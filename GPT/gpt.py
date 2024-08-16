@@ -161,6 +161,26 @@ class UserActions:
         actions.user.gpt_insert_response(response, destination)
         return response
 
+    def gpt_run_prompt(prompt: str, source: str = ""):
+        """Apply an arbitrary prompt to arbitrary text"""
+
+        text_to_process: GPTMessageItem = actions.user.gpt_get_source_text(source)
+        if (
+            text_to_process.get("text", "") == ""
+            and text_to_process.get("image_url", "") == ""
+        ):
+            text_to_process = None  # type: ignore
+
+        # Handle special cases in the prompt
+        ### Ask is a special case, where the text to process is the prompted question, not selected text
+        if prompt.startswith("ask"):
+            text_to_process = format_message(prompt.removeprefix("ask"))
+            prompt = "Generate text that satisfies the question or request given in the input."
+
+        response = gpt_query(format_message(prompt), text_to_process, "")
+
+        return response.get("text")
+
     def gpt_pass(source: str = "", destination: str = "") -> None:
         """Passes a response from source to destination"""
         actions.user.gpt_insert_response(

@@ -23,7 +23,8 @@ summarize: Summarize this text into a format suitable for project notes.
 add context: Add additional text to the selected text that would be appropriate to the situation and add useful information.
 fit schema: The given text has a series of responses that need to be categorized. Each response has a key that needs to be mapped to a value. Infer the schema from the text unless it is given at the top of the text with prior examples. Return the key-value pairs in a JSON format unless you infer a different format.
 answer: Generate text that satisfies the question or request given in the input.
-shell: Generate a shell script that performs the following actions. Output only the command. Do not output any comments or explanations. Default to the bash shell unless otherwise specified.
+shell: Generate a {shell_name} shell command that will perform the given task. Only include the code. Do not include any comments, backticks, or natural language explanations. Do not output the shell name, only the code that is valid {shell_name}. Condense the code into a single line such that it can be ran in the terminal.
+sql: Generate SQL to complete a given request. Output only the SQL in one line without newlines. Do not output comments, backticks, or natural language explanations. Prioritize SQL queries that are database agnostic.
 add emoji: Return the same exact text verbatim with the same formatting, but add emoji when appropriate in order to make the text fun and easier to understand.
 make softer: Act as an editor. I want you to make the following text softer in tone. Return just the modified text.
 make stronger: Act as an editor. I want you to make the following text stronger in tone. Return just the modified text.

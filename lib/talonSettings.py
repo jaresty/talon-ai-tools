@@ -1,6 +1,6 @@
 from typing import Literal
 
-from talon import Context, Module, clip
+from talon import Context, Module, clip, settings
 
 mod = Module()
 ctx = Context()
@@ -20,7 +20,9 @@ mod.list("modelSource", desc="Where to get the text from for the GPT")
     rule="{user.staticPrompt} | {user.customPrompt} | (please <user.text>) | (ask <user.text>)"
 )
 def modelPrompt(matched_prompt) -> str:
-    return str(matched_prompt).format(clip=clip.text())
+    return str(matched_prompt).format(
+        clip=clip.text(), shell_name=settings.get("user.model_shell_default")
+    )
 
 
 # model prompts can be either static and predefined by this repo or custom outside of it

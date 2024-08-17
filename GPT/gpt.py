@@ -41,34 +41,6 @@ def gpt_query(
 
 @mod.action_class
 class UserActions:
-    def gpt_generate_shell(text_to_process: str) -> str:
-        """Generate a shell command from a spoken instruction"""
-        shell_name = settings.get("user.model_shell_default")
-        if shell_name is None:
-            raise Exception("GPT Error: Shell name is not set. Set it in the settings.")
-
-        prompt = f"""
-        Generate a {shell_name} shell command that will perform the given task.
-        Only include the code. Do not include any comments, backticks, or natural language explanations. Do not output the shell name, only the code that is valid {shell_name}.
-        Condense the code into a single line such that it can be ran in the terminal.
-        """
-
-        result = gpt_query(format_message(prompt), format_message(text_to_process))
-        return extract_message(result)
-
-    def gpt_generate_sql(text_to_process: str) -> str:
-        """Generate a SQL query from a spoken instruction"""
-
-        prompt = """
-       Generate SQL to complete a given request.
-       Output only the SQL in one line without newlines.
-       Do not output comments, backticks, or natural language explanations.
-       Prioritize SQL queries that are database agnostic.
-        """
-        return gpt_query(format_message(prompt), format_message(text_to_process)).get(
-            "text", ""
-        )
-
     def gpt_start_debug():
         """Enable debug logging"""
         GPTState.start_debug()

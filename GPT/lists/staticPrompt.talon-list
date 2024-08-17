@@ -57,3 +57,5 @@ format prose: As an editor, format the following outline or summarization as pro
 
 ## AI TOOLS
 explain prompt: Analyze the provided prompt and response. Explain how the prompt was understood to generate the given response. Provide only the explanation.
+
+apply clip: {clip}

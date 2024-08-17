@@ -31,12 +31,3 @@ tag: user.cursorless
     text = user.cursorless_get_text(cursorless_target)
     user.gpt_clear_thread()
     user.gpt_push_thread(text)
-
-# Applies an arbitrary prompt from the clipboard to a cursorless target.
-# Useful for applying complex/custom prompts that need to be drafted in a text editor.
-{user.model} apply [from] clip <user.cursorless_target>$:
-    prompt = clip.text()
-    text = user.cursorless_get_text_list(cursorless_target)
-    result = user.gpt_apply_prompt(prompt, text)
-    default_destination = user.cursorless_create_destination(cursorless_target)
-    user.cursorless_insert(default_destination, result)

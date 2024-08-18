@@ -101,12 +101,6 @@ class UserActions:
         ):
             text_to_process = None  # type: ignore
 
-        # Handle special cases in the prompt
-        ### Ask is a special case, where the text to process is the prompted question, not selected text
-        if prompt.startswith("ask"):
-            text_to_process = format_message(prompt.removeprefix("ask"))
-            prompt = "Generate text that satisfies the question or request given in the input."
-
         prompt_with_destination_substitution = prompt.format(
             destination_text=actions.user.gpt_destination_text(destination)
         )
@@ -114,6 +108,20 @@ class UserActions:
         response = gpt_query(
             format_message(prompt_with_destination_substitution),
             text_to_process,
+            destination,
+        )
+
+        actions.user.gpt_insert_response(response, destination)
+        return response
+
+    def gpt_ask(text_to_process: str, destination: str = ""):
+        """Ask a question"""
+
+        response = gpt_query(
+            format_message(
+                "Generate text that satisfies the question or request given in the input."
+            ),
+            format_message(text_to_process),
             destination,
         )
 

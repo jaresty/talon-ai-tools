@@ -8,6 +8,8 @@
 {user.model} <user.modelPrompt> [{user.modelSource}] [{user.modelDestination}]$:
     user.gpt_apply_prompt(modelPrompt, modelSource or "", modelDestination or "")
 
+^{user.model} ask <user.text> [{user.modelDestination}]$: user.gpt_ask(text, modelDestination or "")
+
 # Select the last GPT response so you can edit it further
 {user.model} take response: user.gpt_select_last()
 

@@ -1,7 +1,7 @@
 import base64
 import json
 import os
-from typing import Literal, Optional
+from typing import Literal
 
 import requests
 from talon import actions, app, clip, settings
@@ -91,8 +91,6 @@ def format_clipboard() -> GPTMessageItem:
 
 
 def build_request(
-    prompt: GPTMessageItem,
-    content_to_process: Optional[GPTMessageItem],
     destination: str = "",
 ):
     notification = "GPT Task Started"
@@ -129,33 +127,6 @@ def build_request(
     ]
 
     system_messages += GPTState.context
-    content: list[GPTMessageItem] = []
-    if content_to_process is not None:
-        if content_to_process["type"] == "image_url":
-            image = content_to_process
-            # If we are processing an image, we have
-            # to add it as a second message
-            content = [prompt, image]
-        elif content_to_process["type"] == "text":
-            # If we are processing text content, just
-            # add the text on to the same message instead
-            # of splitting it into multiple messages
-            prompt["text"] = (
-                prompt["text"] + '\n\n"""' + content_to_process["text"] + '"""'  # type: ignore a Prompt has to be of type text
-            )
-            content = [prompt]
-    else:
-        # If there isn't any content to process,
-        # we just use the prompt and nothing else
-        content = [prompt]
-
-    current_request: GPTMessage = {
-        "role": "user",
-        "content": content,
-    }
-
-    if GPTState.thread_enabled:
-        GPTState.push_thread(current_request)
 
     GPTState.request = {
         "messages": [],
@@ -166,7 +137,6 @@ def build_request(
     }
     append_request_messages([format_messages("system", system_messages)])
     append_request_messages(GPTState.thread)
-    append_request_messages([current_request])
 
 
 def append_request_messages(messages: list[GPTMessage]):

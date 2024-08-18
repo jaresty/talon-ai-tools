@@ -1,11 +1,12 @@
 import os
-from typing import Any, Optional
+from typing import Any
 
 from talon import Module, actions, clip, settings
 
 from ..lib.HTMLBuilder import Builder
 from ..lib.modelConfirmationGUI import confirmation_gui
 from ..lib.modelHelpers import (
+    append_request_messages,
     build_request,
     chats_to_string,
     extract_message,
@@ -26,17 +27,12 @@ mod.tag(
 )
 
 
-def gpt_query(
-    prompt: GPTMessageItem,
-    text_to_process: Optional[GPTMessageItem],
-    destination: str = "",
-):
+def gpt_query():
     """Send a prompt to the GPT API and return the response"""
 
     # Reset state before pasting
     GPTState.last_was_pasted = False
 
-    response = build_request(prompt, text_to_process, destination)
     response = send_request()
     return response
 
@@ -96,36 +92,8 @@ class UserActions:
     def gpt_apply_prompt(prompt: str, source: str = "", destination: str = ""):
         """Apply an arbitrary prompt to arbitrary text"""
 
-        text_to_process: GPTMessageItem = actions.user.gpt_get_source_text(source)
-        if (
-            text_to_process.get("text", "") == ""
-            and text_to_process.get("image_url", "") == ""
-        ):
-            text_to_process = None  # type: ignore
-
-        prompt_with_destination_substitution = prompt.format(
-            destination_text=actions.user.gpt_destination_text(destination)
-        )
-
-        response = gpt_query(
-            format_message(prompt_with_destination_substitution),
-            text_to_process,
-            destination,
-        )
-
-        actions.user.gpt_insert_response(response, destination)
-        return response
-
-    def gpt_ask(text_to_process: str, destination: str = ""):
-        """Ask a question"""
-
-        response = gpt_query(
-            format_message(
-                "Generate text that satisfies the question or request given in the input."
-            ),
-            format_message(text_to_process),
-            destination,
-        )
+        actions.user.gpt_prepare_message(source, prompt, "")
+        response = gpt_query()
 
         actions.user.gpt_insert_response(response, destination)
         return response
@@ -133,14 +101,8 @@ class UserActions:
     def gpt_run_prompt(prompt: str, source: str = ""):
         """Apply an arbitrary prompt to arbitrary text"""
 
-        text_to_process: GPTMessageItem = actions.user.gpt_get_source_text(source)
-        if (
-            text_to_process.get("text", "") == ""
-            and text_to_process.get("image_url", "") == ""
-        ):
-            text_to_process = None  # type: ignore
-
-        response = gpt_query(format_message(prompt), text_to_process, "")
+        response = actions.user.gpt_prepare_message(source, prompt, "")
+        response = gpt_query()
 
         return response.get("text")
 
@@ -359,3 +321,25 @@ class UserActions:
                     )
             case "this" | _:
                 return format_message(actions.edit.selected_text())
+
+    def gpt_prepare_message(
+        spoken_text: str,
+        prompt: str,
+        destination: str = "",
+    ) -> None:
+        """Get the source text that is will have the prompt applied to it"""
+        prompt_with_destination_substitution = prompt.format(
+            destination_text=actions.user.gpt_destination_text(destination)
+        )
+        build_request(destination)
+        content_to_process: GPTMessageItem = actions.user.gpt_get_source_text(
+            spoken_text
+        )
+
+        current_request = format_messages(
+            "user",
+            [format_message(prompt_with_destination_substitution), content_to_process],
+        )
+        if GPTState.thread_enabled:
+            GPTState.push_thread(current_request)
+        append_request_messages([current_request])

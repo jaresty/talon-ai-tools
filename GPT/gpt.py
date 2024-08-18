@@ -107,7 +107,15 @@ class UserActions:
             text_to_process = format_message(prompt.removeprefix("ask"))
             prompt = "Generate text that satisfies the question or request given in the input."
 
-        response = gpt_query(format_message(prompt), text_to_process, destination)
+        prompt_with_destination_substitution = prompt.format(
+            destination_text=actions.user.gpt_destination_text(destination)
+        )
+
+        response = gpt_query(
+            format_message(prompt_with_destination_substitution),
+            text_to_process,
+            destination,
+        )
 
         actions.user.gpt_insert_response(response, destination)
         return response
@@ -276,6 +284,30 @@ class UserActions:
             # Don't do anything if none of the previous conditions were valid
             case _:
                 pass
+
+    def gpt_destination_text(
+        method: str = "",
+        cursorless_destination: Any = None,
+    ) -> str:
+        """Get the text of the destination"""
+        # Use a custom default if nothing is provided and the user has set
+        # a different default destination
+        if method == "":
+            method = settings.get("user.model_default_destination")
+
+        match method:
+            case "thread":
+                return chats_to_string(GPTState.thread)
+            case "newThread" | "newContext":
+                return ""
+            case "clipboard" | "appendClipboard":
+                return clip.text()
+            case "context":
+                return messages_to_string(GPTState.context)
+            case "cursorless":
+                return actions.user.cursorless_get_text(cursorless_destination)
+            case _:
+                return actions.edit.selected_text()
 
     def gpt_get_source_text(spoken_text: str) -> GPTMessageItem:
         """Get the source text that is will have the prompt applied to it"""

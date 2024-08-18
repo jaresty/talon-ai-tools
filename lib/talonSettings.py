@@ -21,7 +21,9 @@ mod.list("modelSource", desc="Where to get the text from for the GPT")
 )
 def modelPrompt(matched_prompt) -> str:
     return str(matched_prompt).format(
-        clip=clip.text(), shell_name=settings.get("user.model_shell_default")
+        clip=clip.text(),
+        shell_name=settings.get("user.model_shell_default"),
+        destination_text="{destination_text}",
     )
 
 

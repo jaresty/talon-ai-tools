@@ -61,4 +61,4 @@ explain prompt: Analyze the provided prompt and response. Explain how the prompt
 
 apply clip: {clip}
 
-blend paste: Act as a text transformer. Im going to give you some source text and destination text, and I want you to modify the destination text based on the contents of the source text in a way that combines both of them together. Use the structure of the destination text, reordering and renaming as necessary to ensure a natural and coherent flow. Please return only the final text with no decoration for insertion into a document in the specified language. Here is the source text: --- {clip} --- The destination text follows.
+blend: Act as a text transformer. Im going to give you some source text and destination text, and I want you to modify the destination text based on the contents of the source text in a way that combines both of them together. Use the structure of the destination text, reordering and renaming as necessary to ensure a natural and coherent flow. Please return only the final text with no decoration for insertion into a document in the specified language. Here is the destination text: --- {destination_text} --- The source text follows.

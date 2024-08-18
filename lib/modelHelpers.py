@@ -167,7 +167,6 @@ def build_request(
     append_request_messages([format_messages("system", system_messages)])
     append_request_messages(GPTState.thread)
     append_request_messages([current_request])
-    GPTState.last_request = chats_to_string(GPTState.request["messages"])
 
 
 def append_request_messages(messages: list[GPTMessage]):

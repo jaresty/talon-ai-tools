@@ -339,10 +339,12 @@ class UserActions:
                     )
                 return format_message(GPTState.last_response)
             case "gptRequest":
-                return format_message(GPTState.last_request)
+                return format_message(chats_to_string(GPTState.request["messages"]))
             case "gptExchange":
                 return format_message(
-                    GPTState.last_request + "\n\nassistant\n\n" + GPTState.last_response
+                    chats_to_string(GPTState.request["messages"])
+                    + "\n\nassistant\n\n"
+                    + GPTState.last_response
                 )
 
             case "lastTalonDictation":

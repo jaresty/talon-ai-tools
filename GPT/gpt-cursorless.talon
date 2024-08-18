@@ -11,23 +11,6 @@ tag: user.cursorless
     user.cursorless_insert(cursorless_destination or default_destination, result)
 
 # Add the text from a cursorless target to your context
-{user.model} pass <user.cursorless_target> to context$:
+{user.model} pass <user.cursorless_target> [{user.modelDestination}]$:
     text = user.cursorless_get_text(cursorless_target)
-    user.gpt_push_context(text)
-
-# Add the text from a cursorless target to a new context
-{user.model} pass <user.cursorless_target> to new context'$:
-    text = user.cursorless_get_text(cursorless_target)
-    user.gpt_clear_context()
-    user.gpt_push_context(text)
-
-# Add the text from a cursorless target to the current thread
-{user.model} pass <user.cursorless_target> to thread$:
-    text = user.cursorless_get_text(cursorless_target)
-    user.gpt_push_thread(text)
-
-# Add the text from a cursorless target to a new thread
-{user.model} pass <user.cursorless_target> to new thread$:
-    text = user.cursorless_get_text(cursorless_target)
-    user.gpt_clear_thread()
-    user.gpt_push_thread(text)
+    user.gpt_insert_text(text, user.modelDestination)

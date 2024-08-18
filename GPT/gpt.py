@@ -179,6 +179,10 @@ class UserActions:
             notify("No text to reformat")
             raise Exception("No text to reformat")
 
+    def gpt_insert_text(text: str, method: str = "") -> None:
+        """Insert text using the helpers here"""
+        actions.user.gpt_insert_response(format_message(text), method)
+
     def gpt_insert_response(
         gpt_message: GPTMessageItem,
         method: str = "",

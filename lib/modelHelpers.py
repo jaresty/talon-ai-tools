@@ -153,23 +153,25 @@ def build_request(
         "role": "user",
         "content": content,
     }
-    messages = (
-        [
-            format_messages("system", system_messages),
-        ]
-        + GPTState.thread
-        + [current_request]
-    )
+
     if GPTState.thread_enabled:
         GPTState.push_thread(current_request)
-    GPTState.last_request = chats_to_string(messages)
+
     GPTState.request = {
-        "messages": messages,
+        "messages": [],
         "max_tokens": 2024,
         "temperature": settings.get("user.model_temperature"),
         "n": 1,
         "model": settings.get("user.openai_model"),
     }
+    append_request_messages([format_messages("system", system_messages)])
+    append_request_messages(GPTState.thread)
+    append_request_messages([current_request])
+    GPTState.last_request = chats_to_string(GPTState.request["messages"])
+
+
+def append_request_messages(messages: list[GPTMessage]):
+    GPTState.request["messages"] = GPTState.request.get("messages", []) + messages
 
 
 def send_request():

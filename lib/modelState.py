@@ -2,7 +2,7 @@ from typing import ClassVar
 
 from talon import actions
 
-from .modelTypes import GPTMessage, GPTMessageItem
+from .modelTypes import GPTMessage, GPTMessageItem, GPTRequest
 
 
 class GPTState:
@@ -11,6 +11,7 @@ class GPTState:
     last_request: ClassVar[str] = ""
     last_was_pasted: ClassVar[bool] = False
     context: ClassVar[list[GPTMessageItem]] = []
+    request: ClassVar[GPTRequest]
     thread: ClassVar[list[GPTMessage]] = []
     thread_enabled: ClassVar[bool] = False
     debug_enabled: ClassVar[bool] = False

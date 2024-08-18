@@ -90,13 +90,11 @@ def format_clipboard() -> GPTMessageItem:
         return format_message(clip.text())  # type: ignore Unclear why this is not narrowing the type
 
 
-def send_request(
+def build_request(
     prompt: GPTMessageItem,
     content_to_process: Optional[GPTMessageItem],
-    tools: Optional[list[dict[str, str]]] = None,
     destination: str = "",
 ):
-    """Generate run a GPT request and return the response"""
     notification = "GPT Task Started"
     if len(GPTState.context) > 0:
         notification += ": Reusing Stored Context"
@@ -104,7 +102,6 @@ def send_request(
         notification += ", Threading Enabled"
 
     notify(notification)
-    TOKEN = get_token()
 
     language = actions.code.language()
     language_context = (
@@ -132,12 +129,6 @@ def send_request(
     ]
 
     system_messages += GPTState.context
-
-    headers = {
-        "Content-Type": "application/json",
-        "Authorization": f"Bearer {TOKEN}",
-    }
-
     content: list[GPTMessageItem] = []
     if content_to_process is not None:
         if content_to_process["type"] == "image_url":
@@ -162,7 +153,6 @@ def send_request(
         "role": "user",
         "content": content,
     }
-
     messages = (
         [
             format_messages("system", system_messages),
@@ -170,27 +160,41 @@ def send_request(
         + GPTState.thread
         + [current_request]
     )
-    data = {
+    if GPTState.thread_enabled:
+        GPTState.push_thread(current_request)
+    GPTState.last_request = chats_to_string(messages)
+    GPTState.request = {
         "messages": messages,
         "max_tokens": 2024,
         "temperature": settings.get("user.model_temperature"),
         "n": 1,
         "model": settings.get("user.openai_model"),
     }
+
+
+def send_request():
+    """Generate run a GPT request and return the response"""
+
+    TOKEN = get_token()
+    headers = {
+        "Content-Type": "application/json",
+        "Authorization": f"Bearer {TOKEN}",
+    }
+
     if GPTState.debug_enabled:
-        print(data)
-    if tools is not None:
-        data["tools"] = tools
+        print(GPTState.request)
 
     url: str = settings.get("user.model_endpoint")  # type: ignore
-    raw_response = requests.post(url, headers=headers, data=json.dumps(data))
+    raw_response = requests.post(
+        url, headers=headers, data=json.dumps(GPTState.request)
+    )
 
     match raw_response.status_code:
         case 200:
             notify("GPT Task Completed")
             resp = raw_response.json()["choices"][0]["message"]["content"].strip()
             formatted_resp = strip_markdown(resp)
-            GPTState.last_request = chats_to_string(messages)
+
             GPTState.last_response = formatted_resp
             response = format_message(formatted_resp)
         case _:
@@ -198,7 +202,6 @@ def send_request(
             raise Exception(raw_response.json())
 
     if GPTState.thread_enabled:
-        GPTState.push_thread(current_request)
         GPTState.push_thread(
             {
                 "role": "assistant",

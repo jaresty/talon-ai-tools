@@ -6,6 +6,7 @@ from talon import Module, actions, clip, settings
 from ..lib.HTMLBuilder import Builder
 from ..lib.modelConfirmationGUI import confirmation_gui
 from ..lib.modelHelpers import (
+    build_request,
     chats_to_string,
     extract_message,
     format_clipboard,
@@ -35,7 +36,8 @@ def gpt_query(
     # Reset state before pasting
     GPTState.last_was_pasted = False
 
-    response = send_request(prompt, text_to_process, None, destination)
+    response = build_request(prompt, text_to_process, destination)
+    response = send_request()
     return response
 
 

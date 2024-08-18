@@ -10,3 +10,11 @@ class GPTMessageItem(TypedDict):
 class GPTMessage(TypedDict):
     role: Literal["user", "system", "assistant"]
     content: list[GPTMessageItem]
+
+
+class GPTRequest(TypedDict):
+    messages: list[GPTMessage]
+    max_tokens: int
+    temperature: float
+    n: int
+    model: str

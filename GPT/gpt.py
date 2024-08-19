@@ -1,10 +1,9 @@
-import base64
 import os
 from typing import Any
 
 from ..lib.modelDestination import create_model_destination
 from ..lib.modelSource import create_model_source
-from talon import Module, actions, clip
+from talon import Module, actions
 
 from ..lib.HTMLBuilder import Builder
 from ..lib.modelConfirmationGUI import confirmation_gui
@@ -18,7 +17,7 @@ from ..lib.modelHelpers import (
     send_request,
 )
 from ..lib.modelState import GPTState
-from ..lib.modelTypes import GPTImageItem, GPTTextItem
+from ..lib.modelTypes import GPTTextItem
 
 mod = Module()
 mod.tag(
@@ -205,25 +204,9 @@ class UserActions:
             destination_text=actions.user.gpt_destination_text(destination)
         )
         build_request(destination)
-
-        current_messages: list[GPTImageItem | GPTTextItem] = [
-            format_message(prompt_with_destination_substitution)
-        ]
-        if spoken_text == "clipboard":
-            clipped_image = clip.image()
-
-            if clipped_image:
-                data = clipped_image.encode().data()
-                base64_image = base64.b64encode(data).decode("utf-8")
-                image_item: GPTImageItem = {
-                    "type": "image_url",
-                    "image_url": {"url": f"data:image/;base64,{base64_image}"},
-                }
-                current_messages.append(image_item)
-
-        else:
-            content_to_process: str = actions.user.gpt_get_source_text(spoken_text)
-            current_messages.append(format_message(f'"""{content_to_process}\n"""'))
+        current_messages = create_model_source(spoken_text).format_message(
+            prompt_with_destination_substitution
+        )
 
         current_request = format_messages(
             "user",

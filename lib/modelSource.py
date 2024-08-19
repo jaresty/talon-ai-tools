@@ -1,7 +1,10 @@
+import base64
+from ..lib.modelTypes import GPTImageItem, GPTTextItem
 from ..lib.modelState import GPTState
 from talon import actions, clip, settings
 from ..lib.modelHelpers import (
     chats_to_string,
+    format_message,
     messages_to_string,
     notify,
 )
@@ -11,10 +14,34 @@ class ModelSource:
     def get_text(self):
         raise NotImplementedError("Subclasses should implement this method")
 
+    def format_message(self, prompt: str) -> list[GPTImageItem | GPTTextItem]:
+        return [
+            format_message(f"""
+        {prompt}
+        \"\"\"
+        {self.get_text()}
+        \"\"\"
+
+        """)
+        ]
+
 
 class Clipboard(ModelSource):
     def get_text(self):
         return clip.text()
+
+    def format_message(self, prompt: str) -> list[GPTImageItem | GPTTextItem]:
+        clipped_image = clip.image()
+
+        if clipped_image:
+            data = clipped_image.encode().data()
+            base64_image = base64.b64encode(data).decode("utf-8")
+            image_item: GPTImageItem = {
+                "type": "image_url",
+                "image_url": {"url": f"data:image/;base64,{base64_image}"},
+            }
+            return [format_message(prompt), image_item]
+        return super().format_message(prompt)
 
 
 class Context(ModelSource):

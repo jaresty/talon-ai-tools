@@ -2,6 +2,7 @@ import base64
 import os
 from typing import Any
 
+from lib.modelDestination import create_model_destination
 from talon import Module, actions, clip, settings
 
 from ..lib.HTMLBuilder import Builder
@@ -186,87 +187,7 @@ class UserActions:
             actions.user.confirmation_gui_refresh_thread()
             return
 
-        match method:
-            case "thread" | "newThread" as t:
-                if t == "newThread":
-                    GPTState.new_thread()
-                GPTState.push_thread(format_messages("user", [gpt_message]))
-                actions.user.confirmation_gui_refresh_thread()
-                return
-
-        if gpt_message.get("type") != "text":
-            actions.app.notify(
-                f"Tried to insert an image to {method}, but that is not currently supported. To insert an image to this destination use a prompt to convert it to text."
-            )
-            return
-
-        message_text_no_images = extract_message(gpt_message)
-        match method:
-            case "above":
-                actions.key("left")
-                actions.edit.line_insert_up()
-                GPTState.last_was_pasted = True
-                actions.user.paste(message_text_no_images)
-            case "below":
-                actions.key("right")
-                actions.edit.line_insert_down()
-                GPTState.last_was_pasted = True
-                actions.user.paste(message_text_no_images)
-            case "clipboard":
-                clip.set_text(message_text_no_images)
-            case "snip":
-                actions.user.insert_snippet(message_text_no_images)
-            case "context":
-                GPTState.push_context(gpt_message)
-            case "newContext":
-                GPTState.clear_context()
-                GPTState.push_context(gpt_message)
-            case "appendClipboard":
-                if clip.text() is not None:
-                    clip.set_text(clip.text() + "\n" + message_text_no_images)  # type: ignore Unclear why this is throwing a type error in pylance
-                else:
-                    clip.set_text(message_text_no_images)
-            case "browser":
-                builder = Builder()
-                builder.h1("Talon GPT Result")
-                for line in message_text_no_images.split("\n"):
-                    builder.p(line)
-                builder.render()
-            case "textToSpeech":
-                try:
-                    actions.user.tts(message_text_no_images)
-                except KeyError:
-                    notify("GPT Failure: text to speech is not installed")
-
-            # Although we can insert to a cursorless destination, the cursorless_target capture
-            # Greatly increases DFA compliation times and should be avoided if possible
-            case "cursorless":
-                actions.user.cursorless_insert(
-                    cursorless_destination, message_text_no_images
-                )
-            # Don't add to the window twice if the thread is enabled
-            case "window":
-                # If there was prior text in the confirmation GUI and the user
-                # explicitly passed new text to the gui, clear the old result
-                GPTState.text_to_confirm = message_text_no_images
-                actions.user.confirmation_gui_append(message_text_no_images)
-            case "chain":
-                GPTState.last_was_pasted = True
-                actions.user.paste(message_text_no_images)
-                actions.user.gpt_select_last()
-
-            case "paste":
-                GPTState.last_was_pasted = True
-                actions.user.paste(message_text_no_images)
-            # If the user doesn't specify a method assume they want to paste.
-            # However if they didn't specify a method when the confirmation gui
-            # is showing, assume they don't want anything to be inserted
-            case _ if not confirmation_gui.showing:
-                GPTState.last_was_pasted = True
-                actions.user.paste(message_text_no_images)
-            # Don't do anything if none of the previous conditions were valid
-            case _:
-                pass
+        create_model_destination(method).insert(gpt_message)
 
     def gpt_destination_text(
         method: str = "",

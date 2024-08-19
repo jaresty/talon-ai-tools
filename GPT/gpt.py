@@ -1,5 +1,4 @@
 import os
-from typing import Any
 
 from ..lib.modelDestination import create_model_destination
 from ..lib.modelSource import create_model_source
@@ -162,7 +161,6 @@ class UserActions:
     def gpt_insert_response(
         gpt_message: GPTTextItem,
         method: str = "",
-        cursorless_destination: Any = None,
     ) -> None:
         """Insert a GPT result in a specified way"""
 
@@ -185,7 +183,6 @@ class UserActions:
 
     def gpt_destination_text(
         method: str = "",
-        cursorless_destination: Any = None,
     ) -> str:
         """Get the text of the destination"""
         return create_model_destination(method).get_text()

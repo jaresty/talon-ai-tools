@@ -3,6 +3,7 @@ import os
 from typing import Any
 
 from ..lib.modelDestination import create_model_destination
+from ..lib.modelSource import create_model_source
 from talon import Module, actions, clip
 
 from ..lib.HTMLBuilder import Builder
@@ -10,11 +11,9 @@ from ..lib.modelConfirmationGUI import confirmation_gui
 from ..lib.modelHelpers import (
     append_request_messages,
     build_request,
-    chats_to_string,
     extract_message,
     format_message,
     format_messages,
-    messages_to_string,
     notify,
     send_request,
 )
@@ -194,46 +193,7 @@ class UserActions:
 
     def gpt_get_source_text(spoken_text: str) -> str:
         """Get the source text that is will have the prompt applied to it"""
-        match spoken_text:
-            case "clipboard":
-                return clip.text()
-            case "context":
-                if GPTState.context == []:
-                    notify("GPT Failure: Context is empty")
-                    raise Exception(
-                        "GPT Failure: User applied a prompt to the phrase context, but there was no context stored"
-                    )
-                return messages_to_string(GPTState.context)
-            case "thread":
-                # TODO: Do we want to throw an exception here if the thread is empty?
-                return chats_to_string(GPTState.thread)
-            case "gptResponse":
-                if GPTState.last_response == "":
-                    raise Exception(
-                        "GPT Failure: User applied a prompt to the phrase GPT response, but there was no GPT response stored"
-                    )
-                return GPTState.last_response
-            case "gptRequest":
-                return chats_to_string(GPTState.request["messages"])
-            case "gptExchange":
-                return (
-                    chats_to_string(GPTState.request["messages"])
-                    + "\n\nassistant\n\n"
-                    + GPTState.last_response
-                )
-
-            case "lastTalonDictation":
-                last_output = actions.user.get_last_phrase()
-                if last_output:
-                    actions.user.clear_last_phrase()
-                    return last_output
-                else:
-                    notify("GPT Failure: No last dictation to reformat")
-                    raise Exception(
-                        "GPT Failure: User applied a prompt to the phrase last Talon Dictation, but there was no text to reformat"
-                    )
-            case "this" | _:
-                return actions.edit.selected_text()
+        return create_model_source(spoken_text).get_text()
 
     def gpt_prepare_message(
         spoken_text: str,

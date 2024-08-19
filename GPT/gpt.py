@@ -1,3 +1,4 @@
+import base64
 import os
 from typing import Any
 
@@ -10,7 +11,6 @@ from ..lib.modelHelpers import (
     build_request,
     chats_to_string,
     extract_message,
-    format_clipboard,
     format_message,
     format_messages,
     messages_to_string,
@@ -109,7 +109,7 @@ class UserActions:
     def gpt_pass(source: str = "", destination: str = "") -> None:
         """Passes a response from source to destination"""
         actions.user.gpt_insert_response(
-            actions.user.gpt_get_source_text(source), destination
+            format_message(actions.user.gpt_get_source_text(source)), destination
         )
 
     def gpt_help() -> None:
@@ -121,7 +121,7 @@ class UserActions:
             lines = f.readlines()[2:]
 
         builder = Builder()
-        builder.h1("Talon GPT Prompt List")
+        builder.h0("Talon GPT Prompt List")
         for line in lines:
             if "##" in line:
                 builder.h2(line)
@@ -136,9 +136,8 @@ class UserActions:
         last_output = actions.user.get_last_phrase()
         if last_output:
             actions.user.clear_last_phrase()
-            return extract_message(
-                gpt_query(format_message(PROMPT), format_message(last_output))
-            )
+            actions.user.gpt_prepare_message("last", PROMPT, "")
+            return extract_message(gpt_query())
         else:
             notify("No text to reformat")
             raise Exception("No text to reformat")
@@ -279,31 +278,31 @@ class UserActions:
             case _:
                 return actions.edit.selected_text()
 
-    def gpt_get_source_text(spoken_text: str) -> GPTMessageItem:
+    def gpt_get_source_text(spoken_text: str) -> str:
         """Get the source text that is will have the prompt applied to it"""
         match spoken_text:
             case "clipboard":
-                return format_clipboard()
+                return clip.text()
             case "context":
                 if GPTState.context == []:
                     notify("GPT Failure: Context is empty")
                     raise Exception(
                         "GPT Failure: User applied a prompt to the phrase context, but there was no context stored"
                     )
-                return format_message(messages_to_string(GPTState.context))
+                return messages_to_string(GPTState.context)
             case "thread":
                 # TODO: Do we want to throw an exception here if the thread is empty?
-                return format_message(chats_to_string(GPTState.thread))
+                return chats_to_string(GPTState.thread)
             case "gptResponse":
                 if GPTState.last_response == "":
                     raise Exception(
                         "GPT Failure: User applied a prompt to the phrase GPT response, but there was no GPT response stored"
                     )
-                return format_message(GPTState.last_response)
+                return GPTState.last_response
             case "gptRequest":
-                return format_message(chats_to_string(GPTState.request["messages"]))
+                return chats_to_string(GPTState.request["messages"])
             case "gptExchange":
-                return format_message(
+                return (
                     chats_to_string(GPTState.request["messages"])
                     + "\n\nassistant\n\n"
                     + GPTState.last_response
@@ -313,14 +312,14 @@ class UserActions:
                 last_output = actions.user.get_last_phrase()
                 if last_output:
                     actions.user.clear_last_phrase()
-                    return format_message(last_output)
+                    return last_output
                 else:
                     notify("GPT Failure: No last dictation to reformat")
                     raise Exception(
                         "GPT Failure: User applied a prompt to the phrase last Talon Dictation, but there was no text to reformat"
                     )
             case "this" | _:
-                return format_message(actions.edit.selected_text())
+                return actions.edit.selected_text()
 
     def gpt_prepare_message(
         spoken_text: str,
@@ -332,13 +331,27 @@ class UserActions:
             destination_text=actions.user.gpt_destination_text(destination)
         )
         build_request(destination)
-        content_to_process: GPTMessageItem = actions.user.gpt_get_source_text(
-            spoken_text
-        )
+
+        current_messages = [format_message(prompt_with_destination_substitution)]
+        if spoken_text == "clipboard":
+            clipped_image = clip.image()
+
+            if clipped_image:
+                data = clipped_image.encode().data()
+                base64_image = base64.b64encode(data).decode("utf-8")
+                image_item: GPTMessageItem = {
+                    "type": "image_url",
+                    "image_url": {"url": f"data:image/;base64,{base64_image}"},
+                }
+                current_messages.append(image_item)
+
+        else:
+            content_to_process: str = actions.user.gpt_get_source_text(spoken_text)
+            current_messages.append(format_message(f'"""{content_to_process}\n"""'))
 
         current_request = format_messages(
             "user",
-            [format_message(prompt_with_destination_substitution), content_to_process],
+            current_messages,
         )
         if GPTState.thread_enabled:
             GPTState.push_thread(current_request)

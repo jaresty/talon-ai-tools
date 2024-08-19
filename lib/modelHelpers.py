@@ -72,24 +72,6 @@ def extract_message(content: GPTMessageItem) -> str:
     return content.get("text", "")
 
 
-def format_clipboard() -> GPTMessageItem:
-    clipped_image = clip.image()
-    if clipped_image:
-        data = clipped_image.encode().data()
-        base64_image = base64.b64encode(data).decode("utf-8")
-        return {
-            "type": "image_url",
-            "image_url": {"url": f"data:image/;base64,{base64_image}"},
-        }
-    else:
-        if not clip.text():
-            raise RuntimeError(
-                "User requested info from the clipboard but there is nothing in it"
-            )
-
-        return format_message(clip.text())  # type: ignore Unclear why this is not narrowing the type
-
-
 def build_request(
     destination: str = "",
 ):

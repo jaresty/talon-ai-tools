@@ -1,10 +1,12 @@
-from lib.modelTypes import GPTTextItem
+from ..lib.modelTypes import GPTTextItem
 from ..lib.modelConfirmationGUI import confirmation_gui
-from talon import actions, clip
+from talon import actions, clip, settings
 from ..lib.modelState import GPTState
 from ..lib.modelHelpers import (
+    chats_to_string,
     extract_message,
     format_messages,
+    messages_to_string,
     notify,
 )
 from ..lib.HTMLBuilder import Builder
@@ -13,6 +15,9 @@ from ..lib.HTMLBuilder import Builder
 class ModelDestination:
     def insert(self, gpt_message: GPTTextItem):
         raise NotImplementedError("Subclasses should implement this method")
+
+    def get_text(self):
+        return actions.edit.selected_text()
 
 
 class Above(ModelDestination):
@@ -38,6 +43,9 @@ class Clipboard(ModelDestination):
         extracted_message = extract_message(gpt_message)
         clip.set_text(extracted_message)
 
+    def get_text(self):
+        return clip.text()
+
 
 class Snip(ModelDestination):
     def insert(self, gpt_message):
@@ -49,20 +57,29 @@ class Context(ModelDestination):
     def insert(self, gpt_message):
         GPTState.push_context(gpt_message)
 
+    def get_text(self):
+        return messages_to_string(GPTState.context)
+
 
 class NewContext(ModelDestination):
     def insert(self, gpt_message):
         GPTState.clear_context()
         GPTState.push_context(gpt_message)
 
+    def get_text(self):
+        return ""
+
 
 class AppendClipboard(ModelDestination):
     def insert(self, gpt_message):
         extracted_message = extract_message(gpt_message)
         if clip.text() is not None:
-            clip.set_text(clip.text() + "\n" + extracted_message)  # type: ignore Unclear why this is throwing a type error in pylance
+            clip.set_text(clip.text() + "\n" + extracted_message)  # type: ignore
         else:
             clip.set_text(extracted_message)
+
+    def get_text(self):
+        return ""
 
 
 class Browser(ModelDestination):
@@ -111,12 +128,18 @@ class Thread(ModelDestination):
         GPTState.push_thread(format_messages("user", [gpt_message]))
         actions.user.confirmation_gui_refresh_thread()
 
+    def get_text(self):
+        return chats_to_string(GPTState.thread)
+
 
 class NewThread(ModelDestination):
     def insert(self, gpt_message):
         GPTState.new_thread()
         GPTState.push_thread(format_messages("user", [gpt_message]))
         actions.user.confirmation_gui_refresh_thread()
+
+    def get_text(self):
+        return ""
 
 
 class Default(ModelDestination):
@@ -130,6 +153,8 @@ class Default(ModelDestination):
 
 
 def create_model_destination(destination_type: str) -> ModelDestination:
+    if destination_type == "":
+        destination_type = settings.get("user.model_default_destination")
     match destination_type:
         case "above":
             return Above()

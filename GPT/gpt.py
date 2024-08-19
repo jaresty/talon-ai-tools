@@ -2,8 +2,8 @@ import base64
 import os
 from typing import Any
 
-from lib.modelDestination import create_model_destination
-from talon import Module, actions, clip, settings
+from ..lib.modelDestination import create_model_destination
+from talon import Module, actions, clip
 
 from ..lib.HTMLBuilder import Builder
 from ..lib.modelConfirmationGUI import confirmation_gui
@@ -167,10 +167,6 @@ class UserActions:
         cursorless_destination: Any = None,
     ) -> None:
         """Insert a GPT result in a specified way"""
-        # Use a custom default if nothing is provided and the user has set
-        # a different default destination
-        if method == "":
-            method = settings.get("user.model_default_destination")
 
         # If threading is enabled, and the window is open, refresh the confirmation GUI
         # unless the user explicitly wanted to pass the result to the window without viewing the rest of the thread
@@ -194,24 +190,7 @@ class UserActions:
         cursorless_destination: Any = None,
     ) -> str:
         """Get the text of the destination"""
-        # Use a custom default if nothing is provided and the user has set
-        # a different default destination
-        if method == "":
-            method = settings.get("user.model_default_destination")
-
-        match method:
-            case "thread":
-                return chats_to_string(GPTState.thread)
-            case "newThread" | "newContext":
-                return ""
-            case "clipboard" | "appendClipboard":
-                return clip.text()
-            case "context":
-                return messages_to_string(GPTState.context)
-            case "cursorless":
-                return actions.user.cursorless_get_text(cursorless_destination)
-            case _:
-                return actions.edit.selected_text()
+        return create_model_destination(method).get_text()
 
     def gpt_get_source_text(spoken_text: str) -> str:
         """Get the source text that is will have the prompt applied to it"""

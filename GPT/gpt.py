@@ -135,7 +135,7 @@ class UserActions:
             lines = f.readlines()[2:]
 
         builder = Builder()
-        builder.h0("Talon GPT Prompt List")
+        builder.h1("Talon GPT Prompt List")
         for line in lines:
             if "##" in line:
                 builder.h2(line)

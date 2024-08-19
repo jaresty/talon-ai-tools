@@ -1,15 +1,19 @@
-from typing import Literal, NotRequired, TypedDict
+from typing import Literal, TypedDict
 
 
-class GPTMessageItem(TypedDict):
-    type: Literal["text", "image_url"]
-    text: NotRequired[str]
-    image_url: NotRequired[dict[Literal["url"], str]]
+class GPTTextItem(TypedDict):
+    type: Literal["text"]
+    text: str
+
+
+class GPTImageItem(TypedDict):
+    type: Literal["image_url"]
+    image_url: dict[Literal["url"], str]
 
 
 class GPTMessage(TypedDict):
     role: Literal["user", "system", "assistant"]
-    content: list[GPTMessageItem]
+    content: list[GPTTextItem | GPTImageItem]
 
 
 class GPTRequest(TypedDict):

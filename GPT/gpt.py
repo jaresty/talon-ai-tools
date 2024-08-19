@@ -18,7 +18,7 @@ from ..lib.modelHelpers import (
     send_request,
 )
 from ..lib.modelState import GPTState
-from ..lib.modelTypes import GPTMessageItem
+from ..lib.modelTypes import GPTImageItem, GPTTextItem
 
 mod = Module()
 mod.tag(
@@ -161,7 +161,7 @@ class UserActions:
         actions.user.gpt_insert_response(format_message(text), method)
 
     def gpt_insert_response(
-        gpt_message: GPTMessageItem,
+        gpt_message: GPTTextItem,
         method: str = "",
         cursorless_destination: Any = None,
     ) -> None:
@@ -346,14 +346,16 @@ class UserActions:
         )
         build_request(destination)
 
-        current_messages = [format_message(prompt_with_destination_substitution)]
+        current_messages: list[GPTImageItem | GPTTextItem] = [
+            format_message(prompt_with_destination_substitution)
+        ]
         if spoken_text == "clipboard":
             clipped_image = clip.image()
 
             if clipped_image:
                 data = clipped_image.encode().data()
                 base64_image = base64.b64encode(data).decode("utf-8")
-                image_item: GPTMessageItem = {
+                image_item: GPTImageItem = {
                     "type": "image_url",
                     "image_url": {"url": f"data:image/;base64,{base64_image}"},
                 }

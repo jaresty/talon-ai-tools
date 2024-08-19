@@ -2,14 +2,14 @@ from typing import ClassVar
 
 from talon import actions
 
-from .modelTypes import GPTMessage, GPTMessageItem, GPTRequest
+from .modelTypes import GPTImageItem, GPTMessage, GPTRequest, GPTTextItem
 
 
 class GPTState:
     text_to_confirm: ClassVar[str] = ""
     last_response: ClassVar[str] = ""
     last_was_pasted: ClassVar[bool] = False
-    context: ClassVar[list[GPTMessageItem]] = []
+    context: ClassVar[list[GPTTextItem | GPTImageItem]] = []
     request: ClassVar[GPTRequest]
     thread: ClassVar[list[GPTMessage]] = []
     thread_enabled: ClassVar[bool] = False
@@ -52,7 +52,7 @@ class GPTState:
         actions.app.notify("Disabled threading")
 
     @classmethod
-    def push_context(cls, context: GPTMessageItem):
+    def push_context(cls, context: GPTTextItem):
         """Add the selected text to the stored context"""
         if context.get("type") != "text":
             actions.app.notify(

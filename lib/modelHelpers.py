@@ -8,14 +8,14 @@ from talon import actions, app, clip, settings
 
 from ..lib.pureHelpers import strip_markdown
 from .modelState import GPTState
-from .modelTypes import GPTMessage, GPTMessageItem
+from .modelTypes import GPTImageItem, GPTMessage, GPTTextItem
 
 """"
 All functions in this this file have impure dependencies on either the model or the talon APIs
 """
 
 
-def messages_to_string(messages: list[GPTMessageItem]) -> str:
+def messages_to_string(messages: list[GPTTextItem | GPTImageItem]) -> str:
     """Format messages as a string"""
     formatted_messages = []
     for message in messages:
@@ -56,7 +56,8 @@ def get_token() -> str:
 
 
 def format_messages(
-    role: Literal["user", "system", "assistant"], messages: list[GPTMessageItem]
+    role: Literal["user", "system", "assistant"],
+    messages: list[GPTTextItem | GPTImageItem],
 ) -> GPTMessage:
     return {
         "role": role,
@@ -64,11 +65,11 @@ def format_messages(
     }
 
 
-def format_message(content: str) -> GPTMessageItem:
+def format_message(content: str) -> GPTTextItem:
     return {"type": "text", "text": content}
 
 
-def extract_message(content: GPTMessageItem) -> str:
+def extract_message(content: GPTTextItem) -> str:
     return content.get("text", "")
 
 
@@ -96,7 +97,7 @@ def build_request(
         else None
     )
 
-    system_messages: list[GPTMessageItem] = [
+    system_messages: list[GPTTextItem | GPTImageItem] = [
         {"type": "text", "text": item}
         for item in [
             settings.get("user.model_system_prompt"),

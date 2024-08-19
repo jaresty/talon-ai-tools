@@ -106,6 +106,20 @@ class UserActions:
 
         return response.get("text")
 
+    def gpt_analyze_prompt(destination: str):
+        """Explain why we got the results we did"""
+        PROMPT = "Analyze the provided prompt and response. Explain how the prompt was understood to generate the given response. Provide only the explanation."
+        append_request_messages([format_messages("user", [format_message(PROMPT)])])
+        response = gpt_query()
+
+        actions.user.gpt_insert_response(response, destination)
+
+    def gpt_replay(destination: str):
+        """Replay the last request"""
+        response = gpt_query()
+
+        actions.user.gpt_insert_response(response, destination)
+
     def gpt_pass(source: str = "", destination: str = "") -> None:
         """Passes a response from source to destination"""
         actions.user.gpt_insert_response(

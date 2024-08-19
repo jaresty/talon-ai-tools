@@ -11,6 +11,9 @@
 {user.model} [<user.modelPrompt>] <user.pleasePrompt> [{user.modelSource}] [{user.modelDestination}]$:
     user.gpt_apply_prompt(pleasePrompt, modelSource or "", modelDestination or "")
 
+{user.model} analyze prompt [{user.modelDestination}]$: user.gpt_analyze_prompt(modelDestination or "")
+{user.model} replay [{user.modelDestination}]$: user.gpt_replay(modelDestination or "")
+
 # Select the last GPT response so you can edit it further
 {user.model} take response: user.gpt_select_last()
 

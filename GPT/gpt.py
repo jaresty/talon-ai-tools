@@ -87,19 +87,26 @@ class UserActions:
         for _ in lines[0]:
             actions.edit.extend_left()
 
-    def gpt_apply_prompt(prompt: str, source: str = "", destination: str = ""):
+    def gpt_apply_prompt(
+        prompt: str,
+        source: str = "",
+        additional_source: str = "",
+        destination: str = "",
+    ):
         """Apply an arbitrary prompt to arbitrary text"""
 
-        actions.user.gpt_prepare_message(source, prompt, "")
+        actions.user.gpt_prepare_message(source, additional_source, prompt, "")
         response = gpt_query()
 
         actions.user.gpt_insert_response(response, destination)
         return response
 
-    def gpt_run_prompt(prompt: str, source: str = ""):
+    def gpt_run_prompt(prompt: str, source: str = "", additional_source: str = ""):
         """Apply an arbitrary prompt to arbitrary text"""
 
-        response = actions.user.gpt_prepare_message(source, prompt, "")
+        response = actions.user.gpt_prepare_message(
+            source, additional_source, prompt, ""
+        )
         response = gpt_query()
 
         return response.get("text")
@@ -193,16 +200,18 @@ class UserActions:
 
     def gpt_prepare_message(
         spoken_text: str,
+        additional_source: str,
         prompt: str,
         destination: str = "",
     ) -> None:
         """Get the source text that is will have the prompt applied to it"""
-        prompt_with_destination_substitution = prompt.format(
-            destination_text=actions.user.gpt_destination_text(destination)
+        prompt_with_substitution = prompt.format(
+            destination_text=actions.user.gpt_destination_text(destination),
+            additional_source=create_model_source(additional_source).get_text(),
         )
         build_request(destination)
         current_messages = create_model_source(spoken_text).format_message(
-            prompt_with_destination_substitution
+            prompt_with_substitution
         )
 
         current_request = format_messages(

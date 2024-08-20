@@ -22,6 +22,7 @@ def modelPrompt(matched_prompt) -> str:
         clip=clip.text(),
         shell_name=settings.get("user.model_shell_default"),
         destination_text="{destination_text}",
+        additional_source="{additional_source}",
     )
 
 

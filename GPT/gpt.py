@@ -188,12 +188,6 @@ class UserActions:
 
         create_model_destination(method).insert(gpt_message)
 
-    def gpt_destination_text(
-        method: str = "",
-    ) -> str:
-        """Get the text of the destination"""
-        return create_model_destination(method).get_text()
-
     def gpt_get_source_text(spoken_text: str) -> str:
         """Get the source text that is will have the prompt applied to it"""
         return create_model_source(spoken_text).get_text()
@@ -206,7 +200,6 @@ class UserActions:
     ) -> None:
         """Get the source text that is will have the prompt applied to it"""
         prompt_with_substitution = prompt.format(
-            destination_text=actions.user.gpt_destination_text(destination),
             additional_source=create_model_source(additional_source).get_text(),
         )
         build_request(destination)

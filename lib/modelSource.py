@@ -27,8 +27,9 @@ def format_source_messages(
     source_message = source.format_message()
     formatted_messages: list[GPTImageItem | GPTTextItem] = [
         format_message(prompt_chunks[0]),
-        format_message(prompt_chunks[1]),
     ]
+    if len(prompt_chunks) > 1:
+        formatted_messages.append(format_message(prompt_chunks[1]))
     if source_message is not None:
         formatted_messages.append(source_message)
 

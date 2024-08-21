@@ -1,6 +1,6 @@
 from ..lib.modelTypes import GPTTextItem
 from ..lib.modelConfirmationGUI import confirmation_gui
-from talon import actions, clip, settings
+from talon import actions, clip, settings, ui
 from ..lib.modelState import GPTState
 from ..lib.modelHelpers import (
     extract_message,
@@ -12,11 +12,24 @@ from ..lib.HTMLBuilder import Builder
 
 class ModelDestination:
     def insert(self, gpt_message: GPTTextItem):
-        raise NotImplementedError("Subclasses should implement this method")
+        extracted_message = extract_message(gpt_message)
+        GPTState.text_to_confirm = extracted_message
+        actions.user.confirmation_gui_append(extracted_message)
+
+    def inside_textarea(self):
+        return ui.focused_element().get("AXRole") in [
+            "AXTextArea",
+            "AXTextField",
+            "AXComboBox",
+            "AXStaticText",
+        ]
 
 
 class Above(ModelDestination):
     def insert(self, gpt_message):
+        if not self.inside_textarea():
+            return super().insert(gpt_message)
+
         actions.key("left")
         actions.edit.line_insert_up()
         GPTState.last_was_pasted = True
@@ -26,6 +39,8 @@ class Above(ModelDestination):
 
 class Below(ModelDestination):
     def insert(self, gpt_message):
+        if not self.inside_textarea():
+            return super().insert(gpt_message)
         actions.key("right")
         actions.edit.line_insert_down()
         GPTState.last_was_pasted = True
@@ -41,6 +56,8 @@ class Clipboard(ModelDestination):
 
 class Snip(ModelDestination):
     def insert(self, gpt_message):
+        if not self.inside_textarea():
+            return super().insert(gpt_message)
         extracted_message = extract_message(gpt_message)
         actions.user.insert_snippet(extracted_message)
 
@@ -84,15 +101,10 @@ class TextToSpeech(ModelDestination):
             notify("GPT Failure: text to speech is not installed")
 
 
-class Window(ModelDestination):
-    def insert(self, gpt_message):
-        extracted_message = extract_message(gpt_message)
-        GPTState.text_to_confirm = extracted_message
-        actions.user.confirmation_gui_append(extracted_message)
-
-
 class Chain(ModelDestination):
     def insert(self, gpt_message):
+        if not self.inside_textarea():
+            return super().insert(gpt_message)
         GPTState.last_was_pasted = True
         extracted_message = extract_message(gpt_message)
         actions.user.paste(extracted_message)
@@ -101,6 +113,8 @@ class Chain(ModelDestination):
 
 class Paste(ModelDestination):
     def insert(self, gpt_message):
+        if not self.inside_textarea():
+            return super().insert(gpt_message)
         GPTState.last_was_pasted = True
         extracted_message = extract_message(gpt_message)
         actions.user.paste(extracted_message)
@@ -152,7 +166,7 @@ def create_model_destination(destination_type: str) -> ModelDestination:
         case "textToSpeech":
             return TextToSpeech()
         case "window":
-            return Window()
+            return ModelDestination()
         case "chain":
             return Chain()
         case "paste":

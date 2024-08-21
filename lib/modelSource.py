@@ -15,15 +15,17 @@ class ModelSource:
         raise NotImplementedError("Subclasses should implement this method")
 
     def format_message(self, prompt: str) -> list[GPTImageItem | GPTTextItem]:
-        return [
-            format_message(f"""
-        {prompt}
-        \"\"\"
-        {self.get_text()}
-        \"\"\"
-
-        """)
-        ]
+        text = self.get_text()
+        if text.strip() != "" and text:
+            return [
+                format_message(f"""
+                {prompt}
+                \"\"\"
+                {text}
+                \"\"\"
+                """)
+            ]
+        return [format_message(prompt)]
 
 
 class Clipboard(ModelSource):

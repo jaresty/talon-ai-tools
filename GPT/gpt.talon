@@ -8,7 +8,7 @@
 {user.model} <user.modelPrompt> [{user.modelSource}] [with {user.modelSource}] [{user.modelDestination}]$:
     user.gpt_apply_prompt(modelPrompt, modelSource_1 or "", modelSource_2 or "", modelDestination or "")
 
-{user.model} [<user.modelPrompt>] <user.pleasePrompt> [{user.modelSource}] [{user.modelDestination}]$:
+^{user.model} [<user.modelPrompt>] <user.pleasePrompt> [{user.modelSource}] [{user.modelDestination}]$:
     user.gpt_apply_prompt(pleasePrompt, modelSource or "", "", modelDestination or "")
 
 {user.model} analyze prompt [{user.modelDestination}]$: user.gpt_analyze_prompt(modelDestination or "")

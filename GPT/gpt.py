@@ -1,7 +1,7 @@
 import os
 
 from ..lib.modelDestination import create_model_destination
-from ..lib.modelSource import create_model_source
+from ..lib.modelSource import create_model_source, format_source_messages
 from talon import Module, actions
 
 from ..lib.HTMLBuilder import Builder
@@ -198,13 +198,13 @@ class UserActions:
         prompt: str,
         destination: str = "",
     ) -> None:
-        """Get the source text that is will have the prompt applied to it"""
-        prompt_with_substitution = prompt.format(
-            additional_source=create_model_source(additional_source).get_text(),
-        )
+        """Get the source text that will have the prompt applied to it"""
         build_request(destination)
-        current_messages = create_model_source(spoken_text).format_message(
-            prompt_with_substitution
+
+        current_messages = format_source_messages(
+            prompt,
+            create_model_source(spoken_text),
+            create_model_source(additional_source),
         )
 
         current_request = format_messages(

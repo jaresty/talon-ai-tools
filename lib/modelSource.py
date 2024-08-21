@@ -14,25 +14,36 @@ class ModelSource:
     def get_text(self):
         raise NotImplementedError("Subclasses should implement this method")
 
-    def format_message(self, prompt: str) -> list[GPTImageItem | GPTTextItem]:
+    def format_message(self) -> GPTImageItem | GPTTextItem | None:
         text = self.get_text()
         if text.strip() != "" and text:
-            return [
-                format_message(f"""
-                {prompt}
-                \"\"\"
-                {text}
-                \"\"\"
-                """)
-            ]
-        return [format_message(prompt)]
+            return format_message(text)
+
+
+def format_source_messages(
+    prompt: str, source: ModelSource, additional_source: ModelSource | None = None
+):
+    prompt_chunks = prompt.split("{additional_source}")
+    source_message = source.format_message()
+    formatted_messages: list[GPTImageItem | GPTTextItem] = [
+        format_message(prompt_chunks[0]),
+        format_message(prompt_chunks[1]),
+    ]
+    if source_message is not None:
+        formatted_messages.append(source_message)
+
+    if additional_source is not None:
+        additional_source_message = additional_source.format_message()
+        if additional_source_message is not None:
+            formatted_messages.insert(1, additional_source_message)
+    return formatted_messages
 
 
 class Clipboard(ModelSource):
     def get_text(self):
         return clip.text()
 
-    def format_message(self, prompt: str) -> list[GPTImageItem | GPTTextItem]:
+    def format_message(self) -> GPTImageItem | GPTTextItem | None:
         clipped_image = clip.image()
 
         if clipped_image:
@@ -42,8 +53,8 @@ class Clipboard(ModelSource):
                 "type": "image_url",
                 "image_url": {"url": f"data:image/;base64,{base64_image}"},
             }
-            return [format_message(prompt), image_item]
-        return super().format_message(prompt)
+            return image_item
+        return super().format_message()
 
 
 class Context(ModelSource):

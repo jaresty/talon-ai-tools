@@ -96,6 +96,12 @@ def build_request(
         if destination == "snip"
         else None
     )
+    additional_user_context = []
+    try:
+        additional_user_context = actions.user.gpt_additional_user_context()
+    except Exception as e:
+        # Handle the exception, log it, or print an error message
+        notify(f"An error occurred: {e}")
 
     system_messages: list[GPTTextItem | GPTImageItem] = [
         {"type": "text", "text": item}
@@ -105,7 +111,7 @@ def build_request(
             application_context,
             snippet_context,
         ]
-        + actions.user.gpt_additional_user_context()
+        + additional_user_context
         if item is not None
     ]
 

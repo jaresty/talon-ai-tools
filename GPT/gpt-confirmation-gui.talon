@@ -10,8 +10,8 @@ tag: user.model_window_open
     user.gpt_select_last()
 
 ^copy response$: user.confirmation_gui_copy()
-^pass response to context$: user.confirmation_gui_pass_context()
-^pass response to thread$: user.confirmation_gui_pass_thread()
+^pass to context$: user.confirmation_gui_pass_context()
+^pass to thread$: user.confirmation_gui_pass_thread()
 
 # Deny the output of the model and discard it
 ^discard response$: user.confirmation_gui_close()

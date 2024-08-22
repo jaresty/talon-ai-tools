@@ -42,13 +42,13 @@ def confirmation_gui(gui: imgui.GUI):
     #     actions.user.confirmation_gui_paste()
     #     actions.user.gpt_select_last()
 
-    # gui.spacer()
-    # if gui.button("Pass response to context"):
-    #     actions.user.confirmation_gui_pass_context()
+    gui.spacer()
+    if gui.button("Pass to context"):
+        actions.user.confirmation_gui_pass_context()
 
-    # gui.spacer()
-    # if gui.button("Pass response to thread"):
-    #     actions.user.confirmation_gui_pass_thread()
+    gui.spacer()
+    if gui.button("Pass to thread"):
+        actions.user.confirmation_gui_pass_thread()
 
     gui.spacer()
     if gui.button("Copy response"):

@@ -17,12 +17,16 @@ class ModelDestination:
         actions.user.confirmation_gui_append(extracted_message)
 
     def inside_textarea(self):
-        return ui.focused_element().get("AXRole") in [
-            "AXTextArea",
-            "AXTextField",
-            "AXComboBox",
-            "AXStaticText",
-        ]
+        try:
+            return ui.focused_element().get("AXRole") in [
+                "AXTextArea",
+                "AXTextField",
+                "AXComboBox",
+                "AXStaticText",
+            ]
+        except Exception:
+            # Handle exception or log error
+            return False
 
 
 class Above(ModelDestination):

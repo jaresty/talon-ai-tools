@@ -200,12 +200,17 @@ class UserActions:
     ) -> None:
         """Get the source text that will have the prompt applied to it"""
         build_request(destination)
-
-        current_messages = format_source_messages(
-            prompt,
-            create_model_source(spoken_text),
-            create_model_source(additional_source),
-        )
+        if spoken_text == additional_source:
+            current_messages = format_source_messages(
+                prompt,
+                create_model_source(spoken_text),
+            )
+        else:
+            current_messages = format_source_messages(
+                prompt,
+                create_model_source(spoken_text),
+                create_model_source(additional_source),
+            )
 
         current_request = format_messages(
             "user",

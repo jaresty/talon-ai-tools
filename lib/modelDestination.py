@@ -13,8 +13,11 @@ from ..lib.HTMLBuilder import Builder
 class ModelDestination:
     def insert(self, gpt_message: GPTTextItem):
         extracted_message = extract_message(gpt_message)
-        GPTState.text_to_confirm = extracted_message
-        actions.user.confirmation_gui_append(extracted_message)
+        if len(extracted_message.split("\n")) > 100:
+            Browser().insert(gpt_message)
+        else:
+            GPTState.text_to_confirm = extracted_message
+            actions.user.confirmation_gui_append(extracted_message)
 
     def inside_textarea(self):
         try:

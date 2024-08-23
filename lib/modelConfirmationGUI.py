@@ -59,6 +59,10 @@ def confirmation_gui(gui: imgui.GUI):
         actions.user.confirmation_gui_paste()
 
     gui.spacer()
+    if gui.button("Open browser"):
+        actions.user.confirmation_gui_open_browser()
+
+    gui.spacer()
     if gui.button("Discard response"):
         actions.user.confirmation_gui_close()
 
@@ -80,6 +84,12 @@ class UserActions:
     def confirmation_gui_pass_context():
         """Add the model output to the context"""
         actions.user.gpt_push_context(GPTState.text_to_confirm)
+        GPTState.text_to_confirm = ""
+        actions.user.confirmation_gui_close()
+
+    def confirmation_gui_open_browser():
+        """Open a browser with the response"""
+        actions.user.gpt_insert_text(GPTState.text_to_confirm, "browser")
         GPTState.text_to_confirm = ""
         actions.user.confirmation_gui_close()
 

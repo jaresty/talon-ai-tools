@@ -12,6 +12,7 @@ tag: user.model_window_open
 ^copy response$: user.confirmation_gui_copy()
 ^pass to context$: user.confirmation_gui_pass_context()
 ^pass to thread$: user.confirmation_gui_pass_thread()
+^open browser$: user.confirmation_gui_open_browser()
 
 # Deny the output of the model and discard it
 ^discard response$: user.confirmation_gui_close()

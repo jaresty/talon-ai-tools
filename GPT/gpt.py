@@ -128,7 +128,7 @@ class UserActions:
     def gpt_pass(source: str = "", destination: str = "") -> None:
         """Passes a response from source to destination"""
         actions.user.gpt_insert_response(
-            format_message(actions.user.gpt_get_source_text(source)), destination
+            create_model_source(source).format_message(), destination
         )
 
     def gpt_help() -> None:

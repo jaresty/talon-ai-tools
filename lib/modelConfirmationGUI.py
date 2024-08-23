@@ -63,6 +63,10 @@ def confirmation_gui(gui: imgui.GUI):
         actions.user.confirmation_gui_open_browser()
 
     gui.spacer()
+    if gui.button("Analyze prompt"):
+        actions.user.confirmation_gui_analyze_prompt()
+
+    gui.spacer()
     if gui.button("Discard response"):
         actions.user.confirmation_gui_close()
 
@@ -92,6 +96,12 @@ class UserActions:
         actions.user.gpt_insert_text(GPTState.text_to_confirm, "browser")
         GPTState.text_to_confirm = ""
         actions.user.confirmation_gui_close()
+
+    def confirmation_gui_analyze_prompt():
+        """Analyze the last prompt"""
+        GPTState.text_to_confirm = ""
+        actions.user.confirmation_gui_close()
+        actions.user.gpt_analyze_prompt("window")
 
     def confirmation_gui_pass_thread():
         """Add the model output to the thread"""

@@ -58,7 +58,4 @@ format prose: As an editor, format the following outline or summarization as pro
 
 apply clip: {clip}
 
-blend: "Act as a text transformer. Im going to give you some source text and destination text, and I want you to modify the destination text based on the contents of the source text in a way that combines both of them together. Use the structure of the destination text, reordering and renaming as necessary to ensure a natural and coherent flow. Please return only the final text with no decoration for insertion into a document in the specified language. Here is the destination text: \"\"\"\n {additional_source} \n\"\"\" The source text follows."
-
 cluster compare: This text contains similar but not identical ideas. Create a table listing each comparison once to highlight these subtle differences. Omit ideas that appear only once. Ensure the table width does not exceed 100 characters, wrapping text to new lines as necessary.
-compare: "You will find two items below. Carefully compare them. List all the differences and similarities, providing detailed explanations for each. Highlight any subtle distinctions and commonalities. The first item is this: \n\"\"\"\n{additional_source}\n\"\"\"\n The second item follows."

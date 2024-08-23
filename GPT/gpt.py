@@ -114,6 +114,10 @@ class UserActions:
     def gpt_analyze_prompt(destination: str):
         """Explain why we got the results we did"""
         PROMPT = "Analyze the provided prompt and response. Explain how the prompt was understood to generate the given response. Provide only the explanation."
+
+        append_request_messages(
+            [format_messages("assistant", [format_message(GPTState.last_response)])]
+        )
         append_request_messages([format_messages("user", [format_message(PROMPT)])])
         response = gpt_query()
 

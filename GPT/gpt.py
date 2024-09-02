@@ -228,7 +228,6 @@ class UserActions:
                     )
 
         # Iterate over all of the system prompt messages and format them as messages
-        print("system prompt", GPTState.system_prompt.format_as_array())
         system_prompt_messages: list[GPTTextItem] = []
         for message in GPTState.system_prompt.format_as_array():
             system_prompt_messages.append(format_message(message))

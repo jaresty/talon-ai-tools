@@ -75,6 +75,7 @@ def extract_message(content: GPTTextItem) -> str:
 
 def build_request(
     destination: str = "",
+    additional_source_message: str | None = None,
 ):
     notification = "GPT Task Started"
     if len(GPTState.context) > 0:
@@ -110,6 +111,7 @@ def build_request(
             language_context,
             application_context,
             snippet_context,
+            additional_source_message,
         ]
         + additional_user_context
         if item is not None

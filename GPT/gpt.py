@@ -207,25 +207,15 @@ class UserActions:
         destination: str = "",
     ) -> None:
         """Get the source text that will have the prompt applied to it"""
-        build_request(destination)
-        if spoken_text == additional_source:
-            current_messages = format_source_messages(
-                prompt,
-                create_model_source(spoken_text),
-            )
-        else:
-            additional_model_source = create_model_source(additional_source)
-            current_messages = format_source_messages(
-                prompt,
-                create_model_source(spoken_text),
-                additional_model_source,
-            )
-            if len(current_messages) < 4 and additional_model_source is not None:
-                additional_source_message = additional_model_source.format_message()
-                if additional_source_message is not None:
-                    append_request_messages(
-                        [format_messages("system", [additional_source_message])]
-                    )
+        additional_model_source = create_model_source(additional_source)
+        build_request(destination, additional_model_source.get_text())
+
+        additional_model_source = create_model_source(additional_source)
+        current_messages = format_source_messages(
+            prompt,
+            create_model_source(spoken_text),
+            additional_model_source,
+        )
 
         # Iterate over all of the system prompt messages and format them as messages
         system_prompt_messages: list[GPTTextItem] = []

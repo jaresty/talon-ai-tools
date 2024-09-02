@@ -2,7 +2,13 @@ from typing import ClassVar
 
 from talon import actions
 
-from .modelTypes import GPTImageItem, GPTMessage, GPTRequest, GPTTextItem
+from .modelTypes import (
+    GPTImageItem,
+    GPTMessage,
+    GPTRequest,
+    GPTSystemPrompt,
+    GPTTextItem,
+)
 
 
 class GPTState:
@@ -14,6 +20,7 @@ class GPTState:
     thread: ClassVar[list[GPTMessage]] = []
     thread_enabled: ClassVar[bool] = False
     debug_enabled: ClassVar[bool] = False
+    system_prompt: ClassVar[GPTSystemPrompt] = GPTSystemPrompt()
 
     @classmethod
     def start_debug(cls):

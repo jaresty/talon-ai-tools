@@ -16,7 +16,7 @@ from ..lib.modelHelpers import (
     send_request,
 )
 from ..lib.modelState import GPTState
-from ..lib.modelTypes import GPTTextItem
+from ..lib.modelTypes import GPTSystemPrompt, GPTTextItem
 
 mod = Module()
 mod.tag(
@@ -169,6 +169,10 @@ class UserActions:
         """Insert text using the helpers here"""
         actions.user.gpt_insert_response(format_message(text), method)
 
+    def gpt_reset_system_prompt():
+        """Reset the system prompt to default"""
+        GPTState.system_prompt = GPTSystemPrompt()
+
     def gpt_insert_response(
         gpt_message: GPTTextItem,
         method: str = "",
@@ -222,6 +226,13 @@ class UserActions:
                     append_request_messages(
                         [format_messages("system", [additional_source_message])]
                     )
+
+        # Iterate over all of the system prompt messages and format them as messages
+        print("system prompt", GPTState.system_prompt.format_as_array())
+        system_prompt_messages: list[GPTTextItem] = []
+        for message in GPTState.system_prompt.format_as_array():
+            system_prompt_messages.append(format_message(message))
+        append_request_messages([format_messages("system", system_prompt_messages)])
 
         current_request = format_messages(
             "user",

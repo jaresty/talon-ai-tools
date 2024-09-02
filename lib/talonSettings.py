@@ -75,6 +75,31 @@ mod.setting(
     desc="The default system prompt that informs the way the model should behave at a high level",
 )
 
+mod.setting(
+    "model_default_voice",
+    type=str,
+    default="You are an assistant helping an office worker to be more productive.",
+    desc="The default voice to use. Who should the LLM be acting as.",
+)
+mod.setting(
+    "model_default_purpose",
+    type=str,
+    default="Your purpose is to help accomplish a task.",
+    desc="The default purpose of the communication. This informs how the LLM should respond. For example you could say to inform.",
+)
+mod.setting(
+    "model_default_tone",
+    type=str,
+    default="You are casual and friendly and helpful.",
+    desc="Is the default tone to use. For example speak kindly or formally.",
+)
+mod.setting(
+    "model_default_audience",
+    type=str,
+    default="Your audience is just the person who is making this request.",
+    desc="This is the audience that the LLM should format for. For example a programmer or a toddler.m",
+)
+
 
 mod.setting(
     "model_shell_default",

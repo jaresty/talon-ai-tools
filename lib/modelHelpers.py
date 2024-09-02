@@ -57,7 +57,7 @@ def get_token() -> str:
 
 def format_messages(
     role: Literal["user", "system", "assistant"],
-    messages: list[GPTTextItem | GPTImageItem],
+    messages: list[GPTTextItem | GPTImageItem] | list[GPTTextItem],
 ) -> GPTMessage:
     return {
         "role": role,

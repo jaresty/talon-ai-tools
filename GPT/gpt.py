@@ -210,11 +210,18 @@ class UserActions:
                 create_model_source(spoken_text),
             )
         else:
+            additional_model_source = create_model_source(additional_source)
             current_messages = format_source_messages(
                 prompt,
                 create_model_source(spoken_text),
-                create_model_source(additional_source),
+                additional_model_source,
             )
+            if len(current_messages) < 4 and additional_model_source is not None:
+                additional_source_message = additional_model_source.format_message()
+                if additional_source_message is not None:
+                    append_request_messages(
+                        [format_messages("system", [additional_source_message])]
+                    )
 
         current_request = format_messages(
             "user",

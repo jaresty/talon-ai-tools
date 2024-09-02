@@ -29,14 +29,14 @@ def format_source_messages(
         format_message(prompt_chunks[0]),
     ]
     if len(prompt_chunks) > 1:
+        if additional_source is not None:
+            additional_source_message = additional_source.format_message()
+            if additional_source_message is not None:
+                formatted_messages.append(additional_source_message)
         formatted_messages.append(format_message(prompt_chunks[1]))
     if source_message is not None:
         formatted_messages.append(source_message)
 
-    if additional_source is not None:
-        additional_source_message = additional_source.format_message()
-        if additional_source_message is not None:
-            formatted_messages.insert(1, additional_source_message)
     return formatted_messages
 
 

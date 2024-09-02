@@ -5,12 +5,8 @@
 #   Example: `model fix grammar below` -> Fixes the grammar of the selected text and pastes below
 #   Example: `model explain this` -> Explains the selected text and pastes in place
 #   Example: `model fix grammar clip to browser` -> Fixes the grammar of the text on the clipboard and opens in browser`
-{user.model} <user.modelPrompt> [{user.modelSource}] [{user.modelDestination}]$:
-    user.gpt_apply_prompt(modelPrompt, modelSource_1 or "", "", modelDestination or "")
-
-# Runs a model prompt on two targets
-{user.model} <user.modelSimplePairPrompt> {user.modelSource} [with {user.modelSource}] [{user.modelDestination}]$:
-    user.gpt_apply_prompt(modelSimplePairPrompt, modelSource_1 or "", modelSource_2 or "", modelDestination or "")
+{user.model} <user.modelPrompt> [{user.modelSource}] [with <user.additionalModelSource>] [{user.modelDestination}]$:
+    user.gpt_apply_prompt(modelPrompt, modelSource or "", additionalModelSource or "", modelDestination or "")
 
 ^{user.model} [<user.modelPrompt>] <user.pleasePrompt> [{user.modelSource}] [{user.modelDestination}]$:
     user.gpt_apply_prompt(pleasePrompt, modelSource or "", "", modelDestination or "")

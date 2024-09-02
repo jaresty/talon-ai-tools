@@ -86,7 +86,7 @@ def build_request(
 
     language = actions.code.language()
     language_context = (
-        f"The user is currently in a code editor for the programming language: {language}."
+        f"The user is currently in a code editor for the programming language: {language}. You are an expert in this language and will return syntactically appropriate responses for insertion directly into this language. All commentary should be commented out so that you do not cause any syntax errors."
         if language != ""
         else None
     )

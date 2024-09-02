@@ -8,8 +8,8 @@
 {user.model} <user.modelPrompt> [{user.modelSource}] [with <user.additionalModelSource>] [{user.modelDestination}]$:
     user.gpt_apply_prompt(modelPrompt, modelSource or "", additionalModelSource or "", modelDestination or "")
 
-^{user.model} [<user.modelPrompt>] <user.pleasePrompt> [{user.modelSource}] [{user.modelDestination}]$:
-    user.gpt_apply_prompt(pleasePrompt, modelSource or "", "", modelDestination or "")
+^{user.model} [<user.modelPrompt>] <user.pleasePrompt> [{user.modelSource}] [with <user.additionalModelSource>] [{user.modelDestination}]$:
+    user.gpt_apply_prompt(pleasePrompt, modelSource or "", additionalModelSource or "", modelDestination or "")
 
 {user.model} analyze prompt [{user.modelDestination}]$: user.gpt_analyze_prompt(modelDestination or "window")
 {user.model} replay [{user.modelDestination}]$: user.gpt_replay(modelDestination or "")

@@ -4,3 +4,6 @@ list: user.modelPurpose
 for information: You are writing to provide information.
 for entertainment: You are writing to entertain.
 for persuasion: You are writing to persuade.
+for brainstorming: You are writing to brainstorm divergent ideas.
+for deciding: You are writing to converge on a decision.
+for planning: You are writing to plan.

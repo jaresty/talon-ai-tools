@@ -53,19 +53,6 @@ def modelSimplePrompt(matched_prompt) -> str:
     return str(matched_prompt)
 
 
-# @mod.capture(
-#     rule="[{user.modelVoice} | {user.modelAudience} | {user.modelPurpose} | {user.modelTone}]+"
-# )
-# def systemStyle(m) -> GPTSystemPrompt:
-#     # Provide default values if any of these are None
-#     return GPTSystemPrompt(
-#         voice=m.modelVoice or GPTState.system_prompt.voice,
-#         audience=m.modelAudience or GPTState.system_prompt.audience,
-#         purpose=m.modelPurpose or GPTState.system_prompt.purpose,
-#         tone=m.modelTone or GPTState.system_prompt.tone,
-#     )
-
-
 mod.setting(
     "openai_model",
     type=Literal["gpt-3.5-turbo", "gpt-4", "gpt-4o-mini"],  # type: ignore
@@ -96,7 +83,7 @@ mod.setting(
 mod.setting(
     "model_system_prompt",
     type=str,
-    default="You are an assistant helping an office worker to be more productive. Output just the response to the request and no additional content. Do not generate any markdown formatting such as backticks for programming languages unless it is explicitly requested. If the user requests code generation, output just code and not additional natural language explanation.",
+    default="Output just the response to the request and no additional content. Do not generate any markdown formatting such as backticks for programming languages unless it is explicitly requested. If the user requests code generation, output just code and not additional natural language explanation.",
     desc="The default system prompt that informs the way the model should behave at a high level",
 )
 

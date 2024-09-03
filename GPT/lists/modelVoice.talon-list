@@ -4,12 +4,13 @@ list: user.modelVoice
 as software engineer: Act as a software engineer.
 as frontend developer: Act as a frontend developer.
 as blender: Act as a text transformer.
-as teacher: You are a teacher.
-as writer: You are a writer.
-as reader: You are a reader.
+as teacher: Act as a teacher.
+as writer: Act as a writer.
+as reader: Act as a reader.
 as editor: Act as an editor.
 as facilitator: Act as a facilitator.
 as prompt engineer: Act as a prompt engineer.
-as designer: You are a designer.
-as artist: You are an artist.
-as product manager: You are a product manager.
+as designer: Act as a designer.
+as artist: Act as an artist.
+as product manager: Act as a product manager.
+as contrarian: Act as a contrarian.

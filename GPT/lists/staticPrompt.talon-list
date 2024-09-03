@@ -5,7 +5,6 @@ list: user.staticPrompt
 # Reduce verbosity and prevent the need to say the entire prompt each time time
 
 ## FIXES
-fix grammar formally: Fix any mistakes or irregularities in grammar, spelling, or formatting. Use a professional business tone. The text was created using voice dictation. Thus, there are likely to be issues regarding homophones and other misrecognitions. Do not change the original structure of the text.
 fix grammar: Fix any mistakes or irregularities in grammar, spelling, or formatting. The text was created using voice dictation. Thus, there are likely to be issues regarding homophones and other misrecognitions. Do not change the tone. Do not change the original structure of the text.
 fix syntax: Fix any syntax errors in this code selection. Do not change any behavior.
 
@@ -14,8 +13,8 @@ format table: The following markdown text is raw data. There is no index. Return
 format bullets: Convert each paragraph into a heading with a series of bullet points underneath it. Each paragraph is separated by a new line. Separate paragraphs should not have combined bullet points. This should all be done in markdown syntax. If it is a small paragraph, then you can just leave it as a heading and not add bullet points. Do not reduce content, only reduce things that would be redundant. These bullet points should be in a useful format for notes for those who want to quickly look at it. If there is a citation in the markdown original, then keep the citation just at the top and not within every individual bullet point.
 format mermaid: Convert the following plain text into the text syntax for a mermaid diagram.
 format comment: Format the following text as a comment for the current programming language. Use the proper comment syntax for the current language. Split the comment into multiple lines if the lines are too long.
-group: Act as an organizer. The following text consists of various topics all put together. Please group these items into categories and label each category. Return just the results.
-join: Act as an editor. The following text is separated into multiple parts. Please group them together into one part maintaining the flow and meaning. Reorder in whatever way makes sense. Remove any redundant information. The result should be only one part with no additional structure. Return just the modified text.
+group: The following text consists of various topics all put together. Please group these items into categories and label each category. Return just the results.
+join: The following text is separated into multiple parts. Please group them together into one part maintaining the flow and meaning. Reorder in whatever way makes sense. Remove any redundant information. The result should be only one part with no additional structure. Return just the modified text.
 
 ## TEXT GENERATION
 explain: Explain this text in a way that is easier to understand for a layman without technical knowledge.
@@ -47,8 +46,8 @@ translate to english: Translate the following text into English.
 
 ## CODE GENERATION
 generate code: The following plaintext describes a process in code in the language that is specified by the system prompt. Please output the code necessary to do this. Return just code and not any natural language explanations.
-update comments: Act as a software engineer. The following code may be missing comments or the comments could be out of date. Please update the comments. If you are unsure how to comment something, ask a question in a comment instead. Return just the code and not any explanations.
-clean code: Act as a software engineer. Reduce any duplication in the selected code and improve it to be more idiomatic and clear for other users. However, do not change the behavior or functionality. Return just the code and not any explanations.
+update comments: The following code may be missing comments or the comments could be out of date. Please update the comments. If you are unsure how to comment something, ask a question in a comment instead. Return just the code and not any explanations.
+clean code: Reduce any duplication in the selected code and improve it to be more idiomatic and clear for other users. However, do not change the behavior or functionality. Return just the code and not any explanations.
 improve semantics: The following is an HTML document. Keep the same structure and layout but if it is needed, change any elements to use proper semantic HTML and make sure it is implementing best practices for user accessibility. Output just the HTML and not any extra explanations.
 
 ## WRITING HELPERS
@@ -60,6 +59,6 @@ apply clip: {clip}
 
 cluster compare: This text contains similar but not identical ideas. Create a table listing each comparison once to highlight these subtle differences. Omit ideas that appear only once. Ensure the table width does not exceed 100 characters, wrapping text to new lines as necessary.
 
-blend: "Act as a text transformer. Im going to give you some source text and destination text, and I want you to modify the destination text based on the contents of the source text in a way that combines both of them together. Use the structure of the destination text, reordering and renaming as necessary to ensure a natural and coherent flow. Please return only the final text with no decoration for insertion into a document in the specified language. Here is the destination text: \"\"\"\n {additional_source} \n\"\"\" The source text follows."
+blend: "Im going to give you some source text and destination text, and I want you to modify the destination text based on the contents of the source text in a way that combines both of them together. Use the structure of the destination text, reordering and renaming as necessary to ensure a natural and coherent flow. Please return only the final text with no decoration for insertion into a document in the specified language. Here is the destination text: \"\"\"\n {additional_source} \n\"\"\" The source text follows."
 
 compare: "You will find two items below. Carefully compare them. List all the differences and similarities, providing detailed explanations for each. Highlight any subtle distinctions and commonalities. The first item is this: \n\"\"\"\n{additional_source}\n\"\"\"\n The second item follows."

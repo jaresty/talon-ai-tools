@@ -1,0 +1,7 @@
+list: user.modelPurpose
+-
+
+for information: You are writing this to provide information.
+for documentation: You are writing this to create documentation.
+for coding: You are providing coding support.
+for marketing: You are writing this to create marketing content.

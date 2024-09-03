@@ -87,6 +87,11 @@ class GPTRequest(ModelSource):
         return chats_to_string(GPTState.request["messages"])
 
 
+class Style(ModelSource):
+    def get_text(self):
+        return "\n".join(GPTState.system_prompt.format_as_array())
+
+
 class GPTExchange(ModelSource):
     def get_text(self):
         return (
@@ -124,6 +129,8 @@ def create_model_source(source_type: str) -> ModelSource:
             return Context()
         case "thread":
             return Thread()
+        case "style":
+            return Style()
         case "gptResponse":
             return GPTResponse()
         case "gptRequest":

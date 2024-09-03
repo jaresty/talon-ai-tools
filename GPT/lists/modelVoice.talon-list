@@ -1,0 +1,8 @@
+list: user.modelVoice
+-
+
+as programmer: You are a programmer.
+as teacher: You are a teacher.
+as writer: You are a writer.
+as marketer: You are a marketer.
+as analyst: You are an analyst.

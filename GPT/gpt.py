@@ -74,6 +74,33 @@ class UserActions:
         """This is an override function that can be used to add additional context to the prompt"""
         return []
 
+    def gpt_set_system_prompt(
+        modelVoice: str,
+        modelAudience: str,
+        modelPurpose: str,
+        modelTone: str,
+    ) -> None:
+        """Set the system prompt to be used when the LLM responds to you"""
+        if modelVoice == "":
+            modelVoice = GPTState.system_prompt.voice
+        if modelAudience == "":
+            modelAudience = GPTState.system_prompt.audience
+        if modelTone == "":
+            modelTone = GPTState.system_prompt.tone
+        if modelPurpose == "":
+            modelPurpose = GPTState.system_prompt.purpose
+        new_system_prompt = GPTSystemPrompt(
+            voice=modelVoice,
+            audience=modelAudience,
+            purpose=modelPurpose,
+            tone=modelTone,
+        )
+        GPTState.system_prompt = new_system_prompt
+
+    def gpt_reset_system_prompt():
+        """Reset the system prompt to default"""
+        GPTState.system_prompt = GPTSystemPrompt()
+
     def gpt_select_last() -> None:
         """select all the text in the last GPT output"""
         if not GPTState.last_was_pasted:
@@ -168,10 +195,6 @@ class UserActions:
     def gpt_insert_text(text: str, method: str = "") -> None:
         """Insert text using the helpers here"""
         actions.user.gpt_insert_response(format_message(text), method)
-
-    def gpt_reset_system_prompt():
-        """Reset the system prompt to default"""
-        GPTState.system_prompt = GPTSystemPrompt()
 
     def gpt_insert_response(
         gpt_message: GPTTextItem,

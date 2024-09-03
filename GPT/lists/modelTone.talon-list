@@ -1,0 +1,10 @@
+list: user.modelTone
+-
+
+casually: Use a casual tone.
+formally: Use a formal tone.
+professionally: Use a professional tone.
+humorously: Use a humorous tone.
+seriously: Use a serious tone.
+optimistically: Use an optimistic tone.
+pessimistically: Use a pessimistic tone.

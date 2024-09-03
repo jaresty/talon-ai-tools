@@ -15,6 +15,9 @@ thread: thread
 # Apply the prompt to the currently selected text
 this: selection
 
+# Apply the prompt to the current chat style
+style: style
+
 # Apply the prompt to the previous request
 request: gptRequest
 

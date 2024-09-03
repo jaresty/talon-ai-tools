@@ -11,8 +11,8 @@
 ^{user.model} [<user.modelPrompt>] <user.pleasePrompt> [{user.modelSource}] [with <user.additionalModelSource>] [{user.modelDestination}]$:
     user.gpt_apply_prompt(pleasePrompt, modelSource or "", additionalModelSource or "", modelDestination or "")
 
-^{user.model} act [{user.modelVoice} | {user.modelAudience} | {user.modelPurpose} | {user.modelTone}]+: user.gpt_set_system_prompt(modelVoice or "", modelAudience or "", modelPurpose or "", modelTone or "")
-^{user.model} act reset: user.gpt_reset_system_prompt()
+^{user.model} write [{user.modelVoice} | {user.modelAudience} | {user.modelPurpose} | {user.modelTone}]+: user.gpt_set_system_prompt(modelVoice or "", modelAudience or "", modelPurpose or "", modelTone or "")
+^{user.model} write reset: user.gpt_reset_system_prompt()
 
 {user.model} analyze prompt [{user.modelDestination}]$: user.gpt_analyze_prompt(modelDestination or "window")
 {user.model} replay [{user.modelDestination}]$: user.gpt_replay(modelDestination or "")

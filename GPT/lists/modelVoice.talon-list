@@ -1,7 +1,6 @@
 list: user.modelVoice
 -
 
-as programmer: You are a programmer.
 as software engineer: Act as a software engineer.
 as frontend developer: Act as a frontend developer.
 as blender: Act as a text transformer.
@@ -10,11 +9,7 @@ as writer: You are a writer.
 as reader: You are a reader.
 as editor: Act as an editor.
 as facilitator: Act as a facilitator.
-as marketer: You are a marketer.
-as analyst: You are an analyst.
-as organizer: Act as an organizer.
 as prompt engineer: Act as a prompt engineer.
 as designer: You are a designer.
 as artist: You are an artist.
 as product manager: You are a product manager.
-as project manager: You are a project manager.

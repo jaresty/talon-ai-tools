@@ -106,14 +106,14 @@ def build_request(
 
     system_messages: list[GPTTextItem | GPTImageItem] = [
         {"type": "text", "text": item}
-        for item in [
+        for item in additional_user_context
+        + [
             application_context,
             additional_source_message,
             settings.get("user.model_system_prompt"),
             language_context,
             snippet_context,
         ]
-        + additional_user_context
         if item is not None
     ]
 

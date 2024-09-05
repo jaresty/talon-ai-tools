@@ -7,4 +7,4 @@ for persuasion: You are writing to persuade.
 for brainstorming: You are writing to brainstorm divergent ideas.
 for deciding: You are writing to converge on a decision.
 for planning: You are writing to plan.
-for coding: You are programming code. Do not return any explanation - only syntactically valid code.
+for coding: You are programming code. Do not return only syntactically valid code. All explanation should be commented.

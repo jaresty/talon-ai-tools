@@ -1,16 +1,24 @@
 list: user.modelVoice
 -
 
-as software engineer: Act as a software engineer.
-as frontend developer: Act as a frontend developer.
-as blender: Act as a text transformer.
-as teacher: Act as a teacher.
-as writer: Act as a writer.
-as reader: Act as a reader.
-as editor: Act as an editor.
-as facilitator: Act as a facilitator.
+## Technical Roles
+as programmer: Act as a programmer.
 as prompt engineer: Act as a prompt engineer.
+
+## Creative Roles
+as blender: Act as a text transformer.
+as writer: Act as a writer.
 as designer: Act as a designer.
 as artist: Act as an artist.
+
+## Educational Roles
+as teacher: Act as a teacher.
+as reader: Act as a reader.
+as editor: Act as an editor.
+
+## Management Roles
+as facilitator: Act as a facilitator.
 as product manager: Act as a product manager.
+
+## Critical Roles
 as contrarian: Act as a contrarian.

@@ -77,7 +77,7 @@ class GPTSystemPrompt:
         # Formats the instance variables as an array of strings
         return [
             f"Voice: {self.get_voice()}",
-            f"Purpose: {self.get_purpose()}",
             f"Tone: {self.get_tone()}",
             f"Audience: {self.get_audience()}",
+            f"Purpose: {self.get_purpose()}",
         ]

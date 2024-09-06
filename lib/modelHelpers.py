@@ -117,7 +117,7 @@ def build_request(
         if item is not None
     ]
 
-    system_messages += GPTState.context
+    system_messages = GPTState.context + system_messages
 
     GPTState.request = {
         "messages": [],

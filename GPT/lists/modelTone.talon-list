@@ -4,3 +4,5 @@ list: user.modelTone
 casually: Use a casual tone.
 neutrally: Use a neutral tone.
 formally: Use a formal tone.
+directly: Use a direct tone.
+indirectly: Use an indirect tone.

@@ -1,10 +1,9 @@
 list: user.modelAudience
 -
 
-to technical: The audience for this is a group that is technical.
-to nontechnical: The audience for this is a group that is nontechnical.
 to managers: The audience for this is a group of managers.
 to team: The audience for this is your team members.
 to stakeholders: The audience for this is the stakeholders.
-to receptive: The audience for this is a receptive audience.
-to skeptics: The audience for this is a skeptic audience.
+to product manager: The audience for this is a product manager.
+to designer: The audience for this is a designer.
+to programmer: The audience for this is a programmer.

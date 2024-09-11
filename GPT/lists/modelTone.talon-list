@@ -1,7 +1,7 @@
 list: user.modelTone
 -
 
-casually: Use a casual tone.
+casually: Use a casual tone and include appropriate emoji.
 neutrally: Use a neutral tone.
 formally: Use a formal tone.
 directly: Use a direct tone.

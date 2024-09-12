@@ -47,10 +47,12 @@ def format_source_messages(
             raise Exception(
                 "Tried to use a prompt with an additional source message without providing an additional source"
             )
-    return additional_source_messages + [
-        format_message(prompt_chunks[0]),
-        source_message,
+    current_request: list[GPTTextItem | GPTImageItem] = [
+        format_message(prompt_chunks[0])
     ]
+    if source_message is not None:
+        current_request += [source_message]
+    return additional_source_messages + current_request
 
 
 class Clipboard(ModelSource):

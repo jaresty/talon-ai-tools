@@ -25,25 +25,32 @@ def format_source_messages(
 ):
     prompt_chunks = prompt.split("{additional_source}")
     source_message = source.format_message()
-    formatted_messages: list[GPTImageItem | GPTTextItem | None] = []
     additional_source_message = None
     if additional_source is not None:
         additional_source_message = additional_source.format_message()
-    if len(prompt_chunks) == 1:
-        formatted_messages = [
-            additional_source_message,
-            format_message(prompt_chunks[0]),
-            source_message,
-        ]
+    additional_source_messages: list[GPTImageItem | GPTTextItem] = []
+    if additional_source_message is not None:
+        if len(prompt_chunks) == 1:
+            additional_source_messages = [
+                format_message(
+                    "This background information has been provided to help you answer the subsequent prompt"
+                ),
+                additional_source_message,
+            ]
+        else:
+            additional_source_messages = [
+                format_message(prompt_chunks.pop()),
+                additional_source_message,
+            ]
     else:
-        formatted_messages = [
-            format_message(prompt_chunks[0]),
-            additional_source_message,
-            format_message(prompt_chunks[1]),
-            source_message,
-        ]
-
-    return [message for message in formatted_messages if message is not None]
+        if len(prompt_chunks) > 1:
+            raise Exception(
+                "Tried to use a prompt with an additional source message without providing an additional source"
+            )
+    return additional_source_messages + [
+        format_message(prompt_chunks[0]),
+        source_message,
+    ]
 
 
 class Clipboard(ModelSource):

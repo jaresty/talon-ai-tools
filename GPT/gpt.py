@@ -231,7 +231,7 @@ class UserActions:
     ) -> None:
         """Get the source text that will have the prompt applied to it"""
         additional_model_source = create_model_source(additional_source)
-        build_request(destination, additional_model_source.get_text())
+        build_request(destination)
 
         additional_model_source = create_model_source(additional_source)
         current_messages = format_source_messages(

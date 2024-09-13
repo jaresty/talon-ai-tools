@@ -16,6 +16,7 @@ class GPTState:
     last_response: ClassVar[str] = ""
     last_was_pasted: ClassVar[bool] = False
     context: ClassVar[list[GPTTextItem | GPTImageItem]] = []
+    query: ClassVar[list[GPTMessage]] = []
     request: ClassVar[GPTRequest]
     thread: ClassVar[list[GPTMessage]] = []
     thread_enabled: ClassVar[bool] = False
@@ -39,6 +40,12 @@ class GPTState:
         """Reset the stored context"""
         cls.context = []
         actions.app.notify("Cleared user context")
+
+    @classmethod
+    def clear_query(cls):
+        """Reset the stored query"""
+        cls.query = []
+        actions.app.notify("Cleared user query")
 
     @classmethod
     def new_thread(cls):
@@ -67,7 +74,14 @@ class GPTState:
             )
             return
         cls.context += [context]
-        actions.app.notify("Appended user context")
+        actions.app.notify("Appended system context")
+
+    @classmethod
+    def push_query(cls, query: GPTMessage):
+        """Add the selected item to the stored query"""
+
+        cls.query += [query]
+        actions.app.notify("Appended user query")
 
     @classmethod
     def push_thread(cls, context: GPTMessage):
@@ -81,4 +95,5 @@ class GPTState:
         cls.last_response = ""
         cls.last_was_pasted = False
         cls.context = []
+        cls.query = []
         cls.thread = []

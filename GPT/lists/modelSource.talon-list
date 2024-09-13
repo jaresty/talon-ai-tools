@@ -12,6 +12,9 @@ context: context
 # Apply the prompt to the text in the thread
 thread: thread
 
+# Apply the prompt to the text in the query
+query: query
+
 # Apply the prompt to the currently selected text
 this: selection
 

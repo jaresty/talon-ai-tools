@@ -47,6 +47,10 @@ def confirmation_gui(gui: imgui.GUI):
         actions.user.confirmation_gui_pass_context()
 
     gui.spacer()
+    if gui.button("Pass to query"):
+        actions.user.confirmation_gui_pass_query()
+
+    gui.spacer()
     if gui.button("Pass to thread"):
         actions.user.confirmation_gui_pass_thread()
 
@@ -88,6 +92,12 @@ class UserActions:
     def confirmation_gui_pass_context():
         """Add the model output to the context"""
         actions.user.gpt_push_context(GPTState.text_to_confirm)
+        GPTState.text_to_confirm = ""
+        actions.user.confirmation_gui_close()
+
+    def confirmation_gui_pass_query():
+        """Add the model output to the query"""
+        actions.user.gpt_push_query(GPTState.text_to_confirm)
         GPTState.text_to_confirm = ""
         actions.user.confirmation_gui_close()
 

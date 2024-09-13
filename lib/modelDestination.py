@@ -74,6 +74,11 @@ class Context(ModelDestination):
         GPTState.push_context(gpt_message)
 
 
+class Query(ModelDestination):
+    def insert(self, gpt_message):
+        GPTState.push_query(format_messages("user", [gpt_message]))
+
+
 class NewContext(ModelDestination):
     def insert(self, gpt_message):
         GPTState.clear_context()
@@ -164,6 +169,8 @@ def create_model_destination(destination_type: str) -> ModelDestination:
             return Snip()
         case "context":
             return Context()
+        case "query":
+            return Query()
         case "newContext":
             return NewContext()
         case "appendClipboard":

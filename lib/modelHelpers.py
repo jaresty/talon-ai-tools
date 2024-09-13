@@ -79,6 +79,8 @@ def build_request(
     notification = "GPT Task Started"
     if len(GPTState.context) > 0:
         notification += ": Reusing Stored Context"
+    if len(GPTState.query) > 0:
+        notification += ": Reusing Stored Query"
     if GPTState.thread_enabled:
         notification += ", Threading Enabled"
 

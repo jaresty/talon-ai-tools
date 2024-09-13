@@ -18,6 +18,9 @@ to clip: clipboard
 # Instead of pasting, add the result to the context
 to context: context
 
+# Instead of pasting, add the result to the query
+to query: query
+
 # Instead of pasting, add the result to a new context
 to new context: newContext
 

@@ -66,6 +66,10 @@ class UserActions:
         """Add the selected text to the stored context"""
         GPTState.push_context(format_message(context))
 
+    def gpt_push_query(query: str):
+        """Add the selected text to the stored context"""
+        GPTState.push_query(format_message(query))
+
     def gpt_push_thread(content: str):
         """Add the selected text to the active thread"""
         GPTState.push_thread(format_messages("user", [format_message(content)]))
@@ -245,6 +249,7 @@ class UserActions:
         for message in GPTState.system_prompt.format_as_array():
             system_prompt_messages.append(format_message(message))
         append_request_messages([format_messages("system", system_prompt_messages)])
+        append_request_messages(GPTState.query)
 
         current_request = format_messages(
             "user",

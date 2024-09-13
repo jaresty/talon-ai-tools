@@ -88,6 +88,11 @@ class Thread(ModelSource):
         return chats_to_string(GPTState.thread)
 
 
+class Query(ModelSource):
+    def get_text(self):
+        return chats_to_string(GPTState.query)
+
+
 class GPTResponse(ModelSource):
     def get_text(self):
         if GPTState.last_response == "":
@@ -142,6 +147,8 @@ def create_model_source(source_type: str) -> ModelSource:
             return Clipboard()
         case "context":
             return Context()
+        case "query":
+            return Query()
         case "thread":
             return Thread()
         case "style":

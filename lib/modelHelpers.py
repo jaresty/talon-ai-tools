@@ -15,7 +15,9 @@ All functions in this this file have impure dependencies on either the model or 
 """
 
 
-def messages_to_string(messages: list[GPTTextItem | GPTImageItem]) -> str:
+def messages_to_string(
+    messages: list[GPTTextItem | GPTImageItem] | list[GPTTextItem],
+) -> str:
     """Format messages as a string"""
     formatted_messages = []
     for message in messages:

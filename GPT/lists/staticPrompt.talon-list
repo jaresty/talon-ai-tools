@@ -44,14 +44,13 @@ make commit message: Draft a conventional commit message for this change, with a
 ## Explanation
 explain clusters: This text contains similar but not identical ideas. Create a table listing each comparison once to highlight these subtle differences. Omit ideas that appear only once. Ensure the table width does not exceed 100 characters, wrapping text to new lines as necessary.
 explain compare: "You will find two items below. Carefully compare them. List all the differences and similarities, providing detailed explanations for each. Highlight any subtle distinctions and commonalities. The first item is this: \n\"\"\"\n{additional_source}\n\"\"\"\n The second item follows."
-explain coach: Evaluate this code with a focus on potential changes. Each unit of code should have only one reason to change. Identify areas for improvement to enhance the design."
 explain critique: Critique this text. Tell me what is wrong with it.
 explain obscure: Identify all terms in the following text that are not defined. Return just the list of terms.
 explain dependencies: Identify all dependencies in the following text and what they depend on. Consider something a dependency if both it and what it depends on are listed. Return just the list of dependencies.
-explain code: Provide a detailed explanation of this code. Break down the syntax and explain the function of each component. How does the code operate as a whole?
 explain split: Suggest different ways to categorize or split the following text, which contains multiple interrelated topics. Return just the modified text.
 explain style: I want you to describe the style of this text so that I can use your response as instructions to reformat some other text to match that style. Include an example for clarity.
 explain process: Identify the process flow in the following text. Return just the flow.
+explain code: Provide a detailed explanation of this code. Break down the syntax and explain the function of each component. How does the code operate as a whole?
 
 ## Brainstorming
 brainstorm questions: Help me explore this question from multiple perspectives. For each perspective, ask followup questions and indicate what perspective is being taken.
@@ -59,5 +58,6 @@ brainstorm prompt: Craft several alternative versions of this prompt to increase
 brainstorm interpretation: Formulate multiple reasonable interpretations of this, considering different perspectives.
 brainstorm how to: I have a problem that I do not know how to solve. Help me think through a quick plan to solve this problem. What steps should I take so I can resolve this today?
 brainstorm bridge: "Guide me to achieve the desired situation: {additional_source}, starting from the current state. The current situation is described below."
+brainstorm refactor: Evaluate this code with a focus on potential changes. Each unit of code should have only one reason to change. Identify areas for improvement to enhance the design.
 
 answer: Generate text that satisfies the question or request given in the input.

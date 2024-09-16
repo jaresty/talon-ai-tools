@@ -17,7 +17,7 @@ class ModelSource:
     def format_message(self) -> GPTImageItem | GPTTextItem | None:
         text = self.get_text()
         if text.strip() != "" and text:
-            return format_message(f'"""\n{text}\n"""')
+            return format_message(text)
 
 
 def format_source_messages(
@@ -26,7 +26,7 @@ def format_source_messages(
     prompt_chunks = prompt.split("{additional_source}")
     source_message = source.format_message()
     additional_source_message = None
-    if additional_source is not None:
+    if additional_source is not None and additional_source != source:
         additional_source_message = additional_source.format_message()
     additional_source_messages: list[GPTImageItem | GPTTextItem] = []
     if additional_source_message is not None:

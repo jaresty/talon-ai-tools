@@ -14,6 +14,8 @@ make heading: Create a heading that encapsulates the text below. Return just the
 make gherkin: Reformat the following text into proper gherkin without adding new criteria. Use Jira markup for formatting. Return just the modified text.
 make HTML: Format the following text as semantic HTML. Return just the formatted HTML.
 
+make whole: The following text describes individual parts of a whole. Create a description that represents the complete entity.
+make parts: The following text describes the whole thing. Break it up into its individual parts. Return just the parts.
 make groups: The following text consists of various topics all put together. Please group these items into categories and label each category. Return just the results.
 make joined: The following text is separated into multiple parts. Please group them together into one part maintaining the flow and meaning. Reorder in whatever way makes sense. Remove any redundant information. The result should be only one part with no additional structure. Return just the modified text.
 make split: The text below contains multiple topics. Your job is to separate these topics into sections and arrange them clearly. Provide only the reformatted text.

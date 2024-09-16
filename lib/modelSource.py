@@ -17,7 +17,7 @@ class ModelSource:
     def format_message(self) -> GPTImageItem | GPTTextItem | None:
         text = self.get_text()
         if text.strip() != "" and text:
-            return format_message(text)
+            return format_message(f'"""\n{text}\n"""')
 
 
 def format_source_messages(

@@ -49,6 +49,10 @@ class UserActions:
         """Reset the stored context"""
         GPTState.clear_context()
 
+    def gpt_clear_query():
+        """Reset the stored query"""
+        GPTState.clear_query()
+
     def gpt_clear_thread():
         """Create a new thread"""
         GPTState.new_thread()
@@ -68,7 +72,7 @@ class UserActions:
 
     def gpt_push_query(query: str):
         """Add the selected text to the stored context"""
-        GPTState.push_query(format_message(query))
+        GPTState.push_query(format_messages("user", [format_message(query)]))
 
     def gpt_push_thread(content: str):
         """Add the selected text to the active thread"""

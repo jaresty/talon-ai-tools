@@ -79,13 +79,26 @@ class GPTState:
     @classmethod
     def push_query(cls, query: GPTMessage):
         """Add the selected item to the stored query"""
+        query_message = query.get("content")[0]
 
+        if query_message is None:
+            actions.app.notify(
+                "Tried to append None to the query but that is not allowed"
+            )
+            return
         cls.query += [query]
         actions.app.notify("Appended user query")
 
     @classmethod
     def push_thread(cls, context: GPTMessage):
         """Add the selected text to the current thread"""
+        thread_message = context.get("content")[0]
+
+        if thread_message is None:
+            actions.app.notify(
+                "Tried to append None to the thread but that is not allowed"
+            )
+            return
         cls.thread += [context]
         actions.app.notify("Appended to thread")
 

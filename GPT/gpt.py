@@ -166,9 +166,11 @@ class UserActions:
 
     def gpt_pass(source: str = "", destination: str = "") -> None:
         """Passes a response from source to destination"""
-        actions.user.gpt_insert_response(
-            create_model_source(source).format_message(), destination
-        )
+        model_source = create_model_source(source).format_message()
+        if model_source is None:
+            notify("Tried to use none as a model source which is not allowed")
+            return
+        actions.user.gpt_insert_response(model_source, destination)
 
     def gpt_help() -> None:
         """Open the GPT help file in the web browser"""

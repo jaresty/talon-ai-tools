@@ -23,7 +23,7 @@ make short: Shorten the following text while preserving its meaning. Return just
 make flat: Edit the text below to form a single, cohesive, and grammatically correct paragraph that clearly communicates the main points. Provide the modified version only.
 make shuffled: Reconstruct the following text to ensure the layout is logical and significantly different from the original. Create new categories, each representing a single idea without using conjunctions like AND or OR. Present the revised text in the same language.
 
-make clear: Add additional context to the selected text that would be appropriate to the situation and add useful information. Also fix any grammatical mistakes.
+make clear: Add additional context to the selected text that would be appropriate to the situation and add useful information. Also fix any grammatical mistakes. If you need to ask questions in order to add the necessary context, respond with those questions instead.
 
 make softer: Act as an editor. I want you to make the following text softer in tone. Return just the modified text.
 make stronger: Act as an editor. I want you to make the following text stronger in tone. Return just the modified text.

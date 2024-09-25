@@ -132,6 +132,15 @@ class Paste(ModelDestination):
         actions.user.paste(extracted_message)
 
 
+class Typed(ModelDestination):
+    def insert(self, gpt_message):
+        if not self.inside_textarea():
+            return super().insert(gpt_message)
+        GPTState.last_was_pasted = True
+        extracted_message = extract_message(gpt_message)
+        actions.auto_insert(extracted_message)
+
+
 class Thread(ModelDestination):
     def insert(self, gpt_message):
         GPTState.push_thread(format_messages("user", [gpt_message]))
@@ -185,6 +194,8 @@ def create_model_destination(destination_type: str) -> ModelDestination:
             return Chain()
         case "paste":
             return Paste()
+        case "typed":
+            return Typed()
         case "thread":
             return Thread()
         case "newThread":

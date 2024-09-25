@@ -26,7 +26,7 @@ def format_source_messages(
     prompt_chunks = prompt.split("{additional_source}")
     source_message = source.format_message()
     additional_source_message = None
-    if additional_source is not None and additional_source != source:
+    if additional_source is not None:
         additional_source_message = additional_source.format_message()
     additional_source_messages: list[GPTImageItem | GPTTextItem] = []
     if additional_source_message is not None:

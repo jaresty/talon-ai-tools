@@ -9,7 +9,7 @@ make table: The following markdown text is raw data. There is no index. Return t
 make bullets: Convert each paragraph into a heading with a series of bullet points underneath it. Each paragraph is separated by a new line. Separate paragraphs should not have combined bullet points. This should all be done in markdown syntax. If it is a small paragraph, then you can just leave it as a heading and not add bullet points. Do not reduce content, only reduce things that would be redundant. These bullet points should be in a useful format for notes for those who want to quickly look at it. If there is a citation in the markdown original, then keep the citation just at the top and not within every individual bullet point.
 make diagram: Convert the following plain text into the text syntax for a mermaid diagram.
 make outline: Create an outline that encapsulates the text below. Keep the number of sections between three and five to optimize for human working memory. Return just the outline.
-make todo: Annotate each task in the following text with context and relative size tags. Output the tasks as a markdown todo list. Return just the tasks.
+make todo: Annotate each task in the following text with context and relative size tags. Convert each task into a single action item and output them as a markdown todo list. If there are multiple items within a task, split them into separate tasks. Return only the tasks.
 make heading: Create a heading that encapsulates the text below. Return just the heading.
 make gherkin: Reformat the following text into proper gherkin without adding new criteria. Use Jira markup for formatting. Return just the modified text.
 make HTML: Format the following text as semantic HTML. Return just the formatted HTML.

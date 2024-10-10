@@ -11,7 +11,7 @@ tag: user.cursorless
 
 # Apply a paired prompt to any two targets, and output it any target
 # Paste it to the cursor if no target is specified
-^{user.model} <user.modelPrompt> <user.cursorless_target> with <user.cursorless_target> [{user.modelDestination}]$:
+^{user.model} <user.modelPrompt> <user.cursorless_target> using <user.cursorless_target> [{user.modelDestination}]$:
     first_source = user.cursorless_get_text(cursorless_target_1)
     second_source = user.cursorless_get_text(cursorless_target_2)
     result = user.gpt_run_prompt(user.modelPrompt, first_source, second_source)

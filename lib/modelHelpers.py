@@ -75,9 +75,7 @@ def extract_message(content: GPTTextItem) -> str:
     return content.get("text", "")
 
 
-def build_request(
-    destination: str = "",
-):
+def build_request():
     notification = "GPT Task Started"
     if len(GPTState.context) > 0:
         notification += ": Reusing Stored Context"
@@ -95,11 +93,7 @@ def build_request(
         else None
     )
     application_context = f"The following describes the currently focused application:\n\n{actions.user.talon_get_active_context()}\n\nYou are an expert user of this application."
-    snippet_context = (
-        "\n\nPlease return the response as a snippet with placeholders. A snippet can control cursors and text insertion using constructs like tabstops ($1, $2, etc., with $0 as the final position). Linked tabstops update together. Placeholders, such as ${1:foo}, allow easy changes and can be nested (${1:another ${2:}}). Choices, using ${1|one,two,three|}, prompt user selection."
-        if destination == "snip"
-        else None
-    )
+
     additional_user_context = []
     try:
         additional_user_context = actions.user.gpt_additional_user_context()
@@ -114,11 +108,10 @@ def build_request(
             application_context,
             settings.get("user.model_system_prompt"),
             language_context,
-            snippet_context,
         ]
+        + GPTState.system_prompt.format_as_array()
         if item is not None
     ]
-
     system_messages = GPTState.context + system_messages
 
     GPTState.request = {

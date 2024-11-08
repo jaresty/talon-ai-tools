@@ -16,7 +16,7 @@ from ..lib.modelHelpers import (
     send_request,
 )
 from ..lib.modelState import GPTState
-from ..lib.modelTypes import GPTSystemPrompt, GPTTextItem
+from ..lib.modelTypes import GPTImageItem, GPTSystemPrompt, GPTTextItem
 
 mod = Module()
 mod.tag(
@@ -130,7 +130,7 @@ class UserActions:
     ):
         """Apply an arbitrary prompt to arbitrary text"""
 
-        actions.user.gpt_prepare_message(source, additional_source, prompt, "")
+        actions.user.gpt_prepare_message(source, additional_source, prompt, destination)
         response = gpt_query()
 
         actions.user.gpt_insert_response(response, destination)
@@ -243,7 +243,7 @@ class UserActions:
         additional_model_source = None
         if additional_source != spoken_text:
             additional_model_source = create_model_source(additional_source)
-        build_request(destination)
+        build_request()
 
         current_messages = format_source_messages(
             prompt,
@@ -251,16 +251,18 @@ class UserActions:
             additional_model_source,
         )
 
-        # Iterate over all of the system prompt messages and format them as messages
-        system_prompt_messages: list[GPTTextItem] = []
-        for message in GPTState.system_prompt.format_as_array():
-            system_prompt_messages.append(format_message(message))
-        append_request_messages([format_messages("system", system_prompt_messages)])
-        append_request_messages(GPTState.query)
-
+        snippet_context: list[GPTTextItem | GPTImageItem] = (
+            [
+                format_message(
+                    "\n\nYou must return the response as a snippet with placeholders. A snippet can control cursors and text insertion using constructs like tabstops ($1, $2, etc., with $0 as the final position). Linked tabstops update together. Placeholders, such as ${1:foo}, allow easy changes and can be nested (${1:another ${2:}}). Choices, using ${1|one,two,three|}, prompt user selection."
+                )
+            ]
+            if destination == "snip"
+            else []
+        )
         current_request = format_messages(
             "user",
-            current_messages,
+            snippet_context + current_messages,
         )
         if GPTState.thread_enabled:
             GPTState.push_thread(current_request)

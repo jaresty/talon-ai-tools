@@ -1,6 +1,6 @@
 from typing import Literal
 
-from talon import Context, Module, clip, settings
+from talon import Context, Module
 
 mod = Module()
 ctx = Context()
@@ -13,38 +13,14 @@ mod.list("modelPrompt", desc="GPT Prompts")
 mod.list("model", desc="The name of the model")
 mod.list("modelDestination", desc="What to do after returning the model response")
 mod.list("modelSource", desc="Where to get the text from for the GPT")
-mod.list(
-    "modelVoice", desc="The voice for the LLM to use. For example, 'as programmer'"
-)
-mod.list("modelTone", desc="The tone for the LLM to use. For example, 'casually'")
-mod.list(
-    "modelPurpose",
-    desc="The purpose for the LLM to write. For example, 'for information'",
-)
-mod.list(
-    "modelAudience",
-    desc="The audience to whom the LLM is writing. For example, 'to business'",
-)
 
 
 # model prompts can be either static and predefined by this repo or custom outside of it
-@mod.capture(rule="{user.staticPrompt} | {user.customPrompt}")
+@mod.capture(
+    rule="{user.staticPrompt} | {user.customPrompt} | (please <user.text>) | (ask <user.text>)"
+)
 def modelPrompt(matched_prompt) -> str:
-    return str(matched_prompt).format(
-        clip=clip.text(),
-        shell_name=settings.get("user.model_shell_default"),
-        additional_source="{additional_source}",
-    )
-
-
-@mod.capture(rule="please <user.text>")
-def pleasePrompt(matched_prompt) -> str:
     return str(matched_prompt)
-
-
-@mod.capture(rule="{user.modelSource}")
-def additionalModelSource(model_source) -> str:
-    return str(model_source)
 
 
 # model prompts can be either static and predefined by this repo or custom outside of it
@@ -83,33 +59,8 @@ mod.setting(
 mod.setting(
     "model_system_prompt",
     type=str,
-    default="Output just the response to the request and no additional content. Do not generate any markdown formatting such as backticks for programming languages unless it is explicitly requested. If the user requests code generation, output just code and not additional natural language explanation.",
+    default="You are an assistant helping an office worker to be more productive. Output just the response to the request and no additional content. Do not generate any markdown formatting such as backticks for programming languages unless it is explicitly requested. If the user requests code generation, output just code and not additional natural language explanation.",
     desc="The default system prompt that informs the way the model should behave at a high level",
-)
-
-mod.setting(
-    "model_default_voice",
-    type=str,
-    default="You are an assistant helping an office worker to be more productive.",
-    desc="The default voice to use. Who should the LLM be acting as.",
-)
-mod.setting(
-    "model_default_purpose",
-    type=str,
-    default="Your purpose is to help accomplish a task.",
-    desc="The default purpose of the communication. This informs how the LLM should respond. For example you could say to inform.",
-)
-mod.setting(
-    "model_default_tone",
-    type=str,
-    default="You are casual and friendly and helpful.",
-    desc="Is the default tone to use. For example speak kindly or formally.",
-)
-mod.setting(
-    "model_default_audience",
-    type=str,
-    default="Your audience is just the person who is making this request.",
-    desc="This is the audience that the LLM should format for. For example a programmer or a toddler.m",
 )
 
 

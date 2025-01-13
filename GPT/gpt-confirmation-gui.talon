@@ -10,11 +10,8 @@ tag: user.model_window_open
     user.gpt_select_last()
 
 ^copy response$: user.confirmation_gui_copy()
-^pass to context$: user.confirmation_gui_pass_context()
-^pass to query$: user.confirmation_gui_pass_query()
-^pass to thread$: user.confirmation_gui_pass_thread()
-^open browser$: user.confirmation_gui_open_browser()
-^analyze prompt$: user.confirmation_gui_analyze_prompt()
+^pass response to context$: user.confirmation_gui_pass_context()
+^pass response to thread$: user.confirmation_gui_pass_thread()
 
 # Deny the output of the model and discard it
 ^discard response$: user.confirmation_gui_close()

@@ -42,17 +42,13 @@ def confirmation_gui(gui: imgui.GUI):
     #     actions.user.confirmation_gui_paste()
     #     actions.user.gpt_select_last()
 
-    gui.spacer()
-    if gui.button("Pass to context"):
-        actions.user.confirmation_gui_pass_context()
+    # gui.spacer()
+    # if gui.button("Pass response to context"):
+    #     actions.user.confirmation_gui_pass_context()
 
-    gui.spacer()
-    if gui.button("Pass to query"):
-        actions.user.confirmation_gui_pass_query()
-
-    gui.spacer()
-    if gui.button("Pass to thread"):
-        actions.user.confirmation_gui_pass_thread()
+    # gui.spacer()
+    # if gui.button("Pass response to thread"):
+    #     actions.user.confirmation_gui_pass_thread()
 
     gui.spacer()
     if gui.button("Copy response"):
@@ -61,14 +57,6 @@ def confirmation_gui(gui: imgui.GUI):
     gui.spacer()
     if gui.button("Paste response"):
         actions.user.confirmation_gui_paste()
-
-    gui.spacer()
-    if gui.button("Open browser"):
-        actions.user.confirmation_gui_open_browser()
-
-    gui.spacer()
-    if gui.button("Analyze prompt"):
-        actions.user.confirmation_gui_analyze_prompt()
 
     gui.spacer()
     if gui.button("Discard response"):
@@ -94,24 +82,6 @@ class UserActions:
         actions.user.gpt_push_context(GPTState.text_to_confirm)
         GPTState.text_to_confirm = ""
         actions.user.confirmation_gui_close()
-
-    def confirmation_gui_pass_query():
-        """Add the model output to the query"""
-        actions.user.gpt_push_query(GPTState.text_to_confirm)
-        GPTState.text_to_confirm = ""
-        actions.user.confirmation_gui_close()
-
-    def confirmation_gui_open_browser():
-        """Open a browser with the response"""
-        actions.user.gpt_insert_text(GPTState.text_to_confirm, "browser")
-        GPTState.text_to_confirm = ""
-        actions.user.confirmation_gui_close()
-
-    def confirmation_gui_analyze_prompt():
-        """Analyze the last prompt"""
-        GPTState.text_to_confirm = ""
-        actions.user.confirmation_gui_close()
-        actions.user.gpt_analyze_prompt("window")
 
     def confirmation_gui_pass_thread():
         """Add the model output to the thread"""

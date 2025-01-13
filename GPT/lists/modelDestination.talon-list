@@ -18,9 +18,6 @@ to clip: clipboard
 # Instead of pasting, add the result to the context
 to context: context
 
-# Instead of pasting, add the result to the query
-to query: query
-
 # Instead of pasting, add the result to a new context
 to new context: newContext
 
@@ -47,6 +44,3 @@ chain: chain
 
 # Insert the response as a snippet with placeholders (only works in vscode)
 snip: snip
-
-# Insert the response by typing it
-typed: typed

@@ -2,26 +2,17 @@ from typing import ClassVar
 
 from talon import actions
 
-from .modelTypes import (
-    GPTImageItem,
-    GPTMessage,
-    GPTRequest,
-    GPTSystemPrompt,
-    GPTTextItem,
-)
+from .modelTypes import GPTMessage, GPTMessageItem
 
 
 class GPTState:
     text_to_confirm: ClassVar[str] = ""
     last_response: ClassVar[str] = ""
     last_was_pasted: ClassVar[bool] = False
-    context: ClassVar[list[GPTTextItem | GPTImageItem]] = []
-    query: ClassVar[list[GPTMessage]] = []
-    request: ClassVar[GPTRequest]
+    context: ClassVar[list[GPTMessageItem]] = []
     thread: ClassVar[list[GPTMessage]] = []
     thread_enabled: ClassVar[bool] = False
     debug_enabled: ClassVar[bool] = False
-    system_prompt: ClassVar[GPTSystemPrompt] = GPTSystemPrompt()
 
     @classmethod
     def start_debug(cls):
@@ -42,12 +33,6 @@ class GPTState:
         actions.app.notify("Cleared user context")
 
     @classmethod
-    def clear_query(cls):
-        """Reset the stored query"""
-        cls.query = []
-        actions.app.notify("Cleared user query")
-
-    @classmethod
     def new_thread(cls):
         """Create a new thread"""
         cls.thread = []
@@ -66,7 +51,7 @@ class GPTState:
         actions.app.notify("Disabled threading")
 
     @classmethod
-    def push_context(cls, context: GPTTextItem):
+    def push_context(cls, context: GPTMessageItem):
         """Add the selected text to the stored context"""
         if context.get("type") != "text":
             actions.app.notify(
@@ -74,31 +59,11 @@ class GPTState:
             )
             return
         cls.context += [context]
-        actions.app.notify("Appended system context")
-
-    @classmethod
-    def push_query(cls, query: GPTMessage):
-        """Add the selected item to the stored query"""
-        query_message = query.get("content")[0]
-
-        if query_message is None:
-            actions.app.notify(
-                "Tried to append None to the query but that is not allowed"
-            )
-            return
-        cls.query += [query]
-        actions.app.notify("Appended user query")
+        actions.app.notify("Appended user context")
 
     @classmethod
     def push_thread(cls, context: GPTMessage):
         """Add the selected text to the current thread"""
-        thread_message = context.get("content")[0]
-
-        if thread_message is None:
-            actions.app.notify(
-                "Tried to append None to the thread but that is not allowed"
-            )
-            return
         cls.thread += [context]
         actions.app.notify("Appended to thread")
 
@@ -108,5 +73,4 @@ class GPTState:
         cls.last_response = ""
         cls.last_was_pasted = False
         cls.context = []
-        cls.query = []
         cls.thread = []

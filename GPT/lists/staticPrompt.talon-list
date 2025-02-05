@@ -39,7 +39,7 @@ make blend: "Im going to give you some source text and destination text, and I w
 make guard: Refactor this code to handle error cases first. Use guard clauses or throw errors where appropriate. Return just the modified text for direct insertion into code.
 make docs: Add API documentation to the following code. Include documentation for all parameters used. Return just the modified text.
 make dry: Reduce duplication in the following code without changing its behavior. Return just the new code for direct insertion.
-make commit message: Draft a conventional commit message for this change, with a real emoji that effectively conveys the nature of the update.
+make commit message: Draft a conventional commit message for this change.
 
 ## Explanation
 explain clusters: This text contains similar but not identical ideas. Create a table listing each comparison once to highlight these subtle differences. Omit ideas that appear only once. Ensure the table width does not exceed 100 characters, wrapping text to new lines as necessary.

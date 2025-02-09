@@ -19,6 +19,8 @@ class ModelDestination:
             GPTState.text_to_confirm = extracted_message
             actions.user.confirmation_gui_append(extracted_message)
 
+    # If this isn't working, you may need to turn on dication for electron apps
+    #  ui.apps(bundle="com.microsoft.VSCode")[0].element.AXManualAccessibility = True
     def inside_textarea(self):
         try:
             return ui.focused_element().get("AXRole") in [
@@ -27,8 +29,9 @@ class ModelDestination:
                 "AXComboBox",
                 "AXStaticText",
             ]
-        except Exception:
+        except Exception as e:
             # Handle exception or log error
+            print(f"An error occurred: {e}")
             return False
 
 

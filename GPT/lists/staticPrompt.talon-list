@@ -51,7 +51,7 @@ converge how to: I have a problem that I do not know how to solve. Help me think
 converge bridge: "Guide me to achieve the desired situation: {additional_source}, starting from the current state. The current situation is described below."
 
 ## Diverge
-diverge split: Suggest different ways to categorize or split the following text, which contains multiple interrelated topics. Return just the modified text.
+diverge groups: Suggest different ways to categorize or split the following text, which contains multiple interrelated topics. Return just the modified text.
 diverge questions: Help me explore this question from multiple perspectives. For each perspective, ask followup questions and indicate what perspective is being taken.
 diverge prompt: Craft several alternative versions of this prompt to increase its effectiveness. If there is any ambiguity in the intention, provide responses that explore the different possible meanings.
 diverge interpretation: Formulate multiple reasonable interpretations of this, considering different perspectives.

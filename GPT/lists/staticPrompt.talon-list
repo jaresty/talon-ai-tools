@@ -27,6 +27,7 @@ converge softer: Act as an editor. I want you to make the following text softer 
 converge stronger: Act as an editor. I want you to make the following text stronger in tone. Return just the modified text.
 converge match: I have given you some context to describe a style of writing that I would like to use. Please make this text match that style. Return just the modified text.
 converge abstract: Convert this specific text into a more generalized and abstract form.
+converge math: Please convert this text into a mathematical formula or representation.
 converge interesting: Reorder the text so the most surprising or interesting part comes first. Maintain the current tone. Return just the modified text.
 converge direct: Reorder the text to be more direct. Lead with the main point and follow up with auxiliary information. Return just the modified text.
 converge indirect: Reorder the text to be more indirect. Lead with auxiliary information and conclude with the main point. Return just the modified text.

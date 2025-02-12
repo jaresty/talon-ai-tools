@@ -4,60 +4,54 @@ list: user.staticPrompt
 # Use static prompts as aliases for detailed instructions
 # Reduce verbosity and prevent the need to say the entire prompt each time time
 
-## Transformation
-make table: The following markdown text is raw data. There is no index. Return the text in a markdown table format. Each row has a new line in the original data.
-make bullets: Convert each paragraph into a heading with a series of bullet points underneath it. Each paragraph is separated by a new line. Separate paragraphs should not have combined bullet points. This should all be done in markdown syntax. If it is a small paragraph, then you can just leave it as a heading and not add bullet points. Do not reduce content, only reduce things that would be redundant. These bullet points should be in a useful format for notes for those who want to quickly look at it. If there is a citation in the markdown original, then keep the citation just at the top and not within every individual bullet point.
-make diagram: Convert the following plain text into the text syntax for a mermaid diagram.
-make outline: Create an outline that encapsulates the text below. Keep the number of sections between three and five to optimize for human working memory. Return just the outline.
-make todo: Annotate each task in the following text with context and relative size tags. Convert each task into a single action item and output them as a markdown todo list. If there are multiple items within a task, split them into separate tasks. Return only the tasks.
-make heading: Create a heading that encapsulates the text below. Return just the heading.
-make gherkin: Reformat the following text into proper gherkin without adding new criteria. Use Jira markup for formatting. Return just the modified text.
-make HTML: Format the following text as semantic HTML. Return just the formatted HTML.
+## Converge
+converge table: The following markdown text is raw data. There is no index. Return the text in a markdown table format. Each row has a new line in the original data.
+converge bullets: Convert each paragraph into a heading with a series of bullet points underneath it. Each paragraph is separated by a new line. Separate paragraphs should not have combined bullet points. This should all be done in markdown syntax. If it is a small paragraph, then you can just leave it as a heading and not add bullet points. Do not reduce content, only reduce things that would be redundant. These bullet points should be in a useful format for notes for those who want to quickly look at it. If there is a citation in the markdown original, then keep the citation just at the top and not within every individual bullet point.
+converge diagram: Convert the following plain text into the text syntax for a mermaid diagram.
+converge outline: Create an outline that encapsulates the text below. Keep the number of sections between three and five to optimize for human working memory. Return just the outline.
+converge todo: Annotate each task in the following text with context and relative size tags. Convert each task into a single action item and output them as a markdown todo list. If there are multiple items within a task, split them into separate tasks. Return only the tasks.
+converge heading: Create a heading that encapsulates the text below. Return just the heading.
+converge gherkin: Reformat the following text into proper gherkin without adding new criteria. Use Jira markup for formatting. Return just the modified text.
+converge HTML: Format the following text as semantic HTML. Return just the formatted HTML.
+converge whole: The following text describes individual parts of a whole. Create a description that represents the complete entity.
+converge parts: The following text presents a whole concept. Divide it into its distinct elements. Return just the elements.
+converge groups: The following text consists of various topics all put together. Please group these items into categories and label each category. Return just the results.
+converge joined: The following text is separated into multiple parts. Please group them together into one part maintaining the flow and meaning. Reorder in whatever way makes sense. Remove any redundant information. The result should be only one part with no additional structure. Return just the modified text.
+converge split: The text below contains multiple topics. Your job is to separate these topics into sections and arrange them clearly. Provide only the reformatted text.
+converge short: Shorten the following text while preserving its meaning. Return just the modified text.
+converge flat: Edit the text below to form a single, cohesive, and grammatically correct paragraph that clearly communicates the main points. Provide the modified version only.
+converge shuffled: Reconstruct the following text to ensure the layout is logical and significantly different from the original. Create new categories, each representing a single idea without using conjunctions like AND or OR. Present the revised text in the same language.
+converge clear: Add additional context to the selected text that would be appropriate to the situation and add useful information. Also fix any grammatical mistakes. If you need to ask questions in order to add the necessary context, respond with those questions instead.
+converge softer: Act as an editor. I want you to make the following text softer in tone. Return just the modified text.
+converge stronger: Act as an editor. I want you to make the following text stronger in tone. Return just the modified text.
+converge match: I have given you some context to describe a style of writing that I would like to use. Please make this text match that style. Return just the modified text.
+converge abstract: Convert this specific text into a more generalized and abstract form.
+converge interesting: Reorder the text so the most surprising or interesting part comes first. Maintain the current tone. Return just the modified text.
+converge direct: Reorder the text to be more direct. Lead with the main point and follow up with auxiliary information. Return just the modified text.
+converge indirect: Reorder the text to be more indirect. Lead with auxiliary information and conclude with the main point. Return just the modified text.
+converge emphatic: Place special emphasis on this text to show that it holds greater significance.
+converge understated: Please rewrite this text to make it clear that it is not the main point. It should be easily distinguishable from the main content.
+converge blend: "Im going to give you some source text and destination text, and I want you to modify the destination text based on the contents of the source text in a way that combines both of them together. Use the structure of the destination text, reordering and renaming as necessary to ensure a natural and coherent flow. Please return only the final text with no decoration for insertion into a document in the specified language. Here is the destination text: \"\"\"\n {additional_source} \n\"\"\" The source text follows."
+converge guard: Refactor this code to handle error cases first. Use guard clauses or throw errors where appropriate. Return just the modified text for direct insertion into code.
+converge docs: Add API documentation to the following code. Include documentation for all parameters used. Return just the modified text.
+converge dry: Reduce duplication in the following code without changing its behavior. Return just the new code for direct insertion.
+converge commit message: Draft a conventional commit message for this change.
+converge clusters: This text contains similar but not identical ideas. Create a table listing each comparison once to highlight these subtle differences. Omit ideas that appear only once. Ensure the table width does not exceed 100 characters, wrapping text to new lines as necessary.
+converge compare: "You will find two items below. Carefully compare them. List all the differences and similarities, providing detailed explanations for each. Highlight any subtle distinctions and commonalities. The first item is this: \n\"\"\"\n{additional_source}\n\"\"\"\n The second item follows."
+converge critique: Critique this text. Tell me what is wrong with it.
+converge obscure: Identify all terms in the following text that are not defined. Return just the list of terms.
+converge dependencies: Identify all dependencies in the following text and what they depend on. Consider something a dependency if both it and what it depends on are listed. Return just the list of dependencies.
+converge style: I want you to describe the style of this text so that I can use your response as instructions to reformat some other text to match that style. Include an example for clarity.
+converge process: Identify the process flow in the following text. Return just the flow.
+converge explain: Provide a detailed explanation of this.
+converge how to: I have a problem that I do not know how to solve. Help me think through a quick plan to solve this problem. What steps should I take so I can resolve this today?
+converge bridge: "Guide me to achieve the desired situation: {additional_source}, starting from the current state. The current situation is described below."
 
-make whole: The following text describes individual parts of a whole. Create a description that represents the complete entity.
-make parts: The following text presents a whole concept. Divide it into its distinct elements. Return just the elements.
-make groups: The following text consists of various topics all put together. Please group these items into categories and label each category. Return just the results.
-make joined: The following text is separated into multiple parts. Please group them together into one part maintaining the flow and meaning. Reorder in whatever way makes sense. Remove any redundant information. The result should be only one part with no additional structure. Return just the modified text.
-make split: The text below contains multiple topics. Your job is to separate these topics into sections and arrange them clearly. Provide only the reformatted text.
-make short: Shorten the following text while preserving its meaning. Return just the modified text.
-make flat: Edit the text below to form a single, cohesive, and grammatically correct paragraph that clearly communicates the main points. Provide the modified version only.
-make shuffled: Reconstruct the following text to ensure the layout is logical and significantly different from the original. Create new categories, each representing a single idea without using conjunctions like AND or OR. Present the revised text in the same language.
-
-make clear: Add additional context to the selected text that would be appropriate to the situation and add useful information. Also fix any grammatical mistakes. If you need to ask questions in order to add the necessary context, respond with those questions instead.
-
-make softer: Act as an editor. I want you to make the following text softer in tone. Return just the modified text.
-make stronger: Act as an editor. I want you to make the following text stronger in tone. Return just the modified text.
-make match: I have given you some context to describe a style of writing that I would like to use. Please make this text match that style. Return just the modified text.
-make abstract: Convert this specific text into a more generalized and abstract form.
-make interesting: Reorder the text so the most surprising or interesting part comes first. Maintain the current tone. Return just the modified text.
-make direct: Reorder the text to be more direct. Lead with the main point and follow up with auxiliary information. Return just the modified text.
-make indirect: Reorder the text to be more indirect. Lead with auxiliary information and conclude with the main point. Return just the modified text.
-make emphatic: Place special emphasis on this text to show that it holds greater significance.
-make understated: Please rewrite this text to make it clear that it is not the main point. It should be easily distinguishable from the main content.
-
-make blend: "Im going to give you some source text and destination text, and I want you to modify the destination text based on the contents of the source text in a way that combines both of them together. Use the structure of the destination text, reordering and renaming as necessary to ensure a natural and coherent flow. Please return only the final text with no decoration for insertion into a document in the specified language. Here is the destination text: \"\"\"\n {additional_source} \n\"\"\" The source text follows."
-make guard: Refactor this code to handle error cases first. Use guard clauses or throw errors where appropriate. Return just the modified text for direct insertion into code.
-make docs: Add API documentation to the following code. Include documentation for all parameters used. Return just the modified text.
-make dry: Reduce duplication in the following code without changing its behavior. Return just the new code for direct insertion.
-make commit message: Draft a conventional commit message for this change.
-
-## Explanation
-explain clusters: This text contains similar but not identical ideas. Create a table listing each comparison once to highlight these subtle differences. Omit ideas that appear only once. Ensure the table width does not exceed 100 characters, wrapping text to new lines as necessary.
-explain compare: "You will find two items below. Carefully compare them. List all the differences and similarities, providing detailed explanations for each. Highlight any subtle distinctions and commonalities. The first item is this: \n\"\"\"\n{additional_source}\n\"\"\"\n The second item follows."
-explain critique: Critique this text. Tell me what is wrong with it.
-explain obscure: Identify all terms in the following text that are not defined. Return just the list of terms.
-explain dependencies: Identify all dependencies in the following text and what they depend on. Consider something a dependency if both it and what it depends on are listed. Return just the list of dependencies.
-explain split: Suggest different ways to categorize or split the following text, which contains multiple interrelated topics. Return just the modified text.
-explain style: I want you to describe the style of this text so that I can use your response as instructions to reformat some other text to match that style. Include an example for clarity.
-explain process: Identify the process flow in the following text. Return just the flow.
-explain code: Provide a detailed explanation of this code. Break down the syntax and explain the function of each component. How does the code operate as a whole?
-
-## Brainstorming
-brainstorm questions: Help me explore this question from multiple perspectives. For each perspective, ask followup questions and indicate what perspective is being taken.
-brainstorm prompt: Craft several alternative versions of this prompt to increase its effectiveness. If there is any ambiguity in the intention, provide responses that explore the different possible meanings.
-brainstorm interpretation: Formulate multiple reasonable interpretations of this, considering different perspectives.
-brainstorm how to: I have a problem that I do not know how to solve. Help me think through a quick plan to solve this problem. What steps should I take so I can resolve this today?
-brainstorm bridge: "Guide me to achieve the desired situation: {additional_source}, starting from the current state. The current situation is described below."
-brainstorm refactor: Evaluate this code with a focus on potential changes. Each unit of code should have only one reason to change. Identify areas for improvement to enhance the design.
+## Diverge
+diverge split: Suggest different ways to categorize or split the following text, which contains multiple interrelated topics. Return just the modified text.
+diverge questions: Help me explore this question from multiple perspectives. For each perspective, ask followup questions and indicate what perspective is being taken.
+diverge prompt: Craft several alternative versions of this prompt to increase its effectiveness. If there is any ambiguity in the intention, provide responses that explore the different possible meanings.
+diverge interpretation: Formulate multiple reasonable interpretations of this, considering different perspectives.
+diverge refactor: Evaluate this code with a focus on potential changes. Each unit of code should have only one reason to change. Identify areas for improvement to enhance the design.
 
 answer: Generate text that satisfies the question or request given in the input.

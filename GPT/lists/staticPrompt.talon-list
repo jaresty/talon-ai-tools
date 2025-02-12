@@ -56,7 +56,7 @@ diverge questions: Help me explore this question from multiple perspectives. For
 diverge prompt: Craft several alternative versions of this prompt to increase its effectiveness. If there is any ambiguity in the intention, provide responses that explore the different possible meanings.
 diverge interpretation: Formulate multiple reasonable interpretations of this, considering different perspectives.
 diverge refactor: Evaluate this code with a focus on potential changes. Each unit of code should have only one reason to change. Identify areas for improvement to enhance the design.
-diverge debug: Explore different hypotheses for this Provide a step-by-step experiment for each hypothesis to verify or reject it.
+diverge debug: Explore different hypotheses for this. Provide a step-by-step experiment for each hypothesis to verify or reject it.
 diverge diagram: Analyze the given plain text from different perspectives. For each perspective, translate it into mermaid diagram syntax.
 diverge math: Consider various interpretations of this and transform each into a mathematical formulation or model.
 

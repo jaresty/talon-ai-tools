@@ -39,7 +39,8 @@ converge commit message: Draft a conventional commit message for this change.
 converge clusters: This text contains similar but not identical ideas. Create a table listing each comparison once to highlight these subtle differences. Omit ideas that appear only once. Ensure the table width does not exceed 100 characters, wrapping text to new lines as necessary.
 converge compare: "You will find two items below. Carefully compare them. List all the differences and similarities, providing detailed explanations for each. Highlight any subtle distinctions and commonalities. The first item is this: \n\"\"\"\n{additional_source}\n\"\"\"\n The second item follows."
 converge critique: Critique this text. Tell me what is wrong with it.
-converge obscure: Identify all terms in the following text that are not defined. Return just the list of terms.
+converge is obscure: Identify all terms in the following text that are not defined. Return just the list of terms.
+converge is objective: Assess whether the following text maintains objectivity. Provide examples to support your conclusion.
 converge dependencies: Identify all dependencies in the following text and what they depend on. Consider something a dependency if both it and what it depends on are listed. Return just the list of dependencies.
 converge style: I want you to describe the style of this text so that I can use your response as instructions to reformat some other text to match that style. Include an example for clarity.
 converge process: Identify the process flow in the following text. Return just the flow.
@@ -53,5 +54,6 @@ diverge questions: Help me explore this question from multiple perspectives. For
 diverge prompt: Craft several alternative versions of this prompt to increase its effectiveness. If there is any ambiguity in the intention, provide responses that explore the different possible meanings.
 diverge interpretation: Formulate multiple reasonable interpretations of this, considering different perspectives.
 diverge refactor: Evaluate this code with a focus on potential changes. Each unit of code should have only one reason to change. Identify areas for improvement to enhance the design.
+diverge debug: Explore different hypotheses for this Provide a step-by-step experiment for each hypothesis to verify or reject it.
 
 answer: Generate text that satisfies the question or request given in the input.

@@ -60,5 +60,5 @@ diverge refactor: Evaluate this code with a focus on potential changes. Each uni
 diverge debug: Explore different hypotheses for this. Provide a step-by-step experiment for each hypothesis to verify or reject it.
 diverge diagram: Analyze the given plain text from different perspectives. For each perspective, translate it into mermaid diagram syntax.
 diverge math: Consider various interpretations of this and transform each into a mathematical formulation or model.
-
+diverge how to: Im stuck with an issue and need help brainstorming solutions. What are some potential approaches I can take to solve this problem today?
 answer: Generate text that satisfies the question or request given in the input.

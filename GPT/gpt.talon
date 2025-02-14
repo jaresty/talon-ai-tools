@@ -8,7 +8,7 @@
 {user.model} <user.modelPrompt> [{user.modelSource}] [using <user.additionalModelSource>] [{user.modelDestination}]$:
     user.gpt_apply_prompt(modelPrompt, modelSource or "", additionalModelSource or "", modelDestination or "")
 
-^{user.model} [<user.modelPrompt>] <user.pleasePrompt> [{user.modelSource}] [using <user.additionalModelSource>] [{user.modelDestination}]$:
+^{user.model} <user.pleasePrompt> [{user.modelSource}] [using <user.additionalModelSource>] [{user.modelDestination}]$:
     user.gpt_apply_prompt(pleasePrompt, modelSource or "", additionalModelSource or "", modelDestination or "")
 
 ^{user.model} write [{user.modelVoice} | {user.modelAudience} | {user.modelPurpose} | {user.modelTone}]+: user.gpt_set_system_prompt(modelVoice or "", modelAudience or "", modelPurpose or "", modelTone or "")

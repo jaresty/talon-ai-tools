@@ -55,12 +55,12 @@ def pleasePrompt(matched_prompt) -> str:
     return additional_prompt + "\n" + str(matched_prompt.text)
 
 
-@mod.capture(rule="<user.modelDestination> | <user.modelDestinationRegister>")
+@mod.capture(rule="{user.modelDestination} | <user.modelDestinationRegister>")
 def modelDestination(model_destination) -> ModelDestination:
     if hasattr(model_destination, "modelDestinationRegister"):
         return model_destination.modelDestinationRegister
 
-    return create_model_destination(model_destination.modelDestinationDestination)
+    return create_model_destination(model_destination.modelDestination)
 
 
 @mod.capture(rule="{user.modelSource} | <user.modelSourceRegister>")

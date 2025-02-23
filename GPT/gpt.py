@@ -3,7 +3,7 @@ import os
 from ..lib.talonSettings import ApplyPromptConfiguration, PassConfiguration
 
 from ..lib.modelDestination import Default, ModelDestination
-from ..lib.modelSource import create_model_source, format_source_messages
+from ..lib.modelSource import ModelSource, create_model_source, format_source_messages
 from talon import Module, actions
 
 from ..lib.HTMLBuilder import Builder
@@ -49,6 +49,10 @@ class UserActions:
     def gpt_clear_context():
         """Reset the stored context"""
         GPTState.clear_context()
+
+    def gpt_clear_register(register_name: str):
+        """Reset the stored register_name"""
+        GPTState.clear_register(register_name)
 
     def gpt_clear_query():
         """Reset the stored query"""
@@ -166,9 +170,9 @@ class UserActions:
 
     def gpt_pass(pass_configuration: PassConfiguration) -> None:
         """Passes a response from source to destination"""
-        source: str = pass_configuration.model_source
+        source: ModelSource = pass_configuration.model_source
         destination: ModelDestination = pass_configuration.model_destination
-        model_source = create_model_source(source).format_message()
+        model_source = source.format_message()
         if model_source is None:
             notify("Tried to use none as a model source which is not allowed")
             return
@@ -213,7 +217,6 @@ class UserActions:
         destination: ModelDestination = Default(),
     ) -> None:
         """Insert a GPT result in a specified way"""
-        print(f"The current destination is {destination}")
         destination.insert(gpt_message)
 
     def gpt_get_source_text(spoken_text: str) -> str:

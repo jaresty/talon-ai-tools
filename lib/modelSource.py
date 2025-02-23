@@ -89,6 +89,14 @@ class Thread(ModelSource):
         return chats_to_string(GPTState.thread)
 
 
+class SourceRegister(ModelSource):
+    def __init__(self, register_name):
+        self.register_name = register_name
+
+    def get_text(self):
+        return chats_to_string(GPTState.registers[self.register_name] or [])
+
+
 class Query(ModelSource):
     def get_text(self):
         return chats_to_string(GPTState.query)

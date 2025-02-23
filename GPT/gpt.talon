@@ -11,6 +11,9 @@
 ^{user.model} <user.pleasePromptConfiguration>:
     user.gpt_apply_prompt(pleasePromptConfiguration)
 
+^{user.model} clear register {user.letter}:
+    user.gpt_clear_register(letter)
+
 ^{user.model} write [{user.modelVoice} | {user.modelAudience} | {user.modelPurpose} | {user.modelTone}]+: user.gpt_set_system_prompt(modelVoice or "", modelAudience or "", modelPurpose or "", modelTone or "")
 ^{user.model} write reset: user.gpt_reset_system_prompt()
 

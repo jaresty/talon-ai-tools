@@ -9,8 +9,8 @@
 # Example: `model pass context to clip`
 # Example: `model pass thread to browser`
 # Example: `model pass clip to this`
-^{user.model} pass ({user.modelSource} | {user.modelDestination} | {user.modelSource} {user.modelDestination})$:
-    user.gpt_pass(modelSource or "", modelDestination or "")
+^{user.model} pass <user.passConfiguration>$:
+    user.gpt_pass(passConfiguration)
 
 # Clear the context stored in the model
 # Note that if you are in a thread, your thread

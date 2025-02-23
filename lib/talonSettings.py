@@ -1,5 +1,10 @@
+from dataclasses import dataclass
 from typing import Literal
 
+from .modelDestination import (
+    ModelDestination,
+    create_model_destination,
+)
 from talon import Context, Module, clip, settings
 
 mod = Module()
@@ -47,6 +52,25 @@ def pleasePrompt(matched_prompt) -> str:
     return additional_prompt + "\n" + str(matched_prompt.text)
 
 
+@mod.capture(rule="<user.modelDestination>")
+def modelDestination(model_destination) -> ModelDestination:
+    return create_model_destination(model_destination.modelDestination)
+
+
+@dataclass
+class ApplyPromptConfiguration:
+    please_prompt: str
+    model_source: str
+    additional_model_source: str
+    model_destination: ModelDestination
+
+
+@dataclass
+class PassConfiguration:
+    model_source: str
+    model_destination: ModelDestination
+
+
 @mod.capture(rule="{user.modelSource}")
 def additionalModelSource(model_source) -> str:
     return str(model_source)
@@ -56,6 +80,61 @@ def additionalModelSource(model_source) -> str:
 @mod.capture(rule="{user.staticPrompt} | {user.customPrompt}")
 def modelSimplePrompt(matched_prompt) -> str:
     return str(matched_prompt)
+
+
+@mod.capture(
+    rule="^<user.pleasePrompt> [{user.modelSource}] [using <user.additionalModelSource>] [<user.modelDestination>]$"
+)
+def pleasePromptConfiguration(matched_prompt) -> ApplyPromptConfiguration:
+    destination_type: str = ""
+    if not hasattr(matched_prompt, "modelDestination"):
+        destination_type = settings.get("user.model_default_destination")
+    return ApplyPromptConfiguration(
+        getattr(matched_prompt, "pleasePrompt", ""),
+        getattr(matched_prompt, "modelSource", ""),
+        getattr(matched_prompt, "additionalModelSource", ""),
+        getattr(
+            matched_prompt,
+            "modelDestination",
+            create_model_destination(destination_type),
+        ),
+    )
+
+
+@mod.capture(
+    rule="<user.modelPrompt> [{user.modelSource}] [using <user.additionalModelSource>] [<user.modelDestination>]"
+)
+def applyPromptConfiguration(matched_prompt) -> ApplyPromptConfiguration:
+    destination_type: str = ""
+    if not hasattr(matched_prompt, "modelDestination"):
+        destination_type = settings.get("user.model_default_destination")
+    return ApplyPromptConfiguration(
+        getattr(matched_prompt, "modelPrompt", ""),
+        getattr(matched_prompt, "modelSource", ""),
+        getattr(matched_prompt, "additionalModelSource", ""),
+        getattr(
+            matched_prompt,
+            "modelDestination",
+            create_model_destination(destination_type),
+        ),
+    )
+
+
+@mod.capture(
+    rule="({user.modelSource} | <user.modelDestination> | {user.modelSource} <user.modelDestination>)$"
+)
+def passConfiguration(matched_prompt) -> PassConfiguration:
+    destination_type: str = ""
+    if not hasattr(matched_prompt, "modelDestination"):
+        destination_type = settings.get("user.model_default_destination")
+    return PassConfiguration(
+        getattr(matched_prompt, "modelSource", ""),
+        getattr(
+            matched_prompt,
+            "modelDestination",
+            create_model_destination(destination_type),
+        ),
+    )
 
 
 mod.setting(

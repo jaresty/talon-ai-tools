@@ -23,6 +23,7 @@ class ModelSource:
 def format_source_messages(
     prompt: str, source: ModelSource, additional_source: ModelSource | None = None
 ):
+    print(f"the current prompt is {prompt}")
     prompt_chunks = prompt.split("{additional_source}")
     source_message = source.format_message()
     additional_source_message = None

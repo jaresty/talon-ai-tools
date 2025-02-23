@@ -1,4 +1,4 @@
-from typing import ClassVar
+from typing import ClassVar, Dict
 
 from talon import actions
 
@@ -19,6 +19,7 @@ class GPTState:
     query: ClassVar[list[GPTMessage]] = []
     request: ClassVar[GPTRequest]
     thread: ClassVar[list[GPTMessage]] = []
+    registers: ClassVar[Dict[str, list[GPTMessage]]] = {}
     thread_enabled: ClassVar[bool] = False
     debug_enabled: ClassVar[bool] = False
     system_prompt: ClassVar[GPTSystemPrompt] = GPTSystemPrompt()
@@ -52,6 +53,27 @@ class GPTState:
         """Create a new thread"""
         cls.thread = []
         actions.app.notify("Created a new thread")
+
+    @classmethod
+    def append_register(cls, message: GPTMessage, register: str):
+        """Append a message to a register"""
+        if register not in cls.registers:
+            cls.registers[register] = []
+        cls.registers[register].append(message)
+        actions.app.notify("Appended message to register")
+
+    @classmethod
+    def new_register(cls, message: GPTMessage, register: str):
+        """Append a message to a new register"""
+        cls.registers[register] = []
+        cls.registers[register].append(message)
+        actions.app.notify("Appended message to register")
+
+    @classmethod
+    def clear_register(cls, register: str):
+        """Append a message to a register"""
+        cls.registers[register] = []
+        actions.app.notify(f"Cleared register {register}")
 
     @classmethod
     def enable_thread(cls):

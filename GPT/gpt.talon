@@ -5,11 +5,11 @@
 #   Example: `model fix grammar below` -> Fixes the grammar of the selected text and pastes below
 #   Example: `model explain this` -> Explains the selected text and pastes in place
 #   Example: `model fix grammar clip to browser` -> Fixes the grammar of the text on the clipboard and opens in browser`
-{user.model} <user.modelPrompt> [{user.modelSource}] [using <user.additionalModelSource>] [{user.modelDestination}]$:
-    user.gpt_apply_prompt(modelPrompt, modelSource or "", additionalModelSource or "", modelDestination or "")
+{user.model} <user.applyPromptConfiguration>:
+    user.gpt_apply_prompt(applyPromptConfiguration)
 
-^{user.model} <user.pleasePrompt> [{user.modelSource}] [using <user.additionalModelSource>] [{user.modelDestination}]$:
-    user.gpt_apply_prompt(pleasePrompt, modelSource or "", additionalModelSource or "", modelDestination or "")
+^{user.model} <user.pleasePromptConfiguration>:
+    user.gpt_apply_prompt(pleasePromptConfiguration)
 
 ^{user.model} write [{user.modelVoice} | {user.modelAudience} | {user.modelPurpose} | {user.modelTone}]+: user.gpt_set_system_prompt(modelVoice or "", modelAudience or "", modelPurpose or "", modelTone or "")
 ^{user.model} write reset: user.gpt_reset_system_prompt()

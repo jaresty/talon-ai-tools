@@ -1,11 +1,12 @@
 import os
 
-from ..lib.modelDestination import create_model_destination
+from ..lib.talonSettings import ApplyPromptConfiguration, PassConfiguration
+
+from ..lib.modelDestination import Default, ModelDestination
 from ..lib.modelSource import create_model_source, format_source_messages
 from talon import Module, actions
 
 from ..lib.HTMLBuilder import Builder
-from ..lib.modelConfirmationGUI import confirmation_gui
 from ..lib.modelHelpers import (
     append_request_messages,
     build_request,
@@ -122,13 +123,12 @@ class UserActions:
         for _ in lines[0]:
             actions.edit.extend_left()
 
-    def gpt_apply_prompt(
-        prompt: str,
-        source: str = "",
-        additional_source: str = "",
-        destination: str = "",
-    ):
+    def gpt_apply_prompt(apply_prompt_configuration: ApplyPromptConfiguration):
         """Apply an arbitrary prompt to arbitrary text"""
+        prompt = apply_prompt_configuration.please_prompt
+        source = apply_prompt_configuration.model_source
+        additional_source = apply_prompt_configuration.additional_model_source
+        destination = apply_prompt_configuration.model_destination
 
         actions.user.gpt_prepare_message(source, additional_source, prompt, "")
         response = gpt_query()
@@ -146,7 +146,7 @@ class UserActions:
 
         return response.get("text")
 
-    def gpt_analyze_prompt(destination: str):
+    def gpt_analyze_prompt(destination: ModelDestination = Default()):
         """Explain why we got the results we did"""
         PROMPT = "Analyze the provided prompt and response. Explain how the prompt was understood to generate the given response. Provide only the explanation."
 
@@ -164,8 +164,10 @@ class UserActions:
 
         actions.user.gpt_insert_response(response, destination)
 
-    def gpt_pass(source: str = "", destination: str = "") -> None:
+    def gpt_pass(pass_configuration: PassConfiguration) -> None:
         """Passes a response from source to destination"""
+        source: str = pass_configuration.model_source
+        destination: ModelDestination = pass_configuration.model_destination
         model_source = create_model_source(source).format_message()
         if model_source is None:
             notify("Tried to use none as a model source which is not allowed")
@@ -202,32 +204,17 @@ class UserActions:
             notify("No text to reformat")
             raise Exception("No text to reformat")
 
-    def gpt_insert_text(text: str, method: str = "") -> None:
+    def gpt_insert_text(text: str, destination: ModelDestination = Default()) -> None:
         """Insert text using the helpers here"""
-        actions.user.gpt_insert_response(format_message(text), method)
+        actions.user.gpt_insert_response(format_message(text), destination)
 
     def gpt_insert_response(
         gpt_message: GPTTextItem,
-        method: str = "",
+        destination: ModelDestination = Default(),
     ) -> None:
         """Insert a GPT result in a specified way"""
-
-        # If threading is enabled, and the window is open, refresh the confirmation GUI
-        # unless the user explicitly wanted to pass the result to the window without viewing the rest of the thread
-        if (
-            GPTState.thread_enabled
-            and confirmation_gui.showing
-            and not method == "window"
-            # If they ask for thread or newThread specifically,
-            # it should be pushed to the thread and not just refreshed
-            and not method == "thread"
-            and not method == "newThread"
-        ):
-            # Skip inserting the response if the user is just viewing the thread in the window
-            actions.user.confirmation_gui_refresh_thread()
-            return
-
-        create_model_destination(method).insert(gpt_message)
+        print(f"The current destination is {destination}")
+        destination.insert(gpt_message)
 
     def gpt_get_source_text(spoken_text: str) -> str:
         """Get the source text that is will have the prompt applied to it"""
@@ -237,7 +224,7 @@ class UserActions:
         spoken_text: str,
         additional_source: str,
         prompt: str,
-        destination: str = "",
+        destination: ModelDestination = Default(),
     ) -> None:
         """Get the source text that will have the prompt applied to it"""
         additional_model_source = None

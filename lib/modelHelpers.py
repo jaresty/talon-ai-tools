@@ -4,6 +4,7 @@ import os
 from typing import Literal
 
 import requests
+from lib.modelDestination import Default, ModelDestination
 from talon import actions, app, clip, settings
 
 from ..lib.pureHelpers import strip_markdown
@@ -76,7 +77,7 @@ def extract_message(content: GPTTextItem) -> str:
 
 
 def build_request(
-    destination: str = "",
+    destination: ModelDestination = Default(),
 ):
     notification = "GPT Task Started"
     if len(GPTState.context) > 0:
@@ -97,7 +98,7 @@ def build_request(
     application_context = f"The following describes the currently focused application:\n\n{actions.user.talon_get_active_context()}\n\nYou are an expert user of this application."
     snippet_context = (
         "\n\nPlease return the response as a snippet with placeholders. A snippet can control cursors and text insertion using constructs like tabstops ($1, $2, etc., with $0 as the final position). Linked tabstops update together. Placeholders, such as ${1:foo}, allow easy changes and can be nested (${1:another ${2:}}). Choices, using ${1|one,two,three|}, prompt user selection."
-        if destination == "snip"
+        if destination == "snip"  # todo: change this to handle the type being snipped
         else None
     )
     additional_user_context = []

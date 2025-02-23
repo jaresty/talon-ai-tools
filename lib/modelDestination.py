@@ -157,6 +157,17 @@ class NewThread(ModelDestination):
         actions.user.confirmation_gui_refresh_thread()
 
 
+class Register(ModelDestination):
+    def __init__(self, register_name):
+        self.register_name = register_name
+
+    def insert(self, gpt_message):
+        GPTState.append_register(
+            format_messages("user", [gpt_message]), self.register_name
+        )
+        actions.user.confirmation_gui_refresh_thread()
+
+
 class Default(ModelDestination):
     def insert(self, gpt_message):
         if confirmation_gui.showing:

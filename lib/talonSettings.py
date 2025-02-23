@@ -3,6 +3,7 @@ from typing import Literal
 
 from .modelDestination import (
     ModelDestination,
+    Register,
     create_model_destination,
 )
 from talon import Context, Module, clip, settings
@@ -52,9 +53,17 @@ def pleasePrompt(matched_prompt) -> str:
     return additional_prompt + "\n" + str(matched_prompt.text)
 
 
-@mod.capture(rule="<user.modelDestination>")
+@mod.capture(rule="<user.modelDestination> | <user.modelRegister>")
 def modelDestination(model_destination) -> ModelDestination:
+    if hasattr(model_destination, "modelRegister"):
+        return model_destination.modelRegister
+
     return create_model_destination(model_destination.modelDestination)
+
+
+@mod.capture(rule="register <user.letter>")
+def modelRegister(match_rule) -> ModelDestination:
+    return Register(match_rule.letter)
 
 
 @dataclass

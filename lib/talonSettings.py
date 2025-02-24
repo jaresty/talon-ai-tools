@@ -37,8 +37,8 @@ mod.list(
 
 # model prompts can be either static and predefined by this repo or custom outside of it
 @mod.capture(rule="{user.staticPrompt} | {user.customPrompt}")
-def modelPrompt(matched_prompt) -> str:
-    return str(matched_prompt).format(
+def modelPrompt(m) -> str:
+    return str(m).format(
         clip=clip.text(),
         shell_name=settings.get("user.model_shell_default"),
         additional_source="{additional_source}",
@@ -46,34 +46,35 @@ def modelPrompt(matched_prompt) -> str:
 
 
 @mod.capture(rule="[<user.modelPrompt>] please <user.text>")
-def pleasePrompt(matched_prompt) -> str:
+def pleasePrompt(m) -> str:
     additional_prompt = ""
-    # Check if matched_prompt has the property modelPrompt
+    # Check if m has the property modelPrompt
 
-    if hasattr(matched_prompt, "modelPrompt"):
-        additional_prompt = matched_prompt.modelPrompt
-    return additional_prompt + "\n" + str(matched_prompt.text)
+    if hasattr(m, "modelPrompt"):
+        additional_prompt = m.modelPrompt
+    return additional_prompt + "\n" + str(m.text)
 
 
 @mod.capture(rule="{user.modelDestination} | <user.modelDestinationRegister>")
-def modelDestination(model_destination) -> ModelDestination:
-    if hasattr(model_destination, "modelDestinationRegister"):
-        return model_destination.modelDestinationRegister
+def modelDestination(m) -> ModelDestination:
+    print(f"The configuration is {m}")
+    if hasattr(m, "modelDestinationRegister"):
+        return m.modelDestinationRegister
 
-    return create_model_destination(model_destination.modelDestination)
+    return create_model_destination(m.modelDestination)
 
 
 @mod.capture(rule="{user.modelSource} | <user.modelSourceRegister>")
-def modelSource(model_source) -> ModelSource:
-    if hasattr(model_source, "modelSourceRegister"):
-        return model_source.modelSourceRegister
+def modelSource(m) -> ModelSource:
+    if hasattr(m, "modelSourceRegister"):
+        return m.modelSourceRegister
 
-    return create_model_source(model_source.modelSource)
+    return create_model_source(m.modelSource)
 
 
 @mod.capture(rule="to register <user.letter>")
-def modelDestinationRegister(match_rule) -> ModelDestination:
-    return Register(match_rule.letter)
+def modelDestinationRegister(m) -> ModelDestination:
+    return Register(m.letter)
 
 
 @mod.capture(rule="register <user.letter>")

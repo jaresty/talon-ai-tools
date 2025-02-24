@@ -110,27 +110,26 @@ def modelSimplePrompt(matched_prompt) -> str:
     rule="^<user.pleasePrompt> [<user.modelSource>] [using <user.additionalModelSource>] [<user.modelDestination>]$"
 )
 def pleasePromptConfiguration(matched_prompt) -> ApplyPromptConfiguration:
-    destination_type: str = ""
-    source_type: str = ""
-    additional_source_type: str = ""
-    if not hasattr(matched_prompt, "modelDestination"):
-        destination_type = settings.get("user.model_default_destination")
-    if not hasattr(matched_prompt, "modelSource"):
-        source_type = settings.get("user.model_default_source")
-    if not hasattr(matched_prompt, "additionalModelSource"):
-        additional_source_type = settings.get("user.model_default_source")
     return ApplyPromptConfiguration(
         getattr(matched_prompt, "pleasePrompt", ""),
-        getattr(matched_prompt, "modelSource", create_model_source(source_type)),
-        getattr(
-            matched_prompt,
-            "additionalModelSource",
-            create_model_source(additional_source_type),
+        create_model_source(
+            getattr(
+                matched_prompt, "modelSource", settings.get("user.model_default_source")
+            ),
         ),
-        getattr(
-            matched_prompt,
-            "modelDestination",
-            create_model_destination(destination_type),
+        create_model_source(
+            getattr(
+                matched_prompt,
+                "additionalModelSource",
+                settings.get("user.model_default_source"),
+            ),
+        ),
+        create_model_destination(
+            getattr(
+                matched_prompt,
+                "modelDestination",
+                settings.get("user.model_default_destination"),
+            ),
         ),
     )
 

@@ -55,18 +55,18 @@ class GPTState:
         actions.app.notify("Created a new thread")
 
     @classmethod
-    def append_register(cls, message: GPTTextItem | GPTImageItem, register: str):
+    def append_register(cls, message: list[GPTTextItem | GPTImageItem], register: str):
         """Append a message to a register"""
         if register not in cls.registers:
             cls.registers[register] = []
-        cls.registers[register].append(message)
+        cls.registers[register] += message
         actions.app.notify("Appended message to register")
 
     @classmethod
-    def new_register(cls, message: GPTTextItem | GPTImageItem, register: str):
+    def new_register(cls, message: list[GPTTextItem | GPTImageItem], register: str):
         """Append a message to a new register"""
         cls.registers[register] = []
-        cls.registers[register].append(message)
+        cls.registers[register] += message
         actions.app.notify("Appended message to register")
 
     @classmethod

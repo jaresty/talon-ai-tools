@@ -137,7 +137,7 @@ class UserActions:
         actions.user.gpt_prepare_message(source, additional_source, prompt, "")
         response = gpt_query()
 
-        actions.user.gpt_insert_response(response, destination)
+        actions.user.gpt_insert_response([response], destination)
         return response
 
     def gpt_run_prompt(prompt: str, source: str = "", additional_source: str = ""):
@@ -172,11 +172,7 @@ class UserActions:
         """Passes a response from source to destination"""
         source: ModelSource = pass_configuration.model_source
         destination: ModelDestination = pass_configuration.model_destination
-        model_source = source.format_message()
-        if model_source is None:
-            notify("Tried to use none as a model source which is not allowed")
-            return
-        actions.user.gpt_insert_response(model_source, destination)
+        actions.user.gpt_insert_response(source.format_messages(), destination)
 
     def gpt_help() -> None:
         """Open the GPT help file in the web browser"""
@@ -213,7 +209,7 @@ class UserActions:
         actions.user.gpt_insert_response(format_message(text), destination)
 
     def gpt_insert_response(
-        gpt_message: GPTTextItem,
+        gpt_message: list[GPTTextItem],
         destination: ModelDestination = Default(),
     ) -> None:
         """Insert a GPT result in a specified way"""

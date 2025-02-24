@@ -4,7 +4,8 @@ import os
 from typing import Literal
 
 import requests
-from ..lib.modelDestination import Default, ModelDestination
+
+# from ..lib.modelDestination import Default, ModelDestination
 from talon import actions, app, clip, settings
 
 from ..lib.pureHelpers import strip_markdown
@@ -77,7 +78,7 @@ def extract_message(content: GPTTextItem) -> str:
 
 
 def build_request(
-    destination: ModelDestination = Default(),
+    destination,
 ):
     notification = "GPT Task Started"
     if len(GPTState.context) > 0:

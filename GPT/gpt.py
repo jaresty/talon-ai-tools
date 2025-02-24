@@ -58,6 +58,10 @@ class UserActions:
         """Reset the stored query"""
         GPTState.clear_query()
 
+    def gpt_clear_all():
+        """Reset all state"""
+        GPTState.clear_all()
+
     def gpt_clear_thread():
         """Create a new thread"""
         GPTState.new_thread()

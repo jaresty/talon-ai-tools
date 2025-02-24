@@ -49,6 +49,15 @@ class GPTState:
         actions.app.notify("Cleared user query")
 
     @classmethod
+    def clear_all(cls):
+        """Reset all state"""
+        cls.context = []
+        cls.thread = []
+        cls.query = []
+        cls.stacks = {}
+        actions.app.notify("Cleared all state")
+
+    @classmethod
     def new_thread(cls):
         """Create a new thread"""
         cls.thread = []

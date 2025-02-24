@@ -21,6 +21,7 @@
 # Note that if you are in a thread, your thread
 # will still remain active.
 {user.model} clear query: user.gpt_clear_query()
+{user.model} clear all: user.gpt_clear_all()
 
 # Create a new thread which is similar to a conversation with the model
 # A thread allows the model to access data from the previous queries in the same thread

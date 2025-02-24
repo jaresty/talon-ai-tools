@@ -16,29 +16,31 @@ class ModelSource:
 
     def format_message(self) -> GPTImageItem | GPTTextItem:
         text = self.get_text()
-        if text.strip() != "" and text:
-            return format_message(text)
+        return format_message(text)
 
-    def format_messages(self) ->list[GPTImageItem | GPTTextItem]:
-        return [self.format_message(self)]
+    def format_messages(self) -> list[GPTImageItem | GPTTextItem]:
+        return [self.format_message()]
 
 
 def format_source_messages(
-    prompt: str, source: ModelSource, additional_source: ModelSource = None
+    prompt: str, source: ModelSource, additional_source: ModelSource | None = None
 ):
     prompt_chunks = prompt.split("{additional_source}")
     source_messages = source.format_messages()
-    additional_source_messages:list[GPTImageItem | GPTTextItem] = []
+    additional_source_messages: list[GPTImageItem | GPTTextItem] = []
     if additional_source is not None:
         additional_source_messages = additional_source.format_messages()
         if len(prompt_chunks) == 1:
             additional_source_messages = [
                 format_message(
                     "This background information has been provided to help you answer the subsequent prompt"
-                )] + additional_source_message.format_messages(),
+                )
+            ] + additional_source_messages
 
         else:
-            additional_source_messages = [format_message(prompt_chunks.pop())]  + additional_source_message.format_messages()
+            additional_source_messages = [
+                format_message(prompt_chunks.pop())
+            ] + additional_source_messages
 
     else:
         if len(prompt_chunks) > 1:
@@ -48,8 +50,7 @@ def format_source_messages(
     current_request: list[GPTTextItem | GPTImageItem] = [
         format_message(prompt_chunks[0])
     ]
-    if source_message is not None:
-        current_request += source_message.format_messages()
+    current_request += source_messages
     return additional_source_messages + current_request
 
 

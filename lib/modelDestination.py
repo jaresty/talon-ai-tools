@@ -159,14 +159,12 @@ class NewThread(ModelDestination):
         actions.user.confirmation_gui_refresh_thread()
 
 
-class Register(ModelDestination):
-    def __init__(self, register_name):
-        self.register_name = register_name
+class Stack(ModelDestination):
+    def __init__(self, stack_name):
+        self.stack_name = stack_name
 
     def insert(self, gpt_message):
-        print("I'm appending to the register  ")
-        GPTState.append_register(gpt_message, self.register_name)
-        actions.user.confirmation_gui_refresh_thread()
+        GPTState.append_stack(gpt_message, self.stack_name)
 
 
 class Default(ModelDestination):

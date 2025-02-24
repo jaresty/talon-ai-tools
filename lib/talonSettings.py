@@ -1,11 +1,11 @@
 from dataclasses import dataclass
 from typing import Literal
 
-from .modelSource import ModelSource, SourceRegister, create_model_source
+from .modelSource import ModelSource, SourceStack, create_model_source
 
 from .modelDestination import (
     ModelDestination,
-    Register,
+    Stack,
     create_model_destination,
 )
 from talon import Context, Module, clip, settings
@@ -55,30 +55,30 @@ def pleasePrompt(m) -> str:
     return additional_prompt + "\n" + str(m.text)
 
 
-@mod.capture(rule="{user.modelDestination} | <user.modelDestinationRegister>")
+@mod.capture(rule="{user.modelDestination} | <user.modelDestinationStack>")
 def modelDestination(m) -> ModelDestination:
-    if hasattr(m, "modelDestinationRegister"):
-        return m.modelDestinationRegister
+    if hasattr(m, "modelDestinationStack"):
+        return m.modelDestinationStack
 
     return create_model_destination(m.modelDestination)
 
 
-@mod.capture(rule="{user.modelSource} | <user.modelSourceRegister>")
+@mod.capture(rule="{user.modelSource} | <user.modelSourceStack>")
 def modelSource(m) -> ModelSource:
-    if hasattr(m, "modelSourceRegister"):
-        return m.modelSourceRegister
+    if hasattr(m, "modelSourceStack"):
+        return m.modelSourceStack
 
     return create_model_source(m.modelSource)
 
 
-@mod.capture(rule="to register <user.letter>")
-def modelDestinationRegister(m) -> ModelDestination:
-    return Register(m.letter)
+@mod.capture(rule="to stack <user.letter>")
+def modelDestinationStack(m) -> ModelDestination:
+    return Stack(m.letter)
 
 
-@mod.capture(rule="register <user.letter>")
-def modelSourceRegister(match_rule) -> ModelSource:
-    return SourceRegister(match_rule.letter)
+@mod.capture(rule="stack <user.letter>")
+def modelSourceStack(match_rule) -> ModelSource:
+    return SourceStack(match_rule.letter)
 
 
 @dataclass

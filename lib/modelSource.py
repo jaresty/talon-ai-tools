@@ -91,21 +91,15 @@ class Thread(ModelSource):
         return chats_to_string(GPTState.thread)
 
 
-class SourceRegister(ModelSource):
-    def __init__(self, register_name):
-        self.register_name = register_name
+class SourceStack(ModelSource):
+    def __init__(self, stack_name):
+        self.stack_name = stack_name
 
     def get_text(self):
-        print(
-            f"the contents of register {self.register_name} re {GPTState.registers[self.register_name]}"
-        )
-        return messages_to_string(GPTState.registers[self.register_name] or [])
+        return messages_to_string(GPTState.stacks[self.stack_name] or [])
 
     def format_messages(self) -> list[GPTImageItem | GPTTextItem]:
-        print(
-            f"the contents of register {self.register_name} re {GPTState.registers[self.register_name]}"
-        )
-        return deepcopy(GPTState.registers[self.register_name] or [])
+        return deepcopy(GPTState.stacks[self.stack_name] or [])
 
 
 class Query(ModelSource):

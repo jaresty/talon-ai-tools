@@ -19,7 +19,7 @@ class GPTState:
     query: ClassVar[list[GPTMessage]] = []
     request: ClassVar[GPTRequest]
     thread: ClassVar[list[GPTMessage]] = []
-    registers: ClassVar[Dict[str, list[GPTTextItem | GPTImageItem]]] = {}
+    stacks: ClassVar[Dict[str, list[GPTTextItem | GPTImageItem]]] = {}
     thread_enabled: ClassVar[bool] = False
     debug_enabled: ClassVar[bool] = False
     system_prompt: ClassVar[GPTSystemPrompt] = GPTSystemPrompt()
@@ -55,29 +55,29 @@ class GPTState:
         actions.app.notify("Created a new thread")
 
     @classmethod
-    def append_register(
+    def append_stack(
         cls,
         message: list[GPTTextItem | GPTImageItem] | list[GPTTextItem],
-        register: str,
+        stack: str,
     ):
-        """Append a message to a register"""
-        if register not in cls.registers:
-            cls.registers[register] = []
-        cls.registers[register] += message
-        actions.app.notify("Appended message to register")
+        """Append a message to a stack"""
+        if stack not in cls.stacks:
+            cls.stacks[stack] = []
+        cls.stacks[stack] += message
+        actions.app.notify(f"Appended message to stack {stack}")
 
     @classmethod
-    def new_register(cls, message: list[GPTTextItem | GPTImageItem], register: str):
-        """Append a message to a new register"""
-        cls.registers[register] = []
-        cls.registers[register] += message
-        actions.app.notify("Appended message to register")
+    def new_stack(cls, message: list[GPTTextItem | GPTImageItem], stack: str):
+        """Append a message to a new stack"""
+        cls.stacks[stack] = []
+        cls.stacks[stack] += message
+        actions.app.notify(f"Appended message to stack {stack}")
 
     @classmethod
-    def clear_register(cls, register: str):
-        """Append a message to a register"""
-        cls.registers[register] = []
-        actions.app.notify(f"Cleared register {register}")
+    def clear_stack(cls, stack: str):
+        """Append a message to a stack"""
+        cls.stacks[stack] = []
+        actions.app.notify(f"Cleared stack {stack}")
 
     @classmethod
     def enable_thread(cls):

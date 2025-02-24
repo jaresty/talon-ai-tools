@@ -50,9 +50,9 @@ class UserActions:
         """Reset the stored context"""
         GPTState.clear_context()
 
-    def gpt_clear_register(register_name: str):
-        """Reset the stored register_name"""
-        GPTState.clear_register(register_name)
+    def gpt_clear_stack(stack_name: str):
+        """Reset the stored stack"""
+        GPTState.clear_stack(stack_name)
 
     def gpt_clear_query():
         """Reset the stored query"""

@@ -4,7 +4,7 @@ import os
 from typing import Literal
 
 import requests
-from lib.modelDestination import Default, ModelDestination
+from ..lib.modelDestination import Default, ModelDestination
 from talon import actions, app, clip, settings
 
 from ..lib.pureHelpers import strip_markdown

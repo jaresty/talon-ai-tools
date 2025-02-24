@@ -19,7 +19,7 @@ class GPTState:
     query: ClassVar[list[GPTMessage]] = []
     request: ClassVar[GPTRequest]
     thread: ClassVar[list[GPTMessage]] = []
-    registers: ClassVar[Dict[str, list[GPTMessage]]] = {}
+    registers: ClassVar[Dict[str, list[GPTTextItem | GPTImageItem]]] = {}
     thread_enabled: ClassVar[bool] = False
     debug_enabled: ClassVar[bool] = False
     system_prompt: ClassVar[GPTSystemPrompt] = GPTSystemPrompt()
@@ -55,7 +55,7 @@ class GPTState:
         actions.app.notify("Created a new thread")
 
     @classmethod
-    def append_register(cls, message: GPTMessage, register: str):
+    def append_register(cls, message: GPTTextItem | GPTImageItem, register: str):
         """Append a message to a register"""
         if register not in cls.registers:
             cls.registers[register] = []
@@ -63,7 +63,7 @@ class GPTState:
         actions.app.notify("Appended message to register")
 
     @classmethod
-    def new_register(cls, message: GPTMessage, register: str):
+    def new_register(cls, message: GPTTextItem | GPTImageItem, register: str):
         """Append a message to a new register"""
         cls.registers[register] = []
         cls.registers[register].append(message)

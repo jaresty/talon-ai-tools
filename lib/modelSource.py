@@ -1,4 +1,5 @@
 import base64
+from copy import deepcopy
 from ..lib.modelTypes import GPTImageItem, GPTTextItem
 from ..lib.modelState import GPTState
 from talon import actions, clip, settings
@@ -50,6 +51,7 @@ def format_source_messages(
     current_request: list[GPTTextItem | GPTImageItem] = [
         format_message(prompt_chunks[0])
     ]
+    print(f"The current source messages are {source_messages}")
     current_request += source_messages
     return additional_source_messages + current_request
 
@@ -81,6 +83,9 @@ class Context(ModelSource):
             )
         return messages_to_string(GPTState.context)
 
+    def format_messages(self) -> list[GPTImageItem | GPTTextItem]:
+        return deepcopy(GPTState.context)
+
 
 class Thread(ModelSource):
     def get_text(self):
@@ -92,7 +97,16 @@ class SourceRegister(ModelSource):
         self.register_name = register_name
 
     def get_text(self):
-        return chats_to_string(GPTState.registers[self.register_name] or [])
+        print(
+            f"the contents of register {self.register_name} re {GPTState.registers[self.register_name]}"
+        )
+        return messages_to_string(GPTState.registers[self.register_name] or [])
+
+    def format_messages(self) -> list[GPTImageItem | GPTTextItem]:
+        print(
+            f"the contents of register {self.register_name} re {GPTState.registers[self.register_name]}"
+        )
+        return deepcopy(GPTState.registers[self.register_name] or [])
 
 
 class Query(ModelSource):

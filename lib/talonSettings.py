@@ -168,18 +168,18 @@ def applyPromptConfiguration(matched_prompt) -> ApplyPromptConfiguration:
     rule="(<user.modelSource> | <user.modelDestination> | <user.modelSource> <user.modelDestination>)$"
 )
 def passConfiguration(matched_prompt) -> PassConfiguration:
-    destination_type: str = ""
-    source_type: str = ""
-    if not hasattr(matched_prompt, "modelDestination"):
-        destination_type = settings.get("user.model_default_destination")
-    if not hasattr(matched_prompt, "modelSource"):
-        source_type = settings.get("user.model_default_source")
     return PassConfiguration(
-        getattr(matched_prompt, "modelSource", create_model_source(source_type)),
-        getattr(
-            matched_prompt,
-            "modelDestination",
-            create_model_destination(destination_type),
+        create_model_source(
+            getattr(
+                matched_prompt, "modelSource", settings.get("user.model_default_source")
+            )
+        ),
+        create_model_destination(
+            getattr(
+                matched_prompt,
+                "modelDestination",
+                settings.get("user.model_default_destination"),
+            )
         ),
     )
 

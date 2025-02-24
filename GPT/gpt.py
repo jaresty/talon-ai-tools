@@ -4,7 +4,7 @@ from ..lib.talonSettings import ApplyPromptConfiguration, PassConfiguration
 
 from ..lib.modelDestination import Default, ModelDestination
 from ..lib.modelSource import ModelSource, create_model_source, format_source_messages
-from talon import Module, actions
+from talon import Module, actions, settings
 
 from ..lib.HTMLBuilder import Builder
 from ..lib.modelHelpers import (
@@ -220,20 +220,24 @@ class UserActions:
         return create_model_source(spoken_text).get_text()
 
     def gpt_prepare_message(
-        spoken_text: str,
-        additional_source: str,
+        model_source: ModelSource,
+        additional_source: ModelSource,
         prompt: str,
         destination: ModelDestination = Default(),
     ) -> None:
         """Get the source text that will have the prompt applied to it"""
         additional_model_source = None
-        if additional_source != spoken_text:
-            additional_model_source = create_model_source(additional_source)
+
+        if type(additional_source) is not type(model_source):
+            additional_model_source = create_model_source(
+                settings.get("user.model_default_source")
+            )
+
         build_request(destination)
 
         current_messages = format_source_messages(
             prompt,
-            create_model_source(spoken_text),
+            model_source,
             additional_model_source,
         )
 

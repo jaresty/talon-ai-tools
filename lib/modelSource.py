@@ -1,4 +1,5 @@
 import base64
+from copy import deepcopy
 from ..lib.modelTypes import GPTImageItem, GPTTextItem
 from ..lib.modelState import GPTState
 from talon import actions, clip, settings
@@ -14,35 +15,34 @@ class ModelSource:
     def get_text(self):
         raise NotImplementedError("Subclasses should implement this method")
 
-    def format_message(self) -> GPTImageItem | GPTTextItem | None:
+    def format_message(self) -> GPTImageItem | GPTTextItem:
         text = self.get_text()
-        if text.strip() != "" and text:
-            return format_message(text)
+        return format_message(text)
+
+    def format_messages(self) -> list[GPTImageItem | GPTTextItem]:
+        return [self.format_message()]
 
 
 def format_source_messages(
     prompt: str, source: ModelSource, additional_source: ModelSource | None = None
 ):
-    print(f"the current prompt is {prompt}")
     prompt_chunks = prompt.split("{additional_source}")
-    source_message = source.format_message()
-    additional_source_message = None
-    if additional_source is not None:
-        additional_source_message = additional_source.format_message()
+    source_messages = source.format_messages()
     additional_source_messages: list[GPTImageItem | GPTTextItem] = []
-    if additional_source_message is not None:
+    if additional_source is not None:
+        additional_source_messages = additional_source.format_messages()
         if len(prompt_chunks) == 1:
             additional_source_messages = [
                 format_message(
                     "This background information has been provided to help you answer the subsequent prompt"
-                ),
-                additional_source_message,
-            ]
+                )
+            ] + additional_source_messages
+
         else:
             additional_source_messages = [
-                format_message(prompt_chunks.pop()),
-                additional_source_message,
-            ]
+                format_message(prompt_chunks.pop())
+            ] + additional_source_messages
+
     else:
         if len(prompt_chunks) > 1:
             raise Exception(
@@ -51,8 +51,7 @@ def format_source_messages(
     current_request: list[GPTTextItem | GPTImageItem] = [
         format_message(prompt_chunks[0])
     ]
-    if source_message is not None:
-        current_request += [source_message]
+    current_request += source_messages
     return additional_source_messages + current_request
 
 
@@ -60,7 +59,7 @@ class Clipboard(ModelSource):
     def get_text(self):
         return clip.text()
 
-    def format_message(self) -> GPTImageItem | GPTTextItem | None:
+    def format_message(self) -> GPTImageItem | GPTTextItem:
         clipped_image = clip.image()
 
         if clipped_image:
@@ -83,6 +82,9 @@ class Context(ModelSource):
             )
         return messages_to_string(GPTState.context)
 
+    def format_messages(self) -> list[GPTImageItem | GPTTextItem]:
+        return deepcopy(GPTState.context)
+
 
 class Thread(ModelSource):
     def get_text(self):
@@ -94,7 +96,16 @@ class SourceRegister(ModelSource):
         self.register_name = register_name
 
     def get_text(self):
-        return chats_to_string(GPTState.registers[self.register_name] or [])
+        print(
+            f"the contents of register {self.register_name} re {GPTState.registers[self.register_name]}"
+        )
+        return messages_to_string(GPTState.registers[self.register_name] or [])
+
+    def format_messages(self) -> list[GPTImageItem | GPTTextItem]:
+        print(
+            f"the contents of register {self.register_name} re {GPTState.registers[self.register_name]}"
+        )
+        return deepcopy(GPTState.registers[self.register_name] or [])
 
 
 class Query(ModelSource):

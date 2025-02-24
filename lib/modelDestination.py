@@ -3,7 +3,7 @@ from ..lib.modelConfirmationGUI import confirmation_gui
 from talon import actions, clip, settings, ui
 from ..lib.modelState import GPTState
 from ..lib.modelHelpers import (
-    extract_message,
+    messages_to_string,
     format_messages,
     notify,
 )
@@ -11,8 +11,8 @@ from ..lib.HTMLBuilder import Builder
 
 
 class ModelDestination:
-    def insert(self, gpt_message: GPTTextItem):
-        extracted_message = extract_message(gpt_message)
+    def insert(self, gpt_message: list[GPTTextItem]):
+        extracted_message = messages_to_string(gpt_message)
         if len(extracted_message.split("\n")) > 100:
             Browser().insert(gpt_message)
         else:
@@ -43,7 +43,7 @@ class Above(ModelDestination):
         actions.key("left")
         actions.edit.line_insert_up()
         GPTState.last_was_pasted = True
-        extracted_message = extract_message(gpt_message)
+        extracted_message = messages_to_string(gpt_message)
         actions.user.paste(extracted_message)
 
 
@@ -54,13 +54,13 @@ class Below(ModelDestination):
         actions.key("right")
         actions.edit.line_insert_down()
         GPTState.last_was_pasted = True
-        extracted_message = extract_message(gpt_message)
+        extracted_message = messages_to_string(gpt_message)
         actions.user.paste(extracted_message)
 
 
 class Clipboard(ModelDestination):
     def insert(self, gpt_message):
-        extracted_message = extract_message(gpt_message)
+        extracted_message = messages_to_string(gpt_message)
         clip.set_text(extracted_message)
 
 
@@ -68,29 +68,31 @@ class Snip(ModelDestination):
     def insert(self, gpt_message):
         if not self.inside_textarea():
             return super().insert(gpt_message)
-        extracted_message = extract_message(gpt_message)
+        extracted_message = messages_to_string(gpt_message)
         actions.user.insert_snippet(extracted_message)
 
 
 class Context(ModelDestination):
     def insert(self, gpt_message):
-        GPTState.push_context(gpt_message)
+        for message in gpt_message:
+            GPTState.push_context(message)
 
 
 class Query(ModelDestination):
     def insert(self, gpt_message):
-        GPTState.push_query(format_messages("user", [gpt_message]))
+        GPTState.push_query(format_messages("user", gpt_message))
 
 
 class NewContext(ModelDestination):
     def insert(self, gpt_message):
         GPTState.clear_context()
-        GPTState.push_context(gpt_message)
+        for message in gpt_message:
+            GPTState.push_context(message)
 
 
 class AppendClipboard(ModelDestination):
     def insert(self, gpt_message):
-        extracted_message = extract_message(gpt_message)
+        extracted_message = messages_to_string(gpt_message)
         if clip.text() is not None:
             clip.set_text(clip.text() + "\n" + extracted_message)  # type: ignore
         else:
@@ -101,7 +103,7 @@ class Browser(ModelDestination):
     def insert(self, gpt_message):
         builder = Builder()
         builder.h1("Talon GPT Result")
-        extracted_message = extract_message(gpt_message)
+        extracted_message = messages_to_string(gpt_message)
         for line in extracted_message.split("\n"):
             builder.p(line)
         builder.render()
@@ -110,7 +112,7 @@ class Browser(ModelDestination):
 class TextToSpeech(ModelDestination):
     def insert(self, gpt_message):
         try:
-            extracted_message = extract_message(gpt_message)
+            extracted_message = messages_to_string(gpt_message)
             actions.user.tts(extracted_message)
         except KeyError:
             notify("GPT Failure: text to speech is not installed")
@@ -121,7 +123,7 @@ class Chain(ModelDestination):
         if not self.inside_textarea():
             return super().insert(gpt_message)
         GPTState.last_was_pasted = True
-        extracted_message = extract_message(gpt_message)
+        extracted_message = messages_to_string(gpt_message)
         actions.user.paste(extracted_message)
         actions.user.gpt_select_last()
 
@@ -131,7 +133,7 @@ class Paste(ModelDestination):
         if not self.inside_textarea():
             return super().insert(gpt_message)
         GPTState.last_was_pasted = True
-        extracted_message = extract_message(gpt_message)
+        extracted_message = messages_to_string(gpt_message)
         actions.user.paste(extracted_message)
 
 
@@ -140,20 +142,20 @@ class Typed(ModelDestination):
         if not self.inside_textarea():
             return super().insert(gpt_message)
         GPTState.last_was_pasted = True
-        extracted_message = extract_message(gpt_message)
+        extracted_message = messages_to_string(gpt_message)
         actions.auto_insert(extracted_message)
 
 
 class Thread(ModelDestination):
     def insert(self, gpt_message):
-        GPTState.push_thread(format_messages("user", [gpt_message]))
+        GPTState.push_thread(format_messages("user", gpt_message))
         actions.user.confirmation_gui_refresh_thread()
 
 
 class NewThread(ModelDestination):
     def insert(self, gpt_message):
         GPTState.new_thread()
-        GPTState.push_thread(format_messages("user", [gpt_message]))
+        GPTState.push_thread(format_messages("user", gpt_message))
         actions.user.confirmation_gui_refresh_thread()
 
 
@@ -162,9 +164,8 @@ class Register(ModelDestination):
         self.register_name = register_name
 
     def insert(self, gpt_message):
-        GPTState.append_register(
-            format_messages("user", [gpt_message]), self.register_name
-        )
+        print("I'm appending to the register  ")
+        GPTState.append_register(gpt_message, self.register_name)
         actions.user.confirmation_gui_refresh_thread()
 
 
@@ -172,7 +173,7 @@ class Default(ModelDestination):
     def insert(self, gpt_message):
         if confirmation_gui.showing:
             GPTState.last_was_pasted = True
-            extracted_message = extract_message(gpt_message)
+            extracted_message = messages_to_string(gpt_message)
             actions.user.paste(extracted_message)
         else:
             pass

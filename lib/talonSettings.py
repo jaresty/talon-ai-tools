@@ -57,7 +57,6 @@ def pleasePrompt(m) -> str:
 
 @mod.capture(rule="{user.modelDestination} | <user.modelDestinationRegister>")
 def modelDestination(m) -> ModelDestination:
-    print(f"The configuration is {m}")
     if hasattr(m, "modelDestinationRegister"):
         return m.modelDestinationRegister
 
@@ -113,24 +112,20 @@ def modelSimplePrompt(matched_prompt) -> str:
 def pleasePromptConfiguration(matched_prompt) -> ApplyPromptConfiguration:
     return ApplyPromptConfiguration(
         getattr(matched_prompt, "pleasePrompt", ""),
-        create_model_source(
-            getattr(
-                matched_prompt, "modelSource", settings.get("user.model_default_source")
-            ),
+        getattr(
+            matched_prompt,
+            "modelSource",
+            create_model_source(settings.get("user.model_default_source")),
         ),
-        create_model_source(
-            getattr(
-                matched_prompt,
-                "additionalModelSource",
-                settings.get("user.model_default_source"),
-            ),
+        getattr(
+            matched_prompt,
+            "additionalModelSource",
+            create_model_source(settings.get("user.model_default_source")),
         ),
-        create_model_destination(
-            getattr(
-                matched_prompt,
-                "modelDestination",
-                settings.get("user.model_default_destination"),
-            ),
+        getattr(
+            matched_prompt,
+            "modelDestination",
+            create_model_destination(settings.get("user.model_default_destination")),
         ),
     )
 
@@ -141,24 +136,20 @@ def pleasePromptConfiguration(matched_prompt) -> ApplyPromptConfiguration:
 def applyPromptConfiguration(matched_prompt) -> ApplyPromptConfiguration:
     return ApplyPromptConfiguration(
         getattr(matched_prompt, "modelPrompt", ""),
-        create_model_source(
-            getattr(
-                matched_prompt, "modelSource", settings.get("user.model_default_source")
-            ),
+        getattr(
+            matched_prompt,
+            "modelSource",
+            create_model_source(settings.get("user.model_default_source")),
         ),
-        create_model_source(
-            getattr(
-                matched_prompt,
-                "additionalModelSource",
-                settings.get("user.model_default_source"),
-            ),
+        getattr(
+            matched_prompt,
+            "additionalModelSource",
+            create_model_source(settings.get("user.model_default_source")),
         ),
-        create_model_destination(
-            getattr(
-                matched_prompt,
-                "modelDestination",
-                settings.get("user.model_default_destination"),
-            ),
+        getattr(
+            matched_prompt,
+            "modelDestination",
+            create_model_destination(settings.get("user.model_default_destination")),
         ),
     )
 
@@ -168,17 +159,15 @@ def applyPromptConfiguration(matched_prompt) -> ApplyPromptConfiguration:
 )
 def passConfiguration(matched_prompt) -> PassConfiguration:
     return PassConfiguration(
-        create_model_source(
-            getattr(
-                matched_prompt, "modelSource", settings.get("user.model_default_source")
-            )
+        getattr(
+            matched_prompt,
+            "modelSource",
+            create_model_source(settings.get("user.model_default_source")),
         ),
-        create_model_destination(
-            getattr(
-                matched_prompt,
-                "modelDestination",
-                settings.get("user.model_default_destination"),
-            )
+        getattr(
+            matched_prompt,
+            "modelDestination",
+            create_model_destination(settings.get("user.model_default_destination")),
         ),
     )
 

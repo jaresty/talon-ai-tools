@@ -64,7 +64,6 @@ class GPTState:
         if register not in cls.registers:
             cls.registers[register] = []
         cls.registers[register] += message
-        print(f"Appended to register {cls.registers[register]}")
         actions.app.notify("Appended message to register")
 
     @classmethod

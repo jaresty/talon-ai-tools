@@ -51,7 +51,6 @@ def format_source_messages(
     current_request: list[GPTTextItem | GPTImageItem] = [
         format_message(prompt_chunks[0])
     ]
-    print(f"The current source messages are {source_messages}")
     current_request += source_messages
     return additional_source_messages + current_request
 

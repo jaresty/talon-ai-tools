@@ -164,6 +164,7 @@ class Register(ModelDestination):
         self.register_name = register_name
 
     def insert(self, gpt_message):
+        print("I'm appending to the register  ")
         GPTState.append_register(gpt_message, self.register_name)
         actions.user.confirmation_gui_refresh_thread()
 

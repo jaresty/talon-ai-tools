@@ -144,7 +144,13 @@ class UserActions:
         actions.user.gpt_insert_response([response], destination)
         return response
 
-    def gpt_run_prompt(prompt: str, source: str = "", additional_source: str = ""):
+    def gpt_run_prompt(
+        prompt: str,
+        source: ModelSource,
+        additional_source: ModelSource = create_model_source(
+            settings.get("user.model_default_source")
+        ),
+    ):
         """Apply an arbitrary prompt to arbitrary text"""
 
         response = actions.user.gpt_prepare_message(
@@ -211,6 +217,18 @@ class UserActions:
     def gpt_insert_text(text: str, destination: ModelDestination = Default()) -> None:
         """Insert text using the helpers here"""
         actions.user.gpt_insert_response(format_message(text), destination)
+
+    def gpt_search_engine(search_engine: str, source: ModelSource) -> str:
+        """Format the source for searching with a search engine and open a search"""
+
+        prompt = f"""
+        I want to search for the following using the {search_engine} search engine.
+        Format the text into a succinct search to help me find what I'm looking for. Return only the text of the search query.
+        Optimize the search for returning good search results leaving off anything that would not be useful in searching.
+        Rather than searching for exact strings, I want to find a search that is as close as possible.
+        I will take care of putting it into a search.
+        """
+        return actions.user.gpt_run_prompt(prompt, source)
 
     def gpt_insert_response(
         gpt_message: list[GPTTextItem],

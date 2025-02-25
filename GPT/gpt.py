@@ -225,14 +225,13 @@ class UserActions:
 
     def gpt_prepare_message(
         model_source: ModelSource,
-        additional_source: ModelSource,
+        additional_model_source: ModelSource,
         prompt: str,
         destination: ModelDestination = Default(),
     ) -> None:
         """Get the source text that will have the prompt applied to it"""
-        additional_model_source = None
 
-        if type(additional_source) is not type(model_source):
+        if type(additional_model_source) is type(model_source):
             additional_model_source = create_model_source(
                 settings.get("user.model_default_source")
             )

@@ -50,6 +50,7 @@ dip process: Identify the process flow in the following text. Return just the fl
 dip explain: Provide a detailed explanation of this.
 dip how to: I have a problem that I do not know how to solve. Help me think through a quick plan to solve this problem. What steps should I take so I can resolve this today?
 dip bridge: "Guide me to achieve the desired situation: {additional_source}, starting from the current state. The current situation is described below."
+dip emoji: Give me an appropriate emoji for this. Return just the emoji.
 
 ## Diverge
 fly groups: Suggest different ways to categorize or split the following text, which contains multiple interrelated topics. Return just the modified text.
@@ -62,4 +63,5 @@ fly diagram: Analyze the given plain text from different perspectives. For each 
 fly math: Consider various interpretations of this and transform each into a mathematical formulation or model.
 fly how to: Im stuck with an issue and need help brainstorming solutions. What are some potential approaches I can take to solve this problem today?
 fly idea: Please give me various ideas about this.
+fly emoji: Give me some appropriate emoji for this. Return just the emoji. Explore multiple options.
 answer: Generate text that satisfies the question or request given in the input.

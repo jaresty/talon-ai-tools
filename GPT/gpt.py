@@ -2,7 +2,7 @@ import os
 
 from ..lib.talonSettings import ApplyPromptConfiguration, PassConfiguration
 
-from ..lib.modelDestination import Default, ModelDestination
+from ..lib.modelDestination import Browser, Default, ModelDestination
 from ..lib.modelSource import ModelSource, create_model_source, format_source_messages
 from talon import Module, actions, settings
 
@@ -216,7 +216,11 @@ class UserActions:
 
     def gpt_insert_text(text: str, destination: ModelDestination = Default()) -> None:
         """Insert text using the helpers here"""
-        actions.user.gpt_insert_response(format_message(text), destination)
+        actions.user.gpt_insert_response([format_message(text)], destination)
+
+    def gpt_open_browser(text: str) -> None:
+        """Open a browser with the response"""
+        actions.user.gpt_insert_response([format_message(text)], Browser())
 
     def gpt_search_engine(search_engine: str, source: ModelSource) -> str:
         """Format the source for searching with a search engine and open a search"""

@@ -103,7 +103,7 @@ class UserActions:
 
     def confirmation_gui_open_browser():
         """Open a browser with the response"""
-        actions.user.gpt_insert_text(GPTState.text_to_confirm, "browser")
+        actions.user.gpt_open_browser(GPTState.text_to_confirm)
         GPTState.text_to_confirm = ""
         actions.user.confirmation_gui_close()
 

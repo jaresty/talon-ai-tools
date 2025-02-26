@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from typing import Literal
 
-from .modelSource import ModelSource, SourceStack, create_model_source
+from .modelSource import CompoundSource, ModelSource, SourceStack, create_model_source
 
 from .modelDestination import (
     ModelDestination,
@@ -63,8 +63,15 @@ def modelDestination(m) -> ModelDestination:
     return create_model_destination(m.modelDestination)
 
 
+@mod.capture(rule="<user.modelSimpleSource> [and <user.modelSimpleSource>]+")
+def modelCompoundSource(m) -> ModelSource:
+    if len(m.modelSimpleSource_list) == 1:
+        return m.modelSimpleSource_list[0]
+    return CompoundSource(m.modelSimpleSource_list)
+
+
 @mod.capture(rule="{user.modelSource} | <user.modelSourceStack>")
-def modelSource(m) -> ModelSource:
+def modelSimpleSource(m) -> ModelSource:
     if hasattr(m, "modelSourceStack"):
         return m.modelSourceStack
 
@@ -95,7 +102,7 @@ class PassConfiguration:
     model_destination: ModelDestination
 
 
-@mod.capture(rule="<user.modelSource>")
+@mod.capture(rule="<user.modelSimpleSource>")
 def additionalModelSource(model_source) -> str:
     return model_source.modelSource
 
@@ -107,14 +114,14 @@ def modelSimplePrompt(matched_prompt) -> str:
 
 
 @mod.capture(
-    rule="^<user.pleasePrompt> [<user.modelSource>] [using <user.additionalModelSource>] [<user.modelDestination>]$"
+    rule="^<user.pleasePrompt> [<user.modelCompoundSource>] [using <user.additionalModelSource>] [<user.modelDestination>]$"
 )
 def pleasePromptConfiguration(matched_prompt) -> ApplyPromptConfiguration:
     return ApplyPromptConfiguration(
         getattr(matched_prompt, "pleasePrompt", ""),
         getattr(
             matched_prompt,
-            "modelSource",
+            "modelCompoundSource",
             create_model_source(settings.get("user.model_default_source")),
         ),
         getattr(
@@ -131,14 +138,14 @@ def pleasePromptConfiguration(matched_prompt) -> ApplyPromptConfiguration:
 
 
 @mod.capture(
-    rule="<user.modelPrompt> [<user.modelSource>] [using <user.additionalModelSource>] [<user.modelDestination>]"
+    rule="<user.modelPrompt> [<user.modelCompoundSource>] [using <user.additionalModelSource>] [<user.modelDestination>]"
 )
 def applyPromptConfiguration(matched_prompt) -> ApplyPromptConfiguration:
     return ApplyPromptConfiguration(
         getattr(matched_prompt, "modelPrompt", ""),
         getattr(
             matched_prompt,
-            "modelSource",
+            "modelCompoundSource",
             create_model_source(settings.get("user.model_default_source")),
         ),
         getattr(
@@ -155,13 +162,13 @@ def applyPromptConfiguration(matched_prompt) -> ApplyPromptConfiguration:
 
 
 @mod.capture(
-    rule="(<user.modelSource> | <user.modelDestination> | <user.modelSource> <user.modelDestination>)$"
+    rule="(<user.modelSimpleSource> | <user.modelDestination> | <user.modelSimpleSource> <user.modelDestination>)$"
 )
 def passConfiguration(matched_prompt) -> PassConfiguration:
     return PassConfiguration(
         getattr(
             matched_prompt,
-            "modelSource",
+            "modelSimpleSource",
             create_model_source(settings.get("user.model_default_source")),
         ),
         getattr(

@@ -102,6 +102,23 @@ class SourceStack(ModelSource):
         return deepcopy(GPTState.stacks[self.stack_name] or [])
 
 
+class CompoundSource(ModelSource):
+    def __init__(self, model_sources: list[ModelSource]):
+        self.model_sources = model_sources
+
+    def get_text(self):
+        return messages_to_string(self.format_messages())
+
+    def format_messages(self) -> list[GPTImageItem | GPTTextItem]:
+        aggregated_messages: list[GPTImageItem | GPTTextItem] = []
+
+        for source in self.model_sources:
+            messages = source.format_messages()
+            aggregated_messages.extend(messages)
+
+        return aggregated_messages
+
+
 class Query(ModelSource):
     def get_text(self):
         return chats_to_string(GPTState.query)

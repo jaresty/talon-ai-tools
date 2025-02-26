@@ -11,7 +11,7 @@
 ^{user.model} <user.pleasePromptConfiguration>:
     user.gpt_apply_prompt(pleasePromptConfiguration)
 
-{user.model} {user.search_engine} <user.modelSource>:
+{user.model} {user.search_engine} <user.modelCompoundSource>:
     result = user.gpt_search_engine(search_engine, modelSource)
     user.search_with_search_engine(search_engine, result)
 

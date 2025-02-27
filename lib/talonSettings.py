@@ -104,7 +104,7 @@ class PassConfiguration:
 
 @mod.capture(rule="<user.modelSimpleSource>")
 def additionalModelSource(model_source) -> str:
-    return model_source.modelSource
+    return model_source.modelSimpleSource
 
 
 # model prompts can be either static and predefined by this repo or custom outside of it

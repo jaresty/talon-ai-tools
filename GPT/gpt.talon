@@ -12,7 +12,7 @@
     user.gpt_apply_prompt(pleasePromptConfiguration)
 
 {user.model} {user.search_engine} <user.modelCompoundSource>:
-    result = user.gpt_search_engine(search_engine, modelSource)
+    result = user.gpt_search_engine(search_engine, modelCompoundSource)
     user.search_with_search_engine(search_engine, result)
 
 ^{user.model} clear stack {user.letter}:

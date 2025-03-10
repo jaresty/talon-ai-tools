@@ -51,6 +51,7 @@ dip explain: Provide a detailed explanation of this.
 dip how to: I have a problem that I do not know how to solve. Help me think through a quick plan to solve this problem. What steps should I take so I can resolve this today?
 dip bridge: "Guide me to achieve the desired situation: {additional_source}, starting from the current state. The current situation is described below."
 dip emoji: Give me an appropriate emoji for this. Return just the emoji.
+dip debug: I need help solving this problem. I think there is an obvious solution. Please tell me how to fix it, or if the solution is not obvious tell me so.
 
 ## Diverge
 fly groups: Suggest different ways to categorize or split the following text, which contains multiple interrelated topics. Return just the modified text.

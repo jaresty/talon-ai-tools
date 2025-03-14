@@ -55,7 +55,7 @@ dip debug: I need help solving this problem. I think there is an obvious solutio
 
 ## Diverge
 fly groups: Suggest different ways to categorize or split the following text, which contains multiple interrelated topics. Return just the modified text.
-fly questions: Help me explore this question from multiple perspectives. For each perspective, ask followup questions and indicate what perspective is being taken.
+fly questions: Help me explore this using open ended questions from multiple perspectives. An open ended question cannot be answered with a simple yes or no. For each perspective, ask followup questions and indicate what perspective is being taken.
 fly prompt: Craft several alternative versions of this prompt to increase its effectiveness. If there is any ambiguity in the intention, provide responses that explore the different possible meanings.
 fly interpretation: Formulate multiple reasonable interpretations of this, considering different perspectives.
 fly refactor: Evaluate this code with a focus on potential changes. Each unit of code should have only one reason to change. Identify areas for improvement to enhance the design.

@@ -160,7 +160,7 @@ class UserActions:
 
         return response.get("text")
 
-    def gpt_analyze_prompt(destination: ModelDestination = Default()):
+    def gpt_analyze_prompt(destination: ModelDestination = ModelDestination()):
         """Explain why we got the results we did"""
         PROMPT = "Analyze the provided prompt and response. Explain how the prompt was understood to generate the given response. Provide only the explanation."
 
@@ -170,7 +170,7 @@ class UserActions:
         append_request_messages([format_messages("user", [format_message(PROMPT)])])
         response = gpt_query()
 
-        actions.user.gpt_insert_response(response, destination)
+        actions.user.gpt_insert_response([response], destination)
 
     def gpt_replay(destination: str):
         """Replay the last request"""

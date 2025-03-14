@@ -21,7 +21,8 @@
 ^{user.model} write [{user.modelVoice} | {user.modelAudience} | {user.modelPurpose} | {user.modelTone}]+: user.gpt_set_system_prompt(modelVoice or "", modelAudience or "", modelPurpose or "", modelTone or "")
 ^{user.model} write reset: user.gpt_reset_system_prompt()
 
-{user.model} analyze prompt [{user.modelDestination}]$: user.gpt_analyze_prompt(modelDestination or "window")
+{user.model} analyze prompt <user.modelDestination>$: user.gpt_analyze_prompt(modelDestination)
+{user.model} analyze prompt$: user.gpt_analyze_prompt()
 {user.model} replay [{user.modelDestination}]$: user.gpt_replay(modelDestination or "")
 
 # Select the last GPT response so you can edit it further

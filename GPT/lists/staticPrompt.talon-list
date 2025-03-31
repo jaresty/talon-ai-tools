@@ -52,6 +52,7 @@ dip how to: I have a problem that I do not know how to solve. Help me think thro
 dip bridge: "Guide me to achieve the desired situation: {additional_source}, starting from the current state. The current situation is described below."
 dip emoji: Give me an appropriate emoji for this. Return just the emoji.
 dip debug: I need help solving this problem. I think there is an obvious solution. Please tell me how to fix it, or if the solution is not obvious tell me so.
+dip test plan: Write me a test plan for this file. I prefer small and independent tests. List every case that needs to be tested.
 
 ## Diverge
 fly groups: Suggest different ways to categorize or split the following text, which contains multiple interrelated topics. Return just the modified text.
@@ -65,4 +66,5 @@ fly math: Consider various interpretations of this and transform each into a mat
 fly how to: Im stuck with an issue and need help brainstorming solutions. What are some potential approaches I can take to solve this problem today?
 fly idea: Please give me various ideas about this.
 fly emoji: Give me some appropriate emoji for this. Return just the emoji. Explore multiple options.
+
 answer: Generate text that satisfies the question or request given in the input.

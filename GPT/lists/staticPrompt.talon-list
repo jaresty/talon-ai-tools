@@ -52,7 +52,7 @@ dip how to: I have a problem that I do not know how to solve. Help me think thro
 dip bridge: "Guide me to achieve the desired situation: {additional_source}, starting from the current state. The current situation is described below."
 dip emoji: Give me an appropriate emoji for this. Return just the emoji.
 dip debug: I need help solving this problem. I think there is an obvious solution. Please tell me how to fix it, or if the solution is not obvious tell me so.
-dip test plan: Write me a test plan for this file. I prefer small and independent tests. List every case that needs to be tested.
+dip test plan: Write me a test plan for this file. I prefer small and independent tests, but there should be only one test for each path through the code. List every case that needs to be tested.
 
 ## Diverge
 fly groups: Suggest different ways to categorize or split the following text, which contains multiple interrelated topics. Return just the modified text.

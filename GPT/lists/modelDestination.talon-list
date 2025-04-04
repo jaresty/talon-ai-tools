@@ -12,6 +12,9 @@ above: above
 # Past below the current selection
 below: below
 
+# Paste in chunks of 10 lines
+chunked: chunked
+
 # Instead of pasting, return the result to the clipboard
 to clip: clipboard
 

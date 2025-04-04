@@ -47,6 +47,22 @@ class Above(ModelDestination):
         actions.user.paste(extracted_message)
 
 
+class Chunked(ModelDestination):
+    def insert(self, gpt_message):
+        if not self.inside_textarea():
+            return super().insert(gpt_message)
+
+        actions.key("left")
+        actions.edit.line_insert_up()
+        GPTState.last_was_pasted = True
+        extracted_message = messages_to_string(gpt_message)
+        lines = extracted_message.splitlines()
+        for i in range(0, len(lines), 10):
+            chunk = "\n".join(lines[i : i + 10])
+            actions.user.paste(chunk)
+            actions.key("enter")
+
+
 class Below(ModelDestination):
     def insert(self, gpt_message):
         if not self.inside_textarea():
@@ -185,6 +201,8 @@ def create_model_destination(destination_type: str) -> ModelDestination:
             return Above()
         case "below":
             return Below()
+        case "chunked":
+            return Chunked()
         case "clipboard":
             return Clipboard()
         case "snip":

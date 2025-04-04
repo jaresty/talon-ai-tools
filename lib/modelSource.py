@@ -170,6 +170,12 @@ class SelectedText(ModelSource):
         return actions.edit.selected_text()
 
 
+class AllText(ModelSource):
+    def get_text(self):
+        actions.edit.select_all()
+        return actions.edit.selected_text()
+
+
 def create_model_source(source_type: str) -> ModelSource:
     if source_type == "":
         source_type = settings.get("user.model_default_source")
@@ -192,5 +198,7 @@ def create_model_source(source_type: str) -> ModelSource:
             return GPTExchange()
         case "lastTalonDictation":
             return LastTalonDictation()
+        case "all":
+            return AllText()
         case "this" | _:
             return SelectedText()

@@ -3,6 +3,9 @@ list: user.modelSource
 
 # A list of sources from which the model can take in data to process
 
+# Select all and then apply the prompt to the selection
+all: all
+
 # Apply the prompt to the text on the clipboard
 clip: clipboard
 

@@ -92,7 +92,7 @@ def modelSourceStack(match_rule) -> ModelSource:
 class ApplyPromptConfiguration:
     please_prompt: str
     model_source: ModelSource
-    additional_model_source: ModelSource
+    additional_model_source: ModelSource | None
     model_destination: ModelDestination
 
 
@@ -127,7 +127,7 @@ def pleasePromptConfiguration(matched_prompt) -> ApplyPromptConfiguration:
         getattr(
             matched_prompt,
             "additionalModelSource",
-            create_model_source(settings.get("user.model_default_source")),
+            None,
         ),
         getattr(
             matched_prompt,

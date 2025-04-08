@@ -4,7 +4,7 @@ from ..lib.talonSettings import ApplyPromptConfiguration, PassConfiguration
 
 from ..lib.modelDestination import Browser, Default, ModelDestination
 from ..lib.modelSource import ModelSource, create_model_source, format_source_messages
-from talon import Module, actions, settings
+from talon import Module, actions
 
 from ..lib.HTMLBuilder import Builder
 from ..lib.modelHelpers import (
@@ -147,9 +147,7 @@ class UserActions:
     def gpt_run_prompt(
         prompt: str,
         source: ModelSource,
-        additional_source: ModelSource = create_model_source(
-            settings.get("user.model_default_source")
-        ),
+        additional_source: ModelSource | None = None,
     ):
         """Apply an arbitrary prompt to arbitrary text"""
 
@@ -247,16 +245,11 @@ class UserActions:
 
     def gpt_prepare_message(
         model_source: ModelSource,
-        additional_model_source: ModelSource,
+        additional_model_source: ModelSource | None,
         prompt: str,
         destination: ModelDestination = Default(),
     ) -> None:
         """Get the source text that will have the prompt applied to it"""
-
-        if type(additional_model_source) is type(model_source):
-            additional_model_source = create_model_source(
-                settings.get("user.model_default_source")
-            )
 
         build_request(destination)
 

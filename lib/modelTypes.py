@@ -18,8 +18,15 @@ class GPTMessage(TypedDict):
     content: list[GPTTextItem | GPTImageItem] | list[GPTTextItem]
 
 
+class GPTTool(TypedDict):
+    tool_call_id: str
+    name: str
+    role: Literal["tool"]
+    content: str
+
+
 class GPTRequest(TypedDict):
-    messages: list[GPTMessage]
+    messages: list[GPTMessage | GPTTool]
     max_tokens: int
     temperature: float
     n: int

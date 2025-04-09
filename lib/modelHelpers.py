@@ -10,7 +10,7 @@ from talon import actions, app, clip, settings
 
 from ..lib.pureHelpers import strip_markdown
 from .modelState import GPTState
-from .modelTypes import GPTImageItem, GPTMessage, GPTTextItem
+from .modelTypes import GPTImageItem, GPTMessage, GPTTextItem, GPTTool
 
 """"
 All functions in this this file have impure dependencies on either the model or the talon APIs
@@ -138,34 +138,47 @@ def append_request_messages(messages: list[GPTMessage]):
     GPTState.request["messages"] = GPTState.request.get("messages", []) + messages
 
 
+def call_tool(tool_id: str, function_name: str, arguments: str) -> GPTTool:
+    """Call a tool and return a response"""
+    return {
+        "tool_call_id": tool_id,
+        "name": function_name,
+        "role": "tool",
+        "content": "",
+    }
+
+
 def send_request():
     """Generate run a GPT request and return the response"""
 
-    TOKEN = get_token()
-    headers = {
-        "Content-Type": "application/json",
-        "Authorization": f"Bearer {TOKEN}",
-    }
+    message_content = None
 
-    if GPTState.debug_enabled:
-        print(GPTState.request)
+    # loop until the message content is defined
+    while message_content is None:
+        # Send the request and get the response
+        raw_response = send_request_internal(GPTState.request).json()["choices"][0][
+            "message"
+        ]
+        for tool_call in getattr(raw_response, "tool_calls", []):
+            tool_id = tool_call["id"]
+            function_name = tool_call["function"]["name"]
+            arguments = tool_call["function"]["arguments"]
+            tool_response = call_tool(tool_id, function_name, arguments)
+            GPTState.request["messages"].append(tool_response)
 
-    url: str = settings.get("user.model_endpoint")  # type: ignore
-    raw_response = requests.post(
-        url, headers=headers, data=json.dumps(GPTState.request)
-    )
+        # Check if the response content is valid
+        if raw_response:
+            message_content = raw_response["content"]
+        else:
+            # Optionally, handle the case where response is not valid
+            print("No valid response received, retrying...")
 
-    match raw_response.status_code:
-        case 200:
-            notify("GPT Task Completed")
-            resp = raw_response.json()["choices"][0]["message"]["content"].strip()
-            formatted_resp = strip_markdown(resp)
+    notify("GPT Task Completed")
+    resp = message_content.strip()
+    formatted_resp = strip_markdown(resp)
 
-            GPTState.last_response = formatted_resp
-            response = format_message(formatted_resp)
-        case _:
-            notify("GPT Failure: Check the Talon Log")
-            raise Exception(raw_response.json())
+    GPTState.last_response = formatted_resp
+    response = format_message(formatted_resp)
 
     if GPTState.thread_enabled:
         GPTState.push_thread(
@@ -176,6 +189,28 @@ def send_request():
         )
 
     return response
+
+
+def send_request_internal(request):
+    TOKEN = get_token()
+    headers = {
+        "Content-Type": "application/json",
+        "Authorization": f"Bearer {TOKEN}",
+    }
+
+    if GPTState.debug_enabled:
+        print(request)
+
+    url: str = settings.get("user.model_endpoint")  # type: ignore
+    raw_response = requests.post(url, headers=headers, data=json.dumps(request))
+    match raw_response.status_code:
+        case 200:
+            notify("GPT Request Completed")
+        case _:
+            notify("GPT Failure: Check the Talon Log")
+            raise Exception(raw_response.json())
+
+    return raw_response
 
 
 def get_clipboard_image():

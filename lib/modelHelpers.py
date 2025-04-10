@@ -103,8 +103,10 @@ def build_request(
         else None
     )
     additional_user_context = []
+    GPTState.tools = []
     try:
         additional_user_context = actions.user.gpt_additional_user_context()
+        GPTState.tools = json.loads(actions.user.gpt_tools())
     except Exception as e:
         # Handle the exception, log it, or print an error message
         notify(f"An error occurred: {e}")
@@ -125,6 +127,7 @@ def build_request(
 
     GPTState.request = {
         "messages": [],
+        "tools": GPTState.tools,
         "max_tokens": 2024,
         "temperature": settings.get("user.model_temperature"),
         "n": 1,
@@ -134,17 +137,19 @@ def build_request(
     append_request_messages(GPTState.thread)
 
 
-def append_request_messages(messages: list[GPTMessage]):
+def append_request_messages(messages: list[GPTMessage] | list[GPTTool]):
     GPTState.request["messages"] = GPTState.request.get("messages", []) + messages
 
 
 def call_tool(tool_id: str, function_name: str, arguments: str) -> GPTTool:
     """Call a tool and return a response"""
+    content = actions.user.gpt_call_tool(function_name, arguments)
     return {
         "tool_call_id": tool_id,
+        "type": "function",
         "name": function_name,
         "role": "tool",
-        "content": "",
+        "content": content,
     }
 
 
@@ -152,26 +157,26 @@ def send_request():
     """Generate run a GPT request and return the response"""
 
     message_content = None
+    call_count = 0
 
-    # loop until the message content is defined
     while message_content is None:
-        # Send the request and get the response
-        raw_response = send_request_internal(GPTState.request).json()["choices"][0][
-            "message"
-        ]
-        for tool_call in getattr(raw_response, "tool_calls", []):
+        json_response = send_request_internal(GPTState.request).json()
+        if GPTState.debug_enabled:
+            print(json_response)
+        call_count += 1
+        if call_count >= 3:
+            break
+
+        message_response = json_response["choices"][0]["message"]
+        message_content = message_response.get("content", None)
+        append_request_messages([message_response])
+        for tool_call in message_response.get("tool_calls", []):
             tool_id = tool_call["id"]
             function_name = tool_call["function"]["name"]
             arguments = tool_call["function"]["arguments"]
+            notify(f"Calling the tool {function_name} with arguments {arguments}")
             tool_response = call_tool(tool_id, function_name, arguments)
-            GPTState.request["messages"].append(tool_response)
-
-        # Check if the response content is valid
-        if raw_response:
-            message_content = raw_response["content"]
-        else:
-            # Optionally, handle the case where response is not valid
-            print("No valid response received, retrying...")
+            append_request_messages([tool_response])
 
     notify("GPT Task Completed")
     resp = message_content.strip()
@@ -202,6 +207,7 @@ def send_request_internal(request):
         print(request)
 
     url: str = settings.get("user.model_endpoint")  # type: ignore
+    notify("GPT Sending Request")
     raw_response = requests.post(url, headers=headers, data=json.dumps(request))
     match raw_response.status_code:
         case 200:

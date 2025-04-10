@@ -91,6 +91,14 @@ class UserActions:
         """This is an override function that can be used to add additional context to the prompt"""
         return []
 
+    def gpt_tools() -> str:
+        """This is an override function that will provide all of the tools available for tool calls as a JSON string"""
+        return "[]"
+
+    def gpt_call_tool(tool_name: str, parameters: str) -> str:
+        """This will call the tool by name and return a string of the tool call results"""
+        return ""
+
     def gpt_set_system_prompt(
         modelVoice: str,
         modelAudience: str,

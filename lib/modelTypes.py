@@ -13,21 +13,23 @@ class GPTImageItem(TypedDict):
     image_url: dict[Literal["url"], str]
 
 
+class GPTTool(TypedDict):
+    tool_call_id: str
+    name: str
+    type: str
+    role: Literal["tool"]
+    content: str
+
+
 class GPTMessage(TypedDict):
     role: Literal["user", "system", "assistant"]
     content: list[GPTTextItem | GPTImageItem] | list[GPTTextItem]
 
 
-class GPTTool(TypedDict):
-    tool_call_id: str
-    name: str
-    role: Literal["tool"]
-    content: str
-
-
 class GPTRequest(TypedDict):
     messages: list[GPTMessage | GPTTool]
     max_tokens: int
+    tools: list[any]
     temperature: float
     n: int
     model: str

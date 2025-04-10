@@ -19,6 +19,7 @@ class GPTState:
     query: ClassVar[list[GPTMessage]] = []
     request: ClassVar[GPTRequest]
     thread: ClassVar[list[GPTMessage]] = []
+    tools = []
     stacks: ClassVar[Dict[str, list[GPTTextItem | GPTImageItem]]] = {}
     thread_enabled: ClassVar[bool] = False
     debug_enabled: ClassVar[bool] = False

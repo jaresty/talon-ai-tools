@@ -157,15 +157,11 @@ def send_request():
     """Generate run a GPT request and return the response"""
 
     message_content = None
-    call_count = 0
 
     while message_content is None:
         json_response = send_request_internal(GPTState.request).json()
         if GPTState.debug_enabled:
             print(json_response)
-        call_count += 1
-        if call_count >= 3:
-            break
 
         message_response = json_response["choices"][0]["message"]
         message_content = message_response.get("content", None)

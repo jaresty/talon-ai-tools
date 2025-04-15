@@ -22,7 +22,7 @@ pilot bring <user.cursorless_ordinal_or_last> {user.makeshift_destination} <user
     user.cursorless_command(makeshift_destination, cursorless_target)
     user.copilot_bring_code_block(cursorless_ordinal_or_last)
 pilot chat [<user.prose>]$: user.copilot_chat(prose or "")
-pilot {user.copilot_slash_command} <user.cursorless_target> [to <user.prose>]$:
+pilot [{user.copilot_slash_command}] <user.cursorless_target> [to <user.prose>]$:
     user.cursorless_command("setSelection", cursorless_target)
     user.copilot_inline_chat(copilot_slash_command or "", prose or "")
 pilot make [<user.prose>]: user.copilot_inline_chat("", prose or "")

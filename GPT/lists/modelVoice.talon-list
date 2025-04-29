@@ -16,6 +16,7 @@ as artist: Act as an artist.
 as teacher: Act as a teacher.
 as reader: Act as a reader.
 as editor: Act as an editor.
+as other: Act as someone who does not know the author of this text.
 
 ## Management Roles
 as facilitator: Act as a facilitator.

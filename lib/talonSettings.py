@@ -45,7 +45,7 @@ def modelPrompt(m) -> str:
     )
 
 
-@mod.capture(rule="[<user.modelPrompt>] please <user.text>")
+@mod.capture(rule="[<user.modelPrompt>] ask <user.text>")
 def pleasePrompt(m) -> str:
     additional_prompt = ""
     # Check if m has the property modelPrompt

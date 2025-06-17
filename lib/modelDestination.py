@@ -52,8 +52,6 @@ class Chunked(ModelDestination):
         if not self.inside_textarea():
             return super().insert(gpt_message)
 
-        actions.key("left")
-        actions.edit.line_insert_up()
         GPTState.last_was_pasted = True
         extracted_message = messages_to_string(gpt_message)
         lines = extracted_message.splitlines()

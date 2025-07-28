@@ -141,18 +141,20 @@ def pleasePromptConfiguration(matched_prompt) -> ApplyPromptConfiguration:
     rule="<user.modelPrompt> [<user.modelCompoundSource>] [using <user.additionalModelSource>] [<user.modelDestination>]"
 )
 def applyPromptConfiguration(matched_prompt) -> ApplyPromptConfiguration:
+    default_source = create_model_source(settings.get("user.model_default_source"))
+
+    compound_source = getattr(matched_prompt, "modelCompoundSource", default_source)
+    additional_source = getattr(matched_prompt, "additionalModelSource", default_source)
+
+    if not hasattr(matched_prompt, "modelCompoundSource") and not hasattr(
+        matched_prompt, "additionalModelSource"
+    ):
+        additional_source = None
+
     return ApplyPromptConfiguration(
         getattr(matched_prompt, "modelPrompt", ""),
-        getattr(
-            matched_prompt,
-            "modelCompoundSource",
-            create_model_source(settings.get("user.model_default_source")),
-        ),
-        getattr(
-            matched_prompt,
-            "additionalModelSource",
-            create_model_source(settings.get("user.model_default_source")),
-        ),
+        compound_source,
+        additional_source,
         getattr(
             matched_prompt,
             "modelDestination",

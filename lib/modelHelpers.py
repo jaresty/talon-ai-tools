@@ -165,7 +165,9 @@ def send_request():
 
         message_response = json_response["choices"][0]["message"]
         message_content = message_response.get("content", None)
-        append_request_messages([message_response])
+        append_request_messages(
+            [format_messages("assistant", [format_message(message_content)])]
+        )
         for tool_call in message_response.get("tool_calls", []):
             tool_id = tool_call["id"]
             function_name = tool_call["function"]["name"]

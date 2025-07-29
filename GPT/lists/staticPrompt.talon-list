@@ -25,7 +25,7 @@ dip flat: Edit the text below to form a single, cohesive, and grammatically corr
 dip shuffled: Reconstruct the following text to ensure the layout is logical and significantly different from the original. Create new categories, each representing a single idea without using conjunctions like AND or OR. Present the revised text in the same language.
 dip clear: Add additional context to the selected text that would be appropriate to the situation and add useful information. Also fix any grammatical mistakes. If you need to ask questions in order to add the necessary context, respond with those questions instead.
 # dip fix: Fix any grammatical mistakes in this text. Return just the modified text. Do not change the meaning or tone.
-dip context: I want to provide this information to an LLM. Add any additional context that would be useful for the LLM to understand the text.
+dip context: I want to provide this information to an LLM. Add any additional context that would be useful for the LLM to understand the text. Return just the context, formatted for the LLMs consumption directly.
 dip softer: Act as an editor. I want you to make the following text softer in tone. Return just the modified text.
 dip stronger: Act as an editor. I want you to make the following text stronger in tone. Return just the modified text.
 dip match: I have given you some context to describe a style of writing that I would like to use. Make this text match that style. Return just the modified text.

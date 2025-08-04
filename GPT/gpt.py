@@ -245,6 +245,7 @@ class UserActions:
         destination: ModelDestination = Default(),
     ) -> None:
         """Insert a GPT result in a specified way"""
+        actions.user.confirmation_gui_close()
         destination.insert(gpt_message)
 
     def gpt_get_source_text(spoken_text: str) -> str:

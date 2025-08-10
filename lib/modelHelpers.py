@@ -5,7 +5,6 @@ from typing import Literal, List, Union
 
 import requests
 
-# from ..lib.modelDestination import Default, ModelDestination
 from talon import actions, app, clip, settings
 
 from ..lib.pureHelpers import strip_markdown
@@ -16,13 +15,17 @@ from .modelTypes import GPTImageItem, GPTRequest, GPTMessage, GPTTextItem, GPTTo
 All functions in this this file have impure dependencies on either the model or the talon APIs
 """
 
-# --- Globals for tool call control ---
+# --- Context class for tool call control ---
+class ModelHelpersContext:
+    def __init__(self):
+        self.total_tool_calls = 0
+
 MAX_TOTAL_CALLS = 3
-total_tool_calls = 0  # module-level counter
+context = ModelHelpersContext()
 
 
 def messages_to_string(
-    messages: list[GPTTextItem | GPTImageItem] | list[GPTTextItem],
+    messages: List[Union[GPTTextItem, GPTImageItem]],
 ) -> str:
     """Format messages as a string"""
     formatted_messages = []
@@ -34,7 +37,7 @@ def messages_to_string(
     return "\n\n".join(formatted_messages)
 
 
-def chats_to_string(chats: list[GPTMessage]) -> str:
+def chats_to_string(chats: List[GPTMessage]) -> str:
     """Format thread as a string"""
     formatted_messages = []
     for chat in chats:
@@ -190,13 +193,12 @@ def call_tool(
     tool_id: str, function_name: str, arguments: str
 ) -> Union[GPTMessage, GPTTool]:
     """Call a tool and return a valid response message (tool or assistant)"""
-    global total_tool_calls
-    if total_tool_calls >= MAX_TOTAL_CALLS:
+    if context.total_tool_calls >= MAX_TOTAL_CALLS:
         content = "Error: total tool call limit exceeded."
         notify(content)
         return format_messages("assistant", [format_message(content)])
 
-    total_tool_calls += 1
+    context.total_tool_calls += 1
 
     if function_name == "chatgpt_call":
         # Handle recursive call
@@ -234,14 +236,14 @@ def call_tool(
         }
 
 
-def send_request():
-    """Generate run a GPT request and return the response"""
-    global total_tool_calls
-    total_tool_calls = 0
+def send_request(max_attempts: int = 10):
+    """Generate run a GPT request and return the response, with a limit to prevent infinite loops"""
+    context.total_tool_calls = 0
 
     message_content = None
+    attempts = 0
 
-    while message_content is None:
+    while message_content is None and attempts < max_attempts:
         json_response = send_request_internal(GPTState.request)
 
         message_response = json_response["choices"][0]["message"]
@@ -260,6 +262,12 @@ def send_request():
 
             tool_response = call_tool(tool_id, function_name, arguments)
             append_request_messages([tool_response])
+
+        attempts += 1
+
+    if message_content is None:
+        notify("GPT request failed after max attempts.")
+        raise RuntimeError("GPT request failed after max attempts.")
 
     notify("GPT Task Completed")
     resp = message_content.strip()
@@ -305,15 +313,30 @@ def send_request_internal(request):
     return json_response
 
 
+class ClipboardImageError(Exception):
+    """Custom exception for clipboard image errors."""
+    pass
+
 def get_clipboard_image():
     try:
         clipped_image = clip.image()
-        if not clipped_image:
-            raise Exception("No image found in clipboard")
+        if clipped_image is None:
+            raise ClipboardImageError("No image found in clipboard.")
 
-        data = clipped_image.encode().data()
-        base64_image = base64.b64encode(data).decode("utf-8")
+        try:
+            data = clipped_image.encode().data()
+        except Exception as encode_err:
+            raise ClipboardImageError(f"Failed to encode clipboard image: {encode_err}")
+
+        try:
+            base64_image = base64.b64encode(data).decode("utf-8")
+        except Exception as b64_err:
+            raise ClipboardImageError(f"Failed to base64 encode image data: {b64_err}")
+
         return base64_image
+    except ClipboardImageError as cie:
+        print(f"ClipboardImageError: {cie}")
+        raise
     except Exception as e:
-        print(e)
-        raise Exception("Invalid image in clipboard")
+        print(f"Unexpected error in get_clipboard_image: {e}")
+        raise ClipboardImageError("Invalid image in clipboard or clipboard API failure.")

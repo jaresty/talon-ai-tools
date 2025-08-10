@@ -7,6 +7,7 @@ All functions in this file have impure dependencies on either the model or the T
 import base64
 import json
 import os
+import traceback
 from typing import Literal, List, Sequence, Optional, Union
 
 import requests
@@ -27,6 +28,7 @@ class ModelHelpersContext:
 def _log(message: str):
     """Simple logger for debug and error messages."""
     print(f"[modelHelpers] {message}")
+
 
 MAX_TOTAL_CALLS = settings.get("user.gpt_max_total_calls", 3)
 context = ModelHelpersContext()
@@ -62,7 +64,7 @@ def notify(message: str):
         try:
             app.notify(message)
         except Exception:
-            pass
+            _log(f"notify fallback failed: {traceback.format_exc()}")
     _log(message)
 
 
@@ -135,7 +137,9 @@ def _get_additional_user_context_and_tools():
         if hasattr(actions.user, "gpt_tools"):
             user_tools = json.loads(actions.user.gpt_tools())
     except Exception as e:
-        notify(f"An error occurred fetching user context/tools: {e}")
+        notify(
+            f"An error occurred fetching user context/tools: {e}\n{traceback.format_exc()}"
+        )
     return additional_user_context, user_tools
 
 
@@ -232,16 +236,49 @@ def call_tool(
         notify(content)
         return format_messages("assistant", [format_message(content)])
 
-    context.total_tool_calls += 1
+    prompt = ""
 
-    if function_name == "chatgpt_call":
-        # Handle recursive call
-        try:
-            args = json.loads(arguments)
-            prompt = args.get("prompt", "")
-        except Exception as e:
-            notify(f"Invalid arguments for chatgpt_call: {e}")
-            prompt = ""
+    try:
+        if function_name == "chatgpt_call":
+            # Handle recursive call
+            try:
+                args = json.loads(arguments)
+                prompt = args.get("prompt", "")
+            except Exception as e:
+                notify(
+                    f"Invalid arguments for chatgpt_call: {e}\n{traceback.format_exc()}"
+                )
+
+            system_msg = (
+                "You are a recursive assistant call at depth 1 of 1.\n"
+                "Provide a concise and factual answer.\n"
+                "Do NOT suggest or attempt to call yourself again.\n"
+                "Only respond to the user prompt with useful information."
+            )
+            user_message = [format_messages("user", [format_message(prompt)])]
+            nested_request = build_chatgpt_request(user_message, [system_msg])
+            response = send_request_internal(nested_request)
+            content = response["choices"][0]["message"].get("content", "").strip()
+
+            # Return as assistant message instead of tool
+            return format_messages("assistant", [format_message(content)])
+
+        else:
+            # Real tool call via actions
+            content = actions.user.gpt_call_tool(function_name, arguments)
+
+            return {
+                "tool_call_id": tool_id,
+                "type": "function",
+                "name": function_name,
+                "role": "tool",
+                "content": content,
+            }
+    except Exception as e:
+        notify(f"Error in call_tool for {function_name}: {e}\n{traceback.format_exc()}")
+        return format_messages("assistant", [format_message(f"Tool call error: {e}")])
+    finally:
+        context.total_tool_calls += 1
 
         system_msg = (
             "You are a recursive assistant call at depth 1 of 1.\n"
@@ -256,18 +293,6 @@ def call_tool(
 
         # Return as assistant message instead of tool
         return format_messages("assistant", [format_message(content)])
-
-    else:
-        # Real tool call via actions
-        content = actions.user.gpt_call_tool(function_name, arguments)
-
-        return {
-            "tool_call_id": tool_id,
-            "type": "function",
-            "name": function_name,
-            "role": "tool",
-            "content": content,
-        }
 
 
 def send_request(max_attempts: int = 10):
@@ -369,27 +394,19 @@ class ClipboardImageError(Exception):
 
 
 def get_clipboard_image():
+    """Get an image from the clipboard and return it as a base64-encoded string."""
     try:
         clipped_image = clip.image()
         if clipped_image is None:
             raise ClipboardImageError("No image found in clipboard.")
-
-        try:
-            data = clipped_image.encode().data()
-        except Exception as encode_err:
-            raise ClipboardImageError(f"Failed to encode clipboard image: {encode_err}")
-
-        try:
-            base64_image = base64.b64encode(data).decode("utf-8")
-        except Exception as b64_err:
-            raise ClipboardImageError(f"Failed to base64 encode image data: {b64_err}")
-
+        data = clipped_image.encode().data()
+        base64_image = base64.b64encode(data).decode("utf-8")
         return base64_image
     except ClipboardImageError as cie:
-        print(f"ClipboardImageError: {cie}")
+        _log(f"ClipboardImageError: {cie}\n{traceback.format_exc()}")
         raise
     except Exception as e:
-        print(f"Unexpected error in get_clipboard_image: {e}")
+        _log(f"Unexpected error in get_clipboard_image: {e}\n{traceback.format_exc()}")
         raise ClipboardImageError(
             "Invalid image in clipboard or clipboard API failure."
         )

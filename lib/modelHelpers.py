@@ -1,7 +1,13 @@
+"""
+Helpers for interacting with GPT models within a Talon environment.
+
+All functions in this file have impure dependencies on either the model or the Talon APIs.
+"""
+
 import base64
 import json
 import os
-from typing import Literal, List, Union, Sequence
+from typing import Literal, List, Sequence, Optional, Union
 
 import requests
 
@@ -10,10 +16,6 @@ from talon import actions, app, clip, settings
 from ..lib.pureHelpers import strip_markdown
 from .modelState import GPTState
 from .modelTypes import GPTImageItem, GPTRequest, GPTMessage, GPTTextItem, GPTTool
-
-""""
-All functions in this this file have impure dependencies on either the model or the talon APIs
-"""
 
 
 # --- Context class for tool call control ---
@@ -92,7 +94,7 @@ def extract_message(content: GPTTextItem) -> str:
 def build_chatgpt_request(
     user_messages: List[GPTMessage],
     system_messages: List[str],
-    tools: List[GPTTool] = [],
+    tools: Optional[List[GPTTool]] = None,
 ) -> GPTRequest:
     """Build a ChatGPT API request from system and user message lists, with optional tools."""
     system_content = "\n\n".join(system_messages) if system_messages else ""
@@ -107,7 +109,7 @@ def build_chatgpt_request(
         "model": settings.get("user.openai_model"),
         "messages": messages,
         "max_tokens": 2024,
-        "tools": tools,
+        "tools": tools or [],
         "temperature": settings.get("user.model_temperature"),
         "n": 1,  # always one completion
     }
@@ -152,6 +154,7 @@ def _build_snippet_context(destination: str) -> str | None:
         )
     return None
 
+
 def _build_request_context(destination: str) -> list[str]:
     """Build the list of system messages for the request context."""
     language = actions.code.language()
@@ -192,7 +195,8 @@ BUILTIN_ASK_CHATGPT_TOOL = {
     },
 }
 
-def build_request(destination):
+
+def build_request(destination: str):
     """Orchestrate the GPT request build process."""
     notify(_build_request_notification())
     full_system_messages = _build_request_context(destination)

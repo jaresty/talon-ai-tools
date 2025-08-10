@@ -1,7 +1,7 @@
 import base64
 import json
 import os
-from typing import Literal, List, Union
+from typing import Literal, List, Union, Sequence
 
 import requests
 
@@ -25,7 +25,7 @@ context = ModelHelpersContext()
 
 
 def messages_to_string(
-    messages: List[Union[GPTTextItem, GPTImageItem]],
+    messages: Sequence[Union[GPTTextItem, GPTImageItem]],
 ) -> str:
     """Format messages as a string"""
     formatted_messages = []
@@ -69,11 +69,11 @@ def get_token() -> str:
 
 def format_messages(
     role: Literal["user", "system", "assistant"],
-    messages: list[GPTTextItem | GPTImageItem] | list[GPTTextItem],
+    messages: Sequence[Union[GPTTextItem, GPTImageItem]],
 ) -> GPTMessage:
     return {
         "role": role,
-        "content": messages,
+        "content": list(messages),
     }
 
 

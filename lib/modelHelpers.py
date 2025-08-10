@@ -1,7 +1,7 @@
 import base64
 import json
 import os
-from typing import Literal
+from typing import Literal, List, Union
 
 import requests
 
@@ -10,11 +10,15 @@ from talon import actions, app, clip, settings
 
 from ..lib.pureHelpers import strip_markdown
 from .modelState import GPTState
-from .modelTypes import GPTImageItem, GPTMessage, GPTTextItem, GPTTool
+from .modelTypes import GPTImageItem, GPTRequest, GPTMessage, GPTTextItem, GPTTool
 
 """"
 All functions in this this file have impure dependencies on either the model or the talon APIs
 """
+
+# --- Globals for tool call control ---
+MAX_TOTAL_CALLS = 3
+total_tool_calls = 0  # module-level counter
 
 
 def messages_to_string(
@@ -77,9 +81,33 @@ def extract_message(content: GPTTextItem) -> str:
     return content.get("text", "")
 
 
-def build_request(
-    destination,
-):
+def build_chatgpt_request(
+    user_messages: List[GPTMessage],
+    system_messages: List[str],
+    tools: List[GPTTool] = [],
+) -> GPTRequest:
+    """Build a ChatGPT API request from system and user message lists, with optional tools."""
+    system_content = "\n\n".join(system_messages) if system_messages else ""
+
+    messages = []
+    if system_content:
+        messages.append({"role": "system", "content": system_content})
+
+    messages.extend(user_messages)
+
+    request: GPTRequest = {
+        "model": settings.get("user.openai_model"),
+        "messages": messages,
+        "max_tokens": 2024,
+        "tools": tools,
+        "temperature": settings.get("user.model_temperature"),
+        "n": 1,  # always one completion
+    }
+
+    return request
+
+
+def build_request(destination):
     notification = "GPT Task Started"
     if len(GPTState.context) > 0:
         notification += ": Reusing Stored Context"
@@ -99,20 +127,39 @@ def build_request(
     application_context = f"The following describes the currently focused application:\n\n{actions.user.talon_get_active_context()}\n\nYou are an expert user of this application."
     snippet_context = (
         "\n\n Return the response as a snippet with placeholders. A snippet can control cursors and text insertion using constructs like tabstops ($1, $2, etc., with $0 as the final position). Linked tabstops update together. Placeholders, such as ${1:foo}, allow easy changes and can be nested (${1:another ${2:}}). Choices, using ${1|one,two,three|}, prompt user selection."
-        if destination == "snip"  # todo: change this to handle the type being snipped
+        if destination == "snip"
         else None
     )
     additional_user_context = []
-    GPTState.tools = []
+    user_tools = []
     try:
         additional_user_context = actions.user.gpt_additional_user_context()
         GPTState.tools = json.loads(actions.user.gpt_tools())
     except Exception as e:
-        # Handle the exception, log it, or print an error message
         notify(f"An error occurred: {e}")
 
-    system_messages: list[GPTTextItem | GPTImageItem] = [
-        {"type": "text", "text": item}
+    GPTState.tools = user_tools + [
+        {
+            "type": "function",
+            "function": {
+                "name": "chatgpt_call",
+                "description": "Ask the assistant a followup question during a tool call.",
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "prompt": {
+                            "type": "string",
+                            "description": "The prompt to pass to the assistant.",
+                        }
+                    },
+                    "required": ["prompt"],
+                },
+            },
+        }
+    ]
+
+    system_messages = [
+        item
         for item in additional_user_context
         + [
             application_context,
@@ -123,56 +170,94 @@ def build_request(
         if item is not None
     ]
 
-    system_messages = GPTState.context + system_messages
+    full_system_messages = [
+        strip_markdown(m.get("text", m) if isinstance(m, dict) else m)
+        for m in GPTState.context
+    ] + system_messages
 
-    GPTState.request = {
-        "messages": [],
-        "tools": GPTState.tools,
-        "max_tokens": 2024,
-        "temperature": settings.get("user.model_temperature"),
-        "n": 1,
-        "model": settings.get("user.openai_model"),
-    }
-    append_request_messages([format_messages("system", system_messages)])
-    append_request_messages(GPTState.thread)
+    GPTState.request = build_chatgpt_request(
+        user_messages=GPTState.thread or [],
+        system_messages=full_system_messages,
+        tools=GPTState.tools,
+    )
 
 
-def append_request_messages(messages: list[GPTMessage] | list[GPTTool]):
+def append_request_messages(messages: list[GPTMessage | GPTTool]):
     GPTState.request["messages"] = GPTState.request.get("messages", []) + messages
 
 
-def call_tool(tool_id: str, function_name: str, arguments: str) -> GPTTool:
-    """Call a tool and return a response"""
-    content = actions.user.gpt_call_tool(function_name, arguments)
-    return {
-        "tool_call_id": tool_id,
-        "type": "function",
-        "name": function_name,
-        "role": "tool",
-        "content": content,
-    }
+def call_tool(
+    tool_id: str, function_name: str, arguments: str
+) -> Union[GPTMessage, GPTTool]:
+    """Call a tool and return a valid response message (tool or assistant)"""
+    global total_tool_calls
+    if total_tool_calls >= MAX_TOTAL_CALLS:
+        content = "Error: total tool call limit exceeded."
+        notify(content)
+        return format_messages("assistant", [format_message(content)])
+
+    total_tool_calls += 1
+
+    if function_name == "chatgpt_call":
+        # Handle recursive call
+        try:
+            args = json.loads(arguments)
+            prompt = args.get("prompt", "")
+        except Exception as e:
+            notify(f"Invalid arguments for chatgpt_call: {e}")
+            prompt = ""
+
+        system_msg = (
+            "You are a recursive assistant call at depth 1 of 1.\n"
+            "Provide a concise and factual answer.\n"
+            "Do NOT suggest or attempt to call yourself again.\n"
+            "Only respond to the user prompt with useful information."
+        )
+        user_message = [format_messages("user", [format_message(prompt)])]
+        nested_request = build_chatgpt_request(user_message, [system_msg])
+        response = send_request_internal(nested_request)
+        content = response["choices"][0]["message"].get("content", "").strip()
+
+        # Return as assistant message instead of tool
+        return format_messages("assistant", [format_message(content)])
+
+    else:
+        # Real tool call via actions
+        content = actions.user.gpt_call_tool(function_name, arguments)
+
+        return {
+            "tool_call_id": tool_id,
+            "type": "function",
+            "name": function_name,
+            "role": "tool",
+            "content": content,
+        }
 
 
 def send_request():
     """Generate run a GPT request and return the response"""
+    global total_tool_calls
+    total_tool_calls = 0
 
     message_content = None
 
     while message_content is None:
-        json_response = send_request_internal(GPTState.request).json()
-        if GPTState.debug_enabled:
-            print(json_response)
+        json_response = send_request_internal(GPTState.request)
 
         message_response = json_response["choices"][0]["message"]
-        message_content = message_response.get("content", None)
+        message_content = message_response.get("content")
+
         append_request_messages(
             [format_messages("assistant", [format_message(message_content)])]
         )
+
         for tool_call in message_response.get("tool_calls", []):
             tool_id = tool_call["id"]
             function_name = tool_call["function"]["name"]
             arguments = tool_call["function"]["arguments"]
+
             notify(f"Calling the tool {function_name} with arguments {arguments}")
+
             tool_response = call_tool(tool_id, function_name, arguments)
             append_request_messages([tool_response])
 
@@ -214,7 +299,10 @@ def send_request_internal(request):
             notify("GPT Failure: Check the Talon Log")
             raise Exception(raw_response.json())
 
-    return raw_response
+    json_response = raw_response.json()
+    if GPTState.debug_enabled:
+        print(json_response)
+    return json_response
 
 
 def get_clipboard_image():

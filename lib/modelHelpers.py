@@ -280,20 +280,6 @@ def call_tool(
     finally:
         context.total_tool_calls += 1
 
-        system_msg = (
-            "You are a recursive assistant call at depth 1 of 1.\n"
-            "Provide a concise and factual answer.\n"
-            "Do NOT suggest or attempt to call yourself again.\n"
-            "Only respond to the user prompt with useful information."
-        )
-        user_message = [format_messages("user", [format_message(prompt)])]
-        nested_request = build_chatgpt_request(user_message, [system_msg])
-        response = send_request_internal(nested_request)
-        content = response["choices"][0]["message"].get("content", "").strip()
-
-        # Return as assistant message instead of tool
-        return format_messages("assistant", [format_message(content)])
-
 
 def send_request(max_attempts: int = 10):
     """Generate run a GPT request and return the response, with a limit to prevent infinite loops"""

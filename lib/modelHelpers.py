@@ -56,14 +56,15 @@ def notify(message: str):
     print(message)
 
 
+class MissingAPIKeyError(Exception):
+    """Custom exception for missing API keys."""
+    pass
+
 def get_token() -> str:
-    """Get the OpenAI API key from the environment"""
-    try:
-        return os.environ["OPENAI_API_KEY"]
-    except KeyError:
-        message = "GPT Failure: env var OPENAI_API_KEY is not set."
-        notify(message)
-        raise Exception(message)
+    token = os.environ.get("OPENAI_API_KEY")
+    if not token:
+        raise MissingAPIKeyError("OPENAI_API_KEY not found in environment variables")
+    return token
 
 
 def format_messages(

@@ -15,10 +15,12 @@ from .modelTypes import GPTImageItem, GPTRequest, GPTMessage, GPTTextItem, GPTTo
 All functions in this this file have impure dependencies on either the model or the talon APIs
 """
 
+
 # --- Context class for tool call control ---
 class ModelHelpersContext:
     def __init__(self):
         self.total_tool_calls = 0
+
 
 MAX_TOTAL_CALLS = 3
 context = ModelHelpersContext()
@@ -58,7 +60,9 @@ def notify(message: str):
 
 class MissingAPIKeyError(Exception):
     """Custom exception for missing API keys."""
+
     pass
+
 
 def get_token() -> str:
     token = os.environ.get("OPENAI_API_KEY")
@@ -111,7 +115,22 @@ def build_chatgpt_request(
     return request
 
 
-def build_request(destination):
+def _get_additional_user_context_and_tools():
+    """Fetch additional user context and tools, handling errors."""
+    additional_user_context = []
+    user_tools = []
+    try:
+        if hasattr(actions.user, "gpt_additional_user_context"):
+            additional_user_context = actions.user.gpt_additional_user_context()
+        if hasattr(actions.user, "gpt_tools"):
+            user_tools = json.loads(actions.user.gpt_tools())
+    except Exception as e:
+        notify(f"An error occurred fetching user context/tools: {e}")
+    return additional_user_context, user_tools
+
+
+def _build_request_notification() -> str:
+    """Compose the notification string for build_request."""
     notification = "GPT Task Started"
     if len(GPTState.context) > 0:
         notification += ": Reusing Stored Context"
@@ -119,9 +138,22 @@ def build_request(destination):
         notification += ": Reusing Stored Query"
     if GPTState.thread_enabled:
         notification += ", Threading Enabled"
+    return notification
 
-    notify(notification)
 
+def _build_snippet_context(destination: str) -> str | None:
+    """Return snippet context if destination is 'snip', else None."""
+    if destination == "snip":
+        return (
+            "\n\nReturn the response as a snippet with placeholders. "
+            "A snippet can control cursors and text insertion using constructs like tabstops ($1, $2, etc., with $0 as the final position). "
+            "Linked tabstops update together. Placeholders, such as ${1:foo}, allow easy changes and can be nested (${1:another ${2:}}). "
+            "Choices, using ${1|one,two,three|}, prompt user selection."
+        )
+    return None
+
+def _build_request_context(destination: str) -> list[str]:
+    """Build the list of system messages for the request context."""
     language = actions.code.language()
     language_context = (
         f"The user is currently in a code editor for the programming language: {language}. You are an expert in this language and will return syntactically appropriate responses for insertion directly into this language. All commentary should be commented out so that you do not cause any syntax errors."
@@ -129,56 +161,45 @@ def build_request(destination):
         else None
     )
     application_context = f"The following describes the currently focused application:\n\n{actions.user.talon_get_active_context()}\n\nYou are an expert user of this application."
-    snippet_context = (
-        "\n\n Return the response as a snippet with placeholders. A snippet can control cursors and text insertion using constructs like tabstops ($1, $2, etc., with $0 as the final position). Linked tabstops update together. Placeholders, such as ${1:foo}, allow easy changes and can be nested (${1:another ${2:}}). Choices, using ${1|one,two,three|}, prompt user selection."
-        if destination == "snip"
-        else None
-    )
-    additional_user_context = []
-    user_tools = []
-    try:
-        additional_user_context = actions.user.gpt_additional_user_context()
-        GPTState.tools = json.loads(actions.user.gpt_tools())
-    except Exception as e:
-        notify(f"An error occurred: {e}")
-
-    GPTState.tools = user_tools + [
-        {
-            "type": "function",
-            "function": {
-                "name": "chatgpt_call",
-                "description": "Ask the assistant a followup question during a tool call.",
-                "parameters": {
-                    "type": "object",
-                    "properties": {
-                        "prompt": {
-                            "type": "string",
-                            "description": "The prompt to pass to the assistant.",
-                        }
-                    },
-                    "required": ["prompt"],
-                },
-            },
-        }
-    ]
-
+    snippet_context = _build_snippet_context(destination)
     system_messages = [
-        item
-        for item in additional_user_context
-        + [
-            application_context,
-            settings.get("user.model_system_prompt"),
-            language_context,
-            snippet_context,
-        ]
-        if item is not None
+        m
+        for m in [language_context, application_context, snippet_context]
+        if m is not None
     ]
-
     full_system_messages = [
         strip_markdown(m.get("text", m) if isinstance(m, dict) else m)
         for m in GPTState.context
     ] + system_messages
+    return full_system_messages
 
+
+BUILTIN_ASK_CHATGPT_TOOL = {
+    "type": "function",
+    "function": {
+        "name": "chatgpt_call",
+        "description": "Ask the assistant a followup question during a tool call.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "prompt": {
+                    "type": "string",
+                    "description": "The prompt to pass to the assistant.",
+                }
+            },
+            "required": ["prompt"],
+        },
+    },
+}
+
+def build_request(destination):
+    """Orchestrate the GPT request build process."""
+    notify(_build_request_notification())
+    full_system_messages = _build_request_context(destination)
+    additional_user_context, user_tools = _get_additional_user_context_and_tools()
+    # Always include the built-in Ask ChatGPT tool
+    all_tools = (user_tools or []) + [BUILTIN_ASK_CHATGPT_TOOL]
+    GPTState.tools = all_tools
     GPTState.request = build_chatgpt_request(
         user_messages=GPTState.thread or [],
         system_messages=full_system_messages,
@@ -288,6 +309,17 @@ def send_request(max_attempts: int = 10):
     return response
 
 
+class GPTRequestError(Exception):
+    """Custom exception for errors during GPT API requests."""
+
+    def __init__(self, status_code, error_info):
+        super().__init__(
+            f"GPT API request failed with status {status_code}: {error_info}"
+        )
+        self.status_code = status_code
+        self.error_info = error_info
+
+
 def send_request_internal(request):
     TOKEN = get_token()
     headers = {
@@ -301,12 +333,16 @@ def send_request_internal(request):
     url: str = settings.get("user.model_endpoint")  # type: ignore
     notify("GPT Sending Request")
     raw_response = requests.post(url, headers=headers, data=json.dumps(request))
-    match raw_response.status_code:
-        case 200:
-            notify("GPT Request Completed")
-        case _:
-            notify("GPT Failure: Check the Talon Log")
-            raise Exception(raw_response.json())
+    if raw_response.status_code == 200:
+        notify("GPT Request Completed")
+    else:
+        error_info = None
+        try:
+            error_info = raw_response.json()
+        except Exception:
+            error_info = raw_response.text
+        notify(f"GPT Failure: HTTP {raw_response.status_code} | {error_info}")
+        raise GPTRequestError(raw_response.status_code, error_info)
 
     json_response = raw_response.json()
     if GPTState.debug_enabled:
@@ -316,7 +352,9 @@ def send_request_internal(request):
 
 class ClipboardImageError(Exception):
     """Custom exception for clipboard image errors."""
+
     pass
+
 
 def get_clipboard_image():
     try:
@@ -340,4 +378,6 @@ def get_clipboard_image():
         raise
     except Exception as e:
         print(f"Unexpected error in get_clipboard_image: {e}")
-        raise ClipboardImageError("Invalid image in clipboard or clipboard API failure.")
+        raise ClipboardImageError(
+            "Invalid image in clipboard or clipboard API failure."
+        )

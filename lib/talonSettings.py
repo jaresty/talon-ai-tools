@@ -248,3 +248,10 @@ mod.setting(
     default=80,
     desc="The default window width (in characters) for showing model output",
 )
+
+mod.setting(
+    "gpt_max_total_calls",
+    type=int,
+    default=3,
+    desc="The maximum number of tool calls allowed per GPT request. Increase if you want to allow more recursive or chained tool calls.",
+)

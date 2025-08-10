@@ -24,7 +24,11 @@ class ModelHelpersContext:
         self.total_tool_calls = 0
 
 
-MAX_TOTAL_CALLS = 3
+def _log(message: str):
+    """Simple logger for debug and error messages."""
+    print(f"[modelHelpers] {message}")
+
+MAX_TOTAL_CALLS = settings.get("user.gpt_max_total_calls", 3)
 context = ModelHelpersContext()
 
 
@@ -51,13 +55,15 @@ def chats_to_string(chats: List[GPTMessage]) -> str:
 
 
 def notify(message: str):
-    """Send a notification to the user. Defaults the Andreas' notification system if you have it installed"""
+    """Send a notification to the user. Falls back to Talon/app notify, then logs."""
     try:
         actions.user.notify(message)
     except Exception:
-        app.notify(message)
-    # Log in case notifications are disabled
-    print(message)
+        try:
+            app.notify(message)
+        except Exception:
+            pass
+    _log(message)
 
 
 class MissingAPIKeyError(Exception):
@@ -84,10 +90,12 @@ def format_messages(
 
 
 def format_message(content: str) -> GPTTextItem:
+    """Format a string as a GPTTextItem dictionary."""
     return {"type": "text", "text": content}
 
 
 def extract_message(content: GPTTextItem) -> str:
+    """Extract the text field from a GPTTextItem."""
     return content.get("text", "")
 
 

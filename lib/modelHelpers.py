@@ -47,12 +47,25 @@ def messages_to_string(
     return "\n\n".join(formatted_messages)
 
 
-def chats_to_string(chats: List[GPTMessage]) -> str:
+
+def chats_to_string(chats: Sequence[Union[GPTMessage, GPTTool]]) -> str:
     """Format thread as a string"""
     formatted_messages = []
     for chat in chats:
-        formatted_messages.append(chat.get("role"))
-        formatted_messages.append(messages_to_string(chat.get("content", [])))
+        if isinstance(chat, dict):
+            # GPTMessage or GPTTool, try to handle both
+            role = chat.get("role")
+            if role:
+                formatted_messages.append(role)
+            # GPTMessage: has 'content', GPTTool: may have 'content' or 'tool_call_id', etc.
+            content = chat.get("content", [])
+            if isinstance(content, str):
+                formatted_messages.append(content)
+            else:
+                formatted_messages.append(messages_to_string(content))
+        else:
+            # fallback: just str or unknown type
+            formatted_messages.append(str(chat))
     return "\n\n".join(formatted_messages)
 
 

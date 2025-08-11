@@ -33,6 +33,7 @@ class GPTRequest(TypedDict):
     temperature: float
     n: int
     model: str
+    tool_choice: str
 
 
 @dataclass

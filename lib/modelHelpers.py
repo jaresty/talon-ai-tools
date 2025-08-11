@@ -47,7 +47,6 @@ def messages_to_string(
     return "\n\n".join(formatted_messages)
 
 
-
 def chats_to_string(chats: Sequence[Union[GPTMessage, GPTTool]]) -> str:
     """Format thread as a string"""
     formatted_messages = []
@@ -134,7 +133,8 @@ def build_chatgpt_request(
         "max_tokens": 2024,
         "tools": tools or [],
         "temperature": settings.get("user.model_temperature"),
-        "n": 1,  # always one completion
+        "tool_choice": "auto",
+        "n": 1,
     }
 
     return request
@@ -271,10 +271,15 @@ def call_tool(
             user_message = [format_messages("user", [format_message(prompt)])]
             nested_request = build_chatgpt_request(user_message, [system_msg])
             response = send_request_internal(nested_request)
-            content = response["choices"][0]["message"].get("content", "").strip()
+
+            message_response = response["choices"][0]["message"]
+            message_content = message_response.get("content", "")
+            if message_content is None:
+                notify("GPT Failure: No content returned from chatgpt_call")
+                return format_messages("assistant", [format_message("No content")])
 
             # Return as assistant message instead of tool
-            return format_messages("assistant", [format_message(content)])
+            return format_messages("assistant", [format_message(message_content)])
 
         else:
             # Real tool call via actions
@@ -306,10 +311,6 @@ def send_request(max_attempts: int = 10):
 
         message_response = json_response["choices"][0]["message"]
         message_content = message_response.get("content")
-
-        append_request_messages(
-            [format_messages("assistant", [format_message(message_content)])]
-        )
 
         for tool_call in message_response.get("tool_calls", []):
             tool_id = tool_call["id"]

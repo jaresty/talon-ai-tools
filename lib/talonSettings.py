@@ -177,15 +177,8 @@ def passConfiguration(matched_prompt) -> PassConfiguration:
 
 mod.setting(
     "openai_model",
-    type=Literal["gpt-3.5-turbo", "gpt-4", "gpt-4o-mini"],  # type: ignore
-    default="gpt-4o-mini",
-)
-
-mod.setting(
-    "model_temperature",
-    type=float,
-    default=0.6,
-    desc="The temperature of the model. Higher values make the model more creative.",
+    type=Literal["gpt-3.5-turbo", "gpt-4", "gpt-4o-mini", "gpt-5-nano"],  # type: ignore
+    default="gpt-5-nano",
 )
 
 mod.setting(

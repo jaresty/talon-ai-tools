@@ -28,9 +28,9 @@ class GPTMessage(TypedDict):
 
 class GPTRequest(TypedDict):
     messages: list[GPTMessage | GPTTool]
-    max_tokens: int
+    max_completion_tokens: int
     tools: list[any]
-    temperature: float
+    reasoning_effort: str
     n: int
     model: str
     tool_choice: str

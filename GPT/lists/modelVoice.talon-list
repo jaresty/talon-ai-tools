@@ -5,6 +5,7 @@ list: user.modelVoice
 as programmer: Act as a programmer.
 as prompt engineer: Act as a prompt engineer.
 as scientist: Act as a scientist.
+as logician: Act as a logician.
 
 ## Creative Roles
 as blender: Act as a text transformer.

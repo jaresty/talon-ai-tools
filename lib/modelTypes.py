@@ -34,6 +34,7 @@ class GPTRequest(TypedDict):
     n: int
     model: str
     tool_choice: str
+    verbosity: str
 
 
 @dataclass

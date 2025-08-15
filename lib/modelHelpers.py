@@ -135,6 +135,7 @@ def build_chatgpt_request(
         "tools": tools or [],
         "tool_choice": "auto",
         "n": 1,
+        "verbosity": "low",
     }
 
     return request

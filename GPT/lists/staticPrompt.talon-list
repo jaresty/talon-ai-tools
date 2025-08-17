@@ -76,6 +76,9 @@ fly metrics: Find multiple ways to measure this. For each angle, return metrics 
 fly compare: "You will find two items below. Carefully compare them. List all the differences and similarities, providing detailed explanations for each. Highlight any subtle distinctions and commonalities. Your comparison should compare from different angles. The first item is this: \n\"\"\"\n{additional_source}\n\"\"\"\n The second item follows."
 
 ong: Do something useful that large language models are good at.
+rog: As a large language model, I want you to undo the last transformation that was done to this.
 tap: Give me some suggestions about the next step I can do with this using a large language model.
+fog: Make this more abstract.
+dig: Make this more specific.
 
 answer: Generate text that satisfies the question or request given in the input.

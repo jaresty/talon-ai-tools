@@ -1,4 +1,5 @@
 list: user.modelVoice
+# The following is the merged content based on the provided source text and the specified destination structure.
 -
 
 ## Technical Roles
@@ -25,6 +26,16 @@ as product manager: Act as a product manager.
 
 ## Communication Roles
 as negotiator: Act as a negotiator.
+as mediator: Act as a mediator.
 
-## Critical Roles
-as contrarian: Act as a contrarian.
+## Organizational Roles
+as junior engineer: Act as a junior engineer.
+as principal engineer: Act as a principal engineer.
+as Kent Beck: Act as Kent Beck.
+as CTO: Act as a CTO.
+as CFO: Act as a CFO.
+as platform team: Act as a platform team member.
+as stream aligned team: Act as a stream-aligned team.
+as enabling team: Act as an enabling team.
+as complicated subsystem team: Act as a complicated subsystem team.
+as XP enthusiast: Act as an XP enthusiast.

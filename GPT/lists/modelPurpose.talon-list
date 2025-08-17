@@ -10,4 +10,6 @@ for planning: You are writing to plan.
 for coding: You are programming code. Return only syntactically valid code and comments. If there is any explanation make sure to comment it out rather than returning markdown.
 for slack: You are writing a slack message.
 for prompting: You are building up context for subsequent prompts. Keep your responses concise. Include examples if they help clarify the context. Also include counterexamples if they help with understanding.
-for evaluating: You are evaluating a piece of text. Provide a summary of the text and an evaluation of its quality.
+for evaluating: You are evaluating something.
+for coaching: You are coaching someone.
+for appreciation: You are offering appreciation.

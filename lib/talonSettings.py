@@ -114,7 +114,7 @@ def modelSimplePrompt(matched_prompt) -> str:
 
 
 @mod.capture(
-    rule="^<user.pleasePrompt> [<user.modelCompoundSource>] [using <user.additionalModelSource>] [<user.modelDestination>]$"
+    rule="^[<user.modelCompoundSource>] [using <user.additionalModelSource>] [<user.modelDestination>] <user.pleasePrompt>$"
 )
 def pleasePromptConfiguration(matched_prompt) -> ApplyPromptConfiguration:
     return ApplyPromptConfiguration(
@@ -138,7 +138,7 @@ def pleasePromptConfiguration(matched_prompt) -> ApplyPromptConfiguration:
 
 
 @mod.capture(
-    rule="<user.modelPrompt> [<user.modelCompoundSource>] [using <user.additionalModelSource>] [<user.modelDestination>]"
+    rule="[<user.modelCompoundSource>] [using <user.additionalModelSource>] [<user.modelDestination>] <user.modelPrompt>"
 )
 def applyPromptConfiguration(matched_prompt) -> ApplyPromptConfiguration:
     return ApplyPromptConfiguration(

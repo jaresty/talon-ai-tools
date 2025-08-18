@@ -78,7 +78,7 @@ fly compare: "You will find two items below. Carefully compare them. List all th
 # Directional transformations. ong execute a transformation, rog undo the last transformation, tap suggest next steps, fog abstract, dig specific.
 ong: Assume that I have assigned a good task for a large language model to do. Do that task.
 rog: Assume that this is the output of a large language model. Give me the inputs.
-tap: Propose 3–5 concrete next steps for applying an LLM to this.
+tap: Assume that I am going to use a large language model on this. Give me 3-5 example uses.
 fog: Elevate the abstraction level; provide a high-level view or summary.
 dig: Make this more specific. If you need information, ask for clarification.
 

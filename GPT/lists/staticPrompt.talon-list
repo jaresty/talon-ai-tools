@@ -60,7 +60,7 @@ dip coach: Offer some coaching to improve this.
 dip evaluate: Evaluate this. Return just the evaluation.
 dip metrics: Find a way to measure this. Return just the metrics. For each metric return a concrete example.
 dip questions: Help me explore this using open ended questions. An open ended question cannot be answered with a simple yes or no.
-dip wrong: How could this go wrong? Give me one likely issue.
+dip wrong: Considering this carefully, how could this go wrong? Give me one likely issue.
 
 ## Diverge
 fly groups: Suggest different ways to categorize or split the following text, which contains multiple interrelated topics. Return just the modified text.
@@ -76,7 +76,7 @@ fly idea: Give me various ideas about this.
 fly emoji: Give me some appropriate emoji for this. Return just the emoji. Explore multiple options.
 fly metrics: Find multiple ways to measure this. For each angle, return metrics that may be useful and explain why. For each metric return a concrete example.
 fly compare: "You will find two items below. Carefully compare them. List all the differences and similarities, providing detailed explanations for each. Highlight any subtle distinctions and commonalities. Your comparison should compare from different angles. The first item is this: \n\"\"\"\n{additional_source}\n\"\"\"\n The second item follows."
-fly wrong: How could this go wrong? Explore multiple angles.
+fly wrong: Considering this situation carefully, how could go wrong? Explore multiple angles.
 
 # Directional transformations. ong execute a transformation, rog undo the last transformation, tap suggest next steps, fog abstract, dig specific.
 ong: Infer what to do with this and do it. I cannot respond to any questions.

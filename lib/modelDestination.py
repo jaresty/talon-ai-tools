@@ -150,6 +150,14 @@ class Paste(ModelDestination):
         extracted_message = messages_to_string(gpt_message)
         actions.user.paste(extracted_message)
 
+class Draft(ModelDestination):
+    def insert(self, gpt_message):
+        GPTState.last_was_pasted = True
+        extracted_message = messages_to_string(gpt_message)
+        actions.user.draft_editor_open()
+        actions.user.delete_all()
+        actions.user.paste(extracted_message)
+
 
 class Typed(ModelDestination):
     def insert(self, gpt_message):
@@ -229,5 +237,7 @@ def create_model_destination(destination_type: str) -> ModelDestination:
             return Thread()
         case "newThread":
             return NewThread()
+        case "draft":
+            return Draft()
         case _:
             return Default()

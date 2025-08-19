@@ -59,6 +59,8 @@ dip shell: I need a shell command to do the following. Return just the shell com
 dip coach: Offer some coaching to improve this.
 dip evaluate: Evaluate this. Return just the evaluation.
 dip metrics: Find a way to measure this. Return just the metrics. For each metric return a concrete example.
+dip questions: Help me explore this using open ended questions. An open ended question cannot be answered with a simple yes or no.
+
 
 ## Diverge
 fly groups: Suggest different ways to categorize or split the following text, which contains multiple interrelated topics. Return just the modified text.

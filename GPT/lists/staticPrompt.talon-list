@@ -78,10 +78,10 @@ fly metrics: Find multiple ways to measure this. For each angle, return metrics 
 fly compare: "You will find two items below. Carefully compare them. List all the differences and similarities, providing detailed explanations for each. Highlight any subtle distinctions and commonalities. Your comparison should compare from different angles. The first item is this: \n\"\"\"\n{additional_source}\n\"\"\"\n The second item follows."
 
 # Directional transformations. ong execute a transformation, rog undo the last transformation, tap suggest next steps, fog abstract, dig specific.
-ong: Infer what to do with this and do it.
+ong: Infer what to do with this and do it. I cannot respond to any questions.
 rog: Infer the query that led to this response.
-tap: Assume that I am going to use a large language model on this. Give me 3-5 example uses.
-fog: Elevate the abstraction level; provide a high-level view or summary.
-dig: Make this more specific. If you need information, ask for clarification.
+tap: Assume that I am going to use a large language model on this. Give me 3-5 example uses. I cannot respond to any questions.
+fog: Elevate the abstraction level; provide a high-level view or summary. I cannot respond to any questions.
+dig: Make this more specific. I cannot respond to any questions.
 
 answer: Generate text that satisfies the question or request given in the input.

@@ -3,6 +3,7 @@ import textwrap
 from talon import Context, Module, actions, clip, imgui, settings
 
 from .modelHelpers import GPTState, extract_message, notify
+from .modelDestination import create_model_destination
 
 mod = Module()
 ctx = Context()
@@ -116,7 +117,7 @@ class UserActions:
         """Analyze the last prompt"""
         GPTState.text_to_confirm = ""
         actions.user.confirmation_gui_close()
-        actions.user.gpt_analyze_prompt("window")
+        actions.user.gpt_analyze_prompt(create_model_destination("window"))
 
     def confirmation_gui_pass_thread():
         """Add the model output to the thread"""

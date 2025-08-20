@@ -81,8 +81,9 @@ fly wrong: Considering this situation carefully, how could go wrong? Explore mul
 # Directional transformations. ong execute a transformation, rog undo the last transformation, tap suggest next steps, fog abstract, dig specific.
 ong: Infer what to do with this and do it. I cannot respond to any questions.
 rog: Infer the query that led to this response.
-tap: Assume that I am going to use a large language model on this. Give me 3-5 example uses. I cannot respond to any questions.
-fog: Elevate the abstraction level; provide a high-level view or summary. I cannot respond to any questions.
-dig: Make this more specific. I cannot respond to any questions.
+tap: Assume that I am going to use a large language model on this. Give me 3-5 good uses tailored to the following.
+knowledge tap: Tell me what fields of knowledge, theory, or abstract ideas may be applicable to the following. Give me 3-5 example uses.
+fog: Elevate the abstraction level; provide a high-level view or summary.
+dig: Decrease the abstraction level; make this more specific.
 
 answer: Generate text that satisfies the question or request given in the input.

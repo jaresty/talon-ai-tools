@@ -131,7 +131,7 @@ def build_chatgpt_request(
         "model": settings.get("user.openai_model"),
         "messages": messages,
         "max_completion_tokens": 2024,
-        "reasoning_effort": "minimal",
+        "reasoning_effort": "medium",
         "tools": tools or [],
         "tool_choice": "auto",
         "n": 1,

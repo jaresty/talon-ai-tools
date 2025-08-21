@@ -131,11 +131,11 @@ def build_chatgpt_request(
         "model": settings.get("user.openai_model"),
         "messages": messages,
         "max_completion_tokens": 2500,
-        "reasoning_effort": "medium",
+        "reasoning_effort": "minimal",
         "tools": tools or [],
         "tool_choice": "auto",
         "n": 1,
-        "verbosity": "medium",
+        "verbosity": "low",
     }
 
     return request

@@ -130,7 +130,7 @@ def build_chatgpt_request(
     request: GPTRequest = {
         "model": settings.get("user.openai_model"),
         "messages": messages,
-        "max_completion_tokens": 2024,
+        "max_completion_tokens": 2500,
         "reasoning_effort": "medium",
         "tools": tools or [],
         "tool_choice": "auto",

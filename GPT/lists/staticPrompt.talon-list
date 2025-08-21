@@ -62,6 +62,9 @@ dip metrics: Find a way to measure this. Return just the metrics. For each metri
 dip questions: Help me explore this using open ended questions. An open ended question cannot be answered with a simple yes or no.
 dip wrong: Considering this carefully, how could this go wrong? Give me one likely issue.
 
+reason fog: Reorder this so the reasoning comes first.
+exception fog: Reorder this so the exceptions come first.
+
 ## Diverge
 fly groups: Suggest different ways to categorize or split the following text, which contains multiple interrelated topics. Return just the modified text.
 fly questions: Help me explore this using open ended questions from multiple perspectives. An open ended question cannot be answered with a simple yes or no. For each perspective, ask followup questions and indicate what perspective is being taken.

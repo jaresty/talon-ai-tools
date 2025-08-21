@@ -177,8 +177,8 @@ def passConfiguration(matched_prompt) -> PassConfiguration:
 
 mod.setting(
     "openai_model",
-    type=Literal["gpt-3.5-turbo", "gpt-4", "gpt-4o-mini", "gpt-5-nano"],  # type: ignore
-    default="gpt-5-nano",
+    type=Literal["gpt-3.5-turbo", "gpt-4", "gpt-4o-mini", "gpt-5"],  # type: ignore
+    default="gpt-5",
 )
 
 mod.setting(

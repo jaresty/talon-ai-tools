@@ -69,6 +69,7 @@ emoji dig: Make this text easier to scan by adding emoji in the appropriate plac
 emoji ong: Give me an appropriate emoji for this. Return just the emoji.
 emoji fog: Give me some appropriate emoji for this. Return just the emoji. Explore multiple options.
 metrics ong: Find a way to measure this. Return just the metrics. For each metric return a concrete example.
+retro ong: I need a way to help a group reflect on this. Think of an approach and tell me what to do.
 
 ## Diverge
 fly groups: Suggest different ways to categorize or split the following text, which contains multiple interrelated topics. Return just the modified text.

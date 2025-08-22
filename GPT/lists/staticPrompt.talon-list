@@ -42,7 +42,6 @@ dip docs: Add API documentation to the following code. Include documentation for
 dip dry: Reduce duplication in the following code without changing its behavior. Return just the new code for direct insertion.
 dip commit: Draft a conventional commit message for the staged git changes.
 dip clusters: This text contains similar but not identical ideas. Create a table listing each comparison once to highlight these subtle differences. Omit ideas that appear only once. Ensure the table width does not exceed 100 characters, wrapping text to new lines as necessary.
-dip compare: "You will find two items below. Carefully compare them. List all the differences and similarities, providing detailed explanations for each. Highlight any subtle distinctions and commonalities. The first item is this: \n\"\"\"\n{additional_source}\n\"\"\"\n The second item follows."
 dip critique: Critique this text. Tell me what is wrong with it.
 dip is obscure: Identify all terms in the following text that are not defined. Return just the list of terms.
 dip is objective: Assess whether the following text maintains objectivity. Provide examples to support your conclusion.
@@ -59,15 +58,21 @@ dip shell: I need a shell command to do the following. Return just the shell com
 dip coach: Offer some coaching to improve this.
 dip evaluate: Evaluate this. Return just the evaluation.
 dip metrics: Find a way to measure this. Return just the metrics. For each metric return a concrete example.
-dip questions: Help me explore this using open ended questions. An open ended question cannot be answered with a simple yes or no.
 dip wrong: Considering this carefully, how could this go wrong? Give me one likely issue.
 
 reason fog: Reorder this so the reasoning comes first.
 exception fog: Reorder this so the exceptions come first.
+questions fog: Help me explore this using open ended questions. An open ended question cannot be answered with a simple yes or no.
+
+compare dig: "You will find two items below. Carefully compare them. List all the differences and similarities, providing detailed explanations for each. Highlight any subtle distinctions and commonalities. The first item is this: \n\"\"\"\n{additional_source}\n\"\"\"\n The second item follows."
+
+emoji dig: Make this text easier to scan by adding emoji in the appropriate places.
+emoji ong: Give me an appropriate emoji for this. Return just the emoji.
+emoji fog: Give me some appropriate emoji for this. Return just the emoji. Explore multiple options.
+
 
 ## Diverge
 fly groups: Suggest different ways to categorize or split the following text, which contains multiple interrelated topics. Return just the modified text.
-fly questions: Help me explore this using open ended questions from multiple perspectives. An open ended question cannot be answered with a simple yes or no. For each perspective, ask followup questions and indicate what perspective is being taken.
 fly prompt: Craft several alternative versions of this prompt to increase its effectiveness. If there is any ambiguity in the intention, provide responses that explore the different possible meanings.
 fly interpretation: Formulate multiple reasonable interpretations of this, considering different perspectives.
 fly refactor: Evaluate this code with a focus on potential changes. Each unit of code should have only one reason to change. Identify areas for improvement to enhance the design.
@@ -76,9 +81,7 @@ fly diagram: Analyze the given plain text from different perspectives. For each 
 fly math: Consider various interpretations of this and transform each into a mathematical formulation or model.
 fly how to: Im stuck with an issue and need help brainstorming solutions. What are some potential approaches I can take to solve this problem today?
 fly idea: Give me various ideas about this.
-fly emoji: Give me some appropriate emoji for this. Return just the emoji. Explore multiple options.
 fly metrics: Find multiple ways to measure this. For each angle, return metrics that may be useful and explain why. For each metric return a concrete example.
-fly compare: "You will find two items below. Carefully compare them. List all the differences and similarities, providing detailed explanations for each. Highlight any subtle distinctions and commonalities. Your comparison should compare from different angles. The first item is this: \n\"\"\"\n{additional_source}\n\"\"\"\n The second item follows."
 fly wrong: Considering this situation carefully, how could go wrong? Explore multiple angles.
 
 # Directional transformations. ong execute a transformation, rog undo the last transformation, tap suggest next steps, fog abstract, dig specific.

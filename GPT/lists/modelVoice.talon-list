@@ -22,7 +22,7 @@ as other: Act as someone who does not know the author of this text.
 
 ## Management Roles
 as facilitator: Act as a facilitator.
-as product manager: Act as a product manager.
+as PM: Act as a product manager.
 
 ## Communication Roles
 as negotiator: Act as a negotiator.
@@ -40,3 +40,6 @@ as stream aligned team: Act as a stream-aligned team.
 as enabling team: Act as an enabling team.
 as complicated subsystem team: Act as a complicated subsystem team.
 as XP enthusiast: Act as an XP enthusiast.
+
+as various: Act as various stakeholders. For each stakeholder tell me what stakeholder it is and why they care about this.
+as perspectives: Take various perspectives. For each perspective tell me what perspective it is and it matters.

@@ -14,5 +14,5 @@ for prompting: You are building up context for subsequent prompts. Keep your res
 for evaluating: You are evaluating something.
 for coaching: You are coaching someone.
 for appreciation: You are offering appreciation.
-for diverging: Youre opening up the conversation to help with thinking about the bigger picture.
+for diverging: Youre opening up the conversation to help with thinking about the bigger picture and multiple perspectives.
 for converging: You are helping converge on a decision.

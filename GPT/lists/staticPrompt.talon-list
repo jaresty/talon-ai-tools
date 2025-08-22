@@ -57,7 +57,6 @@ dip test plan: Write me a test plan for this file. I prefer small and independen
 dip shell: I need a shell command to do the following. Return just the shell command.
 dip coach: Offer some coaching to improve this.
 dip evaluate: Evaluate this. Return just the evaluation.
-dip metrics: Find a way to measure this. Return just the metrics. For each metric return a concrete example.
 dip wrong: Considering this carefully, how could this go wrong? Give me one likely issue.
 
 reason fog: Reorder this so the reasoning comes first.
@@ -69,7 +68,7 @@ compare dig: "You will find two items below. Carefully compare them. List all th
 emoji dig: Make this text easier to scan by adding emoji in the appropriate places.
 emoji ong: Give me an appropriate emoji for this. Return just the emoji.
 emoji fog: Give me some appropriate emoji for this. Return just the emoji. Explore multiple options.
-
+metrics ong: Find a way to measure this. Return just the metrics. For each metric return a concrete example.
 
 ## Diverge
 fly groups: Suggest different ways to categorize or split the following text, which contains multiple interrelated topics. Return just the modified text.
@@ -81,7 +80,6 @@ fly diagram: Analyze the given plain text from different perspectives. For each 
 fly math: Consider various interpretations of this and transform each into a mathematical formulation or model.
 fly how to: Im stuck with an issue and need help brainstorming solutions. What are some potential approaches I can take to solve this problem today?
 fly idea: Give me various ideas about this.
-fly metrics: Find multiple ways to measure this. For each angle, return metrics that may be useful and explain why. For each metric return a concrete example.
 fly wrong: Considering this situation carefully, how could go wrong? Explore multiple angles.
 
 # Directional transformations. ong execute a transformation, rog undo the last transformation, tap suggest next steps, fog abstract, dig specific.

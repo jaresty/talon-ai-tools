@@ -1,5 +1,6 @@
 list: user.staticPrompt
 -
+
 # Tone: Concise, operational, systems-minded
 # Audience: Power users of Windsurf and Talon who maintain prompt libraries
 # Purpose: Spot misclassifications and suggest minimal fixes without redundancy
@@ -22,7 +23,7 @@ describe fog: Describe this content.
 abstract fog: Generalize the text.
 explain fog: Provide a detailed explanation.
 objectivity fog: Assess objectivity with examples.
-undefined-terms fog: List undefined terms only.
+undefined fog: List undefined terms only.
 critique fog: Critique: what’s wrong with the text.
 style fog: Describe style instructions with an example.
 

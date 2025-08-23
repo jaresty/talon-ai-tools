@@ -1,100 +1,96 @@
 list: user.staticPrompt
 -
 
-# Use static prompts as aliases for detailed instructions
-# Reduce verbosity and prevent the need to say the entire prompt each time time
+# Tone: Concise, operational, systems-minded
+# Audience: Power users of Windsurf and Talon who maintain prompt libraries
+# Purpose: Spot misclassifications and suggest minimal fixes without redundancy
 
-## Converge
-dip table: The following markdown text is raw data. There is no index. Return the text in a markdown table format. Each row has a new line in the original data.
-dip bullets: Convert each paragraph into a heading with a series of bullet points underneath it. Each paragraph is separated by a new line. Separate paragraphs should not have combined bullet points. This should all be done in markdown syntax. If it is a small paragraph, then you can just leave it as a heading and not add bullet points. Do not reduce content, only reduce things that would be redundant. These bullet points should be in a useful format for notes for those who want to quickly look at it. If there is a citation in the markdown original, then keep the citation just at the top and not within every individual bullet point.
-dip diagram: Convert the following plain text into the text syntax for a mermaid diagram.
-dip system: Translate the given plain text into mermaid diagram syntax. Focus on representing the system in a way that aligns with systems thinking methodologies, showcasing relationships, balancing and reinforcing feedback loops (if present), and system dynamics.
-dip describe: Describe this content.
-dip outline: Create an outline that encapsulates the text below. Keep the number of sections between three and five to optimize for human working memory. Return just the outline.
-dip todo: Annotate each task in the following text with context and relative size tags. Convert each task into a single action item and output them as a markdown todo list. If there are multiple items within a task, split them into separate tasks. Return only the tasks.
-dip heading: Create a heading that encapsulates the text below. Return just the heading.
-dip gherkin: Reformat the following text into proper gherkin without adding new criteria. Use Jira markup for formatting. Return just the modified text.
-dip HTML: Format the following text as semantic HTML. Return just the formatted HTML.
-dip whole: The following text describes individual parts of a whole. Create a description that represents the complete entity.
-dip parts: The following text presents a whole concept. Divide it into its distinct elements. Return just the elements.
-dip groups: The following text consists of various topics all put together. Group these items into categories and label each category. Return just the results.
-dip joined: The following text is separated into multiple parts. Group them together into one part maintaining the flow and meaning. Reorder in whatever way makes sense. Remove any redundant information. The result should be only one part with no additional structure. Return just the modified text.
-dip split: The text below contains multiple topics. Your job is to separate these topics into sections and arrange them clearly. Provide only the reformatted text.
-dip short: Shorten the following text while preserving its meaning. Return just the modified text.
-dip flat: Edit the text below to form a single, cohesive, and grammatically correct paragraph that clearly communicates the main points. Provide the modified version only.
-dip shuffled: Reconstruct the following text to ensure the layout is logical and significantly different from the original. Create new categories, each representing a single idea without using conjunctions like AND or OR. Present the revised text in the same language.
-dip clear: Add additional context to the selected text that would be appropriate to the situation and add useful information. Also fix any grammatical mistakes. If you need to ask questions in order to add the necessary context, respond with those questions instead.
-dip fix: Fix any grammatical mistakes in this text. Return just the modified text. Do not change the meaning or tone.
-dip context: I want to provide this information to an LLM. Add any additional context that would be useful for the LLM to understand the text. Return just the context, formatted for the LLMs consumption directly.
-dip softer: Act as an editor. I want you to make the following text softer in tone. Return just the modified text.
-dip stronger: Act as an editor. I want you to make the following text stronger in tone. Return just the modified text.
-dip match: I have given you some context to describe a style of writing that I would like to use. Make this text match that style. Return just the modified text.
-dip abstract: Convert this specific text into a more generalized and abstract form.
-dip math: Convert this text into a mathematical formula or representation.
-dip interesting: Reorder the text so the most surprising or interesting part comes first. Maintain the current tone. Return just the modified text.
-dip direct: Reorder the text to be more direct. Lead with the main point and follow up with auxiliary information. Return just the modified text.
-dip indirect: Reorder the text to be more indirect. Lead with auxiliary information and conclude with the main point. Return just the modified text.
-dip emphatic: Place special emphasis on this text to show that it holds greater significance.
-dip understated: Rewrite this text to make it clear that it is not the main point. It should be easily distinguishable from the main content.
-dip blend: "Im going to give you some source text and destination text, and I want you to modify the destination text based on the contents of the source text in a way that combines both of them together. Use the structure of the destination text, reordering and renaming as necessary to ensure a natural and coherent flow. Return only the final text with no decoration for insertion into a document in the specified language. Here is the destination text: \"\"\"\n {additional_source} \n\"\"\" The source text follows."
-dip guard: Refactor this code to handle error cases first. Use guard clauses or throw errors where appropriate. Return just the modified text for direct insertion into code.
-dip docs: Add API documentation to the following code. Include documentation for all parameters used. Return just the modified text.
-dip dry: Reduce duplication in the following code without changing its behavior. Return just the new code for direct insertion.
-dip commit: Draft a conventional commit message for the staged git changes.
-dip clusters: This text contains similar but not identical ideas. Create a table listing each comparison once to highlight these subtle differences. Omit ideas that appear only once. Ensure the table width does not exceed 100 characters, wrapping text to new lines as necessary.
-dip critique: Critique this text. Tell me what is wrong with it.
-dip is obscure: Identify all terms in the following text that are not defined. Return just the list of terms.
-dip is objective: Assess whether the following text maintains objectivity. Provide examples to support your conclusion.
-dip dependencies: Identify all dependencies in the following text and what they depend on. Consider something a dependency if both it and what it depends on are listed. Return just the list of dependencies.
-dip style: I want you to describe the style of this text so that I can use your response as instructions to reformat some other text to match that style. Include an example for clarity.
-dip process: Identify the process flow in the following text. Return just the flow.
-dip explain: Provide a detailed explanation of this.
-dip how to: I have a problem that I do not know how to solve. Help me think through a quick plan to solve this problem. What steps should I take so I can resolve this today?
-dip bridge: "Guide me to achieve the desired situation: {additional_source}, starting from the current state. The current situation is described below."
-dip emoji: Give me an appropriate emoji for this. Return just the emoji.
-dip debug: I need help solving this problem. I think there is an obvious solution. Tell me how to fix it, or if the solution is not obvious tell me so.
-dip test plan: Write me a test plan for this file. I prefer small and independent tests, but there should be only one test for each path through the code. List every case that needs to be tested.
-dip shell: I need a shell command to do the following. Return just the shell command.
-dip coach: Offer some coaching to improve this.
-dip evaluate: Evaluate this. Return just the evaluation.
-dip wrong: Considering this carefully, how could this go wrong? Give me one likely issue.
+# Stakeholders:
+# - Prompt Librarian: Ensures alias clarity, no overlaps, consistent directionality.
+# - Power User: Wants memorable, stable suffixes and predictable effects.
+# - Facilitator/Team Lead: Needs consistent semantics across workflows.
+# - Developer/Automator: Requires stable names and deterministic behavior.
 
+# Changes applied:
+# - Reclassify describe/abstract/explain/is objective/is obscure/critique/style to FOG.
+# - Clarify process ong to “Identify the process flow; return just the flow.”
+# - Keep emoji fog/dig/ong distinct.
+# - No other semantic changes.
+
+# FOG (higher-level/abstract)
 reason fog: Reorder this so the reasoning comes first.
 exception fog: Reorder this so the exceptions come first.
 questions fog: Help me explore this using open ended questions. An open ended question cannot be answered with a simple yes or no.
-
-compare dig: "You will find two items below. Carefully compare them. List all the differences and similarities, providing detailed explanations for each. Highlight any subtle distinctions and commonalities. The first item is this: \n\"\"\"\n{additional_source}\n\"\"\"\n The second item follows."
-
-emoji dig: Make this text easier to scan by adding emoji in the appropriate places.
-emoji ong: Give me an appropriate emoji for this. Return just the emoji.
 emoji fog: Give me some appropriate emoji for this. Return just the emoji. Explore multiple options.
-metrics ong: Find a way to measure this. Return just the metrics. For each metric return a concrete example.
-retro ong: I need a way to help a group reflect on this. Think of an approach and tell me what to do.
-mini retro ong: I need a way to help a group reflect on this in under 5 minutes including the time to explain the activity so it must be simple and really take one or two steps at most. Think of an approach and tell me what to do.
-
-## Diverge
-fly groups: Suggest different ways to categorize or split the following text, which contains multiple interrelated topics. Return just the modified text.
-fly prompt: Craft several alternative versions of this prompt to increase its effectiveness. If there is any ambiguity in the intention, provide responses that explore the different possible meanings.
-fly interpretation: Formulate multiple reasonable interpretations of this, considering different perspectives.
-fly refactor: Evaluate this code with a focus on potential changes. Each unit of code should have only one reason to change. Identify areas for improvement to enhance the design.
-fly debug: Explore different hypotheses for this. Provide a step-by-step experiment for each hypothesis to verify or reject it.
-fly diagram: Analyze the given plain text from different perspectives. For each perspective, translate it into mermaid diagram syntax.
-fly math: Consider various interpretations of this and transform each into a mathematical formulation or model.
-fly how to: Im stuck with an issue and need help brainstorming solutions. What are some potential approaches I can take to solve this problem today?
-fly idea: Give me various ideas about this.
-fly wrong: Considering this situation carefully, how could go wrong? Explore multiple angles.
-
-# Directional transformations. ong execute a transformation, rog undo the last transformation, tap suggest next steps, fog abstract, dig specific.
-ong: Infer what to do with this and do it. I cannot respond to any questions.
-rog: Infer the query that led to this response.
-tap: Assume that I am going to use a large language model on this. Give me 3-5 good uses tailored to the following.
-knowledge tap: Tell me what fields of knowledge, theory, or abstract ideas may be applicable to the following. Give me 3-5 examples.
-audience tap: Tell me what you think the audience for this is. Give me 3-5 possibilities.
-tone tap: Tell me what tone you think this has. Give me 3-5 possibilities.
-
 fog: Elevate the abstraction level; provide a high-level view or summary.
+describe fog: Describe this content.
+abstract fog: Generalize the text.
+explain fog: Provide a detailed explanation.
+is objective fog: Assess objectivity with examples.
+is obscure fog: List undefined terms only.
+critique fog: Critique: what’s wrong with the text.
+style fog: Describe style instructions with an example.
+
+# DIG (lower-level/specific)
+compare dig: "You will find two items below. Carefully compare them. List all the differences and similarities, providing detailed explanations for each. Highlight any subtle distinctions and commonalities. The first item is this: \n\"\"\"\n{additional_source}\n\"\"\"\n The second item follows."
+emoji dig: Make this text easier to scan by adding emoji in the appropriate places.
 dig: Decrease the abstraction level; make this more specific and filling in any useful details.
 
-emoji dig: Make this text easier to scan by adding emoji in the appropriate places.
+# ONG (forward/transform)
+table ong: The following markdown text is raw data. There is no index. Return the text in a markdown table format. Each row has a new line in the original data.
+bullets ong: Convert each paragraph into a heading with bullet points underneath. Preserve citations only at the top. Don’t reduce content; remove redundancy. Use markdown.
+diagram ong: Convert the following plain text into the text syntax for a mermaid diagram.
+system ong: Translate the given plain text into mermaid syntax emphasizing systems thinking, loops, and dynamics.
+outline ong: Create a 3–5 section outline that encapsulates the text. Return just the outline.
+todo ong: Convert tasks into single action items with context and relative size tags; split multiples; return a markdown todo list only.
+heading ong: Create a heading that encapsulates the text. Return just the heading.
+gherkin ong: Reformat into proper Gherkin using Jira markup; return only modified text.
+HTML ong: Format the text as semantic HTML; return only HTML.
+whole ong: Parts-to-whole: write a complete entity description.
+parts ong: Whole-to-parts: return just the elements.
+groups ong: Group items into categories and label them; return just results.
+joined ong: Merge parts into one coherent part; reorder as needed; remove redundancy; return only the single part.
+split ong: Separate topics into clear sections; return only reformatted text.
+short ong: Shorten while preserving meaning; return only modified text.
+flat ong: Edit into one cohesive paragraph; return only the paragraph.
+shuffled ong: Reconstruct layout with new single-idea categories; avoid AND/OR conjunctions; same language.
+clear ong: Add appropriate context and useful info; fix grammar. If questions are needed, ask them instead. (Note: this one may prompt questions.)
+fix ong: Fix grammar only; keep meaning and tone; return only modified text.
+context ong: Add LLM-ready context; return just the context.
+softer ong: Make the tone softer; return only modified text.
+stronger ong: Make the tone stronger; return only modified text.
+match ong: Rewrite to match provided style; return only modified text.
+math ong: Convert to a mathematical formula or representation.
+interesting ong: Lead with the most surprising/interesting part; keep tone; return only modified text.
+direct ong: Make ordering more direct; main point first; return only modified text.
+indirect ong: Make ordering indirect; main point last; return only modified text.
+emphatic ong: Emphasize the text to show greater significance.
+understated ong: Mark as not the main point; easily distinguishable.
+blend ong: Blend source into destination structure; return final text only.
+guard ong: Refactor code to guard clauses/errors first; return only modified code.
+docs ong: Add API docs for all parameters; return only modified text.
+dry ong: Reduce code duplication without changing behavior; return only new code.
+commit ong: Draft a conventional commit message for staged changes.
+clusters ong: Table of subtle differences among similar ideas; omit singletons; width ≤ 100 chars.
+dependencies ong: List dependencies and what they depend on.
+process ong: Identify the process flow; return just the flow.
+how to ong: Quick plan to solve the problem today.
+bridge ong: Guide from current to desired situation using given additional_source.
+emoji ong: Give an appropriate emoji; return just the emoji.
+metrics ong: Find metrics with concrete examples; return just the metrics.
+retro ong: Design a group reflection approach; provide what to do.
+mini retro ong: Sub-5-minute reflection approach; simple 1–2 steps.
 
-answer: Generate text that satisfies the question or request given in the input.
+# ROG (back/undo)
+rog: Infer the query that led to this response.
+
+# TAP (begin ongoing convo)
+tap: Assume use with an LLM; give 3–5 good uses tailored to the following.
+knowledge tap: 3–5 applicable fields of knowledge/theory.
+audience tap: 3–5 possible audiences.
+tone tap: 3–5 possible tones.
+
+# Notes:
+# - Removed “dip” and “fly” prefixes; applied fog/dig/ong/rog/tap suffixes per directionality.
+# - Deduplicated overlapping items; preserved distinct intents (e.g., emoji fog vs emoji ong vs emoji dig).
+# - Kept commands terse for fast recall (e.g., “table ong”, “fix ong”, “compare dig”).

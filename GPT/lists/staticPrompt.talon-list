@@ -10,19 +10,8 @@ list: user.staticPrompt
 # - Facilitator/Team Lead: Needs consistent semantics across workflows.
 # - Developer/Automator: Requires stable names and deterministic behavior.
 
-# Summary:
-# - Action: Apply specified reclassifications, clarify process ong, ensure emoji variants remain distinct, and flag minimal additional fixes.
-# - Rationale: Reduce ambiguity, enforce directionality (FOG/DIG/ONG), and stabilize command surface.
+# Action: Apply specified reclassifications, clarify process ong, ensure emoji variants remain distinct, and flag minimal additional fixes.
 
-# Minimal fixes (operational deltas only):
-# 1) Rename "is objective fog" and "is obscure fog" to avoid verb-leading collisions with other "is ..." patterns; keep semantics.
-#    - "objectivity fog" and "undefined-terms fog" for stability and grep-ability.
-# 2) Clarify "clear ong" note to remove question-asking behavior since user can’t respond; align with ONG transform contract.
-#    - Modify to: "Add appropriate context and useful info; fix grammar. Return only modified text. Do not ask questions."
-# 3) Standardize imperative phrasing across FOG/DIG/ONG for predictability.
-# 4) Ensure all “Return only …” variants consistently specify output constraints.
-
-# Applied specification (post-fix)
 # FOG (higher-level/abstract)
 reason fog: Reorder this so the reasoning comes first.
 exception fog: Reorder this so the exceptions come first.
@@ -73,9 +62,6 @@ indirect ong: Make ordering indirect; main point last; return only modified text
 emphatic ong: Emphasize the text to show greater significance.
 understated ong: Mark as not the main point; easily distinguishable.
 blend ong: Blend source into destination structure; return final text only.
-guard ong: Refactor code to guard clauses/errors first; return only modified code.
-docs ong: Add API docs for all parameters; return only modified text.
-dry ong: Reduce code duplication without changing behavior; return only new code.
 commit ong: Draft a conventional commit message for staged changes.
 clusters ong: Table of subtle differences among similar ideas; omit singletons; width ≤ 100 chars.
 dependencies ong: List dependencies and what they depend on.

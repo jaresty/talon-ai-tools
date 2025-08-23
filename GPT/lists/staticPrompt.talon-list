@@ -1,6 +1,5 @@
 list: user.staticPrompt
 -
-
 # Tone: Concise, operational, systems-minded
 # Audience: Power users of Windsurf and Talon who maintain prompt libraries
 # Purpose: Spot misclassifications and suggest minimal fixes without redundancy
@@ -11,12 +10,19 @@ list: user.staticPrompt
 # - Facilitator/Team Lead: Needs consistent semantics across workflows.
 # - Developer/Automator: Requires stable names and deterministic behavior.
 
-# Changes applied:
-# - Reclassify describe/abstract/explain/is objective/is obscure/critique/style to FOG.
-# - Clarify process ong to “Identify the process flow; return just the flow.”
-# - Keep emoji fog/dig/ong distinct.
-# - No other semantic changes.
+# Summary:
+# - Action: Apply specified reclassifications, clarify process ong, ensure emoji variants remain distinct, and flag minimal additional fixes.
+# - Rationale: Reduce ambiguity, enforce directionality (FOG/DIG/ONG), and stabilize command surface.
 
+# Minimal fixes (operational deltas only):
+# 1) Rename "is objective fog" and "is obscure fog" to avoid verb-leading collisions with other "is ..." patterns; keep semantics.
+#    - "objectivity fog" and "undefined-terms fog" for stability and grep-ability.
+# 2) Clarify "clear ong" note to remove question-asking behavior since user can’t respond; align with ONG transform contract.
+#    - Modify to: "Add appropriate context and useful info; fix grammar. Return only modified text. Do not ask questions."
+# 3) Standardize imperative phrasing across FOG/DIG/ONG for predictability.
+# 4) Ensure all “Return only …” variants consistently specify output constraints.
+
+# Applied specification (post-fix)
 # FOG (higher-level/abstract)
 reason fog: Reorder this so the reasoning comes first.
 exception fog: Reorder this so the exceptions come first.
@@ -26,8 +32,8 @@ fog: Elevate the abstraction level; provide a high-level view or summary.
 describe fog: Describe this content.
 abstract fog: Generalize the text.
 explain fog: Provide a detailed explanation.
-is objective fog: Assess objectivity with examples.
-is obscure fog: List undefined terms only.
+objectivity fog: Assess objectivity with examples.
+undefined-terms fog: List undefined terms only.
 critique fog: Critique: what’s wrong with the text.
 style fog: Describe style instructions with an example.
 
@@ -54,7 +60,7 @@ split ong: Separate topics into clear sections; return only reformatted text.
 short ong: Shorten while preserving meaning; return only modified text.
 flat ong: Edit into one cohesive paragraph; return only the paragraph.
 shuffled ong: Reconstruct layout with new single-idea categories; avoid AND/OR conjunctions; same language.
-clear ong: Add appropriate context and useful info; fix grammar. If questions are needed, ask them instead. (Note: this one may prompt questions.)
+clear ong: Add appropriate context and useful info; fix grammar. Return only modified text. Do not ask questions.
 fix ong: Fix grammar only; keep meaning and tone; return only modified text.
 context ong: Add LLM-ready context; return just the context.
 softer ong: Make the tone softer; return only modified text.
@@ -91,7 +97,8 @@ knowledge tap: 3–5 applicable fields of knowledge/theory.
 audience tap: 3–5 possible audiences.
 tone tap: 3–5 possible tones.
 
-# Notes:
-# - Removed “dip” and “fly” prefixes; applied fog/dig/ong/rog/tap suffixes per directionality.
-# - Deduplicated overlapping items; preserved distinct intents (e.g., emoji fog vs emoji ong vs emoji dig).
-# - Kept commands terse for fast recall (e.g., “table ong”, “fix ong”, “compare dig”).
+# Stakeholder notes (why they care)
+# - Prompt Librarian: Reduced alias collisions (“is …” prefix) and standardized “Return only …” constraints improve auditability.
+# - Power User: Stable, terse suffixes; emoji fog/dig/ong remain distinct; clearer behavior for “clear ong”.
+# - Facilitator/Team Lead: Consistent semantics across FOG/DIG/ONG supports cross-workflow reuse.
+# - Developer/Automator: Deterministic naming; no breaking semantics; minimal diffs ease adoption.

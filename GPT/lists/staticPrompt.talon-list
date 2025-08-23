@@ -80,6 +80,7 @@ emoji ong: Give an appropriate emoji; return just the emoji.
 metrics ong: Find metrics with concrete examples; return just the metrics.
 retro ong: Design a group reflection approach; provide what to do.
 mini retro ong: Sub-5-minute reflection approach; simple 1–2 steps.
+ong: Infer what to do with this and do it. I cannot respond to any questions.
 
 # ROG (back/undo)
 rog: Infer the query that led to this response.

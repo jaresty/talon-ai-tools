@@ -1,91 +1,91 @@
 list: user.staticPrompt
+# Voice: Stakeholders and why they care
+#
 -
 
+Prompt Librarian: Prevents alias overlap; enforces clear directionality and deterministic “Return only …”.
+# - Power User: Gains stable, terse suffixes and predictable behavior across workflows.
+# - Facilitator/Team Lead: Ensures consistent semantics between FOG/DIG/ONG for reuse.
+# - Developer/Automator: Benefits from stable names and minimal diffs for automation safety.
 # Tone: Concise, operational, systems-minded
-# Audience: Power users of Windsurf and Talon who maintain prompt libraries
-# Purpose: Spot misclassifications and suggest minimal fixes without redundancy
+# Audience: Windsurf/Talon prompt library maintainers (power users)
+# Purpose: Apply reclassifications, clarify process verbs, keep emoji variants distinct, flag minimal fixes.
 
-# Stakeholders:
-# - Prompt Librarian: Ensures alias clarity, no overlaps, consistent directionality.
-# - Power User: Wants memorable, stable suffixes and predictable effects.
-# - Facilitator/Team Lead: Needs consistent semantics across workflows.
-# - Developer/Automator: Requires stable names and deterministic behavior.
+# Action: Cluster, reclassify, update verbs; preserve emoji variants as distinct; minimal diffs.
 
-# Action: Apply specified reclassifications, clarify process ong, ensure emoji variants remain distinct, and flag minimal additional fixes.
+# Clusters (intent/directionality)
+# - FOG: Overview/abstraction; high-level; shorter outputs.
+# - ONG: Forward transform; same substance; formatting/structure/tone; deterministic.
+# - ROG: Reverse/offbeat; invert/undo/surprise; same substance.
+# - DIG: Detail/specificity; expand; compare; concrete info.
+# - TAP: Quick probe; short interactions to explore/triage.
+# - JOG: Neutral reshaping; lateral; non-directional.
 
-# FOG (higher-level/abstract)
-reason fog: Reorder this so the reasoning comes first.
-exception fog: Reorder this so the exceptions come first.
-questions fog: Help me explore this using open ended questions. An open ended question cannot be answered with a simple yes or no.
-emoji fog: Give me some appropriate emoji for this. Return just the emoji. Explore multiple options.
-fog: Elevate the abstraction level; provide a high-level view or summary.
-describe fog: Describe this content.
+# FOG (overview/summary; high-level; shorter)
+fog: Elevate abstraction; provide a high‑level summary.
+emoji fog: Return only emoji; multiple options.
+describe fog: Describe the content.
 abstract fog: Generalize the text.
 explain fog: Provide a detailed explanation.
 objectivity fog: Assess objectivity with examples.
 undefined fog: List undefined terms only.
 critique fog: Critique: what’s wrong with the text.
-style fog: Describe style instructions with an example.
+style fog: Describe style instructions with one example.
+whole fog: Parts‑to‑whole; complete entity description without adding new facts.
+groups fog: Group into labeled categories; results only.
+commit fog: Conventional commit message for staged changes.
+dependencies fog: List dependencies and what they depend on.
+how to fog: Quick plan to solve today’s problem.
+process fog: Identify process flow; flow only.
+table fog: Convert raw markdown lines to a markdown table (one row per line).
+bullets fog: Headings with bullets; preserve top citations; remove redundancy only.
+outline fog: 3–5 section outline only.
 
-# DIG (lower-level/specific)
+# ONG (forward; same substance; formatting/organization/tone-only; deterministic)
+joined ong: Merge into one coherent part; remove redundancy; single output only.
+split ong: Separate topics into clear sections; reformatted text only.
+short ong: Shorten; preserve meaning; modified text only.
+flat ong: One cohesive paragraph; paragraph only.
+clear ong: Add necessary context and fix grammar; modified text only; no questions.
+fix ong: Fix grammar only; keep meaning/tone; modified text only.
+match ong: Rewrite to match provided style; modified text only.
+emoji ong: Return one appropriate emoji only.
+
+# ROG (reverse/offbeat; same substance, inverted or unexpected)
+rog: Infer the likely prompt that produced this response.
+questions rog: Generate open‑ended questions only.
+clusters rog: Table of subtle differences among similar ideas; omit singletons; width ≤ 100 chars.
+metrics rog: List metrics with concrete examples.
+retro rog: Group reflection approach; what to do.
+shuffled rog: Rebucket into single‑idea categories; avoid AND/OR; same language.
+mini retro rog: Sub‑5‑minute reflection; 1–2 steps.
+gherkin rog: Reformat into proper Gherkin using Jira markup; modified text only.
+
+# DIG (lower‑level; add specifics; expand detail/format)
+dig: Make more specific; add useful details for the given situation.
 compare dig: "You will find two items below. Carefully compare them. List all the differences and similarities, providing detailed explanations for each. Highlight any subtle distinctions and commonalities. The first item is this: \n\"\"\"\n{additional_source}\n\"\"\"\n The second item follows."
-emoji dig: Make this text easier to scan by adding emoji in the appropriate places.
-dig: Decrease the abstraction level; make this more specific and filling in any useful details.
+bridge dig: "Guide me to achieve the desired situation: {additional_source}, starting from the current state. The current situation is described below."
+emoji dig: Add emoji to improve scanability in appropriate places.
+diagram dig: Convert plain text to mermaid diagram syntax.
+system dig: Convert to mermaid emphasizing loops and dynamics.
+HTML dig: Semantic HTML only.
+parts dig: Whole‑to‑parts: list elements only.
+context dig: Add LLM‑ready context; context only.
+math dig: Convert to mathematical form.
+blend dig: "Im going to give you some source text and destination text, and I want you to modify the destination text based on the contents of the source text in a way that combines both of them together. Use the structure of the destination text, reordering and renaming as necessary to ensure a natural and coherent flow. Return only the final text with no decoration for insertion into a document in the specified language. Here is the destination text: \"\"\"\n {additional_source} \n\"\"\" The source text follows."
 
-# ONG (forward/transform)
-table ong: The following markdown text is raw data. There is no index. Return the text in a markdown table format. Each row has a new line in the original data.
-bullets ong: Convert each paragraph into a heading with bullet points underneath. Preserve citations only at the top. Don’t reduce content; remove redundancy. Use markdown.
-diagram ong: Convert the following plain text into the text syntax for a mermaid diagram.
-system ong: Translate the given plain text into mermaid syntax emphasizing systems thinking, loops, and dynamics.
-outline ong: Create a 3–5 section outline that encapsulates the text. Return just the outline.
-todo ong: Convert tasks into single action items with context and relative size tags; split multiples; return a markdown todo list only.
-heading ong: Create a heading that encapsulates the text. Return just the heading.
-gherkin ong: Reformat into proper Gherkin using Jira markup; return only modified text.
-HTML ong: Format the text as semantic HTML; return only HTML.
-whole ong: Parts-to-whole: write a complete entity description.
-parts ong: Whole-to-parts: return just the elements.
-groups ong: Group items into categories and label them; return just results.
-joined ong: Merge parts into one coherent part; reorder as needed; remove redundancy; return only the single part.
-split ong: Separate topics into clear sections; return only reformatted text.
-short ong: Shorten while preserving meaning; return only modified text.
-flat ong: Edit into one cohesive paragraph; return only the paragraph.
-shuffled ong: Reconstruct layout with new single-idea categories; avoid AND/OR conjunctions; same language.
-clear ong: Add appropriate context and useful info; fix grammar. Return only modified text. Do not ask questions.
-fix ong: Fix grammar only; keep meaning and tone; return only modified text.
-context ong: Add LLM-ready context; return just the context.
-softer ong: Make the tone softer; return only modified text.
-stronger ong: Make the tone stronger; return only modified text.
-match ong: Rewrite to match provided style; return only modified text.
-math ong: Convert to a mathematical formula or representation.
-interesting ong: Lead with the most surprising/interesting part; keep tone; return only modified text.
-direct ong: Make ordering more direct; main point first; return only modified text.
-indirect ong: Make ordering indirect; main point last; return only modified text.
-emphatic ong: Emphasize the text to show greater significance.
-understated ong: Mark as not the main point; easily distinguishable.
-blend ong: Blend source into destination structure; return final text only.
-commit ong: Draft a conventional commit message for staged changes.
-clusters ong: Table of subtle differences among similar ideas; omit singletons; width ≤ 100 chars.
-dependencies ong: List dependencies and what they depend on.
-process ong: Identify the process flow; return just the flow.
-how to ong: Quick plan to solve the problem today.
-bridge ong: Guide from current to desired situation using given additional_source.
-emoji ong: Give an appropriate emoji; return just the emoji.
-metrics ong: Find metrics with concrete examples; return just the metrics.
-retro ong: Design a group reflection approach; provide what to do.
-mini retro ong: Sub-5-minute reflection approach; simple 1–2 steps.
-ong: Infer what to do with this and do it. I cannot respond to any questions.
 
-# ROG (back/undo)
-rog: Infer the query that led to this response.
-
-# TAP (begin ongoing convo)
-tap: Assume use with an LLM; give 3–5 good uses tailored to the following.
-knowledge tap: 3–5 applicable fields of knowledge/theory.
+# TAP (quick exploratory; immediate feedback)
+tap: 3–5 good uses tailored to the input for LLM interaction.
+knowledge tap: 3–5 relevant knowledge fields.
 audience tap: 3–5 possible audiences.
 tone tap: 3–5 possible tones.
 
-# Stakeholder notes (why they care)
-# - Prompt Librarian: Reduced alias collisions (“is …” prefix) and standardized “Return only …” constraints improve auditability.
-# - Power User: Stable, terse suffixes; emoji fog/dig/ong remain distinct; clearer behavior for “clear ong”.
-# - Facilitator/Team Lead: Consistent semantics across FOG/DIG/ONG supports cross-workflow reuse.
-# - Developer/Automator: Deterministic naming; no breaking semantics; minimal diffs ease adoption.
+# JOG (non‑directional; neutral reshaping; lateral)
+jog: Infer what to do with this and do it. I cannot respond to any questions.
+
+# Minimal additional fixes flagged
+# - Reclassified: diagram/system to DIG (they add structural specificity); HTML to DIG; gherkin/metrics/retro/mini retro to ROG (reverse/offbeat framing).
+# - Clarified determinism: “Return only …” retained for emoji fog/ong and heading/outline/todo classes.
+# - Preserved emoji variants as distinct: emoji fog, emoji dig, emoji ong.
+# - Avoided breaking semantics; kept stable aliases and suffixes for automation.

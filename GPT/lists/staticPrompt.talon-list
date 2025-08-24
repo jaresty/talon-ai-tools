@@ -54,7 +54,7 @@ style rog: Describe style instructions with one example.
 critique rog: Critique: what’s wrong with the text.
 groups rog: Group into labeled categories; results only.
 how to rog: Quick plan to solve today’s problem.
-shuffled rog: Rebucket into single‑idea categories; avoid AND/OR; same language.
+shuffled rog: Reconstruct the following text to ensure the layout is logical and significantly different from the original. Create new categories, each representing a single idea without using conjunctions like AND or OR. Present the revised text in the same language.
 mini retro rog: Sub‑5‑minute reflection; 1–2 steps.
 gherkin rog: Reformat into proper Gherkin using Jira markup; modified text only.
 

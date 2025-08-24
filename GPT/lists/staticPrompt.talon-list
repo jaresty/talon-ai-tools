@@ -24,10 +24,6 @@ Prompt Librarian: Prevents alias overlap; enforces clear directionality and dete
 # FOG (overview/summary; high-level; shorter)
 fog: Elevate abstraction; provide a high‑level summary.
 emoji fog: Return only emoji; multiple options.
-describe fog: Describe the content.
-abstract fog: Generalize the text.
-explain fog: Provide a detailed explanation.
-whole fog: Parts‑to‑whole; complete entity description without adding new facts.
 commit fog: Conventional commit message for staged changes.
 process fog: Identify process flow; flow only.
 table fog: Convert raw markdown lines to a markdown table (one row per line).
@@ -56,10 +52,8 @@ retro rog: Group reflection approach; what to do.
 objectivity rog: Assess objectivity with examples.
 style rog: Describe style instructions with one example.
 critique rog: Critique: what’s wrong with the text.
-undefined rog: List undefined terms only.
 groups rog: Group into labeled categories; results only.
 how to rog: Quick plan to solve today’s problem.
-dependencies rog: List dependencies and what they depend on.
 shuffled rog: Rebucket into single‑idea categories; avoid AND/OR; same language.
 mini retro rog: Sub‑5‑minute reflection; 1–2 steps.
 gherkin rog: Reformat into proper Gherkin using Jira markup; modified text only.
@@ -70,7 +64,6 @@ compare dig: "You will find two items below. Carefully compare them. List all th
 bridge dig: "Guide me to achieve the desired situation: {additional_source}, starting from the current state. The current situation is described below."
 emoji dig: Add emoji to improve scanability in appropriate places.
 HTML dig: Semantic HTML only.
-parts dig: Whole‑to‑parts: list elements only.
 format dig: Add appropriate formatting to the text.
 context dig: Add LLM‑ready context; context only.
 blend dig: "Im going to give you some source text and destination text, and I want you to modify the destination text based on the contents of the source text in a way that combines both of them together. Use the structure of the destination text, reordering and renaming as necessary to ensure a natural and coherent flow. Return only the final text with no decoration for insertion into a document in the specified language. Here is the destination text: \"\"\"\n {additional_source} \n\"\"\" The source text follows."
@@ -81,6 +74,10 @@ tap: 3–5 good uses tailored to the input for LLM interaction.
 knowledge tap: 3–5 relevant knowledge fields.
 audience tap: 3–5 possible audiences.
 tone tap: 3–5 possible tones.
+parts tap: Whole‑to‑parts: list elements only.
+undefined tap: List undefined terms only.
+dependency tap: List dependencies and what they depend on.
+whole tap: Parts‑to‑whole; complete entity description without adding new facts.
 
 # JOG (non‑directional; neutral reshaping; lateral)
 jog: Infer what to do with this and do it. I cannot respond to any questions.

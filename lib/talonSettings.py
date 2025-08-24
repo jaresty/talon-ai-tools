@@ -205,25 +205,25 @@ mod.setting(
 mod.setting(
     "model_default_voice",
     type=str,
-    default="Infer a relevant voice based on the context or the user's request and introduce it.",
+    default="Infer a relevant voice based on the context or the user's request.",
     desc="The default voice to use. Who should the LLM be acting as.",
 )
 mod.setting(
     "model_default_purpose",
     type=str,
-    default="Infer a relevant purpose based on the context or the user's request and introduce it.",
+    default="Infer a relevant purpose based on the context or the user's request.",
     desc="The default purpose of the communication. This informs how the LLM should respond. For example you could say to inform.",
 )
 mod.setting(
     "model_default_tone",
     type=str,
-    default="Infer a relevant tone based on the context or the user's request and introduce it.",
+    default="Infer a relevant tone based on the context or the user's request.",
     desc="Is the default tone to use. For example speak kindly or formally.",
 )
 mod.setting(
     "model_default_audience",
     type=str,
-    default="Infer a relevant audience based on the context or the user's request and introduce it.",
+    default="Infer a relevant audience based on the context or the user's request.",
     desc="This is the audience that the LLM should format for. For example a programmer or a toddler.m",
 )
 

@@ -91,4 +91,5 @@ class GPTSystemPrompt:
             f"Tone: {self.get_tone()}",
             f"Audience: {self.get_audience()}",
             f"Purpose: {self.get_purpose()}",
+            "For each of voice, tone, audience, and purpose, if it is not empty, introduce it."
         ]

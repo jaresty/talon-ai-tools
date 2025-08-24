@@ -70,6 +70,7 @@ diagram dig: Convert plain text to mermaid diagram syntax.
 system dig: Convert to mermaid emphasizing loops and dynamics.
 HTML dig: Semantic HTML only.
 parts dig: Whole‑to‑parts: list elements only.
+format dig: Add appropriate formatting to the text.
 context dig: Add LLM‑ready context; context only.
 math dig: Convert to mathematical form.
 blend dig: "Im going to give you some source text and destination text, and I want you to modify the destination text based on the contents of the source text in a way that combines both of them together. Use the structure of the destination text, reordering and renaming as necessary to ensure a natural and coherent flow. Return only the final text with no decoration for insertion into a document in the specified language. Here is the destination text: \"\"\"\n {additional_source} \n\"\"\" The source text follows."

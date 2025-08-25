@@ -78,6 +78,7 @@ parts tap: Whole‑to‑parts: list elements only.
 undefined tap: List undefined terms only.
 dependency tap: List dependencies and what they depend on.
 whole tap: Parts‑to‑whole; complete entity description without adding new facts.
+problem tap: I want help with abstraction laddering. I have given you a problem. I want you to make a list with that in the middle. In the item above, list three answers to the question why is this a problem?. In the item below, list three answers to the question what problems does this cause?. Order the answers in decreasing importance to the audience.
 
 # JOG (non‑directional; neutral reshaping; lateral)
 jog: Infer what to do with this and do it. I cannot respond to any questions.

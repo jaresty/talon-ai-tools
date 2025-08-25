@@ -3,7 +3,7 @@ list: user.staticPrompt
 #
 -
 
-Prompt Librarian: Prevents alias overlap; enforces clear directionality and deterministic “Return only …”.
+# Prompt Librarian: Prevents alias overlap; enforces clear directionality and deterministic “Return only …”.
 # - Power User: Gains stable, terse suffixes and predictable behavior across workflows.
 # - Facilitator/Team Lead: Ensures consistent semantics between FOG/DIG/ONG for reuse.
 # - Developer/Automator: Benefits from stable names and minimal diffs for automation safety.
@@ -57,6 +57,8 @@ how to rog: Quick plan to solve today’s problem.
 shuffled rog: Reconstruct the following text to ensure the layout is logical and significantly different from the original. Create new categories, each representing a single idea without using conjunctions like AND or OR. Present the revised text in the same language.
 mini retro rog: Sub‑5‑minute reflection; 1–2 steps.
 gherkin rog: Reformat into proper Gherkin using Jira markup; modified text only.
+wasinawa rog: I want you to help me with doing a what, so what, now what analysis. For the following ask those three questions and give me your answers. What refers to what happened. So what refers to what is important about what happened. Now what refers to what should we do about what happened.
+problem rog: I want help with abstraction laddering. I have given you a problem. I want you to make a list with that in the middle. In the item above, list three answers to the question why is this a problem?. In the item below, list three answers to the question what problems does this cause?. Order the answers in decreasing importance to the audience.
 
 # DIG (lower‑level; add specifics; expand detail/format)
 dig: Make more specific; add useful details for the given situation.
@@ -78,7 +80,6 @@ parts tap: Whole‑to‑parts: list elements only.
 undefined tap: List undefined terms only.
 dependency tap: List dependencies and what they depend on.
 whole tap: Parts‑to‑whole; complete entity description without adding new facts.
-problem tap: I want help with abstraction laddering. I have given you a problem. I want you to make a list with that in the middle. In the item above, list three answers to the question why is this a problem?. In the item below, list three answers to the question what problems does this cause?. Order the answers in decreasing importance to the audience.
 
 # JOG (non‑directional; neutral reshaping; lateral)
 jog: Infer what to do with this and do it. I cannot respond to any questions.

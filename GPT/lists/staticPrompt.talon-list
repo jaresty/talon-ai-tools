@@ -30,6 +30,13 @@ bullets fog: Headings with bullets; preserve top citations; remove redundancy on
 diagram fog: Convert plain text to mermaid diagram syntax.
 math fog: Convert to mathematical form.
 gherkin fog: Reformat into proper Gherkin using Jira markup; modified text only.
+questions fog: Generate open‑ended questions only.
+metrics fog: List metrics that result in these outcomes with concrete examples.
+retro fog: Group reflection approach; what to do.
+objectivity fog: Assess objectivity with examples.
+style fog: Describe style instructions with one example.
+critique fog: Critique: what’s wrong with the text.
+how to fog: Quick plan to solve today’s problem.
 wasinawa fog: I want you to help me with doing a what, so what, now what analysis. For the following ask those three questions and give me your answers. What refers to what happened. So what refers to what is important about what happened. Now what refers to what should we do about what happened.
 problem fog: I want help with abstraction laddering. I have given you a problem. I want you to make a list with that in the middle. In the item above, list three answers to the question why is this a problem?. In the item below, list three answers to the question what problems does this cause?. Order the answers in decreasing importance to the audience.
 
@@ -48,14 +55,7 @@ blend ong: "Im going to give you some source text and destination text, and I wa
 
 # ROG (reverse/offbeat; same substance, inverted or unexpected)
 rog: Infer the likely prompt that produced this response.
-questions rog: Generate open‑ended questions only.
 clusters rog: Table of subtle differences among similar ideas; omit singletons; width ≤ 100 chars.
-metrics rog: List metrics that result in these outcomes with concrete examples.
-retro rog: Group reflection approach; what to do.
-objectivity rog: Assess objectivity with examples.
-style rog: Describe style instructions with one example.
-critique rog: Critique: what’s wrong with the text.
-how to rog: Quick plan to solve today’s problem.
 bridge rog: "Guide me to achieve the desired situation: {additional_source}, starting from the current state. The current situation is described below."
 compare rog: "You will find two items below. Carefully compare them. List all the differences and similarities, providing detailed explanations for each. Highlight any subtle distinctions and commonalities. The first item is this: \n\"\"\"\n{additional_source}\n\"\"\"\n The second item follows."
 

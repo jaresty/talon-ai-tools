@@ -26,15 +26,17 @@ fog: Elevate abstraction; provide a high‑level summary.
 emoji fog: Return only emoji; multiple options.
 commit fog: Conventional commit message for staged changes.
 process fog: Identify process flow; flow only.
-table fog: Convert raw markdown lines to a markdown table (one row per line).
 bullets fog: Headings with bullets; preserve top citations; remove redundancy only.
-outline fog: 3–5 section outline only.
 diagram fog: Convert plain text to mermaid diagram syntax.
 math fog: Convert to mathematical form.
-system fog: Convert to mermaid emphasizing loops and dynamics.
+gherkin fog: Reformat into proper Gherkin using Jira markup; modified text only.
+wasinawa fog: I want you to help me with doing a what, so what, now what analysis. For the following ask those three questions and give me your answers. What refers to what happened. So what refers to what is important about what happened. Now what refers to what should we do about what happened.
+problem fog: I want help with abstraction laddering. I have given you a problem. I want you to make a list with that in the middle. In the item above, list three answers to the question why is this a problem?. In the item below, list three answers to the question what problems does this cause?. Order the answers in decreasing importance to the audience.
 
 # ONG (forward; same substance; formatting/organization/tone-only; deterministic)
 joined ong: Merge into one coherent part; remove redundancy; single output only.
+groups ong: Group into labeled categories; results only.
+shuffled ong: Reconstruct the following text to ensure the layout is logical and significantly different from the original. Create new categories, each representing a single idea without using conjunctions like AND or OR. Present the revised text in the same language.
 split ong: Separate topics into clear sections; reformatted text only.
 short ong: Shorten; preserve meaning; modified text only.
 flat ong: One cohesive paragraph; paragraph only.
@@ -42,50 +44,34 @@ clear ong: Add necessary context and fix grammar; modified text only; no questio
 fix ong: Fix grammar only; keep meaning/tone; modified text only.
 match ong: Rewrite to match provided style; modified text only.
 emoji ong: Return one appropriate emoji only.
+blend ong: "Im going to give you some source text and destination text, and I want you to modify the destination text based on the contents of the source text in a way that combines both of them together. Use the structure of the destination text, reordering and renaming as necessary to ensure a natural and coherent flow. Return only the final text with no decoration for insertion into a document in the specified language. Here is the destination text: \"\"\"\n {additional_source} \n\"\"\" The source text follows."
 
 # ROG (reverse/offbeat; same substance, inverted or unexpected)
 rog: Infer the likely prompt that produced this response.
 questions rog: Generate open‑ended questions only.
 clusters rog: Table of subtle differences among similar ideas; omit singletons; width ≤ 100 chars.
-metrics rog: List metrics with concrete examples.
+metrics rog: List metrics that result in these outcomes with concrete examples.
 retro rog: Group reflection approach; what to do.
 objectivity rog: Assess objectivity with examples.
 style rog: Describe style instructions with one example.
 critique rog: Critique: what’s wrong with the text.
-groups rog: Group into labeled categories; results only.
 how to rog: Quick plan to solve today’s problem.
-shuffled rog: Reconstruct the following text to ensure the layout is logical and significantly different from the original. Create new categories, each representing a single idea without using conjunctions like AND or OR. Present the revised text in the same language.
-mini retro rog: Sub‑5‑minute reflection; 1–2 steps.
-gherkin rog: Reformat into proper Gherkin using Jira markup; modified text only.
-wasinawa rog: I want you to help me with doing a what, so what, now what analysis. For the following ask those three questions and give me your answers. What refers to what happened. So what refers to what is important about what happened. Now what refers to what should we do about what happened.
-problem rog: I want help with abstraction laddering. I have given you a problem. I want you to make a list with that in the middle. In the item above, list three answers to the question why is this a problem?. In the item below, list three answers to the question what problems does this cause?. Order the answers in decreasing importance to the audience.
+bridge rog: "Guide me to achieve the desired situation: {additional_source}, starting from the current state. The current situation is described below."
+compare rog: "You will find two items below. Carefully compare them. List all the differences and similarities, providing detailed explanations for each. Highlight any subtle distinctions and commonalities. The first item is this: \n\"\"\"\n{additional_source}\n\"\"\"\n The second item follows."
 
 # DIG (lower‑level; add specifics; expand detail/format)
 dig: Make more specific; add useful details for the given situation.
-compare dig: "You will find two items below. Carefully compare them. List all the differences and similarities, providing detailed explanations for each. Highlight any subtle distinctions and commonalities. The first item is this: \n\"\"\"\n{additional_source}\n\"\"\"\n The second item follows."
-bridge dig: "Guide me to achieve the desired situation: {additional_source}, starting from the current state. The current situation is described below."
 emoji dig: Add emoji to improve scanability in appropriate places.
 HTML dig: Semantic HTML only.
-format dig: Add appropriate formatting to the text.
+format dig: Add appropriate formatting leveraging commands available in the context (slack, markdown, etc) to the text.
 context dig: Add LLM‑ready context; context only.
-blend dig: "Im going to give you some source text and destination text, and I want you to modify the destination text based on the contents of the source text in a way that combines both of them together. Use the structure of the destination text, reordering and renaming as necessary to ensure a natural and coherent flow. Return only the final text with no decoration for insertion into a document in the specified language. Here is the destination text: \"\"\"\n {additional_source} \n\"\"\" The source text follows."
-
 
 # TAP (quick exploratory; immediate feedback)
 tap: 3–5 good uses tailored to the input for LLM interaction.
 knowledge tap: 3–5 relevant knowledge fields.
-audience tap: 3–5 possible audiences.
-tone tap: 3–5 possible tones.
-parts tap: Whole‑to‑parts: list elements only.
 undefined tap: List undefined terms only.
 dependency tap: List dependencies and what they depend on.
-whole tap: Parts‑to‑whole; complete entity description without adding new facts.
+retro tap: Sub‑5‑minute reflection; 1–2 steps.
 
 # JOG (non‑directional; neutral reshaping; lateral)
 jog: Infer what to do with this and do it. I cannot respond to any questions.
-
-# Minimal additional fixes flagged
-# - Reclassified: diagram/system to DIG (they add structural specificity); HTML to DIG; gherkin/metrics/retro/mini retro to ROG (reverse/offbeat framing).
-# - Clarified determinism: “Return only …” retained for emoji fog/ong and heading/outline/todo classes.
-# - Preserved emoji variants as distinct: emoji fog, emoji dig, emoji ong.
-# - Avoided breaking semantics; kept stable aliases and suffixes for automation.

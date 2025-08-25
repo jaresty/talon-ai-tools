@@ -74,6 +74,7 @@ emoji tap: Return one appropriate emoji only.
 dependency tap: List dependencies and what they depend on.
 retro tap: Sub‑5‑minute reflection; 1–2 steps.
 how to tap: Quick plan to solve today’s problem.
+question tap: Ask a quick open ended question about this that is important to the audience.
 
 # JOG (non‑directional; neutral reshaping; lateral)
 jog: Infer what to do with this and do it. I cannot respond to any questions.

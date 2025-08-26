@@ -58,7 +58,7 @@ rog: Infer the likely prompt that produced this response.
 clusters rog: Table of subtle differences among similar ideas; omit singletons; width ≤ 100 chars.
 bridge rog: "Guide me to achieve the desired situation: {additional_source}, starting from the current state. The current situation is described below."
 compare rog: "You will find two items below. Carefully compare them. List all the differences and similarities, providing detailed explanations for each. Highlight any subtle distinctions and commonalities. The first item is this: \n\"\"\"\n{additional_source}\n\"\"\"\n The second item follows."
-invert rog: Invert this so it is still true focuses on the things that were `negative space` in the original.
+invert rog: Invert this so it is still true focuses on the things that were `negative space` in the original. Im not looking for a literal inversion but rather metaphorical one.
 debug rog: Provide a step-by-step experiment for this hypothesis to verify or reject it.
 
 # DIG (lower‑level; add specifics; expand detail/format)

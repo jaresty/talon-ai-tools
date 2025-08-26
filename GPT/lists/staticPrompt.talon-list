@@ -38,7 +38,7 @@ style fog: Describe style instructions with one example.
 critique fog: Critique: what’s wrong with the text.
 wasinawa fog: I want you to help me with doing a what, so what, now what analysis. For the following ask those three questions and give me your answers. What refers to what happened. So what refers to what is important about what happened. Now what refers to what should we do about what happened.
 problem fog: I want help with abstraction laddering. I have given you a problem. I want you to make a list with that in the middle. In the item above, list three answers to the question why is this a problem?. In the item below, list three answers to the question what problems does this cause?. Order the answers in decreasing importance to the audience.
-debug fog: Explore different hypotheses for this. Provide a step-by-step experiment for each hypothesis to verify or reject it.
+debug fog: Re state your understanding of the situation and give me several different hypotheses for it.
 
 
 # ONG (forward; same substance; formatting/organization/tone-only; deterministic)
@@ -59,6 +59,7 @@ clusters rog: Table of subtle differences among similar ideas; omit singletons; 
 bridge rog: "Guide me to achieve the desired situation: {additional_source}, starting from the current state. The current situation is described below."
 compare rog: "You will find two items below. Carefully compare them. List all the differences and similarities, providing detailed explanations for each. Highlight any subtle distinctions and commonalities. The first item is this: \n\"\"\"\n{additional_source}\n\"\"\"\n The second item follows."
 invert rog: Invert this so it is still true focuses on the things that were `negative space` in the original.
+debug rog: Provide a step-by-step experiment for this hypothesis to verify or reject it.
 
 # DIG (lower‑level; add specifics; expand detail/format)
 dig: Make more specific; add useful details for the given situation.

@@ -52,6 +52,10 @@ clear ong: Add necessary context and fix grammar; modified text only; no questio
 fix ong: Fix grammar only; keep meaning/tone; modified text only.
 match ong: Rewrite to match provided style; modified text only.
 blend ong: "Im going to give you some source text and destination text, and I want you to modify the destination text based on the contents of the source text in a way that combines both of them together. Use the structure of the destination text, reordering and renaming as necessary to ensure a natural and coherent flow. Return only the final text with no decoration for insertion into a document in the specified language. Here is the destination text: \"\"\"\n {additional_source} \n\"\"\" The source text follows."
+add ong: Combine these ideas by adding them together so that the resulting text includes both of them but not in a numerical sense.
+times ong: Combine these ideas by multiplying them together so that the resulting text is a combination of both of them but not in a numerical sense.
+sub ong: Subtract the second idea from the first idea but not in a numerical sense.
+div ong: Divide the first idea by the second idea but not in a numerical sense.
 
 # ROG (reverse/offbeat; same substance, inverted or unexpected)
 rog: Infer the likely prompt that produced this response.

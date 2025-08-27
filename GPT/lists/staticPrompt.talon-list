@@ -76,7 +76,7 @@ debug rog: Provide a step-by-step experiment for this hypothesis to verify or re
 reflection rog: Calculate the reflection of this but not in a numerical sense.
 rotation rog: Calculate the 90 degree rotation of this but not in a numerical sense.
 dimension rog: Expand the dimensions (geometric) of this. For each axis explain of the scale of the dimension.
-bud rog: Subject misleading/extraneous.
+bud rog: Subtract misleading/extraneous.
 drum rog: Divide into contrasting cases.
 dub rog: Strip to unexpected core.
 grove rog: Synthesize unlikely links.

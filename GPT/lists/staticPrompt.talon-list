@@ -42,9 +42,9 @@ debug fog: Re state your understanding of the situation and give me several diff
 root fog: Square this but not in a numerical sense.
 times fog: Multiply the first idea by the second idea but not in a numerical sense.
 add fog: Add the first idea to the second idea but not in a numerical sense.
-calc fog: Calculate the integral of this but not in numerical sense.
-limit fog: Calculate the limit of this but not in numerical sense.
-recurrence fog: Calculate the recurrence relation of this but not in numerical sense.
+calc fog: Calculate the (mathematical) integral of this idea but not in numerical sense.
+limit fog: Calculate the (mathematical) limit of this idea but not in numerical sense.
+recurrence fog: Calculate the (mathematical) recurrence relation of this idea; explain the consequences in plain language.
 set fog: Union of the first idea and the second idea but not in numerical sense.
 
 # ONG (forward; same substance; formatting/organization/tone-only; deterministic)
@@ -67,9 +67,9 @@ bridge rog: "Guide me to achieve the desired situation: {additional_source}, sta
 compare rog: "You will find two items below. Carefully compare them. List all the differences and similarities, providing detailed explanations for each. Highlight any subtle distinctions and commonalities. The first item is this: \n\"\"\"\n{additional_source}\n\"\"\"\n The second item follows."
 invert rog: Invert this so it is still true focuses on the things that were `negative space` in the original. Im not looking for a literal inversion but rather metaphorical one.
 debug rog: Provide a step-by-step experiment for this hypothesis to verify or reject it.
-reflection rog: Calculate the reflection of this but not in numerical sense.
-rotation rog: Calculate the 90 degree rotation of this but not in numerical sense.
-dimension rog: Expand the dimensions of this but not in numerical sense.
+reflection rog: Calculate the reflection of this but not in a numerical sense.
+rotation rog: Calculate the 90 degree rotation of this but not in a numerical sense.
+dimension rog: Expand the dimensions (geometric) of this. For each axis explain of the scale of the dimension.
 
 # DIG (lower‑level; add specifics; expand detail/format)
 dig: Make more specific; add useful details for the given situation.
@@ -80,8 +80,8 @@ context dig: Add LLM‑ready context; context only.
 root dig: Take the square root of this but not in a numerical sense.
 times dig: Divide the first idea by the second idea but not in a numerical sense.
 add dig: Subtract the second idea from the first idea but not in a numerical sense.
-calc dig: Calculate the derivative of this but not in mathematical sense.
-limit dig: Calculate the opposite of the limit - the initial state - of this but not in mathematical sense.
+calc dig: Calculate the derivative (change, trend, dynamics) of this but not in a mathematical sense.
+limit dig: Calculate the opposite of the limit - the initial state - of this but not in a mathematical sense.
 set dig: Intersection of the first idea and the second idea but not in numerical sense.
 
 # TAP (quick exploratory; immediate feedback)

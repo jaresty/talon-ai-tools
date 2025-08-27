@@ -34,7 +34,7 @@ def format_source_messages(
         if len(prompt_chunks) == 1:
             additional_source_messages = [
                 format_message(
-                    "This background information has been provided to help you answer the subsequent prompt"
+                    "## This background information has been provided to help you answer the subsequent prompt"
                 )
             ] + additional_source_messages
 
@@ -49,7 +49,9 @@ def format_source_messages(
                 "Tried to use a prompt with an additional source message without providing an additional source"
             )
     current_request: list[GPTTextItem | GPTImageItem] = [
-        format_message(prompt_chunks[0])
+        format_message("# Prompt\n"),
+        format_message(prompt_chunks[0]),
+        format_message("\n\n## This is the content we are working with\n"),
     ]
     current_request += source_messages
     return additional_source_messages + current_request

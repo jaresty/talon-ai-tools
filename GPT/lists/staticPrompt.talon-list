@@ -39,13 +39,13 @@ critique fog: Critique: what’s wrong with the text.
 wasinawa fog: I want you to help me with doing a what, so what, now what analysis. For the following ask those three questions and give me your answers. What refers to what happened. So what refers to what is important about what happened. Now what refers to what should we do about what happened.
 problem fog: I want help with abstraction laddering. I have given you a problem. I want you to make a list with that in the middle. In the item above, list three answers to the question why is this a problem?. In the item below, list three answers to the question what problems does this cause?. Order the answers in decreasing importance to the audience.
 debug fog: Re state your understanding of the situation and give me several different hypotheses for it.
-root fog: Square this but not in a numerical sense.
-times fog: Multiply the first idea by the second idea but not in a numerical sense.
-add fog: Add the first idea to the second idea but not in a numerical sense.
-calc fog: Calculate the (mathematical) integral of this idea but not in numerical sense.
-limit fog: Calculate the (mathematical) limit of this idea but not in numerical sense.
+bud fog: Add more abstract layers.
+drum fog: Multiply to broader view.
+dub fog: Intensify an abstraction.
+grove fog: Highlight macro trends.
+boom fog: Push idea toward extreme form.
+meld fog: Find high level common ground (principles).
 recurrence fog: Calculate the (mathematical) recurrence relation of this idea; explain the consequences in plain language.
-set fog: Union of the first idea and the second idea but not in numerical sense.
 
 # ONG (forward; same substance; formatting/organization/tone-only; deterministic)
 joined ong: Merge into one coherent part; remove redundancy; single output only.
@@ -59,6 +59,12 @@ fix ong: Fix grammar only; keep meaning/tone; modified text only.
 match ong: Rewrite to match provided style; modified text only.
 blend ong: "Im going to give you some source text and destination text, and I want you to modify the destination text based on the contents of the source text in a way that combines both of them together. Use the structure of the destination text, reordering and renaming as necessary to ensure a natural and coherent flow. Return only the final text with no decoration for insertion into a document in the specified language. Here is the destination text: \"\"\"\n {additional_source} \n\"\"\" The source text follows."
 mod ong: Modulo the first idea by the second idea but not in a numerical sense.
+bud ong: Add supporting examples.
+drum ong: Multiplies scenarios forward.
+dub ong: Distill to essence.
+grove ong: Show forward evolution.
+boom ong: Project ultimate future state.
+meld ong: Union-include all viewpoints coherently.
 
 # ROG (reverse/offbeat; same substance, inverted or unexpected)
 rog: Infer the likely prompt that produced this response.
@@ -70,6 +76,12 @@ debug rog: Provide a step-by-step experiment for this hypothesis to verify or re
 reflection rog: Calculate the reflection of this but not in a numerical sense.
 rotation rog: Calculate the 90 degree rotation of this but not in a numerical sense.
 dimension rog: Expand the dimensions (geometric) of this. For each axis explain of the scale of the dimension.
+bud rog: Subject misleading/extraneous.
+drum rog: Divide into contrasting cases.
+dub rog: Strip to unexpected core.
+grove rog: Synthesize unlikely links.
+boom rog: Revealed surprising origin/cause.
+meld rog: Contrast- spotlight differences / complements.
 
 # DIG (lower‑level; add specifics; expand detail/format)
 dig: Make more specific; add useful details for the given situation.
@@ -77,12 +89,13 @@ emoji dig: Add emoji to improve scanability in appropriate places.
 HTML dig: Semantic HTML only.
 format dig: Add appropriate formatting leveraging commands available in the context (slack, markdown, etc) to the text.
 context dig: Add LLM‑ready context; context only.
-root dig: Take the square root of this but not in a numerical sense.
-times dig: Divide the first idea by the second idea but not in a numerical sense.
-add dig: Subtract the second idea from the first idea but not in a numerical sense.
-calc dig: Calculate the derivative (change, trend, dynamics) of this but not in a mathematical sense.
-limit dig: Calculate the opposite of the limit - the initial state - of this but not in a mathematical sense.
-set dig: Intersection of the first idea and the second idea but not in numerical sense.
+bud dig: Subtract fine details.
+drum dig: Divide into smaller parts.
+dub dig: Distill the concrete essence.
+grove dig: Accumulate detailed synthesis.
+boom dig: Trace back to foundational start.
+meld dig: Find concrete overlap (shared details).
+
 
 # TAP (quick exploratory; immediate feedback)
 tap: 3–5 good uses tailored to the input for LLM interaction.

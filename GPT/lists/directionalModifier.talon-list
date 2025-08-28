@@ -2,9 +2,9 @@ list: user.directionalModifier
 #
 -
 
-fog: Higher level. Use your judgement to choose between--Overview, abstraction.
-ong: Same level. Use your judgement to choose between--Forward transform,same substance,formatting,structure,tone.
-rog: Same level. Use your judgement to choose between--Reverse,offbeat,invert,undo,surprise.
-dig: Lower level. Use your judgement to choose between--Detail,specificity,expand,zoom in,compare,concrete info.
-tap: Quick interactions. Use your judgement to choose between--probe,explore,triage.
-jog: Neutral. Use your judgement to choose between--Neutral,reshaping,lateral,non-directional.
+fog: Higher level. Choose the best angle for the whole response--Overview, abstraction.
+ong: Same level. Choose the best angle for the whole response--Forward transform,same substance,formatting,structure,tone.
+rog: Same level. Choose the best angle for the whole response--Reverse,backward,transform,left,invert,unusual,unexpected,undo,surprise.
+dig: Lower level. Choose the best angle for the whole response--Detail,specificity,expand,zoom in,compare,concrete info.
+tap: Quick interactions. Keep it super short and to the point. Use bullets and limit nesting.
+jog: Neutral. Choose the best angle for the whole response--Neutral,reshaping,lateral,non-directional.

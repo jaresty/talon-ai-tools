@@ -234,7 +234,7 @@ mod.setting(
 mod.setting(
     "model_window_char_width",
     type=int,
-    default=80,
+    default=200,
     desc="The default window width (in characters) for showing model output",
 )
 

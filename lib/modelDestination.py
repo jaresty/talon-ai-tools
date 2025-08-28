@@ -13,7 +13,7 @@ from ..lib.HTMLBuilder import Builder
 class ModelDestination:
     def insert(self, gpt_message: list[GPTTextItem]):
         extracted_message = messages_to_string(gpt_message)
-        if len(extracted_message.split("\n")) > 100:
+        if len(extracted_message.split("\n")) > 60:
             Browser().insert(gpt_message)
         else:
             GPTState.text_to_confirm = extracted_message

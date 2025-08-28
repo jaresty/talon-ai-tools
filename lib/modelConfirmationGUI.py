@@ -164,9 +164,9 @@ class UserActions:
             for item in msg["content"]:
                 role = "GPT" if msg["role"] == "assistant" else "USER"
                 output = f"{role}: {extract_message(item)}"
-                # every 100 characters split the output into multiple lines
+                # every 200 characters split the output into multiple lines
                 formatted_output += (
-                    "\n".join(output[i : i + 100] for i in range(0, len(output), 100))
+                    "\n".join(output[i : i + 200] for i in range(0, len(output), 200))
                     + "\n"
                 )
 

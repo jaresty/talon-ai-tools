@@ -19,12 +19,12 @@ critique: Critique: what’s wrong with the text.
 wasinawa: I want you to help me with doing a what, so what, now what analysis. For the following ask those three questions and give me your answers. What refers to what happened. So what refers to what is important about what happened. Now what refers to what should we do about what happened.
 problem: I want help with abstraction laddering. I have given you a problem. I want you to make a list with that in the middle. In the item above, list three answers to the question why is this a problem?. In the item below, list three answers to the question what problems does this cause?. Order the answers in decreasing importance to the audience.
 debug: Help me debug this by giving me hypotheses.
-bud: Consider mathematical addition and subtraction. Apply those concepts in a non-mathematical way to this.
-drum: Consider multiplication and division. Apply those concepts in a non-mathematical way to this.
-dub: Consider powers and roots. Apply those concepts in a non-mathematical way to this.
-grove: Consider integrals and derivatives. Apply those concepts in a non-mathematical way to this.
-boom: Consider mathematical limits. Apply those concepts in a non-mathematical way to this.
-meld: Consider mathematical set operations. Apply those concepts in a non-mathematical way to this.
+bud: Consider mathematical addition and subtraction. Apply those concepts in a non-numerical way to this.
+drum: Consider multiplication and division. Apply those concepts in a non-numerical way to this.
+dub: Consider powers and roots. Apply those concepts in a non-numerical way to this.
+grove: Consider integrals and derivatives. Apply those concepts in a non-numerical way to this.
+boom: Consider mathematical limits. Apply those concepts in a non-numerical way to this.
+meld: Consider mathematical set operations. Apply those concepts in a non-numerical way to this.
 recurrence: Calculate the (mathematical) recurrence relation of this idea; explain the consequences in plain language.
 join: Merge into one coherent part; remove redundancy;
 pain: List 3-5 pain points; issues; problems; obstacles; challenges; barriers. Order by importance to the audience.

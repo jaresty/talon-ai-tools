@@ -44,6 +44,7 @@ reflection: Calculate the reflection of this but not in a numerical sense.
 rotation: Calculate the 90 degree rotation of this but not in a numerical sense.
 dimension: Expand the dimensions (geometric) of this. For each axis explain of the scale of the dimension.
 HTML: Semantic HTML only.
+type: Represent this as a type or taxonomy.
 format: Add appropriate formatting leveraging commands available in the context (slack, markdown, etc) to the text.
 context: Add LLM‑ready context; context only.
 knowledge: 3–5 relevant knowledge fields.

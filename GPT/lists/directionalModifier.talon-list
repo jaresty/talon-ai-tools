@@ -2,9 +2,9 @@ list: user.directionalModifier
 #
 -
 
-fog: Overview/abstraction; higher-level; overview; shorter outputs.
-ong: Forward transform; same substance; formatting/structure/tone; deterministic.
-rog: Reverse/offbeat; invert/undo/surprise; same substance.
-dig: Detail/specificity; lower-level; expand; zoom in; compare; concrete info.
-tap: Quick probe; short interactions to explore/triage.
-jog: Neutral reshaping; lateral; non-directional.
+fog: Higher level. Use your judgement to choose between--Overview, abstraction.
+ong: Same level. Use your judgement to choose between--Forward transform,same substance,formatting,structure,tone.
+rog: Same level. Use your judgement to choose between--Reverse,offbeat,invert,undo,surprise.
+dig: Lower level. Use your judgement to choose between--Detail,specificity,expand,zoom in,compare,concrete info.
+tap: Quick interactions. Use your judgement to choose between--probe,explore,triage.
+jog: Neutral. Use your judgement to choose between--Neutral,reshaping,lateral,non-directional.

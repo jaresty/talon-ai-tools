@@ -55,8 +55,3 @@ undefined: List undefined terms only.
 dependency: List dependencies and what they depend on.
 how to: Quick plan to solve today’s problem.
 question: Ask open ended questions about this that are important to the audience.
-# Voice: Analytical, concise, expert.
-# Tone: Direct, efficient, minimal.
-# Audience: Technical professionals needing precise guidance.
-# Purpose: Identify key knowledge areas for mathematically grounded JSON comparison.
-# How I understood the prompt: You want 3–5 succinct knowledge fields relevant to mathematically comparing two JSON payloads, delivered as brief bullets with minimal nesting.

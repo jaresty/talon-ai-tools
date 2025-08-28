@@ -41,7 +41,7 @@ def modelPrompt(m) -> str:
     print(m)
     if hasattr(m, "customPrompt"):
         return str(m.customPrompt)
-    return getattr(m, "staticPrompt", "") + getattr(m, "directionalModifier", "")
+    return getattr(m, "staticPrompt", "Infer a task that LLMs are good at.") + getattr(m, "directionalModifier", "")
 
 
 @mod.capture(rule="[<user.modelPrompt>] prompt <user.text>")

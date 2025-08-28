@@ -16,6 +16,7 @@ mod.tag("gpt_beta", desc="Tag for enabling beta GPT commands")
 # Stores all our prompts that don't require arguments
 # (ie those that just take in the clipboard text)
 mod.list("staticPrompt", desc="GPT Prompts Without Dynamic Arguments")
+mod.list("directionalModifier", desc="GPT Directional Modifiers")
 mod.list("customPrompt", desc="Custom user-defined GPT prompts")
 mod.list("modelPrompt", desc="GPT Prompts")
 mod.list("model", desc="The name of the model")
@@ -34,15 +35,13 @@ mod.list(
     desc="The audience to whom the LLM is writing. For example, 'to business'",
 )
 
-
 # model prompts can be either static and predefined by this repo or custom outside of it
-@mod.capture(rule="{user.staticPrompt} | {user.customPrompt}")
+@mod.capture(rule="[{user.staticPrompt}] {user.directionalModifier} | {user.customPrompt}")
 def modelPrompt(m) -> str:
-    return str(m).format(
-        clip=clip.text(),
-        shell_name=settings.get("user.model_shell_default"),
-        additional_source="{additional_source}",
-    )
+    print(m)
+    if hasattr(m, "customPrompt"):
+        return str(m.customPrompt)
+    return getattr(m, "staticPrompt", "") + getattr(m, "directionalModifier", "")
 
 
 @mod.capture(rule="[<user.modelPrompt>] prompt <user.text>")
@@ -107,10 +106,7 @@ def additionalModelSource(model_source) -> str:
     return model_source.modelSimpleSource
 
 
-# model prompts can be either static and predefined by this repo or custom outside of it
-@mod.capture(rule="{user.staticPrompt} | {user.customPrompt}")
-def modelSimplePrompt(matched_prompt) -> str:
-    return str(matched_prompt)
+
 
 
 @mod.capture(

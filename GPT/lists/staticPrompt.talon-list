@@ -3,109 +3,50 @@ list: user.staticPrompt
 #
 -
 
-# Prompt Librarian: Prevents alias overlap; enforces clear directionality and deterministic “Return only …”.
-# - Power User: Gains stable, terse suffixes and predictable behavior across workflows.
-# - Facilitator/Team Lead: Ensures consistent semantics between FOG/DIG/ONG for reuse.
-# - Developer/Automator: Benefits from stable names and minimal diffs for automation safety.
-# Tone: Concise, operational, systems-minded
-# Audience: Windsurf/Talon prompt library maintainers (power users)
-# Purpose: Apply reclassifications, clarify process verbs, keep emoji variants distinct, flag minimal fixes.
-
-# Action: Cluster, reclassify, update verbs; preserve emoji variants as distinct; minimal diffs.
-
-# Clusters (intent/directionality)
-# - FOG: Overview/abstraction; high-level; shorter outputs.
-# - ONG: Forward transform; same substance; formatting/structure/tone; deterministic.
-# - ROG: Reverse/offbeat; invert/undo/surprise; same substance.
-# - DIG: Detail/specificity; expand; compare; concrete info.
-# - TAP: Quick probe; short interactions to explore/triage.
-# - JOG: Neutral reshaping; lateral; non-directional.
-
-# FOG (overview/summary; high-level; shorter)
-fog: Elevate abstraction; provide a high‑level summary.
-emoji fog: Return only emoji; multiple options.
-commit fog: Conventional commit message for staged changes.
-process fog: Identify process flow; flow only.
-bullets fog: Headings with bullets; preserve top citations; remove redundancy only.
-diagram fog: Convert plain text to mermaid diagram syntax.
-math fog: Convert to mathematical form.
-gherkin fog: Reformat into proper Gherkin using Jira markup; modified text only.
-questions fog: Generate open‑ended questions only.
-metrics fog: List metrics that result in these outcomes with concrete examples.
-retro fog: Group reflection approach; what to do.
-objectivity fog: Assess objectivity with examples.
-style fog: Describe style instructions with one example.
-critique fog: Critique: what’s wrong with the text.
-wasinawa fog: I want you to help me with doing a what, so what, now what analysis. For the following ask those three questions and give me your answers. What refers to what happened. So what refers to what is important about what happened. Now what refers to what should we do about what happened.
-problem fog: I want help with abstraction laddering. I have given you a problem. I want you to make a list with that in the middle. In the item above, list three answers to the question why is this a problem?. In the item below, list three answers to the question what problems does this cause?. Order the answers in decreasing importance to the audience.
-debug fog: Re state your understanding of the situation and give me several different hypotheses for it.
-bud fog: Add more abstract layers.
-drum fog: Multiply to broader view.
-dub fog: Intensify an abstraction.
-grove fog: Highlight macro trends.
-boom fog: Push idea toward extreme form.
-meld fog: Find high level common ground (principles).
-recurrence fog: Calculate the (mathematical) recurrence relation of this idea; explain the consequences in plain language.
-
-# ONG (forward; same substance; formatting/organization/tone-only; deterministic)
-joined ong: Merge into one coherent part; remove redundancy; single output only.
-groups ong: Group into labeled categories; results only.
-shuffled ong: Reconstruct the following text to ensure the layout is logical and significantly different from the original. Create new categories, each representing a single idea without using conjunctions like AND or OR. Present the revised text in the same language.
-split ong: Separate topics into clear sections; reformatted text only.
-short ong: Shorten; preserve meaning; modified text only.
-flat ong: One cohesive paragraph; paragraph only.
-clear ong: Add necessary context and fix grammar; modified text only; no questions.
-fix ong: Fix grammar only; keep meaning/tone; modified text only.
-match ong: Rewrite to match provided style; modified text only.
-blend ong: "Im going to give you some source text and destination text, and I want you to modify the destination text based on the contents of the source text in a way that combines both of them together. Use the structure of the destination text, reordering and renaming as necessary to ensure a natural and coherent flow. Return only the final text with no decoration for insertion into a document in the specified language. Here is the destination text: \"\"\"\n {additional_source} \n\"\"\" The source text follows."
-mod ong: Modulo the first idea by the second idea but not in a numerical sense.
-bud ong: Add supporting examples.
-drum ong: Multiplies scenarios forward.
-dub ong: Distill to essence.
-grove ong: Show forward evolution.
-boom ong: Project ultimate future state.
-meld ong: Union-include all viewpoints coherently.
-
-# ROG (reverse/offbeat; same substance, inverted or unexpected)
-rog: Infer the likely prompt that produced this response.
-clusters rog: Table of subtle differences among similar ideas; omit singletons; width ≤ 100 chars.
-bridge rog: "Guide me to achieve the desired situation: {additional_source}, starting from the current state. The current situation is described below."
-compare rog: "You will find two items below. Carefully compare them. List all the differences and similarities, providing detailed explanations for each. Highlight any subtle distinctions and commonalities. The first item is this: \n\"\"\"\n{additional_source}\n\"\"\"\n The second item follows."
-invert rog: Invert this so it is still true focuses on the things that were `negative space` in the original. Im not looking for a literal inversion but rather metaphorical one.
-debug rog: Provide a step-by-step experiment for this hypothesis to verify or reject it.
-reflection rog: Calculate the reflection of this but not in a numerical sense.
-rotation rog: Calculate the 90 degree rotation of this but not in a numerical sense.
-dimension rog: Expand the dimensions (geometric) of this. For each axis explain of the scale of the dimension.
-bud rog: Subtract what is misleading/extraneous and share the result.
-drum rog: Divide into contrasting cases.
-dub rog: Strip to unexpected core.
-grove rog: Synthesize unlikely links.
-boom rog: Reveal surprising origin/cause.
-meld rog: Contrast; spotlight differences / complements.
-
-# DIG (lower‑level; add specifics; expand detail/format)
-dig: Make more specific; add useful details for the given situation.
-emoji dig: Add emoji to improve scanability in appropriate places.
-HTML dig: Semantic HTML only.
-format dig: Add appropriate formatting leveraging commands available in the context (slack, markdown, etc) to the text.
-context dig: Add LLM‑ready context; context only.
-bud dig: Subtract fine details.
-drum dig: Divide into smaller parts.
-dub dig: Distill the concrete essence.
-grove dig: Accumulate detailed synthesis.
-boom dig: Trace back to foundational start.
-meld dig: Find concrete overlap (shared details).
-
-
-# TAP (quick exploratory; immediate feedback)
-tap: 3–5 good uses tailored to the input for LLM interaction.
-knowledge tap: 3–5 relevant knowledge fields.
-undefined tap: List undefined terms only.
-emoji tap: Return one appropriate emoji only.
-dependency tap: List dependencies and what they depend on.
-retro tap: Sub‑5‑minute reflection; 1–2 steps.
-how to tap: Quick plan to solve today’s problem.
-question tap: Ask a quick open ended question about this that is important to the audience.
-
-# JOG (non‑directional; neutral reshaping; lateral)
-jog: Infer what to do with this and do it. I cannot respond to any questions.
+emoji: Return only emoji.
+commit: Conventional commit message for staged changes.
+process: Identify process flow; flow only.
+bullets: Headings with bullets; preserve top citations; remove redundancy only.
+diagram: Convert plain text to mermaid diagram syntax.
+math: Convert to mathematical form.
+gherkin: Reformat into proper Gherkin using Jira markup; modified text only.
+questions: Generate open‑ended questions only.
+metrics: List metrics that result in these outcomes with concrete examples.
+retro: Help me introspect / reflect on this.
+objectivity: Assess objectivity with examples.
+style: Describe style instructions with one example.
+critique: Critique: what’s wrong with the text.
+wasinawa: I want you to help me with doing a what, so what, now what analysis. For the following ask those three questions and give me your answers. What refers to what happened. So what refers to what is important about what happened. Now what refers to what should we do about what happened.
+problem: I want help with abstraction laddering. I have given you a problem. I want you to make a list with that in the middle. In the item above, list three answers to the question why is this a problem?. In the item below, list three answers to the question what problems does this cause?. Order the answers in decreasing importance to the audience.
+debug: Help me debug this.
+bud: Consider mathematical addition and subtraction. Apply those concepts in a non-mathematical way to this.
+drum: Consider multiplication and division. Apply those concepts in a non-mathematical way to this.
+dub: Consider powers and roots. Apply those concepts in a non-mathematical way to this.
+grove: Consider integrals and derivatives. Apply those concepts in a non-mathematical way to this.
+boom: Consider mathematical limits. Apply those concepts in a non-mathematical way to this.
+meld: Consider mathematical set operations. Apply those concepts in a non-mathematical way to this.
+recurrence: Calculate the (mathematical) recurrence relation of this idea; explain the consequences in plain language.
+join: Merge into one coherent part; remove redundancy;
+group: Group into labeled categories; results only.
+shuffled: Reconstruct the following text to ensure the layout is logical and significantly different from the original. Create new categories, each representing a single idea without using conjunctions like AND or OR. Present the revised text in the same language.
+split: Separate topics into clear sections; reformatted text only.
+short: Shorten; preserve meaning; modified text only.
+fix: Fix grammar only; keep meaning/tone; modified text only.
+match: Rewrite to match provided style; modified text only.
+blend: "Im going to give you some source text and destination text, and I want you to modify the destination text based on the contents of the source text in a way that combines both of them together. Use the structure of the destination text, reordering and renaming as necessary to ensure a natural and coherent flow. Return only the final text with no decoration for insertion into a document in the specified language. Here is the destination text: \"\"\"\n {additional_source} \n\"\"\" The source text follows."
+mod: Modulo the first idea by the second idea but not in a numerical sense.
+clusters: Table of subtle differences among similar ideas; omit singletons; width ≤ 100 chars.
+bridge: "Guide me to achieve the desired situation: {additional_source}, starting from the current state. The current situation is described below."
+compare: "You will find two items below. Carefully compare them. List all the differences and similarities, providing detailed explanations for each. Highlight any subtle distinctions and commonalities. The first item is this: \n\"\"\"\n{additional_source}\n\"\"\"\n The second item follows."
+invert: Invert this so it is still true focuses on the things that were `negative space` in the original. Im not looking for a literal inversion but rather metaphorical one.
+reflection: Calculate the reflection of this but not in a numerical sense.
+rotation: Calculate the 90 degree rotation of this but not in a numerical sense.
+dimension: Expand the dimensions (geometric) of this. For each axis explain of the scale of the dimension.
+HTML: Semantic HTML only.
+format: Add appropriate formatting leveraging commands available in the context (slack, markdown, etc) to the text.
+context: Add LLM‑ready context; context only.
+knowledge: 3–5 relevant knowledge fields.
+undefined: List undefined terms only.
+dependency: List dependencies and what they depend on.
+how to: Quick plan to solve today’s problem.
+question: Ask open ended questions about this that are important to the audience.

@@ -34,7 +34,7 @@ def format_source_messages(
         if len(prompt_chunks) == 1:
             additional_source_messages = [
                 format_message(
-                    "## This is the additional content"
+                    "## This is the secondary content; if the prompt has a direction consider this to be to the left, origin, or history\n"
                 )
             ] + additional_source_messages
 
@@ -51,7 +51,7 @@ def format_source_messages(
     current_request: list[GPTTextItem | GPTImageItem] = [
         format_message("# Prompt\n"),
         format_message(prompt_chunks[0]),
-        format_message("\n\n## This is the primary content\n"),
+        format_message("\n\n## This is the primary content; if the prompt has a direction consider this to be to the right, destination, or future\n"),
     ]
     current_request += source_messages
     return additional_source_messages + current_request

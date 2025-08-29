@@ -2,10 +2,10 @@ list: user.directionalModifier
 #
 -
 
-fog: Higher level. Choose the best angle for the whole response--Overview, abstract,up,more,bigger,higher,increasing,addition,multiplication,exponents,integrals,synthesis,whole,(etc).
+fog: Higher level. Choose the best angle for the whole response--Overview, abstract,up,more,bigger,higher,increasing,addition,multiplication,exponents,integrals,synthesis,whole,summary,(etc).
 ong: Same level. Choose the best angle for the whole response--Forward,right,future,next,(etc).
 rog: Same level. Choose the best angle for the whole response--Reverse,backward,left,historical,last,(etc).
-dig: Lower level. Choose the best angle for the whole response--Detail,specific,expand,zoom in,compare,concrete,down,less,smaller,decreasing,subtraction,division,derivatives,roots,parts,components,(etc).
+dig: Lower level. Choose the best angle for the whole response--Detail,specific,expand,zoom in,compare,concrete,down,less,smaller,decreasing,subtraction,division,derivatives,roots,parts,components,specificity,(etc).
 bog: Bidirectional same level. Choose the best angle for the whole response--Contrast,compare,opposite,oppose,(etc)
 flip: Surpising angle-quirky,unusual,creative,offbeat,invert,reflect,(etc).
 tap: Quick interactions. Keep it super short and to the point. Use bullets and limit nesting.

@@ -2,11 +2,11 @@ list: user.directionalModifier
 #
 -
 
-fog: Higher level. Choose the best angle for the whole response--Overview, abstract,up,more,bigger,higher,increasing,addition,multiplication,exponents,integrals,synthesis,whole,summary,(etc).
-ong: Same level. Choose the best angle for the whole response--Forward,right,future,next,(etc).
-rog: Same level. Choose the best angle for the whole response--Reverse,backward,left,historical,last,(etc).
-dig: Lower level. Choose the best angle for the whole response--Detail,specific,expand,zoom in,compare,concrete,down,less,smaller,decreasing,subtraction,division,derivatives,roots,parts,components,specificity,(etc).
-bog: Bidirectional same level. Choose the best angle for the whole response--Contrast,compare,opposite,oppose,(etc)
-flip: Surpising angle-quirky,unusual,creative,offbeat,invert,reflect,(etc).
-tap: Quick interactions. Keep it super short and to the point. Use bullets and limit nesting.
-jog: Infer what to do with this and do it. I cannot respond to any questions.
+fog: Higher level. Step back and take a broad or abstract view — think overview, synthesis, big picture, zoom out, addition, multiplication, exponents, integration, whole.
+ong: Same level. Move onward — continue, extend, look ahead, explore the next stage, progression, future direction.
+rog: Same level. Move backward — trace history, recall origins, look at the last step, revisit earlier states, retrograde perspective.
+dig: Lower level. Drill down — add detail, get specific, break apart, zoom in, compare closely, parts, components, subtraction, division, derivatives, roots.
+bog: Bidirectional same level. Hold opposites side by side — contrast, weigh trade-offs, compare, oppose, push-and-pull, dual view.
+flip: Surprising angle. Invert or skew the perspective — twist, reflect, reframe, flip inside-out, unexpected, quirky, creative.
+tap: Quick interaction. Be terse and practical — bullets, shorthand, minimal words, fast response.
+jog: Interpret and act. Don’t ask back — just infer the intent and carry it out directly.

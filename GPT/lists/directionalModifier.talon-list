@@ -6,5 +6,7 @@ fog: Higher level. Choose the best angle for the whole response--Overview, abstr
 ong: Same level. Choose the best angle for the whole response--Forward,right,future,next,(etc).
 rog: Same level. Choose the best angle for the whole response--Reverse,backward,left,historical,last,(etc).
 dig: Lower level. Choose the best angle for the whole response--Detail,specificity,expand,zoom in,compare,concrete info,down,less,smaller,(etc).
+bog: Bidirectional same level. Choose the best angle for the whole response--Contrast,compare,opposite,oppose,(etc)
+flip: Surpising angle-quirky,unusual,creative,offbeat,invert,reflect,(etc).
 tap: Quick interactions. Keep it super short and to the point. Use bullets and limit nesting.
 jog: Infer what to do with this and do it. I cannot respond to any questions.

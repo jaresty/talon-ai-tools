@@ -11,6 +11,7 @@ diagram: Convert plain text to mermaid diagram syntax.
 math: Convert to mathematical form.
 gherkin: Reformat into proper Gherkin using Jira markup; modified text only.
 questions: Generate open‑ended questions only.
+challenge: Challenge this with questions so we can make it better.
 metrics: List metrics that result in these outcomes with concrete examples.
 retro: Help me introspect / reflect on this.
 objectivity: Assess objectivity with examples.

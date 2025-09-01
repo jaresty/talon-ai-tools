@@ -54,6 +54,7 @@ HTML: Semantic HTML only.
 type: Represent this as a type or taxonomy.
 format: Add appropriate formatting leveraging commands available in the context (slack, markdown, etc) to the text.
 context: Add LLM‑ready context; context only.
+easier: This is too much work. Give me something that I can accomplish in a smaller timescale.
 knowledge: 3–5 relevant knowledge fields.
 undefined: List undefined terms only.
 dependency: List dependencies and what they depend on.

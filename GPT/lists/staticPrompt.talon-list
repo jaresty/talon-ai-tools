@@ -8,7 +8,7 @@ commit: Conventional commit message for staged changes.
 process: Identify process flow; flow only.
 bullets: Headings with bullets; preserve top citations; remove redundancy only.
 diagram: Convert plain text to mermaid diagram syntax. Remember that mermaid diagrams do not allow parentheses.
-describe: Describe this.
+describe: Just describe this objectively. Do not offer suggestions, solutions, or recommendations.
 math: Convert to mathematical form.
 gherkin: Reformat into proper Gherkin using Jira markup; modified text only.
 questions: Generate open‑ended questions only.

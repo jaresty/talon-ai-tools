@@ -12,6 +12,7 @@ describe: Just describe this objectively. Do not offer suggestions, solutions, o
 math: Convert to mathematical form.
 clear: Remove all jargon and complex language.
 gherkin: Reformat into proper Gherkin using Jira markup; modified text only.
+team: Tell me about the team structure. Just talk about the people and their roles.
 questions: Generate open‑ended questions only.
 recipe: Represent this as a recipe using a custom language. Include a key for how to understand the language. Do not offer suggestions, solutions, or recommendations.
 challenge: Challenge this with questions so we can make it better.

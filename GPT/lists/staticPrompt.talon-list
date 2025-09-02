@@ -13,6 +13,7 @@ math: Convert to mathematical form.
 clear: Remove all jargon and complex language.
 gherkin: Reformat into proper Gherkin using Jira markup; modified text only.
 questions: Generate open‑ended questions only.
+recipe: Represent this as a recipe using a custom language. Include a key for how to understand the language. Do not offer suggestions, solutions, or recommendations.
 challenge: Challenge this with questions so we can make it better.
 metrics: List metrics that result in these outcomes with concrete examples.
 retro: Help me introspect / reflect on this.

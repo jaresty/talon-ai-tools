@@ -10,6 +10,7 @@ bullets: Headings with bullets; preserve top citations; remove redundancy only.
 diagram: Convert plain text to mermaid diagram syntax. Remember that mermaid diagrams do not allow parentheses.
 describe: Just describe this objectively. Do not offer suggestions, solutions, or recommendations.
 math: Convert to mathematical form.
+clear: Remove all jargon and complex language.
 gherkin: Reformat into proper Gherkin using Jira markup; modified text only.
 questions: Generate open‑ended questions only.
 challenge: Challenge this with questions so we can make it better.

@@ -91,5 +91,5 @@ class GPTSystemPrompt:
             f"Tone: {self.get_tone()}",
             f"Audience: {self.get_audience()}",
             f"Purpose: {self.get_purpose()}",
-            "For each of voice, tone, audience, and purpose, if it is not empty, introduce it. Define any terms you use that would not be understood by the audience. Additionally, introduce how you understood the prompt."
+            "For each of voice, tone, audience, and purpose, if it is not empty, introduce it. Define any terms you use that would not be understood by the audience. Additionally, introduce how you understood the prompt. In your response, break things down into easily scanned chunks with no more items than the human short term memory limit. If you are asked to respond in a way that would not be meaningful, decline the request and explain why."
         ]

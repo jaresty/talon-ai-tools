@@ -60,12 +60,12 @@ simple: Rewrite this in a simpler way.
 context: Add LLM‑ready context; context only.
 easier: This is too much work. Give me something that I can accomplish in a smaller timescale.
 knowledge: 3–5 relevant knowledge fields.
-why: Explain why. Keep this descriptive, not problem-solving.
-how: Explain how. Keep this descriptive, not problem-solving.
-who: Explain who. Keep this descriptive, not problem-solving.
-what: Explain what. Keep this descriptive, not problem-solving.
-when: Explain when. Keep this descriptive, not problem-solving.
-where: Explain where. Keep this descriptive, not problem-solving.
+why: Explain why. Limit the number of reasons based on the human short term memory capacity. Keep this descriptive, not problem-solving.
+how: Explain how. Limit the number of steps based on the human short term memory capacity. Keep this descriptive, not problem-solving.
+who: Explain who. Limit the number of actors based on the human short term memory capacity. Keep this descriptive, not problem-solving.
+what: Explain what. Limit the number of items based on the human short term memory capacity. Keep this descriptive, not problem-solving.
+when: Explain when. Limit the number of timeframes based on the human short term memory capacity. Keep this descriptive, not problem-solving.
+where: Explain where. Limit the number of locations based on the human short term memory capacity. Keep this descriptive, not problem-solving.
 undefined: List undefined terms only.
 dependency: List dependencies and what they depend on.
 how to: Quick plan to solve today’s problem.

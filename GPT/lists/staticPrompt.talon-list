@@ -61,6 +61,8 @@ simple: Rewrite this in a simpler way.
 context: Add LLM‑ready context; context only.
 easier: This is too much work. Give me something that I can accomplish in a smaller timescale.
 knowledge: 3–5 relevant knowledge fields.
+why: Explain why. Keep this descriptive, not problem-solving.
+how: Explain how. Keep this descriptive, not problem-solving.
 undefined: List undefined terms only.
 dependency: List dependencies and what they depend on.
 how to: Quick plan to solve today’s problem.

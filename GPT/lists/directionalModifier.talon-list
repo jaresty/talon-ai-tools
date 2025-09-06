@@ -9,5 +9,5 @@ dig: Lower level. Drill down — add detail, get specific, break apart, zoom in,
 bog: Bidirectional same level. Hold opposites side by side — contrast, weigh trade-offs, compare, oppose, push-and-pull, dual view.
 flip: Surprising angle. Invert or skew the perspective — twist, reflect, reframe, flip inside-out, unexpected, quirky, creative.
 flop: Various angle. Consider various options.
-tap: Quick interaction. Be terse and practical — bullets, shorthand, minimal words, fast response. Use unambiguous names so I can ask an LLM about it later.
+tap: Itemize at a very high level ideas that could be applied to this. Be terse and practical — bullets, shorthand, minimal words, fast response. Use unambiguous names so I can ask an LLM about it later. Be descriptive. Do not try to propose a solution or answer how - only answer what. You must answer in a single bulleted list limited based on the human short term memory capacity.
 jog: Interpret and act. Don’t ask back — just infer the intent and carry it out directly.

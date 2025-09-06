@@ -68,7 +68,7 @@ when: Explain when. Limit the number of timeframes based on the human short term
 where: Explain where. Limit the number of locations based on the human short term memory capacity. Keep this descriptive, not problem-solving.
 shell: Write a shell script.
 ADR: Write an ADR.
-operations: Infer an appropriate operations research concept to apply.
+operations: Infer an appropriate Operations Research (or management science) concept to apply.
 undefined: List undefined terms only.
 dependency: List dependencies and what they depend on.
 how to: Quick plan to solve today’s problem.

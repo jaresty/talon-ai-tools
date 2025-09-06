@@ -18,6 +18,8 @@ challenge: Challenge this with questions so we can make it better.
 metrics: List metrics that result in these outcomes with concrete examples.
 retro: Help me introspect / reflect on this.
 objectivity: Assess objectivity with examples.
+structure: Describe the structure of the whole input. Do not offer suggestions, solutions, or recommendations.
+relation: Invert this so it focuses on the relationships between things. Describe those relationships. Do not offer suggestions, solutions, or recommendations.
 style: Describe style instructions with one example.
 critique: This looks bad. What is wrong with it?
 wasinawa: I want you to help me with doing a what, so what, now what analysis. For the following ask those three questions and give me your answers. What refers to what happened. So what refers to what is important about what happened. Now what refers to what should we do about what happened.

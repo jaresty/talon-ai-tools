@@ -2,14 +2,17 @@ list: user.directionalModifier
 #
 -
 
-fog: Important: Use an abstracting, generalizing lens to frame the preceding prompt.
-fly ong: Important: Use an abstracting, generalizing, acting, extending lens to frame the preceding prompt.
-fly rog: Important: Use an abstracting, generalizing, reflective, structural lens to frame the preceding prompt.
-ong: Important: Use an acting, extending lens to frame the preceding prompt.
-rog: Important: Use a reflective, structural lens to frame the preceding prompt.
-dig: Important: Use a concretizing, grounding lens to frame the preceding prompt.
-dip ong: Important: Use a concretizing, grounding, acting, extending lens to frame the preceding prompt.
-dip rog: Important: Use a concretizing, grounding, reflective, structural lens to frame the preceding prompt.
+fog: Important: Use an abstracting x generalizing lens to frame the preceding prompt.
+fly ong: Important: Use a combined abstracting x generalizing x acting x extending lens to frame the preceding prompt.
+fly rog: Important: Use a combined abstracting x generalizing x reflective x structural lens to frame the preceding prompt.
+fly bog: Important: Use a combined abstracting x generalizing x acting x extending x reflective x structural lens to frame the preceding prompt.
+ong: Important: Use an acting x extending lens to frame the preceding prompt.
+rog: Important: Use a combined reflective x structural lens to frame the preceding prompt.
+bog: Important: Use a combined acting x extending x reflective x structural lens to frame the preceding prompt.
+dig: Important: Use a combined concretizing x grounding lens to frame the preceding prompt.
+dip ong: Important: Use a combined concretizing x grounding x acting x extending lens to frame the preceding prompt.
+dip rog: Important: Use a combined concretizing x grounding x reflective x structural lens to frame the preceding prompt.
+dip bog: Important: Use a combined concretizing x grounding x acting x extending x reflective x structural lens to frame the preceding prompt.
 flip: Important: Use an inverting, skewing, or surprising lens.
 flop: Important: You must consider various angles and introduce each angle.
 tap: Important: Itemize at a very high level ideas that could be applied to this. Be terse and practical — bullets, shorthand, minimal words, fast response. Use unambiguous names so I can ask an LLM about it later. Be descriptive. Do not try to propose a solution or answer how - only answer what. You must answer in a single bulleted list limited based on the human short term memory capacity.

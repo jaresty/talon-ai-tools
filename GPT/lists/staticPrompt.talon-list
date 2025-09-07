@@ -15,6 +15,7 @@ team: Tell me about the team structure. Just talk about the people and their rol
 questions: Generate open‑ended questions only.
 recipe: Represent this as a recipe using a custom language. Include a key for how to understand the language. Do not offer suggestions, solutions, or recommendations.
 challenge: Challenge this with questions so we can make it better.
+product: Frame this through a product lens.
 metrics: List metrics that result in these outcomes with concrete examples.
 retro: Help me introspect / reflect on this.
 objectivity: Assess objectivity with examples.

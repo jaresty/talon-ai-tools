@@ -2,12 +2,11 @@ list: user.directionalModifier
 #
 -
 
-fog: Higher level. Step back and take a broad or abstract view — think overview, synthesis, big picture, zoom out, addition, multiplication, exponents, integration, whole, why, discovery.
-ong: Same level. Move onward — continue, extend, look ahead, explore the next stage, progression, future direction, potential, possibility, how.
-rog: Same level. Move backward — trace history, recall origins, look at the last step, revisit earlier states, retrograde perspective, past, drag, barriers, constraints, limits, boundaries, inertia, where, when.
-dig: Lower level. Drill down — add detail, get specific, break apart, zoom in, compare closely, parts, components, subtraction, division, derivatives, roots, what, who, framing.
-bog: Bidirectional same level. Hold opposites side by side — contrast, weigh trade-offs, compare, oppose, push-and-pull, dual view.
-flip: Surprising angle. Invert or skew the perspective — twist, reflect, reframe, flip inside-out, unexpected, quirky, creative.
-flop: Various angle. Consider various options.
+fog: Use an abstracting, generalizing lens.
+ong: Use an acting, extending lens.
+rog: Use a reflective, structural lens.
+dig: Use a concretizing, grounding lens.
+flip: Use an inverting, skewing, or surprising lens.
+flop: You must consider various angles and introduce each angle.
 tap: Itemize at a very high level ideas that could be applied to this. Be terse and practical — bullets, shorthand, minimal words, fast response. Use unambiguous names so I can ask an LLM about it later. Be descriptive. Do not try to propose a solution or answer how - only answer what. You must answer in a single bulleted list limited based on the human short term memory capacity.
 jog: Interpret and act. Don’t ask back — just infer the intent and carry it out directly.

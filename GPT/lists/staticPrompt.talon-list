@@ -10,6 +10,7 @@ diagram: Convert plain text to mermaid diagram syntax. Infer the best diagram ty
 describe: Just describe this objectively. Do not offer suggestions, solutions, or recommendations.
 math: Consider fields of mathematics that apply to this to frame your response and tell me which you are using:
 clear: Remove all jargon and complex language.
+todo: Format as a todo list.
 gherkin: Reformat into proper Gherkin using Jira markup; modified text only.
 team: Tell me about the team structure. Just talk about the people and their roles.
 questions: Generate open‑ended questions only.

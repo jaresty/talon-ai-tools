@@ -40,6 +40,7 @@ probability: Consider concepts such as distributions or probabilities (etc) and 
 recurrence: Calculate the (mathematical) recurrence relation of this idea; explain the consequences in plain language.
 join: Merge into one coherent part; remove redundancy;
 pain: List 3-5 pain points; issues; problems; obstacles; challenges; barriers. Order by importance to the audience.
+done: What is the definition of done for this?
 group: Group into labeled categories; results only.
 shuffled: Reconstruct the following text to ensure the layout is logical and significantly different from the original. Create new categories, each representing a single idea without using conjunctions like AND or OR. Present the revised text in the same language.
 split: Separate topics into clear sections; reformatted text only.

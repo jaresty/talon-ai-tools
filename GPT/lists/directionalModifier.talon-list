@@ -7,6 +7,9 @@ fly ong: Important: Use a combined abstracting-generalizing-acting-extending len
 fly rog: Important: Use a combined abstracting-generalizing-reflective-structural lens to frame the preceding prompt.
 fly bog: Important: Use a combined abstracting-generalizing-acting-extending-reflective-structural lens to frame the preceding prompt.
 fig: Important: Use a combined abstracting-generalizing-concretizing-grounding lens to frame the preceding prompt.
+fip ong: Important: Use a combined abstracting-generalizing-concretizing-grounding-acting-extending lens to frame the preceding prompt.
+fip rog: Important: Use a combined abstracting-generalizing-concretizing-grounding-reflective-structural lens to frame the preceding prompt.
+fip bog: Important: Use a combined abstracting-generalizing-concretizing-grounding-acting-extending-reflective-structural lens to frame the preceding prompt.
 ong: Important: Use an acting-extending lens to frame the preceding prompt.
 rog: Important: Use a combined reflective-structural lens to frame the preceding prompt.
 bog: Important: Use a combined acting-extending-reflective-structural lens to frame the preceding prompt.

@@ -11,6 +11,8 @@ describe: Just describe this objectively. Do not offer suggestions, solutions, o
 math: Consider fields of mathematics that apply to this to frame your response and tell me which you are using:
 clear: Remove all jargon and complex language.
 todo: Format as a todo list.
+assumption: What are the assumptions behind this?
+value: What is the user value of this?
 gherkin: Reformat into proper Gherkin using Jira markup; modified text only.
 team: Tell me about the team structure. Just talk about the people and their roles.
 questions: Generate open‑ended questions only.

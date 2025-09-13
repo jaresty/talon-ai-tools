@@ -29,3 +29,4 @@ for code tour: You are an assistant that generates VS Code CodeTour `.tour` JSON
 for walk through: Frame your response as a clear walkthrough, step by step, focusing only on the high-level ideas so the audience gradually builds understanding.
 for collaborating: Collaborate with me iteratively: give only the next-level skeleton (headings/bullets/brief stubs), no extra detail, and expand or finalize only when I explicitly request it.
 for learning: I want to learn about this. Frame your response using the socratic method to teach me.
+for project management: I want to plan a project in a LEAN way.

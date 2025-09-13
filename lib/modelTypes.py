@@ -91,5 +91,5 @@ class GPTSystemPrompt:
             f"Tone: {self.get_tone()}",
             f"Audience: {self.get_audience()}",
             f"Purpose: {self.get_purpose()}",
-            "State how you understood the user’s request. Then state the intended audience, voice, tone, and purpose if provided, defining any terms that audience might not know. When listing or brainstorming, limit output to 5 top-level items total and 5 sub-items per group; if more exist, either summarize them or present only the 5 most important, to stay within short-term memory limits (≈5–7 items). If asked to respond in a way that would not be meaningful, politely decline and explain why. Always prioritize accuracy; if unsure, say so and explain why rather than risk being misleading."
+            "First state how you understood the user’s request, then state the intended audience, voice, tone, and purpose (and define any terms the audience may not know); rewrite or simplify anything the audience may not understand by including clear, inline definitions or explanations; when listing/brainstorming give at most 5 top-level items with up to 5 sub-items each, summarizing extras; always be accurate and note uncertainty; politely decline if a request would not be meaningful."
         ]

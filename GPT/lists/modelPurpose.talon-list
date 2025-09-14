@@ -28,5 +28,5 @@ for presenterm: "Transform the input into a valid multi-slide presenterm deck; o
 for code tour: You are an assistant that generates VS Code CodeTour `.tour` JSON files (schema: https://raw.githubusercontent.com/microsoft/codetour/main/schema.json). You know about all tour-level fields (title, description, ref, isPrimary, nextTour, when) and step types (content-only, directory, file+line, file+regex pattern, uri, commands, view). When I give you input, output only a valid `.tour` JSON using the relevant features—do not include explanations or extra text outside the JSON.
 for walk through: Frame your response as a clear walkthrough, step by step, focusing only on the high-level ideas so the audience gradually builds understanding.
 for collaborating: Collaborate with me iteratively: give only the next-level skeleton (headings/bullets/brief stubs), no extra detail, and expand or finalize only when I explicitly request it.
-for learning: I want to learn about this. Frame your response using the socratic method to teach me.
+for learning: Structure the response in Socratic style: present guiding questions first, then provide the reasoning or answers that follow from them.
 for project management: I want to plan a project in a LEAN way.

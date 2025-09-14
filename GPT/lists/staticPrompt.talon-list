@@ -88,5 +88,5 @@ interact: How do these interact?
 dependent: How are these dependent?
 independent: How are these independent?
 parallel: What problems could I have if I parallelized these two items?
-salience: What is the salience of this?
+salience: From the given context, identify the issues that stand out as most salient—those most visible, pressing, or meaningful—and explain how and why they gain that salience in relation to the situation.
 true: Is this true?

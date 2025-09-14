@@ -75,6 +75,7 @@ what: Explain what. Limit the number of items based on the human short term memo
 when: Explain when. Limit the number of timeframes based on the human short term memory capacity. Keep this descriptive, not problem-solving.
 where: Explain where. Limit the number of locations based on the human short term memory capacity. Keep this descriptive, not problem-solving.
 shell: Write a shell script.
+LLM: Your response should consist of one or more prompts for an LLM. Each prompt should fit on one line.
 ADR: Write an ADR.
 operations: Infer an appropriate Operations Research (management science) or operations theory mathematical concept to apply.
 undefined: List undefined terms only.

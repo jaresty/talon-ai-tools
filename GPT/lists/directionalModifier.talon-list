@@ -19,5 +19,5 @@ dip rog: Important: Apply concretizing-grounding-reflective-structural as one sy
 dip bog: Important: Apply concretizing-grounding-acting-extending-reflective-structural as one synthesized lens to frame the preceding prompt. Do not itemize or separate.
 flip: Important: Apply an inverting, skewing, or surprising perspective as one synthesized lens to frame the preceding prompt.
 flop: Important: Consider various angles and introduce each as part of one synthesized lens to frame the preceding prompt.
-tap: Important: Itemize at a very high level ideas that could be applied to this. Be terse and practical — bullets, shorthand, minimal words, fast response. Use unambiguous names so I can ask an LLM about it later. Be descriptive. Do not try to propose a solution or answer how - only answer what. You must answer in a single bulleted list limited based on the human short term memory capacity.
+tap: Important: List 5–7 high-level abstract categories with clear, unambiguous labels and a short descriptive phrase; no how-to, only what.
 jog: Important: Interpret and act as one synthesized lens to frame the preceding prompt. Don’t ask back — just infer the intent and carry it out directly.

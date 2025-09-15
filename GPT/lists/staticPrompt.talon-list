@@ -67,7 +67,7 @@ format: Add appropriate formatting leveraging commands available in the context 
 simple: Rewrite this in a simpler way.
 context: Add LLM‑ready context; context only.
 easier: This is too much work. Give me something that I can accomplish in a smaller timescale.
-knowledge: Consider academic or industry Fields of Knowledge you know about that apply to this to frame your response and tell me which you are using:
+knowledge: Identify academic or industry fields of knowledge that are relevant to this topic. For each field, explain why it applies and what perspective it offers.
 why: Explain why. Limit the number of reasons based on the human short term memory capacity. Keep this descriptive, not problem-solving.
 how: Explain how. Limit the number of steps based on the human short term memory capacity. Keep this descriptive, not problem-solving.
 who: Explain who. Limit the number of actors based on the human short term memory capacity. Keep this descriptive, not problem-solving.

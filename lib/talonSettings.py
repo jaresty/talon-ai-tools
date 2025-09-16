@@ -34,14 +34,15 @@ mod.list(
     "modelAudience",
     desc="The audience to whom the LLM is writing. For example, 'to business'",
 )
+mod.list("goalModifier", desc="GPT Goal Modifiers")
 
 # model prompts can be either static and predefined by this repo or custom outside of it
-@mod.capture(rule="[{user.staticPrompt}] {user.directionalModifier} | {user.customPrompt}")
+@mod.capture(rule="[{user.goalModifier}] [{user.staticPrompt}] {user.directionalModifier} | {user.customPrompt}")
 def modelPrompt(m) -> str:
     print(m)
     if hasattr(m, "customPrompt"):
         return str(m.customPrompt)
-    return getattr(m, "staticPrompt", "I'm not telling you what to do. Infer the task.") + getattr(m, "directionalModifier", "")
+    return getattr(m, "staticPrompt", "I'm not telling you what to do. Infer the task.") + getattr(m, "goalModifier", "") + getattr(m, "directionalModifier", "")
 
 
 @mod.capture(rule="[<user.modelPrompt>] prompt <user.text>")

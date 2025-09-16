@@ -5,9 +5,9 @@ list: user.staticPrompt
 
 emoji: Return only emoji.
 commit: Conventional commit message for staged changes.
-flow: Explain the flow. Keep this descriptive, not problem-solving.
+flow: Explain the flow.
 diagram: Convert plain text to mermaid diagram syntax. Infer the best diagram type. Remember that mermaid diagrams do not allow parentheses.
-describe: Just describe this objectively. Do not offer suggestions, solutions, or recommendations.
+describe: Just describe this objectively.
 math: Consider fields of mathematics that apply to this to frame your response and tell me which you are using:
 clear: Remove all jargon and complex language.
 todo: Format as a todo list.
@@ -16,14 +16,14 @@ value: What is the user value of this?
 gherkin: Reformat into proper Gherkin using Jira markup; modified text only.
 team: Tell me about the team structure. Just talk about the people and their roles.
 questions: Generate open‑ended questions only.
-recipe: Represent this as a recipe using a custom language. Include a key for how to understand the language. Do not offer suggestions, solutions, or recommendations.
+recipe: Represent this as a recipe using a custom language. Include a key for how to understand the language.
 challenge: Challenge this with questions so we can make it better.
 product: Frame this through a product lens.
 metrics: List metrics that result in these outcomes with concrete examples.
 retro: Help me introspect / reflect on this.
 objectivity: Assess objectivity with examples.
-structure: Describe the structure of the whole input. Do not offer suggestions, solutions, or recommendations.
-relation: Invert this so it focuses on the relationships between things. Describe those relationships. Do not offer suggestions, solutions, or recommendations.
+structure: Describe the structure of the whole input.
+relation: Invert this so it focuses on the relationships between things. Describe those relationships.
 style: Describe style instructions with one example.
 critique: This looks bad. What is wrong with it?
 wasinawa: I want you to help me with doing a what, so what, now what analysis. For the following ask those three questions and give me your answers. What refers to what happened. So what refers to what is important about what happened. Now what refers to what should we do about what happened.

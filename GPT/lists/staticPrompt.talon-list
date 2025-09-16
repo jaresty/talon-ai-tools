@@ -68,12 +68,12 @@ simple: Rewrite this in a simpler way.
 context: Add LLM‑ready context; context only.
 easier: This is too much work. Give me something that I can accomplish in a smaller timescale.
 knowledge: Identify academic or industry fields of knowledge that are relevant to this topic. For each field, explain why it applies and what perspective it offers.
-why: Explain why. Limit the number of reasons based on the human short term memory capacity. Keep this descriptive, not problem-solving.
-how: Explain how. Limit the number of steps based on the human short term memory capacity. Keep this descriptive, not problem-solving.
-who: Explain who. Limit the number of actors based on the human short term memory capacity. Keep this descriptive, not problem-solving.
-what: Explain what. Limit the number of items based on the human short term memory capacity. Keep this descriptive, not problem-solving.
-when: Explain when. Limit the number of timeframes based on the human short term memory capacity. Keep this descriptive, not problem-solving.
-where: Explain where. Limit the number of locations based on the human short term memory capacity. Keep this descriptive, not problem-solving.
+why: Explain why. Keep this descriptive, not problem-solving.
+how: Explain how. Keep this descriptive, not problem-solving.
+who: Explain who. Keep this descriptive, not problem-solving.
+what: Explain what. Keep this descriptive, not problem-solving.
+when: Explain when. Keep this descriptive, not problem-solving.
+where: Explain where. Keep this descriptive, not problem-solving.
 shell: Write a shell script.
 LLM: Your response should consist of one or more prompts for an LLM. Each prompt should fit on one line.
 ADR: Write an ADR.

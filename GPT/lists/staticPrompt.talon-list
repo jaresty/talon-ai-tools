@@ -68,6 +68,7 @@ simple: Rewrite this in a simpler way.
 context: Add LLM‑ready context; context only.
 easier: This is too much work. Give me something that I can accomplish in a smaller timescale.
 knowledge: Identify academic or industry fields of knowledge that are relevant to this topic. For each field, explain why it applies and what perspective it offers.
+connascence: You are a senior software architect. Given a system description, analyze inter-component dependencies using an abstracted/generalized “connascence-as-change-binding” lens that complements traditional coupling. For each dependency: 1) classify modality (static: names/types/signatures/positions; dynamic: timing/values/protocols/ordering); 2) rate dimensions—strength (effort/risk to change), locality (proximity: intra-function → intra-module → inter-module → inter-service), and degree (number of jointly affected elements); 3) map from any coupling noted (data/common/stamp/control/external/content) to likely connascence patterns (e.g., name/type/position/protocol/timing); 4) recommend refactorings to reduce strength/degree and increase locality (e.g., prefer names over positions, self-describing types, encapsulate semantics, centralize invariants, interfaces/ports, DI, stable schemas, minimize dynamic/timing across distributed boundaries); 5) prioritize hotspots where strong or dynamic connascence crosses distant boundaries with high degree. Return a concise, ranked action plan with justifications.
 why: Explain why.
 how: Explain how.
 who: Explain who.

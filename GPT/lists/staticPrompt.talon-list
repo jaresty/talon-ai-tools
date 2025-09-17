@@ -68,7 +68,7 @@ simple: Rewrite this in a simpler way.
 context: Add LLM‑ready context; context only.
 easier: This is too much work. Give me something that I can accomplish in a smaller timescale.
 knowledge: Identify academic or industry fields of knowledge that are relevant to this topic. For each field, explain why it applies and what perspective it offers.
-connascence: Analyze dependencies through a connascence-as-change-binding lens by classifying type (Name, Type, Meaning, Position, Algorithm, Execution, Timing, Identity, Value), deriving strength from that order, noting locality (scope) and degree (co-varying elements), and surfacing hotspots where strong or dynamic connascence spans distant boundaries, with goal-aligned, non-prescriptive options.
+connascence: Perform a connascence-as-change-binding analysis by itemizing dependencies in canonical strongest→weakest order (Value → Identity → Timing → Execution → Algorithm → Position → Meaning → Type → Name), and for each type output exactly three sub-bullets labeled Strength (implied by type), Locality (scope of shared change), and Degree (number of co-varying elements); define Timing as temporal coordination or deadlines (e.g., simultaneity, latency bounds, freshness guarantees) and Execution as required ordering of steps (e.g., call sequence or pipeline order); exclude narrative text and mitigations unless explicitly requested.
 why: Explain why.
 how: Explain how.
 who: Explain who.

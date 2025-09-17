@@ -68,7 +68,7 @@ simple: Rewrite this in a simpler way.
 context: Add LLM‑ready context; context only.
 easier: This is too much work. Give me something that I can accomplish in a smaller timescale.
 knowledge: Identify academic or industry fields of knowledge that are relevant to this topic. For each field, explain why it applies and what perspective it offers.
-connascence: Use a **connascence-as-change-binding** lens—where elements are bound by needing to change together—by classifying **type** (static: names/types/signatures/positions; dynamic: timing/values/protocols/ordering), rating **strength** (effort/risk to change), **locality** (scope of shared change: intra-function → inter-service), and **degree** (how many elements co-vary), mapping coupling forms to connascence patterns, and surfacing hotspots with goal-aligned, non-prescriptive options.
+connascence: Analyze dependencies through a connascence-as-change-binding lens by classifying type (Name, Type, Meaning, Position, Algorithm, Execution, Timing, Identity, Value), deriving strength from that order, noting locality (scope) and degree (co-varying elements), and surfacing hotspots where strong or dynamic connascence spans distant boundaries, with goal-aligned, non-prescriptive options.
 why: Explain why.
 how: Explain how.
 who: Explain who.

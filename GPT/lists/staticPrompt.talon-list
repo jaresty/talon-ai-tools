@@ -77,6 +77,7 @@ when: Explain when.
 where: Explain where.
 shell: Write a shell script.
 LLM: Your response should consist of one or more prompts for an LLM. Each prompt should fit on one line.
+incremental: How can I break this down into smaller steps to do just the next tiny increment?
 ADR: Write an ADR.
 operations: Infer an appropriate Operations Research (management science) or operations theory mathematical concept to apply.
 undefined: List undefined terms only.

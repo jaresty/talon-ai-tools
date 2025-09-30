@@ -13,6 +13,7 @@ clear: Remove all jargon and complex language.
 todo: Format as a todo list.
 assumption: What are the assumptions behind this?
 value: What is the user value of this?
+jobs: List the JTBD - Jobs To Be Done for this.
 gherkin: Reformat into proper Gherkin using Jira markup; modified text only.
 team: Tell me about the team structure. Just talk about the people and their roles.
 questions: Generate open‑ended questions only.

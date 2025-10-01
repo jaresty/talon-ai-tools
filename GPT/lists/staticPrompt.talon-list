@@ -24,6 +24,7 @@ metrics: List metrics that result in these outcomes with concrete examples.
 retro: Help me introspect / reflect on this.
 objectivity: Assess objectivity with examples.
 structure: Describe the structure of the whole input.
+wardley: Generate a Wardley Map by identifying users, needs, components, their placement on value chain and evolution, and dependencies, then summarize key strategic insights.
 relation: Invert this so it focuses on the relationships between things. Describe those relationships.
 style: Describe style instructions with one example.
 critique: This looks bad. What is wrong with it?

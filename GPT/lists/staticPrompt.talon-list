@@ -102,7 +102,7 @@ dub: Consider concepts such as powers or roots (etc) and pick one consistent ang
 drum: Consider concepts such as multiplication or division (etc) and pick one consistent angle for your response that fits. Apply those concepts in a non-numerical way to this.
 
 # - Strategy, mapping, and dependencies
-wardley: Generate a Wardley Map by identifying users, needs, components, their placement on value chain and evolution, and dependencies, then summarize key strategic insights. This type of map typically orients the visibility to the user on the y-axis and the evolution of the subject on the x-axis. If formatting for a table the rows should be ordered from high user visibility (top) to low user visibility (bottom). The columns should be ordered from genesis (left) to commodity (right). The cells should be the items, and empty cells are OK.
+wardley: Generate a Wardley Map by identifying users, needs, and components, then output it strictly as a Markdown table where rows = visibility levels (High, Medium, Low) and columns = evolution stages (Genesis, Custom, Product, Commodity), placing components only in the cells where they belong and leaving other cells empty, and after the table provide a concise summary of dependencies and key strategic insights.
 dependency: List dependencies and what they depend on.
 cochange: In this situation with multiple subjects, show me how each subject directly cochanges with the others.
 interact: How do these interact?

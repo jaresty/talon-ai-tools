@@ -190,7 +190,7 @@ class UserActions:
         destination: ModelDestination = pass_configuration.model_destination
         actions.user.gpt_insert_response(source.format_messages(), destination)
 
-def gpt_help() -> None:
+    def gpt_help() -> None:
         """Open the GPT help file in the web browser"""
         # Build a consolidated, scannable help page from all related lists
         current_dir = os.path.dirname(__file__)
@@ -205,7 +205,12 @@ def gpt_help() -> None:
             except FileNotFoundError:
                 return []
 
-        def render_list_as_tables(title: str, filename: str, builder: Builder) -> None:
+        def render_list_as_tables(
+            title: str,
+            filename: str,
+            builder: Builder,
+            comment_mode: str = "section_headers",  # or "preceding_description"
+        ) -> None:
             lines = read_list_lines(filename)
             if not lines:
                 return
@@ -213,6 +218,7 @@ def gpt_help() -> None:
             builder.h2(title)
 
             table_open = False
+            last_comment_block: list[str] = []
 
             def ensure_table_open():
                 nonlocal table_open
@@ -232,18 +238,28 @@ def gpt_help() -> None:
                     # keep spacing logical but avoid empty rows
                     continue
                 if line.startswith("#"):
-                    # Section headers inside files (e.g., "# - Category")
+                    # Comments: either section headers or descriptions depending on mode
                     header = line.lstrip("# ")
-                    close_table_if_open()
-                    if header:
-                        builder.h3(header)
+                    if comment_mode == "preceding_description":
+                        # accumulate consecutive comment lines for the next key:value
+                        if header:
+                            last_comment_block.append(header)
+                    else:
+                        close_table_if_open()
+                        if header:
+                            builder.h3(header)
                     continue
 
                 # Parse key: value rows (e.g., "emoji: Return only emoji.")
                 if ":" in line:
                     parts = line.split(":", 1)
                     key = parts[0].strip()
-                    desc = parts[1].strip()
+                    if comment_mode == "preceding_description":
+                        # Use accumulated comment(s) as description; fall back to inline text if none
+                        desc = " ".join(last_comment_block).strip() or parts[1].strip()
+                        last_comment_block = []
+                    else:
+                        desc = parts[1].strip()
                     if key or desc:
                         ensure_table_open()
                         builder.add_row([key, desc])
@@ -262,8 +278,9 @@ def gpt_help() -> None:
         render_list_as_tables("Tone", "modelTone.talon-list", builder)
         render_list_as_tables("Audience", "modelAudience.talon-list", builder)
         render_list_as_tables("Purpose", "modelPurpose.talon-list", builder)
-        render_list_as_tables("Sources", "modelSource.talon-list", builder)
-        render_list_as_tables("Destinations", "modelDestination.talon-list", builder)
+        # For Sources/Destinations, descriptions live in the preceding comment lines
+        render_list_as_tables("Sources", "modelSource.talon-list", builder, comment_mode="preceding_description")
+        render_list_as_tables("Destinations", "modelDestination.talon-list", builder, comment_mode="preceding_description")
 
         builder.render()
 

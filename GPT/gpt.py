@@ -190,21 +190,80 @@ class UserActions:
         destination: ModelDestination = pass_configuration.model_destination
         actions.user.gpt_insert_response(source.format_messages(), destination)
 
-    def gpt_help() -> None:
+def gpt_help() -> None:
         """Open the GPT help file in the web browser"""
-        # get the text from the file and open it in the web browser
+        # Build a consolidated, scannable help page from all related lists
         current_dir = os.path.dirname(__file__)
-        file_path = os.path.join(current_dir, "lists", "staticPrompt.talon-list")
-        with open(file_path, "r") as f:
-            lines = f.readlines()[2:]
+        lists_dir = os.path.join(current_dir, "lists")
+
+        def read_list_lines(name: str) -> list[str]:
+            path = os.path.join(lists_dir, name)
+            try:
+                with open(path, "r", encoding="utf-8") as f:
+                    # Skip the first two lines (talon list header convention)
+                    return f.readlines()[2:]
+            except FileNotFoundError:
+                return []
+
+        def render_list_as_tables(title: str, filename: str, builder: Builder) -> None:
+            lines = read_list_lines(filename)
+            if not lines:
+                return
+
+            builder.h2(title)
+
+            table_open = False
+
+            def ensure_table_open():
+                nonlocal table_open
+                if not table_open:
+                    builder.start_table(["Trigger", "Description"])
+                    table_open = True
+
+            def close_table_if_open():
+                nonlocal table_open
+                if table_open:
+                    builder.end_table()
+                    table_open = False
+
+            for raw in lines:
+                line = raw.strip()
+                if not line:
+                    # keep spacing logical but avoid empty rows
+                    continue
+                if line.startswith("#"):
+                    # Section headers inside files (e.g., "# - Category")
+                    header = line.lstrip("# ")
+                    close_table_if_open()
+                    if header:
+                        builder.h3(header)
+                    continue
+
+                # Parse key: value rows (e.g., "emoji: Return only emoji.")
+                if ":" in line:
+                    parts = line.split(":", 1)
+                    key = parts[0].strip()
+                    desc = parts[1].strip()
+                    if key or desc:
+                        ensure_table_open()
+                        builder.add_row([key, desc])
+
+            close_table_if_open()
 
         builder = Builder()
-        builder.h1("Talon GPT Prompt List")
-        for line in lines:
-            if "##" in line:
-                builder.h2(line)
-            else:
-                builder.p(line)
+        builder.title("Talon GPT Reference")
+        builder.h1("Talon GPT Reference")
+
+        # Order for easy scanning with Cmd-F
+        render_list_as_tables("Static Prompts", "staticPrompt.talon-list", builder)
+        render_list_as_tables("Directional Modifiers", "directionalModifier.talon-list", builder)
+        render_list_as_tables("Goal Modifiers", "goalModifier.talon-list", builder)
+        render_list_as_tables("Voice", "modelVoice.talon-list", builder)
+        render_list_as_tables("Tone", "modelTone.talon-list", builder)
+        render_list_as_tables("Audience", "modelAudience.talon-list", builder)
+        render_list_as_tables("Purpose", "modelPurpose.talon-list", builder)
+        render_list_as_tables("Sources", "modelSource.talon-list", builder)
+        render_list_as_tables("Destinations", "modelDestination.talon-list", builder)
 
         builder.render()
 

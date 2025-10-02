@@ -27,3 +27,45 @@ img {
     display: block;
     margin: 20px auto;
 }
+
+/* Tables: consistent widths and alignment across the document */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed; /* ensure consistent column widths across tables */
+}
+
+thead th {
+    font-weight: bold;
+}
+
+th,
+td {
+    padding: 6px 8px;
+    vertical-align: top;
+}
+
+/* Right-align triggers (first column), fixed width using ch for monospace consistency */
+th:nth-child(1),
+td:nth-child(1) {
+    width: 28ch; /* keep trigger width consistent across tables */
+    text-align: right;
+    white-space: nowrap;
+    padding-right: 1rem;
+}
+
+/* Left-align descriptions (second column), fill remaining space */
+th:nth-child(2),
+td:nth-child(2) {
+    text-align: left;
+}
+
+/* Subtle zebra striping for readability */
+tbody tr:nth-child(odd) {
+    background: rgba(255, 255, 255, 0.03);
+}
+
+/* Optional thin separators */
+tbody tr + tr td {
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+}

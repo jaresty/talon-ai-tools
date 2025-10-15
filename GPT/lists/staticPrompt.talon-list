@@ -12,6 +12,7 @@ fix: Fix grammar only; keep meaning/tone; modified text only.
 format: Add appropriate formatting leveraging commands available in the context (slack, markdown, etc) to the text.
 HTML: Semantic HTML only.
 LLM: Your response should consist of one or more prompts for an LLM. Each prompt should fit on one line.
+announce: Announce this to the audience.
 
 # - Analysis, structure, and perspective
 describe: Just describe this objectively.

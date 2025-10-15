@@ -57,6 +57,7 @@ objectivity: Assess objectivity with examples.
 pain: List 3-5 pain points; issues; problems; obstacles; challenges; barriers. Order by importance to the audience.
 experiment: I have given you a problem. Suggest one or more experiments that I can try to solve it.
 science: Give me testable, relevant, and specific hypotheses.
+debug: Analyze the full transcript using the scientific method of debugging—summarize only the stable current facts (not repeating prior lists), list unresolved questions, select the next best unanswered one, propose hypotheses consistent with the evidence, choose the best current hypothesis, design a minimal experiment to confirm or refute it, and restructure as needed for clarity and logical completeness.
 wasinawa: I want you to help me with doing a what, so what, now what analysis. For the following ask those three questions and give me your answers. What refers to what happened. So what refers to what is important about what happened. Now what refers to what should we do about what happened.
 retro: Help me introspect / reflect on this.
 critique: This looks bad. What is wrong with it?

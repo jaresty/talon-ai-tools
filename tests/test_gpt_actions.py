@@ -100,6 +100,7 @@ if bootstrap is not None:
                 session.execute.assert_called_once()
                 self.assertEqual(result, "formatted")
 
+
         def test_gpt_pass_uses_prompt_session(self):
             configuration = MagicMock(
                 model_source=MagicMock(),

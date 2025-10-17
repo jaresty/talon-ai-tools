@@ -1,5 +1,5 @@
 import unittest
-from unittest.mock import patch, MagicMock
+from unittest.mock import ANY, MagicMock, patch
 
 try:
     from bootstrap import bootstrap
@@ -77,6 +77,28 @@ if bootstrap is not None:
                     mock_session.execute.return_value,
                     "paste",
                 )
+
+        def test_gpt_reformat_last_uses_prompt_session(self):
+            actions.user.get_last_phrase = lambda: "spoken"
+            actions.user.clear_last_phrase = lambda: None
+
+            with patch.object(gpt_module, "PromptSession") as session_cls, patch.object(
+                gpt_module, "create_model_source"
+            ) as create_source, patch.object(
+                gpt_module, "extract_message", side_effect=lambda msg: msg["text"]
+            ):
+                source = MagicMock()
+                create_source.return_value = source
+                session = session_cls.return_value
+                session.execute.return_value = {"type": "text", "text": "formatted"}
+
+                result = gpt_module.UserActions.gpt_reformat_last("as code")
+
+                session_cls.assert_called_once()
+                create_source.assert_called_once_with("last")
+                session.prepare_prompt.assert_called_once_with(ANY, source)
+                session.execute.assert_called_once()
+                self.assertEqual(result, "formatted")
 else:
     class GPTActionPromptSessionTests(unittest.TestCase):
         @unittest.skip("Test harness unavailable outside unittest runs")

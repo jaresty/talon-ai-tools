@@ -303,8 +303,11 @@ class UserActions:
         last_output = actions.user.get_last_phrase()
         if last_output:
             actions.user.clear_last_phrase()
-            actions.user.gpt_prepare_message("last", PROMPT, "")
-            return extract_message(gpt_query())
+            session = PromptSession(Default())
+            source = create_model_source("last")
+            session.prepare_prompt(PROMPT, source)
+            response = session.execute()
+            return extract_message(response)
         else:
             notify("No text to reformat")
             raise Exception("No text to reformat")

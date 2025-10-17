@@ -1,4 +1,3 @@
-from dataclasses import dataclass, field
 from typing import List
 
 from ..lib.modelTypes import GPTTextItem
@@ -11,28 +10,7 @@ from ..lib.modelHelpers import (
     notify,
 )
 from ..lib.HTMLBuilder import Builder
-
-
-@dataclass
-class ResponsePresentation:
-    display_text: str
-    paste_text: str
-    browser_lines: List[str] = field(default_factory=list)
-    open_browser: bool = False
-
-
-def render_for_destination(
-    gpt_message: List[GPTTextItem], destination_kind: str
-) -> ResponsePresentation:
-    extracted_message = messages_to_string(gpt_message)
-    lines = extracted_message.split("\n")
-    open_browser = destination_kind == "browser" or len(lines) > 60
-    return ResponsePresentation(
-        display_text=extracted_message,
-        paste_text=extracted_message,
-        browser_lines=lines,
-        open_browser=open_browser,
-    )
+from ..lib.modelPresentation import ResponsePresentation, render_for_destination
 
 
 class ModelDestination:
@@ -221,7 +199,7 @@ class Default(ModelDestination):
             GPTState.last_was_pasted = True
             actions.user.paste(presentation.paste_text)
         else:
-            pass
+            actions.user.confirmation_gui_append(presentation)
 
 
 def create_model_destination(destination_type: str) -> ModelDestination:

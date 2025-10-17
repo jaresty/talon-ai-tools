@@ -1,8 +1,11 @@
 import textwrap
 
+from typing import Optional, Union
+
 from talon import Context, Module, actions, clip, imgui, settings
 
 from .modelHelpers import GPTState, extract_message, notify
+from .modelPresentation import ResponsePresentation
 
 mod = Module()
 ctx = Context()
@@ -11,6 +14,7 @@ ctx = Context()
 class ConfirmationGUIState:
     display_thread = False
     last_item_text = ""
+    current_presentation: Optional[ResponsePresentation] = None
 
     @classmethod
     def update(cls):
@@ -82,10 +86,15 @@ def confirmation_gui(gui: imgui.GUI):
 
 @mod.action_class
 class UserActions:
-    def confirmation_gui_append(model_output: str):
+    def confirmation_gui_append(model_output: Union[str, ResponsePresentation]):
         """Add text to the confirmation gui"""
         ctx.tags = ["user.model_window_open"]
-        GPTState.text_to_confirm = model_output
+        if isinstance(model_output, ResponsePresentation):
+            ConfirmationGUIState.current_presentation = model_output
+            GPTState.text_to_confirm = model_output.display_text
+        else:
+            ConfirmationGUIState.current_presentation = None
+            GPTState.text_to_confirm = model_output
         confirmation_gui.show()
 
     def confirmation_gui_close():
@@ -93,6 +102,7 @@ class UserActions:
         GPTState.text_to_confirm = ""
         confirmation_gui.hide()
         ctx.tags = []
+        ConfirmationGUIState.current_presentation = None
 
     def confirmation_gui_pass_context():
         """Add the model output to the context"""
@@ -108,7 +118,11 @@ class UserActions:
 
     def confirmation_gui_open_browser():
         """Open a browser with the response"""
-        actions.user.gpt_open_browser(GPTState.text_to_confirm)
+        presentation = ConfirmationGUIState.current_presentation
+        if presentation and presentation.open_browser:
+            actions.user.gpt_open_browser(presentation.display_text)
+        else:
+            actions.user.gpt_open_browser(GPTState.text_to_confirm)
         GPTState.text_to_confirm = ""
         actions.user.confirmation_gui_close()
 
@@ -142,10 +156,14 @@ class UserActions:
         """Paste the model output"""
 
         text_to_set = (
+            ConfirmationGUIState.current_presentation.paste_text
+            if ConfirmationGUIState.current_presentation
+            and not ConfirmationGUIState.display_thread
+            else (
             GPTState.text_to_confirm
             if not ConfirmationGUIState.display_thread
             else ConfirmationGUIState.last_item_text
-        )
+        ))
 
         if not text_to_set:
             notify("GPT error: No text in confirmation GUI to paste")
@@ -174,3 +192,4 @@ class UserActions:
         ctx.tags = ["user.model_window_open"]
         if confirmation_gui.showing or force_open:
             confirmation_gui.show()
+        ConfirmationGUIState.current_presentation = None

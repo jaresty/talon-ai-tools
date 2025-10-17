@@ -1,15 +1,15 @@
 import os
+from typing import Optional
 
 from ..lib.talonSettings import ApplyPromptConfiguration, PassConfiguration
 
 from ..lib.modelDestination import Browser, Default, ModelDestination
-from ..lib.modelSource import ModelSource, create_model_source, format_source_messages
+from ..lib.modelSource import ModelSource, create_model_source
 from talon import Module, actions
 
 from ..lib.HTMLBuilder import Builder
 from ..lib.modelHelpers import (
     append_request_messages,
-    build_request,
     extract_message,
     format_message,
     format_messages,
@@ -18,6 +18,7 @@ from ..lib.modelHelpers import (
 )
 from ..lib.modelState import GPTState
 from ..lib.modelTypes import GPTSystemPrompt, GPTTextItem
+from ..lib.promptSession import PromptSession
 
 mod = Module()
 mod.tag(
@@ -155,14 +156,13 @@ class UserActions:
     def gpt_run_prompt(
         prompt: str,
         source: ModelSource,
-        additional_source: ModelSource | None = None,
+        additional_source: Optional[ModelSource] = None,
     ):
         """Apply an arbitrary prompt to arbitrary text"""
 
-        response = actions.user.gpt_prepare_message(
-            source, additional_source, prompt, ""
-        )
-        response = gpt_query()
+        session = PromptSession(destination="")
+        session.prepare_prompt(prompt, source, additional_source)
+        response = session.execute()
 
         return response.get("text")
 
@@ -170,11 +170,21 @@ class UserActions:
         """Explain why we got the results we did"""
         PROMPT = "Analyze the provided prompt and response. Explain how the prompt was understood to generate the given response. Provide only the explanation."
 
-        append_request_messages(
-            [format_messages("assistant", [format_message(GPTState.last_response)])]
+        if not GPTState.last_response:
+            notify("GPT Failure: No response available to analyze")
+            return
+
+        session = PromptSession(destination)
+        session.begin(reuse_existing=True)
+        session.add_messages(
+            [
+                format_messages(
+                    "assistant", [format_message(GPTState.last_response)]
+                ),
+                format_messages("user", [format_message(PROMPT)]),
+            ]
         )
-        append_request_messages([format_messages("user", [format_message(PROMPT)])])
-        response = gpt_query()
+        response = session.execute()
 
         actions.user.gpt_insert_response([response], destination)
 
@@ -330,31 +340,11 @@ class UserActions:
 
     def gpt_prepare_message(
         model_source: ModelSource,
-        additional_model_source: ModelSource | None,
+        additional_model_source: Optional[ModelSource],
         prompt: str,
         destination: ModelDestination = Default(),
     ) -> None:
         """Get the source text that will have the prompt applied to it"""
 
-        build_request(destination)
-
-        current_messages = format_source_messages(
-            prompt,
-            model_source,
-            additional_model_source,
-        )
-
-        # Iterate over all of the system prompt messages and format them as messages
-        system_prompt_messages: list[GPTTextItem] = []
-        for message in GPTState.system_prompt.format_as_array():
-            system_prompt_messages.append(format_message(message))
-        append_request_messages([format_messages("system", system_prompt_messages)])
-        append_request_messages(GPTState.query)
-
-        current_request = format_messages(
-            "user",
-            current_messages,
-        )
-        if GPTState.thread_enabled:
-            GPTState.push_thread(current_request)
-        append_request_messages([current_request])
+        session = PromptSession(destination)
+        session.prepare_prompt(prompt, model_source, additional_model_source)

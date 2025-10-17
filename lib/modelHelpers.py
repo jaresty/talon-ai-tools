@@ -149,7 +149,9 @@ def _get_additional_user_context_and_tools():
         if hasattr(actions.user, "gpt_additional_user_context"):
             additional_user_context = actions.user.gpt_additional_user_context()
         if hasattr(actions.user, "gpt_tools"):
-            user_tools = json.loads(actions.user.gpt_tools())
+            raw_tools = actions.user.gpt_tools()
+            if raw_tools:
+                user_tools = json.loads(raw_tools)
     except Exception as e:
         notify(
             f"An error occurred fetching user context/tools: {e}\n{traceback.format_exc()}"

@@ -4,3 +4,4 @@ list: user.goalModifier
 
 just: Keep this descriptive, not problem-solving. Do not offer suggestions, solutions, or recommendations.
 solve: Keep this problem-solving, not descriptive.
+sample: Include the probabilities of each response.

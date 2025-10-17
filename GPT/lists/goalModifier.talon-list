@@ -4,4 +4,4 @@ list: user.goalModifier
 
 just: Keep this descriptive, not problem-solving. Do not offer suggestions, solutions, or recommendations.
 solve: Keep this problem-solving, not descriptive.
-sample: Include the probabilities of each response.
+sample: Generate N diverse responses with explicit numeric probabilities (total ≈1), sampled from your full internal distribution rather than the top mode; avoid near-duplicates and keep each response self-contained; output only the responses and their probabilities.

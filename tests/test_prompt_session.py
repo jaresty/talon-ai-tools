@@ -15,6 +15,7 @@ if bootstrap is not None:
     from talon_user.lib.promptSession import PromptSession
     from talon_user.lib.modelSource import ModelSource
     from talon_user.lib import promptSession as prompt_session_module
+    from talon_user.lib.modelHelpers import MAX_TOTAL_CALLS
 
     class _StaticSource(ModelSource):
         def __init__(self, text: str):
@@ -62,6 +63,63 @@ if bootstrap is not None:
 
             self.assertEqual(result["text"], "done")
             mock_send_request.assert_called_once()
+
+        def test_begin_reuse_existing_skips_build(self):
+            GPTState.request = {
+                "messages": [],
+                "model": settings.get("user.openai_model"),
+                "tools": [],
+            }
+            session = PromptSession(destination="paste")
+            session.begin(reuse_existing=True)
+
+            self.assertTrue(session._prepared)
+
+        def test_add_messages_appends_tool_responses(self):
+            source = _StaticSource("primary")
+            session = PromptSession(destination="paste")
+            session.prepare_prompt("hello", source)
+
+            tool_message = {
+                "tool_call_id": "1",
+                "name": "tool",
+                "type": "function",
+                "role": "tool",
+                "content": "result",
+            }
+
+            session.add_messages([tool_message])
+
+            self.assertIn(tool_message, GPTState.request["messages"])
+
+        def test_add_messages_does_not_exceed_total_calls(self):
+            source = _StaticSource("primary")
+            session = PromptSession(destination="paste")
+            session.prepare_prompt("hello", source)
+
+            for _ in range(MAX_TOTAL_CALLS):
+                session.add_messages(
+                    [
+                        {
+                            "tool_call_id": "1",
+                            "name": "tool",
+                            "type": "function",
+                            "role": "tool",
+                            "content": "result",
+                        }
+                    ]
+                )
+
+            self.assertGreaterEqual(len(GPTState.request["messages"]), MAX_TOTAL_CALLS)
+
+        def test_begin_without_existing_request_builds_once(self):
+            session = PromptSession(destination="paste")
+            session.begin()
+            first_request = GPTState.request
+
+            session.begin(reuse_existing=True)
+
+            self.assertIs(GPTState.request, first_request)
 else:
     class PromptSessionTests(unittest.TestCase):
         @unittest.skip("Test harness unavailable outside unittest runs")

@@ -119,6 +119,15 @@ if bootstrap is not None:
                     configuration.model_source.format_messages(),
                     configuration.model_destination,
                 )
+
+        def test_thread_push_uses_prompt_session(self):
+            with patch.object(gpt_module, "PromptSession") as session_cls:
+                session = session_cls.return_value
+
+                gpt_module.UserActions.gpt_replay("thread")
+
+                session_cls.assert_called_once()
+                session.begin.assert_called_once_with(reuse_existing=True)
 else:
     class GPTActionPromptSessionTests(unittest.TestCase):
         @unittest.skip("Test harness unavailable outside unittest runs")

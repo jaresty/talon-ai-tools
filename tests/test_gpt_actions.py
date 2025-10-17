@@ -121,6 +121,13 @@ if bootstrap is not None:
                     configuration.model_destination,
                 )
 
+        def test_thread_toggle_does_not_build_session(self):
+            actions.user.confirmation_gui_refresh_thread = MagicMock()
+            with patch.object(gpt_module, "PromptSession") as session_cls:
+                gpt_module.UserActions.gpt_enable_threading()
+                session_cls.assert_not_called()
+
+
         def test_thread_push_uses_prompt_session(self):
             with patch.object(gpt_module, "PromptSession") as session_cls:
                 session = session_cls.return_value

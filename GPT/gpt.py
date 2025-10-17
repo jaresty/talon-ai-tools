@@ -201,6 +201,10 @@ class UserActions:
         """Passes a response from source to destination"""
         source: ModelSource = pass_configuration.model_source
         destination: ModelDestination = pass_configuration.model_destination
+
+        session = PromptSession(destination)
+        session.begin(reuse_existing=True)
+
         actions.user.gpt_insert_response(source.format_messages(), destination)
 
     def gpt_help() -> None:

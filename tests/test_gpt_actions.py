@@ -99,6 +99,26 @@ if bootstrap is not None:
                 session.prepare_prompt.assert_called_once_with(ANY, source)
                 session.execute.assert_called_once()
                 self.assertEqual(result, "formatted")
+
+        def test_gpt_pass_uses_prompt_session(self):
+            configuration = MagicMock(
+                model_source=MagicMock(),
+                model_destination=MagicMock(),
+            )
+
+            with patch.object(gpt_module, "PromptSession") as session_cls:
+                session = session_cls.return_value
+
+                gpt_module.UserActions.gpt_pass(configuration)
+
+                session_cls.assert_called_once()
+                session.prepare_prompt.assert_not_called()
+                session.begin.assert_called_once_with(reuse_existing=True)
+                session.execute.assert_not_called()
+                actions.user.gpt_insert_response.assert_called_once_with(
+                    configuration.model_source.format_messages(),
+                    configuration.model_destination,
+                )
 else:
     class GPTActionPromptSessionTests(unittest.TestCase):
         @unittest.skip("Test harness unavailable outside unittest runs")

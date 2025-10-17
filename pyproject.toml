@@ -21,7 +21,7 @@ target-version = ['py311']
 profile = 'black'
 
 [tool.pytest.ini_options]
-pythonpath = [".", "test/stubs"]
+pythonpath = [".", "tests/stubs"]
 
 [tool.pyright]
 # Talon classes don't use self so ignore the associated errors

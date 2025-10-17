@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Literal
+from typing import Literal, Optional
 
 from .modelSource import CompoundSource, ModelSource, SourceStack, create_model_source
 
@@ -92,7 +92,7 @@ def modelSourceStack(match_rule) -> ModelSource:
 class ApplyPromptConfiguration:
     please_prompt: str
     model_source: ModelSource
-    additional_model_source: ModelSource | None
+    additional_model_source: Optional[ModelSource]
     model_destination: ModelDestination
 
 

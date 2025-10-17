@@ -1,3 +1,5 @@
+from typing import List
+
 from ..lib.modelTypes import GPTTextItem
 from ..lib.modelConfirmationGUI import confirmation_gui
 from talon import actions, clip, settings, ui
@@ -11,7 +13,7 @@ from ..lib.HTMLBuilder import Builder
 
 
 class ModelDestination:
-    def insert(self, gpt_message: list[GPTTextItem]):
+    def insert(self, gpt_message: List[GPTTextItem]):
         extracted_message = messages_to_string(gpt_message)
         if len(extracted_message.split("\n")) > 60:
             Browser().insert(gpt_message)
@@ -202,42 +204,31 @@ class Default(ModelDestination):
 def create_model_destination(destination_type: str) -> ModelDestination:
     if destination_type == "":
         destination_type = settings.get("user.model_default_destination")
-    match destination_type:
-        case "above":
-            return Above()
-        case "below":
-            return Below()
-        case "chunked":
-            return Chunked()
-        case "clipboard":
-            return Clipboard()
-        case "snip":
-            return Snip()
-        case "context":
-            return Context()
-        case "query":
-            return Query()
-        case "newContext":
-            return NewContext()
-        case "appendClipboard":
-            return AppendClipboard()
-        case "browser":
-            return Browser()
-        case "textToSpeech":
-            return TextToSpeech()
-        case "window":
-            return ModelDestination()
-        case "chain":
-            return Chain()
-        case "paste":
-            return Paste()
-        case "typed":
-            return Typed()
-        case "thread":
-            return Thread()
-        case "newThread":
-            return NewThread()
-        case "draft":
-            return Draft()
-        case _:
-            return Default()
+    destination_map = {
+        "above": Above,
+        "below": Below,
+        "chunked": Chunked,
+        "clipboard": Clipboard,
+        "snip": Snip,
+        "context": Context,
+        "query": Query,
+        "newContext": NewContext,
+        "appendClipboard": AppendClipboard,
+        "browser": Browser,
+        "textToSpeech": TextToSpeech,
+        "chain": Chain,
+        "paste": Paste,
+        "typed": Typed,
+        "thread": Thread,
+        "newThread": NewThread,
+        "draft": Draft,
+    }
+
+    if destination_type == "window":
+        return ModelDestination()
+
+    destination_cls = destination_map.get(destination_type)
+    if destination_cls is not None:
+        return destination_cls()
+
+    return Default()

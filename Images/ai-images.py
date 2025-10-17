@@ -28,13 +28,13 @@ class Actions:
 
         response = requests.post(url, headers=headers, json=data)
 
-        match response.status_code:
-            case 200:
-                response_dict = response.json()
-                image_url = response_dict["data"][0]["url"]
-                # TODO choose whether to save the image, save the url, or paste the image into the current window
-                webbrowser.open(image_url)
-            case _:
-                print(response.json())
-                notify("Error generating image")
-                raise Exception("Error generating image")
+        if response.status_code == 200:
+            response_dict = response.json()
+            image_url = response_dict["data"][0]["url"]
+            # TODO choose whether to save the image, save the url, or paste the image into the current window
+            webbrowser.open(image_url)
+            return
+
+        print(response.json())
+        notify("Error generating image")
+        raise Exception("Error generating image")

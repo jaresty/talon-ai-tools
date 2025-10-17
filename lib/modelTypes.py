@@ -1,6 +1,8 @@
+from __future__ import annotations
+
 from talon import settings
 from dataclasses import dataclass, field
-from typing import Literal, TypedDict
+from typing import Any, List, Literal, TypedDict, Union
 
 
 class GPTTextItem(TypedDict):
@@ -23,13 +25,13 @@ class GPTTool(TypedDict):
 
 class GPTMessage(TypedDict):
     role: Literal["user", "system", "assistant"]
-    content: list[GPTTextItem | GPTImageItem] | list[GPTTextItem]
+    content: List[Union[GPTTextItem, GPTImageItem]]
 
 
 class GPTRequest(TypedDict):
-    messages: list[GPTMessage | GPTTool]
+    messages: List[Union[GPTMessage, GPTTool]]
     max_completion_tokens: int
-    tools: list[any]
+    tools: List[Any]
     reasoning_effort: str
     n: int
     model: str

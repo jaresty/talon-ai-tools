@@ -169,7 +169,7 @@ def _build_request_notification() -> str:
     return notification
 
 
-def _build_snippet_context(destination: str) -> str | None:
+def _build_snippet_context(destination: str) -> Optional[str]:
     """Return snippet context if destination is 'snip', else None."""
     if destination == "snip":
         return (
@@ -237,7 +237,7 @@ def build_request(destination: str):
     )
 
 
-def append_request_messages(messages: list[GPTMessage | GPTTool]):
+def append_request_messages(messages: List[Union[GPTMessage, GPTTool]]):
     GPTState.request["messages"] = GPTState.request.get("messages", []) + messages
 
 

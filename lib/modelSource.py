@@ -1,5 +1,7 @@
 import base64
 from copy import deepcopy
+from typing import List, Optional, Union
+
 from ..lib.modelTypes import GPTImageItem, GPTTextItem
 from ..lib.modelState import GPTState
 from talon import actions, clip, settings
@@ -11,24 +13,27 @@ from ..lib.modelHelpers import (
 )
 
 
+GPTItem = Union[GPTImageItem, GPTTextItem]
+
+
 class ModelSource:
     def get_text(self):
         raise NotImplementedError("Subclasses should implement this method")
 
-    def format_message(self) -> GPTImageItem | GPTTextItem:
+    def format_message(self) -> GPTItem:
         text = self.get_text()
         return format_message(text)
 
-    def format_messages(self) -> list[GPTImageItem | GPTTextItem]:
+    def format_messages(self) -> List[GPTItem]:
         return [self.format_message()]
 
 
 def format_source_messages(
-    prompt: str, source: ModelSource, additional_source: ModelSource | None = None
+    prompt: str, source: ModelSource, additional_source: Optional[ModelSource] = None
 ):
     prompt_chunks = prompt.split("{additional_source}")
     source_messages = source.format_messages()
-    additional_source_messages: list[GPTImageItem | GPTTextItem] = []
+    additional_source_messages: List[GPTItem] = []
     if additional_source is not None:
         additional_source_messages = additional_source.format_messages()
         if len(prompt_chunks) == 1:
@@ -48,7 +53,7 @@ def format_source_messages(
             raise Exception(
                 "Tried to use a prompt with an additional source message without providing an additional source"
             )
-    current_request: list[GPTTextItem | GPTImageItem] = [
+    current_request: List[GPTItem] = [
         format_message("# Prompt\n"),
         format_message(prompt_chunks[0]),
         format_message("\n\n## This is the primary content; if the prompt has a direction consider this to be to the right, destination, or future\n"),
@@ -61,7 +66,7 @@ class Clipboard(ModelSource):
     def get_text(self):
         return clip.text()
 
-    def format_message(self) -> GPTImageItem | GPTTextItem:
+    def format_message(self) -> GPTItem:
         clipped_image = clip.image()
 
         if clipped_image:
@@ -84,7 +89,7 @@ class Context(ModelSource):
             )
         return messages_to_string(GPTState.context)
 
-    def format_messages(self) -> list[GPTImageItem | GPTTextItem]:
+    def format_messages(self) -> List[GPTItem]:
         return deepcopy(GPTState.context)
 
 
@@ -100,19 +105,19 @@ class SourceStack(ModelSource):
     def get_text(self):
         return messages_to_string(GPTState.stacks[self.stack_name] or [])
 
-    def format_messages(self) -> list[GPTImageItem | GPTTextItem]:
+    def format_messages(self) -> List[GPTItem]:
         return deepcopy(GPTState.stacks[self.stack_name] or [])
 
 
 class CompoundSource(ModelSource):
-    def __init__(self, model_sources: list[ModelSource]):
+    def __init__(self, model_sources: List[ModelSource]):
         self.model_sources = model_sources
 
     def get_text(self):
         return messages_to_string(self.format_messages())
 
-    def format_messages(self) -> list[GPTImageItem | GPTTextItem]:
-        aggregated_messages: list[GPTImageItem | GPTTextItem] = []
+    def format_messages(self) -> List[GPTItem]:
+        aggregated_messages: List[GPTItem] = []
 
         for source in self.model_sources:
             messages = source.format_messages()
@@ -181,26 +186,21 @@ class AllText(ModelSource):
 def create_model_source(source_type: str) -> ModelSource:
     if source_type == "":
         source_type = settings.get("user.model_default_source")
-    match source_type:
-        case "clipboard":
-            return Clipboard()
-        case "context":
-            return Context()
-        case "query":
-            return Query()
-        case "thread":
-            return Thread()
-        case "style":
-            return Style()
-        case "gptResponse":
-            return GPTResponse()
-        case "gptRequest":
-            return GPTRequest()
-        case "gptExchange":
-            return GPTExchange()
-        case "lastTalonDictation":
-            return LastTalonDictation()
-        case "all":
-            return AllText()
-        case "this" | _:
-            return SelectedText()
+    source_map = {
+        "clipboard": Clipboard,
+        "context": Context,
+        "query": Query,
+        "thread": Thread,
+        "style": Style,
+        "gptResponse": GPTResponse,
+        "gptRequest": GPTRequest,
+        "gptExchange": GPTExchange,
+        "lastTalonDictation": LastTalonDictation,
+        "all": AllText,
+    }
+
+    source_cls = source_map.get(source_type)
+    if source_cls is not None:
+        return source_cls()
+
+    return SelectedText()

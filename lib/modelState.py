@@ -1,4 +1,4 @@
-from typing import ClassVar, Dict
+from typing import ClassVar, Dict, List, Union
 
 from talon import actions
 
@@ -15,12 +15,12 @@ class GPTState:
     text_to_confirm: ClassVar[str] = ""
     last_response: ClassVar[str] = ""
     last_was_pasted: ClassVar[bool] = False
-    context: ClassVar[list[GPTTextItem | GPTImageItem]] = []
-    query: ClassVar[list[GPTMessage]] = []
+    context: ClassVar[List[Union[GPTTextItem, GPTImageItem]]] = []
+    query: ClassVar[List[GPTMessage]] = []
     request: ClassVar[GPTRequest]
-    thread: ClassVar[list[GPTMessage]] = []
+    thread: ClassVar[List[GPTMessage]] = []
     tools = []
-    stacks: ClassVar[Dict[str, list[GPTTextItem | GPTImageItem]]] = {}
+    stacks: ClassVar[Dict[str, List[Union[GPTTextItem, GPTImageItem]]]] = {}
     thread_enabled: ClassVar[bool] = False
     debug_enabled: ClassVar[bool] = False
     system_prompt: ClassVar[GPTSystemPrompt] = GPTSystemPrompt()
@@ -67,7 +67,7 @@ class GPTState:
     @classmethod
     def append_stack(
         cls,
-        message: list[GPTTextItem | GPTImageItem] | list[GPTTextItem],
+        message: List[Union[GPTTextItem, GPTImageItem]],
         stack: str,
     ):
         """Append a message to a stack"""
@@ -77,7 +77,9 @@ class GPTState:
         actions.app.notify(f"Appended message to stack {stack}")
 
     @classmethod
-    def new_stack(cls, message: list[GPTTextItem | GPTImageItem], stack: str):
+    def new_stack(
+        cls, message: List[Union[GPTTextItem, GPTImageItem]], stack: str
+    ):
         """Append a message to a new stack"""
         cls.stacks[stack] = []
         cls.stacks[stack] += message

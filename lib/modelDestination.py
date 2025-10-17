@@ -1,3 +1,4 @@
+from dataclasses import dataclass, field
 from typing import List
 
 from ..lib.modelTypes import GPTTextItem
@@ -12,14 +13,36 @@ from ..lib.modelHelpers import (
 from ..lib.HTMLBuilder import Builder
 
 
+@dataclass
+class ResponsePresentation:
+    display_text: str
+    paste_text: str
+    browser_lines: List[str] = field(default_factory=list)
+    open_browser: bool = False
+
+
+def render_for_destination(
+    gpt_message: List[GPTTextItem], destination_kind: str
+) -> ResponsePresentation:
+    extracted_message = messages_to_string(gpt_message)
+    lines = extracted_message.split("\n")
+    open_browser = destination_kind == "browser" or len(lines) > 60
+    return ResponsePresentation(
+        display_text=extracted_message,
+        paste_text=extracted_message,
+        browser_lines=lines,
+        open_browser=open_browser,
+    )
+
+
 class ModelDestination:
     def insert(self, gpt_message: List[GPTTextItem]):
-        extracted_message = messages_to_string(gpt_message)
-        if len(extracted_message.split("\n")) > 60:
+        presentation = render_for_destination(gpt_message, "default")
+        if presentation.open_browser:
             Browser().insert(gpt_message)
         else:
-            GPTState.text_to_confirm = extracted_message
-            actions.user.confirmation_gui_append(extracted_message)
+            GPTState.text_to_confirm = presentation.display_text
+            actions.user.confirmation_gui_append(presentation.display_text)
 
     # If this isn't working, you may need to turn on dication for electron apps
     #  ui.apps(bundle="com.microsoft.VSCode")[0].element.AXManualAccessibility = True
@@ -45,8 +68,8 @@ class Above(ModelDestination):
         actions.key("left")
         actions.edit.line_insert_up()
         GPTState.last_was_pasted = True
-        extracted_message = messages_to_string(gpt_message)
-        actions.user.paste(extracted_message)
+        presentation = render_for_destination(gpt_message, "above")
+        actions.user.paste(presentation.paste_text)
 
 
 class Chunked(ModelDestination):
@@ -55,8 +78,8 @@ class Chunked(ModelDestination):
             return super().insert(gpt_message)
 
         GPTState.last_was_pasted = True
-        extracted_message = messages_to_string(gpt_message)
-        lines = extracted_message.splitlines()
+        presentation = render_for_destination(gpt_message, "chunked")
+        lines = presentation.browser_lines
         for i in range(0, len(lines), 10):
             chunk = "\n".join(lines[i : i + 10])
             actions.user.paste(chunk)
@@ -70,22 +93,22 @@ class Below(ModelDestination):
         actions.key("right")
         actions.edit.line_insert_down()
         GPTState.last_was_pasted = True
-        extracted_message = messages_to_string(gpt_message)
-        actions.user.paste(extracted_message)
+        presentation = render_for_destination(gpt_message, "below")
+        actions.user.paste(presentation.paste_text)
 
 
 class Clipboard(ModelDestination):
     def insert(self, gpt_message):
-        extracted_message = messages_to_string(gpt_message)
-        clip.set_text(extracted_message)
+        presentation = render_for_destination(gpt_message, "clipboard")
+        clip.set_text(presentation.paste_text)
 
 
 class Snip(ModelDestination):
     def insert(self, gpt_message):
         if not self.inside_textarea():
             return super().insert(gpt_message)
-        extracted_message = messages_to_string(gpt_message)
-        actions.user.insert_snippet(extracted_message)
+        presentation = render_for_destination(gpt_message, "snip")
+        actions.user.insert_snippet(presentation.paste_text)
 
 
 class Context(ModelDestination):
@@ -108,19 +131,19 @@ class NewContext(ModelDestination):
 
 class AppendClipboard(ModelDestination):
     def insert(self, gpt_message):
-        extracted_message = messages_to_string(gpt_message)
+        presentation = render_for_destination(gpt_message, "appendClipboard")
         if clip.text() is not None:
-            clip.set_text(clip.text() + "\n" + extracted_message)  # type: ignore
+            clip.set_text(clip.text() + "\n" + presentation.paste_text)  # type: ignore
         else:
-            clip.set_text(extracted_message)
+            clip.set_text(presentation.paste_text)
 
 
 class Browser(ModelDestination):
     def insert(self, gpt_message):
+        presentation = render_for_destination(gpt_message, "browser")
         builder = Builder()
         builder.h1("Talon GPT Result")
-        extracted_message = messages_to_string(gpt_message)
-        for line in extracted_message.split("\n"):
+        for line in presentation.browser_lines:
             builder.p(line)
         builder.render()
 
@@ -128,8 +151,8 @@ class Browser(ModelDestination):
 class TextToSpeech(ModelDestination):
     def insert(self, gpt_message):
         try:
-            extracted_message = messages_to_string(gpt_message)
-            actions.user.tts(extracted_message)
+            presentation = render_for_destination(gpt_message, "tts")
+            actions.user.tts(presentation.paste_text)
         except KeyError:
             notify("GPT Failure: text to speech is not installed")
 
@@ -139,8 +162,8 @@ class Chain(ModelDestination):
         if not self.inside_textarea():
             return super().insert(gpt_message)
         GPTState.last_was_pasted = True
-        extracted_message = messages_to_string(gpt_message)
-        actions.user.paste(extracted_message)
+        presentation = render_for_destination(gpt_message, "chain")
+        actions.user.paste(presentation.paste_text)
         actions.user.gpt_select_last()
 
 
@@ -149,16 +172,16 @@ class Paste(ModelDestination):
         if not self.inside_textarea():
             return super().insert(gpt_message)
         GPTState.last_was_pasted = True
-        extracted_message = messages_to_string(gpt_message)
-        actions.user.paste(extracted_message)
+        presentation = render_for_destination(gpt_message, "paste")
+        actions.user.paste(presentation.paste_text)
 
 class Draft(ModelDestination):
     def insert(self, gpt_message):
         GPTState.last_was_pasted = True
-        extracted_message = messages_to_string(gpt_message)
+        presentation = render_for_destination(gpt_message, "draft")
         actions.user.draft_editor_open()
         actions.user.delete_all()
-        actions.user.paste(extracted_message)
+        actions.user.paste(presentation.paste_text)
 
 
 class Typed(ModelDestination):
@@ -166,8 +189,8 @@ class Typed(ModelDestination):
         if not self.inside_textarea():
             return super().insert(gpt_message)
         GPTState.last_was_pasted = True
-        extracted_message = messages_to_string(gpt_message)
-        actions.auto_insert(extracted_message)
+        presentation = render_for_destination(gpt_message, "typed")
+        actions.auto_insert(presentation.paste_text)
 
 
 class Thread(ModelDestination):
@@ -193,10 +216,10 @@ class Stack(ModelDestination):
 
 class Default(ModelDestination):
     def insert(self, gpt_message):
+        presentation = render_for_destination(gpt_message, "default")
         if confirmation_gui.showing:
             GPTState.last_was_pasted = True
-            extracted_message = messages_to_string(gpt_message)
-            actions.user.paste(extracted_message)
+            actions.user.paste(presentation.paste_text)
         else:
             pass
 

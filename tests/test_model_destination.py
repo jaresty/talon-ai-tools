@@ -1,4 +1,5 @@
 import unittest
+from unittest.mock import patch
 
 try:
     from bootstrap import bootstrap
@@ -9,8 +10,9 @@ else:
 
 if bootstrap is not None:
     from talon import clip
-    from talon_user.lib.modelDestination import AppendClipboard, Clipboard
+    from talon_user.lib.modelDestination import AppendClipboard, Clipboard, ResponsePresentation
     from talon_user.lib.modelTypes import GPTTextItem
+    from talon_user.lib import modelDestination as destination_module
 
     class ModelDestinationClipboardTests(unittest.TestCase):
         def setUp(self) -> None:
@@ -32,6 +34,23 @@ if bootstrap is not None:
             dest.insert([message])
 
             self.assertEqual(clip.text(), "existing\nmore")
+
+        def test_default_destination_uses_response_renderer(self):
+            message: GPTTextItem = {"type": "text", "text": "hello"}
+            destination_module.confirmation_gui.showing = True
+
+            with patch.object(destination_module, "render_for_destination") as renderer, patch.object(
+                destination_module.actions.user, "paste"
+            ) as paste:
+                renderer.return_value = ResponsePresentation(
+                    display_text="hello", paste_text="hello", open_browser=False
+                )
+
+                destination_module.Default().insert([message])
+
+                renderer.assert_called_once()
+                paste.assert_called_once_with("hello")
+            destination_module.confirmation_gui.showing = False
 else:
     class ModelDestinationClipboardTests(unittest.TestCase):
         @unittest.skip("Test harness unavailable outside unittest runs")

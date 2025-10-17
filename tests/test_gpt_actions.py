@@ -31,6 +31,52 @@ if bootstrap is not None:
                 mock_session.add_messages.assert_called_once()
                 mock_session.execute.assert_called_once()
                 actions.user.gpt_insert_response.assert_called_once()
+                call_args = actions.user.gpt_insert_response.call_args
+                self.assertEqual(
+                    call_args.args[0], [mock_session.execute.return_value]
+                )
+
+        def test_gpt_apply_prompt_uses_prompt_session(self):
+            configuration = MagicMock(
+                please_prompt="do something",
+                model_source=MagicMock(),
+                additional_model_source=None,
+                model_destination=MagicMock(),
+            )
+
+            with patch.object(gpt_module, "PromptSession") as session_cls:
+                mock_session = session_cls.return_value
+                mock_session.execute.return_value = {"type": "text", "text": "result"}
+
+                result = gpt_module.UserActions.gpt_apply_prompt(configuration)
+
+                session_cls.assert_called_once()
+                mock_session.prepare_prompt.assert_called_once_with(
+                    configuration.please_prompt,
+                    configuration.model_source,
+                    configuration.additional_model_source,
+                )
+                mock_session.execute.assert_called_once()
+                actions.user.gpt_insert_response.assert_called_once_with(
+                    [mock_session.execute.return_value],
+                    configuration.model_destination,
+                )
+                self.assertEqual(result, mock_session.execute.return_value)
+
+        def test_gpt_replay_uses_prompt_session_output(self):
+            with patch.object(gpt_module, "PromptSession") as session_cls:
+                mock_session = session_cls.return_value
+                mock_session.execute.return_value = {"type": "text", "text": "replayed"}
+
+                gpt_module.UserActions.gpt_replay("paste")
+
+                session_cls.assert_called_once()
+                mock_session.begin.assert_called_once_with(reuse_existing=True)
+                mock_session.execute.assert_called_once()
+                actions.user.gpt_insert_response.assert_called_once_with(
+                    mock_session.execute.return_value,
+                    "paste",
+                )
 else:
     class GPTActionPromptSessionTests(unittest.TestCase):
         @unittest.skip("Test harness unavailable outside unittest runs")

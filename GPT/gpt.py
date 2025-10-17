@@ -147,8 +147,9 @@ class UserActions:
         additional_source = apply_prompt_configuration.additional_model_source
         destination = apply_prompt_configuration.model_destination
 
-        actions.user.gpt_prepare_message(source, additional_source, prompt, "")
-        response = gpt_query()
+        session = PromptSession(destination)
+        session.prepare_prompt(prompt, source, additional_source)
+        response = session.execute()
 
         actions.user.gpt_insert_response([response], destination)
         return response
@@ -190,7 +191,9 @@ class UserActions:
 
     def gpt_replay(destination: str):
         """Replay the last request"""
-        response = gpt_query()
+        session = PromptSession(destination)
+        session.begin(reuse_existing=True)
+        response = session.execute()
 
         actions.user.gpt_insert_response(response, destination)
 
@@ -343,8 +346,9 @@ class UserActions:
         additional_model_source: Optional[ModelSource],
         prompt: str,
         destination: ModelDestination = Default(),
-    ) -> None:
+    ) -> PromptSession:
         """Get the source text that will have the prompt applied to it"""
 
         session = PromptSession(destination)
         session.prepare_prompt(prompt, model_source, additional_model_source)
+        return session

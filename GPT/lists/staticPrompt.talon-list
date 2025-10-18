@@ -33,6 +33,7 @@ where: Explain where.
 undefined: List undefined terms only.
 compare: "You will find two items below. Carefully compare them. List all the differences and similarities, providing detailed explanations for each. Highlight any subtle distinctions and commonalities. The first item is this: \n\"\"\"\n{additional_source}\n\"\"\"\n The second item follows."
 clusters: Table of subtle differences among similar ideas; omit singletons; width ≤ 100 chars.
+taste: Evaluate the taste of the subject by considering its harmony, proportion, restraint, and authenticity, explaining how well it balances refinement with genuine expression.
 
 # - Planning, product, and execution
 todo: Format as a todo list.

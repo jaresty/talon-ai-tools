@@ -29,6 +29,7 @@ if bootstrap is not None:
 
             session_cls.assert_called()
             self.assertTrue(GPTState.thread_enabled)
+
 else:
     class ThreadingIntegrationTests(unittest.TestCase):
         @unittest.skip("Test harness unavailable outside unittest runs")

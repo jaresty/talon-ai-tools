@@ -18,6 +18,7 @@ from ..lib.modelState import GPTState
 from ..lib.modelTypes import GPTSystemPrompt
 from ..lib.promptPipeline import PromptPipeline, PromptResult
 from ..lib.promptSession import PromptSession
+from ..lib.recursiveOrchestrator import RecursiveOrchestrator
 
 mod = Module()
 mod.tag(
@@ -27,6 +28,7 @@ mod.tag(
 
 
 _prompt_pipeline = PromptPipeline()
+_recursive_orchestrator = RecursiveOrchestrator(_prompt_pipeline)
 
 
 def gpt_query():
@@ -149,7 +151,7 @@ class UserActions:
         additional_source = apply_prompt_configuration.additional_model_source
         destination = apply_prompt_configuration.model_destination
 
-        result = _prompt_pipeline.run(
+        result = _recursive_orchestrator.run(
             prompt,
             source,
             destination,
@@ -173,6 +175,24 @@ class UserActions:
             additional_source=additional_source,
         )
 
+        return result.text
+
+    def gpt_recursive_prompt(
+        prompt: str,
+        source: ModelSource,
+        destination: ModelDestination = Default(),
+        additional_source: Optional[ModelSource] = None,
+    ) -> str:
+        """Run a controller prompt that may recursively delegate work to sub-sessions."""
+
+        result = _recursive_orchestrator.run(
+            prompt,
+            source,
+            destination,
+            additional_source,
+        )
+
+        actions.user.gpt_insert_response(result, destination)
         return result.text
 
     def gpt_analyze_prompt(destination: ModelDestination = ModelDestination()):

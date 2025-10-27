@@ -13,6 +13,7 @@ Thank you for your interest in contributing to `talon-ai-tools`. We are happy to
 - Comment all functions with doctrings and type annotations for arguments
 - Any code that is intended to be reused within the repo should be placed within the `lib/` folder
 - GPT orchestration should flow through `PromptPipeline`/`PromptSession`, and new actions should add unit tests mirroring `tests/test_gpt_actions.py` to pin expected pipeline calls.
+- When implementing recursive flows, use `RecursiveOrchestrator` so controller directives stay JSON-encoded and the final delegate/controller output preserves the requested format.
 
 ## Contributing Talonscript
 

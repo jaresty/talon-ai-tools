@@ -31,9 +31,16 @@ if bootstrap is not None:
                 [format_message("result")]
             )
             gpt_module._prompt_pipeline = self.pipeline
+            self._original_orchestrator = gpt_module._recursive_orchestrator
+            self.orchestrator = MagicMock()
+            self.orchestrator.run.return_value = PromptResult.from_messages(
+                [format_message("orchestrated")]
+            )
+            gpt_module._recursive_orchestrator = self.orchestrator
 
         def tearDown(self):
             gpt_module._prompt_pipeline = self._original_pipeline
+            gpt_module._recursive_orchestrator = self._original_orchestrator
 
         def test_gpt_analyze_prompt_uses_prompt_session(self):
             with patch.object(gpt_module, "PromptSession") as session_cls:
@@ -50,27 +57,29 @@ if bootstrap is not None:
                     session_cls.call_args.args[0],
                 )
 
-        def test_gpt_apply_prompt_uses_prompt_pipeline(self):
+        def test_gpt_apply_prompt_uses_recursive_orchestrator(self):
             configuration = MagicMock(
                 please_prompt="do something",
                 model_source=MagicMock(),
                 additional_model_source=None,
                 model_destination=MagicMock(),
             )
-
+            delegate_result = PromptResult.from_messages(
+                [format_message("delegated output")]
+            )
             result_text = gpt_module.UserActions.gpt_apply_prompt(configuration)
 
-            self.pipeline.run.assert_called_once_with(
+            self.orchestrator.run.assert_called_once_with(
                 configuration.please_prompt,
                 configuration.model_source,
                 configuration.model_destination,
                 configuration.additional_model_source,
             )
             actions.user.gpt_insert_response.assert_called_once_with(
-                self.pipeline.run.return_value,
+                self.orchestrator.run.return_value,
                 configuration.model_destination,
             )
-            self.assertEqual(result_text, "result")
+            self.assertEqual(result_text, "orchestrated")
 
         def test_gpt_replay_uses_prompt_session_output(self):
             with patch.object(gpt_module, "PromptSession") as session_cls:
@@ -178,6 +187,32 @@ if bootstrap is not None:
             destination_param = sig.parameters["destination"]
             self.assertIs(destination_param.annotation, ModelDestination)
             self.assertIs(sig.return_annotation, None)
+
+        def test_gpt_recursive_prompt_uses_orchestrator(self):
+            orchestrator = MagicMock()
+            delegate_result = PromptResult.from_messages(
+                [format_message("recursive result")]
+            )
+            orchestrator.run.return_value = delegate_result
+            with patch.object(gpt_module, "_recursive_orchestrator", orchestrator):
+                source = MagicMock()
+                destination = MagicMock()
+
+                result = gpt_module.UserActions.gpt_recursive_prompt(
+                    "controller prompt", source, destination=destination
+                )
+
+            orchestrator.run.assert_called_once_with(
+                "controller prompt",
+                source,
+                destination,
+                None,
+            )
+            actions.user.gpt_insert_response.assert_called_once_with(
+                delegate_result,
+                destination,
+            )
+            self.assertEqual(result, "recursive result")
 else:
     class GPTActionPromptSessionTests(unittest.TestCase):
         @unittest.skip("Test harness unavailable outside unittest runs")

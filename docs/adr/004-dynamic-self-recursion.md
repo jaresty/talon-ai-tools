@@ -1,6 +1,6 @@
 # ADR 004: Dynamic Self-Recursive ChatGPT Architecture
 
-- Status: Proposed
+- Status: Accepted
 - Date: 2025-02-14
 
 ## Context
@@ -27,8 +27,8 @@ The orchestrator will: interpret structured recursion directives, spawn delegate
 5. **Testing**: Add integration tests that simulate multi-step flows—controller delegates to critic & synthesizer, etc.—and verify halting conditions.
 
 ## Next Steps
-1. Extend PromptSession to recognize controller/ delegate roles and structured recursion directives.
-2. Implement orchestrator logic that spawns delegate sessions when instructed, respecting guardrails.
-3. Craft controller/delegate prompts describing available recursion modes and reflection protocol.
-4. Add integration tests covering decomposition, iteration, and perspective splitting, ensuring sessions merge results correctly.
-5. Document the recursive calling interface for contributors.
+1. ✅ Extend PromptSession to recognize controller/ delegate roles and structured recursion directives.
+2. ✅ Implement orchestrator logic that spawns delegate sessions when instructed, respecting guardrails.
+3. ✅ Craft controller/delegate prompts describing available recursion modes and reflection protocol.
+4. ✅ Add integration tests covering decomposition, iteration, and perspective splitting, ensuring sessions merge results correctly.
+5. ✅ Document the recursive calling interface for contributors.

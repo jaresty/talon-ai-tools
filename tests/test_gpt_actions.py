@@ -1,3 +1,4 @@
+import inspect
 import unittest
 from unittest.mock import ANY, MagicMock, patch
 
@@ -10,7 +11,10 @@ else:
 
 if bootstrap is not None:
     from talon import actions
+    from talon_user.lib.modelHelpers import format_message
     from talon_user.lib.modelState import GPTState
+    from talon_user.lib.modelDestination import ModelDestination
+    from talon_user.lib.promptPipeline import PromptResult
     from talon_user.GPT import gpt as gpt_module
 
     class GPTActionPromptSessionTests(unittest.TestCase):
@@ -18,25 +22,35 @@ if bootstrap is not None:
             GPTState.reset_all()
             GPTState.last_response = "assistant output"
             actions.user.gpt_insert_response = MagicMock()
+            self._original_pipeline = gpt_module._prompt_pipeline
+            self.pipeline = MagicMock()
+            self.pipeline.complete.return_value = PromptResult.from_messages(
+                [format_message("analysis")]
+            )
+            self.pipeline.run.return_value = PromptResult.from_messages(
+                [format_message("result")]
+            )
+            gpt_module._prompt_pipeline = self.pipeline
+
+        def tearDown(self):
+            gpt_module._prompt_pipeline = self._original_pipeline
 
         def test_gpt_analyze_prompt_uses_prompt_session(self):
             with patch.object(gpt_module, "PromptSession") as session_cls:
                 mock_session = session_cls.return_value
-                mock_session.execute.return_value = {"type": "text", "text": "analysis"}
 
                 gpt_module.UserActions().gpt_analyze_prompt()
 
                 session_cls.assert_called_once()
                 mock_session.begin.assert_called_once_with(reuse_existing=True)
                 mock_session.add_messages.assert_called_once()
-                mock_session.execute.assert_called_once()
-                actions.user.gpt_insert_response.assert_called_once()
-                call_args = actions.user.gpt_insert_response.call_args
-                self.assertEqual(
-                    call_args.args[0], [mock_session.execute.return_value]
+                self.pipeline.complete.assert_called_once_with(mock_session)
+                actions.user.gpt_insert_response.assert_called_once_with(
+                    self.pipeline.complete.return_value,
+                    session_cls.call_args.args[0],
                 )
 
-        def test_gpt_apply_prompt_uses_prompt_session(self):
+        def test_gpt_apply_prompt_uses_prompt_pipeline(self):
             configuration = MagicMock(
                 please_prompt="do something",
                 model_source=MagicMock(),
@@ -44,61 +58,66 @@ if bootstrap is not None:
                 model_destination=MagicMock(),
             )
 
-            with patch.object(gpt_module, "PromptSession") as session_cls:
-                mock_session = session_cls.return_value
-                mock_session.execute.return_value = {"type": "text", "text": "result"}
+            result_text = gpt_module.UserActions.gpt_apply_prompt(configuration)
 
-                result = gpt_module.UserActions.gpt_apply_prompt(configuration)
-
-                session_cls.assert_called_once()
-                mock_session.prepare_prompt.assert_called_once_with(
-                    configuration.please_prompt,
-                    configuration.model_source,
-                    configuration.additional_model_source,
-                )
-                mock_session.execute.assert_called_once()
-                actions.user.gpt_insert_response.assert_called_once_with(
-                    [mock_session.execute.return_value],
-                    configuration.model_destination,
-                )
-                self.assertEqual(result, mock_session.execute.return_value)
+            self.pipeline.run.assert_called_once_with(
+                configuration.please_prompt,
+                configuration.model_source,
+                configuration.model_destination,
+                configuration.additional_model_source,
+            )
+            actions.user.gpt_insert_response.assert_called_once_with(
+                self.pipeline.run.return_value,
+                configuration.model_destination,
+            )
+            self.assertEqual(result_text, "result")
 
         def test_gpt_replay_uses_prompt_session_output(self):
             with patch.object(gpt_module, "PromptSession") as session_cls:
                 mock_session = session_cls.return_value
-                mock_session.execute.return_value = {"type": "text", "text": "replayed"}
+                mock_session._destination = "paste"
+                self.pipeline.complete.return_value = PromptResult.from_messages(
+                    [format_message("replayed")]
+                )
 
                 gpt_module.UserActions.gpt_replay("paste")
 
                 session_cls.assert_called_once()
                 mock_session.begin.assert_called_once_with(reuse_existing=True)
-                mock_session.execute.assert_called_once()
+                self.pipeline.complete.assert_called_once_with(mock_session)
                 actions.user.gpt_insert_response.assert_called_once_with(
-                    mock_session.execute.return_value,
+                    self.pipeline.complete.return_value,
                     "paste",
                 )
 
-        def test_gpt_reformat_last_uses_prompt_session(self):
+        def test_gpt_reformat_last_uses_prompt_pipeline(self):
             actions.user.get_last_phrase = lambda: "spoken"
             actions.user.clear_last_phrase = lambda: None
 
-            with patch.object(gpt_module, "PromptSession") as session_cls, patch.object(
-                gpt_module, "create_model_source"
-            ) as create_source, patch.object(
-                gpt_module, "extract_message", side_effect=lambda msg: msg["text"]
-            ):
+            with patch.object(gpt_module, "create_model_source") as create_source:
                 source = MagicMock()
                 create_source.return_value = source
-                session = session_cls.return_value
-                session.execute.return_value = {"type": "text", "text": "formatted"}
+                self.pipeline.run.return_value = PromptResult.from_messages(
+                    [format_message("formatted")]
+                )
 
                 result = gpt_module.UserActions.gpt_reformat_last("as code")
 
-                session_cls.assert_called_once()
                 create_source.assert_called_once_with("last")
-                session.prepare_prompt.assert_called_once_with(ANY, source)
-                session.execute.assert_called_once()
+                self.pipeline.run.assert_called_once()
                 self.assertEqual(result, "formatted")
+
+        def test_gpt_run_prompt_returns_pipeline_text(self):
+            source = MagicMock()
+
+            text = gpt_module.UserActions.gpt_run_prompt("question", source)
+
+            self.pipeline.run.assert_called_once()
+            args, kwargs = self.pipeline.run.call_args
+            self.assertEqual(args[0:2], ("question", source))
+            self.assertEqual(kwargs.get("destination"), "")
+            self.assertIsNone(kwargs.get("additional_source"))
+            self.assertEqual(text, "result")
 
 
         def test_gpt_pass_uses_prompt_session(self):
@@ -106,6 +125,9 @@ if bootstrap is not None:
                 model_source=MagicMock(),
                 model_destination=MagicMock(),
             )
+            configuration.model_source.format_messages.return_value = [
+                format_message("pass")
+            ]
 
             with patch.object(gpt_module, "PromptSession") as session_cls:
                 session = session_cls.return_value
@@ -116,8 +138,15 @@ if bootstrap is not None:
                 session.prepare_prompt.assert_not_called()
                 session.begin.assert_called_once_with(reuse_existing=True)
                 session.execute.assert_not_called()
-                actions.user.gpt_insert_response.assert_called_once_with(
-                    configuration.model_source.format_messages(),
+                actions.user.gpt_insert_response.assert_called_once()
+                inserted_result = actions.user.gpt_insert_response.call_args.args[0]
+                self.assertIsInstance(inserted_result, PromptResult)
+                self.assertEqual(
+                    inserted_result.messages,
+                    configuration.model_source.format_messages.return_value,
+                )
+                self.assertIs(
+                    actions.user.gpt_insert_response.call_args.args[1],
                     configuration.model_destination,
                 )
 
@@ -131,11 +160,24 @@ if bootstrap is not None:
         def test_thread_push_uses_prompt_session(self):
             with patch.object(gpt_module, "PromptSession") as session_cls:
                 session = session_cls.return_value
+                session._destination = "thread"
+                self.pipeline.complete.return_value = PromptResult.from_messages(
+                    [format_message("threaded")]
+                )
 
                 gpt_module.UserActions.gpt_replay("thread")
 
                 session_cls.assert_called_once()
                 session.begin.assert_called_once_with(reuse_existing=True)
+                self.pipeline.complete.assert_called_with(session)
+
+        def test_gpt_insert_response_has_type_annotations(self):
+            sig = inspect.signature(gpt_module.UserActions.gpt_insert_response)
+            param = sig.parameters["gpt_result"]
+            self.assertIsNot(param.annotation, inspect._empty)
+            destination_param = sig.parameters["destination"]
+            self.assertIs(destination_param.annotation, ModelDestination)
+            self.assertIs(sig.return_annotation, None)
 else:
     class GPTActionPromptSessionTests(unittest.TestCase):
         @unittest.skip("Test harness unavailable outside unittest runs")

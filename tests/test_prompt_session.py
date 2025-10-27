@@ -15,7 +15,7 @@ if bootstrap is not None:
     from talon_user.lib.promptSession import PromptSession
     from talon_user.lib.modelSource import ModelSource
     from talon_user.lib import promptSession as prompt_session_module
-    from talon_user.lib.modelHelpers import MAX_TOTAL_CALLS
+    from talon_user.lib.modelHelpers import MAX_TOTAL_CALLS, format_message
 
     class _StaticSource(ModelSource):
         def __init__(self, text: str):
@@ -100,6 +100,19 @@ if bootstrap is not None:
             session.begin(reuse_existing=True)
 
             self.assertIs(GPTState.request, first_request)
+
+        def test_append_thread_records_assistant_message(self):
+            GPTState.enable_thread()
+            session = PromptSession(destination="paste")
+
+            assistant_item = format_message("assistant reply")
+
+            session.append_thread(assistant_item)
+
+            self.assertTrue(GPTState.thread)
+            last_message = GPTState.thread[-1]
+            self.assertEqual(last_message["role"], "assistant")
+            self.assertEqual(last_message["content"][0], assistant_item)
 else:
     class PromptSessionTests(unittest.TestCase):
         @unittest.skip("Test harness unavailable outside unittest runs")

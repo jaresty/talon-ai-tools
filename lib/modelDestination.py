@@ -1,26 +1,38 @@
-from typing import List
+from typing import Iterable, List, Sequence, Union, cast
 
 from ..lib.modelTypes import GPTTextItem
 from ..lib.modelConfirmationGUI import confirmation_gui
 from talon import actions, clip, settings, ui
 from ..lib.modelState import GPTState
 from ..lib.modelHelpers import (
-    messages_to_string,
     format_messages,
     notify,
 )
 from ..lib.HTMLBuilder import Builder
-from ..lib.modelPresentation import ResponsePresentation, render_for_destination
+from ..lib.promptPipeline import PromptResult
+
+
+PromptPayload = Union[PromptResult, Sequence[GPTTextItem], GPTTextItem]
+
+
+def _coerce_prompt_result(payload: PromptPayload) -> PromptResult:
+    if isinstance(payload, PromptResult):
+        return payload
+    if hasattr(payload, "messages") and hasattr(payload, "presentation_for"):
+        return cast(PromptResult, payload)
+    if isinstance(payload, dict):
+        return PromptResult.from_messages([payload])
+    return PromptResult.from_messages(payload)
 
 
 class ModelDestination:
-    def insert(self, gpt_message: List[GPTTextItem]):
-        presentation = render_for_destination(gpt_message, "default")
+    def insert(self, gpt_output: PromptPayload):
+        result = _coerce_prompt_result(gpt_output)
+        presentation = result.presentation_for("default")
         if presentation.open_browser:
-            Browser().insert(gpt_message)
+            Browser().insert(result)
         else:
-            GPTState.text_to_confirm = presentation.display_text
-            actions.user.confirmation_gui_append(presentation.display_text)
+            actions.user.confirmation_gui_append(presentation)
 
     # If this isn't working, you may need to turn on dication for electron apps
     #  ui.apps(bundle="com.microsoft.VSCode")[0].element.AXManualAccessibility = True
@@ -39,24 +51,26 @@ class ModelDestination:
 
 
 class Above(ModelDestination):
-    def insert(self, gpt_message):
+    def insert(self, gpt_output):
+        result = _coerce_prompt_result(gpt_output)
         if not self.inside_textarea():
-            return super().insert(gpt_message)
+            return super().insert(result)
 
         actions.key("left")
         actions.edit.line_insert_up()
         GPTState.last_was_pasted = True
-        presentation = render_for_destination(gpt_message, "above")
+        presentation = result.presentation_for("above")
         actions.user.paste(presentation.paste_text)
 
 
 class Chunked(ModelDestination):
-    def insert(self, gpt_message):
+    def insert(self, gpt_output):
+        result = _coerce_prompt_result(gpt_output)
         if not self.inside_textarea():
-            return super().insert(gpt_message)
+            return super().insert(result)
 
         GPTState.last_was_pasted = True
-        presentation = render_for_destination(gpt_message, "chunked")
+        presentation = result.presentation_for("chunked")
         lines = presentation.browser_lines
         for i in range(0, len(lines), 10):
             chunk = "\n".join(lines[i : i + 10])
@@ -65,51 +79,58 @@ class Chunked(ModelDestination):
 
 
 class Below(ModelDestination):
-    def insert(self, gpt_message):
+    def insert(self, gpt_output):
+        result = _coerce_prompt_result(gpt_output)
         if not self.inside_textarea():
-            return super().insert(gpt_message)
+            return super().insert(result)
         actions.key("right")
         actions.edit.line_insert_down()
         GPTState.last_was_pasted = True
-        presentation = render_for_destination(gpt_message, "below")
+        presentation = result.presentation_for("below")
         actions.user.paste(presentation.paste_text)
 
 
 class Clipboard(ModelDestination):
-    def insert(self, gpt_message):
-        presentation = render_for_destination(gpt_message, "clipboard")
+    def insert(self, gpt_output):
+        result = _coerce_prompt_result(gpt_output)
+        presentation = result.presentation_for("clipboard")
         clip.set_text(presentation.paste_text)
 
 
 class Snip(ModelDestination):
-    def insert(self, gpt_message):
+    def insert(self, gpt_output):
+        result = _coerce_prompt_result(gpt_output)
         if not self.inside_textarea():
-            return super().insert(gpt_message)
-        presentation = render_for_destination(gpt_message, "snip")
+            return super().insert(result)
+        presentation = result.presentation_for("snip")
         actions.user.insert_snippet(presentation.paste_text)
 
 
 class Context(ModelDestination):
-    def insert(self, gpt_message):
-        for message in gpt_message:
+    def insert(self, gpt_output):
+        result = _coerce_prompt_result(gpt_output)
+        for message in result.messages:
             GPTState.push_context(message)
 
 
 class Query(ModelDestination):
-    def insert(self, gpt_message):
-        GPTState.push_query(format_messages("user", gpt_message))
+    def insert(self, gpt_output):
+        result = _coerce_prompt_result(gpt_output)
+        GPTState.push_query(format_messages("user", result.messages))
 
 
 class NewContext(ModelDestination):
-    def insert(self, gpt_message):
+    def insert(self, gpt_output):
+        result = _coerce_prompt_result(gpt_output)
         GPTState.clear_context()
-        for message in gpt_message:
+        for message in result.messages:
             GPTState.push_context(message)
 
 
 class AppendClipboard(ModelDestination):
-    def insert(self, gpt_message):
-        presentation = render_for_destination(gpt_message, "appendClipboard")
+    def insert(self, gpt_output):
+        result = _coerce_prompt_result(gpt_output)
+        presentation = result.presentation_for("appendClipboard")
         if clip.text() is not None:
             clip.set_text(clip.text() + "\n" + presentation.paste_text)  # type: ignore
         else:
@@ -117,8 +138,9 @@ class AppendClipboard(ModelDestination):
 
 
 class Browser(ModelDestination):
-    def insert(self, gpt_message):
-        presentation = render_for_destination(gpt_message, "browser")
+    def insert(self, gpt_output):
+        result = _coerce_prompt_result(gpt_output)
+        presentation = result.presentation_for("browser")
         builder = Builder()
         builder.h1("Talon GPT Result")
         for line in presentation.browser_lines:
@@ -127,60 +149,67 @@ class Browser(ModelDestination):
 
 
 class TextToSpeech(ModelDestination):
-    def insert(self, gpt_message):
+    def insert(self, gpt_output):
         try:
-            presentation = render_for_destination(gpt_message, "tts")
+            result = _coerce_prompt_result(gpt_output)
+            presentation = result.presentation_for("tts")
             actions.user.tts(presentation.paste_text)
         except KeyError:
             notify("GPT Failure: text to speech is not installed")
 
 
 class Chain(ModelDestination):
-    def insert(self, gpt_message):
+    def insert(self, gpt_output):
+        result = _coerce_prompt_result(gpt_output)
         if not self.inside_textarea():
-            return super().insert(gpt_message)
+            return super().insert(result)
         GPTState.last_was_pasted = True
-        presentation = render_for_destination(gpt_message, "chain")
+        presentation = result.presentation_for("chain")
         actions.user.paste(presentation.paste_text)
         actions.user.gpt_select_last()
 
 
 class Paste(ModelDestination):
-    def insert(self, gpt_message):
+    def insert(self, gpt_output):
+        result = _coerce_prompt_result(gpt_output)
         if not self.inside_textarea():
-            return super().insert(gpt_message)
+            return super().insert(result)
         GPTState.last_was_pasted = True
-        presentation = render_for_destination(gpt_message, "paste")
+        presentation = result.presentation_for("paste")
         actions.user.paste(presentation.paste_text)
 
 class Draft(ModelDestination):
-    def insert(self, gpt_message):
+    def insert(self, gpt_output):
+        result = _coerce_prompt_result(gpt_output)
         GPTState.last_was_pasted = True
-        presentation = render_for_destination(gpt_message, "draft")
+        presentation = result.presentation_for("draft")
         actions.user.draft_editor_open()
         actions.user.delete_all()
         actions.user.paste(presentation.paste_text)
 
 
 class Typed(ModelDestination):
-    def insert(self, gpt_message):
+    def insert(self, gpt_output):
+        result = _coerce_prompt_result(gpt_output)
         if not self.inside_textarea():
-            return super().insert(gpt_message)
+            return super().insert(result)
         GPTState.last_was_pasted = True
-        presentation = render_for_destination(gpt_message, "typed")
+        presentation = result.presentation_for("typed")
         actions.auto_insert(presentation.paste_text)
 
 
 class Thread(ModelDestination):
-    def insert(self, gpt_message):
-        GPTState.push_thread(format_messages("user", gpt_message))
+    def insert(self, gpt_output):
+        result = _coerce_prompt_result(gpt_output)
+        GPTState.push_thread(format_messages("user", result.messages))
         actions.user.confirmation_gui_refresh_thread()
 
 
 class NewThread(ModelDestination):
-    def insert(self, gpt_message):
+    def insert(self, gpt_output):
+        result = _coerce_prompt_result(gpt_output)
         GPTState.new_thread()
-        GPTState.push_thread(format_messages("user", gpt_message))
+        GPTState.push_thread(format_messages("user", result.messages))
         actions.user.confirmation_gui_refresh_thread()
 
 
@@ -188,13 +217,15 @@ class Stack(ModelDestination):
     def __init__(self, stack_name):
         self.stack_name = stack_name
 
-    def insert(self, gpt_message):
-        GPTState.append_stack(gpt_message, self.stack_name)
+    def insert(self, gpt_output):
+        result = _coerce_prompt_result(gpt_output)
+        GPTState.append_stack(result.messages, self.stack_name)
 
 
 class Default(ModelDestination):
-    def insert(self, gpt_message):
-        presentation = render_for_destination(gpt_message, "default")
+    def insert(self, gpt_output):
+        result = _coerce_prompt_result(gpt_output)
+        presentation = result.presentation_for("default")
         if confirmation_gui.showing:
             GPTState.last_was_pasted = True
             actions.user.paste(presentation.paste_text)

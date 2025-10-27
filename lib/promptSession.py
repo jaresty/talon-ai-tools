@@ -23,6 +23,10 @@ class PromptSession:
         self._destination = destination
         self._prepared = False
 
+    @property
+    def destination(self) -> Union[str, object]:
+        return self._destination
+
     def prepare_prompt(
         self,
         prompt: str,
@@ -52,6 +56,13 @@ class PromptSession:
         """Append additional messages or tool responses to the request."""
         self.begin()
         append_request_messages(messages)
+
+    def append_thread(self, message: GPTTextItem) -> None:
+        """Record an assistant response in the active thread when threading is enabled."""
+        if not GPTState.thread_enabled:
+            return
+        thread_message = format_messages("assistant", [message])
+        GPTState.push_thread(thread_message)
 
     def execute(self):
         """Send the request and return the assistant response."""

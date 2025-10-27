@@ -1,6 +1,6 @@
 # ADR 002: Formalize Prompt Session and Presentation Domains
 
-- Status: Proposed
+- Status: Accepted
 - Date: 2025-02-14
 
 ## Context
@@ -26,6 +26,6 @@ Churn and branching concentrate in the GPT orchestration layer (`lib/modelHelper
 - Reduces coordination cost when adding new sources, destinations, or UI surfaces because each domain has clearer boundaries.
 
 ## Next Steps
-1. Spike the `PromptSession` prototype and map existing `GPTState` usage to method calls.
-2. Migrate a high-traffic command (`gpt_run_prompt`) to the new pipeline to validate ergonomics.
-3. Roll the presentation contract into GUI and browser destinations, then retire legacy helpers.
+1. ✅ Spike the `PromptSession` prototype and map existing `GPTState` usage to method calls.
+2. ✅ Migrate a high-traffic command (`gpt_run_prompt`) to the new pipeline to validate ergonomics.
+3. ✅ Roll the presentation contract into GUI and browser destinations, then retire legacy helpers.

@@ -3,21 +3,20 @@ from typing import Optional
 
 from ..lib.talonSettings import ApplyPromptConfiguration, PassConfiguration
 
-from ..lib.modelDestination import Browser, Default, ModelDestination
+from ..lib.modelDestination import Browser, Default, ModelDestination, PromptPayload
 from ..lib.modelSource import ModelSource, create_model_source
 from talon import Module, actions
 
 from ..lib.HTMLBuilder import Builder
 from ..lib.modelHelpers import (
-    append_request_messages,
-    extract_message,
     format_message,
     format_messages,
     notify,
     send_request,
 )
 from ..lib.modelState import GPTState
-from ..lib.modelTypes import GPTSystemPrompt, GPTTextItem
+from ..lib.modelTypes import GPTSystemPrompt
+from ..lib.promptPipeline import PromptPipeline, PromptResult
 from ..lib.promptSession import PromptSession
 
 mod = Module()
@@ -25,6 +24,9 @@ mod.tag(
     "model_window_open",
     desc="Tag for enabling the model window commands when the window is open",
 )
+
+
+_prompt_pipeline = PromptPipeline()
 
 
 def gpt_query():
@@ -147,12 +149,15 @@ class UserActions:
         additional_source = apply_prompt_configuration.additional_model_source
         destination = apply_prompt_configuration.model_destination
 
-        session = PromptSession(destination)
-        session.prepare_prompt(prompt, source, additional_source)
-        response = session.execute()
+        result = _prompt_pipeline.run(
+            prompt,
+            source,
+            destination,
+            additional_source,
+        )
 
-        actions.user.gpt_insert_response([response], destination)
-        return response
+        actions.user.gpt_insert_response(result, destination)
+        return result.text
 
     def gpt_run_prompt(
         prompt: str,
@@ -161,11 +166,14 @@ class UserActions:
     ):
         """Apply an arbitrary prompt to arbitrary text"""
 
-        session = PromptSession(destination="")
-        session.prepare_prompt(prompt, source, additional_source)
-        response = session.execute()
+        result = _prompt_pipeline.run(
+            prompt,
+            source,
+            destination="",
+            additional_source=additional_source,
+        )
 
-        return response.get("text")
+        return result.text
 
     def gpt_analyze_prompt(destination: ModelDestination = ModelDestination()):
         """Explain why we got the results we did"""
@@ -185,17 +193,17 @@ class UserActions:
                 format_messages("user", [format_message(PROMPT)]),
             ]
         )
-        response = session.execute()
+        result = _prompt_pipeline.complete(session)
 
-        actions.user.gpt_insert_response([response], destination)
+        actions.user.gpt_insert_response(result, destination)
 
     def gpt_replay(destination: str):
         """Replay the last request"""
         session = PromptSession(destination)
         session.begin(reuse_existing=True)
-        response = session.execute()
+        result = _prompt_pipeline.complete(session)
 
-        actions.user.gpt_insert_response(response, destination)
+        actions.user.gpt_insert_response(result, destination)
 
     def gpt_pass(pass_configuration: PassConfiguration) -> None:
         """Passes a response from source to destination"""
@@ -205,7 +213,9 @@ class UserActions:
         session = PromptSession(destination)
         session.begin(reuse_existing=True)
 
-        actions.user.gpt_insert_response(source.format_messages(), destination)
+        result = PromptResult.from_messages(source.format_messages())
+
+        actions.user.gpt_insert_response(result, destination)
 
     def gpt_help() -> None:
         """Open the GPT help file in the web browser"""
@@ -307,22 +317,22 @@ class UserActions:
         last_output = actions.user.get_last_phrase()
         if last_output:
             actions.user.clear_last_phrase()
-            session = PromptSession(Default())
             source = create_model_source("last")
-            session.prepare_prompt(PROMPT, source)
-            response = session.execute()
-            return extract_message(response)
+            result = _prompt_pipeline.run(PROMPT, source, Default())
+            return result.text
         else:
             notify("No text to reformat")
             raise Exception("No text to reformat")
 
     def gpt_insert_text(text: str, destination: ModelDestination = Default()) -> None:
         """Insert text using the helpers here"""
-        actions.user.gpt_insert_response([format_message(text)], destination)
+        result = PromptResult.from_messages([format_message(text)])
+        actions.user.gpt_insert_response(result, destination)
 
     def gpt_open_browser(text: str) -> None:
         """Open a browser with the response"""
-        actions.user.gpt_insert_response([format_message(text)], Browser())
+        result = PromptResult.from_messages([format_message(text)])
+        actions.user.gpt_insert_response(result, Browser())
 
     def gpt_search_engine(search_engine: str, source: ModelSource) -> str:
         """Format the source for searching with a search engine and open a search"""
@@ -337,12 +347,12 @@ class UserActions:
         return actions.user.gpt_run_prompt(prompt, source)
 
     def gpt_insert_response(
-        gpt_message: list[GPTTextItem],
+        gpt_result: PromptPayload,
         destination: ModelDestination = Default(),
     ) -> None:
         """Insert a GPT result in a specified way"""
         actions.user.confirmation_gui_close()
-        destination.insert(gpt_message)
+        destination.insert(gpt_result)
 
     def gpt_get_source_text(spoken_text: str) -> str:
         """Get the source text that is will have the prompt applied to it"""

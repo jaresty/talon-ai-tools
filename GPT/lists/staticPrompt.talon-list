@@ -33,7 +33,7 @@ where: Explain where.
 undefined: List undefined terms only.
 compare: "You will find two items below. Carefully compare them. List all the differences and similarities, providing detailed explanations for each. Highlight any subtle distinctions and commonalities. The first item is this: \n\"\"\"\n{additional_source}\n\"\"\"\n The second item follows."
 clusters: Table of subtle differences among similar ideas; omit singletons; width ≤ 100 chars.
-taste: Evaluate the taste of the subject by considering its harmony, proportion, restraint, and authenticity, explaining how well it balances refinement with genuine expression.
+taste: Evaluate the taste of the subject by analysing how well it achieves harmony, proportion, restraint, authenticity, and cultural/historical appropriateness; explain both its strengths and weaknesses, how it balances refinement with innovation, how it aligns or conflicts with its context, and whether its judgment feels cultivated and likely to endure.
 
 # - Planning, product, and execution
 todo: Format as a todo list.

@@ -3,78 +3,65 @@ from unittest.mock import patch
 
 try:
     from bootstrap import bootstrap
-except ModuleNotFoundError:  # Talon runtime importing tests; ignore
+except ModuleNotFoundError:
     bootstrap = None
 else:
     bootstrap()
 
 if bootstrap is not None:
-    from talon import clip
-    from talon_user.lib.modelDestination import AppendClipboard, Clipboard
+    from talon import actions, clip
+    from talon_user.lib.modelDestination import ModelDestination
+    from talon_user.lib import modelDestination as model_destination_module
+    from talon_user.lib.modelHelpers import format_message
     from talon_user.lib.modelPresentation import ResponsePresentation
-    from talon_user.lib.modelTypes import GPTTextItem
-    from talon_user.lib import modelDestination as destination_module
+    from talon_user.lib.promptPipeline import PromptResult
 
-    class ModelDestinationClipboardTests(unittest.TestCase):
-        def setUp(self) -> None:
+    class ModelDestinationTests(unittest.TestCase):
+        def setUp(self):
+            actions.user.calls.clear()
             clip.set_text(None)
 
-        def test_clipboard_destination_replaces_text(self):
-            dest = Clipboard()
-            message: GPTTextItem = {"type": "text", "text": "hello world"}
+        @patch.object(model_destination_module, "Browser")
+        def test_insert_uses_response_presentation(self, browser_cls):
+            with patch.object(actions.user, "confirmation_gui_append") as gui_append, patch.object(
+                actions.user, "paste"
+            ) as paste_action:
+                result = PromptResult.from_messages([format_message("answer")])
 
-            dest.insert([message])
+                ModelDestination().insert(result)
 
-            self.assertEqual(clip.text(), "hello world")
+            browser_instance = browser_cls.return_value
+            gui_append.assert_called_once()
+            self.assertFalse(paste_action.called)
+            self.assertFalse(browser_instance.insert.called)
+            presentation = gui_append.call_args.args[0]
+            self.assertIsInstance(presentation, ResponsePresentation)
+            self.assertEqual(presentation.display_text, "answer")
 
-        def test_append_clipboard_destination_appends_with_newline(self):
-            clip.set_text("existing")
-            dest = AppendClipboard()
-            message: GPTTextItem = {"type": "text", "text": "more"}
+        def test_insert_accepts_prompt_result_like_object(self):
+            with patch.object(actions.user, "confirmation_gui_append"):
+                inner = PromptResult.from_messages([format_message("legacy")])
 
-            dest.insert([message])
+                class ForeignPromptResult:
+                    def __init__(self, wrapped):
+                        self._wrapped = wrapped
+                        self.messages = wrapped.messages
+                        self.session = wrapped.session
 
-            self.assertEqual(clip.text(), "existing\nmore")
+                    def presentation_for(self, destination_kind):
+                        return self._wrapped.presentation_for(destination_kind)
 
-        def test_default_destination_uses_response_renderer(self):
-            message: GPTTextItem = {"type": "text", "text": "hello"}
-            destination_module.confirmation_gui.showing = True
+                    def append_thread(self):
+                        return self._wrapped.append_thread()
 
-            with patch.object(destination_module, "render_for_destination") as renderer, patch.object(
-                destination_module.actions.user, "paste"
-            ) as paste:
-                renderer.return_value = ResponsePresentation(
-                    display_text="hello", paste_text="hello", open_browser=False
-                )
+                    @property
+                    def text(self):
+                        return self._wrapped.text
 
-                destination_module.Default().insert([message])
+                ModelDestination().insert(ForeignPromptResult(inner))
 
-                renderer.assert_called_once()
-                paste.assert_called_once_with("hello")
-            destination_module.confirmation_gui.showing = False
-
-        def test_default_destination_appends_to_confirmation_gui(self):
-            message: GPTTextItem = {"type": "text", "text": "hello"}
-
-            with patch.object(
-                destination_module, "render_for_destination"
-            ) as renderer, patch.object(
-                destination_module.actions.user, "confirmation_gui_append"
-            ) as append:
-                renderer.return_value = ResponsePresentation(
-                    display_text="hello", paste_text="hello"
-                )
-
-                destination_module.Default().insert([message])
-
-                renderer.assert_called_once()
-                append.assert_called_once()
 else:
-    class ModelDestinationClipboardTests(unittest.TestCase):
+    class ModelDestinationTests(unittest.TestCase):
         @unittest.skip("Test harness unavailable outside unittest runs")
         def test_placeholder(self):
             pass
-
-
-if __name__ == "__main__":
-    unittest.main()

@@ -1,6 +1,6 @@
 # ADR 003: Extend PromptSession to UI surfaces and integration tests
 
-- Status: Proposed
+- Status: Accepted
 - Date: 2025-02-14
 
 ## Context
@@ -18,6 +18,6 @@ We plan to:
 - Contributors will have clearer guidance, reducing the chance of bypassing PromptSession accidentally.
 
 ## Next Steps
-1. Refactor `lib/modelDestination.py` and `lib/modelConfirmationGUI.py` to consume a consolidated response object produced by PromptSession.
-2. Add integration tests that cover threading, tool recursion, and destination rendering under `tests/`.
-3. Update CONTRIBUTING with the PromptSession/testing guidelines already summarized in README.
+1. ✅ Refactor `lib/modelDestination.py` and `lib/modelConfirmationGUI.py` to consume a consolidated response object produced by PromptSession.
+2. ✅ Add integration tests that cover threading, tool recursion, and destination rendering under `tests/`.
+3. ✅ Update CONTRIBUTING with the PromptSession/testing guidelines already summarized in README.

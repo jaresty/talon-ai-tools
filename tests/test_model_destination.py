@@ -1,4 +1,5 @@
 import unittest
+from typing import TYPE_CHECKING
 from unittest.mock import patch
 
 try:
@@ -61,7 +62,8 @@ if bootstrap is not None:
                 ModelDestination().insert(ForeignPromptResult(inner))
 
 else:
-    class ModelDestinationTests(unittest.TestCase):
-        @unittest.skip("Test harness unavailable outside unittest runs")
-        def test_placeholder(self):
-            pass
+    if not TYPE_CHECKING:
+        class ModelDestinationTests(unittest.TestCase):
+            @unittest.skip("Test harness unavailable outside unittest runs")
+            def test_placeholder(self):
+                pass

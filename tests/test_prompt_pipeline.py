@@ -1,4 +1,5 @@
 import unittest
+from typing import TYPE_CHECKING
 from unittest.mock import MagicMock
 
 try:
@@ -54,8 +55,8 @@ if bootstrap is not None:
             self.assertFalse(presentation.open_browser)
 
 else:
-    class PromptPipelineTests(unittest.TestCase):
-        @unittest.skip("Test harness unavailable outside unittest runs")
-        def test_placeholder(self):
-            pass
-
+    if not TYPE_CHECKING:
+        class PromptPipelineTests(unittest.TestCase):
+            @unittest.skip("Test harness unavailable outside unittest runs")
+            def test_placeholder(self):
+                pass

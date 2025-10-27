@@ -108,9 +108,11 @@ def format_message(content: str) -> GPTTextItem:
     return {"type": "text", "text": content}
 
 
-def extract_message(content: GPTTextItem) -> str:
-    """Extract the text field from a GPTTextItem."""
-    return content.get("text", "")
+def extract_message(content: Union[GPTTextItem, GPTImageItem]) -> str:
+    """Extract text from a GPT message item, ignoring non-text entries."""
+    if content.get("type") == "text":
+        return content.get("text", "")
+    return ""
 
 
 def build_chatgpt_request(
@@ -183,8 +185,9 @@ def _build_snippet_context(destination: str) -> Optional[str]:
     return None
 
 
-def _build_request_context(destination: str) -> list[str]:
+def _build_request_context(destination: object) -> list[str]:
     """Build the list of system messages for the request context."""
+    destination_str = destination if isinstance(destination, str) else ""
     language = actions.code.language()
     language_context = (
         f"The user is currently in a code editor for the programming language: {language}. You are an expert in this language and will return syntactically appropriate responses for insertion directly into this language. All commentary should be commented out so that you do not cause any syntax errors."
@@ -192,7 +195,7 @@ def _build_request_context(destination: str) -> list[str]:
         else None
     )
     application_context = f"The following describes the currently focused application:\n\n{actions.user.talon_get_active_context()}\n\nYou are an expert user of this application."
-    snippet_context = _build_snippet_context(destination)
+    snippet_context = _build_snippet_context(destination_str)
     system_messages = [
         m
         for m in [language_context, application_context, snippet_context]
@@ -224,7 +227,7 @@ BUILTIN_ASK_CHATGPT_TOOL = {
 }
 
 
-def build_request(destination: str):
+def build_request(destination: object):
     """Orchestrate the GPT request build process."""
     notify(_build_request_notification())
     full_system_messages = _build_request_context(destination)
@@ -239,8 +242,8 @@ def build_request(destination: str):
     )
 
 
-def append_request_messages(messages: List[Union[GPTMessage, GPTTool]]):
-    GPTState.request["messages"] = GPTState.request.get("messages", []) + messages
+def append_request_messages(messages: Sequence[Union[GPTMessage, GPTTool]]):
+    GPTState.request["messages"] = GPTState.request.get("messages", []) + list(messages)
 
 
 def call_tool(

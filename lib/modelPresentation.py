@@ -1,8 +1,8 @@
 from dataclasses import dataclass, field
-from typing import List
+from typing import List, Sequence
 
 from .modelHelpers import messages_to_string
-from .modelTypes import GPTTextItem
+from .modelSource import GPTItem
 
 
 @dataclass
@@ -14,7 +14,7 @@ class ResponsePresentation:
 
 
 def render_for_destination(
-    gpt_message: List[GPTTextItem], destination_kind: str
+    gpt_message: Sequence[GPTItem], destination_kind: str
 ) -> ResponsePresentation:
     extracted_message = messages_to_string(gpt_message)
     lines = extracted_message.split("\n")

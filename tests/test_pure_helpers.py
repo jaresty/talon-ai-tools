@@ -1,4 +1,5 @@
 import unittest
+from typing import TYPE_CHECKING
 
 try:
     from bootstrap import bootstrap
@@ -19,10 +20,11 @@ if bootstrap is not None:
             text = "plain text"
             self.assertEqual(strip_markdown(text), "plain text")
 else:
-    class StripMarkdownTests(unittest.TestCase):
-        @unittest.skip("Test harness unavailable outside unittest runs")
-        def test_placeholder(self):
-            pass
+    if not TYPE_CHECKING:
+        class StripMarkdownTests(unittest.TestCase):
+            @unittest.skip("Test harness unavailable outside unittest runs")
+            def test_placeholder(self):
+                pass
 
 
 if __name__ == "__main__":

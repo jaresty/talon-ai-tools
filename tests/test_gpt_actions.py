@@ -1,5 +1,6 @@
 import inspect
 import unittest
+from typing import TYPE_CHECKING
 from unittest.mock import ANY, MagicMock, patch
 
 try:
@@ -214,10 +215,11 @@ if bootstrap is not None:
             )
             self.assertEqual(result, "recursive result")
 else:
-    class GPTActionPromptSessionTests(unittest.TestCase):
-        @unittest.skip("Test harness unavailable outside unittest runs")
-        def test_placeholder(self):
-            pass
+    if not TYPE_CHECKING:
+        class GPTActionPromptSessionTests(unittest.TestCase):
+            @unittest.skip("Test harness unavailable outside unittest runs")
+            def test_placeholder(self):
+                pass
 
 
 if __name__ == "__main__":

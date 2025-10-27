@@ -1,4 +1,5 @@
 import unittest
+from typing import TYPE_CHECKING
 from unittest.mock import patch
 
 try:
@@ -114,10 +115,11 @@ if bootstrap is not None:
             self.assertEqual(last_message["role"], "assistant")
             self.assertEqual(last_message["content"][0], assistant_item)
 else:
-    class PromptSessionTests(unittest.TestCase):
-        @unittest.skip("Test harness unavailable outside unittest runs")
-        def test_placeholder(self):
-            pass
+    if not TYPE_CHECKING:
+        class PromptSessionTests(unittest.TestCase):
+            @unittest.skip("Test harness unavailable outside unittest runs")
+            def test_placeholder(self):
+                pass
 
 
 if __name__ == "__main__":

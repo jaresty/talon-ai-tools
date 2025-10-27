@@ -3,10 +3,10 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Iterable, List, Optional
+from typing import Iterable, List, Optional, cast
 
 from .modelPresentation import ResponsePresentation, render_for_destination
-from .modelSource import ModelSource
+from .modelSource import GPTItem, ModelSource
 from .modelTypes import GPTTextItem
 from .promptSession import PromptSession
 
@@ -15,24 +15,29 @@ from .promptSession import PromptSession
 class PromptResult:
     """Structured result of a prompt run, including messages and presentation helpers."""
 
-    messages: List[GPTTextItem]
+    messages: List[GPTItem]
     session: Optional[PromptSession] = None
 
     @classmethod
     def from_response(
-        cls, response: GPTTextItem, session: Optional[PromptSession] = None
+        cls, response: GPTItem, session: Optional[PromptSession] = None
     ) -> "PromptResult":
         return cls(messages=[response], session=session)
 
     @classmethod
     def from_messages(
-        cls, messages: Iterable[GPTTextItem], session: Optional[PromptSession] = None
+        cls, messages: Iterable[GPTItem], session: Optional[PromptSession] = None
     ) -> "PromptResult":
         return cls(messages=list(messages), session=session)
 
     @property
     def text(self) -> str:
-        return self.messages[0].get("text", "") if self.messages else ""
+        if not self.messages:
+            return ""
+        first = self.messages[0]
+        if first["type"] == "text":
+            return cast(str, first["text"])
+        return ""
 
     def presentation_for(self, destination_kind: str) -> ResponsePresentation:
         return render_for_destination(self.messages, destination_kind)
@@ -42,7 +47,9 @@ class PromptResult:
             return
         if not self.messages:
             return
-        self.session.append_thread(self.messages[0])
+        first = self.messages[0]
+        if first["type"] == "text":
+            self.session.append_thread(cast(GPTTextItem, first))
 
 
 class PromptPipeline:

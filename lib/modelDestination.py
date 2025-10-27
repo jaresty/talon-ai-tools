@@ -1,5 +1,6 @@
-from typing import Iterable, List, Sequence, Union, cast
+from typing import Iterable, List, Sequence, Union, cast, Iterator
 
+from ..lib.modelSource import GPTItem
 from ..lib.modelTypes import GPTTextItem
 from ..lib.modelConfirmationGUI import confirmation_gui
 from talon import actions, clip, settings, ui
@@ -12,7 +13,13 @@ from ..lib.HTMLBuilder import Builder
 from ..lib.promptPipeline import PromptResult
 
 
-PromptPayload = Union[PromptResult, Sequence[GPTTextItem], GPTTextItem]
+PromptPayload = Union[PromptResult, Sequence[GPTItem], GPTItem]
+
+
+def _iter_text_items(items: Iterable[GPTItem]) -> Iterator[GPTTextItem]:
+    for item in items:
+        if item["type"] == "text":
+            yield cast(GPTTextItem, item)
 
 
 def _coerce_prompt_result(payload: PromptPayload) -> PromptResult:
@@ -109,7 +116,7 @@ class Snip(ModelDestination):
 class Context(ModelDestination):
     def insert(self, gpt_output):
         result = _coerce_prompt_result(gpt_output)
-        for message in result.messages:
+        for message in _iter_text_items(result.messages):
             GPTState.push_context(message)
 
 
@@ -123,7 +130,7 @@ class NewContext(ModelDestination):
     def insert(self, gpt_output):
         result = _coerce_prompt_result(gpt_output)
         GPTState.clear_context()
-        for message in result.messages:
+        for message in _iter_text_items(result.messages):
             GPTState.push_context(message)
 
 

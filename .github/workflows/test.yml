@@ -31,4 +31,4 @@ jobs:
         run: /usr/bin/python3 -m pip install -r ./.github/requirements-test.txt
 
       - name: Run tests
-        run: /usr/bin/python3 -m pytest ./.test/ -vvvv -rP
+        run: /usr/bin/python3 -m unittest discover -s tests -v

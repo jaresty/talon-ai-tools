@@ -1,9 +1,12 @@
 list: user.staticPrompt
-# Voice: Stakeholders and why they care
-#
 -
 
-# - Output and formatting
+# Voice, Audience, and Framing
+
+announce: Announce this to the audience.
+
+# Output and Formatting
+
 emoji: Return only emoji.
 clear: Remove all jargon and complex language.
 simple: Rewrite this in a simpler way.
@@ -12,30 +15,32 @@ fix: Fix grammar only; keep meaning/tone; modified text only.
 format: Add appropriate formatting leveraging commands available in the context (slack, markdown, etc) to the text.
 HTML: Semantic HTML only.
 LLM: Your response should consist of one or more prompts for an LLM. Each prompt should fit on one line.
-announce: Announce this to the audience.
 
-# - Analysis, structure, and perspective
+# Analysis, Structure, and Perspective
+
 describe: Just describe this objectively.
 structure: Describe the structure of the whole input.
-objectivity: Assess objectivity with examples.
-assumption: What are the assumptions behind this?
+flow: Explain the flow.
+undefined: List undefined terms only.
 relation: Invert this so it focuses on the relationships between things. Describe those relationships.
 type: Represent this as a type or taxonomy.
-knowledge: Identify academic or industry fields of knowledge that are relevant to this topic. For each field, explain why it applies and what perspective it offers.
-system: Evaluate the SUBJECT from a systems theory perspective. Identify the system’s boundaries, components, and key stakeholders. Analyze the flows of information, energy, or resources between subsystems. Consider feedback loops, emergent behaviors, and unintended consequences. Explore how the system adapts to internal or external changes, and what patterns of stability, growth, or decline emerge. Finally, assess leverage points within the system where small interventions could produce significant change.
-tao: Classify the subject below through the lens of Taoist philosophy. Explain how it relates to key Taoist concepts such as Dao 道 (the Way), De 德 (virtue/power), Yin-Yang 陰陽 (complementary forces), Wu Wei 無為 (effortless action), Ziran 自然 (naturalness), Pu 樸 (the uncarved block), Qi 氣 (vital energy), and Li 理 (natural patterns/principle). Identify which concepts are most relevant, and explain why.
-why: Explain why.
-how: Explain how.
 who: Explain who.
 what: Explain what.
 when: Explain when.
 where: Explain where.
-undefined: List undefined terms only.
-compare: "You will find two items below. Carefully compare them. List all the differences and similarities, providing detailed explanations for each. Highlight any subtle distinctions and commonalities. The first item is this: \n\"\"\"\n{additional_source}\n\"\"\"\n The second item follows."
+why: Explain why.
+how: Explain how.
+assumption: What are the assumptions behind this?
+objectivity: Assess objectivity with examples.
+compare: "You will find two items below. Carefully compare them. List all the differences and similarities, providing detailed explanations for each. Highlight any subtle distinctions and commonalities. The first item is this:\n\"\"\"\n{additional_source}\n\"\"\"\nThe second item follows."
 clusters: Table of subtle differences among similar ideas; omit singletons; width ≤ 100 chars.
+knowledge: Identify academic or industry fields of knowledge relevant to this topic. For each field, explain why it applies and what perspective it offers.
 taste: Evaluate the taste of the subject by analysing how well it achieves harmony, proportion, restraint, authenticity, and cultural/historical appropriateness; explain both its strengths and weaknesses, how it balances refinement with innovation, how it aligns or conflicts with its context, and whether its judgment feels cultivated and likely to endure.
+system: Evaluate the SUBJECT from a systems theory perspective, identifying boundaries, components, and stakeholders; analyze flows, feedback loops, emergent behaviors, and leverage points.
+tao: "Classify the subject through Taoist philosophy—relate it to Dao 道, De 德, Yin Yang 陰陽, Wu Wei 無為, Ziran 自然, Pu 樸, Qi 氣, and Li 理; identify which apply and why."
 
-# - Planning, product, and execution
+# Planning, Product, and Execution
+
 todo: Format as a todo list.
 product: Frame this through a product lens.
 metrics: List metrics that result in these outcomes with concrete examples.
@@ -43,85 +48,82 @@ value: What is the user value of this?
 jobs: List the JTBD - Jobs To Be Done for this.
 done: What is the definition of done for this?
 how to: Quick plan to solve today’s problem.
-operations: Infer an appropriate Operations Research (management science) or operations theory mathematical concept to apply.
+operations: Infer an appropriate Operations Research or management science concept to apply.
 incremental: How can I break this down into smaller steps to do just the next tiny increment?
 bridge: "Guide me to achieve the desired situation: {additional_source}, starting from the current state. The current situation is described below."
 ADR: Write an ADR.
 shell: Write a shell script.
 commit: Conventional commit message for staged changes.
 
-# - Exploration, critique, and reflection
+# Exploration, Critique, and Reflection
+
 challenge: Challenge this with questions so we can make it better.
 critique: This looks bad. What is wrong with it?
 retro: Help me introspect / reflect on this.
-objectivity: Assess objectivity with examples.
-pain: List 3-5 pain points; issues; problems; obstacles; challenges; barriers. Order by importance to the audience.
+pain: List 3–5 pain points; issues; problems; obstacles; challenges; barriers. Order by importance to the audience.
 experiment: I have given you a problem. Suggest one or more experiments that I can try to solve it.
 science: Give me testable, relevant, and specific hypotheses.
 debug: Analyze the full transcript using the scientific method of debugging—summarize only the stable current facts (not repeating prior lists), list unresolved questions, select the next best unanswered one, propose hypotheses consistent with the evidence, choose the best current hypothesis, design a minimal experiment to confirm or refute it, and restructure as needed for clarity and logical completeness.
-wasinawa: I want you to help me with doing a what, so what, now what analysis. For the following ask those three questions and give me your answers. What refers to what happened. So what refers to what is important about what happened. Now what refers to what should we do about what happened.
-retro: Help me introspect / reflect on this.
-critique: This looks bad. What is wrong with it?
+wasinawa: "Perform a What–So What–Now What reflection. Divide your response into three parts: (1) What happened, (2) Why it matters, (3) What we should do next. Keep each section clear and distinct."
 easier: This is too much work. Give me something that I can accomplish in a smaller timescale.
 true: Is this true?
-question: Ask open ended questions about this that are important to the audience.
+question: Ask open-ended questions about this that are important to the audience.
 
-# - Transformation and reformatting
-flow: Explain the flow.
+# Transformation and Reformatting
 diagram: Convert plain text to mermaid diagram syntax. Infer the best diagram type. Remember that mermaid diagrams do not allow parentheses.
 gherkin: Reformat into proper Gherkin using Jira markup; modified text only.
 group: Group into labeled categories; results only.
 split: Separate topics into clear sections; reformatted text only.
-shuffled: Reconstruct the following text to ensure the layout is logical and significantly different from the original. Create new categories, each representing a single idea without using conjunctions like AND or OR. Present the revised text in the same language.
+shuffled: Reconstruct text to ensure layout is logical and significantly different from the original; create new categories, each representing one idea.
 match: Rewrite to match provided style; modified text only.
-blend: "Im going to give you some source text and destination text, and I want you to modify the destination text based on the contents of the source text in a way that combines both of them together. Use the structure of the destination text, reordering and renaming as necessary to ensure a natural and coherent flow. Return only the final text with no decoration for insertion into a document in the specified language. Here is the destination text: \"\"\"\n {additional_source} \n\"\"\" The source text follows."
-join: Merge into one coherent part; remove redundancy;
+blend: "Combine source and destination texts coherently. Use the structure of the destination, reordering and renaming as needed. Return only the final text. Here is the destination: \"\"\"\n{additional_source}\n\"\"\" The source follows. Maintain logical and stylistic integration."
+join: Merge into one coherent part; remove redundancy.
 sort: Sort these items in order of importance to the audience.
-short: Shorten; preserve meaning; modified text only.
-fix: Fix grammar only; keep meaning/tone; modified text only.
-context: Add LLM‑ready context; context only.
-format: Add appropriate formatting leveraging commands available in the context (slack, markdown, etc) to the text.
-presenterm: "Transform the input into a valid multi-slide presenterm deck; output raw Markdown only (no code fences). Front matter exactly: \"--- newline title: <use a descriptive title based on the input, never leave blank; in the title, encode any colon ':' as &#58; and encode < and > as &lt; and &gt;> newline author: Generated (or authors: [...] ) newline date: YYYY-MM-DD newline --- newline\"; no other keys. Produce up to 12 slides (no minimum required); each slide MUST start with a Setext header (Title line, next line exactly ---), include content and references, and end with an HTML comment named end_slide on its own line with nothing else, then a blank line; the final slide MAY omit the closing end_slide. ALWAYS insert a blank line before the References section so that a line with \"References\" or \"- References\" is preceded by one empty line. Emit directives only as HTML comments on their own line with exact syntax and nothing else on the line: end_slide = \"<!-- end_slide -->\"; pause = \"<!-- pause -->\"; column_layout with weights = \"<!-- column_layout: [7, 3] -->\"; column with index = \"<!-- column: 0 -->\"; reset_layout = \"<!-- reset_layout -->\"; jump_to_middle = \"<!-- jump_to_middle -->\". CODE FENCE SAFETY: whenever a fenced code block opens (e.g., ```mermaid +render, ```bash +exec, ```latex +render, ```d2 +render), you MUST emit a matching closing fence of exactly three backticks on its own line BEFORE any non-code content, directive, or end_slide; IF a fence is still open at slide end, AUTO-EMIT the closing fence first. Support mermaid diagrams via code blocks tagged mermaid +render; support LaTeX via code blocks tagged latex +render; support D2 via code blocks tagged d2 +render; support executable snippets via fenced code blocks whose info string starts with a language then +exec (optionally +id:<name>) or +exec_replace or +image; only emit \"<!-- snippet_output: name -->\" if a snippet with +id:name exists. Hide code lines with # or /// prefixes per language; other code blocks only if relevant (name the language); images only if valid paths/URLs. HTML SAFETY IN SLIDE BODY (outside all fenced/inline code and outside HTML directives): raw HTML is NOT allowed; therefore you MUST replace EVERY literal '<' with &lt; and EVERY literal '>' with &gt; in body text (including list items and headings); NEVER output raw '<' or '>' in body text. Markdown safety in SLIDE BODY: prevent accidental styling by encoding isolated control chars unless part of valid syntax; encode every standalone or path-embedded '~' as \"&#126;\" (so \"~/foo\" becomes \"&#126;/foo\"), but keep intentional \"~~text~~\" unchanged. MERMAID SAFETY: inside mermaid code blocks, preserve Mermaid grammar and delimiters unchanged ([], (), [[]], (()), [/ /]); for NODE/EDGE LABEL TEXT you MUST wrap the entire label in ASCII double quotes and, inside that quoted text ONLY, you may encode problematic characters using **Mermaid-compatible numeric codes with NO leading ampersand**: use \"#91;\" for '[', \"#93;\" for ']', \"#40;\" for '(', \"#41;\" for ')', \"#123;\" for '{{', \"#125;\" for '}}', \"#60;\" for '<', \"#62;\" for '>', \"#35;\" for '#', and \"#58;\" for ':'; escape an internal double quote as \\\"; leave ampersands '&' and slashes '/' as-is; do not apply any other entity encodings inside labels; do not double-encode. Avoid # headers. This instruction itself must contain no literal newline characters. Talon note: every literal curly brace in this instruction is doubled (\"{{\" and \"}}\")."
+context: Add LLM-ready context; context only.
+presenterm: "Transform input into a valid multi-slide Presenterm deck in raw Markdown, following the exact required front matter and formatting rules; ensure safety for code blocks, diagrams, and HTML entities."
 
-# - Mathematical and abstract lenses
-math: Consider fields of mathematics that apply to this to frame your response and tell me which you are using:
+# Mathematical and Abstract Lenses
+
+math: Consider mathematical fields that apply to this and specify which are used.
 orthogonal: What is orthogonal in this?
-bud: Consider concepts such as addition or subtraction (etc) and pick one consistent angle for your response that fits. Apply those concepts in a non-numerical way to this.
-boom: Consider concepts such as limits or continuity (etc) and pick one consistent angle for your response that fits. Apply those concepts in a non-numerical way to this.
-meld: Apply set theory to this and pick one consistent angle for your response that fits. Apply those concepts in a non-numerical way to this.
-order: Consider concepts such as partial orders or lattices (etc) and pick one consistent angle for your response that fits. Apply those concepts in a non-numerical way to this.
-logic: Consider concepts such as propositional logic or predicate logic (etc) and pick one consistent angle for your response that fits. Apply those concepts in a non-numerical way to this.
-probability: Consider concepts such as distributions or probabilities or statistics (etc) and pick one consistent angle for your response that fits. Apply those concepts in a non-numerical way to this.
-recurrence: Calculate the (mathematical) recurrence relation of this idea; explain the consequences in plain language.
-map: Use data mapping / transformation concepts to describe the transformation.
-mod: Modulo the first idea by the second idea but not in a numerical sense.
-dimension: Expand the dimensions (geometric) of this. For each axis explain of the scale of the dimension.
-rotation: Calculate the 90 degree rotation of this but not in a numerical sense.
-reflection: Calculate the reflection of this but not in a numerical sense.
-invert: Invert this so it is still true focuses on the things that were `negative space` in the original. Im not looking for a literal inversion but rather metaphorical one.
-graph: Consider concepts such as trees or graphs (etc) and pick one consistent angle for your response that fits. Apply those concepts in a non-numerical way to this.
-grove: Consider concepts such as integrals or derivatives (etc) and pick one consistent angle for your response that fits. Apply those concepts in a non-numerical way to this.
-dub: Consider concepts such as powers or roots (etc) and pick one consistent angle for your response that fits. Apply those concepts in a non-numerical way to this.
-drum: Consider concepts such as multiplication or division (etc) and pick one consistent angle for your response that fits. Apply those concepts in a non-numerical way to this.
+bud: Apply addition/subtraction-like reasoning non-numerically.
+boom: Apply limit/continuity-like reasoning non-numerically.
+meld: Apply set theory reasoning non-numerically.
+order: Apply order or lattice theory reasoning non-numerically.
+logic: Apply propositional or predicate logic reasoning non-numerically.
+probability: Apply probability or statistics reasoning non-numerically.
+recurrence: Calculate the recurrence relation of this idea and explain its consequences in plain language.
+map: "Use data mapping and transformation concepts to describe this. Identify source and target schemas, specify transformation rules, and describe how information flows between them, including loss, duplication, or enrichment at each stage."
+mod: Modulo the first idea by the second idea non-numerically.
+dimension: Expand dimensions of this geometrically; describe each axis.
+rotation: Compute the 90-degree rotation metaphorically.
+reflection: Compute the reflection metaphorically.
+invert: Invert conceptually to reveal negative space.
+graph: "Apply graph or tree theory reasoning non-numerically. Identify nodes, edges, and their meanings. Describe edge direction, weight, and centrality. Explain how structure influences flow or dependency within the system."
+grove: Apply integral/derivative concepts non-numerically.
+dub: Apply power/root concepts non-numerically.
+drum: Apply multiplication/division concepts non-numerically.
 
-# - Strategy, mapping, and dependencies
-wardley: Generate a Wardley Map by identifying users, needs, and components, then output it strictly as a Markdown table where rows = visibility levels (High, Medium, Low) and columns = evolution stages (Genesis, Custom, Product, Commodity), placing components only in the cells where they belong and leaving other cells empty, and after the table provide a concise summary of dependencies and key strategic insights.
+# Strategy, Mapping, and Dependencies
+
+wardley: Generate a Wardley Map by identifying users, needs, and components, then output it as a Markdown table where rows = visibility levels and columns = evolution stages. Provide a concise summary of dependencies and key strategic insights.
 dependency: List dependencies and what they depend on.
-cochange: In this situation with multiple subjects, show me how each subject directly cochanges with the others.
+cochange: In this situation with multiple subjects, show how each directly cochanges with the others.
 interact: How do these interact?
 dependent: How are these dependent?
 independent: How are these independent?
 parallel: What problems could I have if I parallelized these two items?
 team: Tell me about the team structure. Just talk about the people and their roles.
 unknown: Imagine I’ve missed some critical unknown unknowns in this situation. What could they be, and how might they impact the outcome?
-jim: Analyze the SUBJECT for connascence, using these definitions: Connascence = ‘a change in one element requires a change in another’; Properties—Strength (static forms usually weaker, dynamic forms stronger), Degree (number of elements affected together), Locality (closer proximity = higher locality value); compute Severity as Severity = Strength × Degree ÷ Locality; Types include: Static—Connascence of Name (CoN), Type (CoT), Position (CoP), Meaning (CoM), Algorithm (CoA); Dynamic—Execution (CoE), Timing (CoTi), Value (CoV), Identity (CoI); Strength guidance: Name≈1, Type≈2, Position≈3, Meaning≈4, Algorithm≈5, Execution≈6, Timing≈7, Value≈8, Identity≈9; For each detected instance, evaluate its Type, Strength, Degree, Locality, Severity, and illustrate with an example; then suggest remedies that reduce overall connascence in the system (not just single items), considering strategies such as moving from stronger to weaker forms, reducing Degree, improving Locality, or mitigating dynamic dependencies; include examples of how such remedies might be applied in this context, and highlight trade-offs where local strong connascence is acceptable due to high Locality.
-domain: Perform a connascence-driven discovery of business domains in the SUBJECT: use connascence definitions (Connascence = ‘a change in one element requires a change in another’; Types with intrinsic Strength: Name=1, Type=2, Position=3, Meaning=4, Algorithm=5, Execution=6, Timing=7, Value=8, Identity=9; Degree = number of elements bound: D1=1–2, D2=3–4, D3=5+; Locality = L1=same function/module, L2=cross–bounded context, L3=external/public contract; Severity = Strength × Degree ÷ Locality). Group elements into domains of coupling where multiple forms of connascence converge, and describe the obligations and change scenarios that tie them together. Treat these clusters as candidate business domains or bounded contexts. For each domain, report the dominant connascence forms, supporting Severity, examples of co-change, and the business concepts implied. Highlight ≈3–5 strongest domains to keep focus. Finally, suggest remedies to strengthen boundaries (reduce Degree, improve Locality, shift to weaker connascence) and show how those remedies clarify or separate business domains, with example fixes.
-tune: Evaluate this through the Concordance Frame: how visible, how broad in scope, and how volatile are the dependencies that must stay in tune for the system to remain correct?
-melody: Concordance measures how elements coordinate across visibility (how obvious the link is), scope (how far it reaches), and volatility (how often it changes); analyze the system to find clusters that share these coordination patterns, infer the shared intent or “tune” that defines each hidden domain, and recommend specific ways to clarify or strengthen those domains by reducing coordination cost or aligning their boundaries.
+jim: "Analyze the SUBJECT for connascence using its properties (Strength, Degree, Locality). Identify its Type (Name, Type, Position, Meaning, Algorithm, Execution, Timing, Value, Identity). Compute Severity = Strength × Degree ÷ Locality. For each instance, provide examples and remedies that reduce overall connascence, considering trade-offs."
+domain: "Perform a connascence-driven discovery of business domains. Group elements by coupling where multiple forms of connascence converge, describe obligations and change scenarios, and suggest boundary-strengthening remedies with examples."
+tune: "Evaluate this through the Concordance Frame: assess the visibility, scope, and volatility of dependencies that must stay in tune for correctness. Identify clusters that share coordination patterns, describe their shared intent ('tune'), and explain how their concordance affects system stability."
+melody: "Analyze the system for concordance clusters: (1) Identify groups of elements coordinated by visibility, scope, and volatility. (2) Name the shared 'melody' that defines each hidden domain. (3) Explain how these domains interact and recommend actions to clarify, reinforce, or rebalance their coordination."
 
-# - Variations and playful
+# Variations and Playful
+
 silly: I want you to say something silly about this.
 style: Describe style instructions with one example.
 recipe: Represent this as a recipe using a custom language. Include a key for how to understand the language.
 problem: I want help with abstraction laddering. I have given you a problem. I want you to make a list with that in the middle. In the item above, list three answers to the question why is this a problem?. In the item below, list three answers to the question what problems does this cause?. Order the answers in decreasing importance to the audience.
-lens: Given the input, create an abstract visualization that avoids diagrams or maps entirely, expressing the big picture as a loose metaphorical form (consider the input and invent an effective concept) that highlights contrasts, intensities, and points of interest, provides simple anchors for reference, and a short legend for orientation while leaving room for exploration. The output should be an SVG or code that can be run. Give instructions to view if any additional steps are required.
+lens: "Given the input, create an abstract visualization that avoids diagrams or maps entirely. Express the big picture as a loose metaphorical form highlighting contrasts and points of interest. Include a short legend for orientation and, if needed, SVG or code instructions to view."

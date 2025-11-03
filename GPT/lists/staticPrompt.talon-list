@@ -68,6 +68,9 @@ wasinawa: "Perform a What–So What–Now What reflection. Divide your response 
 easier: This is too much work. Give me something that I can accomplish in a smaller timescale.
 true: Is this true?
 question: Ask open-ended questions about this that are important to the audience.
+relevant: What is relevant?
+misunderstood: What is misunderstood?
+risky: What is risky?
 
 # Transformation and Reformatting
 diagram: Convert plain text to mermaid diagram syntax. Infer the best diagram type. Remember that mermaid diagrams do not allow parentheses.

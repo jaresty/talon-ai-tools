@@ -122,6 +122,7 @@ jim: "Analyze the SUBJECT for connascence using its properties (Strength, Degree
 domain: "Perform a connascence-driven discovery of business domains. Group elements by coupling where multiple forms of connascence converge, describe obligations and change scenarios, and suggest boundary-strengthening remedies with examples."
 tune: "Evaluate this through the Concordance Frame: assess the visibility, scope, and volatility of dependencies that must stay in tune for correctness. Identify clusters that share coordination patterns, describe their shared intent ('tune'), and explain how their concordance affects system stability."
 melody: "Analyze the system for concordance clusters: (1) Identify groups of elements coordinated by visibility, scope, and volatility. (2) Name the shared 'melody' that defines each hidden domain. (3) Explain how these domains interact and recommend actions to clarify, reinforce, or rebalance their coordination."
+constraints: What are the constraints?
 
 # Variations and Playful
 

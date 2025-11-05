@@ -123,6 +123,8 @@ domain: "Perform a connascence-driven discovery of business domains. Group eleme
 tune: "Evaluate this through the Concordance Frame: assess the visibility, scope, and volatility of dependencies that must stay in tune for correctness. Identify clusters that share coordination patterns, describe their shared intent ('tune'), and explain how their concordance affects system stability."
 melody: "Analyze the system for concordance clusters: (1) Identify groups of elements coordinated by visibility, scope, and volatility. (2) Name the shared 'melody' that defines each hidden domain. (3) Explain how these domains interact and recommend actions to clarify, reinforce, or rebalance their coordination."
 constraints: Identify the key constraint in this system, describe the behaviors it promotes and discourages, explain how it could be balanced for long-term health, and note where this approach works or fails.
+effects: What are the second and third order effects of this?
+
 # Variations and Playful
 
 silly: I want you to say something silly about this.

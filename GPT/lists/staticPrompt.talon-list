@@ -54,6 +54,7 @@ bridge: "Guide me to achieve the desired situation: {additional_source}, startin
 ADR: Write an ADR.
 shell: Write a shell script.
 commit: Conventional commit message for staged changes.
+facilitate: Design a meeting for this.
 
 # Exploration, Critique, and Reflection
 

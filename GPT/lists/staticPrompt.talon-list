@@ -107,6 +107,7 @@ graph: "Apply graph or tree theory reasoning non-numerically. Identify nodes, ed
 grove: Apply integral/derivative concepts non-numerically.
 dub: Apply power/root concepts non-numerically.
 drum: Apply multiplication/division concepts non-numerically.
+document: Given a subject, list the document or writing formats that best apply (e.g., ADRs, experiment logs, RFCs, briefs), explain why each fits and what perspective it reveals, and include any borderline formats.
 
 # Strategy, Mapping, and Dependencies
 

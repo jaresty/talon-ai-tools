@@ -21,7 +21,7 @@ When asked to “run an ADR loop/execute iteration using `docs/adr/adr-loop-exec
 2. **Run one loop / execute iteration for that ADR**
    - Re-read the ADR and any associated work-log to understand its scope, intent, and current state.
    - **Work-log location and convention:** for each ADR, prefer a dedicated work-log file named `docs/adr/<ADR-NUMBER>-<slug>.work-log.md` (for example, `docs/adr/0118-concordance-churn-complexity-hidden-domain-refresh.work-log.md`). If no such file exists yet for the chosen ADR, create one on first use and record slices there rather than appending large change histories directly to the primary ADR document.
-   - Enumerate remaining work and break it down into **atomic, text-edit-level tasks** (code, tests, or docs).
+   - Enumerate remaining work and break it down into **atomic, behavior-focused tasks** that you can realize via concrete edits (code, tests, or docs). A single task may involve multiple files or commands as long as it forms one coherent slice (for example, “regenerate fixture X and promote updated artifacts” or “refactor CLI Y behind an orchestrator plus add tests”).
    - Filter to tasks that are **material and behavior-affecting** or clearly improve maintainability/guardrails for the ADR.
    - Choose at least one feasible atomic task to advance, preferring the one that tests or exercises the **riskiest assumption** (the assumption whose failure would most undermine the ADR).
    - Implement the chosen task(s) concretely (edit code/docs/tests), then run minimal, fast checks and fix issues you encounter.

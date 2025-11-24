@@ -4,6 +4,11 @@ This file is a small, generic utility prompt for running **loop + execute** iter
 
 When asked to “run an ADR loop/execute iteration using `docs/adr/adr-loop-execute-helper.md`”, the assistant should:
 
+0. **Clear known red checks first**
+   - If there are any **known failing tests, lint errors, or type-check failures** in the current repository that the assistant is already aware of from this session (for example, a red `npm test`, `npm run lint`, or `npm run typecheck` that has not yet been addressed), the *first* task for this loop must be to fix or explicitly triage those failures.
+   - Treat fixing these red checks as an ADR-aligned slice when they are clearly tied to an existing ADR (for example, test guardrails or invariants introduced by a lifecycle ADR like 0107 or a CLI hotspot ADR); otherwise, treat them as preconditions that must be cleared before selecting a new ADR task.
+   - Only once the relevant checks are green again (or a failure is explicitly and temporarily acknowledged/parked in an ADR work-log with rationale) may the assistant pick up a new ADR task below.
+
 1. **Select a target ADR**
    - Prefer an ADR that appears **incomplete** (for example, non-terminal or missing `Status`, an open tasks section, or an active work-log with unfinished material work).
    - If the user has provided a list or ordering of ADRs, respect that as a priority queue and choose the first that still appears incomplete.
@@ -21,4 +26,3 @@ When asked to “run an ADR loop/execute iteration using `docs/adr/adr-loop-exec
 Example invocation:
 
 > Run one ADR loop/execute iteration using the helper in `docs/adr/adr-loop-execute-helper.md`, letting you pick any ADR that still looks incomplete, unless I’ve explicitly queued ADRs in this conversation.
-

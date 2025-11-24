@@ -4,10 +4,14 @@ This file is a small, generic utility prompt for running **loop + execute** iter
 
 When asked to “run an ADR loop/execute iteration using `docs/adr/adr-loop-execute-helper.md`”, the assistant should:
 
-0. **Clear known red checks first**
-   - If there are any **known failing tests, lint errors, or type-check failures** in the current repository that the assistant is already aware of from this session (for example, a red `npm test`, `npm run lint`, or `npm run typecheck` that has not yet been addressed), the *first* task for this loop must be to fix or explicitly triage those failures.
+0. **Clear known red checks first (hard requirement)**
+   - If there are any **known failing tests, lint errors, or type-check failures** in the current repository that the assistant is already aware of from this session (for example, a red `npm test`, `npm run lint`, or `npm run typecheck` that has not yet been addressed), the *first and only* task for this loop **until resolved** must be to fix or explicitly triage those failures.
+   - Fixes **must respect test intent**:
+     - If a test is failing because requirements have genuinely changed, it is acceptable to update or, in rare cases, remove the test — but only after making the new requirement explicit in the relevant ADR/work-log and ensuring the updated/removed test still reflects a clear, reviewed contract.
+     - If the implementation is broken relative to the documented behaviour or test expectations, the implementation must be fixed; do **not** weaken or delete the test just to make the suite green.
+   - We **never intentionally leave red tests** in this repository. Any failure encountered during a loop must be brought back to green (via correct implementation or contract update) before moving on.
    - Treat fixing these red checks as an ADR-aligned slice when they are clearly tied to an existing ADR (for example, test guardrails or invariants introduced by a lifecycle ADR like 0107 or a CLI hotspot ADR); otherwise, treat them as preconditions that must be cleared before selecting a new ADR task.
-   - Only once the relevant checks are green again (or a failure is explicitly and temporarily acknowledged/parked in an ADR work-log with rationale) may the assistant pick up a new ADR task below.
+   - The assistant **must not** select a new ADR or start fresh ADR work in this loop while aware of unresolved red tests/lint/type checks. Only once the relevant checks are green again (or a failure is explicitly and temporarily acknowledged/parked in an ADR work-log with rationale as a short-lived regression to be fixed immediately in the next loop) may the assistant proceed to step 1 and pick up a new ADR task below.
 
 1. **Select a target ADR**
    - Prefer an ADR that appears **incomplete** (for example, non-terminal or missing `Status`, an open tasks section, or an active work-log with unfinished material work).

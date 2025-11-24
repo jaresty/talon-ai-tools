@@ -20,11 +20,12 @@ When asked to “run an ADR loop/execute iteration using `docs/adr/adr-loop-exec
 
 2. **Run one loop / execute iteration for that ADR**
    - Re-read the ADR and any associated work-log to understand its scope, intent, and current state.
+   - **Work-log location and convention:** for each ADR, prefer a dedicated work-log file named `docs/adr/<ADR-NUMBER>-<slug>.work-log.md` (for example, `docs/adr/0118-concordance-churn-complexity-hidden-domain-refresh.work-log.md`). If no such file exists yet for the chosen ADR, create one on first use and record slices there rather than appending large change histories directly to the primary ADR document.
    - Enumerate remaining work and break it down into **atomic, text-edit-level tasks** (code, tests, or docs).
    - Filter to tasks that are **material and behavior-affecting** or clearly improve maintainability/guardrails for the ADR.
    - Choose at least one feasible atomic task to advance, preferring the one that tests or exercises the **riskiest assumption** (the assumption whose failure would most undermine the ADR).
    - Implement the chosen task(s) concretely (edit code/docs/tests), then run minimal, fast checks and fix issues you encounter.
-   - Update any relevant work-log or “Salient Tasks” section to reflect what changed and what remains.
+   - Update the ADR’s dedicated work-log and, if present, its “Salient Tasks” section to reflect what changed and what remains, keeping the primary ADR document focused on stable decisions rather than slice-by-slice execution history.
    - If and only if no qualifying tasks remain after a fresh pass and checks are green, you may mark the ADR complete or terminal according to the project’s lifecycle conventions.
 
 Example invocation:

@@ -22,7 +22,7 @@ When asked to “run an ADR loop/execute iteration using `docs/adr/adr-loop-exec
 2. **Run one loop / execute iteration for that ADR**
    - Re-read the ADR and any associated work-log to understand its scope, intent, and current state.
    - **Work-log location and convention:** for each ADR, prefer a dedicated work-log file named `docs/adr/<ADR-NUMBER>-<slug>.work-log.md` (for example, `docs/adr/0118-concordance-churn-complexity-hidden-domain-refresh.work-log.md`). If no such file exists yet for the chosen ADR, create one on first use and record slices there rather than appending large change histories directly to the primary ADR document.
-   - Enumerate remaining work and break it down into **behavior-focused tasks** that you can realize via concrete edits (code, tests, or docs).
+ - Enumerate remaining work and break it down into **behavior-focused tasks** that you can realize via concrete edits (code, tests, or docs).
      - Prefer **small, atomic slices** when a meaningful micro-task exists. A single slice may still involve multiple files or commands as long as it forms one coherent unit (for example, "regenerate fixture X and promote updated artifacts" or "refactor CLI Y behind an orchestrator plus add tests").
      - **Larger, well-scoped slices (including refactors or end-to-end workflows) are explicitly allowed and often preferred early** when they are the most valuable next step for the chosen ADR, especially when they exercise a high-risk or poorly understood assumption. When taking a larger slice:
        - Outline a short, concrete plan before editing code.
@@ -33,6 +33,9 @@ When asked to “run an ADR loop/execute iteration using `docs/adr/adr-loop-exec
    - For larger slices, outline a short, concrete plan in your response (a few ordered steps) before you start editing code, then implement that plan within this loop.
    - Implement the chosen task(s) concretely (edit code/docs/tests), then run minimal, fast checks and fix issues you encounter.
    - Update the ADR’s dedicated work-log and, if present, its “Salient Tasks” section to reflect what changed and what remains, keeping the primary ADR document focused on stable decisions rather than slice-by-slice execution history.
+   - When you conclude that the remaining meaningful work for an ADR should be **deferred to future ADRs** (for example, because it represents a larger, multi-step lifecycle project), you must:
+     - Write or extend the appropriate successor ADR(s) to own that work explicitly, and
+     - Update the current ADR and/or its work-log to point to those successor ADRs, rather than leaving vague references to "future ADRs" without concrete ids.
    - If and only if no qualifying tasks remain after a fresh pass and checks are green, you may mark the ADR complete or terminal according to the project’s lifecycle conventions.
 
 Example invocation:

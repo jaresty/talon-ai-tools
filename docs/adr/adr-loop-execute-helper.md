@@ -2,15 +2,15 @@
 
 This file is a small, generic utility prompt for running **loop + execute** iterations over ADRs. It is **not** an ADR itself and is not tied to any specific ADR number.
 
-When asked to “run an ADR loop/execute iteration using `docs/adr/adr-loop-execute-helper.md`”, the assistant should **decide autonomously** which ADR and slice to target, without asking the user to choose, and should bias toward slices that exercise the riskiest assumptions early — including end‑to‑end flows that validate real CLI behaviour, not just local refactors.
+When asked to “run an ADR loop/execute iteration using this helper”, the assistant should **decide autonomously** which ADR and slice to target, without asking the user to choose, and should bias toward slices that exercise the riskiest assumptions early — including end‑to‑end flows that validate real CLI behaviour, not just local refactors.
 
 0. **Clear known red checks first (hard requirement)**
-   - If there are any **known failing tests, lint errors, or type-check failures** in the current repository that the assistant is already aware of from this session (for example, a red `npm test`, `npm run lint`, or `npm run typecheck` that has not yet been addressed), the *first and only* task for this loop **until resolved** must be to fix or explicitly triage those failures.
+   - If there are any **known failing tests, lint errors, or type-check failures** in the current codebase that the assistant is already aware of from this session (for example, a red `npm test`, `npm run lint`, or `npm run typecheck` that has not yet been addressed), the *first and only* task for this loop **until resolved** must be to fix or explicitly triage those failures.
    - Fixes **must respect test intent**:
      - If a test is failing because requirements have genuinely changed, it is acceptable to update or, in rare cases, remove the test — but only after making the new requirement explicit in the relevant ADR/work-log and ensuring the updated/removed test still reflects a clear, reviewed contract.
      - If the implementation is broken relative to the documented behaviour or test expectations, the implementation must be fixed; do **not** weaken or delete the test just to make the suite green.
-   - We **never intentionally leave red tests** in this repository. Any failure encountered during a loop must be brought back to green (via correct implementation or contract update) before moving on.
-   - Treat fixing these red checks as an ADR-aligned slice when they are clearly tied to an existing ADR (for example, test guardrails or invariants introduced by a lifecycle ADR like 0107 or a CLI hotspot ADR); otherwise, treat them as preconditions that must be cleared before selecting a new ADR task.
+   - We **never intentionally leave red tests** in this codebase. Any failure encountered during a loop must be brought back to green (via correct implementation or contract update) before moving on.
+   - Treat fixing these red checks as an ADR-aligned slice when they are clearly tied to an existing ADR (for example, test guardrails or invariants introduced by a lifecycle ADR or a CLI hotspot ADR); otherwise, treat them as preconditions that must be cleared before selecting a new ADR task.
    - The assistant **must not** select a new ADR or start fresh ADR work in this loop while aware of unresolved red tests/lint/type checks. Only once the relevant checks are green again (or a failure is explicitly and temporarily acknowledged/parked in an ADR work-log with rationale as a short-lived regression to be fixed immediately in the next loop) may the assistant proceed to step 1 and pick up a new ADR task below.
 
 1. **Select a target ADR**
@@ -21,20 +21,20 @@ When asked to “run an ADR loop/execute iteration using `docs/adr/adr-loop-exec
 
 2. **Run one loop / execute iteration for that ADR**
    - Re-read the ADR and any associated work-log to understand its scope, intent, and current state.
-   - **Work-log location and convention:** for each ADR, prefer a dedicated work-log file named `docs/adr/<ADR-NUMBER>-<slug>.work-log.md` (for example, `docs/adr/0118-concordance-churn-complexity-hidden-domain-refresh.work-log.md`). If no such file exists yet for the chosen ADR, create one on first use and record slices there rather than appending large change histories directly to the primary ADR document.
+   - **Work-log location and convention:** for each ADR, prefer a dedicated work-log file alongside the primary ADR document, following a convention such as `<ADR-NUMBER>-<slug>.work-log.md` (for example, `0118-example-adr.work-log.md`). If no such file exists yet for the chosen ADR, create one on first use and record slices there rather than appending large change histories directly to the primary ADR document.
    - Enumerate remaining work and break it down into **behavior-focused tasks** that you can realize via concrete edits (code, tests, or docs), and the **validation flows** that demonstrate those behaviours end‑to‑end.
      - Prefer **small, atomic slices** when a meaningful micro-task exists. A single slice may still involve multiple files or commands as long as it forms one coherent unit (for example, "regenerate fixture X and promote updated artifacts" or "refactor CLI Y behind an orchestrator plus add tests").
      - **Larger, well-scoped slices (including refactors or end-to-end workflows) are explicitly allowed and often preferred early** when they are the most valuable next step for the chosen ADR, especially when they exercise a high-risk or poorly understood assumption. When taking a larger slice:
        - Outline a short, concrete plan before editing code.
-       - Keep the work bounded to a coherent theme (for example, a specific hotspot, workflow, or property run) that can reasonably be completed within this loop.
-       - Plan **end-to-end validation** up front: for generator/CLI work, this typically means running the real commands the ADR cares about (for example, `rcef:index`, `rcef:verify-generated`, `property:ci`, `verify:ci`, docs‑lint) for at least one property (fixture or real), not just unit tests.
+       - Keep the work bounded to a coherent theme (for example, a specific hotspot, workflow, or end‑to‑end run) that can reasonably be completed within this loop.
+       - Plan **end-to-end validation** up front: when applicable, run the real commands or workflows the ADR cares about for at least one realistic target, not just unit tests.
    - Filter to tasks that are **material and behavior-affecting** or clearly improve maintainability/guardrails for the ADR.
    - Choose at least one feasible task to advance, **without asking the user to choose among options**, and prefer the one that tests or exercises the **riskiest assumption** (the assumption whose failure would most undermine the ADR), even if that implies a larger, end‑to‑end slice.
    - For larger slices, outline a short, concrete plan in your response (a few ordered steps) before you start editing code, then implement that plan within this loop.
    - Implement the chosen task(s) concretely (edit code/docs/tests), then run **both focused tests and the relevant end‑to‑end commands** to validate behaviour:
      - For pure library/refactor work, this may be unit + integration tests.
-     - For CLI/generator/verification work, this should include running the CLI entrypoints the ADR talks about (for example, `rcef:index`, `rcef:verify-generated`, `property:ci`, `verify:ci`, `docs:adr-lint`, or smaller ADR‑specific npm scripts) for at least one property.
-     - Respect existing constraints: automated tests must not treat real properties as fixtures, but ADR loops **may** run CLIs against real properties as part of manual validation, and must record those commands and outcomes in the ADR work-log.
+     - For CLI/generator/verification work, this should include running the entrypoints or workflows the ADR talks about for at least one realistic target.
+     - Respect existing project constraints around environments, fixtures, and test data, and record important validation commands and outcomes in the ADR work-log.
    - Update the ADR’s dedicated work-log and, if present, its “Salient Tasks” section to reflect what changed and what remains, keeping the primary ADR document focused on stable decisions rather than slice-by-slice execution history.
    - When you conclude that the remaining meaningful work for an ADR should be **deferred to future ADRs** (for example, because it represents a larger, multi-step lifecycle project), you must:
      - Write or extend the appropriate successor ADR(s) to own that work explicitly, and
@@ -43,4 +43,4 @@ When asked to “run an ADR loop/execute iteration using `docs/adr/adr-loop-exec
 
 Example invocation:
 
-> Run one ADR loop/execute iteration using the helper in `docs/adr/adr-loop-execute-helper.md`, letting you pick any ADR that still looks incomplete. You should autonomously select the ADR and slice, and you may choose either a small, focused slice or, when it adds more value (especially to drive out risky assumptions early), a larger but well-scoped refactor or workflow for that ADR, as long as you plan it and validate behaviour within this loop.
+> Run one ADR loop/execute iteration using this ADR loop helper prompt, letting you pick any ADR that still looks incomplete. You should autonomously select the ADR and slice, and you may choose either a small, focused slice or, when it adds more value (especially to drive out risky assumptions early), a larger but well-scoped refactor or workflow for that ADR, as long as you plan it and validate behaviour within this loop.

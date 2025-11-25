@@ -2,7 +2,7 @@
 
 This file is a small, generic utility prompt for running **loop + execute** iterations over ADRs. It is **not** an ADR itself and is not tied to any specific ADR number.
 
-When asked to “run an ADR loop/execute iteration using `docs/adr/adr-loop-execute-helper.md`”, the assistant should:
+When asked to “run an ADR loop/execute iteration using `docs/adr/adr-loop-execute-helper.md`”, the assistant should **decide autonomously** which ADR and slice to target, without asking the user to choose, and should bias toward slices that exercise the riskiest assumptions early.
 
 0. **Clear known red checks first (hard requirement)**
    - If there are any **known failing tests, lint errors, or type-check failures** in the current repository that the assistant is already aware of from this session (for example, a red `npm test`, `npm run lint`, or `npm run typecheck` that has not yet been addressed), the *first and only* task for this loop **until resolved** must be to fix or explicitly triage those failures.
@@ -15,17 +15,21 @@ When asked to “run an ADR loop/execute iteration using `docs/adr/adr-loop-exec
 
 1. **Select a target ADR**
    - Prefer an ADR that appears **incomplete** (for example, non-terminal or missing `Status`, an open tasks section, or an active work-log with unfinished material work).
-   - If the user has provided a list or ordering of ADRs, respect that as a priority queue and choose the first that still appears incomplete.
+   - When several ADRs are incomplete, **prioritise those that are closest to completion** (for example, ones where most Salient Tasks are marked done and remaining work is narrow and well-understood) so that loops tend to drive ADRs to terminal states rather than fanning out work-in-progress across many ADRs.
+   - If the user has provided a list or ordering of ADRs, treat that as a priority queue and choose the first that still appears incomplete, but **do not** stop to ask the user which ADR to pick; the assistant is expected to make this choice.
    - If no ADR appears incomplete under these heuristics, report that no suitable ADR was found and perform no work.
 
 2. **Run one loop / execute iteration for that ADR**
    - Re-read the ADR and any associated work-log to understand its scope, intent, and current state.
    - **Work-log location and convention:** for each ADR, prefer a dedicated work-log file named `docs/adr/<ADR-NUMBER>-<slug>.work-log.md` (for example, `docs/adr/0118-concordance-churn-complexity-hidden-domain-refresh.work-log.md`). If no such file exists yet for the chosen ADR, create one on first use and record slices there rather than appending large change histories directly to the primary ADR document.
    - Enumerate remaining work and break it down into **behavior-focused tasks** that you can realize via concrete edits (code, tests, or docs).
-     - Prefer **small, atomic slices** when a meaningful micro-task exists. A single slice may still involve multiple files or commands as long as it forms one coherent unit (for example, “regenerate fixture X and promote updated artifacts” or “refactor CLI Y behind an orchestrator plus add tests”).
-     - If, after a fresh pass, **no meaningful micro-slice remains** for any incomplete ADR, you may instead propose and execute a **larger, well-scoped slice** for the chosen ADR (for example, a modest refactor in a hotspot or a real-property/report workflow), as long as it is fully implemented and logged within this loop.
+     - Prefer **small, atomic slices** when a meaningful micro-task exists. A single slice may still involve multiple files or commands as long as it forms one coherent unit (for example, "regenerate fixture X and promote updated artifacts" or "refactor CLI Y behind an orchestrator plus add tests").
+     - **Larger, well-scoped slices (including refactors or end-to-end workflows) are explicitly allowed and often preferred early** when they are the most valuable next step for the chosen ADR, especially when they exercise a high-risk or poorly understood assumption. When taking a larger slice:
+       - Outline a short, concrete plan before editing code.
+       - Keep the work bounded to a coherent theme (for example, a specific hotspot, workflow, or property run) that can reasonably be completed within this loop.
+       - Validate behaviour with appropriate tests or focused commands.
    - Filter to tasks that are **material and behavior-affecting** or clearly improve maintainability/guardrails for the ADR.
-   - Choose at least one feasible task to advance, preferring the one that tests or exercises the **riskiest assumption** (the assumption whose failure would most undermine the ADR).
+   - Choose at least one feasible task to advance, **without asking the user to choose among options**, and prefer the one that tests or exercises the **riskiest assumption** (the assumption whose failure would most undermine the ADR), even if that implies a somewhat larger slice.
    - For larger slices, outline a short, concrete plan in your response (a few ordered steps) before you start editing code, then implement that plan within this loop.
    - Implement the chosen task(s) concretely (edit code/docs/tests), then run minimal, fast checks and fix issues you encounter.
    - Update the ADR’s dedicated work-log and, if present, its “Salient Tasks” section to reflect what changed and what remains, keeping the primary ADR document focused on stable decisions rather than slice-by-slice execution history.
@@ -33,4 +37,4 @@ When asked to “run an ADR loop/execute iteration using `docs/adr/adr-loop-exec
 
 Example invocation:
 
-> Run one ADR loop/execute iteration using the helper in `docs/adr/adr-loop-execute-helper.md`, letting you pick any ADR that still looks incomplete, unless I’ve explicitly queued ADRs in this conversation.
+> Run one ADR loop/execute iteration using the helper in `docs/adr/adr-loop-execute-helper.md`, letting you pick any ADR that still looks incomplete. You should autonomously select the ADR and slice, and you may choose either a small, focused slice or, when it adds more value (especially to drive out risky assumptions early), a larger but well-scoped refactor or workflow for that ADR, as long as you plan it and validate behaviour within this loop.

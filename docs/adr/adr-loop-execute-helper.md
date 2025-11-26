@@ -41,6 +41,7 @@ When asked to “run an ADR loop/execute iteration using this helper”, the ass
        - **Add or tighten guardrails** (for example, new checks, invariants, validation paths, or safer defaults that prevent bad states, again covered by tests).
        - **Improve characterisation tests** (for example, filling in missing branches or edge cases for behaviour the ADR already owns).
        A healthy sequence of slices for a hotspot usually involves starting with characterisation tests, then using those tests to support simplification and guardrail changes, rather than adding tests indefinitely without ever simplifying or tightening behaviour.
+       When a hotspot already has explicit, well-targeted characterisation tests for its key branches and edge cases, prefer simplification or guardrail work over additional tests unless you can point to a specific uncovered behaviour or regression risk.
      - **Larger, well-scoped slices (including refactors or end-to-end workflows) are explicitly allowed and often preferred early** when they best exercise a high-risk or poorly understood assumption, as long as they can reasonably be completed within a single loop. When taking a larger slice:
        - Outline a short, concrete plan before editing code.
        - Keep the work bounded to a coherent theme (for example, a specific hotspot, workflow, or end‑to‑end run) that can reasonably be completed within this loop.
@@ -105,3 +106,64 @@ Example: bad vs good loop
 Example invocation:
 
 > Run one ADR loop/execute iteration using this ADR loop helper prompt, letting you pick any ADR that still looks incomplete. You should autonomously select the ADR and slice, and you may choose either a small, focused slice or, when it adds more value (especially to drive out risky assumptions early), a larger but well-scoped refactor or workflow for that ADR, as long as you plan it and validate behaviour within this loop.
+
+---
+
+## Formal view (optional, shorthand)
+
+This section gives a lightweight, implementation-neutral model of the loop
+process. It is a **shorthand for reasoning**, not a replacement for the
+natural-language rules above; if they ever appear to conflict, treat the
+earlier sections as the source of truth.
+
+- **State per ADR**  
+  For each ADR `a`, imagine a simple state triple:
+  - `B_a`: the set of remaining in-scope behavioural obligations owned by `a`
+    in this repo (tests, refactors, guardrails, documentation that describes
+    actual behaviour).
+  - `C_a`: a notion of characterisation coverage for the behaviours `a`
+    touches (for example, whether key branches and edge cases are exercised by
+    tests).
+  - `H_a`: a notion of structural or guardrail health for those behaviours
+    (for example, whether there are clear invariants, safe defaults, or
+    obvious failure modes).
+
+- **One loop = one action**  
+  A single loop iteration chooses:
+  - A target ADR `a` that is not yet fully implemented (`B_a` non-empty or
+    its work-log not terminal),
+  - A specific behaviour or facet of that ADR to work on, and
+  - A small edit plan `k`, usually dominated by one of:
+    - `k_test`: improve characterisation tests for that behaviour.
+    - `k_simplify`: simplify or de-tangle the implementation while keeping
+      behaviour the same (tests stay green).
+    - `k_guard`: add or tighten guardrails (checks, invariants, safer
+      defaults) with tests.
+
+- **Transition**  
+  Executing a slice `(a, k)` should:
+  - Remove or shrink at least one item from `B_a` (for example, by
+    implementing a backlog test, refactor, or guardrail), and
+  - Improve either `C_a` (better characterisation) or `H_a` (simpler/safer
+    behaviour), or both, and
+  - Leave tests and other ADRs no worse off (respecting the red-check rules).
+
+- **Policy intuition**  
+  The helper’s rules can be read as a policy that:
+  - Clears red checks first.
+  - Chooses ADRs whose `B_a` is non-empty and, when project guidance exists,
+    prioritises those ADRs the project treats as coordinating or high-value.
+  - For a given ADR `a`, typically:
+    - Starts with `k_test` when `C_a` is weak, to safely map behaviour.
+    - Moves to `k_simplify` / `k_guard` once `C_a` is good for a behaviour,
+      using those tests to keep refactors honest and guardrails safe.
+    - Avoids taking many `k_test`-only slices in a row for the same
+      behaviour; once characterisation is strong, further confidence gains
+      should come primarily from simplification and guardrails.
+
+Over time, repeated applications of this loop should drive each ADR’s
+behavioural state `(B_a, C_a, H_a)` toward:
+
+- `B_a` empty (no remaining in-repo obligations),
+- `C_a` strong enough that changes are low-risk to reason about, and
+- `H_a` strong enough that the system fails safely and is easy to evolve.

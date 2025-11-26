@@ -15,7 +15,7 @@ When asked to “run an ADR loop/execute iteration using this helper”, the ass
 
 1. **Select a target ADR**
    - Prefer an ADR that appears **incomplete** (for example, non-terminal or missing `Status`, an open tasks section, or an active work-log with unfinished material work).
-   - When several ADRs are incomplete, **prioritise those that are closest to completion** (for example, ones where most Salient Tasks are marked done and remaining work is narrow and well-understood) so that loops tend to drive ADRs to terminal states rather than fanning out work-in-progress across many ADRs.
+   - When several ADRs are incomplete, **prioritise those that are closest to completion** (for example, ones where most Salient Tasks are marked done and remaining work is narrow and well-understood) so that loops tend to drive ADRs to terminal states and limit concurrent work-in-progress across many ADRs. This prioritisation is about **which ADR** to work on; slice size for that ADR (small vs larger, end-to-end slices) is chosen independently in step 2 based on risk and feasibility, not to favour smallness for its own sake.
    - If the user has provided a list or ordering of ADRs, treat that as a priority queue and choose the first that still appears incomplete, but **do not** stop to ask the user which ADR to pick; the assistant is expected to make this choice.
    - If no ADR appears incomplete under these heuristics, report that no suitable ADR was found and perform no work.
 
@@ -29,6 +29,10 @@ When asked to “run an ADR loop/execute iteration using this helper”, the ass
        - Keep the work bounded to a coherent theme (for example, a specific hotspot, workflow, or end‑to‑end run) that can reasonably be completed within this loop.
        - Plan **end-to-end validation** up front: when applicable, run the real commands or workflows the ADR cares about for at least one realistic target, not just unit tests.
      - Use **small, atomic slices** when a meaningful micro-task exists that clearly de-risks a larger change (for example, adding a missing characterisation test, extracting a helper that multiple callers will use, or landing a trivial-but-risky bugfix). A single slice may still involve multiple files or commands as long as it forms one coherent unit (for example, "regenerate fixture X and promote updated artifacts" or "refactor CLI Y behind an orchestrator plus add tests").
+   - Avoid **deferral-only** slices:
+     - Do not treat “write more ADRs” or “move work into a future ADR” as a valid outcome on its own; when you touch an ADR via this helper, land at least one concrete improvement (code, tests, or a clearly behavior-describing doc change) in this repo.
+     - Successor ADRs and “future round” notes are fine, but only **alongside** behavior-level work; they should describe or coordinate work you are actually doing, not replace it.
+     - Pure documentation slices (ADR text/work-log only) are acceptable occasionally when they clarify already-implemented behaviour or reconcile ADRs with the current code/tests, but must not be used to avoid obvious, in-scope behavior changes the ADR already calls for.
    - Filter to tasks that are **material and behavior-affecting** or clearly improve maintainability/guardrails for the ADR.
    - Choose at least one feasible task to advance, **without asking the user to choose among options**, and prefer the one that tests or exercises the **riskiest assumption** (the assumption whose failure would most undermine the ADR), even if that implies a larger, end‑to‑end slice.
    - For larger slices, outline a short, concrete plan in your response (a few ordered steps) before you start editing code, then implement that plan within this loop.

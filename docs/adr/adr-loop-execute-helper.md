@@ -29,10 +29,14 @@ When asked to “run an ADR loop/execute iteration using this helper”, the ass
        - Keep the work bounded to a coherent theme (for example, a specific hotspot, workflow, or end‑to‑end run) that can reasonably be completed within this loop.
        - Plan **end-to-end validation** up front: when applicable, run the real commands or workflows the ADR cares about for at least one realistic target, not just unit tests.
      - Use **small, atomic slices** when a meaningful micro-task exists that clearly de-risks a larger change (for example, adding a missing characterisation test, extracting a helper that multiple callers will use, or landing a trivial-but-risky bugfix). A single slice may still involve multiple files or commands as long as it forms one coherent unit (for example, "regenerate fixture X and promote updated artifacts" or "refactor CLI Y behind an orchestrator plus add tests").
-   - Avoid **deferral-only** slices:
-     - Do not treat “write more ADRs” or “move work into a future ADR” as a valid outcome on its own; when you touch an ADR via this helper, land at least one concrete improvement (code, tests, or a clearly behavior-describing doc change) in this repo.
-     - Successor ADRs and “future round” notes are fine, but only **alongside** behavior-level work; they should describe or coordinate work you are actually doing, not replace it.
-     - Pure documentation slices (ADR text/work-log only) are acceptable occasionally when they clarify already-implemented behaviour or reconcile ADRs with the current code/tests, but must not be used to avoid obvious, in-scope behavior changes the ADR already calls for.
+   - Avoid **deferral-only** or **appearance-only** slices:
+     - Do not treat “write more ADRs”, “mark this as optional/future work”, or “close/reshape checkboxes” as a valid outcome on its own. When you touch an ADR via this helper, land at least one concrete improvement (code, tests, or a clearly behavior-describing doc change) in this repo that is grounded in how the system actually behaves.
+     - Successor ADRs and “future round” notes are fine, but only **alongside** behavior-level work; they should describe or coordinate work you are actually doing, not replace it, and must not be used primarily to move work out of sight.
+     - Pure documentation slices (ADR text/work-log only) are acceptable **only occasionally**, and only when they:
+       - Clarify already-implemented behaviour, or
+       - Reconcile ADRs/work-logs with the current code/tests after you have validated that behaviour in this loop.
+       They must **not** be used to avoid obvious, in-scope behavior changes the ADR already calls for, or to simply reclassify tasks as “optional” without behaviour-backed rationale.
+     - Treat checkboxes and “Salient Tasks” as **signals of real work**, not goals in themselves. If you change task status or structure, it should be because the underlying behaviour has been implemented, validated, or explicitly and justifiably de-scoped based on behavioural/impact analysis, not just to reduce apparent WIP.
    - Filter to tasks that are **material and behavior-affecting** or clearly improve maintainability/guardrails for the ADR.
    - Choose at least one feasible task to advance, **without asking the user to choose among options**, and prefer the one that tests or exercises the **riskiest assumption** (the assumption whose failure would most undermine the ADR), even if that implies a larger, end‑to‑end slice.
    - For larger slices, outline a short, concrete plan in your response (a few ordered steps) before you start editing code, then implement that plan within this loop.
@@ -45,6 +49,32 @@ When asked to “run an ADR loop/execute iteration using this helper”, the ass
      - Write or extend the appropriate successor ADR(s) to own that work explicitly, and
      - Update the current ADR and/or its work-log to point to those successor ADRs, rather than leaving vague references to "future ADRs" without concrete ids.
    - If and only if no qualifying tasks remain after a fresh pass and checks are green, you may mark the ADR complete or terminal according to the project’s lifecycle conventions.
+
+Example: bad vs good loop
+
+- **Bad loop (do not do this):**
+  - Skim ADR-XXXX, notice an unchecked task about “consider deduping library tags”.
+  - Without inspecting code/tests or exercising behaviour, edit the ADR to say
+    “Optional / future ADR” and remove the checkbox so it no longer looks incomplete.
+  - Do not touch any code, tests, or end-to-end flows.
+  - Outcome: apparent progress (fewer checkboxes), but no behavioural validation
+    and no concrete improvement. This violates the deferral-only / appearance-only rules.
+
+- **Good loop (what this helper expects):**
+  - Skim ADR-XXXX and its work-log, identify the same “dedupe library tags” task as
+    a risky but narrowly scoping behaviour.
+  - Inspect the relevant module(s) and add a small **characterisation test** that
+    captures current tag behaviour (including duplicates) and how it surfaces in a
+    CLI or generator workflow.
+  - Implement a minimal, well-scoped improvement (for example, canonicalising tags
+    in a single orchestrator or pipeline) and add tests for both branches
+    (deduped vs non-deduped / backwards-compatibility as required).
+  - Run the focused tests and, when applicable, one realistic CLI command or
+    workflow mentioned in the ADR to validate behaviour end-to-end.
+  - Update the ADR work-log (and, if needed, ADR text) to describe the concrete
+    behaviour change and what remains. If you conclude further dedupe work is
+    out-of-scope for this ADR, record that decision with behaviour-backed
+    rationale before treating remaining bullets as future ADR material.
 
 Example invocation:
 

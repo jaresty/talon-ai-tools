@@ -133,13 +133,27 @@ earlier sections as the source of truth.
   A single loop iteration chooses:
   - A target ADR `a` that is not yet fully implemented (`B_a` non-empty or
     its work-log not terminal),
-  - A specific behaviour or facet of that ADR to work on, and
+  - A specific behaviour or facet of that ADR to work on (an *area of
+    behaviour* such as a function, module, command path, or small cluster of
+    related helpers where behaviour is observable), and
   - A small edit plan `k`, usually dominated by one of:
-    - `k_test`: improve characterisation tests for that behaviour.
+    - `k_test`: improve characterisation tests for that area of behaviour
+      when key branches and error paths are not yet clearly exercised.
     - `k_simplify`: simplify or de-tangle the implementation while keeping
       behaviour the same (tests stay green).
     - `k_guard`: add or tighten guardrails (checks, invariants, safer
       defaults) with tests.
+
+  For a given area of behaviour:
+  - Prefer at most one or two `k_test`-dominant slices in a row. Once
+    characterisation is strong (branches and error paths are clearly covered
+    by tests and work-logs describe behaviour in that area as
+    "well-characterised" or equivalent), bias strongly toward `k_simplify`
+    or `k_guard` for subsequent slices.
+  - It is acceptable, and often desirable, for a `k_simplify` or `k_guard`
+    slice to make only implementation and/or documentation changes without
+    adding new tests, provided existing relevant tests remain green and still
+    cover the branches involved.
 
 - **Transition**  
   Executing a slice `(a, k)` should:
@@ -155,12 +169,32 @@ earlier sections as the source of truth.
   - Chooses ADRs whose `B_a` is non-empty and, when project guidance exists,
     prioritises those ADRs the project treats as coordinating or high-value.
   - For a given ADR `a`, typically:
-    - Starts with `k_test` when `C_a` is weak, to safely map behaviour.
-    - Moves to `k_simplify` / `k_guard` once `C_a` is good for a behaviour,
-      using those tests to keep refactors honest and guardrails safe.
-    - Avoids taking many `k_test`-only slices in a row for the same
+    - Starts with `k_test` when `C_a` is weak for the chosen area of
+      behaviour, to safely map behaviour and exercise its main
+      true/false/error/early-return branches.
+    - Moves to `k_simplify` / `k_guard` once `C_a` is good for that area of
+      behaviour, using those tests to keep refactors honest and guardrails
+      safe.
+    - Avoids taking many `k_test`-only slices in a row for the same area of
       behaviour; once characterisation is strong, further confidence gains
-      should come primarily from simplification and guardrails.
+      should come primarily from simplification and guardrails instead of
+      additional near-duplicate tests.
+
+- **Coverage vs over-testing**  
+  The goal for tests in this loop is **complete, meaningful coverage** for
+  each area of behaviour we touch: every observable branch
+  (true/false/exception/early-return) should be exercised by at least one
+  test at an appropriate level.
+
+  When deciding whether to add a new test in a slice:
+  - Prefer adding tests that either:
+    - cover a previously untested branch or error path, or
+    - capture a genuinely new case or invariant that is not already clear
+      from existing tests.
+  - Avoid over-testing by **not** adding tests that only restate the same
+    behaviour for the same area, at the same level, without improving
+    clarity or branch coverage. In those cases, prefer `k_simplify` or
+    `k_guard` work that relies on the existing tests.
 
 Over time, repeated applications of this loop should drive each ADR’s
 behavioural state `(B_a, C_a, H_a)` toward:

@@ -246,6 +246,7 @@ Concretely, for each proposed change:
 - Behavior‑changing refactors must not proceed without **adequate** characterization tests for the behavior being changed; when existing tests already cover the relevant branches and contracts, **no additional pre‑refactor characterization tests are required**, and the existing tests should be **reused and, if needed, extended**.
 - When existing tests already provide good behavioral and branch coverage for the paths being changed, prefer **reusing and extending** those tests over adding near‑duplicate ones; do not add new tests “just because” if they do not meaningfully improve confidence.
    - Tests should favor **behavioral/contract‑level assertions** over internal implementation details, and the suite should stay reasonably fast and focused (avoid over‑testing the same behavior in many redundant places).
+   - Avoid adding tests that only assert the presence of **static text** (for example, ADR headings, boilerplate README sections, or other incidental documentation wording) unless that text itself expresses a behaviour‑level contract that code and tests depend on. Prefer tests that exercise behaviour and contracts rather than fragile checks on exact phrasing.
 
 Include in the ADR a dedicated section titled **“Tests‑First Refactor Plan”** that captures this mapping.
 

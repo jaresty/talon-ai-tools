@@ -17,7 +17,8 @@ When asked to “run an ADR loop/execute iteration using this helper”, the ass
 1. **Select a target ADR**
    - Prefer an ADR that appears **incomplete** (for example, non-terminal or missing `Status`, an open tasks section, or an active work-log with unfinished material work).
    - When several ADRs are incomplete, **prioritise those that are closest to completion** (for example, ones where most Salient Tasks are marked done and remaining work is narrow and well-understood) so that loops tend to drive ADRs to terminal states and limit concurrent work-in-progress across many ADRs. This prioritisation is about **which ADR** to work on; slice size for that ADR (small vs larger, end-to-end slices) is chosen independently in step 2 based on risk and feasibility, not to favour smallness for its own sake.
-   - Treat `Status` (`Proposed`, `Accepted`, `In Progress`, etc.), task checkboxes, and work-log notes as **signals**, not optimisation targets. Do not cherry-pick the easiest or least risky ADRs (for example, ADRs in low-risk or purely documentation-only areas, or ones that appear to need only a trivial wording tweak) purely to minimise effort. Prefer ADRs where a small, well-scoped slice will **exercise or validate a meaningful behavioural assumption**, even if that slice is slightly more involved.
+  - Treat `Status` (`Proposed`, `Accepted`, `In Progress`, etc.), task checkboxes, and work-log notes as **signals**, not optimisation targets. Do not cherry-pick the easiest or least risky ADRs (for example, ADRs in low-risk or purely documentation-only areas, or ones that appear to need only a trivial wording tweak) purely to minimise effort. Prefer ADRs where a small, well-scoped slice will **exercise or validate a meaningful behavioural assumption**, even if that slice is slightly more involved.
+  - Changes that affect only ADR metadata (for example, `Status`, `Owners`, dates) or purely cosmetic formatting should **not** be treated as satisfying an ADR loop slice on their own. They may be made opportunistically when touching an ADR, but the loop’s primary outcome must be a concrete behavioural/structural change or a meaningful characterisation/guardrail improvement.
    - If project-wide guidance (for example, AGENTS instructions, coordinating ADRs, or lifecycle notes) designates certain ADRs as "priority" or "coordinating" homes for ongoing work, treat those ADRs as **first-class candidates** when they appear incomplete, even when the user does not mention their ids explicitly. Their size or importance is not, by itself, a valid reason to avoid them; instead, choose a realistically small slice within them for this loop.
    - An ADR marked `Status: Accepted` may still be a good candidate when its implementation plan or work-log shows open, in-scope behaviour or test work (for example, an unchecked "Step 5" or an unfinished "Implementation Plan"). In those cases, treat the open tasks as the source of truth for incompleteness rather than assuming "Accepted" means fully implemented.
    - When an ADR’s backlog is large or daunting, remember that this helper only asks you to advance that ADR by **one concrete slice per loop**. The overall size of the backlog is not, by itself, a valid reason to avoid an otherwise high-value ADR; instead, choose a small, realistic slice within it.
@@ -223,6 +224,12 @@ earlier sections as the source of truth.
     clarity or branch coverage. The loop should not increase test count when
     that would only duplicate existing coverage. In those cases, prefer
     behaviour-level work that relies on the existing tests.
+  - Avoid **purely textual/docs-only tests** that assert only the presence of
+    ADR headings, metadata (for example, `Status`, `Owners`), or incidental
+    wording, unless that text itself expresses a behaviour-level contract
+    that code and tests depend on. Docs guardrails should focus on contracts
+    (for example, Tests-First principles, specific helper names, or
+    Concordance invariants), not on boilerplate.
 
 Over time, repeated applications of this loop should drive each ADR’s
 behavioural state `(B_a, C_a, H_a)` toward:

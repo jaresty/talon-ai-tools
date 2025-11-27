@@ -37,12 +37,13 @@ When asked to “run an ADR loop/execute iteration using this helper”, the ass
    - **Work-log location and convention:** for each ADR, prefer a dedicated work-log file alongside the primary ADR document, following a convention such as `<ADR-NUMBER>-<slug>.work-log.md` (for example, `0118-example-adr.work-log.md`). If no such file exists yet for the chosen ADR, create one on first use and record slices there rather than appending large change histories directly to the primary ADR document.
    - Enumerate remaining work and break it down into **behavior-focused tasks** that you can realize via concrete edits (code, tests, or docs), and the **validation flows** that demonstrate those behaviours end‑to‑end.
      - Prioritise tasks that **clarify or test the riskiest assumptions first** (for example, assumptions about end‑to‑end workflows, critical invariants, or cross‑component contracts such as API interactions or persistence semantics). Size is secondary to risk: choose slices that give the most information about whether the ADR’s core bets actually hold.
-     - Remember that there are three primary ways to increase confidence under an ADR:
+     - Remember that the **primary goal** of the loop is to advance the ADR’s in‑scope behavioural obligations (`B_a`) in this repo while keeping structural/guardrail health (`H_a`) and tests (`C_a`) strong enough that those changes are safe and easy to evolve.
+       - **Implement or extend behaviour** the ADR describes (for example, adding a new capability, tightening an invariant, or wiring a new workflow), with tests that capture the intended contracts.
        - **Simplify or de-tangle existing code** (small, well-motivated refactors that reduce complexity and make behaviour easier to reason about, while keeping tests green).
        - **Add or tighten guardrails** (for example, new checks, invariants, validation paths, or safer defaults that prevent bad states, again covered by tests).
-       - **Improve characterisation tests** (for example, filling in missing branches or edge cases for behaviour the ADR already owns).
-       A healthy sequence of slices for a hotspot usually involves starting with characterisation tests, then using those tests to support simplification and guardrail changes, rather than adding tests indefinitely without ever simplifying or tightening behaviour.
-       When a hotspot already has explicit, well-targeted characterisation tests for its key branches and edge cases, prefer simplification or guardrail work over additional tests unless you can point to a specific uncovered behaviour or regression risk.
+       - **Improve characterisation tests** when needed (for example, filling in missing branches or edge cases for behaviour the ADR already owns so that new features, simplifications, or guardrail changes are safely covered).
+       A healthy sequence of slices for an area of behaviour usually involves starting with just enough characterisation tests to understand and protect it, then using those tests to support implementing or evolving behaviour (including simplification and guardrail changes), rather than adding tests indefinitely without ever changing behaviour.
+       When an area already has explicit, well-targeted characterisation tests for its key branches and edge cases, prefer behaviour changes (including simplification or guardrail work) over additional tests unless you can point to a specific uncovered behaviour or regression risk.
      - **Larger, well-scoped slices (including refactors or end-to-end workflows) are explicitly allowed and often preferred early** when they best exercise a high-risk or poorly understood assumption, as long as they can reasonably be completed within a single loop. When taking a larger slice:
        - Outline a short, concrete plan before editing code.
        - Keep the work bounded to a coherent theme (for example, a specific hotspot, workflow, or end‑to‑end run) that can reasonably be completed within this loop.
@@ -171,9 +172,14 @@ earlier sections as the source of truth.
   - Chooses ADRs whose `B_a` is non-empty and, when project guidance exists,
     prioritises those ADRs the project treats as coordinating or high-value.
   - For a given ADR `a`, typically:
+    - Aims to reduce `B_a` (outstanding behavioural obligations) by
+      implementing or evolving behaviour in line with the ADR, while keeping
+      `H_a` (structural/guardrail health) and `C_a` (tests) strong enough
+      that those changes are safe and easy to evolve.
     - Starts with `k_test` when `C_a` is weak for the chosen area of
       behaviour, to safely map behaviour and exercise its main
-      true/false/error/early-return branches.
+      true/false/error/early-return branches so that future simplification
+      or guardrail changes are protected.
     - Moves to `k_simplify` / `k_guard` once `C_a` is good for that area of
       behaviour, using those tests to keep refactors honest and guardrails
       safe.

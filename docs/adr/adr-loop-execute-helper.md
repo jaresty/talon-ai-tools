@@ -201,8 +201,9 @@ earlier sections as the source of truth.
       from existing tests.
   - Avoid over-testing by **not** adding tests that only restate the same
     behaviour for the same area, at the same level, without improving
-    clarity or branch coverage. In those cases, prefer `k_simplify` or
-    `k_guard` work that relies on the existing tests.
+    clarity or branch coverage. The loop should not increase test count when
+    that would only duplicate existing coverage. In those cases, prefer
+    `k_simplify` or `k_guard` work that relies on the existing tests.
 
 Over time, repeated applications of this loop should drive each ADR’s
 behavioural state `(B_a, C_a, H_a)` toward:

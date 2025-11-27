@@ -143,6 +143,8 @@ Apply the Concordance framing to the hotspot clusters using this description:
 
 Throughout this analysis, treat **Concordance scores and health snapshot signals as first‑class outcomes of the work**: your recommendations should aim to **reduce sustained Concordance scores for the in‑scope hotspots over time** by fixing underlying structural, test, and UX issues, not by weakening guardrails, narrowing coverage, or otherwise gaming the scoring pipeline.
 
+Concretely, look for changes that **increase visibility** (make coordination links and contracts more obvious), **narrow scope** (reduce the blast radius when hotspots change), and **reduce volatility** (stabilise or better absorb frequent changes) so that Concordance scores fall because the system is genuinely easier and safer to coordinate.
+
 For each hotspot cluster:
 
 1. Analyze **visibility**:
@@ -217,6 +219,8 @@ Record, for each recommendation, in the ADR draft:
 
 The goal of this step is to ensure **adequate, branch‑focused test coverage for the behaviour you are about to change**, **not** to impose a blanket requirement to add new characterization tests when good tests already exist.
 
+Put differently: this helper uses "characterize" in the sense of **"make sure the behaviour is well covered by tests"**, which may mean **relying entirely on existing tests** when they already exercise the relevant branches, or **adding new characterization tests only where those existing tests are insufficient**.
+
 In other words:
 
 - You **must** have adequate tests for the behaviour you are changing.
@@ -239,8 +243,8 @@ Concretely, for each proposed change:
      - The tests (existing or new) that characterize current behavior.
      - The tests that should confirm the new behavior or structure post‑refactor.
 4. Make explicit that:
-   - Behavior‑changing refactors must not proceed without **adequate** characterization tests for the behavior being changed; when existing tests already cover the relevant branches and contracts, **no additional pre‑refactor characterization tests are required**, and the existing tests should be **reused and, if needed, extended**.
-   - When existing tests already provide good behavioral and branch coverage for the paths being changed, prefer **reusing and extending** those tests over adding near‑duplicate ones; do not add new tests “just because” if they do not meaningfully improve confidence.
+- Behavior‑changing refactors must not proceed without **adequate** characterization tests for the behavior being changed; when existing tests already cover the relevant branches and contracts, **no additional pre‑refactor characterization tests are required**, and the existing tests should be **reused and, if needed, extended**.
+- When existing tests already provide good behavioral and branch coverage for the paths being changed, prefer **reusing and extending** those tests over adding near‑duplicate ones; do not add new tests “just because” if they do not meaningfully improve confidence.
    - Tests should favor **behavioral/contract‑level assertions** over internal implementation details, and the suite should stay reasonably fast and focused (avoid over‑testing the same behavior in many redundant places).
 
 Include in the ADR a dedicated section titled **“Tests‑First Refactor Plan”** that captures this mapping.
@@ -264,6 +268,7 @@ Using the outputs from steps 1–6, the assistant must now **create a new ADR fi
 4. **Decision**
    - Core decisions about domain boundaries, orchestrators/facades, and alignment with existing patterns.
    - A short statement making clear that, for the in‑scope hotspots, the intended long‑term effect of these decisions is to **reduce Concordance scores** by improving structure, tests, and guardrails rather than by relaxing scoring or hiding signals.
+   - Where relevant, an explicit note that the chosen refactors aim to **increase visibility**, **narrow scope**, and **reduce volatility** for those hotspots so that coordination becomes easier and safer over time.
 5. **Tests‑First Principle**
    - An explicit section restating the tests‑first characterization principle in bold or a blockquote, including the expectation of branch‑level coverage for new/changed logic where practical.
 6. **Refactor Plan**

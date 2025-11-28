@@ -88,7 +88,8 @@ When asked to “run an ADR loop/execute iteration using this helper”, the ass
    - When you conclude that the remaining meaningful work for an ADR should be **deferred to future ADRs** (for example, because it represents a larger, multi-step lifecycle project), you must:
      - Write or extend the appropriate successor ADR(s) to own that work explicitly, and
      - Update the current ADR and/or its work-log to point to those successor ADRs, rather than leaving vague references to "future ADRs" without concrete ids.
-   - If and only if no qualifying tasks remain after a fresh pass and checks are green, you may mark the ADR complete or terminal according to the project’s lifecycle conventions.
+   - Before reconciling the ADR’s status (for example, marking it complete/terminal or otherwise concluding that its in-repo work is done), run the project’s **full** standard checks for this repo (typically `npm run lint`, `npm run typecheck`, and `npm test`, or their current equivalents) within this loop and treat any failures as "known red checks" under step 0 that must be fixed or explicitly triaged before you change status.
+   - If and only if no qualifying tasks remain after a fresh pass and these checks are green, you may mark the ADR complete or terminal according to the project’s lifecycle conventions.
 
 Example: bad vs good loop
 

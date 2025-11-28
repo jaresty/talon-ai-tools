@@ -235,6 +235,7 @@ earlier sections as the source of truth.
     are capturing a genuinely new case or invariant that is not already
     clear from existing tests).
   - A slice that makes a **real behaviour change** (for example, tightening a helper’s input contract or adjusting a workflow) and adds or updates tests in the same area to cover that change **counts as a behaviour-focused slice**, not a "tests-only" slice.
+  - Do **not** introduce new test-only hooks in production modules (for example, `__test__*` exports, test-only flags, or branches with no production callers) just to make a test easier to write. When you need a seam for testing, prefer extracting or reusing a real helper/facade/orchestrator that production code also uses, and test through that seam or through natural entrypoints.
   - Avoid over-testing by **not** adding tests that only restate the same
     behaviour for the same area, at the same level, without improving
     clarity or branch coverage. The loop should not increase test count when

@@ -184,6 +184,14 @@ earlier sections as the source of truth.
     simplification or guardrails to make only implementation and/or
     documentation changes without adding new tests, provided existing
     relevant tests remain green and still cover the branches involved.
+  - Occasionally, when an ADR is not itself primarily about testing but you
+    genuinely cannot find any safe, in-scope behaviour change for this loop
+    and there is a clearly missing characterisation test for an important,
+    realistic branch, a **tests-only** slice that adds just that missing
+    test is acceptable. Treat this as an exception, not the norm: once the
+    key branches for that area are well covered, prefer behaviour-level work
+    (simplification, guardrails, or new capabilities) in subsequent loops
+    rather than adding more tests for the same paths.
 
 - **Transition**  
   Executing a slice `(a, k)` should:
@@ -233,7 +241,11 @@ earlier sections as the source of truth.
   - Only add new characterisation tests when that coverage is clearly
     insufficient for the intended refactor or guardrail change (or when you
     are capturing a genuinely new case or invariant that is not already
-    clear from existing tests).
+    clear from existing tests). Do not "hunt" for ever-smaller or highly
+    contrived branches when existing tests already give strong evidence for
+    realistic flows and error modes; favour tests that represent plausible
+    scenarios over ones that require distorting production behaviour or
+    environments just to toggle a line-level branch.
   - A slice that makes a **real behaviour change** (for example, tightening a helper’s input contract or adjusting a workflow) and adds or updates tests in the same area to cover that change **counts as a behaviour-focused slice**, not a "tests-only" slice.
   - Do **not** introduce new test-only hooks in production modules (for example, `__test__*` exports, test-only flags, or branches with no production callers) just to make a test easier to write. When you need a seam for testing, prefer extracting or reusing a real helper/facade/orchestrator that production code also uses, and test through that seam or through natural entrypoints.
   - Avoid over-testing by **not** adding tests that only restate the same

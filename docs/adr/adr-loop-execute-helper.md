@@ -125,11 +125,11 @@ You can think about each ADR `a` in terms of a simple state:
 - `B_a`: remaining in‑scope objectives or tasks in this repo
   (behaviour, refactors, guardrails, tests, docs, or other concrete work the
   ADR calls for).
-- `C_a`: how well the behaviours `a` touches are characterised by tests.
-- `H_a`: the structural/guardrail health around those behaviours.
+- `C_a`: how well the areas `a` touches are supported by evidence
+  (for example, tests, checks, or other validation that make changes safer).
 
 Each loop chooses one ADR and one slice, then:
 
 - Reduces `B_a` by completing or shrinking at least one ADR‑defined task.
-- Keeps or improves `C_a` and `H_a` enough that future changes in this area
-  remain safe and easy to reason about.
+- Keeps or improves `C_a` enough that future changes in this area remain
+  safe and easy to reason about.

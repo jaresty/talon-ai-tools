@@ -12,10 +12,16 @@ The caller may either:
 - Ask the assistant to choose an appropriate ADR autonomously.
 
 When using this helper:
-- Keep reasoning and status updates **concise and high‑signal**. Summarise
-  plans and progress rather than narrating every micro‑step.
+- Keep reasoning and status updates **concise and high‑signal**.
+  - Summarise the plan, what you changed, and what remains.
+  - Avoid narrating each inspection step (for example, which file you are
+    about to open or which search you will run) unless it affects a
+    decision.
 - Focus on external artefacts (code, tests, docs, work‑logs, ADR metadata),
-  not on describing your own thought process in detail.
+  not on describing your internal thought process in detail.
+- Once you have chosen a slice for this loop, **commit to it** unless you
+  hit a hard blocker. Do not keep shopping for alternative slices or
+  repeatedly re‑stating high‑level options.
 
 ---
 

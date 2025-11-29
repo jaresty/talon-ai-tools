@@ -73,13 +73,32 @@ For the chosen ADR and focus area:
   - Adding or improving tests or documentation when the ADR explicitly calls
     for them, or when they are clearly needed to make the planned change
     safe.
+  - Reconciling the ADR's stated tasks and scope
+    with its current work-log and repo state
+    (for example, marking tasks as out-of-scope
+    for this repo, splitting overly broad tasks,
+    or adding a concise "Current status" summary).
 - Do **not** assume every slice must combine behaviour and tests. Choose
-  the slice that best advances the ADR’s objectives; use tests and other
+  the slice that best advances the ADR's objectives; use tests and other
   checks as strategies to make those changes safe.
 - Keep the slice small enough that you can, within this single loop:
   - Implement the change,
   - Run at least the most relevant checks/tests, and
-  - Update the work‑log.
+  - Update the work-log.
+
+- Periodically (for example, every few loops for
+  the same ADR), choose a slice that is primarily
+  a **status snapshot**:
+  - Scan the ADR's own task lists (for example,
+    "Salient Tasks") and its work-log entries.
+  - For this repo, mark which tasks are:
+    - Completed or clearly characterised.
+    - Still in-repo and incomplete.
+    - Explicitly out-of-repo or deferred.
+  - Add a short "Current status" or "Refactor plan
+    and current status" subsection to the ADR or
+    work-log so a future loop can see progress at
+    a glance.
 
 ---
 
@@ -108,19 +127,31 @@ Execute the slice end‑to‑end:
 
 The loop is complete once you have landed a coherent slice that:
 
-- Advances at least one ADR‑defined objective or task in this repo.
+- Advances at least one ADR-defined objective or task in this repo.
 - Leaves tests and guardrails at least as strong as before (and stronger
   when that was part of the slice).
-- Records what changed and what remains in the ADR’s work‑log so that the
+- Records what changed and what remains in the ADR's work-log so that the
   next loop can pick up from a clear state.
 
 Periodically, when `B_a` for an ADR is nearly or fully exhausted in this
-repo, reconcile the ADR’s own metadata (for example, `Status` and any
-remaining task lists) with the work‑log. Before making a **major status
-change** (for example, marking an ADR as effectively complete for this
-repo), first run the project’s usual gating checks (tests, lint, type‑check)
-that cover the affected areas so the status update accurately reflects a
-green, stable state.
+repo, or when several loops have landed for the
+same ADR, run a dedicated **status reconciliation**
+loop:
+
+- Use the ADR's own task lists and work-log to
+  summarise what is:
+  - Completed in this repo.
+  - Still in-repo and planned.
+  - Out-of-repo or intentionally deferred.
+- Update the ADR's metadata (for example,
+  `Status` and any remaining task lists) and/or
+  work-log with a short "Current status" summary.
+- Before making a major status change (for
+  example, marking an ADR as effectively complete
+  for this repo), run the project's usual gating
+  checks (tests, lint, type-check) that cover the
+  affected areas so the updated status reflects a
+  green, stable state.
 
 ---
 

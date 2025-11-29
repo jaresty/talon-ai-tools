@@ -11,6 +11,12 @@ The caller may either:
 - Specify the target ADR explicitly (for example, by id), or
 - Ask the assistant to choose an appropriate ADR autonomously.
 
+When using this helper:
+- Keep reasoning and status updates **concise and high‑signal**. Summarise
+  plans and progress rather than narrating every micro‑step.
+- Focus on external artefacts (code, tests, docs, work‑logs, ADR metadata),
+  not on describing your own thought process in detail.
+
 ---
 
 ## 0. Clear relevant red checks
@@ -61,6 +67,9 @@ For the chosen ADR and focus area:
   - Adding or improving tests or documentation when the ADR explicitly calls
     for them, or when they are clearly needed to make the planned change
     safe.
+- Do **not** assume every slice must combine behaviour and tests. Choose
+  the slice that best advances the ADR’s objectives; use tests and other
+  checks as strategies to make those changes safe.
 - Keep the slice small enough that you can, within this single loop:
   - Implement the change,
   - Run at least the most relevant checks/tests, and

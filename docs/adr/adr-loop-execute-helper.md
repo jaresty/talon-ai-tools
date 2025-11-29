@@ -1,268 +1,126 @@
 # ADR Loop / Execute Helper Prompt
 
-This file is a small, generic utility prompt for running **loop + execute** iterations over ADRs. It is **not** an ADR itself and is not tied to any specific ADR number.
+This helper describes a simple, repeatable loop for making progress on ADRs.
+It is **not** an ADR itself and is intentionally ADR‑agnostic.
 
-When asked to “run an ADR loop/execute iteration using this helper”, the assistant should **decide autonomously** which ADR and slice to target, without asking the user to choose, and should bias toward slices that exercise the riskiest assumptions early — including end‑to‑end flows that validate real behaviour at entrypoints (for example, CLIs or public APIs), not just local refactors.
+When asked to “run an ADR loop/execute iteration using this helper”, follow
+the steps below to deliver one small, concrete slice of work that advances an
+ADR’s own objectives in this repo.
 
-0. **Clear known red checks first (hard requirement)**
-   - If there are any **known failing tests, lint errors, or type-check failures** in the current codebase that the assistant is already aware of from this session (for example, a red `npm test`, `npm run lint`, or `npm run typecheck` that has not yet been addressed), the *first and only* task for this loop **until resolved** must be to fix or explicitly triage those failures.
-   - Fixes **must respect test intent**:
-     - If a test is failing because requirements have genuinely changed, it is acceptable to update or, in rare cases, remove the test — but only after making the new requirement explicit in the relevant ADR/work-log and ensuring the updated/removed test still reflects a clear, reviewed contract.
-     - If the implementation is broken relative to the documented behaviour or test expectations, the implementation must be fixed; do **not** weaken or delete the test just to make the suite green.
-   - We **never intentionally leave red tests** in this codebase. Any failure encountered during a loop must be brought back to green (via correct implementation or contract update) before moving on.
-   - Treat fixing these red checks as an ADR-aligned slice when they are clearly tied to an existing ADR (for example, test guardrails or invariants introduced by a lifecycle ADR or an ADR that governs a particular entrypoint or workflow); otherwise, treat them as preconditions that must be cleared before selecting a new ADR task.
-   - The assistant **must not** select a new ADR or start fresh ADR work in this loop while aware of unresolved red tests/lint/type checks. Only once the relevant checks are green again (or a failure is explicitly and temporarily acknowledged/parked in an ADR work-log with rationale as a short-lived regression to be fixed immediately in the next loop) may the assistant proceed to step 1 and pick up a new ADR task below.
-   - If there has been no recent test/lint/typecheck run that meaningfully covers the code you intend to change, strongly prefer running at least the most relevant focused checks (for example, a single test file or targeted command) in this loop. Future iterations should treat any failures from those runs as "known red checks" under this step until they are addressed or explicitly triaged.
-
-1. **Select a target ADR**
-   - Prefer an ADR that appears **incomplete** (for example, non-terminal or missing `Status`, an open tasks section, or an active work-log with unfinished material work).
-   - When several ADRs are incomplete, **prioritise those that are closest to completion** (for example, ones where most Salient Tasks are marked done and remaining work is narrow and well-understood) so that loops tend to drive ADRs to terminal states and limit concurrent work-in-progress across many ADRs. This prioritisation is about **which ADR** to work on; slice size for that ADR (small vs larger, end-to-end slices) is chosen independently in step 2 based on risk and feasibility, not to favour smallness for its own sake.
-  - Treat `Status` (`Proposed`, `Accepted`, `In Progress`, etc.), task checkboxes, and work-log notes as **signals**, not optimisation targets. Do not cherry-pick the easiest or least risky ADRs (for example, ADRs in low-risk or purely documentation-only areas, or ones that appear to need only a trivial wording tweak) purely to minimise effort. Prefer ADRs where a small, well-scoped slice will **exercise or validate a meaningful behavioural assumption**, even if that slice is slightly more involved.
-  - Changes that affect only ADR metadata (for example, `Status`, `Owners`, dates) or purely cosmetic formatting should **not** be treated as satisfying an ADR loop slice on their own. They may be made opportunistically when touching an ADR, but the loop’s primary outcome must be a concrete behavioural/structural change or a meaningful characterisation/guardrail improvement.
-   - If project-wide guidance (for example, AGENTS instructions, coordinating ADRs, or lifecycle notes) designates certain ADRs as "priority" or "coordinating" homes for ongoing work, treat those ADRs as **first-class candidates** when they appear incomplete, even when the user does not mention their ids explicitly. Their size or importance is not, by itself, a valid reason to avoid them; instead, choose a realistically small slice within them for this loop.
-   - An ADR marked `Status: Accepted` may still be a good candidate when its implementation plan or work-log shows open, in-scope behaviour or test work (for example, an unchecked "Step 5" or an unfinished "Implementation Plan"). In those cases, treat the open tasks as the source of truth for incompleteness rather than assuming "Accepted" means fully implemented.
-   - When an ADR’s backlog is large or daunting, remember that this helper only asks you to advance that ADR by **one concrete slice per loop**. The overall size of the backlog is not, by itself, a valid reason to avoid an otherwise high-value ADR; instead, choose a small, realistic slice within it.
-   - When you have several candidate ADRs, **prefer those whose remaining work is clearly behavioural or test-related** over ones whose only obvious work is repo housekeeping (for example, moving scratch files, minor cosmetic doc edits, or renaming folders) unless the ADR explicitly treats that housekeeping as part of a governed surface. Housekeeping-only ADRs are better handled opportunistically, not as primary loop targets when richer behaviour work is available.
-   - Use simple, robust discovery commands (for example, searching for `Status:` or unfinished tasks) to shortlist candidates, but **do not over-optimise ADR selection** or spend a whole loop hunting for the "perfect" ADR. After a brief scan, pick a reasonable candidate whose remaining work is behaviourally meaningful and commit to advancing it in this loop.
-   - It is acceptable to discover, after inspection, that a candidate ADR is effectively complete for this repo. In that case, note this briefly in its work-log and treat it as complete; do **not** stretch the loop by inventing a trivial doc-only change just to "do something" for that ADR. For the next loop, choose a different ADR with genuine behavioural or testing work remaining.
-
-3. **Periodically normalise ADR Status and Salient Tasks**
-   - When an ADR’s work-log and code/tests clearly show that one or more Salient Tasks (or phases) are effectively satisfied **in this repository** (behaviour implemented, tests in place, and any supporting tooling/docs updated), it is appropriate to dedicate a loop to bringing the ADR’s visible status back in sync with reality.
-     - Update the ADR’s `Status` field if appropriate (for example, `Proposed` → `In Progress` → `Accepted`) based on the maturity of the behaviour and remaining work.
-     - Flip the relevant Salient Task checkbox(es) from `[ ]` to `[x]` and, where helpful, add a short inline note pointing to key helpers/tests or to specific work-log bullets.
-   - Treat this normalisation as a valid ADR loop **only when** it is grounded in already-landed behaviour+tests for that ADR; do not count purely cosmetic metadata edits (for example, rewording only) as a loop outcome on their own.
-  - Prefer batching these status/checkbox updates into an occasional "status normalisation" loop when several tasks or phases are clearly done, rather than toggling boxes for every micro-slice. The goal is to keep each ADR’s top-level view (`Status`, Salient Tasks) accurate and low-churn while the work-log captures the detailed slice history.
-  - When the user explicitly names one or more ADR ids (for example, "work on ADR-0107" or "run a loop for ADR-0126's Salient Tasks"), treat those ADRs as **primary candidates** for selection in this loop. You may still apply the usual heuristics (for example, clearing red checks first or preferring the closest-to-complete ADR among several user-named options), but you must not avoid a user-named ADR solely because it has a large or demanding backlog.
-   - It is normal, and often desirable, to run several consecutive loops for the **same ADR and hotspot cluster** when meaningful work remains; do not switch ADRs or clusters just for variety if the current one still has high-value, in-scope behaviour to implement or validate.
-   - Never **fabricate incompleteness** just to satisfy this helper. Do not downgrade an ADR's lifecycle state (for example, changing `Status: Accepted` back to `In Progress` or `Proposed`), and do not add new unchecked tasks, solely to create work for a loop. Status and task lists must reflect the actual design and implementation lifecycle, not the needs of the current loop.
-   - If the user has provided a list or ordering of ADRs, treat that as a priority queue and choose the first that still appears incomplete, but **do not** stop to ask the user which ADR to pick; the assistant is expected to make this choice within those constraints.
-   - If no ADR appears incomplete under these heuristics, report that no suitable ADR was found and perform no work.
-
-2. **Run one loop / execute iteration for that ADR**
-   - **Open or create the ADR work-log:**
-     - Derive the expected work-log **file** name from the ADR file (for example, `docs/adr/0118-example-adr.md` → `docs/adr/0118-example-adr.work-log.md`). This work-log is a **separate markdown file**, not a section embedded inside the main ADR.
-     - If the work-log file already exists, read it alongside the ADR.
-     - If no such file exists yet for the chosen ADR, the assistant **must create one on first use** with at least a top-level heading (for example, `# ADR-0118 – Example ADR Work-Log`) and an initial dated entry for this loop, and then record slices there rather than appending large change histories directly to the primary ADR document.
-   - Re-read the ADR and its work-log to understand its scope, intent, and current state.
-   - Skim the ADR’s Salient Tasks, implementation plan, and work-log for behaviours that are described as risky, drift-prone, coordination-heavy, or otherwise important (for example, key workflows, orchestrators, or cross-surface joins). Prefer to choose your area of behaviour for this loop from that list rather than from arbitrary helpers.
-   - If the ADR references other ADRs (for example, treating them as "exhaust backlogs", successors, or prerequisites), pick **one primary ADR** for this loop and anchor your slice there. It is fine to consult related ADRs for context, but avoid bouncing work across multiple ADRs in a single loop.
-   - When an ADR talks about how agents, tools, or workflows should **select or prioritise tasks** (for example, policies about exhausting Salient Tasks or interpreting user references), implement that behaviour in the concrete systems that enforce it (code, configuration, or tests), not only in high-level instructions. Purely updating global instructions or helper prompts without wiring them into actual behaviour or guardrails is usually a deferral-style slice unless the behaviour is already implemented and you are just bringing docs into alignment.
-   - **Work-log location and convention:** for each ADR, use a **separate, dedicated work-log file** alongside the primary ADR document, following a convention such as `<ADR-NUMBER>-<slug>.work-log.md` (for example, `0118-example-adr.work-log.md`). Do **not** create long-running "work log" sections inside the main ADR; keep the ADR focused on stable decisions and store slice-by-slice history only in the work-log file.
-   - Enumerate remaining work and break it down into **behavior-focused tasks** that you can realize via concrete edits (code, tests, or docs), and the **validation flows** that demonstrate those behaviours end‑to‑end.
-     - Prioritise tasks that **clarify or test the riskiest assumptions first** (for example, assumptions about end‑to‑end workflows, critical invariants, or cross‑component contracts such as API interactions or persistence semantics). Size is secondary to risk: choose slices that give the most information about whether the ADR’s core bets actually hold.
-     - Remember that the **primary goal** of the loop is to advance the ADR’s in‑scope behavioural obligations (`B_a`) in this repo while keeping structural/guardrail health (`H_a`) and tests (`C_a`) strong enough that those changes are safe and easy to evolve.
-       - **Implement or extend behaviour** the ADR describes (for example, adding a new capability, tightening an invariant, or wiring a new workflow), with tests that capture the intended contracts.
-       - **Simplify or de-tangle existing code** (small, well-motivated refactors that reduce complexity and make behaviour easier to reason about, while keeping tests green).
-       - **Add or tighten guardrails** (for example, new checks, invariants, validation paths, or safer defaults that prevent bad states, again covered by tests).
-       - **Improve characterisation tests** when needed (for example, filling in missing branches or edge cases for behaviour the ADR already owns so that new features, simplifications, or guardrail changes are safely covered).
-       A healthy sequence of slices for an area of behaviour usually involves starting with just enough characterisation tests to understand and protect it, then using those tests to support implementing or evolving behaviour (including simplification and guardrail changes), rather than adding tests indefinitely without ever changing behaviour.
-       When an area already has explicit, well-targeted characterisation tests for its key branches and edge cases, prefer behaviour changes (including simplification or guardrail work) over additional tests unless you can point to a specific uncovered behaviour or regression risk.
-     - **Larger, well-scoped slices (including refactors or end-to-end workflows) are explicitly allowed and often preferred early** when they best exercise a high-risk or poorly understood assumption, as long as they can reasonably be completed within a single loop. When taking a larger slice:
-       - Outline a short, concrete plan before editing code.
-       - Keep the work bounded to a coherent theme (for example, a specific hotspot, workflow, or end‑to‑end run) that can reasonably be completed within this loop.
-       - Plan **end-to-end validation** up front: when applicable, run the real commands or workflows the ADR cares about for at least one realistic target, not just unit tests.
-     - Use **small, atomic slices** when a meaningful micro-task exists that clearly de-risks a larger change (for example, adding a missing characterisation test, extracting a helper that multiple callers will use, or landing a trivial-but-risky bugfix). A single slice may still involve multiple files or commands as long as it forms one coherent unit (for example, "regenerate fixture X and promote updated artifacts" or "refactor CLI Y behind an orchestrator plus add tests").
-      - Large bullets in an "Implementation Plan" (for example, "Step 5: documentation and compatibility cleanup") should normally be **broken down into smaller, explicit behaviour-level subtasks** (for example, 5a/5b/5c) in the ADR's work-log or Salient Tasks before or as you work on them. A single loop may then reasonably implement and validate just one small, coherent sub-part of such a step (for example, retiring one legacy path with tests) and record that partial progress in the work-log, rather than attempting to complete the entire step in one go.
-   - If, after a brief but honest pass over the ADR and its work-log, you cannot find a trivially "safe" or tiny behaviour slice, do **not** give up on that ADR by default or switch to an unrelated, easier ADR. Instead, choose the smallest realistic behaviour slice you can see (often a characterization test plus a very small guard/refactor in a clearly in-scope hotspot) and implement that, even if it feels slightly more ambitious than a pure documentation or housekeeping change.
-  - Avoid **deferral-only** or **appearance-only** slices:
-     - Do not treat “write more ADRs”, “mark this as optional/future work”, or “close/reshape checkboxes” as a valid outcome on its own. When you touch an ADR via this helper, land at least one concrete improvement (code, tests, or a clearly behavior-describing doc change) in this repo that is grounded in how the system actually behaves.
-     - Successor ADRs and “future round” notes are fine, but only **alongside** behavior-level work; they should describe or coordinate work you are actually doing, not replace it, and must not be used primarily to move work out of sight.
-     - Pure documentation slices (ADR text/work-log only) are acceptable **only occasionally**, and only when they:
-       - Clarify already-implemented behaviour, or
-       - Reconcile ADRs/work-logs with the current code/tests after you have validated that behaviour in this loop.
-       Before choosing a pure documentation slice for an ADR that still has open, in-scope tasks, you must make a fresh pass over its text and work-log to confirm that no concrete, in-repo behaviour changes remain. If any such work is still clearly in scope, you must pick behaviour-level work instead of a documentation-only slice.
-       When the ADR explicitly calls out test or refactor backlogs (for example, "Test Tasks (To-Do)", "Additional Test Recommendations", or similar), you must treat those as **behavioural work items**. It is only acceptable to satisfy them via documentation reconciliation if you can point to specific existing tests/refactors that fully exercise the described behaviour (including relevant branches and edge cases); otherwise, you should add those tests/refactors in this or a future behaviour-level slice.
-       Pure documentation slices must **not** be used to avoid obvious, in-scope behavior changes the ADR already calls for, or to simply reclassify tasks as “optional” or “archived/external” without behaviour-backed rationale.
-       User time constraints or the absence of an explicit request for code/tests are not, by themselves, valid reasons to choose a documentation-only slice when in-scope behaviour work remains.
-     - A loop that lands **no concrete change at all** (analysis-only) is only acceptable when, after a fresh scan, you conclude there is truly **no remaining in-scope behavioural work for any ADR in this repo** (for example, all in-repo tasks are complete and remaining bullets are explicitly external). In all other cases, each loop must land at least one concrete change before you report back.
-       Except when you are fixing existing failing tests, a loop whose only code changes are new tests (with no behaviour-affecting changes for the chosen ADR) does **not** count as a sufficient outcome when in-scope behavioural work remains; in those cases, pair characterisation tests with at least one small behaviour change for that ADR in the same loop.
-       Documentation that introduces **new policies or selection rules** (for example, changing how agents interpret ADR references or task lists) counts as a behaviour change, not a pure documentation slice, and must be paired with corresponding implementation and/or tests in this loop.
-     - Treat checkboxes and “Salient Tasks” as **signals of real work**, not goals in themselves. If you change task status or structure, it should be because the underlying behaviour has been implemented, validated, or explicitly and justifiably de-scoped based on behavioural/impact analysis, not just to reduce apparent WIP.
-   - Filter to tasks that are **material and behavior-affecting** or clearly improve maintainability/guardrails for the ADR.
-     - Adding or improving **characterisation tests** is valuable when it meaningfully tightens or clarifies behaviour the ADR already cares about (for example, adding a missing negative/guard test for an invariant, or characterising current behaviour of a critical helper). However, except when clearing existing red tests, a loop that chooses to add new characterisation tests for an area of behaviour should also land at least one behaviour-affecting change for that same ADR in this loop (for example, a small guard, refactor, or feature adjustment driven by those tests). Do not add arbitrary or loosely related tests just to "touch something" for this ADR, and do not repeatedly pick test-only slices for the **same ADR and code path** once you already have good characterisation there. New tests should normally exercise previously untested branches, edge cases, or failure modes; adding near-duplicate tests that cover the same behaviour with the same assertions does not count as a meaningful slice.
-     - A task does not need to be pre-listed as a checkbox or bullet to be valid. It is fine to discover a small, in-scope subtask while reading the ADR/work-log (for example, a missing edge-case test or a small guard) and land it in this loop, as long as you record it clearly in the work-log.
-   - Choose at least one feasible task to advance, **without asking the user to choose among options**, and prefer the one that tests or exercises the **riskiest assumption** (the assumption whose failure would most undermine the ADR), even if that implies a larger, end‑to‑end slice.
-  - For larger slices, outline a short, concrete plan in your response (a few ordered steps) before you start editing code, then implement that plan within this loop.
-     - Implement the chosen task(s) concretely (edit code/docs/tests), then run **focused tests and any relevant higher-level checks** to validate behaviour:
-       - For internal/library work, this may be unit and/or integration tests.
-       - When the ADR governs user-facing entrypoints or workflows (for example, CLIs, APIs, generators, or orchestrators), prefer to run at least one representative command or workflow in addition to unit tests.
-       - Prefer tests that exercise the **domain behaviour of the ADR itself** (for example, the workflows, invariants, or contracts the ADR is about) over meta-tests about ADR selection, this helper, or purely static documentation content, unless such meta-behaviour or documentation is explicitly in scope of the chosen ADR (for example, when an ADR governs a generated artifact index or published report).
-       - Respect existing project constraints around environments, fixtures, and test data, and record important validation commands and outcomes in the ADR work-log.
-       - Over the lifetime of an ADR, ensure that at least some slices exercise behaviour at **natural seams** (such as public entrypoints, orchestrators, or other primary integration points) and assert observable contracts (for example, exit codes, responses, logs, reports, or generated artifacts), not only internal helper behaviour. This improves the value of the tests and makes later refactors safer.
-      - When candidate changes would alter an external or user-visible contract (for example, JSON report shapes or CLI flags) and the impact is unclear, prefer in this loop either (a) a smaller, clearly safe behavioural or documentation improvement, or (b) a characterisation/usage-mapping slice that makes the contract and its callers explicit so that a later loop can change it safely with tests.
-   - Update the ADR’s dedicated work-log and, if present, its “Salient Tasks” section to reflect what changed and what remains, keeping the primary ADR document focused on stable decisions rather than slice-by-slice execution history.
-   - In your final chat response for this loop, explicitly mention which work-log file you created or updated and summarise the new or amended slice entry, so that humans (and future loops) can quickly locate and reuse that history.
-   - When you conclude that the remaining meaningful work for an ADR should be **deferred to future ADRs** (for example, because it represents a larger, multi-step lifecycle project), you must:
-     - Write or extend the appropriate successor ADR(s) to own that work explicitly, and
-     - Update the current ADR and/or its work-log to point to those successor ADRs, rather than leaving vague references to "future ADRs" without concrete ids.
-   - Before reconciling the ADR’s status (for example, marking it complete/terminal or otherwise concluding that its in-repo work is done), run the project’s **full** standard checks for this repo (typically `npm run lint`, `npm run typecheck`, and `npm test`, or their current equivalents) within this loop and treat any failures as "known red checks" under step 0 that must be fixed or explicitly triaged before you change status.
-   - If and only if no qualifying tasks remain after a fresh pass and these checks are green, you may mark the ADR complete or terminal according to the project’s lifecycle conventions.
-
-Example: bad vs good loop
-
-- **Bad loop (do not do this):**
-  - Skim ADR-XXXX, notice an unchecked task about “consider deduping library tags”.
-  - Without inspecting code/tests or exercising behaviour, edit the ADR to say
-    “Optional / future ADR” and remove the checkbox so it no longer looks incomplete.
-  - Do not touch any code, tests, or end-to-end flows.
-  - Outcome: apparent progress (fewer checkboxes), but no behavioural validation
-    and no concrete improvement. This violates the deferral-only / appearance-only rules.
-
-- **Good loop (what this helper expects):**
-  - Skim ADR-XXXX and its work-log, identify the same “dedupe library tags” task as
-    a risky but narrowly scoping behaviour.
-  - Inspect the relevant module(s) and add a small **characterisation test** that
-    captures current tag behaviour (including duplicates) and how it surfaces in a
-    CLI or generator workflow.
-  - Implement a minimal, well-scoped improvement (for example, canonicalising tags
-    in a single orchestrator or pipeline) and add tests for both branches
-    (deduped vs non-deduped / backwards-compatibility as required).
-  - Run the focused tests and, when applicable, one realistic CLI command or
-    workflow mentioned in the ADR to validate behaviour end-to-end.
-  - Update the ADR work-log (and, if needed, ADR text) to describe the concrete
-    behaviour change and what remains. If you conclude further dedupe work is
-    out-of-scope for this ADR, record that decision with behaviour-backed
-    rationale before treating remaining bullets as future ADR material.
-
-Example invocation:
-
-> Run one ADR loop/execute iteration using this ADR loop helper prompt, letting you pick any ADR that still looks incomplete. You should autonomously select the ADR and slice, and you may choose either a small, focused slice or, when it adds more value (especially to drive out risky assumptions early), a larger but well-scoped refactor or workflow for that ADR, as long as you plan it and validate behaviour within this loop.
+The caller may either:
+- Specify the target ADR explicitly (for example, by id), or
+- Ask the assistant to choose an appropriate ADR autonomously.
 
 ---
 
-## Formal view (optional, shorthand)
+## 0. Clear relevant red checks
 
-This section gives a lightweight, implementation-neutral model of the loop
-process. It is a **shorthand for reasoning**, not a replacement for the
-natural-language rules above; if they ever appear to conflict, treat the
-earlier sections as the source of truth.
+- If you already know about failing tests, lint errors, or type‑check
+  failures that are relevant to the area you plan to touch, treat fixing or
+  triaging those as the first task in this loop.
+- Respect test intent: when behaviour is wrong, fix the implementation;
+  when requirements have genuinely changed, update the tests and the
+  relevant ADR/work‑log to match.
+- Do not start new ADR work while knowingly leaving relevant red checks
+  unaddressed, unless the failure is explicitly recorded and parked in an
+  ADR work‑log as a short‑lived regression.
 
-- **State per ADR**  
-  For each ADR `a`, imagine a simple state triple:
-  - `B_a`: the set of remaining in-scope behavioural obligations owned by `a`
-    in this repo (tests, refactors, guardrails, documentation that describes
-    actual behaviour).
-  - `C_a`: a notion of characterisation coverage for the behaviours `a`
-    touches (for example, whether key branches and edge cases are exercised by
-    tests).
-  - `H_a`: a notion of structural or guardrail health for those behaviours
-    (for example, whether there are clear invariants, safe defaults, or
-    obvious failure modes).
+---
 
-- **One loop = one action**  
-  A single loop iteration chooses:
-  - A target ADR `a` that is not yet fully implemented (`B_a` non-empty or
-    its work-log not terminal),
-  - A specific behaviour or facet of that ADR to work on (an *area of
-    behaviour* such as a function, module, command path, or small cluster of
-    related helpers where behaviour is observable), and
-  - A small edit plan `k` that matches the **goals of that specific ADR**
-    for the chosen area of behaviour. Some common patterns (not mutually
-    exclusive, and not exhaustive) are:
-    - Strengthening tests where key branches and error paths are not yet
-      clearly exercised.
-    - Simplifying or de-tangling the implementation while keeping behaviour
-      the same (tests stay green).
-    - Adding or tightening guardrails (checks, invariants, safer defaults)
-      when the ADR explicitly calls for them.
+## 1. Choose an ADR and focus area
 
-  For a given area of behaviour:
-  - Let the ADR’s own text and work-log define what “good” looks like
-    (cooling hotspots, simplifying structures, adding guardrails, etc.), and
-    choose `k` to move the system toward those goals rather than following a
-    fixed pattern.
-  - In most ADRs, it is perfectly acceptable for a slice to consist only of
-    behaviour or structural changes, as long as existing tests already
-    exercise the affected behaviour. When you **do** add new
-    characterisation tests, treat them as supporting that change rather than
-    as the main outcome. Tests-only slices should be rare and are mainly
-    appropriate when the ADR itself is explicitly about testing (for
-    example, a coverage- or guardrail-focused ADR), or when clearly
-    required to make a planned refactor/guardrail safe in the very next
-    slice.
-  - It is acceptable, and often desirable, for a slice focused on
-    simplification or guardrails to make only implementation and/or
-    documentation changes without adding new tests, provided existing
-    relevant tests remain green and still cover the branches involved.
-  - Occasionally, when an ADR is not itself primarily about testing but you
-    genuinely cannot find any safe, in-scope behaviour change for this loop
-    and there is a clearly missing characterisation test for an important,
-    realistic branch, a **tests-only** slice that adds just that missing
-    test is acceptable. Treat this as an exception, not the norm: once the
-    key branches for that area are well covered, prefer behaviour-level work
-    (simplification, guardrails, or new capabilities) in subsequent loops
-    rather than adding more tests for the same paths.
+- If the caller has specified a target ADR, use that ADR.
+- Otherwise, pick a single ADR that is clearly **incomplete** in this repo
+  (for example, open tasks, non‑terminal status, or an active work‑log with
+  remaining slices).
+- When several ADRs are incomplete, prefer ones where:
+  - A small slice will retire a meaningful objective, or
+  - A slice will exercise a risky or central assumption (for example,
+    entrypoints, critical workflows, or cross‑component contracts).
+- Within that ADR, choose one **focus area** for this loop: a function,
+  module, workflow, guardrail, or specific task already described in the ADR
+  or its work‑log.
 
-- **Transition**  
-  Executing a slice `(a, k)` should:
-  - Remove or shrink at least one item from `B_a` (for example, by
-    implementing a backlog test, refactor, or guardrail), and
-  - Improve either `C_a` (better characterisation) or `H_a` (simpler/safer
-    behaviour), or both, and
-  - Leave tests and other ADRs no worse off (respecting the red-check rules).
+---
 
-- **Policy intuition**  
-  The helper’s rules can be read as a policy that:
-  - Clears red checks first.
-  - Chooses ADRs whose `B_a` is non-empty and, when project guidance exists,
-    prioritises those ADRs the project treats as coordinating or high-value.
-  - For a given ADR `a`, typically:
-    - Aims to reduce `B_a` (outstanding behavioural obligations) by
-      implementing or evolving behaviour in line with the ADR, while keeping
-      `H_a` (structural/guardrail health) and `C_a` (tests) strong enough
-      that those changes are safe and easy to evolve.
-    - Starts by analysing whether `C_a` is weak for the chosen area of
-      behaviour. When key branches and error paths are not clearly exercised
-      by existing tests, prefer a small amount of focused characterisation
-      **paired with** the intended refactor or guardrail change for that
-      area, not as a stand-alone outcome.
-    - When existing tests already provide good behavioural and branch
-      coverage for the paths being changed, prefer to rely on and, where
-      helpful, gently extend those tests rather than adding new ones.
-    - Avoids taking many tests-only slices in a row for the same area of
-      behaviour; once characterisation is strong, further confidence gains
-      should come primarily from simplification and guardrails instead of
-      additional near-duplicate tests.
+## 2. Plan one small slice
 
-- **Coverage vs over-testing**  
-  The goal for tests in this loop is **complete, meaningful coverage** for
-  each area of behaviour we touch: every observable branch
-  (true/false/exception/early-return) should be exercised by at least one
-  test at an appropriate level.
+For the chosen ADR and focus area:
 
-  When deciding whether to add a new test in a slice:
-  - First ask whether the tests that already exist for the **specific code
-    paths you intend to change** clearly exercise the relevant
-    true/false/error/early-return branches.
-  - Treat characterisation tests as a **strategy, not a requirement**: when
-    suitable tests already exist and clearly cover the behaviour you are
-    changing, prefer to rely on those tests (and at most extend them
-    lightly) rather than adding new ones.
-  - Only add new characterisation tests when that coverage is clearly
-    insufficient for the intended refactor or guardrail change (or when you
-    are capturing a genuinely new case or invariant that is not already
-    clear from existing tests). Do not "hunt" for ever-smaller or highly
-    contrived branches when existing tests already give strong evidence for
-    realistic flows and error modes; favour tests that represent plausible
-    scenarios over ones that require distorting production behaviour or
-    environments just to toggle a line-level branch.
-  - A slice that makes a **real behaviour change** (for example, tightening a helper’s input contract or adjusting a workflow) and adds or updates tests in the same area to cover that change **counts as a behaviour-focused slice**, not a "tests-only" slice.
-  - Do **not** introduce new test-only hooks in production modules (for example, `__test__*` exports, test-only flags, or branches with no production callers) just to make a test easier to write. When you need a seam for testing, prefer extracting or reusing a real helper/facade/orchestrator that production code also uses, and test through that seam or through natural entrypoints.
-  - Avoid over-testing by **not** adding tests that only restate the same
-    behaviour for the same area, at the same level, without improving
-    clarity or branch coverage. The loop should not increase test count when
-    that would only duplicate existing coverage. In those cases, prefer
-    behaviour-level work that relies on the existing tests.
-  - Avoid **purely textual/docs-only tests** that assert only the presence of
-    ADR headings, metadata (for example, `Status`, `Owners`), or incidental
-    wording, unless that text itself expresses a behaviour-level contract
-    that code and tests depend on. Docs guardrails should focus on contracts
-    (for example, Tests-First principles, specific helper names, or
-    Concordance invariants), not on boilerplate.
+- Re‑read the ADR and its work‑log to understand:
+  - The ADR’s stated objectives and remaining tasks in this repo.
+  - Any existing decisions about scope, exclusions, or deferrals.
+- Open or create the ADR’s work‑log file
+  (for example, `0118-example-adr.work-log.md`) and add a dated heading for
+  this loop.
+- Decide on **one small, coherent slice** that moves the ADR forward. Common
+  patterns (not exhaustive) include:
+  - Implementing or extending a behaviour or workflow the ADR calls for.
+  - Simplifying or refactoring code the ADR identifies as a hotspot.
+  - Adding or tightening a guardrail the ADR requires.
+  - Adding or improving tests or documentation when the ADR explicitly calls
+    for them, or when they are clearly needed to make the planned change
+    safe.
+- Keep the slice small enough that you can, within this single loop:
+  - Implement the change,
+  - Run at least the most relevant checks/tests, and
+  - Update the work‑log.
 
-Over time, repeated applications of this loop should drive each ADR’s
-behavioural state `(B_a, C_a, H_a)` toward:
+---
 
-- `B_a` empty (no remaining in-repo obligations),
-- `C_a` strong enough that changes are low-risk to reason about, and
-- `H_a` strong enough that the system fails safely and is easy to evolve.
+## 3. Execute, validate, and record
+
+Execute the slice end‑to‑end:
+
+- Make the necessary edits (code, tests, docs, or configuration) to satisfy
+  the chosen objective.
+- Run focused checks that exercise the affected area (for example, targeted
+  tests or a representative CLI/API call) to confirm behaviour.
+- If you discover that the ADR’s objectives are unclear, too broad, or
+  partly out‑of‑date for this area, prefer to:
+  - Clarify the intent in the ADR’s work‑log, and
+  - Implement the smallest safe subset that you can state clearly,
+  rather than silently redefining the ADR.
+- Before claiming that an ADR objective in this focus area is complete or
+  removed (that is, before you change `B_a` for this ADR), run the relevant
+  checks that cover this change (targeted tests at minimum, and broader
+  project checks when the change is wide‑ranging or high‑risk).
+- Then update the ADR work‑log entry for this loop with:
+  - The ADR id and focus area you chose.
+  - A brief summary of the concrete changes you made.
+  - Which ADR objectives or tasks you believe were retired or reduced.
+  - Any follow‑up tasks you discovered and did **not** complete in this loop.
+
+The loop is complete once you have landed a coherent slice that:
+
+- Advances at least one ADR‑defined objective or task in this repo.
+- Leaves tests and guardrails at least as strong as before (and stronger
+  when that was part of the slice).
+- Records what changed and what remains in the ADR’s work‑log so that the
+  next loop can pick up from a clear state.
+
+Periodically, when `B_a` for an ADR is nearly or fully exhausted in this
+repo, reconcile the ADR’s own metadata (for example, `Status` and any
+remaining task lists) with the work‑log. Before making a **major status
+change** (for example, marking an ADR as effectively complete for this
+repo), first run the project’s usual gating checks (tests, lint, type‑check)
+that cover the affected areas so the status update accurately reflects a
+green, stable state.
+
+---
+
+### Optional shorthand
+
+You can think about each ADR `a` in terms of a simple state:
+
+- `B_a`: remaining in‑scope objectives or tasks in this repo
+  (behaviour, refactors, guardrails, tests, docs, or other concrete work the
+  ADR calls for).
+- `C_a`: how well the behaviours `a` touches are characterised by tests.
+- `H_a`: the structural/guardrail health around those behaviours.
+
+Each loop chooses one ADR and one slice, then:
+
+- Reduces `B_a` by completing or shrinking at least one ADR‑defined task.
+- Keeps or improves `C_a` and `H_a` enough that future changes in this area
+  remain safe and easy to reason about.

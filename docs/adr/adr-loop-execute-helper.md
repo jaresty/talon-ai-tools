@@ -55,7 +55,7 @@ When using this helper:
 
 ---
 
-## 2. Plan one small slice
+## 2. Plan one bounded slice
 
 For the chosen ADR and focus area:
 
@@ -65,7 +65,7 @@ For the chosen ADR and focus area:
 - Open or create the ADR’s work‑log file
   (for example, `0118-example-adr.work-log.md`) and add a dated heading for
   this loop.
-- Decide on **one small, coherent slice** that moves the ADR forward. Common
+- Decide on **one bounded, coherent slice** that moves the ADR forward. Common
   patterns (not exhaustive) include:
   - Implementing or extending a behaviour or workflow the ADR calls for.
   - Simplifying or refactoring code the ADR identifies as a hotspot.
@@ -81,8 +81,21 @@ For the chosen ADR and focus area:
 - Do **not** assume every slice must combine behaviour and tests. Choose
   the slice that best advances the ADR's objectives; use tests and other
   checks as strategies to make those changes safe.
-- Keep the slice small enough that you can, within this single loop:
-  - Implement the change,
+- After you have identified a couple of plausible slices, **choose one**
+  and commit to it for this loop. Avoid repeatedly revisiting slice
+  options unless you hit a hard blocker (for example, missing context or
+  failing checks you cannot safely address here).
+- Documentation-only slices should either:
+  - Resolve a specific, observed confusion in current behaviour, tests, or
+    workflows, **or**
+  - Reconcile ADR tasks/status with actual repo state (for example,
+    marking tasks complete/deferred and adding a short "Current status"
+    snapshot).
+  Avoid slices that only tweak wording without changing behaviour,
+  evidence, or status.
+- Keep the slice **bounded and completable** enough that you can, within
+  this single loop:
+  - Implement the change end-to-end,
   - Run at least the most relevant checks/tests, and
   - Update the work-log.
 
@@ -127,6 +140,9 @@ Execute the slice end‑to‑end:
 
 The loop is complete once you have landed a coherent slice that:
 
+- Lands at least one concrete change in this repo (code, tests, or docs
+  that change how Concordance is enforced or how ADR scope/status is
+  applied).
 - Advances at least one ADR-defined objective or task in this repo.
 - Leaves tests and guardrails at least as strong as before (and stronger
   when that was part of the slice).

@@ -19,7 +19,17 @@
     user.gpt_clear_stack(letter)
 
 ^{user.model} write [{user.modelVoice} | {user.modelAudience} | {user.modelPurpose} | {user.modelTone}]+: user.gpt_set_system_prompt(modelVoice or "", modelAudience or "", modelPurpose or "", modelTone or "")
-^{user.model} write reset: user.gpt_reset_system_prompt()
+^{user.model} reset writing$: user.gpt_reset_system_prompt()
+
+^{user.model} set completeness {user.completenessModifier}$: user.gpt_set_default_completeness(completenessModifier)
+^{user.model} set scope {user.scopeModifier}$: user.gpt_set_default_scope(scopeModifier)
+^{user.model} set method {user.methodModifier}$: user.gpt_set_default_method(methodModifier)
+^{user.model} set style {user.styleModifier}$: user.gpt_set_default_style(styleModifier)
+
+^{user.model} reset completeness$: user.gpt_reset_default_completeness()
+^{user.model} reset scope$: user.gpt_reset_default_scope()
+^{user.model} reset method$: user.gpt_reset_default_method()
+^{user.model} reset style$: user.gpt_reset_default_style()
 
 {user.model} analyze prompt <user.modelDestination>$: user.gpt_analyze_prompt(modelDestination)
 {user.model} analyze prompt$: user.gpt_analyze_prompt()

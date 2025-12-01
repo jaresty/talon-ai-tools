@@ -1,0 +1,7 @@
+list: user.scopeModifier
+#
+-
+
+narrow: Important: Restrict your discussion to a very small slice of the topic; avoid broad context.
+focus: Important: Stay tightly on a central theme; avoid tangents and side-quests.
+bound: Important: Stay inside explicit limits that are inferred from or stated in the prompt; do not introduce material outside them.

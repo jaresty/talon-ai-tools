@@ -10,6 +10,41 @@ Query language models with voice commands. Helpful to automatically generate tex
 
 - View the [docs](http://localhost:4321/talon-ai-tools/) for more detailed usage and help
 
+For implementation details of the modifier axes and defaults, see the ADR:
+
+- `docs/adr/005-orthogonal-prompt-modifiers-and-defaults.md`
+
+### Modifier axes (advanced)
+
+The `model` command now supports several short, speech-friendly modifier axes you can tack on after the prompt:
+
+- Completeness (`completenessModifier`): `skim`, `gist`, `full`, `max`
+- Scope (`scopeModifier`): `narrow`, `focus`, `bound`
+- Method (`methodModifier`): `steps`, `plan`, `rigor`
+- Style (`styleModifier`): `plain`, `tight`, `bullets`, `table`, `code`
+
+You normally say at most one or two of these per call. Examples (only using real prompts from `staticPrompt.talon-list`):
+
+- `model fix skim plain fog` – light grammar/typo fix in plain language.
+- `model fix full plain rog` – full grammar/wording pass, still straightforward.
+- `model simple gist plain fog` – rewrite selected text in a simpler way, short but complete.
+- `model short gist tight rog` – shorten selected text while keeping the core meaning, written tightly.
+- `model todo gist bullets rog` – turn notes into a concise TODO list as bullets.
+- `model flow full steps plain rog` – explain the flow of selected code or text step by step.
+- `model diagram gist code fog` – convert text to a mermaid-style diagram, code-only.
+
+If you omit a modifier, a default is inferred from:
+
+- Global settings like `user.model_default_completeness` / `scope` / `method` / `style`, and
+- Per-prompt defaults for some static prompts (for example, `fix`, `simple`, `short`, `todo`, `diagram`).
+
+You can adjust these defaults by voice:
+
+- `model set completeness skim` / `model reset completeness`
+- `model set scope narrow` / `model reset scope`
+- `model set method steps` / `model reset method`
+- `model set style bullets` / `model reset style`
+
 ## OpenAI API Pricing
 
 The OpenAI API that is used in this repo, through which you make queries to GPT 3.5 (the model used for ChatGPT), is not free. However it is extremely cheap and unless you are frequently processing large amounts of text, it will likely cost less than $1 per month. Most months I have spent less than $0.50

@@ -1,0 +1,9 @@
+list: user.styleModifier
+#
+-
+
+plain: Important: Use straightforward, everyday language; minimise jargon and complex sentence structures.
+tight: Important: Make the answer short and dense; remove fluff and redundancy.
+bullets: Important: Format the main answer as concise bullet points only; avoid long paragraphs.
+table: Important: Present the main answer as a Markdown table when feasible; keep columns and rows compact.
+code: Important: Output only code or markup for the main answer, with no surrounding natural-language explanation.

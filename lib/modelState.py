@@ -24,6 +24,12 @@ class GPTState:
     thread_enabled: ClassVar[bool] = False
     debug_enabled: ClassVar[bool] = False
     system_prompt: ClassVar[GPTSystemPrompt] = GPTSystemPrompt()
+    # Track whether the user has intentionally overridden per-axis defaults via
+    # settings so that per-prompt profiles do not compete with user intent.
+    user_overrode_completeness: ClassVar[bool] = False
+    user_overrode_scope: ClassVar[bool] = False
+    user_overrode_method: ClassVar[bool] = False
+    user_overrode_style: ClassVar[bool] = False
 
     @classmethod
     def start_debug(cls):
@@ -148,3 +154,7 @@ class GPTState:
         cls.context = []
         cls.query = []
         cls.thread = []
+        cls.user_overrode_completeness = False
+        cls.user_overrode_scope = False
+        cls.user_overrode_method = False
+        cls.user_overrode_style = False

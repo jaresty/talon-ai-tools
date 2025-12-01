@@ -2,12 +2,12 @@ from dataclasses import dataclass
 from typing import Literal, Optional
 
 from .modelSource import CompoundSource, ModelSource, SourceStack, create_model_source
-
 from .modelDestination import (
     ModelDestination,
     Stack,
     create_model_destination,
 )
+from .modelState import GPTState
 from talon import Context, Module, clip, settings
 
 mod = Module()
@@ -17,6 +17,10 @@ mod.tag("gpt_beta", desc="Tag for enabling beta GPT commands")
 # (ie those that just take in the clipboard text)
 mod.list("staticPrompt", desc="GPT Prompts Without Dynamic Arguments")
 mod.list("directionalModifier", desc="GPT Directional Modifiers")
+mod.list("completenessModifier", desc="GPT Completeness Modifiers")
+mod.list("scopeModifier", desc="GPT Scope Modifiers")
+mod.list("methodModifier", desc="GPT Method Modifiers")
+mod.list("styleModifier", desc="GPT Style Modifiers")
 mod.list("customPrompt", desc="Custom user-defined GPT prompts")
 mod.list("modelPrompt", desc="GPT Prompts")
 mod.list("model", desc="The name of the model")
@@ -36,13 +40,53 @@ mod.list(
 )
 mod.list("goalModifier", desc="GPT Goal Modifiers")
 
+
+STATIC_PROMPT_PROFILES = {
+    # TODO lists are usually concise, stepwise, and bullet-oriented.
+    "todo": {"method": "steps", "style": "bullets"},
+    # Diagrams tend to be represented as code/markup only.
+    "diagram": {"style": "code"},
+}
+
 # model prompts can be either static and predefined by this repo or custom outside of it
-@mod.capture(rule="[{user.goalModifier}] [{user.staticPrompt}] {user.directionalModifier} | {user.customPrompt}")
+@mod.capture(rule="[{user.goalModifier}] [{user.staticPrompt}] [{user.completenessModifier}] [{user.scopeModifier}] [{user.methodModifier}] [{user.styleModifier}] {user.directionalModifier} | {user.customPrompt}")
 def modelPrompt(m) -> str:
-    print(m)
     if hasattr(m, "customPrompt"):
         return str(m.customPrompt)
-    return getattr(m, "staticPrompt", "I'm not telling you what to do. Infer the task.") + getattr(m, "goalModifier", "") + getattr(m, "directionalModifier", "")
+    static_prompt = getattr(
+        m, "staticPrompt", "I'm not telling you what to do. Infer the task."
+    )
+    base = static_prompt + getattr(m, "goalModifier", "")
+
+    profiles = STATIC_PROMPT_PROFILES.get(static_prompt, {})
+
+    completeness = getattr(m, "completenessModifier", "")
+
+    scope = getattr(m, "scopeModifier", "")
+    method = getattr(m, "methodModifier", "")
+    if not method and not GPTState.user_overrode_method:
+        profile_method = profiles.get("method")
+        if profile_method == "steps":
+            method = (
+                "Important: Use a clear, step-by-step method for this kind of prompt; "
+                "briefly label each step."
+            )
+
+    style = getattr(m, "styleModifier", "")
+    if not style and not GPTState.user_overrode_style:
+        profile_style = profiles.get("style")
+        if profile_style == "bullets":
+            style = (
+                "Important: Present the main answer as concise bullet points rather "
+                "than long paragraphs."
+            )
+        elif profile_style == "code":
+            style = (
+                "Important: Present the main answer primarily as code or markup, with "
+                "minimal surrounding explanation."
+            )
+
+    return base + completeness + scope + method + style + getattr(m, "directionalModifier", "")
 
 
 @mod.capture(rule="[<user.modelPrompt>] prompt <user.text>")
@@ -222,6 +266,47 @@ mod.setting(
     type=str,
     default="Infer a relevant audience based on the context or the user's request.",
     desc="This is the audience that the LLM should format for. For example a programmer or a toddler.m",
+)
+
+mod.setting(
+    "model_default_completeness",
+    type=str,
+    default="full",
+    desc=(
+        "Default completeness level when no spoken completeness modifier is provided. "
+        "Suggested values align with the completenessModifier list (for example, 'skim', 'gist', 'full', 'max')."
+    ),
+)
+
+mod.setting(
+    "model_default_scope",
+    type=str,
+    default="",
+    desc=(
+        "Default conceptual scope when no spoken scope modifier is provided. "
+        "Suggested values align with the scopeModifier list (for example, 'narrow', 'focus', 'bound'). "
+        "Leave empty to avoid adding an implicit scope bias."
+    ),
+)
+
+mod.setting(
+    "model_default_method",
+    type=str,
+    default="",
+    desc=(
+        "Default method or process when no spoken method modifier is provided. "
+        "Suggested values align with the methodModifier list (for example, 'steps', 'plan', 'rigor')."
+    ),
+)
+
+mod.setting(
+    "model_default_style",
+    type=str,
+    default="",
+    desc=(
+        "Default output style when no spoken style modifier is provided. "
+        "Suggested values align with the styleModifier list (for example, 'plain', 'tight', 'bullets', 'table', 'code')."
+    ),
 )
 
 

@@ -5,7 +5,7 @@ from ..lib.talonSettings import ApplyPromptConfiguration, PassConfiguration
 
 from ..lib.modelDestination import Browser, Default, ModelDestination, PromptPayload
 from ..lib.modelSource import ModelSource, create_model_source
-from talon import Module, actions
+from talon import Module, actions, settings
 
 from ..lib.HTMLBuilder import Builder
 from ..lib.modelHelpers import (
@@ -130,6 +130,52 @@ class UserActions:
     def gpt_reset_system_prompt():
         """Reset the system prompt to default"""
         GPTState.system_prompt = GPTSystemPrompt()
+        # Also reset contract-style defaults so "reset writing" is a single
+        # switch for persona and writing behaviour.
+        settings.set("user.model_default_completeness", "full")
+        settings.set("user.model_default_scope", "")
+        settings.set("user.model_default_method", "")
+        settings.set("user.model_default_style", "")
+
+    def gpt_set_default_completeness(level: str) -> None:
+        """Set the default completeness level for subsequent prompts"""
+        settings.set("user.model_default_completeness", level)
+        GPTState.user_overrode_completeness = True
+
+    def gpt_set_default_scope(level: str) -> None:
+        """Set the default scope level for subsequent prompts"""
+        settings.set("user.model_default_scope", level)
+        GPTState.user_overrode_scope = True
+
+    def gpt_set_default_method(level: str) -> None:
+        """Set the default method for subsequent prompts"""
+        settings.set("user.model_default_method", level)
+        GPTState.user_overrode_method = True
+
+    def gpt_set_default_style(level: str) -> None:
+        """Set the default style for subsequent prompts"""
+        settings.set("user.model_default_style", level)
+        GPTState.user_overrode_style = True
+
+    def gpt_reset_default_completeness() -> None:
+        """Reset the default completeness level to its configured base value"""
+        settings.set("user.model_default_completeness", "full")
+        GPTState.user_overrode_completeness = False
+
+    def gpt_reset_default_scope() -> None:
+        """Reset the default scope level to its configured base value"""
+        settings.set("user.model_default_scope", "")
+        GPTState.user_overrode_scope = False
+
+    def gpt_reset_default_method() -> None:
+        """Reset the default method to its configured base value (no strong default)"""
+        settings.set("user.model_default_method", "")
+        GPTState.user_overrode_method = False
+
+    def gpt_reset_default_style() -> None:
+        """Reset the default style to its configured base value (no strong default)"""
+        settings.set("user.model_default_style", "")
+        GPTState.user_overrode_style = False
 
     def gpt_select_last() -> None:
         """select all the text in the last GPT output"""
@@ -317,9 +363,18 @@ class UserActions:
         builder.title("Talon GPT Reference")
         builder.h1("Talon GPT Reference")
 
+        builder.p(
+            "Use modifiers after a static prompt to control completeness, method, "
+            "scope, and style. You normally say at most one or two modifiers per call."
+        )
+
         # Order for easy scanning with Cmd-F
         render_list_as_tables("Static Prompts", "staticPrompt.talon-list", builder)
         render_list_as_tables("Directional Modifiers", "directionalModifier.talon-list", builder)
+        render_list_as_tables("Completeness Modifiers", "completenessModifier.talon-list", builder)
+        render_list_as_tables("Scope Modifiers", "scopeModifier.talon-list", builder)
+        render_list_as_tables("Method Modifiers", "methodModifier.talon-list", builder)
+        render_list_as_tables("Style Modifiers", "styleModifier.talon-list", builder)
         render_list_as_tables("Goal Modifiers", "goalModifier.talon-list", builder)
         render_list_as_tables("Voice", "modelVoice.talon-list", builder)
         render_list_as_tables("Tone", "modelTone.talon-list", builder)
@@ -328,6 +383,15 @@ class UserActions:
         # For Sources/Destinations, descriptions live in the preceding comment lines
         render_list_as_tables("Sources", "modelSource.talon-list", builder, comment_mode="preceding_description")
         render_list_as_tables("Destinations", "modelDestination.talon-list", builder, comment_mode="preceding_description")
+
+        builder.h2("Default settings examples")
+        builder.ul(
+            "Set defaults: 'model set completeness skim', 'model set scope narrow', "
+            "'model set method steps', 'model set style bullets'.",
+            "Reset defaults: 'model reset writing' (persona + all defaults), or "
+            "'model reset completeness', 'model reset scope', 'model reset method', "
+            "'model reset style'.",
+        )
 
         builder.render()
 

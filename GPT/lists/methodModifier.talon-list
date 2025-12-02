@@ -5,3 +5,5 @@ list: user.methodModifier
 steps: Important: Solve this step by step; briefly label and explain each step before giving the final answer.
 plan: Important: Give a short plan first, then carry it out; clearly separate the plan from the execution.
 rigor: Important: Use disciplined, well-justified reasoning; avoid hand-waving and make your logic explicit.
+rewrite: Important: Rewrite or refactor while preserving the original intent; treat this as a mechanical transform, not a re-interpretation.
+diagnose: Important: Look for likely causes of problems first; narrow down hypotheses before proposing fixes or changes.

@@ -18,9 +18,9 @@ For implementation details of the modifier axes and defaults, see the ADR:
 
 The `model` command now supports several short, speech-friendly modifier axes you can tack on after the prompt:
 
-- Completeness (`completenessModifier`): `skim`, `gist`, `full`, `max`
-- Scope (`scopeModifier`): `narrow`, `focus`, `bound`
-- Method (`methodModifier`): `steps`, `plan`, `rigor`
+- Completeness (`completenessModifier`): `skim`, `gist`, `full`, `max`, `minimal`, `deep`
+- Scope (`scopeModifier`): `narrow`, `focus`, `bound`, `edges`
+- Method (`methodModifier`): `steps`, `plan`, `rigor`, `rewrite`, `diagnose`
 - Style (`styleModifier`): `plain`, `tight`, `bullets`, `table`, `code`
 
 You normally say at most one or two of these per call. Examples (only using real prompts from `staticPrompt.talon-list`):

@@ -104,11 +104,14 @@ Semantics live in the description text, not the spoken word itself. In practice,
   - `steps:` Solve step by step; label each step and explain briefly.
   - `plan:` Give a short plan first, then carry it out.
   - `rigor:` Use disciplined, well-justified reasoning; avoid hand-waving and make uncertainty explicit instead of guessing (method-level constraint, not just a “serious” style flag).
+  - `rewrite:` Rewrite or refactor while preserving the original intent; treat this as a mostly mechanical transform.
+  - `diagnose:` Look for likely causes of problems first; narrow down hypotheses before proposing fixes.
 
 - `scopeModifier` (**conceptual scope rather than text region**):
   - `narrow:` Restrict discussion to a very small slice of the topic within the voice-selected target.
   - `focus:` Stay tightly on a central theme within the target; avoid tangents and side-quests.
   - `bound:` Stay inside explicit limits inferred from or stated in the prompt; do not introduce material outside them.
+  - `edges:` Emphasise edge cases, errors, and unusual conditions around the subject.
 
 - `styleModifier`:
   - `plain:` Use straightforward, everyday language; minimise jargon.
@@ -334,9 +337,9 @@ The core design for ADR 005 is implemented and stable in this repo. Remaining wo
 ## Current Status (this repo)
 
 - Completeness, scope, method, and style modifier lists exist under `GPT/lists` and are registered as Talon lists:
-  - `completenessModifier` (`skim`, `gist`, `full`, `max`)
-  - `scopeModifier` (`narrow`, `focus`, `bound`)
-  - `methodModifier` (`steps`, `plan`, `rigor`)
+  - `completenessModifier` (`skim`, `gist`, `full`, `max`, `minimal`, `deep`)
+  - `scopeModifier` (`narrow`, `focus`, `bound`, `edges`)
+  - `methodModifier` (`steps`, `plan`, `rigor`, `rewrite`, `diagnose`)
   - `styleModifier` (`plain`, `tight`, `bullets`, `table`, `code`)
 - The `modelPrompt` capture rule accepts these axes as optional modifiers (in the order: completeness, scope, method, style) before the required `directionalModifier`.
 - `modelPrompt`:

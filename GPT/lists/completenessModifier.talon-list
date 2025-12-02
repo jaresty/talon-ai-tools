@@ -6,3 +6,5 @@ skim: Important: Do a very light pass; address only the most obvious or critical
 gist: Important: Provide a short but complete answer or summary; cover the main points once without going into all details.
 full: Important: Provide a thorough answer for normal use; cover all major aspects, but you do not need every micro-detail.
 max: Important: Be as exhaustive as is reasonable; cover essentially everything relevant and treat omissions as errors.
+minimal: Important: Make the smallest change or answer that satisfies the request; avoid extra work outside the core need.
+deep: Important: Go into substantial depth within the chosen scope; cover fine details without necessarily enumerating every theoretical edge case.

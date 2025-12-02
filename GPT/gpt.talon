@@ -35,6 +35,8 @@
 {user.model} analyze prompt$: user.gpt_analyze_prompt()
 {user.model} replay [{user.modelDestination}]$: user.gpt_replay(modelDestination or "")
 
+{user.model} last recipe$: user.gpt_show_last_recipe()
+
 # Select the last GPT response so you can edit it further
 {user.model} take response: user.gpt_select_last()
 

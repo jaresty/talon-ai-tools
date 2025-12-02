@@ -15,6 +15,9 @@ class GPTState:
     text_to_confirm: ClassVar[str] = ""
     last_response: ClassVar[str] = ""
     last_was_pasted: ClassVar[bool] = False
+    # Human-readable summary of the last prompt recipe
+    # (static prompt + effective completeness/scope/method/style).
+    last_recipe: ClassVar[str] = ""
     context: ClassVar[List[Union[GPTTextItem, GPTImageItem]]] = []
     query: ClassVar[List[GPTMessage]] = []
     request: ClassVar[GPTRequest]
@@ -62,6 +65,9 @@ class GPTState:
         cls.thread = []
         cls.query = []
         cls.stacks = {}
+        cls.last_response = ""
+        cls.last_was_pasted = False
+        cls.last_recipe = ""
         actions.app.notify("Cleared all state")
 
     @classmethod
@@ -151,6 +157,7 @@ class GPTState:
         cls.text_to_confirm = ""
         cls.last_response = ""
         cls.last_was_pasted = False
+        cls.last_recipe = ""
         cls.context = []
         cls.query = []
         cls.thread = []

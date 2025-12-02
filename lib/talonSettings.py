@@ -99,6 +99,19 @@ def modelPrompt(m) -> str:
     GPTState.system_prompt.method = effective_method or ""
     GPTState.system_prompt.style = effective_style or ""
 
+    # Store a concise, human-readable recipe for this prompt so the
+    # confirmation GUI (and future UIs) can recap what was asked.
+    recipe_parts = [static_prompt]
+    if effective_completeness:
+        recipe_parts.append(effective_completeness)
+    if effective_scope:
+        recipe_parts.append(effective_scope)
+    if effective_method:
+        recipe_parts.append(effective_method)
+    if effective_style:
+        recipe_parts.append(effective_style)
+    GPTState.last_recipe = " · ".join(recipe_parts)
+
     # Task line: what you want done.
     # Restore the pre-ADR semantics: the visible Task text is the human-facing
     # static prompt description (when present), plus any goal modifier. This

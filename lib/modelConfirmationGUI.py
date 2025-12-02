@@ -46,6 +46,10 @@ def confirmation_gui(gui: imgui.GUI):
         ):
             gui.text(line)
 
+    if GPTState.last_recipe:
+        gui.spacer()
+        gui.text(f"Recipe: {GPTState.last_recipe}")
+
     # gui.spacer()
     # if gui.button("Chain response"):
     #     actions.user.confirmation_gui_paste()
@@ -78,6 +82,14 @@ def confirmation_gui(gui: imgui.GUI):
     gui.spacer()
     if gui.button("Analyze prompt"):
         actions.user.confirmation_gui_analyze_prompt()
+
+    gui.spacer()
+    if gui.button("Show grammar help"):
+        actions.user.model_help_gui_open_for_last_recipe()
+
+    gui.spacer()
+    if gui.button("Open pattern menu"):
+        actions.user.confirmation_gui_open_pattern_menu_for_prompt()
 
     gui.spacer()
     if gui.button("Discard response"):
@@ -193,3 +205,15 @@ class UserActions:
         if confirmation_gui.showing or force_open:
             confirmation_gui.show()
         ConfirmationGUIState.current_presentation = None
+
+    def confirmation_gui_open_pattern_menu_for_prompt():
+        """Open the prompt pattern menu for the last static prompt, if available"""
+        recipe = GPTState.last_recipe
+        if not recipe:
+            notify("GPT: No last recipe available to open a pattern menu for")
+            return
+        static_prompt = recipe.split(" · ", 1)[0].strip()
+        if not static_prompt:
+            notify("GPT: Could not determine a static prompt for the last recipe")
+            return
+        actions.user.prompt_pattern_gui_open_for_static_prompt(static_prompt)

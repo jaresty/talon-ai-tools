@@ -15,6 +15,15 @@ if bootstrap is not None:
     from talon_user.lib.modelState import GPTState
 
     class ModelPromptModifiersTests(unittest.TestCase):
+        def setUp(self) -> None:
+            # Ensure GPTState starts clean for tests that rely on derived axes.
+            if bootstrap is not None:
+                GPTState.reset_all()
+                settings.set("user.model_default_completeness", "full")
+                settings.set("user.model_default_scope", "")
+                settings.set("user.model_default_method", "")
+                settings.set("user.model_default_style", "")
+
         def test_no_modifiers_uses_static_prompt_profile_when_present(self):
             m = SimpleNamespace(
                 staticPrompt="fix",
@@ -126,12 +135,6 @@ if bootstrap is not None:
         def test_model_prompt_uses_profiles_for_system_axes_when_unset(self):
             # Defaults are present but profile should shape the effective axes
             # when no spoken modifier is given.
-            settings.set("user.model_default_completeness", "full")
-            settings.set("user.model_default_scope", "")
-            settings.set("user.model_default_method", "")
-            settings.set("user.model_default_style", "")
-            GPTState.reset_all()
-
             # "todo" has a profile for completeness/method/style/scope.
             m = SimpleNamespace(
                 staticPrompt="todo",
@@ -147,12 +150,6 @@ if bootstrap is not None:
             self.assertEqual(GPTState.system_prompt.style, "bullets")
 
         def test_model_prompt_applies_code_style_for_gherkin(self):
-            settings.set("user.model_default_completeness", "full")
-            settings.set("user.model_default_scope", "")
-            settings.set("user.model_default_method", "")
-            settings.set("user.model_default_style", "")
-            GPTState.reset_all()
-
             m = SimpleNamespace(
                 staticPrompt="gherkin",
                 goalModifier="",
@@ -164,6 +161,63 @@ if bootstrap is not None:
             self.assertEqual(GPTState.system_prompt.completeness, "full")
             self.assertEqual(GPTState.system_prompt.scope, "bound")
             self.assertEqual(GPTState.system_prompt.style, "code")
+
+        def test_clear_all_resets_last_recipe_and_response(self):
+            # Exercise the lifecycle: after a prompt, clear_all should drop
+            # last_response/last_recipe so recap helpers don't show stale data.
+            m = SimpleNamespace(
+                staticPrompt="fix",
+                goalModifier="GOAL",
+                completenessModifier="skim",
+                scopeModifier="narrow",
+                methodModifier="steps",
+                styleModifier="plain",
+                directionalModifier="DIR",
+            )
+
+            _ = modelPrompt(m)
+
+            self.assertNotEqual(GPTState.last_recipe, "")
+
+            GPTState.clear_all()
+
+            self.assertEqual(GPTState.last_recipe, "")
+            self.assertEqual(GPTState.last_response, "")
+
+        def test_model_prompt_updates_last_recipe_with_spoken_modifiers(self):
+            # Spoken modifiers should be reflected in the last_recipe summary.
+            m = SimpleNamespace(
+                staticPrompt="fix",
+                goalModifier="GOAL",
+                completenessModifier="skim",
+                scopeModifier="narrow",
+                methodModifier="steps",
+                styleModifier="plain",
+                directionalModifier="DIR",
+            )
+
+            _ = modelPrompt(m)
+
+            self.assertEqual(
+                GPTState.last_recipe,
+                "fix · skim · narrow · steps · plain",
+            )
+
+        def test_model_prompt_updates_last_recipe_with_profile_axes(self):
+            # When no spoken modifiers are provided, the per-prompt profile for
+            # "todo" should drive the last_recipe summary.
+            m = SimpleNamespace(
+                staticPrompt="todo",
+                goalModifier="",
+                directionalModifier="DIR",
+            )
+
+            _ = modelPrompt(m)
+
+            self.assertEqual(
+                GPTState.last_recipe,
+                "todo · gist · focus · steps · bullets",
+            )
 
 else:
     if not TYPE_CHECKING:

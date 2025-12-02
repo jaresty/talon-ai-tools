@@ -320,6 +320,17 @@ STATIC_PROMPT_CONFIG: dict[str, StaticPromptProfile] = {
     "document": {
         "description": "List document or writing formats (e.g., ADRs, experiment logs, RFCs, briefs), explain why each fits, and what perspective it reveals.",
     },
+    "com b": {
+        "description": (
+            "Analyze the subject using the COM-B model (Capability, Opportunity, Motivation, Behavior), "
+            "identify key enablers and barriers across Capability, Opportunity, and Motivation, map them to Behavior Change Wheel "
+            "intervention functions and behavior change techniques, and outline a minimal, testable implementation and evaluation plan."
+        ),
+        "completeness": "full",
+        "method": "rigor",
+        "style": "plain",
+        "scope": "focus",
+    },
     # Strategy, mapping, and dependency prompts (description-only profiles).
     "wardley": {
         "description": (

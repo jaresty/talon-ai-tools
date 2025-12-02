@@ -10,9 +10,54 @@ Query language models with voice commands. Helpful to automatically generate tex
 
 - View the [docs](http://localhost:4321/talon-ai-tools/) for more detailed usage and help
 
-For implementation details of the modifier axes and defaults, see the ADR:
+For implementation details of the modifier axes, defaults, and helpers, see the ADRs:
 
 - `docs/adr/005-orthogonal-prompt-modifiers-and-defaults.md`
+- `docs/adr/006-pattern-picker-and-recap.md`
+
+### In-Talon helpers for discoverability (ADR 006)
+
+To make the grammar easier to remember and explore, ADR 006 adds a few helpers:
+
+- `model patterns` – opens a small GUI with curated “patterns” for common tasks (coding and writing/product/reflection), each showing:
+  - A pattern name (for example, “Debug bug”, “Fix locally”, “Summarize selection”).
+  - The underlying recipe (for example, `debug · full · narrow · rigor · rog`).
+  - A one-line description.
+  - Clicking a pattern runs the corresponding recipe via the normal `model` pipeline and closes the GUI.
+  - You can also say `model coding patterns` or `model writing patterns` to open the GUI filtered to those domains, then either click or say the pattern name (for example, `debug bug`) to execute it.
+- `model pattern menu <staticPrompt>` – opens a prompt-focused pattern picker for any static prompt (for example, `describe`, `fix`, `retro`), which:
+  - Shows the prompt’s description and any profile defaults (completeness/scope/method/style).
+  - Lists a few generic, axis-driven mini-patterns (for example, “Quick gist”, “Deep narrow rigor”, “Bulleted summary”) as concrete recipes for that prompt.
+  - Lets you trigger these patterns by clicking or by saying the preset names (for example, `quick gist`) while the picker is open.
+- `model quick help` – opens an in-Talon “Model grammar quick reference” window listing:
+  - The main axes (goal/static prompt, directional lens, completeness, scope, method, style).
+  - Canonical modifier vocab, pulled from the same Talon lists that drive the grammar.
+  - A few example recipes.
+- You can also open axis-specific quick help:
+  - `model quick help completeness`
+  - `model quick help scope`
+  - `model quick help method`
+  - `model quick help style`
+- `model show grammar` – opens quick help with the last recipe and an exact, speakable `model …` line so you can repeat or adapt a successful combination by voice.
+- `model last recipe` – shows the last prompt recipe (static prompt plus effective completeness/scope/method/style) in a notification, even if the confirmation GUI is closed.
+
+When the confirmation GUI is open, it also:
+
+- Displays a `Recipe:` line derived from the same axes, so you can see at a glance what combination you just used.
+- Offers a `Show grammar help` button that opens quick help pre-populated with the last recipe, and an `Open pattern menu` button that opens the prompt-specific pattern menu for the same static prompt, making it easy to either study or explore nearby recipes for what you just ran.
+
+#### Quick reference (ADR 006 commands)
+
+- Patterns:
+  - `model patterns` / `model coding patterns` / `model writing patterns`
+  - `model pattern menu <staticPrompt>`
+- Recap:
+  - `model last recipe`
+  - Confirmation GUI `Recipe:` line
+- Grammar help:
+  - `model quick help`
+  - `model quick help completeness` / `scope` / `method` / `style`
+  - `model show grammar`
 
 ### Modifier axes (advanced)
 
@@ -22,6 +67,16 @@ The `model` command now supports several short, speech-friendly modifier axes yo
 - Scope (`scopeModifier`): `narrow`, `focus`, `bound`, `edges`
 - Method (`methodModifier`): `steps`, `plan`, `rigor`, `rewrite`, `diagnose`
 - Style (`styleModifier`): `plain`, `tight`, `bullets`, `table`, `code`
+
+Directional lenses (required) are a separate axis:
+
+- Direction (`directionalModifier`): core lenses like `fog`, `fig`, `dig`, `ong`, `rog`, `bog`, plus combined forms (for example, `fly ong`, `fip rog`, `dip bog`).
+  - Every `model` command that uses this grammar should include exactly one directional lens token.
+
+When you use these modifiers—either by speaking them or via a pattern/pattern menu—their semantics are applied in two places:
+
+- As part of the **system prompt contract** (via `Completeness/Scope/Method/Style` fields), which shapes how the model reasons and responds.
+- As explicit **Constraints:** lines in the user prompt, where the Talon lists expand keys like `gist` or `focus` into the full “Important: …” descriptions you see in logs or confirmation text.
 
 You normally say at most one or two of these per call. Examples (only using real prompts from `staticPrompt.talon-list`):
 

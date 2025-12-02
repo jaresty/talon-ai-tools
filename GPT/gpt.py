@@ -6,7 +6,7 @@ from ..lib.staticPromptConfig import STATIC_PROMPT_CONFIG
 
 from ..lib.modelDestination import Browser, Default, ModelDestination, PromptPayload
 from ..lib.modelSource import ModelSource, create_model_source
-from talon import Module, actions, settings
+from talon import Module, actions, clip, settings
 
 from ..lib.HTMLBuilder import Builder
 from ..lib.modelHelpers import (
@@ -193,6 +193,18 @@ class UserActions:
 
     def gpt_apply_prompt(apply_prompt_configuration: ApplyPromptConfiguration):
         """Apply an arbitrary prompt to arbitrary text"""
+        # If the pattern picker GUI is open, close it when any model prompt runs
+        # so voice-triggered patterns and regular grammar both dismiss it.
+        try:
+            actions.user.model_pattern_gui_close()
+        except Exception:
+            pass
+        # Also close the prompt-specific pattern picker if it is open.
+        try:
+            actions.user.prompt_pattern_gui_close()
+        except Exception:
+            pass
+
         prompt = apply_prompt_configuration.please_prompt
         source = apply_prompt_configuration.model_source
         additional_source = apply_prompt_configuration.additional_model_source
@@ -271,6 +283,14 @@ class UserActions:
         result = _prompt_pipeline.complete(session)
 
         actions.user.gpt_insert_response(result, destination)
+
+    def gpt_show_last_recipe() -> None:
+        """Show a short summary of the last prompt recipe"""
+        recipe = GPTState.last_recipe
+        if not recipe:
+            notify("GPT: No last recipe available")
+            return
+        actions.app.notify(f"Last recipe: {recipe}")
 
     def gpt_pass(pass_configuration: PassConfiguration) -> None:
         """Passes a response from source to destination"""
@@ -389,6 +409,15 @@ class UserActions:
         builder.p(
             "Use modifiers after a static prompt to control completeness, method, "
             "scope, and style. You normally say at most one or two modifiers per call."
+        )
+
+        builder.h2("How to use the helpers (ADR 006)")
+        builder.ul(
+            "Patterns: say 'model patterns' (or 'model coding patterns' / 'model writing patterns') and click a pattern or say its name (for example, 'debug bug') to run a curated recipe.",
+            "Prompt pattern menu: say 'model pattern menu <prompt>' (for example, 'model pattern menu describe') to see a few generic recipes for that static prompt; click or say 'quick gist', 'deep narrow rigor', or 'bulleted summary' while the menu is open.",
+            "Recap: after running a model command, check the confirmation window's 'Recipe:' line, or say 'model last recipe' to see the last combination in a notification.",
+            "Grammar help: say 'model quick help' for an overview, or 'model show grammar' to see the last recipe and an exact 'model …' line you can repeat or adapt.",
+            "From the confirmation window, use 'Show grammar help' or 'Open pattern menu' buttons to quickly inspect or tweak what you just ran.",
         )
 
         # Order for easy scanning with Cmd-F

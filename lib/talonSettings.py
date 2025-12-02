@@ -50,8 +50,6 @@ def modelPrompt(m) -> str:
         m, "staticPrompt", "I'm not telling you what to do. Infer the task."
     )
     config = STATIC_PROMPT_CONFIG.get(static_prompt, {})
-    # For the Task line, expand short keys into richer descriptions when we
-    # have them; axes still key off the canonical value.
     display_prompt = config.get("description", static_prompt)
     goal_modifier = getattr(m, "goalModifier", "")
     directional = getattr(m, "directionalModifier", "")
@@ -102,7 +100,12 @@ def modelPrompt(m) -> str:
     GPTState.system_prompt.style = effective_style or ""
 
     # Task line: what you want done.
-    task_line = f"Task:\n  {display_prompt}{goal_modifier}"
+    # Restore the pre-ADR semantics: the visible Task text is the human-facing
+    # static prompt description (when present), plus any goal modifier. This
+    # keeps the prompt text aligned with what users historically saw in the
+    # staticPrompt list, even though we now store descriptions centrally.
+    task_text = f"{display_prompt}{goal_modifier}"
+    task_line = f"Task:\n  {task_text}"
 
     # Constraints block: map each spoken/profile axis into typed lines when we
     # have something meaningful to say. We deliberately do not restate plain

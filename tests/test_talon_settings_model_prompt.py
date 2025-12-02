@@ -29,7 +29,10 @@ if bootstrap is not None:
             # appended after a blank line.
             self.assertIn("Task:", result)
             self.assertIn("Constraints:", result)
-            self.assertIn("fixGOAL", result)
+            self.assertIn(
+                "Fix grammar, spelling, and minor style issues while keeping meaning and tone; return only the modified text.GOAL",
+                result,
+            )
             # Profile for "fix" biases completeness/scope conceptually.
             self.assertIn("Completeness:", result)
             self.assertIn("Scope:", result)

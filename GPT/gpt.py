@@ -2,6 +2,7 @@ import os
 from typing import Optional
 
 from ..lib.talonSettings import ApplyPromptConfiguration, PassConfiguration
+from ..lib.staticPromptConfig import STATIC_PROMPT_CONFIG
 
 from ..lib.modelDestination import Browser, Default, ModelDestination, PromptPayload
 from ..lib.modelSource import ModelSource, create_model_source
@@ -302,7 +303,8 @@ class UserActions:
             title: str,
             filename: str,
             builder: Builder,
-            comment_mode: str = "section_headers",  # or "preceding_description"
+            comment_mode: str = "section_headers",  # "section_headers", "preceding_description", or "static_prompts"
+            description_overrides: Optional[dict[str, str]] = None,
         ) -> None:
             lines = read_list_lines(filename)
             if not lines:
@@ -312,6 +314,7 @@ class UserActions:
 
             table_open = False
             last_comment_block: list[str] = []
+            last_was_blank = True
 
             def ensure_table_open():
                 nonlocal table_open
@@ -329,6 +332,7 @@ class UserActions:
                 line = raw.strip()
                 if not line:
                     # keep spacing logical but avoid empty rows
+                    last_was_blank = True
                     continue
                 if line.startswith("#"):
                     # Comments: either section headers or descriptions depending on mode
@@ -337,25 +341,44 @@ class UserActions:
                         # accumulate consecutive comment lines for the next key:value
                         if header:
                             last_comment_block.append(header)
+                    elif comment_mode == "static_prompts":
+                        # In static prompts, treat trailing-period comments as
+                        # descriptions, and other comments that follow a blank
+                        # line as section headers; remaining comments attach to
+                        # the next key as descriptions.
+                        if header.endswith("."):
+                            if header:
+                                last_comment_block.append(header)
+                        elif last_was_blank and not last_comment_block:
+                            close_table_if_open()
+                            if header:
+                                builder.h3(header)
+                        else:
+                            if header:
+                                last_comment_block.append(header)
                     else:
                         close_table_if_open()
                         if header:
                             builder.h3(header)
+                    last_was_blank = False
                     continue
 
                 # Parse key: value rows (e.g., "emoji: Return only emoji.")
                 if ":" in line:
                     parts = line.split(":", 1)
                     key = parts[0].strip()
-                    if comment_mode == "preceding_description":
+                    if comment_mode in ("preceding_description", "static_prompts"):
                         # Use accumulated comment(s) as description; fall back to inline text if none
                         desc = " ".join(last_comment_block).strip() or parts[1].strip()
                         last_comment_block = []
                     else:
                         desc = parts[1].strip()
+                    if description_overrides and key in description_overrides:
+                        desc = description_overrides[key]
                     if key or desc:
                         ensure_table_open()
                         builder.add_row([key, desc])
+                    last_was_blank = False
 
             close_table_if_open()
 
@@ -369,7 +392,20 @@ class UserActions:
         )
 
         # Order for easy scanning with Cmd-F
-        render_list_as_tables("Static Prompts", "staticPrompt.talon-list", builder)
+        # Static prompts prefer descriptions from STATIC_PROMPT_CONFIG so there
+        # is a single source of truth, while section headers in the Talon list
+        # still provide visual groupings in the help.
+        render_list_as_tables(
+            "Static Prompts",
+            "staticPrompt.talon-list",
+            builder,
+            comment_mode="static_prompts",
+            description_overrides={
+                key: cfg["description"]
+                for key, cfg in STATIC_PROMPT_CONFIG.items()
+                if cfg.get("description")
+            },
+        )
         render_list_as_tables("Directional Modifiers", "directionalModifier.talon-list", builder)
         render_list_as_tables("Completeness Modifiers", "completenessModifier.talon-list", builder)
         render_list_as_tables("Scope Modifiers", "scopeModifier.talon-list", builder)

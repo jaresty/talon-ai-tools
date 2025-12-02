@@ -13,6 +13,7 @@ as blender: Act as a text transformer.
 as writer: Act as a writer.
 as designer: Act as a designer.
 as artist: Act as an artist.
+as adversary: Act as an adversarial reviewer who looks for weaknesses and flaws.
 
 ## Educational Roles
 as teacher: Act as a teacher.

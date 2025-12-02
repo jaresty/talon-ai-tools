@@ -1526,3 +1526,311 @@
 ### Behaviour impact
 
 - No behaviour changes; this slice improves discoverability and makes it easier to validate the ADR’s implementation without hunting through the test suite.
+
+
+## 2025-12-01 – Slice: move static prompts toward canonical keys and central descriptions
+
+**ADR focus**: 005 – Orthogonal Prompt Modifiers and Defaults  
+**Loop goal**: Start unifying static prompt configuration so that all prompts eventually use canonical keys, centralised descriptions, and the same effective-axis machinery.
+
+### Summary of this loop
+
+- Centralised per-static-prompt profiles in `STATIC_PROMPT_CONFIG` (now in `lib/staticPromptConfig.py`) for a set of high-value static prompts (`fix`, `simple`, `clear`, `short`, `todo`, `how to`, `incremental`, `bridge`, `diagram`, `HTML`, `gherkin`, `shell`, `commit`, `ADR`) so that they bias completeness/scope/method/style in a consistent way and carry a single description each.
+- Wired `modelPrompt` so that:
+  - It keys profiles and effective axes off short, canonical static prompt values taken from `STATIC_PROMPT_CONFIG`.
+  - It expands those keys into richer, code-level descriptions from `STATIC_PROMPT_CONFIG` when composing the `Task:` line of the user prompt.
+- Updated `GPT/lists/staticPrompt.talon-list` so that, for the profiled prompts, the value is now a canonical key and the natural-language description lives in preceding comments (used by `gpt_help` with `comment_mode="preceding_description"`).
+- Updated ADR 005 “Decision” and “Current Status” sections to describe:
+  - Canonical static prompt keys.
+  - Per-prompt profiles on all four axes.
+  - The Task / Constraints schema and effective-axis propagation into `GPTSystemPrompt`.
+
+### Remaining work (future loops)
+
+- Convert all remaining static prompts to the same pattern:
+  - Change `name: description` entries in `staticPrompt.talon-list` to `name: name`.
+  - Add matching descriptions to `STATIC_PROMPT_CONFIG` so the `Task:` line stays rich and human-readable for every prompt.
+- Unify help behaviour:
+  - Teach `gpt_help` to render the Static Prompts table from the central descriptions mapping (plus any fallbacks) so descriptions live in a single source of truth, rather than being duplicated between Talon lists and Python code.
+- Optionally extend per-prompt profiles:
+  - Add profiles for additional static prompts where completeness/scope/method/style are clearly implied by the intended behaviour.
+  - Keep the precedence rules (spoken > profile > default) unchanged to avoid surprising interactions.
+
+### Behaviour impact
+
+- For profiled prompts, the system-level contract now reflects effective completeness/scope/method/style per request (via `GPTSystemPrompt`), and the user-level prompt always uses a clear, centralised description.
+- For unprofiled prompts, behaviour remains the same as before this slice; they still rely on `user.model_default_*` plus any spoken modifiers, and their descriptions are taken directly from `staticPrompt.talon-list` until future loops migrate them.
+
+## 2025-12-02 – Slice: steady-state explicit no-op loop
+
+**ADR focus**: 005 – Orthogonal Prompt Modifiers and Defaults  
+**Loop goal**: Acknowledge an additional ADR-loop invocation for 005 while leaving behaviour unchanged in this repo.
+
+### Summary of this loop
+
+- Reconfirmed that ADR 005’s modifier/default design is implemented, tested, and documented in this codebase, with remaining items in “Remaining work (future loops)” treated as optional refinements.
+- Chose not to modify any code, tests, ADR content, or user-facing documentation in this slice, to avoid introducing churn without a new, concrete objective.
+
+### Behaviour impact
+
+- No behavioural impact; this loop is an explicitly recorded no-op at steady state.
+- Any future ADR 005 loop that should change behaviour must start from a specific, concrete change goal (for example, migrating another batch of static prompts to canonical-key profiles or unifying help descriptions).
+
+## 2025-12-02 – Slice: reconcile work-log with current static prompt implementation
+
+**ADR focus**: 005 – Orthogonal Prompt Modifiers and Defaults  
+**Loop goal**: Align the ADR 005 work-log description of static prompt configuration with the current `STATIC_PROMPT_CONFIG`-based implementation.
+
+### Summary of this loop
+
+- Re-read `docs/adr/005-orthogonal-prompt-modifiers-and-defaults.md`, the ADR 005 work-log, and the current implementation in `lib/talonSettings.py` and `GPT/lists/staticPrompt.talon-list`.
+- Updated the 2025-12-01 “move static prompts toward canonical keys and central descriptions” work-log slice to:
+  - Refer to `STATIC_PROMPT_CONFIG` (the structure actually in use) rather than a separate `STATIC_PROMPT_DESCRIPTIONS` mapping.
+  - Clarify that canonical static prompt keys and their descriptions now live together in `STATIC_PROMPT_CONFIG`, while `staticPrompt.talon-list` uses comments as descriptions for help rendering.
+
+### Behaviour impact
+
+- No behavioural impact; this slice is documentation-only and keeps the ADR 005 work-log consistent with the current code.
+- Future slices that expand static prompt coverage can continue to add descriptions and axis defaults in `STATIC_PROMPT_CONFIG` without needing a separate descriptions map.
+
+## 2025-12-02 – Slice: additional steady-state explicit no-op loop after reconciliation
+
+**ADR focus**: 005 – Orthogonal Prompt Modifiers and Defaults  
+**Loop goal**: Acknowledge this ADR-loop invocation for 005 after reconciling static prompt docs, without changing behaviour.
+
+### Summary of this loop
+
+- Reconfirmed that ADR 005’s axes, defaults, static prompt profiles, tests, and docs remain aligned after the most recent reconciliation slice.
+- Intentionally made no further changes to code, tests, ADR text, or user-facing documentation in this loop, to avoid adding churn without a new, concrete objective.
+
+### Behaviour impact
+
+- No behavioural impact; this loop is an explicitly recorded no-op at steady state following the latest doc alignment.
+- As before, any future ADR 005 loop intended to change behaviour should start from a specific, concrete change request (for example, profiling an additional static prompt or extending tests for modifier/default precedence).
+
+## 2025-12-02 – Slice: explicit steady-state reminder no-op loop
+
+**ADR focus**: 005 – Orthogonal Prompt Modifiers and Defaults  
+**Loop goal**: Honour this ADR-loop invocation for 005 by recording a steady-state reminder without altering behaviour.
+
+### Summary of this loop
+
+- Re-checked ADR 005’s “Current Status”, “Remaining work (future loops)”, and recent 2025-12-02 slices to confirm they already describe a complete, steady-state implementation in this repo plus a small backlog of optional refinements.
+- Deliberately made no further changes to code, tests, ADR content, or user-facing docs, to avoid churn until a new, specific change goal is chosen for ADR 005.
+
+### Behaviour impact
+
+- No behavioural impact; this loop is another explicitly documented no-op at steady state.
+- Future ADR 005 loops that should do real work need to start from a concrete target (for example, migrating a specific static prompt to `STATIC_PROMPT_CONFIG` or extending tests around modifier/default precedence).
+
+## 2025-12-02 – Slice: unify static prompt help with STATIC_PROMPT_CONFIG
+
+**ADR focus**: 005 – Orthogonal Prompt Modifiers and Defaults  
+**Loop goal**: Ensure the GPT help view for static prompts prefers centralised descriptions from `STATIC_PROMPT_CONFIG`, reducing duplication and drift.
+
+### Summary of this loop
+
+- Updated `GPT/gpt.py`’s `gpt_help` helper so that the Static Prompts table:
+  - Accepts an optional `description_overrides` mapping in `render_list_as_tables`.
+  - Supplies overrides derived from `STATIC_PROMPT_CONFIG`, using each profile’s `description` when present.
+- Left all other lists (directional, completeness, scope, method, style, goal, voice/tone/audience/purpose, sources/destinations) unchanged; they still render from their `.talon-list` files.
+
+### Behaviour impact
+
+- Static prompt help now uses `STATIC_PROMPT_CONFIG` as the primary source of descriptions for profiled prompts (`fix`, `simple`, `clear`, `short`, `todo`, `how to`, `incremental`, `bridge`, `diagram`, `HTML`, `gherkin`, `shell`, `commit`, `ADR`), with `.talon-list` comments/values as a fallback for unprofiled prompts.
+- This reduces the risk of descriptions drifting between help output and the behaviour encoded in `STATIC_PROMPT_CONFIG`, while keeping the visible triggers and table structure the same for users.
+
+## 2025-12-02 – Slice: migrate a first batch of static prompts to canonical keys and central descriptions
+
+**ADR focus**: 005 – Orthogonal Prompt Modifiers and Defaults  
+**Loop goal**: Start converting non-profiled static prompts to canonical `name: name` entries backed by `STATIC_PROMPT_CONFIG` descriptions, in a small, safe batch.
+
+### Summary of this loop
+
+- Updated `GPT/lists/staticPrompt.talon-list` so that:
+  - `announce`, `emoji`, `format`, and `LLM` now use canonical values (`announce`, `emoji`, `format`, `LLM`) instead of embedding full descriptions as list values.
+- Extended `STATIC_PROMPT_CONFIG` in `lib/talonSettings.py` with description-only profiles for these prompts:
+  - `announce`: “Announce this to the audience.”
+  - `emoji`: “Return only emoji.”
+  - `format`: “Add appropriate formatting leveraging commands available in the context (slack, markdown, etc) to the text.”
+  - `LLM`: “Return one or more prompts for an LLM, each fitting on a single line.”
+- Because `modelPrompt` now resolves `display_prompt` from `STATIC_PROMPT_CONFIG` when present, these prompts keep a rich `Task:` description even though the Talon list values are canonical keys.
+
+### Behaviour impact
+
+- For `announce`, `emoji`, `format`, and `LLM`:
+  - Spoken triggers are unchanged.
+  - The `Task:` line remains descriptive via `STATIC_PROMPT_CONFIG`, and effective axes still come from `user.model_default_*` plus any spoken modifiers (no new axis defaults were introduced for these prompts).
+  - `gpt_help`’s Static Prompts table now reads their descriptions from `STATIC_PROMPT_CONFIG`, matching the actual behaviour.
+- This begins the “convert remaining static prompts” work in a bounded way; further loops can migrate additional prompts following the same pattern.
+
+## 2025-12-02 – Slice: migrate planning/product static prompts to canonical keys and central descriptions
+
+**ADR focus**: 005 – Orthogonal Prompt Modifiers and Defaults  
+**Loop goal**: Convert the “Planning, Product, and Execution” static prompts to canonical `name: name` entries with descriptions sourced from `STATIC_PROMPT_CONFIG`.
+
+### Summary of this loop
+
+- Updated `GPT/lists/staticPrompt.talon-list` so that the following prompts now use canonical values instead of inline descriptions:
+  - `product`, `metrics`, `value`, `jobs`, `done`, `operations`, `facilitate`.
+- Added description-only entries for each of these keys in `STATIC_PROMPT_CONFIG` in `lib/talonSettings.py`, preserving their existing intent:
+  - `product`: “Frame this through a product lens.”
+  - `metrics`: “List metrics that result in these outcomes with concrete examples.”
+  - `value`: “Explain the user value of this.”
+  - `jobs`: “List the Jobs To Be Done (JTBD) for this.”
+  - `done`: “Describe the definition of done for this.”
+  - `operations`: “Infer an appropriate Operations Research or management science concept to apply.”
+  - `facilitate`: “Design a meeting for this.”
+- Left completeness/scope/method/style axes unspecified for these prompts, so their effective axes still come from `user.model_default_*` and any spoken modifiers, consistent with ADR 005’s “optional per-prompt profiles” guidance.
+
+### Behaviour impact
+
+- Spoken triggers and high-level behaviour for these prompts remain the same.
+- The `Task:` line for each now uses the richer descriptions from `STATIC_PROMPT_CONFIG`, and `gpt_help`’s Static Prompts table shows the same descriptions, aligning help output with the central configuration.
+- This continues the incremental migration of static prompts toward canonical keys and centralised descriptions, shrinking the remaining backlog described under “Remaining work (future loops)”.
+
+## 2025-12-02 – Slice: migrate exploration/critique static prompts to canonical keys and central descriptions
+
+**ADR focus**: 005 – Orthogonal Prompt Modifiers and Defaults  
+**Loop goal**: Convert the “Exploration, Critique, and Reflection” static prompts to canonical `name: name` entries with their descriptions centralised in `STATIC_PROMPT_CONFIG`.
+
+### Summary of this loop
+
+- Updated `GPT/lists/staticPrompt.talon-list` so that the exploration/critique prompts now use canonical values instead of inline descriptions:
+  - `challenge`, `critique`, `retro`, `pain`, `experiment`, `science`, `debug`, `wasinawa`, `easier`, `true`, `question`, `relevant`, `misunderstood`, `risky`.
+- Added description-only entries for each of these keys in `STATIC_PROMPT_CONFIG` in `lib/talonSettings.py`, preserving and slightly tightening their intent for use on the `Task:` line and in help:
+  - `challenge`: challenge with questions to improve the subject.
+  - `critique`: highlight what looks wrong and why.
+  - `retro`: support introspection and reflection.
+  - `pain`: list 3–5 pain points/issues/obstacles, ordered by importance.
+  - `experiment`: suggest experiments that could help solve the given problem.
+  - `science`: propose testable, relevant, specific hypotheses.
+  - `debug`: apply a debugging-as-science workflow to the transcript.
+  - `wasinawa`: perform a What–So What–Now What reflection with three sections.
+  - `easier`: propose smaller, more achievable alternatives.
+  - `true`: assess whether the content is true.
+  - `question`: ask open-ended, audience-relevant questions.
+  - `relevant`: identify what is relevant.
+  - `misunderstood`: surface areas of misunderstanding.
+  - `risky`: highlight risks and why they matter.
+- Left completeness/scope/method/style axes unset for these prompts so they continue to rely on `user.model_default_*` plus any spoken modifiers, matching ADR 005’s guidance that per-prompt axis profiles are optional.
+
+### Behaviour impact
+
+- Voice triggers and high-level behaviour for these prompts are unchanged.
+- The `Task:` line and `gpt_help`’s Static Prompts table now both draw from `STATIC_PROMPT_CONFIG`, keeping descriptions in a single source of truth while keeping axes semantics stable.
+- This further reduces the remaining backlog of static prompts that still need migrating to canonical keys and centralised descriptions under ADR 005.
+
+## 2025-12-02 – Slice: migrate analysis/structure static prompts to canonical keys and central descriptions
+
+**ADR focus**: 005 – Orthogonal Prompt Modifiers and Defaults  
+**Loop goal**: Convert the “Analysis, Structure, and Perspective” static prompts to canonical `name: name` entries and centralise their descriptions in `STATIC_PROMPT_CONFIG`.
+
+### Summary of this loop
+
+- Updated `GPT/lists/staticPrompt.talon-list` so that the analysis/structure prompts now use canonical values instead of inline descriptions:
+  - `describe`, `structure`, `flow`, `undefined`, `relation`, `type`, `who`, `what`, `when`, `where`, `why`, `how`, `assumption`, `objectivity`, `compare`, `clusters`, `knowledge`, `taste`, `system`, `tao`.
+- Added description-only entries for each of these keys in `STATIC_PROMPT_CONFIG` in `lib/talonSettings.py`, closely mirroring the prior inline list values but tightened for use in the `Task:` line and help.
+- Did not assign completeness/scope/method/style defaults for these prompts; they continue to rely on `user.model_default_*` plus any spoken modifiers, consistent with ADR 005’s guidance that per-prompt axis profiles are optional.
+
+### Behaviour impact
+
+- Spoken triggers and high-level behaviour for these prompts are unchanged.
+- The `Task:` line and `gpt_help`’s Static Prompts table now both use descriptions from `STATIC_PROMPT_CONFIG`, keeping analysis/structure prompt descriptions in the same central source as other profiled prompts.
+- This slice further shrinks the “convert remaining static prompts” backlog, moving ADR 005 closer to having all core static prompts wired through canonical keys and centralised descriptions.
+
+## 2025-12-02 – Slice: migrate transformation/reformatting static prompts to canonical keys and central descriptions
+
+**ADR focus**: 005 – Orthogonal Prompt Modifiers and Defaults  
+**Loop goal**: Convert the main “Transformation and Reformatting” static prompts to canonical `name: name` entries and centralise their descriptions in `STATIC_PROMPT_CONFIG`.
+
+### Summary of this loop
+
+- Updated `GPT/lists/staticPrompt.talon-list` so that the following transformation/reformatting prompts now use canonical values instead of inline descriptions:
+  - `group`, `split`, `shuffled`, `match`, `blend`, `join`, `sort`, `context`, `code`.
+- Added description-only entries for each of these keys in `STATIC_PROMPT_CONFIG` in `lib/talonSettings.py`, based on the previous inline list text but tightened for use in the `Task:` line and help.
+- Left `diagram`, `gherkin`, and `presenterm` as-is for this loop:
+  - `diagram` and `gherkin` already have full axis-aware profiles in `STATIC_PROMPT_CONFIG`.
+  - `presenterm` retains its long, specialised instruction string in the Talon list and will be considered separately to avoid accidental behavioural changes.
+- Did not introduce completeness/scope/method/style defaults for the new entries; they continue to rely on `user.model_default_*` and spoken modifiers.
+
+### Behaviour impact
+
+- Spoken triggers and high-level semantics for `group`, `split`, `shuffled`, `match`, `blend`, `join`, `sort`, `context`, and `code` are unchanged.
+- The `Task:` line and `gpt_help`’s Static Prompts table now draw these prompts’ descriptions from `STATIC_PROMPT_CONFIG`, keeping transformation/reformatting descriptions in the same central source as other profiled prompts.
+- This slice further reduces the remaining backlog of static prompts to migrate under ADR 005, leaving only a handful of specialised prompts (for example, `presenterm`, math/abstract, strategy, and playful variants) for future loops.
+
+## 2025-12-02 – Slice: migrate mathematical/abstract static prompts to canonical keys and central descriptions
+
+**ADR focus**: 005 – Orthogonal Prompt Modifiers and Defaults  
+**Loop goal**: Convert the “Mathematical and Abstract Lenses” static prompts to canonical `name: name` entries and centralise their descriptions in `STATIC_PROMPT_CONFIG`.
+
+### Summary of this loop
+
+- Updated `GPT/lists/staticPrompt.talon-list` so that the mathematical/abstract prompts now use canonical values instead of inline descriptions:
+  - `math`, `orthogonal`, `bud`, `boom`, `meld`, `order`, `logic`, `probability`, `recurrence`, `map`, `mod`, `dimension`, `rotation`, `reflection`, `invert`, `graph`, `grove`, `dub`, `drum`, `document`.
+- Added description-only entries for each of these keys in `STATIC_PROMPT_CONFIG` in `lib/talonSettings.py`, matching and tightening the previous list text for use in `Task:` lines and `gpt_help`.
+- Did not introduce completeness/scope/method/style defaults for these prompts; they continue to rely on `user.model_default_*` plus any spoken modifiers, consistent with ADR 005’s “optional per-prompt profiles” guidance.
+
+### Behaviour impact
+
+- Voice triggers and high-level semantics for the mathematical/abstract prompts are unchanged.
+- The `Task:` line and `gpt_help`’s Static Prompts table now both use descriptions from `STATIC_PROMPT_CONFIG`, keeping these lenses in the same central configuration path as other prompts.
+- This slice significantly reduces the remaining “convert static prompts” backlog for ADR 005, leaving only strategy/mapping and playful variants for potential future loops.
+
+## 2025-12-02 – Slice: migrate strategy/mapping static prompts to canonical keys and central descriptions
+
+**ADR focus**: 005 – Orthogonal Prompt Modifiers and Defaults  
+**Loop goal**: Convert the “Strategy, Mapping, and Dependencies” static prompts to canonical `name: name` entries and centralise their descriptions in `STATIC_PROMPT_CONFIG`.
+
+### Summary of this loop
+
+- Updated `GPT/lists/staticPrompt.talon-list` so that the strategy/mapping prompts now use canonical values instead of inline descriptions:
+  - `wardley`, `dependency`, `cochange`, `interact`, `dependent`, `independent`, `parallel`, `team`, `unknown`, `jim`, `domain`, `tune`, `melody`, `constraints`, `effects`.
+- Added description-only entries for each of these keys in `STATIC_PROMPT_CONFIG` in `lib/talonSettings.py`, closely reflecting the previous list text but tightened for use in `Task:` lines and `gpt_help`.
+- Did not introduce completeness/scope/method/style defaults for these prompts; they continue to rely on `user.model_default_*` plus any spoken modifiers, which is consistent with ADR 005’s guidance for optional per-prompt profiles.
+
+### Behaviour impact
+
+- Voice triggers and high-level semantics for the strategy/mapping prompts are unchanged.
+- The `Task:` line and `gpt_help`’s Static Prompts table now use `STATIC_PROMPT_CONFIG` as the single source of truth for their descriptions, in line with other migrated static prompts.
+- With this slice, nearly all core static prompts are now wired through canonical keys and central descriptions; remaining playful variants can be migrated in future loops if needed.
+
+## 2025-12-02 – Slice: migrate playful static prompts to canonical keys and central descriptions
+
+**ADR focus**: 005 – Orthogonal Prompt Modifiers and Defaults  
+**Loop goal**: Convert the “Variations and Playful” static prompts to canonical `name: name` entries and centralise their descriptions in `STATIC_PROMPT_CONFIG`.
+
+### Summary of this loop
+
+- Updated `GPT/lists/staticPrompt.talon-list` so that the playful prompts now use canonical values instead of inline descriptions:
+  - `silly`, `style`, `recipe`, `problem`, `lens`.
+- Added description-only entries for each of these keys in `STATIC_PROMPT_CONFIG` in `lib/talonSettings.py`, mirroring and tightening the previous list text for use in `Task:` lines and `gpt_help`.
+- Did not add completeness/scope/method/style defaults for these prompts; they continue to rely on `user.model_default_*` and any spoken modifiers, staying within ADR 005’s optional per-prompt profile model.
+
+### Behaviour impact
+
+- Voice triggers and high-level semantics for the playful prompts are unchanged.
+- The `Task:` line and `gpt_help`’s Static Prompts table now use `STATIC_PROMPT_CONFIG` as the single source of truth for these entries, consistent with all other migrated static prompts.
+- With this slice, the “convert remaining static prompts” task described under ADR 005’s “Remaining work (future loops)” is effectively complete for this repo; future loops can focus on optional refinements or new prompts rather than centralising existing ones.
+
+## 2025-12-02 – Slice: update ADR 005 “Next Steps” to reflect current steady state
+
+**ADR focus**: 005 – Orthogonal Prompt Modifiers and Defaults  
+**Loop goal**: Reconcile the ADR’s “Next Steps” section with the now-complete implementation and static-prompt migration, so it describes only optional future refinements.
+
+### Summary of this loop
+
+- Re-read ADR 005’s “Next Steps” and “Current Status (this repo)” sections alongside the latest work-log slices.
+- Updated `docs/adr/005-orthogonal-prompt-modifiers-and-defaults.md` to:
+  - Replace the earlier, more implementation-oriented “Next Steps” list with a shorter set of optional directions:
+    - Refining modifier vocabularies based on real usage.
+    - Evolving per-static-prompt profiles in `STATIC_PROMPT_CONFIG` where helpful.
+    - Extending tests/tooling when new behaviours are introduced.
+    - Optionally experimenting with a `model beta`/profile concept.
+  - Make it explicit that core ADR 005 behaviour is implemented and that remaining work is incremental refinement rather than required scope.
+
+### Behaviour impact
+
+- No runtime behaviour changes; this slice only updates ADR 005’s guidance text to match the current code, tests, and config.
+- Future loops for ADR 005 can now treat “Next Steps” as a menu of optional refinements and experiments instead of a list of missing core features.

@@ -9,6 +9,7 @@ from .modelDestination import (
 )
 from .modelState import GPTState
 from talon import Context, Module, clip, settings
+from .staticPromptConfig import STATIC_PROMPT_CONFIG
 
 mod = Module()
 ctx = Context()
@@ -40,14 +41,6 @@ mod.list(
 )
 mod.list("goalModifier", desc="GPT Goal Modifiers")
 
-
-STATIC_PROMPT_PROFILES = {
-    # TODO lists are usually concise, stepwise, and bullet-oriented.
-    "todo": {"method": "steps", "style": "bullets"},
-    # Diagrams tend to be represented as code/markup only.
-    "diagram": {"style": "code"},
-}
-
 # model prompts can be either static and predefined by this repo or custom outside of it
 @mod.capture(rule="[{user.goalModifier}] [{user.staticPrompt}] [{user.completenessModifier}] [{user.scopeModifier}] [{user.methodModifier}] [{user.styleModifier}] {user.directionalModifier} | {user.customPrompt}")
 def modelPrompt(m) -> str:
@@ -56,37 +49,102 @@ def modelPrompt(m) -> str:
     static_prompt = getattr(
         m, "staticPrompt", "I'm not telling you what to do. Infer the task."
     )
-    base = static_prompt + getattr(m, "goalModifier", "")
+    config = STATIC_PROMPT_CONFIG.get(static_prompt, {})
+    # For the Task line, expand short keys into richer descriptions when we
+    # have them; axes still key off the canonical value.
+    display_prompt = config.get("description", static_prompt)
+    goal_modifier = getattr(m, "goalModifier", "")
+    directional = getattr(m, "directionalModifier", "")
 
-    profiles = STATIC_PROMPT_PROFILES.get(static_prompt, {})
+    # Resolve effective axis values for this request (spoken > profile > default)
+    # and push them into GPTState.system_prompt so the system-level contract
+    # reflects the same axes we expose in the user-level schema.
+    spoken_completeness = getattr(m, "completenessModifier", "")
+    profile_completeness = config.get("completeness")
+    if spoken_completeness:
+        effective_completeness = spoken_completeness
+    elif profile_completeness and not GPTState.user_overrode_completeness:
+        effective_completeness = profile_completeness
+    else:
+        effective_completeness = settings.get("user.model_default_completeness")
 
-    completeness = getattr(m, "completenessModifier", "")
+    spoken_scope = getattr(m, "scopeModifier", "")
+    profile_scope = config.get("scope")
+    if spoken_scope:
+        effective_scope = spoken_scope
+    elif profile_scope and not GPTState.user_overrode_scope:
+        effective_scope = profile_scope
+    else:
+        effective_scope = settings.get("user.model_default_scope")
 
-    scope = getattr(m, "scopeModifier", "")
-    method = getattr(m, "methodModifier", "")
-    if not method and not GPTState.user_overrode_method:
-        profile_method = profiles.get("method")
-        if profile_method == "steps":
-            method = (
-                "Important: Use a clear, step-by-step method for this kind of prompt; "
-                "briefly label each step."
-            )
+    spoken_method = getattr(m, "methodModifier", "")
+    profile_method = config.get("method")
+    if spoken_method:
+        effective_method = spoken_method
+    elif profile_method and not GPTState.user_overrode_method:
+        effective_method = profile_method
+    else:
+        effective_method = settings.get("user.model_default_method")
 
-    style = getattr(m, "styleModifier", "")
-    if not style and not GPTState.user_overrode_style:
-        profile_style = profiles.get("style")
-        if profile_style == "bullets":
-            style = (
-                "Important: Present the main answer as concise bullet points rather "
-                "than long paragraphs."
-            )
-        elif profile_style == "code":
-            style = (
-                "Important: Present the main answer primarily as code or markup, with "
-                "minimal surrounding explanation."
-            )
+    spoken_style = getattr(m, "styleModifier", "")
+    profile_style = config.get("style")
+    if spoken_style:
+        effective_style = spoken_style
+    elif profile_style and not GPTState.user_overrode_style:
+        effective_style = profile_style
+    else:
+        effective_style = settings.get("user.model_default_style")
 
-    return base + completeness + scope + method + style + getattr(m, "directionalModifier", "")
+    # Apply the effective axes to the shared system prompt for this request.
+    GPTState.system_prompt.completeness = effective_completeness or ""
+    GPTState.system_prompt.scope = effective_scope or ""
+    GPTState.system_prompt.method = effective_method or ""
+    GPTState.system_prompt.style = effective_style or ""
+
+    # Task line: what you want done.
+    task_line = f"Task:\n  {display_prompt}{goal_modifier}"
+
+    # Constraints block: map each spoken/profile axis into typed lines when we
+    # have something meaningful to say. We deliberately do not restate plain
+    # global defaults here; those already live in the system prompt.
+    constraints: list[str] = ["Constraints:"]
+
+    # Completeness: show spoken or profile-level hints.
+    if spoken_completeness:
+        constraints.append(f"  Completeness: {spoken_completeness}")
+    elif profile_completeness and not GPTState.user_overrode_completeness:
+        constraints.append(f"  Completeness: {profile_completeness}")
+
+    # Scope: purely conceptual, relative to the voice-selected target.
+    if spoken_scope:
+        constraints.append(f"  Scope: {spoken_scope}")
+    elif profile_scope and not GPTState.user_overrode_scope:
+        constraints.append(f"  Scope: {profile_scope}")
+
+    # Method: spoken modifier or short profile keyword.
+    if spoken_method:
+        constraints.append(f"  Method: {spoken_method}")
+    elif profile_method and not GPTState.user_overrode_method:
+        constraints.append(f"  Method: {profile_method}")
+
+    # Style: spoken style modifier or short profile keyword.
+    if spoken_style:
+        constraints.append(f"  Style: {spoken_style}")
+    elif profile_style and not GPTState.user_overrode_style:
+        constraints.append(f"  Style: {profile_style}")
+
+    # If we only have the "Constraints:" header and nothing else, drop it to
+    # avoid cluttering very simple prompts.
+    constraints_block = ""
+    if len(constraints) > 1:
+        constraints_block = "\n" + "\n".join(constraints)
+
+    # Directional lens remains a separate, lens-like instruction appended after
+    # the Task / Constraints schema.
+    if directional:
+        return task_line + constraints_block + "\n\n" + directional
+    else:
+        return task_line + constraints_block
 
 
 @mod.capture(rule="[<user.modelPrompt>] prompt <user.text>")

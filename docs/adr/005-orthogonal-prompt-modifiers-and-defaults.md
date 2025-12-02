@@ -45,7 +45,7 @@ We will:
 
    These will be used in spoken commands to adjust behavior ad hoc on a per-prompt basis.
 
-2. Introduce corresponding default settings for at least completeness and scope (and optionally method/style), analogous to `model_default_voice`, etc. For example:
+2. Introduce corresponding default settings for all four axes, analogous to `model_default_voice`, etc. For example:
   - `model_default_completeness`
   - `model_default_scope`
   - `model_default_method`
@@ -53,13 +53,15 @@ We will:
 
    These will be applied automatically when a prompt does not specify that modifier axis explicitly.
 
-3. Introduce per-prompt defaults keyed by static prompt, so that each static prompt can define its own “profile” for these axes. For example:
-   - `fix` might default to `{ completeness: "solid", scope: "spot" }`.
-   - `simple` might default to `{ completeness: "gist", scope: "spot" }`.
-   - `todo` might default to `{ completeness: "gist", method: "steps", scope: "block" }`.
-   - `diagram` might default to `{ completeness: "gist", scope: "file", style: "code" }`.
+3. Introduce a single, per-static-prompt configuration map keyed by canonical static prompt names. Each entry configures:
+   - A human-readable description for the `Task:` line (for example, “Reformat this into proper Gherkin using Jira markup; output only the reformatted Gherkin with no surrounding explanation.”).
+   - Optional defaults for any of the four contract-style axes (completeness, method, scope, style). For example:
+     - `fix` might configure `{ description: "...", completeness: "full", scope: "narrow" }`.
+     - `simple` might configure `{ description: "...", completeness: "gist", scope: "narrow" }`.
+     - `todo` might configure `{ description: "...", completeness: "gist", method: "steps", scope: "focus", style: "bullets" }`.
+     - `diagram` might configure `{ description: "...", completeness: "gist", scope: "focus", style: "code" }`.
 
-   These per-prompt profiles sit conceptually between global defaults and spoken modifiers, and are part of the intended behaviour of this ADR rather than a purely optional extension.
+   This per-prompt configuration map sits conceptually between global defaults and spoken modifiers, and is part of the intended behaviour of this ADR rather than a purely optional extension.
 
 4. Keep `directionalModifier` as a separate, lens-like dimension, distinct from these contract-style axes:
    - It continues to represent thinking stance (abstract/concrete, acting/reflecting, etc.).
@@ -67,7 +69,7 @@ We will:
 
 5. Make the combination logic explicit, composable, and non-competing:
    - The pipeline will build the user prompt out of:
-     - Goal / static prompt
+     - Goal / static prompt (a short, canonical key expanded into a richer description for the model).
      - `goalModifier`
      - `directionalModifier` (lens)
      - Zero or more of: `completenessModifier`, `methodModifier`, `scopeModifier`, `styleModifier`
@@ -76,7 +78,7 @@ We will:
      1. Spoken modifier (if present).
      2. Per-prompt profile value for that axis (if defined).
      3. Global default setting for that axis.
-   - Only the `effective_<axis>` value is surfaced to the model for that axis (in system prompt lines and any user-level hints), so profiles and defaults do not compete.
+   - The effective axis values are surfaced to the model via `GPTSystemPrompt` lines (`Completeness`, `Scope`, `Method`, `Style`), while the user-level prompt shows the static prompt’s canonical key expanded into a human-readable description (for example, “gherkin” → “Reformat this into proper Gherkin using Jira markup; output only the reformatted Gherkin with no surrounding explanation.”).
 
 This keeps the current `model` command usable, adds richer control in an incremental way, and supports experimentation without discarding the existing directional lenses.
 
@@ -103,19 +105,19 @@ Semantics live in the description text, not the spoken word itself. In practice,
   - `plan:` Give a short plan first, then carry it out.
   - `rigor:` Use disciplined, well-justified reasoning; avoid hand-waving and make uncertainty explicit instead of guessing (method-level constraint, not just a “serious” style flag).
 
-- `scopeModifier` (**optional; conceptual scope rather than text region**):
-  - `narrow:` Restrict discussion to a very small slice of the topic.
-  - `focus:` Stay tightly on a central theme; avoid tangents and side-quests.
-  - `bound:` Stay inside explicit limits; do not introduce material outside them.
+- `scopeModifier` (**conceptual scope rather than text region**):
+  - `narrow:` Restrict discussion to a very small slice of the topic within the voice-selected target.
+  - `focus:` Stay tightly on a central theme within the target; avoid tangents and side-quests.
+  - `bound:` Stay inside explicit limits inferred from or stated in the prompt; do not introduce material outside them.
 
-- `styleModifier` (optional extra beyond existing prompts):
+- `styleModifier`:
   - `plain:` Use straightforward, everyday language; minimise jargon.
   - `tight:` Make the answer short and dense; no fluff.
   - `bullets:` Present the main answer as concise bullet points.
   - `table:` Present the main answer as a Markdown table when feasible.
   - `code:` Present the main answer primarily as code or markup, with minimal prose.
 
-These are designed to be short, punchy utterances that can be spoken reliably and concatenated into the prompt text in the same way as existing modifiers.
+These values are designed to be short, punchy utterances that can be spoken reliably and combined with static prompts and directional lenses.
 
 ### Constraint semantics (Task / Completeness / Method / Scope / Style)
 
@@ -137,68 +139,99 @@ A concrete way to understand the four contract-style axes, consistent with the �
 
 In short: Scope = the fence; Completeness = how thoroughly you search inside the fence; Method = which tool you use; Style = how the finished output is presented.
 
+#### Examples: using completeness and scope together
+
+Concrete examples from the “Task / Constraints” pattern help keep completeness and scope distinct:
+
+- Software documentation:
+  - Scope: “only the error-handling paths in the checkout flow”.
+  - Completeness: from “mention a couple of major paths” (skim) up to “list every error-handling path that exists” (full).
+- Debugging:
+  - Scope: “investigate only `renderPage()`”.
+  - Completeness: from “highlight a few likely issues” (skim) up to “walk every branch, mutation, side effect, and external call” (full).
+- Conceptual study (for example, biology):
+  - Scope: “only the circulatory system”.
+  - Completeness: from “big idea of how it works” (gist) up to “cover every relevant component and regulation mechanism” (full).
+
+These examples are meant as intuition pumps: scope picks the fenced area; completeness decides how densely you fill it.
+
+#### Constraint categories and example adjectives
+
+In practice, natural-language adjectives tend to fall into four functional “layers” that line up with these axes, even when the concrete spoken tokens in `GPT/lists` are different:
+
+- **Style constraints** – tone, brevity, and density:
+  - Words like `light`, `simple`, `small`, `compact`, `moderate` mostly affect how something is said, not what is allowed to be said (they are cousins of `plain`, `tight`, and the style-related static prompts).
+- **Scope constraints** – territory and boundaries:
+  - Words like `narrow`, `focused`, `targeted`, `bounded`, `comprehensive` decide what area is in‑bounds, conceptually relative to whatever text or object the voice command already targeted (for example, “within this function”, “within this error-handling path”, “within this snippet”).
+- **Method constraints** – reasoning approach:
+  - Words like `rigorous`, `deep` change how the model thinks and structures the answer (similar in spirit to spoken method modifiers like `steps` and `plan` when they are used as method flags).
+- **Completeness constraints** – inclusion requirements:
+  - Words like `detailed`, `thorough`, `exhaustive` say how much of the relevant domain must appear (they occupy the same end of the axis as `full`/`max` versus `skim`/`gist`).
+
+These adjectives are not all wired in as spoken `*Modifier` values; they are a conceptual vocabulary for understanding how different free‑form instructions map onto the four contract-style axes and onto the existing concrete lists.
+
+Some adjectives can straddle layers (for example, “detailed” can be style or completeness; “focused” can be scope or method). When in doubt, the higher-impact interpretation wins: “detailed” is treated as completeness before style; “focused” is treated as scope before method; “rigorous” is treated as method before style.
+
+#### Constraint dominance and conflict resolution
+
+When multiple constraint words are present in a single prompt (whether spoken modifiers, free‑form adjectives, or both), the effective behaviour is guided by how much each word shrinks the space of valid outputs. Empirically:
+
+- **Completeness dominates**:
+  - High‑completeness terms (“full”, “max”, or natural‑language cousins like `exhaustive` / `thorough` / `detailed`) override brevity and most style/method nudges.
+  - For example, “simple but exhaustive” means exhaustive coverage, expressed as simply as possible.
+- **Method overrides style, competes with scope**:
+  - Method terms (`steps`, `plan`, `rigor`/`rigorous`, `deep`) reshape internal reasoning and outweigh style terms like `simple` or `light`.
+  - With hard scope (for example, “bounded and deep”), the resolution is “deep reasoning inside the boundary”.
+- **Hard scope dominates style and soft scope**:
+  - Hard scope terms (`bound`/`bounded`, “only X”, “exclude Y`) dominate style terms; softer scope words like “focused” or “narrow” sit below explicit bounds.
+  - For example, “simple but bounded” means stay inside the boundary; simplicity only affects wording.
+- **Style never wins on its own**:
+  - Style terms (`plain`, `tight`, `bullets`, or free‑form adjectives like `simple`, `small`, `compact`, `light`, `moderate`) only shape presentation; they yield whenever they clash with scope, method, or completeness requirements.
+
+A useful mental “tie‑breaker ladder” for mixed adjectives is to think in terms of axes, not specific spellings:
+
+> completeness axis (for example, `full` / `max` / “exhaustive`)  
+> > method axis (for example, `steps` / `plan` / “rigorous” / “deep`)  
+> > hard scope axis (for example, “bounded to X” or “only within this selection”)  
+> > style axis (for example, `plain` / `tight` / `bullets` / “simple` / `compact`).
+
+This ladder is descriptive, not prescriptive: it does not change the `effective_<axis>` precedence rules earlier in this ADR, but it captures how layered constraints typically behave when interpreted by the model and is intended as a guide when designing new spoken modifiers, per-prompt profiles, or static prompts.
+
 ### New default settings (persistent)
 
 Add Talon settings analogous to existing ones:
 
-- `model_default_completeness` (string; for example, `"sketch"`, `"full"`)
+- `model_default_completeness` (string; for example, `"skim"`, `"gist"`, `"full"`, `"max"`)
 - `model_default_scope` (string; for example, `"narrow"`, `"focus"`, `"bound"`; recommended default is empty for no implicit scope bias)
-- `model_default_method` (string; for example, `"stepwise"` or `"plan then do"`)
-- `model_default_style` (optional, if we want default output form separate from static prompts)
+- `model_default_method` (string; for example, `"steps"` or `"plan"`)
+- `model_default_style` (string; for example, `"plain"`, `"bullets"`, `"code"`)
 
 These will be:
 
-- Used when building the prompt if the corresponding modifier axis is not present in the spoken command.
-- Overridable via a voice command similar to `model write as programmer`, for example:
-  - `model set completeness sketch`
-  - `model set scope file`
-  - `model set method stepwise`
-
-### Completeness axis – current semantics
-
-In the current implementation, completeness behaves as follows:
-
-- **Global default only in system prompt**:
-  - `user.model_default_completeness` is surfaced via `GPTSystemPrompt` as `Completeness: <value>`.
-  - This is the only default completeness signal; there is no per-static-prompt “bias” implemented in code.
-- **User prompt stays plain unless you speak a modifier**:
-  - `modelPrompt` does not inject extra completeness hints when no `completenessModifier` is spoken.
-  - For example, `model fix fog` composes to `fix` + any goal modifiers + `fog` with no extra completeness text.
-- **Spoken modifiers are explicit overrides**:
-  - If you say `model fix solid fog`, the `solid` completeness modifier is appended directly into the user prompt string and is treated as the explicit completeness instruction for that request.
-  - No additional “use your default completeness” or “bias toward …” phrases are added on top.
-
-### Per-prompt defaults (profiles)
-
-Some static prompts today implicitly bundle goal, completeness, scope, method, and style (for example, `simple` both “simplifies” and tends to produce short output). To make that explicit and controllable, we will introduce per-prompt profiles:
-
-- For each static prompt key `k` (for example, `fix`, `todo`, `diagram`), maintain an optional profile. For illustration:
-  - `defaults["todo"] = { method: "steps", style: "bullets" }`
-  - `defaults["diagram"] = { style: "code" }`
-
-When a static prompt is present, its profile contributes values to the `effective_<axis>` computation described above:
-
-- If a spoken modifier is present for an axis, it wins.
-- Otherwise, if the profile defines a value for that axis, it shadows the global default for that request for that axis.
-- Otherwise, the global default is used.
-
-Earlier experiments partially realised the completeness axis in code via a small mapping in `lib/talonSettings.py`, but this has since been removed to avoid competing defaults; future per-prompt profiles should follow the `effective_<axis>` precedence described above.
+- Used by `GPTSystemPrompt` when no effective per-request value is supplied.
+- Overridable via voice commands similar to `model write as programmer`, for example:
+  - `model set completeness skim`
+  - `model set scope narrow`
+  - `model set method steps`
+  - `model set style bullets`
 
 ### How the pieces interact
 
 - Baseline behavior:
-  - The system prompt incorporates `model_default_voice`, `model_default_audience`, `model_default_purpose`, `model_default_tone`, and default completeness/method/style (and optionally scope) as brief sentences derived from `user.model_default_*`.
-  - Conceptually, `effective_<axis>` values are derived using the precedence rules above; in the current implementation, contract-style axes in the system prompt lines reflect the global defaults, while any per-call overrides are expressed in the user prompt via spoken modifiers and profile hints.
-  - If the user just says `model fix`, the response uses the global defaults for all contract-style axes, plus any per-prompt profile for `fix` (for example, `full` completeness) for axes where no spoken modifier is present.
+  - The system prompt incorporates `model_default_voice`, `model_default_audience`, `model_default_purpose`, `model_default_tone`, and the four contract-style axes (completeness, scope, method, style). For each axis, `modelPrompt` computes an effective value (spoken modifier > per-prompt profile > `user.model_default_*`) and writes it into `GPTState.system_prompt` before the request is built.
+  - `modelPrompt` also builds a user-level `Task / Constraints` schema. The `Task` line contains the static prompt plus any goal modifier; the `Constraints` block contains any spoken modifiers and, where present, short per-prompt profile hints for completeness, scope, method, and style. Pure global defaults need not be repeated here, since they are already reflected in the system prompt lines.
+  - If the user just says `model fix fog`, the response uses the effective axes in the system prompt (`Completeness: full`, `Scope: narrow`, and so on, based on the `fix` profile and global defaults), plus the profile-level completeness/scope hints for `fix` in the user prompt’s `Constraints` block. The directional lens (`fog`) is appended after the schema.
 
 - Per-prompt overrides:
   - If the user says:
-    - `model fix skim steps plain`
+    - `model fix skim steps plain fog`
   - Then:
-    - `effective_completeness` = `skim` (overrides any default and any `fix`-specific completeness).
-    - `effective_method` = `steps` (overrides default method and any `fix`-specific method).
-    - `effective_style` = `plain` (overrides default style and any `fix`-specific style).
-    - Directional lens (`fog` and so on) is unchanged unless also specified.
+    - The `Task` line is still `fix` + any goal modifiers.
+    - The `Constraints` block contains explicit lines for:
+      - `Completeness: skim`
+      - `Method: steps`
+      - `Style: plain`
+    - Any profile values for those axes are suppressed for that call; the directional lens (`fog`) remains a separate instruction appended after the schema.
 
 - Directional lenses remain distinct:
   - A command could be:
@@ -284,42 +317,51 @@ Deferred: directional lenses are still valuable for some users, and this ADR aim
 
 ## Next Steps
 
-1. Refine vocabularies for:
-   - `completenessModifier`, `scopeModifier`, `methodModifier`, and `styleModifier` (small, opinionated sets).
-   - Prioritise the few values you actually use in practice; trim or rename others as experience accumulates.
-2. Evolve lists and settings in code, wired into:
-   - `lib/talonSettings.py` (lists, captures, settings, optional per-prompt profiles when/if added).
-   - System prompt construction (relying on `user.model_default_*` for defaults and spoken modifiers for overrides).
-3. Extend tests and tooling:
-   - Add further tests for prompt composition and default/override precedence when new behaviours are introduced (for example, per-prompt profiles on additional axes).
-   - Ensure new axes remain discoverable and low-friction in day-to-day use (for example, via `gpt_help` and README examples).
-4. Dogfood and iterate:
-   - Use modifiers in everyday work.
-   - Adjust terms and defaults based on actual usage.
-5. Optionally, add a temporary “beta profile” or `model beta` command to try alternative interpretations of these axes without disturbing existing `model` behavior, then merge once the design stabilizes.
+The core design for ADR 005 is implemented and stable in this repo. Remaining work is optional refinement rather than required behaviour change. Useful future directions include:
+
+1. Refine modifier vocabularies in practice:
+   - Focus on the small subset you actually speak day to day (for example, `skim`/`gist`/`full`, `steps`, `plain`/`bullets`/`code`).
+   - Trim, rename, or deprecate rarely used values over time to keep lists discoverable.
+2. Evolve optional per-static-prompt profiles:
+   - Add or tweak axis defaults in `STATIC_PROMPT_CONFIG` only where a prompt’s intent clearly implies a particular completeness/scope/method/style bias.
+   - Keep to the precedence rules (`spoken > profile > user.model_default_*`) and avoid surprising hidden defaults.
+3. Extend tests and tooling as new behaviours are introduced:
+   - When adding new profiles or axes, expand focused tests for `modelPrompt` composition and default/override precedence.
+   - Keep `gpt_help` and `GPT/readme.md` examples in sync with any vocabulary or profile changes.
+4. Explore profile or mode experiments:
+   - Optionally introduce a temporary “beta profile” or `model beta` command to trial alternative interpretations of these axes without disturbing the main `model` behaviour, promoting successful patterns into the primary flow once they stabilise.
 
 ## Current Status (this repo)
 
 - Completeness, scope, method, and style modifier lists exist under `GPT/lists` and are registered as Talon lists:
-  - `completenessModifier` (`skim`, `gist`, `draft`, `solid`)
-  - `scopeModifier` (`spot`, `block`, `file`, `tests`)
-  - `methodModifier` (`steps`, `plan`, `check`, `alts`)
-  - `styleModifier` (`bullets`, `table`, `story`, `code`)
+  - `completenessModifier` (`skim`, `gist`, `full`, `max`)
+  - `scopeModifier` (`narrow`, `focus`, `bound`)
+  - `methodModifier` (`steps`, `plan`, `rigor`)
+  - `styleModifier` (`plain`, `tight`, `bullets`, `table`, `code`)
 - The `modelPrompt` capture rule accepts these axes as optional modifiers (in the order: completeness, scope, method, style) before the required `directionalModifier`.
-- The composed prompt string includes:
-  - Base static prompt + goal modifier.
-  - Completeness instructions (from spoken modifier only).
-  - Scope/method/style instructions when spoken.
-  - Directional (lens) instructions.
-- Global defaults are available for all contract-style axes via Talon settings:
-  - `user.model_default_completeness`, `user.model_default_scope`, `user.model_default_method`, `user.model_default_style`.
-- `GPTSystemPrompt` incorporates these defaults and surfaces them as:
-  - `Completeness`, `Scope`, `Method`, and `Style` lines in the system prompt array.
-- There is currently no per-static-prompt completeness, scope, method, or style profile active in code; all defaults come from the `user.model_default_*` settings plus any spoken modifiers.
+- `modelPrompt`:
+  - Computes effective completeness/scope/method/style per request (spoken modifier > per-static-prompt profile > `user.model_default_*`).
+  - Writes these effective values into `GPTState.system_prompt` so `GPTSystemPrompt.format_as_array()` exposes them as `Completeness`, `Scope`, `Method`, and `Style` lines.
+  - Returns a `Task / Constraints` schema as the user prompt, with the static prompt and goal on the `Task` line and any spoken/profile constraints listed under `Constraints:`.
+- A single per-static-prompt configuration map is active in code (`STATIC_PROMPT_CONFIG` in `lib/staticPromptConfig.py`, consumed by `lib/talonSettings.py`). For selected prompts, it configures both description and axis defaults. For example:
+  - `fix` configures `{ description: "...", completeness: "full", scope: "narrow" }`.
+  - `simple` configures `{ description: "...", completeness: "gist", scope: "narrow" }`.
+  - `short` configures `{ description: "...", completeness: "gist", style: "tight" }`.
+  - `clear` configures `{ description: "...", completeness: "full", style: "plain" }`.
+  - `todo` configures `{ description: "...", completeness: "gist", method: "steps", style: "bullets", scope: "focus" }`.
+  - `how to` configures `{ description: "...", completeness: "gist", method: "steps", style: "bullets", scope: "focus" }`.
+  - `incremental` configures `{ description: "...", completeness: "gist", method: "steps", scope: "focus" }`.
+  - `bridge` configures `{ description: "...", completeness: "full", method: "steps", scope: "focus" }`.
+  - `diagram` configures `{ description: "...", completeness: "gist", scope: "focus", style: "code" }`.
+  - `HTML` configures `{ description: "...", completeness: "full", scope: "bound", style: "code" }`.
+  - `gherkin` configures `{ description: "...", completeness: "full", scope: "bound", style: "code" }`.
+  - `shell` configures `{ description: "...", completeness: "full", scope: "bound", style: "code" }`.
+  - `commit` configures `{ description: "...", completeness: "gist", scope: "bound", style: "plain" }`.
+  - `ADR` configures `{ description: "...", completeness: "full", method: "rigor", scope: "focus", style: "plain" }`.
 - The `gpt_help` command renders help tables for static prompts, directional modifiers, goal modifiers, voice/tone/audience/purpose, and all four new modifier axes.
 - Focused tests exist for:
   - `modelPrompt` composition across completeness/scope/method/style.
-  - `GPTSystemPrompt` use of the new default axes.
+  - `GPTSystemPrompt` use of the new contract-style axes and Talon defaults.
 
 ### How to run the relevant tests
 
@@ -332,16 +374,25 @@ Deferred: directional lenses are still valuable for some users, and this ADR aim
 ## Practical usage tips
 
 - Start simple:
-  - Rely on `user.model_default_completeness` and speak completeness modifiers only when you want something clearly different (for example, `skim` for a quick pass or `solid` for a thorough one).
+  - Rely on `user.model_default_completeness` and speak completeness modifiers only when you want something clearly different (for example, `skim` for a quick pass or `full` for a thorough one).
   - Use at most one or two spoken modifiers per `model` command until the axes feel natural.
 - Prefer scope + method as your primary knobs:
-  - Scope defaults can stay at `spot` for most day-to-day use; speak `file` only when you truly want file-level reasoning.
+  - Keep `model_default_scope` empty for most day-to-day use so scope stays tied to whatever you selected or targeted with the voice command; speak conceptual scopes like `narrow`, `focus`, or `bound` only when you want to tighten or harden that conceptual territory.
   - Method modifiers like `steps` or `plan` are a good default mental model tweak without overloading the prompt.
 - Treat style as output formatting, not semantics:
   - Use `bullets` or `table` when you care mainly about how the answer is laid out.
   - Use `code` only when you truly want “code only, no explanation”.
 - Use voice commands to shift modes:
   - `model set completeness skim` / `model reset completeness`.
-  - `model set scope file` / `model reset scope`.
+  - `model set scope narrow` / `model reset scope`.
   - `model set method steps` / `model reset method`.
   - `model set style bullets` / `model reset style`.
+ - When using overloaded adjectives in free‑form prompts, prefer explicit typing to reduce ambiguity:
+   - For example, use a mini‑spec:
+     - `Task: …`
+     - `Constraints:`
+     - `  Completeness: thorough`
+     - `  Method: rigorous`
+     - `  Scope: bounded to X`
+     - `  Style: simple`
+   - Or prefix lines like `Scope: focused on error-handling only`, `Method: deep analysis`, `Style: compact`. This makes it obvious which contract-style axis each word is meant to affect.

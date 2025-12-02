@@ -10,7 +10,9 @@ else:
     bootstrap()
 
 if bootstrap is not None:
+    from talon import settings
     from talon_user.lib.talonSettings import modelPrompt
+    from talon_user.lib.modelState import GPTState
 
     class ModelPromptModifiersTests(unittest.TestCase):
         def test_no_modifiers_uses_static_prompt_profile_when_present(self):
@@ -22,9 +24,17 @@ if bootstrap is not None:
 
             result = modelPrompt(m)
 
-            # With no explicit completeness modifier and no completeness profile for "fix",
-            # the composed prompt should just be the base plus directional modifier.
-            self.assertEqual(result, "fixGOALDIR")
+            # With no explicit axis modifiers, we should get a Task / Constraints
+            # schema with a profile-driven completeness/scope hint and the lens
+            # appended after a blank line.
+            self.assertIn("Task:", result)
+            self.assertIn("Constraints:", result)
+            self.assertIn("fixGOAL", result)
+            # Profile for "fix" biases completeness/scope conceptually.
+            self.assertIn("Completeness:", result)
+            self.assertIn("Scope:", result)
+            # Directional lens appears after the schema.
+            self.assertTrue(result.rstrip().endswith("DIR"))
 
         def test_explicit_completeness_modifier_is_used_as_is(self):
             m = SimpleNamespace(
@@ -36,9 +46,11 @@ if bootstrap is not None:
 
             result = modelPrompt(m)
 
-            self.assertTrue(result.startswith("fixGOAL"))
-            self.assertIn("COMP", result)
-            self.assertTrue(result.endswith("DIR"))
+            # Explicit completeness should appear under the Completeness line.
+            self.assertIn("Task:", result)
+            self.assertIn("Constraints:", result)
+            self.assertIn("Completeness: COMP", result)
+            self.assertTrue(result.rstrip().endswith("DIR"))
 
         def test_scope_method_style_modifiers_appended_in_order(self):
             m = SimpleNamespace(
@@ -53,37 +65,102 @@ if bootstrap is not None:
 
             result = modelPrompt(m)
 
-            # Check that all parts are present and ordered.
-            self.assertTrue(result.startswith("fixGOAL"))
-            self.assertIn("COMP", result)
-            self.assertIn("SCOPE", result)
-            self.assertIn("METHOD", result)
-            self.assertIn("STYLE", result)
-            self.assertTrue(result.endswith("DIR"))
-
-            self.assertLess(result.index("COMP"), result.index("SCOPE"))
-            self.assertLess(result.index("SCOPE"), result.index("METHOD"))
-            self.assertLess(result.index("METHOD"), result.index("STYLE"))
+            # Check that all constraint lines are present under the schema.
+            self.assertIn("Task:", result)
+            self.assertIn("Constraints:", result)
+            self.assertIn("Completeness: COMP", result)
+            self.assertIn("Scope: SCOPE", result)
+            self.assertIn("Method: METHOD", result)
+            self.assertIn("Style: STYLE", result)
+            self.assertTrue(result.rstrip().endswith("DIR"))
 
         def test_missing_scope_method_style_do_not_add_text(self):
             m = SimpleNamespace(
                 staticPrompt="fix",
                 goalModifier="GOAL",
                 completenessModifier="COMP",
-                # scope/method/style omitted on purpose; per-prompt profile is only for
-                # completeness on "fix", so no extra method/style text should appear.
+                # scope/method/style omitted on purpose; profiles may add hints,
+                # but we should not see the test sentinel tokens.
                 directionalModifier="DIR",
             )
 
             result = modelPrompt(m)
 
-            self.assertTrue(result.startswith("fixGOAL"))
-            self.assertIn("COMP", result)
-            # No placeholder text should appear for scope/method/style when omitted.
+            self.assertIn("Task:", result)
+            self.assertIn("Completeness: COMP", result)
+            # No literal sentinel tokens should appear for scope/method/style.
             self.assertNotIn("SCOPE", result)
             self.assertNotIn("METHOD", result)
             self.assertNotIn("STYLE", result)
-            self.assertTrue(result.endswith("DIR"))
+            self.assertTrue(result.rstrip().endswith("DIR"))
+
+        def test_model_prompt_updates_system_prompt_axes(self):
+            # Start from known defaults.
+            settings.set("user.model_default_completeness", "full")
+            settings.set("user.model_default_scope", "")
+            settings.set("user.model_default_method", "")
+            settings.set("user.model_default_style", "")
+            GPTState.reset_all()
+
+            # Spoken modifiers should win over profiles and defaults.
+            m = SimpleNamespace(
+                staticPrompt="fix",
+                goalModifier="GOAL",
+                completenessModifier="skim",
+                scopeModifier="narrow",
+                methodModifier="steps",
+                styleModifier="plain",
+                directionalModifier="DIR",
+            )
+
+            _ = modelPrompt(m)
+
+            self.assertEqual(GPTState.system_prompt.completeness, "skim")
+            self.assertEqual(GPTState.system_prompt.scope, "narrow")
+            self.assertEqual(GPTState.system_prompt.method, "steps")
+            self.assertEqual(GPTState.system_prompt.style, "plain")
+
+        def test_model_prompt_uses_profiles_for_system_axes_when_unset(self):
+            # Defaults are present but profile should shape the effective axes
+            # when no spoken modifier is given.
+            settings.set("user.model_default_completeness", "full")
+            settings.set("user.model_default_scope", "")
+            settings.set("user.model_default_method", "")
+            settings.set("user.model_default_style", "")
+            GPTState.reset_all()
+
+            # "todo" has a profile for completeness/method/style/scope.
+            m = SimpleNamespace(
+                staticPrompt="todo",
+                goalModifier="",
+                directionalModifier="DIR",
+            )
+
+            _ = modelPrompt(m)
+
+            self.assertEqual(GPTState.system_prompt.completeness, "gist")
+            self.assertEqual(GPTState.system_prompt.scope, "focus")
+            self.assertEqual(GPTState.system_prompt.method, "steps")
+            self.assertEqual(GPTState.system_prompt.style, "bullets")
+
+        def test_model_prompt_applies_code_style_for_gherkin(self):
+            settings.set("user.model_default_completeness", "full")
+            settings.set("user.model_default_scope", "")
+            settings.set("user.model_default_method", "")
+            settings.set("user.model_default_style", "")
+            GPTState.reset_all()
+
+            m = SimpleNamespace(
+                staticPrompt="gherkin",
+                goalModifier="",
+                directionalModifier="DIR",
+            )
+
+            _ = modelPrompt(m)
+
+            self.assertEqual(GPTState.system_prompt.completeness, "full")
+            self.assertEqual(GPTState.system_prompt.scope, "bound")
+            self.assertEqual(GPTState.system_prompt.style, "code")
 
 else:
     if not TYPE_CHECKING:

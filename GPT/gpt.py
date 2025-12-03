@@ -420,6 +420,13 @@ class UserActions:
             "From the confirmation window, use 'Show grammar help' or 'Open pattern menu' buttons to quickly inspect or tweak what you just ran.",
         )
 
+        builder.h2("Replaced prompts (ADR 007)")
+        builder.ul(
+            "`simple` → use `describe` with `gist` + `plain` (or the “Simplify locally” pattern).",
+            "`short` → use `describe` with `gist` + `tight` (or the “Tighten summary” pattern).",
+            "`how to` / `incremental` → use `todo` or `bridge` with `steps` + `checklist`/`minimal` (or the “Extract todos” pattern).",
+        )
+
         # Order for easy scanning with Cmd-F
         # Static prompts prefer descriptions from STATIC_PROMPT_CONFIG so there
         # is a single source of truth, while section headers in the Talon list

@@ -108,7 +108,7 @@ def _show_scope(gui: imgui.GUI) -> None:
         for key, desc in SCOPE_ITEMS:
             gui.text(f"  {key}: {desc}")
     else:
-        keys = SCOPE_KEYS or ["narrow", "focus", "bound"]
+        keys = SCOPE_KEYS or ["narrow", "focus", "bound", "edges", "relations"]
         gui.text("  " + ", ".join(keys))
     gui.spacer()
 
@@ -119,7 +119,7 @@ def _show_method(gui: imgui.GUI) -> None:
         for key, desc in METHOD_ITEMS:
             gui.text(f"  {key}: {desc}")
     else:
-        keys = METHOD_KEYS or ["steps", "plan", "rigor"]
+        keys = METHOD_KEYS or ["steps", "plan", "rigor", "rewrite", "diagnose", "filter", "prioritize", "cluster"]
         gui.text("  " + ", ".join(keys))
     gui.spacer()
 
@@ -130,7 +130,7 @@ def _show_style(gui: imgui.GUI) -> None:
         for key, desc in STYLE_ITEMS:
             gui.text(f"  {key}: {desc}")
     else:
-        keys = STYLE_KEYS or ["plain", "tight", "bullets", "table", "code"]
+        keys = STYLE_KEYS or ["plain", "tight", "bullets", "table", "code", "checklist"]
         gui.text("  " + ", ".join(keys))
     gui.spacer()
 
@@ -140,6 +140,11 @@ def _show_examples(gui: imgui.GUI) -> None:
     gui.text("  Debug bug: debug · full · narrow · rigor · rog")
     gui.text("  Fix locally: fix · full · narrow · steps · ong")
     gui.text("  Summarize gist: describe · gist · focus · plain · fog")
+    gui.spacer()
+    gui.text("Replaced prompts")
+    gui.text("  simple → use describe · gist · plain (or the 'Simplify locally' pattern).")
+    gui.text("  short → use describe · gist · tight (or the 'Tighten summary' pattern).")
+    gui.text("  todo-style 'how to' → use todo · gist · checklist (or the 'Extract todos' pattern).")
     gui.spacer()
 
 

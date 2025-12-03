@@ -44,6 +44,14 @@ STATIC_PROMPT_CONFIG: dict[str, StaticPromptProfile] = {
     },
     "relation": {
         "description": "Invert this so it focuses on the relationships between things and describe those relationships.",
+        "scope": "relations",
+    },
+    "motifs": {
+        "description": "Identify and summarize meaningful motifs and recurring patterns in the selected material; highlight clusters, common motifs, and notable outliers.",
+        "completeness": "gist",
+        "scope": "relations",
+        "method": "steps",
+        "style": "bullets",
     },
     "type": {
         "description": "Represent this as a type or taxonomy.",
@@ -161,6 +169,7 @@ STATIC_PROMPT_CONFIG: dict[str, StaticPromptProfile] = {
     "pain": {
         "description": "List 3–5 pain points, issues, obstacles, or challenges, ordered by importance to the audience.",
         "completeness": "gist",
+        "method": "filter",
         "style": "bullets",
         "scope": "focus",
     },
@@ -201,24 +210,28 @@ STATIC_PROMPT_CONFIG: dict[str, StaticPromptProfile] = {
     "question": {
         "description": "Ask open-ended questions about this that are important to the audience.",
         "completeness": "gist",
+        "method": "filter",
         "style": "bullets",
         "scope": "focus",
     },
     "relevant": {
         "description": "Identify what is relevant here.",
         "completeness": "gist",
+        "method": "filter",
         "style": "bullets",
         "scope": "focus",
     },
     "misunderstood": {
         "description": "Identify what is misunderstood in this situation.",
         "completeness": "gist",
+        "method": "filter",
         "style": "bullets",
         "scope": "focus",
     },
     "risky": {
         "description": "Highlight what is risky and why.",
         "completeness": "gist",
+        "method": "filter",
         "style": "bullets",
         "scope": "focus",
     },
@@ -344,21 +357,27 @@ STATIC_PROMPT_CONFIG: dict[str, StaticPromptProfile] = {
     },
     "dependency": {
         "description": "List dependencies and what they depend on.",
+        "scope": "relations",
     },
     "cochange": {
         "description": "For multiple subjects, show how each directly cochanges with the others.",
+        "scope": "relations",
     },
     "interact": {
         "description": "Explain how these elements interact.",
+        "scope": "relations",
     },
     "dependent": {
         "description": "Explain how these elements are dependent on each other.",
+        "scope": "relations",
     },
     "independent": {
         "description": "Explain how these elements are independent.",
+        "scope": "relations",
     },
     "parallel": {
         "description": "Describe problems that could arise if these two items were parallelized.",
+        "scope": "relations",
     },
     "team": {
         "description": "Describe the team structure, focusing on people and their roles.",
@@ -449,42 +468,12 @@ STATIC_PROMPT_CONFIG: dict[str, StaticPromptProfile] = {
         "completeness": "full",
         "scope": "narrow",
     },
-    # Simple explanations lean toward gist-level completeness with tight scope.
-    "simple": {
-        "description": "Rewrite this in a simpler way while preserving the core meaning.",
-        "completeness": "gist",
-        "scope": "narrow",
-    },
-    # Shortening and clarity prompts bias style and completeness.
-    "short": {
-        "description": "Shorten this while preserving meaning; return only the modified text.",
-        "completeness": "gist",
-        "style": "tight",
-    },
-    "clear": {
-        "description": "Remove all jargon and complex language; rewrite this so it is easy to understand.",
-        "completeness": "full",
-        "style": "plain",
-    },
     # TODO and planning prompts are usually concise, stepwise, and bullet-oriented.
     "todo": {
         "description": "Format this as a todo list.",
         "completeness": "gist",
         "method": "steps",
-        "style": "bullets",
-        "scope": "focus",
-    },
-    "how to": {
-        "description": "Provide a quick plan to solve today’s problem.",
-        "completeness": "gist",
-        "method": "steps",
-        "style": "bullets",
-        "scope": "focus",
-    },
-    "incremental": {
-        "description": "Break this down into smaller steps to do just the next tiny increment.",
-        "completeness": "gist",
-        "method": "steps",
+        "style": "checklist",
         "scope": "focus",
     },
     "bridge": {

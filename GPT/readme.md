@@ -64,9 +64,10 @@ When the confirmation GUI is open, it also:
 The `model` command now supports several short, speech-friendly modifier axes you can tack on after the prompt:
 
 - Completeness (`completenessModifier`): `skim`, `gist`, `full`, `max`, `minimal`, `deep`
-- Scope (`scopeModifier`): `narrow`, `focus`, `bound`, `edges`
-- Method (`methodModifier`): `steps`, `plan`, `rigor`, `rewrite`, `diagnose`
-- Style (`styleModifier`): `plain`, `tight`, `bullets`, `table`, `code`
+- Scope (`scopeModifier`): `narrow`, `focus`, `bound`, `edges`, `relations`
+- Method (`methodModifier`): `steps`, `plan`, `rigor`, `rewrite`, `diagnose`, `filter`, `prioritize`, `cluster`
+- Style (`styleModifier`): `plain`, `tight`, `bullets`, `table`, `code`, `checklist`
+  - Additional style: `cards` – format the answer as discrete cards/items with clear headings and short bodies.
 
 Directional lenses (required) are a separate axis:
 
@@ -78,20 +79,18 @@ When you use these modifiers—either by speaking them or via a pattern/pattern 
 - As part of the **system prompt contract** (via `Completeness/Scope/Method/Style` fields), which shapes how the model reasons and responds.
 - As explicit **Constraints:** lines in the user prompt, where the Talon lists expand keys like `gist` or `focus` into the full “Important: …” descriptions you see in logs or confirmation text.
 
-You normally say at most one or two of these per call. Examples (only using real prompts from `staticPrompt.talon-list`):
+You normally say at most one or two of these per call. Examples:
 
 - `model fix skim plain fog` – light grammar/typo fix in plain language.
 - `model fix full plain rog` – full grammar/wording pass, still straightforward.
-- `model simple gist plain fog` – rewrite selected text in a simpler way, short but complete.
-- `model short gist tight rog` – shorten selected text while keeping the core meaning, written tightly.
-- `model todo gist bullets rog` – turn notes into a concise TODO list as bullets.
+- `model todo gist checklist rog` – turn notes into a concise TODO list as an actionable checklist.
 - `model flow full steps plain rog` – explain the flow of selected code or text step by step.
 - `model diagram gist code fog` – convert text to a mermaid-style diagram, code-only.
 
 If you omit a modifier, a default is inferred from:
 
 - Global settings like `user.model_default_completeness` / `scope` / `method` / `style`, and
-- Per-prompt defaults for some static prompts (for example, `fix`, `simple`, `short`, `todo`, `diagram`).
+- Per-prompt defaults for some static prompts (for example, `fix`, `todo`, `diagram`).
 
 You can adjust these defaults by voice:
 

@@ -682,6 +682,8 @@
     - Describes `directionalModifier` with examples of core lenses and combined forms.
     - States that every `model` command using this grammar should include exactly one directional lens token.
   - Ensured the example pattern recipe now shows a full, speakable form including the lens, e.g. `debug · full · narrow · rigor · rog`.
+  - Extended the style modifier list to include a `cards` style:
+    - Described as formatting the answer as discrete cards/items with clear headings and short bodies, complementing existing `plain`/`bullets`/`table`/`code` styles.
 
 ### Behaviour impact
 

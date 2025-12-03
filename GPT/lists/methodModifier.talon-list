@@ -7,3 +7,6 @@ plan: Important: Give a short plan first, then carry it out; clearly separate th
 rigor: Important: Use disciplined, well-justified reasoning; avoid hand-waving and make your logic explicit.
 rewrite: Important: Rewrite or refactor while preserving the original intent; treat this as a mechanical transform, not a re-interpretation.
 diagnose: Important: Look for likely causes of problems first; narrow down hypotheses before proposing fixes or changes.
+filter: Important: Extract only items that match a clearly stated criterion (for example, pain points, risks, open questions); do not restate everything else.
+prioritize: Important: Assess and order items by importance or impact to the stated audience; make the ranking and rationale explicit.
+cluster: Important: Group similar items into labeled categories and describe each cluster, emphasising recurring patterns over isolated singletons.

@@ -1,19 +1,9 @@
 list: user.staticPrompt
 -
 
-# Voice, Audience, and Framing
-
-announce: announce
-
 # Output and Formatting
 
 emoji: emoji
-# Remove all jargon and complex language.
-clear: clear
-# Rewrite this in a simpler way.
-simple: simple
-# Shorten; preserve meaning; modified text only.
-short: short
 # Fix grammar only; keep meaning/tone; modified text only.
 fix: fix
 format: format
@@ -44,6 +34,7 @@ taste: taste
 system: system
 tao: tao
 com b: com b
+motifs: motifs
 
 # Planning, Product, and Execution
 
@@ -54,9 +45,7 @@ metrics: metrics
 value: value
 jobs: jobs
 done: done
-how to: how to
 operations: operations
-incremental: incremental
 bridge: bridge
 # Write an ADR.
 ADR: ADR
@@ -142,8 +131,6 @@ effects: effects
 
 # Variations and Playful
 
-silly: silly
-style: style
 recipe: recipe
 problem: problem
 lens: lens

@@ -25,7 +25,7 @@ Right now, these are either implicit, pushed into ad-hoc phrasing, or partially 
 
 - Issue ad-hoc prompts that tweak these axes for a single interaction.
 - Configure sticky defaults so that multiple `model` requests share the same completeness/scope/method without repeating the same instructions.
-- Express that some static prompts (for example, `fix`, `simple`, `short`, `todo`, `diagram`) carry not just a goal but also an implicit “profile” for completeness, scope, method, and style.
+- Express that some static prompts (for example, `fix`, `todo`, `diagram`) carry not just a goal but also an implicit “profile” for completeness, scope, method, and style.
 - Experiment safely with new axes without breaking the existing `model` surface.
 
 The idea that’s emerging is: treat these as orthogonal axes, and support both:
@@ -57,7 +57,6 @@ We will:
    - A human-readable description for the `Task:` line (for example, “Reformat this into proper Gherkin using Jira markup; output only the reformatted Gherkin with no surrounding explanation.”).
    - Optional defaults for any of the four contract-style axes (completeness, method, scope, style). For example:
      - `fix` might configure `{ description: "...", completeness: "full", scope: "narrow" }`.
-     - `simple` might configure `{ description: "...", completeness: "gist", scope: "narrow" }`.
      - `todo` might configure `{ description: "...", completeness: "gist", method: "steps", scope: "focus", style: "bullets" }`.
      - `diagram` might configure `{ description: "...", completeness: "gist", scope: "focus", style: "code" }`.
 
@@ -187,6 +186,7 @@ When multiple constraint words are present in a single prompt (whether spoken mo
   - With hard scope (for example, “bounded and deep”), the resolution is “deep reasoning inside the boundary”.
 - **Hard scope dominates style and soft scope**:
   - Hard scope terms (`bound`/`bounded`, “only X”, “exclude Y`) dominate style terms; softer scope words like “focused” or “narrow” sit below explicit bounds.
+  - Relational scope terms (for example, `relations`) narrow the territory further to how elements connect (“only relationships and interaction patterns among these parts”).
   - For example, “simple but bounded” means stay inside the boundary; simplicity only affects wording.
 - **Style never wins on its own**:
   - Style terms (`plain`, `tight`, `bullets`, or free‑form adjectives like `simple`, `small`, `compact`, `light`, `moderate`) only shape presentation; they yield whenever they clash with scope, method, or completeness requirements.
@@ -194,9 +194,9 @@ When multiple constraint words are present in a single prompt (whether spoken mo
 A useful mental “tie‑breaker ladder” for mixed adjectives is to think in terms of axes, not specific spellings:
 
 > completeness axis (for example, `full` / `max` / “exhaustive`)  
-> > method axis (for example, `steps` / `plan` / “rigorous” / “deep`)  
+> > method axis (for example, `steps` / `plan` / “rigorous” / “deep` / `filter` / `prioritize` / `cluster`)  
 > > hard scope axis (for example, “bounded to X” or “only within this selection”)  
-> > style axis (for example, `plain` / `tight` / `bullets` / “simple` / `compact`).
+> > style axis (for example, `plain` / `tight` / `bullets` / “simple` / `compact` / `checklist`).
 
 This ladder is descriptive, not prescriptive: it does not change the `effective_<axis>` precedence rules earlier in this ADR, but it captures how layered constraints typically behave when interpreted by the model and is intended as a guide when designing new spoken modifiers, per-prompt profiles, or static prompts.
 
@@ -205,9 +205,9 @@ This ladder is descriptive, not prescriptive: it does not change the `effective_
 Add Talon settings analogous to existing ones:
 
 - `model_default_completeness` (string; for example, `"skim"`, `"gist"`, `"full"`, `"max"`)
-- `model_default_scope` (string; for example, `"narrow"`, `"focus"`, `"bound"`; recommended default is empty for no implicit scope bias)
-- `model_default_method` (string; for example, `"steps"` or `"plan"`)
-- `model_default_style` (string; for example, `"plain"`, `"bullets"`, `"code"`)
+- `model_default_scope` (string; for example, `"narrow"`, `"focus"`, `"bound"`, `"relations"`; recommended default is empty for no implicit scope bias)
+- `model_default_method` (string; for example, `"steps"`, `"plan"`, `"filter"`, `"prioritize"`, or `"cluster"`)
+- `model_default_style` (string; for example, `"plain"`, `"bullets"`, `"code"`, `"checklist"`)
 
 These will be:
 
@@ -339,8 +339,8 @@ The core design for ADR 005 is implemented and stable in this repo. Remaining wo
 - Completeness, scope, method, and style modifier lists exist under `GPT/lists` and are registered as Talon lists:
   - `completenessModifier` (`skim`, `gist`, `full`, `max`, `minimal`, `deep`)
   - `scopeModifier` (`narrow`, `focus`, `bound`, `edges`)
-  - `methodModifier` (`steps`, `plan`, `rigor`, `rewrite`, `diagnose`)
-  - `styleModifier` (`plain`, `tight`, `bullets`, `table`, `code`)
+  - `methodModifier` (`steps`, `plan`, `rigor`, `rewrite`, `diagnose`, `filter`, `prioritize`, `cluster`)
+  - `styleModifier` (`plain`, `tight`, `bullets`, `table`, `code`, `checklist`)
 - The `modelPrompt` capture rule accepts these axes as optional modifiers (in the order: completeness, scope, method, style) before the required `directionalModifier`.
 - `modelPrompt`:
   - Computes effective completeness/scope/method/style per request (spoken modifier > per-static-prompt profile > `user.model_default_*`).
@@ -348,12 +348,7 @@ The core design for ADR 005 is implemented and stable in this repo. Remaining wo
   - Returns a `Task / Constraints` schema as the user prompt, with the static prompt and goal on the `Task` line and any spoken/profile constraints listed under `Constraints:`.
 - A single per-static-prompt configuration map is active in code (`STATIC_PROMPT_CONFIG` in `lib/staticPromptConfig.py`, consumed by `lib/talonSettings.py`). For selected prompts, it configures both description and axis defaults. For example:
   - `fix` configures `{ description: "...", completeness: "full", scope: "narrow" }`.
-  - `simple` configures `{ description: "...", completeness: "gist", scope: "narrow" }`.
-  - `short` configures `{ description: "...", completeness: "gist", style: "tight" }`.
-  - `clear` configures `{ description: "...", completeness: "full", style: "plain" }`.
-  - `todo` configures `{ description: "...", completeness: "gist", method: "steps", style: "bullets", scope: "focus" }`.
-  - `how to` configures `{ description: "...", completeness: "gist", method: "steps", style: "bullets", scope: "focus" }`.
-  - `incremental` configures `{ description: "...", completeness: "gist", method: "steps", scope: "focus" }`.
+  - `todo` configures `{ description: "...", completeness: "gist", method: "steps", style: "checklist", scope: "focus" }`.
   - `bridge` configures `{ description: "...", completeness: "full", method: "steps", scope: "focus" }`.
   - `diagram` configures `{ description: "...", completeness: "gist", scope: "focus", style: "code" }`.
   - `HTML` configures `{ description: "...", completeness: "full", scope: "bound", style: "code" }`.
@@ -373,6 +368,8 @@ The core design for ADR 005 is implemented and stable in this repo. Remaining wo
 - These tests:
   - Exercise `modelPrompt` composition for completeness/scope/method/style.
   - Verify that `GPTSystemPrompt` reads the `user.model_default_*` settings for the new axes.
+
+## Practical usage tips
 
 ## Practical usage tips
 

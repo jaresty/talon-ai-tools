@@ -7,3 +7,5 @@ tight: Important: Make the answer short and dense; remove fluff and redundancy.
 bullets: Important: Format the main answer as concise bullet points only; avoid long paragraphs.
 table: Important: Present the main answer as a Markdown table when feasible; keep columns and rows compact.
 code: Important: Output only code or markup for the main answer, with no surrounding natural-language explanation.
+cards: Important: Present the main answer as a set of discrete cards or items, each with a clear heading and a short body; avoid long continuous prose.
+checklist: Important: Present the main answer as an actionable checklist; each item should be a clear, imperative task rather than descriptive prose.

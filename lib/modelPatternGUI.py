@@ -79,6 +79,7 @@ SCOPE_TOKENS = {
     "focus",
     "bound",
     "edges",
+    "relations",
 }
 
 METHOD_TOKENS = {
@@ -87,6 +88,9 @@ METHOD_TOKENS = {
     "rigor",
     "rewrite",
     "diagnose",
+    "filter",
+    "prioritize",
+    "cluster",
 }
 
 STYLE_TOKENS = {
@@ -95,6 +99,7 @@ STYLE_TOKENS = {
     "bullets",
     "table",
     "code",
+    "checklist",
 }
 
 COMPLETENESS_MAP = _load_axis_map("completenessModifier.talon-list")
@@ -139,10 +144,28 @@ PATTERNS: list[PromptPattern] = [
     PromptPattern(
         name="Extract todos",
         description="Turn this into a todo list.",
-        recipe="todo · gist · focus · steps · bullets · ong",
+        recipe="todo · gist · focus · steps · checklist · ong",
+        domain="coding",
+    ),
+    PromptPattern(
+        name="Map dependencies",
+        description="List and explain key dependencies and what they depend on.",
+        recipe="dependency · gist · relations · steps · fog",
         domain="coding",
     ),
     # Writing / product / reflection patterns
+    PromptPattern(
+        name="Simplify locally",
+        description="Rewrite the selected text in a simpler way, short but complete.",
+        recipe="describe · gist · narrow · plain · fog",
+        domain="writing",
+    ),
+    PromptPattern(
+        name="Tighten summary",
+        description="Shorten the text while preserving its core meaning.",
+        recipe="describe · gist · focus · tight · fog",
+        domain="writing",
+    ),
     PromptPattern(
         name="Summarize gist",
         description="One-paragraph summary of the text.",
@@ -164,7 +187,13 @@ PATTERNS: list[PromptPattern] = [
     PromptPattern(
         name="Pain points",
         description="List and order key pain points.",
-        recipe="pain · gist · focus · bullets · fog",
+        recipe="pain · gist · focus · filter · bullets · fog",
+        domain="writing",
+    ),
+    PromptPattern(
+        name="Risk scan",
+        description="List and briefly explain key risks.",
+        recipe="risky · gist · focus · filter · bullets · fog",
         domain="writing",
     ),
 ]

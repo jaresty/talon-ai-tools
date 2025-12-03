@@ -147,7 +147,7 @@ if bootstrap is not None:
             self.assertEqual(GPTState.system_prompt.completeness, "gist")
             self.assertEqual(GPTState.system_prompt.scope, "focus")
             self.assertEqual(GPTState.system_prompt.method, "steps")
-            self.assertEqual(GPTState.system_prompt.style, "bullets")
+            self.assertEqual(GPTState.system_prompt.style, "checklist")
 
         def test_model_prompt_applies_code_style_for_gherkin(self):
             m = SimpleNamespace(
@@ -216,8 +216,37 @@ if bootstrap is not None:
 
             self.assertEqual(
                 GPTState.last_recipe,
-                "todo · gist · focus · steps · bullets",
+                "todo · gist · focus · steps · checklist",
             )
+
+        def test_model_prompt_uses_profiles_for_filter_style_prompts(self):
+            # Filter-style prompts like "pain" should drive method/style/scope
+            # via their profiles when no spoken modifiers are present.
+            m = SimpleNamespace(
+                staticPrompt="pain",
+                goalModifier="",
+                directionalModifier="DIR",
+            )
+
+            _ = modelPrompt(m)
+
+            self.assertEqual(GPTState.system_prompt.completeness, "gist")
+            self.assertEqual(GPTState.system_prompt.scope, "focus")
+            self.assertEqual(GPTState.system_prompt.method, "filter")
+            self.assertEqual(GPTState.system_prompt.style, "bullets")
+
+        def test_model_prompt_uses_relations_scope_for_dependency_prompts(self):
+            # Relationship-style prompts like "dependency" should use the
+            # relational scope profile when present.
+            m = SimpleNamespace(
+                staticPrompt="dependency",
+                goalModifier="",
+                directionalModifier="DIR",
+            )
+
+            _ = modelPrompt(m)
+
+            self.assertEqual(GPTState.system_prompt.scope, "relations")
 
 else:
     if not TYPE_CHECKING:

@@ -17,6 +17,12 @@ class StaticPromptProfile(TypedDict, total=False):
 
 
 STATIC_PROMPT_CONFIG: dict[str, StaticPromptProfile] = {
+    # Default "infer the task" prompt used when no explicit staticPrompt
+    # is provided. This keeps the visible Task description consistent with
+    # the historical fallback while giving it a concise recipe token.
+    "infer": {
+        "description": "I'm not telling you what to do. Infer the task.",
+    },
     "emoji": {
         "description": "Return only emoji.",
     },

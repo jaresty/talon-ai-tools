@@ -1,6 +1,9 @@
 list: user.staticPrompt
 -
 
+# Default "infer the task" recipe, used when no explicit static prompt is spoken.
+infer: infer
+
 # Output and Formatting
 
 emoji: emoji

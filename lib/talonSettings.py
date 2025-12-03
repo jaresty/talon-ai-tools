@@ -160,11 +160,22 @@ mod.list("goalModifier", desc="GPT Goal Modifiers")
 def modelPrompt(m) -> str:
     if hasattr(m, "customPrompt"):
         return str(m.customPrompt)
-    static_prompt = getattr(
-        m, "staticPrompt", "I'm not telling you what to do. Infer the task."
-    )
+    # When no explicit staticPrompt is spoken, fall back to the canonical
+    # "infer" key so that recipes remain concise and grammar-shaped while the
+    # Task line still uses the historic human-facing description.
+    static_prompt = getattr(m, "staticPrompt", "infer")
     profile = get_static_prompt_profile(static_prompt)
-    display_prompt = profile["description"] if profile is not None else static_prompt
+    if profile is not None:
+        display_prompt = profile["description"]
+    else:
+        # Preserve the previous human-facing fallback text when we have no
+        # profile metadata (for example, custom prompts defined outside this
+        # repo).
+        display_prompt = (
+            "I'm not telling you what to do. Infer the task."
+            if static_prompt == "infer"
+            else static_prompt
+        )
     goal_modifier = getattr(m, "goalModifier", "")
     directional = getattr(m, "directionalModifier", "")
 

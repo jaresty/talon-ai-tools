@@ -13,9 +13,7 @@ from talon import Context, Module, clip, settings
 from .staticPromptConfig import STATIC_PROMPT_CONFIG
 
 
-def _read_axis_default_from_list(
-    filename: str, key: str, fallback: str
-) -> str:
+def _read_axis_default_from_list(filename: str, key: str, fallback: str) -> str:
     """Return the list value for a given key from a GPT axis .talon-list file.
 
     Falls back to the provided fallback if the file or key is not found.
@@ -44,11 +42,77 @@ def _read_axis_default_from_list(
     return fallback
 
 
+def _read_axis_value_to_key_map(filename: str) -> dict[str, str]:
+    """Build a mapping from axis value/description back to its short key.
+
+    We normalise both the key and value so that:
+    - Spoken modifiers that expand to long, instruction-style text can be
+      mapped back to their concise grammar token (for example, the long
+      "Important: Provide a thorough answer..." string -> "full").
+    - Code paths that already use the short token (for example, tests or
+      static prompt profiles) map idempotently to themselves.
+    """
+    current_dir = os.path.dirname(__file__)
+    lists_dir = os.path.abspath(os.path.join(current_dir, "..", "GPT", "lists"))
+    path = os.path.join(lists_dir, filename)
+    mapping: dict[str, str] = {}
+    try:
+        with open(path, "r", encoding="utf-8") as f:
+            for line in f:
+                line = line.strip()
+                if (
+                    not line
+                    or line.startswith("#")
+                    or line.startswith("list:")
+                    or line == "-"
+                ):
+                    continue
+                if ":" not in line:
+                    continue
+                key, value = line.split(":", 1)
+                short = key.strip()
+                desc = value.strip()
+                # Map both the key and its description back to the short token.
+                mapping[short] = short
+                mapping[desc] = short
+    except FileNotFoundError:
+        return {}
+    return mapping
+
+
 DEFAULT_COMPLETENESS_VALUE = _read_axis_default_from_list(
     "completenessModifier.talon-list",
     "full",
     "full",
 )
+
+_COMPLETENESS_VALUE_TO_KEY = _read_axis_value_to_key_map(
+    "completenessModifier.talon-list"
+)
+_SCOPE_VALUE_TO_KEY = _read_axis_value_to_key_map("scopeModifier.talon-list")
+_METHOD_VALUE_TO_KEY = _read_axis_value_to_key_map("methodModifier.talon-list")
+_STYLE_VALUE_TO_KEY = _read_axis_value_to_key_map("styleModifier.talon-list")
+
+
+def _axis_recipe_token(axis: str, raw_value: str) -> str:
+    """Return the short token to use in last_recipe for a given axis value.
+
+    This keeps the system prompt free to use rich, instruction-style axis
+    descriptions while the confirmation GUI and recipe recap stay concise and
+    grammar-shaped (for example, `shell · full · bound · steps · plain`). If
+    we cannot resolve a mapping, fall back to the raw value.
+    """
+    if not raw_value:
+        return raw_value
+    axis_map = {
+        "completeness": _COMPLETENESS_VALUE_TO_KEY,
+        "scope": _SCOPE_VALUE_TO_KEY,
+        "method": _METHOD_VALUE_TO_KEY,
+        "style": _STYLE_VALUE_TO_KEY,
+    }.get(axis, {})
+    if not axis_map:
+        return raw_value
+    return axis_map.get(raw_value, raw_value)
 
 mod = Module()
 ctx = Context()
@@ -142,13 +206,13 @@ def modelPrompt(m) -> str:
     # confirmation GUI (and future UIs) can recap what was asked.
     recipe_parts = [static_prompt]
     if effective_completeness:
-        recipe_parts.append(effective_completeness)
+        recipe_parts.append(_axis_recipe_token("completeness", effective_completeness))
     if effective_scope:
-        recipe_parts.append(effective_scope)
+        recipe_parts.append(_axis_recipe_token("scope", effective_scope))
     if effective_method:
-        recipe_parts.append(effective_method)
+        recipe_parts.append(_axis_recipe_token("method", effective_method))
     if effective_style:
-        recipe_parts.append(effective_style)
+        recipe_parts.append(_axis_recipe_token("style", effective_style))
     GPTState.last_recipe = " · ".join(recipe_parts)
 
     # Task line: what you want done.

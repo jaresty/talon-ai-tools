@@ -129,6 +129,152 @@ if bootstrap is not None:
             self.assertIsNone(kwargs.get("additional_source"))
             self.assertEqual(text, "result")
 
+        def test_gpt_suggest_prompt_recipes_parses_suggestions(self):
+            with patch.object(gpt_module, "PromptSession") as session_cls, patch.object(
+                gpt_module, "create_model_source"
+            ) as create_source:
+                source = MagicMock()
+                source.get_text.return_value = "content"
+                create_source.return_value = source
+                mock_session = session_cls.return_value
+                mock_session._destination = "paste"
+
+                # Arrange a suggestion-style response.
+                self.pipeline.complete.return_value = PromptResult.from_messages(
+                    [
+                        format_message(
+                            "Name: Deep map | Recipe: describe · full · relations · cluster · bullets · fog\n"
+                            "Name: Quick scan | Recipe: dependency · gist · relations · steps · plain · fog"
+                        )
+                    ]
+                )
+
+                gpt_module.UserActions().gpt_suggest_prompt_recipes("subject")
+
+                self.assertEqual(
+                    GPTState.last_suggested_recipes,
+                    [
+                        {
+                            "name": "Deep map",
+                            "recipe": "describe · full · relations · cluster · bullets · fog",
+                        },
+                        {
+                            "name": "Quick scan",
+                            "recipe": "dependency · gist · relations · steps · plain · fog",
+                        },
+                    ],
+                )
+
+        def test_gpt_suggest_prompt_recipes_accepts_label_without_name_prefix(self):
+            with patch.object(gpt_module, "PromptSession") as session_cls, patch.object(
+                gpt_module, "create_model_source"
+            ) as create_source:
+                source = MagicMock()
+                source.get_text.return_value = "content"
+                create_source.return_value = source
+                mock_session = session_cls.return_value
+                mock_session._destination = "paste"
+
+                self.pipeline.complete.return_value = PromptResult.from_messages(
+                    [
+                        format_message(
+                            "Relational Overview | Recipe: describe · full · relations · cluster · plain · jog"
+                        )
+                    ]
+                )
+
+                gpt_module.UserActions().gpt_suggest_prompt_recipes("subject")
+
+                self.assertEqual(
+                    GPTState.last_suggested_recipes,
+                    [
+                        {
+                            "name": "Relational Overview",
+                            "recipe": "describe · full · relations · cluster · plain · jog",
+                        }
+                    ],
+                )
+
+        def test_gpt_suggest_prompt_recipes_allows_empty_source_when_subject_given(self):
+            with patch.object(gpt_module, "PromptSession") as session_cls, patch.object(
+                gpt_module, "create_model_source"
+            ) as create_source:
+                source = MagicMock()
+                source.get_text.return_value = ""
+                create_source.return_value = source
+                mock_session = session_cls.return_value
+                mock_session._destination = "paste"
+
+                # Arrange a suggestion-style response so parsing succeeds.
+                self.pipeline.complete.return_value = PromptResult.from_messages(
+                    [
+                        format_message(
+                            "Relational Overview | Recipe: describe · full · relations · cluster · plain · jog"
+                        )
+                    ]
+                )
+
+                gpt_module.UserActions().gpt_suggest_prompt_recipes("subject")
+
+                # Even with an empty source, providing a subject should still
+                # drive a suggestion request and populate suggestions.
+                self.assertEqual(
+                    GPTState.last_suggested_recipes,
+                    [
+                        {
+                            "name": "Relational Overview",
+                            "recipe": "describe · full · relations · cluster · plain · jog",
+                        }
+                    ],
+                )
+
+        def test_gpt_suggest_prompt_recipes_opens_suggestion_gui_when_available(self):
+            with patch.object(gpt_module, "PromptSession") as session_cls, patch.object(
+                gpt_module, "create_model_source"
+            ) as create_source, patch.object(
+                actions.user, "model_prompt_recipe_suggestions_gui_open"
+            ) as open_gui:
+                source = MagicMock()
+                source.get_text.return_value = "content"
+                create_source.return_value = source
+                mock_session = session_cls.return_value
+                mock_session._destination = "paste"
+
+                # Arrange a suggestion-style response.
+                self.pipeline.complete.return_value = PromptResult.from_messages(
+                    [
+                        format_message(
+                            "Name: Deep map | Recipe: describe · full · relations · cluster · bullets · fog"
+                        )
+                    ]
+                )
+
+                gpt_module.UserActions().gpt_suggest_prompt_recipes("subject")
+
+                open_gui.assert_called_once()
+
+        def test_gpt_suggest_prompt_recipes_uses_prompt_session(self):
+            with patch.object(gpt_module, "PromptSession") as session_cls, patch.object(
+                gpt_module, "create_model_source"
+            ) as create_source:
+                source = MagicMock()
+                source.get_text.return_value = "content"
+                create_source.return_value = source
+                mock_session = session_cls.return_value
+                mock_session._destination = "paste"
+
+                gpt_module.UserActions().gpt_suggest_prompt_recipes("subject")
+
+                create_source.assert_called_once()
+                session_cls.assert_called_once()
+                mock_session.begin.assert_called_once_with(reuse_existing=True)
+                mock_session.add_messages.assert_called_once()
+                self.pipeline.complete.assert_called_once_with(mock_session)
+                actions.user.gpt_insert_response.assert_called_once_with(
+                    self.pipeline.complete.return_value,
+                    mock_session._destination,
+                )
+
 
         def test_gpt_pass_uses_prompt_session(self):
             configuration = MagicMock(

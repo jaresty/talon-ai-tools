@@ -59,6 +59,15 @@ When the confirmation GUI is open, it also:
   - `model quick help completeness` / `scope` / `method` / `style`
   - `model show grammar`
 
+#### Prompt recipe suggestions (ADR 008)
+
+- `model suggest` / `model suggest for <subject>` – ask the model to propose 3–5 concrete `staticPrompt · completeness · scope · method · style · directional` recipes for the current source (selection/clipboard/etc.), insert them as `Name: … | Recipe: …` lines, cache them, and open a small “Prompt recipe suggestions” window.
+- In the suggestions window:
+  - Click a suggestion to run that recipe via the normal `model` pipeline; the window closes after execution.
+  - Say `run suggestion <number>` (for example, `run suggestion 1`) to execute a specific recipe by index.
+  - Say `close suggestions` to dismiss the window.
+- `model suggestions` – reopen the suggestion window based on the last `model suggest` call without re-running the model.
+
 ### Modifier axes (advanced)
 
 The `model` command now supports several short, speech-friendly modifier axes you can tack on after the prompt:

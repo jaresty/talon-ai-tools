@@ -18,6 +18,9 @@ class GPTState:
     # Human-readable summary of the last prompt recipe
     # (static prompt + effective completeness/scope/method/style).
     last_recipe: ClassVar[str] = ""
+    # Last set of prompt recipe suggestions, if any, as a list of
+    # {"name": ..., "recipe": ...} dictionaries derived from `model suggest`.
+    last_suggested_recipes: ClassVar[List[Dict[str, str]]] = []
     context: ClassVar[List[Union[GPTTextItem, GPTImageItem]]] = []
     query: ClassVar[List[GPTMessage]] = []
     request: ClassVar[GPTRequest]
@@ -68,6 +71,7 @@ class GPTState:
         cls.last_response = ""
         cls.last_was_pasted = False
         cls.last_recipe = ""
+        cls.last_suggested_recipes = []
         actions.app.notify("Cleared all state")
 
     @classmethod
@@ -158,6 +162,7 @@ class GPTState:
         cls.last_response = ""
         cls.last_was_pasted = False
         cls.last_recipe = ""
+        cls.last_suggested_recipes = []
         cls.context = []
         cls.query = []
         cls.thread = []

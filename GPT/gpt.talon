@@ -37,6 +37,12 @@
 
 {user.model} last recipe$: user.gpt_show_last_recipe()
 
+{user.model} <user.modelSimpleSource> suggest for <user.text>$: user.gpt_suggest_prompt_recipes_with_source(modelSimpleSource, text)
+{user.model} <user.modelSimpleSource> suggest$: user.gpt_suggest_prompt_recipes_with_source(modelSimpleSource, "")
+{user.model} suggest for <user.text>$: user.gpt_suggest_prompt_recipes(text)
+{user.model} suggest$: user.gpt_suggest_prompt_recipes("")
+{user.model} suggestions$: user.model_prompt_recipe_suggestions_gui_open()
+
 # Select the last GPT response so you can edit it further
 {user.model} take response: user.gpt_select_last()
 

@@ -36,6 +36,114 @@ _prompt_pipeline = PromptPipeline()
 _recursive_orchestrator = RecursiveOrchestrator(_prompt_pipeline)
 
 
+def _read_list_items(filename: str) -> list[tuple[str, str]]:
+    """Read (key, description) pairs from a Talon list file in GPT/lists."""
+    current_dir = os.path.dirname(__file__)
+    lists_dir = os.path.join(current_dir, "lists")
+    path = os.path.join(lists_dir, filename)
+    items: list[tuple[str, str]] = []
+    try:
+        with open(path, "r", encoding="utf-8") as f:
+            for line in f:
+                line = line.strip()
+                if (
+                    not line
+                    or line.startswith("#")
+                    or line.startswith("list:")
+                    or line == "-"
+                ):
+                    continue
+                if ":" not in line:
+                    continue
+                key, value = line.split(":", 1)
+                items.append((key.strip(), value.strip()))
+    except FileNotFoundError:
+        return []
+    return items
+
+
+def _build_axis_docs() -> str:
+    """Build a text block describing all axis and directional modifiers."""
+    sections = [
+        ("Completeness modifiers", "completenessModifier.talon-list"),
+        ("Scope modifiers", "scopeModifier.talon-list"),
+        ("Method modifiers", "methodModifier.talon-list"),
+        ("Style modifiers", "styleModifier.talon-list"),
+        ("Directional modifiers", "directionalModifier.talon-list"),
+    ]
+    lines: list[str] = []
+    for label, filename in sections:
+        items = _read_list_items(filename)
+        if not items:
+            continue
+        lines.append(f"{label}:")
+        for key, desc in items:
+            lines.append(f"- {key}: {desc}")
+        lines.append("")
+    return "\n".join(lines).rstrip()
+
+
+def _build_static_prompt_docs() -> str:
+    """Build a text block describing static prompts and their semantics."""
+    current_dir = os.path.dirname(__file__)
+    lists_dir = os.path.join(current_dir, "lists")
+    path = os.path.join(lists_dir, "staticPrompt.talon-list")
+    # Prefer descriptions from STATIC_PROMPT_CONFIG, and include default axes
+    # when present; fall back to listing other prompts by name.
+    lines: list[str] = []
+    seen: set[str] = set()
+
+    # First, profiled prompts with rich descriptions.
+    for name, profile in STATIC_PROMPT_CONFIG.items():
+        description = profile.get("description", "").strip()
+        if not description:
+            continue
+        axes_bits: list[str] = []
+        for label in ("completeness", "scope", "method", "style"):
+            value = profile.get(label)
+            if value:
+                axes_bits.append(f"{label}={value}")
+        if axes_bits:
+            lines.append(
+                f"- {name}: {description} (defaults: {', '.join(axes_bits)})"
+            )
+        else:
+            lines.append(f"- {name}: {description}")
+        seen.add(name)
+
+    # Then, any remaining static prompts from the list so the model sees the
+    # full token vocabulary.
+    other_prompts: list[str] = []
+    try:
+        with open(path, "r", encoding="utf-8") as f:
+            for line in f:
+                line = line.strip()
+                if (
+                    not line
+                    or line.startswith("#")
+                    or line.startswith("list:")
+                    or line == "-"
+                ):
+                    continue
+                if ":" not in line:
+                    continue
+                key, _ = line.split(":", 1)
+                key = key.strip()
+                if key and key not in seen:
+                    other_prompts.append(key)
+                    seen.add(key)
+    except FileNotFoundError:
+        pass
+
+    if other_prompts:
+        lines.append(
+            "- Other static prompts (tokens only; see docs for semantics): "
+            + ", ".join(sorted(other_prompts))
+        )
+
+    return "\n".join(lines)
+
+
 def gpt_query():
     """Send a prompt to the GPT API and return the response"""
 
@@ -208,6 +316,12 @@ class UserActions:
             actions.user.prompt_pattern_gui_close()
         except Exception:
             pass
+        # Close the suggestion picker as well so executing a prompt always
+        # leaves at most one model window visible.
+        try:
+            actions.user.model_prompt_recipe_suggestions_gui_close()
+        except Exception:
+            pass
 
         prompt = apply_prompt_configuration.please_prompt
         source = apply_prompt_configuration.model_source
@@ -279,6 +393,95 @@ class UserActions:
         result = _prompt_pipeline.complete(session)
 
         actions.user.gpt_insert_response(result, destination)
+
+    def gpt_suggest_prompt_recipes(subject: str) -> None:
+        """Suggest model prompt recipes using the default source."""
+        source = create_model_source(settings.get("user.model_default_source"))
+        UserActions.gpt_suggest_prompt_recipes_with_source(source, subject)
+
+    def gpt_suggest_prompt_recipes_with_source(
+        source: ModelSource, subject: str
+    ) -> None:
+        """Suggest model prompt recipes for an explicit source."""
+        try:
+            content = source.get_text()
+        except Exception:
+            # Underlying helpers (for example, Context/GPTResponse) already
+            # notify the user when no content is available.
+            return
+
+        subject = subject or ""
+        content_text = str(content)
+        if not content_text.strip() and not subject.strip():
+            notify("GPT: No source or subject available for suggestions")
+            return
+
+        axis_docs = _build_axis_docs()
+        static_prompt_docs = _build_static_prompt_docs()
+        prompt_subject = subject.strip() if subject else "unspecified"
+        user_text = (
+            "You are a prompt recipe assistant for the Talon `model` command.\n"
+            "Based on the subject and content below, suggest 3–5 concrete prompt recipes.\n\n"
+            "For each recipe, output exactly one line in this format:\n"
+            "Name: <short human-friendly name> | Recipe: <staticPrompt> · <completeness> · <scope> · <method> · <style> · <directional>\n\n"
+            "Use only tokens from the following sets where possible.\n"
+            "Axis semantics and available tokens:\n"
+            f"{axis_docs}\n\n"
+            "Static prompts and their semantics:\n"
+            f"{static_prompt_docs}\n\n"
+            f"Subject: {prompt_subject}\n\n"
+            "Content:\n"
+            f"{content_text}\n"
+        )
+
+        destination = Default()
+        session = PromptSession(destination)
+        session.begin(reuse_existing=True)
+        session.add_messages([format_messages("user", [format_message(user_text)])])
+        result = _prompt_pipeline.complete(session)
+
+        # Attempt to parse the result text into structured suggestions so
+        # future loops (for example, a suggestions GUI) can reuse them
+        # without re-calling the model.
+        suggestions: list[dict[str, str]] = []
+        for raw_line in result.text.splitlines():
+            line = raw_line.strip()
+            if not line or "|" not in line:
+                continue
+            try:
+                name_part, recipe_part = line.split("|", 1)
+            except ValueError:
+                continue
+            if "Recipe:" not in recipe_part:
+                continue
+            # Allow both "Name: <label>" and bare labels before the pipe.
+            if "Name:" in name_part:
+                _, name_value = name_part.split("Name:", 1)
+                name = name_value.strip()
+            else:
+                name = name_part.strip().strip(":")
+            # Always require an explicit Recipe: label for the second half.
+            _, recipe_value = recipe_part.split("Recipe:", 1)
+            recipe = recipe_value.strip()
+            if not name or not recipe:
+                continue
+            suggestions.append({"name": name, "recipe": recipe})
+        GPTState.last_suggested_recipes = suggestions
+
+        if suggestions:
+            try:
+                actions.user.model_prompt_recipe_suggestions_gui_open()
+                # When the suggestion GUI opens successfully, we do not also
+                # open the confirmation GUI; the picker becomes the primary
+                # surface for these recipes.
+            except Exception:
+                # If the GUI is not available for any reason, still insert the
+                # raw suggestions so the feature remains usable.
+                actions.user.gpt_insert_response(result, destination)
+        else:
+            # If we didn't recognise any suggestions, fall back to the normal
+            # insertion flow so the user can still see the raw output.
+            actions.user.gpt_insert_response(result, destination)
 
     def gpt_replay(destination: str):
         """Replay the last request"""

@@ -183,6 +183,12 @@ if bootstrap is not None:
 
             self.assertEqual(GPTState.last_recipe, "")
             self.assertEqual(GPTState.last_response, "")
+            self.assertEqual(GPTState.last_directional, "")
+            self.assertEqual(GPTState.last_static_prompt, "")
+            self.assertEqual(GPTState.last_completeness, "")
+            self.assertEqual(GPTState.last_scope, "")
+            self.assertEqual(GPTState.last_method, "")
+            self.assertEqual(GPTState.last_style, "")
 
         def test_model_prompt_updates_last_recipe_with_spoken_modifiers(self):
             # Spoken modifiers should be reflected in the last_recipe summary.
@@ -202,6 +208,15 @@ if bootstrap is not None:
                 GPTState.last_recipe,
                 "fix · skim · narrow · steps · plain",
             )
+            self.assertEqual(GPTState.last_static_prompt, "fix")
+            self.assertEqual(GPTState.last_completeness, "skim")
+            self.assertEqual(GPTState.last_scope, "narrow")
+            self.assertEqual(GPTState.last_method, "steps")
+            self.assertEqual(GPTState.last_style, "plain")
+            # Directional is stored as the short token when known; in this test
+            # we use a sentinel "DIR" that is not in the Talon list, so it
+            # should be preserved as-is.
+            self.assertEqual(GPTState.last_directional, "DIR")
 
         def test_model_prompt_updates_last_recipe_with_profile_axes(self):
             # When no spoken modifiers are provided, the per-prompt profile for
@@ -218,6 +233,12 @@ if bootstrap is not None:
                 GPTState.last_recipe,
                 "todo · gist · focus · steps · checklist",
             )
+            self.assertEqual(GPTState.last_static_prompt, "todo")
+            self.assertEqual(GPTState.last_completeness, "gist")
+            self.assertEqual(GPTState.last_scope, "focus")
+            self.assertEqual(GPTState.last_method, "steps")
+            self.assertEqual(GPTState.last_style, "checklist")
+            self.assertEqual(GPTState.last_directional, "DIR")
 
         def test_model_prompt_uses_profiles_for_filter_style_prompts(self):
             # Filter-style prompts like "pain" should drive method/style/scope

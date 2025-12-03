@@ -294,6 +294,11 @@ def _run_pattern(pattern: PromptPattern) -> None:
     if style:
         recipe_parts.append(style)
     GPTState.last_recipe = " · ".join(recipe_parts)
+    GPTState.last_static_prompt = static_prompt
+    GPTState.last_completeness = completeness or ""
+    GPTState.last_scope = scope or ""
+    GPTState.last_method = method or ""
+    GPTState.last_style = style or ""
     GPTState.last_directional = directional or ""
 
     actions.user.model_pattern_gui_close()

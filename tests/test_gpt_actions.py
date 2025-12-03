@@ -149,7 +149,7 @@ if bootstrap is not None:
                     ]
                 )
 
-                gpt_module.UserActions().gpt_suggest_prompt_recipes("subject")
+                gpt_module.UserActions.gpt_suggest_prompt_recipes("subject")
 
                 self.assertEqual(
                     GPTState.last_suggested_recipes,
@@ -183,7 +183,7 @@ if bootstrap is not None:
                     ]
                 )
 
-                gpt_module.UserActions().gpt_suggest_prompt_recipes("subject")
+                gpt_module.UserActions.gpt_suggest_prompt_recipes("subject")
 
                 self.assertEqual(
                     GPTState.last_suggested_recipes,
@@ -214,7 +214,7 @@ if bootstrap is not None:
                     ]
                 )
 
-                gpt_module.UserActions().gpt_suggest_prompt_recipes("subject")
+                gpt_module.UserActions.gpt_suggest_prompt_recipes("subject")
 
                 # Even with an empty source, providing a subject should still
                 # drive a suggestion request and populate suggestions.
@@ -249,7 +249,7 @@ if bootstrap is not None:
                     ]
                 )
 
-                gpt_module.UserActions().gpt_suggest_prompt_recipes("subject")
+                gpt_module.UserActions.gpt_suggest_prompt_recipes("subject")
 
                 open_gui.assert_called_once()
 
@@ -263,17 +263,18 @@ if bootstrap is not None:
                 mock_session = session_cls.return_value
                 mock_session._destination = "paste"
 
-                gpt_module.UserActions().gpt_suggest_prompt_recipes("subject")
+                gpt_module.UserActions.gpt_suggest_prompt_recipes("subject")
 
                 create_source.assert_called_once()
                 session_cls.assert_called_once()
                 mock_session.begin.assert_called_once_with(reuse_existing=True)
                 mock_session.add_messages.assert_called_once()
                 self.pipeline.complete.assert_called_once_with(mock_session)
-                actions.user.gpt_insert_response.assert_called_once_with(
-                    self.pipeline.complete.return_value,
-                    mock_session._destination,
+                actions.user.gpt_insert_response.assert_called_once()
+                inserted_result, inserted_destination = (
+                    actions.user.gpt_insert_response.call_args.args
                 )
+                self.assertIs(inserted_result, self.pipeline.complete.return_value)
 
 
         def test_gpt_pass_uses_prompt_session(self):
@@ -360,6 +361,115 @@ if bootstrap is not None:
                 destination,
             )
             self.assertEqual(result, "recursive result")
+
+        def test_gpt_show_last_recipe_without_state_notifies_and_returns(self):
+            GPTState.reset_all()
+            with patch.object(gpt_module, "notify") as notify_mock, patch.object(
+                actions.app, "notify"
+            ) as app_notify:
+                gpt_module.UserActions.gpt_show_last_recipe()
+
+                notify_mock.assert_called_once()
+                app_notify.assert_not_called()
+
+        def test_gpt_show_last_recipe_includes_directional_when_present(self):
+            GPTState.reset_all()
+            GPTState.last_recipe = "describe · full · relations · cluster · bullets"
+            GPTState.last_directional = "fog"
+
+            with patch.object(actions.app, "notify") as app_notify:
+                gpt_module.UserActions.gpt_show_last_recipe()
+
+                app_notify.assert_called_once_with(
+                    "Last recipe: describe · full · relations · cluster · bullets · fog"
+                )
+
+        def test_gpt_show_last_recipe_omits_directional_when_absent(self):
+            GPTState.reset_all()
+            GPTState.last_recipe = "describe · full · relations · cluster · bullets"
+            GPTState.last_directional = ""
+
+            with patch.object(actions.app, "notify") as app_notify:
+                gpt_module.UserActions.gpt_show_last_recipe()
+
+                app_notify.assert_called_once_with(
+                    "Last recipe: describe · full · relations · cluster · bullets"
+                )
+
+        def test_gpt_rerun_last_recipe_without_state_notifies_and_returns(self):
+            GPTState.reset_all()
+
+            with patch.object(gpt_module, "notify") as notify_mock, patch.object(
+                actions.user, "gpt_apply_prompt"
+            ) as apply_mock, patch.object(gpt_module, "modelPrompt") as model_prompt:
+                gpt_module.UserActions.gpt_rerun_last_recipe(
+                    "", "", "", "", "", ""
+                )
+
+                notify_mock.assert_called_once()
+                apply_mock.assert_not_called()
+                model_prompt.assert_not_called()
+
+        def test_gpt_rerun_last_recipe_applies_overrides_on_last_tokens(self):
+            # Seed last recipe state with token-based values.
+            GPTState.reset_all()
+            GPTState.last_recipe = "describe · full · relations · cluster · bullets"
+            GPTState.last_static_prompt = "describe"
+            GPTState.last_completeness = "full"
+            GPTState.last_scope = "relations"
+            GPTState.last_method = "cluster"
+            GPTState.last_style = "bullets"
+            GPTState.last_directional = "fog"
+
+            with (
+                patch.object(
+                    gpt_module,
+                    "_axis_value_from_token",
+                    side_effect=lambda token, mapping: token,
+                ) as axis_value,
+                patch.object(gpt_module, "modelPrompt") as model_prompt,
+                patch.object(gpt_module, "create_model_source") as create_source,
+                patch.object(
+                    gpt_module, "create_model_destination"
+                ) as create_destination,
+                patch.object(actions.user, "gpt_apply_prompt") as apply_prompt,
+            ):
+                source = MagicMock()
+                destination = MagicMock()
+                create_source.return_value = source
+                create_destination.return_value = destination
+                model_prompt.return_value = "PROMPT"
+
+                # Override static prompt, completeness, and directional; reuse
+                # last scope/method/style. No explicit subject.
+                gpt_module.UserActions.gpt_rerun_last_recipe(
+                    "todo", "gist", "", "", "", "rog"
+                )
+
+                # Axis mapping should be invoked for all non-empty axes.
+                axis_tokens = [call.args[0] for call in axis_value.call_args_list]
+                self.assertIn("gist", axis_tokens)
+                self.assertIn("relations", axis_tokens)
+                self.assertIn("cluster", axis_tokens)
+                self.assertIn("bullets", axis_tokens)
+                self.assertIn("rog", axis_tokens)
+
+                # modelPrompt should receive a match object with merged axes.
+                model_prompt.assert_called_once()
+                match = model_prompt.call_args.args[0]
+                self.assertEqual(match.staticPrompt, "todo")
+                self.assertEqual(match.completenessModifier, "gist")
+                self.assertEqual(match.scopeModifier, "relations")
+                self.assertEqual(match.methodModifier, "cluster")
+                self.assertEqual(match.styleModifier, "bullets")
+                self.assertEqual(match.directionalModifier, "rog")
+
+                # Execution should go through the normal apply_prompt path.
+                apply_prompt.assert_called_once()
+                config = apply_prompt.call_args.args[0]
+                self.assertEqual(config.please_prompt, "PROMPT")
+                self.assertIs(config.model_source, source)
+                self.assertIs(config.model_destination, destination)
 else:
     if not TYPE_CHECKING:
         class GPTActionPromptSessionTests(unittest.TestCase):

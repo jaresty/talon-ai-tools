@@ -186,6 +186,10 @@ def model_help_gui(gui: imgui.GUI):
             grammar_phrase = f"model {GPTState.last_recipe.replace(' · ', ' ')}"
         gui.text(f"Last recipe: {recipe_text}")
         gui.text(f"Say: {grammar_phrase}")
+        gui.text(
+            "Tip: Say 'model again' to rerun this recipe, or add axis tokens "
+            "(for example, 'model again gist fog') to tweak it."
+        )
         gui.spacer()
 
     section = HelpGUIState.section

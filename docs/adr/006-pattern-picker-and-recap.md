@@ -185,6 +185,7 @@ For future changes in this repo:
 - If you add or change axis values in the Talon lists (completeness/scope/method/style/directional):
   - Pattern helpers (`model patterns` and `model pattern menu …`) will automatically pick up the new semantics via their axis maps.
   - You may still want to update pattern recipes and example flows to showcase particularly useful new combinations.
+  - Remember that recap helpers (`model last recipe`, `model show grammar`) and the rerun shorthand from ADR 009 (`model again`) also depend on the same `last_recipe` + directional state.
 
 ### Testing and verification tips
 

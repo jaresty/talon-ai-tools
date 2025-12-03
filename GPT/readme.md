@@ -10,10 +10,11 @@ Query language models with voice commands. Helpful to automatically generate tex
 
 - View the [docs](http://localhost:4321/talon-ai-tools/) for more detailed usage and help
 
-For implementation details of the modifier axes, defaults, and helpers, see the ADRs:
+For implementation details of the modifier axes, defaults, helpers, and rerun shorthand, see the ADRs:
 
 - `docs/adr/005-orthogonal-prompt-modifiers-and-defaults.md`
 - `docs/adr/006-pattern-picker-and-recap.md`
+- `docs/adr/009-rerun-last-recipe-shorthand.md`
 
 ### In-Talon helpers for discoverability (ADR 006)
 
@@ -39,7 +40,7 @@ To make the grammar easier to remember and explore, ADR 006 adds a few helpers:
   - `model quick help method`
   - `model quick help style`
 - `model show grammar` – opens quick help with the last recipe and an exact, speakable `model …` line so you can repeat or adapt a successful combination by voice.
-- `model last recipe` – shows the last prompt recipe (static prompt plus effective completeness/scope/method/style) in a notification, even if the confirmation GUI is closed.
+- `model last recipe` – shows the last prompt recipe (static prompt plus effective completeness/scope/method/style and directional lens) in a notification, even if the confirmation GUI is closed.
 
 When the confirmation GUI is open, it also:
 
@@ -53,6 +54,7 @@ When the confirmation GUI is open, it also:
   - `model pattern menu <staticPrompt>`
 - Recap:
   - `model last recipe`
+  - `model again` / `model again …`
   - Confirmation GUI `Recipe:` line
 - Grammar help:
   - `model quick help`
@@ -67,6 +69,22 @@ When the confirmation GUI is open, it also:
   - Say `run suggestion <number>` (for example, `run suggestion 1`) to execute a specific recipe by index.
   - Say `close suggestions` to dismiss the window.
 - `model suggestions` – reopen the suggestion window based on the last `model suggest` call without re-running the model.
+
+#### Rerun last recipe shorthand (ADR 009)
+
+- `model last recipe` – show the last prompt recipe (static prompt plus effective completeness/scope/method/style and directional lens) in a notification, even if the confirmation GUI is closed.
+- `model again` – rerun the last recipe exactly, using the same static prompt, axes, and directional lens.
+- `model again [<staticPrompt>] [axis tokens…]` – rerun the last recipe but override any subset of:
+  - Static prompt (`<staticPrompt>`).
+  - Completeness (`skim`, `gist`, `full`, etc.).
+  - Scope (`narrow`, `focus`, `bound`, etc.).
+  - Method (`steps`, `plan`, `cluster`, etc.).
+  - Style (`plain`, `bullets`, `tight`, etc.).
+  - Directional lens (`fog`, `rog`, `ong`, etc.).
+- Examples:
+  - `model again gist fog` – keep the last static prompt/scope/method/style, but change completeness to `gist` and directional lens to `fog`.
+  - `model again todo gist fog` – change static prompt to `todo` and completeness to `gist`, reuse the last scope/method/style, and set directional lens to `fog`.
+  - `model again steps tight rog` – keep the last static prompt/completeness/scope, but switch method to `steps`, style to `tight`, and directional lens to `rog`.
 
 ### Modifier axes (advanced)
 

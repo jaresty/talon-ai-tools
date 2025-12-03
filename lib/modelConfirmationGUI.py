@@ -48,7 +48,13 @@ def confirmation_gui(gui: imgui.GUI):
 
     if GPTState.last_recipe:
         gui.spacer()
-        gui.text(f"Recipe: {GPTState.last_recipe}")
+        # Include the directional lens alongside the core recipe tokens so the
+        # confirmation GUI matches quick help and other recap surfaces.
+        if getattr(GPTState, "last_directional", ""):
+            recipe_text = f"{GPTState.last_recipe} · {GPTState.last_directional}"
+        else:
+            recipe_text = GPTState.last_recipe
+        gui.text(f"Recipe: {recipe_text}")
 
     # gui.spacer()
     # if gui.button("Chain response"):

@@ -101,6 +101,11 @@ def _run_suggestion(suggestion: Suggestion) -> None:
         if token:
             recipe_parts.append(token)
     GPTState.last_recipe = " · ".join(recipe_parts)
+    GPTState.last_static_prompt = static_prompt
+    GPTState.last_completeness = completeness or ""
+    GPTState.last_scope = scope or ""
+    GPTState.last_method = method or ""
+    GPTState.last_style = style or ""
     GPTState.last_directional = directional or ""
 
 

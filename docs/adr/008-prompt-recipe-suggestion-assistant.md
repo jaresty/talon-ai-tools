@@ -291,6 +291,7 @@ This ADR does **not** change the semantics of default axes or profiles; it only 
   Cons:
   - Still requires users to choose prompts and recipes manually.
   - Less adaptive to arbitrary subjects or domains.
+  - Does not provide a shorthand for iterating on the last recipe once chosen; for that, see ADR 009’s `model again` rerun shorthand.
 
 - **Auto-run a “best guess” recipe with no GUI**  
   Pros:

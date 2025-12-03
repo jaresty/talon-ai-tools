@@ -5,10 +5,17 @@ from ..lib.talonSettings import (
     ApplyPromptConfiguration,
     DEFAULT_COMPLETENESS_VALUE,
     PassConfiguration,
+    modelPrompt,
 )
 from ..lib.staticPromptConfig import STATIC_PROMPT_CONFIG
 
-from ..lib.modelDestination import Browser, Default, ModelDestination, PromptPayload
+from ..lib.modelDestination import (
+    Browser,
+    Default,
+    ModelDestination,
+    PromptPayload,
+    create_model_destination,
+)
 from ..lib.modelSource import ModelSource, create_model_source
 from talon import Module, actions, clip, settings
 
@@ -18,12 +25,21 @@ from ..lib.modelHelpers import (
     format_messages,
     notify,
     send_request,
+    messages_to_string,
 )
 from ..lib.modelState import GPTState
 from ..lib.modelTypes import GPTSystemPrompt
 from ..lib.promptPipeline import PromptPipeline, PromptResult
 from ..lib.promptSession import PromptSession
 from ..lib.recursiveOrchestrator import RecursiveOrchestrator
+from ..lib.modelPatternGUI import (
+    _axis_value as _axis_value_from_token,
+    COMPLETENESS_MAP as _COMPLETENESS_MAP,
+    SCOPE_MAP as _SCOPE_MAP,
+    METHOD_MAP as _METHOD_MAP,
+    STYLE_MAP as _STYLE_MAP,
+    DIRECTIONAL_MAP as _DIRECTIONAL_MAP,
+)
 
 mod = Module()
 mod.tag(
@@ -328,6 +344,13 @@ class UserActions:
         additional_source = apply_prompt_configuration.additional_model_source
         destination = apply_prompt_configuration.model_destination
 
+        # Snapshot the primary source messages so plain `model again` can reuse
+        # the same content even if the live source has changed.
+        try:
+            GPTState.last_source_messages = source.format_messages()
+        except Exception:
+            GPTState.last_source_messages = []
+
         result = _recursive_orchestrator.run(
             prompt,
             source,
@@ -394,21 +417,8 @@ class UserActions:
 
         actions.user.gpt_insert_response(result, destination)
 
-    def gpt_suggest_prompt_recipes(self_or_subject, subject: Optional[str] = None) -> None:
-        """Suggest model prompt recipes using the default source.
-
-        Accepts both Talon-style calls (subject only) and direct instance
-        calls from tests (self, subject).
-        """
-        # Normalise arguments so that either:
-        # - UserActions.gpt_suggest_prompt_recipes("subject"), or
-        # - UserActions().gpt_suggest_prompt_recipes("subject")
-        # both resolve to the same subject string.
-        if subject is None and isinstance(self_or_subject, str):
-            subject = self_or_subject
-        elif subject is None:
-            subject = ""
-
+    def gpt_suggest_prompt_recipes(subject: str) -> None:
+        """Suggest model prompt recipes using the default source."""
         source = create_model_source(settings.get("user.model_default_source"))
         UserActions.gpt_suggest_prompt_recipes_with_source(source, subject)
 
@@ -516,6 +526,152 @@ class UserActions:
         else:
             recipe_text = recipe
         actions.app.notify(f"Last recipe: {recipe_text}")
+
+    def gpt_rerun_last_recipe(
+        static_prompt: str,
+        completeness: str,
+        scope: str,
+        method: str,
+        style: str,
+        directional: str,
+    ) -> None:
+        """Rerun the last prompt recipe with optional axis overrides, using the last or default source."""
+        if not GPTState.last_recipe:
+            notify("GPT: No last recipe available to rerun")
+            return
+
+        base_static = getattr(GPTState, "last_static_prompt", "") or ""
+        base_completeness = getattr(GPTState, "last_completeness", "") or ""
+        base_scope = getattr(GPTState, "last_scope", "") or ""
+        base_method = getattr(GPTState, "last_method", "") or ""
+        base_style = getattr(GPTState, "last_style", "") or ""
+        base_directional = getattr(GPTState, "last_directional", "") or ""
+
+        new_static = static_prompt or base_static
+        new_completeness = completeness or base_completeness
+        new_scope = scope or base_scope
+        new_method = method or base_method
+        new_style = style or base_style
+        new_directional = directional or base_directional
+
+        if not new_static:
+            notify("GPT: Last recipe is not available to rerun")
+            return
+
+        # Build a lightweight object with the attributes expected by modelPrompt.
+        class Match:
+            pass
+
+        match = Match()
+        setattr(match, "staticPrompt", new_static)
+        if new_completeness:
+            setattr(
+                match,
+                "completenessModifier",
+                _axis_value_from_token(new_completeness, _COMPLETENESS_MAP),
+            )
+        if new_scope:
+            setattr(
+                match,
+                "scopeModifier",
+                _axis_value_from_token(new_scope, _SCOPE_MAP),
+            )
+        if new_method:
+            setattr(
+                match,
+                "methodModifier",
+                _axis_value_from_token(new_method, _METHOD_MAP),
+            )
+        if new_style:
+            setattr(
+                match,
+                "styleModifier",
+                _axis_value_from_token(new_style, _STYLE_MAP),
+            )
+        if new_directional:
+            setattr(
+                match,
+                "directionalModifier",
+                _axis_value_from_token(new_directional, _DIRECTIONAL_MAP),
+            )
+
+        # Keep GPTState.last_recipe and structured fields in sync with the
+        # effective recipe for this rerun.
+        recipe_parts = [new_static]
+        for token in (new_completeness, new_scope, new_method, new_style):
+            if token:
+                recipe_parts.append(token)
+        GPTState.last_recipe = " · ".join(recipe_parts)
+        GPTState.last_static_prompt = new_static
+        GPTState.last_completeness = new_completeness or ""
+        GPTState.last_scope = new_scope or ""
+        GPTState.last_method = new_method or ""
+        GPTState.last_style = new_style or ""
+        GPTState.last_directional = new_directional or ""
+
+        please_prompt = modelPrompt(match)
+
+        # Resolve the source for this rerun:
+        # - Prefer a cached snapshot of the last primary source messages so
+        #   plain `model again` reuses the same content even if the live
+        #   source (clipboard/selection/etc.) has changed.
+        # - Fallback to the live default source when we have no snapshot.
+        cached_messages = getattr(GPTState, "last_source_messages", [])
+        if cached_messages:
+            from copy import deepcopy
+
+            class CachedSource(ModelSource):
+                def __init__(self, messages):
+                    self._messages = list(messages)
+
+                def get_text(self):
+                    return messages_to_string(self._messages)
+
+                def format_messages(self):
+                    return deepcopy(self._messages)
+
+            source: ModelSource = CachedSource(cached_messages)
+        else:
+            source_key = getattr(GPTState, "last_again_source", "") or settings.get(
+                "user.model_default_source"
+            )
+            source = create_model_source(source_key)
+
+        config = ApplyPromptConfiguration(
+            please_prompt=please_prompt,
+            model_source=source,
+            additional_model_source=None,
+            model_destination=create_model_destination(
+                settings.get("user.model_default_destination")
+            ),
+        )
+
+        actions.user.gpt_apply_prompt(config)
+
+    def gpt_rerun_last_recipe_with_source(
+        source: ModelSource,
+        static_prompt: str,
+        completeness: str,
+        scope: str,
+        method: str,
+        style: str,
+        directional: str,
+    ) -> None:
+        """Rerun the last prompt recipe for an explicit source with optional axis overrides."""
+        # Remember this source key for subsequent plain `model again` calls.
+        source_key = getattr(source, "modelSimpleSource", None)
+        if isinstance(source_key, str) and source_key:
+            GPTState.last_again_source = source_key
+        # Delegate to the default-source variant, which will resolve the
+        # actual ModelSource from the stored key and apply the same axis logic.
+        UserActions.gpt_rerun_last_recipe(
+            static_prompt,
+            completeness,
+            scope,
+            method,
+            style,
+            directional,
+        )
 
     def gpt_pass(pass_configuration: PassConfiguration) -> None:
         """Passes a response from source to destination"""

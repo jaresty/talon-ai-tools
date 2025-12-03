@@ -158,6 +158,11 @@ def _run_prompt_pattern(static_prompt: str, pattern: PromptAxisPattern) -> None:
         if token:
             recipe_parts.append(token)
     GPTState.last_recipe = " · ".join(recipe_parts)
+    GPTState.last_static_prompt = static_prompt
+    GPTState.last_completeness = pattern.completeness or ""
+    GPTState.last_scope = pattern.scope or ""
+    GPTState.last_method = pattern.method or ""
+    GPTState.last_style = pattern.style or ""
     GPTState.last_directional = pattern.directional or ""
 
     actions.user.prompt_pattern_gui_close()

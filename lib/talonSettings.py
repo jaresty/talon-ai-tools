@@ -207,19 +207,39 @@ def modelPrompt(m) -> str:
     GPTState.system_prompt.style = effective_style or ""
 
     # Store a concise, human-readable recipe for this prompt so the
-    # confirmation GUI (and future UIs) can recap what was asked.
+    # confirmation GUI (and future UIs) can recap what was asked, and keep a
+    # structured view of the same tokens for shorthand grammars.
     recipe_parts = [static_prompt]
-    if effective_completeness:
-        recipe_parts.append(_axis_recipe_token("completeness", effective_completeness))
-    if effective_scope:
-        recipe_parts.append(_axis_recipe_token("scope", effective_scope))
-    if effective_method:
-        recipe_parts.append(_axis_recipe_token("method", effective_method))
-    if effective_style:
-        recipe_parts.append(_axis_recipe_token("style", effective_style))
+    completeness_token = (
+        _axis_recipe_token("completeness", effective_completeness)
+        if effective_completeness
+        else ""
+    )
+    scope_token = (
+        _axis_recipe_token("scope", effective_scope) if effective_scope else ""
+    )
+    method_token = (
+        _axis_recipe_token("method", effective_method) if effective_method else ""
+    )
+    style_token = (
+        _axis_recipe_token("style", effective_style) if effective_style else ""
+    )
+    if completeness_token:
+        recipe_parts.append(completeness_token)
+    if scope_token:
+        recipe_parts.append(scope_token)
+    if method_token:
+        recipe_parts.append(method_token)
+    if style_token:
+        recipe_parts.append(style_token)
     GPTState.last_recipe = " · ".join(recipe_parts)
-    # Track the last directional lens separately so recap/quick help can
-    # surface it without changing the core recipe token.
+    GPTState.last_static_prompt = static_prompt
+    GPTState.last_completeness = completeness_token
+    GPTState.last_scope = scope_token
+    GPTState.last_method = method_token
+    GPTState.last_style = style_token
+    # Track the last directional lens separately (as a short token) so
+    # recap/quick help and shorthand grammars can include it.
     GPTState.last_directional = _axis_recipe_token("directional", directional or "")
 
     # Task line: what you want done.

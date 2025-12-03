@@ -20,6 +20,20 @@ class GPTState:
     last_recipe: ClassVar[str] = ""
     # Short token for the last directional lens (for example, "fog").
     last_directional: ClassVar[str] = ""
+    # Structured fields for the last recipe, stored as short tokens where
+    # applicable so they can be reused by shorthand grammars such as
+    # `model again`.
+    last_static_prompt: ClassVar[str] = ""
+    last_completeness: ClassVar[str] = ""
+    last_scope: ClassVar[str] = ""
+    last_method: ClassVar[str] = ""
+    last_style: ClassVar[str] = ""
+    # Snapshot of the primary source messages used for the last model run
+    # so `model again` can reuse the same content even if the live source
+    # (for example, clipboard or selection) has changed.
+    last_source_messages: ClassVar[List[Union[GPTTextItem, GPTImageItem]]] = []
+    # Last explicit source key used with `model again` (for example, "clip", "this").
+    last_again_source: ClassVar[str] = ""
     # Last set of prompt recipe suggestions, if any, as a list of
     # {"name": ..., "recipe": ...} dictionaries derived from `model suggest`.
     last_suggested_recipes: ClassVar[List[Dict[str, str]]] = []
@@ -74,6 +88,13 @@ class GPTState:
         cls.last_was_pasted = False
         cls.last_recipe = ""
         cls.last_directional = ""
+        cls.last_static_prompt = ""
+        cls.last_completeness = ""
+        cls.last_scope = ""
+        cls.last_method = ""
+        cls.last_style = ""
+        cls.last_source_messages = []
+        cls.last_again_source = ""
         cls.last_suggested_recipes = []
         actions.app.notify("Cleared all state")
 
@@ -166,6 +187,13 @@ class GPTState:
         cls.last_was_pasted = False
         cls.last_recipe = ""
         cls.last_directional = ""
+        cls.last_static_prompt = ""
+        cls.last_completeness = ""
+        cls.last_scope = ""
+        cls.last_method = ""
+        cls.last_style = ""
+        cls.last_source_messages = []
+        cls.last_again_source = ""
         cls.last_suggested_recipes = []
         cls.context = []
         cls.query = []

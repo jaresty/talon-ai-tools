@@ -6,6 +6,7 @@
 - Related ADRs:
   - `005-orthogonal-prompt-modifiers-and-defaults.md`
   - `006-pattern-picker-and-recap.md`
+  - `0011-concordance-static-prompt-axis-mapping-domain-boundaries.md`
 
 ## Context
 

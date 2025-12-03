@@ -122,6 +122,86 @@ if bootstrap is not None:
                 "some-value",
             )
 
+        def test_directional_axis_recipe_token_uses_value_to_key_map(self) -> None:
+            """Directional axis values should also round-trip through the mapping."""
+            root = Path(__file__).resolve().parents[1]
+            directional_path = root / "GPT" / "lists" / "directionalModifier.talon-list"
+            key = None
+            desc = None
+            with directional_path.open("r", encoding="utf-8") as f:
+                for line in f:
+                    line = line.strip()
+                    if (
+                        not line
+                        or line.startswith("#")
+                        or line.startswith("list:")
+                        or line == "-"
+                    ):
+                        continue
+                    if ":" not in line:
+                        continue
+                    key, value = line.split(":", 1)
+                    key = key.strip()
+                    desc = value.strip()
+                    break
+
+            self.assertIsNotNone(key)
+            self.assertIsNotNone(desc)
+
+            # Description should map back to the short key.
+            token_from_desc = _axis_recipe_token(  # type: ignore[arg-type]
+                "directional",
+                desc,
+            )
+            self.assertEqual(token_from_desc, key)
+
+            # Short key should map idempotently to itself.
+            token_from_key = _axis_recipe_token(  # type: ignore[arg-type]
+                "directional",
+                key,
+            )
+            self.assertEqual(token_from_key, key)
+
+        def _assert_axis_round_trip(self, filename: str, axis: str) -> None:
+            root = Path(__file__).resolve().parents[1]
+            path = root / "GPT" / "lists" / filename
+            key = None
+            desc = None
+            with path.open("r", encoding="utf-8") as f:
+                for line in f:
+                    line = line.strip()
+                    if (
+                        not line
+                        or line.startswith("#")
+                        or line.startswith("list:")
+                        or line == "-"
+                    ):
+                        continue
+                    if ":" not in line:
+                        continue
+                    key, value = line.split(":", 1)
+                    key = key.strip()
+                    desc = value.strip()
+                    break
+
+            self.assertIsNotNone(key)
+            self.assertIsNotNone(desc)
+
+            token_from_desc = _axis_recipe_token(axis, desc)  # type: ignore[arg-type]
+            self.assertEqual(token_from_desc, key)
+
+            token_from_key = _axis_recipe_token(axis, key)  # type: ignore[arg-type]
+            self.assertEqual(token_from_key, key)
+
+        def test_scope_axis_recipe_token_uses_value_to_key_map(self) -> None:
+            self._assert_axis_round_trip("scopeModifier.talon-list", "scope")
+
+        def test_method_axis_recipe_token_uses_value_to_key_map(self) -> None:
+            self._assert_axis_round_trip("methodModifier.talon-list", "method")
+
+        def test_style_axis_recipe_token_uses_value_to_key_map(self) -> None:
+            self._assert_axis_round_trip("styleModifier.talon-list", "style")
+
         def test_read_axis_default_from_list_returns_list_value(self) -> None:
             """Ensure _read_axis_default_from_list returns the list value when present."""
             # For the completeness list, the value for "full" is a long

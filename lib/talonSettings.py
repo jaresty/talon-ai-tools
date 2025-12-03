@@ -96,6 +96,19 @@ _DIRECTIONAL_VALUE_TO_KEY = _read_axis_value_to_key_map(
     "directionalModifier.talon-list"
 )
 
+_AXIS_VALUE_TO_KEY_MAPS: dict[str, dict[str, str]] = {
+    "completeness": _COMPLETENESS_VALUE_TO_KEY,
+    "scope": _SCOPE_VALUE_TO_KEY,
+    "method": _METHOD_VALUE_TO_KEY,
+    "style": _STYLE_VALUE_TO_KEY,
+    "directional": _DIRECTIONAL_VALUE_TO_KEY,
+}
+
+
+def _axis_value_to_key_map_for(axis: str) -> dict[str, str]:
+    """Return the value→key map for a given axis, if available."""
+    return _AXIS_VALUE_TO_KEY_MAPS.get(axis, {})
+
 
 def _axis_recipe_token(axis: str, raw_value: str) -> str:
     """Return the short token to use in last_recipe for a given axis value.
@@ -107,13 +120,7 @@ def _axis_recipe_token(axis: str, raw_value: str) -> str:
     """
     if not raw_value:
         return raw_value
-    axis_map = {
-        "completeness": _COMPLETENESS_VALUE_TO_KEY,
-        "scope": _SCOPE_VALUE_TO_KEY,
-        "method": _METHOD_VALUE_TO_KEY,
-        "style": _STYLE_VALUE_TO_KEY,
-        "directional": _DIRECTIONAL_VALUE_TO_KEY,
-    }.get(axis, {})
+    axis_map = _axis_value_to_key_map_for(axis)
     if not axis_map:
         return raw_value
     return axis_map.get(raw_value, raw_value)

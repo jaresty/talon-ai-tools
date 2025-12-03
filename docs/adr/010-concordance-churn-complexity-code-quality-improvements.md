@@ -8,6 +8,10 @@ Owners: Talon AI tools maintainers
 
 _Work-log_: see `docs/adr/010-concordance-churn-complexity-code-quality-improvements.work-log.md` for per-loop slices and current execution history in this repo.
 
+Related ADRs:
+
+- `docs/adr/0011-concordance-static-prompt-axis-mapping-domain-boundaries.md` – narrows in on the static prompt and axis mapping domains called out as hotspots here and codifies their boundaries, façades, and tests.
+
 Related helpers in this repo:
 
 - `docs/adr/adr-loop-execute-helper.md` – generic helper for running ADR execution loops.

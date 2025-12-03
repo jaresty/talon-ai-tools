@@ -17,6 +17,8 @@ The current surfaces (Talon voice grammar plus static docs) have these issues:
 For definitions and rationale behind the core modifier axes (completeness, scope, method, style), see ADR 005:
 
 - `docs/adr/005-orthogonal-prompt-modifiers-and-defaults.md`
+- For static prompt and axis mapping domain boundaries (including how `modelPrompt` and settings/GUIs interact with the axes), see ADR 0011:
+  - `docs/adr/0011-concordance-static-prompt-axis-mapping-domain-boundaries.md`
 
 We want a solution that:
 

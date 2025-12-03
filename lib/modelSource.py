@@ -201,6 +201,14 @@ def create_model_source(source_type: str) -> ModelSource:
 
     source_cls = source_map.get(source_type)
     if source_cls is not None:
-        return source_cls()
+        instance = source_cls()
+        # Tag the instance with its canonical source key so other flows
+        # (for example, `model again` and `model suggest`) can recover it.
+        setattr(instance, "modelSimpleSource", source_type)
+        return instance
 
-    return SelectedText()
+    # Fallback to selection for unknown keys (for example, when
+    # user.model_default_source is set to "selection" or another custom token).
+    instance = SelectedText()
+    setattr(instance, "modelSimpleSource", source_type or "selection")
+    return instance

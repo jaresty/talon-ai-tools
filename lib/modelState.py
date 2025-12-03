@@ -34,6 +34,9 @@ class GPTState:
     last_source_messages: ClassVar[List[Union[GPTTextItem, GPTImageItem]]] = []
     # Last explicit source key used with `model again` (for example, "clip", "this").
     last_again_source: ClassVar[str] = ""
+    # Last source key used when generating prompt recipe suggestions, stored
+    # as the canonical model source token (for example, "clipboard", "context").
+    last_suggest_source: ClassVar[str] = ""
     # Last set of prompt recipe suggestions, if any, as a list of
     # {"name": ..., "recipe": ...} dictionaries derived from `model suggest`.
     last_suggested_recipes: ClassVar[List[Dict[str, str]]] = []
@@ -95,6 +98,7 @@ class GPTState:
         cls.last_style = ""
         cls.last_source_messages = []
         cls.last_again_source = ""
+        cls.last_suggest_source = ""
         cls.last_suggested_recipes = []
         actions.app.notify("Cleared all state")
 
@@ -194,6 +198,7 @@ class GPTState:
         cls.last_style = ""
         cls.last_source_messages = []
         cls.last_again_source = ""
+        cls.last_suggest_source = ""
         cls.last_suggested_recipes = []
         cls.context = []
         cls.query = []

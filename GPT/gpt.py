@@ -433,6 +433,14 @@ class UserActions:
             # notify the user when no content is available.
             return
 
+        # Remember the canonical source key used for these suggestions so the
+        # suggestion GUI can both display and reuse it when running recipes.
+        source_key = getattr(source, "modelSimpleSource", "")
+        if isinstance(source_key, str) and source_key:
+            GPTState.last_suggest_source = source_key
+        else:
+            GPTState.last_suggest_source = ""
+
         subject = subject or ""
         content_text = str(content)
         if not content_text.strip() and not subject.strip():

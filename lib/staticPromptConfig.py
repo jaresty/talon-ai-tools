@@ -17,9 +17,6 @@ class StaticPromptProfile(TypedDict):
 
 
 STATIC_PROMPT_CONFIG: dict[str, StaticPromptProfile] = {
-    "announce": {
-        "description": "Announce this to the audience.",
-    },
     "emoji": {
         "description": "Return only emoji.",
     },
@@ -429,14 +426,6 @@ STATIC_PROMPT_CONFIG: dict[str, StaticPromptProfile] = {
         "scope": "focus",
     },
     # Variations and playful prompts (description-only profiles).
-    "silly": {
-        "description": "Say something silly about this.",
-    },
-    "style": {
-        "description": "Describe style instructions with one example.",
-        "completeness": "gist",
-        "style": "plain",
-    },
     "recipe": {
         "description": "Represent this as a recipe using a custom language and include a key for understanding it.",
         "completeness": "full",

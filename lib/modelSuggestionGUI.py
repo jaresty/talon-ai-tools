@@ -1,4 +1,6 @@
 from dataclasses import dataclass
+import os
+from pathlib import Path
 from typing import List
 
 from talon import Context, Module, actions, imgui, settings
@@ -33,6 +35,36 @@ class Suggestion:
 
 class SuggestionGUIState:
     suggestions: List[Suggestion] = []
+
+
+def _load_source_spoken_map() -> dict[str, str]:
+    """Map canonical model source keys to spoken tokens (for example, 'clipboard' -> 'clip')."""
+    mapping: dict[str, str] = {}
+    try:
+        current_dir = os.path.dirname(__file__)
+        path = Path(current_dir).parent / "GPT" / "lists" / "modelSource.talon-list"
+        with path.open("r", encoding="utf-8") as f:
+            for line in f:
+                stripped = line.strip()
+                if (
+                    not stripped
+                    or stripped.startswith("#")
+                    or stripped.startswith("list:")
+                    or stripped.startswith("-")
+                ):
+                    continue
+                if ":" not in stripped:
+                    continue
+                spoken, value = (part.strip() for part in stripped.split(":", 1))
+                if spoken and value:
+                    mapping[value] = spoken
+    except FileNotFoundError:
+        # If the list is missing, fall back to default behaviour (no source hint).
+        mapping = {}
+    return mapping
+
+
+SOURCE_SPOKEN_MAP = _load_source_spoken_map()
 
 
 def _refresh_suggestions_from_state() -> None:
@@ -80,9 +112,15 @@ def _run_suggestion(suggestion: Suggestion) -> None:
 
     please_prompt = modelPrompt(match)
 
+    # Prefer the source used when generating these suggestions, falling back
+    # to the current default source when unavailable.
+    source_key = getattr(GPTState, "last_suggest_source", "") or settings.get(
+        "user.model_default_source"
+    )
+
     config = ApplyPromptConfiguration(
         please_prompt=please_prompt,
-        model_source=create_model_source(settings.get("user.model_default_source")),
+        model_source=create_model_source(source_key),
         additional_model_source=None,
         model_destination=create_model_destination(
             settings.get("user.model_default_destination")
@@ -124,7 +162,16 @@ def model_suggestion_gui(gui: imgui.GUI):
                 _run_suggestion(suggestion)
                 return
             gui.text(f"Recipe: {suggestion.recipe}")
-            grammar_phrase = f"model {suggestion.recipe.replace(' · ', ' ')}"
+            # If we know which source was used for `model suggest`, include it
+            # in the suggested grammar so users can easily reapply the recipe
+            # to the same kind of content (for example, `model clip …`).
+            source_key = getattr(GPTState, "last_suggest_source", "")
+            spoken_source = SOURCE_SPOKEN_MAP.get(source_key, "")
+            base_recipe = suggestion.recipe.replace(" · ", " ")
+            if spoken_source:
+                grammar_phrase = f"model {spoken_source} {base_recipe}"
+            else:
+                grammar_phrase = f"model {base_recipe}"
             gui.text(f"Say: {grammar_phrase}")
             gui.spacer()
 

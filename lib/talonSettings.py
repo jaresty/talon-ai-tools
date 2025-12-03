@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from typing import Literal, Optional
+import os
 
 from .modelSource import CompoundSource, ModelSource, SourceStack, create_model_source
 from .modelDestination import (
@@ -10,6 +11,44 @@ from .modelDestination import (
 from .modelState import GPTState
 from talon import Context, Module, clip, settings
 from .staticPromptConfig import STATIC_PROMPT_CONFIG
+
+
+def _read_axis_default_from_list(
+    filename: str, key: str, fallback: str
+) -> str:
+    """Return the list value for a given key from a GPT axis .talon-list file.
+
+    Falls back to the provided fallback if the file or key is not found.
+    """
+    current_dir = os.path.dirname(__file__)
+    lists_dir = os.path.abspath(os.path.join(current_dir, "..", "GPT", "lists"))
+    path = os.path.join(lists_dir, filename)
+    try:
+        with open(path, "r", encoding="utf-8") as f:
+            for line in f:
+                line = line.strip()
+                if (
+                    not line
+                    or line.startswith("#")
+                    or line.startswith("list:")
+                    or line == "-"
+                ):
+                    continue
+                if ":" not in line:
+                    continue
+                k, value = line.split(":", 1)
+                if k.strip() == key:
+                    return value.strip()
+    except FileNotFoundError:
+        return fallback
+    return fallback
+
+
+DEFAULT_COMPLETENESS_VALUE = _read_axis_default_from_list(
+    "completenessModifier.talon-list",
+    "full",
+    "full",
+)
 
 mod = Module()
 ctx = Context()
@@ -345,7 +384,7 @@ mod.setting(
 mod.setting(
     "model_default_completeness",
     type=str,
-    default="full",
+    default=DEFAULT_COMPLETENESS_VALUE,
     desc=(
         "Default completeness level when no spoken completeness modifier is provided. "
         "Suggested values align with the completenessModifier list (for example, 'skim', 'gist', 'full', 'max')."

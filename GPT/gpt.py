@@ -1,7 +1,11 @@
 import os
 from typing import Optional
 
-from ..lib.talonSettings import ApplyPromptConfiguration, PassConfiguration
+from ..lib.talonSettings import (
+    ApplyPromptConfiguration,
+    DEFAULT_COMPLETENESS_VALUE,
+    PassConfiguration,
+)
 from ..lib.staticPromptConfig import STATIC_PROMPT_CONFIG
 
 from ..lib.modelDestination import Browser, Default, ModelDestination, PromptPayload
@@ -133,7 +137,7 @@ class UserActions:
         GPTState.system_prompt = GPTSystemPrompt()
         # Also reset contract-style defaults so "reset writing" is a single
         # switch for persona and writing behaviour.
-        settings.set("user.model_default_completeness", "full")
+        settings.set("user.model_default_completeness", DEFAULT_COMPLETENESS_VALUE)
         settings.set("user.model_default_scope", "")
         settings.set("user.model_default_method", "")
         settings.set("user.model_default_style", "")
@@ -160,7 +164,7 @@ class UserActions:
 
     def gpt_reset_default_completeness() -> None:
         """Reset the default completeness level to its configured base value"""
-        settings.set("user.model_default_completeness", "full")
+        settings.set("user.model_default_completeness", DEFAULT_COMPLETENESS_VALUE)
         GPTState.user_overrode_completeness = False
 
     def gpt_reset_default_scope() -> None:

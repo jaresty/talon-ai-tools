@@ -8,13 +8,14 @@ When asked to “run the churn × complexity Concordance ADR helper using `docs/
 
 ## 0. Preconditions and Scope
 
-- Scope: this helper is designed for churn/complexity and Concordance work over the core RCEF and testing hotspots:
-  - `scripts/rcef/**`
-  - `scripts/testing/**`
-  - `scripts/__tests__/**`
+- Scope: this helper is designed for churn/complexity and Concordance work over the core Talon AI tools and tests in this repo:
+  - `lib/**`
+  - `GPT/**`
+  - `copilot/**`
+  - `tests/**`
 - Tools (already in this repo):
-  - **Line‑level churn × complexity heatmap (statement‑level):** `scripts/tools/line-churn-heatmap.mjs`
-  - **Git log fixture for churn scope:** `npm run dev:churn:git-log` → `scripts/tools/churn-git-log-stat.mjs`
+  - **Line‑level churn × complexity heatmap (statement‑level):** `scripts/tools/line-churn-heatmap.py`
+  - **Git log fixture for churn scope:** `scripts/tools/churn-git-log-stat.py`
 - ADR identifier and title selection should be **automatic**:
   - List existing ADR files under `docs/adr/` that match `^\d{4}-.*\.md$` (excluding `*.work-log.md`).
   - Parse their numeric prefixes, find the maximum `N`, and choose `ADR_ID = N + 1`, left‑padded to 4 digits (for example, if the highest is `0117`, pick `0118`).
@@ -42,16 +43,17 @@ Use the in‑repo **line‑level churn × complexity heatmap** as the canonical 
 Run the dev helper to capture `git log --stat` output for the same churn window and scope as the heatmap:
 
 ```bash
-cd /Users/tkma6d4/dev/aem_manager
+cd /path/to/talon-ai-tools
 
 # Optional: override window/scope via env, otherwise defaults are:
 #   LINE_CHURN_SINCE="90 days ago"
-#   LINE_CHURN_SCOPE="scripts/rcef/,scripts/testing/"
+#   LINE_CHURN_SCOPE="lib/,GPT/,copilot/,tests/"
+#   LINE_CHURN_OUTPUT="tmp/churn-scan/git-log-stat.txt"
 
-npm run dev:churn:git-log
+python scripts/tools/churn-git-log-stat.py
 ```
 
-This runs `node scripts/tools/churn-git-log-stat.mjs` and writes:
+This runs the in‑repo helper and writes:
 
 - `tmp/churn-scan/git-log-stat.txt` — reproducible `git log --stat` text for the configured window/scope.
 
@@ -60,15 +62,15 @@ This runs `node scripts/tools/churn-git-log-stat.mjs` and writes:
 Then run the statement‑level churn × complexity tool:
 
 ```bash
-cd /Users/tkma6d4/dev/aem_manager
+cd /path/to/talon-ai-tools
 
 # Environment variables (all optional):
 #   LINE_CHURN_SINCE   - git --since window (default: "90 days ago")
-#   LINE_CHURN_SCOPE   - comma-separated path prefixes (default: "scripts/rcef/,scripts/testing/")
+#   LINE_CHURN_SCOPE   - comma-separated path prefixes (default: "lib/,GPT/,copilot/,tests/")
 #   LINE_CHURN_LIMIT   - max nodes to report (default: 200)
-#   LINE_CHURN_OUTPUT  - JSON output path (default: "tmp/churn-scan/line-hotspots.json")
+#   LINE_CHURN_OUTPUT  - JSON output path (default: "tmp/churn-scan/line-hotspots.json"
 
-node scripts/tools/line-churn-heatmap.mjs
+python scripts/tools/line-churn-heatmap.py
 ```
 
 This script:
@@ -85,7 +87,7 @@ This script:
 ```jsonc
 {
   "since": "90 days ago",
-  "scope": ["scripts/rcef/", "scripts/testing/"],
+  "scope": ["lib/", "GPT/", "copilot/", "tests/"],
   "limit": 200,
   "generatedAt": "2025-..",
   "lines": [
@@ -93,11 +95,11 @@ This script:
   ],
   "nodes": [
     {
-      "file": "scripts/rcef/generate-index.ts",
-      "symbolName": "generateForYaml",
+      "file": "lib/talonSettings.py",
+      "symbolName": "load_settings",
       "role": "…",
-      "nodeKind": "FunctionDeclaration",
-      "nodeStartLine": 248,
+      "nodeKind": "Function",
+      "nodeStartLine": 120,
       "totalChurn": 10,
       "totalCoordination": 6.3,
       "avgComplexity": 7.2,
@@ -195,10 +197,10 @@ The assistant must now search the codebase for **similar behavior and existing p
 For each draft recommendation from step 4:
 
 1. **Search for prior art** in the repo:
-   - Prefer existing domain homes and patterns, for example:
-     - `scripts/rcef/verify-pipeline/**`, `scripts/rcef/index-pipeline/**`.
-     - `scripts/rcef/session/**`, `scripts/rcef/session-tune/**`.
-     - Existing domain facades and orchestrators (`*-facade.ts`, `*-orchestrator.ts`, `*-tune` modules).
+   - Prefer existing domain homes and patterns in this project, for example:
+     - Core model and prompt pipeline modules under `lib/`.
+     - Talon command and list definitions under `GPT/` and `copilot/`.
+     - Existing GUI/orchestrator modules and entrypoints.
 2. Compare the draft with prior art:
    - Is there an existing module or pattern that already solves a similar coordination/boundary problem?
    - Can we **extend or reuse** that pattern rather than creating a completely new one?
@@ -279,14 +281,14 @@ Using the outputs from steps 1–6, the assistant must now **create a new ADR fi
     - Where possible, expected **Concordance‑score effects** (for example, "should lower sustained scores for Sentinel tune hotspots once refactors and tests land"), with a reminder that reductions must come from genuine improvements, not from weakening Concordance checks.
 8. **Salient Tasks** (optional but recommended)
    - Checklist of concrete tasks (code, tests, docs) that can be completed in small, independent slices.
-   - When the new ADR will govern Concordance hotspots/tunes already covered by ADR‑0107 / 0118 / 0119 / 0120 / 0123, align its Salient Tasks and execution plan with ADR‑0126’s no‑deferral policy:
-     - Treat the ADR as the long‑term home for **completing** the in‑scope Concordance refactors/guardrails in this repo (not just as a container for future rounds).
+   - When the new ADR will govern Concordance hotspots that overlap with existing ADRs in this repo, align its Salient Tasks and execution plan with those ADRs’ stated scope and status:
+     - Treat the new ADR as a home for **completing** the in‑scope Concordance refactors/guardrails in this repo (not just as a container for future rounds).
      - Phrase Salient Tasks in terms of concrete behaviour changes (code + tests + minimal docs) rather than “write another ADR” or “explicitly defer this tune”.
      - Avoid introducing tasks whose only outcome is to move work into yet another successor ADR without landing at least one material behaviour slice.
 
 ### 7.1 File creation requirements
 
-When running under the AEM Manager Codex CLI harness:
+When running under this repo’s Codex CLI harness:
 
 - Use the available file‑editing tools (for example, `apply_patch`) to create the ADR file at:
   - `docs/adr/ADR_ID-ADR_TITLE_SLUG.md`.

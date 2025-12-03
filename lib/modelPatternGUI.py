@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 import os
-from typing import Literal
+from typing import Literal, Optional
 
 from talon import Context, Module, actions, imgui, settings
 
@@ -21,7 +21,7 @@ PatternDomain = Literal["coding", "writing"]
 
 
 class PatternGUIState:
-    domain: PatternDomain | None = None
+    domain: Optional[PatternDomain] = None
 
 
 @dataclass(frozen=True)

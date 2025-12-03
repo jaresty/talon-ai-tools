@@ -7,7 +7,23 @@ from ..lib.talonSettings import (
     PassConfiguration,
     modelPrompt,
 )
+
 from ..lib.staticPromptConfig import STATIC_PROMPT_CONFIG
+
+try:
+    from ..lib.staticPromptConfig import get_static_prompt_axes, get_static_prompt_profile
+except ImportError:  # Talon may have a stale staticPromptConfig loaded
+    def get_static_prompt_profile(name: str):
+        return STATIC_PROMPT_CONFIG.get(name)
+
+    def get_static_prompt_axes(name: str) -> dict[str, str]:
+        profile = STATIC_PROMPT_CONFIG.get(name, {})
+        axes: dict[str, str] = {}
+        for axis in ("completeness", "scope", "method", "style"):
+            value = profile.get(axis)
+            if value:
+                axes[axis] = value
+        return axes
 
 from ..lib.modelDestination import (
     Browser,
@@ -110,13 +126,16 @@ def _build_static_prompt_docs() -> str:
     seen: set[str] = set()
 
     # First, profiled prompts with rich descriptions.
-    for name, profile in STATIC_PROMPT_CONFIG.items():
+    for name in STATIC_PROMPT_CONFIG.keys():
+        profile = get_static_prompt_profile(name)
+        if profile is None:
+            continue
         description = profile.get("description", "").strip()
         if not description:
             continue
         axes_bits: list[str] = []
         for label in ("completeness", "scope", "method", "style"):
-            value = profile.get(label)
+            value = get_static_prompt_axes(name).get(label)
             if value:
                 axes_bits.append(f"{label}={value}")
         if axes_bits:

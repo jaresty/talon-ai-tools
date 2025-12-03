@@ -10,7 +10,7 @@ from .modelDestination import (
 )
 from .modelState import GPTState
 from talon import Context, Module, clip, settings
-from .staticPromptConfig import STATIC_PROMPT_CONFIG
+from .staticPromptConfig import get_static_prompt_axes, get_static_prompt_profile
 
 
 def _read_axis_default_from_list(filename: str, key: str, fallback: str) -> str:
@@ -156,16 +156,18 @@ def modelPrompt(m) -> str:
     static_prompt = getattr(
         m, "staticPrompt", "I'm not telling you what to do. Infer the task."
     )
-    config = STATIC_PROMPT_CONFIG.get(static_prompt, {})
-    display_prompt = config.get("description", static_prompt)
+    profile = get_static_prompt_profile(static_prompt)
+    display_prompt = profile["description"] if profile is not None else static_prompt
     goal_modifier = getattr(m, "goalModifier", "")
     directional = getattr(m, "directionalModifier", "")
+
+    profile_axes = get_static_prompt_axes(static_prompt)
 
     # Resolve effective axis values for this request (spoken > profile > default)
     # and push them into GPTState.system_prompt so the system-level contract
     # reflects the same axes we expose in the user-level schema.
     spoken_completeness = getattr(m, "completenessModifier", "")
-    profile_completeness = config.get("completeness")
+    profile_completeness = profile_axes.get("completeness")
     if spoken_completeness:
         effective_completeness = spoken_completeness
     elif profile_completeness and not GPTState.user_overrode_completeness:
@@ -174,7 +176,7 @@ def modelPrompt(m) -> str:
         effective_completeness = settings.get("user.model_default_completeness")
 
     spoken_scope = getattr(m, "scopeModifier", "")
-    profile_scope = config.get("scope")
+    profile_scope = profile_axes.get("scope")
     if spoken_scope:
         effective_scope = spoken_scope
     elif profile_scope and not GPTState.user_overrode_scope:
@@ -183,7 +185,7 @@ def modelPrompt(m) -> str:
         effective_scope = settings.get("user.model_default_scope")
 
     spoken_method = getattr(m, "methodModifier", "")
-    profile_method = config.get("method")
+    profile_method = profile_axes.get("method")
     if spoken_method:
         effective_method = spoken_method
     elif profile_method and not GPTState.user_overrode_method:
@@ -192,7 +194,7 @@ def modelPrompt(m) -> str:
         effective_method = settings.get("user.model_default_method")
 
     spoken_style = getattr(m, "styleModifier", "")
-    profile_style = config.get("style")
+    profile_style = profile_axes.get("style")
     if spoken_style:
         effective_style = spoken_style
     elif profile_style and not GPTState.user_overrode_style:

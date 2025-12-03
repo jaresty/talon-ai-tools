@@ -1,13 +1,30 @@
 from dataclasses import dataclass
 import os
-from typing import Literal
+from typing import Literal, Optional
 
 from talon import Context, Module, actions, imgui, settings
 
 from .modelDestination import create_model_destination
 from .modelSource import create_model_source
 from .modelState import GPTState
-from .staticPromptConfig import STATIC_PROMPT_CONFIG
+
+try:
+    # Prefer the shared static prompt domain helpers when available.
+    from .staticPromptConfig import get_static_prompt_axes, get_static_prompt_profile
+except ImportError:  # Talon may have an older module state cached
+    from .staticPromptConfig import STATIC_PROMPT_CONFIG
+
+    def get_static_prompt_profile(name: str):
+        return STATIC_PROMPT_CONFIG.get(name)
+
+    def get_static_prompt_axes(name: str) -> dict[str, str]:
+        profile = STATIC_PROMPT_CONFIG.get(name, {})
+        axes: dict[str, str] = {}
+        for axis in ("completeness", "scope", "method", "style"):
+            value = profile.get(axis)
+            if value:
+                axes[axis] = value
+        return axes
 from .talonSettings import ApplyPromptConfiguration, modelPrompt
 
 mod = Module()
@@ -22,7 +39,7 @@ PatternDomain = Literal["prompt"]
 
 
 class PromptPatternGUIState:
-    static_prompt: str | None = None
+    static_prompt: Optional[str] = None
 
 
 @dataclass(frozen=True)
@@ -180,15 +197,16 @@ def prompt_pattern_gui(gui: imgui.GUI):
         gui.spacer()
     else:
         gui.text(f"Prompt: {static_prompt}")
-        config = STATIC_PROMPT_CONFIG.get(static_prompt, {})
-        description = config.get("description")
+        profile = get_static_prompt_profile(static_prompt)
+        description = profile["description"] if profile is not None else None
         if description:
             gui.text(description)
             gui.spacer()
 
         axes: list[str] = []
+        profile_axes = get_static_prompt_axes(static_prompt)
         for label in ("completeness", "scope", "method", "style"):
-            value = config.get(label)
+            value = profile_axes.get(label)
             if value:
                 axes.append(f"{label.capitalize()}: {value}")
         if axes:

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import NotRequired, TypedDict
+from typing import TypedDict
 
 # Central configuration for static prompts:
 # - Each key is a canonical static prompt value (as used in GPT/lists/staticPrompt.talon-list).
@@ -8,12 +8,12 @@ from typing import NotRequired, TypedDict
 # - Optional completeness/scope/method/style fields define per-prompt axis profiles.
 
 
-class StaticPromptProfile(TypedDict):
+class StaticPromptProfile(TypedDict, total=False):
     description: str
-    completeness: NotRequired[str]
-    scope: NotRequired[str]
-    method: NotRequired[str]
-    style: NotRequired[str]
+    completeness: str
+    scope: str
+    method: str
+    style: str
 
 
 STATIC_PROMPT_CONFIG: dict[str, StaticPromptProfile] = {
@@ -511,3 +511,33 @@ STATIC_PROMPT_CONFIG: dict[str, StaticPromptProfile] = {
         "style": "plain",
     },
 }
+
+_AXES = ("completeness", "scope", "method", "style")
+
+
+def get_static_prompt_profile(name: str) -> StaticPromptProfile | None:
+    """Return the StaticPromptProfile for a given key, if present.
+
+    This helper provides a single place to look up profile metadata so that
+    callers (GUI, settings, docs) do not need to reach into STATIC_PROMPT_CONFIG
+    directly.
+    """
+    return STATIC_PROMPT_CONFIG.get(name)
+
+
+def get_static_prompt_axes(name: str) -> dict[str, str]:
+    """Return the axis values defined for a static prompt profile.
+
+    The result maps axis name -> configured value for the axes present in the
+    profile (a subset of: completeness, scope, method, style). Unknown prompts
+    return an empty dict.
+    """
+    profile = STATIC_PROMPT_CONFIG.get(name)
+    if profile is None:
+        return {}
+    axes: dict[str, str] = {}
+    for axis in _AXES:
+        value = profile.get(axis)
+        if value:
+            axes[axis] = value
+    return axes

@@ -1,8 +1,25 @@
-from talon import Context, Module, actions, imgui
 import os
 
+from talon import Context, Module, actions, imgui
+
 from .modelState import GPTState
-from .staticPromptConfig import STATIC_PROMPT_CONFIG
+
+try:
+    from .staticPromptConfig import get_static_prompt_axes, get_static_prompt_profile
+except ImportError:  # Talon may have a stale staticPromptConfig loaded
+    from .staticPromptConfig import STATIC_PROMPT_CONFIG
+
+    def get_static_prompt_profile(name: str):
+        return STATIC_PROMPT_CONFIG.get(name)
+
+    def get_static_prompt_axes(name: str) -> dict[str, str]:
+        profile = STATIC_PROMPT_CONFIG.get(name, {})
+        axes: dict[str, str] = {}
+        for axis in ("completeness", "scope", "method", "style"):
+            value = profile.get(axis)
+            if value:
+                axes[axis] = value
+        return axes
 
 mod = Module()
 ctx = Context()
@@ -156,10 +173,10 @@ def model_help_gui(gui: imgui.GUI):
     if HelpGUIState.static_prompt:
         sp = HelpGUIState.static_prompt
         gui.text(f"Prompt: {sp}")
-        config = STATIC_PROMPT_CONFIG.get(sp, {})
         axes = []
+        profile_axes = get_static_prompt_axes(sp)
         for label in ("completeness", "scope", "method", "style"):
-            value = config.get(label)
+            value = profile_axes.get(label)
             if value:
                 axes.append(f"{label.capitalize()}: {value}")
         if axes:

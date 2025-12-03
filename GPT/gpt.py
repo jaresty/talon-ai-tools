@@ -449,7 +449,10 @@ class UserActions:
             content = source.get_text()
         except Exception:
             # Underlying helpers (for example, Context/GPTResponse) already
-            # notify the user when no content is available.
+            # notify the user when no content is available. Clear any cached
+            # suggestions so the GUI doesn't appear to reflect stale content.
+            GPTState.last_suggested_recipes = []
+            GPTState.last_suggest_source = ""
             return
 
         # Remember the canonical source key used for these suggestions so the
@@ -463,6 +466,10 @@ class UserActions:
         subject = subject or ""
         content_text = str(content)
         if not content_text.strip() and not subject.strip():
+            # If we have neither source content nor a subject, clear previous
+            # suggestions to avoid showing stale recipes in the GUI.
+            GPTState.last_suggested_recipes = []
+            GPTState.last_suggest_source = ""
             notify("GPT: No source or subject available for suggestions")
             return
 

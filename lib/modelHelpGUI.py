@@ -92,6 +92,100 @@ METHOD_ITEMS = _read_axis_items("methodModifier.talon-list")
 STYLE_ITEMS = _read_axis_items("styleModifier.talon-list")
 
 
+def _group_directional_keys() -> dict[str, list[str]]:
+    """Arrange directional lenses along vertical/horizontal cardinal axes."""
+    groups: dict[str, list[str]] = {
+        "up": [],
+        "center_v": [],
+        "down": [],
+        "left": [],
+        "center_h": [],
+        "right": [],
+        "central": [],
+        "non_directional": [],
+        "fused_other": [],
+    }
+    if not DIRECTIONAL_KEYS:
+        return groups
+
+    vertical_up = {"fog"}
+    vertical_center = {"fig"}
+    vertical_down = {"dig"}
+
+    horizontal_left = {"rog"}
+    horizontal_center = {"bog"}
+    horizontal_right = {"ong"}
+
+    central_names = {"jog"}
+
+    seen_directional: set[str] = set()
+
+    # First pass: classify by prefixes/suffixes and known singletons.
+    for key in DIRECTIONAL_KEYS:
+        base = key.strip()
+        is_directional = False
+
+        if " " in base:
+            prefix, suffix = base.split(" ", 1)
+            if prefix == "fly":
+                groups["up"].append(base)
+                is_directional = True
+            elif prefix == "fip":
+                groups["center_v"].append(base)
+                is_directional = True
+            elif prefix == "dip":
+                groups["down"].append(base)
+                is_directional = True
+
+            if suffix == "rog":
+                groups["left"].append(base)
+                is_directional = True
+            elif suffix == "bog":
+                groups["center_h"].append(base)
+                is_directional = True
+            elif suffix == "ong":
+                groups["right"].append(base)
+                is_directional = True
+
+            if not is_directional:
+                groups["fused_other"].append(base)
+        else:
+            if base in vertical_up:
+                groups["up"].append(base)
+                is_directional = True
+            if base in vertical_center:
+                groups["center_v"].append(base)
+                is_directional = True
+            if base in vertical_down:
+                groups["down"].append(base)
+                is_directional = True
+
+            if base in horizontal_left:
+                groups["left"].append(base)
+                is_directional = True
+            if base in horizontal_center:
+                groups["center_h"].append(base)
+                is_directional = True
+            if base in horizontal_right:
+                groups["right"].append(base)
+                is_directional = True
+
+            if base in central_names:
+                groups["central"].append(base)
+                is_directional = True
+
+        if is_directional:
+            seen_directional.add(base)
+
+    # Second pass: anything not seen and not fused is non-directional (flip, flop, tap, etc.).
+    for key in DIRECTIONAL_KEYS:
+        base = key.strip()
+        if " " not in base and base not in seen_directional:
+            groups["non_directional"].append(base)
+
+    return groups
+
+
 def _show_axes(gui: imgui.GUI) -> None:
     gui.text("Axes")
     gui.text("  - Goal / static prompt")
@@ -101,10 +195,32 @@ def _show_axes(gui: imgui.GUI) -> None:
 
     gui.text("Directional lenses")
     if DIRECTIONAL_KEYS:
-        gui.text("  " + ", ".join(DIRECTIONAL_KEYS))
+        groups = _group_directional_keys()
+        if groups["up"] or groups["center_v"] or groups["down"]:
+            gui.text("  Vertical slices:")
+            if groups["up"]:
+                gui.text("    Up: " + ", ".join(groups["up"]))
+            if groups["center_v"]:
+                gui.text("    Center: " + ", ".join(groups["center_v"]))
+            if groups["down"]:
+                gui.text("    Down: " + ", ".join(groups["down"]))
+
+        if groups["left"] or groups["center_h"] or groups["right"]:
+            gui.text("  Horizontal slices:")
+            if groups["left"]:
+                gui.text("    Left: " + ", ".join(groups["left"]))
+            if groups["center_h"]:
+                gui.text("    Center: " + ", ".join(groups["center_h"]))
+            if groups["right"]:
+                gui.text("    Right: " + ", ".join(groups["right"]))
+
+        if groups["central"]:
+            gui.text("  Central lenses: " + ", ".join(groups["central"]))
+        if groups["non_directional"]:
+            gui.text("  Non-directional: " + ", ".join(groups["non_directional"]))
     else:
         gui.text("  fog, fig, dig, ong, rog, bog")
-    gui.text("  (plus combined forms like fly ong, fip rog, dip bog)")
+    gui.text("  (one lens per model call)")
     gui.spacer()
 
 

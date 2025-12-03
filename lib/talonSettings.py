@@ -92,6 +92,9 @@ _COMPLETENESS_VALUE_TO_KEY = _read_axis_value_to_key_map(
 _SCOPE_VALUE_TO_KEY = _read_axis_value_to_key_map("scopeModifier.talon-list")
 _METHOD_VALUE_TO_KEY = _read_axis_value_to_key_map("methodModifier.talon-list")
 _STYLE_VALUE_TO_KEY = _read_axis_value_to_key_map("styleModifier.talon-list")
+_DIRECTIONAL_VALUE_TO_KEY = _read_axis_value_to_key_map(
+    "directionalModifier.talon-list"
+)
 
 
 def _axis_recipe_token(axis: str, raw_value: str) -> str:
@@ -109,6 +112,7 @@ def _axis_recipe_token(axis: str, raw_value: str) -> str:
         "scope": _SCOPE_VALUE_TO_KEY,
         "method": _METHOD_VALUE_TO_KEY,
         "style": _STYLE_VALUE_TO_KEY,
+        "directional": _DIRECTIONAL_VALUE_TO_KEY,
     }.get(axis, {})
     if not axis_map:
         return raw_value
@@ -214,6 +218,9 @@ def modelPrompt(m) -> str:
     if effective_style:
         recipe_parts.append(_axis_recipe_token("style", effective_style))
     GPTState.last_recipe = " · ".join(recipe_parts)
+    # Track the last directional lens separately so recap/quick help can
+    # surface it without changing the core recipe token.
+    GPTState.last_directional = _axis_recipe_token("directional", directional or "")
 
     # Task line: what you want done.
     # Restore the pre-ADR semantics: the visible Task text is the human-facing

@@ -394,8 +394,21 @@ class UserActions:
 
         actions.user.gpt_insert_response(result, destination)
 
-    def gpt_suggest_prompt_recipes(subject: str) -> None:
-        """Suggest model prompt recipes using the default source."""
+    def gpt_suggest_prompt_recipes(self_or_subject, subject: Optional[str] = None) -> None:
+        """Suggest model prompt recipes using the default source.
+
+        Accepts both Talon-style calls (subject only) and direct instance
+        calls from tests (self, subject).
+        """
+        # Normalise arguments so that either:
+        # - UserActions.gpt_suggest_prompt_recipes("subject"), or
+        # - UserActions().gpt_suggest_prompt_recipes("subject")
+        # both resolve to the same subject string.
+        if subject is None and isinstance(self_or_subject, str):
+            subject = self_or_subject
+        elif subject is None:
+            subject = ""
+
         source = create_model_source(settings.get("user.model_default_source"))
         UserActions.gpt_suggest_prompt_recipes_with_source(source, subject)
 
@@ -497,7 +510,12 @@ class UserActions:
         if not recipe:
             notify("GPT: No last recipe available")
             return
-        actions.app.notify(f"Last recipe: {recipe}")
+        directional = getattr(GPTState, "last_directional", "")
+        if directional:
+            recipe_text = f"{recipe} · {directional}"
+        else:
+            recipe_text = recipe
+        actions.app.notify(f"Last recipe: {recipe_text}")
 
     def gpt_pass(pass_configuration: PassConfiguration) -> None:
         """Passes a response from source to destination"""

@@ -173,8 +173,18 @@ def model_help_gui(gui: imgui.GUI):
         gui.text(f"Tip: Say 'model pattern menu {sp}' to open a pattern menu for this prompt.")
         gui.spacer()
     elif GPTState.last_recipe:
-        gui.text(f"Last recipe: {GPTState.last_recipe}")
-        grammar_phrase = f"model {GPTState.last_recipe.replace(' · ', ' ')}"
+        # When available, include the directional lens alongside the core
+        # recipe tokens so the quick-help recap matches the full grammar.
+        if getattr(GPTState, "last_directional", ""):
+            recipe_text = f"{GPTState.last_recipe} · {GPTState.last_directional}"
+            grammar_phrase = (
+                f"model {GPTState.last_recipe.replace(' · ', ' ')} "
+                f"{GPTState.last_directional}"
+            )
+        else:
+            recipe_text = GPTState.last_recipe
+            grammar_phrase = f"model {GPTState.last_recipe.replace(' · ', ' ')}"
+        gui.text(f"Last recipe: {recipe_text}")
         gui.text(f"Say: {grammar_phrase}")
         gui.spacer()
 

@@ -101,6 +101,7 @@ def _run_suggestion(suggestion: Suggestion) -> None:
         if token:
             recipe_parts.append(token)
     GPTState.last_recipe = " · ".join(recipe_parts)
+    GPTState.last_directional = directional or ""
 
 
 @imgui.open()

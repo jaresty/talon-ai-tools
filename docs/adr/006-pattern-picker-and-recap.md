@@ -34,7 +34,7 @@ We will adopt a layered, GUI-centric discoverability approach centered on a smal
    - Provide a compact `imgui` GUI (“pattern picker”) opened via a short voice command (`model patterns`).
    - The GUI presents a curated set of high-value “recipes” (per domain, e.g. coding vs writing), each as a button showing:
      - A human-readable pattern name (e.g. “Debug bug”, “Fix locally”, “Summarize selection”, “Product framing”).
-     - The underlying grammar recipe (static prompt + axes + directional lens; e.g. `debug · full · narrow · rigor · rog`) and the corresponding spoken grammar line (`model debug full narrow rigor rog`).
+     - The underlying grammar recipe (static prompt + axes + directional lens; for example, `debug · full · narrow · rigor · rog` in the original design, or `describe · full · narrow · debugging · rog` in this repo after ADR 012) and the corresponding spoken grammar line.
    - In the initial implementation:
      - Clicking a button executes the corresponding recipe via the same model pipeline used by spoken `model` commands, using the current default source/destination, and dismisses the pattern picker.
      - The GUI also renders the recipe and a one-line description under each button, making it a visual quick reference before you trigger it.

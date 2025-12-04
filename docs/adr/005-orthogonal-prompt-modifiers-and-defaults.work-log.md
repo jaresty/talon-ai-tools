@@ -155,13 +155,13 @@
       - `Important: Use your default completeness level for this task.`
   - When a `completenessModifier` **is** spoken, its full instruction text is still appended and takes precedence.
 
-### Behaviour impact
+### Behaviour impact (at the time of this slice)
 
 - Commands like `model fix fog` now:
   - Inherit `user.model_default_completeness`.
   - Also carry an explicit nudge to bias toward a `solid` completeness answer because the static prompt is `fix`.
-- Similarly, `model simple rog` and `model short rog` bias toward `gist` completeness by default, as does `model todo rog` and `model diagram fog`.
-- This begins to implement the “per-prompt profiles” concept for the completeness axis only, without yet touching scope, method, or style.
+- Similarly, `model simple rog` and `model short rog` bias toward `gist` completeness by default, as does `model todo rog` and (historically, before ADR 012) `model diagram fog`.
+- This began to implement the “per-prompt profiles” concept for the completeness axis only, without yet touching scope, method, or style.
 
 ### Still TODO for ADR 005
 
@@ -171,6 +171,10 @@
   - Presence vs absence of a spoken completeness modifier.
   - Prompts with and without per-prompt completeness entries.
   - Interaction with `user.model_default_completeness`.
+- **Note (this repo, after ADR 012/013):** Some of the envisioned per-prompt profile work for format/transform prompts has effectively been superseded by ADR 012/013:
+  - Format-heavy behaviour is now encoded in `styleModifier` entries (for example, `diagram`, `presenterm`, `html`, `gherkin`, `shellscript`, `emoji`, `recipe`, `abstractvisual`, `commit`, `adr`, `code`) rather than per-prompt completeness hints.
+  - Method-heavy behaviour for prompts like `debug`/`experiment`/`science` has been moved into `methodModifier` values (`debugging`, `experimental`, `systems`) instead of relying on static-prompt-specific completeness tweaks.
+  - Remaining per-prompt completeness/scope/method/style profiles are concentrated in `lib/staticPromptConfig.py` for semantic prompts that truly benefit from them.
 
 ## 2025-12-01 – Slice: introduce scope modifiers (spot/block/file/tests)
 

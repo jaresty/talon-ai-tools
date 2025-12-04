@@ -88,6 +88,116 @@ if bootstrap is not None:
                 self.assertEqual(GPTState.last_style, "")
                 self.assertEqual(GPTState.last_directional, "rog")
 
+            def test_pattern_with_style_token_sets_style_axis(self) -> None:
+                """Patterns that include a style token should set last_style."""
+                target = next(p for p in PATTERNS if p.name == "Sketch diagram")
+
+                UserActions.model_pattern_run_name(target.name)
+
+                self.assertEqual(GPTState.last_static_prompt, "describe")
+                self.assertEqual(GPTState.last_completeness, "gist")
+                self.assertEqual(GPTState.last_scope, "focus")
+                self.assertEqual(GPTState.last_method, "")
+                self.assertEqual(GPTState.last_style, "diagram")
+                self.assertEqual(GPTState.last_directional, "fog")
+
+            def test_parse_recipe_handles_new_method_tokens(self) -> None:
+                """New method tokens like 'flow' should be parsed as methods."""
+                target = next(p for p in PATTERNS if p.name == "Explain flow")
+
+                (
+                    static_prompt,
+                    completeness,
+                    scope,
+                    method,
+                    style,
+                    directional,
+                ) = _parse_recipe(target.recipe)
+
+                self.assertEqual(static_prompt, "describe")
+                self.assertEqual(completeness, "gist")
+                self.assertEqual(scope, "focus")
+                self.assertEqual(method, "flow")
+                self.assertEqual(style, "")
+                self.assertEqual(directional, "fog")
+
+            def test_slack_and_jira_patterns_are_configured(self) -> None:
+                """Slack summary and Jira ticket patterns should parse to expected axes."""
+                slack = next(p for p in PATTERNS if p.name == "Slack summary")
+                jira = next(p for p in PATTERNS if p.name == "Jira ticket")
+
+                (
+                    static_prompt,
+                    completeness,
+                    scope,
+                    method,
+                    style,
+                    directional,
+                ) = _parse_recipe(slack.recipe)
+
+                self.assertEqual(static_prompt, "describe")
+                self.assertEqual(completeness, "gist")
+                self.assertEqual(scope, "focus")
+                self.assertEqual(method, "")
+                self.assertEqual(style, "slack")
+                self.assertEqual(directional, "fog")
+
+                (
+                    static_prompt,
+                    completeness,
+                    scope,
+                    method,
+                    style,
+                    directional,
+                ) = _parse_recipe(jira.recipe)
+
+                self.assertEqual(static_prompt, "describe")
+                self.assertEqual(completeness, "full")
+                self.assertEqual(scope, "focus")
+                self.assertEqual(method, "steps")
+                self.assertEqual(style, "jira")
+                self.assertEqual(directional, "fog")
+
+            def test_motif_scan_pattern_uses_motifs_method(self) -> None:
+                """Motif scan pattern should use relations scope and motifs method."""
+                motif = next(p for p in PATTERNS if p.name == "Motif scan")
+
+                (
+                    static_prompt,
+                    completeness,
+                    scope,
+                    method,
+                    style,
+                    directional,
+                ) = _parse_recipe(motif.recipe)
+
+                self.assertEqual(static_prompt, "describe")
+                self.assertEqual(completeness, "gist")
+                self.assertEqual(scope, "relations")
+                self.assertEqual(method, "motifs")
+                self.assertEqual(style, "bullets")
+                self.assertEqual(directional, "fog")
+
+            def test_type_outline_pattern_uses_taxonomy_style(self) -> None:
+                """Type outline pattern should use taxonomy style."""
+                pattern = next(p for p in PATTERNS if p.name == "Type outline")
+
+                (
+                    static_prompt,
+                    completeness,
+                    scope,
+                    method,
+                    style,
+                    directional,
+                ) = _parse_recipe(pattern.recipe)
+
+                self.assertEqual(static_prompt, "describe")
+                self.assertEqual(completeness, "full")
+                self.assertEqual(scope, "focus")
+                self.assertEqual(method, "")
+                self.assertEqual(style, "taxonomy")
+                self.assertEqual(directional, "rog")
+
             def test_all_pattern_static_prompts_exist_in_config_and_list(self) -> None:
                 """Ensure every pattern's static prompt token is wired into config and the list."""
                 root = Path(__file__).resolve().parents[1]

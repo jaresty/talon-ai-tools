@@ -70,6 +70,14 @@ if bootstrap is not None:
                 f"Profiled static prompts missing from staticPrompt.talon-list: {sorted(config_keys - talon_keys)}",
             )
 
+        def test_static_prompt_docs_note_axis_only_behaviours(self) -> None:
+            """Static prompt docs should mention axis-only behaviours and where to find recipes."""
+            docs = _build_static_prompt_docs()
+            self.assertIn(
+                "live only as style/method axis values",
+                docs,
+            )
+
         def test_axis_docs_include_all_axis_sections(self) -> None:
             """Characterise the axis docs block for completeness."""
             docs = _build_axis_docs()
@@ -90,6 +98,70 @@ if bootstrap is not None:
             self.assertTrue(
                 any(k in docs for k in ("fog:", "rog:", "ong:")),
                 "Expected at least one directional modifier key in axis docs",
+            )
+
+        def test_axis_docs_note_adrs_and_readme_cheat_sheet(self) -> None:
+            """Axis docs should point readers at ADRs and the README cheat sheet."""
+            docs = _build_axis_docs()
+            self.assertIn(
+                "ADR 005/012/013",
+                docs,
+            )
+
+        def test_axis_only_tokens_do_not_appear_as_static_prompts(self) -> None:
+            """Guardrail: axis-only tokens from ADR 012 must not be static prompts."""
+            root = pathlib.Path(__file__).resolve().parents[1]
+            static_list_path = root / "GPT" / "lists" / "staticPrompt.talon-list"
+            talon_keys: set[str] = set()
+            with static_list_path.open("r", encoding="utf-8") as f:
+                for line in f:
+                    s = line.strip()
+                    if (
+                        not s
+                        or s.startswith("#")
+                        or s.startswith("list:")
+                        or s == "-"
+                    ):
+                        continue
+                    if ":" not in s:
+                        continue
+                    key, _ = s.split(":", 1)
+                    talon_keys.add(key.strip())
+
+            # Style-only behaviours (ADR 012 axis-only styles).
+            style_only = {
+                "diagram",
+                "presenterm",
+                "HTML",
+                "gherkin",
+                "shell",
+                "code",
+                "emoji",
+                "format",
+                "recipe",
+                "lens",
+                "commit",
+                "ADR",
+                "taxonomy",
+            }
+            # Method-only or axis-shaped prompts that were retired as static prompts.
+            method_only = {
+                "debug",
+                "structure",
+                "flow",
+                "compare",
+                "type",
+                "relation",
+                "clusters",
+                "motifs",
+            }
+
+            forbidden = style_only | method_only
+            present = sorted(forbidden & talon_keys)
+            self.assertEqual(
+                present,
+                [],
+                f"Axis-only tokens should not appear as staticPrompt keys, but found: {present}",
             )
 
         def test_pattern_static_prompts_are_documented(self) -> None:

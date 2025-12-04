@@ -538,7 +538,7 @@ mod.setting(
     "model_shell_default",
     type=str,
     default="bash",
-    desc="The default shell for outputting model shell commands",
+    desc="The default shell for outputting model shell commands (for example, when using the shellscript style).",
 )
 
 mod.setting(

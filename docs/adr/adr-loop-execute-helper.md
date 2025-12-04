@@ -4,8 +4,9 @@ This helper describes a simple, repeatable loop for making progress on ADRs.
 It is **not** an ADR itself and is intentionally ADR‑agnostic.
 
 When asked to “run an ADR loop/execute iteration using this helper”, follow
-the steps below to deliver one small, concrete slice of work that advances an
-ADR’s own objectives in this repo.
+the steps below to deliver one **substantial, concrete slice** of work that
+advances an ADR’s own objectives in this repo. It is also valid to discover
+that there is no substantial work left for a given ADR and report that fact.
 
 The caller may either:
 - Specify the target ADR explicitly (for example, by id), or
@@ -22,6 +23,9 @@ When using this helper:
 - Once you have chosen a slice for this loop, **commit to it** unless you
   hit a hard blocker. Do not keep shopping for alternative slices or
   repeatedly re‑stating high‑level options.
+- By default, aim for slices that:
+  - Touch at least two of: code, tests, docs, configuration, or UX surfaces, **or**
+  - Retire or introduce at least one non‑trivial behaviour end‑to‑end (not just a single wording tweak).
 
 ---
 
@@ -52,10 +56,17 @@ When using this helper:
 - Within that ADR, choose one **focus area** for this loop: a function,
   module, workflow, guardrail, or specific task already described in the ADR
   or its work‑log.
+- If, after scanning a specified ADR and its work‑log, you cannot identify any
+  substantial, in‑repo work remaining (for example, status is Accepted and
+  B_a is effectively 0), it is acceptable to:
+  - Run a short status‑only confirmation slice for that ADR (updating the
+    work‑log), **or**
+  - Tell the caller there is no further substantial work for that ADR and
+    suggest moving on to another ADR.
 
 ---
 
-## 2. Plan one bounded slice
+## 2. Plan one bounded, substantial slice
 
 For the chosen ADR and focus area:
 
@@ -78,6 +89,9 @@ For the chosen ADR and focus area:
     (for example, marking tasks as out-of-scope
     for this repo, splitting overly broad tasks,
     or adding a concise "Current status" summary).
+- As a rule of thumb, prefer slices that:
+  - Change behaviour or configuration and exercise it with tests or representative runs, and/or
+  - Update multiple ADR touchpoints together (for example, config + tests + docs), rather than microscopic, single-line edits.
 - Do **not** assume every slice must combine behaviour and tests. Choose
   the slice that best advances the ADR's objectives; use tests and other
   checks as strategies to make those changes safe.
@@ -91,13 +105,19 @@ For the chosen ADR and focus area:
   - Reconcile ADR tasks/status with actual repo state (for example,
     marking tasks complete/deferred and adding a short "Current status"
     snapshot).
-  Avoid slices that only tweak wording without changing behaviour,
-  evidence, or status.
+  Treat **pure wording-only tweaks** (that do not change behaviour, evidence,
+  or status) as anti-patterns for ADR loops; batch those outside of this
+  helper when possible.
 - Keep the slice **bounded and completable** enough that you can, within
   this single loop:
   - Implement the change end-to-end,
   - Run at least the most relevant checks/tests, and
   - Update the work-log.
+  If, after scanning the ADR and work‑log, you genuinely cannot find any
+  substantial slice that meets these criteria, do **not** force a token,
+  wording-only change just to satisfy the loop. Instead, treat this as a
+  status confirmation loop: record in the work‑log that there is no remaining
+  in‑repo work for this ADR (B_a ≈ 0) and report that outcome to the caller.
 
 - Periodically (for example, every few loops for
   the same ADR), choose a slice that is primarily

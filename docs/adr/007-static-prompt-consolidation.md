@@ -59,8 +59,12 @@ We will:
      - `method=cluster` – group similar items into labeled categories and describe each cluster, emphasising recurring patterns over singletons.
      - `style=checklist` – express the main answer as an actionable checklist (imperative, task-shaped bullets) rather than generic prose or bullets.
 
-4. **Keep domain-heavy and format-heavy prompts as static prompts**
+4. **Keep domain-heavy and format-/method-heavy prompts as static prompts (then refine via ADR 012/013)**
    - Retain static prompts that encode domain knowledge, specialised output contracts, or complex safety constraints that cannot be reconstructed from axes alone.
+   - In this repo, many of the format-/method-heavy prompts originally kept by this ADR (for example, `diagram`, `presenterm`, `HTML`, `gherkin`, `shell`, `code`, `emoji`, `format`, `recipe`, `lens`, `commit`, `ADR`, `debug`, `structure`, `flow`, `compare`, `motifs`) have since been retired as static prompts and re-expressed as style/method axis values and patterns by:
+     - ADR 012 – Style and Method Prompt Refactor, and
+     - ADR 013 – Static Prompt Axis Refinement and Streamlining.
+   - The remaining static prompts in this repo focus on semantic/domain lenses and structured tasks; new format/method behaviours should usually be added as axes or patterns rather than new static prompts.
 
 This ADR explicitly opts **not** to preserve backwards compatibility at the static-prompt level. Once adopted, we will update the static prompt list, axis vocabularies, and patterns in one coordinated change:
 
@@ -166,15 +170,22 @@ Several prompts bundle a light planning/filtering semantic with a heavily axis-s
 
 We explicitly *do not* propose consolidation for:
 
-- Format/transform heavy prompts:
+- Format/transform heavy prompts (original ADR 007 scope):
   - `diagram`, `gherkin`, `shell`, `code`, `format`, `presenterm`, `recipe`, `group`, `split`, `shuffled`, `match`, `blend`, `join`, `sort`, `context`, `commit`, `ADR`, `HTML`.
-  - Rationale: encode strong, specific output formats and safety constraints that go beyond axes.
+  - Rationale at the time: encode strong, specific output formats and safety constraints that go beyond axes.
 
 - Domain or lens heavy prompts:
   - `math`, `orthogonal`, `bud`/`boom`/`meld`/`order`/`logic`/`probability`, `map`, `graph`, `document`, `wardley`, `com b`, `operations`, `science`, `experiment`, `debug`, `system`, `tao`, `jim`, `domain`, `tune`, `effects`, `problem`, `lens`, `motifs`, `knowledge`, `taste`, `assumption`, `objectivity`, etc.
   - Rationale: these encode non-trivial semantic frames or specialised workflows that are not recoverable from axes alone.
 
 These remain the “semantic backbone” of the static prompt surface and are good anchors for ADR 006 pattern recipes.
+
+> **Note (added after ADR 012/013):** In this repo, later ADRs have refined this decision:
+> 
+> - ADR 012 migrated several of the format/transform prompts (`diagram`, `gherkin`, `shell`, `code`, `format`, `presenterm`, `recipe`, `commit`, `ADR`, `HTML`, `emoji`, `lens`) into the style axis and removed them as static prompts.
+> - ADR 013 further moved some axis‑shaped prompts (`structure`, `flow`, `relation`, `type`, `compare`, `clusters`, `motifs`, and others) into method/scope/style axes and patterns.
+> 
+> ADR 007’s intent still applies conceptually (keep semantic/domain prompts as the backbone), but the concrete list of “kept” static prompts in this repository is now smaller and should be read together with ADR 012 and ADR 013.
 
 ## Consequences
 

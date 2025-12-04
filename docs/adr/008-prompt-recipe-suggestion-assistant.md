@@ -8,9 +8,9 @@
 
 The GPT integration exposes an orthogonal prompt grammar:
 
-- Static prompts (for example, `describe`, `fix`, `todo`, `gherkin`).
+- Static prompts (for example, `describe`, `fix`, `todo`, and a smaller, semantic backbone set as refined by ADR 007/012/013).
 - Directional lenses (for example, `fog`, `rog`, `ong`).
-- Contract-style axes: completeness, scope, method, style (ADR 005).
+- Contract-style axes: completeness, scope, method, style (ADR 005/012/013).
 - Pattern pickers and prompt-specific pattern menus (ADR 006).
 
 This grammar is powerful but still requires users to *choose* a full recipe:

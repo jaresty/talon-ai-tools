@@ -27,3 +27,17 @@ Thank you for your interest in contributing to `talon-ai-tools`. We are happy to
 - If a list is needed, `.talon-list` files should be used instead of defining lists inside Python
   - This makes it easier to customize list items by overriding the `.talon-list` and not needing to fork the Python.
 - Avoid any configuration pattern that requires a user to fork this repository
+
+## GPT prompts, axes, and ADRs
+
+- Before adding or changing **static prompts** or axis lists, read:
+  - `docs/adr/012-style-and-method-prompt-refactor.md`
+  - `docs/adr/013-static-prompt-axis-refinement-and-streamlining.md`
+- Design rules (summarised from those ADRs):
+  - Prefer **axes + patterns** (completeness/scope/method/style + directional lenses) for new behaviours.
+  - Add new static prompts only for clearly semantic/domain lenses or structured tasks that are not easily expressed via axes alone.
+  - Keep Talon lists, pattern GUIs, help surfaces, and tests in sync whenever you change prompts or axes.
+  - Name axis tokens for speech: use short, single, pronounceable words without hyphens (for example, `shellscript` instead of `shell-script`); avoid punctuation or multi-word phrases in axis keys so they remain easy to speak and remember.
+  - Do **not** reintroduce axis-only behaviours (for example, `diagram`, `presenterm`, `HTML`, `gherkin`, `shell`, `code`, `emoji`, `format`, `recipe`, `lens`, `commit`, `ADR`, `debug`, `structure`, `flow`, `compare`, `type`, `relation`, `clusters`, `motifs`, `taxonomy`) as static prompts; they should remain on the style/method axes with patterns/recipes.
+  - When changing prompts or axes, run and update the guardrail tests described in ADR 012 (for example, `tests/test_axis_mapping.py`, `tests/test_static_prompt_docs.py`, `tests/test_model_pattern_gui.py`, `tests/test_model_help_gui.py`) so docs, patterns, and behaviour stay in sync.
+  - When deprecating or demoting a static prompt, follow the “Mini-checklist: deprecating a static prompt” subsection in ADR 012 to keep config, patterns, docs, and tests aligned.

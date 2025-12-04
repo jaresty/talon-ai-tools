@@ -1,6 +1,8 @@
 list: user.staticPrompt
 -
 
+# Static prompts cover the semantic “what” (lenses and domains); many format and method behaviours now live only as style/method axes (see ADR 012/013).
+
 # Default "infer the task" recipe, used when no explicit static prompt is spoken.
 infer: infer
 
@@ -13,11 +15,7 @@ LLM: LLM
 # Analysis, Structure, and Perspective
 
 describe: describe
-structure: structure
-flow: flow
 undefined: undefined
-relation: relation
-type: type
 who: who
 what: what
 when: when
@@ -26,14 +24,11 @@ why: why
 how: how
 assumption: assumption
 objectivity: objectivity
-compare: compare
-clusters: clusters
 knowledge: knowledge
 taste: taste
 system: system
 tao: tao
 com b: com b
-motifs: motifs
 
 # Planning, Product, and Execution
 

@@ -91,6 +91,15 @@ METHOD_TOKENS = {
     "filter",
     "prioritize",
     "cluster",
+    # Extended method axis tokens from ADR 012/013.
+    "systems",
+    "experimental",
+    "debugging",
+    "structure",
+    "flow",
+    "compare",
+    "motifs",
+    "wasinawa",
 }
 
 STYLE_TOKENS = {
@@ -99,7 +108,22 @@ STYLE_TOKENS = {
     "bullets",
     "table",
     "code",
+    "cards",
     "checklist",
+    # Heavier output/formatting styles from ADR 012.
+    "diagram",
+    "presenterm",
+    "html",
+    "gherkin",
+    "shellscript",
+    "emoji",
+    "slack",
+    "jira",
+    "recipe",
+    "abstractvisual",
+    "commit",
+    "adr",
+    "taxonomy",
 }
 
 COMPLETENESS_MAP = _load_axis_map("completenessModifier.talon-list")
@@ -132,7 +156,7 @@ PATTERNS: list[PromptPattern] = [
     PromptPattern(
         name="Explain flow",
         description="Explain how this code or text flows.",
-        recipe="flow · gist · focus · steps · fog",
+        recipe="describe · gist · focus · flow · fog",
         domain="coding",
     ),
     PromptPattern(
@@ -197,6 +221,30 @@ PATTERNS: list[PromptPattern] = [
         domain="writing",
     ),
     PromptPattern(
+        name="Slack summary",
+        description="Summarize this content for Slack.",
+        recipe="describe · gist · focus · slack · fog",
+        domain="writing",
+    ),
+    PromptPattern(
+        name="Jira ticket",
+        description="Draft a Jira-style ticket description for this issue.",
+        recipe="describe · full · focus · steps · jira · fog",
+        domain="writing",
+    ),
+    PromptPattern(
+        name="Motif scan",
+        description="Scan for recurring motifs and patterns.",
+        recipe="describe · gist · relations · motifs · bullets · fog",
+        domain="writing",
+    ),
+    PromptPattern(
+        name="Type outline",
+        description="Outline a type/taxonomy: categories, subtypes, and relationships.",
+        recipe="describe · full · focus · taxonomy · rog",
+        domain="writing",
+    ),
+    PromptPattern(
         name="Sketch diagram",
         description="Convert this into a Mermaid-style diagram (code only).",
         recipe="describe · gist · focus · diagram · fog",
@@ -206,6 +254,12 @@ PATTERNS: list[PromptPattern] = [
         name="Architecture decision",
         description="Draft an Architecture Decision Record (ADR) for this situation.",
         recipe="describe · full · focus · adr · rog",
+        domain="writing",
+    ),
+    PromptPattern(
+        name="Present slides",
+        description="Render this as a Presenterm slide deck.",
+        recipe="describe · full · focus · presenterm · rog",
         domain="writing",
     ),
 ]

@@ -103,7 +103,10 @@ def _build_axis_docs() -> str:
         ("Style modifiers", "styleModifier.talon-list"),
         ("Directional modifiers", "directionalModifier.talon-list"),
     ]
-    lines: list[str] = []
+    lines: list[str] = [
+        "Note: Axes capture how and in what shape the model should respond (completeness, scope, method, style, directional lens). "
+        "For full semantics and examples, see ADR 005/012/013 and the GPT README axis cheat sheet.\n"
+    ]
     for label, filename in sections:
         items = _read_list_items(filename)
         if not items:
@@ -122,7 +125,9 @@ def _build_static_prompt_docs() -> str:
     path = os.path.join(lists_dir, "staticPrompt.talon-list")
     # Prefer descriptions from STATIC_PROMPT_CONFIG, and include default axes
     # when present; fall back to listing other prompts by name.
-    lines: list[str] = []
+    lines: list[str] = [
+        "Note: Some behaviours (for example, diagrams, Presenterm decks, ADRs, shell scripts, debugging, Slack/Jira formatting, taxonomy-style outputs) now live only as style/method axis values rather than static prompts; see ADR 012/013 and the README cheat sheet for axis-based recipes.\n"
+    ]
     seen: set[str] = set()
 
     # First, profiled prompts with rich descriptions.

@@ -21,3 +21,4 @@ recipe: Important: Express the answer as a recipe with a custom, clearly explain
 abstractvisual: Important: Express the big picture as an abstract visual or metaphorical layout (for example, regions and contrasts) with a short legend and, if needed, brief SVG/code-like hints.
 commit: Important: Express the answer as a conventional commit message with a short type/scope line and, if needed, a concise body.
 adr: Important: Express the answer as an Architecture Decision Record (ADR) with sections for context, decision, and consequences, using a concise, document-like style.
+taxonomy: Important: Express the answer as a type or taxonomy: define categories, subtypes, and their relationships in a compact, structured way.

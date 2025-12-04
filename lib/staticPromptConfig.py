@@ -30,28 +30,8 @@ STATIC_PROMPT_CONFIG: dict[str, StaticPromptProfile] = {
     "describe": {
         "description": "Just describe this objectively.",
     },
-    "structure": {
-        "description": "Describe the structure of the whole input.",
-    },
-    "flow": {
-        "description": "Explain the flow.",
-    },
     "undefined": {
         "description": "List undefined terms only.",
-    },
-    "relation": {
-        "description": "Invert this so it focuses on the relationships between things and describe those relationships.",
-        "scope": "relations",
-    },
-    "motifs": {
-        "description": "Identify and summarize meaningful motifs and recurring patterns in the selected material; highlight clusters, common motifs, and notable outliers.",
-        "completeness": "gist",
-        "scope": "relations",
-        "method": "steps",
-        "style": "bullets",
-    },
-    "type": {
-        "description": "Represent this as a type or taxonomy.",
     },
     "who": {
         "description": "Explain who.",
@@ -76,15 +56,6 @@ STATIC_PROMPT_CONFIG: dict[str, StaticPromptProfile] = {
     },
     "objectivity": {
         "description": "Assess objectivity with examples.",
-    },
-    "compare": {
-        "description": (
-            "Given two items (with the first provided as additional_source), carefully compare them: "
-            "list all differences and similarities, highlighting subtle distinctions and commonalities."
-        ),
-    },
-    "clusters": {
-        "description": "Create a table of subtle differences among similar ideas, omitting singletons and keeping width ≤ 100 characters.",
     },
     "knowledge": {
         "description": "Identify relevant academic or industry fields of knowledge and explain why each applies and what perspective it offers.",
@@ -171,27 +142,6 @@ STATIC_PROMPT_CONFIG: dict[str, StaticPromptProfile] = {
         "completeness": "gist",
         "method": "filter",
         "style": "bullets",
-        "scope": "focus",
-    },
-    "experiment": {
-        "description": "Given a problem, suggest one or more experiments that could help solve it.",
-        "completeness": "full",
-        "method": "experimental",
-        "style": "plain",
-        "scope": "focus",
-    },
-    "science": {
-        "description": "Give me testable, relevant, and specific hypotheses.",
-        "completeness": "full",
-        "method": "experimental",
-        "style": "plain",
-        "scope": "focus",
-    },
-    "wasinawa": {
-        "description": "Perform a What–So What–Now What reflection with three clear sections.",
-        "completeness": "full",
-        "method": "steps",
-        "style": "plain",
         "scope": "focus",
     },
     "easier": {

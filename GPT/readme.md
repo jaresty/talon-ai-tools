@@ -4,7 +4,7 @@ Query language models with voice commands. Helpful to automatically generate tex
 
 ## Help
 
-- See [the list of prompts](lists/staticPrompt.talon-list) for all the prompts that can be used with the `model` command.
+- See [the list of prompts](lists/staticPrompt.talon-list) for the current static prompts that can be used with the `model` command; note that some behaviours (for example, diagrams, Presenterm decks, ADRs, and shell scripts) now live only as style/method axis values rather than static prompts (see ADR 012/013).
 
 - See the [examples file](../.docs/usage-examples/examples.md) for gifs that show how to use the commands.
 
@@ -14,7 +14,10 @@ For implementation details of the modifier axes, defaults, helpers, and rerun sh
 
 - `docs/adr/005-orthogonal-prompt-modifiers-and-defaults.md`
 - `docs/adr/006-pattern-picker-and-recap.md`
+- `docs/adr/008-prompt-recipe-suggestion-assistant.md`
 - `docs/adr/009-rerun-last-recipe-shorthand.md`
+- `docs/adr/012-style-and-method-prompt-refactor.md`
+- `docs/adr/013-static-prompt-axis-refinement-and-streamlining.md`
 
 ### In-Talon helpers for discoverability (ADR 006)
 
@@ -22,7 +25,7 @@ To make the grammar easier to remember and explore, ADR 006 adds a few helpers:
 
 - `model patterns` – opens a small GUI with curated “patterns” for common tasks (coding and writing/product/reflection), each showing:
   - A pattern name (for example, “Debug bug”, “Fix locally”, “Summarize selection”).
-  - The underlying recipe (for example, `debug · full · narrow · rigor · rog`).
+  - The underlying recipe (for example, `describe · full · narrow · debugging · rog`).
   - A one-line description.
   - Clicking a pattern runs the corresponding recipe via the normal `model` pipeline and closes the GUI.
   - You can also say `model coding patterns` or `model writing patterns` to open the GUI filtered to those domains, then either click or say the pattern name (for example, `debug bug`) to execute it.
@@ -92,8 +95,8 @@ The `model` command now supports several short, speech-friendly modifier axes yo
 
 - Completeness (`completenessModifier`): `skim`, `gist`, `full`, `max`, `minimal`, `deep`
 - Scope (`scopeModifier`): `narrow`, `focus`, `bound`, `edges`, `relations`
-- Method (`methodModifier`): `steps`, `plan`, `rigor`, `rewrite`, `diagnose`, `filter`, `prioritize`, `cluster`
-- Style (`styleModifier`): `plain`, `tight`, `bullets`, `table`, `code`, `checklist`, `diagram`, `presenterm`, `html`, `gherkin`, `shellscript`, `emoji`, `slack`, `jira`, `recipe`, `abstractvisual`, `commit`, `adr`
+– Method (`methodModifier`): `steps`, `plan`, `rigor`, `rewrite`, `diagnose`, `filter`, `prioritize`, `cluster`, `systems`, `experimental`, `debugging`, `structure`, `flow`, `compare`, `motifs`, `wasinawa`
+– Style (`styleModifier`): `plain`, `tight`, `bullets`, `table`, `code`, `checklist`, `diagram`, `presenterm`, `html`, `gherkin`, `shellscript`, `emoji`, `slack`, `jira`, `recipe`, `abstractvisual`, `commit`, `adr`, `taxonomy`
   - Additional style: `cards` – format the answer as discrete cards/items with clear headings and short bodies.
 
 Directional lenses (required) are a separate axis:
@@ -111,7 +114,7 @@ You normally say at most one or two of these per call. Examples:
 - `model fix skim plain fog` – light grammar/typo fix in plain language.
 - `model fix full plain rog` – full grammar/wording pass, still straightforward.
 - `model todo gist checklist rog` – turn notes into a concise TODO list as an actionable checklist.
-- `model flow full steps plain rog` – explain the flow of selected code or text step by step.
+- `model describe flow rog` – explain the flow of selected code or text step by step using the `flow` method.
 - `model describe diagram fog` – convert text to a mermaid-style Mermaid diagram, code-only.
 
 If you omit a modifier, a default is inferred from global settings like:
@@ -124,6 +127,31 @@ You can adjust these defaults by voice:
 - `model set scope narrow` / `model reset scope`
 - `model set method steps` / `model reset method`
 - `model set style bullets` / `model reset style`
+
+### Common axis recipes (cheat sheet)
+
+Some high-frequency combinations you can say directly:
+
+- Diagrams:
+  - `model describe diagram fog` – sketchy Mermaid diagram, code-only.
+- Presentations:
+  - `model describe presenterm rog` – Presenterm slide deck.
+- ADRs:
+  - `model describe adr rog` – Architecture Decision Record.
+- Shell scripts:
+  - `model describe shellscript rog` – shell script only.
+- Debugging:
+  - `model describe debugging rog` – debugging-style analysis of the current code or text.
+- Methods:
+  - `model describe systems fog` – systems-thinking sketch of the subject.
+  - `model describe experimental fog` – experimental/scientific plan and hypotheses.
+  - `model describe flow rog` – explain the flow of code or text step by step.
+  - `model describe motifs fog` – scan for recurring motifs and patterns (often with `scope relations`).
+- Types / taxonomy:
+  - `model describe taxonomy rog` – express a type/taxonomy: categories, subtypes, and relationships.
+- Channel formatting:
+  - `model describe slack fog` – format for Slack (Markdown, mentions, code blocks).
+  - `model describe jira fog` – format for Jira markup.
 
 ## OpenAI API Pricing
 
@@ -139,5 +167,5 @@ If you wish to change any configuration settings, copy the [example configuratio
 | ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------- |
 | user.openai_model        | `"gpt-5-nano"`                                                                                                                                                                                                                                                    | The model to use for the queries. NOTE: To access certain models you may need prior API use |
 | user.model_endpoint      | `"https://api.openai.com/v1/chat/completions"`                                                                                                                                                                                                                     | Any OpenAI compatible endpoint address can be used (Azure, local llamafiles, etc)           |
-| user.model_shell_default | `"bash"`                                                                                                                                                                                                                                                           | The default shell for `model shell` commands                                                |
+| user.model_shell_default | `"bash"`                                                                                                                                                                                                                                                           | The default shell used when outputting shell commands (for example, when using the `shellscript` style) |
 | user.model_system_prompt | `"You are an assistant helping an office worker to be more productive. Output just the response to the request and no additional content. Do not generate any markdown formatting such as backticks for programming languages unless it is explicitly requested."` | The meta-prompt for how to respond to all prompts                                           |

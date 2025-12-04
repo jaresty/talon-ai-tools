@@ -252,7 +252,24 @@ def _show_method(gui: imgui.GUI) -> None:
         for key, desc in METHOD_ITEMS:
             gui.text(f"  {key}: {desc}")
     else:
-        keys = METHOD_KEYS or ["steps", "plan", "rigor", "rewrite", "diagnose", "filter", "prioritize", "cluster"]
+        keys = METHOD_KEYS or [
+            "steps",
+            "plan",
+            "rigor",
+            "rewrite",
+            "diagnose",
+            "filter",
+            "prioritize",
+            "cluster",
+            "systems",
+            "experimental",
+            "debugging",
+            "structure",
+            "flow",
+            "compare",
+            "motifs",
+            "wasinawa",
+        ]
         gui.text("  " + ", ".join(keys))
     gui.spacer()
 
@@ -263,16 +280,45 @@ def _show_style(gui: imgui.GUI) -> None:
         for key, desc in STYLE_ITEMS:
             gui.text(f"  {key}: {desc}")
     else:
-        keys = STYLE_KEYS or ["plain", "tight", "bullets", "table", "code", "checklist"]
+        keys = STYLE_KEYS or [
+            "plain",
+            "tight",
+            "bullets",
+            "table",
+            "code",
+            "cards",
+            "checklist",
+            "diagram",
+            "presenterm",
+            "html",
+            "gherkin",
+            "shellscript",
+            "emoji",
+            "slack",
+            "jira",
+            "recipe",
+            "abstractvisual",
+            "commit",
+            "adr",
+            "taxonomy",
+        ]
         gui.text("  " + ", ".join(keys))
     gui.spacer()
 
 
 def _show_examples(gui: imgui.GUI) -> None:
     gui.text("Examples")
-    gui.text("  Debug bug: debug · full · narrow · rigor · rog")
+    gui.text("  Debug bug: describe · full · narrow · debugging · rog")
     gui.text("  Fix locally: fix · full · narrow · steps · ong")
     gui.text("  Summarize gist: describe · gist · focus · plain · fog")
+    gui.text("  Sketch diagram: describe · gist · focus · diagram · fog")
+    gui.text("  Architecture decision: describe · full · focus · adr · rog")
+    gui.text("  Present slides: describe · full · focus · presenterm · rog")
+    gui.text("  Format for Slack: describe · gist · focus · slack · fog")
+    gui.text("  Format for Jira: describe · gist · focus · jira · fog")
+    gui.text("  Systems sketch: describe · gist · focus · systems · fog")
+    gui.text("  Experiment plan: describe · full · focus · experimental · fog")
+    gui.text("  Type/taxonomy: describe · full · focus · taxonomy · rog")
     gui.spacer()
     gui.text("Replaced prompts")
     gui.text("  simple → use describe · gist · plain (or the 'Simplify locally' pattern).")

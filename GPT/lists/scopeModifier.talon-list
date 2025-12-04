@@ -7,3 +7,5 @@ focus: Important: Stay tightly on a central theme; avoid tangents and side-quest
 bound: Important: Stay inside explicit limits that are inferred from or stated in the prompt; do not introduce material outside them.
 edges: Important: Emphasise edge cases, errors, and unusual conditions around the subject.
 relations: Important: Focus on the relationships, interactions, and dependencies between the elements, not their internal details.
+dynamics: Important: Emphasise how the system's behaviour and state evolve over time: scenarios, state changes, feedback loops, and transitions.
+interfaces: Important: Focus on the external interfaces, contracts, and boundaries between components or systems, not on their internal implementations.

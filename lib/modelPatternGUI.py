@@ -100,6 +100,16 @@ METHOD_TOKENS = {
     "compare",
     "motifs",
     "wasinawa",
+    # Extended method axis tokens from ADR 015.
+    "xp",
+    "adversarial",
+    "receptive",
+    "resistant",
+    "novice",
+    "liberating",
+    "diverge",
+    "converge",
+    "mapping",
 }
 
 STYLE_TOKENS = {
@@ -172,6 +182,12 @@ PATTERNS: list[PromptPattern] = [
         domain="coding",
     ),
     PromptPattern(
+        name="XP next steps",
+        description="Suggest XP-flavoured next steps: tiny slices, tests, and production feedback.",
+        recipe="describe · gist · actions · xp · bullets · ong",
+        domain="coding",
+    ),
+    PromptPattern(
         name="Map dependencies",
         description="List and explain key dependencies and what they depend on.",
         recipe="dependency · gist · relations · steps · fog",
@@ -197,6 +213,12 @@ PATTERNS: list[PromptPattern] = [
         domain="writing",
     ),
     PromptPattern(
+        name="Explain for beginner",
+        description="Explain this to a beginner from first principles with simple language.",
+        recipe="describe · gist · focus · novice · plain · fog",
+        domain="writing",
+    ),
+    PromptPattern(
         name="Product framing",
         description="Frame this through a product lens.",
         recipe="product · gist · focus · steps · bullets · fog",
@@ -206,6 +228,12 @@ PATTERNS: list[PromptPattern] = [
         name="Retro / reflect",
         description="Reflect on what happened and why.",
         recipe="retro · full · focus · steps · rog",
+        domain="writing",
+    ),
+    PromptPattern(
+        name="Liberating facilitation",
+        description="Frame this as a short Liberating Structures-style facilitation plan.",
+        recipe="facilitate · full · focus · liberating · bullets · rog",
         domain="writing",
     ),
     PromptPattern(
@@ -236,6 +264,24 @@ PATTERNS: list[PromptPattern] = [
         name="Motif scan",
         description="Scan for recurring motifs and patterns.",
         recipe="describe · gist · relations · motifs · bullets · fog",
+        domain="writing",
+    ),
+    PromptPattern(
+        name="Diverge options",
+        description="Open up the option space with multiple angles and possibilities.",
+        recipe="describe · gist · focus · diverge · bullets · fog",
+        domain="writing",
+    ),
+    PromptPattern(
+        name="Converge decision",
+        description="Weigh trade-offs and converge on a clear decision or short list.",
+        recipe="describe · full · focus · converge · bullets · rog",
+        domain="writing",
+    ),
+    PromptPattern(
+        name="Mapping scan",
+        description="Map out elements and relationships rather than a linear narrative.",
+        recipe="describe · gist · relations · mapping · bullets · fog",
         domain="writing",
     ),
     PromptPattern(

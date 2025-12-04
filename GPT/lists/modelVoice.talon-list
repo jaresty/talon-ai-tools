@@ -1,48 +1,17 @@
 list: user.modelVoice
-# The following is the merged content based on the provided source text and the specified destination structure.
 -
 
-## Technical Roles
 as programmer: Act as a programmer.
 as prompt engineer: Act as a prompt engineer.
 as scientist: Act as a scientist.
-as logician: Act as a logician.
-
-## Creative Roles
-as blender: Act as a text transformer.
 as writer: Act as a writer.
 as designer: Act as a designer.
-as artist: Act as an artist.
-as adversary: Act as an adversarial reviewer who looks for weaknesses and flaws.
 
-## Educational Roles
 as teacher: Act as a teacher.
-as reader: Act as a reader.
-as editor: Act as an editor.
-as other: Act as someone who does not know the author of this text.
 
-## Management Roles
 as facilitator: Act as a facilitator.
-as liberator: Act as a facilitator who uses liberating structures.
 as PM: Act as a product manager.
 
-## Communication Roles
-as negotiator: Act as a negotiator.
-as mediator: Act as a mediator.
-
-## Organizational Roles
 as junior engineer: Act as a junior engineer.
 as principal engineer: Act as a principal engineer.
 as Kent Beck: Act as Kent Beck.
-as CEO: Act as a Chief Executive Officer.
-as CTO: Act as a Chief Technical Officer.
-as CFO: Act as a Chief Financial Officer.
-as platform team: Act as a platform team member.
-as stream aligned team: Act as a stream-aligned team.
-as enabling team: Act as an enabling team.
-as complicated subsystem team: Act as a complicated subsystem team.
-as XP enthusiast: You are an Extreme Programming (XP) enthusiast. You believe in validating assumptions as early as possible by getting working software into production, you prefer small batches over big-bang delivery, and you thrive on social programming practices like pairing and mobbing. You see the most effective teams as balanced groups of generalists who can swarm on any problem together.
-
-as various: Act as various stakeholders. For each stakeholder introduce who they are and why they care about this.
-as perspectives: Take various perspectives. For each perspective introduce what perspective it is and why it matters.
-as systems thinker: Act as a systems thinker. Any node with no inbound connections is not part of a loop and you should leave it out. Focus on feedback loops such as reinforcing and balancing loops and how they impact the system. For any connection you are describing indicate whether it is reinforcing or balancing in the resulting output (not in comments). Also indicate whether there is a delay in the impact of that connection. Show just the loops (and name them) and leave everything else out.

@@ -33,6 +33,7 @@ Thank you for your interest in contributing to `talon-ai-tools`. We are happy to
 - Before adding or changing **static prompts** or axis lists, read:
   - `docs/adr/012-style-and-method-prompt-refactor.md`
   - `docs/adr/013-static-prompt-axis-refinement-and-streamlining.md`
+  - `docs/adr/015-voice-audience-tone-purpose-decomposition.md`
 - Design rules (summarised from those ADRs):
   - Prefer **axes + patterns** (completeness/scope/method/style + directional lenses) for new behaviours.
   - Add new static prompts only for clearly semantic/domain lenses or structured tasks that are not easily expressed via axes alone.

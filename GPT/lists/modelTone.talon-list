@@ -2,9 +2,7 @@ list: user.modelTone
 -
 
 casually: Use a casual tone and include appropriate emoji.
-neutrally: Use a neutral tone.
 formally: Use a formal tone.
 directly: Use a direct tone.
 gently: Use a gentle tone.
-briefly: Keep this message as brief as possible.
 kindly: Use a kind tone.

@@ -18,6 +18,7 @@ For implementation details of the modifier axes, defaults, helpers, and rerun sh
 - `docs/adr/009-rerun-last-recipe-shorthand.md`
 - `docs/adr/012-style-and-method-prompt-refactor.md`
 - `docs/adr/013-static-prompt-axis-refinement-and-streamlining.md`
+- `docs/adr/015-voice-audience-tone-purpose-decomposition.md`
 
 ### In-Talon helpers for discoverability (ADR 006)
 
@@ -95,8 +96,8 @@ The `model` command now supports several short, speech-friendly modifier axes yo
 
 - Completeness (`completenessModifier`): `skim`, `gist`, `full`, `max`, `minimal`, `deep`, `framework`, `path`
 - Scope (`scopeModifier`): `narrow`, `focus`, `bound`, `edges`, `relations`, `dynamics`, `interfaces`, `system`, `actions`
-– Method (`methodModifier`): `steps`, `plan`, `rigor`, `rewrite`, `diagnose`, `filter`, `prioritize`, `cluster`, `systemic`, `experimental`, `debugging`, `structure`, `flow`, `compare`, `motifs`, `wasinawa`, `ladder`, `contextualise`
-– Style (`styleModifier`): `plain`, `tight`, `bullets`, `table`, `code`, `checklist`, `diagram`, `presenterm`, `html`, `gherkin`, `shellscript`, `emoji`, `slack`, `jira`, `recipe`, `abstractvisual`, `commit`, `adr`, `taxonomy`, `cards`
+- Method (`methodModifier`): `steps`, `plan`, `rigor`, `rewrite`, `diagnose`, `filter`, `prioritize`, `cluster`, `systemic`, `experimental`, `debugging`, `structure`, `flow`, `compare`, `motifs`, `wasinawa`, `ladder`, `contextualise`, `xp`, `adversarial`, `receptive`, `resistant`, `novice`, `liberating`, `diverge`, `converge`, `mapping`
+- Style (`styleModifier`): `plain`, `tight`, `bullets`, `table`, `code`, `checklist`, `diagram`, `presenterm`, `html`, `gherkin`, `shellscript`, `emoji`, `slack`, `jira`, `recipe`, `abstractvisual`, `commit`, `adr`, `taxonomy`, `cards`, `codetour`
   - Additional style: `cards` – format the answer as discrete cards/items with clear headings and short bodies.
 
 Directional lenses (required) are a separate axis:
@@ -147,11 +148,36 @@ Some high-frequency combinations you can say directly:
   - `model describe experimental fog` – experimental/scientific plan and hypotheses.
   - `model describe flow rog` – explain the flow of code or text step by step.
   - `model describe motifs fog` – scan for recurring motifs and patterns (often with `scope relations`).
+  - `model describe xp ong` – XP-flavoured stance: tiny slices, tests, and production feedback.
+  - `model describe adversarial rog` – adversarial review: look for weaknesses, edge cases, and unstated assumptions.
+  - `model describe novice fog` – explain for a beginner from first principles.
+  - `model describe liberating rog` – Liberating Structures-style facilitation framing.
+  - `model describe diverge fog` – open up the option space and explore alternatives.
+  - `model describe converge rog` – weigh options and narrow towards a decision.
+  - `model describe mapping fog` – emphasise mapping elements and relationships over linear exposition.
 - Types / taxonomy:
   - `model describe taxonomy rog` – express a type/taxonomy: categories, subtypes, and relationships.
 - Channel formatting:
   - `model describe slack fog` – format for Slack (Markdown, mentions, code blocks).
   - `model describe jira fog` – format for Jira markup.
+
+### Legacy tokens → new grammar (quick mapping)
+
+If you were using some older, now-retired tokens, here are the closest replacements using the current axes:
+
+- Voices / stance:
+  - `as XP enthusiast` → `as programmer` + `method=xp` (for example, `model describe xp ong`).  
+  - `as adversary` → suitable voice + `method=adversarial` + `for evaluating`.  
+  - `as liberator` → `as facilitator` + `method=liberating` (or use the “Liberating facilitation” pattern).
+- Audiences:
+  - `to receptive` / `to resistant` → keep the audience (for example, `to managers` / `to stakeholders`) and add `method=receptive` / `method=resistant`.  
+  - `to dummy` → keep a friendlier audience (for example, `to junior engineer`) and add `method=novice` + `gist`/`minimal` + `plain`.
+- Purposes / shape:
+  - `for coding` → `goal=solve` + `style=code`.  
+  - `for debugging` → `goal=solve` + `method=debugging`.  
+  - `for slack` / `for table` / `for presenterm` / `for code tour` → `style=slack` / `table` / `presenterm` / `codetour`.  
+  - `for diverging` / `for converging` → `for brainstorming` + `method=diverge`; `for deciding` + `method=converge`.  
+  - `for mapping` → `method=mapping` + relations/system/dynamics scope (often with `diagram`, `table`, or `abstractvisual` style).
 
 ## OpenAI API Pricing
 

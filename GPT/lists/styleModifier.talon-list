@@ -22,3 +22,5 @@ abstractvisual: Important: Express the big picture as an abstract visual or meta
 commit: Important: Express the answer as a conventional commit message with a short type/scope line and, if needed, a concise body.
 adr: Important: Express the answer as an Architecture Decision Record (ADR) with sections for context, decision, and consequences, using a concise, document-like style.
 taxonomy: Important: Express the answer as a type or taxonomy: define categories, subtypes, and their relationships in a compact, structured way.
+
+codetour: Important: Output only a valid VS Code CodeTour `.tour` JSON document (schema-compatible), using steps and fields appropriate to the task; do not include any extra prose or surrounding explanation.

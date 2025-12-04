@@ -198,6 +198,128 @@ if bootstrap is not None:
                 self.assertEqual(style, "taxonomy")
                 self.assertEqual(directional, "rog")
 
+            def test_xp_next_steps_pattern_uses_xp_method(self) -> None:
+                """XP next steps pattern should use xp method on actions scope."""
+                pattern = next(p for p in PATTERNS if p.name == "XP next steps")
+
+                (
+                    static_prompt,
+                    completeness,
+                    scope,
+                    method,
+                    style,
+                    directional,
+                ) = _parse_recipe(pattern.recipe)
+
+                self.assertEqual(static_prompt, "describe")
+                self.assertEqual(completeness, "gist")
+                self.assertEqual(scope, "actions")
+                self.assertEqual(method, "xp")
+                self.assertEqual(style, "bullets")
+                self.assertEqual(directional, "ong")
+
+            def test_explain_for_beginner_pattern_uses_novice_method(self) -> None:
+                """Explain for beginner pattern should use novice method."""
+                pattern = next(p for p in PATTERNS if p.name == "Explain for beginner")
+
+                (
+                    static_prompt,
+                    completeness,
+                    scope,
+                    method,
+                    style,
+                    directional,
+                ) = _parse_recipe(pattern.recipe)
+
+                self.assertEqual(static_prompt, "describe")
+                self.assertEqual(completeness, "gist")
+                self.assertEqual(scope, "focus")
+                self.assertEqual(method, "novice")
+                self.assertEqual(style, "plain")
+                self.assertEqual(directional, "fog")
+
+            def test_liberating_facilitation_pattern_uses_liberating_method(self) -> None:
+                """Liberating facilitation pattern should use liberating method."""
+                pattern = next(
+                    p for p in PATTERNS if p.name == "Liberating facilitation"
+                )
+
+                (
+                    static_prompt,
+                    completeness,
+                    scope,
+                    method,
+                    style,
+                    directional,
+                ) = _parse_recipe(pattern.recipe)
+
+                self.assertEqual(static_prompt, "facilitate")
+                self.assertEqual(completeness, "full")
+                self.assertEqual(scope, "focus")
+                self.assertEqual(method, "liberating")
+                self.assertEqual(style, "bullets")
+                self.assertEqual(directional, "rog")
+
+            def test_diverge_options_pattern_uses_diverge_method(self) -> None:
+                """Diverge options pattern should use diverge method."""
+                pattern = next(p for p in PATTERNS if p.name == "Diverge options")
+
+                (
+                    static_prompt,
+                    completeness,
+                    scope,
+                    method,
+                    style,
+                    directional,
+                ) = _parse_recipe(pattern.recipe)
+
+                self.assertEqual(static_prompt, "describe")
+                self.assertEqual(completeness, "gist")
+                self.assertEqual(scope, "focus")
+                self.assertEqual(method, "diverge")
+                self.assertEqual(style, "bullets")
+                self.assertEqual(directional, "fog")
+
+            def test_converge_decision_pattern_uses_converge_method(self) -> None:
+                """Converge decision pattern should use converge method."""
+                pattern = next(p for p in PATTERNS if p.name == "Converge decision")
+
+                (
+                    static_prompt,
+                    completeness,
+                    scope,
+                    method,
+                    style,
+                    directional,
+                ) = _parse_recipe(pattern.recipe)
+
+                self.assertEqual(static_prompt, "describe")
+                self.assertEqual(completeness, "full")
+                self.assertEqual(scope, "focus")
+                self.assertEqual(method, "converge")
+                self.assertEqual(style, "bullets")
+                self.assertEqual(directional, "rog")
+
+            def test_mapping_scan_pattern_uses_mapping_method(self) -> None:
+                """Mapping scan pattern should use mapping method on relations scope."""
+                pattern = next(p for p in PATTERNS if p.name == "Mapping scan")
+
+                (
+                    static_prompt,
+                    completeness,
+                    scope,
+                    method,
+                    style,
+                    directional,
+                ) = _parse_recipe(pattern.recipe)
+
+                self.assertEqual(static_prompt, "describe")
+                self.assertEqual(completeness, "gist")
+                self.assertEqual(scope, "relations")
+                self.assertEqual(method, "mapping")
+                self.assertEqual(style, "bullets")
+                self.assertEqual(directional, "fog")
+
             def test_all_pattern_static_prompts_exist_in_config_and_list(self) -> None:
                 """Ensure every pattern's static prompt token is wired into config and the list."""
                 root = Path(__file__).resolve().parents[1]

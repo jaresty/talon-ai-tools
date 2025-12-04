@@ -18,3 +18,5 @@ flow: Important: Focus on flow over time or sequence: explain how control, data,
 compare: Important: Compare two or more items: list similarities and differences, highlighting subtle distinctions and tradeoffs that matter to the audience.
 motifs: Important: Scan for recurring motifs and patterns: identify repeated elements, themes, clusters, and notable outliers, and briefly explain why they matter.
 wasinawa: Important: Apply a What–So What–Now What reflection: first describe what happened, then interpret why it matters, then propose concrete next steps.
+ladder: Important: Use abstraction laddering: place the focal problem, then step up to higher-level causes and down to consequences, ordered by importance to the audience.
+contextualise: Important: Add or reshape context to support another operation (for example, supplying background for an LLM or reframing content) without rewriting the main text itself.

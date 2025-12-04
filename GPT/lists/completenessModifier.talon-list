@@ -8,3 +8,5 @@ full: Important: Provide a thorough answer for normal use; cover all major aspec
 max: Important: Be as exhaustive as is reasonable; cover essentially everything relevant and treat omissions as errors.
 minimal: Important: Make the smallest change or answer that satisfies the request; avoid extra work outside the core need.
 deep: Important: Go into substantial depth within the chosen scope; cover fine details without necessarily enumerating every theoretical edge case.
+framework: Important: Within the chosen scope, cover all major parts of an explicit named framework or map (for example, COM-B, Wardley, Concordance); you may omit irrelevant tangents that are outside that framework.
+path: Important: Describe a continuous path from the current state to a desired state, covering the key intermediate stages needed to make the transition coherent, without exhaustively detailing every micro-step.

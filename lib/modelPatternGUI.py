@@ -168,7 +168,7 @@ PATTERNS: list[PromptPattern] = [
     PromptPattern(
         name="Extract todos",
         description="Turn this into a todo list.",
-        recipe="todo · gist · focus · steps · checklist · ong",
+        recipe="todo · gist · actions · steps · checklist · ong",
         domain="coding",
     ),
     PromptPattern(
@@ -236,6 +236,24 @@ PATTERNS: list[PromptPattern] = [
         name="Motif scan",
         description="Scan for recurring motifs and patterns.",
         recipe="describe · gist · relations · motifs · bullets · fog",
+        domain="writing",
+    ),
+    PromptPattern(
+        name="Cluster items",
+        description="Group related items into labeled categories; clustered output only.",
+        recipe="describe · full · narrow · cluster · plain · fog",
+        domain="writing",
+    ),
+    PromptPattern(
+        name="Rank items",
+        description="Sort items in order of importance to the audience.",
+        recipe="describe · full · narrow · prioritize · plain · fog",
+        domain="writing",
+    ),
+    PromptPattern(
+        name="Abstraction ladder",
+        description="Use abstraction laddering: reasons above the problem, consequences below.",
+        recipe="describe · full · focus · ladder · plain · rog",
         domain="writing",
     ),
     PromptPattern(

@@ -120,6 +120,33 @@ PROMPT_PRESETS: list[PromptAxisPattern] = [
         style="bullets",
         directional="fog",
     ),
+    PromptAxisPattern(
+        name="Abstraction ladder",
+        description="Place the focal problem in the middle, with reasons above and consequences below.",
+        completeness="full",
+        scope="focus",
+        method="ladder",
+        style="plain",
+        directional="rog",
+    ),
+    PromptAxisPattern(
+        name="Cluster items",
+        description="Group related items into labeled categories; clustered output only.",
+        completeness="full",
+        scope="narrow",
+        method="cluster",
+        style="plain",
+        directional="fog",
+    ),
+    PromptAxisPattern(
+        name="Rank items",
+        description="Sort items in order of importance to the audience.",
+        completeness="full",
+        scope="narrow",
+        method="prioritize",
+        style="plain",
+        directional="fog",
+    ),
 ]
 
 

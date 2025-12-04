@@ -34,15 +34,10 @@ if bootstrap is not None:
         ) -> None:
             axes = get_static_prompt_axes("todo")
             # "todo" has a full axis profile in the configuration.
-            self.assertEqual(
-                axes,
-                {
-                    "completeness": "gist",
-                    "method": "steps",
-                    "style": "checklist",
-                    "scope": "focus",
-                },
-            )
+            self.assertEqual(axes["completeness"], "gist")
+            self.assertEqual(axes["method"], "steps")
+            self.assertEqual(axes["style"], "checklist")
+            self.assertEqual(axes["scope"], "actions")
 
         def test_get_static_prompt_axes_is_empty_for_description_only_profile(
             self,
@@ -55,10 +50,25 @@ if bootstrap is not None:
         def test_get_static_prompt_axes_is_empty_for_unknown_prompt(self) -> None:
             self.assertEqual(get_static_prompt_axes("nonexistent-static-prompt"), {})
 
+        def test_static_prompt_axes_include_clustered_tokens(self) -> None:
+            # Spot-check a few prompts that use clustered axis tokens introduced by ADR 014.
+            system_axes = get_static_prompt_axes("system")
+            self.assertEqual(system_axes.get("completeness"), "framework")
+            self.assertEqual(system_axes.get("scope"), "system")
+            self.assertEqual(system_axes.get("method"), "systems")
+
+            bridge_axes = get_static_prompt_axes("bridge")
+            self.assertEqual(bridge_axes.get("completeness"), "path")
+
+            effects_axes = get_static_prompt_axes("effects")
+            self.assertEqual(effects_axes.get("scope"), "dynamics")
+
+            context_axes = get_static_prompt_axes("context")
+            self.assertEqual(context_axes.get("method"), "contextualise")
+
 else:
     if not TYPE_CHECKING:
         class StaticPromptConfigDomainTests(unittest.TestCase):
             @unittest.skip("Test harness unavailable outside unittest runs")
             def test_placeholder(self) -> None:
                 pass
-

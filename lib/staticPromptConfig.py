@@ -70,7 +70,8 @@ STATIC_PROMPT_CONFIG: dict[str, StaticPromptProfile] = {
         "description": "Evaluate the subject from a systems theory perspective: boundaries, components, stakeholders, flows, feedback, emergence, and leverage points.",
         "method": "systems",
         "style": "plain",
-        "scope": "focus",
+        "scope": "system",
+        "completeness": "framework",
     },
     "tao": {
         "description": (
@@ -179,9 +180,6 @@ STATIC_PROMPT_CONFIG: dict[str, StaticPromptProfile] = {
         "scope": "focus",
     },
     # Transformation and reformatting prompts (description-only profiles).
-    "group": {
-        "description": "Group into labeled categories; results only.",
-    },
     "split": {
         "description": "Separate topics into clear sections; reformatted text only.",
     },
@@ -200,11 +198,12 @@ STATIC_PROMPT_CONFIG: dict[str, StaticPromptProfile] = {
     "join": {
         "description": "Merge content into one coherent part, removing redundancy.",
     },
-    "sort": {
-        "description": "Sort items in order of importance to the audience.",
-    },
     "context": {
         "description": "Add LLM-ready context only; do not rewrite the main text.",
+        "completeness": "gist",
+        "method": "contextualise",
+        "style": "plain",
+        "scope": "focus",
     },
     # Mathematical and abstract lenses (description-only profiles).
     "math": {
@@ -366,18 +365,7 @@ STATIC_PROMPT_CONFIG: dict[str, StaticPromptProfile] = {
         "completeness": "full",
         "method": "steps",
         "style": "plain",
-        "scope": "focus",
-    },
-    # Variations and playful prompts (description-only profiles).
-    "problem": {
-        "description": (
-            "Help with abstraction laddering: place the given problem in the middle, list three reasons why it is a problem above, "
-            "and three problems it causes below, ordered by importance to the audience."
-        ),
-        "completeness": "full",
-        "method": "steps",
-        "style": "plain",
-        "scope": "focus",
+        "scope": "dynamics",
     },
     # Fix-style prompts tend to want solid, local, code-level edits.
     "fix": {
@@ -391,11 +379,11 @@ STATIC_PROMPT_CONFIG: dict[str, StaticPromptProfile] = {
         "completeness": "gist",
         "method": "steps",
         "style": "checklist",
-        "scope": "focus",
+        "scope": "actions",
     },
     "bridge": {
         "description": "Guide me from the current state to the desired situation described in the additional source.",
-        "completeness": "full",
+        "completeness": "path",
         "method": "steps",
         "scope": "focus",
     },

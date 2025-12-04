@@ -60,13 +60,11 @@ misunderstood: misunderstood
 risky: risky
 
 # Transformation and Reformatting
-group: group
 split: split
 shuffled: shuffled
 match: match
 blend: blend
 join: join
-sort: sort
 context: context
 
 # Mathematical and Abstract Lenses
@@ -111,5 +109,3 @@ constraints: constraints
 effects: effects
 
 # Variations and Playful
-
-problem: problem

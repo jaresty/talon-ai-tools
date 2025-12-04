@@ -218,11 +218,11 @@ if bootstrap is not None:
 
             self.assertEqual(
                 GPTState.last_recipe,
-                "todo · gist · focus · steps · checklist",
+                "todo · gist · actions · steps · checklist",
             )
             self.assertEqual(GPTState.last_static_prompt, "todo")
             self.assertEqual(GPTState.last_completeness, "gist")
-            self.assertEqual(GPTState.last_scope, "focus")
+            self.assertEqual(GPTState.last_scope, "actions")
             self.assertEqual(GPTState.last_method, "steps")
             self.assertEqual(GPTState.last_style, "checklist")
             self.assertEqual(GPTState.last_directional, "DIR")

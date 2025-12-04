@@ -37,10 +37,7 @@ if bootstrap is not None:
                 actions.user.gpt_apply_prompt.assert_called_once()
                 actions.user.prompt_pattern_gui_close.assert_called_once()
                 # last_recipe should reflect the static prompt and axis tokens.
-                self.assertEqual(
-                    GPTState.last_recipe,
-                    "todo · gist · focus · plain",
-                )
+                self.assertEqual(GPTState.last_recipe, "todo · gist · focus · plain")
                 self.assertEqual(GPTState.last_static_prompt, "todo")
                 self.assertEqual(GPTState.last_completeness, pattern.completeness)
                 self.assertEqual(GPTState.last_scope, pattern.scope)

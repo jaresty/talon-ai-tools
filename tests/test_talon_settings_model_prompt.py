@@ -145,7 +145,7 @@ if bootstrap is not None:
             _ = modelPrompt(m)
 
             self.assertEqual(GPTState.system_prompt.completeness, "gist")
-            self.assertEqual(GPTState.system_prompt.scope, "focus")
+            self.assertEqual(GPTState.system_prompt.scope, "actions")
             self.assertEqual(GPTState.system_prompt.method, "steps")
             self.assertEqual(GPTState.system_prompt.style, "checklist")
 

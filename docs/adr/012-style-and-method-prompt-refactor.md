@@ -16,7 +16,7 @@
 
 This ADR retires many format- and method-shaped static prompts (for example, `diagram`, `presenterm`, `HTML`, `gherkin`, `shell`, `code`, `emoji`, `format`, `recipe`, `lens`, `commit`, `ADR`, and `debug`) and re-expresses them as **style** and **method** axis values. In practice, that means:
 
-- You keep using short, semantic prompts for “what” (for example, `describe`, `todo`, `system`, `product`, `wardley`).
+- You keep using short, semantic prompts for “what” (for example, `describe`, `todo`, `product`, `wardley`).
 - You use **axes** to say “how” and “in what shape”:
   - Styles like `diagram`, `presenterm`, `html`, `gherkin`, `shellscript`, `emoji`, `slack`, `jira`, `recipe`, `abstractvisual`, `commit`, `adr`, `code`, `taxonomy`.
   - Methods like `systems`, `experimental`, `debugging`, `structure`, `flow`, `compare`, `motifs`, `wasinawa` (replacing older static prompts such as `system`, `experiment`, `science`, `debug`).
@@ -211,14 +211,14 @@ or use pattern recipes and GUIs that bake these style values into named recipes.
 
 Add new `methodModifier` values that capture thinking frames, not just local process:
 
-- `systems` – “Analyse using systems thinking: boundaries, components, flows, feedback loops, emergence, and leverage points.”
+- `systemic` – “Analyse using systems thinking: boundaries, components, flows, feedback loops, emergence, and leverage points.”
 - `experimental` – “Use an experimental/scientific reasoning pattern: hypotheses, tests, observations, revisions.”
 - `debugging` – “Approach as debugging: narrow hypotheses, inspect evidence, identify likely root causes.”
 
 Wire semantic prompts to these methods via `STATIC_PROMPT_CONFIG`:
 
 - For `system` (before it is retired as a static prompt), ensure its behaviour is expressed as:
-  - `method: "systems"`  
+  - `method: "systemic"`  
   - `scope: "focus"`  
   - `style: "plain"` (or left to defaults).
 - For `experiment` and `science`, ensure their behaviour is expressed as:
@@ -230,7 +230,7 @@ Wire semantic prompts to these methods via `STATIC_PROMPT_CONFIG`:
 
 Once the axis behaviour is correct and documented, remove `system`, `experiment`, `science`, and `debug` as static prompts and access these approaches via the method axis:
 
-- `model describe systems fog` – “Describe this, using a systems-thinking method, with lens `fog`.”
+- `model describe systemic fog` – “Describe this, using a systems-thinking method, with lens `fog`.”
 - `model describe experimental` – “Describe this, using an experimental/scientific method.”
 - `model describe debugging` – “Describe this, using a debugging-style method.”
 
@@ -327,7 +327,7 @@ In this repo, behaviours for the fully retired prompts must now be requested via
 - `model describe commit` (instead of `model commit`)
 - `model describe adr` (instead of `model ADR`)
 - `model describe code` (instead of `model code`)
-- `model describe systems fog` / `model describe experimental` / `model describe debugging` (instead of relying on `system` / `experiment` / `science` / `debug` as static prompts).
+- `model describe systemic fog` / `model describe experimental` / `model describe debugging` (instead of relying on `system` / `experiment` / `science` / `debug` as static prompts).
 
 #### Axis-only prompt summary
 
@@ -350,7 +350,7 @@ For quick reference, the following behaviours are **axis-only** in this repo (no
 
 - **Method-only behaviours** (via `methodModifier`):
   - `debugging` – debugging-style scientific method.
-  - `systems` – systems-thinking stance.
+  - `systemic` – systems-thinking stance.
   - `experimental` – experimental/scientific stance.
   - `structure` – structural focus method.
   - `flow` – flow/sequence focus method.
@@ -358,7 +358,7 @@ For quick reference, the following behaviours are **axis-only** in this repo (no
   - `motifs` – motif/pattern scan method.
   - `wasinawa` – What–So What–Now What reflection.
 
-These behaviours should be combined with semantic static prompts (for example, `describe`, `system`, `product`) and directional lenses rather than invoked as standalone static prompts.
+These behaviours should be combined with semantic static prompts (for example, `describe`, `product`) and directional lenses rather than invoked as standalone static prompts.
 
 If this axis-only list changes, update the corresponding guardrails and contributor docs:
 - `tests/test_static_prompt_docs.py:test_axis_only_tokens_do_not_appear_as_static_prompts`
@@ -373,7 +373,7 @@ Complementing the axis-only behaviours, this repo intentionally keeps a smaller 
 - Analysis and perspective:
   - `describe`, `who`, `what`, `when`, `where`, `why`, `how`, `undefined`, `assumption`, `objectivity`, `true`.
 - Domain / lens heavy:
-  - `knowledge`, `taste`, `system`, `tao`, `com b`, `math`, `orthogonal`, `map`, `graph`, `document`, `wardley`, `domain`, `tune`, `melody`, `constraints`, `effects`, `operations`, `facilitate`, `challenge`, `critique`, `retro`, `easier`, `unknown`, `team`, `jim`.
+  - `knowledge`, `taste`, `tao`, `com b`, `math`, `orthogonal`, `map`, `graph`, `document`, `wardley`, `domain`, `tune`, `melody`, `constraints`, `effects`, `operations`, `facilitate`, `challenge`, `critique`, `retro`, `easier`, `unknown`, `team`, `jim`.
 - Planning and product:
   - `todo`, `product`, `metrics`, `value`, `jobs`, `done`, `bridge`.
 - Transformations / reformatting:
@@ -526,7 +526,7 @@ Mapping the “Implementation Sketch and Next Steps” section to this repo’s 
 
 - **Step 1 – Extend axis vocabularies**: implemented.
   - Style: `diagram`, `presenterm`, `html`, `gherkin`, `shellscript`, `emoji`, `slack`, `jira`, `recipe`, `abstractvisual`, `commit`, `adr`, `taxonomy`, etc.
-  - Method: `systems`, `experimental`, `debugging`, `structure`, `flow`, `compare`, `motifs`, `wasinawa`, alongside existing `steps`, `plan`, `rigor`, `filter`, `cluster`, etc.
+  - Method: `systemic`, `experimental`, `debugging`, `structure`, `flow`, `compare`, `motifs`, `wasinawa`, alongside existing `steps`, `plan`, `rigor`, `filter`, `cluster`, etc.
 - **Step 2 – Update static prompt configuration**: implemented for all targeted prompts.
   - Format/transform prompts and several axis-shaped prompts have had their profiles removed or simplified in `lib/staticPromptConfig.py`.
 - **Step 3 – Remove retired static prompts**: implemented for all prompts listed in this ADR for this repo.
@@ -539,8 +539,7 @@ Mapping the “Implementation Sketch and Next Steps” section to this repo’s 
 
 Future work related to this ADR in this repo is now mostly optional/refinement:
 
-- Decide if and when to fully retire certain remaining method-heavy static prompts (for example, `system`, `experiment`, `science`) in favour of pure axis-based recipes. If/when that happens, representative axis-first replacements would be:
-  - `model system systems fog` → `model describe systems fog` (or `model describe systems diagram fog` for a systems diagram).
+- Decide if and when to fully retire certain remaining method-heavy static prompts (for example, `experiment`, `science`) in favour of pure axis-based recipes. If/when that happens, representative axis-first replacements would be:
   - `model experiment` / `model science` → `model describe experimental fog` (or `model describe experimental rog` for more exhaustive plans and hypotheses).
 - Continue evolving patterns and docs to highlight high-value axis combinations rather than adding new static prompts.
 - When considering further static-prompt/axis refinements beyond what is already implemented here, treat ADR 013 as the primary home for those decisions and keep this ADR focused on the style/method refactor it records.

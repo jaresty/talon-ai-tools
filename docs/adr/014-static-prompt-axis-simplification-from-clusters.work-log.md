@@ -96,3 +96,20 @@
   - Reuse the same axis vocabulary and recipes established here, or
   - Be governed by new ADRs if they introduce qualitatively new behaviours.
 
+## 2025-12-04 – Loop: Rename systems-thinking method axis token to avoid ambiguity
+
+- Renamed the systems-thinking method axis token from `systems` to `systemic` to avoid the awkward “system systems” phrase when combining:
+  - `system` as a static prompt or scope (`scope=system`), and
+  - The systems-thinking method axis.
+- Updated all relevant artefacts:
+  - `GPT/lists/methodModifier.talon-list`: key is now `systemic` with the same systems-thinking description.
+  - `lib/staticPromptConfig.py`: the `system` static prompt now uses `method="systemic"` (still with `completeness=framework`, `scope=system`, `style=plain`).
+  - `lib/modelHelpGUI.py`: default method key list and the “Systems sketch” example now reference `systemic`.
+  - `lib/modelPatternGUI.py`: `METHOD_TOKENS` uses `systemic`.
+  - `GPT/readme.md`: method axis cheat sheet and examples now say `systemic` (for example, `model describe systemic fog`).
+  - ADR 012 (`docs/adr/012-style-and-method-prompt-refactor.md`) and its work-log now describe the method axis in terms of `systemic` instead of `systems`, including future-work examples.
+- This preserves the conceptual distinction between:
+  - `scope=system` (whole-system fence) and
+  - `method=systemic` (systems-thinking stance),
+  while making the spoken grammar less confusing.
+

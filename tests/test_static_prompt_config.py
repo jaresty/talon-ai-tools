@@ -52,11 +52,6 @@ if bootstrap is not None:
 
         def test_static_prompt_axes_include_clustered_tokens(self) -> None:
             # Spot-check a few prompts that use clustered axis tokens introduced by ADR 014.
-            system_axes = get_static_prompt_axes("system")
-            self.assertEqual(system_axes.get("completeness"), "framework")
-            self.assertEqual(system_axes.get("scope"), "system")
-            self.assertEqual(system_axes.get("method"), "systems")
-
             bridge_axes = get_static_prompt_axes("bridge")
             self.assertEqual(bridge_axes.get("completeness"), "path")
 

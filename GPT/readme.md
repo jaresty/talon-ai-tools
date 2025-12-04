@@ -95,7 +95,7 @@ The `model` command now supports several short, speech-friendly modifier axes yo
 
 - Completeness (`completenessModifier`): `skim`, `gist`, `full`, `max`, `minimal`, `deep`, `framework`, `path`
 - Scope (`scopeModifier`): `narrow`, `focus`, `bound`, `edges`, `relations`, `dynamics`, `interfaces`, `system`, `actions`
-– Method (`methodModifier`): `steps`, `plan`, `rigor`, `rewrite`, `diagnose`, `filter`, `prioritize`, `cluster`, `systems`, `experimental`, `debugging`, `structure`, `flow`, `compare`, `motifs`, `wasinawa`, `ladder`, `contextualise`
+– Method (`methodModifier`): `steps`, `plan`, `rigor`, `rewrite`, `diagnose`, `filter`, `prioritize`, `cluster`, `systemic`, `experimental`, `debugging`, `structure`, `flow`, `compare`, `motifs`, `wasinawa`, `ladder`, `contextualise`
 – Style (`styleModifier`): `plain`, `tight`, `bullets`, `table`, `code`, `checklist`, `diagram`, `presenterm`, `html`, `gherkin`, `shellscript`, `emoji`, `slack`, `jira`, `recipe`, `abstractvisual`, `commit`, `adr`, `taxonomy`
   - Additional style: `cards` – format the answer as discrete cards/items with clear headings and short bodies.
 
@@ -143,7 +143,7 @@ Some high-frequency combinations you can say directly:
 - Debugging:
   - `model describe debugging rog` – debugging-style analysis of the current code or text.
 - Methods:
-  - `model describe systems fog` – systems-thinking sketch of the subject.
+  - `model describe systemic fog` – systems-thinking sketch of the subject.
   - `model describe experimental fog` – experimental/scientific plan and hypotheses.
   - `model describe flow rog` – explain the flow of code or text step by step.
   - `model describe motifs fog` – scan for recurring motifs and patterns (often with `scope relations`).

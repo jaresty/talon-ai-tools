@@ -520,7 +520,7 @@ The dated slices below record the concrete steps taken to reach this state. Each
     - Which style-heavy prompts have been fully retired into styles (`diagram`, `presenterm`, `HTML`, `gherkin`, `shell`, `code`, `emoji`, `format`, `recipe`, `lens`, `commit`, `ADR`).
     - Which method-heavy prompts have moved their stance into methods (for example, `debug` → `method debugging`) and which still exist as static prompts (`system`, `experiment`, `science`).
     - The current axis vocabularies for style and method.
-  - Included concrete example commands showing the new, axis-first usage (for example, `model describe diagram fog`, `model describe presenterm rog`, `model describe adr`, `model describe systems fog`).
+  - Included concrete example commands showing the new, axis-first usage (for example, `model describe diagram fog`, `model describe presenterm rog`, `model describe adr`, `model describe systemic fog`).
 
 ### Behaviour impact
 
@@ -1390,13 +1390,13 @@ The dated slices below record the concrete steps taken to reach this state. Each
 
 - Updated `docs/adr/012-style-and-method-prompt-refactor.md` in the “Future work related to this ADR in this repo” section:
   - Expanded the bullet about possibly retiring `system`, `experiment`, and `science` as static prompts to include representative axis-first replacements:
-    - `model system systems fog` → `model describe systems fog` (or `model describe systems diagram fog` for systems diagrams).
+    - `model system systems fog` → `model describe systemic fog` (or `model describe systemic diagram fog` for systems diagrams).
     - `model experiment` / `model science` → `model describe experimental fog` (or `model describe experimental rog` for more exhaustive plans and hypotheses).
 
 ### Behaviour impact
 
 - No runtime behaviour changes; this slice only clarifies documentation:
-  - If a future loop decides to retire `system`/`experiment`/`science` as static prompts, ADR 012 now already contains concrete, axis-based replacement recipes consistent with the existing method axis (`systems`, `experimental`).
+  - If a future loop decides to retire `system`/`experiment`/`science` as static prompts, ADR 012 now already contains concrete, axis-based replacement recipes consistent with the existing method axis (`systemic`, `experimental`).
 
 ### Notes and follow-ups
 

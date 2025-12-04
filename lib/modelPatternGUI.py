@@ -92,7 +92,7 @@ METHOD_TOKENS = {
     "prioritize",
     "cluster",
     # Extended method axis tokens from ADR 012/013.
-    "systems",
+    "systemic",
     "experimental",
     "debugging",
     "structure",

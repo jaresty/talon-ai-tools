@@ -66,13 +66,6 @@ STATIC_PROMPT_CONFIG: dict[str, StaticPromptProfile] = {
             "explaining strengths, weaknesses, and contextual fit."
         ),
     },
-    "system": {
-        "description": "Evaluate the subject from a systems theory perspective: boundaries, components, stakeholders, flows, feedback, emergence, and leverage points.",
-        "method": "systems",
-        "style": "plain",
-        "scope": "system",
-        "completeness": "framework",
-    },
     "tao": {
         "description": (
             "Classify the subject through Taoist philosophy—relate it to Dao, De, Yin/Yang, Wu Wei, Ziran, Pu, Qi, and Li; identify which apply and why."

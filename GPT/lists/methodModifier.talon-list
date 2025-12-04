@@ -10,7 +10,7 @@ diagnose: Important: Look for likely causes of problems first; narrow down hypot
 filter: Important: Extract only items that match a clearly stated criterion (for example, pain points, risks, open questions); do not restate everything else.
 prioritize: Important: Assess and order items by importance or impact to the stated audience; make the ranking and rationale explicit.
 cluster: Important: Group similar items into labeled categories and describe each cluster, emphasising recurring patterns over isolated singletons.
-systems: Important: Analyse the subject using systems thinking, focusing on boundaries, components, flows, feedback loops, emergence, and leverage points.
+systemic: Important: Analyse the subject using systems thinking, focusing on boundaries, components, flows, feedback loops, emergence, and leverage points.
 experimental: Important: Reason in an experimental or scientific style: given a problem, propose one or more concrete experiments that could help solve it, outline how each experiment would run, what outcomes you expect, and how those outcomes would update your hypotheses.
 debugging: Important: Use a debugging-style scientific method: summarise stable facts, list unresolved questions, propose plausible hypotheses, and design minimal experiments or checks to confirm or refute them, then narrow down likely root causes and outline fixes.
 structure: Important: Focus on structural aspects: outline parts, hierarchy, containment, and how elements are organised, rather than explaining detailed behaviour.

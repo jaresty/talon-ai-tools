@@ -92,6 +92,28 @@ METHOD_ITEMS = _read_axis_items("methodModifier.talon-list")
 STYLE_ITEMS = _read_axis_items("styleModifier.talon-list")
 
 
+def _wrap_and_render(gui: imgui.GUI, text: str, indent: str = "  ", width: int = 80) -> None:
+    """Render long text with manual word-wrapping to avoid oversized dialogs."""
+    words = text.split()
+    if not words:
+        return
+
+    current = indent
+    for word in words:
+        # +1 for the space before the next word when needed.
+        next_len = len(current) + (1 if current.strip() else 0) + len(word)
+        if next_len > width:
+            gui.text(current)
+            current = f"{indent}{word}"
+        else:
+            if current.strip():
+                current += " " + word
+            else:
+                current = indent + word
+    if current.strip():
+        gui.text(current)
+
+
 def _group_directional_keys() -> dict[str, list[str]]:
     """Arrange directional lenses along vertical/horizontal cardinal axes."""
     groups: dict[str, list[str]] = {
@@ -199,25 +221,25 @@ def _show_axes(gui: imgui.GUI) -> None:
         if groups["up"] or groups["center_v"] or groups["down"]:
             gui.text("  Vertical slices:")
             if groups["up"]:
-                gui.text("    Up: " + ", ".join(groups["up"]))
+                _wrap_and_render(gui, "Up: " + ", ".join(groups["up"]), indent="    ")
             if groups["center_v"]:
-                gui.text("    Center: " + ", ".join(groups["center_v"]))
+                _wrap_and_render(gui, "Center: " + ", ".join(groups["center_v"]), indent="    ")
             if groups["down"]:
-                gui.text("    Down: " + ", ".join(groups["down"]))
+                _wrap_and_render(gui, "Down: " + ", ".join(groups["down"]), indent="    ")
 
         if groups["left"] or groups["center_h"] or groups["right"]:
             gui.text("  Horizontal slices:")
             if groups["left"]:
-                gui.text("    Left: " + ", ".join(groups["left"]))
+                _wrap_and_render(gui, "Left: " + ", ".join(groups["left"]), indent="    ")
             if groups["center_h"]:
-                gui.text("    Center: " + ", ".join(groups["center_h"]))
+                _wrap_and_render(gui, "Center: " + ", ".join(groups["center_h"]), indent="    ")
             if groups["right"]:
-                gui.text("    Right: " + ", ".join(groups["right"]))
+                _wrap_and_render(gui, "Right: " + ", ".join(groups["right"]), indent="    ")
 
         if groups["central"]:
-            gui.text("  Central lenses: " + ", ".join(groups["central"]))
+            _wrap_and_render(gui, "Central lenses: " + ", ".join(groups["central"]))
         if groups["non_directional"]:
-            gui.text("  Non-directional: " + ", ".join(groups["non_directional"]))
+            _wrap_and_render(gui, "Non-directional: " + ", ".join(groups["non_directional"]))
     else:
         gui.text("  fog, fig, dig, ong, rog, bog")
     gui.text("  (one lens per model call)")
@@ -231,7 +253,7 @@ def _show_completeness(gui: imgui.GUI) -> None:
             gui.text(f"  {key}: {desc}")
     else:
         keys = COMPLETENESS_KEYS or ["skim", "gist", "full", "max"]
-        gui.text("  " + ", ".join(keys))
+        _wrap_and_render(gui, ", ".join(keys))
     gui.spacer()
 
 
@@ -242,7 +264,7 @@ def _show_scope(gui: imgui.GUI) -> None:
             gui.text(f"  {key}: {desc}")
     else:
         keys = SCOPE_KEYS or ["narrow", "focus", "bound", "edges", "relations"]
-        gui.text("  " + ", ".join(keys))
+        _wrap_and_render(gui, ", ".join(keys))
     gui.spacer()
 
 
@@ -261,7 +283,7 @@ def _show_method(gui: imgui.GUI) -> None:
             "filter",
             "prioritize",
             "cluster",
-            "systems",
+            "systemic",
             "experimental",
             "debugging",
             "structure",
@@ -270,7 +292,7 @@ def _show_method(gui: imgui.GUI) -> None:
             "motifs",
             "wasinawa",
         ]
-        gui.text("  " + ", ".join(keys))
+        _wrap_and_render(gui, ", ".join(keys))
     gui.spacer()
 
 
@@ -302,11 +324,16 @@ def _show_style(gui: imgui.GUI) -> None:
             "adr",
             "taxonomy",
         ]
-        gui.text("  " + ", ".join(keys))
+        _wrap_and_render(gui, ", ".join(keys))
     gui.spacer()
 
 
 def _show_examples(gui: imgui.GUI) -> None:
+    # Only show the full examples section when explicitly requested; this
+    # keeps the default quick help view from becoming excessively tall.
+    if HelpGUIState.section != "examples":
+        return
+
     gui.text("Examples")
     gui.text("  Debug bug: describe · full · narrow · debugging · rog")
     gui.text("  Fix locally: fix · full · narrow · steps · ong")
@@ -316,14 +343,23 @@ def _show_examples(gui: imgui.GUI) -> None:
     gui.text("  Present slides: describe · full · focus · presenterm · rog")
     gui.text("  Format for Slack: describe · gist · focus · slack · fog")
     gui.text("  Format for Jira: describe · gist · focus · jira · fog")
-    gui.text("  Systems sketch: describe · gist · focus · systems · fog")
+    gui.text("  Systems sketch: describe · gist · focus · systemic · fog")
     gui.text("  Experiment plan: describe · full · focus · experimental · fog")
     gui.text("  Type/taxonomy: describe · full · focus · taxonomy · rog")
     gui.spacer()
     gui.text("Replaced prompts")
-    gui.text("  simple → use describe · gist · plain (or the 'Simplify locally' pattern).")
-    gui.text("  short → use describe · gist · tight (or the 'Tighten summary' pattern).")
-    gui.text("  todo-style 'how to' → use todo · gist · checklist (or the 'Extract todos' pattern).")
+    _wrap_and_render(
+        gui,
+        "simple → use describe · gist · plain (or the 'Simplify locally' pattern).",
+    )
+    _wrap_and_render(
+        gui,
+        "short → use describe · gist · tight (or the 'Tighten summary' pattern).",
+    )
+    _wrap_and_render(
+        gui,
+        "todo-style 'how to' → use todo · gist · checklist (or the 'Extract todos' pattern).",
+    )
     gui.spacer()
 
 

@@ -149,19 +149,6 @@ if bootstrap is not None:
             self.assertEqual(GPTState.system_prompt.method, "steps")
             self.assertEqual(GPTState.system_prompt.style, "checklist")
 
-        def test_model_prompt_applies_code_style_for_gherkin(self):
-            m = SimpleNamespace(
-                staticPrompt="gherkin",
-                goalModifier="",
-                directionalModifier="DIR",
-            )
-
-            _ = modelPrompt(m)
-
-            self.assertEqual(GPTState.system_prompt.completeness, "full")
-            self.assertEqual(GPTState.system_prompt.scope, "bound")
-            self.assertEqual(GPTState.system_prompt.style, "code")
-
         def test_clear_all_resets_last_recipe_and_response(self):
             # Exercise the lifecycle: after a prompt, clear_all should drop
             # last_response/last_recipe so recap helpers don't show stale data.

@@ -44,7 +44,7 @@ if bootstrap is not None:
                 self.assertEqual(_axis_value("", mapping), "")
 
             def test_parse_recipe_extracts_static_prompt_and_axes(self) -> None:
-                recipe = "debug · full · narrow · rigor · plain · rog"
+                recipe = "describe · full · narrow · debugging · plain · rog"
 
                 (
                     static_prompt,
@@ -55,10 +55,10 @@ if bootstrap is not None:
                     directional,
                 ) = _parse_recipe(recipe)
 
-                self.assertEqual(static_prompt, "debug")
+                self.assertEqual(static_prompt, "describe")
                 self.assertEqual(completeness, "full")
                 self.assertEqual(scope, "narrow")
-                self.assertEqual(method, "rigor")
+                self.assertEqual(method, "debugging")
                 self.assertEqual(style, "plain")
                 self.assertEqual(directional, "rog")
 
@@ -77,12 +77,12 @@ if bootstrap is not None:
                 # current behaviour rather than restating the full axes.
                 self.assertEqual(
                     GPTState.last_recipe,
-                    "debug · full · narrow · rigor",
+                    "describe · full · narrow · debugging",
                 )
-                self.assertEqual(GPTState.last_static_prompt, "debug")
+                self.assertEqual(GPTState.last_static_prompt, "describe")
                 self.assertEqual(GPTState.last_completeness, "full")
                 self.assertEqual(GPTState.last_scope, "narrow")
-                self.assertEqual(GPTState.last_method, "rigor")
+                self.assertEqual(GPTState.last_method, "debugging")
                 # last_style is left empty for this pattern; the style token is
                 # not included in last_recipe.
                 self.assertEqual(GPTState.last_style, "")

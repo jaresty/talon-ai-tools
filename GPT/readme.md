@@ -93,7 +93,7 @@ The `model` command now supports several short, speech-friendly modifier axes yo
 - Completeness (`completenessModifier`): `skim`, `gist`, `full`, `max`, `minimal`, `deep`
 - Scope (`scopeModifier`): `narrow`, `focus`, `bound`, `edges`, `relations`
 - Method (`methodModifier`): `steps`, `plan`, `rigor`, `rewrite`, `diagnose`, `filter`, `prioritize`, `cluster`
-- Style (`styleModifier`): `plain`, `tight`, `bullets`, `table`, `code`, `checklist`
+- Style (`styleModifier`): `plain`, `tight`, `bullets`, `table`, `code`, `checklist`, `diagram`, `presenterm`, `html`, `gherkin`, `shellscript`, `emoji`, `slack`, `jira`, `recipe`, `abstractvisual`, `commit`, `adr`
   - Additional style: `cards` – format the answer as discrete cards/items with clear headings and short bodies.
 
 Directional lenses (required) are a separate axis:
@@ -112,12 +112,11 @@ You normally say at most one or two of these per call. Examples:
 - `model fix full plain rog` – full grammar/wording pass, still straightforward.
 - `model todo gist checklist rog` – turn notes into a concise TODO list as an actionable checklist.
 - `model flow full steps plain rog` – explain the flow of selected code or text step by step.
-- `model diagram gist code fog` – convert text to a mermaid-style diagram, code-only.
+- `model describe diagram fog` – convert text to a mermaid-style Mermaid diagram, code-only.
 
-If you omit a modifier, a default is inferred from:
+If you omit a modifier, a default is inferred from global settings like:
 
-- Global settings like `user.model_default_completeness` / `scope` / `method` / `style`, and
-- Per-prompt defaults for some static prompts (for example, `fix`, `todo`, `diagram`).
+- `user.model_default_completeness` / `scope` / `method` / `style`.
 
 You can adjust these defaults by voice:
 

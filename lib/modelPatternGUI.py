@@ -120,7 +120,7 @@ PATTERNS: list[PromptPattern] = [
     PromptPattern(
         name="Debug bug",
         description="Deeply debug the current code or text.",
-        recipe="debug · full · narrow · rigor · rog",
+        recipe="describe · full · narrow · debugging · rog",
         domain="coding",
     ),
     PromptPattern(
@@ -194,6 +194,18 @@ PATTERNS: list[PromptPattern] = [
         name="Risk scan",
         description="List and briefly explain key risks.",
         recipe="risky · gist · focus · filter · bullets · fog",
+        domain="writing",
+    ),
+    PromptPattern(
+        name="Sketch diagram",
+        description="Convert this into a Mermaid-style diagram (code only).",
+        recipe="describe · gist · focus · diagram · fog",
+        domain="coding",
+    ),
+    PromptPattern(
+        name="Architecture decision",
+        description="Draft an Architecture Decision Record (ADR) for this situation.",
+        recipe="describe · full · focus · adr · rog",
         domain="writing",
     ),
 ]

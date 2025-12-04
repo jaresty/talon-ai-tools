@@ -23,12 +23,6 @@ STATIC_PROMPT_CONFIG: dict[str, StaticPromptProfile] = {
     "infer": {
         "description": "I'm not telling you what to do. Infer the task.",
     },
-    "emoji": {
-        "description": "Return only emoji.",
-    },
-    "format": {
-        "description": "Add appropriate formatting leveraging commands available in the context (slack, markdown, etc) to the text.",
-    },
     "LLM": {
         "description": "Return one or more prompts for an LLM, each fitting on a single line.",
     },
@@ -103,6 +97,9 @@ STATIC_PROMPT_CONFIG: dict[str, StaticPromptProfile] = {
     },
     "system": {
         "description": "Evaluate the subject from a systems theory perspective: boundaries, components, stakeholders, flows, feedback, emergence, and leverage points.",
+        "method": "systems",
+        "style": "plain",
+        "scope": "focus",
     },
     "tao": {
         "description": (
@@ -179,21 +176,14 @@ STATIC_PROMPT_CONFIG: dict[str, StaticPromptProfile] = {
     "experiment": {
         "description": "Given a problem, suggest one or more experiments that could help solve it.",
         "completeness": "full",
-        "method": "rigor",
+        "method": "experimental",
         "style": "plain",
         "scope": "focus",
     },
     "science": {
         "description": "Give me testable, relevant, and specific hypotheses.",
         "completeness": "full",
-        "method": "rigor",
-        "style": "plain",
-        "scope": "focus",
-    },
-    "debug": {
-        "description": "Analyze the full transcript using the scientific method of debugging—summarize stable facts, list unresolved questions, propose hypotheses, and design a minimal experiment to confirm or refute them.",
-        "completeness": "full",
-        "method": "rigor",
+        "method": "experimental",
         "style": "plain",
         "scope": "focus",
     },
@@ -265,9 +255,6 @@ STATIC_PROMPT_CONFIG: dict[str, StaticPromptProfile] = {
     },
     "context": {
         "description": "Add LLM-ready context only; do not rewrite the main text.",
-    },
-    "code": {
-        "description": "Write code for this.",
     },
     # Mathematical and abstract lenses (description-only profiles).
     "math": {
@@ -432,11 +419,6 @@ STATIC_PROMPT_CONFIG: dict[str, StaticPromptProfile] = {
         "scope": "focus",
     },
     # Variations and playful prompts (description-only profiles).
-    "recipe": {
-        "description": "Represent this as a recipe using a custom language and include a key for understanding it.",
-        "completeness": "full",
-        "style": "code",
-    },
     "problem": {
         "description": (
             "Help with abstraction laddering: place the given problem in the middle, list three reasons why it is a problem above, "
@@ -444,16 +426,6 @@ STATIC_PROMPT_CONFIG: dict[str, StaticPromptProfile] = {
         ),
         "completeness": "full",
         "method": "steps",
-        "style": "plain",
-        "scope": "focus",
-    },
-    "lens": {
-        "description": (
-            "Create an abstract visualization that avoids diagrams or maps: express the big picture as a loose metaphorical form highlighting contrasts "
-            "and points of interest, with a short legend and optional SVG or code instructions."
-        ),
-        "completeness": "gist",
-        "method": "rigor",
         "style": "plain",
         "scope": "focus",
     },
@@ -477,45 +449,7 @@ STATIC_PROMPT_CONFIG: dict[str, StaticPromptProfile] = {
         "method": "steps",
         "scope": "focus",
     },
-    # Diagrams and other code/format-only prompts tend to be markup/code only.
-    "diagram": {
-        "description": "Convert plain text to appropriate mermaid diagram syntax, inferring the best diagram type; mermaid diagrams do not allow parentheses.",
-        "completeness": "gist",
-        "scope": "focus",
-        "style": "code",
-    },
-    "HTML": {
-        "description": "Rewrite this as semantic HTML only.",
-        "completeness": "full",
-        "scope": "bound",
-        "style": "code",
-    },
-    "gherkin": {
-        "description": "Reformat this into proper Gherkin using Jira markup; output only the reformatted Gherkin with no surrounding explanation.",
-        "completeness": "full",
-        "scope": "bound",
-        "style": "code",
-    },
-    "shell": {
-        "description": "Write a shell script that implements this.",
-        "completeness": "full",
-        "scope": "bound",
-        "style": "code",
-    },
     # Document-shaped and summary-style outputs.
-    "commit": {
-        "description": "Write a conventional commit message for the staged changes.",
-        "completeness": "gist",
-        "scope": "bound",
-        "style": "plain",
-    },
-    "ADR": {
-        "description": "Write an Architecture Decision Record (ADR) for this situation.",
-        "completeness": "full",
-        "method": "rigor",
-        "scope": "focus",
-        "style": "plain",
-    },
 }
 
 _AXES = ("completeness", "scope", "method", "style")

@@ -20,15 +20,15 @@ For implementation details of the modifier axes, defaults, helpers, and rerun sh
 - `docs/adr/013-static-prompt-axis-refinement-and-streamlining.md`
 - `docs/adr/015-voice-audience-tone-purpose-decomposition.md`
 
-### Meta interpretation channel (ADR 019)
+### Meta interpretation channel (ADR 019) and richer structure (ADR 020)
 
-If your system prompt asks the model to explain how it interpreted your request, format that explanation as a trailing, clearly-marked Markdown section so Talon can treat it as non-pasteable meta. The recommended pattern is:
+If your system prompt asks the model to explain how it interpreted your request, format that explanation as a trailing, clearly-marked Markdown section so Talon can treat it as non-pasteable meta. The core pattern (ADR 019) is:
 
-- End your main answer normally.
-- Then add a heading and short explanation, for example:
+1. End your main answer normally.
+2. Then add a heading and short explanation, for example:
 
-  - `## Model interpretation`  
-    *(one or more lines describing how the model understood the prompt, assumptions, or chosen pattern)*
+   - `## Model interpretation`  
+     *(one or more lines describing how the model understood the prompt, assumptions, or chosen pattern)*
 
 When a response follows this pattern:
 
@@ -40,6 +40,19 @@ When a response follows this pattern:
     - As a short `Meta:` line in the confirmation GUI.
     - As a “Model interpretation” preview in quick help.
     - As a “Model interpretation” section in the browser view.
+
+ADR 020 extends this meta channel into a richer optional bundle. Inside the meta section (after `## Model interpretation`), the recommended structure is:
+
+- `## Model interpretation` – a short paragraph explaining how the model interpreted your request and why it chose its approach.
+- `### Assumptions` – 2–4 short bullets capturing key assumptions and inferred constraints.
+- `### Gaps and checks` – 1–3 bullets listing major gaps/caveats and specific things you should verify.
+- `### Better prompt` – a single, improved version of your request in one or two sentences.
+- `### Axis tweak suggestion` – when helpful, a line like `Suggestion: completeness=gist` or `Suggestion: style=bullets` using the same axis tokens as the rest of the grammar.
+
+All of these live in the **meta channel only**:
+
+- They are not pasted into your documents.
+- They are visible via recap surfaces and via `model meta …` commands.
 
 ### In-Talon helpers for discoverability (ADR 006)
 
@@ -234,4 +247,4 @@ If you wish to change any configuration settings, copy the [example configuratio
 | user.model_endpoint      | `"https://api.openai.com/v1/chat/completions"`                                                                                                                                                                                                                     | Any OpenAI compatible endpoint address can be used (Azure, local llamafiles, etc)           |
 | user.model_request_timeout_seconds | `120`                                                                                                                                                                                                                                                    | Maximum time in seconds to wait for a single model HTTP request before timing out           |
 | user.model_shell_default | `"bash"`                                                                                                                                                                                                                                                           | The default shell used when outputting shell commands (for example, when using the `shellscript` style) |
-| user.model_system_prompt | `"You are an assistant helping an office worker to be more productive. Output just the response to the request and no additional content. Do not generate any markdown formatting such as backticks for programming languages unless it is explicitly requested."` | The meta-prompt for how to respond to all prompts                                           |
+| user.model_system_prompt | `"Output just the main answer to the user's request as the primary response. Do not generate markdown formatting such as backticks for programming languages unless it is explicitly requested or implied by a style/method axis (for example, 'code', 'table', 'presenterm'). If the user requests code generation, output just code in the main answer and not additional natural-language explanation. After the main answer, append a structured, non-pasteable meta section starting with the heading '## Model interpretation'. In that meta section only (not in the main answer), briefly explain how you interpreted the request and chose your approach; list key assumptions and constraints as short bullets; call out major gaps or caveats and up to three things the user should verify; propose one improved version of the user's original prompt in one or two sentences; and, when helpful, suggest a single axis tweak in the form 'Suggestion: <axis>=<token>' using the existing axis token vocabulary."` | The meta-prompt for how to respond to all prompts (you can override this if you prefer a different meta format) |

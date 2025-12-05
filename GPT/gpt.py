@@ -204,6 +204,31 @@ class UserActions:
         """Disable debug logging"""
         GPTState.stop_debug()
 
+    def gpt_copy_last_raw_exchange() -> None:
+        """Copy the last raw GPT request/response JSON to the clipboard for debugging."""
+        try:
+            data = {
+                "request": getattr(GPTState, "last_raw_request", {}) or {},
+                "response": getattr(GPTState, "last_raw_response", {}) or {},
+            }
+        except Exception:
+            data = {"request": {}, "response": {}}
+
+        if not data["request"] and not data["response"]:
+            notify("GPT debug: No last raw exchange available to copy")
+            return
+
+        try:
+            import json as _json
+
+            pretty = _json.dumps(data, indent=2, sort_keys=True)
+        except Exception:
+            # Fallback: best-effort string representation.
+            pretty = str(data)
+
+        clip.set_text(pretty)
+        notify("GPT debug: Copied last raw request/response JSON to clipboard")
+
     def gpt_clear_context():
         """Reset the stored context"""
         GPTState.clear_context()

@@ -5,10 +5,7 @@ from ..lib.modelTypes import GPTTextItem
 from ..lib.modelConfirmationGUI import confirmation_gui
 from talon import actions, clip, settings, ui
 from ..lib.modelState import GPTState
-from ..lib.modelHelpers import (
-    format_messages,
-    notify,
-)
+from ..lib.modelHelpers import format_messages, notify
 from ..lib.HTMLBuilder import Builder
 from ..lib.promptPipeline import PromptResult
 
@@ -30,6 +27,27 @@ def _coerce_prompt_result(payload: PromptPayload) -> PromptResult:
     if isinstance(payload, dict):
         return PromptResult.from_messages([payload])
     return PromptResult.from_messages(payload)
+
+
+def _emit_paragraphs(builder: Builder, lines: List[str]) -> None:
+    """
+    Render logical paragraphs from a sequence of lines.
+
+    - Consecutive non-empty lines are joined with spaces into a single
+      paragraph.
+    - Blank lines start a new paragraph.
+    """
+    buffer: List[str] = []
+    for raw in lines:
+        line = raw.rstrip()
+        if not line:
+            if buffer:
+                builder.p(" ".join(buffer))
+                buffer = []
+            continue
+        buffer.append(line)
+    if buffer:
+        builder.p(" ".join(buffer))
 
 
 class ModelDestination:
@@ -154,6 +172,7 @@ class Browser(ModelDestination):
         # Mirror the confirmation GUI's recipe recap so the browser view
         # carries the same orientation cues.
         if GPTState.last_recipe:
+            builder.h2("Prompt recap")
             if getattr(GPTState, "last_directional", ""):
                 recipe_text = (
                     f"{GPTState.last_recipe} · {GPTState.last_directional}"
@@ -187,13 +206,11 @@ class Browser(ModelDestination):
         ).strip()
         if meta:
             builder.h2("Model interpretation")
-            for line in meta.splitlines():
-                builder.p(line)
+            _emit_paragraphs(builder, meta.splitlines())
 
         builder.h2("Response")
 
-        for line in presentation.browser_lines:
-            builder.p(line)
+        _emit_paragraphs(builder, presentation.browser_lines)
         builder.render()
 
 

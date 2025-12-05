@@ -38,6 +38,8 @@
 {user.model} last recipe$: user.gpt_show_last_recipe()
 {user.model} last meta$: user.gpt_show_last_meta()
 
+{user.model} debug logs$: user.gpt_copy_last_raw_exchange()
+
 ^{user.model} again$:
     user.gpt_rerun_last_recipe("", "", "", "", "", "")
 

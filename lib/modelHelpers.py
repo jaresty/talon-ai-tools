@@ -54,9 +54,10 @@ def split_answer_and_meta(text: str) -> tuple[str, str]:
 
     Heuristic:
     - By default, treat the entire response as answer text.
-    - If we find a trailing Markdown heading whose text contains
-      'interpretation' (for example, '## Model interpretation'), treat that
-      heading and everything after it as meta.
+    - If we find a Markdown heading whose text is exactly
+      'Model interpretation' (for example, '## Model interpretation'),
+      ignoring case and surrounding whitespace, treat that heading and
+      everything after it as meta.
     """
     if not text.strip():
         return "", ""
@@ -66,9 +67,14 @@ def split_answer_and_meta(text: str) -> tuple[str, str]:
 
     for idx, line in enumerate(lines):
         stripped = line.lstrip()
-        if stripped.startswith("#") and "interpretation" in stripped.lower():
-            split_index = idx
-            break
+        if stripped.startswith("#"):
+            # Require an explicit "Model interpretation" heading so we don't
+            # accidentally split on unrelated headings that happen to contain
+            # the word "interpretation".
+            heading_text = stripped.lstrip("#").strip().lower()
+            if heading_text == "model interpretation":
+                split_index = idx
+                break
 
     if split_index is None:
         return text, ""
@@ -421,6 +427,10 @@ def send_request_internal(request):
         "Authorization": f"Bearer {TOKEN}",
     }
 
+    # Capture the raw request for debugging so it can be inspected or copied
+    # after the fact, regardless of whether stdout is visible.
+    GPTState.last_raw_request = request
+
     if GPTState.debug_enabled:
         print(request)
 
@@ -447,6 +457,8 @@ def send_request_internal(request):
         raise GPTRequestError(raw_response.status_code, error_info)
 
     json_response = raw_response.json()
+    # Capture the raw JSON response alongside the request for debugging.
+    GPTState.last_raw_response = json_response
     if GPTState.debug_enabled:
         print(json_response)
     return json_response

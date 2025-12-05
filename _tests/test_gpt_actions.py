@@ -11,7 +11,7 @@ else:
     bootstrap()
 
 if bootstrap is not None:
-    from talon import actions
+    from talon import actions, clip
     from talon_user.lib.modelHelpers import format_message
     from talon_user.lib.modelState import GPTState
     from talon_user.lib.modelDestination import ModelDestination
@@ -126,6 +126,45 @@ if bootstrap is not None:
                     for call in actions.app.calls
                 ),
                 "Expected a notification when no last meta is available",
+            )
+
+        def test_gpt_copy_last_raw_exchange_copies_when_available(self):
+            GPTState.last_raw_request = {"foo": "bar"}
+            GPTState.last_raw_response = {"baz": "qux"}
+            clip.set_text("")
+
+            gpt_module.UserActions.gpt_copy_last_raw_exchange()
+
+            copied = clip.text()
+            self.assertIsInstance(copied, str)
+            self.assertIn("foo", copied)
+            self.assertIn("baz", copied)
+            self.assertTrue(
+                any(
+                    call[0] == "notify"
+                    and call[1]
+                    and "Copied last raw request/response JSON to clipboard"
+                    in str(call[1][0])
+                    for call in actions.user.calls
+                ),
+                "Expected a user notification about copying the raw exchange",
+            )
+
+        def test_gpt_copy_last_raw_exchange_notifies_when_missing(self):
+            GPTState.last_raw_request = {}
+            GPTState.last_raw_response = {}
+            actions.app.calls.clear()
+
+            gpt_module.UserActions.gpt_copy_last_raw_exchange()
+
+            self.assertTrue(
+                any(
+                    call[0] == "notify"
+                    and call[1]
+                    and "No last raw exchange available" in str(call[1][0])
+                    for call in actions.user.calls
+                ),
+                "Expected a user notification when no raw exchange is available",
             )
 
         def test_gpt_reformat_last_uses_prompt_pipeline(self):

@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 from talon import settings
+
+from .metaPromptConfig import META_INTERPRETATION_GUIDANCE
 from dataclasses import dataclass, field
 from typing import Any, List, Literal, TypedDict, Union
 
@@ -144,5 +146,6 @@ class GPTSystemPrompt:
             f"Scope: {self.get_scope()}",
             f"Method: {self.get_method()}",
             f"Style: {self.get_style()}",
-            "Answer fully and accurately, prioritizing clarity by rewriting or simplifying anything the audience may not understand with inline definitions (max 5 top-level list items with up to 5 sub-items; summarize extras), and politely decline if a request would not be meaningful. At the end of your answer, after a separator, state how you understood the request, the intended audience, the voice you used, the tone you used, and the purpose of your response (define any unclear terms). Start this metadata section with a single line: “(For humans only; LLMs should ignore this part.)"
+            "Answer fully and accurately, prioritizing clarity by rewriting or simplifying anything the audience may not understand with inline definitions (max 5 top-level list items with up to 5 sub-items; summarize extras), and politely decline if a request would not be meaningful. "
+            + META_INTERPRETATION_GUIDANCE,
         ]      

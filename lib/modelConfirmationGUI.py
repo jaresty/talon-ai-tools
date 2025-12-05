@@ -6,6 +6,7 @@ from talon import Context, Module, actions, clip, imgui, settings
 
 from .modelHelpers import GPTState, extract_message, notify
 from .modelPresentation import ResponsePresentation
+from .metaPromptConfig import first_meta_preview_line, meta_preview_lines
 
 mod = Module()
 ctx = Context()
@@ -44,10 +45,9 @@ def confirmation_gui(gui: imgui.GUI):
     # to confirm and it not represent a thread
     ConfirmationGUIState.update()
 
+    width = settings.get("user.model_window_char_width") or 80
     for paragraph in GPTState.text_to_confirm.split("\n"):
-        for line in textwrap.wrap(
-            paragraph, settings.get("user.model_window_char_width")
-        ):
+        for line in textwrap.wrap(paragraph, width):
             gui.text(line)
 
     if GPTState.last_recipe:
@@ -63,11 +63,21 @@ def confirmation_gui(gui: imgui.GUI):
         # confirmation GUI surfaces both what was asked and how it was
         # interpreted, without affecting paste semantics.
         meta = getattr(GPTState, "last_meta", "").strip()
-        if meta:
-            preview = meta.splitlines()[0].strip()
-            if len(preview) > 80:
-                preview = preview[:77].rstrip() + "..."
-            gui.text(f"Meta: {preview}")
+        # If the confirmation text is just the meta block (for example,
+        # when the user has explicitly passed meta to the window), show the
+        # full non-heading meta lines. Otherwise, keep the radar bounded.
+        if GPTState.text_to_confirm.strip() == meta:
+            preview_lines = meta_preview_lines(meta, max_lines=None)
+        else:
+            preview_lines = meta_preview_lines(meta, max_lines=4)
+        if preview_lines:
+            # Show a richer multi-line meta recap. Use a "Meta:" header and
+            # wrap each preview line to match the main window width so users
+            # can read the full approach/assumptions at a glance.
+            gui.text("Meta:")
+            for line in preview_lines:
+                for wrapped in textwrap.wrap(line, width):
+                    gui.text(f"  {wrapped}")
 
     # gui.spacer()
     # if gui.button("Chain response"):

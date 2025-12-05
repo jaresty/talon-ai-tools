@@ -50,6 +50,10 @@ class GPTState:
     stacks: ClassVar[Dict[str, List[Union[GPTTextItem, GPTImageItem]]]] = {}
     thread_enabled: ClassVar[bool] = False
     debug_enabled: ClassVar[bool] = False
+    # Raw HTTP request/response payloads for the last model call, useful for
+    # debugging or copying logs.
+    last_raw_request: ClassVar[Dict] = {}
+    last_raw_response: ClassVar[Dict] = {}
     system_prompt: ClassVar[GPTSystemPrompt] = GPTSystemPrompt()
     # Track whether the user has intentionally overridden per-axis defaults via
     # settings so that per-prompt profiles do not compete with user intent.
@@ -103,6 +107,8 @@ class GPTState:
         cls.last_again_source = ""
         cls.last_suggest_source = ""
         cls.last_suggested_recipes = []
+        cls.last_raw_request = {}
+        cls.last_raw_response = {}
         actions.app.notify("Cleared all state")
 
     @classmethod
@@ -211,3 +217,5 @@ class GPTState:
         cls.user_overrode_scope = False
         cls.user_overrode_method = False
         cls.user_overrode_style = False
+        cls.last_raw_request = {}
+        cls.last_raw_response = {}

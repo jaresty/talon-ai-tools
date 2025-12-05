@@ -3,6 +3,7 @@ import os
 from talon import Context, Module, actions, imgui
 
 from .modelState import GPTState
+from .metaPromptConfig import first_meta_preview_line, meta_preview_lines
 
 try:
     from .staticPromptConfig import get_static_prompt_axes, get_static_prompt_profile
@@ -420,13 +421,14 @@ def model_help_gui(gui: imgui.GUI):
             "(for example, 'model again gist fog') to tweak it."
         )
         meta = getattr(GPTState, "last_meta", "").strip()
-        if meta:
+        preview_lines = meta_preview_lines(meta, max_lines=2)
+        if preview_lines:
             gui.spacer()
             gui.text("Model interpretation")
             # Show a short, wrapped preview of the meta text so users can
             # quickly see how the model interpreted the last request.
-            first_line = meta.splitlines()[0].strip()
-            _wrap_and_render(gui, first_line)
+            for line in preview_lines:
+                _wrap_and_render(gui, line)
         gui.spacer()
 
     section = HelpGUIState.section

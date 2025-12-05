@@ -142,6 +142,10 @@ def _parse_meta(meta_text: str) -> Dict[str, Union[str, List[str]]]:
 
     for line in cleaned:
         lower = line.lower()
+        # Skip bare "Model interpretation" markers after stripping markdown
+        # headings; they act as section headers rather than content.
+        if lower == "model interpretation":
+            continue
         # Label-based switches.
         if lower.startswith("interpretation:"):
             section = "interpretation"

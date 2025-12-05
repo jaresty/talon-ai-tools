@@ -76,6 +76,18 @@ def _read_axis_value_to_key_map(filename: str) -> dict[str, str]:
                 # Map both the key and its description back to the short token.
                 mapping[short] = short
                 mapping[desc] = short
+                # Some axis descriptions are wrapped in quotes in the Talon
+                # list files so they can contain colons and other punctuation.
+                # Talon normalises these when exposing the list value to
+                # Python, so we also record an unquoted variant to ensure
+                # lookups (for example, "dynamics" scope) still resolve to the
+                # concise token for last_recipe.
+                if (desc.startswith('"') and desc.endswith('"')) or (
+                    desc.startswith("'") and desc.endswith("'")
+                ):
+                    unquoted = desc[1:-1].strip()
+                    if unquoted:
+                        mapping[unquoted] = short
     except FileNotFoundError:
         return {}
     return mapping

@@ -211,39 +211,108 @@ def _group_directional_keys() -> dict[str, list[str]]:
 
 def _show_axes(gui: imgui.GUI) -> None:
     gui.text("Axes")
-    gui.text("  - Goal / static prompt")
-    gui.text("  - Directional lens")
+    gui.text("  - Static prompt")
     gui.text("  - Completeness, Scope, Method, Style")
+    gui.text("  - Directional lens")
     gui.spacer()
 
-    gui.text("Directional lenses")
-    if DIRECTIONAL_KEYS:
-        groups = _group_directional_keys()
-        if groups["up"] or groups["center_v"] or groups["down"]:
-            gui.text("  Vertical slices:")
-            if groups["up"]:
-                _wrap_and_render(gui, "Up: " + ", ".join(groups["up"]), indent="    ")
-            if groups["center_v"]:
-                _wrap_and_render(gui, "Center: " + ", ".join(groups["center_v"]), indent="    ")
-            if groups["down"]:
-                _wrap_and_render(gui, "Down: " + ", ".join(groups["down"]), indent="    ")
 
-        if groups["left"] or groups["center_h"] or groups["right"]:
-            gui.text("  Horizontal slices:")
-            if groups["left"]:
-                _wrap_and_render(gui, "Left: " + ", ".join(groups["left"]), indent="    ")
-            if groups["center_h"]:
-                _wrap_and_render(gui, "Center: " + ", ".join(groups["center_h"]), indent="    ")
-            if groups["right"]:
-                _wrap_and_render(gui, "Right: " + ", ".join(groups["right"]), indent="    ")
+def _show_directional_lenses(gui: imgui.GUI) -> None:
+    gui.text("Directional lenses (coordinate map)")
+    gui.text("  Columns: reflect (left), mixed (center), act (right)")
+    gui.text("  Rows: abstract (up), center, concrete (down)")
+    gui.spacer()
 
-        if groups["central"]:
-            _wrap_and_render(gui, "Central lenses: " + ", ".join(groups["central"]))
-        if groups["non_directional"]:
-            _wrap_and_render(gui, "Non-directional: " + ", ".join(groups["non_directional"]))
+    if not DIRECTIONAL_KEYS:
         gui.text("  Core lenses: fog, fig, dig, ong, rog, bog, jog")
-    else:
-        gui.text("  fog, fig, dig, ong, rog, bog, jog")
+        return
+
+    groups = _group_directional_keys()
+
+    # Build a simple 3x3 grid: rows = up/center/down, columns = left/center/right.
+    grid: dict[tuple[str, str], list[str]] = {
+        ("up", "left"): [],
+        ("up", "center"): [],
+        ("up", "right"): [],
+        ("center", "left"): [],
+        ("center", "center"): [],
+        ("center", "right"): [],
+        ("down", "left"): [],
+        ("down", "center"): [],
+        ("down", "right"): [],
+    }
+    other_non_directional: list[str] = []
+    other_fused: list[str] = []
+
+    for key in DIRECTIONAL_KEYS:
+        token = key.strip()
+        if not token:
+            continue
+
+        if token in groups["non_directional"]:
+            other_non_directional.append(token)
+            continue
+        if token in groups["fused_other"]:
+            other_fused.append(token)
+            continue
+
+        row = "center"
+        col = "center"
+
+        if token in groups["up"]:
+            row = "up"
+        elif token in groups["down"]:
+            row = "down"
+        elif token in groups["center_v"]:
+            row = "center"
+
+        if token in groups["left"]:
+            col = "left"
+        elif token in groups["right"]:
+            col = "right"
+        elif token in groups["center_h"]:
+            col = "center"
+
+        if token in groups["central"]:
+            row = "center"
+            col = "center"
+
+        grid[(row, col)].append(token)
+
+    def _fmt(row_key: str, col_key: str) -> str:
+        tokens = grid[(row_key, col_key)]
+        return ", ".join(tokens)
+
+    gui.text("  Map (tokens by row/column):")
+
+    def _render_row(label: str, row_key: str) -> None:
+        gui.text(f"    {label}:")
+        left = _fmt(row_key, "left")
+        center = _fmt(row_key, "center")
+        right = _fmt(row_key, "right")
+        if left:
+            _wrap_and_render(gui, "reflect: " + left, indent="      ")
+        if center:
+            _wrap_and_render(gui, "mixed:   " + center, indent="      ")
+        if right:
+            _wrap_and_render(gui, "act:     " + right, indent="      ")
+
+    _render_row("abstract (up)", "up")
+    _render_row("center", "center")
+    _render_row("concrete (down)", "down")
+
+    if other_non_directional:
+        _wrap_and_render(
+            gui,
+            "Other directional lenses (non-directional): " + ", ".join(other_non_directional),
+            indent="  ",
+        )
+    if other_fused:
+        _wrap_and_render(
+            gui,
+            "Other directional lenses (fused): " + ", ".join(other_fused),
+            indent="  ",
+        )
     gui.text("  (one lens per model call)")
     gui.spacer()
 
@@ -442,6 +511,8 @@ def model_help_gui(gui: imgui.GUI):
         _show_method(gui)
     if section in ("all", "style"):
         _show_style(gui)
+    if section in ("all", "axes"):
+        _show_directional_lenses(gui)
     if section in ("all", "examples"):
         _show_examples(gui)
 

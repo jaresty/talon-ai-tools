@@ -69,7 +69,7 @@ To make the grammar easier to remember and explore, ADR 006 adds a few helpers:
   - Lists a few generic, axis-driven mini-patterns (for example, “Quick gist”, “Deep narrow rigor”, “Bulleted summary”) as concrete recipes for that prompt.
   - Lets you trigger these patterns by clicking or by saying the preset names (for example, `quick gist`) while the picker is open.
 - `model quick help` – opens an in-Talon “Model grammar quick reference” window listing:
-  - The main axes (goal/static prompt, directional lens, completeness, scope, method, style).
+  - The main axes (static prompt, completeness, scope, method, style, directional lens).
   - Canonical modifier vocab, pulled from the same Talon lists that drive the grammar.
   - A few example recipes.
 - You can also open axis-specific quick help:

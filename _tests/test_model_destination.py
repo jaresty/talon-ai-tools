@@ -87,6 +87,12 @@ if bootstrap is not None:
                 any("Meta details" in text for text in paragraph_texts),
                 "Expected browser view to include meta interpretation text",
             )
+            # The bare heading marker should not appear as its own paragraph.
+            self.assertNotIn(
+                "Model interpretation",
+                paragraph_texts,
+                "Model interpretation heading should not be rendered as a body paragraph",
+            )
 
         @patch.object(model_destination_module, "Browser")
         def test_insert_uses_response_presentation(self, browser_cls):

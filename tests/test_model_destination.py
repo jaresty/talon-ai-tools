@@ -16,11 +16,48 @@ if bootstrap is not None:
     from talon_user.lib.modelHelpers import format_message
     from talon_user.lib.modelPresentation import ResponsePresentation
     from talon_user.lib.promptPipeline import PromptResult
+    from talon_user.lib.modelState import GPTState
 
     class ModelDestinationTests(unittest.TestCase):
         def setUp(self):
             actions.user.calls.clear()
             clip.set_text(None)
+
+        @patch.object(model_destination_module, "Builder")
+        def test_browser_includes_recipe_metadata_from_gpt_state(self, builder_cls):
+            # Ensure clean state before configuring recipe fields.
+            GPTState.reset_all()
+            GPTState.last_recipe = "describe · full · focus · plain"
+            GPTState.last_directional = "fog"
+            GPTState.last_static_prompt = "describe"
+
+            result = PromptResult.from_messages([format_message("body line")])
+
+            builder_instance = builder_cls.return_value
+
+            browser = model_destination_module.Browser()
+            browser.insert(result)
+
+            # The browser destination should prepend a Recipe line, a speakable
+            # grammar line, and a tip that references the static prompt.
+            paragraph_texts = [call.args[0] for call in builder_instance.p.call_args_list]
+
+            self.assertIn(
+                "Recipe: describe · full · focus · plain · fog", paragraph_texts
+            )
+            self.assertIn(
+                "Say: model describe full focus plain fog", paragraph_texts
+            )
+            self.assertTrue(
+                any("model show grammar" in text for text in paragraph_texts),
+                "Expected a tip mentioning 'model show grammar'",
+            )
+            self.assertTrue(
+                any("model pattern menu describe" in text for text in paragraph_texts),
+                "Expected a tip mentioning 'model pattern menu describe'",
+            )
+
+            builder_instance.h2.assert_called_with("Response")
 
         @patch.object(model_destination_module, "Browser")
         def test_insert_uses_response_presentation(self, browser_cls):

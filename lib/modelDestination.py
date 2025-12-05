@@ -150,6 +150,40 @@ class Browser(ModelDestination):
         presentation = result.presentation_for("browser")
         builder = Builder()
         builder.h1("Talon GPT Result")
+
+        # Mirror the confirmation GUI's recipe recap so the browser view
+        # carries the same orientation cues.
+        if GPTState.last_recipe:
+            if getattr(GPTState, "last_directional", ""):
+                recipe_text = (
+                    f"{GPTState.last_recipe} · {GPTState.last_directional}"
+                )
+                grammar_phrase = (
+                    f"model {GPTState.last_recipe.replace(' · ', ' ')} "
+                    f"{GPTState.last_directional}"
+                )
+            else:
+                recipe_text = GPTState.last_recipe
+                grammar_phrase = (
+                    f"model {GPTState.last_recipe.replace(' · ', ' ')}"
+                )
+
+            builder.p(f"Recipe: {recipe_text}")
+            builder.p(f"Say: {grammar_phrase}")
+
+            # When possible, include a prompt-specific pattern menu hint that
+            # matches the confirmation GUI + quick-help guidance.
+            static_prompt = GPTState.last_static_prompt or recipe_text.split(
+                " · ", 1
+            )[0].strip()
+            if static_prompt:
+                builder.p(
+                    f"Tip: Say 'model show grammar' for a detailed breakdown, "
+                    f"or 'model pattern menu {static_prompt}' to explore nearby recipes."
+                )
+
+            builder.h2("Response")
+
         for line in presentation.browser_lines:
             builder.p(line)
         builder.render()

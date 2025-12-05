@@ -185,6 +185,22 @@ def _build_snippet_context(destination: str) -> Optional[str]:
     return None
 
 
+def _build_timeout_context() -> Optional[str]:
+    """Describe the approximate client-side timeout so the model can budget its response."""
+    try:
+        timeout_seconds: int = settings.get(
+            "user.model_request_timeout_seconds", 120  # type: ignore
+        )
+    except Exception:
+        timeout_seconds = 120
+    if timeout_seconds <= 0:
+        return None
+    return (
+        "The client may cancel this request if it takes much longer than "
+        f"{timeout_seconds} seconds to receive a response. Prefer concise, efficient responses that comfortably fit within that time budget."
+    )
+
+
 def _build_request_context(destination: object) -> list[str]:
     """Build the list of system messages for the request context."""
     destination_str = destination if isinstance(destination, str) else ""
@@ -196,9 +212,10 @@ def _build_request_context(destination: object) -> list[str]:
     )
     application_context = f"The following describes the currently focused application:\n\n{actions.user.talon_get_active_context()}\n\nYou are an expert user of this application."
     snippet_context = _build_snippet_context(destination_str)
+    timeout_context = _build_timeout_context()
     system_messages = [
         m
-        for m in [language_context, application_context, snippet_context]
+        for m in [language_context, application_context, snippet_context, timeout_context]
         if m is not None
     ]
     full_system_messages = [
@@ -374,8 +391,16 @@ def send_request_internal(request):
         print(request)
 
     url: str = settings.get("user.model_endpoint")  # type: ignore
+    timeout_seconds: int = settings.get("user.model_request_timeout_seconds", 120)  # type: ignore
     notify("GPT Sending Request")
-    raw_response = requests.post(url, headers=headers, data=json.dumps(request))
+    try:
+        raw_response = requests.post(
+            url, headers=headers, data=json.dumps(request), timeout=timeout_seconds
+        )
+    except requests.exceptions.Timeout:
+        error_msg = f"Request timed out after {timeout_seconds} seconds"
+        notify(f"GPT Failure: {error_msg}")
+        raise GPTRequestError(408, error_msg)
     if raw_response.status_code == 200:
         notify("GPT Request Completed")
     else:

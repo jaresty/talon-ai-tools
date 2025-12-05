@@ -97,8 +97,12 @@ The `model` command now supports several short, speech-friendly modifier axes yo
 - Completeness (`completenessModifier`): `skim`, `gist`, `full`, `max`, `minimal`, `deep`, `framework`, `path`
 - Scope (`scopeModifier`): `narrow`, `focus`, `bound`, `edges`, `relations`, `dynamics`, `interfaces`, `system`, `actions`
 - Method (`methodModifier`): `steps`, `plan`, `rigor`, `rewrite`, `diagnose`, `filter`, `prioritize`, `cluster`, `systemic`, `experimental`, `debugging`, `structure`, `flow`, `compare`, `motifs`, `wasinawa`, `ladder`, `contextualise`, `xp`, `adversarial`, `receptive`, `resistant`, `novice`, `liberating`, `diverge`, `converge`, `mapping`
-- Style (`styleModifier`): `plain`, `tight`, `bullets`, `table`, `code`, `checklist`, `diagram`, `presenterm`, `html`, `gherkin`, `shellscript`, `emoji`, `slack`, `jira`, `recipe`, `abstractvisual`, `commit`, `adr`, `taxonomy`, `cards`, `codetour`
-  - Additional style: `cards` – format the answer as discrete cards/items with clear headings and short bodies.
+- Style (`styleModifier`): `plain`, `tight`, `bullets`, `table`, `code`, `checklist`, `diagram`, `presenterm`, `html`, `gherkin`, `shellscript`, `emoji`, `slack`, `jira`, `recipe`, `abstractvisual`, `commit`, `adr`, `taxonomy`, `cards`, `codetour`, `story`, `bug`, `spike`
+  - Additional styles:
+    - `cards` – format the answer as discrete cards/items with clear headings and short bodies.
+    - `story` – format the output as a user story using “As a…, I want…, so that…”, optionally with a short prose description and high-level acceptance criteria.
+    - `bug` – format the output as a structured bug report (Steps to Reproduce, Expected Behavior, Actual Behavior, Environment/Context).
+    - `spike` – format the output as a research spike: short problem/decision statement plus a list of key questions to answer.
 
 Directional lenses (required) are a separate axis:
 
@@ -193,5 +197,6 @@ If you wish to change any configuration settings, copy the [example configuratio
 | ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------- |
 | user.openai_model        | `"gpt-5-nano"`                                                                                                                                                                                                                                                    | The model to use for the queries. NOTE: To access certain models you may need prior API use |
 | user.model_endpoint      | `"https://api.openai.com/v1/chat/completions"`                                                                                                                                                                                                                     | Any OpenAI compatible endpoint address can be used (Azure, local llamafiles, etc)           |
+| user.model_request_timeout_seconds | `120`                                                                                                                                                                                                                                                    | Maximum time in seconds to wait for a single model HTTP request before timing out           |
 | user.model_shell_default | `"bash"`                                                                                                                                                                                                                                                           | The default shell used when outputting shell commands (for example, when using the `shellscript` style) |
 | user.model_system_prompt | `"You are an assistant helping an office worker to be more productive. Output just the response to the request and no additional content. Do not generate any markdown formatting such as backticks for programming languages unless it is explicitly requested."` | The meta-prompt for how to respond to all prompts                                           |

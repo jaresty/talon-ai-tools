@@ -7,6 +7,9 @@ settings():
 
     # user.model_system_prompt = "You are an assistant helping an office worker to be more productive."
 
+    # Maximum time in seconds to wait for a single model HTTP request before timing out.
+    # user.model_request_timeout_seconds = 120
+
     # Change to 'gpt-4' or the model of your choice
     # user.openai_model = 'gpt-3.5-turbo'
 

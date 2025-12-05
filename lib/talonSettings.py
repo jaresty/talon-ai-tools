@@ -461,6 +461,13 @@ mod.setting(
 )
 
 mod.setting(
+    "model_request_timeout_seconds",
+    type=int,
+    default=120,
+    desc="Maximum time in seconds to wait for a single model HTTP request before timing out.",
+)
+
+mod.setting(
     "model_system_prompt",
     type=str,
     default="Output just the response to the request and no additional content. Do not generate any markdown formatting such as backticks for programming languages unless it is explicitly requested. If the user requests code generation, output just code and not additional natural language explanation.",

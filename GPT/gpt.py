@@ -450,6 +450,21 @@ class UserActions:
         source: ModelSource, subject: str
     ) -> None:
         """Suggest model prompt recipes for an explicit source."""
+        # When debug logging is enabled, surface details about how `model suggest`
+        # resolved its source so users can diagnose unexpected content.
+        if GPTState.debug_enabled:
+            try:
+                default_source_key = settings.get("user.model_default_source")
+            except Exception:
+                default_source_key = "<error>"
+            resolved_source_key = getattr(source, "modelSimpleSource", "")
+            notify(
+                "GPT debug: model suggest using "
+                f"default_source={default_source_key!r}, "
+                f"resolved_source={resolved_source_key!r}, "
+                f"source_class={source.__class__.__name__}"
+            )
+
         try:
             content = source.get_text()
         except Exception:
@@ -470,6 +485,13 @@ class UserActions:
 
         subject = subject or ""
         content_text = str(content)
+        if GPTState.debug_enabled:
+            preview = content_text[:200].replace("\n", "\\n")
+            notify(
+                "GPT debug: model suggest content length="
+                f"{len(content_text)}, preview={preview!r}"
+            )
+
         if not content_text.strip() and not subject.strip():
             # If we have neither source content nor a subject, clear previous
             # suggestions to avoid showing stale recipes in the GUI.
@@ -498,7 +520,11 @@ class UserActions:
 
         destination = Default()
         session = PromptSession(destination)
-        session.begin(reuse_existing=True)
+        # Start a fresh request for suggestions so we don't accidentally
+        # reuse the previous GPTState.request (for example, from the last
+        # `model` call). This avoids leaking prior prompt content into
+        # the suggestion meta-prompt.
+        session.begin()
         session.add_messages([format_messages("user", [format_message(user_text)])])
         result = _prompt_pipeline.complete(session)
 

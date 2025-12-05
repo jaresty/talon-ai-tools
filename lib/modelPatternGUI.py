@@ -80,6 +80,7 @@ SCOPE_TOKENS = {
     "bound",
     "edges",
     "relations",
+    "actions",
 }
 
 METHOD_TOKENS = {

@@ -267,7 +267,10 @@ if bootstrap is not None:
 
                 create_source.assert_called_once()
                 session_cls.assert_called_once()
-                mock_session.begin.assert_called_once_with(reuse_existing=True)
+                # Suggestion flow starts a fresh request rather than reusing
+                # any in-flight GPTState.request to avoid leaking prior
+                # prompt content into the meta-prompt.
+                mock_session.begin.assert_called_once_with()
                 mock_session.add_messages.assert_called_once()
                 self.pipeline.complete.assert_called_once_with(mock_session)
                 actions.user.gpt_insert_response.assert_called_once()

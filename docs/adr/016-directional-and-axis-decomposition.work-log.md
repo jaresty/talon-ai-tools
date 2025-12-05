@@ -38,7 +38,7 @@ Changes made (this loop):
     - Deleted `flip` and `flop` entries from the directional list.
   - Left core and composite values in place:
     - Core: `fog`, `fig`, `dig`, `ong`, `rog`, `bog`, `jog`.
-    - Composite/historic bundles: `fly`/`fip`/`dip` + `ong`/`rog`/`bog`, plus `tap`.
+    - Composite/historic bundles: `fly`/`fip`/`dip` + `ong`/`rog`/`bog`.
 
 Checks / validation:
 

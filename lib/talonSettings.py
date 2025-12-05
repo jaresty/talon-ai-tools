@@ -153,10 +153,8 @@ mod.list(
     "modelAudience",
     desc="The audience to whom the LLM is writing. For example, 'to business'",
 )
-mod.list("goalModifier", desc="GPT Goal Modifiers")
-
 # model prompts can be either static and predefined by this repo or custom outside of it
-@mod.capture(rule="[{user.goalModifier}] [{user.staticPrompt}] [{user.completenessModifier}] [{user.scopeModifier}] [{user.methodModifier}] [{user.styleModifier}] {user.directionalModifier} | {user.customPrompt}")
+@mod.capture(rule="[{user.staticPrompt}] [{user.completenessModifier}] [{user.scopeModifier}] [{user.methodModifier}] [{user.styleModifier}] {user.directionalModifier} | {user.customPrompt}")
 def modelPrompt(m) -> str:
     if hasattr(m, "customPrompt"):
         return str(m.customPrompt)
@@ -176,7 +174,6 @@ def modelPrompt(m) -> str:
             if static_prompt == "infer"
             else static_prompt
         )
-    goal_modifier = getattr(m, "goalModifier", "")
     directional = getattr(m, "directionalModifier", "")
 
     profile_axes = get_static_prompt_axes(static_prompt)
@@ -263,11 +260,9 @@ def modelPrompt(m) -> str:
     GPTState.last_directional = _axis_recipe_token("directional", directional or "")
 
     # Task line: what you want done.
-    # Restore the pre-ADR semantics: the visible Task text is the human-facing
-    # static prompt description (when present), plus any goal modifier. This
-    # keeps the prompt text aligned with what users historically saw in the
-    # staticPrompt list, even though we now store descriptions centrally.
-    task_text = f"{display_prompt}{goal_modifier}"
+    # The visible Task text is the human-facing static prompt description
+    # (when present); legacy goal modifiers are no longer appended here.
+    task_text = display_prompt
     task_line = f"Task:\n  {task_text}"
 
     # Constraints block: map each spoken/profile axis into typed lines when we

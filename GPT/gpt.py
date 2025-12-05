@@ -893,7 +893,6 @@ class UserActions:
         render_list_as_tables("Scope Modifiers", "scopeModifier.talon-list", builder)
         render_list_as_tables("Method Modifiers", "methodModifier.talon-list", builder)
         render_list_as_tables("Style Modifiers", "styleModifier.talon-list", builder)
-        render_list_as_tables("Goal Modifiers", "goalModifier.talon-list", builder)
         render_list_as_tables("Voice", "modelVoice.talon-list", builder)
         render_list_as_tables("Tone", "modelTone.talon-list", builder)
         render_list_as_tables("Audience", "modelAudience.talon-list", builder)

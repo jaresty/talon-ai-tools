@@ -253,7 +253,20 @@ def _show_completeness(gui: imgui.GUI) -> None:
         for key, desc in COMPLETENESS_ITEMS:
             gui.text(f"  {key}: {desc}")
     else:
-        keys = COMPLETENESS_KEYS or ["skim", "gist", "full", "max"]
+        # Fallback to a representative set of known completeness tokens if the
+        # list cannot be loaded. When available, COMPLETENESS_KEYS comes from
+        # completenessModifier.talon-list and should include the full set.
+        keys = COMPLETENESS_KEYS or [
+            "skim",
+            "gist",
+            "full",
+            "max",
+            "minimal",
+            "deep",
+            "framework",
+            "path",
+            "samples",
+        ]
         _wrap_and_render(gui, ", ".join(keys))
     gui.spacer()
 
@@ -292,6 +305,7 @@ def _show_method(gui: imgui.GUI) -> None:
             "compare",
             "motifs",
             "wasinawa",
+            "analysis",
         ]
         _wrap_and_render(gui, ", ".join(keys))
     gui.spacer()
@@ -347,6 +361,8 @@ def _show_examples(gui: imgui.GUI) -> None:
     gui.text("  Systems sketch: describe · gist · focus · systemic · fog")
     gui.text("  Experiment plan: describe · full · focus · experimental · fog")
     gui.text("  Type/taxonomy: describe · full · focus · taxonomy · rog")
+    gui.text("  Analysis only: describe · gist · focus · analysis · fog")
+    gui.text("  Sample options: describe · samples · focus · diverge · fog")
     gui.spacer()
     gui.text("Replaced prompts")
     _wrap_and_render(

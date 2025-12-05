@@ -120,7 +120,7 @@ They do not introduce a new axis; they pack more defaults into the directional a
   - Axes: `method=diverge` and/or `compare`, with `style=cards` or `bullets`.  
   - Residual: “do not synthesise; keep perspectives clearly separated.”
 
-- `tap` – 5–7 abstract categories with labels and short phrases, no how‑to.  
+- `tap` – 5–7 abstract categories with labels and short phrases, no how‑to (now **retired** as a directional token).  
   - Axes: essentially `completeness=framework`, `scope=system`, `method=mapping`, `style=taxonomy`.  
   - Residual: almost none; this is a recipe.
 
@@ -222,7 +222,7 @@ We do **not** introduce new conceptual axes for these; instead:
   - completeness/scope/method/style.
 - Advanced users can always spell out the explicit axes (`mapping`, `ladder`, `systemic`, `actions`, `relations`, etc.) instead of relying on the composite token.
 
-### Shape‑ and method‑heavy directionals (`tap`, historical `flop` / `flip`)
+### Shape‑ and method‑heavy directionals (historical `tap` / `flop` / `flip`)
 
 For `tap` (and historically `flop` and `flip`), we treat their **semantics** as belonging primarily to the other axes:
 
@@ -230,8 +230,8 @@ For `tap` (and historically `flop` and `flip`), we treat their **semantics** as 
   - Expressed as a canonical axis recipe, for example:  
     - `describe · framework · system · mapping · taxonomy · fog`  
   - Directional role: none beyond choosing a base lens (`fog` in the example).  
-  - Recommendation:
-    - Keep `tap` as a directional token for continuity, but describe it as “equivalent to using the taxonomy/framework recipe,” not as a separate directional dimension.
+  - Decision in this ADR:
+    - **Remove `tap` from `directionalModifier`** and encourage expressing its behaviour via the taxonomy recipe and patterns (for example, the `Tap map` pattern).
 
 Historically, two additional directional tokens (`flop` and `flip`) encoded shape and method semantics:
 
@@ -272,7 +272,7 @@ In all three cases, the *behaviour* is defined via completeness/scope/method/sty
 
 ### Negative / trade‑offs
 
-- Some users currently relying on composite directionals (`fly/fip/dip`, `tap`) and the now‑removed `flop`/`flip` tokens as *the* way to access certain behaviours will need to learn that those behaviours are now modelled via the main axes plus a simpler directional lens.  
+- Some users currently relying on composite directionals (`fly/fip/dip`) and the now‑removed `tap`/`flop`/`flip` tokens as *the* way to access certain behaviours will need to learn that those behaviours are now modelled via the main axes plus a simpler directional lens.  
 - There is some documentation and mental overhead in explaining that composite tokens are “named bundles” on the same axis, not new dimensions.
 
 ## Current status in this repo
@@ -281,8 +281,8 @@ As of 2025‑12‑05, the following pieces of this ADR are implemented in `talon
 
 - `GPT/lists/directionalModifier.talon-list`:
   - Contains the core directional lenses described here: `fog`, `fig`, `dig`, `ong`, `rog`, `bog`, `jog`.
-  - Retains composite values (`fly`/`fip`/`dip` + `ong`/`rog`/`bog`) and `tap` as directional tokens.
-  - Has removed `flop` and `flip` in favour of axis-based recipes.
+  - Retains composite values (`fly`/`fip`/`dip` + `ong`/`rog`/`bog`) as directional tokens.
+  - Has removed `tap`, `flop`, and `flip` in favour of axis-based recipes and patterns.
 - Quick-help and axis docs:
   - `_build_axis_docs()` in `GPT/gpt.py` lists the directional axis alongside completeness/scope/method/style and points readers at ADR 016.
   - `lib/modelHelpGUI.py`:
@@ -308,8 +308,8 @@ This ADR describes a decomposition and simplification strategy. Follow‑up chan
 
 - **Update `GPT/lists/directionalModifier.talon-list`** to:
   - Clarify which tokens are core lenses (`fog`, `fig`, `dig`, `ong`, `rog`, `bog`, `jog`).  
-  - Remove `flop` and `flip` from the list.  
-  - Reword composite and legacy tokens (`fly`/`fip`/`dip`, `tap`) in terms of their implied axis defaults and example recipes, explicitly noting that they do not introduce new axes.
+  - Remove `tap`, `flop`, and `flip` from the list.  
+  - Reword composite tokens (`fly`/`fip`/`dip`) in terms of their implied axis defaults and example recipes, explicitly noting that they do not introduce new axes.
 
 - **Align quick‑help / grammar docs** (for example, `lib/modelHelpGUI.py`, `GPT/readme.md`) to:
   - Present the directional axis alongside completeness/scope/method/style.  
@@ -407,8 +407,8 @@ This section summarises how to think about existing or historical directional to
 - `tap`:
   - Behaviour: taxonomy-style, framework-level map of categories and subtypes (see “Tap-style taxonomy map” recipe).  
   - Migration:
-    - Encourage `framework` + `system` + `mapping` + `taxonomy` + `fog` as the explicit recipe.  
-    - If `tap` is used as a directional token, treat it as a convenient alias for that axis combination; do not add extra semantics beyond the recipe.
+    - Encourage `framework` + `system` + `mapping` + `taxonomy` + `fog` as the explicit recipe, surfaced via patterns (for example, `Tap map`) and docs.
+    - Do **not** use `tap` as a directional token; its semantics now live only in axes and patterns.
 
 - Historical `flop` and `flip`:
   - `flop`: multi-angle stakeholder view; successively present several perspectives without synthesising them (see “Multi-angle stakeholder view” example).  

@@ -108,6 +108,55 @@ if bootstrap is not None:
                 docs,
             )
 
+        def test_new_completeness_and_method_tokens_present(self) -> None:
+            """Ensure ADR 017's axis tokens exist in the Talon lists."""
+            root = pathlib.Path(__file__).resolve().parents[1]
+
+            completeness_list_path = root / "GPT" / "lists" / "completenessModifier.talon-list"
+            completeness_keys: set[str] = set()
+            with completeness_list_path.open("r", encoding="utf-8") as f:
+                for line in f:
+                    s = line.strip()
+                    if (
+                        not s
+                        or s.startswith("#")
+                        or s.startswith("list:")
+                        or s == "-"
+                    ):
+                        continue
+                    if ":" not in s:
+                        continue
+                    key, _ = s.split(":", 1)
+                    completeness_keys.add(key.strip())
+
+            method_list_path = root / "GPT" / "lists" / "methodModifier.talon-list"
+            method_keys: set[str] = set()
+            with method_list_path.open("r", encoding="utf-8") as f:
+                for line in f:
+                    s = line.strip()
+                    if (
+                        not s
+                        or s.startswith("#")
+                        or s.startswith("list:")
+                        or s == "-"
+                    ):
+                        continue
+                    if ":" not in s:
+                        continue
+                    key, _ = s.split(":", 1)
+                    method_keys.add(key.strip())
+
+            self.assertIn(
+                "samples",
+                completeness_keys,
+                "Expected 'samples' completeness token from ADR 017 to be present",
+            )
+            self.assertIn(
+                "analysis",
+                method_keys,
+                "Expected 'analysis' method token from ADR 017 to be present",
+            )
+
         def test_axis_only_tokens_do_not_appear_as_static_prompts(self) -> None:
             """Guardrail: axis-only tokens from ADR 012 must not be static prompts."""
             root = pathlib.Path(__file__).resolve().parents[1]

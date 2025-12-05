@@ -137,6 +137,8 @@ You can adjust these defaults by voice:
 
 Some high-frequency combinations you can say directly:
 
+- Completeness:
+  - `skim`, `gist`, `full`, `max`, `minimal`, `deep`, `framework`, `path`, `samples`.
 - Diagrams:
   - `model describe diagram fog` – sketchy Mermaid diagram, code-only.
 - Presentations:
@@ -159,6 +161,7 @@ Some high-frequency combinations you can say directly:
   - `model describe diverge fog` – open up the option space and explore alternatives.
   - `model describe converge rog` – weigh options and narrow towards a decision.
   - `model describe mapping fog` – emphasise mapping elements and relationships over linear exposition.
+  - `model describe analysis fog` – analysis-only, non-prescriptive description (no actions or recommendations).
 - Directional lenses:
   - `fog` – upwards/generalising lens (bias toward gist + system/relations).
   - `dig` – downwards/grounding lens (bias toward deep + actions/narrow).

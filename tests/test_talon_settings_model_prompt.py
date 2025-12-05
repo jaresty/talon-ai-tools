@@ -27,7 +27,6 @@ if bootstrap is not None:
         def test_no_modifiers_uses_static_prompt_profile_when_present(self):
             m = SimpleNamespace(
                 staticPrompt="fix",
-                goalModifier="GOAL",
                 directionalModifier="DIR",
             )
 
@@ -39,7 +38,7 @@ if bootstrap is not None:
             self.assertIn("Task:", result)
             self.assertIn("Constraints:", result)
             self.assertIn(
-                "Fix grammar, spelling, and minor style issues while keeping meaning and tone; return only the modified text.GOAL",
+                "Fix grammar, spelling, and minor style issues while keeping meaning and tone; return only the modified text.",
                 result,
             )
             # Profile for "fix" biases completeness/scope conceptually.
@@ -51,7 +50,6 @@ if bootstrap is not None:
         def test_explicit_completeness_modifier_is_used_as_is(self):
             m = SimpleNamespace(
                 staticPrompt="fix",
-                goalModifier="GOAL",
                 completenessModifier="COMP",
                 directionalModifier="DIR",
             )
@@ -67,7 +65,6 @@ if bootstrap is not None:
         def test_scope_method_style_modifiers_appended_in_order(self):
             m = SimpleNamespace(
                 staticPrompt="fix",
-                goalModifier="GOAL",
                 completenessModifier="COMP",
                 scopeModifier="SCOPE",
                 methodModifier="METHOD",
@@ -89,7 +86,6 @@ if bootstrap is not None:
         def test_missing_scope_method_style_do_not_add_text(self):
             m = SimpleNamespace(
                 staticPrompt="fix",
-                goalModifier="GOAL",
                 completenessModifier="COMP",
                 # scope/method/style omitted on purpose; profiles may add hints,
                 # but we should not see the test sentinel tokens.
@@ -117,7 +113,6 @@ if bootstrap is not None:
             # Spoken modifiers should win over profiles and defaults.
             m = SimpleNamespace(
                 staticPrompt="fix",
-                goalModifier="GOAL",
                 completenessModifier="skim",
                 scopeModifier="narrow",
                 methodModifier="steps",
@@ -138,7 +133,6 @@ if bootstrap is not None:
             # "todo" has a profile for completeness/method/style/scope.
             m = SimpleNamespace(
                 staticPrompt="todo",
-                goalModifier="",
                 directionalModifier="DIR",
             )
 
@@ -154,7 +148,6 @@ if bootstrap is not None:
             # last_response/last_recipe so recap helpers don't show stale data.
             m = SimpleNamespace(
                 staticPrompt="fix",
-                goalModifier="GOAL",
                 completenessModifier="skim",
                 scopeModifier="narrow",
                 methodModifier="steps",
@@ -181,7 +174,6 @@ if bootstrap is not None:
             # Spoken modifiers should be reflected in the last_recipe summary.
             m = SimpleNamespace(
                 staticPrompt="fix",
-                goalModifier="GOAL",
                 completenessModifier="skim",
                 scopeModifier="narrow",
                 methodModifier="steps",
@@ -210,7 +202,6 @@ if bootstrap is not None:
             # "todo" should drive the last_recipe summary.
             m = SimpleNamespace(
                 staticPrompt="todo",
-                goalModifier="",
                 directionalModifier="DIR",
             )
 
@@ -232,7 +223,6 @@ if bootstrap is not None:
             # via their profiles when no spoken modifiers are present.
             m = SimpleNamespace(
                 staticPrompt="pain",
-                goalModifier="",
                 directionalModifier="DIR",
             )
 
@@ -248,7 +238,6 @@ if bootstrap is not None:
             # relational scope profile when present.
             m = SimpleNamespace(
                 staticPrompt="dependency",
-                goalModifier="",
                 directionalModifier="DIR",
             )
 

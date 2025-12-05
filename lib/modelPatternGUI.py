@@ -469,11 +469,19 @@ def model_pattern_gui(gui: imgui.GUI):
     gui.spacer()
 
     domain = PatternGUIState.domain
-    if domain is None or domain == "coding":
-        _render_domain(gui, "coding")
+    if domain is None:
+        gui.text("Choose a pattern domain:")
         gui.spacer()
-    if domain is None or domain == "writing":
-        _render_domain(gui, "writing")
+        if gui.button("Coding patterns"):
+            PatternGUIState.domain = "coding"
+        if gui.button("Writing / product / reflection patterns"):
+            PatternGUIState.domain = "writing"
+        gui.spacer()
+        gui.text(
+            "Tip: Say 'model coding patterns' or 'model writing patterns' to jump straight to a domain."
+        )
+    else:
+        _render_domain(gui, domain)
 
     gui.spacer()
     if gui.button("Close"):

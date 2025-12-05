@@ -104,7 +104,7 @@ if bootstrap is not None:
             """Axis docs should point readers at ADRs and the README cheat sheet."""
             docs = _build_axis_docs()
             self.assertIn(
-                "ADR 005/012/013",
+                "ADR 005/012/013/016",
                 docs,
             )
 
@@ -176,6 +176,43 @@ if bootstrap is not None:
             self.assertFalse(
                 missing,
                 f"Expected all pattern static prompts to appear in docs; missing: {', '.join(missing)}",
+            )
+
+        def test_directional_list_matches_adr_016_core_and_retired_tokens(self) -> None:
+            """Guardrail: directional list includes core lenses and excludes retired tokens (ADR 016)."""
+            root = pathlib.Path(__file__).resolve().parents[1]
+            directional_list_path = root / "GPT" / "lists" / "directionalModifier.talon-list"
+            talon_keys: set[str] = set()
+            with directional_list_path.open("r", encoding="utf-8") as f:
+                for line in f:
+                    s = line.strip()
+                    if (
+                        not s
+                        or s.startswith("#")
+                        or s.startswith("list:")
+                        or s == "-"
+                    ):
+                        continue
+                    if ":" not in s:
+                        continue
+                    key, _ = s.split(":", 1)
+                    talon_keys.add(key.strip())
+
+            # Core directional lenses from ADR 016 that must be present.
+            core_lenses = {"fog", "fig", "dig", "ong", "rog", "bog", "jog"}
+            missing_core = sorted(core_lenses - talon_keys)
+            self.assertFalse(
+                missing_core,
+                f"Core directional lenses from ADR 016 missing from directionalModifier.talon-list: {missing_core}",
+            )
+
+            # Tokens explicitly retired by ADR 016 should not appear.
+            retired = {"flip", "flop"}
+            present_retired = sorted(retired & talon_keys)
+            self.assertEqual(
+                present_retired,
+                [],
+                f"Retired directional tokens from ADR 016 should not be present: {present_retired}",
             )
 
 else:

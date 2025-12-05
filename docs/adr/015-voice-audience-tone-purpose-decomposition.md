@@ -192,8 +192,8 @@ Contributors who need additional voices beyond this core set can still add them 
   - Decision:  
     - **Retire both from voice**.  
     - Represent via:  
-      - Directional: `flop` (“various angles, presented separately”),  
       - Method axis: clustering/compare combinations,  
+      - Scope/shape: relations-focused, multi-angle patterns (see ADR 016 for directional lens decomposition),  
       - Recipes like “multi-stakeholder view” that use scope/method tokens.
 
 - `as systems thinker`  
@@ -266,7 +266,6 @@ We keep a focused set of audiences that show up frequently in practice and have 
   - Decision:  
     - **Retire from audience**.  
     - Represent via:  
-      - Directional: `flop` (separate angles),  
       - Method: `cluster` / `compare`,  
       - Scope: `relations`,  
       - Pattern recipes like “map stakeholders and concerns”.
@@ -465,7 +464,6 @@ To avoid losing expressive power when retiring voice/audience/purpose items, we 
 
 - `as various` / `as perspectives` / `to various` / `to perspectives` → multi-angle patterns:  
   - Use:  
-    - Directional `flop` (separate angles),  
     - `method=cluster` and/or `method=compare`,  
     - `scope=relations`,  
     - with a pattern that explicitly introduces each stakeholder/perspective and why it matters.

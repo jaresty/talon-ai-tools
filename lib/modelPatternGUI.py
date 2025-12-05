@@ -286,6 +286,12 @@ PATTERNS: list[PromptPattern] = [
         domain="writing",
     ),
     PromptPattern(
+        name="Tap map",
+        description="Summarize this as a short taxonomy-style map of key categories and subtypes.",
+        recipe="describe · framework · system · mapping · taxonomy · fog",
+        domain="writing",
+    ),
+    PromptPattern(
         name="Cluster items",
         description="Group related items into labeled categories; clustered output only.",
         recipe="describe · full · narrow · cluster · plain · fog",
@@ -325,6 +331,24 @@ PATTERNS: list[PromptPattern] = [
         name="Present slides",
         description="Render this as a Presenterm slide deck.",
         recipe="describe · full · focus · presenterm · rog",
+        domain="writing",
+    ),
+    PromptPattern(
+        name="Multi-angle view",
+        description="Lay out several distinct perspectives or stakeholders side by side.",
+        recipe="describe · full · relations · diverge · cards · rog",
+        domain="writing",
+    ),
+    PromptPattern(
+        name="Flip it review",
+        description="Stress-test this with a devil's advocate, adversarial review.",
+        recipe="describe · gist · edges · adversarial · fog",
+        domain="writing",
+    ),
+    PromptPattern(
+        name="Systems path",
+        description="Outline a short systems-level path from here to a desired outcome.",
+        recipe="describe · gist · system · mapping · steps · ong",
         domain="writing",
     ),
 ]

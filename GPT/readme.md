@@ -159,6 +159,14 @@ Some high-frequency combinations you can say directly:
   - `model describe diverge fog` – open up the option space and explore alternatives.
   - `model describe converge rog` – weigh options and narrow towards a decision.
   - `model describe mapping fog` – emphasise mapping elements and relationships over linear exposition.
+- Directional lenses:
+  - `fog` – upwards/generalising lens (bias toward gist + system/relations).
+  - `dig` – downwards/grounding lens (bias toward deep + actions/narrow).
+  - `fig` – span abstraction levels (bias toward ladder/mapping across system + actions).
+  - `ong` – act/extend lens (bias toward concrete next steps, path + actions).
+  - `rog` – reflect/structure lens (bias toward frameworks, structure, and reflection).
+  - `bog` – blended act/reflect lens (hold action and reflection together as one stance).
+  - `jog` – neutral confirmation / phrase end (reuse existing axes; avoid extra meta-questions).
 - Types / taxonomy:
   - `model describe taxonomy rog` – express a type/taxonomy: categories, subtypes, and relationships.
 - Channel formatting:

@@ -199,7 +199,7 @@ def _group_directional_keys() -> dict[str, list[str]]:
         if is_directional:
             seen_directional.add(base)
 
-    # Second pass: anything not seen and not fused is non-directional (flip, flop, tap, etc.).
+    # Second pass: anything not seen and not fused is non-directional (for example, tap).
     for key in DIRECTIONAL_KEYS:
         base = key.strip()
         if " " not in base and base not in seen_directional:
@@ -240,8 +240,9 @@ def _show_axes(gui: imgui.GUI) -> None:
             _wrap_and_render(gui, "Central lenses: " + ", ".join(groups["central"]))
         if groups["non_directional"]:
             _wrap_and_render(gui, "Non-directional: " + ", ".join(groups["non_directional"]))
+        gui.text("  Core lenses: fog, fig, dig, ong, rog, bog, jog")
     else:
-        gui.text("  fog, fig, dig, ong, rog, bog")
+        gui.text("  fog, fig, dig, ong, rog, bog, jog")
     gui.text("  (one lens per model call)")
     gui.spacer()
 

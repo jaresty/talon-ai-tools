@@ -320,6 +320,87 @@ if bootstrap is not None:
                 self.assertEqual(style, "bullets")
                 self.assertEqual(directional, "fog")
 
+            def test_tap_map_pattern_uses_framework_and_taxonomy(self) -> None:
+                """Tap map pattern should use framework completeness, system scope, mapping method, and taxonomy style."""
+                pattern = next(p for p in PATTERNS if p.name == "Tap map")
+
+                (
+                    static_prompt,
+                    completeness,
+                    scope,
+                    method,
+                    style,
+                    directional,
+                ) = _parse_recipe(pattern.recipe)
+
+                self.assertEqual(static_prompt, "describe")
+                self.assertEqual(completeness, "framework")
+                self.assertEqual(scope, "system")
+                self.assertEqual(method, "mapping")
+                self.assertEqual(style, "taxonomy")
+                self.assertEqual(directional, "fog")
+
+            def test_multi_angle_view_pattern_uses_diverge_and_cards(self) -> None:
+                """Multi-angle view pattern should use diverge method on relations scope with cards style."""
+                pattern = next(p for p in PATTERNS if p.name == "Multi-angle view")
+
+                (
+                    static_prompt,
+                    completeness,
+                    scope,
+                    method,
+                    style,
+                    directional,
+                ) = _parse_recipe(pattern.recipe)
+
+                self.assertEqual(static_prompt, "describe")
+                self.assertEqual(completeness, "full")
+                self.assertEqual(scope, "relations")
+                self.assertEqual(method, "diverge")
+                self.assertEqual(style, "cards")
+                self.assertEqual(directional, "rog")
+
+            def test_flip_it_review_pattern_uses_adversarial_and_edges(self) -> None:
+                """Flip it review pattern should use adversarial method on edges scope with fog lens."""
+                pattern = next(p for p in PATTERNS if p.name == "Flip it review")
+
+                (
+                    static_prompt,
+                    completeness,
+                    scope,
+                    method,
+                    style,
+                    directional,
+                ) = _parse_recipe(pattern.recipe)
+
+                self.assertEqual(static_prompt, "describe")
+                self.assertEqual(completeness, "gist")
+                self.assertEqual(scope, "edges")
+                self.assertEqual(method, "adversarial")
+                self.assertEqual(style, "")
+                self.assertEqual(directional, "fog")
+
+            def test_systems_path_pattern_uses_mapping_steps_and_ong(self) -> None:
+                """Systems path pattern should use mapping method, steps, and ong directional on system scope."""
+                pattern = next(p for p in PATTERNS if p.name == "Systems path")
+
+                (
+                    static_prompt,
+                    completeness,
+                    scope,
+                    method,
+                    style,
+                    directional,
+                ) = _parse_recipe(pattern.recipe)
+
+                self.assertEqual(static_prompt, "describe")
+                self.assertEqual(completeness, "gist")
+                self.assertEqual(scope, "system")
+                self.assertEqual(method, "mapping")
+                # Systems path does not fix a specific style; default is fine.
+                self.assertEqual(style, "")
+                self.assertEqual(directional, "ong")
+
             def test_all_pattern_static_prompts_exist_in_config_and_list(self) -> None:
                 """Ensure every pattern's static prompt token is wired into config and the list."""
                 root = Path(__file__).resolve().parents[1]

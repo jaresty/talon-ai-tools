@@ -105,7 +105,7 @@ def _build_axis_docs() -> str:
     ]
     lines: list[str] = [
         "Note: Axes capture how and in what shape the model should respond (completeness, scope, method, style, directional lens). "
-        "For full semantics and examples, see ADR 005/012/013 and the GPT README axis cheat sheet.\n"
+        "For full semantics and examples, see ADR 005/012/013/016 and the GPT README axis cheat sheet.\n"
     ]
     for label, filename in sections:
         items = _read_list_items(filename)

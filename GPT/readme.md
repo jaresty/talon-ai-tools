@@ -20,6 +20,27 @@ For implementation details of the modifier axes, defaults, helpers, and rerun sh
 - `docs/adr/013-static-prompt-axis-refinement-and-streamlining.md`
 - `docs/adr/015-voice-audience-tone-purpose-decomposition.md`
 
+### Meta interpretation channel (ADR 019)
+
+If your system prompt asks the model to explain how it interpreted your request, format that explanation as a trailing, clearly-marked Markdown section so Talon can treat it as non-pasteable meta. The recommended pattern is:
+
+- End your main answer normally.
+- Then add a heading and short explanation, for example:
+
+  - `## Model interpretation`  
+    *(one or more lines describing how the model understood the prompt, assumptions, or chosen pattern)*
+
+When a response follows this pattern:
+
+- The main answer (everything before the `## Model interpretation` heading) is what gets pasted and shown as the primary body.
+- The interpretation section (from the heading onward) is:
+  - Stored as `last_meta`.
+  - Available as a `meta` source (for example, `model meta to browser` / `context` / `query`).
+  - Surfaced near last-recipe radars:
+    - As a short `Meta:` line in the confirmation GUI.
+    - As a “Model interpretation” preview in quick help.
+    - As a “Model interpretation” section in the browser view.
+
 ### In-Talon helpers for discoverability (ADR 006)
 
 To make the grammar easier to remember and explore, ADR 006 adds a few helpers:

@@ -592,6 +592,14 @@ class UserActions:
             recipe_text = recipe
         actions.app.notify(f"Last recipe: {recipe_text}")
 
+    def gpt_show_last_meta() -> None:
+        """Show the last meta-interpretation, if available."""
+        meta = getattr(GPTState, "last_meta", "")
+        if not meta.strip():
+            actions.app.notify("GPT: No last meta interpretation available")
+            return
+        actions.app.notify(f"Last meta interpretation:\n{meta}")
+
     def gpt_rerun_last_recipe(
         static_prompt: str,
         completeness: str,

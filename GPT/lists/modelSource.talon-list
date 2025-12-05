@@ -35,3 +35,6 @@ response: gptResponse
 
 # Apply the prompt to the last phrase typed by Talon via a user's dictation
 last: lastTalonDictation
+
+# Apply the prompt to the last meta-interpretation of a response (when available)
+meta: meta

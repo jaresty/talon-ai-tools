@@ -182,7 +182,15 @@ class Browser(ModelDestination):
                     f"or 'model pattern menu {static_prompt}' to explore nearby recipes."
                 )
 
-            builder.h2("Response")
+        meta = getattr(presentation, "meta_text", "").strip() or getattr(
+            GPTState, "last_meta", ""
+        ).strip()
+        if meta:
+            builder.h2("Model interpretation")
+            for line in meta.splitlines():
+                builder.p(line)
+
+        builder.h2("Response")
 
         for line in presentation.browser_lines:
             builder.p(line)

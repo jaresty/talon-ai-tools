@@ -183,6 +183,18 @@ class AllText(ModelSource):
         return actions.edit.selected_text()
 
 
+class Meta(ModelSource):
+    def get_text(self):
+        if not getattr(GPTState, "last_meta", ""):
+            notify(
+                "GPT Failure: User requested meta interpretation, but there was no meta available"
+            )
+            raise Exception(
+                "GPT Failure: User requested meta interpretation, but there was no meta available"
+            )
+        return GPTState.last_meta
+
+
 def create_model_source(source_type: str) -> ModelSource:
     if source_type == "":
         source_type = settings.get("user.model_default_source")
@@ -197,6 +209,7 @@ def create_model_source(source_type: str) -> ModelSource:
         "gptExchange": GPTExchange,
         "lastTalonDictation": LastTalonDictation,
         "all": AllText,
+        "meta": Meta,
     }
 
     source_cls = source_map.get(source_type)

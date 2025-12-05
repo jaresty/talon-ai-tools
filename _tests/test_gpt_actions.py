@@ -42,6 +42,7 @@ if bootstrap is not None:
         def tearDown(self):
             gpt_module._prompt_pipeline = self._original_pipeline
             gpt_module._recursive_orchestrator = self._original_orchestrator
+            actions.app.calls.clear()
 
         def test_gpt_analyze_prompt_uses_prompt_session(self):
             with patch.object(gpt_module, "PromptSession") as session_cls:
@@ -99,6 +100,33 @@ if bootstrap is not None:
                     self.pipeline.complete.return_value,
                     "paste",
                 )
+
+        def test_gpt_show_last_meta_notifies_when_present(self):
+            GPTState.last_meta = "Interpreted as: summarise the design tradeoffs."
+
+            gpt_module.UserActions.gpt_show_last_meta()
+
+            # The stub app namespace records notify calls.
+            self.assertTrue(
+                any(
+                    "Last meta interpretation:" in call[1][0]
+                    for call in actions.app.calls
+                ),
+                "Expected a notification containing the last meta interpretation",
+            )
+
+        def test_gpt_show_last_meta_notifies_when_missing(self):
+            GPTState.last_meta = ""
+
+            gpt_module.UserActions.gpt_show_last_meta()
+
+            self.assertTrue(
+                any(
+                    "No last meta interpretation available" in call[1][0]
+                    for call in actions.app.calls
+                ),
+                "Expected a notification when no last meta is available",
+            )
 
         def test_gpt_reformat_last_uses_prompt_pipeline(self):
             actions.user.get_last_phrase = lambda: "spoken"

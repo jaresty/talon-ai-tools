@@ -47,6 +47,37 @@ def messages_to_string(
     return "\n\n".join(formatted_messages)
 
 
+def split_answer_and_meta(text: str) -> tuple[str, str]:
+    """
+    Split a raw assistant response into primary answer text and an optional
+    trailing meta-interpretation section.
+
+    Heuristic:
+    - By default, treat the entire response as answer text.
+    - If we find a trailing Markdown heading whose text contains
+      'interpretation' (for example, '## Model interpretation'), treat that
+      heading and everything after it as meta.
+    """
+    if not text.strip():
+        return "", ""
+
+    lines = text.split("\n")
+    split_index = None
+
+    for idx, line in enumerate(lines):
+        stripped = line.lstrip()
+        if stripped.startswith("#") and "interpretation" in stripped.lower():
+            split_index = idx
+            break
+
+    if split_index is None:
+        return text, ""
+
+    answer = "\n".join(lines[:split_index]).rstrip()
+    meta = "\n".join(lines[split_index:]).lstrip()
+    return answer, meta
+
+
 def chats_to_string(chats: Sequence[Union[GPTMessage, GPTTool]]) -> str:
     """Format thread as a string"""
     formatted_messages = []
@@ -355,8 +386,11 @@ def send_request(max_attempts: int = 10):
     resp = message_content.strip()
     formatted_resp = strip_markdown(resp)
 
-    GPTState.last_response = formatted_resp
-    response = format_message(formatted_resp)
+    answer_text, meta_text = split_answer_and_meta(formatted_resp)
+
+    GPTState.last_response = answer_text
+    GPTState.last_meta = meta_text
+    response = format_message(answer_text)
 
     if GPTState.thread_enabled:
         GPTState.push_thread(

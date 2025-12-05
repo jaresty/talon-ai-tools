@@ -419,6 +419,14 @@ def model_help_gui(gui: imgui.GUI):
             "Tip: Say 'model again' to rerun this recipe, or add axis tokens "
             "(for example, 'model again gist fog') to tweak it."
         )
+        meta = getattr(GPTState, "last_meta", "").strip()
+        if meta:
+            gui.spacer()
+            gui.text("Model interpretation")
+            # Show a short, wrapped preview of the meta text so users can
+            # quickly see how the model interpreted the last request.
+            first_line = meta.splitlines()[0].strip()
+            _wrap_and_render(gui, first_line)
         gui.spacer()
 
     section = HelpGUIState.section

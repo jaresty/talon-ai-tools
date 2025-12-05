@@ -169,7 +169,11 @@ class _ImguiFunction:
 
 def open():
     def decorator(func):
-        return _ImguiFunction(func)
+        wrapper = _ImguiFunction(func)
+        # Expose the underlying function so tests can call it directly
+        # with a custom GUI stub when needed.
+        setattr(wrapper, "__wrapped__", func)
+        return wrapper
 
     return decorator
 
@@ -178,7 +182,12 @@ imgui = SimpleNamespace(open=open, GUI=_DummyGUI)
 
 
 class _AppNamespace(SimpleNamespace):
-    def notify(self, *_args, **_kwargs):
+    def __init__(self):
+        super().__init__()
+        self.calls: list[tuple[str, tuple, dict]] = []
+
+    def notify(self, message: str, *args, **kwargs):
+        self.calls.append(("notify", (message, *args), kwargs))
         return None
 
 

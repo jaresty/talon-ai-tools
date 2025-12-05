@@ -25,8 +25,8 @@ taxonomy: Important: Express the answer as a type or taxonomy: define categories
 
 codetour: Important: Output only a valid VS Code CodeTour `.tour` JSON document (schema-compatible), using steps and fields appropriate to the task; do not include any extra prose or surrounding explanation.
 
-story: Important: Format the backlog item as a user story using \"As a <persona>, I want <capability>, so that <value>.\" Optionally include a short description and high-level acceptance criteria in plain prose, but do not use Gherkin or test-case syntax here.
+story: "Important: Format the backlog item as a user story using \"As a <persona>, I want <capability>, so that <value>.\" Optionally include a short description and high-level acceptance criteria in plain prose, but do not use Gherkin or test-case syntax here."
 bug: Important: Format the answer as a structured bug report with clear sections for Steps to Reproduce, Expected Behavior, Actual Behavior, and Environment/Context; focus on concise, testable details.
-spike: Important: Format the backlog item as a research spike: start with a brief problem or decision statement, then list the key questions the spike should answer; keep the emphasis on questions and learning, not implementation tasks.
+spike: "Important: Format the backlog item as a research spike: start with a brief problem or decision statement, then list the key questions the spike should answer; keep the emphasis on questions and learning, not implementation tasks."
 
 faq: Important: Format the answer as an FAQ-style list: a sequence of clearly separated question headings with concise answers beneath each one; keep questions and answers easy to skim, and avoid long uninterrupted prose.

@@ -163,6 +163,7 @@ if bootstrap is not None:
 
             self.assertEqual(GPTState.last_recipe, "")
             self.assertEqual(GPTState.last_response, "")
+            self.assertEqual(GPTState.last_meta, "")
             self.assertEqual(GPTState.last_directional, "")
             self.assertEqual(GPTState.last_static_prompt, "")
             self.assertEqual(GPTState.last_completeness, "")

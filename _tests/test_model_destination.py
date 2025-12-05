@@ -22,6 +22,7 @@ if bootstrap is not None:
         def setUp(self):
             actions.user.calls.clear()
             clip.set_text(None)
+            GPTState.reset_all()
 
         @patch.object(model_destination_module, "Builder")
         def test_browser_includes_recipe_metadata_from_gpt_state(self, builder_cls):
@@ -58,6 +59,34 @@ if bootstrap is not None:
             )
 
             builder_instance.h2.assert_called_with("Response")
+
+        @patch.object(model_destination_module, "Builder")
+        def test_browser_includes_meta_section_when_available(self, builder_cls):
+            GPTState.reset_all()
+            GPTState.last_recipe = "describe · full · focus · plain"
+            GPTState.last_directional = "fog"
+            GPTState.last_static_prompt = "describe"
+
+            # Simulate a presentation with meta text already split out.
+            result = PromptResult.from_messages(
+                [format_message("body line\n\n## Model interpretation\nMeta details")]
+            )
+
+            builder_instance = builder_cls.return_value
+
+            browser = model_destination_module.Browser()
+            browser.insert(result)
+
+            # Collect all paragraph calls after Browser.insert.
+            paragraph_texts = [call.args[0] for call in builder_instance.p.call_args_list]
+
+            # We expect a dedicated Model interpretation section header and the
+            # meta content rendered separately from the main body.
+            self.assertIn("Model interpretation", [call.args[0] for call in builder_instance.h2.call_args_list])
+            self.assertTrue(
+                any("Meta details" in text for text in paragraph_texts),
+                "Expected browser view to include meta interpretation text",
+            )
 
         @patch.object(model_destination_module, "Browser")
         def test_insert_uses_response_presentation(self, browser_cls):

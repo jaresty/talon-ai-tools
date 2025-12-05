@@ -52,6 +52,8 @@ if bootstrap is not None:
 
             self.assertIsInstance(presentation, ResponsePresentation)
             self.assertEqual(presentation.display_text, "line one")
+            # No meta section by default for a single-part response.
+            self.assertEqual(presentation.meta_text, "")
             self.assertFalse(presentation.open_browser)
 
 else:

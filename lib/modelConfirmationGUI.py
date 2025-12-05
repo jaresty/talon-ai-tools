@@ -59,6 +59,15 @@ def confirmation_gui(gui: imgui.GUI):
         else:
             recipe_text = GPTState.last_recipe
         gui.text(f"Recipe: {recipe_text}")
+        # When available, show a compact meta-interpretation radar so the
+        # confirmation GUI surfaces both what was asked and how it was
+        # interpreted, without affecting paste semantics.
+        meta = getattr(GPTState, "last_meta", "").strip()
+        if meta:
+            preview = meta.splitlines()[0].strip()
+            if len(preview) > 80:
+                preview = preview[:77].rstrip() + "..."
+            gui.text(f"Meta: {preview}")
 
     # gui.spacer()
     # if gui.button("Chain response"):

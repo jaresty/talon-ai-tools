@@ -14,6 +14,8 @@ from .modelTypes import (
 class GPTState:
     text_to_confirm: ClassVar[str] = ""
     last_response: ClassVar[str] = ""
+    # Optional meta-interpretation for the last response, when available.
+    last_meta: ClassVar[str] = ""
     last_was_pasted: ClassVar[bool] = False
     # Human-readable summary of the last prompt recipe
     # (static prompt + effective completeness/scope/method/style).
@@ -88,6 +90,7 @@ class GPTState:
         cls.query = []
         cls.stacks = {}
         cls.last_response = ""
+        cls.last_meta = ""
         cls.last_was_pasted = False
         cls.last_recipe = ""
         cls.last_directional = ""
@@ -188,6 +191,7 @@ class GPTState:
     def reset_all(cls):
         cls.text_to_confirm = ""
         cls.last_response = ""
+        cls.last_meta = ""
         cls.last_was_pasted = False
         cls.last_recipe = ""
         cls.last_directional = ""

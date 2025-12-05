@@ -36,6 +36,7 @@
 {user.model} replay [{user.modelDestination}]$: user.gpt_replay(modelDestination or "")
 
 {user.model} last recipe$: user.gpt_show_last_recipe()
+{user.model} last meta$: user.gpt_show_last_meta()
 
 ^{user.model} again$:
     user.gpt_rerun_last_recipe("", "", "", "", "", "")

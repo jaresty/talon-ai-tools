@@ -9,6 +9,7 @@
   - 014 – Static Prompt Axis Simplification from Clusters  
   - 015 – Voice, Audience, Tone, Purpose Axis Decomposition  
   - 016 – Directional and Axis Decomposition  
+  - 017 – Goal Modifier Decomposition and Simplification  
 
 ## Context
 
@@ -37,6 +38,12 @@ This blurs the intended orthogonality:
 - Adding new composite tokens increases cross-coupling instead of reusing existing axis elements.
 
 We want to preserve the four contract axes (plus audience, tone, purpose, voice, and destination) but ensure each **axis token is “pure”**: its description lives on a single axis. Complex behaviours should be expressed as **recipes** (combinations across axes or patterns), not as single overloaded adjectives.
+
+This ADR focuses on:
+
+- Tightening the semantics of the four axis Talon lists.  
+- Moving stance and audience semantics to the dedicated tone/audience axes.  
+- Representing composite behaviours as explicit axis combinations and patterns.
 
 ## Decision
 
@@ -75,9 +82,9 @@ Composite behaviours SHOULD be expressed as:
 - **Axis recipes**: explicit combinations like `deep + flow + dynamics + checklist`.  
 - Or **static prompts / patterns** that internally set axis values, instead of introducing new composite axis tokens.
 
-### Reclassification and decomposition of existing tokens
+### Reclassification and decomposition of existing tokens (high level)
 
-We will refactor the current lists so that each remaining token is pure, and composite behaviours are represented by combinations or patterns.
+We will refactor the current lists so that each remaining token is pure, and composite behaviours are represented by combinations or patterns. Detailed token-by-token changes live in the ADR 018 work-log.
 
 #### Completeness list (`GPT/lists/completenessModifier.talon-list`)
 
@@ -199,6 +206,48 @@ Examples:
 - “Sampling with probabilities”:
   - `method: samples`, `completeness: gist`, `style: bullets` (or a dedicated options style).
 
+## Salient Tasks
+
+- **Axis list refactors**
+  - Make `GPT/lists/completenessModifier.talon-list` pure by retiring `framework`, `path`, and `samples` as completeness values and, where needed, introducing or reusing method/style tokens to capture their structural/format semantics.  
+  - Tighten wording in `GPT/lists/scopeModifier.talon-list` so each entry describes only conceptual territory (including filters like “only actions” or “only relations”) without prescribing method or style.  
+  - Move stance/audience tokens out of `GPT/lists/methodModifier.talon-list` into `GPT/lists/modelTone.talon-list` and `GPT/lists/modelAudience.talon-list`, and tighten remaining method definitions so they describe reasoning patterns only.  
+  - Review `GPT/lists/styleModifier.talon-list` to ensure style entries (including heavy genres like `adr`, `bug`, `story`, `presenterm`, `codetour`) do not embed completeness or method promises beyond what their containers inherently require.
+
+- **Static prompt and pattern recipes**
+  - In `lib/staticPromptConfig.py`, express behaviours previously tied to composite axis tokens (`framework`, `path`, `samples`, and any others identified in the work-log) as explicit axis combinations and/or static prompt profiles.  
+  - In pattern GUIs, add or refine recipes that surface these combinations as named behaviours (for example, “Framework review”, “Systems path”, “Sampling with probabilities”) without reintroducing composite axis tokens.
+
+- **Guardrails, tests, and docs**
+  - Extend axis mapping and static prompt tests (for example, `tests/test_axis_mapping.py`, `tests/test_static_prompt_config.py`, `tests/test_static_prompt_docs.py`) to assert that:
+    - Each axis token lives on a single conceptual axis.  
+    - Behaviours formerly implemented by composite tokens are now produced by explicit axis combinations or patterns.  
+  - Update `GPT/readme.md`, quick-help, and any GUI help text to:
+    - Reflect the refined axis vocabularies.  
+    - Show axis-composition examples in place of the removed composite modifiers.
+
+## Current Status (this repo)
+
+As of this ADR’s date:
+
+- **Completeness axis** (`GPT/lists/completenessModifier.talon-list`):
+  - Pure coverage tokens: `skim`, `gist`, `full`, `max`, `minimal`, `deep`.  
+  - Composite tokens that mix coverage with structure or format: `framework`, `path`, `samples`.
+
+- **Scope axis** (`GPT/lists/scopeModifier.talon-list`):
+  - Pure territory tokens: `narrow`, `focus`, `bound`.  
+  - Tokens that encode both territory and a reasoning/filtering lens: `edges`, `relations`, `dynamics`, `interfaces`, `system`, `actions`.
+
+- **Method axis** (`GPT/lists/methodModifier.talon-list`):
+  - Reasoning-pattern tokens: `steps`, `plan`, `rigor`, `rewrite`, `diagnose`, `filter`, `prioritize`, `cluster`, `systemic`, `experimental`, `debugging`, `structure`, `flow`, `compare`, `motifs`, `wasinawa`, `ladder`, `contextualise`, `xp`, `liberating`, `diverge`, `converge`, `mapping`, `analysis`.  
+  - Tokens that primarily express stance or audience rather than method: `adversarial`, `receptive`, `resistant`, `novice`.
+
+- **Style axis** (`GPT/lists/styleModifier.talon-list`):
+  - Layout/surface tokens: `plain`, `tight`, `bullets`, `table`, `code`, `cards`, `checklist`.  
+  - Heavy genre/container tokens that impose strong format contracts: `diagram`, `presenterm`, `html`, `gherkin`, `shellscript`, `emoji`, `slack`, `jira`, `recipe`, `abstractvisual`, `commit`, `adr`, `taxonomy`, `codetour`, `story`, `bug`, `spike`.
+
+These observations drive the concrete list changes and recipes in the Implementation Plan.
+
 ## Consequences
 
 ### Benefits
@@ -261,3 +310,18 @@ Examples:
    - Introduce compatibility handling (for example, mapping `path` completeness to the nearest recipe) and document deprecations.  
    - After a grace period and sufficient test coverage, remove the compatibility mappings where appropriate, keeping only pattern-based behaviours.
 
+## How to Exercise ADR‑018 Checks (this repo)
+
+Until ADR‑018 is fully implemented, the most relevant checks are:
+
+- **Axis mapping and static prompt config tests**
+  - `python -m unittest tests.test_axis_mapping tests.test_static_prompt_config`
+- **Static prompt docs and list alignment**
+  - `python -m unittest tests.test_static_prompt_docs`
+- **Full test sweep (this repo)**
+  - `make test`
+
+As list refactors and recipes land for this ADR, these same tests should be extended (per the Implementation Plan) to assert that:
+
+- Each axis token stays on a single conceptual axis.  
+- Former composite behaviours are covered by explicit axis combinations or patterns rather than single overloaded modifiers.

@@ -181,4 +181,3 @@ else:
             @unittest.skip("Test harness unavailable outside unittest runs")
             def test_placeholder(self) -> None:
                 pass
-

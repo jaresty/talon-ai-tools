@@ -420,17 +420,17 @@ To avoid losing expressive power when retiring voice/audience/purpose items, we 
   - Canonical replacement for `as adversary` (voice):  
     - Use any suitable voice (for example, `as programmer`, `as editor`) plus `method=adversarial` and `purpose=for evaluating`.
 
- - `receptive` – “Assume the audience is open and generally aligned; lead with the main point or recommendation, then provide supporting details, evidence, and caveats; keep structure simple and confidence clear.”  
-   - Canonical replacement for `to receptive` (audience):  
-     - Use any audience (for example, `to managers`) plus `method=receptive`, optionally combined with `completeness=gist` and `style=tight`.
+- `headline` – “Use a headline-first structure: state the main point or recommendation up front, then layer in supporting details, evidence, and caveats in a simple, easy-to-skim order.”  
+  - Canonical replacement for `to receptive` (audience):  
+    - Use any audience (for example, `to managers`) plus `method=headline`, optionally combined with `completeness=gist` and `style=tight`.
 
- - `resistant` – “Assume the audience is skeptical or cautious; lead with background, evidence, trade-offs, and alternatives, and only then give a clear recommendation or main point; surface objections and constraints explicitly.”  
-   - Canonical replacement for `to resistant` (audience):  
-     - Use any audience (for example, `to stakeholders`) plus `method=resistant`, typically combined with `completeness=deep`.
+- `case` – “Build the case before the conclusion: lay out background, evidence, trade-offs, and alternatives first, then converge on a clear recommendation that shows how objections and constraints are addressed.”  
+  - Canonical replacement for `to resistant` (audience):  
+    - Use any audience (for example, `to stakeholders`) plus `method=case`, typically combined with `completeness=deep`.
 
- - `novice` – “Assume the reader is brand-new to the topic; start from first principles, avoid jargon or explain it immediately, use concrete examples and analogies, and build concepts gradually.”  
-   - Canonical replacement for `to dummy` (audience):  
-     - Use any audience (for example, `to junior engineer`) plus `method=novice` with `completeness=gist/minimal` and `style=plain`.
+- `scaffold` – “Explain with scaffolding: start from first principles, introduce ideas gradually, use concrete examples and analogies, and revisit key points so a beginner can follow and retain the concepts.”  
+  - Canonical replacement for `to dummy` (audience):  
+    - Use any audience (for example, `to junior engineer`) plus `method=scaffold` with `completeness=gist/minimal` and `style=plain`.
 
 - `liberating` – “Facilitate using Liberating Structures: emphasise distributed participation, short structured interactions, concrete invitations, and visual, stepwise processes; name or evoke specific LS patterns when helpful (for example, 1-2-4-All, TRIZ, 15% Solutions).”  
   - Canonical replacement for `as liberator` (voice):  
@@ -524,7 +524,7 @@ We mitigate these by:
      - Style: `slack`, `table`, `presenterm`, `code`.  
      - Method: `debugging`, `systems`, `experimental`.  
    - Add the following tokens and descriptions:  
-     - Method: `xp`, `adversarial`, `receptive`, `resistant`, `novice`, `liberating`, `diverge`, `converge`, `mapping`.  
+     - Method: `xp`, `adversarial`, `headline`, `case`, `scaffold`, `liberating`, `diverge`, `converge`, `mapping`.  
      - Style: `codetour` with a strict “output only valid .tour JSON” contract.  
    - Ensure descriptions in `styleModifier.talon-list` and `methodModifier.talon-list` carry the long-form behavioural constraints described above.
 
@@ -587,16 +587,16 @@ This appendix summarises concrete replacements for the most common retired token
 ### Audiences → methods / scopes
 
 - `to receptive`  
-  - Use: normal audience (for example, `to managers`) + `method=receptive`.  
-  - Example: `model describe receptive fog to managers`.
+  - Use: normal audience (for example, `to managers`) + `method=headline`.  
+  - Example: `model describe headline fog to managers`.
 
 - `to resistant`  
-  - Use: normal audience (for example, `to stakeholders`) + `method=resistant`.  
-  - Example: `model describe resistant rog to stakeholders`.
+  - Use: normal audience (for example, `to stakeholders`) + `method=case`.  
+  - Example: `model describe case rog to stakeholders`.
 
 - `to dummy`  
-  - Use: friendlier form + `method=novice` + `gist`/`minimal` + `plain`.  
-  - Example: `model describe gist novice plain fog to junior engineer`.
+  - Use: friendlier form + `method=scaffold` + `gist`/`minimal` + `plain`.  
+  - Example: `model describe gist scaffold plain fog to junior engineer`.
 
 - `to various` / `to perspectives`  
   - Use: normal primary audience + `flop` + `method=cluster`/`compare` + `scope=relations`.  

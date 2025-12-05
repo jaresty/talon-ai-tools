@@ -80,6 +80,7 @@ SCOPE_TOKENS = {
     "bound",
     "edges",
     "relations",
+    "system",
     "actions",
 }
 
@@ -104,13 +105,14 @@ METHOD_TOKENS = {
     # Extended method axis tokens from ADR 015.
     "xp",
     "adversarial",
-    "receptive",
-    "resistant",
-    "novice",
+    "headline",
+    "case",
+    "scaffold",
     "liberating",
     "diverge",
     "converge",
     "mapping",
+    "socratic",
 }
 
 STYLE_TOKENS = {
@@ -135,6 +137,7 @@ STYLE_TOKENS = {
     "commit",
     "adr",
     "taxonomy",
+    "faq",
 }
 
 COMPLETENESS_MAP = _load_axis_map("completenessModifier.talon-list")
@@ -216,7 +219,7 @@ PATTERNS: list[PromptPattern] = [
     PromptPattern(
         name="Explain for beginner",
         description="Explain this to a beginner from first principles with simple language.",
-        recipe="describe · gist · focus · novice · plain · fog",
+        recipe="describe · gist · focus · scaffold · plain · fog",
         domain="writing",
     ),
     PromptPattern(
@@ -288,7 +291,7 @@ PATTERNS: list[PromptPattern] = [
     PromptPattern(
         name="Tap map",
         description="Summarize this as a short taxonomy-style map of key categories and subtypes.",
-        recipe="describe · framework · system · mapping · taxonomy · fog",
+        recipe="describe · full · system · mapping · taxonomy · fog",
         domain="writing",
     ),
     PromptPattern(
@@ -348,7 +351,7 @@ PATTERNS: list[PromptPattern] = [
     PromptPattern(
         name="Systems path",
         description="Outline a short systems-level path from here to a desired outcome.",
-        recipe="describe · gist · system · mapping · steps · ong",
+        recipe="describe · gist · system · mapping · ong",
         domain="writing",
     ),
 ]

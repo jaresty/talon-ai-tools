@@ -263,9 +263,6 @@ def _show_completeness(gui: imgui.GUI) -> None:
             "max",
             "minimal",
             "deep",
-            "framework",
-            "path",
-            "samples",
         ]
         _wrap_and_render(gui, ", ".join(keys))
     gui.spacer()

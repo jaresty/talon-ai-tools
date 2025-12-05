@@ -146,15 +146,42 @@ if bootstrap is not None:
                     key, _ = s.split(":", 1)
                     method_keys.add(key.strip())
 
-            self.assertIn(
-                "samples",
-                completeness_keys,
-                "Expected 'samples' completeness token from ADR 017 to be present",
-            )
+            style_list_path = root / "GPT" / "lists" / "styleModifier.talon-list"
+            style_keys: set[str] = set()
+            with style_list_path.open("r", encoding="utf-8") as f:
+                for line in f:
+                    s = line.strip()
+                    if (
+                        not s
+                        or s.startswith("#")
+                        or s.startswith("list:")
+                        or s == "-"
+                    ):
+                        continue
+                    if ":" not in s:
+                        continue
+                    key, _ = s.split(":", 1)
+                    style_keys.add(key.strip())
+
             self.assertIn(
                 "analysis",
                 method_keys,
                 "Expected 'analysis' method token from ADR 017 to be present",
+            )
+            self.assertIn(
+                "samples",
+                method_keys,
+                "Expected 'samples' method token from ADR 017/018 to be present",
+            )
+            self.assertIn(
+                "socratic",
+                method_keys,
+                "Expected 'socratic' method token from ADR 018 to be present",
+            )
+            self.assertIn(
+                "faq",
+                style_keys,
+                "Expected 'faq' style token from ADR 018 to be present",
             )
 
         def test_axis_only_tokens_do_not_appear_as_static_prompts(self) -> None:

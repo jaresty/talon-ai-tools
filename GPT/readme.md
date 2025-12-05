@@ -96,8 +96,8 @@ The `model` command now supports several short, speech-friendly modifier axes yo
 
 - Completeness (`completenessModifier`): `skim`, `gist`, `full`, `max`, `minimal`, `deep`, `framework`, `path`
 - Scope (`scopeModifier`): `narrow`, `focus`, `bound`, `edges`, `relations`, `dynamics`, `interfaces`, `system`, `actions`
-- Method (`methodModifier`): `steps`, `plan`, `rigor`, `rewrite`, `diagnose`, `filter`, `prioritize`, `cluster`, `systemic`, `experimental`, `debugging`, `structure`, `flow`, `compare`, `motifs`, `wasinawa`, `ladder`, `contextualise`, `xp`, `adversarial`, `receptive`, `resistant`, `novice`, `liberating`, `diverge`, `converge`, `mapping`
-- Style (`styleModifier`): `plain`, `tight`, `bullets`, `table`, `code`, `checklist`, `diagram`, `presenterm`, `html`, `gherkin`, `shellscript`, `emoji`, `slack`, `jira`, `recipe`, `abstractvisual`, `commit`, `adr`, `taxonomy`, `cards`, `codetour`, `story`, `bug`, `spike`
+- Method (`methodModifier`): `steps`, `plan`, `rigor`, `rewrite`, `diagnose`, `filter`, `prioritize`, `cluster`, `systemic`, `experimental`, `debugging`, `structure`, `flow`, `compare`, `motifs`, `wasinawa`, `ladder`, `contextualise`, `samples`, `xp`, `adversarial`, `headline`, `case`, `scaffold`, `liberating`, `diverge`, `converge`, `mapping`, `analysis`, `socratic`
+- Style (`styleModifier`): `plain`, `tight`, `bullets`, `table`, `code`, `checklist`, `diagram`, `presenterm`, `html`, `gherkin`, `shellscript`, `emoji`, `slack`, `jira`, `recipe`, `abstractvisual`, `commit`, `adr`, `taxonomy`, `cards`, `codetour`, `story`, `bug`, `spike`, `faq`
   - Additional styles:
     - `cards` – format the answer as discrete cards/items with clear headings and short bodies.
     - `story` – format the output as a user story using “As a…, I want…, so that…”, optionally with a short prose description and high-level acceptance criteria.
@@ -138,7 +138,7 @@ You can adjust these defaults by voice:
 Some high-frequency combinations you can say directly:
 
 - Completeness:
-  - `skim`, `gist`, `full`, `max`, `minimal`, `deep`, `framework`, `path`, `samples`.
+  - `skim`, `gist`, `full`, `max`, `minimal`, `deep`.
 - Diagrams:
   - `model describe diagram fog` – sketchy Mermaid diagram, code-only.
 - Presentations:
@@ -156,7 +156,9 @@ Some high-frequency combinations you can say directly:
   - `model describe motifs fog` – scan for recurring motifs and patterns (often with `scope relations`).
   - `model describe xp ong` – XP-flavoured stance: tiny slices, tests, and production feedback.
   - `model describe adversarial rog` – adversarial review: look for weaknesses, edge cases, and unstated assumptions.
-  - `model describe novice fog` – explain for a beginner from first principles.
+  - `model describe scaffold fog` – explain for a beginner from first principles using gradual scaffolding.
+  - `model describe socratic for teaching` – explore the topic by asking short, targeted questions before giving conclusions.
+  - `model describe samples diverge fog` – generate multiple options with approximate probabilities.
   - `model describe liberating rog` – Liberating Structures-style facilitation framing.
   - `model describe diverge fog` – open up the option space and explore alternatives.
   - `model describe converge rog` – weigh options and narrow towards a decision.
@@ -175,6 +177,7 @@ Some high-frequency combinations you can say directly:
 - Channel formatting:
   - `model describe slack fog` – format for Slack (Markdown, mentions, code blocks).
   - `model describe jira fog` – format for Jira markup.
+  - `model describe faq rog` – format as an FAQ page with question headings and concise answers.
 
 ### Legacy tokens → new grammar (quick mapping)
 

@@ -218,8 +218,8 @@ if bootstrap is not None:
                 self.assertEqual(style, "bullets")
                 self.assertEqual(directional, "ong")
 
-            def test_explain_for_beginner_pattern_uses_novice_method(self) -> None:
-                """Explain for beginner pattern should use novice method."""
+            def test_explain_for_beginner_pattern_uses_scaffold_method(self) -> None:
+                """Explain for beginner pattern should use scaffold method."""
                 pattern = next(p for p in PATTERNS if p.name == "Explain for beginner")
 
                 (
@@ -234,7 +234,7 @@ if bootstrap is not None:
                 self.assertEqual(static_prompt, "describe")
                 self.assertEqual(completeness, "gist")
                 self.assertEqual(scope, "focus")
-                self.assertEqual(method, "novice")
+                self.assertEqual(method, "scaffold")
                 self.assertEqual(style, "plain")
                 self.assertEqual(directional, "fog")
 
@@ -320,8 +320,8 @@ if bootstrap is not None:
                 self.assertEqual(style, "bullets")
                 self.assertEqual(directional, "fog")
 
-            def test_tap_map_pattern_uses_framework_and_taxonomy(self) -> None:
-                """Tap map pattern should use framework completeness, system scope, mapping method, and taxonomy style."""
+            def test_tap_map_pattern_uses_full_and_taxonomy(self) -> None:
+                """Tap map pattern should use full completeness, system scope, mapping method, and taxonomy style."""
                 pattern = next(p for p in PATTERNS if p.name == "Tap map")
 
                 (
@@ -334,7 +334,7 @@ if bootstrap is not None:
                 ) = _parse_recipe(pattern.recipe)
 
                 self.assertEqual(static_prompt, "describe")
-                self.assertEqual(completeness, "framework")
+                self.assertEqual(completeness, "full")
                 self.assertEqual(scope, "system")
                 self.assertEqual(method, "mapping")
                 self.assertEqual(style, "taxonomy")

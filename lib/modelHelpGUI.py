@@ -294,27 +294,46 @@ def _show_directional_lenses(gui: imgui.GUI) -> None:
         act_tokens = grid[(row_key, "right")]
 
         gui.text(f"{label}:")
+        _wrap_and_render(gui, "reflect: " + _fmt_slot(reflect_tokens), indent="    ")
+        _wrap_and_render(gui, "mixed:   " + _fmt_slot(mixed_tokens), indent="    ")
+        _wrap_and_render(gui, "act:     " + _fmt_slot(act_tokens), indent="    ")
+
+    def _render_column(label: str, col_key: str) -> None:
+        abstract_tokens = grid[("up", col_key)]
+        center_tokens = grid[("center", col_key)]
+        concrete_tokens = grid[("down", col_key)]
+
+        gui.text(f"{label}:")
         _wrap_and_render(
             gui,
-            "reflect (left): " + _fmt_slot(reflect_tokens),
+            "abstract: " + _fmt_slot(abstract_tokens),
             indent="    ",
         )
         _wrap_and_render(
             gui,
-            "mixed (center): " + _fmt_slot(mixed_tokens),
+            "center:   " + _fmt_slot(center_tokens),
             indent="    ",
         )
         _wrap_and_render(
             gui,
-            "act (right): " + _fmt_slot(act_tokens),
+            "concrete: " + _fmt_slot(concrete_tokens),
             indent="    ",
         )
 
+    # Vertical-oriented categories.
     _render_row("ABSTRACT (up)", "up")
     gui.spacer()
-    _render_row("CENTER", "center")
-    gui.spacer()
     _render_row("CONCRETE (down)", "down")
+    gui.spacer()
+
+    # Horizontal-oriented categories.
+    _render_column("REFLECT (left)", "left")
+    gui.spacer()
+    _render_column("ACT (right)", "right")
+    gui.spacer()
+
+    # Mixed/central lenses.
+    _render_column("CENTER (mixed)", "center")
 
     if other_non_directional:
         _wrap_and_render(

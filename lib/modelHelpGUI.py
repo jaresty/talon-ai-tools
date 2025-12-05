@@ -219,12 +219,16 @@ def _show_axes(gui: imgui.GUI) -> None:
 
 def _show_directional_lenses(gui: imgui.GUI) -> None:
     gui.text("Directional lenses (coordinate map)")
-    gui.text("  Columns: reflect (left), mixed (center), act (right)")
-    gui.text("  Rows: abstract (up), center, concrete (down)")
+    gui.text(
+        "  Axes: rows = abstract (up) -> center -> concrete (down); "
+        "columns = reflect (left) / mixed (center) / act (right)"
+    )
     gui.spacer()
 
     if not DIRECTIONAL_KEYS:
         gui.text("  Core lenses: fog, fig, dig, ong, rog, bog, jog")
+        gui.text("  (one lens per model call)")
+        gui.spacer()
         return
 
     groups = _group_directional_keys()
@@ -279,27 +283,38 @@ def _show_directional_lenses(gui: imgui.GUI) -> None:
 
         grid[(row, col)].append(token)
 
-    def _fmt(row_key: str, col_key: str) -> str:
-        tokens = grid[(row_key, col_key)]
-        return ", ".join(tokens)
-
-    gui.text("  Map (tokens by row/column):")
+    def _fmt_slot(items: list[str]) -> str:
+        if not items:
+            return "-"
+        return ", ".join(items)
 
     def _render_row(label: str, row_key: str) -> None:
-        gui.text(f"    {label}:")
-        left = _fmt(row_key, "left")
-        center = _fmt(row_key, "center")
-        right = _fmt(row_key, "right")
-        if left:
-            _wrap_and_render(gui, "reflect: " + left, indent="      ")
-        if center:
-            _wrap_and_render(gui, "mixed:   " + center, indent="      ")
-        if right:
-            _wrap_and_render(gui, "act:     " + right, indent="      ")
+        reflect_tokens = grid[(row_key, "left")]
+        mixed_tokens = grid[(row_key, "center")]
+        act_tokens = grid[(row_key, "right")]
 
-    _render_row("abstract (up)", "up")
-    _render_row("center", "center")
-    _render_row("concrete (down)", "down")
+        gui.text(f"{label}:")
+        _wrap_and_render(
+            gui,
+            "reflect (left): " + _fmt_slot(reflect_tokens),
+            indent="    ",
+        )
+        _wrap_and_render(
+            gui,
+            "mixed (center): " + _fmt_slot(mixed_tokens),
+            indent="    ",
+        )
+        _wrap_and_render(
+            gui,
+            "act (right): " + _fmt_slot(act_tokens),
+            indent="    ",
+        )
+
+    _render_row("ABSTRACT (up)", "up")
+    gui.spacer()
+    _render_row("CENTER", "center")
+    gui.spacer()
+    _render_row("CONCRETE (down)", "down")
 
     if other_non_directional:
         _wrap_and_render(

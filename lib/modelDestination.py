@@ -1,4 +1,4 @@
-from typing import Iterable, List, Sequence, Union, cast, Iterator
+from typing import Iterable, List, Sequence, Union, cast, Iterator, Dict
 
 from ..lib.modelSource import GPTItem
 from ..lib.modelTypes import GPTTextItem
@@ -48,6 +48,159 @@ def _emit_paragraphs(builder: Builder, lines: List[str]) -> None:
         buffer.append(line)
     if buffer:
         builder.p(" ".join(buffer))
+
+
+def _emit_rich_answer(builder: Builder, lines: List[str]) -> None:
+    """
+    Render answer text with basic awareness of paragraphs and bullet lists.
+
+    - Groups contiguous non-empty, non-bullet lines into paragraphs.
+    - Groups contiguous bullet-style lines (starting with '-' or '*') into
+      unordered lists.
+    """
+    paragraph_buffer: List[str] = []
+    bullet_buffer: List[str] = []
+
+    def flush_paragraphs() -> None:
+        nonlocal paragraph_buffer
+        if paragraph_buffer:
+            _emit_paragraphs(builder, paragraph_buffer)
+            paragraph_buffer = []
+
+    def flush_bullets() -> None:
+        nonlocal bullet_buffer
+        if bullet_buffer:
+            builder.ul(*bullet_buffer)
+            bullet_buffer = []
+
+    for raw in lines:
+        line = raw.rstrip()
+        if not line:
+            # Blank line: end any current group.
+            flush_bullets()
+            flush_paragraphs()
+            continue
+
+        stripped = line.lstrip()
+        is_bullet = stripped.startswith("- ") or stripped.startswith("* ")
+        if is_bullet:
+            # Move any pending paragraph content out before starting bullets.
+            flush_paragraphs()
+            # Drop the leading bullet marker for display purposes.
+            bullet_text = stripped[2:].strip()
+            bullet_buffer.append(bullet_text or stripped)
+        else:
+            # Non-bullet content: end any bullet group and continue paragraphing.
+            flush_bullets()
+            paragraph_buffer.append(line)
+
+    flush_bullets()
+    flush_paragraphs()
+
+
+def _parse_meta(meta_text: str) -> Dict[str, Union[str, List[str]]]:
+    """
+    Best-effort parse of the structured meta bundle into named sections.
+
+    The parser is intentionally conservative: when it cannot confidently
+    classify content, it leaves it in the interpretation/extra buckets so that
+    no information is lost.
+    """
+    result: Dict[str, Union[str, List[str]]] = {
+        "interpretation": "",
+        "assumptions": [],
+        "gaps": [],
+        "better_prompt": "",
+        "suggestion": "",
+        "extra": [],
+    }
+    if not meta_text.strip():
+        return result
+
+    lines = [line.strip() for line in meta_text.splitlines() if line.strip()]
+    if not lines:
+        return result
+
+    # Strip markdown heading markers but keep the text.
+    cleaned: List[str] = []
+    for line in lines:
+        stripped = line.lstrip()
+        if stripped.startswith("#"):
+            # Collapse "## Heading ..." into just "Heading ..." for parsing.
+            stripped = stripped.lstrip("#").strip()
+        cleaned.append(stripped or line)
+
+    section: str = "interpretation"
+
+    def append_text(key: str, text: str) -> None:
+        current = result.get(key, "")
+        if isinstance(current, str):
+            if current:
+                result[key] = f"{current} {text}".strip()
+            else:
+                result[key] = text.strip()
+
+    for line in cleaned:
+        lower = line.lower()
+        # Label-based switches.
+        if lower.startswith("interpretation:"):
+            section = "interpretation"
+            append_text("interpretation", line.split(":", 1)[1].strip())
+            continue
+        if lower.startswith("assumptions/constraints:") or lower.startswith(
+            "assumptions:"
+        ):
+            section = "assumptions"
+            tail = line.split(":", 1)[1].strip()
+            if tail:
+                cast(List[str], result["assumptions"]).append(tail)
+            continue
+        if (
+            lower.startswith("gaps/caveats to verify:")
+            or lower.startswith("gaps/caveats:")
+            or lower.startswith("gaps:")
+        ):
+            section = "gaps"
+            tail = line.split(":", 1)[1].strip()
+            if tail:
+                cast(List[str], result["gaps"]).append(tail)
+            continue
+        if lower.startswith("improved prompt:") or lower.startswith("better prompt:"):
+            section = "better_prompt"
+            append_text("better_prompt", line.split(":", 1)[1].strip())
+            continue
+        if lower.startswith("suggestion:"):
+            section = "suggestion"
+            suggestion_text = line.split(":", 1)[1].strip()
+            if suggestion_text:
+                result["suggestion"] = suggestion_text
+            continue
+
+        # Bullets under assumptions/gaps.
+        if line.startswith("- ") or line.startswith("* "):
+            tail = line[2:].strip()
+            if section == "assumptions":
+                cast(List[str], result["assumptions"]).append(tail)
+            elif section == "gaps":
+                cast(List[str], result["gaps"]).append(tail)
+            else:
+                cast(List[str], result["extra"]).append(tail)
+            continue
+
+        # Fallback: attribute text to the current section or extras.
+        if section == "interpretation":
+            append_text("interpretation", line)
+        elif section == "better_prompt":
+            append_text("better_prompt", line)
+        elif section == "suggestion":
+            if not result["suggestion"]:
+                result["suggestion"] = line
+            else:
+                cast(List[str], result["extra"]).append(line)
+        else:
+            cast(List[str], result["extra"]).append(line)
+
+    return result
 
 
 class ModelDestination:
@@ -206,11 +359,38 @@ class Browser(ModelDestination):
         ).strip()
         if meta:
             builder.h2("Model interpretation")
-            _emit_paragraphs(builder, meta.splitlines())
+            parsed = _parse_meta(meta)
+            interpretation = cast(str, parsed.get("interpretation", ""))
+            assumptions = cast(List[str], parsed.get("assumptions", []))
+            gaps = cast(List[str], parsed.get("gaps", []))
+            better = cast(str, parsed.get("better_prompt", ""))
+            suggestion = cast(str, parsed.get("suggestion", ""))
+            extra = cast(List[str], parsed.get("extra", []))
+
+            if interpretation:
+                _emit_paragraphs(builder, [interpretation])
+            if assumptions:
+                builder.h3("Assumptions/constraints")
+                builder.ul(*assumptions)
+            if gaps:
+                builder.h3("Gaps and checks")
+                builder.ul(*gaps)
+            if better:
+                builder.h3("Better prompt")
+                _emit_paragraphs(builder, [better])
+            if suggestion:
+                builder.h3("Axis tweak suggestion")
+                builder.p(suggestion)
+            if extra:
+                _emit_paragraphs(builder, extra)
+            builder.p(
+                "Note: This interpretation section is diagnostic and is not pasted into documents; "
+                "use the Response section below when copying content into other tools."
+            )
 
         builder.h2("Response")
 
-        _emit_paragraphs(builder, presentation.browser_lines)
+        _emit_rich_answer(builder, presentation.browser_lines)
         builder.render()
 
 

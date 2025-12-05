@@ -127,6 +127,31 @@ if bootstrap is not None:
 
                 ModelDestination().insert(ForeignPromptResult(inner))
 
+        @patch.object(model_destination_module, "Builder")
+        def test_browser_renders_bulleted_response_as_list(self, builder_cls):
+            # Ensure rich answer rendering recognises simple bullets.
+            GPTState.reset_all()
+            result = PromptResult.from_messages(
+                [
+                    format_message(
+                        "Intro paragraph.\n\n- First item\n- Second item\n\nConclusion."
+                    )
+                ]
+            )
+
+            builder_instance = builder_cls.return_value
+
+            browser = model_destination_module.Browser()
+            browser.insert(result)
+
+            # The builder should have been asked to render at least one
+            # unordered list for the bullet items.
+            self.assertTrue(
+                any(call[0] == () for call in builder_instance.ul.call_args_list)
+                or builder_instance.ul.call_args_list,
+                "Expected Browser to render bullets via Builder.ul",
+            )
+
 else:
     if not TYPE_CHECKING:
         class ModelDestinationTests(unittest.TestCase):

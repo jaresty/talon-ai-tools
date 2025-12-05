@@ -634,6 +634,13 @@ class UserActions:
         directional: str,
     ) -> None:
         """Rerun the last prompt recipe with optional axis overrides, using the last or default source."""
+        # Close the main confirmation window so the rerun does not briefly
+        # show a mismatched recipe/response pair while state updates.
+        try:
+            actions.user.confirmation_gui_close()
+        except Exception:
+            pass
+
         if not GPTState.last_recipe:
             notify("GPT: No last recipe available to rerun")
             return

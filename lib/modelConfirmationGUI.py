@@ -15,6 +15,7 @@ class ConfirmationGUIState:
     display_thread = False
     last_item_text = ""
     current_presentation: Optional[ResponsePresentation] = None
+    show_advanced_actions = False
 
     @classmethod
     def update(cls):
@@ -22,6 +23,9 @@ class ConfirmationGUIState:
             "USER" in GPTState.text_to_confirm and "GPT" in GPTState.text_to_confirm
         )
         if len(GPTState.thread) == 0:
+            # When there is no thread, always treat the view as a simple
+            # single-response confirmation, regardless of any stray tokens.
+            cls.display_thread = False
             cls.last_item_text = ""
             return
 
@@ -62,44 +66,56 @@ def confirmation_gui(gui: imgui.GUI):
     #     actions.user.gpt_select_last()
 
     gui.spacer()
-    if gui.button("Pass to context"):
-        actions.user.confirmation_gui_pass_context()
-
-    gui.spacer()
-    if gui.button("Pass to query"):
-        actions.user.confirmation_gui_pass_query()
-
-    gui.spacer()
-    if gui.button("Pass to thread"):
-        actions.user.confirmation_gui_pass_thread()
+    if gui.button("Paste response"):
+        actions.user.confirmation_gui_paste()
 
     gui.spacer()
     if gui.button("Copy response"):
         actions.user.confirmation_gui_copy()
 
     gui.spacer()
-    if gui.button("Paste response"):
-        actions.user.confirmation_gui_paste()
-
-    gui.spacer()
-    if gui.button("Open browser"):
-        actions.user.confirmation_gui_open_browser()
-
-    gui.spacer()
-    if gui.button("Analyze prompt"):
-        actions.user.confirmation_gui_analyze_prompt()
-
-    gui.spacer()
-    if gui.button("Show grammar help"):
-        actions.user.model_help_gui_open_for_last_recipe()
-
-    gui.spacer()
-    if gui.button("Open pattern menu"):
-        actions.user.confirmation_gui_open_pattern_menu_for_prompt()
-
-    gui.spacer()
     if gui.button("Discard response"):
         actions.user.confirmation_gui_close()
+
+    gui.spacer()
+    toggle_label = (
+        "Hide advanced actions"
+        if ConfirmationGUIState.show_advanced_actions
+        else "More actions…"
+    )
+    if gui.button(toggle_label):
+        ConfirmationGUIState.show_advanced_actions = (
+            not ConfirmationGUIState.show_advanced_actions
+        )
+
+    if ConfirmationGUIState.show_advanced_actions:
+        gui.spacer()
+        if gui.button("Pass to context"):
+            actions.user.confirmation_gui_pass_context()
+
+        gui.spacer()
+        if gui.button("Pass to query"):
+            actions.user.confirmation_gui_pass_query()
+
+        gui.spacer()
+        if gui.button("Pass to thread"):
+            actions.user.confirmation_gui_pass_thread()
+
+        gui.spacer()
+        if gui.button("Open browser"):
+            actions.user.confirmation_gui_open_browser()
+
+        gui.spacer()
+        if gui.button("Analyze prompt"):
+            actions.user.confirmation_gui_analyze_prompt()
+
+        gui.spacer()
+        if gui.button("Show grammar help"):
+            actions.user.model_help_gui_open_for_last_recipe()
+
+        gui.spacer()
+        if gui.button("Open pattern menu"):
+            actions.user.confirmation_gui_open_pattern_menu_for_prompt()
 
 
 @mod.action_class
@@ -107,6 +123,7 @@ class UserActions:
     def confirmation_gui_append(model_output: Union[str, ResponsePresentation]):
         """Add text to the confirmation gui"""
         ctx.tags = ["user.model_window_open"]
+        ConfirmationGUIState.show_advanced_actions = False
         if isinstance(model_output, ResponsePresentation):
             ConfirmationGUIState.current_presentation = model_output
             GPTState.text_to_confirm = model_output.display_text
@@ -121,6 +138,7 @@ class UserActions:
         confirmation_gui.hide()
         ctx.tags = []
         ConfirmationGUIState.current_presentation = None
+        ConfirmationGUIState.show_advanced_actions = False
 
     def confirmation_gui_pass_context():
         """Add the model output to the context"""
@@ -173,15 +191,20 @@ class UserActions:
     def confirmation_gui_paste():
         """Paste the model output"""
 
-        text_to_set = (
-            ConfirmationGUIState.current_presentation.paste_text
-            if ConfirmationGUIState.current_presentation
-            and not ConfirmationGUIState.display_thread
-            else (
-            GPTState.text_to_confirm
-            if not ConfirmationGUIState.display_thread
-            else ConfirmationGUIState.last_item_text
-        ))
+        if ConfirmationGUIState.display_thread:
+            text_to_set = ConfirmationGUIState.last_item_text
+        elif ConfirmationGUIState.current_presentation:
+            # Prefer the presentation's explicit paste text, falling back to
+            # the display text or raw confirmation text when needed.
+            text_to_set = (
+                getattr(ConfirmationGUIState.current_presentation, "paste_text", "")
+                or getattr(
+                    ConfirmationGUIState.current_presentation, "display_text", ""
+                )
+                or GPTState.text_to_confirm
+            )
+        else:
+            text_to_set = GPTState.text_to_confirm
 
         if not text_to_set:
             notify("GPT error: No text in confirmation GUI to paste")
@@ -211,6 +234,7 @@ class UserActions:
         if confirmation_gui.showing or force_open:
             confirmation_gui.show()
         ConfirmationGUIState.current_presentation = None
+        ConfirmationGUIState.show_advanced_actions = False
 
     def confirmation_gui_open_pattern_menu_for_prompt():
         """Open the prompt pattern menu for the last static prompt, if available"""

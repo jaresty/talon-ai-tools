@@ -1,8 +1,8 @@
 from dataclasses import dataclass
 import os
-from typing import Literal, Optional
+from typing import Dict, Literal, Optional, Tuple
 
-from talon import Context, Module, actions, imgui, settings
+from talon import Context, Module, actions, canvas, settings, ui
 
 from .modelDestination import create_model_destination
 from .modelSource import create_model_source
@@ -30,6 +30,31 @@ class PromptPattern:
     description: str
     recipe: str
     domain: PatternDomain
+
+
+class PatternCanvasState:
+    """State specific to the canvas-based model pattern picker."""
+
+    showing: bool = False
+
+
+_pattern_canvas: Optional[canvas.Canvas] = None
+_pattern_button_bounds: Dict[str, Tuple[int, int, int, int]] = {}
+
+# Default geometry for the pattern picker window.
+_PANEL_WIDTH = 720
+_PANEL_HEIGHT = 600
+
+try:  # Talon runtime
+    from talon.types import Rect
+except Exception:  # Tests / stubs
+
+    class Rect:  # type: ignore[override]
+        def __init__(self, x: float, y: float, width: float, height: float):
+            self.x = x
+            self.y = y
+            self.width = width
+            self.height = height
 
 
 def _load_axis_map(filename: str) -> dict[str, str]:
@@ -63,6 +88,14 @@ def _axis_value(token: str, mapping: dict[str, str]) -> str:
     if not token:
         return ""
     return mapping.get(token, token)
+
+
+def _debug(msg: str) -> None:
+    """Lightweight debug logging for the pattern canvas."""
+    try:
+        print(f"GPT pattern canvas: {msg}")
+    except Exception:
+        pass
 
 
 COMPLETENESS_TOKENS = {
@@ -357,6 +390,249 @@ PATTERNS: list[PromptPattern] = [
 ]
 
 
+def _ensure_pattern_canvas() -> canvas.Canvas:
+    """Create the pattern canvas if needed and register handlers."""
+    global _pattern_canvas
+    if _pattern_canvas is not None:
+        return _pattern_canvas
+
+    screen = ui.main_screen()
+    try:
+        screen_x = getattr(screen, "x", 0)
+        screen_y = getattr(screen, "y", 0)
+        screen_width = getattr(screen, "width", _PANEL_WIDTH + 80)
+        screen_height = getattr(screen, "height", _PANEL_HEIGHT + 80)
+        margin_x = 40
+        margin_y = 40
+
+        panel_width = min(_PANEL_WIDTH, max(screen_width - 2 * margin_x, 480))
+        panel_height = min(_PANEL_HEIGHT, max(screen_height - 2 * margin_y, 360))
+
+        start_x = screen_x + max((screen_width - panel_width) // 2, margin_x)
+        start_y = screen_y + max((screen_height - panel_height) // 2, margin_y)
+        rect = Rect(start_x, start_y, panel_width, panel_height)
+        _pattern_canvas = canvas.Canvas.from_rect(rect)
+        try:
+            _pattern_canvas.blocks_mouse = True
+        except Exception:
+            pass
+    except Exception:
+        _pattern_canvas = canvas.Canvas.from_screen(screen)
+
+    def _on_draw(c: canvas.Canvas) -> None:  # pragma: no cover - visual only
+        _draw_pattern_canvas(c)
+
+    _pattern_canvas.register("draw", _on_draw)
+
+    def _on_mouse(evt) -> None:  # pragma: no cover - visual only
+        """Handle close hotspot, domain selection, and pattern clicks."""
+        try:
+            rect = getattr(_pattern_canvas, "rect", None)
+            pos = getattr(evt, "pos", None)
+            if rect is None or pos is None:
+                return
+
+            event_type = getattr(evt, "event", "") or ""
+            button = getattr(evt, "button", None)
+            gpos = getattr(evt, "gpos", None) or pos
+
+            local_x = pos.x
+            local_y = pos.y
+            if local_x < 0 or local_y < 0:
+                return
+            abs_x = rect.x + local_x
+            abs_y = rect.y + local_y
+
+            header_height = 32
+            hotspot_width = 80
+
+            if event_type in ("mousedown", "mouse_down") and button in (0, 1):
+                # Close hotspot in top-right header band.
+                if (
+                    0 <= local_y <= header_height
+                    and rect.width - hotspot_width <= local_x <= rect.width
+                ):
+                    _debug("pattern canvas close click detected")
+                    actions.user.model_pattern_gui_close()
+                    return
+
+                # Button hits for domain or patterns.
+                for key, (bx1, by1, bx2, by2) in list(_pattern_button_bounds.items()):
+                    if not (bx1 <= abs_x <= bx2 and by1 <= abs_y <= by2):
+                        continue
+                    if key == "domain_coding":
+                        PatternGUIState.domain = "coding"
+                        _pattern_canvas.show()
+                    elif key == "domain_writing":
+                        PatternGUIState.domain = "writing"
+                        _pattern_canvas.show()
+                    elif key.startswith("pattern:"):
+                        name = key.split(":", 1)[1]
+                        for pattern in PATTERNS:
+                            if pattern.name == name:
+                                _run_pattern(pattern)
+                                break
+                    return
+
+            # Minimal drag: allow moving the panel by dragging the header.
+            if event_type in ("mousemove", "mouse_move") and button in (0, 1):
+                if 0 <= local_y <= header_height:
+                    try:
+                        dx = gpos.x - rect.x
+                        dy = gpos.y - rect.y
+                        _pattern_canvas.move(rect.x + dx, rect.y + dy)
+                    except Exception:
+                        pass
+        except Exception:
+            return
+
+    try:
+        _pattern_canvas.register("mouse", _on_mouse)
+    except Exception:
+        _debug("mouse handler registration failed for pattern canvas")
+
+    def _on_key(evt) -> None:  # pragma: no cover - visual only
+        try:
+            if not getattr(evt, "down", False):
+                return
+            key = getattr(evt, "key", "") or ""
+            if key.lower() in ("escape", "esc"):
+                actions.user.model_pattern_gui_close()
+        except Exception:
+            return
+
+    try:
+        _pattern_canvas.register("key", _on_key)
+    except Exception:
+        _debug("key handler registration failed for pattern canvas")
+
+    return _pattern_canvas
+
+
+def _open_pattern_canvas(domain: Optional[PatternDomain]) -> None:
+    canvas_obj = _ensure_pattern_canvas()
+    PatternGUIState.domain = domain
+    PatternCanvasState.showing = True
+    canvas_obj.show()
+
+
+def _close_pattern_canvas() -> None:
+    global _pattern_canvas
+    PatternCanvasState.showing = False
+    if _pattern_canvas is None:
+        return
+    try:
+        _pattern_canvas.hide()
+    except Exception:
+        pass
+
+
+def _draw_pattern_canvas(c: canvas.Canvas) -> None:  # pragma: no cover - visual only
+    rect = getattr(c, "rect", None)
+    draw_text = getattr(c, "draw_text", None)
+    if draw_text is None:
+        return
+
+    _pattern_button_bounds.clear()
+
+    paint = getattr(c, "paint", None)
+    if rect is not None and paint is not None:
+        try:
+            old_color = getattr(paint, "color", None)
+            old_style = getattr(paint, "style", None)
+            paint.color = "FFFFFF"
+            if hasattr(paint, "Style") and hasattr(paint, "style"):
+                paint.style = paint.Style.FILL
+            c.draw_rect(rect)
+            if old_style is not None:
+                paint.style = old_style
+            paint.color = old_color or "000000"
+        except Exception:
+            try:
+                paint.color = "000000"
+            except Exception:
+                pass
+
+    if rect is not None and hasattr(rect, "x") and hasattr(rect, "y"):
+        x = rect.x + 40
+        y = rect.y + 60
+    else:
+        x = 40
+        y = 60
+    line_h = 18
+    approx_char = 8
+
+    draw_text("Model patterns", x, y)
+    if rect is not None and hasattr(rect, "width"):
+        close_label = "[X]"
+        close_y = rect.y + 24
+        close_x = rect.x + rect.width - (len(close_label) * approx_char) - 16
+        draw_text(close_label, close_x, close_y)
+    y += line_h
+    draw_text(
+        "Tip: Say the pattern name or full 'model …' grammar; clicking also runs it.",
+        x,
+        y,
+    )
+    y += line_h * 2
+
+    domain = PatternGUIState.domain
+    if domain is None:
+        draw_text("Choose a pattern domain:", x, y)
+        y += line_h * 2
+        # Coding domain button.
+        label = "[Coding patterns]"
+        draw_text(label, x, y)
+        _pattern_button_bounds["domain_coding"] = (
+            x,
+            y - line_h,
+            x + len(label) * approx_char,
+            y + line_h,
+        )
+        y += line_h * 2
+        # Writing/product/reflection domain button.
+        label = "[Writing / product / reflection patterns]"
+        draw_text(label, x, y)
+        _pattern_button_bounds["domain_writing"] = (
+            x,
+            y - line_h,
+            x + len(label) * approx_char,
+            y + line_h,
+        )
+        y += line_h * 2
+        draw_text(
+            "Tip: Say 'model coding patterns' or 'model writing patterns' to jump straight to a domain.",
+            x,
+            y,
+        )
+        return
+
+    # Domain-specific patterns.
+    title = "Coding patterns" if domain == "coding" else "Writing / product / reflection"
+    draw_text(title, x, y)
+    y += line_h
+    draw_text("Tip: Say 'close patterns' to close this menu.", x, y)
+    y += line_h * 2
+
+    for pattern in PATTERNS:
+        if pattern.domain != domain:
+            continue
+        label = f"[{pattern.name}]"
+        draw_text(label, x, y)
+        _pattern_button_bounds[f"pattern:{pattern.name}"] = (
+            x,
+            y - line_h,
+            x + len(label) * approx_char,
+            y + line_h,
+        )
+        y += line_h
+        draw_text(pattern.recipe, x, y)
+        y += line_h
+        grammar_phrase = f"model {pattern.recipe.replace(' · ', ' ')}"
+        draw_text(f"Say: {grammar_phrase}", x, y)
+        y += line_h * 2
+
+
 def _parse_recipe(recipe: str) -> tuple[str, str, str, str, str, str]:
     """Parse a human-readable recipe into static prompt + axes + directional lens.
 
@@ -462,59 +738,6 @@ def _run_pattern(pattern: PromptPattern) -> None:
     actions.user.model_pattern_gui_close()
 
 
-def _render_domain(gui: imgui.GUI, domain: PatternDomain) -> None:
-    has_domain = any(p.domain == domain for p in PATTERNS)
-    if not has_domain:
-        return
-
-    title = "Coding patterns" if domain == "coding" else "Writing / product / reflection"
-    gui.text(title)
-    gui.line()
-    gui.spacer()
-    gui.text("Tip: Say 'close patterns' to close this menu.")
-    gui.spacer()
-
-    for pattern in PATTERNS:
-        if pattern.domain != domain:
-            continue
-        if gui.button(pattern.name):
-            _run_pattern(pattern)
-        gui.text(pattern.recipe)
-        grammar_phrase = f"model {pattern.recipe.replace(' · ', ' ')}"
-        gui.text(f"Say: {grammar_phrase}")
-        gui.spacer()
-
-
-@imgui.open()
-def model_pattern_gui(gui: imgui.GUI):
-    gui.text("Model patterns")
-    gui.line()
-    gui.spacer()
-    gui.text(
-        "Tip: Say the pattern name (for example, 'debug bug') or the full 'model …' grammar to run it; clicking also runs it."
-    )
-    gui.spacer()
-
-    domain = PatternGUIState.domain
-    if domain is None:
-        gui.text("Choose a pattern domain:")
-        gui.spacer()
-        if gui.button("Coding patterns"):
-            PatternGUIState.domain = "coding"
-        if gui.button("Writing / product / reflection patterns"):
-            PatternGUIState.domain = "writing"
-        gui.spacer()
-        gui.text(
-            "Tip: Say 'model coding patterns' or 'model writing patterns' to jump straight to a domain."
-        )
-    else:
-        _render_domain(gui, domain)
-
-    gui.spacer()
-    if gui.button("Close"):
-        actions.user.model_pattern_gui_close()
-
-
 @mod.action_class
 class UserActions:
     def model_pattern_gui_open():
@@ -525,11 +748,10 @@ class UserActions:
         except Exception:
             pass
         try:
-            actions.user.model_help_gui_close()
+            actions.user.model_help_canvas_close()
         except Exception:
             pass
-        PatternGUIState.domain = None
-        model_pattern_gui.show()
+        _open_pattern_canvas(domain=None)
         ctx.tags = ["user.model_pattern_window_open"]
 
     def model_pattern_gui_open_coding():
@@ -539,11 +761,10 @@ class UserActions:
         except Exception:
             pass
         try:
-            actions.user.model_help_gui_close()
+            actions.user.model_help_canvas_close()
         except Exception:
             pass
-        PatternGUIState.domain = "coding"
-        model_pattern_gui.show()
+        _open_pattern_canvas(domain="coding")
         ctx.tags = ["user.model_pattern_window_open"]
 
     def model_pattern_gui_open_writing():
@@ -553,15 +774,14 @@ class UserActions:
         except Exception:
             pass
         try:
-            actions.user.model_help_gui_close()
+            actions.user.model_help_canvas_close()
         except Exception:
             pass
-        PatternGUIState.domain = "writing"
-        model_pattern_gui.show()
+        _open_pattern_canvas(domain="writing")
 
     def model_pattern_gui_close():
         """Close the model pattern picker GUI"""
-        model_pattern_gui.hide()
+        _close_pattern_canvas()
         ctx.tags = []
 
     def model_pattern_run_name(pattern_name: str):

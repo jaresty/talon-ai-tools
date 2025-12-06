@@ -11,12 +11,12 @@ else:
 if bootstrap is not None:
     from talon_user.lib.modelHelpCanvas import (
         HelpCanvasState,
+        HelpGUIState,
         UserActions,
         _ensure_canvas,
         register_draw_handler,
         unregister_draw_handler,
     )
-    from talon_user.lib.modelHelpGUI import HelpGUIState
 
     class ModelHelpCanvasTests(unittest.TestCase):
         def setUp(self) -> None:
@@ -56,7 +56,7 @@ if bootstrap is not None:
 
             UserActions.model_help_canvas_open_for_static_prompt("todo")
 
-            self.assertTrue(HelpCanvasState.showing)
+            self.assertTrue(HelpGUIState.showing)
             self.assertEqual(HelpGUIState.section, "all")
             self.assertEqual(HelpGUIState.static_prompt, "todo")
 

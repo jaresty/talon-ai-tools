@@ -4,14 +4,143 @@ from talon import Context, Module, actions, canvas, ui
 from talon import skia
 
 from .modelState import GPTState
-from .modelHelpGUI import (  # Reuse shared axis helpers and state.
-    COMPLETENESS_KEYS,
-    HelpGUIState,
-    METHOD_KEYS,
-    SCOPE_KEYS,
-    STYLE_KEYS,
-    _group_directional_keys,
-)
+
+from .metaPromptConfig import first_meta_preview_line, meta_preview_lines
+
+try:
+    from .staticPromptConfig import get_static_prompt_axes
+except ImportError:  # Talon may have a stale staticPromptConfig loaded
+    from .staticPromptConfig import STATIC_PROMPT_CONFIG
+
+    def get_static_prompt_axes(name: str) -> dict[str, str]:
+        profile = STATIC_PROMPT_CONFIG.get(name, {})
+        axes: dict[str, str] = {}
+        for axis in ("completeness", "scope", "method", "style"):
+            value = profile.get(axis)
+            if value:
+                axes[axis] = value
+        return axes
+
+
+COMPLETENESS_KEYS = [
+    "skim",
+    "gist",
+    "full",
+    "max",
+    "minimal",
+    "deep",
+]
+SCOPE_KEYS = ["narrow", "focus", "bound", "edges", "relations"]
+METHOD_KEYS = [
+    "steps",
+    "plan",
+    "rigor",
+    "rewrite",
+    "diagnose",
+    "filter",
+    "prioritize",
+    "cluster",
+    "systemic",
+    "experimental",
+    "debugging",
+    "structure",
+    "flow",
+    "compare",
+    "motifs",
+    "wasinawa",
+    "analysis",
+]
+STYLE_KEYS = [
+    "plain",
+    "tight",
+    "bullets",
+    "table",
+    "code",
+    "cards",
+    "checklist",
+    "diagram",
+    "presenterm",
+    "html",
+    "gherkin",
+    "shellscript",
+    "emoji",
+    "slack",
+    "jira",
+    "recipe",
+    "abstractvisual",
+    "commit",
+    "adr",
+    "taxonomy",
+]
+
+
+def _group_directional_keys() -> dict[str, list[str]]:
+    """Arrange directional lenses into vertical/horizontal groups.
+
+    The canvas layout uses this to build the directional XY map; the exact
+    grouping logic is intentionally simple and mirrors the legacy imgui
+    helper without depending on list files.
+    """
+    groups: dict[str, list[str]] = {
+        "up": [],
+        "center_v": [],
+        "down": [],
+        "left": [],
+        "center_h": [],
+        "right": [],
+        "central": [],
+        "non_directional": [],
+        "fused_other": [],
+    }
+    vertical_up = {"fog"}
+    vertical_center = {"fig"}
+    vertical_down = {"dig"}
+    horizontal_left = {"rog"}
+    horizontal_center = {"bog"}
+    horizontal_right = {"ong"}
+    central_names = {"jog"}
+
+    directional_keys = {"fog", "fig", "dig", "rog", "bog", "ong", "jog"}
+    seen_directional: set[str] = set()
+
+    for base in directional_keys:
+        is_directional = False
+        if base in vertical_up:
+            groups["up"].append(base)
+            is_directional = True
+        if base in vertical_center:
+            groups["center_v"].append(base)
+            is_directional = True
+        if base in vertical_down:
+            groups["down"].append(base)
+            is_directional = True
+
+        if base in horizontal_left:
+            groups["left"].append(base)
+            is_directional = True
+        if base in horizontal_center:
+            groups["center_h"].append(base)
+            is_directional = True
+        if base in horizontal_right:
+            groups["right"].append(base)
+            is_directional = True
+
+        if base in central_names:
+            groups["central"].append(base)
+            is_directional = True
+
+        if is_directional:
+            seen_directional.add(base)
+
+    return groups
+
+
+class HelpGUIState:
+    """Shared quick-help state reused by canvas tests and legacy callers."""
+
+    section: str = "all"
+    static_prompt: Optional[str] = None
+    showing: bool = False
 
 mod = Module()
 ctx = Context()
@@ -291,6 +420,7 @@ def _open_canvas() -> None:
     """Show the canvas-based quick help."""
     canvas_obj = _ensure_canvas()
     HelpCanvasState.showing = True
+    HelpGUIState.showing = True
     _debug("opening canvas quick help")
     canvas_obj.show()
 
@@ -300,8 +430,10 @@ def _close_canvas() -> None:
     global _help_canvas
     if _help_canvas is None:
         HelpCanvasState.showing = False
+        HelpGUIState.showing = False
         return
     HelpCanvasState.showing = False
+    HelpGUIState.showing = False
     try:
         _debug("closing canvas quick help")
         _help_canvas.hide()
@@ -925,6 +1057,9 @@ class UserActions:
         except Exception:
             pass
 
+        # Match the legacy imgui semantics: reset back to the generic "all"
+        # section and clear any static prompt focus when opening for the last
+        # recipe.
         _reset_help_state("all", None)
         _open_canvas()
 

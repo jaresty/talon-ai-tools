@@ -98,3 +98,41 @@
   then a later loop can safely reintroduce a guarded `user.model_response_canvas_font` override and richer emoji support.
 - Until then, emoji and special glyph rendering remain best handled by the browser destination, which benefits from the OS/browser font stack.
 
+## 2025-12-05 – Slice: meta header, answer semantics, and ADR reconciliation
+
+**ADR focus**: 023 – Canvas-Based Response Viewer and Controls  
+**Loop goal**: Align the ADR with the now-primary canvas response viewer, improve the meta header UX, and fix remaining behavioural gaps around answer selection and button hit‑targets.
+
+### Summary of this loop
+
+- Rewrote `docs/adr/023-canvas-response-viewer.md` to:
+  - Mark the ADR as **Accepted** and add a “Current status in this repo” section that reflects the shipped canvas viewer.  
+  - Describe the actual layout: header recap, one-line meta preview, expandable diagnostic meta panel, scrollable answer body, footer button row.  
+  - Clarify that the body text source **prefers** `GPTState.text_to_confirm` and falls back to `GPTState.last_response`, and that browser fallback for long answers is now an explicit action, not automatic.  
+  - Document that per‑canvas font overrides are intentionally avoided on this runtime (pointing to the work‑log slice above).  
+- Updated `lib/modelResponseCanvas.py`:
+  - Ensured the **meta header toggle** is clickable by:
+    - Keeping its bounds recorded in `_response_button_bounds`.  
+    - Removing the footer-time `clear()` call that previously wiped the toggle’s hit‑target.  
+  - Normalised the **Browser** button behaviour so it uses the same answer text as the body:
+    - `answer = GPTState.text_to_confirm or GPTState.last_response`, matching `answer` selection used when drawing the body.  
+  - Left scroll clamping logic in `_default_draw_response` as the single source of truth so users cannot scroll past the end of content, regardless of whether the scroll delta came from the low-level mouse path or the high-level `scroll` events.
+
+### Behaviour impact
+
+- Users now get:
+  - A small, always-visible **meta summary** and toggle in the header, with the full diagnostic panel rendered above the answer (non-scrolling).  
+  - A working meta toggle hit‑target (no longer lost when footer buttons are drawn).  
+  - A `[Browser]` button that opens exactly the same text they see in the canvas body, whether it came from `model …` confirmation, `model pass clip`, or other destinations that set `text_to_confirm`.  
+- The ADR now accurately describes:
+  - That the canvas viewer has replaced the legacy confirmation modal in normal flows.  
+  - The intended separation between **diagnostic meta** and **pasteable answer**.  
+
+### Follow-ups and remaining work
+
+- Add or extend tests in `_tests/test_model_response_canvas.py` to:
+  - Exercise meta toggle behaviour (toggling `meta_expanded` via a synthetic click and confirming draw handlers run without error).  
+  - Assert the answer selection prefers `text_to_confirm` when present and falls back to `last_response`.  
+- Consider additional small UX polish based on adversarial review:
+  - Visual hints that distinguish meta from pasteable content.  
+  - Further tuning of scroll step sizes and drag smoothness across devices.  

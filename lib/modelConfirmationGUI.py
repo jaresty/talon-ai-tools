@@ -153,10 +153,6 @@ class UserActions:
         else:
             ConfirmationGUIState.current_presentation = None
             GPTState.text_to_confirm = model_output
-        # Keep the canvas-based response viewer in sync with the text being
-        # confirmed so it can display content even for non-model flows (for
-        # example, `model pass clip`).
-        GPTState.last_response = GPTState.text_to_confirm
         # Open the canvas-based response viewer instead of the legacy imgui
         # confirmation window.
         actions.user.model_response_canvas_open()

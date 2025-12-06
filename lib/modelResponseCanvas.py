@@ -14,6 +14,7 @@ class ResponseCanvasState:
 
     showing: bool = False
     scroll_y: float = 0.0
+    meta_expanded: bool = False
 
 
 _response_canvas: Optional[canvas.Canvas] = None
@@ -134,14 +135,25 @@ def _ensure_response_canvas() -> canvas.Canvas:
                     _response_drag_offset = None
                     return
 
-                # Button hits in footer.
+                # Button hits in header/footer.
                 for key, (bx1, by1, bx2, by2) in list(_response_button_bounds.items()):
                     if not (bx1 <= abs_x <= bx2 and by1 <= abs_y <= by2):
                         continue
                     _debug(f"response button clicked: {key}")
-                    answer = getattr(GPTState, "last_response", "") or ""
+                    # Use the same selection as the body: prefer the current
+                    # confirmation text, then fall back to the last response.
+                    answer = (
+                        getattr(GPTState, "text_to_confirm", "")
+                        or getattr(GPTState, "last_response", "")
+                        or ""
+                    )
                     try:
-                        if key == "paste":
+                        if key == "meta_toggle":
+                            ResponseCanvasState.meta_expanded = (
+                                not ResponseCanvasState.meta_expanded
+                            )
+                            _response_canvas.show()
+                        elif key == "paste":
                             actions.user.confirmation_gui_paste()
                             actions.user.model_response_canvas_close()
                         elif key == "copy":
@@ -387,6 +399,8 @@ def _default_draw_response(c: canvas.Canvas) -> None:  # pragma: no cover - visu
     if draw_text is None:
         _debug("response canvas draw skipped (no draw_text)")
         return
+    # Reset button bounds on each draw so header/footer hit targets stay fresh.
+    _response_button_bounds.clear()
 
     # Fill background.
     paint = getattr(c, "paint", None)
@@ -431,34 +445,284 @@ def _default_draw_response(c: canvas.Canvas) -> None:  # pragma: no cover - visu
         body_bottom = 520
     line_h = 18
 
+    # Track the default text color so we can temporarily lighten diagnostic
+    # sections (like meta) without permanently changing the canvas text color.
+    default_text_color = None
+    if paint is not None:
+        try:
+            default_text_color = getattr(paint, "color", None) or "000000"
+        except Exception:
+            default_text_color = "000000"
+
     # Header with close affordance.
     draw_text("Model response viewer", x, y)
+    close_x = None
     if rect is not None and hasattr(rect, "width"):
         close_label = "[X]"
         close_y = rect.y + 24
         close_x = rect.x + rect.width - (len(close_label) * 8) - 16
         draw_text(close_label, close_x, close_y)
-    y += line_h * 2
+    y += line_h
 
-    # Optional compact meta interpretation summary above the answer body.
+    # Compact prompt recap under the title so users can see which recipe and
+    # spoken form produced the current response.
+    recipe = getattr(GPTState, "last_recipe", "") or ""
+    if recipe:
+        draw_text("Talon GPT Result", x, y)
+        y += line_h
+        draw_text("Prompt recap", x, y)
+        y += line_h
+        directional = getattr(GPTState, "last_directional", "") or ""
+        if directional:
+            recipe_text = f"{recipe} · {directional}"
+            grammar_phrase = (
+                f"model {recipe.replace(' · ', ' ')} {directional}"
+            )
+        else:
+            recipe_text = recipe
+            grammar_phrase = f"model {recipe.replace(' · ', ' ')}"
+        draw_text(f"Recipe: {recipe_text}", x, y)
+        y += line_h
+        draw_text(f"Say: {grammar_phrase}", x, y)
+        y += line_h
+
+    # Optional diagnostic meta section and toggle under the recap.
     meta = getattr(GPTState, "last_meta", "").strip()
+    parsed_meta: Optional[dict] = None
+    meta_summary: str = ""
     if meta:
         try:
-            parsed = _parse_meta(meta)
-            interpretation = (parsed.get("interpretation") or "").strip()
-            if interpretation:
-                draw_text("Interpretation:", x, y)
-                y += line_h
-                for part in interpretation.splitlines()[:2]:
-                    draw_text(f"  {part}", x, y)
-                    y += line_h
-                y += line_h // 2
+            parsed_meta = _parse_meta(meta)
         except Exception:
-            # Meta parsing is best-effort; ignore failures.
-            pass
+            parsed_meta = None
+    if parsed_meta:
+        interpretation = (parsed_meta.get("interpretation") or "").strip()
+        if interpretation:
+            meta_summary = interpretation.splitlines()[0]
+    # Fallback: if parsing did not yield an interpretation summary, use the
+    # first non-empty raw meta line (after stripping markdown-style headings)
+    # so the band always has a short preview.
+    if not meta_summary and meta:
+        for raw_line in meta.splitlines():
+            stripped = raw_line.strip()
+            if not stripped:
+                continue
+            # Strip markdown-style headings.
+            if stripped.startswith("#"):
+                stripped = stripped.lstrip("#").strip()
+            if not stripped:
+                continue
+            lower = stripped.lower()
+            # Skip generic section headers; we want a content-bearing line.
+            if lower == "model interpretation" or lower.startswith(
+                "model interpretation "
+            ):
+                continue
+            # If we see an Interpretation:/Reading: line, treat the tail as the
+            # summary, and strip any leading bullet marker.
+            if lower.startswith("interpretation:") or lower.startswith("reading:"):
+                tail = stripped.split(":", 1)[1].strip()
+                # Drop leading "- " or "* " if present.
+                if tail.startswith("- ") or tail.startswith("* "):
+                    tail = tail[2:].strip()
+                meta_summary = tail or stripped
+            # Strip a leading bullet when using a generic content line.
+            elif stripped.startswith("- ") or stripped.startswith("* "):
+                meta_summary = stripped[2:].strip()
+            else:
+                meta_summary = stripped
+            break
 
-    # Body: scrollable answer text.
-    answer = getattr(GPTState, "last_response", "") or ""
+    if meta and rect is not None:
+        approx_char_width = 8
+        # Compute the toggle first so we know exactly how much horizontal
+        # space is available for the meta band text.
+        toggle_label = (
+            "[Hide meta]"
+            if parsed_meta and ResponseCanvasState.meta_expanded
+            else "[Show meta]"
+        )
+        toggle_x = rect.x + rect.width - (len(toggle_label) * approx_char_width) - 24
+        toggle_y = y
+
+        # Meta label band, visually distinct from the answer and recap. We draw
+        # a subtle background strip and lighten the text color so it reads as
+        # secondary to the main response.
+        base_label = "Meta (diagnostic)"
+        if meta_summary:
+            # Available width for the band is everything from x to slightly
+            # before the toggle. Use that to truncate the summary so the band
+            # never overlaps the toggle or the window edge.
+            max_band_pixels = max(
+                toggle_x - x - 16, len(base_label) * approx_char_width
+            )
+            max_band_chars = max(
+                int(max_band_pixels // approx_char_width), len(base_label)
+            )
+            summary_text = meta_summary
+            if len(f"{base_label} – {summary_text}") > max_band_chars:
+                # Reserve space for an ellipsis when truncating.
+                avail = max_band_chars - len(base_label) - 3
+                if avail > 0:
+                    summary_text = summary_text[:avail].rstrip()
+                    if len(meta_summary) > len(summary_text):
+                        summary_text += "…"
+                else:
+                    summary_text = ""
+            if summary_text:
+                band_text = f"{base_label} – {summary_text}"
+            else:
+                band_text = base_label
+        else:
+            band_text = base_label
+
+        # Draw a light background band behind the meta label.
+        if paint is not None:
+            try:
+                old_color = getattr(paint, "color", None)
+                old_style = getattr(paint, "style", None)
+                if hasattr(paint, "Style") and hasattr(paint, "style"):
+                    paint.style = paint.Style.FILL
+                paint.color = "F5F5F5"
+                band_width = toggle_x - x if toggle_x > x else rect.width - 80
+                c.draw_rect(ui.Rect(x - 8, y - line_h + 4, band_width + 16, line_h + 4))
+                # Slightly lighter text for meta.
+                paint.color = "666666"
+            except Exception:
+                pass
+
+        draw_text(band_text, x, y)
+        draw_text(toggle_label, toggle_x, toggle_y)
+        _response_button_bounds["meta_toggle"] = (
+            toggle_x,
+            toggle_y - line_h,
+            toggle_x + len(toggle_label) * approx_char_width,
+            toggle_y + line_h,
+        )
+
+        # Restore default text color after drawing the band/toggle.
+        if paint is not None and default_text_color is not None:
+            try:
+                paint.color = default_text_color
+            except Exception:
+                pass
+
+        y += line_h
+
+    # Optional expanded meta panel above the answer body when requested. This
+    # is explicitly diagnostic and visually treated as an annotation block,
+    # not part of the pasteable response.
+    if parsed_meta and ResponseCanvasState.meta_expanded:
+        # Lighten diagnostic meta text to further separate it from the primary
+        # response body.
+        if paint is not None:
+            try:
+                paint.color = "666666"
+            except Exception:
+                pass
+        y += line_h
+        detail_x = x + 16
+        # Use the same approximate character width as the body, but keep meta
+        # text within the visible canvas width so it does not run off-screen.
+        meta_max_chars = max(
+            int((rect.width - (detail_x - (rect.x if rect else 0)) - 40) // approx_char_width),
+            20,
+        )
+
+        def _wrap_meta(text: str) -> list[str]:
+            lines: list[str] = []
+            remaining = text.strip()
+            while remaining:
+                if len(remaining) <= meta_max_chars:
+                    lines.append(remaining)
+                    break
+                piece = remaining[:meta_max_chars]
+                split_at = piece.rfind(" ")
+                if split_at <= 0:
+                    lines.append(remaining[:meta_max_chars])
+                    remaining = remaining[meta_max_chars:].lstrip()
+                else:
+                    lines.append(remaining[:split_at])
+                    remaining = remaining[split_at + 1 :].lstrip()
+            return lines or [text]
+
+        interpretation = (parsed_meta.get("interpretation") or "").strip()
+        if interpretation:
+            for part in interpretation.splitlines():
+                for wrapped in _wrap_meta(f"  {part}"):
+                    draw_text(wrapped, detail_x, y)
+                    y += line_h
+            y += line_h // 2
+        assumptions = parsed_meta.get("assumptions") or []
+        if assumptions:
+            for wrapped in _wrap_meta("  Assumptions/constraints:"):
+                draw_text(wrapped, detail_x, y)
+                y += line_h
+            for item in assumptions:
+                for wrapped in _wrap_meta(f"    - {item}"):
+                    draw_text(wrapped, detail_x, y)
+                    y += line_h
+            y += line_h // 2
+        gaps = parsed_meta.get("gaps") or []
+        if gaps:
+            for wrapped in _wrap_meta("  Gaps/checks:"):
+                draw_text(wrapped, detail_x, y)
+                y += line_h
+            for item in gaps:
+                for wrapped in _wrap_meta(f"    - {item}"):
+                    draw_text(wrapped, detail_x, y)
+                    y += line_h
+            y += line_h // 2
+        better = (parsed_meta.get("better_prompt") or "").strip()
+        if better:
+            for wrapped in _wrap_meta("  Better prompt:"):
+                draw_text(wrapped, detail_x, y)
+                y += line_h
+            for part in better.splitlines():
+                for wrapped in _wrap_meta(f"    {part}"):
+                    draw_text(wrapped, detail_x, y)
+                    y += line_h
+            y += line_h // 2
+        suggestion = (parsed_meta.get("suggestion") or "").strip()
+        if suggestion:
+            for wrapped in _wrap_meta("  Axis tweak suggestion:"):
+                draw_text(wrapped, detail_x, y)
+                y += line_h
+            for wrapped in _wrap_meta(f"    {suggestion}"):
+                draw_text(wrapped, detail_x, y)
+                y += line_h
+            y += line_h // 2
+        extra = parsed_meta.get("extra") or []
+        for item in extra:
+            for wrapped in _wrap_meta(f"  {item}"):
+                draw_text(wrapped, detail_x, y)
+                y += line_h
+        # Closing reminder that this section is diagnostic context about how
+        # the model read the request, not part of the main answer body.
+        for wrapped in _wrap_meta("  Note: meta is diagnostic context only."):
+            draw_text(wrapped, detail_x, y)
+            y += line_h
+        # Restore default text color for the main response body.
+        if paint is not None and default_text_color is not None:
+            try:
+                paint.color = default_text_color
+            except Exception:
+                pass
+
+    # Transition into the main, pasteable response body with an explicit
+    # heading and additional spacing so it is visually separated from recap
+    # and diagnostic meta.
+    y += line_h
+    draw_text("Response:", x, y)
+    y += line_h
+    y += line_h // 2
+    body_top = max(body_top, y)
+
+    # Body: scrollable answer text. Prefer the current confirmation text when
+    # present, falling back to the last model response.
+    answer = (
+        getattr(GPTState, "text_to_confirm", "") or getattr(GPTState, "last_response", "")
+    )
     if not answer:
         draw_text("No last response available.", x, y)
         return
@@ -518,8 +782,9 @@ def _default_draw_response(c: canvas.Canvas) -> None:  # pragma: no cover - visu
         except Exception:
             pass
 
-    # Footer buttons.
-    _response_button_bounds.clear()
+    # Footer buttons. We intentionally do not clear _response_button_bounds
+    # here so that the header meta toggle bounds remain registered; the
+    # bounds map was cleared at the start of this draw.
     footer_y = body_bottom + line_h // 2
     btn_labels = [
         ("paste", "[Paste]"),
@@ -535,9 +800,15 @@ def _default_draw_response(c: canvas.Canvas) -> None:  # pragma: no cover - visu
     ]
     btn_x = x
     approx_char = 8
+    max_footer_x = (rect.x + rect.width - 40) if rect is not None else 10000
     for key, label in btn_labels:
-        draw_text(label, btn_x, footer_y)
         width = len(label) * approx_char
+        # Wrap to a new footer line if the next button would exceed the
+        # visible canvas width.
+        if btn_x + width > max_footer_x:
+            footer_y += line_h * 2
+            btn_x = x
+        draw_text(label, btn_x, footer_y)
         _response_button_bounds[key] = (
             btn_x,
             footer_y - line_h,
@@ -545,6 +816,10 @@ def _default_draw_response(c: canvas.Canvas) -> None:  # pragma: no cover - visu
             footer_y,
         )
         btn_x += width + approx_char * 2
+        # Add extra spacing between logical button groups to improve visual
+        # scanability (output actions | context/thread | analysis/browser).
+        if key in ("discard", "thread"):
+            btn_x += approx_char * 4
 
 
 register_response_draw_handler(_default_draw_response)

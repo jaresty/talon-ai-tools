@@ -57,10 +57,13 @@ class PromptPatternCanvasState:
     """State specific to the canvas-based prompt pattern picker."""
 
     showing: bool = False
+    scroll_y: float = 0.0
 
 
 _prompt_pattern_canvas: Optional[canvas.Canvas] = None
 _prompt_pattern_button_bounds: Dict[str, Tuple[int, int, int, int]] = {}
+_prompt_pattern_hover_close: bool = False
+_prompt_pattern_hover_name: Optional[str] = None
 
 _PANEL_WIDTH = 720
 _PANEL_HEIGHT = 600
@@ -217,8 +220,9 @@ def _ensure_prompt_pattern_canvas() -> canvas.Canvas:
     _prompt_pattern_canvas.register("draw", _on_draw)
 
     def _on_mouse(evt) -> None:  # pragma: no cover - visual only
-        """Handle close hotspot and pattern selection."""
+        """Handle close hotspot, pattern selection, hover, and drag."""
         try:
+            global _prompt_pattern_hover_close, _prompt_pattern_hover_name
             rect = getattr(_prompt_pattern_canvas, "rect", None)
             pos = getattr(evt, "pos", None)
             if rect is None or pos is None:
@@ -237,6 +241,21 @@ def _ensure_prompt_pattern_canvas() -> canvas.Canvas:
 
             header_height = 32
             hotspot_width = 80
+
+            # Track hover state for the close hotspot and pattern buttons.
+            if event_type in ("mousemove", "mouse_move") and button not in (0, 1):
+                _prompt_pattern_hover_close = (
+                    0 <= local_y <= header_height
+                    and rect.width - hotspot_width <= local_x <= rect.width
+                )
+                hover_name: Optional[str] = None
+                for key, (bx1, by1, bx2, by2) in list(
+                    _prompt_pattern_button_bounds.items()
+                ):
+                    if bx1 <= abs_x <= bx2 and by1 <= abs_y <= by2:
+                        hover_name = key
+                        break
+                _prompt_pattern_hover_name = hover_name
 
             if event_type in ("mousedown", "mouse_down") and button in (0, 1):
                 # Close hotspot in top-right header band.
@@ -272,6 +291,27 @@ def _ensure_prompt_pattern_canvas() -> canvas.Canvas:
                         _prompt_pattern_canvas.move(rect.x + dx, rect.y + dy)
                     except Exception:
                         pass
+                return
+
+            # Vertical scroll via mouse wheel when available.
+            if event_type in ("mouse_scroll", "wheel", "scroll"):
+                dy = getattr(evt, "dy", 0) or getattr(evt, "wheel_y", 0)
+                try:
+                    dy = float(dy)
+                except Exception:
+                    dy = 0.0
+                if dy and rect is not None:
+                    line_h = 18
+                    row_height = line_h * 5
+                    # Approximate the same body region used in _draw_prompt_patterns.
+                    body_top = rect.y + 60 + line_h * 6
+                    body_bottom = rect.y + rect.height - line_h * 2
+                    visible_height = max(body_bottom - body_top, row_height)
+                    total_content_height = row_height * len(PROMPT_PRESETS)
+                    max_scroll = max(total_content_height - visible_height, 0)
+                    new_scroll = PromptPatternCanvasState.scroll_y - dy * 40.0
+                    PromptPatternCanvasState.scroll_y = max(min(new_scroll, max_scroll), 0.0)
+                return
         except Exception:
             return
 
@@ -302,12 +342,15 @@ def _open_prompt_pattern_canvas(static_prompt: str) -> None:
     canvas_obj = _ensure_prompt_pattern_canvas()
     PromptPatternGUIState.static_prompt = static_prompt
     PromptPatternCanvasState.showing = True
+    PromptPatternCanvasState.scroll_y = 0.0
     canvas_obj.show()
 
 
 def _close_prompt_pattern_canvas() -> None:
-    global _prompt_pattern_canvas
+    global _prompt_pattern_canvas, _prompt_pattern_hover_close, _prompt_pattern_hover_name
     PromptPatternCanvasState.showing = False
+    _prompt_pattern_hover_close = False
+    _prompt_pattern_hover_name = None
     if _prompt_pattern_canvas is None:
         return
     try:
@@ -333,6 +376,13 @@ def _draw_prompt_patterns(c: canvas.Canvas) -> None:  # pragma: no cover - visua
             if hasattr(paint, "Style") and hasattr(paint, "style"):
                 paint.style = paint.Style.FILL
             c.draw_rect(rect)
+            # Subtle outline so the canvas reads as a coherent panel.
+            if hasattr(paint, "Style") and hasattr(paint, "style"):
+                paint.style = paint.Style.STROKE
+            paint.color = "C0C0C0"
+            c.draw_rect(
+                Rect(rect.x + 0.5, rect.y + 0.5, rect.width - 1, rect.height - 1)
+            )
             if old_style is not None:
                 paint.style = old_style
             paint.color = old_color or "000000"
@@ -357,6 +407,14 @@ def _draw_prompt_patterns(c: canvas.Canvas) -> None:  # pragma: no cover - visua
         close_y = rect.y + 24
         close_x = rect.x + rect.width - (len(close_label) * approx_char) - 16
         draw_text(close_label, close_x, close_y)
+        if paint is not None and _prompt_pattern_hover_close:
+            try:
+                underline_rect = Rect(
+                    close_x, close_y + 4, len(close_label) * approx_char, 1
+                )
+                c.draw_rect(underline_rect)
+            except Exception:
+                pass
     y += line_h
 
     static_prompt = PromptPatternGUIState.static_prompt
@@ -398,16 +456,51 @@ def _draw_prompt_patterns(c: canvas.Canvas) -> None:  # pragma: no cover - visua
     draw_text("Patterns for this prompt:", x, y)
     y += line_h * 2
 
-    for pattern in PROMPT_PRESETS:
+    # Scrollable list of presets.
+    if rect is not None and hasattr(rect, "height"):
+        body_top = y
+        body_bottom = rect.y + rect.height - line_h * 2
+    else:
+        body_top = y
+        body_bottom = y + line_h * len(PROMPT_PRESETS) * 5
+    visible_height = max(body_bottom - body_top, line_h * 4)
+
+    # Approximate each preset row height: [Name], recipe, "Say", description, spacer.
+    row_height = line_h * 5
+    total_content_height = row_height * len(PROMPT_PRESETS)
+    max_scroll = max(total_content_height - visible_height, 0)
+    scroll_y = max(min(PromptPatternCanvasState.scroll_y, max_scroll), 0)
+    PromptPatternCanvasState.scroll_y = scroll_y
+
+    start_index = int(scroll_y // row_height)
+    offset_y = body_top - (scroll_y % row_height)
+
+    for idx in range(start_index, len(PROMPT_PRESETS)):
+        pattern = PROMPT_PRESETS[idx]
+        row_y = offset_y + (idx - start_index) * row_height
+        if row_y > body_bottom:
+            break
+
         label = f"[{pattern.name}]"
-        draw_text(label, x, y)
+        draw_text(label, x, row_y)
         _prompt_pattern_button_bounds[pattern.name] = (
             x,
-            y - line_h,
+            row_y - line_h,
             x + len(label) * approx_char,
-            y + line_h,
+            row_y + line_h,
         )
-        y += line_h
+        if (
+            _prompt_pattern_hover_name == pattern.name
+            and rect is not None
+            and paint is not None
+        ):
+            try:
+                underline_rect = Rect(x, row_y + 4, len(label) * approx_char, 1)
+                c.draw_rect(underline_rect)
+            except Exception:
+                pass
+        row_y += line_h
+
         recipe_tokens = [static_prompt]
         for token in (
             pattern.completeness,
@@ -419,18 +512,47 @@ def _draw_prompt_patterns(c: canvas.Canvas) -> None:  # pragma: no cover - visua
             if token:
                 recipe_tokens.append(token)
         recipe_str = " · ".join(recipe_tokens)
-        draw_text(recipe_str, x, y)
-        y += line_h
+        draw_text(recipe_str, x, row_y)
+        row_y += line_h
         draw_text(
             f"Say (grammar): model {recipe_str.replace(' · ', ' ')}",
             x,
-            y,
+            row_y,
         )
-        y += line_h
-        draw_text(pattern.description, x, y)
-        y += line_h * 2
+        row_y += line_h
+        draw_text(pattern.description, x, row_y)
 
-    draw_text("Tip: Say 'close pattern menu' to close this menu.", x, y)
+    # Draw a simple scrollbar when needed.
+    if max_scroll > 0 and rect is not None and paint is not None:
+        try:
+            old_color = getattr(paint, "color", None)
+            old_style = getattr(paint, "style", None)
+            track_x = rect.x + rect.width - 12
+            track_y = body_top
+            track_height = visible_height
+            if hasattr(paint, "Style") and hasattr(paint, "style"):
+                paint.style = paint.Style.STROKE
+            paint.color = "DDDDDD"
+            c.draw_rect(Rect(track_x, track_y, 6, track_height))
+            thumb_height = max(int(visible_height * visible_height / total_content_height), 20)
+            if max_scroll > 0:
+                thumb_offset = int((scroll_y / max_scroll) * (visible_height - thumb_height))
+            else:
+                thumb_offset = 0
+            paint.color = "888888"
+            if hasattr(paint, "Style") and hasattr(paint, "style"):
+                paint.style = paint.Style.FILL
+            c.draw_rect(
+                Rect(track_x + 1, track_y + thumb_offset + 1, 4, thumb_height - 2)
+            )
+            if old_style is not None and hasattr(paint, "Style"):
+                paint.style = old_style
+            if old_color is not None:
+                paint.color = old_color
+        except Exception:
+            pass
+
+    draw_text("Tip: Say 'close pattern menu' to close this menu.", x, body_bottom + line_h // 2)
 
 
 def _run_prompt_pattern(static_prompt: str, pattern: PromptAxisPattern) -> None:

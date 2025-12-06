@@ -22,6 +22,7 @@ _response_draw_handlers: list[Callable] = []
 _response_button_bounds: dict[str, tuple[int, int, int, int]] = {}
 _response_drag_offset: Optional[tuple[float, float]] = None
 _response_hover_close: bool = False
+_response_hover_button: Optional[str] = None
 _response_mouse_log_count: int = 0
 
 
@@ -77,7 +78,7 @@ def _ensure_response_canvas() -> canvas.Canvas:
 
     def _on_mouse(evt) -> None:  # pragma: no cover - visual only
         try:
-            global _response_drag_offset, _response_hover_close, _response_mouse_log_count
+            global _response_drag_offset, _response_hover_close, _response_hover_button, _response_mouse_log_count
             rect = getattr(_response_canvas, "rect", None)
             pos = getattr(evt, "pos", None)
             if rect is None or pos is None:
@@ -86,21 +87,6 @@ def _ensure_response_canvas() -> canvas.Canvas:
             event_type = getattr(evt, "event", "") or ""
             button = getattr(evt, "button", None)
             gpos = getattr(evt, "gpos", None) or pos
-
-            # Lightweight generic mouse logging (first few events only) to
-            # understand the event shapes Talon delivers in this runtime.
-            if _response_mouse_log_count < 20:
-                try:
-                    attrs = sorted(a for a in dir(evt) if not a.startswith("_"))
-                    dy_val = getattr(evt, "dy", None)
-                    wy_val = getattr(evt, "wheel_y", None)
-                    _debug(
-                        f"response canvas mouse raw event_type={event_type} button={button} "
-                        f"attrs={attrs} dy={dy_val} wheel_y={wy_val}"
-                    )
-                except Exception:
-                    pass
-                _response_mouse_log_count += 1
 
             local_x = pos.x
             local_y = pos.y
@@ -117,6 +103,12 @@ def _ensure_response_canvas() -> canvas.Canvas:
                     0 <= local_y <= header_height
                     and rect.width - hotspot_width <= local_x <= rect.width
                 )
+                hover_key: Optional[str] = None
+                for key, (bx1, by1, bx2, by2) in list(_response_button_bounds.items()):
+                    if bx1 <= abs_x <= bx2 and by1 <= abs_y <= by2:
+                        hover_key = key
+                        break
+                _response_hover_button = hover_key
 
             # Handle close click and drag start.
             if event_type in ("mousedown", "mouse_down") and button in (0, 1):
@@ -243,16 +235,10 @@ def _ensure_response_canvas() -> canvas.Canvas:
             rect = getattr(_response_canvas, "rect", None)
             if rect is None:
                 return
-            event_type = getattr(evt, "event", "") or ""
-            attrs = sorted(a for a in dir(evt) if not a.startswith("_"))
             dy = getattr(evt, "dy", None)
             delta_y = getattr(evt, "delta_y", None)
             pixels = getattr(evt, "pixels", None)
             degrees = getattr(evt, "degrees", None)
-            _debug(
-                f"response canvas scroll event_type={event_type} attrs={attrs} "
-                f"dy={dy} delta_y={delta_y} pixels={pixels} degrees={degrees}"
-            )
 
             # Prefer pixel deltas when available, then degrees, then dy/delta_y.
             raw = None
@@ -274,9 +260,6 @@ def _ensure_response_canvas() -> canvas.Canvas:
                 # Treat negative pixel.y (scroll down) as increasing scroll_y.
                 ResponseCanvasState.scroll_y = max(
                     ResponseCanvasState.scroll_y - raw, 0.0
-                )
-                _debug(
-                    f"response canvas scroll applied raw={raw}, scroll_y={ResponseCanvasState.scroll_y}"
                 )
         except Exception:
             return
@@ -402,7 +385,8 @@ def _default_draw_response(c: canvas.Canvas) -> None:  # pragma: no cover - visu
     # Reset button bounds on each draw so header/footer hit targets stay fresh.
     _response_button_bounds.clear()
 
-    # Fill background.
+    # Fill background and draw a subtle outline so the canvas reads as a
+    # coherent panel against the editor/background.
     paint = getattr(c, "paint", None)
     if rect is not None and paint is not None:
         try:
@@ -412,6 +396,12 @@ def _default_draw_response(c: canvas.Canvas) -> None:  # pragma: no cover - visu
             if hasattr(paint, "Style") and hasattr(paint, "style"):
                 paint.style = paint.Style.FILL
             c.draw_rect(rect)
+            if hasattr(paint, "Style") and hasattr(paint, "style"):
+                paint.style = paint.Style.STROKE
+            paint.color = "C0C0C0"
+            c.draw_rect(
+                ui.Rect(rect.x + 0.5, rect.y + 0.5, rect.width - 1, rect.height - 1)
+            )
             if old_style is not None:
                 paint.style = old_style
             paint.color = old_color or "000000"
@@ -471,6 +461,14 @@ def _default_draw_response(c: canvas.Canvas) -> None:  # pragma: no cover - visu
         close_y = rect.y + 24
         close_x = rect.x + rect.width - (len(close_label) * 8) - 16
         draw_text(close_label, close_x, close_y)
+        if paint is not None and _response_hover_close:
+            try:
+                underline_rect = ui.Rect(
+                    close_x, close_y + 4, len(close_label) * 8, 1
+                )
+                c.draw_rect(underline_rect)
+            except Exception:
+                pass
     y += line_h
 
     # Compact prompt recap under the title so users can see which recipe and
@@ -611,6 +609,17 @@ def _default_draw_response(c: canvas.Canvas) -> None:  # pragma: no cover - visu
             toggle_x + len(toggle_label) * approx_char_width,
             toggle_y + line_h,
         )
+        if _response_hover_button in ("meta_toggle", "meta_toggle_region"):
+            try:
+                underline_rect = ui.Rect(
+                    toggle_x,
+                    toggle_y + 4,
+                    len(toggle_label) * approx_char_width,
+                    1,
+                )
+                c.draw_rect(underline_rect)
+            except Exception:
+                pass
 
         # Restore default text color after drawing the band/toggle.
         if paint is not None and default_text_color is not None:
@@ -848,13 +857,24 @@ def _default_draw_response(c: canvas.Canvas) -> None:  # pragma: no cover - visu
         if btn_x + width > max_footer_x:
             footer_y += line_h * 2
             btn_x = x
-        draw_text(label, btn_x, footer_y)
+        label_x = btn_x
+        draw_text(label, label_x, footer_y)
         _response_button_bounds[key] = (
-            btn_x,
+            label_x,
             footer_y - line_h,
-            btn_x + width,
+            label_x + width,
             footer_y,
         )
+        if (
+            _response_hover_button == key
+            and rect is not None
+            and paint is not None
+        ):
+            try:
+                underline_rect = ui.Rect(label_x, footer_y + 4, width, 1)
+                c.draw_rect(underline_rect)
+            except Exception:
+                pass
         btn_x += width + approx_char * 2
         # Add extra spacing between logical button groups to improve visual
         # scanability (output actions | context/thread | analysis/browser).

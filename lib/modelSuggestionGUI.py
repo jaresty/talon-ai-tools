@@ -52,10 +52,13 @@ class SuggestionCanvasState:
     """State specific to the canvas-based suggestion window."""
 
     showing: bool = False
+    scroll_y: float = 0.0
 
 
 _suggestion_canvas: Optional[canvas.Canvas] = None
 _suggestion_button_bounds: Dict[int, Tuple[int, int, int, int]] = {}
+_suggestion_hover_close: bool = False
+_suggestion_hover_index: Optional[int] = None
 
 # Simple geometry defaults to keep the panel centered and readable.
 _PANEL_WIDTH = 720
@@ -135,8 +138,9 @@ def _ensure_suggestion_canvas() -> canvas.Canvas:
     _suggestion_canvas.register("draw", _on_draw)
 
     def _on_mouse(evt) -> None:  # pragma: no cover - visual only
-        """Handle close hotspot and suggestion selection."""
+        """Handle close hotspot, suggestion selection, hover, and drag."""
         try:
+            global _suggestion_hover_close, _suggestion_hover_index
             rect = getattr(_suggestion_canvas, "rect", None)
             pos = getattr(evt, "pos", None)
             if rect is None or pos is None:
@@ -155,6 +159,21 @@ def _ensure_suggestion_canvas() -> canvas.Canvas:
 
             header_height = 32
             hotspot_width = 80
+
+            # Hover feedback for the close hotspot and suggestion rows.
+            if event_type in ("mousemove", "mouse_move"):
+                _suggestion_hover_close = (
+                    0 <= local_y <= header_height
+                    and rect.width - hotspot_width <= local_x <= rect.width
+                )
+                hover_index: Optional[int] = None
+                for index, (bx1, by1, bx2, by2) in list(
+                    _suggestion_button_bounds.items()
+                ):
+                    if bx1 <= abs_x <= bx2 and by1 <= abs_y <= by2:
+                        hover_index = index
+                        break
+                _suggestion_hover_index = hover_index
 
             if event_type in ("mousedown", "mouse_down") and button in (0, 1):
                 # Close hotspot in top-right header band.
@@ -187,6 +206,27 @@ def _ensure_suggestion_canvas() -> canvas.Canvas:
                         _suggestion_canvas.move(rect.x + dx, rect.y + dy)
                     except Exception:
                         pass
+                return
+
+            # Vertical scroll via mouse wheel when available.
+            if event_type in ("mouse_scroll", "wheel", "scroll"):
+                dy = getattr(evt, "dy", 0) or getattr(evt, "wheel_y", 0)
+                try:
+                    dy = float(dy)
+                except Exception:
+                    dy = 0.0
+                if dy and rect is not None:
+                    # Positive dy scrolls down (content up).
+                    line_h = 18
+                    row_height = line_h * 3
+                    body_top = 60 + line_h * 2
+                    body_bottom = rect.y + rect.height - line_h * 2
+                    visible_height = max(body_bottom - body_top, row_height)
+                    total_content_height = row_height * max(len(SuggestionGUIState.suggestions), 0)
+                    max_scroll = max(total_content_height - visible_height, 0)
+                    new_scroll = SuggestionCanvasState.scroll_y - dy * 40.0
+                    SuggestionCanvasState.scroll_y = max(min(new_scroll, max_scroll), 0.0)
+                return
         except Exception:
             return
 
@@ -216,12 +256,15 @@ def _ensure_suggestion_canvas() -> canvas.Canvas:
 def _open_suggestion_canvas() -> None:
     canvas_obj = _ensure_suggestion_canvas()
     SuggestionCanvasState.showing = True
+    SuggestionCanvasState.scroll_y = 0.0
     canvas_obj.show()
 
 
 def _close_suggestion_canvas() -> None:
-    global _suggestion_canvas
+    global _suggestion_canvas, _suggestion_hover_close, _suggestion_hover_index
     SuggestionCanvasState.showing = False
+    _suggestion_hover_close = False
+    _suggestion_hover_index = None
     if _suggestion_canvas is None:
         return
     try:
@@ -248,6 +291,13 @@ def _draw_suggestions(c: canvas.Canvas) -> None:  # pragma: no cover - visual on
             if hasattr(paint, "Style") and hasattr(paint, "style"):
                 paint.style = paint.Style.FILL
             c.draw_rect(rect)
+            # Subtle outline so the canvas reads as a coherent panel.
+            if hasattr(paint, "Style") and hasattr(paint, "style"):
+                paint.style = paint.Style.STROKE
+            paint.color = "C0C0C0"
+            c.draw_rect(
+                Rect(rect.x + 0.5, rect.y + 0.5, rect.width - 1, rect.height - 1)
+            )
             if old_style is not None:
                 paint.style = old_style
             paint.color = old_color or "000000"
@@ -272,6 +322,14 @@ def _draw_suggestions(c: canvas.Canvas) -> None:  # pragma: no cover - visual on
         close_y = rect.y + 24
         close_x = rect.x + rect.width - (len(close_label) * approx_char) - 16
         draw_text(close_label, close_x, close_y)
+        if paint is not None and _suggestion_hover_close:
+            try:
+                underline_rect = Rect(
+                    close_x, close_y + 4, len(close_label) * approx_char, 1
+                )
+                c.draw_rect(underline_rect)
+            except Exception:
+                pass
     y += line_h * 2
 
     suggestions = SuggestionGUIState.suggestions
@@ -279,12 +337,38 @@ def _draw_suggestions(c: canvas.Canvas) -> None:  # pragma: no cover - visual on
         draw_text("No suggestions available. Run 'model suggest' first.", x, y)
         return
 
-    # Render each suggestion as a clickable row (name + grammar hint).
-    for index, suggestion in enumerate(suggestions):
+    # Each suggestion row is rendered as:
+    #   [Name]
+    #   Say: model …
+    #   <blank line>
+    # which we approximate as a fixed row height.
+    row_height = line_h * 3
+    body_top = y
+    if rect is not None and hasattr(rect, "height"):
+        body_bottom = rect.y + rect.height - line_h * 2
+    else:
+        body_bottom = body_top + row_height * len(suggestions)
+    visible_height = max(body_bottom - body_top, row_height)
+
+    total_content_height = row_height * len(suggestions)
+    max_scroll = max(total_content_height - visible_height, 0)
+    scroll_y = max(min(SuggestionCanvasState.scroll_y, max_scroll), 0)
+    SuggestionCanvasState.scroll_y = scroll_y
+
+    start_index = int(scroll_y // row_height)
+    offset_y = body_top - (scroll_y % row_height)
+
+    # Render each visible suggestion as a clickable row.
+    for index in range(start_index, len(suggestions)):
+        suggestion = suggestions[index]
+        row_y = offset_y + (index - start_index) * row_height
+        if row_y > body_bottom:
+            break
+
         label = f"[{suggestion.name}]"
         label_width = len(label) * approx_char
-        row_top = y - line_h
-        row_bottom = y + line_h
+        row_top = row_y - line_h
+        row_bottom = row_y + line_h
         if rect is not None:
             bx1 = x
             by1 = row_top
@@ -297,8 +381,18 @@ def _draw_suggestions(c: canvas.Canvas) -> None:  # pragma: no cover - visual on
             by2 = row_bottom
         _suggestion_button_bounds[index] = (bx1, by1, bx2, by2)
 
-        draw_text(label, x, y)
-        y += line_h
+        draw_text(label, x, row_y)
+        if (
+            _suggestion_hover_index == index
+            and rect is not None
+            and paint is not None
+        ):
+            try:
+                underline_rect = Rect(x, row_y + 4, label_width, 1)
+                c.draw_rect(underline_rect)
+            except Exception:
+                pass
+        row_y += line_h
 
         source_key = getattr(GPTState, "last_suggest_source", "")
         spoken_source = SOURCE_SPOKEN_MAP.get(source_key, "")
@@ -307,8 +401,35 @@ def _draw_suggestions(c: canvas.Canvas) -> None:  # pragma: no cover - visual on
             grammar_phrase = f"model {spoken_source} {base_recipe}"
         else:
             grammar_phrase = f"model {base_recipe}"
-        draw_text(f"Say: {grammar_phrase}", x + 4, y)
-        y += line_h * 2
+        draw_text(f"Say: {grammar_phrase}", x + 4, row_y)
+
+    # Draw a simple scrollbar when needed.
+    if max_scroll > 0 and rect is not None and paint is not None:
+        try:
+            old_color = getattr(paint, "color", None)
+            old_style = getattr(paint, "style", None)
+            track_x = rect.x + rect.width - 12
+            track_y = body_top
+            track_height = visible_height
+            if hasattr(paint, "Style") and hasattr(paint, "style"):
+                paint.style = paint.Style.STROKE
+            paint.color = "DDDDDD"
+            c.draw_rect(Rect(track_x, track_y, 6, track_height))
+            thumb_height = max(int(visible_height * visible_height / total_content_height), 20)
+            if max_scroll > 0:
+                thumb_offset = int((scroll_y / max_scroll) * (visible_height - thumb_height))
+            else:
+                thumb_offset = 0
+            paint.color = "888888"
+            if hasattr(paint, "Style") and hasattr(paint, "style"):
+                paint.style = paint.Style.FILL
+            c.draw_rect(Rect(track_x + 1, track_y + thumb_offset + 1, 4, thumb_height - 2))
+            if old_style is not None and hasattr(paint, "Style"):
+                paint.style = old_style
+            if old_color is not None:
+                paint.color = old_color
+        except Exception:
+            pass
 
 
 def _refresh_suggestions_from_state() -> None:

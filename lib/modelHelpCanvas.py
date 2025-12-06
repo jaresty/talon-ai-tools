@@ -160,6 +160,7 @@ class HelpCanvasState:
     """State specific to the canvas-based quick help view."""
 
     showing: bool = False
+    scroll_y: float = 0.0
 
 
 _help_canvas: Optional[canvas.Canvas] = None
@@ -365,6 +366,23 @@ def _ensure_canvas() -> canvas.Canvas:
                 except Exception:
                     # If rect assignment fails for any reason, stop dragging.
                     _drag_offset = None
+                return
+
+            # Vertical scroll via mouse wheel when available.
+            if event_type in ("mouse_scroll", "wheel", "scroll"):
+                dy = getattr(evt, "dy", 0) or getattr(evt, "wheel_y", 0)
+                try:
+                    dy = float(dy)
+                except Exception:
+                    dy = 0.0
+                if dy:
+                    # Positive dy scrolls down (content up). Keep the bound
+                    # conservative; the content is mostly text and fits well
+                    # within a couple of thousand pixels.
+                    new_scroll = HelpCanvasState.scroll_y - dy * 40.0
+                    HelpCanvasState.scroll_y = max(min(new_scroll, 2000.0), 0.0)
+                return
+
         except Exception:
             # Mouse handling should never crash Talon; ignore errors.
             return
@@ -378,15 +396,32 @@ def _ensure_canvas() -> canvas.Canvas:
         _debug("mouse handler registration failed; close hotspot disabled")
 
     def _on_key(evt) -> None:  # pragma: no cover - visual only
-        """Minimal key handler so Escape can close the canvas."""
+        """Key handler for quick help (Escape + basic scrolling)."""
         try:
             if not getattr(evt, "down", False):
                 return
-            key = getattr(evt, "key", "") or ""
-            if key.lower() in ("escape", "esc"):
+            key = (getattr(evt, "key", "") or "").lower()
+            if key in ("escape", "esc"):
                 _debug("escape key pressed; closing canvas quick help")
                 _reset_help_state("all", None)
                 _close_canvas()
+                return
+
+            # Provide simple keyboard scrolling so users can inspect tall
+            # quick-help content without relying solely on the mouse.
+            # Use coarse and fine increments similar to the response canvas.
+            delta = 0.0
+            if key in ("pagedown", "page_down"):
+                delta = 200.0
+            elif key in ("pageup", "page_up"):
+                delta = -200.0
+            elif key in ("down", "j"):
+                delta = 40.0
+            elif key in ("up", "k"):
+                delta = -40.0
+            if delta:
+                new_scroll = HelpCanvasState.scroll_y + delta
+                HelpCanvasState.scroll_y = max(min(new_scroll, 2000.0), 0.0)
         except Exception:
             return
 
@@ -421,6 +456,7 @@ def _open_canvas() -> None:
     canvas_obj = _ensure_canvas()
     HelpCanvasState.showing = True
     HelpGUIState.showing = True
+    HelpCanvasState.scroll_y = 0.0
     _debug("opening canvas quick help")
     canvas_obj.show()
 
@@ -434,6 +470,7 @@ def _close_canvas() -> None:
         return
     HelpCanvasState.showing = False
     HelpGUIState.showing = False
+    HelpCanvasState.scroll_y = 0.0
     try:
         _debug("closing canvas quick help")
         _help_canvas.hide()
@@ -476,7 +513,8 @@ def _default_draw_quick_help(c: canvas.Canvas) -> None:  # pragma: no cover - vi
             base_textsize = None
 
     # Fill the entire canvas rect with a solid background so the quick help
-    # feels like an opaque modal rather than floating text.
+    # feels like an opaque modal rather than floating text, and add a subtle
+    # outline so it reads as a coherent panel.
     rect = getattr(c, "rect", None)
     if rect is not None and paint is not None and hasattr(rect, "width"):
         try:
@@ -486,6 +524,12 @@ def _default_draw_quick_help(c: canvas.Canvas) -> None:  # pragma: no cover - vi
             if hasattr(paint, "Style") and hasattr(paint, "style"):
                 paint.style = paint.Style.FILL
             c.draw_rect(rect)
+            if hasattr(paint, "Style") and hasattr(paint, "style"):
+                paint.style = paint.Style.STROKE
+            paint.color = "C0C0C0"
+            c.draw_rect(
+                Rect(rect.x + 0.5, rect.y + 0.5, rect.width - 1, rect.height - 1)
+            )
             # Restore style; text colour is set explicitly below.
             if old_style is not None:
                 paint.style = old_style
@@ -503,13 +547,15 @@ def _default_draw_quick_help(c: canvas.Canvas) -> None:  # pragma: no cover - vi
         except Exception:
             pass
 
-    # Draw near the top-left of the canvas so it is easy to spot.
+    # Draw near the top-left of the canvas; apply a vertical scroll offset so
+    # tall quick-help content can be inspected on smaller screens.
+    scroll_y = getattr(HelpCanvasState, "scroll_y", 0.0) or 0.0
     if rect is not None and hasattr(rect, "x") and hasattr(rect, "y"):
         x = rect.x + 40
-        y = rect.y + 60
+        y = rect.y + 60 - int(scroll_y)
     else:
         x = 40
-        y = 60
+        y = 60 - int(scroll_y)
     line_h = 18
 
     # Header band behind the title and close button so the top of the panel

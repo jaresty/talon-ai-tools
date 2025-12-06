@@ -13,9 +13,15 @@ META_INTERPRETATION_GUIDANCE: str = (
     "request and chose your approach; list key assumptions and constraints as "
     "short bullets; call out major gaps or caveats and up to three things the "
     "user should verify; propose one improved version of the user's original "
-    "prompt in one or two sentences; and, when helpful, suggest a single axis "
-    "tweak in the form 'Suggestion: <axis>=<token>' using the existing axis "
-    "token vocabulary."
+    "prompt in one or two sentences; and, when helpful, suggest at most one "
+    "axis tweak in the form 'Suggestion: <axis>=<token>'. Prefer using an "
+    "existing axis name (for example, completeness, scope, method, style) and a "
+    "single existing axis token (for example, focus, narrow, bullets). Do not "
+    "include multiple options (no lists, pipes, or slashes). If you believe an "
+    "important axis or token is missing from the current vocabulary, you may "
+    "propose exactly one new candidate in this Suggestion line, but make it a "
+    "single, concrete token and keep the surrounding explanation brief so it is "
+    "clear this is a proposed addition rather than a free-form phrase."
 )
 
 

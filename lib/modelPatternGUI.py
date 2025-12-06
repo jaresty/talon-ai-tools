@@ -36,10 +36,14 @@ class PatternCanvasState:
     """State specific to the canvas-based model pattern picker."""
 
     showing: bool = False
+    scroll_y: float = 0.0
 
 
 _pattern_canvas: Optional[canvas.Canvas] = None
 _pattern_button_bounds: Dict[str, Tuple[int, int, int, int]] = {}
+_pattern_drag_offset: Optional[Tuple[float, float]] = None
+_pattern_hover_close: bool = False
+_pattern_hover_key: Optional[str] = None
 
 # Default geometry for the pattern picker window.
 _PANEL_WIDTH = 720
@@ -425,8 +429,9 @@ def _ensure_pattern_canvas() -> canvas.Canvas:
     _pattern_canvas.register("draw", _on_draw)
 
     def _on_mouse(evt) -> None:  # pragma: no cover - visual only
-        """Handle close hotspot, domain selection, and pattern clicks."""
+        """Handle close hotspot, domain selection, pattern clicks, hover, and drag."""
         try:
+            global _pattern_drag_offset, _pattern_hover_close, _pattern_hover_key
             rect = getattr(_pattern_canvas, "rect", None)
             pos = getattr(evt, "pos", None)
             if rect is None or pos is None:
@@ -445,6 +450,20 @@ def _ensure_pattern_canvas() -> canvas.Canvas:
 
             header_height = 32
             hotspot_width = 80
+
+            # Track hover state for the close hotspot and any button bounds so
+            # the renderer can provide visual feedback as the mouse moves.
+            if event_type in ("mousemove", "mouse_move") and _pattern_drag_offset is None:
+                _pattern_hover_close = (
+                    0 <= local_y <= header_height
+                    and rect.width - hotspot_width <= local_x <= rect.width
+                )
+                hover_key: Optional[str] = None
+                for key, (bx1, by1, bx2, by2) in list(_pattern_button_bounds.items()):
+                    if bx1 <= abs_x <= bx2 and by1 <= abs_y <= by2:
+                        hover_key = key
+                        break
+                _pattern_hover_key = hover_key
 
             if event_type in ("mousedown", "mouse_down") and button in (0, 1):
                 # Close hotspot in top-right header band.
@@ -474,15 +493,60 @@ def _ensure_pattern_canvas() -> canvas.Canvas:
                                 break
                     return
 
-            # Minimal drag: allow moving the panel by dragging the header.
-            if event_type in ("mousemove", "mouse_move") and button in (0, 1):
-                if 0 <= local_y <= header_height:
-                    try:
-                        dx = gpos.x - rect.x
-                        dy = gpos.y - rect.y
-                        _pattern_canvas.move(rect.x + dx, rect.y + dy)
-                    except Exception:
-                        pass
+                # If we didn't hit a button or close hotspot, start a drag from
+                # anywhere in the panel, mirroring the response canvas.
+                _pattern_drag_offset = (gpos.x - rect.x, gpos.y - rect.y)
+                _debug(f"pattern drag start at offset {_pattern_drag_offset}")
+                return
+
+            if event_type in ("mouseup", "mouse_up"):
+                _pattern_drag_offset = None
+                return
+
+            if event_type in ("mousemove", "mouse_move") and _pattern_drag_offset is not None:
+                dx, dy = _pattern_drag_offset
+                new_x = gpos.x - dx
+                new_y = gpos.y - dy
+                try:
+                    _pattern_canvas.move(new_x, new_y)
+                except Exception:
+                    _pattern_drag_offset = None
+                return
+
+            # Scroll the pattern list with mouse wheel events.
+            if event_type in ("mouse_scroll", "wheel", "scroll"):
+                dy = getattr(evt, "dy", 0) or getattr(evt, "wheel_y", 0)
+                try:
+                    dy = float(dy)
+                except Exception:
+                    dy = 0.0
+                if dy and rect is not None and PatternGUIState.domain is not None:
+                    # Map wheel events to whole-row scrolling so rows never
+                    # partially overlap the header/tip band.
+                    line_h = 18
+                    row_height = line_h * 3
+                    body_top = rect.y + 60 + line_h * 4
+                    body_bottom = rect.y + rect.height - (line_h // 2)
+                    visible_height = max(body_bottom - body_top, row_height)
+                    patterns = [p for p in PATTERNS if p.domain == PatternGUIState.domain]
+                    if patterns:
+                        # Use a ceiling-based visible_rows so that we do not
+                        # allow one extra scroll "page" that would leave a
+                        # mostly-empty gap at the bottom.
+                        visible_rows = max(
+                            int((visible_height + row_height - 1) // row_height), 1
+                        )
+                        max_offset = max(len(patterns) - visible_rows, 0)
+                        # dy < 0 → scroll down (next rows), dy > 0 → up.
+                        step = -1 if dy > 0 else 1
+                        offset = int(getattr(PatternCanvasState, "scroll_y", 0) or 0)
+                        offset = max(min(offset + step, max_offset), 0)
+                        PatternCanvasState.scroll_y = float(offset)
+                        try:
+                            _pattern_canvas.show()
+                        except Exception:
+                            pass
+                return
         except Exception:
             return
 
@@ -490,6 +554,70 @@ def _ensure_pattern_canvas() -> canvas.Canvas:
         _pattern_canvas.register("mouse", _on_mouse)
     except Exception:
         _debug("mouse handler registration failed for pattern canvas")
+
+    def _on_scroll(evt) -> None:  # pragma: no cover - visual only
+        """Handle high-level scroll events when the runtime exposes them separately."""
+        try:
+            rect = getattr(_pattern_canvas, "rect", None)
+            if rect is None or PatternGUIState.domain is None:
+                return
+
+            event_type = getattr(evt, "event", "") or ""
+            dy = getattr(evt, "dy", None)
+            delta_y = getattr(evt, "delta_y", None)
+            pixels = getattr(evt, "pixels", None)
+            degrees = getattr(evt, "degrees", None)
+
+            raw = None
+            if pixels is not None and hasattr(pixels, "y"):
+                raw = getattr(pixels, "y", None)
+            elif degrees is not None and hasattr(degrees, "y"):
+                raw = getattr(degrees, "y", None)
+            elif dy is not None:
+                raw = dy
+            elif delta_y is not None:
+                raw = delta_y
+            if raw is None:
+                return
+            try:
+                raw = float(raw)
+            except Exception:
+                return
+            if not raw:
+                return
+
+            line_h = 18
+            row_height = line_h * 3
+            body_top = rect.y + 60 + line_h * 4
+            body_bottom = rect.y + rect.height - (line_h // 2)
+            visible_height = max(body_bottom - body_top, row_height)
+            patterns = [p for p in PATTERNS if p.domain == PatternGUIState.domain]
+            if not patterns:
+                return
+            visible_rows = max(
+                int((visible_height + row_height - 1) // row_height), 1
+            )
+            max_offset = max(len(patterns) - visible_rows, 0)
+            # raw < 0 (scroll down) → next rows, raw > 0 → previous rows.
+            step = -1 if raw > 0 else 1
+            offset = int(getattr(PatternCanvasState, "scroll_y", 0) or 0)
+            offset = max(min(offset + step, max_offset), 0)
+            PatternCanvasState.scroll_y = float(offset)
+            try:
+                _pattern_canvas.show()
+            except Exception:
+                pass
+        except Exception:
+            return
+
+    # Register the scroll handler for the common Talon scroll event names so
+    # it behaves like the response canvas across runtimes.
+    for evt_name in ("scroll", "wheel", "mouse_scroll"):
+        try:
+            _pattern_canvas.register(evt_name, _on_scroll)
+            _debug(f"registered pattern scroll handler for '{evt_name}'")
+        except Exception:
+            _debug(f"pattern scroll handler registration failed for '{evt_name}'")
 
     def _on_key(evt) -> None:  # pragma: no cover - visual only
         try:
@@ -513,12 +641,15 @@ def _open_pattern_canvas(domain: Optional[PatternDomain]) -> None:
     canvas_obj = _ensure_pattern_canvas()
     PatternGUIState.domain = domain
     PatternCanvasState.showing = True
+    PatternCanvasState.scroll_y = 0.0
     canvas_obj.show()
 
 
 def _close_pattern_canvas() -> None:
-    global _pattern_canvas
+    global _pattern_canvas, _pattern_hover_close, _pattern_hover_key
     PatternCanvasState.showing = False
+    _pattern_hover_close = False
+    _pattern_hover_key = None
     if _pattern_canvas is None:
         return
     try:
@@ -544,6 +675,13 @@ def _draw_pattern_canvas(c: canvas.Canvas) -> None:  # pragma: no cover - visual
             if hasattr(paint, "Style") and hasattr(paint, "style"):
                 paint.style = paint.Style.FILL
             c.draw_rect(rect)
+            # Subtle outline so the canvas reads as a coherent panel.
+            if hasattr(paint, "Style") and hasattr(paint, "style"):
+                paint.style = paint.Style.STROKE
+            paint.color = "C0C0C0"
+            c.draw_rect(
+                Rect(rect.x + 0.5, rect.y + 0.5, rect.width - 1, rect.height - 1)
+            )
             if old_style is not None:
                 paint.style = old_style
             paint.color = old_color or "000000"
@@ -568,6 +706,14 @@ def _draw_pattern_canvas(c: canvas.Canvas) -> None:  # pragma: no cover - visual
         close_y = rect.y + 24
         close_x = rect.x + rect.width - (len(close_label) * approx_char) - 16
         draw_text(close_label, close_x, close_y)
+        if paint is not None and _pattern_hover_close:
+            try:
+                underline_rect = Rect(
+                    close_x, close_y + 4, len(close_label) * approx_char, 1
+                )
+                c.draw_rect(underline_rect)
+            except Exception:
+                pass
     y += line_h
     draw_text(
         "Tip: Say the pattern name or full 'model …' grammar; clicking also runs it.",
@@ -589,6 +735,12 @@ def _draw_pattern_canvas(c: canvas.Canvas) -> None:  # pragma: no cover - visual
             x + len(label) * approx_char,
             y + line_h,
         )
+        if _pattern_hover_key == "domain_coding" and rect is not None and paint is not None:
+            try:
+                underline_rect = Rect(x, y + 4, len(label) * approx_char, 1)
+                c.draw_rect(underline_rect)
+            except Exception:
+                pass
         y += line_h * 2
         # Writing/product/reflection domain button.
         label = "[Writing / product / reflection patterns]"
@@ -599,6 +751,12 @@ def _draw_pattern_canvas(c: canvas.Canvas) -> None:  # pragma: no cover - visual
             x + len(label) * approx_char,
             y + line_h,
         )
+        if _pattern_hover_key == "domain_writing" and rect is not None and paint is not None:
+            try:
+                underline_rect = Rect(x, y + 4, len(label) * approx_char, 1)
+                c.draw_rect(underline_rect)
+            except Exception:
+                pass
         y += line_h * 2
         draw_text(
             "Tip: Say 'model coding patterns' or 'model writing patterns' to jump straight to a domain.",
@@ -614,23 +772,106 @@ def _draw_pattern_canvas(c: canvas.Canvas) -> None:  # pragma: no cover - visual
     draw_text("Tip: Say 'close patterns' to close this menu.", x, y)
     y += line_h * 2
 
-    for pattern in PATTERNS:
-        if pattern.domain != domain:
-            continue
+    # Scrolling list of patterns for the current domain.
+    patterns = [p for p in PATTERNS if p.domain == domain]
+    if rect is not None and hasattr(rect, "height"):
+        body_top = y
+        body_bottom = rect.y + rect.height - (line_h // 2)
+    else:
+        body_top = y
+        body_bottom = y + line_h * len(patterns) * 3
+    visible_height = max(body_bottom - body_top, line_h * 3)
+
+    row_height = line_h * 3  # [Name], recipe, "Say: …"
+    if patterns:
+        # Use a ceiling-based visible_rows so that we do not allow one extra
+        # scroll "page" that would leave a mostly-empty gap at the bottom.
+        visible_rows = max(
+            int((visible_height + row_height - 1) // row_height), 1
+        )
+        max_offset = max(len(patterns) - visible_rows, 0)
+    else:
+        visible_rows = 0
+        max_offset = 0
+
+    # Interpret scroll_y as a row offset to avoid partial-row overlap.
+    offset_rows = int(getattr(PatternCanvasState, "scroll_y", 0) or 0)
+    offset_rows = max(min(offset_rows, max_offset), 0)
+    PatternCanvasState.scroll_y = float(offset_rows)
+
+    for idx in range(offset_rows, len(patterns)):
+        pattern = patterns[idx]
+        row_y = body_top + (idx - offset_rows) * row_height
+        if row_y > body_bottom:
+            break
+
         label = f"[{pattern.name}]"
-        draw_text(label, x, y)
+        draw_text(label, x, row_y)
+        key = f"pattern:{pattern.name}"
         _pattern_button_bounds[f"pattern:{pattern.name}"] = (
             x,
-            y - line_h,
+            row_y - line_h,
             x + len(label) * approx_char,
-            y + line_h,
+            row_y + line_h,
         )
-        y += line_h
-        draw_text(pattern.recipe, x, y)
-        y += line_h
+        if _pattern_hover_key == key and rect is not None and paint is not None:
+            try:
+                underline_rect = Rect(x, row_y + 4, len(label) * approx_char, 1)
+                c.draw_rect(underline_rect)
+            except Exception:
+                pass
+        row_y += line_h
+        draw_text(pattern.recipe, x, row_y)
+        row_y += line_h
         grammar_phrase = f"model {pattern.recipe.replace(' · ', ' ')}"
-        draw_text(f"Say: {grammar_phrase}", x, y)
-        y += line_h * 2
+        draw_text(f"Say: {grammar_phrase}", x, row_y)
+
+    # Simple scrollbar when content exceeds the visible height. Use row-based
+    # offsets so the thumb reflects which subset of rows is visible.
+    if max_offset > 0 and rect is not None and paint is not None:
+        try:
+            old_color = getattr(paint, "color", None)
+            old_style = getattr(paint, "style", None)
+            track_x = rect.x + rect.width - 12
+            track_y = body_top
+            track_height = visible_height
+            if hasattr(paint, "Style") and hasattr(paint, "style"):
+                paint.style = paint.Style.STROKE
+            paint.color = "DDDDDD"
+            c.draw_rect(Rect(track_x, track_y, 6, track_height))
+            thumb_height = max(
+                int(
+                    visible_height
+                    * visible_height
+                    / (row_height * len(patterns) or 1)
+                ),
+                20,
+            )
+            travel = max(visible_height - thumb_height, 0)
+            if max_offset > 0:
+                # When the user reaches the last or second-to-last page of
+                # rows, visually snap the thumb to the end of the track so
+                # there is no lingering dead space at the bottom even if the
+                # row-based offset cannot represent every exact pixel.
+                if offset_rows >= max_offset - 1:
+                    frac = 1.0
+                else:
+                    frac = offset_rows / float(max_offset)
+                thumb_offset = int(frac * travel)
+            else:
+                thumb_offset = 0
+            paint.color = "888888"
+            if hasattr(paint, "Style") and hasattr(paint, "style"):
+                paint.style = paint.Style.FILL
+            # Allow the thumb to travel the full height of the track so there
+            # is no visual dead space at the bottom when scrolled to the end.
+            c.draw_rect(Rect(track_x + 1, track_y + thumb_offset, 4, thumb_height))
+            if old_style is not None and hasattr(paint, "Style"):
+                paint.style = old_style
+            if old_color is not None:
+                paint.color = old_color
+        except Exception:
+            pass
 
 
 def _parse_recipe(recipe: str) -> tuple[str, str, str, str, str, str]:

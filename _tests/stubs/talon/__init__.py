@@ -130,11 +130,84 @@ class _UIElement:
 
 
 class _UI:
+    # Minimal subset needed for tests; real Talon exposes main_screen().
+    def main_screen(self):
+        return _UIElement()
+
     def focused_element(self):
         return _UIElement()
 
 
 ui = _UI()
+
+
+class _Canvas:
+    """Minimal canvas stub for tests.
+
+    Provides just enough of the `canvas.Canvas` API used in this repo to
+    allow unit tests to exercise open/close wiring without a real Talon
+    runtime or drawing surface.
+    """
+
+    def __init__(self, _screen=None):
+        self._callbacks: dict[str, list] = {}
+        self.visible: bool = False
+
+    @classmethod
+    def from_screen(cls, screen, **_kwargs):
+        # The screen object is ignored in tests; real Talon will supply a
+        # proper screen with geometry.
+        return cls(screen)
+
+    @classmethod
+    def from_rect(cls, rect, **_kwargs):
+        # In tests, treat from_rect the same as from_screen and ignore rect.
+        return cls(rect)
+
+    def register(self, event: str, callback):
+        self._callbacks.setdefault(event, []).append(callback)
+
+    def unregister(self, event: str, callback):
+        callbacks = self._callbacks.get(event)
+        if not callbacks:
+            return
+        try:
+            callbacks.remove(callback)
+        except ValueError:
+            pass
+
+    def show(self):
+        self.visible = True
+        # Optionally invoke draw callbacks once so they are smoke-tested.
+        for cb in self._callbacks.get("draw", []):
+            cb(self)
+
+    def hide(self):
+        self.visible = False
+
+
+canvas = SimpleNamespace(Canvas=_Canvas)
+
+
+class _SkiaPaint:
+    def __init__(self):
+        self.color = 0
+
+
+class _SkiaRect:
+    def __init__(self, x, y, width, height):
+        self.x = x
+        self.y = y
+        self.width = width
+        self.height = height
+
+
+class _SkiaModule(SimpleNamespace):
+    def __init__(self):
+        super().__init__(Paint=_SkiaPaint, Rect=_SkiaRect)
+
+
+skia = _SkiaModule()
 
 
 class _DummyGUI:
@@ -203,4 +276,6 @@ __all__ = [
     "Module",
     "settings",
     "ui",
+    "canvas",
+    "skia",
 ]

@@ -130,7 +130,7 @@ def confirmation_gui(gui: imgui.GUI):
 
         gui.spacer()
         if gui.button("Show grammar help"):
-            actions.user.model_help_gui_open_for_last_recipe()
+            actions.user.model_help_canvas_open_for_last_recipe()
 
         gui.spacer()
         if gui.button("Open pattern menu"):

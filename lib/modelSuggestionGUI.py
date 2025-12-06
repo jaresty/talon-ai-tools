@@ -198,7 +198,7 @@ class UserActions:
         except Exception:
             pass
         try:
-            actions.user.model_help_gui_close()
+            actions.user.model_help_canvas_close()
         except Exception:
             pass
 

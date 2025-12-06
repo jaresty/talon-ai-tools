@@ -220,8 +220,8 @@ def _show_axes(gui: imgui.GUI) -> None:
 def _show_directional_lenses(gui: imgui.GUI) -> None:
     gui.text("Directional lenses (coordinate map)")
     gui.text(
-        "  Axes: rows = abstract (up) -> center -> concrete (down); "
-        "columns = reflect (left) / mixed (center) / act (right)"
+        "  Axes: up/down = abstract -> center -> concrete; "
+        "left/right = reflect -> mixed -> act"
     )
     gui.spacer()
 
@@ -288,22 +288,20 @@ def _show_directional_lenses(gui: imgui.GUI) -> None:
             return "-"
         return ", ".join(items)
 
-    def _render_row(label: str, row_key: str) -> None:
+    def _render_row(row_key: str) -> None:
         reflect_tokens = grid[(row_key, "left")]
         mixed_tokens = grid[(row_key, "center")]
         act_tokens = grid[(row_key, "right")]
 
-        gui.text(f"{label}:")
         _wrap_and_render(gui, "reflect: " + _fmt_slot(reflect_tokens), indent="    ")
         _wrap_and_render(gui, "mixed:   " + _fmt_slot(mixed_tokens), indent="    ")
         _wrap_and_render(gui, "act:     " + _fmt_slot(act_tokens), indent="    ")
 
-    def _render_column(label: str, col_key: str) -> None:
+    def _render_column(col_key: str) -> None:
         abstract_tokens = grid[("up", col_key)]
         center_tokens = grid[("center", col_key)]
         concrete_tokens = grid[("down", col_key)]
 
-        gui.text(f"{label}:")
         _wrap_and_render(
             gui,
             "abstract: " + _fmt_slot(abstract_tokens),
@@ -320,20 +318,25 @@ def _show_directional_lenses(gui: imgui.GUI) -> None:
             indent="    ",
         )
 
-    # Vertical-oriented categories.
-    _render_row("ABSTRACT (up)", "up")
-    gui.spacer()
-    _render_row("CONCRETE (down)", "down")
-    gui.spacer()
-
-    # Horizontal-oriented categories.
-    _render_column("REFLECT (left)", "left")
-    gui.spacer()
-    _render_column("ACT (right)", "right")
+    # Top band: abstract lenses by stance.
+    gui.text("UP / ABSTRACT")
+    _render_row("up")
     gui.spacer()
 
-    # Mixed/central lenses.
-    _render_column("CENTER (mixed)", "center")
+    # Middle band: horizontal stances at all depths.
+    gui.text("LEFT / REFLECT")
+    _render_column("left")
+    gui.spacer()
+    gui.text("CENTER / MIXED")
+    _render_column("center")
+    gui.spacer()
+    gui.text("RIGHT / ACT")
+    _render_column("right")
+    gui.spacer()
+
+    # Bottom band: concrete lenses by stance.
+    gui.text("DOWN / CONCRETE")
+    _render_row("down")
 
     if other_non_directional:
         _wrap_and_render(

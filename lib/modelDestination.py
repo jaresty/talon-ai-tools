@@ -211,10 +211,10 @@ class ModelDestination:
     def insert(self, gpt_output: PromptPayload):
         result = _coerce_prompt_result(gpt_output)
         presentation = result.presentation_for("default")
-        if presentation.open_browser:
-            Browser().insert(result)
-        else:
-            actions.user.confirmation_gui_append(presentation)
+        # Always route through the confirmation surface (canvas-based viewer),
+        # even for long responses. Opening a browser becomes an explicit user
+        # action rather than an automatic fallback.
+        actions.user.confirmation_gui_append(presentation)
 
     # If this isn't working, you may need to turn on dication for electron apps
     #  ui.apps(bundle="com.microsoft.VSCode")[0].element.AXManualAccessibility = True

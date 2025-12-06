@@ -125,6 +125,12 @@ settings = _Settings()
 
 
 class _UIElement:
+    def __init__(self, x=0, y=0, width=1920, height=1080):
+        self.x = x
+        self.y = y
+        self.width = width
+        self.height = height
+
     def get(self, _name):
         return None
 

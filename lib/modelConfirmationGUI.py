@@ -125,6 +125,10 @@ def confirmation_gui(gui: imgui.GUI):
             actions.user.confirmation_gui_open_browser()
 
         gui.spacer()
+        if gui.button("View in canvas"):
+            actions.user.model_response_canvas_open()
+
+        gui.spacer()
         if gui.button("Analyze prompt"):
             actions.user.confirmation_gui_analyze_prompt()
 
@@ -140,7 +144,7 @@ def confirmation_gui(gui: imgui.GUI):
 @mod.action_class
 class UserActions:
     def confirmation_gui_append(model_output: Union[str, ResponsePresentation]):
-        """Add text to the confirmation gui"""
+        """Add text to the confirmation surface (canvas-based viewer)"""
         ctx.tags = ["user.model_window_open"]
         ConfirmationGUIState.show_advanced_actions = False
         if isinstance(model_output, ResponsePresentation):
@@ -149,7 +153,13 @@ class UserActions:
         else:
             ConfirmationGUIState.current_presentation = None
             GPTState.text_to_confirm = model_output
-        confirmation_gui.show()
+        # Keep the canvas-based response viewer in sync with the text being
+        # confirmed so it can display content even for non-model flows (for
+        # example, `model pass clip`).
+        GPTState.last_response = GPTState.text_to_confirm
+        # Open the canvas-based response viewer instead of the legacy imgui
+        # confirmation window.
+        actions.user.model_response_canvas_open()
 
     def confirmation_gui_close():
         """Close the model output without pasting it"""

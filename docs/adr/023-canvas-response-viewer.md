@@ -139,6 +139,7 @@ The canvas is laid out as a **single, focused panel**:
 - **Header band** at the top:
   - Title: `Model response viewer`.  
   - Close affordance `[X]` in the top‑right, with a hover hotspot.  
+  - Uses a monospaced canvas typeface by default (for example, `Menlo` on this system) to keep wrapping and bullet alignment predictable, with an optional `user.model_response_canvas_typeface` setting to override the family.  
   - Compact **prompt recap** when `GPTState.last_recipe` is available:
     - `Talon GPT Result`, `Prompt recap`, `Recipe: …`, and `Say: model …` (derived from recipe + directional lens).  
   - **Meta band** when `GPTState.last_meta` is non‑empty:
@@ -155,6 +156,7 @@ The canvas is laid out as a **single, focused panel**:
     - Axis tweak suggestion.  
     - Any extra lines.  
   - A short note at the end of this block emphasises that meta is **diagnostic context about how the model read the request**, not part of the main answer body.  
+  - Clicking anywhere in the meta band or expanded meta block toggles show/hide, not just the `[Show meta]` / `[Hide meta]` label.  
 - **Scrollable answer body**:
   - The scroll area starts below the header/meta section (`body_top`), so header + meta do not scroll with the answer.  
   - The answer text source is:
@@ -270,6 +272,7 @@ Additional controls (for example, “Tighten answer”, “Explain meta”) are 
      - Introduce an explicit “Response” heading and additional padding between recap, meta, and answer to break up the current wall of text.  
      - Keep the `[Show/Hide meta]` toggle visually coupled to the meta label (same horizontal band) so its relationship to the block is obvious.  
    - Optionally group footer actions into logical clusters (for example, output actions vs. thread/context vs. analysis/browser) with a bit more spacing to improve scanability.  
+   - Consider defaulting meta to **collapsed** (band-only) on first open so the initial view is answer‑first while keeping diagnostic context a single click away.  
    - Consider optional keyboard shortcuts or small visual hints that distinguish “pasteable answer” from “diagnostic meta”.  
 
 3. **Tests and guardrails**

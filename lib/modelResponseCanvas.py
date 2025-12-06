@@ -1,6 +1,6 @@
 from typing import Callable, Optional
 
-from talon import Context, Module, actions, canvas, clip, ui
+from talon import Context, Module, actions, canvas, clip, settings, ui
 
 from .modelState import GPTState
 from .modelDestination import _parse_meta
@@ -148,7 +148,7 @@ def _ensure_response_canvas() -> canvas.Canvas:
                         or ""
                     )
                     try:
-                        if key == "meta_toggle":
+                        if key in ("meta_toggle", "meta_toggle_region"):
                             ResponseCanvasState.meta_expanded = (
                                 not ResponseCanvasState.meta_expanded
                             )
@@ -425,13 +425,22 @@ def _default_draw_response(c: canvas.Canvas) -> None:  # pragma: no cover - visu
     # coverage) via a Talon setting rather than hard-coding a platform-
     # specific family here. This is best-effort and ignored when unsupported.
     paint = getattr(c, "paint", None)
-    # Prefer a configurable typeface when the runtime exposes one. This uses
-    # the same pattern as talon_hud's rich text handling, but allows an
-    # optional user override for the font family.
-    # Note: we intentionally do not override the canvas font family here.
-    # Experiments with skia.Typeface and FontMgr showed that the necessary
-    # constructors are not exposed on all Talon runtimes, so per-canvas font
-    # changes are not reliable. See ADR 023 work-log for details.
+    if paint is not None:
+        # Simple string-based typeface override; Talon maps this to a
+        # platform-appropriate font when supported. Default to a monospaced
+        # font that exists on this system, but allow users to override it via
+        # a Talon setting when desired.
+        try:
+            family = settings.get("user.model_response_canvas_typeface", "") or "Menlo"
+        except Exception:
+            family = "Menlo"
+        if family:
+            try:
+                paint.typeface = family
+            except Exception:
+                # If the runtime does not support this typeface name, fall
+                # back silently to the default canvas font.
+                pass
 
     if rect is not None and hasattr(rect, "x") and hasattr(rect, "y"):
         x = rect.x + 40
@@ -533,6 +542,9 @@ def _default_draw_response(c: canvas.Canvas) -> None:  # pragma: no cover - visu
                 meta_summary = stripped
             break
 
+    meta_region_top: Optional[int] = None
+    meta_region_bottom: Optional[int] = None
+
     if meta and rect is not None:
         approx_char_width = 8
         # Compute the toggle first so we know exactly how much horizontal
@@ -607,6 +619,8 @@ def _default_draw_response(c: canvas.Canvas) -> None:  # pragma: no cover - visu
             except Exception:
                 pass
 
+        # Record the top of the clickable meta region slightly above the band.
+        meta_region_top = y - line_h // 2
         y += line_h
 
     # Optional expanded meta panel above the answer body when requested. This
@@ -708,6 +722,32 @@ def _default_draw_response(c: canvas.Canvas) -> None:  # pragma: no cover - visu
                 paint.color = default_text_color
             except Exception:
                 pass
+
+        # Extend the clickable meta region to the bottom of the expanded block.
+        meta_region_bottom = y
+
+    # If we have any meta at all, allow clicking anywhere in the meta band /
+    # block region to toggle expansion, not just on the text toggle control.
+    if (
+        meta
+        and rect is not None
+        and meta_region_top is not None
+        and meta_region_bottom is None
+    ):
+        # Meta was present but not expanded; treat just the band as clickable.
+        meta_region_bottom = y
+    if (
+        meta
+        and rect is not None
+        and meta_region_top is not None
+        and meta_region_bottom is not None
+    ):
+        _response_button_bounds["meta_toggle_region"] = (
+            rect.x,
+            int(meta_region_top),
+            rect.x + rect.width,
+            int(meta_region_bottom),
+        )
 
     # Transition into the main, pasteable response body with an explicit
     # heading and additional spacing so it is visually separated from recap
@@ -841,6 +881,9 @@ class UserActions:
 
         ResponseCanvasState.showing = True
         ResponseCanvasState.scroll_y = 0.0
+        # Always start with meta collapsed; the band still shows a short
+        # summary so the initial view is response-first.
+        ResponseCanvasState.meta_expanded = False
         _debug("opening response canvas")
         canvas_obj.show()
 
@@ -851,6 +894,7 @@ class UserActions:
             return
         ResponseCanvasState.showing = False
         ResponseCanvasState.scroll_y = 0.0
+        ResponseCanvasState.meta_expanded = False
         try:
             _response_canvas.hide()
         except Exception:

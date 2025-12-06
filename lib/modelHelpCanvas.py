@@ -39,6 +39,13 @@ _drag_offset: Optional[tuple[float, float]] = None
 _hover_close: bool = False
 _hover_panel: bool = False
 
+# Default geometry for the quick help window. Kept in one place so future
+# tweaks do not require hunting for magic numbers.
+_PANEL_WIDTH = 820
+_PANEL_HEIGHT = 900
+_PANEL_OFFSET_X = 200
+_PANEL_OFFSET_Y = 80
+
 
 def _debug(msg: str) -> None:
     """Lightweight debug logging for the canvas quick help.
@@ -109,14 +116,24 @@ def _ensure_canvas() -> canvas.Canvas:
         return _help_canvas
 
     screen = ui.main_screen()
-    # Use a simple, opinionated fixed placement relative to the main screen.
-    # This avoids surprises from DPI/scaling quirks: the panel always opens
-    # at the same offset and size.
+    # Prefer centering relative to the main screen while keeping geometry
+    # bounded so the panel stays fully visible.
+    # Width/height defaults live in module-level constants so they are easy
+    # to tune without scattering magic numbers.
     try:
-        start_x = getattr(screen, "x", 0) + 200
-        start_y = getattr(screen, "y", 0) + 80
-        panel_width = 820
-        panel_height = 720
+        screen_x = getattr(screen, "x", 0)
+        screen_y = getattr(screen, "y", 0)
+        screen_width = getattr(screen, "width", _PANEL_WIDTH + 80)
+        screen_height = getattr(screen, "height", _PANEL_HEIGHT + 80)
+        margin_x = 40
+        margin_y = 40
+
+        # Constrain panel size so it always fits within the screen margins.
+        panel_width = min(_PANEL_WIDTH, max(screen_width - 2 * margin_x, 480))
+        panel_height = min(_PANEL_HEIGHT, max(screen_height - 2 * margin_y, 480))
+
+        start_x = screen_x + max((screen_width - panel_width) // 2, margin_x)
+        start_y = screen_y + max((screen_height - panel_height) // 2, margin_y)
         rect = Rect(start_x, start_y, panel_width, panel_height)
         _debug(
             f"initial canvas rect=({start_x}, {start_y}, {panel_width}, {panel_height}) "
@@ -580,6 +597,39 @@ def _default_draw_quick_help(c: canvas.Canvas) -> None:  # pragma: no cover - vi
         tokens = grid.get((row, col)) or []
         return ", ".join(tokens) if tokens else "-"
 
+    def _fmt_base_cell(row: str, col: str) -> str:
+        """Format only base (single-token) lenses for the main grid.
+
+        Combined two-word lenses like 'fly rog' are omitted here and shown
+        instead in the quadrant annotations so we avoid duplication.
+        """
+        tokens = [t for t in (grid.get((row, col)) or []) if " " not in t]
+        return ", ".join(tokens)
+
+    def _build_combined_lines(row: str) -> list[str]:
+        """Build multi-line combined lens summary for a vertical row.
+
+        Example:
+          combined:
+            reflect: fly rog
+            mixed:   fly bog
+            act:     fly ong
+        """
+        lines: list[str] = []
+        segments: list[str] = []
+        for col, label in (("left", "reflect"), ("center", "mixed"), ("right", "act")):
+            raw = [t for t in (grid.get((row, col)) or []) if " " in t]
+            if not raw:
+                continue
+            tokens = list(dict.fromkeys(raw))
+            segments.append(f"{label}: {', '.join(tokens)}")
+        if not segments:
+            return lines
+        lines.append("  combined:")
+        for seg in segments:
+            lines.append(f"    {seg}")
+        return lines
+
     # Lay out the directional lenses as a cross-shaped XY map with five
     # labelled blocks: up/abstract, left/reflect, center/mixed, right/act,
     # down/concrete. This mirrors the mental model from ADR 016 and the
@@ -587,7 +637,7 @@ def _default_draw_quick_help(c: canvas.Canvas) -> None:  # pragma: no cover - vi
     if rect is not None and hasattr(rect, "x") and hasattr(rect, "width"):
         total_width = max(rect.width - 80, 300)
         block_width = max(min(total_width // 3, 260), 180)
-        col_gap = 24
+        col_gap = 16
         center_x = rect.x + rect.width // 2 - block_width // 2
         left_x = center_x - block_width - col_gap
         right_x = center_x + block_width + col_gap
@@ -597,6 +647,8 @@ def _default_draw_quick_help(c: canvas.Canvas) -> None:  # pragma: no cover - vi
         center_x = x + block_width + 24
         right_x = center_x + block_width + 24
 
+    block_rects: dict[str, Rect] = {}
+
     def _draw_block(
         title: str,
         lines: list[str],
@@ -604,6 +656,7 @@ def _default_draw_quick_help(c: canvas.Canvas) -> None:  # pragma: no cover - vi
         box_y: int,
         box_width: int,
         bg_color: Optional[str],
+        key: Optional[str],
     ) -> int:
         # Optional soft background tint to make each block feel like a
         # distinct region in the coordinate map.
@@ -624,6 +677,8 @@ def _default_draw_quick_help(c: canvas.Canvas) -> None:  # pragma: no cover - vi
                     height + 2 * pad_y,
                 )
                 c.draw_rect(bg_rect)
+                if key:
+                    block_rects[key] = bg_rect
                 paint.color = old_color or "000000"
                 if old_style is not None:
                     paint.style = old_style
@@ -657,78 +712,133 @@ def _default_draw_quick_help(c: canvas.Canvas) -> None:  # pragma: no cover - vi
     y_grid_top = y
 
     # Top: UP / ABSTRACT
+    up_lines: list[str] = []
+    val = _fmt_base_cell("up", "left")
+    if val:
+        up_lines.append(f"  reflect: {val}")
+    val = _fmt_base_cell("up", "center")
+    if val:
+        up_lines.append(f"  mixed:   {val}")
+    val = _fmt_base_cell("up", "right")
+    if val:
+        up_lines.append(f"  act:     {val}")
+    up_lines.extend(_build_combined_lines("up"))
+
     top_end_y = _draw_block(
         "UP / ABSTRACT",
-        [
-            f"  reflect: {_fmt_cell('up', 'left')}",
-            f"  mixed:   {_fmt_cell('up', 'center')}",
-            f"  act:     {_fmt_cell('up', 'right')}",
-        ],
+        up_lines,
         center_x,
         y_grid_top,
         block_width,
         "FFF9E5",
+        "up",
     )
 
     # Center column: CENTER / MIXED
     center_start_y = top_end_y + (line_h // 2)
+    center_lines: list[str] = []
+    val = _fmt_base_cell("up", "center")
+    if val:
+        center_lines.append(f"  abstract: {val}")
+    val = _fmt_base_cell("center", "center")
+    if val:
+        center_lines.append(f"  center:   {val}")
+    val = _fmt_base_cell("down", "center")
+    if val:
+        center_lines.append(f"  concrete: {val}")
+
     center_end_y = _draw_block(
         "CENTER / MIXED",
-        [
-            f"  abstract: {_fmt_cell('up', 'center')}",
-            f"  center:   {_fmt_cell('center', 'center')}",
-            f"  concrete: {_fmt_cell('down', 'center')}",
-        ],
+        center_lines,
         center_x,
         center_start_y,
         block_width,
         "F5F5F5",
+        "center",
     )
 
     # Left: LEFT / REFLECT
+    left_lines: list[str] = []
+    val = _fmt_base_cell("up", "left")
+    if val:
+        left_lines.append(f"  abstract: {val}")
+    val = _fmt_base_cell("center", "left")
+    if val:
+        left_lines.append(f"  center:   {val}")
+    val = _fmt_base_cell("down", "left")
+    if val:
+        left_lines.append(f"  concrete: {val}")
+    # Light hint that vertical movement for this stance comes from fly/dip.
+    if any(" " in t for t in (grid.get(("up", "left"), []) or []) + (grid.get(("down", "left"), []) or [])):
+        left_lines.append("  vertical: via fly/dip")
+
     left_end_y = _draw_block(
         "LEFT / REFLECT",
-        [
-            f"  abstract: {_fmt_cell('up', 'left')}",
-            f"  center:   {_fmt_cell('center', 'left')}",
-            f"  concrete: {_fmt_cell('down', 'left')}",
-        ],
+        left_lines,
         left_x,
         center_start_y,
         block_width,
         "EEF5FF",
+        "left",
     )
 
     # Right: RIGHT / ACT
+    right_lines: list[str] = []
+    val = _fmt_base_cell("up", "right")
+    if val:
+        right_lines.append(f"  abstract: {val}")
+    val = _fmt_base_cell("center", "right")
+    if val:
+        right_lines.append(f"  center:   {val}")
+    val = _fmt_base_cell("down", "right")
+    if val:
+        right_lines.append(f"  concrete: {val}")
+    if any(" " in t for t in (grid.get(("up", "right"), []) or []) + (grid.get(("down", "right"), []) or [])):
+        right_lines.append("  vertical: via fly/dip")
+
     right_end_y = _draw_block(
         "RIGHT / ACT",
-        [
-            f"  abstract: {_fmt_cell('up', 'right')}",
-            f"  center:   {_fmt_cell('center', 'right')}",
-            f"  concrete: {_fmt_cell('down', 'right')}",
-        ],
+        right_lines,
         right_x,
         center_start_y,
         block_width,
         "E9F8EC",
+        "right",
     )
 
     # Bottom: DOWN / CONCRETE
     bottom_start_y = center_end_y + (line_h // 2)
+    down_lines: list[str] = []
+    val = _fmt_base_cell("down", "left")
+    if val:
+        down_lines.append(f"  reflect: {val}")
+    val = _fmt_base_cell("down", "center")
+    if val:
+        down_lines.append(f"  mixed:   {val}")
+    val = _fmt_base_cell("down", "right")
+    if val:
+        down_lines.append(f"  act:     {val}")
+    down_lines.extend(_build_combined_lines("down"))
+
     bottom_end_y = _draw_block(
         "DOWN / CONCRETE",
-        [
-            f"  reflect: {_fmt_cell('down', 'left')}",
-            f"  mixed:   {_fmt_cell('down', 'center')}",
-            f"  act:     {_fmt_cell('down', 'right')}",
-        ],
+        down_lines,
         center_x,
         bottom_start_y,
         block_width,
         "FFF0F5",
+        "down",
     )
 
     y = max(left_end_y, right_end_y, bottom_end_y) + line_h
+
+    # Short caption to reinforce usage without adding heavy text blocks.
+    draw_text(
+        "  One lens per call. fly/fip/dip move up/center/down; rog/bog/ong set reflect/mixed/act.",
+        x,
+        y,
+    )
+    y += line_h
 
     # Optional examples section, shown only when explicitly focused to avoid
     # making the default quick help view too tall (mirrors imgui semantics).

@@ -32,5 +32,5 @@ spike: "Important: Format the backlog item as a research spike: start with a bri
 faq: Important: Format the answer as an FAQ-style list: a sequence of clearly separated question headings with concise answers beneath each one; keep questions and answers easy to skim, and avoid long uninterrupted prose.
 
 log: Important: Format the answer as a concise work or research log entry: include date or time markers when appropriate, short bullet-style updates, and enough context for future you to understand what happened without adding unrelated narrative.
-fun: Important: Make the message feel light and fun while preserving the core content and clarity; use a more playful tone and occasional humour, but avoid obscuring key information or becoming verbose.
+fun: Important: Make the message feel light and fun while preserving the core content and clarity; use a more playful tone, occasional humour, and a few well-chosen emoji where they genuinely help with tone or scannability, but avoid obscuring key information, overusing emoji, or becoming verbose.
 announce: Important: Format the answer as a clear announcement suitable for sharing with a team or channel: start with a short headline, briefly explain what changed and why, and end with any relevant actions or next steps for readers.

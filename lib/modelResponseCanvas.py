@@ -345,6 +345,14 @@ def _format_answer_lines(answer: str, max_chars: int) -> list[str]:
                     lines.append(bullet_prefix + content)
                     content = ""
                     break
+                # If the remaining content fits on this line, keep it intact
+                # instead of forcing a wrap that leaves a short trailing
+                # fragment (for example, moving a single word like "truth)"
+                # onto its own line).
+                if len(content) <= available:
+                    lines.append(bullet_prefix + content)
+                    content = ""
+                    break
                 piece = content[:available]
                 # Try to break at the last space inside the window.
                 break_at = piece.rfind(" ")
@@ -472,8 +480,20 @@ def _default_draw_response(c: canvas.Canvas) -> None:  # pragma: no cover - visu
     y += line_h
 
     # Compact prompt recap under the title so users can see which recipe and
-    # spoken form produced the current response.
+    # spoken form produced the current response. Prefer the structured
+    # axis fields when available so we keep this recap concise and
+    # token-based even if older code paths stored a verbose last_recipe.
     recipe = getattr(GPTState, "last_recipe", "") or ""
+    static_prompt = getattr(GPTState, "last_static_prompt", "") or ""
+    axis_parts: list[str] = []
+    if static_prompt:
+        axis_parts.append(static_prompt)
+    for attr in ("last_completeness", "last_scope", "last_method", "last_style"):
+        value = getattr(GPTState, attr, "") or ""
+        if value:
+            axis_parts.append(value)
+    if axis_parts:
+        recipe = " · ".join(axis_parts)
     if recipe:
         draw_text("Talon GPT Result", x, y)
         y += line_h

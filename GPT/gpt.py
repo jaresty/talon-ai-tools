@@ -392,6 +392,13 @@ class UserActions:
 
     def gpt_apply_prompt(apply_prompt_configuration: ApplyPromptConfiguration):
         """Apply an arbitrary prompt to arbitrary text"""
+        # Close the response viewer at the start of a new run so it disappears
+        # immediately (for example, when using `model again`) and will be
+        # reopened with the fresh answer once the pipeline completes.
+        try:
+            actions.user.model_response_canvas_close()
+        except Exception:
+            pass
         # If the pattern picker GUI is open, close it when any model prompt runs
         # so voice-triggered patterns and regular grammar both dismiss it.
         try:

@@ -35,3 +35,6 @@ mapping: Important: Emphasise mapping over exposition: surface elements, relatio
 analysis: Important: Describe, analyse, and structure the situation; do not propose specific actions, fixes, or recommendations.
 
 socratic: Important: Use a Socratic, question-led method: advance primarily by asking short, targeted questions that surface assumptions, definitions, and gaps in understanding; hold back from giving full conclusions until enough answers are available or the user explicitly asks for a summary.
+
+direct: Important: Lead with the main point or recommendation first, then follow with only the most relevant supporting context, evidence, and next steps.
+indirect: Important: Start with brief background, reasoning, and trade-offs, then finish with a clear bottom-line point or recommendation that ties them together.

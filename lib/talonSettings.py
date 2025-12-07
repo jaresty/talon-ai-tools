@@ -273,21 +273,35 @@ def _spoken_axis_value(m, axis_name: str) -> str:
 
     For completeness we expect at most one value and return the bare
     `completenessModifier` when present. For scope/method/style we allow
-    Talon to provide `axisModifier_list` (multiple values); we join them
-    with spaces to preserve multi-tag semantics at the description level.
+    Talon to provide `axisModifier_list` (multiple values); we map each
+    spoken value back to its short axis token and join them with spaces so
+    multi-tag semantics are preserved in a concise, token-based form.
     """
     # Completeness remains single-valued.
     if axis_name == "completeness":
         return getattr(m, "completenessModifier", "")
 
+    axis_map = _axis_value_to_key_map_for(axis_name)
+
+    def _normalise(raw: object) -> str:
+        value = str(raw).strip()
+        if not value:
+            return ""
+        if not axis_map:
+            return value
+        # Map both short tokens and full "Important: …" descriptions back
+        # to the concise axis token when possible.
+        return axis_map.get(value, value)
+
     list_attr = f"{axis_name}Modifier_list"
     single_attr = f"{axis_name}Modifier"
     if hasattr(m, list_attr):
         values = getattr(m, list_attr) or []
-        parts = [str(v).strip() for v in values if str(v).strip()]
+        parts = [_normalise(v) for v in values if _normalise(v)]
         if parts:
             return " ".join(parts)
-    return getattr(m, single_attr, "")
+    single = getattr(m, single_attr, "")
+    return _normalise(single)
 
 
 # model prompts can be either static and predefined by this repo or custom outside of it
@@ -346,7 +360,11 @@ def modelPrompt(m) -> str:
     elif profile_scope and not GPTState.user_overrode_scope:
         effective_scope = profile_scope
     else:
-        effective_scope = settings.get("user.model_default_scope")
+        # Normalise any persisted default back to short tokens so that
+        # last_recipe and GPTState.last_* remain concise.
+        effective_scope = _axis_recipe_token(
+            "scope", settings.get("user.model_default_scope")
+        )
 
     spoken_method = _spoken_axis_value(m, "method")
     raw_profile_method = profile_axes.get("method")
@@ -359,7 +377,9 @@ def modelPrompt(m) -> str:
     elif profile_method and not GPTState.user_overrode_method:
         effective_method = profile_method
     else:
-        effective_method = settings.get("user.model_default_method")
+        effective_method = _axis_recipe_token(
+            "method", settings.get("user.model_default_method")
+        )
 
     spoken_style = _spoken_axis_value(m, "style")
     raw_profile_style = profile_axes.get("style")
@@ -372,7 +392,9 @@ def modelPrompt(m) -> str:
     elif profile_style and not GPTState.user_overrode_style:
         effective_style = profile_style
     else:
-        effective_style = settings.get("user.model_default_style")
+        effective_style = _axis_recipe_token(
+            "style", settings.get("user.model_default_style")
+        )
 
     # Apply the effective axes to the shared system prompt for this request.
     GPTState.system_prompt.completeness = effective_completeness or ""

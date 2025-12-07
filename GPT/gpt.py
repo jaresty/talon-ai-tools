@@ -5,6 +5,7 @@ from ..lib.talonSettings import (
     ApplyPromptConfiguration,
     DEFAULT_COMPLETENESS_VALUE,
     PassConfiguration,
+    _axis_recipe_token,
     _axis_string_to_tokens,
     _axis_tokens_to_string,
     _canonicalise_axis_tokens,
@@ -334,22 +335,26 @@ class UserActions:
 
     def gpt_set_default_completeness(level: str) -> None:
         """Set the default completeness level for subsequent prompts"""
-        settings.set("user.model_default_completeness", level)
+        token = _axis_recipe_token("completeness", level)
+        settings.set("user.model_default_completeness", token)
         GPTState.user_overrode_completeness = True
 
     def gpt_set_default_scope(level: str) -> None:
         """Set the default scope level for subsequent prompts"""
-        settings.set("user.model_default_scope", level)
+        token = _axis_recipe_token("scope", level)
+        settings.set("user.model_default_scope", token)
         GPTState.user_overrode_scope = True
 
     def gpt_set_default_method(level: str) -> None:
         """Set the default method for subsequent prompts"""
-        settings.set("user.model_default_method", level)
+        token = _axis_recipe_token("method", level)
+        settings.set("user.model_default_method", token)
         GPTState.user_overrode_method = True
 
     def gpt_set_default_style(level: str) -> None:
         """Set the default style for subsequent prompts"""
-        settings.set("user.model_default_style", level)
+        token = _axis_recipe_token("style", level)
+        settings.set("user.model_default_style", token)
         GPTState.user_overrode_style = True
 
     def gpt_reset_default_completeness() -> None:

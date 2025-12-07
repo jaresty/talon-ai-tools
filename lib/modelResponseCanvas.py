@@ -1,6 +1,8 @@
 from typing import Callable, Optional
 
-from talon import Context, Module, actions, canvas, clip, settings, ui
+from talon import Context, Module, actions, canvas, clip, ui
+
+from .canvasFont import apply_canvas_typeface
 
 from .modelState import GPTState
 from .modelDestination import _parse_meta
@@ -424,21 +426,15 @@ def _default_draw_response(c: canvas.Canvas) -> None:  # pragma: no cover - visu
     # specific family here. This is best-effort and ignored when unsupported.
     paint = getattr(c, "paint", None)
     if paint is not None:
-        # Simple string-based typeface override; Talon maps this to a
-        # platform-appropriate font when supported. Default to a monospaced
-        # font that exists on this system, but allow users to override it via
-        # a Talon setting when desired.
-        try:
-            family = settings.get("user.model_response_canvas_typeface", "") or "Menlo"
-        except Exception:
-            family = "Menlo"
-        if family:
-            try:
-                paint.typeface = family
-            except Exception:
-                # If the runtime does not support this typeface name, fall
-                # back silently to the default canvas font.
-                pass
+        # Share a common canvas typeface selection helper so all GPT canvases
+        # (response viewer, quick help, patterns, suggestions) prefer the same
+        # monospaced font chain, while still allowing a Talon setting override.
+        apply_canvas_typeface(
+            paint,
+            settings_key="user.model_response_canvas_typeface",
+            debug=_debug,
+            cache_key="response",
+        )
 
     if rect is not None and hasattr(rect, "x") and hasattr(rect, "y"):
         x = rect.x + 40

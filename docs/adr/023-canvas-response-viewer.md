@@ -139,7 +139,7 @@ The canvas is laid out as a **single, focused panel**:
 - **Header band** at the top:
   - Title: `Model response viewer`.  
   - Close affordance `[X]` in the top‑right, with a hover hotspot.  
-  - Uses a monospaced canvas typeface by default (for example, `Menlo` on this system) to keep wrapping and bullet alignment predictable, with an optional `user.model_response_canvas_typeface` setting to override the family.  
+  - Uses a monospaced canvas typeface by default (for example, `MonaspiceXe Nerd Font Mono` or `Menlo` on this system) to keep wrapping and bullet alignment predictable, with an optional `user.model_response_canvas_typeface` setting to override the family.  
   - Compact **prompt recap** when `GPTState.last_recipe` is available:
     - `Talon GPT Result`, `Prompt recap`, `Recipe: …`, and `Say: model …` (derived from recipe + directional lens).  
   - **Meta band** when `GPTState.last_meta` is non‑empty:

@@ -5,6 +5,7 @@ from typing import Dict, List, Optional, Tuple
 
 from talon import Context, Module, actions, canvas, settings, ui
 
+from .canvasFont import apply_canvas_typeface
 from .modelDestination import create_model_destination
 from .modelSource import create_model_source
 from .modelState import GPTState
@@ -283,6 +284,13 @@ def _draw_suggestions(c: canvas.Canvas) -> None:  # pragma: no cover - visual on
     _suggestion_button_bounds.clear()
 
     paint = getattr(c, "paint", None)
+    if paint is not None:
+        apply_canvas_typeface(
+            paint,
+            settings_key="user.model_response_canvas_typeface",
+            cache_key="suggestions",
+        )
+
     if rect is not None and paint is not None:
         try:
             old_color = getattr(paint, "color", None)

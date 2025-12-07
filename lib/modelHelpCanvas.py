@@ -3,6 +3,8 @@ from typing import Callable, Optional
 from talon import Context, Module, actions, canvas, ui
 from talon import skia
 
+from .canvasFont import apply_canvas_typeface
+
 from .modelState import GPTState
 
 from .metaPromptConfig import first_meta_preview_line, meta_preview_lines
@@ -520,6 +522,13 @@ def _default_draw_quick_help(c: canvas.Canvas) -> None:  # pragma: no cover - vi
             base_textsize = getattr(paint, "textsize", None)
         except Exception:
             base_textsize = None
+        # Align quick-help canvas font with the shared GPT canvas font chain.
+        apply_canvas_typeface(
+            paint,
+            settings_key="user.model_response_canvas_typeface",
+            debug=_debug,
+            cache_key="help",
+        )
 
     # Fill the entire canvas rect with a solid background so the quick help
     # feels like an opaque modal rather than floating text, and add a subtle

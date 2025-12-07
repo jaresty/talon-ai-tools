@@ -33,6 +33,7 @@ com b: com b
 
 # Format as a todo list.
 todo: todo
+ticket: ticket
 product: product
 metrics: metrics
 value: value

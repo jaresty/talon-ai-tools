@@ -13,7 +13,11 @@ if bootstrap is not None:
     import tempfile
 
     from talon_user.lib.talonSettings import (
+        _AXIS_INCOMPATIBILITIES,
         _axis_recipe_token,
+        _axis_string_to_tokens,
+        _axis_tokens_to_string,
+        _canonicalise_axis_tokens,
         _read_axis_default_from_list,
         _read_axis_value_to_key_map,
     )
@@ -221,6 +225,94 @@ if bootstrap is not None:
                 "fallback-value",
             )
             self.assertEqual(value, "fallback-value")
+
+        def test_canonicalise_axis_tokens_deduplicates_and_sorts(self) -> None:
+            """Axis token canonicalisation should dedupe and canonicalise order."""
+            tokens = ["jira", "story", "jira", "story", "jira"]
+
+            canonical = _canonicalise_axis_tokens("style", tokens)
+
+            # With no incompatibilities and a soft cap of 3, the result
+            # should contain each token at most once, within the style cap.
+            self.assertEqual(set(canonical), {"jira", "story"})
+            # Cap is 3 for style, but this input only needs 2.
+            self.assertEqual(len(canonical), 2)
+            # And serialisation should round-trip via the helper functions.
+            serialised = _axis_tokens_to_string(canonical)
+            round_tripped = _axis_string_to_tokens(serialised)
+            self.assertEqual(round_tripped, canonical)
+
+        def test_canonicalise_axis_tokens_applies_soft_caps_with_last_wins(self) -> None:
+            """Soft caps should keep the most recent tokens for an axis."""
+            # For scope, the soft cap is 2. Providing three distinct tokens
+            # should result in at most two surviving, and they should be a
+            # subset of the originals.
+            tokens = ["narrow", "focus", "bound"]
+
+            canonical = _canonicalise_axis_tokens("scope", tokens)
+
+            # The scope soft cap is 2; more than that should be trimmed.
+            self.assertEqual(len(canonical), 2)
+            for token in canonical:
+                self.assertIn(token, tokens)
+
+            serialised = _axis_tokens_to_string(canonical)
+            round_tripped = _axis_string_to_tokens(serialised)
+            self.assertEqual(round_tripped, canonical)
+
+        def test_canonicalise_axis_tokens_respects_method_soft_cap(self) -> None:
+            """Method axis canonicalisation should enforce a cap of 3 tokens."""
+            # For method, the soft cap is 3. Providing four distinct tokens
+            # should result in exactly three surviving, all drawn from the
+            # original set.
+            tokens = ["steps", "plan", "rigor", "rewrite"]
+
+            canonical = _canonicalise_axis_tokens("method", tokens)
+
+            self.assertEqual(len(canonical), 3)
+            for token in canonical:
+                self.assertIn(token, tokens)
+
+            serialised = _axis_tokens_to_string(canonical)
+            round_tripped = _axis_string_to_tokens(serialised)
+            self.assertEqual(round_tripped, canonical)
+
+        def test_style_incompatibility_drops_conflicting_tokens_last_wins(self) -> None:
+            """Incompatible style tokens should obey last-wins semantics."""
+            # For style, we declare 'jira' and 'adr' mutually incompatible.
+            # When both appear, the later token should win after
+            # canonicalisation.
+            canonical = _canonicalise_axis_tokens("style", ["jira", "adr"])
+            self.assertEqual(canonical, ["adr"])
+
+            canonical_reverse = _canonicalise_axis_tokens("style", ["adr", "jira"])
+            self.assertEqual(canonical_reverse, ["jira"])
+
+        def test_container_style_tokens_have_explicit_incompatibility_decisions(
+            self,
+        ) -> None:
+            """Guardrail: container-style tokens must have an explicit incompatibility decision."""
+            # Container-like styles represent primary output surfaces or
+            # containers. For now we treat 'jira' and 'adr' as the canonical
+            # pair; adding new container styles (for example, tweet/email)
+            # should extend this list and, at the same time, update
+            # _AXIS_INCOMPATIBILITIES with an explicit decision.
+            container_styles = {"jira", "adr"}
+
+            style_incompat = _AXIS_INCOMPATIBILITIES.get("style", {})
+
+            for token in container_styles:
+                # Each container token must either:
+                # - be a key in the incompatibility table, or
+                # - be listed as incompatible with at least one other token.
+                declared_as_key = token in style_incompat
+                declared_in_values = any(
+                    token in conflicts for conflicts in style_incompat.values()
+                )
+                self.assertTrue(
+                    declared_as_key or declared_in_values,
+                    f"Container style {token!r} must have an explicit incompatibility decision in _AXIS_INCOMPATIBILITIES['style']",
+                )
 
 else:
     if not TYPE_CHECKING:

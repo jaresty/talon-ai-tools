@@ -198,6 +198,185 @@ if bootstrap is not None:
             # should be preserved as-is.
             self.assertEqual(GPTState.last_directional, "DIR")
 
+        def test_model_prompt_handles_multi_tag_scope_from_list(self):
+            """Multi-tag scope from scopeModifier_list should be preserved and canonicalised."""
+            # Start from known defaults.
+            settings.set("user.model_default_completeness", "full")
+            settings.set("user.model_default_scope", "")
+            settings.set("user.model_default_method", "")
+            settings.set("user.model_default_style", "")
+            GPTState.reset_all()
+
+            # Simulate a Talon match object that exposes multiple scope
+            # modifiers via the *_list attribute. Other axes remain single.
+            m = SimpleNamespace(
+                staticPrompt="fix",
+                completenessModifier="skim",
+                scopeModifier_list=["narrow", "focus"],
+                methodModifier="steps",
+                styleModifier="plain",
+                directionalModifier="DIR",
+            )
+
+            _ = modelPrompt(m)
+
+            # System prompt should see the raw, spoken scope description.
+            self.assertEqual(GPTState.system_prompt.completeness, "skim")
+            self.assertEqual(GPTState.system_prompt.scope, "narrow focus")
+            self.assertEqual(GPTState.system_prompt.method, "steps")
+            self.assertEqual(GPTState.system_prompt.style, "plain")
+
+            # last_scope should reflect a canonicalised set of scope tokens.
+            self.assertNotEqual(GPTState.last_scope, "")
+            scope_tokens = GPTState.last_scope.split()
+            self.assertEqual(set(scope_tokens), {"narrow", "focus"})
+
+            # last_recipe should include a multi-token scope segment.
+            self.assertIn("fix · skim", GPTState.last_recipe)
+            self.assertIn("steps", GPTState.last_recipe)
+            # The exact order of scope tokens is canonicalised; assert by set.
+            recipe_parts = [p.strip() for p in GPTState.last_recipe.split("·")]
+            scope_part = recipe_parts[2]
+            self.assertEqual(set(scope_part.split()), {"narrow", "focus"})
+
+        def test_model_prompt_enforces_scope_soft_cap_from_list(self):
+            """Over-cap multi-tag scope from scopeModifier_list should respect the soft cap."""
+            settings.set("user.model_default_completeness", "full")
+            settings.set("user.model_default_scope", "")
+            settings.set("user.model_default_method", "")
+            settings.set("user.model_default_style", "")
+            GPTState.reset_all()
+
+            # Provide three distinct scope modifiers even though the soft cap
+            # for scope is 2; the canonicaliser should enforce the cap.
+            m = SimpleNamespace(
+                staticPrompt="fix",
+                completenessModifier="skim",
+                scopeModifier_list=["narrow", "focus", "bound"],
+                methodModifier="steps",
+                styleModifier="plain",
+                directionalModifier="DIR",
+            )
+
+            _ = modelPrompt(m)
+
+            # System prompt should see the raw, spoken scope description.
+            self.assertEqual(GPTState.system_prompt.scope, "narrow focus bound")
+
+            # last_scope should include at most 2 tokens drawn from the input set.
+            scope_tokens = GPTState.last_scope.split()
+            self.assertLessEqual(len(scope_tokens), 2)
+            self.assertTrue(set(scope_tokens).issubset({"narrow", "focus", "bound"}))
+
+            # last_recipe should reflect the capped, canonicalised scope tokens.
+            recipe_parts = [p.strip() for p in GPTState.last_recipe.split("·")]
+            # static, completeness, scope, method, style
+            scope_part = recipe_parts[2]
+            scope_part_tokens = scope_part.split()
+            self.assertLessEqual(len(scope_part_tokens), 2)
+            self.assertTrue(
+                set(scope_part_tokens).issubset({"narrow", "focus", "bound"})
+            )
+
+        def test_model_prompt_handles_multi_tag_method_from_list(self):
+            """Multi-tag method from methodModifier_list should be preserved and canonicalised."""
+            settings.set("user.model_default_completeness", "full")
+            settings.set("user.model_default_scope", "")
+            settings.set("user.model_default_method", "")
+            settings.set("user.model_default_style", "")
+            GPTState.reset_all()
+
+            m = SimpleNamespace(
+                staticPrompt="fix",
+                completenessModifier="skim",
+                scopeModifier="narrow",
+                methodModifier_list=["structure", "flow"],
+                styleModifier="plain",
+                directionalModifier="DIR",
+            )
+
+            _ = modelPrompt(m)
+
+            self.assertEqual(GPTState.system_prompt.method, "structure flow")
+            self.assertNotEqual(GPTState.last_method, "")
+            method_tokens = GPTState.last_method.split()
+            self.assertEqual(set(method_tokens), {"structure", "flow"})
+
+            recipe_parts = [p.strip() for p in GPTState.last_recipe.split("·")]
+            # static, completeness, scope, method, style
+            method_part = recipe_parts[3]
+            self.assertEqual(set(method_part.split()), {"structure", "flow"})
+
+        def test_model_prompt_handles_multi_tag_style_from_list(self):
+            """Multi-tag style from styleModifier_list should be preserved and canonicalised."""
+            settings.set("user.model_default_completeness", "full")
+            settings.set("user.model_default_scope", "")
+            settings.set("user.model_default_method", "")
+            settings.set("user.model_default_style", "")
+            GPTState.reset_all()
+
+            m = SimpleNamespace(
+                staticPrompt="ticket",
+                completenessModifier="full",
+                scopeModifier="actions",
+                methodModifier="structure",
+                styleModifier_list=["jira", "faq"],
+                directionalModifier="fog",
+            )
+
+            _ = modelPrompt(m)
+
+            self.assertEqual(GPTState.system_prompt.style, "jira faq")
+            self.assertNotEqual(GPTState.last_style, "")
+            style_tokens = GPTState.last_style.split()
+            self.assertEqual(set(style_tokens), {"jira", "faq"})
+
+            recipe_parts = [p.strip() for p in GPTState.last_recipe.split("·")]
+            style_part = recipe_parts[4]
+            self.assertEqual(set(style_part.split()), {"jira", "faq"})
+
+        def test_model_prompt_enforces_style_soft_cap_from_list(self):
+            """Over-cap multi-tag style from styleModifier_list should respect the soft cap."""
+            settings.set("user.model_default_completeness", "full")
+            settings.set("user.model_default_scope", "")
+            settings.set("user.model_default_method", "")
+            settings.set("user.model_default_style", "")
+            GPTState.reset_all()
+
+            # Provide four distinct style modifiers even though the soft cap
+            # for style is 3; the canonicaliser should enforce the cap.
+            m = SimpleNamespace(
+                staticPrompt="ticket",
+                completenessModifier="full",
+                scopeModifier="actions",
+                methodModifier="structure",
+                styleModifier_list=["jira", "story", "faq", "bullets"],
+                directionalModifier="fog",
+            )
+
+            _ = modelPrompt(m)
+
+            # System prompt should see the raw, spoken style description.
+            self.assertEqual(
+                GPTState.system_prompt.style, "jira story faq bullets"
+            )
+
+            # last_style should include at most 3 tokens drawn from the input set.
+            style_tokens = GPTState.last_style.split()
+            self.assertLessEqual(len(style_tokens), 3)
+            self.assertTrue(
+                set(style_tokens).issubset({"jira", "story", "faq", "bullets"})
+            )
+
+            # last_recipe should reflect the capped, canonicalised style tokens.
+            recipe_parts = [p.strip() for p in GPTState.last_recipe.split("·")]
+            style_part = recipe_parts[4]
+            style_part_tokens = style_part.split()
+            self.assertLessEqual(len(style_part_tokens), 3)
+            self.assertTrue(
+                set(style_part_tokens).issubset({"jira", "story", "faq", "bullets"})
+            )
+
         def test_model_prompt_updates_last_recipe_with_profile_axes(self):
             # When no spoken modifiers are provided, the per-prompt profile for
             # "todo" should drive the last_recipe summary.

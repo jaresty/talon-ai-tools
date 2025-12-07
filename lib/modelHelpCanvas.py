@@ -12,13 +12,22 @@ try:
 except ImportError:  # Talon may have a stale staticPromptConfig loaded
     from .staticPromptConfig import STATIC_PROMPT_CONFIG
 
-    def get_static_prompt_axes(name: str) -> dict[str, str]:
+    def get_static_prompt_axes(name: str) -> dict[str, object]:
         profile = STATIC_PROMPT_CONFIG.get(name, {})
-        axes: dict[str, str] = {}
+        axes: dict[str, object] = {}
         for axis in ("completeness", "scope", "method", "style"):
             value = profile.get(axis)
-            if value:
-                axes[axis] = value
+            if not value:
+                continue
+            if axis == "completeness":
+                axes[axis] = str(value)
+            else:
+                if isinstance(value, list):
+                    tokens = [str(v).strip() for v in value if str(v).strip()]
+                else:
+                    tokens = [str(value).strip()]
+                if tokens:
+                    axes[axis] = tokens
         return axes
 
 
@@ -730,6 +739,14 @@ def _default_draw_quick_help(c: canvas.Canvas) -> None:  # pragma: no cover - vi
     # Left column: completeness + scope
     y_left = _draw_axis_column("Completeness", "completeness", COMPLETENESS_KEYS, x_left, y_left)
     y_left = _draw_axis_column("Scope", "scope", SCOPE_KEYS, x_left, y_left)
+
+    # Brief axis multiplicity hint so users know which axes can be combined.
+    draw_text(
+        "Note: Completeness is single-valued; scope/method/style can combine multiple tags (for example, actions edges; structure flow; jira story).",
+        x_left,
+        max(y_left, y_right),
+    )
+    y_left += line_h * 2
 
     # Right column: method + style
     y_right = _draw_axis_column("Method", "method", METHOD_KEYS, x_right, y_right)

@@ -22,9 +22,12 @@ class GPTState:
     last_recipe: ClassVar[str] = ""
     # Short token for the last directional lens (for example, "fog").
     last_directional: ClassVar[str] = ""
-    # Structured fields for the last recipe, stored as short tokens where
-    # applicable so they can be reused by shorthand grammars such as
-    # `model again`.
+    # Structured fields for the last recipe. These are stored as short
+    # tokens so they can be reused by shorthand grammars such as `model again`.
+    # For scope/method/style specifically, the values are serialised
+    # multi-token sets: space-separated axis tokens in canonical form.
+    # External consumers that read these fields must treat them as sets
+    # (split on whitespace) rather than assuming a single scalar token.
     last_static_prompt: ClassVar[str] = ""
     last_completeness: ClassVar[str] = ""
     last_scope: ClassVar[str] = ""

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TypedDict
+from typing import TypedDict, Union
 
 # Central configuration for static prompts:
 # - Each key is a canonical static prompt value (as used in GPT/lists/staticPrompt.talon-list).
@@ -11,9 +11,11 @@ from typing import TypedDict
 class StaticPromptProfile(TypedDict, total=False):
     description: str
     completeness: str
-    scope: str
-    method: str
-    style: str
+    # Scope, method, and style may be expressed as a single token or a small
+    # list of tokens; callers are responsible for any further normalisation.
+    scope: Union[str, list[str]]
+    method: Union[str, list[str]]
+    style: Union[str, list[str]]
 
 
 STATIC_PROMPT_CONFIG: dict[str, StaticPromptProfile] = {
@@ -120,6 +122,13 @@ STATIC_PROMPT_CONFIG: dict[str, StaticPromptProfile] = {
         "method": "steps",
         "style": "bullets",
         "scope": "focus",
+    },
+    "ticket": {
+        "description": "Draft a Jira-style user story ticket for this issue.",
+        "completeness": "full",
+        "scope": ["actions"],
+        "method": ["structure"],
+        "style": ["jira", "story"],
     },
     # Exploration, critique, and reflection prompts (description-only profiles).
     "challenge": {
@@ -396,19 +405,35 @@ def get_static_prompt_profile(name: str) -> StaticPromptProfile | None:
     return STATIC_PROMPT_CONFIG.get(name)
 
 
-def get_static_prompt_axes(name: str) -> dict[str, str]:
+def get_static_prompt_axes(name: str) -> dict[str, object]:
     """Return the axis values defined for a static prompt profile.
 
     The result maps axis name -> configured value for the axes present in the
     profile (a subset of: completeness, scope, method, style). Unknown prompts
     return an empty dict.
+
+    - `completeness` remains a single short token.
+    - `scope`, `method`, and `style` may be configured as a single token or
+      as a small list of tokens; callers that care about set semantics should
+      normalise these values (for example, via helpers in the axis-mapping
+      domain).
     """
     profile = STATIC_PROMPT_CONFIG.get(name)
     if profile is None:
         return {}
-    axes: dict[str, str] = {}
+    axes: dict[str, object] = {}
     for axis in _AXES:
         value = profile.get(axis)
-        if value:
-            axes[axis] = value
+        if not value:
+            continue
+        # Completeness remains scalar; other axes may be a single token or a list.
+        if axis == "completeness":
+            axes[axis] = str(value)
+        else:
+            if isinstance(value, list):
+                tokens = [str(v).strip() for v in value if str(v).strip()]
+            else:
+                tokens = [str(value).strip()]
+            if tokens:
+                axes[axis] = tokens
     return axes

@@ -880,8 +880,11 @@ def _parse_recipe(recipe: str) -> tuple[str, str, str, str, str, str]:
     The recipe format is:
       staticPrompt · [axes…] · directional
     where intermediate tokens map into completeness/scope/method/style by membership.
+    For scope/method/style, each axis position may contain one or more
+    space-separated tokens; we treat those as a set for that axis and
+    preserve them as a single, space-joined string for downstream callers.
     """
-    tokens = [t.strip() for t in recipe.split("·")]
+    tokens = [t.strip() for t in recipe.split("·") if t.strip()]
     if not tokens:
         return "", "", "", "", "", ""
 
@@ -889,19 +892,32 @@ def _parse_recipe(recipe: str) -> tuple[str, str, str, str, str, str]:
     directional = tokens[-1] if len(tokens) > 1 else ""
 
     completeness = ""
-    scope = ""
-    method = ""
-    style = ""
+    scope_tokens: list[str] = []
+    method_tokens: list[str] = []
+    style_tokens: list[str] = []
 
-    for token in tokens[1:-1]:
-        if token in COMPLETENESS_TOKENS:
-            completeness = token
-        elif token in SCOPE_TOKENS:
-            scope = token
-        elif token in METHOD_TOKENS:
-            method = token
-        elif token in STYLE_TOKENS:
-            style = token
+    for segment in tokens[1:-1]:
+        # Allow multiple axis tokens within a single segment (for example,
+        # "actions edges" or "jira story") by splitting on whitespace.
+        for token in segment.split():
+            token = token.strip()
+            if not token:
+                continue
+            if token in COMPLETENESS_TOKENS:
+                completeness = token
+            elif token in SCOPE_TOKENS:
+                if token not in scope_tokens:
+                    scope_tokens.append(token)
+            elif token in METHOD_TOKENS:
+                if token not in method_tokens:
+                    method_tokens.append(token)
+            elif token in STYLE_TOKENS:
+                if token not in style_tokens:
+                    style_tokens.append(token)
+
+    scope = " ".join(scope_tokens) if scope_tokens else ""
+    method = " ".join(method_tokens) if method_tokens else ""
+    style = " ".join(style_tokens) if style_tokens else ""
 
     return static_prompt, completeness, scope, method, style, directional
 

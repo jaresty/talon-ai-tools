@@ -23,9 +23,16 @@ if bootstrap is not None:
             GPTState.reset_all()
             SuggestionGUIState.suggestions = []
             SuggestionCanvasState.showing = False
+            self._original_notify = actions.app.notify
             actions.app.notify = MagicMock()
             actions.user.gpt_apply_prompt = MagicMock()
             actions.user.model_prompt_recipe_suggestions_gui_close = MagicMock()
+
+        def tearDown(self):
+            # Restore the original notify implementation so other tests that
+            # rely on the stubbed `actions.app.calls` behaviour continue to
+            # work as expected.
+            actions.app.notify = self._original_notify
 
         def test_run_index_executes_suggestion_and_closes_gui(self):
             GPTState.last_suggested_recipes = [
@@ -91,6 +98,33 @@ if bootstrap is not None:
 
             actions.app.notify.assert_called_once()
             self.assertFalse(SuggestionCanvasState.showing)
+
+        def test_run_index_handles_multi_tag_axis_recipe(self):
+            """Suggestions with multi-tag axis fields should execute and update last_*."""
+            # Seed a suggestion that uses multi-token scope/method/style segments.
+            GPTState.last_suggested_recipes = [
+                {
+                    "name": "Jira FAQ ticket",
+                    "recipe": "ticket · full · actions edges · structure flow · jira faq · fog",
+                },
+            ]
+
+            UserActions.model_prompt_recipe_suggestions_run_index(1)
+
+            # Suggestion should have been executed and the GUI closed.
+            actions.user.gpt_apply_prompt.assert_called_once()
+            actions.user.model_prompt_recipe_suggestions_gui_close.assert_called_once()
+
+            # GPTState last_* fields should reflect the parsed multi-tag axes.
+            self.assertEqual(GPTState.last_static_prompt, "ticket")
+            self.assertEqual(GPTState.last_completeness, "full")
+            self.assertEqual(GPTState.last_directional, "fog")
+
+            # Scope/method/style are stored as space-separated token strings
+            # built from recognised axis tokens.
+            self.assertEqual(GPTState.last_scope, "actions edges")
+            self.assertEqual(GPTState.last_method, "structure flow")
+            self.assertEqual(GPTState.last_style, "jira faq")
 
 else:
     if not TYPE_CHECKING:

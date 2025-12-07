@@ -5,6 +5,9 @@ from ..lib.talonSettings import (
     ApplyPromptConfiguration,
     DEFAULT_COMPLETENESS_VALUE,
     PassConfiguration,
+    _axis_string_to_tokens,
+    _axis_tokens_to_string,
+    _canonicalise_axis_tokens,
     modelPrompt,
 )
 
@@ -16,13 +19,21 @@ except ImportError:  # Talon may have a stale staticPromptConfig loaded
     def get_static_prompt_profile(name: str):
         return STATIC_PROMPT_CONFIG.get(name)
 
-    def get_static_prompt_axes(name: str) -> dict[str, str]:
+    def get_static_prompt_axes(name: str) -> dict[str, object]:
         profile = STATIC_PROMPT_CONFIG.get(name, {})
-        axes: dict[str, str] = {}
+        axes: dict[str, object] = {}
         for axis in ("completeness", "scope", "method", "style"):
             value = profile.get(axis)
             if value:
-                axes[axis] = value
+                if axis == "completeness":
+                    axes[axis] = str(value)
+                else:
+                    if isinstance(value, list):
+                        tokens = [str(v).strip() for v in value if str(v).strip()]
+                    else:
+                        tokens = [str(value).strip()]
+                    if tokens:
+                        axes[axis] = tokens
         return axes
 
 from ..lib.modelDestination import (
@@ -141,8 +152,14 @@ def _build_static_prompt_docs() -> str:
         axes_bits: list[str] = []
         for label in ("completeness", "scope", "method", "style"):
             value = get_static_prompt_axes(name).get(label)
-            if value:
-                axes_bits.append(f"{label}={value}")
+            if not value:
+                continue
+            if isinstance(value, list):
+                rendered = " ".join(str(v) for v in value)
+            else:
+                rendered = str(value)
+            if rendered:
+                axes_bits.append(f"{label}={rendered}")
         if axes_bits:
             lines.append(
                 f"- {name}: {description} (defaults: {', '.join(axes_bits)})"
@@ -532,7 +549,11 @@ class UserActions:
             "You are a prompt recipe assistant for the Talon `model` command.\n"
             "Based on the subject and content below, suggest 3–5 concrete prompt recipes.\n\n"
             "For each recipe, output exactly one line in this format:\n"
-            "Name: <short human-friendly name> | Recipe: <staticPrompt> · <completeness> · <scope> · <method> · <style> · <directional>\n\n"
+            "Name: <short human-friendly name> | Recipe: <staticPrompt> · <completeness> · <scopeTokens> · <methodTokens> · <styleTokens> · <directional>\n\n"
+            "Where:\n"
+            "- <completeness> and <directional> are single axis tokens.\n"
+            "- <scopeTokens>, <methodTokens>, and <styleTokens> are zero or more space-separated axis tokens for that axis (respecting small caps: scope ≤ 2 tokens, method ≤ 3 tokens, style ≤ 3 tokens).\n"
+            "Examples of multi-tag fields: scopeTokens='actions edges', methodTokens='structure flow', styleTokens='jira story'.\n\n"
             "Use only tokens from the following sets where possible.\n"
             "Axis semantics and available tokens:\n"
             f"{axis_docs}\n\n"
@@ -653,10 +674,71 @@ class UserActions:
         base_directional = getattr(GPTState, "last_directional", "") or ""
 
         new_static = static_prompt or base_static
+
+        # Completeness remains scalar; overrides simply replace the base when
+        # provided.
         new_completeness = completeness or base_completeness
-        new_scope = scope or base_scope
-        new_method = method or base_method
-        new_style = style or base_style
+
+        # Scope/method/style may conceptually be multi-valued. We treat
+        # last_* values as already-serialised canonical sets and merge any
+        # override tokens via the shared normaliser.
+        base_scope_tokens = _axis_string_to_tokens(base_scope)
+        override_scope_tokens = _axis_string_to_tokens(scope)
+        merged_scope_tokens = _canonicalise_axis_tokens(
+            "scope", base_scope_tokens + override_scope_tokens
+        )
+        new_scope = _axis_tokens_to_string(merged_scope_tokens)
+
+        base_method_tokens = _axis_string_to_tokens(base_method)
+        override_method_tokens = _axis_string_to_tokens(method)
+        merged_method_tokens = _canonicalise_axis_tokens(
+            "method", base_method_tokens + override_method_tokens
+        )
+        new_method = _axis_tokens_to_string(merged_method_tokens)
+
+        base_style_tokens = _axis_string_to_tokens(base_style)
+        override_style_tokens = _axis_string_to_tokens(style)
+        merged_style_tokens = _canonicalise_axis_tokens(
+            "style", base_style_tokens + override_style_tokens
+        )
+        new_style = _axis_tokens_to_string(merged_style_tokens)
+
+        # If normalisation dropped axis tokens (due to caps or
+        # incompatibilities), surface a short, non-modal hint so users can
+        # see what changed.
+        def _axis_drop_summary(
+            axis_name: str,
+            base_tokens: list[str],
+            override_tokens: list[str],
+            merged_tokens: list[str],
+        ) -> str:
+            original_tokens = [t for t in base_tokens + override_tokens if t]
+            if not original_tokens:
+                return ""
+            original_set = set(original_tokens)
+            merged_set = set(merged_tokens)
+            if not original_set or original_set == merged_set:
+                return ""
+            original_str = " ".join(original_tokens)
+            merged_str = " ".join(merged_tokens) if merged_tokens else "(none)"
+            return f"{axis_name}={original_str} \u2192 {merged_str}"
+
+        axis_drop_parts: list[str] = []
+        for axis_name, base_tokens, override_tokens, merged_tokens in (
+            ("scope", base_scope_tokens, override_scope_tokens, merged_scope_tokens),
+            ("method", base_method_tokens, override_method_tokens, merged_method_tokens),
+            ("style", base_style_tokens, override_style_tokens, merged_style_tokens),
+        ):
+            summary = _axis_drop_summary(axis_name, base_tokens, override_tokens, merged_tokens)
+            if summary:
+                axis_drop_parts.append(summary)
+
+        if axis_drop_parts:
+            notify(
+                "GPT: Axes normalised (caps/incompatibilities); "
+                + "; ".join(axis_drop_parts)
+            )
+
         new_directional = directional or base_directional
 
         if not new_static:

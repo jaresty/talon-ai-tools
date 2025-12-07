@@ -131,17 +131,47 @@ The `model` command now supports several short, speech-friendly modifier axes yo
 - Completeness (`completenessModifier`): `skim`, `gist`, `full`, `max`, `minimal`, `deep`, `framework`, `path`
 - Scope (`scopeModifier`): `narrow`, `focus`, `bound`, `edges`, `relations`, `dynamics`, `interfaces`, `system`, `actions`
 - Method (`methodModifier`): `steps`, `plan`, `rigor`, `rewrite`, `diagnose`, `filter`, `prioritize`, `cluster`, `systemic`, `experimental`, `debugging`, `structure`, `flow`, `compare`, `motifs`, `wasinawa`, `ladder`, `contextualise`, `samples`, `xp`, `adversarial`, `headline`, `case`, `scaffold`, `liberating`, `diverge`, `converge`, `mapping`, `analysis`, `socratic`
-- Style (`styleModifier`): `plain`, `tight`, `bullets`, `table`, `code`, `checklist`, `diagram`, `presenterm`, `html`, `gherkin`, `shellscript`, `emoji`, `slack`, `jira`, `recipe`, `abstractvisual`, `commit`, `adr`, `taxonomy`, `cards`, `codetour`, `story`, `bug`, `spike`, `faq`
+- Style (`styleModifier`): `plain`, `tight`, `bullets`, `table`, `code`, `checklist`, `diagram`, `presenterm`, `html`, `gherkin`, `shellscript`, `emoji`, `slack`, `jira`, `recipe`, `abstractvisual`, `commit`, `adr`, `taxonomy`, `cards`, `codetour`, `story`, `bug`, `spike`, `faq`, `log`, `fun`, `announce`
   - Additional styles:
     - `cards` – format the answer as discrete cards/items with clear headings and short bodies.
     - `story` – format the output as a user story using “As a…, I want…, so that…”, optionally with a short prose description and high-level acceptance criteria.
     - `bug` – format the output as a structured bug report (Steps to Reproduce, Expected Behavior, Actual Behavior, Environment/Context).
     - `spike` – format the output as a research spike: short problem/decision statement plus a list of key questions to answer.
+    - `log` – write as a concise work or research log entry (dates/times optional, short bullet-style updates, enough context for future you).
+    - `fun` – keep the content the same but make the tone playful and fun while preserving clarity.
+    - `announce` – format as an announcement: short headline, what changed and why, and any actions or next steps.
 
 Directional lenses (required) are a separate axis:
 
 - Direction (`directionalModifier`): core lenses like `fog`, `fig`, `dig`, `ong`, `rog`, `bog`, plus combined forms (for example, `fly ong`, `fip rog`, `dip bog`).
   - Every `model` command that uses this grammar should include exactly one directional lens token.
+
+Axis multiplicity:
+
+- Completeness is **single-valued**: you pick at most one completeness token per call.
+- Scope, method, and style are **multi-valued** tag sets:
+  - You can speak more than one modifier on these axes in a single `model` command.
+  - Under the hood, tokens are normalised into sets with small soft caps:
+    - Scope: ≤ 2 tokens.
+    - Method: ≤ 3 tokens.
+    - Style: ≤ 3 tokens.
+  - For example:
+    - `model ticket actions edges structure flow jira faq fog`
+      - Static prompt: `ticket`.
+      - Completeness: default/profile (`full`).
+      - Scope: `actions edges`.
+      - Method: `structure flow`.
+      - Style: `jira faq` (Jira-formatted user story ticket with FAQ-style details).
+
+Some recommended multi-tag combinations:
+
+- Scope:
+  - `actions edges` – focus on concrete actions and the interactions between edges/interfaces.
+- Method:
+  - `structure flow` – emphasise both structural decomposition and stepwise flow.
+- Style:
+  - `jira story` – Jira-formatted user story ticket.
+  - `jira faq` – Jira ticket with FAQ-style sections for common questions.
 
 When you use these modifiers—either by speaking them or via a pattern/pattern menu—their semantics are applied in two places:
 
@@ -166,6 +196,8 @@ You can adjust these defaults by voice:
 - `model set scope narrow` / `model reset scope`
 - `model set method steps` / `model reset method`
 - `model set style bullets` / `model reset style`
+
+For the full design of these axes (scalar completeness; multi-tag scope/method/style with soft caps and incompatibilities), see ADR 026 in `docs/adr/026-axis-multiplicity-for-scope-method-style.md`.
 
 ### Common axis recipes (cheat sheet)
 

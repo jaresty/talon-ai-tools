@@ -158,6 +158,29 @@ if bootstrap is not None:
                 self.assertEqual(style, "jira")
                 self.assertEqual(directional, "fog")
 
+            def test_parse_recipe_ignores_unknown_axis_tokens(self) -> None:
+                """Recipes with unknown axis tokens should keep known tokens and ignore unknown ones."""
+                recipe = "describe · full · actions UNKNOWN_SCOPE · structure UNKNOWN_METHOD · jira UNKNOWN_STYLE · rog"
+
+                (
+                    static_prompt,
+                    completeness,
+                    scope,
+                    method,
+                    style,
+                    directional,
+                ) = _parse_recipe(recipe)
+
+                self.assertEqual(static_prompt, "describe")
+                self.assertEqual(completeness, "full")
+                # Only known scope token should be retained.
+                self.assertEqual(scope, "actions")
+                # Only known method token should be retained.
+                self.assertEqual(method, "structure")
+                # Only known style token should be retained.
+                self.assertEqual(style, "jira")
+                self.assertEqual(directional, "rog")
+
             def test_motif_scan_pattern_uses_motifs_method(self) -> None:
                 """Motif scan pattern should use relations scope and motifs method."""
                 motif = next(p for p in PATTERNS if p.name == "Motif scan")

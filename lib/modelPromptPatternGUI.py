@@ -17,13 +17,22 @@ except ImportError:  # Talon may have an older module state cached
     def get_static_prompt_profile(name: str):
         return STATIC_PROMPT_CONFIG.get(name)
 
-    def get_static_prompt_axes(name: str) -> dict[str, str]:
+    def get_static_prompt_axes(name: str) -> dict[str, object]:
         profile = STATIC_PROMPT_CONFIG.get(name, {})
-        axes: dict[str, str] = {}
+        axes: dict[str, object] = {}
         for axis in ("completeness", "scope", "method", "style"):
             value = profile.get(axis)
-            if value:
-                axes[axis] = value
+            if not value:
+                continue
+            if axis == "completeness":
+                axes[axis] = str(value)
+            else:
+                if isinstance(value, list):
+                    tokens = [str(v).strip() for v in value if str(v).strip()]
+                else:
+                    tokens = [str(value).strip()]
+                if tokens:
+                    axes[axis] = tokens
         return axes
 from .talonSettings import ApplyPromptConfiguration, modelPrompt
 
@@ -434,8 +443,14 @@ def _draw_prompt_patterns(c: canvas.Canvas) -> None:  # pragma: no cover - visua
     profile_axes = get_static_prompt_axes(static_prompt)
     for label in ("completeness", "scope", "method", "style"):
         value = profile_axes.get(label)
-        if value:
-            axes.append(f"{label.capitalize()}: {value}")
+        if not value:
+            continue
+        if isinstance(value, list):
+            rendered = " ".join(str(v) for v in value)
+        else:
+            rendered = str(value)
+        if rendered:
+            axes.append(f"{label.capitalize()}: {rendered}")
     if axes:
         draw_text("Profile defaults:", x, y)
         y += line_h

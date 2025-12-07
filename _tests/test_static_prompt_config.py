@@ -35,9 +35,9 @@ if bootstrap is not None:
             axes = get_static_prompt_axes("todo")
             # "todo" has a full axis profile in the configuration.
             self.assertEqual(axes["completeness"], "gist")
-            self.assertEqual(axes["method"], "steps")
-            self.assertEqual(axes["style"], "checklist")
-            self.assertEqual(axes["scope"], "actions")
+            self.assertEqual(axes["method"], ["steps"])
+            self.assertEqual(axes["style"], ["checklist"])
+            self.assertEqual(axes["scope"], ["actions"])
 
         def test_get_static_prompt_axes_is_empty_for_description_only_profile(
             self,
@@ -56,10 +56,21 @@ if bootstrap is not None:
             self.assertEqual(bridge_axes.get("completeness"), "path")
 
             effects_axes = get_static_prompt_axes("effects")
-            self.assertEqual(effects_axes.get("scope"), "dynamics")
+            self.assertEqual(effects_axes.get("scope"), ["dynamics"])
 
             context_axes = get_static_prompt_axes("context")
-            self.assertEqual(context_axes.get("method"), "contextualise")
+            self.assertEqual(context_axes.get("method"), ["contextualise"])
+
+        def test_ticket_static_prompt_uses_multi_tag_axes(self) -> None:
+            """Static prompt 'ticket' should expose multi-tag axis defaults."""
+            axes = get_static_prompt_axes("ticket")
+            self.assertIsNotNone(axes)
+            self.assertEqual(axes.get("completeness"), "full")
+            self.assertEqual(axes.get("scope"), ["actions"])
+            self.assertEqual(axes.get("method"), ["structure"])
+            # Style defaults should include both 'jira' and 'story' tokens.
+            style_values = axes.get("style")
+            self.assertEqual(style_values, ["jira", "story"])
 
 else:
     if not TYPE_CHECKING:

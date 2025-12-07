@@ -1,6 +1,6 @@
-from dataclasses import dataclass
-from typing import Literal, Optional
 import os
+from dataclasses import dataclass
+from typing import Literal, Optional, TypedDict
 
 from .modelSource import CompoundSource, ModelSource, SourceStack, create_model_source
 from .modelDestination import (
@@ -10,7 +10,7 @@ from .modelDestination import (
 )
 from .modelState import GPTState
 from .metaPromptConfig import META_INTERPRETATION_GUIDANCE
-from talon import Context, Module, clip, settings
+from talon import Context, Module, settings
 from .staticPromptConfig import get_static_prompt_axes, get_static_prompt_profile
 
 
@@ -118,6 +118,105 @@ _AXIS_VALUE_TO_KEY_MAPS: dict[str, dict[str, str]] = {
 }
 
 
+class AxisValues(TypedDict):
+    """Internal representation of axis values for a single request.
+
+    Completeness stays scalar; scope/method/style are sets represented as
+    canonicalised lists. This does not change the external system prompt
+    schema yet but provides a shared shape for normalisation and tests.
+    """
+
+    completeness: Optional[str]
+    scope: list[str]
+    method: list[str]
+    style: list[str]
+
+
+_AXIS_SOFT_CAPS: dict[str, int] = {
+    # Completeness remains scalar and is capped by construction.
+    "scope": 2,
+    "method": 3,
+    "style": 3,
+}
+
+# Incompatibilities are expressed as axis -> token -> set of tokens that
+# cannot co-exist with that token. This table starts mostly empty; ADR-0026
+# populates it incrementally as we identify genuinely incompatible pairs.
+_AXIS_INCOMPATIBILITIES: dict[str, dict[str, set[str]]] = {
+    "scope": {},
+    "method": {},
+    "style": {
+        # Jira-style issue containers and long-form ADR records are treated
+        # as mutually exclusive primary output containers.
+        "jira": {"adr"},
+        "adr": {"jira"},
+    },
+}
+
+
+def _canonicalise_axis_tokens(axis: str, tokens: list[str]) -> list[str]:
+    """Normalise a sequence of axis tokens into a canonical set.
+
+    Behaviour:
+    - Trims blanks.
+    - Applies last-wins semantics with respect to per-axis incompatibilities:
+      when a new token arrives, any incompatible existing tokens are dropped.
+    - Deduplicates tokens.
+    - Applies per-axis soft caps (keeping the most recent tokens when over).
+    - Returns tokens sorted by a stable key (currently the short token string)
+      so equivalent sets have identical serialised forms.
+    """
+    raw = [t.strip() for t in tokens if t and t.strip()]
+    if not raw:
+        return []
+
+    incompat_for_axis = _AXIS_INCOMPATIBILITIES.get(axis, {})
+    seen: set[str] = set()
+    ordered: list[str] = []
+
+    for token in raw:
+        conflicts = incompat_for_axis.get(token, set())
+        if conflicts:
+            # Drop any conflicting tokens that were accepted earlier.
+            ordered = [t for t in ordered if t not in conflicts]
+            seen -= conflicts
+        if token in seen:
+            continue
+        ordered.append(token)
+        seen.add(token)
+
+    cap = _AXIS_SOFT_CAPS.get(axis)
+    if cap is not None and cap > 0 and len(ordered) > cap:
+        # Enforce soft cap with last-wins semantics: keep the most recent.
+        ordered = ordered[-cap:]
+
+    # Canonicalise order so equivalent sets serialise identically.
+    return sorted(ordered)
+
+
+def _axis_tokens_to_string(tokens: list[str]) -> str:
+    """Serialise a canonical list of axis tokens into a string.
+
+    Tokens are joined by a single space; callers are expected to pass in
+    already-canonicalised token lists (for example, from
+    `_canonicalise_axis_tokens`).
+    """
+    if not tokens:
+        return ""
+    return " ".join(tokens)
+
+
+def _axis_string_to_tokens(value: str) -> list[str]:
+    """Parse a serialised axis string back into tokens.
+
+    This is the inverse of `_axis_tokens_to_string` for well-formed inputs:
+    it splits on ASCII whitespace and drops empty segments.
+    """
+    if not value:
+        return []
+    return [segment for segment in value.split() if segment]
+
+
 def _axis_value_to_key_map_for(axis: str) -> dict[str, str]:
     """Return the value→key map for a given axis, if available."""
     return _AXIS_VALUE_TO_KEY_MAPS.get(axis, {})
@@ -137,6 +236,7 @@ def _axis_recipe_token(axis: str, raw_value: str) -> str:
     if not axis_map:
         return raw_value
     return axis_map.get(raw_value, raw_value)
+
 
 mod = Module()
 ctx = Context()
@@ -166,8 +266,40 @@ mod.list(
     "modelAudience",
     desc="The audience to whom the LLM is writing. For example, 'to business'",
 )
+
+
+def _spoken_axis_value(m, axis_name: str) -> str:
+    """Return the spoken modifier(s) for a given axis as a single string.
+
+    For completeness we expect at most one value and return the bare
+    `completenessModifier` when present. For scope/method/style we allow
+    Talon to provide `axisModifier_list` (multiple values); we join them
+    with spaces to preserve multi-tag semantics at the description level.
+    """
+    # Completeness remains single-valued.
+    if axis_name == "completeness":
+        return getattr(m, "completenessModifier", "")
+
+    list_attr = f"{axis_name}Modifier_list"
+    single_attr = f"{axis_name}Modifier"
+    if hasattr(m, list_attr):
+        values = getattr(m, list_attr) or []
+        parts = [str(v).strip() for v in values if str(v).strip()]
+        if parts:
+            return " ".join(parts)
+    return getattr(m, single_attr, "")
+
+
 # model prompts can be either static and predefined by this repo or custom outside of it
-@mod.capture(rule="[{user.staticPrompt}] [{user.completenessModifier}] [{user.scopeModifier}] [{user.methodModifier}] [{user.styleModifier}] {user.directionalModifier} | {user.customPrompt}")
+@mod.capture(
+    rule="[{user.staticPrompt}] "
+    "[{user.completenessModifier}] "
+    "[{user.scopeModifier}+] "
+    "[{user.methodModifier}+] "
+    "[{user.styleModifier}+] "
+    "{user.directionalModifier} "
+    "| {user.customPrompt}"
+)
 def modelPrompt(m) -> str:
     if hasattr(m, "customPrompt"):
         return str(m.customPrompt)
@@ -194,7 +326,7 @@ def modelPrompt(m) -> str:
     # Resolve effective axis values for this request (spoken > profile > default)
     # and push them into GPTState.system_prompt so the system-level contract
     # reflects the same axes we expose in the user-level schema.
-    spoken_completeness = getattr(m, "completenessModifier", "")
+    spoken_completeness = _spoken_axis_value(m, "completeness")
     profile_completeness = profile_axes.get("completeness")
     if spoken_completeness:
         effective_completeness = spoken_completeness
@@ -203,8 +335,12 @@ def modelPrompt(m) -> str:
     else:
         effective_completeness = settings.get("user.model_default_completeness")
 
-    spoken_scope = getattr(m, "scopeModifier", "")
-    profile_scope = profile_axes.get("scope")
+    spoken_scope = _spoken_axis_value(m, "scope")
+    raw_profile_scope = profile_axes.get("scope")
+    if isinstance(raw_profile_scope, list):
+        profile_scope = " ".join(str(v) for v in raw_profile_scope)
+    else:
+        profile_scope = raw_profile_scope
     if spoken_scope:
         effective_scope = spoken_scope
     elif profile_scope and not GPTState.user_overrode_scope:
@@ -212,8 +348,12 @@ def modelPrompt(m) -> str:
     else:
         effective_scope = settings.get("user.model_default_scope")
 
-    spoken_method = getattr(m, "methodModifier", "")
-    profile_method = profile_axes.get("method")
+    spoken_method = _spoken_axis_value(m, "method")
+    raw_profile_method = profile_axes.get("method")
+    if isinstance(raw_profile_method, list):
+        profile_method = " ".join(str(v) for v in raw_profile_method)
+    else:
+        profile_method = raw_profile_method
     if spoken_method:
         effective_method = spoken_method
     elif profile_method and not GPTState.user_overrode_method:
@@ -221,8 +361,12 @@ def modelPrompt(m) -> str:
     else:
         effective_method = settings.get("user.model_default_method")
 
-    spoken_style = getattr(m, "styleModifier", "")
-    profile_style = profile_axes.get("style")
+    spoken_style = _spoken_axis_value(m, "style")
+    raw_profile_style = profile_axes.get("style")
+    if isinstance(raw_profile_style, list):
+        profile_style = " ".join(str(v) for v in raw_profile_style)
+    else:
+        profile_style = raw_profile_style
     if spoken_style:
         effective_style = spoken_style
     elif profile_style and not GPTState.user_overrode_style:
@@ -240,6 +384,11 @@ def modelPrompt(m) -> str:
     # confirmation GUI (and future UIs) can recap what was asked, and keep a
     # structured view of the same tokens for shorthand grammars.
     recipe_parts = [static_prompt]
+
+    # Map effective axis descriptions back to concise axis tokens for
+    # last_recipe / GPTState.last_* storage. For this slice, we still have
+    # at most one token per axis; later slices will extend this to multiple
+    # tokens via the canonicalisation helpers above.
     completeness_token = (
         _axis_recipe_token("completeness", effective_completeness)
         if effective_completeness
@@ -254,20 +403,37 @@ def modelPrompt(m) -> str:
     style_token = (
         _axis_recipe_token("style", effective_style) if effective_style else ""
     )
+
+    # Prepare canonical, per-axis token sets so that future multi-tag axes
+    # can reuse the same helpers without changing storage formats.
+    scope_tokens = _canonicalise_axis_tokens(
+        "scope", _axis_string_to_tokens(scope_token)
+    )
+    method_tokens = _canonicalise_axis_tokens(
+        "method", _axis_string_to_tokens(method_token)
+    )
+    style_tokens = _canonicalise_axis_tokens(
+        "style", _axis_string_to_tokens(style_token)
+    )
+
+    scope_serialised = _axis_tokens_to_string(scope_tokens)
+    method_serialised = _axis_tokens_to_string(method_tokens)
+    style_serialised = _axis_tokens_to_string(style_tokens)
+
     if completeness_token:
         recipe_parts.append(completeness_token)
-    if scope_token:
-        recipe_parts.append(scope_token)
-    if method_token:
-        recipe_parts.append(method_token)
-    if style_token:
-        recipe_parts.append(style_token)
+    if scope_serialised:
+        recipe_parts.append(scope_serialised)
+    if method_serialised:
+        recipe_parts.append(method_serialised)
+    if style_serialised:
+        recipe_parts.append(style_serialised)
     GPTState.last_recipe = " · ".join(recipe_parts)
     GPTState.last_static_prompt = static_prompt
     GPTState.last_completeness = completeness_token
-    GPTState.last_scope = scope_token
-    GPTState.last_method = method_token
-    GPTState.last_style = style_token
+    GPTState.last_scope = scope_serialised
+    GPTState.last_method = method_serialised
+    GPTState.last_style = style_serialised
     # Track the last directional lens separately (as a short token) so
     # recap/quick help and shorthand grammars can include it.
     GPTState.last_directional = _axis_recipe_token("directional", directional or "")
@@ -381,9 +547,6 @@ class PassConfiguration:
 @mod.capture(rule="<user.modelSimpleSource>")
 def additionalModelSource(model_source) -> str:
     return model_source.modelSimpleSource
-
-
-
 
 
 @mod.capture(

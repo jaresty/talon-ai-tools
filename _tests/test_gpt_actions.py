@@ -540,6 +540,140 @@ if bootstrap is not None:
                 self.assertEqual(config.please_prompt, "PROMPT")
                 self.assertIs(config.model_source, source)
                 self.assertIs(config.model_destination, destination)
+
+        def test_gpt_rerun_last_recipe_merges_multi_tag_axes_with_canonicalisation(
+            self,
+        ):
+            """Seed multi-token last_* axes and ensure rerun respects canonicalisation."""
+            GPTState.reset_all()
+            # Simulate a previous multi-tag axis state.
+            GPTState.last_recipe = "describe · full · narrow focus · cluster · jira story"
+            GPTState.last_static_prompt = "describe"
+            GPTState.last_completeness = "full"
+            GPTState.last_scope = "narrow focus"
+            GPTState.last_method = "cluster"
+            GPTState.last_style = "jira story"
+            GPTState.last_directional = "fog"
+
+            with (
+                patch.object(
+                    gpt_module,
+                    "_axis_value_from_token",
+                    side_effect=lambda token, mapping: token,
+                ),
+                patch.object(gpt_module, "modelPrompt") as model_prompt,
+                patch.object(gpt_module, "create_model_source") as create_source,
+                patch.object(
+                    gpt_module, "create_model_destination"
+                ) as create_destination,
+                patch.object(actions.user, "gpt_apply_prompt") as apply_prompt,
+            ):
+                source = MagicMock()
+                destination = MagicMock()
+                create_source.return_value = source
+                create_destination.return_value = destination
+                model_prompt.return_value = "PROMPT-MULTI"
+
+                # Override scope and style with additional tokens; method left unchanged.
+                gpt_module.UserActions.gpt_rerun_last_recipe(
+                    "todo",
+                    "",              # completeness override (none)
+                    "bound",         # new scope token to merge
+                    "",              # method unchanged
+                    "bullets",       # additional style token to merge
+                    "rog",           # new directional
+                )
+
+                # modelPrompt should receive a match with merged axis modifiers.
+                model_prompt.assert_called_once()
+                match = model_prompt.call_args.args[0]
+                self.assertEqual(match.staticPrompt, "todo")
+                # Completeness inherited from last state.
+                self.assertEqual(match.completenessModifier, "full")
+                # Scope should now be a canonicalised, capped set rendered as a string.
+                # With a scope cap of 2 and base "narrow focus" plus "bound", we expect
+                # the most recent two tokens, canonicalised; the exact policy is owned
+                # by the normaliser, but we at least assert that:
+                self.assertIsInstance(match.scopeModifier, str)
+                self.assertTrue(match.scopeModifier)
+                for token in match.scopeModifier.split():
+                    self.assertIn(token, {"narrow", "focus", "bound"})
+                # Method unchanged.
+                self.assertEqual(match.methodModifier, "cluster")
+                # Style should merge "jira story" with "bullets" under the style cap.
+                self.assertIsInstance(match.styleModifier, str)
+                self.assertTrue(match.styleModifier)
+                for token in match.styleModifier.split():
+                    self.assertIn(token, {"jira", "story", "bullets"})
+                self.assertEqual(match.directionalModifier, "rog")
+
+                # State should be updated using the canonical serialisation helpers.
+                self.assertEqual(GPTState.last_static_prompt, "todo")
+                self.assertEqual(GPTState.last_completeness, "full")
+                self.assertEqual(GPTState.last_directional, "rog")
+                # Scope/method/style should be non-empty strings with tokens drawn from
+                # the expected sets; exact ordering is owned by the normaliser.
+                self.assertTrue(GPTState.last_scope)
+                for token in GPTState.last_scope.split():
+                    self.assertIn(token, {"narrow", "focus", "bound"})
+
+                self.assertEqual(GPTState.last_method, "cluster")
+
+                self.assertTrue(GPTState.last_style)
+                for token in GPTState.last_style.split():
+                    self.assertIn(token, {"jira", "story", "bullets"})
+
+                # Execution should still go through the normal apply_prompt path.
+                apply_prompt.assert_called_once()
+                config = apply_prompt.call_args.args[0]
+                self.assertEqual(config.please_prompt, "PROMPT-MULTI")
+                self.assertIs(config.model_source, source)
+                self.assertIs(config.model_destination, destination)
+
+        def test_gpt_rerun_last_recipe_notifies_when_axis_tokens_are_dropped(
+            self,
+        ):
+            """Rerun should surface a hint when axis tokens are dropped."""
+            GPTState.reset_all()
+            # Seed a last recipe that includes incompatible style tokens.
+            GPTState.last_recipe = "describe · full · narrow · steps · jira adr"
+            GPTState.last_static_prompt = "describe"
+            GPTState.last_completeness = "full"
+            GPTState.last_scope = "narrow"
+            GPTState.last_method = "steps"
+            GPTState.last_style = "jira adr"
+            GPTState.last_directional = "fog"
+
+            with (
+                patch.object(
+                    gpt_module,
+                    "_axis_value_from_token",
+                    side_effect=lambda token, mapping: token,
+                ),
+                patch.object(gpt_module, "modelPrompt") as model_prompt,
+                patch.object(gpt_module, "create_model_source") as create_source,
+                patch.object(
+                    gpt_module, "create_model_destination"
+                ) as create_destination,
+                patch.object(actions.user, "gpt_apply_prompt") as apply_prompt,
+                patch.object(gpt_module, "notify") as notify_mock,
+            ):
+                source = MagicMock()
+                destination = MagicMock()
+                create_source.return_value = source
+                create_destination.return_value = destination
+                model_prompt.return_value = "PROMPT-CONFLICT"
+
+                # No overrides; rerun should apply incompatibility rules to
+                # the existing style axis and surface a hint.
+                gpt_module.UserActions.gpt_rerun_last_recipe(
+                    "", "", "", "", "", "rog"
+                )
+
+                notify_mock.assert_called()
+                message = notify_mock.call_args.args[0]
+                self.assertIn("Axes normalised", message)
+                self.assertIn("style=jira adr", message)
 else:
     if not TYPE_CHECKING:
         class GPTActionPromptSessionTests(unittest.TestCase):

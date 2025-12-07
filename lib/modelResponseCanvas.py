@@ -2,7 +2,7 @@ from typing import Callable, Optional
 
 from talon import Context, Module, actions, canvas, clip, ui
 
-from .canvasFont import apply_canvas_typeface
+from .canvasFont import apply_canvas_typeface, draw_text_with_emoji_fallback
 
 from .modelState import GPTState
 from .modelDestination import _parse_meta
@@ -812,7 +812,21 @@ def _default_draw_response(c: canvas.Canvas) -> None:  # pragma: no cover - visu
         ly = offset_y + (idx - start_index) * line_h
         if ly > body_bottom:
             break
-        draw_text(lines[idx] or " ", x, ly)
+        line_text = lines[idx] or " "
+        # Prefer an emoji-aware draw helper so runs containing emoji can use
+        # a more compatible typeface when available, while keeping layout
+        # consistent with the existing fixed-width assumptions.
+        try:
+            draw_text_with_emoji_fallback(
+                c,
+                line_text,
+                x,
+                ly,
+                approx_char_width=approx_char_width,
+            )
+        except Exception:
+            # Fallback to a simple draw if anything goes wrong.
+            draw_text(line_text, x, ly)
 
     # Draw a simple scrollbar when content exceeds the visible height.
     if content_height > visible_height and rect is not None and paint is not None:

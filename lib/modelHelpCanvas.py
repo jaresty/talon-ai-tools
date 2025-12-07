@@ -704,18 +704,38 @@ def _default_draw_quick_help(c: canvas.Canvas) -> None:  # pragma: no cover - vi
     def _draw_axis_keys_wrapped(keys: list[str], col_x: int, col_y: int) -> int:
         """Render axis keys across multiple lines to avoid over-long rows.
 
-        We use a simple item-count based wrapping rather than pixel-perfect
-        measurement so the layout stays robust across fonts and themes.
+        We use character-count based wrapping, approximating width so text
+        stays within the canvas without depending on precise font metrics.
         """
         if not keys:
             return col_y
-        max_per_row = 7
+
+        # Approximate maximum character width based on remaining canvas space.
+        approx_char_width = 8
+        if rect is not None and hasattr(rect, "x") and hasattr(rect, "width"):
+            right_bound = rect.x + rect.width - 40
+        else:
+            right_bound = col_x + 360
+        max_pixels = max(right_bound - col_x, 80)
+        max_chars = max(int(max_pixels // approx_char_width), 10)
+
         idx = 0
         while idx < len(keys):
-            row = keys[idx : idx + max_per_row]
+            row: list[str] = []
+            # Build up a row until adding another key would exceed max_chars.
+            while idx < len(keys):
+                candidate_key = keys[idx]
+                candidate = ", ".join(row + [candidate_key]) if row else candidate_key
+                line_text = "  " + candidate
+                if len(line_text) > max_chars and row:
+                    break
+                row.append(candidate_key)
+                idx += 1
+                if len(line_text) >= max_chars:
+                    break
             draw_text("  " + ", ".join(row), col_x, col_y)
             col_y += line_h
-            idx += max_per_row
+
         return col_y
 
     def _draw_axis_column(
@@ -749,20 +769,43 @@ def _default_draw_quick_help(c: canvas.Canvas) -> None:  # pragma: no cover - vi
     y_left = _draw_axis_column("Completeness", "completeness", COMPLETENESS_KEYS, x_left, y_left)
     y_left = _draw_axis_column("Scope", "scope", SCOPE_KEYS, x_left, y_left)
 
-    # Brief axis multiplicity hint so users know which axes can be combined.
-    draw_text(
-        "Note: Completeness is single-valued; scope/method/style can combine multiple tags (for example, actions edges; structure flow; jira story).",
-        x_left,
-        max(y_left, y_right),
-    )
-    y_left += line_h * 2
-
     # Right column: method + style
     y_right = _draw_axis_column("Method", "method", METHOD_KEYS, x_right, y_right)
     y_right = _draw_axis_column("Style", "style", STYLE_KEYS, x_right, y_right)
 
-    # Continue below the tallest column.
-    y = max(y_left, y_right) + line_h
+    # Brief axis multiplicity hint so users know which axes can be combined.
+    # Draw this note below whichever column is taller and wrap it so it stays
+    # within the visible canvas width.
+    axes_bottom = max(y_left, y_right)
+    note = (
+        "Note: Completeness is single-valued; scope/method/style can combine multiple "
+        "tags (for example, actions edges; structure flow; jira story)."
+    )
+    approx_char_width = 8
+    if rect is not None and hasattr(rect, "x") and hasattr(rect, "width"):
+        right_bound = rect.x + rect.width - 40
+    else:
+        right_bound = x_left + 480
+    max_pixels = max(right_bound - x_left, 120)
+    max_chars = max(int(max_pixels // approx_char_width), 20)
+
+    words = note.split()
+    line = ""
+    note_y = axes_bottom
+    for word in words:
+        candidate = f"{line} {word}".strip()
+        if len(candidate) > max_chars and line:
+            draw_text(line, x_left, note_y)
+            note_y += line_h
+            line = word
+        else:
+            line = candidate
+    if line:
+        draw_text(line, x_left, note_y)
+        note_y += line_h
+
+    # Continue below the wrapped note.
+    y = note_y + line_h
 
     # Draw a subtle separator between the axis block and the directional map
     # to make the section boundary easier to see.

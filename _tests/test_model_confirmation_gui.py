@@ -10,6 +10,9 @@ else:
 
 if bootstrap is not None:
     from talon_user.lib.modelConfirmationGUI import confirmation_gui
+    from talon_user.lib.modelConfirmationGUI import (
+        UserActions as ConfirmationActions,
+    )
     from talon_user.lib.modelState import GPTState
     from talon import actions
 
@@ -122,6 +125,46 @@ if bootstrap is not None:
 
             labels = [call[0] for call in actions.user.calls]
             self.assertIn("help_hub_open", labels)
+
+        def test_confirmation_close_dismisses_response_canvas(self) -> None:
+            GPTState.text_to_confirm = "Body"
+            actions.user.calls.clear()
+
+            ConfirmationActions.confirmation_gui_close()
+
+            labels = [call[0] for call in actions.user.calls]
+            self.assertIn("model_response_canvas_close", labels)
+
+        def test_paste_invokes_canvas_close_before_paste(self) -> None:
+            GPTState.text_to_confirm = "Paste me"
+            actions.user.calls.clear()
+            actions.user.pasted.clear()
+
+            orig_close = actions.user.confirmation_gui_close
+            orig_canvas_close = getattr(actions.user, "model_response_canvas_close", None)
+
+            def _record_canvas_close():
+                actions.user.calls.append(("model_response_canvas_close", tuple(), {}))
+
+            try:
+                actions.user.confirmation_gui_close = ConfirmationActions.confirmation_gui_close  # type: ignore[attr-defined]
+                actions.user.model_response_canvas_close = _record_canvas_close  # type: ignore[attr-defined]
+                ConfirmationActions.confirmation_gui_paste()
+            finally:
+                actions.user.confirmation_gui_close = orig_close  # type: ignore[attr-defined]
+                if orig_canvas_close is not None:
+                    actions.user.model_response_canvas_close = orig_canvas_close  # type: ignore[attr-defined]
+                elif hasattr(actions.user, "model_response_canvas_close"):
+                    delattr(actions.user, "model_response_canvas_close")
+
+            labels = [call[0] for call in actions.user.calls]
+            self.assertIn("model_response_canvas_close", labels)
+            self.assertIn("paste", labels)
+            self.assertLess(
+                labels.index("model_response_canvas_close"),
+                labels.index("paste"),
+            )
+            self.assertEqual(actions.user.pasted[-1], "Paste me")
 
 else:
     if not TYPE_CHECKING:

@@ -971,16 +971,14 @@ def _default_draw_response(c: canvas.Canvas) -> None:  # pragma: no cover - visu
     # bounds map was cleared at the start of this draw.
     footer_y = body_bottom + line_h // 2
     btn_labels = [
-        ("paste", "[Paste]"),
-        ("copy", "[Copy]"),
-        ("discard", "[Discard]"),
-        ("context", "[Context]"),
-        ("query", "[Query]"),
-        ("thread", "[Thread]"),
-        ("browser", "[Browser]"),
-        ("analyze", "[Analyze]"),
-        ("patterns", "[Patterns]"),
-        ("quick_help", "[Quick help]"),
+        ("paste", "[Paste response]"),
+        ("copy", "[Copy response]"),
+        ("discard", "[Discard response]"),
+        ("context", "[Pass to context]"),
+        ("query", "[Pass to query]"),
+        ("thread", "[Pass to thread]"),
+        ("browser", "[Open browser]"),
+        ("analyze", "[Analyze prompt]"),
     ]
     btn_x = x
     approx_char = 8

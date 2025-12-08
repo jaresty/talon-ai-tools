@@ -2,7 +2,7 @@ import textwrap
 
 from typing import Optional, Union
 
-from talon import Context, Module, actions, clip, imgui, settings
+from talon import Context, Module, actions, clip, cron, imgui, settings
 
 from .modelHelpers import GPTState, extract_message, notify
 from .modelPresentation import ResponsePresentation
@@ -172,6 +172,12 @@ class UserActions:
         ctx.tags = []
         ConfirmationGUIState.current_presentation = None
         ConfirmationGUIState.show_advanced_actions = False
+        # Always hide the response canvas as well so it never blocks focus
+        # after a voice-command-driven paste/copy/close.
+        try:
+            actions.user.model_response_canvas_close()
+        except Exception:
+            pass
 
     def confirmation_gui_pass_context():
         """Add the model output to the context"""
@@ -260,7 +266,19 @@ class UserActions:
         ConfirmationGUIState.display_thread = False
         ConfirmationGUIState.last_item_text = ""
         actions.user.confirmation_gui_close()
-        actions.user.paste(text_to_set)
+
+        def _paste():
+            try:
+                actions.user.paste(text_to_set)
+            except Exception:
+                pass
+
+        # Delay paste slightly so the response canvas/GUI can relinquish focus
+        # before we type into the target application.
+        try:
+            cron.after("60ms", _paste)
+        except Exception:
+            _paste()
 
     def confirmation_gui_refresh_thread(force_open: bool = False):
         """Refresh the threading output in the confirmation GUI"""

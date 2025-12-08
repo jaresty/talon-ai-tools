@@ -67,6 +67,7 @@ _BORDER_COLOR = _rgba(74, 74, 74, 255)
 _BUTTON_COLOR = _rgba(46, 46, 46, 255)
 _BUTTON_HOVER_COLOR = _rgba(58, 58, 58, 255)
 _RESULT_COLOR = _rgba(37, 37, 37, 255)
+_RESULT_HOVER_COLOR = _rgba(52, 52, 52, 255)
 
 
 def _rect_contains(rect: skia.Rect, x: float, y: float) -> bool:
@@ -177,18 +178,13 @@ def _ensure_canvas() -> None:
             )
             _button_bounds["__close__"] = close_rect
             close_bg = skia.Paint()
-            close_bg.color = (
-                _BUTTON_HOVER_COLOR if HelpHubState.hover_label == "__close__" else _BUTTON_COLOR
-            )
+            is_close_hover = HelpHubState.hover_label == "__close__"
+            close_bg.color = _BUTTON_HOVER_COLOR if is_close_hover else _BUTTON_COLOR
             c.draw_rect(close_rect, close_bg)
             # Draw glyph with slight brightness bump on hover.
             glyph_paint = skia.Paint()
-            glyph_paint.color = text_paint.color
+            glyph_paint.color = _rgba(255, 255, 255, 255) if is_close_hover else _rgba(210, 210, 210, 255)
             apply_canvas_typeface(glyph_paint)
-            if HelpHubState.hover_label == "__close__":
-                glyph_paint.color = _rgba(255, 255, 255, 255)
-            else:
-                glyph_paint.color = _rgba(210, 210, 210, 255)
             c.draw_text("×", close_rect.x + 7, close_rect.y + 16, glyph_paint)
 
             filter_query = HelpHubState.filter_text.strip()
@@ -207,10 +203,14 @@ def _ensure_canvas() -> None:
                     rect_height += 16
                 rect = skia.Rect(start_x, start_y, content_width, rect_height)
                 _search_bounds[res.label] = rect
+                is_hover = HelpHubState.hover_label == res.label
                 res_bg = skia.Paint()
-                res_bg.color = _RESULT_COLOR
+                res_bg.color = _RESULT_HOVER_COLOR if is_hover else _RESULT_COLOR
                 c.draw_rect(rect, res_bg)
-                c.draw_text(label, rect.x + 10, rect.y + 18, text_paint)
+                label_paint = skia.Paint(text_paint)
+                if is_hover:
+                    label_paint.color = _rgba(255, 255, 255, 255)
+                c.draw_text(label, rect.x + 10, rect.y + 18, label_paint)
                 detail_y = rect.y + 34
                 detail_line = ""
                 if has_hint:
@@ -218,8 +218,9 @@ def _ensure_canvas() -> None:
                 elif has_desc:
                     detail_line = desc
                 if detail_line:
+                    detail_paint = skia.Paint(label_paint)
                     for wrapped in _wrap_text(detail_line, content_width - 20, approx_char_px=7):
-                        c.draw_text(wrapped, rect.x + 10, detail_y, text_paint)
+                        c.draw_text(wrapped, rect.x + 10, detail_y, detail_paint)
                         detail_y += 16
                 return rect.height + 6
 
@@ -403,24 +404,6 @@ def _ensure_canvas() -> None:
             if event_type and _scroll_log_count < 4:
                 _log(f"mouse event type={event_type}")
                 globals()["_scroll_log_count"] = _scroll_log_count + 1
-            if event_type not in ("mousedown", "mouse_down"):
-                # Drag / move support.
-                if event_type in ("mousemove", "mouse_move") and HelpHubState.drag_offset:
-                    gpos = getattr(evt, "gpos", None) or getattr(evt, "pos", None)
-                    if gpos is None:
-                        return
-                    dx, dy = HelpHubState.drag_offset
-                    try:
-                        _hub_canvas.move(gpos.x - dx, gpos.y - dy)
-                    except Exception:
-                        HelpHubState.drag_offset = None
-                if event_type in ("mouseup", "mouse_up"):
-                    HelpHubState.drag_offset = None
-                if event_type in ("mouse_scroll", "wheel", "scroll"):
-                    _handle_scroll_delta(evt)
-                return
-            if getattr(evt, "button", 0) not in (0, 1):
-                return
             pos = getattr(evt, "gpos", None) or getattr(evt, "pos", None)
             if pos is None:
                 return
@@ -428,8 +411,7 @@ def _ensure_canvas() -> None:
             gy = getattr(pos, "y", None)
             if gx is None or gy is None:
                 return
-            _log(f"mousedown type={event_type} at ({gx},{gy}); bounds keys={list(_button_bounds.keys())}")
-            # Hover state
+            # Hover state (always set on move/down).
             HelpHubState.hover_label = ""
             close_rect = _button_bounds.get("__close__")
             if close_rect and _rect_contains(close_rect, gx, gy):
@@ -440,6 +422,27 @@ def _ensure_canvas() -> None:
                     if rect and _rect_contains(rect, gx, gy):
                         HelpHubState.hover_label = btn.label
                         break
+                if not HelpHubState.hover_label:
+                    for res in _search_results:
+                        rect = _search_bounds.get(res.label)
+                        if rect and _rect_contains(rect, gx, gy):
+                            HelpHubState.hover_label = res.label
+                            break
+            if event_type not in ("mousedown", "mouse_down"):
+                # Drag / move support.
+                if event_type in ("mousemove", "mouse_move") and HelpHubState.drag_offset:
+                    try:
+                        _hub_canvas.move(gx - HelpHubState.drag_offset[0], gy - HelpHubState.drag_offset[1])
+                    except Exception:
+                        HelpHubState.drag_offset = None
+                if event_type in ("mouseup", "mouse_up"):
+                    HelpHubState.drag_offset = None
+                if event_type in ("mouse_scroll", "wheel", "scroll"):
+                    _handle_scroll_delta(evt)
+                return
+            if getattr(evt, "button", 0) not in (0, 1):
+                return
+            _log(f"mousedown type={event_type} at ({gx},{gy}); bounds keys={list(_button_bounds.keys())}")
             # Scrollbar clicks: clicking track jumps proportionally; thumb behaves the same.
             for zone_name, rect in _scroll_bounds.items():
                 if rect and rect.x <= gx <= rect.x + rect.width and rect.y <= gy <= rect.y + rect.height:

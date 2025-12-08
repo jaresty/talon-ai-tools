@@ -182,7 +182,9 @@ def _ensure_canvas() -> None:
             )
             c.draw_rect(close_rect, close_bg)
             # Draw glyph with slight brightness bump on hover.
-            glyph_paint = skia.Paint(text_paint)
+            glyph_paint = skia.Paint()
+            glyph_paint.color = text_paint.color
+            apply_canvas_typeface(glyph_paint)
             if HelpHubState.hover_label == "__close__":
                 glyph_paint.color = _rgba(255, 255, 255, 255)
             else:

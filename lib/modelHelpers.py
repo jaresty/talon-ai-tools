@@ -8,15 +8,65 @@ import base64
 import json
 import os
 import traceback
+import time
+import codecs
 from typing import Literal, List, Sequence, Optional, Union
 
 import requests
 
 from talon import actions, app, clip, settings
+from talon import cron
 
 from ..lib.pureHelpers import strip_markdown
 from .modelState import GPTState
 from .modelTypes import GPTImageItem, GPTRequest, GPTMessage, GPTTextItem, GPTTool
+
+from .requestAsync import start_async
+from .requestBus import (
+    emit_begin_send,
+    emit_begin_stream,
+    emit_complete,
+    emit_fail,
+    emit_reset,
+    emit_cancel,
+    set_controller,
+    current_state,
+)
+from .requestController import RequestUIController
+from .requestState import RequestState
+from .requestLog import append_entry
+import threading
+
+# Ensure a default request UI controller is registered so lifecycle events
+# surface minimal progress toasts even before richer UI hooks exist.
+try:
+    from . import requestUI  # noqa: F401
+except Exception:
+    # Best-effort; if Talon imports fail, continue without UI wiring.
+    pass
+
+
+_active_response_lock = threading.Lock()
+_active_response = None
+
+
+def _set_active_response(resp):
+    global _active_response
+    with _active_response_lock:
+        _active_response = resp
+
+
+def cancel_active_request():
+    """Best-effort: close any in-flight HTTP response."""
+    global _active_response
+    with _active_response_lock:
+        resp = _active_response
+        _active_response = None
+    try:
+        if resp is not None:
+            resp.close()
+    except Exception:
+        pass
 
 
 # --- Context class for tool call control ---
@@ -32,6 +82,29 @@ def _log(message: str):
 
 MAX_TOTAL_CALLS = settings.get("user.gpt_max_total_calls", 3)
 context = ModelHelpersContext()
+
+
+def _destination_kind(destination: object) -> str:
+    """Derive a short destination kind for UI decisions."""
+    try:
+        if hasattr(destination, "kind"):
+            kind = getattr(destination, "kind")
+            if isinstance(kind, str) and kind:
+                return kind.lower()
+        if isinstance(destination, str):
+            return (destination or "").lower()
+        return destination.__class__.__name__.lower()
+    except Exception:
+        return ""
+
+
+def _prefer_canvas_progress() -> bool:
+    """Return True when the destination prefers in-canvas progress over a pill."""
+    try:
+        kind = getattr(GPTState, "current_destination_kind", "") or ""
+    except Exception:
+        kind = ""
+    return kind in ("window", "default")
 
 
 def messages_to_string(
@@ -284,6 +357,41 @@ BUILTIN_ASK_CHATGPT_TOOL = {
 def build_request(destination: object):
     """Orchestrate the GPT request build process."""
     notify(_build_request_notification())
+    kind = _destination_kind(destination)
+    try:
+        print(f"[modelHelpers] build_request destination kind={kind}")
+    except Exception:
+        pass
+    # Reset per-request buffers so stale meta/stream text do not bleed into the
+    # next response.
+    try:
+        GPTState.text_to_confirm = ""
+        GPTState.last_meta = ""
+    except Exception:
+        pass
+    # For paste-like destinations, if there is no focused textarea we fall back
+    # to the window surface; detect that up front so progress is routed to the
+    # response canvas instead of a pill.
+    try:
+        if kind in {"paste", "above", "below", "chunked", "snip", "typed"}:
+            if hasattr(destination, "inside_textarea") and callable(
+                getattr(destination, "inside_textarea", None)
+            ):
+                if not destination.inside_textarea():
+                    kind = "window"
+                    print(
+                        "[modelHelpers] inside_textarea=False; forcing destination kind=window"
+                    )
+    except Exception:
+        pass
+    try:
+        GPTState.current_destination_kind = kind
+    except Exception:
+        GPTState.current_destination_kind = ""
+    try:
+        GPTState.text_to_confirm = ""
+    except Exception:
+        pass
     full_system_messages = _build_request_context(destination)
     additional_user_context, user_tools = _get_additional_user_context_and_tools()
     # Always include the built-in Ask ChatGPT tool
@@ -359,6 +467,308 @@ def call_tool(
         context.total_tool_calls += 1
 
 
+class CancelledRequest(RuntimeError):
+    """Raised internally when a cancel is requested mid-stream."""
+    pass
+
+
+def _send_request_streaming(request, request_id: str) -> str:
+    """Stream a response and append deltas into GPTState.text_to_confirm."""
+    try:
+        print("[modelHelpers] streaming entry")
+    except Exception:
+        pass
+    TOKEN = get_token()
+    headers = {
+        "Content-Type": "application/json",
+        "Authorization": f"Bearer {TOKEN}",
+    }
+    url: str = settings.get("user.model_endpoint")  # type: ignore
+    timeout_seconds: int = settings.get("user.model_request_timeout_seconds", 120)  # type: ignore
+
+    decoder = codecs.getincrementaldecoder("utf-8")()
+    parts: list[str] = []
+    first_chunk = True
+    emit_begin_stream(request_id=request_id)
+    # Open the response canvas up-front when using the window/default path so
+    # progress (or buffered responses) are visible without waiting for the end.
+    if _prefer_canvas_progress():
+        try:
+            actions.user.model_response_canvas_open()
+        except Exception:
+            pass
+
+    try:
+        print(
+            f"[modelHelpers] streaming path engaged url={url} "
+            f"timeout={timeout_seconds}s"
+        )
+    except Exception:
+        pass
+
+    # Explicitly request streaming from the API; some endpoints require the
+    # `stream` flag in the JSON payload as well as an HTTP streaming response.
+    request_with_stream = dict(request)
+    request_with_stream["stream"] = True
+
+    try:
+        raw_response = requests.post(
+            url,
+            headers=headers,
+            json=request_with_stream,
+            timeout=timeout_seconds,
+            stream=True,
+        )
+        _set_active_response(raw_response)
+        try:
+            print("[modelHelpers] streaming request started")
+            content_type = raw_response.headers.get("content-type", "")
+            if content_type and "text/event-stream" not in content_type.lower():
+                print(
+                    f"[modelHelpers] streaming requested but content-type='{content_type}'; "
+                    "response may be buffered"
+                )
+                # If the server ignored streaming, parse the full JSON body once
+                # and return immediately to avoid consuming the stream iterator.
+                try:
+                    parsed_full = raw_response.json()
+                    text_piece = (
+                        parsed_full.get("choices", [{}])[0]
+                        .get("message", {})
+                        .get("content", "")
+                    )
+                    parts.append(text_piece or "")
+                    GPTState.text_to_confirm = "".join(parts)
+                    if _prefer_canvas_progress():
+                        try:
+                            actions.user.model_response_canvas_open()
+                            actions.user.model_response_canvas_refresh()
+                        except Exception:
+                            pass
+                    try:
+                        print(
+                            "[modelHelpers] non-stream response parsed via json(), "
+                            f"len={len(text_piece or '')}"
+                        )
+                    except Exception:
+                        pass
+                    answer_text = "".join(parts)
+                    GPTState.last_raw_response = parsed_full
+                    _set_active_response(None)
+                    return answer_text
+                except Exception as e:
+                    print(f"[modelHelpers] non-stream parse failed: {e!r}")
+                    traceback.print_exc()
+        except Exception:
+            pass
+    except requests.exceptions.Timeout:
+        error_msg = f"Request timed out after {timeout_seconds} seconds"
+        notify(f"GPT Failure: {error_msg}")
+        raise GPTRequestError(408, error_msg)
+    except Exception as e:
+        print(f"[modelHelpers] streaming requests.post failed: {e!r}")
+        traceback.print_exc()
+        raise
+    if raw_response.status_code != 200:
+        error_info = None
+        try:
+            error_info = raw_response.json()
+        except Exception:
+            error_info = raw_response.text
+        notify(f"GPT Failure: HTTP {raw_response.status_code} | {error_info}")
+        raise GPTRequestError(raw_response.status_code, error_info)
+
+    def _append_text(text_piece: str):
+        nonlocal first_chunk
+        parts.append(text_piece)
+        GPTState.text_to_confirm = "".join(parts)
+        if first_chunk:
+            first_chunk = False
+            try:
+                actions.user.model_response_canvas_open()
+            except Exception:
+                pass
+        try:
+            actions.user.model_response_canvas_refresh()
+        except Exception:
+            pass
+
+    try:
+        for raw_line in raw_response.iter_lines():
+            try:
+                state = current_state()
+            except Exception:
+                state = RequestState()
+            if getattr(state, "cancel_requested", False):
+                try:
+                    print("[modelHelpers] streaming cancel detected; closing stream")
+                    try:
+                        phase = getattr(state, "phase", None)
+                        print(f"[modelHelpers] streaming cancel state phase={phase}")
+                    except Exception:
+                        pass
+                except Exception:
+                    pass
+                try:
+                    set_controller(RequestUIController())
+                    emit_cancel(request_id=request_id)
+                except Exception:
+                    pass
+                try:
+                    cancel_active_request()
+                except Exception:
+                    pass
+                try:
+                    raw_response.close()
+                except Exception:
+                    pass
+                _set_active_response(None)
+                raise CancelledRequest()
+            if not raw_line:
+                continue
+            if raw_line.startswith(b":"):
+                continue
+            line = decoder.decode(raw_line)
+            if not line:
+                continue
+            if line.startswith("data:"):
+                line = line[len("data:") :].strip()
+            if line == "[DONE]":
+                break
+            try:
+                parsed = json.loads(line)
+            except Exception:
+                continue
+            try:
+                delta = parsed["choices"][0].get("delta", {})
+                text_piece = delta.get("content")
+            except Exception:
+                text_piece = None
+            if text_piece:
+                _append_text(text_piece)
+                try:
+                    print(
+                        f"[modelHelpers] streaming chunk len={len(text_piece)} "
+                        f"total_len={len(GPTState.text_to_confirm)}"
+                    )
+                except Exception:
+                    pass
+        try:
+            state_after_stream = current_state()
+        except Exception:
+            state_after_stream = RequestState()
+        if getattr(state_after_stream, "cancel_requested", False):
+            try:
+                print("[modelHelpers] streaming ended; cancel requested, aborting")
+            except Exception:
+                pass
+            try:
+                set_controller(RequestUIController())
+                emit_cancel(request_id=request_id)
+            except Exception:
+                pass
+            raise CancelledRequest()
+        tail = decoder.decode(b"", final=True)
+        if tail:
+            _append_text(tail)
+        # Fallback: if no chunks were received, try parsing a full JSON body
+        # (some endpoints may ignore the stream flag and return a single JSON).
+        if not parts:
+            try:
+                parsed_full = raw_response.json()
+                text_piece = (
+                    parsed_full.get("choices", [{}])[0]
+                    .get("message", {})
+                    .get("content", "")
+                )
+                if text_piece:
+                    parts.append(text_piece)
+                    GPTState.text_to_confirm = "".join(parts)
+                    if _prefer_canvas_progress():
+                        try:
+                            actions.user.model_response_canvas_open()
+                            actions.user.model_response_canvas_refresh()
+                        except Exception:
+                            pass
+                    print(
+                        "[modelHelpers] streaming fallback parsed full JSON, "
+                        f"len={len(text_piece)} total_len={len(GPTState.text_to_confirm)}"
+                    )
+            except Exception as e:
+                print(f"[modelHelpers] streaming fallback parse failed: {e}")
+        else:
+            try:
+                print(f"[modelHelpers] streaming completed with {len(parts)} chunks")
+            except Exception:
+                pass
+    except CancelledRequest:
+        # Cancel was requested upstream; just propagate without extra notifications.
+        try:
+            print("[modelHelpers] streaming CancelledRequest caught, closing")
+        except Exception:
+            pass
+        try:
+            cancel_active_request()
+        except Exception:
+            pass
+        try:
+            raw_response.close()
+        except Exception:
+            pass
+        _set_active_response(None)
+        raise
+    except Exception as e:
+        # If cancel was requested (regardless of exception type), treat as cancel.
+        try:
+            state = current_state()
+        except Exception:
+            state = RequestState()
+        if getattr(state, "cancel_requested", False):
+            try:
+                print(f"[modelHelpers] streaming exception during cancel: {e!r}")
+            except Exception:
+                pass
+            try:
+                raw_response.close()
+            except Exception:
+                pass
+            _set_active_response(None)
+            try:
+                cancel_active_request()
+            except Exception:
+                pass
+            raise CancelledRequest()
+        # Some transports surface cancellation as AttributeError on the underlying
+        # stream; treat those as cancels to avoid noisy tracebacks.
+        if isinstance(e, AttributeError):
+            try:
+                raw_response.close()
+            except Exception:
+                pass
+            _set_active_response(None)
+            raise CancelledRequest()
+        emit_fail(str(e), request_id=request_id)
+        print(f"[modelHelpers] streaming error; falling back: {e}")
+        raise
+    finally:
+        try:
+            raw_response.close()
+        except Exception:
+            pass
+
+    answer_text = "".join(parts)
+    try:
+        print(
+            f"[modelHelpers] streaming complete parts={len(parts)} answer_len={len(answer_text)} "
+            f"meta_present={bool(GPTState.last_meta)}"
+        )
+    except Exception:
+        pass
+    GPTState.last_raw_response = {"choices": [{"message": {"content": answer_text}}]}
+    _set_active_response(None)
+    return answer_text
+
+
 def send_request(max_attempts: int = 10):
     """Generate run a GPT request and return the response, with a limit to prevent infinite loops"""
     context.total_tool_calls = 0
@@ -366,8 +776,112 @@ def send_request(max_attempts: int = 10):
     message_content = None
     attempts = 0
 
+    request_id = emit_begin_send()
+    started_at_ms = int(time.time() * 1000)
+    try:
+        print(
+            f"[modelHelpers] send_request destination_kind={getattr(GPTState, 'current_destination_kind', '')} "
+            f"prefer_canvas_progress={_prefer_canvas_progress()}"
+        )
+        try:
+            phase = getattr(current_state(), "phase", None)
+            print(f"[modelHelpers] initial request phase={phase}")
+        except Exception:
+            pass
+    except Exception:
+        pass
+    if not _prefer_canvas_progress():
+        try:
+            from .pillCanvas import show_pill
+
+            show_pill("Model: sending…", RequestPhase.SENDING)
+        except Exception:
+            pass
+
+    try:
+        use_stream = bool(settings.get("user.model_streaming", True))
+    except Exception:
+        use_stream = True
+    print(f"[modelHelpers] streaming_enabled={use_stream}")
+    if use_stream:
+        try:
+            print("[modelHelpers] invoking streaming request")
+            message_content = _send_request_streaming(GPTState.request, request_id)
+        except CancelledRequest:
+            try:
+                print("[modelHelpers] send_request: streaming cancelled, aborting without fallback")
+                try:
+                    phase = getattr(current_state(), "phase", None)
+                    print(f"[modelHelpers] after streaming cancel phase={phase}")
+                except Exception:
+                    pass
+            except Exception:
+                pass
+            try:
+                set_controller(RequestUIController())
+                emit_cancel(request_id=request_id)
+                emit_reset()
+                try:
+                    phase_after_reset = getattr(current_state(), "phase", None)
+                    print(f"[modelHelpers] after emit_reset phase={phase_after_reset}")
+                except Exception:
+                    pass
+            except Exception:
+                pass
+            try:
+                cancel_active_request()
+            except Exception:
+                pass
+            try:
+                _set_active_response(None)
+            except Exception:
+                pass
+            try:
+                GPTState.text_to_confirm = ""
+            except Exception:
+                pass
+            return format_message("")
+        except Exception as e:
+            try:
+                print(f"[modelHelpers] streaming failed; retrying without stream ({e!r})")
+                traceback.print_exc()
+            except Exception:
+                pass
+            message_content = None
+        if message_content is None:
+            try:
+                print("[modelHelpers] streaming branch returned None (skipped or failed)")
+            except Exception:
+                pass
+
     while message_content is None and attempts < max_attempts:
-        json_response = send_request_internal(GPTState.request)
+        try:
+            state = current_state()
+        except Exception:
+            state = RequestState()
+        if getattr(state, "cancel_requested", False):
+            try:
+                print("[modelHelpers] cancel detected before non-stream send; aborting")
+                try:
+                    phase = getattr(state, "phase", None)
+                    print(f"[modelHelpers] fallback cancel state phase={phase}")
+                except Exception:
+                    pass
+            except Exception:
+                pass
+            emit_fail("cancelled", request_id=request_id)
+            notify("GPT: Request cancelled")
+            cancel_active_request()
+            return format_message("")
+
+        try:
+            json_response = send_request_internal(GPTState.request)
+        except GPTRequestError as e:
+            emit_fail(str(e), request_id=request_id)
+            raise
+        except Exception as e:
+            emit_fail(str(e), request_id=request_id)
+            raise
 
         message_response = json_response["choices"][0]["message"]
         message_content = message_response.get("content")
@@ -384,19 +898,73 @@ def send_request(max_attempts: int = 10):
 
         attempts += 1
 
+    try:
+        state_after = current_state()
+    except Exception:
+        state_after = RequestState()
+    if getattr(state_after, "cancel_requested", False):
+        emit_fail("cancelled", request_id=request_id)
+        notify("GPT: Request cancelled")
+        cancel_active_request()
+        return format_message("")
+
     if message_content is None:
+        emit_fail("max_attempts_exceeded", request_id=request_id)
         notify("GPT request failed after max attempts.")
         raise RuntimeError("GPT request failed after max attempts.")
 
+    try:
+        print(
+            f"[modelHelpers] message_content_len={len(message_content)} "
+            f"preview='{message_content[:120].replace(chr(10), ' ')}'"
+        )
+    except Exception:
+        pass
     notify("GPT Task Completed")
     resp = message_content.strip()
     formatted_resp = strip_markdown(resp)
 
     answer_text, meta_text = split_answer_and_meta(formatted_resp)
+    try:
+        print(
+            f"[modelHelpers] split answer_len={len(answer_text)} meta_len={len(meta_text)} "
+            f"answer_preview='{answer_text[:80].replace(chr(10), ' ')}' "
+            f"meta_preview='{meta_text[:80].replace(chr(10), ' ')}'"
+        )
+    except Exception:
+        pass
 
     GPTState.last_response = answer_text
     GPTState.last_meta = meta_text
+    # Keep the streaming buffer aligned with the final answer so inflight views
+    # or immediate redraws have content even if the stream was sparse.
+    GPTState.text_to_confirm = answer_text
     response = format_message(answer_text)
+
+    # When using the canvas for progress (response window/default), refresh it
+    # after the final content is ready so the body redraws with the answer.
+    if _prefer_canvas_progress():
+        def _refresh():
+            try:
+                actions.user.model_response_canvas_refresh()
+            except Exception as e:
+                try:
+                    app.notify(f"GPT: response canvas refresh failed: {e}")
+                except Exception:
+                    pass
+        try:
+            cron.after("0ms", _refresh)
+            cron.after("50ms", _refresh)
+        except Exception:
+            _refresh()
+        try:
+            actions.user.model_response_canvas_open()
+        except Exception:
+            pass
+        try:
+            actions.user.model_response_canvas_refresh()
+        except Exception:
+            pass
 
     if GPTState.thread_enabled:
         GPTState.push_thread(
@@ -406,7 +974,48 @@ def send_request(max_attempts: int = 10):
             }
         )
 
+    emit_complete(request_id=request_id)
+
+    duration_ms = int(time.time() * 1000) - started_at_ms
+
+    try:
+        prompt_text = ""
+        try:
+            messages = GPTState.request.get("messages", [])  # type: ignore[union-attr]
+            user_messages = [m for m in messages if m.get("role") == "user"]
+            if user_messages:
+                parts = []
+                for item in user_messages[0].get("content", []):
+                    if item.get("type") == "text":
+                        parts.append(item.get("text", ""))
+                prompt_text = "\n\n".join(parts).strip()
+        except Exception:
+            prompt_text = ""
+        append_entry(
+            request_id,
+            prompt_text,
+            answer_text,
+            meta_text,
+            started_at_ms=started_at_ms,
+            duration_ms=duration_ms,
+        )
+    except Exception:
+        pass
+
     return response
+
+
+def send_request_async():
+    """Run send_request in a background thread and return a handle."""
+    return start_async(send_request)
+
+
+__all__ = [
+    "send_request",
+    "send_request_async",
+    "send_request_internal",
+    "GPTRequestError",
+]
 
 
 class GPTRequestError(Exception):
@@ -418,6 +1027,12 @@ class GPTRequestError(Exception):
         )
         self.status_code = status_code
         self.error_info = error_info
+
+
+class CancelledRequest(RuntimeError):
+    """Raised internally when a cancel is requested mid-stream."""
+
+    pass
 
 
 def send_request_internal(request):
@@ -441,6 +1056,7 @@ def send_request_internal(request):
         raw_response = requests.post(
             url, headers=headers, data=json.dumps(request), timeout=timeout_seconds
         )
+        _set_active_response(raw_response)
     except requests.exceptions.Timeout:
         error_msg = f"Request timed out after {timeout_seconds} seconds"
         notify(f"GPT Failure: {error_msg}")
@@ -461,6 +1077,7 @@ def send_request_internal(request):
     GPTState.last_raw_response = json_response
     if GPTState.debug_enabled:
         print(json_response)
+    _set_active_response(None)
     return json_response
 
 

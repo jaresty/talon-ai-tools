@@ -9,6 +9,12 @@ from ..lib.modelHelpers import format_messages, notify
 from ..lib.HTMLBuilder import Builder
 from ..lib.promptPipeline import PromptResult
 
+def _set_destination_kind(kind: str) -> None:
+    try:
+        GPTState.current_destination_kind = (kind or "").lower()
+    except Exception:
+        pass
+
 
 PromptPayload = Union[PromptResult, Sequence[GPTItem], GPTItem]
 
@@ -208,6 +214,8 @@ def _parse_meta(meta_text: str) -> Dict[str, Union[str, List[str]]]:
 
 
 class ModelDestination:
+    kind = "window"
+
     def insert(self, gpt_output: PromptPayload):
         result = _coerce_prompt_result(gpt_output)
         presentation = result.presentation_for("default")
@@ -227,15 +235,24 @@ class ModelDestination:
                 "AXStaticText",
             ]
         except Exception as e:
-            # Handle exception or log error
-            print(f"An error occurred: {e}")
+            # Suppress noisy UI lookup errors unless debug is explicitly enabled.
+            try:
+                from .modelState import GPTState
+
+                if getattr(GPTState, "debug_enabled", False):
+                    print(f"[modelDestination] inside_textarea error: {e}")
+            except Exception:
+                pass
             return False
 
 
 class Above(ModelDestination):
+    kind = "above"
+
     def insert(self, gpt_output):
         result = _coerce_prompt_result(gpt_output)
         if not self.inside_textarea():
+            _set_destination_kind("window")
             return super().insert(result)
 
         actions.key("left")
@@ -246,9 +263,12 @@ class Above(ModelDestination):
 
 
 class Chunked(ModelDestination):
+    kind = "chunked"
+
     def insert(self, gpt_output):
         result = _coerce_prompt_result(gpt_output)
         if not self.inside_textarea():
+            _set_destination_kind("window")
             return super().insert(result)
 
         GPTState.last_was_pasted = True
@@ -261,9 +281,12 @@ class Chunked(ModelDestination):
 
 
 class Below(ModelDestination):
+    kind = "below"
+
     def insert(self, gpt_output):
         result = _coerce_prompt_result(gpt_output)
         if not self.inside_textarea():
+            _set_destination_kind("window")
             return super().insert(result)
         actions.key("right")
         actions.edit.line_insert_down()
@@ -273,6 +296,8 @@ class Below(ModelDestination):
 
 
 class Clipboard(ModelDestination):
+    kind = "clipboard"
+
     def insert(self, gpt_output):
         result = _coerce_prompt_result(gpt_output)
         presentation = result.presentation_for("clipboard")
@@ -280,15 +305,20 @@ class Clipboard(ModelDestination):
 
 
 class Snip(ModelDestination):
+    kind = "snip"
+
     def insert(self, gpt_output):
         result = _coerce_prompt_result(gpt_output)
         if not self.inside_textarea():
+            _set_destination_kind("window")
             return super().insert(result)
         presentation = result.presentation_for("snip")
         actions.user.insert_snippet(presentation.paste_text)
 
 
 class Context(ModelDestination):
+    kind = "context"
+
     def insert(self, gpt_output):
         result = _coerce_prompt_result(gpt_output)
         for message in _iter_text_items(result.messages):
@@ -296,12 +326,16 @@ class Context(ModelDestination):
 
 
 class Query(ModelDestination):
+    kind = "query"
+
     def insert(self, gpt_output):
         result = _coerce_prompt_result(gpt_output)
         GPTState.push_query(format_messages("user", result.messages))
 
 
 class NewContext(ModelDestination):
+    kind = "newContext"
+
     def insert(self, gpt_output):
         result = _coerce_prompt_result(gpt_output)
         GPTState.clear_context()
@@ -310,6 +344,8 @@ class NewContext(ModelDestination):
 
 
 class AppendClipboard(ModelDestination):
+    kind = "appendClipboard"
+
     def insert(self, gpt_output):
         result = _coerce_prompt_result(gpt_output)
         presentation = result.presentation_for("appendClipboard")
@@ -320,6 +356,8 @@ class AppendClipboard(ModelDestination):
 
 
 class Browser(ModelDestination):
+    kind = "browser"
+
     def insert(self, gpt_output):
         result = _coerce_prompt_result(gpt_output)
         presentation = result.presentation_for("browser")
@@ -399,6 +437,8 @@ class Browser(ModelDestination):
 
 
 class TextToSpeech(ModelDestination):
+    kind = "textToSpeech"
+
     def insert(self, gpt_output):
         try:
             result = _coerce_prompt_result(gpt_output)
@@ -409,6 +449,8 @@ class TextToSpeech(ModelDestination):
 
 
 class Chain(ModelDestination):
+    kind = "chain"
+
     def insert(self, gpt_output):
         result = _coerce_prompt_result(gpt_output)
         if not self.inside_textarea():
@@ -420,15 +462,20 @@ class Chain(ModelDestination):
 
 
 class Paste(ModelDestination):
+    kind = "paste"
+
     def insert(self, gpt_output):
         result = _coerce_prompt_result(gpt_output)
         if not self.inside_textarea():
+            _set_destination_kind("window")
             return super().insert(result)
         GPTState.last_was_pasted = True
         presentation = result.presentation_for("paste")
         actions.user.paste(presentation.paste_text)
 
 class Draft(ModelDestination):
+    kind = "draft"
+
     def insert(self, gpt_output):
         result = _coerce_prompt_result(gpt_output)
         GPTState.last_was_pasted = True
@@ -439,9 +486,12 @@ class Draft(ModelDestination):
 
 
 class Typed(ModelDestination):
+    kind = "typed"
+
     def insert(self, gpt_output):
         result = _coerce_prompt_result(gpt_output)
         if not self.inside_textarea():
+            _set_destination_kind("window")
             return super().insert(result)
         GPTState.last_was_pasted = True
         presentation = result.presentation_for("typed")
@@ -449,6 +499,8 @@ class Typed(ModelDestination):
 
 
 class Thread(ModelDestination):
+    kind = "thread"
+
     def insert(self, gpt_output):
         result = _coerce_prompt_result(gpt_output)
         GPTState.push_thread(format_messages("user", result.messages))
@@ -456,6 +508,8 @@ class Thread(ModelDestination):
 
 
 class NewThread(ModelDestination):
+    kind = "newThread"
+
     def insert(self, gpt_output):
         result = _coerce_prompt_result(gpt_output)
         GPTState.new_thread()
@@ -464,6 +518,8 @@ class NewThread(ModelDestination):
 
 
 class Stack(ModelDestination):
+    kind = "stack"
+
     def __init__(self, stack_name):
         self.stack_name = stack_name
 
@@ -473,6 +529,8 @@ class Stack(ModelDestination):
 
 
 class Default(ModelDestination):
+    kind = "default"
+
     def insert(self, gpt_output):
         result = _coerce_prompt_result(gpt_output)
         presentation = result.presentation_for("default")

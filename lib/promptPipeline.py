@@ -9,6 +9,7 @@ from .modelPresentation import ResponsePresentation, render_for_destination
 from .modelSource import GPTItem, ModelSource
 from .modelTypes import GPTTextItem
 from .promptSession import PromptSession
+from .requestAsync import start_async
 
 
 @dataclass
@@ -69,7 +70,21 @@ class PromptPipeline:
         session.prepare_prompt(prompt, source, additional_source)
         return self.complete(session)
 
+    def run_async(
+        self,
+        prompt: str,
+        source: ModelSource,
+        destination,
+        additional_source: Optional[ModelSource] = None,
+    ):
+        """Prepare and execute a prompt in a background thread; returns a handle."""
+        return start_async(self.run, prompt, source, destination, additional_source)
+
     def complete(self, session: PromptSession) -> PromptResult:
         response = session.execute()
         session.append_thread(response)
         return PromptResult.from_response(response, session=session)
+
+    def complete_async(self, session: PromptSession):
+        """Run complete() in a background thread and return a handle."""
+        return start_async(self.complete, session)

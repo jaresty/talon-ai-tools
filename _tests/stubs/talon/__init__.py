@@ -87,6 +87,7 @@ class _Actions(SimpleNamespace):
 
 
 actions = _Actions()
+cron = SimpleNamespace(after=lambda _, fn: fn())
 
 
 class _Clip:
@@ -115,6 +116,8 @@ class _Settings:
             self._values[key] = value
 
     def get(self, key: str, default=None):
+        if key == "user.model_streaming":
+            return 1
         return self._values.get(key, default)
 
     def set(self, key: str, value):
@@ -137,6 +140,8 @@ class _UIElement:
 
 class _UI:
     # Minimal subset needed for tests; real Talon exposes main_screen().
+    Rect = _UIElement
+
     def main_screen(self):
         return _UIElement()
 

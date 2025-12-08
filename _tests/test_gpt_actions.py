@@ -17,16 +17,31 @@ if bootstrap is not None:
     from talon_user.lib.modelDestination import ModelDestination
     from talon_user.lib.promptPipeline import PromptResult
     from talon_user.GPT import gpt as gpt_module
+    from talon_user.lib.requestBus import set_controller, current_state
+    from talon_user.lib.requestController import RequestUIController
+    from talon_user.lib.requestState import RequestPhase
 
     class GPTActionPromptSessionTests(unittest.TestCase):
         def setUp(self):
             GPTState.reset_all()
             GPTState.last_response = "assistant output"
+            gpt_module.settings.set("user.model_async_blocking", False)
             actions.user.gpt_insert_response = MagicMock()
             self._original_pipeline = gpt_module._prompt_pipeline
             self.pipeline = MagicMock()
             self.pipeline.complete.return_value = PromptResult.from_messages(
                 [format_message("analysis")]
+            )
+            class _Handle:
+                def __init__(self, result):
+                    self.result = result
+                def wait(self, timeout=None):
+                    return True
+            self.pipeline.complete_async.return_value = _Handle(
+                PromptResult.from_messages([format_message("async analysis")])
+            )
+            self.pipeline.run_async.return_value = _Handle(
+                PromptResult.from_messages([format_message("async run")])
             )
             self.pipeline.run.return_value = PromptResult.from_messages(
                 [format_message("result")]
@@ -34,6 +49,16 @@ if bootstrap is not None:
             gpt_module._prompt_pipeline = self.pipeline
             self._original_orchestrator = gpt_module._recursive_orchestrator
             self.orchestrator = MagicMock()
+            class _AsyncHandle:
+                def __init__(self, result):
+                    self.result = result
+
+                def wait(self, timeout=None):
+                    return True
+
+            self.orchestrator.run_async.return_value = _AsyncHandle(
+                PromptResult.from_messages([format_message("async delegated output")])
+            )
             self.orchestrator.run.return_value = PromptResult.from_messages(
                 [format_message("orchestrated")]
             )
@@ -44,18 +69,34 @@ if bootstrap is not None:
             gpt_module._recursive_orchestrator = self._original_orchestrator
             actions.app.calls.clear()
 
+        def test_gpt_cancel_request_emits_cancel(self):
+            set_controller(RequestUIController())
+            actions.user.calls.clear()
+            gpt_module.UserActions.gpt_cancel_request()
+            self.assertEqual(current_state().phase, RequestPhase.CANCELLED)
+            # Expect a user-level notify
+            self.assertTrue(
+                any(call[0] == "notify" for call in actions.user.calls + actions.app.calls)
+            )
+
         def test_gpt_analyze_prompt_uses_prompt_session(self):
             with patch.object(gpt_module, "PromptSession") as session_cls:
                 mock_session = session_cls.return_value
+                handle = self.pipeline.complete_async.return_value
+                handle.wait = MagicMock(return_value=True)
+                async_result = PromptResult.from_messages([format_message("analysis")])
+                handle.result = async_result
 
-                gpt_module.UserActions().gpt_analyze_prompt()
+                with patch.object(gpt_module, "_handle_async_result") as handle_async:
+                    gpt_module.UserActions().gpt_analyze_prompt()
 
                 session_cls.assert_called_once()
                 mock_session.begin.assert_called_once_with(reuse_existing=True)
                 mock_session.add_messages.assert_called_once()
-                self.pipeline.complete.assert_called_once_with(mock_session)
+                self.pipeline.complete_async.assert_called_once_with(mock_session)
+                handle_async.assert_called_once_with(handle, session_cls.call_args.args[0], block=False)
                 actions.user.gpt_insert_response.assert_called_once_with(
-                    self.pipeline.complete.return_value,
+                    async_result,
                     session_cls.call_args.args[0],
                 )
 
@@ -66,40 +107,42 @@ if bootstrap is not None:
                 additional_model_source=None,
                 model_destination=MagicMock(),
             )
-            delegate_result = PromptResult.from_messages(
-                [format_message("delegated output")]
-            )
-            result_text = gpt_module.UserActions.gpt_apply_prompt(configuration)
+            with patch.object(gpt_module, "_handle_async_result") as handle_async:
+                handle_async.side_effect = lambda h, d, block=True: setattr(
+                    h, "result", h.result
+                )
+                result_text = gpt_module.UserActions.gpt_apply_prompt(configuration)
 
-            self.orchestrator.run.assert_called_once_with(
+            self.orchestrator.run_async.assert_called_once_with(
                 configuration.please_prompt,
                 configuration.model_source,
                 configuration.model_destination,
                 configuration.additional_model_source,
             )
+            self.orchestrator.run.assert_not_called()
+            handle_async.assert_called_once()
             actions.user.gpt_insert_response.assert_called_once_with(
-                self.orchestrator.run.return_value,
+                self.orchestrator.run_async.return_value.result,
                 configuration.model_destination,
             )
-            self.assertEqual(result_text, "orchestrated")
+            self.assertEqual(result_text, "async delegated output")
 
         def test_gpt_replay_uses_prompt_session_output(self):
             with patch.object(gpt_module, "PromptSession") as session_cls:
                 mock_session = session_cls.return_value
                 mock_session._destination = "paste"
-                self.pipeline.complete.return_value = PromptResult.from_messages(
-                    [format_message("replayed")]
-                )
+                handle = self.pipeline.complete_async.return_value
+                handle.wait = MagicMock(return_value=True)
+                result = PromptResult.from_messages([format_message("replayed")])
+                handle.result = result
 
-                gpt_module.UserActions.gpt_replay("paste")
+                with patch.object(gpt_module, "_handle_async_result") as handle_async:
+                    gpt_module.UserActions.gpt_replay("paste")
 
                 session_cls.assert_called_once()
                 mock_session.begin.assert_called_once_with(reuse_existing=True)
-                self.pipeline.complete.assert_called_once_with(mock_session)
-                actions.user.gpt_insert_response.assert_called_once_with(
-                    self.pipeline.complete.return_value,
-                    "paste",
-                )
+                self.pipeline.complete_async.assert_called_once_with(mock_session)
+                handle_async.assert_called_once_with(handle, "paste", block=False)
 
         def test_gpt_show_last_meta_notifies_when_present(self):
             GPTState.last_meta = "Interpreted as: summarise the design tradeoffs."
@@ -167,34 +210,48 @@ if bootstrap is not None:
                 "Expected a user notification when no raw exchange is available",
             )
 
-        def test_gpt_reformat_last_uses_prompt_pipeline(self):
-            actions.user.get_last_phrase = lambda: "spoken"
-            actions.user.clear_last_phrase = lambda: None
+        def test_gpt_replay_non_blocking_calls_handle_async_with_block_false(self):
+            with patch.object(gpt_module, "PromptSession") as session_cls:
+                mock_session = session_cls.return_value
+                mock_session._destination = "paste"
+                handle = self.pipeline.complete_async.return_value
+                handle.result = PromptResult.from_messages([format_message("replayed")])
+                with patch.object(gpt_module, "_handle_async_result") as handle_async:
+                    gpt_module.UserActions.gpt_replay("paste")
+                    handle_async.assert_called_once_with(handle, "paste", block=False)
 
-            with patch.object(gpt_module, "create_model_source") as create_source:
-                source = MagicMock()
-                create_source.return_value = source
-                self.pipeline.run.return_value = PromptResult.from_messages(
-                    [format_message("formatted")]
-                )
-
-                result = gpt_module.UserActions.gpt_reformat_last("as code")
-
-                create_source.assert_called_once_with("last")
-                self.pipeline.run.assert_called_once()
-                self.assertEqual(result, "formatted")
+        def test_gpt_set_async_blocking_sets_setting_and_notifies(self):
+            actions.app.calls.clear()
+            gpt_module.UserActions.gpt_set_async_blocking(1)
+            self.assertTrue(gpt_module.settings.get("user.model_async_blocking"))
+            self.assertTrue(
+                any(call[0] == "notify" for call in actions.app.calls),
+                "Expected a notification when toggling async mode",
+            )
 
         def test_gpt_run_prompt_returns_pipeline_text(self):
             source = MagicMock()
 
             text = gpt_module.UserActions.gpt_run_prompt("question", source)
 
-            self.pipeline.run.assert_called_once()
-            args, kwargs = self.pipeline.run.call_args
-            self.assertEqual(args[0:2], ("question", source))
-            self.assertEqual(kwargs.get("destination"), "")
-            self.assertIsNone(kwargs.get("additional_source"))
-            self.assertEqual(text, "result")
+            # Async path preferred; fallback to sync when needed.
+            self.pipeline.run_async.assert_called_once_with(
+                "question", source, destination="", additional_source=None
+            )
+            self.assertEqual(text, "async run")
+
+        def test_gpt_run_prompt_uses_async_and_blocks_setting(self):
+            source = MagicMock()
+            handle = self.pipeline.run_async.return_value
+            handle.wait = MagicMock(return_value=True)
+            async_result = PromptResult.from_messages([format_message("async run result")])
+            handle.result = async_result
+            actions.user.calls.clear()
+
+            text = gpt_module.UserActions.gpt_run_prompt("question", source)
+
+            handle.wait.assert_called_once()
+            self.assertEqual(text, "async run result")
 
         def test_gpt_suggest_prompt_recipes_parses_suggestions(self):
             with patch.object(gpt_module, "PromptSession") as session_cls, patch.object(
@@ -207,7 +264,9 @@ if bootstrap is not None:
                 mock_session._destination = "paste"
 
                 # Arrange a suggestion-style response.
-                self.pipeline.complete.return_value = PromptResult.from_messages(
+                handle = self.pipeline.complete_async.return_value
+                handle.wait = MagicMock(return_value=True)
+                handle.result = PromptResult.from_messages(
                     [
                         format_message(
                             "Name: Deep map | Recipe: describe · full · relations · cluster · bullets · fog\n"
@@ -242,7 +301,9 @@ if bootstrap is not None:
                 mock_session = session_cls.return_value
                 mock_session._destination = "paste"
 
-                self.pipeline.complete.return_value = PromptResult.from_messages(
+                handle = self.pipeline.complete_async.return_value
+                handle.wait = MagicMock(return_value=True)
+                handle.result = PromptResult.from_messages(
                     [
                         format_message(
                             "Relational Overview | Recipe: describe · full · relations · cluster · plain · jog"
@@ -269,31 +330,33 @@ if bootstrap is not None:
                 source = MagicMock()
                 source.get_text.return_value = ""
                 create_source.return_value = source
-                mock_session = session_cls.return_value
-                mock_session._destination = "paste"
+            mock_session = session_cls.return_value
+            mock_session._destination = "paste"
 
-                # Arrange a suggestion-style response so parsing succeeds.
-                self.pipeline.complete.return_value = PromptResult.from_messages(
-                    [
-                        format_message(
-                            "Relational Overview | Recipe: describe · full · relations · cluster · plain · jog"
-                        )
-                    ]
-                )
+            # Arrange a suggestion-style response so parsing succeeds.
+            handle = self.pipeline.complete_async.return_value
+            handle.wait = MagicMock(return_value=True)
+            handle.result = PromptResult.from_messages(
+                [
+                    format_message(
+                        "Relational Overview | Recipe: describe · full · relations · cluster · plain · jog"
+                    )
+                ]
+            )
 
-                gpt_module.UserActions.gpt_suggest_prompt_recipes("subject")
+            gpt_module.UserActions.gpt_suggest_prompt_recipes("subject")
 
-                # Even with an empty source, providing a subject should still
-                # drive a suggestion request and populate suggestions.
-                self.assertEqual(
-                    GPTState.last_suggested_recipes,
-                    [
-                        {
-                            "name": "Relational Overview",
-                            "recipe": "describe · full · relations · cluster · plain · jog",
-                        }
-                    ],
-                )
+            # Even with an empty source, providing a subject should still
+            # drive a suggestion request and populate suggestions.
+            self.assertEqual(
+                GPTState.last_suggested_recipes,
+                [
+                    {
+                        "name": "Relational Overview",
+                        "recipe": "describe · full · relations · cluster · plain · jog",
+                    }
+                ],
+            )
 
         def test_gpt_suggest_prompt_recipes_opens_suggestion_gui_when_available(self):
             with patch.object(gpt_module, "PromptSession") as session_cls, patch.object(
@@ -308,7 +371,9 @@ if bootstrap is not None:
                 mock_session._destination = "paste"
 
                 # Arrange a suggestion-style response.
-                self.pipeline.complete.return_value = PromptResult.from_messages(
+                handle = self.pipeline.complete_async.return_value
+                handle.wait = MagicMock(return_value=True)
+                handle.result = PromptResult.from_messages(
                     [
                         format_message(
                             "Name: Deep map | Recipe: describe · full · relations · cluster · bullets · fog"
@@ -334,17 +399,12 @@ if bootstrap is not None:
 
                 create_source.assert_called_once()
                 session_cls.assert_called_once()
-                # Suggestion flow starts a fresh request rather than reusing
-                # any in-flight GPTState.request to avoid leaking prior
-                # prompt content into the meta-prompt.
-                mock_session.begin.assert_called_once_with()
-                mock_session.add_messages.assert_called_once()
-                self.pipeline.complete.assert_called_once_with(mock_session)
-                actions.user.gpt_insert_response.assert_called_once()
-                inserted_result, inserted_destination = (
-                    actions.user.gpt_insert_response.call_args.args
-                )
-                self.assertIs(inserted_result, self.pipeline.complete.return_value)
+            # Suggestion flow starts a fresh request rather than reusing
+            # any in-flight GPTState.request to avoid leaking prior
+            # prompt content into the meta-prompt.
+            mock_session.begin.assert_called_once_with()
+            mock_session.add_messages.assert_called_once()
+            self.pipeline.complete_async.assert_called_once_with(mock_session)
 
 
         def test_gpt_pass_uses_prompt_session(self):
@@ -388,15 +448,18 @@ if bootstrap is not None:
             with patch.object(gpt_module, "PromptSession") as session_cls:
                 session = session_cls.return_value
                 session._destination = "thread"
-                self.pipeline.complete.return_value = PromptResult.from_messages(
-                    [format_message("threaded")]
-                )
+                handle = self.pipeline.complete_async.return_value
+                handle.wait = MagicMock(return_value=True)
+                result = PromptResult.from_messages([format_message("threaded")])
+                handle.result = result
 
-                gpt_module.UserActions.gpt_replay("thread")
+                with patch.object(gpt_module, "_handle_async_result") as handle_async:
+                    gpt_module.UserActions.gpt_replay("thread")
 
-                session_cls.assert_called_once()
-                session.begin.assert_called_once_with(reuse_existing=True)
-                self.pipeline.complete.assert_called_with(session)
+            session_cls.assert_called_once()
+            session.begin.assert_called_once_with(reuse_existing=True)
+            self.pipeline.complete_async.assert_called_with(session)
+            handle_async.assert_called_once_with(handle, "thread", block=False)
 
         def test_gpt_insert_response_has_type_annotations(self):
             sig = inspect.signature(gpt_module.UserActions.gpt_insert_response)
@@ -411,21 +474,33 @@ if bootstrap is not None:
             delegate_result = PromptResult.from_messages(
                 [format_message("recursive result")]
             )
+            class _Handle:
+                def __init__(self, result):
+                    self.result = result
+                def wait(self, timeout=None):
+                    return True
+            orchestrator.run_async.return_value = _Handle(delegate_result)
             orchestrator.run.return_value = delegate_result
             with patch.object(gpt_module, "_recursive_orchestrator", orchestrator):
                 source = MagicMock()
                 destination = MagicMock()
 
-                result = gpt_module.UserActions.gpt_recursive_prompt(
-                    "controller prompt", source, destination=destination
-                )
+                with patch.object(gpt_module, "_handle_async_result") as handle_async:
+                    handle_async.side_effect = lambda h, d, block=False: setattr(
+                        h, "result", h.result
+                    )
+                    result = gpt_module.UserActions.gpt_recursive_prompt(
+                        "controller prompt", source, destination=destination
+                    )
 
-            orchestrator.run.assert_called_once_with(
+            orchestrator.run_async.assert_called_once_with(
                 "controller prompt",
                 source,
                 destination,
                 None,
             )
+            orchestrator.run.assert_not_called()
+            handle_async.assert_called_once()
             actions.user.gpt_insert_response.assert_called_once_with(
                 delegate_result,
                 destination,

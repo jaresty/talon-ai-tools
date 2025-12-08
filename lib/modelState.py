@@ -16,6 +16,9 @@ class GPTState:
     last_response: ClassVar[str] = ""
     # Optional meta-interpretation for the last response, when available.
     last_meta: ClassVar[str] = ""
+    # Last destination kind (for example, "window", "default", "paste") so UI
+    # surfaces can tailor progress affordances per destination.
+    current_destination_kind: ClassVar[str] = ""
     last_was_pasted: ClassVar[bool] = False
     # Human-readable summary of the last prompt recipe
     # (static prompt + effective completeness/scope/method/style).

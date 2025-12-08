@@ -39,6 +39,9 @@
 {user.model} last meta$: user.gpt_show_last_meta()
 
 {user.model} debug logs$: user.gpt_copy_last_raw_exchange()
+{user.model} cancel$: user.gpt_cancel_request()
+{user.model} async blocking$: user.gpt_set_async_blocking(1)
+{user.model} async non blocking$: user.gpt_set_async_blocking(0)
 
 ^{user.model} again$:
     user.gpt_rerun_last_recipe("", "", "", "", "", "")
@@ -66,11 +69,6 @@
 
 # Select the last GPT response so you can edit it further
 {user.model} take response: user.gpt_select_last()
-
-# Reformat the last dictation with additional context or formatting instructions
-{user.model} [nope] that was <user.text>$:
-    result = user.gpt_reformat_last(text)
-    user.paste(result)
 
 # Enable debug logging so you can more details about messages being sent
 {user.model} start debug: user.gpt_start_debug()

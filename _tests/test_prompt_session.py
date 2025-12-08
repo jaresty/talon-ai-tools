@@ -65,6 +65,22 @@ if bootstrap is not None:
             self.assertEqual(result["text"], "done")
             mock_send_request.assert_called_once()
 
+        @patch.object(prompt_session_module, "send_request_async")
+        def test_execute_async_returns_send_request_async_handle(self, mock_send_request_async):
+            class DummyHandle:
+                pass
+
+            mock_handle = DummyHandle()
+            mock_send_request_async.return_value = mock_handle
+            source = _StaticSource("input")
+            session = PromptSession(destination="paste")
+            session.prepare_prompt("run", source)
+
+            handle = session.execute_async()
+
+            self.assertIs(handle, mock_handle)
+            mock_send_request_async.assert_called_once()
+
         def test_begin_reuse_existing_skips_build(self):
             GPTState.request = {
                 "messages": [],

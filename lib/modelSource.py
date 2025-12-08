@@ -207,7 +207,6 @@ def create_model_source(source_type: str) -> ModelSource:
         "gptResponse": GPTResponse,
         "gptRequest": GPTRequest,
         "gptExchange": GPTExchange,
-        "lastTalonDictation": LastTalonDictation,
         "all": AllText,
         "meta": Meta,
     }

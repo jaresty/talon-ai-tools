@@ -10,6 +10,7 @@ from ..lib.modelHelpers import (
     format_message,
     format_messages,
     send_request,
+    send_request_async,
 )
 from ..lib.modelSource import ModelSource, format_source_messages
 from ..lib.modelState import GPTState
@@ -68,6 +69,11 @@ class PromptSession:
         """Send the request and return the assistant response."""
         self._ensure_prepared()
         return send_request()
+
+    def execute_async(self):
+        """Send the request asynchronously and return a handle."""
+        self._ensure_prepared()
+        return send_request_async()
 
     def begin(self, reuse_existing: bool = False) -> None:
         """Ensure the underlying request exists, optionally reusing the current one."""

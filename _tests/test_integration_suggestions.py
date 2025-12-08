@@ -26,6 +26,12 @@ if bootstrap is not None:
             # Patch pipeline used by gpt_suggest_prompt_recipes.
             self._original_pipeline = gpt_module._prompt_pipeline
             self.pipeline = MagicMock()
+            # Force async suggestion flow to fall back to the synchronous
+            # pipeline result so the tests can control the suggestion text.
+            handle = MagicMock()
+            handle.wait = MagicMock(return_value=True)
+            handle.result = None
+            self.pipeline.complete_async.return_value = handle
             gpt_module._prompt_pipeline = self.pipeline
 
         def tearDown(self):

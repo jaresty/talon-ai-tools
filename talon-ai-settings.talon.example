@@ -16,6 +16,13 @@ settings():
     # Increase the window width.
     # user.model_window_char_width = 120
 
+    # Enable debug logging for the request progress pill overlay.
+    # When set to 1, the pill emits small notifications with its state/position.
+    user.model_debug_pill = 1
+
+    # Enable streaming responses by default (set to 0 to disable).
+    user.model_streaming = 1
+
 # Only uncomment the line below if you want experimental behavior to parse Talon files
 # tag(): user.gpt_beta
 

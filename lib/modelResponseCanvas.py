@@ -6,6 +6,8 @@ from .canvasFont import apply_canvas_typeface, draw_text_with_emoji_fallback
 
 from .modelState import GPTState
 from .modelDestination import _parse_meta
+from .requestState import RequestPhase, RequestState
+from .requestBus import current_state
 
 mod = Module()
 ctx = Context()
@@ -19,6 +21,21 @@ class ResponseCanvasState:
     meta_expanded: bool = False
 
 
+def _prefer_canvas_progress() -> bool:
+    try:
+        kind = getattr(GPTState, "current_destination_kind", "") or ""
+    except Exception:
+        kind = ""
+    return kind in ("window", "default")
+
+
+def _current_request_state() -> RequestState:
+    try:
+        return current_state()
+    except Exception:
+        return RequestState()
+
+
 _response_canvas: Optional[canvas.Canvas] = None
 _response_draw_handlers: list[Callable] = []
 _response_button_bounds: dict[str, tuple[int, int, int, int]] = {}
@@ -26,6 +43,27 @@ _response_drag_offset: Optional[tuple[float, float]] = None
 _response_hover_close: bool = False
 _response_hover_button: Optional[str] = None
 _response_mouse_log_count: int = 0
+_response_handlers_registered: bool = False
+
+
+def _coerce_text(value) -> str:
+    """Best-effort convert various payloads to displayable text."""
+    try:
+        if isinstance(value, str):
+            return value
+        if hasattr(value, "display_text"):
+            return getattr(value, "display_text", "") or ""
+        if hasattr(value, "browser_lines"):
+            lines = getattr(value, "browser_lines", None)
+            if isinstance(lines, list):
+                return "\n".join(str(item) for item in lines)
+            if isinstance(lines, str):
+                return lines
+        if value is None:
+            return ""
+        return str(value)
+    except Exception:
+        return ""
 
 
 def _debug(msg: str) -> None:
@@ -37,9 +75,9 @@ def _debug(msg: str) -> None:
 
 def _ensure_response_canvas() -> canvas.Canvas:
     """Create the response canvas if needed and register handlers."""
-    global _response_canvas
+    global _response_canvas, _response_handlers_registered
+    last_draw_error: Optional[str] = None
     if _response_canvas is not None:
-        _debug("reusing existing response canvas")
         return _response_canvas
 
     screen = ui.main_screen()
@@ -60,23 +98,25 @@ def _ensure_response_canvas() -> canvas.Canvas:
             _response_canvas.blocks_mouse = True
         except Exception:
             pass
-        _debug(
-            f"response canvas rect=({start_x}, {start_y}, {panel_width}, {panel_height}) "
-            f"screen=({screen_x}, {screen_y}, {screen_width}, {screen_height})"
-        )
     except Exception:
         _response_canvas = canvas.Canvas.from_screen(screen)
-        _debug("created response canvas from main_screen fallback")
 
     def _on_draw(c: canvas.Canvas) -> None:  # pragma: no cover - visual only
+        nonlocal last_draw_error
         for handler in list(_response_draw_handlers):
             try:
                 handler(c)
-            except Exception:
-                continue
+            except Exception as e:
+                # Log the first error per draw; suppress repeats until next draw.
+                if last_draw_error != str(e):
+                    try:
+                        _debug(f"response canvas draw handler error: {e}")
+                    except Exception:
+                        pass
+                    last_draw_error = str(e)
 
-    _response_canvas.register("draw", _on_draw)
-    _debug("registered response draw handler")
+    if not _response_handlers_registered:
+        _response_canvas.register("draw", _on_draw)
 
     def _on_mouse(evt) -> None:  # pragma: no cover - visual only
         try:
@@ -119,7 +159,6 @@ def _ensure_response_canvas() -> canvas.Canvas:
                     0 <= local_y <= header_height
                     and rect.width - hotspot_width <= local_x <= rect.width
                 ):
-                    _debug("response close click detected")
                     ResponseCanvasState.showing = False
                     ResponseCanvasState.scroll_y = 0.0
                     try:
@@ -133,7 +172,6 @@ def _ensure_response_canvas() -> canvas.Canvas:
                 for key, (bx1, by1, bx2, by2) in list(_response_button_bounds.items()):
                     if not (bx1 <= abs_x <= bx2 and by1 <= abs_y <= by2):
                         continue
-                    _debug(f"response button clicked: {key}")
                     # Use the same selection as the body: prefer the current
                     # confirmation text, then fall back to the last response.
                     answer = (
@@ -142,7 +180,9 @@ def _ensure_response_canvas() -> canvas.Canvas:
                         or ""
                     )
                     try:
-                        if key in ("meta_toggle", "meta_toggle_region"):
+                        if key == "cancel":
+                            actions.user.gpt_cancel_request()
+                        elif key in ("meta_toggle", "meta_toggle_region"):
                             ResponseCanvasState.meta_expanded = (
                                 not ResponseCanvasState.meta_expanded
                             )
@@ -185,7 +225,6 @@ def _ensure_response_canvas() -> canvas.Canvas:
 
                 # Start drag anywhere else.
                 _response_drag_offset = (gpos.x - rect.x, gpos.y - rect.y)
-                _debug(f"response drag start at offset {_response_drag_offset}")
                 return
 
             if event_type in ("mouseup", "mouse_up"):
@@ -205,9 +244,6 @@ def _ensure_response_canvas() -> canvas.Canvas:
                     ResponseCanvasState.scroll_y = max(
                         ResponseCanvasState.scroll_y - dy * 40.0, 0.0
                     )
-                    _debug(
-                        f"response canvas mouse scroll dy={dy}, scroll_y={ResponseCanvasState.scroll_y}"
-                    )  # pragma: no cover - debug aid
                 return
 
             # Drag while moving.
@@ -225,11 +261,11 @@ def _ensure_response_canvas() -> canvas.Canvas:
         except Exception:
             return
 
-    try:
-        _response_canvas.register("mouse", _on_mouse)
-        _debug("registered response mouse handler")
-    except Exception:
-        _debug("response mouse handler registration failed")
+    if not _response_handlers_registered:
+        try:
+            _response_canvas.register("mouse", _on_mouse)
+        except Exception:
+            pass
 
     def _on_scroll(evt) -> None:  # pragma: no cover - visual only
         """Handle high-level scroll events when the runtime exposes them."""
@@ -266,12 +302,12 @@ def _ensure_response_canvas() -> canvas.Canvas:
         except Exception:
             return
 
-    for evt_name in ("scroll", "wheel", "mouse_scroll"):
-        try:
-            _response_canvas.register(evt_name, _on_scroll)
-            _debug(f"registered response scroll handler for '{evt_name}'")
-        except Exception:
-            _debug(f"response scroll handler registration failed for '{evt_name}'")
+    if not _response_handlers_registered:
+        for evt_name in ("scroll", "wheel", "mouse_scroll"):
+            try:
+                _response_canvas.register(evt_name, _on_scroll)
+            except Exception:
+                pass
 
     def _on_key(evt) -> None:  # pragma: no cover - visual only
         try:
@@ -279,7 +315,6 @@ def _ensure_response_canvas() -> canvas.Canvas:
                 return
             key = (getattr(evt, "key", "") or "").lower()
             if key in ("escape", "esc"):
-                _debug("escape key pressed; closing response canvas")
                 ResponseCanvasState.showing = False
                 try:
                     _response_canvas.hide()
@@ -296,17 +331,20 @@ def _ensure_response_canvas() -> canvas.Canvas:
         except Exception:
             return
 
-    try:
-        _response_canvas.register("key", _on_key)
-        _debug("registered response key handler")
-    except Exception:
-        _debug("response key handler registration failed")
+    if not _response_handlers_registered:
+        try:
+            _response_canvas.register("key", _on_key)
+        except Exception:
+            pass
+
+    _response_handlers_registered = True
 
     return _response_canvas
 
 
 def register_response_draw_handler(handler: Callable) -> None:
-    _response_draw_handlers.append(handler)
+    if handler not in _response_draw_handlers:
+        _response_draw_handlers.append(handler)
 
 
 def unregister_response_draw_handler(handler: Callable) -> None:
@@ -322,7 +360,7 @@ def _format_answer_lines(answer: str, max_chars: int) -> list[str]:
     - Collapses multiple blank lines.
     - Applies a simple bullet style for lines starting with '-' or '*'.
     """
-    raw_lines = answer.splitlines() or [answer]
+    raw_lines = _coerce_text(answer).splitlines() or [answer]
     lines: list[str] = []
     last_blank = False
     for raw in raw_lines:
@@ -390,7 +428,6 @@ def _default_draw_response(c: canvas.Canvas) -> None:  # pragma: no cover - visu
     rect = getattr(c, "rect", None)
     draw_text = getattr(c, "draw_text", None)
     if draw_text is None:
-        _debug("response canvas draw skipped (no draw_text)")
         return
     # Reset button bounds on each draw so header/footer hit targets stay fresh.
     _response_button_bounds.clear()
@@ -457,22 +494,69 @@ def _default_draw_response(c: canvas.Canvas) -> None:  # pragma: no cover - visu
         except Exception:
             default_text_color = "000000"
 
-    # Header with close affordance.
+    approx_char = 8
+    state = _current_request_state()
+    phase = getattr(state, "phase", RequestPhase.IDLE)
+    cancel_requested = getattr(state, "cancel_requested", False)
+    prefer_progress = _prefer_canvas_progress()
+    inflight = phase in (
+        RequestPhase.SENDING,
+        RequestPhase.STREAMING,
+        RequestPhase.CANCELLED,
+    )
+
+    # Header with close affordance and optional progress/cancel controls.
     draw_text("Model response viewer", x, y)
-    close_x = None
-    if rect is not None and hasattr(rect, "width"):
-        close_label = "[X]"
-        close_y = rect.y + 24
-        close_x = rect.x + rect.width - (len(close_label) * 8) - 16
-        draw_text(close_label, close_x, close_y)
-        if paint is not None and _response_hover_close:
-            try:
-                underline_rect = ui.Rect(
-                    close_x, close_y + 4, len(close_label) * 8, 1
-                )
-                c.draw_rect(underline_rect)
-            except Exception:
-                pass
+    close_y = rect.y + 24 if rect is not None else y
+    right_cursor = rect.x + rect.width - 16 if rect is not None else None
+
+    def _header_label(label: str, key: Optional[str] = None, hover: bool = False):
+        nonlocal right_cursor
+        if right_cursor is None:
+            return
+        width = len(label) * approx_char
+        right_cursor -= width
+        draw_text(label, right_cursor, close_y)
+        if key:
+            _response_button_bounds[key] = (
+                right_cursor,
+                close_y - line_h,
+                right_cursor + width,
+                close_y + line_h,
+            )
+            if hover and paint is not None:
+                try:
+                    underline_rect = ui.Rect(right_cursor, close_y + 4, width, 1)
+                    c.draw_rect(underline_rect)
+                except Exception:
+                    pass
+        right_cursor -= approx_char * 2
+
+    status_label = ""
+    cancel_label = ""
+    if prefer_progress:
+        if phase is RequestPhase.SENDING:
+            status_label = "Sending…"
+            cancel_label = "[Cancel]"
+        elif phase is RequestPhase.STREAMING:
+            status_label = "Streaming…"
+            cancel_label = "[Cancel]"
+        elif phase is RequestPhase.CANCELLED:
+            status_label = "Cancel requested"
+        elif phase is RequestPhase.ERROR:
+            status_label = "Failed"
+        elif phase is RequestPhase.DONE:
+            status_label = "Done"
+
+    _header_label("[X]", hover=_response_hover_close)
+    if cancel_label:
+        _header_label(
+            cancel_label,
+            key="cancel",
+            hover=_response_hover_button == "cancel",
+        )
+    if status_label:
+        _header_label(status_label)
     y += line_h
 
     # Compact prompt recap under the title so users can see which recipe and
@@ -783,12 +867,30 @@ def _default_draw_response(c: canvas.Canvas) -> None:  # pragma: no cover - visu
     y += line_h // 2
     body_top = max(body_top, y)
 
-    # Body: scrollable answer text. Prefer the current confirmation text when
-    # present, falling back to the last model response.
+    # Body: scrollable answer text. While inflight on a canvas-progress
+    # destination, prefer the streaming buffer and avoid showing stale
+    # last_response content.
+    text_to_confirm_raw = getattr(GPTState, "text_to_confirm", "")
+    text_to_confirm = _coerce_text(text_to_confirm_raw)
+    last_response = _coerce_text(getattr(GPTState, "last_response", ""))
     answer = (
-        getattr(GPTState, "text_to_confirm", "") or getattr(GPTState, "last_response", "")
+        text_to_confirm
+        if inflight and prefer_progress
+        else (text_to_confirm or last_response)
     )
+    # Limit debug logging to inflight progress draws; stay silent on DONE/IDLE.
+    # Debug logging silenced for steady state; re-enable selectively when needed.
     if not answer:
+        if prefer_progress:
+            if phase is RequestPhase.SENDING:
+                draw_text("Waiting for model response (sending)…", x, y)
+                return
+            if phase is RequestPhase.STREAMING:
+                draw_text("Streaming… awaiting first chunk", x, y)
+                return
+            if phase is RequestPhase.CANCELLED:
+                draw_text("Cancel requested; waiting for model to stop…", x, y)
+                return
         draw_text("No last response available.", x, y)
         return
 
@@ -917,12 +1019,49 @@ register_response_draw_handler(_default_draw_response)
 
 @mod.action_class
 class UserActions:
+    def model_response_canvas_refresh():
+        """Force a redraw of the response canvas if it is showing."""
+        if _response_canvas is None:
+            return
+        try:
+            if ResponseCanvasState.showing:
+                _response_canvas.hide()
+            _response_canvas.show()
+            ResponseCanvasState.showing = True
+        except Exception:
+            pass
+
     def model_response_canvas_open():
-        """Toggle the canvas-based response viewer for the last model answer"""
+        """Open the canvas-based response viewer for the last model answer (idempotent)."""
+        state = _current_request_state()
+        prefer_progress = _prefer_canvas_progress()
+        inflight = state.phase in (
+            RequestPhase.SENDING,
+            RequestPhase.STREAMING,
+            RequestPhase.CANCELLED,
+        )
+        if not inflight and not (
+            getattr(GPTState, "last_response", "")
+            or getattr(GPTState, "text_to_confirm", "")
+        ):
+            return
+        canvas_obj = _ensure_response_canvas()
+        if ResponseCanvasState.showing:
+            return
+        ResponseCanvasState.showing = True
+        ResponseCanvasState.scroll_y = 0.0
+        # Always start with meta collapsed; the band still shows a short
+        # summary so the initial view is response-first.
+        ResponseCanvasState.meta_expanded = False
+        canvas_obj.show()
+
+    def model_response_canvas_toggle():
+        """Toggle the canvas-based response viewer open/closed."""
         canvas_obj = _ensure_response_canvas()
         if ResponseCanvasState.showing:
             ResponseCanvasState.showing = False
             ResponseCanvasState.scroll_y = 0.0
+            ResponseCanvasState.meta_expanded = False
             try:
                 canvas_obj.hide()
             except Exception:
@@ -931,10 +1070,7 @@ class UserActions:
 
         ResponseCanvasState.showing = True
         ResponseCanvasState.scroll_y = 0.0
-        # Always start with meta collapsed; the band still shows a short
-        # summary so the initial view is response-first.
         ResponseCanvasState.meta_expanded = False
-        _debug("opening response canvas")
         canvas_obj.show()
 
     def model_response_canvas_close():

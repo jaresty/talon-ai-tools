@@ -1,4 +1,5 @@
 import os
+import threading
 from typing import Optional
 
 from ..lib.talonSettings import (
@@ -68,6 +69,29 @@ from ..lib.modelPatternGUI import (
     STYLE_MAP as _STYLE_MAP,
     DIRECTIONAL_MAP as _DIRECTIONAL_MAP,
 )
+from ..lib.requestState import RequestPhase
+from ..lib.requestBus import emit_cancel, current_state, set_controller
+from ..lib.requestController import RequestUIController
+
+# Ensure a default request UI controller is registered so cancel events have a sink.
+try:
+    from ..lib import requestUI  # noqa: F401
+except Exception:
+    pass
+
+
+def _set_setting(key: str, value) -> None:
+    """Best-effort setter for Talon settings across runtimes."""
+    try:
+        if hasattr(settings, "set"):
+            settings.set(key, value)
+            return
+    except Exception:
+        pass
+    try:
+        settings[key] = value
+    except Exception:
+        pass
 
 mod = Module()
 mod.tag(
@@ -78,6 +102,7 @@ mod.tag(
 
 _prompt_pipeline = PromptPipeline()
 _recursive_orchestrator = RecursiveOrchestrator(_prompt_pipeline)
+ASYNC_BLOCKING_SETTING = "user.model_async_blocking"
 
 
 def _read_list_items(filename: str) -> list[tuple[str, str]]:
@@ -104,6 +129,45 @@ def _read_list_items(filename: str) -> list[tuple[str, str]]:
     except FileNotFoundError:
         return []
     return items
+
+
+def _await_handle_and_insert(handle, destination: str) -> None:
+    """Wait on an async handle and insert the response when ready (background)."""
+    def _runner():
+        try:
+            handle.wait(timeout=None)
+        except Exception:
+            pass
+        result = getattr(handle, "result", None)
+        if result is None:
+            notify("GPT: Async run produced no result")
+            return
+        try:
+            actions.user.gpt_insert_response(result, destination)
+        except Exception:
+            notify("GPT: Failed to insert async result")
+
+    threading.Thread(target=_runner, daemon=True).start()
+
+
+def _handle_async_result(handle, destination: str, block: bool = True) -> None:
+    """Insert async result, either blocking or via background wait."""
+    if block:
+        try:
+            handle.wait(timeout=None)
+        except Exception:
+            pass
+        result = getattr(handle, "result", None)
+        if result is None:
+            notify("GPT: Async run produced no result")
+            return
+        try:
+            actions.user.gpt_insert_response(result, destination)
+        except Exception:
+            notify("GPT: Failed to insert async result")
+        return
+    # Non-blocking path: background wait and insert.
+    _await_handle_and_insert(handle, destination)
 
 
 def _build_axis_docs() -> str:
@@ -328,53 +392,59 @@ class UserActions:
         GPTState.system_prompt = GPTSystemPrompt()
         # Also reset contract-style defaults so "reset writing" is a single
         # switch for persona and writing behaviour.
-        settings.set("user.model_default_completeness", DEFAULT_COMPLETENESS_VALUE)
-        settings.set("user.model_default_scope", "")
-        settings.set("user.model_default_method", "")
-        settings.set("user.model_default_style", "")
+        _set_setting("user.model_default_completeness", DEFAULT_COMPLETENESS_VALUE)
+        _set_setting("user.model_default_scope", "")
+        _set_setting("user.model_default_method", "")
+        _set_setting("user.model_default_style", "")
 
     def gpt_set_default_completeness(level: str) -> None:
         """Set the default completeness level for subsequent prompts"""
         token = _axis_recipe_token("completeness", level)
-        settings.set("user.model_default_completeness", token)
+        _set_setting("user.model_default_completeness", token)
         GPTState.user_overrode_completeness = True
 
     def gpt_set_default_scope(level: str) -> None:
         """Set the default scope level for subsequent prompts"""
         token = _axis_recipe_token("scope", level)
-        settings.set("user.model_default_scope", token)
+        _set_setting("user.model_default_scope", token)
         GPTState.user_overrode_scope = True
 
     def gpt_set_default_method(level: str) -> None:
         """Set the default method for subsequent prompts"""
         token = _axis_recipe_token("method", level)
-        settings.set("user.model_default_method", token)
+        _set_setting("user.model_default_method", token)
         GPTState.user_overrode_method = True
 
     def gpt_set_default_style(level: str) -> None:
         """Set the default style for subsequent prompts"""
         token = _axis_recipe_token("style", level)
-        settings.set("user.model_default_style", token)
+        _set_setting("user.model_default_style", token)
         GPTState.user_overrode_style = True
+
+    def gpt_set_async_blocking(enabled: int) -> None:
+        """Toggle async blocking mode for model runs (1=blocking, 0=non-blocking)"""
+        _set_setting(ASYNC_BLOCKING_SETTING, bool(enabled))
+        mode = "blocking" if enabled else "non-blocking"
+        actions.app.notify(f"GPT: async mode set to {mode}")
 
     def gpt_reset_default_completeness() -> None:
         """Reset the default completeness level to its configured base value"""
-        settings.set("user.model_default_completeness", DEFAULT_COMPLETENESS_VALUE)
+        _set_setting("user.model_default_completeness", DEFAULT_COMPLETENESS_VALUE)
         GPTState.user_overrode_completeness = False
 
     def gpt_reset_default_scope() -> None:
         """Reset the default scope level to its configured base value"""
-        settings.set("user.model_default_scope", "")
+        _set_setting("user.model_default_scope", "")
         GPTState.user_overrode_scope = False
 
     def gpt_reset_default_method() -> None:
         """Reset the default method to its configured base value (no strong default)"""
-        settings.set("user.model_default_method", "")
+        _set_setting("user.model_default_method", "")
         GPTState.user_overrode_method = False
 
     def gpt_reset_default_style() -> None:
         """Reset the default style to its configured base value (no strong default)"""
-        settings.set("user.model_default_style", "")
+        _set_setting("user.model_default_style", "")
         GPTState.user_overrode_style = False
 
     def gpt_select_last() -> None:
@@ -429,15 +499,38 @@ class UserActions:
         except Exception:
             GPTState.last_source_messages = []
 
-        result = _recursive_orchestrator.run(
-            prompt,
-            source,
-            destination,
-            additional_source,
-        )
+        result = None
+        async_started = False
+        raw_block = settings.get("user.model_async_blocking", False)
+        block = False if raw_block is None else bool(raw_block)
+        # Prefer async orchestrator path; optionally block for result.
+        if hasattr(_recursive_orchestrator, "run_async"):
+            try:
+                handle = _recursive_orchestrator.run_async(
+                    prompt,
+                    source,
+                    destination,
+                    additional_source,
+                )
+                async_started = True
+                _handle_async_result(handle, destination, block=block)
+                result = getattr(handle, "result", None)
+            except Exception:
+                async_started = False
+                result = None
+        if result is None and not async_started:
+            result = _recursive_orchestrator.run(
+                prompt,
+                source,
+                destination,
+                additional_source,
+            )
 
-        actions.user.gpt_insert_response(result, destination)
-        return result.text
+        if result is not None:
+            actions.user.gpt_insert_response(result, destination)
+            return result.text
+        # Non-blocking async path returns early; insertion handled in background.
+        return ""
 
     def gpt_run_prompt(
         prompt: str,
@@ -446,14 +539,36 @@ class UserActions:
     ):
         """Apply an arbitrary prompt to arbitrary text"""
 
-        result = _prompt_pipeline.run(
-            prompt,
-            source,
-            destination="",
-            additional_source=additional_source,
-        )
+        result = None
+        async_started = False
+        raw_block = settings.get(ASYNC_BLOCKING_SETTING, False)
+        block = False if raw_block is None else bool(raw_block)
 
-        return result.text
+        try:
+            handle = _prompt_pipeline.run_async(
+                prompt,
+                source,
+                destination="",
+                additional_source=additional_source,
+            )
+            async_started = True
+            _handle_async_result(handle, destination="", block=block)
+            result = getattr(handle, "result", None)
+        except Exception:
+            async_started = False
+            result = None
+
+        if result is None and not async_started:
+            result = _prompt_pipeline.run(
+                prompt,
+                source,
+                destination="",
+                additional_source=additional_source,
+            )
+
+        if result is not None:
+            return result.text
+        return ""
 
     def gpt_recursive_prompt(
         prompt: str,
@@ -463,15 +578,37 @@ class UserActions:
     ) -> str:
         """Run a controller prompt that may recursively delegate work to sub-sessions."""
 
-        result = _recursive_orchestrator.run(
-            prompt,
-            source,
-            destination,
-            additional_source,
-        )
+        result = None
+        async_started = False
+        raw_block = settings.get(ASYNC_BLOCKING_SETTING, False)
+        block = False if raw_block is None else bool(raw_block)
+        try:
+            handle = _recursive_orchestrator.run_async(
+                prompt,
+                source,
+                destination,
+                additional_source,
+            )
+            async_started = True
+            _handle_async_result(handle, destination, block=block)
+            result = getattr(handle, "result", None)
+        except Exception:
+            async_started = False
+            result = None
 
-        actions.user.gpt_insert_response(result, destination)
-        return result.text
+        if result is None and not async_started:
+            result = _recursive_orchestrator.run(
+                prompt,
+                source,
+                destination,
+                additional_source,
+            )
+
+        if result is not None:
+            actions.user.gpt_insert_response(result, destination)
+            return result.text if hasattr(result, "text") else str(getattr(result, "text", ""))  # type: ignore[arg-type]
+        # Non-blocking async path returns early; insertion handled in background.
+        return ""
 
     def gpt_analyze_prompt(destination: ModelDestination = ModelDestination()):
         """Explain why we got the results we did"""
@@ -491,9 +628,24 @@ class UserActions:
                 format_messages("user", [format_message(PROMPT)]),
             ]
         )
-        result = _prompt_pipeline.complete(session)
+        result = None
+        async_started = False
+        raw_block = settings.get(ASYNC_BLOCKING_SETTING, False)
+        block = False if raw_block is None else bool(raw_block)
+        try:
+            handle = _prompt_pipeline.complete_async(session)
+            async_started = True
+            _handle_async_result(handle, destination, block=block)
+            result = getattr(handle, "result", None)
+        except Exception:
+            async_started = False
+            result = None
 
-        actions.user.gpt_insert_response(result, destination)
+        if result is None and not async_started:
+            result = _prompt_pipeline.complete(session)
+
+        if result is not None:
+            actions.user.gpt_insert_response(result, destination)
 
     def gpt_suggest_prompt_recipes(subject: str) -> None:
         """Suggest model prompt recipes using the default source."""
@@ -584,7 +736,15 @@ class UserActions:
         # the suggestion meta-prompt.
         session.begin()
         session.add_messages([format_messages("user", [format_message(user_text)])])
-        result = _prompt_pipeline.complete(session)
+        result = None
+        try:
+            handle = _prompt_pipeline.complete_async(session)
+            handle.wait(timeout=10.0)
+            result = getattr(handle, "result", None)
+        except Exception:
+            result = None
+        if result is None:
+            result = _prompt_pipeline.complete(session)
 
         # Attempt to parse the result text into structured suggestions so
         # future loops (for example, a suggestions GUI) can reuse them
@@ -633,9 +793,10 @@ class UserActions:
         """Replay the last request"""
         session = PromptSession(destination)
         session.begin(reuse_existing=True)
-        result = _prompt_pipeline.complete(session)
-
-        actions.user.gpt_insert_response(result, destination)
+        result_handle = _prompt_pipeline.complete_async(session)
+        raw_block = settings.get("user.model_async_blocking", False)
+        block = False if raw_block is None else bool(raw_block)
+        _handle_async_result(result_handle, destination, block=block)
 
     def gpt_show_last_recipe() -> None:
         """Show a short summary of the last prompt recipe"""
@@ -657,6 +818,23 @@ class UserActions:
             actions.app.notify("GPT: No last meta interpretation available")
             return
         actions.app.notify(f"Last meta interpretation:\n{meta}")
+
+    def gpt_cancel_request() -> None:
+        """Best-effort cancel for in-flight model requests (UI + state only)."""
+        # Ensure the bus has a controller so the cancel event updates state/UX.
+        try:
+            if current_state().phase == RequestPhase.IDLE:
+                set_controller(RequestUIController())
+        except Exception:
+            set_controller(RequestUIController())
+        try:
+            from ..lib.modelHelpers import cancel_active_request
+
+            cancel_active_request()
+        except Exception:
+            pass
+        emit_cancel()
+        notify("GPT: Cancel requested")
 
     def gpt_rerun_last_recipe(
         static_prompt: str,
@@ -1046,19 +1224,6 @@ class UserActions:
 
         builder.render()
 
-    def gpt_reformat_last(how_to_reformat: str) -> str:
-        """Reformat the last model output"""
-        PROMPT = f"""The last phrase was written using voice dictation. It has an error with spelling, grammar, or just general misrecognition due to a lack of context. Please reformat the following text to correct the error with the context that it was {how_to_reformat}."""
-        last_output = actions.user.get_last_phrase()
-        if last_output:
-            actions.user.clear_last_phrase()
-            source = create_model_source("last")
-            result = _prompt_pipeline.run(PROMPT, source, Default())
-            return result.text
-        else:
-            notify("No text to reformat")
-            raise Exception("No text to reformat")
-
     def gpt_insert_text(text: str, destination: ModelDestination = Default()) -> None:
         """Insert text using the helpers here"""
         result = PromptResult.from_messages([format_message(text)])
@@ -1086,6 +1251,13 @@ class UserActions:
         destination: ModelDestination = Default(),
     ) -> None:
         """Insert a GPT result in a specified way"""
+        try:
+            text = getattr(gpt_result, "text", "") or ""
+            if isinstance(text, str) and not text.strip():
+                actions.app.notify("GPT: Request cancelled")
+                return
+        except Exception:
+            pass
         actions.user.confirmation_gui_close()
         destination.insert(gpt_result)
 

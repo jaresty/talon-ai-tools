@@ -1,5 +1,6 @@
 import unittest
 from typing import TYPE_CHECKING
+from unittest.mock import patch
 
 try:
     from bootstrap import bootstrap
@@ -17,13 +18,28 @@ if bootstrap is not None:
         unregister_response_draw_handler,
     )
     from talon_user.lib.modelState import GPTState
+    from talon_user.lib import modelResponseCanvas
+    from talon_user.lib.requestState import RequestPhase, RequestState
 
     class ModelResponseCanvasTests(unittest.TestCase):
         def setUp(self) -> None:
             ResponseCanvasState.showing = False
             ResponseCanvasState.scroll_y = 0.0
+            GPTState.text_to_confirm = ""
+            self._state_patch = patch.object(
+                modelResponseCanvas,
+                "current_state",
+                return_value=RequestState(),
+            )
+            self._state_patch.start()
 
-        def test_open_and_close_toggle_canvas(self) -> None:
+        def tearDown(self) -> None:
+            try:
+                self._state_patch.stop()
+            except Exception:
+                pass
+
+        def test_open_is_idempotent_and_toggle_closes(self) -> None:
             GPTState.last_response = "line one\nline two"
             _ensure_response_canvas()
 
@@ -31,6 +47,9 @@ if bootstrap is not None:
             self.assertTrue(ResponseCanvasState.showing)
 
             UserActions.model_response_canvas_open()
+            self.assertTrue(ResponseCanvasState.showing)
+
+            UserActions.model_response_canvas_toggle()
             self.assertFalse(ResponseCanvasState.showing)
 
         def test_open_without_answer_is_safe(self) -> None:
@@ -38,10 +57,19 @@ if bootstrap is not None:
             _ensure_response_canvas()
 
             UserActions.model_response_canvas_open()
-            self.assertTrue(ResponseCanvasState.showing)
-
-            UserActions.model_response_canvas_close()
+            # With no response/meta, opening is a no-op.
             self.assertFalse(ResponseCanvasState.showing)
+
+        def test_open_allows_inflight_progress_without_answer(self) -> None:
+            GPTState.last_response = ""
+            _ensure_response_canvas()
+            with patch.object(
+                modelResponseCanvas,
+                "current_state",
+                return_value=RequestState(phase=RequestPhase.SENDING),
+            ):
+                UserActions.model_response_canvas_open()
+            self.assertTrue(ResponseCanvasState.showing)
 
         def test_custom_draw_handler_invoked_on_show(self) -> None:
             GPTState.last_response = "test"

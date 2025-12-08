@@ -56,6 +56,21 @@ if bootstrap is not None:
             self.assertEqual(presentation.meta_text, "")
             self.assertFalse(presentation.open_browser)
 
+        def test_complete_async_delegates_to_session(self):
+            out_handle = self.pipeline.complete_async(self.session)
+            out_handle.wait(timeout=1.0)
+            self.session.execute.assert_called_once()
+            self.session.append_thread.assert_called_once()
+            self.assertTrue(out_handle.done)
+
+        def test_run_async_prepares_and_runs(self):
+            source = _StaticSource("input")
+            out_handle = self.pipeline.run_async("prompt", source, "dest")
+            out_handle.wait(timeout=1.0)
+            self.session_cls.assert_called_once_with("dest")
+            self.session.prepare_prompt.assert_called_once_with("prompt", source, None)
+            self.session.execute.assert_called_once()
+
 else:
     if not TYPE_CHECKING:
         class PromptPipelineTests(unittest.TestCase):

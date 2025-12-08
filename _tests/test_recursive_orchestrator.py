@@ -77,6 +77,25 @@ if bootstrap is not None:
             )
             self.assertIs(result, delegate_result)
 
+        def test_run_async_executes_in_background(self):
+            controller_result = PromptResult.from_messages(
+                [format_message("plain response")]
+            )
+            self.pipeline.run.return_value = controller_result
+
+            handle = self.orchestrator.run_async(
+                "controller prompt", self.source, destination="paste"
+            )
+            handle.wait(timeout=1.0)
+            self.assertTrue(handle.done)
+            self.assertIs(handle.result, controller_result)
+            self.pipeline.run.assert_called_once_with(
+                "controller prompt",
+                self.source,
+                "paste",
+                None,
+            )
+
 else:
     if not TYPE_CHECKING:
         class RecursiveOrchestratorTests(unittest.TestCase):

@@ -9,6 +9,7 @@ from typing import Any, Dict, Optional
 
 from .promptPipeline import PromptPipeline, PromptResult
 from .modelSource import ModelSource
+from .requestAsync import start_async
 
 
 _CODE_FENCE_PATTERN = re.compile(r"```(?:json)?\s*(.*?)```", re.DOTALL)
@@ -54,6 +55,16 @@ class RecursiveOrchestrator:
 
         return delegate_result
 
+    def run_async(
+        self,
+        prompt: str,
+        source: ModelSource,
+        destination,
+        additional_source: Optional[ModelSource] = None,
+    ):
+        """Run `run` in a background thread and return a handle."""
+        return start_async(self.run, prompt, source, destination, additional_source)
+
     def _parse_delegate_directive(
         self, text: str
     ) -> Optional[_DelegateDirective]:
@@ -85,4 +96,3 @@ class RecursiveOrchestrator:
             if isinstance(payload, dict):
                 return payload
         return None
-

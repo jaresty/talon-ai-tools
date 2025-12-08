@@ -107,6 +107,35 @@ def _prefer_canvas_progress() -> bool:
     return kind in ("window", "default")
 
 
+def _should_show_response_canvas() -> bool:
+    """Gate response-canvas usage on destination preferences and explicit suppression."""
+    try:
+        if getattr(GPTState, "suppress_response_canvas", False):
+            return False
+    except Exception:
+        pass
+    return _prefer_canvas_progress()
+
+
+def _update_stream_state_from_text(full_text: str) -> None:
+    """
+    Normalise the in-flight streaming buffer so:
+    - GPTState.text_to_confirm holds only the main answer body (meta removed).
+    - GPTState.last_meta is kept in sync as soon as a meta section appears.
+
+    This keeps the response canvas layout stable while streaming, avoiding a
+    late jump when the finished response is split into answer/meta.
+    """
+    try:
+        answer, meta = split_answer_and_meta(full_text)
+        GPTState.text_to_confirm = answer
+        if meta:
+            GPTState.last_meta = meta
+    except Exception:
+        # Fall back to the raw text if splitting fails so we still surface progress.
+        GPTState.text_to_confirm = full_text
+
+
 def messages_to_string(
     messages: Sequence[Union[GPTTextItem, GPTImageItem]],
 ) -> str:
@@ -490,9 +519,15 @@ def _send_request_streaming(request, request_id: str) -> str:
     parts: list[str] = []
     first_chunk = True
     emit_begin_stream(request_id=request_id)
+    # Seed the meta section at the top of the response so the layout stays
+    # stable even before the real meta arrives from the stream.
+    try:
+        GPTState.last_meta = "## Model interpretation\n(pending…)"
+    except Exception:
+        pass
     # Open the response canvas up-front when using the window/default path so
     # progress (or buffered responses) are visible without waiting for the end.
-    if _prefer_canvas_progress():
+    if _should_show_response_canvas():
         try:
             actions.user.model_response_canvas_open()
         except Exception:
@@ -538,8 +573,8 @@ def _send_request_streaming(request, request_id: str) -> str:
                         .get("content", "")
                     )
                     parts.append(text_piece or "")
-                    GPTState.text_to_confirm = "".join(parts)
-                    if _prefer_canvas_progress():
+                    _update_stream_state_from_text("".join(parts))
+                    if _should_show_response_canvas():
                         try:
                             actions.user.model_response_canvas_open()
                             actions.user.model_response_canvas_refresh()
@@ -581,17 +616,19 @@ def _send_request_streaming(request, request_id: str) -> str:
     def _append_text(text_piece: str):
         nonlocal first_chunk
         parts.append(text_piece)
-        GPTState.text_to_confirm = "".join(parts)
+        _update_stream_state_from_text("".join(parts))
         if first_chunk:
             first_chunk = False
+            if _should_show_response_canvas():
+                try:
+                    actions.user.model_response_canvas_open()
+                except Exception:
+                    pass
+        if _should_show_response_canvas():
             try:
-                actions.user.model_response_canvas_open()
+                actions.user.model_response_canvas_refresh()
             except Exception:
                 pass
-        try:
-            actions.user.model_response_canvas_refresh()
-        except Exception:
-            pass
 
     try:
         for raw_line in raw_response.iter_lines():
@@ -683,8 +720,8 @@ def _send_request_streaming(request, request_id: str) -> str:
                 )
                 if text_piece:
                     parts.append(text_piece)
-                    GPTState.text_to_confirm = "".join(parts)
-                    if _prefer_canvas_progress():
+                    _update_stream_state_from_text("".join(parts))
+                    if _should_show_response_canvas():
                         try:
                             actions.user.model_response_canvas_open()
                             actions.user.model_response_canvas_refresh()
@@ -943,7 +980,7 @@ def send_request(max_attempts: int = 10):
 
     # When using the canvas for progress (response window/default), refresh it
     # after the final content is ready so the body redraws with the answer.
-    if _prefer_canvas_progress():
+    if _should_show_response_canvas():
         def _refresh():
             try:
                 actions.user.model_response_canvas_refresh()

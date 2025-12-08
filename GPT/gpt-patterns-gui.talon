@@ -16,4 +16,4 @@ tag: user.model_pattern_window_open
 ^pain points$: user.model_pattern_run_name("Pain points")
 
 ^close patterns$: user.model_pattern_gui_close()
-
+^help hub$: user.help_hub_open()

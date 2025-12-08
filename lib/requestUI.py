@@ -69,6 +69,13 @@ def _show_response_canvas_hint() -> None:
     _notify("Model done. Say 'last response' to view details.")
 
 
+def _hide_help_hub() -> None:
+    try:
+        actions.user.help_hub_close()
+    except Exception:
+        pass
+
+
 def _on_state_change(state: RequestState) -> None:
     """Notify on terminal states so failures/cancels are visible."""
     try:
@@ -93,6 +100,7 @@ def register_default_request_ui() -> RequestUIController:
         show_confirmation=_show_confirmation,
         hide_confirmation=_hide_confirmation,
         show_response_canvas=_show_response_canvas_hint,
+        hide_help_hub=_hide_help_hub,
         on_state_change=_on_state_change,
     )
     set_controller(_controller)

@@ -13,6 +13,7 @@ from typing import Callable, Optional
 from .requestState import (
     RequestEvent,
     RequestState,
+    RequestPhase,
     Surface,
     transition,
 )
@@ -29,6 +30,7 @@ class RequestUIController:
         hide_confirmation: Optional[Callable[[], None]] = None,
         show_response_canvas: Optional[Callable[[], None]] = None,
         hide_response_canvas: Optional[Callable[[], None]] = None,
+        hide_help_hub: Optional[Callable[[], None]] = None,
         on_state_change: Optional[Callable[[RequestState], None]] = None,
     ):
         self._state = RequestState()
@@ -39,6 +41,7 @@ class RequestUIController:
             "hide_confirmation": hide_confirmation,
             "show_response_canvas": show_response_canvas,
             "hide_response_canvas": hide_response_canvas,
+            "hide_help_hub": hide_help_hub,
         }
         self._on_state_change = on_state_change
 
@@ -63,6 +66,8 @@ class RequestUIController:
 
     def _reconcile_surfaces(self, prev: RequestState, nxt: RequestState) -> None:
         """Close no-longer-active surfaces and open the new one."""
+        if nxt.phase is not RequestPhase.IDLE:
+            self._close_surface(None, force_hub=True)
         if prev.active_surface != nxt.active_surface:
             self._close_surface(prev.active_surface)
             self._open_surface(nxt.active_surface)
@@ -85,9 +90,11 @@ class RequestUIController:
             except Exception:
                 pass
 
-    def _close_surface(self, surface: Surface) -> None:
+    def _close_surface(self, surface: Optional[Surface], force_hub: bool = False) -> None:
         cb = None
-        if surface is Surface.PILL:
+        if force_hub:
+            cb = self._callbacks.get("hide_help_hub")
+        elif surface is Surface.PILL:
             cb = self._callbacks.get("hide_pill")
         elif surface is Surface.CONFIRMATION_CHIP:
             cb = self._callbacks.get("hide_confirmation")

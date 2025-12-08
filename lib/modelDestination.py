@@ -541,6 +541,15 @@ class Default(ModelDestination):
             actions.user.confirmation_gui_append(presentation)
 
 
+class Silent(ModelDestination):
+    kind = "silent"
+
+    def insert(self, gpt_output):
+        # Consume the result without inserting or opening any UI surfaces.
+        _coerce_prompt_result(gpt_output)
+        _set_destination_kind("silent")
+
+
 def create_model_destination(destination_type: str) -> ModelDestination:
     if destination_type == "":
         destination_type = settings.get("user.model_default_destination")
@@ -562,6 +571,7 @@ def create_model_destination(destination_type: str) -> ModelDestination:
         "thread": Thread,
         "newThread": NewThread,
         "draft": Draft,
+        "silent": Silent,
     }
 
     if destination_type == "window":

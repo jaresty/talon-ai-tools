@@ -1,7 +1,7 @@
 # 028 – Help hub and discoverability consolidation
 
 ## Status
-Proposed
+Accepted
 
 ## Context
 - New users face fragmented help: browser HTML (`model help`), canvas quick help, pattern picker, prompt pattern menu, suggestions GUI, confirmation buttons, plus ADRs/README. Each surface is partial; none routes to the others.
@@ -26,6 +26,7 @@ Build a unified, in-Talon “Help Hub” with search, cross-links, and onboardin
   - Quick help gains buttons: Open Patterns, Open Prompt Pattern Menu (pre-filled if last static prompt exists), Open Suggestions (if last source cached), Open HTML Docs.
   - Pattern/prompt pattern GUIs gain an “Axes/help” button jumping to quick help focused on that prompt/axis summary.
   - Confirmation window keeps “Show grammar help” but also “Open Help Hub” and “Open Suggestions” when a last-suggest source exists.
+  - Add a “History” entry in Help Hub to open the request history drawer/list (ADR 027 surfaces) so past responses are discoverable without recalling commands.
 - **Normalization visibility**: surface axis caps/normalisation drops inline in Help Hub/quick help (e.g., show “style ≤3; extras dropped: …” after merges) so users see what tokens will be kept.
 - **Voice trigger hints**: show the active voice commands for each open surface inside the Hub (e.g., pattern GUI triggers, suggestion GUI commands) to reduce hidden affordances. Derive dynamically from Talon lists/config to avoid drift; hide if unavailable.
 - **ADR links**: include a short “Learn why” section in Help Hub with links to relevant ADRs (005/006/008/009/012/013/019/020); expose as “Copy link” to clipboard (notify), not auto-open, to respect sandboxing.
@@ -42,3 +43,10 @@ Build a unified, in-Talon “Help Hub” with search, cross-links, and onboardin
 - Modal coordination is explicit: opening Hub closes patterns/prompt-pattern/suggestions/quick help; launching those from Hub closes Hub; confirmation stays separate.
 - Search is non-executing and disambiguated by group; normalization notes are scoped to last recipe and only show when drops occur; ADR links/cheat sheet use clipboard copy to avoid sandbox issues.
 - Tests must cover hub open/close, modal transitions, search grouping, normalization note rendering, voice-hint derivation, and copy actions to prevent regressions.
+- Integration with ADR 027: treat Hub as another surface managed by the request/UI controller so it follows the same open/close rules; when a request starts, controller closes Hub to avoid conflicts. Do not add Hub to the pill/toast surfaces; keep confirmation additions minimal (single button). Reuse ADR 027 toast mechanics for error fallback. Ensure Hub key handling (Esc/backspace) coexists with quick help/pill bindings.
+- UI/UX mitigations:
+  - Use opaque backgrounds, borders, and non-click-through canvases (`block_mouse`) where supported; if unavailable, warn and close overlapping surfaces aggressively.
+  - Keep content within bounds: enable body scroll, wrap or truncate long labels/descriptions, and clamp search results; avoid hardcoded heights that cause overlap.
+  - Provide clear affordances: hover/active states, visible drag handle, and explicit filter focus/feedback (cursor or placeholder); display a fallback message when key capture fails.
+  - Avoid surprising reopen flows: do not auto-open Hub on close hotspots unless user explicitly opts in; default close hotspots to just close.
+  - Make fallback explicit: when Hub cannot open, notify with retry guidance and explicit “copy cheat sheet” messaging instead of silent copy.

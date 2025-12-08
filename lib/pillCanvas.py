@@ -63,15 +63,11 @@ def _pill_color_for_phase(phase: RequestPhase) -> str:
 
 def _debug(msg: str) -> None:
     try:
-        enabled = settings.get("user.model_debug_pill", True)
+        enabled = settings.get("user.model_debug_pill", False)
     except Exception:
-        enabled = True
+        enabled = False
     if not enabled:
         return
-    try:
-        app.notify(f"[pill] {msg}")
-    except Exception:
-        pass
     try:
         print(f"[pill] {msg}")
     except Exception:

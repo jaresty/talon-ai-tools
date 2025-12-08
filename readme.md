@@ -41,6 +41,14 @@ os.environ["OPENAI_API_KEY"] = "YOUR-KEY-HERE"
 >
 > You can also exclusively use this repo with just [Copilot](./copilot/README.md) if you do not need LLM integration
 
+### In-Talon help surfaces
+
+- `model help hub` – central hub linking quick help, patterns, suggestions, history, docs.
+- `model quick help` – grammar/axes cheat sheet; `model quick help hub/patterns/suggestions/history/docs` for nearby surfaces.
+- `model patterns` / `model pattern menu <prompt>` – curated recipes and per-prompt presets.
+- `model suggest` / `model suggestions` – prompt recipe suggestions picker.
+- `model history drawer` / `model history list` – recent requests/responses.
+
 ### Quickstart Video
 
 [![Talon-AI-Tools Quickstart](./.docs/video_thumbnail.jpg)](https://www.youtube.com/watch?v=FctiTs6D2tM "Talon-AI-Tools Quickstart")

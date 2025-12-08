@@ -40,9 +40,11 @@ except ImportError:  # Talon may have a stale staticPromptConfig loaded
 
 from ..lib.modelDestination import (
     Browser,
+    Clipboard,
     Default,
     ModelDestination,
     PromptPayload,
+    Silent,
     create_model_destination,
 )
 from ..lib.modelSource import ModelSource, create_model_source
@@ -486,6 +488,11 @@ class UserActions:
             actions.user.model_prompt_recipe_suggestions_gui_close()
         except Exception:
             pass
+        # Close the Help Hub to avoid overlapping overlays during runs.
+        try:
+            actions.user.help_hub_close()
+        except Exception:
+            pass
 
         prompt = apply_prompt_configuration.please_prompt
         source = apply_prompt_configuration.model_source
@@ -728,23 +735,37 @@ class UserActions:
             f"{content_text}\n"
         )
 
-        destination = Default()
+        # Run suggestions through a silent destination so we never open the
+        # confirmation surface for this helper. Keep a clipboard fallback to
+        # expose the raw output without popping UI if parsing/GUI fails.
+        destination = Silent()
+        fallback_destination = Clipboard()
         session = PromptSession(destination)
+        # Suppress response canvas while suggestions are running so streaming
+        # text never opens the confirmation viewer.
+        prev_suppress = getattr(GPTState, "suppress_response_canvas", False)
+        GPTState.suppress_response_canvas = True
+        result = None
         # Start a fresh request for suggestions so we don't accidentally
         # reuse the previous GPTState.request (for example, from the last
         # `model` call). This avoids leaking prior prompt content into
         # the suggestion meta-prompt.
-        session.begin()
-        session.add_messages([format_messages("user", [format_message(user_text)])])
-        result = None
         try:
-            handle = _prompt_pipeline.complete_async(session)
-            handle.wait(timeout=10.0)
-            result = getattr(handle, "result", None)
-        except Exception:
-            result = None
-        if result is None:
-            result = _prompt_pipeline.complete(session)
+            session.begin()
+            session.add_messages([format_messages("user", [format_message(user_text)])])
+            try:
+                handle = _prompt_pipeline.complete_async(session)
+                handle.wait(timeout=10.0)
+                result = getattr(handle, "result", None)
+            except Exception:
+                result = None
+            if result is None:
+                result = _prompt_pipeline.complete(session)
+        finally:
+            try:
+                GPTState.suppress_response_canvas = prev_suppress
+            except Exception:
+                pass
 
         # Attempt to parse the result text into structured suggestions so
         # future loops (for example, a suggestions GUI) can reuse them
@@ -783,11 +804,11 @@ class UserActions:
             except Exception:
                 # If the GUI is not available for any reason, still insert the
                 # raw suggestions so the feature remains usable.
-                actions.user.gpt_insert_response(result, destination)
+                actions.user.gpt_insert_response(result, fallback_destination)
         else:
             # If we didn't recognise any suggestions, fall back to the normal
             # insertion flow so the user can still see the raw output.
-            actions.user.gpt_insert_response(result, destination)
+            actions.user.gpt_insert_response(result, fallback_destination)
 
     def gpt_replay(destination: str):
         """Replay the last request"""

@@ -442,6 +442,12 @@ def _ensure_pattern_canvas() -> canvas.Canvas:
             event_type = getattr(evt, "event", "") or ""
             button = getattr(evt, "button", None)
             gpos = getattr(evt, "gpos", None) or pos
+            _debug(
+                f"pattern canvas mouse evt={event_type} button={button} "
+                f"pos=({getattr(pos,'x',None)},{getattr(pos,'y',None)}) "
+                f"gpos=({getattr(gpos,'x',None)},{getattr(gpos,'y',None)}) "
+                f"drag_offset={_pattern_drag_offset}"
+            )
 
             local_x = pos.x
             local_y = pos.y
@@ -509,6 +515,7 @@ def _ensure_pattern_canvas() -> canvas.Canvas:
                 dx, dy = _pattern_drag_offset
                 new_x = gpos.x - dx
                 new_y = gpos.y - dy
+                _debug(f"pattern drag move new=({new_x},{new_y}) from gpos=({gpos.x},{gpos.y}) offset={_pattern_drag_offset}")
                 try:
                     _pattern_canvas.move(new_x, new_y)
                 except Exception:

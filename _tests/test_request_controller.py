@@ -39,6 +39,9 @@ if bootstrap is not None:
             def hide_response():
                 calls.append("hide_response")
 
+            def hide_hub():
+                calls.append("hide_hub")
+
             controller = RequestUIController(
                 show_pill=show_pill,
                 hide_pill=hide_pill,
@@ -46,11 +49,13 @@ if bootstrap is not None:
                 hide_confirmation=hide_conf,
                 show_response_canvas=show_response,
                 hide_response_canvas=hide_response,
+                hide_help_hub=hide_hub,
             )
 
             controller.handle(RequestEvent(RequestEventKind.GOT_TRANSCRIPT))
             self.assertEqual(controller.state.active_surface, Surface.CONFIRMATION_CHIP)
             self.assertIn("show_conf", calls)
+            self.assertIn("hide_hub", calls)
 
             controller.handle(
                 RequestEvent(RequestEventKind.CONFIRM_SEND, request_id="r1")

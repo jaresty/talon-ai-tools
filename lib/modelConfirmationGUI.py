@@ -140,6 +140,14 @@ def confirmation_gui(gui: imgui.GUI):
         if gui.button("Open pattern menu"):
             actions.user.confirmation_gui_open_pattern_menu_for_prompt()
 
+        gui.spacer()
+        if gui.button("Open Help Hub"):
+            actions.user.help_hub_open()
+
+        gui.spacer()
+        if gui.button("History"):
+            actions.user.request_history_drawer_toggle()
+
 
 @mod.action_class
 class UserActions:

@@ -11,10 +11,12 @@ else:
 if bootstrap is not None:
     from talon_user.lib.modelConfirmationGUI import confirmation_gui
     from talon_user.lib.modelState import GPTState
+    from talon import actions
 
     class ConfirmationGUIMetaTests(unittest.TestCase):
         def setUp(self) -> None:
             GPTState.reset_all()
+            actions.user.calls.clear()
 
         def test_includes_meta_preview_when_last_meta_present(self) -> None:
             GPTState.text_to_confirm = "Body"
@@ -95,6 +97,31 @@ if bootstrap is not None:
                 any("Interpreted as:" in line for line in meta_body_lines),
                 "Meta preview should use the first non-heading meta line",
             )
+
+        def test_help_hub_button_triggers_action(self) -> None:
+            GPTState.text_to_confirm = "Body"
+            GPTState.last_recipe = "describe"
+
+            gui_fn = confirmation_gui.__wrapped__  # type: ignore[attr-defined]
+
+            class _StubGUI:
+                def text(self, value: str) -> None:
+                    pass
+
+                def line(self) -> None:
+                    pass
+
+                def spacer(self) -> None:
+                    pass
+
+                def button(self, label: str, *_args, **_kwargs) -> bool:
+                    # Simulate clicking More actions and then Open Help Hub.
+                    return label in ("More actions…", "Open Help Hub")
+
+            gui_fn(_StubGUI())  # type: ignore[arg-type]
+
+            labels = [call[0] for call in actions.user.calls]
+            self.assertIn("help_hub_open", labels)
 
 else:
     if not TYPE_CHECKING:

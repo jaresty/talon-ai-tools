@@ -5,3 +5,4 @@ tag: user.model_suggestion_window_open
 
 ^close suggestions$: user.model_prompt_recipe_suggestions_gui_close()
 ^run suggestion <number>$: user.model_prompt_recipe_suggestions_run_index(number)
+^help hub$: user.help_hub_open()

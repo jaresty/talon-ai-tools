@@ -6,3 +6,4 @@ tag: user.model_prompt_pattern_window_open
 ^bulleted summary$: user.prompt_pattern_run_preset("Bulleted summary")
 
 ^close pattern menu$: user.prompt_pattern_gui_close()
+^help hub$: user.help_hub_open()

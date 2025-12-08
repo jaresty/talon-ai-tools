@@ -168,8 +168,8 @@ def _ensure_response_canvas() -> canvas.Canvas:
                             )
                             _response_canvas.show()
                         elif key == "paste":
-                            actions.user.confirmation_gui_paste()
                             actions.user.model_response_canvas_close()
+                            actions.user.confirmation_gui_paste()
                         elif key == "copy":
                             actions.user.confirmation_gui_copy()
                             actions.user.model_response_canvas_close()

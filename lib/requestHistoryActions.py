@@ -1,5 +1,6 @@
 from talon import Module, actions, app
 
+from .modelConfirmationGUI import ConfirmationGUIState
 from .modelHelpers import notify
 from .modelState import GPTState
 from .requestLog import latest, nth_from_latest, all_entries
@@ -14,6 +15,12 @@ def _show_entry(entry) -> None:
     if entry is None:
         notify("GPT: No request history available")
         return
+    # Clear any stale presentation so paste uses the history entry text instead
+    # of the last live model response.
+    ConfirmationGUIState.current_presentation = None
+    ConfirmationGUIState.display_thread = False
+    ConfirmationGUIState.last_item_text = ""
+    ConfirmationGUIState.show_advanced_actions = False
     GPTState.text_to_confirm = entry.response
     GPTState.last_response = entry.response
     GPTState.last_meta = entry.meta

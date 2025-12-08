@@ -1,8 +1,9 @@
 from dataclasses import dataclass
 import os
+import time
 from typing import Callable, Dict, List, Optional
 
-from talon import Context, Module, actions, canvas, clip, ui
+from talon import Context, Module, actions, app, canvas, clip, ui, tap
 from talon import skia
 
 from .canvasFont import apply_canvas_typeface
@@ -47,6 +48,13 @@ _search_results: List[HubButton] = []
 _last_layout_signature: Optional[tuple[float, float, float]] = None
 _layout_log_count = 0
 _scroll_log_count = 0
+_modifier_state = {"alt": False, "cmd": False}
+_last_alt_down = 0.0
+_last_cmd_down = 0.0
+_global_key_handler_registered = False
+_tap_key_handler_registered = False
+_hub_key_handler = None  # set after canvas creation
+_handlers_registered = False
 
 # Basic layout constants for a compact panel.
 _PANEL_WIDTH = 520
@@ -123,12 +131,21 @@ def _ensure_canvas() -> None:
             _panel_height_px = _PANEL_HEIGHT
             target_rect = ui.Rect(100, 100, _PANEL_WIDTH, _panel_height_px)
             _hub_canvas = canvas.Canvas.from_rect(target_rect)
-    except Exception:
+    except Exception as e:
         _hub_canvas = None
+        _log(f"_ensure_canvas failed: {e}")
         return
 
     if _hub_canvas is None:
         return
+    try:
+        _hub_canvas.blocks_mouse = True  # type: ignore[attr-defined]
+    except Exception as e:
+        _log(f"failed to set blocks_mouse: {e}")
+    try:
+        _hub_canvas.block_mouse = True  # type: ignore[attr-defined]
+    except Exception as e:
+        _log(f"failed to set block_mouse: {e}")
     _log("canvas created; size="
          f"{_PANEL_WIDTH}x{_panel_height_px}; rect={getattr(_hub_canvas, 'rect', None)}")
     try:
@@ -509,83 +526,143 @@ def _ensure_canvas() -> None:
         except Exception:
             return
 
-    def _on_key(evt) -> None:  # pragma: no cover - visual
+    # Register handlers once per canvas lifetime.
+    if not globals().get("_handlers_registered", False):
         try:
-            if not getattr(evt, "down", False):
-                return
-            key = (getattr(evt, "key", "") or "").lower()
-            if key in ("escape", "esc"):
-                help_hub_close()
-                return
-            if key in ("backspace", "back"):
-                HelpHubState.filter_text = HelpHubState.filter_text[:-1]
-                _recompute_search_results()
-                return
-            if key in ("pagedown", "page_down"):
-                HelpHubState.scroll_y = min(
-                    HelpHubState.max_scroll, HelpHubState.scroll_y + 200.0
-                )
-                _clamp_scroll()
-                try:
-                    _hub_canvas.show()
-                except Exception:
-                    pass
-                return
-            if key in ("pageup", "page_up"):
-                HelpHubState.scroll_y = max(0.0, HelpHubState.scroll_y - 200.0)
-                _clamp_scroll()
-                try:
-                    _hub_canvas.show()
-                except Exception:
-                    pass
-                return
-            if key in ("up", "arrowup"):
-                HelpHubState.scroll_y = max(0.0, HelpHubState.scroll_y - 60.0)
-                _clamp_scroll()
-                try:
-                    _hub_canvas.show()
-                except Exception:
-                    pass
-                return
-            if key in ("down", "arrowdown"):
-                HelpHubState.scroll_y = min(HelpHubState.max_scroll, HelpHubState.scroll_y + 60.0)
-                _clamp_scroll()
-                try:
-                    _hub_canvas.show()
-                except Exception:
-                    pass
-                return
-            # Basic ASCII input
-            if len(key) == 1 and 32 <= ord(key) <= 126:
-                HelpHubState.filter_text += key
-                _recompute_search_results()
-        except Exception:
+            _hub_canvas.register("draw", _draw)
+            _log("hub draw handler registered")
+        except Exception as e:
+            _log(f"hub draw register failed: {e}")
+        for evt_name in ("mouse", "mouse_move", "mouse_drag"):
+            try:
+                _hub_canvas.register(evt_name, _on_mouse)
+                _log(f"hub mouse handler registered for {evt_name}")
+            except Exception as e:
+                _log(f"hub mouse register failed for {evt_name}: {e}")
+        for evt_name in ("scroll", "wheel", "mouse_scroll"):
+            try:
+                _hub_canvas.register(evt_name, _on_scroll)
+                _log(f"hub scroll handler registered for {evt_name}")
+            except Exception as e:
+                _log(f"hub scroll register failed for {evt_name}: {e}")
+        globals()["_handlers_registered"] = True
+
+def _on_scroll(evt) -> None:  # pragma: no cover - visual
+    _handle_scroll_delta(evt)
+
+
+def _on_key(evt) -> None:  # pragma: no cover - visual
+    """Global key handler for Help Hub."""
+    try:
+        raw_key = getattr(evt, "key", "") or ""
+        key = raw_key.lower()
+        # Normalise common aliases from tap/ui events.
+        if key in ("bksp", "backspace"):
+            key = "backspace"
+        if key in ("del",):
+            key = "delete"
+        if not getattr(evt, "down", False):
+            if key in ("alt", "lalt", "ralt"):
+                _modifier_state["alt"] = False
+            if key in ("cmd", "lcmd", "rcmd", "meta", "super"):
+                _modifier_state["cmd"] = False
             return
+        # Track modifiers explicitly; Talon may send them as separate keys.
+        if key in ("alt", "lalt", "ralt"):
+            _modifier_state["alt"] = True
+            globals()["_last_alt_down"] = time.time()
+            return
+        if key in ("cmd", "lcmd", "rcmd", "meta", "super"):
+            _modifier_state["cmd"] = True
+            globals()["_last_cmd_down"] = time.time()
+            return
+        mods = []
+        raw_mods = getattr(evt, "mods", None) or []
+        for mod_name in ("alt", "cmd", "ctrl", "shift", "meta", "super", "option", "opt", "command"):
+            if getattr(evt, mod_name, False):
+                mods.append(mod_name)
+        for side_mod in ("lalt", "ralt", "lcmd", "rcmd", "lctrl", "rctrl"):
+            if getattr(evt, side_mod, False) and side_mod not in mods:
+                mods.append(side_mod)
+        for m in raw_mods:
+            lm = str(m).lower()
+            if lm not in mods:
+                mods.append(lm)
+        alt_down = (
+            _modifier_state.get("alt", False)
+            or getattr(evt, "alt", False)
+            or getattr(evt, "lalt", False)
+            or getattr(evt, "ralt", False)
+            or any(m in ("alt", "option", "opt") for m in mods)
+        )
+        cmd_down = (
+            _modifier_state.get("cmd", False)
+            or getattr(evt, "cmd", False)
+            or getattr(evt, "lcmd", False)
+            or getattr(evt, "rcmd", False)
+            or getattr(evt, "meta", False)
+            or getattr(evt, "super", False)
+            or any(m in ("cmd", "command", "meta", "super") for m in mods)
+        )
+        now = time.time()
+        shift_down = "shift" in mods or getattr(evt, "shift", False) or getattr(evt, "lshift", False)
+        if key in ("escape", "esc"):
+            help_hub_close()
+            return
+        if key in ("tab",) or key in ("down", "arrowdown"):
+            _focus_step(-1 if shift_down and key == "tab" else 1)
+            return
+        if key in ("up", "arrowup"):
+            _focus_step(-1)
+            return
+        if key in ("enter", "return"):
+            if _activate_focus():
+                return
+        if key in ("backspace", "back") and not alt_down and not cmd_down:
+            HelpHubState.filter_text = HelpHubState.filter_text[:-1]
+            _recompute_search_results()
+            return
+        # Treat recent alt/cmd down as active even if the modifier isn't reported on the delete key.
+        alt_active = alt_down or (now - globals().get("_last_alt_down", 0.0) < 0.4)
+        cmd_active = cmd_down or (now - globals().get("_last_cmd_down", 0.0) < 0.4)
+        if key in ("delete", "backspace") and alt_active:
+            text = HelpHubState.filter_text.rstrip()
+            stripped = text.rstrip()
+            parts = stripped.rsplit(" ", 1)
+            HelpHubState.filter_text = parts[0] if len(parts) == 2 else ""
+            _recompute_search_results()
+            return
+        if key in ("delete", "backspace") and cmd_active:
+            HelpHubState.filter_text = ""
+            _recompute_search_results()
+            return
+        if key in ("pagedown", "page_down"):
+            HelpHubState.scroll_y = min(HelpHubState.max_scroll, HelpHubState.scroll_y + 200.0)
+            _clamp_scroll()
+            try:
+                if _hub_canvas is not None:
+                    _hub_canvas.show()
+            except Exception:
+                pass
+            return
+        if key in ("pageup", "page_up"):
+            HelpHubState.scroll_y = max(0.0, HelpHubState.scroll_y - 200.0)
+            _clamp_scroll()
+            try:
+                if _hub_canvas is not None:
+                    _hub_canvas.show()
+            except Exception:
+                pass
+            return
+        if len(key) == 1 and 32 <= ord(key) <= 126:
+            HelpHubState.filter_text += key
+            _recompute_search_results()
+    except Exception as e:
+        _log(f"hub key handler exception: {e}")
+        return
 
-    def _on_scroll(evt) -> None:  # pragma: no cover - visual
-        _handle_scroll_delta(evt)
 
-    try:
-        _hub_canvas.register("draw", _draw)
-    except Exception:
-        pass
-    try:
-        _hub_canvas.register("mouse", _on_mouse)
-    except Exception:
-        pass
-    # Dedicated scroll handler to cover platforms that expose pixels/degrees/etc.
-    for evt_name in ("scroll", "wheel", "mouse_scroll"):
-        try:
-            _hub_canvas.register(evt_name, _on_scroll)
-        except Exception:
-            continue
-    # Some Talon setups emit wheel/scroll on a dedicated channel; register both.
-    try:
-        _hub_canvas.register("key", _on_key)
-    except Exception:
-        pass
-
-
+_hub_key_handler = _on_key
 def _cheat_sheet_text() -> str:
     lines = [
         "Model Help Hub cheat sheet",
@@ -743,6 +820,7 @@ def _copy_adr_links() -> None:
 def help_hub_open():
     """Open Help Hub canvas."""
     global _buttons, _layout_log_count, _scroll_log_count, _last_layout_signature
+    global _global_key_handler_registered, _tap_key_handler_registered
     _buttons = _build_buttons()
     _build_search_index()
     _recompute_search_results()
@@ -760,24 +838,57 @@ def help_hub_open():
             actions.app.notify("Help Hub: unable to open")
         return
     HelpHubState.showing = True
+    if _hub_key_handler is None:
+        _ensure_canvas()
+    _log(f"hub key handler object: {_hub_key_handler!r}")
+    if not _global_key_handler_registered and _hub_key_handler is not None:
+        try:
+            tap.register(tap.KEY | tap.HOOK, _hub_key_handler)
+            _tap_key_handler_registered = True
+            _global_key_handler_registered = True
+            _log("help hub key tap handler registered")
+        except Exception as e:
+            _log(f"help hub key tap register failed: {e}")
     try:
         _hub_canvas.move(80, 80)
     except Exception:
         pass
-    _hub_canvas.show()
+    try:
+        _hub_canvas.register("focus", lambda *_: None)
+    except Exception as e:
+        _log(f"help hub focus register failed: {e}")
+    try:
+        _hub_canvas.show()
+        try:
+            # Some runtimes require an explicit focus request; this may be a no-op elsewhere.
+            focus_fn = getattr(_hub_canvas, "focus", None)
+            if callable(focus_fn):
+                focus_fn()
+                _log("help hub focus() invoked on canvas")
+        except Exception as e:
+            _log(f"help hub focus() failed: {e}")
+    except Exception as e:
+        _log(f"help hub show failed: {e}")
 
 
 def help_hub_close():
     """Close Help Hub canvas."""
-    global _hub_canvas
+    global _hub_canvas, _global_key_handler_registered, _tap_key_handler_registered
     HelpHubState.showing = False
     HelpHubState.filter_text = ""
     HelpHubState.show_onboarding = False
+    if _tap_key_handler_registered:
+        try:
+            tap.unregister(tap.KEY | tap.HOOK, _hub_key_handler)
+        except Exception as e:
+            _log(f"help hub key tap unregister failed: {e}")
+        _tap_key_handler_registered = False
+    _global_key_handler_registered = False
     if _hub_canvas is not None:
         try:
             _hub_canvas.hide()
-        except Exception:
-            pass
+        except Exception as e:
+            _log(f"help hub hide failed: {e}")
 
 
 def help_hub_test_click(label: str) -> None:
@@ -1007,6 +1118,64 @@ def _handle_click(x: float, y: float) -> bool:
             except Exception:
                 return True
 
+    return False
+
+
+def _focusable_items() -> List[tuple[str, str]]:
+    """Return an ordered list of (kind,label) focus targets."""
+    items: List[tuple[str, str]] = []
+    if HelpHubState.filter_text.strip():
+        for res in _search_results:
+            items.append(("res", res.label))
+    else:
+        for btn in _buttons:
+            items.append(("btn", btn.label))
+        for res in _search_results:
+            items.append(("res", res.label))
+    return items
+
+
+def _focus_step(delta: int) -> None:
+    items = _focusable_items()
+    if not items:
+        return
+    current = HelpHubState.hover_label or ""
+    try:
+        idx = next(i for i, (kind, label) in enumerate(items) if f"{kind}:{label}" == current)
+    except StopIteration:
+        # If nothing focused yet, start before the first item when moving forward,
+        # or just past the last item when moving backward.
+        idx = -1 if delta > 0 else len(items)
+    idx = (idx + delta) % len(items)
+    kind, label = items[idx]
+    HelpHubState.hover_label = f"{kind}:{label}"
+    try:
+        if _hub_canvas is not None:
+            _hub_canvas.show()
+    except Exception:
+        pass
+
+
+def _activate_focus() -> bool:
+    label = HelpHubState.hover_label or ""
+    if label.startswith("btn:"):
+        target = label[len("btn:") :]
+        for btn in _buttons:
+            if btn.label == target:
+                try:
+                    btn.handler()
+                except Exception:
+                    pass
+                return True
+    if label.startswith("res:"):
+        target = label[len("res:") :]
+        for res in _search_results:
+            if res.label == target:
+                try:
+                    res.handler()
+                except Exception:
+                    pass
+                return True
     return False
 
 

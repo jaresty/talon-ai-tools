@@ -241,12 +241,26 @@ class UserActions:
 
         if not text_to_set:
             notify("GPT error: No text in confirmation GUI to paste")
-        else:
-            actions.user.paste(text_to_set)
-            GPTState.last_response = text_to_set
-            GPTState.last_was_pasted = True
+            # Clear any stale confirmation state even when nothing was pasted.
+            GPTState.text_to_confirm = ""
+            ConfirmationGUIState.current_presentation = None
+            ConfirmationGUIState.display_thread = False
+            ConfirmationGUIState.last_item_text = ""
+            actions.user.confirmation_gui_close()
+            return
+
+        # Record the paste intent before closing surfaces so state remains
+        # accurate even if downstream actions no-op.
+        GPTState.last_response = text_to_set
+        GPTState.last_was_pasted = True
+        # Clear the confirmation surface before pasting to return focus to the
+        # user's target application.
         GPTState.text_to_confirm = ""
+        ConfirmationGUIState.current_presentation = None
+        ConfirmationGUIState.display_thread = False
+        ConfirmationGUIState.last_item_text = ""
         actions.user.confirmation_gui_close()
+        actions.user.paste(text_to_set)
 
     def confirmation_gui_refresh_thread(force_open: bool = False):
         """Refresh the threading output in the confirmation GUI"""

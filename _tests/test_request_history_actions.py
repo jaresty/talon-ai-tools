@@ -12,12 +12,18 @@ if bootstrap is not None:
     from talon_user.lib.requestHistoryActions import UserActions as HistoryActions
     from talon_user.lib.requestLog import append_entry, clear_history
     from talon_user.lib.modelState import GPTState
+    from talon_user.lib.modelConfirmationGUI import (
+        ConfirmationGUIState,
+        UserActions as ConfirmationActions,
+    )
+    from talon_user.lib.modelPresentation import ResponsePresentation
     from talon import actions
 
     class RequestHistoryActionTests(unittest.TestCase):
         def setUp(self):
             clear_history()
             actions.user.calls.clear()
+            actions.user.pasted.clear()
             actions.app.calls.clear()
             GPTState.last_response = ""
             GPTState.last_meta = ""
@@ -84,6 +90,22 @@ if bootstrap is not None:
             notify_calls = [c for c in actions.user.calls if c[0] == "notify"]
             app_notify_calls = [c for c in actions.app.calls if c[0] == "notify"]
             self.assertGreaterEqual(len(notify_calls) + len(app_notify_calls), 1)
+
+        def test_history_open_clears_presentation_and_pastes_entry(self):
+            append_entry("rid-1", "prompt one", "history answer", duration_ms=7)
+            ConfirmationGUIState.current_presentation = ResponsePresentation(
+                display_text="old display",
+                paste_text="old paste",
+            )
+            ConfirmationGUIState.display_thread = True
+            ConfirmationGUIState.last_item_text = "thread chunk"
+
+            HistoryActions.gpt_request_history_show_latest()
+            ConfirmationActions.confirmation_gui_paste()
+
+            self.assertIsNone(ConfirmationGUIState.current_presentation)
+            self.assertFalse(ConfirmationGUIState.display_thread)
+            self.assertEqual(actions.user.pasted[-1], "history answer")
 else:
     if not TYPE_CHECKING:
         class RequestHistoryActionTests(unittest.TestCase):

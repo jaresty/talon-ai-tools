@@ -118,6 +118,55 @@ if bootstrap is not None:
             mouse_cb(_Evt(100.0))
             self.assertEqual(ResponseCanvasState.scroll_y, 0.0)
 
+        def test_paste_button_closes_canvas_before_paste(self) -> None:
+            GPTState.text_to_confirm = "paste me"
+            ResponseCanvasState.showing = True
+            canvas_obj = _ensure_response_canvas()
+            if not hasattr(canvas_obj, "rect") or canvas_obj.rect is None:
+                canvas_obj.rect = type(
+                    "R", (), {"x": 0, "y": 0, "width": 400, "height": 300}
+                )()
+            canvas_obj.show()
+            callbacks = getattr(canvas_obj, "_callbacks", {})
+            mouse_cbs = callbacks.get("mouse") or []
+            if not mouse_cbs:
+                self.skipTest("Canvas stub does not expose mouse callbacks")
+            mouse_cb = mouse_cbs[0]
+            bounds = modelResponseCanvas._response_button_bounds.get("paste")  # type: ignore[attr-defined]
+            if not bounds:
+                self.skipTest("Paste button bounds not available")
+            bx1, by1, _bx2, _by2 = bounds
+            calls: list[str] = []
+            orig_close = actions.user.model_response_canvas_close
+            orig_paste = actions.user.confirmation_gui_paste
+
+            def _close():
+                calls.append("close")
+                ResponseCanvasState.showing = False
+
+            def _paste():
+                calls.append("paste")
+
+            actions.user.model_response_canvas_close = _close  # type: ignore[attr-defined]
+            actions.user.confirmation_gui_paste = _paste  # type: ignore[attr-defined]
+            try:
+                class _Evt:
+                    def __init__(self, x: int, y: int):
+                        self.event = "mousedown"
+                        self.button = 0
+                        self.pos = type("P", (), {"x": x, "y": y})()
+                        self.gpos = self.pos
+
+                rel_x = bx1 - canvas_obj.rect.x + 1
+                rel_y = by1 - canvas_obj.rect.y + 1
+                mouse_cb(_Evt(rel_x, rel_y))
+            finally:
+                actions.user.model_response_canvas_close = orig_close  # type: ignore[attr-defined]
+                actions.user.confirmation_gui_paste = orig_paste  # type: ignore[attr-defined]
+
+            self.assertEqual(calls, ["close", "paste"])
+            self.assertFalse(ResponseCanvasState.showing)
+
 else:
     if not TYPE_CHECKING:
         class ModelResponseCanvasTests(unittest.TestCase):

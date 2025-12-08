@@ -67,7 +67,7 @@ _BORDER_COLOR = _rgba(74, 74, 74, 255)
 _BUTTON_COLOR = _rgba(46, 46, 46, 255)
 _BUTTON_HOVER_COLOR = _rgba(58, 58, 58, 255)
 _RESULT_COLOR = _rgba(37, 37, 37, 255)
-_RESULT_HOVER_COLOR = _rgba(52, 52, 52, 255)
+_RESULT_HOVER_COLOR = _rgba(70, 70, 70, 255)
 
 
 def _rect_contains(rect: skia.Rect, x: float, y: float) -> bool:
@@ -179,11 +179,11 @@ def _ensure_canvas() -> None:
             _button_bounds["__close__"] = close_rect
             close_bg = skia.Paint()
             is_close_hover = HelpHubState.hover_label == "__close__"
-            close_bg.color = _BUTTON_HOVER_COLOR if is_close_hover else _BUTTON_COLOR
+            close_bg.color = _rgba(200, 64, 64, 255) if is_close_hover else _BUTTON_COLOR
             c.draw_rect(close_rect, close_bg)
             # Draw glyph with slight brightness bump on hover.
             glyph_paint = skia.Paint()
-            glyph_paint.color = _rgba(255, 255, 255, 255) if is_close_hover else _rgba(210, 210, 210, 255)
+            glyph_paint.color = _rgba(255, 255, 255, 255) if is_close_hover else _rgba(220, 220, 220, 255)
             apply_canvas_typeface(glyph_paint)
             c.draw_text("×", close_rect.x + 7, close_rect.y + 16, glyph_paint)
 
@@ -203,11 +203,13 @@ def _ensure_canvas() -> None:
                     rect_height += 16
                 rect = skia.Rect(start_x, start_y, content_width, rect_height)
                 _search_bounds[res.label] = rect
-                is_hover = HelpHubState.hover_label == res.label
+                is_hover = HelpHubState.hover_label == f"res:{res.label}"
                 res_bg = skia.Paint()
                 res_bg.color = _RESULT_HOVER_COLOR if is_hover else _RESULT_COLOR
                 c.draw_rect(rect, res_bg)
-                label_paint = skia.Paint(text_paint)
+                label_paint = skia.Paint()
+                label_paint.color = text_paint.color
+                apply_canvas_typeface(label_paint)
                 if is_hover:
                     label_paint.color = _rgba(255, 255, 255, 255)
                 c.draw_text(label, rect.x + 10, rect.y + 18, label_paint)
@@ -255,12 +257,17 @@ def _ensure_canvas() -> None:
                         # Button background
                         bg = skia.Paint()
                         bg.color = _BUTTON_COLOR
-                        if HelpHubState.hover_label == btn.label:
+                        if HelpHubState.hover_label == f"btn:{btn.label}":
                             bg.color = _BUTTON_HOVER_COLOR
                         c.draw_rect(rect, bg)
 
                         # Label + wrapped description.
-                        c.draw_text(btn.label, rect.x + 10, rect.y + 20, text_paint)
+                        label_paint = skia.Paint()
+                        label_paint.color = text_paint.color
+                        apply_canvas_typeface(label_paint)
+                        if HelpHubState.hover_label == f"btn:{btn.label}":
+                            label_paint.color = _rgba(255, 255, 255, 255)
+                        c.draw_text(btn.label, rect.x + 10, rect.y + 20, label_paint)
                         desc_lines = []
                         desc = btn.description or ""
                         if len(desc) > 50:
@@ -268,7 +275,7 @@ def _ensure_canvas() -> None:
                         elif desc:
                             desc_lines = [desc]
                         for idx, line in enumerate(desc_lines):
-                            c.draw_text(line, rect.x + 10, rect.y + 38 + idx * 16, text_paint)
+                            c.draw_text(line, rect.x + 10, rect.y + 38 + idx * 16, label_paint)
 
                         btn_y += _BUTTON_HEIGHT + _BUTTON_SPACING
                 btn_y += 6
@@ -420,13 +427,13 @@ def _ensure_canvas() -> None:
                 for btn in _buttons:
                     rect = _button_bounds.get(btn.label)
                     if rect and _rect_contains(rect, gx, gy):
-                        HelpHubState.hover_label = btn.label
+                        HelpHubState.hover_label = f"btn:{btn.label}"
                         break
                 if not HelpHubState.hover_label:
                     for res in _search_results:
                         rect = _search_bounds.get(res.label)
                         if rect and _rect_contains(rect, gx, gy):
-                            HelpHubState.hover_label = res.label
+                            HelpHubState.hover_label = f"res:{res.label}"
                             break
             if event_type not in ("mousedown", "mouse_down"):
                 # Drag / move support.

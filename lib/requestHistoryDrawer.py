@@ -28,6 +28,12 @@ def _ensure_canvas() -> canvas.Canvas:
 
     rect = ui.Rect(40, 80, 520, 260)
     _history_canvas = canvas.Canvas.from_rect(rect)
+    try:
+        _history_canvas.blocks_mouse = True
+        if hasattr(_history_canvas, "block_mouse"):
+            _history_canvas.block_mouse = True  # type: ignore[attr-defined]
+    except Exception:
+        pass
 
     def _on_draw(c: canvas.Canvas):
         rect = getattr(c, "rect", None) or ui.Rect(40, 80, 520, 260)

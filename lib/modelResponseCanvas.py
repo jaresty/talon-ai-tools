@@ -1,6 +1,6 @@
 from typing import Callable, Optional
 
-from talon import Context, Module, actions, canvas, clip, ui
+from talon import Context, Module, actions, canvas, clip, ui, skia
 
 from .canvasFont import apply_canvas_typeface, draw_text_with_emoji_fallback
 
@@ -137,37 +137,17 @@ def _ensure_response_canvas() -> canvas.Canvas:
             abs_x = rect.x + local_x
             abs_y = rect.y + local_y
 
-            header_height = 32
-            hotspot_width = 80
-
             if event_type in ("mousemove", "mouse_move"):
-                _response_hover_close = (
-                    0 <= local_y <= header_height
-                    and rect.width - hotspot_width <= local_x <= rect.width
-                )
                 hover_key: Optional[str] = None
                 for key, (bx1, by1, bx2, by2) in list(_response_button_bounds.items()):
                     if bx1 <= abs_x <= bx2 and by1 <= abs_y <= by2:
                         hover_key = key
                         break
                 _response_hover_button = hover_key
+                _response_hover_close = hover_key == "close"
 
             # Handle close click and drag start.
             if event_type in ("mousedown", "mouse_down") and button in (0, 1):
-                # Close hotspot in top-right header.
-                if (
-                    0 <= local_y <= header_height
-                    and rect.width - hotspot_width <= local_x <= rect.width
-                ):
-                    ResponseCanvasState.showing = False
-                    ResponseCanvasState.scroll_y = 0.0
-                    try:
-                        _response_canvas.hide()
-                    except Exception:
-                        pass
-                    _response_drag_offset = None
-                    return
-
                 # Button hits in header/footer.
                 for key, (bx1, by1, bx2, by2) in list(_response_button_bounds.items()):
                     if not (bx1 <= abs_x <= bx2 and by1 <= abs_y <= by2):
@@ -221,6 +201,15 @@ def _ensure_response_canvas() -> canvas.Canvas:
                             actions.user.model_help_canvas_open_for_last_recipe()
                     except Exception:
                         pass
+                    if key == "close":
+                        ResponseCanvasState.showing = False
+                        ResponseCanvasState.scroll_y = 0.0
+                        try:
+                            _response_canvas.hide()
+                        except Exception:
+                            pass
+                        _response_drag_offset = None
+                        return
                     return
 
                 # Start drag anywhere else.
@@ -524,12 +513,26 @@ def _default_draw_response(c: canvas.Canvas) -> None:  # pragma: no cover - visu
                 right_cursor + width,
                 close_y + line_h,
             )
-            if hover and paint is not None:
+            if hover:
                 try:
                     underline_rect = ui.Rect(right_cursor, close_y + 4, width, 1)
-                    c.draw_rect(underline_rect)
-                except Exception:
-                    pass
+                    # Draw an underline using a dedicated Paint to avoid clashes.
+                    underline_paint = getattr(skia, "Paint", None)
+                    if underline_paint is not None:
+                        p = underline_paint()
+                        p.color = default_text_color or "FFFFFF"
+                        c.draw_rect(underline_rect, p)
+                    else:
+                        if paint is not None:
+                            old_color = getattr(paint, "color", None)
+                            paint.color = default_text_color or "FFFFFF"
+                            c.draw_rect(underline_rect, paint)
+                            if old_color is not None:
+                                paint.color = old_color
+                        else:
+                            c.draw_rect(underline_rect)
+                except Exception as e:
+                    _debug(f"response close underline draw failed: {e}")
         right_cursor -= approx_char * 2
 
     status_label = ""
@@ -548,7 +551,7 @@ def _default_draw_response(c: canvas.Canvas) -> None:  # pragma: no cover - visu
         elif phase is RequestPhase.DONE:
             status_label = "Done"
 
-    _header_label("[X]", hover=_response_hover_close)
+    _header_label("[X]", key="close", hover=_response_hover_button == "close")
     if cancel_label:
         _header_label(
             cancel_label,

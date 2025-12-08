@@ -220,7 +220,10 @@ def _ensure_canvas() -> None:
                 elif has_desc:
                     detail_line = desc
                 if detail_line:
-                    detail_paint = skia.Paint(label_paint)
+                    # Avoid copying a Paint via constructor (can raise in some runtimes).
+                    detail_paint = skia.Paint()
+                    detail_paint.color = label_paint.color
+                    apply_canvas_typeface(detail_paint)
                     for wrapped in _wrap_text(detail_line, content_width - 20, approx_char_px=7):
                         c.draw_text(wrapped, rect.x + 10, detail_y, detail_paint)
                         detail_y += 16
@@ -268,13 +271,17 @@ def _ensure_canvas() -> None:
                         if HelpHubState.hover_label == f"btn:{btn.label}":
                             label_paint.color = _rgba(255, 255, 255, 255)
                         c.draw_text(btn.label, rect.x + 10, rect.y + 20, label_paint)
-                        desc_lines = []
-                        desc = btn.description or ""
-                        if len(desc) > 50:
-                            desc_lines = [desc[:50] + "..."]
-                        elif desc:
-                            desc_lines = [desc]
-                        for idx, line in enumerate(desc_lines):
+                        desc_lines: List[str] = []
+                        desc = (btn.description or "").strip()
+                        hint = (btn.voice_hint or "").strip()
+                        max_desc_width = content_width - 20
+                        if desc:
+                            desc_lines.extend(_wrap_text(desc, max_desc_width, approx_char_px=7)[:2])
+                        if hint:
+                            desc_lines.extend(
+                                _wrap_text(hint, max_desc_width, approx_char_px=7)[:2]
+                            )
+                        for idx, line in enumerate(desc_lines[:3]):
                             c.draw_text(line, rect.x + 10, rect.y + 38 + idx * 16, label_paint)
 
                         btn_y += _BUTTON_HEIGHT + _BUTTON_SPACING

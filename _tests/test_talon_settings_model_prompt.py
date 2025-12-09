@@ -169,6 +169,36 @@ if bootstrap is not None:
             self.assertEqual(GPTState.system_prompt.method, "steps")
             self.assertEqual(GPTState.system_prompt.style, "checklist")
 
+        def test_prefixed_token_reassigns_to_highest_priority_axis(self):
+            m = SimpleNamespace(
+                staticPrompt="fix",
+                # Intentionally mis-placed axis token with explicit prefix.
+                styleModifier="Completeness:skim",
+                directionalModifier="DIR",
+            )
+
+            result = modelPrompt(m)
+
+            # Completeness should capture the prefixed token; style should stay empty.
+            self.assertEqual(GPTState.system_prompt.completeness, "skim")
+            self.assertEqual(GPTState.system_prompt.style, "")
+            self.assertIn("Completeness:", result)
+            self.assertNotIn("Style:", result.split("Constraints:", 1)[-1])
+
+        def test_axis_map_recovers_method_token_from_wrong_axis(self):
+            m = SimpleNamespace(
+                staticPrompt="fix",
+                # "steps" belongs to method; provide it under style to test reassignment.
+                styleModifier="steps",
+                directionalModifier="DIR",
+            )
+
+            _ = modelPrompt(m)
+
+            # The method axis should capture the token; style should remain empty.
+            self.assertEqual(GPTState.system_prompt.method, "steps")
+            self.assertEqual(GPTState.system_prompt.style, "")
+
         def test_clear_all_resets_last_recipe_and_response(self):
             # Exercise the lifecycle: after a prompt, clear_all should drop
             # last_response/last_recipe so recap helpers don't show stale data.

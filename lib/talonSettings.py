@@ -1,6 +1,6 @@
 import os
 from dataclasses import dataclass
-from typing import Literal, Optional, TypedDict
+from typing import Literal, Optional, Tuple, TypedDict
 
 from .axisMappings import (
     AXIS_VALUE_TO_KEY_MAPS,
@@ -210,6 +210,124 @@ def _axis_string_to_tokens(value: str) -> list[str]:
 def _axis_value_to_key_map_for(axis: str) -> dict[str, str]:
     """Return the value→key map for a given axis, if available."""
     return axis_value_to_key_map_for(axis)
+
+
+_AXIS_PRIORITY: tuple[str, ...] = ("completeness", "method", "scope", "style")
+
+
+def _axis_prefix(token: str) -> Tuple[Optional[str], Optional[str]]:
+    """Return (axis, stripped_value) if the token uses an explicit prefix."""
+    if ":" not in token:
+        return None, None
+    prefix, remainder = token.split(":", 1)
+    axis = prefix.strip().lower()
+    if axis in _AXIS_PRIORITY:
+        return axis, remainder.strip()
+    return None, None
+
+
+def _resolve_axis_for_token(
+    token: str, hint_axis: Optional[str] = None
+) -> Tuple[Optional[str], Optional[str]]:
+    """Determine which axis a token belongs to, applying hierarchy rules.
+
+    - Prefixed tokens (for example, 'Completeness:full') are assigned to the
+      named axis after stripping the prefix.
+    - Otherwise, we look for matches across all axis value→key maps and pick
+      the highest-priority axis when multiple matches exist.
+    - If no matches are found, fall back to the hint axis so user-provided
+      tokens are not dropped silently.
+    """
+    raw = token.strip()
+    if not raw:
+        return None, None
+
+    pref_axis, pref_value = _axis_prefix(raw)
+    if pref_axis:
+        axis_map = _axis_value_to_key_map_for(pref_axis)
+        mapped = axis_map.get(pref_value, pref_value)
+        return pref_axis, mapped
+
+    matches: list[tuple[str, str]] = []
+    for axis in _AXIS_PRIORITY:
+        axis_map = _axis_value_to_key_map_for(axis)
+        mapped = axis_map.get(raw)
+        if mapped:
+            matches.append((axis, mapped))
+    if matches:
+        # Highest-priority axis wins when multiple are possible.
+        matches.sort(key=lambda pair: _AXIS_PRIORITY.index(pair[0]))
+        return matches[0]
+
+    # Preserve the token on its hinted axis when unmapped.
+    if hint_axis:
+        return hint_axis, raw
+    return None, None
+
+
+def _apply_constraint_hierarchy(axis_values: AxisValues) -> tuple[AxisValues, AxisValues]:
+    """Reassign and normalise axis tokens using the completeness>method>scope>style hierarchy.
+
+    Returns a pair: (resolved_axes_preserving_order, canonical_axes) where:
+    - Resolved axes keep ingestion order while applying caps/conflicts.
+    - Canonical axes apply the same caps/conflicts but return sorted tokens for recipe serialisation.
+    """
+    buckets: dict[str, list[str]] = {axis: [] for axis in _AXIS_PRIORITY}
+
+    def _ingest(tokens: list[str], hint: str) -> None:
+        for token in tokens:
+            target_axis, mapped = _resolve_axis_for_token(token, hint_axis=hint)
+            if target_axis and mapped:
+                buckets[target_axis].append(mapped)
+
+    completeness_tokens = [axis_values["completeness"]] if axis_values.get("completeness") else []
+    _ingest(completeness_tokens, "completeness")
+    _ingest(axis_values.get("method", []), "method")
+    _ingest(axis_values.get("scope", []), "scope")
+    _ingest(axis_values.get("style", []), "style")
+
+    def _preserve_order(axis: str, tokens: list[str]) -> list[str]:
+        """Apply conflicts while keeping ingestion order (no caps)."""
+        raw = [t.strip() for t in tokens if t and t.strip()]
+        if not raw:
+            return []
+        incompat_for_axis = _AXIS_INCOMPATIBILITIES.get(axis, {})
+        seen: set[str] = set()
+        ordered: list[str] = []
+        for token in raw:
+            conflicts = incompat_for_axis.get(token, set())
+            if conflicts:
+                ordered = [t for t in ordered if t not in conflicts]
+                seen -= conflicts
+            if token in seen:
+                continue
+            ordered.append(token)
+            seen.add(token)
+        return ordered
+
+    resolved_scope = _preserve_order("scope", buckets["scope"])
+    resolved_method = _preserve_order("method", buckets["method"])
+    resolved_style = _preserve_order("style", buckets["style"])
+
+    canonical_scope = _canonicalise_axis_tokens("scope", buckets["scope"])
+    canonical_method = _canonicalise_axis_tokens("method", buckets["method"])
+    canonical_style = _canonicalise_axis_tokens("style", buckets["style"])
+
+    completeness_value = buckets["completeness"][-1] if buckets["completeness"] else None
+
+    resolved: AxisValues = {
+        "completeness": completeness_value,
+        "scope": resolved_scope,
+        "method": resolved_method,
+        "style": resolved_style,
+    }
+    canonical: AxisValues = {
+        "completeness": completeness_value,
+        "scope": canonical_scope,
+        "method": canonical_method,
+        "style": canonical_style,
+    }
+    return resolved, canonical
 
 
 def _axis_recipe_token(axis: str, raw_value: str) -> str:
@@ -427,23 +545,41 @@ def modelPrompt(m) -> str:
         effective_style_raw = settings.get("user.model_default_style")
 
     # Map all axes to token-based storage, keeping a canonical form for recap/rerun.
-    completeness_tokens = _map_axis_tokens("completeness", effective_completeness_raw)
-    completeness_token = completeness_tokens[0] if completeness_tokens else ""
+    raw_completeness_tokens = _map_axis_tokens("completeness", effective_completeness_raw)
+    raw_scope_tokens = _map_axis_tokens("scope", effective_scope_raw)
+    raw_method_tokens = _map_axis_tokens("method", effective_method_raw)
+    raw_style_tokens = _map_axis_tokens("style", effective_style_raw)
 
-    scope_tokens = _map_axis_tokens("scope", effective_scope_raw)
+    resolved_axes, canonical_axes = _apply_constraint_hierarchy(
+        {
+            "completeness": raw_completeness_tokens[0] if raw_completeness_tokens else None,
+            "scope": raw_scope_tokens,
+            "method": raw_method_tokens,
+            "style": raw_style_tokens,
+        }
+    )
+
+    completeness_token = resolved_axes.get("completeness") or ""
+    completeness_tokens = [completeness_token] if completeness_token else []
+
+    scope_tokens = resolved_axes.get("scope", [])
+    scope_canonical_serialised = _axis_tokens_to_string(
+        canonical_axes.get("scope", [])
+    )
+
+    method_tokens = resolved_axes.get("method", [])
+    method_canonical_serialised = _axis_tokens_to_string(
+        canonical_axes.get("method", [])
+    )
+
+    style_tokens = resolved_axes.get("style", [])
+    style_canonical_serialised = _axis_tokens_to_string(
+        canonical_axes.get("style", [])
+    )
+
     scope_serialised = _axis_tokens_to_string(scope_tokens)
-    scope_canonical_tokens = _canonicalise_axis_tokens("scope", scope_tokens)
-    scope_canonical_serialised = _axis_tokens_to_string(scope_canonical_tokens)
-
-    method_tokens = _map_axis_tokens("method", effective_method_raw)
     method_serialised = _axis_tokens_to_string(method_tokens)
-    method_canonical_tokens = _canonicalise_axis_tokens("method", method_tokens)
-    method_canonical_serialised = _axis_tokens_to_string(method_canonical_tokens)
-
-    style_tokens = _map_axis_tokens("style", effective_style_raw)
     style_serialised = _axis_tokens_to_string(style_tokens)
-    style_canonical_tokens = _canonicalise_axis_tokens("style", style_tokens)
-    style_canonical_serialised = _axis_tokens_to_string(style_canonical_tokens)
 
     # Apply the effective axes to the shared system prompt for this request.
     GPTState.system_prompt.completeness = completeness_token or ""
@@ -474,6 +610,11 @@ def modelPrompt(m) -> str:
     # recap/quick help and shorthand grammars can include it.
     GPTState.last_directional = _axis_recipe_token("directional", directional or "")
 
+    completeness_from_cross_axis = bool(completeness_token and not raw_completeness_tokens)
+    scope_from_cross_axis = bool(scope_tokens and not raw_scope_tokens)
+    method_from_cross_axis = bool(method_tokens and not raw_method_tokens)
+    style_from_cross_axis = bool(style_tokens and not raw_style_tokens)
+
     # Task line: what you want done.
     # The visible Task text is the human-facing static prompt description
     # (when present); legacy goal modifiers are no longer appended here.
@@ -490,28 +631,28 @@ def modelPrompt(m) -> str:
         return " ".join(hydrated) if hydrated else " ".join(tokens)
 
     # Completeness: show spoken or profile-level hints (hydrate for readability).
-    if completeness_tokens and spoken_completeness:
+    if completeness_tokens and (spoken_completeness or completeness_from_cross_axis):
         constraints.append(f"  Completeness: {_hydrate('completeness', completeness_tokens)}")
     elif profile_completeness and not GPTState.user_overrode_completeness:
         prof_tokens = _map_axis_tokens("completeness", profile_completeness)
         constraints.append(f"  Completeness: {_hydrate('completeness', prof_tokens)}")
 
     # Scope: purely conceptual, relative to the voice-selected target.
-    if scope_tokens and spoken_scope:
+    if scope_tokens and (spoken_scope or scope_from_cross_axis):
         constraints.append(f"  Scope: {_hydrate('scope', scope_tokens)}")
     elif profile_scope and not GPTState.user_overrode_scope:
         prof_tokens = _map_axis_tokens("scope", profile_scope)
         constraints.append(f"  Scope: {_hydrate('scope', prof_tokens)}")
 
     # Method: spoken modifier or short profile keyword.
-    if method_tokens and spoken_method:
+    if method_tokens and (spoken_method or method_from_cross_axis):
         constraints.append(f"  Method: {_hydrate('method', method_tokens)}")
     elif profile_method and not GPTState.user_overrode_method:
         prof_tokens = _map_axis_tokens("method", profile_method)
         constraints.append(f"  Method: {_hydrate('method', prof_tokens)}")
 
     # Style: spoken style modifier or short profile keyword.
-    if style_tokens and spoken_style:
+    if style_tokens and (spoken_style or style_from_cross_axis):
         constraints.append(f"  Style: {_hydrate('style', style_tokens)}")
     elif profile_style and not GPTState.user_overrode_style:
         prof_tokens = _map_axis_tokens("style", profile_style)

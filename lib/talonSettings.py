@@ -104,6 +104,20 @@ _COMPLETENESS_VALUE_TO_KEY = _read_axis_value_to_key_map(
 )
 _SCOPE_VALUE_TO_KEY = _read_axis_value_to_key_map("scopeModifier.talon-list")
 _METHOD_VALUE_TO_KEY = _read_axis_value_to_key_map("methodModifier.talon-list")
+if "samples" in _METHOD_VALUE_TO_KEY:
+    # Tolerate truncated variants of the samples prompt so last_recipe stays concise.
+    _METHOD_VALUE_TO_KEY.setdefault("avoid near-duplicate options.", "samples")
+    _METHOD_VALUE_TO_KEY.setdefault("avoid near duplicate options.", "samples")
+    _METHOD_VALUE_TO_KEY.setdefault(
+        "approximately sum to 1; avoid near-duplicate options.", "samples"
+    )
+    _METHOD_VALUE_TO_KEY.setdefault(
+        "approximately sum to 1; avoid near duplicate options.", "samples"
+    )
+    _METHOD_VALUE_TO_KEY.setdefault("sum to 1; avoid near-duplicate options.", "samples")
+    _METHOD_VALUE_TO_KEY.setdefault("sum to 1; avoid near duplicate options.", "samples")
+    _METHOD_VALUE_TO_KEY.setdefault("sum to 1", "samples")
+    _METHOD_VALUE_TO_KEY.setdefault("approximately sum to 1", "samples")
 _STYLE_VALUE_TO_KEY = _read_axis_value_to_key_map("styleModifier.talon-list")
 _DIRECTIONAL_VALUE_TO_KEY = _read_axis_value_to_key_map(
     "directionalModifier.talon-list"
@@ -150,6 +164,9 @@ _AXIS_INCOMPATIBILITIES: dict[str, dict[str, set[str]]] = {
         # as mutually exclusive primary output containers.
         "jira": {"adr"},
         "adr": {"jira"},
+        # Synchronous session plans are a distinct container; currently no
+        # explicit conflicts with other containers.
+        "sync": set(),
     },
 }
 
@@ -235,7 +252,40 @@ def _axis_recipe_token(axis: str, raw_value: str) -> str:
     axis_map = _axis_value_to_key_map_for(axis)
     if not axis_map:
         return raw_value
-    return axis_map.get(raw_value, raw_value)
+
+    # Direct lookups first.
+    token = axis_map.get(raw_value)
+    if token:
+        return token
+
+    # If we received multiple whitespace-separated tokens, map each part.
+    if " " in raw_value:
+        parts = raw_value.split()
+        mapped_parts = [axis_map.get(part, part) for part in parts]
+        joined = " ".join(part for part in mapped_parts if part)
+        if joined and joined != raw_value:
+            return joined
+
+    # Heuristic: if the raw value ends with a known description (for example,
+    # when upstream prepends extra words), map to that token.
+    normalized = raw_value.strip()
+    if axis == "method" and "near-duplicate options" in normalized:
+        return "samples"
+    for desc, short in axis_map.items():
+        if not desc:
+            continue
+        if normalized.endswith(desc):
+            return short
+        if desc in normalized:
+            return short
+
+    # If no mapping is found, fall back to the raw value but log it for
+    # diagnostics.
+    try:
+        print(f"[axis mapping miss] axis={axis} raw_value={raw_value!r}")
+    except Exception:
+        pass
+    return raw_value
 
 
 mod = Module()

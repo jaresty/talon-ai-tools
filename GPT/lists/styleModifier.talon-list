@@ -29,6 +29,9 @@ story: "Important: Format the backlog item as a user story using \"As a <persona
 bug: Important: Format the answer as a structured bug report with clear sections for Steps to Reproduce, Expected Behavior, Actual Behavior, and Environment/Context; focus on concise, testable details.
 spike: "Important: Format the backlog item as a research spike: start with a brief problem or decision statement, then list the key questions the spike should answer; keep the emphasis on questions and learning, not implementation tasks."
 
+sync: Important: Shape the output as a synchronous/live session plan (agenda, steps, cues) rather than static reference text.
+remote: Important: Optimise for remote delivery: make instructions work in distributed/online contexts and surface tooling/interaction hints that work over video/voice/screenshare.
+
 faq: Important: Format the answer as an FAQ-style list: a sequence of clearly separated question headings with concise answers beneath each one; keep questions and answers easy to skim, and avoid long uninterrupted prose.
 
 log: Important: Format the answer as a concise work or research log entry: include date or time markers when appropriate, short bullet-style updates, and enough context for future you to understand what happened without adding unrelated narrative.

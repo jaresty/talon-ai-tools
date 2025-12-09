@@ -687,25 +687,16 @@ class UserActions:
                 f"source_class={source.__class__.__name__}"
             )
 
+        subject = subject or ""
         try:
             content = source.get_text()
         except Exception:
             # Underlying helpers (for example, Context/GPTResponse) already
-            # notify the user when no content is available. Clear any cached
-            # suggestions so the GUI doesn't appear to reflect stale content.
-            GPTState.last_suggested_recipes = []
-            GPTState.last_suggest_source = ""
+            # notify the user when no content is available. Keep any cached
+            # suggestions intact so `model suggestions` can still reopen the
+            # last successful set after a transient failure to read the source.
             return
 
-        # Remember the canonical source key used for these suggestions so the
-        # suggestion GUI can both display and reuse it when running recipes.
-        source_key = getattr(source, "modelSimpleSource", "")
-        if isinstance(source_key, str) and source_key:
-            GPTState.last_suggest_source = source_key
-        else:
-            GPTState.last_suggest_source = ""
-
-        subject = subject or ""
         content_text = str(content)
         if GPTState.debug_enabled:
             preview = content_text[:200].replace("\n", "\\n")
@@ -715,12 +706,18 @@ class UserActions:
             )
 
         if not content_text.strip() and not subject.strip():
-            # If we have neither source content nor a subject, clear previous
-            # suggestions to avoid showing stale recipes in the GUI.
-            GPTState.last_suggested_recipes = []
-            GPTState.last_suggest_source = ""
+            # If we have neither source content nor a subject, keep any cached
+            # suggestions so they remain available via `model suggestions`.
             notify("GPT: No source or subject available for suggestions")
             return
+
+        # Remember the canonical source key used for these suggestions so the
+        # suggestion GUI can both display and reuse it when running recipes.
+        source_key = getattr(source, "modelSimpleSource", "")
+        if isinstance(source_key, str) and source_key:
+            suggest_source_key = source_key
+        else:
+            suggest_source_key = ""
 
         axis_docs = _build_axis_docs()
         static_prompt_docs = _build_static_prompt_docs()
@@ -841,9 +838,10 @@ class UserActions:
             recipe_tokens[-1] = directional
             recipe = " · ".join(recipe_tokens)
             suggestions.append({"name": name, "recipe": recipe})
-        GPTState.last_suggested_recipes = suggestions
 
         if suggestions:
+            GPTState.last_suggested_recipes = suggestions
+            GPTState.last_suggest_source = suggest_source_key
             try:
                 actions.user.model_prompt_recipe_suggestions_gui_open()
                 # When the suggestion GUI opens successfully, we do not also

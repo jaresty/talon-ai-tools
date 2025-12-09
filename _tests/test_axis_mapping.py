@@ -166,6 +166,30 @@ if bootstrap is not None:
             )
             self.assertEqual(token_from_key, key)
 
+        def test_method_recipe_token_handles_samples_truncated_variant(self) -> None:
+            """The samples method should map truncated variants back to 'samples'."""
+            token = _axis_recipe_token(
+                "method",
+                "avoid near-duplicate options.",
+            )
+            self.assertEqual(token, "samples")
+
+        def test_method_recipe_token_handles_samples_sum_variant(self) -> None:
+            """The samples method should map the sum-to-1 clause back to 'samples'."""
+            token = _axis_recipe_token(
+                "method",
+                "sum to 1; avoid near-duplicate options.",
+            )
+            self.assertEqual(token, "samples")
+
+        def test_method_recipe_token_maps_suffix_description(self) -> None:
+            """Heuristic suffix mapping should resolve long samples descriptions."""
+            token = _axis_recipe_token(
+                "method",
+                "1; sum to Important: Generate several diverse, self-contained options and, where appropriate, attach short descriptions and explicit numeric probabilities that approximately sum to 1; avoid near-duplicate options.",
+            )
+            self.assertEqual(token, "samples")
+
         def _assert_axis_round_trip(self, filename: str, axis: str) -> None:
             root = Path(__file__).resolve().parents[1]
             path = root / "GPT" / "lists" / filename
@@ -297,7 +321,7 @@ if bootstrap is not None:
             # pair; adding new container styles (for example, tweet/email)
             # should extend this list and, at the same time, update
             # _AXIS_INCOMPATIBILITIES with an explicit decision.
-            container_styles = {"jira", "adr"}
+            container_styles = {"jira", "adr", "sync"}
 
             style_incompat = _AXIS_INCOMPATIBILITIES.get("style", {})
 

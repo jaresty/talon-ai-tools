@@ -64,7 +64,7 @@ def _hide_confirmation() -> None:
 
 
 def _show_response_canvas_hint() -> None:
-    _notify("Model done. Say 'last response' to view details.")
+    _notify("Model done. Say 'model last response' to view details.")
 
 
 def _hide_help_hub() -> None:

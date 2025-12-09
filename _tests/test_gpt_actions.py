@@ -490,10 +490,59 @@ if bootstrap is not None:
                     ]
                 )
 
-                gpt_module.UserActions.gpt_suggest_prompt_recipes("subject")
+            gpt_module.UserActions.gpt_suggest_prompt_recipes("subject")
 
-                # Suggestion should be dropped because it lacks a directional token.
-                self.assertEqual(GPTState.last_suggested_recipes, [])
+            # Suggestion should be dropped because it lacks a directional token.
+            self.assertEqual(GPTState.last_suggested_recipes, [])
+
+        def test_gpt_suggest_prompt_recipes_preserves_cache_on_source_error(self):
+            cached = [
+                {
+                    "name": "Previous",
+                    "recipe": "describe · full · relations · flow · plain · fog",
+                }
+            ]
+            GPTState.last_suggested_recipes = list(cached)
+            GPTState.last_suggest_source = "clipboard"
+
+            with patch.object(gpt_module, "create_model_source") as create_source:
+                source = MagicMock()
+                source.get_text.side_effect = RuntimeError("no content")
+                create_source.return_value = source
+
+                gpt_module.UserActions.gpt_suggest_prompt_recipes("")
+
+            # Cached suggestions should remain available when the source cannot be read.
+            self.assertEqual(GPTState.last_suggested_recipes, cached)
+            self.assertEqual(GPTState.last_suggest_source, "clipboard")
+            self.pipeline.complete_async.assert_not_called()
+            self.pipeline.complete.assert_not_called()
+
+        def test_gpt_suggest_prompt_recipes_preserves_cache_when_no_input(self):
+            cached = [
+                {
+                    "name": "Previous",
+                    "recipe": "describe · full · relations · flow · plain · fog",
+                }
+            ]
+            GPTState.last_suggested_recipes = list(cached)
+            GPTState.last_suggest_source = "clipboard"
+
+            with patch.object(gpt_module, "PromptSession") as session_cls, patch.object(
+                gpt_module, "create_model_source"
+            ) as create_source:
+                source = MagicMock()
+                source.get_text.return_value = "   "
+                create_source.return_value = source
+                session_cls.return_value._destination = "paste"
+
+                gpt_module.UserActions.gpt_suggest_prompt_recipes("")
+
+            # When both subject and content are empty, leave the cached suggestions intact.
+            self.assertEqual(GPTState.last_suggested_recipes, cached)
+            self.assertEqual(GPTState.last_suggest_source, "clipboard")
+            self.pipeline.complete_async.assert_not_called()
+            self.pipeline.complete.assert_not_called()
 
         def test_gpt_pass_uses_prompt_session(self):
             configuration = MagicMock(

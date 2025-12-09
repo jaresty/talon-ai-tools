@@ -752,15 +752,13 @@ class UserActions:
         destination = Silent()
         fallback_destination = Clipboard()
         session = PromptSession(destination)
-        # When the pipeline is swapped out for a stub (for example, in tests),
-        # drive the request UI ourselves so the progress pill still opens.
-        pipeline_handles_progress = isinstance(_prompt_pipeline, PromptPipeline)
+        # Always emit UI lifecycle events so the pill shows even when the
+        # pipeline is swapped out or does not drive the request bus.
         manual_request_id: Optional[str] = None
-        if not pipeline_handles_progress:
-            try:
-                manual_request_id = emit_begin_send()
-            except Exception:
-                manual_request_id = None
+        try:
+            manual_request_id = emit_begin_send()
+        except Exception:
+            manual_request_id = None
         # Suppress response canvas while suggestions are running so streaming
         # text never opens the confirmation viewer.
         prev_suppress = getattr(GPTState, "suppress_response_canvas", False)

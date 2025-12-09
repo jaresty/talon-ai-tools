@@ -79,16 +79,20 @@ def _debug(msg: str) -> None:
 # Proactively create the canvas on Talon's ready event to ensure a main-thread
 # resource context is available before worker threads attempt to show it.
 _warmup_handle = None
+_warmup_done = False
 
 
 def _on_app_ready():
     """Warm up a canvas on the main thread; retry a few times via cron."""
 
     def _warmup():
-        global _warmup_handle
+        global _warmup_handle, _warmup_done
+        if _warmup_done:
+            return
         try:
             if _ensure_pill_canvas() is not None:
                 _debug("app ready: pill canvas warmup succeeded; stopping interval")
+                _warmup_done = True
                 if _warmup_handle:
                     cron.cancel(_warmup_handle)
                 _warmup_handle = None

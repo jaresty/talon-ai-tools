@@ -6,6 +6,7 @@ from talon import skia
 from .canvasFont import apply_canvas_typeface
 
 from .modelState import GPTState
+from .talonSettings import _AXIS_SOFT_CAPS
 
 from .metaPromptConfig import first_meta_preview_line, meta_preview_lines
 
@@ -639,6 +640,17 @@ def _default_draw_quick_help(c: canvas.Canvas) -> None:  # pragma: no cover - vi
     draw_text("  model <staticPrompt> [completeness] [scope] [method] [style] <directional lens>", x, y)
     y += line_h
 
+    # Make multiplicity explicit so users know how many axis tokens are kept.
+    scope_cap = _AXIS_SOFT_CAPS.get("scope", 2)
+    method_cap = _AXIS_SOFT_CAPS.get("method", 3)
+    style_cap = _AXIS_SOFT_CAPS.get("style", 3)
+    caps_line = (
+        f"  Caps: 1 static prompt · 1 completeness · scope≤{scope_cap} · "
+        f"method≤{method_cap} · style≤{style_cap} · 1 directional lens"
+    )
+    draw_text(caps_line, x, y)
+    y += line_h
+
     section_focus = getattr(HelpGUIState, "section", "all") or "all"
 
     if HelpGUIState.static_prompt:
@@ -778,8 +790,8 @@ def _default_draw_quick_help(c: canvas.Canvas) -> None:  # pragma: no cover - vi
     # within the visible canvas width.
     axes_bottom = max(y_left, y_right)
     note = (
-        "Note: Completeness is single-valued; scope/method/style can combine multiple "
-        "tags (for example, actions edges; structure flow; jira story)."
+        f"Note: completeness is single-valued. Scope≤{scope_cap}, method≤{method_cap}, "
+        f"style≤{style_cap}; combine tags like actions edges or structure flow."
     )
     approx_char_width = 8
     if rect is not None and hasattr(rect, "x") and hasattr(rect, "width"):

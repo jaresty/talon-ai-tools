@@ -17,6 +17,7 @@ if bootstrap is not None:
         register_response_draw_handler,
         unregister_response_draw_handler,
     )
+    from talon import actions
     from talon_user.lib.modelState import GPTState
     from talon_user.lib import modelResponseCanvas
     from talon_user.lib.requestState import RequestPhase, RequestState

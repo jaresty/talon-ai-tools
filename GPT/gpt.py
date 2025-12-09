@@ -729,6 +729,7 @@ class UserActions:
             "For each recipe, output exactly one line in this format:\n"
             "Name: <short human-friendly name> | Recipe: <staticPrompt> · <completeness> · <scopeTokens> · <methodTokens> · <styleTokens> · <directional>\n\n"
             "Where:\n"
+            "- <staticPrompt> is exactly one static prompt token (do not include multiple static prompts or combine them).\n"
             "- <completeness> and <directional> are single axis tokens.\n"
             "- <scopeTokens>, <methodTokens>, and <styleTokens> are zero or more space-separated axis tokens for that axis (respecting small caps: scope ≤ 2 tokens, method ≤ 3 tokens, style ≤ 3 tokens).\n"
             "Examples of multi-tag fields: scopeTokens='actions edges', methodTokens='structure flow', styleTokens='jira story'.\n\n"
@@ -820,6 +821,14 @@ class UserActions:
             recipe = recipe_value.strip()
             if not name or not recipe:
                 continue
+            # Enforce a single static prompt token by collapsing any
+            # space-delimited static prompt segment to its first token.
+            recipe_tokens = [t.strip() for t in recipe.split("·") if t.strip()]
+            if recipe_tokens:
+                static_tokens = recipe_tokens[0].split()
+                if len(static_tokens) > 1:
+                    recipe_tokens[0] = static_tokens[0]
+                    recipe = " · ".join(recipe_tokens)
             suggestions.append({"name": name, "recipe": recipe})
         GPTState.last_suggested_recipes = suggestions
 

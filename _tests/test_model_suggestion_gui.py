@@ -131,12 +131,11 @@ if bootstrap is not None:
             """Dragging the header should move the suggestion canvas."""
             SuggestionGUIState.suggestions = []
             canvas_obj = modelSuggestionGUI._ensure_suggestion_canvas()
-            # Provide a rect and move method on the stub canvas so the drag
-            # handler can adjust position.
-            if not hasattr(canvas_obj, "rect") or canvas_obj.rect is None:
-                canvas_obj.rect = type(
-                    "R", (), {"x": 10, "y": 20, "width": 400, "height": 300}
-                )()
+            # Provide a deterministic rect and move method on the stub canvas so
+            # the drag handler can adjust position.
+            canvas_obj.rect = type(
+                "R", (), {"x": 10, "y": 20, "width": 400, "height": 300}
+            )()
             moved_to: list[tuple[int, int]] = []
 
             def _move(x, y):

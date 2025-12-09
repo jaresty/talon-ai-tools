@@ -437,6 +437,39 @@ if bootstrap is not None:
                 emit_complete.assert_called_once_with(request_id="req-suggest")
                 emit_fail.assert_not_called()
 
+        def test_gpt_suggest_prompt_recipes_canonicalises_static_prompt(self):
+            with patch.object(gpt_module, "PromptSession") as session_cls, patch.object(
+                gpt_module, "create_model_source"
+            ) as create_source:
+                source = MagicMock()
+                source.get_text.return_value = "content"
+                create_source.return_value = source
+                mock_session = session_cls.return_value
+                mock_session._destination = "paste"
+
+                handle = self.pipeline.complete_async.return_value
+                handle.wait = MagicMock(return_value=True)
+                handle.result = PromptResult.from_messages(
+                    [
+                        format_message(
+                            "Name: Multi static | Recipe: ticket describe · full · relations · flow · plain · fog"
+                        )
+                    ]
+                )
+
+                gpt_module.UserActions.gpt_suggest_prompt_recipes("subject")
+
+                # Static prompt should be collapsed to the first token ("ticket").
+                self.assertEqual(
+                    GPTState.last_suggested_recipes,
+                    [
+                        {
+                            "name": "Multi static",
+                            "recipe": "ticket · full · relations · flow · plain · fog",
+                        }
+                    ],
+                )
+
         def test_gpt_pass_uses_prompt_session(self):
             configuration = MagicMock(
                 model_source=MagicMock(),

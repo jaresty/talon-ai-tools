@@ -163,6 +163,8 @@ class _Canvas:
     def __init__(self, _screen=None):
         self._callbacks: dict[str, list] = {}
         self.visible: bool = False
+        self.rect = None
+        self.blocks_mouse = False
 
     @classmethod
     def from_screen(cls, screen, **_kwargs):
@@ -173,7 +175,9 @@ class _Canvas:
     @classmethod
     def from_rect(cls, rect, **_kwargs):
         # In tests, treat from_rect the same as from_screen and ignore rect.
-        return cls(rect)
+        obj = cls(rect)
+        obj.rect = rect
+        return obj
 
     def register(self, event: str, callback):
         self._callbacks.setdefault(event, []).append(callback)
@@ -195,6 +199,21 @@ class _Canvas:
 
     def hide(self):
         self.visible = False
+
+    # Minimal drawing/movement primitives used by response and suggestion canvases.
+    def draw_text(self, *_args, **_kwargs):
+        return None
+
+    def draw_rect(self, *_args, **_kwargs):
+        return None
+
+    def move(self, x: float, y: float):
+        if self.rect is not None:
+            try:
+                self.rect.x = x
+                self.rect.y = y
+            except Exception:
+                pass
 
 
 canvas = SimpleNamespace(Canvas=_Canvas)

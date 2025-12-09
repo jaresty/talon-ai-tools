@@ -406,6 +406,36 @@ if bootstrap is not None:
             mock_session.add_messages.assert_called_once()
             self.pipeline.complete_async.assert_called_once_with(mock_session)
 
+        def test_gpt_suggest_prompt_recipes_opens_progress_pill(self):
+            with (
+                patch.object(gpt_module, "PromptSession") as session_cls,
+                patch.object(gpt_module, "create_model_source") as create_source,
+                patch.object(gpt_module, "emit_begin_send") as begin_send,
+                patch.object(gpt_module, "emit_complete") as emit_complete,
+                patch.object(gpt_module, "emit_fail") as emit_fail,
+            ):
+                source = MagicMock()
+                source.get_text.return_value = "content"
+                create_source.return_value = source
+                mock_session = session_cls.return_value
+                mock_session._destination = "paste"
+
+                handle = self.pipeline.complete_async.return_value
+                handle.wait = MagicMock(return_value=True)
+                handle.result = PromptResult.from_messages(
+                    [
+                        format_message(
+                            "Name: Quick idea | Recipe: describe · gist · actions · flow · plain · rog"
+                        )
+                    ]
+                )
+                begin_send.return_value = "req-suggest"
+
+                gpt_module.UserActions.gpt_suggest_prompt_recipes("subject")
+
+                begin_send.assert_called_once()
+                emit_complete.assert_called_once_with(request_id="req-suggest")
+                emit_fail.assert_not_called()
 
         def test_gpt_pass_uses_prompt_session(self):
             configuration = MagicMock(

@@ -63,7 +63,7 @@ _suggestion_hover_index: Optional[int] = None
 _suggestion_drag_offset: Optional[Tuple[float, float]] = None
 
 # Simple geometry defaults to keep the panel centered and readable.
-_PANEL_WIDTH = 720
+_PANEL_WIDTH = 840
 _PANEL_HEIGHT = 520
 
 

@@ -72,7 +72,14 @@ from ..lib.modelPatternGUI import (
     DIRECTIONAL_MAP as _DIRECTIONAL_MAP,
 )
 from ..lib.requestState import RequestPhase
-from ..lib.requestBus import emit_cancel, current_state, set_controller
+from ..lib.requestBus import (
+    emit_begin_send,
+    emit_cancel,
+    emit_complete,
+    emit_fail,
+    current_state,
+    set_controller,
+)
 from ..lib.requestController import RequestUIController
 
 # Ensure a default request UI controller is registered so cancel events have a sink.
@@ -741,6 +748,15 @@ class UserActions:
         destination = Silent()
         fallback_destination = Clipboard()
         session = PromptSession(destination)
+        # When the pipeline is swapped out for a stub (for example, in tests),
+        # drive the request UI ourselves so the progress pill still opens.
+        pipeline_handles_progress = isinstance(_prompt_pipeline, PromptPipeline)
+        manual_request_id: Optional[str] = None
+        if not pipeline_handles_progress:
+            try:
+                manual_request_id = emit_begin_send()
+            except Exception:
+                manual_request_id = None
         # Suppress response canvas while suggestions are running so streaming
         # text never opens the confirmation viewer.
         prev_suppress = getattr(GPTState, "suppress_response_canvas", False)
@@ -761,6 +777,18 @@ class UserActions:
                 result = None
             if result is None:
                 result = _prompt_pipeline.complete(session)
+            if manual_request_id is not None:
+                try:
+                    emit_complete(request_id=manual_request_id)
+                except Exception:
+                    pass
+        except Exception as exc:
+            if manual_request_id is not None:
+                try:
+                    emit_fail(str(exc), request_id=manual_request_id)
+                except Exception:
+                    pass
+            raise
         finally:
             try:
                 GPTState.suppress_response_canvas = prev_suppress

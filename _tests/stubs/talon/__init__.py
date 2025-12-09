@@ -200,6 +200,28 @@ class _Canvas:
 canvas = SimpleNamespace(Canvas=_Canvas)
 
 
+class _Tap:
+    """Minimal tap stub that records registrations."""
+
+    KEY = 1
+    HOOK = 2
+
+    def __init__(self):
+        self.registrations: list[tuple[int, object]] = []
+
+    def register(self, event_mask: int, handler):
+        self.registrations.append((event_mask, handler))
+
+    def unregister(self, event_mask: int, handler):
+        try:
+            self.registrations.remove((event_mask, handler))
+        except ValueError:
+            pass
+
+
+tap = _Tap()
+
+
 class _SkiaPaint:
     def __init__(self):
         self.color = 0
@@ -289,4 +311,5 @@ __all__ = [
     "ui",
     "canvas",
     "skia",
+    "tap",
 ]

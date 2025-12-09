@@ -60,6 +60,7 @@ _suggestion_canvas: Optional[canvas.Canvas] = None
 _suggestion_button_bounds: Dict[int, Tuple[int, int, int, int]] = {}
 _suggestion_hover_close: bool = False
 _suggestion_hover_index: Optional[int] = None
+_suggestion_drag_offset: Optional[Tuple[float, float]] = None
 
 # Simple geometry defaults to keep the panel centered and readable.
 _PANEL_WIDTH = 720
@@ -128,9 +129,10 @@ def _ensure_suggestion_canvas() -> canvas.Canvas:
         _suggestion_canvas = canvas.Canvas.from_rect(rect)
         try:
             _suggestion_canvas.blocks_mouse = True
-        except Exception:
-            pass
-    except Exception:
+        except Exception as e:
+            _debug(f"could not set blocks_mouse: {e}")
+    except Exception as e:
+        _debug(f"falling back to screen canvas: {e}")
         _suggestion_canvas = canvas.Canvas.from_screen(screen)
 
     def _on_draw(c: canvas.Canvas) -> None:  # pragma: no cover - visual only
@@ -141,20 +143,22 @@ def _ensure_suggestion_canvas() -> canvas.Canvas:
     def _on_mouse(evt) -> None:  # pragma: no cover - visual only
         """Handle close hotspot, suggestion selection, hover, and drag."""
         try:
-            global _suggestion_hover_close, _suggestion_hover_index
+            global _suggestion_hover_close, _suggestion_hover_index, _suggestion_drag_offset
             rect = getattr(_suggestion_canvas, "rect", None)
             pos = getattr(evt, "pos", None)
             if rect is None or pos is None:
                 return
 
-            event_type = getattr(evt, "event", "") or ""
+            event_type_raw = getattr(evt, "event", "") or ""
+            event_type = str(event_type_raw).lower()
             button = getattr(evt, "button", None)
             gpos = getattr(evt, "gpos", None) or pos
 
             local_x = pos.x
             local_y = pos.y
             if local_x < 0 or local_y < 0:
-                return
+                if _suggestion_drag_offset is None:
+                    return
             abs_x = rect.x + local_x
             abs_y = rect.y + local_y
 
@@ -162,7 +166,7 @@ def _ensure_suggestion_canvas() -> canvas.Canvas:
             hotspot_width = 80
 
             # Hover feedback for the close hotspot and suggestion rows.
-            if event_type in ("mousemove", "mouse_move"):
+            if event_type in ("mousemove", "mouse_move", "mouse_drag", "mouse_dragged"):
                 _suggestion_hover_close = (
                     0 <= local_y <= header_height
                     and rect.width - hotspot_width <= local_x <= rect.width
@@ -176,7 +180,8 @@ def _ensure_suggestion_canvas() -> canvas.Canvas:
                         break
                 _suggestion_hover_index = hover_index
 
-            if event_type in ("mousedown", "mouse_down") and button in (0, 1):
+            if event_type in ("mousedown", "mouse_down", "mouse_drag", "mouse_drag_start") and button in (0, 1, None):
+                handled_click = False
                 # Close hotspot in top-right header band.
                 if (
                     0 <= local_y <= header_height
@@ -184,6 +189,7 @@ def _ensure_suggestion_canvas() -> canvas.Canvas:
                 ):
                     _debug("suggestion canvas close click detected")
                     actions.user.model_prompt_recipe_suggestions_gui_close()
+                    handled_click = True
                     return
 
                 # Button hits for suggestions.
@@ -196,17 +202,31 @@ def _ensure_suggestion_canvas() -> canvas.Canvas:
                         suggestion = SuggestionGUIState.suggestions[index]
                         _debug(f"suggestion clicked: {suggestion.name}")
                         _run_suggestion(suggestion)
+                        handled_click = True
                     return
 
-            # Minimal drag: allow moving the panel by dragging the header.
-            if event_type in ("mousemove", "mouse_move") and button in (0, 1):
-                if 0 <= local_y <= header_height:
-                    try:
-                        dx = gpos.x - rect.x
-                        dy = gpos.y - rect.y
-                        _suggestion_canvas.move(rect.x + dx, rect.y + dy)
-                    except Exception:
-                        pass
+                # Start drag anywhere that was not a button hit.
+                if not handled_click:
+                    _suggestion_drag_offset = (gpos.x - rect.x, gpos.y - rect.y)
+                    return
+
+            if event_type in ("mouseup", "mouse_up", "mouse_drag_end"):
+                _suggestion_drag_offset = None
+                return
+
+            # Drag while moving with an active drag offset.
+            if (
+                event_type in ("mousemove", "mouse_move", "mouse_drag", "mouse_dragged")
+                and _suggestion_drag_offset is not None
+            ):
+                dx, dy = _suggestion_drag_offset
+                new_x = gpos.x - dx
+                new_y = gpos.y - dy
+                try:
+                    _suggestion_canvas.move(new_x, new_y)
+                except Exception:
+                    _suggestion_drag_offset = None
+                    _debug("suggestion canvas drag move failed; clearing drag state")
                 return
 
             # Vertical scroll via mouse wheel when available.
@@ -228,13 +248,14 @@ def _ensure_suggestion_canvas() -> canvas.Canvas:
                     new_scroll = SuggestionCanvasState.scroll_y - dy * 40.0
                     SuggestionCanvasState.scroll_y = max(min(new_scroll, max_scroll), 0.0)
                 return
-        except Exception:
+        except Exception as e:
+            _debug(f"suggestion canvas mouse handler error: {e}")
             return
 
     try:
         _suggestion_canvas.register("mouse", _on_mouse)
-    except Exception:
-        _debug("mouse handler registration failed for suggestion canvas")
+    except Exception as e:
+        _debug(f"mouse handler registration failed for suggestion canvas: {e}")
 
     def _on_key(evt) -> None:  # pragma: no cover - visual only
         try:
@@ -243,13 +264,14 @@ def _ensure_suggestion_canvas() -> canvas.Canvas:
             key = getattr(evt, "key", "") or ""
             if key.lower() in ("escape", "esc"):
                 actions.user.model_prompt_recipe_suggestions_gui_close()
-        except Exception:
+        except Exception as e:
+            _debug(f"suggestion canvas key handler error: {e}")
             return
 
     try:
         _suggestion_canvas.register("key", _on_key)
-    except Exception:
-        _debug("key handler registration failed for suggestion canvas")
+    except Exception as e:
+        _debug(f"key handler registration failed for suggestion canvas: {e}")
 
     return _suggestion_canvas
 
@@ -262,16 +284,18 @@ def _open_suggestion_canvas() -> None:
 
 
 def _close_suggestion_canvas() -> None:
-    global _suggestion_canvas, _suggestion_hover_close, _suggestion_hover_index
+    global _suggestion_canvas, _suggestion_hover_close, _suggestion_hover_index, _suggestion_drag_offset
     SuggestionCanvasState.showing = False
+    SuggestionCanvasState.scroll_y = 0.0
     _suggestion_hover_close = False
     _suggestion_hover_index = None
+    _suggestion_drag_offset = None
     if _suggestion_canvas is None:
         return
     try:
         _suggestion_canvas.hide()
-    except Exception:
-        pass
+    except Exception as e:
+        _debug(f"failed to hide suggestion canvas: {e}")
 
 
 def _draw_suggestions(c: canvas.Canvas) -> None:  # pragma: no cover - visual only

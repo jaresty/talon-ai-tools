@@ -17,6 +17,7 @@ if bootstrap is not None:
         SuggestionGUIState,
         SuggestionCanvasState,
     )
+    from talon_user.lib import modelSuggestionGUI
 
     class ModelSuggestionGUITests(unittest.TestCase):
         def setUp(self):
@@ -125,6 +126,52 @@ if bootstrap is not None:
             self.assertEqual(GPTState.last_scope, "actions edges")
             self.assertEqual(GPTState.last_method, "structure flow")
             self.assertEqual(GPTState.last_style, "jira faq")
+
+        def test_drag_header_moves_canvas(self):
+            """Dragging the header should move the suggestion canvas."""
+            SuggestionGUIState.suggestions = []
+            canvas_obj = modelSuggestionGUI._ensure_suggestion_canvas()
+            # Provide a rect and move method on the stub canvas so the drag
+            # handler can adjust position.
+            if not hasattr(canvas_obj, "rect") or canvas_obj.rect is None:
+                canvas_obj.rect = type(
+                    "R", (), {"x": 10, "y": 20, "width": 400, "height": 300}
+                )()
+            moved_to: list[tuple[int, int]] = []
+
+            def _move(x, y):
+                moved_to.append((x, y))
+                canvas_obj.rect = type(
+                    "R", (), {"x": x, "y": y, "width": 400, "height": 300}
+                )()
+
+            canvas_obj.move = _move  # type: ignore[attr-defined]
+            callbacks = getattr(canvas_obj, "_callbacks", {})
+            mouse_cbs = callbacks.get("mouse") or []
+            if not mouse_cbs:
+                self.skipTest("Canvas stub does not expose mouse callbacks")
+            mouse_cb = mouse_cbs[0]
+
+            class _Evt:
+                def __init__(self, event: str, x: int, y: int):
+                    self.event = event
+                    self.button = 0
+                    self.pos = type("P", (), {"x": x, "y": y})()
+                    self.gpos = type(
+                        "P",
+                        (),
+                        {
+                            "x": canvas_obj.rect.x + x,
+                            "y": canvas_obj.rect.y + y,
+                        },
+                    )()
+
+            # Start drag in the header (avoid the close hotspot by keeping x small).
+            mouse_cb(_Evt("mousedown", 20, 10))
+            # Move to a new position; rect should update via move().
+            mouse_cb(_Evt("mousemove", 80, 60))
+
+            self.assertIn((70, 70), moved_to)
 
 else:
     if not TYPE_CHECKING:

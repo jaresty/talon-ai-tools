@@ -1,7 +1,7 @@
 # 030 - Axis token storage and hydration boundary
 
 ## Status
-Proposed
+Accepted
 
 ## Context
 - Axis Talon lists store short keys mapped to long, instruction-style descriptions; `model_default_completeness` even defaults to the hydrated text from `completenessModifier.talon-list`.
@@ -23,7 +23,7 @@ Proposed
 
 ## Implementation notes
 - Add an axis hydration helper that takes a token or token set and returns the mapped description(s) from the Talon lists; use it when building the system prompt lines.
-- Update `GPTSystemPrompt`/`modelPrompt` to persist token values in state and hydrate only when producing system messages; ensure `_axis_recipe_token` is no longer needed for primary flows.
+- Update `GPTSystemPrompt`/`modelPrompt` to persist token values in state and hydrate only when producing system messages; keep `_axis_recipe_token` only for legacy heuristics (for example, truncated `samples` variants, directional shorthands).
 - Normalise persisted settings/static profiles at startup (e.g., map hydrated strings to tokens once) and store tokens going forward; log unmapped values for follow-up.
 - Refresh tests around axis mapping, rerun, and recap to assert token preservation and boundary-only hydration.
 
@@ -31,3 +31,4 @@ Proposed
 - Axis list description edits will not risk breaking UI recap or rerun because state no longer stores hydrated strings.
 - System prompt construction gains a clear, testable mapping layer but requires updates to any code that currently assumes hydrated values in `GPTState.system_prompt`.
 - One-time normalisation reduces surprise for existing users but may surface legacy values that cannot be mapped, which will need migration guidance.
+- UIs (constraints, suggestion picker, response recap) hydrate tokens at display time; verbose hydrated text lives behind meta/toggles to keep recaps concise.

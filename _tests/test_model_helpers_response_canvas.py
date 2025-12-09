@@ -39,11 +39,10 @@ if bootstrap is not None:
             ):
                 modelHelpers._refresh_response_canvas()
 
-            # Two scheduled refreshes plus final refresh; open called once.
-            self.assertGreaterEqual(refresh.call_count, 3)
+            # One UI dispatch; open then refresh called once each.
+            self.assertEqual(refresh.call_count, 1)
             open_canvas.assert_called_once()
-            self.assertIn(0, run_calls)
-            self.assertIn(50, run_calls)
+            self.assertEqual(run_calls, [0])
 
         def test_refresh_swallow_exceptions(self):
             # Ensure no exception is raised if refresh/open throw.

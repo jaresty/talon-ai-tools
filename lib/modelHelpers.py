@@ -118,8 +118,13 @@ def _should_show_response_canvas() -> bool:
 
 
 def _refresh_response_canvas() -> None:
-    """Refresh and open the response canvas on the Talon main thread."""
-    def _refresh_once():
+    """Open (if needed) and refresh the response canvas once on the UI thread."""
+
+    def _open_and_refresh():
+        try:
+            actions.user.model_response_canvas_open()
+        except Exception:
+            pass
         try:
             actions.user.model_response_canvas_refresh()
         except Exception as e:
@@ -128,16 +133,7 @@ def _refresh_response_canvas() -> None:
             except Exception:
                 pass
 
-    def _open_canvas():
-        try:
-            actions.user.model_response_canvas_open()
-        except Exception:
-            pass
-
-    run_on_ui_thread(_refresh_once, delay_ms=0)
-    run_on_ui_thread(_refresh_once, delay_ms=50)
-    run_on_ui_thread(_open_canvas)
-    run_on_ui_thread(_refresh_once)
+    run_on_ui_thread(_open_and_refresh)
 
 
 def _update_stream_state_from_text(full_text: str) -> None:
@@ -598,11 +594,7 @@ def _send_request_streaming(request, request_id: str) -> str:
                     parts.append(text_piece or "")
                     _update_stream_state_from_text("".join(parts))
                     if _should_show_response_canvas():
-                        try:
-                            actions.user.model_response_canvas_open()
-                            actions.user.model_response_canvas_refresh()
-                        except Exception:
-                            pass
+                        _refresh_response_canvas()
                     try:
                         print(
                             "[modelHelpers] non-stream response parsed via json(), "
@@ -636,6 +628,22 @@ def _send_request_streaming(request, request_id: str) -> str:
         notify(f"GPT Failure: HTTP {raw_response.status_code} | {error_info}")
         raise GPTRequestError(raw_response.status_code, error_info)
 
+    refresh_interval_ms = 250
+    last_canvas_refresh_ms = 0
+
+    def _maybe_refresh_canvas(force: bool = False) -> None:
+        nonlocal last_canvas_refresh_ms
+        if not _should_show_response_canvas():
+            return
+        now_ms = int(time.time() * 1000)
+        if not force and last_canvas_refresh_ms and now_ms - last_canvas_refresh_ms < refresh_interval_ms:
+            return
+        try:
+            actions.user.model_response_canvas_refresh()
+            last_canvas_refresh_ms = now_ms
+        except Exception:
+            pass
+
     def _append_text(text_piece: str):
         nonlocal first_chunk
         parts.append(text_piece)
@@ -647,11 +655,9 @@ def _send_request_streaming(request, request_id: str) -> str:
                     actions.user.model_response_canvas_open()
                 except Exception:
                     pass
-        if _should_show_response_canvas():
-            try:
-                actions.user.model_response_canvas_refresh()
-            except Exception:
-                pass
+                _maybe_refresh_canvas(force=True)
+                return
+        _maybe_refresh_canvas()
 
     try:
         for raw_line in raw_response.iter_lines():
@@ -745,11 +751,7 @@ def _send_request_streaming(request, request_id: str) -> str:
                     parts.append(text_piece)
                     _update_stream_state_from_text("".join(parts))
                     if _should_show_response_canvas():
-                        try:
-                            actions.user.model_response_canvas_open()
-                            actions.user.model_response_canvas_refresh()
-                        except Exception:
-                            pass
+                        _refresh_response_canvas()
                     print(
                         "[modelHelpers] streaming fallback parsed full JSON, "
                         f"len={len(text_piece)} total_len={len(GPTState.text_to_confirm)}"

@@ -13,7 +13,7 @@ mod = Module()
 
 class HistoryDrawerState:
     showing: bool = False
-    entries: List[Tuple[str, str]] = []  # (request_id, prompt_snippet)
+    entries: List[Tuple[str, str]] = []  # (request_id, prompt_snippet + recipe)
     selected_index: int = 0
 
 
@@ -158,7 +158,20 @@ def _ensure_canvas() -> canvas.Canvas:
 
 
 def _refresh_entries() -> None:
-    entries = list(reversed(all_entries()))
+    try:
+        entries = list(reversed(all_entries()))
+    except Exception as e:
+        try:
+            print(f"[requestHistoryDrawer] failed to load entries: {e}")
+        except Exception:
+            pass
+        HistoryDrawerState.entries = []
+        HistoryDrawerState.selected_index = 0
+        return
+    try:
+        print(f"[requestHistoryDrawer] refresh entries={len(entries)}")
+    except Exception:
+        pass
     rendered: List[Tuple[str, str]] = []
     for entry in entries:
         prompt = (entry.prompt or "").strip().splitlines()[0] if entry.prompt else ""
@@ -167,7 +180,11 @@ def _refresh_entries() -> None:
         label = f"{entry.request_id}"
         if dur:
             label = f"{label} ({dur})"
-        rendered.append((label, snippet))
+        recipe = (getattr(entry, "recipe", "") or "").strip()
+        body = snippet
+        if recipe:
+            body = f"{recipe} · {snippet}" if snippet else recipe
+        rendered.append((label, body))
     HistoryDrawerState.entries = rendered
     HistoryDrawerState.selected_index = 0
 

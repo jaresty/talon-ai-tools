@@ -136,7 +136,12 @@ def _refresh_response_canvas() -> None:
     run_on_ui_thread(_open_and_refresh)
 
 
-def _update_stream_state_from_text(full_text: str) -> None:
+def _update_stream_state_from_text(
+    full_text: str,
+    *,
+    meta_throttle_ms: Optional[int] = None,
+    last_meta_update_ms: Optional[list[int]] = None,
+) -> None:
     """
     Normalise the in-flight streaming buffer so:
     - GPTState.text_to_confirm holds only the main answer body (meta removed).
@@ -149,6 +154,15 @@ def _update_stream_state_from_text(full_text: str) -> None:
         answer, meta = split_answer_and_meta(full_text)
         GPTState.text_to_confirm = answer
         if meta:
+            if meta_throttle_ms is not None and last_meta_update_ms is not None:
+                now_ms = int(time.time() * 1000)
+                last = last_meta_update_ms[0] if last_meta_update_ms else 0
+                if last and now_ms - last < meta_throttle_ms:
+                    return
+                if last_meta_update_ms:
+                    last_meta_update_ms[0] = now_ms
+                else:
+                    last_meta_update_ms.append(now_ms)
             GPTState.last_meta = meta
     except Exception:
         # Fall back to the raw text if splitting fails so we still surface progress.
@@ -537,6 +551,9 @@ def _send_request_streaming(request, request_id: str) -> str:
     decoder = codecs.getincrementaldecoder("utf-8")()
     parts: list[str] = []
     first_chunk = True
+    refresh_interval_ms = 250
+    last_canvas_refresh_ms = 0
+    last_meta_refresh_ms = [0]
     emit_begin_stream(request_id=request_id)
     # Seed the meta section at the top of the response so the layout stays
     # stable even before the real meta arrives from the stream.
@@ -592,7 +609,11 @@ def _send_request_streaming(request, request_id: str) -> str:
                         .get("content", "")
                     )
                     parts.append(text_piece or "")
-                    _update_stream_state_from_text("".join(parts))
+                    _update_stream_state_from_text(
+                        "".join(parts),
+                        meta_throttle_ms=refresh_interval_ms,
+                        last_meta_update_ms=last_meta_refresh_ms,
+                    )
                     if _should_show_response_canvas():
                         _refresh_response_canvas()
                     try:
@@ -630,6 +651,7 @@ def _send_request_streaming(request, request_id: str) -> str:
 
     refresh_interval_ms = 250
     last_canvas_refresh_ms = 0
+    last_meta_refresh_ms = [0]
 
     def _maybe_refresh_canvas(force: bool = False) -> None:
         nonlocal last_canvas_refresh_ms
@@ -647,7 +669,11 @@ def _send_request_streaming(request, request_id: str) -> str:
     def _append_text(text_piece: str):
         nonlocal first_chunk
         parts.append(text_piece)
-        _update_stream_state_from_text("".join(parts))
+        _update_stream_state_from_text(
+            "".join(parts),
+            meta_throttle_ms=refresh_interval_ms,
+            last_meta_update_ms=last_meta_refresh_ms,
+        )
         if first_chunk:
             first_chunk = False
             if _should_show_response_canvas():
@@ -749,7 +775,11 @@ def _send_request_streaming(request, request_id: str) -> str:
                 )
                 if text_piece:
                     parts.append(text_piece)
-                    _update_stream_state_from_text("".join(parts))
+                    _update_stream_state_from_text(
+                        "".join(parts),
+                        meta_throttle_ms=refresh_interval_ms,
+                        last_meta_update_ms=last_meta_refresh_ms,
+                    )
                     if _should_show_response_canvas():
                         _refresh_response_canvas()
                     print(
@@ -998,6 +1028,11 @@ def send_request(max_attempts: int = 10):
 
     GPTState.last_response = answer_text
     GPTState.last_meta = meta_text
+    last_recipe = getattr(GPTState, "last_recipe", "") or ""
+    try:
+        print(f"[modelHelpers] logging recipe={last_recipe!r}")
+    except Exception:
+        pass
     # Keep the streaming buffer aligned with the final answer so inflight views
     # or immediate redraws have content even if the stream was sparse.
     GPTState.text_to_confirm = answer_text
@@ -1021,6 +1056,13 @@ def send_request(max_attempts: int = 10):
     duration_ms = int(time.time() * 1000) - started_at_ms
 
     try:
+        try:
+            print(
+                f"[modelHelpers] preparing history append id={request_id!r} recipe={last_recipe!r} "
+                f"prompt_len={len(prompt_text or '')} answer_len={len(answer_text)}"
+            )
+        except Exception:
+            pass
         prompt_text = ""
         try:
             messages = GPTState.request.get("messages", [])  # type: ignore[union-attr]
@@ -1038,11 +1080,19 @@ def send_request(max_attempts: int = 10):
             prompt_text,
             answer_text,
             meta_text,
+            recipe=last_recipe,
             started_at_ms=started_at_ms,
             duration_ms=duration_ms,
         )
-    except Exception:
-        pass
+        try:
+            print("[modelHelpers] append_entry succeeded")
+        except Exception:
+            pass
+    except Exception as e:
+        try:
+            print(f"[modelHelpers] append_entry failed: {e}")
+        except Exception:
+            pass
 
     return response
 

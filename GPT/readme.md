@@ -128,10 +128,10 @@ When the confirmation GUI is open, it also:
 
 The `model` command now supports several short, speech-friendly modifier axes you can tack on after the prompt:
 
-- Completeness (`completenessModifier`): `skim`, `gist`, `full`, `max`, `minimal`, `deep`, `framework`, `path`
-- Scope (`scopeModifier`): `narrow`, `focus`, `bound`, `edges`, `relations`, `dynamics`, `interfaces`, `system`, `actions`
-- Method (`methodModifier`): `steps`, `plan`, `rigor`, `rewrite`, `diagnose`, `filter`, `prioritize`, `cluster`, `systemic`, `experimental`, `debugging`, `structure`, `flow`, `compare`, `motifs`, `wasinawa`, `ladder`, `contextualise`, `samples`, `xp`, `adversarial`, `headline`, `case`, `scaffold`, `liberating`, `diverge`, `converge`, `mapping`, `analysis`, `socratic`, `direct`, `indirect`
-- Style (`styleModifier`): `plain`, `tight`, `bullets`, `table`, `code`, `checklist`, `diagram`, `presenterm`, `html`, `gherkin`, `shellscript`, `emoji`, `slack`, `jira`, `recipe`, `abstractvisual`, `commit`, `adr`, `taxonomy`, `cards`, `codetour`, `story`, `bug`, `spike`, `faq`, `log`, `fun`, `party`, `announce`, `remote`, `sync`
+- Completeness (`completenessModifier`): `skim`, `gist`, `full`, `max`, `minimal`
+- Scope (`scopeModifier`): `narrow`, `focus`, `bound`, `edges`, `relations`, `dynamics`, `interfaces`, `system`, `actions`, `activities`
+- Method (`methodModifier`): `steps`, `plan`, `rigor`, `rewrite`, `diagnose`, `filter`, `prioritize`, `cluster`, `systemic`, `experimental`, `debugging`, `structure`, `flow`, `compare`, `motifs`, `wasinawa`, `ladder`, `contextualise`, `deep`, `samples`, `xp`, `adversarial`, `case`, `scaffold`, `liberating`, `diverge`, `converge`, `mapping`, `analysis`, `taxonomy`, `socratic`, `direct`, `indirect`
+- Style (`styleModifier`): `plain`, `tight`, `bullets`, `table`, `headline`, `code`, `cards`, `checklist`, `diagram`, `presenterm`, `html`, `gherkin`, `shellscript`, `emoji`, `slack`, `jira`, `recipe`, `abstractvisual`, `commit`, `adr`, `codetour`, `story`, `bug`, `spike`, `sync`, `remote`, `faq`, `log`, `fun`, `party`, `announce`
   - Additional styles:
     - `cards` – format the answer as discrete cards/items with clear headings and short bodies.
     - `story` – format the output as a user story using “As a…, I want…, so that…”, optionally with a short prose description and high-level acceptance criteria.

@@ -10,7 +10,7 @@ else:
 
 if bootstrap is not None:
     from talon_user.lib.requestHistoryActions import UserActions as HistoryActions
-    from talon_user.lib.requestLog import append_entry, clear_history
+    from talon_user.lib.requestLog import append_entry, clear_history, all_entries
     from talon_user.lib.modelState import GPTState
     from talon_user.lib.modelConfirmationGUI import (
         ConfirmationGUIState,
@@ -90,6 +90,30 @@ if bootstrap is not None:
             notify_calls = [c for c in actions.user.calls if c[0] == "notify"]
             app_notify_calls = [c for c in actions.app.calls if c[0] == "notify"]
             self.assertGreaterEqual(len(notify_calls) + len(app_notify_calls), 1)
+
+        def test_history_list_handles_entries_without_recipe(self):
+            # Simulate legacy entries lacking a recipe attribute by monkeypatching all_entries.
+            class LegacyEntry:
+                def __init__(self, request_id, prompt, response, meta=""):
+                    self.request_id = request_id
+                    self.prompt = prompt
+                    self.response = response
+                    self.meta = meta
+                    self.duration_ms = None
+
+            saved_all_entries = all_entries
+            try:
+                def legacy_all_entries():
+                    return [LegacyEntry("rid-legacy", "prompt legacy", "resp legacy", "meta legacy")]
+                HistoryActions.all_entries = staticmethod(legacy_all_entries)  # type: ignore[attr-defined]
+                actions.user.calls.clear()
+                actions.app.calls.clear()
+                HistoryActions.gpt_request_history_list(1)
+                notify_calls = [c for c in actions.user.calls if c[0] == "notify"]
+                app_notify_calls = [c for c in actions.app.calls if c[0] == "notify"]
+                self.assertGreaterEqual(len(notify_calls) + len(app_notify_calls), 1)
+            finally:
+                HistoryActions.all_entries = staticmethod(saved_all_entries)  # type: ignore[attr-defined]
 
         def test_history_open_clears_presentation_and_pastes_entry(self):
             append_entry("rid-1", "prompt one", "history answer", duration_ms=7)

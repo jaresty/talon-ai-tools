@@ -6,6 +6,7 @@ plain: Important: Use straightforward, everyday language; minimise jargon and co
 tight: Important: Make the answer short and dense; remove fluff and redundancy.
 bullets: Important: Format the main answer as concise bullet points only; avoid long paragraphs.
 table: Important: Present the main answer as a Markdown table when feasible; keep columns and rows compact.
+headline: Important: Use a headline-first presentation: state the main point up front, then layer supporting details beneath; prioritise readability and skimmability.
 code: Important: Output only code or markup for the main answer, with no surrounding natural-language explanation.
 cards: Important: Present the main answer as a set of discrete cards or items, each with a clear heading and a short body; avoid long continuous prose.
 checklist: Important: Present the main answer as an actionable checklist; each item should be a clear, imperative task rather than descriptive prose.
@@ -21,7 +22,6 @@ recipe: Important: Express the answer as a recipe with a custom, clearly explain
 abstractvisual: Important: Express the big picture as an abstract visual or metaphorical layout (for example, regions and contrasts) with a short legend and, if needed, brief SVG/code-like hints.
 commit: Important: Express the answer as a conventional commit message with a short type/scope line and, if needed, a concise body.
 adr: Important: Express the answer as an Architecture Decision Record (ADR) with sections for context, decision, and consequences, using a concise, document-like style.
-taxonomy: Important: Express the answer as a type or taxonomy: define categories, subtypes, and their relationships in a compact, structured way.
 
 codetour: Important: Output only a valid VS Code CodeTour `.tour` JSON document (schema-compatible), using steps and fields appropriate to the task; do not include any extra prose or surrounding explanation.
 

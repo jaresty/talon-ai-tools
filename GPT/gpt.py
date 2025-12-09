@@ -192,7 +192,8 @@ def _build_axis_docs() -> str:
     ]
     lines: list[str] = [
         "Note: Axes capture how and in what shape the model should respond (completeness, scope, method, style, directional lens). "
-        "For full semantics and examples, see ADR 005/012/013/016 and the GPT README axis cheat sheet.\n"
+        "Hierarchy: Completeness > Method > Scope > Style. Ambiguous tokens are assigned in that order unless explicitly prefixed "
+        "(Completeness:/Method:/Scope:/Style:). For full semantics and examples, see ADR 005/012/013/016/032 and the GPT README axis cheat sheet.\n"
     ]
     for label, filename in sections:
         items = _read_list_items(filename)

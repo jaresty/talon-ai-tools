@@ -199,6 +199,63 @@ if bootstrap is not None:
             self.assertEqual(GPTState.system_prompt.method, "steps")
             self.assertEqual(GPTState.system_prompt.style, "")
 
+        def test_last_recipe_uses_resolved_axes(self):
+            settings.set("user.model_default_scope", "")
+            settings.set("user.model_default_method", "")
+            settings.set("user.model_default_style", "")
+            GPTState.reset_all()
+
+            m = SimpleNamespace(
+                staticPrompt="infer",
+                completenessModifier="full",
+                # Misfile a method token under style.
+                styleModifier="steps",
+                directionalModifier="DIR",
+            )
+
+            _ = modelPrompt(m)
+
+            # Method absorbs the token; style remains empty; recipe reflects resolved axes.
+            self.assertEqual(GPTState.system_prompt.method, "steps")
+            self.assertEqual(GPTState.system_prompt.style, "")
+            self.assertEqual(GPTState.last_recipe, "infer · full · steps")
+
+        def test_ambiguous_token_uses_priority_order(self):
+            """When a token is valid for multiple axes, the hierarchy should pick the higher-priority axis."""
+            from talon_user.lib import axisMappings
+
+            scope_map = axisMappings.AXIS_VALUE_TO_KEY_MAPS["scope"]
+            method_map = axisMappings.AXIS_VALUE_TO_KEY_MAPS["method"]
+            original_scope = scope_map.get("ambig")
+            original_method = method_map.get("ambig")
+            try:
+                scope_map["ambig"] = "ambig"
+                method_map["ambig"] = "ambig"
+
+                m = SimpleNamespace(
+                    staticPrompt="fix",
+                    completenessModifier="full",
+                    scopeModifier="ambig",
+                    methodModifier="",
+                    styleModifier="plain",
+                    directionalModifier="DIR",
+                )
+
+                _ = modelPrompt(m)
+
+                # Method outranks scope, so the ambiguous token should land on method.
+                self.assertEqual(GPTState.system_prompt.method, "ambig")
+                self.assertEqual(GPTState.system_prompt.scope, "")
+            finally:
+                if original_scope is None:
+                    scope_map.pop("ambig", None)
+                else:
+                    scope_map["ambig"] = original_scope
+                if original_method is None:
+                    method_map.pop("ambig", None)
+                else:
+                    method_map["ambig"] = original_method
+
         def test_clear_all_resets_last_recipe_and_response(self):
             # Exercise the lifecycle: after a prompt, clear_all should drop
             # last_response/last_recipe so recap helpers don't show stale data.

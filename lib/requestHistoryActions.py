@@ -24,6 +24,7 @@ def _show_entry(entry) -> None:
     GPTState.text_to_confirm = entry.response
     GPTState.last_response = entry.response
     GPTState.last_meta = entry.meta
+    GPTState.last_recipe = getattr(entry, "recipe", "") or ""
     try:
         actions.user.model_response_canvas_open()
     except Exception:
@@ -83,6 +84,9 @@ class UserActions:
             prompt_snippet = prompt[:60] + ("…" if len(prompt) > 60 else "")
             dur = f"{entry.duration_ms}ms" if entry.duration_ms is not None else ""
             label = entry.request_id if not dur else f"{entry.request_id} ({dur})"
-            lines.append(f"{idx}: {label} | {prompt_snippet}")
+            recipe = (getattr(entry, "recipe", "") or "").strip()
+            parts = [p for p in (recipe, prompt_snippet) if p]
+            payload = " · ".join(parts) if parts else prompt_snippet
+            lines.append(f"{idx}: {label} | {payload}")
         message = "Recent model requests:\n" + "\n".join(lines)
         notify(message)

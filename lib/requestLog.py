@@ -14,20 +14,37 @@ def append_entry(
     prompt: str,
     response: str,
     meta: str = "",
+    recipe: str = "",
     started_at_ms: Optional[int] = None,
     duration_ms: Optional[int] = None,
 ) -> None:
     """Append a request entry to the bounded history ring."""
+    try:
+        print(
+            f"[requestLog] append id={request_id!r} prompt_len={len(prompt or '')} "
+            f"response_len={len(response or '')} recipe={recipe!r} duration_ms={duration_ms}"
+        )
+    except Exception:
+        pass
     _history.append(
         RequestLogEntry(
             request_id=request_id,
             prompt=prompt,
             response=response,
             meta=meta,
+            recipe=recipe,
             started_at_ms=started_at_ms,
             duration_ms=duration_ms,
         )
     )
+    try:
+        latest_entry = _history.latest() if hasattr(_history, "latest") else None
+        latest_id = latest_entry.request_id if latest_entry else "?"
+        print(
+            f"[requestLog] stored entries={len(_history)} latest_id={latest_id} hist_id={id(_history)}"
+        )
+    except Exception:
+        pass
 
 
 def latest() -> Optional[RequestLogEntry]:
@@ -39,7 +56,16 @@ def nth_from_latest(offset: int) -> Optional[RequestLogEntry]:
 
 
 def all_entries():
-    return _history.all()
+    try:
+        entries = _history.all()
+        print(f"[requestLog] all_entries len={len(entries)} hist_id={id(_history)}")
+        return entries
+    except Exception as e:
+        try:
+            print(f"[requestLog] all_entries failed: {e}")
+        except Exception:
+            pass
+        return []
 
 
 def clear_history() -> None:

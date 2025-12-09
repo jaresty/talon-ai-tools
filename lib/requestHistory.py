@@ -17,6 +17,7 @@ class RequestLogEntry:
     prompt: str
     response: str
     meta: str = ""
+    recipe: str = ""
     started_at_ms: Optional[int] = None
     duration_ms: Optional[int] = None
 
@@ -31,6 +32,12 @@ class RequestHistory:
     def append(self, entry: RequestLogEntry) -> None:
         """Add a new entry, evicting the oldest when at capacity."""
         self._entries.append(entry)
+        try:
+            print(
+                f"[requestHistory] append on {id(self)} len={len(self._entries)} newest_id={entry.request_id}"
+            )
+        except Exception:
+            pass
 
     def latest(self) -> Optional[RequestLogEntry]:
         """Return the most recent entry, if any."""
@@ -49,6 +56,10 @@ class RequestHistory:
 
     def all(self) -> List[RequestLogEntry]:
         """Return a copy of all entries from oldest to newest."""
+        try:
+            print(f"[requestHistory] all on {id(self)} len={len(self._entries)}")
+        except Exception:
+            pass
         return list(self._entries)
 
     def __len__(self) -> int:

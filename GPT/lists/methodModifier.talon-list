@@ -21,11 +21,12 @@ wasinawa: Important: Apply a What–So What–Now What reflection: first describ
 ladder: Important: Use abstraction laddering: place the focal problem, then step up to higher-level causes and down to consequences, ordered by importance to the audience.
 contextualise: Important: Add or reshape context to support another operation (for example, supplying background for an LLM or reframing content) without rewriting the main text itself.
 
+deep: Important: Go into substantial depth within the chosen scope; unpack reasoning layers and fine details without necessarily enumerating every edge case.
+
 samples: Important: Generate several diverse, self-contained options and, where appropriate, attach short descriptions and explicit numeric probabilities that approximately sum to 1; avoid near-duplicate options.
 
 xp: Important: Use an Extreme Programming-style approach: favour very small, incremental changes; rely on working software and tests as primary feedback; and iterate with tight, collaborative feedback loops rather than big-bang plans.
 adversarial: Important: Run a constructive stress-test: systematically search for weaknesses, edge cases, counterexamples, failure modes, and unstated assumptions, and prioritise critique and stress-testing over agreement while still aiming to improve the work.
-headline: Important: Use a headline-first structure: state the main point or recommendation up front, then layer in supporting details, evidence, and caveats in a simple, easy-to-skim order.
 case: Important: Build the case before the conclusion: lay out background, evidence, trade-offs, and alternatives first, then converge on a clear recommendation that shows how objections and constraints are addressed.
 scaffold: Important: Explain with scaffolding: start from first principles, introduce ideas gradually, use concrete examples and analogies, and revisit key points so a beginner can follow and retain the concepts.
 liberating: Important: Facilitate using Liberating Structures: emphasise distributed participation, short structured interactions, concrete invitations, and visual, stepwise processes; name or evoke specific LS patterns when helpful (for example, 1-2-4-All, TRIZ, 15% Solutions).
@@ -33,6 +34,7 @@ diverge: Important: Open up the option space: generate multiple, diverse possibi
 converge: Important: Narrow down and make a call: weigh trade-offs, eliminate weaker options, and arrive at a small set of recommendations or a single decision.
 mapping: Important: Emphasise mapping over exposition: surface elements, relationships, and structure; organise them into a coherent map (textual, tabular, or visual) rather than a linear narrative.
 analysis: Important: Describe, analyse, and structure the situation; do not propose specific actions, fixes, or recommendations.
+taxonomy: Important: Build or refine a taxonomy: define categories, subtypes, and relationships to clarify structure; prefer compact representations over prose.
 
 socratic: Important: Use a Socratic, question-led method: advance primarily by asking short, targeted questions that surface assumptions, definitions, and gaps in understanding; hold back from giving full conclusions until enough answers are available or the user explicitly asks for a summary.
 

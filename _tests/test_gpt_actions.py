@@ -470,6 +470,31 @@ if bootstrap is not None:
                     ],
                 )
 
+        def test_gpt_suggest_prompt_recipes_requires_directional(self):
+            with patch.object(gpt_module, "PromptSession") as session_cls, patch.object(
+                gpt_module, "create_model_source"
+            ) as create_source:
+                source = MagicMock()
+                source.get_text.return_value = "content"
+                create_source.return_value = source
+                mock_session = session_cls.return_value
+                mock_session._destination = "paste"
+
+                handle = self.pipeline.complete_async.return_value
+                handle.wait = MagicMock(return_value=True)
+                handle.result = PromptResult.from_messages(
+                    [
+                        format_message(
+                            "Name: Missing directional | Recipe: describe · full · relations · flow · plain"
+                        )
+                    ]
+                )
+
+                gpt_module.UserActions.gpt_suggest_prompt_recipes("subject")
+
+                # Suggestion should be dropped because it lacks a directional token.
+                self.assertEqual(GPTState.last_suggested_recipes, [])
+
         def test_gpt_pass_uses_prompt_session(self):
             configuration = MagicMock(
                 model_source=MagicMock(),

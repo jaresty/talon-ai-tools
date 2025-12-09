@@ -71,6 +71,8 @@ from ..lib.modelPatternGUI import (
     STYLE_MAP as _STYLE_MAP,
     DIRECTIONAL_MAP as _DIRECTIONAL_MAP,
 )
+# Backward-compatible alias for directional map used during parsing.
+DIRECTIONAL_MAP = _DIRECTIONAL_MAP
 from ..lib.requestState import RequestPhase
 from ..lib.requestBus import (
     emit_begin_send,
@@ -731,6 +733,7 @@ class UserActions:
             "Where:\n"
             "- <staticPrompt> is exactly one static prompt token (do not include multiple static prompts or combine them).\n"
             "- <completeness> and <directional> are single axis tokens.\n"
+            "- Directional is required: always include exactly one directional modifier from the directional list; never leave it blank.\n"
             "- <scopeTokens>, <methodTokens>, and <styleTokens> are zero or more space-separated axis tokens for that axis (respecting small caps: scope ≤ 2 tokens, method ≤ 3 tokens, style ≤ 3 tokens).\n"
             "Examples of multi-tag fields: scopeTokens='actions edges', methodTokens='structure flow', styleTokens='jira story'.\n\n"
             "Use only tokens from the following sets where possible.\n"
@@ -818,17 +821,27 @@ class UserActions:
                 name = name_part.strip().strip(":")
             # Always require an explicit Recipe: label for the second half.
             _, recipe_value = recipe_part.split("Recipe:", 1)
-            recipe = recipe_value.strip()
-            if not name or not recipe:
+            recipe_value = recipe_value.strip()
+            if not name:
                 continue
             # Enforce a single static prompt token by collapsing any
             # space-delimited static prompt segment to its first token.
-            recipe_tokens = [t.strip() for t in recipe.split("·") if t.strip()]
-            if recipe_tokens:
-                static_tokens = recipe_tokens[0].split()
-                if len(static_tokens) > 1:
-                    recipe_tokens[0] = static_tokens[0]
-                    recipe = " · ".join(recipe_tokens)
+            recipe_tokens = [t.strip() for t in recipe_value.split("·") if t.strip()]
+            if not recipe_tokens:
+                continue
+            static_tokens = recipe_tokens[0].split()
+            if len(static_tokens) > 1:
+                recipe_tokens[0] = static_tokens[0]
+            # Require a directional token (last segment); drop if missing.
+            raw_directional = recipe_tokens[-1] if len(recipe_tokens) > 1 else ""
+            dir_tokens = raw_directional.split()
+            if len(dir_tokens) != 1:
+                continue
+            directional = dir_tokens[0]
+            if directional not in _DIRECTIONAL_MAP:
+                continue
+            recipe_tokens[-1] = directional
+            recipe = " · ".join(recipe_tokens)
             suggestions.append({"name": name, "recipe": recipe})
         GPTState.last_suggested_recipes = suggestions
 

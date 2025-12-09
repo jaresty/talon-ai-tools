@@ -152,9 +152,11 @@ def _ensure_response_canvas() -> canvas.Canvas:
         screen_width = getattr(screen, "width", 1600)
         screen_height = getattr(screen, "height", 900)
         margin_x = 40
-        margin_y = 40
+        margin_y = 32
         panel_width = min(900, max(screen_width - 2 * margin_x, 600))
-        panel_height = min(700, max(screen_height - 2 * margin_y, 480))
+        max_available_height = max(screen_height - 2 * margin_y, 480)
+        preferred_height = max(int(screen_height * 0.85), 520)
+        panel_height = min(preferred_height, max_available_height, 1000)
         start_x = screen_x + max((screen_width - panel_width) // 2, margin_x)
         start_y = screen_y + max((screen_height - panel_height) // 2, margin_y)
         rect = ui.Rect(start_x, start_y, panel_width, panel_height)
@@ -736,8 +738,9 @@ def _default_draw_response(c: canvas.Canvas) -> None:  # pragma: no cover - visu
 
     meta_region_top: Optional[int] = None
     meta_region_bottom: Optional[int] = None
-    last_prompt_text = getattr(GPTState, "last_prompt_text", "") or ""
-    meta_content = bool(meta or hydrated_parts or last_prompt_text)
+    # Keep meta compact: show interpretation and hydrated axes, but omit the
+    # full prompt to avoid duplicating the model's own interpretation recap.
+    meta_content = bool(meta or hydrated_parts)
 
     if meta_content and rect is not None:
         approx_char_width = 8
@@ -864,16 +867,6 @@ def _default_draw_response(c: canvas.Canvas) -> None:  # pragma: no cover - visu
                     lines.append(remaining[:split_at])
                     remaining = remaining[split_at + 1 :].lstrip()
             return lines or [text]
-
-        if last_prompt_text:
-            for wrapped in _wrap_meta("  Prompt:"):
-                draw_text(wrapped, detail_x, y)
-                y += line_h
-            for line in last_prompt_text.splitlines():
-                for wrapped in _wrap_meta(f"    {line}"):
-                    draw_text(wrapped, detail_x, y)
-                    y += line_h
-            y += line_h // 2
 
         if hydrated_parts:
             details_text = f"Axes: {' · '.join(hydrated_parts)}"

@@ -151,6 +151,16 @@ def _update_stream_state_from_text(
     late jump when the finished response is split into answer/meta.
     """
     try:
+        # When meta updates are throttled and we've updated recently, skip the
+        # split entirely to avoid redundant parsing work while the answer is
+        # stable and only meta is streaming in.
+        if meta_throttle_ms is not None and last_meta_update_ms is not None:
+            last = last_meta_update_ms[0] if last_meta_update_ms else 0
+            if last:
+                now_ms = int(time.time() * 1000)
+                if now_ms - last < meta_throttle_ms:
+                    return
+
         answer, meta = split_answer_and_meta(full_text)
         GPTState.text_to_confirm = answer
         if meta:
@@ -648,10 +658,6 @@ def _send_request_streaming(request, request_id: str) -> str:
             error_info = raw_response.text
         notify(f"GPT Failure: HTTP {raw_response.status_code} | {error_info}")
         raise GPTRequestError(raw_response.status_code, error_info)
-
-    refresh_interval_ms = 250
-    last_canvas_refresh_ms = 0
-    last_meta_refresh_ms = [0]
 
     def _maybe_refresh_canvas(force: bool = False) -> None:
         nonlocal last_canvas_refresh_ms

@@ -298,6 +298,16 @@ def _close_suggestion_canvas() -> None:
         _debug(f"failed to hide suggestion canvas: {e}")
 
 
+def _hydrate_axis_list(tokens: str, mapping: dict[str, str]) -> str:
+    """Return hydrated axis descriptions for a space-separated token list."""
+    if not tokens:
+        return ""
+    hydrated = []
+    for token in tokens.split():
+        hydrated.append(mapping.get(token, token))
+    return " ".join(hydrated)
+
+
 def _draw_suggestions(c: canvas.Canvas) -> None:  # pragma: no cover - visual only
     rect = getattr(c, "rect", None)
     draw_text = getattr(c, "draw_text", None)
@@ -372,9 +382,10 @@ def _draw_suggestions(c: canvas.Canvas) -> None:  # pragma: no cover - visual on
     # Each suggestion row is rendered as:
     #   [Name]
     #   Say: model …
+    #   Details: <hydrated axes>
     #   <blank line>
     # which we approximate as a fixed row height.
-    row_height = line_h * 3
+    row_height = line_h * 4
     body_top = y
     if rect is not None and hasattr(rect, "height"):
         body_bottom = rect.y + rect.height - line_h * 2
@@ -434,6 +445,26 @@ def _draw_suggestions(c: canvas.Canvas) -> None:  # pragma: no cover - visual on
         else:
             grammar_phrase = f"model {base_recipe}"
         draw_text(f"Say: {grammar_phrase}", x + 4, row_y)
+        row_y += line_h
+
+        static_prompt, completeness, scope, method, style, directional = _parse_recipe(
+            suggestion.recipe
+        )
+        parts: list[str] = []
+        if completeness:
+            parts.append(
+                f"C: {_hydrate_axis_list(completeness, COMPLETENESS_MAP)}"
+            )
+        if scope:
+            parts.append(f"S: {_hydrate_axis_list(scope, SCOPE_MAP)}")
+        if method:
+            parts.append(f"M: {_hydrate_axis_list(method, METHOD_MAP)}")
+        if style:
+            parts.append(f"St: {_hydrate_axis_list(style, STYLE_MAP)}")
+        if directional:
+            parts.append(f"D: {_hydrate_axis_list(directional, DIRECTIONAL_MAP)}")
+        if parts:
+            draw_text(f"Details: {' · '.join(parts)}", x + 4, row_y)
 
     # Draw a simple scrollbar when needed.
     if max_scroll > 0 and rect is not None and paint is not None:

@@ -11,6 +11,7 @@ else:
 
 if bootstrap is not None:
     from talon import settings
+    from talon_user.lib.axisMappings import axis_key_to_value_map_for
     from talon_user.lib.talonSettings import modelPrompt
     from talon_user.lib.modelState import GPTState
 
@@ -82,6 +83,31 @@ if bootstrap is not None:
             self.assertIn("Method: METHOD", result)
             self.assertIn("Style: STYLE", result)
             self.assertTrue(result.rstrip().endswith("DIR"))
+
+        def test_constraint_block_hydrates_axis_tokens(self):
+            """Constraints should display hydrated axis descriptions while state stays tokenised."""
+            m = SimpleNamespace(
+                staticPrompt="fix",
+                completenessModifier="skim",
+                scopeModifier="relations",
+                methodModifier="steps",
+                styleModifier="bullets",
+                directionalModifier="DIR",
+            )
+
+            result = modelPrompt(m)
+
+            completeness_desc = axis_key_to_value_map_for("completeness").get(
+                "skim", "skim"
+            )
+            scope_desc = axis_key_to_value_map_for("scope").get("relations", "relations")
+            method_desc = axis_key_to_value_map_for("method").get("steps", "steps")
+            style_desc = axis_key_to_value_map_for("style").get("bullets", "bullets")
+
+            self.assertIn(f"Completeness: {completeness_desc}", result)
+            self.assertIn(f"Scope: {scope_desc}", result)
+            self.assertIn(f"Method: {method_desc}", result)
+            self.assertIn(f"Style: {style_desc}", result)
 
         def test_missing_scope_method_style_do_not_add_text(self):
             m = SimpleNamespace(

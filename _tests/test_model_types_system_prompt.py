@@ -11,6 +11,7 @@ else:
 
 if bootstrap is not None:
     from talon import settings
+    from talon_user.lib.axisMappings import axis_key_to_value_map_for
     from talon_user.lib.modelTypes import GPTSystemPrompt
 
     class GPTSystemPromptDefaultsTests(unittest.TestCase):
@@ -26,10 +27,22 @@ if bootstrap is not None:
 
             lines = self.prompt.format_as_array()
 
-            self.assertIn("Completeness: full", lines)
-            self.assertIn("Scope: narrow", lines)
-            self.assertIn("Method: steps", lines)
-            self.assertIn("Style: bullets", lines)
+            self.assertIn(
+                f"Completeness: {axis_key_to_value_map_for('completeness').get('full', 'full')}",
+                lines,
+            )
+            self.assertIn(
+                f"Scope: {axis_key_to_value_map_for('scope').get('narrow', 'narrow')}",
+                lines,
+            )
+            self.assertIn(
+                f"Method: {axis_key_to_value_map_for('method').get('steps', 'steps')}",
+                lines,
+            )
+            self.assertIn(
+                f"Style: {axis_key_to_value_map_for('style').get('bullets', 'bullets')}",
+                lines,
+            )
 
         def test_overrides_settings_when_fields_set_explicitly(self):
             settings.set("user.model_default_completeness", "full")
@@ -46,10 +59,22 @@ if bootstrap is not None:
 
             lines = prompt.format_as_array()
 
-            self.assertIn("Completeness: max", lines)
-            self.assertIn("Scope: bound", lines)
-            self.assertIn("Method: plan", lines)
-            self.assertIn("Style: code", lines)
+            self.assertIn(
+                f"Completeness: {axis_key_to_value_map_for('completeness').get('max', 'max')}",
+                lines,
+            )
+            self.assertIn(
+                f"Scope: {axis_key_to_value_map_for('scope').get('bound', 'bound')}",
+                lines,
+            )
+            self.assertIn(
+                f"Method: {axis_key_to_value_map_for('method').get('plan', 'plan')}",
+                lines,
+            )
+            self.assertIn(
+                f"Style: {axis_key_to_value_map_for('style').get('code', 'code')}",
+                lines,
+            )
 
 else:
     if not TYPE_CHECKING:

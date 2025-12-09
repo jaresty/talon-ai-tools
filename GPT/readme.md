@@ -131,7 +131,7 @@ The `model` command now supports several short, speech-friendly modifier axes yo
 - Completeness (`completenessModifier`): `skim`, `gist`, `full`, `max`, `minimal`, `deep`, `framework`, `path`
 - Scope (`scopeModifier`): `narrow`, `focus`, `bound`, `edges`, `relations`, `dynamics`, `interfaces`, `system`, `actions`
 - Method (`methodModifier`): `steps`, `plan`, `rigor`, `rewrite`, `diagnose`, `filter`, `prioritize`, `cluster`, `systemic`, `experimental`, `debugging`, `structure`, `flow`, `compare`, `motifs`, `wasinawa`, `ladder`, `contextualise`, `samples`, `xp`, `adversarial`, `headline`, `case`, `scaffold`, `liberating`, `diverge`, `converge`, `mapping`, `analysis`, `socratic`, `direct`, `indirect`
-- Style (`styleModifier`): `plain`, `tight`, `bullets`, `table`, `code`, `checklist`, `diagram`, `presenterm`, `html`, `gherkin`, `shellscript`, `emoji`, `slack`, `jira`, `recipe`, `abstractvisual`, `commit`, `adr`, `taxonomy`, `cards`, `codetour`, `story`, `bug`, `spike`, `faq`, `log`, `fun`, `party`, `announce`
+- Style (`styleModifier`): `plain`, `tight`, `bullets`, `table`, `code`, `checklist`, `diagram`, `presenterm`, `html`, `gherkin`, `shellscript`, `emoji`, `slack`, `jira`, `recipe`, `abstractvisual`, `commit`, `adr`, `taxonomy`, `cards`, `codetour`, `story`, `bug`, `spike`, `faq`, `log`, `fun`, `party`, `announce`, `remote`, `sync`
   - Additional styles:
     - `cards` – format the answer as discrete cards/items with clear headings and short bodies.
     - `story` – format the output as a user story using “As a…, I want…, so that…”, optionally with a short prose description and high-level acceptance criteria.
@@ -141,6 +141,8 @@ The `model` command now supports several short, speech-friendly modifier axes yo
     - `fun` – keep the content the same but make the tone playful and fun while preserving clarity.
     - `party` – push into wild, celebratory, emoji-heavy responses while still keeping the main content readable and structured.
     - `announce` – format as an announcement: short headline, what changed and why, and any actions or next steps.
+    - `remote` – emphasise remote-friendly delivery: distributed/online context hints and tooling tips.
+    - `sync` – shape the answer as a synchronous/live session plan with agenda/steps/cues.
 
 Directional lenses (required) are a separate axis:
 

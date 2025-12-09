@@ -48,6 +48,8 @@ class GPTState:
     # Last set of prompt recipe suggestions, if any, as a list of
     # {"name": ..., "recipe": ...} dictionaries derived from `model suggest`.
     last_suggested_recipes: ClassVar[List[Dict[str, str]]] = []
+    # Last composed prompt text sent to the model (Task/Constraints/Directional).
+    last_prompt_text: ClassVar[str] = ""
     context: ClassVar[List[Union[GPTTextItem, GPTImageItem]]] = []
     query: ClassVar[List[GPTMessage]] = []
     request: ClassVar[GPTRequest]
@@ -113,6 +115,8 @@ class GPTState:
         cls.last_again_source = ""
         cls.last_suggest_source = ""
         cls.last_suggested_recipes = []
+        cls.last_prompt_text = ""
+        cls.last_prompt_text = ""
         cls.last_raw_request = {}
         cls.last_raw_response = {}
         actions.app.notify("Cleared all state")
@@ -216,6 +220,7 @@ class GPTState:
         cls.last_again_source = ""
         cls.last_suggest_source = ""
         cls.last_suggested_recipes = []
+        cls.last_prompt_text = ""
         cls.context = []
         cls.query = []
         cls.thread = []

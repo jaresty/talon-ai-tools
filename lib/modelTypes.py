@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from talon import settings
+from .axisMappings import axis_hydrate_tokens, axis_value_to_key_map_for
 
 from .metaPromptConfig import META_INTERPRETATION_GUIDANCE
 from dataclasses import dataclass, field
@@ -117,35 +118,60 @@ class GPTSystemPrompt:
 
     @staticmethod
     def default_completeness() -> str:
-        # Default completeness level falls back to the configured setting.
-        return settings.get("user.model_default_completeness")
+        # Default completeness level falls back to the configured setting (token-based).
+        raw = settings.get("user.model_default_completeness")
+        axis_map = axis_value_to_key_map_for("completeness")
+        return axis_map.get(raw, raw)
 
     @staticmethod
     def default_scope() -> str:
-        # Default scope level falls back to the configured setting.
-        return settings.get("user.model_default_scope")
+        # Default scope level falls back to the configured setting (token-based).
+        raw = settings.get("user.model_default_scope")
+        axis_map = axis_value_to_key_map_for("scope")
+        tokens = str(raw).split()
+        mapped = [axis_map.get(token, token) for token in tokens if token]
+        return " ".join(mapped)
 
     @staticmethod
     def default_method() -> str:
-        # Default method falls back to the configured setting.
-        return settings.get("user.model_default_method")
+        # Default method falls back to the configured setting (token-based).
+        raw = settings.get("user.model_default_method")
+        axis_map = axis_value_to_key_map_for("method")
+        tokens = str(raw).split()
+        mapped = [axis_map.get(token, token) for token in tokens if token]
+        return " ".join(mapped)
 
     @staticmethod
     def default_style() -> str:
-        # Default style falls back to the configured setting.
-        return settings.get("user.model_default_style")
+        # Default style falls back to the configured setting (token-based).
+        raw = settings.get("user.model_default_style")
+        axis_map = axis_value_to_key_map_for("style")
+        tokens = str(raw).split()
+        mapped = [axis_map.get(token, token) for token in tokens if token]
+        return " ".join(mapped)
 
     def format_as_array(self) -> list[str]:
         # Formats the instance variables as an array of strings
+        def hydrate(axis: str, value: str) -> str:
+            tokens = [t for t in (value or "").split() if t]
+            if not tokens:
+                return ""
+            hydrated = axis_hydrate_tokens(axis, tokens)
+            if not hydrated:
+                return " ".join(tokens)
+            if axis == "completeness":
+                return hydrated[0]
+            return " ".join(hydrated)
+
         return [
             f"Voice: {self.get_voice()}",
             f"Tone: {self.get_tone()}",
             f"Audience: {self.get_audience()}",
             f"Purpose: {self.get_purpose()}",
-            f"Completeness: {self.get_completeness()}",
-            f"Scope: {self.get_scope()}",
-            f"Method: {self.get_method()}",
-            f"Style: {self.get_style()}",
+            f"Completeness: {hydrate('completeness', self.get_completeness())}",
+            f"Scope: {hydrate('scope', self.get_scope())}",
+            f"Method: {hydrate('method', self.get_method())}",
+            f"Style: {hydrate('style', self.get_style())}",
             "Answer fully and accurately, prioritizing clarity by rewriting or simplifying anything the audience may not understand with inline definitions (max 5 top-level list items with up to 5 sub-items; summarize extras), and politely decline if a request would not be meaningful. "
             + META_INTERPRETATION_GUIDANCE,
-        ]      
+        ]

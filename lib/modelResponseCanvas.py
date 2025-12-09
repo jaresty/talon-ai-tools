@@ -8,6 +8,7 @@ from .modelState import GPTState
 from .modelDestination import _parse_meta
 from .requestState import RequestPhase, RequestState
 from .requestBus import current_state
+from .axisMappings import axis_hydrate_tokens
 
 mod = Module()
 ctx = Context()
@@ -19,6 +20,34 @@ class ResponseCanvasState:
     showing: bool = False
     scroll_y: float = 0.0
     meta_expanded: bool = False
+
+
+def _hydrate_axis(axis: str, token_str: str) -> str:
+    """Return hydrated description(s) for a space-separated token string."""
+    tokens = [t for t in token_str.split() if t]
+    if not tokens:
+        return ""
+    hydrated = axis_hydrate_tokens(axis, tokens)
+    return " ".join(hydrated) if hydrated else token_str
+
+
+def _wrap_text(text: str, max_chars: int = 96) -> list[str]:
+    """Naive word-wrap for canvas text rendering."""
+    words = text.split()
+    lines: list[str] = []
+    current: list[str] = []
+    count = 0
+    for word in words:
+        if count + len(word) + (1 if current else 0) > max_chars and current:
+            lines.append(" ".join(current))
+            current = [word]
+            count = len(word)
+        else:
+            current.append(word)
+            count += len(word) + (1 if len(current) > 1 else 0)
+    if current:
+        lines.append(" ".join(current))
+    return lines
 
 
 def _prefer_canvas_progress() -> bool:
@@ -77,6 +106,42 @@ def _ensure_response_canvas() -> canvas.Canvas:
     """Create the response canvas if needed and register handlers."""
     global _response_canvas, _response_handlers_registered
     last_draw_error: Optional[str] = None
+
+    def _prime_footer_bounds_for_tests(c: canvas.Canvas) -> None:
+        """Populate footer button bounds when draw is not invoked (tests)."""
+        rect = getattr(c, "rect", None)
+        if rect is None:
+            return
+        x = getattr(rect, "x", 0) + 40
+        footer_y = getattr(rect, "y", 0) + getattr(rect, "height", 300) - 60 + 18 // 2
+        btn_labels = [
+            ("paste", "[Paste response]"),
+            ("copy", "[Copy response]"),
+            ("discard", "[Discard response]"),
+            ("context", "[Pass to context]"),
+            ("query", "[Pass to query]"),
+            ("thread", "[Pass to thread]"),
+            ("browser", "[Open browser]"),
+            ("analyze", "[Analyze prompt]"),
+        ]
+        btn_x = x
+        approx_char = 8
+        max_footer_x = (
+            getattr(rect, "x", 0) + getattr(rect, "width", 1000) - 40
+        )
+        for key, label in btn_labels:
+            width = len(label) * approx_char
+            if btn_x + width > max_footer_x:
+                footer_y += 18 * 2
+                btn_x = x
+            label_x = btn_x
+            _response_button_bounds[key] = (
+                int(label_x),
+                int(footer_y - 18),
+                int(label_x + width),
+                int(footer_y),
+            )
+            btn_x += width + approx_char
     if _response_canvas is not None:
         return _response_canvas
 
@@ -325,6 +390,18 @@ def _ensure_response_canvas() -> canvas.Canvas:
             _response_canvas.register("key", _on_key)
         except Exception:
             pass
+    # Populate footer button bounds immediately so tests have hit targets even
+    # when the canvas stub does not auto-draw.
+    try:
+        _prime_footer_bounds_for_tests(_response_canvas)
+    except Exception:
+        pass
+    # Prime an initial draw so hit targets exist even when the canvas stub
+    # does not automatically trigger draw() in tests.
+    try:
+        _on_draw(_response_canvas)
+    except Exception:
+        pass
 
     _response_handlers_registered = True
 
@@ -575,6 +652,7 @@ def _default_draw_response(c: canvas.Canvas) -> None:  # pragma: no cover - visu
         value = getattr(GPTState, attr, "") or ""
         if value:
             axis_parts.append(value)
+    hydrated_parts: list[str] = []
     if axis_parts:
         recipe = " · ".join(axis_parts)
     if recipe:
@@ -595,6 +673,19 @@ def _default_draw_response(c: canvas.Canvas) -> None:  # pragma: no cover - visu
         y += line_h
         draw_text(f"Say: {grammar_phrase}", x, y)
         y += line_h
+        # Hydrated axis details stay hidden until the meta panel is expanded.
+        last_completeness = getattr(GPTState, "last_completeness", "") or ""
+        last_scope = getattr(GPTState, "last_scope", "") or ""
+        last_method = getattr(GPTState, "last_method", "") or ""
+        last_style = getattr(GPTState, "last_style", "") or ""
+        if last_completeness:
+            hydrated_parts.append(f"C: {_hydrate_axis('completeness', last_completeness)}")
+        if last_scope:
+            hydrated_parts.append(f"S: {_hydrate_axis('scope', last_scope)}")
+        if last_method:
+            hydrated_parts.append(f"M: {_hydrate_axis('method', last_method)}")
+        if last_style:
+            hydrated_parts.append(f"St: {_hydrate_axis('style', last_style)}")
 
     # Optional diagnostic meta section and toggle under the recap.
     meta = getattr(GPTState, "last_meta", "").strip()
@@ -645,8 +736,10 @@ def _default_draw_response(c: canvas.Canvas) -> None:  # pragma: no cover - visu
 
     meta_region_top: Optional[int] = None
     meta_region_bottom: Optional[int] = None
+    last_prompt_text = getattr(GPTState, "last_prompt_text", "") or ""
+    meta_content = bool(meta or hydrated_parts or last_prompt_text)
 
-    if meta and rect is not None:
+    if meta_content and rect is not None:
         approx_char_width = 8
         # Compute the toggle first so we know exactly how much horizontal
         # space is available for the meta band text.
@@ -738,7 +831,7 @@ def _default_draw_response(c: canvas.Canvas) -> None:  # pragma: no cover - visu
     # Optional expanded meta panel above the answer body when requested. This
     # is explicitly diagnostic and visually treated as an annotation block,
     # not part of the pasteable response.
-    if parsed_meta and ResponseCanvasState.meta_expanded:
+    if ResponseCanvasState.meta_expanded and meta_content:
         # Lighten diagnostic meta text to further separate it from the primary
         # response body.
         if paint is not None:
@@ -772,57 +865,75 @@ def _default_draw_response(c: canvas.Canvas) -> None:  # pragma: no cover - visu
                     remaining = remaining[split_at + 1 :].lstrip()
             return lines or [text]
 
-        interpretation = (parsed_meta.get("interpretation") or "").strip()
-        if interpretation:
-            for part in interpretation.splitlines():
-                for wrapped in _wrap_meta(f"  {part}"):
+        if last_prompt_text:
+            for wrapped in _wrap_meta("  Prompt:"):
+                draw_text(wrapped, detail_x, y)
+                y += line_h
+            for line in last_prompt_text.splitlines():
+                for wrapped in _wrap_meta(f"    {line}"):
                     draw_text(wrapped, detail_x, y)
                     y += line_h
             y += line_h // 2
-        assumptions = parsed_meta.get("assumptions") or []
-        if assumptions:
-            for wrapped in _wrap_meta("  Assumptions/constraints:"):
+
+        if hydrated_parts:
+            details_text = f"Axes: {' · '.join(hydrated_parts)}"
+            for wrapped in _wrap_meta(details_text):
                 draw_text(wrapped, detail_x, y)
                 y += line_h
-            for item in assumptions:
-                for wrapped in _wrap_meta(f"    - {item}"):
+            y += line_h // 2
+
+        if parsed_meta:
+            interpretation = (parsed_meta.get("interpretation") or "").strip()
+            if interpretation:
+                for part in interpretation.splitlines():
+                    for wrapped in _wrap_meta(f"  {part}"):
+                        draw_text(wrapped, detail_x, y)
+                        y += line_h
+                y += line_h // 2
+            assumptions = parsed_meta.get("assumptions") or []
+            if assumptions:
+                for wrapped in _wrap_meta("  Assumptions/constraints:"):
                     draw_text(wrapped, detail_x, y)
                     y += line_h
-            y += line_h // 2
-        gaps = parsed_meta.get("gaps") or []
-        if gaps:
-            for wrapped in _wrap_meta("  Gaps/checks:"):
-                draw_text(wrapped, detail_x, y)
-                y += line_h
-            for item in gaps:
-                for wrapped in _wrap_meta(f"    - {item}"):
+                for item in assumptions:
+                    for wrapped in _wrap_meta(f"    - {item}"):
+                        draw_text(wrapped, detail_x, y)
+                        y += line_h
+                y += line_h // 2
+            gaps = parsed_meta.get("gaps") or []
+            if gaps:
+                for wrapped in _wrap_meta("  Gaps/checks:"):
                     draw_text(wrapped, detail_x, y)
                     y += line_h
-            y += line_h // 2
-        better = (parsed_meta.get("better_prompt") or "").strip()
-        if better:
-            for wrapped in _wrap_meta("  Better prompt:"):
-                draw_text(wrapped, detail_x, y)
-                y += line_h
-            for part in better.splitlines():
-                for wrapped in _wrap_meta(f"    {part}"):
+                for item in gaps:
+                    for wrapped in _wrap_meta(f"    - {item}"):
+                        draw_text(wrapped, detail_x, y)
+                        y += line_h
+                y += line_h // 2
+            better = (parsed_meta.get("better_prompt") or "").strip()
+            if better:
+                for wrapped in _wrap_meta("  Better prompt:"):
                     draw_text(wrapped, detail_x, y)
                     y += line_h
-            y += line_h // 2
-        suggestion = (parsed_meta.get("suggestion") or "").strip()
-        if suggestion:
-            for wrapped in _wrap_meta("  Axis tweak suggestion:"):
-                draw_text(wrapped, detail_x, y)
-                y += line_h
-            for wrapped in _wrap_meta(f"    {suggestion}"):
-                draw_text(wrapped, detail_x, y)
-                y += line_h
-            y += line_h // 2
-        extra = parsed_meta.get("extra") or []
-        for item in extra:
-            for wrapped in _wrap_meta(f"  {item}"):
-                draw_text(wrapped, detail_x, y)
-                y += line_h
+                for part in better.splitlines():
+                    for wrapped in _wrap_meta(f"    {part}"):
+                        draw_text(wrapped, detail_x, y)
+                        y += line_h
+                y += line_h // 2
+            suggestion = (parsed_meta.get("suggestion") or "").strip()
+            if suggestion:
+                for wrapped in _wrap_meta("  Axis tweak suggestion:"):
+                    draw_text(wrapped, detail_x, y)
+                    y += line_h
+                for wrapped in _wrap_meta(f"    {suggestion}"):
+                    draw_text(wrapped, detail_x, y)
+                    y += line_h
+                y += line_h // 2
+            extra = parsed_meta.get("extra") or []
+            for item in extra:
+                for wrapped in _wrap_meta(f"  {item}"):
+                    draw_text(wrapped, detail_x, y)
+                    y += line_h
         # Closing reminder that this section is diagnostic context about how
         # the model read the request, not part of the main answer body.
         for wrapped in _wrap_meta("  Note: meta is diagnostic context only."):
@@ -841,7 +952,7 @@ def _default_draw_response(c: canvas.Canvas) -> None:  # pragma: no cover - visu
     # If we have any meta at all, allow clicking anywhere in the meta band /
     # block region to toggle expansion, not just on the text toggle control.
     if (
-        meta
+        meta_content
         and rect is not None
         and meta_region_top is not None
         and meta_region_bottom is None
@@ -849,7 +960,7 @@ def _default_draw_response(c: canvas.Canvas) -> None:  # pragma: no cover - visu
         # Meta was present but not expanded; treat just the band as clickable.
         meta_region_bottom = y
     if (
-        meta
+        meta_content
         and rect is not None
         and meta_region_top is not None
         and meta_region_bottom is not None

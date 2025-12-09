@@ -507,6 +507,10 @@ class UserActions:
         source = apply_prompt_configuration.model_source
         additional_source = apply_prompt_configuration.additional_model_source
         destination = apply_prompt_configuration.model_destination
+        try:
+            GPTState.last_prompt_text = prompt
+        except Exception:
+            pass
 
         # Snapshot the primary source messages so plain `model again` can reuse
         # the same content even if the live source has changed.

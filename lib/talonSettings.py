@@ -2,6 +2,12 @@ import os
 from dataclasses import dataclass
 from typing import Literal, Optional, TypedDict
 
+from .axisMappings import (
+    AXIS_VALUE_TO_KEY_MAPS,
+    DEFAULT_COMPLETENESS_TOKEN,
+    axis_hydrate_tokens,
+    axis_value_to_key_map_for,
+)
 from .modelSource import CompoundSource, ModelSource, SourceStack, create_model_source
 from .modelDestination import (
     ModelDestination,
@@ -13,15 +19,21 @@ from .metaPromptConfig import META_INTERPRETATION_GUIDANCE
 from talon import Context, Module, settings
 from .staticPromptConfig import get_static_prompt_axes, get_static_prompt_profile
 
+# Backward-compatible alias for existing callers.
+DEFAULT_COMPLETENESS_VALUE = DEFAULT_COMPLETENESS_TOKEN
+
+
+def _lists_dir() -> str:
+    current_dir = os.path.dirname(__file__)
+    return os.path.abspath(os.path.join(current_dir, "..", "GPT", "lists"))
+
 
 def _read_axis_default_from_list(filename: str, key: str, fallback: str) -> str:
     """Return the list value for a given key from a GPT axis .talon-list file.
 
     Falls back to the provided fallback if the file or key is not found.
     """
-    current_dir = os.path.dirname(__file__)
-    lists_dir = os.path.abspath(os.path.join(current_dir, "..", "GPT", "lists"))
-    path = os.path.join(lists_dir, filename)
+    path = os.path.join(_lists_dir(), filename)
     try:
         with open(path, "r", encoding="utf-8") as f:
             for line in f:
@@ -44,18 +56,8 @@ def _read_axis_default_from_list(filename: str, key: str, fallback: str) -> str:
 
 
 def _read_axis_value_to_key_map(filename: str) -> dict[str, str]:
-    """Build a mapping from axis value/description back to its short key.
-
-    We normalise both the key and value so that:
-    - Spoken modifiers that expand to long, instruction-style text can be
-      mapped back to their concise grammar token (for example, the long
-      "Important: Provide a thorough answer..." string -> "full").
-    - Code paths that already use the short token (for example, tests or
-      static prompt profiles) map idempotently to themselves.
-    """
-    current_dir = os.path.dirname(__file__)
-    lists_dir = os.path.abspath(os.path.join(current_dir, "..", "GPT", "lists"))
-    path = os.path.join(lists_dir, filename)
+    """Build a mapping from axis value/description back to its short key."""
+    path = os.path.join(_lists_dir(), filename)
     mapping: dict[str, str] = {}
     try:
         with open(path, "r", encoding="utf-8") as f:
@@ -73,15 +75,8 @@ def _read_axis_value_to_key_map(filename: str) -> dict[str, str]:
                 key, value = line.split(":", 1)
                 short = key.strip()
                 desc = value.strip()
-                # Map both the key and its description back to the short token.
                 mapping[short] = short
                 mapping[desc] = short
-                # Some axis descriptions are wrapped in quotes in the Talon
-                # list files so they can contain colons and other punctuation.
-                # Talon normalises these when exposing the list value to
-                # Python, so we also record an unquoted variant to ensure
-                # lookups (for example, "dynamics" scope) still resolve to the
-                # concise token for last_recipe.
                 if (desc.startswith('"') and desc.endswith('"')) or (
                     desc.startswith("'") and desc.endswith("'")
                 ):
@@ -93,17 +88,7 @@ def _read_axis_value_to_key_map(filename: str) -> dict[str, str]:
     return mapping
 
 
-DEFAULT_COMPLETENESS_VALUE = _read_axis_default_from_list(
-    "completenessModifier.talon-list",
-    "full",
-    "full",
-)
-
-_COMPLETENESS_VALUE_TO_KEY = _read_axis_value_to_key_map(
-    "completenessModifier.talon-list"
-)
-_SCOPE_VALUE_TO_KEY = _read_axis_value_to_key_map("scopeModifier.talon-list")
-_METHOD_VALUE_TO_KEY = _read_axis_value_to_key_map("methodModifier.talon-list")
+_METHOD_VALUE_TO_KEY = AXIS_VALUE_TO_KEY_MAPS.get("method", {})
 if "samples" in _METHOD_VALUE_TO_KEY:
     # Tolerate truncated variants of the samples prompt so last_recipe stays concise.
     _METHOD_VALUE_TO_KEY.setdefault("avoid near-duplicate options.", "samples")
@@ -118,18 +103,6 @@ if "samples" in _METHOD_VALUE_TO_KEY:
     _METHOD_VALUE_TO_KEY.setdefault("sum to 1; avoid near duplicate options.", "samples")
     _METHOD_VALUE_TO_KEY.setdefault("sum to 1", "samples")
     _METHOD_VALUE_TO_KEY.setdefault("approximately sum to 1", "samples")
-_STYLE_VALUE_TO_KEY = _read_axis_value_to_key_map("styleModifier.talon-list")
-_DIRECTIONAL_VALUE_TO_KEY = _read_axis_value_to_key_map(
-    "directionalModifier.talon-list"
-)
-
-_AXIS_VALUE_TO_KEY_MAPS: dict[str, dict[str, str]] = {
-    "completeness": _COMPLETENESS_VALUE_TO_KEY,
-    "scope": _SCOPE_VALUE_TO_KEY,
-    "method": _METHOD_VALUE_TO_KEY,
-    "style": _STYLE_VALUE_TO_KEY,
-    "directional": _DIRECTIONAL_VALUE_TO_KEY,
-}
 
 
 class AxisValues(TypedDict):
@@ -236,7 +209,7 @@ def _axis_string_to_tokens(value: str) -> list[str]:
 
 def _axis_value_to_key_map_for(axis: str) -> dict[str, str]:
     """Return the value→key map for a given axis, if available."""
-    return _AXIS_VALUE_TO_KEY_MAPS.get(axis, {})
+    return axis_value_to_key_map_for(axis)
 
 
 def _axis_recipe_token(axis: str, raw_value: str) -> str:
@@ -288,6 +261,18 @@ def _axis_recipe_token(axis: str, raw_value: str) -> str:
     return raw_value
 
 
+def _map_axis_tokens(axis: str, raw_value: str) -> list[str]:
+    """Map raw axis values/descriptions to their short tokens, preserving order."""
+    if not raw_value:
+        return []
+    axis_map = _axis_value_to_key_map_for(axis)
+    direct = axis_map.get(raw_value)
+    if direct:
+        return [direct]
+    tokens = _axis_string_to_tokens(str(raw_value))
+    return [axis_map.get(token, token) for token in tokens if token]
+
+
 mod = Module()
 ctx = Context()
 mod.tag("gpt_beta", desc="Tag for enabling beta GPT commands")
@@ -321,17 +306,20 @@ mod.list(
 def _spoken_axis_value(m, axis_name: str) -> str:
     """Return the spoken modifier(s) for a given axis as a single string.
 
-    For completeness we expect at most one value and return the bare
-    `completenessModifier` when present. For scope/method/style we allow
+    For completeness we expect at most one value and return the
+    normalised `completenessModifier` when present. For scope/method/style we allow
     Talon to provide `axisModifier_list` (multiple values); we map each
     spoken value back to its short axis token and join them with spaces so
     multi-tag semantics are preserved in a concise, token-based form.
     """
+    axis_map = _axis_value_to_key_map_for(axis_name)
+
     # Completeness remains single-valued.
     if axis_name == "completeness":
-        return getattr(m, "completenessModifier", "")
-
-    axis_map = _axis_value_to_key_map_for(axis_name)
+        value = getattr(m, "completenessModifier", "")
+        if not value:
+            return ""
+        return axis_map.get(value, value) if axis_map else value
 
     def _normalise(raw: object) -> str:
         value = str(raw).strip()
@@ -393,11 +381,11 @@ def modelPrompt(m) -> str:
     spoken_completeness = _spoken_axis_value(m, "completeness")
     profile_completeness = profile_axes.get("completeness")
     if spoken_completeness:
-        effective_completeness = spoken_completeness
+        effective_completeness_raw = spoken_completeness
     elif profile_completeness and not GPTState.user_overrode_completeness:
-        effective_completeness = profile_completeness
+        effective_completeness_raw = profile_completeness
     else:
-        effective_completeness = settings.get("user.model_default_completeness")
+        effective_completeness_raw = settings.get("user.model_default_completeness")
 
     spoken_scope = _spoken_axis_value(m, "scope")
     raw_profile_scope = profile_axes.get("scope")
@@ -406,15 +394,11 @@ def modelPrompt(m) -> str:
     else:
         profile_scope = raw_profile_scope
     if spoken_scope:
-        effective_scope = spoken_scope
+        effective_scope_raw = spoken_scope
     elif profile_scope and not GPTState.user_overrode_scope:
-        effective_scope = profile_scope
+        effective_scope_raw = profile_scope
     else:
-        # Normalise any persisted default back to short tokens so that
-        # last_recipe and GPTState.last_* remain concise.
-        effective_scope = _axis_recipe_token(
-            "scope", settings.get("user.model_default_scope")
-        )
+        effective_scope_raw = settings.get("user.model_default_scope")
 
     spoken_method = _spoken_axis_value(m, "method")
     raw_profile_method = profile_axes.get("method")
@@ -423,13 +407,11 @@ def modelPrompt(m) -> str:
     else:
         profile_method = raw_profile_method
     if spoken_method:
-        effective_method = spoken_method
+        effective_method_raw = spoken_method
     elif profile_method and not GPTState.user_overrode_method:
-        effective_method = profile_method
+        effective_method_raw = profile_method
     else:
-        effective_method = _axis_recipe_token(
-            "method", settings.get("user.model_default_method")
-        )
+        effective_method_raw = settings.get("user.model_default_method")
 
     spoken_style = _spoken_axis_value(m, "style")
     raw_profile_style = profile_axes.get("style")
@@ -438,74 +420,56 @@ def modelPrompt(m) -> str:
     else:
         profile_style = raw_profile_style
     if spoken_style:
-        effective_style = spoken_style
+        effective_style_raw = spoken_style
     elif profile_style and not GPTState.user_overrode_style:
-        effective_style = profile_style
+        effective_style_raw = profile_style
     else:
-        effective_style = _axis_recipe_token(
-            "style", settings.get("user.model_default_style")
-        )
+        effective_style_raw = settings.get("user.model_default_style")
+
+    # Map all axes to token-based storage, keeping a canonical form for recap/rerun.
+    completeness_tokens = _map_axis_tokens("completeness", effective_completeness_raw)
+    completeness_token = completeness_tokens[0] if completeness_tokens else ""
+
+    scope_tokens = _map_axis_tokens("scope", effective_scope_raw)
+    scope_serialised = _axis_tokens_to_string(scope_tokens)
+    scope_canonical_tokens = _canonicalise_axis_tokens("scope", scope_tokens)
+    scope_canonical_serialised = _axis_tokens_to_string(scope_canonical_tokens)
+
+    method_tokens = _map_axis_tokens("method", effective_method_raw)
+    method_serialised = _axis_tokens_to_string(method_tokens)
+    method_canonical_tokens = _canonicalise_axis_tokens("method", method_tokens)
+    method_canonical_serialised = _axis_tokens_to_string(method_canonical_tokens)
+
+    style_tokens = _map_axis_tokens("style", effective_style_raw)
+    style_serialised = _axis_tokens_to_string(style_tokens)
+    style_canonical_tokens = _canonicalise_axis_tokens("style", style_tokens)
+    style_canonical_serialised = _axis_tokens_to_string(style_canonical_tokens)
 
     # Apply the effective axes to the shared system prompt for this request.
-    GPTState.system_prompt.completeness = effective_completeness or ""
-    GPTState.system_prompt.scope = effective_scope or ""
-    GPTState.system_prompt.method = effective_method or ""
-    GPTState.system_prompt.style = effective_style or ""
+    GPTState.system_prompt.completeness = completeness_token or ""
+    GPTState.system_prompt.scope = scope_serialised or ""
+    GPTState.system_prompt.method = method_serialised or ""
+    GPTState.system_prompt.style = style_serialised or ""
 
     # Store a concise, human-readable recipe for this prompt so the
     # confirmation GUI (and future UIs) can recap what was asked, and keep a
     # structured view of the same tokens for shorthand grammars.
     recipe_parts = [static_prompt]
 
-    # Map effective axis descriptions back to concise axis tokens for
-    # last_recipe / GPTState.last_* storage. For this slice, we still have
-    # at most one token per axis; later slices will extend this to multiple
-    # tokens via the canonicalisation helpers above.
-    completeness_token = (
-        _axis_recipe_token("completeness", effective_completeness)
-        if effective_completeness
-        else ""
-    )
-    scope_token = (
-        _axis_recipe_token("scope", effective_scope) if effective_scope else ""
-    )
-    method_token = (
-        _axis_recipe_token("method", effective_method) if effective_method else ""
-    )
-    style_token = (
-        _axis_recipe_token("style", effective_style) if effective_style else ""
-    )
-
-    # Prepare canonical, per-axis token sets so that future multi-tag axes
-    # can reuse the same helpers without changing storage formats.
-    scope_tokens = _canonicalise_axis_tokens(
-        "scope", _axis_string_to_tokens(scope_token)
-    )
-    method_tokens = _canonicalise_axis_tokens(
-        "method", _axis_string_to_tokens(method_token)
-    )
-    style_tokens = _canonicalise_axis_tokens(
-        "style", _axis_string_to_tokens(style_token)
-    )
-
-    scope_serialised = _axis_tokens_to_string(scope_tokens)
-    method_serialised = _axis_tokens_to_string(method_tokens)
-    style_serialised = _axis_tokens_to_string(style_tokens)
-
     if completeness_token:
         recipe_parts.append(completeness_token)
-    if scope_serialised:
-        recipe_parts.append(scope_serialised)
-    if method_serialised:
-        recipe_parts.append(method_serialised)
-    if style_serialised:
-        recipe_parts.append(style_serialised)
+    if scope_canonical_serialised:
+        recipe_parts.append(scope_canonical_serialised)
+    if method_canonical_serialised:
+        recipe_parts.append(method_canonical_serialised)
+    if style_canonical_serialised:
+        recipe_parts.append(style_canonical_serialised)
     GPTState.last_recipe = " · ".join(recipe_parts)
     GPTState.last_static_prompt = static_prompt
     GPTState.last_completeness = completeness_token
-    GPTState.last_scope = scope_serialised
-    GPTState.last_method = method_serialised
-    GPTState.last_style = style_serialised
+    GPTState.last_scope = scope_canonical_serialised
+    GPTState.last_method = method_canonical_serialised
+    GPTState.last_style = style_canonical_serialised
     # Track the last directional lens separately (as a short token) so
     # recap/quick help and shorthand grammars can include it.
     GPTState.last_directional = _axis_recipe_token("directional", directional or "")
@@ -521,29 +485,37 @@ def modelPrompt(m) -> str:
     # global defaults here; those already live in the system prompt.
     constraints: list[str] = ["Constraints:"]
 
-    # Completeness: show spoken or profile-level hints.
-    if spoken_completeness:
-        constraints.append(f"  Completeness: {spoken_completeness}")
+    def _hydrate(axis: str, tokens: list[str]) -> str:
+        hydrated = axis_hydrate_tokens(axis, tokens)
+        return " ".join(hydrated) if hydrated else " ".join(tokens)
+
+    # Completeness: show spoken or profile-level hints (hydrate for readability).
+    if completeness_tokens and spoken_completeness:
+        constraints.append(f"  Completeness: {_hydrate('completeness', completeness_tokens)}")
     elif profile_completeness and not GPTState.user_overrode_completeness:
-        constraints.append(f"  Completeness: {profile_completeness}")
+        prof_tokens = _map_axis_tokens("completeness", profile_completeness)
+        constraints.append(f"  Completeness: {_hydrate('completeness', prof_tokens)}")
 
     # Scope: purely conceptual, relative to the voice-selected target.
-    if spoken_scope:
-        constraints.append(f"  Scope: {spoken_scope}")
+    if scope_tokens and spoken_scope:
+        constraints.append(f"  Scope: {_hydrate('scope', scope_tokens)}")
     elif profile_scope and not GPTState.user_overrode_scope:
-        constraints.append(f"  Scope: {profile_scope}")
+        prof_tokens = _map_axis_tokens("scope", profile_scope)
+        constraints.append(f"  Scope: {_hydrate('scope', prof_tokens)}")
 
     # Method: spoken modifier or short profile keyword.
-    if spoken_method:
-        constraints.append(f"  Method: {spoken_method}")
+    if method_tokens and spoken_method:
+        constraints.append(f"  Method: {_hydrate('method', method_tokens)}")
     elif profile_method and not GPTState.user_overrode_method:
-        constraints.append(f"  Method: {profile_method}")
+        prof_tokens = _map_axis_tokens("method", profile_method)
+        constraints.append(f"  Method: {_hydrate('method', prof_tokens)}")
 
     # Style: spoken style modifier or short profile keyword.
-    if spoken_style:
-        constraints.append(f"  Style: {spoken_style}")
+    if style_tokens and spoken_style:
+        constraints.append(f"  Style: {_hydrate('style', style_tokens)}")
     elif profile_style and not GPTState.user_overrode_style:
-        constraints.append(f"  Style: {profile_style}")
+        prof_tokens = _map_axis_tokens("style", profile_style)
+        constraints.append(f"  Style: {_hydrate('style', prof_tokens)}")
 
     # If we only have the "Constraints:" header and nothing else, drop it to
     # avoid cluttering very simple prompts.

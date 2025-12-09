@@ -20,7 +20,6 @@ from talon import cron
 from ..lib.pureHelpers import strip_markdown
 from .modelState import GPTState
 from .modelTypes import GPTImageItem, GPTRequest, GPTMessage, GPTTextItem, GPTTool
-
 from .requestAsync import start_async
 from .requestBus import (
     emit_begin_send,
@@ -35,6 +34,7 @@ from .requestBus import (
 from .requestController import RequestUIController
 from .requestState import RequestState
 from .requestLog import append_entry
+from .uiDispatch import run_on_ui_thread
 import threading
 
 # Ensure a default request UI controller is registered so lifecycle events
@@ -115,6 +115,29 @@ def _should_show_response_canvas() -> bool:
     except Exception:
         pass
     return _prefer_canvas_progress()
+
+
+def _refresh_response_canvas() -> None:
+    """Refresh and open the response canvas on the Talon main thread."""
+    def _refresh_once():
+        try:
+            actions.user.model_response_canvas_refresh()
+        except Exception as e:
+            try:
+                app.notify(f"GPT: response canvas refresh failed: {e}")
+            except Exception:
+                pass
+
+    def _open_canvas():
+        try:
+            actions.user.model_response_canvas_open()
+        except Exception:
+            pass
+
+    run_on_ui_thread(_refresh_once, delay_ms=0)
+    run_on_ui_thread(_refresh_once, delay_ms=50)
+    run_on_ui_thread(_open_canvas)
+    run_on_ui_thread(_refresh_once)
 
 
 def _update_stream_state_from_text(full_text: str) -> None:
@@ -981,27 +1004,7 @@ def send_request(max_attempts: int = 10):
     # When using the canvas for progress (response window/default), refresh it
     # after the final content is ready so the body redraws with the answer.
     if _should_show_response_canvas():
-        def _refresh():
-            try:
-                actions.user.model_response_canvas_refresh()
-            except Exception as e:
-                try:
-                    app.notify(f"GPT: response canvas refresh failed: {e}")
-                except Exception:
-                    pass
-        try:
-            cron.after("0ms", _refresh)
-            cron.after("50ms", _refresh)
-        except Exception:
-            _refresh()
-        try:
-            actions.user.model_response_canvas_open()
-        except Exception:
-            pass
-        try:
-            actions.user.model_response_canvas_refresh()
-        except Exception:
-            pass
+        _refresh_response_canvas()
 
     if GPTState.thread_enabled:
         GPTState.push_thread(

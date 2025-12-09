@@ -6,6 +6,13 @@ from talon_user.lib.requestState import RequestPhase
 
 
 class PillCanvasClickTests(unittest.TestCase):
+    def setUp(self):
+        pillCanvas.PillState.showing = False
+        pillCanvas.PillState.text = "Model"
+        pillCanvas.PillState.phase = RequestPhase.IDLE
+        pillCanvas.PillState.generation = 0
+        pillCanvas._pill_canvas = None
+
     def test_click_cancel_calls_cancel_request(self):
         with patch.object(pillCanvas, "actions") as actions_mock, patch.object(
             pillCanvas, "hide_pill"
@@ -60,3 +67,119 @@ class PillCanvasClickTests(unittest.TestCase):
             self.assertEqual(pillCanvas._pill_rect.x, 120)
             self.assertEqual(pillCanvas._pill_rect.y, 0)
             dummy_canvas.rect = pillCanvas._pill_rect
+
+    def test_show_pill_dispatches_on_ui_thread(self):
+        class Rect:
+            def __init__(self, x, y, width, height):
+                self.x = x
+                self.y = y
+                self.width = width
+                self.height = height
+
+        dispatched_delays = []
+
+        def run_on_ui_thread(fn, delay_ms=0):
+            dispatched_delays.append(delay_ms)
+            fn()
+
+        rect = Rect(10, 20, 30, 40)
+
+        with (
+            patch.object(pillCanvas, "run_on_ui_thread", side_effect=run_on_ui_thread)
+            as run_mock,
+            patch.object(pillCanvas, "_default_rect", return_value=rect),
+            patch.object(pillCanvas, "_show_canvas") as show_canvas,
+            patch.object(pillCanvas, "actions") as actions_mock,
+        ):
+            actions_mock.user.notify = MagicMock()
+            pillCanvas.show_pill("Sending", RequestPhase.SENDING)
+
+            # Two scheduled attempts (immediate and retry).
+            self.assertEqual(run_mock.call_count, 2)
+            self.assertIn(0, dispatched_delays)
+            self.assertIn(50, dispatched_delays)
+            show_canvas.assert_called_with(
+                "Sending (click to cancel)", RequestPhase.SENDING, rect
+            )
+
+    def test_hide_pill_dispatches_on_ui_thread(self):
+        dispatched = []
+
+        def run_on_ui_thread(fn, delay_ms=0):
+            dispatched.append(delay_ms)
+            fn()
+
+        dummy_canvas = MagicMock()
+        original_canvas = pillCanvas._pill_canvas
+        pillCanvas._pill_canvas = dummy_canvas
+        try:
+            with patch.object(
+                pillCanvas, "run_on_ui_thread", side_effect=run_on_ui_thread
+            ):
+                pillCanvas.hide_pill()
+
+            self.assertEqual(dispatched, [0])
+            dummy_canvas.hide.assert_called_once()
+        finally:
+            pillCanvas._pill_canvas = original_canvas
+
+    def test_hide_prevents_late_show_from_background(self):
+        # Simulate rapid hide after show scheduling; stale show should be skipped.
+        class Rect:
+            def __init__(self, x, y, width, height):
+                self.x = x
+                self.y = y
+                self.width = width
+                self.height = height
+
+        calls = {"show": 0}
+        delayed_fns = []
+
+        def run_on_ui_thread(fn, delay_ms=0):
+            # Collect callbacks to run later to simulate async timing.
+            delayed_fns.append(fn)
+
+        rect = Rect(0, 0, 10, 10)
+
+        with (
+            patch.object(pillCanvas, "run_on_ui_thread", side_effect=run_on_ui_thread),
+            patch.object(pillCanvas, "_default_rect", return_value=rect),
+            patch.object(pillCanvas, "_show_canvas") as show_canvas,
+            patch.object(pillCanvas, "actions") as actions_mock,
+        ):
+            actions_mock.user.notify = MagicMock()
+
+            pillCanvas.show_pill("Sending", RequestPhase.SENDING)
+            pillCanvas.hide_pill()
+
+            # Execute delayed callbacks; stale shows should be skipped.
+            for fn in delayed_fns:
+                fn()
+
+            show_canvas.assert_not_called()
+
+    def test_show_pill_skips_redundant_dispatch(self):
+        class Rect:
+            def __init__(self, x, y, width, height):
+                self.x = x
+                self.y = y
+                self.width = width
+                self.height = height
+
+        rect = Rect(0, 0, 10, 10)
+
+        with (
+            patch.object(pillCanvas, "run_on_ui_thread") as run_mock,
+            patch.object(pillCanvas, "_default_rect", return_value=rect),
+            patch.object(pillCanvas, "_show_canvas") as show_canvas,
+            patch.object(pillCanvas, "actions") as actions_mock,
+        ):
+            run_mock.side_effect = lambda fn, delay_ms=0: fn()
+            actions_mock.user.notify = MagicMock()
+
+            pillCanvas.show_pill("Sending", RequestPhase.SENDING)
+            # Second call with same text/phase should skip dispatch.
+            pillCanvas.show_pill("Sending", RequestPhase.SENDING)
+
+            self.assertEqual(run_mock.call_count, 2)
+            self.assertEqual(show_canvas.call_count, 2)

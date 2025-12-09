@@ -16,6 +16,7 @@ from .requestController import RequestUIController
 from .requestState import RequestPhase, RequestState
 from .modelState import GPTState
 from .pillCanvas import show_pill, hide_pill
+from .uiDispatch import run_on_ui_thread
 
 
 def _notify(message: str) -> None:
@@ -44,17 +45,14 @@ def _show_pill() -> None:
         # When the destination is the response window, surface progress in the
         # response canvas itself instead of a floating pill to avoid canvas
         # resource issues on background threads.
-        try:
-            actions.user.model_response_canvas_open()
-        except Exception:
-            pass
+        run_on_ui_thread(lambda: actions.user.model_response_canvas_open())
         _notify("Model: sending…")
         return
-    show_pill("Model: sending…", RequestPhase.SENDING)
+    run_on_ui_thread(lambda: show_pill("Model: sending…", RequestPhase.SENDING))
 
 
 def _hide_pill() -> None:
-    hide_pill()
+    run_on_ui_thread(hide_pill)
 
 
 def _show_confirmation() -> None:
@@ -70,10 +68,7 @@ def _show_response_canvas_hint() -> None:
 
 
 def _hide_help_hub() -> None:
-    try:
-        actions.user.help_hub_close()
-    except Exception:
-        pass
+    run_on_ui_thread(lambda: actions.user.help_hub_close())
 
 
 def _on_state_change(state: RequestState) -> None:

@@ -6,11 +6,12 @@ offers a click-to-cancel affordance when cancellation is supported.
 
 from __future__ import annotations
 
-from typing import Optional
+from typing import Callable, Optional
 
 from talon import Module, actions, app, canvas, ui, settings, cron
 
 from .requestState import RequestPhase
+from .uiDispatch import run_on_ui_thread
 
 mod = Module()
 
@@ -20,6 +21,7 @@ class PillState:
     text: str = "Model"
     phase: RequestPhase = RequestPhase.IDLE
     hover: bool = False
+    generation: int = 0  # increments each show/hide to ignore stale UI-thread work
 
 
 _pill_canvas: Optional[canvas.Canvas] = None
@@ -63,7 +65,7 @@ def _pill_color_for_phase(phase: RequestPhase) -> str:
 
 def _debug(msg: str) -> None:
     try:
-        enabled = settings.get("user.model_debug_pill", False)
+        enabled = settings.get("user.model_debug_pill", True)
     except Exception:
         enabled = False
     if not enabled:
@@ -74,8 +76,41 @@ def _debug(msg: str) -> None:
         pass
 
 
+# Proactively create the canvas on Talon's ready event to ensure a main-thread
+# resource context is available before worker threads attempt to show it.
+_warmup_handle = None
+
+
+def _on_app_ready():
+    """Warm up a canvas on the main thread; retry a few times via cron."""
+
+    def _warmup():
+        global _warmup_handle
+        try:
+            if _ensure_pill_canvas() is not None:
+                _debug("app ready: pill canvas warmup succeeded; stopping interval")
+                if _warmup_handle:
+                    cron.cancel(_warmup_handle)
+                _warmup_handle = None
+        except Exception as e:
+            _debug(f"app ready warmup failed: {e}")
+
+    try:
+        _debug("app ready: scheduling pill canvas warmup")
+        _warmup_handle = cron.interval("50ms", _warmup)
+    except Exception as e:
+        _debug(f"app ready warmup scheduling failed: {e}")
+
+
+try:
+    app.register("ready", _on_app_ready)
+except Exception:
+    pass
+
+
 def _ensure_pill_canvas() -> canvas.Canvas:
     global _pill_canvas
+    created = False
     if _pill_canvas is not None:
         _debug("reusing existing pill canvas")
         return _pill_canvas
@@ -83,6 +118,7 @@ def _ensure_pill_canvas() -> canvas.Canvas:
     # Prefer a rect-based canvas; fall back to full screen if it fails.
     try:
         _pill_canvas = canvas.Canvas.from_rect(_pill_rect)
+        created = True
         _debug(
             f"pill canvas created from rect ({_pill_rect.x},{_pill_rect.y},{_pill_rect.width},{_pill_rect.height})"
         )
@@ -92,6 +128,7 @@ def _ensure_pill_canvas() -> canvas.Canvas:
     if _pill_canvas is None:
         try:
             _pill_canvas = canvas.Canvas.from_screen(ui.main_screen())
+            created = True
             _debug("created pill canvas from screen fallback")
         except Exception as e:
             _debug(f"pill canvas from_screen failed: {e}")
@@ -137,14 +174,21 @@ def _ensure_pill_canvas() -> canvas.Canvas:
         _pill_canvas.register("mouse", _on_mouse)
     except Exception:
         pass
+    # Ensure newly created canvases stay hidden until explicitly shown.
+    if created:
+        try:
+            _pill_canvas.hide()
+        except Exception:
+            pass
     return _pill_canvas
 
 
-def _show_canvas(display_text: str, phase: RequestPhase) -> None:
-    """Create/show the canvas on the main thread (cron) to avoid threading issues."""
+def _show_canvas(display_text: str, phase: RequestPhase, rect: Optional[ui.Rect]) -> None:
+    """Create/show the canvas; must be called on the main thread."""
+    target_rect = rect or _pill_rect
     c = _ensure_pill_canvas()
     # Ensure the canvas reflects the latest rect when reused.
-    _apply_rect(_pill_rect)
+    _apply_rect(target_rect)
     try:
         if c is not None:
             c.show()
@@ -177,9 +221,6 @@ def _apply_rect(rect: ui.Rect) -> None:
 
 
 def show_pill(text: str, phase: RequestPhase) -> None:
-    # Place the pill near the right-hand side on every show.
-    _apply_rect(_default_rect())
-    PillState.phase = phase
     # Surface a simple affordance hint depending on phase.
     if phase in (RequestPhase.SENDING, RequestPhase.STREAMING):
         display_text = f"{text} (click to cancel)"
@@ -187,12 +228,15 @@ def show_pill(text: str, phase: RequestPhase) -> None:
         display_text = f"{text} (open response)"
     else:
         display_text = text
+    # Avoid redundant UI-thread dispatch if nothing changed.
+    if PillState.showing and PillState.phase == phase and PillState.text == display_text:
+        _debug("skip redundant pill show (same phase/text)")
+        return
     PillState.text = display_text
     PillState.phase = phase
     PillState.showing = True
-    _debug(
-        f"Show pill: '{display_text}' phase={phase.name} rect=({_pill_rect.x}, {_pill_rect.y}, {_pill_rect.width}, {_pill_rect.height})"
-    )
+    PillState.generation += 1
+    current_gen = PillState.generation
     # Best-effort toast in case canvas is not visible or available.
     try:
         actions.user.notify(display_text)
@@ -205,25 +249,35 @@ def show_pill(text: str, phase: RequestPhase) -> None:
     # retry shortly after in case the resource context is briefly unavailable.
     def _try_show():
         try:
-            _show_canvas(display_text, phase)
+            # Ignore stale show requests if hide was called meanwhile.
+            if PillState.generation != current_gen or not PillState.showing:
+                _debug("skipping stale pill show attempt")
+                return
+            rect = _default_rect()
+            _debug(
+                f"Show pill: '{display_text}' phase={phase.name} rect=({rect.x}, {rect.y}, {rect.width}, {rect.height})"
+            )
+            _show_canvas(display_text, phase, rect)
         except Exception as e:
             _debug(f"pill canvas show failed: {e}")
-    try:
-        cron.after("0ms", _try_show)
-        cron.after("50ms", _try_show)
-    except Exception as e:
-        _debug(f"cron dispatch failed, showing directly: {e}")
-        _try_show()
+
+    run_on_ui_thread(_try_show, delay_ms=0)
+    run_on_ui_thread(_try_show, delay_ms=50)
 
 
 def hide_pill() -> None:
     PillState.showing = False
+    PillState.generation += 1
     _debug("Hide pill")
-    if _pill_canvas is not None:
-        try:
-            _pill_canvas.hide()
-        except Exception:
-            pass
+
+    def _hide():
+        if _pill_canvas is not None:
+            try:
+                _pill_canvas.hide()
+            except Exception:
+                pass
+
+    run_on_ui_thread(_hide)
 
 
 def handle_pill_click(phase: RequestPhase) -> None:

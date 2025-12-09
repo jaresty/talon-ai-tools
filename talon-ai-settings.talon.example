@@ -18,8 +18,8 @@ settings():
 
     # Enable debug logging for the request progress pill overlay.
     # When set to 1, the pill emits small notifications with its state/position.
-    # Default is off to avoid noisy notifications on systems without canvas support.
-    # user.model_debug_pill = 1
+    # Default is on; set to 0 to silence pill/UI-thread debug logs.
+    user.model_debug_pill = 1
 
     # Enable streaming responses by default (set to 0 to disable).
     user.model_streaming = 1

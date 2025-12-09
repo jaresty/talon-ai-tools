@@ -1,4 +1,5 @@
 import unittest
+from unittest.mock import patch
 from typing import TYPE_CHECKING
 
 try:
@@ -23,6 +24,12 @@ if bootstrap is not None:
         def setUp(self):
             actions.app.calls.clear()
             actions.user.calls.clear()
+            from talon_user.lib import pillCanvas
+
+            pillCanvas.PillState.showing = False
+            pillCanvas.PillState.text = "Model"
+            pillCanvas.PillState.phase = RequestPhase.IDLE
+            pillCanvas.PillState.generation = 0
             requestUI.register_default_request_ui()
             emit_reset()
 
@@ -51,6 +58,20 @@ if bootstrap is not None:
             emit_fail("boom")
             notifications = [c for c in actions.user.calls + actions.app.calls if c[0] == "notify"]
             self.assertTrue(any("boom" in str(args[0]) for _, args, _ in notifications))
+
+        def test_canvas_destination_dispatches_ui_open(self):
+            from talon_user.lib.modelState import GPTState
+
+            GPTState.current_destination_kind = "window"
+            try:
+                with patch.object(
+                    requestUI, "run_on_ui_thread"
+                ) as run_on_ui_thread_mock:
+                    run_on_ui_thread_mock.side_effect = lambda fn: fn()
+                    emit_begin_send()
+                run_on_ui_thread_mock.assert_called()
+            finally:
+                GPTState.current_destination_kind = ""
 else:
     if not TYPE_CHECKING:
         class RequestUITests(unittest.TestCase):

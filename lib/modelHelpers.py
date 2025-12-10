@@ -33,8 +33,9 @@ from .requestBus import (
 )
 from .requestController import RequestUIController
 from .requestState import RequestState
-from .requestLog import append_entry
+from .requestLog import append_entry_from_request
 from .uiDispatch import run_on_ui_thread
+from .requestLifecycle import RequestLifecycleState, reduce_request_state
 import threading
 
 # Ensure a default request UI controller is registered so lifecycle events
@@ -371,7 +372,8 @@ def _build_timeout_context() -> Optional[str]:
     """Describe the approximate client-side timeout so the model can budget its response."""
     try:
         timeout_seconds: int = settings.get(
-            "user.model_request_timeout_seconds", 120  # type: ignore
+            "user.model_request_timeout_seconds",
+            120,  # type: ignore
         )
     except Exception:
         timeout_seconds = 120
@@ -397,7 +399,12 @@ def _build_request_context(destination: object) -> list[str]:
     timeout_context = _build_timeout_context()
     system_messages = [
         m
-        for m in [language_context, application_context, snippet_context, timeout_context]
+        for m in [
+            language_context,
+            application_context,
+            snippet_context,
+            timeout_context,
+        ]
         if m is not None
     ]
     full_system_messages = [
@@ -541,6 +548,7 @@ def call_tool(
 
 class CancelledRequest(RuntimeError):
     """Raised internally when a cancel is requested mid-stream."""
+
     pass
 
 
@@ -550,6 +558,33 @@ def _send_request_streaming(request, request_id: str) -> str:
         print("[modelHelpers] streaming entry")
     except Exception:
         pass
+
+    managed_externally = False
+    lifecycle = RequestLifecycleState()
+    try:
+        managed_externally = hasattr(GPTState, "last_lifecycle")
+        if managed_externally:
+            lifecycle = getattr(GPTState, "last_lifecycle", lifecycle)
+        else:
+            GPTState.last_lifecycle = lifecycle
+    except Exception:
+        managed_externally = True
+
+    def _update_lifecycle(event: str) -> None:
+        nonlocal lifecycle
+        if managed_externally:
+            return
+        try:
+            lifecycle = reduce_request_state(lifecycle, event)
+            try:
+                GPTState.last_lifecycle = lifecycle
+            except Exception:
+                pass
+        except Exception:
+            pass
+
+    _update_lifecycle("start")
+
     TOKEN = get_token()
     headers = {
         "Content-Type": "application/json",
@@ -586,6 +621,14 @@ def _send_request_streaming(request, request_id: str) -> str:
         )
     except Exception:
         pass
+
+    def _handle_streaming_error(exc: Exception) -> None:
+        _update_lifecycle("error")
+        emit_fail(str(exc), request_id=request_id)
+        try:
+            print(f"[modelHelpers] streaming error; falling back: {exc!r}")
+        except Exception:
+            pass
 
     # Explicitly request streaming from the API; some endpoints require the
     # `stream` flag in the JSON payload as well as an HTTP streaming response.
@@ -624,6 +667,8 @@ def _send_request_streaming(request, request_id: str) -> str:
                         meta_throttle_ms=refresh_interval_ms,
                         last_meta_update_ms=last_meta_refresh_ms,
                     )
+                    _update_lifecycle("stream_start")
+                    _update_lifecycle("stream_end")
                     if _should_show_response_canvas():
                         _refresh_response_canvas()
                     try:
@@ -645,10 +690,13 @@ def _send_request_streaming(request, request_id: str) -> str:
     except requests.exceptions.Timeout:
         error_msg = f"Request timed out after {timeout_seconds} seconds"
         notify(f"GPT Failure: {error_msg}")
-        raise GPTRequestError(408, error_msg)
+        err = GPTRequestError(408, error_msg)
+        _handle_streaming_error(err)
+        raise err
     except Exception as e:
         print(f"[modelHelpers] streaming requests.post failed: {e!r}")
         traceback.print_exc()
+        _handle_streaming_error(e)
         raise
     if raw_response.status_code != 200:
         error_info = None
@@ -664,7 +712,11 @@ def _send_request_streaming(request, request_id: str) -> str:
         if not _should_show_response_canvas():
             return
         now_ms = int(time.time() * 1000)
-        if not force and last_canvas_refresh_ms and now_ms - last_canvas_refresh_ms < refresh_interval_ms:
+        if (
+            not force
+            and last_canvas_refresh_ms
+            and now_ms - last_canvas_refresh_ms < refresh_interval_ms
+        ):
             return
         try:
             actions.user.model_response_canvas_refresh()
@@ -682,6 +734,7 @@ def _send_request_streaming(request, request_id: str) -> str:
         )
         if first_chunk:
             first_chunk = False
+            _update_lifecycle("stream_start")
             if _should_show_response_canvas():
                 try:
                     actions.user.model_response_canvas_open()
@@ -807,6 +860,7 @@ def _send_request_streaming(request, request_id: str) -> str:
         except Exception:
             pass
         _set_active_response(None)
+        _update_lifecycle("cancel")
         raise
     except Exception as e:
         # If cancel was requested (regardless of exception type), treat as cancel.
@@ -838,8 +892,7 @@ def _send_request_streaming(request, request_id: str) -> str:
                 pass
             _set_active_response(None)
             raise CancelledRequest()
-        emit_fail(str(e), request_id=request_id)
-        print(f"[modelHelpers] streaming error; falling back: {e}")
+        _handle_streaming_error(e)
         raise
     finally:
         try:
@@ -855,6 +908,7 @@ def _send_request_streaming(request, request_id: str) -> str:
         )
     except Exception:
         pass
+    _update_lifecycle("stream_end")
     GPTState.last_raw_response = {"choices": [{"message": {"content": answer_text}}]}
     _set_active_response(None)
     return answer_text
@@ -867,7 +921,45 @@ def send_request(max_attempts: int = 10):
     message_content = None
     attempts = 0
 
+    lifecycle = RequestLifecycleState()
+    try:
+        GPTState.last_lifecycle = lifecycle
+    except Exception:
+        pass
+
     request_id = emit_begin_send()
+    lifecycle = reduce_request_state(lifecycle, "start")
+    try:
+        GPTState.last_lifecycle = lifecycle
+    except Exception:
+        pass
+
+    def _handle_cancelled_request() -> str:
+        emit_fail("cancelled", request_id=request_id)
+        notify("GPT: Request cancelled")
+        cancel_active_request()
+        return format_message("")
+
+    def _handle_request_error(exc: Exception) -> None:
+        nonlocal lifecycle
+        emit_fail(str(exc), request_id=request_id)
+        lifecycle = reduce_request_state(lifecycle, "error")
+        try:
+            GPTState.last_lifecycle = lifecycle
+        except Exception:
+            pass
+
+    def _handle_max_attempts_exceeded() -> None:
+        nonlocal lifecycle
+        emit_fail("max_attempts_exceeded", request_id=request_id)
+        lifecycle = reduce_request_state(lifecycle, "error")
+        try:
+            GPTState.last_lifecycle = lifecycle
+        except Exception:
+            pass
+        notify("GPT request failed after max attempts.")
+        raise RuntimeError("GPT request failed after max attempts.")
+
     started_at_ms = int(time.time() * 1000)
     try:
         print(
@@ -897,10 +989,30 @@ def send_request(max_attempts: int = 10):
     if use_stream:
         try:
             print("[modelHelpers] invoking streaming request")
-            message_content = _send_request_streaming(GPTState.request, request_id)
-        except CancelledRequest:
+            # Logical lifecycle: first chunk observed.
+            lifecycle = reduce_request_state(lifecycle, "stream_start")
             try:
-                print("[modelHelpers] send_request: streaming cancelled, aborting without fallback")
+                GPTState.last_lifecycle = lifecycle
+            except Exception:
+                pass
+            message_content = _send_request_streaming(GPTState.request, request_id)
+            # Only mark completed when we actually received content.
+            if message_content is not None:
+                lifecycle = reduce_request_state(lifecycle, "stream_end")
+                try:
+                    GPTState.last_lifecycle = lifecycle
+                except Exception:
+                    pass
+        except CancelledRequest:
+            lifecycle = reduce_request_state(lifecycle, "cancel")
+            try:
+                GPTState.last_lifecycle = lifecycle
+            except Exception:
+                pass
+            try:
+                print(
+                    "[modelHelpers] send_request: streaming cancelled, aborting without fallback"
+                )
                 try:
                     phase = getattr(current_state(), "phase", None)
                     print(f"[modelHelpers] after streaming cancel phase={phase}")
@@ -935,14 +1047,18 @@ def send_request(max_attempts: int = 10):
             return format_message("")
         except Exception as e:
             try:
-                print(f"[modelHelpers] streaming failed; retrying without stream ({e!r})")
+                print(
+                    f"[modelHelpers] streaming failed; retrying without stream ({e!r})"
+                )
                 traceback.print_exc()
             except Exception:
                 pass
             message_content = None
         if message_content is None:
             try:
-                print("[modelHelpers] streaming branch returned None (skipped or failed)")
+                print(
+                    "[modelHelpers] streaming branch returned None (skipped or failed)"
+                )
             except Exception:
                 pass
 
@@ -961,18 +1077,15 @@ def send_request(max_attempts: int = 10):
                     pass
             except Exception:
                 pass
-            emit_fail("cancelled", request_id=request_id)
-            notify("GPT: Request cancelled")
-            cancel_active_request()
-            return format_message("")
+            return _handle_cancelled_request()
 
         try:
             json_response = send_request_internal(GPTState.request)
         except GPTRequestError as e:
-            emit_fail(str(e), request_id=request_id)
+            _handle_request_error(e)
             raise
         except Exception as e:
-            emit_fail(str(e), request_id=request_id)
+            _handle_request_error(e)
             raise
 
         message_response = json_response["choices"][0]["message"]
@@ -995,15 +1108,15 @@ def send_request(max_attempts: int = 10):
     except Exception:
         state_after = RequestState()
     if getattr(state_after, "cancel_requested", False):
-        emit_fail("cancelled", request_id=request_id)
-        notify("GPT: Request cancelled")
-        cancel_active_request()
-        return format_message("")
+        lifecycle = reduce_request_state(lifecycle, "cancel")
+        try:
+            GPTState.last_lifecycle = lifecycle
+        except Exception:
+            pass
+        return _handle_cancelled_request()
 
     if message_content is None:
-        emit_fail("max_attempts_exceeded", request_id=request_id)
-        notify("GPT request failed after max attempts.")
-        raise RuntimeError("GPT request failed after max attempts.")
+        _handle_max_attempts_exceeded()
 
     try:
         print(
@@ -1012,6 +1125,13 @@ def send_request(max_attempts: int = 10):
         )
     except Exception:
         pass
+    # Non-stream completion path.
+    lifecycle = reduce_request_state(lifecycle, "complete")
+    try:
+        GPTState.last_lifecycle = lifecycle
+    except Exception:
+        pass
+
     notify("GPT Task Completed")
     resp = message_content.strip()
     formatted_resp = strip_markdown(resp)
@@ -1048,48 +1168,27 @@ def send_request(max_attempts: int = 10):
     duration_ms = int(time.time() * 1000) - started_at_ms
 
     try:
+        axes = getattr(GPTState, "last_axes", {}) or {}
+        prompt_text = append_entry_from_request(
+            request_id=request_id,
+            request=getattr(GPTState, "request", None),
+            answer_text=answer_text,
+            meta_text=meta_text,
+            recipe=last_recipe,
+            started_at_ms=started_at_ms,
+            duration_ms=duration_ms,
+            axes=axes,
+        )
         try:
             print(
-                f"[modelHelpers] preparing history append id={request_id!r} recipe={last_recipe!r} "
+                "[modelHelpers] append_entry_from_request succeeded "
                 f"prompt_len={len(prompt_text or '')} answer_len={len(answer_text)}"
             )
         except Exception:
             pass
-        prompt_text = ""
-        try:
-            messages = GPTState.request.get("messages", [])  # type: ignore[union-attr]
-            user_messages = [m for m in messages if m.get("role") == "user"]
-            if user_messages:
-                parts = []
-                for item in user_messages[0].get("content", []):
-                    if item.get("type") == "text":
-                        parts.append(item.get("text", ""))
-                prompt_text = "\n\n".join(parts).strip()
-        except Exception:
-            prompt_text = ""
-        try:
-            from copy import deepcopy
-        except Exception:
-            deepcopy = None  # type: ignore[assignment]
-        axes = getattr(GPTState, "last_axes", {}) or {}
-        axes_copy = deepcopy(axes) if deepcopy else dict(axes)
-        append_entry(
-            request_id,
-            prompt_text,
-            answer_text,
-            meta_text,
-            recipe=last_recipe,
-            started_at_ms=started_at_ms,
-            duration_ms=duration_ms,
-            axes=axes_copy,
-        )
-        try:
-            print("[modelHelpers] append_entry succeeded")
-        except Exception:
-            pass
     except Exception as e:
         try:
-            print(f"[modelHelpers] append_entry failed: {e}")
+            print(f"[modelHelpers] append_entry_from_request failed: {e}")
         except Exception:
             pass
 

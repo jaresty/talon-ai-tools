@@ -3,6 +3,16 @@ from talon import actions, clip
 from lib import helpHub
 
 
+class _DummyButton(helpHub.HubButton):
+    def __init__(self, label: str, description: str = "", voice_hint: str = ""):
+        super().__init__(
+            label=label,
+            description=description,
+            handler=lambda: None,
+            voice_hint=voice_hint,
+        )
+
+
 def setup_function():
     # Reset recorded calls between tests.
     actions.user.calls.clear()
@@ -54,3 +64,101 @@ def test_help_hub_scroll_logging():
     helpHub.HelpHubState.scroll_y = 0.0
     helpHub.HelpHubState.scroll_y = min(helpHub.HelpHubState.max_scroll, 200.0)
     assert helpHub.HelpHubState.scroll_y == helpHub.HelpHubState.max_scroll
+
+
+def test_help_hub_next_focus_label_wraps_and_steps():
+    items = [
+        ("btn", "Quick help"),
+        ("btn", "Patterns"),
+        ("res", "Docs"),
+    ]
+
+    # No current focus: moving forward focuses the first item.
+    assert helpHub._next_focus_label("", 1, items) == "btn:Quick help"
+
+    # Stepping forward wraps from last to first.
+    assert helpHub._next_focus_label("res:Docs", 1, items) == "btn:Quick help"
+
+    # Stepping backward from first wraps to last.
+    assert helpHub._next_focus_label("btn:Quick help", -1, items) == "res:Docs"
+
+
+def test_build_search_index_uses_buttons_and_lists(monkeypatch):
+    buttons = [
+        _DummyButton(label="Quick help", description="Open quick help"),
+    ]
+
+    def fake_read_list_items(name: str):
+        if name == "staticPrompt.talon-list":
+            return ["todo"]
+        if name == "completenessModifier.talon-list":
+            return ["full"]
+        return []
+
+    index = helpHub.build_search_index(
+        buttons, patterns=[], presets=[], read_list_items=fake_read_list_items
+    )
+    labels = {item.label for item in index}
+
+    assert "Hub: Quick help" in labels
+    assert "Prompt: todo" in labels
+    assert "Axis (Completeness): full" in labels
+
+
+def test_focusable_items_for_uses_results_when_filtered():
+    buttons = [
+        _DummyButton(label="Quick help"),
+        _DummyButton(label="Patterns"),
+    ]
+    results = [
+        _DummyButton(label="Hub: Quick help"),
+        _DummyButton(label="Axis (Completeness): full"),
+    ]
+
+    items = helpHub.focusable_items_for("quick", buttons, results)
+    assert items == [("res", "Hub: Quick help"), ("res", "Axis (Completeness): full")]
+
+
+def test_focusable_items_for_includes_buttons_when_unfiltered():
+    buttons = [
+        _DummyButton(label="Quick help"),
+        _DummyButton(label="Patterns"),
+    ]
+    results = [
+        _DummyButton(label="Hub: Quick help"),
+    ]
+
+    items = helpHub.focusable_items_for("", buttons, results)
+    assert items == [
+        ("btn", "Quick help"),
+        ("btn", "Patterns"),
+        ("res", "Hub: Quick help"),
+    ]
+
+
+def test_help_hub_search_results_for_is_pure_and_label_based():
+    index = [
+        helpHub.HubButton(
+            label="Quick help",
+            description="Open grammar quick reference",
+            handler=lambda: None,
+            voice_hint="Say: model quick help",
+        ),
+        helpHub.HubButton(
+            label="Patterns",
+            description="Open curated model patterns",
+            handler=lambda: None,
+            voice_hint="Say: model patterns",
+        ),
+    ]
+
+    # Empty or whitespace-only queries return no results.
+    assert helpHub.search_results_for("", index) == []
+    assert helpHub.search_results_for("   ", index) == []
+
+    # Case-insensitive substring match on labels only.
+    results = helpHub.search_results_for("quick", index)
+    assert [item.label for item in results] == ["Quick help"]
+
+    results = helpHub.search_results_for("PAT", index)
+    assert [item.label for item in results] == ["Patterns"]

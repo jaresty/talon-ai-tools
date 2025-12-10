@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from typing import Optional
+from copy import deepcopy
 
 from .requestHistory import RequestHistory, RequestLogEntry
 
@@ -51,6 +52,60 @@ def append_entry(
         pass
 
 
+def append_entry_from_request(
+    request_id: str,
+    request: object | None,
+    answer_text: str,
+    meta_text: str = "",
+    *,
+    recipe: str = "",
+    started_at_ms: Optional[int] = None,
+    duration_ms: Optional[int] = None,
+    axes: Optional[dict[str, list[str]]] = None,
+) -> str:
+    """Append a history entry derived from a request dict.
+
+    This helper centralises the prompt/axes extraction semantics used when
+    logging completed GPT requests so callers share a single contract for
+    history entries.
+    """
+
+    prompt_text = ""
+    try:
+        request_dict = request or {}
+        if isinstance(request_dict, dict):
+            messages = request_dict.get("messages", [])
+            user_messages = [
+                m for m in messages if isinstance(m, dict) and m.get("role") == "user"
+            ]
+            if user_messages:
+                parts: list[str] = []
+                for item in user_messages[0].get("content", []):
+                    if isinstance(item, dict) and item.get("type") == "text":
+                        parts.append(item.get("text", ""))
+                prompt_text = "\n\n".join(parts).strip()
+    except Exception:
+        prompt_text = ""
+
+    axes_source = axes or {}
+    try:
+        axes_copy = deepcopy(axes_source)
+    except Exception:
+        axes_copy = dict(axes_source)
+
+    append_entry(
+        request_id,
+        prompt_text,
+        answer_text,
+        meta_text,
+        recipe=recipe,
+        started_at_ms=started_at_ms,
+        duration_ms=duration_ms,
+        axes=axes_copy,
+    )
+    return prompt_text
+
+
 def latest() -> Optional[RequestLogEntry]:
     return _history.latest()
 
@@ -77,4 +132,11 @@ def clear_history() -> None:
         _history._entries.popleft()  # type: ignore[attr-defined]
 
 
-__all__ = ["append_entry", "latest", "nth_from_latest", "all_entries", "clear_history"]
+__all__ = [
+    "append_entry",
+    "append_entry_from_request",
+    "latest",
+    "nth_from_latest",
+    "all_entries",
+    "clear_history",
+]

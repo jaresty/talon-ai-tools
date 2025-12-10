@@ -2,6 +2,7 @@ from dataclasses import dataclass
 import os
 import time
 from typing import Callable, Dict, List, Optional
+from collections.abc import Sequence
 
 from talon import Context, Module, actions, app, canvas, clip, ui, tap
 from talon import skia
@@ -9,6 +10,17 @@ from talon import skia
 from .canvasFont import apply_canvas_typeface
 from .modelState import GPTState
 from .suggestionCoordinator import last_recipe_snapshot, suggestion_grammar_phrase
+from .helpDomain import (
+    help_index,
+    help_search,
+    help_focusable_items,
+    help_next_focus_label,
+    help_activation_target,
+    help_edit_filter_text,
+    HelpIndexEntry,
+)
+
+
 try:
     from .modelPatternGUI import PATTERNS
     from .modelPromptPatternGUI import PROMPT_PRESETS
@@ -67,6 +79,8 @@ _BUTTON_SPACING = 10
 _SEARCH_ITEM_HEIGHT = 32
 _SCROLL_GUTTER = 20
 _panel_height_px = _PANEL_HEIGHT
+
+
 def _rgba(r: int, g: int, b: int, a: int = 255) -> int:
     return (r << 24) | (g << 16) | (b << 8) | a
 
@@ -147,13 +161,16 @@ def _ensure_canvas() -> None:
         _hub_canvas.block_mouse = True  # type: ignore[attr-defined]
     except Exception as e:
         _log(f"failed to set block_mouse: {e}")
-    _log("canvas created; size="
-         f"{_PANEL_WIDTH}x{_panel_height_px}; rect={getattr(_hub_canvas, 'rect', None)}")
+    _log(
+        "canvas created; size="
+        f"{_PANEL_WIDTH}x{_panel_height_px}; rect={getattr(_hub_canvas, 'rect', None)}"
+    )
     try:
         if target_rect is not None:
             _hub_canvas.rect = target_rect  # type: ignore[attr-defined]
     except Exception:
         pass
+
     def _draw(c: canvas.Canvas):  # pragma: no cover - visual
         if not hasattr(c, "draw_rect") or not hasattr(c, "draw_text"):
             return
@@ -197,11 +214,17 @@ def _ensure_canvas() -> None:
             _button_bounds["__close__"] = close_rect
             close_bg = skia.Paint()
             is_close_hover = HelpHubState.hover_label == "__close__"
-            close_bg.color = _rgba(200, 64, 64, 255) if is_close_hover else _BUTTON_COLOR
+            close_bg.color = (
+                _rgba(200, 64, 64, 255) if is_close_hover else _BUTTON_COLOR
+            )
             c.draw_rect(close_rect, close_bg)
             # Draw glyph with slight brightness bump on hover.
             glyph_paint = skia.Paint()
-            glyph_paint.color = _rgba(255, 255, 255, 255) if is_close_hover else _rgba(220, 220, 220, 255)
+            glyph_paint.color = (
+                _rgba(255, 255, 255, 255)
+                if is_close_hover
+                else _rgba(220, 220, 220, 255)
+            )
             apply_canvas_typeface(glyph_paint)
             c.draw_text("×", close_rect.x + 7, close_rect.y + 16, glyph_paint)
 
@@ -209,7 +232,9 @@ def _ensure_canvas() -> None:
 
             content_width = _PANEL_WIDTH - 2 * _PADDING_X - _SCROLL_GUTTER
 
-            def _draw_result_row(res: HubButton, start_x: float, start_y: float) -> float:
+            def _draw_result_row(
+                res: HubButton, start_x: float, start_y: float
+            ) -> float:
                 """Draw a filtered result row; return the total height consumed."""
                 label = res.label if len(res.label) <= 70 else res.label[:70] + "..."
                 rect_height = _SEARCH_ITEM_HEIGHT
@@ -242,7 +267,9 @@ def _ensure_canvas() -> None:
                     detail_paint = skia.Paint()
                     detail_paint.color = label_paint.color
                     apply_canvas_typeface(detail_paint)
-                    for wrapped in _wrap_text(detail_line, content_width - 20, approx_char_px=7):
+                    for wrapped in _wrap_text(
+                        detail_line, content_width - 20, approx_char_px=7
+                    ):
                         c.draw_text(wrapped, rect.x + 10, detail_y, detail_paint)
                         detail_y += 16
                 return rect.height + 6
@@ -294,13 +321,17 @@ def _ensure_canvas() -> None:
                         hint = (btn.voice_hint or "").strip()
                         max_desc_width = content_width - 20
                         if desc:
-                            desc_lines.extend(_wrap_text(desc, max_desc_width, approx_char_px=7)[:2])
+                            desc_lines.extend(
+                                _wrap_text(desc, max_desc_width, approx_char_px=7)[:2]
+                            )
                         if hint:
                             desc_lines.extend(
                                 _wrap_text(hint, max_desc_width, approx_char_px=7)[:2]
                             )
                         for idx, line in enumerate(desc_lines[:3]):
-                            c.draw_text(line, rect.x + 10, rect.y + 38 + idx * 16, label_paint)
+                            c.draw_text(
+                                line, rect.x + 10, rect.y + 38 + idx * 16, label_paint
+                            )
 
                         btn_y += _BUTTON_HEIGHT + _BUTTON_SPACING
                 btn_y += 6
@@ -348,7 +379,9 @@ def _ensure_canvas() -> None:
                     ]
                     info_y += 8
                     for line in onboarding_lines:
-                        for wrapped in _wrap_text(line, content_width, approx_char_px=7):
+                        for wrapped in _wrap_text(
+                            line, content_width, approx_char_px=7
+                        ):
                             c.draw_text(wrapped, x, info_y, text_paint)
                             info_y += 18
 
@@ -374,7 +407,11 @@ def _ensure_canvas() -> None:
                 _scroll_bounds["track"] = track_rect
                 c.draw_rect(track_rect, track)
                 thumb_height = max(
-                    int(track_height * visible_height / (content_bottom - (c.rect.y + _PADDING_Y))),
+                    int(
+                        track_height
+                        * visible_height
+                        / (content_bottom - (c.rect.y + _PADDING_Y))
+                    ),
                     18,
                 )
                 thumb_offset = 0
@@ -383,14 +420,18 @@ def _ensure_canvas() -> None:
                         (HelpHubState.scroll_y / HelpHubState.max_scroll)
                         * max(track_height - thumb_height, 0)
                     )
-                thumb_rect = skia.Rect(track_x, track_y + thumb_offset, track_width, thumb_height)
+                thumb_rect = skia.Rect(
+                    track_x, track_y + thumb_offset, track_width, thumb_height
+                )
                 _scroll_bounds["thumb"] = thumb_rect
                 thumb = skia.Paint()
                 thumb.color = _BUTTON_HOVER_COLOR
                 c.draw_rect(thumb_rect, thumb)
                 # Step buttons
                 up_rect = skia.Rect(track_x - 8, track_y - 18, track_width + 16, 14)
-                dn_rect = skia.Rect(track_x - 8, track_y + track_height + 4, track_width + 16, 14)
+                dn_rect = skia.Rect(
+                    track_x - 8, track_y + track_height + 4, track_width + 16, 14
+                )
                 _scroll_bounds["step_up"] = up_rect
                 _scroll_bounds["step_down"] = dn_rect
                 c.draw_text("▲", up_rect.x + 4, up_rect.y + 12, text_paint)
@@ -460,9 +501,15 @@ def _ensure_canvas() -> None:
                             break
             if event_type not in ("mousedown", "mouse_down"):
                 # Drag / move support.
-                if event_type in ("mousemove", "mouse_move") and HelpHubState.drag_offset:
+                if (
+                    event_type in ("mousemove", "mouse_move")
+                    and HelpHubState.drag_offset
+                ):
                     try:
-                        _hub_canvas.move(gx - HelpHubState.drag_offset[0], gy - HelpHubState.drag_offset[1])
+                        _hub_canvas.move(
+                            gx - HelpHubState.drag_offset[0],
+                            gy - HelpHubState.drag_offset[1],
+                        )
                     except Exception:
                         HelpHubState.drag_offset = None
                 if event_type in ("mouseup", "mouse_up"):
@@ -472,10 +519,16 @@ def _ensure_canvas() -> None:
                 return
             if getattr(evt, "button", 0) not in (0, 1):
                 return
-            _log(f"mousedown type={event_type} at ({gx},{gy}); bounds keys={list(_button_bounds.keys())}")
+            _log(
+                f"mousedown type={event_type} at ({gx},{gy}); bounds keys={list(_button_bounds.keys())}"
+            )
             # Scrollbar clicks: clicking track jumps proportionally; thumb behaves the same.
             for zone_name, rect in _scroll_bounds.items():
-                if rect and rect.x <= gx <= rect.x + rect.width and rect.y <= gy <= rect.y + rect.height:
+                if (
+                    rect
+                    and rect.x <= gx <= rect.x + rect.width
+                    and rect.y <= gy <= rect.y + rect.height
+                ):
                     if zone_name in ("track", "thumb") and HelpHubState.max_scroll > 0:
                         frac = max(
                             0.0,
@@ -502,23 +555,42 @@ def _ensure_canvas() -> None:
             try:
                 if _hub_canvas is not None:
                     rect = _hub_canvas.rect
-                    if rect.x <= gx <= rect.x + rect.width and rect.y <= gy <= rect.y + rect.height:
+                    if (
+                        rect.x <= gx <= rect.x + rect.width
+                        and rect.y <= gy <= rect.y + rect.height
+                    ):
                         HelpHubState.drag_offset = (gx - rect.x, gy - rect.y)
             except Exception:
                 pass
             for btn in _buttons:
                 rect = _button_bounds.get(btn.label)
                 if rect and _rect_contains(rect, gx, gy):
+                    HelpHubState.hover_label = f"btn:{btn.label}"
+                    target = help_activation_target(
+                        HelpHubState.hover_label, _buttons, _search_results
+                    )
+                    if target is None:
+                        return
                     try:
-                        btn.handler()
+                        handler = getattr(target, "handler", None)
+                        if callable(handler):
+                            handler()
                     except Exception:
                         pass
                     return
             for res in _search_results:
                 rect = _search_bounds.get(res.label)
                 if rect and _rect_contains(rect, gx, gy):
+                    HelpHubState.hover_label = f"res:{res.label}"
+                    target = help_activation_target(
+                        HelpHubState.hover_label, _buttons, _search_results
+                    )
+                    if target is None:
+                        return
                     try:
-                        res.handler()
+                        handler = getattr(target, "handler", None)
+                        if callable(handler):
+                            handler()
                     except Exception:
                         pass
                     return
@@ -545,6 +617,7 @@ def _ensure_canvas() -> None:
             except Exception as e:
                 _log(f"hub scroll register failed for {evt_name}: {e}")
         globals()["_handlers_registered"] = True
+
 
 def _on_scroll(evt) -> None:  # pragma: no cover - visual
     _handle_scroll_delta(evt)
@@ -577,7 +650,17 @@ def _on_key(evt) -> None:  # pragma: no cover - visual
             return
         mods = []
         raw_mods = getattr(evt, "mods", None) or []
-        for mod_name in ("alt", "cmd", "ctrl", "shift", "meta", "super", "option", "opt", "command"):
+        for mod_name in (
+            "alt",
+            "cmd",
+            "ctrl",
+            "shift",
+            "meta",
+            "super",
+            "option",
+            "opt",
+            "command",
+        ):
             if getattr(evt, mod_name, False):
                 mods.append(mod_name)
         for side_mod in ("lalt", "ralt", "lcmd", "rcmd", "lctrl", "rctrl"):
@@ -604,7 +687,11 @@ def _on_key(evt) -> None:  # pragma: no cover - visual
             or any(m in ("cmd", "command", "meta", "super") for m in mods)
         )
         now = time.time()
-        shift_down = "shift" in mods or getattr(evt, "shift", False) or getattr(evt, "lshift", False)
+        shift_down = (
+            "shift" in mods
+            or getattr(evt, "shift", False)
+            or getattr(evt, "lshift", False)
+        )
         if key in ("escape", "esc"):
             help_hub_close()
             return
@@ -618,25 +705,30 @@ def _on_key(evt) -> None:  # pragma: no cover - visual
             if _activate_focus():
                 return
         if key in ("backspace", "back") and not alt_down and not cmd_down:
-            HelpHubState.filter_text = HelpHubState.filter_text[:-1]
+            HelpHubState.filter_text = help_edit_filter_text(
+                HelpHubState.filter_text, key, alt=False, cmd=False
+            )
             _recompute_search_results()
             return
         # Treat recent alt/cmd down as active even if the modifier isn't reported on the delete key.
         alt_active = alt_down or (now - globals().get("_last_alt_down", 0.0) < 0.4)
         cmd_active = cmd_down or (now - globals().get("_last_cmd_down", 0.0) < 0.4)
         if key in ("delete", "backspace") and alt_active:
-            text = HelpHubState.filter_text.rstrip()
-            stripped = text.rstrip()
-            parts = stripped.rsplit(" ", 1)
-            HelpHubState.filter_text = parts[0] if len(parts) == 2 else ""
+            HelpHubState.filter_text = help_edit_filter_text(
+                HelpHubState.filter_text, key, alt=True, cmd=False
+            )
             _recompute_search_results()
             return
         if key in ("delete", "backspace") and cmd_active:
-            HelpHubState.filter_text = ""
+            HelpHubState.filter_text = help_edit_filter_text(
+                HelpHubState.filter_text, key, alt=False, cmd=True
+            )
             _recompute_search_results()
             return
         if key in ("pagedown", "page_down"):
-            HelpHubState.scroll_y = min(HelpHubState.max_scroll, HelpHubState.scroll_y + 200.0)
+            HelpHubState.scroll_y = min(
+                HelpHubState.max_scroll, HelpHubState.scroll_y + 200.0
+            )
             _clamp_scroll()
             try:
                 if _hub_canvas is not None:
@@ -654,7 +746,9 @@ def _on_key(evt) -> None:  # pragma: no cover - visual
                 pass
             return
         if len(key) == 1 and 32 <= ord(key) <= 126:
-            HelpHubState.filter_text += key
+            HelpHubState.filter_text = help_edit_filter_text(
+                HelpHubState.filter_text, key, alt=False, cmd=False
+            )
             _recompute_search_results()
     except Exception as e:
         _log(f"hub key handler exception: {e}")
@@ -662,6 +756,8 @@ def _on_key(evt) -> None:  # pragma: no cover - visual
 
 
 _hub_key_handler = _on_key
+
+
 def _cheat_sheet_text() -> str:
     lines = [
         "Model Help Hub cheat sheet",
@@ -926,7 +1022,9 @@ def help_hub_onboarding() -> None:
 
 
 def _read_list_items(filename: str) -> List[str]:
-    current_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "GPT", "lists"))
+    current_dir = os.path.abspath(
+        os.path.join(os.path.dirname(__file__), "..", "GPT", "lists")
+    )
     path = os.path.join(current_dir, filename)
     items: List[str] = []
     try:
@@ -948,79 +1046,64 @@ def _read_list_items(filename: str) -> List[str]:
     return items
 
 
+def build_search_index(
+    buttons: Sequence[HubButton],
+    patterns,
+    presets,
+    read_list_items: Callable[[str], List[str]] = _read_list_items,
+) -> List[HubButton]:
+    """Pure helper: construct the Help Hub search index.
+
+    Delegates to the HelpDomain ``help_index`` façade so index construction
+    semantics live in the help domain, while this helper adapts entries into
+    ``HubButton`` instances for the canvas UI.
+    """
+    logical_entries = help_index(buttons, patterns, presets, read_list_items)
+
+    entries: List[HubButton] = []
+    for entry in logical_entries:
+        # ``help_index`` currently returns ``HelpIndexEntry`` instances, but we
+        # only rely on the public attributes here so the domain layer can
+        # evolve independently.
+        entries.append(
+            HubButton(
+                label=getattr(entry, "label", ""),
+                description=getattr(entry, "description", ""),
+                handler=getattr(entry, "handler", lambda: None),
+                voice_hint=getattr(entry, "voice_hint", ""),
+            )
+        )
+
+    return entries
+
+
 def _build_search_index() -> None:
     global _search_index
-    entries: List[HubButton] = []
+    _search_index = build_search_index(
+        _buttons, PATTERNS, PROMPT_PRESETS, _read_list_items
+    )
 
-    def _add(
-        label: str,
-        desc: str,
-        handler: Callable[[], None],
-        voice_hint: str = "",
-    ) -> None:
-        entries.append(
-            HubButton(label=label, description=desc, handler=handler, voice_hint=voice_hint)
-        )
 
-    # Existing hub buttons as entries
-    for btn in _buttons:
-        _add(f"Hub: {btn.label}", btn.description, btn.handler, btn.voice_hint)
+def search_results_for(query: str, index: List[HubButton]) -> List[HubButton]:
+    """Pure helper: compute search results for a query and index.
 
-    # Static prompts
-        for prompt in _read_list_items("staticPrompt.talon-list"):
-            _add(
-                f"Prompt: {prompt}",
-                "Open quick help for prompt",
-                lambda p=prompt: actions.user.model_help_canvas_open_for_static_prompt(p),
-                voice_hint=f"Say: model run {prompt}",
-            )
+    Delegates to the HelpDomain façade so search semantics are centralised in
+    ``helpDomain`` while keeping this backward-compatible entrypoint.
+    """
 
-    # Axes
-    for axis_file, axis_label in (
-        ("completenessModifier.talon-list", "Completeness"),
-        ("scopeModifier.talon-list", "Scope"),
-        ("methodModifier.talon-list", "Method"),
-        ("styleModifier.talon-list", "Style"),
-    ):
-        for token in _read_list_items(axis_file):
-            _add(
-                f"Axis ({axis_label}): {token}",
-                "Open quick help",
-                lambda a=axis_label.lower(): actions.user.model_help_canvas_open() or None,
-                voice_hint=f"Say: model run … {token}",
-            )
-
-    # Patterns and prompt presets
-    for pat in PATTERNS:
-        _add(
-            f"Pattern: {pat.name}",
-            pat.description,
-            lambda name=pat.name: actions.user.model_pattern_run_name(name),
-            voice_hint=f"Open patterns (model patterns), then say '{pat.name.lower()}'",
-        )
-    for preset in PROMPT_PRESETS:
-        _add(
-            f"Preset: {preset.name}",
-            preset.description,
-            lambda name=preset.name: actions.user.prompt_pattern_run_preset(name),
-            voice_hint="Open prompt pattern menu (model pattern menu <prompt>), then choose this preset",
-        )
-
-    _search_index = entries
+    # ``help_search`` already implements the case-insensitive substring match
+    # on labels that used to live here.
+    results = help_search(query, index)
+    # Narrow the result type back to ``HubButton`` for callers in this module.
+    return [item for item in results if isinstance(item, HubButton)]
 
 
 def _recompute_search_results() -> None:
     global _search_results
-    query = (HelpHubState.filter_text or "").lower()
-    if not query:
-        _search_results = []
-        return
-    results: List[HubButton] = []
-    for item in _search_index:
-        if query in item.label.lower():
-            results.append(item)
-    _search_results = results
-    _log(f"filter={query!r}, results={len(results)}")
+    _search_results = search_results_for(HelpHubState.filter_text, _search_index)
+    _log(
+        f"filter={(HelpHubState.filter_text or '').lower()!r}, results={len(_search_results)}"
+    )
     _clamp_scroll()
 
 
@@ -1074,7 +1157,12 @@ def _handle_scroll_delta(evt) -> None:
 
 
 def _handle_click(x: float, y: float) -> bool:
-    """Handle click targets inside the hub. Returns True if handled."""
+    """Handle click targets inside the hub. Returns True if handled.
+
+    Button and result activation is now handled via HelpDomain through the
+    main ``_on_mouse`` handler; this helper keeps only the close affordance so
+    click semantics stay centralised while the close box remains cheap to hit.
+    """
     # Close if we hit the explicit close box.
     close_rect = _button_bounds.get("__close__")
     if close_rect is None:
@@ -1091,47 +1179,36 @@ def _handle_click(x: float, y: float) -> bool:
         help_hub_close()
         return True
 
-    # Buttons
-    for label, rect in _button_bounds.items():
-        if label == "__close__":
-            continue
-        if _rect_contains(rect, x, y):
-            _log(f"click button='{label}' at ({x},{y}) in {rect}")
-            try:
-                for btn in _buttons:
-                    if btn.label == label:
-                        btn.handler()
-                        return True
-            except Exception:
-                return True
-
-    # Search results
-    for label, rect in _search_bounds.items():
-        if _rect_contains(rect, x, y):
-            _log(f"click search='{label}' at ({x},{y}) in {rect}")
-            try:
-                for item in _search_results:
-                    if item.label == label:
-                        item.handler()
-                        return True
-            except Exception:
-                return True
-
     return False
+
+
+def focusable_items_for(
+    filter_text: str, buttons: Sequence[HubButton], results: Sequence[HubButton]
+) -> List[tuple[str, str]]:
+    """Pure helper: ordered list of (kind,label) focus targets.
+
+    Delegates to the HelpDomain façade so the core navigation contract lives in
+    ``helpDomain`` while callers here retain the same signature.
+    """
+
+    return help_focusable_items(filter_text, buttons, results)
 
 
 def _focusable_items() -> List[tuple[str, str]]:
     """Return an ordered list of (kind,label) focus targets."""
-    items: List[tuple[str, str]] = []
-    if HelpHubState.filter_text.strip():
-        for res in _search_results:
-            items.append(("res", res.label))
-    else:
-        for btn in _buttons:
-            items.append(("btn", btn.label))
-        for res in _search_results:
-            items.append(("res", res.label))
-    return items
+    return focusable_items_for(
+        HelpHubState.filter_text or "", _buttons, _search_results
+    )
+
+
+def _next_focus_label(current: str, delta: int, items: List[tuple[str, str]]) -> str:
+    """Compute the next focus label given current label and step.
+
+    Delegates to the HelpDomain façade so the navigation core is centralised in
+    ``helpDomain`` while existing tests can still target this helper.
+    """
+
+    return help_next_focus_label(current, delta, items)
 
 
 def _focus_step(delta: int) -> None:
@@ -1139,15 +1216,10 @@ def _focus_step(delta: int) -> None:
     if not items:
         return
     current = HelpHubState.hover_label or ""
-    try:
-        idx = next(i for i, (kind, label) in enumerate(items) if f"{kind}:{label}" == current)
-    except StopIteration:
-        # If nothing focused yet, start before the first item when moving forward,
-        # or just past the last item when moving backward.
-        idx = -1 if delta > 0 else len(items)
-    idx = (idx + delta) % len(items)
-    kind, label = items[idx]
-    HelpHubState.hover_label = f"{kind}:{label}"
+    new_label = _next_focus_label(current, delta, items)
+    if not new_label:
+        return
+    HelpHubState.hover_label = new_label
     try:
         if _hub_canvas is not None:
             _hub_canvas.show()
@@ -1156,26 +1228,23 @@ def _focus_step(delta: int) -> None:
 
 
 def _activate_focus() -> bool:
+    """Activate the currently focused hub item, if any.
+
+    Resolution of which object to invoke is delegated to the HelpDomain
+    façade so that Help Hub remains a thin adapter over the domain semantics.
+    """
+
     label = HelpHubState.hover_label or ""
-    if label.startswith("btn:"):
-        target = label[len("btn:") :]
-        for btn in _buttons:
-            if btn.label == target:
-                try:
-                    btn.handler()
-                except Exception:
-                    pass
-                return True
-    if label.startswith("res:"):
-        target = label[len("res:") :]
-        for res in _search_results:
-            if res.label == target:
-                try:
-                    res.handler()
-                except Exception:
-                    pass
-                return True
-    return False
+    target = help_activation_target(label, _buttons, _search_results)
+    if target is None:
+        return False
+    try:
+        handler = getattr(target, "handler", None)
+        if callable(handler):
+            handler()
+    except Exception:
+        pass
+    return True
 
 
 @mod.action_class

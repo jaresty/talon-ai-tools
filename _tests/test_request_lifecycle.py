@@ -1,0 +1,80 @@
+import unittest
+from typing import TYPE_CHECKING
+
+try:
+    from bootstrap import bootstrap
+except ModuleNotFoundError:
+    bootstrap = None
+else:
+    bootstrap()
+
+
+if bootstrap is not None:
+    from talon_user.lib.requestLifecycle import (
+        RequestLifecycleState,
+        reduce_request_state,
+        is_terminal,
+    )
+
+    class RequestLifecycleTests(unittest.TestCase):
+        def test_happy_path_streaming_flow(self) -> None:
+            state = RequestLifecycleState()
+            state = reduce_request_state(state, "start")
+            self.assertEqual(state.status, "running")
+
+            state = reduce_request_state(state, "stream_start")
+            self.assertEqual(state.status, "streaming")
+
+            state = reduce_request_state(state, "stream_end")
+            self.assertEqual(state.status, "completed")
+
+        def test_non_streaming_completion_flow(self) -> None:
+            state = RequestLifecycleState()
+            state = reduce_request_state(state, "start")
+            self.assertEqual(state.status, "running")
+
+            state = reduce_request_state(state, "complete")
+            self.assertEqual(state.status, "completed")
+
+        def test_error_and_cancel_are_terminal(self) -> None:
+            state = RequestLifecycleState()
+            state = reduce_request_state(state, "start")
+            state = reduce_request_state(state, "error")
+            self.assertEqual(state.status, "errored")
+
+            # Further events should not move out of errored.
+            for event in ("start", "stream_start", "stream_end", "complete", "cancel"):
+                new_state = reduce_request_state(state, event)
+                self.assertEqual(new_state.status, "errored")
+
+            # Cancel from non-terminal states reaches cancelled.
+            for initial in ("pending", "running", "streaming"):
+                with self.subTest(initial=initial):
+                    state = RequestLifecycleState(status=initial)
+                    final = reduce_request_state(state, "cancel")
+                    self.assertEqual(final.status, "cancelled")
+
+        def test_unknown_events_are_ignored(self) -> None:
+            state = RequestLifecycleState()
+            new_state = reduce_request_state(state, "unknown-event")
+            self.assertIs(new_state, state)
+
+        def test_is_terminal_matches_error_and_cancel_contract(self) -> None:
+            # Pending, running, streaming, and completed are non-terminal.
+            for status in ("pending", "running", "streaming", "completed"):
+                with self.subTest(status=status):
+                    self.assertFalse(is_terminal(RequestLifecycleState(status=status)))
+
+            # Errored and cancelled are terminal.
+            for status in ("errored", "cancelled"):
+                with self.subTest(status=status):
+                    self.assertTrue(is_terminal(RequestLifecycleState(status=status)))
+
+
+else:
+    if not TYPE_CHECKING:
+
+        class RequestLifecycleTests(unittest.TestCase):
+            @unittest.skip("Test harness unavailable outside unittest runs")
+            def test_placeholder(self) -> None:
+                pass

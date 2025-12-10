@@ -15,8 +15,10 @@ if bootstrap is not None:
         RequestPhase,
         RequestState,
         Surface,
+        lifecycle_status_for,
         transition,
     )
+    from talon_user.lib.requestLifecycle import RequestLifecycleState
 
     class RequestStateTests(unittest.TestCase):
         def test_reset_restores_default(self):
@@ -37,7 +39,9 @@ if bootstrap is not None:
             self.assertEqual(next_state.last_error, "")
 
         def test_confirmation_flow_sets_surfaces(self):
-            state = transition(RequestState(), RequestEvent(RequestEventKind.START_LISTEN))
+            state = transition(
+                RequestState(), RequestEvent(RequestEventKind.START_LISTEN)
+            )
             self.assertEqual(state.phase, RequestPhase.LISTENING)
 
             state = transition(state, RequestEvent(RequestEventKind.GOT_TRANSCRIPT))
@@ -54,7 +58,8 @@ if bootstrap is not None:
 
         def test_stream_and_cancel_preserve_request_id(self):
             state = transition(
-                RequestState(), RequestEvent(RequestEventKind.BEGIN_SEND, request_id="rid")
+                RequestState(),
+                RequestEvent(RequestEventKind.BEGIN_SEND, request_id="rid"),
             )
             state = transition(state, RequestEvent(RequestEventKind.BEGIN_STREAM))
             self.assertEqual(state.phase, RequestPhase.STREAMING)
@@ -69,20 +74,45 @@ if bootstrap is not None:
 
         def test_complete_and_fail_mark_response_canvas(self):
             state = transition(
-                RequestState(), RequestEvent(RequestEventKind.BEGIN_SEND, request_id="rid")
+                RequestState(),
+                RequestEvent(RequestEventKind.BEGIN_SEND, request_id="rid"),
             )
             done = transition(state, RequestEvent(RequestEventKind.COMPLETE))
             self.assertEqual(done.phase, RequestPhase.DONE)
             self.assertEqual(done.active_surface, Surface.RESPONSE_CANVAS)
             self.assertTrue(done.is_terminal)
 
-            failed = transition(state, RequestEvent(RequestEventKind.FAIL, error="timeout"))
+            failed = transition(
+                state, RequestEvent(RequestEventKind.FAIL, error="timeout")
+            )
             self.assertEqual(failed.phase, RequestPhase.ERROR)
             self.assertEqual(failed.active_surface, Surface.RESPONSE_CANVAS)
             self.assertEqual(failed.last_error, "timeout")
             self.assertTrue(failed.is_terminal)
+
+        def test_lifecycle_status_for_maps_phases_to_logical_status(self):
+            cases = [
+                (RequestPhase.IDLE, "pending"),
+                (RequestPhase.LISTENING, "pending"),
+                (RequestPhase.TRANSCRIBING, "pending"),
+                (RequestPhase.CONFIRMING, "pending"),
+                (RequestPhase.SENDING, "running"),
+                (RequestPhase.STREAMING, "streaming"),
+                (RequestPhase.DONE, "completed"),
+                (RequestPhase.ERROR, "errored"),
+                (RequestPhase.CANCELLED, "cancelled"),
+            ]
+
+            for phase, expected in cases:
+                with self.subTest(phase=phase):
+                    state = RequestState(phase=phase)
+                    lifecycle = lifecycle_status_for(state)
+                    self.assertIsInstance(lifecycle, RequestLifecycleState)
+                    self.assertEqual(lifecycle.status, expected)
+
 else:
     if not TYPE_CHECKING:
+
         class RequestStateTests(unittest.TestCase):
             @unittest.skip("Test harness unavailable outside unittest runs")
             def test_placeholder(self):

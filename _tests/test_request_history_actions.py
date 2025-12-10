@@ -9,7 +9,11 @@ else:
     bootstrap()
 
 if bootstrap is not None:
-    from talon_user.lib.requestHistoryActions import UserActions as HistoryActions
+    from talon_user.lib.requestHistoryActions import (
+        UserActions as HistoryActions,
+        history_axes_for,
+        history_summary_lines,
+    )
     from talon_user.lib.requestLog import append_entry, clear_history, all_entries
     from talon_user.lib.modelState import GPTState
     from talon_user.lib.modelConfirmationGUI import (
@@ -103,8 +107,14 @@ if bootstrap is not None:
 
             saved_all_entries = all_entries
             try:
+
                 def legacy_all_entries():
-                    return [LegacyEntry("rid-legacy", "prompt legacy", "resp legacy", "meta legacy")]
+                    return [
+                        LegacyEntry(
+                            "rid-legacy", "prompt legacy", "resp legacy", "meta legacy"
+                        )
+                    ]
+
                 HistoryActions.all_entries = staticmethod(legacy_all_entries)  # type: ignore[attr-defined]
                 actions.user.calls.clear()
                 actions.app.calls.clear()
@@ -140,7 +150,13 @@ if bootstrap is not None:
             GPTState.last_style = "checklist"
             GPTState.last_directional = "rog"
 
-            append_entry("rid-1", "prompt text", "resp", "meta", recipe="infer · full · rigor · jog")
+            append_entry(
+                "rid-1",
+                "prompt text",
+                "resp",
+                "meta",
+                recipe="infer · full · rigor · jog",
+            )
 
             HistoryActions.gpt_request_history_show_latest()
 
@@ -226,8 +242,46 @@ if bootstrap is not None:
                     "style": ["plain"],
                 },
             )
+
+        def test_history_axes_for_filters_invalid_tokens(self):
+            axes = {
+                "completeness": ["full", "Important: Hydrated completeness"],
+                "scope": ["bound", "Invalid scope"],
+                "method": ["rigor", "Unknown method"],
+                "style": ["plain", "Hydrated style"],
+            }
+
+            filtered = history_axes_for(axes)
+
+            self.assertEqual(
+                filtered,
+                {
+                    "completeness": ["full"],
+                    "scope": ["bound"],
+                    "method": ["rigor"],
+                    "style": ["plain"],
+                },
+            )
+
+        def test_history_summary_lines_matches_existing_formatting(self):
+            append_entry(
+                "rid-1",
+                "prompt one",
+                "resp1",
+                "meta1",
+                recipe="infer · full · rigor",
+                duration_ms=7,
+            )
+
+            entries = all_entries()[-1:]
+            lines = history_summary_lines(entries)
+
+            self.assertEqual(
+                lines, ["0: rid-1 (7ms) | infer · full · rigor · prompt one"]
+            )
 else:
     if not TYPE_CHECKING:
+
         class RequestHistoryActionTests(unittest.TestCase):
             @unittest.skip("Test harness unavailable outside unittest runs")
             def test_placeholder(self):

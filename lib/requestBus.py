@@ -5,7 +5,13 @@ from __future__ import annotations
 from typing import Optional
 
 from .requestController import RequestUIController
-from .requestState import RequestEvent, RequestEventKind, RequestState
+from .requestState import (
+    RequestEvent,
+    RequestEventKind,
+    RequestState,
+    lifecycle_status_for,
+)
+
 
 _controller: Optional[RequestUIController] = None
 _counter: int = 0
@@ -53,7 +59,9 @@ def emit_complete(request_id: Optional[str] = None) -> RequestState:
 
 
 def emit_fail(error: str = "", request_id: Optional[str] = None) -> RequestState:
-    return _handle(RequestEvent(RequestEventKind.FAIL, request_id=request_id, error=error))
+    return _handle(
+        RequestEvent(RequestEventKind.FAIL, request_id=request_id, error=error)
+    )
 
 
 def emit_cancel(request_id: Optional[str] = None) -> RequestState:
@@ -66,6 +74,17 @@ def current_state() -> RequestState:
     return _controller.state
 
 
+def current_lifecycle_state():
+    """Return the logical RequestLifecycle state for the current request.
+
+    This is a thin adapter from the UI-focused ``RequestState`` exposed by the
+    request bus to the transport-agnostic ``RequestLifecycleState`` façade
+    defined in ``requestLifecycle`` for ADR-0037.
+    """
+
+    return lifecycle_status_for(current_state())
+
+
 __all__ = [
     "set_controller",
     "emit_reset",
@@ -75,5 +94,6 @@ __all__ = [
     "emit_fail",
     "emit_cancel",
     "current_state",
+    "current_lifecycle_state",
     "next_request_id",
 ]

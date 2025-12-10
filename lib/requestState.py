@@ -11,6 +11,8 @@ from dataclasses import dataclass
 from enum import Enum
 from typing import Optional
 
+from .requestLifecycle import RequestLifecycleState, RequestStatus
+
 
 class RequestPhase(Enum):
     IDLE = "idle"
@@ -129,6 +131,38 @@ def transition(state: RequestState, event: RequestEvent) -> RequestState:
     return state
 
 
+def lifecycle_status_for(state: RequestState) -> RequestLifecycleState:
+    """Map ``RequestState`` phases onto the RequestLifecycle façade.
+
+    This provides a thin, testable bridge from the UI-focused request state
+    machine to the transport/UI-agnostic ``RequestLifecycleState`` used by
+    ADR-0037. No callers are wired to this yet; it is an adapter for future
+    RequestLifecycle slices.
+    """
+
+    phase = state.phase
+    if phase in (
+        RequestPhase.IDLE,
+        RequestPhase.LISTENING,
+        RequestPhase.TRANSCRIBING,
+        RequestPhase.CONFIRMING,
+    ):
+        status: RequestStatus = "pending"
+    elif phase is RequestPhase.SENDING:
+        status = "running"
+    elif phase is RequestPhase.STREAMING:
+        status = "streaming"
+    elif phase is RequestPhase.DONE:
+        status = "completed"
+    elif phase is RequestPhase.ERROR:
+        status = "errored"
+    elif phase is RequestPhase.CANCELLED:
+        status = "cancelled"
+    else:
+        status = "pending"
+    return RequestLifecycleState(status=status)
+
+
 __all__ = [
     "RequestPhase",
     "Surface",
@@ -136,4 +170,5 @@ __all__ = [
     "RequestEvent",
     "RequestState",
     "transition",
+    "lifecycle_status_for",
 ]

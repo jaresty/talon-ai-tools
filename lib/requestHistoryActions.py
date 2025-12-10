@@ -11,6 +11,64 @@ mod = Module()
 _cursor_offset = 0
 
 
+def _filter_axis_tokens(axis: str, tokens: list[str]) -> list[str]:
+    """Filter history axis tokens against the known axis map.
+
+    This helper centralises the token filtering semantics used when hydrating
+    GPTState from history entries so tests and future RequestLifecycle/History
+    façades can treat it as a single contract.
+    """
+    valid = axis_key_to_value_map_for(axis)
+    return [t for t in tokens if t in valid]
+
+
+def history_axes_for(axes: dict[str, list[str]]) -> dict[str, list[str]]:
+    """Pure helper: normalise stored history axes via the axis map.
+
+    This centralises how history entries' axis tokens are filtered against the
+    configured axis keys so RequestLifecycle/HistoryQuery façades and tests
+    can reuse it without depending on GPTState.
+    """
+    axes = axes or {}
+    return {
+        "completeness": _filter_axis_tokens(
+            "completeness", list(axes.get("completeness", []) or [])
+        ),
+        "scope": _filter_axis_tokens("scope", list(axes.get("scope", []) or [])),
+        "method": _filter_axis_tokens("method", list(axes.get("method", []) or [])),
+        "style": _filter_axis_tokens("style", list(axes.get("style", []) or [])),
+    }
+
+
+from collections.abc import Sequence
+
+
+def history_summary_lines(entries: Sequence[object]) -> list[str]:
+    """Pure helper: format recent history entries into summary lines.
+
+    This mirrors the existing `gpt_request_history_list` formatting so drawers
+    and future HistoryQuery façades can reuse it without depending on Talon
+    notify calls.
+    """
+    lines: list[str] = []
+    for idx, entry in enumerate(reversed(entries)):
+        prompt = (
+            (getattr(entry, "prompt", "") or "").strip().splitlines()[0]
+            if getattr(entry, "prompt", None)
+            else ""
+        )
+        prompt_snippet = prompt[:60] + ("…" if len(prompt) > 60 else "")
+        duration_ms = getattr(entry, "duration_ms", None)
+        dur = f"{duration_ms}ms" if duration_ms is not None else ""
+        request_id = getattr(entry, "request_id", "")
+        label = request_id if not dur else f"{request_id} ({dur})"
+        recipe = (getattr(entry, "recipe", "") or "").strip()
+        parts = [p for p in (recipe, prompt_snippet) if p]
+        payload = " · ".join(parts) if parts else prompt_snippet
+        lines.append(f"{idx}: {label} | {payload}")
+    return lines
+
+
 def _show_entry(entry) -> None:
     """Populate GPTState with a historic entry and open the response canvas."""
     if entry is None:
@@ -30,18 +88,12 @@ def _show_entry(entry) -> None:
     raw_recipe = getattr(entry, "recipe", "") or ""
     if getattr(entry, "axes", None):
         axes = getattr(entry, "axes", {}) or {}
-        def _filter_tokens(axis: str, tokens: list[str]) -> list[str]:
-            valid = axis_key_to_value_map_for(axis)
-            return [t for t in tokens if t in valid]
+        GPTState.last_axes = history_axes_for(axes)
 
-        GPTState.last_axes = {
-            "completeness": _filter_tokens("completeness", list(axes.get("completeness", []) or [])),
-            "scope": _filter_tokens("scope", list(axes.get("scope", []) or [])),
-            "method": _filter_tokens("method", list(axes.get("method", []) or [])),
-            "style": _filter_tokens("style", list(axes.get("style", []) or [])),
-        }
         GPTState.last_static_prompt = raw_recipe.split(" · ")[0] if raw_recipe else ""
-        GPTState.last_completeness = " ".join(GPTState.last_axes["completeness"]).strip()
+        GPTState.last_completeness = " ".join(
+            GPTState.last_axes["completeness"]
+        ).strip()
         GPTState.last_scope = " ".join(GPTState.last_axes["scope"]).strip()
         GPTState.last_method = " ".join(GPTState.last_axes["method"]).strip()
         GPTState.last_style = " ".join(GPTState.last_axes["style"]).strip()
@@ -57,6 +109,7 @@ def _show_entry(entry) -> None:
             if value:
                 recipe_parts.append(value)
         GPTState.last_recipe = " · ".join(recipe_parts)
+
     elif getattr(entry, "recipe", None):
         GPTState.last_recipe = raw_recipe
         try:
@@ -94,7 +147,12 @@ def _show_entry(entry) -> None:
         GPTState.last_method = ""
         GPTState.last_style = ""
         GPTState.last_directional = ""
-        GPTState.last_axes = {"completeness": [], "scope": [], "method": [], "style": []}
+        GPTState.last_axes = {
+            "completeness": [],
+            "scope": [],
+            "method": [],
+            "style": [],
+        }
     try:
         actions.user.model_response_canvas_open()
     except Exception:
@@ -148,15 +206,6 @@ class UserActions:
         if not entries:
             notify("GPT: No request history available")
             return
-        lines = []
-        for idx, entry in enumerate(reversed(entries)):
-            prompt = (entry.prompt or "").strip().splitlines()[0] if entry.prompt else ""
-            prompt_snippet = prompt[:60] + ("…" if len(prompt) > 60 else "")
-            dur = f"{entry.duration_ms}ms" if entry.duration_ms is not None else ""
-            label = entry.request_id if not dur else f"{entry.request_id} ({dur})"
-            recipe = (getattr(entry, "recipe", "") or "").strip()
-            parts = [p for p in (recipe, prompt_snippet) if p]
-            payload = " · ".join(parts) if parts else prompt_snippet
-            lines.append(f"{idx}: {label} | {payload}")
+        lines = history_summary_lines(entries)
         message = "Recent model requests:\n" + "\n".join(lines)
         notify(message)

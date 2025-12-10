@@ -3,10 +3,12 @@
 from __future__ import annotations
 
 from typing import List, Optional, Tuple
+from collections.abc import Sequence
 
 from talon import Module, actions, canvas, ui
 
 from .requestLog import all_entries
+from .historyQuery import history_drawer_entries_from
 
 mod = Module()
 
@@ -121,7 +123,8 @@ def _ensure_canvas() -> canvas.Canvas:
             HistoryDrawerState.selected_index = 0
             return
         HistoryDrawerState.selected_index = max(
-            0, min(HistoryDrawerState.selected_index, len(HistoryDrawerState.entries) - 1)
+            0,
+            min(HistoryDrawerState.selected_index, len(HistoryDrawerState.entries) - 1),
         )
 
     def _on_mouse(evt):
@@ -172,20 +175,7 @@ def _refresh_entries() -> None:
         print(f"[requestHistoryDrawer] refresh entries={len(entries)}")
     except Exception:
         pass
-    rendered: List[Tuple[str, str]] = []
-    for entry in entries:
-        prompt = (entry.prompt or "").strip().splitlines()[0] if entry.prompt else ""
-        snippet = prompt[:80] + ("…" if len(prompt) > 80 else "")
-        dur = f"{entry.duration_ms}ms" if entry.duration_ms is not None else ""
-        label = f"{entry.request_id}"
-        if dur:
-            label = f"{label} ({dur})"
-        recipe = (getattr(entry, "recipe", "") or "").strip()
-        body = snippet
-        if recipe:
-            body = f"{recipe} · {snippet}" if snippet else recipe
-        rendered.append((label, body))
-    HistoryDrawerState.entries = rendered
+    HistoryDrawerState.entries = history_drawer_entries_from(entries)
     HistoryDrawerState.selected_index = 0
 
 
@@ -222,7 +212,9 @@ class UserActions:
         """Move selection to previous entry in the history drawer"""
         if not HistoryDrawerState.entries:
             return
-        HistoryDrawerState.selected_index = max(0, HistoryDrawerState.selected_index - 1)
+        HistoryDrawerState.selected_index = max(
+            0, HistoryDrawerState.selected_index - 1
+        )
         c = _ensure_canvas()
         try:
             c.show()

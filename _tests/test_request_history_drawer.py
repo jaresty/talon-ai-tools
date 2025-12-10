@@ -12,6 +12,7 @@ if bootstrap is not None:
     from talon_user.lib.requestHistoryDrawer import (
         HistoryDrawerState,
         UserActions as DrawerActions,
+        history_drawer_entries_from,
     )
     from talon_user.lib.requestLog import append_entry, clear_history
     from talon import canvas
@@ -45,8 +46,26 @@ if bootstrap is not None:
             self.assertEqual(HistoryDrawerState.selected_index, 1)
             DrawerActions.request_history_drawer_prev_entry()
             self.assertEqual(HistoryDrawerState.selected_index, 0)
+
+        def test_history_drawer_entries_from_matches_label_and_body(self):
+            class DummyEntry:
+                def __init__(self):
+                    self.request_id = "rid-1"
+                    self.prompt = "prompt one\nsecond line"
+                    self.response = "resp1"
+                    self.meta = "meta1"
+                    self.duration_ms = 42
+                    self.recipe = "infer · full · rigor"
+
+            rendered = history_drawer_entries_from([DummyEntry()])
+
+            self.assertEqual(len(rendered), 1)
+            label, body = rendered[0]
+            self.assertEqual(label, "rid-1 (42ms)")
+            self.assertEqual(body, "infer · full · rigor · prompt one")
 else:
     if not TYPE_CHECKING:
+
         class RequestHistoryDrawerTests(unittest.TestCase):
             @unittest.skip("Test harness unavailable outside unittest runs")
             def test_placeholder(self):

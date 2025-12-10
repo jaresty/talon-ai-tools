@@ -4,7 +4,7 @@ from talon import Context, Module, actions, canvas, ui
 from talon import skia
 
 from .canvasFont import apply_canvas_typeface
-from .axisMappings import axis_docs_map
+from .axisConfig import axis_docs_for
 
 from .modelState import GPTState
 from .talonSettings import _AXIS_SOFT_CAPS
@@ -36,10 +36,10 @@ except ImportError:  # Talon may have a stale staticPromptConfig loaded
 
 
 def _axis_keys(axis: str) -> list[str]:
-    """Return axis keys in list-file order."""
+    """Return axis keys in list-file order via AxisDocs façade."""
 
-    mapping = axis_docs_map(axis)
-    return [key for key in mapping.keys()]
+    docs = axis_docs_for(axis)
+    return [doc.key for doc in docs]
 
 
 # Axis summaries (keys only; descriptions remain in docs). Pulled directly from
@@ -118,12 +118,14 @@ class HelpGUIState:
     static_prompt: Optional[str] = None
     showing: bool = False
 
+
 mod = Module()
 ctx = Context()
 
 try:  # Talon runtime
     from talon.types import Rect
 except Exception:  # Tests / stubs
+
     class Rect:  # type: ignore[override]
         def __init__(self, x: float, y: float, width: float, height: float):
             self.x = x
@@ -429,12 +431,30 @@ def unregister_draw_handler(handler: Callable) -> None:
 
 def _open_canvas() -> None:
     """Show the canvas-based quick help."""
+    _debug(
+        "_open_canvas called: showing=%s help_showing=%s"
+        % (
+            getattr(HelpCanvasState, "showing", False),
+            getattr(HelpGUIState, "showing", False),
+        )
+    )
     canvas_obj = _ensure_canvas()
+    if canvas_obj is None:
+        _debug("_open_canvas: _ensure_canvas returned None; aborting show")
+        return
     HelpCanvasState.showing = True
     HelpGUIState.showing = True
     HelpCanvasState.scroll_y = 0.0
-    _debug("opening canvas quick help")
-    canvas_obj.show()
+    _debug("opening canvas quick help (calling show())")
+    try:
+        canvas_obj.show()
+        _debug("canvas quick help: show() returned without raising")
+    except Exception as e:
+        _debug(f"canvas quick help: show() failed: {e}")
+
+        _debug("canvas quick help: show() returned without raising")
+    except Exception as e:
+        _debug(f"canvas quick help: show() failed: {e}")
 
 
 def _close_canvas() -> None:
@@ -456,13 +476,17 @@ def _close_canvas() -> None:
         pass
 
 
-def _reset_help_state(section: str = "all", static_prompt: Optional[str] = None) -> None:
+def _reset_help_state(
+    section: str = "all", static_prompt: Optional[str] = None
+) -> None:
     """Reset shared quick-help state to a known baseline."""
     HelpGUIState.section = section
     HelpGUIState.static_prompt = static_prompt
 
 
-def _default_draw_quick_help(c: canvas.Canvas) -> None:  # pragma: no cover - visual only
+def _default_draw_quick_help(
+    c: canvas.Canvas,
+) -> None:  # pragma: no cover - visual only
     """Baseline canvas renderer for quick help.
 
     This implementation intentionally keeps canvas usage conservative so it
@@ -575,7 +599,12 @@ def _default_draw_quick_help(c: canvas.Canvas) -> None:  # pragma: no cover - vi
     # Draw a small close hint in the top-right header area to align with the
     # clickable close hotspot registered in `_ensure_canvas()`. When hovered,
     # slightly underline the label so it feels interactive.
-    if rect is not None and hasattr(rect, "width") and hasattr(rect, "x") and hasattr(rect, "y"):
+    if (
+        rect is not None
+        and hasattr(rect, "width")
+        and hasattr(rect, "x")
+        and hasattr(rect, "y")
+    ):
         close_label = "[X]"
         close_y = rect.y + 24
         # Align close label within the same horizontal band as the title.
@@ -601,7 +630,11 @@ def _default_draw_quick_help(c: canvas.Canvas) -> None:  # pragma: no cover - vi
     # Grammar skeleton and last-recipe reminder.
     draw_text("Grammar:", x, y)
     y += line_h
-    draw_text("  model <staticPrompt> [completeness] [scope] [method] [style] <directional lens>", x, y)
+    draw_text(
+        "  model run <staticPrompt> [completeness] [scope] [method] [style] <directional lens>",
+        x,
+        y,
+    )
     y += line_h
 
     # Make multiplicity explicit so users know how many axis tokens are kept.
@@ -633,7 +666,7 @@ def _default_draw_quick_help(c: canvas.Canvas) -> None:  # pragma: no cover - vi
             draw_text(f"Last recipe: {recap}", x, y)
             y += line_h
 
-            speakable = f"model {recipe.replace(' · ', ' ')}"
+            speakable = f"model run {recipe.replace(' · ', ' ')}"
             if directional:
                 speakable = f"{speakable} {directional}"
             draw_text(f"Say: {speakable}", x, y)
@@ -743,7 +776,9 @@ def _default_draw_quick_help(c: canvas.Canvas) -> None:  # pragma: no cover - vi
         return col_y
 
     # Left column: completeness + scope
-    y_left = _draw_axis_column("Completeness", "completeness", COMPLETENESS_KEYS, x_left, y_left)
+    y_left = _draw_axis_column(
+        "Completeness", "completeness", COMPLETENESS_KEYS, x_left, y_left
+    )
     y_left = _draw_axis_column("Scope", "scope", SCOPE_KEYS, x_left, y_left)
 
     # Right column: method + style
@@ -993,7 +1028,11 @@ def _default_draw_quick_help(c: canvas.Canvas) -> None:  # pragma: no cover - vi
     if val:
         left_lines.append(f"  concrete: {val}")
     # Light hint that vertical movement for this stance comes from fly/dip.
-    if any(" " in t for t in (grid.get(("up", "left"), []) or []) + (grid.get(("down", "left"), []) or [])):
+    if any(
+        " " in t
+        for t in (grid.get(("up", "left"), []) or [])
+        + (grid.get(("down", "left"), []) or [])
+    ):
         left_lines.append("  vertical: via fly/dip")
 
     left_end_y = _draw_block(
@@ -1017,7 +1056,11 @@ def _default_draw_quick_help(c: canvas.Canvas) -> None:  # pragma: no cover - vi
     val = _fmt_base_cell("down", "right")
     if val:
         right_lines.append(f"  concrete: {val}")
-    if any(" " in t for t in (grid.get(("up", "right"), []) or []) + (grid.get(("down", "right"), []) or [])):
+    if any(
+        " " in t
+        for t in (grid.get(("up", "right"), []) or [])
+        + (grid.get(("down", "right"), []) or [])
+    ):
         right_lines.append("  vertical: via fly/dip")
 
     right_end_y = _draw_block(
@@ -1088,7 +1131,9 @@ def _default_draw_quick_help(c: canvas.Canvas) -> None:  # pragma: no cover - vi
         y += line_h
         draw_text("  Systems sketch: describe · gist · focus · systemic · fog", x, y)
         y += line_h
-        draw_text("  Experiment plan: describe · full · focus · experimental · fog", x, y)
+        draw_text(
+            "  Experiment plan: describe · full · focus · experimental · fog", x, y
+        )
         y += line_h
         draw_text("  Type/taxonomy: describe · full · focus · taxonomy · rog", x, y)
         y += line_h
@@ -1098,11 +1143,23 @@ def _default_draw_quick_help(c: canvas.Canvas) -> None:  # pragma: no cover - vi
         y += line_h * 2
         draw_text("Replaced prompts", x, y)
         y += line_h
-        draw_text("  simple → use describe · gist · plain (or the 'Simplify locally' pattern).", x, y)
+        draw_text(
+            "  simple → use describe · gist · plain (or the 'Simplify locally' pattern).",
+            x,
+            y,
+        )
         y += line_h
-        draw_text("  short → use describe · gist · tight (or the 'Tighten summary' pattern).", x, y)
+        draw_text(
+            "  short → use describe · gist · tight (or the 'Tighten summary' pattern).",
+            x,
+            y,
+        )
         y += line_h
-        draw_text("  todo-style 'how to' → use todo · gist · checklist (or the 'Extract todos' pattern).", x, y)
+        draw_text(
+            "  todo-style 'how to' → use todo · gist · checklist (or the 'Extract todos' pattern).",
+            x,
+            y,
+        )
 
 
 # Register the default quick help renderer so the canvas has a baseline view

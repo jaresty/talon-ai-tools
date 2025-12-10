@@ -8,7 +8,7 @@ from .modelState import GPTState
 from .modelDestination import _parse_meta
 from .requestState import RequestPhase, RequestState
 from .requestBus import current_state
-from .axisMappings import axis_hydrate_tokens
+from .axisConfig import axis_docs_for
 from .suggestionCoordinator import (
     last_recipe_snapshot,
     last_recap_snapshot,
@@ -28,11 +28,17 @@ class ResponseCanvasState:
 
 
 def _hydrate_axis(axis: str, token_str: str) -> str:
-    """Return hydrated description(s) for a space-separated token string."""
+    """Return hydrated description(s) for a space-separated token string.
+
+    Uses the AxisDocs façade so response surfaces share the same
+    documentation source as quick help and other Concordance views.
+    """
     tokens = [t for t in token_str.split() if t]
     if not tokens:
         return ""
-    hydrated = axis_hydrate_tokens(axis, tokens)
+    docs = axis_docs_for(axis)
+    mapping = {doc.key: doc.description for doc in docs}
+    hydrated = [mapping.get(token, token) for token in tokens]
     return " ".join(hydrated) if hydrated else token_str
 
 
@@ -132,9 +138,7 @@ def _ensure_response_canvas() -> canvas.Canvas:
         ]
         btn_x = x
         approx_char = 8
-        max_footer_x = (
-            getattr(rect, "x", 0) + getattr(rect, "width", 1000) - 40
-        )
+        max_footer_x = getattr(rect, "x", 0) + getattr(rect, "width", 1000) - 40
         for key, label in btn_labels:
             width = len(label) * approx_char
             if btn_x + width > max_footer_x:
@@ -148,6 +152,7 @@ def _ensure_response_canvas() -> canvas.Canvas:
                 int(footer_y),
             )
             btn_x += width + approx_char
+
     if _response_canvas is not None:
         return _response_canvas
 
@@ -193,7 +198,11 @@ def _ensure_response_canvas() -> canvas.Canvas:
 
     def _on_mouse(evt) -> None:  # pragma: no cover - visual only
         try:
-            global _response_drag_offset, _response_hover_close, _response_hover_button, _response_mouse_log_count
+            global \
+                _response_drag_offset, \
+                _response_hover_close, \
+                _response_hover_button, \
+                _response_mouse_log_count
             rect = getattr(_response_canvas, "rect", None)
             pos = getattr(evt, "pos", None)
             if rect is None or pos is None:
@@ -385,7 +394,9 @@ def _ensure_response_canvas() -> canvas.Canvas:
             elif key in ("pagedown", "page_down"):
                 ResponseCanvasState.scroll_y += 200
             elif key in ("pageup", "page_up"):
-                ResponseCanvasState.scroll_y = max(ResponseCanvasState.scroll_y - 200, 0)
+                ResponseCanvasState.scroll_y = max(
+                    ResponseCanvasState.scroll_y - 200, 0
+                )
             elif key in ("down", "j"):
                 ResponseCanvasState.scroll_y += 40
             elif key in ("up", "k"):
@@ -672,7 +683,9 @@ def _default_draw_response(c: canvas.Canvas) -> None:  # pragma: no cover - visu
     axis_parts: list[str] = []
     if static_prompt:
         axis_parts.append(static_prompt)
-    last_completeness = _axis_join("completeness", getattr(GPTState, "last_completeness", "") or "")
+    last_completeness = _axis_join(
+        "completeness", getattr(GPTState, "last_completeness", "") or ""
+    )
     last_scope = _axis_join("scope", getattr(GPTState, "last_scope", "") or "")
     last_method = _axis_join("method", getattr(GPTState, "last_method", "") or "")
     last_style = _axis_join("style", getattr(GPTState, "last_style", "") or "")
@@ -708,12 +721,16 @@ def _default_draw_response(c: canvas.Canvas) -> None:  # pragma: no cover - visu
         draw_text(f"Say: {grammar_phrase}", x, y)
         y += line_h
         # Hydrated axis details stay hidden until the meta panel is expanded.
-        last_completeness = _axis_join("completeness", getattr(GPTState, "last_completeness", "") or "")
+        last_completeness = _axis_join(
+            "completeness", getattr(GPTState, "last_completeness", "") or ""
+        )
         last_scope = _axis_join("scope", getattr(GPTState, "last_scope", "") or "")
         last_method = _axis_join("method", getattr(GPTState, "last_method", "") or "")
         last_style = _axis_join("style", getattr(GPTState, "last_style", "") or "")
         try:
-            if any((last_completeness, last_scope, last_method, last_style, directional)):
+            if any(
+                (last_completeness, last_scope, last_method, last_style, directional)
+            ):
                 global _last_recap_log
                 snapshot = (
                     static_prompt,
@@ -734,7 +751,9 @@ def _default_draw_response(c: canvas.Canvas) -> None:  # pragma: no cover - visu
         except Exception:
             pass
         if last_completeness:
-            hydrated_parts.append(f"C: {_hydrate_axis('completeness', last_completeness)}")
+            hydrated_parts.append(
+                f"C: {_hydrate_axis('completeness', last_completeness)}"
+            )
         if last_scope:
             hydrated_parts.append(f"S: {_hydrate_axis('scope', last_scope)}")
         if last_method:
@@ -900,7 +919,10 @@ def _default_draw_response(c: canvas.Canvas) -> None:  # pragma: no cover - visu
         # Use the same approximate character width as the body, but keep meta
         # text within the visible canvas width so it does not run off-screen.
         meta_max_chars = max(
-            int((rect.width - (detail_x - (rect.x if rect else 0)) - 40) // approx_char_width),
+            int(
+                (rect.width - (detail_x - (rect.x if rect else 0)) - 40)
+                // approx_char_width
+            ),
             20,
         )
 
@@ -1104,9 +1126,13 @@ def _default_draw_response(c: canvas.Canvas) -> None:  # pragma: no cover - visu
             paint.color = "DDDDDD"
             c.draw_rect(ui.Rect(track_x, track_y, 6, track_height))
             # Thumb sized proportionally to visible/content heights.
-            thumb_height = max(int(visible_height * visible_height / content_height), 20)
+            thumb_height = max(
+                int(visible_height * visible_height / content_height), 20
+            )
             if max_scroll > 0:
-                thumb_offset = int((scroll_y / max_scroll) * (visible_height - thumb_height))
+                thumb_offset = int(
+                    (scroll_y / max_scroll) * (visible_height - thumb_height)
+                )
             else:
                 thumb_offset = 0
             paint.color = "888888"
@@ -1155,11 +1181,7 @@ def _default_draw_response(c: canvas.Canvas) -> None:  # pragma: no cover - visu
             label_x + width,
             footer_y,
         )
-        if (
-            _response_hover_button == key
-            and rect is not None
-            and paint is not None
-        ):
+        if _response_hover_button == key and rect is not None and paint is not None:
             try:
                 underline_rect = ui.Rect(label_x, footer_y + 4, width, 1)
                 c.draw_rect(underline_rect)

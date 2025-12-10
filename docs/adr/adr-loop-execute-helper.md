@@ -76,8 +76,15 @@ For the chosen ADR and focus area:
 - Open or create the ADR’s work‑log file
   (for example, `0118-example-adr.work-log.md`) and add a dated heading for
   this loop.
-- Decide on **one bounded, coherent slice** that moves the ADR forward. Common
-  patterns (not exhaustive) include:
+- Decide on **one bounded, coherent slice** that moves the ADR forward.
+  - “Bounded” here does **not** mean “small”. It means:
+    - You can describe the slice clearly,
+    - You can land it end-to-end (code/tests/docs as needed) in a single loop, and
+    - You are not leaving behaviour half-migrated with no clear follow-up.
+  Large, high-impact slices are fine when they meet these criteria.
+
+Common patterns (not exhaustive) include:
+
   - Implementing or extending a behaviour or workflow the ADR calls for.
   - Simplifying or refactoring code the ADR identifies as a hotspot.
   - Adding or tightening a guardrail the ADR requires.
@@ -91,7 +98,7 @@ For the chosen ADR and focus area:
     or adding a concise "Current status" summary).
 - As a rule of thumb, prefer slices that:
   - Change behaviour or configuration and exercise it with tests or representative runs, and/or
-  - Update multiple ADR touchpoints together (for example, config + tests + docs), rather than microscopic, single-line edits.
+  - Update multiple ADR touchpoints together (for example, config + tests + docs), whether the slice is narrow or broad in scope, rather than microscopic, single-line edits.
 - Do **not** assume every slice must combine behaviour and tests. Choose
   the slice that best advances the ADR's objectives; use tests and other
   checks as strategies to make those changes safe.
@@ -104,20 +111,32 @@ For the chosen ADR and focus area:
     workflows, **or**
   - Reconcile ADR tasks/status with actual repo state (for example,
     marking tasks complete/deferred and adding a short "Current status"
-    snapshot).
+    snapshot), **or**
+  - Take a broad, cross-cutting ADR task (for example, a single
+    "remove duplicated lifecycle/history logic" bullet) and decompose it
+    into a small set of named, bounded subtasks with:
+      - Clear focus areas (functions/modules/workflows),
+      - Expected artefacts (code/tests/docs), and
+      - Primary tests/checks for each subtask,
+    updating the ADR's Salient Tasks and work-log accordingly.
   Treat **pure wording-only tweaks** (that do not change behaviour, evidence,
   or status) as anti-patterns for ADR loops; batch those outside of this
   helper when possible.
 - Keep the slice **bounded and completable** enough that you can, within
-  this single loop:
+this single loop:
   - Implement the change end-to-end,
   - Run at least the most relevant checks/tests, and
   - Update the work-log.
+  This applies equally to small and large slices: big refactors are
+  acceptable when you can still land them coherently within one loop.
+
   If, after scanning the ADR and work‑log, you genuinely cannot find any
-  substantial slice that meets these criteria, do **not** force a token,
-  wording-only change just to satisfy the loop. Instead, treat this as a
-  status confirmation loop: record in the work‑log that there is no remaining
-  in‑repo work for this ADR (B_a ≈ 0) and report that outcome to the caller.
+  substantial slice that meets these criteria, first consider a
+  **decomposition loop** for any broad or cross-cutting tasks (as described
+  above). Only when remaining work is either clearly out-of-repo or already
+  decomposed and exhausted should you treat this as a status confirmation
+  loop: record in the work-log that there is no remaining in-repo work for
+  this ADR (B_a ≈ 0) and report that outcome to the caller.
 
 - Periodically (for example, every few loops for
   the same ADR), choose a slice that is primarily

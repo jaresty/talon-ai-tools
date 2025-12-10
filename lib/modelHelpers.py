@@ -929,6 +929,7 @@ def send_request(max_attempts: int = 10):
                 pass
             try:
                 GPTState.text_to_confirm = ""
+                GPTState.last_meta = ""
             except Exception:
                 pass
             return format_message("")

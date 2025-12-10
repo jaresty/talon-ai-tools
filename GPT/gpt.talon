@@ -43,9 +43,6 @@
 {user.model} async blocking$: user.gpt_set_async_blocking(1)
 {user.model} async non blocking$: user.gpt_set_async_blocking(0)
 
-^{user.model} again$:
-    user.gpt_rerun_last_recipe("", "", "", "", "", "")
-
 ^{user.model} again {user.staticPrompt} [{user.completenessModifier}] [{user.scopeModifier}] [{user.scopeModifier}] [{user.methodModifier}] [{user.methodModifier}] [{user.methodModifier}] [{user.styleModifier}] [{user.styleModifier}] [{user.styleModifier}] [{user.directionalModifier}]$:
     user.gpt_rerun_last_recipe(staticPrompt or "", completenessModifier or "", scopeModifier_list or "", methodModifier_list or "", styleModifier_list or "", directionalModifier or "")
 

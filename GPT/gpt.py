@@ -119,6 +119,31 @@ _recursive_orchestrator = RecursiveOrchestrator(_prompt_pipeline)
 ASYNC_BLOCKING_SETTING = "user.model_async_blocking"
 
 
+def _request_is_in_flight() -> bool:
+    """Return True when a GPT request is already running."""
+    try:
+        phase = getattr(current_state(), "phase", RequestPhase.IDLE)
+        # Treat terminal phases as idle so follow-up requests are allowed.
+        if phase in (
+            RequestPhase.IDLE,
+            RequestPhase.DONE,
+            RequestPhase.ERROR,
+            RequestPhase.CANCELLED,
+        ):
+            return False
+        return phase != RequestPhase.IDLE
+    except Exception:
+        return False
+
+
+def _reject_if_request_in_flight() -> bool:
+    """Notify and return True when a GPT request is already running."""
+    if _request_is_in_flight():
+        notify("GPT: A request is already running; wait for it to finish or cancel it first.")
+        return True
+    return False
+
+
 def _read_list_items(filename: str) -> list[tuple[str, str]]:
     """Read (key, description) pairs from a Talon list file in GPT/lists."""
     current_dir = os.path.dirname(__file__)
@@ -477,6 +502,9 @@ class UserActions:
 
     def gpt_apply_prompt(apply_prompt_configuration: ApplyPromptConfiguration):
         """Apply an arbitrary prompt to arbitrary text"""
+        # Refuse to start a new run if one is already in progress.
+        if _reject_if_request_in_flight():
+            return
         # Close the response viewer at the start of a new run so it disappears
         # immediately (for example, when using `model again`) and will be
         # reopened with the fresh answer once the pipeline completes.
@@ -563,6 +591,9 @@ class UserActions:
     ):
         """Apply an arbitrary prompt to arbitrary text"""
 
+        if _reject_if_request_in_flight():
+            return ""
+
         result = None
         async_started = False
         raw_block = settings.get(ASYNC_BLOCKING_SETTING, False)
@@ -602,6 +633,9 @@ class UserActions:
     ) -> str:
         """Run a controller prompt that may recursively delegate work to sub-sessions."""
 
+        if _reject_if_request_in_flight():
+            return ""
+
         result = None
         async_started = False
         raw_block = settings.get(ASYNC_BLOCKING_SETTING, False)
@@ -637,6 +671,9 @@ class UserActions:
     def gpt_analyze_prompt(destination: ModelDestination = ModelDestination()):
         """Explain why we got the results we did"""
         PROMPT = "Analyze the provided prompt and response. Explain how the prompt was understood to generate the given response. Provide only the explanation."
+
+        if _reject_if_request_in_flight():
+            return
 
         if not GPTState.last_response:
             notify("GPT Failure: No response available to analyze")
@@ -866,6 +903,9 @@ class UserActions:
 
     def gpt_replay(destination: str):
         """Replay the last request"""
+        if _reject_if_request_in_flight():
+            return
+
         session = PromptSession(destination)
         session.begin(reuse_existing=True)
         result_handle = _prompt_pipeline.complete_async(session)
@@ -1466,6 +1506,17 @@ class UserActions:
             text = getattr(gpt_result, "text", "") or ""
             if isinstance(text, str) and not text.strip():
                 actions.app.notify("GPT: Request cancelled")
+                return
+        except Exception:
+            pass
+        # If we're already showing the response canvas (window destination),
+        # avoid inserting to a surface to prevent accidental paste.
+        try:
+            if getattr(GPTState, "current_destination_kind", "") == "window":
+                try:
+                    actions.user.model_response_canvas_open()
+                except Exception:
+                    pass
                 return
         except Exception:
             pass

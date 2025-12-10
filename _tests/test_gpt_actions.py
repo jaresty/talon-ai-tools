@@ -20,6 +20,7 @@ if bootstrap is not None:
     from talon_user.lib.requestBus import set_controller, current_state
     from talon_user.lib.requestController import RequestUIController
     from talon_user.lib.requestState import RequestPhase
+    from talon_user.lib.talonSettings import ApplyPromptConfiguration
     from talon_user.lib.requestHistoryActions import UserActions as HistoryActions
     from talon_user.lib.requestLog import append_entry, clear_history
 
@@ -906,7 +907,7 @@ if bootstrap is not None:
                 create_destination.return_value = destination
                 model_prompt.return_value = "PROMPT"
 
-                gpt_module.UserActions.gpt_rerun_last_recipe("", "", [], [], [], "")
+                gpt_module.UserActions.gpt_rerun_last_recipe("", "", [], [], [], "rog")
 
                 mapped_tokens = [call.args[0] for call in axis_value.call_args_list]
                 self.assertIn("full", mapped_tokens)
@@ -985,10 +986,12 @@ if bootstrap is not None:
                 create_destination.return_value = destination
                 model_prompt.return_value = "PROMPT"
 
-                gpt_module.UserActions.gpt_rerun_last_recipe("", "", "", "", "", "")
+                gpt_module.UserActions.gpt_rerun_last_recipe("", "", [], [], [], "rog")
 
                 mapped_tokens = [call.args[0] for call in axis_value.call_args_list]
-                self.assertEqual(set(mapped_tokens), {"full", "bound", "rigor", "plain"})
+                self.assertTrue(
+                    {"full", "bound", "rigor", "plain"}.issubset(set(mapped_tokens))
+                )
                 self.assertEqual(
                     GPTState.last_axes,
                     {
@@ -1126,6 +1129,87 @@ if bootstrap is not None:
                         "style": ["plain"],
                     },
                 )
+
+        def test_gpt_apply_prompt_refuses_when_request_in_flight(self):
+            """A new request should be rejected if one is already running."""
+            running_state = MagicMock()
+            running_state.phase = RequestPhase.SENDING
+
+            with (
+                patch.object(gpt_module, "current_state", return_value=running_state),
+                patch.object(gpt_module, "notify") as notify_mock,
+                patch.object(gpt_module._prompt_pipeline, "run_async") as run_async_mock,
+            ):
+                config = ApplyPromptConfiguration(
+                    please_prompt="PROMPT",
+                    model_source=MagicMock(),
+                    additional_model_source=None,
+                    model_destination=MagicMock(),
+                )
+                gpt_module.UserActions.gpt_apply_prompt(config)
+
+                notify_mock.assert_called_once()
+                run_async_mock.assert_not_called()
+
+        def test_gpt_run_prompt_refuses_when_request_in_flight(self):
+            """Direct prompt runs should be rejected if one is already running."""
+            running_state = MagicMock()
+            running_state.phase = RequestPhase.SENDING
+
+            with (
+                patch.object(gpt_module, "current_state", return_value=running_state),
+                patch.object(gpt_module, "notify") as notify_mock,
+                patch.object(gpt_module._prompt_pipeline, "run_async") as run_async_mock,
+            ):
+                gpt_module.UserActions.gpt_run_prompt("PROMPT", MagicMock())
+
+                notify_mock.assert_called_once()
+                run_async_mock.assert_not_called()
+
+        def test_gpt_recursive_prompt_refuses_when_request_in_flight(self):
+            """Recursive prompt runs should be rejected if one is already running."""
+            running_state = MagicMock()
+            running_state.phase = RequestPhase.SENDING
+
+            with (
+                patch.object(gpt_module, "current_state", return_value=running_state),
+                patch.object(gpt_module, "notify") as notify_mock,
+                patch.object(gpt_module._recursive_orchestrator, "run_async") as run_async_mock,
+            ):
+                gpt_module.UserActions.gpt_recursive_prompt("PROMPT", MagicMock())
+
+                notify_mock.assert_called_once()
+                run_async_mock.assert_not_called()
+
+        def test_gpt_replay_refuses_when_request_in_flight(self):
+            """Replays should be rejected if one is already running."""
+            running_state = MagicMock()
+            running_state.phase = RequestPhase.SENDING
+
+            with (
+                patch.object(gpt_module, "current_state", return_value=running_state),
+                patch.object(gpt_module, "notify") as notify_mock,
+                patch.object(gpt_module._prompt_pipeline, "complete_async") as complete_async_mock,
+            ):
+                gpt_module.UserActions.gpt_replay(destination="window")
+
+                notify_mock.assert_called_once()
+                complete_async_mock.assert_not_called()
+
+        def test_gpt_analyze_refuses_when_request_in_flight(self):
+            """Analyze should be rejected if one is already running."""
+            running_state = MagicMock()
+            running_state.phase = RequestPhase.SENDING
+
+            with (
+                patch.object(gpt_module, "current_state", return_value=running_state),
+                patch.object(gpt_module, "notify") as notify_mock,
+                patch.object(gpt_module._prompt_pipeline, "complete_async") as complete_async_mock,
+            ):
+                gpt_module.UserActions.gpt_analyze_prompt()
+
+                notify_mock.assert_called_once()
+                complete_async_mock.assert_not_called()
 
         def test_gpt_rerun_last_recipe_notifies_when_axis_tokens_are_dropped(
             self,

@@ -376,7 +376,7 @@ def _draw_suggestions(c: canvas.Canvas) -> None:  # pragma: no cover - visual on
 
     suggestions = SuggestionGUIState.suggestions
     if not suggestions:
-        draw_text("No suggestions available. Run 'model suggest' first.", x, y)
+        draw_text("No suggestions available. Run 'model run suggest' first.", x, y)
         return
 
     # Each suggestion row is rendered as:

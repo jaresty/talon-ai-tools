@@ -565,7 +565,7 @@ def _draw_prompt_patterns(c: canvas.Canvas) -> None:  # pragma: no cover - visua
     draw_text("Grammar template:", x, y)
     y += line_h
     draw_text(
-        f"  model {static_prompt} [completeness] [scope] [method] [style] <directional lens>",
+        f"  model run {static_prompt} [completeness] [scope] [method] [style] <directional lens>",
         x,
         y,
     )

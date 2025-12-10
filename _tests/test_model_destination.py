@@ -46,9 +46,7 @@ if bootstrap is not None:
             self.assertIn(
                 "Recipe: describe · full · focus · plain · fog", paragraph_texts
             )
-            self.assertIn(
-                "Say: model describe full focus plain fog", paragraph_texts
-            )
+            self.assertIn("Say: model run describe full focus plain fog", paragraph_texts)
             self.assertTrue(
                 any("model show grammar" in text for text in paragraph_texts),
                 "Expected a tip mentioning 'model show grammar'",

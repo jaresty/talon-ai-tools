@@ -732,7 +732,7 @@ def _draw_pattern_canvas(c: canvas.Canvas) -> None:  # pragma: no cover - visual
                 pass
     y += line_h
     draw_text(
-        "Tip: Say the pattern name or full 'model …' grammar; clicking also runs it.",
+        "Tip: Say the pattern name or full 'model run …' grammar; clicking also runs it.",
         x,
         y,
     )

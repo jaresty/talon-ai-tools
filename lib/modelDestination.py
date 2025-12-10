@@ -401,10 +401,10 @@ class Browser(ModelDestination):
             directional = getattr(GPTState, "last_directional", "") or ""
             if directional:
                 recipe_text = f"{recipe} · {directional}"
-                grammar_phrase = f"model {recipe.replace(' · ', ' ')} {directional}"
+                grammar_phrase = f"model run {recipe.replace(' · ', ' ')} {directional}"
             else:
                 recipe_text = recipe
-                grammar_phrase = f"model {recipe.replace(' · ', ' ')}"
+                grammar_phrase = f"model run {recipe.replace(' · ', ' ')}"
 
             builder.p(f"Recipe: {recipe_text}")
             builder.p(f"Say: {grammar_phrase}")

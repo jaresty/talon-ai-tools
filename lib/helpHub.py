@@ -332,7 +332,7 @@ def _ensure_canvas() -> None:
                 info_y = result_y + 10
                 info_lines = [
                     "Caps: scope≤2, method≤3, style≤3; include a directional lens.",
-                    "Voice hints: model patterns · model quick help · model suggest · history drawer.",
+                    "Voice hints: model patterns · model quick help · model run suggest · history drawer.",
                     "Hub: wheel/PgUp/PgDn/arrow keys or scrollbar to scroll; say 'model help filter <phrase>'.",
                 ]
                 for line in info_lines:
@@ -345,7 +345,7 @@ def _ensure_canvas() -> None:
                         "Onboarding:",
                         "1) Open Patterns and run one recipe.",
                         "2) Open Quick help and say model show grammar.",
-                        "3) Try 'model again gist fog' after a run.",
+                        "3) Try 'model run again gist fog' after a run.",
                     ]
                     info_y += 8
                     for line in onboarding_lines:
@@ -670,7 +670,7 @@ def _cheat_sheet_text() -> str:
         "- model help hub",
         "- model quick help / model show grammar",
         "- model patterns / model pattern menu <prompt>",
-        "- model suggest / model suggestions",
+        "- model run suggest / model run suggestions",
         "- model history list / history drawer",
         "- model help (HTML docs)",
         "Axes (examples):",
@@ -757,7 +757,7 @@ def _build_buttons() -> List[HubButton]:
             label="Suggestions",
             description="Reopen prompt recipe suggestions",
             handler=lambda: actions.user.model_prompt_recipe_suggestions_gui_open(),
-            voice_hint="Say: model suggestions",
+            voice_hint="Say: model run suggestions",
         ),
         HubButton(
             label="History",
@@ -968,13 +968,13 @@ def _build_search_index() -> None:
         _add(f"Hub: {btn.label}", btn.description, btn.handler, btn.voice_hint)
 
     # Static prompts
-    for prompt in _read_list_items("staticPrompt.talon-list"):
-        _add(
-            f"Prompt: {prompt}",
-            "Open quick help for prompt",
-            lambda p=prompt: actions.user.model_help_canvas_open_for_static_prompt(p),
-            voice_hint=f"Say: model {prompt}",
-        )
+        for prompt in _read_list_items("staticPrompt.talon-list"):
+            _add(
+                f"Prompt: {prompt}",
+                "Open quick help for prompt",
+                lambda p=prompt: actions.user.model_help_canvas_open_for_static_prompt(p),
+                voice_hint=f"Say: model run {prompt}",
+            )
 
     # Axes
     for axis_file, axis_label in (
@@ -988,7 +988,7 @@ def _build_search_index() -> None:
                 f"Axis ({axis_label}): {token}",
                 "Open quick help",
                 lambda a=axis_label.lower(): actions.user.model_help_canvas_open() or None,
-                voice_hint=f"Say: model … {token}",
+                voice_hint=f"Say: model run … {token}",
             )
 
     # Patterns and prompt presets

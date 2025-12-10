@@ -8,6 +8,7 @@ from talon import skia
 
 from .canvasFont import apply_canvas_typeface
 from .modelState import GPTState
+from .suggestionCoordinator import last_recipe_snapshot, suggestion_grammar_phrase
 try:
     from .modelPatternGUI import PATTERNS
     from .modelPromptPatternGUI import PROMPT_PRESETS
@@ -305,16 +306,14 @@ def _ensure_canvas() -> None:
                 btn_y += 6
 
                 # Last recipe recap.
-                try:
-                    last_recipe = getattr(GPTState, "last_recipe", "") or ""
-                    last_directional = getattr(GPTState, "last_directional", "") or ""
-                except Exception:
-                    last_recipe = ""
-                    last_directional = ""
-                if last_recipe:
-                    recipe_line = f"Last recipe: {last_recipe}"
-                    if last_directional:
-                        recipe_line += f" · {last_directional}"
+                snapshot = last_recipe_snapshot()
+                recipe_text = snapshot.get("recipe", "") or ""
+                directional = snapshot.get("directional", "") or ""
+                if recipe_text:
+                    if directional:
+                        recipe_line = f"Last recipe: {recipe_text} · {directional}"
+                    else:
+                        recipe_line = f"Last recipe: {recipe_text}"
                     c.draw_text(recipe_line, x, btn_y + 16, text_paint)
                     btn_y += 34
 

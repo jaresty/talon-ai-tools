@@ -18,7 +18,11 @@ from ..lib.talonSettings import (
 from ..lib.staticPromptConfig import STATIC_PROMPT_CONFIG
 
 try:
-    from ..lib.staticPromptConfig import get_static_prompt_axes, get_static_prompt_profile
+    from ..lib.staticPromptConfig import (
+        get_static_prompt_axes,
+        get_static_prompt_profile,
+        static_prompt_catalog,
+    )
 except ImportError:  # Talon may have a stale staticPromptConfig loaded
     def get_static_prompt_profile(name: str):
         return STATIC_PROMPT_CONFIG.get(name)
@@ -39,6 +43,48 @@ except ImportError:  # Talon may have a stale staticPromptConfig loaded
                     if tokens:
                         axes[axis] = tokens
         return axes
+
+    def static_prompt_catalog(static_prompt_list_path=None):
+        talon_tokens = []
+        try:
+            current_dir = os.path.dirname(__file__)
+            path = os.path.join(current_dir, "lists", "staticPrompt.talon-list")
+            with open(path, "r", encoding="utf-8") as f:
+                for line in f:
+                    s = line.strip()
+                    if (
+                        not s
+                        or s.startswith("#")
+                        or s.startswith("list:")
+                        or s == "-"
+                    ):
+                        continue
+                    if ":" not in s:
+                        continue
+                    key, _ = s.split(":", 1)
+                    key = key.strip()
+                    if key:
+                        talon_tokens.append(key)
+        except FileNotFoundError:
+            pass
+        profiled = []
+        for name in STATIC_PROMPT_CONFIG.keys():
+            profiled.append(
+                {
+                    "name": name,
+                    "description": STATIC_PROMPT_CONFIG.get(name, {}).get(
+                        "description", ""
+                    ),
+                    "axes": get_static_prompt_axes(name),
+                }
+            )
+        profiled_names = {entry["name"] for entry in profiled}
+        unprofiled_tokens = [token for token in talon_tokens if token not in profiled_names]
+        return {
+            "profiled": profiled,
+            "talon_list_tokens": talon_tokens,
+            "unprofiled_tokens": unprofiled_tokens,
+        }
 
 from ..lib.modelDestination import (
     Browser,
@@ -74,6 +120,12 @@ from ..lib.modelPatternGUI import (
     DIRECTIONAL_MAP as _DIRECTIONAL_MAP,
 )
 from ..lib.axisMappings import axis_key_to_value_map_for
+from ..lib.suggestionCoordinator import (
+    record_suggestions,
+    last_recipe_snapshot,
+    set_last_recipe_from_selection,
+    last_recap_snapshot,
+)
 # Backward-compatible alias for directional map used during parsing.
 DIRECTIONAL_MAP = _DIRECTIONAL_MAP
 from ..lib.requestState import RequestPhase
@@ -236,27 +288,21 @@ def _build_axis_docs() -> str:
 
 def _build_static_prompt_docs() -> str:
     """Build a text block describing static prompts and their semantics."""
-    current_dir = os.path.dirname(__file__)
-    lists_dir = os.path.join(current_dir, "lists")
-    path = os.path.join(lists_dir, "staticPrompt.talon-list")
-    # Prefer descriptions from STATIC_PROMPT_CONFIG, and include default axes
-    # when present; fall back to listing other prompts by name.
+    catalog = static_prompt_catalog()
+    # Prefer descriptions from the catalog (STATIC_PROMPT_CONFIG), and include
+    # default axes when present; fall back to listing unprofiled prompts by name.
     lines: list[str] = [
         "Note: Some behaviours (for example, diagrams, Presenterm decks, ADRs, shell scripts, debugging, Slack/Jira formatting, taxonomy-style outputs) now live only as style/method axis values rather than static prompts; see ADR 012/013 and the README cheat sheet for axis-based recipes.\n"
     ]
-    seen: set[str] = set()
-
     # First, profiled prompts with rich descriptions.
-    for name in STATIC_PROMPT_CONFIG.keys():
-        profile = get_static_prompt_profile(name)
-        if profile is None:
-            continue
-        description = profile.get("description", "").strip()
+    for entry in catalog["profiled"]:
+        name = entry["name"]
+        description = entry.get("description", "").strip()
         if not description:
             continue
         axes_bits: list[str] = []
         for label in ("completeness", "scope", "method", "style"):
-            value = get_static_prompt_axes(name).get(label)
+            value = entry.get("axes", {}).get(label)
             if not value:
                 continue
             if isinstance(value, list):
@@ -271,32 +317,10 @@ def _build_static_prompt_docs() -> str:
             )
         else:
             lines.append(f"- {name}: {description}")
-        seen.add(name)
 
     # Then, any remaining static prompts from the list so the model sees the
     # full token vocabulary.
-    other_prompts: list[str] = []
-    try:
-        with open(path, "r", encoding="utf-8") as f:
-            for line in f:
-                line = line.strip()
-                if (
-                    not line
-                    or line.startswith("#")
-                    or line.startswith("list:")
-                    or line == "-"
-                ):
-                    continue
-                if ":" not in line:
-                    continue
-                key, _ = line.split(":", 1)
-                key = key.strip()
-                if key and key not in seen:
-                    other_prompts.append(key)
-                    seen.add(key)
-    except FileNotFoundError:
-        pass
-
+    other_prompts = catalog.get("unprofiled_tokens", [])
     if other_prompts:
         lines.append(
             "- Other static prompts (tokens only; see docs for semantics): "
@@ -885,8 +909,7 @@ class UserActions:
             suggestions.append({"name": name, "recipe": recipe})
 
         if suggestions:
-            GPTState.last_suggested_recipes = suggestions
-            GPTState.last_suggest_source = suggest_source_key
+            record_suggestions(suggestions, suggest_source_key)
             try:
                 actions.user.model_prompt_recipe_suggestions_gui_open()
                 # When the suggestion GUI opens successfully, we do not also
@@ -915,31 +938,30 @@ class UserActions:
 
     def gpt_show_last_recipe() -> None:
         """Show a short summary of the last prompt recipe"""
-        axes_tokens = getattr(GPTState, "last_axes", {}) or {}
-        static_prompt = getattr(GPTState, "last_static_prompt", "") or ""
-
-        def _axis_join(axis: str, fallback: str) -> str:
-            tokens = axes_tokens.get(axis)
-            if isinstance(tokens, list) and tokens:
-                return " ".join(str(t) for t in tokens if str(t))
-            return fallback
+        snapshot = last_recipe_snapshot()
+        static_prompt = snapshot.get("static_prompt", "")
+        completeness = snapshot.get("completeness", "")
+        scope_tokens = snapshot.get("scope_tokens", []) or []
+        method_tokens = snapshot.get("method_tokens", []) or []
+        style_tokens = snapshot.get("style_tokens", []) or []
 
         parts: list[str] = []
         if static_prompt:
             parts.append(static_prompt)
-        completeness = _axis_join("completeness", getattr(GPTState, "last_completeness", "") or "")
-        scope = _axis_join("scope", getattr(GPTState, "last_scope", "") or "")
-        method = _axis_join("method", getattr(GPTState, "last_method", "") or "")
-        style = _axis_join("style", getattr(GPTState, "last_style", "") or "")
-        for value in (completeness, scope, method, style):
+        for value in (
+            completeness,
+            " ".join(scope_tokens),
+            " ".join(method_tokens),
+            " ".join(style_tokens),
+        ):
             if value:
                 parts.append(value)
 
-        recipe = " · ".join(parts) if parts else GPTState.last_recipe
+        recipe = " · ".join(parts) if parts else snapshot.get("recipe", "")
         if not recipe:
             notify("GPT: No last recipe available")
             return
-        directional = getattr(GPTState, "last_directional", "")
+        directional = snapshot.get("directional", "")
         if directional:
             recipe_text = f"{recipe} · {directional}"
         else:
@@ -948,11 +970,16 @@ class UserActions:
 
     def gpt_show_last_meta() -> None:
         """Show the last meta-interpretation, if available."""
-        meta = getattr(GPTState, "last_meta", "")
-        if not meta.strip():
+        meta = last_recap_snapshot().get("meta", "")
+        if not meta or not str(meta).strip():
             actions.app.notify("GPT: No last meta interpretation available")
             return
         actions.app.notify(f"Last meta interpretation:\n{meta}")
+
+    def gpt_clear_last_recap() -> None:
+        """Clear last response/recipe/meta recap state."""
+        clear_recap_state()
+        actions.app.notify("GPT: Cleared last recap state")
 
     def gpt_cancel_request() -> None:
         """Best-effort cancel for in-flight model requests (UI + state only)."""
@@ -991,25 +1018,13 @@ class UserActions:
             notify("GPT: No last recipe available to rerun")
             return
 
-        base_static = getattr(GPTState, "last_static_prompt", "") or ""
-        axes_state = getattr(GPTState, "last_axes", {}) or {}
-
-        def _axis_tokens(axis: str, fallback_str: str) -> list[str]:
-            tokens = axes_state.get(axis)
-            if isinstance(tokens, list) and tokens:
-                return [str(t) for t in tokens if str(t)]
-            return _axis_string_to_tokens(fallback_str)
-
-        base_completeness_tokens = _axis_tokens(
-            "completeness", getattr(GPTState, "last_completeness", "") or ""
-        )
-        base_scope_tokens_raw = _axis_tokens("scope", getattr(GPTState, "last_scope", "") or "")
-        base_method_tokens_raw = _axis_tokens(
-            "method", getattr(GPTState, "last_method", "") or ""
-        )
-        base_style_tokens_raw = _axis_tokens("style", getattr(GPTState, "last_style", "") or "")
-        base_completeness = base_completeness_tokens[0] if base_completeness_tokens else ""
-        base_directional = getattr(GPTState, "last_directional", "") or ""
+        snapshot = last_recipe_snapshot()
+        base_static = snapshot.get("static_prompt", "")
+        base_completeness = snapshot.get("completeness", "")
+        base_scope_tokens_raw = snapshot.get("scope_tokens", []) or []
+        base_method_tokens_raw = snapshot.get("method_tokens", []) or []
+        base_style_tokens_raw = snapshot.get("style_tokens", []) or []
+        base_directional = snapshot.get("directional", "")
 
         try:
             if any(
@@ -1205,23 +1220,14 @@ class UserActions:
 
         # Keep GPTState.last_recipe and structured fields in sync with the
         # effective recipe for this rerun.
-        recipe_parts = [new_static]
-        for token in (new_completeness, new_scope, new_method, new_style):
-            if token:
-                recipe_parts.append(token)
-        GPTState.last_recipe = " · ".join(recipe_parts)
-        GPTState.last_static_prompt = new_static
-        GPTState.last_completeness = new_completeness or ""
-        GPTState.last_scope = new_scope or ""
-        GPTState.last_method = new_method or ""
-        GPTState.last_style = new_style or ""
-        GPTState.last_directional = new_directional or ""
-        GPTState.last_axes = {
-            "completeness": [new_completeness] if new_completeness else [],
-            "scope": merged_scope_tokens,
-            "method": merged_method_tokens,
-            "style": merged_style_tokens,
-        }
+        set_last_recipe_from_selection(
+            new_static,
+            new_completeness,
+            new_scope,
+            new_method,
+            new_style,
+            new_directional,
+        )
 
         try:
             print(

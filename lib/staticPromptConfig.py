@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from pathlib import Path
 from typing import TypedDict, Union
 
 # Central configuration for static prompts:
@@ -437,3 +438,71 @@ def get_static_prompt_axes(name: str) -> dict[str, object]:
             if tokens:
                 axes[axis] = tokens
     return axes
+
+
+class StaticPromptCatalogEntry(TypedDict):
+    name: str
+    description: str
+    axes: dict[str, object]
+
+
+class StaticPromptCatalog(TypedDict):
+    profiled: list[StaticPromptCatalogEntry]
+    talon_list_tokens: list[str]
+    unprofiled_tokens: list[str]
+
+
+def _read_static_prompt_tokens(static_prompt_list_path: str | Path | None = None) -> list[str]:
+    """Return the token names from staticPrompt.talon-list, if present."""
+    if static_prompt_list_path is None:
+        current_dir = Path(__file__).resolve().parent
+        static_prompt_list_path = current_dir.parent / "GPT" / "lists" / "staticPrompt.talon-list"
+    path = Path(static_prompt_list_path)
+    tokens: list[str] = []
+    try:
+        with path.open("r", encoding="utf-8") as f:
+            for line in f:
+                s = line.strip()
+                if not s or s.startswith("#") or s.startswith("list:") or s == "-":
+                    continue
+                if ":" not in s:
+                    continue
+                key, _ = s.split(":", 1)
+                key = key.strip()
+                if key:
+                    tokens.append(key)
+    except FileNotFoundError:
+        return []
+    return tokens
+
+
+def static_prompt_catalog(static_prompt_list_path: str | Path | None = None) -> StaticPromptCatalog:
+    """Return a catalog view that unifies profiles and Talon list tokens.
+
+    The catalog is the SSOT for docs and drift checks:
+    - profiled entries come from STATIC_PROMPT_CONFIG with axes resolved via
+      `get_static_prompt_axes`.
+    - talon_list_tokens reflects the live staticPrompt.talon-list entries.
+    - unprofiled_tokens lists tokens present in the Talon list but not in the
+      profiled set (so docs can mention the token vocabulary).
+    """
+    talon_tokens = _read_static_prompt_tokens(static_prompt_list_path)
+    profiled: list[StaticPromptCatalogEntry] = []
+    for name in STATIC_PROMPT_CONFIG.keys():
+        profile = get_static_prompt_profile(name)
+        if profile is None:
+            continue
+        profiled.append(
+            {
+                "name": name,
+                "description": profile.get("description", "").strip(),
+                "axes": get_static_prompt_axes(name),
+            }
+        )
+    profiled_names = {entry["name"] for entry in profiled}
+    unprofiled_tokens = [token for token in talon_tokens if token not in profiled_names]
+    return {
+        "profiled": profiled,
+        "talon_list_tokens": talon_tokens,
+        "unprofiled_tokens": unprofiled_tokens,
+    }

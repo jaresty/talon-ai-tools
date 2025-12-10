@@ -4,7 +4,7 @@ from talon import Context, Module, actions, canvas, ui
 from talon import skia
 
 from .canvasFont import apply_canvas_typeface
-from .axisConfig import AXIS_KEY_TO_VALUE
+from .axisMappings import axis_docs_map
 
 from .modelState import GPTState
 from .talonSettings import _AXIS_SOFT_CAPS
@@ -38,7 +38,7 @@ except ImportError:  # Talon may have a stale staticPromptConfig loaded
 def _axis_keys(axis: str) -> list[str]:
     """Return axis keys in list-file order."""
 
-    mapping = AXIS_KEY_TO_VALUE.get(axis) or {}
+    mapping = axis_docs_map(axis)
     return [key for key in mapping.keys()]
 
 

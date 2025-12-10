@@ -34,3 +34,15 @@ def axis_hydrate_tokens(axis: str, tokens: list[str]) -> list[str]:
         return []
     mapping = axis_key_to_value_map(axis)
     return [mapping.get(token, token) for token in tokens if token]
+
+
+def axis_hydrate_token(axis: str, token: str) -> str:
+    """Hydrate a single axis token to its description (or pass through)."""
+    if not token:
+        return ""
+    return axis_key_to_value_map(axis).get(token, token)
+
+
+def axis_docs_map(axis: str) -> dict[str, str]:
+    """Return the key->description map for an axis for UI/docs consumption."""
+    return axis_key_to_value_map(axis)

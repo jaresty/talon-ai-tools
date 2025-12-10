@@ -9,6 +9,11 @@ from .modelDestination import _parse_meta
 from .requestState import RequestPhase, RequestState
 from .requestBus import current_state
 from .axisMappings import axis_hydrate_tokens
+from .suggestionCoordinator import (
+    last_recipe_snapshot,
+    last_recap_snapshot,
+    suggestion_grammar_phrase,
+)
 
 mod = Module()
 ctx = Context()
@@ -646,15 +651,23 @@ def _default_draw_response(c: canvas.Canvas) -> None:  # pragma: no cover - visu
     # spoken form produced the current response. Prefer the structured
     # axis fields when available so we keep this recap concise and
     # token-based even if older code paths stored a verbose last_recipe.
-    recipe = getattr(GPTState, "last_recipe", "") or ""
-    static_prompt = getattr(GPTState, "last_static_prompt", "") or ""
-    axes_tokens = getattr(GPTState, "last_axes", {}) or {}
+    recipe_snapshot = last_recipe_snapshot()
+    recipe = recipe_snapshot.get("recipe", "") or ""
+    static_prompt = recipe_snapshot.get("static_prompt", "") or ""
+    axes_tokens = {
+        "completeness": recipe_snapshot.get("completeness", ""),
+        "scope": recipe_snapshot.get("scope_tokens", []) or [],
+        "method": recipe_snapshot.get("method_tokens", []) or [],
+        "style": recipe_snapshot.get("style_tokens", []) or [],
+    }
 
     def _axis_join(axis: str, fallback: str) -> str:
         tokens = axes_tokens.get(axis)
-        if isinstance(tokens, list) and tokens:
-            return " ".join(str(t) for t in tokens if str(t))
-        return fallback
+        if isinstance(tokens, list):
+            if tokens:
+                return " ".join(str(t) for t in tokens if str(t))
+            return fallback
+        return str(tokens) if tokens else fallback
 
     axis_parts: list[str] = []
     if static_prompt:
@@ -672,22 +685,24 @@ def _default_draw_response(c: canvas.Canvas) -> None:  # pragma: no cover - visu
         recipe = recipe_tokens
     # If only static prompt is present but we have a legacy recipe, keep the legacy recipe
     # so older flows that only set last_recipe still show a full recap.
-    if recipe_tokens and len(axis_parts) <= 1 and getattr(GPTState, "last_recipe", ""):
-        recipe = getattr(GPTState, "last_recipe", "")
+    if recipe_tokens and len(axis_parts) <= 1 and recipe_snapshot.get("recipe", ""):
+        recipe = recipe_snapshot.get("recipe", "")
     if recipe:
         draw_text("Talon GPT Result", x, y)
         y += line_h
         draw_text("Prompt recap", x, y)
         y += line_h
-        directional = getattr(GPTState, "last_directional", "") or ""
+        directional = recipe_snapshot.get("directional", "") or ""
         if directional:
             recipe_text = f"{recipe} · {directional}"
-            grammar_phrase = (
-                f"model {recipe.replace(' · ', ' ')} {directional}"
+            grammar_phrase = suggestion_grammar_phrase(
+                recipe_text, getattr(GPTState, "last_again_source", ""), {}
             )
         else:
             recipe_text = recipe
-            grammar_phrase = f"model {recipe.replace(' · ', ' ')}"
+            grammar_phrase = suggestion_grammar_phrase(
+                recipe_text, getattr(GPTState, "last_again_source", ""), {}
+            )
         draw_text(f"Recipe: {recipe_text}", x, y)
         y += line_h
         draw_text(f"Say: {grammar_phrase}", x, y)
@@ -728,7 +743,7 @@ def _default_draw_response(c: canvas.Canvas) -> None:  # pragma: no cover - visu
             hydrated_parts.append(f"St: {_hydrate_axis('style', last_style)}")
 
     # Optional diagnostic meta section and toggle under the recap.
-    meta = getattr(GPTState, "last_meta", "").strip()
+    meta = last_recap_snapshot().get("meta", "").strip()
     parsed_meta: Optional[dict] = None
     meta_summary: str = ""
     if meta:
@@ -1017,7 +1032,7 @@ def _default_draw_response(c: canvas.Canvas) -> None:  # pragma: no cover - visu
     # last_response content.
     text_to_confirm_raw = getattr(GPTState, "text_to_confirm", "")
     text_to_confirm = _coerce_text(text_to_confirm_raw)
-    last_response = _coerce_text(getattr(GPTState, "last_response", ""))
+    last_response = _coerce_text(last_recap_snapshot().get("response", ""))
     answer = (
         text_to_confirm
         if inflight and prefer_progress

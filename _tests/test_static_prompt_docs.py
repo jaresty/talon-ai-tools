@@ -13,7 +13,10 @@ if bootstrap is not None:
     import pathlib
 
     from talon_user.GPT.gpt import _build_axis_docs, _build_static_prompt_docs
-    from talon_user.lib.staticPromptConfig import STATIC_PROMPT_CONFIG
+    from talon_user.lib.staticPromptConfig import (
+        STATIC_PROMPT_CONFIG,
+        static_prompt_catalog,
+    )
     from talon_user.lib.modelPatternGUI import PATTERNS, _parse_recipe
 
     class StaticPromptDocsTests(unittest.TestCase):
@@ -28,6 +31,21 @@ if bootstrap is not None:
                 self._static_list_path.is_file(),
                 "staticPrompt.talon-list should exist for this test",
             )
+
+        def test_static_prompt_catalog_exposes_profiles_and_tokens(self) -> None:
+            catalog = static_prompt_catalog()
+
+            # A known profiled prompt should include description and axes.
+            todo_entry = next(
+                (entry for entry in catalog["profiled"] if entry["name"] == "todo"),
+                None,
+            )
+            self.assertIsNotNone(todo_entry, "Expected todo in catalog")
+            self.assertIn("Format this as a todo list.", todo_entry["description"])
+            self.assertIn("checklist", todo_entry["axes"].get("style", []))
+
+            # Talon list tokens should be present for drift checks.
+            self.assertIn("todo", catalog["talon_list_tokens"])
 
         def test_static_prompt_docs_include_profiled_and_unprofiled_prompts(self) -> None:
             docs = _build_static_prompt_docs()

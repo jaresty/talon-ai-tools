@@ -9,6 +9,7 @@ from .canvasFont import apply_canvas_typeface
 from .modelDestination import create_model_destination
 from .modelSource import create_model_source
 from .modelState import GPTState
+from .axisMappings import axis_docs_map
 
 try:
     # Prefer the shared static prompt domain helpers when available.
@@ -98,28 +99,18 @@ except Exception:  # Tests / stubs
 
 
 def _load_axis_map(filename: str) -> dict[str, str]:
-    """Load a Talon list file as key -> description mapping."""
-    current_dir = os.path.dirname(__file__)
-    lists_dir = os.path.abspath(os.path.join(current_dir, "..", "GPT", "lists"))
-    path = os.path.join(lists_dir, filename)
-    mapping: dict[str, str] = {}
-    try:
-        with open(path, "r", encoding="utf-8") as f:
-            for line in f:
-                line = line.strip()
-                if (
-                    not line
-                    or line.startswith("#")
-                    or line.startswith("list:")
-                    or line == "-"
-                ):
-                    continue
-                if ":" in line:
-                    key, value = line.split(":", 1)
-                    mapping[key.strip()] = value.strip()
-    except FileNotFoundError:
+    """Load axis descriptions from the shared axis mapping SSOT."""
+    axis = filename.replace("Modifier.talon-list", "").replace(".talon-list", "")
+    axis_key = {
+        "completeness": "completeness",
+        "scope": "scope",
+        "method": "method",
+        "style": "style",
+        "directional": "directional",
+    }.get(axis, "")
+    if not axis_key:
         return {}
-    return mapping
+    return axis_docs_map(axis_key)
 
 
 def _axis_value(token: str, mapping: dict[str, str]) -> str:

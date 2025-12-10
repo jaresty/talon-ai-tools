@@ -10,6 +10,12 @@ from .modelDestination import create_model_destination
 from .modelSource import create_model_source
 from .modelState import GPTState
 from .talonSettings import ApplyPromptConfiguration, modelPrompt
+from .suggestionCoordinator import (
+    suggestion_entries,
+    suggestion_source,
+    set_last_recipe_from_selection,
+    suggestion_grammar_phrase,
+)
 from .modelPatternGUI import (
     _axis_value,
     _parse_recipe,
@@ -438,12 +444,9 @@ def _draw_suggestions(c: canvas.Canvas) -> None:  # pragma: no cover - visual on
         row_y += line_h
 
         source_key = getattr(GPTState, "last_suggest_source", "")
-        spoken_source = SOURCE_SPOKEN_MAP.get(source_key, "")
-        base_recipe = suggestion.recipe.replace(" · ", " ")
-        if spoken_source:
-            grammar_phrase = f"model {spoken_source} {base_recipe}"
-        else:
-            grammar_phrase = f"model {base_recipe}"
+        grammar_phrase = suggestion_grammar_phrase(
+            suggestion.recipe, source_key, SOURCE_SPOKEN_MAP
+        )
         draw_text(f"Say: {grammar_phrase}", x + 4, row_y)
         row_y += line_h
 
@@ -498,8 +501,7 @@ def _draw_suggestions(c: canvas.Canvas) -> None:  # pragma: no cover - visual on
 def _refresh_suggestions_from_state() -> None:
     SuggestionGUIState.suggestions = [
         Suggestion(name=item["name"], recipe=item["recipe"])
-        for item in GPTState.last_suggested_recipes
-        if item.get("name") and item.get("recipe")
+        for item in suggestion_entries()
     ]
 
 
@@ -542,9 +544,7 @@ def _run_suggestion(suggestion: Suggestion) -> None:
 
     # Prefer the source used when generating these suggestions, falling back
     # to the current default source when unavailable.
-    source_key = getattr(GPTState, "last_suggest_source", "") or settings.get(
-        "user.model_default_source"
-    )
+    source_key = suggestion_source(settings.get("user.model_default_source"))
 
     config = ApplyPromptConfiguration(
         please_prompt=please_prompt,
@@ -562,23 +562,14 @@ def _run_suggestion(suggestion: Suggestion) -> None:
     actions.user.gpt_apply_prompt(config)
 
     # Keep last_recipe concise and token-based to reinforce speakable grammar.
-    recipe_parts = [static_prompt]
-    for token in (completeness, scope, method, style):
-        if token:
-            recipe_parts.append(token)
-    GPTState.last_recipe = " · ".join(recipe_parts)
-    GPTState.last_static_prompt = static_prompt
-    GPTState.last_completeness = completeness or ""
-    GPTState.last_scope = scope or ""
-    GPTState.last_method = method or ""
-    GPTState.last_style = style or ""
-    GPTState.last_directional = directional or ""
-    GPTState.last_axes = {
-        "completeness": [completeness] if completeness else [],
-        "scope": scope.split() if scope else [],
-        "method": method.split() if method else [],
-        "style": style.split() if style else [],
-    }
+    set_last_recipe_from_selection(
+        static_prompt,
+        completeness,
+        scope,
+        method,
+        style,
+        directional,
+    )
 
 
 @mod.action_class

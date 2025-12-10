@@ -1,6 +1,6 @@
 # ADR-0037 – Concordance Hotspots for Help, Response, and Request Orchestration Domains
 
-Status: Proposed  
+Status: Accepted  
 Date: 2025-12-10  
 Owners: Talon AI tools maintainers
 

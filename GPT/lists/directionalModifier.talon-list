@@ -1,20 +1,19 @@
 list: user.directionalModifier
 #
 -
-
-fog: Important: Apply an abstracting-generalizing perspective as one synthesized lens to frame the preceding prompt.
-fly ong: Important: Frame the preceding prompt through one unified perspective that blends abstraction, generalization, acting, and extending. Interpret these as a single fused stance—never separate or itemize.
-fly rog: Important: Frame the preceding prompt through one unified perspective that blends abstraction, generalization, reflection, and structure. Interpret these as a single fused stance—never separate or itemize.
-fly bog: Important: Frame the preceding prompt through one unified perspective that blends abstraction, generalization, acting, extending, reflection, and structure. Interpret these as a single fused stance—never separate or itemize.
-fig: Important: Apply an abstracting-generalizing-concretizing-grounding perspective as one synthesized lens to frame the preceding prompt.
-fip ong: Important: Frame the preceding prompt through one unified perspective that blends abstraction, generalization, concreteness, grounding, acting, and extending. Interpret these as a single fused stance—never separate or itemize.
-fip rog: Important: Frame the preceding prompt through one unified perspective that blends abstraction, generalization, concreteness, grounding, reflection, and structure. Interpret these as a single fused stance—never separate or itemize.
-fip bog: Important: Frame the preceding prompt through one unified perspective that blends abstraction, generalization, concreteness, grounding, acting, extending, reflection, and structure. Interpret these as a single fused stance—never separate or itemize.
-ong: Important: Apply an acting-extending perspective as one synthesized lens to frame the preceding prompt.
-rog: Important: Apply a reflective-structural perspective as one synthesized lens to frame the preceding prompt.
-bog: Important: Frame the preceding prompt through one unified perspective that blends acting, extending, reflection, and structure. Interpret these as a single fused stance—never separate or itemize.
-dig: Important: Apply a concretizing-grounding perspective as one synthesized lens to frame the preceding prompt.
-dip ong: Important: Frame the preceding prompt through one unified perspective that blends concreteness, grounding, acting, and extending. Interpret these as a single fused stance—never separate or itemize.
-dip rog: Important: Frame the preceding prompt through one unified perspective that blends concreteness, grounding, reflection, and structure. Interpret these as a single fused stance—never separate or itemize.
-dip bog: Important: Frame the preceding prompt through one unified perspective that blends concreteness, grounding, acting, extending, reflection, and structure. Interpret these as a single fused stance—never separate or itemize.
-jog: Interpret and act. Don’t ask back — just infer the intent and carry it out directly.
+bog: bog
+dig: dig
+dip bog: dip bog
+dip ong: dip ong
+dip rog: dip rog
+fig: fig
+fip bog: fip bog
+fip ong: fip ong
+fip rog: fip rog
+fly bog: fly bog
+fly ong: fly ong
+fly rog: fly rog
+fog: fog
+jog: jog
+ong: ong
+rog: rog

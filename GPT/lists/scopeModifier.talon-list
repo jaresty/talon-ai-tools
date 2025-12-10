@@ -1,14 +1,13 @@
 list: user.scopeModifier
 #
 -
-
-narrow: Important: Within the selected target, restrict your discussion to a very small slice of the topic; avoid broad context.
-focus: Important: Within the selected target, stay tightly on a central theme; avoid tangents and side-quests.
-bound: Important: Within the selected target, stay inside explicit conceptual limits that are inferred from or stated in the prompt; do not introduce material outside them.
-edges: Important: Within the selected target, emphasise edge cases, errors, and unusual conditions around the subject.
-relations: Important: Within the selected target, focus on the relationships, interactions, and dependencies between elements, not their internal details.
-dynamics: "Important: Within the selected target, focus on how the system's behaviour and state evolve over time: scenarios, state changes, feedback loops, and transitions."
-interfaces: Important: Within the selected target, focus on external interfaces, contracts, and boundaries between components or systems, not on their internal implementations.
-system: Important: Within the selected target, focus on the overall system as a whole: its components, boundaries, stakeholders, and internal structure, rather than individual lines or snippets.
-actions: Important: Within the selected target, focus only on concrete actions or tasks that a user or team could take, not on background analysis or explanation.
-activities: Important: Within the selected target, enumerate concrete session activities or segments (what to do, by whom, in what order), rather than abstract description.
+actions: actions
+activities: activities
+bound: bound
+dynamics: dynamics
+edges: edges
+focus: focus
+interfaces: interfaces
+narrow: narrow
+relations: relations
+system: system

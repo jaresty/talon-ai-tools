@@ -4,6 +4,7 @@ from talon import Context, Module, actions, canvas, ui
 from talon import skia
 
 from .canvasFont import apply_canvas_typeface
+from .axisConfig import AXIS_KEY_TO_VALUE
 
 from .modelState import GPTState
 from .talonSettings import _AXIS_SOFT_CAPS
@@ -34,56 +35,19 @@ except ImportError:  # Talon may have a stale staticPromptConfig loaded
         return axes
 
 
-COMPLETENESS_KEYS = [
-    "skim",
-    "gist",
-    "full",
-    "max",
-    "minimal",
-    "deep",
-]
-SCOPE_KEYS = ["narrow", "focus", "bound", "edges", "relations"]
-METHOD_KEYS = [
-    "steps",
-    "plan",
-    "rigor",
-    "rewrite",
-    "diagnose",
-    "filter",
-    "prioritize",
-    "cluster",
-    "systemic",
-    "experimental",
-    "debugging",
-    "structure",
-    "flow",
-    "compare",
-    "motifs",
-    "wasinawa",
-    "analysis",
-]
-STYLE_KEYS = [
-    "plain",
-    "tight",
-    "bullets",
-    "table",
-    "code",
-    "cards",
-    "checklist",
-    "diagram",
-    "presenterm",
-    "html",
-    "gherkin",
-    "shellscript",
-    "emoji",
-    "slack",
-    "jira",
-    "recipe",
-    "abstractvisual",
-    "commit",
-    "adr",
-    "taxonomy",
-]
+def _axis_keys(axis: str) -> list[str]:
+    """Return axis keys in list-file order."""
+
+    mapping = AXIS_KEY_TO_VALUE.get(axis) or {}
+    return [key for key in mapping.keys()]
+
+
+# Axis summaries (keys only; descriptions remain in docs). Pulled directly from
+# the generated axis map so quick help follows the list files.
+COMPLETENESS_KEYS = _axis_keys("completeness")
+SCOPE_KEYS = _axis_keys("scope")
+METHOD_KEYS = _axis_keys("method")
+STYLE_KEYS = _axis_keys("style")
 
 
 def _group_directional_keys() -> dict[str, list[str]]:
@@ -722,13 +686,14 @@ def _default_draw_quick_help(c: canvas.Canvas) -> None:  # pragma: no cover - vi
         if not keys:
             return col_y
 
-        # Approximate maximum character width based on remaining canvas space.
+        # Approximate maximum character width based on the column width so the
+        # two axis columns don't bleed into each other.
         approx_char_width = 8
-        if rect is not None and hasattr(rect, "x") and hasattr(rect, "width"):
-            right_bound = rect.x + rect.width - 40
+        if rect is not None and hasattr(rect, "width"):
+            # Reserve margin inside the column for breathing room.
+            max_pixels = max((rect.width // 2) - 60, 120)
         else:
-            right_bound = col_x + 360
-        max_pixels = max(right_bound - col_x, 80)
+            max_pixels = 320
         max_chars = max(int(max_pixels // approx_char_width), 10)
 
         idx = 0

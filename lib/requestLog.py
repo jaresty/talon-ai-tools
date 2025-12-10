@@ -17,15 +17,18 @@ def append_entry(
     recipe: str = "",
     started_at_ms: Optional[int] = None,
     duration_ms: Optional[int] = None,
+    axes: Optional[dict[str, list[str]]] = None,
 ) -> None:
     """Append a request entry to the bounded history ring."""
     try:
         print(
             f"[requestLog] append id={request_id!r} prompt_len={len(prompt or '')} "
-            f"response_len={len(response or '')} recipe={recipe!r} duration_ms={duration_ms}"
+            f"response_len={len(response or '')} recipe={recipe!r} duration_ms={duration_ms} "
+            f"axes_keys={list((axes or {}).keys())}"
         )
     except Exception:
         pass
+    axes_payload = axes or {}
     _history.append(
         RequestLogEntry(
             request_id=request_id,
@@ -35,6 +38,7 @@ def append_entry(
             recipe=recipe,
             started_at_ms=started_at_ms,
             duration_ms=duration_ms,
+            axes=axes_payload,
         )
     )
     try:

@@ -36,6 +36,14 @@ class GPTState:
     last_scope: ClassVar[str] = ""
     last_method: ClassVar[str] = ""
     last_style: ClassVar[str] = ""
+    # Authoritative axis tokens per ADR 034: completeness (scalar token),
+    # scope/method/style as token lists.
+    last_axes: ClassVar[Dict[str, List[str]]] = {
+        "completeness": [],
+        "scope": [],
+        "method": [],
+        "style": [],
+    }
     # Snapshot of the primary source messages used for the last model run
     # so `model again` can reuse the same content even if the live source
     # (for example, clipboard or selection) has changed.
@@ -53,6 +61,14 @@ class GPTState:
     context: ClassVar[List[Union[GPTTextItem, GPTImageItem]]] = []
     query: ClassVar[List[GPTMessage]] = []
     request: ClassVar[GPTRequest]
+    # Authoritative axis tokens per ADR 034: completeness (scalar token),
+    # scope/method/style as token lists.
+    last_axes: ClassVar[Dict[str, List[str]]] = {
+        "completeness": [],
+        "scope": [],
+        "method": [],
+        "style": [],
+    }
     thread: ClassVar[List[GPTMessage]] = []
     tools = []
     stacks: ClassVar[Dict[str, List[Union[GPTTextItem, GPTImageItem]]]] = {}
@@ -119,6 +135,7 @@ class GPTState:
         cls.last_prompt_text = ""
         cls.last_raw_request = {}
         cls.last_raw_response = {}
+        cls.last_axes = {"completeness": [], "scope": [], "method": [], "style": []}
         actions.app.notify("Cleared all state")
 
     @classmethod
@@ -230,3 +247,4 @@ class GPTState:
         cls.user_overrode_style = False
         cls.last_raw_request = {}
         cls.last_raw_response = {}
+        cls.last_axes = {"completeness": [], "scope": [], "method": [], "style": []}

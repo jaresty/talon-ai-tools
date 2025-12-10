@@ -73,6 +73,7 @@ _response_hover_close: bool = False
 _response_hover_button: Optional[str] = None
 _response_mouse_log_count: int = 0
 _response_handlers_registered: bool = False
+_last_recap_log: Optional[tuple[str, str, str, str, str, str]] = None
 
 
 def _coerce_text(value) -> str:
@@ -647,16 +648,32 @@ def _default_draw_response(c: canvas.Canvas) -> None:  # pragma: no cover - visu
     # token-based even if older code paths stored a verbose last_recipe.
     recipe = getattr(GPTState, "last_recipe", "") or ""
     static_prompt = getattr(GPTState, "last_static_prompt", "") or ""
+    axes_tokens = getattr(GPTState, "last_axes", {}) or {}
+
+    def _axis_join(axis: str, fallback: str) -> str:
+        tokens = axes_tokens.get(axis)
+        if isinstance(tokens, list) and tokens:
+            return " ".join(str(t) for t in tokens if str(t))
+        return fallback
+
     axis_parts: list[str] = []
     if static_prompt:
         axis_parts.append(static_prompt)
-    for attr in ("last_completeness", "last_scope", "last_method", "last_style"):
-        value = getattr(GPTState, attr, "") or ""
+    last_completeness = _axis_join("completeness", getattr(GPTState, "last_completeness", "") or "")
+    last_scope = _axis_join("scope", getattr(GPTState, "last_scope", "") or "")
+    last_method = _axis_join("method", getattr(GPTState, "last_method", "") or "")
+    last_style = _axis_join("style", getattr(GPTState, "last_style", "") or "")
+    for value in (last_completeness, last_scope, last_method, last_style):
         if value:
             axis_parts.append(value)
     hydrated_parts: list[str] = []
-    if axis_parts:
-        recipe = " · ".join(axis_parts)
+    recipe_tokens = " · ".join(axis_parts) if axis_parts else ""
+    if recipe_tokens:
+        recipe = recipe_tokens
+    # If only static prompt is present but we have a legacy recipe, keep the legacy recipe
+    # so older flows that only set last_recipe still show a full recap.
+    if recipe_tokens and len(axis_parts) <= 1 and getattr(GPTState, "last_recipe", ""):
+        recipe = getattr(GPTState, "last_recipe", "")
     if recipe:
         draw_text("Talon GPT Result", x, y)
         y += line_h
@@ -676,10 +693,31 @@ def _default_draw_response(c: canvas.Canvas) -> None:  # pragma: no cover - visu
         draw_text(f"Say: {grammar_phrase}", x, y)
         y += line_h
         # Hydrated axis details stay hidden until the meta panel is expanded.
-        last_completeness = getattr(GPTState, "last_completeness", "") or ""
-        last_scope = getattr(GPTState, "last_scope", "") or ""
-        last_method = getattr(GPTState, "last_method", "") or ""
-        last_style = getattr(GPTState, "last_style", "") or ""
+        last_completeness = _axis_join("completeness", getattr(GPTState, "last_completeness", "") or "")
+        last_scope = _axis_join("scope", getattr(GPTState, "last_scope", "") or "")
+        last_method = _axis_join("method", getattr(GPTState, "last_method", "") or "")
+        last_style = _axis_join("style", getattr(GPTState, "last_style", "") or "")
+        try:
+            if any((last_completeness, last_scope, last_method, last_style, directional)):
+                global _last_recap_log
+                snapshot = (
+                    static_prompt,
+                    last_completeness,
+                    last_scope,
+                    last_method,
+                    last_style,
+                    directional,
+                )
+                if snapshot != _last_recap_log:
+                    _debug(
+                        "recap state "
+                        f"static={static_prompt!r} C={last_completeness!r} "
+                        f"S={last_scope!r} M={last_method!r} St={last_style!r} "
+                        f"D={directional!r}"
+                    )
+                    _last_recap_log = snapshot
+        except Exception:
+            pass
         if last_completeness:
             hydrated_parts.append(f"C: {_hydrate_axis('completeness', last_completeness)}")
         if last_scope:

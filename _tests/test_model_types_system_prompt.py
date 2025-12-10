@@ -76,6 +76,21 @@ if bootstrap is not None:
                 lines,
             )
 
+        def test_directional_is_hydrated_when_present(self):
+            prompt = GPTSystemPrompt(directional="fog")
+
+            lines = prompt.format_as_array()
+
+            directional_desc = axis_key_to_value_map_for("directional").get(
+                "fog", "fog"
+            )
+            self.assertTrue(
+                any(
+                    line.startswith("Directional: ") and directional_desc in line
+                    for line in lines
+                )
+            )
+
 else:
     if not TYPE_CHECKING:
         class GPTSystemPromptDefaultsTests(unittest.TestCase):

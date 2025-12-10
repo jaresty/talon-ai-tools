@@ -1,4 +1,5 @@
 import unittest
+from pathlib import Path
 from typing import TYPE_CHECKING
 
 try:
@@ -9,116 +10,43 @@ else:
     bootstrap()
 
 if bootstrap is not None:
-    from pathlib import Path
-    import tempfile
-
+    from talon_user.lib.axisConfig import AXIS_KEY_TO_VALUE
     from talon_user.lib.talonSettings import (
         _AXIS_INCOMPATIBILITIES,
         _axis_recipe_token,
         _axis_string_to_tokens,
         _axis_tokens_to_string,
+        _map_axis_tokens,
         _canonicalise_axis_tokens,
         _read_axis_default_from_list,
         _read_axis_value_to_key_map,
     )
 
     class AxisMappingTests(unittest.TestCase):
-        def setUp(self) -> None:
-            # Create a temporary Talon list file under GPT/lists for these tests.
-            root = Path(__file__).resolve().parents[1]
-            lists_dir = root / "GPT" / "lists"
-            lists_dir.mkdir(parents=True, exist_ok=True)
-            self.tests_axis_path = lists_dir / "testsAxisMapping.talon-list"
-            self.tests_axis_path.write_text(
-                "\n".join(
-                    [
-                        "list: user.testsAxisMapping",
-                        "#",
-                        "-",
-                        "",
-                        "# Well-formed entries",
-                        "short1: Long description one that should map back to short1.",
-                        "short2: Another description that should map back to short2.",
-                        "",
-                        "# Malformed / ignored entries",
-                        "just-some-text-without-colon",
-                        "-",
-                    ]
-                ),
-                encoding="utf-8",
+        def test_value_to_key_returns_tokens_only(self) -> None:
+            mapping = _read_axis_value_to_key_map("methodModifier.talon-list")
+            self.assertIn("rigor", mapping)
+            self.assertEqual(mapping["rigor"], "rigor")
+            # Descriptions should no longer appear in value->key map.
+            self.assertFalse(
+                any("Important:" in key for key in mapping.keys()),
+                "Value->key map should contain tokens only",
             )
 
-        def tearDown(self) -> None:
-            try:
-                self.tests_axis_path.unlink()
-            except FileNotFoundError:
-                pass
-
-        def test_builds_mapping_from_keys_and_descriptions(self) -> None:
-            mapping = _read_axis_value_to_key_map("testsAxisMapping.talon-list")
-
-            # Both the short key and the long description should map back
-            # to the short token.
-            self.assertEqual(mapping["short1"], "short1")
-            self.assertEqual(
-                mapping["Long description one that should map back to short1."],
-                "short1",
-            )
-            self.assertEqual(mapping["short2"], "short2")
-            self.assertEqual(
-                mapping["Another description that should map back to short2."],
-                "short2",
-            )
-
-        def test_ignores_comments_headers_and_malformed_lines(self) -> None:
-            mapping = _read_axis_value_to_key_map("testsAxisMapping.talon-list")
-
-            # Header, comments, bare dashes, and lines without a colon should
-            # not appear in the mapping.
-            self.assertNotIn("list: user.testsAxisMapping", mapping)
-            self.assertNotIn("just-some-text-without-colon", mapping)
-            # We only expect the four mappings from the two well-formed lines.
-            self.assertEqual(len(mapping), 4)
-
-        def test_missing_file_returns_empty_dict(self) -> None:
+        def test_value_to_key_missing_file_returns_empty_dict(self) -> None:
             mapping = _read_axis_value_to_key_map("nonexistent-axis-file.talon-list")
             self.assertEqual(mapping, {})
 
-        def test_axis_recipe_token_maps_description_back_to_short_key(self) -> None:
-            """Ensure _axis_recipe_token uses the underlying value→key maps."""
-            # Parse one real entry from the completeness list so the test
-            # stays aligned with the repository configuration.
-            root = Path(__file__).resolve().parents[1]
-            completeness_path = root / "GPT" / "lists" / "completenessModifier.talon-list"
-            key = None
-            desc = None
-            with completeness_path.open("r", encoding="utf-8") as f:
-                for line in f:
-                    line = line.strip()
-                    if (
-                        not line
-                        or line.startswith("#")
-                        or line.startswith("list:")
-                        or line == "-"
-                    ):
-                        continue
-                    if ":" not in line:
-                        continue
-                    key, value = line.split(":", 1)
-                    key = key.strip()
-                    desc = value.strip()
-                    break
+        def test_axis_recipe_token_returns_token_identity(self) -> None:
+            """_axis_recipe_token should be identity on token inputs."""
+            key, _desc = next(iter(AXIS_KEY_TO_VALUE["completeness"].items()))
+            self.assertEqual(_axis_recipe_token("completeness", key), key)
 
-            self.assertIsNotNone(key)
-            self.assertIsNotNone(desc)
-
-            # Description should map back to the short key.
-            token_from_desc = _axis_recipe_token("completeness", desc)  # type: ignore[arg-type]
-            self.assertEqual(token_from_desc, key)
-
-            # Short key should map idempotently to itself.
-            token_from_key = _axis_recipe_token("completeness", key)  # type: ignore[arg-type]
-            self.assertEqual(token_from_key, key)
+        def test_axis_recipe_token_preserves_multi_token_values(self) -> None:
+            """Multi-token axis lists should round-trip."""
+            token = _axis_recipe_token("method", "plan xp")  # type: ignore[arg-type]
+            self.assertEqual(token, "plan xp")
+            self.assertEqual(_map_axis_tokens("method", ["plan", "xp"]), ["plan", "xp"])
 
         def test_axis_recipe_token_falls_back_for_unknown_axis(self) -> None:
             self.assertEqual(
@@ -126,121 +54,31 @@ if bootstrap is not None:
                 "some-value",
             )
 
-        def test_directional_axis_recipe_token_uses_value_to_key_map(self) -> None:
-            """Directional axis values should also round-trip through the mapping."""
-            root = Path(__file__).resolve().parents[1]
-            directional_path = root / "GPT" / "lists" / "directionalModifier.talon-list"
-            key = None
-            desc = None
-            with directional_path.open("r", encoding="utf-8") as f:
-                for line in f:
-                    line = line.strip()
-                    if (
-                        not line
-                        or line.startswith("#")
-                        or line.startswith("list:")
-                        or line == "-"
-                    ):
-                        continue
-                    if ":" not in line:
-                        continue
-                    key, value = line.split(":", 1)
-                    key = key.strip()
-                    desc = value.strip()
-                    break
-
-            self.assertIsNotNone(key)
-            self.assertIsNotNone(desc)
-
-            # Description should map back to the short key.
-            token_from_desc = _axis_recipe_token(  # type: ignore[arg-type]
-                "directional",
-                desc,
-            )
+        def _assert_axis_round_trip(self, axis: str) -> None:
+            key, _desc = next(iter(AXIS_KEY_TO_VALUE[axis].items()))
+            token_from_desc = _axis_recipe_token(axis, key)  # type: ignore[arg-type]
             self.assertEqual(token_from_desc, key)
-
-            # Short key should map idempotently to itself.
-            token_from_key = _axis_recipe_token(  # type: ignore[arg-type]
-                "directional",
-                key,
-            )
-            self.assertEqual(token_from_key, key)
-
-        def test_method_recipe_token_handles_samples_truncated_variant(self) -> None:
-            """The samples method should map truncated variants back to 'samples'."""
-            token = _axis_recipe_token(
-                "method",
-                "avoid near-duplicate options.",
-            )
-            self.assertEqual(token, "samples")
-
-        def test_method_recipe_token_handles_samples_sum_variant(self) -> None:
-            """The samples method should map the sum-to-1 clause back to 'samples'."""
-            token = _axis_recipe_token(
-                "method",
-                "sum to 1; avoid near-duplicate options.",
-            )
-            self.assertEqual(token, "samples")
-
-        def test_method_recipe_token_maps_suffix_description(self) -> None:
-            """Heuristic suffix mapping should resolve long samples descriptions."""
-            token = _axis_recipe_token(
-                "method",
-                "1; sum to Important: Generate several diverse, self-contained options and, where appropriate, attach short descriptions and explicit numeric probabilities that approximately sum to 1; avoid near-duplicate options.",
-            )
-            self.assertEqual(token, "samples")
-
-        def _assert_axis_round_trip(self, filename: str, axis: str) -> None:
-            root = Path(__file__).resolve().parents[1]
-            path = root / "GPT" / "lists" / filename
-            key = None
-            desc = None
-            with path.open("r", encoding="utf-8") as f:
-                for line in f:
-                    line = line.strip()
-                    if (
-                        not line
-                        or line.startswith("#")
-                        or line.startswith("list:")
-                        or line == "-"
-                    ):
-                        continue
-                    if ":" not in line:
-                        continue
-                    key, value = line.split(":", 1)
-                    key = key.strip()
-                    desc = value.strip()
-                    break
-
-            self.assertIsNotNone(key)
-            self.assertIsNotNone(desc)
-
-            token_from_desc = _axis_recipe_token(axis, desc)  # type: ignore[arg-type]
-            self.assertEqual(token_from_desc, key)
-
             token_from_key = _axis_recipe_token(axis, key)  # type: ignore[arg-type]
             self.assertEqual(token_from_key, key)
 
         def test_scope_axis_recipe_token_uses_value_to_key_map(self) -> None:
-            self._assert_axis_round_trip("scopeModifier.talon-list", "scope")
+            self._assert_axis_round_trip("scope")
 
         def test_method_axis_recipe_token_uses_value_to_key_map(self) -> None:
-            self._assert_axis_round_trip("methodModifier.talon-list", "method")
+            self._assert_axis_round_trip("method")
 
         def test_style_axis_recipe_token_uses_value_to_key_map(self) -> None:
-            self._assert_axis_round_trip("styleModifier.talon-list", "style")
+            self._assert_axis_round_trip("style")
 
         def test_read_axis_default_from_list_returns_list_value(self) -> None:
-            """Ensure _read_axis_default_from_list returns the list value when present."""
-            # For the completeness list, the value for "full" is a long
-            # description; the helper should return that description rather
-            # than the fallback.
+            """Ensure _read_axis_default_from_list returns the token when present."""
+            # Lists now store token:token entries; expect the token back.
             value = _read_axis_default_from_list(
                 "completenessModifier.talon-list",
                 "full",
                 "fallback-value",
             )
-            self.assertIn("Important:", value)
+            self.assertEqual(value, "full")
 
         def test_read_axis_default_from_list_falls_back_when_missing(self) -> None:
             value = _read_axis_default_from_list(
@@ -337,6 +175,47 @@ if bootstrap is not None:
                     declared_as_key or declared_in_values,
                     f"Container style {token!r} must have an explicit incompatibility decision in _AXIS_INCOMPATIBILITIES['style']",
                 )
+
+        def test_talon_list_tokens_match_axis_config(self) -> None:
+            """Guardrail: Talon list tokens must match axisConfig tokens (token-only ingress)."""
+            axis_to_file = {
+                "completeness": "completenessModifier.talon-list",
+                "scope": "scopeModifier.talon-list",
+                "method": "methodModifier.talon-list",
+                "style": "styleModifier.talon-list",
+                "directional": "directionalModifier.talon-list",
+            }
+
+            def _list_tokens(filename: str) -> set[str]:
+                path = Path(__file__).resolve().parent.parent / "GPT" / "lists" / filename
+                tokens: set[str] = set()
+                with path.open("r", encoding="utf-8") as f:
+                    for line in f:
+                        line = line.strip()
+                        if (
+                            not line
+                            or line.startswith("#")
+                            or line.startswith("list:")
+                            or line == "-"
+                        ):
+                            continue
+                        if ":" not in line:
+                            continue
+                        key, _value = line.split(":", 1)
+                        token = key.strip()
+                        if token:
+                            tokens.add(token)
+                return tokens
+
+            for axis, filename in axis_to_file.items():
+                with self.subTest(axis=axis):
+                    config_tokens = set(AXIS_KEY_TO_VALUE[axis].keys())
+                    list_tokens = _list_tokens(filename)
+                    self.assertEqual(
+                        list_tokens,
+                        config_tokens,
+                        f"Talon list tokens for axis {axis} must match axisConfig",
+                    )
 
 else:
     if not TYPE_CHECKING:

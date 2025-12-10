@@ -119,7 +119,7 @@ if bootstrap is not None:
                 model_prompt.return_value = "PROMPT-AGAIN"
 
                 gpt_module.UserActions.gpt_rerun_last_recipe(
-                    "", "gist", "", "", "", "rog"
+                    "", "gist", [], [], [], "rog"
                 )
 
                 # gpt_apply_prompt should have been called again with a config
@@ -191,7 +191,7 @@ if bootstrap is not None:
                 model_prompt.return_value = "PROMPT-MULTI-AGAIN"
 
                 gpt_module.UserActions.gpt_rerun_last_recipe(
-                    "", "", "", "", "jira", "rog"
+                    "", "", [], [], ["jira"], "rog"
                 )
 
                 # One more apply call with the rerun config.
@@ -252,7 +252,7 @@ if bootstrap is not None:
                 create_dest_again.return_value = dest_again
                 model_prompt.return_value = "PROMPT-OVER-CAP-AGAIN"
 
-                gpt_module.UserActions.gpt_rerun_last_recipe("", "", "", "", "", "rog")
+                gpt_module.UserActions.gpt_rerun_last_recipe("", "", [], [], [], "rog")
 
                 config = actions.user.gpt_apply_prompt.call_args.args[0]
                 self.assertEqual(config.please_prompt, "PROMPT-OVER-CAP-AGAIN")

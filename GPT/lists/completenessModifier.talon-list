@@ -1,9 +1,8 @@
 list: user.completenessModifier
 #
 -
-
-skim: Important: Do a very light pass; address only the most obvious or critical issues. Do not aim for completeness.
-gist: Important: Provide a short but complete answer or summary; cover the main points once without going into all details.
-full: Important: Provide a thorough answer for normal use; cover all major aspects, but you do not need every micro-detail.
-max: Important: Be as exhaustive as is reasonable; cover essentially everything relevant and treat omissions as errors.
-minimal: Important: Make the smallest change or answer that satisfies the request; avoid extra work outside the core need.
+full: full
+gist: gist
+max: max
+minimal: minimal
+skim: skim

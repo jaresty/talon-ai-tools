@@ -20,11 +20,17 @@ def render_for_destination(
 ) -> ResponsePresentation:
     extracted_message = messages_to_string(gpt_message)
     answer_text, meta_text = split_answer_and_meta(extracted_message)
-    lines = answer_text.split("\n")
+
+    # When the payload only contains meta (for example, `model pass meta`), the
+    # main answer portion is empty. Fall back to the meta text so paste/display
+    # flows still have content instead of silently inserting nothing.
+    primary_text = answer_text or meta_text
+
+    lines = primary_text.split("\n") if primary_text else []
     open_browser = destination_kind == "browser" or len(lines) > 60
     return ResponsePresentation(
-        display_text=answer_text,
-        paste_text=answer_text,
+        display_text=primary_text,
+        paste_text=primary_text,
         browser_lines=lines,
         open_browser=open_browser,
         meta_text=meta_text,

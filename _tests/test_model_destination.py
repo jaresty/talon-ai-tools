@@ -14,7 +14,7 @@ if bootstrap is not None:
     from talon_user.lib.modelDestination import ModelDestination
     from talon_user.lib import modelDestination as model_destination_module
     from talon_user.lib.modelHelpers import format_message
-    from talon_user.lib.modelPresentation import ResponsePresentation
+    from talon_user.lib.modelPresentation import ResponsePresentation, render_for_destination
     from talon_user.lib.promptPipeline import PromptResult
     from talon_user.lib.modelState import GPTState
 
@@ -157,6 +157,19 @@ if bootstrap is not None:
                 or builder_instance.ul.call_args_list,
                 "Expected Browser to render bullets via Builder.ul",
             )
+
+        def test_presentation_falls_back_to_meta_when_no_answer(self):
+            # When only meta content is present, still surface it for paste/display.
+            messages = [
+                format_message("## Model interpretation\nMeta details only."),
+            ]
+
+            presentation = render_for_destination(messages, "paste")
+
+            self.assertEqual(presentation.display_text.strip(), messages[0]["text"].strip())
+            self.assertEqual(presentation.paste_text.strip(), messages[0]["text"].strip())
+            # meta_text should remain populated so other surfaces can render it separately.
+            self.assertEqual(presentation.meta_text.strip(), messages[0]["text"].strip())
 
 else:
     if not TYPE_CHECKING:

@@ -55,6 +55,8 @@ class GPTSystemPrompt:
     scope: str = field(default="")
     method: str = field(default="")
     style: str = field(default="")
+    # Directional lenses are kept as a separate axis.
+    directional: str = field(default="")
 
     def get_voice(self) -> str:
         if not self.voice:
@@ -96,6 +98,10 @@ class GPTSystemPrompt:
             self.style = self.default_style()
         return self.style
 
+    def get_directional(self) -> str:
+        # Directional lenses default to empty; callers set this per prompt.
+        return self.directional
+
     @staticmethod
     def default_voice() -> str:
         # Code to evaluate and return a default value for voice
@@ -117,43 +123,69 @@ class GPTSystemPrompt:
         return settings.get("user.model_default_audience")
 
     @staticmethod
+    def _coerce_tokens(raw) -> list[str]:
+        """Normalise list/tuple settings without splitting strings."""
+        if isinstance(raw, (list, tuple)):
+            return [str(v).strip() for v in raw if str(v).strip()]
+        if not raw:
+            return []
+        return [t for t in str(raw).split() if t]
+
+    @staticmethod
     def default_completeness() -> str:
         # Default completeness level falls back to the configured setting (token-based).
-        raw = settings.get("user.model_default_completeness")
+        raw_tokens = GPTSystemPrompt._coerce_tokens(
+            settings.get("user.model_default_completeness")
+        )
+        token = raw_tokens[0] if raw_tokens else ""
         axis_map = axis_value_to_key_map_for("completeness")
-        return axis_map.get(raw, raw)
+        return axis_map.get(token, token)
 
     @staticmethod
     def default_scope() -> str:
         # Default scope level falls back to the configured setting (token-based).
-        raw = settings.get("user.model_default_scope")
+        raw_tokens = GPTSystemPrompt._coerce_tokens(
+            settings.get("user.model_default_scope")
+        )
         axis_map = axis_value_to_key_map_for("scope")
-        tokens = str(raw).split()
-        mapped = [axis_map.get(token, token) for token in tokens if token]
+        mapped = [axis_map.get(token, token) for token in raw_tokens]
         return " ".join(mapped)
 
     @staticmethod
     def default_method() -> str:
         # Default method falls back to the configured setting (token-based).
-        raw = settings.get("user.model_default_method")
+        raw_tokens = GPTSystemPrompt._coerce_tokens(
+            settings.get("user.model_default_method")
+        )
         axis_map = axis_value_to_key_map_for("method")
-        tokens = str(raw).split()
-        mapped = [axis_map.get(token, token) for token in tokens if token]
+        mapped = [axis_map.get(token, token) for token in raw_tokens]
         return " ".join(mapped)
 
     @staticmethod
     def default_style() -> str:
         # Default style falls back to the configured setting (token-based).
-        raw = settings.get("user.model_default_style")
+        raw_tokens = GPTSystemPrompt._coerce_tokens(
+            settings.get("user.model_default_style")
+        )
         axis_map = axis_value_to_key_map_for("style")
-        tokens = str(raw).split()
-        mapped = [axis_map.get(token, token) for token in tokens if token]
+        mapped = [axis_map.get(token, token) for token in raw_tokens]
         return " ".join(mapped)
 
     def format_as_array(self) -> list[str]:
         # Formats the instance variables as an array of strings
-        def hydrate(axis: str, value: str) -> str:
-            tokens = [t for t in (value or "").split() if t]
+        def _tokens_for_axis(axis: str, value) -> list[str]:
+            if isinstance(value, (list, tuple)):
+                return [str(t).strip() for t in value if str(t).strip()]
+            normalized = str(value or "").strip()
+            if not normalized:
+                return []
+            if axis == "directional":
+                # Directional tokens can contain spaces; keep them intact.
+                return [normalized]
+            return [t for t in normalized.split() if t]
+
+        def hydrate(axis: str, value) -> str:
+            tokens = _tokens_for_axis(axis, value)
             if not tokens:
                 return ""
             hydrated = axis_hydrate_tokens(axis, tokens)
@@ -163,7 +195,7 @@ class GPTSystemPrompt:
                 return hydrated[0]
             return " ".join(hydrated)
 
-        return [
+        lines = [
             f"Voice: {self.get_voice()}",
             f"Tone: {self.get_tone()}",
             f"Audience: {self.get_audience()}",
@@ -172,6 +204,15 @@ class GPTSystemPrompt:
             f"Scope: {hydrate('scope', self.get_scope())}",
             f"Method: {hydrate('method', self.get_method())}",
             f"Style: {hydrate('style', self.get_style())}",
-            "Answer fully and accurately, prioritizing clarity by rewriting or simplifying anything the audience may not understand with inline definitions (max 5 top-level list items with up to 5 sub-items; summarize extras), and politely decline if a request would not be meaningful. "
-            + META_INTERPRETATION_GUIDANCE,
         ]
+
+        directional_text = hydrate("directional", self.get_directional())
+        if directional_text:
+            lines.append(f"Directional: {directional_text}")
+
+        lines.append(
+            "Answer fully and accurately, prioritizing clarity by rewriting or simplifying anything the audience may not understand with inline definitions (max 5 top-level list items with up to 5 sub-items; summarize extras), and politely decline if a request would not be meaningful. "
+            + META_INTERPRETATION_GUIDANCE
+        )
+
+        return lines

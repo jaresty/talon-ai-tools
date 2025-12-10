@@ -50,14 +50,35 @@ def confirmation_gui(gui: imgui.GUI):
         for line in textwrap.wrap(paragraph, width):
             gui.text(line)
 
-    if GPTState.last_recipe:
+    axes_tokens = getattr(GPTState, "last_axes", {}) or {}
+
+    def _axis_join(axis: str, fallback: str) -> str:
+        tokens = axes_tokens.get(axis)
+        if isinstance(tokens, list) and tokens:
+            return " ".join(str(t) for t in tokens if str(t))
+        return fallback
+
+    recipe_parts: list[str] = []
+    static_prompt = getattr(GPTState, "last_static_prompt", "") or ""
+    if static_prompt:
+        recipe_parts.append(static_prompt)
+    last_completeness = _axis_join("completeness", getattr(GPTState, "last_completeness", "") or "")
+    last_scope = _axis_join("scope", getattr(GPTState, "last_scope", "") or "")
+    last_method = _axis_join("method", getattr(GPTState, "last_method", "") or "")
+    last_style = _axis_join("style", getattr(GPTState, "last_style", "") or "")
+    for value in (last_completeness, last_scope, last_method, last_style):
+        if value:
+            recipe_parts.append(value)
+
+    recipe = " · ".join(recipe_parts) if recipe_parts else GPTState.last_recipe
+    if recipe:
         gui.spacer()
         # Include the directional lens alongside the core recipe tokens so the
         # confirmation GUI matches quick help and other recap surfaces.
         if getattr(GPTState, "last_directional", ""):
-            recipe_text = f"{GPTState.last_recipe} · {GPTState.last_directional}"
+            recipe_text = f"{recipe} · {GPTState.last_directional}"
         else:
-            recipe_text = GPTState.last_recipe
+            recipe_text = recipe
         gui.text(f"Recipe: {recipe_text}")
         # When available, show a compact meta-interpretation radar so the
         # confirmation GUI surfaces both what was asked and how it was

@@ -22,6 +22,13 @@ if bootstrap is not None:
             source = Meta()
             self.assertEqual(source.get_text(), GPTState.last_meta)
 
+        def test_meta_source_strips_heading_when_present(self) -> None:
+            GPTState.last_meta = "## Model interpretation\n\nMeta body"
+
+            source = Meta()
+
+            self.assertEqual(source.get_text(), "Meta body")
+
         def test_meta_source_raises_when_no_meta_available(self) -> None:
             GPTState.last_meta = ""
 

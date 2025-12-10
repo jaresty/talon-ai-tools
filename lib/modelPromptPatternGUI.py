@@ -768,6 +768,12 @@ def _run_prompt_pattern(static_prompt: str, pattern: PromptAxisPattern) -> None:
     GPTState.last_method = pattern.method or ""
     GPTState.last_style = pattern.style or ""
     GPTState.last_directional = pattern.directional or ""
+    GPTState.last_axes = {
+        "completeness": [pattern.completeness] if pattern.completeness else [],
+        "scope": (pattern.scope or "").split() if pattern.scope else [],
+        "method": (pattern.method or "").split() if pattern.method else [],
+        "style": (pattern.style or "").split() if pattern.style else [],
+    }
 
     actions.user.prompt_pattern_gui_close()
 

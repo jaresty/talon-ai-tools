@@ -1007,6 +1007,12 @@ def _run_pattern(pattern: PromptPattern) -> None:
     GPTState.last_method = method or ""
     GPTState.last_style = style or ""
     GPTState.last_directional = directional or ""
+    GPTState.last_axes = {
+        "completeness": [completeness] if completeness else [],
+        "scope": scope.split() if scope else [],
+        "method": method.split() if method else [],
+        "style": style.split() if style else [],
+    }
 
     actions.user.model_pattern_gui_close()
 

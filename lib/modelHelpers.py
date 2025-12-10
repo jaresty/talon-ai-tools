@@ -744,13 +744,6 @@ def _send_request_streaming(request, request_id: str) -> str:
                 text_piece = None
             if text_piece:
                 _append_text(text_piece)
-                try:
-                    print(
-                        f"[modelHelpers] streaming chunk len={len(text_piece)} "
-                        f"total_len={len(GPTState.text_to_confirm)}"
-                    )
-                except Exception:
-                    pass
         try:
             state_after_stream = current_state()
         except Exception:
@@ -1023,14 +1016,6 @@ def send_request(max_attempts: int = 10):
     formatted_resp = strip_markdown(resp)
 
     answer_text, meta_text = split_answer_and_meta(formatted_resp)
-    try:
-        print(
-            f"[modelHelpers] split answer_len={len(answer_text)} meta_len={len(meta_text)} "
-            f"answer_preview='{answer_text[:80].replace(chr(10), ' ')}' "
-            f"meta_preview='{meta_text[:80].replace(chr(10), ' ')}'"
-        )
-    except Exception:
-        pass
 
     GPTState.last_response = answer_text
     GPTState.last_meta = meta_text
@@ -1081,6 +1066,12 @@ def send_request(max_attempts: int = 10):
                 prompt_text = "\n\n".join(parts).strip()
         except Exception:
             prompt_text = ""
+        try:
+            from copy import deepcopy
+        except Exception:
+            deepcopy = None  # type: ignore[assignment]
+        axes = getattr(GPTState, "last_axes", {}) or {}
+        axes_copy = deepcopy(axes) if deepcopy else dict(axes)
         append_entry(
             request_id,
             prompt_text,
@@ -1089,6 +1080,7 @@ def send_request(max_attempts: int = 10):
             recipe=last_recipe,
             started_at_ms=started_at_ms,
             duration_ms=duration_ms,
+            axes=axes_copy,
         )
         try:
             print("[modelHelpers] append_entry succeeded")

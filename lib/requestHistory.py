@@ -7,8 +7,8 @@ GPTState. Intended to power the request log drawer and back/forward recall.
 from __future__ import annotations
 
 from collections import deque
-from dataclasses import dataclass
-from typing import Deque, Iterable, List, Optional
+from dataclasses import dataclass, field
+from typing import Deque, Iterable, List, Optional, Dict
 
 
 @dataclass(frozen=True)
@@ -20,6 +20,8 @@ class RequestLogEntry:
     recipe: str = ""
     started_at_ms: Optional[int] = None
     duration_ms: Optional[int] = None
+    # Token-only axes per ADR 034.
+    axes: Dict[str, List[str]] = field(default_factory=dict)
 
 
 class RequestHistory:

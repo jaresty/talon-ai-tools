@@ -130,6 +130,102 @@ if bootstrap is not None:
             self.assertIsNone(ConfirmationGUIState.current_presentation)
             self.assertFalse(ConfirmationGUIState.display_thread)
             self.assertEqual(actions.user.pasted[-1], "history answer")
+
+        def test_history_open_syncs_axes_from_recipe(self):
+            # Seed stale live axes and ensure the history entry recipe replaces them.
+            GPTState.last_static_prompt = "todo"
+            GPTState.last_completeness = "gist"
+            GPTState.last_scope = "actions"
+            GPTState.last_method = "steps"
+            GPTState.last_style = "checklist"
+            GPTState.last_directional = "rog"
+
+            append_entry("rid-1", "prompt text", "resp", "meta", recipe="infer · full · rigor · jog")
+
+            HistoryActions.gpt_request_history_show_latest()
+
+            self.assertEqual(GPTState.last_static_prompt, "infer")
+            self.assertEqual(GPTState.last_completeness, "full")
+            self.assertEqual(GPTState.last_method, "rigor")
+            self.assertEqual(GPTState.last_directional, "jog")
+
+        def test_history_show_latest_prefers_axes_dict(self):
+            # If an entry includes an axes dict, it should win over the legacy recipe string.
+            axes = {
+                "completeness": ["max"],
+                "scope": ["edges", "bound"],
+                "method": ["rigor"],
+                "style": ["jira"],
+            }
+            append_entry(
+                "rid-axes",
+                "prompt text",
+                "resp axes",
+                "meta axes",
+                recipe="infer · full · bound · steps · plain",
+                axes=axes,
+            )
+
+            HistoryActions.gpt_request_history_show_latest()
+
+            self.assertEqual(GPTState.last_axes, axes)
+            # last_* strings should be derived from the axes tokens (not the legacy recipe).
+            self.assertEqual(GPTState.last_completeness, "max")
+            self.assertEqual(GPTState.last_scope, "edges bound")
+            self.assertEqual(GPTState.last_method, "rigor")
+            self.assertEqual(GPTState.last_style, "jira")
+
+        def test_history_show_latest_recap_uses_last_axes_tokens(self):
+            axes = {
+                "completeness": ["full"],
+                "scope": ["bound", "edges"],
+                "method": ["rigor", "xp"],
+                "style": ["plain"],
+            }
+            append_entry(
+                "rid-axes",
+                "prompt text",
+                "resp axes",
+                "meta axes",
+                recipe="legacy · should · be · ignored",
+                axes=axes,
+            )
+
+            HistoryActions.gpt_request_history_show_latest()
+
+            # The recap recipe string is derived from tokens, not the legacy recipe.
+            expected_recipe = " · ".join(
+                ["", "full", "bound edges", "rigor xp", "plain"]
+            ).strip(" ·")
+            self.assertEqual(GPTState.last_recipe, expected_recipe)
+
+        def test_history_show_latest_filters_invalid_axis_tokens(self):
+            axes = {
+                "completeness": ["full", "Important: Hydrated completeness"],
+                "scope": ["bound", "Invalid scope"],
+                "method": ["rigor", "Unknown method"],
+                "style": ["plain", "Hydrated style"],
+            }
+            append_entry(
+                "rid-axes",
+                "prompt text",
+                "resp axes",
+                "meta axes",
+                recipe="legacy · should · be · ignored",
+                axes=axes,
+            )
+
+            HistoryActions.gpt_request_history_show_latest()
+
+            self.assertEqual(
+                GPTState.last_axes,
+                {
+                    "completeness": ["full"],
+                    "scope": ["bound"],
+                    "method": ["rigor"],
+                    "style": ["plain"],
+                },
+            )
 else:
     if not TYPE_CHECKING:
         class RequestHistoryActionTests(unittest.TestCase):

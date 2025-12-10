@@ -1,15 +1,17 @@
 import os
 import threading
-from typing import Optional
+from typing import List, Optional, Union
 
 from ..lib.talonSettings import (
     ApplyPromptConfiguration,
     DEFAULT_COMPLETENESS_VALUE,
     PassConfiguration,
     _axis_recipe_token,
+    _map_axis_tokens,
     _axis_string_to_tokens,
     _axis_tokens_to_string,
     _canonicalise_axis_tokens,
+    _tokens_list,
     modelPrompt,
 )
 
@@ -71,6 +73,7 @@ from ..lib.modelPatternGUI import (
     STYLE_MAP as _STYLE_MAP,
     DIRECTIONAL_MAP as _DIRECTIONAL_MAP,
 )
+from ..lib.axisMappings import axis_key_to_value_map_for
 # Backward-compatible alias for directional map used during parsing.
 DIRECTIONAL_MAP = _DIRECTIONAL_MAP
 from ..lib.requestState import RequestPhase
@@ -872,7 +875,27 @@ class UserActions:
 
     def gpt_show_last_recipe() -> None:
         """Show a short summary of the last prompt recipe"""
-        recipe = GPTState.last_recipe
+        axes_tokens = getattr(GPTState, "last_axes", {}) or {}
+        static_prompt = getattr(GPTState, "last_static_prompt", "") or ""
+
+        def _axis_join(axis: str, fallback: str) -> str:
+            tokens = axes_tokens.get(axis)
+            if isinstance(tokens, list) and tokens:
+                return " ".join(str(t) for t in tokens if str(t))
+            return fallback
+
+        parts: list[str] = []
+        if static_prompt:
+            parts.append(static_prompt)
+        completeness = _axis_join("completeness", getattr(GPTState, "last_completeness", "") or "")
+        scope = _axis_join("scope", getattr(GPTState, "last_scope", "") or "")
+        method = _axis_join("method", getattr(GPTState, "last_method", "") or "")
+        style = _axis_join("style", getattr(GPTState, "last_style", "") or "")
+        for value in (completeness, scope, method, style):
+            if value:
+                parts.append(value)
+
+        recipe = " · ".join(parts) if parts else GPTState.last_recipe
         if not recipe:
             notify("GPT: No last recipe available")
             return
@@ -911,9 +934,9 @@ class UserActions:
     def gpt_rerun_last_recipe(
         static_prompt: str,
         completeness: str,
-        scope: str,
-        method: str,
-        style: str,
+        scope: List[str],
+        method: List[str],
+        style: List[str],
         directional: str,
     ) -> None:
         """Rerun the last prompt recipe with optional axis overrides, using the last or default source."""
@@ -929,41 +952,132 @@ class UserActions:
             return
 
         base_static = getattr(GPTState, "last_static_prompt", "") or ""
-        base_completeness = getattr(GPTState, "last_completeness", "") or ""
-        base_scope = getattr(GPTState, "last_scope", "") or ""
-        base_method = getattr(GPTState, "last_method", "") or ""
-        base_style = getattr(GPTState, "last_style", "") or ""
+        axes_state = getattr(GPTState, "last_axes", {}) or {}
+
+        def _axis_tokens(axis: str, fallback_str: str) -> list[str]:
+            tokens = axes_state.get(axis)
+            if isinstance(tokens, list) and tokens:
+                return [str(t) for t in tokens if str(t)]
+            return _axis_string_to_tokens(fallback_str)
+
+        base_completeness_tokens = _axis_tokens(
+            "completeness", getattr(GPTState, "last_completeness", "") or ""
+        )
+        base_scope_tokens_raw = _axis_tokens("scope", getattr(GPTState, "last_scope", "") or "")
+        base_method_tokens_raw = _axis_tokens(
+            "method", getattr(GPTState, "last_method", "") or ""
+        )
+        base_style_tokens_raw = _axis_tokens("style", getattr(GPTState, "last_style", "") or "")
+        base_completeness = base_completeness_tokens[0] if base_completeness_tokens else ""
         base_directional = getattr(GPTState, "last_directional", "") or ""
+
+        try:
+            if any(
+                (
+                    static_prompt,
+                    override_completeness_tokens,
+                    scope,
+                    method,
+                    style,
+                    directional,
+                )
+            ):
+                print(
+                    "[gpt again] overrides",
+                    f"static={static_prompt!r} "
+                    f"C={override_completeness_tokens or completeness!r} "
+                    f"S={override_scope_tokens or scope!r} "
+                    f"M={override_method_tokens or method!r} "
+                    f"St={override_style_tokens or style!r} "
+                    f"D={directional!r}",
+                )
+            # Always emit base once per rerun so we can see diffs.
+            print(
+                "[gpt again] base",
+                f"static={base_static!r} C={base_completeness!r} "
+                f"S={base_scope!r} M={base_method!r} St={base_style!r} D={base_directional!r}",
+            )
+        except Exception:
+            pass
 
         new_static = static_prompt or base_static
 
         # Completeness remains scalar; overrides simply replace the base when
         # provided.
-        new_completeness = completeness or base_completeness
+        override_completeness_tokens = _map_axis_tokens("completeness", _tokens_list(completeness))
+        new_completeness = (
+            override_completeness_tokens[0]
+            if override_completeness_tokens
+            else base_completeness
+        )
 
-        # Scope/method/style may conceptually be multi-valued. We treat
-        # last_* values as already-serialised canonical sets and merge any
-        # override tokens via the shared normaliser.
-        base_scope_tokens = _axis_string_to_tokens(base_scope)
-        override_scope_tokens = _axis_string_to_tokens(scope)
-        merged_scope_tokens = _canonicalise_axis_tokens(
-            "scope", base_scope_tokens + override_scope_tokens
+        # Scope/method/style remain token-based. An explicit override replaces
+        # the base axis; unspecified axes keep the previous canonical tokens.
+        def _filter_known(axis: str, tokens: list[str]) -> list[str]:
+            """Drop any tokens that are not in the axis config map."""
+            valid = axis_key_to_value_map_for(axis)
+            return [t for t in tokens if t in valid]
+
+        # Normalise incoming overrides to lists of tokens; treat non-lists as empty.
+        scope_value = scope if isinstance(scope, list) else []
+        method_value = method if isinstance(method, list) else []
+        style_value = style if isinstance(style, list) else []
+
+        base_scope_tokens = _canonicalise_axis_tokens(
+            "scope", _filter_known("scope", base_scope_tokens_raw)
+        )
+        override_scope_tokens = _filter_known("scope", _map_axis_tokens("scope", scope_value))
+        merged_scope_tokens = (
+            _canonicalise_axis_tokens("scope", override_scope_tokens)
+            if scope
+            else base_scope_tokens
         )
         new_scope = _axis_tokens_to_string(merged_scope_tokens)
 
-        base_method_tokens = _axis_string_to_tokens(base_method)
-        override_method_tokens = _axis_string_to_tokens(method)
-        merged_method_tokens = _canonicalise_axis_tokens(
-            "method", base_method_tokens + override_method_tokens
+        base_method_tokens = _canonicalise_axis_tokens(
+            "method", _filter_known("method", base_method_tokens_raw)
+        )
+        override_method_tokens = _filter_known("method", _map_axis_tokens("method", method_value))
+        merged_method_tokens = (
+            _canonicalise_axis_tokens("method", override_method_tokens)
+            if method
+            else base_method_tokens
         )
         new_method = _axis_tokens_to_string(merged_method_tokens)
 
-        base_style_tokens = _axis_string_to_tokens(base_style)
-        override_style_tokens = _axis_string_to_tokens(style)
-        merged_style_tokens = _canonicalise_axis_tokens(
-            "style", base_style_tokens + override_style_tokens
+        base_style_tokens = _canonicalise_axis_tokens(
+            "style", _filter_known("style", base_style_tokens_raw)
+        )
+        override_style_tokens = _filter_known("style", _map_axis_tokens("style", style_value))
+        merged_style_tokens = (
+            _canonicalise_axis_tokens("style", override_style_tokens)
+            if style
+            else base_style_tokens
         )
         new_style = _axis_tokens_to_string(merged_style_tokens)
+
+        if new_completeness and new_completeness not in axis_key_to_value_map_for("completeness"):
+            new_completeness = ""
+
+        try:
+            changed = (
+                override_scope_tokens
+                or override_method_tokens
+                or override_style_tokens
+                or override_completeness_tokens
+                or static_prompt
+                or directional
+            )
+            if changed:
+                print(
+                    "[gpt again] override->new",
+                    f"scope_override={override_scope_tokens} scope_new={merged_scope_tokens}",
+                    f"method_override={override_method_tokens} method_new={merged_method_tokens}",
+                    f"style_override={override_style_tokens} style_new={merged_style_tokens}",
+                    f"C_new={new_completeness!r} static_new={new_static!r} directional={new_directional!r}",
+                )
+        except Exception:
+            pass
 
         # If normalisation dropped axis tokens (due to caps or
         # incompatibilities), surface a short, non-modal hint so users can
@@ -974,7 +1088,12 @@ class UserActions:
             override_tokens: list[str],
             merged_tokens: list[str],
         ) -> str:
-            original_tokens = [t for t in base_tokens + override_tokens if t]
+            # When an override is provided, treat it as authoritative.
+            original_tokens = (
+                [t for t in override_tokens if t]
+                if override_tokens
+                else [t for t in base_tokens if t]
+            )
             if not original_tokens:
                 return ""
             original_set = set(original_tokens)
@@ -987,9 +1106,9 @@ class UserActions:
 
         axis_drop_parts: list[str] = []
         for axis_name, base_tokens, override_tokens, merged_tokens in (
-            ("scope", base_scope_tokens, override_scope_tokens, merged_scope_tokens),
-            ("method", base_method_tokens, override_method_tokens, merged_method_tokens),
-            ("style", base_style_tokens, override_style_tokens, merged_style_tokens),
+            ("scope", base_scope_tokens_raw, override_scope_tokens, merged_scope_tokens),
+            ("method", base_method_tokens_raw, override_method_tokens, merged_method_tokens),
+            ("style", base_style_tokens_raw, override_style_tokens, merged_style_tokens),
         ):
             summary = _axis_drop_summary(axis_name, base_tokens, override_tokens, merged_tokens)
             if summary:
@@ -1057,6 +1176,26 @@ class UserActions:
         GPTState.last_method = new_method or ""
         GPTState.last_style = new_style or ""
         GPTState.last_directional = new_directional or ""
+        GPTState.last_axes = {
+            "completeness": [new_completeness] if new_completeness else [],
+            "scope": merged_scope_tokens,
+            "method": merged_method_tokens,
+            "style": merged_style_tokens,
+        }
+
+        try:
+            print(
+                "[gpt again] stored",
+                f"recipe={GPTState.last_recipe!r} "
+                f"static={GPTState.last_static_prompt!r} "
+                f"C={GPTState.last_completeness!r} "
+                f"S={GPTState.last_scope!r} "
+                f"M={GPTState.last_method!r} "
+                f"St={GPTState.last_style!r} "
+                f"D={GPTState.last_directional!r}",
+            )
+        except Exception:
+            pass
 
         please_prompt = modelPrompt(match)
 
@@ -1101,9 +1240,9 @@ class UserActions:
         source: ModelSource,
         static_prompt: str,
         completeness: str,
-        scope: str,
-        method: str,
-        style: str,
+        scope: List[str],
+        method: List[str],
+        style: List[str],
         directional: str,
     ) -> None:
         """Rerun the last prompt recipe for an explicit source with optional axis overrides."""

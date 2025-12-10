@@ -1,40 +1,34 @@
 list: user.styleModifier
 #
 -
-
-plain: Important: Use straightforward, everyday language; minimise jargon and complex sentence structures.
-tight: Important: Make the answer short and dense; remove fluff and redundancy.
-bullets: Important: Format the main answer as concise bullet points only; avoid long paragraphs.
-table: Important: Present the main answer as a Markdown table when feasible; keep columns and rows compact.
-headline: Important: Use a headline-first presentation: state the main point up front, then layer supporting details beneath; prioritise readability and skimmability.
-code: Important: Output only code or markup for the main answer, with no surrounding natural-language explanation.
-cards: Important: Present the main answer as a set of discrete cards or items, each with a clear heading and a short body; avoid long continuous prose.
-checklist: Important: Present the main answer as an actionable checklist; each item should be a clear, imperative task rather than descriptive prose.
-diagram: "Important: Convert the input into appropriate Mermaid diagram code only: infer the best diagram type for the task, and respect existing Mermaid safety constraints (Mermaid diagrams do not allow parentheses in the syntax or raw '|' characters inside node labels; use careful numeric label encoding such as \"#124;\" for '|' instead of raw problematic characters)."
-presenterm: "Important: Transform the input into a valid multi-slide presenterm deck; output raw Markdown only (no code fences). Front matter exactly: \"--- newline title: <use a descriptive title based on the input, never leave blank; in the title, encode any colon ':' as &#58; and encode < and > as &lt; and &gt;> newline author: Generated (or authors: [...] ) newline date: YYYY-MM-DD newline --- newline\"; no other keys. Produce up to 12 slides (no minimum required); each slide MUST start with a Setext header (Title line, next line exactly ---), include content and references, and end with an HTML comment named end_slide on its own line with nothing else, then a blank line; the final slide MAY omit the closing end_slide. ALWAYS insert a blank line before the References section so that a line with \"References\" or \"- References\" is preceded by one empty line. Emit directives only as HTML comments on their own line with exact syntax and nothing else on the line: end_slide = \"<!-- end_slide -->\"; pause = \"<!-- pause -->\"; column_layout with weights = \"<!-- column_layout: [7, 3] -->\"; column with index = \"<!-- column: 0 -->\"; reset_layout = \"<!-- reset_layout -->\"; jump_to_middle = \"<!-- jump_to_middle -->\". CODE FENCE SAFETY: whenever a fenced code block opens (e.g., ```mermaid +render, ```bash +exec, ```latex +render, ```d2 +render), you MUST emit a matching closing fence of exactly three backticks on its own line BEFORE any non-code content, directive, or end_slide; IF a fence is still open at slide end, AUTO-EMIT the closing fence first. Support mermaid diagrams via code blocks tagged mermaid +render; support LaTeX via code blocks tagged latex +render; support D2 via code blocks tagged d2 +render; support executable snippets via fenced code blocks whose info string starts with a language then +exec (optionally +id:<name>) or +exec_replace or +image; only emit \"<!-- snippet_output: name -->\" if a snippet with +id:name exists. Hide code lines with # or /// prefixes per language; other code blocks only if relevant (name the language); images only if valid paths/URLs. HTML SAFETY IN SLIDE BODY (outside all fenced/inline code and outside HTML directives): raw HTML is NOT allowed; therefore you MUST replace EVERY literal '<' with &lt; and EVERY literal '>' with &gt; in body text (including list items and headings); NEVER output raw '<' or '>' in body text. Markdown safety in SLIDE BODY: prevent accidental styling by encoding isolated control chars unless part of valid syntax; encode every standalone or path-embedded '~' as \"&#126;\" (so \"~/foo\" becomes \"&#126;/foo\"), but keep intentional \"~~text~~\" unchanged. MERMAID SAFETY: inside mermaid code blocks, preserve Mermaid grammar and delimiters unchanged ([], (), [[]], (()), [/ /]); for NODE/EDGE LABEL TEXT you MUST wrap the entire label in ASCII double quotes and, inside that quoted text ONLY, you may encode problematic characters using Mermaid-compatible numeric codes with NO leading ampersand: use \"#91;\" for '[', \"#93;\" for ']', \"#40;\" for '(', \"#41;\" for ')', \"#123;\" for '{{', \"#125;\" for '}}', \"#60;\" for '<', \"#62;\" for '>', \"#35;\" for '#', \"#58;\" for ':', and \"#124;\" for '|'; escape an internal double quote as \"\"; leave ampersands '&' and slashes '/' as-is; do not apply any other entity encodings inside labels; do not double-encode. Avoid # headers."
-html: Important: Output only semantic HTML for the answer, with no surrounding prose.
-gherkin: Important: Output only Gherkin using Jira markup where appropriate; no surrounding explanation.
-shellscript: Important: Express the solution as a shell script, focusing on correct, executable shell code rather than prose.
-emoji: Important: Express the answer only as emoji, omitting natural-language text.
-slack: Important: Format the answer for Slack, using appropriate Markdown, mentions, and code blocks, without adding channel-irrelevant decoration.
-jira: Important: Format the answer using Jira markup (headings, lists, panels) where relevant, without adding extra explanation beyond the content.
-recipe: Important: Express the answer as a recipe with a custom, clearly explained mini-language plus a short key for understanding it.
-abstractvisual: Important: Express the big picture as an abstract visual or metaphorical layout (for example, regions and contrasts) with a short legend and, if needed, brief SVG/code-like hints.
-commit: Important: Express the answer as a conventional commit message with a short type/scope line and, if needed, a concise body.
-adr: Important: Express the answer as an Architecture Decision Record (ADR) with sections for context, decision, and consequences, using a concise, document-like style.
-
-codetour: Important: Output only a valid VS Code CodeTour `.tour` JSON document (schema-compatible), using steps and fields appropriate to the task; do not include any extra prose or surrounding explanation.
-
-story: "Important: Format the backlog item as a user story using \"As a <persona>, I want <capability>, so that <value>.\" Optionally include a short description and high-level acceptance criteria in plain prose, but do not use Gherkin or test-case syntax here."
-bug: Important: Format the answer as a structured bug report with clear sections for Steps to Reproduce, Expected Behavior, Actual Behavior, and Environment/Context; focus on concise, testable details.
-spike: "Important: Format the backlog item as a research spike: start with a brief problem or decision statement, then list the key questions the spike should answer; keep the emphasis on questions and learning, not implementation tasks."
-
-sync: Important: Shape the output as a synchronous/live session plan (agenda, steps, cues) rather than static reference text.
-remote: Important: Optimise for remote delivery: make instructions work in distributed/online contexts and surface tooling/interaction hints that work over video/voice/screenshare.
-
-faq: Important: Format the answer as an FAQ-style list: a sequence of clearly separated question headings with concise answers beneath each one; keep questions and answers easy to skim, and avoid long uninterrupted prose.
-
-log: Important: Format the answer as a concise work or research log entry: include date or time markers when appropriate, short bullet-style updates, and enough context for future you to understand what happened without adding unrelated narrative.
-fun: Important: Make the message feel light and fun while preserving the core content and clarity; use a more playful tone, occasional humour, and a few well-chosen emoji where they genuinely help with tone or scannability, but avoid obscuring key information, overusing emoji, or becoming verbose.
-party: Important: Make the message feel wild, celebratory, and over-the-top while preserving core content and readability; use a very playful tone and liberal, varied emoji throughout, leaning into humour and enthusiasm without dropping important details or structure.
-announce: Important: Format the answer as a clear announcement suitable for sharing with a team or channel: start with a short headline, briefly explain what changed and why, and end with any relevant actions or next steps for readers.
+abstractvisual: abstractvisual
+adr: adr
+announce: announce
+bug: bug
+bullets: bullets
+cards: cards
+checklist: checklist
+code: code
+codetour: codetour
+commit: commit
+diagram: diagram
+emoji: emoji
+faq: faq
+fun: fun
+gherkin: gherkin
+headline: headline
+html: html
+jira: jira
+log: log
+party: party
+plain: plain
+presenterm: presenterm
+recipe: recipe
+remote: remote
+shellscript: shellscript
+slack: slack
+spike: spike
+story: story
+sync: sync
+table: table
+tight: tight

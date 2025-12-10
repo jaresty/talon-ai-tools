@@ -1,10 +1,11 @@
 import os
 from dataclasses import dataclass
-from typing import Literal, Optional, Tuple, TypedDict
+from typing import Literal, Optional, Sequence, Tuple, TypedDict
 
 from .axisMappings import (
     AXIS_VALUE_TO_KEY_MAPS,
     DEFAULT_COMPLETENESS_TOKEN,
+    axis_key_to_value_map_for,
     axis_hydrate_tokens,
     axis_value_to_key_map_for,
 )
@@ -29,10 +30,21 @@ def _lists_dir() -> str:
 
 
 def _read_axis_default_from_list(filename: str, key: str, fallback: str) -> str:
-    """Return the list value for a given key from a GPT axis .talon-list file.
+    """Return the configured token for a given key from a GPT axis .talon-list file.
 
     Falls back to the provided fallback if the file or key is not found.
     """
+    axis_for_file = {
+        "completenessModifier.talon-list": "completeness",
+        "scopeModifier.talon-list": "scope",
+        "methodModifier.talon-list": "method",
+        "styleModifier.talon-list": "style",
+        "directionalModifier.talon-list": "directional",
+    }.get(filename)
+    if axis_for_file:
+        mapping = axis_key_to_value_map_for(axis_for_file)
+        return key if key in mapping else fallback
+    # Fallback for tests/unknown files: parse directly.
     path = os.path.join(_lists_dir(), filename)
     try:
         with open(path, "r", encoding="utf-8") as f:
@@ -47,16 +59,26 @@ def _read_axis_default_from_list(filename: str, key: str, fallback: str) -> str:
                     continue
                 if ":" not in line:
                     continue
-                k, value = line.split(":", 1)
+                k, _value = line.split(":", 1)
                 if k.strip() == key:
-                    return value.strip()
+                    return key
     except FileNotFoundError:
         return fallback
     return fallback
 
 
 def _read_axis_value_to_key_map(filename: str) -> dict[str, str]:
-    """Build a mapping from axis value/description back to its short key."""
+    """Build a mapping from axis value back to its short key (tokens only)."""
+    axis_for_file = {
+        "completenessModifier.talon-list": "completeness",
+        "scopeModifier.talon-list": "scope",
+        "methodModifier.talon-list": "method",
+        "styleModifier.talon-list": "style",
+        "directionalModifier.talon-list": "directional",
+    }.get(filename)
+    if axis_for_file:
+        return axis_value_to_key_map_for(axis_for_file)
+    # Fallback for tests/unknown files: parse directly.
     path = os.path.join(_lists_dir(), filename)
     mapping: dict[str, str] = {}
     try:
@@ -73,16 +95,8 @@ def _read_axis_value_to_key_map(filename: str) -> dict[str, str]:
                 if ":" not in line:
                     continue
                 key, value = line.split(":", 1)
-                short = key.strip()
-                desc = value.strip()
-                mapping[short] = short
-                mapping[desc] = short
-                if (desc.startswith('"') and desc.endswith('"')) or (
-                    desc.startswith("'") and desc.endswith("'")
-                ):
-                    unquoted = desc[1:-1].strip()
-                    if unquoted:
-                        mapping[unquoted] = short
+                token = key.strip()
+                mapping[token] = token
     except FileNotFoundError:
         return {}
     return mapping
@@ -212,6 +226,23 @@ def _axis_value_to_key_map_for(axis: str) -> dict[str, str]:
     return axis_value_to_key_map_for(axis)
 
 
+def _tokens_list(value) -> list[str]:
+    """Coerce raw axis input (string or sequence) into a list of tokens."""
+    if isinstance(value, (list, tuple)):
+        return [str(v).strip() for v in value if str(v).strip()]
+    if not value:
+        return []
+    return _axis_string_to_tokens(str(value).strip())
+
+
+def _normalise_directional(raw_value) -> str:
+    """Keep directional tokens intact, allowing space-containing lens keys."""
+    if isinstance(raw_value, (list, tuple)):
+        tokens = [str(v).strip() for v in raw_value if str(v).strip()]
+        return " ".join(tokens)
+    return str(raw_value).strip() if raw_value else ""
+
+
 _AXIS_PRIORITY: tuple[str, ...] = ("completeness", "method", "scope", "style")
 
 
@@ -330,6 +361,38 @@ def _apply_constraint_hierarchy(axis_values: AxisValues) -> tuple[AxisValues, Ax
     return resolved, canonical
 
 
+def _filter_axis_tokens(axis_values: AxisValues) -> AxisValues:
+    """Filter axis tokens against axisConfig to keep token-only state.
+
+    For live prompt runs we allow unknown short tokens (for example, custom
+    sentinel values used in tests) but drop obviously hydrated values such
+    as long instruction strings that start with 'Important:'.
+    """
+
+    def _filter(axis: str, tokens: list[str]) -> list[str]:
+        valid = axis_value_to_key_map_for(axis)
+        filtered: list[str] = []
+        for t in tokens:
+            if t in valid:
+                filtered.append(t)
+                continue
+            if str(t).strip().lower().startswith("important:"):
+                continue
+            filtered.append(t)
+        return filtered
+
+    filtered: AxisValues = {
+        "completeness": axis_values.get("completeness"),
+        "scope": _filter("scope", axis_values.get("scope", [])),
+        "method": _filter("method", axis_values.get("method", [])),
+        "style": _filter("style", axis_values.get("style", [])),
+    }
+    comp = filtered["completeness"]
+    if comp and str(comp).strip().lower().startswith("important:"):
+        filtered["completeness"] = None
+    return filtered
+
+
 def _axis_recipe_token(axis: str, raw_value: str) -> str:
     """Return the short token to use in last_recipe for a given axis value.
 
@@ -340,55 +403,23 @@ def _axis_recipe_token(axis: str, raw_value: str) -> str:
     """
     if not raw_value:
         return raw_value
-    axis_map = _axis_value_to_key_map_for(axis)
-    if not axis_map:
-        return raw_value
-
-    # Direct lookups first.
-    token = axis_map.get(raw_value)
-    if token:
-        return token
-
-    # If we received multiple whitespace-separated tokens, map each part.
-    if " " in raw_value:
-        parts = raw_value.split()
-        mapped_parts = [axis_map.get(part, part) for part in parts]
-        joined = " ".join(part for part in mapped_parts if part)
-        if joined and joined != raw_value:
-            return joined
-
-    # Heuristic: if the raw value ends with a known description (for example,
-    # when upstream prepends extra words), map to that token.
-    normalized = raw_value.strip()
-    if axis == "method" and "near-duplicate options" in normalized:
-        return "samples"
-    for desc, short in axis_map.items():
-        if not desc:
-            continue
-        if normalized.endswith(desc):
-            return short
-        if desc in normalized:
-            return short
-
-    # If no mapping is found, fall back to the raw value but log it for
-    # diagnostics.
-    try:
-        print(f"[axis mapping miss] axis={axis} raw_value={raw_value!r}")
-    except Exception:
-        pass
-    return raw_value
+    normalized = str(raw_value).strip()
+    if not normalized:
+        return ""
+    # In token-only mode, just return the token string.
+    return normalized
 
 
-def _map_axis_tokens(axis: str, raw_value: str) -> list[str]:
-    """Map raw axis values/descriptions to their short tokens, preserving order."""
-    if not raw_value:
+def _map_axis_tokens(axis: str, raw_tokens: Sequence[str]) -> list[str]:
+    """Map raw axis tokens to their short tokens, preserving order."""
+    if not raw_tokens:
         return []
-    axis_map = _axis_value_to_key_map_for(axis)
-    direct = axis_map.get(raw_value)
-    if direct:
-        return [direct]
-    tokens = _axis_string_to_tokens(str(raw_value))
-    return [axis_map.get(token, token) for token in tokens if token]
+    tokens: list[str] = []
+    for token in raw_tokens:
+        normalized = str(token).strip()
+        if normalized:
+            tokens.append(normalized)
+    return tokens
 
 
 mod = Module()
@@ -489,7 +520,7 @@ def modelPrompt(m) -> str:
             if static_prompt == "infer"
             else static_prompt
         )
-    directional = getattr(m, "directionalModifier", "")
+    directional = _normalise_directional(getattr(m, "directionalModifier", ""))
 
     profile_axes = get_static_prompt_axes(static_prompt)
 
@@ -545,10 +576,10 @@ def modelPrompt(m) -> str:
         effective_style_raw = settings.get("user.model_default_style")
 
     # Map all axes to token-based storage, keeping a canonical form for recap/rerun.
-    raw_completeness_tokens = _map_axis_tokens("completeness", effective_completeness_raw)
-    raw_scope_tokens = _map_axis_tokens("scope", effective_scope_raw)
-    raw_method_tokens = _map_axis_tokens("method", effective_method_raw)
-    raw_style_tokens = _map_axis_tokens("style", effective_style_raw)
+    raw_completeness_tokens = _map_axis_tokens("completeness", _tokens_list(effective_completeness_raw))
+    raw_scope_tokens = _map_axis_tokens("scope", _tokens_list(effective_scope_raw))
+    raw_method_tokens = _map_axis_tokens("method", _tokens_list(effective_method_raw))
+    raw_style_tokens = _map_axis_tokens("style", _tokens_list(effective_style_raw))
 
     resolved_axes, canonical_axes = _apply_constraint_hierarchy(
         {
@@ -558,6 +589,9 @@ def modelPrompt(m) -> str:
             "style": raw_style_tokens,
         }
     )
+    # Filter out any tokens not present in axisConfig to keep token-only state.
+    resolved_axes = _filter_axis_tokens(resolved_axes)
+    canonical_axes = _filter_axis_tokens(canonical_axes)
 
     completeness_token = resolved_axes.get("completeness") or ""
     completeness_tokens = [completeness_token] if completeness_token else []
@@ -586,6 +620,7 @@ def modelPrompt(m) -> str:
     GPTState.system_prompt.scope = scope_serialised or ""
     GPTState.system_prompt.method = method_serialised or ""
     GPTState.system_prompt.style = style_serialised or ""
+    GPTState.system_prompt.directional = directional or ""
 
     # Store a concise, human-readable recipe for this prompt so the
     # confirmation GUI (and future UIs) can recap what was asked, and keep a
@@ -606,6 +641,12 @@ def modelPrompt(m) -> str:
     GPTState.last_scope = scope_canonical_serialised
     GPTState.last_method = method_canonical_serialised
     GPTState.last_style = style_canonical_serialised
+    GPTState.last_axes = {
+        "completeness": [completeness_token] if completeness_token else [],
+        "scope": canonical_axes.get("scope", []),
+        "method": canonical_axes.get("method", []),
+        "style": canonical_axes.get("style", []),
+    }
     # Track the last directional lens separately (as a short token) so
     # recap/quick help and shorthand grammars can include it.
     GPTState.last_directional = _axis_recipe_token("directional", directional or "")
@@ -634,28 +675,28 @@ def modelPrompt(m) -> str:
     if completeness_tokens and (spoken_completeness or completeness_from_cross_axis):
         constraints.append(f"  Completeness: {_hydrate('completeness', completeness_tokens)}")
     elif profile_completeness and not GPTState.user_overrode_completeness:
-        prof_tokens = _map_axis_tokens("completeness", profile_completeness)
+        prof_tokens = _map_axis_tokens("completeness", _tokens_list(profile_completeness))
         constraints.append(f"  Completeness: {_hydrate('completeness', prof_tokens)}")
 
     # Scope: purely conceptual, relative to the voice-selected target.
     if scope_tokens and (spoken_scope or scope_from_cross_axis):
         constraints.append(f"  Scope: {_hydrate('scope', scope_tokens)}")
     elif profile_scope and not GPTState.user_overrode_scope:
-        prof_tokens = _map_axis_tokens("scope", profile_scope)
+        prof_tokens = _map_axis_tokens("scope", _tokens_list(profile_scope))
         constraints.append(f"  Scope: {_hydrate('scope', prof_tokens)}")
 
     # Method: spoken modifier or short profile keyword.
     if method_tokens and (spoken_method or method_from_cross_axis):
         constraints.append(f"  Method: {_hydrate('method', method_tokens)}")
     elif profile_method and not GPTState.user_overrode_method:
-        prof_tokens = _map_axis_tokens("method", profile_method)
+        prof_tokens = _map_axis_tokens("method", _tokens_list(profile_method))
         constraints.append(f"  Method: {_hydrate('method', prof_tokens)}")
 
     # Style: spoken style modifier or short profile keyword.
     if style_tokens and (spoken_style or style_from_cross_axis):
         constraints.append(f"  Style: {_hydrate('style', style_tokens)}")
     elif profile_style and not GPTState.user_overrode_style:
-        prof_tokens = _map_axis_tokens("style", profile_style)
+        prof_tokens = _map_axis_tokens("style", _tokens_list(profile_style))
         constraints.append(f"  Style: {_hydrate('style', prof_tokens)}")
 
     # If we only have the "Constraints:" header and nothing else, drop it to
@@ -664,12 +705,9 @@ def modelPrompt(m) -> str:
     if len(constraints) > 1:
         constraints_block = "\n" + "\n".join(constraints)
 
-    # Directional lens remains a separate, lens-like instruction appended after
-    # the Task / Constraints schema.
-    if directional:
-        return task_line + constraints_block + "\n\n" + directional
-    else:
-        return task_line + constraints_block
+    # Directional lens is sent via the system prompt; avoid appending raw
+    # tokens to the user-facing prompt text.
+    return task_line + constraints_block
 
 
 @mod.capture(rule="[<user.modelPrompt>] prompt <user.text>")

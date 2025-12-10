@@ -183,6 +183,26 @@ class AllText(ModelSource):
         return actions.edit.selected_text()
 
 
+def _strip_model_interpretation_heading(meta_text: str) -> str:
+    """Remove a leading 'Model interpretation' heading for reuse as plain text."""
+    lines = meta_text.splitlines()
+    if not lines:
+        return meta_text
+
+    first = lines[0].lstrip()
+    if first.startswith("#"):
+        heading_text = first.lstrip("#").strip().lower()
+        if heading_text == "model interpretation":
+            # Drop the heading and any immediate blank lines so downstream
+            # consumers (for example, model pass) receive just the content.
+            body = lines[1:]
+            while body and not body[0].strip():
+                body.pop(0)
+            return "\n".join(body)
+
+    return meta_text
+
+
 class Meta(ModelSource):
     def get_text(self):
         if not getattr(GPTState, "last_meta", ""):
@@ -192,7 +212,7 @@ class Meta(ModelSource):
             raise Exception(
                 "GPT Failure: User requested meta interpretation, but there was no meta available"
             )
-        return GPTState.last_meta
+        return _strip_model_interpretation_heading(GPTState.last_meta)
 
 
 def create_model_source(source_type: str) -> ModelSource:

@@ -20,6 +20,8 @@ if bootstrap is not None:
     from talon_user.lib.requestBus import set_controller, current_state
     from talon_user.lib.requestController import RequestUIController
     from talon_user.lib.requestState import RequestPhase
+    from talon_user.lib.requestHistoryActions import UserActions as HistoryActions
+    from talon_user.lib.requestLog import append_entry, clear_history
 
     class GPTActionPromptSessionTests(unittest.TestCase):
         def setUp(self):
@@ -678,6 +680,29 @@ if bootstrap is not None:
                     "Last recipe: describe · full · relations · cluster · bullets"
                 )
 
+        def test_gpt_show_last_recipe_uses_last_axes_tokens_when_present(self):
+            GPTState.reset_all()
+            GPTState.last_recipe = "hydrated legacy string"
+            GPTState.last_static_prompt = "describe"
+            GPTState.last_completeness = "hydrated"
+            GPTState.last_scope = "hydrated scope"
+            GPTState.last_method = "hydrated method"
+            GPTState.last_style = "hydrated style"
+            GPTState.last_directional = "fog"
+            GPTState.last_axes = {
+                "completeness": ["full"],
+                "scope": ["bound", "edges"],
+                "method": ["rigor"],
+                "style": ["plain"],
+            }
+
+            with patch.object(actions.app, "notify") as app_notify:
+                gpt_module.UserActions.gpt_show_last_recipe()
+
+            app_notify.assert_called_once_with(
+                "Last recipe: describe · full · bound edges · rigor · plain · fog"
+            )
+
         def test_gpt_rerun_last_recipe_without_state_notifies_and_returns(self):
             GPTState.reset_all()
 
@@ -725,7 +750,7 @@ if bootstrap is not None:
                 # Override static prompt, completeness, and directional; reuse
                 # last scope/method/style. No explicit subject.
                 gpt_module.UserActions.gpt_rerun_last_recipe(
-                    "todo", "gist", "", "", "", "rog"
+                    "todo", "gist", [], [], [], "rog"
                 )
 
                 # Axis mapping should be invoked for all non-empty axes.
@@ -789,11 +814,11 @@ if bootstrap is not None:
                 # Override scope and style with additional tokens; method left unchanged.
                 gpt_module.UserActions.gpt_rerun_last_recipe(
                     "todo",
-                    "",              # completeness override (none)
-                    "bound",         # new scope token to merge
-                    "",              # method unchanged
-                    "bullets",       # additional style token to merge
-                    "rog",           # new directional
+                    "",                # completeness override (none)
+                    ["bound"],         # new scope token to merge
+                    [],                # method unchanged
+                    ["bullets"],       # additional style token to merge
+                    "rog",             # new directional
                 )
 
                 # modelPrompt should receive a match with merged axis modifiers.
@@ -841,6 +866,266 @@ if bootstrap is not None:
                 self.assertEqual(config.please_prompt, "PROMPT-MULTI")
                 self.assertIs(config.model_source, source)
                 self.assertIs(config.model_destination, destination)
+
+        def test_gpt_rerun_last_recipe_prefers_last_axes_tokens(self):
+            """Ensure rerun uses token-only last_axes even if legacy recipe is hydrated/mismatched."""
+            GPTState.reset_all()
+            GPTState.last_recipe = "hydrated legacy string"
+            GPTState.last_static_prompt = "infer"
+            GPTState.last_completeness = "hydrated-completeness"
+            GPTState.last_scope = "hydrated-scope"
+            GPTState.last_method = "hydrated-method"
+            GPTState.last_style = "hydrated-style"
+            GPTState.last_axes = {
+                "completeness": ["full"],
+                "scope": ["bound", "edges"],
+                "method": ["rigor"],
+                "style": ["plain"],
+            }
+            # Inject some hydrated/unknown tokens to ensure they are dropped.
+            GPTState.last_axes["scope"].append("Hydrated scope")
+            GPTState.last_axes["method"].append("Unknown method")
+            GPTState.last_axes["style"].append("Fancy hydrated style")
+
+            with (
+                patch.object(
+                    gpt_module,
+                    "_axis_value_from_token",
+                    side_effect=lambda token, mapping: token,
+                ) as axis_value,
+                patch.object(gpt_module, "modelPrompt") as model_prompt,
+                patch.object(gpt_module, "create_model_source") as create_source,
+                patch.object(
+                    gpt_module, "create_model_destination"
+                ) as create_destination,
+                patch.object(actions.user, "gpt_apply_prompt") as apply_prompt,
+            ):
+                source = MagicMock()
+                destination = MagicMock()
+                create_source.return_value = source
+                create_destination.return_value = destination
+                model_prompt.return_value = "PROMPT"
+
+                gpt_module.UserActions.gpt_rerun_last_recipe("", "", [], [], [], "")
+
+                mapped_tokens = [call.args[0] for call in axis_value.call_args_list]
+                self.assertIn("full", mapped_tokens)
+                self.assertIn("bound edges", mapped_tokens)
+                self.assertIn("rigor", mapped_tokens)
+                self.assertIn("plain", mapped_tokens)
+
+                match = model_prompt.call_args.args[0]
+                self.assertEqual(match.staticPrompt, "infer")
+                self.assertEqual(match.completenessModifier, "full")
+                self.assertEqual(match.scopeModifier, "bound edges")
+                self.assertEqual(match.methodModifier, "rigor")
+                self.assertEqual(match.styleModifier, "plain")
+
+                self.assertEqual(GPTState.last_recipe, "infer · full · bound edges · rigor · plain")
+                self.assertEqual(GPTState.last_completeness, "full")
+                self.assertEqual(GPTState.last_scope, "bound edges")
+                self.assertEqual(GPTState.last_method, "rigor")
+                self.assertEqual(GPTState.last_style, "plain")
+                self.assertEqual(
+                    GPTState.last_axes,
+                    {
+                        "completeness": ["full"],
+                        "scope": ["bound", "edges"],
+                        "method": ["rigor"],
+                        "style": ["plain"],
+                    },
+                )
+
+        def test_history_then_rerun_keeps_last_axes_token_only(self):
+            """End-to-end guardrail: history ingest + rerun keeps axes token-only."""
+            GPTState.reset_all()
+            clear_history()
+            axes = {
+                "completeness": ["full", "Hydrated completeness"],
+                "scope": ["bound", "Invalid scope"],
+                "method": ["rigor", "Unknown method"],
+                "style": ["plain", "Fancy hydrated style"],
+            }
+            append_entry(
+                "rid-axes",
+                "prompt text",
+                "resp axes",
+                "meta axes",
+                recipe="legacy · should · be · ignored",
+                axes=axes,
+            )
+
+            HistoryActions.gpt_request_history_show_latest()
+            self.assertEqual(
+                GPTState.last_axes,
+                {
+                    "completeness": ["full"],
+                    "scope": ["bound"],
+                    "method": ["rigor"],
+                    "style": ["plain"],
+                },
+            )
+
+            with (
+                patch.object(
+                    gpt_module,
+                    "_axis_value_from_token",
+                    side_effect=lambda token, mapping: token,
+                ) as axis_value,
+                patch.object(gpt_module, "modelPrompt") as model_prompt,
+                patch.object(gpt_module, "create_model_source") as create_source,
+                patch.object(
+                    gpt_module, "create_model_destination"
+                ) as create_destination,
+                patch.object(actions.user, "gpt_apply_prompt") as apply_prompt,
+            ):
+                source = MagicMock()
+                destination = MagicMock()
+                create_source.return_value = source
+                create_destination.return_value = destination
+                model_prompt.return_value = "PROMPT"
+
+                gpt_module.UserActions.gpt_rerun_last_recipe("", "", "", "", "", "")
+
+                mapped_tokens = [call.args[0] for call in axis_value.call_args_list]
+                self.assertEqual(set(mapped_tokens), {"full", "bound", "rigor", "plain"})
+                self.assertEqual(
+                    GPTState.last_axes,
+                    {
+                        "completeness": ["full"],
+                        "scope": ["bound"],
+                        "method": ["rigor"],
+                        "style": ["plain"],
+                    },
+                )
+
+        def test_rerun_override_method_multi_tokens_preserved(self):
+            """Overriding method with multiple tokens should preserve all known tokens."""
+            GPTState.reset_all()
+            GPTState.last_recipe = "infer · full · bound · xp"
+            GPTState.last_static_prompt = "infer"
+            GPTState.last_completeness = "full"
+            GPTState.last_scope = "bound"
+            GPTState.last_method = "xp"
+            GPTState.last_style = "plain"
+            GPTState.last_axes = {
+                "completeness": ["full"],
+                "scope": ["bound"],
+                "method": ["xp"],
+                "style": ["plain"],
+            }
+
+            with (
+                patch.object(
+                    gpt_module,
+                    "_axis_value_from_token",
+                    side_effect=lambda token, mapping: token,
+                ) as axis_value,
+                patch.object(gpt_module, "modelPrompt") as model_prompt,
+                patch.object(gpt_module, "create_model_source") as create_source,
+                patch.object(
+                    gpt_module, "create_model_destination"
+                ) as create_destination,
+                patch.object(actions.user, "gpt_apply_prompt") as apply_prompt,
+            ):
+                source = MagicMock()
+                destination = MagicMock()
+                create_source.return_value = source
+                create_destination.return_value = destination
+                model_prompt.return_value = "PROMPT"
+
+                gpt_module.UserActions.gpt_rerun_last_recipe(
+                    "",
+                    "",
+                    [],
+                    ["xp", "rigor"],
+                    [],
+                    "",
+                )
+
+                mapped_tokens = [call.args[0] for call in axis_value.call_args_list]
+                self.assertIn("rigor xp", mapped_tokens)
+
+                match = model_prompt.call_args.args[0]
+                self.assertEqual(match.methodModifier, "rigor xp")
+
+                self.assertEqual(
+                    GPTState.last_axes,
+                    {
+                        "completeness": ["full"],
+                        "scope": ["bound"],
+                        "method": ["rigor", "xp"],
+                        "style": ["plain"],
+                    },
+                )
+        def test_gpt_rerun_last_recipe_filters_unknown_override_tokens(self):
+            """Overrides containing unknown/hydrated tokens should be dropped, preserving known tokens."""
+            GPTState.reset_all()
+            GPTState.last_recipe = "infer · full · bound · rigor · plain"
+            GPTState.last_static_prompt = "infer"
+            GPTState.last_completeness = "full"
+            GPTState.last_scope = "bound"
+            GPTState.last_method = "rigor"
+            GPTState.last_style = "plain"
+            GPTState.last_axes = {
+                "completeness": ["full"],
+                "scope": ["bound"],
+                "method": ["rigor"],
+                "style": ["plain"],
+            }
+
+            with (
+                patch.object(
+                    gpt_module,
+                    "_axis_value_from_token",
+                    side_effect=lambda token, mapping: token,
+                ) as axis_value,
+                patch.object(gpt_module, "modelPrompt") as model_prompt,
+                patch.object(gpt_module, "create_model_source") as create_source,
+                patch.object(
+                    gpt_module, "create_model_destination"
+                ) as create_destination,
+                patch.object(actions.user, "gpt_apply_prompt") as apply_prompt,
+            ):
+                source = MagicMock()
+                destination = MagicMock()
+                create_source.return_value = source
+                create_destination.return_value = destination
+                model_prompt.return_value = "PROMPT"
+
+                gpt_module.UserActions.gpt_rerun_last_recipe(
+                    "",
+                    "full",  # valid completeness
+                    ["bound", "invalid-scope"],  # one valid, one invalid
+                    ["rigor", "hydrated-method"],  # one valid, one invalid
+                    ["plain", "UnknownStyle"],  # one valid, one invalid
+                    "",
+                )
+
+                # Only known tokens should be mapped.
+                mapped_tokens = [call.args[0] for call in axis_value.call_args_list]
+                self.assertIn("full", mapped_tokens)
+                self.assertIn("bound", mapped_tokens)
+                self.assertIn("rigor", mapped_tokens)
+                self.assertIn("plain", mapped_tokens)
+                self.assertNotIn("invalid-scope", mapped_tokens)
+                self.assertNotIn("hydrated-method", mapped_tokens)
+                self.assertNotIn("UnknownStyle", mapped_tokens)
+
+                match = model_prompt.call_args.args[0]
+                self.assertEqual(match.scopeModifier, "bound")
+                self.assertEqual(match.methodModifier, "rigor")
+                self.assertEqual(match.styleModifier, "plain")
+
+                self.assertEqual(
+                    GPTState.last_axes,
+                    {
+                        "completeness": ["full"],
+                        "scope": ["bound"],
+                        "method": ["rigor"],
+                        "style": ["plain"],
+                    },
+                )
 
         def test_gpt_rerun_last_recipe_notifies_when_axis_tokens_are_dropped(
             self,

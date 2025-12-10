@@ -366,30 +366,51 @@ class Browser(ModelDestination):
 
         # Mirror the confirmation GUI's recipe recap so the browser view
         # carries the same orientation cues.
-        if GPTState.last_recipe:
+        axes_tokens = getattr(GPTState, "last_axes", {}) or {}
+
+        def _axis_join(axis: str, fallback: str) -> str:
+            tokens = axes_tokens.get(axis)
+            if isinstance(tokens, list) and tokens:
+                return " ".join(str(t) for t in tokens if str(t))
+            return fallback
+
+        static_prompt = getattr(GPTState, "last_static_prompt", "") or ""
+        axis_parts: list[str] = []
+        if static_prompt:
+            axis_parts.append(static_prompt)
+        last_completeness = _axis_join("completeness", getattr(GPTState, "last_completeness", "") or "")
+        last_scope = _axis_join("scope", getattr(GPTState, "last_scope", "") or "")
+        last_method = _axis_join("method", getattr(GPTState, "last_method", "") or "")
+        last_style = _axis_join("style", getattr(GPTState, "last_style", "") or "")
+        for value in (last_completeness, last_scope, last_method, last_style):
+            if value:
+                axis_parts.append(value)
+
+        recipe_tokens = " · ".join(axis_parts) if axis_parts else ""
+        recipe = recipe_tokens or getattr(GPTState, "last_recipe", "") or ""
+        # If we only have the static prompt from tokens but a legacy recipe string exists,
+        # prefer the legacy string so older code paths still show full axis context.
+        if (
+            recipe_tokens
+            and len(axis_parts) <= 1
+            and getattr(GPTState, "last_recipe", "")
+        ):
+            recipe = getattr(GPTState, "last_recipe", "")
+        if recipe:
             builder.h2("Prompt recap")
-            if getattr(GPTState, "last_directional", ""):
-                recipe_text = (
-                    f"{GPTState.last_recipe} · {GPTState.last_directional}"
-                )
-                grammar_phrase = (
-                    f"model {GPTState.last_recipe.replace(' · ', ' ')} "
-                    f"{GPTState.last_directional}"
-                )
+            directional = getattr(GPTState, "last_directional", "") or ""
+            if directional:
+                recipe_text = f"{recipe} · {directional}"
+                grammar_phrase = f"model {recipe.replace(' · ', ' ')} {directional}"
             else:
-                recipe_text = GPTState.last_recipe
-                grammar_phrase = (
-                    f"model {GPTState.last_recipe.replace(' · ', ' ')}"
-                )
+                recipe_text = recipe
+                grammar_phrase = f"model {recipe.replace(' · ', ' ')}"
 
             builder.p(f"Recipe: {recipe_text}")
             builder.p(f"Say: {grammar_phrase}")
 
             # When possible, include a prompt-specific pattern menu hint that
             # matches the confirmation GUI + quick-help guidance.
-            static_prompt = GPTState.last_static_prompt or recipe_text.split(
-                " · ", 1
-            )[0].strip()
             if static_prompt:
                 builder.p(
                     f"Tip: Say 'model show grammar' for a detailed breakdown, "

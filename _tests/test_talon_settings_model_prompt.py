@@ -34,8 +34,7 @@ if bootstrap is not None:
             result = modelPrompt(m)
 
             # With no explicit axis modifiers, we should get a Task / Constraints
-            # schema with a profile-driven completeness/scope hint and the lens
-            # appended after a blank line.
+            # schema with a profile-driven completeness/scope hint.
             self.assertIn("Task:", result)
             self.assertIn("Constraints:", result)
             self.assertIn(
@@ -45,8 +44,9 @@ if bootstrap is not None:
             # Profile for "fix" biases completeness/scope conceptually.
             self.assertIn("Completeness:", result)
             self.assertIn("Scope:", result)
-            # Directional lens appears after the schema.
-            self.assertTrue(result.rstrip().endswith("DIR"))
+            # Directional lens is pushed into the system prompt instead of the task text.
+            self.assertEqual(GPTState.system_prompt.directional, "DIR")
+            self.assertNotIn("\nDIR", result)
 
         def test_explicit_completeness_modifier_is_used_as_is(self):
             m = SimpleNamespace(
@@ -61,7 +61,7 @@ if bootstrap is not None:
             self.assertIn("Task:", result)
             self.assertIn("Constraints:", result)
             self.assertIn("Completeness: COMP", result)
-            self.assertTrue(result.rstrip().endswith("DIR"))
+            self.assertEqual(GPTState.system_prompt.directional, "DIR")
 
         def test_scope_method_style_modifiers_appended_in_order(self):
             m = SimpleNamespace(
@@ -82,7 +82,7 @@ if bootstrap is not None:
             self.assertIn("Scope: SCOPE", result)
             self.assertIn("Method: METHOD", result)
             self.assertIn("Style: STYLE", result)
-            self.assertTrue(result.rstrip().endswith("DIR"))
+            self.assertEqual(GPTState.system_prompt.directional, "DIR")
 
         def test_constraint_block_hydrates_axis_tokens(self):
             """Constraints should display hydrated axis descriptions while state stays tokenised."""
@@ -126,7 +126,7 @@ if bootstrap is not None:
             self.assertNotIn("SCOPE", result)
             self.assertNotIn("METHOD", result)
             self.assertNotIn("STYLE", result)
-            self.assertTrue(result.rstrip().endswith("DIR"))
+            self.assertEqual(GPTState.system_prompt.directional, "DIR")
 
         def test_model_prompt_updates_system_prompt_axes(self):
             # Start from known defaults.
@@ -168,6 +168,31 @@ if bootstrap is not None:
             self.assertEqual(GPTState.system_prompt.scope, "actions")
             self.assertEqual(GPTState.system_prompt.method, "steps")
             self.assertEqual(GPTState.system_prompt.style, "checklist")
+
+        def test_directional_moves_to_system_prompt_and_hydrates(self):
+            m = SimpleNamespace(
+                staticPrompt="fix",
+                directionalModifier="fog",
+            )
+
+            result = modelPrompt(m)
+
+            self.assertEqual(GPTState.system_prompt.directional, "fog")
+            self.assertEqual(GPTState.last_directional, "fog")
+
+            # The task text should not append the directional lens directly.
+            self.assertNotIn("\nfog", result)
+
+            # System prompt should hydrate the directional lens when present.
+            directional_desc = axis_key_to_value_map_for("directional").get(
+                "fog", "fog"
+            )
+            self.assertTrue(
+                any(
+                    line.startswith("Directional: ") and directional_desc in line
+                    for line in GPTState.system_prompt.format_as_array()
+                )
+            )
 
         def test_prefixed_token_reassigns_to_highest_priority_axis(self):
             m = SimpleNamespace(

@@ -48,7 +48,7 @@ We will add a **Prompt Recipe Suggestion Assistant** that:
 - Optionally takes extra spoken text describing the subject or goal.
 - Asks GPT (once) to propose several concrete recipes:
   - `staticPrompt + completeness + scope + method + style + directional`.
-- Presents those recipes in a small, clickable GUI.
+- Presents those recipes in a small, clickable GUI (refined by ADR 041 for stance-aware, preset-free suggestions behaviour).
 - Lets the user execute a chosen recipe via the existing `model` pipeline.
 
 This appears as:

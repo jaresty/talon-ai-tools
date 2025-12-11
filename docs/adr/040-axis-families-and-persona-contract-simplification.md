@@ -297,6 +297,15 @@ We introduce an explicit **axis family model** and associated **design rules**:
 
 ---
 
+### Current status (this repo – 2025-12-11)
+
+- Persona / Intent SSOT is implemented via `lib/personaConfig.py`, with shared `PERSONA_PRESETS` and `INTENT_PRESETS` used by help surfaces and GUIs.
+- Help Hub, canvas quick help, pattern GUI, and the suggestions GUI all now expose the Persona / Intent / Contract (Who / Why / How) framing in some form.
+- Prompt recipe suggestions (ADR 008) still treat `Recipe` as primarily a Contract (How) recommendation, but the parsing and suggestion GUI now support optional per-recipe `Stance:` and `Why:` metadata.
+- The `model write …` / `model reset writing` flow is the primary way to change/reset Persona/Intent; suggestions are intended to teach good combinations rather than silently alter stance.
+- Remaining in-repo work for this ADR is mostly prompt-tuning (improving how consistently the LLM emits useful `Stance:`/`Why:` segments) and small UX polish, not structural changes.
+
+
 ## Implementation sketch (this repo)
 
 1. **Docs and help updates**  
@@ -321,8 +330,29 @@ We introduce an explicit **axis family model** and associated **design rules**:
    - Optionally add a small lint/test helper that asserts:  
      - New tokens in voice/audience/tone/purpose do not contain obviously contract-shaped words (for example, “brief”, “table”, “diagram”, “debugging”).  
      - New contract tokens do not contain obvious persona/intent words (“executive”, “novice”, “persuasion”).
+ 
+  4. **Stance-aware suggestions (Who / Why / How)**  
+   - See also ADR 041 for stance-aware prompt suggestions GUI behaviour and preset-free design.
 
-4. **Adversarial examples in docs**  
+   - When implementing prompt recipe suggestions (ADR 008) in this repo, treat each suggestion as a small, teachable three-step flow:
+     - Step 1 – **Set stance (Who / Why)** using Persona and Intent presets (for example, a `model write …` command that sets voice/audience/tone/purpose for writing).  
+     - Step 2 – **Run contract (How)** using `model run <staticPrompt> [completeness] [scope] [method] [style] <directional>` as today.  
+     - Step 3 – **Optionally reset stance** (for example, `model reset writing`) to return to defaults after a focused interaction.  
+   - When calling the LLM to generate suggestions, provide:
+     - The current request and source summary.  
+     - The current stance snapshot (active Persona/Intent presets or raw axis keys).  
+     - The available Persona presets (`PERSONA_PRESETS`), Intent presets (`INTENT_PRESETS`), and contract axes/tokens that are safe to suggest.  
+   - Ask the LLM to return, for each suggestion:
+     - A recommended Persona/Intent preset (or “keep current” stance), expressed as preset keys and/or a concrete “set stance” command.  
+     - A recommended contract recipe (static prompt + completeness/scope/method/style + directional) and its `model run …` form.  
+     - Whether to recommend a stance reset afterwards and, if so, the concrete reset command.  
+     - A short, one-line explanation of why this stance+contract pairing is appropriate for the current task.  
+   - In the suggestions GUI, surface these as **compact** rows that respect vertical space:
+     - Show at most a handful of stance suggestions (for example, 2–3 Persona presets and 2–3 Intent presets) and keep each explanation to a single line.  
+     - Keep the existing contract `Say: model run …` and `Axes:` summaries; do not enlarge the window purely for Who/Why text.
+ 
+ 5. **Adversarial examples in docs**  
+
    - Add a small appendix (in README or quick help) that revisits the stress tests above (“Explain simply to a junior engineer”, “Adversarial review for resistant stakeholders”, “Executive brief vs deep write-up”) and shows:  
      - How each is expressed using Persona + Intent + Contract,  
      - Where *not* to encode each behaviour (for example, not as a new purpose or voice).

@@ -18,6 +18,7 @@ if bootstrap is not None:
         suggestion_grammar_phrase,
         last_recipe_snapshot,
         last_recap_snapshot,
+        suggestion_entries_with_metadata,
     )
     from talon_user.lib.modelState import GPTState
 
@@ -54,6 +55,26 @@ if bootstrap is not None:
             )
             entries = suggestion_entries()
             self.assertEqual(entries, [{"name": "Valid", "recipe": "fix · full · fog"}])
+
+        def test_suggestion_entries_with_metadata_preserves_extra_fields(self) -> None:
+            record_suggestions(
+                [
+                    {
+                        "name": "With stance",
+                        "recipe": "fix · full · fog",
+                        "stance_command": "model write as teacher …",
+                        "why": "Kind stance for junior devs",
+                    },
+                ],
+                "clipboard",
+            )
+            entries = suggestion_entries_with_metadata()
+            self.assertEqual(len(entries), 1)
+            entry = entries[0]
+            self.assertEqual(entry["name"], "With stance")
+            self.assertEqual(entry["recipe"], "fix · full · fog")
+            self.assertEqual(entry.get("stance_command"), "model write as teacher …")
+            self.assertEqual(entry.get("why"), "Kind stance for junior devs")
 
         def test_suggestion_source_falls_back(self) -> None:
             record_suggestions([], None)

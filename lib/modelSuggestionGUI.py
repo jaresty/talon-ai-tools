@@ -10,8 +10,9 @@ from .modelDestination import create_model_destination
 from .modelSource import create_model_source
 from .modelState import GPTState
 from .talonSettings import ApplyPromptConfiguration, modelPrompt
+from .personaConfig import PERSONA_PRESETS, INTENT_PRESETS
 from .suggestionCoordinator import (
-    suggestion_entries,
+    suggestion_entries_with_metadata,
     suggestion_source,
     set_last_recipe_from_selection,
     suggestion_grammar_phrase,
@@ -49,6 +50,8 @@ except Exception:  # Tests / stubs
 class Suggestion:
     name: str
     recipe: str
+    stance_command: str = ""
+    why: str = ""
 
 
 class SuggestionGUIState:
@@ -70,7 +73,7 @@ _suggestion_drag_offset: Optional[Tuple[float, float]] = None
 
 # Simple geometry defaults to keep the panel centered and readable.
 _PANEL_WIDTH = 840
-_PANEL_HEIGHT = 520
+_PANEL_HEIGHT = 720
 
 
 def _load_source_spoken_map() -> dict[str, str]:
@@ -401,16 +404,22 @@ def _draw_suggestions(c: canvas.Canvas) -> None:  # pragma: no cover - visual on
         draw_text("No suggestions available. Run 'model run suggest' first.", x, y)
         return
 
+    # Small spacer between the header and the first suggestion row.
+    y += line_h
+
     # Each suggestion row is rendered as:
     #   [Name]
     #   Say: model …
-    #   Details: <hydrated axes>
-    #   <blank line>
-    # which we approximate as a fixed row height.
-    row_height = line_h * 4
+    #   Axes: <compact summary>
+    #   (optional) S1/Why lines (stance and why on their own lines)
+    # which we approximate as a fixed row height with a small gap
+    # between suggestions for readability.
+    row_height = line_h * 6
     body_top = y
     if rect is not None and hasattr(rect, "height"):
-        body_bottom = rect.y + rect.height - line_h * 2
+        # Leave extra margin above the footer tip so the last suggestion
+        # does not visually collide with it.
+        body_bottom = rect.y + rect.height - line_h * 3
     else:
         body_bottom = body_top + row_height * len(suggestions)
     visible_height = max(body_bottom - body_top, row_height)
@@ -481,6 +490,22 @@ def _draw_suggestions(c: canvas.Canvas) -> None:  # pragma: no cover - visual on
         if summary_parts:
             draw_text(f"Axes: {' '.join(summary_parts)}", x + 4, row_y)
 
+        # Use the remaining row height to show an optional, compact stance
+        # and explanation. When S1/Why are present, they use two lines; when
+        # absent we still leave a small gap so the next header does not crowd.
+        if suggestion.stance_command or suggestion.why:
+            row_y += line_h
+            if suggestion.stance_command:
+                draw_text(f"S1: {suggestion.stance_command}", x + 4, row_y)
+                row_y += line_h
+            if suggestion.why:
+                # Keep Why reasonably compact; truncate if extremely long.
+                why_text = f"Why: {suggestion.why}"
+                draw_text(why_text[:200], x + 4, row_y)
+        else:
+            # Lightweight spacer below Axes when no stance/why metadata.
+            row_y += line_h
+
     # Draw a simple scrollbar when needed.
     if max_scroll > 0 and rect is not None and paint is not None:
         try:
@@ -515,11 +540,24 @@ def _draw_suggestions(c: canvas.Canvas) -> None:  # pragma: no cover - visual on
         except Exception:
             pass
 
+    # Optional global reset hint, kept compact and non-interactive to
+    # avoid changing per-suggestion behaviour while still advertising
+    # the stance reset command described in ADR 040/041.
+    if rect is not None:
+        tip = 'Tip: say "model reset writing" to reset stance.'
+        tip_y = rect.y + rect.height - line_h
+        draw_text(tip, rect.x + 40, tip_y)
+
 
 def _refresh_suggestions_from_state() -> None:
     SuggestionGUIState.suggestions = [
-        Suggestion(name=item["name"], recipe=item["recipe"])
-        for item in suggestion_entries()
+        Suggestion(
+            name=item["name"],
+            recipe=item["recipe"],
+            stance_command=item.get("stance_command", ""),
+            why=item.get("why", ""),
+        )
+        for item in suggestion_entries_with_metadata()
     ]
 
 
@@ -622,12 +660,14 @@ class UserActions:
         ctx.tags = []
 
     def model_prompt_recipe_suggestions_run_index(index: int):
-        """Run the Nth suggested recipe (1-based index)."""
+        """Run a suggestion by 1-based index from the cached list."""
         _refresh_suggestions_from_state()
         if not SuggestionGUIState.suggestions:
             actions.app.notify("No prompt recipe suggestions available")
             return
         if index <= 0 or index > len(SuggestionGUIState.suggestions):
-            actions.app.notify(f"No suggestion numbered {index}")
+            actions.app.notify("Suggestion index out of range")
             return
-        _run_suggestion(SuggestionGUIState.suggestions[index - 1])
+
+        suggestion = SuggestionGUIState.suggestions[index - 1]
+        _run_suggestion(suggestion)

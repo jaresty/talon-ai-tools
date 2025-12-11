@@ -154,3 +154,19 @@ def set_last_recipe_from_selection(
         "method": method_tokens,
         "style": style_tokens,
     }
+
+
+
+def suggestion_entries_with_metadata() -> list[dict[str, str]]:
+    """Return raw suggestion dicts (including optional stance metadata)."""
+    recipes = getattr(GPTState, "last_suggested_recipes", []) or []
+    entries: list[dict[str, str]] = []
+    for item in recipes:
+        if not isinstance(item, dict):
+            continue
+        name = item.get("name")
+        recipe = item.get("recipe")
+        if not name or not recipe:
+            continue
+        entries.append(dict(item))
+    return entries

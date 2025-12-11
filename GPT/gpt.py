@@ -121,6 +121,7 @@ from ..lib.modelPatternGUI import (
     DIRECTIONAL_MAP as _DIRECTIONAL_MAP,
 )
 from ..lib.axisMappings import axis_key_to_value_map_for
+from ..lib.personaConfig import persona_docs_map, PERSONA_PRESETS, INTENT_PRESETS
 from ..lib.suggestionCoordinator import (
     record_suggestions,
     last_recipe_snapshot,
@@ -322,6 +323,39 @@ def _build_axis_docs() -> str:
         for key, desc in items:
             lines.append(f"- {key}: {desc}")
         lines.append("")
+    return "\n".join(lines).rstrip()
+
+
+def _build_persona_intent_docs() -> str:
+    """Build a compact cheat sheet for Persona/Intent stance tokens."""
+    axes = (
+        ("Voice", "voice"),
+        ("Audience", "audience"),
+        ("Tone", "tone"),
+        ("Purpose", "purpose"),
+    )
+    lines: list[str] = [
+        "Persona (Who) and Intent (Why) tokens you may use in Stance commands:",
+        "",
+    ]
+    for label, axis in axes:
+        docs = persona_docs_map(axis)
+        if not docs:
+            continue
+        tokens = ", ".join(sorted(docs.keys()))
+        if not tokens:
+            continue
+        lines.append(f"{label} tokens:")
+        lines.append(f"- {tokens}")
+        lines.append("")
+
+    # Provide a few concrete stance examples that use only valid axis tokens.
+    lines.append("Examples of valid stance commands:")
+    lines.append(
+        "- Stance: model write as teacher to junior engineer kindly for teaching"
+    )
+    lines.append("- Stance: model write as programmer to CEO directly for deciding")
+    lines.append("- Stance: model write as programmer to programmer for information")
     return "\n".join(lines).rstrip()
 
 
@@ -934,13 +968,17 @@ class UserActions:
             prev_dest_kind = ""
 
         axis_docs = _build_axis_docs()
+        persona_intent_docs = _build_persona_intent_docs()
         static_prompt_docs = _build_static_prompt_docs()
         prompt_subject = subject.strip() if subject else "unspecified"
         user_text = (
             "You are a prompt recipe assistant for the Talon `model` command.\n"
             "Based on the subject and content below, suggest 3–5 concrete prompt recipes.\n\n"
-            "For each recipe, output exactly one line in this format:\n"
+            "For each recipe, output exactly one line using this base shape:\n"
             "Name: <short human-friendly name> | Recipe: <staticPrompt> · <completeness> · <scopeTokens> · <methodTokens> · <styleTokens> · <directional>\n\n"
+            "When a different persona/intent stance would materially change how the model should respond, you SHOULD include stance/why segments for that suggestion. Across your 3–5 recipes, include clear Stance/Why segments for at least two suggestions.\n"
+            "Append them on the same line, for example:\n"
+            " | Stance: model write <voice/audience/tone/purpose tokens> for <purpose> | Why: <short reason this stance + contract fit the subject>\n\n"
             "Where:\n"
             "- <staticPrompt> is exactly one static prompt token (do not include multiple static prompts or combine them).\n"
             "- <completeness> and <directional> are single axis tokens.\n"
@@ -948,12 +986,16 @@ class UserActions:
             "- <scopeTokens>, <methodTokens>, and <styleTokens> are zero or more space-separated axis tokens for that axis (respecting small caps: scope ≤ 2 tokens, method ≤ 3 tokens, style ≤ 3 tokens).\n"
             "Examples of multi-tag fields: scopeTokens='actions edges', methodTokens='structure flow', styleTokens='jira story'.\n\n"
             "Important formatting rules (strict):\n"
-            "- Output only these recipe lines; do not include explanations, bullets, or any other text.\n"
-            "- Always include the literal labels 'Name:' and 'Recipe:' exactly as shown.\n"
+            "- Output only these recipe lines; do not include extra commentary, bullets, or any other text.\n"
+            "- Always include the literal labels 'Name:' and 'Recipe:' exactly as shown; when you add stance/why, use the literal labels 'Stance:' and 'Why:' exactly as shown.\n"
+            "- Keep everything for a suggestion on a single line separated by ' | ' segments; do not wrap a single suggestion across multiple lines.\n"
+            "- Never invent new axis tokens: always choose from the provided axis lists (for example, use the method token 'analysis' rather than a new token like 'analyze').\n"
             "- Do not reorder or rename fields, and do not add extra separators.\n\n"
             "Use only tokens from the following sets where possible.\n"
-            "Axis semantics and available tokens:\n"
+            "Axis semantics and available tokens (How the model responds):\n"
             f"{axis_docs}\n\n"
+            "Persona/Intent stance tokens and examples for Stance commands (Who/Why):\n"
+            f"{persona_intent_docs}\n\n"
             "Static prompts and their semantics:\n"
             f"{static_prompt_docs}\n\n"
             f"Subject: {prompt_subject}\n\n"
@@ -1019,15 +1061,18 @@ class UserActions:
         # Attempt to parse the result text into structured suggestions so
         # future loops (for example, a suggestions GUI) can reuse them
         # without re-calling the model.
+        # Attempt to parse the result text into structured suggestions so
+        # future loops (for example, a suggestions GUI) can reuse them
+        # without re-calling the model.
         suggestions: list[dict[str, str]] = []
         for raw_line in result.text.splitlines():
             line = raw_line.strip()
             if not line or "|" not in line:
                 continue
-            try:
-                name_part, recipe_part = line.split("|", 1)
-            except ValueError:
+            segments = [seg.strip() for seg in line.split("|") if seg.strip()]
+            if len(segments) < 2:
                 continue
+            name_part = segments[0]
             # Allow both "Name: <label>" and bare labels before the pipe.
             if "Name:" in name_part:
                 _, name_value = name_part.split("Name:", 1)
@@ -1037,21 +1082,33 @@ class UserActions:
             if not name:
                 continue
 
-            # Prefer an explicit "Recipe:" label when present, but tolerate
-            # legacy lines that omit it and contain only the recipe tokens.
-            if "Recipe:" in recipe_part:
-                _, recipe_value = recipe_part.split("Recipe:", 1)
-            else:
-                candidate = recipe_part.strip()
+            # Prefer an explicit "Recipe:" label segment when present.
+            recipe_value = ""
+            for seg in segments[1:]:
+                if "Recipe:" in seg:
+                    _, recipe_part = seg.split("Recipe:", 1)
+                    recipe_value = recipe_part.strip()
+                    break
+            if not recipe_value:
+                candidate = segments[1] if len(segments) > 1 else ""
+                candidate = candidate.strip()
                 # Heuristic guard: only treat the segment as a recipe when it
                 # contains at least one "·" separator to avoid picking up
                 # arbitrary commentary.
-                if "·" not in candidate:
-                    continue
-                recipe_value = candidate
-            recipe_value = recipe_value.strip()
+                if "·" in candidate:
+                    recipe_value = candidate
             if not recipe_value:
                 continue
+
+            stance_command = ""
+            why_text = ""
+            for seg in segments[1:]:
+                if "Stance:" in seg:
+                    _, stance_part = seg.split("Stance:", 1)
+                    stance_command = stance_part.strip()
+                elif "Why:" in seg:
+                    _, why_part = seg.split("Why:", 1)
+                    why_text = why_part.strip()
 
             # Enforce a single static prompt token by collapsing any
             # space-delimited static prompt segment to its first token.
@@ -1071,7 +1128,12 @@ class UserActions:
                 continue
             recipe_tokens[-1] = directional
             recipe = " · ".join(recipe_tokens)
-            suggestions.append({"name": name, "recipe": recipe})
+            entry: dict[str, str] = {"name": name, "recipe": recipe}
+            if stance_command:
+                entry["stance_command"] = stance_command
+            if why_text:
+                entry["why"] = why_text
+            suggestions.append(entry)
 
         if suggestions:
             record_suggestions(suggestions, suggest_source_key)

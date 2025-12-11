@@ -344,6 +344,41 @@ if bootstrap is not None:
                     ],
                 )
 
+        def test_gpt_suggest_prompt_recipes_parses_stance_and_why(self):
+            with (
+                patch.object(gpt_module, "PromptSession") as session_cls,
+                patch.object(gpt_module, "create_model_source") as create_source,
+            ):
+                source = MagicMock()
+                source.get_text.return_value = "content"
+                create_source.return_value = source
+                mock_session = session_cls.return_value
+                mock_session._destination = "paste"
+
+                handle = self.pipeline.complete_async.return_value
+                handle.wait = MagicMock(return_value=True)
+                handle.result = PromptResult.from_messages(
+                    [
+                        format_message(
+                            "Name: Teach junior dev | Recipe: describe · gist · focus · scaffold · plain · fog | Stance: model write as teacher to junior engineer kindly for teaching | Why: Kind, stepwise explanation for less-experienced devs"
+                        )
+                    ]
+                )
+
+                gpt_module.UserActions.gpt_suggest_prompt_recipes("subject")
+
+                self.assertEqual(
+                    GPTState.last_suggested_recipes,
+                    [
+                        {
+                            "name": "Teach junior dev",
+                            "recipe": "describe · gist · focus · scaffold · plain · fog",
+                            "stance_command": "model write as teacher to junior engineer kindly for teaching",
+                            "why": "Kind, stepwise explanation for less-experienced devs",
+                        }
+                    ],
+                )
+
         def test_gpt_suggest_prompt_recipes_accepts_label_without_name_prefix(self):
             with (
                 patch.object(gpt_module, "PromptSession") as session_cls,

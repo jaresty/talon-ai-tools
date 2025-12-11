@@ -11,6 +11,7 @@ from .modelSource import create_model_source
 from .talonSettings import ApplyPromptConfiguration, modelPrompt
 from .modelState import GPTState
 from .axisMappings import axis_docs_map
+from .personaConfig import PERSONA_PRESETS, INTENT_PRESETS
 
 mod = Module()
 ctx = Context()
@@ -795,7 +796,44 @@ def _draw_pattern_canvas(c: canvas.Canvas) -> None:  # pragma: no cover - visual
     draw_text(title, x, y)
     y += line_h
     draw_text("Tip: Say 'close patterns' to close this menu.", x, y)
-    y += line_h * 2
+    y += line_h
+
+    # Surface a small Who / Why section so users can see how patterns relate
+    # to Persona (Who) and Intent (Why) presets from ADR 040.
+    draw_text("Who / Why presets (ADR 040):", x, y)
+    y += line_h
+
+    try:
+        if PERSONA_PRESETS:
+            draw_text("  Persona (Who):", x, y)
+            y += line_h
+            for preset in PERSONA_PRESETS[:3]:
+                pieces: list[str] = []
+                if preset.voice:
+                    pieces.append(preset.voice)
+                if preset.audience:
+                    pieces.append(preset.audience)
+                if preset.tone:
+                    pieces.append(preset.tone)
+                axes = " · ".join(pieces)
+                draw_text(f"    {preset.label}: {axes}", x, y)
+                y += line_h
+    except Exception:
+        # If persona presets are unavailable for any reason, continue without them.
+        pass
+
+    try:
+        if INTENT_PRESETS:
+            draw_text("  Intent (Why):", x, y)
+            y += line_h
+            for preset in INTENT_PRESETS[:4]:
+                draw_text(f"    {preset.label}: {preset.purpose}", x, y)
+                y += line_h
+    except Exception:
+        # If intent presets are unavailable, continue without them.
+        pass
+
+    y += line_h
 
     # Scrolling list of patterns for the current domain.
     patterns = [p for p in PATTERNS if p.domain == domain]

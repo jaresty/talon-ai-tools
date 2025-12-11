@@ -62,7 +62,9 @@ if bootstrap is not None:
                 self.assertEqual(style, "plain")
                 self.assertEqual(directional, "rog")
 
-            def test_model_pattern_run_name_dispatches_and_updates_last_recipe(self) -> None:
+            def test_model_pattern_run_name_dispatches_and_updates_last_recipe(
+                self,
+            ) -> None:
                 """Ensure pattern selection flows through to GPTState.last_recipe."""
                 target = next(p for p in PATTERNS if p.name == "Debug bug")
 
@@ -88,8 +90,18 @@ if bootstrap is not None:
                 self.assertEqual(GPTState.last_style, "")
                 self.assertEqual(GPTState.last_directional, "rog")
 
+            def test_model_pattern_save_source_delegates_to_confirmation_helper(
+                self,
+            ) -> None:
+                actions.user.confirmation_gui_save_to_file = MagicMock()
+
+                UserActions.model_pattern_save_source_to_file()
+
+                actions.user.confirmation_gui_save_to_file.assert_called_once_with()
+
             def test_pattern_with_style_token_sets_style_axis(self) -> None:
                 """Patterns that include a style token should set last_style."""
+
                 target = next(p for p in PATTERNS if p.name == "Sketch diagram")
 
                 UserActions.model_pattern_run_name(target.name)
@@ -261,7 +273,9 @@ if bootstrap is not None:
                 self.assertEqual(style, "plain")
                 self.assertEqual(directional, "fog")
 
-            def test_liberating_facilitation_pattern_uses_liberating_method(self) -> None:
+            def test_liberating_facilitation_pattern_uses_liberating_method(
+                self,
+            ) -> None:
                 """Liberating facilitation pattern should use liberating method."""
                 pattern = next(
                     p for p in PATTERNS if p.name == "Liberating facilitation"
@@ -463,6 +477,7 @@ if bootstrap is not None:
 
     except ImportError:
         if not TYPE_CHECKING:
+
             class ModelPatternGUITests(unittest.TestCase):
                 @unittest.skip("modelPatternGUI unavailable in this Talon runtime")
                 def test_placeholder(self) -> None:
@@ -470,6 +485,7 @@ if bootstrap is not None:
 
 else:
     if not TYPE_CHECKING:
+
         class ModelPatternGUITests(unittest.TestCase):
             @unittest.skip("Test harness unavailable outside unittest runs")
             def test_placeholder(self) -> None:

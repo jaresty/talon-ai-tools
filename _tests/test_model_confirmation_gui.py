@@ -126,6 +126,31 @@ if bootstrap is not None:
             labels = [call[0] for call in actions.user.calls]
             self.assertIn("help_hub_open", labels)
 
+        def test_save_to_file_button_triggers_action(self) -> None:
+            GPTState.text_to_confirm = "Body"
+            GPTState.last_recipe = "describe"
+
+            gui_fn = confirmation_gui.__wrapped__  # type: ignore[attr-defined]
+
+            class _StubGUI:
+                def text(self, value: str) -> None:
+                    pass
+
+                def line(self) -> None:
+                    pass
+
+                def spacer(self) -> None:
+                    pass
+
+                def button(self, label: str, *_args, **_kwargs) -> bool:
+                    # Simulate clicking More actions and then Save to file.
+                    return label in ("More actions…", "Save to file")
+
+            gui_fn(_StubGUI())  # type: ignore[arg-type]
+
+            labels = [call[0] for call in actions.user.calls]
+            self.assertIn("confirmation_gui_save_to_file", labels)
+
         def test_confirmation_close_dismisses_response_canvas(self) -> None:
             GPTState.text_to_confirm = "Body"
             actions.user.calls.clear()
@@ -141,13 +166,17 @@ if bootstrap is not None:
             actions.user.pasted.clear()
 
             orig_close = actions.user.confirmation_gui_close
-            orig_canvas_close = getattr(actions.user, "model_response_canvas_close", None)
+            orig_canvas_close = getattr(
+                actions.user, "model_response_canvas_close", None
+            )
 
             def _record_canvas_close():
                 actions.user.calls.append(("model_response_canvas_close", tuple(), {}))
 
             try:
-                actions.user.confirmation_gui_close = ConfirmationActions.confirmation_gui_close  # type: ignore[attr-defined]
+                actions.user.confirmation_gui_close = (
+                    ConfirmationActions.confirmation_gui_close
+                )  # type: ignore[attr-defined]
                 actions.user.model_response_canvas_close = _record_canvas_close  # type: ignore[attr-defined]
                 ConfirmationActions.confirmation_gui_paste()
             finally:
@@ -168,6 +197,7 @@ if bootstrap is not None:
 
 else:
     if not TYPE_CHECKING:
+
         class ConfirmationGUIMetaTests(unittest.TestCase):
             @unittest.skip("Test harness unavailable outside unittest runs")
             def test_placeholder(self) -> None:

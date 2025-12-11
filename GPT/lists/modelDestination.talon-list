@@ -39,6 +39,9 @@ to after clip: appendClipboard
 # Open the result in the browser
 to browser: browser
 
+# Save the result to a markdown file
+to file: file
+
 # Speak the result with TTS
 to speech: textToSpeech
 

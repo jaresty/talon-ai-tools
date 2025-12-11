@@ -113,8 +113,12 @@ if "samples" in _METHOD_VALUE_TO_KEY:
     _METHOD_VALUE_TO_KEY.setdefault(
         "approximately sum to 1; avoid near duplicate options.", "samples"
     )
-    _METHOD_VALUE_TO_KEY.setdefault("sum to 1; avoid near-duplicate options.", "samples")
-    _METHOD_VALUE_TO_KEY.setdefault("sum to 1; avoid near duplicate options.", "samples")
+    _METHOD_VALUE_TO_KEY.setdefault(
+        "sum to 1; avoid near-duplicate options.", "samples"
+    )
+    _METHOD_VALUE_TO_KEY.setdefault(
+        "sum to 1; avoid near duplicate options.", "samples"
+    )
     _METHOD_VALUE_TO_KEY.setdefault("sum to 1", "samples")
     _METHOD_VALUE_TO_KEY.setdefault("approximately sum to 1", "samples")
 
@@ -296,7 +300,9 @@ def _resolve_axis_for_token(
     return None, None
 
 
-def _apply_constraint_hierarchy(axis_values: AxisValues) -> tuple[AxisValues, AxisValues]:
+def _apply_constraint_hierarchy(
+    axis_values: AxisValues,
+) -> tuple[AxisValues, AxisValues]:
     """Reassign and normalise axis tokens using the completeness>method>scope>style hierarchy.
 
     Returns a pair: (resolved_axes_preserving_order, canonical_axes) where:
@@ -311,7 +317,9 @@ def _apply_constraint_hierarchy(axis_values: AxisValues) -> tuple[AxisValues, Ax
             if target_axis and mapped:
                 buckets[target_axis].append(mapped)
 
-    completeness_tokens = [axis_values["completeness"]] if axis_values.get("completeness") else []
+    completeness_tokens = (
+        [axis_values["completeness"]] if axis_values.get("completeness") else []
+    )
     _ingest(completeness_tokens, "completeness")
     _ingest(axis_values.get("method", []), "method")
     _ingest(axis_values.get("scope", []), "scope")
@@ -344,7 +352,9 @@ def _apply_constraint_hierarchy(axis_values: AxisValues) -> tuple[AxisValues, Ax
     canonical_method = _canonicalise_axis_tokens("method", buckets["method"])
     canonical_style = _canonicalise_axis_tokens("style", buckets["style"])
 
-    completeness_value = buckets["completeness"][-1] if buckets["completeness"] else None
+    completeness_value = (
+        buckets["completeness"][-1] if buckets["completeness"] else None
+    )
 
     resolved: AxisValues = {
         "completeness": completeness_value,
@@ -576,14 +586,18 @@ def modelPrompt(m) -> str:
         effective_style_raw = settings.get("user.model_default_style")
 
     # Map all axes to token-based storage, keeping a canonical form for recap/rerun.
-    raw_completeness_tokens = _map_axis_tokens("completeness", _tokens_list(effective_completeness_raw))
+    raw_completeness_tokens = _map_axis_tokens(
+        "completeness", _tokens_list(effective_completeness_raw)
+    )
     raw_scope_tokens = _map_axis_tokens("scope", _tokens_list(effective_scope_raw))
     raw_method_tokens = _map_axis_tokens("method", _tokens_list(effective_method_raw))
     raw_style_tokens = _map_axis_tokens("style", _tokens_list(effective_style_raw))
 
     resolved_axes, canonical_axes = _apply_constraint_hierarchy(
         {
-            "completeness": raw_completeness_tokens[0] if raw_completeness_tokens else None,
+            "completeness": raw_completeness_tokens[0]
+            if raw_completeness_tokens
+            else None,
             "scope": raw_scope_tokens,
             "method": raw_method_tokens,
             "style": raw_style_tokens,
@@ -597,9 +611,7 @@ def modelPrompt(m) -> str:
     completeness_tokens = [completeness_token] if completeness_token else []
 
     scope_tokens = resolved_axes.get("scope", [])
-    scope_canonical_serialised = _axis_tokens_to_string(
-        canonical_axes.get("scope", [])
-    )
+    scope_canonical_serialised = _axis_tokens_to_string(canonical_axes.get("scope", []))
 
     method_tokens = resolved_axes.get("method", [])
     method_canonical_serialised = _axis_tokens_to_string(
@@ -607,9 +619,7 @@ def modelPrompt(m) -> str:
     )
 
     style_tokens = resolved_axes.get("style", [])
-    style_canonical_serialised = _axis_tokens_to_string(
-        canonical_axes.get("style", [])
-    )
+    style_canonical_serialised = _axis_tokens_to_string(canonical_axes.get("style", []))
 
     scope_serialised = _axis_tokens_to_string(scope_tokens)
     method_serialised = _axis_tokens_to_string(method_tokens)
@@ -651,7 +661,9 @@ def modelPrompt(m) -> str:
     # recap/quick help and shorthand grammars can include it.
     GPTState.last_directional = _axis_recipe_token("directional", directional or "")
 
-    completeness_from_cross_axis = bool(completeness_token and not raw_completeness_tokens)
+    completeness_from_cross_axis = bool(
+        completeness_token and not raw_completeness_tokens
+    )
     scope_from_cross_axis = bool(scope_tokens and not raw_scope_tokens)
     method_from_cross_axis = bool(method_tokens and not raw_method_tokens)
     style_from_cross_axis = bool(style_tokens and not raw_style_tokens)
@@ -673,9 +685,13 @@ def modelPrompt(m) -> str:
 
     # Completeness: show spoken or profile-level hints (hydrate for readability).
     if completeness_tokens and (spoken_completeness or completeness_from_cross_axis):
-        constraints.append(f"  Completeness: {_hydrate('completeness', completeness_tokens)}")
+        constraints.append(
+            f"  Completeness: {_hydrate('completeness', completeness_tokens)}"
+        )
     elif profile_completeness and not GPTState.user_overrode_completeness:
-        prof_tokens = _map_axis_tokens("completeness", _tokens_list(profile_completeness))
+        prof_tokens = _map_axis_tokens(
+            "completeness", _tokens_list(profile_completeness)
+        )
         constraints.append(f"  Completeness: {_hydrate('completeness', prof_tokens)}")
 
     # Scope: purely conceptual, relative to the voice-selected target.
@@ -722,6 +738,7 @@ def pleasePrompt(m) -> str:
 
 @mod.capture(rule="{user.modelDestination} | <user.modelDestinationStack>")
 def modelDestination(m) -> ModelDestination:
+    print(f"modelDestination capture: {m}")
     if hasattr(m, "modelDestinationStack"):
         return m.modelDestinationStack
 
@@ -820,6 +837,7 @@ def applyPromptConfiguration(matched_prompt) -> ApplyPromptConfiguration:
     rule="(<user.modelSimpleSource> | <user.modelDestination> | <user.modelSimpleSource> <user.modelDestination>)$"
 )
 def passConfiguration(matched_prompt) -> PassConfiguration:
+    print(f"passConfiguration capture: {matched_prompt}")
     return PassConfiguration(
         getattr(
             matched_prompt,
@@ -952,6 +970,17 @@ mod.setting(
     type=int,
     default=200,
     desc="The default window width (in characters) for showing model output",
+)
+
+mod.setting(
+    "model_source_save_directory",
+    type=str,
+    default="",
+    desc=(
+        "Optional directory where 'model source save file' and 'model history save source' "
+        "write markdown files. When empty, Talon defaults to a 'talon-ai-model-sources' "
+        "folder under the Talon user directory."
+    ),
 )
 
 mod.setting(

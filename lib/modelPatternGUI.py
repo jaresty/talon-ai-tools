@@ -435,8 +435,8 @@ def _ensure_pattern_canvas() -> canvas.Canvas:
             gpos = getattr(evt, "gpos", None) or pos
             _debug(
                 f"pattern canvas mouse evt={event_type} button={button} "
-                f"pos=({getattr(pos,'x',None)},{getattr(pos,'y',None)}) "
-                f"gpos=({getattr(gpos,'x',None)},{getattr(gpos,'y',None)}) "
+                f"pos=({getattr(pos, 'x', None)},{getattr(pos, 'y', None)}) "
+                f"gpos=({getattr(gpos, 'x', None)},{getattr(gpos, 'y', None)}) "
                 f"drag_offset={_pattern_drag_offset}"
             )
 
@@ -452,7 +452,10 @@ def _ensure_pattern_canvas() -> canvas.Canvas:
 
             # Track hover state for the close hotspot and any button bounds so
             # the renderer can provide visual feedback as the mouse moves.
-            if event_type in ("mousemove", "mouse_move") and _pattern_drag_offset is None:
+            if (
+                event_type in ("mousemove", "mouse_move")
+                and _pattern_drag_offset is None
+            ):
                 _pattern_hover_close = (
                     0 <= local_y <= header_height
                     and rect.width - hotspot_width <= local_x <= rect.width
@@ -502,11 +505,16 @@ def _ensure_pattern_canvas() -> canvas.Canvas:
                 _pattern_drag_offset = None
                 return
 
-            if event_type in ("mousemove", "mouse_move") and _pattern_drag_offset is not None:
+            if (
+                event_type in ("mousemove", "mouse_move")
+                and _pattern_drag_offset is not None
+            ):
                 dx, dy = _pattern_drag_offset
                 new_x = gpos.x - dx
                 new_y = gpos.y - dy
-                _debug(f"pattern drag move new=({new_x},{new_y}) from gpos=({gpos.x},{gpos.y}) offset={_pattern_drag_offset}")
+                _debug(
+                    f"pattern drag move new=({new_x},{new_y}) from gpos=({gpos.x},{gpos.y}) offset={_pattern_drag_offset}"
+                )
                 try:
                     _pattern_canvas.move(new_x, new_y)
                 except Exception:
@@ -528,7 +536,9 @@ def _ensure_pattern_canvas() -> canvas.Canvas:
                     body_top = rect.y + 60 + line_h * 4
                     body_bottom = rect.y + rect.height - (line_h // 2)
                     visible_height = max(body_bottom - body_top, row_height)
-                    patterns = [p for p in PATTERNS if p.domain == PatternGUIState.domain]
+                    patterns = [
+                        p for p in PATTERNS if p.domain == PatternGUIState.domain
+                    ]
                     if patterns:
                         # Use a ceiling-based visible_rows so that we do not
                         # allow one extra scroll "page" that would leave a
@@ -594,9 +604,7 @@ def _ensure_pattern_canvas() -> canvas.Canvas:
             patterns = [p for p in PATTERNS if p.domain == PatternGUIState.domain]
             if not patterns:
                 return
-            visible_rows = max(
-                int((visible_height + row_height - 1) // row_height), 1
-            )
+            visible_rows = max(int((visible_height + row_height - 1) // row_height), 1)
             max_offset = max(len(patterns) - visible_rows, 0)
             # raw < 0 (scroll down) → next rows, raw > 0 → previous rows.
             step = -1 if raw > 0 else 1
@@ -742,7 +750,11 @@ def _draw_pattern_canvas(c: canvas.Canvas) -> None:  # pragma: no cover - visual
             x + len(label) * approx_char,
             y + line_h,
         )
-        if _pattern_hover_key == "domain_coding" and rect is not None and paint is not None:
+        if (
+            _pattern_hover_key == "domain_coding"
+            and rect is not None
+            and paint is not None
+        ):
             try:
                 underline_rect = Rect(x, y + 4, len(label) * approx_char, 1)
                 c.draw_rect(underline_rect)
@@ -758,7 +770,11 @@ def _draw_pattern_canvas(c: canvas.Canvas) -> None:  # pragma: no cover - visual
             x + len(label) * approx_char,
             y + line_h,
         )
-        if _pattern_hover_key == "domain_writing" and rect is not None and paint is not None:
+        if (
+            _pattern_hover_key == "domain_writing"
+            and rect is not None
+            and paint is not None
+        ):
             try:
                 underline_rect = Rect(x, y + 4, len(label) * approx_char, 1)
                 c.draw_rect(underline_rect)
@@ -773,7 +789,9 @@ def _draw_pattern_canvas(c: canvas.Canvas) -> None:  # pragma: no cover - visual
         return
 
     # Domain-specific patterns.
-    title = "Coding patterns" if domain == "coding" else "Writing / product / reflection"
+    title = (
+        "Coding patterns" if domain == "coding" else "Writing / product / reflection"
+    )
     draw_text(title, x, y)
     y += line_h
     draw_text("Tip: Say 'close patterns' to close this menu.", x, y)
@@ -793,9 +811,7 @@ def _draw_pattern_canvas(c: canvas.Canvas) -> None:  # pragma: no cover - visual
     if patterns:
         # Use a ceiling-based visible_rows so that we do not allow one extra
         # scroll "page" that would leave a mostly-empty gap at the bottom.
-        visible_rows = max(
-            int((visible_height + row_height - 1) // row_height), 1
-        )
+        visible_rows = max(int((visible_height + row_height - 1) // row_height), 1)
         max_offset = max(len(patterns) - visible_rows, 0)
     else:
         visible_rows = 0
@@ -848,9 +864,7 @@ def _draw_pattern_canvas(c: canvas.Canvas) -> None:  # pragma: no cover - visual
             c.draw_rect(Rect(track_x, track_y, 6, track_height))
             thumb_height = max(
                 int(
-                    visible_height
-                    * visible_height
-                    / (row_height * len(patterns) or 1)
+                    visible_height * visible_height / (row_height * len(patterns) or 1)
                 ),
                 20,
             )
@@ -1060,3 +1074,12 @@ class UserActions:
             if pattern.name.lower() == pattern_name.lower():
                 _run_pattern(pattern)
                 break
+
+    def model_pattern_save_source_to_file():
+        """Save the most recent model response to a file via the confirmation GUI helper."""
+        try:
+            actions.user.confirmation_gui_save_to_file()
+        except Exception:
+            from .modelHelpers import notify
+
+            notify("GPT: Could not save response to file from pattern menu")

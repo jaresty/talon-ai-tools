@@ -1,4 +1,8 @@
-from talon import Module, actions, app
+import datetime
+import os
+import re
+
+from talon import Module, actions, app, settings
 
 from .modelConfirmationGUI import ConfirmationGUIState
 from .modelHelpers import notify
@@ -43,6 +47,34 @@ def history_axes_for(axes: dict[str, list[str]]) -> dict[str, list[str]]:
 from collections.abc import Sequence
 
 
+def _slugify_label(value: str) -> str:
+    """Create a filesystem-friendly slug from a label."""
+    value = (value or "").strip().lower().replace(" ", "-")
+    value = re.sub(r"[^a-z0-9._-]+", "", value)
+    return value or "history"
+
+
+def _model_source_save_dir() -> str:
+    """Return the base directory for saved history/model sources.
+
+    Shares the same setting key as the GPT helpers so users have a single
+    place to configure where source files are written.
+    """
+    try:
+        base = settings.get("user.model_source_save_directory")
+        if isinstance(base, str) and base.strip():
+            return os.path.expanduser(base)
+    except Exception:
+        pass
+
+    try:
+        current_dir = os.path.dirname(__file__)
+        user_root = os.path.dirname(os.path.dirname(current_dir))
+        return os.path.join(user_root, "talon-ai-model-sources")
+    except Exception:
+        return os.path.join(os.path.dirname(__file__), "talon-ai-model-sources")
+
+
 def history_summary_lines(entries: Sequence[object]) -> list[str]:
     """Pure helper: format recent history entries into summary lines.
 
@@ -67,6 +99,76 @@ def history_summary_lines(entries: Sequence[object]) -> list[str]:
         payload = " · ".join(parts) if parts else prompt_snippet
         lines.append(f"{idx}: {label} | {payload}")
     return lines
+
+
+def _save_history_prompt_to_file(entry) -> None:
+    """Save the given history entry's prompt to a markdown file.
+
+    Uses the shared `user.model_source_save_directory` setting and a
+    timestamped/slugged filename so history-driven saves align with other
+    source saves.
+    """
+    if entry is None:
+        notify("GPT: No request history available to save")
+        return
+
+    prompt = (getattr(entry, "prompt", "") or "").strip()
+    if not prompt:
+        notify("GPT: No source content available to save for this history entry")
+        return
+
+    base_dir = _model_source_save_dir()
+    try:
+        os.makedirs(base_dir, exist_ok=True)
+    except Exception as exc:
+        notify(f"GPT: Could not create source directory: {exc}")
+        return
+
+    now = datetime.datetime.utcnow()
+    timestamp = now.strftime("%Y-%m-%dT%H-%M-%SZ")
+
+    slug_parts: list[str] = ["history"]
+    request_id = getattr(entry, "request_id", "") or ""
+    if request_id:
+        slug_parts.append(_slugify_label(str(request_id)))
+    recipe = (getattr(entry, "recipe", "") or "").strip()
+    if recipe:
+        # Use the first token of the recipe as an additional hint.
+        slug_parts.append(_slugify_label(recipe.split(" · ", 1)[0]))
+
+    filename = timestamp
+    if slug_parts:
+        filename += "-" + "-".join(slug_parts)
+    filename += ".md"
+    path = os.path.join(base_dir, filename)
+
+    header_lines: list[str] = [
+        f"saved_at: {now.isoformat()}Z",
+        "source_type: history",
+    ]
+    if request_id:
+        header_lines.append(f"request_id: {request_id}")
+    if recipe:
+        header_lines.append(f"recipe: {recipe}")
+    axes = getattr(entry, "axes", {}) or {}
+    for axis in ("completeness", "scope", "method", "style"):
+        tokens = axes.get(axis) or []
+        if isinstance(tokens, list) and tokens:
+            joined = " ".join(str(t) for t in tokens if str(t).strip())
+            if joined:
+                header_lines.append(f"{axis}_tokens: {joined}")
+
+    body = "# Source\n" + prompt
+    content = "\n".join(header_lines) + "\n---\n\n" + body
+
+    try:
+        with open(path, "w", encoding="utf-8") as f:
+            f.write(content)
+    except Exception as exc:
+        notify(f"GPT: Failed to save history source file: {exc}")
+        return
+
+    notify(f"GPT: Saved history source to {path}")
 
 
 def _show_entry(entry) -> None:
@@ -209,3 +311,8 @@ class UserActions:
         lines = history_summary_lines(entries)
         message = "Recent model requests:\n" + "\n".join(lines)
         notify(message)
+
+    def gpt_request_history_save_latest_source():
+        """Save the latest request's source prompt to a markdown file."""
+        entry = latest()
+        _save_history_prompt_to_file(entry)

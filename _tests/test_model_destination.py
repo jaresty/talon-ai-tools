@@ -14,7 +14,10 @@ if bootstrap is not None:
     from talon_user.lib.modelDestination import ModelDestination
     from talon_user.lib import modelDestination as model_destination_module
     from talon_user.lib.modelHelpers import format_message
-    from talon_user.lib.modelPresentation import ResponsePresentation, render_for_destination
+    from talon_user.lib.modelPresentation import (
+        ResponsePresentation,
+        render_for_destination,
+    )
     from talon_user.lib.promptPipeline import PromptResult
     from talon_user.lib.modelState import GPTState
 
@@ -41,12 +44,16 @@ if bootstrap is not None:
 
             # The browser destination should prepend a Recipe line, a speakable
             # grammar line, and a tip that references the static prompt.
-            paragraph_texts = [call.args[0] for call in builder_instance.p.call_args_list]
+            paragraph_texts = [
+                call.args[0] for call in builder_instance.p.call_args_list
+            ]
 
             self.assertIn(
                 "Recipe: describe · full · focus · plain · fog", paragraph_texts
             )
-            self.assertIn("Say: model run describe full focus plain fog", paragraph_texts)
+            self.assertIn(
+                "Say: model run describe full focus plain fog", paragraph_texts
+            )
             self.assertTrue(
                 any("model show grammar" in text for text in paragraph_texts),
                 "Expected a tip mentioning 'model show grammar'",
@@ -76,11 +83,16 @@ if bootstrap is not None:
             browser.insert(result)
 
             # Collect all paragraph calls after Browser.insert.
-            paragraph_texts = [call.args[0] for call in builder_instance.p.call_args_list]
+            paragraph_texts = [
+                call.args[0] for call in builder_instance.p.call_args_list
+            ]
 
             # We expect a dedicated Model interpretation section header and the
             # meta content rendered separately from the main body.
-            self.assertIn("Model interpretation", [call.args[0] for call in builder_instance.h2.call_args_list])
+            self.assertIn(
+                "Model interpretation",
+                [call.args[0] for call in builder_instance.h2.call_args_list],
+            )
             self.assertTrue(
                 any("Meta details" in text for text in paragraph_texts),
                 "Expected browser view to include meta interpretation text",
@@ -94,9 +106,10 @@ if bootstrap is not None:
 
         @patch.object(model_destination_module, "Browser")
         def test_insert_uses_response_presentation(self, browser_cls):
-            with patch.object(actions.user, "confirmation_gui_append") as gui_append, patch.object(
-                actions.user, "paste"
-            ) as paste_action:
+            with (
+                patch.object(actions.user, "confirmation_gui_append") as gui_append,
+                patch.object(actions.user, "paste") as paste_action,
+            ):
                 result = PromptResult.from_messages([format_message("answer")])
 
                 ModelDestination().insert(result)
@@ -164,13 +177,48 @@ if bootstrap is not None:
 
             presentation = render_for_destination(messages, "paste")
 
-            self.assertEqual(presentation.display_text.strip(), messages[0]["text"].strip())
-            self.assertEqual(presentation.paste_text.strip(), messages[0]["text"].strip())
+            self.assertEqual(
+                presentation.display_text.strip(), messages[0]["text"].strip()
+            )
+            self.assertEqual(
+                presentation.paste_text.strip(), messages[0]["text"].strip()
+            )
             # meta_text should remain populated so other surfaces can render it separately.
-            self.assertEqual(presentation.meta_text.strip(), messages[0]["text"].strip())
+            self.assertEqual(
+                presentation.meta_text.strip(), messages[0]["text"].strip()
+            )
+
+        def test_file_destination_writes_markdown_with_response(self):
+            from talon import settings as talon_settings  # type: ignore
+            import os
+            import tempfile
+
+            tmpdir = tempfile.mkdtemp()
+            talon_settings.set("user.model_source_save_directory", tmpdir)
+
+            GPTState.reset_all()
+            GPTState.last_recipe = "describe · full · focus · plain"
+            GPTState.last_directional = "fog"
+            GPTState.last_static_prompt = "describe"
+
+            result = PromptResult.from_messages([format_message("answer body")])
+
+            before = set(os.listdir(tmpdir))
+            dest = model_destination_module.File()
+            dest.insert(result)
+            after = set(os.listdir(tmpdir))
+            new_files = list(after - before)
+            self.assertEqual(len(new_files), 1, new_files)
+            path = os.path.join(tmpdir, new_files[0])
+            with open(path, "r", encoding="utf-8") as f:
+                content = f.read()
+            self.assertIn("# Response", content)
+            self.assertIn("answer body", content)
+
 
 else:
     if not TYPE_CHECKING:
+
         class ModelDestinationTests(unittest.TestCase):
             @unittest.skip("Test harness unavailable outside unittest runs")
             def test_placeholder(self):

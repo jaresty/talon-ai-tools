@@ -1,3 +1,5 @@
+import os
+import tempfile
 import unittest
 from typing import TYPE_CHECKING
 
@@ -279,6 +281,44 @@ if bootstrap is not None:
             self.assertEqual(
                 lines, ["0: rid-1 (7ms) | infer · full · rigor · prompt one"]
             )
+
+        def test_history_save_latest_source_writes_markdown_with_prompt(self):
+            tmpdir = tempfile.mkdtemp()
+            from talon import settings as talon_settings  # type: ignore
+
+            talon_settings.set("user.model_source_save_directory", tmpdir)
+
+            append_entry(
+                "rid-1",
+                "prompt one",
+                "resp1",
+                "meta1",
+                recipe="infer · full · rigor",
+                duration_ms=7,
+            )
+
+            actions.user.calls.clear()
+            before = set(os.listdir(tmpdir))
+
+            HistoryActions.gpt_request_history_save_latest_source()
+
+            after = set(os.listdir(tmpdir))
+            new_files = list(after - before)
+            self.assertEqual(len(new_files), 1, new_files)
+            path = os.path.join(tmpdir, new_files[0])
+            with open(path, "r", encoding="utf-8") as f:
+                content = f.read()
+            self.assertIn("# Source", content)
+            self.assertIn("prompt one", content)
+
+            notify_calls = [c for c in actions.user.calls if c[0] == "notify"]
+            app_notify_calls = [c for c in actions.app.calls if c[0] == "notify"]
+            self.assertGreaterEqual(
+                len(notify_calls) + len(app_notify_calls),
+                1,
+                "Expected at least one notification about saving history source",
+            )
+
 else:
     if not TYPE_CHECKING:
 

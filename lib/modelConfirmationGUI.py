@@ -62,7 +62,9 @@ def confirmation_gui(gui: imgui.GUI):
     static_prompt = getattr(GPTState, "last_static_prompt", "") or ""
     if static_prompt:
         recipe_parts.append(static_prompt)
-    last_completeness = _axis_join("completeness", getattr(GPTState, "last_completeness", "") or "")
+    last_completeness = _axis_join(
+        "completeness", getattr(GPTState, "last_completeness", "") or ""
+    )
     last_scope = _axis_join("scope", getattr(GPTState, "last_scope", "") or "")
     last_method = _axis_join("method", getattr(GPTState, "last_method", "") or "")
     last_style = _axis_join("style", getattr(GPTState, "last_style", "") or "")
@@ -154,6 +156,10 @@ def confirmation_gui(gui: imgui.GUI):
             actions.user.confirmation_gui_analyze_prompt()
 
         gui.spacer()
+        if gui.button("Save to file"):
+            actions.user.confirmation_gui_save_to_file()
+
+        gui.spacer()
         if gui.button("Show grammar help"):
             actions.user.model_help_canvas_open_for_last_recipe()
 
@@ -211,6 +217,20 @@ class UserActions:
         actions.user.gpt_push_query(GPTState.text_to_confirm)
         GPTState.text_to_confirm = ""
         actions.user.confirmation_gui_close()
+
+    def confirmation_gui_save_to_file():
+        """Save the current confirmation response to a markdown file via the file destination."""
+        from .modelDestination import File
+        from .modelHelpers import format_message
+        from .promptPipeline import PromptResult
+
+        text = (GPTState.text_to_confirm or "").strip()
+        if not text:
+            notify("GPT: No response available to save")
+            return
+
+        result = PromptResult.from_messages([format_message(text)])
+        File().insert(result)
 
     def confirmation_gui_open_browser():
         """Open a browser with the response"""

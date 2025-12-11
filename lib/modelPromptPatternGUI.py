@@ -234,13 +234,19 @@ def _ensure_prompt_pattern_canvas() -> canvas.Canvas:
     def _on_mouse(evt) -> None:  # pragma: no cover - visual only
         """Handle close hotspot, pattern selection, hover, and drag (mirrors response canvas)."""
         try:
-            global _prompt_pattern_hover_close, _prompt_pattern_hover_name, _prompt_pattern_drag_offset, _prompt_pattern_dragging, _mouse_log_count
+            global \
+                _prompt_pattern_hover_close, \
+                _prompt_pattern_hover_name, \
+                _prompt_pattern_drag_offset, \
+                _prompt_pattern_dragging, \
+                _mouse_log_count
             _mouse_log_count = globals().get("_mouse_log_count", 0)
             rect = getattr(_prompt_pattern_canvas, "rect", None)
             pos = getattr(evt, "pos", None)
             if pos is None and rect is not None:
                 gp = getattr(evt, "gpos", None)
                 if gp is not None:
+
                     class _Local:
                         def __init__(self, x: float, y: float):
                             self.x = x
@@ -403,7 +409,9 @@ def _ensure_prompt_pattern_canvas() -> canvas.Canvas:
             try:
                 _prompt_pattern_canvas.register(evt_name, _on_mouse)
             except Exception:
-                _debug(f"mouse handler registration failed for prompt pattern canvas ({evt_name})")
+                _debug(
+                    f"mouse handler registration failed for prompt pattern canvas ({evt_name})"
+                )
         for evt_name in ("scroll", "wheel", "mouse_scroll"):
             try:
                 _prompt_pattern_canvas.register(evt_name, _on_scroll)
@@ -800,3 +808,12 @@ class UserActions:
             if pattern.name.lower() == preset_name.lower():
                 _run_prompt_pattern(static_prompt, pattern)
                 break
+
+    def prompt_pattern_save_source_to_file():
+        """Save the most recent model response to a file via the confirmation GUI helper."""
+        try:
+            actions.user.confirmation_gui_save_to_file()
+        except Exception:
+            actions.app.notify(
+                "GPT: Could not save response to file from prompt patterns"
+            )

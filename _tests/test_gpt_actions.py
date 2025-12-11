@@ -1,4 +1,6 @@
 import inspect
+import os
+import tempfile
 import unittest
 from typing import TYPE_CHECKING
 from unittest.mock import ANY, MagicMock, patch
@@ -75,6 +77,42 @@ if bootstrap is not None:
             gpt_module._prompt_pipeline = self._original_pipeline
             gpt_module._recursive_orchestrator = self._original_orchestrator
             actions.app.calls.clear()
+
+        def test_gpt_save_source_to_file_writes_markdown_with_source_text(self):
+            GPTState.reset_all()
+            tmpdir = tempfile.mkdtemp()
+            gpt_module.settings.set("user.model_source_save_directory", tmpdir)
+            actions.app.calls.clear()
+            actions.user.calls.clear()
+
+            # Seed a simple last_source_messages snapshot.
+            GPTState.last_source_messages = [format_message("hello world")]
+            GPTState.last_source_key = "clipboard"
+            GPTState.last_recipe = "describe · full"
+            GPTState.last_static_prompt = "describe"
+            GPTState.last_completeness = "full"
+
+            before = set(os.listdir(tmpdir))
+            gpt_module.UserActions.gpt_save_source_to_file()
+            after = set(os.listdir(tmpdir))
+            new_files = list(after - before)
+            self.assertEqual(len(new_files), 1, new_files)
+            path = os.path.join(tmpdir, new_files[0])
+            with open(path, "r", encoding="utf-8") as f:
+                content = f.read()
+            self.assertIn("# Source", content)
+            self.assertIn("hello world", content)
+
+            # Ensure we notified the user about the save.
+            self.assertTrue(
+                any(
+                    call[0] == "notify"
+                    and call[1]
+                    and "Saved model source to" in str(call[1][0])
+                    for call in actions.user.calls + actions.app.calls
+                ),
+                "Expected a notification about saving the model source",
+            )
 
         def test_gpt_cancel_request_emits_cancel(self):
             set_controller(RequestUIController())

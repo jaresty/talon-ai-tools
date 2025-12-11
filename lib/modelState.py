@@ -48,6 +48,8 @@ class GPTState:
     # so `model again` can reuse the same content even if the live source
     # (for example, clipboard or selection) has changed.
     last_source_messages: ClassVar[List[Union[GPTTextItem, GPTImageItem]]] = []
+    # Last canonical source key used for the most recent run (for example, "clipboard", "context").
+    last_source_key: ClassVar[str] = ""
     # Last explicit source key used with `model again` (for example, "clip", "this").
     last_again_source: ClassVar[str] = ""
     # Last source key used when generating prompt recipe suggestions, stored
@@ -60,7 +62,18 @@ class GPTState:
     last_prompt_text: ClassVar[str] = ""
     context: ClassVar[List[Union[GPTTextItem, GPTImageItem]]] = []
     query: ClassVar[List[GPTMessage]] = []
-    request: ClassVar[GPTRequest]
+    # Last fully constructed request envelope sent to the model so sources
+    # like GPTRequest/GPTExchange can reference it safely.
+    request: ClassVar[GPTRequest] = {
+        "messages": [],
+        "max_completion_tokens": 0,
+        "tools": [],
+        "reasoning_effort": "",
+        "n": 1,
+        "model": "",
+        "tool_choice": "auto",
+        "verbosity": "",
+    }
     # Authoritative axis tokens per ADR 034: completeness (scalar token),
     # scope/method/style as token lists.
     last_axes: ClassVar[Dict[str, List[str]]] = {
@@ -128,14 +141,22 @@ class GPTState:
         cls.last_method = ""
         cls.last_style = ""
         cls.last_source_messages = []
+        cls.last_source_key = ""
         cls.last_again_source = ""
         cls.last_suggest_source = ""
         cls.last_suggested_recipes = []
         cls.last_prompt_text = ""
-        cls.last_prompt_text = ""
+        cls.context = []
+        cls.query = []
+        cls.thread = []
+        cls.user_overrode_completeness = False
+        cls.user_overrode_scope = False
+        cls.user_overrode_method = False
+        cls.user_overrode_style = False
         cls.last_raw_request = {}
         cls.last_raw_response = {}
         cls.last_axes = {"completeness": [], "scope": [], "method": [], "style": []}
+        cls.request["messages"] = []
         actions.app.notify("Cleared all state")
 
     @classmethod
@@ -157,9 +178,7 @@ class GPTState:
         actions.app.notify(f"Appended message to stack {stack}")
 
     @classmethod
-    def new_stack(
-        cls, message: List[Union[GPTTextItem, GPTImageItem]], stack: str
-    ):
+    def new_stack(cls, message: List[Union[GPTTextItem, GPTImageItem]], stack: str):
         """Append a message to a new stack"""
         cls.stacks[stack] = []
         cls.stacks[stack] += message
@@ -234,6 +253,7 @@ class GPTState:
         cls.last_method = ""
         cls.last_style = ""
         cls.last_source_messages = []
+        cls.last_source_key = ""
         cls.last_again_source = ""
         cls.last_suggest_source = ""
         cls.last_suggested_recipes = []

@@ -78,13 +78,17 @@ if bootstrap is not None:
         # importable, provide a skipped placeholder so Talon does not log an
         # import error.
         if not TYPE_CHECKING:
+
             class PromptPatternGUITests(unittest.TestCase):
-                @unittest.skip("modelPromptPatternGUI unavailable in this Talon runtime")
+                @unittest.skip(
+                    "modelPromptPatternGUI unavailable in this Talon runtime"
+                )
                 def test_placeholder(self) -> None:
                     pass
 
 else:
     if not TYPE_CHECKING:
+
         class PromptPatternGUITests(unittest.TestCase):
             @unittest.skip("Test harness unavailable outside unittest runs")
             def test_placeholder(self) -> None:

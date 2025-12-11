@@ -1,3 +1,6 @@
+import datetime
+import os
+import re
 from typing import Iterable, List, Sequence, Union, cast, Iterator, Dict
 
 from ..lib.modelSource import GPTItem
@@ -314,6 +317,119 @@ class Clipboard(ModelDestination):
         clip.set_text(presentation.paste_text)
 
 
+class File(ModelDestination):
+    kind = "file"
+
+    def insert(self, gpt_output):
+        """Write a human-readable response snapshot to a markdown file.
+
+        This destination focuses on the model's response (and, when cheaply
+        available, its prompt/context) rather than raw HTTP logs.
+        """
+        result = _coerce_prompt_result(gpt_output)
+        presentation = result.presentation_for("paste")
+
+        # Resolve base directory from user setting, with a sensible default.
+        try:
+            base = settings.get("user.model_source_save_directory")
+            if isinstance(base, str) and base.strip():
+                base_dir = os.path.expanduser(base)
+            else:
+                raise ValueError("empty base directory setting")
+        except Exception:
+            try:
+                from .modelHelpers import talon_user_dir  # type: ignore
+
+                base_dir = os.path.join(talon_user_dir(), "talon-ai-model-sources")
+            except Exception:
+                base_dir = os.path.join(
+                    os.path.expanduser("~"), "talon-ai-model-sources"
+                )
+
+        try:
+            os.makedirs(base_dir, exist_ok=True)
+        except Exception as exc:
+            notify(f"GPT: Could not create file destination directory: {exc}")
+            return
+
+        now = datetime.datetime.utcnow()
+        timestamp = now.strftime("%Y-%m-%dT%H-%M-%SZ")
+
+        # Build a short slug from the last recipe/axes for context.
+        axes_tokens = getattr(GPTState, "last_axes", {}) or {}
+
+        def _axis_join(axis: str, fallback: str) -> str:
+            tokens = axes_tokens.get(axis)
+            if isinstance(tokens, list) and tokens:
+                return " ".join(str(t) for t in tokens if str(t))
+            return fallback
+
+        static_prompt = getattr(GPTState, "last_static_prompt", "") or ""
+        slug_bits = []
+        if static_prompt:
+            slug_bits.append(static_prompt)
+        last_completeness = _axis_join(
+            "completeness", getattr(GPTState, "last_completeness", "") or ""
+        )
+        last_scope = _axis_join("scope", getattr(GPTState, "last_scope", "") or "")
+        last_method = _axis_join("method", getattr(GPTState, "last_method", "") or "")
+        last_style = _axis_join("style", getattr(GPTState, "last_style", "") or "")
+        for value in (last_completeness, last_scope, last_method, last_style):
+            if value:
+                slug_bits.append(value)
+
+        def _slug(value: str) -> str:
+            value = (value or "").strip().lower().replace(" ", "-")
+            return re.sub(r"[^a-z0-9._-]+", "", value)
+
+        slug = "-".join(_slug(bit) for bit in slug_bits if bit) or "response"
+        filename = f"{timestamp}-{slug}.md"
+        path = os.path.join(base_dir, filename)
+
+        # Assemble a human-oriented header and sections.
+        header_lines = [
+            f"saved_at: {now.isoformat()}Z",
+            "kind=response",
+        ]
+        model_name = settings.get("user.openai_model")
+        if isinstance(model_name, str) and model_name.strip():
+            header_lines.append(f"model: {model_name}")
+        recipe = getattr(GPTState, "last_recipe", "") or ""
+        if recipe:
+            header_lines.append(f"recipe: {recipe}")
+        directional = getattr(GPTState, "last_directional", "") or ""
+        if directional:
+            header_lines.append(f"directional: {directional}")
+
+        for axis_key, axis_value in (
+            ("completeness", last_completeness),
+            ("scope", last_scope),
+            ("method", last_method),
+            ("style", last_style),
+        ):
+            if axis_value:
+                header_lines.append(f"{axis_key}_tokens: {axis_value}")
+
+        prompt_text = getattr(GPTState, "last_prompt_text", "") or ""
+        response_text = presentation.paste_text or presentation.display_text or ""
+
+        sections = []
+        if prompt_text.strip():
+            sections.append("# Prompt / Context\n" + prompt_text.strip() + "\n")
+        sections.append("# Response\n" + response_text.strip() + "\n")
+
+        content = "\n".join(header_lines) + "\n---\n\n" + "\n\n".join(sections)
+
+        try:
+            with open(path, "w", encoding="utf-8") as f:
+                f.write(content)
+        except Exception as exc:
+            notify(f"GPT: Failed to write file destination output: {exc}")
+            return
+
+        notify(f"GPT: Saved response to {path}")
+
+
 class Snip(ModelDestination):
     kind = "snip"
 
@@ -627,6 +743,7 @@ def create_model_destination(destination_type: str) -> ModelDestination:
         "newThread": NewThread,
         "draft": Draft,
         "silent": Silent,
+        "file": File,
     }
 
     if destination_type == "window":

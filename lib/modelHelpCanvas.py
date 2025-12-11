@@ -649,27 +649,19 @@ def _default_draw_quick_help(
     draw_text(caps_line, x, y)
     y += line_h
 
-    # High-level axis families (ADR 040): Who / Why / How.
-    draw_text("Who / Why / How (ADR 040):", x, y)
+    # Persona / Intent quick grammar and presets.
+    draw_text("Who / Why (Persona / Intent):", x, y)
     y += line_h
-    draw_text("  Who – Persona: voice, audience, tone.", x, y)
+    draw_text("  persona <personaPreset>", x, y)
     y += line_h
-    draw_text("  Why – Intent: purpose.", x, y)
-    y += line_h
-    draw_text(
-        "  How – Contract: completeness, scope, method, style.",
-        x,
-        y,
-    )
+    draw_text("  intent <intentPreset>", x, y)
     y += line_h
 
-    # Surface a few shared persona and intent presets so users see concrete
-    # Who/Why recipes alongside the raw axes.
     try:
-        persona_labels = [preset.label for preset in PERSONA_PRESETS[:3]]
+        persona_labels = [preset.label for preset in PERSONA_PRESETS]
         if persona_labels:
             draw_text(
-                "  Persona presets: " + ", ".join(persona_labels),
+                "  Persona presets (Who): " + ", ".join(persona_labels),
                 x,
                 y,
             )
@@ -679,10 +671,10 @@ def _default_draw_quick_help(
         pass
 
     try:
-        intent_labels = [preset.label for preset in INTENT_PRESETS[:4]]
+        intent_labels = [preset.label for preset in INTENT_PRESETS]
         if intent_labels:
             draw_text(
-                "  Intent presets: " + ", ".join(intent_labels),
+                "  Intent presets (Why): " + ", ".join(intent_labels),
                 x,
                 y,
             )
@@ -690,6 +682,13 @@ def _default_draw_quick_help(
     except Exception:
         # If intent presets cannot be imported, continue without them.
         pass
+
+    draw_text(
+        "  Status/reset: persona status · persona reset · intent status · intent reset",
+        x,
+        y,
+    )
+    y += line_h
 
     section_focus = getattr(HelpGUIState, "section", "all") or "all"
 
@@ -1295,4 +1294,19 @@ class UserActions:
     def model_help_canvas_open_examples():
         """Open canvas quick help focused on examples"""
         _reset_help_state("examples", None)
+        _open_canvas()
+
+    def model_help_canvas_open_who():
+        """Open canvas quick help focused on persona (Who)"""
+        _reset_help_state("who", None)
+        _open_canvas()
+
+    def model_help_canvas_open_why():
+        """Open canvas quick help focused on intent (Why)"""
+        _reset_help_state("why", None)
+        _open_canvas()
+
+    def model_help_canvas_open_how():
+        """Open canvas quick help focused on contract (How)"""
+        _reset_help_state("how", None)
         _open_canvas()

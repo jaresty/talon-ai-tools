@@ -1,3 +1,4 @@
+import json
 import os
 import threading
 from typing import List, Optional, Union
@@ -97,7 +98,7 @@ from ..lib.modelDestination import (
     create_model_destination,
 )
 from ..lib.modelSource import ModelSource, create_model_source
-from talon import Module, actions, clip, settings
+from talon import Context, Module, actions, clip, settings
 
 from ..lib.HTMLBuilder import Builder
 from ..lib.modelHelpers import (
@@ -197,10 +198,37 @@ def _set_setting(key: str, value) -> None:
 
 
 mod = Module()
+ctx = Context()
 mod.tag(
     "model_window_open",
     desc="Tag for enabling the model window commands when the window is open",
 )
+
+# Persona/Intent preset lists for stance commands (ADR 042).
+_PERSONA_PRESET_SPOKEN_TO_KEY: dict[str, str] = {}
+for preset in PERSONA_PRESETS:
+    spoken = (preset.label or preset.key).strip().lower()
+    if not spoken:
+        continue
+    # Last definition wins if duplicates occur.
+    _PERSONA_PRESET_SPOKEN_TO_KEY[spoken] = preset.key
+
+_INTENT_PRESET_SPOKEN_TO_KEY: dict[str, str] = {}
+for preset in INTENT_PRESETS:
+    spoken = (preset.key or "").strip().lower()
+    if not spoken:
+        continue
+    _INTENT_PRESET_SPOKEN_TO_KEY[spoken] = preset.key
+
+mod.list("personaPreset", desc="Persona (Who) presets for GPT stance")
+mod.list("intentPreset", desc="Intent (Why) presets for GPT stance")
+
+try:
+    ctx.lists["user.personaPreset"] = _PERSONA_PRESET_SPOKEN_TO_KEY
+    ctx.lists["user.intentPreset"] = _INTENT_PRESET_SPOKEN_TO_KEY
+except Exception:
+    # In some runtimes, Context may not be fully initialised; fail softly.
+    pass
 
 
 _prompt_pipeline = PromptPipeline()
@@ -636,6 +664,160 @@ class UserActions:
         _set_setting("user.model_default_style", "")
         GPTState.user_overrode_style = True
 
+    def persona_set_preset(preset_key: str) -> None:
+        """Set Persona (Who) stance from a shared preset (ADR 042)."""
+        from ..lib.personaConfig import PersonaPreset  # Local import for Talon reloads
+
+        preset_map: dict[str, PersonaPreset] = {p.key: p for p in PERSONA_PRESETS}
+        preset = preset_map.get(preset_key)
+        if preset is None:
+            notify(f"GPT: Unknown persona preset: {preset_key}")
+            return
+
+        current = getattr(GPTState, "system_prompt", GPTSystemPrompt())
+        if not isinstance(current, GPTSystemPrompt):
+            current = GPTSystemPrompt()
+
+        new_prompt = GPTSystemPrompt(
+            voice=preset.voice or current.voice,
+            audience=preset.audience or current.audience,
+            purpose=current.purpose,
+            tone=preset.tone or current.tone,
+            completeness=current.completeness,
+            scope=current.scope,
+            method=current.method,
+            style=current.style,
+            directional=current.directional,
+        )
+        GPTState.system_prompt = new_prompt
+        notify(
+            "GPT: Persona stance set to "
+            f"voice={new_prompt.voice or current.get_voice()}, "
+            f"audience={new_prompt.audience or current.get_audience()}, "
+            f"tone={new_prompt.tone or current.get_tone()}"
+        )
+
+    def intent_set_preset(preset_key: str) -> None:
+        """Set Intent (Why) stance from a shared preset (ADR 042)."""
+        from ..lib.personaConfig import IntentPreset  # Local import for Talon reloads
+
+        preset_map: dict[str, IntentPreset] = {p.key: p for p in INTENT_PRESETS}
+        preset = preset_map.get(preset_key)
+        if preset is None:
+            notify(f"GPT: Unknown intent preset: {preset_key}")
+            return
+
+        current = getattr(GPTState, "system_prompt", GPTSystemPrompt())
+        if not isinstance(current, GPTSystemPrompt):
+            current = GPTSystemPrompt()
+
+        new_prompt = GPTSystemPrompt(
+            voice=current.voice,
+            audience=current.audience,
+            purpose=preset.purpose or current.purpose,
+            tone=current.tone,
+            completeness=current.completeness,
+            scope=current.scope,
+            method=current.method,
+            style=current.style,
+            directional=current.directional,
+        )
+        GPTState.system_prompt = new_prompt
+        notify(
+            "GPT: Intent stance set to "
+            f"purpose={new_prompt.purpose or current.get_purpose()}"
+        )
+
+    def persona_status() -> None:
+        """Show the current Persona (Who) stance compared to defaults."""
+        current = getattr(GPTState, "system_prompt", GPTSystemPrompt())
+        if not isinstance(current, GPTSystemPrompt):
+            current = GPTSystemPrompt()
+
+        voice = current.get_voice()
+        audience = current.get_audience()
+        tone = current.get_tone()
+
+        default_voice = GPTSystemPrompt.default_voice() or ""
+        default_audience = GPTSystemPrompt.default_audience() or ""
+        default_tone = GPTSystemPrompt.default_tone() or ""
+
+        non_default_axes: list[str] = []
+        if voice != default_voice:
+            non_default_axes.append("voice")
+        if audience != default_audience:
+            non_default_axes.append("audience")
+        if tone != default_tone:
+            non_default_axes.append("tone")
+
+        if non_default_axes:
+            suffix = f" (non-default: {', '.join(non_default_axes)})"
+        else:
+            suffix = " (all default)"
+
+        notify(
+            "Persona stance: "
+            f"voice={voice or default_voice}, "
+            f"audience={audience or default_audience}, "
+            f"tone={tone or default_tone}{suffix}"
+        )
+
+    def intent_status() -> None:
+        """Show the current Intent (Why) stance compared to defaults."""
+        current = getattr(GPTState, "system_prompt", GPTSystemPrompt())
+        if not isinstance(current, GPTSystemPrompt):
+            current = GPTSystemPrompt()
+
+        purpose = current.get_purpose()
+        default_purpose = GPTSystemPrompt.default_purpose() or ""
+
+        if purpose != default_purpose:
+            suffix = " (non-default)"
+        else:
+            suffix = " (default)"
+
+        notify(f"Intent stance: purpose={purpose or default_purpose}{suffix}")
+
+    def persona_reset() -> None:
+        """Reset Persona (Who) stance to defaults without touching contract axes."""
+        current = getattr(GPTState, "system_prompt", GPTSystemPrompt())
+        if not isinstance(current, GPTSystemPrompt):
+            current = GPTSystemPrompt()
+
+        new_prompt = GPTSystemPrompt(
+            voice="",
+            audience="",
+            purpose=current.purpose,
+            tone="",
+            completeness=current.completeness,
+            scope=current.scope,
+            method=current.method,
+            style=current.style,
+            directional=current.directional,
+        )
+        GPTState.system_prompt = new_prompt
+        notify("GPT: Persona stance reset to defaults")
+
+    def intent_reset() -> None:
+        """Reset Intent (Why) stance to defaults without touching contract axes."""
+        current = getattr(GPTState, "system_prompt", GPTSystemPrompt())
+        if not isinstance(current, GPTSystemPrompt):
+            current = GPTSystemPrompt()
+
+        new_prompt = GPTSystemPrompt(
+            voice=current.voice,
+            audience=current.audience,
+            purpose="",
+            tone=current.tone,
+            completeness=current.completeness,
+            scope=current.scope,
+            method=current.method,
+            style=current.style,
+            directional=current.directional,
+        )
+        GPTState.system_prompt = new_prompt
+        notify("GPT: Intent stance reset to defaults")
+
     def gpt_set_async_blocking(enabled: int) -> None:
         """Toggle async blocking mode for model runs (1=blocking, 0=non-blocking)"""
         _set_setting(ASYNC_BLOCKING_SETTING, bool(enabled))
@@ -973,28 +1155,72 @@ class UserActions:
         prompt_subject = subject.strip() if subject else "unspecified"
         user_text = (
             "You are a prompt recipe assistant for the Talon `model` command.\n"
-            "Based on the subject and content below, suggest 3–5 concrete prompt recipes.\n\n"
-            "For each recipe, output exactly one line using this base shape:\n"
-            "Name: <short human-friendly name> | Recipe: <staticPrompt> · <completeness> · <scopeTokens> · <methodTokens> · <styleTokens> · <directional>\n\n"
-            "When a different persona/intent stance would materially change how the model should respond, you SHOULD include stance/why segments for that suggestion. Across your 3–5 recipes, include clear Stance/Why segments for at least two suggestions.\n"
-            "Append them on the same line, for example:\n"
-            " | Stance: model write <voice/audience/tone/purpose tokens> for <purpose> | Why: <short reason this stance + contract fit the subject>\n\n"
-            "Where:\n"
+            "Based on the subject and content below, suggest 3 to 5 concrete prompt recipes.\n\n"
+            "You MUST output ONLY JSON with this exact top-level shape (no markdown, backticks, or extra text):\n\n"
+            "{\n"
+            '  "suggestions": [\n'
+            "    {\n"
+            '      "name": string,\n'
+            '      "recipe": string,\n'
+            '      "persona_voice": string,\n'
+            '      "persona_audience": string,\n'
+            '      "persona_tone": string,\n'
+            '      "intent_purpose": string,\n'
+            '      "stance_command": string,\n'
+            '      "why": string\n'
+            "    }\n"
+            "  ]\n"
+            "}\n\n"
+            "Fields:\n"
+            "- name: short human-friendly label for the suggestion.\n"
+            "- recipe: a contract-only axis string of the form\n"
+            "  '<staticPrompt> · <completeness> · <scopeTokens> · <methodTokens> · <styleTokens> · <directional>'.\n"
+            "- persona_voice / persona_audience / persona_tone / intent_purpose:\n"
+            "  optional Persona/Intent axis tokens (Who/Why) using ONLY the values\n"
+            "  from the Persona/Intent token lists below. Leave as an empty string\n"
+            '  ("") when you cannot reasonably express the stance with these tokens.\n'
+            "- stance_command: a single-line, voice-friendly command that a user could\n"
+            "  speak to set this stance. Valid forms are:\n"
+            "  * Preferred (always valid):\n"
+            "    'model write <persona_voice> <persona_audience> <persona_tone> <intent_purpose>'\n"
+            "    using exactly the persona_voice/persona_audience/persona_tone/intent_purpose\n"
+            "    tokens you chose for this suggestion.\n"
+            "    You MUST include at least intent_purpose; never output 'model write'\n"
+            "    or 'model write for' on their own.\n"
+            "  * Optional (only when the stance matches a known preset):\n"
+            "    'persona <personaPreset>' and/or 'intent <intentPreset>' where\n"
+            "    <personaPreset> and <intentPreset> are names from the Persona/Intent\n"
+            "    preset lists (for example, 'persona teach junior dev', 'intent teach').\n"
+            "  Never emit 'persona' followed directly by raw axis tokens; if you cannot\n"
+            "  use a preset name, fall back to the 'model write' form above.\n"
+            "- why: 1–2 sentences explaining when this suggestion is useful.\n\n"
+            "Recipe rules:\n"
             "- <staticPrompt> is exactly one static prompt token (do not include multiple static prompts or combine them).\n"
             "- <completeness> and <directional> are single axis tokens.\n"
             "- Directional is required: always include exactly one directional modifier from the directional list; never leave it blank.\n"
             "- <scopeTokens>, <methodTokens>, and <styleTokens> are zero or more space-separated axis tokens for that axis (respecting small caps: scope ≤ 2 tokens, method ≤ 3 tokens, style ≤ 3 tokens).\n"
-            "Examples of multi-tag fields: scopeTokens='actions edges', methodTokens='structure flow', styleTokens='jira story'.\n\n"
-            "Important formatting rules (strict):\n"
-            "- Output only these recipe lines; do not include extra commentary, bullets, or any other text.\n"
-            "- Always include the literal labels 'Name:' and 'Recipe:' exactly as shown; when you add stance/why, use the literal labels 'Stance:' and 'Why:' exactly as shown.\n"
-            "- Keep everything for a suggestion on a single line separated by ' | ' segments; do not wrap a single suggestion across multiple lines.\n"
-            "- Never invent new axis tokens: always choose from the provided axis lists (for example, use the method token 'analysis' rather than a new token like 'analyze').\n"
-            "- Do not reorder or rename fields, and do not add extra separators.\n\n"
+            "  Examples: scopeTokens='actions edges', methodTokens='structure flow', styleTokens='jira story'.\n\n"
+            "Persona/Intent rules (Who/Why):\n"
+            "- When a different Persona/Intent stance would materially change how the\n"
+            "  model should respond, you SHOULD fill persona_voice/persona_audience/\n"
+            "  persona_tone/intent_purpose using ONLY the Persona/Intent token lists\n"
+            "  below, and you SHOULD provide a matching stance_command.\n"
+            "- Across your 3 to 5 suggestions, include clear Persona/Intent stances for\n"
+            "  at least two suggestions.\n"
+            "- When you cannot sensibly express the stance with these tokens, leave\n"
+            "  persona_voice/persona_audience/persona_tone/intent_purpose as empty\n"
+            "  strings and rely on stance_command + why instead.\n\n"
+            "Formatting rules (strict):\n"
+            "- Output ONLY the JSON object described above; do NOT include prose,\n"
+            "  markdown, backticks, or any other surrounding text.\n"
+            "- All suggestion objects MUST include name and recipe.\n"
+            "- Never invent new axis tokens: always choose from the provided axis\n"
+            "  lists (for example, use the method token 'analysis' rather than a new\n"
+            "  token like 'analyze').\n\n"
             "Use only tokens from the following sets where possible.\n"
             "Axis semantics and available tokens (How the model responds):\n"
             f"{axis_docs}\n\n"
-            "Persona/Intent stance tokens and examples for Stance commands (Who/Why):\n"
+            "Persona/Intent stance tokens and examples for stance commands (Who/Why):\n"
             f"{persona_intent_docs}\n\n"
             "Static prompts and their semantics:\n"
             f"{static_prompt_docs}\n\n"
@@ -1060,80 +1286,121 @@ class UserActions:
 
         # Attempt to parse the result text into structured suggestions so
         # future loops (for example, a suggestions GUI) can reuse them
-        # without re-calling the model.
-        # Attempt to parse the result text into structured suggestions so
-        # future loops (for example, a suggestions GUI) can reuse them
-        # without re-calling the model.
+        # without re-calling the model. Prefer the JSON shape described in
+        # ADR 042; fall back to the legacy line-based format if needed.
         suggestions: list[dict[str, str]] = []
-        for raw_line in result.text.splitlines():
-            line = raw_line.strip()
-            if not line or "|" not in line:
-                continue
-            segments = [seg.strip() for seg in line.split("|") if seg.strip()]
-            if len(segments) < 2:
-                continue
-            name_part = segments[0]
-            # Allow both "Name: <label>" and bare labels before the pipe.
-            if "Name:" in name_part:
-                _, name_value = name_part.split("Name:", 1)
-                name = name_value.strip()
-            else:
-                name = name_part.strip().strip(":")
-            if not name:
-                continue
+        raw_text = getattr(result, "text", "") or ""
+        raw_text = str(raw_text).strip()
 
-            # Prefer an explicit "Recipe:" label segment when present.
-            recipe_value = ""
-            for seg in segments[1:]:
-                if "Recipe:" in seg:
-                    _, recipe_part = seg.split("Recipe:", 1)
-                    recipe_value = recipe_part.strip()
-                    break
+        def _normalise_recipe(value: str) -> str:
+            """Normalise a recipe string and enforce a single static prompt token.
+
+            This preserves the existing behaviour: we require a single
+            <staticPrompt> token and a single known directional token; we drop
+            any suggestion that does not meet these constraints.
+            """
+            recipe_value = (value or "").strip()
             if not recipe_value:
-                candidate = segments[1] if len(segments) > 1 else ""
-                candidate = candidate.strip()
-                # Heuristic guard: only treat the segment as a recipe when it
-                # contains at least one "·" separator to avoid picking up
-                # arbitrary commentary.
-                if "·" in candidate:
-                    recipe_value = candidate
-            if not recipe_value:
-                continue
-
-            stance_command = ""
-            why_text = ""
-            for seg in segments[1:]:
-                if "Stance:" in seg:
-                    _, stance_part = seg.split("Stance:", 1)
-                    stance_command = stance_part.strip()
-                elif "Why:" in seg:
-                    _, why_part = seg.split("Why:", 1)
-                    why_text = why_part.strip()
-
-            # Enforce a single static prompt token by collapsing any
-            # space-delimited static prompt segment to its first token.
-            recipe_tokens = [t.strip() for t in recipe_value.split("·") if t.strip()]
-            if not recipe_tokens:
-                continue
-            static_tokens = recipe_tokens[0].split()
+                return ""
+            parts = [t.strip() for t in recipe_value.split("·") if t.strip()]
+            if not parts:
+                return ""
+            static_tokens = parts[0].split()
             if len(static_tokens) > 1:
-                recipe_tokens[0] = static_tokens[0]
-            # Require a directional token (last segment); drop if missing.
-            raw_directional = recipe_tokens[-1] if len(recipe_tokens) > 1 else ""
+                parts[0] = static_tokens[0]
+            raw_directional = parts[-1] if len(parts) > 1 else ""
             dir_tokens = raw_directional.split()
             if len(dir_tokens) != 1:
-                continue
+                return ""
             directional = dir_tokens[0]
             if directional not in _DIRECTIONAL_MAP:
-                continue
-            recipe_tokens[-1] = directional
-            recipe = " · ".join(recipe_tokens)
-            entry: dict[str, str] = {"name": name, "recipe": recipe}
-            if stance_command:
-                entry["stance_command"] = stance_command
-            if why_text:
-                entry["why"] = why_text
-            suggestions.append(entry)
+                return ""
+            parts[-1] = directional
+            return " · ".join(parts)
+
+        if raw_text:
+            parsed_from_json = False
+            # First, try the structured JSON format.
+            try:
+                data = json.loads(raw_text)
+                if isinstance(data, dict):
+                    raw_suggestions = data.get("suggestions", [])
+                    if isinstance(raw_suggestions, list):
+                        for item in raw_suggestions:
+                            if not isinstance(item, dict):
+                                continue
+                            name = str(item.get("name", "")).strip()
+                            recipe_value = str(item.get("recipe", "")).strip()
+                            if not name or not recipe_value:
+                                continue
+                            recipe = _normalise_recipe(recipe_value)
+                            if not recipe:
+                                continue
+                            entry: dict[str, str] = {"name": name, "recipe": recipe}
+                            for key in (
+                                "persona_voice",
+                                "persona_audience",
+                                "persona_tone",
+                                "intent_purpose",
+                                "stance_command",
+                                "why",
+                            ):
+                                val = str(item.get(key, "")).strip()
+                                if val:
+                                    entry[key] = val
+                            suggestions.append(entry)
+                parsed_from_json = bool(suggestions)
+            except Exception:
+                parsed_from_json = False
+
+            # Legacy fallback: parse pipe-separated lines if JSON was not usable.
+            if not parsed_from_json:
+                for raw_line in raw_text.splitlines():
+                    line = raw_line.strip()
+                    if not line or "|" not in line:
+                        continue
+                    segments = [seg.strip() for seg in line.split("|") if seg.strip()]
+                    if len(segments) < 2:
+                        continue
+                    name_part = segments[0]
+                    if "Name:" in name_part:
+                        _, name_value = name_part.split("Name:", 1)
+                        name = name_value.strip()
+                    else:
+                        name = name_part.strip().strip(":")
+                    if not name:
+                        continue
+
+                    recipe_value = ""
+                    for seg in segments[1:]:
+                        if "Recipe:" in seg:
+                            _, recipe_part = seg.split("Recipe:", 1)
+                            recipe_value = recipe_part.strip()
+                            break
+                    if not recipe_value and len(segments) > 1:
+                        candidate = segments[1].strip()
+                        if "·" in candidate:
+                            recipe_value = candidate
+                    recipe = _normalise_recipe(recipe_value)
+                    if not recipe:
+                        continue
+
+                    stance_command = ""
+                    why_text = ""
+                    for seg in segments[1:]:
+                        if "Stance:" in seg:
+                            _, stance_part = seg.split("Stance:", 1)
+                            stance_command = stance_part.strip()
+                        elif "Why:" in seg:
+                            _, why_part = seg.split("Why:", 1)
+                            why_text = why_part.strip()
+
+                    entry: dict[str, str] = {"name": name, "recipe": recipe}
+                    if stance_command:
+                        entry["stance_command"] = stance_command
+                    if why_text:
+                        entry["why"] = why_text
+                    suggestions.append(entry)
 
         if suggestions:
             record_suggestions(suggestions, suggest_source_key)

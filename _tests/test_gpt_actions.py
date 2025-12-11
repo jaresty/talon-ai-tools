@@ -260,6 +260,80 @@ if bootstrap is not None:
                 "Expected a user notification when no raw exchange is available",
             )
 
+        def test_persona_set_preset_updates_persona_axes(self) -> None:
+            GPTState.reset_all()
+            # Start from a neutral system prompt so we can see changes clearly.
+            GPTState.system_prompt = gpt_module.GPTSystemPrompt()
+
+            gpt_module.UserActions.persona_set_preset("teach_junior_dev")
+
+            prompt = GPTState.system_prompt
+            self.assertIsInstance(prompt, gpt_module.GPTSystemPrompt)
+            self.assertEqual(prompt.voice, "as teacher")
+            self.assertEqual(prompt.audience, "to junior engineer")
+            self.assertEqual(prompt.tone, "kindly")
+
+        def test_intent_set_preset_updates_purpose_axis(self) -> None:
+            GPTState.reset_all()
+            GPTState.system_prompt = gpt_module.GPTSystemPrompt()
+
+            gpt_module.UserActions.intent_set_preset("decide")
+
+            prompt = GPTState.system_prompt
+            self.assertIsInstance(prompt, gpt_module.GPTSystemPrompt)
+            self.assertEqual(prompt.purpose, "for deciding")
+
+        def test_persona_and_intent_reset_restore_defaults(self) -> None:
+            GPTState.reset_all()
+            # Seed a non-default stance first.
+            GPTState.system_prompt = gpt_module.GPTSystemPrompt(
+                voice="as teacher",
+                audience="to junior engineer",
+                purpose="for teaching",
+                tone="kindly",
+            )
+
+            gpt_module.UserActions.persona_reset()
+            gpt_module.UserActions.intent_reset()
+
+            prompt = GPTState.system_prompt
+            self.assertIsInstance(prompt, gpt_module.GPTSystemPrompt)
+            self.assertEqual(prompt.voice, "")
+            self.assertEqual(prompt.audience, "")
+            self.assertEqual(prompt.tone, "")
+            self.assertEqual(prompt.purpose, "")
+
+        def test_persona_and_intent_status_notify(self) -> None:
+            GPTState.reset_all()
+            GPTState.system_prompt = gpt_module.GPTSystemPrompt(
+                voice="as teacher",
+                audience="to junior engineer",
+                purpose="for teaching",
+                tone="kindly",
+            )
+            actions.app.calls.clear()
+            actions.user.calls.clear()
+
+            gpt_module.UserActions.persona_status()
+            gpt_module.UserActions.intent_status()
+
+            persona_notifies = [
+                call
+                for call in actions.user.calls + actions.app.calls
+                if call[0] == "notify"
+                and call[1]
+                and "Persona stance" in str(call[1][0])
+            ]
+            intent_notifies = [
+                call
+                for call in actions.user.calls + actions.app.calls
+                if call[0] == "notify"
+                and call[1]
+                and "Intent stance" in str(call[1][0])
+            ]
+            self.assertTrue(persona_notifies, "Expected persona_status to notify")
+            self.assertTrue(intent_notifies, "Expected intent_status to notify")
+
         def test_gpt_replay_non_blocking_calls_handle_async_with_block_false(self):
             with patch.object(gpt_module, "PromptSession") as session_cls:
                 mock_session = session_cls.return_value

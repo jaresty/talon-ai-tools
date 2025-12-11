@@ -494,6 +494,18 @@ def _ensure_pattern_canvas() -> canvas.Canvas:
                             if pattern.name == name:
                                 _run_pattern(pattern)
                                 break
+                    elif key.startswith("persona:"):
+                        preset_key = key.split(":", 1)[1]
+                        try:
+                            actions.user.persona_set_preset(preset_key)
+                        except Exception:
+                            pass
+                    elif key.startswith("intent:"):
+                        preset_key = key.split(":", 1)[1]
+                        try:
+                            actions.user.intent_set_preset(preset_key)
+                        except Exception:
+                            pass
                     return
 
                 # If we didn't hit a button or close hotspot, start a drag from
@@ -799,7 +811,8 @@ def _draw_pattern_canvas(c: canvas.Canvas) -> None:  # pragma: no cover - visual
     y += line_h
 
     # Surface a small Who / Why section so users can see how patterns relate
-    # to Persona (Who) and Intent (Why) presets from ADR 040.
+    # to Persona (Who) and Intent (Why) presets from ADR 040. Each preset row
+    # is also a clickable button that applies the corresponding stance.
     draw_text("Who / Why presets (ADR 040):", x, y)
     y += line_h
 
@@ -816,7 +829,18 @@ def _draw_pattern_canvas(c: canvas.Canvas) -> None:  # pragma: no cover - visual
                 if preset.tone:
                     pieces.append(preset.tone)
                 axes = " · ".join(pieces)
-                draw_text(f"    {preset.label}: {axes}", x, y)
+                label_line = (
+                    f"    {preset.label}: {axes}" if axes else f"    {preset.label}"
+                )
+                draw_text(label_line, x, y)
+                if rect is not None:
+                    key = f"persona:{preset.key}"
+                    _pattern_button_bounds[key] = (
+                        x,
+                        y - line_h,
+                        x + len(label_line) * approx_char,
+                        y + line_h,
+                    )
                 y += line_h
     except Exception:
         # If persona presets are unavailable for any reason, continue without them.
@@ -827,7 +851,68 @@ def _draw_pattern_canvas(c: canvas.Canvas) -> None:  # pragma: no cover - visual
             draw_text("  Intent (Why):", x, y)
             y += line_h
             for preset in INTENT_PRESETS[:4]:
-                draw_text(f"    {preset.label}: {preset.purpose}", x, y)
+                label_line = f"    {preset.label}: {preset.purpose}"
+                draw_text(label_line, x, y)
+                if rect is not None:
+                    key = f"intent:{preset.key}"
+                    _pattern_button_bounds[key] = (
+                        x,
+                        y - line_h,
+                        x + len(label_line) * approx_char,
+                        y + line_h,
+                    )
+                y += line_h
+    except Exception:
+        # If intent presets are unavailable, continue without them.
+        pass
+
+    y += line_h
+
+    try:
+        if PERSONA_PRESETS:
+            draw_text("  Persona (Who):", x, y)
+            y += line_h
+            for preset in PERSONA_PRESETS[:3]:
+                pieces: list[str] = []
+                if preset.voice:
+                    pieces.append(preset.voice)
+                if preset.audience:
+                    pieces.append(preset.audience)
+                if preset.tone:
+                    pieces.append(preset.tone)
+                axes = " · ".join(pieces)
+                label_line = (
+                    f"    {preset.label}: {axes}" if axes else f"    {preset.label}"
+                )
+                draw_text(label_line, x, y)
+                if rect is not None:
+                    key = f"persona:{preset.key}"
+                    _pattern_button_bounds[key] = (
+                        x,
+                        y - line_h,
+                        x + len(label_line) * approx_char,
+                        y + line_h,
+                    )
+                y += line_h
+    except Exception:
+        # If persona presets are unavailable for any reason, continue without them.
+        pass
+
+    try:
+        if INTENT_PRESETS:
+            draw_text("  Intent (Why):", x, y)
+            y += line_h
+            for preset in INTENT_PRESETS[:4]:
+                label_line = f"    {preset.label}: {preset.purpose}"
+                draw_text(label_line, x, y)
+                if rect is not None:
+                    key = f"intent:{preset.key}"
+                    _pattern_button_bounds[key] = (
+                        x,
+                        y - line_h,
+                        x + len(label_line) * approx_char,
+                        y + line_h,
+                    )
                 y += line_h
     except Exception:
         # If intent presets are unavailable, continue without them.

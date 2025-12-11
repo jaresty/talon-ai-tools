@@ -72,3 +72,13 @@
 
 # Disable debug logging
 {user.model} stop debug: user.gpt_stop_debug()
+
+# Persona / Intent preset stance commands (ADR 042)
+persona {user.personaPreset}: user.persona_set_preset(personaPreset)
+intent {user.intentPreset}: user.intent_set_preset(intentPreset)
+
+persona status: user.persona_status()
+intent status: user.intent_status()
+
+persona reset: user.persona_reset()
+intent reset: user.intent_reset()

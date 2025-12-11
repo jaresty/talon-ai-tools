@@ -50,7 +50,17 @@ except Exception:  # Tests / stubs
 class Suggestion:
     name: str
     recipe: str
+    # Structured Persona/Intent axes (Who/Why). These are optional and left
+    # empty when a suggestion does not provide a stance in axis form.
+    persona_voice: str = ""
+    persona_audience: str = ""
+    persona_tone: str = ""
+    intent_purpose: str = ""
+    # Flexible, model-authored stance string. This is typically a
+    # voice-friendly command like "persona teach junior dev · intent teach"
+    # or "model write as teacher to junior engineer kindly for teaching".
     stance_command: str = ""
+    # Short natural-language explanation of when to use this suggestion.
     why: str = ""
 
 
@@ -404,8 +414,8 @@ def _draw_suggestions(c: canvas.Canvas) -> None:  # pragma: no cover - visual on
         draw_text("No suggestions available. Run 'model run suggest' first.", x, y)
         return
 
-    # Small spacer between the header and the first suggestion row.
-    y += line_h
+    # No global stance hint here: keep the panel focused on per-suggestion
+    # contract and stance so it is clear which commands apply to which row.
 
     # Each suggestion row is rendered as:
     #   [Name]
@@ -418,8 +428,9 @@ def _draw_suggestions(c: canvas.Canvas) -> None:  # pragma: no cover - visual on
     body_top = y
     if rect is not None and hasattr(rect, "height"):
         # Leave extra margin above the footer tip so the last suggestion
-        # does not visually collide with it.
-        body_bottom = rect.y + rect.height - line_h * 3
+        # does not visually collide with it. Use a slightly larger gap to
+        # avoid overlap when Why text runs long.
+        body_bottom = rect.y + rect.height - line_h * 4
     else:
         body_bottom = body_top + row_height * len(suggestions)
     visible_height = max(body_bottom - body_top, row_height)
@@ -490,21 +501,63 @@ def _draw_suggestions(c: canvas.Canvas) -> None:  # pragma: no cover - visual on
         if summary_parts:
             draw_text(f"Axes: {' '.join(summary_parts)}", x + 4, row_y)
 
-        # Use the remaining row height to show an optional, compact stance
-        # and explanation. When S1/Why are present, they use two lines; when
-        # absent we still leave a small gap so the next header does not crowd.
-        if suggestion.stance_command or suggestion.why:
+    # Use the remaining row height to show an optional, compact stance
+    # and explanation. Stance is expressed in terms of Persona/Intent axes
+    # plus a flexible, voice-friendly stance_command when present.
+    has_persona_axes = bool(
+        getattr(suggestion, "persona_voice", "")
+        or getattr(suggestion, "persona_audience", "")
+        or getattr(suggestion, "persona_tone", "")
+    )
+    has_intent_axis = bool(getattr(suggestion, "intent_purpose", ""))
+    has_stance_command = bool(suggestion.stance_command)
+    has_why = bool(suggestion.why)
+
+    if has_persona_axes or has_intent_axis or has_stance_command or has_why:
+        row_y += line_h
+        # Put the concrete voice command first so users know exactly what to say.
+        if has_stance_command:
+            draw_text(f"Say: {suggestion.stance_command}", x + 4, row_y)
             row_y += line_h
-            if suggestion.stance_command:
-                draw_text(f"S1: {suggestion.stance_command}", x + 4, row_y)
+        if has_persona_axes or has_intent_axis:
+            draw_text("Stance:", x + 4, row_y)
+            row_y += line_h
+            if has_persona_axes:
+                persona_bits = [
+                    b
+                    for b in [
+                        getattr(suggestion, "persona_voice", ""),
+                        getattr(suggestion, "persona_audience", ""),
+                        getattr(suggestion, "persona_tone", ""),
+                    ]
+                    if b
+                ]
+                if persona_bits:
+                    # Label these as Who (axes) to distinguish them from the
+                    # `persona` command, which takes presets rather than raw
+                    # axis tokens.
+                    draw_text(
+                        "  Who: " + " · ".join(persona_bits),
+                        x + 4,
+                        row_y,
+                    )
+                    row_y += line_h
+            if has_intent_axis:
+                # Label the purpose axis as Why (axis) so it is clearly the
+                # Intent axis, not the `intent` command.
+                draw_text(
+                    f"  Why: {getattr(suggestion, 'intent_purpose', '')}",
+                    x + 4,
+                    row_y,
+                )
                 row_y += line_h
-            if suggestion.why:
-                # Keep Why reasonably compact; truncate if extremely long.
-                why_text = f"Why: {suggestion.why}"
-                draw_text(why_text[:200], x + 4, row_y)
-        else:
-            # Lightweight spacer below Axes when no stance/why metadata.
-            row_y += line_h
+        if has_why:
+            # Keep Why reasonably compact; truncate if extremely long.
+            why_text = f"Why: {suggestion.why}"
+            draw_text(why_text[:200], x + 4, row_y)
+    else:
+        # Lightweight spacer below Axes when no stance/why metadata.
+        row_y += line_h
 
     # Draw a simple scrollbar when needed.
     if max_scroll > 0 and rect is not None and paint is not None:
@@ -554,6 +607,10 @@ def _refresh_suggestions_from_state() -> None:
         Suggestion(
             name=item["name"],
             recipe=item["recipe"],
+            persona_voice=item.get("persona_voice", ""),
+            persona_audience=item.get("persona_audience", ""),
+            persona_tone=item.get("persona_tone", ""),
+            intent_purpose=item.get("intent_purpose", ""),
             stance_command=item.get("stance_command", ""),
             why=item.get("why", ""),
         )

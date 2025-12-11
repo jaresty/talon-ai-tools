@@ -123,6 +123,7 @@ from ..lib.modelPatternGUI import (
 )
 from ..lib.axisMappings import axis_key_to_value_map_for
 from ..lib.personaConfig import persona_docs_map, PERSONA_PRESETS, INTENT_PRESETS
+from ..lib.stanceValidation import valid_stance_command as _valid_stance_command
 from ..lib.suggestionCoordinator import (
     record_suggestions,
     last_recipe_snapshot,
@@ -1346,18 +1347,44 @@ class UserActions:
                             recipe = _normalise_recipe(recipe_value)
                             if not recipe:
                                 continue
+
+                            persona_voice = str(item.get("persona_voice", "")).strip()
+                            persona_audience = str(
+                                item.get("persona_audience", "")
+                            ).strip()
+                            persona_tone = str(item.get("persona_tone", "")).strip()
+                            intent_purpose = str(item.get("intent_purpose", "")).strip()
+                            raw_stance = str(item.get("stance_command", "")).strip()
+                            why_text = str(item.get("why", "")).strip()
+                            reasoning = str(item.get("reasoning", "")).strip()
+
                             entry: dict[str, str] = {"name": name, "recipe": recipe}
-                            for key in (
-                                "persona_voice",
-                                "persona_audience",
-                                "persona_tone",
-                                "intent_purpose",
-                                "stance_command",
-                                "why",
-                            ):
-                                val = str(item.get(key, "")).strip()
-                                if val:
-                                    entry[key] = val
+                            if persona_voice:
+                                entry["persona_voice"] = persona_voice
+                            if persona_audience:
+                                entry["persona_audience"] = persona_audience
+                            if persona_tone:
+                                entry["persona_tone"] = persona_tone
+                            if intent_purpose:
+                                entry["intent_purpose"] = intent_purpose
+
+                            if raw_stance:
+                                if _valid_stance_command(raw_stance):
+                                    entry["stance_command"] = raw_stance
+                                else:
+                                    msg = f"GPT model suggest: invalid stance for '{name}': {raw_stance}"
+                                    if reasoning:
+                                        msg += f" | reasoning: {reasoning[:160]}"
+                                    try:
+                                        print(msg)
+                                    except Exception:
+                                        pass
+
+                            if why_text:
+                                entry["why"] = why_text
+                            if reasoning:
+                                entry["reasoning"] = reasoning
+
                             suggestions.append(entry)
                 parsed_from_json = bool(suggestions)
             except Exception:

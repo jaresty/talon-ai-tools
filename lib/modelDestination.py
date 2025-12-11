@@ -9,6 +9,7 @@ from ..lib.modelHelpers import format_messages, notify
 from ..lib.HTMLBuilder import Builder
 from ..lib.promptPipeline import PromptResult
 
+
 def _set_destination_kind(kind: str) -> None:
     try:
         GPTState.current_destination_kind = (kind or "").lower()
@@ -251,7 +252,10 @@ class Above(ModelDestination):
 
     def insert(self, gpt_output):
         result = _coerce_prompt_result(gpt_output)
-        if not self.inside_textarea():
+        if (
+            getattr(self, "is_default_destination", False)
+            and not self.inside_textarea()
+        ):
             _set_destination_kind("window")
             return super().insert(result)
 
@@ -267,7 +271,10 @@ class Chunked(ModelDestination):
 
     def insert(self, gpt_output):
         result = _coerce_prompt_result(gpt_output)
-        if not self.inside_textarea():
+        if (
+            getattr(self, "is_default_destination", False)
+            and not self.inside_textarea()
+        ):
             _set_destination_kind("window")
             return super().insert(result)
 
@@ -285,7 +292,10 @@ class Below(ModelDestination):
 
     def insert(self, gpt_output):
         result = _coerce_prompt_result(gpt_output)
-        if not self.inside_textarea():
+        if (
+            getattr(self, "is_default_destination", False)
+            and not self.inside_textarea()
+        ):
             _set_destination_kind("window")
             return super().insert(result)
         actions.key("right")
@@ -309,7 +319,10 @@ class Snip(ModelDestination):
 
     def insert(self, gpt_output):
         result = _coerce_prompt_result(gpt_output)
-        if not self.inside_textarea():
+        if (
+            getattr(self, "is_default_destination", False)
+            and not self.inside_textarea()
+        ):
             _set_destination_kind("window")
             return super().insert(result)
         presentation = result.presentation_for("snip")
@@ -378,7 +391,9 @@ class Browser(ModelDestination):
         axis_parts: list[str] = []
         if static_prompt:
             axis_parts.append(static_prompt)
-        last_completeness = _axis_join("completeness", getattr(GPTState, "last_completeness", "") or "")
+        last_completeness = _axis_join(
+            "completeness", getattr(GPTState, "last_completeness", "") or ""
+        )
         last_scope = _axis_join("scope", getattr(GPTState, "last_scope", "") or "")
         last_method = _axis_join("method", getattr(GPTState, "last_method", "") or "")
         last_style = _axis_join("style", getattr(GPTState, "last_style", "") or "")
@@ -417,9 +432,10 @@ class Browser(ModelDestination):
                     f"or 'model pattern menu {static_prompt}' to explore nearby recipes."
                 )
 
-        meta = getattr(presentation, "meta_text", "").strip() or getattr(
-            GPTState, "last_meta", ""
-        ).strip()
+        meta = (
+            getattr(presentation, "meta_text", "").strip()
+            or getattr(GPTState, "last_meta", "").strip()
+        )
         if meta:
             builder.h2("Model interpretation")
             parsed = _parse_meta(meta)
@@ -487,12 +503,26 @@ class Paste(ModelDestination):
 
     def insert(self, gpt_output):
         result = _coerce_prompt_result(gpt_output)
-        if not self.inside_textarea():
+        if (
+            getattr(self, "is_default_destination", False)
+            and not self.inside_textarea()
+        ):
             _set_destination_kind("window")
             return super().insert(result)
         GPTState.last_was_pasted = True
         presentation = result.presentation_for("paste")
         actions.user.paste(presentation.paste_text)
+
+
+class ForcePaste(ModelDestination):
+    kind = "forcePaste"
+
+    def insert(self, gpt_output):
+        result = _coerce_prompt_result(gpt_output)
+        GPTState.last_was_pasted = True
+        presentation = result.presentation_for("paste")
+        actions.user.paste(presentation.paste_text)
+
 
 class Draft(ModelDestination):
     kind = "draft"
@@ -511,7 +541,10 @@ class Typed(ModelDestination):
 
     def insert(self, gpt_output):
         result = _coerce_prompt_result(gpt_output)
-        if not self.inside_textarea():
+        if (
+            getattr(self, "is_default_destination", False)
+            and not self.inside_textarea()
+        ):
             _set_destination_kind("window")
             return super().insert(result)
         GPTState.last_was_pasted = True
@@ -588,6 +621,7 @@ def create_model_destination(destination_type: str) -> ModelDestination:
         "textToSpeech": TextToSpeech,
         "chain": Chain,
         "paste": Paste,
+        "forcePaste": ForcePaste,
         "typed": Typed,
         "thread": Thread,
         "newThread": NewThread,

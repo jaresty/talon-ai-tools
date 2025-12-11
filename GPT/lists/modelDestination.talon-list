@@ -4,7 +4,7 @@ list: user.modelDestination
 # A list of adjectives/adverbs describing how the result of the GPT query should be returned
 
 # paste in place
-to this: paste
+to this: forcePaste
 
 # Paste above the current selection
 above: above

@@ -327,7 +327,9 @@ class File(ModelDestination):
         available, its prompt/context) rather than raw HTTP logs.
         """
         result = _coerce_prompt_result(gpt_output)
-        presentation = result.presentation_for("paste")
+        from .modelHelpers import build_exchange_snapshot  # type: ignore
+
+        snapshot = build_exchange_snapshot(result, kind="response")
 
         # Resolve base directory from user setting, with a sensible default.
         try:
@@ -337,14 +339,7 @@ class File(ModelDestination):
             else:
                 raise ValueError("empty base directory setting")
         except Exception:
-            try:
-                from .modelHelpers import talon_user_dir  # type: ignore
-
-                base_dir = os.path.join(talon_user_dir(), "talon-ai-model-sources")
-            except Exception:
-                base_dir = os.path.join(
-                    os.path.expanduser("~"), "talon-ai-model-sources"
-                )
+            base_dir = os.path.join(os.path.expanduser("~"), "talon-ai-model-sources")
 
         try:
             os.makedirs(base_dir, exist_ok=True)
@@ -410,13 +405,16 @@ class File(ModelDestination):
             if axis_value:
                 header_lines.append(f"{axis_key}_tokens: {axis_value}")
 
-        prompt_text = getattr(GPTState, "last_prompt_text", "") or ""
-        response_text = presentation.paste_text or presentation.display_text or ""
+        prompt_text = snapshot.get("prompt_text", "") or ""
+        response_text = snapshot.get("response_text", "") or ""
+        meta_text = snapshot.get("meta_text", "") or ""
 
         sections = []
         if prompt_text.strip():
             sections.append("# Prompt / Context\n" + prompt_text.strip() + "\n")
         sections.append("# Response\n" + response_text.strip() + "\n")
+        if meta_text.strip():
+            sections.append("# Meta\n" + meta_text.strip() + "\n")
 
         content = "\n".join(header_lines) + "\n---\n\n" + "\n\n".join(sections)
 

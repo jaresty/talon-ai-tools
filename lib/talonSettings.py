@@ -738,7 +738,6 @@ def pleasePrompt(m) -> str:
 
 @mod.capture(rule="{user.modelDestination} | <user.modelDestinationStack>")
 def modelDestination(m) -> ModelDestination:
-    print(f"modelDestination capture: {m}")
     if hasattr(m, "modelDestinationStack"):
         return m.modelDestinationStack
 
@@ -837,7 +836,6 @@ def applyPromptConfiguration(matched_prompt) -> ApplyPromptConfiguration:
     rule="(<user.modelSimpleSource> | <user.modelDestination> | <user.modelSimpleSource> <user.modelDestination>)$"
 )
 def passConfiguration(matched_prompt) -> PassConfiguration:
-    print(f"passConfiguration capture: {matched_prompt}")
     return PassConfiguration(
         getattr(
             matched_prompt,

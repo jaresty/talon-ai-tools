@@ -263,6 +263,31 @@ def notify(message: str):
     _log(message)
 
 
+def build_exchange_snapshot(result, kind: str = "response") -> dict:
+    """Build a simple exchange snapshot for destinations like File.
+
+    Uses GPTState to fill in prompt/response/meta text alongside the
+    rendered presentation from the PromptResult-like object.
+    """
+    try:
+        presentation = result.presentation_for("paste")
+        response_text = getattr(presentation, "paste_text", "") or getattr(
+            presentation, "display_text", ""
+        )
+    except Exception:
+        response_text = ""
+
+    prompt_text = getattr(GPTState, "last_prompt_text", "") or ""
+    meta_text = getattr(GPTState, "last_meta", "") or ""
+
+    return {
+        "kind": kind,
+        "prompt_text": prompt_text,
+        "response_text": response_text,
+        "meta_text": meta_text,
+    }
+
+
 class MissingAPIKeyError(Exception):
     """Custom exception for missing API keys."""
 

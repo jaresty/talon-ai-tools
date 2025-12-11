@@ -124,6 +124,54 @@ When the confirmation GUI is open, it also:
   - `model again todo gist fog` – change static prompt to `todo` and completeness to `gist`, reuse the last scope/method/style, and set directional lens to `fog`.
   - `model again steps tight rog` – keep the last static prompt/completeness/scope, but switch method to `steps`, style to `tight`, and directional lens to `rog`.
 
+### Persona / Intent / Contract (Who / Why / How)
+
+When you are deciding how much of the grammar to use, it helps to think in three families (ADR 040):
+
+- **Persona – Who**  
+  - `voice` – who is speaking (for example, `as programmer`, `as teacher`).  
+  - `audience` – who this is for (for example, `to junior engineer`, `to CEO`, `to team`).  
+  - `tone` – emotional register (for example, `casually`, `formally`, `directly`, `gently`, `kindly`).  
+  - You can usually ignore persona until you explicitly want to tailor an explanation for a specific role.
+
+- **Intent – Why**  
+  - `purpose` – interaction-level intent (for example, `for information`, `for deciding`, `for brainstorming`, `for teaching`, `for evaluating`).  
+  - Pick a purpose when you care about “why we’re talking” (teach vs decide vs explore), not about output container or reasoning steps.
+
+- **Contract – How**  
+  - `completeness` – how much coverage (`skim`, `gist`, `full`, `max`, `minimal`, `deep`).  
+  - `scope` – what territory is in-bounds (`narrow`, `focus`, `bound`, `actions`, `relations`, `system`, `dynamics`, etc.).  
+  - `method` – how to think/decompose (`steps`, `plan`, `debugging`, `xp`, `diverge`, `converge`, `mapping`, etc.).  
+  - `style` – visible shape/container (`plain`, `tight`, `bullets`, `table`, `code`, `adr`, `presenterm`, `slack`, `jira`, etc.).
+
+In day-to-day use you can:
+
+- Start with just a static prompt and directional lens (for example, `model describe fog`).
+- Add **How** (contract axes) when you want more control over depth, territory, reasoning, or output shape.
+- Only reach for **Who** (persona) and **Why** (intent) when you specifically want to change who you’re speaking as/to, or whether you’re teaching vs deciding vs brainstorming.
+
+#### Who / Why / How – examples
+
+A couple of common prompts decomposed into the three families:
+
+- “Explain simply to a junior engineer”  
+  - **Persona (Who)**: `as teacher` + `to junior engineer` + `tone=kindly`.  
+  - **Intent (Why)**: `for teaching`.  
+  - **Contract (How)**: `completeness=gist` or `minimal`, `scope=focus`, `method=scaffold`, `style=plain` (optionally `tight`).  
+  - **Do not** try to encode this entirely as a new audience or purpose token; treat it as a recipe across existing axes.
+
+- “Executive brief for CEO” vs “Deep technical write-up for engineers”  
+  - **Persona (Who)**:  
+    - Exec brief → `as programmer` + `to CEO` + `tone=directly`/`formally`.  
+    - Deep write-up → `as programmer` + `to programmer`/`to principal engineer`.  
+  - **Intent (Why)**:  
+    - Exec brief → often `for deciding` or `for information`.  
+    - Deep write-up → usually `for information` or `for evaluating`.  
+  - **Contract (How)**:  
+    - Exec brief → `completeness=gist`, `scope=focus`, `method=headline`/`structure`, `style=plain` or `announce`.  
+    - Deep write-up → `completeness=full` or `deep`, `scope=system`/`relations`, `method=structure`/`analysis`, `style=plain` or `adr`.  
+  - Again, keep persona and intent focused on Who/Why; put coverage, territory, reasoning, and container into the contract axes.
+
 ### Modifier axes (advanced)
 
 The `model` command now supports several short, speech-friendly modifier axes you can tack on after the prompt:

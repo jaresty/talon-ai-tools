@@ -1,18 +1,18 @@
 list: user.modelAudience
 -
 
-to managers: The audience for this is a group of managers.
-to team: The audience for this is your team members.
-to stakeholders: The audience for this is the stakeholders.
-to product manager: The audience for this is a product manager.
-to designer: The audience for this is a designer.
-to analyst: The audience for this is an analyst. Consider how best to visualize the result.
-to programmer: The audience for this is a programmer.
-to LLM: The audience for this is a large language model.
-to junior engineer: The audience for this is a junior engineer.
-to principal engineer: The audience for this is a principal engineer.
-to Kent Beck: The audience for this is Kent Beck.
-to CEO: The audience for this is a Chief Executive Officer.
-to platform team: The audience for this is a platform team.
-to stream aligned team: The audience for this is a stream-aligned team.
-to XP enthusiast: The audience for this is an XP enthusiast. They care about early validation with working software in production, small batches, social programming (pairing and mobbing), and balanced, swarm-capable teams of generalists.
+to managers: to managers
+to team: to team
+to stakeholders: to stakeholders
+to product manager: to product manager
+to designer: to designer
+to analyst: to analyst
+to programmer: to programmer
+to LLM: to LLM
+to junior engineer: to junior engineer
+to principal engineer: to principal engineer
+to Kent Beck: to Kent Beck
+to CEO: to CEO
+to platform team: to platform team
+to stream aligned team: to stream aligned team
+to XP enthusiast: to XP enthusiast

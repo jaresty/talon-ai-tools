@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from talon import settings
 from .axisMappings import axis_hydrate_tokens, axis_value_to_key_map_for
+from .personaConfig import persona_hydrate_tokens
 
 from .metaPromptConfig import META_INTERPRETATION_GUIDANCE
 from dataclasses import dataclass, field
@@ -195,11 +196,18 @@ class GPTSystemPrompt:
                 return hydrated[0]
             return " ".join(hydrated)
 
+        def hydrate_persona(axis: str, value: str) -> str:
+            tokens = _tokens_for_axis(axis, value)
+            if not tokens:
+                return ""
+            hydrated = persona_hydrate_tokens(axis, tokens)
+            return " ".join(hydrated) if hydrated else " ".join(tokens)
+
         lines = [
-            f"Voice: {self.get_voice()}",
-            f"Tone: {self.get_tone()}",
-            f"Audience: {self.get_audience()}",
-            f"Purpose: {self.get_purpose()}",
+            f"Voice: {hydrate_persona('voice', self.get_voice())}",
+            f"Tone: {hydrate_persona('tone', self.get_tone())}",
+            f"Audience: {hydrate_persona('audience', self.get_audience())}",
+            f"Purpose: {hydrate_persona('purpose', self.get_purpose())}",
             f"Completeness: {hydrate('completeness', self.get_completeness())}",
             f"Scope: {hydrate('scope', self.get_scope())}",
             f"Method: {hydrate('method', self.get_method())}",

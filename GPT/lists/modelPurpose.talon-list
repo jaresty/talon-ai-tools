@@ -1,18 +1,18 @@
 list: user.modelPurpose
 -
 
-for information: You are writing to provide information.
-for entertainment: You are writing to entertain.
-for persuasion: You are writing to persuade.
-for brainstorming: You are writing to open up possibilities and explore multiple options.
-for deciding: You are writing to help converge on a decision.
-for planning: You are writing to plan.
-for evaluating: You are evaluating something.
-for coaching: You are coaching someone.
-for appreciation: You are offering appreciation.
-for triage: You are helping to triage. Any suggestions you make should be doable in a short timescale. Do not discuss the time required.
-for announcing: When crafting this, remember the purpose is to create a clear, concise announcement that can be delivered by any appropriate speaker. Make explicit who the announcement is for, what is happening, when and where it occurs, and what actions (if any) the audience should take, without assuming a specific speaker identity or style.
-for walk through: Frame your response as a clear walkthrough, step by step, focusing only on the high-level ideas so the audience gradually builds understanding.
-for collaborating: Collaborate with me iteratively: give only the next-level skeleton (headings/bullets/brief stubs), no extra detail, and expand or finalize only when I explicitly request it.
-for teaching: When creating teaching content, remember the purpose is to help me teach: use a Socratic style where appropriate by starting sections with guiding questions that lead the audience into the explanations.
-for project management: I want to plan a project in a LEAN way.
+for information: for information
+for entertainment: for entertainment
+for persuasion: for persuasion
+for brainstorming: for brainstorming
+for deciding: for deciding
+for planning: for planning
+for evaluating: for evaluating
+for coaching: for coaching
+for appreciation: for appreciation
+for triage: for triage
+for announcing: for announcing
+for walk through: for walk through
+for collaborating: for collaborating
+for teaching: for teaching
+for project management: for project management

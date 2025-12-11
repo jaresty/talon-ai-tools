@@ -783,6 +783,10 @@ def _cheat_sheet_text() -> str:
         "- model run suggest / model run suggestions",
         "- model history list / history drawer",
         "- model help (HTML docs)",
+        "Who / Why / How (ADR 040):",
+        "- Persona (Who): voice, audience, tone",
+        "- Intent (Why): purpose",
+        "- Contract (How): completeness, scope, method, style",
         "Axes (examples):",
         "- completeness: skim | gist | full | deep",
         "- scope: narrow | focus | bound | edges",
@@ -834,6 +838,7 @@ def _adr_links_text() -> str:
             "docs/adr/022-canvas-quick-help-gui.md",
             "docs/adr/027-request-state-machine-and-progress-surfaces.md",
             "docs/adr/028-help-hub-and-discoverability.md",
+            "docs/adr/040-axis-families-and-persona-contract-simplification.md",
         ]
     )
 

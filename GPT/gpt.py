@@ -1672,10 +1672,35 @@ class UserActions:
         render_list_as_tables("Scope Modifiers", "scopeModifier.talon-list", builder)
         render_list_as_tables("Method Modifiers", "methodModifier.talon-list", builder)
         render_list_as_tables("Style Modifiers", "styleModifier.talon-list", builder)
-        render_list_as_tables("Voice", "modelVoice.talon-list", builder)
-        render_list_as_tables("Tone", "modelTone.talon-list", builder)
-        render_list_as_tables("Audience", "modelAudience.talon-list", builder)
-        render_list_as_tables("Purpose", "modelPurpose.talon-list", builder)
+        # For persona and intent axes, keep the Talon lists as token carriers and
+        # pull rich descriptions from a Python persona config so we do not bake
+        # long instructions directly into the .talon files.
+        from ..lib.personaConfig import persona_docs_map
+
+        render_list_as_tables(
+            "Voice",
+            "modelVoice.talon-list",
+            builder,
+            description_overrides=persona_docs_map("voice"),
+        )
+        render_list_as_tables(
+            "Tone",
+            "modelTone.talon-list",
+            builder,
+            description_overrides=persona_docs_map("tone"),
+        )
+        render_list_as_tables(
+            "Audience",
+            "modelAudience.talon-list",
+            builder,
+            description_overrides=persona_docs_map("audience"),
+        )
+        render_list_as_tables(
+            "Purpose",
+            "modelPurpose.talon-list",
+            builder,
+            description_overrides=persona_docs_map("purpose"),
+        )
         # For Sources/Destinations, descriptions live in the preceding comment lines
         render_list_as_tables(
             "Sources",

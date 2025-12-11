@@ -1,4 +1,4 @@
-# 036 – Axis Families and Persona/Contract Simplification
+# 040 – Axis Families and Persona/Contract Simplification
 
 - Status: Draft  
 - Date: 2025-12-10  
@@ -311,6 +311,7 @@ We introduce an explicit **axis family model** and associated **design rules**:
    - Define a small set of shared persona presets in a SSOT (for example, a `PERSONA_PRESETS` mapping in an appropriate module):  
      - Each preset: `{name, voice, audience, tone}`.  
    - Similarly define intent presets for common purposes.  
+   - Align `modelVoice.talon-list`, `modelAudience.talon-list`, `modelTone.talon-list`, and `modelPurpose.talon-list` with the axis list pattern by keeping them as token→key carriers (for example, `spoken: key` or effectively `key: key`), and move longer labels/descriptions into a Python-side doc/lookup layer that is only hydrated when constructing prompts for the model.  
    - Surface these presets in pattern GUIs, the suggestions modal, and/or a lightweight persona/intent picker, without changing the underlying lists or system prompt representation.
 
 3. **Axis-family contribution rules**  
@@ -327,8 +328,8 @@ We introduce an explicit **axis family model** and associated **design rules**:
      - Where *not* to encode each behaviour (for example, not as a new purpose or voice).
 
 5. **Work-log and guardrails**  
-   - Track concrete slices of this ADR in a `docs/adr/036-axis-families-and-persona-contract-simplification.work-log.md` file as changes land.  
-   - Ensure tests that already guard axis semantics (for example, `tests/test_voice_audience_tone_purpose_lists.py`, `tests/test_readme_axis_lists.py`, `tests/test_model_help_gui.py`) continue to pass as help/README structure changes, adding small assertions where useful (for example, that help surfaces show the family grouping text).
+   - Track concrete slices of this ADR in a `docs/adr/040-axis-families-and-persona-contract-simplification.work-log.md` file as changes land.  
+   - Ensure tests that already guard axis semantics (for example, `_tests/test_voice_audience_tone_purpose_lists.py`, and any axis/readme/help Hub tests) continue to pass as help/README structure changes, adding small assertions where useful (for example, that help surfaces show the family grouping text).
 
 6. **Voice-first ergonomics (Talon)**  
    - Treat persona and intent presets, and high-value pattern recipes, as **spoken commands first** and GUI labels second.  

@@ -1,17 +1,17 @@
 list: user.modelVoice
 -
 
-as programmer: Act as a programmer.
-as prompt engineer: Act as a prompt engineer.
-as scientist: Act as a scientist.
-as writer: Act as a writer.
-as designer: Act as a designer.
+as programmer: as programmer
+as prompt engineer: as prompt engineer
+as scientist: as scientist
+as writer: as writer
+as designer: as designer
 
-as teacher: Act as a teacher.
+as teacher: as teacher
 
-as facilitator: Act as a facilitator.
-as PM: Act as a product manager.
+as facilitator: as facilitator
+as PM: as PM
 
-as junior engineer: Act as a junior engineer.
-as principal engineer: Act as a principal engineer.
-as Kent Beck: Act as Kent Beck.
+as junior engineer: as junior engineer
+as principal engineer: as principal engineer
+as Kent Beck: as Kent Beck

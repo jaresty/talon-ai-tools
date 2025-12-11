@@ -1,6 +1,6 @@
 # 020 – Richer Meta Interpretation Structure
 
-- Status: Proposed  
+- Status: Accepted  
 - Date: 2025-12-05  
 - Context: `talon-ai-tools` GPT integration (`model` commands), building on ADR 019
 - See also:

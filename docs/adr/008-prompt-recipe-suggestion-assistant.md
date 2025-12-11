@@ -1,6 +1,6 @@
 # 008 – Prompt Recipe Suggestion Assistant
 
-- Status: Proposed  
+- Status: Accepted  
 - Date: 2025-12-03  
 - Context: `talon-ai-tools` GPT integration (`model` commands)
 

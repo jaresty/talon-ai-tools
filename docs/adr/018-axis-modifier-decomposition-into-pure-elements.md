@@ -1,6 +1,6 @@
 # 018 – Axis Modifier Decomposition into Pure Elements
 
-- Status: Draft  
+- Status: Accepted  
 - Date: 2025-12-05  
 - Context: `talon-ai-tools` GPT `model` commands (static prompts + completeness/scope/method/style + directional modifiers + voice/audience/tone/purpose + destination)  
 - Related ADRs:  

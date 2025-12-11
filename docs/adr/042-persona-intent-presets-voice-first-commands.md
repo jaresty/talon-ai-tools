@@ -1,6 +1,6 @@
 # 042 – Voice-First Persona and Intent Presets as First-Class Commands
 
-- Status: Proposed  
+- Status: Accepted  
 - Date: 2025-12-11  
 - Context: `talon-ai-tools` GPT `model` commands, Persona/Intent presets in `lib/personaConfig.py` and GUI/help surfaces (ADR 015, 026, 040, 041).
 

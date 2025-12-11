@@ -1,6 +1,6 @@
 # 043 – Validation and Debug Reasoning for LLM-Suggested Prompt Commands
 
-- Status: Proposed  
+- Status: Accepted  
 - Date: 2025-12-11  
 - Context: `talon-ai-tools` GPT `model suggest` flow, prompt recipe suggestions GUI, and ADRs 008/040/042.
 

@@ -1,6 +1,6 @@
 # ADR-0039 – Save Model Exchanges via File Destination
 
-Status: Draft  
+Status: Accepted  
 Date: 2025-12-10  
 Owners: Talon AI tools maintainers
 

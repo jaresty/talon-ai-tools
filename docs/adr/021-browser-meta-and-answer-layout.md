@@ -1,6 +1,6 @@
 # 021 – Browser Meta and Answer Layout
 
-- Status: Proposed  
+- Status: Accepted  
 - Date: 2025-12-05  
 - Context: `talon-ai-tools` GPT integration (`model … to browser`)
 - See also:

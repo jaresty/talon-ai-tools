@@ -1,6 +1,6 @@
 # 040 – Axis Families and Persona/Contract Simplification
 
-- Status: Draft  
+- Status: Accepted  
 - Date: 2025-12-10  
 - Context: `talon-ai-tools` GPT `model` commands (static prompts + completeness/scope/method/style + directional modifiers + voice/audience/tone/purpose)  
 - Related ADRs:  

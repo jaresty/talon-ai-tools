@@ -1,6 +1,6 @@
 # 041 – Stance-Aware Prompt Suggestions Without Presets in GUI
 
-- Status: Draft  
+- Status: Accepted  
 - Date: 2025-12-11  
 - Context: Prompt recipe suggestions (ADR 008) and Persona / Intent / Contract framing (ADR 040) in `talon-ai-tools`.
 

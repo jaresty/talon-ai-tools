@@ -1,6 +1,6 @@
 # 013 – Static Prompt Axis Refinement and Streamlining
 
-- Status: Proposed  
+- Status: Accepted  
 - Date: 2025-12-XX  
 - Context: `talon-ai-tools` GPT `model` commands (static prompts + completeness/scope/method/style axes + directional lenses)  
 - Related ADRs:  

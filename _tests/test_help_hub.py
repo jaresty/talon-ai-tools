@@ -37,6 +37,29 @@ def test_help_hub_button_triggers_quick_help():
     assert "model_help_canvas_open" in labels
 
 
+def test_help_hub_quick_help_closes_hub_before_open(monkeypatch):
+    # Open the hub and patch quick help to assert close-before-open ordering.
+    helpHub.help_hub_open()
+    assert helpHub.HelpHubState.showing is True
+
+    calls: list[str] = []
+    original = actions.user.model_help_canvas_open
+
+    def _wrapped():  # type: ignore[no-redef]
+        # Help Hub should already be closed when quick help opens.
+        calls.append("open_quick_help")
+        assert helpHub.HelpHubState.showing is False
+        return original()
+
+    monkeypatch.setattr(actions.user, "model_help_canvas_open", _wrapped)
+    try:
+        helpHub.help_hub_test_click("Quick help")
+    finally:
+        monkeypatch.setattr(actions.user, "model_help_canvas_open", original)
+
+    assert calls == ["open_quick_help"]
+
+
 def test_help_hub_copy_adr_links():
     helpHub.help_hub_open()
     helpHub.help_hub_test_click("ADR links")

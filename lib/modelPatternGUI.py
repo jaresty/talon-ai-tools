@@ -1066,6 +1066,62 @@ def _parse_recipe(recipe: str) -> tuple[str, str, str, str, str, str]:
     return static_prompt, completeness, scope, method, style, directional
 
 
+def pattern_debug_snapshot(pattern_name: str) -> dict[str, object]:
+    """Return a structured debug snapshot for a named pattern.
+
+    This helper is a first-step coordinator for the Pattern Debug & GPT Action
+    domain: it exposes static pattern configuration (recipe and axes) together
+    with the current `GPTState` axis view so tests and GPT actions can inspect
+    the same shape of data.
+    """
+
+    pattern: Optional[PromptPattern] = None
+    for candidate in PATTERNS:
+        if candidate.name.lower() == pattern_name.lower():
+            pattern = candidate
+            break
+    if pattern is None:
+        return {}
+
+    (
+        static_prompt,
+        completeness,
+        scope,
+        method,
+        style,
+        directional,
+    ) = _parse_recipe(pattern.recipe)
+
+    axes: dict[str, object] = {
+        "completeness": completeness,
+        "scope": scope.split() if scope else [],
+        "method": method.split() if method else [],
+        "style": style.split() if style else [],
+        "directional": directional,
+    }
+
+    snapshot: dict[str, object] = {
+        "name": pattern.name,
+        "domain": pattern.domain,
+        "description": pattern.description,
+        "recipe": pattern.recipe,
+        "static_prompt": static_prompt,
+        "axes": axes,
+    }
+
+    # Attach the current GPTState axis snapshot when available so callers can
+    # compare configured axes to the most recent run.
+    try:
+        snapshot["last_recipe"] = getattr(GPTState, "last_recipe", "") or ""
+        last_axes = getattr(GPTState, "last_axes", None) or {}
+        if isinstance(last_axes, dict):
+            snapshot["last_axes"] = last_axes
+    except Exception:
+        pass
+
+    return snapshot
+
+
 def _run_pattern(pattern: PromptPattern) -> None:
     """Execute a model pattern as if spoken via the model grammar."""
     (

@@ -12,6 +12,10 @@ else:
 if bootstrap is not None:
     from talon import settings
     from talon_user.lib.axisMappings import axis_key_to_value_map_for
+    from talon_user.lib.staticPromptConfig import (
+        STATIC_PROMPT_CONFIG,
+        get_static_prompt_axes,
+    )
     from talon_user.lib.talonSettings import modelPrompt
     from talon_user.lib.modelState import GPTState
 
@@ -100,7 +104,9 @@ if bootstrap is not None:
             completeness_desc = axis_key_to_value_map_for("completeness").get(
                 "skim", "skim"
             )
-            scope_desc = axis_key_to_value_map_for("scope").get("relations", "relations")
+            scope_desc = axis_key_to_value_map_for("scope").get(
+                "relations", "relations"
+            )
             method_desc = axis_key_to_value_map_for("method").get("steps", "steps")
             style_desc = axis_key_to_value_map_for("style").get("bullets", "bullets")
 
@@ -244,6 +250,56 @@ if bootstrap is not None:
             self.assertEqual(GPTState.system_prompt.method, "steps")
             self.assertEqual(GPTState.system_prompt.style, "")
             self.assertEqual(GPTState.last_recipe, "infer · full · steps")
+
+        def test_profile_axes_are_propagated_to_system_prompt(self) -> None:
+            """Guardrail: profile axes should be reflected in GPTState.last_axes.
+
+            For every profiled static prompt that defines scope/method/style axes,
+            calling modelPrompt with only that staticPrompt (and a directional
+            lens) should populate GPTState.last_axes with those axis tokens,
+            subject to the usual axisConfig filtering and hierarchy rules.
+            """
+
+            from types import SimpleNamespace as _NS
+
+            for name, _profile in STATIC_PROMPT_CONFIG.items():
+                axes = get_static_prompt_axes(name)
+                # Skip prompts with no profile axes.
+                if not axes:
+                    continue
+                has_profile_axes = any(
+                    axis in axes for axis in ("scope", "method", "style")
+                )
+                if not has_profile_axes:
+                    continue
+
+                with self.subTest(static_prompt=name):
+                    GPTState.reset_all()
+                    m = _NS(staticPrompt=name, directionalModifier="DIR")
+                    _ = modelPrompt(m)
+
+                    last_axes = GPTState.last_axes
+
+                    for axis in ("scope", "method", "style"):
+                        configured = axes.get(axis)
+                        if not configured:
+                            continue
+                        if isinstance(configured, list):
+                            expected_tokens = [
+                                str(v).strip() for v in configured if str(v).strip()
+                            ]
+                        else:
+                            token = str(configured).strip()
+                            expected_tokens = [token] if token else []
+
+                        actual_tokens = last_axes.get(axis, [])
+                        for token in expected_tokens:
+                            self.assertIn(
+                                token,
+                                actual_tokens,
+                                f"Static prompt {name!r} axis {axis!r} token {token!r} "
+                                "not reflected in GPTState.last_axes",
+                            )
 
         def test_ambiguous_token_uses_priority_order(self):
             """When a token is valid for multiple axes, the hierarchy should pick the higher-priority axis."""
@@ -495,9 +551,7 @@ if bootstrap is not None:
             _ = modelPrompt(m)
 
             # System prompt should see the raw, spoken style description.
-            self.assertEqual(
-                GPTState.system_prompt.style, "jira story faq bullets"
-            )
+            self.assertEqual(GPTState.system_prompt.style, "jira story faq bullets")
 
             # last_style should include at most 3 tokens drawn from the input set.
             style_tokens = GPTState.last_style.split()
@@ -565,6 +619,7 @@ if bootstrap is not None:
 
 else:
     if not TYPE_CHECKING:
+
         class ModelPromptModifiersTests(unittest.TestCase):
             @unittest.skip("Test harness unavailable outside unittest runs")
             def test_placeholder(self):

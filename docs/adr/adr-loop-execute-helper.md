@@ -122,6 +122,15 @@ Common patterns (not exhaustive) include:
   Treat **pure wording-only tweaks** (that do not change behaviour, evidence,
   or status) as anti-patterns for ADR loops; batch those outside of this
   helper when possible.
+  Status- or documentation-only slices should be the **exception**, not the
+  default: for a given ADR, ensure that the clear majority of loops retire or
+  introduce real behaviour/config/test changes rather than repeatedly
+  re-describing scope or status. When you do mark tasks as out-of-scope in this
+  repo, include a short justification of why they cannot or will not be
+  implemented here (rather than simply being difficult or inconvenient).
+  In the ADR's work-log entry for each loop, explicitly tag the slice as
+  `kind: behaviour`, `kind: guardrail/tests`, or `kind: status` so that the
+  balance of slice types is visible over time.
 - Keep the slice **bounded and completable** enough that you can, within
 this single loop:
   - Implement the change end-to-end,
@@ -151,6 +160,11 @@ this single loop:
     and current status" subsection to the ADR or
     work-log so a future loop can see progress at
     a glance.
+  - Do not run more than one status-snapshot loop
+    in a row for the same ADR unless the previous
+    loop has already established that `B_a ≈ 0`
+    (no remaining in-repo work) and you are only
+    confirming that state.
 
 ---
 
@@ -221,7 +235,12 @@ You can think about each ADR `a` in terms of a simple state:
   (for example, tests, checks, or other validation that make changes safer).
 
 Each loop chooses one ADR and one slice, then:
-
-- Reduces `B_a` by completing or shrinking at least one ADR‑defined task.
+ 
+- Reduces `B_a` by completing or shrinking at least one ADR‑defined task **in this
+  repo**; pure status-only loops should only reduce `B_a` when they mark work as
+  complete or explicitly out-of-repo with a brief, concrete justification rooted
+  in prior behavioural evidence, and when that decision is recorded in the
+  work-log for later review—not as a way to avoid implementing planned changes.
 - Keeps or improves `C_a` enough that future changes in this area remain
   safe and easy to reason about.
+

@@ -853,37 +853,41 @@ def _build_buttons() -> List[HubButton]:
         HubButton(
             label="Quick help",
             description="Open grammar quick reference",
-            handler=lambda: actions.user.model_help_canvas_open(),
+            handler=_navigate_and_close(lambda: actions.user.model_help_canvas_open()),
             voice_hint="Say: model quick help",
         ),
         HubButton(
             label="Patterns",
             description="Open curated model patterns",
-            handler=lambda: actions.user.model_pattern_gui_open(),
+            handler=_navigate_and_close(lambda: actions.user.model_pattern_gui_open()),
             voice_hint="Say: model patterns",
         ),
         HubButton(
             label="Prompt pattern menu",
             description="Open presets for the last prompt",
-            handler=_open_prompt_pattern_menu,
+            handler=_navigate_and_close(_open_prompt_pattern_menu),
             voice_hint="Say: model pattern menu <prompt>",
         ),
         HubButton(
             label="Suggestions",
             description="Reopen prompt recipe suggestions",
-            handler=lambda: actions.user.model_prompt_recipe_suggestions_gui_open(),
+            handler=_navigate_and_close(
+                lambda: actions.user.model_prompt_recipe_suggestions_gui_open()
+            ),
             voice_hint="Say: model run suggestions",
         ),
         HubButton(
             label="History",
             description="Open request history drawer",
-            handler=lambda: actions.user.request_history_drawer_toggle(),
+            handler=_navigate_and_close(
+                lambda: actions.user.request_history_drawer_toggle()
+            ),
             voice_hint="Say: model history drawer",
         ),
         HubButton(
             label="HTML docs",
             description="Open full docs in browser",
-            handler=lambda: actions.user.gpt_help(),
+            handler=_navigate_and_close(lambda: actions.user.gpt_help()),
             voice_hint="Say: model help",
         ),
         HubButton(
@@ -930,6 +934,27 @@ def _copy_adr_links() -> None:
         actions.app.notify("Help Hub: ADR links copied")
     except Exception:
         pass
+
+
+def _navigate_and_close(handler: Callable[[], None]) -> Callable[[], None]:
+    """Return a handler that closes Help Hub before navigation.
+
+    This keeps overlay UIs from stacking by ensuring that when a Help Hub
+    button opens another surface (quick help, patterns, history, etc.), the
+    hub itself closes first.
+    """
+
+    def _wrapped() -> None:
+        try:
+            help_hub_close()
+        except Exception:
+            pass
+        try:
+            handler()
+        except Exception:
+            pass
+
+    return _wrapped
 
 
 def help_hub_open():

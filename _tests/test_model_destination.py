@@ -132,7 +132,7 @@ if bootstrap is not None:
                         self.messages = wrapped.messages
                         self.session = wrapped.session
 
-                    def presentation_for(self, destination_kind):
+                    def presentation_for(self, destination_kind):  # noqa: ARG002
                         return self._wrapped.presentation_for(destination_kind)
 
                     def append_thread(self):
@@ -214,6 +214,53 @@ if bootstrap is not None:
                 content = f.read()
             self.assertIn("# Response", content)
             self.assertIn("answer body", content)
+
+        def test_file_destination_header_and_slug_use_last_axes_tokens(self):
+            from talon import settings as talon_settings  # type: ignore
+            import os
+            import tempfile
+
+            tmpdir = tempfile.mkdtemp()
+            talon_settings.set("user.model_source_save_directory", tmpdir)
+
+            GPTState.reset_all()
+            # Seed legacy last_* fields with values that should be overridden
+            # by the structured last_axes tokens.
+            GPTState.last_static_prompt = "infer"
+            GPTState.last_completeness = "gist"
+            GPTState.last_scope = "legacy-scope"
+            GPTState.last_method = "legacy-method"
+            GPTState.last_style = "legacy-style"
+            GPTState.last_axes = {
+                "completeness": ["full"],
+                "scope": ["bound", "edges"],
+                "method": ["rigor"],
+                "style": ["plain"],
+            }
+
+            result = PromptResult.from_messages([format_message("answer body")])
+
+            before = set(os.listdir(tmpdir))
+            dest = model_destination_module.File()
+            dest.insert(result)
+            after = set(os.listdir(tmpdir))
+            new_files = list(after - before)
+            self.assertEqual(len(new_files), 1, new_files)
+            filename = new_files[0]
+
+            # Filename slug should reflect the axis tokens from last_axes
+            # rather than the legacy last_* strings.
+            self.assertIn("infer-full-bound-edges-rigor-plain", filename)
+
+            path = os.path.join(tmpdir, filename)
+            with open(path, "r", encoding="utf-8") as f:
+                content = f.read()
+
+            # Header should include axis tokens derived from last_axes.
+            self.assertIn("completeness_tokens: full", content)
+            self.assertIn("scope_tokens: bound edges", content)
+            self.assertIn("method_tokens: rigor", content)
+            self.assertIn("style_tokens: plain", content)
 
 
 else:

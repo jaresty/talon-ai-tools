@@ -3,7 +3,7 @@ import os
 import tempfile
 import unittest
 from typing import TYPE_CHECKING
-from unittest.mock import ANY, MagicMock, patch
+from unittest.mock import MagicMock, patch
 
 try:
     from bootstrap import bootstrap
@@ -197,28 +197,25 @@ if bootstrap is not None:
         def test_gpt_show_last_meta_notifies_when_present(self):
             GPTState.last_meta = "Interpreted as: summarise the design tradeoffs."
 
-            gpt_module.UserActions.gpt_show_last_meta()
+            with patch.object(actions.app, "notify") as app_notify:
+                gpt_module.UserActions.gpt_show_last_meta()
 
-            # The stub app namespace records notify calls.
-            self.assertTrue(
-                any(
-                    "Last meta interpretation:" in call[1][0]
-                    for call in actions.app.calls
-                ),
-                "Expected a notification containing the last meta interpretation",
+            app_notify.assert_called_once()
+            self.assertIn(
+                "Last meta interpretation:",
+                str(app_notify.call_args[0][0]),
             )
 
         def test_gpt_show_last_meta_notifies_when_missing(self):
             GPTState.last_meta = ""
 
-            gpt_module.UserActions.gpt_show_last_meta()
+            with patch.object(actions.app, "notify") as app_notify:
+                gpt_module.UserActions.gpt_show_last_meta()
 
-            self.assertTrue(
-                any(
-                    "No last meta interpretation available" in call[1][0]
-                    for call in actions.app.calls
-                ),
-                "Expected a notification when no last meta is available",
+            app_notify.assert_called_once()
+            self.assertIn(
+                "No last meta interpretation available",
+                str(app_notify.call_args[0][0]),
             )
 
         def test_gpt_copy_last_raw_exchange_copies_when_available(self):
@@ -346,11 +343,13 @@ if bootstrap is not None:
 
         def test_gpt_set_async_blocking_sets_setting_and_notifies(self):
             actions.app.calls.clear()
-            gpt_module.UserActions.gpt_set_async_blocking(1)
+            with patch.object(actions.app, "notify") as app_notify:
+                gpt_module.UserActions.gpt_set_async_blocking(1)
             self.assertTrue(gpt_module.settings.get("user.model_async_blocking"))
-            self.assertTrue(
-                any(call[0] == "notify" for call in actions.app.calls),
-                "Expected a notification when toggling async mode",
+            app_notify.assert_called_once()
+            self.assertIn(
+                "async mode set to",
+                str(app_notify.call_args[0][0]),
             )
 
         def test_gpt_run_prompt_returns_pipeline_text(self):

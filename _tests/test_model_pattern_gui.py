@@ -20,6 +20,7 @@ if bootstrap is not None:
             UserActions,
             _axis_value,
             _parse_recipe,
+            pattern_debug_snapshot,
         )
         from talon_user.lib.modelState import GPTState
         from talon_user.lib.staticPromptConfig import STATIC_PROMPT_CONFIG
@@ -212,6 +213,42 @@ if bootstrap is not None:
                 self.assertEqual(method, "motifs")
                 self.assertEqual(style, "bullets")
                 self.assertEqual(directional, "fog")
+
+            def test_pattern_debug_snapshot_includes_axes_and_state(self) -> None:
+                """pattern_debug_snapshot should expose config and GPTState axes."""
+                target = next(p for p in PATTERNS if p.name == "Debug bug")
+
+                GPTState.last_recipe = "unit-test-recipe"
+                GPTState.last_axes = {
+                    "completeness": ["full"],
+                    "scope": ["narrow"],
+                    "method": ["debugging"],
+                    "style": [],
+                }
+
+                snapshot = pattern_debug_snapshot(target.name)
+
+                self.assertEqual(snapshot["name"], target.name)
+                self.assertEqual(snapshot["domain"], target.domain)
+                self.assertEqual(snapshot["description"], target.description)
+                self.assertEqual(snapshot["recipe"], target.recipe)
+                self.assertEqual(snapshot["static_prompt"], "describe")
+
+                axes = snapshot["axes"]
+                self.assertEqual(axes["completeness"], "full")
+                self.assertEqual(axes["scope"], ["narrow"])
+                self.assertEqual(axes["method"], ["debugging"])
+                self.assertEqual(axes["style"], [])
+                self.assertEqual(axes["directional"], "rog")
+
+                self.assertEqual(snapshot["last_recipe"], "unit-test-recipe")
+                self.assertEqual(snapshot["last_axes"], GPTState.last_axes)
+
+            def test_pattern_debug_snapshot_unknown_pattern_returns_empty_dict(
+                self,
+            ) -> None:
+                snapshot = pattern_debug_snapshot("does-not-exist")
+                self.assertEqual(snapshot, {})
 
             def test_type_outline_pattern_uses_taxonomy_style(self) -> None:
                 """Type outline pattern should use taxonomy style."""

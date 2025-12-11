@@ -452,11 +452,30 @@ class StaticPromptCatalog(TypedDict):
     unprofiled_tokens: list[str]
 
 
-def _read_static_prompt_tokens(static_prompt_list_path: str | Path | None = None) -> list[str]:
+def static_prompt_description_overrides() -> dict[str, str]:
+    """Return name->description map for static prompts.
+
+    Docs and README/help surfaces should use this helper rather than reaching
+    into STATIC_PROMPT_CONFIG directly so that description semantics remain
+    centralised in this module.
+    """
+    overrides: dict[str, str] = {}
+    for name, profile in STATIC_PROMPT_CONFIG.items():
+        description = str(profile.get("description", "")).strip()
+        if description:
+            overrides[name] = description
+    return overrides
+
+
+def _read_static_prompt_tokens(
+    static_prompt_list_path: str | Path | None = None,
+) -> list[str]:
     """Return the token names from staticPrompt.talon-list, if present."""
     if static_prompt_list_path is None:
         current_dir = Path(__file__).resolve().parent
-        static_prompt_list_path = current_dir.parent / "GPT" / "lists" / "staticPrompt.talon-list"
+        static_prompt_list_path = (
+            current_dir.parent / "GPT" / "lists" / "staticPrompt.talon-list"
+        )
     path = Path(static_prompt_list_path)
     tokens: list[str] = []
     try:
@@ -476,7 +495,9 @@ def _read_static_prompt_tokens(static_prompt_list_path: str | Path | None = None
     return tokens
 
 
-def static_prompt_catalog(static_prompt_list_path: str | Path | None = None) -> StaticPromptCatalog:
+def static_prompt_catalog(
+    static_prompt_list_path: str | Path | None = None,
+) -> StaticPromptCatalog:
     """Return a catalog view that unifies profiles and Talon list tokens.
 
     The catalog is the SSOT for docs and drift checks:

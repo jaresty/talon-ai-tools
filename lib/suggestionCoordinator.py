@@ -90,6 +90,39 @@ def last_recipe_snapshot() -> dict[str, object]:
     }
 
 
+def recipe_header_lines_from_snapshot(snapshot: dict[str, object]) -> list[str]:
+    """Build axis/recipe header lines from a last_recipe_snapshot dict.
+
+    This keeps the formatting of recipe/axis headers consistent across
+    snapshot surfaces (for example, source snapshots and response
+    destinations) while allowing each caller to prepend its own
+    saved_at/model/source_type fields.
+    """
+
+    header_lines: list[str] = []
+
+    recipe = snapshot.get("recipe", "") or ""
+    if recipe:
+        header_lines.append(f"recipe: {recipe}")
+
+    completeness = snapshot.get("completeness", "") or ""
+    if completeness:
+        header_lines.append(f"completeness: {completeness}")
+
+    for axis in ("scope", "method", "style"):
+        tokens = snapshot.get(f"{axis}_tokens", []) or []
+        if isinstance(tokens, list) and tokens:
+            joined = " ".join(str(t) for t in tokens if str(t).strip())
+            if joined:
+                header_lines.append(f"{axis}_tokens: {joined}")
+
+    directional = snapshot.get("directional", "") or ""
+    if directional:
+        header_lines.append(f"directional: {directional}")
+
+    return header_lines
+
+
 def last_recap_snapshot() -> dict[str, str]:
     """Return last response/recipe/meta for recap surfaces."""
     return {
@@ -154,7 +187,6 @@ def set_last_recipe_from_selection(
         "method": method_tokens,
         "style": style_tokens,
     }
-
 
 
 def suggestion_entries_with_metadata() -> list[dict[str, str]]:

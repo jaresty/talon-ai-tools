@@ -259,6 +259,49 @@ if bootstrap is not None:
                 self.assertIsInstance(GPTState.last_lifecycle, RequestLifecycleState)
                 self.assertEqual(GPTState.last_lifecycle.status, "completed")
 
+        def test_send_request_max_attempts_sets_lifecycle_and_raises(self) -> None:
+            """Non-streaming max_attempts path should mark lifecycle errored and raise."""
+
+            if RequestLifecycleState is None:
+                self.skipTest("RequestLifecycleState unavailable")
+
+            def fake_get(key, default=None):
+                # Disable streaming so send_request takes the non-stream loop.
+                if key == "user.model_streaming":
+                    return False
+                if key == "user.model_endpoint":
+                    return "http://example.com"
+                if key == "user.model_request_timeout_seconds":
+                    return 120
+                return default
+
+            def fake_send_request_internal(_req):  # noqa: ARG001
+                # Return a response with no message content so message_content
+                # stays None and the loop exhausts max_attempts.
+                return {"choices": [{"message": {}}]}
+
+            GPTState.request = {
+                "model": "dummy-model",
+                "messages": [
+                    {"role": "user", "content": "hi"},
+                ],
+            }
+
+            with (
+                patch.object(modelHelpers.settings, "get", side_effect=fake_get),
+                patch.object(
+                    modelHelpers,
+                    "send_request_internal",
+                    side_effect=fake_send_request_internal,
+                ),
+            ):
+                with self.assertRaises(RuntimeError) as ctx:
+                    send_request(max_attempts=2)
+
+            self.assertIn("max attempts", str(ctx.exception).lower())
+            self.assertIsInstance(GPTState.last_lifecycle, RequestLifecycleState)
+            self.assertEqual(GPTState.last_lifecycle.status, "errored")
+
         def test_streaming_timeout_raises_gpt_request_error(self) -> None:
             """Characterise timeout handling in _send_request_streaming."""
 

@@ -1,7 +1,7 @@
 import json
 import os
 import threading
-from typing import List, Optional, Union, cast
+from typing import List, Optional, cast
 import datetime
 import re
 
@@ -9,9 +9,7 @@ from ..lib.talonSettings import (
     ApplyPromptConfiguration,
     DEFAULT_COMPLETENESS_VALUE,
     PassConfiguration,
-    _axis_recipe_token,
     _map_axis_tokens,
-    _axis_string_to_tokens,
     _axis_tokens_to_string,
     _canonicalise_axis_tokens,
     _tokens_list,
@@ -25,6 +23,7 @@ try:
         get_static_prompt_axes,
         get_static_prompt_profile,
         static_prompt_catalog,
+        static_prompt_description_overrides,
     )
 except ImportError:  # Talon may have a stale staticPromptConfig loaded
 
@@ -87,6 +86,19 @@ except ImportError:  # Talon may have a stale staticPromptConfig loaded
             "unprofiled_tokens": unprofiled_tokens,
         }
 
+    def static_prompt_description_overrides() -> dict[str, str]:
+        """Fallback description overrides when helpers are unavailable.
+
+        Mirrors the semantics of lib.staticPromptConfig.static_prompt_description_overrides
+        so README/help surfaces see a consistent view in older Talon runtimes.
+        """
+        overrides: dict[str, str] = {}
+        for name, cfg in STATIC_PROMPT_CONFIG.items():
+            description = str(cfg.get("description", "")).strip()
+            if description:
+                overrides[name] = description
+        return overrides
+
 
 from ..lib.modelDestination import (
     Browser,
@@ -108,7 +120,6 @@ from ..lib.modelHelpers import (
     send_request,
     messages_to_string,
 )
-from typing import cast
 
 from ..lib.modelState import GPTState
 from ..lib.modelTypes import GPTSystemPrompt
@@ -129,6 +140,7 @@ from ..lib.stanceValidation import valid_stance_command as _valid_stance_command
 from ..lib.suggestionCoordinator import (
     record_suggestions,
     last_recipe_snapshot,
+    recipe_header_lines_from_snapshot,
     set_last_recipe_from_selection,
     last_recap_snapshot,
 )
@@ -511,25 +523,9 @@ def _save_source_snapshot_to_file() -> Optional[str]:
     ]
     if source_type:
         header_lines.append(f"source_type: {source_type}")
-    recipe = snapshot.get("recipe", "") or getattr(GPTState, "last_recipe", "")
-    if recipe:
-        header_lines.append(f"recipe: {recipe}")
-    completeness = snapshot.get("completeness", "") or getattr(
-        GPTState, "last_completeness", ""
-    )
-    if completeness:
-        header_lines.append(f"completeness: {completeness}")
-    for axis in ("scope", "method", "style"):
-        tokens = snapshot.get(f"{axis}_tokens", []) or []
-        if isinstance(tokens, list) and tokens:
-            joined = " ".join(str(t) for t in tokens if str(t).strip())
-            if joined:
-                header_lines.append(f"{axis}_tokens: {joined}")
-    directional = snapshot.get("directional", "") or getattr(
-        GPTState, "last_directional", ""
-    )
-    if directional:
-        header_lines.append(f"directional: {directional}")
+    # Delegate recipe/axis header details to the suggestion coordinator
+    # snapshot helper so all recap/snapshot surfaces stay aligned.
+    header_lines.extend(recipe_header_lines_from_snapshot(snapshot))
 
     body = "# Source\n" + source_text
     content = "\n".join(header_lines) + "\n---\n\n" + body
@@ -1580,6 +1576,64 @@ class UserActions:
             return
         actions.app.notify(f"Last meta interpretation:\n{meta}")
 
+    def gpt_show_pattern_debug(pattern_name: str) -> None:
+        """Show a concise debug snapshot for a named pattern."""
+        try:
+            from ..lib.modelPatternGUI import pattern_debug_snapshot
+        except Exception:
+            actions.app.notify("GPT: Pattern debug helper unavailable")
+            return
+
+        snapshot = pattern_debug_snapshot(pattern_name)
+        if not snapshot:
+            actions.app.notify(f"GPT: No pattern debug info for '{pattern_name}'")
+            return
+
+        name = str(snapshot.get("name") or pattern_name)
+        static_prompt = str(snapshot.get("static_prompt") or "")
+        axes = snapshot.get("axes", {}) or {}
+        completeness = str(axes.get("completeness") or "")
+        scope_value = axes.get("scope") or []
+        method_value = axes.get("method") or []
+        style_value = axes.get("style") or []
+        directional = str(axes.get("directional") or "")
+
+        def _as_tokens(value) -> list[str]:
+            if isinstance(value, list):
+                return [str(v) for v in value if v]
+            if isinstance(value, str) and value.strip():
+                return value.strip().split()
+            return []
+
+        scope_tokens = _as_tokens(scope_value)
+        method_tokens = _as_tokens(method_value)
+        style_tokens = _as_tokens(style_value)
+
+        parts: list[str] = []
+        if static_prompt:
+            parts.append(static_prompt)
+        for value in (
+            completeness,
+            " ".join(scope_tokens),
+            " ".join(method_tokens),
+            " ".join(style_tokens),
+        ):
+            if value:
+                parts.append(value)
+        if directional:
+            parts.append(directional)
+        recipe_line = " · ".join(parts) if parts else snapshot.get("recipe", "")
+
+        last_axes = snapshot.get("last_axes") or {}
+        actions.app.notify(
+            "Pattern debug: "
+            + name
+            + "\nRecipe: "
+            + (recipe_line or "(unknown)")
+            + "\nLast axes: "
+            + str(last_axes),
+        )
+
     def gpt_clear_last_recap() -> None:
         """Clear last response/recipe/meta recap state."""
         clear_recap_state()
@@ -2074,19 +2128,16 @@ class UserActions:
         )
 
         # Order for easy scanning with Cmd-F
-        # Static prompts prefer descriptions from STATIC_PROMPT_CONFIG so there
-        # is a single source of truth, while section headers in the Talon list
-        # still provide visual groupings in the help.
+        # Static prompts prefer descriptions from the shared static prompt
+        # configuration façade so there is a single source of truth, while
+        # section headers in the Talon list still provide visual groupings in
+        # the help.
         render_list_as_tables(
             "Static Prompts",
             "staticPrompt.talon-list",
             builder,
             comment_mode="static_prompts",
-            description_overrides={
-                key: cfg["description"]
-                for key, cfg in STATIC_PROMPT_CONFIG.items()
-                if cfg.get("description")
-            },
+            description_overrides=static_prompt_description_overrides(),
         )
         render_list_as_tables(
             "Directional Modifiers", "directionalModifier.talon-list", builder

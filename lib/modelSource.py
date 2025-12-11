@@ -56,7 +56,9 @@ def format_source_messages(
     current_request: List[GPTItem] = [
         format_message("# Prompt\n"),
         format_message(prompt_chunks[0]),
-        format_message("\n\n## This is the primary content; if the prompt has a direction consider this to be to the right, destination, or future\n"),
+        format_message(
+            "\n\n## This is the primary content; if the prompt has a direction consider this to be to the right, destination, or future\n"
+        ),
     ]
     current_request += source_messages
     return additional_source_messages + current_request
@@ -180,6 +182,13 @@ class SelectedText(ModelSource):
 class AllText(ModelSource):
     def get_text(self):
         actions.edit.select_all()
+        # Give the active application a brief moment to apply the selection
+        # before reading it so "all" behaves reliably as a snapshot of the
+        # current buffer.
+        try:
+            actions.sleep("150ms")
+        except Exception:
+            pass
         return actions.edit.selected_text()
 
 

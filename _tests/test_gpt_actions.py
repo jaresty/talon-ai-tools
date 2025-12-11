@@ -35,11 +35,14 @@ if bootstrap is not None:
             self.pipeline.complete.return_value = PromptResult.from_messages(
                 [format_message("analysis")]
             )
+
             class _Handle:
                 def __init__(self, result):
                     self.result = result
+
                 def wait(self, timeout=None):
                     return True
+
             self.pipeline.complete_async.return_value = _Handle(
                 PromptResult.from_messages([format_message("async analysis")])
             )
@@ -52,6 +55,7 @@ if bootstrap is not None:
             gpt_module._prompt_pipeline = self.pipeline
             self._original_orchestrator = gpt_module._recursive_orchestrator
             self.orchestrator = MagicMock()
+
             class _AsyncHandle:
                 def __init__(self, result):
                     self.result = result
@@ -79,7 +83,10 @@ if bootstrap is not None:
             self.assertEqual(current_state().phase, RequestPhase.CANCELLED)
             # Expect a user-level notify
             self.assertTrue(
-                any(call[0] == "notify" for call in actions.user.calls + actions.app.calls)
+                any(
+                    call[0] == "notify"
+                    for call in actions.user.calls + actions.app.calls
+                )
             )
 
         def test_gpt_analyze_prompt_uses_prompt_session(self):
@@ -97,7 +104,9 @@ if bootstrap is not None:
                 mock_session.begin.assert_called_once_with(reuse_existing=True)
                 mock_session.add_messages.assert_called_once()
                 self.pipeline.complete_async.assert_called_once_with(mock_session)
-                handle_async.assert_called_once_with(handle, session_cls.call_args.args[0], block=False)
+                handle_async.assert_called_once_with(
+                    handle, session_cls.call_args.args[0], block=False
+                )
                 actions.user.gpt_insert_response.assert_called_once_with(
                     async_result,
                     session_cls.call_args.args[0],
@@ -247,7 +256,9 @@ if bootstrap is not None:
             source = MagicMock()
             handle = self.pipeline.run_async.return_value
             handle.wait = MagicMock(return_value=True)
-            async_result = PromptResult.from_messages([format_message("async run result")])
+            async_result = PromptResult.from_messages(
+                [format_message("async run result")]
+            )
             handle.result = async_result
             actions.user.calls.clear()
 
@@ -257,9 +268,10 @@ if bootstrap is not None:
             self.assertEqual(text, "async run result")
 
         def test_gpt_suggest_prompt_recipes_parses_suggestions(self):
-            with patch.object(gpt_module, "PromptSession") as session_cls, patch.object(
-                gpt_module, "create_model_source"
-            ) as create_source:
+            with (
+                patch.object(gpt_module, "PromptSession") as session_cls,
+                patch.object(gpt_module, "create_model_source") as create_source,
+            ):
                 source = MagicMock()
                 source.get_text.return_value = "content"
                 create_source.return_value = source
@@ -295,9 +307,10 @@ if bootstrap is not None:
                 )
 
         def test_gpt_suggest_prompt_recipes_accepts_label_without_name_prefix(self):
-            with patch.object(gpt_module, "PromptSession") as session_cls, patch.object(
-                gpt_module, "create_model_source"
-            ) as create_source:
+            with (
+                patch.object(gpt_module, "PromptSession") as session_cls,
+                patch.object(gpt_module, "create_model_source") as create_source,
+            ):
                 source = MagicMock()
                 source.get_text.return_value = "content"
                 create_source.return_value = source
@@ -326,10 +339,48 @@ if bootstrap is not None:
                     ],
                 )
 
-        def test_gpt_suggest_prompt_recipes_allows_empty_source_when_subject_given(self):
-            with patch.object(gpt_module, "PromptSession") as session_cls, patch.object(
-                gpt_module, "create_model_source"
-            ) as create_source:
+        def test_gpt_suggest_prompt_recipes_accepts_missing_recipe_label_with_axes_tokens(
+            self,
+        ):
+            with (
+                patch.object(gpt_module, "PromptSession") as session_cls,
+                patch.object(gpt_module, "create_model_source") as create_source,
+            ):
+                source = MagicMock()
+                source.get_text.return_value = "content"
+                create_source.return_value = source
+                mock_session = session_cls.return_value
+                mock_session._destination = "paste"
+
+                handle = self.pipeline.complete_async.return_value
+                handle.wait = MagicMock(return_value=True)
+                handle.result = PromptResult.from_messages(
+                    [
+                        format_message(
+                            "Credit-card model quick scan | describe · skim · focus · direct · plain · jog"
+                        )
+                    ]
+                )
+
+                gpt_module.UserActions.gpt_suggest_prompt_recipes("subject")
+
+                self.assertEqual(
+                    GPTState.last_suggested_recipes,
+                    [
+                        {
+                            "name": "Credit-card model quick scan",
+                            "recipe": "describe · skim · focus · direct · plain · jog",
+                        }
+                    ],
+                )
+
+        def test_gpt_suggest_prompt_recipes_allows_empty_source_when_subject_given(
+            self,
+        ):
+            with (
+                patch.object(gpt_module, "PromptSession") as session_cls,
+                patch.object(gpt_module, "create_model_source") as create_source,
+            ):
                 source = MagicMock()
                 source.get_text.return_value = ""
                 create_source.return_value = source
@@ -362,11 +413,13 @@ if bootstrap is not None:
             )
 
         def test_gpt_suggest_prompt_recipes_opens_suggestion_gui_when_available(self):
-            with patch.object(gpt_module, "PromptSession") as session_cls, patch.object(
-                gpt_module, "create_model_source"
-            ) as create_source, patch.object(
-                actions.user, "model_prompt_recipe_suggestions_gui_open"
-            ) as open_gui:
+            with (
+                patch.object(gpt_module, "PromptSession") as session_cls,
+                patch.object(gpt_module, "create_model_source") as create_source,
+                patch.object(
+                    actions.user, "model_prompt_recipe_suggestions_gui_open"
+                ) as open_gui,
+            ):
                 source = MagicMock()
                 source.get_text.return_value = "content"
                 create_source.return_value = source
@@ -389,9 +442,10 @@ if bootstrap is not None:
                 open_gui.assert_called_once()
 
         def test_gpt_suggest_prompt_recipes_uses_prompt_session(self):
-            with patch.object(gpt_module, "PromptSession") as session_cls, patch.object(
-                gpt_module, "create_model_source"
-            ) as create_source:
+            with (
+                patch.object(gpt_module, "PromptSession") as session_cls,
+                patch.object(gpt_module, "create_model_source") as create_source,
+            ):
                 source = MagicMock()
                 source.get_text.return_value = "content"
                 create_source.return_value = source
@@ -441,9 +495,10 @@ if bootstrap is not None:
                 emit_fail.assert_not_called()
 
         def test_gpt_suggest_prompt_recipes_canonicalises_static_prompt(self):
-            with patch.object(gpt_module, "PromptSession") as session_cls, patch.object(
-                gpt_module, "create_model_source"
-            ) as create_source:
+            with (
+                patch.object(gpt_module, "PromptSession") as session_cls,
+                patch.object(gpt_module, "create_model_source") as create_source,
+            ):
                 source = MagicMock()
                 source.get_text.return_value = "content"
                 create_source.return_value = source
@@ -474,9 +529,10 @@ if bootstrap is not None:
                 )
 
         def test_gpt_suggest_prompt_recipes_requires_directional(self):
-            with patch.object(gpt_module, "PromptSession") as session_cls, patch.object(
-                gpt_module, "create_model_source"
-            ) as create_source:
+            with (
+                patch.object(gpt_module, "PromptSession") as session_cls,
+                patch.object(gpt_module, "create_model_source") as create_source,
+            ):
                 source = MagicMock()
                 source.get_text.return_value = "content"
                 create_source.return_value = source
@@ -531,9 +587,10 @@ if bootstrap is not None:
             GPTState.last_suggested_recipes = list(cached)
             GPTState.last_suggest_source = "clipboard"
 
-            with patch.object(gpt_module, "PromptSession") as session_cls, patch.object(
-                gpt_module, "create_model_source"
-            ) as create_source:
+            with (
+                patch.object(gpt_module, "PromptSession") as session_cls,
+                patch.object(gpt_module, "create_model_source") as create_source,
+            ):
                 source = MagicMock()
                 source.get_text.return_value = "   "
                 create_source.return_value = source
@@ -583,7 +640,6 @@ if bootstrap is not None:
                 gpt_module.UserActions.gpt_enable_threading()
                 session_cls.assert_not_called()
 
-
         def test_thread_push_uses_prompt_session(self):
             with patch.object(gpt_module, "PromptSession") as session_cls:
                 session = session_cls.return_value
@@ -614,11 +670,14 @@ if bootstrap is not None:
             delegate_result = PromptResult.from_messages(
                 [format_message("recursive result")]
             )
+
             class _Handle:
                 def __init__(self, result):
                     self.result = result
+
                 def wait(self, timeout=None):
                     return True
+
             orchestrator.run_async.return_value = _Handle(delegate_result)
             orchestrator.run.return_value = delegate_result
             with patch.object(gpt_module, "_recursive_orchestrator", orchestrator):
@@ -649,9 +708,10 @@ if bootstrap is not None:
 
         def test_gpt_show_last_recipe_without_state_notifies_and_returns(self):
             GPTState.reset_all()
-            with patch.object(gpt_module, "notify") as notify_mock, patch.object(
-                actions.app, "notify"
-            ) as app_notify:
+            with (
+                patch.object(gpt_module, "notify") as notify_mock,
+                patch.object(actions.app, "notify") as app_notify,
+            ):
                 gpt_module.UserActions.gpt_show_last_recipe()
 
                 notify_mock.assert_called_once()
@@ -707,12 +767,12 @@ if bootstrap is not None:
         def test_gpt_rerun_last_recipe_without_state_notifies_and_returns(self):
             GPTState.reset_all()
 
-            with patch.object(gpt_module, "notify") as notify_mock, patch.object(
-                actions.user, "gpt_apply_prompt"
-            ) as apply_mock, patch.object(gpt_module, "modelPrompt") as model_prompt:
-                gpt_module.UserActions.gpt_rerun_last_recipe(
-                    "", "", "", "", "", ""
-                )
+            with (
+                patch.object(gpt_module, "notify") as notify_mock,
+                patch.object(actions.user, "gpt_apply_prompt") as apply_mock,
+                patch.object(gpt_module, "modelPrompt") as model_prompt,
+            ):
+                gpt_module.UserActions.gpt_rerun_last_recipe("", "", "", "", "", "")
 
                 notify_mock.assert_called_once()
                 apply_mock.assert_not_called()
@@ -785,7 +845,9 @@ if bootstrap is not None:
             """Seed multi-token last_* axes and ensure rerun respects canonicalisation."""
             GPTState.reset_all()
             # Simulate a previous multi-tag axis state.
-            GPTState.last_recipe = "describe · full · narrow focus · cluster · jira story"
+            GPTState.last_recipe = (
+                "describe · full · narrow focus · cluster · jira story"
+            )
             GPTState.last_static_prompt = "describe"
             GPTState.last_completeness = "full"
             GPTState.last_scope = "narrow focus"
@@ -815,11 +877,11 @@ if bootstrap is not None:
                 # Override scope and style with additional tokens; method left unchanged.
                 gpt_module.UserActions.gpt_rerun_last_recipe(
                     "todo",
-                    "",                # completeness override (none)
-                    ["bound"],         # new scope token to merge
-                    [],                # method unchanged
-                    ["bullets"],       # additional style token to merge
-                    "rog",             # new directional
+                    "",  # completeness override (none)
+                    ["bound"],  # new scope token to merge
+                    [],  # method unchanged
+                    ["bullets"],  # additional style token to merge
+                    "rog",  # new directional
                 )
 
                 # modelPrompt should receive a match with merged axis modifiers.
@@ -922,7 +984,9 @@ if bootstrap is not None:
                 self.assertEqual(match.methodModifier, "rigor")
                 self.assertEqual(match.styleModifier, "plain")
 
-                self.assertEqual(GPTState.last_recipe, "infer · full · bound edges · rigor · plain")
+                self.assertEqual(
+                    GPTState.last_recipe, "infer · full · bound edges · rigor · plain"
+                )
                 self.assertEqual(GPTState.last_completeness, "full")
                 self.assertEqual(GPTState.last_scope, "bound edges")
                 self.assertEqual(GPTState.last_method, "rigor")
@@ -1061,6 +1125,7 @@ if bootstrap is not None:
                         "style": ["plain"],
                     },
                 )
+
         def test_gpt_rerun_last_recipe_filters_unknown_override_tokens(self):
             """Overrides containing unknown/hydrated tokens should be dropped, preserving known tokens."""
             GPTState.reset_all()
@@ -1138,7 +1203,9 @@ if bootstrap is not None:
             with (
                 patch.object(gpt_module, "current_state", return_value=running_state),
                 patch.object(gpt_module, "notify") as notify_mock,
-                patch.object(gpt_module._prompt_pipeline, "run_async") as run_async_mock,
+                patch.object(
+                    gpt_module._prompt_pipeline, "run_async"
+                ) as run_async_mock,
             ):
                 config = ApplyPromptConfiguration(
                     please_prompt="PROMPT",
@@ -1159,7 +1226,9 @@ if bootstrap is not None:
             with (
                 patch.object(gpt_module, "current_state", return_value=running_state),
                 patch.object(gpt_module, "notify") as notify_mock,
-                patch.object(gpt_module._prompt_pipeline, "run_async") as run_async_mock,
+                patch.object(
+                    gpt_module._prompt_pipeline, "run_async"
+                ) as run_async_mock,
             ):
                 gpt_module.UserActions.gpt_run_prompt("PROMPT", MagicMock())
 
@@ -1174,7 +1243,9 @@ if bootstrap is not None:
             with (
                 patch.object(gpt_module, "current_state", return_value=running_state),
                 patch.object(gpt_module, "notify") as notify_mock,
-                patch.object(gpt_module._recursive_orchestrator, "run_async") as run_async_mock,
+                patch.object(
+                    gpt_module._recursive_orchestrator, "run_async"
+                ) as run_async_mock,
             ):
                 gpt_module.UserActions.gpt_recursive_prompt("PROMPT", MagicMock())
 
@@ -1189,7 +1260,9 @@ if bootstrap is not None:
             with (
                 patch.object(gpt_module, "current_state", return_value=running_state),
                 patch.object(gpt_module, "notify") as notify_mock,
-                patch.object(gpt_module._prompt_pipeline, "complete_async") as complete_async_mock,
+                patch.object(
+                    gpt_module._prompt_pipeline, "complete_async"
+                ) as complete_async_mock,
             ):
                 gpt_module.UserActions.gpt_replay(destination="window")
 
@@ -1204,7 +1277,9 @@ if bootstrap is not None:
             with (
                 patch.object(gpt_module, "current_state", return_value=running_state),
                 patch.object(gpt_module, "notify") as notify_mock,
-                patch.object(gpt_module._prompt_pipeline, "complete_async") as complete_async_mock,
+                patch.object(
+                    gpt_module._prompt_pipeline, "complete_async"
+                ) as complete_async_mock,
             ):
                 gpt_module.UserActions.gpt_analyze_prompt()
 
@@ -1247,9 +1322,7 @@ if bootstrap is not None:
 
                 # No overrides; rerun should apply incompatibility rules to
                 # the existing style axis and surface a hint.
-                gpt_module.UserActions.gpt_rerun_last_recipe(
-                    "", "", "", "", "", "rog"
-                )
+                gpt_module.UserActions.gpt_rerun_last_recipe("", "", "", "", "", "rog")
 
                 notify_mock.assert_called()
                 message = notify_mock.call_args.args[0]
@@ -1257,6 +1330,7 @@ if bootstrap is not None:
                 self.assertIn("style=jira adr", message)
 else:
     if not TYPE_CHECKING:
+
         class GPTActionPromptSessionTests(unittest.TestCase):
             @unittest.skip("Test harness unavailable outside unittest runs")
             def test_placeholder(self):

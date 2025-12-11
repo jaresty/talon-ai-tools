@@ -815,6 +815,10 @@ class UserActions:
             "- Directional is required: always include exactly one directional modifier from the directional list; never leave it blank.\n"
             "- <scopeTokens>, <methodTokens>, and <styleTokens> are zero or more space-separated axis tokens for that axis (respecting small caps: scope ≤ 2 tokens, method ≤ 3 tokens, style ≤ 3 tokens).\n"
             "Examples of multi-tag fields: scopeTokens='actions edges', methodTokens='structure flow', styleTokens='jira story'.\n\n"
+            "Important formatting rules (strict):\n"
+            "- Output only these recipe lines; do not include explanations, bullets, or any other text.\n"
+            "- Always include the literal labels 'Name:' and 'Recipe:' exactly as shown.\n"
+            "- Do not reorder or rename fields, and do not add extra separators.\n\n"
             "Use only tokens from the following sets where possible.\n"
             "Axis semantics and available tokens:\n"
             f"{axis_docs}\n\n"
@@ -892,19 +896,31 @@ class UserActions:
                 name_part, recipe_part = line.split("|", 1)
             except ValueError:
                 continue
-            if "Recipe:" not in recipe_part:
-                continue
             # Allow both "Name: <label>" and bare labels before the pipe.
             if "Name:" in name_part:
                 _, name_value = name_part.split("Name:", 1)
                 name = name_value.strip()
             else:
                 name = name_part.strip().strip(":")
-            # Always require an explicit Recipe: label for the second half.
-            _, recipe_value = recipe_part.split("Recipe:", 1)
-            recipe_value = recipe_value.strip()
             if not name:
                 continue
+
+            # Prefer an explicit "Recipe:" label when present, but tolerate
+            # legacy lines that omit it and contain only the recipe tokens.
+            if "Recipe:" in recipe_part:
+                _, recipe_value = recipe_part.split("Recipe:", 1)
+            else:
+                candidate = recipe_part.strip()
+                # Heuristic guard: only treat the segment as a recipe when it
+                # contains at least one "·" separator to avoid picking up
+                # arbitrary commentary.
+                if "·" not in candidate:
+                    continue
+                recipe_value = candidate
+            recipe_value = recipe_value.strip()
+            if not recipe_value:
+                continue
+
             # Enforce a single static prompt token by collapsing any
             # space-delimited static prompt segment to its first token.
             recipe_tokens = [t.strip() for t in recipe_value.split("·") if t.strip()]

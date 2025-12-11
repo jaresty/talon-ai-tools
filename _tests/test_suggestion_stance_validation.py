@@ -44,6 +44,16 @@ if bootstrap is not None:
                 )
                 self.assertFalse(valid_stance_command("intent for collaborating"))
 
+            def test_rejects_model_write_with_unknown_tail_words(self) -> None:
+                # Unknown words that are not part of any axis token should cause
+                # model write stances to be rejected even if they contain
+                # something that looks like a purpose.
+                self.assertFalse(
+                    valid_stance_command(
+                        "model write as teacher to junior engineer kindly for teaching quickly"
+                    )
+                )
+
     except ImportError:
         # When Talon loads this test but the underlying validator module is not
         # importable, provide a skipped placeholder so Talon does not log an

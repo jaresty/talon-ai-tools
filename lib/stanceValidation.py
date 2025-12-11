@@ -14,6 +14,7 @@ VOICE_TOKENS: set[str] = set(persona_docs_map("voice").keys())
 AUDIENCE_TOKENS: set[str] = set(persona_docs_map("audience").keys())
 TONE_TOKENS: set[str] = set(persona_docs_map("tone").keys())
 PURPOSE_TOKENS: set[str] = set(persona_docs_map("purpose").keys())
+AXIS_TOKENS: set[str] = VOICE_TOKENS | AUDIENCE_TOKENS | TONE_TOKENS | PURPOSE_TOKENS
 
 _PERSONA_PRESET_SPOKEN_SET: set[str] = {
     (preset.label or preset.key).strip().lower()
@@ -61,10 +62,40 @@ def valid_stance_command(cmd: str) -> bool:
         tail = lower[len("model write ") :].strip()
         if not tail:
             return False
+
         # Require at least one known purpose token to appear verbatim in the
         # command (for example, 'for teaching', 'for collaborating').
         if not any(purpose in lower for purpose in PURPOSE_TOKENS):
             return False
-        return True
+
+        # Enforce that the tail can be composed entirely from known
+        # Persona/Intent axis phrases. This is intentionally conservative: we
+        # treat axis tokens as whole phrases (for example, "as teacher",
+        # "to junior engineer", "kindly", "for teaching") and require that
+        # they tile the tail without leftovers.
+        remaining = tail
+        seen_purpose = False
+        # Sort by length so longer multi-word phrases ("to junior engineer")
+        # win over their substrings.
+        axis_phrases = sorted(AXIS_TOKENS, key=len, reverse=True)
+        while remaining:
+            stripped = remaining.lstrip()
+            if not stripped:
+                break
+            matched = False
+            for phrase in axis_phrases:
+                phrase_l = phrase.strip().lower()
+                if not phrase_l:
+                    continue
+                if stripped.startswith(phrase_l):
+                    matched = True
+                    if phrase_l in PURPOSE_TOKENS:
+                        seen_purpose = True
+                    remaining = stripped[len(phrase_l) :]
+                    break
+            if not matched:
+                return False
+        # At least one purpose phrase must have been matched explicitly.
+        return seen_purpose
 
     return False

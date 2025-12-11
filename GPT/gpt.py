@@ -1,7 +1,7 @@
 import json
 import os
 import threading
-from typing import List, Optional, Union
+from typing import List, Optional, Union, cast
 import datetime
 import re
 
@@ -108,6 +108,8 @@ from ..lib.modelHelpers import (
     send_request,
     messages_to_string,
 )
+from typing import cast
+
 from ..lib.modelState import GPTState
 from ..lib.modelTypes import GPTSystemPrompt
 from ..lib.promptPipeline import PromptPipeline, PromptResult
@@ -1337,17 +1339,12 @@ class UserActions:
                 if isinstance(data, dict):
                     raw_suggestions = data.get("suggestions", [])
                     if isinstance(raw_suggestions, list):
+                        debug_failures: list[dict[str, object]] = []
                         for item in raw_suggestions:
                             if not isinstance(item, dict):
                                 continue
                             name = str(item.get("name", "")).strip()
                             recipe_value = str(item.get("recipe", "")).strip()
-                            if not name or not recipe_value:
-                                continue
-                            recipe = _normalise_recipe(recipe_value)
-                            if not recipe:
-                                continue
-
                             persona_voice = str(item.get("persona_voice", "")).strip()
                             persona_audience = str(
                                 item.get("persona_audience", "")
@@ -1357,6 +1354,36 @@ class UserActions:
                             raw_stance = str(item.get("stance_command", "")).strip()
                             why_text = str(item.get("why", "")).strip()
                             reasoning = str(item.get("reasoning", "")).strip()
+
+                            debug_record: dict[str, object] = {
+                                "name": name,
+                                "raw": {
+                                    "recipe": recipe_value,
+                                    "persona_voice": persona_voice,
+                                    "persona_audience": persona_audience,
+                                    "persona_tone": persona_tone,
+                                    "intent_purpose": intent_purpose,
+                                    "stance_command": raw_stance,
+                                    "reasoning": reasoning,
+                                },
+                                "failures": [],
+                            }
+                            failures = cast(list[str], debug_record["failures"])
+
+                            if not name:
+                                failures.append("missing_name")
+                            if not recipe_value:
+                                failures.append("missing_recipe")
+                            if not name or not recipe_value:
+                                if failures:
+                                    debug_failures.append(debug_record)
+                                continue
+
+                            recipe = _normalise_recipe(recipe_value)
+                            if not recipe:
+                                failures.append("recipe_invalid")
+                                debug_failures.append(debug_record)
+                                continue
 
                             entry: dict[str, str] = {"name": name, "recipe": recipe}
                             if persona_voice:
@@ -1372,13 +1399,7 @@ class UserActions:
                                 if _valid_stance_command(raw_stance):
                                     entry["stance_command"] = raw_stance
                                 else:
-                                    msg = f"GPT model suggest: invalid stance for '{name}': {raw_stance}"
-                                    if reasoning:
-                                        msg += f" | reasoning: {reasoning[:160]}"
-                                    try:
-                                        print(msg)
-                                    except Exception:
-                                        pass
+                                    failures.append("stance_invalid_form")
 
                             if why_text:
                                 entry["why"] = why_text
@@ -1386,6 +1407,35 @@ class UserActions:
                                 entry["reasoning"] = reasoning
 
                             suggestions.append(entry)
+                            if failures:
+                                debug_failures.append(debug_record)
+
+                        if debug_failures and getattr(GPTState, "debug_enabled", False):
+                            try:
+                                lines: list[str] = []
+                                for record in debug_failures[:5]:
+                                    name = str(record.get("name") or "<unnamed>")
+                                    raw = cast(dict[str, object], record.get("raw", {}))
+                                    failures = cast(
+                                        list[str], record.get("failures") or []
+                                    )
+                                    recipe_val = str(raw.get("recipe", ""))
+                                    stance_val = str(raw.get("stance_command", ""))
+                                    reasoning_val = str(raw.get("reasoning", ""))
+                                    line = (
+                                        f"{name}: {','.join(failures)} | "
+                                        f"recipe={recipe_val!r} stance={stance_val!r}"
+                                    )
+                                    if reasoning_val:
+                                        line += f" | reasoning={reasoning_val[:80]!r}"
+                                    lines.append(line)
+                                print(
+                                    "GPT model suggest: validation failures:\n"
+                                    + "\n".join(lines)
+                                )
+                            except Exception:
+                                pass
+
                 parsed_from_json = bool(suggestions)
             except Exception:
                 parsed_from_json = False
@@ -1434,7 +1484,16 @@ class UserActions:
 
                     entry: dict[str, str] = {"name": name, "recipe": recipe}
                     if stance_command:
-                        entry["stance_command"] = stance_command
+                        if _valid_stance_command(stance_command):
+                            entry["stance_command"] = stance_command
+                        elif getattr(GPTState, "debug_enabled", False):
+                            try:
+                                print(
+                                    "GPT model suggest: invalid legacy stance for "
+                                    f"'{name}': {stance_command}"
+                                )
+                            except Exception:
+                                pass
                     if why_text:
                         entry["why"] = why_text
                     suggestions.append(entry)

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from dataclasses import dataclass
 from typing import Dict
 
 # Persona and intent axis docs (token -> description), parallel to AXIS_KEY_TO_VALUE
@@ -78,3 +79,77 @@ def persona_hydrate_tokens(axis: str, tokens: list[str]) -> list[str]:
 def persona_docs_map(axis: str) -> dict[str, str]:
     """Return a key->description map for UI/docs surfaces."""
     return persona_key_to_value_map(axis)
+
+
+@dataclass(frozen=True)
+class PersonaPreset:
+    key: str
+    label: str
+    voice: str | None = None
+    audience: str | None = None
+    tone: str | None = None
+
+
+@dataclass(frozen=True)
+class IntentPreset:
+    key: str
+    label: str
+    purpose: str
+
+
+PERSONA_PRESETS: tuple[PersonaPreset, ...] = (
+    PersonaPreset(
+        key="peer_engineer_explanation",
+        label="Peer engineer explanation",
+        voice="as programmer",
+        audience="to programmer",
+    ),
+    PersonaPreset(
+        key="teach_junior_dev",
+        label="Teach junior dev",
+        voice="as teacher",
+        audience="to junior engineer",
+        tone="kindly",
+    ),
+    PersonaPreset(
+        key="executive_brief",
+        label="Executive brief",
+        voice="as programmer",
+        audience="to CEO",
+        tone="directly",
+    ),
+)
+
+
+INTENT_PRESETS: tuple[IntentPreset, ...] = (
+    IntentPreset(
+        key="teach",
+        label="Teach / explain",
+        purpose="for teaching",
+    ),
+    IntentPreset(
+        key="decide",
+        label="Decide",
+        purpose="for deciding",
+    ),
+    IntentPreset(
+        key="plan",
+        label="Plan / organise",
+        purpose="for planning",
+    ),
+    IntentPreset(
+        key="evaluate",
+        label="Evaluate / review",
+        purpose="for evaluating",
+    ),
+    IntentPreset(
+        key="brainstorm",
+        label="Brainstorm",
+        purpose="for brainstorming",
+    ),
+    IntentPreset(
+        key="appreciate",
+        label="Appreciate / thank",
+        purpose="for appreciation",
+    ),
+)

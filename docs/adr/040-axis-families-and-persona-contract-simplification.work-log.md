@@ -146,3 +146,62 @@
 ### Follow-ups
 
 - Optionally mirror a shortened version of these examples into quick help or Help Hub docs so the same patterns are visible in in‑Talon surfaces.
+
+---
+
+## 2025-12-10 – Slice: Persona and intent presets SSOT
+
+- **ADR**: 040 – Axis Families and Persona/Contract Simplification
+- **Focus area**: Persona/intent presets SSOT and tests.
+
+### Changes
+
+- Extended `lib/personaConfig.py` with dataclass-based presets:
+  - `PERSONA_PRESETS`: small set of named persona recipes (for example, `peer_engineer_explanation`, `teach_junior_dev`, `executive_brief`) that map to existing `voice`/`audience`/`tone` tokens.
+  - `INTENT_PRESETS`: named intent presets (for example, `teach`, `decide`, `plan`, `evaluate`, `brainstorm`, `appreciate`) that map to existing `purpose` tokens.
+- Added `_tests/test_persona_presets.py` to ensure:
+  - All persona and intent presets reference valid axis tokens from `PERSONA_KEY_TO_VALUE`.
+  - Expected core presets are present.
+  - Persona and intent preset keys are unique.
+- Ran `python3 -m pytest _tests/test_persona_presets.py _tests/test_voice_audience_tone_purpose_lists.py` to confirm tests pass.
+
+### Rationale
+
+- Establishes a concrete SSOT for Persona (Who) and Intent (Why) presets, so future GUIs and suggestion surfaces can consume a shared, typed structure instead of hard-coding combinations.
+- Keeps presets aligned with existing axis tokens and ADR 015/040 semantics by test-guarding their mappings.
+
+### Follow-ups
+
+- Surface `PERSONA_PRESETS` and `INTENT_PRESETS` in one or more UX surfaces (for example, pattern picker, suggestions modal, quick help) as persona/intent pickers.
+- Consider small docs/help snippets that reference these preset names so users see concrete Who/Why recipes, not just raw axes.
+
+---
+
+## 2025-12-10 – Slice: Quick-help canvas shows Persona / Intent / Contract
+
+- **ADR**: 040 – Axis Families and Persona/Contract Simplification
+- **Focus area**: Canvas quick-help framing for Who / Why / How.
+
+### Changes
+
+- Updated `lib/modelHelpCanvas.py` to import `PERSONA_PRESETS` and `INTENT_PRESETS` from `lib/personaConfig`.
+- Extended the default canvas renderer (`_default_draw_quick_help`) to show a concise axis-family summary immediately after the grammar/caps lines:
+  - "Who / Why / How (ADR 040):" header.
+  - "Who – Persona: voice, audience, tone."
+  - "Why – Intent: purpose."
+  - "How – Contract: completeness, scope, method, style."
+- Added lightweight persona/intent preset hints to the same section so users see concrete Who/Why recipes in quick help:
+  - "Persona presets: …" using the first few `PERSONA_PRESETS` labels.
+  - "Intent presets: …" using the first few `INTENT_PRESETS` labels.
+  - Both blocks are guarded so quick help still renders if presets cannot be imported.
+- Ran `python3 -m pytest _tests/test_model_help_canvas.py _tests/test_help_hub.py` to confirm help-related tests remain green.
+
+### Rationale
+
+- Brings the canvas-based quick help in line with ADR 040’s family model so users see **Persona / Intent / Contract (Who / Why / How)** in the primary grammar reference, not only in README/Help Hub.
+- Reuses the shared persona/intent preset SSOT to surface a small, concrete set of default Who/Why recipes without hard-coding combinations in the canvas module.
+
+### Follow-ups
+
+- Consider adding dedicated voice entrypoints (`model help who`, `model help why`, `model help how`) that focus the canvas on the new section once their semantics are designed.
+- Iterate on the quick-help layout to show a slightly richer preset table (for example, preset name plus decomposed axes) if this remains readable within the canvas height constraints.

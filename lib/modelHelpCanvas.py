@@ -5,6 +5,7 @@ from talon import skia
 
 from .canvasFont import apply_canvas_typeface
 from .axisConfig import axis_docs_for
+from .personaConfig import INTENT_PRESETS, PERSONA_PRESETS
 
 from .modelState import GPTState
 from .talonSettings import _AXIS_SOFT_CAPS
@@ -150,7 +151,7 @@ _hover_panel: bool = False
 # Default geometry for the quick help window. Kept in one place so future
 # tweaks do not require hunting for magic numbers.
 _PANEL_WIDTH = 820
-_PANEL_HEIGHT = 900
+_PANEL_HEIGHT = 980
 _PANEL_OFFSET_X = 200
 _PANEL_OFFSET_Y = 80
 
@@ -648,6 +649,48 @@ def _default_draw_quick_help(
     draw_text(caps_line, x, y)
     y += line_h
 
+    # High-level axis families (ADR 040): Who / Why / How.
+    draw_text("Who / Why / How (ADR 040):", x, y)
+    y += line_h
+    draw_text("  Who – Persona: voice, audience, tone.", x, y)
+    y += line_h
+    draw_text("  Why – Intent: purpose.", x, y)
+    y += line_h
+    draw_text(
+        "  How – Contract: completeness, scope, method, style.",
+        x,
+        y,
+    )
+    y += line_h
+
+    # Surface a few shared persona and intent presets so users see concrete
+    # Who/Why recipes alongside the raw axes.
+    try:
+        persona_labels = [preset.label for preset in PERSONA_PRESETS[:3]]
+        if persona_labels:
+            draw_text(
+                "  Persona presets: " + ", ".join(persona_labels),
+                x,
+                y,
+            )
+            y += line_h
+    except Exception:
+        # If persona presets cannot be imported, continue without them.
+        pass
+
+    try:
+        intent_labels = [preset.label for preset in INTENT_PRESETS[:4]]
+        if intent_labels:
+            draw_text(
+                "  Intent presets: " + ", ".join(intent_labels),
+                x,
+                y,
+            )
+            y += line_h
+    except Exception:
+        # If intent presets cannot be imported, continue without them.
+        pass
+
     section_focus = getattr(HelpGUIState, "section", "all") or "all"
 
     if HelpGUIState.static_prompt:
@@ -977,7 +1020,7 @@ def _default_draw_quick_help(
         up_lines.append(f"  reflect: {val}")
     val = _fmt_base_cell("up", "center")
     if val:
-        up_lines.append(f"  mixed:   {val}")
+        up_lines.append(f"  center:  {val}")
     val = _fmt_base_cell("up", "right")
     if val:
         up_lines.append(f"  act:     {val}")
@@ -994,17 +1037,14 @@ def _default_draw_quick_help(
     )
 
     # Center column: CENTER / MIXED
+    # Focus this block on the true central lenses so tokens like `fog` and
+    # `dig` stay anchored to their UP/DOWN blocks instead of being relabelled
+    # here as "abstract"/"concrete" again.
     center_start_y = top_end_y + (line_h // 2)
     center_lines: list[str] = []
-    val = _fmt_base_cell("up", "center")
-    if val:
-        center_lines.append(f"  abstract: {val}")
     val = _fmt_base_cell("center", "center")
     if val:
-        center_lines.append(f"  center:   {val}")
-    val = _fmt_base_cell("down", "center")
-    if val:
-        center_lines.append(f"  concrete: {val}")
+        center_lines.append(f"  center: {val}")
 
     center_end_y = _draw_block(
         "CENTER / MIXED",
@@ -1081,7 +1121,7 @@ def _default_draw_quick_help(
         down_lines.append(f"  reflect: {val}")
     val = _fmt_base_cell("down", "center")
     if val:
-        down_lines.append(f"  mixed:   {val}")
+        down_lines.append(f"  center:  {val}")
     val = _fmt_base_cell("down", "right")
     if val:
         down_lines.append(f"  act:     {val}")

@@ -24,6 +24,7 @@ try:
         static_prompt_catalog,
     )
 except ImportError:  # Talon may have a stale staticPromptConfig loaded
+
     def get_static_prompt_profile(name: str):
         return STATIC_PROMPT_CONFIG.get(name)
 
@@ -52,12 +53,7 @@ except ImportError:  # Talon may have a stale staticPromptConfig loaded
             with open(path, "r", encoding="utf-8") as f:
                 for line in f:
                     s = line.strip()
-                    if (
-                        not s
-                        or s.startswith("#")
-                        or s.startswith("list:")
-                        or s == "-"
-                    ):
+                    if not s or s.startswith("#") or s.startswith("list:") or s == "-":
                         continue
                     if ":" not in s:
                         continue
@@ -79,12 +75,15 @@ except ImportError:  # Talon may have a stale staticPromptConfig loaded
                 }
             )
         profiled_names = {entry["name"] for entry in profiled}
-        unprofiled_tokens = [token for token in talon_tokens if token not in profiled_names]
+        unprofiled_tokens = [
+            token for token in talon_tokens if token not in profiled_names
+        ]
         return {
             "profiled": profiled,
             "talon_list_tokens": talon_tokens,
             "unprofiled_tokens": unprofiled_tokens,
         }
+
 
 from ..lib.modelDestination import (
     Browser,
@@ -126,6 +125,7 @@ from ..lib.suggestionCoordinator import (
     set_last_recipe_from_selection,
     last_recap_snapshot,
 )
+
 # Backward-compatible alias for directional map used during parsing.
 DIRECTIONAL_MAP = _DIRECTIONAL_MAP
 from ..lib.requestState import RequestPhase
@@ -159,6 +159,7 @@ def _set_setting(key: str, value) -> None:
     except Exception:
         pass
 
+
 mod = Module()
 mod.tag(
     "model_window_open",
@@ -191,7 +192,9 @@ def _request_is_in_flight() -> bool:
 def _reject_if_request_in_flight() -> bool:
     """Notify and return True when a GPT request is already running."""
     if _request_is_in_flight():
-        notify("GPT: A request is already running; wait for it to finish or cancel it first.")
+        notify(
+            "GPT: A request is already running; wait for it to finish or cancel it first."
+        )
         return True
     return False
 
@@ -224,6 +227,7 @@ def _read_list_items(filename: str) -> list[tuple[str, str]]:
 
 def _await_handle_and_insert(handle, destination: str) -> None:
     """Wait on an async handle and insert the response when ready (background)."""
+
     def _runner():
         try:
             handle.wait(timeout=None)
@@ -312,9 +316,7 @@ def _build_static_prompt_docs() -> str:
             if rendered:
                 axes_bits.append(f"{label}={rendered}")
         if axes_bits:
-            lines.append(
-                f"- {name}: {description} (defaults: {', '.join(axes_bits)})"
-            )
+            lines.append(f"- {name}: {description} (defaults: {', '.join(axes_bits)})")
         else:
             lines.append(f"- {name}: {description}")
 
@@ -688,7 +690,11 @@ class UserActions:
 
         if result is not None:
             actions.user.gpt_insert_response(result, destination)
-            return result.text if hasattr(result, "text") else str(getattr(result, "text", ""))  # type: ignore[arg-type]
+            return (
+                result.text
+                if hasattr(result, "text")
+                else str(getattr(result, "text", ""))
+            )  # type: ignore[arg-type]
         # Non-blocking async path returns early; insertion handled in background.
         return ""
 
@@ -707,9 +713,7 @@ class UserActions:
         session.begin(reuse_existing=True)
         session.add_messages(
             [
-                format_messages(
-                    "assistant", [format_message(GPTState.last_response)]
-                ),
+                format_messages("assistant", [format_message(GPTState.last_response)]),
                 format_messages("user", [format_message(PROMPT)]),
             ]
         )
@@ -788,6 +792,15 @@ class UserActions:
         else:
             suggest_source_key = ""
 
+        # For suggestions, avoid opening the response canvas as a progress
+        # surface; treat this as a distinct destination kind so the default
+        # RequestUI controller uses the pill instead of the response viewer.
+        prev_dest_kind = getattr(GPTState, "current_destination_kind", "")
+        try:
+            GPTState.current_destination_kind = "suggest"
+        except Exception:
+            prev_dest_kind = ""
+
         axis_docs = _build_axis_docs()
         static_prompt_docs = _build_static_prompt_docs()
         prompt_subject = subject.strip() if subject else "unspecified"
@@ -862,6 +875,10 @@ class UserActions:
                 GPTState.suppress_response_canvas = prev_suppress
             except Exception:
                 pass
+            try:
+                GPTState.current_destination_kind = prev_dest_kind
+            except Exception:
+                pass
 
         # Attempt to parse the result text into structured suggestions so
         # future loops (for example, a suggestions GUI) can reuse them
@@ -911,11 +928,25 @@ class UserActions:
         if suggestions:
             record_suggestions(suggestions, suggest_source_key)
             try:
+                try:
+                    notify("GPT: Opening prompt recipe suggestions window")
+                except Exception:
+                    pass
                 actions.user.model_prompt_recipe_suggestions_gui_open()
+                try:
+                    notify("GPT: Prompt recipe suggestions window opened")
+                except Exception:
+                    pass
                 # When the suggestion GUI opens successfully, we do not also
                 # open the confirmation GUI; the picker becomes the primary
                 # surface for these recipes.
-            except Exception:
+            except Exception as exc:
+                try:
+                    notify(
+                        f"GPT: Suggestion GUI unavailable; inserting raw suggestions instead ({exc})"
+                    )
+                except Exception:
+                    pass
                 # If the GUI is not available for any reason, still insert the
                 # raw suggestions so the feature remains usable.
                 actions.user.gpt_insert_response(result, fallback_destination)
@@ -1059,7 +1090,9 @@ class UserActions:
 
         # Completeness remains scalar; overrides simply replace the base when
         # provided.
-        override_completeness_tokens = _map_axis_tokens("completeness", _tokens_list(completeness))
+        override_completeness_tokens = _map_axis_tokens(
+            "completeness", _tokens_list(completeness)
+        )
         new_completeness = (
             override_completeness_tokens[0]
             if override_completeness_tokens
@@ -1081,7 +1114,9 @@ class UserActions:
         base_scope_tokens = _canonicalise_axis_tokens(
             "scope", _filter_known("scope", base_scope_tokens_raw)
         )
-        override_scope_tokens = _filter_known("scope", _map_axis_tokens("scope", scope_value))
+        override_scope_tokens = _filter_known(
+            "scope", _map_axis_tokens("scope", scope_value)
+        )
         merged_scope_tokens = (
             _canonicalise_axis_tokens("scope", override_scope_tokens)
             if scope
@@ -1092,7 +1127,9 @@ class UserActions:
         base_method_tokens = _canonicalise_axis_tokens(
             "method", _filter_known("method", base_method_tokens_raw)
         )
-        override_method_tokens = _filter_known("method", _map_axis_tokens("method", method_value))
+        override_method_tokens = _filter_known(
+            "method", _map_axis_tokens("method", method_value)
+        )
         merged_method_tokens = (
             _canonicalise_axis_tokens("method", override_method_tokens)
             if method
@@ -1103,7 +1140,9 @@ class UserActions:
         base_style_tokens = _canonicalise_axis_tokens(
             "style", _filter_known("style", base_style_tokens_raw)
         )
-        override_style_tokens = _filter_known("style", _map_axis_tokens("style", style_value))
+        override_style_tokens = _filter_known(
+            "style", _map_axis_tokens("style", style_value)
+        )
         merged_style_tokens = (
             _canonicalise_axis_tokens("style", override_style_tokens)
             if style
@@ -1111,7 +1150,9 @@ class UserActions:
         )
         new_style = _axis_tokens_to_string(merged_style_tokens)
 
-        if new_completeness and new_completeness not in axis_key_to_value_map_for("completeness"):
+        if new_completeness and new_completeness not in axis_key_to_value_map_for(
+            "completeness"
+        ):
             new_completeness = ""
 
         try:
@@ -1161,11 +1202,28 @@ class UserActions:
 
         axis_drop_parts: list[str] = []
         for axis_name, base_tokens, override_tokens, merged_tokens in (
-            ("scope", base_scope_tokens_raw, override_scope_tokens, merged_scope_tokens),
-            ("method", base_method_tokens_raw, override_method_tokens, merged_method_tokens),
-            ("style", base_style_tokens_raw, override_style_tokens, merged_style_tokens),
+            (
+                "scope",
+                base_scope_tokens_raw,
+                override_scope_tokens,
+                merged_scope_tokens,
+            ),
+            (
+                "method",
+                base_method_tokens_raw,
+                override_method_tokens,
+                merged_method_tokens,
+            ),
+            (
+                "style",
+                base_style_tokens_raw,
+                override_style_tokens,
+                merged_style_tokens,
+            ),
         ):
-            summary = _axis_drop_summary(axis_name, base_tokens, override_tokens, merged_tokens)
+            summary = _axis_drop_summary(
+                axis_name, base_tokens, override_tokens, merged_tokens
+            )
             if summary:
                 axis_drop_parts.append(summary)
 
@@ -1457,8 +1515,12 @@ class UserActions:
                 if cfg.get("description")
             },
         )
-        render_list_as_tables("Directional Modifiers", "directionalModifier.talon-list", builder)
-        render_list_as_tables("Completeness Modifiers", "completenessModifier.talon-list", builder)
+        render_list_as_tables(
+            "Directional Modifiers", "directionalModifier.talon-list", builder
+        )
+        render_list_as_tables(
+            "Completeness Modifiers", "completenessModifier.talon-list", builder
+        )
         render_list_as_tables("Scope Modifiers", "scopeModifier.talon-list", builder)
         render_list_as_tables("Method Modifiers", "methodModifier.talon-list", builder)
         render_list_as_tables("Style Modifiers", "styleModifier.talon-list", builder)
@@ -1467,8 +1529,18 @@ class UserActions:
         render_list_as_tables("Audience", "modelAudience.talon-list", builder)
         render_list_as_tables("Purpose", "modelPurpose.talon-list", builder)
         # For Sources/Destinations, descriptions live in the preceding comment lines
-        render_list_as_tables("Sources", "modelSource.talon-list", builder, comment_mode="preceding_description")
-        render_list_as_tables("Destinations", "modelDestination.talon-list", builder, comment_mode="preceding_description")
+        render_list_as_tables(
+            "Sources",
+            "modelSource.talon-list",
+            builder,
+            comment_mode="preceding_description",
+        )
+        render_list_as_tables(
+            "Destinations",
+            "modelDestination.talon-list",
+            builder,
+            comment_mode="preceding_description",
+        )
 
         builder.h2("Default settings examples")
         builder.ul(

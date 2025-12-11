@@ -7,7 +7,9 @@ from typing import Iterable, List, Dict, Optional
 from .modelState import GPTState
 
 
-def record_suggestions(suggestions: Iterable[dict[str, str]], source_key: str | None) -> None:
+def record_suggestions(
+    suggestions: Iterable[dict[str, str]], source_key: str | None
+) -> None:
     """Persist the latest suggestions and source key in GPTState."""
     suggestions_list = list(suggestions)
     GPTState.last_suggested_recipes = suggestions_list
@@ -42,7 +44,9 @@ def suggestion_source(default_source: Optional[str] = None) -> str:
 
 
 def suggestion_grammar_phrase(
-    recipe: str, source_key: str | None = None, spoken_map: Optional[dict[str, str]] = None
+    recipe: str,
+    source_key: str | None = None,
+    spoken_map: Optional[dict[str, str]] = None,
 ) -> str:
     """Build a speakable grammar phrase for a suggestion recipe."""
     spoken_source = ""
@@ -50,8 +54,8 @@ def suggestion_grammar_phrase(
         spoken_source = spoken_map.get(source_key, "")
     base_recipe = recipe.replace(" · ", " ").strip()
     if spoken_source:
-        return f"model {spoken_source} {base_recipe}".strip()
-    return f"model {base_recipe}".strip()
+        return f"model run {spoken_source} {base_recipe}".strip()
+    return f"model run {base_recipe}".strip()
 
 
 def _tokens(value) -> list[str]:
@@ -65,6 +69,7 @@ def _tokens(value) -> list[str]:
 def last_recipe_snapshot() -> dict[str, object]:
     """Return the last recipe/static/axis tokens in a normalised form."""
     axes_state = getattr(GPTState, "last_axes", {}) or {}
+
     def _axis(axis: str, fallback: str = "") -> list[str]:
         tokens = axes_state.get(axis)
         if isinstance(tokens, list) and tokens:
@@ -75,7 +80,9 @@ def last_recipe_snapshot() -> dict[str, object]:
     return {
         "recipe": recipe_str,
         "static_prompt": getattr(GPTState, "last_static_prompt", "") or "",
-        "completeness": (_axis("completeness", getattr(GPTState, "last_completeness", "")) or [""])[0],
+        "completeness": (
+            _axis("completeness", getattr(GPTState, "last_completeness", "")) or [""]
+        )[0],
         "scope_tokens": _axis("scope", getattr(GPTState, "last_scope", "")),
         "method_tokens": _axis("method", getattr(GPTState, "last_method", "")),
         "style_tokens": _axis("style", getattr(GPTState, "last_style", "")),
@@ -126,7 +133,12 @@ def set_last_recipe_from_selection(
     method_tokens = _tokens(method)
     style_tokens = _tokens(style)
     recipe_parts = [static_token] if static_token else []
-    for token in (completeness_token, " ".join(scope_tokens), " ".join(method_tokens), " ".join(style_tokens)):
+    for token in (
+        completeness_token,
+        " ".join(scope_tokens),
+        " ".join(method_tokens),
+        " ".join(style_tokens),
+    ):
         if token:
             recipe_parts.append(token)
     GPTState.last_recipe = " · ".join(recipe_parts)

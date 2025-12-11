@@ -149,7 +149,10 @@ def _ensure_suggestion_canvas() -> canvas.Canvas:
     def _on_mouse(evt) -> None:  # pragma: no cover - visual only
         """Handle close hotspot, suggestion selection, hover, and drag."""
         try:
-            global _suggestion_hover_close, _suggestion_hover_index, _suggestion_drag_offset
+            global \
+                _suggestion_hover_close, \
+                _suggestion_hover_index, \
+                _suggestion_drag_offset
             rect = getattr(_suggestion_canvas, "rect", None)
             pos = getattr(evt, "pos", None)
             if rect is None or pos is None:
@@ -186,7 +189,12 @@ def _ensure_suggestion_canvas() -> canvas.Canvas:
                         break
                 _suggestion_hover_index = hover_index
 
-            if event_type in ("mousedown", "mouse_down", "mouse_drag", "mouse_drag_start") and button in (0, 1, None):
+            if event_type in (
+                "mousedown",
+                "mouse_down",
+                "mouse_drag",
+                "mouse_drag_start",
+            ) and button in (0, 1, None):
                 handled_click = False
                 # Close hotspot in top-right header band.
                 if (
@@ -249,10 +257,14 @@ def _ensure_suggestion_canvas() -> canvas.Canvas:
                     body_top = 60 + line_h * 2
                     body_bottom = rect.y + rect.height - line_h * 2
                     visible_height = max(body_bottom - body_top, row_height)
-                    total_content_height = row_height * max(len(SuggestionGUIState.suggestions), 0)
+                    total_content_height = row_height * max(
+                        len(SuggestionGUIState.suggestions), 0
+                    )
                     max_scroll = max(total_content_height - visible_height, 0)
                     new_scroll = SuggestionCanvasState.scroll_y - dy * 40.0
-                    SuggestionCanvasState.scroll_y = max(min(new_scroll, max_scroll), 0.0)
+                    SuggestionCanvasState.scroll_y = max(
+                        min(new_scroll, max_scroll), 0.0
+                    )
                 return
         except Exception as e:
             _debug(f"suggestion canvas mouse handler error: {e}")
@@ -290,7 +302,11 @@ def _open_suggestion_canvas() -> None:
 
 
 def _close_suggestion_canvas() -> None:
-    global _suggestion_canvas, _suggestion_hover_close, _suggestion_hover_index, _suggestion_drag_offset
+    global \
+        _suggestion_canvas, \
+        _suggestion_hover_close, \
+        _suggestion_hover_index, \
+        _suggestion_drag_offset
     SuggestionCanvasState.showing = False
     SuggestionCanvasState.scroll_y = 0.0
     _suggestion_hover_close = False
@@ -431,11 +447,7 @@ def _draw_suggestions(c: canvas.Canvas) -> None:  # pragma: no cover - visual on
         _suggestion_button_bounds[index] = (bx1, by1, bx2, by2)
 
         draw_text(label, x, row_y)
-        if (
-            _suggestion_hover_index == index
-            and rect is not None
-            and paint is not None
-        ):
+        if _suggestion_hover_index == index and rect is not None and paint is not None:
             try:
                 underline_rect = Rect(x, row_y + 4, label_width, 1)
                 c.draw_rect(underline_rect)
@@ -453,21 +465,21 @@ def _draw_suggestions(c: canvas.Canvas) -> None:  # pragma: no cover - visual on
         static_prompt, completeness, scope, method, style, directional = _parse_recipe(
             suggestion.recipe
         )
-        parts: list[str] = []
+        # Render a compact axes summary instead of full hydrated descriptions
+        # to keep the suggestions panel readable.
+        summary_parts: list[str] = []
         if completeness:
-            parts.append(
-                f"C: {_hydrate_axis_list(completeness, COMPLETENESS_MAP)}"
-            )
+            summary_parts.append(f"C:{completeness}")
         if scope:
-            parts.append(f"S: {_hydrate_axis_list(scope, SCOPE_MAP)}")
+            summary_parts.append(f"S:{scope}")
         if method:
-            parts.append(f"M: {_hydrate_axis_list(method, METHOD_MAP)}")
+            summary_parts.append(f"M:{method}")
         if style:
-            parts.append(f"St: {_hydrate_axis_list(style, STYLE_MAP)}")
+            summary_parts.append(f"St:{style}")
         if directional:
-            parts.append(f"D: {_hydrate_axis_list(directional, DIRECTIONAL_MAP)}")
-        if parts:
-            draw_text(f"Details: {' · '.join(parts)}", x + 4, row_y)
+            summary_parts.append(f"D:{directional}")
+        if summary_parts:
+            draw_text(f"Axes: {' '.join(summary_parts)}", x + 4, row_y)
 
     # Draw a simple scrollbar when needed.
     if max_scroll > 0 and rect is not None and paint is not None:
@@ -481,15 +493,21 @@ def _draw_suggestions(c: canvas.Canvas) -> None:  # pragma: no cover - visual on
                 paint.style = paint.Style.STROKE
             paint.color = "DDDDDD"
             c.draw_rect(Rect(track_x, track_y, 6, track_height))
-            thumb_height = max(int(visible_height * visible_height / total_content_height), 20)
+            thumb_height = max(
+                int(visible_height * visible_height / total_content_height), 20
+            )
             if max_scroll > 0:
-                thumb_offset = int((scroll_y / max_scroll) * (visible_height - thumb_height))
+                thumb_offset = int(
+                    (scroll_y / max_scroll) * (visible_height - thumb_height)
+                )
             else:
                 thumb_offset = 0
             paint.color = "888888"
             if hasattr(paint, "Style") and hasattr(paint, "style"):
                 paint.style = paint.Style.FILL
-            c.draw_rect(Rect(track_x + 1, track_y + thumb_offset + 1, 4, thumb_height - 2))
+            c.draw_rect(
+                Rect(track_x + 1, track_y + thumb_offset + 1, 4, thumb_height - 2)
+            )
             if old_style is not None and hasattr(paint, "Style"):
                 paint.style = old_style
             if old_color is not None:

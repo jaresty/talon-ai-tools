@@ -26,7 +26,12 @@ if bootstrap is not None:
             GPTState.reset_all()
 
         def test_record_and_fetch_suggestions(self) -> None:
-            suggestions = [{"name": "Fix bugs", "recipe": "fix · full · narrow · steps · plain · fog"}]
+            suggestions = [
+                {
+                    "name": "Fix bugs",
+                    "recipe": "fix · full · narrow · steps · plain · fog",
+                }
+            ]
             record_suggestions(suggestions, "clipboard")
 
             stored, source = last_suggestions()
@@ -41,7 +46,10 @@ if bootstrap is not None:
 
         def test_suggestion_entries_filters_invalid(self) -> None:
             record_suggestions(
-                [{"name": "Valid", "recipe": "fix · full · fog"}, {"name": "", "recipe": "bad"}],
+                [
+                    {"name": "Valid", "recipe": "fix · full · fog"},
+                    {"name": "", "recipe": "bad"},
+                ],
                 "clipboard",
             )
             entries = suggestion_entries()
@@ -83,9 +91,9 @@ if bootstrap is not None:
             phrase = suggestion_grammar_phrase(
                 "fix · full · fog", "clipboard", {"clipboard": "clip"}
             )
-            self.assertEqual(phrase, "model clip fix full fog")
+            self.assertEqual(phrase, "model run clip fix full fog")
             no_source_phrase = suggestion_grammar_phrase("fix · full · fog", None, {})
-            self.assertEqual(no_source_phrase, "model fix full fog")
+            self.assertEqual(no_source_phrase, "model run fix full fog")
 
         def test_last_recipe_snapshot_uses_axes_when_present(self) -> None:
             GPTState.last_static_prompt = "fix"
@@ -115,6 +123,7 @@ if bootstrap is not None:
 
 else:
     if not TYPE_CHECKING:
+
         class SuggestionCoordinatorTests(unittest.TestCase):
             @unittest.skip("Test harness unavailable outside unittest runs")
             def test_placeholder(self) -> None:

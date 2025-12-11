@@ -64,6 +64,7 @@ _scroll_log_count = 0
 _modifier_state = {"alt": False, "cmd": False}
 _last_alt_down = 0.0
 _last_cmd_down = 0.0
+_last_alt_nav_down = 0.0
 _global_key_handler_registered = False
 _tap_key_handler_registered = False
 _hub_key_handler = None  # set after canvas creation
@@ -631,7 +632,8 @@ def _on_key(evt) -> None:  # pragma: no cover - visual
         # Normalise common aliases from tap/ui events.
         if key in ("bksp", "backspace"):
             key = "backspace"
-        if key in ("del",):
+        # Some runtimes send delete as "del" or the raw delete char ("\x7f").
+        if key in ("del", "\x7f"):
             key = "delete"
         if not getattr(evt, "down", False):
             if key in ("alt", "lalt", "ralt"):
@@ -650,6 +652,15 @@ def _on_key(evt) -> None:  # pragma: no cover - visual
             return
         mods = []
         raw_mods = getattr(evt, "mods", None) or []
+        _log(
+            f"hub key: raw_key={raw_key!r} key={key!r} down={getattr(evt, 'down', False)} mods={raw_mods}"
+        )
+        # Track an Alt+Left/Right navigation pattern so we can treat a
+        # subsequent bare delete as an Alt+Delete semantic (word delete).
+        if key in ("left", "right", "arrowleft", "arrowright") and any(
+            str(m).lower() in ("alt", "option", "opt") for m in raw_mods
+        ):
+            globals()["_last_alt_nav_down"] = time.time()
         for mod_name in (
             "alt",
             "cmd",
@@ -711,7 +722,11 @@ def _on_key(evt) -> None:  # pragma: no cover - visual
             _recompute_search_results()
             return
         # Treat recent alt/cmd down as active even if the modifier isn't reported on the delete key.
-        alt_active = alt_down or (now - globals().get("_last_alt_down", 0.0) < 0.4)
+        alt_active = (
+            alt_down
+            or (now - globals().get("_last_alt_down", 0.0) < 0.4)
+            or (now - globals().get("_last_alt_nav_down", 0.0) < 0.4)
+        )
         cmd_active = cmd_down or (now - globals().get("_last_cmd_down", 0.0) < 0.4)
         if key in ("delete", "backspace") and alt_active:
             HelpHubState.filter_text = help_edit_filter_text(

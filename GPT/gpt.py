@@ -220,6 +220,16 @@ for preset in INTENT_PRESETS:
         continue
     _INTENT_PRESET_SPOKEN_TO_KEY[spoken] = preset.key
 
+# Token sets for Persona/Intent axes and presets used when validating
+# stance_command strings produced by the LLM for `model suggest`.
+VOICE_TOKENS: set[str] = set(persona_docs_map("voice").keys())
+AUDIENCE_TOKENS: set[str] = set(persona_docs_map("audience").keys())
+TONE_TOKENS: set[str] = set(persona_docs_map("tone").keys())
+PURPOSE_TOKENS: set[str] = set(persona_docs_map("purpose").keys())
+
+_PERSONA_PRESET_SPOKEN_SET: set[str] = set(_PERSONA_PRESET_SPOKEN_TO_KEY.keys())
+_INTENT_PRESET_SPOKEN_SET: set[str] = set(_INTENT_PRESET_SPOKEN_TO_KEY.keys())
+
 mod.list("personaPreset", desc="Persona (Who) presets for GPT stance")
 mod.list("intentPreset", desc="Intent (Why) presets for GPT stance")
 

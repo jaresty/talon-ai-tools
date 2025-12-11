@@ -10,7 +10,7 @@ from .modelDestination import create_model_destination
 from .modelSource import create_model_source
 from .modelState import GPTState
 from .talonSettings import ApplyPromptConfiguration, modelPrompt
-from .personaConfig import PERSONA_PRESETS, INTENT_PRESETS
+from .personaConfig import persona_docs_map, PERSONA_PRESETS, INTENT_PRESETS
 from .suggestionCoordinator import (
     suggestion_entries_with_metadata,
     suggestion_source,
@@ -75,6 +75,25 @@ class SuggestionCanvasState:
     scroll_y: float = 0.0
 
 
+# Axis and preset token sets used to validate stance_command strings before
+# we surface them as "Say:" lines in the suggestions GUI.
+VOICE_TOKENS: set[str] = set(persona_docs_map("voice").keys())
+AUDIENCE_TOKENS: set[str] = set(persona_docs_map("audience").keys())
+TONE_TOKENS: set[str] = set(persona_docs_map("tone").keys())
+PURPOSE_TOKENS: set[str] = set(persona_docs_map("purpose").keys())
+
+_PERSONA_PRESET_SPOKEN_SET: set[str] = {
+    (preset.label or preset.key).strip().lower()
+    for preset in PERSONA_PRESETS
+    if (preset.label or preset.key).strip()
+}
+_INTENT_PRESET_SPOKEN_SET: set[str] = {
+    (preset.key or "").strip().lower()
+    for preset in INTENT_PRESETS
+    if (preset.key or "").strip()
+}
+
+
 _suggestion_canvas: Optional[canvas.Canvas] = None
 _suggestion_button_bounds: Dict[int, Tuple[int, int, int, int]] = {}
 _suggestion_hover_close: bool = False
@@ -118,6 +137,49 @@ SOURCE_SPOKEN_MAP = _load_source_spoken_map()
 
 def _debug(msg: str) -> None:
     """Lightweight debug logging for the suggestion canvas."""
+
+
+def _valid_stance_command(cmd: str) -> bool:
+    """Return True if cmd is a sayable stance command.
+
+    Allowed forms (case-insensitive, with optional whitespace):
+    - model write <persona_voice> <persona_audience> <persona_tone> <intent_purpose>
+      where at least one known purpose token (for teaching/deciding/...) is present.
+    - persona <personaPreset>
+    - intent <intentPreset>
+    - persona <personaPreset> · intent <intentPreset> (or the reverse order).
+    """
+    if not cmd:
+        return False
+    text = (cmd or "").strip()
+    lower = text.lower()
+
+    # Combined persona/intent separated by '·'
+    parts = [p.strip() for p in lower.split("·") if p.strip()]
+    if len(parts) > 1:
+        # All parts must validate individually.
+        return all(_valid_stance_command(p) for p in parts)
+
+    # Single-part commands.
+    if lower.startswith("persona "):
+        name = lower[len("persona ") :].strip()
+        return name in _PERSONA_PRESET_SPOKEN_SET
+
+    if lower.startswith("intent "):
+        name = lower[len("intent ") :].strip()
+        return name in _INTENT_PRESET_SPOKEN_SET
+
+    if lower.startswith("model write "):
+        tail = lower[len("model write ") :].strip()
+        if not tail:
+            return False
+        # Require at least one known purpose token to appear verbatim in the
+        # command (for example, 'for teaching', 'for collaborating').
+        if not any(purpose in lower for purpose in PURPOSE_TOKENS):
+            return False
+        return True
+
+    return False
     try:
         print(f"GPT suggestion canvas: {msg}")
     except Exception:
@@ -510,14 +572,20 @@ def _draw_suggestions(c: canvas.Canvas) -> None:  # pragma: no cover - visual on
         or getattr(suggestion, "persona_tone", "")
     )
     has_intent_axis = bool(getattr(suggestion, "intent_purpose", ""))
-    has_stance_command = bool(suggestion.stance_command)
+    raw_stance = (suggestion.stance_command or "").strip()
+    stance_text = raw_stance if _valid_stance_command(raw_stance) else ""
+    if raw_stance and not stance_text:
+        _debug(
+            f"invalid stance_command for suggestion '{suggestion.name}': {raw_stance}"
+        )
+    has_stance_command = bool(stance_text)
     has_why = bool(suggestion.why)
 
     if has_persona_axes or has_intent_axis or has_stance_command or has_why:
         row_y += line_h
         # Put the concrete voice command first so users know exactly what to say.
         if has_stance_command:
-            draw_text(f"Say: {suggestion.stance_command}", x + 4, row_y)
+            draw_text(f"Say: {stance_text}", x + 4, row_y)
             row_y += line_h
         if has_persona_axes or has_intent_axis:
             draw_text("Stance:", x + 4, row_y)

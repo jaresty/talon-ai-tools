@@ -14,6 +14,8 @@ from .modelTypes import (
 class GPTState:
     text_to_confirm: ClassVar[str] = ""
     last_response: ClassVar[str] = ""
+    current_provider_id: ClassVar[str] = "openai"
+    request_provider: ClassVar[object] = None
     # Optional meta-interpretation for the last response, when available.
     last_meta: ClassVar[str] = ""
     # Snapshot of the current streaming run (if any) so UI surfaces can render
@@ -160,6 +162,8 @@ class GPTState:
         cls.last_raw_response = {}
         cls.last_axes = {"completeness": [], "scope": [], "method": [], "style": []}
         cls.request["messages"] = []
+        cls.request_provider = None
+        cls.current_provider_id = "openai"
         actions.app.notify("Cleared all state")
 
     @classmethod

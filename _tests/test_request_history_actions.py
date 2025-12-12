@@ -278,6 +278,30 @@ if bootstrap is not None:
                 lines, ["0: rid-1 (7ms) | infer · full · rigor · prompt one"]
             )
 
+        def test_history_summary_lines_include_provider(self):
+            append_entry(
+                "rid-2",
+                "prompt provider",
+                "resp2",
+                "meta2",
+                recipe="infer · full",
+                provider_id="gemini",
+            )
+            lines = history_summary_lines(all_entries())
+            self.assertTrue(any("provider=gemini" in line for line in lines))
+
+        def test_show_entry_sets_provider(self):
+            append_entry(
+                "rid-3",
+                "prompt",
+                "resp3",
+                "meta3",
+                recipe="infer · full",
+                provider_id="gemini",
+            )
+            HistoryActions.gpt_request_history_show_latest()
+            self.assertEqual(getattr(GPTState, "current_provider_id", ""), "gemini")
+
         def test_history_save_latest_source_writes_markdown_with_prompt(self):
             tmpdir = tempfile.mkdtemp()
             from talon import settings as talon_settings  # type: ignore

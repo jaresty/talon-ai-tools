@@ -56,13 +56,14 @@ if bootstrap is not None:
                     self.meta = "meta1"
                     self.duration_ms = 42
                     self.recipe = "infer · full · rigor"
+                    self.provider_id = "gemini"
 
             rendered = history_drawer_entries_from([DummyEntry()])
 
             self.assertEqual(len(rendered), 1)
             label, body = rendered[0]
-            self.assertEqual(label, "rid-1 (42ms)")
-            self.assertEqual(body, "infer · full · rigor · prompt one")
+            self.assertEqual(label, "rid-1 (42ms) [gemini]")
+            self.assertEqual(body, "infer · full · rigor · prompt one · provider=gemini")
 else:
     if not TYPE_CHECKING:
 

@@ -837,6 +837,7 @@ def _cheat_sheet_text() -> str:
         "- model patterns / model pattern menu <prompt>",
         "- model run suggest / model run suggestions",
         "- model history list / history drawer",
+        "- model provider list / provider use <name> / provider status",
         "- model help (HTML docs)",
         "Who / Why / How (ADR 040):",
         "- Persona (Who): voice, audience, tone",
@@ -938,6 +939,12 @@ def _build_buttons() -> List[HubButton]:
                 lambda: actions.user.request_history_drawer_toggle()
             ),
             voice_hint="Say: model history drawer",
+        ),
+        HubButton(
+            label="Providers",
+            description="List/switch model providers",
+            handler=_navigate_and_close(lambda: actions.user.model_provider_list()),
+            voice_hint="Say: model provider list",
         ),
         HubButton(
             label="HTML docs",

@@ -45,11 +45,13 @@ if bootstrap is not None:
                     self.prompt = "prompt one"
                     self.duration_ms = 7
                     self.recipe = "infer · full · rigor"
+                    self.provider_id = "gemini"
 
             entries = [DummyEntry()]
             direct = actions_summary_lines(entries)
             via_facade = history_summary_lines(entries)
             self.assertEqual(via_facade, direct)
+            self.assertTrue(any("provider=gemini" in line for line in via_facade))
 
         def test_history_drawer_entries_from_delegates_to_drawer_helper(self) -> None:
             class DummyEntry:
@@ -60,11 +62,13 @@ if bootstrap is not None:
                     self.meta = "meta1"
                     self.duration_ms = 42
                     self.recipe = "infer · full · rigor"
+                    self.provider_id = "gemini"
 
             entries = [DummyEntry()]
             direct = drawer_entries_from(entries)
             via_facade = history_drawer_entries_from(entries)
             self.assertEqual(via_facade, direct)
+            self.assertIn("[gemini]", via_facade[0][0])
 
 
 else:

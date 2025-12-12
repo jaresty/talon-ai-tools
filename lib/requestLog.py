@@ -87,13 +87,14 @@ def append_entry(
     started_at_ms: Optional[int] = None,
     duration_ms: Optional[int] = None,
     axes: Optional[dict[str, list[str]]] = None,
+    provider_id: str = "",
 ) -> None:
     """Append a request entry to the bounded history ring."""
     try:
         print(
             f"[requestLog] append id={request_id!r} prompt_len={len(prompt or '')} "
             f"response_len={len(response or '')} recipe={recipe!r} duration_ms={duration_ms} "
-            f"axes_keys={list((axes or {}).keys())}"
+            f"axes_keys={list((axes or {}).keys())} provider_id={provider_id}"
         )
     except Exception:
         pass
@@ -108,6 +109,7 @@ def append_entry(
             started_at_ms=started_at_ms,
             duration_ms=duration_ms,
             axes=axes_payload,
+            provider_id=provider_id or "",
         )
     )
     try:
@@ -130,6 +132,7 @@ def append_entry_from_request(
     started_at_ms: Optional[int] = None,
     duration_ms: Optional[int] = None,
     axes: Optional[dict[str, list[str]]] = None,
+    provider_id: str = "",
 ) -> str:
     """Append a history entry derived from a request dict.
 
@@ -170,6 +173,7 @@ def append_entry_from_request(
         started_at_ms=started_at_ms,
         duration_ms=duration_ms,
         axes=axes_copy,
+        provider_id=provider_id,
     )
     return prompt_text
 

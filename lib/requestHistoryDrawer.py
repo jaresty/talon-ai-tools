@@ -15,7 +15,7 @@ mod = Module()
 
 class HistoryDrawerState:
     showing: bool = False
-    entries: List[Tuple[str, str]] = []  # (request_id, prompt_snippet + recipe)
+    entries: List[Tuple[str, str]] = []  # (request_id, prompt_snippet + recipe + provider)
     selected_index: int = 0
 
 

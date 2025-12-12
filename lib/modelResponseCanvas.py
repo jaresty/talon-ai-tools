@@ -652,19 +652,20 @@ def _default_draw_response(c: canvas.Canvas) -> None:  # pragma: no cover - visu
 
     status_label = ""
     cancel_label = ""
-    if prefer_progress:
-        if phase is RequestPhase.SENDING:
-            status_label = "Sending…"
+    if phase is RequestPhase.SENDING:
+        status_label = "Sending…"
+        if not cancel_requested:
             cancel_label = "[Cancel]"
-        elif phase is RequestPhase.STREAMING:
-            status_label = "Streaming…"
+    elif phase is RequestPhase.STREAMING:
+        status_label = "Streaming…"
+        if not cancel_requested:
             cancel_label = "[Cancel]"
-        elif phase is RequestPhase.CANCELLED:
-            status_label = "Cancel requested"
-        elif phase is RequestPhase.ERROR:
-            status_label = "Failed"
-        elif phase is RequestPhase.DONE:
-            status_label = "Done"
+    elif phase is RequestPhase.CANCELLED:
+        status_label = "Cancel requested"
+    elif phase is RequestPhase.ERROR:
+        status_label = "Failed"
+    elif phase is RequestPhase.DONE:
+        status_label = "Done"
 
     _header_label("[X]", key="close", hover=_response_hover_button == "close")
     if cancel_label:

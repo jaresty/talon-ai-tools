@@ -41,6 +41,13 @@ os.environ["OPENAI_API_KEY"] = "YOUR-KEY-HERE"
 >
 > You can also exclusively use this repo with just [Copilot](./copilot/README.md) if you do not need LLM integration
 
+### Multiple providers (ADR 047)
+
+- Switch providers by voice: `model provider list`, `model provider use <name>`, `model provider next/previous`, `model provider status`.
+- Bundled providers: `openai`, `gemini`. Configure tokens via Talon settings (`user.model_provider_token_openai`, `user.model_provider_token_gemini`) or env (`OPENAI_API_KEY` / `GEMINI_API_KEY`). Add more via `user.model_provider_extra` in `talon-ai-settings.talon`.
+- Switch provider + model together: `model provider use <name> model <model-id>` persists the model for built-ins (OpenAI uses `user.openai_model`; Gemini uses `user.model_provider_model_gemini`) and applies an in-session override for custom providers. Spoken model aliases are supported: Gemini via `user.model_provider_model_aliases_gemini` (e.g., `one five pro`), OpenAI via `user.model_provider_model_aliases_openai` (e.g., `four o`).
+- Provider list/status render in a canvas with reachability hints (enable probes with `user.model_provider_probe = 1`).
+
 ### In-Talon help surfaces
 
 - `model help hub` – central hub linking quick help, patterns, suggestions, history, docs.

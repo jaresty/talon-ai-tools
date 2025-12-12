@@ -5,6 +5,24 @@ settings():
     # Works with any API with the same schema as OpenAI's (i.e. Azure, llamafiles, etc.)
     # user.model_endpoint = "https://api.openai.com/v1/chat/completions"
 
+    # Optional: switch default provider (ADR 047). Bundled options: openai, gemini.
+    # Set tokens via Talon settings or env vars (OPENAI_API_KEY / GEMINI_API_KEY):
+    # user.model_provider_token_openai = "sk-..."
+    # user.model_provider_token_gemini = "your-gemini-key"
+    # Optional provider defaults:
+    # user.model_provider_model_gemini = "gemini-1.5-pro"
+    # Optional spoken aliases for Gemini models (comma-separated spoken:modelid):
+    # user.model_provider_model_aliases_gemini = "one five pro:gemini-1.5-pro,flash:gemini-1.5-flash"
+    # Optional spoken aliases for OpenAI models (comma-separated spoken:modelid):
+    # user.model_provider_model_aliases_openai = "four o:gpt-4o,four point one:gpt-4.1"
+    # user.model_provider_current = "openai"
+    # user.model_provider_default = "openai"
+    # user.model_provider_extra = {"providers": [
+    #     {"id": "local", "display_name": "Local Llama", "endpoint": "http://localhost:8080/v1/chat/completions", "api_key_env": "LOCAL_LLM_API_KEY", "default_model": "llama-3-8b"}
+    # ]}
+    # Enable reachability probes in provider list/status canvases
+    # user.model_provider_probe = 1
+
     # user.model_system_prompt = "You are an assistant helping an office worker to be more productive."
 
     # Maximum time in seconds to wait for a single model HTTP request before timing out.

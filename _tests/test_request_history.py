@@ -10,6 +10,7 @@ else:
 
 if bootstrap is not None:
     from talon_user.lib.requestHistory import RequestHistory, RequestLogEntry
+    from talon_user.lib import requestLog
 
     class RequestHistoryTests(unittest.TestCase):
         def test_append_and_latest(self):
@@ -43,6 +44,23 @@ if bootstrap is not None:
             hist.append(RequestLogEntry("r3", "p3", "resp3"))
             ids = [entry.request_id for entry in hist.all()]
             self.assertEqual(ids, ["r1", "r2", "r3"])
+
+        def test_append_entry_from_request_captures_provider(self):
+            requestLog.clear_history()
+            request = {
+                "messages": [
+                    {
+                        "role": "user",
+                        "content": [{"type": "text", "text": "hello"}],
+                    }
+                ]
+            }
+            requestLog.append_entry_from_request(
+                "req-1", request, "resp", provider_id="gemini"
+            )
+            latest = requestLog.latest()
+            assert latest is not None
+            self.assertEqual(latest.provider_id, "gemini")
 else:
     if not TYPE_CHECKING:
         class RequestHistoryTests(unittest.TestCase):

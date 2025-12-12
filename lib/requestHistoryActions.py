@@ -111,6 +111,9 @@ def history_summary_lines(entries: Sequence[object]) -> list[str]:
         recipe = (getattr(entry, "recipe", "") or "").strip()
         parts = [p for p in (recipe, prompt_snippet) if p]
         payload = " · ".join(parts) if parts else prompt_snippet
+        provider_id = (getattr(entry, "provider_id", "") or "").strip()
+        if provider_id:
+            payload = f"{payload} · provider={provider_id}" if payload else f"provider={provider_id}"
         lines.append(f"{idx}: {label} | {payload}")
     return lines
 
@@ -205,6 +208,12 @@ def _show_entry(entry) -> None:
     GPTState.text_to_confirm = entry.response
     GPTState.last_response = entry.response
     GPTState.last_meta = entry.meta
+    provider_id = (getattr(entry, "provider_id", "") or "").strip()
+    if provider_id:
+        try:
+            GPTState.current_provider_id = provider_id  # type: ignore[attr-defined]
+        except Exception:
+            pass
     # Keep structured axis fields in sync with the stored axes/recipe so recaps
     # match the history entry instead of whatever the live state held.
     raw_recipe = getattr(entry, "recipe", "") or ""

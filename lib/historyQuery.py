@@ -56,5 +56,10 @@ def history_drawer_entries_from(entries: Sequence[object]) -> List[Tuple[str, st
         body = snippet
         if recipe:
             body = f"{recipe} · {snippet}" if snippet else recipe
+        provider_id = (getattr(entry, "provider_id", "") or "").strip()
+        if provider_id:
+            label = f"{label} [{provider_id}]"
+        if provider_id:
+            body = f"{body} · provider={provider_id}" if body else f"provider={provider_id}"
         rendered.append((label, body))
     return rendered

@@ -45,6 +45,14 @@ from .streamingCoordinator import (
     record_streaming_complete,
     record_streaming_error,
 )
+from .providerRegistry import (
+    OPENAI_ENDPOINT,
+    ProviderConfig,
+    provider_registry,
+    provider_token_hint,
+    provider_tokens_setting,
+)
+from .providerCanvas import show_provider_canvas
 from .axisCatalog import axis_catalog
 import threading
 
@@ -299,11 +307,123 @@ class MissingAPIKeyError(Exception):
     pass
 
 
-def get_token() -> str:
-    token = os.environ.get("OPENAI_API_KEY")
+def get_token(provider: Optional[ProviderConfig] = None) -> str:
+    provider = provider or provider_registry().active_provider()
+    tokens = provider_tokens_setting()
+    token = tokens.get(provider.id)
+    token_source = "settings" if token else ""
     if not token:
-        raise MissingAPIKeyError("OPENAI_API_KEY not found in environment variables")
+        token = os.environ.get(provider.api_key_env)
+        if token:
+            token_source = "env"
+    if not token:
+        hint = provider_token_hint(provider.id, provider.api_key_env)
+        _show_provider_error(
+            f"Missing token ({hint})",
+            provider.id,
+            provider.api_key_env,
+            hint=f"Set {hint}.",
+        )
+        raise MissingAPIKeyError(
+            f"Token missing for provider '{provider.id}'. Configure {hint}."
+        )
+    try:
+        GPTState.current_provider_id = provider.id  # type: ignore[attr-defined]
+    except Exception:
+        pass
     return token
+
+
+def active_provider() -> ProviderConfig:
+    """Return the active provider and mirror it into GPTState."""
+
+    provider = provider_registry().active_provider()
+    try:
+        GPTState.current_provider_id = provider.id  # type: ignore[attr-defined]
+    except Exception:
+        pass
+    return provider
+
+
+def bound_provider() -> ProviderConfig:
+    """Return the provider bound to the current request, falling back to active."""
+
+    try:
+        bound = getattr(GPTState, "request_provider", None)
+        if bound:
+            return bound  # type: ignore[return-value]
+    except Exception:
+        pass
+    return active_provider()
+
+
+def _ensure_request_supported(provider: ProviderConfig, request: dict) -> None:
+    """Raise if the provider lacks capabilities required by the request."""
+
+    try:
+        messages = request.get("messages", []) or []
+    except Exception:
+        messages = []
+    requires_vision = False
+    for msg in messages:
+        try:
+            for content in msg.get("content") or []:
+                if isinstance(content, dict) and content.get("type") == "image_url":
+                    requires_vision = True
+                    break
+            if requires_vision:
+                break
+        except Exception:
+            continue
+    if requires_vision and not provider.features.get("vision", False):
+        _show_provider_error("Vision not supported for this provider", provider.id, provider.api_key_env)
+        raise UnsupportedProviderCapability(provider.id, "vision")
+
+
+def provider_endpoint(provider: ProviderConfig) -> str:
+    """Return the effective endpoint with user override support."""
+
+    override = settings.get("user.model_endpoint", None)
+    if isinstance(override, str) and override.strip():
+        return override.strip()
+    return provider.endpoint or OPENAI_ENDPOINT
+
+
+def _show_provider_error(
+    message: str, provider_id: str, api_key_env: str, *, hint: Optional[str] = None
+) -> None:
+    """Render a provider error in the canvas for quick recovery."""
+
+    lines = [f"Provider '{provider_id}' unavailable: {message}"]
+    if hint:
+        lines.append(hint)
+    else:
+        lines.append(
+            f"Check {provider_token_hint(provider_id, api_key_env)} or provider capabilities."
+        )
+    try:
+        show_provider_canvas("Provider error", lines)
+    except Exception:
+        try:
+            notify(message)
+        except Exception:
+            pass
+
+
+def _warn_streaming_disabled(provider: ProviderConfig) -> None:
+    """Inform the user when streaming is disabled for the current provider."""
+
+    lines = [
+        f"Streaming disabled for provider '{provider.id}'.",
+        "Running request without streaming.",
+    ]
+    try:
+        show_provider_canvas("Provider warning", lines)
+    except Exception:
+        try:
+            notify("Streaming disabled for this provider")
+        except Exception:
+            pass
 
 
 def format_messages(
@@ -332,9 +452,18 @@ def build_chatgpt_request(
     user_messages: List[GPTMessage],
     system_messages: List[str],
     tools: Optional[List[GPTTool]] = None,
+    provider: Optional[ProviderConfig] = None,
 ) -> GPTRequest:
     """Build a ChatGPT API request from system and user message lists, with optional tools."""
     system_content = "\n\n".join(system_messages) if system_messages else ""
+
+    provider = provider or active_provider()
+    model_id = provider.default_model or None
+    if provider.id == "openai":
+        model_id = settings.get("user.openai_model", model_id)
+    elif provider.id == "gemini":
+        model_id = settings.get("user.model_provider_model_gemini", model_id)
+    model_id = model_id or "gpt-5"
 
     messages = []
     if system_content:
@@ -343,7 +472,7 @@ def build_chatgpt_request(
     messages.extend(user_messages)
 
     request: GPTRequest = {
-        "model": settings.get("user.openai_model"),
+        "model": model_id,
         "messages": messages,
         "max_completion_tokens": 5000,
         "reasoning_effort": "minimal",
@@ -507,10 +636,13 @@ def build_request(destination: object):
     # Always include the built-in Ask ChatGPT tool
     all_tools = (user_tools or []) + [BUILTIN_ASK_CHATGPT_TOOL]
     GPTState.tools = all_tools
+    provider = active_provider()
+    GPTState.request_provider = provider
     GPTState.request = build_chatgpt_request(
         user_messages=GPTState.thread or [],
         system_messages=full_system_messages,
         tools=GPTState.tools,
+        provider=provider,
     )
 
 
@@ -583,6 +715,15 @@ class CancelledRequest(RuntimeError):
     pass
 
 
+class UnsupportedProviderCapability(RuntimeError):
+    """Raised when a provider lacks required capabilities for the request."""
+
+    def __init__(self, provider_id: str, feature: str):
+        super().__init__(f"Provider '{provider_id}' does not support {feature}")
+        self.provider_id = provider_id
+        self.feature = feature
+
+
 def _send_request_streaming(request, request_id: str) -> str:
     """Stream a response and append deltas into GPTState.text_to_confirm."""
     try:
@@ -616,12 +757,18 @@ def _send_request_streaming(request, request_id: str) -> str:
 
     _update_lifecycle("start")
 
-    TOKEN = get_token()
+    provider = bound_provider()
+    _ensure_request_supported(provider, request)
+    try:
+        TOKEN = get_token(provider)
+    except MissingAPIKeyError:
+        _show_provider_error("Missing API key", provider.id, provider.api_key_env)
+        raise
     headers = {
         "Content-Type": "application/json",
         "Authorization": f"Bearer {TOKEN}",
     }
-    url: str = settings.get("user.model_endpoint")  # type: ignore
+    url: str = provider_endpoint(provider)  # type: ignore
     timeout_seconds: int = settings.get("user.model_request_timeout_seconds", 120)  # type: ignore
 
     decoder = codecs.getincrementaldecoder("utf-8")()
@@ -1068,10 +1215,21 @@ def send_request(max_attempts: int = 10):
         except Exception:
             pass
 
+    provider = bound_provider()
+    _ensure_request_supported(provider, GPTState.request)
     try:
         use_stream = bool(settings.get("user.model_streaming", True))
     except Exception:
         use_stream = True
+    try:
+        if not provider.features.get("streaming", True):
+            use_stream = False
+            print(
+                f"[modelHelpers] provider '{provider.id}' disables streaming; using sync path"
+            )
+            _warn_streaming_disabled(provider)
+    except Exception:
+        provider = None
     print(f"[modelHelpers] streaming_enabled={use_stream}")
     if use_stream:
         try:
@@ -1265,6 +1423,7 @@ def send_request(max_attempts: int = 10):
             started_at_ms=started_at_ms,
             duration_ms=duration_ms,
             axes=axes,
+            provider_id=getattr(provider, "id", ""),
         )
         try:
             print(
@@ -1313,7 +1472,13 @@ class CancelledRequest(RuntimeError):
 
 
 def send_request_internal(request):
-    TOKEN = get_token()
+    provider = bound_provider()
+    _ensure_request_supported(provider, request)
+    try:
+        TOKEN = get_token(provider)
+    except MissingAPIKeyError:
+        _show_provider_error("Missing API key", provider.id, provider.api_key_env)
+        raise
     headers = {
         "Content-Type": "application/json",
         "Authorization": f"Bearer {TOKEN}",
@@ -1326,7 +1491,7 @@ def send_request_internal(request):
     if GPTState.debug_enabled:
         print(request)
 
-    url: str = settings.get("user.model_endpoint")  # type: ignore
+    url: str = provider_endpoint(provider)  # type: ignore
     timeout_seconds: int = settings.get("user.model_request_timeout_seconds", 120)  # type: ignore
     notify("GPT Sending Request")
     try:
@@ -1364,8 +1529,24 @@ class ClipboardImageError(Exception):
     pass
 
 
+class ClipboardImageUnsupportedProvider(ClipboardImageError):
+    """Raised when the active provider does not support vision/image sources."""
+
+    def __init__(self, provider_id: str):
+        super().__init__(f"Provider '{provider_id}' does not support image clipboard")
+        self.provider_id = provider_id
+
+
 def get_clipboard_image():
     """Get an image from the clipboard and return it as a base64-encoded string."""
+    provider = bound_provider()
+    if not provider.features.get("vision", False):
+        _show_provider_error(
+            "Vision/images not supported for this provider",
+            provider.id,
+            provider.api_key_env,
+        )
+        raise ClipboardImageUnsupportedProvider(provider.id)
     try:
         clipped_image = clip.image()
         if clipped_image is None:

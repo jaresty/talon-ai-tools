@@ -868,8 +868,78 @@ def passConfiguration(matched_prompt) -> PassConfiguration:
 
 mod.setting(
     "openai_model",
-    type=Literal["gpt-3.5-turbo", "gpt-4", "gpt-4o-mini", "gpt-5"],  # type: ignore
+    type=Literal[
+        "gpt-3.5-turbo",
+        "gpt-4",
+        "gpt-4.1",
+        "gpt-4o",
+        "gpt-4o-mini",
+        "gpt-5",
+    ],  # type: ignore
     default="gpt-5",
+)
+
+mod.setting(
+    "model_provider_current",
+    type=str,
+    default="openai",
+    desc="Current active model provider id (for example, 'openai' or 'gemini').",
+)
+
+mod.setting(
+    "model_provider_default",
+    type=str,
+    default="openai",
+    desc="Default provider id to use when none is set.",
+)
+
+mod.setting(
+    "model_provider_token_openai",
+    type=str,
+    default="",
+    desc="Optional token for the built-in openai provider when env vars are unavailable.",
+)
+
+mod.setting(
+    "model_provider_token_gemini",
+    type=str,
+    default="",
+    desc="Optional token for the built-in gemini provider when env vars are unavailable.",
+)
+
+mod.setting(
+    "model_provider_model_gemini",
+    type=str,
+    default="",
+    desc="Optional default model for the built-in gemini provider.",
+)
+
+mod.setting(
+    "model_provider_model_aliases_gemini",
+    type=str,
+    default="",
+    desc="Optional comma-separated model aliases for gemini (format: 'spoken:modelid', e.g. 'one five pro:gemini-1.5-pro').",
+)
+
+mod.setting(
+    "model_provider_model_aliases_openai",
+    type=str,
+    default="",
+    desc="Optional comma-separated model aliases for openai (format: 'spoken:modelid', e.g. 'four o:gpt-4o').",
+)
+
+mod.setting(
+    "model_provider_extra",
+    type=dict,
+    default={},
+    desc="Optional extra provider definitions; accepts a dict or list of provider config objects.",
+)
+
+mod.setting(
+    "model_provider_probe",
+    type=int,
+    default=0,
+    desc="When set to 1, provider list/status will attempt a quick reachability probe of the provider endpoint.",
 )
 
 mod.setting(

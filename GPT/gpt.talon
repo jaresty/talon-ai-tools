@@ -82,3 +82,12 @@ intent status: user.intent_status()
 
 persona reset: user.persona_reset()
 intent reset: user.intent_reset()
+
+# Provider selection (ADR 047)
+{user.model} provider list$: user.model_provider_list()
+{user.model} provider status$: user.model_provider_status()
+{user.model} provider (use|switch) <user.text>$: user.model_provider_use(text)
+{user.model} provider (use|switch) <user.text> model <user.text>$: user.model_provider_use(text, text1)
+{user.model} provider next$: user.model_provider_next()
+{user.model} provider previous$: user.model_provider_previous()
+{user.model} provider close$: user.model_provider_close()

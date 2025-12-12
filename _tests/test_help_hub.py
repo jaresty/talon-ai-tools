@@ -37,6 +37,21 @@ def test_help_hub_button_triggers_quick_help():
     assert "model_help_canvas_open" in labels
 
 
+def test_help_hub_button_triggers_provider_list():
+    helpHub.help_hub_open()
+    helpHub.help_hub_test_click("Providers")
+    labels = [call[0] for call in actions.user.calls]
+    assert "model_provider_list" in labels
+
+
+def test_help_hub_search_can_trigger_provider_list():
+    helpHub.help_hub_open()
+    helpHub.help_hub_set_filter("provider")
+    helpHub.help_hub_test_click("Providers")
+    labels = [call[0] for call in actions.user.calls]
+    assert "model_provider_list" in labels
+
+
 def test_help_hub_quick_help_closes_hub_before_open(monkeypatch):
     # Open the hub and patch quick help to assert close-before-open ordering.
     helpHub.help_hub_open()

@@ -231,6 +231,28 @@ if bootstrap is not None:
             self.assertFalse(bool(snapshot_arg.get("completed")))
             self.assertFalse(bool(snapshot_arg.get("errored")))
 
+        def test_cancel_button_shown_when_inflight_without_progress_pref(self) -> None:
+            """Response canvas should surface a cancel affordance even when progress UI is disabled."""
+
+            GPTState.current_destination_kind = "pill"
+            with patch.object(
+                modelResponseCanvas,
+                "_current_request_state",
+                return_value=RequestState(phase=RequestPhase.STREAMING),
+            ):
+                canvas_obj = _ensure_response_canvas()
+                if not hasattr(canvas_obj, "rect") or canvas_obj.rect is None:
+                    canvas_obj.rect = type(
+                        "R", (), {"x": 0, "y": 0, "width": 500, "height": 400}
+                    )()
+                callbacks = getattr(canvas_obj, "_callbacks", {})
+                draw_cbs = callbacks.get("draw") or []
+                for cb in draw_cbs:
+                    cb(canvas_obj)
+
+            bounds = modelResponseCanvas._response_button_bounds.get("cancel")  # type: ignore[attr-defined]
+            self.assertIsNotNone(bounds, "Expected cancel button bounds to be registered")
+
         def test_error_canvas_passes_errored_snapshot_to_streaming_adapter(
             self,
         ) -> None:

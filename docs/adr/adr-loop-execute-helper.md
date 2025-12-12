@@ -193,12 +193,31 @@ loop:
 - Update the ADR's metadata (for example,
   `Status` and any remaining task lists) and/or
   work-log with a short "Current status" summary.
-- Before making a major status change (for
-  example, marking an ADR as effectively complete
-  for this repo), run the project's usual gating
-  checks (tests, lint, type-check) that cover the
-  affected areas so the updated status reflects a
-  green, stable state.
+- Before making a major status change (for example, marking an ADR as
+  effectively complete for this repo), you MUST first run an adversarial
+  completion check for that ADR in its work-log that:
+  - Restates the ADR’s original motivation and key objectives in this repo
+    in your own words.
+  - Lists at least one plausible way the ADR could still be incomplete or
+    mis-scoped (for example, an area the ADR text mentions that has no
+    corresponding code, tests, or docs evidence).
+  - For each plausible gap, either:
+    - Add a concrete follow-up task or subtask in the ADR or work-log,
+      naming the module, workflow, or guardrail to change, **or**
+    - Explain briefly, with pointers to evidence, why it is genuinely
+      out-of-scope or no longer required.
+  - Confirms which remaining in-scope items (if any) are still required
+    for this repo and records them as explicit follow-up tasks.
+- You MUST NOT mark the ADR as effectively complete for this repo while any
+  of those required in-scope follow-up tasks remain open; they represent
+  remaining `B_a` and must be completed or explicitly reclassified as
+  out-of-repo/no-longer-required in a later loop.
+- Once that adversarial completion check is recorded and any required
+  follow-up tasks for this focus area are either completed in this loop or
+  explicitly left for future loops, run the project's usual gating checks
+  (tests, lint, type-check) that cover the affected areas so the updated
+  status reflects a green, stable state.
+
 
 ---
 

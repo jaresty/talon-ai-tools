@@ -1,3 +1,4 @@
+import os
 import unittest
 import json
 from typing import TYPE_CHECKING
@@ -34,6 +35,8 @@ if bootstrap is not None:
             GPTState.text_to_confirm = ""
             GPTState.last_response = ""
             GPTState.last_raw_response = None
+            os.environ["OPENAI_API_KEY"] = "test-key"
+            GPTState.last_streaming_snapshot = {}
             if hasattr(GPTState, "last_lifecycle"):
                 delattr(GPTState, "last_lifecycle")
 

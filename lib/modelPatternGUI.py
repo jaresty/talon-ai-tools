@@ -1283,3 +1283,39 @@ class UserActions:
             from .modelHelpers import notify
 
             notify("GPT: Could not save response to file from pattern menu")
+
+    def model_pattern_debug_name(pattern_name: str):
+        """Show a concise pattern debug view for a named pattern.
+
+        This GUI-level action delegates to the Pattern Debug coordinator so
+        pattern inspection flows share the same snapshot/view semantics as GPT
+        actions and tests.
+        """
+
+        try:
+            from .patternDebugCoordinator import pattern_debug_view
+        except Exception:
+            actions.app.notify("GPT: Pattern debug helper unavailable")
+            return
+
+        try:
+            view = pattern_debug_view(pattern_name)
+        except Exception:
+            actions.app.notify("GPT: Pattern debug helper unavailable")
+            return
+
+        if not view:
+            actions.app.notify(f"GPT: No pattern debug info for '{pattern_name}'")
+            return
+
+        name = str(view.get("name") or pattern_name)
+        recipe_line = str(view.get("recipe_line") or "")
+        axes = view.get("axes") or {}
+
+        message_lines = [f"Pattern debug: {name}"]
+        if recipe_line:
+            message_lines.append(f"Recipe: {recipe_line}")
+        if axes:
+            message_lines.append(f"Axes: {axes}")
+
+        actions.app.notify("\n".join(message_lines))

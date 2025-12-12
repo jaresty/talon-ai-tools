@@ -16,6 +16,9 @@ class GPTState:
     last_response: ClassVar[str] = ""
     # Optional meta-interpretation for the last response, when available.
     last_meta: ClassVar[str] = ""
+    # Snapshot of the current streaming run (if any) so UI surfaces can render
+    # progress and status via the streamingCoordinator façade.
+    last_streaming_snapshot: ClassVar[Dict[str, object]] = {}
     # Last destination kind (for example, "window", "default", "paste") so UI
     # surfaces can tailor progress affordances per destination.
     current_destination_kind: ClassVar[str] = ""

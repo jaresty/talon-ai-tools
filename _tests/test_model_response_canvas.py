@@ -19,6 +19,7 @@ if bootstrap is not None:
     )
     from talon import actions
     from talon_user.lib.modelState import GPTState
+    from talon_user.lib import streamingCoordinator
     from talon_user.lib import modelResponseCanvas
     from talon_user.lib.requestState import RequestPhase, RequestState
 
@@ -27,6 +28,7 @@ if bootstrap is not None:
             ResponseCanvasState.showing = False
             ResponseCanvasState.scroll_y = 0.0
             GPTState.text_to_confirm = ""
+            GPTState.last_streaming_snapshot = {}
             self._state_patch = patch.object(
                 modelResponseCanvas,
                 "current_state",
@@ -94,7 +96,9 @@ if bootstrap is not None:
             # In the Talon stub, Canvas.from_rect does not set rect; provide
             # a minimal rect so the mouse handler does not early-return.
             if not hasattr(canvas_obj, "rect") or canvas_obj.rect is None:
-                canvas_obj.rect = type("R", (), {"x": 0, "y": 0, "width": 400, "height": 300})()
+                canvas_obj.rect = type(
+                    "R", (), {"x": 0, "y": 0, "width": 400, "height": 300}
+                )()
             # Access the registered mouse handler from the stub canvas.
             callbacks = getattr(canvas_obj, "_callbacks", {})
             mouse_cbs = callbacks.get("mouse") or []
@@ -151,6 +155,7 @@ if bootstrap is not None:
             actions.user.model_response_canvas_close = _close  # type: ignore[attr-defined]
             actions.user.confirmation_gui_paste = _paste  # type: ignore[attr-defined]
             try:
+
                 class _Evt:
                     def __init__(self, x: int, y: int):
                         self.event = "mousedown"
@@ -168,8 +173,82 @@ if bootstrap is not None:
             self.assertEqual(calls, ["close", "paste"])
             self.assertFalse(ResponseCanvasState.showing)
 
+        def test_inflight_canvas_passes_snapshot_to_streaming_adapter(self) -> None:
+            """Inflight canvas draws should pass streaming state through the streamingCoordinator adapter."""
+            GPTState.text_to_confirm = "streamed"
+            GPTState.last_streaming_snapshot = {
+                "text": "streamed",
+                "completed": False,
+                "errored": False,
+                "error_message": "",
+            }
+
+            with patch.object(
+                modelResponseCanvas,
+                "_current_request_state",
+                return_value=RequestState(phase=RequestPhase.STREAMING),
+            ), patch.object(
+                streamingCoordinator,
+                "canvas_view_from_snapshot",
+                side_effect=lambda snapshot: {
+                    "text": snapshot.get("text", ""),
+                    "status": "inflight",
+                    "error_message": "",
+                },
+            ) as mock_view:
+                canvas_obj = _ensure_response_canvas()
+                callbacks = getattr(canvas_obj, "_callbacks", {})
+                draw_cbs = callbacks.get("draw") or []
+                for cb in draw_cbs:
+                    cb(canvas_obj)
+
+            self.assertTrue(mock_view.called)
+            snapshot_arg = mock_view.call_args[0][0]
+            self.assertEqual(snapshot_arg["text"], "streamed")
+            self.assertFalse(bool(snapshot_arg.get("completed")))
+            self.assertFalse(bool(snapshot_arg.get("errored")))
+
+        def test_error_canvas_passes_errored_snapshot_to_streaming_adapter(
+            self,
+        ) -> None:
+            """Error-phase canvas draws should pass an errored snapshot to the streamingCoordinator adapter."""
+            GPTState.text_to_confirm = "partial error text"
+            GPTState.last_streaming_snapshot = {
+                "text": "partial error text",
+                "completed": False,
+                "errored": True,
+                "error_message": "timeout",
+            }
+
+            with patch.object(
+                modelResponseCanvas,
+                "_current_request_state",
+                return_value=RequestState(phase=RequestPhase.ERROR),
+            ), patch.object(
+                streamingCoordinator,
+                "canvas_view_from_snapshot",
+                side_effect=lambda snapshot: {
+                    "text": snapshot.get("text", ""),
+                    "status": "errored",
+                    "error_message": "timeout",
+                },
+            ) as mock_view:
+                canvas_obj = _ensure_response_canvas()
+                callbacks = getattr(canvas_obj, "_callbacks", {})
+                draw_cbs = callbacks.get("draw") or []
+                for cb in draw_cbs:
+                    cb(canvas_obj)
+
+            self.assertTrue(mock_view.called)
+            snapshot_arg = mock_view.call_args[0][0]
+            self.assertEqual(snapshot_arg["text"], "partial error text")
+            self.assertFalse(bool(snapshot_arg.get("completed")))
+            self.assertTrue(bool(snapshot_arg.get("errored")))
+
+
 else:
     if not TYPE_CHECKING:
+
         class ModelResponseCanvasTests(unittest.TestCase):
             @unittest.skip("Test harness unavailable outside unittest runs")
             def test_placeholder(self) -> None:

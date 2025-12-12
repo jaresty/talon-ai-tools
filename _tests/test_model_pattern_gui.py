@@ -1,6 +1,6 @@
 import unittest
 from typing import TYPE_CHECKING
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch
 
 try:
     from bootstrap import bootstrap
@@ -290,6 +290,41 @@ if bootstrap is not None:
                 )
                 # last_axes should surface the seeded GPTState.last_axes.
                 self.assertEqual(view["last_axes"], GPTState.last_axes)
+
+            def test_model_pattern_debug_name_uses_coordinator_view(self) -> None:
+                """model_pattern_debug_name should call the coordinator view and notify with its recipe line."""
+                target = next(p for p in PATTERNS if p.name == "Debug bug")
+
+                with patch(
+                    "talon_user.lib.patternDebugCoordinator.pattern_debug_view",
+                    return_value={
+                        "name": target.name,
+                        "recipe_line": "describe · full · narrow · debugging · rog",
+                        "axes": {
+                            "completeness": "full",
+                            "scope": ["narrow"],
+                            "method": ["debugging"],
+                            "style": [],
+                            "directional": "rog",
+                        },
+                        "last_axes": {},
+                    },
+                ) as mocked_view:
+                    calls: list[str] = []
+
+                    def _notify(msg: str) -> None:
+                        calls.append(msg)
+
+                    actions.app.notify = _notify  # type: ignore[assignment]
+
+                    UserActions.model_pattern_debug_name(target.name)
+
+                mocked_view.assert_called_once_with(target.name)
+                self.assertEqual(len(calls), 1)
+                message = calls[0]
+                self.assertIn("Pattern debug:", message)
+                self.assertIn(target.name, message)
+                self.assertIn("describe · full · narrow · debugging · rog", message)
 
             def test_pattern_debug_catalog_filters_by_domain(self) -> None:
                 """pattern_debug_catalog should filter snapshots by domain when requested."""

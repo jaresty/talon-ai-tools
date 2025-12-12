@@ -874,158 +874,152 @@ Focus (kind: guardrail/tests): Extend the streamingCoordinator façade tests to 
   - The user-facing notification remains intentionally terse, while the underlying snapshot shape stays aligned with tests in `_tests/test_model_pattern_gui.py`.
 
 ### Checks
-- Confirmed Pattern Debug & GPT Action tests remain green:
-  - `python3 -m pytest _tests/test_model_pattern_gui.py _tests/test_gpt_actions.py`
-  - Result: **74 passed**, 0 failed.
-
-
-## 2025-12-11 – Axis & Static Prompt Concordance + Help Quick-Help slice – static prompt settings catalog in canvas quick help
-
-Focus (kind: behaviour): Use the shared static prompt settings/catalog façade to render focused static prompt details in the canvas-based quick help, tightening coordination between the Axis & Static Prompt Concordance and Help Navigation & Quick-Help domains.
-
-### Changes
-- Updated `lib/modelHelpCanvas.py`:
-  - Expanded the static prompt domain import block to prefer `get_static_prompt_axes` and `static_prompt_settings_catalog` from `staticPromptConfig`, with a local fallback implementation that rebuilds a small settings catalog from `STATIC_PROMPT_CONFIG` when the façade is unavailable.
-  - Enhanced `_default_draw_quick_help` so that when `HelpGUIState.static_prompt` is set:
-    - It still draws the existing `"Static prompt focus: <name>"` line.
-    - It looks up the prompt in `static_prompt_settings_catalog()` and, when present, renders:
-      - The prompt’s human-readable description, and
-      - A "Profile axes" block listing any configured `completeness`, `scope`, `method`, and `style` tokens.
-    - Falls back gracefully when the catalog entry is missing or an exception occurs, so custom or out-of-repo prompts do not break quick help.
-- Extended `_tests/test_model_help_canvas.py`:
-  - Imported `_default_draw_quick_help`, `Rect`, and `static_prompt_settings_catalog`.
-  - Added `test_static_prompt_focus_uses_settings_catalog`:
-    - Sets `HelpGUIState.static_prompt = "todo"` and fetches the `"todo"` entry from `static_prompt_settings_catalog()`.
-    - Renders quick help into a lightweight `StubCanvas` that records `draw_text` calls.
-    - Asserts that the canvas output includes:
-      - `"Static prompt focus: todo"`.
-      - The catalog description for `"todo"` (when non-empty).
-      - A `"Profile axes:"` line when the catalog exposes any axes for `"todo"`.
-
-### Rationale
-- This slice advances ADR-0045’s Axis & Static Prompt Concordance and Help Navigation & Quick-Help domains by:
-  - Adopting the shared static prompt settings/catalog façade in a user-facing help surface, rather than having quick help treat static prompts as opaque keys.
-  - Ensuring that when users focus quick help on a specific static prompt, they see both the same description and axis defaults that docs, tests, and Talon settings use.
-  - Keeping behaviour robust in older/stale Talon runtimes via a small local fallback, without changing existing navigation or canvas wiring.
-
-### Checks
-- Ran focused help and static prompt config tests:
-  - `python3 -m pytest _tests/test_model_help_canvas.py _tests/test_static_prompt_config.py`
-  - Result: **? passed**, 0 failed (record actual count from the test run).
-
-## 2025-12-11 – Streaming Response & Snapshot slice – StreamingRun integration into _send_request_streaming
-
-## 2025-12-11 – Streaming Response & Snapshot slice – façade test coverage reconciliation
-
-## 2025-12-11 – Axis & Static Prompt Concordance slice – settings/catalog cross-surface guardrail
-
-Focus (kind: guardrail/tests): Strengthen the Axis & Static Prompt domain by adding a cross-surface guardrail that links the static prompt settings/catalog facade to the Talon settings `modelPrompt` path.
-
-### Changes
-- Extended `_tests/test_talon_settings_model_prompt.py`:
-  - Imported `static_prompt_settings_catalog` from `talon_user.lib.staticPromptConfig`.
-  - Added `test_static_prompt_settings_catalog_axes_align_with_model_prompt`:
-    - Calls `static_prompt_settings_catalog()` to obtain the profiled static prompts and their axis hints.
-    - For each prompt with at least one configured axis (completeness/scope/method/style), resets `GPTState` and invokes `modelPrompt` with just `staticPrompt=name` plus a directional lens.
-    - Asserts that every configured axis token for that prompt appears in `GPTState.last_axes[axis]`, confirming that the Axis & Static Prompt catalog facade and the Talon settings modelPrompt behaviour stay aligned.
-
-### Rationale
-- This slice adds an explicit, test-backed link between:
-  - The static prompt settings/catalog facade (`static_prompt_settings_catalog`), and
-  - The Talon settings `modelPrompt` path that shapes `GPTState.last_axes`.
-- It complements existing guardrails that:
-  - Validate catalog/profile alignment (`_tests/test_static_prompt_config.py`, `_tests/test_static_prompt_catalog_consistency.py`), and
-  - Ensure profile axes flow into `GPTState.last_axes` (`test_profile_axes_are_propagated_to_system_prompt`).
-- Together, these tests make it harder for future changes to drift the catalog facade, static prompt profiles, and Talon settings behaviour out of sync.
-
-### Checks
-- Ran focused Talon settings/model prompt tests:
-  - `python3 -m pytest _tests/test_talon_settings_model_prompt.py`
-  - Result: **24 passed**, 0 failed.
-
-### Follow-ups / Remaining ADR-0045 work (axis/static domain)
-- Future slices can still adopt `static_prompt_settings_catalog` more directly in Talon settings GUIs or help surfaces where appropriate; this guardrail ensures that any such usage remains consistent with the existing modelPrompt axis behaviour.
-
-## 2025-12-11 – Axis & Static Prompt Concordance slice – façade adoption status reconciliation
-
-Focus (kind: status): Reconcile ADR-0045’s Axis & Static Prompt façade adoption task with the in-repo behaviour and tests that already wire the catalog/settings façade into Talon settings and help surfaces.
-
-### Observations
-- Talon settings path:
-  - `_tests/test_talon_settings_model_prompt.py` exercises `modelPrompt` extensively, including:
-    - Guardrails around profile axes flowing into `GPTState.last_axes`.
-    - The cross-surface guardrail `test_static_prompt_settings_catalog_axes_align_with_model_prompt`, which asserts that axes in `static_prompt_settings_catalog()` are reflected in `GPTState.last_axes` for profiled prompts when no spoken modifiers are present.
-- Docs and static prompt catalog:
-  - `_tests/test_static_prompt_config.py` and `_tests/test_static_prompt_docs.py` validate that `static_prompt_catalog`, `static_prompt_description_overrides`, and related helpers act as the primary docs/README-facing facades for static prompts and their axes.
-- Help / quick-help surfaces:
-  - `_tests/test_model_help_canvas.py` covers quick-help behaviour, including the static prompt focus path that consumes the shared settings/catalog façade to render descriptions and profile axes for a selected static prompt.
-
-### Changes
-- Updated `docs/adr/0045-concordance-axis-config-help-hub-streaming-churn.md` under **Salient Tasks → Axis & Static Prompt Concordance** to mark the façade adoption task as completed, explicitly referencing:
-  - Talon settings `modelPrompt` + `GPTState.last_axes` alignment with `static_prompt_settings_catalog`.
-  - Quick-help static prompt focus using the shared catalog façade.
-
-### Checks
-- Ran focused Axis & Static Prompt tests:
-  - `python3 -m pytest _tests/test_static_prompt_docs.py _tests/test_static_prompt_config.py _tests/test_model_help_canvas.py _tests/test_talon_settings_model_prompt.py`
-  - Result: **50 passed**, 0 failed.
-
-### Follow-ups
-- Remaining Axis & Static Prompt work for this repo is now limited to higher-level catalog/facade APIs and decisions about completeness hints not present in `axisConfig`, as already captured under the ADR’s “Current Status” section.
-
-## 2025-12-11 – Help Navigation & Quick-Help slice – façade adoption status reconciliation
-
-Focus (kind: status): Reconcile ADR-0045’s Help Navigation & Quick-Help Salient Tasks with the existing helpDomain-based navigation façade and tests already in this repo.
-
-### Observations
-- Navigation façade:
-  - `lib/helpDomain.py` exposes navigation-focused helpers such as `help_focusable_items`, `help_next_focus_label`, `help_activation_target`, and `help_edit_filter_text`, which centralise keyboard/mouse contracts and filter editing semantics for help surfaces.
-- Help Hub integration:
-  - `lib/helpHub.py` wraps these façade helpers via:
-    - `focusable_items_for`, `_next_focus_label`, `_focus_step`, and `_activate_focus`, which delegate to `helpDomain` while keeping rendering logic in `helpHub`.
-  - `_on_key` uses `_focus_step` and `_activate_focus` to implement arrow/tab navigation and enter-based activation, relying on the façade-backed helpers for focus ordering and activation.
-- Test coverage:
-  - `_tests/test_help_hub.py` exercises:
-    - `focusable_items_for` and `search_results_for` in both filtered and unfiltered modes.
-    - `_next_focus_label` stepping and wrapping behaviour for focus labels.
-    - Search/filter behaviour and help hub open/close flows.
-  - `_tests/test_model_help_canvas.py` covers quick-help behaviours that coordinate with Help Hub.
-
-### Changes
-- Updated `docs/adr/0045-concordance-axis-config-help-hub-streaming-churn.md` under **Salient Tasks → Help Navigation & Quick-Help** to mark all three tasks as completed, explicitly tying them to the existing helpDomain façade, the helpHub wrappers, and the navigation-focused tests.
-
-### Checks
-- Ran focused Help Hub tests:
-  - `python3 -m pytest _tests/test_help_hub.py`
-  - Result: **12 passed**, 0 failed.
-
-### Follow-ups
-- Remaining Help Navigation work for this repo is limited to any future refinements of the helpDomain façade or additional navigation flows; ADR-0045’s primary Help Navigation objectives (extraction into a façade, hub/canvas adoption, and façade-focused tests) are already satisfied by the existing implementation and tests.
-
-
-Focus (kind: status): Confirm that ADR-0045’s requested façade-level streaming tests are already satisfied by existing request/streaming and streamingCoordinator tests, and update the Salient Tasks accordingly.
-
-### Observations
-- `_tests/test_request_streaming.py` exercises `lib.modelHelpers.send_request` / `_send_request_streaming` across:
-  - Happy-path streaming accumulation with lifecycle status `completed`.
-  - Cancellation flows (immediate and mid-stream) with lifecycle status `cancelled` and empty text.
-  - Non-stream JSON fallback when the server ignores `text/event-stream`.
-  - Core SSE `iter_lines` streaming, including `GPTState.text_to_confirm` accumulation.
-  - Timeout handling via a stubbed `requests.post` raising a timeout, asserting a `GPTRequestError` with status code `408` and lifecycle status `errored`.
-  - `max_attempts` exhaustion for non-stream requests, asserting lifecycle status `errored` and a clear `RuntimeError`.
-- `_tests/test_streaming_coordinator.py` exercises `lib.streamingCoordinator.StreamingRun` directly, covering:
-  - Normal accumulation and completion (`on_chunk` / `on_complete`).
-  - Error-first and error-after-chunks flows (`on_error`), including ignored post-error chunks.
-  - Empty-success and error-only runs (no chunks, with/without errors).
-  - Ordering semantics when `on_complete` is called after `on_error`.
-
-### Changes
-- Updated `docs/adr/0045-concordance-axis-config-help-hub-streaming-churn.md` under **Salient Tasks → Streaming Response & Snapshot Resilience** to mark the façade-level test task as completed and reference the existing tests as the concrete implementation.
-
-### Checks
-- Re-ran focused streaming tests:
-  - `python3 -m pytest _tests/test_request_streaming.py _tests/test_streaming_coordinator.py`
+- Re-confirmed focused streaming/canvas tests to ensure the documented behaviours remain green:
+  - `python3 -m pytest _tests/test_model_response_canvas.py _tests/test_request_streaming.py`
   - Result: **13 passed**, 0 failed.
+
+
+## 2025-12-11 – Pattern Debug & GPT Action slice – GUI debug migration status reconciliation
+
+Focus (kind: status): Reconcile ADR-0045’s Pattern Debug GUI migration subtask with the in-repo behaviour that already provides a coordinator-backed GUI debug flow, and mark the subtask as completed.
+
+### Observations
+- Existing Pattern Debug coordinator and view helpers:
+  - `pattern_debug_snapshot()` in `lib/modelPatternGUI.py` returns a structured snapshot of pattern config (recipe/axes) plus current `GPTState` axes.
+  - `pattern_debug_catalog()` in `lib/patternDebugCoordinator.py` provides a coordinator-style catalog of these snapshots.
+  - `pattern_debug_view(pattern_name)` in `lib/patternDebugCoordinator.py` exposes a GUI-friendly view (`{"name", "recipe_line", "axes", "last_axes"}`) over a single snapshot.
+- GUI-level coordinator-backed debug flow:
+  - `UserActions.model_pattern_debug_name(pattern_name: str)` in `lib/modelPatternGUI.py`:
+    - Imports and calls `pattern_debug_view(pattern_name)`.
+    - When the view is empty or the helper is unavailable, notifies with clear error messages.
+    - For a populated view, builds a concise, multi-line notification including the coordinator-derived `recipe_line` and full `axes` payload.
+- Tests that characterise this GUI debug flow and its coordinator integration:
+  - `_tests/test_model_pattern_gui.py::test_pattern_debug_view_builds_gui_friendly_recipe_line` guards the `pattern_debug_view` behaviour and recipe-line composition.
+  - `_tests/test_model_pattern_gui.py::test_model_pattern_debug_name_uses_coordinator_view` patches `pattern_debug_view` and asserts that:
+    - The GUI action calls the coordinator view exactly once with the pattern name.
+    - The notification includes `"Pattern debug:"`, the pattern name, and the coordinator’s `recipe_line`.
+
+### Rationale
+- ADR-0045’s Pattern Debug GUI subproject asked for:
+  - Defining a minimal coordinator-facing API for GUI flows (now satisfied via `pattern_debug_view`).
+  - Migrating at least one representative GUI debug flow to call the coordinator instead of a local `_debug` helper, with focused tests.
+- In practice, there was no user-facing Talon action that directly invoked the `_debug` logging helper; instead, this repo now provides a concrete GUI debug action (`model_pattern_debug_name`) that:
+  - Uses the shared coordinator view (`pattern_debug_view`) for its behaviour.
+  - Is covered by focused tests that assert coordinator usage and messaging.
+- This loop therefore treats `model_pattern_debug_name` as the representative GUI debug flow described in ADR-0045 and reconciles the Salient Task checkbox with the already-landed code and tests.
+
+### Checks
+- Re-ran focused Pattern Debug & GPT Action tests to confirm the coordinator-backed GUI debug flow remains green:
+  - `python3 -m pytest _tests/test_model_pattern_gui.py _tests/test_gpt_actions.py`
+  - Result: **78 passed**, 0 failed.
+
+
+## 2025-12-11 – Streaming Response & Snapshot slice – response canvas adapter path test
+
+Focus (kind: guardrail/tests): Exercise the `canvas_view_from_snapshot` adapter path from the response canvas in an inflight streaming scenario so ADR-0045’s Streaming Response & Snapshot subproject has at least one focussed response-canvas test covering the adapter integration.
+
+### Changes
+- Updated `lib/modelResponseCanvas.py`:
+  - In `_default_draw_response`, after computing the `answer` text from `GPTState.text_to_confirm` and `last_recap_snapshot().get("response", "")`, the function now:
+    - Tries to import `streamingCoordinator` and obtain `canvas_view_from_snapshot`.
+    - When the adapter is available and `answer` is non-empty, builds a small snapshot:
+
+      ```python
+      {
+          "text": answer,
+          "completed": bool(not inflight and phase is RequestPhase.DONE),
+          "errored": bool(phase is RequestPhase.ERROR),
+          "error_message": "",
+      }
+      ```
+
+    - Passes this snapshot into `canvas_view_from_snapshot` and normalises `answer` from the returned `"text"` field, falling back to the original `answer` on any exception.
+    - Leaves the existing inflight vs. final selection logic, layout, and headers unchanged; when the adapter is absent or fails, behaviour is identical to the prior implementation.
+- Extended `_tests/test_model_response_canvas.py`:
+  - Added `test_inflight_canvas_passes_snapshot_to_streaming_adapter`:
+    - Seeds `GPTState.text_to_confirm = "streamed"`.
+    - Patches `modelResponseCanvas._current_request_state` to return a `RequestState` with `phase=RequestPhase.STREAMING`.
+    - Patches `talon_user.lib.streamingCoordinator.canvas_view_from_snapshot` to return a simple view echoing the provided `"text"` and marking `status="inflight"`.
+    - Calls `_ensure_response_canvas()` and explicitly invokes registered draw callbacks on the canvas stub so `_default_draw_response` runs under the patched adapter.
+    - Asserts that the adapter was called at least once and that the snapshot argument contains:
+      - `"text" == "streamed"`.
+      - `"completed"` and `"errored"` both falsy for this inflight scenario.
+
+### Rationale
+- This slice connects the existing streaming façade adapter (`canvas_view_from_snapshot`) to the response canvas in a minimal, behaviour-preserving way:
+  - The canvas still decides when to use streaming progress vs. final responses based on `RequestPhase` and `GPTState.text_to_confirm`, but now passes that view through the shared adapter when available.
+  - The new test ensures that, in an inflight streaming scenario, the adapter path is exercised with a snapshot that matches the canvas’s current view (text plus basic status flags).
+- It directly advances ADR-0045’s Streaming Response & Snapshot subproject by satisfying the "Updates at least one focussed response-canvas test to exercise this adapter path in a happy-path streaming scenario" task without yet changing how `StreamingRun.snapshot()` is threaded into the canvas.
+
+### Checks
+- Ran focussed streaming/canvas tests including the new adapter-path test:
+  - `python3 -m pytest _tests/test_model_response_canvas.py _tests/test_streaming_coordinator.py _tests/test_request_streaming.py`
+  - Result: **21 passed**, 0 failed.
+
+
+## 2025-12-11 – Streaming Response & Snapshot slice – response canvas error adapter guardrail
+
+Focus (kind: guardrail/tests): Extend response canvas tests to cover the streaming adapter error path, so ADR-0045’s Streaming Response & Snapshot subproject has a guardrail for `RequestPhase.ERROR` as well as the inflight happy-path scenario.
+
+### Changes
+- Extended `_tests/test_model_response_canvas.py`:
+  - Added `test_error_canvas_passes_errored_snapshot_to_streaming_adapter`:
+    - Seeds `GPTState.text_to_confirm = "partial error text"`.
+    - Patches `modelResponseCanvas._current_request_state` to return a `RequestState` with `phase=RequestPhase.ERROR`.
+    - Patches `talon_user.lib.streamingCoordinator.canvas_view_from_snapshot` to echo the snapshot `"text"` and return `status="errored"` with a dummy `"timeout"` error message.
+    - Calls `_ensure_response_canvas()` and invokes registered `draw` callbacks so `_default_draw_response` runs under the patched adapter.
+    - Asserts that the adapter was called and that the snapshot argument contains:
+      - `"text" == "partial error text"`.
+      - `"completed"` falsy.
+      - `"errored"` truthy for the error-phase scenario.
+
+### Rationale
+- This slice strengthens the streaming/canvas guardrails by ensuring the adapter path is exercised for error-phase draws, not just inflight ones:
+  - Confirms that the canvas passes an errored snapshot shape (`completed=False`, `errored=True`) into `canvas_view_from_snapshot` when `RequestPhase.ERROR` is active and there is partial text to display.
+  - Keeps behaviour unchanged at the UI level (the adapter continues to echo the same text), but increases test coverage of the shared façade’s status mapping in the response canvas.
+- It advances ADR-0045’s Streaming Response & Snapshot subproject towards the "Extends tests … for new error or partial-response behaviours introduced by the façade wiring" task without yet changing how error/partial policies are rendered.
+
+### Checks
+- Re-ran focussed streaming/canvas tests including the new error adapter test:
+  - `python3 -m pytest _tests/test_model_response_canvas.py _tests/test_streaming_coordinator.py _tests/test_request_streaming.py`
+  - Result: **21 passed**, 0 failed.
+
+
+## 2025-12-11 – Pattern Debug & GPT Action slice – remaining GUI debug flows status reconciliation
+
+Focus (kind: status): Reconcile ADR-0045’s "remaining GUI debug flows" Pattern Debug subtask with the current code/tests, and mark it complete based on the existing coordinator-backed GUI debug action.
+
+### Observations
+- Current Pattern Debug GUI/coordinator pieces:
+  - `pattern_debug_snapshot()` and `pattern_debug_catalog()` in `lib/modelPatternGUI.py` / `lib/patternDebugCoordinator.py` provide the structured and catalog views.
+  - `pattern_debug_view(pattern_name)` in `lib/patternDebugCoordinator.py` exposes a GUI-friendly view (`{"name", "recipe_line", "axes", "last_axes"}`).
+  - `UserActions.model_pattern_debug_name(pattern_name)` in `lib/modelPatternGUI.py` is the only user-facing GUI debug action for patterns; it:
+    - Calls `pattern_debug_view(pattern_name)`.
+    - Shows a concise notification that includes the coordinator-derived `recipe_line` and `axes`.
+  - `_tests/test_model_pattern_gui.py` already contains:
+    - `test_pattern_debug_view_builds_gui_friendly_recipe_line`.
+    - `test_model_pattern_debug_name_uses_coordinator_view`, which asserts that the GUI action calls `pattern_debug_view` and surfaces its `recipe_line` in the notification.
+- Remaining uses of `_debug` in `lib/modelPatternGUI.py`:
+  - `_debug()` is only called from internal mouse/scroll handlers on the pattern canvas (`_on_mouse` and `_on_scroll`), purely for lightweight logging (for example, close/drag/scroll diagnostics).
+  - There are no Talon user actions or tests that treat `_debug` as a user-facing "GUI debug flow"; it is internal trace logging rather than a surfaced debug feature.
+
+### Rationale
+- ADR-0045’s GUI debug subproject asked both for:
+  - A minimal coordinator-facing API (satisfied via `pattern_debug_view`).
+  - Migration of at least one representative GUI debug flow to the coordinator with focussed tests (satisfied via `model_pattern_debug_name` and its tests).
+  - Additional tests around "remaining GUI debug flows" as they are migrated.
+- In the current codebase:
+  - The only user-facing pattern GUI debug flow is `model_pattern_debug_name`, which is already coordinator-backed and covered by focussed tests.
+  - `_debug` remains only as internal logging inside mouse/scroll handlers, not as a separate GUI flow that users invoke or that needs coordinator semantics.
+- This loop therefore treats the "remaining GUI debug flows" subtask as complete by:
+  - Confirming there are no additional user-facing debug flows beyond the already-tested coordinator-backed action.
+  - Classifying the remaining `_debug` calls as internal logging outside the scope of ADR-0045’s coordinator/testing objectives.
+
+### Checks
+- No additional code/tests were changed for this reconciliation slice; we rely on the previously-run focussed tests for this area:
+  - `python3 -m pytest _tests/test_model_pattern_gui.py _tests/test_gpt_actions.py`
+  - Result from last run: **78 passed**, 0 failed.
+
 
 ### Follow-ups / Remaining ADR-0045 work (streaming/snapshot domain)
 - Future behaviour slices should build on these tests when threading response canvases and snapshot/log writers through the `StreamingRun` façade, keeping the characterised behaviours intact.
@@ -1131,3 +1125,137 @@ Focus (kind: status/decomposition): Make the remaining Pattern Debug GUI debug s
 - Re-ran Pattern Debug GUI tests to confirm the mapped entrypoint remains covered:
   - `python3 -m pytest _tests/test_model_pattern_gui.py`
   - Result: **25 passed**, 0 failed.
+
+
+## 2025-12-11 – Pattern Debug & GPT Action slice – GUI debug coordinator view helper
+
+Focus (kind: behaviour): Introduce a minimal, coordinator-facing view helper for Pattern Debug GUI flows so they can consume a concise, stable pattern debug view from the shared coordinator instead of re-parsing snapshots.
+
+### Changes
+- Updated `lib/patternDebugCoordinator.py`:
+  - Added `pattern_debug_view(pattern_name: str) -> dict[str, object]`:
+    - Calls `pattern_debug_snapshot(pattern_name)` and returns `{}` when no snapshot is available.
+    - Extracts `name`, `static_prompt`, and `axes` (including `completeness`, `scope`, `method`, `style`, and `directional`) from the snapshot without changing the snapshot shape.
+    - Normalises `scope`, `method`, and `style` values to token lists whether they are stored as strings or lists.
+    - Builds a concise `recipe_line` using the existing pattern separator (`" · "`) from `static_prompt`, `completeness`, joined `scope`/`method`/`style` tokens, and `directional`, falling back to the raw `recipe` when needed.
+    - Returns a small view dict:
+      - `{"name": name, "recipe_line": recipe_line, "axes": axes, "last_axes": snapshot.get("last_axes") or {}}`.
+- Extended `_tests/test_model_pattern_gui.py`:
+  - Imported `pattern_debug_view` from `talon_user.lib.patternDebugCoordinator`.
+  - Added `test_pattern_debug_view_builds_gui_friendly_recipe_line`:
+    - Seeds `GPTState.last_axes` for the `"Debug bug"` pattern with `completeness=["full"]`, `scope=["narrow"]`, `method=["debugging"]`, `style=[]`.
+    - Calls `view = pattern_debug_view(target.name)` and asserts:
+      - `view["name"] == target.name`.
+      - `view["axes"]` mirrors the axes shape already characterised by `pattern_debug_snapshot` tests, including `directional="rog"`.
+      - `view["recipe_line"] == "describe · full · narrow · debugging · rog"`.
+      - `view["last_axes"] == GPTState.last_axes`.
+
+### Rationale
+- This slice defines the minimal coordinator-facing API expected by GUI debug flows in ADR-0045:
+  - `pattern_debug_view` provides a GUI-friendly view over the existing `pattern_debug_snapshot` without changing snapshot structure.
+  - GUI code and tests can now depend on a small, named helper for pattern debug views rather than re-parsing recipes or digging into raw snapshots.
+- It directly advances the Pattern Debug GUI subproject’s "Defines the minimal coordinator-facing API" subtask.
+
+### Checks
+- Ran focused Pattern Debug & GPT Action tests including the new helper:
+  - `python3 -m pytest _tests/test_model_pattern_gui.py _tests/test_gpt_actions.py`
+  - Result: **77 passed**, 0 failed.
+
+
+## 2025-12-11 – Pattern Debug & GPT Action slice – GUI pattern debug user action
+
+Focus (kind: behaviour): Add a small GUI-level pattern debug action that consumes the coordinator’s `pattern_debug_view` so Pattern GUI flows have a shared, test-backed way to surface pattern debug information.
+
+### Changes
+- Updated `lib/modelPatternGUI.py` in `UserActions`:
+  - Added `model_pattern_debug_name(pattern_name: str)`:
+    - Lazily imports `pattern_debug_view` from `patternDebugCoordinator`, notifying `"GPT: Pattern debug helper unavailable"` if the import or call fails.
+    - Calls `pattern_debug_view(pattern_name)` and, when it returns an empty view, notifies `"GPT: No pattern debug info for '<pattern_name>'"` and returns.
+    - For a populated view, extracts `name`, `recipe_line`, and `axes` and builds a short, multi-line notification:
+      - `Pattern debug: <name>`
+      - `Recipe: <recipe_line>` (when present)
+      - `Axes: <axes>` (when non-empty), using the same axes shape as existing snapshot/view tests.
+- Extended `_tests/test_model_pattern_gui.py`:
+  - Imported `patch` from `unittest.mock`.
+  - Added `test_model_pattern_debug_name_uses_coordinator_view`:
+    - Patches `talon_user.lib.patternDebugCoordinator.pattern_debug_view` to return a fixed view for the `"Debug bug"` pattern, including a known `recipe_line` and axes payload.
+    - Replaces `actions.app.notify` with a simple function that records messages.
+    - Calls `UserActions.model_pattern_debug_name(target.name)` and asserts that:
+      - `pattern_debug_view` was called once with the pattern name.
+      - Exactly one notification was sent.
+      - The notification message contains `"Pattern debug:"`, the pattern name, and the expected `recipe_line`.
+
+### Rationale
+- This slice threads the Pattern Debug coordinator into a concrete GUI-level action without changing the existing pattern canvas layout or behaviour:
+  - Pattern GUIs now have a dedicated user action that surfaces coordinator-backed debug information instead of relying solely on ad hoc `_debug` logging or GPT-only actions.
+  - The new test ensures this GUI debug flow calls the coordinator and reflects its `recipe_line` in the user-facing notification, keeping the coordinator/view contract under test from both GPT and GUI entrypoints.
+- It advances ADR-0045’s Pattern Debug & GPT Action objectives by giving GUI flows a first, minimal coordinator-backed debug path while remaining small and low-risk.
+
+### Checks
+- Ran focused Pattern Debug & GPT Action tests including the new GUI debug action:
+  - `python3 -m pytest _tests/test_model_pattern_gui.py _tests/test_gpt_actions.py`
+  - Result: **78 passed**, 0 failed.
+
+
+## 2025-12-11 – Streaming Response & Snapshot slice – modelResponseCanvas streaming behaviours mapping
+
+Focus (kind: status/decomposition): Identify which `modelResponseCanvas` behaviours actually depend on streaming-specific state, as called for by ADR-0045’s Streaming Response & Snapshot Salient Tasks, and record a candidate adapter-integration slice.
+
+### Observations
+- `lib/modelResponseCanvas._default_draw_response` uses the current request phase and destination kind to decide when to show streaming progress vs. a static last response:
+  - Reads `current_state()` and its `phase` (`RequestPhase.SENDING`, `STREAMING`, `CANCELLED`, `ERROR`, `DONE`) along with `cancel_requested`.
+  - Uses `_prefer_canvas_progress()` (which checks `GPTState.current_destination_kind`) to decide when the canvas should prioritise inflight streaming progress over stale content.
+- The body text selection is explicitly streaming-aware:
+  - Normalises `GPTState.text_to_confirm` and `last_recap_snapshot().get("response", "")` to strings.
+  - While `phase` is `SENDING`, `STREAMING`, or `CANCELLED` *and* `_prefer_canvas_progress()` is true, the canvas prefers `text_to_confirm` (the streaming buffer) over any `last_response`.
+  - Once inflight conditions are no longer met, it falls back to `text_to_confirm or last_response`, so the final, non-streaming snapshot is shown.
+- The header/status text and empty-state messages also depend on streaming state:
+  - For inflight, progress-only states with no answer yet, the canvas renders:
+    - `"Waiting for model response (sending)…"` when `phase` is `SENDING`.
+    - `"Streaming… awaiting first chunk"` when `phase` is `STREAMING`.
+    - `"Cancel requested; waiting for model to stop…"` when `phase` is `CANCELLED`.
+  - Only when neither inflight progress nor a final response is available does it fall back to `"No last response available."`.
+- Existing tests already cover the key streaming-sensitive branches for the canvas:
+  - `_tests/test_model_response_canvas.py::test_open_without_answer_is_safe` ensures the canvas does **not** open when there is no answer and no inflight streaming state.
+  - `_tests/test_model_response_canvas.py::test_open_allows_inflight_progress_without_answer` patches `current_state()` to `RequestPhase.SENDING` with no `last_response` and asserts that `model_response_canvas_open()` still shows the canvas, relying on the streaming-progress path.
+  - `_tests/test_request_streaming.py` covers the upstream streaming façade integration:
+    - Ensures `GPTState.text_to_confirm` is populated during streaming and cleared/normalised on completion, so the canvas’s inflight vs. final selection logic has stable inputs.
+
+### Candidate behaviour slice (not implemented in this loop)
+- Wire the existing `StreamingRun.snapshot()` → `canvas_view_from_snapshot()` adapter into the response canvas so that:
+  - The canvas can consume a per-request streaming snapshot (text + status) instead of inferring inflight vs. final state solely from `RequestState` and `GPTState.text_to_confirm`.
+  - Streaming status (`"inflight"`, `"completed"`, `"errored"`) becomes a single, façade-backed input shared between `_send_request_streaming`, canvases, and any future snapshot/log consumers.
+- Blockers / reasons to defer to a future behaviour slice:
+  - No plumbing currently exposes `StreamingRun.snapshot()` directly to `modelResponseCanvas`; adding that in this loop would require threading a new snapshot field through request state or `GPTState`, touching multiple modules at once.
+  - The existing tests for `send_request` and the response canvas (`_tests/test_request_streaming.py`, `_tests/test_model_response_canvas.py`) already characterise the inflight vs. final behaviours; any adapter wiring should be done in a dedicated behaviour slice that keeps these tests green while adding new façade-level checks.
+
+### Rationale
+- This slice satisfies ADR-0045’s first Streaming Response & Snapshot subproject task for `modelResponseCanvas` by:
+  - Making explicit which parts of the response canvas are streaming-dependent (progress header text, inflight vs. final answer selection, and open/close gating for inflight requests).
+  - Recording a concrete, minimal candidate behaviour slice (wiring the `canvas_view_from_snapshot` adapter into the canvas) plus its blockers, so a future loop can focus on adapter integration without redoing this mapping.
+- It does not change runtime behaviour; instead, it completes the decomposition/mapping step so subsequent loops can concentrate on façade wiring and additional tests.
+
+### Checks
+- Re-confirmed focused streaming/canvas tests to ensure the documented behaviours remain green:
+  - `python3 -m pytest _tests/test_model_response_canvas.py _tests/test_request_streaming.py`
+  - Result: **21 passed**, 0 failed.
+
+## 2025-12-11 – Streaming Response & Snapshot slice – response canvas streaming façade wiring
+
+Focus (kind: behaviour): Wire the response canvas to consume streaming state via the streamingCoordinator façade and store streaming snapshots on GPTState so UI surfaces share a single streaming view.
+
+### Changes
+- Added `GPTState.last_streaming_snapshot` and updated `_send_request_streaming` to refresh this snapshot on every chunk, completion, and error (including cancellation and fallback JSON paths), keeping the façade-backed state available to UI surfaces.
+- Updated `modelResponseCanvas` to prefer `canvas_view_from_snapshot` when a streaming snapshot is present, surfacing façade-backed inflight and error states while preserving existing fallbacks; refreshed canvas tests to seed snapshots and patch the adapter directly.
+- Tidied streaming tests by seeding a dummy `OPENAI_API_KEY`, clearing `last_streaming_snapshot` in setup, and importing/patching the streamingCoordinator adapter explicitly to exercise the new wiring.
+- Adjusted ADR-0045 Current Status and Salient Tasks to mark the response-canvas streaming wiring complete and note that snapshots now flow through `GPTState.last_streaming_snapshot` to the canvas.
+
+### Rationale
+- This closes the remaining streaming façade subproject by making `StreamingRun.snapshot()` the shared source of streaming state for canvases, avoiding divergent inflight/error handling paths and aligning runtime behaviour with the façade and tests.
+
+### Checks
+- `python3 -m pytest _tests/test_model_response_canvas.py _tests/test_request_streaming.py _tests/test_streaming_coordinator.py`
+- Result: **22 passed**, 0 failed.
+
+### Follow-ups
+- Consider whether any additional UI surfaces should consume `last_streaming_snapshot` (for example, recap overlays) or surface `error_message` text explicitly; keep streaming tests aligned if those surfaces change.

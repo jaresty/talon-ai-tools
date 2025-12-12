@@ -472,6 +472,7 @@ def build_request(destination: object):
     try:
         GPTState.text_to_confirm = ""
         GPTState.last_meta = ""
+        GPTState.last_streaming_snapshot = {}
     except Exception:
         pass
     # For paste-like destinations, if there is no focused textarea we fall back
@@ -622,6 +623,14 @@ def _send_request_streaming(request, request_id: str) -> str:
     decoder = codecs.getincrementaldecoder("utf-8")()
     streaming_run: StreamingRun = new_streaming_run(request_id)
     parts: list[str] = streaming_run.chunks
+
+    def _update_streaming_snapshot() -> None:
+        try:
+            GPTState.last_streaming_snapshot = streaming_run.snapshot()
+        except Exception:
+            pass
+
+    _update_streaming_snapshot()
     first_chunk = True
     refresh_interval_ms = 250
     last_canvas_refresh_ms = 0
@@ -690,6 +699,7 @@ def _send_request_streaming(request, request_id: str) -> str:
                     )
                     if text_piece:
                         streaming_run.on_chunk(text_piece)
+                        _update_streaming_snapshot()
                     full_text = streaming_run.text
                     _update_stream_state_from_text(
                         full_text,
@@ -708,6 +718,7 @@ def _send_request_streaming(request, request_id: str) -> str:
                     except Exception:
                         pass
                     streaming_run.on_complete()
+                    _update_streaming_snapshot()
                     answer_text = full_text
                     GPTState.last_raw_response = parsed_full
                     _set_active_response(None)
@@ -722,12 +733,14 @@ def _send_request_streaming(request, request_id: str) -> str:
         notify(f"GPT Failure: {error_msg}")
         err = GPTRequestError(408, error_msg)
         streaming_run.on_error(error_msg)
+        _update_streaming_snapshot()
         _handle_streaming_error(err)
         raise err
     except Exception as e:
         print(f"[modelHelpers] streaming requests.post failed: {e!r}")
         traceback.print_exc()
         streaming_run.on_error(str(e))
+        _update_streaming_snapshot()
         _handle_streaming_error(e)
         raise
     if raw_response.status_code != 200:
@@ -759,6 +772,7 @@ def _send_request_streaming(request, request_id: str) -> str:
     def _append_text(text_piece: str):
         nonlocal first_chunk
         streaming_run.on_chunk(text_piece)
+        _update_streaming_snapshot()
         full_text = streaming_run.text
         _update_stream_state_from_text(
             full_text,
@@ -860,6 +874,7 @@ def _send_request_streaming(request, request_id: str) -> str:
                 )
                 if text_piece:
                     streaming_run.on_chunk(text_piece)
+                    _update_streaming_snapshot()
                     full_text = streaming_run.text
                     _update_stream_state_from_text(
                         full_text,
@@ -897,6 +912,7 @@ def _send_request_streaming(request, request_id: str) -> str:
             pass
         _set_active_response(None)
         streaming_run.on_error("cancelled")
+        _update_streaming_snapshot()
         _update_lifecycle("cancel")
         raise
     except Exception as e:
@@ -930,6 +946,7 @@ def _send_request_streaming(request, request_id: str) -> str:
             _set_active_response(None)
             raise CancelledRequest()
         streaming_run.on_error(str(e))
+        _update_streaming_snapshot()
         _handle_streaming_error(e)
         raise
 
@@ -940,6 +957,7 @@ def _send_request_streaming(request, request_id: str) -> str:
             pass
 
     streaming_run.on_complete()
+    _update_streaming_snapshot()
     answer_text = streaming_run.text
     try:
         print(
@@ -977,6 +995,10 @@ def send_request(max_attempts: int = 10):
     def _handle_cancelled_request() -> str:
         emit_fail("cancelled", request_id=request_id)
         notify("GPT: Request cancelled")
+        try:
+            GPTState.last_streaming_snapshot = {}
+        except Exception:
+            pass
         cancel_active_request()
         return format_message("")
 

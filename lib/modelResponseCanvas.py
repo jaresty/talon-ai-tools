@@ -1052,14 +1052,55 @@ def _default_draw_response(c: canvas.Canvas) -> None:  # pragma: no cover - visu
     # Body: scrollable answer text. While inflight on a canvas-progress
     # destination, prefer the streaming buffer and avoid showing stale
     # last_response content.
+    streaming_snapshot = getattr(GPTState, "last_streaming_snapshot", {}) or {}
+    streaming_adapter = None
+    try:
+        from . import streamingCoordinator as _streaming_coordinator
+
+        streaming_adapter = getattr(
+            _streaming_coordinator, "canvas_view_from_snapshot", None
+        )
+    except Exception:
+        streaming_adapter = None
+    streaming_text = _coerce_text(streaming_snapshot.get("text", ""))
+    streaming_error_message = _coerce_text(
+        streaming_snapshot.get("error_message", "")
+    )
+    streaming_completed = bool(streaming_snapshot.get("completed"))
+    streaming_errored = bool(streaming_snapshot.get("errored"))
+    if streaming_adapter is not None and streaming_snapshot:
+        try:
+            snapshot_view = streaming_adapter(streaming_snapshot) or {}
+            streaming_text = _coerce_text(
+                snapshot_view.get("text", streaming_text)
+            )
+            streaming_error_message = _coerce_text(
+                snapshot_view.get("error_message", streaming_error_message)
+            )
+            status = str(snapshot_view.get("status") or "")
+            streaming_completed = streaming_completed or status == "completed"
+            streaming_errored = streaming_errored or status == "errored"
+        except Exception:
+            pass
+
     text_to_confirm_raw = getattr(GPTState, "text_to_confirm", "")
     text_to_confirm = _coerce_text(text_to_confirm_raw)
     last_response = _coerce_text(last_recap_snapshot().get("response", ""))
-    answer = (
-        text_to_confirm
-        if inflight and prefer_progress
-        else (text_to_confirm or last_response)
+    use_streaming_text = streaming_text and (
+        (inflight and prefer_progress)
+        or streaming_errored
+        or (streaming_completed and not text_to_confirm and not last_response)
     )
+    answer = (
+        streaming_text
+        if use_streaming_text
+        else (
+            text_to_confirm
+            if inflight and prefer_progress
+            else (text_to_confirm or last_response or streaming_text)
+        )
+    )
+
     # Limit debug logging to inflight progress draws; stay silent on DONE/IDLE.
     # Debug logging silenced for steady state; re-enable selectively when needed.
     if not answer:
@@ -1073,6 +1114,9 @@ def _default_draw_response(c: canvas.Canvas) -> None:  # pragma: no cover - visu
             if phase is RequestPhase.CANCELLED:
                 draw_text("Cancel requested; waiting for model to stop…", x, y)
                 return
+        if streaming_errored and streaming_error_message:
+            draw_text(f"Streaming error: {streaming_error_message}", x, y)
+            return
         draw_text("No last response available.", x, y)
         return
 

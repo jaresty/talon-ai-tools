@@ -308,9 +308,9 @@ For each domain, we will:
     - Source and destination snapshots have tests for headers and slugs that encode axis/static-prompt context and source type, built on the shared `last_recipe_snapshot()` / `recipe_header_lines_from_snapshot()` façade in `suggestionCoordinator`.
     - The `max_attempts` non-streaming failure path in `send_request` is explicitly tested to mark the lifecycle as `errored` and raise a clear error.
     - Request history entries in `requestLog` now store token-only axis state filtered through `axisMappings`, dropping obviously hydrated axis descriptions before logging, with tests guarding this behaviour.
-    - A small `streamingCoordinator` façade (`StreamingRun` plus helpers) now exists as a test-backed accumulator for per-request streaming state, and `_send_request_streaming` uses `StreamingRun` as its in-memory accumulator while preserving existing canvas and lifecycle behaviour.
+    - A small `streamingCoordinator` façade (`StreamingRun` plus helpers) now exists as a test-backed accumulator for per-request streaming state, and `_send_request_streaming` uses `StreamingRun` as its in-memory accumulator while preserving existing canvas and lifecycle behaviour. Streaming snapshots are stored on `GPTState.last_streaming_snapshot` and normalised for UI via `canvas_view_from_snapshot`, and the response canvas now prefers this façade for inflight and errored states.
   - Remaining work for this repo:
-    - Thread response canvas updates and snapshot/log writes through the streaming façade behind an explicit policy surface, keeping existing tests green.
+    - Evaluate whether any other UI surfaces need the streaming snapshot view (for example, recap overlays) and extend error-state rendering if required.
 
 ## Consequences
 - **Positive outcomes**
@@ -344,18 +344,19 @@ For each domain, we will:
 - **Pattern Debug & GPT Action Orchestration**
   - [x] Design and implement a pattern debug coordinator that replaces ad hoc `_debug` entrypoints for non-GUI flows (via `pattern_debug_snapshot` and `pattern_debug_catalog`).
   - [x] Route GPT actions that depend on pattern inspection through this coordinator (for example, `gpt_show_pattern_debug`).
-  - [ ] Decide whether and how GUI debug flows should consume the coordinator and extend tests to target those paths where appropriate, via a small subproject that:
+  - [x] Decide whether and how GUI debug flows should consume the coordinator and extend tests to target those paths where appropriate, via a small subproject that (implemented via the `UserActions.model_pattern_debug_name` coordinator-backed GUI debug action and its focussed tests).
     - [x] Maps the concrete GUI debug flows and entrypoints that currently rely on `_debug`-style helpers (for example, the `modelPatternGUI._debug` path exercised by `_tests/test_model_pattern_gui.py`).
-    - [ ] Defines the minimal coordinator-facing API needed by those flows (for example, which snapshot fields they consume and how results are rendered).
-    - [ ] Migrates at least one representative GUI debug flow to call the coordinator instead of a local `_debug` helper, with focused tests characterising that integration.
-    - [ ] Extends or adds tests around remaining GUI debug flows as they are migrated in follow-up loops, until they either use the coordinator or are explicitly documented as out-of-scope.
+    - [x] Defines the minimal coordinator-facing API needed by those flows (for example, which snapshot fields they consume and how results are rendered, via `pattern_debug_view` in `patternDebugCoordinator`).
+    - [x] Migrates at least one representative GUI debug flow to call the coordinator instead of a local `_debug` helper, with focused tests characterising that integration (via `UserActions.model_pattern_debug_name` using `pattern_debug_view`).
+    - [x] Extends or adds tests around remaining GUI debug flows as they are migrated in follow-up loops, until they either use the coordinator or are explicitly documented as out-of-scope (no additional user-facing GUI debug flows beyond `UserActions.model_pattern_debug_name`; remaining `_debug` calls are internal logging only; see work-log reconciliation entry).
 
 - **Streaming Response & Snapshot Resilience**
   - [x] Design a small streaming/snapshot façade (for example, a `streamingCoordinator`) around `_send_request_streaming` that owns accumulation and error-handling policies for a single request, without rewiring call sites yet.
   - [x] Add façade-level characterization tests that cover normal streaming, cancellation, JSON fallback, SSE, timeout, and max-attempts behaviour, reusing existing request/streaming tests where possible (primarily `_tests/test_request_streaming.py` and `_tests/test_streaming_coordinator.py`).
-  - [ ] Rewire `modelResponseCanvas` to use the streaming façade (or a thin wrapper over `StreamingRun.snapshot()`) for any streaming-specific state it needs, while keeping existing layout and axis rendering semantics unchanged and extending tests to cover the integration, via a small subproject that:
-    - [ ] Identifies which `modelResponseCanvas` behaviours actually depend on streaming-specific state (for example, incremental text accumulation vs. final snapshot fields).
+  - [x] Rewire `modelResponseCanvas` to use the streaming façade (or a thin wrapper over `StreamingRun.snapshot()`) for any streaming-specific state it needs, while keeping existing layout and axis rendering semantics unchanged and extending tests to cover the integration, via a small subproject that:
+    - [x] Stores streaming snapshots on `GPTState.last_streaming_snapshot` and normalises them through `canvas_view_from_snapshot` so the canvas prefers façade-backed inflight/error text.
+    - [x] Identifies which `modelResponseCanvas` behaviours actually depend on streaming-specific state (for example, incremental text accumulation vs. final snapshot fields; see work-log mapping entry for details).
     - [x] Introduces a thin adapter or helper that exposes `StreamingRun.snapshot()` data in the shape `modelResponseCanvas` needs, without changing canvas layout or axis rendering semantics (for example, `canvas_view_from_snapshot` in `streamingCoordinator`).
-    - [ ] Updates at least one focussed response-canvas test to exercise this adapter path in a happy-path streaming scenario while keeping existing expectations green.
-    - [ ] Extends tests (for example, `_tests/test_model_response_canvas.py` and streaming-related tests) to cover any new error or partial-response behaviours introduced by the façade wiring in follow-up loops.
+    - [x] Updates at least one focussed response-canvas test to exercise this adapter path in a happy-path streaming scenario while keeping existing expectations green (via `_tests/test_model_response_canvas.py::test_inflight_canvas_passes_snapshot_to_streaming_adapter`).
+    - [x] Extends tests (for example, `_tests/test_model_response_canvas.py` and streaming-related tests) to cover any new error or partial-response behaviours introduced by the façade wiring in follow-up loops (via `test_inflight_canvas_passes_snapshot_to_streaming_adapter` and `test_error_canvas_passes_errored_snapshot_to_streaming_adapter`).
   - [x] Thread snapshot/file/log writes (`_save_source_snapshot_to_file`, `modelDestination`, `requestLog`/`requestHistoryActions`) through the axis/recipe façade (`last_recipe_snapshot` / `recipe_header_lines_from_snapshot`) and axis filtering helpers, with existing tests in `_tests/test_gpt_source_snapshot.py`, `_tests/test_model_destination.py`, `_tests/test_request_log.py`, and `_tests/test_request_history_actions.py` guarding the contracts.

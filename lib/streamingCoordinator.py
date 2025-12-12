@@ -1,10 +1,9 @@
 """Streaming coordination façade for ADR-0045.
 
 Provides a small, testable helper for accumulating streamed text and
-recording completion/error state for a single request. This module does not
-yet wrap `_send_request_streaming` directly; existing streaming flows remain
-unchanged. Future slices can thread this façade through `modelHelpers`,
-canvases, destinations, and logs as described in ADR-0045.
+recording completion/error state for a single request. `_send_request_streaming`
+uses this façade as its in-memory accumulator, and UI surfaces (for example,
+the response canvas) can consume snapshots via `canvas_view_from_snapshot`.
 """
 
 from __future__ import annotations

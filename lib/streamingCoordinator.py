@@ -95,3 +95,30 @@ def new_streaming_run(request_id: str) -> StreamingRun:
     """
 
     return StreamingRun(request_id=str(request_id))
+
+
+def canvas_view_from_snapshot(snapshot: Dict[str, Any]) -> Dict[str, Any]:
+    """Return a small, canvas-friendly view of a streaming snapshot.
+
+    This helper does not depend on UI types. It provides a stable shape
+    for response canvases and tests to consume `StreamingRun.snapshot()`
+    output without depending on the full snapshot structure.
+    """
+
+    text = str(snapshot.get("text") or "")
+    completed = bool(snapshot.get("completed"))
+    errored = bool(snapshot.get("errored"))
+    error_message = str(snapshot.get("error_message") or "")
+
+    if errored:
+        status = "errored"
+    elif completed:
+        status = "completed"
+    else:
+        status = "inflight"
+
+    return {
+        "text": text,
+        "status": status,
+        "error_message": error_message,
+    }

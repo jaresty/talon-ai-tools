@@ -1080,3 +1080,54 @@ Focus (kind: behaviour): Thread the streamingCoordinator façade into the core s
 ### Follow-ups / Remaining ADR-0045 work (streaming/snapshot domain)
 - In future slices, thread response canvas refresh behaviour and snapshot/log write helpers (`_save_source_snapshot_to_file`, `modelDestination`, `requestLog`/`requestHistoryActions`) through `StreamingRun.snapshot()` or a thin façade built on it, keeping the characterised streaming tests green.
 - Decide whether any additional façade-level tests are needed once canvases or destinations consume the `StreamingRun` snapshot directly (for example, to assert how partial/error streams are rendered).
+
+
+## 2025-12-11 – Streaming Response & Snapshot slice – streaming snapshot canvas view helper
+
+Focus (kind: guardrail/tests): Add a small, canvas-friendly adapter over `StreamingRun.snapshot()` so response canvases and tests can consume streaming state through a stable façade without changing existing canvas behaviour yet.
+
+### Changes
+- Updated `lib/streamingCoordinator.py`:
+  - Added `canvas_view_from_snapshot(snapshot: Dict[str, Any]) -> Dict[str, Any]`:
+    - Normalises the snapshot’s `text`, `completed`, `errored`, and `error_message` fields into a simple `{"text", "status", "error_message"}` mapping.
+    - Derives `status` as one of `"inflight"`, `"completed"`, or `"errored"`, with errors taking precedence over completion.
+    - Treats missing or `None` fields as empty strings/False booleans so callers see a consistent shape.
+- Extended `_tests/test_streaming_coordinator.py` with `test_canvas_view_from_snapshot_maps_status_and_text`:
+  - Constructs three `StreamingRun` instances representing inflight, completed, and errored streams, using `new_streaming_run` and the existing façade methods.
+  - Asserts that `canvas_view_from_snapshot(run.snapshot())` returns:
+    - `text` equal to the accumulated streamed text for each run.
+    - `status` equal to `"inflight"`, `"completed"`, or `"errored"` as appropriate.
+    - `error_message` preserved for the errored case and empty otherwise.
+
+### Rationale
+- This slice advances ADR-0045’s Streaming Response & Snapshot façade by:
+  - Defining a small, UI-agnostic adapter that expresses streaming state in a form `modelResponseCanvas` can consume in future slices without depending on the full snapshot shape.
+  - Keeping all streaming semantics inside the existing `StreamingRun` façade while giving canvases/tests a narrow, well-characterised view.
+- It stops short of wiring the adapter into `modelResponseCanvas` itself; that work remains in the Salient Tasks subproject.
+
+### Checks
+- Ran focused streaming façade tests:
+  - `python3 -m pytest _tests/test_streaming_coordinator.py`
+  - Result: **7 passed**, 0 failed.
+
+
+## 2025-12-11 – Pattern Debug & GPT Action slice – GUI debug flow mapping
+
+Focus (kind: status/decomposition): Make the remaining Pattern Debug GUI debug subproject more concrete by explicitly mapping the current GUI debug entrypoint that relies on `_debug`-style helpers and reflecting that mapping in ADR-0045’s Salient Tasks.
+
+### Changes
+- Updated `docs/adr/0045-concordance-axis-config-help-hub-streaming-churn.md` under **Salient Tasks → Pattern Debug & GPT Action Orchestration** so that the GUI debug subproject now:
+  - Marks the "Maps the concrete GUI debug flows and entrypoints that currently rely on `_debug`-style helpers" subtask as completed.
+  - Notes that, today, this mapping consists of the `modelPatternGUI._debug` path exercised and characterised by `_tests/test_model_pattern_gui.py`.
+- Left the remaining GUI debug subtasks (defining the minimal coordinator-facing API, migrating a representative GUI debug flow to the coordinator, and extending tests for the remaining flows) as unchecked for future behaviour slices.
+
+### Rationale
+- This slice tightens ADR-0045’s Pattern Debug & GPT Action subproject by:
+  - Making the "map GUI debug flows" subtask concrete and clearly tied to the existing `modelPatternGUI._debug` entrypoint and its test coverage.
+  - Clarifying what remains for future loops: defining the coordinator API expected by GUI flows, migrating at least one GUI debug path to the coordinator, and extending tests accordingly.
+- It does not change runtime behaviour; instead, it finishes the decomposition/status work for this particular Pattern Debug GUI mapping subtask so later behaviour slices can target specific entrypoints with less ambiguity.
+
+### Checks
+- Re-ran Pattern Debug GUI tests to confirm the mapped entrypoint remains covered:
+  - `python3 -m pytest _tests/test_model_pattern_gui.py`
+  - Result: **25 passed**, 0 failed.

@@ -12,6 +12,7 @@ if bootstrap is not None:
     from talon_user.lib.streamingCoordinator import (
         StreamingRun,
         new_streaming_run,
+        canvas_view_from_snapshot,
     )
 
     class StreamingCoordinatorTests(unittest.TestCase):
@@ -98,6 +99,34 @@ if bootstrap is not None:
             self.assertFalse(run.completed)
             self.assertEqual(run.text, "partial")
             self.assertEqual(run.error_message, "cancelled")
+
+        def test_canvas_view_from_snapshot_maps_status_and_text(self) -> None:
+            # Inflight snapshot
+            inflight = new_streaming_run("req-inflight")
+            inflight.on_chunk("hello ")
+            inflight.on_chunk("world")
+            inflight_view = canvas_view_from_snapshot(inflight.snapshot())
+            self.assertEqual(inflight_view["text"], "hello world")
+            self.assertEqual(inflight_view["status"], "inflight")
+            self.assertEqual(inflight_view["error_message"], "")
+
+            # Completed snapshot
+            completed = new_streaming_run("req-complete")
+            completed.on_chunk("done")
+            completed.on_complete()
+            completed_view = canvas_view_from_snapshot(completed.snapshot())
+            self.assertEqual(completed_view["text"], "done")
+            self.assertEqual(completed_view["status"], "completed")
+            self.assertEqual(completed_view["error_message"], "")
+
+            # Errored snapshot with message
+            errored = new_streaming_run("req-error")
+            errored.on_chunk("partial")
+            errored.on_error("timeout")
+            errored_view = canvas_view_from_snapshot(errored.snapshot())
+            self.assertEqual(errored_view["text"], "partial")
+            self.assertEqual(errored_view["status"], "errored")
+            self.assertEqual(errored_view["error_message"], "timeout")
 
 
 else:

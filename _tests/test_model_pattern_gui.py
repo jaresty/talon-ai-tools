@@ -22,7 +22,10 @@ if bootstrap is not None:
             _parse_recipe,
             pattern_debug_snapshot,
         )
-        from talon_user.lib.patternDebugCoordinator import pattern_debug_catalog
+        from talon_user.lib.patternDebugCoordinator import (
+            pattern_debug_catalog,
+            pattern_debug_view,
+        )
         from talon_user.lib.modelState import GPTState
         from talon_user.lib.staticPromptConfig import STATIC_PROMPT_CONFIG
 
@@ -257,6 +260,36 @@ if bootstrap is not None:
                 names = {snap["name"] for snap in snapshots}
                 for pattern in PATTERNS:
                     self.assertIn(pattern.name, names)
+
+            def test_pattern_debug_view_builds_gui_friendly_recipe_line(self) -> None:
+                """pattern_debug_view should expose name, axes, last_axes, and a concise recipe line."""
+                target = next(p for p in PATTERNS if p.name == "Debug bug")
+
+                # Seed GPTState axes so the underlying snapshot has last_axes data.
+                GPTState.last_axes = {
+                    "completeness": ["full"],
+                    "scope": ["narrow"],
+                    "method": ["debugging"],
+                    "style": [],
+                }
+
+                view = pattern_debug_view(target.name)
+                self.assertEqual(view["name"], target.name)
+                # Axes in the view should match the snapshot axes shape tested elsewhere.
+                axes = view["axes"]
+                self.assertEqual(axes["completeness"], "full")
+                self.assertEqual(axes["scope"], ["narrow"])
+                self.assertEqual(axes["method"], ["debugging"])
+                self.assertEqual(axes["style"], [])
+                self.assertEqual(axes["directional"], "rog")
+
+                # recipe_line should be a concise, token-based recap including directional.
+                self.assertEqual(
+                    view["recipe_line"],
+                    "describe · full · narrow · debugging · rog",
+                )
+                # last_axes should surface the seeded GPTState.last_axes.
+                self.assertEqual(view["last_axes"], GPTState.last_axes)
 
             def test_pattern_debug_catalog_filters_by_domain(self) -> None:
                 """pattern_debug_catalog should filter snapshots by domain when requested."""

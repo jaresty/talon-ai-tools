@@ -174,6 +174,7 @@ if bootstrap is not None:
                 "scope": ["edges", "bound"],
                 "method": ["rigor"],
                 "style": ["jira"],
+                "directional": ["fog"],
             }
             append_entry(
                 "rid-axes",
@@ -192,6 +193,8 @@ if bootstrap is not None:
             self.assertEqual(GPTState.last_scope, "edges bound")
             self.assertEqual(GPTState.last_method, "rigor")
             self.assertEqual(GPTState.last_style, "jira")
+            self.assertEqual(GPTState.last_directional, "fog")
+            self.assertIn("fog", GPTState.last_recipe)
 
         def test_history_show_latest_recap_uses_last_axes_tokens(self):
             axes = {
@@ -235,15 +238,12 @@ if bootstrap is not None:
 
             HistoryActions.gpt_request_history_show_latest()
 
-            self.assertEqual(
-                GPTState.last_axes,
-                {
-                    "completeness": ["full"],
-                    "scope": ["bound"],
-                    "method": ["rigor"],
-                    "style": ["plain"],
-                },
-            )
+            self.assertEqual(GPTState.last_axes.get("completeness"), ["full"])
+            self.assertEqual(GPTState.last_axes.get("scope"), ["bound"])
+            self.assertEqual(GPTState.last_axes.get("method"), ["rigor"])
+            self.assertEqual(GPTState.last_axes.get("style"), ["plain"])
+            # Directional was absent; ensure no unknowns leaked through.
+            self.assertFalse(GPTState.last_axes.get("directional"))
 
         def test_history_axes_for_filters_invalid_tokens(self):
             axes = {
@@ -255,15 +255,11 @@ if bootstrap is not None:
 
             filtered = history_axes_for(axes)
 
-            self.assertEqual(
-                filtered,
-                {
-                    "completeness": ["full"],
-                    "scope": ["bound"],
-                    "method": ["rigor"],
-                    "style": ["plain"],
-                },
-            )
+            self.assertEqual(filtered.get("completeness"), ["full"])
+            self.assertEqual(filtered.get("scope"), ["bound"])
+            self.assertEqual(filtered.get("method"), ["rigor"])
+            self.assertEqual(filtered.get("style"), ["plain"])
+            self.assertFalse(filtered.get("directional"))
 
         def test_history_summary_lines_matches_existing_formatting(self):
             append_entry(

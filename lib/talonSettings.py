@@ -9,6 +9,7 @@ from .axisMappings import (
     axis_hydrate_tokens,
     axis_value_to_key_map_for,
 )
+from .axisCatalog import axis_catalog
 from .modelSource import CompoundSource, ModelSource, SourceStack, create_model_source
 from .modelDestination import (
     ModelDestination,
@@ -371,7 +372,7 @@ def _apply_constraint_hierarchy(
     return resolved, canonical
 
 
-def _filter_axis_tokens(axis_values: AxisValues) -> AxisValues:
+def _filter_axis_tokens(axis_values: AxisValues, allow_unknown: bool = False) -> AxisValues:
     """Filter axis tokens against axisConfig to keep token-only state.
 
     For live prompt runs we allow unknown short tokens (for example, custom
@@ -379,8 +380,16 @@ def _filter_axis_tokens(axis_values: AxisValues) -> AxisValues:
     as long instruction strings that start with 'Important:'.
     """
 
+    catalog = axis_catalog()
+    catalog_tokens = {
+        axis: set((tokens or {}).keys())
+        for axis, tokens in (catalog.get("axes") or {}).items()
+    }
+
     def _filter(axis: str, tokens: list[str]) -> list[str]:
         valid = axis_value_to_key_map_for(axis)
+        valid_tokens = set(valid.keys())
+        valid_tokens |= catalog_tokens.get(axis, set())
         filtered: list[str] = []
         for t in tokens:
             if t in valid:
@@ -388,7 +397,13 @@ def _filter_axis_tokens(axis_values: AxisValues) -> AxisValues:
                 continue
             if str(t).strip().lower().startswith("important:"):
                 continue
-            filtered.append(t)
+            if t in valid_tokens:
+                filtered.append(t)
+                continue
+            # Keep short/unknown tokens (for example, test sentinels) so spoken
+            # modifiers still flow through even when they are not in axisConfig.
+            if allow_unknown:
+                filtered.append(t)
         return filtered
 
     filtered: AxisValues = {
@@ -396,6 +411,7 @@ def _filter_axis_tokens(axis_values: AxisValues) -> AxisValues:
         "scope": _filter("scope", axis_values.get("scope", [])),
         "method": _filter("method", axis_values.get("method", [])),
         "style": _filter("style", axis_values.get("style", [])),
+        "directional": _filter("directional", axis_values.get("directional", [])),  # type: ignore[dict-item]
     }
     comp = filtered["completeness"]
     if comp and str(comp).strip().lower().startswith("important:"):
@@ -604,8 +620,8 @@ def modelPrompt(m) -> str:
         }
     )
     # Filter out any tokens not present in axisConfig to keep token-only state.
-    resolved_axes = _filter_axis_tokens(resolved_axes)
-    canonical_axes = _filter_axis_tokens(canonical_axes)
+    resolved_axes = _filter_axis_tokens(resolved_axes, allow_unknown=True)
+    canonical_axes = _filter_axis_tokens(canonical_axes, allow_unknown=True)
 
     completeness_token = resolved_axes.get("completeness") or ""
     completeness_tokens = [completeness_token] if completeness_token else []

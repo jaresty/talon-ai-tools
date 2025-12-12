@@ -9,6 +9,8 @@ from .modelHelpers import notify
 from .modelState import GPTState
 from .requestLog import latest, nth_from_latest, all_entries
 from .axisMappings import axis_key_to_value_map_for
+from .axisCatalog import axis_catalog
+from .axisCatalog import axis_catalog
 
 mod = Module()
 
@@ -34,6 +36,11 @@ def history_axes_for(axes: dict[str, list[str]]) -> dict[str, list[str]]:
     can reuse it without depending on GPTState.
     """
     axes = axes or {}
+    catalog = axis_catalog()
+    catalog_tokens = {
+        axis: set((tokens or {}).keys())
+        for axis, tokens in (catalog.get("axes") or {}).items()
+    }
     return {
         "completeness": _filter_axis_tokens(
             "completeness", list(axes.get("completeness", []) or [])
@@ -41,6 +48,13 @@ def history_axes_for(axes: dict[str, list[str]]) -> dict[str, list[str]]:
         "scope": _filter_axis_tokens("scope", list(axes.get("scope", []) or [])),
         "method": _filter_axis_tokens("method", list(axes.get("method", []) or [])),
         "style": _filter_axis_tokens("style", list(axes.get("style", []) or [])),
+        "directional": [
+            t
+            for t in _filter_axis_tokens(
+                "directional", list(axes.get("directional", []) or [])
+            )
+            if t in catalog_tokens.get("directional", set())
+        ],
     }
 
 
@@ -135,6 +149,12 @@ def _save_history_prompt_to_file(entry) -> None:
     if recipe:
         # Use the first token of the recipe as an additional hint.
         slug_parts.append(_slugify_label(recipe.split(" · ", 1)[0]))
+    # Include directional axis tokens when present to make the slug more
+    # self-describing for catalog-aligned history saves.
+    normalized_axes = history_axes_for(getattr(entry, "axes", {}) or {})
+    dir_tokens = normalized_axes.get("directional") or []
+    for token in dir_tokens:
+        slug_parts.append(_slugify_label(str(token)))
 
     filename = timestamp
     if slug_parts:
@@ -151,7 +171,7 @@ def _save_history_prompt_to_file(entry) -> None:
     if recipe:
         header_lines.append(f"recipe: {recipe}")
     axes = getattr(entry, "axes", {}) or {}
-    for axis in ("completeness", "scope", "method", "style"):
+    for axis in ("completeness", "scope", "method", "style", "directional"):
         tokens = axes.get(axis) or []
         if isinstance(tokens, list) and tokens:
             joined = " ".join(str(t) for t in tokens if str(t).strip())
@@ -199,6 +219,9 @@ def _show_entry(entry) -> None:
         GPTState.last_scope = " ".join(GPTState.last_axes["scope"]).strip()
         GPTState.last_method = " ".join(GPTState.last_axes["method"]).strip()
         GPTState.last_style = " ".join(GPTState.last_axes["style"]).strip()
+        GPTState.last_directional = " ".join(
+            GPTState.last_axes.get("directional", [])
+        ).strip()
         # Derive a concise, token-based recap from axes (token-only storage).
         recipe_parts = []
         # Ignore any legacy recipe content when axes are present; recap is token-only.
@@ -207,6 +230,7 @@ def _show_entry(entry) -> None:
             GPTState.last_scope,
             GPTState.last_method,
             GPTState.last_style,
+            GPTState.last_directional,
         ):
             if value:
                 recipe_parts.append(value)

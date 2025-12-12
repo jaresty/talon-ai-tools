@@ -1,83 +1,130 @@
+"""Pattern debug coordinator facade (ADR-0046).
+
+Provides a structured, testable snapshot of pattern metadata (name, domain,
+description, recipe, axes) so GUIs and guardrails can consume a shared shape
+instead of bespoke `_debug` paths.
+"""
+
 from __future__ import annotations
 
-from typing import Optional
+from typing import List, Dict, Any, Optional
 
-from .modelPatternGUI import PATTERNS, PatternDomain, pattern_debug_snapshot
+from .axisCatalog import axis_catalog
+
+
+def _default_patterns():
+    """Lazy accessor to avoid hard import cycles with modelPatternGUI."""
+    try:
+        from .modelPatternGUI import PATTERNS  # type: ignore
+
+        return PATTERNS
+    except Exception:
+        return []
+
+
+def _axes_from_pattern(pattern) -> tuple[str, Dict[str, Any]]:
+    """Parse a pattern's recipe/axes into a unified axes dict."""
+
+    catalog = axis_catalog()
+    axis_tokens = {
+        axis: set((tokens or {}).keys())
+        for axis, tokens in (catalog.get("axes") or {}).items()
+    }
+
+    recipe = getattr(pattern, "recipe", "") or ""
+    tokens = [t.strip() for t in recipe.split("·") if t.strip()]
+    static_prompt = tokens[0] if tokens else ""
+    directional = tokens[-1] if len(tokens) > 1 else ""
+
+    completeness = ""
+    scope_tokens: List[str] = []
+    method_tokens: List[str] = []
+    style_tokens: List[str] = []
+
+    for segment in tokens[1:-1]:
+        for token in segment.split():
+            if token in axis_tokens.get("completeness", set()):
+                completeness = token
+            elif token in axis_tokens.get("scope", set()):
+                if token not in scope_tokens:
+                    scope_tokens.append(token)
+            elif token in axis_tokens.get("method", set()):
+                if token not in method_tokens:
+                    method_tokens.append(token)
+            elif token in axis_tokens.get("style", set()):
+                if token not in style_tokens:
+                    style_tokens.append(token)
+
+    axes_attr = getattr(pattern, "axes", {}) or {}
+
+    def _list(value: Any) -> List[str]:
+        if isinstance(value, list):
+            return value
+        if value is None:
+            return []
+        return [str(value)]
+
+    axes: Dict[str, Any] = {
+        "completeness": axes_attr.get("completeness") or completeness,
+        "scope": _list(axes_attr.get("scope")) or scope_tokens,
+        "method": _list(axes_attr.get("method")) or method_tokens,
+        "style": _list(axes_attr.get("style")) or style_tokens,
+        "directional": axes_attr.get("directional") or directional,
+    }
+    return static_prompt, axes
+
+
+def pattern_debug_view(
+    pattern_name: str, patterns=None
+) -> Dict[str, Any]:
+    """Return a single pattern debug view including axes/recipe."""
+
+    patterns = patterns if patterns is not None else _default_patterns()
+    for pat in patterns:
+        if str(getattr(pat, "name", "")).lower() != str(pattern_name).lower():
+            continue
+
+        static_prompt, axes = _axes_from_pattern(pat)
+        view: Dict[str, Any] = {
+            "name": getattr(pat, "name", pattern_name),
+            "description": getattr(pat, "description", ""),
+            "domain": getattr(pat, "domain", None),
+            "recipe_line": getattr(pat, "recipe", ""),
+            "axes": axes,
+            "static_prompt": static_prompt,
+        }
+        try:
+            from .modelState import GPTState  # type: ignore
+
+            last_axes = getattr(GPTState, "last_axes", None)
+            if isinstance(last_axes, dict):
+                view["last_axes"] = last_axes
+        except Exception:
+            pass
+        return view
+    return {}
+
+
+def pattern_debug_snapshot(
+    pattern_name: str, patterns=None
+) -> Dict[str, Any]:
+    """Return a structured snapshot for a named pattern."""
+
+    return pattern_debug_view(pattern_name, patterns=patterns)
 
 
 def pattern_debug_catalog(
-    domain: Optional[PatternDomain] = None,
-) -> list[dict[str, object]]:
-    """Return debug snapshots for all patterns, optionally filtered by domain.
+    patterns=None, domain: Optional[str] = None
+) -> List[Dict[str, Any]]:
+    """Return debug views for all patterns, optionally filtered by domain."""
 
-    This helper is a small coordinator-style façade for the Pattern Debug & GPT
-    Action domain. Callers (GUIs, GPT actions, tests) can obtain a stable list
-    of pattern debug snapshots without reimplementing iteration or filtering
-    logic around ``PATTERNS``.
-    """
-
-    snapshots: list[dict[str, object]] = []
-    for pattern in PATTERNS:
-        if domain is not None and pattern.domain != domain:
+    patterns = patterns if patterns is not None else _default_patterns()
+    views: List[Dict[str, Any]] = []
+    for pat in patterns:
+        view = pattern_debug_view(getattr(pat, "name", ""), patterns=patterns)
+        if not view:
             continue
-        snapshot = pattern_debug_snapshot(pattern.name)
-        if snapshot:
-            snapshots.append(snapshot)
-    return snapshots
-
-
-def pattern_debug_view(pattern_name: str) -> dict[str, object]:
-    """Return a minimal, GUI-friendly view of a pattern debug snapshot.
-
-    This helper is a thin adapter over :func:`pattern_debug_snapshot` that
-    exposes just enough structure for GUI flows to render a concise, token-based
-    recipe line alongside the underlying axes state. It intentionally preserves
-    the snapshot's axes shape so existing tests can continue to characterise
-    that behaviour.
-    """
-
-    snapshot = pattern_debug_snapshot(pattern_name)
-    if not snapshot:
-        return {}
-
-    name = str(snapshot.get("name") or pattern_name)
-    static_prompt = str(snapshot.get("static_prompt") or "")
-    axes = snapshot.get("axes", {}) or {}
-    completeness = str(axes.get("completeness") or "")
-    scope_value = axes.get("scope") or []
-    method_value = axes.get("method") or []
-    style_value = axes.get("style") or []
-    directional = str(axes.get("directional") or "")
-
-    def _as_tokens(value) -> list[str]:
-        if isinstance(value, list):
-            return [str(v) for v in value if v]
-        if isinstance(value, str) and value.strip():
-            return value.strip().split()
-        return []
-
-    scope_tokens = _as_tokens(scope_value)
-    method_tokens = _as_tokens(method_value)
-    style_tokens = _as_tokens(style_value)
-
-    parts: list[str] = []
-    if static_prompt:
-        parts.append(static_prompt)
-    for value in (
-        completeness,
-        " ".join(scope_tokens),
-        " ".join(method_tokens),
-        " ".join(style_tokens),
-    ):
-        if value:
-            parts.append(value)
-    if directional:
-        parts.append(directional)
-    recipe_line = " · ".join(parts) or str(snapshot.get("recipe") or "")
-
-    return {
-        "name": name,
-        "recipe_line": recipe_line,
-        "axes": axes,
-        "last_axes": snapshot.get("last_axes") or {},
-    }
+        if domain is not None and view.get("domain") != domain:
+            continue
+        views.append(view)
+    return views

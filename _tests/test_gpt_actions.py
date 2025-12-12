@@ -1174,6 +1174,7 @@ if bootstrap is not None:
                     "scope": ["bound"],
                     "method": ["rigor"],
                     "style": ["plain"],
+                    "directional": [],
                 },
             )
 

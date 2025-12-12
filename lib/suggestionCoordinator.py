@@ -77,6 +77,11 @@ def last_recipe_snapshot() -> dict[str, object]:
         return _tokens(fallback)
 
     recipe_str = getattr(GPTState, "last_recipe", "") or ""
+    directional_tokens = axes_state.get("directional")
+    if isinstance(directional_tokens, list) and directional_tokens:
+        directional = " ".join(str(t) for t in directional_tokens if str(t))
+    else:
+        directional = getattr(GPTState, "last_directional", "") or ""
     return {
         "recipe": recipe_str,
         "static_prompt": getattr(GPTState, "last_static_prompt", "") or "",
@@ -86,7 +91,7 @@ def last_recipe_snapshot() -> dict[str, object]:
         "scope_tokens": _axis("scope", getattr(GPTState, "last_scope", "")),
         "method_tokens": _axis("method", getattr(GPTState, "last_method", "")),
         "style_tokens": _axis("style", getattr(GPTState, "last_style", "")),
-        "directional": getattr(GPTState, "last_directional", "") or "",
+        "directional": directional,
     }
 
 

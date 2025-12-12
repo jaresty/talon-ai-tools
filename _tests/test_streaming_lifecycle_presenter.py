@@ -29,10 +29,12 @@ if bootstrap is not None:
 
         def test_error_marks_errored_snapshot_and_preserves_text(self) -> None:
             run = new_streaming_run("req-2")
+            run.axes = {"directional": ["fog"]}
             record_streaming_chunk(run, "partial")
             snap = record_streaming_error(run, "boom")
             self.assertTrue(snap["errored"])
             self.assertEqual(snap["text"], "partial")
+            self.assertEqual(snap.get("axes"), {"directional": ["fog"]})
             view = canvas_view_from_snapshot(snap)
             self.assertEqual(view["status"], "errored")
             self.assertIn("boom", view["error_message"])

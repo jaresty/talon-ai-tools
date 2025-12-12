@@ -45,6 +45,7 @@ from .streamingCoordinator import (
     record_streaming_complete,
     record_streaming_error,
 )
+from .axisCatalog import axis_catalog
 import threading
 
 # Ensure a default request UI controller is registered so lifecycle events
@@ -625,6 +626,24 @@ def _send_request_streaming(request, request_id: str) -> str:
 
     decoder = codecs.getincrementaldecoder("utf-8")()
     streaming_run: StreamingRun = new_streaming_run(request_id)
+    try:
+        catalog = axis_catalog()
+        axes_map = catalog.get("axes", {}) or {}
+        filtered_axes: dict[str, list[str]] = {}
+        axes = request.get("axes") or {}
+        for axis in ("completeness", "scope", "method", "style", "directional"):
+            vals = axes.get(axis) or []
+            if isinstance(vals, list):
+                tokens = [str(v) for v in vals if str(v)]
+            else:
+                tokens = [str(vals)] if vals else []
+            known = set((axes_map.get(axis) or {}).keys())
+            kept = [t for t in tokens if t in known]
+            if kept:
+                filtered_axes[axis] = kept
+        streaming_run.axes = filtered_axes
+    except Exception:
+        pass
     parts: list[str] = streaming_run.chunks
 
     def _update_streaming_snapshot() -> None:

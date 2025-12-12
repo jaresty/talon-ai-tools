@@ -76,11 +76,29 @@ def validate_static_prompt_axes(catalog) -> List[str]:
     return errors
 
 
+def validate_static_prompt_descriptions(catalog) -> List[str]:
+    errors: List[str] = []
+    descriptions = catalog.get("static_prompt_descriptions", {}) or {}
+    profiled = catalog.get("static_prompts", {}).get("profiled", []) or []
+    for entry in profiled:
+        name = entry.get("name", "")
+        if not name:
+            continue
+        desc = (descriptions.get(name) or "").strip()
+        catalog_desc = (entry.get("description") or "").strip()
+        if desc != catalog_desc:
+            errors.append(
+                f"[static prompt description drift] {name!r} catalog description mismatch between overrides and catalog entry"
+            )
+    return errors
+
+
 def main() -> int:
     catalog = axis_catalog()
     errors: List[str] = []
     errors.extend(validate_axis_tokens(catalog))
     errors.extend(validate_static_prompt_axes(catalog))
+    errors.extend(validate_static_prompt_descriptions(catalog))
 
     if errors:
         print("Axis catalog validation failed:")

@@ -11,6 +11,9 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import List, Optional, Dict, Any
 
+from .axisCatalog import axis_catalog
+from .requestLog import append_entry_from_request
+
 
 @dataclass
 class StreamingRun:
@@ -26,6 +29,7 @@ class StreamingRun:
     completed: bool = False
     errored: bool = False
     error_message: str = ""
+    axes: Dict[str, List[str]] = field(default_factory=dict)
 
     def on_chunk(self, text: str) -> None:
         """Append a streamed text chunk.
@@ -83,6 +87,7 @@ class StreamingRun:
             "completed": self.completed,
             "errored": self.errored,
             "error_message": self.error_message,
+            "axes": dict(self.axes),
         }
 
 

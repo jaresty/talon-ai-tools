@@ -56,12 +56,13 @@ def test_last_recipe_snapshot_prefers_last_axes_tokens_over_legacy_fields() -> N
     GPTState.last_scope = "hydrated-scope"
     GPTState.last_method = "hydrated-method"
     GPTState.last_style = "hydrated-style"
-    GPTState.last_directional = "fog"
+    GPTState.last_directional = "bog"  # should be overridden by last_axes
     GPTState.last_axes = {
         "completeness": ["full"],
         "scope": ["bound", "edges"],
         "method": ["rigor"],
         "style": ["plain"],
+        "directional": ["fog"],
     }
 
     snapshot = last_recipe_snapshot()

@@ -27,3 +27,24 @@ axis-regenerate:
 
 axis-catalog-validate:
 	python3 scripts/tools/axis-catalog-validate.py
+
+axis-cheatsheet:
+	mkdir -p tmp
+	python3 scripts/tools/generate-axis-cheatsheet.py --out tmp/readme-axis-cheatsheet.md
+
+axis-guardrails: axis-catalog-validate axis-cheatsheet
+	@echo "Axis guardrails completed (catalog validation + cheat sheet)"
+
+axis-guardrails-test: axis-guardrails
+	python3 -m pytest _tests/test_axis_catalog_validate.py _tests/test_generate_axis_cheatsheet.py _tests/test_readme_axis_lists.py
+
+adr0046-guardrails:
+	make axis-guardrails-test
+	python3 -m pytest \
+		_tests/test_model_destination.py \
+		_tests/test_request_history_actions.py \
+		_tests/test_recipe_header_lines.py \
+		_tests/test_gpt_source_snapshot.py \
+		_tests/test_streaming_coordinator.py \
+		_tests/test_streaming_lifecycle_presenter.py \
+		_tests/test_pattern_debug_coordinator.py

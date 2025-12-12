@@ -1,5 +1,5 @@
 # ADR-0046 – Concordance – Axis Catalog, Help Navigation, Pattern GUIs, and Streaming Resilience
-Status: Proposed  
+Status: Accepted  
 Date: 2025-12-11  
 Owners: Talon AI tools maintainers
 

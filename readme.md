@@ -56,6 +56,7 @@ os.environ["OPENAI_API_KEY"] = "YOUR-KEY-HERE"
 ## Development
 
 - Tests run with the lightweight Talon stub harness under `tests/`; the helper `bootstrap.py` wires the stubs, so simply run `python3 -m unittest discover -s tests` or `make test`.
+- Axis catalog guardrails: run `make axis-guardrails` (catalog drift check + catalog-backed cheat sheet generation) to keep axis tokens/docs aligned with the SSOT.
 - `tests/stubs/talon/__init__.py` mirrors the Talon APIs required by the repo; add new behaviors there when extending commands.
 - GPT orchestration code should flow through `lib/promptSession.PromptSession` rather than manually mutating `GPTState`. The typical pattern is to create a session, call `prepare_prompt(...)`, optionally `begin(reuse_existing=True)` when reusing an in-flight request, then `execute()`.
 - When adding new actions, keep the `UserActions` methods thin, prefer unit tests similar to `tests/test_gpt_actions.py`, and verify they assert the prompt session interactions you expect.

@@ -40,6 +40,7 @@ if bootstrap is not None:
 
         def test_error_preserves_chunks_and_blocks_further_appends(self) -> None:
             run = StreamingRun("req-2")
+            run.axes = {"method": ["rigor"]}
 
             run.on_chunk("partial")
             run.on_error("boom")
@@ -55,6 +56,7 @@ if bootstrap is not None:
             self.assertEqual(snap["text"], "partial")
             self.assertTrue(snap["errored"])
             self.assertFalse(snap["completed"])
+            self.assertEqual(snap.get("axes"), {"method": ["rigor"]})
 
         def test_empty_or_none_chunks_are_ignored(self) -> None:
             run = new_streaming_run("req-3")

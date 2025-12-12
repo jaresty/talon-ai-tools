@@ -371,7 +371,14 @@ class File(ModelDestination):
         last_style = axis_join(
             axes_tokens, "style", getattr(GPTState, "last_style", "") or ""
         )
-        for value in (last_completeness, last_scope, last_method, last_style):
+        last_directional = getattr(GPTState, "last_directional", "") or ""
+        for value in (
+            last_completeness,
+            last_scope,
+            last_method,
+            last_style,
+            last_directional,
+        ):
             if value:
                 slug_bits.append(value)
 
@@ -522,29 +529,39 @@ class Browser(ModelDestination):
         last_style = axis_join(
             axes_tokens, "style", getattr(GPTState, "last_style", "") or ""
         )
-        for value in (last_completeness, last_scope, last_method, last_style):
+        last_directional = axis_join(
+            axes_tokens,
+            "directional",
+            getattr(GPTState, "last_directional", "") or "",
+        )
+        for value in (
+            last_completeness,
+            last_scope,
+            last_method,
+            last_style,
+            last_directional,
+        ):
             if value:
                 axis_parts.append(value)
 
         recipe_tokens = " · ".join(axis_parts) if axis_parts else ""
-        recipe = recipe_tokens or getattr(GPTState, "last_recipe", "") or ""
-        # If we only have the static prompt from tokens but a legacy recipe string exists,
-        # prefer the legacy string so older code paths still show full axis context.
-        if (
-            recipe_tokens
-            and len(axis_parts) <= 1
-            and getattr(GPTState, "last_recipe", "")
-        ):
-            recipe = getattr(GPTState, "last_recipe", "")
+        last_recipe_value = getattr(GPTState, "last_recipe", "") or ""
+        recipe = recipe_tokens or last_recipe_value
+        # If the catalog-derived tokens are sparse (for example, only static
+        # prompt + directional), prefer the richer last_recipe string when present.
+        if last_recipe_value:
+            populated_axes = sum(1 for v in (last_completeness, last_scope, last_method, last_style) if v)
+            if len(axis_parts) < 4 or populated_axes < 3:
+                recipe = last_recipe_value
         if recipe:
             builder.h2("Prompt recap")
             directional = getattr(GPTState, "last_directional", "") or ""
-            if directional:
-                recipe_text = f"{recipe} · {directional}"
-                grammar_phrase = f"model run {recipe.replace(' · ', ' ')} {directional}"
-            else:
-                recipe_text = recipe
-                grammar_phrase = f"model run {recipe.replace(' · ', ' ')}"
+            recipe_text = recipe
+            grammar_recipe = recipe.replace(" · ", " ")
+            if directional and directional not in recipe_text:
+                recipe_text = f"{recipe_text} · {directional}"
+                grammar_recipe = f"{grammar_recipe} {directional}"
+            grammar_phrase = f"model run {grammar_recipe}"
 
             builder.p(f"Recipe: {recipe_text}")
             builder.p(f"Say: {grammar_phrase}")

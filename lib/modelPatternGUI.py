@@ -12,6 +12,7 @@ from .modelSource import create_model_source
 from .talonSettings import ApplyPromptConfiguration, modelPrompt
 from .modelState import GPTState
 from .axisMappings import axis_docs_map
+from .patternDebugCoordinator import pattern_debug_view, pattern_debug_catalog as _pattern_debug_catalog
 from .personaConfig import PERSONA_PRESETS, INTENT_PRESETS
 
 mod = Module()
@@ -1075,50 +1076,21 @@ def _parse_recipe(recipe: str) -> tuple[str, str, str, str, str, str]:
 
 
 def pattern_debug_snapshot(pattern_name: str) -> dict[str, object]:
-    """Return a structured debug snapshot for a named pattern.
+    """Return a structured debug snapshot for a named pattern."""
 
-    This helper is a first-step coordinator for the Pattern Debug & GPT Action
-    domain: it exposes static pattern configuration (recipe and axes) together
-    with the current `GPTState` axis view so tests and GPT actions can inspect
-    the same shape of data.
-    """
-
-    pattern: Optional[PromptPattern] = None
-    for candidate in PATTERNS:
-        if candidate.name.lower() == pattern_name.lower():
-            pattern = candidate
-            break
-    if pattern is None:
+    view = pattern_debug_view(pattern_name, patterns=PATTERNS)
+    if not view:
         return {}
 
-    (
-        static_prompt,
-        completeness,
-        scope,
-        method,
-        style,
-        directional,
-    ) = _parse_recipe(pattern.recipe)
-
-    axes: dict[str, object] = {
-        "completeness": completeness,
-        "scope": scope.split() if scope else [],
-        "method": method.split() if method else [],
-        "style": style.split() if style else [],
-        "directional": directional,
-    }
-
     snapshot: dict[str, object] = {
-        "name": pattern.name,
-        "domain": pattern.domain,
-        "description": pattern.description,
-        "recipe": pattern.recipe,
-        "static_prompt": static_prompt,
-        "axes": axes,
+        "name": view.get("name", pattern_name),
+        "domain": view.get("domain"),
+        "description": view.get("description", ""),
+        "recipe": view.get("recipe_line", ""),
+        "static_prompt": view.get("static_prompt", ""),
+        "axes": view.get("axes", {}),
     }
 
-    # Attach the current GPTState axis snapshot when available so callers can
-    # compare configured axes to the most recent run.
     try:
         snapshot["last_recipe"] = getattr(GPTState, "last_recipe", "") or ""
         last_axes = getattr(GPTState, "last_axes", None) or {}
@@ -1133,22 +1105,9 @@ def pattern_debug_snapshot(pattern_name: str) -> dict[str, object]:
 def pattern_debug_catalog(
     domain: Optional[PatternDomain] = None,
 ) -> list[dict[str, object]]:
-    """Return debug snapshots for all patterns, optionally filtered by domain.
+    """Return debug snapshots for all patterns, optionally filtered by domain."""
 
-    This is a small coordinator-style helper for the Pattern Debug & GPT Action
-    domain: callers (GUIs, GPT actions, tests) can use it to obtain a stable
-    list of pattern debug snapshots without reimplementing iteration or
-    filtering logic around PATTERNS.
-    """
-
-    snapshots: list[dict[str, object]] = []
-    for pattern in PATTERNS:
-        if domain is not None and pattern.domain != domain:
-            continue
-        snapshot = pattern_debug_snapshot(pattern.name)
-        if snapshot:
-            snapshots.append(snapshot)
-    return snapshots
+    return _pattern_debug_catalog(patterns=PATTERNS, domain=domain)
 
 
 def _run_pattern(pattern: PromptPattern) -> None:

@@ -10,7 +10,10 @@ else:
 
 if bootstrap is not None:
     from talon_user.lib import axisCatalog
-    from talon_user.lib.staticPromptConfig import static_prompt_catalog
+    from talon_user.lib.staticPromptConfig import (
+        static_prompt_catalog,
+        static_prompt_description_overrides,
+    )
 
     class AxisCatalogTests(unittest.TestCase):
         def test_axis_list_tokens_align_with_axis_config(self) -> None:
@@ -41,6 +44,16 @@ if bootstrap is not None:
                 catalog["static_prompts"],
                 static_prompt_catalog(),
                 "axis_catalog static_prompts should mirror static_prompt_catalog()",
+            )
+
+        def test_static_prompt_descriptions_match_overrides(self) -> None:
+            """Guardrail: axis_catalog static prompt descriptions mirror overrides helper."""
+
+            catalog = axisCatalog.axis_catalog()
+            self.assertEqual(
+                catalog["static_prompt_descriptions"],
+                static_prompt_description_overrides(),
+                "axis_catalog static_prompt_descriptions should mirror static_prompt_description_overrides()",
             )
 
 else:

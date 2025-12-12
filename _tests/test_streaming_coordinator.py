@@ -13,7 +13,9 @@ if bootstrap is not None:
         StreamingRun,
         new_streaming_run,
         canvas_view_from_snapshot,
+        current_streaming_snapshot,
     )
+    from talon_user.lib.modelState import GPTState
 
     class StreamingCoordinatorTests(unittest.TestCase):
         def test_accumulates_chunks_and_marks_complete(self) -> None:
@@ -127,6 +129,17 @@ if bootstrap is not None:
             self.assertEqual(errored_view["text"], "partial")
             self.assertEqual(errored_view["status"], "errored")
             self.assertEqual(errored_view["error_message"], "timeout")
+
+        def test_current_streaming_snapshot_returns_copy(self) -> None:
+            GPTState.last_streaming_snapshot = {"text": "abc", "errored": False}
+            snap = current_streaming_snapshot()
+            self.assertEqual(snap, {"text": "abc", "errored": False})
+            # Mutating the returned snapshot should not affect GPTState.
+            snap["text"] = "mutated"
+            self.assertEqual(
+                getattr(GPTState, "last_streaming_snapshot", {}),
+                {"text": "abc", "errored": False},
+            )
 
 
 else:

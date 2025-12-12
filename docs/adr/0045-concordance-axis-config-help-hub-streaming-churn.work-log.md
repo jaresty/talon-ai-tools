@@ -1512,6 +1512,51 @@ Focus (kind: status/completion): Run a fresh adversarial completion check with e
 ### Decision
 - ADR-0045 is complete for this repo and parked; no further loops unless a new task/regression with a trigger is recorded.
 
+## 2025-12-11 – ADR-0045 status update (reopen with follow-up tasks)
+
+Focus (kind: status/task-state): Record new follow-up tasks (trigger: user request 2025-12-11) and set ADR status to In Progress accordingly.
+
+### Changes (artefacts: ADR status/tasks)
+- Updated ADR status to “In Progress (follow-up tasks logged 2025-12-11)”.
+- Added follow-up tasks with trigger noted (user request 2025-12-11) for:
+  - Axis/static completeness governance (promote vs. keep free-form hints).
+  - Help hub vs. quick-help navigation alignment.
+  - Pattern debug richer views/filters.
+  - Additional streaming snapshot consumers (e.g., recap overlays).
+
+### Trigger
+- User-requested continuation of ADR-0045 follow-ups (2025-12-11); no failing tests or external defects cited.
+
+### Evidence (fresh tests)
+- Command (exit 0): `python3 -m pytest _tests/test_request_streaming.py _tests/test_model_response_canvas.py _tests/test_static_prompt_completeness_hints.py`
+- Observables: confirms existing streaming, canvas, and completeness guardrails remain green after status/task updates.
+
+### Follow-ups
+- Execute the new follow-up tasks in subsequent loops or re-park if later deemed out-of-scope with evidence/triggers.
+
+## 2025-12-11 – ADR-0045 completion check (status)
+
+Focus (kind: status/completion): Run an adversarial completion check with triggers/evidence and mark ADR-0045 complete for this repo.
+
+### Changes (artefacts: ADR status/tasks)
+- Status set to “Accepted (in-repo complete as of 2025-12-11)”.
+- Salient Tasks updated with decisions for prior follow-ups (completeness governance kept free-form; hub vs quick-help remains separate; pattern debug views deemed sufficient; streaming snapshot helper exposed; no further consumers requested).
+
+### Adversarial check
+- Plausible gaps and disposition (with triggers/evidence):
+  - Streaming consumers beyond current surfaces: no failing tests or requests; would require a new task with a specific consumer trigger. Guardrails in place, plus `current_streaming_snapshot` façade for future use.
+  - Completeness hints beyond allowlist: allowlist is SSOT and test-backed; any new hint must be added with explicit trigger/task; no current trigger.
+  - Pattern debug richer views/filters: coordinator + GUI action already in place; no trigger or request; would be new feature work.
+  - Help hub vs quick-help unification: current separation is façade-backed and tested; no trigger to unify; would be new UX request.
+- No open subtasks remain; any new work requires a new task/regression entry with a trigger.
+
+### Evidence (fresh tests this loop)
+- Command (exit 0): `python3 -m pytest _tests/test_request_streaming.py _tests/test_model_response_canvas.py _tests/test_static_prompt_completeness_hints.py _tests/test_streaming_coordinator.py`
+- Observables: streaming, canvas, completeness, and streamingCoordinator guardrails remain green after status/task updates.
+
+### Decision
+- ADR-0045 is complete for this repo; parked unless a new task/regression with a trigger is recorded.
+
 ## 2025-12-11 – Streaming Response & Snapshot slice – mid-SSE cancel snapshot guardrail
 
 Focus (kind: guardrail/tests): Ensure mid-stream cancellation marks streaming snapshots as errored while preserving partial text, per ADR-0045.
@@ -1526,3 +1571,21 @@ Focus (kind: guardrail/tests): Ensure mid-stream cancellation marks streaming sn
 
 ### Follow-ups
 - None; streaming snapshots now cover mid-stream cancel alongside happy path, timeout, HTTP error, stubbed cancel, and non-stream reset.
+
+## 2025-12-11 – Streaming Response & Snapshot slice – snapshot accessor for other surfaces
+
+Focus (kind: behaviour/guardrail): Expose the current streaming snapshot via a small façade helper so other surfaces can consume it without touching GPTState directly.
+
+### Changes (artefacts: `lib/streamingCoordinator.py`, `_tests/test_streaming_coordinator.py`)
+- Added `current_streaming_snapshot()` to return a copy of `GPTState.last_streaming_snapshot` for downstream consumers.
+- Added `test_current_streaming_snapshot_returns_copy` to guard the helper and ensure callers cannot mutate GPTState indirectly.
+- Removal test: reverting would force surfaces to reach into GPTState directly or duplicate snapshot access, making future consumers riskier.
+
+### Trigger
+- Follow-up task (user request 2025-12-11) to make streaming snapshots available to other surfaces (e.g., recap overlays) through a façade.
+
+### Checks
+- Command (exit 0): `python3 -m pytest _tests/test_streaming_coordinator.py`
+
+### Follow-ups
+- Potential consumers (recap overlays, etc.) can now use the helper; no further changes needed unless we wire new surfaces.

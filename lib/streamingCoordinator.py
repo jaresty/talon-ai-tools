@@ -121,3 +121,15 @@ def canvas_view_from_snapshot(snapshot: Dict[str, Any]) -> Dict[str, Any]:
         "status": status,
         "error_message": error_message,
     }
+
+
+def current_streaming_snapshot() -> Dict[str, Any]:
+    """Return the current GPTState streaming snapshot (if any) as a copy."""
+
+    try:
+        from .modelState import GPTState
+
+        snap = getattr(GPTState, "last_streaming_snapshot", {}) or {}
+        return dict(snap)
+    except Exception:
+        return {}

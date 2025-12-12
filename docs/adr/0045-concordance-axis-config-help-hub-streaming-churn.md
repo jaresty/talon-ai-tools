@@ -1,5 +1,5 @@
 # ADR-0045 – Concordance – Axis Config, Help Surfaces, and Streaming Churn
-Status: In Progress (follow-up tasks logged 2025-12-11)  
+Status: Accepted (in-repo complete as of 2025-12-11)  
 Date: 2025-12-11  
 Owners: Talon AI tools maintainers
 
@@ -283,13 +283,13 @@ For each domain, we will:
     - `modelPrompt` behaviour is characterised so that static prompt profile axes flow into `GPTState.last_axes` when no spoken modifiers override them.
     - `static_prompt_description_overrides()` and `static_prompt_catalog()` now act as the primary docs/README-facing facades for static prompt descriptions and catalog structure.
     - Completeness hints are governed by axis tokens or a small allowed free-form set (for example, `path`), guarded by tests so new hints are explicit and the allowlist is centralised in `completeness_freeform_allowlist()`.
-  - No remaining in-repo tasks; completeness hints that are not axis tokens remain intentionally free-form and are covered by existing catalog/profile guardrails and doc/tests alignment.
+  - Follow-up task logged below to revisit completeness hint governance if new hints are requested.
 
 - **Help Navigation & Quick-Help**
   - In-repo behaviour/guardrails:
     - Help Hub navigation already delegates search/focus to `helpDomain` helpers, with tests characterising keyboard navigation and result focus.
     - Hub buttons that open other overlays (Quick help, Patterns, History, HTML docs, Suggestions) now close the hub before opening the target surface, with tests guarding this close-before-open behaviour.
-  - No remaining in-repo tasks; quick-help intentionally remains a focused surface separate from hub navigation, with existing tests covering both.
+  - Follow-up task logged below to revisit hub vs. quick-help alignment if requested.
 
 - **Pattern Debug & GPT Action Orchestration**
   - In-repo behaviour/guardrails:
@@ -331,11 +331,13 @@ For each domain, we will:
   - [x] Map current uses of `axisConfig`, `axisMappings`, `staticPromptConfig`, and `static_prompt_catalog` across libs, GUIs, Talon lists, and docs.
   - [x] Introduce or tighten small catalog/facade APIs that expose axis and static prompt semantics to docs, help, and Talon settings (for example, `static_prompt_catalog`, `static_prompt_description_overrides`, and `static_prompt_settings_catalog`).
   - [x] Adopt these facades in Talon settings and GUI/help surfaces where appropriate, and add/extend tests to characterise cross-surface behaviour and consistency (for example, `modelPrompt` / `GPTState.last_axes` alignment with `static_prompt_settings_catalog`, and quick-help static prompt focus using the shared catalog).
+  - [x] Follow-up (trigger: user request 2025-12-11): Decision: keep completeness hints free-form beyond the allowlist unless explicitly promoted via new ADR/task; allowlist is centralised and test-backed.
 
 - **Help Navigation & Quick-Help**
   - [x] Extract navigation state and keyboard/mouse contracts into a dedicated help navigation façade (via `helpDomain` helpers such as `help_focusable_items`, `help_next_focus_label`, `help_activation_target`, and `help_edit_filter_text`).
   - [x] Update help hub and help canvas to use the façade for navigation while keeping rendering logic local (for example, `helpHub.focusable_items_for`, `_next_focus_label`, `_focus_step`, and `_activate_focus` delegating into `helpDomain`).
   - [x] Add façade-focused tests and extend existing help/canvas tests to cover key navigation flows (for example, `_tests/test_help_hub.py` focus/activation and filter/edit tests, plus `_tests/test_model_help_canvas.py` quick-help behaviours).
+  - [x] Follow-up (trigger: user request 2025-12-11): Decision: keep hub and quick-help navigation separate; existing façade/tests cover both; revisit only if a new UX request arrives.
 
 - **Pattern Debug & GPT Action Orchestration**
   - [x] Design and implement a pattern debug coordinator that replaces ad hoc `_debug` entrypoints for non-GUI flows (via `pattern_debug_snapshot` and `pattern_debug_catalog`).
@@ -345,6 +347,7 @@ For each domain, we will:
     - [x] Defines the minimal coordinator-facing API needed by those flows (for example, which snapshot fields they consume and how results are rendered, via `pattern_debug_view` in `patternDebugCoordinator`).
     - [x] Migrates at least one representative GUI debug flow to call the coordinator instead of a local `_debug` helper, with focused tests characterising that integration (via `UserActions.model_pattern_debug_name` using `pattern_debug_view`).
     - [x] Extends or adds tests around remaining GUI debug flows as they are migrated in follow-up loops, until they either use the coordinator or are explicitly documented as out-of-scope (no additional user-facing GUI debug flows beyond `UserActions.model_pattern_debug_name`; remaining `_debug` calls are internal logging only; see work-log reconciliation entry).
+  - [x] Follow-up (trigger: user request 2025-12-11): Decision: no additional pattern debug views/filters required now; future UX would be a new ADR/task.
 
 - **Streaming Response & Snapshot Resilience**
   - [x] Design a small streaming/snapshot façade (for example, a `streamingCoordinator`) around `_send_request_streaming` that owns accumulation and error-handling policies for a single request, without rewiring call sites yet.
@@ -356,3 +359,4 @@ For each domain, we will:
     - [x] Updates at least one focussed response-canvas test to exercise this adapter path in a happy-path streaming scenario while keeping existing expectations green (via `_tests/test_model_response_canvas.py::test_inflight_canvas_passes_snapshot_to_streaming_adapter`).
     - [x] Extends tests (for example, `_tests/test_model_response_canvas.py` and streaming-related tests) to cover any new error or partial-response behaviours introduced by the façade wiring in follow-up loops (via `test_inflight_canvas_passes_snapshot_to_streaming_adapter` and `test_error_canvas_passes_errored_snapshot_to_streaming_adapter`).
   - [x] Thread snapshot/file/log writes (`_save_source_snapshot_to_file`, `modelDestination`, `requestLog`/`requestHistoryActions`) through the axis/recipe façade (`last_recipe_snapshot` / `recipe_header_lines_from_snapshot`) and axis filtering helpers, with existing tests in `_tests/test_gpt_source_snapshot.py`, `_tests/test_model_destination.py`, `_tests/test_request_log.py`, and `_tests/test_request_history_actions.py` guarding the contracts.
+  - [x] Follow-up (trigger: user request 2025-12-11): Expose `last_streaming_snapshot` via a façade helper (`current_streaming_snapshot`) for additional surfaces (e.g., recap overlays) and add guardrail tests; no further consumers requested.

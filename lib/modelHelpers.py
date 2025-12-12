@@ -157,7 +157,6 @@ def _refresh_response_canvas() -> None:
 
 def _update_stream_state_from_text(
     full_text: str,
-    *,
     meta_throttle_ms: Optional[int] = None,
     last_meta_update_ms: Optional[list[int]] = None,
 ) -> None:
@@ -165,6 +164,8 @@ def _update_stream_state_from_text(
     Normalise the in-flight streaming buffer so:
     - GPTState.text_to_confirm holds only the main answer body (meta removed).
     - GPTState.last_meta is kept in sync as soon as a meta section appears.
+    - GPTState.last_streaming_snapshot["text"] mirrors the meta-stripped answer
+      so canvas progress views never briefly show meta inside the main body.
 
     This keeps the response canvas layout stable while streaming, avoiding a
     late jump when the finished response is split into answer/meta.
@@ -182,6 +183,28 @@ def _update_stream_state_from_text(
 
         answer, meta = split_answer_and_meta(full_text)
         GPTState.text_to_confirm = answer
+
+        # Keep the streaming snapshot text aligned with the meta-stripped
+        # answer so any canvas using the snapshot (for example, the response
+        # viewer's inflight progress path) does not briefly render the meta
+        # section as part of the main response.
+        try:
+            snap = getattr(GPTState, "last_streaming_snapshot", None)
+        except Exception:
+            snap = None
+        if isinstance(snap, dict):
+            updated = dict(snap)
+            if answer:
+                updated["text"] = answer
+            else:
+                # Preserve whatever text was already present when we don't have
+                # a better split (for example, when the buffer is empty).
+                updated["text"] = str(updated.get("text", ""))
+            try:
+                GPTState.last_streaming_snapshot = updated
+            except Exception:
+                pass
+
         if meta:
             if meta_throttle_ms is not None and last_meta_update_ms is not None:
                 now_ms = int(time.time() * 1000)
@@ -376,7 +399,9 @@ def _ensure_request_supported(provider: ProviderConfig, request: dict) -> None:
         except Exception:
             continue
     if requires_vision and not provider.features.get("vision", False):
-        _show_provider_error("Vision not supported for this provider", provider.id, provider.api_key_env)
+        _show_provider_error(
+            "Vision not supported for this provider", provider.id, provider.api_key_env
+        )
         raise UnsupportedProviderCapability(provider.id, "vision")
 
 

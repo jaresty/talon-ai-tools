@@ -107,9 +107,17 @@ def canvas_view_from_snapshot(snapshot: Dict[str, Any]) -> Dict[str, Any]:
     This helper does not depend on UI types. It provides a stable shape
     for response canvases and tests to consume `StreamingRun.snapshot()`
     output without depending on the full snapshot structure.
+
+    It also mirrors the confirmation/recap behaviour by stripping any
+    trailing "Model interpretation" meta section from the text payload,
+    so canvas consumers never briefly render meta inside the primary
+    answer body while streaming.
     """
 
-    text = str(snapshot.get("text") or "")
+    from .modelHelpers import split_answer_and_meta
+
+    raw_text = str(snapshot.get("text") or "")
+    text, _meta = split_answer_and_meta(raw_text)
     completed = bool(snapshot.get("completed"))
     errored = bool(snapshot.get("errored"))
     error_message = str(snapshot.get("error_message") or "")

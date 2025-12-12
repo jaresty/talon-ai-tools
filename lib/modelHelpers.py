@@ -7,6 +7,7 @@ All functions in this file have impure dependencies on either the model or the T
 import base64
 import json
 import os
+import re
 import traceback
 import time
 import codecs
@@ -212,16 +213,11 @@ def split_answer_and_meta(text: str) -> tuple[str, str]:
     lines = text.split("\n")
     split_index = None
 
+    heading_pattern = re.compile(r"^\s*#+\s*model interpretation\b", re.IGNORECASE)
     for idx, line in enumerate(lines):
-        stripped = line.lstrip()
-        if stripped.startswith("#"):
-            # Require an explicit "Model interpretation" heading so we don't
-            # accidentally split on unrelated headings that happen to contain
-            # the word "interpretation".
-            heading_text = stripped.lstrip("#").strip().lower()
-            if heading_text == "model interpretation":
-                split_index = idx
-                break
+        if heading_pattern.match(line):
+            split_index = idx
+            break
 
     if split_index is None:
         return text, ""

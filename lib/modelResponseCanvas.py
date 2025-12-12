@@ -76,6 +76,21 @@ def _current_request_state() -> RequestState:
         return RequestState()
 
 
+def _reset_meta_if_new_signature(
+    recipe_snapshot: dict[str, object], recap_snapshot: dict[str, str]
+) -> None:
+    """Collapse meta when a new response/meta/recipe arrives."""
+    global _last_meta_signature
+    signature = (
+        str(recap_snapshot.get("response", "")),
+        str(recap_snapshot.get("meta", "")),
+        str(recipe_snapshot.get("recipe", "")),
+    )
+    if signature != _last_meta_signature:
+        ResponseCanvasState.meta_expanded = False
+        _last_meta_signature = signature
+
+
 _response_canvas: Optional[canvas.Canvas] = None
 _response_draw_handlers: list[Callable] = []
 _response_button_bounds: dict[str, tuple[int, int, int, int]] = {}
@@ -85,6 +100,9 @@ _response_hover_button: Optional[str] = None
 _response_mouse_log_count: int = 0
 _response_handlers_registered: bool = False
 _last_recap_log: Optional[tuple[str, str, str, str, str, str]] = None
+# Track the last rendered recap/meta tuple so meta is collapsed when a new
+# response arrives (prevents stale expanded meta on subsequent runs).
+_last_meta_signature: Optional[tuple[str, str, str]] = None
 
 
 def _coerce_text(value) -> str:
@@ -663,6 +681,8 @@ def _default_draw_response(c: canvas.Canvas) -> None:  # pragma: no cover - visu
     # axis fields when available so we keep this recap concise and
     # token-based even if older code paths stored a verbose last_recipe.
     recipe_snapshot = last_recipe_snapshot()
+    recap_snapshot = last_recap_snapshot()
+    _reset_meta_if_new_signature(recipe_snapshot, recap_snapshot)
     recipe = recipe_snapshot.get("recipe", "") or ""
     static_prompt = recipe_snapshot.get("static_prompt", "") or ""
     axes_tokens = {
@@ -762,7 +782,7 @@ def _default_draw_response(c: canvas.Canvas) -> None:  # pragma: no cover - visu
             hydrated_parts.append(f"St: {_hydrate_axis('style', last_style)}")
 
     # Optional diagnostic meta section and toggle under the recap.
-    meta = last_recap_snapshot().get("meta", "").strip()
+    meta = recap_snapshot.get("meta", "").strip()
     parsed_meta: Optional[dict] = None
     meta_summary: str = ""
     if meta:
@@ -1085,7 +1105,7 @@ def _default_draw_response(c: canvas.Canvas) -> None:  # pragma: no cover - visu
 
     text_to_confirm_raw = getattr(GPTState, "text_to_confirm", "")
     text_to_confirm = _coerce_text(text_to_confirm_raw)
-    last_response = _coerce_text(last_recap_snapshot().get("response", ""))
+    last_response = _coerce_text(recap_snapshot.get("response", ""))
     use_streaming_text = streaming_text and (
         (inflight and prefer_progress)
         or streaming_errored

@@ -63,6 +63,29 @@ if bootstrap is not None:
             # With no response/meta, opening is a no-op.
             self.assertFalse(ResponseCanvasState.showing)
 
+        def test_meta_collapses_on_new_recap_signature(self) -> None:
+            """Expanded meta should reset when a new response/meta is rendered."""
+            ResponseCanvasState.meta_expanded = True
+            modelResponseCanvas._last_meta_signature = ("old", "old_meta", "old_recipe")  # type: ignore[attr-defined]
+            GPTState.last_response = "new response text"
+            GPTState.last_meta = "meta block"
+            GPTState.last_recipe = "new recipe"
+            canvas_obj = _ensure_response_canvas()
+            if not hasattr(canvas_obj, "rect") or canvas_obj.rect is None:
+                canvas_obj.rect = type(
+                    "R", (), {"x": 0, "y": 0, "width": 500, "height": 400}
+                )()
+            callbacks = getattr(canvas_obj, "_callbacks", {})
+            draw_cbs = callbacks.get("draw") or []
+            for cb in draw_cbs:
+                cb(canvas_obj)
+
+            self.assertFalse(ResponseCanvasState.meta_expanded)
+            self.assertEqual(
+                modelResponseCanvas._last_meta_signature,  # type: ignore[attr-defined]
+                ("new response text", "meta block", "new recipe"),
+            )
+
         def test_open_allows_inflight_progress_without_answer(self) -> None:
             GPTState.last_response = ""
             _ensure_response_canvas()

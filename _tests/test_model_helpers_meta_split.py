@@ -73,6 +73,31 @@ if bootstrap is not None:
             self.assertEqual(answer, text)
             self.assertEqual(meta, "")
 
+        def test_splits_when_heading_has_suffix_text(self) -> None:
+            text = (
+                "Body\n"
+                "## Model interpretation- Interpretation: details\n"
+                "Meta content"
+            )
+
+            answer, meta = split_answer_and_meta(text)
+
+            self.assertEqual(answer.strip(), "Body")
+            self.assertIn("Model interpretation", meta)
+            self.assertIn("Meta content", meta)
+
+        def test_splits_when_heading_has_dash_and_suffix(self) -> None:
+            text = (
+                "Body\n"
+                "  ###   Model interpretation- Intended intent: something\n"
+                "Meta content\n"
+            )
+
+            answer, meta = split_answer_and_meta(text)
+
+            self.assertEqual(answer.strip(), "Body")
+            self.assertTrue(meta.strip().startswith("###   Model interpretation"))
+
 else:
     if not TYPE_CHECKING:
         class SplitAnswerAndMetaTests(unittest.TestCase):

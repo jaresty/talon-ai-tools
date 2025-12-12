@@ -1,5 +1,5 @@
 # ADR-0045 – Concordance – Axis Config, Help Surfaces, and Streaming Churn
-Status: Proposed  
+Status: In Progress (follow-up tasks logged 2025-12-11)  
 Date: 2025-12-11  
 Owners: Talon AI tools maintainers
 
@@ -282,16 +282,14 @@ For each domain, we will:
     - Guardrail tests enforce that profiled static prompt axes (scope/method/style/directional) use valid `axisConfig` tokens.
     - `modelPrompt` behaviour is characterised so that static prompt profile axes flow into `GPTState.last_axes` when no spoken modifiers override them.
     - `static_prompt_description_overrides()` and `static_prompt_catalog()` now act as the primary docs/README-facing facades for static prompt descriptions and catalog structure.
-  - Remaining work for this repo:
-    - Introduce a slightly higher-level catalog/facade API (built on the current helpers) and tighten Talon settings / GUI consumers to use it consistently.
-    - Decide how completeness hints that are not present in `axisConfig` should be handled (pure hints vs. promoted axis tokens) and update tests/docs accordingly.
+    - Completeness hints are governed by axis tokens or a small allowed free-form set (for example, `path`), guarded by tests so new hints are explicit and the allowlist is centralised in `completeness_freeform_allowlist()`.
+  - No remaining in-repo tasks; completeness hints that are not axis tokens remain intentionally free-form and are covered by existing catalog/profile guardrails and doc/tests alignment.
 
 - **Help Navigation & Quick-Help**
   - In-repo behaviour/guardrails:
     - Help Hub navigation already delegates search/focus to `helpDomain` helpers, with tests characterising keyboard navigation and result focus.
     - Hub buttons that open other overlays (Quick help, Patterns, History, HTML docs, Suggestions) now close the hub before opening the target surface, with tests guarding this close-before-open behaviour.
-  - Remaining work for this repo:
-    - Decide whether quick-help should share a small navigation façade with Help Hub (for example, for focus movement), or remain a separate, focused surface with its own state.
+  - No remaining in-repo tasks; quick-help intentionally remains a focused surface separate from hub navigation, with existing tests covering both.
 
 - **Pattern Debug & GPT Action Orchestration**
   - In-repo behaviour/guardrails:
@@ -299,8 +297,7 @@ For each domain, we will:
     - `pattern_debug_catalog()` in `patternDebugCoordinator` exposes a coordinator-style catalog of pattern debug snapshots (optionally filtered by domain), built on `pattern_debug_snapshot`.
     - `UserActions.gpt_show_pattern_debug` surfaces a concise, user-facing pattern debug view by querying the coordinator and rendering a short recipe line plus last-axes payload.
     - GPT action tests around async blocking and meta notifications now directly guard the `actions.app.notify` contract.
-  - Remaining work for this repo:
-    - Decide how far to extend the Pattern Debug coordinator (for example, adding a "last run" view or richer filters) and whether any GUI flows should consume it directly instead of relying on local helpers like `_debug`.
+  - Follow-up tasks logged below for richer views/filters if requested.
 
 - **Streaming Response & Snapshot Resilience**
   - In-repo behaviour/guardrails:
@@ -308,9 +305,8 @@ For each domain, we will:
     - Source and destination snapshots have tests for headers and slugs that encode axis/static-prompt context and source type, built on the shared `last_recipe_snapshot()` / `recipe_header_lines_from_snapshot()` façade in `suggestionCoordinator`.
     - The `max_attempts` non-streaming failure path in `send_request` is explicitly tested to mark the lifecycle as `errored` and raise a clear error.
     - Request history entries in `requestLog` now store token-only axis state filtered through `axisMappings`, dropping obviously hydrated axis descriptions before logging, with tests guarding this behaviour.
-    - A small `streamingCoordinator` façade (`StreamingRun` plus helpers) now exists as a test-backed accumulator for per-request streaming state, and `_send_request_streaming` uses `StreamingRun` as its in-memory accumulator while preserving existing canvas and lifecycle behaviour. Streaming snapshots are stored on `GPTState.last_streaming_snapshot` and normalised for UI via `canvas_view_from_snapshot`, and the response canvas now prefers this façade for inflight and errored states.
-  - Remaining work for this repo:
-    - Evaluate whether any other UI surfaces need the streaming snapshot view (for example, recap overlays) and extend error-state rendering if required.
+    - A small `streamingCoordinator` façade (`StreamingRun` plus helpers) now exists as a test-backed accumulator for per-request streaming state, and `_send_request_streaming` uses `StreamingRun` as its in-memory accumulator while preserving existing canvas and lifecycle behaviour. Streaming snapshots are stored on `GPTState.last_streaming_snapshot` and normalised for UI via `canvas_view_from_snapshot`, and the response canvas now prefers this façade for inflight, errored, and completed states. Snapshots are cleared on non-stream runs to avoid stale state, and guardrails cover happy path, SSE, timeout, cancel, HTTP error, and non-stream reset flows.
+    - No remaining in-repo guardrails; other surfaces can consume `last_streaming_snapshot` if new UX needs appear. Future changes are tracked as follow-up tasks below.
 
 ## Consequences
 - **Positive outcomes**

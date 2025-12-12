@@ -3,26 +3,45 @@
 This helper describes a simple, repeatable loop for making progress on ADRs.
 It is **not** an ADR itself and is intentionally ADR‑agnostic.
 
-When asked to “run an ADR loop/execute iteration using this helper”, follow
-the steps below to deliver one **substantial, concrete slice** of work that
-advances an ADR’s own objectives in this repo. It is also valid to discover
-that there is no substantial work left for a given ADR and report that fact.
+When asked to “run an ADR loop/execute iteration using this helper”, deliver
+one **substantial, concrete slice** that changes an observable artefact
+(code/tests/docs/config) or ADR task/status. If you find no safe slice,
+record the blocker instead of writing a no-delta loop.
 
 The caller may either:
 - Specify the target ADR explicitly (for example, by id), or
 - Ask the assistant to choose an appropriate ADR autonomously.
 
 When using this helper:
-- Keep reasoning and status updates **concise and high‑signal**.
-  - Summarise the plan, what you changed, and what remains.
-  - Avoid narrating each inspection step (for example, which file you are
-    about to open or which search you will run) unless it affects a
-    decision.
-- Focus on external artefacts (code, tests, docs, work‑logs, ADR metadata),
-  not on describing your internal thought process in detail.
-- By default, prefer **behaviour‑changing slices** that touch multiple parts
-  of the system; use narrow or status‑only loops only when a broader slice
-  is clearly unsafe or blocked.
+- Keep outputs concise and high‑signal: what slice, what changed, what
+  remains. Focus on artefacts, not narration.
+- Every loop entry must cite at least one touched or inspected artefact path
+  (code/tests/docs/config) and, for status/task changes, the specific
+  task/status field changed; absence of such pointers is non‑compliant.
+- When citing artefacts or checks, include how they were gathered in this loop:
+  test command and exit result (if any), or file/section re-read. Self‑report
+  without these details is non‑compliant.
+  - Include a short snippet (or checksum) from command output or the changed
+    section for each cited check where feasible; if omitted, state why and
+    treat the loop as non-compliant if the omission blocks confidence.
+    Absence of any artefact for cited checks must be called out explicitly.
+- Choose the smallest slice that moves ADR objectives and yields an
+  observable change. If reverting it wouldn’t change behaviour, tests,
+  docs contract, or task/status (e.g., a test outcome, user-facing contract,
+  or ADR task/status entry), pick a different slice.
+- Status-only is valid only when a behaviour slice is unsafe this loop and
+  you record the blocker; otherwise land a behavioural/guardrail/doc slice.
+- Each loop must produce a concrete delta: modify code/tests/docs/config
+  **or** change task/status state in the ADR/work‑log (complete/out‑of‑repo
+  with evidence). Zero‑delta loops are non‑compliant.
+- If you cannot identify a compliant delta for a loop, do not write a status
+  entry; instead, add a short blocker note to the ADR/work‑log explaining why
+  a new task or clarity is needed before proceeding, and log the observable
+  trigger (failing test id/output, bug/ticket, external request) if one
+  exists.
+  - Do not repeat “parked”/blocker entries: once parked, your only options are
+    to (a) record a new task/regression with its trigger and run a behaviour
+    slice, or (b) run a fresh adversarial completion check to mark status.
 - Once you have chosen a slice for this loop, **commit to it**, but be
   willing to abandon it and pick a clearer, more meaningful slice if you
   discover the original is too small or not worth doing.
@@ -63,6 +82,9 @@ When using this helper:
   - Exercises the highest‑coordination or highest‑risk area the ADR identifies as important or risky (and that already has sufficient test coverage), or
   - Retires a clearly‑defined ADR task end‑to‑end with minimal ambiguity.
   Ask the caller to prioritise only when there is an explicit external constraint (for example, "do not touch streaming this week") or when there is a genuine cross‑ADR product/business priority call you cannot infer from code, tests, and ADR text alone—not merely because multiple subtasks exist.
+- If the ADR is parked (all tasks complete) and no new task/regression has been
+  recorded in the ADR/work-log before this loop, do not run or log a loop.
+  Zero‑delta “status confirmations” are non‑compliant.
 - If, after scanning a specified ADR and its work‑log, you believe there is no
   substantial, in‑repo work remaining for this ADR in this repo (for example,
   status is Accepted and there are no clearly remaining in‑repo tasks or
@@ -90,54 +112,38 @@ When using this helper:
 
 For the chosen ADR and focus area:
 
-- Re‑read the ADR and its work‑log to understand:
-  - The ADR’s stated objectives and remaining tasks in this repo.
-  - Any existing decisions about scope, exclusions, or deferrals.
-- Open or create the ADR’s work‑log file
-  (for example, `0118-example-adr.work-log.md`) and add a dated heading for
-  this loop.
-- Decide on **one coherent slice** that moves the ADR forward.
-  - You can describe the slice clearly.
-  - You can land it end-to-end (code/tests/docs as needed) in a single loop.
-  - You are not leaving behaviour half-migrated with no clear follow-up.
-  - "Bounded" means *finishable in this loop*, not "small"—multi-module or multi-surface slices are encouraged when you can still implement and validate them safely end-to-end.
-
-Common patterns (not exhaustive) include:
-
-  - Implementing or extending a behaviour or workflow the ADR calls for.
-  - Simplifying or refactoring code the ADR identifies as a high-impact area.
-  - Adding or tightening a guardrail the ADR requires.
-  - Adding or improving tests or documentation when the ADR explicitly calls
-    for them, or when they are clearly needed to make the planned change
-    safe.
-  - Reconciling the ADR's stated tasks and scope
-    with its current work-log and repo state
-    (for example, marking tasks as out-of-scope
-    for this repo, splitting overly broad tasks,
-    or adding a concise "Current status" summary).
-- As a rule of thumb, prefer slices that:
-  - Change behaviour or configuration and exercise it with tests or representative runs, and/or
-  - Update multiple ADR touchpoints together (for example, config + tests + docs), whether the slice is narrow or broad in scope, rather than microscopic, single-line edits.
-- Do **not** assume every slice must combine behaviour and tests. Choose
-  the slice that best advances the ADR's objectives; use tests and other
-  checks as strategies to make those changes safe.
-- Documentation- or status-only slices should be **rare**. Use them only when:
-  - You cannot safely land a behaviour slice in this loop *after* attempting to decompose it, **and** you:
-    - Propose at least one concrete candidate behaviour slice for this ADR in the work-log (naming the module/function or workflow you would change). This candidate must be a minimal, single-loop behaviour slice for the focus area, not an obviously oversized "rewrite everything" task when smaller subtasks already exist, and
-    - Record one or more concrete blocking conditions for that slice (for example, missing fixtures, failing tests that must be fixed first, an explicit external constraint, or unclear cross-ADR scope). When using "unclear scope" as a blocker, also add a follow-up task to clarify or split that scope (for example, via a new ADR or decomposition slice), **or**
-  - You are reconciling ADR tasks/status with already-landed work and can point to concrete evidence (tests, code, docs) that all in-repo objectives are effectively complete.
-  In all other cases, prefer behaviour/refactor/guardrail slices.
-- If you cannot find a safe behaviour slice, first try a small **decomposition** slice (splitting a broad ADR task into concrete, testable subtasks) before falling back to a pure status loop, and record those subtasks explicitly in the work-log.
-- Before claiming there is "no substantial in-repo work remaining" for an ADR, run an adversarial check in the work-log entry:
-  - List at least one area or task the ADR names that you *could* plausibly touch.
-  - Explain why each is unsafe or too large for this loop (for example, requires a multi-ADR design change, or would leave behaviour half-migrated).
-  - For tasks that are genuinely multi-loop or multi-surface design/refactor work, make that scope explicit *inside this ADR* by:
-    - Introducing a short **subproject** or subsection that names the larger goal and breaks it into smaller, concrete, testable subtasks.
-    - Ensuring at least one of those subtasks is small enough to complete safely in a single loop (behaviour or guardrail/tests), leaving the rest as clearly-labelled follow-up subtasks under the same ADR.
-  - Keep those subproject subtasks in the ADR's own task/status sections so repeated loops can retire them one by one without pretending the overarching goal fits into a single loop.
-  - When such a subproject already lists concrete subtasks and there is no explicit external constraint, treat those subtasks as the default pool for the next loop and pick one yourself as the focus slice, rather than asking the caller which to choose.
-  - Skipping all such subtasks in a loop is only acceptable when you also record in that loop’s work-log entry why each remaining subtask is temporarily blocked or no longer a safe single-loop slice.
-- Always tag each loop in the ADR work-log as `kind: behaviour`, `kind: guardrail/tests`, or `kind: status` so the balance of slice types stays visible over time.
+- Re‑read the ADR and work‑log for objectives, tasks, scope/deferrals.
+- Add a dated heading to the ADR work‑log for this loop.
+- Pick one coherent, finishable slice that yields an observable change. If you
+  cannot, log a blocker instead of forcing a loop.
+- Use the removal test: if reverting your slice wouldn’t change behaviour,
+  tests, docs contract, or task/status, choose a different slice.
+- Status/documentation-only is acceptable only when a behaviour slice is
+  unsafe now and you record the blocker plus at least one concrete candidate
+  behaviour slice for later.
+  - Do not run status-only loops back-to-back; only run one after at least one
+  behaviour/guardrail/tests loop since the last status-only, unless a newly
+  recorded task/regression (added to the ADR/work-log before the loop)
+  justifies it.
+  - The intervening behaviour/guardrail/tests loop must itself satisfy the
+  removal test (its reversion would change behaviour/tests/docs/task/status),
+  not just a trivial edit.
+- If no safe behaviour slice, decompose broad tasks into explicit, testable
+  subtasks and record them in the ADR before considering status-only.
+- Before claiming “no substantial in-repo work remains,” run an adversarial
+  check in the work‑log: name plausible tasks you could touch, why they’re
+  unsafe/too large now, and either split into subtasks or mark out-of-repo
+  with evidence. Keep subprojects/subtasks in the ADR so future loops can
+  retire them.
+  - Do not reuse the same evidence verbatim across loops; confirm fresh
+  inspection or test runs, and cite what was newly reviewed this loop. If
+  repeating a check, note what changed since the prior run or why repetition
+    was necessary, and point to an observable (failing test, log, contract)
+    that motivated the repeat when available. Prefer noting whether the
+    observed outcome changed versus the prior run (for example, pass→fail,
+    fail→pass, doc/task/state updated).
+- Tag the loop in the work‑log as `kind: behaviour`, `kind: guardrail/tests`,
+  or `kind: status`.
 
 
 ---
@@ -146,28 +152,44 @@ Common patterns (not exhaustive) include:
 
 Execute the slice end‑to‑end:
 
-- Make the necessary edits (code, tests, docs, or configuration) to satisfy
-  the chosen objective. By default, a loop should land at least one concrete
-  change in this repo; pure status loops are the exception, not the norm.
-- Run focused checks that exercise the affected area (for example, targeted
-  tests or a representative CLI/API call) to confirm behaviour.
-- If you discover that the ADR’s objectives are unclear, too broad, or
-  partly out‑of‑date for this area, prefer to:
-  - Clarify the intent in the ADR’s work‑log, and
-  - Implement the smallest safe subset that you can state clearly,
-  rather than silently redefining the ADR.
-- Before claiming that an ADR objective in this focus area is complete or
-  removed (that is, before you change `B_a` for this ADR), run the relevant
-  checks that cover this change (targeted tests at minimum, and broader
-  project checks when the change is wide‑ranging or high‑risk).
-- Then update the ADR work‑log entry for this loop with:
-  - The ADR id and focus area you chose.
-  - A brief summary of the concrete changes you made.
-  - Which ADR objectives or tasks you believe were retired or reduced.
-  - Any follow‑up tasks you discovered and did **not** complete in this loop.
+- Make the edits (code, tests, docs, config) to satisfy the objective. If the
+  behaviour slice is unsafe, log the blocker and the candidate slice instead
+  of forcing a status loop.
+- Run focused checks (targeted tests or representative runs) for the affected
+  area; cite what you ran or inspected and whether it was run/read in this
+  loop.
+- If objectives are unclear, clarify in the work‑log and land the smallest
+  safe subset you can state clearly.
+- Before marking an objective complete/removed, run the relevant checks.
+- When marking work out‑of‑repo/no‑longer‑required, state the task, cite a
+  boundary/constraint, point at current tests/docs/code, and, if possible,
+  note the expected owner/system; if no owner is identified, record that
+  explicitly. Avoid vague “future work” language.
+- Update the ADR work‑log entry with the ADR id/focus area, concrete changes,
+  objectives/tasks retired, follow-ups, and the artefact paths touched or
+  inspected. Include a brief removal test statement (what would change if
+  this loop were reverted) and the test command/exit or files/sections
+  reviewed this loop.
+- Avoid hollow artefact citations: note a substantive change or observation
+  (not whitespace/format-only) so reversion would alter behaviour/tests or
+  task/status. If the change is small, call out the specific observable it
+  affects (test expectation, contract wording, task/status) and tie it to a
+  test or explicit acceptance/contract reference when possible. Prefer
+  citing the specific test/contract id or assertion that would change if
+  reverted.
 - Each loop MUST do at least one of:
-  - Land a behaviour, refactor, guardrail, test, docs, or configuration change in this repo for the chosen ADR focus area that is non-trivial with respect to the ADR’s objectives (for example, not just formatting-only or rename-only changes unrelated to the behaviour being exercised), or
-  - Mark at least one ADR task or subtask as completed or explicitly out-of-repo with a short justification recorded in the ADR and/or its work-log, in line with the adversarial checks above.
+  - Land a behaviour, refactor, guardrail, test, docs, or configuration change
+    in this repo for the chosen ADR focus area that is non-trivial with
+    respect to the ADR’s objectives, or
+  - Mark at least one ADR task/subtask as completed or explicitly out-of-repo
+    with a short justification recorded in the ADR and/or its work-log, in
+    line with the adversarial checks above.
+  - Status-only loops are allowed only when they update tasks/status with
+    evidence, are not back-to-back, and are limited to one after at least one
+    behaviour/guardrail/tests loop unless driven by a newly recorded
+    task/regression (added to the ADR/work-log before the loop). If no
+    artefact delta is available, skip the loop. After parking an ADR, any new
+    loop must start by recording a new task/regression in the ADR/work‑log.
 
 The loop is complete once you have landed a coherent slice that:
 
@@ -193,9 +215,9 @@ loop:
 - Update the ADR's metadata (for example,
   `Status` and any remaining task lists) and/or
   work-log with a short "Current status" summary.
-- Before making a major status change (for example, marking an ADR as
-  effectively complete for this repo), you MUST first run an adversarial
-  completion check for that ADR in its work-log that:
+- Before making any major status change (for example, marking an ADR as
+  effectively complete for this repo), you MUST first run and record an
+  adversarial completion check for that ADR in its work-log that:
   - Restates the ADR’s original motivation and key objectives in this repo
     in your own words.
   - Lists at least one plausible way the ADR could still be incomplete or
@@ -203,11 +225,26 @@ loop:
     corresponding code, tests, or docs evidence).
   - For each plausible gap, either:
     - Add a concrete follow-up task or subtask in the ADR or work-log,
-      naming the module, workflow, or guardrail to change, **or**
+      naming the module, workflow, or guardrail to change, **and** include a
+      trigger (failing test id/output, bug/ticket, external request), **or**
     - Explain briefly, with pointers to evidence, why it is genuinely
-      out-of-scope or no longer required.
+      out-of-scope or no longer required for this repo; claiming “new feature”
+      is only acceptable when paired with a concrete trigger or external scope
+      decision. Unsupported “new feature” labels are non-compliant.
   - Confirms which remaining in-scope items (if any) are still required
     for this repo and records them as explicit follow-up tasks.
+  - Use fresh evidence for this completion check: rerun targeted tests in
+    this loop or re-read relevant modules today, citing what was run or
+    inspected and whether it was done in this loop. If no tests are rerun,
+    cite the specific files/sections reviewed. Reusing only prior checks is
+    non-compliant; record the actual commands/outputs or file sections
+    inspected. The adversarial check itself must be rigorous (plausible gaps,
+    evidence, and dispositions recorded, not cursory). A completion check is
+    valid only if it produces an artefact delta (for example, updated
+    tasks/status) and the ADR is not parked without a new recorded
+    task/regression; otherwise skip and do not log a completion entry. Do not
+    change status without a recorded adversarial completion check that meets
+    these criteria.
 - You MUST NOT mark the ADR as effectively complete for this repo while any
   of those required in-scope follow-up tasks remain open; they represent
   remaining `B_a` and must be completed or explicitly reclassified as
@@ -217,6 +254,14 @@ loop:
   explicitly left for future loops, run the project's usual gating checks
   (tests, lint, type-check) that cover the affected areas so the updated
   status reflects a green, stable state.
+- After a completion check declares all tasks done, park the ADR: do not run
+  additional loops unless a new requirement/regression is logged as a new
+  task or subtask. Record that new task in the ADR/work-log before starting
+  another loop, with a pointer to its trigger (failing test id/output,
+  bug/ticket, external request, or explicit contract/test that would change).
+  “Parked” has this specific meaning; do not rebrand it (“paused”, “done for
+  now”, etc.) to bypass the rule—no loops without a newly recorded task/
+  regression and trigger.
 
 
 ---
@@ -249,5 +294,4 @@ loop:
  - **Substantial slice**: A slice whose removal would change at least one test outcome, runtime behaviour, or ADR task/status that is observable from outside this helper.
  - **Non-trivial change**: A change whose removal would alter behaviour under test, a guardrail, or the ADR’s effective task list/status. Pure formatting/renames that do not affect tests, behaviour, or tasks are trivial.
  - **Candidate behaviour slice**: A small, named change scoped to a single focus area (function, module, workflow, or guardrail) that could be landed and tested in one loop without leaving that area half-migrated.
-
-
+ - **Parked**: If you cannot name a compliant in-repo slice, the ADR is parked: do not run or log a loop until you first record a new task/regression in the ADR/work-log (with a pointer to its trigger: failing test id/output, bug/ticket, external request). Different wording (“paused”, “done for now”, etc.) still counts as parked. You cannot keep reporting “parked”; the next action must be a new task-driven slice or a completion check to update status.

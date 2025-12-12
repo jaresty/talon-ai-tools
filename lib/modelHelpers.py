@@ -692,6 +692,14 @@ def _send_request_streaming(request, request_id: str) -> str:
                 # and return immediately to avoid consuming the stream iterator.
                 try:
                     parsed_full = raw_response.json()
+                    if raw_response.status_code != 200:
+                        error_info = parsed_full or raw_response.text
+                        streaming_run.on_error(f"HTTP {raw_response.status_code}")
+                        _update_streaming_snapshot()
+                        notify(
+                            f"GPT Failure: HTTP {raw_response.status_code} | {error_info}"
+                        )
+                        raise GPTRequestError(raw_response.status_code, error_info)
                     text_piece = (
                         parsed_full.get("choices", [{}])[0]
                         .get("message", {})
@@ -749,6 +757,8 @@ def _send_request_streaming(request, request_id: str) -> str:
             error_info = raw_response.json()
         except Exception:
             error_info = raw_response.text
+        streaming_run.on_error(f"HTTP {raw_response.status_code}")
+        _update_streaming_snapshot()
         notify(f"GPT Failure: HTTP {raw_response.status_code} | {error_info}")
         raise GPTRequestError(raw_response.status_code, error_info)
 
@@ -807,6 +817,8 @@ def _send_request_streaming(request, request_id: str) -> str:
                         pass
                 except Exception:
                     pass
+                streaming_run.on_error("cancelled")
+                _update_streaming_snapshot()
                 try:
                     set_controller(RequestUIController())
                     emit_cancel(request_id=request_id)
@@ -853,6 +865,8 @@ def _send_request_streaming(request, request_id: str) -> str:
                 print("[modelHelpers] streaming ended; cancel requested, aborting")
             except Exception:
                 pass
+            streaming_run.on_error("cancelled")
+            _update_streaming_snapshot()
             try:
                 set_controller(RequestUIController())
                 emit_cancel(request_id=request_id)
@@ -982,6 +996,10 @@ def send_request(max_attempts: int = 10):
     lifecycle = RequestLifecycleState()
     try:
         GPTState.last_lifecycle = lifecycle
+    except Exception:
+        pass
+    try:
+        GPTState.last_streaming_snapshot = {}
     except Exception:
         pass
 

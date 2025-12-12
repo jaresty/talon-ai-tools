@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import TypedDict, Union
+from typing import Set, TypedDict, Union
 
 # Central configuration for static prompts:
 # - Each key is a canonical static prompt value (as used in GPT/lists/staticPrompt.talon-list).
@@ -17,6 +17,15 @@ class StaticPromptProfile(TypedDict, total=False):
     scope: Union[str, list[str]]
     method: Union[str, list[str]]
     style: Union[str, list[str]]
+
+
+COMPLETENESS_FREEFORM_ALLOWLIST: Set[str] = {"path"}
+
+
+def completeness_freeform_allowlist() -> Set[str]:
+    """Return the allowed non-axis completeness hints for static prompts."""
+
+    return set(COMPLETENESS_FREEFORM_ALLOWLIST)
 
 
 STATIC_PROMPT_CONFIG: dict[str, StaticPromptProfile] = {

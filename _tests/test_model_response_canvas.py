@@ -245,6 +245,41 @@ if bootstrap is not None:
             self.assertFalse(bool(snapshot_arg.get("completed")))
             self.assertTrue(bool(snapshot_arg.get("errored")))
 
+        def test_completed_snapshot_used_when_no_buffer_or_last_response(self) -> None:
+            """Completed streaming snapshot should be used when buffers are empty."""
+            GPTState.text_to_confirm = ""
+            GPTState.last_streaming_snapshot = {
+                "text": "final streamed text",
+                "completed": True,
+                "errored": False,
+                "error_message": "",
+            }
+
+            with patch.object(
+                modelResponseCanvas,
+                "_current_request_state",
+                return_value=RequestState(phase=RequestPhase.DONE),
+            ), patch.object(
+                streamingCoordinator,
+                "canvas_view_from_snapshot",
+                side_effect=lambda snapshot: {
+                    "text": snapshot.get("text", ""),
+                    "status": "completed",
+                    "error_message": "",
+                },
+            ) as mock_view:
+                canvas_obj = _ensure_response_canvas()
+                callbacks = getattr(canvas_obj, "_callbacks", {})
+                draw_cbs = callbacks.get("draw") or []
+                for cb in draw_cbs:
+                    cb(canvas_obj)
+
+            self.assertTrue(mock_view.called)
+            snapshot_arg = mock_view.call_args[0][0]
+            self.assertEqual(snapshot_arg["text"], "final streamed text")
+            self.assertTrue(bool(snapshot_arg.get("completed")))
+            self.assertFalse(bool(snapshot_arg.get("errored")))
+
 
 else:
     if not TYPE_CHECKING:

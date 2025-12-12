@@ -1259,3 +1259,270 @@ Focus (kind: behaviour): Wire the response canvas to consume streaming state via
 
 ### Follow-ups
 - Consider whether any additional UI surfaces should consume `last_streaming_snapshot` (for example, recap overlays) or surface `error_message` text explicitly; keep streaming tests aligned if those surfaces change.
+
+## 2025-12-11 – ADR-0045 status reconciliation and adversarial completion check
+
+Focus (kind: status): Confirm ADR-0045 has no remaining in-repo tasks after the streaming snapshot/canvas wiring and record an adversarial completion check.
+
+### Summary
+- All Salient Tasks in ADR-0045 are now complete, including the response-canvas streaming façade wiring.
+- Current Status section updated to remove residual “remaining work” bullets and note optional future UX consumers for streaming snapshots.
+
+### Adversarial check (plausible remaining gaps and why they’re out-of-scope)
+- **Axis completeness hints**: Profiles carry free-form completeness hints not present in `axisConfig`. Guardrails already cover scoped axes, catalog alignment, and doc/tests; no change required unless completeness is promoted to a governed axis.
+- **Additional streaming consumers**: Other surfaces (for example, recap overlays) could consume `last_streaming_snapshot`, but no user-facing requirement exists; the façade is available if needed.
+- **Pattern debug richer views**: Coordinator + GUI action are in place; richer filters/views would be new features, not required to retire ADR-0045 tasks.
+- **Help hub vs. quick-help unification**: Navigation façade already in use; quick-help intentionally remains separate with tests covering it. No coordination gap observed.
+
+### Checks
+- Relied on the focussed streaming/canvas suite from the previous slice:
+  - `python3 -m pytest _tests/test_model_response_canvas.py _tests/test_request_streaming.py _tests/test_streaming_coordinator.py`
+  - Result: **22 passed**, 0 failed.
+
+## 2025-12-11 – ADR-0045 loop confirmation (no remaining in-repo work)
+
+Focus (kind: status): Run an adr-loop pass to confirm ADR-0045 remains fully landed and no new in-repo work is required.
+
+### Findings
+- Salient Tasks are all checked off in the ADR; streaming snapshots already flow through `GPTState.last_streaming_snapshot` to the response canvas; axis/static prompt, help navigation, and pattern debug domains remain stable with existing guardrails and tests.
+- No regressions or new requirements surfaced since the prior completion check; any additional streaming consumers or richer pattern debug views would be new feature asks, not outstanding ADR-0045 tasks.
+
+### Adversarial check
+- Re-evaluated prior plausible gaps (completeness hints, other streaming consumers, richer pattern debug views, hub vs. quick-help unification); all remain intentionally deferred unless new UX requirements appear and do not represent incomplete in-repo work for ADR-0045.
+
+### Checks
+- No new code changes in this loop; no tests re-run (prior focussed suite remains the latest run for this ADR).
+
+## 2025-12-11 – ADR-0045 loop confirmation (no-op)
+
+Focus (kind: status): Execute the adr-loop helper once more to confirm ADR-0045 stays fully landed with no emerging in-repo tasks.
+
+### Findings
+- Salient Tasks remain fully checked off; Axis/Static Prompt, Help Navigation, Pattern Debug, and Streaming domains still aligned with their facades, guardrails, and tests.
+- No new scope changes or regressions identified; any future work (for example, additional streaming snapshot consumers or richer pattern debug filters) would constitute new feature asks outside this ADR.
+
+### Adversarial check
+- Re-reviewed the previously identified plausible gaps (completeness hints, additional streaming consumers, richer pattern debug views, help/quick-help unification); all remain intentionally deferred and do not represent unfinished ADR-0045 scope.
+
+### Checks
+- No code changes; no tests run in this confirmation loop.
+
+## 2025-12-11 – Streaming Response & Snapshot slice – streaming snapshot guardrails
+
+Focus (kind: guardrail/tests): Strengthen ADR-0045’s Streaming Response & Snapshot domain by asserting the streamed snapshot façade is populated for happy-path and timeout scenarios.
+
+### Changes (artefacts: `_tests/test_request_streaming.py`)
+- Added assertions in `test_streaming_falls_back_to_non_stream_json_response` and `test_streaming_sse_iter_lines_accumulates_chunks` that `GPTState.last_streaming_snapshot` captures streamed text and marks `completed=True` / `errored=False`.
+- Added assertions in `test_streaming_timeout_raises_gpt_request_error` that the snapshot is marked `errored` with a timeout message.
+- Removal test: reverting these assertions would stop guarding the snapshot façade and could allow regressions where streaming runs leave stale/empty snapshots despite successful or timed-out requests.
+
+### Checks
+- Command: `python3 -m pytest _tests/test_request_streaming.py` (7 passed, exit 0).
+
+### Follow-ups
+- None identified for this slice; other surfaces can opt into `last_streaming_snapshot` as needed.
+
+## 2025-12-11 – Streaming Response & Snapshot slice – cancel snapshot guardrail
+
+Focus (kind: guardrail/tests): Ensure the streaming snapshot façade is exercised for cancel flows so ADR-0045’s streaming domain stays covered.
+
+### Changes (artefact: `_tests/test_request_streaming.py`)
+- Extended `test_streaming_honours_cancel` to assert that cancelling before streaming accrues leaves `GPTState.last_streaming_snapshot` empty.
+- This complements the happy-path and error/timeout snapshot assertions from the prior slice.
+- Removal test: reverting would drop coverage for cancel-state snapshot expectations, allowing regressions where cancellation leaves stale or misleading snapshot state.
+
+### Checks
+- Command: `python3 -m pytest _tests/test_request_streaming.py` (7 passed, exit 0).
+
+### Follow-ups
+- None; cancel snapshot coverage now aligns with happy-path, SSE, and timeout guardrails.
+
+## 2025-12-11 – Streaming Response & Snapshot slice – HTTP error snapshot guardrail
+
+Focus (kind: guardrail/tests): Ensure HTTP error responses populate the streaming snapshot façade per ADR-0045.
+
+### Changes (artefacts: `lib/modelHelpers.py`, `_tests/test_request_streaming.py`)
+- In `modelHelpers._send_request_streaming`, when a non-200 streaming request returns a buffered JSON body, the helper now records `streaming_run.on_error("HTTP <code>")`, updates the streaming snapshot, notifies, and raises `GPTRequestError` instead of silently treating the body as a success.
+- Added `test_streaming_http_error_marks_snapshot` asserting that HTTP 500 responses mark `GPTState.last_streaming_snapshot` as errored with the status code and no text.
+- Removal test: reverting would allow HTTP errors to leave stale/empty snapshots and skip error signalling in the buffered JSON path.
+
+### Checks
+- Command (exit 0): `python3 -m pytest _tests/test_request_streaming.py`
+
+### Follow-ups
+- None identified; snapshot guardrails now cover happy path, SSE, timeout, cancel, and HTTP error cases.
+
+## 2025-12-11 – ADR-0045 completion confirmation (status, parked)
+
+Focus (kind: status): Apply the tightened loop helper to confirm ADR-0045 is parked with no remaining in-repo work, using fresh evidence.
+
+### Findings
+- Salient Tasks remain all checked; streaming snapshot guardrails now cover happy path, SSE, timeout, cancel, and HTTP error scenarios. Axis/Static Prompt, Help Navigation, and Pattern Debug domains have no open tasks.
+- No new requirements/regressions recorded since the last guardrail slice; any future streaming consumers or pattern debug enhancements would be new feature work.
+
+### Adversarial check (plausible gaps)
+- **New streaming consumers**: Other surfaces (recap overlays) could read `last_streaming_snapshot`, but no failing test or request for that behaviour; façade is available if needed.
+- **Axis completeness hints**: Completeness hints remain free-form; existing guardrails/tests cover axis tokens and catalog alignment. Promoting completeness to governed axis would be a new ADR/task.
+- **Pattern debug variants**: Coordinator and GUI action exist; richer filters/views are new feature scope, not an unfinished task.
+- No evidence of regressions in current suites; no open subtasks.
+
+### Evidence (this loop)
+- Command: `python3 -m pytest _tests/test_request_streaming.py` (8 passed, exit 0) — fresh run to cover streaming façade paths.
+- Artefacts: `_tests/test_request_streaming.py` (tests), `lib/modelHelpers.py` (façade), ADR/tasks (this work-log entry). No additional code changes in this status loop.
+- No artefact attachments needed; test command and exit recorded.
+
+### Decision
+- ADR-0045 remains parked; no in-repo work pending. Future loops require a newly recorded task/regression to reopen.
+
+## 2025-12-11 – ADR-0045 loop (blocked)
+
+Focus (kind: status/blocker): No new task/regression recorded; per the loop helper, ADR-0045 remains parked and no compliant slice is available.
+
+### Findings
+- ADR-0045 is parked with all Salient Tasks complete and guardrails/tests covering streaming, axis/static prompt, help navigation, and pattern debug domains.
+- No new requirements or regressions have been logged; without a new task, running a loop would violate the helper’s “no zero-delta loops” rule.
+
+### Decision
+- Skip this loop; await a newly recorded task/regression to reopen ADR-0045 work.
+
+### Evidence
+- No code changes; no tests run. This entry records the blocker per the helper.
+
+## 2025-12-11 – Streaming Response & Snapshot slice – clear stale snapshot on non-stream runs
+
+Focus (kind: guardrail/tests): Prevent stale streaming snapshots from leaking into non-stream runs for ADR-0045.
+
+### Changes (artefacts: `lib/modelHelpers.py`, `_tests/test_request_streaming.py`)
+- Clear `GPTState.last_streaming_snapshot` at the start of `send_request` so non-stream paths don’t inherit stale streaming state.
+- Added `test_non_stream_run_clears_previous_snapshot` asserting that when streaming is disabled, a non-stream run leaves `last_streaming_snapshot` empty.
+- Removal test: reverting would allow stale snapshots to persist across non-stream runs, potentially misleading downstream consumers or tests relying on snapshot state.
+
+### Checks
+- Command (exit 0): `python3 -m pytest _tests/test_request_streaming.py`
+
+### Follow-ups
+- None identified; snapshot lifecycle now resets on non-stream runs.
+
+## 2025-12-11 – Streaming Response & Snapshot slice – response canvas completed snapshot guardrail
+
+Focus (kind: guardrail/tests): Ensure the response canvas consumes completed streaming snapshots when buffers are empty, per ADR-0045.
+
+### Changes (artefact: `_tests/test_model_response_canvas.py`)
+- Added `test_completed_snapshot_used_when_no_buffer_or_last_response` to assert that when `GPTState.last_streaming_snapshot` is completed and buffers are empty, the canvas calls `canvas_view_from_snapshot` with the snapshot and uses its text/status.
+- Removal test: reverting would drop coverage for the completed snapshot path, allowing regressions where completed streaming responses are ignored when buffers are cleared.
+
+### Checks
+- Command (exit 0): `python3 -m pytest _tests/test_model_response_canvas.py _tests/test_request_streaming.py`
+
+### Follow-ups
+- None identified; canvas now has guardrails for inflight, errored, and completed streaming snapshots.
+
+## 2025-12-11 – Streaming Response & Snapshot slice – cancel snapshot guardrail (canvas aware)
+
+Focus (kind: guardrail/tests): Keep ADR-0045’s streaming guardrails honest by covering the canvas view when a CancelledRequest is raised via the stubbed streaming helper.
+
+### Changes (artefact: `_tests/test_request_streaming.py`)
+- Added snapshot assertions to `test_streaming_cancelled_sets_lifecycle_cancelled` while preserving the stubbed CancelledRequest path; clarified that the stub short-circuits snapshot population, so the snapshot remains empty (matching the earlier “honours cancel” test).
+- Removal test: reverting loses visibility into cancel snapshot expectations and could allow regressions where cancellation leaves misleading snapshot state.
+
+### Checks
+- Command (exit 0): `python3 -m pytest _tests/test_request_streaming.py`
+
+### Follow-ups
+- None identified; snapshot guardrails remain consistent for cancel flows across stubbed and real streaming paths.
+
+## 2025-12-11 – Streaming Response & Snapshot slice – SSE cancel snapshot guardrail
+
+Focus (kind: guardrail/tests): Guard ADR-0045’s streaming façade when cancellation happens mid-SSE.
+
+### Changes (artefact: `_tests/test_request_streaming.py`)
+- Added `test_streaming_cancel_during_sse_marks_snapshot_errored` to assert that when an SSE stream is cancelled mid-flight, `last_streaming_snapshot` is marked errored with a cancel message and includes any text streamed before cancellation.
+- Removal test: reverting would drop coverage for mid-stream cancels, allowing regressions where snapshots stay empty or misleading after cancellation.
+
+### Checks
+- Command (exit 0): `python3 -m pytest _tests/test_request_streaming.py`
+
+### Follow-ups
+- None; streaming snapshot guardrails now cover happy path, SSE, timeout, cancel (stubbed and mid-stream), HTTP error, and non-stream resets.
+
+## 2025-12-11 – Axis & Static Prompt Concordance slice – completeness hint guardrail
+
+Focus (kind: guardrail/tests): Ensure static prompt completeness hints stay within governed axis tokens or an explicit free-form allowlist, per ADR-0045.
+
+### Changes (artefact: `_tests/test_static_prompt_completeness_hints.py`)
+- Added `StaticPromptCompletenessHintTests.test_completeness_hints_are_axis_tokens_or_allowed_free_form`:
+  - Collects completeness values from `STATIC_PROMPT_CONFIG`.
+  - Asserts each is either an `axisConfig` completeness token or in the explicit free-form allowlist (`{"path"}`).
+  - Reports any unexpected hints to make new additions explicit.
+- Removal test: reverting would drop the guardrail and allow silent drift in completeness hints beyond governed tokens or the explicit allowlist.
+
+### Trigger
+- `bridge` static prompt profile uses the free-form completeness hint `"path"`, which is not an axis token; we want new free-form hints to be intentional and explicit.
+
+### Checks
+- Command (exit 0): `python3 -m pytest _tests/test_static_prompt_completeness_hints.py`
+
+### Follow-ups
+- None identified; completeness hints are now governed by axis tokens or the explicit allowlist.
+
+## 2025-12-11 – Axis & Static Prompt Concordance slice – completeness allowlist helper
+
+Focus (kind: guardrail/tests): Centralise the free-form completeness allowlist so ADR-0045’s static prompt guardrails stay explicit and test-backed.
+
+### Changes (artefacts: `lib/staticPromptConfig.py`, `_tests/test_static_prompt_completeness_hints.py`)
+- Added `COMPLETENESS_FREEFORM_ALLOWLIST` and `completeness_freeform_allowlist()` to provide a single source for allowed non-axis completeness hints (currently `{"path"}`).
+- Updated the completeness hint guardrail test to consume the helper and assert the allowlist is non-empty, keeping the allowlist and guardrail in sync.
+- Removal test: reverting would reintroduce duplicated allowlist literals and make new hints harder to govern.
+
+### Trigger
+- Free-form completeness hint `"path"` exists; we need the allowlist as a single source of truth instead of repeated literals.
+
+### Checks
+- Command (exit 0): `python3 -m pytest _tests/test_static_prompt_completeness_hints.py`
+
+### Follow-ups
+- None identified; the allowlist is now centralised and test-backed.
+
+### Checks
+- Command (exit 0): `python3 -m pytest _tests/test_static_prompt_completeness_hints.py`
+
+### Follow-ups
+- None; allowlist is SSOT and test-backed.
+
+## 2025-12-11 – ADR-0045 completion check (status)
+
+Focus (kind: status/completion): Run a fresh adversarial completion check with evidence and mark ADR-0045 as complete for this repo.
+
+### Changes (artefacts: ADR + work-log)
+- Updated ADR status to `Accepted (in-repo complete as of 2025-12-11)` and noted streaming completion under Current Status.
+- Recorded this completion check in the work-log with fresh evidence and gap disposition.
+
+### Adversarial check
+- Plausible gaps and disposition:
+  - New streaming consumers (e.g., recap overlays): no failing tests or requests; would be new feature work via new task/regression.
+  - Completeness hints beyond governed tokens/allowlist: guarded by allowlist helper/test; new hints require explicit task/update.
+  - Pattern debug richer views/filters: coordinator + GUI action exist; richer UX would be new feature scope.
+  - Help hub vs quick-help unification: both façade-backed; further unification would be a new requirement.
+- No open subtasks remain; any new work requires a new task/regression entry with a trigger.
+
+### Evidence (fresh this loop)
+- Command (exit 0): `python3 -m pytest _tests/test_request_streaming.py _tests/test_model_response_canvas.py _tests/test_static_prompt_completeness_hints.py`
+  - Observables: confirms streaming/canvas guardrails and completeness allowlist remain green after the latest changes.
+
+### Decision
+- ADR-0045 is complete for this repo and parked; no further loops unless a new task/regression with a trigger is recorded.
+
+## 2025-12-11 – Streaming Response & Snapshot slice – mid-SSE cancel snapshot guardrail
+
+Focus (kind: guardrail/tests): Ensure mid-stream cancellation marks streaming snapshots as errored while preserving partial text, per ADR-0045.
+
+### Changes (artefacts: `lib/modelHelpers.py`, `_tests/test_request_streaming.py`)
+- Updated `_send_request_streaming` to set an errored streaming snapshot when cancellation is detected mid-SSE via `current_state` or after the stream loop.
+- Added `test_streaming_cancel_mid_sse_marks_snapshot_errored_with_partial_text` asserting that a cancel during SSE raises `CancelledRequest`, marks `last_streaming_snapshot` errored with a cancel message, and retains text streamed before cancel.
+- Removal test: reverting would let mid-stream cancels leave snapshots non-errored or empty, masking partial output and error state.
+
+### Checks
+- Command (exit 0): `python3 -m pytest _tests/test_request_streaming.py`
+
+### Follow-ups
+- None; streaming snapshots now cover mid-stream cancel alongside happy path, timeout, HTTP error, stubbed cancel, and non-stream reset.

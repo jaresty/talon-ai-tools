@@ -9,7 +9,7 @@ else:
     bootstrap()
 
 if bootstrap is not None:
-    from talon_user.lib.staticPromptConfig import static_prompt_catalog
+    from talon_user.lib.axisCatalog import static_prompt_catalog
     from talon_user.lib.axisConfig import AXIS_KEY_TO_VALUE
 
     class StaticPromptAxisTokenTests(unittest.TestCase):

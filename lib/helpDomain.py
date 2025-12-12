@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from collections.abc import Sequence
 from dataclasses import dataclass
-from typing import Any, Callable, List, Tuple
+from typing import Any, Callable, List, Optional, Tuple
 
 from talon import actions
 
@@ -20,6 +20,7 @@ def help_index(
     patterns: Sequence[Any],
     presets: Sequence[Any],
     read_list_items: Callable[[str], List[str]],
+    catalog: Optional[dict] = None,
 ) -> List[HelpIndexEntry]:
     """HelpDomain façade: build the help search index.
 
@@ -55,30 +56,45 @@ def help_index(
             getattr(btn, "voice_hint", ""),
         )
 
-        # Static prompts.
-        for prompt in read_list_items("staticPrompt.talon-list"):
-            _add(
-                f"Prompt: {prompt}",
-                "Open quick help for prompt",
-                lambda p=prompt: actions.user.model_help_canvas_open_for_static_prompt(  # type: ignore[attr-defined]
-                    p
-                ),
-                voice_hint=f"Say: model run {prompt}",
-            )
+    # Static prompts (prefer catalog if provided).
+    static_prompts = []
+    if catalog:
+        static_prompts = [
+            entry.get("name", "")
+            for entry in catalog.get("static_prompts", {}).get("profiled", [])
+            if entry.get("name")
+        ]
+    if not static_prompts:
+        static_prompts = read_list_items("staticPrompt.talon-list")
+    for prompt in static_prompts:
+        _add(
+            f"Prompt: {prompt}",
+            "Open quick help for prompt",
+            lambda p=prompt: actions.user.model_help_canvas_open_for_static_prompt(  # type: ignore[attr-defined]
+                p
+            ),
+            voice_hint=f"Say: model run {prompt}",
+        )
 
-    # Axes.
-    for axis_file, axis_label in (
-        ("completenessModifier.talon-list", "Completeness"),
-        ("scopeModifier.talon-list", "Scope"),
-        ("methodModifier.talon-list", "Method"),
-        ("styleModifier.talon-list", "Style"),
-    ):
-        for token in read_list_items(axis_file):
+    # Axes (prefer catalog axis tokens).
+    axis_sources = {
+        "Completeness": "completenessModifier.talon-list",
+        "Scope": "scopeModifier.talon-list",
+        "Method": "methodModifier.talon-list",
+        "Style": "styleModifier.talon-list",
+        "Directional": "directionalModifier.talon-list",
+    }
+    for axis_label, axis_file in axis_sources.items():
+        tokens: List[str] = []
+        if catalog:
+            axis_key = axis_label.lower()
+            tokens = list((catalog.get("axes", {}).get(axis_key) or {}).keys())
+        if not tokens:
+            tokens = read_list_items(axis_file)
+        for token in tokens:
             _add(
                 f"Axis ({axis_label}): {token}",
                 "Open quick help",
-                # Keep handler semantics aligned with the existing Help Hub
-                # behaviour; axis is conveyed via the label and token.
                 lambda _a=axis_label.lower(): actions.user.model_help_canvas_open()  # type: ignore[attr-defined]
                 or None,
                 voice_hint=f"Say: model run … {token}",

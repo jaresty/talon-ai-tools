@@ -19,13 +19,14 @@ from ..lib.talonSettings import (
 from ..lib.staticPromptConfig import STATIC_PROMPT_CONFIG
 
 try:
-    from ..lib.staticPromptConfig import (
+    from ..lib.axisCatalog import (
+        axis_catalog,
         get_static_prompt_axes,
         get_static_prompt_profile,
         static_prompt_catalog,
         static_prompt_description_overrides,
     )
-except ImportError:  # Talon may have a stale staticPromptConfig loaded
+except ImportError:  # Talon may have a stale runtime without axisCatalog
 
     def get_static_prompt_profile(name: str):
         return STATIC_PROMPT_CONFIG.get(name)
@@ -98,6 +99,16 @@ except ImportError:  # Talon may have a stale staticPromptConfig loaded
             if description:
                 overrides[name] = description
         return overrides
+
+    def axis_catalog():
+        # Minimal fallback: expose axisConfig tokens without Talon list parsing.
+        return {
+            "axes": {},
+            "axis_list_tokens": {},
+            "static_prompts": static_prompt_catalog(),
+            "static_prompt_descriptions": static_prompt_description_overrides(),
+            "static_prompt_profiles": STATIC_PROMPT_CONFIG,
+        }
 
 
 from ..lib.modelDestination import (
@@ -357,19 +368,33 @@ def _handle_async_result(handle, destination: str, block: bool = True) -> None:
 def _build_axis_docs() -> str:
     """Build a text block describing all axis and directional modifiers."""
     sections = [
-        ("Completeness modifiers", "completenessModifier.talon-list"),
-        ("Scope modifiers", "scopeModifier.talon-list"),
-        ("Method modifiers", "methodModifier.talon-list"),
-        ("Style modifiers", "styleModifier.talon-list"),
-        ("Directional modifiers", "directionalModifier.talon-list"),
+        ("Completeness modifiers", "completeness"),
+        ("Scope modifiers", "scope"),
+        ("Method modifiers", "method"),
+        ("Style modifiers", "style"),
+        ("Directional modifiers", "directional"),
     ]
+    catalog = axis_catalog()
+    axis_tokens = catalog.get("axes", {}) or {}
     lines: list[str] = [
         "Note: Axes capture how and in what shape the model should respond (completeness, scope, method, style, directional lens). "
         "Hierarchy: Completeness > Method > Scope > Style. Ambiguous tokens are assigned in that order unless explicitly prefixed "
         "(Completeness:/Method:/Scope:/Style:). For full semantics and examples, see ADR 005/012/013/016/032 and the GPT README axis cheat sheet.\n"
     ]
-    for label, filename in sections:
-        items = _read_list_items(filename)
+    for label, axis_name in sections:
+        token_map = axis_tokens.get(axis_name, {}) or {}
+        if not token_map:
+            # Fallback to Talon list parsing if catalog data is missing.
+            filename = {
+                "completeness": "completenessModifier.talon-list",
+                "scope": "scopeModifier.talon-list",
+                "method": "methodModifier.talon-list",
+                "style": "styleModifier.talon-list",
+                "directional": "directionalModifier.talon-list",
+            }.get(axis_name)
+            items = _read_list_items(filename) if filename else []
+        else:
+            items = sorted(token_map.items(), key=lambda kv: kv[0])
         if not items:
             continue
         lines.append(f"{label}:")

@@ -6,6 +6,7 @@ from typing import Optional
 from copy import deepcopy
 
 from .axisMappings import axis_registry_tokens, axis_value_to_key_map_for
+from .axisCatalog import axis_catalog
 from .requestHistory import RequestHistory, RequestLogEntry
 
 _history = RequestHistory()
@@ -23,6 +24,14 @@ def _filter_axes_payload(axes: Optional[dict[str, list[str]]]) -> dict[str, list
     if not axes:
         return {}
 
+    catalog = axis_catalog()
+    axis_tokens = {
+        axis: set((tokens or {}).keys()) for axis, tokens in catalog["axes"].items()
+    }
+    axis_list_tokens = {
+        axis: set(tokens or []) for axis, tokens in catalog["axis_list_tokens"].items()
+    }
+
     filtered: dict[str, list[str]] = {}
 
     for axis_name, raw_values in axes.items():
@@ -37,9 +46,12 @@ def _filter_axes_payload(axes: Optional[dict[str, list[str]]]) -> dict[str, list
         if not values:
             continue
 
-        if axis_name in ("completeness", "scope", "method", "style"):
+        if axis_name in ("completeness", "scope", "method", "style", "directional"):
             mapping = axis_value_to_key_map_for(axis_name)
             known_tokens = axis_registry_tokens(axis_name)
+            # Include tokens from the axis catalog and Talon lists to catch drift.
+            known_tokens = known_tokens.union(axis_tokens.get(axis_name, set()))
+            known_tokens = known_tokens.union(axis_list_tokens.get(axis_name, set()))
             kept: list[str] = []
             for token in values:
                 lower = token.lower()

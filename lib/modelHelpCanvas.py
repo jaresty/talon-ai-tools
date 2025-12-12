@@ -6,6 +6,7 @@ from talon import skia
 from .canvasFont import apply_canvas_typeface
 from .helpUI import apply_scroll_delta, clamp_scroll
 from .axisConfig import axis_docs_for
+from .axisCatalog import axis_catalog
 from .personaConfig import INTENT_PRESETS, PERSONA_PRESETS
 
 from .modelState import GPTState
@@ -56,7 +57,15 @@ except ImportError:  # Talon may have a stale staticPromptConfig loaded
 
 
 def _axis_keys(axis: str) -> list[str]:
-    """Return axis keys in list-file order via AxisDocs façade."""
+    """Return axis keys from the catalog SSOT, falling back to AxisDocs."""
+
+    try:
+        catalog = axis_catalog()
+        axis_tokens = catalog.get("axes", {}).get(axis)
+        if axis_tokens:
+            return list(axis_tokens.keys())
+    except Exception:
+        pass
 
     docs = axis_docs_for(axis)
     return [doc.key for doc in docs]
@@ -173,6 +182,13 @@ def _group_directional_keys() -> dict[str, list[str]]:
     central_names = {"jog"}
 
     directional_keys = {"fog", "fig", "dig", "rog", "bog", "ong", "jog"}
+    try:
+        catalog = axis_catalog()
+        catalog_keys = set((catalog.get("axes", {}).get("directional") or {}).keys())
+        if catalog_keys:
+            directional_keys |= catalog_keys
+    except Exception:
+        pass
     seen_directional: set[str] = set()
 
     for base in directional_keys:

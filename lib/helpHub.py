@@ -7,6 +7,8 @@ from collections.abc import Sequence
 from talon import Context, Module, actions, app, canvas, clip, ui, tap
 from talon import skia
 
+from .axisCatalog import axis_catalog
+
 from .canvasFont import apply_canvas_typeface
 from .helpUI import apply_scroll_delta, clamp_scroll, scroll_fraction
 from .modelState import GPTState
@@ -111,6 +113,26 @@ def _log(msg: str) -> None:
         pass
 
 
+def _block_key_event(evt) -> None:
+    """Best-effort key blocking to stop fallthrough into other apps."""
+
+    for name in ("block", "stop", "consume"):
+        fn = getattr(evt, name, None)
+        if callable(fn):
+            try:
+                fn()
+            except Exception:
+                continue
+            else:
+                return
+    # As a last resort, set a handled flag if present.
+    try:
+        if hasattr(evt, "handled"):
+            evt.handled = True  # type: ignore[attr-defined]
+    except Exception:
+        pass
+
+
 def _close_overlapping_surfaces() -> None:
     """Close other overlays to avoid stacking UIs."""
     for closer in (
@@ -159,6 +181,12 @@ def _ensure_canvas() -> None:
         _hub_canvas.blocks_mouse = True  # type: ignore[attr-defined]
     except Exception as e:
         _log(f"failed to set blocks_mouse: {e}")
+    # Try to block keyboard input from reaching the foreground app while the hub is open.
+    for attr in ("blocks_keyboard", "block_keyboard"):
+        try:
+            setattr(_hub_canvas, attr, True)  # type: ignore[attr-defined]
+        except Exception as e:
+            _log(f"failed to set {attr}: {e}")
     try:
         _hub_canvas.block_mouse = True  # type: ignore[attr-defined]
     except Exception as e:
@@ -632,6 +660,8 @@ def _on_scroll(evt) -> None:  # pragma: no cover - visual
 def _on_key(evt) -> None:  # pragma: no cover - visual
     """Global key handler for Help Hub."""
     try:
+        if not getattr(HelpHubState, "showing", False):
+            return None
         raw_key = getattr(evt, "key", "") or ""
         key = raw_key.lower()
         # Normalise common aliases from tap/ui events.
@@ -645,16 +675,19 @@ def _on_key(evt) -> None:  # pragma: no cover - visual
                 _modifier_state["alt"] = False
             if key in ("cmd", "lcmd", "rcmd", "meta", "super"):
                 _modifier_state["cmd"] = False
-            return
+            _block_key_event(evt)
+            return True
         # Track modifiers explicitly; Talon may send them as separate keys.
         if key in ("alt", "lalt", "ralt"):
             _modifier_state["alt"] = True
             globals()["_last_alt_down"] = time.time()
-            return
+            _block_key_event(evt)
+            return True
         if key in ("cmd", "lcmd", "rcmd", "meta", "super"):
             _modifier_state["cmd"] = True
             globals()["_last_cmd_down"] = time.time()
-            return
+            _block_key_event(evt)
+            return True
         mods = []
         raw_mods = getattr(evt, "mods", None) or []
         _log(
@@ -710,22 +743,27 @@ def _on_key(evt) -> None:  # pragma: no cover - visual
         )
         if key in ("escape", "esc"):
             help_hub_close()
-            return
+            _block_key_event(evt)
+            return True
         if key in ("tab",) or key in ("down", "arrowdown"):
             _focus_step(-1 if shift_down and key == "tab" else 1)
-            return
+            _block_key_event(evt)
+            return True
         if key in ("up", "arrowup"):
             _focus_step(-1)
-            return
+            _block_key_event(evt)
+            return True
         if key in ("enter", "return"):
             if _activate_focus():
-                return
+                _block_key_event(evt)
+                return True
         if key in ("backspace", "back") and not alt_down and not cmd_down:
             HelpHubState.filter_text = help_edit_filter_text(
                 HelpHubState.filter_text, key, alt=False, cmd=False
             )
             _recompute_search_results()
-            return
+            _block_key_event(evt)
+            return True
         # Treat recent alt/cmd down as active even if the modifier isn't reported on the delete key.
         alt_active = (
             alt_down
@@ -738,13 +776,15 @@ def _on_key(evt) -> None:  # pragma: no cover - visual
                 HelpHubState.filter_text, key, alt=True, cmd=False
             )
             _recompute_search_results()
-            return
+            _block_key_event(evt)
+            return True
         if key in ("delete", "backspace") and cmd_active:
             HelpHubState.filter_text = help_edit_filter_text(
                 HelpHubState.filter_text, key, alt=False, cmd=True
             )
             _recompute_search_results()
-            return
+            _block_key_event(evt)
+            return True
         if key in ("pagedown", "page_down"):
             HelpHubState.scroll_y = apply_scroll_delta(
                 HelpHubState.scroll_y, 200.0, HelpHubState.max_scroll
@@ -755,7 +795,8 @@ def _on_key(evt) -> None:  # pragma: no cover - visual
                     _hub_canvas.show()
             except Exception:
                 pass
-            return
+            _block_key_event(evt)
+            return True
         if key in ("pageup", "page_up"):
             HelpHubState.scroll_y = apply_scroll_delta(
                 HelpHubState.scroll_y, -200.0, HelpHubState.max_scroll
@@ -766,15 +807,22 @@ def _on_key(evt) -> None:  # pragma: no cover - visual
                     _hub_canvas.show()
             except Exception:
                 pass
-            return
+            _block_key_event(evt)
+            return True
         if len(key) == 1 and 32 <= ord(key) <= 126:
             HelpHubState.filter_text = help_edit_filter_text(
                 HelpHubState.filter_text, key, alt=False, cmd=False
             )
             _recompute_search_results()
+            _block_key_event(evt)
+            return True
+        # Swallow all other keys while hub is visible to avoid fallthrough.
+        _block_key_event(evt)
+        return True
     except Exception as e:
         _log(f"hub key handler exception: {e}")
-        return
+        _block_key_event(evt)
+        return True
 
 
 _hub_key_handler = _on_key
@@ -1103,6 +1151,7 @@ def build_search_index(
     patterns,
     presets,
     read_list_items: Callable[[str], List[str]] = _read_list_items,
+    catalog: Optional[dict] = None,
 ) -> List[HubButton]:
     """Pure helper: construct the Help Hub search index.
 
@@ -1110,7 +1159,9 @@ def build_search_index(
     semantics live in the help domain, while this helper adapts entries into
     ``HubButton`` instances for the canvas UI.
     """
-    logical_entries = help_index(buttons, patterns, presets, read_list_items)
+    logical_entries = help_index(
+        buttons, patterns, presets, read_list_items, catalog=catalog
+    )
 
     entries: List[HubButton] = []
     for entry in logical_entries:
@@ -1132,7 +1183,7 @@ def build_search_index(
 def _build_search_index() -> None:
     global _search_index
     _search_index = build_search_index(
-        _buttons, PATTERNS, PROMPT_PRESETS, _read_list_items
+        _buttons, PATTERNS, PROMPT_PRESETS, _read_list_items, catalog=axis_catalog()
     )
 
 

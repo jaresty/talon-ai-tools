@@ -274,7 +274,7 @@ Some high-frequency combinations you can say directly:
   - `model describe xp ong` – XP-flavoured stance: tiny slices, tests, and production feedback.
   - `model describe adversarial rog` – adversarial review: look for weaknesses, edge cases, and unstated assumptions.
   - `model describe scaffold fog` – explain for a beginner from first principles using gradual scaffolding.
-  - `model describe socratic for teaching` – explore the topic by asking short, targeted questions before giving conclusions.
+  - `model describe socratic fog` – explore the topic by asking short, targeted questions before giving conclusions.
   - `model describe samples diverge fog` – generate multiple options with approximate probabilities.
   - `model describe liberating rog` – Liberating Structures-style facilitation framing.
   - `model describe diverge fog` – open up the option space and explore alternatives.

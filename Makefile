@@ -24,3 +24,6 @@ axis-regenerate:
 	mkdir -p tmp
 	PYTHONPATH=. python3 scripts/tools/generate_axis_config.py --out tmp/axisConfig.generated.py
 	PYTHONPATH=. python3 scripts/tools/generate_axis_config.py --markdown --out tmp/readme-axis-tokens.md
+
+axis-catalog-validate:
+	python3 scripts/tools/axis-catalog-validate.py

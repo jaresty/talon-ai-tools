@@ -107,6 +107,32 @@ if bootstrap is not None:
             )
             self.assertNotIn("Important: do many things", entry.axes.get("method", []))
 
+        def test_append_entry_uses_axis_catalog_tokens(self):
+            """Guardrail: requestLog axis filtering honors catalog/list tokens."""
+
+            axes = {
+                # directional axis present in axisConfig/Talon lists
+                "directional": ["bog", "unknown-direction"],
+                # passthrough for unexpected keys should keep trimmed values
+                "custom": [" keep_me "],
+            }
+
+            append_entry(
+                "r5",
+                "prompt",
+                "resp",
+                "meta",
+                recipe="recipe5",
+                started_at_ms=9,
+                duration_ms=10,
+                axes=axes,
+            )
+
+            entry = latest()  # type: ignore[assignment]
+            self.assertIsNotNone(entry)
+            self.assertEqual(entry.axes.get("directional"), ["bog"])
+            self.assertEqual(entry.axes.get("custom"), ["keep_me"])
+
 
 else:
     if not TYPE_CHECKING:

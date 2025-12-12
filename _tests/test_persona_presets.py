@@ -39,7 +39,17 @@ if bootstrap is not None:
         def test_expected_core_persona_presets_present(self) -> None:
             keys = {preset.key for preset in personaConfig.PERSONA_PRESETS}
             self.assertTrue(
-                {"peer_engineer_explanation", "teach_junior_dev", "executive_brief"}
+                {
+                    "peer_engineer_explanation",
+                    "coach_junior",
+                    "teach_junior_dev",
+                    "stakeholder_facilitator",
+                    "designer_to_pm",
+                    "product_manager_to_team",
+                    "executive_brief",
+                    "platform_ops",
+                    "analyst_peer",
+                }
                 <= keys
             )
 

@@ -106,20 +106,54 @@ def test_help_hub_next_focus_label_wraps_and_steps():
     assert helpHub._next_focus_label("btn:Quick help", -1, items) == "res:Docs"
 
 
+def test_help_hub_key_handler_swallows_keys(monkeypatch):
+    helpHub.help_hub_open()
+
+    class _Evt:
+        def __init__(self, key: str):
+            self.key = key
+            self.down = True
+            self.mods = []
+            self.blocked = 0
+
+        def block(self):
+            self.blocked += 1
+
+    handler = helpHub._hub_key_handler
+    assert handler is not None
+    result = handler(_Evt("j"))
+    assert result is True
+
+    # Key-up events are consumed as well.
+    evt_up = _Evt("j")
+    evt_up.down = False
+    result_up = handler(evt_up)
+    assert result_up is True
+    assert evt_up.blocked >= 1
+
+    helpHub.help_hub_close()
+
+
 def test_build_search_index_uses_buttons_and_lists(monkeypatch):
     buttons = [
         _DummyButton(label="Quick help", description="Open quick help"),
     ]
 
+    fake_catalog = {
+        "axes": {"completeness": {"full": "Full answer"}},
+        "axis_list_tokens": {"completeness": ["full"]},
+        "static_prompts": {"profiled": [{"name": "todo"}]},
+    }
+
     def fake_read_list_items(name: str):
-        if name == "staticPrompt.talon-list":
-            return ["todo"]
-        if name == "completenessModifier.talon-list":
-            return ["full"]
         return []
 
     index = helpHub.build_search_index(
-        buttons, patterns=[], presets=[], read_list_items=fake_read_list_items
+        buttons,
+        patterns=[],
+        presets=[],
+        read_list_items=fake_read_list_items,
+        catalog=fake_catalog,
     )
     labels = {item.label for item in index}
 

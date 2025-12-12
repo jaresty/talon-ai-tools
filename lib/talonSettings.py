@@ -372,7 +372,9 @@ def _apply_constraint_hierarchy(
     return resolved, canonical
 
 
-def _filter_axis_tokens(axis_values: AxisValues, allow_unknown: bool = False) -> AxisValues:
+def _filter_axis_tokens(
+    axis_values: AxisValues, allow_unknown: bool = False
+) -> AxisValues:
     """Filter axis tokens against axisConfig to keep token-only state.
 
     For live prompt runs we allow unknown short tokens (for example, custom
@@ -465,16 +467,19 @@ mod.list("model", desc="The name of the model")
 mod.list("modelDestination", desc="What to do after returning the model response")
 mod.list("modelSource", desc="Where to get the text from for the GPT")
 mod.list(
-    "modelVoice", desc="The voice for the LLM to use. For example, 'as programmer'"
+    "modelVoice", desc="Persona voice: who is speaking. For example, 'as programmer'."
 )
-mod.list("modelTone", desc="The tone for the LLM to use. For example, 'casually'")
+mod.list(
+    "modelTone",
+    desc="Persona tone: emotional register (for example, 'kindly', 'formally').",
+)
 mod.list(
     "modelPurpose",
-    desc="The purpose for the LLM to write. For example, 'for information'",
+    desc="Intent: why you're talking. For example, 'for teaching'.",
 )
 mod.list(
     "modelAudience",
-    desc="The audience to whom the LLM is writing. For example, 'to business'",
+    desc="Persona audience: who this is for. For example, 'to programmer'.",
 )
 
 
@@ -979,25 +984,25 @@ mod.setting(
     "model_default_voice",
     type=str,
     default="Infer a relevant voice based on the context or the user's request.",
-    desc="The default voice to use. Who should the LLM be acting as.",
+    desc="Default voice (who is speaking). For example, 'as programmer'.",
 )
 mod.setting(
     "model_default_purpose",
     type=str,
     default="Infer a relevant purpose based on the context or the user's request.",
-    desc="The default purpose of the communication. This informs how the LLM should respond. For example you could say to inform.",
+    desc="Default intent (why you're talking). For example, 'for teaching'.",
 )
 mod.setting(
     "model_default_tone",
     type=str,
     default="Infer a relevant tone based on the context or the user's request.",
-    desc="Is the default tone to use. For example speak kindly or formally.",
+    desc="Default tone (emotional register). For example, 'kindly' or 'formally'.",
 )
 mod.setting(
     "model_default_audience",
     type=str,
     default="Infer a relevant audience based on the context or the user's request.",
-    desc="This is the audience that the LLM should format for. For example a programmer or a toddler.m",
+    desc="Default audience (who this is for). For example, 'to programmer' or 'to junior engineer'.",
 )
 
 mod.setting(

@@ -843,6 +843,7 @@ def _cheat_sheet_text() -> str:
         "- Persona (Who): voice, audience, tone",
         "- Intent (Why): purpose",
         "- Contract (How): completeness, scope, method, style",
+        "- Presets: small Who/Why bundles (for example, 'Teach junior dev', 'Executive brief').",
         "Axes (examples):",
         "- completeness: skim | gist | full | deep",
         "- scope: narrow | focus | bound | edges",
@@ -1218,9 +1219,7 @@ def _recompute_search_results() -> None:
 
 
 def _clamp_scroll() -> None:
-    HelpHubState.scroll_y = clamp_scroll(
-        HelpHubState.scroll_y, HelpHubState.max_scroll
-    )
+    HelpHubState.scroll_y = clamp_scroll(HelpHubState.scroll_y, HelpHubState.max_scroll)
 
 
 def _handle_scroll_delta(evt) -> None:

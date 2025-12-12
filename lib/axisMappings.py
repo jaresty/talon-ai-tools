@@ -46,3 +46,14 @@ def axis_hydrate_token(axis: str, token: str) -> str:
 def axis_docs_map(axis: str) -> dict[str, str]:
     """Return the key->description map for an axis for UI/docs consumption."""
     return axis_key_to_value_map(axis)
+
+
+def axis_registry() -> dict[str, list[str]]:
+    """Return a snapshot of axis tokens keyed by axis name."""
+    return {axis: list(mapping.keys()) for axis, mapping in AXIS_KEY_TO_VALUE.items()}
+
+
+def axis_registry_tokens(axis: str) -> set[str]:
+    """Return the set of known tokens for a given axis."""
+    mapping = AXIS_KEY_TO_VALUE.get(axis, {})
+    return set(mapping.keys())

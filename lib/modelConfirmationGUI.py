@@ -4,6 +4,7 @@ from typing import Optional, Union
 
 from talon import Context, Module, actions, clip, cron, imgui, settings
 
+from .axisJoin import axis_join
 from .modelHelpers import GPTState, extract_message, notify
 from .modelPresentation import ResponsePresentation
 from .metaPromptConfig import first_meta_preview_line, meta_preview_lines
@@ -52,22 +53,22 @@ def confirmation_gui(gui: imgui.GUI):
 
     axes_tokens = getattr(GPTState, "last_axes", {}) or {}
 
-    def _axis_join(axis: str, fallback: str) -> str:
-        tokens = axes_tokens.get(axis)
-        if isinstance(tokens, list) and tokens:
-            return " ".join(str(t) for t in tokens if str(t))
-        return fallback
-
     recipe_parts: list[str] = []
     static_prompt = getattr(GPTState, "last_static_prompt", "") or ""
     if static_prompt:
         recipe_parts.append(static_prompt)
-    last_completeness = _axis_join(
-        "completeness", getattr(GPTState, "last_completeness", "") or ""
+    last_completeness = axis_join(
+        axes_tokens, "completeness", getattr(GPTState, "last_completeness", "") or ""
     )
-    last_scope = _axis_join("scope", getattr(GPTState, "last_scope", "") or "")
-    last_method = _axis_join("method", getattr(GPTState, "last_method", "") or "")
-    last_style = _axis_join("style", getattr(GPTState, "last_style", "") or "")
+    last_scope = axis_join(
+        axes_tokens, "scope", getattr(GPTState, "last_scope", "") or ""
+    )
+    last_method = axis_join(
+        axes_tokens, "method", getattr(GPTState, "last_method", "") or ""
+    )
+    last_style = axis_join(
+        axes_tokens, "style", getattr(GPTState, "last_style", "") or ""
+    )
     for value in (last_completeness, last_scope, last_method, last_style):
         if value:
             recipe_parts.append(value)

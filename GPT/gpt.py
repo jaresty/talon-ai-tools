@@ -222,7 +222,7 @@ mod.tag(
 # Persona/Intent preset lists for stance commands (ADR 042).
 _PERSONA_PRESET_SPOKEN_TO_KEY: dict[str, str] = {}
 for preset in PERSONA_PRESETS:
-    spoken = (preset.label or preset.key).strip().lower()
+    spoken = (preset.spoken or preset.label or preset.key).strip().lower()
     if not spoken:
         continue
     # Last definition wins if duplicates occur.

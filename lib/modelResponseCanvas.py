@@ -2,6 +2,7 @@ from typing import Callable, Optional
 
 from talon import Context, Module, actions, canvas, clip, ui, skia
 
+from .axisJoin import axis_join
 from .canvasFont import apply_canvas_typeface, draw_text_with_emoji_fallback
 
 from .modelState import GPTState
@@ -692,23 +693,22 @@ def _default_draw_response(c: canvas.Canvas) -> None:  # pragma: no cover - visu
         "style": recipe_snapshot.get("style_tokens", []) or [],
     }
 
-    def _axis_join(axis: str, fallback: str) -> str:
-        tokens = axes_tokens.get(axis)
-        if isinstance(tokens, list):
-            if tokens:
-                return " ".join(str(t) for t in tokens if str(t))
-            return fallback
-        return str(tokens) if tokens else fallback
-
     axis_parts: list[str] = []
     if static_prompt:
         axis_parts.append(static_prompt)
-    last_completeness = _axis_join(
+    last_completeness = axis_join(
+        axes_tokens,
         "completeness", getattr(GPTState, "last_completeness", "") or ""
     )
-    last_scope = _axis_join("scope", getattr(GPTState, "last_scope", "") or "")
-    last_method = _axis_join("method", getattr(GPTState, "last_method", "") or "")
-    last_style = _axis_join("style", getattr(GPTState, "last_style", "") or "")
+    last_scope = axis_join(
+        axes_tokens, "scope", getattr(GPTState, "last_scope", "") or ""
+    )
+    last_method = axis_join(
+        axes_tokens, "method", getattr(GPTState, "last_method", "") or ""
+    )
+    last_style = axis_join(
+        axes_tokens, "style", getattr(GPTState, "last_style", "") or ""
+    )
     for value in (last_completeness, last_scope, last_method, last_style):
         if value:
             axis_parts.append(value)
@@ -741,12 +741,20 @@ def _default_draw_response(c: canvas.Canvas) -> None:  # pragma: no cover - visu
         draw_text(f"Say: {grammar_phrase}", x, y)
         y += line_h
         # Hydrated axis details stay hidden until the meta panel is expanded.
-        last_completeness = _axis_join(
-            "completeness", getattr(GPTState, "last_completeness", "") or ""
+        last_completeness = axis_join(
+            axes_tokens,
+            "completeness",
+            getattr(GPTState, "last_completeness", "") or "",
         )
-        last_scope = _axis_join("scope", getattr(GPTState, "last_scope", "") or "")
-        last_method = _axis_join("method", getattr(GPTState, "last_method", "") or "")
-        last_style = _axis_join("style", getattr(GPTState, "last_style", "") or "")
+        last_scope = axis_join(
+            axes_tokens, "scope", getattr(GPTState, "last_scope", "") or ""
+        )
+        last_method = axis_join(
+            axes_tokens, "method", getattr(GPTState, "last_method", "") or ""
+        )
+        last_style = axis_join(
+            axes_tokens, "style", getattr(GPTState, "last_style", "") or ""
+        )
         try:
             if any(
                 (last_completeness, last_scope, last_method, last_style, directional)

@@ -8,6 +8,7 @@ from ..lib.modelTypes import GPTTextItem
 from ..lib.modelConfirmationGUI import confirmation_gui
 from talon import actions, clip, settings, ui
 from ..lib.modelState import GPTState
+from ..lib.axisJoin import axis_join
 from ..lib.modelHelpers import format_messages, notify
 from ..lib.HTMLBuilder import Builder
 from ..lib.promptPipeline import PromptResult
@@ -353,22 +354,23 @@ class File(ModelDestination):
         # Build a short slug from the last recipe/axes for context.
         axes_tokens = getattr(GPTState, "last_axes", {}) or {}
 
-        def _axis_join(axis: str, fallback: str) -> str:
-            tokens = axes_tokens.get(axis)
-            if isinstance(tokens, list) and tokens:
-                return " ".join(str(t) for t in tokens if str(t))
-            return fallback
-
         static_prompt = getattr(GPTState, "last_static_prompt", "") or ""
         slug_bits = []
         if static_prompt:
             slug_bits.append(static_prompt)
-        last_completeness = _axis_join(
+        last_completeness = axis_join(
+            axes_tokens,
             "completeness", getattr(GPTState, "last_completeness", "") or ""
         )
-        last_scope = _axis_join("scope", getattr(GPTState, "last_scope", "") or "")
-        last_method = _axis_join("method", getattr(GPTState, "last_method", "") or "")
-        last_style = _axis_join("style", getattr(GPTState, "last_style", "") or "")
+        last_scope = axis_join(
+            axes_tokens, "scope", getattr(GPTState, "last_scope", "") or ""
+        )
+        last_method = axis_join(
+            axes_tokens, "method", getattr(GPTState, "last_method", "") or ""
+        )
+        last_style = axis_join(
+            axes_tokens, "style", getattr(GPTState, "last_style", "") or ""
+        )
         for value in (last_completeness, last_scope, last_method, last_style):
             if value:
                 slug_bits.append(value)
@@ -503,22 +505,23 @@ class Browser(ModelDestination):
         # carries the same orientation cues.
         axes_tokens = getattr(GPTState, "last_axes", {}) or {}
 
-        def _axis_join(axis: str, fallback: str) -> str:
-            tokens = axes_tokens.get(axis)
-            if isinstance(tokens, list) and tokens:
-                return " ".join(str(t) for t in tokens if str(t))
-            return fallback
-
         static_prompt = getattr(GPTState, "last_static_prompt", "") or ""
         axis_parts: list[str] = []
         if static_prompt:
             axis_parts.append(static_prompt)
-        last_completeness = _axis_join(
+        last_completeness = axis_join(
+            axes_tokens,
             "completeness", getattr(GPTState, "last_completeness", "") or ""
         )
-        last_scope = _axis_join("scope", getattr(GPTState, "last_scope", "") or "")
-        last_method = _axis_join("method", getattr(GPTState, "last_method", "") or "")
-        last_style = _axis_join("style", getattr(GPTState, "last_style", "") or "")
+        last_scope = axis_join(
+            axes_tokens, "scope", getattr(GPTState, "last_scope", "") or ""
+        )
+        last_method = axis_join(
+            axes_tokens, "method", getattr(GPTState, "last_method", "") or ""
+        )
+        last_style = axis_join(
+            axes_tokens, "style", getattr(GPTState, "last_style", "") or ""
+        )
         for value in (last_completeness, last_scope, last_method, last_style):
             if value:
                 axis_parts.append(value)

@@ -14,6 +14,7 @@ if bootstrap is not None:
         new_streaming_run,
         canvas_view_from_snapshot,
         current_streaming_snapshot,
+        record_streaming_snapshot,
     )
     from talon_user.lib.modelState import GPTState
 
@@ -139,6 +140,16 @@ if bootstrap is not None:
             self.assertEqual(
                 getattr(GPTState, "last_streaming_snapshot", {}),
                 {"text": "abc", "errored": False},
+            )
+
+        def test_record_streaming_snapshot_updates_gptstate(self) -> None:
+            run = new_streaming_run("req-record")
+            run.on_chunk("hello")
+            snap = record_streaming_snapshot(run)
+            self.assertEqual(snap["text"], "hello")
+            self.assertEqual(
+                getattr(GPTState, "last_streaming_snapshot", {}),
+                snap,
             )
 
 

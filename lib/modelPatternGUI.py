@@ -5,6 +5,7 @@ from typing import Dict, Literal, Optional, Tuple
 from talon import Context, Module, actions, canvas, settings, ui
 
 from .canvasFont import apply_canvas_typeface
+from .helpUI import clamp_scroll
 
 from .modelDestination import create_model_destination
 from .modelSource import create_model_source
@@ -48,6 +49,7 @@ _pattern_button_bounds: Dict[str, Tuple[int, int, int, int]] = {}
 _pattern_drag_offset: Optional[Tuple[float, float]] = None
 _pattern_hover_close: bool = False
 _pattern_hover_key: Optional[str] = None
+_line_height = 18
 
 # Default geometry for the pattern picker window.
 _PANEL_WIDTH = 720
@@ -176,6 +178,30 @@ SCOPE_MAP = _load_axis_map("scopeModifier.talon-list")
 METHOD_MAP = _load_axis_map("methodModifier.talon-list")
 STYLE_MAP = _load_axis_map("styleModifier.talon-list")
 DIRECTIONAL_MAP = _load_axis_map("directionalModifier.talon-list")
+
+
+def _visible_rows(rect: Rect) -> int:
+    """Compute how many pattern rows fit in the visible body region."""
+    row_height = _line_height * 3
+    body_top = rect.y + 60 + _line_height * 4
+    body_bottom = rect.y + rect.height - (_line_height // 2)
+    visible_height = max(body_bottom - body_top, row_height)
+    return max(int((visible_height + row_height - 1) // row_height), 1)
+
+
+def _max_scroll_offset(rect: Rect, patterns: list[PromptPattern]) -> int:
+    visible_rows = _visible_rows(rect)
+    return max(len(patterns) - visible_rows, 0)
+
+
+def _scroll_pattern_list(
+    current_offset: float, step: int, rect: Rect, patterns: list[PromptPattern]
+) -> float:
+    """Return a clamped row offset after applying a scroll step."""
+    if not patterns:
+        return float(current_offset or 0)
+    max_offset = _max_scroll_offset(rect, patterns)
+    return clamp_scroll(float(current_offset or 0) + step, float(max_offset))
 
 # NOTE: For spoken commands, Talon list values for completeness/scope/method/style
 # are already the full "Important: …" descriptions. For pattern buttons, we
@@ -544,26 +570,18 @@ def _ensure_pattern_canvas() -> canvas.Canvas:
                 if dy and rect is not None and PatternGUIState.domain is not None:
                     # Map wheel events to whole-row scrolling so rows never
                     # partially overlap the header/tip band.
-                    line_h = 18
-                    row_height = line_h * 3
-                    body_top = rect.y + 60 + line_h * 4
-                    body_bottom = rect.y + rect.height - (line_h // 2)
-                    visible_height = max(body_bottom - body_top, row_height)
                     patterns = [
                         p for p in PATTERNS if p.domain == PatternGUIState.domain
                     ]
                     if patterns:
-                        # Use a ceiling-based visible_rows so that we do not
-                        # allow one extra scroll "page" that would leave a
-                        # mostly-empty gap at the bottom.
-                        visible_rows = max(
-                            int((visible_height + row_height - 1) // row_height), 1
-                        )
-                        max_offset = max(len(patterns) - visible_rows, 0)
                         # dy < 0 → scroll down (next rows), dy > 0 → up.
                         step = -1 if dy > 0 else 1
-                        offset = int(getattr(PatternCanvasState, "scroll_y", 0) or 0)
-                        offset = max(min(offset + step, max_offset), 0)
+                        offset = _scroll_pattern_list(
+                            getattr(PatternCanvasState, "scroll_y", 0.0),
+                            step,
+                            rect,
+                            patterns,
+                        )
                         PatternCanvasState.scroll_y = float(offset)
                         try:
                             _pattern_canvas.show()
@@ -609,20 +627,14 @@ def _ensure_pattern_canvas() -> canvas.Canvas:
             if not raw:
                 return
 
-            line_h = 18
-            row_height = line_h * 3
-            body_top = rect.y + 60 + line_h * 4
-            body_bottom = rect.y + rect.height - (line_h // 2)
-            visible_height = max(body_bottom - body_top, row_height)
             patterns = [p for p in PATTERNS if p.domain == PatternGUIState.domain]
             if not patterns:
                 return
-            visible_rows = max(int((visible_height + row_height - 1) // row_height), 1)
-            max_offset = max(len(patterns) - visible_rows, 0)
             # raw < 0 (scroll down) → next rows, raw > 0 → previous rows.
             step = -1 if raw > 0 else 1
-            offset = int(getattr(PatternCanvasState, "scroll_y", 0) or 0)
-            offset = max(min(offset + step, max_offset), 0)
+            offset = _scroll_pattern_list(
+                getattr(PatternCanvasState, "scroll_y", 0.0), step, rect, patterns
+            )
             PatternCanvasState.scroll_y = float(offset)
             try:
                 _pattern_canvas.show()
@@ -931,18 +943,14 @@ def _draw_pattern_canvas(c: canvas.Canvas) -> None:  # pragma: no cover - visual
     visible_height = max(body_bottom - body_top, line_h * 3)
 
     row_height = line_h * 3  # [Name], recipe, "Say: …"
-    if patterns:
-        # Use a ceiling-based visible_rows so that we do not allow one extra
-        # scroll "page" that would leave a mostly-empty gap at the bottom.
-        visible_rows = max(int((visible_height + row_height - 1) // row_height), 1)
-        max_offset = max(len(patterns) - visible_rows, 0)
+    if patterns and rect is not None:
+        max_offset = _max_scroll_offset(rect, patterns)
     else:
-        visible_rows = 0
         max_offset = 0
 
     # Interpret scroll_y as a row offset to avoid partial-row overlap.
     offset_rows = int(getattr(PatternCanvasState, "scroll_y", 0) or 0)
-    offset_rows = max(min(offset_rows, max_offset), 0)
+    offset_rows = int(clamp_scroll(offset_rows, max_offset))
     PatternCanvasState.scroll_y = float(offset_rows)
 
     for idx in range(offset_rows, len(patterns)):

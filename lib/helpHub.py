@@ -8,6 +8,7 @@ from talon import Context, Module, actions, app, canvas, clip, ui, tap
 from talon import skia
 
 from .canvasFont import apply_canvas_typeface
+from .helpUI import apply_scroll_delta, clamp_scroll, scroll_fraction
 from .modelState import GPTState
 from .suggestionCoordinator import last_recipe_snapshot, suggestion_grammar_phrase
 from .helpDomain import (
@@ -418,7 +419,7 @@ def _ensure_canvas() -> None:
                 thumb_offset = 0
                 if HelpHubState.max_scroll > 0:
                     thumb_offset = int(
-                        (HelpHubState.scroll_y / HelpHubState.max_scroll)
+                        scroll_fraction(HelpHubState.scroll_y, HelpHubState.max_scroll)
                         * max(track_height - thumb_height, 0)
                     )
                 thumb_rect = skia.Rect(
@@ -535,12 +536,16 @@ def _ensure_canvas() -> None:
                             0.0,
                             min((gy - rect.y) / max(rect.height - 1, 1), 1.0),
                         )
-                        HelpHubState.scroll_y = frac * HelpHubState.max_scroll
+                        HelpHubState.scroll_y = clamp_scroll(
+                            frac * HelpHubState.max_scroll, HelpHubState.max_scroll
+                        )
                     elif zone_name == "step_up":
-                        HelpHubState.scroll_y = max(0.0, HelpHubState.scroll_y - 120.0)
+                        HelpHubState.scroll_y = apply_scroll_delta(
+                            HelpHubState.scroll_y, -120.0, HelpHubState.max_scroll
+                        )
                     elif zone_name == "step_down":
-                        HelpHubState.scroll_y = min(
-                            HelpHubState.max_scroll, HelpHubState.scroll_y + 120.0
+                        HelpHubState.scroll_y = apply_scroll_delta(
+                            HelpHubState.scroll_y, 120.0, HelpHubState.max_scroll
                         )
                     _clamp_scroll()
                     try:
@@ -741,8 +746,8 @@ def _on_key(evt) -> None:  # pragma: no cover - visual
             _recompute_search_results()
             return
         if key in ("pagedown", "page_down"):
-            HelpHubState.scroll_y = min(
-                HelpHubState.max_scroll, HelpHubState.scroll_y + 200.0
+            HelpHubState.scroll_y = apply_scroll_delta(
+                HelpHubState.scroll_y, 200.0, HelpHubState.max_scroll
             )
             _clamp_scroll()
             try:
@@ -752,7 +757,9 @@ def _on_key(evt) -> None:  # pragma: no cover - visual
                 pass
             return
         if key in ("pageup", "page_up"):
-            HelpHubState.scroll_y = max(0.0, HelpHubState.scroll_y - 200.0)
+            HelpHubState.scroll_y = apply_scroll_delta(
+                HelpHubState.scroll_y, -200.0, HelpHubState.max_scroll
+            )
             _clamp_scroll()
             try:
                 if _hub_canvas is not None:
@@ -1153,10 +1160,9 @@ def _recompute_search_results() -> None:
 
 
 def _clamp_scroll() -> None:
-    if HelpHubState.scroll_y < 0:
-        HelpHubState.scroll_y = 0.0
-    if HelpHubState.scroll_y > HelpHubState.max_scroll:
-        HelpHubState.scroll_y = HelpHubState.max_scroll
+    HelpHubState.scroll_y = clamp_scroll(
+        HelpHubState.scroll_y, HelpHubState.max_scroll
+    )
 
 
 def _handle_scroll_delta(evt) -> None:
@@ -1188,7 +1194,7 @@ def _handle_scroll_delta(evt) -> None:
         if not raw:
             return
         new_scroll = HelpHubState.scroll_y - raw * 40.0
-        HelpHubState.scroll_y = max(0.0, min(new_scroll, HelpHubState.max_scroll))
+        HelpHubState.scroll_y = clamp_scroll(new_scroll, HelpHubState.max_scroll)
         _clamp_scroll()
         if _scroll_log_count < 6:
             globals()["_scroll_log_count"] = _scroll_log_count + 1

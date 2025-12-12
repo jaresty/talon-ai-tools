@@ -1,5 +1,5 @@
 # ADR-0044 – Concordance Axis SSOT and Help/Pattern UI Streamlining
-Status: Proposed  
+Status: Accepted (in-repo complete as of 2025-12-11)  
 Date: 2025-12-11  
 Owners: talon-ai-tools maintainers
 
@@ -77,9 +77,9 @@ Fragmented SSOTs and parallel UI/streaming implementations drive high coordinati
 - Mitigations: enforce generator checks in CI, land in thin slices with existing + new characterization tests, keep fallback rendering/logging paths intact during migration. Expected effect: lower sustained Concordance scores for axis and help/response hotspots through higher visibility, narrower scope, and lower volatility rather than weakened guardrails.
 
 ## Salient Tasks
-- [ ] Add axis registry + generator, regenerate `axisConfig.py`/README fragments, and add drift test.  
-- [ ] Redirect `requestLog` axis filtering and static prompt allowlist to the registry.  
-- [ ] Extract `help_ui` helper and migrate help hub, quick help canvas, and pattern picker to shared navigation/scroll/hover handling.  
-- [ ] Centralize `_axis_join` and adopt across response/confirmation/destination code paths.  
-- [ ] Wrap streaming lifecycle into a shared presenter and cover cancel/error/buffered paths with characterization tests.  
-- [ ] Run `python3 -m pytest` to confirm coverage after each slice.
+- [x] Add axis registry + generator, regenerate `axisConfig.py`/README fragments, and add drift test.  
+- [x] Redirect `requestLog` axis filtering and static prompt allowlist to the registry.  
+- [x] Extract `help_ui` helper and migrate help hub, quick help canvas, and pattern picker to shared navigation/scroll/hover handling.  
+- [x] Centralize `_axis_join` and adopt across response/confirmation/destination code paths.  
+- [x] Wrap streaming lifecycle into a shared presenter and cover cancel/error/buffered paths with characterization tests.  
+- [x] Run `python3 -m pytest` to confirm coverage after each slice.

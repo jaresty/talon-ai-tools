@@ -1,6 +1,7 @@
 import unittest
 from typing import TYPE_CHECKING
 from unittest.mock import MagicMock, patch
+import importlib
 
 try:
     from bootstrap import bootstrap
@@ -36,6 +37,8 @@ if bootstrap is not None:
                 actions.app.notify = MagicMock()
                 actions.user.gpt_apply_prompt = MagicMock()
                 actions.user.model_pattern_gui_close = MagicMock()
+                # Ensure talon_user.lib is importable for patch targets.
+                importlib.import_module("talon_user.lib.patternDebugCoordinator")
 
             def test_axis_value_returns_description_when_present(self) -> None:
                 mapping = {"gist": "Important: Provide a short but complete answer."}
@@ -295,8 +298,11 @@ if bootstrap is not None:
                 """model_pattern_debug_name should call the coordinator view and notify with its recipe line."""
                 target = next(p for p in PATTERNS if p.name == "Debug bug")
 
-                with patch(
-                    "talon_user.lib.patternDebugCoordinator.pattern_debug_view",
+                pdc = importlib.import_module("talon_user.lib.patternDebugCoordinator")
+
+                with patch.object(
+                    pdc,
+                    "pattern_debug_view",
                     return_value={
                         "name": target.name,
                         "recipe_line": "describe · full · narrow · debugging · rog",

@@ -4,6 +4,7 @@ from talon import Context, Module, actions, canvas, ui
 from talon import skia
 
 from .canvasFont import apply_canvas_typeface
+from .helpUI import apply_scroll_delta, clamp_scroll
 from .axisConfig import axis_docs_for
 from .personaConfig import INTENT_PRESETS, PERSONA_PRESETS
 
@@ -59,6 +60,82 @@ def _axis_keys(axis: str) -> list[str]:
 
     docs = axis_docs_for(axis)
     return [doc.key for doc in docs]
+
+
+def _persona_preset_commands() -> list[str]:
+    """Return speakable persona preset commands in list order."""
+
+    commands: list[str] = []
+    for preset in PERSONA_PRESETS:
+        # Only show explicit spoken forms; labels/keys are too verbose for quick help.
+        spoken = (preset.spoken or "").strip().lower()
+        if not spoken:
+            continue
+        commands.append(spoken)
+    return commands
+
+
+def _intent_preset_commands() -> list[str]:
+    """Return speakable intent preset commands in list order."""
+
+    commands: list[str] = []
+    for preset in INTENT_PRESETS:
+        spoken = (preset.key or "").strip().lower()
+        if not spoken:
+            continue
+        commands.append(spoken)
+    return commands
+
+
+def _draw_wrapped_commands(
+    prefix: str,
+    commands: list[str],
+    draw_text: Callable[[str, int, int], None],
+    x: int,
+    y: int,
+    rect: Optional["Rect"],
+    line_h: int,
+    command_prefix: Optional[str] = None,
+) -> int:
+    """Render a prefixed command list, wrapping to multiple lines when needed."""
+
+    if not commands:
+        return y
+
+    entries = list(commands)
+    if command_prefix and entries:
+        entries = [f"{command_prefix} {entries[0]}"] + entries[1:]
+
+    approx_char_width = 8
+    max_pixels = 320
+    try:
+        if rect is not None and hasattr(rect, "width"):
+            padding = 0
+            if hasattr(rect, "x"):
+                padding = max(x - rect.x, 0)
+            max_pixels = max(int(rect.width) - (2 * padding), 120)
+    except Exception:
+        # Fall back to the default max width if rect math fails.
+        max_pixels = 320
+    # Keep lines readable even on wide panels.
+    max_pixels = min(max_pixels, 520)
+    max_chars = max(int(max_pixels // approx_char_width), 10)
+
+    lines: list[str] = []
+    current = prefix + entries[0]
+    for cmd in entries[1:]:
+        candidate = current + " · " + cmd
+        if len(candidate) > max_chars and current:
+            lines.append(current)
+            current = " " * len(prefix) + cmd
+        else:
+            current = candidate
+    lines.append(current)
+
+    for line in lines:
+        draw_text(line, x, y)
+        y += line_h
+    return y
 
 
 # Axis summaries (keys only; descriptions remain in docs). Pulled directly from
@@ -377,7 +454,7 @@ def _ensure_canvas() -> canvas.Canvas:
                     # conservative; the content is mostly text and fits well
                     # within a couple of thousand pixels.
                     new_scroll = HelpCanvasState.scroll_y - dy * 40.0
-                    HelpCanvasState.scroll_y = max(min(new_scroll, 2000.0), 0.0)
+                    HelpCanvasState.scroll_y = clamp_scroll(new_scroll, 2000.0)
                 return
 
         except Exception:
@@ -418,7 +495,7 @@ def _ensure_canvas() -> canvas.Canvas:
                 delta = -40.0
             if delta:
                 new_scroll = HelpCanvasState.scroll_y + delta
-                HelpCanvasState.scroll_y = max(min(new_scroll, 2000.0), 0.0)
+                HelpCanvasState.scroll_y = clamp_scroll(new_scroll, 2000.0)
         except Exception:
             return
 
@@ -676,27 +753,35 @@ def _default_draw_quick_help(
     y += line_h
 
     try:
-        persona_labels = [preset.label for preset in PERSONA_PRESETS]
-        if persona_labels:
-            draw_text(
-                "  Persona presets (Who): " + ", ".join(persona_labels),
+        persona_commands = _persona_preset_commands()
+        if persona_commands:
+            y = _draw_wrapped_commands(
+                "  Persona presets (Who): ",
+                persona_commands,
+                draw_text,
                 x,
                 y,
+                rect,
+                line_h,
+                command_prefix="persona",
             )
-            y += line_h
     except Exception:
         # If persona presets cannot be imported, continue without them.
         pass
 
     try:
-        intent_labels = [preset.label for preset in INTENT_PRESETS]
-        if intent_labels:
-            draw_text(
-                "  Intent presets (Why): " + ", ".join(intent_labels),
+        intent_commands = _intent_preset_commands()
+        if intent_commands:
+            y = _draw_wrapped_commands(
+                "  Intent presets (Why): ",
+                intent_commands,
+                draw_text,
                 x,
                 y,
+                rect,
+                line_h,
+                command_prefix="intent",
             )
-            y += line_h
     except Exception:
         # If intent presets cannot be imported, continue without them.
         pass

@@ -85,6 +85,7 @@ def persona_docs_map(axis: str) -> dict[str, str]:
 class PersonaPreset:
     key: str
     label: str
+    spoken: str | None = None
     voice: str | None = None
     audience: str | None = None
     tone: str | None = None
@@ -101,12 +102,14 @@ PERSONA_PRESETS: tuple[PersonaPreset, ...] = (
     PersonaPreset(
         key="peer_engineer_explanation",
         label="Peer engineer explanation",
+        spoken="peer",
         voice="as programmer",
         audience="to programmer",
     ),
     PersonaPreset(
         key="teach_junior_dev",
         label="Teach junior dev",
+        spoken="mentor",
         voice="as teacher",
         audience="to junior engineer",
         tone="kindly",
@@ -114,6 +117,7 @@ PERSONA_PRESETS: tuple[PersonaPreset, ...] = (
     PersonaPreset(
         key="executive_brief",
         label="Executive brief",
+        spoken="exec",
         voice="as programmer",
         audience="to CEO",
         tone="directly",

@@ -12,6 +12,8 @@ else:
 if bootstrap is not None:
     from pathlib import Path
 
+    from talon_user.lib.axisMappings import axis_registry
+
     class ReadmeAxisListTests(unittest.TestCase):
         def setUp(self) -> None:
             self.root = Path(__file__).resolve().parents[1]
@@ -89,10 +91,37 @@ if bootstrap is not None:
                 f"Style tokens missing from README style axis list: {missing}",
             )
 
+        def test_readme_axis_lists_match_registry_for_core_axes(self) -> None:
+            """README token lists should match the axis registry for core axes."""
+            registry = axis_registry()
+            axis_markers = {
+                "completeness": "Completeness (`completenessModifier`)",
+                "scope": "Scope (`scopeModifier`)",
+                "method": "Method (`methodModifier`)",
+                "style": "Style (`styleModifier`)",
+            }
+            for axis, marker in axis_markers.items():
+                with self.subTest(axis=axis):
+                    readme_keys = {
+                        key
+                        for key in self._read_axis_keys_from_readme_line(marker)
+                        if "Modifier" not in key
+                    }
+                    registry_keys = set(registry[axis])
+                    missing = sorted(registry_keys - readme_keys)
+                    extra = sorted(readme_keys - registry_keys)
+                    self.assertFalse(
+                        missing,
+                        f"{axis} tokens missing from README list: {missing}",
+                    )
+                    self.assertFalse(
+                        extra,
+                        f"{axis} README tokens not present in registry: {extra}",
+                    )
+
 else:
     if not TYPE_CHECKING:
         class ReadmeAxisListTests(unittest.TestCase):
             @unittest.skip("Test harness unavailable outside unittest runs")
             def test_placeholder(self) -> None:
                 pass
-

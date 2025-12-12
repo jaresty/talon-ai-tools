@@ -5,7 +5,7 @@ from __future__ import annotations
 from typing import Optional
 from copy import deepcopy
 
-from .axisMappings import axis_value_to_key_map_for
+from .axisMappings import axis_registry_tokens, axis_value_to_key_map_for
 from .requestHistory import RequestHistory, RequestLogEntry
 
 _history = RequestHistory()
@@ -39,16 +39,18 @@ def _filter_axes_payload(axes: Optional[dict[str, list[str]]]) -> dict[str, list
 
         if axis_name in ("completeness", "scope", "method", "style"):
             mapping = axis_value_to_key_map_for(axis_name)
+            known_tokens = axis_registry_tokens(axis_name)
             kept: list[str] = []
             for token in values:
                 lower = token.lower()
-                if mapping and token in mapping:
-                    kept.append(token)
-                    continue
                 if lower.startswith("important:"):
                     # Skip obviously hydrated/system-prompt style strings.
                     continue
-                kept.append(token)
+                if known_tokens and token in known_tokens:
+                    kept.append(token)
+                    continue
+                if not known_tokens and mapping and token in mapping:
+                    kept.append(token)
             if kept:
                 filtered[axis_name] = kept
             continue

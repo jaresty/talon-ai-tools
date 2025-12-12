@@ -133,3 +133,37 @@ def current_streaming_snapshot() -> Dict[str, Any]:
         return dict(snap)
     except Exception:
         return {}
+
+
+def record_streaming_snapshot(run: StreamingRun) -> Dict[str, Any]:
+    """Persist the current streaming snapshot to GPTState and return it."""
+
+    snapshot = run.snapshot()
+    try:
+        from .modelState import GPTState
+
+        GPTState.last_streaming_snapshot = snapshot
+    except Exception:
+        pass
+    return snapshot
+
+
+def record_streaming_chunk(run: StreamingRun, text: str) -> Dict[str, Any]:
+    """Append a chunk and persist the updated snapshot."""
+
+    run.on_chunk(text)
+    return record_streaming_snapshot(run)
+
+
+def record_streaming_error(run: StreamingRun, message: str) -> Dict[str, Any]:
+    """Mark error and persist the snapshot."""
+
+    run.on_error(message)
+    return record_streaming_snapshot(run)
+
+
+def record_streaming_complete(run: StreamingRun) -> Dict[str, Any]:
+    """Mark completion and persist the snapshot."""
+
+    run.on_complete()
+    return record_streaming_snapshot(run)

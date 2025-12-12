@@ -37,7 +37,14 @@ from .requestState import RequestState
 from .requestLog import append_entry_from_request
 from .uiDispatch import run_on_ui_thread
 from .requestLifecycle import RequestLifecycleState, reduce_request_state
-from .streamingCoordinator import new_streaming_run, StreamingRun
+from .streamingCoordinator import (
+    new_streaming_run,
+    StreamingRun,
+    record_streaming_snapshot,
+    record_streaming_chunk,
+    record_streaming_complete,
+    record_streaming_error,
+)
 import threading
 
 # Ensure a default request UI controller is registered so lifecycle events
@@ -621,12 +628,9 @@ def _send_request_streaming(request, request_id: str) -> str:
     parts: list[str] = streaming_run.chunks
 
     def _update_streaming_snapshot() -> None:
-        try:
-            GPTState.last_streaming_snapshot = streaming_run.snapshot()
-        except Exception:
-            pass
+        record_streaming_snapshot(streaming_run)
 
-    _update_streaming_snapshot()
+    record_streaming_snapshot(streaming_run)
     first_chunk = True
     refresh_interval_ms = 250
     last_canvas_refresh_ms = 0
@@ -691,7 +695,7 @@ def _send_request_streaming(request, request_id: str) -> str:
                     if raw_response.status_code != 200:
                         error_info = parsed_full or raw_response.text
                         streaming_run.on_error(f"HTTP {raw_response.status_code}")
-                        _update_streaming_snapshot()
+                        record_streaming_snapshot(streaming_run)
                         notify(
                             f"GPT Failure: HTTP {raw_response.status_code} | {error_info}"
                         )
@@ -702,8 +706,7 @@ def _send_request_streaming(request, request_id: str) -> str:
                         .get("content", "")
                     )
                     if text_piece:
-                        streaming_run.on_chunk(text_piece)
-                        _update_streaming_snapshot()
+                        record_streaming_chunk(streaming_run, text_piece)
                     full_text = streaming_run.text
                     _update_stream_state_from_text(
                         full_text,
@@ -721,8 +724,7 @@ def _send_request_streaming(request, request_id: str) -> str:
                         )
                     except Exception:
                         pass
-                    streaming_run.on_complete()
-                    _update_streaming_snapshot()
+                    record_streaming_complete(streaming_run)
                     answer_text = full_text
                     GPTState.last_raw_response = parsed_full
                     _set_active_response(None)
@@ -736,15 +738,13 @@ def _send_request_streaming(request, request_id: str) -> str:
         error_msg = f"Request timed out after {timeout_seconds} seconds"
         notify(f"GPT Failure: {error_msg}")
         err = GPTRequestError(408, error_msg)
-        streaming_run.on_error(error_msg)
-        _update_streaming_snapshot()
+        record_streaming_error(streaming_run, error_msg)
         _handle_streaming_error(err)
         raise err
     except Exception as e:
         print(f"[modelHelpers] streaming requests.post failed: {e!r}")
         traceback.print_exc()
-        streaming_run.on_error(str(e))
-        _update_streaming_snapshot()
+        record_streaming_error(streaming_run, str(e))
         _handle_streaming_error(e)
         raise
     if raw_response.status_code != 200:
@@ -753,8 +753,7 @@ def _send_request_streaming(request, request_id: str) -> str:
             error_info = raw_response.json()
         except Exception:
             error_info = raw_response.text
-        streaming_run.on_error(f"HTTP {raw_response.status_code}")
-        _update_streaming_snapshot()
+        record_streaming_error(streaming_run, f"HTTP {raw_response.status_code}")
         notify(f"GPT Failure: HTTP {raw_response.status_code} | {error_info}")
         raise GPTRequestError(raw_response.status_code, error_info)
 
@@ -777,8 +776,7 @@ def _send_request_streaming(request, request_id: str) -> str:
 
     def _append_text(text_piece: str):
         nonlocal first_chunk
-        streaming_run.on_chunk(text_piece)
-        _update_streaming_snapshot()
+        record_streaming_chunk(streaming_run, text_piece)
         full_text = streaming_run.text
         _update_stream_state_from_text(
             full_text,
@@ -813,8 +811,7 @@ def _send_request_streaming(request, request_id: str) -> str:
                         pass
                 except Exception:
                     pass
-                streaming_run.on_error("cancelled")
-                _update_streaming_snapshot()
+                record_streaming_error(streaming_run, "cancelled")
                 try:
                     set_controller(RequestUIController())
                     emit_cancel(request_id=request_id)
@@ -861,8 +858,7 @@ def _send_request_streaming(request, request_id: str) -> str:
                 print("[modelHelpers] streaming ended; cancel requested, aborting")
             except Exception:
                 pass
-            streaming_run.on_error("cancelled")
-            _update_streaming_snapshot()
+            record_streaming_error(streaming_run, "cancelled")
             try:
                 set_controller(RequestUIController())
                 emit_cancel(request_id=request_id)
@@ -883,8 +879,7 @@ def _send_request_streaming(request, request_id: str) -> str:
                     .get("content", "")
                 )
                 if text_piece:
-                    streaming_run.on_chunk(text_piece)
-                    _update_streaming_snapshot()
+                    record_streaming_chunk(streaming_run, text_piece)
                     full_text = streaming_run.text
                     _update_stream_state_from_text(
                         full_text,
@@ -921,8 +916,7 @@ def _send_request_streaming(request, request_id: str) -> str:
         except Exception:
             pass
         _set_active_response(None)
-        streaming_run.on_error("cancelled")
-        _update_streaming_snapshot()
+        record_streaming_error(streaming_run, "cancelled")
         _update_lifecycle("cancel")
         raise
     except Exception as e:
@@ -955,8 +949,7 @@ def _send_request_streaming(request, request_id: str) -> str:
                 pass
             _set_active_response(None)
             raise CancelledRequest()
-        streaming_run.on_error(str(e))
-        _update_streaming_snapshot()
+        record_streaming_error(streaming_run, str(e))
         _handle_streaming_error(e)
         raise
 
@@ -966,8 +959,7 @@ def _send_request_streaming(request, request_id: str) -> str:
         except Exception:
             pass
 
-    streaming_run.on_complete()
-    _update_streaming_snapshot()
+    record_streaming_complete(streaming_run)
     answer_text = streaming_run.text
     try:
         print(

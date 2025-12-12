@@ -19,3 +19,8 @@ adr010-check:
 
 adr010-status:
 	python3 scripts/tools/adr010-status.py
+
+axis-regenerate:
+	mkdir -p tmp
+	PYTHONPATH=. python3 scripts/tools/generate_axis_config.py --out tmp/axisConfig.generated.py
+	PYTHONPATH=. python3 scripts/tools/generate_axis_config.py --markdown --out tmp/readme-axis-tokens.md

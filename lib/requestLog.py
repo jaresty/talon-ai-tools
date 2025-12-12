@@ -5,9 +5,63 @@ from __future__ import annotations
 from typing import Optional
 from copy import deepcopy
 
+from .axisMappings import axis_value_to_key_map_for
 from .requestHistory import RequestHistory, RequestLogEntry
 
 _history = RequestHistory()
+
+
+def _filter_axes_payload(axes: Optional[dict[str, list[str]]]) -> dict[str, list[str]]:
+    """Normalise and filter axes payload for request history.
+
+    Ensures token-only axis state per ADR-034/ADR-0045 by:
+    - Trimming blanks
+    - Dropping obviously hydrated values that start with 'Important:'
+    - Keeping known axis tokens when present in axisMappings
+    - Passing through non-axis keys (if any) after basic trimming
+    """
+    if not axes:
+        return {}
+
+    filtered: dict[str, list[str]] = {}
+
+    for axis_name, raw_values in axes.items():
+        values: list[str]
+        if isinstance(raw_values, list):
+            values = [str(v).strip() for v in raw_values]
+        else:
+            values = [str(raw_values).strip()]
+
+        # Drop empty values early.
+        values = [v for v in values if v]
+        if not values:
+            continue
+
+        if axis_name in ("completeness", "scope", "method", "style"):
+            mapping = axis_value_to_key_map_for(axis_name)
+            kept: list[str] = []
+            for token in values:
+                lower = token.lower()
+                if mapping and token in mapping:
+                    kept.append(token)
+                    continue
+                if lower.startswith("important:"):
+                    # Skip obviously hydrated/system-prompt style strings.
+                    continue
+                kept.append(token)
+            if kept:
+                filtered[axis_name] = kept
+            continue
+
+        # For any unexpected axis keys, keep trimmed non-empty values as-is.
+        passthrough: list[str] = []
+        for token in values:
+            if token:
+                passthrough.append(token)
+        if passthrough:
+            filtered[axis_name] = passthrough
+
+    return filtered
 
 
 def append_entry(
@@ -29,7 +83,7 @@ def append_entry(
         )
     except Exception:
         pass
-    axes_payload = axes or {}
+    axes_payload = _filter_axes_payload(axes)
     _history.append(
         RequestLogEntry(
             request_id=request_id,

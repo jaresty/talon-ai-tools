@@ -13,7 +13,10 @@ from .talonSettings import _AXIS_SOFT_CAPS
 from .metaPromptConfig import first_meta_preview_line, meta_preview_lines
 
 try:
-    from .staticPromptConfig import get_static_prompt_axes
+    from .staticPromptConfig import (
+        get_static_prompt_axes,
+        static_prompt_settings_catalog,
+    )
 except ImportError:  # Talon may have a stale staticPromptConfig loaded
     from .staticPromptConfig import STATIC_PROMPT_CONFIG
 
@@ -34,6 +37,21 @@ except ImportError:  # Talon may have a stale staticPromptConfig loaded
                 if tokens:
                     axes[axis] = tokens
         return axes
+
+    def static_prompt_settings_catalog():
+        """Fallback settings catalog when static_prompt_settings_catalog is unavailable.
+
+        This mirrors lib.staticPromptConfig.static_prompt_settings_catalog but
+        builds entries directly from STATIC_PROMPT_CONFIG and get_static_prompt_axes
+        so quick-help surfaces can still render static prompt details.
+        """
+        catalog: dict[str, dict[str, object]] = {}
+        for name, profile in STATIC_PROMPT_CONFIG.items():
+            catalog[name] = {
+                "description": str(profile.get("description", "")).strip(),
+                "axes": get_static_prompt_axes(name),
+            }
+        return catalog
 
 
 def _axis_keys(axis: str) -> list[str]:
@@ -696,6 +714,36 @@ def _default_draw_quick_help(
         sp = HelpGUIState.static_prompt
         draw_text(f"Static prompt focus: {sp}", x, y)
         y += line_h
+
+        # When a static prompt is focused, render its description and axis
+        # profile using the shared static prompt settings catalog so quick help
+        # stays aligned with docs and Talon settings.
+        try:
+            settings_catalog = static_prompt_settings_catalog()
+        except Exception:
+            settings_catalog = {}
+        entry = settings_catalog.get(sp) if settings_catalog else None
+        if entry:
+            description = str(entry.get("description") or "").strip()
+            if description:
+                draw_text(description, x, y)
+                y += line_h
+            axes = entry.get("axes") or {}
+            if axes:
+                draw_text("Profile axes:", x, y)
+                y += line_h
+                for axis in ("completeness", "scope", "method", "style"):
+                    value = axes.get(axis)
+                    if not value:
+                        continue
+                    if isinstance(value, list):
+                        rendered = " ".join(str(v) for v in value)
+                    else:
+                        rendered = str(value)
+                    if rendered:
+                        draw_text(f"  {axis.capitalize()}: {rendered}", x, y)
+                        y += line_h
+            y += line_h
     elif GPTState.last_recipe:
         recipe = GPTState.last_recipe
         directional = getattr(GPTState, "last_directional", "")

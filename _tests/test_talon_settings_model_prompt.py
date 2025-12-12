@@ -15,6 +15,7 @@ if bootstrap is not None:
     from talon_user.lib.staticPromptConfig import (
         STATIC_PROMPT_CONFIG,
         get_static_prompt_axes,
+        static_prompt_settings_catalog,
     )
     from talon_user.lib.talonSettings import modelPrompt
     from talon_user.lib.modelState import GPTState
@@ -616,6 +617,55 @@ if bootstrap is not None:
             _ = modelPrompt(m)
 
             self.assertEqual(GPTState.system_prompt.scope, "relations")
+
+        def test_static_prompt_settings_catalog_axes_align_with_model_prompt(self):
+            """Static prompt settings catalog axes should match GPTState.last_axes when no spoken modifiers are present.
+
+            This guards cross-surface consistency between the Axis & Static Prompt
+            catalog facade and the Talon settings modelPrompt path for all
+            profiled static prompts that define axis hints.
+            """
+
+            catalog = static_prompt_settings_catalog()
+
+            for name, entry in catalog.items():
+                axes = entry.get("axes", {}) or {}
+                # Skip prompts with no profile axes.
+                has_profile_axes = any(
+                    axis in axes and axes.get(axis)
+                    for axis in ("scope", "method", "style", "completeness")
+                )
+                if not has_profile_axes:
+                    continue
+
+                with self.subTest(static_prompt=name):
+                    GPTState.reset_all()
+                    m = SimpleNamespace(staticPrompt=name, directionalModifier="DIR")
+                    _ = modelPrompt(m)
+
+                    last_axes = GPTState.last_axes or {}
+
+                    for axis in ("scope", "method", "style", "completeness"):
+                        configured = axes.get(axis)
+                        if not configured:
+                            continue
+                        if isinstance(configured, list):
+                            expected_tokens = [
+                                str(v).strip() for v in configured if str(v).strip()
+                            ]
+                        else:
+                            token = str(configured).strip()
+                            expected_tokens = [token] if token else []
+
+                        actual_tokens = last_axes.get(axis, []) or []
+
+                        for token in expected_tokens:
+                            self.assertIn(
+                                token,
+                                actual_tokens,
+                                f"Static prompt {name!r} axis {axis!r} token {token!r} "
+                                "not reflected in GPTState.last_axes via settings catalog",
+                            )
 
 else:
     if not TYPE_CHECKING:

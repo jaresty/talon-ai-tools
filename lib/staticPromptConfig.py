@@ -527,3 +527,34 @@ def static_prompt_catalog(
         "talon_list_tokens": talon_tokens,
         "unprofiled_tokens": unprofiled_tokens,
     }
+
+
+class StaticPromptSettingsEntry(TypedDict):
+    """Settings/docs-facing view of a static prompt profile.
+
+    This facade is intended for Talon settings GUIs and help surfaces that
+    need a simple mapping from static prompt name to description and axes,
+    reusing the same profile/cross-surface semantics as `static_prompt_catalog`.
+    """
+
+    description: str
+    axes: dict[str, object]
+
+
+def static_prompt_settings_catalog() -> dict[str, StaticPromptSettingsEntry]:
+    """Return a settings-friendly catalog of static prompts.
+
+    The result maps each profiled static prompt name to a small entry
+    containing its human-readable description and axis profile as surfaced
+    by `get_static_prompt_axes`.
+    """
+
+    catalog = static_prompt_catalog()
+    result: dict[str, StaticPromptSettingsEntry] = {}
+    for entry in catalog["profiled"]:
+        name = entry["name"]
+        result[name] = {
+            "description": entry.get("description", "").strip(),
+            "axes": entry.get("axes", {}),
+        }
+    return result

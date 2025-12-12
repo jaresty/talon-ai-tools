@@ -16,7 +16,10 @@ if bootstrap is not None:
         _ensure_canvas,
         register_draw_handler,
         unregister_draw_handler,
+        _default_draw_quick_help,
+        Rect,
     )
+    from talon_user.lib.staticPromptConfig import static_prompt_settings_catalog
 
     class ModelHelpCanvasTests(unittest.TestCase):
         def setUp(self) -> None:
@@ -122,8 +125,41 @@ if bootstrap is not None:
                 self.skipTest("Canvas stub does not expose _callbacks")
             self.assertIn("key", callbacks)
 
+        def test_static_prompt_focus_uses_settings_catalog(self) -> None:
+            """Quick-help static prompt focus should render settings catalog data."""
+            HelpGUIState.section = "all"
+            HelpGUIState.static_prompt = "todo"
+
+            catalog = static_prompt_settings_catalog()
+            entry = catalog.get("todo")
+            self.assertIsNotNone(
+                entry,
+                "Expected 'todo' in static prompt settings catalog",
+            )
+            description = entry["description"]
+            axes = entry["axes"]
+
+            class StubCanvas:
+                def __init__(self) -> None:
+                    self.rect = Rect(0, 0, 800, 600)
+                    self.drawn: list[str] = []
+
+                def draw_text(self, text, x, y) -> None:  # type: ignore[override]
+                    self.drawn.append(str(text))
+
+            canvas = StubCanvas()
+            _default_draw_quick_help(canvas)
+
+            self.assertIn("Static prompt focus: todo", canvas.drawn)
+            if description:
+                self.assertIn(description, canvas.drawn)
+            if axes:
+                self.assertIn("Profile axes:", canvas.drawn)
+
+
 else:
     if not TYPE_CHECKING:
+
         class ModelHelpCanvasTests(unittest.TestCase):
             @unittest.skip("Test harness unavailable outside unittest runs")
             def test_placeholder(self) -> None:

@@ -275,6 +275,43 @@ For each domain, we will:
     - Assert snapshot/log write contracts (e.g., when a snapshot should be present and what metadata it includes).
   - Keep existing tests as end-to-end guards and extend them with cases that exercise new façade behaviours where appropriate.
 
+## Current Status (2025-12-11)
+
+- **Axis & Static Prompt Concordance**
+  - In-repo guardrails and facades in place:
+    - Guardrail tests enforce that profiled static prompt axes (scope/method/style/directional) use valid `axisConfig` tokens.
+    - `modelPrompt` behaviour is characterised so that static prompt profile axes flow into `GPTState.last_axes` when no spoken modifiers override them.
+    - `static_prompt_description_overrides()` and `static_prompt_catalog()` now act as the primary docs/README-facing facades for static prompt descriptions and catalog structure.
+  - Remaining work for this repo:
+    - Introduce a slightly higher-level catalog/facade API (built on the current helpers) and tighten Talon settings / GUI consumers to use it consistently.
+    - Decide how completeness hints that are not present in `axisConfig` should be handled (pure hints vs. promoted axis tokens) and update tests/docs accordingly.
+
+- **Help Navigation & Quick-Help**
+  - In-repo behaviour/guardrails:
+    - Help Hub navigation already delegates search/focus to `helpDomain` helpers, with tests characterising keyboard navigation and result focus.
+    - Hub buttons that open other overlays (Quick help, Patterns, History, HTML docs, Suggestions) now close the hub before opening the target surface, with tests guarding this close-before-open behaviour.
+  - Remaining work for this repo:
+    - Decide whether quick-help should share a small navigation façade with Help Hub (for example, for focus movement), or remain a separate, focused surface with its own state.
+
+- **Pattern Debug & GPT Action Orchestration**
+  - In-repo behaviour/guardrails:
+    - `pattern_debug_snapshot()` in `modelPatternGUI` provides a structured, tested view of pattern recipes and axes plus current `GPTState` axes.
+    - `pattern_debug_catalog()` in `patternDebugCoordinator` exposes a coordinator-style catalog of pattern debug snapshots (optionally filtered by domain), built on `pattern_debug_snapshot`.
+    - `UserActions.gpt_show_pattern_debug` surfaces a concise, user-facing pattern debug view by querying the coordinator and rendering a short recipe line plus last-axes payload.
+    - GPT action tests around async blocking and meta notifications now directly guard the `actions.app.notify` contract.
+  - Remaining work for this repo:
+    - Decide how far to extend the Pattern Debug coordinator (for example, adding a "last run" view or richer filters) and whether any GUI flows should consume it directly instead of relying on local helpers like `_debug`.
+
+- **Streaming Response & Snapshot Resilience**
+  - In-repo behaviour/guardrails:
+    - Streaming request behaviour (happy path, cancellation, JSON fallback, SSE, and timeout) is characterised and guarded by tests, including lifecycle status transitions.
+    - Source and destination snapshots have tests for headers and slugs that encode axis/static-prompt context and source type, built on the shared `last_recipe_snapshot()` / `recipe_header_lines_from_snapshot()` façade in `suggestionCoordinator`.
+    - The `max_attempts` non-streaming failure path in `send_request` is explicitly tested to mark the lifecycle as `errored` and raise a clear error.
+    - Request history entries in `requestLog` now store token-only axis state filtered through `axisMappings`, dropping obviously hydrated axis descriptions before logging, with tests guarding this behaviour.
+    - A small `streamingCoordinator` façade (`StreamingRun` plus helpers) now exists as a test-backed accumulator for per-request streaming state, and `_send_request_streaming` uses `StreamingRun` as its in-memory accumulator while preserving existing canvas and lifecycle behaviour.
+  - Remaining work for this repo:
+    - Thread response canvas updates and snapshot/log writes through the streaming façade behind an explicit policy surface, keeping existing tests green.
+
 ## Consequences
 - **Positive outcomes**
   - **Lower coordination cost** for axis/static prompt changes by consolidating semantics and exposing clear, reusable facades for docs, help, and Talon settings.
@@ -295,21 +332,22 @@ For each domain, we will:
 
 ## Salient Tasks
 - **Axis & Static Prompt Concordance**
-  - [ ] Map current uses of `axisConfig`, `axisMappings`, `staticPromptConfig`, and `static_prompt_catalog` across libs, GUIs, Talon lists, and docs.
-  - [ ] Introduce or tighten a small catalog/facade API that exposes axis and static prompt semantics to docs, help, and Talon settings.
-  - [ ] Add/extend tests to characterize catalog behaviour and cross-surface consistency.
+  - [x] Map current uses of `axisConfig`, `axisMappings`, `staticPromptConfig`, and `static_prompt_catalog` across libs, GUIs, Talon lists, and docs.
+  - [x] Introduce or tighten small catalog/facade APIs that expose axis and static prompt semantics to docs, help, and Talon settings (for example, `static_prompt_catalog`, `static_prompt_description_overrides`, and `static_prompt_settings_catalog`).
+  - [x] Adopt these facades in Talon settings and GUI/help surfaces where appropriate, and add/extend tests to characterise cross-surface behaviour and consistency (for example, `modelPrompt` / `GPTState.last_axes` alignment with `static_prompt_settings_catalog`, and quick-help static prompt focus using the shared catalog).
 
 - **Help Navigation & Quick-Help**
-  - [ ] Extract navigation state and keyboard/mouse contracts into a dedicated help navigation façade.
-  - [ ] Update help hub and help canvas to use the façade for navigation while keeping rendering logic local.
-  - [ ] Add façade-focused tests and extend existing help/canvas tests to cover key navigation flows.
+  - [x] Extract navigation state and keyboard/mouse contracts into a dedicated help navigation façade (via `helpDomain` helpers such as `help_focusable_items`, `help_next_focus_label`, `help_activation_target`, and `help_edit_filter_text`).
+  - [x] Update help hub and help canvas to use the façade for navigation while keeping rendering logic local (for example, `helpHub.focusable_items_for`, `_next_focus_label`, `_focus_step`, and `_activate_focus` delegating into `helpDomain`).
+  - [x] Add façade-focused tests and extend existing help/canvas tests to cover key navigation flows (for example, `_tests/test_help_hub.py` focus/activation and filter/edit tests, plus `_tests/test_model_help_canvas.py` quick-help behaviours).
 
 - **Pattern Debug & GPT Action Orchestration**
-  - [ ] Design and implement a pattern debug coordinator that replaces ad hoc `_debug` entrypoints.
-  - [ ] Route GPT actions that depend on pattern inspection through this coordinator.
-  - [ ] Add tests for the coordinator and adjust existing tests to target it where appropriate.
+  - [x] Design and implement a pattern debug coordinator that replaces ad hoc `_debug` entrypoints for non-GUI flows (via `pattern_debug_snapshot` and `pattern_debug_catalog`).
+  - [x] Route GPT actions that depend on pattern inspection through this coordinator (for example, `gpt_show_pattern_debug`).
+  - [ ] Decide whether and how GUI debug flows should consume the coordinator and extend tests to target those paths where appropriate.
 
 - **Streaming Response & Snapshot Resilience**
-  - [ ] Define a streaming/snapshot façade that centralizes streaming accumulation and error-handling policies.
-  - [ ] Integrate canvases, destinations, and logs with this façade.
-  - [ ] Characterize and test normal and error streaming scenarios, including snapshot/log behaviour, before and after refactors.
+  - [x] Design a small streaming/snapshot façade (for example, a `streamingCoordinator`) around `_send_request_streaming` that owns accumulation and error-handling policies for a single request, without rewiring call sites yet.
+  - [x] Add façade-level characterization tests that cover normal streaming, cancellation, JSON fallback, SSE, timeout, and max-attempts behaviour, reusing existing request/streaming tests where possible (primarily `_tests/test_request_streaming.py` and `_tests/test_streaming_coordinator.py`).
+  - [ ] Rewire `modelResponseCanvas` to use the streaming façade (or a thin wrapper over `StreamingRun.snapshot()`) for any streaming-specific state it needs, while keeping existing layout and axis rendering semantics unchanged and extending tests to cover the integration.
+  - [x] Thread snapshot/file/log writes (`_save_source_snapshot_to_file`, `modelDestination`, `requestLog`/`requestHistoryActions`) through the axis/recipe façade (`last_recipe_snapshot` / `recipe_header_lines_from_snapshot`) and axis filtering helpers, with existing tests in `_tests/test_gpt_source_snapshot.py`, `_tests/test_model_destination.py`, `_tests/test_request_log.py`, and `_tests/test_request_history_actions.py` guarding the contracts.

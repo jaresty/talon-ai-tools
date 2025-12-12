@@ -1579,12 +1579,24 @@ class UserActions:
     def gpt_show_pattern_debug(pattern_name: str) -> None:
         """Show a concise debug snapshot for a named pattern."""
         try:
-            from ..lib.modelPatternGUI import pattern_debug_snapshot
+            from ..lib.patternDebugCoordinator import pattern_debug_catalog
         except Exception:
             actions.app.notify("GPT: Pattern debug helper unavailable")
             return
 
-        snapshot = pattern_debug_snapshot(pattern_name)
+        try:
+            snapshots = pattern_debug_catalog()
+        except Exception:
+            actions.app.notify("GPT: Pattern debug helper unavailable")
+            return
+
+        snapshot = None
+        for candidate in snapshots:
+            name_value = str(candidate.get("name") or "")
+            if name_value.lower() == pattern_name.lower():
+                snapshot = candidate
+                break
+
         if not snapshot:
             actions.app.notify(f"GPT: No pattern debug info for '{pattern_name}'")
             return

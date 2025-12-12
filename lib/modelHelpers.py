@@ -36,6 +36,7 @@ from .requestState import RequestState
 from .requestLog import append_entry_from_request
 from .uiDispatch import run_on_ui_thread
 from .requestLifecycle import RequestLifecycleState, reduce_request_state
+from .streamingCoordinator import new_streaming_run, StreamingRun
 import threading
 
 # Ensure a default request UI controller is registered so lifecycle events
@@ -619,7 +620,8 @@ def _send_request_streaming(request, request_id: str) -> str:
     timeout_seconds: int = settings.get("user.model_request_timeout_seconds", 120)  # type: ignore
 
     decoder = codecs.getincrementaldecoder("utf-8")()
-    parts: list[str] = []
+    streaming_run: StreamingRun = new_streaming_run(request_id)
+    parts: list[str] = streaming_run.chunks
     first_chunk = True
     refresh_interval_ms = 250
     last_canvas_refresh_ms = 0
@@ -686,9 +688,11 @@ def _send_request_streaming(request, request_id: str) -> str:
                         .get("message", {})
                         .get("content", "")
                     )
-                    parts.append(text_piece or "")
+                    if text_piece:
+                        streaming_run.on_chunk(text_piece)
+                    full_text = streaming_run.text
                     _update_stream_state_from_text(
-                        "".join(parts),
+                        full_text,
                         meta_throttle_ms=refresh_interval_ms,
                         last_meta_update_ms=last_meta_refresh_ms,
                     )
@@ -703,7 +707,8 @@ def _send_request_streaming(request, request_id: str) -> str:
                         )
                     except Exception:
                         pass
-                    answer_text = "".join(parts)
+                    streaming_run.on_complete()
+                    answer_text = full_text
                     GPTState.last_raw_response = parsed_full
                     _set_active_response(None)
                     return answer_text
@@ -716,11 +721,13 @@ def _send_request_streaming(request, request_id: str) -> str:
         error_msg = f"Request timed out after {timeout_seconds} seconds"
         notify(f"GPT Failure: {error_msg}")
         err = GPTRequestError(408, error_msg)
+        streaming_run.on_error(error_msg)
         _handle_streaming_error(err)
         raise err
     except Exception as e:
         print(f"[modelHelpers] streaming requests.post failed: {e!r}")
         traceback.print_exc()
+        streaming_run.on_error(str(e))
         _handle_streaming_error(e)
         raise
     if raw_response.status_code != 200:
@@ -751,9 +758,10 @@ def _send_request_streaming(request, request_id: str) -> str:
 
     def _append_text(text_piece: str):
         nonlocal first_chunk
-        parts.append(text_piece)
+        streaming_run.on_chunk(text_piece)
+        full_text = streaming_run.text
         _update_stream_state_from_text(
-            "".join(parts),
+            full_text,
             meta_throttle_ms=refresh_interval_ms,
             last_meta_update_ms=last_meta_refresh_ms,
         )
@@ -842,7 +850,7 @@ def _send_request_streaming(request, request_id: str) -> str:
             _append_text(tail)
         # Fallback: if no chunks were received, try parsing a full JSON body
         # (some endpoints may ignore the stream flag and return a single JSON).
-        if not parts:
+        if not streaming_run.chunks:
             try:
                 parsed_full = raw_response.json()
                 text_piece = (
@@ -851,9 +859,10 @@ def _send_request_streaming(request, request_id: str) -> str:
                     .get("content", "")
                 )
                 if text_piece:
-                    parts.append(text_piece)
+                    streaming_run.on_chunk(text_piece)
+                    full_text = streaming_run.text
                     _update_stream_state_from_text(
-                        "".join(parts),
+                        full_text,
                         meta_throttle_ms=refresh_interval_ms,
                         last_meta_update_ms=last_meta_refresh_ms,
                     )
@@ -867,7 +876,9 @@ def _send_request_streaming(request, request_id: str) -> str:
                 print(f"[modelHelpers] streaming fallback parse failed: {e}")
         else:
             try:
-                print(f"[modelHelpers] streaming completed with {len(parts)} chunks")
+                print(
+                    f"[modelHelpers] streaming completed with {len(streaming_run.chunks)} chunks"
+                )
             except Exception:
                 pass
     except CancelledRequest:
@@ -885,6 +896,7 @@ def _send_request_streaming(request, request_id: str) -> str:
         except Exception:
             pass
         _set_active_response(None)
+        streaming_run.on_error("cancelled")
         _update_lifecycle("cancel")
         raise
     except Exception as e:
@@ -917,18 +929,21 @@ def _send_request_streaming(request, request_id: str) -> str:
                 pass
             _set_active_response(None)
             raise CancelledRequest()
+        streaming_run.on_error(str(e))
         _handle_streaming_error(e)
         raise
+
     finally:
         try:
             raw_response.close()
         except Exception:
             pass
 
-    answer_text = "".join(parts)
+    streaming_run.on_complete()
+    answer_text = streaming_run.text
     try:
         print(
-            f"[modelHelpers] streaming complete parts={len(parts)} answer_len={len(answer_text)} "
+            f"[modelHelpers] streaming complete parts={len(streaming_run.chunks)} answer_len={len(answer_text)} "
             f"meta_present={bool(GPTState.last_meta)}"
         )
     except Exception:

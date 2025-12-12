@@ -22,6 +22,7 @@ if bootstrap is not None:
             _parse_recipe,
             pattern_debug_snapshot,
         )
+        from talon_user.lib.patternDebugCoordinator import pattern_debug_catalog
         from talon_user.lib.modelState import GPTState
         from talon_user.lib.staticPromptConfig import STATIC_PROMPT_CONFIG
 
@@ -249,6 +250,27 @@ if bootstrap is not None:
             ) -> None:
                 snapshot = pattern_debug_snapshot("does-not-exist")
                 self.assertEqual(snapshot, {})
+
+            def test_pattern_debug_catalog_includes_all_patterns(self) -> None:
+                """pattern_debug_catalog should return a snapshot per pattern by default."""
+                snapshots = pattern_debug_catalog()
+                names = {snap["name"] for snap in snapshots}
+                for pattern in PATTERNS:
+                    self.assertIn(pattern.name, names)
+
+            def test_pattern_debug_catalog_filters_by_domain(self) -> None:
+                """pattern_debug_catalog should filter snapshots by domain when requested."""
+                coding_snapshots = pattern_debug_catalog(domain="coding")
+                writing_snapshots = pattern_debug_catalog(domain="writing")
+
+                self.assertTrue(coding_snapshots)
+                self.assertTrue(writing_snapshots)
+
+                coding_domains = {snap["domain"] for snap in coding_snapshots}
+                writing_domains = {snap["domain"] for snap in writing_snapshots}
+
+                self.assertEqual(coding_domains, {"coding"})
+                self.assertEqual(writing_domains, {"writing"})
 
             def test_type_outline_pattern_uses_taxonomy_style(self) -> None:
                 """Type outline pattern should use taxonomy style."""

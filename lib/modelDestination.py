@@ -389,21 +389,29 @@ class File(ModelDestination):
         model_name = settings.get("user.openai_model")
         if isinstance(model_name, str) and model_name.strip():
             header_lines.append(f"model: {model_name}")
-        recipe = getattr(GPTState, "last_recipe", "") or ""
-        if recipe:
-            header_lines.append(f"recipe: {recipe}")
-        directional = getattr(GPTState, "last_directional", "") or ""
-        if directional:
-            header_lines.append(f"directional: {directional}")
 
-        for axis_key, axis_value in (
-            ("completeness", last_completeness),
-            ("scope", last_scope),
-            ("method", last_method),
-            ("style", last_style),
-        ):
-            if axis_value:
-                header_lines.append(f"{axis_key}_tokens: {axis_value}")
+        # Reuse the shared recipe/axis header façade so response snapshots
+        # stay aligned with source snapshots and recap views.
+        try:
+            snapshot_header = recipe_header_lines_from_snapshot(last_recipe_snapshot())
+            header_lines.extend(snapshot_header)
+        except Exception:
+            # Fall back to the previous inline behaviour if the façade is
+            # unavailable or misconfigured in this runtime.
+            recipe_value = getattr(GPTState, "last_recipe", "") or ""
+            if recipe_value:
+                header_lines.append(f"recipe: {recipe_value}")
+            directional = getattr(GPTState, "last_directional", "") or ""
+            if directional:
+                header_lines.append(f"directional: {directional}")
+            for axis_key, axis_value in (
+                ("completeness", last_completeness),
+                ("scope", last_scope),
+                ("method", last_method),
+                ("style", last_style),
+            ):
+                if axis_value:
+                    header_lines.append(f"{axis_key}_tokens: {axis_value}")
 
         prompt_text = snapshot.get("prompt_text", "") or ""
         response_text = snapshot.get("response_text", "") or ""

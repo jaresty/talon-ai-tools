@@ -13,6 +13,7 @@ if bootstrap is not None:
         STATIC_PROMPT_CONFIG,
         get_static_prompt_axes,
         get_static_prompt_profile,
+        static_prompt_settings_catalog,
     )
 
     class StaticPromptConfigDomainTests(unittest.TestCase):
@@ -72,8 +73,21 @@ if bootstrap is not None:
             style_values = axes.get("style")
             self.assertEqual(style_values, ["jira", "story"])
 
+        def test_static_prompt_settings_catalog_matches_profiles(self) -> None:
+            catalog = static_prompt_settings_catalog()
+            for name, profile in STATIC_PROMPT_CONFIG.items():
+                self.assertIn(name, catalog)
+                entry = catalog[name]
+                self.assertEqual(
+                    entry["description"],
+                    profile.get("description", "").strip(),
+                )
+                self.assertEqual(entry["axes"], get_static_prompt_axes(name))
+
+
 else:
     if not TYPE_CHECKING:
+
         class StaticPromptConfigDomainTests(unittest.TestCase):
             @unittest.skip("Test harness unavailable outside unittest runs")
             def test_placeholder(self) -> None:

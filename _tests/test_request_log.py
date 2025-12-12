@@ -78,6 +78,36 @@ if bootstrap is not None:
             # Mutating the original axes dict should not affect stored entry.
             axes["method"].append("extra")
             self.assertEqual(entry.axes.get("method"), ["steps"])  # type: ignore[union-attr]
+
+        def test_append_entry_filters_hydrated_axis_values(self):
+            axes = {
+                "scope": ["focus", "Important: expand scope a lot"],
+                "method": ["steps", "Important: do many things"],
+            }
+
+            append_entry(
+                "r4",
+                "prompt",
+                "resp",
+                "meta",
+                recipe="recipe4",
+                started_at_ms=7,
+                duration_ms=8,
+                axes=axes,
+            )
+
+            entry = latest()  # type: ignore[assignment]
+            self.assertIsNotNone(entry)
+            # Known axis tokens should be preserved.
+            self.assertEqual(entry.axes.get("scope"), ["focus"])
+            self.assertEqual(entry.axes.get("method"), ["steps"])
+            # Hydrated values starting with 'Important:' should be dropped.
+            self.assertNotIn(
+                "Important: expand scope a lot", entry.axes.get("scope", [])
+            )
+            self.assertNotIn("Important: do many things", entry.axes.get("method", []))
+
+
 else:
     if not TYPE_CHECKING:
 

@@ -25,6 +25,7 @@ if bootstrap is not None:
             GPTState.reset_all()
             SuggestionGUIState.suggestions = []
             SuggestionCanvasState.showing = False
+            SuggestionCanvasState.scroll_y = 0.0
             self._original_notify = actions.app.notify
             actions.app.notify = MagicMock()
             actions.user.notify = MagicMock()
@@ -203,6 +204,35 @@ if bootstrap is not None:
             mouse_cb(_Evt("mousemove", 80, 60))
 
             self.assertIn((70, 70), moved_to)
+
+        def test_scroll_event_callback_updates_offset(self):
+            """Scroll events should adjust the suggestion canvas offset."""
+            SuggestionGUIState.suggestions = [
+                modelSuggestionGUI.Suggestion(
+                    name=f"Suggestion {i}",
+                    recipe="describe · gist · focus · plain · fog",
+                )
+                for i in range(20)
+            ]
+            canvas_obj = modelSuggestionGUI._ensure_suggestion_canvas()
+            callbacks = getattr(canvas_obj, "_callbacks", {})
+            scroll_cbs = (
+                callbacks.get("scroll")
+                or callbacks.get("wheel")
+                or callbacks.get("mouse_scroll")
+            )
+            if not scroll_cbs:
+                self.skipTest("Canvas stub does not expose scroll callbacks")
+            scroll_cb = scroll_cbs[0]
+
+            class _Evt:
+                def __init__(self, delta: float):
+                    self.dy = delta
+                    self.wheel_y = delta
+
+            self.assertEqual(SuggestionCanvasState.scroll_y, 0.0)
+            scroll_cb(_Evt(-1.0))
+            self.assertGreater(SuggestionCanvasState.scroll_y, 0.0)
 
 else:
     if not TYPE_CHECKING:

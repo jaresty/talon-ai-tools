@@ -196,6 +196,34 @@ def _ensure_suggestion_canvas() -> canvas.Canvas:
 
     _suggestion_canvas.register("draw", _on_draw)
 
+    def _scroll_suggestions(raw_delta: float) -> None:  # pragma: no cover - visual only
+        """Apply a scroll delta to the suggestion list."""
+        try:
+            rect = getattr(_suggestion_canvas, "rect", None)
+            if rect is None:
+                return
+            delta = float(raw_delta or 0.0)
+            if not delta:
+                return
+            line_h = 18
+            stance_lines = stance_defaults_lines(suggestion_context() or None)
+            row_height = line_h * 10
+            body_top = rect.y + 60 + line_h * 2
+            if stance_lines:
+                body_top += line_h  # label
+                body_top += line_h * len(stance_lines)
+                body_top += line_h // 2
+            body_bottom = rect.y + rect.height - line_h * 4
+            visible_height = max(body_bottom - body_top, row_height)
+            total_content_height = row_height * max(
+                len(SuggestionGUIState.suggestions), 0
+            )
+            max_scroll = max(total_content_height - visible_height, 0)
+            new_scroll = SuggestionCanvasState.scroll_y - delta * 40.0
+            SuggestionCanvasState.scroll_y = max(min(new_scroll, max_scroll), 0.0)
+        except Exception as e:
+            _debug(f"suggestion scroll handler error: {e}")
+
     def _on_mouse(evt) -> None:  # pragma: no cover - visual only
         """Handle close hotspot, suggestion selection, hover, and drag."""
         try:
@@ -296,28 +324,7 @@ def _ensure_suggestion_canvas() -> canvas.Canvas:
             # Vertical scroll via mouse wheel when available.
             if event_type in ("mouse_scroll", "wheel", "scroll"):
                 dy = getattr(evt, "dy", 0) or getattr(evt, "wheel_y", 0)
-                try:
-                    dy = float(dy)
-                except Exception:
-                    dy = 0.0
-                if dy and rect is not None:
-                    # Positive dy scrolls down (content up).
-                    line_h = 18
-                    # Keep scroll math in sync with _draw_suggestions, which
-                    # reserves extra vertical space per row to account for
-                    # optional stance and Why text.
-                    row_height = line_h * 10
-                    body_top = 60 + line_h * 2
-                    body_bottom = rect.y + rect.height - line_h * 2
-                    visible_height = max(body_bottom - body_top, row_height)
-                    total_content_height = row_height * max(
-                        len(SuggestionGUIState.suggestions), 0
-                    )
-                    max_scroll = max(total_content_height - visible_height, 0)
-                    new_scroll = SuggestionCanvasState.scroll_y - dy * 40.0
-                    SuggestionCanvasState.scroll_y = max(
-                        min(new_scroll, max_scroll), 0.0
-                    )
+                _scroll_suggestions(dy)
                 return
         except Exception as e:
             _debug(f"suggestion canvas mouse handler error: {e}")
@@ -327,6 +334,21 @@ def _ensure_suggestion_canvas() -> canvas.Canvas:
         _suggestion_canvas.register("mouse", _on_mouse)
     except Exception as e:
         _debug(f"mouse handler registration failed for suggestion canvas: {e}")
+
+    def _on_scroll(evt) -> None:  # pragma: no cover - visual only
+        """Handle scroll events exposed separately from mouse callbacks."""
+        try:
+            raw = getattr(evt, "dy", 0) or getattr(evt, "wheel_y", 0)
+            _scroll_suggestions(raw)
+        except Exception as e:
+            _debug(f"suggestion scroll handler error: {e}")
+            return
+
+    for evt_name in ("scroll", "wheel", "mouse_scroll"):
+        try:
+            _suggestion_canvas.register(evt_name, _on_scroll)
+        except Exception as e:
+            _debug(f"suggestion scroll handler registration failed for '{evt_name}': {e}")
 
     def _on_key(evt) -> None:  # pragma: no cover - visual only
         try:

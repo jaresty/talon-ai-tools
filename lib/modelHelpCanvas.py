@@ -1310,19 +1310,13 @@ def _default_draw_quick_help(
 
     # Short caption to reinforce usage without adding heavy text blocks.
     draw_text(
-        "  One lens per call. fly/fip/dip move up/center/down; rog/bog/ong set reflect/mixed/act.",
+        "  One lens. fly/fip/dip move up/center/down; rog/bog/ong set reflect/mixed/act.",
         x,
         y,
     )
     y += line_h
     draw_text(
-        "  Form/channel are single-value; legacy style tokens are removed—use form/channel.",
-        x,
-        y,
-    )
-    y += line_h
-    draw_text(
-        "  Always include one directional lens: fog/fig/dig/ong/rog/bog/jog.",
+        "  Form/channel single-value; legacy style removed. Directional: fog/fig/dig/ong/rog/bog/jog.",
         x,
         y,
     )

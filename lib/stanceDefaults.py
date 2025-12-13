@@ -42,7 +42,7 @@ def stance_defaults_lines(ctx: Optional[Dict[str, str]] = None) -> List[str]:
         provider = _short(provider_registry().current_provider_id())
     except Exception:
         provider = "–"
-    stance_line = f"Stance: V={voice} A={audience} T={tone} I={purpose}"
+    stance_line = f"Stance: Voice={voice} Audience={audience} Tone={tone} Intent={purpose}"
     defaults_line = (
         "Defaults: "
         f"C={_axis_from_ctx_or_setting('completeness', 'user.model_default_completeness')} "
@@ -50,6 +50,6 @@ def stance_defaults_lines(ctx: Optional[Dict[str, str]] = None) -> List[str]:
         f"M={_axis_from_ctx_or_setting('method', 'user.model_default_method')} "
         f"F={_axis_from_ctx_or_setting('form', 'user.model_default_form')} "
         f"Ch={_axis_from_ctx_or_setting('channel', 'user.model_default_channel')} "
-        f"P={provider}"
+        f"Provider={provider}"
     )
     return [stance_line, defaults_line]

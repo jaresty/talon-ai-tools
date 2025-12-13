@@ -354,6 +354,7 @@ def _suggest_prompt_text(
         '      "persona_tone": string,\n'
         '      "intent_purpose": string,\n'
         '      "stance_command": string,\n'
+        '      "reasoning": string,\n'
         '      "why": string\n'
         "    }\n"
         "  ]\n"
@@ -380,11 +381,13 @@ def _suggest_prompt_text(
         "    preset lists (for example, 'persona teach junior dev', 'intent teach').\n"
         "  Never emit 'persona' followed directly by raw axis tokens; if you cannot\n"
         "  use a preset name, fall back to the 'model write' form above.\n"
+        "- reasoning: 1–2 sentences describing why you chose this recipe/stance,\n"
+        "  focusing on the axis token choices (especially staticPrompt + directional).\n"
         "- why: 1–2 sentences explaining when this suggestion is useful.\n\n"
         "Recipe rules:\n"
         "- <staticPrompt> is exactly one static prompt token (do not include multiple static prompts or combine them).\n"
         "- <completeness> and <directional> are single axis tokens.\n"
-        "- Directional is required: always include exactly one directional modifier from the directional list; never leave it blank.\n"
+        "- Directional is required: always include exactly one directional modifier from the directional list; many valid tokens contain spaces (for example, 'fly ong')—keep the full token intact.\n"
         "- <scopeTokens> and <methodTokens> are zero or more space-separated axis tokens for that axis (respecting small caps: scope ≤ 2 tokens, method ≤ 3 tokens).\n"
         "- <formToken> and <channelToken> are single axis tokens (Form and Channel are singletons; omit them when no bias is needed).\n"
         "  Examples: scopeTokens='actions edges', methodTokens='structure flow', formToken='bullets', channelToken='slack'.\n\n"
@@ -401,10 +404,11 @@ def _suggest_prompt_text(
         "Formatting rules (strict):\n"
         "- Output ONLY the JSON object described above; do NOT include prose,\n"
         "  markdown, backticks, or any other surrounding text.\n"
-        "- All suggestion objects MUST include name and recipe.\n"
+        "- All suggestion objects MUST include name and recipe; also fill reasoning and why for every suggestion.\n"
         "- Never invent new axis tokens: always choose from the provided axis\n"
         "  lists (for example, use the method token 'analysis' rather than a new\n"
-        "  token like 'analyze').\n\n"
+        "  token like 'analyze'). When unsure, choose the closest valid token rather\n"
+        "  than inventing a new one.\n\n"
         "Use only tokens from the following sets where possible.\n"
         "Axis semantics and available tokens (How the model responds):\n"
         f"{axis_docs}\n\n"
@@ -2834,11 +2838,8 @@ def _suggest_prompt_recipes_core_impl(source: ModelSource, subject: str) -> None
         if len(static_tokens) > 1:
             parts[0] = static_tokens[0]
         raw_directional = parts[-1] if len(parts) > 1 else ""
-        dir_tokens = raw_directional.split()
-        if len(dir_tokens) != 1:
-            return ""
-        directional = dir_tokens[0]
-        if directional not in _DIRECTIONAL_MAP:
+        directional = _canonical_axis_value("directional", raw_directional)
+        if not directional:
             return ""
         parts[-1] = directional
         # Enforce axis caps on the remaining segments when present.

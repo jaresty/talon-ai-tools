@@ -147,7 +147,7 @@ def _draw_wrapped_commands(
     if command_prefix and entries:
         entries = [f"{command_prefix} {entries[0]}"] + entries[1:]
 
-    approx_char_width = 8
+    approx_char_width = 7
     max_pixels = 320
     try:
         if rect is not None and hasattr(rect, "width"):
@@ -159,7 +159,7 @@ def _draw_wrapped_commands(
         # Fall back to the default max width if rect math fails.
         max_pixels = 320
     # Keep lines readable even on wide panels.
-    max_pixels = min(max_pixels, 520)
+    max_pixels = min(max_pixels, 680)
     max_chars = max(int(max_pixels // approx_char_width), 10)
 
     lines: list[str] = []
@@ -742,6 +742,36 @@ def _default_draw_quick_help(
         y = 60 - int(scroll_y)
     line_h = 18
 
+    def _draw_section_label(title: str, start_x: int, start_y: int, accent: str = "E8EEF7") -> int:
+        """Draw a wide, aligned band heading to segment the layout."""
+        if rect is not None and paint is not None and hasattr(rect, "width"):
+            try:
+                old_color = getattr(paint, "color", None)
+                old_style = getattr(paint, "style", None)
+                pad_x = 12
+                pad_y = 4
+                # Keep bands aligned to the main content column so accent
+                # blocks line up across sections.
+                content_left = rect.x + 16
+                content_width = max(rect.width - 32, 120)
+                min_width = (len(title) * 8) + 2 * pad_x
+                band_width = max(content_width, min_width)
+                bg_rect = Rect(content_left, start_y - pad_y, band_width, line_h + (2 * pad_y))
+                paint.color = accent
+                if hasattr(paint, "Style") and hasattr(paint, "style"):
+                    paint.style = paint.Style.FILL
+                c.draw_rect(bg_rect)
+                if old_style is not None:
+                    paint.style = old_style
+                paint.color = old_color or "000000"
+            except Exception:
+                try:
+                    paint.color = "000000"
+                except Exception:
+                    pass
+        draw_text(title, start_x, start_y + (line_h // 4))
+        return start_y + line_h + (line_h // 3)
+
     def _draw_wrapped_line(text: str, start_x: int, start_y: int, indent: int = 0) -> int:
         """Draw text wrapped to fit the canvas width; returns new y position."""
         if not text:
@@ -838,9 +868,10 @@ def _default_draw_quick_help(
 
     # Spacer below the title; rely on hover/affordances rather than a long
     # textual hint for interaction.
-    y += line_h
+    y += line_h // 2
 
     # --- Band 1: Active state + last action -------------------------------------------------
+    y = _draw_section_label("Session snapshot", x, y)
     for line in stance_defaults_lines():
         y = _draw_wrapped_line(line, x, y)
     scope_cap = _AXIS_SOFT_CAPS.get("scope", 2)
@@ -869,6 +900,7 @@ def _default_draw_quick_help(
         return
 
     # --- Band 2: Grammar + commands ---------------------------------------------------------
+    y = _draw_section_label("Commands & grammar", x, y, accent="F3F3F3")
     y = _draw_wrapped_line("Grammar: model run <staticPrompt> [axes…] <directional lens>", x, y)
     y = _draw_wrapped_line(
         "Say: model run <prompt> <directional>  |  model again [axes] [directional]",
@@ -880,6 +912,7 @@ def _default_draw_quick_help(
     y += line_h // 2
 
     # Persona / Intent quick grammar and presets (compressed).
+    y = _draw_section_label("Who / Why / How", x, y, accent="FFF7E6")
     y = _draw_wrapped_line("Who/Why: persona <preset> · intent <preset>", x, y)
     try:
         persona_commands = _persona_preset_commands()
@@ -967,6 +1000,8 @@ def _default_draw_quick_help(
                         y += line_h
             y += line_h
     y += line_h
+
+    y = _draw_section_label("Axes (keys)", x, y, accent="EAF4FF")
 
     # Draw a subtle border around the panel, with a slightly stronger
     # contrast when the mouse is hovering over the panel. This gives a
@@ -1100,13 +1135,8 @@ def _default_draw_quick_help(
             pass
 
     # Directional overview as a coarse grid summary.
+    y = _draw_section_label("Directional lenses", x, y, accent="E8F8F0")
     grid = _build_direction_grid()
-    y += line_h
-    if section_focus == "directional":
-        draw_text("Directional lenses (focus, coordinate map)", x, y)
-    else:
-        draw_text("Directional lenses (coordinate map)", x, y)
-    y += line_h
     # Brief semantic hints so the axes feel meaningful, not just symbolic.
     y = _draw_wrapped_line(
         "Vertical: abstract↑ / concrete↓. Horizontal: reflect← / act→. Center: mix.",
@@ -1114,7 +1144,7 @@ def _default_draw_quick_help(
         y,
         indent=2,
     )
-    y += line_h // 2
+    y += line_h // 3
 
     def _fmt_cell(row: str, col: str) -> str:
         tokens = grid.get((row, col)) or []
@@ -1156,7 +1186,7 @@ def _default_draw_quick_help(
     # Lay out the directional lenses as a compact 3×3 grid.
     if rect is not None and hasattr(rect, "x") and hasattr(rect, "width"):
         total_width = max(rect.width - 80, 300)
-        block_width = max(min(total_width // 3, 260), 160)
+        block_width = max(min(total_width // 3, 230), 160)
         col_gap = 12
         center_x = rect.x + rect.width // 2 - block_width // 2
         left_x = center_x - block_width - col_gap
@@ -1358,25 +1388,24 @@ def _default_draw_quick_help(
     y = max(left_end_y, right_end_y, bottom_end_y) + line_h
 
     # Short caption to reinforce usage without adding heavy text blocks.
-    draw_text(
-        "  One lens. fly/fip/dip move up/center/down; rog/bog/ong set reflect/mixed/act.",
+    y = _draw_wrapped_line(
+        "One lens. fly/fip/dip move up/center/down; rog/bog/ong set reflect/mixed/act.",
         x,
         y,
+        indent=2,
     )
-    y += line_h
-    draw_text(
-        "  Form/channel single-value; legacy style removed. Directional: fog/fig/dig/ong/rog/bog/jog.",
+    y = _draw_wrapped_line(
+        "Form/channel are optional singletons; Always include one directional lens. Directional: fog/fig/dig/ong/rog/bog/jog.",
         x,
         y,
+        indent=2,
     )
-    y += line_h
+    y += line_h // 2
 
     # Optional examples section, shown only when explicitly focused to avoid
     # making the default quick help view too tall (mirrors imgui semantics).
     if section_focus == "examples":
-        y += line_h
-        draw_text("Examples", x, y)
-        y += line_h
+        y = _draw_section_label("Examples", x, y, accent="F0ECFF")
         draw_text("  Debug bug: describe · full · narrow · debugging · rog", x, y)
         y += line_h
         draw_text("  Fix locally: fix · full · narrow · steps · ong", x, y)

@@ -18,6 +18,7 @@ if bootstrap is not None:
         unregister_draw_handler,
         _default_draw_quick_help,
         Rect,
+        _group_directional_keys,
     )
     from talon_user.lib.staticPromptConfig import static_prompt_settings_catalog
 
@@ -62,6 +63,12 @@ if bootstrap is not None:
             self.assertTrue(HelpGUIState.showing)
             self.assertEqual(HelpGUIState.section, "all")
             self.assertEqual(HelpGUIState.static_prompt, "todo")
+
+        def test_directional_grid_uses_only_core_lenses(self) -> None:
+            """Primary directional grid should surface only core lenses (no composites)."""
+            groups = _group_directional_keys()
+            all_tokens = {token for lst in groups.values() for token in lst}
+            self.assertTrue(all(token in {"fog", "fig", "dig", "rog", "bog", "ong", "jog"} for token in all_tokens))
 
         def test_open_for_last_recipe_resets_static_prompt(self) -> None:
             HelpGUIState.static_prompt = "fix"
@@ -160,6 +167,34 @@ if bootstrap is not None:
                 self.assertIn(description, canvas.drawn)
             if axes:
                 self.assertIn("Profile axes:", canvas.drawn)
+
+        def test_quick_help_surfaces_form_channel_defaults_and_directional_requirement(self) -> None:
+            """Quick help should remind users about form/channel singleton defaults and required directional lens."""
+
+            HelpGUIState.section = "all"
+            HelpGUIState.static_prompt = None
+
+            class StubCanvas:
+                def __init__(self) -> None:
+                    self.rect = Rect(0, 0, 800, 600)
+                    self.drawn: list[str] = []
+
+                def draw_text(self, text, x, y) -> None:  # type: ignore[override]
+                    self.drawn.append(str(text))
+
+            canvas = StubCanvas()
+            _default_draw_quick_help(canvas)
+
+            hint = [
+                line
+                for line in canvas.drawn
+                if "Form/channel are optional singletons" in line
+                and "Always include one directional lens" in line
+            ]
+            self.assertTrue(
+                hint,
+                "Expected quick help to include form/channel defaults and directional requirement hint",
+            )
 
 
 else:

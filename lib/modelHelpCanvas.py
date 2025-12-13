@@ -212,14 +212,10 @@ def _group_directional_keys() -> dict[str, list[str]]:
     horizontal_right = {"ong"}
     central_names = {"jog"}
 
-    directional_keys = {"fog", "fig", "dig", "rog", "bog", "ong", "jog"}
-    try:
-        catalog = axis_catalog()
-        catalog_keys = set((catalog.get("axes", {}).get("directional") or {}).keys())
-        if catalog_keys:
-            directional_keys |= catalog_keys
-    except Exception:
-        pass
+    core_directional_keys = {"fog", "fig", "dig", "rog", "bog", "ong", "jog"}
+    directional_keys = set(core_directional_keys)
+    # Accept only core lenses for the primary grid; composite aliases are
+    # treated as advanced/secondary and deliberately excluded here.
     seen_directional: set[str] = set()
 
     for base in directional_keys:
@@ -790,6 +786,12 @@ def _default_draw_quick_help(
         f"method≤{method_cap} · form≤{form_cap} · channel≤{channel_cap} · 1 directional lens"
     )
     draw_text(caps_line, x, y)
+    y += line_h
+    draw_text(
+        "  Form/channel are optional singletons; if omitted, defaults/last-run apply. Always include one directional lens.",
+        x,
+        y,
+    )
     y += line_h
 
     # Persona / Intent quick grammar and presets.

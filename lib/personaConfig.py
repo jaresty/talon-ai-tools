@@ -154,22 +154,6 @@ PERSONA_PRESETS: tuple[PersonaPreset, ...] = (
         audience="to CEO",
         tone="directly",
     ),
-    PersonaPreset(
-        key="platform_ops",
-        label="Platform ops",
-        spoken="ops",
-        voice="as programmer",
-        audience="to platform team",
-        tone="directly",
-    ),
-    PersonaPreset(
-        key="analyst_peer",
-        label="Analyst peer",
-        spoken="analyst",
-        voice="as scientist",
-        audience="to analyst",
-        tone="formally",
-    ),
 )
 
 
@@ -203,5 +187,25 @@ INTENT_PRESETS: tuple[IntentPreset, ...] = (
         key="appreciate",
         label="Appreciate / thank",
         purpose="for appreciation",
+    ),
+    IntentPreset(
+        key="persuade",
+        label="Persuade",
+        purpose="for persuasion",
+    ),
+    IntentPreset(
+        key="coach",
+        label="Coach",
+        purpose="for coaching",
+    ),
+    IntentPreset(
+        key="collaborate",
+        label="Collaborate",
+        purpose="for collaborating",
+    ),
+    IntentPreset(
+        key="entertain",
+        label="Entertain",
+        purpose="for entertainment",
     ),
 )

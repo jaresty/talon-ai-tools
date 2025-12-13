@@ -260,6 +260,9 @@ _INTENT_PRESET_SPOKEN_SET: set[str] = set(_INTENT_PRESET_SPOKEN_TO_KEY.keys())
 mod.list("personaPreset", desc="Persona (Who) presets for GPT stance")
 mod.list("intentPreset", desc="Intent (Why) presets for GPT stance")
 
+# Session-scoped presets (prompt + stance + contract + directional + destination).
+_PRESETS: dict[str, dict[str, object]] = {}
+
 try:
     ctx.lists["user.personaPreset"] = _PERSONA_PRESET_SPOKEN_TO_KEY
     ctx.lists["user.intentPreset"] = _INTENT_PRESET_SPOKEN_TO_KEY
@@ -1477,7 +1480,8 @@ class UserActions:
 
             This preserves the existing behaviour: we require a single
             <staticPrompt> token and a single known directional token; we drop
-            any suggestion that does not meet these constraints.
+            any suggestion that does not meet these constraints. Axis caps are
+            enforced per ADR 048 (scope≤2, method≤3, form=1, channel=1).
             """
             recipe_value = (value or "").strip()
             if not recipe_value:
@@ -1496,6 +1500,21 @@ class UserActions:
             if directional not in _DIRECTIONAL_MAP:
                 return ""
             parts[-1] = directional
+            # Enforce axis caps on the remaining segments when present.
+            # Expected shape: static · completeness · scope · method · form · channel · directional
+            if len(parts) >= 6:
+                scope_tokens = parts[2].split() if len(parts) > 2 else []
+                method_tokens = parts[3].split() if len(parts) > 3 else []
+                form_tokens = parts[4].split() if len(parts) > 4 else []
+                channel_tokens = parts[5].split() if len(parts) > 5 else []
+                if scope_tokens:
+                    parts[2] = " ".join(scope_tokens[-2:])
+                if method_tokens:
+                    parts[3] = " ".join(method_tokens[-3:])
+                if form_tokens:
+                    parts[4] = form_tokens[-1]
+                if channel_tokens:
+                    parts[5] = channel_tokens[-1]
             return " · ".join(parts)
 
         if raw_text:
@@ -1715,6 +1734,24 @@ class UserActions:
             )
             return
 
+        snapshot = last_recipe_snapshot()
+        # Enforce axis caps for replay surfaces (scope≤2, method≤3, form=1, channel=1).
+        scope_tokens = (snapshot.get("scope_tokens") or [])[-2:]
+        method_tokens = (snapshot.get("method_tokens") or [])[-3:]
+        form_tokens = (snapshot.get("form_tokens") or [])[-1:]
+        channel_tokens = (snapshot.get("channel_tokens") or [])[-1:]
+
+        # Rebuild recipe/state with capped axes to avoid replaying over-cap values.
+        set_last_recipe_from_selection(
+            snapshot.get("static_prompt", ""),
+            snapshot.get("completeness", ""),
+            scope_tokens,
+            method_tokens,
+            form_tokens,
+            channel_tokens,
+            directional,
+        )
+
         session = PromptSession(destination)
         session.begin(reuse_existing=True)
         result_handle = _prompt_pipeline.complete_async(session)
@@ -1881,7 +1918,107 @@ class UserActions:
         emit_cancel()
         notify("GPT: Cancel requested")
 
-    def gpt_beta_paste_prompt(match) -> None:
+    def gpt_preset_save(name: str) -> None:
+        """Save the current prompt + stance + contract + directional + destination as a preset."""
+        if not name or not name.strip():
+            notify("GPT: Preset name required")
+            return
+        if not GPTState.last_recipe or not getattr(GPTState, "last_directional", ""):
+            notify("GPT: No last recipe/directional to save as preset")
+            return
+        preset_name = name.strip().lower()
+        axes = getattr(GPTState, "last_axes", {}) or {}
+        dest_kind = (
+            getattr(GPTState, "current_destination_kind", "") or settings.get("user.model_default_destination")
+        )
+        sys = getattr(GPTState, "system_prompt", None)
+        _PRESETS[preset_name] = {
+            "static_prompt": getattr(GPTState, "last_static_prompt", "") or "",
+            "completeness": getattr(GPTState, "last_completeness", "") or "",
+            "scope": axes.get("scope", []) or [],
+            "method": axes.get("method", []) or [],
+            "form": axes.get("form", []) or [],
+            "channel": axes.get("channel", []) or [],
+            "directional": axes.get("directional", []) or [],
+            "voice": getattr(sys, "voice", "") if sys else "",
+            "audience": getattr(sys, "audience", "") if sys else "",
+            "tone": getattr(sys, "tone", "") if sys else "",
+            "purpose": getattr(sys, "purpose", "") if sys else "",
+            "destination_kind": dest_kind or "",
+        }
+        notify(f"GPT: Preset '{preset_name}' saved")
+
+    def gpt_preset_run(name: str) -> None:
+        """Run a saved preset using the stored contract and last/default sources/destination."""
+        preset_name = name.strip().lower()
+        preset = _PRESETS.get(preset_name)
+        if not preset:
+            notify(f"GPT: Unknown preset '{preset_name}'")
+            return
+        static_prompt = str(preset.get("static_prompt", "") or "")
+        completeness = str(preset.get("completeness", "") or "")
+        scope = [str(t) for t in preset.get("scope", []) if str(t)]
+        method = [str(t) for t in preset.get("method", []) if str(t)]
+        form_tokens = [str(t) for t in preset.get("form", []) if str(t)]
+        channel_tokens = [str(t) for t in preset.get("channel", []) if str(t)]
+        directional_tokens = [str(t) for t in preset.get("directional", []) if str(t)]
+        directional = directional_tokens[-1] if directional_tokens else ""
+        voice = str(preset.get("voice", "") or "")
+        audience = str(preset.get("audience", "") or "")
+        tone = str(preset.get("tone", "") or "")
+        purpose = str(preset.get("purpose", "") or "")
+        destination_kind = str(preset.get("destination_kind", "") or "")
+        # Seed state so rerun uses the preset axes.
+        GPTState.last_static_prompt = static_prompt
+        GPTState.last_completeness = completeness
+        GPTState.last_scope = " ".join(scope)
+        GPTState.last_method = " ".join(method)
+        GPTState.last_form = " ".join(form_tokens)
+        GPTState.last_channel = " ".join(channel_tokens)
+        GPTState.last_directional = directional
+        # Seed stance and destination.
+        try:
+            GPTState.system_prompt.voice = voice
+            GPTState.system_prompt.audience = audience
+            GPTState.system_prompt.tone = tone
+            GPTState.system_prompt.purpose = purpose
+        except Exception:
+            pass
+        try:
+            GPTState.current_destination_kind = destination_kind
+        except Exception:
+            pass
+        GPTState.last_axes = {
+            "completeness": [completeness] if completeness else [],
+            "scope": scope,
+            "method": method,
+            "form": form_tokens,
+            "channel": channel_tokens,
+            "directional": directional_tokens,
+        }
+        # Compose a concise recipe for recap surfaces.
+        recipe_parts = [p for p in (static_prompt, completeness, " ".join(scope), " ".join(method), " ".join(form_tokens), " ".join(channel_tokens)) if p]
+        GPTState.last_recipe = " · ".join(recipe_parts)
+        UserActions.gpt_rerun_last_recipe(
+            static_prompt,
+            completeness,
+            scope,
+            method,
+            directional,
+            " ".join(form_tokens),
+            " ".join(channel_tokens),
+            destination_kind,
+        )
+
+    def gpt_preset_list() -> None:
+        """List saved preset names."""
+        if not _PRESETS:
+            notify("GPT: No presets saved")
+            return
+        names = sorted(_PRESETS.keys())
+        notify(f"GPT presets: {', '.join(names)}")
+
+    def gpt_beta_paste_prompt(match: str) -> None:
         """Build a prompt via modelPrompt and paste it, surfacing migration errors."""
         if _reject_if_request_in_flight():
             return
@@ -1908,6 +2045,7 @@ class UserActions:
         directional: str,
         form: Union[str, List[str]] = "",
         channel: Union[str, List[str]] = "",
+        destination_kind: str = "",
     ) -> None:
         """Rerun the last prompt recipe with optional axis overrides, using the last or default source."""
         if _reject_if_request_in_flight():
@@ -2250,13 +2388,24 @@ class UserActions:
             )
             source = create_model_source(source_key)
 
+        dest_kind_value = (
+            destination_kind
+            or getattr(GPTState, "current_destination_kind", "")
+            or settings.get("user.model_default_destination")
+            or ""
+        )
+        dest_kind_value = str(dest_kind_value or "").strip()
+        if dest_kind_value:
+            try:
+                GPTState.current_destination_kind = dest_kind_value
+            except Exception:
+                pass
+
         config = ApplyPromptConfiguration(
             please_prompt=please_prompt,
             model_source=source,
             additional_model_source=None,
-            model_destination=create_model_destination(
-                settings.get("user.model_default_destination")
-            ),
+            model_destination=create_model_destination(dest_kind_value),
         )
 
         actions.user.gpt_apply_prompt(config)
@@ -2270,6 +2419,7 @@ class UserActions:
         directional: str,
         form: Union[str, List[str]] = "",
         channel: Union[str, List[str]] = "",
+        destination_kind: str = "",
     ) -> None:
         """Rerun the last prompt recipe for an explicit source with optional axis overrides."""
         if _reject_if_request_in_flight():
@@ -2288,6 +2438,7 @@ class UserActions:
             directional,
             form,
             channel,
+            destination_kind,
         )
 
     def gpt_pass(pass_configuration: PassConfiguration) -> None:
@@ -2327,10 +2478,24 @@ class UserActions:
             builder: Builder,
             comment_mode: str = "section_headers",  # "section_headers", "preceding_description", or "static_prompts"
             description_overrides: Optional[dict[str, str]] = None,
+            allowed_tokens: Optional[set[str]] = None,
         ) -> None:
             lines = read_list_lines(filename)
             if not lines:
                 return
+            # Optionally filter tokens to keep core/primary values only.
+            if allowed_tokens is not None:
+                filtered: list[str] = []
+                for line in lines:
+                    # Lines follow "token: token" or comments; keep comments.
+                    stripped = line.strip()
+                    if not stripped or stripped.startswith("#"):
+                        filtered.append(line)
+                        continue
+                    token = stripped.split(":")[0].strip()
+                    if token in allowed_tokens:
+                        filtered.append(line)
+                lines = filtered
 
             builder.h2(title)
 
@@ -2451,6 +2616,12 @@ class UserActions:
         render_list_as_tables("Method Modifiers", "methodModifier.talon-list", builder)
         render_list_as_tables("Form Modifiers", "formModifier.talon-list", builder)
         render_list_as_tables("Channel Modifiers", "channelModifier.talon-list", builder)
+        render_list_as_tables(
+            "Directional Modifiers",
+            "directionalModifier.talon-list",
+            builder,
+            allowed_tokens={"fog", "fig", "dig", "ong", "rog", "bog", "jog"},
+        )
         # For persona and intent axes, keep the Talon lists as token carriers and
         # pull rich descriptions from a Python persona config so we do not bake
         # long instructions directly into the .talon files.
@@ -2591,6 +2762,6 @@ def _safe_model_prompt(match) -> str:
         return ""
 
 
-def gpt_beta_paste_prompt(match) -> None:
+def gpt_beta_paste_prompt(match: str) -> None:
     """Module-level beta pass helper; delegates to the action for coverage."""
     return UserActions.gpt_beta_paste_prompt(match)

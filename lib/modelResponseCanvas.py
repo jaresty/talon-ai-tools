@@ -783,21 +783,13 @@ def _default_draw_response(c: canvas.Canvas) -> None:  # pragma: no cover - visu
             recipe_text = recipe
             grammar_phrase = suggestion_grammar_phrase(
                 recipe_text, getattr(GPTState, "last_again_source", ""), {}
-        )
+            )
         draw_text(f"Recipe: {recipe_text}", x, y)
         y += line_h
         draw_text(f"Say: {grammar_phrase}", x, y)
         y += line_h
-        # Surface migration hints inline with parse-back so users see the
-        # single-value form/channel contract and directional requirement.
         draw_text(
-            "Form/channel are single-value; legacy style tokens are removed—use form/channel.",
-            x,
-            y,
-        )
-        y += line_h
-        draw_text(
-            "Always include one directional lens: fog/fig/dig/ong/rog/bog/jog.",
+            "Form+channel: one each (defaults/last-run apply if omitted); include one directional lens (fog/fig/dig/ong/rog/bog/jog).",
             x,
             y,
         )

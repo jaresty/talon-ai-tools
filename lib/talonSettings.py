@@ -530,21 +530,37 @@ def _spoken_axis_value(m, axis_name: str) -> str:
 
     list_attr = f"{axis_name}Modifier_list"
     single_attr = f"{axis_name}Modifier"
+    cap = None
+    if axis_name == "scope":
+        cap = 2
+    elif axis_name == "method":
+        cap = 3
+    elif axis_name in ("form", "channel"):
+        cap = 1
+
     if hasattr(m, list_attr):
         values = getattr(m, list_attr) or []
         parts = [_normalise(v) for v in values if _normalise(v)]
         if parts:
+            if cap is not None:
+                parts = parts[-cap:]
             return " ".join(parts)
     single = getattr(m, single_attr, "")
-    return _normalise(single)
+    value = _normalise(single)
+    if cap is not None and value:
+        return " ".join(value.split()[-cap:])
+    return value
 
 
 # model prompts can be either static and predefined by this repo or custom outside of it
 @mod.capture(
     rule="[{user.staticPrompt}] "
     "[{user.completenessModifier}] "
-    "[{user.scopeModifier}+] "
-    "[{user.methodModifier}+] "
+    "[{user.scopeModifier}] "
+    "[{user.scopeModifier}] "
+    "[{user.methodModifier}] "
+    "[{user.methodModifier}] "
+    "[{user.methodModifier}] "
     "[{user.formModifier}] "
     "[{user.channelModifier}] "
     "{user.directionalModifier} "
@@ -890,6 +906,21 @@ def additionalModelSource(model_source) -> str:
     rule="^[<user.modelCompoundSource>] [using <user.additionalModelSource>] [<user.modelDestination>] <user.pleasePrompt>$"
 )
 def pleasePromptConfiguration(matched_prompt) -> ApplyPromptConfiguration:
+    # Guardrail: legacy style axis is removed post form/channel split.
+    legacy_style_tokens: list[str] = []
+    for attr in ("styleModifier", "styleModifier_list"):
+        value = getattr(matched_prompt, attr, None)
+        if isinstance(value, (list, tuple)):
+            legacy_style_tokens.extend([str(v).strip() for v in value if str(v).strip()])
+        elif value:
+            legacy_style_tokens.append(str(value).strip())
+    if legacy_style_tokens:
+        notify(
+            f"GPT: style axis is removed; use form/channel instead (got {legacy_style_tokens})."
+        )
+        raise ValueError(
+            f"styleModifier is no longer supported; use form/channel instead (got {legacy_style_tokens})."
+        )
     return ApplyPromptConfiguration(
         getattr(matched_prompt, "pleasePrompt", ""),
         getattr(
@@ -914,6 +945,21 @@ def pleasePromptConfiguration(matched_prompt) -> ApplyPromptConfiguration:
     rule="[<user.modelCompoundSource>] [using <user.additionalModelSource>] [<user.modelDestination>] <user.modelPrompt>"
 )
 def applyPromptConfiguration(matched_prompt) -> ApplyPromptConfiguration:
+    # Guardrail: legacy style axis is removed post form/channel split.
+    legacy_style_tokens: list[str] = []
+    for attr in ("styleModifier", "styleModifier_list"):
+        value = getattr(matched_prompt, attr, None)
+        if isinstance(value, (list, tuple)):
+            legacy_style_tokens.extend([str(v).strip() for v in value if str(v).strip()])
+        elif value:
+            legacy_style_tokens.append(str(value).strip())
+    if legacy_style_tokens:
+        notify(
+            f"GPT: style axis is removed; use form/channel instead (got {legacy_style_tokens})."
+        )
+        raise ValueError(
+            f"styleModifier is no longer supported; use form/channel instead (got {legacy_style_tokens})."
+        )
     return ApplyPromptConfiguration(
         getattr(matched_prompt, "modelPrompt", ""),
         getattr(

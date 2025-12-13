@@ -137,6 +137,13 @@ def history_summary_lines(entries: Sequence[object]) -> list[str]:
     """
     lines: list[str] = []
     for idx, entry in enumerate(reversed(entries)):
+        axes = getattr(entry, "axes", {}) or {}
+        dir_tokens = axes.get("directional") if isinstance(axes, dict) else None
+        if isinstance(axes, dict) and axes and not dir_tokens:
+            # Skip entries with axes present but no directional lens to keep
+            # summaries aligned with ADR 048 requirements. Legacy entries with
+            # no axes fall through.
+            continue
         prompt = (
             (getattr(entry, "prompt", "") or "").strip().splitlines()[0]
             if getattr(entry, "prompt", None)
@@ -151,22 +158,34 @@ def history_summary_lines(entries: Sequence[object]) -> list[str]:
         axes = getattr(entry, "axes", None) or {}
         if axes:
             axes_tokens = history_axes_for(axes)
-            recipe_tokens: list[str] = []
-            if recipe:
-                static_token = recipe.split(" · ")[0]
-                if static_token:
-                    recipe_tokens.append(static_token)
-            comp = " ".join(axes_tokens.get("completeness", []))
-            scope = " ".join(axes_tokens.get("scope", []))
-            method = " ".join(axes_tokens.get("method", []))
-            form = " ".join(axes_tokens.get("form", []))
-            channel = " ".join(axes_tokens.get("channel", []))
+            recipe_parts = recipe.split(" · ") if recipe else []
+            static_token = recipe_parts[0] if recipe_parts else ""
+            comp = " ".join(axes_tokens.get("completeness", [])) or (
+                recipe_parts[1] if len(recipe_parts) > 1 else ""
+            )
+            scope = " ".join(axes_tokens.get("scope", [])) or (
+                recipe_parts[2] if len(recipe_parts) > 2 else ""
+            )
+            method = " ".join(axes_tokens.get("method", [])) or (
+                recipe_parts[3] if len(recipe_parts) > 3 else ""
+            )
+            form = " ".join(axes_tokens.get("form", [])) or (
+                recipe_parts[4] if len(recipe_parts) > 4 else ""
+            )
+            channel = " ".join(axes_tokens.get("channel", [])) or (
+                recipe_parts[5] if len(recipe_parts) > 5 else ""
+            )
             directional = " ".join(axes_tokens.get("directional", []))
-            for value in (comp, scope, method, form, channel, directional):
-                if value:
-                    recipe_tokens.append(value)
-            if recipe_tokens:
-                recipe = " · ".join(recipe_tokens)
+            recipe_tokens = [
+                static_token,
+                comp,
+                scope,
+                method,
+                form,
+                channel,
+                directional,
+            ]
+            recipe = " · ".join([t for t in recipe_tokens if t])
         parts = [p for p in (recipe, prompt_snippet) if p]
         payload = " · ".join(parts) if parts else prompt_snippet
         provider_id = (getattr(entry, "provider_id", "") or "").strip()
@@ -357,6 +376,12 @@ def _show_entry(entry) -> None:
             "form": [],
             "channel": [],
         }
+    # History entries must include a directional lens post-ADR 048.
+    if not getattr(GPTState, "last_directional", ""):
+        notify(
+            "GPT: History entry has no directional lens; replay requires fog/fig/dig/ong/rog/bog/jog."
+        )
+        return
     try:
         actions.user.model_response_canvas_open()
     except Exception:

@@ -47,7 +47,7 @@ if bootstrap is not None:
                 "suggestions": [
                     {
                         "name": "Valid stance",
-                        "recipe": "describe · gist · focus · bullets · rog",
+                        "recipe": "describe · gist · focus bound · steps structure flow plan · bullets table · slack jira · rog",
                         "persona_voice": "as teacher",
                         "persona_audience": "to junior engineer",
                         "persona_tone": "kindly",
@@ -97,6 +97,8 @@ if bootstrap is not None:
             # The valid suggestion keeps its stance_command.
             self.assertEqual(first["name"], "Valid stance")
             self.assertIn("stance_command", first)
+            # Axis caps should be enforced when normalising the recipe.
+            self.assertEqual(first["recipe"], "describe · gist · focus bound · structure flow plan · table · jira · rog")
 
             # The invalid stance suggestion is kept but without a stance_command.
             self.assertEqual(second["name"], "Invalid stance")

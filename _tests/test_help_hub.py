@@ -121,6 +121,30 @@ def test_help_hub_next_focus_label_wraps_and_steps():
     assert helpHub._next_focus_label("btn:Quick help", -1, items) == "res:Docs"
 
 
+def test_cheat_sheet_hides_composite_directionals():
+    """Cheat sheet should surface only core directional lenses (no fly/fip/dip)."""
+    text = helpHub._cheat_sheet_text()
+    assert "fly" not in text
+    assert "fip" not in text
+    assert "dip" not in text
+
+
+def test_cheat_sheet_omits_legacy_style_axis():
+    """Cheat sheet should not reintroduce legacy style axis tokens/commands."""
+    text = helpHub._cheat_sheet_text().lower()
+    assert "style axis" not in text
+    assert "style=" not in text
+    assert "model set style" not in text
+
+
+def test_cheat_sheet_calls_out_form_channel_defaults_and_directional_requirement():
+    """Cheat sheet should remind users form/channel are optional singletons with defaults and one directional lens is required."""
+    text = helpHub._cheat_sheet_text().lower()
+    assert "form and channel are optional singletons" in text
+    assert "defaults/last-run apply" in text
+    assert "directional lens" in text
+
+
 def test_help_hub_key_handler_swallows_keys(monkeypatch):
     helpHub.help_hub_open()
 

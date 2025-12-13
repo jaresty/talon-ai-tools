@@ -47,7 +47,7 @@ ADR 020 extends this meta channel into a richer optional bundle. Inside the meta
 - `### Assumptions` – 2–4 short bullets capturing key assumptions and inferred constraints.
 - `### Gaps and checks` – 1–3 bullets listing major gaps/caveats and specific things you should verify.
 - `### Better prompt` – a single, improved version of your request in one or two sentences.
-- `### Axis tweak suggestion` – when helpful, a line like `Suggestion: completeness=gist` or `Suggestion: style=bullets` using the same axis tokens as the rest of the grammar.
+- `### Axis tweak suggestion` – when helpful, a line like `Suggestion: completeness=gist` or `Suggestion: form=bullets` using the same axis tokens as the rest of the grammar.
 
 All of these live in the **meta channel only**:
 
@@ -96,7 +96,7 @@ When the confirmation GUI is open, it also:
   - Confirmation GUI `Recipe:` line
 - Grammar help:
   - `model quick help`
-  - `model quick help completeness` / `scope` / `method` / `style`
+  - `model quick help completeness` / `scope` / `method` / `form` / `channel` / `directional`
   - `model show grammar`
 
 #### Provider switching (ADR 047)
@@ -166,7 +166,7 @@ A couple of common prompts decomposed into the three families:
 - “Explain simply to a junior engineer”  
   - **Persona (Who)**: `as teacher` + `to junior engineer` + `tone=kindly`.  
   - **Intent (Why)**: `for teaching`.  
-  - **Contract (How)**: `completeness=gist` or `minimal`, `scope=focus`, `method=scaffold`, `style=plain` (optionally `tight`).  
+  - **Contract (How)**: `completeness=gist` or `minimal`, `scope=focus`, `method=scaffold`, `form=plain` (optionally `tight`), plus an optional channel when the medium matters (for example, `channel=slack`).  
   - **Do not** try to encode this entirely as a new audience or purpose token; treat it as a recipe across existing axes.
 
 - “Executive brief for CEO” vs “Deep technical write-up for engineers”  
@@ -205,7 +205,7 @@ The `model` command now supports several short, speech-friendly modifier axes yo
 Directional lenses (required) are a separate axis:
 
 - Direction (`directionalModifier`): core lenses like `fog`, `fig`, `dig`, `ong`, `rog`, `bog`, plus combined forms (for example, `fly ong`, `fip rog`, `dip bog`).
-  - Every `model` command that uses this grammar should include exactly one directional lens token.
+  - Every `model` command that uses this grammar should include exactly one directional lens token; composite aliases (fly/fip/dip) are advanced and hidden from primary help.
 
 Axis multiplicity:
 
@@ -232,14 +232,13 @@ Some recommended multi-tag combinations:
   - `actions edges` – focus on concrete actions and the interactions between edges/interfaces.
 - Method:
   - `structure flow` – emphasise both structural decomposition and stepwise flow.
-- Style:
-  - Form/channel examples:
-    - `headline slack` – announcement-style headline for Slack.
-    - `adr presenterm` – ADR-format output with Presenterm channel bias.
+- Form/Channel examples:
+  - `headline slack` – announcement-style headline for Slack (channel bias).
+  - `adr presenterm` – ADR-format output with Presenterm channel bias.
 
 When you use these modifiers—either by speaking them or via a pattern/pattern menu—their semantics are applied in two places:
 
-- As part of the **system prompt contract** (via `Completeness/Scope/Method/Style` fields), which shapes how the model reasons and responds.
+- As part of the **system prompt contract** (via `Completeness/Scope/Method/Form/Channel` fields), which shapes how the model reasons and responds.
 - As explicit **Constraints:** lines in the user prompt, where the Talon lists expand keys like `gist` or `focus` into the full “Important: …” descriptions you see in logs or confirmation text.
 
 You normally say at most one or two of these per call. Examples:
@@ -252,16 +251,17 @@ You normally say at most one or two of these per call. Examples:
 
 If you omit a modifier, a default is inferred from global settings like:
 
-- `user.model_default_completeness` / `scope` / `method` / `style`.
+- `user.model_default_completeness` / `scope` / `method` / `form` / `channel`.
 
 You can adjust these defaults by voice:
 
 - `model set completeness skim` / `model reset completeness`
 - `model set scope narrow` / `model reset scope`
 - `model set method steps` / `model reset method`
-- `model set style bullets` / `model reset style`
+- `model set form bullets` / `model reset form`
+- `model set channel slack` / `model reset channel`
 
-For the full design of these axes (scalar completeness; multi-tag scope/method/style with soft caps and incompatibilities), see ADR 026 in `docs/adr/026-axis-multiplicity-for-scope-method-style.md`.
+For the full design of these axes (scalar completeness; multi-tag scope/method with soft caps and incompatibilities; single form/channel), see ADR 026 in `docs/adr/026-axis-multiplicity-for-scope-method-style.md`.
 
 ### Common axis recipes (cheat sheet)
 
@@ -321,9 +321,9 @@ If you were using some older, now-retired tokens, here are the closest replaceme
   - `to receptive` / `to resistant` → keep the audience (for example, `to managers` / `to stakeholders`) and add `method=receptive` / `method=resistant`.  
   - `to dummy` → keep a friendlier audience (for example, `to junior engineer`) and add `method=novice` + `gist`/`minimal` + `plain`.
 - Purposes / shape:
-  - `for coding` → `goal=solve` + `style=code`.  
+  - `for coding` → `goal=solve` + `form=code`.  
   - `for debugging` → `goal=solve` + `method=debugging`.  
-  - `for slack` / `for table` / `for presenterm` / `for code tour` → `style=slack` / `table` / `presenterm` / `codetour`.  
+  - `for slack` / `for table` / `for presenterm` / `for code tour` → `channel=slack` / `form=table` / `channel=presenterm` / `form=codetour`.  
   - `for diverging` / `for converging` → `for brainstorming` + `method=diverge`; `for deciding` + `method=converge`.  
   - `for mapping` → `method=mapping` + relations/system/dynamics scope (often with `diagram`, `table`, or `abstractvisual` style).
 

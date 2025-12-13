@@ -214,6 +214,80 @@ if bootstrap is not None:
             # No notify expected when simply guarded.
             self.assertFalse(actions.user.notify.called)
 
+        def test_preset_save_and_run_uses_last_axes(self) -> None:
+            """Preset save/run should capture last axes and rerun with them."""
+            # Seed last recipe/state.
+            GPTState.last_recipe = "describe · gist · focus · plain"
+            GPTState.last_static_prompt = "describe"
+            GPTState.last_completeness = "gist"
+            GPTState.last_scope = "focus"
+            GPTState.last_method = ""
+            GPTState.last_form = "plain"
+            GPTState.last_channel = ""
+            GPTState.last_directional = "fog"
+            GPTState.last_axes = {
+                "completeness": ["gist"],
+                "scope": ["focus"],
+                "method": [],
+                "form": ["plain"],
+                "channel": [],
+                "directional": ["fog"],
+            }
+
+            gpt_module.actions.user.gpt_apply_prompt = MagicMock()
+            gpt_module.actions.user.confirmation_gui_close = MagicMock()
+
+            gpt_module.UserActions.gpt_preset_save("quick")
+            self.assertIn("quick", gpt_module._PRESETS)
+
+            gpt_module.UserActions.gpt_preset_run("quick")
+
+            gpt_module.actions.user.gpt_apply_prompt.assert_called_once()
+
+        def test_preset_run_uses_saved_destination_kind(self) -> None:
+            """Preset run should reuse the saved destination kind when rerunning."""
+            GPTState.last_recipe = "describe · gist · focus · plain · fog"
+            GPTState.last_static_prompt = "describe"
+            GPTState.last_completeness = "gist"
+            GPTState.last_scope = "focus"
+            GPTState.last_method = ""
+            GPTState.last_form = "plain"
+            GPTState.last_channel = ""
+            GPTState.last_directional = "fog"
+            GPTState.last_axes = {
+                "completeness": ["gist"],
+                "scope": ["focus"],
+                "method": [],
+                "form": ["plain"],
+                "channel": [],
+                "directional": ["fog"],
+            }
+            # Save with a non-default destination and then clear it from state to
+            # ensure the preset value is used.
+            GPTState.current_destination_kind = "snip"
+            gpt_module.UserActions.gpt_preset_save("clip")
+            GPTState.current_destination_kind = ""
+
+            with (
+                patch.object(gpt_module, "modelPrompt") as model_prompt,
+                patch.object(gpt_module, "create_model_source") as create_source,
+                patch.object(
+                    gpt_module, "create_model_destination"
+                ) as create_destination,
+                patch.object(actions.user, "gpt_apply_prompt") as apply_prompt,
+            ):
+                source = MagicMock()
+                destination = MagicMock()
+                model_prompt.return_value = "PROMPT"
+                create_source.return_value = source
+                create_destination.return_value = destination
+
+                gpt_module.UserActions.gpt_preset_run("clip")
+
+            create_destination.assert_called_once_with("snip")
+            config = apply_prompt.call_args.args[0]
+            self.assertIs(config.model_destination, destination)
+
         def test_gpt_apply_prompt_skips_empty_prompt(self):
             """Empty prompts should be rejected with a notification."""
             actions.user.calls.clear()
@@ -334,7 +408,35 @@ if bootstrap is not None:
 
         def test_gpt_replay_uses_prompt_session_output(self):
             GPTState.last_directional = "fog"
-            with patch.object(gpt_module, "PromptSession") as session_cls:
+            # Seed axes with over-cap values to ensure replay applies caps.
+            GPTState.last_axes = {
+                "completeness": ["full"],
+                "scope": ["bound", "edges", "focus"],
+                "method": ["rigor", "xp", "steps", "plan"],
+                "form": ["plain", "table"],
+                "channel": ["slack", "jira"],
+                "directional": ["fog"],
+            }
+            GPTState.last_static_prompt = "describe"
+            GPTState.last_completeness = "full"
+            GPTState.last_scope = "bound edges focus"
+            GPTState.last_method = "rigor xp steps plan"
+            GPTState.last_form = "plain table"
+            GPTState.last_channel = "slack jira"
+            with (
+                patch.object(gpt_module, "PromptSession") as session_cls,
+                patch.object(gpt_module, "last_recipe_snapshot") as snapshot_mock,
+            ):
+                snapshot_mock.return_value = {
+                    "static_prompt": "describe",
+                    "completeness": "full",
+                    "scope_tokens": ["bound", "edges", "focus"],
+                    "method_tokens": ["rigor", "xp", "steps", "plan"],
+                    "form_tokens": ["plain", "table"],
+                    "channel_tokens": ["slack", "jira"],
+                    "directional": "fog",
+                }
+
                 mock_session = session_cls.return_value
                 mock_session._destination = "paste"
                 handle = self.pipeline.complete_async.return_value
@@ -349,6 +451,12 @@ if bootstrap is not None:
                 mock_session.begin.assert_called_once_with(reuse_existing=True)
                 self.pipeline.complete_async.assert_called_once_with(mock_session)
                 handle_async.assert_called_once_with(handle, "paste", block=False)
+                # Axis caps applied during replay.
+                # Scope cap keeps the last two tokens (order canonicalised).
+                self.assertEqual(set(GPTState.last_scope.split()), {"edges", "focus"})
+                self.assertEqual(set(GPTState.last_method.split()), {"steps", "plan", "xp"})
+                self.assertEqual(GPTState.last_form, "table")
+                self.assertEqual(GPTState.last_channel, "jira")
 
         def test_gpt_show_last_meta_notifies_when_present(self):
             GPTState.last_meta = "Interpreted as: summarise the design tradeoffs."

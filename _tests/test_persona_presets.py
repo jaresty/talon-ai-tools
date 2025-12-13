@@ -47,8 +47,6 @@ if bootstrap is not None:
                     "designer_to_pm",
                     "product_manager_to_team",
                     "executive_brief",
-                    "platform_ops",
-                    "analyst_peer",
                 }
                 <= keys
             )
@@ -56,7 +54,18 @@ if bootstrap is not None:
         def test_expected_intent_presets_present(self) -> None:
             keys = {preset.key for preset in personaConfig.INTENT_PRESETS}
             self.assertTrue(
-                {"teach", "decide", "plan", "evaluate", "brainstorm", "appreciate"}
+                {
+                    "teach",
+                    "decide",
+                    "plan",
+                    "evaluate",
+                    "brainstorm",
+                    "appreciate",
+                    "persuade",
+                    "coach",
+                    "collaborate",
+                    "entertain",
+                }
                 <= keys
             )
 

@@ -44,6 +44,11 @@ def history_drawer_entries_from(entries: Sequence[object]) -> List[Tuple[str, st
 
     rendered: List[Tuple[str, str]] = []
     for entry in entries:
+        axes = getattr(entry, "axes", {}) or {}
+        if isinstance(axes, dict) and axes and not axes.get("directional"):
+            # Skip entries with axes present but no directional lens to maintain
+            # the ADR 048 requirement of a single directional per replay path.
+            continue
         prompt = (getattr(entry, "prompt", "") or "").strip().splitlines()[0]
         snippet = prompt[:80] + ("…" if len(prompt) > 80 else "")
         duration_ms = getattr(entry, "duration_ms", None)
@@ -53,7 +58,6 @@ def history_drawer_entries_from(entries: Sequence[object]) -> List[Tuple[str, st
         if dur:
             label = f"{label} ({dur})"
         recipe = (getattr(entry, "recipe", "") or "").strip()
-        axes = getattr(entry, "axes", None) or {}
         if axes:
             axes_tokens = _history_axes_for_impl(axes)
             recipe_tokens: list[str] = []

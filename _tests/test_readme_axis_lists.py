@@ -73,6 +73,14 @@ if bootstrap is not None:
                         f"{axis} README tokens not present in catalog: {extra}",
                     )
 
+        def test_readme_does_not_reference_legacy_style_axis(self) -> None:
+            """Guardrail: README should not reference the removed style axis."""
+            text = self.readme_path.read_text(encoding="utf-8")
+            self.assertNotIn("model set style", text)
+            self.assertNotIn("model reset style", text)
+            self.assertNotIn("style=", text)
+            self.assertNotIn("style axis", text)
+
 else:
     if not TYPE_CHECKING:
         class ReadmeAxisListTests(unittest.TestCase):

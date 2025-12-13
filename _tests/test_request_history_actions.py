@@ -12,11 +12,13 @@ else:
     bootstrap()
 
 if bootstrap is not None:
+    from talon import actions, app
     from talon_user.lib.requestHistoryActions import (
         UserActions as HistoryActions,
         history_axes_for,
         history_summary_lines,
     )
+    import talon_user.lib.requestHistoryActions as history_actions
     from talon_user.lib.requestLog import append_entry, clear_history, all_entries
     from talon_user.lib.modelState import GPTState
     from talon_user.lib.modelConfirmationGUI import (
@@ -43,7 +45,21 @@ if bootstrap is not None:
             actions.user.model_response_canvas_open = _open_canvas  # type: ignore[attr-defined]
 
         def test_show_latest_populates_state_and_opens_canvas(self):
-            append_entry("rid-1", "prompt text", "answer text", "meta text")
+            append_entry(
+                "rid-1",
+                "prompt text",
+                "answer text",
+                "meta text",
+                recipe="describe · gist · focus · steps · plain · slack · fog",
+                axes={
+                    "completeness": ["gist"],
+                    "scope": ["focus"],
+                    "method": ["steps"],
+                    "form": ["plain"],
+                    "channel": ["slack"],
+                    "directional": ["fog"],
+                },
+            )
             HistoryActions.gpt_request_history_show_latest()
 
             self.assertEqual(GPTState.last_response, "answer text")
@@ -340,6 +356,33 @@ if bootstrap is not None:
             self.assertEqual(filtered.get("channel"), ["jira"])
             self.assertEqual(filtered.get("directional"), ["fog"])
 
+        def test_history_entry_without_directional_notifies_and_returns(self):
+            # History entries lacking directional should not open the canvas or update last state.
+            append_entry(
+                "rid-no-dir",
+                "prompt",
+                "response",
+                meta="",
+                recipe="describe · gist · focus · flow",
+                axes={
+                    "completeness": ["gist"],
+                    "scope": ["focus"],
+                    "method": ["flow"],
+                    "form": ["plain"],
+                    "channel": ["slack"],
+                    "directional": [],
+                },
+            )
+            GPTState.last_directional = ""
+            with patch.object(app, "notify") as notify_mock, patch.object(
+                actions.user, "model_response_canvas_open"
+            ) as canvas_mock, patch.object(history_actions, "notify") as notify_fn:
+                HistoryActions.gpt_request_history_show_latest()
+
+            notify_fn.assert_called()
+            canvas_mock.assert_not_called()
+            self.assertEqual(GPTState.last_directional, "")
+
         def test_history_summary_lines_matches_existing_formatting(self):
             append_entry(
                 "rid-1",
@@ -348,13 +391,14 @@ if bootstrap is not None:
                 "meta1",
                 recipe="infer · full · rigor",
                 duration_ms=7,
+                axes={"directional": ["fog"]},
             )
 
             entries = all_entries()[-1:]
             lines = history_summary_lines(entries)
 
             self.assertEqual(
-                lines, ["0: rid-1 (7ms) | infer · full · rigor · prompt one"]
+                lines, ["0: rid-1 (7ms) | infer · full · rigor · fog · prompt one"]
             )
 
         def test_history_summary_lines_prefers_axes_tokens(self):
@@ -370,6 +414,7 @@ if bootstrap is not None:
                     "method": ["rigor"],
                     "form": ["adr"],
                     "channel": ["slack"],
+                    "directional": ["fog"],
                 },
             )
 
@@ -384,11 +429,35 @@ if bootstrap is not None:
                 "prompt provider",
                 "resp2",
                 "meta2",
-                recipe="infer · full",
+                recipe="infer · full · rog",
+                axes={"directional": ["rog"]},
                 provider_id="gemini",
             )
             lines = history_summary_lines(all_entries())
             self.assertTrue(any("provider=gemini" in line for line in lines))
+
+        def test_history_summary_lines_skips_entries_without_directional(self):
+            append_entry(
+                "rid-no-dir",
+                "prompt",
+                "resp",
+                "meta",
+                recipe="infer · gist · focus",
+                axes={"completeness": ["gist"], "directional": []},
+            )
+            append_entry(
+                "rid-with-dir",
+                "prompt",
+                "resp",
+                "meta",
+                recipe="infer · gist · focus · rog",
+                axes={"completeness": ["gist"], "directional": ["rog"]},
+            )
+
+            lines = history_summary_lines(all_entries())
+
+            self.assertEqual(len(lines), 1)
+            self.assertIn("rid-with-dir", lines[0])
 
         def test_show_entry_sets_provider(self):
             append_entry(

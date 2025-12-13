@@ -47,6 +47,7 @@ if bootstrap is not None:
                     self.duration_ms = 7
                     self.recipe = "infer · full · rigor"
                     self.provider_id = "gemini"
+                    self.axes = {"directional": ["fog"]}
 
             entries = [DummyEntry()]
             direct = actions_summary_lines(entries)
@@ -98,6 +99,21 @@ if bootstrap is not None:
             self.assertIn("slack", body)
             self.assertIn("fog", body)
             self.assertNotIn("recipe", body)
+
+        def test_history_drawer_skips_entries_without_directional(self) -> None:
+            class DummyEntry:
+                def __init__(self) -> None:
+                    self.request_id = "rid-no-dir"
+                    self.prompt = "prompt one"
+                    self.response = "resp1"
+                    self.meta = "meta1"
+                    self.duration_ms = 10
+                    self.recipe = "infer · gist"
+                    self.axes = {"completeness": ["gist"], "directional": []}
+
+            entries = [DummyEntry()]
+            rendered = history_drawer_entries_from(entries)
+            self.assertEqual(rendered, [])
 
 
 else:

@@ -1,3 +1,4 @@
+import tempfile
 import unittest
 from pathlib import Path
 from typing import TYPE_CHECKING
@@ -14,6 +15,15 @@ if bootstrap is not None:
     from talon_user.lib.axisMappings import axis_registry
 
     class AxisRegistryDriftTests(unittest.TestCase):
+        def setUp(self) -> None:
+            self._tmp_dir = tempfile.TemporaryDirectory()
+
+        def tearDown(self) -> None:
+            try:
+                self._tmp_dir.cleanup()
+            except Exception:
+                pass
+
         def test_registry_matches_axis_config_tokens(self) -> None:
             registry = axis_registry()
             for axis, mapping in AXIS_KEY_TO_VALUE.items():
@@ -69,6 +79,19 @@ if bootstrap is not None:
                 style_list_path.exists(),
                 "styleModifier.talon-list should be removed after form/channel migration",
             )
+
+        def test_axis_catalog_rejects_legacy_style_list(self) -> None:
+            """Guardrail: axis_catalog should fail fast when a style list reappears."""
+            tmp = Path(self._tmp_dir.name)
+            lists_dir = tmp / "lists"
+            lists_dir.mkdir(parents=True, exist_ok=True)
+            style_path = lists_dir / "styleModifier.talon-list"
+            style_path.write_text("list: user.styleModifier\n-\nplain: plain\n", encoding="utf-8")
+
+            from talon_user.lib.axisCatalog import axis_catalog
+
+            with self.assertRaises(ValueError):
+                axis_catalog(lists_dir=lists_dir)
 
 else:
     if not TYPE_CHECKING:

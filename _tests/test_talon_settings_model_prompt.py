@@ -1,6 +1,7 @@
 import unittest
 from types import SimpleNamespace
 from typing import TYPE_CHECKING
+from unittest.mock import patch
 
 try:
     from bootstrap import bootstrap
@@ -17,7 +18,8 @@ if bootstrap is not None:
         get_static_prompt_axes,
         static_prompt_settings_catalog,
     )
-    from talon_user.lib.talonSettings import modelPrompt
+    import talon_user.lib.talonSettings as talon_settings
+    from talon_user.lib.talonSettings import applyPromptConfiguration, modelPrompt, pleasePromptConfiguration
     from talon_user.lib.modelState import GPTState
 
     class ModelPromptModifiersTests(unittest.TestCase):
@@ -470,13 +472,13 @@ if bootstrap is not None:
 
             _ = modelPrompt(m)
 
-            # System prompt should see the raw, spoken scope description.
-            self.assertEqual(GPTState.system_prompt.scope, "narrow focus bound")
+            # System prompt should see the capped, most recent scope tokens.
+            self.assertEqual(GPTState.system_prompt.scope, "focus bound")
 
             # last_scope should include at most 2 tokens drawn from the input set.
             scope_tokens = GPTState.last_scope.split()
             self.assertLessEqual(len(scope_tokens), 2)
-            self.assertTrue(set(scope_tokens).issubset({"narrow", "focus", "bound"}))
+            self.assertTrue(set(scope_tokens).issubset({"focus", "bound"}))
 
             # last_recipe should reflect the capped, canonicalised scope tokens.
             recipe_parts = [p.strip() for p in GPTState.last_recipe.split("·")]
@@ -528,6 +530,58 @@ if bootstrap is not None:
             with self.assertRaises(ValueError) as ctx:
                 modelPrompt(m)
             self.assertIn("use form/channel instead", str(ctx.exception))
+
+        def test_apply_prompt_configuration_rejects_legacy_style_modifier(self):
+            """Guardrail: applyPromptConfiguration should reject legacy style tokens."""
+            m = SimpleNamespace(
+                modelPrompt="describe",
+                styleModifier="plain",
+                directionalModifier="fog",
+            )
+
+            with patch.object(talon_settings, "notify") as notify_mock:
+                with self.assertRaises(ValueError):
+                    applyPromptConfiguration(m)
+
+            notify_mock.assert_called_once()
+
+        def test_please_prompt_configuration_rejects_legacy_style_modifier(self):
+            """Guardrail: pleasePromptConfiguration should reject legacy style tokens."""
+            m = SimpleNamespace(
+                pleasePrompt="describe",
+                styleModifier="plain",
+            )
+
+            with patch.object(talon_settings, "notify") as notify_mock:
+                with self.assertRaises(ValueError):
+                    pleasePromptConfiguration(m)
+
+            notify_mock.assert_called_once()
+
+        def test_spoken_axis_caps_scope_method_form_channel(self):
+            """Spoken axis values should respect caps (scope≤2, method≤3, form=1, channel=1)."""
+            m = SimpleNamespace(
+                staticPrompt="fix",
+                completenessModifier="skim",
+                scopeModifier_list=["narrow", "focus", "bound"],
+                methodModifier_list=["steps", "structure", "flow", "plan"],
+                formModifier_list=["adr", "table"],
+                channelModifier_list=["slack", "jira"],
+                directionalModifier="fog",
+            )
+
+            _ = modelPrompt(m)
+
+            self.assertEqual(GPTState.system_prompt.scope, "focus bound")
+            self.assertEqual(GPTState.system_prompt.method, "structure flow plan")
+            self.assertEqual(GPTState.system_prompt.form, "table")
+            self.assertEqual(GPTState.system_prompt.channel, "jira")
+            scope_tokens = GPTState.last_scope.split()
+            method_tokens = GPTState.last_method.split()
+            self.assertLessEqual(len(scope_tokens), 2)
+            self.assertLessEqual(len(method_tokens), 3)
+            self.assertEqual(GPTState.last_form, "table")
+            self.assertEqual(GPTState.last_channel, "jira")
 
         def test_model_prompt_handles_multi_tag_form_from_list(self):
             """Form list should respect singleton cap and keep the most recent token."""

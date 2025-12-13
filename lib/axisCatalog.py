@@ -23,6 +23,8 @@ _AXIS_LIST_FILES: Dict[str, str] = {
     "directional": "directionalModifier.talon-list",
 }
 
+_LEGACY_STYLE_LIST = "styleModifier.talon-list"
+
 
 def _read_list_tokens(path: Path) -> List[str]:
     """Parse Talon list tokens from a list file, ignoring comments and headers."""
@@ -92,9 +94,26 @@ def axis_catalog(
     - static_prompt_profiles: raw profiles for callers that need direct access.
     """
 
+    if "style" in AXIS_KEY_TO_VALUE:
+        raise ValueError("style axis is removed; drop legacy style before building the axis catalog.")
+
     axis_lists: Dict[str, List[str]] = {}
     for axis_name in _AXIS_LIST_FILES:
         axis_lists[axis_name] = axis_list_tokens(axis_name, lists_dir=lists_dir)
+
+    # Guard against accidental reintroduction of the legacy style list.
+    base_dir = (
+        Path(lists_dir)
+        if lists_dir
+        else Path(__file__).resolve().parent.parent / "GPT" / "lists"
+    )
+    style_list_path = base_dir / _LEGACY_STYLE_LIST
+    if style_list_path.exists():
+        style_tokens = _read_list_tokens(style_list_path)
+        if style_tokens:
+            raise ValueError(
+                f"styleModifier list is removed after form/channel split (found tokens: {style_tokens})"
+            )
 
     return {
         "axes": AXIS_KEY_TO_VALUE,

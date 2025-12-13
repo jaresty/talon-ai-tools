@@ -878,8 +878,10 @@ def _cheat_sheet_text() -> str:
         "- form: plain | bullets | table | code | checklist | adr",
         "- channel: slack | jira | presenterm | html | announce",
         "Hints:",
-        "- Form and channel are single-value; legacy style tokens are removed (use form/channel).",
+        "- Form and channel are optional singletons; defaults/last-run apply when omitted; legacy style tokens are removed (use form/channel).",
         "- Every run needs exactly one directional lens (fog/fig/dig/ong/rog/bog/jog).",
+        "Persona presets: peer | coach | mentor | stakeholder | design | pm | exec",
+        "Intent presets: teach | decide | plan | evaluate | brainstorm | appreciate | persuade | coach | collaborate | entertain",
         "- Use More actions… → Open Help Hub in confirmation",
         "- Say 'model help filter <phrase>' to search in Hub",
     ]

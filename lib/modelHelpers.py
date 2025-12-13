@@ -814,7 +814,14 @@ def _send_request_streaming(request, request_id: str) -> str:
         axes_map = catalog.get("axes", {}) or {}
         filtered_axes: dict[str, list[str]] = {}
         axes = request.get("axes") or {}
-        for axis in ("completeness", "scope", "method", "style", "directional"):
+        for axis in (
+            "completeness",
+            "scope",
+            "method",
+            "form",
+            "channel",
+            "directional",
+        ):
             vals = axes.get(axis) or []
             if isinstance(vals, list):
                 tokens = [str(v) for v in vals if str(v)]

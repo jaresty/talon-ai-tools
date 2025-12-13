@@ -77,6 +77,10 @@
 persona {user.personaPreset}: user.persona_set_preset(personaPreset)
 intent {user.intentPreset}: user.intent_set_preset(intentPreset)
 
+{user.model} preset save <user.text>$: user.gpt_preset_save(text)
+{user.model} preset run <user.text>$: user.gpt_preset_run(text)
+{user.model} preset list$: user.gpt_preset_list()
+
 persona status: user.persona_status()
 intent status: user.intent_status()
 

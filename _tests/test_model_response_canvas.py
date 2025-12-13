@@ -325,58 +325,69 @@ if bootstrap is not None:
             self.assertTrue(bool(snapshot_arg.get("completed")))
             self.assertFalse(bool(snapshot_arg.get("errored")))
 
-        def test_prompt_recap_includes_migration_hints(self) -> None:
-            """Prompt recap should surface form/channel singleton and directional requirements."""
-            GPTState.last_response = "answer"
-            GPTState.last_recipe = "describe · gist · focus · plain"
-            GPTState.last_static_prompt = "describe"
-            GPTState.last_axes = {
-                "completeness": ["gist"],
-                "scope": ["focus"],
-                "method": [],
-                "form": ["plain"],
-                "channel": [],
-                "directional": ["fog"],
-            }
+        def test_recap_surfaces_form_channel_directional_hint(self) -> None:
+            """Recap line should remind users about single form/channel and the directional requirement."""
+
+            GPTState.last_response = "answer body"
+            GPTState.last_recipe = "infer · full · focus"
             GPTState.last_directional = "fog"
+            GPTState.last_completeness = "full"
+            GPTState.last_scope = "focus"
+            GPTState.last_method = "steps"
+            GPTState.last_form = "bullets"
+            GPTState.last_channel = "slack"
 
-            canvas_obj = _ensure_response_canvas()
-            # Provide minimal canvas primitives and state for the draw handler.
-            if not hasattr(canvas_obj, "rect") or canvas_obj.rect is None:
-                canvas_obj.rect = type(
-                    "R", (), {"x": 0, "y": 0, "width": 800, "height": 600}
-                )()
+            with patch.object(
+                modelResponseCanvas,
+                "last_recipe_snapshot",
+                return_value={
+                    "recipe": "infer · full · focus · steps · bullets · slack",
+                    "static_prompt": "infer",
+                    "completeness": "full",
+                    "scope_tokens": ["focus"],
+                    "method_tokens": ["steps"],
+                    "form_tokens": ["bullets"],
+                    "channel_tokens": ["slack"],
+                    "directional": "fog",
+                },
+            ), patch.object(
+                modelResponseCanvas,
+                "last_recap_snapshot",
+                return_value={"response": "answer body", "meta": ""},
+            ), patch.object(
+                modelResponseCanvas,
+                "suggestion_grammar_phrase",
+                return_value="model again fog",
+            ):
+                canvas_obj = _ensure_response_canvas()
+                if not hasattr(canvas_obj, "rect") or canvas_obj.rect is None:
+                    canvas_obj.rect = type(
+                        "R", (), {"x": 0, "y": 0, "width": 500, "height": 400}
+                    )()
+                captured: list[str] = []
+                original_draw_text = getattr(canvas_obj, "draw_text", None)
 
-            class Paint:
-                class Style:
-                    FILL = 1
-                    STROKE = 2
+                def _capture(text, *args, **kwargs):
+                    captured.append(str(text))
+                    if original_draw_text:
+                        return original_draw_text(text, *args, **kwargs)
+                    return None
 
-                def __init__(self) -> None:
-                    self.color = "000000"
-                    self.style = None
+                canvas_obj.draw_text = _capture  # type: ignore[attr-defined]
+                callbacks = getattr(canvas_obj, "_callbacks", {})
+                draw_cbs = callbacks.get("draw") or []
+                for cb in draw_cbs:
+                    cb(canvas_obj)
 
-            canvas_obj.paint = Paint()
-            drawn: list[str] = []
-
-            def _draw_text(text, *_args, **_kwargs):  # type: ignore[override]
-                drawn.append(str(text))
-
-            canvas_obj.draw_text = _draw_text  # type: ignore[assignment]
-            canvas_obj.draw_rect = lambda *args, **kwargs: None  # type: ignore[assignment]
-
-            callbacks = getattr(canvas_obj, "_callbacks", {})
-            draw_cbs = callbacks.get("draw") or []
-            for cb in draw_cbs:
-                cb(canvas_obj)
-
+            hint_lines = [
+                line
+                for line in captured
+                if "Form+channel: one each" in line
+                and "directional lens" in line
+            ]
             self.assertTrue(
-                any("Form/channel are single-value" in line for line in drawn),
-                f"Expected form/channel migration hint in recap text, got {drawn}",
-            )
-            self.assertTrue(
-                any("directional lens" in line for line in drawn),
-                f"Expected directional migration hint in recap text, got {drawn}",
+                hint_lines,
+                "Expected response recap to surface form/channel singleton and directional hint",
             )
 
 

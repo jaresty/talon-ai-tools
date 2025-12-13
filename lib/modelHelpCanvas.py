@@ -839,40 +839,44 @@ def _default_draw_quick_help(
         pass
 
     try:
-        intent_commands = _intent_preset_commands()
-        if intent_commands:
-            y = _draw_wrapped_commands(
-                "  Intent presets (Why): ",
-                intent_commands,
-                draw_text,
-                x,
-                y,
-                rect,
-                line_h,
-                command_prefix="intent",
-            )
-    except Exception:
-        # If intent presets cannot be imported, continue without them.
-        pass
-    try:
         intent_buckets = intent_bucket_presets()
     except Exception:
         intent_buckets = {}
+    rendered_intents = False
     if intent_buckets:
         task = intent_buckets.get("task", [])
         relational = intent_buckets.get("relational", [])
         if task:
             y = _draw_wrapped_line(
-                "  Task intents: " + " · ".join(task),
+                "  Task intents (say: intent …): " + " · ".join(task),
                 x,
                 y,
             )
+            rendered_intents = True
         if relational:
             y = _draw_wrapped_line(
-                "  Relational intents: " + " · ".join(relational),
+                "  Relational intents (say: intent …): " + " · ".join(relational),
                 x,
                 y,
             )
+            rendered_intents = True
+    if not rendered_intents:
+        try:
+            intent_commands = _intent_preset_commands()
+            if intent_commands:
+                y = _draw_wrapped_commands(
+                    "  Intent presets (Why): ",
+                    intent_commands,
+                    draw_text,
+                    x,
+                    y,
+                    rect,
+                    line_h,
+                    command_prefix="intent",
+                )
+        except Exception:
+            # If intent presets cannot be imported, continue without them.
+            pass
 
     draw_text(
         "  Status/reset: persona status · persona reset · intent status · intent reset",

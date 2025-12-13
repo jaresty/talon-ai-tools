@@ -863,13 +863,13 @@ def _default_draw_quick_help(
         relational = intent_buckets.get("relational", [])
         if task:
             y = _draw_wrapped_line(
-                "  Task intents (Why): " + " · ".join(task),
+                "  Task intents: " + " · ".join(task),
                 x,
                 y,
             )
         if relational:
             y = _draw_wrapped_line(
-                "  Relational intents (Why): " + " · ".join(relational),
+                "  Relational intents: " + " · ".join(relational),
                 x,
                 y,
             )

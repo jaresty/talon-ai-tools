@@ -13,7 +13,7 @@ from .canvasFont import apply_canvas_typeface
 from .helpUI import apply_scroll_delta, clamp_scroll, scroll_fraction
 from .modelState import GPTState
 from .suggestionCoordinator import last_recipe_snapshot, suggestion_grammar_phrase
-from .personaConfig import intent_bucket_presets
+from .personaConfig import intent_bucket_presets, PERSONA_PRESETS
 from .helpDomain import (
     help_index,
     help_search,
@@ -857,6 +857,28 @@ _hub_key_handler = _on_key
 
 
 def _cheat_sheet_text() -> str:
+    def _axis_examples(axis: str, fallback: List[str], limit: int = 6) -> List[str]:
+        try:
+            catalog = axis_catalog()
+            axes = catalog.get("axes", {})
+            tokens = list((axes.get(axis) or {}).keys())
+            if tokens:
+                return tokens[:limit]
+        except Exception:
+            pass
+        return fallback[:limit]
+
+    def _persona_presets() -> List[str]:
+        names: List[str] = []
+        try:
+            for preset in PERSONA_PRESETS:
+                spoken = (preset.spoken or "").strip().lower()
+                if spoken:
+                    names.append(spoken)
+        except Exception:
+            pass
+        return names
+
     intent_buckets = {}
     try:
         intent_buckets = intent_bucket_presets()
@@ -874,6 +896,23 @@ def _cheat_sheet_text() -> str:
         if relational_intents
         else "Intent presets (relational): appreciate | persuade | coach | collaborate | entertain"
     )
+    persona_presets = _persona_presets()
+    persona_line = (
+        "Persona presets: " + " | ".join(persona_presets)
+        if persona_presets
+        else "Persona presets: peer | coach | mentor | stakeholder | design | pm | exec"
+    )
+    completeness_tokens = _axis_examples(
+        "completeness", ["skim", "gist", "full", "deep"]
+    )
+    scope_tokens = _axis_examples("scope", ["narrow", "focus", "bound", "edges"])
+    method_tokens = _axis_examples(
+        "method", ["steps", "plan", "rigor", "flow", "debugging"]
+    )
+    form_tokens = _axis_examples("form", ["plain", "bullets", "table", "code", "adr"])
+    channel_tokens = _axis_examples(
+        "channel", ["slack", "jira", "presenterm", "html", "announce"]
+    )
     lines = [
         "Model Help Hub cheat sheet",
         "Core commands:",
@@ -890,15 +929,15 @@ def _cheat_sheet_text() -> str:
         "- Contract (How): completeness, scope, method, form, channel",
         "- Presets: small Who/Why bundles (for example, 'Teach junior dev', 'Executive brief').",
         "Axes (examples):",
-        "- completeness: skim | gist | full | deep",
-        "- scope: narrow | focus | bound | edges",
-        "- method: steps | plan | rigor | flow | debugging",
-        "- form: plain | bullets | table | code | checklist | adr",
-        "- channel: slack | jira | presenterm | html | announce",
+        "- completeness: " + " | ".join(completeness_tokens),
+        "- scope: " + " | ".join(scope_tokens),
+        "- method: " + " | ".join(method_tokens),
+        "- form: " + " | ".join(form_tokens),
+        "- channel: " + " | ".join(channel_tokens),
         "Hints:",
         "- Form and channel are optional singletons; defaults/last-run apply when omitted; legacy style tokens are removed (use form/channel).",
         "- Every run needs exactly one directional lens (fog/fig/dig/ong/rog/bog/jog).",
-        "Persona presets: peer | coach | mentor | stakeholder | design | pm | exec",
+        persona_line,
         task_line,
         relational_line,
         "- Use More actions… → Open Help Hub in confirmation",

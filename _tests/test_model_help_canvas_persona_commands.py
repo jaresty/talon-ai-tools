@@ -33,7 +33,7 @@ if bootstrap is not None:
             canvas = _DummyCanvas()
             _default_draw_quick_help(canvas)
 
-            prefix = "  Persona presets (Who): "
+            prefix = "  Persona: "
             persona_lines = [
                 line
                 for line in canvas.text
@@ -41,8 +41,7 @@ if bootstrap is not None:
             ]
             self.assertTrue(persona_lines, "Persona presets line not rendered")
             combined = " ".join(persona_lines)
-            self.assertIn("persona peer", combined)
-            # Subsequent entries should omit the repeated 'persona' prefix.
+            self.assertIn("Persona: peer", combined)
             for token in ("mentor", "exec"):
                 self.assertIn(token, combined)
 
@@ -50,7 +49,7 @@ if bootstrap is not None:
             canvas = _DummyCanvas()
             _default_draw_quick_help(canvas)
 
-            prefix = "  Intent presets (Why): "
+            prefix = "  Intent: "
             intent_lines = [
                 line
                 for line in canvas.text
@@ -58,7 +57,7 @@ if bootstrap is not None:
             ]
             self.assertTrue(intent_lines, "Intent presets line not rendered")
             combined = " ".join(intent_lines)
-            self.assertIn("intent teach", combined)
+            self.assertIn("Intent: teach", combined)
             for token in ("decide", "plan"):
                 self.assertIn(token, combined)
 
@@ -69,7 +68,7 @@ if bootstrap is not None:
 
             _default_draw_quick_help(canvas)
 
-            prefix = "  Persona presets (Who): "
+            prefix = "  Persona: "
             persona_lines = [
                 line
                 for line in canvas.text

@@ -1413,13 +1413,13 @@ def send_request(max_attempts: int = 10):
                 _set_active_response(None)
             except Exception:
                 pass
-                try:
-                    GPTState.text_to_confirm = ""
-                    GPTState.last_meta = ""
-                except Exception:
-                    pass
-                _clear_notify_suppress()
-                return format_message("")
+            try:
+                GPTState.text_to_confirm = ""
+                GPTState.last_meta = ""
+            except Exception:
+                pass
+            _clear_notify_suppress()
+            return format_message("")
         except Exception as e:
             try:
                 print(

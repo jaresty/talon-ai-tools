@@ -1,13 +1,14 @@
 import datetime
 import os
 import re
+import sys
 
 from talon import Module, actions, app, settings
 
 from .modelConfirmationGUI import ConfirmationGUIState
 from .modelHelpers import notify
 from .modelState import GPTState
-from .requestLog import latest, nth_from_latest, all_entries
+from .requestLog import latest, nth_from_latest, all_entries as requestlog_all_entries
 from .axisMappings import axis_key_to_value_map_for
 from .axisCatalog import axis_catalog
 from .axisCatalog import axis_catalog
@@ -441,7 +442,12 @@ class UserActions:
         """Show a short summary of recent history entries"""
         if _reject_if_request_in_flight():
             return
-        entries = all_entries()[-count:]
+        try:
+            entries = UserActions.all_entries()[-count:]  # type: ignore[attr-defined]
+        except Exception:
+            entries = []
+        if not entries:
+            entries = requestlog_all_entries()[-count:]
         if not entries:
             notify("GPT: No request history available")
             return

@@ -918,14 +918,14 @@ def _default_draw_quick_help(
         persona_commands = _persona_preset_commands()
         if persona_commands:
             y = _draw_wrapped_commands(
-                "Persona presets:",
-                persona_commands[:6],
+                "  Persona: ",
+                persona_commands,
                 draw_text,
                 x,
                 y,
                 rect,
                 line_h,
-                command_prefix="persona",
+                command_prefix=None,
             )
     except Exception:
         pass
@@ -941,22 +941,6 @@ def _default_draw_quick_help(
             y = _draw_wrapped_line("Task intents: " + " · ".join(task), x, y)
         if relational:
             y = _draw_wrapped_line("Relational intents: " + " · ".join(relational), x, y)
-    try:
-        intent_commands = _intent_preset_commands()
-        if intent_commands:
-            y = _draw_wrapped_commands(
-                "Intent presets:",
-                intent_commands[:6],
-                draw_text,
-                x,
-                y,
-                rect,
-                line_h,
-                command_prefix="intent",
-            )
-    except Exception:
-        pass
-
     y = _draw_wrapped_line(
         "Status/reset: persona status/reset · intent status/reset",
         x,

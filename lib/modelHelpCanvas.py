@@ -1033,9 +1033,9 @@ def _default_draw_quick_help(
     x_left = x
     # Default to a reasonable column separation; when rect is available, use half-width.
     if rect is not None and hasattr(rect, "width"):
-        x_right = rect.x + rect.width // 2
+        x_right = rect.x + (rect.width * 3) // 5
     else:
-        x_right = x + 360
+        x_right = x + 320
     y_left = y_axes_top
     y_right = y_axes_top
 
@@ -1111,7 +1111,7 @@ def _default_draw_quick_help(
     y_left = _draw_axis_column("Scope", "scope", SCOPE_KEYS, x_left, y_left)
     y_left = _draw_axis_column("Method", "method", METHOD_KEYS, x_left, y_left)
 
-    # Right column: form/channel
+    # Right column: form/channel stacked to save horizontal space.
     y_right = _draw_axis_column("Form", "form", FORM_KEYS, x_right, y_right)
     y_right = _draw_axis_column("Channel", "channel", CHANNEL_KEYS, x_right, y_right)
 
@@ -1185,17 +1185,21 @@ def _default_draw_quick_help(
 
     # Lay out the directional lenses as a compact 3×3 grid.
     if rect is not None and hasattr(rect, "x") and hasattr(rect, "width"):
-        total_width = max(rect.width - 80, 300)
-        block_width = max(min(total_width // 3, 230), 160)
-        col_gap = 12
-        center_x = rect.x + rect.width // 2 - block_width // 2
+        # Use the inner content width (minus margins) so the grid stays within
+        # the visible panel bounds.
+        inner_width = max(rect.width - 80, 320)
+        col_gap = 10
+        block_width = max(min(int((inner_width - 2 * col_gap) // 3), 200), 150)
+        # Center the grid relative to the content column, not the full rect.
+        content_left = rect.x + 40
+        center_x = content_left + (inner_width // 2) - (block_width // 2)
         left_x = center_x - block_width - col_gap
         right_x = center_x + block_width + col_gap
     else:
-        block_width = 200
+        block_width = 180
         left_x = x
-        center_x = x + block_width + 20
-        right_x = center_x + block_width + 20
+        center_x = x + block_width + 18
+        right_x = center_x + block_width + 18
 
     block_rects: dict[str, Rect] = {}
 
@@ -1215,8 +1219,8 @@ def _default_draw_quick_help(
                 old_color = getattr(paint, "color", None)
                 old_style = getattr(paint, "style", None)
                 height = (1 + len(lines)) * line_h + (line_h // 2)
-                pad_x = 8
-                pad_y = line_h // 3
+                pad_x = 6
+                pad_y = max(line_h // 4, 3)
                 paint.color = bg_color
                 if hasattr(paint, "Style") and hasattr(paint, "style"):
                     paint.style = paint.Style.FILL
@@ -1395,7 +1399,7 @@ def _default_draw_quick_help(
         indent=2,
     )
     y = _draw_wrapped_line(
-        "Form/channel are optional singletons; Always include one directional lens. Directional: fog/fig/dig/ong/rog/bog/jog.",
+        "Form/channel are optional singletons; Always include one directional lens.",
         x,
         y,
         indent=2,

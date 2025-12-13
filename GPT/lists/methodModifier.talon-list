@@ -1,6 +1,7 @@
 list: user.methodModifier
 #
 -
+visual: visual
 adversarial: adversarial
 analysis: analysis
 case: case

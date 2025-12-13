@@ -154,6 +154,12 @@ PERSONA_PRESETS: tuple[PersonaPreset, ...] = (
         audience="to CEO",
         tone="directly",
     ),
+    PersonaPreset(
+        key="fun_mode",
+        label="Fun mode",
+        spoken="fun",
+        tone="casually",
+    ),
 )
 
 

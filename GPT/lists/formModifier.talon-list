@@ -1,23 +1,17 @@
 list: user.formModifier
 # Form container/shape tokens (one max)
 -
-abstractvisual: abstractvisual
 adr: adr
 bug: bug
 bullets: bullets
 cards: cards
 checklist: checklist
 code: code
-codetour: codetour
 commit: commit
-diagram: diagram
-emoji: emoji
 faq: faq
-fun: fun
 gherkin: gherkin
 headline: headline
 log: log
-party: party
 plain: plain
 recipe: recipe
 shellscript: shellscript

@@ -150,8 +150,8 @@ When you are deciding how much of the grammar to use, it helps to think in three
   - `completeness` – how much coverage (`skim`, `gist`, `full`, `max`, `minimal`, `deep`).  
   - `scope` – what territory is in-bounds (`narrow`, `focus`, `bound`, `actions`, `relations`, `system`, `dynamics`, etc.).  
   - `method` – how to think/decompose (`steps`, `plan`, `debugging`, `xp`, `diverge`, `converge`, `mapping`, etc.).  
-  - `form` – container/shape (`plain`, `bullets`, `table`, `code`, `adr`, `story`, `checklist`, `faq`, `headline`, `diagram`, `recipe`, `bug`, `spike`, `log`, `cards`, `codetour`, `commit`, `emoji`, `fun`, `gherkin`, `shellscript`, `party`).  
-  - `channel` – medium bias (`slack`, `jira`, `presenterm`, `announce`, `remote`, `sync`, `html`).
+  - `form` – container/shape (`plain`, `bullets`, `table`, `code`, `adr`, `story`, `checklist`, `faq`, `headline`, `recipe`, `bug`, `spike`, `log`, `cards`, `commit`, `gherkin`, `shellscript`, `tight`).  
+  - `channel` – medium bias (`slack`, `jira`, `presenterm`, `announce`, `remote`, `sync`, `html`, `codetour`, `diagram`, `svg`).
 
 In day-to-day use you can:
 
@@ -187,17 +187,17 @@ The `model` command now supports several short, speech-friendly modifier axes yo
 
 - Completeness (`completenessModifier`): `full`, `gist`, `max`, `minimal`, `skim`
 - Scope (`scopeModifier`): `actions`, `activities`, `bound`, `dynamics`, `edges`, `focus`, `interfaces`, `narrow`, `relations`, `system`
-- Method (`methodModifier`): `adversarial`, `analysis`, `case`, `cluster`, `compare`, `contextualise`, `converge`, `debugging`, `deep`, `diagnose`, `direct`, `diverge`, `experimental`, `filter`, `flow`, `indirect`, `ladder`, `liberating`, `mapping`, `motifs`, `plan`, `prioritize`, `rewrite`, `rigor`, `samples`, `scaffold`, `socratic`, `steps`, `structure`, `systemic`, `taxonomy`, `wasinawa`, `xp`
-- Form (`formModifier`): `abstractvisual`, `adr`, `bug`, `bullets`, `cards`, `checklist`, `code`, `codetour`, `commit`, `diagram`, `emoji`, `faq`, `fun`, `gherkin`, `headline`, `log`, `party`, `plain`, `recipe`, `shellscript`, `spike`, `story`, `table`, `tight`, `presenterm`
-- Channel (`channelModifier`): `announce`, `html`, `jira`, `presenterm`, `remote`, `slack`, `sync`
+- Method (`methodModifier`): `visual`, `adversarial`, `analysis`, `case`, `cluster`, `compare`, `contextualise`, `converge`, `debugging`, `deep`, `diagnose`, `direct`, `diverge`, `experimental`, `filter`, `flow`, `indirect`, `ladder`, `liberating`, `mapping`, `motifs`, `plan`, `prioritize`, `rewrite`, `rigor`, `samples`, `scaffold`, `socratic`, `steps`, `structure`, `systemic`, `taxonomy`, `wasinawa`, `xp`
+- Form (`formModifier`): `adr`, `bug`, `bullets`, `cards`, `checklist`, `code`, `commit`, `faq`, `gherkin`, `headline`, `log`, `plain`, `recipe`, `shellscript`, `spike`, `story`, `table`, `tight`
+- Channel (`channelModifier`): `announce`, `codetour`, `diagram`, `html`, `jira`, `presenterm`, `remote`, `slack`, `sync`, `svg`
   - Additional form/channel notes:
     - `cards` – format the answer as discrete cards/items with clear headings and short bodies.
     - `story` – format the output as a user story using “As a…, I want…, so that…”, optionally with a short prose description and high-level acceptance criteria.
     - `bug` – format the output as a structured bug report (Steps to Reproduce, Expected Behavior, Actual Behavior, Environment/Context).
     - `spike` – format the output as a research spike: short problem/decision statement plus a list of key questions to answer.
     - `log` – write as a concise work or research log entry (dates/times optional, short bullet-style updates, enough context for future you).
-    - `fun` – keep the content the same but make the tone playful and fun while preserving clarity.
-    - `party` – push into wild, celebratory, emoji-heavy responses while still keeping the main content readable and structured.
+    - `codetour` (channel) – output only a valid VS Code CodeTour `.tour` JSON document; no extra prose.
+    - `diagram` (channel) – output only Mermaid diagram code; obey Mermaid safety constraints (no raw `()` in labels, escape `|` as `#124;`, etc.).
     - `announce` – format as an announcement: short headline, what changed and why, and any actions or next steps.
     - `remote` – emphasise remote-friendly delivery: distributed/online context hints and tooling tips.
     - `sync` – shape the answer as a synchronous/live session plan with agenda/steps/cues.
@@ -323,9 +323,9 @@ If you were using some older, now-retired tokens, here are the closest replaceme
 - Purposes / shape:
   - `for coding` → `goal=solve` + `form=code`.  
   - `for debugging` → `goal=solve` + `method=debugging`.  
-  - `for slack` / `for table` / `for presenterm` / `for code tour` → `channel=slack` / `form=table` / `channel=presenterm` / `form=codetour`.  
+  - `for slack` / `for table` / `for presenterm` / `for code tour` → `channel=slack` / `form=table` / `channel=presenterm` / `channel=codetour`.  
   - `for diverging` / `for converging` → `for brainstorming` + `method=diverge`; `for deciding` + `method=converge`.  
-  - `for mapping` → `method=mapping` + relations/system/dynamics scope (often with `diagram`, `table`, or `abstractvisual` style).
+  - `for mapping` → `method=mapping` + relations/system/dynamics scope (often with `diagram` channel, `table` form, or `visual` method).
 
 ## OpenAI API Pricing
 

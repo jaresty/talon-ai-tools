@@ -64,6 +64,9 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "preceding prompt.",
     },
     "method": {
+        "visual": "Important: Express the big picture using an abstract visual or metaphorical layout as a "
+        "reasoning aid (for example, regions and contrasts) with a short legend and concise, format-ready "
+        "hints when helpful.",
         "adversarial": "Important: Run a constructive stress-test: systematically search for weaknesses, edge "
         "cases, counterexamples, failure modes, and unstated assumptions, and prioritise critique "
         "and stress-testing over agreement while still aiming to improve the work.",
@@ -165,8 +168,6 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "boundaries, stakeholders, and internal structure, rather than individual lines or snippets.",
     },
     "form": {
-        "abstractvisual": "Important: Express the big picture as an abstract visual or metaphorical layout (for "
-        "example, regions and contrasts) with a short legend and, if needed, brief SVG/code-like hints.",
         "adr": "Important: Express the answer as an Architecture Decision Record (ADR) with sections for context, "
         "decision, and consequences, using a concise, document-like style.",
         "bug": "Important: Format the answer as a structured bug report with clear sections for Steps to Reproduce, "
@@ -178,31 +179,17 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "imperative task rather than descriptive prose.",
         "code": "Important: Output only code or markup for the main answer, with no surrounding natural-language "
         "explanation.",
-        "codetour": "Important: Output only a valid VS Code CodeTour `.tour` JSON document (schema-compatible), "
-        "using steps and fields appropriate to the task; do not include any extra prose or surrounding "
-        "explanation.",
         "commit": "Important: Express the answer as a conventional commit message with a short type/scope line and, "
         "if needed, a concise body.",
-        "diagram": '"Important: Convert the input into appropriate Mermaid diagram code only: infer the best '
-        "diagram type for the task, and respect existing Mermaid safety constraints (Mermaid diagrams do "
-        "not allow parentheses in the syntax or raw '|' characters inside node labels; use careful "
-        'numeric label encoding such as \\"#124;\\" for \'|\' instead of raw problematic characters)."',
-        "emoji": "Important: Express the answer only as emoji, omitting natural-language text.",
         "faq": "Important: Format the answer as an FAQ-style list: a sequence of clearly separated question "
         "headings with concise answers beneath each one; keep questions and answers easy to skim, and avoid "
         "long uninterrupted prose.",
-        "fun": "Important: Make the message feel light and fun while preserving the core content and clarity; use a "
-        "more playful tone, occasional humour, and a few well-chosen emoji where they genuinely help with "
-        "tone or scannability, but avoid obscuring key information, overusing emoji, or becoming verbose.",
         "gherkin": "Important: Output only Gherkin using Jira markup where appropriate; no surrounding explanation.",
         "headline": "Important: Use a headline-first presentation: state the main point up front, then layer "
         "supporting details beneath; prioritise readability and skimmability.",
         "log": "Important: Format the answer as a concise work or research log entry: include date or time markers "
         "when appropriate, short bullet-style updates, and enough context for future you to understand what "
         "happened without adding unrelated narrative.",
-        "party": "Important: Make the message feel wild, celebratory, and over-the-top while preserving core "
-        "content and readability; use a very playful tone and liberal, varied emoji throughout, leaning "
-        "into humour and enthusiasm without dropping important details or structure.",
         "plain": "Important: Use straightforward, everyday language; minimise jargon and complex sentence "
         "structures.",
         "recipe": "Important: Express the answer as a recipe with a custom, clearly explained mini-language plus a "
@@ -223,6 +210,13 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "announce": "Important: Format the answer as a clear announcement suitable for sharing with a team or "
         "channel: start with a short headline, briefly explain what changed and why, and end with any "
         "relevant actions or next steps for readers.",
+        "codetour": "Important: Output only a valid VS Code CodeTour `.tour` JSON document (schema-compatible), "
+        "using steps and fields appropriate to the task; do not include any extra prose or surrounding "
+        "explanation.",
+        "diagram": '"Important: Convert the input into appropriate Mermaid diagram code only: infer the best '
+        "diagram type for the task, and respect existing Mermaid safety constraints (Mermaid diagrams do "
+        "not allow parentheses in the syntax or raw '|' characters inside node labels; use careful "
+        'numeric label encoding such as \\"#124;\\" for \'|\' instead of raw problematic characters)."',
         "html": "Important: Output only semantic HTML for the answer, with no surrounding prose.",
         "jira": "Important: Format the answer using Jira markup (headings, lists, panels) where relevant, without "
         "adding extra explanation beyond the content.",
@@ -271,6 +265,8 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "without adding channel-irrelevant decoration.",
         "sync": "Important: Shape the output as a synchronous/live session plan (agenda, steps, cues) rather than "
         "static reference text.",
+        "svg": "Important: Output only SVG markup for the answer, with no surrounding prose; prefer minimal, valid "
+        "SVG suitable for copy/paste into an `.svg` file.",
     },
 }
 

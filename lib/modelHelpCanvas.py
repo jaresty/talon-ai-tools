@@ -7,7 +7,7 @@ from .canvasFont import apply_canvas_typeface
 from .helpUI import apply_scroll_delta, clamp_scroll
 from .axisConfig import axis_docs_for
 from .axisCatalog import axis_catalog
-from .personaConfig import INTENT_PRESETS, PERSONA_PRESETS
+from .personaConfig import INTENT_PRESETS, PERSONA_PRESETS, intent_bucket_presets
 
 from .modelState import GPTState
 from .talonSettings import _AXIS_SOFT_CAPS
@@ -289,7 +289,7 @@ _hover_panel: bool = False
 # Default geometry for the quick help window. Kept in one place so future
 # tweaks do not require hunting for magic numbers.
 _PANEL_WIDTH = 820
-_PANEL_HEIGHT = 980
+_PANEL_HEIGHT = 1100
 _PANEL_OFFSET_X = 200
 _PANEL_OFFSET_Y = 80
 
@@ -704,6 +704,33 @@ def _default_draw_quick_help(
         y = 60 - int(scroll_y)
     line_h = 18
 
+    def _draw_wrapped_line(text: str, start_x: int, start_y: int, indent: int = 0) -> int:
+        """Draw text wrapped to fit the canvas width; returns new y position."""
+        if not text:
+            return start_y
+        approx_char = 8
+        if rect is not None and hasattr(rect, "width") and hasattr(rect, "x"):
+            max_pixels = max(rect.width - 2 * (start_x - rect.x), 160)
+        else:
+            max_pixels = 560
+        max_chars = max(int(max_pixels // approx_char), 20)
+        words = text.split()
+        line = ""
+        cur_y = start_y
+        while words:
+            word = words.pop(0)
+            candidate = f"{line} {word}".strip()
+            if len(candidate) > max_chars and line:
+                draw_text(line, start_x + indent, cur_y)
+                cur_y += line_h
+                line = word
+            else:
+                line = candidate
+        if line:
+            draw_text(line, start_x + indent, cur_y)
+            cur_y += line_h
+        return cur_y
+
     # Header band behind the title and close button so the top of the panel
     # feels like a natural title bar.
     if rect is not None and paint is not None and hasattr(rect, "width"):
@@ -767,14 +794,7 @@ def _default_draw_quick_help(
     y += line_h * 2
 
     # Grammar skeleton and last-recipe reminder.
-    draw_text("Grammar:", x, y)
-    y += line_h
-    draw_text(
-        "  model run <staticPrompt> [completeness] [scope] [scope] [method] [method] [method] [form] [channel] <directional lens>",
-        x,
-        y,
-    )
-    y += line_h
+    y = _draw_wrapped_line("Grammar: model run <staticPrompt> [axes…] <directional lens>", x, y)
 
     # Make multiplicity explicit so users know how many axis tokens are kept.
     scope_cap = _AXIS_SOFT_CAPS.get("scope", 2)
@@ -782,17 +802,16 @@ def _default_draw_quick_help(
     form_cap = _AXIS_SOFT_CAPS.get("form", 1)
     channel_cap = _AXIS_SOFT_CAPS.get("channel", 1)
     caps_line = (
-        f"  Caps: 1 static prompt · 1 completeness · scope≤{scope_cap} · "
+        f"Caps: 1 static prompt · 1 completeness · scope≤{scope_cap} · "
         f"method≤{method_cap} · form≤{form_cap} · channel≤{channel_cap} · 1 directional lens"
     )
-    draw_text(caps_line, x, y)
-    y += line_h
-    draw_text(
-        "  Form/channel are optional singletons; if omitted, defaults/last-run apply. Always include one directional lens.",
+    y = _draw_wrapped_line(caps_line, x, y, indent=2)
+    y = _draw_wrapped_line(
+        "Form/channel are optional singletons; defaults/last-run apply when omitted. Always include one directional lens.",
         x,
         y,
+        indent=2,
     )
-    y += line_h
 
     # Persona / Intent quick grammar and presets.
     draw_text("Who / Why (Persona / Intent):", x, y)
@@ -835,6 +854,25 @@ def _default_draw_quick_help(
     except Exception:
         # If intent presets cannot be imported, continue without them.
         pass
+    try:
+        intent_buckets = intent_bucket_presets()
+    except Exception:
+        intent_buckets = {}
+    if intent_buckets:
+        task = intent_buckets.get("task", [])
+        relational = intent_buckets.get("relational", [])
+        if task:
+            y = _draw_wrapped_line(
+                "  Task intents (Why): " + " · ".join(task),
+                x,
+                y,
+            )
+        if relational:
+            y = _draw_wrapped_line(
+                "  Relational intents (Why): " + " · ".join(relational),
+                x,
+                y,
+            )
 
     draw_text(
         "  Status/reset: persona status · persona reset · intent status · intent reset",
@@ -1005,9 +1043,9 @@ def _default_draw_quick_help(
         "Completeness", "completeness", COMPLETENESS_KEYS, x_left, y_left
     )
     y_left = _draw_axis_column("Scope", "scope", SCOPE_KEYS, x_left, y_left)
+    y_left = _draw_axis_column("Method", "method", METHOD_KEYS, x_left, y_left)
 
-    # Right column: method + form/channel
-    y_right = _draw_axis_column("Method", "method", METHOD_KEYS, x_right, y_right)
+    # Right column: form/channel
     y_right = _draw_axis_column("Form", "form", FORM_KEYS, x_right, y_right)
     y_right = _draw_axis_column("Channel", "channel", CHANNEL_KEYS, x_right, y_right)
 

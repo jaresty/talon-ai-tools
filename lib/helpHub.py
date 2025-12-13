@@ -13,6 +13,7 @@ from .canvasFont import apply_canvas_typeface
 from .helpUI import apply_scroll_delta, clamp_scroll, scroll_fraction
 from .modelState import GPTState
 from .suggestionCoordinator import last_recipe_snapshot, suggestion_grammar_phrase
+from .personaConfig import intent_bucket_presets
 from .helpDomain import (
     help_index,
     help_search,
@@ -856,6 +857,23 @@ _hub_key_handler = _on_key
 
 
 def _cheat_sheet_text() -> str:
+    intent_buckets = {}
+    try:
+        intent_buckets = intent_bucket_presets()
+    except Exception:
+        intent_buckets = {}
+    task_intents = intent_buckets.get("task", [])
+    relational_intents = intent_buckets.get("relational", [])
+    task_line = (
+        "Intent presets (task): " + " | ".join(task_intents)
+        if task_intents
+        else "Intent presets (task): teach | decide | plan | evaluate | brainstorm"
+    )
+    relational_line = (
+        "Intent presets (relational): " + " | ".join(relational_intents)
+        if relational_intents
+        else "Intent presets (relational): appreciate | persuade | coach | collaborate | entertain"
+    )
     lines = [
         "Model Help Hub cheat sheet",
         "Core commands:",
@@ -881,7 +899,8 @@ def _cheat_sheet_text() -> str:
         "- Form and channel are optional singletons; defaults/last-run apply when omitted; legacy style tokens are removed (use form/channel).",
         "- Every run needs exactly one directional lens (fog/fig/dig/ong/rog/bog/jog).",
         "Persona presets: peer | coach | mentor | stakeholder | design | pm | exec",
-        "Intent presets: teach | decide | plan | evaluate | brainstorm | appreciate | persuade | coach | collaborate | entertain",
+        task_line,
+        relational_line,
         "- Use More actions… → Open Help Hub in confirmation",
         "- Say 'model help filter <phrase>' to search in Hub",
     ]

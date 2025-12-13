@@ -209,3 +209,22 @@ INTENT_PRESETS: tuple[IntentPreset, ...] = (
         purpose="for entertainment",
     ),
 )
+
+INTENT_BUCKETS: dict[str, tuple[str, ...]] = {
+    # Task/intellectual intents (ADR 048 split)
+    "task": ("teach", "decide", "plan", "evaluate", "brainstorm"),
+    # Relational/social intents (ADR 048 split)
+    "relational": ("appreciate", "persuade", "coach", "collaborate", "entertain"),
+}
+
+
+def intent_bucket_presets() -> dict[str, list[str]]:
+    """Return intent preset keys grouped into task/relational buckets."""
+
+    preset_keys = [preset.key for preset in INTENT_PRESETS if preset.key]
+    buckets: dict[str, list[str]] = {}
+    for bucket, members in INTENT_BUCKETS.items():
+        filtered = [m for m in members if m in preset_keys]
+        if filtered:
+            buckets[bucket] = filtered
+    return buckets

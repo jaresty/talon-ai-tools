@@ -110,7 +110,7 @@
 ---
 
 ## Outstanding follow-ups (tracked for implementation)
-- Completed: grammar consumers (`modelPrompt`, run/again, replay/history, suggest) now enforce `[form] [channel] <directional>` with axis caps, legacy style tokens rejected, and direction-less history entries hidden from summaries/open.
+- Completed: grammar consumers (`modelPrompt`, run/again, replay/history) enforce `[form] [channel] <directional>` with axis caps; `suggest` remains free-form on input but suggestion recipes are normalised/validated to the same caps with a required directional, and legacy style tokens are rejected. Direction-less history entries are hidden from summaries/open.
 - Help/cheatsheets/parse-back: surface migration messaging (legacy style removal), Form/Channel defaults fallback, and cardinality in recap/help surfaces; ensure parse-back shows form/channel + directional. ✅ Response canvas, help canvas, and Help Hub cheat sheet now remind users form+channel are optional singletons (defaults/last-run apply) and one directional lens is required.
 - Guardrails/tests: drift checks remain red if style tokens reappear; parse-back/help canvases and Help Hub cheat sheet are covered by guardrails for form=1/channel=1/directional=1 messaging and axis caps on recaps/history; negative legacy-style capture test remains in place.
 - Intent combinations: keep `intent <preset>` single-valued in capture; allow task+relational pairing only via presets or sequential commands (per ADR). If we decide to support dual intent tokens, add a follow-up to widen storage/state/help/tests explicitly. ✅ Enforced today; no open work.

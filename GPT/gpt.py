@@ -1251,438 +1251,13 @@ class UserActions:
     def gpt_suggest_prompt_recipes(subject: str) -> None:
         """Suggest model prompt recipes using the default source."""
         source = create_model_source(settings.get("user.model_default_source"))
-        UserActions.gpt_suggest_prompt_recipes_with_source(source, subject)
+        _suggest_prompt_recipes_core_impl(source, subject)
 
     def gpt_suggest_prompt_recipes_with_source(
         source: ModelSource, subject: str
     ) -> None:
         """Suggest model prompt recipes for an explicit source."""
-        if _reject_if_request_in_flight():
-            return
-
-        subject = subject or ""
-        try:
-            content = source.get_text()
-        except Exception:
-            # Underlying helpers (for example, Context/GPTResponse) already
-            # notify the user when no content is available. Keep any cached
-            # suggestions intact so `model suggestions` can still reopen the
-            # last successful set after a transient failure to read the source.
-            return
-
-        content_text = str(content)
-        if GPTState.debug_enabled:
-            preview = content_text[:200].replace("\n", "\\n")
-            notify(
-                "GPT debug: model suggest content length="
-                f"{len(content_text)}, preview={preview!r}"
-            )
-
-        if not content_text.strip() and not subject.strip():
-            # If we have neither source content nor a subject, keep any cached
-            # suggestions so they remain available via `model suggestions`.
-            notify("GPT: No source or subject available for suggestions")
-            return
-
-        # Remember the canonical source key used for these suggestions so the
-        # suggestion GUI can both display and reuse it when running recipes.
-        source_key = getattr(source, "modelSimpleSource", "")
-        if isinstance(source_key, str) and source_key:
-            suggest_source_key = source_key
-        else:
-            suggest_source_key = ""
-
-        # For suggestions, avoid opening the response canvas as a progress
-        # surface; treat this as a distinct destination kind so the default
-        # RequestUI controller uses the pill instead of the response viewer.
-        prev_dest_kind = getattr(GPTState, "current_destination_kind", "")
-        try:
-            GPTState.current_destination_kind = "suggest"
-        except Exception:
-            prev_dest_kind = ""
-
-        axis_docs = _build_axis_docs()
-        persona_intent_docs = _build_persona_intent_docs()
-        static_prompt_docs = _build_static_prompt_docs()
-        prompt_subject = subject.strip() if subject else "unspecified"
-        user_text = (
-            "You are a prompt recipe assistant for the Talon `model` command.\n"
-            "Based on the subject and content below, suggest 3 to 5 concrete prompt recipes.\n\n"
-            "You MUST output ONLY JSON with this exact top-level shape (no markdown, backticks, or extra text):\n\n"
-            "{\n"
-            '  "suggestions": [\n'
-            "    {\n"
-            '      "name": string,\n'
-            '      "recipe": string,\n'
-            '      "persona_voice": string,\n'
-            '      "persona_audience": string,\n'
-            '      "persona_tone": string,\n'
-            '      "intent_purpose": string,\n'
-            '      "stance_command": string,\n'
-            '      "why": string\n'
-            "    }\n"
-            "  ]\n"
-            "}\n\n"
-            "Fields:\n"
-            "- name: short human-friendly label for the suggestion.\n"
-            "- recipe: a contract-only axis string of the form\n"
-            "  '<staticPrompt> · <completeness> · <scopeTokens> · <methodTokens> · <formToken> · <channelToken> · <directional>'.\n"
-            "- persona_voice / persona_audience / persona_tone / intent_purpose:\n"
-            "  optional Persona/Intent axis tokens (Who/Why) using ONLY the values\n"
-            "  from the Persona/Intent token lists below. Leave as an empty string\n"
-            '  ("") when you cannot reasonably express the stance with these tokens.\n'
-            "- stance_command: a single-line, voice-friendly command that a user could\n"
-            "  speak to set this stance. Valid forms are:\n"
-            "  * Preferred (always valid):\n"
-            "    'model write <persona_voice> <persona_audience> <persona_tone> <intent_purpose>'\n"
-            "    using exactly the persona_voice/persona_audience/persona_tone/intent_purpose\n"
-            "    tokens you chose for this suggestion.\n"
-            "    You MUST include at least intent_purpose; never output 'model write'\n"
-            "    or 'model write for' on their own.\n"
-            "  * Optional (only when the stance matches a known preset):\n"
-            "    'persona <personaPreset>' and/or 'intent <intentPreset>' where\n"
-            "    <personaPreset> and <intentPreset> are names from the Persona/Intent\n"
-            "    preset lists (for example, 'persona teach junior dev', 'intent teach').\n"
-            "  Never emit 'persona' followed directly by raw axis tokens; if you cannot\n"
-            "  use a preset name, fall back to the 'model write' form above.\n"
-            "- why: 1–2 sentences explaining when this suggestion is useful.\n\n"
-            "Recipe rules:\n"
-            "- <staticPrompt> is exactly one static prompt token (do not include multiple static prompts or combine them).\n"
-            "- <completeness> and <directional> are single axis tokens.\n"
-            "- Directional is required: always include exactly one directional modifier from the directional list; never leave it blank.\n"
-            "- <scopeTokens> and <methodTokens> are zero or more space-separated axis tokens for that axis (respecting small caps: scope ≤ 2 tokens, method ≤ 3 tokens).\n"
-            "- <formToken> and <channelToken> are single axis tokens (Form and Channel are singletons; omit them when no bias is needed).\n"
-            "  Examples: scopeTokens='actions edges', methodTokens='structure flow', formToken='bullets', channelToken='slack'.\n\n"
-            "Persona/Intent rules (Who/Why):\n"
-            "- When a different Persona/Intent stance would materially change how the\n"
-            "  model should respond, you SHOULD fill persona_voice/persona_audience/\n"
-            "  persona_tone/intent_purpose using ONLY the Persona/Intent token lists\n"
-            "  below, and you SHOULD provide a matching stance_command.\n"
-            "- Across your 3 to 5 suggestions, include clear Persona/Intent stances for\n"
-            "  at least two suggestions.\n"
-            "- When you cannot sensibly express the stance with these tokens, leave\n"
-            "  persona_voice/persona_audience/persona_tone/intent_purpose as empty\n"
-            "  strings and rely on stance_command + why instead.\n\n"
-            "Formatting rules (strict):\n"
-            "- Output ONLY the JSON object described above; do NOT include prose,\n"
-            "  markdown, backticks, or any other surrounding text.\n"
-            "- All suggestion objects MUST include name and recipe.\n"
-            "- Never invent new axis tokens: always choose from the provided axis\n"
-            "  lists (for example, use the method token 'analysis' rather than a new\n"
-            "  token like 'analyze').\n\n"
-            "Use only tokens from the following sets where possible.\n"
-            "Axis semantics and available tokens (How the model responds):\n"
-            f"{axis_docs}\n\n"
-            "Persona/Intent stance tokens and examples for stance commands (Who/Why):\n"
-            f"{persona_intent_docs}\n\n"
-            "Static prompts and their semantics:\n"
-            f"{static_prompt_docs}\n\n"
-            f"Subject: {prompt_subject}\n\n"
-            "Content:\n"
-            f"{content_text}\n"
-        )
-
-        # Run suggestions through a silent destination so we never open the
-        # confirmation surface for this helper. Keep a clipboard fallback to
-        # expose the raw output without popping UI if parsing/GUI fails.
-        destination = Silent()
-        fallback_destination = Clipboard()
-        session = PromptSession(destination)
-        # Always emit UI lifecycle events so the pill shows even when the
-        # pipeline is swapped out or does not drive the request bus.
-        manual_request_id: Optional[str] = None
-        try:
-            manual_request_id = emit_begin_send()
-        except Exception:
-            manual_request_id = None
-        # Suppress response canvas while suggestions are running so streaming
-        # text never opens the confirmation viewer.
-        prev_suppress = getattr(GPTState, "suppress_response_canvas", False)
-        GPTState.suppress_response_canvas = True
-        result = None
-        # Start a fresh request for suggestions so we don't accidentally
-        # reuse the previous GPTState.request (for example, from the last
-        # `model` call). This avoids leaking prior prompt content into
-        # the suggestion meta-prompt.
-        try:
-            session.begin()
-            session.add_messages([format_messages("user", [format_message(user_text)])])
-            try:
-                handle = _prompt_pipeline.complete_async(session)
-                handle.wait(timeout=10.0)
-                result = getattr(handle, "result", None)
-            except Exception:
-                result = None
-            if result is None:
-                result = _prompt_pipeline.complete(session)
-            if manual_request_id is not None:
-                try:
-                    emit_complete(request_id=manual_request_id)
-                except Exception:
-                    pass
-        except Exception as exc:
-            if manual_request_id is not None:
-                try:
-                    emit_fail(str(exc), request_id=manual_request_id)
-                except Exception:
-                    pass
-            raise
-        finally:
-            try:
-                GPTState.suppress_response_canvas = prev_suppress
-            except Exception:
-                pass
-            try:
-                GPTState.current_destination_kind = prev_dest_kind
-            except Exception:
-                pass
-
-        # Attempt to parse the result text into structured suggestions so
-        # future loops (for example, a suggestions GUI) can reuse them
-        # without re-calling the model. Prefer the JSON shape described in
-        # ADR 042; fall back to the legacy line-based format if needed.
-        suggestions: list[dict[str, str]] = []
-        raw_text = getattr(result, "text", "") or ""
-        raw_text = str(raw_text).strip()
-
-        def _normalise_recipe(value: str) -> str:
-            """Normalise a recipe string and enforce a single static prompt token.
-
-            This preserves the existing behaviour: we require a single
-            <staticPrompt> token and a single known directional token; we drop
-            any suggestion that does not meet these constraints. Axis caps are
-            enforced per ADR 048 (scope≤2, method≤3, form=1, channel=1).
-            """
-            recipe_value = (value or "").strip()
-            if not recipe_value:
-                return ""
-            parts = [t.strip() for t in recipe_value.split("·") if t.strip()]
-            if not parts:
-                return ""
-            static_tokens = parts[0].split()
-            if len(static_tokens) > 1:
-                parts[0] = static_tokens[0]
-            raw_directional = parts[-1] if len(parts) > 1 else ""
-            dir_tokens = raw_directional.split()
-            if len(dir_tokens) != 1:
-                return ""
-            directional = dir_tokens[0]
-            if directional not in _DIRECTIONAL_MAP:
-                return ""
-            parts[-1] = directional
-            # Enforce axis caps on the remaining segments when present.
-            # Expected shape: static · completeness · scope · method · form · channel · directional
-            if len(parts) >= 6:
-                scope_tokens = parts[2].split() if len(parts) > 2 else []
-                method_tokens = parts[3].split() if len(parts) > 3 else []
-                form_tokens = parts[4].split() if len(parts) > 4 else []
-                channel_tokens = parts[5].split() if len(parts) > 5 else []
-                if scope_tokens:
-                    parts[2] = " ".join(scope_tokens[-2:])
-                if method_tokens:
-                    parts[3] = " ".join(method_tokens[-3:])
-                if form_tokens:
-                    parts[4] = form_tokens[-1]
-                if channel_tokens:
-                    parts[5] = channel_tokens[-1]
-            return " · ".join(parts)
-
-        if raw_text:
-            parsed_from_json = False
-            # First, try the structured JSON format.
-            try:
-                data = json.loads(raw_text)
-                if isinstance(data, dict):
-                    raw_suggestions = data.get("suggestions", [])
-                    if isinstance(raw_suggestions, list):
-                        debug_failures: list[dict[str, object]] = []
-                        for item in raw_suggestions:
-                            if not isinstance(item, dict):
-                                continue
-                            name = str(item.get("name", "")).strip()
-                            recipe_value = str(item.get("recipe", "")).strip()
-                            persona_voice = str(item.get("persona_voice", "")).strip()
-                            persona_audience = str(
-                                item.get("persona_audience", "")
-                            ).strip()
-                            persona_tone = str(item.get("persona_tone", "")).strip()
-                            intent_purpose = str(item.get("intent_purpose", "")).strip()
-                            raw_stance = str(item.get("stance_command", "")).strip()
-                            why_text = str(item.get("why", "")).strip()
-                            reasoning = str(item.get("reasoning", "")).strip()
-
-                            debug_record: dict[str, object] = {
-                                "name": name,
-                                "raw": {
-                                    "recipe": recipe_value,
-                                    "persona_voice": persona_voice,
-                                    "persona_audience": persona_audience,
-                                    "persona_tone": persona_tone,
-                                    "intent_purpose": intent_purpose,
-                                    "stance_command": raw_stance,
-                                    "reasoning": reasoning,
-                                },
-                                "failures": [],
-                            }
-                            failures = cast(list[str], debug_record["failures"])
-
-                            if not name:
-                                failures.append("missing_name")
-                            if not recipe_value:
-                                failures.append("missing_recipe")
-                            if not name or not recipe_value:
-                                if failures:
-                                    debug_failures.append(debug_record)
-                                continue
-
-                            recipe = _normalise_recipe(recipe_value)
-                            if not recipe:
-                                failures.append("recipe_invalid")
-                                debug_failures.append(debug_record)
-                                continue
-
-                            entry: dict[str, str] = {"name": name, "recipe": recipe}
-                            if persona_voice:
-                                entry["persona_voice"] = persona_voice
-                            if persona_audience:
-                                entry["persona_audience"] = persona_audience
-                            if persona_tone:
-                                entry["persona_tone"] = persona_tone
-                            if intent_purpose:
-                                entry["intent_purpose"] = intent_purpose
-
-                            if raw_stance:
-                                if _valid_stance_command(raw_stance):
-                                    entry["stance_command"] = raw_stance
-                                else:
-                                    failures.append("stance_invalid_form")
-
-                            if why_text:
-                                entry["why"] = why_text
-                            if reasoning:
-                                entry["reasoning"] = reasoning
-
-                            suggestions.append(entry)
-                            if failures:
-                                debug_failures.append(debug_record)
-
-                        if debug_failures and getattr(GPTState, "debug_enabled", False):
-                            try:
-                                lines: list[str] = []
-                                for record in debug_failures[:5]:
-                                    name = str(record.get("name") or "<unnamed>")
-                                    raw = cast(dict[str, object], record.get("raw", {}))
-                                    failures = cast(
-                                        list[str], record.get("failures") or []
-                                    )
-                                    recipe_val = str(raw.get("recipe", ""))
-                                    stance_val = str(raw.get("stance_command", ""))
-                                    reasoning_val = str(raw.get("reasoning", ""))
-                                    line = (
-                                        f"{name}: {','.join(failures)} | "
-                                        f"recipe={recipe_val!r} stance={stance_val!r}"
-                                    )
-                                    if reasoning_val:
-                                        line += f" | reasoning={reasoning_val[:80]!r}"
-                                    lines.append(line)
-                                print(
-                                    "GPT model suggest: validation failures:\n"
-                                    + "\n".join(lines)
-                                )
-                            except Exception:
-                                pass
-
-                parsed_from_json = bool(suggestions)
-            except Exception:
-                parsed_from_json = False
-
-            # Legacy fallback: parse pipe-separated lines if JSON was not usable.
-            if not parsed_from_json:
-                for raw_line in raw_text.splitlines():
-                    line = raw_line.strip()
-                    if not line or "|" not in line:
-                        continue
-                    segments = [seg.strip() for seg in line.split("|") if seg.strip()]
-                    if len(segments) < 2:
-                        continue
-                    name_part = segments[0]
-                    if "Name:" in name_part:
-                        _, name_value = name_part.split("Name:", 1)
-                        name = name_value.strip()
-                    else:
-                        name = name_part.strip().strip(":")
-                    if not name:
-                        continue
-
-                    recipe_value = ""
-                    for seg in segments[1:]:
-                        if "Recipe:" in seg:
-                            _, recipe_part = seg.split("Recipe:", 1)
-                            recipe_value = recipe_part.strip()
-                            break
-                    if not recipe_value and len(segments) > 1:
-                        candidate = segments[1].strip()
-                        if "·" in candidate:
-                            recipe_value = candidate
-                    recipe = _normalise_recipe(recipe_value)
-                    if not recipe:
-                        continue
-
-                    stance_command = ""
-                    why_text = ""
-                    for seg in segments[1:]:
-                        if "Stance:" in seg:
-                            _, stance_part = seg.split("Stance:", 1)
-                            stance_command = stance_part.strip()
-                        elif "Why:" in seg:
-                            _, why_part = seg.split("Why:", 1)
-                            why_text = why_part.strip()
-
-                    entry: dict[str, str] = {"name": name, "recipe": recipe}
-                    if stance_command:
-                        if _valid_stance_command(stance_command):
-                            entry["stance_command"] = stance_command
-                        elif getattr(GPTState, "debug_enabled", False):
-                            try:
-                                print(
-                                    "GPT model suggest: invalid legacy stance for "
-                                    f"'{name}': {stance_command}"
-                                )
-                            except Exception:
-                                pass
-                    if why_text:
-                        entry["why"] = why_text
-                    suggestions.append(entry)
-
-        if suggestions:
-            record_suggestions(suggestions, suggest_source_key)
-            try:
-                try:
-                    notify("GPT: Opening prompt recipe suggestions window")
-                except Exception:
-                    pass
-                actions.user.model_prompt_recipe_suggestions_gui_open()
-                try:
-                    notify("GPT: Prompt recipe suggestions window opened")
-                except Exception:
-                    pass
-                # When the suggestion GUI opens successfully, we do not also
-                # open the confirmation GUI; the picker becomes the primary
-                # surface for these recipes.
-            except Exception as exc:
-                try:
-                    notify(
-                        f"GPT: Suggestion GUI unavailable; inserting raw suggestions instead ({exc})"
-                    )
-                except Exception:
-                    pass
-                # If the GUI is not available for any reason, still insert the
-                # raw suggestions so the feature remains usable.
-                actions.user.gpt_insert_response(result, fallback_destination)
-        else:
-            # If we didn't recognise any suggestions, fall back to the normal
-            # insertion flow so the user can still see the raw output.
-            actions.user.gpt_insert_response(result, fallback_destination)
+        _suggest_prompt_recipes_core_impl(source, subject)
 
     def gpt_replay(destination: str):
         """Replay the last request"""
@@ -2735,3 +2310,434 @@ def _safe_model_prompt(match) -> str:
 def gpt_beta_paste_prompt(match: str) -> None:
     """Module-level beta pass helper; delegates to the action for coverage."""
     return UserActions.gpt_beta_paste_prompt(match)
+
+
+def _suggest_prompt_recipes_core_impl(source: ModelSource, subject: str) -> None:
+    """Core suggest handler; shared by action entrypoints to avoid deprecated calls."""
+    if _reject_if_request_in_flight():
+        return
+
+    subject = subject or ""
+    try:
+        content = source.get_text()
+    except Exception:
+        # Underlying helpers (for example, Context/GPTResponse) already
+        # notify the user when no content is available. Keep any cached
+        # suggestions intact so `model suggestions` can still reopen the
+        # last successful set after a transient failure to read the source.
+        return
+
+    content_text = str(content)
+    if GPTState.debug_enabled:
+        preview = content_text[:200].replace("\n", "\\n")
+        notify(
+            "GPT debug: model suggest content length="
+            f"{len(content_text)}, preview={preview!r}"
+        )
+
+    if not content_text.strip() and not subject.strip():
+        # If we have neither source content nor a subject, keep any cached
+        # suggestions so they remain available via `model suggestions`.
+        notify("GPT: No source or subject available for suggestions")
+        return
+
+    # Remember the canonical source key used for these suggestions so the
+    # suggestion GUI can both display and reuse it when running recipes.
+    source_key = getattr(source, "modelSimpleSource", "")
+    if isinstance(source_key, str) and source_key:
+        suggest_source_key = source_key
+    else:
+        suggest_source_key = ""
+
+    # For suggestions, avoid opening the response canvas as a progress
+    # surface; treat this as a distinct destination kind so the default
+    # RequestUI controller uses the pill instead of the response viewer.
+    prev_dest_kind = getattr(GPTState, "current_destination_kind", "")
+    try:
+        GPTState.current_destination_kind = "suggest"
+    except Exception:
+        prev_dest_kind = ""
+
+    axis_docs = _build_axis_docs()
+    persona_intent_docs = _build_persona_intent_docs()
+    static_prompt_docs = _build_static_prompt_docs()
+    prompt_subject = subject.strip() if subject else "unspecified"
+    user_text = (
+        "You are a prompt recipe assistant for the Talon `model` command.\n"
+        "Based on the subject and content below, suggest 3 to 5 concrete prompt recipes.\n\n"
+        "You MUST output ONLY JSON with this exact top-level shape (no markdown, backticks, or extra text):\n\n"
+        "{\n"
+        '  "suggestions": [\n'
+        "    {\n"
+        '      "name": string,\n'
+        '      "recipe": string,\n'
+        '      "persona_voice": string,\n'
+        '      "persona_audience": string,\n'
+        '      "persona_tone": string,\n'
+        '      "intent_purpose": string,\n'
+        '      "stance_command": string,\n'
+        '      "why": string\n'
+        "    }\n"
+        "  ]\n"
+        "}\n\n"
+        "Fields:\n"
+        "- name: short human-friendly label for the suggestion.\n"
+        "- recipe: a contract-only axis string of the form\n"
+        "  '<staticPrompt> · <completeness> · <scopeTokens> · <methodTokens> · <formToken> · <channelToken> · <directional>'.\n"
+        "- persona_voice / persona_audience / persona_tone / intent_purpose:\n"
+        "  optional Persona/Intent axis tokens (Who/Why) using ONLY the values\n"
+        "  from the Persona/Intent token lists below. Leave as an empty string\n"
+        '  ("") when you cannot reasonably express the stance with these tokens.\n'
+        "- stance_command: a single-line, voice-friendly command that a user could\n"
+        "  speak to set this stance. Valid forms are:\n"
+        "  * Preferred (always valid):\n"
+        "    'model write <persona_voice> <persona_audience> <persona_tone> <intent_purpose>'\n"
+        "    using exactly the persona_voice/persona_audience/persona_tone/intent_purpose\n"
+        "    tokens you chose for this suggestion.\n"
+        "    You MUST include at least intent_purpose; never output 'model write'\n"
+        "    or 'model write for' on their own.\n"
+        "  * Optional (only when the stance matches a known preset):\n"
+        "    'persona <personaPreset>' and/or 'intent <intentPreset>' where\n"
+        "    <personaPreset> and <intentPreset> are names from the Persona/Intent\n"
+        "    preset lists (for example, 'persona teach junior dev', 'intent teach').\n"
+        "  Never emit 'persona' followed directly by raw axis tokens; if you cannot\n"
+        "  use a preset name, fall back to the 'model write' form above.\n"
+        "- why: 1–2 sentences explaining when this suggestion is useful.\n\n"
+        "Recipe rules:\n"
+        "- <staticPrompt> is exactly one static prompt token (do not include multiple static prompts or combine them).\n"
+        "- <completeness> and <directional> are single axis tokens.\n"
+        "- Directional is required: always include exactly one directional modifier from the directional list; never leave it blank.\n"
+        "- <scopeTokens> and <methodTokens> are zero or more space-separated axis tokens for that axis (respecting small caps: scope ≤ 2 tokens, method ≤ 3 tokens).\n"
+        "- <formToken> and <channelToken> are single axis tokens (Form and Channel are singletons; omit them when no bias is needed).\n"
+        "  Examples: scopeTokens='actions edges', methodTokens='structure flow', formToken='bullets', channelToken='slack'.\n\n"
+        "Persona/Intent rules (Who/Why):\n"
+        "- When a different Persona/Intent stance would materially change how the\n"
+        "  model should respond, you SHOULD fill persona_voice/persona_audience/\n"
+        "  persona_tone/intent_purpose using ONLY the Persona/Intent token lists\n"
+        "  below, and you SHOULD provide a matching stance_command.\n"
+        "- Across your 3 to 5 suggestions, include clear Persona/Intent stances for\n"
+        "  at least two suggestions.\n"
+        "- When you cannot sensibly express the stance with these tokens, leave\n"
+        "  persona_voice/persona_audience/persona_tone/intent_purpose as empty\n"
+        "  strings and rely on stance_command + why instead.\n\n"
+        "Formatting rules (strict):\n"
+        "- Output ONLY the JSON object described above; do NOT include prose,\n"
+        "  markdown, backticks, or any other surrounding text.\n"
+        "- All suggestion objects MUST include name and recipe.\n"
+        "- Never invent new axis tokens: always choose from the provided axis\n"
+        "  lists (for example, use the method token 'analysis' rather than a new\n"
+        "  token like 'analyze').\n\n"
+        "Use only tokens from the following sets where possible.\n"
+        "Axis semantics and available tokens (How the model responds):\n"
+        f"{axis_docs}\n\n"
+        "Persona/Intent stance tokens and examples for stance commands (Who/Why):\n"
+        f"{persona_intent_docs}\n\n"
+        "Static prompts and their semantics:\n"
+        f"{static_prompt_docs}\n\n"
+        f"Subject: {prompt_subject}\n\n"
+        "Content:\n"
+        f"{content_text}\n"
+    )
+
+    # Run suggestions through a silent destination so we never open the
+    # confirmation surface for this helper. Keep a clipboard fallback to
+    # expose the raw output without popping UI if parsing/GUI fails.
+    destination = Silent()
+    fallback_destination = Clipboard()
+    session = PromptSession(destination)
+    # Always emit UI lifecycle events so the pill shows even when the
+    # pipeline is swapped out or does not drive the request bus.
+    manual_request_id: Optional[str] = None
+    try:
+        manual_request_id = emit_begin_send()
+    except Exception:
+        manual_request_id = None
+    # Suppress response canvas while suggestions are running so streaming
+    # text never opens the confirmation viewer.
+    prev_suppress = getattr(GPTState, "suppress_response_canvas", False)
+    GPTState.suppress_response_canvas = True
+    result = None
+    # Start a fresh request for suggestions so we don't accidentally
+    # reuse the previous GPTState.request (for example, from the last
+    # `model` call). This avoids leaking prior prompt content into
+    # the suggestion meta-prompt.
+    try:
+        session.begin()
+        session.add_messages([format_messages("user", [format_message(user_text)])])
+        try:
+            handle = _prompt_pipeline.complete_async(session)
+            handle.wait(timeout=10.0)
+            result = getattr(handle, "result", None)
+        except Exception:
+            result = None
+        if result is None:
+            result = _prompt_pipeline.complete(session)
+        if manual_request_id is not None:
+            try:
+                emit_complete(request_id=manual_request_id)
+            except Exception:
+                pass
+    except Exception as exc:
+        if manual_request_id is not None:
+            try:
+                emit_fail(str(exc), request_id=manual_request_id)
+            except Exception:
+                pass
+        raise
+    finally:
+        try:
+            GPTState.suppress_response_canvas = prev_suppress
+        except Exception:
+            pass
+        try:
+            GPTState.current_destination_kind = prev_dest_kind
+        except Exception:
+            pass
+
+    # Attempt to parse the result text into structured suggestions so
+    # future loops (for example, a suggestions GUI) can reuse them
+    # without re-calling the model. Prefer the JSON shape described in
+    # ADR 042; fall back to the legacy line-based format if needed.
+    suggestions: list[dict[str, str]] = []
+    raw_text = getattr(result, "text", "") or ""
+    raw_text = str(raw_text).strip()
+
+    def _normalise_recipe(value: str) -> str:
+        """Normalise a recipe string and enforce a single static prompt token.
+
+        This preserves the existing behaviour: we require a single
+        <staticPrompt> token and a single known directional token; we drop
+        any suggestion that does not meet these constraints. Axis caps are
+        enforced per ADR 048 (scope≤2, method≤3, form=1, channel=1).
+        """
+        recipe_value = (value or "").strip()
+        if not recipe_value:
+            return ""
+        parts = [t.strip() for t in recipe_value.split("·") if t.strip()]
+        if not parts:
+            return ""
+        static_tokens = parts[0].split()
+        if len(static_tokens) > 1:
+            parts[0] = static_tokens[0]
+        raw_directional = parts[-1] if len(parts) > 1 else ""
+        dir_tokens = raw_directional.split()
+        if len(dir_tokens) != 1:
+            return ""
+        directional = dir_tokens[0]
+        if directional not in _DIRECTIONAL_MAP:
+            return ""
+        parts[-1] = directional
+        # Enforce axis caps on the remaining segments when present.
+        # Expected shape: static · completeness · scope · method · form · channel · directional
+        if len(parts) >= 6:
+            scope_tokens = parts[2].split() if len(parts) > 2 else []
+            method_tokens = parts[3].split() if len(parts) > 3 else []
+            form_tokens = parts[4].split() if len(parts) > 4 else []
+            channel_tokens = parts[5].split() if len(parts) > 5 else []
+            if scope_tokens:
+                parts[2] = " ".join(scope_tokens[-2:])
+            if method_tokens:
+                parts[3] = " ".join(method_tokens[-3:])
+            if form_tokens:
+                parts[4] = form_tokens[-1]
+            if channel_tokens:
+                parts[5] = channel_tokens[-1]
+        return " · ".join(parts)
+
+    if raw_text:
+        parsed_from_json = False
+        # First, try the structured JSON format.
+        try:
+            data = json.loads(raw_text)
+            if isinstance(data, dict):
+                raw_suggestions = data.get("suggestions", [])
+                if isinstance(raw_suggestions, list):
+                    debug_failures: list[dict[str, object]] = []
+                    for item in raw_suggestions:
+                        if not isinstance(item, dict):
+                            continue
+                        name = str(item.get("name", "")).strip()
+                        recipe_value = str(item.get("recipe", "")).strip()
+                        persona_voice = str(item.get("persona_voice", "")).strip()
+                        persona_audience = str(
+                            item.get("persona_audience", "")
+                        ).strip()
+                        persona_tone = str(item.get("persona_tone", "")).strip()
+                        intent_purpose = str(item.get("intent_purpose", "")).strip()
+                        raw_stance = str(item.get("stance_command", "")).strip()
+                        why_text = str(item.get("why", "")).strip()
+                        reasoning = str(item.get("reasoning", "")).strip()
+
+                        debug_record: dict[str, object] = {
+                            "name": name,
+                            "raw": {
+                                "recipe": recipe_value,
+                                "persona_voice": persona_voice,
+                                "persona_audience": persona_audience,
+                                "persona_tone": persona_tone,
+                                "intent_purpose": intent_purpose,
+                                "stance_command": raw_stance,
+                                "reasoning": reasoning,
+                            },
+                            "failures": [],
+                        }
+                        failures = cast(list[str], debug_record["failures"])
+
+                        if not name:
+                            failures.append("missing_name")
+                        if not recipe_value:
+                            failures.append("missing_recipe")
+                        if not name or not recipe_value:
+                            if failures:
+                                debug_failures.append(debug_record)
+                            continue
+
+                        recipe = _normalise_recipe(recipe_value)
+                        if not recipe:
+                            failures.append("recipe_invalid")
+                            debug_failures.append(debug_record)
+                            continue
+
+                        entry: dict[str, str] = {"name": name, "recipe": recipe}
+                        if persona_voice:
+                            entry["persona_voice"] = persona_voice
+                        if persona_audience:
+                            entry["persona_audience"] = persona_audience
+                        if persona_tone:
+                            entry["persona_tone"] = persona_tone
+                        if intent_purpose:
+                            entry["intent_purpose"] = intent_purpose
+
+                        if raw_stance:
+                            if _valid_stance_command(raw_stance):
+                                entry["stance_command"] = raw_stance
+                            else:
+                                failures.append("stance_invalid_form")
+
+                        if why_text:
+                            entry["why"] = why_text
+                        if reasoning:
+                            entry["reasoning"] = reasoning
+
+                        suggestions.append(entry)
+                        if failures:
+                            debug_failures.append(debug_record)
+
+                    if debug_failures and getattr(GPTState, "debug_enabled", False):
+                        try:
+                            lines: list[str] = []
+                            for record in debug_failures[:5]:
+                                name = str(record.get("name") or "<unnamed>")
+                                raw = cast(dict[str, object], record.get("raw", {}))
+                                failures = cast(
+                                    list[str], record.get("failures") or []
+                                )
+                                recipe_val = str(raw.get("recipe", ""))
+                                stance_val = str(raw.get("stance_command", ""))
+                                reasoning_val = str(raw.get("reasoning", ""))
+                                line = (
+                                    f"{name}: {','.join(failures)} | "
+                                    f"recipe={recipe_val!r} stance={stance_val!r}"
+                                )
+                                if reasoning_val:
+                                    line += f" | reasoning={reasoning_val[:80]!r}"
+                                lines.append(line)
+                            print(
+                                "GPT model suggest: validation failures:\n"
+                                + "\n".join(lines)
+                            )
+                        except Exception:
+                            pass
+
+            parsed_from_json = bool(suggestions)
+        except Exception:
+            parsed_from_json = False
+
+        # Legacy fallback: parse pipe-separated lines if JSON was not usable.
+        if not parsed_from_json:
+            for raw_line in raw_text.splitlines():
+                line = raw_line.strip()
+                if not line or "|" not in line:
+                    continue
+                segments = [seg.strip() for seg in line.split("|") if seg.strip()]
+                if len(segments) < 2:
+                    continue
+                name_part = segments[0]
+                if "Name:" in name_part:
+                    _, name_value = name_part.split("Name:", 1)
+                    name = name_value.strip()
+                else:
+                    name = name_part.strip().strip(":")
+                if not name:
+                    continue
+
+                recipe_value = ""
+                for seg in segments[1:]:
+                    if "Recipe:" in seg:
+                        _, recipe_part = seg.split("Recipe:", 1)
+                        recipe_value = recipe_part.strip()
+                        break
+                if not recipe_value and len(segments) > 1:
+                    candidate = segments[1].strip()
+                    if "·" in candidate:
+                        recipe_value = candidate
+                recipe = _normalise_recipe(recipe_value)
+                if not recipe:
+                    continue
+
+                stance_command = ""
+                why_text = ""
+                for seg in segments[1:]:
+                    if "Stance:" in seg:
+                        _, stance_part = seg.split("Stance:", 1)
+                        stance_command = stance_part.strip()
+                    elif "Why:" in seg:
+                        _, why_part = seg.split("Why:", 1)
+                        why_text = why_part.strip()
+
+                entry: dict[str, str] = {"name": name, "recipe": recipe}
+                if stance_command:
+                    if _valid_stance_command(stance_command):
+                        entry["stance_command"] = stance_command
+                    elif getattr(GPTState, "debug_enabled", False):
+                        try:
+                            print(
+                                "GPT model suggest: invalid legacy stance for "
+                                f"'{name}': {stance_command}"
+                            )
+                        except Exception:
+                            pass
+                if why_text:
+                    entry["why"] = why_text
+                suggestions.append(entry)
+
+    if suggestions:
+        record_suggestions(suggestions, suggest_source_key)
+        try:
+            try:
+                notify("GPT: Opening prompt recipe suggestions window")
+            except Exception:
+                pass
+            actions.user.model_prompt_recipe_suggestions_gui_open()
+            try:
+                notify("GPT: Prompt recipe suggestions window opened")
+            except Exception:
+                pass
+            # When the suggestion GUI opens successfully, we do not also
+            # open the confirmation GUI; the picker becomes the primary
+            # surface for these recipes.
+        except Exception as exc:
+            try:
+                notify(
+                    f"GPT: Suggestion GUI unavailable; inserting raw suggestions instead ({exc})"
+                )
+            except Exception:
+                pass
+            # If the GUI is not available for any reason, still insert the
+            # raw suggestions so the feature remains usable.
+            actions.user.gpt_insert_response(result, fallback_destination)
+    else:
+        # If we didn't recognise any suggestions, fall back to the normal
+        # insertion flow so the user can still see the raw output.
+        actions.user.gpt_insert_response(result, fallback_destination)
+

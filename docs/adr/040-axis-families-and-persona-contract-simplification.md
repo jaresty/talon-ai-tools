@@ -336,7 +336,7 @@ We introduce an explicit **axis family model** and associated **design rules**:
 
    - When implementing prompt recipe suggestions (ADR 008) in this repo, treat each suggestion as a small, teachable three-step flow:
      - Step 1 – **Set stance (Who / Why)** using Persona and Intent presets (for example, a `model write …` command that sets voice/audience/tone/purpose for writing).  
-     - Step 2 – **Run contract (How)** using `model run <staticPrompt> [completeness] [scope] [method] [style] <directional>` as today.  
+    - Step 2 – **Run contract (How)** using `model run <staticPrompt> [completeness] [scope] [scope] [method] [method] [method] [form] [channel] <directional>` as today.  
      - Step 3 – **Optionally reset stance** (for example, `model reset writing`) to return to defaults after a focused interaction.  
    - When calling the LLM to generate suggestions, provide:
      - The current request and source summary.  
@@ -344,7 +344,7 @@ We introduce an explicit **axis family model** and associated **design rules**:
      - The available Persona presets (`PERSONA_PRESETS`), Intent presets (`INTENT_PRESETS`), and contract axes/tokens that are safe to suggest.  
    - Ask the LLM to return, for each suggestion:
      - A recommended Persona/Intent preset (or “keep current” stance), expressed as preset keys and/or a concrete “set stance” command.  
-     - A recommended contract recipe (static prompt + completeness/scope/method/style + directional) and its `model run …` form.  
+    - A recommended contract recipe (static prompt + completeness/scope/method/form/channel + directional) and its `model run …` form.  
      - Whether to recommend a stance reset afterwards and, if so, the concrete reset command.  
      - A short, one-line explanation of why this stance+contract pairing is appropriate for the current task.  
    - In the suggestions GUI, surface these as **compact** rows that respect vertical space:

@@ -37,7 +37,7 @@ if bootstrap is not None:
             # "todo" has a full axis profile in the configuration.
             self.assertEqual(axes["completeness"], "gist")
             self.assertEqual(axes["method"], ["steps"])
-            self.assertEqual(axes["style"], ["checklist"])
+            self.assertEqual(axes["form"], ["checklist"])
             self.assertEqual(axes["scope"], ["actions"])
 
         def test_get_static_prompt_axes_is_empty_for_description_only_profile(
@@ -69,9 +69,11 @@ if bootstrap is not None:
             self.assertEqual(axes.get("completeness"), "full")
             self.assertEqual(axes.get("scope"), ["actions"])
             self.assertEqual(axes.get("method"), ["structure"])
-            # Style defaults should include both 'jira' and 'story' tokens.
-            style_values = axes.get("style")
-            self.assertEqual(style_values, ["jira", "story"])
+            # Form/channel defaults should include story form and jira channel tokens.
+            form_values = axes.get("form")
+            channel_values = axes.get("channel")
+            self.assertEqual(form_values, ["story"])
+            self.assertEqual(channel_values, ["jira"])
 
         def test_static_prompt_settings_catalog_matches_profiles(self) -> None:
             catalog = static_prompt_settings_catalog()

@@ -31,7 +31,8 @@ if bootstrap is not None:
                 "completeness": ["full", "Important: Hydrated completeness"],
                 "scope": ["bound", "Invalid scope"],
                 "method": ["rigor", "Unknown method"],
-                "style": ["plain", "Hydrated style"],
+                "form": ["plain", "Hydrated style"],
+                "channel": ["slack", "Hydrated channel"],
             }
 
             direct = actions_axes_for(axes)
@@ -69,6 +70,34 @@ if bootstrap is not None:
             via_facade = history_drawer_entries_from(entries)
             self.assertEqual(via_facade, direct)
             self.assertIn("[gemini]", via_facade[0][0])
+
+        def test_history_drawer_prefers_axes_tokens(self) -> None:
+            class DummyEntry:
+                def __init__(self) -> None:
+                    self.request_id = "rid-axes"
+                    self.prompt = "prompt one\nsecond line"
+                    self.response = "resp1"
+                    self.meta = "meta1"
+                    self.duration_ms = 42
+                    self.recipe = "legacy · recipe"
+                    self.provider_id = ""
+                    self.axes = {
+                        "completeness": ["full"],
+                        "scope": ["actions"],
+                        "method": ["rigor"],
+                        "form": ["adr"],
+                        "channel": ["slack"],
+                        "directional": ["fog"],
+                    }
+
+            entries = [DummyEntry()]
+            rendered = history_drawer_entries_from(entries)
+            label, body = rendered[0]
+            self.assertIn("rid-axes", label)
+            self.assertIn("adr", body)
+            self.assertIn("slack", body)
+            self.assertIn("fog", body)
+            self.assertNotIn("recipe", body)
 
 
 else:

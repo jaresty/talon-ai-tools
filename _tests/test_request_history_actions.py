@@ -2,6 +2,7 @@ import os
 import tempfile
 import unittest
 from typing import TYPE_CHECKING
+from unittest.mock import patch
 
 try:
     from bootstrap import bootstrap
@@ -66,6 +67,34 @@ if bootstrap is not None:
             notify_calls = [c for c in actions.user.calls if c[0] == "notify"]
             app_notify_calls = [c for c in actions.app.calls if c[0] == "notify"]
             self.assertGreaterEqual(len(notify_calls) + len(app_notify_calls), 1)
+
+        def test_history_actions_respect_in_flight_guard(self):
+            append_entry("rid-1", "prompt text", "answer text", "meta text")
+            import sys
+
+            module = sys.modules[HistoryActions.__module__]
+            with (
+                patch.object(module, "_reject_if_request_in_flight", return_value=True),
+                patch.object(module, "_show_entry") as show_entry,
+            ):
+                HistoryActions.gpt_request_history_show_latest()
+                HistoryActions.gpt_request_history_show_previous(1)
+                HistoryActions.gpt_request_history_prev()
+                HistoryActions.gpt_request_history_next()
+            show_entry.assert_not_called()
+
+        def test_history_list_and_save_respect_in_flight_guard(self):
+            append_entry("rid-1", "prompt text", "answer text", "meta text")
+            import sys
+
+            module = sys.modules[HistoryActions.__module__]
+            with patch.object(module, "_reject_if_request_in_flight", return_value=True):
+                HistoryActions.gpt_request_history_list(1)
+                HistoryActions.gpt_request_history_save_latest_source()
+            # No notify calls should have been made when guarded.
+            notify_calls = [c for c in actions.user.calls if c[0] == "notify"]
+            app_notify_calls = [c for c in actions.app.calls if c[0] == "notify"]
+            self.assertEqual(len(notify_calls) + len(app_notify_calls), 0)
 
         def test_prev_next_navigation(self):
             append_entry("rid-1", "p1", "resp1", "meta1")
@@ -149,7 +178,6 @@ if bootstrap is not None:
             GPTState.last_completeness = "gist"
             GPTState.last_scope = "actions"
             GPTState.last_method = "steps"
-            GPTState.last_style = "checklist"
             GPTState.last_directional = "rog"
 
             append_entry(
@@ -173,9 +201,11 @@ if bootstrap is not None:
                 "completeness": ["max"],
                 "scope": ["edges", "bound"],
                 "method": ["rigor"],
-                "style": ["jira"],
+                "form": ["bullets"],
+                "channel": ["jira"],
                 "directional": ["fog"],
             }
+            expected_axes = history_axes_for(axes)
             append_entry(
                 "rid-axes",
                 "prompt text",
@@ -187,12 +217,15 @@ if bootstrap is not None:
 
             HistoryActions.gpt_request_history_show_latest()
 
-            self.assertEqual(GPTState.last_axes, axes)
+            self.assertEqual(GPTState.last_axes, expected_axes)
             # last_* strings should be derived from the axes tokens (not the legacy recipe).
             self.assertEqual(GPTState.last_completeness, "max")
-            self.assertEqual(GPTState.last_scope, "edges bound")
+            self.assertEqual(
+                GPTState.last_scope, " ".join(expected_axes.get("scope", []))
+            )
             self.assertEqual(GPTState.last_method, "rigor")
-            self.assertEqual(GPTState.last_style, "jira")
+            self.assertEqual(GPTState.last_form, "bullets")
+            self.assertEqual(GPTState.last_channel, "jira")
             self.assertEqual(GPTState.last_directional, "fog")
             self.assertIn("fog", GPTState.last_recipe)
 
@@ -201,7 +234,7 @@ if bootstrap is not None:
                 "completeness": ["full"],
                 "scope": ["bound", "edges"],
                 "method": ["rigor", "xp"],
-                "style": ["plain"],
+                "form": ["plain"],
             }
             append_entry(
                 "rid-axes",
@@ -220,12 +253,40 @@ if bootstrap is not None:
             ).strip(" ·")
             self.assertEqual(GPTState.last_recipe, expected_recipe)
 
+        def test_history_show_latest_warns_on_style_axis(self):
+            axes = {
+                "style": ["plain"],
+                "form": ["table"],
+                "channel": ["slack"],
+                "directional": ["rog"],
+            }
+            append_entry(
+                "rid-style",
+                "prompt text",
+                "resp axes",
+                "meta axes",
+                recipe="legacy · plain",
+                axes=axes,
+            )
+            actions.user.calls.clear()
+
+            HistoryActions.gpt_request_history_show_latest()
+
+            notifications = [c for c in actions.user.calls if c[0] == "notify"]
+            self.assertTrue(
+                any("style axis is removed" in str(args[0]).lower() for _, args, _ in notifications)
+            )
+            # Style is ignored; form/channel/directional still hydrate.
+            self.assertEqual(GPTState.last_form, "table")
+            self.assertEqual(GPTState.last_channel, "slack")
+            self.assertEqual(GPTState.last_directional, "rog")
+
         def test_history_show_latest_filters_invalid_axis_tokens(self):
             axes = {
                 "completeness": ["full", "Important: Hydrated completeness"],
                 "scope": ["bound", "Invalid scope"],
                 "method": ["rigor", "Unknown method"],
-                "style": ["plain", "Hydrated style"],
+                "form": ["plain", "Hydrated style"],
             }
             append_entry(
                 "rid-axes",
@@ -241,7 +302,7 @@ if bootstrap is not None:
             self.assertEqual(GPTState.last_axes.get("completeness"), ["full"])
             self.assertEqual(GPTState.last_axes.get("scope"), ["bound"])
             self.assertEqual(GPTState.last_axes.get("method"), ["rigor"])
-            self.assertEqual(GPTState.last_axes.get("style"), ["plain"])
+            self.assertEqual(GPTState.last_axes.get("form"), ["plain"])
             # Directional was absent; ensure no unknowns leaked through.
             self.assertFalse(GPTState.last_axes.get("directional"))
 
@@ -250,7 +311,7 @@ if bootstrap is not None:
                 "completeness": ["full", "Important: Hydrated completeness"],
                 "scope": ["bound", "Invalid scope"],
                 "method": ["rigor", "Unknown method"],
-                "style": ["plain", "Hydrated style"],
+                "form": ["plain", "Hydrated style"],
             }
 
             filtered = history_axes_for(axes)
@@ -258,8 +319,26 @@ if bootstrap is not None:
             self.assertEqual(filtered.get("completeness"), ["full"])
             self.assertEqual(filtered.get("scope"), ["bound"])
             self.assertEqual(filtered.get("method"), ["rigor"])
-            self.assertEqual(filtered.get("style"), ["plain"])
+            self.assertEqual(filtered.get("form"), ["plain"])
             self.assertFalse(filtered.get("directional"))
+
+        def test_history_axes_for_applies_axis_caps(self):
+            axes = {
+                "scope": ["bound", "edges", "focus"],
+                "method": ["rigor", "xp", "steps", "plan"],
+                "form": ["code", "table"],
+                "channel": ["slack", "jira"],
+                "directional": ["fog"],
+            }
+
+            filtered = history_axes_for(axes)
+
+            self.assertEqual(filtered.get("scope"), ["edges", "focus"])
+            self.assertEqual(filtered.get("method"), ["plan", "steps", "xp"])
+            # Form/channel are singletons post-split; caps enforce last-wins.
+            self.assertEqual(filtered.get("form"), ["table"])
+            self.assertEqual(filtered.get("channel"), ["jira"])
+            self.assertEqual(filtered.get("directional"), ["fog"])
 
         def test_history_summary_lines_matches_existing_formatting(self):
             append_entry(
@@ -277,6 +356,27 @@ if bootstrap is not None:
             self.assertEqual(
                 lines, ["0: rid-1 (7ms) | infer · full · rigor · prompt one"]
             )
+
+        def test_history_summary_lines_prefers_axes_tokens(self):
+            append_entry(
+                "rid-axes",
+                "prompt one",
+                "resp1",
+                "meta1",
+                recipe="infer · legacy-style",
+                axes={
+                    "completeness": ["full"],
+                    "scope": ["actions"],
+                    "method": ["rigor"],
+                    "form": ["adr"],
+                    "channel": ["slack"],
+                },
+            )
+
+            lines = history_summary_lines(all_entries()[-1:])
+
+            self.assertTrue(any("adr" in line and "slack" in line for line in lines))
+            self.assertFalse(any("legacy-style" in line for line in lines))
 
         def test_history_summary_lines_include_provider(self):
             append_entry(

@@ -58,7 +58,8 @@ if bootstrap is not None:
                 "completeness": _read_axis_keys("completenessModifier.talon-list"),
                 "scope": _read_axis_keys("scopeModifier.talon-list"),
                 "method": _read_axis_keys("methodModifier.talon-list"),
-                "style": _read_axis_keys("styleModifier.talon-list"),
+                "form": _read_axis_keys("formModifier.talon-list"),
+                "channel": _read_axis_keys("channelModifier.talon-list"),
             }
             self.token_axis_map = _read_overlap_mapping()
 
@@ -70,6 +71,9 @@ if bootstrap is not None:
                 ]
                 if not present_axes:
                     # Token alias not present in lists (e.g., focused vs focus); skip.
+                    continue
+                if axis == "style":
+                    # Style axis has been retired; tokens now live under form/channel.
                     continue
                 self.assertEqual(
                     present_axes,

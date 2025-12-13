@@ -72,7 +72,8 @@ if bootstrap is not None:
                 "completeness": ["full"],
                 "scope": ["bound"],
                 "method": ["rigor"],
-                "style": ["plain"],
+                "form": ["plain"],
+                "channel": ["slack"],
                 "directional": ["fog"],
             }
             GPTState.last_static_prompt = "infer"
@@ -84,12 +85,17 @@ if bootstrap is not None:
             browser = model_destination_module.Browser()
             browser.insert(result)
 
-            paragraph_texts = [call.args[0] for call in builder_instance.p.call_args_list]
+            paragraph_texts = [
+                call.args[0] for call in builder_instance.p.call_args_list
+            ]
             # Recipe should be constructed from last_axes tokens including directional.
             self.assertIn(
-                "Recipe: infer · full · bound · rigor · plain · fog", paragraph_texts
+                "Recipe: infer · full · bound · rigor · plain · slack · fog",
+                paragraph_texts,
             )
-            self.assertIn("Say: model run infer full bound rigor plain fog", paragraph_texts)
+            self.assertIn(
+                "Say: model run infer full bound rigor plain slack fog", paragraph_texts
+            )
 
         @patch.object(model_destination_module, "Builder")
         def test_browser_includes_meta_section_when_available(self, builder_cls):
@@ -256,12 +262,12 @@ if bootstrap is not None:
             GPTState.last_completeness = "gist"
             GPTState.last_scope = "legacy-scope"
             GPTState.last_method = "legacy-method"
-            GPTState.last_style = "legacy-style"
             GPTState.last_axes = {
                 "completeness": ["full"],
                 "scope": ["bound", "edges"],
                 "method": ["rigor"],
-                "style": ["plain"],
+                "form": ["plain"],
+                "channel": ["slack"],
             }
             GPTState.last_directional = "fog"
 
@@ -277,7 +283,7 @@ if bootstrap is not None:
 
             # Filename slug should reflect the axis tokens from last_axes
             # rather than the legacy last_* strings.
-            self.assertIn("infer-full-bound-edges-rigor-plain-fog", filename)
+            self.assertIn("infer-full-bound-edges-rigor-plain-slack-fog", filename)
 
             path = os.path.join(tmpdir, filename)
             with open(path, "r", encoding="utf-8") as f:
@@ -287,7 +293,8 @@ if bootstrap is not None:
             self.assertIn("completeness_tokens: full", content)
             self.assertIn("scope_tokens: bound edges", content)
             self.assertIn("method_tokens: rigor", content)
-            self.assertIn("style_tokens: plain", content)
+            self.assertIn("form_tokens: plain", content)
+            self.assertIn("channel_tokens: slack", content)
             self.assertIn("directional: fog", content)
 
 

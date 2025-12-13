@@ -13,7 +13,8 @@ def test_recipe_header_lines_include_recipe_and_axes() -> None:
         "completeness": "full",
         "scope_tokens": ["relations"],
         "method_tokens": ["cluster"],
-        "style_tokens": ["bullets"],
+        "form_tokens": ["bullets"],
+        "channel_tokens": ["slack"],
         "directional": "fog",
     }
 
@@ -23,7 +24,8 @@ def test_recipe_header_lines_include_recipe_and_axes() -> None:
     assert "completeness: full" in lines
     assert "scope_tokens: relations" in lines
     assert "method_tokens: cluster" in lines
-    assert "style_tokens: bullets" in lines
+    assert "form_tokens: bullets" in lines
+    assert "channel_tokens: slack" in lines
     assert "directional: fog" in lines
 
 
@@ -33,7 +35,8 @@ def test_recipe_header_lines_skip_empty_axes() -> None:
         "completeness": "full",
         "scope_tokens": [],
         "method_tokens": [],
-        "style_tokens": [],
+        "form_tokens": [],
+        "channel_tokens": [],
         "directional": "",
     }
 
@@ -41,10 +44,11 @@ def test_recipe_header_lines_skip_empty_axes() -> None:
 
     assert "recipe: describe · full" in lines
     assert "completeness: full" in lines
-    # No scope/method/style/directional lines when tokens are empty.
+    # No scope/method/form/channel/directional lines when tokens are empty.
     assert all("scope_tokens:" not in line for line in lines)
     assert all("method_tokens:" not in line for line in lines)
-    assert all("style_tokens:" not in line for line in lines)
+    assert all("form_tokens:" not in line for line in lines)
+    assert all("channel_tokens:" not in line for line in lines)
     assert all("directional:" not in line for line in lines)
 
 
@@ -55,13 +59,15 @@ def test_last_recipe_snapshot_prefers_last_axes_tokens_over_legacy_fields() -> N
     GPTState.last_completeness = "hydrated-completeness"
     GPTState.last_scope = "hydrated-scope"
     GPTState.last_method = "hydrated-method"
-    GPTState.last_style = "hydrated-style"
+    GPTState.last_form = "hydrated-form"
+    GPTState.last_channel = "hydrated-channel"
     GPTState.last_directional = "bog"  # should be overridden by last_axes
     GPTState.last_axes = {
         "completeness": ["full"],
         "scope": ["bound", "edges"],
         "method": ["rigor"],
-        "style": ["plain"],
+        "form": ["bullets"],
+        "channel": ["slack"],
         "directional": ["fog"],
     }
 
@@ -72,7 +78,8 @@ def test_last_recipe_snapshot_prefers_last_axes_tokens_over_legacy_fields() -> N
     assert snapshot["completeness"] == "full"
     assert snapshot["scope_tokens"] == ["bound", "edges"]
     assert snapshot["method_tokens"] == ["rigor"]
-    assert snapshot["style_tokens"] == ["plain"]
+    assert snapshot["form_tokens"] == ["bullets"]
+    assert snapshot["channel_tokens"] == ["slack"]
     assert snapshot["directional"] == "fog"
 
 
@@ -83,7 +90,8 @@ def test_last_recipe_snapshot_uses_fallback_when_last_axes_missing() -> None:
     GPTState.last_completeness = "full"
     GPTState.last_scope = "bound edges"
     GPTState.last_method = "rigor"
-    GPTState.last_style = "plain"
+    GPTState.last_form = "plain"
+    GPTState.last_channel = "slack"
     GPTState.last_directional = "fog"
     GPTState.last_axes = {}
 
@@ -94,5 +102,6 @@ def test_last_recipe_snapshot_uses_fallback_when_last_axes_missing() -> None:
     assert snapshot["completeness"] == "full"
     assert snapshot["scope_tokens"] == ["bound", "edges"]
     assert snapshot["method_tokens"] == ["rigor"]
-    assert snapshot["style_tokens"] == ["plain"]
+    assert snapshot["form_tokens"] == ["plain"]
+    assert snapshot["channel_tokens"] == ["slack"]
     assert snapshot["directional"] == "fog"

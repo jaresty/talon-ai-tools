@@ -27,7 +27,8 @@ if bootstrap is not None:
                 "completeness": "completenessModifier.talon-list",
                 "scope": "scopeModifier.talon-list",
                 "method": "methodModifier.talon-list",
-                "style": "styleModifier.talon-list",
+                "form": "formModifier.talon-list",
+                "channel": "channelModifier.talon-list",
                 "directional": "directionalModifier.talon-list",
             }
 
@@ -55,6 +56,19 @@ if bootstrap is not None:
             for axis, filename in axis_to_list.items():
                 with self.subTest(axis=axis):
                     self.assertEqual(set(registry[axis]), _list_tokens(filename))
+
+        def test_style_axis_and_lists_are_removed(self) -> None:
+            """Guardrail: legacy style axis/list must not reappear after form/channel split."""
+            registry = axis_registry()
+            self.assertNotIn("style", registry)
+
+            style_list_path = (
+                Path(__file__).resolve().parent.parent / "GPT" / "lists" / "styleModifier.talon-list"
+            )
+            self.assertFalse(
+                style_list_path.exists(),
+                "styleModifier.talon-list should be removed after form/channel migration",
+            )
 
 else:
     if not TYPE_CHECKING:

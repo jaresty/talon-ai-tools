@@ -11,10 +11,37 @@ from .requestLog import latest, nth_from_latest, all_entries
 from .axisMappings import axis_key_to_value_map_for
 from .axisCatalog import axis_catalog
 from .axisCatalog import axis_catalog
+from .requestState import RequestPhase
+from .requestBus import current_state
+from .talonSettings import _canonicalise_axis_tokens
 
 mod = Module()
 
 _cursor_offset = 0
+
+
+def _request_is_in_flight() -> bool:
+    """Return True when a GPT request is currently running."""
+    try:
+        phase = getattr(current_state(), "phase", RequestPhase.IDLE)
+        return phase not in (
+            RequestPhase.IDLE,
+            RequestPhase.DONE,
+            RequestPhase.ERROR,
+            RequestPhase.CANCELLED,
+        )
+    except Exception:
+        return False
+
+
+def _reject_if_request_in_flight() -> bool:
+    """Notify and return True when a GPT request is already running."""
+    if _request_is_in_flight():
+        notify(
+            "GPT: A request is already running; wait for it to finish or cancel it first."
+        )
+        return True
+    return False
 
 
 def _filter_axis_tokens(axis: str, tokens: list[str]) -> list[str]:
@@ -41,20 +68,32 @@ def history_axes_for(axes: dict[str, list[str]]) -> dict[str, list[str]]:
         axis: set((tokens or {}).keys())
         for axis, tokens in (catalog.get("axes") or {}).items()
     }
+    filtered_completeness = _filter_axis_tokens(
+        "completeness", list(axes.get("completeness", []) or [])
+    )
+    filtered_scope = _filter_axis_tokens("scope", list(axes.get("scope", []) or []))
+    filtered_method = _filter_axis_tokens("method", list(axes.get("method", []) or []))
+    filtered_form = _filter_axis_tokens("form", list(axes.get("form", []) or []))
+    filtered_channel = _filter_axis_tokens(
+        "channel", list(axes.get("channel", []) or [])
+    )
+    filtered_directional = [
+        t
+        for t in _filter_axis_tokens(
+            "directional", list(axes.get("directional", []) or [])
+        )
+        if t in catalog_tokens.get("directional", set())
+    ]
+
     return {
-        "completeness": _filter_axis_tokens(
-            "completeness", list(axes.get("completeness", []) or [])
-        ),
-        "scope": _filter_axis_tokens("scope", list(axes.get("scope", []) or [])),
-        "method": _filter_axis_tokens("method", list(axes.get("method", []) or [])),
-        "style": _filter_axis_tokens("style", list(axes.get("style", []) or [])),
-        "directional": [
-            t
-            for t in _filter_axis_tokens(
-                "directional", list(axes.get("directional", []) or [])
-            )
-            if t in catalog_tokens.get("directional", set())
-        ],
+        # Completeness remains scalar; leave ordering intact.
+        "completeness": filtered_completeness,
+        # Apply the shared canonicalisation (caps and dedupe) for the remaining axes.
+        "scope": _canonicalise_axis_tokens("scope", filtered_scope),
+        "method": _canonicalise_axis_tokens("method", filtered_method),
+        "form": _canonicalise_axis_tokens("form", filtered_form),
+        "channel": _canonicalise_axis_tokens("channel", filtered_channel),
+        "directional": _canonicalise_axis_tokens("directional", filtered_directional),
     }
 
 
@@ -109,6 +148,25 @@ def history_summary_lines(entries: Sequence[object]) -> list[str]:
         request_id = getattr(entry, "request_id", "")
         label = request_id if not dur else f"{request_id} ({dur})"
         recipe = (getattr(entry, "recipe", "") or "").strip()
+        axes = getattr(entry, "axes", None) or {}
+        if axes:
+            axes_tokens = history_axes_for(axes)
+            recipe_tokens: list[str] = []
+            if recipe:
+                static_token = recipe.split(" · ")[0]
+                if static_token:
+                    recipe_tokens.append(static_token)
+            comp = " ".join(axes_tokens.get("completeness", []))
+            scope = " ".join(axes_tokens.get("scope", []))
+            method = " ".join(axes_tokens.get("method", []))
+            form = " ".join(axes_tokens.get("form", []))
+            channel = " ".join(axes_tokens.get("channel", []))
+            directional = " ".join(axes_tokens.get("directional", []))
+            for value in (comp, scope, method, form, channel, directional):
+                if value:
+                    recipe_tokens.append(value)
+            if recipe_tokens:
+                recipe = " · ".join(recipe_tokens)
         parts = [p for p in (recipe, prompt_snippet) if p]
         payload = " · ".join(parts) if parts else prompt_snippet
         provider_id = (getattr(entry, "provider_id", "") or "").strip()
@@ -173,8 +231,8 @@ def _save_history_prompt_to_file(entry) -> None:
         header_lines.append(f"request_id: {request_id}")
     if recipe:
         header_lines.append(f"recipe: {recipe}")
-    axes = getattr(entry, "axes", {}) or {}
-    for axis in ("completeness", "scope", "method", "style", "directional"):
+    axes = normalized_axes
+    for axis in ("completeness", "scope", "method", "form", "channel", "directional"):
         tokens = axes.get(axis) or []
         if isinstance(tokens, list) and tokens:
             joined = " ".join(str(t) for t in tokens if str(t).strip())
@@ -219,15 +277,20 @@ def _show_entry(entry) -> None:
     raw_recipe = getattr(entry, "recipe", "") or ""
     if getattr(entry, "axes", None):
         axes = getattr(entry, "axes", {}) or {}
+        if axes.get("style") or getattr(entry, "legacy_style", False):
+            notify(
+                "GPT: style axis is removed; use form/channel instead (history entry)."
+            )
         GPTState.last_axes = history_axes_for(axes)
 
         GPTState.last_static_prompt = raw_recipe.split(" · ")[0] if raw_recipe else ""
         GPTState.last_completeness = " ".join(
-            GPTState.last_axes["completeness"]
+            GPTState.last_axes.get("completeness", [])
         ).strip()
-        GPTState.last_scope = " ".join(GPTState.last_axes["scope"]).strip()
-        GPTState.last_method = " ".join(GPTState.last_axes["method"]).strip()
-        GPTState.last_style = " ".join(GPTState.last_axes["style"]).strip()
+        GPTState.last_scope = " ".join(GPTState.last_axes.get("scope", [])).strip()
+        GPTState.last_method = " ".join(GPTState.last_axes.get("method", [])).strip()
+        GPTState.last_form = " ".join(GPTState.last_axes.get("form", [])).strip()
+        GPTState.last_channel = " ".join(GPTState.last_axes.get("channel", [])).strip()
         GPTState.last_directional = " ".join(
             GPTState.last_axes.get("directional", [])
         ).strip()
@@ -238,7 +301,8 @@ def _show_entry(entry) -> None:
             GPTState.last_completeness,
             GPTState.last_scope,
             GPTState.last_method,
-            GPTState.last_style,
+            GPTState.last_form,
+            GPTState.last_channel,
             GPTState.last_directional,
         ):
             if value:
@@ -258,20 +322,23 @@ def _show_entry(entry) -> None:
                     completeness,
                     scope,
                     method,
-                    style,
+                    form,
+                    channel,
                     directional,
                 ) = _parse_recipe(GPTState.last_recipe)
                 GPTState.last_static_prompt = static_prompt or ""
                 GPTState.last_completeness = completeness or ""
                 GPTState.last_scope = scope or ""
                 GPTState.last_method = method or ""
-                GPTState.last_style = style or ""
+                GPTState.last_form = form or ""
+                GPTState.last_channel = channel or ""
                 GPTState.last_directional = directional or ""
                 GPTState.last_axes = {
                     "completeness": [completeness] if completeness else [],
                     "scope": scope.split() if scope else [],
                     "method": method.split() if method else [],
-                    "style": style.split() if style else [],
+                    "form": form.split() if form else [],
+                    "channel": channel.split() if channel else [],
                 }
             except Exception:
                 pass
@@ -280,13 +347,15 @@ def _show_entry(entry) -> None:
         GPTState.last_completeness = ""
         GPTState.last_scope = ""
         GPTState.last_method = ""
-        GPTState.last_style = ""
+        GPTState.last_form = ""
+        GPTState.last_channel = ""
         GPTState.last_directional = ""
         GPTState.last_axes = {
             "completeness": [],
             "scope": [],
             "method": [],
-            "style": [],
+            "form": [],
+            "channel": [],
         }
     try:
         actions.user.model_response_canvas_open()
@@ -301,6 +370,8 @@ def _show_entry(entry) -> None:
 class UserActions:
     def gpt_request_history_show_latest():
         """Open the last request/response/meta in the response canvas"""
+        if _reject_if_request_in_flight():
+            return
         global _cursor_offset
         entry = latest()
         _cursor_offset = 0
@@ -308,6 +379,8 @@ class UserActions:
 
     def gpt_request_history_show_previous(offset: int = 1):
         """Open a previous request/response/meta by offset (1 = previous, 2 = two back)"""
+        if _reject_if_request_in_flight():
+            return
         if offset < 0:
             notify("GPT: History offset must be non-negative")
             return
@@ -316,6 +389,8 @@ class UserActions:
 
     def gpt_request_history_prev():
         """Step backward in request history and open the entry"""
+        if _reject_if_request_in_flight():
+            return
         global _cursor_offset
         _cursor_offset += 1
         entry = nth_from_latest(_cursor_offset)
@@ -327,6 +402,8 @@ class UserActions:
 
     def gpt_request_history_next():
         """Step forward in request history and open the entry"""
+        if _reject_if_request_in_flight():
+            return
         global _cursor_offset
         if _cursor_offset <= 0:
             notify("GPT: Already at latest history entry")
@@ -337,6 +414,8 @@ class UserActions:
 
     def gpt_request_history_list(count: int = 5):
         """Show a short summary of recent history entries"""
+        if _reject_if_request_in_flight():
+            return
         entries = all_entries()[-count:]
         if not entries:
             notify("GPT: No request history available")
@@ -347,5 +426,7 @@ class UserActions:
 
     def gpt_request_history_save_latest_source():
         """Save the latest request's source prompt to a markdown file."""
+        if _reject_if_request_in_flight():
+            return
         entry = latest()
         _save_history_prompt_to_file(entry)

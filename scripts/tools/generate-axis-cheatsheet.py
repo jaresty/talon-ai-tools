@@ -36,7 +36,8 @@ def render_cheatsheet(catalog: dict) -> str:
         ("completeness", "Completeness (`completenessModifier`)"),
         ("scope", "Scope (`scopeModifier`)"),
         ("method", "Method (`methodModifier`)"),
-        ("style", "Style (`styleModifier`)"),
+        ("form", "Form (`formModifier`)"),
+        ("channel", "Channel (`channelModifier`)"),
         ("directional", "Direction (`directionalModifier`)"),
     ]
     for axis, heading in order:

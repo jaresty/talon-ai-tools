@@ -10,6 +10,9 @@ from .modelDestination import create_model_destination
 from .modelSource import create_model_source
 from .modelState import GPTState
 from .axisMappings import axis_docs_map
+from .requestBus import current_state
+from .requestState import RequestPhase
+from .modelHelpers import notify
 
 try:
     # Prefer the shared static prompt domain helpers when available.
@@ -23,7 +26,7 @@ except ImportError:  # Talon may have an older module state cached
     def get_static_prompt_axes(name: str) -> dict[str, object]:
         profile = STATIC_PROMPT_CONFIG.get(name, {})
         axes: dict[str, object] = {}
-        for axis in ("completeness", "scope", "method", "style"):
+        for axis in ("completeness", "scope", "method", "form", "channel"):
             value = profile.get(axis)
             if not value:
                 continue
@@ -39,7 +42,12 @@ except ImportError:  # Talon may have an older module state cached
         return axes
 
 
-from .talonSettings import ApplyPromptConfiguration, modelPrompt
+from .talonSettings import (
+    ApplyPromptConfiguration,
+    _canonicalise_axis_tokens,
+    modelPrompt,
+    safe_model_prompt,
+)
 
 mod = Module()
 ctx = Context()
@@ -56,6 +64,30 @@ class PromptPatternGUIState:
     static_prompt: Optional[str] = None
 
 
+def _request_is_in_flight() -> bool:
+    """Return True when a GPT request is currently running."""
+    try:
+        phase = getattr(current_state(), "phase", RequestPhase.IDLE)
+        return phase not in (
+            RequestPhase.IDLE,
+            RequestPhase.DONE,
+            RequestPhase.ERROR,
+            RequestPhase.CANCELLED,
+        )
+    except Exception:
+        return False
+
+
+def _reject_if_request_in_flight() -> bool:
+    """Notify and return True when a GPT request is already running."""
+    if _request_is_in_flight():
+        notify(
+            "GPT: A request is already running; wait for it to finish or cancel it first."
+        )
+        return True
+    return False
+
+
 @dataclass(frozen=True)
 class PromptAxisPattern:
     name: str
@@ -63,7 +95,8 @@ class PromptAxisPattern:
     completeness: str
     scope: str
     method: str
-    style: str
+    form: str
+    channel: str
     directional: str
 
 
@@ -105,7 +138,8 @@ def _load_axis_map(filename: str) -> dict[str, str]:
         "completeness": "completeness",
         "scope": "scope",
         "method": "method",
-        "style": "style",
+        "form": "form",
+        "channel": "channel",
         "directional": "directional",
     }.get(axis, "")
     if not axis_key:
@@ -131,7 +165,8 @@ def _debug(msg: str) -> None:
 COMPLETENESS_MAP = _load_axis_map("completenessModifier.talon-list")
 SCOPE_MAP = _load_axis_map("scopeModifier.talon-list")
 METHOD_MAP = _load_axis_map("methodModifier.talon-list")
-STYLE_MAP = _load_axis_map("styleModifier.talon-list")
+FORM_MAP = _load_axis_map("formModifier.talon-list")
+CHANNEL_MAP = _load_axis_map("channelModifier.talon-list")
 DIRECTIONAL_MAP = _load_axis_map("directionalModifier.talon-list")
 
 
@@ -142,7 +177,8 @@ PROMPT_PRESETS: list[PromptAxisPattern] = [
         completeness="gist",
         scope="focus",
         method="",
-        style="plain",
+        form="plain",
+        channel="",
         directional="fog",
     ),
     PromptAxisPattern(
@@ -151,7 +187,8 @@ PROMPT_PRESETS: list[PromptAxisPattern] = [
         completeness="full",
         scope="narrow",
         method="rigor",
-        style="plain",
+        form="plain",
+        channel="",
         directional="rog",
     ),
     PromptAxisPattern(
@@ -160,7 +197,8 @@ PROMPT_PRESETS: list[PromptAxisPattern] = [
         completeness="gist",
         scope="focus",
         method="",
-        style="bullets",
+        form="bullets",
+        channel="",
         directional="fog",
     ),
     PromptAxisPattern(
@@ -169,7 +207,8 @@ PROMPT_PRESETS: list[PromptAxisPattern] = [
         completeness="full",
         scope="focus",
         method="ladder",
-        style="plain",
+        form="plain",
+        channel="",
         directional="rog",
     ),
     PromptAxisPattern(
@@ -178,7 +217,8 @@ PROMPT_PRESETS: list[PromptAxisPattern] = [
         completeness="full",
         scope="narrow",
         method="cluster",
-        style="plain",
+        form="plain",
+        channel="",
         directional="fog",
     ),
     PromptAxisPattern(
@@ -187,7 +227,8 @@ PROMPT_PRESETS: list[PromptAxisPattern] = [
         completeness="full",
         scope="narrow",
         method="prioritize",
-        style="plain",
+        form="plain",
+        channel="",
         directional="fog",
     ),
 ]
@@ -543,7 +584,7 @@ def _draw_prompt_patterns(c: canvas.Canvas) -> None:  # pragma: no cover - visua
 
     axes: list[str] = []
     profile_axes = get_static_prompt_axes(static_prompt)
-    for label in ("completeness", "scope", "method", "style"):
+    for label in ("completeness", "scope", "method", "form", "channel"):
         value = profile_axes.get(label)
         if not value:
             continue
@@ -564,7 +605,7 @@ def _draw_prompt_patterns(c: canvas.Canvas) -> None:  # pragma: no cover - visua
     draw_text("Grammar template:", x, y)
     y += line_h
     draw_text(
-        f"  model run {static_prompt} [completeness] [scope] [method] [style] <directional lens>",
+        f"  model run {static_prompt} [completeness] [scope] [scope] [method] [method] [method] [form] [channel] <directional lens>",
         x,
         y,
     )
@@ -612,7 +653,8 @@ def _draw_prompt_patterns(c: canvas.Canvas) -> None:  # pragma: no cover - visua
             pat.completeness,
             pat.scope,
             pat.method,
-            pat.style,
+            pat.form,
+            pat.channel,
             pat.directional,
         ):
             if token:
@@ -713,6 +755,18 @@ def _run_prompt_pattern(static_prompt: str, pattern: PromptAxisPattern) -> None:
     """Execute a prompt-specific axis pattern as if spoken via the model grammar."""
     actions.app.notify(f"Running prompt pattern: {static_prompt} · {pattern.name}")
 
+    # Enforce axis caps and single directional lens for prompt patterns.
+    canonical_scope = _canonicalise_axis_tokens("scope", pattern.scope.split())
+    canonical_method = _canonicalise_axis_tokens("method", pattern.method.split())
+    canonical_form = _canonicalise_axis_tokens("form", pattern.form.split())
+    canonical_channel = _canonicalise_axis_tokens("channel", pattern.channel.split())
+    canonical_directional = _canonicalise_axis_tokens(
+        "directional", pattern.directional.split()
+    )
+    if not canonical_directional:
+        notify("GPT: prompt pattern is missing a directional lens; skipping.")
+        return
+
     class Match:
         pass
 
@@ -724,20 +778,33 @@ def _run_prompt_pattern(static_prompt: str, pattern: PromptAxisPattern) -> None:
             "completenessModifier",
             _axis_value(pattern.completeness, COMPLETENESS_MAP),
         )
-    if pattern.scope:
-        setattr(match, "scopeModifier", _axis_value(pattern.scope, SCOPE_MAP))
-    if pattern.method:
-        setattr(match, "methodModifier", _axis_value(pattern.method, METHOD_MAP))
-    if pattern.style:
-        setattr(match, "styleModifier", _axis_value(pattern.style, STYLE_MAP))
-    if pattern.directional:
+    canonical_scope_str = " ".join(canonical_scope)
+    canonical_method_str = " ".join(canonical_method)
+    canonical_form_str = " ".join(canonical_form)
+    canonical_channel_str = " ".join(canonical_channel)
+    canonical_directional_str = " ".join(canonical_directional)
+    if canonical_scope:
+        setattr(match, "scopeModifier", _axis_value(canonical_scope_str, SCOPE_MAP))
+    if canonical_method:
+        setattr(match, "methodModifier", _axis_value(canonical_method_str, METHOD_MAP))
+    if canonical_form:
+        setattr(match, "formModifier", _axis_value(canonical_form_str, FORM_MAP))
+    if canonical_channel:
+        setattr(
+            match,
+            "channelModifier",
+            _axis_value(canonical_channel_str, CHANNEL_MAP),
+        )
+    if canonical_directional:
         setattr(
             match,
             "directionalModifier",
-            _axis_value(pattern.directional, DIRECTIONAL_MAP),
+            _axis_value(canonical_directional_str, DIRECTIONAL_MAP),
         )
 
-    please_prompt = modelPrompt(match)
+    please_prompt = safe_model_prompt(match)
+    if not please_prompt:
+        return
 
     config = ApplyPromptConfiguration(
         please_prompt=please_prompt,
@@ -752,26 +819,33 @@ def _run_prompt_pattern(static_prompt: str, pattern: PromptAxisPattern) -> None:
 
     # Keep last_recipe concise and token-based to reinforce speakable grammar.
     recipe_parts = [static_prompt]
-    for token in (
-        pattern.completeness,
-        pattern.scope,
-        pattern.method,
-        pattern.style,
+    if pattern.completeness:
+        recipe_parts.append(pattern.completeness)
+    for tokens in (
+        canonical_scope,
+        canonical_method,
+        canonical_form,
+        canonical_channel,
     ):
+        token = " ".join(tokens) if tokens else ""
         if token:
             recipe_parts.append(token)
+    recipe_parts.append(" ".join(canonical_directional))
     GPTState.last_recipe = " · ".join(recipe_parts)
     GPTState.last_static_prompt = static_prompt
     GPTState.last_completeness = pattern.completeness or ""
-    GPTState.last_scope = pattern.scope or ""
-    GPTState.last_method = pattern.method or ""
-    GPTState.last_style = pattern.style or ""
-    GPTState.last_directional = pattern.directional or ""
+    GPTState.last_scope = " ".join(canonical_scope)
+    GPTState.last_method = " ".join(canonical_method)
+    GPTState.last_form = " ".join(canonical_form)
+    GPTState.last_channel = " ".join(canonical_channel)
+    GPTState.last_directional = " ".join(canonical_directional)
     GPTState.last_axes = {
         "completeness": [pattern.completeness] if pattern.completeness else [],
-        "scope": (pattern.scope or "").split() if pattern.scope else [],
-        "method": (pattern.method or "").split() if pattern.method else [],
-        "style": (pattern.style or "").split() if pattern.style else [],
+        "scope": canonical_scope,
+        "method": canonical_method,
+        "form": canonical_form,
+        "channel": canonical_channel,
+        "directional": canonical_directional,
     }
 
     actions.user.prompt_pattern_gui_close()
@@ -781,6 +855,8 @@ def _run_prompt_pattern(static_prompt: str, pattern: PromptAxisPattern) -> None:
 class UserActions:
     def prompt_pattern_gui_open_for_static_prompt(static_prompt: str):
         """Open the prompt pattern picker GUI for a specific static prompt"""
+        if _reject_if_request_in_flight():
+            return
         # Close other related menus to avoid overlapping overlays.
         try:
             actions.user.model_pattern_gui_close()
@@ -795,11 +871,15 @@ class UserActions:
 
     def prompt_pattern_gui_close():
         """Close the prompt pattern picker GUI"""
+        if _reject_if_request_in_flight():
+            return
         _close_prompt_pattern_canvas()
         ctx.tags = []
 
     def prompt_pattern_run_preset(preset_name: str):
         """Run a prompt pattern by preset name for the current static prompt"""
+        if _reject_if_request_in_flight():
+            return
         static_prompt = PromptPatternGUIState.static_prompt
         if not static_prompt:
             actions.app.notify("No prompt selected for patterns")
@@ -811,6 +891,8 @@ class UserActions:
 
     def prompt_pattern_save_source_to_file():
         """Save the most recent model response to a file via the confirmation GUI helper."""
+        if _reject_if_request_in_flight():
+            return
         try:
             actions.user.confirmation_gui_save_to_file()
         except Exception:

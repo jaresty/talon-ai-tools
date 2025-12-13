@@ -42,7 +42,7 @@ if bootstrap is not None:
             )
             self.assertIsNotNone(todo_entry, "Expected todo in catalog")
             self.assertIn("Format this as a todo list.", todo_entry["description"])
-            self.assertIn("checklist", todo_entry["axes"].get("style", []))
+            self.assertIn("checklist", todo_entry["axes"].get("form", []))
 
             # Talon list tokens should be present for drift checks.
             self.assertIn("todo", catalog["talon_list_tokens"])
@@ -92,7 +92,7 @@ if bootstrap is not None:
             """Static prompt docs should mention axis-only behaviours and where to find recipes."""
             docs = _build_static_prompt_docs()
             self.assertIn(
-                "live only as style/method axis values",
+                "live only as form/channel/method axis values",
                 docs,
             )
 
@@ -104,7 +104,8 @@ if bootstrap is not None:
             self.assertIn("Completeness modifiers:", docs)
             self.assertIn("Scope modifiers:", docs)
             self.assertIn("Method modifiers:", docs)
-            self.assertIn("Style modifiers:", docs)
+            self.assertIn("Form modifiers:", docs)
+            self.assertIn("Channel modifiers:", docs)
             self.assertIn("Directional modifiers:", docs)
 
             # At least one known key from each list should appear.
@@ -164,9 +165,9 @@ if bootstrap is not None:
                     key, _ = s.split(":", 1)
                     method_keys.add(key.strip())
 
-            style_list_path = root / "GPT" / "lists" / "styleModifier.talon-list"
-            style_keys: set[str] = set()
-            with style_list_path.open("r", encoding="utf-8") as f:
+            form_list_path = root / "GPT" / "lists" / "formModifier.talon-list"
+            form_keys: set[str] = set()
+            with form_list_path.open("r", encoding="utf-8") as f:
                 for line in f:
                     s = line.strip()
                     if (
@@ -179,7 +180,7 @@ if bootstrap is not None:
                     if ":" not in s:
                         continue
                     key, _ = s.split(":", 1)
-                    style_keys.add(key.strip())
+                    form_keys.add(key.strip())
 
             self.assertIn(
                 "analysis",
@@ -196,10 +197,32 @@ if bootstrap is not None:
                 method_keys,
                 "Expected 'socratic' method token from ADR 018 to be present",
             )
+            channel_list_path = root / "GPT" / "lists" / "channelModifier.talon-list"
+            channel_keys: set[str] = set()
+            with channel_list_path.open("r", encoding="utf-8") as f:
+                for line in f:
+                    s = line.strip()
+                    if (
+                        not s
+                        or s.startswith("#")
+                        or s.startswith("list:")
+                        or s == "-"
+                    ):
+                        continue
+                    if ":" not in s:
+                        continue
+                    key, _ = s.split(":", 1)
+                    channel_keys.add(key.strip())
+
             self.assertIn(
                 "faq",
-                style_keys,
-                "Expected 'faq' style token from ADR 018 to be present",
+                form_keys,
+                "Expected 'faq' form token from ADR 018 to be present",
+            )
+            self.assertIn(
+                "slack",
+                channel_keys,
+                "Expected 'slack' channel token to be present after form/channel split",
             )
 
         def test_axis_only_tokens_do_not_appear_as_static_prompts(self) -> None:
@@ -222,8 +245,8 @@ if bootstrap is not None:
                     key, _ = s.split(":", 1)
                     talon_keys.add(key.strip())
 
-            # Style-only behaviours (ADR 012 axis-only styles).
-            style_only = {
+            # Form/channel-only behaviours (ADR 012 axis-only styles moved to Form/Channel).
+            form_channel_only = {
                 "diagram",
                 "presenterm",
                 "HTML",
@@ -250,7 +273,7 @@ if bootstrap is not None:
                 "motifs",
             }
 
-            forbidden = style_only | method_only
+            forbidden = form_channel_only | method_only
             present = sorted(forbidden & talon_keys)
             self.assertEqual(
                 present,

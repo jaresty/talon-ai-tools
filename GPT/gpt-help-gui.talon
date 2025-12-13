@@ -10,7 +10,8 @@
 {user.model} quick help completeness$: user.model_help_canvas_open_completeness()
 {user.model} quick help scope$: user.model_help_canvas_open_scope()
 {user.model} quick help method$: user.model_help_canvas_open_method()
-{user.model} quick help style$: user.model_help_canvas_open_style()
+{user.model} quick help form$: user.model_help_canvas_open_form()
+{user.model} quick help channel$: user.model_help_canvas_open_channel()
 {user.model} quick help direction$: user.model_help_canvas_open_directional()
 {user.model} quick help examples$: user.model_help_canvas_open_examples()
 

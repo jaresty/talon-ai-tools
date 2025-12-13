@@ -14,7 +14,8 @@ if bootstrap is not None:
         COMPLETENESS_KEYS,
         SCOPE_KEYS,
         METHOD_KEYS,
-        STYLE_KEYS,
+        FORM_KEYS,
+        CHANNEL_KEYS,
     )
     from talon_user.lib.axisCatalog import axis_catalog
 
@@ -40,7 +41,8 @@ if bootstrap is not None:
             self.assertEqual(set(COMPLETENESS_KEYS), set(axes["completeness"].keys()))
             self.assertEqual(set(SCOPE_KEYS), set(axes["scope"].keys()))
             self.assertEqual(set(METHOD_KEYS), set(axes["method"].keys()))
-            self.assertEqual(set(STYLE_KEYS), set(axes["style"].keys()))
+            self.assertEqual(set(FORM_KEYS), set(axes["form"].keys()))
+            self.assertEqual(set(CHANNEL_KEYS), set(axes["channel"].keys()))
 else:
     if not TYPE_CHECKING:
 

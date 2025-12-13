@@ -8,21 +8,36 @@ from copy import deepcopy
 from .axisMappings import axis_registry_tokens, axis_value_to_key_map_for
 from .axisCatalog import axis_catalog
 from .requestHistory import RequestHistory, RequestLogEntry
-
 _history = RequestHistory()
 
 
-def _filter_axes_payload(axes: Optional[dict[str, list[str]]]) -> dict[str, list[str]]:
+def _filter_axes_payload(
+    axes: Optional[dict[str, list[str]]],
+) -> tuple[dict[str, list[str]], bool]:
     """Normalise and filter axes payload for request history.
 
-    Ensures token-only axis state per ADR-034/ADR-0045 by:
+    Ensures token-only axis state per ADR-034/ADR-0045/ADR-048 by:
     - Trimming blanks
     - Dropping obviously hydrated values that start with 'Important:'
     - Keeping known axis tokens when present in axisMappings
+    - Applying axis caps/deduplication (scope×2, method×3, form×1, channel×1)
+    - Rejecting legacy style axis payloads in favour of form/channel
     - Passing through non-axis keys (if any) after basic trimming
     """
     if not axes:
-        return {}
+        return {}, False
+
+    # Lazy imports to avoid cycles with modelHelpers/talonSettings callers.
+    try:
+        from .talonSettings import _canonicalise_axis_tokens
+    except Exception:  # pragma: no cover - defensive fallback for stubs
+        def _canonicalise_axis_tokens(axis: str, tokens: list[str]) -> list[str]:
+            return tokens
+    try:
+        from .modelHelpers import notify
+    except Exception:  # pragma: no cover - defensive fallback for stubs
+        def notify(_msg: str) -> None:
+            return None
 
     catalog = axis_catalog()
     axis_tokens = {
@@ -33,6 +48,7 @@ def _filter_axes_payload(axes: Optional[dict[str, list[str]]]) -> dict[str, list
     }
 
     filtered: dict[str, list[str]] = {}
+    legacy_style = False
 
     for axis_name, raw_values in axes.items():
         values: list[str]
@@ -46,7 +62,17 @@ def _filter_axes_payload(axes: Optional[dict[str, list[str]]]) -> dict[str, list
         if not values:
             continue
 
-        if axis_name in ("completeness", "scope", "method", "style", "directional"):
+        if axis_name == "style":
+            try:
+                notify(
+                    "GPT: style axis is removed; use form/channel instead (history log)."
+                )
+            except Exception:
+                pass
+            legacy_style = True
+            continue
+
+        if axis_name in ("completeness", "scope", "method", "form", "channel", "directional"):
             mapping = axis_value_to_key_map_for(axis_name)
             known_tokens = axis_registry_tokens(axis_name)
             # Include tokens from the axis catalog and Talon lists to catch drift.
@@ -56,7 +82,7 @@ def _filter_axes_payload(axes: Optional[dict[str, list[str]]]) -> dict[str, list
             for token in values:
                 lower = token.lower()
                 if lower.startswith("important:"):
-                    # Skip obviously hydrated/system-prompt style strings.
+                    # Skip obviously hydrated/system-prompt strings.
                     continue
                 if known_tokens and token in known_tokens:
                     kept.append(token)
@@ -64,6 +90,8 @@ def _filter_axes_payload(axes: Optional[dict[str, list[str]]]) -> dict[str, list
                 if not known_tokens and mapping and token in mapping:
                     kept.append(token)
             if kept:
+                if axis_name != "completeness":
+                    kept = _canonicalise_axis_tokens(axis_name, kept)
                 filtered[axis_name] = kept
             continue
 
@@ -75,7 +103,7 @@ def _filter_axes_payload(axes: Optional[dict[str, list[str]]]) -> dict[str, list
         if passthrough:
             filtered[axis_name] = passthrough
 
-    return filtered
+    return filtered, legacy_style
 
 
 def append_entry(
@@ -88,6 +116,7 @@ def append_entry(
     duration_ms: Optional[int] = None,
     axes: Optional[dict[str, list[str]]] = None,
     provider_id: str = "",
+    legacy_style: bool = False,
 ) -> None:
     """Append a request entry to the bounded history ring."""
     try:
@@ -98,7 +127,7 @@ def append_entry(
         )
     except Exception:
         pass
-    axes_payload = _filter_axes_payload(axes)
+    axes_payload, legacy_style = _filter_axes_payload(axes)
     _history.append(
         RequestLogEntry(
             request_id=request_id,
@@ -110,6 +139,7 @@ def append_entry(
             duration_ms=duration_ms,
             axes=axes_payload,
             provider_id=provider_id or "",
+            legacy_style=legacy_style,
         )
     )
     try:
@@ -164,6 +194,8 @@ def append_entry_from_request(
     except Exception:
         axes_copy = dict(axes_source)
 
+    axes_payload, legacy_style = _filter_axes_payload(axes_copy)
+
     append_entry(
         request_id,
         prompt_text,
@@ -172,8 +204,9 @@ def append_entry_from_request(
         recipe=recipe,
         started_at_ms=started_at_ms,
         duration_ms=duration_ms,
-        axes=axes_copy,
+        axes=axes_payload,
         provider_id=provider_id,
+        legacy_style=legacy_style,
     )
     return prompt_text
 

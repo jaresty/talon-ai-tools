@@ -1,8 +1,8 @@
-# 012 – Retire Special‑Purpose Static Prompts into Style/Method Axes
+# 012 – Retire Special‑Purpose Static Prompts into Style/Method (Form/Channel) Axes
 
 - Status: Accepted  
 - Date: 2025-12-04  
-- Context: `talon-ai-tools` GPT `model` commands (axes: completeness, scope, method, style; static prompts; directional lenses)  
+- Context: `talon-ai-tools` GPT `model` commands (axes: completeness, scope, method, form, channel; static prompts; directional lenses)  
 - Related ADRs:  
   - 005 – Orthogonal Prompt Modifiers and Defaults  
   - 006 – Pattern Picker and Recap  
@@ -14,11 +14,11 @@
 
 ## Summary (for users)
 
-This ADR retires many format- and method-shaped static prompts (for example, `diagram`, `presenterm`, `HTML`, `gherkin`, `shell`, `code`, `emoji`, `format`, `recipe`, `lens`, `commit`, `ADR`, and `debug`) and re-expresses them as **style** and **method** axis values. In practice, that means:
+This ADR retires many format- and method-shaped static prompts (for example, `diagram`, `presenterm`, `HTML`, `gherkin`, `shell`, `code`, `emoji`, `format`, `recipe`, `lens`, `commit`, `ADR`, and `debug`) and re-expresses them as **form/channel** (formerly style) and **method** axis values. In practice, that means:
 
 - You keep using short, semantic prompts for “what” (for example, `describe`, `todo`, `product`, `wardley`).
 - You use **axes** to say “how” and “in what shape”:
-  - Styles like `diagram`, `presenterm`, `html`, `gherkin`, `shellscript`, `emoji`, `slack`, `jira`, `recipe`, `abstractvisual`, `commit`, `adr`, `code`, `taxonomy`.
+- Form/Channel values like `diagram`, `presenterm`, `html`, `gherkin`, `shellscript`, `emoji`, `slack`, `jira`, `recipe`, `abstractvisual`, `commit`, `adr`, `code`, `taxonomy` (form = container/shape, channel = medium bias).
   - Methods like `systems`, `experimental`, `debugging`, `structure`, `flow`, `compare`, `motifs`, `wasinawa` (replacing older static prompts such as `system`, `experiment`, `science`, `debug`).
 - Common behaviours that used to be static prompts now look like:
   - `model describe diagram fog` (instead of `model diagram fog`),
@@ -28,7 +28,7 @@ This ADR retires many format- and method-shaped static prompts (for example, `di
   - `model describe debugging rog` (instead of `model debug`).
   - Structural/relational prompts like `structure`, `flow`, `compare`, `type`, `relation`, `clusters`, and `motifs` are now expressed via method/scope/style axes (see the migration guide below for representative recipes).
 
-Static prompts are now reserved for semantic/domain lenses and structured tasks that cannot be cleanly expressed as axis combinations; everything else should use styles, methods, scopes, and patterns.
+Static prompts are now reserved for semantic/domain lenses and structured tasks that cannot be cleanly expressed as axis combinations; everything else should use form/channel, methods, scopes, and patterns.
 
 This is a deliberate, breaking change: commands like `model diagram` / `model presenterm` / `model ADR` / `model shell` no longer exist in this repo; use the axis-based forms (for example, `model describe diagram …`, `model describe presenterm …`, `model describe adr …`, `model describe shellscript …`) instead.
 
@@ -43,14 +43,16 @@ ADR 005 introduced explicit modifier axes for:
 - **Completeness** – how thoroughly to cover the territory.  
 - **Scope** – what conceptual territory is in-bounds.  
 - **Method** – how to approach reasoning or transformation.  
-- **Style** – how to present the output (plain, bullets, code, etc.).
+- **Form** – how to present the output (plain, bullets, code, etc.).  
+- **Channel** – medium bias (slack, jira, presenterm, etc.).
 
 In this repo, the concrete axis vocabularies live in:
 
 - `GPT/lists/completenessModifier.talon-list`
 - `GPT/lists/scopeModifier.talon-list`
 - `GPT/lists/methodModifier.talon-list`
-- `GPT/lists/styleModifier.talon-list`
+- `GPT/lists/formModifier.talon-list`
+- `GPT/lists/channelModifier.talon-list`
 - `GPT/lists/directionalModifier.talon-list`
 
 ADR 007 then cleaned up the static prompt surface, moving many “how”/“shape” behaviours into axes and pattern recipes, and explicitly preserving some **format/transform heavy prompts** as static prompts:
@@ -109,7 +111,7 @@ We will:
 
 2. **Remove those prompts from the static prompt surface** rather than preserving them as legacy shorthands. Users will access the behaviour via style/method axes and recipes instead of special-purpose prompt names.
 
-3. **Extend the style axis to allow “heavier” styles** that encode strong formatting contracts and safety rules (not just “bullets vs table vs plain”).
+3. **Extend the form/channel axes to allow “heavier” styles** that encode strong formatting contracts and safety rules (not just “bullets vs table vs plain”).
 
 4. **Extend the method axis to include thinking frames** (for example, systems thinking), not just local process tweaks like `steps` or `plan`.
 
@@ -248,7 +250,7 @@ Once the axis behaviour is correct and documented, remove `system`, `experiment`
 **Cons / Risks**
 
 - **Breaking change**: existing voice habits that rely on the retired static prompt names will stop working once those entries are removed from `staticPrompt.talon-list`. Users must adopt axis-style phrasing or recipes.
-- **Heavier styles**: the style axis now carries non-trivial contracts (Mermaid/Presenterm/HTML/Gherkin safety, shell/commit/ADR schemas). This blurs the original “style is just presentation” intuition and needs clear documentation.
+- **Heavier styles**: the form/channel split now carries non-trivial contracts (Mermaid/Presenterm/HTML/Gherkin safety, shell/commit/ADR schemas). This blurs the original “style is just presentation” intuition and needs clear documentation.
 - **Migration complexity**:
   - We must carefully extract existing instructions from static prompts and Talon lists into style/method descriptions without behavioural regressions.
   - Help text and pattern pickers need to surface the new style/method values clearly.

@@ -9,6 +9,7 @@ else:
     bootstrap()
 
 if bootstrap is not None:
+    from talon import actions
     from talon_user.lib.suggestionCoordinator import (
         last_suggestions,
         record_suggestions,
@@ -88,14 +89,16 @@ if bootstrap is not None:
                 completeness="full",
                 scope="narrow focus",
                 method=["steps", "rigor"],
-                style="plain",
+                form="adr",
+                channel="slack",
                 directional="fog",
             )
             self.assertEqual(GPTState.last_static_prompt, "fix")
             self.assertEqual(GPTState.last_completeness, "full")
             self.assertEqual(GPTState.last_scope, "narrow focus")
             self.assertEqual(GPTState.last_method, "steps rigor")
-            self.assertEqual(GPTState.last_style, "plain")
+            self.assertEqual(GPTState.last_form, "adr")
+            self.assertEqual(GPTState.last_channel, "slack")
             self.assertEqual(GPTState.last_directional, "fog")
             self.assertEqual(
                 GPTState.last_axes,
@@ -103,10 +106,29 @@ if bootstrap is not None:
                     "completeness": ["full"],
                     "scope": ["narrow", "focus"],
                     "method": ["steps", "rigor"],
-                    "style": ["plain"],
+                    "form": ["adr"],
+                    "channel": ["slack"],
+                    "directional": ["fog"],
                 },
             )
-            self.assertIn("fix", GPTState.last_recipe)
+            self.assertIn("fog", GPTState.last_recipe)
+
+        def test_set_last_recipe_from_selection_caps_directional_to_single_token(
+            self,
+        ) -> None:
+            set_last_recipe_from_selection(
+                static_prompt="fix",
+                completeness="full",
+                scope="narrow focus",
+                method=["steps", "rigor"],
+                form="adr",
+                channel="slack",
+                directional="fog rog",
+            )
+
+            self.assertEqual(GPTState.last_directional, "rog")
+            self.assertEqual(GPTState.last_axes.get("directional"), ["rog"])
+            self.assertTrue(GPTState.last_recipe.endswith("rog"))
 
         def test_suggestion_grammar_phrase_uses_spoken_source(self) -> None:
             phrase = suggestion_grammar_phrase(
@@ -122,7 +144,8 @@ if bootstrap is not None:
                 "completeness": ["full"],
                 "scope": ["narrow", "focus"],
                 "method": ["steps"],
-                "style": ["plain"],
+                "form": ["adr"],
+                "channel": ["slack"],
             }
             GPTState.last_directional = "fog"
             snapshot = last_recipe_snapshot()
@@ -130,17 +153,34 @@ if bootstrap is not None:
             self.assertEqual(snapshot["completeness"], "full")
             self.assertEqual(snapshot["scope_tokens"], ["narrow", "focus"])
             self.assertEqual(snapshot["method_tokens"], ["steps"])
-            self.assertEqual(snapshot["style_tokens"], ["plain"])
+            self.assertEqual(snapshot["form_tokens"], ["adr"])
+            self.assertEqual(snapshot["channel_tokens"], ["slack"])
             self.assertEqual(snapshot["directional"], "fog")
 
         def test_last_recap_snapshot_includes_response_and_meta(self) -> None:
             GPTState.last_recipe = "fix · full"
             GPTState.last_response = "result text"
             GPTState.last_meta = "meta text"
+            GPTState.last_directional = "fog"
             recap = last_recap_snapshot()
             self.assertEqual(recap["recipe"], "fix · full")
             self.assertEqual(recap["response"], "result text")
             self.assertEqual(recap["meta"], "meta text")
+            self.assertEqual(recap["directional"], "fog")
+
+        def test_record_suggestions_skips_recipes_without_directional(self) -> None:
+            GPTState.last_suggested_recipes = []
+            actions.user.calls.clear()
+
+            record_suggestions(
+                [{"name": "No dir", "recipe": "fix · full · bound · rigor"}], "clip"
+            )
+
+            self.assertEqual(GPTState.last_suggested_recipes, [])
+            notifications = [c for c in actions.user.calls if c[0] == "notify"]
+            self.assertTrue(
+                any("directional" in str(args[0]).lower() for _, args, _ in notifications)
+            )
 
 else:
     if not TYPE_CHECKING:

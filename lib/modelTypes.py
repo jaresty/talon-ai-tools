@@ -51,11 +51,12 @@ class GPTSystemPrompt:
     audience: str = field(default="")
     # Completeness is a soft contract for how far to take answers.
     completeness: str = field(default="")
-    # Scope, method, and style are soft contracts for how wide to reason,
-    # how to proceed, and what output form to use.
+    # Scope, method, form, and channel are soft contracts for how wide to
+    # reason, how to proceed, and what output container/medium to use.
     scope: str = field(default="")
     method: str = field(default="")
-    style: str = field(default="")
+    form: str = field(default="")
+    channel: str = field(default="")
     # Directional lenses are kept as a separate axis.
     directional: str = field(default="")
 
@@ -94,10 +95,15 @@ class GPTSystemPrompt:
             self.method = self.default_method()
         return self.method
 
-    def get_style(self) -> str:
-        if not self.style:
-            self.style = self.default_style()
-        return self.style
+    def get_form(self) -> str:
+        if not self.form:
+            self.form = self.default_form()
+        return self.form
+
+    def get_channel(self) -> str:
+        if not self.channel:
+            self.channel = self.default_channel()
+        return self.channel
 
     def get_directional(self) -> str:
         # Directional lenses default to empty; callers set this per prompt.
@@ -163,12 +169,22 @@ class GPTSystemPrompt:
         return " ".join(mapped)
 
     @staticmethod
-    def default_style() -> str:
-        # Default style falls back to the configured setting (token-based).
+    def default_form() -> str:
+        # Default form falls back to the configured setting (token-based).
         raw_tokens = GPTSystemPrompt._coerce_tokens(
-            settings.get("user.model_default_style")
+            settings.get("user.model_default_form")
         )
-        axis_map = axis_value_to_key_map_for("style")
+        axis_map = axis_value_to_key_map_for("form")
+        mapped = [axis_map.get(token, token) for token in raw_tokens]
+        return " ".join(mapped)
+
+    @staticmethod
+    def default_channel() -> str:
+        # Default channel falls back to the configured setting (token-based).
+        raw_tokens = GPTSystemPrompt._coerce_tokens(
+            settings.get("user.model_default_channel")
+        )
+        axis_map = axis_value_to_key_map_for("channel")
         mapped = [axis_map.get(token, token) for token in raw_tokens]
         return " ".join(mapped)
 
@@ -211,7 +227,8 @@ class GPTSystemPrompt:
             f"Completeness: {hydrate('completeness', self.get_completeness())}",
             f"Scope: {hydrate('scope', self.get_scope())}",
             f"Method: {hydrate('method', self.get_method())}",
-            f"Style: {hydrate('style', self.get_style())}",
+            f"Form: {hydrate('form', self.get_form())}",
+            f"Channel: {hydrate('channel', self.get_channel())}",
         ]
 
         directional_text = hydrate("directional", self.get_directional())

@@ -23,7 +23,8 @@ if bootstrap is not None:
             axes = {
                 "scope": ["focus", "unknown-scope"],
                 "method": ["steps", "unknown-method"],
-                "style": ["plain"],
+                "form": ["bullets", "unknown-form"],
+                "channel": ["slack", "unknown-channel"],
                 "directional": valid_directional + ["unknown-direction"],
             }
 
@@ -31,8 +32,10 @@ if bootstrap is not None:
 
             self.assertEqual(filtered["scope"], ["focus"])
             self.assertEqual(filtered["method"], ["steps"])
-            self.assertEqual(filtered["style"], ["plain"])
+            self.assertEqual(filtered["form"], ["bullets"])
+            self.assertEqual(filtered["channel"], ["slack"])
             self.assertEqual(filtered["directional"], valid_directional)
+            self.assertNotIn("style", filtered)
 
 else:
     if not TYPE_CHECKING:

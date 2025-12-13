@@ -58,7 +58,8 @@ if bootstrap is not None:
                     "completeness": "full",
                     "scope": ["focus"],
                     "method": ["rigor"],
-                    "style": [],
+                    "form": [],
+                    "channel": [],
                     "directional": "fog",
                 },
             )
@@ -71,6 +72,28 @@ if bootstrap is not None:
             catalog = pattern_debug_catalog(patterns=patterns, domain="coding")
             names = {entry.get("name") for entry in catalog}
             self.assertEqual(names, {"pat1"})
+
+        def test_pattern_debug_canonicalises_axes(self) -> None:
+            patterns = [
+                _DummyPattern(
+                    "pat3",
+                    "desc3",
+                    "infer · full · actions edges system · steps plan rigor filter · bullets plain · slack jira · rog fog",
+                ),
+            ]
+
+            snap = pattern_debug_snapshot("pat3", patterns=patterns)
+            axes = snap["axes"]
+
+            self.assertEqual(axes["completeness"], "full")
+            # Scope/method capped and canonicalised.
+            self.assertEqual(axes["scope"], ["edges", "system"])
+            self.assertEqual(axes["method"], ["filter", "plan", "rigor"])
+            # Form/channel singletons.
+            self.assertEqual(axes["form"], ["plain"])
+            self.assertEqual(axes["channel"], ["jira"])
+            # Directional last-wins single token.
+            self.assertEqual(axes["directional"], "fog")
 
 else:
     if not TYPE_CHECKING:

@@ -6,17 +6,18 @@ from typing import Set, TypedDict, Union
 # Central configuration for static prompts:
 # - Each key is a canonical static prompt value (as used in GPT/lists/staticPrompt.talon-list).
 # - "description" provides the human-readable Task line and help text.
-# - Optional completeness/scope/method/style fields define per-prompt axis profiles.
+# - Optional completeness/scope/method/form/channel fields define per-prompt axis profiles.
 
 
 class StaticPromptProfile(TypedDict, total=False):
     description: str
     completeness: str
-    # Scope, method, and style may be expressed as a single token or a small
-    # list of tokens; callers are responsible for any further normalisation.
+    # Scope, method, form, and channel may be expressed as a single token or a
+    # small list of tokens; callers are responsible for any further normalisation.
     scope: Union[str, list[str]]
     method: Union[str, list[str]]
-    style: Union[str, list[str]]
+    form: Union[str, list[str]]
+    channel: Union[str, list[str]]
 
 
 COMPLETENESS_FREEFORM_ALLOWLIST: Set[str] = {"path"}
@@ -88,49 +89,49 @@ STATIC_PROMPT_CONFIG: dict[str, StaticPromptProfile] = {
         "description": "Frame this through a product lens.",
         "completeness": "gist",
         "method": "steps",
-        "style": "bullets",
+        "form": "bullets",
         "scope": "focus",
     },
     "metrics": {
         "description": "List metrics that result in these outcomes with concrete examples.",
         "completeness": "gist",
         "method": "steps",
-        "style": "bullets",
+        "form": "bullets",
         "scope": "focus",
     },
     "value": {
         "description": "Explain the user value of this.",
         "completeness": "gist",
         "method": "steps",
-        "style": "bullets",
+        "form": "bullets",
         "scope": "focus",
     },
     "jobs": {
         "description": "List the Jobs To Be Done (JTBD) for this.",
         "completeness": "gist",
         "method": "steps",
-        "style": "bullets",
+        "form": "bullets",
         "scope": "focus",
     },
     "done": {
         "description": "Describe the definition of done for this.",
         "completeness": "gist",
         "method": "steps",
-        "style": "bullets",
+        "form": "bullets",
         "scope": "focus",
     },
     "operations": {
         "description": "Infer an appropriate Operations Research or management science concept to apply.",
         "completeness": "gist",
         "method": "rigor",
-        "style": "plain",
+        "form": "plain",
         "scope": "focus",
     },
     "facilitate": {
         "description": "Design a meeting for this.",
         "completeness": "full",
         "method": "steps",
-        "style": "bullets",
+        "form": "bullets",
         "scope": "focus",
     },
     "ticket": {
@@ -138,7 +139,8 @@ STATIC_PROMPT_CONFIG: dict[str, StaticPromptProfile] = {
         "completeness": "full",
         "scope": ["actions"],
         "method": ["structure"],
-        "style": ["jira", "story"],
+        "form": ["story"],
+        "channel": ["jira"],
     },
     # Exploration, critique, and reflection prompts (description-only profiles).
     "challenge": {
@@ -154,7 +156,7 @@ STATIC_PROMPT_CONFIG: dict[str, StaticPromptProfile] = {
         "description": "List 3–5 pain points, issues, obstacles, or challenges, ordered by importance to the audience.",
         "completeness": "gist",
         "method": "filter",
-        "style": "bullets",
+        "form": "bullets",
         "scope": "focus",
     },
     "easier": {
@@ -167,28 +169,28 @@ STATIC_PROMPT_CONFIG: dict[str, StaticPromptProfile] = {
         "description": "Ask open-ended questions about this that are important to the audience.",
         "completeness": "gist",
         "method": "filter",
-        "style": "bullets",
+        "form": "bullets",
         "scope": "focus",
     },
     "relevant": {
         "description": "Identify what is relevant here.",
         "completeness": "gist",
         "method": "filter",
-        "style": "bullets",
+        "form": "bullets",
         "scope": "focus",
     },
     "misunderstood": {
         "description": "Identify what is misunderstood in this situation.",
         "completeness": "gist",
         "method": "filter",
-        "style": "bullets",
+        "form": "bullets",
         "scope": "focus",
     },
     "risky": {
         "description": "Highlight what is risky and why.",
         "completeness": "gist",
         "method": "filter",
-        "style": "bullets",
+        "form": "bullets",
         "scope": "focus",
     },
     # Transformation and reformatting prompts (description-only profiles).
@@ -214,7 +216,7 @@ STATIC_PROMPT_CONFIG: dict[str, StaticPromptProfile] = {
         "description": "Add LLM-ready context only; do not rewrite the main text.",
         "completeness": "gist",
         "method": "contextualise",
-        "style": "plain",
+        "form": "plain",
         "scope": "focus",
     },
     # Mathematical and abstract lenses (description-only profiles).
@@ -292,7 +294,7 @@ STATIC_PROMPT_CONFIG: dict[str, StaticPromptProfile] = {
         ),
         "completeness": "full",
         "method": "rigor",
-        "style": "plain",
+        "form": "plain",
         "scope": "focus",
     },
     # Strategy, mapping, and dependency prompts (description-only profiles).
@@ -303,7 +305,7 @@ STATIC_PROMPT_CONFIG: dict[str, StaticPromptProfile] = {
         ),
         "completeness": "full",
         "method": "steps",
-        "style": "table",
+        "form": "table",
         "scope": "focus",
     },
     "dependency": {
@@ -352,7 +354,7 @@ STATIC_PROMPT_CONFIG: dict[str, StaticPromptProfile] = {
         "description": "Evaluate this design through the Concordance Frame: visibility, scope, and volatility of dependencies that must stay in tune.",
         "completeness": "full",
         "method": "rigor",
-        "style": "plain",
+        "form": "plain",
         "scope": "focus",
     },
     "melody": {
@@ -362,21 +364,21 @@ STATIC_PROMPT_CONFIG: dict[str, StaticPromptProfile] = {
         ),
         "completeness": "full",
         "method": "rigor",
-        "style": "plain",
+        "form": "plain",
         "scope": "focus",
     },
     "constraints": {
         "description": "Identify the key constraint in this system, describe behaviours it promotes and discourages, and discuss how to balance it for long-term health.",
         "completeness": "full",
         "method": "rigor",
-        "style": "plain",
+        "form": "plain",
         "scope": "focus",
     },
     "effects": {
         "description": "Describe the second- and third-order effects of this situation or change.",
         "completeness": "full",
         "method": "steps",
-        "style": "plain",
+        "form": "plain",
         "scope": "dynamics",
     },
     # Fix-style prompts tend to want solid, local, code-level edits.
@@ -390,7 +392,7 @@ STATIC_PROMPT_CONFIG: dict[str, StaticPromptProfile] = {
         "description": "Format this as a todo list.",
         "completeness": "gist",
         "method": "steps",
-        "style": "checklist",
+        "form": "checklist",
         "scope": "actions",
     },
     "bridge": {
@@ -402,7 +404,7 @@ STATIC_PROMPT_CONFIG: dict[str, StaticPromptProfile] = {
     # Document-shaped and summary-style outputs.
 }
 
-_AXES = ("completeness", "scope", "method", "style")
+_AXES = ("completeness", "scope", "method", "form", "channel")
 
 
 def get_static_prompt_profile(name: str) -> StaticPromptProfile | None:
@@ -419,11 +421,11 @@ def get_static_prompt_axes(name: str) -> dict[str, object]:
     """Return the axis values defined for a static prompt profile.
 
     The result maps axis name -> configured value for the axes present in the
-    profile (a subset of: completeness, scope, method, style). Unknown prompts
+    profile (a subset of: completeness, scope, method, form, channel). Unknown prompts
     return an empty dict.
 
     - `completeness` remains a single short token.
-    - `scope`, `method`, and `style` may be configured as a single token or
+    - `scope`, `method`, `form`, and `channel` may be configured as a single token or
       as a small list of tokens; callers that care about set semantics should
       normalise these values (for example, via helpers in the axis-mapping
       domain).

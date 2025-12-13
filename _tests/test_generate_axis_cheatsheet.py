@@ -29,7 +29,8 @@ if not TYPE_CHECKING:
                 self.assertIn("Completeness (`completenessModifier`)", content)
                 self.assertIn("Scope (`scopeModifier`)", content)
                 self.assertIn("Method (`methodModifier`)", content)
-                self.assertIn("Style (`styleModifier`)", content)
+                self.assertIn("Form (`formModifier`)", content)
+                self.assertIn("Channel (`channelModifier`)", content)
                 self.assertIn("Direction (`directionalModifier`)", content)
 
         def test_generate_axis_cheatsheet_tokens_match_catalog(self) -> None:
@@ -62,7 +63,8 @@ if not TYPE_CHECKING:
                     ("completeness", "Completeness (`completenessModifier`):"),
                     ("scope", "Scope (`scopeModifier`):"),
                     ("method", "Method (`methodModifier`):"),
-                    ("style", "Style (`styleModifier`):"),
+                    ("form", "Form (`formModifier`):"),
+                    ("channel", "Channel (`channelModifier`):"),
                     ("directional", "Direction (`directionalModifier`):"),
                 ):
                     line = next(

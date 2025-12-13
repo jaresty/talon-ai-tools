@@ -164,15 +164,11 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "system": "Important: Within the selected target, focus on the overall system as a whole: its components, "
         "boundaries, stakeholders, and internal structure, rather than individual lines or snippets.",
     },
-    "style": {
+    "form": {
         "abstractvisual": "Important: Express the big picture as an abstract visual or metaphorical layout (for "
-        "example, regions and contrasts) with a short legend and, if needed, brief SVG/code-like "
-        "hints.",
+        "example, regions and contrasts) with a short legend and, if needed, brief SVG/code-like hints.",
         "adr": "Important: Express the answer as an Architecture Decision Record (ADR) with sections for context, "
         "decision, and consequences, using a concise, document-like style.",
-        "announce": "Important: Format the answer as a clear announcement suitable for sharing with a team or "
-        "channel: start with a short headline, briefly explain what changed and why, and end with any "
-        "relevant actions or next steps for readers.",
         "bug": "Important: Format the answer as a structured bug report with clear sections for Steps to Reproduce, "
         "Expected Behavior, Actual Behavior, and Environment/Context; focus on concise, testable details.",
         "bullets": "Important: Format the main answer as concise bullet points only; avoid long paragraphs.",
@@ -201,9 +197,6 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "gherkin": "Important: Output only Gherkin using Jira markup where appropriate; no surrounding explanation.",
         "headline": "Important: Use a headline-first presentation: state the main point up front, then layer "
         "supporting details beneath; prioritise readability and skimmability.",
-        "html": "Important: Output only semantic HTML for the answer, with no surrounding prose.",
-        "jira": "Important: Format the answer using Jira markup (headings, lists, panels) where relevant, without "
-        "adding extra explanation beyond the content.",
         "log": "Important: Format the answer as a concise work or research log entry: include date or time markers "
         "when appropriate, short bullet-style updates, and enough context for future you to understand what "
         "happened without adding unrelated narrative.",
@@ -212,6 +205,27 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "into humour and enthusiasm without dropping important details or structure.",
         "plain": "Important: Use straightforward, everyday language; minimise jargon and complex sentence "
         "structures.",
+        "recipe": "Important: Express the answer as a recipe with a custom, clearly explained mini-language plus a "
+        "short key for understanding it.",
+        "shellscript": "Important: Express the solution as a shell script, focusing on correct, executable shell "
+        "code rather than prose.",
+        "spike": '"Important: Format the backlog item as a research spike: start with a brief problem or decision '
+        "statement, then list the key questions the spike should answer; keep the emphasis on questions "
+        'and learning, not implementation tasks."',
+        "story": '"Important: Format the backlog item as a user story using \\"As a <persona>, I want <capability>, '
+        'so that <value>.\\" Optionally include a short description and high-level acceptance criteria in '
+        'plain prose, but do not use Gherkin or test-case syntax here."',
+        "table": "Important: Present the main answer as a Markdown table when feasible; keep columns and rows "
+        "compact.",
+        "tight": "Important: Make the answer short and dense; remove fluff and redundancy.",
+    },
+    "channel": {
+        "announce": "Important: Format the answer as a clear announcement suitable for sharing with a team or "
+        "channel: start with a short headline, briefly explain what changed and why, and end with any "
+        "relevant actions or next steps for readers.",
+        "html": "Important: Output only semantic HTML for the answer, with no surrounding prose.",
+        "jira": "Important: Format the answer using Jira markup (headings, lists, panels) where relevant, without "
+        "adding extra explanation beyond the content.",
         "presenterm": '"Important: Transform the input into a valid multi-slide presenterm deck; output raw '
         'Markdown only (no code fences). Front matter exactly: \\"--- newline title: <use a '
         "descriptive title based on the input, never leave blank; in the title, encode any colon ':' "
@@ -251,25 +265,12 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "\\\"#35;\\\" for '#', \\\"#58;\\\" for ':', and \\\"#124;\\\" for '|'; escape an internal "
         "double quote as \\\"\\\"; leave ampersands '&' and slashes '/' as-is; do not apply any "
         'other entity encodings inside labels; do not double-encode. Avoid # headers."',
-        "recipe": "Important: Express the answer as a recipe with a custom, clearly explained mini-language plus a "
-        "short key for understanding it.",
         "remote": "Important: Optimise for remote delivery: make instructions work in distributed/online contexts "
         "and surface tooling/interaction hints that work over video/voice/screenshare.",
-        "shellscript": "Important: Express the solution as a shell script, focusing on correct, executable shell "
-        "code rather than prose.",
         "slack": "Important: Format the answer for Slack, using appropriate Markdown, mentions, and code blocks, "
         "without adding channel-irrelevant decoration.",
-        "spike": '"Important: Format the backlog item as a research spike: start with a brief problem or decision '
-        "statement, then list the key questions the spike should answer; keep the emphasis on questions "
-        'and learning, not implementation tasks."',
-        "story": '"Important: Format the backlog item as a user story using \\"As a <persona>, I want <capability>, '
-        'so that <value>.\\" Optionally include a short description and high-level acceptance criteria in '
-        'plain prose, but do not use Gherkin or test-case syntax here."',
         "sync": "Important: Shape the output as a synchronous/live session plan (agenda, steps, cues) rather than "
         "static reference text.",
-        "table": "Important: Present the main answer as a Markdown table when feasible; keep columns and rows "
-        "compact.",
-        "tight": "Important: Make the answer short and dense; remove fluff and redundancy.",
     },
 }
 

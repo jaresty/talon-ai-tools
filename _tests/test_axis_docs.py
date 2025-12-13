@@ -13,7 +13,7 @@ if bootstrap is not None:
 
     class AxisDocsTests(unittest.TestCase):
         def test_axis_docs_for_matches_axis_docs_map_across_axes(self) -> None:
-            axes = ["completeness", "scope", "method", "style"]
+            axes = ["completeness", "scope", "method", "form", "channel", "directional"]
             for axis in axes:
                 with self.subTest(axis=axis):
                     docs = axisConfig.axis_docs_for(axis)
@@ -28,7 +28,7 @@ if bootstrap is not None:
         def test_axis_docs_index_includes_expected_axes(self) -> None:
             index = axisConfig.axis_docs_index()
             # At minimum, the core Concordance axes should be present.
-            for axis in ("completeness", "scope", "method", "style"):
+            for axis in ("completeness", "scope", "method", "form", "channel", "directional"):
                 with self.subTest(axis=axis):
                     self.assertIn(axis, index)
                     docs = index[axis]

@@ -23,7 +23,8 @@ if bootstrap is not None:
                 completeness="gist",
                 scope="system",
                 method="steps",
-                style="plain",
+                form="plain",
+                channel="jira",
             )
 
             lines = prompt.format_as_array()
@@ -34,12 +35,14 @@ if bootstrap is not None:
             expected_completeness = axis_hydrate_tokens("completeness", ["gist"])[0]
             expected_scope = " ".join(axis_hydrate_tokens("scope", ["system"]))
             expected_method = " ".join(axis_hydrate_tokens("method", ["steps"]))
-            expected_style = " ".join(axis_hydrate_tokens("style", ["plain"]))
+            expected_form = " ".join(axis_hydrate_tokens("form", ["plain"]))
+            expected_channel = " ".join(axis_hydrate_tokens("channel", ["jira"]))
 
             self.assertIn(f"Completeness: {expected_completeness}", as_text)
             self.assertIn(f"Scope: {expected_scope}", as_text)
             self.assertIn(f"Method: {expected_method}", as_text)
-            self.assertIn(f"Style: {expected_style}", as_text)
+            self.assertIn(f"Form: {expected_form}", as_text)
+            self.assertIn(f"Channel: {expected_channel}", as_text)
 
 else:
     if not TYPE_CHECKING:

@@ -1,5 +1,6 @@
 import unittest
 from typing import TYPE_CHECKING
+from unittest.mock import patch
 
 try:
     from bootstrap import bootstrap
@@ -27,6 +28,20 @@ if bootstrap is not None:
             DrawerActions.request_history_drawer_open()
             self.assertTrue(HistoryDrawerState.showing)
             DrawerActions.request_history_drawer_close()
+            self.assertFalse(HistoryDrawerState.showing)
+
+        def test_drawer_actions_respect_in_flight_guard(self):
+            import sys
+
+            module = sys.modules["talon_user.lib.requestHistoryDrawer"]
+            with patch.object(module, "_reject_if_request_in_flight", return_value=True):
+                DrawerActions.request_history_drawer_open()
+                DrawerActions.request_history_drawer_toggle()
+                DrawerActions.request_history_drawer_close()
+                DrawerActions.request_history_drawer_prev_entry()
+                DrawerActions.request_history_drawer_next_entry()
+                DrawerActions.request_history_drawer_open_selected()
+            # Guarded actions should not flip showing state.
             self.assertFalse(HistoryDrawerState.showing)
 
         def test_open_populates_entries(self):

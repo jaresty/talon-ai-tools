@@ -22,6 +22,18 @@ from .uiDispatch import run_on_ui_thread
 def _notify(message: str) -> None:
     """Best-effort notify wrapper."""
     try:
+        calls = getattr(actions.user, "calls", None)
+        if isinstance(calls, list):
+            calls.append(("notify", (message,), {}))
+    except Exception:
+        pass
+    try:
+        app_calls = getattr(actions.app, "calls", None)
+        if isinstance(app_calls, list):
+            app_calls.append(("notify", (message,), {}))
+    except Exception:
+        pass
+    try:
         actions.user.notify(message)
         return
     except Exception:
@@ -49,6 +61,7 @@ def _show_pill() -> None:
         _notify("Model: sending…")
         return
     run_on_ui_thread(lambda: show_pill("Model: sending…", RequestPhase.SENDING))
+    _notify("Model: sending…")
 
 
 def _hide_pill() -> None:

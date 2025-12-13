@@ -27,6 +27,22 @@ if bootstrap is not None:
 
             self.assertEqual(GPTState.last_suggested_recipes, [])
             self.assertEqual(GPTState.last_meta, "")
+
+        def test_reset_all_preserves_axis_keys(self):
+            GPTState.last_axes = {
+                "completeness": ["full"],
+                "scope": ["bound", "edges"],
+                "method": ["rigor", "xp"],
+                "form": ["plain"],
+                "channel": ["slack"],
+                "directional": ["fog"],
+            }
+
+            GPTState.reset_all()
+
+            for axis in ("completeness", "scope", "method", "form", "channel", "directional"):
+                self.assertIn(axis, GPTState.last_axes)
+                self.assertEqual(GPTState.last_axes[axis], [])
 else:
     if not TYPE_CHECKING:
         class GPTStateSuggestionResetTests(unittest.TestCase):

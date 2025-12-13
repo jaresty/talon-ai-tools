@@ -82,7 +82,7 @@ We will add a new module (for example, `lib/modelHelpCanvas.py`) that:
 - Owns a `canvas.Canvas` instance.  
 - Renders a **single quick help window** with:
   - A **title band** (e.g. “Model grammar quick reference”) that clearly separates the canvas from the underlying app and can host a close affordance.  
-  - A **grammar skeleton** section (`model run <staticPrompt> [completeness] [scope] [method] [style] <directional lens>`) plus:
+  - A **grammar skeleton** section (`model run <staticPrompt> [completeness] [scope] [scope] [method] [method] [method] [form] [channel] <directional lens>`) plus:
     - A **last‑recipe recap** line (tokens + speakable `model …` form) when `GPTState.last_recipe` / `last_directional` are present.  
     - A static‑prompt focus line when opened via `model quick help <staticPrompt>`.  
   - **Axis summaries** (short, scannable lists for completeness/scope/method/style), grouped so that:

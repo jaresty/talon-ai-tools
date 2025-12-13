@@ -13,6 +13,12 @@ from .modelState import GPTState
 from .talonSettings import _AXIS_SOFT_CAPS
 
 from .metaPromptConfig import first_meta_preview_line, meta_preview_lines
+from .requestBus import current_state
+from .requestState import RequestPhase
+from .modelHelpers import notify
+from .requestBus import current_state
+from .requestState import RequestPhase
+from .modelHelpers import notify
 
 try:
     from .staticPromptConfig import (
@@ -25,7 +31,7 @@ except ImportError:  # Talon may have a stale staticPromptConfig loaded
     def get_static_prompt_axes(name: str) -> dict[str, object]:
         profile = STATIC_PROMPT_CONFIG.get(name, {})
         axes: dict[str, object] = {}
-        for axis in ("completeness", "scope", "method", "style"):
+        for axis in ("completeness", "scope", "method", "form", "channel"):
             value = profile.get(axis)
             if not value:
                 continue
@@ -54,6 +60,30 @@ except ImportError:  # Talon may have a stale staticPromptConfig loaded
                 "axes": get_static_prompt_axes(name),
             }
         return catalog
+
+
+def _request_is_in_flight() -> bool:
+    """Return True when a GPT request is currently running."""
+    try:
+        phase = getattr(current_state(), "phase", RequestPhase.IDLE)
+        return phase not in (
+            RequestPhase.IDLE,
+            RequestPhase.DONE,
+            RequestPhase.ERROR,
+            RequestPhase.CANCELLED,
+        )
+    except Exception:
+        return False
+
+
+def _reject_if_request_in_flight() -> bool:
+    """Notify and return True when a GPT request is already running."""
+    if _request_is_in_flight():
+        notify(
+            "GPT: A request is already running; wait for it to finish or cancel it first."
+        )
+        return True
+    return False
 
 
 def _axis_keys(axis: str) -> list[str]:
@@ -152,7 +182,8 @@ def _draw_wrapped_commands(
 COMPLETENESS_KEYS = _axis_keys("completeness")
 SCOPE_KEYS = _axis_keys("scope")
 METHOD_KEYS = _axis_keys("method")
-STYLE_KEYS = _axis_keys("style")
+FORM_KEYS = _axis_keys("form")
+CHANNEL_KEYS = _axis_keys("channel")
 
 
 def _group_directional_keys() -> dict[str, list[str]]:
@@ -743,7 +774,7 @@ def _default_draw_quick_help(
     draw_text("Grammar:", x, y)
     y += line_h
     draw_text(
-        "  model run <staticPrompt> [completeness] [scope] [method] [style] <directional lens>",
+        "  model run <staticPrompt> [completeness] [scope] [scope] [method] [method] [method] [form] [channel] <directional lens>",
         x,
         y,
     )
@@ -752,10 +783,11 @@ def _default_draw_quick_help(
     # Make multiplicity explicit so users know how many axis tokens are kept.
     scope_cap = _AXIS_SOFT_CAPS.get("scope", 2)
     method_cap = _AXIS_SOFT_CAPS.get("method", 3)
-    style_cap = _AXIS_SOFT_CAPS.get("style", 3)
+    form_cap = _AXIS_SOFT_CAPS.get("form", 1)
+    channel_cap = _AXIS_SOFT_CAPS.get("channel", 1)
     caps_line = (
         f"  Caps: 1 static prompt · 1 completeness · scope≤{scope_cap} · "
-        f"method≤{method_cap} · style≤{style_cap} · 1 directional lens"
+        f"method≤{method_cap} · form≤{form_cap} · channel≤{channel_cap} · 1 directional lens"
     )
     draw_text(caps_line, x, y)
     y += line_h
@@ -833,7 +865,7 @@ def _default_draw_quick_help(
             if axes:
                 draw_text("Profile axes:", x, y)
                 y += line_h
-                for axis in ("completeness", "scope", "method", "style"):
+                for axis in ("completeness", "scope", "method", "form", "channel"):
                     value = axes.get(axis)
                     if not value:
                         continue
@@ -972,9 +1004,10 @@ def _default_draw_quick_help(
     )
     y_left = _draw_axis_column("Scope", "scope", SCOPE_KEYS, x_left, y_left)
 
-    # Right column: method + style
+    # Right column: method + form/channel
     y_right = _draw_axis_column("Method", "method", METHOD_KEYS, x_right, y_right)
-    y_right = _draw_axis_column("Style", "style", STYLE_KEYS, x_right, y_right)
+    y_right = _draw_axis_column("Form", "form", FORM_KEYS, x_right, y_right)
+    y_right = _draw_axis_column("Channel", "channel", CHANNEL_KEYS, x_right, y_right)
 
     # Brief axis multiplicity hint so users know which axes can be combined.
     # Draw this note below whichever column is taller and wrap it so it stays
@@ -982,7 +1015,7 @@ def _default_draw_quick_help(
     axes_bottom = max(y_left, y_right)
     note = (
         f"Note: completeness is single-valued. Scope≤{scope_cap}, method≤{method_cap}, "
-        f"style≤{style_cap}; combine tags like actions edges or structure flow."
+        f"form≤{form_cap}, channel≤{channel_cap}; combine tags like actions edges or structure flow."
     )
     approx_char_width = 8
     if rect is not None and hasattr(rect, "x") and hasattr(rect, "width"):
@@ -1294,6 +1327,18 @@ def _default_draw_quick_help(
         y,
     )
     y += line_h
+    draw_text(
+        "  Form/channel are single-value; legacy style tokens are removed—use form/channel.",
+        x,
+        y,
+    )
+    y += line_h
+    draw_text(
+        "  Always include one directional lens: fog/fig/dig/ong/rog/bog/jog.",
+        x,
+        y,
+    )
+    y += line_h
 
     # Optional examples section, shown only when explicitly focused to avoid
     # making the default quick help view too tall (mirrors imgui semantics).
@@ -1359,6 +1404,8 @@ register_draw_handler(_default_draw_quick_help)
 class UserActions:
     def model_help_canvas_open():
         """Toggle the canvas-based model grammar quick reference"""
+        if _reject_if_request_in_flight():
+            return
         if HelpCanvasState.showing:
             _reset_help_state("all", None)
             _close_canvas()
@@ -1379,11 +1426,15 @@ class UserActions:
 
     def model_help_canvas_close():
         """Explicitly close the canvas-based quick help and reset state"""
+        if _reject_if_request_in_flight():
+            return
         _reset_help_state("all", None)
         _close_canvas()
 
     def model_help_canvas_open_for_last_recipe():
         """Open canvas quick help focused on the last recipe"""
+        if _reject_if_request_in_flight():
+            return
         # Close other related menus to avoid overlapping overlays.
         try:
             actions.user.model_pattern_gui_close()
@@ -1402,6 +1453,8 @@ class UserActions:
 
     def model_help_canvas_open_for_static_prompt(static_prompt: str):
         """Open canvas quick help focused on a specific static prompt"""
+        if _reject_if_request_in_flight():
+            return
         # Close other related menus to avoid overlapping overlays.
         try:
             actions.user.model_pattern_gui_close()
@@ -1417,45 +1470,70 @@ class UserActions:
 
     def model_help_canvas_open_completeness():
         """Open canvas quick help focused on completeness"""
+        if _reject_if_request_in_flight():
+            return
         _reset_help_state("completeness", None)
         _open_canvas()
 
     def model_help_canvas_open_scope():
         """Open canvas quick help focused on scope"""
+        if _reject_if_request_in_flight():
+            return
         _reset_help_state("scope", None)
         _open_canvas()
 
     def model_help_canvas_open_method():
         """Open canvas quick help focused on method"""
+        if _reject_if_request_in_flight():
+            return
         _reset_help_state("method", None)
         _open_canvas()
 
-    def model_help_canvas_open_style():
-        """Open canvas quick help focused on style"""
-        _reset_help_state("style", None)
+    def model_help_canvas_open_form():
+        """Open canvas quick help focused on form"""
+        if _reject_if_request_in_flight():
+            return
+        _reset_help_state("form", None)
+        _open_canvas()
+
+    def model_help_canvas_open_channel():
+        """Open canvas quick help focused on channel"""
+        if _reject_if_request_in_flight():
+            return
+        _reset_help_state("channel", None)
         _open_canvas()
 
     def model_help_canvas_open_directional():
         """Open canvas quick help focused on directional lenses"""
+        if _reject_if_request_in_flight():
+            return
         _reset_help_state("directional", None)
         _open_canvas()
 
     def model_help_canvas_open_examples():
         """Open canvas quick help focused on examples"""
+        if _reject_if_request_in_flight():
+            return
         _reset_help_state("examples", None)
         _open_canvas()
 
     def model_help_canvas_open_who():
         """Open canvas quick help focused on persona (Who)"""
+        if _reject_if_request_in_flight():
+            return
         _reset_help_state("who", None)
         _open_canvas()
 
     def model_help_canvas_open_why():
         """Open canvas quick help focused on intent (Why)"""
+        if _reject_if_request_in_flight():
+            return
         _reset_help_state("why", None)
         _open_canvas()
 
     def model_help_canvas_open_how():
         """Open canvas quick help focused on contract (How)"""
+        if _reject_if_request_in_flight():
+            return
         _reset_help_state("how", None)
         _open_canvas()

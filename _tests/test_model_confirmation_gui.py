@@ -126,6 +126,40 @@ if bootstrap is not None:
             labels = [call[0] for call in actions.user.calls]
             self.assertIn("help_hub_open", labels)
 
+        def test_confirmation_recap_includes_migration_hints(self) -> None:
+            """Confirmation recap should remind users of form/channel singletons and directional requirement."""
+            GPTState.text_to_confirm = "Body"
+            GPTState.last_recipe = "describe · gist · focus · plain"
+            GPTState.last_directional = "fog"
+
+            rendered_lines: list[str] = []
+
+            gui_fn = confirmation_gui.__wrapped__  # type: ignore[attr-defined]
+
+            class _StubGUI:
+                def text(self, value: str) -> None:
+                    rendered_lines.append(value)
+
+                def line(self) -> None:
+                    pass
+
+                def spacer(self) -> None:
+                    pass
+
+                def button(self, *_args, **_kwargs) -> bool:
+                    return False
+
+            gui_fn(_StubGUI())  # type: ignore[arg-type]
+
+            self.assertTrue(
+                any("Form/channel are single-value" in line for line in rendered_lines),
+                f"Expected form/channel migration hint in confirmation recap, got {rendered_lines}",
+            )
+            self.assertTrue(
+                any("directional lens" in line for line in rendered_lines),
+                f"Expected directional migration hint in confirmation recap, got {rendered_lines}",
+            )
+
         def test_save_to_file_button_triggers_action(self) -> None:
             GPTState.text_to_confirm = "Body"
             GPTState.last_recipe = "describe"

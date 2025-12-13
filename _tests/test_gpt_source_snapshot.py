@@ -54,7 +54,8 @@ if bootstrap is not None:
                 "completeness": "full",
                 "scope_tokens": ["bound"],
                 "method_tokens": ["steps"],
-                "style_tokens": ["plain"],
+                "form_tokens": ["plain"],
+                "channel_tokens": ["slack"],
                 "directional": "fog",
             }
 
@@ -87,7 +88,8 @@ if bootstrap is not None:
             self.assertIn("completeness: full", content)
             self.assertIn("scope_tokens: bound", content)
             self.assertIn("method_tokens: steps", content)
-            self.assertIn("style_tokens: plain", content)
+            self.assertIn("form_tokens: plain", content)
+            self.assertIn("channel_tokens: slack", content)
             self.assertIn("directional: fog", content)
 
             # Body should contain the rendered source text under a heading.
@@ -118,7 +120,8 @@ if bootstrap is not None:
                 "completeness": "full",
                 "scope_tokens": ["bound"],
                 "method_tokens": ["steps"],
-                "style_tokens": ["plain"],
+                "form_tokens": ["plain"],
+                "channel_tokens": ["slack"],
                 "directional": "fog",
             }
 
@@ -154,7 +157,8 @@ if bootstrap is not None:
             self.assertIn("completeness: full", content)
             self.assertIn("scope_tokens: bound", content)
             self.assertIn("method_tokens: steps", content)
-            self.assertIn("style_tokens: plain", content)
+            self.assertIn("form_tokens: plain", content)
+            self.assertIn("channel_tokens: slack", content)
             self.assertIn("directional: fog", content)
 
 else:

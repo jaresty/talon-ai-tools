@@ -4,7 +4,7 @@ Query language models with voice commands. Helpful to automatically generate tex
 
 ## Help
 
-- See [the list of prompts](lists/staticPrompt.talon-list) for the current static prompts that can be used with the `model` command; note that some behaviours (for example, diagrams, Presenterm decks, ADRs, and shell scripts) now live only as style/method axis values rather than static prompts (see ADR 012/013).
+- See [the list of prompts](lists/staticPrompt.talon-list) for the current static prompts that can be used with the `model` command; note that some behaviours (for example, diagrams, Presenterm decks, ADRs, and shell scripts) now live only as form/channel/method axis values rather than static prompts (see ADR 012/013).
 
 - See the [examples file](../.docs/usage-examples/examples.md) for gifs that show how to use the commands.
 
@@ -65,20 +65,20 @@ To make the grammar easier to remember and explore, ADR 006 adds a few helpers:
   - Clicking a pattern runs the corresponding recipe via the normal `model` pipeline and closes the GUI.
   - You can also say `model coding patterns` or `model writing patterns` to open the GUI filtered to those domains, then either click or say the pattern name (for example, `debug bug`) to execute it.
 - `model pattern menu <staticPrompt>` – opens a prompt-focused pattern picker for any static prompt (for example, `describe`, `fix`, `retro`), which:
-  - Shows the prompt’s description and any profile defaults (completeness/scope/method/style).
+  - Shows the prompt’s description and any profile defaults (completeness/scope/method/form/channel).
   - Lists a few generic, axis-driven mini-patterns (for example, “Quick gist”, “Deep narrow rigor”, “Bulleted summary”) as concrete recipes for that prompt.
   - Lets you trigger these patterns by clicking or by saying the preset names (for example, `quick gist`) while the picker is open.
 - `model quick help` – opens an in-Talon “Model grammar quick reference” window listing:
-  - The main axes (static prompt, completeness, scope, method, style, directional lens).
+  - The main axes (static prompt, completeness, scope, method, form, channel, directional lens).
   - Canonical modifier vocab, pulled from the same Talon lists that drive the grammar.
   - A few example recipes.
 - You can also open axis-specific quick help:
   - `model quick help completeness`
   - `model quick help scope`
   - `model quick help method`
-  - `model quick help style`
+  - `model quick help form` / `model quick help channel` (once split help is available)
 - `model show grammar` – opens quick help with the last recipe and an exact, speakable `model …` line so you can repeat or adapt a successful combination by voice.
-- `model last recipe` – shows the last prompt recipe (static prompt plus effective completeness/scope/method/style and directional lens) in a notification, even if the confirmation GUI is closed.
+- `model last recipe` – shows the last prompt recipe (static prompt plus effective completeness/scope/method/form/channel and directional lens) in a notification, even if the confirmation GUI is closed.
 
 When the confirmation GUI is open, it also:
 
@@ -108,7 +108,7 @@ When the confirmation GUI is open, it also:
 
 #### Prompt recipe suggestions (ADR 008)
 
-- `model suggest` / `model suggest for <subject>` – ask the model to propose 3–5 concrete `staticPrompt · completeness · scope · method · style · directional` recipes for the current source (selection/clipboard/etc.), insert them as `Name: … | Recipe: …` lines, cache them, and open a small “Prompt recipe suggestions” window.
+- `model suggest` / `model suggest for <subject>` – ask the model to propose 3–5 concrete `staticPrompt · completeness · scope · method · form · channel · directional` recipes for the current source (selection/clipboard/etc.), insert them as `Name: … | Recipe: …` lines, cache them, and open a small “Prompt recipe suggestions” window.
 - In the suggestions window:
   - Click a suggestion to run that recipe via the normal `model` pipeline; the window closes after execution.
   - Say `run suggestion <number>` (for example, `run suggestion 1`) to execute a specific recipe by index.
@@ -117,19 +117,20 @@ When the confirmation GUI is open, it also:
 
 #### Rerun last recipe shorthand (ADR 009)
 
-- `model last recipe` – show the last prompt recipe (static prompt plus effective completeness/scope/method/style and directional lens) in a notification, even if the confirmation GUI is closed.
+- `model last recipe` – show the last prompt recipe (static prompt plus effective completeness/scope/method/form/channel and directional lens) in a notification, even if the confirmation GUI is closed.
 - `model again` – rerun the last recipe exactly, using the same static prompt, axes, and directional lens.
 - `model again [<staticPrompt>] [axis tokens…]` – rerun the last recipe but override any subset of:
   - Static prompt (`<staticPrompt>`).
   - Completeness (`skim`, `gist`, `full`, etc.).
   - Scope (`narrow`, `focus`, `bound`, etc.).
   - Method (`steps`, `plan`, `cluster`, etc.).
-  - Style (`plain`, `bullets`, `tight`, etc.).
+  - Form (`plain`, `bullets`, `table`, `code`, etc.).
+  - Channel (`slack`, `jira`, `presenterm`, etc.).
   - Directional lens (`fog`, `rog`, `ong`, etc.).
 - Examples:
-  - `model again gist fog` – keep the last static prompt/scope/method/style, but change completeness to `gist` and directional lens to `fog`.
-  - `model again todo gist fog` – change static prompt to `todo` and completeness to `gist`, reuse the last scope/method/style, and set directional lens to `fog`.
-  - `model again steps tight rog` – keep the last static prompt/completeness/scope, but switch method to `steps`, style to `tight`, and directional lens to `rog`.
+- `model again gist fog` – keep the last static prompt/scope/method/form/channel, but change completeness to `gist` and directional lens to `fog`.
+- `model again todo gist fog` – change static prompt to `todo` and completeness to `gist`, reuse the last scope/method/form/channel, and set directional lens to `fog`.
+- `model again steps tight rog` – keep the last static prompt/completeness/scope, but switch method to `steps`, form to `tight`, and directional lens to `rog`.
 
 ### Persona / Intent / Contract (Who / Why / How)
 
@@ -149,7 +150,8 @@ When you are deciding how much of the grammar to use, it helps to think in three
   - `completeness` – how much coverage (`skim`, `gist`, `full`, `max`, `minimal`, `deep`).  
   - `scope` – what territory is in-bounds (`narrow`, `focus`, `bound`, `actions`, `relations`, `system`, `dynamics`, etc.).  
   - `method` – how to think/decompose (`steps`, `plan`, `debugging`, `xp`, `diverge`, `converge`, `mapping`, etc.).  
-  - `style` – visible shape/container (`plain`, `tight`, `bullets`, `table`, `code`, `adr`, `presenterm`, `slack`, `jira`, etc.).
+  - `form` – container/shape (`plain`, `bullets`, `table`, `code`, `adr`, `story`, `checklist`, `faq`, `headline`, `diagram`, `recipe`, `bug`, `spike`, `log`, `cards`, `codetour`, `commit`, `emoji`, `fun`, `gherkin`, `shellscript`, `party`).  
+  - `channel` – medium bias (`slack`, `jira`, `presenterm`, `announce`, `remote`, `sync`, `html`).
 
 In day-to-day use you can:
 
@@ -175,8 +177,8 @@ A couple of common prompts decomposed into the three families:
     - Exec brief → often `for deciding` or `for information`.  
     - Deep write-up → usually `for information` or `for evaluating`.  
   - **Contract (How)**:  
-    - Exec brief → `completeness=gist`, `scope=focus`, `method=headline`/`structure`, `style=plain` or `announce`.  
-    - Deep write-up → `completeness=full` or `deep`, `scope=system`/`relations`, `method=structure`/`analysis`, `style=plain` or `adr`.  
+    - Exec brief → `completeness=gist`, `scope=focus`, `method=headline`/`structure`, `form=plain`, `channel=announce`.  
+    - Deep write-up → `completeness=full` or `deep`, `scope=system`/`relations`, `method=structure`/`analysis`, `form=adr` or `plain`.
   - Again, keep persona and intent focused on Who/Why; put coverage, territory, reasoning, and container into the contract axes.
 
 ### Modifier axes (advanced)
@@ -186,8 +188,9 @@ The `model` command now supports several short, speech-friendly modifier axes yo
 - Completeness (`completenessModifier`): `full`, `gist`, `max`, `minimal`, `skim`
 - Scope (`scopeModifier`): `actions`, `activities`, `bound`, `dynamics`, `edges`, `focus`, `interfaces`, `narrow`, `relations`, `system`
 - Method (`methodModifier`): `adversarial`, `analysis`, `case`, `cluster`, `compare`, `contextualise`, `converge`, `debugging`, `deep`, `diagnose`, `direct`, `diverge`, `experimental`, `filter`, `flow`, `indirect`, `ladder`, `liberating`, `mapping`, `motifs`, `plan`, `prioritize`, `rewrite`, `rigor`, `samples`, `scaffold`, `socratic`, `steps`, `structure`, `systemic`, `taxonomy`, `wasinawa`, `xp`
-- Style (`styleModifier`): `abstractvisual`, `adr`, `announce`, `bug`, `bullets`, `cards`, `checklist`, `code`, `codetour`, `commit`, `diagram`, `emoji`, `faq`, `fun`, `gherkin`, `headline`, `html`, `jira`, `log`, `party`, `plain`, `presenterm`, `recipe`, `remote`, `shellscript`, `slack`, `spike`, `story`, `sync`, `table`, `tight`
-  - Additional styles:
+- Form (`formModifier`): `abstractvisual`, `adr`, `bug`, `bullets`, `cards`, `checklist`, `code`, `codetour`, `commit`, `diagram`, `emoji`, `faq`, `fun`, `gherkin`, `headline`, `log`, `party`, `plain`, `recipe`, `shellscript`, `spike`, `story`, `table`, `tight`, `presenterm`
+- Channel (`channelModifier`): `announce`, `html`, `jira`, `presenterm`, `remote`, `slack`, `sync`
+  - Additional form/channel notes:
     - `cards` – format the answer as discrete cards/items with clear headings and short bodies.
     - `story` – format the output as a user story using “As a…, I want…, so that…”, optionally with a short prose description and high-level acceptance criteria.
     - `bug` – format the output as a structured bug report (Steps to Reproduce, Expected Behavior, Actual Behavior, Environment/Context).
@@ -207,19 +210,21 @@ Directional lenses (required) are a separate axis:
 Axis multiplicity:
 
 - Completeness is **single-valued**: you pick at most one completeness token per call.
-- Scope, method, and style are **multi-valued** tag sets:
+- Scope and method are **multi-valued** tag sets; form and channel are single-valued:
   - You can speak more than one modifier on these axes in a single `model` command.
   - Under the hood, tokens are normalised into sets with small soft caps:
     - Scope: ≤ 2 tokens.
     - Method: ≤ 3 tokens.
-    - Style: ≤ 3 tokens.
+    - Form: 1 token.
+    - Channel: 1 token.
   - For example:
-    - `model ticket actions edges structure flow jira faq fog`
+    - `model ticket actions edges structure flow headline slack fog`
       - Static prompt: `ticket`.
       - Completeness: default/profile (`full`).
       - Scope: `actions edges`.
       - Method: `structure flow`.
-      - Style: `jira faq` (Jira-formatted user story ticket with FAQ-style details).
+      - Form: `headline`.
+      - Channel: `slack`.
 
 Some recommended multi-tag combinations:
 
@@ -228,8 +233,9 @@ Some recommended multi-tag combinations:
 - Method:
   - `structure flow` – emphasise both structural decomposition and stepwise flow.
 - Style:
-  - `jira story` – Jira-formatted user story ticket.
-  - `jira faq` – Jira ticket with FAQ-style sections for common questions.
+  - Form/channel examples:
+    - `headline slack` – announcement-style headline for Slack.
+    - `adr presenterm` – ADR-format output with Presenterm channel bias.
 
 When you use these modifiers—either by speaking them or via a pattern/pattern menu—their semantics are applied in two places:
 

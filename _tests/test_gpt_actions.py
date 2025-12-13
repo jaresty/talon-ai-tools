@@ -30,6 +30,15 @@ if bootstrap is not None:
         def setUp(self):
             GPTState.reset_all()
             GPTState.last_response = "assistant output"
+            GPTState.last_directional = "fog"
+            GPTState.last_axes = {
+                "completeness": [],
+                "scope": [],
+                "method": [],
+                "form": [],
+                "channel": [],
+                "directional": ["fog"],
+            }
             gpt_module.settings.set("user.model_async_blocking", False)
             actions.user.gpt_insert_response = MagicMock()
             self._original_pipeline = gpt_module._prompt_pipeline
@@ -114,6 +123,27 @@ if bootstrap is not None:
                 "Expected a notification about saving the model source",
             )
 
+        def test_gpt_save_source_respects_in_flight_guard(self):
+            GPTState.reset_all()
+            with (
+                patch.object(gpt_module, "_reject_if_request_in_flight", return_value=True),
+                patch.object(gpt_module, "_save_source_snapshot_to_file") as saver,
+            ):
+                gpt_module.UserActions.gpt_save_source_to_file()
+
+            saver.assert_not_called()
+
+        def test_debug_toggles_respect_in_flight_guard(self):
+            with patch.object(
+                gpt_module, "_reject_if_request_in_flight", return_value=True
+            ), patch.object(GPTState, "start_debug") as start_debug, patch.object(
+                GPTState, "stop_debug"
+            ) as stop_debug:
+                gpt_module.UserActions.gpt_start_debug()
+                gpt_module.UserActions.gpt_stop_debug()
+            start_debug.assert_not_called()
+            stop_debug.assert_not_called()
+
         def test_gpt_cancel_request_emits_cancel(self):
             set_controller(RequestUIController())
             actions.user.calls.clear()
@@ -126,6 +156,131 @@ if bootstrap is not None:
                     for call in actions.user.calls + actions.app.calls
                 )
             )
+
+        def test_safe_model_prompt_surfaces_style_guard(self):
+            """Legacy style tokens should trigger a migration hint, not crash."""
+            actions.user.calls.clear()
+            actions.app.calls.clear()
+            actions.user.notify = MagicMock()
+
+            class Match:
+                staticPrompt = "fix"
+                styleModifier = "plain"
+                directionalModifier = "fog"
+
+            prompt = gpt_module._safe_model_prompt(Match)
+
+            self.assertEqual(prompt, "")
+            self.assertTrue(actions.user.notify.called or actions.app.notify.called)
+
+        def test_beta_paste_prompt_handles_style_guard(self):
+            """Beta pass path should surface migration hint instead of pasting."""
+            actions.user.calls.clear()
+            actions.app.calls.clear()
+            actions.user.paste = MagicMock()
+
+            class Match:
+                staticPrompt = "fix"
+                styleModifier = "plain"
+                directionalModifier = "fog"
+
+            with patch.object(gpt_module, "safe_model_prompt", side_effect=ValueError("style axis is removed")):
+                gpt_module.gpt_beta_paste_prompt(Match)
+
+            actions.user.paste.assert_not_called()
+            notifications = [
+                call for call in actions.user.calls + actions.app.calls if call[0] == "notify"
+            ]
+            self.assertTrue(
+                any("style axis is removed" in str(args[0]) for _name, args, _kwargs in notifications),
+                f"Expected migration hint notification, got: {notifications}",
+            )
+
+        def test_beta_paste_prompt_honors_in_flight_guard(self):
+            """Beta pass should no-op when a request is already in flight."""
+            actions.user.calls.clear()
+            actions.app.calls.clear()
+            actions.user.paste = MagicMock()
+            actions.user.notify = MagicMock()
+
+            class Match:
+                staticPrompt = "fix"
+                directionalModifier = "fog"
+
+            with patch.object(gpt_module, "_reject_if_request_in_flight", return_value=True):
+                gpt_module.gpt_beta_paste_prompt(Match)
+
+            actions.user.paste.assert_not_called()
+            # No notify expected when simply guarded.
+            self.assertFalse(actions.user.notify.called)
+
+        def test_gpt_apply_prompt_skips_empty_prompt(self):
+            """Empty prompts should be rejected with a notification."""
+            actions.user.calls.clear()
+            actions.app.calls.clear()
+            actions.user.notify = MagicMock()
+            actions.user.gpt_insert_response = MagicMock()
+
+            class DummySource:
+                modelSimpleSource = "clipboard"
+
+                def format_messages(self):
+                    return []
+
+            class DummyDestination:
+                pass
+
+            config = ApplyPromptConfiguration(
+                please_prompt="",
+                model_source=DummySource(),
+                additional_model_source=None,
+                model_destination=DummyDestination(),
+            )
+
+            result = gpt_module.UserActions.gpt_apply_prompt(config)
+
+            self.assertEqual(result, "")
+            actions.user.gpt_insert_response.assert_not_called()
+            self.assertTrue(actions.user.notify.called)
+
+        def test_gpt_run_prompt_skips_empty_prompt(self):
+            """gpt_run_prompt should reject empty prompts and notify."""
+            actions.user.calls.clear()
+            actions.app.calls.clear()
+            actions.user.notify = MagicMock()
+
+            class DummySource:
+                modelSimpleSource = "clipboard"
+
+                def format_messages(self):
+                    return []
+
+            result = gpt_module.UserActions.gpt_run_prompt("", DummySource())
+
+            self.assertEqual(result, "")
+            self.assertTrue(actions.user.notify.called)
+
+        def test_gpt_recursive_prompt_skips_empty_prompt(self):
+            """gpt_recursive_prompt should reject empty prompts and notify."""
+            actions.user.calls.clear()
+            actions.app.calls.clear()
+            actions.user.notify = MagicMock()
+
+            class DummySource:
+                modelSimpleSource = "clipboard"
+
+                def format_messages(self):
+                    return []
+
+            class DummyDestination:
+                pass
+
+            result = gpt_module.UserActions.gpt_recursive_prompt(
+                "", DummySource(), DummyDestination(), None
+            )
+
+            self.assertEqual(result, "")
+            self.assertTrue(actions.user.notify.called)
 
         def test_gpt_analyze_prompt_uses_prompt_session(self):
             with patch.object(gpt_module, "PromptSession") as session_cls:
@@ -178,6 +333,7 @@ if bootstrap is not None:
             self.assertEqual(result_text, "async delegated output")
 
         def test_gpt_replay_uses_prompt_session_output(self):
+            GPTState.last_directional = "fog"
             with patch.object(gpt_module, "PromptSession") as session_cls:
                 mock_session = session_cls.return_value
                 mock_session._destination = "paste"
@@ -218,6 +374,91 @@ if bootstrap is not None:
                 str(app_notify.call_args[0][0]),
             )
 
+        def test_gpt_show_last_recipe_respects_in_flight_guard(self):
+            GPTState.reset_all()
+            with (
+                patch.object(gpt_module, "_reject_if_request_in_flight", return_value=True),
+                patch.object(actions.app, "notify") as app_notify,
+            ):
+                gpt_module.UserActions.gpt_show_last_recipe()
+
+            app_notify.assert_not_called()
+
+        def test_gpt_clear_last_recap_respects_in_flight_guard(self):
+            with (
+                patch.object(gpt_module, "_reject_if_request_in_flight", return_value=True),
+                patch.object(gpt_module, "clear_recap_state") as clear_recap,
+            ):
+                gpt_module.UserActions.gpt_clear_last_recap()
+
+            clear_recap.assert_not_called()
+
+        def test_gpt_show_last_meta_respects_in_flight_guard(self):
+            GPTState.reset_all()
+            with (
+                patch.object(gpt_module, "_reject_if_request_in_flight", return_value=True),
+                patch.object(actions.app, "notify") as app_notify,
+            ):
+                gpt_module.UserActions.gpt_show_last_meta()
+
+            app_notify.assert_not_called()
+
+        def test_gpt_show_pattern_debug_respects_in_flight_guard(self):
+            with (
+                patch.object(gpt_module, "_reject_if_request_in_flight", return_value=True),
+                patch.object(actions.app, "notify") as app_notify,
+            ):
+                gpt_module.UserActions.gpt_show_pattern_debug("foo")
+            app_notify.assert_not_called()
+
+        def test_insert_helpers_respect_in_flight_guard(self):
+            with patch.object(
+                gpt_module, "_reject_if_request_in_flight", return_value=True
+            ), patch.object(actions.user, "gpt_insert_response") as insert_resp:
+                gpt_module.UserActions.gpt_insert_text("hello")
+                gpt_module.UserActions.gpt_open_browser("hello")
+            insert_resp.assert_not_called()
+
+        def test_gpt_select_last_respects_in_flight_guard(self):
+            with patch.object(
+                gpt_module, "_reject_if_request_in_flight", return_value=True
+            ), patch.object(actions.edit, "extend_up") as extend_up, patch.object(
+                actions.edit, "extend_line_end"
+            ) as extend_line_end:
+                gpt_module.UserActions.gpt_select_last()
+            extend_up.assert_not_called()
+            extend_line_end.assert_not_called()
+
+        def test_source_and_prepare_helpers_respect_in_flight_guard(self):
+            source = MagicMock()
+            with patch.object(
+                gpt_module, "_reject_if_request_in_flight", return_value=True
+            ), patch.object(gpt_module, "PromptSession") as session_cls:
+                text = gpt_module.UserActions.gpt_get_source_text("clipboard")
+                session = gpt_module.UserActions.gpt_prepare_message(
+                    source, None, "prompt"
+                )
+            self.assertEqual(text, "")
+            session_cls.assert_called_once()
+            # When short-circuiting, prepare_prompt should not be invoked.
+            session_cls.return_value.prepare_prompt.assert_not_called()
+
+        def test_additional_user_context_respects_in_flight_guard(self):
+            with patch.object(
+                gpt_module, "_reject_if_request_in_flight", return_value=True
+            ):
+                ctx = gpt_module.UserActions.gpt_additional_user_context()
+            self.assertEqual(ctx, [])
+
+        def test_gpt_tools_and_call_tool_respect_in_flight_guard(self):
+            with patch.object(
+                gpt_module, "_reject_if_request_in_flight", return_value=True
+            ):
+                tools = gpt_module.UserActions.gpt_tools()
+                result = gpt_module.UserActions.gpt_call_tool("dummy", "{}")
+            self.assertEqual(tools, "[]")
+            self.assertEqual(result, "")
+
         def test_gpt_copy_last_raw_exchange_copies_when_available(self):
             GPTState.last_raw_request = {"foo": "bar"}
             GPTState.last_raw_response = {"baz": "qux"}
@@ -256,6 +497,15 @@ if bootstrap is not None:
                 ),
                 "Expected a user notification when no raw exchange is available",
             )
+
+        def test_gpt_copy_last_raw_exchange_respects_in_flight_guard(self):
+            clip.set_text("sentinel")
+
+            with patch.object(gpt_module, "_reject_if_request_in_flight", return_value=True):
+                gpt_module.UserActions.gpt_copy_last_raw_exchange()
+
+            # Clipboard should remain unchanged and no copy attempt made.
+            self.assertEqual(clip.text(), "sentinel")
 
         def test_persona_set_preset_updates_persona_axes(self) -> None:
             GPTState.reset_all()
@@ -331,7 +581,97 @@ if bootstrap is not None:
             self.assertTrue(persona_notifies, "Expected persona_status to notify")
             self.assertTrue(intent_notifies, "Expected intent_status to notify")
 
+        def test_persona_status_respects_in_flight_guard(self) -> None:
+            with patch.object(gpt_module, "_reject_if_request_in_flight", return_value=True):
+                with patch.object(gpt_module, "notify") as notify_mock:
+                    gpt_module.UserActions.persona_status()
+            notify_mock.assert_not_called()
+
+        def test_intent_status_respects_in_flight_guard(self) -> None:
+            with patch.object(gpt_module, "_reject_if_request_in_flight", return_value=True):
+                with patch.object(gpt_module, "notify") as notify_mock:
+                    gpt_module.UserActions.intent_status()
+            notify_mock.assert_not_called()
+
+        def test_gpt_help_respects_in_flight_guard(self) -> None:
+            with patch.object(
+                gpt_module, "_reject_if_request_in_flight", return_value=True
+            ), patch.object(gpt_module, "open", side_effect=AssertionError("should not open")):
+                gpt_module.UserActions.gpt_help()
+
+        def test_clear_context_respects_in_flight_guard(self):
+            with patch.object(
+                gpt_module, "_reject_if_request_in_flight", return_value=True
+            ), patch.object(gpt_module.GPTState, "clear_context") as clear_ctx:
+                gpt_module.UserActions.gpt_clear_context()
+            clear_ctx.assert_not_called()
+
+        def test_clear_stack_respects_in_flight_guard(self):
+            with patch.object(
+                gpt_module, "_reject_if_request_in_flight", return_value=True
+            ), patch.object(gpt_module.GPTState, "clear_stack") as clear_stack:
+                gpt_module.UserActions.gpt_clear_stack("a")
+            clear_stack.assert_not_called()
+
+        def test_clear_all_respects_in_flight_guard(self):
+            with patch.object(
+                gpt_module, "_reject_if_request_in_flight", return_value=True
+            ), patch.object(gpt_module.GPTState, "clear_all") as clear_all:
+                gpt_module.UserActions.gpt_clear_all()
+            clear_all.assert_not_called()
+
+        def test_persona_set_preset_respects_in_flight_guard(self) -> None:
+            with patch.object(gpt_module, "_reject_if_request_in_flight", return_value=True):
+                with patch.object(gpt_module, "notify") as notify_mock:
+                    gpt_module.UserActions.persona_set_preset("teach_junior_dev")
+            notify_mock.assert_not_called()
+
+        def test_intent_set_preset_respects_in_flight_guard(self) -> None:
+            with patch.object(gpt_module, "_reject_if_request_in_flight", return_value=True):
+                with patch.object(gpt_module, "notify") as notify_mock:
+                    gpt_module.UserActions.intent_set_preset("decide")
+            notify_mock.assert_not_called()
+
+        def test_persona_reset_respects_in_flight_guard(self) -> None:
+            GPTState.system_prompt = gpt_module.GPTSystemPrompt(
+                voice="as teacher", audience="to junior engineer", tone="kindly"
+            )
+            with patch.object(gpt_module, "_reject_if_request_in_flight", return_value=True):
+                with patch.object(gpt_module, "notify") as notify_mock:
+                    gpt_module.UserActions.persona_reset()
+            notify_mock.assert_not_called()
+            prompt = GPTState.system_prompt
+            self.assertEqual(prompt.voice, "as teacher")
+            self.assertEqual(prompt.audience, "to junior engineer")
+            self.assertEqual(prompt.tone, "kindly")
+
+        def test_intent_reset_respects_in_flight_guard(self) -> None:
+            GPTState.system_prompt = gpt_module.GPTSystemPrompt(purpose="for teaching")
+            with patch.object(gpt_module, "_reject_if_request_in_flight", return_value=True):
+                with patch.object(gpt_module, "notify") as notify_mock:
+                    gpt_module.UserActions.intent_reset()
+            notify_mock.assert_not_called()
+            self.assertEqual(GPTState.system_prompt.purpose, "for teaching")
+
+        def test_gpt_reset_system_prompt_respects_in_flight_guard(self) -> None:
+            GPTState.system_prompt = gpt_module.GPTSystemPrompt(
+                voice="as teacher", audience="to junior engineer", tone="kindly"
+            )
+            with patch.object(
+                gpt_module, "_reject_if_request_in_flight", return_value=True
+            ), patch.object(gpt_module, "_set_setting") as set_setting, patch.object(
+                gpt_module, "GPTSystemPrompt"
+            ) as prompt_cls:
+                gpt_module.UserActions.gpt_reset_system_prompt()
+            set_setting.assert_not_called()
+            prompt_cls.assert_not_called()
+            prompt = GPTState.system_prompt
+            self.assertEqual(prompt.voice, "as teacher")
+            self.assertEqual(prompt.audience, "to junior engineer")
+            self.assertEqual(prompt.tone, "kindly")
+
         def test_gpt_replay_non_blocking_calls_handle_async_with_block_false(self):
+            GPTState.last_directional = "fog"
             with patch.object(gpt_module, "PromptSession") as session_cls:
                 mock_session = session_cls.return_value
                 mock_session._destination = "paste"
@@ -351,6 +691,49 @@ if bootstrap is not None:
                 "async mode set to",
                 str(app_notify.call_args[0][0]),
             )
+
+        def test_gpt_set_async_blocking_respects_in_flight_guard(self):
+            gpt_module.settings.set("user.model_async_blocking", False)
+            with patch.object(
+                gpt_module, "_reject_if_request_in_flight", return_value=True
+            ), patch.object(gpt_module, "_set_setting") as set_setting, patch.object(
+                actions.app, "notify"
+            ) as app_notify:
+                gpt_module.UserActions.gpt_set_async_blocking(1)
+            set_setting.assert_not_called()
+            app_notify.assert_not_called()
+            self.assertFalse(gpt_module.settings.get("user.model_async_blocking"))
+
+        def test_default_setters_update_settings_and_flags(self):
+            gpt_module.settings.set("user.model_default_completeness", "")
+            gpt_module.settings.set("user.model_default_scope", "")
+            gpt_module.settings.set("user.model_default_method", "")
+            gpt_module.settings.set("user.model_default_form", "")
+            gpt_module.settings.set("user.model_default_channel", "")
+            GPTState.user_overrode_completeness = False
+            GPTState.user_overrode_scope = False
+            GPTState.user_overrode_method = False
+            GPTState.user_overrode_form = False
+            GPTState.user_overrode_channel = False
+
+            gpt_module.UserActions.gpt_set_default_completeness("full")
+            gpt_module.UserActions.gpt_set_default_scope("narrow")
+            gpt_module.UserActions.gpt_set_default_method("steps")
+            gpt_module.UserActions.gpt_set_default_form("bullets")
+            gpt_module.UserActions.gpt_set_default_channel("slack")
+
+            self.assertEqual(
+                gpt_module.settings.get("user.model_default_completeness"), "full"
+            )
+            self.assertEqual(gpt_module.settings.get("user.model_default_scope"), "narrow")
+            self.assertEqual(gpt_module.settings.get("user.model_default_method"), "steps")
+            self.assertEqual(gpt_module.settings.get("user.model_default_form"), "bullets")
+            self.assertEqual(gpt_module.settings.get("user.model_default_channel"), "slack")
+            self.assertTrue(GPTState.user_overrode_completeness)
+            self.assertTrue(GPTState.user_overrode_scope)
+            self.assertTrue(GPTState.user_overrode_method)
+            self.assertTrue(GPTState.user_overrode_form)
+            self.assertTrue(GPTState.user_overrode_channel)
 
         def test_gpt_run_prompt_returns_pipeline_text(self):
             source = MagicMock()
@@ -377,6 +760,88 @@ if bootstrap is not None:
 
             handle.wait.assert_called_once()
             self.assertEqual(text, "async run result")
+
+        def test_gpt_search_engine_respects_in_flight_guard(self):
+            source = MagicMock()
+            with patch.object(
+                gpt_module, "_reject_if_request_in_flight", return_value=True
+            ), patch.object(actions.user, "gpt_run_prompt") as run_prompt:
+                result = gpt_module.UserActions.gpt_search_engine("google", source)
+            self.assertEqual(result, "")
+            run_prompt.assert_not_called()
+
+        def test_default_resets_respect_in_flight_guard(self):
+            GPTState.user_overrode_completeness = True
+            GPTState.user_overrode_scope = True
+            GPTState.user_overrode_method = True
+            GPTState.user_overrode_form = True
+            GPTState.user_overrode_channel = True
+            with patch.object(
+                gpt_module, "_reject_if_request_in_flight", return_value=True
+            ), patch.object(gpt_module, "_set_setting") as set_setting:
+                gpt_module.UserActions.gpt_reset_default_completeness()
+                gpt_module.UserActions.gpt_reset_default_scope()
+                gpt_module.UserActions.gpt_reset_default_method()
+                gpt_module.UserActions.gpt_reset_default_form()
+                gpt_module.UserActions.gpt_reset_default_channel()
+            set_setting.assert_not_called()
+            self.assertTrue(GPTState.user_overrode_completeness)
+            self.assertTrue(GPTState.user_overrode_scope)
+            self.assertTrue(GPTState.user_overrode_method)
+            self.assertTrue(GPTState.user_overrode_form)
+            self.assertTrue(GPTState.user_overrode_channel)
+
+        def test_default_setters_respect_in_flight_guard(self):
+            gpt_module.settings.set("user.model_default_completeness", "")
+            gpt_module.settings.set("user.model_default_scope", "")
+            gpt_module.settings.set("user.model_default_method", "")
+            gpt_module.settings.set("user.model_default_form", "")
+            gpt_module.settings.set("user.model_default_channel", "")
+            with patch.object(
+                gpt_module, "_reject_if_request_in_flight", return_value=True
+            ), patch.object(gpt_module, "_set_setting") as set_setting:
+                gpt_module.UserActions.gpt_set_default_completeness("full")
+                gpt_module.UserActions.gpt_set_default_scope("narrow")
+                gpt_module.UserActions.gpt_set_default_method("steps")
+                gpt_module.UserActions.gpt_set_default_form("bullets")
+                gpt_module.UserActions.gpt_set_default_channel("slack")
+            set_setting.assert_not_called()
+            self.assertEqual(gpt_module.settings.get("user.model_default_completeness"), "")
+            self.assertEqual(gpt_module.settings.get("user.model_default_scope"), "")
+            self.assertEqual(gpt_module.settings.get("user.model_default_method"), "")
+            self.assertEqual(gpt_module.settings.get("user.model_default_form"), "")
+            self.assertEqual(gpt_module.settings.get("user.model_default_channel"), "")
+
+        def test_gpt_help_respects_in_flight_guard(self):
+            with patch.object(
+                gpt_module, "_reject_if_request_in_flight", return_value=True
+            ), patch.object(actions.app, "open") as app_open:
+                gpt_module.UserActions.gpt_help()
+            app_open.assert_not_called()
+
+        def test_default_resets_clear_flags(self):
+            GPTState.user_overrode_completeness = True
+            GPTState.user_overrode_scope = True
+            GPTState.user_overrode_method = True
+            GPTState.user_overrode_form = True
+            GPTState.user_overrode_channel = True
+            gpt_module.settings.set("user.model_default_completeness", "full")
+            gpt_module.settings.set("user.model_default_scope", "narrow")
+            gpt_module.settings.set("user.model_default_method", "steps")
+            gpt_module.settings.set("user.model_default_form", "bullets")
+            gpt_module.settings.set("user.model_default_channel", "slack")
+
+            gpt_module.UserActions.gpt_reset_default_completeness()
+            gpt_module.UserActions.gpt_reset_default_scope()
+            gpt_module.UserActions.gpt_reset_default_method()
+            gpt_module.UserActions.gpt_reset_default_form()
+            gpt_module.UserActions.gpt_reset_default_channel()
+
+            self.assertFalse(GPTState.user_overrode_completeness)
+            self.assertFalse(GPTState.user_overrode_scope)
+            self.assertFalse(GPTState.user_overrode_method)
+            self.assertFalse(GPTState.user_overrode_form)
+            self.assertFalse(GPTState.user_overrode_channel)
 
         def test_gpt_suggest_prompt_recipes_parses_suggestions(self):
             with (
@@ -750,6 +1215,29 @@ if bootstrap is not None:
             self.pipeline.complete_async.assert_not_called()
             self.pipeline.complete.assert_not_called()
 
+        def test_gpt_suggest_prompt_recipes_honors_in_flight_guard(self):
+            cached = [
+                {
+                    "name": "Previous",
+                    "recipe": "describe · full · relations · flow · plain · fog",
+                }
+            ]
+            GPTState.last_suggested_recipes = list(cached)
+            GPTState.last_suggest_source = "clipboard"
+
+            with (
+                patch.object(gpt_module, "_reject_if_request_in_flight", return_value=True),
+                patch.object(gpt_module, "create_model_source") as create_source,
+            ):
+                source = MagicMock()
+                create_source.return_value = source
+
+                gpt_module.UserActions.gpt_suggest_prompt_recipes("subject")
+
+            # Guard should prevent new request; cached suggestions remain.
+            self.assertEqual(GPTState.last_suggested_recipes, cached)
+            self.pipeline.complete_async.assert_not_called()
+
         def test_gpt_pass_uses_prompt_session(self):
             configuration = MagicMock(
                 model_source=MagicMock(),
@@ -780,6 +1268,32 @@ if bootstrap is not None:
                     configuration.model_destination,
                 )
 
+        def test_gpt_pass_honors_in_flight_guard(self):
+            configuration = MagicMock(
+                model_source=MagicMock(),
+                model_destination=MagicMock(),
+            )
+            configuration.model_source.format_messages.return_value = [
+                format_message("pass")
+            ]
+
+            with patch.object(
+                gpt_module, "_reject_if_request_in_flight", return_value=True
+            ):
+                gpt_module.UserActions.gpt_pass(configuration)
+
+            actions.user.gpt_insert_response.assert_not_called()
+            self.pipeline.run_async.assert_not_called()
+
+        def test_gpt_query_honors_in_flight_guard(self):
+            with patch.object(
+                gpt_module, "_reject_if_request_in_flight", return_value=True
+            ), patch.object(gpt_module, "send_request") as send_req:
+                result = gpt_module.gpt_query()
+
+            self.assertEqual(result, "")
+            send_req.assert_not_called()
+
         def test_thread_toggle_does_not_build_session(self):
             actions.user.confirmation_gui_refresh_thread = MagicMock()
             with patch.object(gpt_module, "PromptSession") as session_cls:
@@ -796,12 +1310,43 @@ if bootstrap is not None:
                 handle.result = result
 
                 with patch.object(gpt_module, "_handle_async_result") as handle_async:
+                    GPTState.last_directional = "fog"
                     gpt_module.UserActions.gpt_replay("thread")
 
             session_cls.assert_called_once()
             session.begin.assert_called_once_with(reuse_existing=True)
             self.pipeline.complete_async.assert_called_with(session)
             handle_async.assert_called_once_with(handle, "thread", block=False)
+
+        def test_thread_state_helpers_respect_in_flight_guard(self):
+            with patch.object(
+                gpt_module, "_reject_if_request_in_flight", return_value=True
+            ), patch.object(GPTState, "new_thread") as new_thread:
+                gpt_module.UserActions.gpt_clear_thread()
+            new_thread.assert_not_called()
+
+            with patch.object(
+                gpt_module, "_reject_if_request_in_flight", return_value=True
+            ), patch.object(GPTState, "enable_thread") as enable_thread, patch.object(
+                GPTState, "disable_thread"
+            ) as disable_thread:
+                gpt_module.UserActions.gpt_enable_threading()
+                gpt_module.UserActions.gpt_disable_threading()
+            enable_thread.assert_not_called()
+            disable_thread.assert_not_called()
+
+        def test_context_push_respects_in_flight_guard(self):
+            with patch.object(
+                gpt_module, "_reject_if_request_in_flight", return_value=True
+            ), patch.object(GPTState, "push_context") as push_ctx, patch.object(
+                GPTState, "push_query"
+            ) as push_query, patch.object(GPTState, "push_thread") as push_thread:
+                gpt_module.UserActions.gpt_push_context("ctx")
+                gpt_module.UserActions.gpt_push_query("q")
+                gpt_module.UserActions.gpt_push_thread("t")
+            push_ctx.assert_not_called()
+            push_query.assert_not_called()
+            push_thread.assert_not_called()
 
         def test_gpt_insert_response_has_type_annotations(self):
             sig = inspect.signature(gpt_module.UserActions.gpt_insert_response)
@@ -894,20 +1439,21 @@ if bootstrap is not None:
             GPTState.last_completeness = "hydrated"
             GPTState.last_scope = "hydrated scope"
             GPTState.last_method = "hydrated method"
-            GPTState.last_style = "hydrated style"
             GPTState.last_directional = "fog"
             GPTState.last_axes = {
                 "completeness": ["full"],
                 "scope": ["bound", "edges"],
                 "method": ["rigor"],
-                "style": ["plain"],
+                "form": ["bullets"],
+                "channel": ["slack"],
+                "directional": ["fog"],
             }
 
             with patch.object(actions.app, "notify") as app_notify:
                 gpt_module.UserActions.gpt_show_last_recipe()
 
             app_notify.assert_called_once_with(
-                "Last recipe: describe · full · bound edges · rigor · plain · fog"
+                "Last recipe: describe · full · bound edges · rigor · bullets · slack · fog"
             )
 
         def test_gpt_rerun_last_recipe_without_state_notifies_and_returns(self):
@@ -918,7 +1464,7 @@ if bootstrap is not None:
                 patch.object(actions.user, "gpt_apply_prompt") as apply_mock,
                 patch.object(gpt_module, "modelPrompt") as model_prompt,
             ):
-                gpt_module.UserActions.gpt_rerun_last_recipe("", "", "", "", "", "")
+                gpt_module.UserActions.gpt_rerun_last_recipe("", "", [], [], "", "", "")
 
                 notify_mock.assert_called_once()
                 apply_mock.assert_not_called()
@@ -932,8 +1478,17 @@ if bootstrap is not None:
             GPTState.last_completeness = "full"
             GPTState.last_scope = "relations"
             GPTState.last_method = "cluster"
-            GPTState.last_style = "bullets"
+            GPTState.last_form = "bullets"
+            GPTState.last_channel = "slack"
             GPTState.last_directional = "fog"
+            GPTState.last_axes = {
+                "completeness": ["full"],
+                "scope": ["relations"],
+                "method": ["cluster"],
+                "form": ["bullets"],
+                "channel": ["slack"],
+                "directional": ["fog"],
+            }
 
             with (
                 patch.object(
@@ -955,9 +1510,9 @@ if bootstrap is not None:
                 model_prompt.return_value = "PROMPT"
 
                 # Override static prompt, completeness, and directional; reuse
-                # last scope/method/style. No explicit subject.
+                # last scope/method/form/channel. No explicit subject.
                 gpt_module.UserActions.gpt_rerun_last_recipe(
-                    "todo", "gist", [], [], [], "rog"
+                    "todo", "gist", [], [], "rog", "", ""
                 )
 
                 # Axis mapping should be invoked for all non-empty axes.
@@ -965,7 +1520,6 @@ if bootstrap is not None:
                 self.assertIn("gist", axis_tokens)
                 self.assertIn("relations", axis_tokens)
                 self.assertIn("cluster", axis_tokens)
-                self.assertIn("bullets", axis_tokens)
                 self.assertIn("rog", axis_tokens)
 
                 # modelPrompt should receive a match object with merged axes.
@@ -975,7 +1529,8 @@ if bootstrap is not None:
                 self.assertEqual(match.completenessModifier, "gist")
                 self.assertEqual(match.scopeModifier, "relations")
                 self.assertEqual(match.methodModifier, "cluster")
-                self.assertEqual(match.styleModifier, "bullets")
+                self.assertEqual(match.formModifier, "bullets")
+                self.assertEqual(match.channelModifier, "slack")
                 self.assertEqual(match.directionalModifier, "rog")
 
                 # Execution should go through the normal apply_prompt path.
@@ -985,6 +1540,55 @@ if bootstrap is not None:
                 self.assertIs(config.model_source, source)
                 self.assertIs(config.model_destination, destination)
 
+        def test_gpt_rerun_last_recipe_honors_in_flight_guard(self):
+            GPTState.reset_all()
+            GPTState.last_recipe = "describe · full"
+            GPTState.last_static_prompt = "describe"
+            GPTState.last_completeness = "full"
+            GPTState.last_directional = "fog"
+            GPTState.last_axes = {
+                "completeness": ["full"],
+                "scope": [],
+                "method": [],
+                "form": [],
+                "channel": [],
+                "directional": ["fog"],
+            }
+
+            with patch.object(
+                gpt_module, "_reject_if_request_in_flight", return_value=True
+            ), patch.object(actions.user, "gpt_apply_prompt", MagicMock()) as apply_mock:
+                gpt_module.UserActions.gpt_rerun_last_recipe("", "", [], [], "fog", "", "")
+
+            self.assertFalse(apply_mock.called)
+
+        def test_gpt_rerun_last_recipe_with_source_honors_in_flight_guard(self):
+            GPTState.reset_all()
+            GPTState.last_recipe = "describe · full"
+            GPTState.last_static_prompt = "describe"
+            GPTState.last_completeness = "full"
+            GPTState.last_directional = "fog"
+            GPTState.last_axes = {
+                "completeness": ["full"],
+                "scope": [],
+                "method": [],
+                "form": [],
+                "channel": [],
+                "directional": ["fog"],
+            }
+
+            class DummySource:
+                modelSimpleSource = "clipboard"
+
+            with patch.object(
+                gpt_module, "_reject_if_request_in_flight", return_value=True
+            ), patch.object(actions.user, "gpt_apply_prompt", MagicMock()) as apply_mock:
+                gpt_module.UserActions.gpt_rerun_last_recipe_with_source(
+                    DummySource(), "", "", [], [], "fog", "", ""
+                )
+
+            self.assertFalse(apply_mock.called)
+
         def test_gpt_rerun_last_recipe_merges_multi_tag_axes_with_canonicalisation(
             self,
         ):
@@ -992,13 +1596,13 @@ if bootstrap is not None:
             GPTState.reset_all()
             # Simulate a previous multi-tag axis state.
             GPTState.last_recipe = (
-                "describe · full · narrow focus · cluster · jira story"
+                "describe · full · narrow focus · cluster · adr table"
             )
             GPTState.last_static_prompt = "describe"
             GPTState.last_completeness = "full"
             GPTState.last_scope = "narrow focus"
             GPTState.last_method = "cluster"
-            GPTState.last_style = "jira story"
+            GPTState.last_form = "adr table"
             GPTState.last_directional = "fog"
 
             with (
@@ -1020,14 +1624,15 @@ if bootstrap is not None:
                 create_destination.return_value = destination
                 model_prompt.return_value = "PROMPT-MULTI"
 
-                # Override scope and style with additional tokens; method left unchanged.
+                # Override scope and form with additional tokens; method left unchanged.
                 gpt_module.UserActions.gpt_rerun_last_recipe(
                     "todo",
                     "",  # completeness override (none)
                     ["bound"],  # new scope token to merge
                     [],  # method unchanged
-                    ["bullets"],  # additional style token to merge
                     "rog",  # new directional
+                    "bullets",  # additional form token to merge
+                    "",  # channel unchanged
                 )
 
                 # modelPrompt should receive a match with merged axis modifiers.
@@ -1046,11 +1651,8 @@ if bootstrap is not None:
                     self.assertIn(token, {"narrow", "focus", "bound"})
                 # Method unchanged.
                 self.assertEqual(match.methodModifier, "cluster")
-                # Style should merge "jira story" with "bullets" under the style cap.
-                self.assertIsInstance(match.styleModifier, str)
-                self.assertTrue(match.styleModifier)
-                for token in match.styleModifier.split():
-                    self.assertIn(token, {"jira", "story", "bullets"})
+                # Form should enforce singleton cap and use the latest token.
+                self.assertEqual(match.formModifier, "bullets")
                 self.assertEqual(match.directionalModifier, "rog")
 
                 # State should be updated using the canonical serialisation helpers.
@@ -1064,10 +1666,6 @@ if bootstrap is not None:
                     self.assertIn(token, {"narrow", "focus", "bound"})
 
                 self.assertEqual(GPTState.last_method, "cluster")
-
-                self.assertTrue(GPTState.last_style)
-                for token in GPTState.last_style.split():
-                    self.assertIn(token, {"jira", "story", "bullets"})
 
                 # Execution should still go through the normal apply_prompt path.
                 apply_prompt.assert_called_once()
@@ -1084,17 +1682,17 @@ if bootstrap is not None:
             GPTState.last_completeness = "hydrated-completeness"
             GPTState.last_scope = "hydrated-scope"
             GPTState.last_method = "hydrated-method"
-            GPTState.last_style = "hydrated-style"
             GPTState.last_axes = {
                 "completeness": ["full"],
                 "scope": ["bound", "edges"],
                 "method": ["rigor"],
-                "style": ["plain"],
+                "form": ["bullets"],
+                "channel": ["slack"],
+                "directional": ["fog"],
             }
             # Inject some hydrated/unknown tokens to ensure they are dropped.
             GPTState.last_axes["scope"].append("Hydrated scope")
             GPTState.last_axes["method"].append("Unknown method")
-            GPTState.last_axes["style"].append("Fancy hydrated style")
 
             with (
                 patch.object(
@@ -1115,37 +1713,26 @@ if bootstrap is not None:
                 create_destination.return_value = destination
                 model_prompt.return_value = "PROMPT"
 
-                gpt_module.UserActions.gpt_rerun_last_recipe("", "", [], [], [], "rog")
+                gpt_module.UserActions.gpt_rerun_last_recipe("", "", [], [], "rog", "", "")
 
-                mapped_tokens = [call.args[0] for call in axis_value.call_args_list]
-                self.assertIn("full", mapped_tokens)
-                self.assertIn("bound edges", mapped_tokens)
-                self.assertIn("rigor", mapped_tokens)
-                self.assertIn("plain", mapped_tokens)
+            mapped_tokens = [call.args[0] for call in axis_value.call_args_list]
+            self.assertIn("full", mapped_tokens)
+            self.assertIn("bound edges", mapped_tokens)
+            self.assertIn("rigor", mapped_tokens)
+            self.assertIn("rog", mapped_tokens)
 
-                match = model_prompt.call_args.args[0]
-                self.assertEqual(match.staticPrompt, "infer")
-                self.assertEqual(match.completenessModifier, "full")
-                self.assertEqual(match.scopeModifier, "bound edges")
-                self.assertEqual(match.methodModifier, "rigor")
-                self.assertEqual(match.styleModifier, "plain")
+            match = model_prompt.call_args.args[0]
+            self.assertEqual(match.staticPrompt, "infer")
+            self.assertEqual(match.completenessModifier, "full")
+            self.assertEqual(match.scopeModifier, "bound edges")
+            self.assertEqual(match.methodModifier, "rigor")
+            self.assertEqual(match.formModifier, "bullets")
+            self.assertEqual(match.channelModifier, "slack")
 
-                self.assertEqual(
-                    GPTState.last_recipe, "infer · full · bound edges · rigor · plain"
-                )
-                self.assertEqual(GPTState.last_completeness, "full")
-                self.assertEqual(GPTState.last_scope, "bound edges")
-                self.assertEqual(GPTState.last_method, "rigor")
-                self.assertEqual(GPTState.last_style, "plain")
-                self.assertEqual(
-                    GPTState.last_axes,
-                    {
-                        "completeness": ["full"],
-                        "scope": ["bound", "edges"],
-                        "method": ["rigor"],
-                        "style": ["plain"],
-                    },
-                )
+            self.assertEqual(
+                GPTState.last_recipe,
+                "infer · full · bound edges · rigor · bullets · slack · rog",
+            )
 
         def test_history_then_rerun_keeps_last_axes_token_only(self):
             """End-to-end guardrail: history ingest + rerun keeps axes token-only."""
@@ -1155,7 +1742,7 @@ if bootstrap is not None:
                 "completeness": ["full", "Hydrated completeness"],
                 "scope": ["bound", "Invalid scope"],
                 "method": ["rigor", "Unknown method"],
-                "style": ["plain", "Fancy hydrated style"],
+                "form": ["adr", "Hydrated form"],
             }
             append_entry(
                 "rid-axes",
@@ -1173,7 +1760,8 @@ if bootstrap is not None:
                     "completeness": ["full"],
                     "scope": ["bound"],
                     "method": ["rigor"],
-                    "style": ["plain"],
+                    "form": ["adr"],
+                    "channel": [],
                     "directional": [],
                 },
             )
@@ -1197,21 +1785,23 @@ if bootstrap is not None:
                 create_destination.return_value = destination
                 model_prompt.return_value = "PROMPT"
 
-                gpt_module.UserActions.gpt_rerun_last_recipe("", "", [], [], [], "rog")
+                gpt_module.UserActions.gpt_rerun_last_recipe("", "", [], [], "rog", "", "")
 
-                mapped_tokens = [call.args[0] for call in axis_value.call_args_list]
-                self.assertTrue(
-                    {"full", "bound", "rigor", "plain"}.issubset(set(mapped_tokens))
-                )
-                self.assertEqual(
-                    GPTState.last_axes,
-                    {
-                        "completeness": ["full"],
-                        "scope": ["bound"],
-                        "method": ["rigor"],
-                        "style": ["plain"],
-                    },
-                )
+            mapped_tokens = [call.args[0] for call in axis_value.call_args_list]
+            self.assertTrue(
+                {"full", "bound", "rigor", "rog"}.issubset(set(mapped_tokens))
+            )
+            self.assertEqual(
+                GPTState.last_axes,
+                {
+                    "completeness": ["full"],
+                    "scope": ["bound"],
+                    "method": ["rigor"],
+                    "form": ["adr"],
+                    "channel": [],
+                    "directional": ["rog"],
+                },
+            )
 
         def test_rerun_override_method_multi_tokens_preserved(self):
             """Overriding method with multiple tokens should preserve all known tokens."""
@@ -1221,12 +1811,13 @@ if bootstrap is not None:
             GPTState.last_completeness = "full"
             GPTState.last_scope = "bound"
             GPTState.last_method = "xp"
-            GPTState.last_style = "plain"
             GPTState.last_axes = {
                 "completeness": ["full"],
                 "scope": ["bound"],
                 "method": ["xp"],
-                "style": ["plain"],
+                "form": ["code"],
+                "channel": ["slack"],
+                "directional": ["jog"],
             }
 
             with (
@@ -1253,25 +1844,119 @@ if bootstrap is not None:
                     "",
                     [],
                     ["xp", "rigor"],
-                    [],
+                    "",
                     "",
                 )
 
                 mapped_tokens = [call.args[0] for call in axis_value.call_args_list]
                 self.assertIn("rigor xp", mapped_tokens)
+                self.assertIn("jog", mapped_tokens)
 
-                match = model_prompt.call_args.args[0]
-                self.assertEqual(match.methodModifier, "rigor xp")
+            match = model_prompt.call_args.args[0]
+            self.assertEqual(match.methodModifier, "rigor xp")
+            self.assertEqual(match.formModifier, "code")
+            self.assertEqual(match.channelModifier, "slack")
 
-                self.assertEqual(
-                    GPTState.last_axes,
-                    {
-                        "completeness": ["full"],
-                        "scope": ["bound"],
-                        "method": ["rigor", "xp"],
-                        "style": ["plain"],
-                    },
+            self.assertEqual(
+                GPTState.last_axes,
+                {
+                    "completeness": ["full"],
+                    "scope": ["bound"],
+                    "method": ["rigor", "xp"],
+                    "form": ["code"],
+                    "channel": ["slack"],
+                    "directional": ["jog"],
+                },
+            )
+
+        def test_rerun_requires_directional(self):
+            """Guardrail: rerun should refuse when no directional is available."""
+            GPTState.reset_all()
+            GPTState.last_recipe = "infer · full · bound · rigor · plain"
+            GPTState.last_static_prompt = "infer"
+            GPTState.last_completeness = "full"
+            GPTState.last_scope = "bound"
+            GPTState.last_method = "rigor"
+            GPTState.last_form = "plain"
+            GPTState.last_channel = "slack"
+            GPTState.last_directional = ""
+            GPTState.last_axes = {
+                "completeness": ["full"],
+                "scope": ["bound"],
+                "method": ["rigor"],
+                "form": ["plain"],
+                "channel": ["slack"],
+                "directional": [],
+            }
+
+            with patch.object(gpt_module, "modelPrompt") as model_prompt, patch.object(
+                gpt_module.actions.user, "gpt_apply_prompt"
+            ) as apply_prompt, patch.object(
+                gpt_module.actions.user, "notify"
+            ) as user_notify:
+                gpt_module.UserActions.gpt_rerun_last_recipe("", "", [], [], "", "", "")
+
+            model_prompt.assert_not_called()
+            apply_prompt.assert_not_called()
+            self.assertTrue(
+                any("directional" in str(call.args[0]).lower() for call in user_notify.call_args_list)
+            )
+
+        def test_gpt_rerun_last_recipe_filters_unknown_directional(self):
+            """Directional overrides should be validated and capped to one token."""
+            GPTState.reset_all()
+            GPTState.last_recipe = "infer · full · bound · rigor · plain · fog"
+            GPTState.last_static_prompt = "infer"
+            GPTState.last_completeness = "full"
+            GPTState.last_scope = "bound"
+            GPTState.last_method = "rigor"
+            GPTState.last_form = "plain"
+            GPTState.last_channel = "slack"
+            GPTState.last_directional = "fog"
+            GPTState.last_axes = {
+                "completeness": ["full"],
+                "scope": ["bound"],
+                "method": ["rigor"],
+                "form": ["plain"],
+                "channel": ["slack"],
+                "directional": ["fog"],
+            }
+
+            with (
+                patch.object(
+                    gpt_module,
+                    "_axis_value_from_token",
+                    side_effect=lambda token, mapping: token,
+                ) as axis_value,
+                patch.object(gpt_module, "modelPrompt") as model_prompt,
+                patch.object(gpt_module, "create_model_source") as create_source,
+                patch.object(
+                    gpt_module, "create_model_destination"
+                ) as create_destination,
+                patch.object(actions.user, "gpt_apply_prompt") as apply_prompt,
+            ):
+                source = MagicMock()
+                destination = MagicMock()
+                create_source.return_value = source
+                create_destination.return_value = destination
+                model_prompt.return_value = "PROMPT"
+
+                gpt_module.UserActions.gpt_rerun_last_recipe(
+                    "",
+                    "",
+                    [],
+                    [],
+                    "invalid-directional",
+                    "",
+                    "",
                 )
+
+            mapped_tokens = [call.args[0] for call in axis_value.call_args_list]
+            self.assertIn("fog", mapped_tokens)
+            self.assertNotIn("invalid-directional", mapped_tokens)
+            match = model_prompt.call_args.args[0]
+            self.assertEqual(match.directionalModifier, "fog")
+            self.assertEqual(GPTState.last_axes.get("directional"), ["fog"])
 
         def test_gpt_rerun_last_recipe_filters_unknown_override_tokens(self):
             """Overrides containing unknown/hydrated tokens should be dropped, preserving known tokens."""
@@ -1281,12 +1966,13 @@ if bootstrap is not None:
             GPTState.last_completeness = "full"
             GPTState.last_scope = "bound"
             GPTState.last_method = "rigor"
-            GPTState.last_style = "plain"
             GPTState.last_axes = {
                 "completeness": ["full"],
                 "scope": ["bound"],
                 "method": ["rigor"],
-                "style": ["plain"],
+                "form": ["adr"],
+                "channel": ["slack"],
+                "directional": ["fog"],
             }
 
             with (
@@ -1313,8 +1999,9 @@ if bootstrap is not None:
                     "full",  # valid completeness
                     ["bound", "invalid-scope"],  # one valid, one invalid
                     ["rigor", "hydrated-method"],  # one valid, one invalid
-                    ["plain", "UnknownStyle"],  # one valid, one invalid
-                    "",
+                    "fig",
+                    "bullets",
+                    "html",
                 )
 
                 # Only known tokens should be mapped.
@@ -1322,7 +2009,7 @@ if bootstrap is not None:
                 self.assertIn("full", mapped_tokens)
                 self.assertIn("bound", mapped_tokens)
                 self.assertIn("rigor", mapped_tokens)
-                self.assertIn("plain", mapped_tokens)
+                self.assertIn("fig", mapped_tokens)
                 self.assertNotIn("invalid-scope", mapped_tokens)
                 self.assertNotIn("hydrated-method", mapped_tokens)
                 self.assertNotIn("UnknownStyle", mapped_tokens)
@@ -1330,17 +2017,20 @@ if bootstrap is not None:
                 match = model_prompt.call_args.args[0]
                 self.assertEqual(match.scopeModifier, "bound")
                 self.assertEqual(match.methodModifier, "rigor")
-                self.assertEqual(match.styleModifier, "plain")
+            self.assertEqual(match.formModifier, "bullets")
+            self.assertEqual(match.channelModifier, "html")
 
-                self.assertEqual(
-                    GPTState.last_axes,
-                    {
-                        "completeness": ["full"],
-                        "scope": ["bound"],
-                        "method": ["rigor"],
-                        "style": ["plain"],
-                    },
-                )
+            self.assertEqual(
+                GPTState.last_axes,
+                {
+                    "completeness": ["full"],
+                    "scope": ["bound"],
+                    "method": ["rigor"],
+                    "form": ["bullets"],
+                    "channel": ["html"],
+                    "directional": ["fig"],
+                },
+            )
 
         def test_gpt_apply_prompt_refuses_when_request_in_flight(self):
             """A new request should be rejected if one is already running."""
@@ -1403,6 +2093,7 @@ if bootstrap is not None:
             """Replays should be rejected if one is already running."""
             running_state = MagicMock()
             running_state.phase = RequestPhase.SENDING
+            GPTState.last_directional = "fog"
 
             with (
                 patch.object(gpt_module, "current_state", return_value=running_state),
@@ -1438,13 +2129,13 @@ if bootstrap is not None:
         ):
             """Rerun should surface a hint when axis tokens are dropped."""
             GPTState.reset_all()
-            # Seed a last recipe that includes incompatible style tokens.
-            GPTState.last_recipe = "describe · full · narrow · steps · jira adr"
+            # Seed a last recipe that includes excess form tokens (cap 1).
+            GPTState.last_recipe = "describe · full · narrow · steps · adr table"
             GPTState.last_static_prompt = "describe"
             GPTState.last_completeness = "full"
             GPTState.last_scope = "narrow"
             GPTState.last_method = "steps"
-            GPTState.last_style = "jira adr"
+            GPTState.last_form = "adr table"
             GPTState.last_directional = "fog"
 
             with (
@@ -1467,14 +2158,13 @@ if bootstrap is not None:
                 create_destination.return_value = destination
                 model_prompt.return_value = "PROMPT-CONFLICT"
 
-                # No overrides; rerun should apply incompatibility rules to
-                # the existing style axis and surface a hint.
+                # No overrides; rerun should apply caps to form/channel and surface a hint.
                 gpt_module.UserActions.gpt_rerun_last_recipe("", "", "", "", "", "rog")
 
                 notify_mock.assert_called()
                 message = notify_mock.call_args.args[0]
                 self.assertIn("Axes normalised", message)
-                self.assertIn("style=jira adr", message)
+                self.assertIn("form=", message)
 else:
     if not TYPE_CHECKING:
 

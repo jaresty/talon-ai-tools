@@ -28,7 +28,8 @@ if bootstrap is not None:
                 settings.set("user.model_default_completeness", "full")
                 settings.set("user.model_default_scope", "")
                 settings.set("user.model_default_method", "")
-                settings.set("user.model_default_style", "")
+                settings.set("user.model_default_form", "")
+                settings.set("user.model_default_channel", "")
 
         def test_no_modifiers_uses_static_prompt_profile_when_present(self):
             m = SimpleNamespace(
@@ -68,13 +69,14 @@ if bootstrap is not None:
             self.assertIn("Completeness: COMP", result)
             self.assertEqual(GPTState.system_prompt.directional, "DIR")
 
-        def test_scope_method_style_modifiers_appended_in_order(self):
+        def test_scope_method_form_channel_modifiers_appended_in_order(self):
             m = SimpleNamespace(
                 staticPrompt="fix",
                 completenessModifier="COMP",
                 scopeModifier="SCOPE",
                 methodModifier="METHOD",
-                styleModifier="STYLE",
+                formModifier="FORM",
+                channelModifier="CHAN",
                 directionalModifier="DIR",
             )
 
@@ -86,7 +88,8 @@ if bootstrap is not None:
             self.assertIn("Completeness: COMP", result)
             self.assertIn("Scope: SCOPE", result)
             self.assertIn("Method: METHOD", result)
-            self.assertIn("Style: STYLE", result)
+            self.assertIn("Form: FORM", result)
+            self.assertIn("Channel: CHAN", result)
             self.assertEqual(GPTState.system_prompt.directional, "DIR")
 
         def test_constraint_block_hydrates_axis_tokens(self):
@@ -96,7 +99,8 @@ if bootstrap is not None:
                 completenessModifier="skim",
                 scopeModifier="relations",
                 methodModifier="steps",
-                styleModifier="bullets",
+                formModifier="bullets",
+                channelModifier="jira",
                 directionalModifier="DIR",
             )
 
@@ -109,18 +113,20 @@ if bootstrap is not None:
                 "relations", "relations"
             )
             method_desc = axis_key_to_value_map_for("method").get("steps", "steps")
-            style_desc = axis_key_to_value_map_for("style").get("bullets", "bullets")
+            form_desc = axis_key_to_value_map_for("form").get("bullets", "bullets")
+            channel_desc = axis_key_to_value_map_for("channel").get("jira", "jira")
 
             self.assertIn(f"Completeness: {completeness_desc}", result)
             self.assertIn(f"Scope: {scope_desc}", result)
             self.assertIn(f"Method: {method_desc}", result)
-            self.assertIn(f"Style: {style_desc}", result)
+            self.assertIn(f"Form: {form_desc}", result)
+            self.assertIn(f"Channel: {channel_desc}", result)
 
-        def test_missing_scope_method_style_do_not_add_text(self):
+        def test_missing_scope_method_form_channel_do_not_add_text(self):
             m = SimpleNamespace(
                 staticPrompt="fix",
                 completenessModifier="COMP",
-                # scope/method/style omitted on purpose; profiles may add hints,
+                # scope/method/form/channel omitted on purpose; profiles may add hints,
                 # but we should not see the test sentinel tokens.
                 directionalModifier="DIR",
             )
@@ -129,10 +135,11 @@ if bootstrap is not None:
 
             self.assertIn("Task:", result)
             self.assertIn("Completeness: COMP", result)
-            # No literal sentinel tokens should appear for scope/method/style.
+            # No literal sentinel tokens should appear for scope/method/form/channel.
             self.assertNotIn("SCOPE", result)
             self.assertNotIn("METHOD", result)
-            self.assertNotIn("STYLE", result)
+            self.assertNotIn("FORM", result)
+            self.assertNotIn("CHAN", result)
             self.assertEqual(GPTState.system_prompt.directional, "DIR")
 
         def test_model_prompt_updates_system_prompt_axes(self):
@@ -140,7 +147,8 @@ if bootstrap is not None:
             settings.set("user.model_default_completeness", "full")
             settings.set("user.model_default_scope", "")
             settings.set("user.model_default_method", "")
-            settings.set("user.model_default_style", "")
+            settings.set("user.model_default_form", "")
+            settings.set("user.model_default_channel", "")
             GPTState.reset_all()
 
             # Spoken modifiers should win over profiles and defaults.
@@ -149,7 +157,8 @@ if bootstrap is not None:
                 completenessModifier="skim",
                 scopeModifier="narrow",
                 methodModifier="steps",
-                styleModifier="plain",
+                formModifier="adr",
+                channelModifier="announce",
                 directionalModifier="DIR",
             )
 
@@ -158,12 +167,13 @@ if bootstrap is not None:
             self.assertEqual(GPTState.system_prompt.completeness, "skim")
             self.assertEqual(GPTState.system_prompt.scope, "narrow")
             self.assertEqual(GPTState.system_prompt.method, "steps")
-            self.assertEqual(GPTState.system_prompt.style, "plain")
+            self.assertEqual(GPTState.system_prompt.form, "adr")
+            self.assertEqual(GPTState.system_prompt.channel, "announce")
 
         def test_model_prompt_uses_profiles_for_system_axes_when_unset(self):
             # Defaults are present but profile should shape the effective axes
             # when no spoken modifier is given.
-            # "todo" has a profile for completeness/method/style/scope.
+            # "todo" has a profile for completeness/method/scope.
             m = SimpleNamespace(
                 staticPrompt="todo",
                 directionalModifier="DIR",
@@ -174,7 +184,9 @@ if bootstrap is not None:
             self.assertEqual(GPTState.system_prompt.completeness, "gist")
             self.assertEqual(GPTState.system_prompt.scope, "actions")
             self.assertEqual(GPTState.system_prompt.method, "steps")
-            self.assertEqual(GPTState.system_prompt.style, "checklist")
+            # Form/channel fall back to profile/defaults; todo supplies a form bias.
+            self.assertEqual(GPTState.system_prompt.form, "checklist")
+            self.assertEqual(GPTState.system_prompt.channel, "")
 
         def test_directional_moves_to_system_prompt_and_hydrates(self):
             m = SimpleNamespace(
@@ -205,57 +217,58 @@ if bootstrap is not None:
             m = SimpleNamespace(
                 staticPrompt="fix",
                 # Intentionally mis-placed axis token with explicit prefix.
-                styleModifier="Completeness:skim",
+                formModifier="Completeness:skim",
                 directionalModifier="DIR",
             )
 
             result = modelPrompt(m)
 
-            # Completeness should capture the prefixed token; style should stay empty.
+            # Completeness should capture the prefixed token; form should stay empty.
             self.assertEqual(GPTState.system_prompt.completeness, "skim")
-            self.assertEqual(GPTState.system_prompt.style, "")
+            self.assertEqual(GPTState.system_prompt.form, "")
             self.assertIn("Completeness:", result)
-            self.assertNotIn("Style:", result.split("Constraints:", 1)[-1])
+            self.assertNotIn("Form:", result.split("Constraints:", 1)[-1])
 
         def test_axis_map_recovers_method_token_from_wrong_axis(self):
             m = SimpleNamespace(
                 staticPrompt="fix",
-                # "steps" belongs to method; provide it under style to test reassignment.
-                styleModifier="steps",
+                # "steps" belongs to method; provide it under form to test reassignment.
+                formModifier="steps",
                 directionalModifier="DIR",
             )
 
             _ = modelPrompt(m)
 
-            # The method axis should capture the token; style should remain empty.
+            # The method axis should capture the token; form should remain empty.
             self.assertEqual(GPTState.system_prompt.method, "steps")
-            self.assertEqual(GPTState.system_prompt.style, "")
+            self.assertEqual(GPTState.system_prompt.form, "")
 
         def test_last_recipe_uses_resolved_axes(self):
             settings.set("user.model_default_scope", "")
             settings.set("user.model_default_method", "")
-            settings.set("user.model_default_style", "")
+            settings.set("user.model_default_form", "")
+            settings.set("user.model_default_channel", "")
             GPTState.reset_all()
 
             m = SimpleNamespace(
                 staticPrompt="infer",
                 completenessModifier="full",
-                # Misfile a method token under style.
-                styleModifier="steps",
+                # Misfile a method token under form.
+                formModifier="steps",
                 directionalModifier="DIR",
             )
 
             _ = modelPrompt(m)
 
-            # Method absorbs the token; style remains empty; recipe reflects resolved axes.
+            # Method absorbs the token; form remains empty; recipe reflects resolved axes.
             self.assertEqual(GPTState.system_prompt.method, "steps")
-            self.assertEqual(GPTState.system_prompt.style, "")
+            self.assertEqual(GPTState.system_prompt.form, "")
             self.assertEqual(GPTState.last_recipe, "infer · full · steps")
 
         def test_profile_axes_are_propagated_to_system_prompt(self) -> None:
             """Guardrail: profile axes should be reflected in GPTState.last_axes.
 
-            For every profiled static prompt that defines scope/method/style axes,
+            For every profiled static prompt that defines scope/method axes,
             calling modelPrompt with only that staticPrompt (and a directional
             lens) should populate GPTState.last_axes with those axis tokens,
             subject to the usual axisConfig filtering and hierarchy rules.
@@ -268,9 +281,7 @@ if bootstrap is not None:
                 # Skip prompts with no profile axes.
                 if not axes:
                     continue
-                has_profile_axes = any(
-                    axis in axes for axis in ("scope", "method", "style")
-                )
+                has_profile_axes = any(axis in axes for axis in ("scope", "method"))
                 if not has_profile_axes:
                     continue
 
@@ -281,7 +292,7 @@ if bootstrap is not None:
 
                     last_axes = GPTState.last_axes
 
-                    for axis in ("scope", "method", "style"):
+                    for axis in ("scope", "method"):
                         configured = axes.get(axis)
                         if not configured:
                             continue
@@ -319,7 +330,6 @@ if bootstrap is not None:
                     completenessModifier="full",
                     scopeModifier="ambig",
                     methodModifier="",
-                    styleModifier="plain",
                     directionalModifier="DIR",
                 )
 
@@ -346,7 +356,8 @@ if bootstrap is not None:
                 completenessModifier="skim",
                 scopeModifier="narrow",
                 methodModifier="steps",
-                styleModifier="plain",
+                formModifier="plain",
+                channelModifier="slack",
                 directionalModifier="DIR",
             )
 
@@ -364,7 +375,8 @@ if bootstrap is not None:
             self.assertEqual(GPTState.last_completeness, "")
             self.assertEqual(GPTState.last_scope, "")
             self.assertEqual(GPTState.last_method, "")
-            self.assertEqual(GPTState.last_style, "")
+            self.assertEqual(GPTState.last_form, "")
+            self.assertEqual(GPTState.last_channel, "")
 
         def test_model_prompt_updates_last_recipe_with_spoken_modifiers(self):
             # Spoken modifiers should be reflected in the last_recipe summary.
@@ -373,7 +385,8 @@ if bootstrap is not None:
                 completenessModifier="skim",
                 scopeModifier="narrow",
                 methodModifier="steps",
-                styleModifier="plain",
+                formModifier="adr",
+                channelModifier="slack",
                 directionalModifier="DIR",
             )
 
@@ -381,13 +394,14 @@ if bootstrap is not None:
 
             self.assertEqual(
                 GPTState.last_recipe,
-                "fix · skim · narrow · steps · plain",
+                "fix · skim · narrow · steps · adr · slack",
             )
             self.assertEqual(GPTState.last_static_prompt, "fix")
             self.assertEqual(GPTState.last_completeness, "skim")
             self.assertEqual(GPTState.last_scope, "narrow")
             self.assertEqual(GPTState.last_method, "steps")
-            self.assertEqual(GPTState.last_style, "plain")
+            self.assertEqual(GPTState.last_form, "adr")
+            self.assertEqual(GPTState.last_channel, "slack")
             # Directional is stored as the short token when known; in this test
             # we use a sentinel "DIR" that is not in the Talon list, so it
             # should be preserved as-is.
@@ -399,7 +413,6 @@ if bootstrap is not None:
             settings.set("user.model_default_completeness", "full")
             settings.set("user.model_default_scope", "")
             settings.set("user.model_default_method", "")
-            settings.set("user.model_default_style", "")
             GPTState.reset_all()
 
             # Simulate a Talon match object that exposes multiple scope
@@ -409,7 +422,8 @@ if bootstrap is not None:
                 completenessModifier="skim",
                 scopeModifier_list=["narrow", "focus"],
                 methodModifier="steps",
-                styleModifier="plain",
+                formModifier="adr",
+                channelModifier="slack",
                 directionalModifier="DIR",
             )
 
@@ -419,7 +433,8 @@ if bootstrap is not None:
             self.assertEqual(GPTState.system_prompt.completeness, "skim")
             self.assertEqual(GPTState.system_prompt.scope, "narrow focus")
             self.assertEqual(GPTState.system_prompt.method, "steps")
-            self.assertEqual(GPTState.system_prompt.style, "plain")
+            self.assertEqual(GPTState.system_prompt.form, "adr")
+            self.assertEqual(GPTState.system_prompt.channel, "slack")
 
             # last_scope should reflect a canonicalised set of scope tokens.
             self.assertNotEqual(GPTState.last_scope, "")
@@ -439,7 +454,6 @@ if bootstrap is not None:
             settings.set("user.model_default_completeness", "full")
             settings.set("user.model_default_scope", "")
             settings.set("user.model_default_method", "")
-            settings.set("user.model_default_style", "")
             GPTState.reset_all()
 
             # Provide three distinct scope modifiers even though the soft cap
@@ -449,7 +463,8 @@ if bootstrap is not None:
                 completenessModifier="skim",
                 scopeModifier_list=["narrow", "focus", "bound"],
                 methodModifier="steps",
-                styleModifier="plain",
+                formModifier="adr",
+                channelModifier="slack",
                 directionalModifier="DIR",
             )
 
@@ -465,7 +480,7 @@ if bootstrap is not None:
 
             # last_recipe should reflect the capped, canonicalised scope tokens.
             recipe_parts = [p.strip() for p in GPTState.last_recipe.split("·")]
-            # static, completeness, scope, method, style
+            # static, completeness, scope, method, form, channel
             scope_part = recipe_parts[2]
             scope_part_tokens = scope_part.split()
             self.assertLessEqual(len(scope_part_tokens), 2)
@@ -478,7 +493,6 @@ if bootstrap is not None:
             settings.set("user.model_default_completeness", "full")
             settings.set("user.model_default_scope", "")
             settings.set("user.model_default_method", "")
-            settings.set("user.model_default_style", "")
             GPTState.reset_all()
 
             m = SimpleNamespace(
@@ -486,7 +500,8 @@ if bootstrap is not None:
                 completenessModifier="skim",
                 scopeModifier="narrow",
                 methodModifier_list=["structure", "flow"],
-                styleModifier="plain",
+                formModifier="adr",
+                channelModifier="slack",
                 directionalModifier="DIR",
             )
 
@@ -498,16 +513,27 @@ if bootstrap is not None:
             self.assertEqual(set(method_tokens), {"structure", "flow"})
 
             recipe_parts = [p.strip() for p in GPTState.last_recipe.split("·")]
-            # static, completeness, scope, method, style
+            # static, completeness, scope, method, form, channel
             method_part = recipe_parts[3]
             self.assertEqual(set(method_part.split()), {"structure", "flow"})
 
-        def test_model_prompt_handles_multi_tag_style_from_list(self):
-            """Multi-tag style from styleModifier_list should be preserved and canonicalised."""
+        def test_model_prompt_rejects_legacy_style_modifier(self):
+            """Guardrail: legacy styleModifier should fail fast post form/channel split."""
+            m = SimpleNamespace(
+                staticPrompt="fix",
+                styleModifier="plain",
+                directionalModifier="DIR",
+            )
+
+            with self.assertRaises(ValueError) as ctx:
+                modelPrompt(m)
+            self.assertIn("use form/channel instead", str(ctx.exception))
+
+        def test_model_prompt_handles_multi_tag_form_from_list(self):
+            """Form list should respect singleton cap and keep the most recent token."""
             settings.set("user.model_default_completeness", "full")
             settings.set("user.model_default_scope", "")
             settings.set("user.model_default_method", "")
-            settings.set("user.model_default_style", "")
             GPTState.reset_all()
 
             m = SimpleNamespace(
@@ -515,60 +541,47 @@ if bootstrap is not None:
                 completenessModifier="full",
                 scopeModifier="actions",
                 methodModifier="structure",
-                styleModifier_list=["jira", "faq"],
+                formModifier_list=["adr", "table"],
+                channelModifier="slack",
                 directionalModifier="fog",
             )
 
             _ = modelPrompt(m)
 
-            self.assertEqual(GPTState.system_prompt.style, "jira faq")
-            self.assertNotEqual(GPTState.last_style, "")
-            style_tokens = GPTState.last_style.split()
-            self.assertEqual(set(style_tokens), {"jira", "faq"})
+            # Form/channel should be singletons; last token wins for form list inputs.
+            self.assertEqual(GPTState.system_prompt.form, "table")
+            self.assertEqual(GPTState.last_form, "table")
+            self.assertEqual(GPTState.last_channel, "slack")
 
             recipe_parts = [p.strip() for p in GPTState.last_recipe.split("·")]
-            style_part = recipe_parts[4]
-            self.assertEqual(set(style_part.split()), {"jira", "faq"})
+            form_part = recipe_parts[4]
+            channel_part = recipe_parts[5]
+            self.assertEqual(form_part, "table")
+            self.assertEqual(channel_part, "slack")
 
-        def test_model_prompt_enforces_style_soft_cap_from_list(self):
-            """Over-cap multi-tag style from styleModifier_list should respect the soft cap."""
+        def test_model_prompt_enforces_channel_soft_cap_from_list(self):
+            """Channel list should respect singleton cap and keep the most recent token."""
             settings.set("user.model_default_completeness", "full")
             settings.set("user.model_default_scope", "")
             settings.set("user.model_default_method", "")
-            settings.set("user.model_default_style", "")
             GPTState.reset_all()
 
-            # Provide four distinct style modifiers even though the soft cap
-            # for style is 3; the canonicaliser should enforce the cap.
             m = SimpleNamespace(
                 staticPrompt="ticket",
                 completenessModifier="full",
                 scopeModifier="actions",
                 methodModifier="structure",
-                styleModifier_list=["jira", "story", "faq", "bullets"],
+                channelModifier_list=["slack", "jira", "html"],
                 directionalModifier="fog",
             )
 
             _ = modelPrompt(m)
 
-            # System prompt should see the raw, spoken style description.
-            self.assertEqual(GPTState.system_prompt.style, "jira story faq bullets")
+            self.assertEqual(GPTState.system_prompt.channel, "html")
+            self.assertEqual(GPTState.last_channel, "html")
 
-            # last_style should include at most 3 tokens drawn from the input set.
-            style_tokens = GPTState.last_style.split()
-            self.assertLessEqual(len(style_tokens), 3)
-            self.assertTrue(
-                set(style_tokens).issubset({"jira", "story", "faq", "bullets"})
-            )
-
-            # last_recipe should reflect the capped, canonicalised style tokens.
             recipe_parts = [p.strip() for p in GPTState.last_recipe.split("·")]
-            style_part = recipe_parts[4]
-            style_part_tokens = style_part.split()
-            self.assertLessEqual(len(style_part_tokens), 3)
-            self.assertTrue(
-                set(style_part_tokens).issubset({"jira", "story", "faq", "bullets"})
-            )
+            self.assertEqual(recipe_parts[-1], "html")
 
         def test_model_prompt_updates_last_recipe_with_profile_axes(self):
             # When no spoken modifiers are provided, the per-prompt profile for
@@ -588,12 +601,11 @@ if bootstrap is not None:
             self.assertEqual(GPTState.last_completeness, "gist")
             self.assertEqual(GPTState.last_scope, "actions")
             self.assertEqual(GPTState.last_method, "steps")
-            self.assertEqual(GPTState.last_style, "checklist")
+            self.assertEqual(GPTState.last_form, "checklist")
             self.assertEqual(GPTState.last_directional, "DIR")
 
         def test_model_prompt_uses_profiles_for_filter_style_prompts(self):
-            # Filter-style prompts like "pain" should drive method/style/scope
-            # via their profiles when no spoken modifiers are present.
+            # Filter-style prompts like "pain" should drive method/scope via profiles.
             m = SimpleNamespace(
                 staticPrompt="pain",
                 directionalModifier="DIR",
@@ -604,7 +616,6 @@ if bootstrap is not None:
             self.assertEqual(GPTState.system_prompt.completeness, "gist")
             self.assertEqual(GPTState.system_prompt.scope, "focus")
             self.assertEqual(GPTState.system_prompt.method, "filter")
-            self.assertEqual(GPTState.system_prompt.style, "bullets")
 
         def test_model_prompt_uses_relations_scope_for_dependency_prompts(self):
             # Relationship-style prompts like "dependency" should use the
@@ -633,7 +644,7 @@ if bootstrap is not None:
                 # Skip prompts with no profile axes.
                 has_profile_axes = any(
                     axis in axes and axes.get(axis)
-                    for axis in ("scope", "method", "style", "completeness")
+                    for axis in ("scope", "method", "completeness")
                 )
                 if not has_profile_axes:
                     continue
@@ -645,7 +656,7 @@ if bootstrap is not None:
 
                     last_axes = GPTState.last_axes or {}
 
-                    for axis in ("scope", "method", "style", "completeness"):
+                    for axis in ("scope", "method", "completeness"):
                         configured = axes.get(axis)
                         if not configured:
                             continue

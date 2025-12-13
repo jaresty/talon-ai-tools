@@ -81,7 +81,8 @@ def help_index(
         "Completeness": "completenessModifier.talon-list",
         "Scope": "scopeModifier.talon-list",
         "Method": "methodModifier.talon-list",
-        "Style": "styleModifier.talon-list",
+        "Form": "formModifier.talon-list",
+        "Channel": "channelModifier.talon-list",
         "Directional": "directionalModifier.talon-list",
     }
     for axis_label, axis_file in axis_sources.items():

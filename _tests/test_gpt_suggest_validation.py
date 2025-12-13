@@ -20,6 +20,15 @@ if bootstrap is not None:
     class GPTSuggestValidationTests(unittest.TestCase):
         def setUp(self) -> None:
             GPTState.reset_all()
+            GPTState.last_directional = "fog"
+            GPTState.last_axes = {
+                "completeness": [],
+                "scope": [],
+                "method": [],
+                "form": [],
+                "channel": [],
+                "directional": ["fog"],
+            }
             # Force suggest flow to use the synchronous result text we control.
             self._original_pipeline = gpt_module._prompt_pipeline
             self.pipeline = MagicMock()

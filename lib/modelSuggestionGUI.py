@@ -9,7 +9,12 @@ from .canvasFont import apply_canvas_typeface
 from .modelDestination import create_model_destination
 from .modelSource import create_model_source
 from .modelState import GPTState
-from .talonSettings import ApplyPromptConfiguration, modelPrompt
+from .talonSettings import (
+    ApplyPromptConfiguration,
+    modelPrompt,
+    safe_model_prompt,
+    _canonicalise_axis_tokens,
+)
 from .stanceValidation import valid_stance_command
 from .suggestionCoordinator import (
     suggestion_entries_with_metadata,
@@ -23,9 +28,13 @@ from .modelPatternGUI import (
     COMPLETENESS_MAP,
     METHOD_MAP,
     SCOPE_MAP,
-    STYLE_MAP,
+    FORM_MAP,
+    CHANNEL_MAP,
     DIRECTIONAL_MAP,
 )
+from .requestBus import current_state
+from .requestState import RequestPhase
+from .modelHelpers import notify
 
 mod = Module()
 ctx = Context()
@@ -86,6 +95,30 @@ _PANEL_WIDTH = 840
 # Give suggestions more vertical room before scrolling while still
 # respecting screen margins on smaller displays.
 _PANEL_HEIGHT = 880
+
+
+def _request_is_in_flight() -> bool:
+    """Return True when a GPT request is currently running."""
+    try:
+        phase = getattr(current_state(), "phase", RequestPhase.IDLE)
+        return phase not in (
+            RequestPhase.IDLE,
+            RequestPhase.DONE,
+            RequestPhase.ERROR,
+            RequestPhase.CANCELLED,
+        )
+    except Exception:
+        return False
+
+
+def _reject_if_request_in_flight() -> bool:
+    """Notify and return True when a GPT request is already running."""
+    if _request_is_in_flight():
+        notify(
+            "GPT: A request is already running; wait for it to finish or cancel it first."
+        )
+        return True
+    return False
 
 
 def _load_source_spoken_map() -> dict[str, str]:
@@ -526,7 +559,15 @@ def _draw_suggestions(c: canvas.Canvas) -> None:  # pragma: no cover - visual on
         draw_text(f"Say: {grammar_phrase}", x + 4, row_y)
         row_y += line_h
 
-        static_prompt, completeness, scope, method, style, directional = _parse_recipe(
+        (
+            static_prompt,
+            completeness,
+            scope,
+            method,
+            form,
+            channel,
+            directional,
+        ) = _parse_recipe(
             suggestion.recipe
         )
         # Render a compact axes summary instead of full hydrated descriptions
@@ -538,8 +579,10 @@ def _draw_suggestions(c: canvas.Canvas) -> None:  # pragma: no cover - visual on
             summary_parts.append(f"S:{scope}")
         if method:
             summary_parts.append(f"M:{method}")
-        if style:
-            summary_parts.append(f"St:{style}")
+        if form:
+            summary_parts.append(f"F:{form}")
+        if channel:
+            summary_parts.append(f"Ch:{channel}")
         if directional:
             summary_parts.append(f"D:{directional}")
         if summary_parts:
@@ -670,12 +713,33 @@ def _refresh_suggestions_from_state() -> None:
 
 def _run_suggestion(suggestion: Suggestion) -> None:
     """Execute a suggested recipe as if spoken via the model grammar."""
-    static_prompt, completeness, scope, method, style, directional = _parse_recipe(
-        suggestion.recipe
-    )
+    (
+        static_prompt,
+        completeness,
+        scope,
+        method,
+        form,
+        channel,
+        directional,
+    ) = _parse_recipe(suggestion.recipe)
     if not static_prompt:
         actions.app.notify("Suggestion has no static prompt; cannot run")
         return
+    if not directional:
+        notify(
+            "GPT: Suggestion has no directional lens; run a directional recipe (fog/fig/dig/ong/rog/bog/jog)."
+        )
+        return
+
+    # Apply axis caps so Form/Channel remain singletons and scope/method obey soft caps.
+    scope_tokens = _canonicalise_axis_tokens("scope", scope.split())
+    method_tokens = _canonicalise_axis_tokens("method", method.split())
+    form_tokens = _canonicalise_axis_tokens("form", form.split())
+    channel_tokens = _canonicalise_axis_tokens("channel", channel.split())
+    scope = " ".join(scope_tokens)
+    method = " ".join(method_tokens)
+    form = " ".join(form_tokens[:1])
+    channel = " ".join(channel_tokens[:1])
 
     actions.app.notify(f"Running suggestion: {suggestion.name}")
 
@@ -694,8 +758,10 @@ def _run_suggestion(suggestion: Suggestion) -> None:
         setattr(match, "scopeModifier", _axis_value(scope, SCOPE_MAP))
     if method:
         setattr(match, "methodModifier", _axis_value(method, METHOD_MAP))
-    if style:
-        setattr(match, "styleModifier", _axis_value(style, STYLE_MAP))
+    if form:
+        setattr(match, "formModifier", _axis_value(form, FORM_MAP))
+    if channel:
+        setattr(match, "channelModifier", _axis_value(channel, CHANNEL_MAP))
     if directional:
         setattr(
             match,
@@ -703,7 +769,9 @@ def _run_suggestion(suggestion: Suggestion) -> None:
             _axis_value(directional, DIRECTIONAL_MAP),
         )
 
-    please_prompt = modelPrompt(match)
+    please_prompt = safe_model_prompt(match)
+    if not please_prompt:
+        return
 
     # Prefer the source used when generating these suggestions, falling back
     # to the current default source when unavailable.
@@ -730,7 +798,8 @@ def _run_suggestion(suggestion: Suggestion) -> None:
         completeness,
         scope,
         method,
-        style,
+        form,
+        channel,
         directional,
     )
 
@@ -739,6 +808,8 @@ def _run_suggestion(suggestion: Suggestion) -> None:
 class UserActions:
     def model_prompt_recipe_suggestions_gui_open():
         """Open the prompt recipe suggestion canvas for the last suggestions."""
+        if _reject_if_request_in_flight():
+            return
         _refresh_suggestions_from_state()
         if not SuggestionGUIState.suggestions:
             actions.app.notify("No prompt recipe suggestions available")
@@ -763,11 +834,15 @@ class UserActions:
 
     def model_prompt_recipe_suggestions_gui_close():
         """Close the prompt recipe suggestion canvas."""
+        if _reject_if_request_in_flight():
+            return
         _close_suggestion_canvas()
         ctx.tags = []
 
     def model_prompt_recipe_suggestions_run_index(index: int):
         """Run a suggestion by 1-based index from the cached list."""
+        if _reject_if_request_in_flight():
+            return
         _refresh_suggestions_from_state()
         if not SuggestionGUIState.suggestions:
             actions.app.notify("No prompt recipe suggestions available")

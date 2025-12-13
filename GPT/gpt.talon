@@ -24,12 +24,14 @@
 ^{user.model} set completeness {user.completenessModifier}$: user.gpt_set_default_completeness(completenessModifier)
 ^{user.model} set scope {user.scopeModifier}$: user.gpt_set_default_scope(scopeModifier)
 ^{user.model} set method {user.methodModifier}$: user.gpt_set_default_method(methodModifier)
-^{user.model} set style {user.styleModifier}$: user.gpt_set_default_style(styleModifier)
+^{user.model} set form {user.formModifier}$: user.gpt_set_default_form(formModifier)
+^{user.model} set channel {user.channelModifier}$: user.gpt_set_default_channel(channelModifier)
 
 ^{user.model} reset completeness$: user.gpt_reset_default_completeness()
 ^{user.model} reset scope$: user.gpt_reset_default_scope()
 ^{user.model} reset method$: user.gpt_reset_default_method()
-^{user.model} reset style$: user.gpt_reset_default_style()
+^{user.model} reset form$: user.gpt_reset_default_form()
+^{user.model} reset channel$: user.gpt_reset_default_channel()
 
 {user.model} analyze prompt <user.modelDestination>$: user.gpt_analyze_prompt(modelDestination)
 {user.model} analyze prompt$: user.gpt_analyze_prompt()
@@ -43,25 +45,23 @@
 {user.model} async blocking$: user.gpt_set_async_blocking(1)
 {user.model} async non blocking$: user.gpt_set_async_blocking(0)
 
-^{user.model} run again {user.staticPrompt} [{user.completenessModifier}] [{user.scopeModifier}] [{user.scopeModifier}] [{user.methodModifier}] [{user.methodModifier}] [{user.methodModifier}] [{user.styleModifier}] [{user.styleModifier}] [{user.styleModifier}] [{user.directionalModifier}]$:
-    user.gpt_rerun_last_recipe(staticPrompt or "", completenessModifier or "", scopeModifier_list or "", methodModifier_list or "", styleModifier_list or "", directionalModifier or "")
+^{user.model} run again {user.staticPrompt} [{user.completenessModifier}] [{user.scopeModifier}] [{user.scopeModifier}] [{user.methodModifier}] [{user.methodModifier}] [{user.methodModifier}] [{user.formModifier}] [{user.channelModifier}] [{user.directionalModifier}]$:
+    user.gpt_rerun_last_recipe(staticPrompt or "", completenessModifier or "", scopeModifier_list or "", methodModifier_list or "", directionalModifier or "", formModifier or "", channelModifier or "")
 
-^{user.model} run again [{user.completenessModifier}] [{user.scopeModifier}] [{user.scopeModifier}] [{user.methodModifier}] [{user.methodModifier}] [{user.methodModifier}] [{user.styleModifier}] [{user.styleModifier}] [{user.styleModifier}] [{user.directionalModifier}]$:
-    user.gpt_rerun_last_recipe("", completenessModifier or "", scopeModifier_list or "", methodModifier_list or "", styleModifier_list or "", directionalModifier or "")
+^{user.model} run again [{user.completenessModifier}] [{user.scopeModifier}] [{user.scopeModifier}] [{user.methodModifier}] [{user.methodModifier}] [{user.methodModifier}] [{user.formModifier}] [{user.channelModifier}] [{user.directionalModifier}]$:
+    user.gpt_rerun_last_recipe("", completenessModifier or "", scopeModifier_list or "", methodModifier_list or "", directionalModifier or "", formModifier or "", channelModifier or "")
 
 ^{user.model} run <user.modelSimpleSource> again$:
     user.gpt_rerun_last_recipe_with_source(modelSimpleSource, "", "", "", "", "", "")
 
-^{user.model} run <user.modelSimpleSource> again {user.staticPrompt} [{user.completenessModifier}] [{user.scopeModifier}] [{user.scopeModifier}] [{user.methodModifier}] [{user.methodModifier}] [{user.methodModifier}] [{user.styleModifier}] [{user.styleModifier}] [{user.styleModifier}] [{user.directionalModifier}]$:
-    user.gpt_rerun_last_recipe_with_source(modelSimpleSource, staticPrompt or "", completenessModifier or "", scopeModifier_list or "", methodModifier_list, styleModifier_list, directionalModifier or "")
+^{user.model} run <user.modelSimpleSource> again {user.staticPrompt} [{user.completenessModifier}] [{user.scopeModifier}] [{user.scopeModifier}] [{user.methodModifier}] [{user.methodModifier}] [{user.methodModifier}] [{user.formModifier}] [{user.channelModifier}] [{user.directionalModifier}]$:
+    user.gpt_rerun_last_recipe_with_source(modelSimpleSource, staticPrompt or "", completenessModifier or "", scopeModifier_list or "", methodModifier_list, directionalModifier or "", formModifier or "", channelModifier or "")
 
-^{user.model} run <user.modelSimpleSource> again [{user.completenessModifier}] [{user.scopeModifier}] [{user.scopeModifier}] [{user.methodModifier}] [{user.methodModifier}] [{user.methodModifier}] [{user.styleModifier}] [{user.styleModifier}] [{user.styleModifier}] [{user.directionalModifier}]$:
-    user.gpt_rerun_last_recipe_with_source(modelSimpleSource, "", completenessModifier or "", scopeModifier_list or "", methodModifier_list, styleModifier_list, directionalModifier or "")
+^{user.model} run <user.modelSimpleSource> again [{user.completenessModifier}] [{user.scopeModifier}] [{user.scopeModifier}] [{user.methodModifier}] [{user.methodModifier}] [{user.methodModifier}] [{user.formModifier}] [{user.channelModifier}] [{user.directionalModifier}]$:
+    user.gpt_rerun_last_recipe_with_source(modelSimpleSource, "", completenessModifier or "", scopeModifier_list or "", methodModifier_list, directionalModifier or "", formModifier or "", channelModifier or "")
 
-{user.model} run <user.modelSimpleSource> suggest for <user.text>$: user.gpt_suggest_prompt_recipes_with_source(modelSimpleSource, text)
-{user.model} run <user.modelSimpleSource> suggest$: user.gpt_suggest_prompt_recipes_with_source(modelSimpleSource, "")
-{user.model} run suggest for <user.text>$: user.gpt_suggest_prompt_recipes(text)
-{user.model} run suggest$: user.gpt_suggest_prompt_recipes("")
+{user.model} run <user.modelSimpleSource> suggest <user.modelPromptSuffix>$: user.gpt_suggest_prompt_recipes_with_source(modelSimpleSource, modelPromptSuffix or "")
+{user.model} run suggest <user.modelPromptSuffix>$: user.gpt_suggest_prompt_recipes(modelPromptSuffix or "")
 {user.model} run suggestions$: user.model_prompt_recipe_suggestions_gui_open()
 
 # Select the last GPT response so you can edit it further

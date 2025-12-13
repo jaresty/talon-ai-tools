@@ -9,7 +9,12 @@ from .helpUI import clamp_scroll
 
 from .modelDestination import create_model_destination
 from .modelSource import create_model_source
-from .talonSettings import ApplyPromptConfiguration, modelPrompt
+from .talonSettings import (
+    ApplyPromptConfiguration,
+    _canonicalise_axis_tokens,
+    modelPrompt,
+    safe_model_prompt,
+)
 from .modelState import GPTState
 from .axisMappings import axis_docs_map
 from .patternDebugCoordinator import pattern_debug_view, pattern_debug_catalog as _pattern_debug_catalog
@@ -76,7 +81,8 @@ def _load_axis_map(filename: str) -> dict[str, str]:
         "completeness": "completeness",
         "scope": "scope",
         "method": "method",
-        "style": "style",
+        "form": "form",
+        "channel": "channel",
         "directional": "directional",
     }.get(axis, "")
     if not axis_key:
@@ -149,35 +155,15 @@ METHOD_TOKENS = {
     "socratic",
 }
 
-STYLE_TOKENS = {
-    "plain",
-    "tight",
-    "bullets",
-    "table",
-    "code",
-    "cards",
-    "checklist",
-    # Heavier output/formatting styles from ADR 012.
-    "diagram",
-    "presenterm",
-    "html",
-    "gherkin",
-    "shellscript",
-    "emoji",
-    "slack",
-    "jira",
-    "recipe",
-    "abstractvisual",
-    "commit",
-    "adr",
-    "taxonomy",
-    "faq",
-}
+FORM_MAP = _load_axis_map("formModifier.talon-list")
+CHANNEL_MAP = _load_axis_map("channelModifier.talon-list")
+FORM_TOKENS = set(FORM_MAP.keys()) | {"taxonomy"}
+CHANNEL_TOKENS = set(CHANNEL_MAP.keys())
 
 COMPLETENESS_MAP = _load_axis_map("completenessModifier.talon-list")
 SCOPE_MAP = _load_axis_map("scopeModifier.talon-list")
 METHOD_MAP = _load_axis_map("methodModifier.talon-list")
-STYLE_MAP = _load_axis_map("styleModifier.talon-list")
+STYLE_MAP = {}
 DIRECTIONAL_MAP = _load_axis_map("directionalModifier.talon-list")
 
 
@@ -204,7 +190,7 @@ def _scroll_pattern_list(
     max_offset = _max_scroll_offset(rect, patterns)
     return clamp_scroll(float(current_offset or 0) + step, float(max_offset))
 
-# NOTE: For spoken commands, Talon list values for completeness/scope/method/style
+# NOTE: For spoken commands, Talon list values for completeness/scope/method/form/channel
 # are already the full "Important: …" descriptions. For pattern buttons, we
 # translate the short tokens through the same lists so that modelPrompt/system
 # see the same semantics, then override GPTState.last_recipe back to a concise,
@@ -1032,8 +1018,8 @@ def _parse_recipe(recipe: str) -> tuple[str, str, str, str, str, str]:
 
     The recipe format is:
       staticPrompt · [axes…] · directional
-    where intermediate tokens map into completeness/scope/method/style by membership.
-    For scope/method/style, each axis position may contain one or more
+    where intermediate tokens map into completeness/scope/method/form/channel by membership.
+    For scope/method/form/channel, each axis position may contain one or more
     space-separated tokens; we treat those as a set for that axis and
     preserve them as a single, space-joined string for downstream callers.
     """
@@ -1042,12 +1028,13 @@ def _parse_recipe(recipe: str) -> tuple[str, str, str, str, str, str]:
         return "", "", "", "", "", ""
 
     static_prompt = tokens[0]
-    directional = tokens[-1] if len(tokens) > 1 else ""
+    directional_tokens: list[str] = tokens[-1].split() if len(tokens) > 1 else []
 
     completeness = ""
     scope_tokens: list[str] = []
     method_tokens: list[str] = []
-    style_tokens: list[str] = []
+    form_tokens: list[str] = []
+    channel_tokens: list[str] = []
 
     for segment in tokens[1:-1]:
         # Allow multiple axis tokens within a single segment (for example,
@@ -1064,15 +1051,26 @@ def _parse_recipe(recipe: str) -> tuple[str, str, str, str, str, str]:
             elif token in METHOD_TOKENS:
                 if token not in method_tokens:
                     method_tokens.append(token)
-            elif token in STYLE_TOKENS:
-                if token not in style_tokens:
-                    style_tokens.append(token)
+            elif token in FORM_TOKENS:
+                if token not in form_tokens:
+                    form_tokens.append(token)
+            elif token in CHANNEL_TOKENS:
+                if token not in channel_tokens:
+                    channel_tokens.append(token)
+
+    scope_tokens = _canonicalise_axis_tokens("scope", scope_tokens)
+    method_tokens = _canonicalise_axis_tokens("method", method_tokens)
+    form_tokens = _canonicalise_axis_tokens("form", form_tokens)
+    channel_tokens = _canonicalise_axis_tokens("channel", channel_tokens)
+    directional_tokens = _canonicalise_axis_tokens("directional", directional_tokens)
 
     scope = " ".join(scope_tokens) if scope_tokens else ""
     method = " ".join(method_tokens) if method_tokens else ""
-    style = " ".join(style_tokens) if style_tokens else ""
+    form = " ".join(form_tokens) if form_tokens else ""
+    channel = " ".join(channel_tokens) if channel_tokens else ""
+    directional = " ".join(directional_tokens) if directional_tokens else ""
 
-    return static_prompt, completeness, scope, method, style, directional
+    return static_prompt, completeness, scope, method, form, channel, directional
 
 
 def pattern_debug_snapshot(pattern_name: str) -> dict[str, object]:
@@ -1117,7 +1115,8 @@ def _run_pattern(pattern: PromptPattern) -> None:
         completeness,
         scope,
         method,
-        style,
+        form,
+        channel,
         directional,
     ) = _parse_recipe(pattern.recipe)
 
@@ -1140,8 +1139,10 @@ def _run_pattern(pattern: PromptPattern) -> None:
         setattr(match, "scopeModifier", _axis_value(scope, SCOPE_MAP))
     if method:
         setattr(match, "methodModifier", _axis_value(method, METHOD_MAP))
-    if style:
-        setattr(match, "styleModifier", _axis_value(style, STYLE_MAP))
+    if form:
+        setattr(match, "formModifier", _axis_value(form, FORM_MAP))
+    if channel:
+        setattr(match, "channelModifier", _axis_value(channel, CHANNEL_MAP))
     if directional:
         setattr(
             match,
@@ -1149,7 +1150,9 @@ def _run_pattern(pattern: PromptPattern) -> None:
             _axis_value(directional, DIRECTIONAL_MAP),
         )
 
-    please_prompt = modelPrompt(match)
+    please_prompt = safe_model_prompt(match)
+    if not please_prompt:
+        return
 
     config = ApplyPromptConfiguration(
         please_prompt=please_prompt,
@@ -1170,29 +1173,62 @@ def _run_pattern(pattern: PromptPattern) -> None:
         recipe_parts.append(scope)
     if method:
         recipe_parts.append(method)
-    if style:
-        recipe_parts.append(style)
+    if form:
+        recipe_parts.append(form)
+    if channel:
+        recipe_parts.append(channel)
     GPTState.last_recipe = " · ".join(recipe_parts)
     GPTState.last_static_prompt = static_prompt
     GPTState.last_completeness = completeness or ""
     GPTState.last_scope = scope or ""
     GPTState.last_method = method or ""
-    GPTState.last_style = style or ""
+    GPTState.last_form = form or ""
+    GPTState.last_channel = channel or ""
     GPTState.last_directional = directional or ""
     GPTState.last_axes = {
         "completeness": [completeness] if completeness else [],
         "scope": scope.split() if scope else [],
         "method": method.split() if method else [],
-        "style": style.split() if style else [],
+        "form": form.split() if form else [],
+        "channel": channel.split() if channel else [],
     }
 
     actions.user.model_pattern_gui_close()
+
+
+def _request_is_in_flight() -> bool:
+    """Return True when a GPT request is currently running."""
+    try:
+        from .requestBus import current_state
+        from .requestState import RequestPhase
+
+        phase = getattr(current_state(), "phase", RequestPhase.IDLE)
+        return phase not in (
+            RequestPhase.IDLE,
+            RequestPhase.DONE,
+            RequestPhase.ERROR,
+            RequestPhase.CANCELLED,
+        )
+    except Exception:
+        return False
+
+
+def _reject_if_request_in_flight() -> bool:
+    """Notify and return True when a GPT request is already running."""
+    if _request_is_in_flight():
+        notify(
+            "GPT: A request is already running; wait for it to finish or cancel it first."
+        )
+        return True
+    return False
 
 
 @mod.action_class
 class UserActions:
     def model_pattern_gui_open():
         """Open the model pattern picker GUI"""
+        if _reject_if_request_in_flight():
+            return
         # Close other related menus to avoid overlapping overlays.
         try:
             actions.user.prompt_pattern_gui_close()
@@ -1207,6 +1243,8 @@ class UserActions:
 
     def model_pattern_gui_open_coding():
         """Open the model pattern picker for coding patterns"""
+        if _reject_if_request_in_flight():
+            return
         try:
             actions.user.prompt_pattern_gui_close()
         except Exception:
@@ -1220,6 +1258,8 @@ class UserActions:
 
     def model_pattern_gui_open_writing():
         """Open the model pattern picker for writing/product/reflection patterns"""
+        if _reject_if_request_in_flight():
+            return
         try:
             actions.user.prompt_pattern_gui_close()
         except Exception:
@@ -1232,11 +1272,15 @@ class UserActions:
 
     def model_pattern_gui_close():
         """Close the model pattern picker GUI"""
+        if _reject_if_request_in_flight():
+            return
         _close_pattern_canvas()
         ctx.tags = []
 
     def model_pattern_run_name(pattern_name: str):
         """Run a model pattern by its display name and close the GUI"""
+        if _reject_if_request_in_flight():
+            return
         for pattern in PATTERNS:
             if pattern.name.lower() == pattern_name.lower():
                 _run_pattern(pattern)
@@ -1244,6 +1288,8 @@ class UserActions:
 
     def model_pattern_save_source_to_file():
         """Save the most recent model response to a file via the confirmation GUI helper."""
+        if _reject_if_request_in_flight():
+            return
         try:
             actions.user.confirmation_gui_save_to_file()
         except Exception:
@@ -1259,6 +1305,8 @@ class UserActions:
         actions and tests.
         """
 
+        if _reject_if_request_in_flight():
+            return
         try:
             from .patternDebugCoordinator import pattern_debug_view
         except Exception:

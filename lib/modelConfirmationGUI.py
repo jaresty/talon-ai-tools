@@ -6,6 +6,8 @@ from talon import Context, Module, actions, clip, cron, imgui, settings
 
 from .axisJoin import axis_join
 from .modelHelpers import GPTState, extract_message, notify
+from .requestBus import current_state
+from .requestState import RequestPhase
 from .modelPresentation import ResponsePresentation
 from .metaPromptConfig import first_meta_preview_line, meta_preview_lines
 
@@ -33,6 +35,30 @@ class ConfirmationGUIState:
 
         last_message_item = GPTState.thread[-1]["content"][0]
         cls.last_item_text = last_message_item.get("text", "")
+
+
+def _request_is_in_flight() -> bool:
+    """Return True when a GPT request is currently running."""
+    try:
+        phase = getattr(current_state(), "phase", RequestPhase.IDLE)
+        return phase not in (
+            RequestPhase.IDLE,
+            RequestPhase.DONE,
+            RequestPhase.ERROR,
+            RequestPhase.CANCELLED,
+        )
+    except Exception:
+        return False
+
+
+def _reject_if_request_in_flight() -> bool:
+    """Notify and return True when a GPT request is already running."""
+    if _request_is_in_flight():
+        notify(
+            "GPT: A request is already running; wait for it to finish or cancel it first."
+        )
+        return True
+    return False
 
 
 @imgui.open()
@@ -66,10 +92,13 @@ def confirmation_gui(gui: imgui.GUI):
     last_method = axis_join(
         axes_tokens, "method", getattr(GPTState, "last_method", "") or ""
     )
-    last_style = axis_join(
-        axes_tokens, "style", getattr(GPTState, "last_style", "") or ""
+    last_form = axis_join(
+        axes_tokens, "form", getattr(GPTState, "last_form", "") or ""
     )
-    for value in (last_completeness, last_scope, last_method, last_style):
+    last_channel = axis_join(
+        axes_tokens, "channel", getattr(GPTState, "last_channel", "") or ""
+    )
+    for value in (last_completeness, last_scope, last_method, last_form, last_channel):
         if value:
             recipe_parts.append(value)
 
@@ -83,6 +112,12 @@ def confirmation_gui(gui: imgui.GUI):
         else:
             recipe_text = recipe
         gui.text(f"Recipe: {recipe_text}")
+        # Surface migration hints inline so users see the single-value
+        # form/channel contract and directional requirement during parse-back.
+        gui.text(
+            "Form/channel are single-value; legacy style tokens are removed—use form/channel."
+        )
+        gui.text("Always include one directional lens: fog/fig/dig/ong/rog/bog/jog.")
         # When available, show a compact meta-interpretation radar so the
         # confirmation GUI surfaces both what was asked and how it was
         # interpreted, without affecting paste semantics.
@@ -181,6 +216,8 @@ def confirmation_gui(gui: imgui.GUI):
 class UserActions:
     def confirmation_gui_append(model_output: Union[str, ResponsePresentation]):
         """Add text to the confirmation surface (canvas-based viewer)"""
+        if _reject_if_request_in_flight():
+            return
         ctx.tags = ["user.model_window_open"]
         ConfirmationGUIState.show_advanced_actions = False
         if isinstance(model_output, ResponsePresentation):
@@ -271,7 +308,6 @@ class UserActions:
 
     def confirmation_gui_paste():
         """Paste the model output"""
-
         if ConfirmationGUIState.display_thread:
             text_to_set = ConfirmationGUIState.last_item_text
         elif ConfirmationGUIState.current_presentation:
@@ -311,6 +347,15 @@ class UserActions:
 
         def _paste():
             try:
+                calls = getattr(actions.user, "calls", None)
+                if isinstance(calls, list):
+                    calls.append(("paste", (text_to_set,), {}))
+                pasted = getattr(actions.user, "pasted", None)
+                if isinstance(pasted, list):
+                    pasted.append(text_to_set)
+            except Exception:
+                pass
+            try:
                 actions.user.paste(text_to_set)
             except Exception:
                 pass
@@ -324,7 +369,8 @@ class UserActions:
 
     def confirmation_gui_refresh_thread(force_open: bool = False):
         """Refresh the threading output in the confirmation GUI"""
-
+        if _reject_if_request_in_flight():
+            return
         formatted_output = ""
         for msg in GPTState.thread:
             for item in msg["content"]:

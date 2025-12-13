@@ -8,6 +8,9 @@ from .providerRegistry import (
     ProviderLookupError,
     provider_registry,
 )
+from .requestBus import current_state
+from .requestState import RequestPhase
+from .modelHelpers import notify
 
 try:
     print(f"[debug] providerCommands loaded from {__file__}")
@@ -187,10 +190,37 @@ def _set_provider_model(provider_id: str, model: str) -> None:
         provider_registry().set_default_model(provider_id, model)
 
 
+def _request_is_in_flight() -> bool:
+    """Return True when a GPT request is currently running."""
+    try:
+        phase = getattr(current_state(), "phase", RequestPhase.IDLE)
+        return phase not in (
+            RequestPhase.IDLE,
+            RequestPhase.DONE,
+            RequestPhase.ERROR,
+            RequestPhase.CANCELLED,
+        )
+    except Exception:
+        return False
+
+
+def _reject_if_request_in_flight() -> bool:
+    """Notify and return True when a GPT request is already running."""
+    if _request_is_in_flight():
+        notify(
+            "GPT: A request is already running; wait for it to finish or cancel it first."
+        )
+        return True
+    return False
+
+
 @mod.action_class
 class UserActions:
     def model_provider_list():
         """Show available providers in a canvas."""
+
+        if _reject_if_request_in_flight():
+            return
 
         registry = provider_registry()
         probe = bool(settings.get("user.model_provider_probe", False))
@@ -200,6 +230,9 @@ class UserActions:
 
     def model_provider_status():
         """Show the current provider status."""
+
+        if _reject_if_request_in_flight():
+            return
 
         registry = provider_registry()
         probe = bool(settings.get("user.model_provider_probe", False))
@@ -218,6 +251,9 @@ class UserActions:
 
     def model_provider_use(name: str, model: str = ""):
         """Switch to a provider by name or alias, optionally setting its model."""
+
+        if _reject_if_request_in_flight():
+            return
 
         registry = provider_registry()
         try:
@@ -242,10 +278,16 @@ class UserActions:
     def model_provider_switch(name: str, model: str = ""):
         """Alias for model_provider_use."""
 
+        if _reject_if_request_in_flight():
+            return
+
         actions.user.model_provider_use(name, model)
 
     def model_provider_next():
         """Cycle to the next provider."""
+
+        if _reject_if_request_in_flight():
+            return
 
         registry = provider_registry()
         provider = registry.cycle(direction=1)
@@ -255,6 +297,9 @@ class UserActions:
     def model_provider_previous():
         """Cycle to the previous provider."""
 
+        if _reject_if_request_in_flight():
+            return
+
         registry = provider_registry()
         provider = registry.cycle(direction=-1)
         lines = _render_provider_lines(registry.status_entries(), f"Switched to {provider.display_name}")
@@ -262,5 +307,8 @@ class UserActions:
 
     def model_provider_close():
         """Hide the provider canvas."""
+
+        if _reject_if_request_in_flight():
+            return
 
         hide_provider_canvas()

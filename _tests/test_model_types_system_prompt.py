@@ -23,7 +23,8 @@ if bootstrap is not None:
             settings.set("user.model_default_completeness", "full")
             settings.set("user.model_default_scope", "narrow")
             settings.set("user.model_default_method", "steps")
-            settings.set("user.model_default_style", "bullets")
+            settings.set("user.model_default_form", "bullets")
+            settings.set("user.model_default_channel", "slack")
 
             lines = self.prompt.format_as_array()
 
@@ -40,7 +41,11 @@ if bootstrap is not None:
                 lines,
             )
             self.assertIn(
-                f"Style: {axis_key_to_value_map_for('style').get('bullets', 'bullets')}",
+                f"Form: {axis_key_to_value_map_for('form').get('bullets', 'bullets')}",
+                lines,
+            )
+            self.assertIn(
+                f"Channel: {axis_key_to_value_map_for('channel').get('slack', 'slack')}",
                 lines,
             )
 
@@ -48,13 +53,15 @@ if bootstrap is not None:
             settings.set("user.model_default_completeness", "full")
             settings.set("user.model_default_scope", "narrow")
             settings.set("user.model_default_method", "steps")
-            settings.set("user.model_default_style", "bullets")
+            settings.set("user.model_default_form", "bullets")
+            settings.set("user.model_default_channel", "slack")
 
             prompt = GPTSystemPrompt(
                 completeness="max",
                 scope="bound",
                 method="plan",
-                style="code",
+                form="code",
+                channel="jira",
             )
 
             lines = prompt.format_as_array()
@@ -72,7 +79,11 @@ if bootstrap is not None:
                 lines,
             )
             self.assertIn(
-                f"Style: {axis_key_to_value_map_for('style').get('code', 'code')}",
+                f"Form: {axis_key_to_value_map_for('form').get('code', 'code')}",
+                lines,
+            )
+            self.assertIn(
+                f"Channel: {axis_key_to_value_map_for('channel').get('jira', 'jira')}",
                 lines,
             )
 

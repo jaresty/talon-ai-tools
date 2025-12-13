@@ -16,6 +16,7 @@ from .modelDestination import (
     Stack,
     create_model_destination,
 )
+from .modelHelpers import notify
 from .modelState import GPTState
 from .metaPromptConfig import META_INTERPRETATION_GUIDANCE
 from talon import Context, Module, settings
@@ -39,7 +40,6 @@ def _read_axis_default_from_list(filename: str, key: str, fallback: str) -> str:
         "completenessModifier.talon-list": "completeness",
         "scopeModifier.talon-list": "scope",
         "methodModifier.talon-list": "method",
-        "styleModifier.talon-list": "style",
         "directionalModifier.talon-list": "directional",
     }.get(filename)
     if axis_for_file:
@@ -74,7 +74,6 @@ def _read_axis_value_to_key_map(filename: str) -> dict[str, str]:
         "completenessModifier.talon-list": "completeness",
         "scopeModifier.talon-list": "scope",
         "methodModifier.talon-list": "method",
-        "styleModifier.talon-list": "style",
         "directionalModifier.talon-list": "directional",
     }.get(filename)
     if axis_for_file:
@@ -127,22 +126,27 @@ if "samples" in _METHOD_VALUE_TO_KEY:
 class AxisValues(TypedDict):
     """Internal representation of axis values for a single request.
 
-    Completeness stays scalar; scope/method/style are sets represented as
-    canonicalised lists. This does not change the external system prompt
-    schema yet but provides a shared shape for normalisation and tests.
+    Completeness stays scalar; scope/method/form/channel/directional are sets
+    represented as canonicalised lists. This does not change the external
+    system prompt schema yet but provides a shared shape for normalisation and
+    tests.
     """
 
     completeness: Optional[str]
     scope: list[str]
     method: list[str]
-    style: list[str]
+    form: list[str]
+    channel: list[str]
+    directional: list[str]
 
 
 _AXIS_SOFT_CAPS: dict[str, int] = {
     # Completeness remains scalar and is capped by construction.
     "scope": 2,
     "method": 3,
-    "style": 3,
+    "form": 1,
+    "channel": 1,
+    "directional": 1,
 }
 
 # Incompatibilities are expressed as axis -> token -> set of tokens that
@@ -151,15 +155,8 @@ _AXIS_SOFT_CAPS: dict[str, int] = {
 _AXIS_INCOMPATIBILITIES: dict[str, dict[str, set[str]]] = {
     "scope": {},
     "method": {},
-    "style": {
-        # Jira-style issue containers and long-form ADR records are treated
-        # as mutually exclusive primary output containers.
-        "jira": {"adr"},
-        "adr": {"jira"},
-        # Synchronous session plans are a distinct container; currently no
-        # explicit conflicts with other containers.
-        "sync": set(),
-    },
+    "form": {},
+    "channel": {},
 }
 
 
@@ -248,7 +245,13 @@ def _normalise_directional(raw_value) -> str:
     return str(raw_value).strip() if raw_value else ""
 
 
-_AXIS_PRIORITY: tuple[str, ...] = ("completeness", "method", "scope", "style")
+_AXIS_PRIORITY: tuple[str, ...] = (
+    "completeness",
+    "method",
+    "scope",
+    "form",
+    "channel",
+)
 
 
 def _axis_prefix(token: str) -> Tuple[Optional[str], Optional[str]]:
@@ -304,7 +307,7 @@ def _resolve_axis_for_token(
 def _apply_constraint_hierarchy(
     axis_values: AxisValues,
 ) -> tuple[AxisValues, AxisValues]:
-    """Reassign and normalise axis tokens using the completeness>method>scope>style hierarchy.
+    """Reassign and normalise axis tokens using the completeness>method>scope>form>channel hierarchy.
 
     Returns a pair: (resolved_axes_preserving_order, canonical_axes) where:
     - Resolved axes keep ingestion order while applying caps/conflicts.
@@ -324,7 +327,8 @@ def _apply_constraint_hierarchy(
     _ingest(completeness_tokens, "completeness")
     _ingest(axis_values.get("method", []), "method")
     _ingest(axis_values.get("scope", []), "scope")
-    _ingest(axis_values.get("style", []), "style")
+    _ingest(axis_values.get("form", []), "form")
+    _ingest(axis_values.get("channel", []), "channel")
 
     def _preserve_order(axis: str, tokens: list[str]) -> list[str]:
         """Apply conflicts while keeping ingestion order (no caps)."""
@@ -347,11 +351,15 @@ def _apply_constraint_hierarchy(
 
     resolved_scope = _preserve_order("scope", buckets["scope"])
     resolved_method = _preserve_order("method", buckets["method"])
-    resolved_style = _preserve_order("style", buckets["style"])
-
     canonical_scope = _canonicalise_axis_tokens("scope", buckets["scope"])
     canonical_method = _canonicalise_axis_tokens("method", buckets["method"])
-    canonical_style = _canonicalise_axis_tokens("style", buckets["style"])
+
+    # Form and channel must be singletons; reuse canonicalised values for both
+    # resolved and canonical representations to enforce caps consistently.
+    canonical_form = _canonicalise_axis_tokens("form", buckets["form"])
+    canonical_channel = _canonicalise_axis_tokens("channel", buckets["channel"])
+    resolved_form = canonical_form
+    resolved_channel = canonical_channel
 
     completeness_value = (
         buckets["completeness"][-1] if buckets["completeness"] else None
@@ -361,13 +369,17 @@ def _apply_constraint_hierarchy(
         "completeness": completeness_value,
         "scope": resolved_scope,
         "method": resolved_method,
-        "style": resolved_style,
+        "form": resolved_form,
+        "channel": resolved_channel,
+        "directional": [],
     }
     canonical: AxisValues = {
         "completeness": completeness_value,
         "scope": canonical_scope,
         "method": canonical_method,
-        "style": canonical_style,
+        "form": canonical_form,
+        "channel": canonical_channel,
+        "directional": [],
     }
     return resolved, canonical
 
@@ -412,8 +424,9 @@ def _filter_axis_tokens(
         "completeness": axis_values.get("completeness"),
         "scope": _filter("scope", axis_values.get("scope", [])),
         "method": _filter("method", axis_values.get("method", [])),
-        "style": _filter("style", axis_values.get("style", [])),
-        "directional": _filter("directional", axis_values.get("directional", [])),  # type: ignore[dict-item]
+        "form": _filter("form", axis_values.get("form", [])),
+        "channel": _filter("channel", axis_values.get("channel", [])),
+        "directional": _filter("directional", axis_values.get("directional", [])),
     }
     comp = filtered["completeness"]
     if comp and str(comp).strip().lower().startswith("important:"):
@@ -440,6 +453,9 @@ def _axis_recipe_token(axis: str, raw_value: str) -> str:
 
 def _map_axis_tokens(axis: str, raw_tokens: Sequence[str]) -> list[str]:
     """Map raw axis tokens to their short tokens, preserving order."""
+    if axis.strip().lower() == "style":
+        # Guardrail post form/channel split: style axis is removed.
+        raise ValueError("style axis is removed; use form/channel instead.")
     if not raw_tokens:
         return []
     tokens: list[str] = []
@@ -460,7 +476,6 @@ mod.list("directionalModifier", desc="GPT Directional Modifiers")
 mod.list("completenessModifier", desc="GPT Completeness Modifiers")
 mod.list("scopeModifier", desc="GPT Scope Modifiers")
 mod.list("methodModifier", desc="GPT Method Modifiers")
-mod.list("styleModifier", desc="GPT Style Modifiers")
 mod.list("customPrompt", desc="Custom user-defined GPT prompts")
 mod.list("modelPrompt", desc="GPT Prompts")
 mod.list("model", desc="The name of the model")
@@ -481,13 +496,15 @@ mod.list(
     "modelAudience",
     desc="Persona audience: who this is for. For example, 'to programmer'.",
 )
+mod.list("formModifier", desc="GPT Form Modifiers")
+mod.list("channelModifier", desc="GPT Channel Modifiers")
 
 
 def _spoken_axis_value(m, axis_name: str) -> str:
     """Return the spoken modifier(s) for a given axis as a single string.
 
     For completeness we expect at most one value and return the
-    normalised `completenessModifier` when present. For scope/method/style we allow
+    normalised `completenessModifier` when present. For scope/method/form/channel we allow
     Talon to provide `axisModifier_list` (multiple values); we map each
     spoken value back to its short axis token and join them with spaces so
     multi-tag semantics are preserved in a concise, token-based form.
@@ -528,13 +545,30 @@ def _spoken_axis_value(m, axis_name: str) -> str:
     "[{user.completenessModifier}] "
     "[{user.scopeModifier}+] "
     "[{user.methodModifier}+] "
-    "[{user.styleModifier}+] "
+    "[{user.formModifier}] "
+    "[{user.channelModifier}] "
     "{user.directionalModifier} "
     "| {user.customPrompt}"
 )
 def modelPrompt(m) -> str:
     if hasattr(m, "customPrompt"):
         return str(m.customPrompt)
+    # Explicit guardrail: legacy style modifiers are no longer supported post
+    # form/channel split. Fail fast if a capture surfaces them.
+    legacy_style_tokens = []
+    for attr in ("styleModifier", "styleModifier_list"):
+        value = getattr(m, attr, None)
+        if isinstance(value, (list, tuple)):
+            legacy_style_tokens.extend([str(v).strip() for v in value if str(v).strip()])
+        elif value:
+            legacy_style_tokens.append(str(value).strip())
+    if any(legacy_style_tokens):
+        notify(
+            f"GPT: style axis is removed; use form/channel instead (got {legacy_style_tokens})."
+        )
+        raise ValueError(
+            f"styleModifier is no longer supported; use form/channel instead (got {legacy_style_tokens})."
+        )
     # When no explicit staticPrompt is spoken, fall back to the canonical
     # "infer" key so that recipes remain concise and grammar-shaped while the
     # Task line still uses the historic human-facing description.
@@ -593,18 +627,31 @@ def modelPrompt(m) -> str:
     else:
         effective_method_raw = settings.get("user.model_default_method")
 
-    spoken_style = _spoken_axis_value(m, "style")
-    raw_profile_style = profile_axes.get("style")
-    if isinstance(raw_profile_style, list):
-        profile_style = " ".join(str(v) for v in raw_profile_style)
+    spoken_form = _spoken_axis_value(m, "form")
+    raw_profile_form = profile_axes.get("form")
+    if isinstance(raw_profile_form, list):
+        profile_form = " ".join(str(v) for v in raw_profile_form)
     else:
-        profile_style = raw_profile_style
-    if spoken_style:
-        effective_style_raw = spoken_style
-    elif profile_style and not GPTState.user_overrode_style:
-        effective_style_raw = profile_style
+        profile_form = raw_profile_form
+    if spoken_form:
+        effective_form_raw = spoken_form
+    elif profile_form and not getattr(GPTState, "user_overrode_form", False):
+        effective_form_raw = profile_form
     else:
-        effective_style_raw = settings.get("user.model_default_style")
+        effective_form_raw = settings.get("user.model_default_form")
+
+    spoken_channel = _spoken_axis_value(m, "channel")
+    raw_profile_channel = profile_axes.get("channel")
+    if isinstance(raw_profile_channel, list):
+        profile_channel = " ".join(str(v) for v in raw_profile_channel)
+    else:
+        profile_channel = raw_profile_channel
+    if spoken_channel:
+        effective_channel_raw = spoken_channel
+    elif raw_profile_channel and not getattr(GPTState, "user_overrode_channel", False):
+        effective_channel_raw = raw_profile_channel
+    else:
+        effective_channel_raw = settings.get("user.model_default_channel")
 
     # Map all axes to token-based storage, keeping a canonical form for recap/rerun.
     raw_completeness_tokens = _map_axis_tokens(
@@ -612,7 +659,8 @@ def modelPrompt(m) -> str:
     )
     raw_scope_tokens = _map_axis_tokens("scope", _tokens_list(effective_scope_raw))
     raw_method_tokens = _map_axis_tokens("method", _tokens_list(effective_method_raw))
-    raw_style_tokens = _map_axis_tokens("style", _tokens_list(effective_style_raw))
+    raw_form_tokens = _map_axis_tokens("form", _tokens_list(effective_form_raw))
+    raw_channel_tokens = _map_axis_tokens("channel", _tokens_list(effective_channel_raw))
 
     resolved_axes, canonical_axes = _apply_constraint_hierarchy(
         {
@@ -621,7 +669,9 @@ def modelPrompt(m) -> str:
             else None,
             "scope": raw_scope_tokens,
             "method": raw_method_tokens,
-            "style": raw_style_tokens,
+            "form": raw_form_tokens,
+            "channel": raw_channel_tokens,
+            "directional": [],
         }
     )
     # Filter out any tokens not present in axisConfig to keep token-only state.
@@ -639,18 +689,22 @@ def modelPrompt(m) -> str:
         canonical_axes.get("method", [])
     )
 
-    style_tokens = resolved_axes.get("style", [])
-    style_canonical_serialised = _axis_tokens_to_string(canonical_axes.get("style", []))
+    form_tokens = resolved_axes.get("form", [])
+    form_canonical_serialised = _axis_tokens_to_string(canonical_axes.get("form", []))
+    channel_tokens = resolved_axes.get("channel", [])
+    channel_canonical_serialised = _axis_tokens_to_string(
+        canonical_axes.get("channel", [])
+    )
 
     scope_serialised = _axis_tokens_to_string(scope_tokens)
     method_serialised = _axis_tokens_to_string(method_tokens)
-    style_serialised = _axis_tokens_to_string(style_tokens)
 
     # Apply the effective axes to the shared system prompt for this request.
     GPTState.system_prompt.completeness = completeness_token or ""
     GPTState.system_prompt.scope = scope_serialised or ""
     GPTState.system_prompt.method = method_serialised or ""
-    GPTState.system_prompt.style = style_serialised or ""
+    GPTState.system_prompt.form = _axis_tokens_to_string(form_tokens) or ""
+    GPTState.system_prompt.channel = _axis_tokens_to_string(channel_tokens) or ""
     GPTState.system_prompt.directional = directional or ""
 
     # Store a concise, human-readable recipe for this prompt so the
@@ -664,19 +718,24 @@ def modelPrompt(m) -> str:
         recipe_parts.append(scope_canonical_serialised)
     if method_canonical_serialised:
         recipe_parts.append(method_canonical_serialised)
-    if style_canonical_serialised:
-        recipe_parts.append(style_canonical_serialised)
+    if form_canonical_serialised:
+        recipe_parts.append(form_canonical_serialised)
+    if channel_canonical_serialised:
+        recipe_parts.append(channel_canonical_serialised)
     GPTState.last_recipe = " · ".join(recipe_parts)
     GPTState.last_static_prompt = static_prompt
     GPTState.last_completeness = completeness_token
     GPTState.last_scope = scope_canonical_serialised
     GPTState.last_method = method_canonical_serialised
-    GPTState.last_style = style_canonical_serialised
+    GPTState.last_form = form_canonical_serialised
+    GPTState.last_channel = channel_canonical_serialised
     GPTState.last_axes = {
         "completeness": [completeness_token] if completeness_token else [],
         "scope": canonical_axes.get("scope", []),
         "method": canonical_axes.get("method", []),
-        "style": canonical_axes.get("style", []),
+        "form": canonical_axes.get("form", []),
+        "channel": canonical_axes.get("channel", []),
+        "directional": [directional] if directional else [],
     }
     # Track the last directional lens separately (as a short token) so
     # recap/quick help and shorthand grammars can include it.
@@ -687,7 +746,8 @@ def modelPrompt(m) -> str:
     )
     scope_from_cross_axis = bool(scope_tokens and not raw_scope_tokens)
     method_from_cross_axis = bool(method_tokens and not raw_method_tokens)
-    style_from_cross_axis = bool(style_tokens and not raw_style_tokens)
+    form_from_cross_axis = bool(form_tokens and not raw_form_tokens)
+    channel_from_cross_axis = bool(channel_tokens and not raw_channel_tokens)
 
     # Task line: what you want done.
     # The visible Task text is the human-facing static prompt description
@@ -729,12 +789,19 @@ def modelPrompt(m) -> str:
         prof_tokens = _map_axis_tokens("method", _tokens_list(profile_method))
         constraints.append(f"  Method: {_hydrate('method', prof_tokens)}")
 
-    # Style: spoken style modifier or short profile keyword.
-    if style_tokens and (spoken_style or style_from_cross_axis):
-        constraints.append(f"  Style: {_hydrate('style', style_tokens)}")
-    elif profile_style and not GPTState.user_overrode_style:
-        prof_tokens = _map_axis_tokens("style", _tokens_list(profile_style))
-        constraints.append(f"  Style: {_hydrate('style', prof_tokens)}")
+    # Form: single container/format axis.
+    if form_tokens and (spoken_form or form_from_cross_axis):
+        constraints.append(f"  Form: {_hydrate('form', form_tokens)}")
+    elif profile_form and not getattr(GPTState, "user_overrode_form", False):
+        prof_tokens = _map_axis_tokens("form", _tokens_list(profile_form))
+        constraints.append(f"  Form: {_hydrate('form', prof_tokens)}")
+
+    # Channel: delivery surface bias.
+    if channel_tokens and (spoken_channel or channel_from_cross_axis):
+        constraints.append(f"  Channel: {_hydrate('channel', channel_tokens)}")
+    elif raw_profile_channel and not getattr(GPTState, "user_overrode_channel", False):
+        prof_tokens = _map_axis_tokens("channel", _tokens_list(raw_profile_channel))
+        constraints.append(f"  Channel: {_hydrate('channel', prof_tokens)}")
 
     # If we only have the "Constraints:" header and nothing else, drop it to
     # avoid cluttering very simple prompts.
@@ -745,6 +812,16 @@ def modelPrompt(m) -> str:
     # Directional lens is sent via the system prompt; avoid appending raw
     # tokens to the user-facing prompt text.
     return task_line + constraints_block
+
+
+def safe_model_prompt(m) -> str:
+    """Call modelPrompt and surface migration hints instead of crashing."""
+    try:
+        return modelPrompt(m)
+    except ValueError as exc:
+        message = str(exc).strip() or "model prompt failed"
+        notify(f"GPT: {message}")
+        return ""
 
 
 @mod.capture(rule="[<user.modelPrompt>] prompt <user.text>")
@@ -973,7 +1050,7 @@ mod.setting(
     type=str,
     default=(
         "Output just the main answer to the user's request as the primary response. "
-        "Do not generate markdown formatting such as backticks for programming languages unless it is explicitly requested or implied by a style/method axis (for example, 'code', 'table', 'presenterm'). "
+        "Do not generate markdown formatting such as backticks for programming languages unless it is explicitly requested or implied by a form/channel axis (for example, 'code', 'table', 'presenterm'). "
         "If the user requests code generation, output just code in the main answer and not additional natural-language explanation. "
     )
     + META_INTERPRETATION_GUIDANCE,
@@ -1037,12 +1114,22 @@ mod.setting(
 )
 
 mod.setting(
-    "model_default_style",
+    "model_default_form",
     type=str,
     default="",
     desc=(
-        "Default output style when no spoken style modifier is provided. "
-        "Suggested values align with the styleModifier list (for example, 'plain', 'tight', 'bullets', 'table', 'code')."
+        "Default output form when no spoken form modifier is provided. "
+        "Suggested values align with the formModifier list (for example, 'plain', 'bullets', 'table', 'code', 'adr')."
+    ),
+)
+
+mod.setting(
+    "model_default_channel",
+    type=str,
+    default="",
+    desc=(
+        "Default output channel bias when no spoken channel modifier is provided. "
+        "Suggested values align with the channelModifier list (for example, 'slack', 'jira', 'presenterm', 'announce')."
     ),
 )
 
@@ -1051,7 +1138,7 @@ mod.setting(
     "model_shell_default",
     type=str,
     default="bash",
-    desc="The default shell for outputting model shell commands (for example, when using the shellscript style).",
+    desc="The default shell for outputting model shell commands (for example, when using the shellscript form).",
 )
 
 mod.setting(

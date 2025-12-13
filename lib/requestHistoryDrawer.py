@@ -9,6 +9,9 @@ from talon import Module, actions, canvas, ui
 
 from .requestLog import all_entries
 from .historyQuery import history_drawer_entries_from
+from .requestBus import current_state
+from .requestState import RequestPhase
+from .modelHelpers import notify
 
 mod = Module()
 
@@ -21,6 +24,30 @@ class HistoryDrawerState:
 
 _history_canvas: Optional[canvas.Canvas] = None
 _button_bounds: List[Tuple[int, int, int, int, int]] = []  # (idx, x1, y1, x2, y2)
+
+
+def _request_is_in_flight() -> bool:
+    """Return True when a GPT request is currently running."""
+    try:
+        phase = getattr(current_state(), "phase", RequestPhase.IDLE)
+        return phase not in (
+            RequestPhase.IDLE,
+            RequestPhase.DONE,
+            RequestPhase.ERROR,
+            RequestPhase.CANCELLED,
+        )
+    except Exception:
+        return False
+
+
+def _reject_if_request_in_flight() -> bool:
+    """Notify and return True when a GPT request is already running."""
+    if _request_is_in_flight():
+        notify(
+            "GPT: A request is already running; wait for it to finish or cancel it first."
+        )
+        return True
+    return False
 
 
 def _ensure_canvas() -> canvas.Canvas:
@@ -183,6 +210,8 @@ def _refresh_entries() -> None:
 class UserActions:
     def request_history_drawer_toggle():
         """Toggle the request history drawer"""
+        if _reject_if_request_in_flight():
+            return
         if HistoryDrawerState.showing:
             actions.user.request_history_drawer_close()
             return
@@ -190,6 +219,8 @@ class UserActions:
 
     def request_history_drawer_open():
         """Open the request history drawer"""
+        if _reject_if_request_in_flight():
+            return
         _refresh_entries()
         c = _ensure_canvas()
         HistoryDrawerState.showing = True
@@ -200,6 +231,8 @@ class UserActions:
 
     def request_history_drawer_close():
         """Close the request history drawer"""
+        if _reject_if_request_in_flight():
+            return
         HistoryDrawerState.showing = False
         if _history_canvas is None:
             return
@@ -210,6 +243,8 @@ class UserActions:
 
     def request_history_drawer_prev_entry():
         """Move selection to previous entry in the history drawer"""
+        if _reject_if_request_in_flight():
+            return
         if not HistoryDrawerState.entries:
             return
         HistoryDrawerState.selected_index = max(
@@ -223,6 +258,8 @@ class UserActions:
 
     def request_history_drawer_next_entry():
         """Move selection to next entry in the history drawer"""
+        if _reject_if_request_in_flight():
+            return
         if not HistoryDrawerState.entries:
             return
         HistoryDrawerState.selected_index = min(
@@ -236,6 +273,8 @@ class UserActions:
 
     def request_history_drawer_open_selected():
         """Open the currently selected entry in the history drawer"""
+        if _reject_if_request_in_flight():
+            return
         if not HistoryDrawerState.entries:
             return
         idx = HistoryDrawerState.selected_index

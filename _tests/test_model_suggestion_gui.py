@@ -1,6 +1,6 @@
 import unittest
 from typing import TYPE_CHECKING
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch
 
 try:
     from bootstrap import bootstrap
@@ -18,6 +18,7 @@ if bootstrap is not None:
         SuggestionCanvasState,
     )
     from talon_user.lib import modelSuggestionGUI
+    import talon_user.lib.talonSettings as talonSettings
 
     class ModelSuggestionGUITests(unittest.TestCase):
         def setUp(self):
@@ -26,6 +27,7 @@ if bootstrap is not None:
             SuggestionCanvasState.showing = False
             self._original_notify = actions.app.notify
             actions.app.notify = MagicMock()
+            actions.user.notify = MagicMock()
             actions.user.gpt_apply_prompt = MagicMock()
             actions.user.model_prompt_recipe_suggestions_gui_close = MagicMock()
 
@@ -83,13 +85,42 @@ if bootstrap is not None:
                 },
             ]
             self.assertFalse(SuggestionCanvasState.showing)
-            self.assertEqual(SuggestionGUIState.suggestions, [])
 
-            UserActions.model_prompt_recipe_suggestions_gui_open()
+        def test_run_index_surfaces_migration_hint_on_legacy_style(self):
+            """Suggestion execution should hint and abort when legacy style is spoken."""
+            GPTState.last_suggested_recipes = [
+                {
+                    "name": "Legacy style",
+                    "recipe": "describe · full · narrow · debugging · plain · rog",
+                },
+            ]
 
-            # Suggestions should be copied into GUI state and the canvas opened.
-            self.assertTrue(SuggestionCanvasState.showing)
-            self.assertEqual(len(SuggestionGUIState.suggestions), 1)
+            def _fake_safe(match):
+                actions.app.notify("GPT: style axis is removed")
+                return ""
+
+            with patch.object(
+                modelSuggestionGUI, "safe_model_prompt", side_effect=_fake_safe
+            ):
+                UserActions.model_prompt_recipe_suggestions_run_index(1)
+
+            actions.user.gpt_apply_prompt.assert_not_called()
+            notifications = [
+                str(args[0])
+                for args in [
+                    *(ca.args for ca in actions.app.notify.call_args_list),
+                    *(ca.args for ca in actions.user.notify.call_args_list),
+                ]
+                if args
+            ]
+            self.assertTrue(
+                any(
+                    "style axis is removed" in note
+                    or "styleModifier is no longer supported" in note
+                    for note in notifications
+                ),
+                f"Expected migration hint notification, got {notifications}",
+            )
 
         def test_open_with_no_suggestions_notifies_and_does_not_show_canvas(self):
             GPTState.last_suggested_recipes = []
@@ -121,11 +152,12 @@ if bootstrap is not None:
             self.assertEqual(GPTState.last_completeness, "full")
             self.assertEqual(GPTState.last_directional, "fog")
 
-            # Scope/method/style are stored as space-separated token strings
+            # Scope/method/form/channel are stored as space-separated token strings
             # built from recognised axis tokens.
             self.assertEqual(GPTState.last_scope, "actions edges")
-            self.assertEqual(GPTState.last_method, "structure flow")
-            self.assertEqual(GPTState.last_style, "jira faq")
+            self.assertEqual(GPTState.last_method, "flow structure")
+            self.assertEqual(GPTState.last_form, "faq")
+            self.assertEqual(GPTState.last_channel, "jira")
 
         def test_drag_header_moves_canvas(self):
             """Dragging the header should move the suggestion canvas."""

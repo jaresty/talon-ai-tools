@@ -10,6 +10,7 @@ from __future__ import annotations
 from typing import List, Dict, Any, Optional
 
 from .axisCatalog import axis_catalog
+from .talonSettings import _canonicalise_axis_tokens
 
 
 def _default_patterns():
@@ -39,7 +40,8 @@ def _axes_from_pattern(pattern) -> tuple[str, Dict[str, Any]]:
     completeness = ""
     scope_tokens: List[str] = []
     method_tokens: List[str] = []
-    style_tokens: List[str] = []
+    form_tokens: List[str] = []
+    channel_tokens: List[str] = []
 
     for segment in tokens[1:-1]:
         for token in segment.split():
@@ -51,25 +53,45 @@ def _axes_from_pattern(pattern) -> tuple[str, Dict[str, Any]]:
             elif token in axis_tokens.get("method", set()):
                 if token not in method_tokens:
                     method_tokens.append(token)
-            elif token in axis_tokens.get("style", set()):
-                if token not in style_tokens:
-                    style_tokens.append(token)
+            elif token in axis_tokens.get("form", set()):
+                if token not in form_tokens:
+                    form_tokens.append(token)
+            elif token in axis_tokens.get("channel", set()):
+                if token not in channel_tokens:
+                    channel_tokens.append(token)
 
     axes_attr = getattr(pattern, "axes", {}) or {}
 
     def _list(value: Any) -> List[str]:
         if isinstance(value, list):
-            return value
+            return [str(v) for v in value if str(v)]
+        if isinstance(value, str):
+            return [seg for seg in value.split() if seg]
         if value is None:
             return []
         return [str(value)]
 
+    scope_values = _list(axes_attr.get("scope")) or scope_tokens
+    method_values = _list(axes_attr.get("method")) or method_tokens
+    form_values = _list(axes_attr.get("form")) or form_tokens
+    channel_values = _list(axes_attr.get("channel")) or channel_tokens
+    directional_values = _list(axes_attr.get("directional")) or _list(directional)
+
+    canonical_scope = _canonicalise_axis_tokens("scope", scope_values)
+    canonical_method = _canonicalise_axis_tokens("method", method_values)
+    canonical_form = _canonicalise_axis_tokens("form", form_values)
+    canonical_channel = _canonicalise_axis_tokens("channel", channel_values)
+    canonical_directional = _canonicalise_axis_tokens(
+        "directional", directional_values
+    )
+
     axes: Dict[str, Any] = {
         "completeness": axes_attr.get("completeness") or completeness,
-        "scope": _list(axes_attr.get("scope")) or scope_tokens,
-        "method": _list(axes_attr.get("method")) or method_tokens,
-        "style": _list(axes_attr.get("style")) or style_tokens,
-        "directional": axes_attr.get("directional") or directional,
+        "scope": canonical_scope,
+        "method": canonical_method,
+        "form": canonical_form,
+        "channel": canonical_channel,
+        "directional": " ".join(canonical_directional) if canonical_directional else "",
     }
     return static_prompt, axes
 

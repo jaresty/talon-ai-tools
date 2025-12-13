@@ -15,6 +15,7 @@ from .suggestionCoordinator import (
     last_recap_snapshot,
     suggestion_grammar_phrase,
 )
+from .modelHelpers import notify
 
 mod = Module()
 ctx = Context()
@@ -26,6 +27,30 @@ class ResponseCanvasState:
     showing: bool = False
     scroll_y: float = 0.0
     meta_expanded: bool = False
+
+
+def _request_is_in_flight() -> bool:
+    """Return True when a GPT request is currently running."""
+    try:
+        phase = getattr(current_state(), "phase", RequestPhase.IDLE)
+        return phase not in (
+            RequestPhase.IDLE,
+            RequestPhase.DONE,
+            RequestPhase.ERROR,
+            RequestPhase.CANCELLED,
+        )
+    except Exception:
+        return False
+
+
+def _reject_if_request_in_flight() -> bool:
+    """Notify and return True when a GPT request is already running."""
+    if _request_is_in_flight():
+        notify(
+            "GPT: A request is already running; wait for it to finish or cancel it first."
+        )
+        return True
+    return False
 
 
 def _hydrate_axis(axis: str, token_str: str) -> str:
@@ -131,6 +156,18 @@ def _debug(msg: str) -> None:
         print(f"GPT response canvas: {msg}")
     except Exception:
         pass
+
+
+def _guard_response_canvas(allow_inflight: bool = False) -> bool:
+    """Return True when the action should abort due to an in-flight request.
+
+    Some callers allow the canvas to open during in-flight progress updates
+    (for example, streaming to the response window). Setting `allow_inflight`
+    skips the guard when a request is currently running.
+    """
+    if allow_inflight and _request_is_in_flight():
+        return False
+    return _reject_if_request_in_flight()
 
 
 def _ensure_response_canvas() -> canvas.Canvas:
@@ -691,7 +728,8 @@ def _default_draw_response(c: canvas.Canvas) -> None:  # pragma: no cover - visu
         "completeness": recipe_snapshot.get("completeness", ""),
         "scope": recipe_snapshot.get("scope_tokens", []) or [],
         "method": recipe_snapshot.get("method_tokens", []) or [],
-        "style": recipe_snapshot.get("style_tokens", []) or [],
+        "form": recipe_snapshot.get("form_tokens", []) or [],
+        "channel": recipe_snapshot.get("channel_tokens", []) or [],
     }
 
     axis_parts: list[str] = []
@@ -707,10 +745,19 @@ def _default_draw_response(c: canvas.Canvas) -> None:  # pragma: no cover - visu
     last_method = axis_join(
         axes_tokens, "method", getattr(GPTState, "last_method", "") or ""
     )
-    last_style = axis_join(
-        axes_tokens, "style", getattr(GPTState, "last_style", "") or ""
+    last_form = axis_join(
+        axes_tokens, "form", getattr(GPTState, "last_form", "") or ""
     )
-    for value in (last_completeness, last_scope, last_method, last_style):
+    last_channel = axis_join(
+        axes_tokens, "channel", getattr(GPTState, "last_channel", "") or ""
+    )
+    for value in (
+        last_completeness,
+        last_scope,
+        last_method,
+        last_form,
+        last_channel,
+    ):
         if value:
             axis_parts.append(value)
     hydrated_parts: list[str] = []
@@ -736,10 +783,24 @@ def _default_draw_response(c: canvas.Canvas) -> None:  # pragma: no cover - visu
             recipe_text = recipe
             grammar_phrase = suggestion_grammar_phrase(
                 recipe_text, getattr(GPTState, "last_again_source", ""), {}
-            )
+        )
         draw_text(f"Recipe: {recipe_text}", x, y)
         y += line_h
         draw_text(f"Say: {grammar_phrase}", x, y)
+        y += line_h
+        # Surface migration hints inline with parse-back so users see the
+        # single-value form/channel contract and directional requirement.
+        draw_text(
+            "Form/channel are single-value; legacy style tokens are removed—use form/channel.",
+            x,
+            y,
+        )
+        y += line_h
+        draw_text(
+            "Always include one directional lens: fog/fig/dig/ong/rog/bog/jog.",
+            x,
+            y,
+        )
         y += line_h
         # Hydrated axis details stay hidden until the meta panel is expanded.
         last_completeness = axis_join(
@@ -753,12 +814,22 @@ def _default_draw_response(c: canvas.Canvas) -> None:  # pragma: no cover - visu
         last_method = axis_join(
             axes_tokens, "method", getattr(GPTState, "last_method", "") or ""
         )
-        last_style = axis_join(
-            axes_tokens, "style", getattr(GPTState, "last_style", "") or ""
+        last_form = axis_join(
+            axes_tokens, "form", getattr(GPTState, "last_form", "") or ""
+        )
+        last_channel = axis_join(
+            axes_tokens, "channel", getattr(GPTState, "last_channel", "") or ""
         )
         try:
             if any(
-                (last_completeness, last_scope, last_method, last_style, directional)
+                (
+                    last_completeness,
+                    last_scope,
+                    last_method,
+                    last_form,
+                    last_channel,
+                    directional,
+                )
             ):
                 global _last_recap_log
                 snapshot = (
@@ -766,15 +837,16 @@ def _default_draw_response(c: canvas.Canvas) -> None:  # pragma: no cover - visu
                     last_completeness,
                     last_scope,
                     last_method,
-                    last_style,
+                    last_form,
+                    last_channel,
                     directional,
                 )
                 if snapshot != _last_recap_log:
                     _debug(
                         "recap state "
                         f"static={static_prompt!r} C={last_completeness!r} "
-                        f"S={last_scope!r} M={last_method!r} St={last_style!r} "
-                        f"D={directional!r}"
+                        f"S={last_scope!r} M={last_method!r} "
+                        f"F={last_form!r} Ch={last_channel!r} D={directional!r}"
                     )
                     _last_recap_log = snapshot
         except Exception:
@@ -787,8 +859,10 @@ def _default_draw_response(c: canvas.Canvas) -> None:  # pragma: no cover - visu
             hydrated_parts.append(f"S: {_hydrate_axis('scope', last_scope)}")
         if last_method:
             hydrated_parts.append(f"M: {_hydrate_axis('method', last_method)}")
-        if last_style:
-            hydrated_parts.append(f"St: {_hydrate_axis('style', last_style)}")
+        if last_form:
+            hydrated_parts.append(f"F: {_hydrate_axis('form', last_form)}")
+        if last_channel:
+            hydrated_parts.append(f"Ch: {_hydrate_axis('channel', last_channel)}")
 
     # Optional diagnostic meta section and toggle under the recap.
     meta = recap_snapshot.get("meta", "").strip()
@@ -1274,6 +1348,8 @@ register_response_draw_handler(_default_draw_response)
 class UserActions:
     def model_response_canvas_refresh():
         """Force a redraw of the response canvas if it is showing."""
+        if _guard_response_canvas(allow_inflight=True):
+            return
         if _response_canvas is None:
             return
         try:
@@ -1293,6 +1369,8 @@ class UserActions:
             RequestPhase.STREAMING,
             RequestPhase.CANCELLED,
         )
+        if _guard_response_canvas(allow_inflight=inflight):
+            return
         if not inflight and not (
             getattr(GPTState, "last_response", "")
             or getattr(GPTState, "text_to_confirm", "")
@@ -1310,6 +1388,8 @@ class UserActions:
 
     def model_response_canvas_toggle():
         """Toggle the canvas-based response viewer open/closed."""
+        if _guard_response_canvas(allow_inflight=True):
+            return
         canvas_obj = _ensure_response_canvas()
         if ResponseCanvasState.showing:
             ResponseCanvasState.showing = False
@@ -1328,6 +1408,8 @@ class UserActions:
 
     def model_response_canvas_close():
         """Explicitly close the response viewer"""
+        if _guard_response_canvas(allow_inflight=True):
+            return
         if _response_canvas is None:
             ResponseCanvasState.showing = False
             return

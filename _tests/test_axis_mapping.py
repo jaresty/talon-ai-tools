@@ -21,6 +21,12 @@ if bootstrap is not None:
         _read_axis_default_from_list,
         _read_axis_value_to_key_map,
     )
+    from talon_user.lib.axisMappings import (
+        axis_hydrate_token,
+        axis_hydrate_tokens,
+        axis_key_to_value_map_for,
+        axis_value_to_key_map_for,
+    )
 
     class AxisMappingTests(unittest.TestCase):
         def test_value_to_key_returns_tokens_only(self) -> None:
@@ -67,9 +73,6 @@ if bootstrap is not None:
         def test_method_axis_recipe_token_uses_value_to_key_map(self) -> None:
             self._assert_axis_round_trip("method")
 
-        def test_style_axis_recipe_token_uses_value_to_key_map(self) -> None:
-            self._assert_axis_round_trip("style")
-
         def test_read_axis_default_from_list_returns_list_value(self) -> None:
             """Ensure _read_axis_default_from_list returns the token when present."""
             # Lists now store token:token entries; expect the token back.
@@ -90,19 +93,12 @@ if bootstrap is not None:
 
         def test_canonicalise_axis_tokens_deduplicates_and_sorts(self) -> None:
             """Axis token canonicalisation should dedupe and canonicalise order."""
-            tokens = ["jira", "story", "jira", "story", "jira"]
+            tokens = ["jira", "slack", "jira", "slack", "jira"]
 
-            canonical = _canonicalise_axis_tokens("style", tokens)
+            canonical = _canonicalise_axis_tokens("channel", tokens)
 
-            # With no incompatibilities and a soft cap of 3, the result
-            # should contain each token at most once, within the style cap.
-            self.assertEqual(set(canonical), {"jira", "story"})
-            # Cap is 3 for style, but this input only needs 2.
-            self.assertEqual(len(canonical), 2)
-            # And serialisation should round-trip via the helper functions.
-            serialised = _axis_tokens_to_string(canonical)
-            round_tripped = _axis_string_to_tokens(serialised)
-            self.assertEqual(round_tripped, canonical)
+            # Channel cap is 1; only the last token should survive.
+            self.assertEqual(canonical, ["slack"])
 
         def test_canonicalise_axis_tokens_applies_soft_caps_with_last_wins(self) -> None:
             """Soft caps should keep the most recent tokens for an axis."""
@@ -139,50 +135,14 @@ if bootstrap is not None:
             round_tripped = _axis_string_to_tokens(serialised)
             self.assertEqual(round_tripped, canonical)
 
-        def test_style_incompatibility_drops_conflicting_tokens_last_wins(self) -> None:
-            """Incompatible style tokens should obey last-wins semantics."""
-            # For style, we declare 'jira' and 'adr' mutually incompatible.
-            # When both appear, the later token should win after
-            # canonicalisation.
-            canonical = _canonicalise_axis_tokens("style", ["jira", "adr"])
-            self.assertEqual(canonical, ["adr"])
-
-            canonical_reverse = _canonicalise_axis_tokens("style", ["adr", "jira"])
-            self.assertEqual(canonical_reverse, ["jira"])
-
-        def test_container_style_tokens_have_explicit_incompatibility_decisions(
-            self,
-        ) -> None:
-            """Guardrail: container-style tokens must have an explicit incompatibility decision."""
-            # Container-like styles represent primary output surfaces or
-            # containers. For now we treat 'jira' and 'adr' as the canonical
-            # pair; adding new container styles (for example, tweet/email)
-            # should extend this list and, at the same time, update
-            # _AXIS_INCOMPATIBILITIES with an explicit decision.
-            container_styles = {"jira", "adr", "sync"}
-
-            style_incompat = _AXIS_INCOMPATIBILITIES.get("style", {})
-
-            for token in container_styles:
-                # Each container token must either:
-                # - be a key in the incompatibility table, or
-                # - be listed as incompatible with at least one other token.
-                declared_as_key = token in style_incompat
-                declared_in_values = any(
-                    token in conflicts for conflicts in style_incompat.values()
-                )
-                self.assertTrue(
-                    declared_as_key or declared_in_values,
-                    f"Container style {token!r} must have an explicit incompatibility decision in _AXIS_INCOMPATIBILITIES['style']",
-                )
-
         def test_talon_list_tokens_match_axis_config(self) -> None:
             """Guardrail: Talon list tokens must match axisConfig tokens (token-only ingress)."""
             axis_to_file = {
                 "completeness": "completenessModifier.talon-list",
                 "scope": "scopeModifier.talon-list",
                 "method": "methodModifier.talon-list",
-                "style": "styleModifier.talon-list",
+                "form": "formModifier.talon-list",
+                "channel": "channelModifier.talon-list",
                 "directional": "directionalModifier.talon-list",
             }
 
@@ -216,6 +176,22 @@ if bootstrap is not None:
                         config_tokens,
                         f"Talon list tokens for axis {axis} must match axisConfig",
                     )
+
+        def test_map_axis_tokens_rejects_legacy_style_axis(self) -> None:
+            """Guardrail: style axis should be blocked post form/channel split."""
+            with self.assertRaisesRegex(ValueError, "style axis is removed"):
+                _map_axis_tokens("style", ["plain"])
+
+        def test_axis_mapping_helpers_reject_legacy_style_axis(self) -> None:
+            """Guardrail: axis mapping/hydration helpers should reject style axis."""
+            with self.assertRaisesRegex(ValueError, "style axis is removed"):
+                axis_value_to_key_map_for("style")
+            with self.assertRaisesRegex(ValueError, "style axis is removed"):
+                axis_key_to_value_map_for("style")
+            with self.assertRaisesRegex(ValueError, "style axis is removed"):
+                axis_hydrate_tokens("style", ["plain"])
+            with self.assertRaisesRegex(ValueError, "style axis is removed"):
+                axis_hydrate_token("style", "plain")
 
 else:
     if not TYPE_CHECKING:

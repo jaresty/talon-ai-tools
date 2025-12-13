@@ -30,7 +30,7 @@ if bootstrap is not None:
                     # Focus this guardrail on axes whose tokens are expected
                     # to come directly from axisConfig; completeness hints may
                     # intentionally use looser language for now.
-                    if axis_name not in {"scope", "method", "style", "directional"}:
+                    if axis_name not in {"scope", "method", "form", "channel", "directional"}:
                         continue
 
                     # Axis must exist in axisConfig.

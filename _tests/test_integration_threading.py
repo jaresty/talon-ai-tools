@@ -26,6 +26,7 @@ if bootstrap is not None:
 
             gpt_module.UserActions.gpt_enable_threading()
             GPTState.query = []
+            GPTState.last_directional = "fog"
             gpt_module.UserActions.gpt_replay("paste")
 
             session_cls.assert_called()

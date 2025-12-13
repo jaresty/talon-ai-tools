@@ -1,0 +1,10 @@
+list: user.channelModifier
+# Channel/medium bias tokens (one max)
+-
+slack: slack
+jira: jira
+presenterm: presenterm
+announce: announce
+remote: remote
+sync: sync
+html: html

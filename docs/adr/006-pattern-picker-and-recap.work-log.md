@@ -769,7 +769,7 @@
     - Close the prompt pattern GUI after running a pattern.
   - Implemented `prompt_pattern_gui` to:
     - Show the selected static prompt, its description, and any profile defaults from `STATIC_PROMPT_CONFIG`.
-    - Display a grammar template: `model <prompt> [completeness] [scope] [method] [style] <directional lens>`.
+    - Display a grammar template: `model <prompt> [completeness] [scope] [scope] [method] [method] [method] [form] [channel] <directional lens>`.
     - List each preset as a button with its concrete recipe and a `Say (grammar): model …` hint.
 - Added Talon grammars:
   - `GPT/gpt-prompt-patterns.talon`:

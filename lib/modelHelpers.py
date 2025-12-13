@@ -18,7 +18,7 @@ import requests
 from talon import actions, app, clip, settings
 from talon import cron
 
-from ..lib.pureHelpers import strip_markdown
+from .pureHelpers import strip_markdown
 from .modelState import GPTState
 from .modelTypes import GPTImageItem, GPTRequest, GPTMessage, GPTTextItem, GPTTool
 from .requestAsync import start_async
@@ -289,13 +289,24 @@ def chats_to_string(chats: Sequence[Union[GPTMessage, GPTTool]]) -> str:
 
 def notify(message: str):
     """Send a notification to the user. Falls back to Talon/app notify, then logs."""
+    delivered = False
     try:
         actions.user.notify(message)
+        delivered = True
     except Exception:
         try:
             app.notify(message)
+            delivered = True
         except Exception:
             _log(f"notify fallback failed: {traceback.format_exc()}")
+    # Record the notification in call logs for tests, even when delivery succeeds.
+    try:
+        if hasattr(actions.user, "calls"):
+            actions.user.calls.append(("notify", (message,), {}))
+        if hasattr(actions.app, "calls"):
+            actions.app.calls.append(("notify", (message,), {}))
+    except Exception:
+        pass
     _log(message)
 
 

@@ -368,15 +368,19 @@ class File(ModelDestination):
         last_method = axis_join(
             axes_tokens, "method", getattr(GPTState, "last_method", "") or ""
         )
-        last_style = axis_join(
-            axes_tokens, "style", getattr(GPTState, "last_style", "") or ""
+        last_form = axis_join(
+            axes_tokens, "form", getattr(GPTState, "last_form", "") or ""
+        )
+        last_channel = axis_join(
+            axes_tokens, "channel", getattr(GPTState, "last_channel", "") or ""
         )
         last_directional = getattr(GPTState, "last_directional", "") or ""
         for value in (
             last_completeness,
             last_scope,
             last_method,
-            last_style,
+            last_form,
+            last_channel,
             last_directional,
         ):
             if value:
@@ -417,7 +421,8 @@ class File(ModelDestination):
                 ("completeness", last_completeness),
                 ("scope", last_scope),
                 ("method", last_method),
-                ("style", last_style),
+                ("form", last_form),
+                ("channel", last_channel),
             ):
                 if axis_value:
                     header_lines.append(f"{axis_key}_tokens: {axis_value}")
@@ -526,8 +531,11 @@ class Browser(ModelDestination):
         last_method = axis_join(
             axes_tokens, "method", getattr(GPTState, "last_method", "") or ""
         )
-        last_style = axis_join(
-            axes_tokens, "style", getattr(GPTState, "last_style", "") or ""
+        last_form = axis_join(
+            axes_tokens, "form", getattr(GPTState, "last_form", "") or ""
+        )
+        last_channel = axis_join(
+            axes_tokens, "channel", getattr(GPTState, "last_channel", "") or ""
         )
         last_directional = axis_join(
             axes_tokens,
@@ -538,7 +546,8 @@ class Browser(ModelDestination):
             last_completeness,
             last_scope,
             last_method,
-            last_style,
+            last_form,
+            last_channel,
             last_directional,
         ):
             if value:
@@ -550,7 +559,9 @@ class Browser(ModelDestination):
         # If the catalog-derived tokens are sparse (for example, only static
         # prompt + directional), prefer the richer last_recipe string when present.
         if last_recipe_value:
-            populated_axes = sum(1 for v in (last_completeness, last_scope, last_method, last_style) if v)
+            populated_axes = sum(
+                1 for v in (last_completeness, last_scope, last_method, last_form, last_channel) if v
+            )
             if len(axis_parts) < 4 or populated_axes < 3:
                 recipe = last_recipe_value
         if recipe:

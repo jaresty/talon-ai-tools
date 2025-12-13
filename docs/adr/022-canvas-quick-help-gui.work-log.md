@@ -145,7 +145,7 @@
     - Sets a monospaced font when possible (e.g. `"Menlo"`) and a reasonable default font size.
     - Renders:
       - A title: “Model grammar quick reference”.
-      - The grammar skeleton: `model run <staticPrompt> [completeness] [scope] [method] [style] <directional lens>`.
+      - The grammar skeleton: `model run <staticPrompt> [completeness] [scope] [scope] [method] [method] [method] [form] [channel] <directional lens>`.
       - A short last-recipe or static-prompt reminder when available from `HelpGUIState` / `GPTState`.
       - Axis key summaries for completeness/scope/method/style using the same lists as the imgui quick help.
       - A textual directional grid:

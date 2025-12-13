@@ -5,13 +5,30 @@ from __future__ import annotations
 from typing import Iterable, List, Dict, Optional
 
 from .modelState import GPTState
+from .axisMappings import axis_registry_tokens
+from .modelHelpers import notify
+
+
+def _recipe_has_directional(recipe: str) -> bool:
+    """Return True when the recipe string includes a known directional token."""
+    tokens = [tok.strip() for tok in recipe.replace("·", " ").split() if tok.strip()]
+    directionals = axis_registry_tokens("directional")
+    return any(tok in directionals for tok in tokens)
 
 
 def record_suggestions(
     suggestions: Iterable[dict[str, str]], source_key: str | None
 ) -> None:
     """Persist the latest suggestions and source key in GPTState."""
-    suggestions_list = list(suggestions)
+    suggestions_list: list[dict[str, str]] = []
+    for item in suggestions:
+        recipe = str(item.get("recipe", "") or "").strip()
+        if recipe and not _recipe_has_directional(recipe):
+            notify(
+                "GPT: Suggestion skipped because it has no directional lens; expected fog/fig/dig/ong/rog/bog/jog."
+            )
+            continue
+        suggestions_list.append(dict(item))
     GPTState.last_suggested_recipes = suggestions_list
     GPTState.last_suggest_source = source_key or ""
 
@@ -66,6 +83,15 @@ def _tokens(value) -> list[str]:
     return []
 
 
+def _directional_token(value: str | list[str]) -> str:
+    """Return a single directional token (last-wins when multiple are provided)."""
+    tokens = _tokens(value)
+    if not tokens:
+        return ""
+    # Enforce single directional per ADR 048; prefer the last spoken token.
+    return tokens[-1]
+
+
 def last_recipe_snapshot() -> dict[str, object]:
     """Return the last recipe/static/axis tokens in a normalised form."""
     axes_state = getattr(GPTState, "last_axes", {}) or {}
@@ -79,9 +105,9 @@ def last_recipe_snapshot() -> dict[str, object]:
     recipe_str = getattr(GPTState, "last_recipe", "") or ""
     directional_tokens = axes_state.get("directional")
     if isinstance(directional_tokens, list) and directional_tokens:
-        directional = " ".join(str(t) for t in directional_tokens if str(t))
+        directional = _directional_token(directional_tokens)
     else:
-        directional = getattr(GPTState, "last_directional", "") or ""
+        directional = _directional_token(getattr(GPTState, "last_directional", ""))
     return {
         "recipe": recipe_str,
         "static_prompt": getattr(GPTState, "last_static_prompt", "") or "",
@@ -90,7 +116,8 @@ def last_recipe_snapshot() -> dict[str, object]:
         )[0],
         "scope_tokens": _axis("scope", getattr(GPTState, "last_scope", "")),
         "method_tokens": _axis("method", getattr(GPTState, "last_method", "")),
-        "style_tokens": _axis("style", getattr(GPTState, "last_style", "")),
+        "form_tokens": _axis("form", getattr(GPTState, "last_form", "")),
+        "channel_tokens": _axis("channel", getattr(GPTState, "last_channel", "")),
         "directional": directional,
     }
 
@@ -114,7 +141,7 @@ def recipe_header_lines_from_snapshot(snapshot: dict[str, object]) -> list[str]:
     if completeness:
         header_lines.append(f"completeness: {completeness}")
 
-    for axis in ("scope", "method", "style"):
+    for axis in ("scope", "method", "form", "channel"):
         tokens = snapshot.get(f"{axis}_tokens", []) or []
         if isinstance(tokens, list) and tokens:
             joined = " ".join(str(t) for t in tokens if str(t).strip())
@@ -134,6 +161,7 @@ def last_recap_snapshot() -> dict[str, str]:
         "recipe": getattr(GPTState, "last_recipe", "") or "",
         "response": getattr(GPTState, "last_response", "") or "",
         "meta": getattr(GPTState, "last_meta", "") or "",
+        "directional": getattr(GPTState, "last_directional", "") or "",
     }
 
 
@@ -147,12 +175,16 @@ def clear_recap_state() -> None:
     GPTState.last_completeness = ""
     GPTState.last_scope = ""
     GPTState.last_method = ""
-    GPTState.last_style = ""
+    GPTState.last_form = ""
+    GPTState.last_channel = ""
+    GPTState.last_directional = ""
     GPTState.last_axes = {
         "completeness": [],
         "scope": [],
         "method": [],
-        "style": [],
+        "form": [],
+        "channel": [],
+        "directional": [],
     }
 
 
@@ -161,21 +193,27 @@ def set_last_recipe_from_selection(
     completeness: str,
     scope: str | list[str],
     method: str | list[str],
-    style: str | list[str],
-    directional: str,
+    form: str | list[str] = "",
+    channel: str | list[str] = "",
+    directional: str = "",
 ) -> None:
     """Update GPTState last_* fields after running a suggestion."""
     static_token = static_prompt or ""
     completeness_token = completeness or ""
     scope_tokens = _tokens(scope)
     method_tokens = _tokens(method)
-    style_tokens = _tokens(style)
+    form_tokens = _tokens(form)
+    channel_tokens = _tokens(channel)
     recipe_parts = [static_token] if static_token else []
+    directional_token = _directional_token(directional)
+
     for token in (
         completeness_token,
         " ".join(scope_tokens),
         " ".join(method_tokens),
-        " ".join(style_tokens),
+        " ".join(form_tokens),
+        " ".join(channel_tokens),
+        directional_token,
     ):
         if token:
             recipe_parts.append(token)
@@ -184,13 +222,16 @@ def set_last_recipe_from_selection(
     GPTState.last_completeness = completeness_token
     GPTState.last_scope = " ".join(scope_tokens)
     GPTState.last_method = " ".join(method_tokens)
-    GPTState.last_style = " ".join(style_tokens)
-    GPTState.last_directional = directional or ""
+    GPTState.last_form = " ".join(form_tokens)
+    GPTState.last_channel = " ".join(channel_tokens)
+    GPTState.last_directional = directional_token
     GPTState.last_axes = {
         "completeness": [completeness_token] if completeness_token else [],
         "scope": scope_tokens,
         "method": method_tokens,
-        "style": style_tokens,
+        "form": form_tokens,
+        "channel": channel_tokens,
+        "directional": [directional_token] if directional_token else [],
     }
 
 

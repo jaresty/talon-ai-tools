@@ -20,6 +20,15 @@ if bootstrap is not None:
     class SuggestionIntegrationTests(unittest.TestCase):
         def setUp(self):
             GPTState.reset_all()
+            GPTState.last_directional = "fog"
+            GPTState.last_axes = {
+                "completeness": [],
+                "scope": [],
+                "method": [],
+                "form": [],
+                "channel": [],
+                "directional": ["fog"],
+            }
             # Stub out GUI open so we can focus on data flow.
             actions.user.model_prompt_recipe_suggestions_gui_open = MagicMock()
             actions.user.gpt_apply_prompt = MagicMock()
@@ -98,7 +107,7 @@ if bootstrap is not None:
             self.assertGreaterEqual(first_call_count, 1)
 
             # Now call gpt_rerun_last_recipe with overrides on top of the stored
-            # last recipe: keep the same static prompt/scope/method/style but
+            # last recipe: keep the same static prompt/scope/method/form/channel but
             # change completeness and directional lens.
             with (
                 patch.object(
@@ -119,7 +128,7 @@ if bootstrap is not None:
                 model_prompt.return_value = "PROMPT-AGAIN"
 
                 gpt_module.UserActions.gpt_rerun_last_recipe(
-                    "", "gist", [], [], [], "rog"
+                    "", "gist", [], [], "rog", "", ""
                 )
 
                 # gpt_apply_prompt should have been called again with a config
@@ -136,13 +145,12 @@ if bootstrap is not None:
                 self.assertEqual(GPTState.last_completeness, "gist")
                 self.assertEqual(GPTState.last_directional, "rog")
 
-        def test_suggest_multi_tag_then_again_resolves_style_incompatibility(self):
-            """End-to-end: multi-tag suggestion followed by overrides respects style incompatibility."""
-            # Arrange a multi-tag suggestion that includes both 'jira' and 'adr'
-            # in the style segment; the normaliser should resolve these via
-            # the style incompatibility rules when rerun.
+        def test_suggest_multi_tag_then_again_resolves_form_channel_singletons(self):
+            """End-to-end: multi-tag suggestion followed by overrides respects form/channel singleton caps."""
+            # Arrange a multi-tag suggestion that includes both a form and channel token;
+            # the normaliser should keep singletons when rerun.
             suggestion_text = (
-                "Name: Jira/ADR ticket | Recipe: ticket · full · actions edges · structure flow · jira adr · fog"
+                "Name: Jira/ADR ticket | Recipe: ticket · full · actions edges · structure flow · adr · jira · fog"
             )
             self.pipeline.complete.return_value = PromptResult.from_messages(
                 [format_message(suggestion_text)]
@@ -165,13 +173,11 @@ if bootstrap is not None:
             # Execute the suggestion to seed last_recipe / last_* from the GUI.
             suggestion_module.UserActions.model_prompt_recipe_suggestions_run_index(1)
 
-            # At this point, last_style is still the raw multi-tag string from
-            # the suggestion recipe ("jira adr").
-            self.assertIn(GPTState.last_style, ("jira adr", "adr jira"))
+            # At this point, last form/channel are the raw tokens from the suggestion recipe.
+            self.assertEqual(GPTState.last_form, "adr")
+            self.assertEqual(GPTState.last_channel, "jira")
 
-            # Now rerun with a style override that adds 'jira' again; the
-            # canonicaliser should resolve the style set using the
-            # incompatibility rules and last-wins semantics.
+            # Now rerun with a channel override that adds 'jira' again; form/channel stay singletons.
             with (
                 patch.object(
                     gpt_module,
@@ -191,25 +197,25 @@ if bootstrap is not None:
                 model_prompt.return_value = "PROMPT-MULTI-AGAIN"
 
                 gpt_module.UserActions.gpt_rerun_last_recipe(
-                    "", "", [], [], ["jira"], "rog"
+                    "", "", [], [], "rog", "", "jira"
                 )
 
                 # One more apply call with the rerun config.
                 config = actions.user.gpt_apply_prompt.call_args.args[0]
                 self.assertEqual(config.please_prompt, "PROMPT-MULTI-AGAIN")
 
-                # After rerun, last_style should reflect the resolved style set.
-                # With jira/adr marked as incompatible and jira supplied last,
-                # only 'jira' should remain after canonicalisation.
-                self.assertEqual(GPTState.last_style, "jira")
+                # After rerun, form/channel should remain singletons.
+                self.assertEqual(GPTState.last_form, "adr")
+                self.assertEqual(GPTState.last_channel, "jira")
 
         def test_suggest_over_cap_axes_then_again_enforces_soft_caps(self):
             """End-to-end: over-cap multi-tag axes from suggestion respect soft caps on rerun."""
-            # Arrange a suggestion that uses over-cap scope and style segments:
+            # Arrange a suggestion that uses over-cap scope and form/channel segments:
             # - scope: actions edges relations (3 tokens, cap 2)
-            # - style: jira story faq bullets (4 tokens, cap 3)
+            # - form: bullets faq checklist (cap 1)
+            # - channel: slack jira html (cap 1)
             suggestion_text = (
-                "Name: Over-cap ticket | Recipe: ticket · full · actions edges relations · structure flow · jira story faq bullets · fog"
+                "Name: Over-cap ticket | Recipe: ticket · full · actions edges relations · structure flow · bullets faq checklist · slack jira html · fog"
             )
             self.pipeline.complete.return_value = PromptResult.from_messages(
                 [format_message(suggestion_text)]
@@ -252,7 +258,7 @@ if bootstrap is not None:
                 create_dest_again.return_value = dest_again
                 model_prompt.return_value = "PROMPT-OVER-CAP-AGAIN"
 
-                gpt_module.UserActions.gpt_rerun_last_recipe("", "", [], [], [], "rog")
+                gpt_module.UserActions.gpt_rerun_last_recipe("", "", [], [], "rog", "", "")
 
                 config = actions.user.gpt_apply_prompt.call_args.args[0]
                 self.assertEqual(config.please_prompt, "PROMPT-OVER-CAP-AGAIN")
@@ -265,13 +271,13 @@ if bootstrap is not None:
                     set(scope_tokens).issubset({"actions", "edges", "relations"})
                 )
 
-                # After rerun, last_style should contain at most 3 tokens drawn
-                # from the original suggestion's style tokens.
-                style_tokens = GPTState.last_style.split()
-                self.assertLessEqual(len(style_tokens), 3)
-                self.assertTrue(
-                    set(style_tokens).issubset({"jira", "story", "faq", "bullets"})
-                )
+                # After rerun, form/channel should reflect singleton caps from the over-cap inputs.
+                form_tokens = GPTState.last_form.split()
+                channel_tokens = GPTState.last_channel.split()
+                self.assertLessEqual(len(form_tokens), 1)
+                self.assertLessEqual(len(channel_tokens), 1)
+                self.assertTrue(set(form_tokens).issubset({"bullets", "faq", "checklist"}))
+                self.assertTrue(set(channel_tokens).issubset({"slack", "jira", "html"}))
 else:
     if not TYPE_CHECKING:
         class SuggestionIntegrationTests(unittest.TestCase):

@@ -325,6 +325,60 @@ if bootstrap is not None:
             self.assertTrue(bool(snapshot_arg.get("completed")))
             self.assertFalse(bool(snapshot_arg.get("errored")))
 
+        def test_prompt_recap_includes_migration_hints(self) -> None:
+            """Prompt recap should surface form/channel singleton and directional requirements."""
+            GPTState.last_response = "answer"
+            GPTState.last_recipe = "describe · gist · focus · plain"
+            GPTState.last_static_prompt = "describe"
+            GPTState.last_axes = {
+                "completeness": ["gist"],
+                "scope": ["focus"],
+                "method": [],
+                "form": ["plain"],
+                "channel": [],
+                "directional": ["fog"],
+            }
+            GPTState.last_directional = "fog"
+
+            canvas_obj = _ensure_response_canvas()
+            # Provide minimal canvas primitives and state for the draw handler.
+            if not hasattr(canvas_obj, "rect") or canvas_obj.rect is None:
+                canvas_obj.rect = type(
+                    "R", (), {"x": 0, "y": 0, "width": 800, "height": 600}
+                )()
+
+            class Paint:
+                class Style:
+                    FILL = 1
+                    STROKE = 2
+
+                def __init__(self) -> None:
+                    self.color = "000000"
+                    self.style = None
+
+            canvas_obj.paint = Paint()
+            drawn: list[str] = []
+
+            def _draw_text(text, *_args, **_kwargs):  # type: ignore[override]
+                drawn.append(str(text))
+
+            canvas_obj.draw_text = _draw_text  # type: ignore[assignment]
+            canvas_obj.draw_rect = lambda *args, **kwargs: None  # type: ignore[assignment]
+
+            callbacks = getattr(canvas_obj, "_callbacks", {})
+            draw_cbs = callbacks.get("draw") or []
+            for cb in draw_cbs:
+                cb(canvas_obj)
+
+            self.assertTrue(
+                any("Form/channel are single-value" in line for line in drawn),
+                f"Expected form/channel migration hint in recap text, got {drawn}",
+            )
+            self.assertTrue(
+                any("directional lens" in line for line in drawn),
+                f"Expected directional migration hint in recap text, got {drawn}",
+            )
+
 
 else:
     if not TYPE_CHECKING:

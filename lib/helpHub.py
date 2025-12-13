@@ -22,6 +22,9 @@ from .helpDomain import (
     help_edit_filter_text,
     HelpIndexEntry,
 )
+from .requestBus import current_state
+from .requestState import RequestPhase
+from .modelHelpers import notify
 
 
 try:
@@ -72,6 +75,30 @@ _global_key_handler_registered = False
 _tap_key_handler_registered = False
 _hub_key_handler = None  # set after canvas creation
 _handlers_registered = False
+
+
+def _request_is_in_flight() -> bool:
+    """Return True when a GPT request is currently running."""
+    try:
+        phase = getattr(current_state(), "phase", RequestPhase.IDLE)
+        return phase not in (
+            RequestPhase.IDLE,
+            RequestPhase.DONE,
+            RequestPhase.ERROR,
+            RequestPhase.CANCELLED,
+        )
+    except Exception:
+        return False
+
+
+def _reject_if_request_in_flight() -> bool:
+    """Notify and return True when a GPT request is already running."""
+    if _request_is_in_flight():
+        notify(
+            "GPT: A request is already running; wait for it to finish or cancel it first."
+        )
+        return True
+    return False
 
 # Basic layout constants for a compact panel.
 _PANEL_WIDTH = 520
@@ -391,7 +418,7 @@ def _ensure_canvas() -> None:
                 # Normalisation and voice hints.
                 info_y = result_y + 10
                 info_lines = [
-                    "Caps: scope≤2, method≤3, style≤3; include a directional lens.",
+                    "Caps: scope≤2, method≤3, form=1, channel=1; include a directional lens.",
                     "Voice hints: model patterns · model quick help · model run suggest · history drawer.",
                     "Hub: wheel/PgUp/PgDn/arrow keys or scrollbar to scroll; say 'model help filter <phrase>'.",
                 ]
@@ -842,14 +869,17 @@ def _cheat_sheet_text() -> str:
         "Who / Why / How (ADR 040):",
         "- Persona (Who): voice, audience, tone",
         "- Intent (Why): purpose",
-        "- Contract (How): completeness, scope, method, style",
+        "- Contract (How): completeness, scope, method, form, channel",
         "- Presets: small Who/Why bundles (for example, 'Teach junior dev', 'Executive brief').",
         "Axes (examples):",
         "- completeness: skim | gist | full | deep",
         "- scope: narrow | focus | bound | edges",
         "- method: steps | plan | rigor | flow | debugging",
-        "- style: plain | tight | bullets | table | code | checklist",
+        "- form: plain | bullets | table | code | checklist | adr",
+        "- channel: slack | jira | presenterm | html | announce",
         "Hints:",
+        "- Form and channel are single-value; legacy style tokens are removed (use form/channel).",
+        "- Every run needs exactly one directional lens (fog/fig/dig/ong/rog/bog/jog).",
         "- Use More actions… → Open Help Hub in confirmation",
         "- Say 'model help filter <phrase>' to search in Hub",
     ]
@@ -1359,14 +1389,20 @@ def _activate_focus() -> bool:
 class UserActions:
     def help_hub_open():
         """Open the Help Hub canvas"""
+        if _reject_if_request_in_flight():
+            return
         help_hub_open()
 
     def help_hub_close():
         """Close the Help Hub canvas"""
+        if _reject_if_request_in_flight():
+            return
         help_hub_close()
 
     def help_hub_toggle():
         """Toggle the Help Hub canvas"""
+        if _reject_if_request_in_flight():
+            return
         if HelpHubState.showing:
             help_hub_close()
         else:
@@ -1374,21 +1410,31 @@ class UserActions:
 
     def help_hub_copy_cheat_sheet():
         """Copy the Help Hub cheat sheet to the clipboard"""
+        if _reject_if_request_in_flight():
+            return
         _copy_cheat_sheet()
 
     def help_hub_test_click(label: str):
         """Test helper: invoke a hub button by label (for unit tests)."""
+        if _reject_if_request_in_flight():
+            return
         help_hub_test_click(label)
 
     def help_hub_onboarding():
         """Open Help Hub with onboarding tips shown"""
+        if _reject_if_request_in_flight():
+            return
         HelpHubState.show_onboarding = True
         help_hub_open()
 
     def help_hub_set_filter(text: str):
         """Set Help Hub filter (opens the hub if needed)"""
+        if _reject_if_request_in_flight():
+            return
         help_hub_set_filter(text)
 
     def help_hub_pick_result(index: int):
         """Activate Nth search result (1-based)"""
+        if _reject_if_request_in_flight():
+            return
         help_hub_pick_result(index)

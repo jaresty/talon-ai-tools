@@ -18,7 +18,8 @@ _AXIS_LIST_FILES: Dict[str, str] = {
     "completeness": "completenessModifier.talon-list",
     "scope": "scopeModifier.talon-list",
     "method": "methodModifier.talon-list",
-    "style": "styleModifier.talon-list",
+    "form": "formModifier.talon-list",
+    "channel": "channelModifier.talon-list",
     "directional": "directionalModifier.talon-list",
 }
 

@@ -89,9 +89,14 @@ if bootstrap is not None:
             self.assertEqual(HelpGUIState.section, "method")
 
             HelpCanvasState.showing = False
-            UserActions.model_help_canvas_open_style()
+            UserActions.model_help_canvas_open_form()
             self.assertTrue(HelpCanvasState.showing)
-            self.assertEqual(HelpGUIState.section, "style")
+            self.assertEqual(HelpGUIState.section, "form")
+
+            HelpCanvasState.showing = False
+            UserActions.model_help_canvas_open_channel()
+            self.assertTrue(HelpCanvasState.showing)
+            self.assertEqual(HelpGUIState.section, "channel")
 
             HelpCanvasState.showing = False
             UserActions.model_help_canvas_open_directional()

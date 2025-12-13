@@ -23,6 +23,8 @@ class RequestLogEntry:
     # Token-only axes per ADR 034.
     axes: Dict[str, List[str]] = field(default_factory=dict)
     provider_id: str = ""
+    # Migration flag: legacy style axis was present in the original request.
+    legacy_style: bool = False
 
 
 class RequestHistory:

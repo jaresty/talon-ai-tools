@@ -1,7 +1,7 @@
 import json
 import os
 import threading
-from typing import List, Optional, cast
+from typing import List, Optional, Union, cast
 import datetime
 import re
 
@@ -14,6 +14,7 @@ from ..lib.talonSettings import (
     _canonicalise_axis_tokens,
     _tokens_list,
     modelPrompt,
+    safe_model_prompt,
 )
 
 from ..lib.staticPromptConfig import STATIC_PROMPT_CONFIG
@@ -34,7 +35,7 @@ except ImportError:  # Talon may have a stale runtime without axisCatalog
     def get_static_prompt_axes(name: str) -> dict[str, object]:
         profile = STATIC_PROMPT_CONFIG.get(name, {})
         axes: dict[str, object] = {}
-        for axis in ("completeness", "scope", "method", "style"):
+        for axis in ("completeness", "scope", "method", "form", "channel"):
             value = profile.get(axis)
             if value:
                 if axis == "completeness":
@@ -142,7 +143,6 @@ from ..lib.modelPatternGUI import (
     COMPLETENESS_MAP as _COMPLETENESS_MAP,
     SCOPE_MAP as _SCOPE_MAP,
     METHOD_MAP as _METHOD_MAP,
-    STYLE_MAP as _STYLE_MAP,
     DIRECTIONAL_MAP as _DIRECTIONAL_MAP,
 )
 from ..lib.axisMappings import axis_key_to_value_map_for
@@ -154,6 +154,7 @@ from ..lib.suggestionCoordinator import (
     recipe_header_lines_from_snapshot,
     set_last_recipe_from_selection,
     last_recap_snapshot,
+    clear_recap_state,
 )
 
 # Backward-compatible alias for directional map used during parsing.
@@ -371,15 +372,16 @@ def _build_axis_docs() -> str:
         ("Completeness modifiers", "completeness"),
         ("Scope modifiers", "scope"),
         ("Method modifiers", "method"),
-        ("Style modifiers", "style"),
+        ("Form modifiers", "form"),
+        ("Channel modifiers", "channel"),
         ("Directional modifiers", "directional"),
     ]
     catalog = axis_catalog()
     axis_tokens = catalog.get("axes", {}) or {}
     lines: list[str] = [
-        "Note: Axes capture how and in what shape the model should respond (completeness, scope, method, style, directional lens). "
-        "Hierarchy: Completeness > Method > Scope > Style. Ambiguous tokens are assigned in that order unless explicitly prefixed "
-        "(Completeness:/Method:/Scope:/Style:). For full semantics and examples, see ADR 005/012/013/016/032 and the GPT README axis cheat sheet.\n"
+        "Note: Axes capture how and in what shape the model should respond (completeness, scope, method, form, channel, directional lens). "
+        "Hierarchy: Completeness > Method > Scope > Form > Channel. Ambiguous tokens are assigned in that order unless explicitly prefixed "
+        "(Completeness:/Method:/Scope:/Form:/Channel:). For full semantics and examples, see ADR 005/012/013/016/032 and the GPT README axis cheat sheet.\n"
     ]
     for label, axis_name in sections:
         token_map = axis_tokens.get(axis_name, {}) or {}
@@ -389,7 +391,8 @@ def _build_axis_docs() -> str:
                 "completeness": "completenessModifier.talon-list",
                 "scope": "scopeModifier.talon-list",
                 "method": "methodModifier.talon-list",
-                "style": "styleModifier.talon-list",
+                "form": "formModifier.talon-list",
+                "channel": "channelModifier.talon-list",
                 "directional": "directionalModifier.talon-list",
             }.get(axis_name)
             items = _read_list_items(filename) if filename else []
@@ -443,7 +446,7 @@ def _build_static_prompt_docs() -> str:
     # Prefer descriptions from the catalog (STATIC_PROMPT_CONFIG), and include
     # default axes when present; fall back to listing unprofiled prompts by name.
     lines: list[str] = [
-        "Note: Some behaviours (for example, diagrams, Presenterm decks, ADRs, shell scripts, debugging, Slack/Jira formatting, taxonomy-style outputs) now live only as style/method axis values rather than static prompts; see ADR 012/013 and the README cheat sheet for axis-based recipes.\n"
+        "Note: Some behaviours (for example, diagrams, Presenterm decks, ADRs, shell scripts, debugging, Slack/Jira formatting, taxonomy-style outputs) now live only as form/channel/method axis values rather than static prompts; see ADR 012/013 and the README cheat sheet for axis-based recipes.\n"
     ]
     # First, profiled prompts with rich descriptions.
     for entry in catalog["profiled"]:
@@ -452,7 +455,7 @@ def _build_static_prompt_docs() -> str:
         if not description:
             continue
         axes_bits: list[str] = []
-        for label in ("completeness", "scope", "method", "style"):
+        for label in ("completeness", "scope", "method", "form", "channel"):
             value = entry.get("axes", {}).get(label)
             if not value:
                 continue
@@ -569,6 +572,9 @@ def _save_source_snapshot_to_file() -> Optional[str]:
 def gpt_query():
     """Send a prompt to the GPT API and return the response"""
 
+    if _reject_if_request_in_flight():
+        return ""
+
     # Reset state before pasting
     GPTState.last_was_pasted = False
 
@@ -580,14 +586,20 @@ def gpt_query():
 class UserActions:
     def gpt_start_debug():
         """Enable debug logging"""
+        if _reject_if_request_in_flight():
+            return
         GPTState.start_debug()
 
     def gpt_stop_debug():
         """Disable debug logging"""
+        if _reject_if_request_in_flight():
+            return
         GPTState.stop_debug()
 
     def gpt_copy_last_raw_exchange() -> None:
         """Copy the last raw GPT request/response JSON to the clipboard for debugging."""
+        if _reject_if_request_in_flight():
+            return
         try:
             data = {
                 "request": getattr(GPTState, "last_raw_request", {}) or {},
@@ -613,55 +625,81 @@ class UserActions:
 
     def gpt_clear_context():
         """Reset the stored context"""
+        if _reject_if_request_in_flight():
+            return
         GPTState.clear_context()
 
     def gpt_clear_stack(stack_name: str):
         """Reset the stored stack"""
+        if _reject_if_request_in_flight():
+            return
         GPTState.clear_stack(stack_name)
 
     def gpt_clear_query():
         """Reset the stored query"""
+        if _reject_if_request_in_flight():
+            return
         GPTState.clear_query()
 
     def gpt_clear_all():
         """Reset all state"""
+        if _reject_if_request_in_flight():
+            return
         GPTState.clear_all()
 
     def gpt_clear_thread():
         """Create a new thread"""
+        if _reject_if_request_in_flight():
+            return
         GPTState.new_thread()
         actions.user.confirmation_gui_refresh_thread()
 
     def gpt_enable_threading():
         """Enable threading of subsequent requests"""
+        if _reject_if_request_in_flight():
+            return
         GPTState.enable_thread()
 
     def gpt_disable_threading():
         """Enable threading of subsequent requests"""
+        if _reject_if_request_in_flight():
+            return
         GPTState.disable_thread()
 
     def gpt_push_context(context: str):
         """Add the selected text to the stored context"""
+        if _reject_if_request_in_flight():
+            return
         GPTState.push_context(format_message(context))
 
     def gpt_push_query(query: str):
         """Add the selected text to the stored context"""
+        if _reject_if_request_in_flight():
+            return
         GPTState.push_query(format_messages("user", [format_message(query)]))
 
     def gpt_push_thread(content: str):
         """Add the selected text to the active thread"""
+        if _reject_if_request_in_flight():
+            return
         GPTState.push_thread(format_messages("user", [format_message(content)]))
 
     def gpt_additional_user_context() -> list[str]:
         """This is an override function that can be used to add additional context to the prompt"""
+        if _reject_if_request_in_flight():
+            return []
         return []
 
     def gpt_tools() -> str:
         """This is an override function that will provide all of the tools available for tool calls as a JSON string"""
+        if _reject_if_request_in_flight():
+            return "[]"
         return "[]"
 
     def gpt_call_tool(tool_name: str, parameters: str) -> str:
         """This will call the tool by name and return a string of the tool call results"""
+        if _reject_if_request_in_flight():
+            return ""
         return ""
 
     def gpt_set_system_prompt(
@@ -671,6 +709,8 @@ class UserActions:
         modelTone: str,
     ) -> None:
         """Set the system prompt to be used when the LLM responds to you"""
+        if _reject_if_request_in_flight():
+            return
         if modelVoice == "":
             modelVoice = GPTState.system_prompt.voice
         if modelAudience == "":
@@ -689,17 +729,23 @@ class UserActions:
 
     def gpt_reset_system_prompt():
         """Reset the system prompt to default"""
+        if _reject_if_request_in_flight():
+            return
         GPTState.system_prompt = GPTSystemPrompt()
         # Also reset contract-style defaults so "reset writing" is a single
         # switch for persona and writing behaviour.
         _set_setting("user.model_default_completeness", DEFAULT_COMPLETENESS_VALUE)
         _set_setting("user.model_default_scope", "")
         _set_setting("user.model_default_method", "")
-        _set_setting("user.model_default_style", "")
-        GPTState.user_overrode_style = True
+        _set_setting("user.model_default_form", "")
+        _set_setting("user.model_default_channel", "")
+        GPTState.user_overrode_form = True
+        GPTState.user_overrode_channel = True
 
     def persona_set_preset(preset_key: str) -> None:
         """Set Persona (Who) stance from a shared preset (ADR 042)."""
+        if _reject_if_request_in_flight():
+            return
         from ..lib.personaConfig import PersonaPreset  # Local import for Talon reloads
 
         preset_map: dict[str, PersonaPreset] = {p.key: p for p in PERSONA_PRESETS}
@@ -720,7 +766,8 @@ class UserActions:
             completeness=current.completeness,
             scope=current.scope,
             method=current.method,
-            style=current.style,
+            form=getattr(current, "form", ""),
+            channel=getattr(current, "channel", ""),
             directional=current.directional,
         )
         GPTState.system_prompt = new_prompt
@@ -733,6 +780,8 @@ class UserActions:
 
     def intent_set_preset(preset_key: str) -> None:
         """Set Intent (Why) stance from a shared preset (ADR 042)."""
+        if _reject_if_request_in_flight():
+            return
         from ..lib.personaConfig import IntentPreset  # Local import for Talon reloads
 
         preset_map: dict[str, IntentPreset] = {p.key: p for p in INTENT_PRESETS}
@@ -753,7 +802,8 @@ class UserActions:
             completeness=current.completeness,
             scope=current.scope,
             method=current.method,
-            style=current.style,
+            form=getattr(current, "form", ""),
+            channel=getattr(current, "channel", ""),
             directional=current.directional,
         )
         GPTState.system_prompt = new_prompt
@@ -764,6 +814,8 @@ class UserActions:
 
     def persona_status() -> None:
         """Show the current Persona (Who) stance compared to defaults."""
+        if _reject_if_request_in_flight():
+            return
         current = getattr(GPTState, "system_prompt", GPTSystemPrompt())
         if not isinstance(current, GPTSystemPrompt):
             current = GPTSystemPrompt()
@@ -798,6 +850,8 @@ class UserActions:
 
     def intent_status() -> None:
         """Show the current Intent (Why) stance compared to defaults."""
+        if _reject_if_request_in_flight():
+            return
         current = getattr(GPTState, "system_prompt", GPTSystemPrompt())
         if not isinstance(current, GPTSystemPrompt):
             current = GPTSystemPrompt()
@@ -814,6 +868,8 @@ class UserActions:
 
     def persona_reset() -> None:
         """Reset Persona (Who) stance to defaults without touching contract axes."""
+        if _reject_if_request_in_flight():
+            return
         current = getattr(GPTState, "system_prompt", GPTSystemPrompt())
         if not isinstance(current, GPTSystemPrompt):
             current = GPTSystemPrompt()
@@ -826,7 +882,8 @@ class UserActions:
             completeness=current.completeness,
             scope=current.scope,
             method=current.method,
-            style=current.style,
+            form=current.form,
+            channel=current.channel,
             directional=current.directional,
         )
         GPTState.system_prompt = new_prompt
@@ -834,6 +891,8 @@ class UserActions:
 
     def intent_reset() -> None:
         """Reset Intent (Why) stance to defaults without touching contract axes."""
+        if _reject_if_request_in_flight():
+            return
         current = getattr(GPTState, "system_prompt", GPTSystemPrompt())
         if not isinstance(current, GPTSystemPrompt):
             current = GPTSystemPrompt()
@@ -846,7 +905,8 @@ class UserActions:
             completeness=current.completeness,
             scope=current.scope,
             method=current.method,
-            style=current.style,
+            form=current.form,
+            channel=current.channel,
             directional=current.directional,
         )
         GPTState.system_prompt = new_prompt
@@ -854,29 +914,81 @@ class UserActions:
 
     def gpt_set_async_blocking(enabled: int) -> None:
         """Toggle async blocking mode for model runs (1=blocking, 0=non-blocking)"""
+        if _reject_if_request_in_flight():
+            return
         _set_setting(ASYNC_BLOCKING_SETTING, bool(enabled))
         mode = "blocking" if enabled else "non-blocking"
         actions.app.notify(f"GPT: async mode set to {mode}")
 
+    def gpt_set_default_completeness(level: str) -> None:
+        """Set the default completeness level."""
+        if _reject_if_request_in_flight():
+            return
+        _set_setting("user.model_default_completeness", level)
+        GPTState.user_overrode_completeness = True
+
     def gpt_reset_default_completeness() -> None:
         """Reset the default completeness level to its configured base value"""
+        if _reject_if_request_in_flight():
+            return
         _set_setting("user.model_default_completeness", DEFAULT_COMPLETENESS_VALUE)
         GPTState.user_overrode_completeness = False
 
+    def gpt_set_default_scope(level: str) -> None:
+        """Set the default scope."""
+        if _reject_if_request_in_flight():
+            return
+        _set_setting("user.model_default_scope", level)
+        GPTState.user_overrode_scope = True
+
     def gpt_reset_default_scope() -> None:
         """Reset the default scope level to its configured base value"""
+        if _reject_if_request_in_flight():
+            return
         _set_setting("user.model_default_scope", "")
         GPTState.user_overrode_scope = False
 
+    def gpt_set_default_method(level: str) -> None:
+        """Set the default method."""
+        if _reject_if_request_in_flight():
+            return
+        _set_setting("user.model_default_method", level)
+        GPTState.user_overrode_method = True
+
     def gpt_reset_default_method() -> None:
         """Reset the default method to its configured base value (no strong default)"""
+        if _reject_if_request_in_flight():
+            return
         _set_setting("user.model_default_method", "")
         GPTState.user_overrode_method = False
 
-    def gpt_reset_default_style() -> None:
-        """Reset the default style to its configured base value (no strong default)"""
-        _set_setting("user.model_default_style", "")
-        GPTState.user_overrode_style = False
+    def gpt_set_default_form(level: str) -> None:
+        """Set the default form."""
+        if _reject_if_request_in_flight():
+            return
+        _set_setting("user.model_default_form", level)
+        GPTState.user_overrode_form = True
+
+    def gpt_reset_default_form() -> None:
+        """Reset the default form to its configured base value (no strong default)"""
+        if _reject_if_request_in_flight():
+            return
+        _set_setting("user.model_default_form", "")
+        GPTState.user_overrode_form = False
+
+    def gpt_set_default_channel(level: str) -> None:
+        """Set the default channel."""
+        if _reject_if_request_in_flight():
+            return
+        _set_setting("user.model_default_channel", level)
+        GPTState.user_overrode_channel = True
+
+    def gpt_reset_default_channel() -> None:
+        """Reset the default channel to its configured base value (no strong default)"""
+        if _reject_if_request_in_flight():
+            return
+        _set_setting("user.model_default_channel", "")
+        GPTState.user_overrode_channel = False
 
     def gpt_save_source_to_file() -> None:
         """Save the last model source to a markdown file.
@@ -884,12 +996,16 @@ class UserActions:
         Uses the last source snapshot from GPTState when available and falls
         back to the current default source when no snapshot exists.
         """
+        if _reject_if_request_in_flight():
+            return
         path = _save_source_snapshot_to_file()
         if not path:
             return
 
     def gpt_select_last() -> None:
         """select all the text in the last GPT output"""
+        if _reject_if_request_in_flight():
+            return
         if not GPTState.last_was_pasted:
             notify("Tried to select GPT output, but it was not pasted in an editor")
             return
@@ -937,6 +1053,9 @@ class UserActions:
             pass
 
         prompt = apply_prompt_configuration.please_prompt
+        if not str(prompt or "").strip():
+            notify("GPT: Prompt is empty; nothing to run")
+            return ""
         source = apply_prompt_configuration.model_source
         additional_source = apply_prompt_configuration.additional_model_source
         destination = apply_prompt_configuration.model_destination
@@ -1002,6 +1121,10 @@ class UserActions:
         if _reject_if_request_in_flight():
             return ""
 
+        if not str(prompt or "").strip():
+            notify("GPT: Prompt is empty; nothing to run")
+            return ""
+
         result = None
         async_started = False
         raw_block = settings.get(ASYNC_BLOCKING_SETTING, False)
@@ -1042,6 +1165,10 @@ class UserActions:
         """Run a controller prompt that may recursively delegate work to sub-sessions."""
 
         if _reject_if_request_in_flight():
+            return ""
+
+        if not str(prompt or "").strip():
+            notify("GPT: Prompt is empty; nothing to run")
             return ""
 
         result = None
@@ -1127,6 +1254,24 @@ class UserActions:
         source: ModelSource, subject: str
     ) -> None:
         """Suggest model prompt recipes for an explicit source."""
+        if _reject_if_request_in_flight():
+            return
+        # Enforce a directional lens per ADR 048: require one directional in
+        # state before issuing a suggest request so downstream recipes stay
+        # within the single-directional contract.
+        last_directional_tokens = getattr(GPTState, "last_axes", {}).get(
+            "directional", []
+        )
+        directional = (
+            last_directional_tokens[-1]
+            if isinstance(last_directional_tokens, list) and last_directional_tokens
+            else getattr(GPTState, "last_directional", "")
+        )
+        if not directional:
+            notify(
+                "GPT: Suggestions require a directional lens (fog/fig/dig/ong/rog/bog/jog). Set one before running suggest."
+            )
+            return
         # When debug logging is enabled, surface details about how `model suggest`
         # resolved its source so users can diagnose unexpected content.
         if GPTState.debug_enabled:
@@ -1208,7 +1353,7 @@ class UserActions:
             "Fields:\n"
             "- name: short human-friendly label for the suggestion.\n"
             "- recipe: a contract-only axis string of the form\n"
-            "  '<staticPrompt> · <completeness> · <scopeTokens> · <methodTokens> · <styleTokens> · <directional>'.\n"
+            "  '<staticPrompt> · <completeness> · <scopeTokens> · <methodTokens> · <formToken> · <channelToken> · <directional>'.\n"
             "- persona_voice / persona_audience / persona_tone / intent_purpose:\n"
             "  optional Persona/Intent axis tokens (Who/Why) using ONLY the values\n"
             "  from the Persona/Intent token lists below. Leave as an empty string\n"
@@ -1232,8 +1377,9 @@ class UserActions:
             "- <staticPrompt> is exactly one static prompt token (do not include multiple static prompts or combine them).\n"
             "- <completeness> and <directional> are single axis tokens.\n"
             "- Directional is required: always include exactly one directional modifier from the directional list; never leave it blank.\n"
-            "- <scopeTokens>, <methodTokens>, and <styleTokens> are zero or more space-separated axis tokens for that axis (respecting small caps: scope ≤ 2 tokens, method ≤ 3 tokens, style ≤ 3 tokens).\n"
-            "  Examples: scopeTokens='actions edges', methodTokens='structure flow', styleTokens='jira story'.\n\n"
+            "- <scopeTokens> and <methodTokens> are zero or more space-separated axis tokens for that axis (respecting small caps: scope ≤ 2 tokens, method ≤ 3 tokens).\n"
+            "- <formToken> and <channelToken> are single axis tokens (Form and Channel are singletons; omit them when no bias is needed).\n"
+            "  Examples: scopeTokens='actions edges', methodTokens='structure flow', formToken='bullets', channelToken='slack'.\n\n"
             "Persona/Intent rules (Who/Why):\n"
             "- When a different Persona/Intent stance would materially change how the\n"
             "  model should respond, you SHOULD fill persona_voice/persona_audience/\n"
@@ -1554,6 +1700,21 @@ class UserActions:
         if _reject_if_request_in_flight():
             return
 
+        # Require a directional lens per ADR 048; prefer last_axes then legacy field.
+        last_directional_tokens = getattr(GPTState, "last_axes", {}).get(
+            "directional", []
+        )
+        directional = (
+            last_directional_tokens[-1]
+            if isinstance(last_directional_tokens, list) and last_directional_tokens
+            else getattr(GPTState, "last_directional", "")
+        )
+        if not directional:
+            notify(
+                "GPT: Last request has no directional lens; replay requires fog/fig/dig/ong/rog/bog/jog."
+            )
+            return
+
         session = PromptSession(destination)
         session.begin(reuse_existing=True)
         result_handle = _prompt_pipeline.complete_async(session)
@@ -1563,12 +1724,16 @@ class UserActions:
 
     def gpt_show_last_recipe() -> None:
         """Show a short summary of the last prompt recipe"""
+        if _reject_if_request_in_flight():
+            return
         snapshot = last_recipe_snapshot()
         static_prompt = snapshot.get("static_prompt", "")
         completeness = snapshot.get("completeness", "")
         scope_tokens = snapshot.get("scope_tokens", []) or []
         method_tokens = snapshot.get("method_tokens", []) or []
-        style_tokens = snapshot.get("style_tokens", []) or []
+        form_tokens = snapshot.get("form_tokens", []) or []
+        channel_tokens = snapshot.get("channel_tokens", []) or []
+        directional = snapshot.get("directional", "") or ""
 
         parts: list[str] = []
         if static_prompt:
@@ -1577,24 +1742,40 @@ class UserActions:
             completeness,
             " ".join(scope_tokens),
             " ".join(method_tokens),
-            " ".join(style_tokens),
+            " ".join(form_tokens),
+            " ".join(channel_tokens),
         ):
             if value:
                 parts.append(value)
 
-        recipe = " · ".join(parts) if parts else snapshot.get("recipe", "")
+        if parts:
+            if directional:
+                parts.append(directional)
+            recipe = " · ".join(parts)
+        else:
+            recipe = snapshot.get("recipe", "") or ""
+            if directional and recipe and directional not in recipe:
+                recipe = f"{recipe} · {directional}"
         if not recipe:
             notify("GPT: No last recipe available")
             return
-        directional = snapshot.get("directional", "")
+        recipe_tokens = [t for t in recipe.split(" · ") if t]
         if directional:
-            recipe_text = f"{recipe} · {directional}"
-        else:
-            recipe_text = recipe
-        actions.app.notify(f"Last recipe: {recipe_text}")
+            seen_directional = False
+            deduped: list[str] = []
+            for token in recipe_tokens:
+                if token == directional:
+                    if seen_directional:
+                        continue
+                    seen_directional = True
+                deduped.append(token)
+            recipe = " · ".join(deduped)
+        actions.app.notify(f"Last recipe: {recipe}")
 
     def gpt_show_last_meta() -> None:
         """Show the last meta-interpretation, if available."""
+        if _reject_if_request_in_flight():
+            return
         meta = last_recap_snapshot().get("meta", "")
         if not meta or not str(meta).strip():
             actions.app.notify("GPT: No last meta interpretation available")
@@ -1603,6 +1784,8 @@ class UserActions:
 
     def gpt_show_pattern_debug(pattern_name: str) -> None:
         """Show a concise debug snapshot for a named pattern."""
+        if _reject_if_request_in_flight():
+            return
         try:
             from ..lib.patternDebugCoordinator import pattern_debug_catalog
         except Exception:
@@ -1632,7 +1815,8 @@ class UserActions:
         completeness = str(axes.get("completeness") or "")
         scope_value = axes.get("scope") or []
         method_value = axes.get("method") or []
-        style_value = axes.get("style") or []
+        form_value = axes.get("form") or []
+        channel_value = axes.get("channel") or []
         directional = str(axes.get("directional") or "")
 
         def _as_tokens(value) -> list[str]:
@@ -1644,7 +1828,8 @@ class UserActions:
 
         scope_tokens = _as_tokens(scope_value)
         method_tokens = _as_tokens(method_value)
-        style_tokens = _as_tokens(style_value)
+        form_tokens = _as_tokens(form_value)
+        channel_tokens = _as_tokens(channel_value)
 
         parts: list[str] = []
         if static_prompt:
@@ -1653,7 +1838,8 @@ class UserActions:
             completeness,
             " ".join(scope_tokens),
             " ".join(method_tokens),
-            " ".join(style_tokens),
+            " ".join(form_tokens),
+            " ".join(channel_tokens),
         ):
             if value:
                 parts.append(value)
@@ -1673,6 +1859,8 @@ class UserActions:
 
     def gpt_clear_last_recap() -> None:
         """Clear last response/recipe/meta recap state."""
+        if _reject_if_request_in_flight():
+            return
         clear_recap_state()
         actions.app.notify("GPT: Cleared last recap state")
 
@@ -1693,15 +1881,37 @@ class UserActions:
         emit_cancel()
         notify("GPT: Cancel requested")
 
+    def gpt_beta_paste_prompt(match) -> None:
+        """Build a prompt via modelPrompt and paste it, surfacing migration errors."""
+        if _reject_if_request_in_flight():
+            return
+        try:
+            prompt = safe_model_prompt(match)
+        except Exception as exc:
+            notify(f"GPT: failed to build prompt ({exc})")
+            return
+        if not prompt:
+            return
+        try:
+            actions.user.paste(prompt)
+        except Exception:
+            try:
+                actions.insert(prompt)
+            except Exception:
+                notify("GPT: failed to paste prompt")
+
     def gpt_rerun_last_recipe(
         static_prompt: str,
         completeness: str,
         scope: List[str],
         method: List[str],
-        style: List[str],
         directional: str,
+        form: Union[str, List[str]] = "",
+        channel: Union[str, List[str]] = "",
     ) -> None:
         """Rerun the last prompt recipe with optional axis overrides, using the last or default source."""
+        if _reject_if_request_in_flight():
+            return
         # Close the main confirmation window so the rerun does not briefly
         # show a mismatched recipe/response pair while state updates.
         try:
@@ -1718,37 +1928,9 @@ class UserActions:
         base_completeness = snapshot.get("completeness", "")
         base_scope_tokens_raw = snapshot.get("scope_tokens", []) or []
         base_method_tokens_raw = snapshot.get("method_tokens", []) or []
-        base_style_tokens_raw = snapshot.get("style_tokens", []) or []
+        base_form_tokens_raw = snapshot.get("form_tokens", []) or []
+        base_channel_tokens_raw = snapshot.get("channel_tokens", []) or []
         base_directional = snapshot.get("directional", "")
-
-        try:
-            if any(
-                (
-                    static_prompt,
-                    override_completeness_tokens,
-                    scope,
-                    method,
-                    style,
-                    directional,
-                )
-            ):
-                print(
-                    "[gpt again] overrides",
-                    f"static={static_prompt!r} "
-                    f"C={override_completeness_tokens or completeness!r} "
-                    f"S={override_scope_tokens or scope!r} "
-                    f"M={override_method_tokens or method!r} "
-                    f"St={override_style_tokens or style!r} "
-                    f"D={directional!r}",
-                )
-            # Always emit base once per rerun so we can see diffs.
-            print(
-                "[gpt again] base",
-                f"static={base_static!r} C={base_completeness!r} "
-                f"S={base_scope!r} M={base_method!r} St={base_style!r} D={base_directional!r}",
-            )
-        except Exception:
-            pass
 
         new_static = static_prompt or base_static
 
@@ -1763,8 +1945,8 @@ class UserActions:
             else base_completeness
         )
 
-        # Scope/method/style remain token-based. An explicit override replaces
-        # the base axis; unspecified axes keep the previous canonical tokens.
+        # Scope/method remain token-based. An explicit override replaces the
+        # base axis; unspecified axes keep the previous canonical tokens.
         def _filter_known(axis: str, tokens: list[str]) -> list[str]:
             """Drop any tokens that are not in the axis config map."""
             valid = axis_key_to_value_map_for(axis)
@@ -1773,7 +1955,8 @@ class UserActions:
         # Normalise incoming overrides to lists of tokens; treat non-lists as empty.
         scope_value = scope if isinstance(scope, list) else []
         method_value = method if isinstance(method, list) else []
-        style_value = style if isinstance(style, list) else []
+        form_value = form if isinstance(form, list) else _tokens_list(form)
+        channel_value = channel if isinstance(channel, list) else _tokens_list(channel)
 
         base_scope_tokens = _canonicalise_axis_tokens(
             "scope", _filter_known("scope", base_scope_tokens_raw)
@@ -1786,6 +1969,7 @@ class UserActions:
             if scope
             else base_scope_tokens
         )
+        base_scope = _axis_tokens_to_string(base_scope_tokens)
         new_scope = _axis_tokens_to_string(merged_scope_tokens)
 
         base_method_tokens = _canonicalise_axis_tokens(
@@ -1799,20 +1983,52 @@ class UserActions:
             if method
             else base_method_tokens
         )
+        base_method = _axis_tokens_to_string(base_method_tokens)
         new_method = _axis_tokens_to_string(merged_method_tokens)
 
-        base_style_tokens = _canonicalise_axis_tokens(
-            "style", _filter_known("style", base_style_tokens_raw)
+        base_form_tokens = _canonicalise_axis_tokens(
+            "form", _filter_known("form", base_form_tokens_raw)
         )
-        override_style_tokens = _filter_known(
-            "style", _map_axis_tokens("style", style_value)
+        override_form_tokens = _filter_known(
+            "form", _map_axis_tokens("form", form_value)
         )
-        merged_style_tokens = (
-            _canonicalise_axis_tokens("style", override_style_tokens)
-            if style
-            else base_style_tokens
+        merged_form_tokens = (
+            _canonicalise_axis_tokens("form", override_form_tokens[:1])
+            if form_value
+            else base_form_tokens
         )
-        new_style = _axis_tokens_to_string(merged_style_tokens)
+        new_form = _axis_tokens_to_string(merged_form_tokens[:1])
+
+        base_channel_tokens = _canonicalise_axis_tokens(
+            "channel", _filter_known("channel", base_channel_tokens_raw)
+        )
+        override_channel_tokens = _filter_known(
+            "channel", _map_axis_tokens("channel", channel_value)
+        )
+        merged_channel_tokens = (
+            _canonicalise_axis_tokens("channel", override_channel_tokens[:1])
+            if channel_value
+            else base_channel_tokens
+        )
+        new_channel = _axis_tokens_to_string(merged_channel_tokens[:1])
+        base_directional_tokens = _filter_known(
+            "directional", _map_axis_tokens("directional", _tokens_list(base_directional))
+        )
+        override_directional_tokens = _filter_known(
+            "directional", _map_axis_tokens("directional", _tokens_list(directional))
+        )
+        if override_directional_tokens:
+            new_directional = override_directional_tokens[-1]
+        elif base_directional_tokens:
+            new_directional = base_directional_tokens[-1]
+        else:
+            new_directional = ""
+
+        if not new_directional:
+            notify(
+                "GPT: Last recipe has no directional lens; rerun requires a directional (fog/fig/dig/ong/rog/bog/jog)."
+            )
+            return
 
         if new_completeness and new_completeness not in axis_key_to_value_map_for(
             "completeness"
@@ -1820,10 +2036,44 @@ class UserActions:
             new_completeness = ""
 
         try:
+            if any(
+                (
+                    static_prompt,
+                    override_completeness_tokens,
+                    scope,
+                    method,
+                    form_value,
+                    channel_value,
+                    directional,
+                )
+            ):
+                print(
+                    "[gpt again] overrides",
+                    f"static={static_prompt!r} "
+                    f"C={override_completeness_tokens or completeness!r} "
+                    f"S={override_scope_tokens or scope!r} "
+                    f"M={override_method_tokens or method!r} "
+                    f"F={override_form_tokens or form!r} "
+                    f"Ch={override_channel_tokens or channel!r} "
+                    f"D={directional!r}",
+                )
+            # Always emit base once per rerun so we can see diffs.
+            print(
+                "[gpt again] base",
+                f"static={base_static!r} C={base_completeness!r} "
+                f"S={base_scope!r} M={base_method!r} "
+                f"F={base_form_tokens_raw!r} Ch={base_channel_tokens_raw!r} "
+                f"D={base_directional!r}",
+            )
+        except Exception:
+            pass
+
+        try:
             changed = (
                 override_scope_tokens
                 or override_method_tokens
-                or override_style_tokens
+                or override_form_tokens
+                or override_channel_tokens
                 or override_completeness_tokens
                 or static_prompt
                 or directional
@@ -1833,7 +2083,8 @@ class UserActions:
                     "[gpt again] override->new",
                     f"scope_override={override_scope_tokens} scope_new={merged_scope_tokens}",
                     f"method_override={override_method_tokens} method_new={merged_method_tokens}",
-                    f"style_override={override_style_tokens} style_new={merged_style_tokens}",
+                    f"form_override={override_form_tokens} form_new={merged_form_tokens}",
+                    f"channel_override={override_channel_tokens} channel_new={merged_channel_tokens}",
                     f"C_new={new_completeness!r} static_new={new_static!r} directional={new_directional!r}",
                 )
         except Exception:
@@ -1879,10 +2130,16 @@ class UserActions:
                 merged_method_tokens,
             ),
             (
-                "style",
-                base_style_tokens_raw,
-                override_style_tokens,
-                merged_style_tokens,
+                "form",
+                base_form_tokens_raw,
+                override_form_tokens,
+                merged_form_tokens,
+            ),
+            (
+                "channel",
+                base_channel_tokens_raw,
+                override_channel_tokens,
+                merged_channel_tokens,
             ),
         ):
             summary = _axis_drop_summary(
@@ -1896,8 +2153,6 @@ class UserActions:
                 "GPT: Axes normalised (caps/incompatibilities); "
                 + "; ".join(axis_drop_parts)
             )
-
-        new_directional = directional or base_directional
 
         if not new_static:
             notify("GPT: Last recipe is not available to rerun")
@@ -1927,12 +2182,10 @@ class UserActions:
                 "methodModifier",
                 _axis_value_from_token(new_method, _METHOD_MAP),
             )
-        if new_style:
-            setattr(
-                match,
-                "styleModifier",
-                _axis_value_from_token(new_style, _STYLE_MAP),
-            )
+        if new_form:
+            setattr(match, "formModifier", new_form)
+        if new_channel:
+            setattr(match, "channelModifier", new_channel)
         if new_directional:
             setattr(
                 match,
@@ -1947,7 +2200,8 @@ class UserActions:
             new_completeness,
             new_scope,
             new_method,
-            new_style,
+            new_form,
+            new_channel,
             new_directional,
         )
 
@@ -1959,13 +2213,16 @@ class UserActions:
                 f"C={GPTState.last_completeness!r} "
                 f"S={GPTState.last_scope!r} "
                 f"M={GPTState.last_method!r} "
-                f"St={GPTState.last_style!r} "
+                f"F={GPTState.last_form!r} "
+                f"Ch={GPTState.last_channel!r} "
                 f"D={GPTState.last_directional!r}",
             )
         except Exception:
             pass
 
-        please_prompt = modelPrompt(match)
+        please_prompt = _safe_model_prompt(match)
+        if not please_prompt:
+            return
 
         # Resolve the source for this rerun:
         # - Prefer a cached snapshot of the last primary source messages so
@@ -2010,10 +2267,13 @@ class UserActions:
         completeness: str,
         scope: List[str],
         method: List[str],
-        style: List[str],
         directional: str,
+        form: Union[str, List[str]] = "",
+        channel: Union[str, List[str]] = "",
     ) -> None:
         """Rerun the last prompt recipe for an explicit source with optional axis overrides."""
+        if _reject_if_request_in_flight():
+            return
         # Remember this source key for subsequent plain `model again` calls.
         source_key = getattr(source, "modelSimpleSource", None)
         if isinstance(source_key, str) and source_key:
@@ -2025,12 +2285,15 @@ class UserActions:
             completeness,
             scope,
             method,
-            style,
             directional,
+            form,
+            channel,
         )
 
     def gpt_pass(pass_configuration: PassConfiguration) -> None:
         """Passes a response from source to destination"""
+        if _reject_if_request_in_flight():
+            return
         source: ModelSource = pass_configuration.model_source
         destination: ModelDestination = pass_configuration.model_destination
 
@@ -2043,6 +2306,8 @@ class UserActions:
 
     def gpt_help() -> None:
         """Open the GPT help file in the web browser"""
+        if _reject_if_request_in_flight():
+            return
         # Build a consolidated, scannable help page from all related lists
         current_dir = os.path.dirname(__file__)
         lists_dir = os.path.join(current_dir, "lists")
@@ -2145,7 +2410,7 @@ class UserActions:
 
         builder.p(
             "Use modifiers after a static prompt to control completeness, method, "
-            "scope, and style. You normally say at most one or two modifiers per call."
+            "scope, form, and channel. You normally say at most one or two modifiers per call."
         )
 
         builder.h2("How to use the helpers (ADR 006)")
@@ -2184,7 +2449,8 @@ class UserActions:
         )
         render_list_as_tables("Scope Modifiers", "scopeModifier.talon-list", builder)
         render_list_as_tables("Method Modifiers", "methodModifier.talon-list", builder)
-        render_list_as_tables("Style Modifiers", "styleModifier.talon-list", builder)
+        render_list_as_tables("Form Modifiers", "formModifier.talon-list", builder)
+        render_list_as_tables("Channel Modifiers", "channelModifier.talon-list", builder)
         # For persona and intent axes, keep the Talon lists as token carriers and
         # pull rich descriptions from a Python persona config so we do not bake
         # long instructions directly into the .talon files.
@@ -2231,26 +2497,33 @@ class UserActions:
         builder.h2("Default settings examples")
         builder.ul(
             "Set defaults: 'model set completeness skim', 'model set scope narrow', "
-            "'model set method steps', 'model set style bullets'.",
+            "'model set method steps', 'model set form bullets', 'model set channel slack'.",
             "Reset defaults: 'model reset writing' (persona + all defaults), or "
             "'model reset completeness', 'model reset scope', 'model reset method', "
-            "'model reset style'.",
+            "'model reset form', 'model reset channel'.",
         )
 
         builder.render()
 
     def gpt_insert_text(text: str, destination: ModelDestination = Default()) -> None:
         """Insert text using the helpers here"""
+        if _reject_if_request_in_flight():
+            return
         result = PromptResult.from_messages([format_message(text)])
         actions.user.gpt_insert_response(result, destination)
 
     def gpt_open_browser(text: str) -> None:
         """Open a browser with the response"""
+        if _reject_if_request_in_flight():
+            return
         result = PromptResult.from_messages([format_message(text)])
         actions.user.gpt_insert_response(result, Browser())
 
     def gpt_search_engine(search_engine: str, source: ModelSource) -> str:
         """Format the source for searching with a search engine and open a search"""
+
+        if _reject_if_request_in_flight():
+            return ""
 
         prompt = f"""
         I want to search for the following using the {search_engine} search engine.
@@ -2289,6 +2562,8 @@ class UserActions:
 
     def gpt_get_source_text(spoken_text: str) -> str:
         """Get the source text that is will have the prompt applied to it"""
+        if _reject_if_request_in_flight():
+            return ""
         return create_model_source(spoken_text).get_text()
 
     def gpt_prepare_message(
@@ -2299,6 +2574,23 @@ class UserActions:
     ) -> PromptSession:
         """Get the source text that will have the prompt applied to it"""
 
+        if _reject_if_request_in_flight():
+            return PromptSession(destination)
+
         session = PromptSession(destination)
         session.prepare_prompt(prompt, model_source, additional_model_source)
         return session
+
+
+def _safe_model_prompt(match) -> str:
+    """Wrap modelPrompt to surface migration errors (for example, legacy style)."""
+    try:
+        return modelPrompt(match)
+    except ValueError as exc:
+        notify(f"GPT: {exc}")
+        return ""
+
+
+def gpt_beta_paste_prompt(match) -> None:
+    """Module-level beta pass helper; delegates to the action for coverage."""
+    return UserActions.gpt_beta_paste_prompt(match)

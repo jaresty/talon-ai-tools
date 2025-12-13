@@ -55,7 +55,7 @@ if bootstrap is not None:
                 "manager",
             }
 
-            for axis in ("completeness", "scope", "method", "style"):
+            for axis in ("completeness", "scope", "method", "form", "channel"):
                 mapping = axisMappings.axis_docs_map(axis)
                 with self.subTest(axis=axis):
                     for key, description in mapping.items():

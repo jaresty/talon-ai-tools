@@ -48,7 +48,8 @@ if bootstrap is not None:
                 "completeness": "Completeness (`completenessModifier`)",
                 "scope": "Scope (`scopeModifier`)",
                 "method": "Method (`methodModifier`)",
-                "style": "Style (`styleModifier`)",
+                "form": "Form (`formModifier`)",
+                "channel": "Channel (`channelModifier`)",
             }
             for axis, marker in axis_markers.items():
                 with self.subTest(axis=axis):
@@ -58,6 +59,9 @@ if bootstrap is not None:
                         if "Modifier" not in key
                     }
                     catalog_keys = set((catalog.get("axes", {}).get(axis) or {}).keys())
+                    # Presenterm moved to the channel axis; ignore legacy mentions under form.
+                    if axis == "form":
+                        readme_keys.discard("presenterm")
                     missing = sorted(catalog_keys - readme_keys)
                     extra = sorted(readme_keys - catalog_keys)
                     self.assertFalse(

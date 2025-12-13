@@ -28,7 +28,7 @@ if bootstrap is not None:
             self.assertEqual(joined, "full")
 
         def test_axis_join_handles_missing_axes(self) -> None:
-            joined = axis_join(None, "style", "plain")
+            joined = axis_join(None, "form", "plain")
             self.assertEqual(joined, "plain")
 
 else:

@@ -35,11 +35,13 @@ if bootstrap is not None:
                 "completeness": ["full"],
                 "scope": ["focus"],
                 "method": ["steps"],
-                "style": ["plain"],
+                "form": ["bullets"],
+                "channel": ["slack"],
                 "directional": ["fog", "unknown-dir"],
             }
             filtered = history_axes_for(axes)
             self.assertEqual(filtered["directional"], ["fog"])
+            self.assertNotIn("style", filtered)
 
         def test_save_history_includes_directional_header(self) -> None:
             """Guardrail: saved history files include directional tokens."""
@@ -48,7 +50,8 @@ if bootstrap is not None:
                 "completeness": ["full"],
                 "scope": ["focus"],
                 "method": ["steps"],
-                "style": ["plain"],
+                "form": ["bullets"],
+                "channel": ["slack"],
                 "directional": ["fog"],
             }
             entry = _Entry(prompt="prompt text", axes=axes)
@@ -71,6 +74,8 @@ if bootstrap is not None:
                 self.assertTrue(saved_files, "Expected a saved history file")
                 content = open(saved_files[0].path, "r", encoding="utf-8").read()
                 self.assertIn("directional_tokens: fog", content)
+                self.assertIn("form_tokens: bullets", content)
+                self.assertIn("channel_tokens: slack", content)
                 self.assertIn("fog", saved_files[0].name)
 
 else:

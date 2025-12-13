@@ -53,6 +53,25 @@ def history_drawer_entries_from(entries: Sequence[object]) -> List[Tuple[str, st
         if dur:
             label = f"{label} ({dur})"
         recipe = (getattr(entry, "recipe", "") or "").strip()
+        axes = getattr(entry, "axes", None) or {}
+        if axes:
+            axes_tokens = _history_axes_for_impl(axes)
+            recipe_tokens: list[str] = []
+            if recipe:
+                static_token = recipe.split(" · ")[0]
+                if static_token:
+                    recipe_tokens.append(static_token)
+            comp = " ".join(axes_tokens.get("completeness", []))
+            scope = " ".join(axes_tokens.get("scope", []))
+            method = " ".join(axes_tokens.get("method", []))
+            form = " ".join(axes_tokens.get("form", []))
+            channel = " ".join(axes_tokens.get("channel", []))
+            directional = " ".join(axes_tokens.get("directional", []))
+            for value in (comp, scope, method, form, channel, directional):
+                if value:
+                    recipe_tokens.append(value)
+            if recipe_tokens:
+                recipe = " · ".join(recipe_tokens)
         body = snippet
         if recipe:
             body = f"{recipe} · {snippet}" if snippet else recipe

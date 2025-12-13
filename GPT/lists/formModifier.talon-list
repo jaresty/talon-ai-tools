@@ -1,9 +1,8 @@
-list: user.styleModifier
-#
+list: user.formModifier
+# Form container/shape tokens (one max)
 -
 abstractvisual: abstractvisual
 adr: adr
-announce: announce
 bug: bug
 bullets: bullets
 cards: cards
@@ -17,18 +16,12 @@ faq: faq
 fun: fun
 gherkin: gherkin
 headline: headline
-html: html
-jira: jira
 log: log
 party: party
 plain: plain
-presenterm: presenterm
 recipe: recipe
-remote: remote
 shellscript: shellscript
-slack: slack
 spike: spike
 story: story
-sync: sync
 table: table
 tight: tight

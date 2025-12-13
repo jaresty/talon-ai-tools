@@ -5,8 +5,13 @@ It is **not** an ADR itself and is intentionally ADR‑agnostic.
 
 When asked to “run an ADR loop/execute iteration using this helper”, deliver
 one **substantial, concrete slice** that changes an observable artefact
-(code/tests/docs/config) or ADR task/status. If you find no safe slice,
+(code/tests/docs/config) or ADR task/status. Keep ADR bodies stable: record
+loop entries in the ADR’s companion work‑log file (for example,
+`ADR-ID-work-log.md`), not in the ADR proper. If you find no safe slice,
 record the blocker instead of writing a no-delta loop.
+- If an ADR still has a work-log embedded in the ADR body, migrate it to the
+  separate `ADR-ID-work-log.md` file before adding new entries; do not keep
+  parallel logs in both places.
 
 The caller may either:
 - Specify the target ADR explicitly (for example, by id), or
@@ -18,6 +23,7 @@ When using this helper:
 - Every loop entry must cite at least one touched or inspected artefact path
   (code/tests/docs/config) and, for status/task changes, the specific
   task/status field changed; absence of such pointers is non‑compliant.
+- General principle: progress is measured by reality changing outside this helper. Bias toward behaviour or guardrail slices, and only introduce new tasks or status notes when paired with an artefact delta (code/tests/config/docs beyond the ADR itself) that would alter behaviour, tests, or task/status if reverted.
 - When citing artefacts or checks, include how they were gathered in this loop:
   test command and exit result (if any), or file/section re-read. Self‑report
   without these details is non‑compliant.
@@ -47,7 +53,8 @@ When using this helper:
   discover the original is too small or not worth doing.
 - Aim for slices that:
   - Touch at least two of: code, tests, docs, configuration, or UX surfaces, **or**
-  - Retire or introduce at least one non‑trivial behaviour end‑to‑end (not just a single wording tweak).
+  - Retire or introduce at least one non-trivial behaviour end-to-end (not just a single wording tweak).
+- Guiding principle: every loop must change reality outside this helper text or the ADR you’re working on. Planning/status is only compliant when paired with an observable delta (code/tests/config/docs beyond the ADR itself) or a blocker tied to evidence; otherwise, do not run the loop. After any status/planning note, the next loop MUST deliver a real change before another status/planning entry.
 
 ---
 

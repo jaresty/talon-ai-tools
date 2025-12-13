@@ -26,28 +26,30 @@ class GPTState:
     current_destination_kind: ClassVar[str] = ""
     last_was_pasted: ClassVar[bool] = False
     # Human-readable summary of the last prompt recipe
-    # (static prompt + effective completeness/scope/method/style).
+    # (static prompt + effective completeness/scope/method/form/channel).
     last_recipe: ClassVar[str] = ""
     # Short token for the last directional lens (for example, "fog").
     last_directional: ClassVar[str] = ""
     # Structured fields for the last recipe. These are stored as short
     # tokens so they can be reused by shorthand grammars such as `model again`.
-    # For scope/method/style specifically, the values are serialised
-    # multi-token sets: space-separated axis tokens in canonical form.
-    # External consumers that read these fields must treat them as sets
-    # (split on whitespace) rather than assuming a single scalar token.
+    # Scope and method may contain multiple tokens serialized as whitespace-
+    # separated sets. External consumers that read these fields must treat
+    # them as sets rather than assuming a single scalar token.
     last_static_prompt: ClassVar[str] = ""
     last_completeness: ClassVar[str] = ""
     last_scope: ClassVar[str] = ""
     last_method: ClassVar[str] = ""
-    last_style: ClassVar[str] = ""
-    # Authoritative axis tokens per ADR 034: completeness (scalar token),
-    # scope/method/style as token lists.
+    last_form: ClassVar[str] = ""
+    last_channel: ClassVar[str] = ""
+    # Authoritative axis tokens per ADR 034/048: completeness (scalar token),
+    # scope/method/form/channel/directional as token lists.
     last_axes: ClassVar[Dict[str, List[str]]] = {
         "completeness": [],
         "scope": [],
         "method": [],
-        "style": [],
+        "form": [],
+        "channel": [],
+        "directional": [],
     }
     # Snapshot of the primary source messages used for the last model run
     # so `model again` can reuse the same content even if the live source
@@ -79,14 +81,13 @@ class GPTState:
         "tool_choice": "auto",
         "verbosity": "",
     }
-    # Authoritative axis tokens per ADR 034: completeness (scalar token),
-    # scope/method/style as token lists.
-    last_axes: ClassVar[Dict[str, List[str]]] = {
-        "completeness": [],
-        "scope": [],
-        "method": [],
-        "style": [],
-    }
+    # Track whether the user has intentionally overridden per-axis defaults via
+    # settings so that per-prompt profiles do not compete with user intent.
+    user_overrode_completeness: ClassVar[bool] = False
+    user_overrode_scope: ClassVar[bool] = False
+    user_overrode_method: ClassVar[bool] = False
+    user_overrode_form: ClassVar[bool] = False
+    user_overrode_channel: ClassVar[bool] = False
     thread: ClassVar[List[GPTMessage]] = []
     tools = []
     stacks: ClassVar[Dict[str, List[Union[GPTTextItem, GPTImageItem]]]] = {}
@@ -97,12 +98,6 @@ class GPTState:
     last_raw_request: ClassVar[Dict] = {}
     last_raw_response: ClassVar[Dict] = {}
     system_prompt: ClassVar[GPTSystemPrompt] = GPTSystemPrompt()
-    # Track whether the user has intentionally overridden per-axis defaults via
-    # settings so that per-prompt profiles do not compete with user intent.
-    user_overrode_completeness: ClassVar[bool] = False
-    user_overrode_scope: ClassVar[bool] = False
-    user_overrode_method: ClassVar[bool] = False
-    user_overrode_style: ClassVar[bool] = False
 
     @classmethod
     def start_debug(cls):
@@ -144,7 +139,8 @@ class GPTState:
         cls.last_completeness = ""
         cls.last_scope = ""
         cls.last_method = ""
-        cls.last_style = ""
+        cls.last_form = ""
+        cls.last_channel = ""
         cls.last_source_messages = []
         cls.last_source_key = ""
         cls.last_again_source = ""
@@ -157,10 +153,18 @@ class GPTState:
         cls.user_overrode_completeness = False
         cls.user_overrode_scope = False
         cls.user_overrode_method = False
-        cls.user_overrode_style = False
+        cls.user_overrode_form = False
+        cls.user_overrode_channel = False
         cls.last_raw_request = {}
         cls.last_raw_response = {}
-        cls.last_axes = {"completeness": [], "scope": [], "method": [], "style": []}
+        cls.last_axes = {
+            "completeness": [],
+            "scope": [],
+            "method": [],
+            "form": [],
+            "channel": [],
+            "directional": [],
+        }
         cls.request["messages"] = []
         cls.request_provider = None
         cls.current_provider_id = "openai"
@@ -258,7 +262,8 @@ class GPTState:
         cls.last_completeness = ""
         cls.last_scope = ""
         cls.last_method = ""
-        cls.last_style = ""
+        cls.last_form = ""
+        cls.last_channel = ""
         cls.last_source_messages = []
         cls.last_source_key = ""
         cls.last_again_source = ""
@@ -268,10 +273,18 @@ class GPTState:
         cls.context = []
         cls.query = []
         cls.thread = []
+        cls.last_raw_request = {}
+        cls.last_raw_response = {}
+        cls.last_axes = {
+            "completeness": [],
+            "scope": [],
+            "method": [],
+            "form": [],
+            "channel": [],
+            "directional": [],
+        }
         cls.user_overrode_completeness = False
         cls.user_overrode_scope = False
         cls.user_overrode_method = False
-        cls.user_overrode_style = False
-        cls.last_raw_request = {}
-        cls.last_raw_response = {}
-        cls.last_axes = {"completeness": [], "scope": [], "method": [], "style": []}
+        cls.user_overrode_form = False
+        cls.user_overrode_channel = False

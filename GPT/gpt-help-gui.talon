@@ -14,6 +14,8 @@
 {user.model} quick help channel$: user.model_help_canvas_open_channel()
 {user.model} quick help direction$: user.model_help_canvas_open_directional()
 {user.model} quick help examples$: user.model_help_canvas_open_examples()
+{user.model} quick help compact$: user.model_help_canvas_compact_on()
+{user.model} quick help full$: user.model_help_canvas_compact_off()
 
 {user.model} show grammar$: user.model_help_canvas_open_for_last_recipe()
 {user.model} quick help {user.staticPrompt}$: user.model_help_canvas_open_for_static_prompt(staticPrompt)

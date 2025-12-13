@@ -509,6 +509,7 @@ except Exception:
 _prompt_pipeline = PromptPipeline()
 _recursive_orchestrator = RecursiveOrchestrator(_prompt_pipeline)
 ASYNC_BLOCKING_SETTING = "user.model_async_blocking"
+_last_inflight_warning_request_id = None
 
 
 def _request_is_in_flight() -> bool:
@@ -530,12 +531,38 @@ def _request_is_in_flight() -> bool:
 
 def _reject_if_request_in_flight() -> bool:
     """Notify and return True when a GPT request is already running."""
-    if _request_is_in_flight():
-        notify(
-            "GPT: A request is already running; wait for it to finish or cancel it first."
-        )
+    global _last_inflight_warning_request_id
+
+    try:
+        state = current_state()
+    except Exception:
+        state = None
+
+    try:
+        phase = getattr(state, "phase", RequestPhase.IDLE)
+        request_id = getattr(state, "request_id", None)
+    except Exception:
+        phase = RequestPhase.IDLE
+        request_id = None
+
+    if phase in (
+        RequestPhase.IDLE,
+        RequestPhase.DONE,
+        RequestPhase.ERROR,
+        RequestPhase.CANCELLED,
+    ):
+        _last_inflight_warning_request_id = None
+        return False
+
+    if request_id is None:
+        request_id = "__none__"
+
+    if request_id == _last_inflight_warning_request_id:
         return True
-    return False
+
+    notify("GPT: A request is already running; wait for it to finish or cancel it first.")
+    _last_inflight_warning_request_id = request_id
+    return True
 
 
 def _read_list_items(filename: str) -> list[tuple[str, str]]:

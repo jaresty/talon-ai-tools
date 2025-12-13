@@ -19,7 +19,12 @@ if bootstrap is not None:
     from talon_user.lib.modelDestination import ModelDestination
     from talon_user.lib.promptPipeline import PromptResult
     from talon_user.GPT import gpt as gpt_module
-    from talon_user.lib.requestBus import set_controller, current_state
+    from talon_user.lib.requestBus import (
+        current_state,
+        emit_begin_send,
+        emit_complete,
+        set_controller,
+    )
     from talon_user.lib.requestController import RequestUIController
     from talon_user.lib.requestState import RequestPhase
     from talon_user.lib.talonSettings import ApplyPromptConfiguration
@@ -1212,6 +1217,92 @@ if bootstrap is not None:
                 begin_send.assert_called_once()
                 emit_complete.assert_called_once_with(request_id="req-suggest")
                 emit_fail.assert_not_called()
+
+        def test_gpt_suggest_prompt_recipes_releases_request_state(self):
+            controller = RequestUIController()
+            set_controller(controller)
+
+            suggestion_text = '{"suggestions":[{"name":"Idea","recipe":"infer · gist · actions · plan · bullets · fog"}]}'
+
+            with (
+                patch.object(gpt_module, "PromptSession") as session_cls,
+                patch.object(gpt_module, "create_model_source") as create_source,
+                patch.object(
+                    gpt_module.actions.user, "model_prompt_recipe_suggestions_gui_open"
+                ),
+                patch.object(
+                    gpt_module.actions.user, "model_prompt_recipe_suggestions_gui_close"
+                ),
+            ):
+                source = MagicMock()
+                source.get_text.return_value = "content"
+                create_source.return_value = source
+                mock_session = session_cls.return_value
+                mock_session._destination = "paste"
+
+                # Force the suggest flow to take the synchronous path we control.
+                self.pipeline.complete_async.side_effect = Exception("async unavailable")
+                self.pipeline.complete.return_value = PromptResult.from_messages(
+                    [format_message(suggestion_text)]
+                )
+
+                gpt_module.UserActions.gpt_suggest_prompt_recipes("subject")
+
+            try:
+                # Request controller should transition to a terminal phase so follow-up
+                # commands are not blocked by the in-flight guard.
+                self.assertEqual(current_state().phase, RequestPhase.DONE)
+                self.assertFalse(gpt_module._request_is_in_flight())
+            finally:
+                set_controller(None)
+
+        def test_inflight_guard_notifies_once_per_request(self):
+            controller = RequestUIController()
+            set_controller(controller)
+            try:
+                with patch.object(gpt_module, "notify") as notify_mock:
+                    rid = emit_begin_send()
+
+                    self.assertTrue(gpt_module._reject_if_request_in_flight())
+                    self.assertTrue(gpt_module._reject_if_request_in_flight())
+
+                notify_mock.assert_called_once()
+
+                emit_complete(request_id=rid)
+                # After a terminal transition, the guard should reset and notify for a new request.
+                with patch.object(gpt_module, "notify") as notify_again:
+                    emit_begin_send()
+                    self.assertTrue(gpt_module._reject_if_request_in_flight())
+                notify_again.assert_called_once()
+            finally:
+                set_controller(None)
+
+        def test_inflight_notifications_deduplicate_across_guards(self):
+            controller = RequestUIController()
+            set_controller(controller)
+            try:
+                rid = emit_begin_send()
+                from talon_user.lib import modelSuggestionGUI as suggestion_module
+                from talon_user.lib import modelHelpers
+
+                self.assertEqual(current_state().request_id, rid)
+
+                with patch.object(actions.user, "notify") as notify_user, patch.object(
+                    actions.app, "notify"
+                ) as notify_app:
+                    # Multiple guards should only emit one notification for the same request.
+                    self.assertTrue(suggestion_module._reject_if_request_in_flight())
+                    self.assertEqual(modelHelpers._last_notify_request_id, rid)
+                    self.assertTrue(gpt_module._reject_if_request_in_flight())
+                    self.assertEqual(modelHelpers._last_notify_request_id, rid)
+
+                notify_user.assert_called_once_with(
+                    "GPT: A request is already running; wait for it to finish or cancel it first."
+                )
+                notify_app.assert_not_called()
+            finally:
+                emit_complete(request_id=rid)
+                set_controller(None)
 
         def test_gpt_suggest_prompt_recipes_canonicalises_static_prompt(self):
             with (

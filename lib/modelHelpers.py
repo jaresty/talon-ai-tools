@@ -101,6 +101,8 @@ def _log(message: str):
 
 MAX_TOTAL_CALLS = settings.get("user.gpt_max_total_calls", 3)
 context = ModelHelpersContext()
+_last_notify_request_id = None
+_last_notify_message = None
 
 
 def _destination_kind(destination: object) -> str:
@@ -288,7 +290,24 @@ def chats_to_string(chats: Sequence[Union[GPTMessage, GPTTool]]) -> str:
 
 
 def notify(message: str):
-    """Send a notification to the user. Falls back to Talon/app notify, then logs."""
+    """Send a notification to the user, deduplicating per request id."""
+    global _last_notify_request_id, _last_notify_message
+
+    try:
+        request_id = getattr(current_state(), "request_id", None)
+    except Exception:
+        request_id = None
+
+    if (
+        request_id is not None
+        and _last_notify_request_id == request_id
+        and _last_notify_message == message
+    ):
+        return
+
+    _last_notify_request_id = request_id
+    _last_notify_message = message
+
     delivered = False
     try:
         actions.user.notify(message)

@@ -280,6 +280,7 @@ class HelpCanvasState:
 
     showing: bool = False
     scroll_y: float = 0.0
+    compact: bool = False
 
 
 _help_canvas: Optional[canvas.Canvas] = None
@@ -287,11 +288,14 @@ _draw_handlers: list[Callable] = []
 _drag_offset: Optional[tuple[float, float]] = None
 _hover_close: bool = False
 _hover_panel: bool = False
+_hover_toggle: bool = False
+_last_rect: Optional["Rect"] = None
 
 # Default geometry for the quick help window. Kept in one place so future
 # tweaks do not require hunting for magic numbers.
 _PANEL_WIDTH = 820
 _PANEL_HEIGHT = 1100
+_PANEL_HEIGHT_COMPACT = 200
 _PANEL_OFFSET_X = 200
 _PANEL_OFFSET_Y = 80
 
@@ -359,7 +363,7 @@ def _build_direction_grid() -> dict[tuple[str, str], list[str]]:
 
 def _ensure_canvas() -> canvas.Canvas:
     """Create the help canvas if needed and register draw handlers."""
-    global _help_canvas
+    global _help_canvas, _last_rect
     if _help_canvas is not None:
         _debug("reusing existing canvas instance")
         return _help_canvas
@@ -378,11 +382,18 @@ def _ensure_canvas() -> canvas.Canvas:
         margin_y = 40
 
         # Constrain panel size so it always fits within the screen margins.
+        desired_height = _PANEL_HEIGHT_COMPACT if getattr(HelpCanvasState, "compact", False) else _PANEL_HEIGHT
         panel_width = min(_PANEL_WIDTH, max(screen_width - 2 * margin_x, 480))
-        panel_height = min(_PANEL_HEIGHT, max(screen_height - 2 * margin_y, 480))
+        panel_height = min(desired_height, max(screen_height - 2 * margin_y, 480))
 
         start_x = screen_x + max((screen_width - panel_width) // 2, margin_x)
         start_y = screen_y + max((screen_height - panel_height) // 2, margin_y)
+        if _last_rect is not None:
+            try:
+                start_x = _last_rect.x
+                start_y = _last_rect.y
+            except Exception:
+                pass
         rect = Rect(start_x, start_y, panel_width, panel_height)
         _debug(
             f"initial canvas rect=({start_x}, {start_y}, {panel_width}, {panel_height}) "
@@ -393,6 +404,10 @@ def _ensure_canvas() -> canvas.Canvas:
         # choose is respected on all platforms; dragging and mouse blocking
         # are handled explicitly below.
         _help_canvas = canvas.Canvas.from_rect(rect)
+        try:
+            _last_rect = rect
+        except Exception:
+            pass
         try:
             _help_canvas.blocks_mouse = True
         except Exception:
@@ -417,7 +432,7 @@ def _ensure_canvas() -> canvas.Canvas:
 
     def _on_mouse(evt) -> None:  # pragma: no cover - visual only
         """Minimal mouse handler to support close and drag affordances."""
-        global _drag_offset, _hover_close, _hover_panel
+        global _drag_offset, _hover_close, _hover_panel, _hover_toggle, _help_canvas
         try:
             rect = getattr(_help_canvas, "rect", None)
             pos = getattr(evt, "pos", None)
@@ -435,28 +450,44 @@ def _ensure_canvas() -> canvas.Canvas:
                 return
 
             header_height = 32
-            hotspot_width = 80
             inside_panel = 0 <= local_x <= rect.width and 0 <= local_y <= rect.height
+            toggle_label = "[compact]" if not getattr(HelpCanvasState, "compact", False) else "[full]"
+            close_label = "[X]"
+            close_left = rect.width - (len(close_label) * 8) - 16
+            close_right = rect.width - 16
+            toggle_right = close_left - 12
+            toggle_left = toggle_right - (len(toggle_label) * 8)
 
             # Track hover state for the close hotspot so the renderer can
             # provide visual feedback.
             if event_type in ("mousemove", "mouse_move"):
                 _hover_close = (
                     0 <= local_y <= header_height
-                    and rect.width - hotspot_width <= local_x <= rect.width
+                    and close_left <= local_x <= close_right
+                )
+                _hover_toggle = (
+                    0 <= local_y <= header_height
+                    and toggle_left <= local_x <= toggle_right
                 )
                 _hover_panel = inside_panel
 
             # Close hotspot: primary-button press in the top-right corner.
             if event_type in ("mousedown", "mouse_down") and button in (0, 1):
-                if (
-                    0 <= local_y <= header_height
-                    and rect.width - hotspot_width <= local_x <= rect.width
-                ):
+                if 0 <= local_y <= header_height and close_left <= local_x <= close_right:
                     _debug("close click detected in canvas header")
                     _reset_help_state("all", None)
                     _close_canvas()
                     _drag_offset = None
+                    return
+                if 0 <= local_y <= header_height and toggle_left <= local_x <= toggle_right:
+                    HelpCanvasState.compact = not getattr(HelpCanvasState, "compact", False)
+                    _debug(f"compact toggle -> {HelpCanvasState.compact}")
+                    try:
+                        _help_canvas.hide()
+                    except Exception:
+                        pass
+                    _help_canvas = None
+                    _open_canvas()
                     return
 
                 # Start drag anywhere else in the panel.
@@ -600,11 +631,17 @@ def _open_canvas() -> None:
 
 def _close_canvas() -> None:
     """Hide the canvas-based quick help."""
-    global _help_canvas
+    global _help_canvas, _last_rect
     if _help_canvas is None:
         HelpCanvasState.showing = False
         HelpGUIState.showing = False
         return
+    rect = getattr(_help_canvas, "rect", None)
+    if rect is not None:
+        try:
+            _last_rect = Rect(rect.x, rect.y, rect.width, rect.height)  # type: ignore
+        except Exception:
+            _last_rect = None
     HelpCanvasState.showing = False
     HelpGUIState.showing = False
     HelpCanvasState.scroll_y = 0.0
@@ -612,9 +649,8 @@ def _close_canvas() -> None:
         _debug("closing canvas quick help")
         _help_canvas.hide()
     except Exception:
-        # In tests, the stub hide() is a no-op; in Talon, hide errors should
-        # not propagate.
         pass
+    _help_canvas = None
 
 
 def _reset_help_state(
@@ -774,13 +810,22 @@ def _default_draw_quick_help(
         and hasattr(rect, "y")
     ):
         close_label = "[X]"
+        toggle_label = "[compact]" if not getattr(HelpCanvasState, "compact", False) else "[full]"
         close_y = rect.y + 24
         # Align close label within the same horizontal band as the title.
         close_x = rect.x + rect.width - (len(close_label) * 8) - 16
+        toggle_x = close_x - (len(toggle_label) * 8) - 12
         draw_text(close_label, close_x, close_y)
+        draw_text(toggle_label, toggle_x, close_y)
         if _hover_close:
             try:
                 underline_rect = Rect(close_x, close_y + 4, len(close_label) * 8, 1)
+                c.draw_rect(underline_rect)
+            except Exception:
+                pass
+        if _hover_toggle:
+            try:
+                underline_rect = Rect(toggle_x, close_y + 4, len(toggle_label) * 8, 1)
                 c.draw_rect(underline_rect)
             except Exception:
                 pass
@@ -818,6 +863,10 @@ def _default_draw_quick_help(
         y = _draw_wrapped_line(f"Last recipe: {recap}", x, y)
 
     y += line_h // 2
+
+    # Compact view stops after state/caps/last recipe.
+    if getattr(HelpCanvasState, "compact", False):
+        return
 
     # --- Band 2: Grammar + commands ---------------------------------------------------------
     y = _draw_wrapped_line("Grammar: model run <staticPrompt> [axes…] <directional lens>", x, y)
@@ -1518,4 +1567,28 @@ class UserActions:
         if _reject_if_request_in_flight():
             return
         _reset_help_state("how", None)
+        _open_canvas()
+
+    def model_help_canvas_compact_on():
+        """Open quick help in compact (state-only) mode."""
+        if _reject_if_request_in_flight():
+            return
+        HelpCanvasState.compact = True
+        _close_canvas()
+        _open_canvas()
+
+    def model_help_canvas_compact_off():
+        """Open quick help in full mode."""
+        if _reject_if_request_in_flight():
+            return
+        HelpCanvasState.compact = False
+        _close_canvas()
+        _open_canvas()
+
+    def model_help_canvas_compact_toggle():
+        """Toggle compact/full quick help."""
+        if _reject_if_request_in_flight():
+            return
+        HelpCanvasState.compact = not getattr(HelpCanvasState, "compact", False)
+        _close_canvas()
         _open_canvas()

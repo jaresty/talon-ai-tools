@@ -840,6 +840,18 @@ def safe_model_prompt(m) -> str:
         return ""
 
 
+@mod.capture(rule="<user.text>")
+def modelSimplePrompt(m) -> str:
+    """Simple freeform prompt text (no axis parsing)."""
+    return str(m.text)
+
+
+@mod.capture(rule="<user.text>")
+def modelPromptSuffix(m) -> str:
+    """Freeform suffix for prompt suggestions."""
+    return str(m.text)
+
+
 @mod.capture(rule="[<user.modelPrompt>] prompt <user.text>")
 def pleasePrompt(m) -> str:
     additional_prompt = ""

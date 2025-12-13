@@ -60,8 +60,8 @@
 ^{user.model} run <user.modelSimpleSource> again [{user.completenessModifier}] [{user.scopeModifier}] [{user.scopeModifier}] [{user.methodModifier}] [{user.methodModifier}] [{user.methodModifier}] [{user.formModifier}] [{user.channelModifier}] [{user.directionalModifier}]$:
     user.gpt_rerun_last_recipe_with_source(modelSimpleSource, "", completenessModifier or "", scopeModifier_list or "", methodModifier_list, directionalModifier or "", formModifier or "", channelModifier or "")
 
-{user.model} run <user.modelSimpleSource> suggest <user.modelPromptSuffix>$: user.gpt_suggest_prompt_recipes_with_source(modelSimpleSource, modelPromptSuffix or "")
-{user.model} run suggest <user.modelPromptSuffix>$: user.gpt_suggest_prompt_recipes(modelPromptSuffix or "")
+{user.model} run <user.modelSimpleSource> suggest [for <user.modelPromptSuffix>]$: user.gpt_suggest_prompt_recipes_with_source(modelSimpleSource, modelPromptSuffix or "")
+{user.model} run suggest [for <user.modelPromptSuffix>]$: user.gpt_suggest_prompt_recipes(modelPromptSuffix or "")
 {user.model} run suggestions$: user.model_prompt_recipe_suggestions_gui_open()
 
 # Select the last GPT response so you can edit it further

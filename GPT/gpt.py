@@ -1259,36 +1259,6 @@ class UserActions:
         """Suggest model prompt recipes for an explicit source."""
         if _reject_if_request_in_flight():
             return
-        # Enforce a directional lens per ADR 048: require one directional in
-        # state before issuing a suggest request so downstream recipes stay
-        # within the single-directional contract.
-        last_directional_tokens = getattr(GPTState, "last_axes", {}).get(
-            "directional", []
-        )
-        directional = (
-            last_directional_tokens[-1]
-            if isinstance(last_directional_tokens, list) and last_directional_tokens
-            else getattr(GPTState, "last_directional", "")
-        )
-        if not directional:
-            notify(
-                "GPT: Suggestions require a directional lens (fog/fig/dig/ong/rog/bog/jog). Set one before running suggest."
-            )
-            return
-        # When debug logging is enabled, surface details about how `model suggest`
-        # resolved its source so users can diagnose unexpected content.
-        if GPTState.debug_enabled:
-            try:
-                default_source_key = settings.get("user.model_default_source")
-            except Exception:
-                default_source_key = "<error>"
-            resolved_source_key = getattr(source, "modelSimpleSource", "")
-            notify(
-                "GPT debug: model suggest using "
-                f"default_source={default_source_key!r}, "
-                f"resolved_source={resolved_source_key!r}, "
-                f"source_class={source.__class__.__name__}"
-            )
 
         subject = subject or ""
         try:

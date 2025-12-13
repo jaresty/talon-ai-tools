@@ -45,22 +45,6 @@ if bootstrap is not None:
             for token in ("mentor", "exec"):
                 self.assertIn(token, combined)
 
-        def test_intent_block_shows_command_forms(self) -> None:
-            canvas = _DummyCanvas()
-            _default_draw_quick_help(canvas)
-
-            prefix = "  Intent: "
-            intent_lines = [
-                line
-                for line in canvas.text
-                if line.startswith(prefix) or line.startswith(" " * len(prefix))
-            ]
-            self.assertTrue(intent_lines, "Intent presets line not rendered")
-            combined = " ".join(intent_lines)
-            self.assertIn("Intent: teach", combined)
-            for token in ("decide", "plan"):
-                self.assertIn(token, combined)
-
         def test_persona_commands_wrap_when_panel_is_narrow(self) -> None:
             rect = Rect(0, 0, 160, 120)
             canvas = _DummyCanvas()

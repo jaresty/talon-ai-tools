@@ -168,6 +168,8 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "boundaries, stakeholders, and internal structure, rather than individual lines or snippets.",
     },
     "form": {
+        "visual": "Important: Convey the answer as an abstract visual/metaphorical layout with a short legend; "
+        "favour big-picture structure over dense prose.",
         "adr": "Important: Express the answer as an Architecture Decision Record (ADR) with sections for context, "
         "decision, and consequences, using a concise, document-like style.",
         "bug": "Important: Format the answer as a structured bug report with clear sections for Steps to Reproduce, "

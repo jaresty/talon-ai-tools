@@ -181,11 +181,11 @@ def _draw_wrapped_commands(
 
 # Axis summaries (keys only; descriptions remain in docs). Pulled directly from
 # the generated axis map so quick help follows the list files.
-COMPLETENESS_KEYS = _axis_keys("completeness")
-SCOPE_KEYS = _axis_keys("scope")
-METHOD_KEYS = _axis_keys("method")
-FORM_KEYS = _axis_keys("form")
-CHANNEL_KEYS = _axis_keys("channel")
+COMPLETENESS_KEYS = sorted(_axis_keys("completeness"))
+SCOPE_KEYS = sorted(_axis_keys("scope"))
+METHOD_KEYS = sorted(_axis_keys("method"))
+FORM_KEYS = sorted(_axis_keys("form"))
+CHANNEL_KEYS = sorted(_axis_keys("channel"))
 
 
 def _group_directional_keys() -> dict[str, list[str]]:

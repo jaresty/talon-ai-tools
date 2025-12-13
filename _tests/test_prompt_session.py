@@ -130,6 +130,40 @@ if bootstrap is not None:
             last_message = GPTState.thread[-1]
             self.assertEqual(last_message["role"], "assistant")
             self.assertEqual(last_message["content"][0], assistant_item)
+
+        def test_add_system_prompt_attaches_hydrated_persona_and_axes(self):
+            GPTState.reset_all()
+            GPTState.system_prompt = GPTSystemPrompt(
+                voice="as programmer",
+                audience="to stakeholders",
+                tone="directly",
+                purpose="for appreciation",
+                completeness="full",
+                scope="actions",
+                method="plan",
+                form="bullets",
+                channel="slack",
+            )
+            session = PromptSession(destination="paste")
+            session.begin()
+
+            session.add_system_prompt()
+
+            system_messages = [
+                msg for msg in GPTState.request.get("messages", []) if msg.get("role") == "system"
+            ]
+            self.assertGreaterEqual(len(system_messages), 1)
+            content_raw = system_messages[-1].get("content", [])
+            hydrated = " ".join([item.get("text", "") for item in content_raw])
+            self.assertIn("Voice: Act as a programmer", hydrated)
+            self.assertIn("Audience: The audience for this is the stakeholders", hydrated)
+            self.assertIn("Tone: Use a direct, straightforward tone while remaining respectful.", hydrated)
+            self.assertIn("Purpose: The goal is to express appreciation or thanks.", hydrated)
+            self.assertIn("Completeness: Important: Provide a thorough answer", hydrated)
+            self.assertIn("Scope: Important: Within the selected target, focus only on concrete actions", hydrated)
+            self.assertIn("Method: Important: Give a short plan first, then carry it out", hydrated)
+            self.assertIn("Form: Important: Format the main answer as concise bullet points only", hydrated)
+            self.assertIn("Channel: Important: Format the answer for Slack", hydrated)
 else:
     if not TYPE_CHECKING:
         class PromptSessionTests(unittest.TestCase):

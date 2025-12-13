@@ -6,8 +6,8 @@ from typing import List, Optional, Union
 
 from ..lib.modelHelpers import (
     append_request_messages,
+    build_system_prompt_messages,
     build_request,
-    format_message,
     format_messages,
     send_request,
     send_request_async,
@@ -39,11 +39,7 @@ class PromptSession:
 
         current_messages = format_source_messages(prompt, source, additional_source)
 
-        system_prompt_messages: List[GPTTextItem] = [
-            format_message(message) for message in GPTState.system_prompt.format_as_array()
-        ]
-        if system_prompt_messages:
-            append_request_messages([format_messages("system", system_prompt_messages)])
+        self.add_system_prompt()
 
         if GPTState.query:
             append_request_messages(GPTState.query)
@@ -57,6 +53,16 @@ class PromptSession:
         """Append additional messages or tool responses to the request."""
         self.begin()
         append_request_messages(messages)
+
+    def add_system_prompt(self, include_request_context: bool = False) -> None:
+        """Append the hydrated system prompt (and optional request context) to the request."""
+        self.begin()
+        system_prompt_messages = build_system_prompt_messages(
+            include_request_context=include_request_context,
+            destination=self._destination if include_request_context else None,
+        )
+        if system_prompt_messages:
+            append_request_messages([format_messages("system", system_prompt_messages)])
 
     def append_thread(self, message: GPTTextItem) -> None:
         """Record an assistant response in the active thread when threading is enabled."""

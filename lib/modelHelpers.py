@@ -609,6 +609,38 @@ def _build_request_context(destination: object) -> list[str]:
     return full_system_messages
 
 
+def build_system_prompt_messages(
+    include_request_context: bool = False, destination: Optional[object] = None
+) -> list[GPTTextItem]:
+    """Return hydrated system-prompt messages, optionally including request context."""
+    messages: list[GPTTextItem] = []
+    context_lines: list[str] = []
+    if include_request_context:
+        try:
+            context_lines = _build_request_context(destination if destination is not None else "")
+        except Exception:
+            context_lines = []
+    for line in context_lines:
+        if line:
+            messages.append(format_message(line))
+
+    try:
+        prompt = getattr(GPTState, "system_prompt", None)
+        prompt_lines = (
+            prompt.format_as_array()
+            if prompt is not None and hasattr(prompt, "format_as_array")
+            else []
+        )
+    except Exception:
+        prompt_lines = []
+
+    for line in prompt_lines:
+        if line:
+            messages.append(format_message(line))
+
+    return messages
+
+
 BUILTIN_ASK_CHATGPT_TOOL = {
     "type": "function",
     "function": {

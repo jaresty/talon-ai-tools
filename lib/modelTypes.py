@@ -225,6 +225,9 @@ class GPTSystemPrompt:
             normalized = str(value or "").strip()
             if not normalized:
                 return []
+            if axis in ("voice", "audience", "tone", "purpose"):
+                # Persona/intent axes use phrase tokens; do not split on spaces.
+                return [normalized]
             if axis == "directional":
                 # Directional tokens can contain spaces; keep them intact.
                 return [normalized]

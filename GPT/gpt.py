@@ -417,165 +417,6 @@ def _suggest_prompt_text(
         "Content:\n"
         f"{content_text}\n"
     )
-def _suggest_hydrated_context(sys_prompt) -> dict[str, str]:
-    """Return hydrated persona/intent + contract defaults for suggest prompt text.
-
-    Uses getters (so defaults are applied) and keeps raw hydrated strings
-    without mapping back to tokens.
-    """
-
-    def _val(attr: str) -> str:
-        if not sys_prompt:
-            return ""
-        getter = getattr(sys_prompt, f"get_{attr}", None)
-        if callable(getter):
-            try:
-                raw = getter()
-                if raw is not None:
-                    return str(raw).strip()
-            except Exception:
-                pass
-        raw = getattr(sys_prompt, attr, "")
-        return str(raw or "").strip()
-
-    return {
-        "voice": _val("voice"),
-        "audience": _val("audience"),
-        "tone": _val("tone"),
-        "purpose": _val("purpose"),
-        "completeness": _val("completeness"),
-        "scope": _val("scope"),
-        "method": _val("method"),
-        "form": _val("form"),
-        "channel": _val("channel"),
-    }
-
-
-def _format_context_lines(snapshot: dict[str, str]) -> list[str]:
-    """Build formatted context lines from a context snapshot dict."""
-    if not snapshot:
-        return []
-    lines: list[str] = []
-    persona_bits = [
-        snapshot.get("voice", "").strip(),
-        snapshot.get("audience", "").strip(),
-        snapshot.get("tone", "").strip(),
-    ]
-    persona_bits = [b for b in persona_bits if b]
-    if persona_bits:
-        lines.append("Persona (Who): " + " · ".join(persona_bits))
-    if snapshot.get("purpose"):
-        lines.append(f"Intent (Why): {snapshot['purpose']}")
-    axis_bits: list[str] = []
-    for label, key in (
-        ("Completeness", "completeness"),
-        ("Scope", "scope"),
-        ("Method", "method"),
-        ("Form", "form"),
-        ("Channel", "channel"),
-    ):
-        val = snapshot.get(key, "").strip()
-        if val:
-            axis_bits.append(f"{label}: {val}")
-    if axis_bits:
-        lines.append("Defaults: " + " · ".join(axis_bits))
-    return lines
-
-
-def _suggest_prompt_text(
-    axis_docs: str,
-    persona_intent_docs: str,
-    static_prompt_docs: str,
-    prompt_subject: str,
-    content_text: str,
-    context_lines: list[str],
-) -> str:
-    """Build the user_text for suggest requests (exposed for characterization tests)."""
-    context_block = (
-        "Current persona/intent/defaults for this user (apply when helpful):\n"
-        + "\n".join(f"- {line}" for line in context_lines)
-        + "\n\n"
-        if context_lines
-        else ""
-    )
-
-    return (
-        "You are a prompt recipe assistant for the Talon `model` command.\n"
-        "Based on the subject and content below, suggest 3 to 5 concrete prompt recipes.\n\n"
-        "You MUST output ONLY JSON with this exact top-level shape (no markdown, backticks, or extra text):\n\n"
-        "{\n"
-        '  "suggestions": [\n'
-        "    {\n"
-        '      "name": string,\n'
-        '      "recipe": string,\n'
-        '      "persona_voice": string,\n'
-        '      "persona_audience": string,\n'
-        '      "persona_tone": string,\n'
-        '      "intent_purpose": string,\n'
-        '      "stance_command": string,\n'
-        '      "why": string\n'
-        "    }\n"
-        "  ]\n"
-        "}\n\n"
-        "Fields:\n"
-        "- name: short human-friendly label for the suggestion.\n"
-        "- recipe: a contract-only axis string of the form\n"
-        "  '<staticPrompt> · <completeness> · <scopeTokens> · <methodTokens> · <formToken> · <channelToken> · <directional>'.\n"
-        "- persona_voice / persona_audience / persona_tone / intent_purpose:\n"
-        "  optional Persona/Intent axis tokens (Who/Why) using ONLY the values\n"
-        "  from the Persona/Intent token lists below. Leave as an empty string\n"
-        '  (\"\") when you cannot reasonably express the stance with these tokens.\n'
-        "- stance_command: a single-line, voice-friendly command that a user could\n"
-        "  speak to set this stance. Valid forms are:\n"
-        "  * Preferred (always valid):\n"
-        "    'model write <persona_voice> <persona_audience> <persona_tone> <intent_purpose>'\n"
-        "    using exactly the persona_voice/persona_audience/persona_tone/intent_purpose\n"
-        "    tokens you chose for this suggestion.\n"
-        "    You MUST include at least intent_purpose; never output 'model write'\n"
-        "    or 'model write for' on their own.\n"
-        "  * Optional (only when the stance matches a known preset):\n"
-        "    'persona <personaPreset>' and/or 'intent <intentPreset>' where\n"
-        "    <personaPreset> and <intentPreset> are names from the Persona/Intent\n"
-        "    preset lists (for example, 'persona teach junior dev', 'intent teach').\n"
-        "  Never emit 'persona' followed directly by raw axis tokens; if you cannot\n"
-        "  use a preset name, fall back to the 'model write' form above.\n"
-        "- why: 1–2 sentences explaining when this suggestion is useful.\n\n"
-        "Recipe rules:\n"
-        "- <staticPrompt> is exactly one static prompt token (do not include multiple static prompts or combine them).\n"
-        "- <completeness> and <directional> are single axis tokens.\n"
-        "- Directional is required: always include exactly one directional modifier from the directional list; never leave it blank.\n"
-        "- <scopeTokens> and <methodTokens> are zero or more space-separated axis tokens for that axis (respecting small caps: scope ≤ 2 tokens, method ≤ 3 tokens).\n"
-        "- <formToken> and <channelToken> are single axis tokens (Form and Channel are singletons; omit them when no bias is needed).\n"
-        "  Examples: scopeTokens='actions edges', methodTokens='structure flow', formToken='bullets', channelToken='slack'.\n\n"
-        "Persona/Intent rules (Who/Why):\n"
-        "- When a different Persona/Intent stance would materially change how the\n"
-        "  model should respond, you SHOULD fill persona_voice/persona_audience/\n"
-        "  persona_tone/intent_purpose using ONLY the Persona/Intent token lists\n"
-        "  below, and you SHOULD provide a matching stance_command.\n"
-        "- Across your 3 to 5 suggestions, include clear Persona/Intent stances for\n"
-        "  at least two suggestions.\n"
-        "- When you cannot sensibly express the stance with these tokens, leave\n"
-        "  persona_voice/persona_audience/persona_tone/intent_purpose as empty\n"
-        "  strings and rely on stance_command + why instead.\n\n"
-        "Formatting rules (strict):\n"
-        "- Output ONLY the JSON object described above; do NOT include prose,\n"
-        "  markdown, backticks, or any other surrounding text.\n"
-        "- All suggestion objects MUST include name and recipe.\n"
-        "- Never invent new axis tokens: always choose from the provided axis\n"
-        "  lists (for example, use the method token 'analysis' rather than a new\n"
-        "  token like 'analyze').\n\n"
-        "Use only tokens from the following sets where possible.\n"
-        "Axis semantics and available tokens (How the model responds):\n"
-        f"{axis_docs}\n\n"
-        "Persona/Intent stance tokens and examples for stance commands (Who/Why):\n"
-        f"{persona_intent_docs}\n\n"
-        + context_block
-        + "Static prompts and their semantics:\n"
-        f"{static_prompt_docs}\n\n"
-        f"Subject: {prompt_subject}\n\n"
-        "Content:\n"
-        f"{content_text}\n"
-    )
 
 
 def _model_source_save_dir() -> str:
@@ -2820,92 +2661,34 @@ def _suggest_prompt_recipes_core_impl(source: ModelSource, subject: str) -> None
         stance_lines.append("Persona/Intent/Defaults: (none set)")
 
     prompt_subject = subject.strip() if subject else "unspecified"
-    user_text = (
-        "You are a prompt recipe assistant for the Talon `model` command.\n"
-        "Based on the subject and content below, suggest 3 to 5 concrete prompt recipes.\n\n"
-        "You MUST output ONLY JSON with this exact top-level shape (no markdown, backticks, or extra text):\n\n"
-        "{\n"
-        '  "suggestions": [\n'
-        "    {\n"
-        '      "name": string,\n'
-        '      "recipe": string,\n'
-        '      "persona_voice": string,\n'
-        '      "persona_audience": string,\n'
-        '      "persona_tone": string,\n'
-        '      "intent_purpose": string,\n'
-        '      "stance_command": string,\n'
-        '      "why": string\n'
-        "    }\n"
-        "  ]\n"
-        "}\n\n"
-        "Fields:\n"
-        "- name: short human-friendly label for the suggestion.\n"
-        "- recipe: a contract-only axis string of the form\n"
-        "  '<staticPrompt> · <completeness> · <scopeTokens> · <methodTokens> · <formToken> · <channelToken> · <directional>'.\n"
-        "- persona_voice / persona_audience / persona_tone / intent_purpose:\n"
-        "  optional Persona/Intent axis tokens (Who/Why) using ONLY the values\n"
-        "  from the Persona/Intent token lists below. Leave as an empty string\n"
-        '  ("") when you cannot reasonably express the stance with these tokens.\n'
-        "- stance_command: a single-line, voice-friendly command that a user could\n"
-        "  speak to set this stance. Valid forms are:\n"
-        "  * Preferred (always valid):\n"
-        "    'model write <persona_voice> <persona_audience> <persona_tone> <intent_purpose>'\n"
-        "    using exactly the persona_voice/persona_audience/persona_tone/intent_purpose\n"
-        "    tokens you chose for this suggestion.\n"
-        "    You MUST include at least intent_purpose; never output 'model write'\n"
-        "    or 'model write for' on their own.\n"
-        "  * Optional (only when the stance matches a known preset):\n"
-        "    'persona <personaPreset>' and/or 'intent <intentPreset>' where\n"
-        "    <personaPreset> and <intentPreset> are names from the Persona/Intent\n"
-        "    preset lists (for example, 'persona teach junior dev', 'intent teach').\n"
-        "  Never emit 'persona' followed directly by raw axis tokens; if you cannot\n"
-        "  use a preset name, fall back to the 'model write' form above.\n"
-        "- why: 1–2 sentences explaining when this suggestion is useful.\n\n"
-        "Recipe rules:\n"
-        "- <staticPrompt> is exactly one static prompt token (do not include multiple static prompts or combine them).\n"
-        "- <completeness> and <directional> are single axis tokens.\n"
-        "- Directional is required: always include exactly one directional modifier from the directional list; never leave it blank.\n"
-        "- <scopeTokens> and <methodTokens> are zero or more space-separated axis tokens for that axis (respecting small caps: scope ≤ 2 tokens, method ≤ 3 tokens).\n"
-        "- <formToken> and <channelToken> are single axis tokens (Form and Channel are singletons; omit them when no bias is needed).\n"
-        "  Examples: scopeTokens='actions edges', methodTokens='structure flow', formToken='bullets', channelToken='slack'.\n\n"
-        "Persona/Intent rules (Who/Why):\n"
-        "- When a different Persona/Intent stance would materially change how the\n"
-        "  model should respond, you SHOULD fill persona_voice/persona_audience/\n"
-        "  persona_tone/intent_purpose using ONLY the Persona/Intent token lists\n"
-        "  below, and you SHOULD provide a matching stance_command.\n"
-        "- Across your 3 to 5 suggestions, include clear Persona/Intent stances for\n"
-        "  at least two suggestions.\n"
-        "- When you cannot sensibly express the stance with these tokens, leave\n"
-        "  persona_voice/persona_audience/persona_tone/intent_purpose as empty\n"
-        "  strings and rely on stance_command + why instead.\n\n"
-        "Formatting rules (strict):\n"
-        "- Output ONLY the JSON object described above; do NOT include prose,\n"
-        "  markdown, backticks, or any other surrounding text.\n"
-        "- All suggestion objects MUST include name and recipe.\n"
-        "- Never invent new axis tokens: always choose from the provided axis\n"
-        "  lists (for example, use the method token 'analysis' rather than a new\n"
-        "  token like 'analyze').\n\n"
-        "Use only tokens from the following sets where possible.\n"
-        "Axis semantics and available tokens (How the model responds):\n"
-        f"{axis_docs}\n\n"
-        "Persona/Intent stance tokens and examples for stance commands (Who/Why):\n"
-        f"{persona_intent_docs}\n\n"
-        "Current persona/intent/defaults for this user (apply when helpful):\n"
-        + "\n".join(f"- {line}" for line in stance_lines)
-        + "\n\n"
-        "Static prompts and their semantics:\n"
-        f"{static_prompt_docs}\n\n"
-        f"Subject: {prompt_subject}\n\n"
-        "Content:\n"
-        f"{content_text}\n"
+    context_lines = _format_context_lines(_suggest_hydrated_context(sys_prompt))
+    if not context_lines:
+        context_lines = stance_lines
+    user_text = _suggest_prompt_text(
+        axis_docs=axis_docs,
+        persona_intent_docs=persona_intent_docs,
+        static_prompt_docs=static_prompt_docs,
+        prompt_subject=prompt_subject,
+        content_text=content_text,
+        context_lines=context_lines,
     )
 
-    if getattr(GPTState, "debug_enabled", False):
-        try:
-            snippet = user_text[:1200].replace("\n", "\\n")
-            print(f"GPT model suggest prompt (truncated to 1200 chars): {snippet}")
-        except Exception:
-            pass
+    try:
+        sys_messages = [
+            format_message(m)
+            for m in getattr(GPTState.system_prompt, "format_as_array", lambda: [])()
+        ]
+        sys_debug = " | ".join(m.get("text", str(m)) for m in sys_messages)
+    except Exception:
+        sys_debug = ""
+    try:
+        snippet = user_text[:1200].replace("\n", "\\n")
+        print(
+            "GPT model suggest prompt (truncated to 1200 chars): "
+            f"{snippet} | system={sys_debug}"
+        )
+    except Exception:
+        pass
 
     # Run suggestions through a silent destination so we never open the
     # confirmation surface for this helper. Keep a clipboard fallback to
@@ -2931,16 +2714,7 @@ def _suggest_prompt_recipes_core_impl(source: ModelSource, subject: str) -> None
     # the suggestion meta-prompt.
     try:
         session.begin()
-        # Include hydrated system prompt so the LLM sees persona/intent/defaults.
-        try:
-            sys_messages = [
-                format_message(m)
-                for m in getattr(GPTState.system_prompt, "format_as_array", lambda: [])()
-            ]
-            if sys_messages:
-                append_request_messages([format_messages("system", sys_messages)])
-        except Exception:
-            pass
+        session.add_system_prompt()
         session.add_messages([format_messages("user", [format_message(user_text)])])
         try:
             handle = _prompt_pipeline.complete_async(session)

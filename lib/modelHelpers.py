@@ -298,9 +298,32 @@ def notify(message: str):
     except Exception:
         request_id = None
 
+    try:
+        suppress_id = getattr(GPTState, "suppress_inflight_notify_request_id", None)
+    except Exception:
+        suppress_id = None
+    if suppress_id is None:
+        try:
+            # Optional import to pick up the module-level flag if available.
+            from talon_user.GPT import gpt as gpt_module  # type: ignore
+
+            suppress_id = getattr(gpt_module, "_suppress_inflight_notify_request_id", None)
+        except Exception:
+            pass
+
+    if suppress_id is not None:
+        if request_id is None:
+            request_id = suppress_id
+        if request_id == suppress_id:
+            return
+
     if (
         request_id is not None
         and _last_notify_request_id == request_id
+        and _last_notify_message == message
+    ) or (
+        request_id is None
+        and _last_notify_request_id is None
         and _last_notify_message == message
     ):
         return
@@ -1252,11 +1275,22 @@ def send_request(max_attempts: int = 10):
         pass
 
     request_id = emit_begin_send()
+    try:
+        GPTState.suppress_inflight_notify_request_id = request_id
+    except Exception:
+        pass
     lifecycle = reduce_request_state(lifecycle, "start")
     try:
         GPTState.last_lifecycle = lifecycle
     except Exception:
         pass
+
+    def _clear_notify_suppress():
+        try:
+            if getattr(GPTState, "suppress_inflight_notify_request_id", None) == request_id:
+                GPTState.suppress_inflight_notify_request_id = None
+        except Exception:
+            pass
 
     def _handle_cancelled_request() -> str:
         emit_fail("cancelled", request_id=request_id)
@@ -1266,6 +1300,7 @@ def send_request(max_attempts: int = 10):
         except Exception:
             pass
         cancel_active_request()
+        _clear_notify_suppress()
         return format_message("")
 
     def _handle_request_error(exc: Exception) -> None:
@@ -1378,12 +1413,13 @@ def send_request(max_attempts: int = 10):
                 _set_active_response(None)
             except Exception:
                 pass
-            try:
-                GPTState.text_to_confirm = ""
-                GPTState.last_meta = ""
-            except Exception:
-                pass
-            return format_message("")
+                try:
+                    GPTState.text_to_confirm = ""
+                    GPTState.last_meta = ""
+                except Exception:
+                    pass
+                _clear_notify_suppress()
+                return format_message("")
         except Exception as e:
             try:
                 print(
@@ -1532,6 +1568,7 @@ def send_request(max_attempts: int = 10):
         except Exception:
             pass
 
+    _clear_notify_suppress()
     return response
 
 

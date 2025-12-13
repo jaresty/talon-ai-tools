@@ -1277,6 +1277,38 @@ if bootstrap is not None:
             finally:
                 set_controller(None)
 
+        def test_inflight_guard_suppresses_notify_for_active_request(self):
+            controller = RequestUIController()
+            set_controller(controller)
+            try:
+                rid = emit_begin_send()
+                gpt_module.GPTState.suppress_inflight_notify_request_id = rid
+                with patch.object(gpt_module, "notify") as notify_mock:
+                    self.assertTrue(gpt_module._reject_if_request_in_flight())
+                notify_mock.assert_not_called()
+            finally:
+                emit_complete(request_id=rid)
+                gpt_module.GPTState.suppress_inflight_notify_request_id = None
+                set_controller(None)
+
+        def test_notify_suppresses_when_request_id_matches_flag(self):
+            controller = RequestUIController()
+            set_controller(controller)
+            try:
+                rid = emit_begin_send()
+                gpt_module.GPTState.suppress_inflight_notify_request_id = rid
+                with (
+                    patch.object(actions.user, "notify") as notify_user,
+                    patch.object(actions.app, "notify") as notify_app,
+                ):
+                    gpt_module.notify("GPT: A request is already running; wait for it to finish or cancel it first.")
+                notify_user.assert_not_called()
+                notify_app.assert_not_called()
+            finally:
+                emit_complete(request_id=rid)
+                gpt_module.GPTState.suppress_inflight_notify_request_id = None
+                set_controller(None)
+
         def test_inflight_notifications_deduplicate_across_guards(self):
             controller = RequestUIController()
             set_controller(controller)

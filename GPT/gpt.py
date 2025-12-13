@@ -510,6 +510,7 @@ _prompt_pipeline = PromptPipeline()
 _recursive_orchestrator = RecursiveOrchestrator(_prompt_pipeline)
 ASYNC_BLOCKING_SETTING = "user.model_async_blocking"
 _last_inflight_warning_request_id = None
+_suppress_inflight_notify_request_id = None
 
 
 def _request_is_in_flight() -> bool:
@@ -532,6 +533,13 @@ def _request_is_in_flight() -> bool:
 def _reject_if_request_in_flight() -> bool:
     """Notify and return True when a GPT request is already running."""
     global _last_inflight_warning_request_id
+    global _suppress_inflight_notify_request_id
+
+    suppress_id = _suppress_inflight_notify_request_id
+    try:
+        suppress_id = suppress_id or getattr(GPTState, "suppress_inflight_notify_request_id", None)
+    except Exception:
+        pass
 
     try:
         state = current_state()
@@ -552,10 +560,22 @@ def _reject_if_request_in_flight() -> bool:
         RequestPhase.CANCELLED,
     ):
         _last_inflight_warning_request_id = None
+        _suppress_inflight_notify_request_id = None
+        try:
+            if suppress_id and getattr(GPTState, "suppress_inflight_notify_request_id", None) == suppress_id:
+                GPTState.suppress_inflight_notify_request_id = None
+        except Exception:
+            pass
         return False
 
     if request_id is None:
-        request_id = "__none__"
+        request_id = suppress_id or "__none__"
+
+    # When the request bus is already in-flight for the current request, suppress
+    # user-facing notify so UI housekeeping (closing surfaces) during a request
+    # does not emit spurious warnings.
+    if request_id == suppress_id:
+        return True
 
     if request_id == _last_inflight_warning_request_id:
         return True
@@ -2728,6 +2748,11 @@ def _suggest_prompt_recipes_core_impl(source: ModelSource, subject: str) -> None
     manual_request_id: Optional[str] = None
     try:
         manual_request_id = emit_begin_send()
+        _suppress_inflight_notify_request_id = manual_request_id
+        try:
+            GPTState.suppress_inflight_notify_request_id = manual_request_id
+        except Exception:
+            pass
     except Exception:
         manual_request_id = None
     # Suppress response canvas while suggestions are running so streaming
@@ -2770,6 +2795,16 @@ def _suggest_prompt_recipes_core_impl(source: ModelSource, subject: str) -> None
             pass
         try:
             GPTState.current_destination_kind = prev_dest_kind
+        except Exception:
+            pass
+        try:
+            # Clear the suppression flag so future requests notify as normal.
+            if manual_request_id is not None and getattr(
+                GPTState, "suppress_inflight_notify_request_id", None
+            ) == manual_request_id:
+                GPTState.suppress_inflight_notify_request_id = None
+            if manual_request_id is not None and _suppress_inflight_notify_request_id == manual_request_id:
+                _suppress_inflight_notify_request_id = None
         except Exception:
             pass
 

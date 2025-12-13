@@ -11,6 +11,7 @@ from .personaConfig import INTENT_PRESETS, PERSONA_PRESETS, intent_bucket_preset
 
 from .modelState import GPTState
 from .talonSettings import _AXIS_SOFT_CAPS
+from .stanceDefaults import stance_defaults_lines
 
 from .metaPromptConfig import first_meta_preview_line, meta_preview_lines
 from .requestBus import current_state
@@ -19,6 +20,7 @@ from .modelHelpers import notify
 from .requestBus import current_state
 from .requestState import RequestPhase
 from .modelHelpers import notify
+
 
 try:
     from .staticPromptConfig import (
@@ -791,42 +793,51 @@ def _default_draw_quick_help(
 
     # Spacer below the title; rely on hover/affordances rather than a long
     # textual hint for interaction.
-    y += line_h * 2
+    y += line_h
 
-    # Grammar skeleton and last-recipe reminder.
-    y = _draw_wrapped_line("Grammar: model run <staticPrompt> [axes…] <directional lens>", x, y)
-
-    # Make multiplicity explicit so users know how many axis tokens are kept.
+    # --- Band 1: Active state + last action -------------------------------------------------
+    for line in stance_defaults_lines():
+        y = _draw_wrapped_line(line, x, y)
     scope_cap = _AXIS_SOFT_CAPS.get("scope", 2)
     method_cap = _AXIS_SOFT_CAPS.get("method", 3)
     form_cap = _AXIS_SOFT_CAPS.get("form", 1)
     channel_cap = _AXIS_SOFT_CAPS.get("channel", 1)
-    caps_line = (
-        f"Caps: 1 static prompt · 1 completeness · scope≤{scope_cap} · "
-        f"method≤{method_cap} · form≤{form_cap} · channel≤{channel_cap} · 1 directional lens"
-    )
-    y = _draw_wrapped_line(caps_line, x, y, indent=2)
     y = _draw_wrapped_line(
-        "Form/channel are optional singletons; defaults stay. Always include one directional lens.",
+        f"Caps: C=1 · S≤{scope_cap} · M≤{method_cap} · F≤{form_cap} · Ch≤{channel_cap} · Dir=1",
+        x,
+        y,
+    )
+
+    if HelpGUIState.static_prompt:
+        sp = HelpGUIState.static_prompt
+        y = _draw_wrapped_line(f"Static prompt: {sp}", x, y)
+    elif GPTState.last_recipe:
+        recipe = GPTState.last_recipe
+        directional = getattr(GPTState, "last_directional", "")
+        recap = f"{recipe} · {directional}" if directional else recipe
+        y = _draw_wrapped_line(f"Last recipe: {recap}", x, y)
+
+    y += line_h // 2
+
+    # --- Band 2: Grammar + commands ---------------------------------------------------------
+    y = _draw_wrapped_line("Grammar: model run <staticPrompt> [axes…] <directional lens>", x, y)
+    y = _draw_wrapped_line(
+        "Say: model run <prompt> <directional>  |  model again [axes] [directional]",
         x,
         y,
         indent=2,
     )
+    y = _draw_wrapped_line("Axes: use one directional; form/channel are singletons.", x, y, indent=2)
+    y += line_h // 2
 
-    # Persona / Intent quick grammar and presets.
-    draw_text("Who / Why (Persona / Intent):", x, y)
-    y += line_h
-    draw_text("  persona <personaPreset>", x, y)
-    y += line_h
-    draw_text("  intent <intentPreset>", x, y)
-    y += line_h
-
+    # Persona / Intent quick grammar and presets (compressed).
+    y = _draw_wrapped_line("Who/Why: persona <preset> · intent <preset>", x, y)
     try:
         persona_commands = _persona_preset_commands()
         if persona_commands:
             y = _draw_wrapped_commands(
-                "  Persona presets (Who): ",
-                persona_commands,
+                "Persona presets:",
+                persona_commands[:6],
                 draw_text,
                 x,
                 y,
@@ -835,7 +846,6 @@ def _default_draw_quick_help(
                 command_prefix="persona",
             )
     except Exception:
-        # If persona presets cannot be imported, continue without them.
         pass
 
     try:
@@ -843,26 +853,18 @@ def _default_draw_quick_help(
     except Exception:
         intent_buckets = {}
     if intent_buckets:
-        task = intent_buckets.get("task", [])
-        relational = intent_buckets.get("relational", [])
+        task = (intent_buckets.get("task", []) or [])[:6]
+        relational = (intent_buckets.get("relational", []) or [])[:6]
         if task:
-            y = _draw_wrapped_line(
-                "  Task intents (say: intent …): " + " · ".join(task),
-                x,
-                y,
-            )
+            y = _draw_wrapped_line("Task intents: " + " · ".join(task), x, y)
         if relational:
-            y = _draw_wrapped_line(
-                "  Relational intents (say: intent …): " + " · ".join(relational),
-                x,
-                y,
-            )
+            y = _draw_wrapped_line("Relational intents: " + " · ".join(relational), x, y)
     try:
         intent_commands = _intent_preset_commands()
         if intent_commands:
             y = _draw_wrapped_commands(
-                "  Intent presets (Why): ",
-                intent_commands,
+                "Intent presets:",
+                intent_commands[:6],
                 draw_text,
                 x,
                 y,
@@ -871,15 +873,13 @@ def _default_draw_quick_help(
                 command_prefix="intent",
             )
     except Exception:
-        # If intent presets cannot be imported, continue without them.
         pass
 
-    draw_text(
-        "  Status/reset: persona status · persona reset · intent status · intent reset",
+    y = _draw_wrapped_line(
+        "Status/reset: persona status/reset · intent status/reset",
         x,
         y,
     )
-    y += line_h
 
     section_focus = getattr(HelpGUIState, "section", "all") or "all"
 
@@ -917,24 +917,6 @@ def _default_draw_quick_help(
                         draw_text(f"  {axis.capitalize()}: {rendered}", x, y)
                         y += line_h
             y += line_h
-    elif GPTState.last_recipe:
-        recipe = GPTState.last_recipe
-        directional = getattr(GPTState, "last_directional", "")
-        if recipe:
-            # Show a recap line plus a speakable `model …` hint, mirroring the
-            # behaviour of the imgui quick help.
-            recap = recipe
-            if directional:
-                recap = f"{recipe} · {directional}"
-            draw_text(f"Last recipe: {recap}", x, y)
-            y += line_h
-
-            speakable = f"model run {recipe.replace(' · ', ' ')}"
-            if directional:
-                speakable = f"{speakable} {directional}"
-            draw_text(f"Say: {speakable}", x, y)
-            y += line_h
-
     y += line_h
 
     # Draw a subtle border around the panel, with a slightly stronger
@@ -1049,39 +1031,13 @@ def _default_draw_quick_help(
     y_right = _draw_axis_column("Form", "form", FORM_KEYS, x_right, y_right)
     y_right = _draw_axis_column("Channel", "channel", CHANNEL_KEYS, x_right, y_right)
 
-    # Brief axis multiplicity hint so users know which axes can be combined.
-    # Draw this note below whichever column is taller and wrap it so it stays
-    # within the visible canvas width.
+    # Brief axis multiplicity hint.
     axes_bottom = max(y_left, y_right)
     note = (
-        f"Note: completeness is single-valued. Scope≤{scope_cap}, method≤{method_cap}, "
-        f"form≤{form_cap}, channel≤{channel_cap}; combine tags like actions edges or structure flow."
+        f"Note: C single; S≤{scope_cap}, M≤{method_cap}, F≤{form_cap}, Ch≤{channel_cap}; combine tags like actions edges."
     )
-    approx_char_width = 8
-    if rect is not None and hasattr(rect, "x") and hasattr(rect, "width"):
-        right_bound = rect.x + rect.width - 40
-    else:
-        right_bound = x_left + 480
-    max_pixels = max(right_bound - x_left, 120)
-    max_chars = max(int(max_pixels // approx_char_width), 20)
-
-    words = note.split()
-    line = ""
-    note_y = axes_bottom
-    for word in words:
-        candidate = f"{line} {word}".strip()
-        if len(candidate) > max_chars and line:
-            draw_text(line, x_left, note_y)
-            note_y += line_h
-            line = word
-        else:
-            line = candidate
-    if line:
-        draw_text(line, x_left, note_y)
-        note_y += line_h
-
-    # Continue below the wrapped note.
-    y = note_y + line_h
+    y = _draw_wrapped_line(note, x_left, axes_bottom)
+    y += line_h
 
     # Draw a subtle separator between the axis block and the directional map
     # to make the section boundary easier to see.
@@ -1103,18 +1059,13 @@ def _default_draw_quick_help(
         draw_text("Directional lenses (coordinate map)", x, y)
     y += line_h
     # Brief semantic hints so the axes feel meaningful, not just symbolic.
-    draw_text(
-        "  Vertical: abstract (up) – generalise; concrete (down) – ground/specify.",
+    y = _draw_wrapped_line(
+        "Vertical: abstract↑ / concrete↓. Horizontal: reflect← / act→. Center: mix.",
         x,
         y,
+        indent=2,
     )
-    y += line_h
-    draw_text(
-        "  Horizontal: reflect (left) – analyse; act (right) – change/extend; center – mix/balance.",
-        x,
-        y,
-    )
-    y += line_h * 2
+    y += line_h // 2
 
     def _fmt_cell(row: str, col: str) -> str:
         tokens = grid.get((row, col)) or []
@@ -1153,22 +1104,19 @@ def _default_draw_quick_help(
             lines.append(f"    {seg}")
         return lines
 
-    # Lay out the directional lenses as a cross-shaped XY map with five
-    # labelled blocks: up/abstract, left/reflect, center/mixed, right/act,
-    # down/concrete. This mirrors the mental model from ADR 016 and the
-    # ASCII sketch used during design.
+    # Lay out the directional lenses as a compact 3×3 grid.
     if rect is not None and hasattr(rect, "x") and hasattr(rect, "width"):
         total_width = max(rect.width - 80, 300)
-        block_width = max(min(total_width // 3, 260), 180)
-        col_gap = 16
+        block_width = max(min(total_width // 3, 260), 160)
+        col_gap = 12
         center_x = rect.x + rect.width // 2 - block_width // 2
         left_x = center_x - block_width - col_gap
         right_x = center_x + block_width + col_gap
     else:
-        block_width = 220
+        block_width = 200
         left_x = x
-        center_x = x + block_width + 24
-        right_x = center_x + block_width + 24
+        center_x = x + block_width + 20
+        right_x = center_x + block_width + 20
 
     block_rects: dict[str, Rect] = {}
 
@@ -1234,7 +1182,7 @@ def _default_draw_quick_help(
 
     y_grid_top = y
 
-    # Top: UP / ABSTRACT
+    # Top: UP · ABSTRACT
     up_lines: list[str] = []
     val = _fmt_base_cell("up", "left")
     if val:
@@ -1248,7 +1196,7 @@ def _default_draw_quick_help(
     up_lines.extend(_build_combined_lines("up"))
 
     top_end_y = _draw_block(
-        "UP / ABSTRACT",
+        "UP · ABSTRACT",
         up_lines,
         center_x,
         y_grid_top,
@@ -1257,7 +1205,7 @@ def _default_draw_quick_help(
         "up",
     )
 
-    # Center column: CENTER / MIXED
+    # Center column: CENTER · MIX
     # Focus this block on the true central lenses so tokens like `fog` and
     # `dig` stay anchored to their UP/DOWN blocks instead of being relabelled
     # here as "abstract"/"concrete" again.
@@ -1268,7 +1216,7 @@ def _default_draw_quick_help(
         center_lines.append(f"  center: {val}")
 
     center_end_y = _draw_block(
-        "CENTER / MIXED",
+        "CENTER · MIX",
         center_lines,
         center_x,
         center_start_y,
@@ -1277,7 +1225,7 @@ def _default_draw_quick_help(
         "center",
     )
 
-    # Left: LEFT / REFLECT
+    # Left: LEFT · REFLECT
     left_lines: list[str] = []
     val = _fmt_base_cell("up", "left")
     if val:
@@ -1297,7 +1245,7 @@ def _default_draw_quick_help(
         left_lines.append("  vertical: via fly/dip")
 
     left_end_y = _draw_block(
-        "LEFT / REFLECT",
+        "LEFT · REFLECT",
         left_lines,
         left_x,
         center_start_y,
@@ -1306,7 +1254,7 @@ def _default_draw_quick_help(
         "left",
     )
 
-    # Right: RIGHT / ACT
+    # Right: RIGHT · ACT
     right_lines: list[str] = []
     val = _fmt_base_cell("up", "right")
     if val:
@@ -1325,7 +1273,7 @@ def _default_draw_quick_help(
         right_lines.append("  vertical: via fly/dip")
 
     right_end_y = _draw_block(
-        "RIGHT / ACT",
+        "RIGHT · ACT",
         right_lines,
         right_x,
         center_start_y,
@@ -1334,7 +1282,7 @@ def _default_draw_quick_help(
         "right",
     )
 
-    # Bottom: DOWN / CONCRETE
+    # Bottom: DOWN · CONCRETE
     bottom_start_y = center_end_y + (line_h // 2)
     down_lines: list[str] = []
     val = _fmt_base_cell("down", "left")

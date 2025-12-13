@@ -935,7 +935,7 @@ def _cheat_sheet_text() -> str:
         "- form: " + " | ".join(form_tokens),
         "- channel: " + " | ".join(channel_tokens),
         "Hints:",
-        "- Form and channel are optional singletons; defaults/last-run apply when omitted; legacy style tokens are removed (use form/channel).",
+        "- Form and channel are optional singletons; set/override explicitly. Current stance/defaults appear in quick help and the response recap.",
         "- Every run needs exactly one directional lens (fog/fig/dig/ong/rog/bog/jog).",
         persona_line,
         task_line,

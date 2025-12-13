@@ -141,7 +141,7 @@ def test_cheat_sheet_calls_out_form_channel_defaults_and_directional_requirement
     """Cheat sheet should remind users form/channel are optional singletons with defaults and one directional lens is required."""
     text = helpHub._cheat_sheet_text().lower()
     assert "form and channel are optional singletons" in text
-    assert "defaults/last-run apply" in text
+    assert "stance/defaults appear in quick help" in text
     assert "directional lens" in text
 
 

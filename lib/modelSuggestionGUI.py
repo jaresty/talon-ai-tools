@@ -36,6 +36,7 @@ from .modelPatternGUI import (
 from .requestBus import current_state
 from .requestState import RequestPhase
 from .modelHelpers import notify
+from .stanceDefaults import stance_defaults_lines
 
 mod = Module()
 ctx = Context()
@@ -489,39 +490,21 @@ def _draw_suggestions(c: canvas.Canvas) -> None:  # pragma: no cover - visual on
 
     suggestions = SuggestionGUIState.suggestions
 
-    # Optional context header showing the stance/defaults used when
-    # suggestions were generated.
+    # Context header showing stance/defaults (prefer the context captured at
+    # suggestion time; fall back to current stance/default settings).
     ctx = suggestion_context()
-    if ctx:
-        stance_parts: list[str] = []
-        persona_bits = [
-            ctx.get("voice", ""),
-            ctx.get("audience", ""),
-            ctx.get("tone", ""),
-        ]
-        persona_bits = [b for b in persona_bits if b]
-        if persona_bits:
-            stance_parts.append("Who: " + " · ".join(persona_bits))
-        if ctx.get("purpose"):
-            stance_parts.append(f"Why: {ctx['purpose']}")
-        axis_parts: list[str] = []
-        for label, key in (
-            ("C", "completeness"),
-            ("S", "scope"),
-            ("M", "method"),
-            ("F", "form"),
-            ("Ch", "channel"),
-        ):
-            val = ctx.get(key, "")
-            if val:
-                axis_parts.append(f"{label}:{val}")
-        if axis_parts:
-            stance_parts.append("Defaults: " + " ".join(axis_parts))
-        if stance_parts:
-            draw_text("Context sent with suggest:", x, y)
-            y += line_h
-            y = _draw_wrapped(" | ".join(stance_parts), x, y)
-            y += line_h // 2
+    stance_lines = stance_defaults_lines(ctx or None)
+    if stance_lines:
+        label = (
+            "Suggest context (stance/defaults):"
+            if ctx
+            else "Stance/defaults:"
+        )
+        draw_text(label, x, y)
+        y += line_h
+        for line in stance_lines:
+            y = _draw_wrapped(line, x, y)
+        y += line_h // 2
 
     if not suggestions:
         draw_text("No suggestions available. Run 'model run suggest' first.", x, y)

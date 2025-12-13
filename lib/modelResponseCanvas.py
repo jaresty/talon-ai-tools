@@ -15,6 +15,7 @@ from .suggestionCoordinator import (
     last_recap_snapshot,
     suggestion_grammar_phrase,
 )
+from .stanceDefaults import stance_defaults_lines
 from .modelHelpers import notify
 
 mod = Module()
@@ -788,8 +789,12 @@ def _default_draw_response(c: canvas.Canvas) -> None:  # pragma: no cover - visu
         y += line_h
         draw_text(f"Say: {grammar_phrase}", x, y)
         y += line_h
+        for line in stance_defaults_lines():
+            for wrapped in _wrap_text(line):
+                draw_text(wrapped, x, y)
+                y += line_h
         draw_text(
-            "Form+channel: one each (defaults/last-run apply if omitted); include one directional lens (fog/fig/dig/ong/rog/bog/jog).",
+            "Axes: single directional lens; form/channel singletons when used.",
             x,
             y,
         )

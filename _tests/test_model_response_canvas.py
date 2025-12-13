@@ -337,6 +337,7 @@ if bootstrap is not None:
             GPTState.last_form = "bullets"
             GPTState.last_channel = "slack"
 
+            captured: list[str] = []
             with patch.object(
                 modelResponseCanvas,
                 "last_recipe_snapshot",
@@ -364,7 +365,6 @@ if bootstrap is not None:
                     canvas_obj.rect = type(
                         "R", (), {"x": 0, "y": 0, "width": 500, "height": 400}
                     )()
-                captured: list[str] = []
                 original_draw_text = getattr(canvas_obj, "draw_text", None)
 
                 def _capture(text, *args, **kwargs):
@@ -379,16 +379,19 @@ if bootstrap is not None:
                 for cb in draw_cbs:
                     cb(canvas_obj)
 
-            hint_lines = [
-                line
-                for line in captured
-                if "Form+channel: one each" in line
-                and "directional lens" in line
+            axes_hint = [
+                line for line in captured if "Axes: single directional lens" in line
             ]
             self.assertTrue(
-                hint_lines,
-                "Expected response recap to surface form/channel singleton and directional hint",
+                axes_hint,
+                "Expected response recap to surface directional + form/channel singleton hint",
             )
+            stance_lines = [line for line in captured if line.startswith("Stance:")]
+            defaults_lines = [
+                line for line in captured if line.startswith("Defaults:")
+            ]
+            self.assertTrue(stance_lines, "Expected stance summary in response recap")
+            self.assertTrue(defaults_lines, "Expected defaults summary in response recap")
 
 
 else:

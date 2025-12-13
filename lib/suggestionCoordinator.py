@@ -248,3 +248,11 @@ def suggestion_entries_with_metadata() -> list[dict[str, str]]:
             continue
         entries.append(dict(item))
     return entries
+
+
+def suggestion_context(default: Optional[dict[str, str]] = None) -> dict[str, str]:
+    """Return the context snapshot sent with the last suggest request."""
+    ctx = getattr(GPTState, "last_suggest_context", {}) or {}
+    if ctx:
+        return dict(ctx)
+    return dict(default or {})

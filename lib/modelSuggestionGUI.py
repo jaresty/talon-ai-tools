@@ -21,6 +21,7 @@ from .suggestionCoordinator import (
     suggestion_source,
     set_last_recipe_from_selection,
     suggestion_grammar_phrase,
+    suggestion_context,
 )
 from .modelPatternGUI import (
     _axis_value,
@@ -487,6 +488,41 @@ def _draw_suggestions(c: canvas.Canvas) -> None:  # pragma: no cover - visual on
     y += line_h * 2
 
     suggestions = SuggestionGUIState.suggestions
+
+    # Optional context header showing the stance/defaults used when
+    # suggestions were generated.
+    ctx = suggestion_context()
+    if ctx:
+        stance_parts: list[str] = []
+        persona_bits = [
+            ctx.get("voice", ""),
+            ctx.get("audience", ""),
+            ctx.get("tone", ""),
+        ]
+        persona_bits = [b for b in persona_bits if b]
+        if persona_bits:
+            stance_parts.append("Who: " + " · ".join(persona_bits))
+        if ctx.get("purpose"):
+            stance_parts.append(f"Why: {ctx['purpose']}")
+        axis_parts: list[str] = []
+        for label, key in (
+            ("C", "completeness"),
+            ("S", "scope"),
+            ("M", "method"),
+            ("F", "form"),
+            ("Ch", "channel"),
+        ):
+            val = ctx.get(key, "")
+            if val:
+                axis_parts.append(f"{label}:{val}")
+        if axis_parts:
+            stance_parts.append("Defaults: " + " ".join(axis_parts))
+        if stance_parts:
+            draw_text("Context sent with suggest:", x, y)
+            y += line_h
+            y = _draw_wrapped(" | ".join(stance_parts), x, y)
+            y += line_h // 2
+
     if not suggestions:
         draw_text("No suggestions available. Run 'model run suggest' first.", x, y)
         return

@@ -1118,25 +1118,25 @@ mod.setting(
 mod.setting(
     "model_default_voice",
     type=str,
-    default="Infer a relevant voice based on the context or the user's request.",
+    default="",
     desc="Default voice (who is speaking). For example, 'as programmer'.",
 )
 mod.setting(
     "model_default_purpose",
     type=str,
-    default="Infer a relevant purpose based on the context or the user's request.",
+    default="",
     desc="Default intent (why you're talking). For example, 'for teaching'.",
 )
 mod.setting(
     "model_default_tone",
     type=str,
-    default="Infer a relevant tone based on the context or the user's request.",
+    default="",
     desc="Default tone (emotional register). For example, 'kindly' or 'formally'.",
 )
 mod.setting(
     "model_default_audience",
     type=str,
-    default="Infer a relevant audience based on the context or the user's request.",
+    default="",
     desc="Default audience (who this is for). For example, 'to programmer' or 'to junior engineer'.",
 )
 

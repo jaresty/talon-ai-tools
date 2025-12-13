@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from talon import settings
 from .axisMappings import axis_hydrate_tokens, axis_value_to_key_map_for
-from .personaConfig import persona_hydrate_tokens
+from .personaConfig import persona_docs_map, persona_hydrate_tokens
 
 from .metaPromptConfig import META_INTERPRETATION_GUIDANCE
 from dataclasses import dataclass, field
@@ -111,23 +111,52 @@ class GPTSystemPrompt:
 
     @staticmethod
     def default_voice() -> str:
-        # Code to evaluate and return a default value for voice
-        return settings.get("user.model_default_voice")
+        # Resolve configured default to a known persona token; drop descriptive strings.
+        raw = settings.get("user.model_default_voice")
+        tokens = GPTSystemPrompt._coerce_tokens(raw)
+        token = tokens[0] if tokens else str(raw or "").strip()
+        docs = persona_docs_map("voice")
+        token_l = token.lower()
+        for key in docs.keys():
+            if str(key).strip().lower() == token_l:
+                return str(key).strip()
+        return ""
 
     @staticmethod
     def default_purpose() -> str:
-        # Code to evaluate and return a default value for purpose
-        return settings.get("user.model_default_purpose")
+        raw = settings.get("user.model_default_purpose")
+        tokens = GPTSystemPrompt._coerce_tokens(raw)
+        token = tokens[0] if tokens else str(raw or "").strip()
+        docs = persona_docs_map("purpose")
+        token_l = token.lower()
+        for key in docs.keys():
+            if str(key).strip().lower() == token_l:
+                return str(key).strip()
+        return ""
 
     @staticmethod
     def default_tone() -> str:
-        # Code to evaluate and return a default value for tone
-        return settings.get("user.model_default_tone")
+        raw = settings.get("user.model_default_tone")
+        tokens = GPTSystemPrompt._coerce_tokens(raw)
+        token = tokens[0] if tokens else str(raw or "").strip()
+        docs = persona_docs_map("tone")
+        token_l = token.lower()
+        for key in docs.keys():
+            if str(key).strip().lower() == token_l:
+                return str(key).strip()
+        return ""
 
     @staticmethod
     def default_audience() -> str:
-        # Code to evaluate and return a default value for audience
-        return settings.get("user.model_default_audience")
+        raw = settings.get("user.model_default_audience")
+        tokens = GPTSystemPrompt._coerce_tokens(raw)
+        token = tokens[0] if tokens else str(raw or "").strip()
+        docs = persona_docs_map("audience")
+        token_l = token.lower()
+        for key in docs.keys():
+            if str(key).strip().lower() == token_l:
+                return str(key).strip()
+        return ""
 
     @staticmethod
     def _coerce_tokens(raw) -> list[str]:

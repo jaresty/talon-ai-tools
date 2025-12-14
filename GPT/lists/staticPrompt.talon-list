@@ -10,7 +10,6 @@ infer: infer
 
 # Fix grammar only; keep meaning/tone; modified text only.
 fix: fix
-LLM: LLM
 
 # Analysis, Structure, and Perspective
 
@@ -33,35 +32,32 @@ com b: com b
 
 # Format as a todo list.
 todo: todo
-ticket: ticket
 product: product
 metrics: metrics
-value: value
-jobs: jobs
-done: done
 operations: operations
+jobs: jobs
+value: value
+pain: pain
+done: done
+team: team
 bridge: bridge
-facilitate: facilitate
 
 # Exploration, Critique, and Reflection
 
 challenge: challenge
 critique: critique
 retro: retro
-pain: pain
 experiment: experiment
 science: science
 wasinawa: wasinawa
 easier: easier
 true: true
-question: question
 relevant: relevant
 misunderstood: misunderstood
 risky: risky
 
 # Transformation and Reformatting
 split: split
-shuffled: shuffled
 match: match
 blend: blend
 join: join
@@ -99,7 +95,6 @@ interact: interact
 dependent: dependent
 independent: independent
 parallel: parallel
-team: team
 unknown: unknown
 jim: jim
 domain: domain

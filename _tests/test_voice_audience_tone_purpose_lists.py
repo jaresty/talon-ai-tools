@@ -143,6 +143,9 @@ if bootstrap is not None:
                     "directly",
                     "gently",
                     "kindly",
+                    "plainly",
+                    "tightly",
+                    "headline first",
                 },
             )
 
@@ -167,6 +170,14 @@ if bootstrap is not None:
                 "for collaborating",
                 "for teaching",
                 "for project management",
+                "for jobs to be done",
+                "for user value",
+                "for pain points",
+                "for definition of done",
+                "for facilitation",
+                "for discovery questions",
+                "for team mapping",
+                "for learning",
             }
             self.assertEqual(
                 keys,

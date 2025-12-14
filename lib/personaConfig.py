@@ -42,6 +42,9 @@ PERSONA_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "directly": "Use a direct, straightforward tone while remaining respectful.",
         "gently": "Use a gentle tone.",
         "kindly": "Use a kind, warm tone.",
+        "plainly": "Use straightforward, everyday language with minimal ornamentation.",
+        "tightly": "Be concise and dense; remove fluff and redundancy.",
+        "headline first": "Lead with the main headline/point first, then layer brief supporting details.",
     },
     "purpose": {
         "for information": "The goal is to provide clear information.",
@@ -55,10 +58,8 @@ PERSONA_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "for appreciation": "The goal is to express appreciation or thanks.",
         "for triage": "The goal is to quickly sort and prioritise issues or options.",
         "for announcing": "The goal is to share a clear, concise announcement with the chosen audience.",
-        "for walk through": "The goal is to walk the audience through the topic so their understanding builds gradually.",
-        "for collaborating": "The goal is to collaborate iteratively with the user on the outcome.",
         "for teaching": "The goal is to help the audience learn and understand the material.",
-        "for project management": "The goal is to support project management and coordination decisions.",
+        "for learning": "The goal is to deepen understanding; the outcome is knowledge, not necessarily a fix.",
     },
 }
 
@@ -205,11 +206,6 @@ INTENT_PRESETS: tuple[IntentPreset, ...] = (
         purpose="for coaching",
     ),
     IntentPreset(
-        key="collaborate",
-        label="Collaborate",
-        purpose="for collaborating",
-    ),
-    IntentPreset(
         key="entertain",
         label="Entertain",
         purpose="for entertainment",
@@ -220,7 +216,7 @@ INTENT_BUCKETS: dict[str, tuple[str, ...]] = {
     # Task/intellectual intents (ADR 048 split)
     "task": ("teach", "decide", "plan", "evaluate", "brainstorm"),
     # Relational/social intents (ADR 048 split)
-    "relational": ("appreciate", "persuade", "coach", "collaborate", "entertain"),
+    "relational": ("appreciate", "persuade", "coach", "entertain"),
 }
 
 

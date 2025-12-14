@@ -36,9 +36,6 @@ STATIC_PROMPT_CONFIG: dict[str, StaticPromptProfile] = {
     "infer": {
         "description": "I'm not telling you what to do. Infer the task.",
     },
-    "LLM": {
-        "description": "Return one or more prompts for an LLM, each fitting on a single line.",
-    },
     # Analysis, structure, and perspective prompts (description-only profiles).
     "describe": {
         "description": "Just describe this objectively.",
@@ -99,48 +96,46 @@ STATIC_PROMPT_CONFIG: dict[str, StaticPromptProfile] = {
         "form": "bullets",
         "scope": "focus",
     },
-    "value": {
-        "description": "Explain the user value of this.",
-        "completeness": "gist",
-        "method": "steps",
-        "form": "bullets",
-        "scope": "focus",
-    },
-    "jobs": {
-        "description": "List the Jobs To Be Done (JTBD) for this.",
-        "completeness": "gist",
-        "method": "steps",
-        "form": "bullets",
-        "scope": "focus",
-    },
-    "done": {
-        "description": "Describe the definition of done for this.",
-        "completeness": "gist",
-        "method": "steps",
-        "form": "bullets",
-        "scope": "focus",
-    },
     "operations": {
         "description": "Infer an appropriate Operations Research or management science concept to apply.",
         "completeness": "gist",
         "method": "rigor",
-        "form": "plain",
         "scope": "focus",
     },
-    "facilitate": {
-        "description": "Design a meeting for this.",
-        "completeness": "full",
-        "method": "steps",
+    "jobs": {
+        "description": "Identify the key Jobs To Be Done, desired outcomes, and forces shaping them.",
+        "completeness": "gist",
+        "method": "analysis",
         "form": "bullets",
         "scope": "focus",
     },
-    "ticket": {
-        "description": "Draft a Jira-style user story ticket for this issue.",
+    "value": {
+        "description": "Describe the user/customer value and impact in a concise value narrative.",
+        "completeness": "gist",
+        "method": "analysis",
+        "form": "bullets",
+        "scope": "focus",
+    },
+    "pain": {
+        "description": "List pain points and obstacles with brief prioritisation or severity.",
+        "completeness": "gist",
+        "method": "filter",
+        "form": "bullets",
+        "scope": "focus",
+    },
+    "done": {
+        "description": "Draft a clear Definition of Done / acceptance criteria as a checklist.",
         "completeness": "full",
-        "scope": ["actions"],
-        "method": ["structure"],
-        "form": ["story"],
-        "channel": ["jira"],
+        "method": "structure",
+        "form": "checklist",
+        "scope": "actions",
+    },
+    "team": {
+        "description": "Map the team/roles/responsibilities and handoffs needed for the work.",
+        "completeness": "gist",
+        "method": "mapping",
+        "form": "table",
+        "scope": "system",
     },
     # Exploration, critique, and reflection prompts (description-only profiles).
     "challenge": {
@@ -152,25 +147,11 @@ STATIC_PROMPT_CONFIG: dict[str, StaticPromptProfile] = {
     "retro": {
         "description": "Help me introspect or reflect on this.",
     },
-    "pain": {
-        "description": "List 3–5 pain points, issues, obstacles, or challenges, ordered by importance to the audience.",
-        "completeness": "gist",
-        "method": "filter",
-        "form": "bullets",
-        "scope": "focus",
-    },
     "easier": {
         "description": "This is too much work; propose something I can accomplish in a smaller timescale.",
     },
     "true": {
         "description": "Assess whether this is true, based on the available information.",
-    },
-    "question": {
-        "description": "Ask open-ended questions about this that are important to the audience.",
-        "completeness": "gist",
-        "method": "filter",
-        "form": "bullets",
-        "scope": "focus",
     },
     "relevant": {
         "description": "Identify what is relevant here.",
@@ -197,9 +178,6 @@ STATIC_PROMPT_CONFIG: dict[str, StaticPromptProfile] = {
     "split": {
         "description": "Separate topics into clear sections; reformatted text only.",
     },
-    "shuffled": {
-        "description": "Reconstruct text so layout is logical and significantly different, creating new categories for each idea.",
-    },
     "match": {
         "description": "Rewrite to match the provided style; modified text only.",
     },
@@ -216,7 +194,6 @@ STATIC_PROMPT_CONFIG: dict[str, StaticPromptProfile] = {
         "description": "Add LLM-ready context only; do not rewrite the main text.",
         "completeness": "gist",
         "method": "contextualise",
-        "form": "plain",
         "scope": "focus",
     },
     # Mathematical and abstract lenses (description-only profiles).
@@ -294,7 +271,6 @@ STATIC_PROMPT_CONFIG: dict[str, StaticPromptProfile] = {
         ),
         "completeness": "full",
         "method": "rigor",
-        "form": "plain",
         "scope": "focus",
     },
     # Strategy, mapping, and dependency prompts (description-only profiles).
@@ -332,9 +308,6 @@ STATIC_PROMPT_CONFIG: dict[str, StaticPromptProfile] = {
         "description": "Describe problems that could arise if these two items were parallelized.",
         "scope": "relations",
     },
-    "team": {
-        "description": "Describe the team structure, focusing on people and their roles.",
-    },
     "unknown": {
         "description": "Imagine critical unknown unknowns in this situation and how they might impact the outcome.",
     },
@@ -354,7 +327,6 @@ STATIC_PROMPT_CONFIG: dict[str, StaticPromptProfile] = {
         "description": "Evaluate this design through the Concordance Frame: visibility, scope, and volatility of dependencies that must stay in tune.",
         "completeness": "full",
         "method": "rigor",
-        "form": "plain",
         "scope": "focus",
     },
     "melody": {
@@ -364,21 +336,18 @@ STATIC_PROMPT_CONFIG: dict[str, StaticPromptProfile] = {
         ),
         "completeness": "full",
         "method": "rigor",
-        "form": "plain",
         "scope": "focus",
     },
     "constraints": {
         "description": "Identify the key constraint in this system, describe behaviours it promotes and discourages, and discuss how to balance it for long-term health.",
         "completeness": "full",
         "method": "rigor",
-        "form": "plain",
         "scope": "focus",
     },
     "effects": {
         "description": "Describe the second- and third-order effects of this situation or change.",
         "completeness": "full",
         "method": "steps",
-        "form": "plain",
         "scope": "dynamics",
     },
     # Fix-style prompts tend to want solid, local, code-level edits.

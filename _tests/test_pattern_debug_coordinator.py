@@ -78,7 +78,7 @@ if bootstrap is not None:
                 _DummyPattern(
                     "pat3",
                     "desc3",
-                    "infer · full · actions edges system · steps plan rigor filter · bullets plain · slack jira · rog fog",
+                    "infer · full · actions edges system · steps plan rigor filter · bullets table · slack jira · rog fog",
                 ),
             ]
 
@@ -90,7 +90,7 @@ if bootstrap is not None:
             self.assertEqual(axes["scope"], ["edges", "system"])
             self.assertEqual(axes["method"], ["filter", "plan", "rigor"])
             # Form/channel singletons.
-            self.assertEqual(axes["form"], ["plain"])
+            self.assertEqual(axes["form"], ["table"])
             self.assertEqual(axes["channel"], ["jira"])
             # Directional last-wins single token.
             self.assertEqual(axes["directional"], "fog")

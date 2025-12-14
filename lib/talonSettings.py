@@ -1187,7 +1187,7 @@ mod.setting(
     default="",
     desc=(
         "Default output channel bias when no spoken channel modifier is provided. "
-        "Suggested values align with the channelModifier list (for example, 'slack', 'jira', 'presenterm', 'announce')."
+        "Suggested values align with the channelModifier list (for example, 'slack', 'jira', 'presenterm')."
     ),
 )
 

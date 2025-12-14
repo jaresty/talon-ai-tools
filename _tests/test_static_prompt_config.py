@@ -62,18 +62,11 @@ if bootstrap is not None:
             context_axes = get_static_prompt_axes("context")
             self.assertEqual(context_axes.get("method"), ["contextualise"])
 
-        def test_ticket_static_prompt_uses_multi_tag_axes(self) -> None:
-            """Static prompt 'ticket' should expose multi-tag axis defaults."""
+        def test_ticket_static_prompt_is_migrated_to_form_channel_axes(self) -> None:
+            """The former 'ticket' prompt now lives on form/channel axes (ADR 050)."""
             axes = get_static_prompt_axes("ticket")
-            self.assertIsNotNone(axes)
-            self.assertEqual(axes.get("completeness"), "full")
-            self.assertEqual(axes.get("scope"), ["actions"])
-            self.assertEqual(axes.get("method"), ["structure"])
-            # Form/channel defaults should include story form and jira channel tokens.
-            form_values = axes.get("form")
-            channel_values = axes.get("channel")
-            self.assertEqual(form_values, ["story"])
-            self.assertEqual(channel_values, ["jira"])
+            self.assertEqual(axes, {})
+            self.assertNotIn("ticket", STATIC_PROMPT_CONFIG)
 
         def test_static_prompt_settings_catalog_matches_profiles(self) -> None:
             catalog = static_prompt_settings_catalog()

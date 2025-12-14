@@ -911,7 +911,7 @@ def _cheat_sheet_text() -> str:
     )
     form_tokens = _axis_examples("form", ["plain", "bullets", "table", "code", "adr"])
     channel_tokens = _axis_examples(
-        "channel", ["slack", "jira", "presenterm", "html", "announce"]
+        "channel", ["slack", "jira", "presenterm", "html"]
     )
     lines = [
         "Model Help Hub cheat sheet",

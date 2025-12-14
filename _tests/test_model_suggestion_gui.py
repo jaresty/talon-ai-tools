@@ -138,7 +138,7 @@ if bootstrap is not None:
             GPTState.last_suggested_recipes = [
                 {
                     "name": "Jira FAQ ticket",
-                    "recipe": "ticket · full · actions edges · structure flow · jira faq · fog",
+                    "recipe": "describe · full · actions edges · structure flow · story · jira faq · fog",
                 },
             ]
 
@@ -149,7 +149,7 @@ if bootstrap is not None:
             actions.user.model_prompt_recipe_suggestions_gui_close.assert_called_once()
 
             # GPTState last_* fields should reflect the parsed multi-tag axes.
-            self.assertEqual(GPTState.last_static_prompt, "ticket")
+            self.assertEqual(GPTState.last_static_prompt, "describe")
             self.assertEqual(GPTState.last_completeness, "full")
             self.assertEqual(GPTState.last_directional, "fog")
 

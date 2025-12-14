@@ -124,13 +124,14 @@ When the confirmation GUI is open, it also:
   - Completeness (`skim`, `gist`, `full`, etc.).
   - Scope (`narrow`, `focus`, `bound`, etc.).
   - Method (`steps`, `plan`, `cluster`, etc.).
-  - Form (`plain`, `bullets`, `table`, `code`, etc.).
+  - Form (`bullets`, `table`, `code`, `adr`, etc.); tone sits on persona (`tone=plainly`/`tightly`/`headline first`, etc.).
   - Channel (`slack`, `jira`, `presenterm`, etc.).
+  - Tone (`kindly`, `directly`, `plainly`, `tightly`, `headline first`, etc.).
   - Directional lens (`fog`, `rog`, `ong`, etc.).
 - Examples:
 - `model again gist fog` – keep the last static prompt/scope/method/form/channel, but change completeness to `gist` and directional lens to `fog`.
 - `model again todo gist fog` – change static prompt to `todo` and completeness to `gist`, reuse the last scope/method/form/channel, and set directional lens to `fog`.
-- `model again steps tight rog` – keep the last static prompt/completeness/scope, but switch method to `steps`, form to `tight`, and directional lens to `rog`.
+- `model again steps tightly rog` – keep the last static prompt/completeness/scope, but switch method to `steps`, tone to `tightly`, and directional lens to `rog`.
 
 ### Persona / Intent / Contract (Who / Why / How)
 
@@ -150,8 +151,8 @@ When you are deciding how much of the grammar to use, it helps to think in three
   - `completeness` – how much coverage (`skim`, `gist`, `full`, `max`, `minimal`, `deep`).  
   - `scope` – what territory is in-bounds (`narrow`, `focus`, `bound`, `actions`, `relations`, `system`, `dynamics`, etc.).  
   - `method` – how to think/decompose (`steps`, `plan`, `debugging`, `xp`, `diverge`, `converge`, `mapping`, etc.).  
-  - `form` – container/shape (`plain`, `bullets`, `table`, `code`, `adr`, `story`, `checklist`, `faq`, `headline`, `recipe`, `bug`, `spike`, `log`, `cards`, `commit`, `gherkin`, `shellscript`, `tight`).  
-  - `channel` – medium bias (`slack`, `jira`, `presenterm`, `announce`, `remote`, `sync`, `html`, `codetour`, `diagram`, `svg`).
+  - `form` – container/shape (`bullets`, `table`, `code`, `adr`, `story`, `checklist`, `faq`, `recipe`, `bug`, `spike`, `log`, `cards`, `commit`, `gherkin`, `shellscript`).  
+  - `channel` – medium bias (`slack`, `jira`, `presenterm`, `remote`, `sync`, `html`, `codetour`, `diagram`, `svg`).
 
 In day-to-day use you can:
 
@@ -166,7 +167,7 @@ A couple of common prompts decomposed into the three families:
 - “Explain simply to a junior engineer”  
   - **Persona (Who)**: `as teacher` + `to junior engineer` + `tone=kindly`.  
   - **Intent (Why)**: `for teaching`.  
-  - **Contract (How)**: `completeness=gist` or `minimal`, `scope=focus`, `method=scaffold`, `form=plain` (optionally `tight`), plus an optional channel when the medium matters (for example, `channel=slack`).  
+  - **Contract (How)**: `completeness=gist` or `minimal`, `scope=focus`, `method=scaffold`, `tone=plainly` (optionally `tightly`/`headline first`), plus an optional form/channel when the medium matters (for example, `form=bullets`, `channel=slack`).  
   - **Do not** try to encode this entirely as a new audience or purpose token; treat it as a recipe across existing axes.
 
 - “Executive brief for CEO” vs “Deep technical write-up for engineers”  
@@ -177,8 +178,8 @@ A couple of common prompts decomposed into the three families:
     - Exec brief → often `for deciding` or `for information`.  
     - Deep write-up → usually `for information` or `for evaluating`.  
   - **Contract (How)**:  
-    - Exec brief → `completeness=gist`, `scope=focus`, `method=headline`/`structure`, `form=plain`, `channel=announce`.  
-    - Deep write-up → `completeness=full` or `deep`, `scope=system`/`relations`, `method=structure`/`analysis`, `form=adr` or `plain`.
+    - Exec brief → `completeness=gist`, `scope=focus`, `method=headline`/`structure`, `tone=tightly` or `tone=headline first`, optionally `form=bullets`.  
+    - Deep write-up → `completeness=full` or `deep`, `scope=system`/`relations`, `method=structure`/`analysis`, `form=adr` or `form=table`, optionally `tone=plainly`.
   - Again, keep persona and intent focused on Who/Why; put coverage, territory, reasoning, and container into the contract axes.
 
 ### Modifier axes (advanced)
@@ -188,8 +189,8 @@ The `model` command now supports several short, speech-friendly modifier axes yo
 - Completeness (`completenessModifier`): `full`, `gist`, `max`, `minimal`, `skim`
 - Scope (`scopeModifier`): `actions`, `activities`, `bound`, `dynamics`, `edges`, `focus`, `interfaces`, `narrow`, `relations`, `system`
 - Method (`methodModifier`): `visual`, `adversarial`, `analysis`, `case`, `cluster`, `compare`, `contextualise`, `converge`, `debugging`, `deep`, `diagnose`, `direct`, `diverge`, `experimental`, `filter`, `flow`, `indirect`, `ladder`, `liberating`, `mapping`, `motifs`, `plan`, `prioritize`, `rewrite`, `rigor`, `samples`, `scaffold`, `socratic`, `steps`, `structure`, `systemic`, `taxonomy`, `wasinawa`, `xp`
-- Form (`formModifier`): `adr`, `bug`, `bullets`, `cards`, `checklist`, `code`, `commit`, `faq`, `gherkin`, `headline`, `log`, `plain`, `recipe`, `shellscript`, `spike`, `story`, `table`, `tight`
-- Channel (`channelModifier`): `announce`, `codetour`, `diagram`, `html`, `jira`, `presenterm`, `remote`, `slack`, `sync`, `svg`
+- Form (`formModifier`): `adr`, `bug`, `bullets`, `cards`, `checklist`, `code`, `commit`, `faq`, `gherkin`, `log`, `recipe`, `shellscript`, `spike`, `story`, `table`, `visual`
+- Channel (`channelModifier`): `codetour`, `diagram`, `html`, `jira`, `presenterm`, `remote`, `slack`, `sync`, `svg`
   - Additional form/channel notes:
     - `cards` – format the answer as discrete cards/items with clear headings and short bodies.
     - `story` – format the output as a user story using “As a…, I want…, so that…”, optionally with a short prose description and high-level acceptance criteria.
@@ -198,7 +199,6 @@ The `model` command now supports several short, speech-friendly modifier axes yo
     - `log` – write as a concise work or research log entry (dates/times optional, short bullet-style updates, enough context for future you).
     - `codetour` (channel) – output only a valid VS Code CodeTour `.tour` JSON document; no extra prose.
     - `diagram` (channel) – output only Mermaid diagram code; obey Mermaid safety constraints (no raw `()` in labels, escape `|` as `#124;`, etc.).
-    - `announce` – format as an announcement: short headline, what changed and why, and any actions or next steps.
     - `remote` – emphasise remote-friendly delivery: distributed/online context hints and tooling tips.
     - `sync` – shape the answer as a synchronous/live session plan with agenda/steps/cues.
 
@@ -218,13 +218,13 @@ Axis multiplicity:
     - Form: 1 token.
     - Channel: 1 token.
   - For example:
-    - `model ticket actions edges structure flow headline slack fog`
-      - Static prompt: `ticket`.
-      - Completeness: default/profile (`full`).
+    - `model describe actions edges structure flow story jira fog`
+      - Static prompt: `describe`.
+      - Completeness: default/profile (`full` unless overridden).
       - Scope: `actions edges`.
       - Method: `structure flow`.
-      - Form: `headline`.
-      - Channel: `slack`.
+      - Form: `story`.
+      - Channel: `jira`.
 
 Some recommended multi-tag combinations:
 
@@ -233,7 +233,7 @@ Some recommended multi-tag combinations:
 - Method:
   - `structure flow` – emphasise both structural decomposition and stepwise flow.
 - Form/Channel examples:
-  - `headline slack` – announcement-style headline for Slack (channel bias).
+  - `headline slack` – headline-first summary for Slack (channel bias).
   - `adr presenterm` – ADR-format output with Presenterm channel bias.
 
 When you use these modifiers—either by speaking them or via a pattern/pattern menu—their semantics are applied in two places:
@@ -243,8 +243,8 @@ When you use these modifiers—either by speaking them or via a pattern/pattern 
 
 You normally say at most one or two of these per call. Examples:
 
-- `model fix skim plain fog` – light grammar/typo fix in plain language.
-- `model fix full plain rog` – full grammar/wording pass, still straightforward.
+- `model fix skim plainly fog` – light grammar/typo fix in plain language.
+- `model fix full plainly rog` – full grammar/wording pass, still straightforward.
 - `model todo gist checklist rog` – turn notes into a concise TODO list as an actionable checklist.
 - `model describe flow rog` – explain the flow of selected code or text step by step using the `flow` method.
 - `model describe diagram fog` – convert text to a mermaid-style Mermaid diagram, code-only.
@@ -319,7 +319,7 @@ If you were using some older, now-retired tokens, here are the closest replaceme
   - `as liberator` → `as facilitator` + `method=liberating` (or use the “Liberating facilitation” pattern).
 - Audiences:
   - `to receptive` / `to resistant` → keep the audience (for example, `to managers` / `to stakeholders`) and add `method=receptive` / `method=resistant`.  
-  - `to dummy` → keep a friendlier audience (for example, `to junior engineer`) and add `method=novice` + `gist`/`minimal` + `plain`.
+  - `to dummy` → keep a friendlier audience (for example, `to junior engineer`) and add `method=novice` + `gist`/`minimal` + `tone=plainly`.
 - Purposes / shape:
   - `for coding` → `goal=solve` + `form=code`.  
   - `for debugging` → `goal=solve` + `method=debugging`.  

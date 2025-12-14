@@ -65,10 +65,32 @@ if bootstrap is not None:
                                 word,
                                 lower,
                                 msg=(
-                                    f"Contract axis {axis!r} token {key!r} description contains "
-                                    f"persona-shaped word {word!r}: {description!r}"
-                                ),
-                            )
+                                f"Contract axis {axis!r} token {key!r} description contains "
+                                f"persona-shaped word {word!r}: {description!r}"
+                            ),
+                        )
+
+        def test_purpose_axis_does_not_include_how_or_artifact_tokens(self) -> None:
+            # Tokens that were re-homed off intent/purpose because they describe
+            # process, collaboration style, or deliverables rather than motivation.
+            disallowed = {
+                "for walk through",
+                "for collaborating",
+                "for facilitation",
+                "for discovery questions",
+                "for jobs to be done",
+                "for user value",
+                "for pain points",
+                "for definition of done",
+                "for team mapping",
+                "for project management",
+            }
+
+            purpose_keys = set(personaConfig.PERSONA_KEY_TO_VALUE.get("purpose", {}))
+            self.assertFalse(
+                disallowed & purpose_keys,
+                f"Purpose axis should not contain how/artifact tokens: {sorted(disallowed & purpose_keys)}",
+            )
 
 
 else:

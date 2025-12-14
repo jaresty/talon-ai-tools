@@ -10,13 +10,10 @@ code: code
 commit: commit
 faq: faq
 gherkin: gherkin
-headline: headline
 log: log
-plain: plain
 recipe: recipe
 shellscript: shellscript
 spike: spike
 story: story
 table: table
-tight: tight
 visual: visual

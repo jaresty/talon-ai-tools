@@ -719,6 +719,34 @@ def _build_persona_intent_docs() -> str:
         lines.append(f"- {tokens}")
         lines.append("")
 
+    try:
+        from ..lib.personaConfig import PERSONA_PRESETS, INTENT_PRESETS
+
+        if PERSONA_PRESETS:
+            lines.append("Persona presets (speakable presets for stance commands):")
+            for preset in PERSONA_PRESETS:
+                bits: list[str] = []
+                if preset.voice:
+                    bits.append(preset.voice)
+                if preset.audience:
+                    bits.append(preset.audience)
+                if preset.tone:
+                    bits.append(preset.tone)
+                stance = " ".join(bits)
+                label = preset.label or preset.key
+                lines.append(f"- persona {preset.key}: {label} ({stance})")
+            lines.append("")
+
+        if INTENT_PRESETS:
+            lines.append("Intent presets (shortcut names for purpose stances):")
+            for preset in INTENT_PRESETS:
+                label = preset.label or preset.key
+                purpose = preset.purpose
+                lines.append(f"- intent {preset.key}: {label} ({purpose})")
+            lines.append("")
+    except Exception:
+        pass
+
     # Provide a few concrete stance examples that use only valid axis tokens.
     lines.append("Examples of valid stance commands:")
     lines.append(

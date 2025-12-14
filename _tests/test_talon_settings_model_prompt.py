@@ -160,7 +160,7 @@ if bootstrap is not None:
                 scopeModifier="narrow",
                 methodModifier="steps",
                 formModifier="adr",
-                channelModifier="announce",
+                channelModifier="slack",
                 directionalModifier="DIR",
             )
 
@@ -170,7 +170,7 @@ if bootstrap is not None:
             self.assertEqual(GPTState.system_prompt.scope, "narrow")
             self.assertEqual(GPTState.system_prompt.method, "steps")
             self.assertEqual(GPTState.system_prompt.form, "adr")
-            self.assertEqual(GPTState.system_prompt.channel, "announce")
+            self.assertEqual(GPTState.system_prompt.channel, "slack")
 
         def test_model_prompt_uses_profiles_for_system_axes_when_unset(self):
             # Defaults are present but profile should shape the effective axes
@@ -659,9 +659,9 @@ if bootstrap is not None:
             self.assertEqual(GPTState.last_directional, "DIR")
 
         def test_model_prompt_uses_profiles_for_filter_style_prompts(self):
-            # Filter-style prompts like "pain" should drive method/scope via profiles.
+            # Filter-style prompts should drive method/scope via profiles.
             m = SimpleNamespace(
-                staticPrompt="pain",
+                staticPrompt="relevant",
                 directionalModifier="DIR",
             )
 

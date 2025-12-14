@@ -54,7 +54,7 @@ if bootstrap is not None:
                 self.assertEqual(_axis_value("", mapping), "")
 
             def test_parse_recipe_extracts_static_prompt_and_axes(self) -> None:
-                recipe = "describe · full · narrow · debugging · plain · rog"
+                recipe = "describe · full · narrow · debugging · bullets · rog"
 
                 (
                     static_prompt,
@@ -70,7 +70,7 @@ if bootstrap is not None:
                 self.assertEqual(completeness, "full")
                 self.assertEqual(scope, "narrow")
                 self.assertEqual(method, "debugging")
-                self.assertEqual(form, "plain")
+                self.assertEqual(form, "bullets")
                 self.assertEqual(channel, "")
                 self.assertEqual(directional, "rog")
 
@@ -142,9 +142,9 @@ if bootstrap is not None:
                 self.assertEqual(GPTState.last_static_prompt, "describe")
                 self.assertEqual(GPTState.last_completeness, "gist")
                 self.assertEqual(GPTState.last_scope, "focus")
-                self.assertEqual(GPTState.last_method, "")
-                self.assertEqual(GPTState.last_form, "diagram")
-                self.assertEqual(GPTState.last_channel, "")
+                self.assertEqual(GPTState.last_method, "structure")
+                self.assertEqual(GPTState.last_form, "code")
+                self.assertEqual(GPTState.last_channel, "diagram")
                 self.assertEqual(GPTState.last_directional, "fog")
 
             def test_parse_recipe_handles_new_method_tokens(self) -> None:
@@ -206,7 +206,7 @@ if bootstrap is not None:
                 self.assertEqual(completeness, "full")
                 self.assertEqual(scope, "focus")
                 self.assertEqual(method, "steps")
-                self.assertEqual(form, "")
+                self.assertEqual(form, "story")
                 self.assertEqual(channel, "jira")
                 self.assertEqual(directional, "fog")
 
@@ -474,7 +474,7 @@ if bootstrap is not None:
                 self.assertEqual(completeness, "gist")
                 self.assertEqual(scope, "focus")
                 self.assertEqual(method, "scaffold")
-                self.assertEqual(form, "plain")
+                self.assertEqual(form, "")
                 self.assertEqual(channel, "")
                 self.assertEqual(directional, "fog")
 
@@ -496,7 +496,7 @@ if bootstrap is not None:
                     directional,
                 ) = _parse_recipe(pattern.recipe)
 
-                self.assertEqual(static_prompt, "facilitate")
+                self.assertEqual(static_prompt, "describe")
                 self.assertEqual(completeness, "full")
                 self.assertEqual(scope, "focus")
                 self.assertEqual(method, "liberating")

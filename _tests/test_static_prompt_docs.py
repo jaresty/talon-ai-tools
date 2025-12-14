@@ -112,7 +112,7 @@ if bootstrap is not None:
             self.assertIn("full:", docs)
             self.assertIn("narrow:", docs)
             self.assertIn("steps:", docs)
-            self.assertIn("plain:", docs)
+            self.assertIn("bullets:", docs)
             # Directional keys depend on local config; check for a typical one.
             self.assertTrue(
                 any(k in docs for k in ("fog:", "rog:", "ong:")),

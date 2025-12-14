@@ -311,19 +311,13 @@ def notify(message: str):
         except Exception:
             pass
 
-    if suppress_id is not None:
-        if request_id is None:
-            request_id = suppress_id
+    if suppress_id is not None and request_id is not None:
         if request_id == suppress_id:
             return
 
     if (
         request_id is not None
         and _last_notify_request_id == request_id
-        and _last_notify_message == message
-    ) or (
-        request_id is None
-        and _last_notify_request_id is None
         and _last_notify_message == message
     ):
         return

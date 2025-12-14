@@ -45,6 +45,24 @@ def _reject_if_request_in_flight() -> bool:
     return False
 
 
+def _clear_notify_suppression() -> None:
+    """Best-effort reset of any lingering notify suppression flags."""
+
+    try:
+        from talon_user.GPT import gpt as gpt_module  # type: ignore
+
+        if hasattr(gpt_module, "_suppress_inflight_notify_request_id"):
+            gpt_module._suppress_inflight_notify_request_id = None  # type: ignore[attr-defined]
+    except Exception:
+        pass
+
+    try:
+        if hasattr(GPTState, "suppress_inflight_notify_request_id"):
+            GPTState.suppress_inflight_notify_request_id = None  # type: ignore[attr-defined]
+    except Exception:
+        pass
+
+
 def _filter_axis_tokens(axis: str, tokens: list[str]) -> list[str]:
     """Filter history axis tokens against the known axis map.
 
@@ -203,6 +221,7 @@ def _save_history_prompt_to_file(entry) -> None:
     timestamped/slugged filename so history-driven saves align with other
     source saves.
     """
+    _clear_notify_suppression()
     if entry is None:
         notify("GPT: No request history available to save")
         return
@@ -274,6 +293,7 @@ def _save_history_prompt_to_file(entry) -> None:
 
 def _show_entry(entry) -> None:
     """Populate GPTState with a historic entry and open the response canvas."""
+    _clear_notify_suppression()
     if entry is None:
         notify("GPT: No request history available")
         return
@@ -440,6 +460,7 @@ class UserActions:
 
     def gpt_request_history_list(count: int = 5):
         """Show a short summary of recent history entries"""
+        _clear_notify_suppression()
         if _reject_if_request_in_flight():
             return
         try:

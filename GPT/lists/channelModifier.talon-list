@@ -6,7 +6,6 @@ diagram: diagram
 slack: slack
 jira: jira
 presenterm: presenterm
-announce: announce
 remote: remote
 sync: sync
 html: html

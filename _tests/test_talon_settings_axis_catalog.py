@@ -23,7 +23,7 @@ if bootstrap is not None:
             axes = {
                 "scope": ["focus", "Important: expand scope"],
                 "method": ["steps", "unknown-method"],
-                "form": ["plain"],
+                "form": ["bullets"],
                 "channel": ["jira", "unknown-channel"],
                 "directional": valid_directional + ["unknown-direction"],
             }
@@ -32,7 +32,7 @@ if bootstrap is not None:
 
             self.assertEqual(filtered["scope"], ["focus"])
             self.assertEqual(filtered["method"], ["steps"])
-            self.assertEqual(filtered["form"], ["plain"])
+            self.assertEqual(filtered["form"], ["bullets"])
             self.assertEqual(filtered["channel"], ["jira"])
             # Unknown directional should be dropped; known catalog tokens kept.
             self.assertEqual(filtered.get("directional"), valid_directional)

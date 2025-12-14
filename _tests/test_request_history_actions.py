@@ -50,12 +50,12 @@ if bootstrap is not None:
                 "prompt text",
                 "answer text",
                 "meta text",
-                recipe="describe · gist · focus · steps · plain · slack · fog",
+                recipe="describe · gist · focus · steps · bullets · slack · fog",
                 axes={
                     "completeness": ["gist"],
                     "scope": ["focus"],
                     "method": ["steps"],
-                    "form": ["plain"],
+                    "form": ["bullets"],
                     "channel": ["slack"],
                     "directional": ["fog"],
                 },
@@ -227,7 +227,7 @@ if bootstrap is not None:
                 "prompt text",
                 "resp axes",
                 "meta axes",
-                recipe="infer · full · bound · steps · plain",
+                recipe="infer · full · bound · steps · bullets",
                 axes=axes,
             )
 
@@ -250,7 +250,7 @@ if bootstrap is not None:
                 "completeness": ["full"],
                 "scope": ["bound", "edges"],
                 "method": ["rigor", "xp"],
-                "form": ["plain"],
+                "form": ["bullets"],
             }
             append_entry(
                 "rid-axes",
@@ -265,7 +265,7 @@ if bootstrap is not None:
 
             # The recap recipe string is derived from tokens, not the legacy recipe.
             expected_recipe = " · ".join(
-                ["", "full", "bound edges", "rigor xp", "plain"]
+                ["", "full", "bound edges", "rigor xp", "bullets"]
             ).strip(" ·")
             self.assertEqual(GPTState.last_recipe, expected_recipe)
 
@@ -302,7 +302,7 @@ if bootstrap is not None:
                 "completeness": ["full", "Important: Hydrated completeness"],
                 "scope": ["bound", "Invalid scope"],
                 "method": ["rigor", "Unknown method"],
-                "form": ["plain", "Hydrated style"],
+                "form": ["bullets", "Hydrated style"],
             }
             append_entry(
                 "rid-axes",
@@ -318,7 +318,7 @@ if bootstrap is not None:
             self.assertEqual(GPTState.last_axes.get("completeness"), ["full"])
             self.assertEqual(GPTState.last_axes.get("scope"), ["bound"])
             self.assertEqual(GPTState.last_axes.get("method"), ["rigor"])
-            self.assertEqual(GPTState.last_axes.get("form"), ["plain"])
+            self.assertEqual(GPTState.last_axes.get("form"), ["bullets"])
             # Directional was absent; ensure no unknowns leaked through.
             self.assertFalse(GPTState.last_axes.get("directional"))
 
@@ -327,7 +327,7 @@ if bootstrap is not None:
                 "completeness": ["full", "Important: Hydrated completeness"],
                 "scope": ["bound", "Invalid scope"],
                 "method": ["rigor", "Unknown method"],
-                "form": ["plain", "Hydrated style"],
+                "form": ["bullets", "Hydrated style"],
             }
 
             filtered = history_axes_for(axes)
@@ -335,7 +335,7 @@ if bootstrap is not None:
             self.assertEqual(filtered.get("completeness"), ["full"])
             self.assertEqual(filtered.get("scope"), ["bound"])
             self.assertEqual(filtered.get("method"), ["rigor"])
-            self.assertEqual(filtered.get("form"), ["plain"])
+            self.assertEqual(filtered.get("form"), ["bullets"])
             self.assertFalse(filtered.get("directional"))
 
         def test_history_axes_for_applies_axis_caps(self):
@@ -368,7 +368,7 @@ if bootstrap is not None:
                     "completeness": ["gist"],
                     "scope": ["focus"],
                     "method": ["flow"],
-                    "form": ["plain"],
+                    "form": ["bullets"],
                     "channel": ["slack"],
                     "directional": [],
                 },

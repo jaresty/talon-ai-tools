@@ -245,7 +245,7 @@ PATTERNS: list[PromptPattern] = [
     PromptPattern(
         name="Simplify locally",
         description="Rewrite the selected text in a simpler way, short but complete.",
-        recipe="describe · gist · narrow · plain · fog",
+        recipe="describe · gist · narrow · fog",
         domain="writing",
     ),
     PromptPattern(
@@ -257,13 +257,13 @@ PATTERNS: list[PromptPattern] = [
     PromptPattern(
         name="Summarize gist",
         description="One-paragraph summary of the text.",
-        recipe="describe · gist · focus · plain · fog",
+        recipe="describe · gist · focus · fog",
         domain="writing",
     ),
     PromptPattern(
         name="Explain for beginner",
         description="Explain this to a beginner from first principles with simple language.",
-        recipe="describe · gist · focus · scaffold · plain · fog",
+        recipe="describe · gist · focus · scaffold · fog",
         domain="writing",
     ),
     PromptPattern(
@@ -281,13 +281,13 @@ PATTERNS: list[PromptPattern] = [
     PromptPattern(
         name="Liberating facilitation",
         description="Frame this as a short Liberating Structures-style facilitation plan.",
-        recipe="facilitate · full · focus · liberating · bullets · rog",
+        recipe="describe · full · focus · liberating · bullets · rog",
         domain="writing",
     ),
     PromptPattern(
         name="Pain points",
         description="List and order key pain points.",
-        recipe="pain · gist · focus · filter · bullets · fog",
+        recipe="describe · gist · focus · filter · bullets · fog",
         domain="writing",
     ),
     PromptPattern(
@@ -305,7 +305,7 @@ PATTERNS: list[PromptPattern] = [
     PromptPattern(
         name="Jira ticket",
         description="Draft a Jira-style ticket description for this issue.",
-        recipe="describe · full · focus · steps · jira · fog",
+        recipe="describe · full · focus · steps · story · jira · fog",
         domain="writing",
     ),
     PromptPattern(
@@ -341,19 +341,19 @@ PATTERNS: list[PromptPattern] = [
     PromptPattern(
         name="Cluster items",
         description="Group related items into labeled categories; clustered output only.",
-        recipe="describe · full · narrow · cluster · plain · fog",
+        recipe="describe · full · narrow · cluster · fog",
         domain="writing",
     ),
     PromptPattern(
         name="Rank items",
         description="Sort items in order of importance to the audience.",
-        recipe="describe · full · narrow · prioritize · plain · fog",
+        recipe="describe · full · narrow · prioritize · fog",
         domain="writing",
     ),
     PromptPattern(
         name="Abstraction ladder",
         description="Use abstraction laddering: reasons above the problem, consequences below.",
-        recipe="describe · full · focus · ladder · plain · rog",
+        recipe="describe · full · focus · ladder · rog",
         domain="writing",
     ),
     PromptPattern(
@@ -365,7 +365,7 @@ PATTERNS: list[PromptPattern] = [
     PromptPattern(
         name="Sketch diagram",
         description="Convert this into a Mermaid-style diagram (code only).",
-        recipe="describe · gist · focus · diagram · fog",
+        recipe="describe · gist · focus · structure · code · diagram · fog",
         domain="coding",
     ),
     PromptPattern(

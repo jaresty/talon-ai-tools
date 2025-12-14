@@ -1352,20 +1352,20 @@ if bootstrap is not None:
                 handle.result = PromptResult.from_messages(
                     [
                         format_message(
-                            "Name: Multi static | Recipe: ticket describe · full · relations · flow · plain · fog"
+                            "Name: Multi static | Recipe: describe · full · relations · flow · story · jira · fog"
                         )
                     ]
                 )
 
                 gpt_module.UserActions.gpt_suggest_prompt_recipes("subject")
 
-                # Static prompt should be collapsed to the first token ("ticket").
+                # Static prompt should be collapsed to the first token ("describe").
                 self.assertEqual(
                     GPTState.last_suggested_recipes,
                     [
                         {
                             "name": "Multi static",
-                            "recipe": "ticket · full · relations · flow · plain · fog",
+                            "recipe": "describe · full · relations · flow · story · jira · fog",
                         }
                     ],
                 )

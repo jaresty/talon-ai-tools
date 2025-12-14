@@ -2774,8 +2774,27 @@ def _suggest_prompt_recipes_core_impl(source: ModelSource, subject: str) -> None
         session.add_messages([format_messages("user", [format_message(user_text)])])
         try:
             handle = _prompt_pipeline.complete_async(session)
-            handle.wait(timeout=10.0)
+            completed = False
+            try:
+                completed = bool(handle.wait(timeout=10.0))
+            except Exception:
+                completed = False
             result = getattr(handle, "result", None)
+            error = getattr(handle, "error", None)
+            if error:
+                raise error
+            # If the async path is still running, wait for it to finish rather than
+            # dispatching a duplicate synchronous request.
+            is_done = bool(getattr(handle, "done", completed))
+            if not is_done and result is None:
+                try:
+                    handle.wait(timeout=None)
+                    is_done = True
+                except Exception:
+                    is_done = completed
+                result = getattr(handle, "result", None)
+            if result is None and is_done:
+                result = _prompt_pipeline.complete(session)
         except Exception:
             result = None
         if result is None:

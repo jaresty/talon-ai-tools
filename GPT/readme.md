@@ -188,7 +188,7 @@ The `model` command now supports several short, speech-friendly modifier axes yo
 
 - Completeness (`completenessModifier`): `full`, `gist`, `max`, `minimal`, `skim`
 - Scope (`scopeModifier`): `actions`, `activities`, `bound`, `dynamics`, `edges`, `focus`, `interfaces`, `narrow`, `relations`, `system`
-- Method (`methodModifier`): `visual`, `adversarial`, `analysis`, `case`, `cluster`, `compare`, `contextualise`, `converge`, `debugging`, `deep`, `diagnose`, `direct`, `diverge`, `experimental`, `filter`, `flow`, `indirect`, `ladder`, `liberating`, `mapping`, `motifs`, `plan`, `prioritize`, `rewrite`, `rigor`, `samples`, `scaffold`, `socratic`, `steps`, `structure`, `systemic`, `taxonomy`, `wasinawa`, `xp`
+- Method (`methodModifier`): `visual`, `adversarial`, `analysis`, `case`, `cluster`, `cocreate`, `compare`, `contextualise`, `converge`, `debugging`, `deep`, `diagnose`, `direct`, `diverge`, `experimental`, `facilitate`, `filter`, `flow`, `indirect`, `ladder`, `liberating`, `mapping`, `motifs`, `plan`, `prioritize`, `probe`, `rewrite`, `rigor`, `samples`, `scaffold`, `socratic`, `steps`, `structure`, `systemic`, `taxonomy`, `walkthrough`, `wasinawa`, `xp`
 - Form (`formModifier`): `adr`, `bug`, `bullets`, `cards`, `checklist`, `code`, `commit`, `faq`, `gherkin`, `log`, `recipe`, `shellscript`, `spike`, `story`, `table`, `visual`
 - Channel (`channelModifier`): `codetour`, `diagram`, `html`, `jira`, `presenterm`, `remote`, `slack`, `sync`, `svg`
   - Additional form/channel notes:

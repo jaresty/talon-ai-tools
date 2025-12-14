@@ -166,17 +166,7 @@ if bootstrap is not None:
                 "for appreciation",
                 "for triage",
                 "for announcing",
-                "for walk through",
-                "for collaborating",
                 "for teaching",
-                "for project management",
-                "for jobs to be done",
-                "for user value",
-                "for pain points",
-                "for definition of done",
-                "for facilitation",
-                "for discovery questions",
-                "for team mapping",
                 "for learning",
             }
             self.assertEqual(

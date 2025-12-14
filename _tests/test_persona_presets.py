@@ -63,7 +63,6 @@ if bootstrap is not None:
                     "appreciate",
                     "persuade",
                     "coach",
-                    "collaborate",
                     "entertain",
                 }
                 <= keys

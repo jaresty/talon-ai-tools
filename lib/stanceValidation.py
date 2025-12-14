@@ -64,7 +64,7 @@ def valid_stance_command(cmd: str) -> bool:
             return False
 
         # Require at least one known purpose token to appear verbatim in the
-        # command (for example, 'for teaching', 'for collaborating').
+        # command (for example, 'for teaching', 'for deciding').
         if not any(purpose in lower for purpose in PURPOSE_TOKENS):
             return False
 

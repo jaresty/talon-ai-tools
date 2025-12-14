@@ -894,7 +894,7 @@ def _cheat_sheet_text() -> str:
     relational_line = (
         "Intent presets (relational): " + " | ".join(relational_intents)
         if relational_intents
-        else "Intent presets (relational): appreciate | persuade | coach | collaborate | entertain"
+        else "Intent presets (relational): appreciate | persuade | coach | entertain"
     )
     persona_presets = _persona_presets()
     persona_line = (

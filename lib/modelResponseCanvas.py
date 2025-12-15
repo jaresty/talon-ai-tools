@@ -278,7 +278,6 @@ def _ensure_response_canvas() -> canvas.Canvas:
             pass
         if not _response_handlers_registered:
             _response_canvas.register("draw", _on_draw)
-            _response_handlers_registered = True
 
         def _on_hide(*_args, **_kwargs):
             _hide_handler()
@@ -291,7 +290,6 @@ def _ensure_response_canvas() -> canvas.Canvas:
             setattr(_response_canvas, "_on_hide_handler", _on_hide)
         except Exception:
             pass
-        return _response_canvas
 
     def _on_mouse(evt) -> None:  # pragma: no cover - visual only
         try:

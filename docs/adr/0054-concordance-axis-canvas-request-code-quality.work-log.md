@@ -1519,3 +1519,255 @@
 - Artefact deltas: `lib/modelResponseCanvas.py`, `_tests/test_model_response_canvas_close.py`.
 - Checks: `python3 -m pytest _tests/test_model_response_canvas_close.py _tests/test_request_bus.py _tests/test_request_controller.py _tests/test_request_ui.py _tests/test_response_canvas_fallback.py` (pass).
 - Removal test: reverting would leave response canvas state dirty after external hides and drop coverage, risking stale scroll/meta state and weakening ADR-0054 request pipeline UX clarity.
+
+## 2025-12-15 – Loop 208 (kind: guardrail/tests)
+- Focus: Enforce directional-axis requirement for request history entries.
+- Change: Added requestLog guardrails to assert history entries without a directional lens are dropped by default while preserving explicit opt-out behaviour for callers that need it.
+- Artefact deltas: `_tests/test_request_log.py`.
+- Checks: `python3 -m pytest _tests/test_request_log.py` (pass).
+- Removal test: reverting would drop the guardrail ensuring non-directional history entries are rejected by default, increasing risk of storing incomplete recipes and losing the coverage that documents the opt-out path.
+
+## 2025-12-15 – Loop 209 (kind: guardrail/tests)
+- Focus: Ensure append_entry_from_request enforces directional lenses by default.
+- Change: Added tests covering append_entry_from_request to confirm entries without directional axes are dropped with a clear drop reason and that callers can explicitly opt out when needed.
+- Artefact deltas: `_tests/test_request_log.py`.
+- Checks: `python3 -m pytest _tests/test_request_log.py` (pass).
+- Removal test: reverting would drop coverage for history entries derived from request payloads, risking acceptance of non-directional logs and weakening ADR-0054 request pipeline guardrails.
+
+## 2025-12-15 – Loop 210 (kind: guardrail/tests)
+- Focus: Clear fallback caches and close the response canvas when a request is cancelled.
+- Change: Request UI now clears all cached fallback text and closes the response canvas on CANCELLED transitions; added guardrail asserting cancel clears fallbacks and closes the canvas.
+- Artefact deltas: `lib/requestUI.py`, `_tests/test_request_ui.py`.
+- Checks: `python3 -m pytest _tests/test_request_ui.py` (pass).
+- Removal test: reverting would leave cached streaming text and open canvases after cancellation and drop coverage, risking stale UI state and weakening ADR-0054 request pipeline resilience.
+
+## 2025-12-15 – Loop 211 (kind: guardrail/tests)
+- Focus: Ensure error transitions clear fallbacks and close the response canvas.
+- Change: Request UI now clears all fallback caches and closes the response canvas on ERROR transitions, with a guardrail covering the error path.
+- Artefact deltas: `lib/requestUI.py`, `_tests/test_request_ui.py`.
+- Checks: `python3 -m pytest _tests/test_request_ui.py` (pass) and `python3 -m pytest` (pass).
+- Removal test: reverting would keep fallback text and open canvases after errors and drop coverage, risking stale streaming UI and weakening ADR-0054 request pipeline resilience.
+
+## 2025-12-15 – Loop 212 (kind: guardrail/tests)
+- Focus: Drop request history entries missing request ids before they reach the log.
+- Change: requestLog now rejects entries with missing/blank request ids and records a drop reason; added guardrails for both append_entry and append_entry_from_request to assert the drop behaviour.
+- Artefact deltas: `lib/requestLog.py`, `_tests/test_request_log.py`.
+- Checks: `python3 -m pytest _tests/test_request_log.py` (pass) and `python3 -m pytest` (pass).
+- Removal test: reverting would allow id-less history entries to be stored and drop coverage, risking unusable history entries and weakened ADR-0054 request pipeline hygiene.
+
+## 2025-12-15 – Loop 213 (kind: guardrail/tests)
+- Focus: Keep history summaries aligned with directional-lens requirement.
+- Change: Added HistoryQuery guardrails to ensure history summaries drop entries missing directional axes and still surface directional/form/channel tokens when present.
+- Artefact deltas: `_tests/test_history_query.py`.
+- Checks: `python3 -m pytest _tests/test_history_query.py` (pass) and `python3 -m pytest` (pass).
+- Removal test: reverting would drop coverage for directional enforcement in history summaries, risking reintroduction of non-directional entries into summary/replay surfaces.
+
+## 2025-12-15 – Loop 214 (kind: guardrail/tests)
+- Focus: Lock history summary ordering and required fields.
+- Change: Added HistoryQuery guardrail to assert summaries render newest-first and include request ids, durations, directional tokens, and provider ids when present.
+- Artefact deltas: `_tests/test_history_query.py`.
+- Checks: `python3 -m pytest _tests/test_history_query.py` (pass) and `python3 -m pytest` (pass).
+- Removal test: reverting would drop coverage for summary ordering and field completeness, risking regressions where history summaries omit ids/directions or invert order.
+
+## 2025-12-15 – Loop 215 (kind: guardrail/tests)
+- Focus: Prevent history replay from mutating GPTState when entries lack a directional lens.
+- Change: History replay now bails before hydrating GPTState when an entry is missing directional axes, so navigation skips invalid entries; guardrails updated to assert cursor/navigation behavior and directional token requirements.
+- Artefact deltas: `lib/requestHistoryActions.py`, `_tests/test_request_history_actions.py`.
+- Checks: `python3 -m pytest _tests/test_request_history_actions.py` (pass) and `python3 -m pytest` (pass).
+- Removal test: reverting would allow non-directional history entries to overwrite GPTState and navigation state, weakening ADR-0054 history guardrails.
+
+## 2025-12-15 – Loop 216 (kind: guardrail/tests)
+- Focus: Ensure history replay/state remains stable when skipping non-directional entries.
+- Change: History replay now skips mutation when entries lack directional axes and navigation guardrails assert cursor/state stability; tests updated to require directional axes on history entries that hydrate state and to keep cursor state unchanged when skipping invalid entries.
+- Artefact deltas: `lib/requestHistoryActions.py`, `_tests/test_request_history_actions.py`.
+- Checks: `python3 -m pytest _tests/test_request_history_actions.py` (pass) and `python3 -m pytest` (pass).
+- Removal test: reverting would allow non-directional history entries to mutate GPTState and navigation cursor, risking stale state and violating ADR-048 directional enforcement.
+
+## 2025-12-15 – Loop 217 (kind: guardrail/tests)
+- Focus: Allow history replay/navigation to include legacy entries whose recipes carry directional tokens even when axes are absent.
+- Change: Directional filtering now recognises directional tokens from the stored recipe when axes are missing; history replay hydrates axes from the recipe where needed. Added guardrails for recipe-driven directional hydration.
+- Artefact deltas: `lib/requestHistoryActions.py`, `_tests/test_request_history_actions.py`.
+- Checks: `python3 -m pytest _tests/test_request_history_actions.py` (pass) and `python3 -m pytest` (pass).
+- Removal test: reverting would exclude legacy recipe-only entries from history navigation and drop coverage for recipe-driven directional hydration, weakening ADR-048 compliance for older logs.
+
+## 2025-12-15 – Loop 218 (kind: guardrail/tests)
+- Focus: Keep history lists/drawer summaries aligned with directional filtering and ordering.
+- Change: History list now pulls only directional entries (including recipe-only directionals) and tests assert it filters non-directional entries and orders newest first; drawer summaries updated to backfill directionals from recipes.
+- Artefact deltas: `lib/requestHistoryActions.py`, `lib/historyQuery.py`, `_tests/test_request_history_actions.py`, `_tests/test_history_query.py`, `_tests/test_request_history_drawer.py`.
+- Checks: `python3 -m pytest _tests/test_history_query.py _tests/test_request_history_drawer.py` (pass) and `python3 -m pytest _tests/test_request_history_actions.py` (pass) and `python3 -m pytest` (pass).
+- Removal test: reverting would allow non-directional entries into history lists/drawer or mis-order newest-first summaries, weakening ADR-048 guardrails and coverage.
+
+## 2025-12-15 – Loop 219 (kind: guardrail/tests)
+- Focus: Surface directional drop reasons when latest history entries are non-directional.
+- Change: History replay (`gpt_request_history_show_latest`) now consumes and notifies the last drop reason when no directional entries are present instead of a generic empty message; guardrail added.
+- Artefact deltas: `lib/requestHistoryActions.py`, `_tests/test_request_history_actions.py`.
+- Checks: `python3 -m pytest _tests/test_request_history_actions.py` (pass) and `python3 -m pytest _tests/test_history_query.py _tests/test_request_history_drawer.py` (pass) and `python3 -m pytest` (pass).
+- Removal test: reverting would hide why replay is blocked when the latest entries lack directionals, weakening ADR-048 guardrails and coverage.
+
+## 2025-12-15 – Loop 220 (kind: guardrail/tests)
+- Focus: Request log directional guardrail is case-insensitive and filters drift.
+- Change: Request log axis filtering now lowercases tokens before matching so directional axes are kept even when callers supply uppercase tokens; added guardrail covering case-insensitive directional tokens. Ensures hydrated/unknown tokens remain filtered and directional enforcement still applies.
+- Artefact deltas: `lib/requestLog.py`, `_tests/test_request_log.py`.
+- Checks: `python3 -m pytest _tests/test_request_log.py` (pass); `python3 -m pytest _tests/test_request_history_actions.py _tests/test_history_query.py` (pass).
+- Removal test: reverting would drop acceptance of uppercase directional tokens and remove the guardrail, causing valid requests with capitalised axis tokens to be rejected or stored inconsistently and weakening ADR-048 history guardrails.
+
+## 2025-12-15 – Loop 221 (kind: guardrail/tests)
+- Focus: Request log axis filtering is case-insensitive across all axes.
+- Change: Request log now lowercases axis tokens before matching for all axes (scope/method/form/channel/directional) to avoid silently dropping uppercase values; added guardrail that mixed-case axis tokens are stored canonicalised. Maintains drift filtering for hydrated/unknown tokens.
+- Artefact deltas: `lib/requestLog.py`, `_tests/test_request_log.py`.
+- Checks: `python3 -m pytest _tests/test_request_log.py` (pass); `python3 -m pytest _tests/test_request_history_actions.py _tests/test_history_query.py` (pass).
+- Removal test: reverting would reject valid history entries when callers provide uppercase axis tokens and would drop the guardrail, weakening ADR-0054/ADR-048 history axis enforcement.
+
+## 2025-12-15 – Loop 222 (kind: guardrail/tests)
+- Focus: History drawer surfaces directional drop reasons when entries are filtered out.
+- Change: Drawer refresh now consumes and displays the last drop reason (e.g., missing directional lens) when no entries survive directional filtering; added guardrail that refresh surfaces the drop message instead of silent empty history.
+- Artefact deltas: `lib/requestHistoryDrawer.py`, `_tests/test_request_history_drawer.py`.
+- Checks: `python3 -m pytest _tests/test_request_history_drawer.py` (pass); `python3 -m pytest _tests/test_request_history_actions.py _tests/test_history_query.py` (pass).
+- Removal test: reverting would make the history drawer silently empty when entries are dropped for missing directionals, hiding actionable drop reasons and weakening ADR-048 guardrails.
+
+## 2025-12-15 – Loop 223 (kind: guardrail/tests)
+- Focus: Preserve drop reason visibility across history surfaces.
+- Change: Drawer now peeks at the last drop reason (non-consuming) when no directional entries remain, so other history surfaces can still report the reason; behaviour remains to show a clear directional-lens message if no drop reason exists.
+- Artefact deltas: `lib/requestHistoryDrawer.py`.
+- Checks: `python3 -m pytest _tests/test_request_history_drawer.py` (pass).
+- Removal test: reverting would consume drop reasons in the drawer and hide them from other history actions, reducing visibility into why entries were dropped and weakening ADR-048 guardrails.
+
+## 2025-12-15 – Loop 224 (kind: guardrail/tests)
+- Focus: Keep drop reasons visible across history list and drawer surfaces.
+- Change: Added guardrail ensuring the history drawer’s peek at the drop reason doesn’t consume it, so `gpt_request_history_list` can still surface the same reason afterward.
+- Artefact deltas: `_tests/test_request_history_actions.py`.
+- Checks: `python3 -m pytest _tests/test_request_history_actions.py _tests/test_request_history_drawer.py _tests/test_history_query.py` (pass).
+- Removal test: reverting would allow drawer refresh to hide drop reasons from the history list, reducing visibility into why entries were dropped and weakening ADR-048 guardrails.
+
+## 2025-12-15 – Loop 225 (kind: guardrail/tests)
+- Focus: History list now peeks (does not consume) drop reasons so other surfaces retain them.
+- Change: `gpt_request_history_list` uses `last_drop_reason` instead of consuming; updated guardrails so both drawer and list can surface the same drop reason without clearing it prematurely.
+- Artefact deltas: `lib/requestHistoryActions.py`, `_tests/test_request_history_actions.py`.
+- Checks: `python3 -m pytest _tests/test_request_history_actions.py _tests/test_request_history_drawer.py _tests/test_history_query.py` (pass).
+- Removal test: reverting would make history list consume drop reasons, hiding them from other history surfaces and weakening ADR-048 guardrails around directional filtering visibility.
+
+## 2025-12-15 – Loop 226 (kind: guardrail/tests)
+- Focus: Drop reasons stay visible across list → drawer flows.
+- Change: Added guardrail ensuring a drop reason surfaced by `gpt_request_history_list` remains available for the history drawer refresh to display afterward.
+- Artefact delta: `_tests/test_request_history_actions.py`.
+- Checks: `python3 -m pytest _tests/test_request_history_actions.py _tests/test_request_history_drawer.py _tests/test_history_query.py` (pass).
+- Removal test: reverting would allow the list view to hide drop reasons from the drawer, reducing visibility into why history entries were filtered and weakening ADR-048 guardrails.
+
+## 2025-12-15 – Loop 227 (kind: guardrail/tests)
+- Focus: Keep drop reasons visible across show_latest and list surfaces.
+- Change: History latest action now peeks at the last drop reason (non-consuming) and guardrails assert the drop reason remains available for the history list; keeps directional drop messaging consistent across surfaces.
+- Artefact deltas: `lib/requestHistoryActions.py`, `_tests/test_request_history_actions.py`.
+- Checks: `python3 -m pytest _tests/test_request_history_actions.py _tests/test_request_history_drawer.py _tests/test_history_query.py` (pass).
+- Removal test: reverting would let show_latest consume drop reasons and hide them from history list, reducing visibility into why entries were filtered and weakening ADR-048 guardrails.
+
+## 2025-12-15 – Loop 228 (kind: guardrail/tests)
+- Focus: Ensure navigation surfaces reuse drop reasons when history is empty/filtered.
+- Change: History navigation (show_previous/prev) now peeks at the last drop reason when no directional entries are available instead of a generic message; added guardrails confirming drop reasons persist across prev/show_previous and remain visible to other surfaces.
+- Artefact deltas: `lib/requestHistoryActions.py`, `_tests/test_request_history_actions.py`.
+- Checks: `python3 -m pytest _tests/test_request_history_actions.py _tests/test_request_history_drawer.py _tests/test_history_query.py` (pass).
+- Removal test: reverting would make navigation hide directional drop reasons, reducing visibility into why history entries were filtered and weakening ADR-048 guardrails.
+
+## 2025-12-15 – Loop 229 (kind: guardrail/tests)
+- Focus: Navigation only surfaces drop reasons when history is empty; no stale bleed.
+- Change: Navigation now uses a drop-reason-aware notifier only when no directional entries exist; added guardrails to ensure prev/older navigation reports directional drop reasons when history is empty and stays generic when directional history exists.
+- Artefact deltas: `lib/requestHistoryActions.py`, `_tests/test_request_history_actions.py`.
+- Checks: `python3 -m pytest _tests/test_request_history_actions.py _tests/test_request_history_drawer.py _tests/test_history_query.py` (pass).
+- Removal test: reverting would let stale drop reasons leak into navigation even when directional history exists, reducing clarity and weakening ADR-048 guardrails.
+
+## 2025-12-15 – Loop 230 (kind: guardrail/tests)
+- Focus: History “next” navigation reuses drop reasons when no directional history exists.
+- Change: `gpt_request_history_next` now peeks at the last drop reason when history is empty; added guardrail ensuring next surfaces directional drop reasons and remains generic when directional history exists.
+- Artefact deltas: `lib/requestHistoryActions.py`, `_tests/test_request_history_actions.py`.
+- Checks: `python3 -m pytest _tests/test_request_history_actions.py _tests/test_request_history_drawer.py _tests/test_history_query.py` (pass).
+- Removal test: reverting would make next navigation hide directional drop reasons or leak stale reasons when directional history exists, weakening ADR-048 guardrails.
+
+## 2025-12-15 – Loop 231 (kind: guardrail/tests)
+- Focus: Navigation drop reasons stay scoped to empty history (no stale bleed).
+- Change: Added guardrail for “next” ensuring drop reasons only surface when history is empty/filtered and remain generic when directional history exists; removed unused drop-reason consumption import.
+- Artefact deltas: `lib/requestHistoryActions.py`, `_tests/test_request_history_actions.py`.
+- Checks: `python3 -m pytest _tests/test_request_history_actions.py _tests/test_request_history_drawer.py _tests/test_history_query.py` (pass).
+- Removal test: reverting would reintroduce stale drop reasons into navigation when directional history exists or hide directional drop messaging when history is empty, weakening ADR-048 guardrails.
+
+## 2025-12-15 – Loop 232 (kind: guardrail/tests)
+- Focus: Drop-reason imports trimmed to match non-consuming flows.
+- Change: Removed unused `consume_last_drop_reason` import from the history drawer now that all surfaces peek at `last_drop_reason` without consuming it.
+- Artefact delta: `lib/requestHistoryDrawer.py`.
+- Checks: `python3 -m pytest _tests/test_request_history_drawer.py _tests/test_request_history_actions.py _tests/test_history_query.py` (pass).
+- Removal test: reverting would reintroduce an unused consuming import, risking accidental consumption paths and increasing drift from the non-consuming drop-reason contract in ADR-048.
+
+## 2025-12-15 – Loop 233 (kind: guardrail/tests)
+- Focus: Navigation drop reasons stay scoped to empty history for show_previous.
+- Change: Added guardrail ensuring `gpt_request_history_show_previous` reports directional drop reasons only when history is empty/filtered and stays generic when directional history exists.
+- Artefact delta: `_tests/test_request_history_actions.py`.
+- Checks: `python3 -m pytest _tests/test_request_history_actions.py _tests/test_request_history_drawer.py _tests/test_history_query.py` (pass).
+- Removal test: reverting would risk stale drop reasons bleeding into show_previous when directional history exists or hide directional drop messaging when history is empty, weakening ADR-048 guardrails.
+
+## 2025-12-15 – Loop 234 (kind: guardrail/tests)
+- Focus: Drop reasons clear and stay silent after a successful directional append.
+- Change: Added guardrail ensuring that after a successful directional append clears the drop reason, `gpt_request_history_show_latest` does not notify using a stale drop reason.
+- Artefact delta: `_tests/test_request_history_actions.py`.
+- Checks: `python3 -m pytest _tests/test_request_history_actions.py _tests/test_request_history_drawer.py _tests/test_history_query.py` (pass).
+- Removal test: reverting would risk stale drop reasons resurfacing on history show_latest even after valid directional entries exist, weakening ADR-048 guardrails.
+
+## 2025-12-15 – Loop 235 (kind: guardrail/tests)
+- Focus: show_latest must not read drop reasons when directional history exists.
+- Change: Added guardrail asserting `gpt_request_history_show_latest` does not consult drop reasons when a directional entry is present (drop reason mock unused, notify not called).
+- Artefact delta: `_tests/test_request_history_actions.py`.
+- Checks: `python3 -m pytest _tests/test_request_history_actions.py _tests/test_request_history_drawer.py _tests/test_history_query.py` (pass).
+- Removal test: reverting would allow stale drop reasons to be consulted even when valid history exists, risking incorrect notifications and weakening ADR-048 guardrails.
+
+## 2025-12-15 – Loop 236 (kind: guardrail/tests)
+- Focus: Prev navigation stays generic when directional history exists.
+- Change: Added guardrail ensuring `gpt_request_history_prev` (with directional history present) reports the generic “No older history entry” message and does not expose drop reasons.
+- Artefact delta: `_tests/test_request_history_actions.py`.
+- Checks: `python3 -m pytest _tests/test_request_history_actions.py _tests/test_request_history_drawer.py _tests/test_history_query.py` (pass).
+- Removal test: reverting would let stale drop reasons leak into prev navigation when directional history exists, weakening ADR-048 guardrails.
+
+## 2025-12-15 – Loop 237 (kind: guardrail/tests)
+- Focus: Clearing history resets drop reasons and prevents stale notifications.
+- Change: Added guardrail ensuring `clear_history` resets drop reasons so `gpt_request_history_list` shows the generic “No request history available” after a drop, preventing stale directional messages post-clear.
+- Artefact delta: `_tests/test_request_history_actions.py`.
+- Checks: `python3 -m pytest _tests/test_request_history_actions.py _tests/test_request_history_drawer.py _tests/test_history_query.py` (pass).
+- Removal test: reverting would risk stale drop reasons surfacing after clearing history, weakening ADR-048 guardrails.
+
+## 2025-12-15 – Loop 238 (kind: guardrail/tests)
+- Focus: History list ignores drop reasons when directional entries exist.
+- Change: Added guardrail asserting `gpt_request_history_list` does not consult drop reasons when directional entries are present, preventing stale drop messaging when history is available.
+- Artefact delta: `_tests/test_request_history_actions.py`.
+- Checks: `python3 -m pytest _tests/test_request_history_actions.py _tests/test_request_history_drawer.py _tests/test_history_query.py` (pass).
+- Removal test: reverting would allow stale drop reasons to surface even when valid directional history exists, weakening ADR-048 guardrails.
+
+## 2025-12-15 – Loop 239 (kind: guardrail/tests)
+- Focus: Drop reasons are non-consuming and request history list stays clean.
+- Change: `consume_last_drop_reason` is now non-consuming (aligned to the new peek contract) and request log tests rely on `last_drop_reason`; added guardrail that drop reasons remain cleared after successful append/history clear while list doesn’t surface stale drops.
+- Artefact deltas: `lib/requestLog.py`, `_tests/test_request_log.py`.
+- Checks: `python3 -m pytest _tests/test_request_log.py` (pass); `python3 -m pytest _tests/test_request_history_actions.py _tests/test_request_history_drawer.py _tests/test_history_query.py` (pass).
+- Removal test: reverting would reintroduce a consuming drop-reason helper and weaken coverage that drop reasons stay cleared or non-stale, undermining ADR-048 guardrails.
+
+## 2025-12-15 – Loop 240 (kind: guardrail/tests)
+- Focus: Keep consume_last_drop_reason consuming while preserving peek contract elsewhere.
+- Change: Restored `consume_last_drop_reason` to clear the stored reason while keeping `last_drop_reason` for peeking; request log guardrails updated to cover both paths.
+- Artefact deltas: `lib/requestLog.py`, `_tests/test_request_log.py`.
+- Checks: `python3 -m pytest _tests/test_request_log.py` (pass); `python3 -m pytest _tests/test_request_history_actions.py _tests/test_request_history_drawer.py _tests/test_history_query.py` (pass).
+- Removal test: reverting would make consume non-consuming again, risking stale drop reasons persisting for callers that expect consumption and weakening ADR-048 drop-reason hygiene.
+
+## 2025-12-15 – Loop 241 (kind: guardrail/tests)
+- Focus: Peek-vs-consume contract on drop reasons is explicitly guarded.
+- Change: Added guardrail to assert `last_drop_reason` is peek-only while `consume_last_drop_reason` still clears the reason, keeping both behaviours covered.
+- Artefact deltas: `_tests/test_request_log.py`.
+- Checks: `python3 -m pytest _tests/test_request_log.py` (pass); `python3 -m pytest _tests/test_request_history_actions.py _tests/test_request_history_drawer.py _tests/test_history_query.py` (pass).
+- Removal test: reverting would drop coverage of the peek vs consume contract for drop reasons, increasing risk of stale or disappearing drop messages and weakening ADR-048 guardrails.
+
+## 2025-12-15 – Loop 242 (kind: guardrail/tests)
+- Focus: Directional append clears prior drop reasons in request log.
+- Change: Added guardrail ensuring a subsequent directional append clears any prior drop reason so consumers don’t surface stale drop messages.
+- Artefact delta: `_tests/test_request_log.py`.
+- Checks: `python3 -m pytest _tests/test_request_log.py` (pass); `python3 -m pytest _tests/test_request_history_actions.py _tests/test_request_history_drawer.py _tests/test_history_query.py` (pass).
+- Removal test: reverting would allow stale drop reasons to persist after valid entries, weakening ADR-048 drop-reason hygiene.
+
+## 2025-12-15 – Loop 243 (kind: guardrail/tests)
+- Focus: Consume drop reasons remains idempotent alongside peek contract.
+- Change: Added guardrail asserting `consume_last_drop_reason` clears once and subsequent consumes return empty while `last_drop_reason` stays empty.
+- Artefact delta: `_tests/test_request_log.py`.
+- Checks: `python3 -m pytest _tests/test_request_log.py` (pass); `python3 -m pytest _tests/test_request_history_actions.py _tests/test_request_history_drawer.py _tests/test_history_query.py` (pass).
+- Removal test: reverting would weaken coverage of the consume-vs-peek contract and could let stale drop reasons persist or reappear, weakening ADR-048 guardrails.

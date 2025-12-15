@@ -145,6 +145,9 @@ def _on_state_change(state: RequestState) -> None:
     try:
         if state.phase is RequestPhase.SENDING:
             clear_all_fallbacks()
+        if state.phase in (RequestPhase.CANCELLED, RequestPhase.ERROR):
+            clear_all_fallbacks()
+            run_on_ui_thread(lambda: actions.user.model_response_canvas_close())
         if state.is_terminal:
             clear_response_fallback(getattr(state, "request_id", None))
         elif state.phase is RequestPhase.IDLE:

@@ -85,17 +85,19 @@ def _filter_axes_payload(
             # Include tokens from the axis catalog and Talon lists to catch drift.
             known_tokens = known_tokens.union(axis_tokens.get(axis_name, set()))
             known_tokens = known_tokens.union(axis_list_tokens.get(axis_name, set()))
+            known_tokens_lower = {t.lower() for t in known_tokens}
+            mapping_lower_keys = {k.lower() for k in mapping} if mapping else set()
             kept: list[str] = []
             for token in values:
                 lower = token.lower()
                 if lower.startswith("important:"):
                     # Skip obviously hydrated/system-prompt strings.
                     continue
-                if known_tokens and token in known_tokens:
-                    kept.append(token)
+                if known_tokens_lower and lower in known_tokens_lower:
+                    kept.append(lower)
                     continue
-                if not known_tokens and mapping and token in mapping:
-                    kept.append(token)
+                if not known_tokens_lower and mapping_lower_keys and lower in mapping_lower_keys:
+                    kept.append(lower)
             if kept:
                 if axis_name != "completeness":
                     kept = _canonicalise_axis_tokens(axis_name, kept)
@@ -129,6 +131,14 @@ def append_entry(
 ) -> None:
     """Append a request entry to the bounded history ring."""
     global _last_drop_reason
+    if not request_id or not str(request_id).strip():
+        message = "GPT: History entry dropped; missing request id."
+        try:
+            notify(message)
+        except Exception:
+            pass
+        _last_drop_reason = message
+        return
     try:
         print(
             f"[requestLog] append id={request_id!r} prompt_len={len(prompt or '')} "
@@ -273,6 +283,8 @@ def last_drop_reason() -> str:
 
 
 def consume_last_drop_reason() -> str:
+    """Return and clear the last drop reason (consuming)."""
+
     global _last_drop_reason
     reason = _last_drop_reason
     _last_drop_reason = ""

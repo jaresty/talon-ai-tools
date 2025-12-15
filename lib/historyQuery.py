@@ -13,6 +13,7 @@ from typing import List, Tuple
 
 from .requestHistoryActions import history_axes_for as _history_axes_for_impl
 from .requestHistoryActions import history_summary_lines as _history_summary_lines_impl
+from .requestHistoryActions import _directional_tokens_for_entry
 
 
 def history_axes_for(axes: dict[str, list[str]]) -> dict[str, list[str]]:
@@ -45,10 +46,14 @@ def history_drawer_entries_from(entries: Sequence[object]) -> List[Tuple[str, st
     rendered: List[Tuple[str, str]] = []
     for entry in entries:
         axes = getattr(entry, "axes", {}) or {}
-        if isinstance(axes, dict) and axes and not axes.get("directional"):
-            # Skip entries with axes present but no directional lens to maintain
-            # the ADR 048 requirement of a single directional per replay path.
+        dir_tokens: list[str] = _directional_tokens_for_entry(entry)
+        if not dir_tokens:
+            # Skip entries without a directional lens to maintain ADR 048 requirements.
             continue
+        # Backfill/normalise directional tokens so rendering includes them.
+        if isinstance(axes, dict) and dir_tokens:
+            axes = dict(axes)
+            axes["directional"] = dir_tokens
         prompt = (getattr(entry, "prompt", "") or "").strip().splitlines()[0]
         snippet = prompt[:80] + ("…" if len(prompt) > 80 else "")
         duration_ms = getattr(entry, "duration_ms", None)

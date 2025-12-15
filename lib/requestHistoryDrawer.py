@@ -7,7 +7,7 @@ from collections.abc import Sequence
 
 from talon import Module, actions, canvas, ui
 
-from .requestLog import all_entries, consume_last_drop_reason
+from .requestLog import all_entries, last_drop_reason
 from .historyQuery import history_drawer_entries_from
 from .requestBus import current_state
 from .requestState import RequestPhase
@@ -226,19 +226,14 @@ def _refresh_entries() -> None:
     HistoryDrawerState.selected_index = 0
     HistoryDrawerState.last_message = ""
     if not HistoryDrawerState.entries:
-        reason = ""
         try:
-            reason = consume_last_drop_reason()
+            HistoryDrawerState.last_message = last_drop_reason()
         except Exception:
-            reason = ""
-        if reason:
-            try:
-                notify(reason)
-            except Exception:
-                pass
-            HistoryDrawerState.last_message = reason
-        else:
-            HistoryDrawerState.last_message = "GPT: No request history available"
+            HistoryDrawerState.last_message = ""
+        if not HistoryDrawerState.last_message:
+            HistoryDrawerState.last_message = (
+                "GPT: No history entries include a directional lens; replay requires fog/fig/dig/ong/rog/bog/jog."
+            )
 
 
 @mod.action_class

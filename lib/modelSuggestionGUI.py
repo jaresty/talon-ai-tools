@@ -104,7 +104,7 @@ _SECONDARY_INDENT = 12
 _REASONING_COLOR = "555555"
 _WHY_COLOR = "111111"
 _REASONING_INDENT = _SECONDARY_INDENT + 8
-_AXES_WRAP_MAX_CHARS = 64
+_AXES_WRAP_MAX_CHARS = 90
 
 # Simple geometry defaults to keep the panel centered and readable.
 _PANEL_WIDTH = 840
@@ -341,20 +341,20 @@ def _axes_summary(
     channel: str,
     directional: str,
 ) -> str:
-    """Return a compact, legible axes summary with full axis names."""
+    """Return a compact, legible axes summary with abbreviated labels."""
     parts: list[str] = []
     if completeness:
-        parts.append(f"Completeness {completeness}")
+        parts.append(f"C {completeness}")
     if scope:
-        parts.append(f"Scope {scope}")
+        parts.append(f"S {scope}")
     if method:
-        parts.append(f"Method {method}")
+        parts.append(f"M {method}")
     if form:
-        parts.append(f"Form {form}")
+        parts.append(f"F {form}")
     if channel:
-        parts.append(f"Channel {channel}")
+        parts.append(f"Ch {channel}")
     if directional:
-        parts.append(f"Directional {directional}")
+        parts.append(f"D {directional}")
     return " | ".join(parts)
 
 
@@ -378,6 +378,44 @@ def _persona_long_form(stance_command: str, persona_bits: list[str]) -> str:
     return "model write " + " ".join(axes)
 
 
+def _match_persona_preset(
+    voice: str, audience: str, tone: str
+) -> Optional["PersonaPreset"]:
+    """Return a PersonaPreset matching the provided axes, if any."""
+
+    voice_l = voice.strip().lower()
+    audience_l = audience.strip().lower()
+    tone_l = tone.strip().lower()
+    for preset in PERSONA_PRESETS:
+        preset_voice = (preset.voice or "").strip().lower()
+        preset_audience = (preset.audience or "").strip().lower()
+        preset_tone = (preset.tone or "").strip().lower()
+        # Require a match for each axis the preset declares; ignore axes the
+        # preset leaves empty (for example, tone is optional).
+        if preset_voice and preset_voice != voice_l:
+            continue
+        if preset_audience and preset_audience != audience_l:
+            continue
+        if preset_tone and preset_tone != tone_l:
+            continue
+        # Avoid false positives when no axes are present.
+        if not (preset_voice or preset_audience or preset_tone):
+            continue
+        return preset
+    return None
+
+
+def _preset_from_command(stance_command: str) -> Optional["PersonaPreset"]:
+    """Return a PersonaPreset for a 'persona <...>' command token when present."""
+    cmd = (stance_command or "").strip().lower()
+    if not cmd.startswith("persona "):
+        return None
+    name = cmd[len("persona ") :].strip()
+    if not name:
+        return None
+    return _PERSONA_PRESET_NAME_TO_PRESET.get(name)
+
+
 def _suggestion_stance_info(suggestion: Suggestion) -> dict[str, object]:
     """Return precomputed stance fields (persona/intent/stance/why) for display."""
     persona_bits = [
@@ -390,6 +428,7 @@ def _suggestion_stance_info(suggestion: Suggestion) -> dict[str, object]:
     intent_display = normalize_intent_token(intent_text) or intent_text
     raw_stance = (getattr(suggestion, "stance_command", "") or "").strip()
     stance_command = raw_stance if valid_stance_command(raw_stance) else ""
+    generated_from_axes = False
 
     # If no explicit stance is provided, try to synthesise one from axes.
     if not stance_command:
@@ -398,14 +437,33 @@ def _suggestion_stance_info(suggestion: Suggestion) -> dict[str, object]:
             candidate = "model write " + " ".join(axis_parts)
             if valid_stance_command(candidate):
                 stance_command = candidate
+                generated_from_axes = True
+    # If we still do not have a stance command but the axes match a persona
+    # preset, surface the persona command so the Say section always shows a
+    # concrete utterance (for example, "persona stake").
+    if (not raw_stance or generated_from_axes) and persona_bits:
+        voice = getattr(suggestion, "persona_voice", "")
+        audience = getattr(suggestion, "persona_audience", "")
+        tone = getattr(suggestion, "persona_tone", "")
+        preset = _match_persona_preset(voice, audience, tone)
+        if preset is not None:
+            stance_command = f"persona {preset.key}"
 
-    stance_display = stance_command
+    preset_for_command = _preset_from_command(stance_command)
+    persona_display = None
+    if preset_for_command is not None:
+        spoken = (preset_for_command.spoken or "").strip() or preset_for_command.key
+        persona_display = f"persona {spoken}"
+
+    stance_display_base = persona_display or stance_command
+    stance_display = stance_display_base
     long_form = _persona_long_form(stance_command, persona_bits)
     if long_form and long_form.lower() != stance_command.lower():
-        stance_display = f"{stance_command} ({long_form})"
+        stance_display = f"{stance_display_base} ({long_form})"
     # Show companion intent command alongside the stance so users see both explicit commands.
     if intent_display and stance_command:
         stance_display = f"{stance_display} · intent {intent_display}"
+    persona_axes_summary = " · ".join(persona_bits)
 
     why_text = (getattr(suggestion, "why", "") or "").strip()
 
@@ -415,6 +473,9 @@ def _suggestion_stance_info(suggestion: Suggestion) -> dict[str, object]:
         "intent_display": intent_display,
         "stance_command": stance_command,
         "stance_display": stance_display,
+        "persona_display": persona_display or persona_axes_summary,
+        "persona_axes_summary": persona_axes_summary,
+        "stance_long_form": long_form,
         "why_text": why_text,
     }
 
@@ -1030,7 +1091,10 @@ def _draw_suggestions(c: canvas.Canvas) -> None:  # pragma: no cover - visual on
         stance_info = _suggestion_stance_info(suggestion)
         persona_bits = stance_info["persona_bits"]
         intent_display = stance_info["intent_display"]
+        persona_display = stance_info.get("persona_display", "")
+        persona_axes_summary = stance_info.get("persona_axes_summary", "")
         stance_text = stance_info.get("stance_display", stance_info["stance_command"])
+        stance_long_form = stance_info.get("stance_long_form", "")
         why_text = stance_info["why_text"]
         reasoning_text = (getattr(suggestion, "reasoning", "") or "").strip()
         if raw_stance and not stance_info["stance_command"]:
@@ -1042,6 +1106,7 @@ def _draw_suggestions(c: canvas.Canvas) -> None:  # pragma: no cover - visual on
         has_stance_command = bool(stance_text)
         has_why = bool(why_text)
         has_reasoning = bool(reasoning_text)
+        primary_command = (persona_display or stance_info.get("stance_command", "")).strip()
 
         if (
             has_persona_axes
@@ -1052,9 +1117,11 @@ def _draw_suggestions(c: canvas.Canvas) -> None:  # pragma: no cover - visual on
         ) and not stop_rendering:
             row_y += line_h
             # Put the concrete voice command first so users know exactly what to say.
-            if has_stance_command:
+            intent_command = f"intent {intent_display}" if has_intent_axis else ""
+            say_parts = [part for part in (primary_command, intent_command) if part]
+            if say_parts:
                 row_y = _draw_wrapped(
-                    f"Say (stance): {stance_text}",
+                    f"Say: {' · '.join(say_parts)}",
                     x + 4,
                     row_y,
                     indent=0,
@@ -1063,16 +1130,41 @@ def _draw_suggestions(c: canvas.Canvas) -> None:  # pragma: no cover - visual on
                 )
                 if row_y >= body_bottom:
                     stop_rendering = True
+            # Only show the long-form line when it adds detail beyond the
+            # primary command and we do not already have a persona preset label.
+            if (
+                stance_long_form
+                and not persona_display
+                and stance_long_form.lower() != primary_command.lower()
+            ):
+                row_y = _draw_wrapped(
+                    f"({stance_long_form})",
+                    x + 4 + _SECONDARY_INDENT,
+                    row_y,
+                    indent=0,
+                    visible_top=body_top,
+                    visible_bottom=body_bottom,
+                    color=_REASONING_COLOR,
+                )
+                if row_y >= body_bottom:
+                    stop_rendering = True
 
             if (has_persona_axes or has_intent_axis) and not stop_rendering:
                 if row_y >= body_top and row_y <= body_bottom - line_h:
-                    pieces: list[str] = []
-                    if has_persona_axes:
-                        pieces.append("Who: " + " · ".join(persona_bits))
-                    if has_intent_axis:
-                        pieces.append(f"Intent: {intent_display}")
+                    persona_line = persona_axes_summary
+                    if persona_display and persona_axes_summary and persona_display != persona_axes_summary:
+                        persona_line = f"{persona_display} ({persona_axes_summary})"
+                    elif persona_display and not persona_line:
+                        persona_line = persona_display
+                    # Skip the Who line when it would duplicate the primary command verbatim.
+                    if persona_line and primary_command and persona_line.lower() == primary_command.lower():
+                        persona_line = ""
+                    if persona_line:
+                        persona_line = f"Who: {persona_line}"
+                    intent_line = f"Intent: {intent_display}" if has_intent_axis else ""
+                    spacer = "   " if persona_line and intent_line else ""
                     draw_text(
-                        "   ".join(pieces),
+                        f"{persona_line}{spacer}{intent_line}",
                         x + 4 + _SECONDARY_INDENT,
                         row_y,
                     )

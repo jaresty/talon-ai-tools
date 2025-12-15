@@ -13,7 +13,7 @@ from .requestLog import (
     latest,
     nth_from_latest,
     all_entries as requestlog_all_entries,
-    consume_last_drop_reason,
+    last_drop_reason,
 )
 from .requestBus import current_state, emit_history_saved
 from .axisMappings import axis_key_to_value_map_for
@@ -61,6 +61,20 @@ def _clear_notify_suppression() -> None:
             gpt_module._suppress_inflight_notify_request_id = None  # type: ignore[attr-defined]
     except Exception:
         pass
+
+
+def _notify_with_drop_reason(fallback: str, *, use_drop_reason: bool) -> None:
+    """Notify with last drop reason when requested, otherwise fall back."""
+
+    if use_drop_reason:
+        try:
+            reason = last_drop_reason()
+        except Exception:
+            reason = ""
+        if reason:
+            notify(reason)
+            return
+    notify(fallback)
 
     try:
         if hasattr(GPTState, "suppress_inflight_notify_request_id"):
@@ -163,11 +177,15 @@ def history_summary_lines(entries: Sequence[object]) -> list[str]:
     lines: list[str] = []
     for idx, entry in enumerate(reversed(entries)):
         axes = getattr(entry, "axes", {}) or {}
-        dir_tokens = axes.get("directional") if isinstance(axes, dict) else None
+        dir_tokens: list[str] = _directional_tokens_for_entry(entry)
         if not dir_tokens:
             # Skip entries without a directional lens to keep summaries aligned
             # with ADR 048 requirements.
             continue
+        # Backfill/normalise directional tokens for downstream rendering.
+        if isinstance(axes, dict) and dir_tokens:
+            axes = dict(axes)
+            axes["directional"] = dir_tokens
         prompt = (
             (getattr(entry, "prompt", "") or "").strip().splitlines()[0]
             if getattr(entry, "prompt", None)
@@ -179,7 +197,6 @@ def history_summary_lines(entries: Sequence[object]) -> list[str]:
         request_id = getattr(entry, "request_id", "")
         label = request_id if not dur else f"{request_id} ({dur})"
         recipe = (getattr(entry, "recipe", "") or "").strip()
-        axes = getattr(entry, "axes", None) or {}
         if axes:
             axes_tokens = history_axes_for(axes)
             recipe_parts = recipe.split(" · ") if recipe else []
@@ -334,6 +351,51 @@ def _save_history_prompt_to_file(entry) -> Optional[str]:
     return path
 
 
+def _directional_tokens_for_entry(entry) -> list[str]:
+    """Best-effort directional tokens for filtering/history navigation."""
+
+    axes = getattr(entry, "axes", {}) or {}
+    if isinstance(axes, dict) and axes.get("directional"):
+        raw = axes.get("directional") or []
+        try:
+            known = set((axis_catalog().get("axes") or {}).get("directional", {}).keys())
+        except Exception:
+            known = set()
+        canon = []
+        for token in raw:
+            lower = str(token).strip().lower()
+            if not lower:
+                continue
+            if known and lower in known:
+                canon.append(lower)
+            elif not known:
+                canon.append(lower)
+        return canon
+
+    recipe = (getattr(entry, "recipe", "") or "").strip()
+    if recipe:
+        tokens = [part.strip().lower() for part in recipe.split("·")]
+        directional_map = (axis_catalog().get("axes") or {}).get("directional") or {}
+        known_directional = set(directional_map.keys())
+        for token in tokens:
+            if token in known_directional:
+                return [token]
+    return []
+
+
+def _directional_history_entries() -> list[object]:
+    """Return history entries that include directional axes."""
+    try:
+        entries = requestlog_all_entries()
+    except Exception:
+        return []
+    directional: list[object] = []
+    for entry in entries:
+        if _directional_tokens_for_entry(entry):
+            directional.append(entry)
+    return directional
+
+
 def _show_entry(entry) -> bool:
     """Populate GPTState with a historic entry and open the response canvas."""
     _clear_notify_suppression()
@@ -349,7 +411,7 @@ def _show_entry(entry) -> bool:
         else None
     )
     parsed_recipe_fields = None
-    if normalized_axes is None and raw_recipe:
+    if raw_recipe:
         try:
             from .modelPatternGUI import _parse_recipe
         except Exception:
@@ -359,6 +421,18 @@ def _show_entry(entry) -> bool:
                 parsed_recipe_fields = _parse_recipe(raw_recipe)
             except Exception:
                 parsed_recipe_fields = None
+    # History entries must include a directional lens post-ADR 048; bail early
+    # before mutating state when missing.
+    directional_tokens: list[str] = []
+    if normalized_axes is not None:
+        directional_tokens = normalized_axes.get("directional", []) or []
+    if not directional_tokens and parsed_recipe_fields and len(parsed_recipe_fields) >= 7:
+        directional_tokens = (parsed_recipe_fields[6] or "").split()
+    if not directional_tokens:
+        notify(
+            "GPT: History entry has no directional lens; replay requires fog/fig/dig/ong/rog/bog/jog."
+        )
+        return False
     # Clear any stale presentation so paste uses the history entry text instead
     # of the last live model response.
     ConfirmationGUIState.current_presentation = None
@@ -386,22 +460,33 @@ def _show_entry(entry) -> bool:
             notify(
                 "GPT: style axis is removed; use form/channel instead (history entry)."
             )
-        GPTState.last_axes = normalized_axes
+        # Fill missing axis tokens from the parsed recipe when available.
+        parsed_static = parsed_recipe_fields[0] if parsed_recipe_fields else ""
+        parsed_completeness = parsed_recipe_fields[1] if parsed_recipe_fields else ""
+        parsed_scope = parsed_recipe_fields[2] if parsed_recipe_fields else ""
+        parsed_method = parsed_recipe_fields[3] if parsed_recipe_fields else ""
+        parsed_form = parsed_recipe_fields[4] if parsed_recipe_fields else ""
+        parsed_channel = parsed_recipe_fields[5] if parsed_recipe_fields else ""
 
-        GPTState.last_static_prompt = raw_recipe.split(" · ")[0] if raw_recipe else ""
-        GPTState.last_completeness = " ".join(
-            GPTState.last_axes.get("completeness", [])
-        ).strip()
-        GPTState.last_scope = " ".join(GPTState.last_axes.get("scope", [])).strip()
-        GPTState.last_method = " ".join(GPTState.last_axes.get("method", [])).strip()
-        GPTState.last_form = " ".join(GPTState.last_axes.get("form", [])).strip()
-        GPTState.last_channel = " ".join(GPTState.last_axes.get("channel", [])).strip()
-        GPTState.last_directional = " ".join(
-            GPTState.last_axes.get("directional", [])
-        ).strip()
+        merged_axes = {
+            "completeness": normalized_axes.get("completeness") or ([parsed_completeness] if parsed_completeness else []),
+            "scope": normalized_axes.get("scope") or (parsed_scope.split() if parsed_scope else []),
+            "method": normalized_axes.get("method") or (parsed_method.split() if parsed_method else []),
+            "form": normalized_axes.get("form") or (parsed_form.split() if parsed_form else []),
+            "channel": normalized_axes.get("channel") or (parsed_channel.split() if parsed_channel else []),
+            "directional": normalized_axes.get("directional") or (directional_tokens if directional_tokens else []),
+        }
+        GPTState.last_axes = merged_axes
+
+        GPTState.last_static_prompt = (raw_recipe.split(" · ")[0] if raw_recipe else "") or parsed_static
+        GPTState.last_completeness = " ".join(merged_axes.get("completeness", [])).strip()
+        GPTState.last_scope = " ".join(merged_axes.get("scope", [])).strip()
+        GPTState.last_method = " ".join(merged_axes.get("method", [])).strip()
+        GPTState.last_form = " ".join(merged_axes.get("form", [])).strip()
+        GPTState.last_channel = " ".join(merged_axes.get("channel", [])).strip()
+        GPTState.last_directional = " ".join(merged_axes.get("directional", [])).strip()
         # Derive a concise, token-based recap from axes (token-only storage).
         recipe_parts = []
-        # Ignore any legacy recipe content when axes are present; recap is token-only.
         for value in (
             GPTState.last_completeness,
             GPTState.last_scope,
@@ -462,7 +547,7 @@ def _show_entry(entry) -> bool:
         notify(
             "GPT: History entry has no directional lens; replay requires fog/fig/dig/ong/rog/bog/jog."
         )
-        return True
+        return False
     try:
         actions.user.model_response_canvas_open()
     except Exception:
@@ -480,8 +565,20 @@ class UserActions:
         if _reject_if_request_in_flight():
             return
         global _cursor_offset
-        entry = latest()
+        entries = _directional_history_entries()
+        entry = entries[-1] if entries else None
         _cursor_offset = 0
+        if entry is None:
+            reason = ""
+            try:
+                reason = last_drop_reason()
+            except Exception:
+                reason = ""
+            if reason:
+                notify(reason)
+            else:
+                notify("GPT: No request history available")
+            return
         _show_entry(entry)
 
     def gpt_request_history_show_previous(offset: int = 1):
@@ -491,7 +588,14 @@ class UserActions:
         if offset < 0:
             notify("GPT: History offset must be non-negative")
             return
-        entry = nth_from_latest(offset)
+        entries = _directional_history_entries()
+        index = len(entries) - 1 - offset
+        entry = entries[index] if 0 <= index < len(entries) else None
+        if entry is None:
+            _notify_with_drop_reason(
+                "GPT: No older history entry", use_drop_reason=not entries
+            )
+            return
         _show_entry(entry)
 
     def gpt_request_history_prev():
@@ -499,11 +603,15 @@ class UserActions:
         if _reject_if_request_in_flight():
             return
         global _cursor_offset
+        entries = _directional_history_entries()
         _cursor_offset += 1
-        entry = nth_from_latest(_cursor_offset)
+        index = len(entries) - 1 - _cursor_offset
+        entry = entries[index] if 0 <= index < len(entries) else None
         if entry is None:
             _cursor_offset -= 1
-            notify("GPT: No older history entry")
+            _notify_with_drop_reason(
+                "GPT: No older history entry", use_drop_reason=not entries
+            )
             return
         if not _show_entry(entry):
             _cursor_offset -= 1
@@ -513,11 +621,21 @@ class UserActions:
         if _reject_if_request_in_flight():
             return
         global _cursor_offset
+        entries = _directional_history_entries()
         if _cursor_offset <= 0:
-            notify("GPT: Already at latest history entry")
+            _notify_with_drop_reason(
+                "GPT: Already at latest history entry", use_drop_reason=not entries
+            )
             return
         _cursor_offset -= 1
-        entry = nth_from_latest(_cursor_offset)
+        index = len(entries) - 1 - _cursor_offset
+        entry = entries[index] if 0 <= index < len(entries) else None
+        if entry is None:
+            _cursor_offset += 1
+            _notify_with_drop_reason(
+                "GPT: No newer history entry", use_drop_reason=not entries
+            )
+            return
         if not _show_entry(entry):
             _cursor_offset += 1
 
@@ -527,15 +645,13 @@ class UserActions:
         if _reject_if_request_in_flight():
             return
         try:
-            entries = UserActions.all_entries()[-count:]  # type: ignore[attr-defined]
+            entries = _directional_history_entries()[-count:]
         except Exception:
             entries = []
         if not entries:
-            entries = requestlog_all_entries()[-count:]
-        if not entries:
             drop_reason = ""
             try:
-                drop_reason = consume_last_drop_reason()
+                drop_reason = last_drop_reason()
             except Exception:
                 drop_reason = ""
             if drop_reason:
@@ -545,9 +661,17 @@ class UserActions:
             return
         lines = history_summary_lines(entries)
         if not lines:
-            notify(
-                "GPT: No history entries include a directional lens; replay requires fog/fig/dig/ong/rog/bog/jog."
-            )
+            drop_reason = ""
+            try:
+                drop_reason = last_drop_reason()
+            except Exception:
+                drop_reason = ""
+            if drop_reason:
+                notify(drop_reason)
+            else:
+                notify(
+                    "GPT: No history entries include a directional lens; replay requires fog/fig/dig/ong/rog/bog/jog."
+                )
             return
         message = "Recent model requests:\n" + "\n".join(lines)
         notify(message)

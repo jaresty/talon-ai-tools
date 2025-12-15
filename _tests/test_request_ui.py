@@ -161,6 +161,52 @@ if bootstrap is not None:
             self.assertEqual(fallback_for("rid-one"), "")
             self.assertEqual(fallback_for("rid-two"), "")
 
+        def test_cancel_clears_fallbacks_and_closes_canvas(self):
+            with patch.object(
+                requestUI, "run_on_ui_thread", side_effect=lambda fn: fn()
+            ), patch.object(
+                requestUI.actions.user,
+                "model_response_canvas_close",
+                create=True,
+            ) as close_mock, patch.object(
+                requestUI.actions.user,
+                "model_response_canvas_refresh",
+                create=True,
+            ):
+                requestUI.GPTState.current_destination_kind = "window"
+                requestUI.GPTState.suppress_response_canvas = False
+                requestUI.register_default_request_ui()
+                requestUI._on_append("rid-cancel", "chunk")
+                self.assertEqual(fallback_for("rid-cancel"), "chunk")
+                requestUI._on_state_change(
+                    RequestState(phase=RequestPhase.CANCELLED, request_id="rid-cancel")
+                )
+                self.assertEqual(fallback_for("rid-cancel"), "")
+                close_mock.assert_called()
+
+        def test_error_clears_fallbacks_and_closes_canvas(self):
+            with patch.object(
+                requestUI, "run_on_ui_thread", side_effect=lambda fn: fn()
+            ), patch.object(
+                requestUI.actions.user,
+                "model_response_canvas_close",
+                create=True,
+            ) as close_mock, patch.object(
+                requestUI.actions.user,
+                "model_response_canvas_refresh",
+                create=True,
+            ):
+                requestUI.GPTState.current_destination_kind = "window"
+                requestUI.GPTState.suppress_response_canvas = False
+                requestUI.register_default_request_ui()
+                requestUI._on_append("rid-error", "chunk")
+                self.assertEqual(fallback_for("rid-error"), "chunk")
+                requestUI._on_state_change(
+                    RequestState(phase=RequestPhase.ERROR, request_id="rid-error")
+                )
+                self.assertEqual(fallback_for("rid-error"), "")
+                close_mock.assert_called()
+
         def test_reset_closes_response_canvas(self):
             with patch.object(
                 requestUI, "run_on_ui_thread", side_effect=lambda fn: fn()

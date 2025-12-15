@@ -85,8 +85,8 @@ if bootstrap is not None:
             )
 
         def test_show_previous_uses_offset(self):
-            append_entry("rid-1", "p1", "resp1", "meta1")
-            append_entry("rid-2", "p2", "resp2", "meta2")
+            append_entry("rid-1", "p1", "resp1", "meta1", axes={"directional": ["fog"]})
+            append_entry("rid-2", "p2", "resp2", "meta2", axes={"directional": ["fog"]})
 
             HistoryActions.gpt_request_history_show_previous(1)
             self.assertEqual(GPTState.last_response, "resp1")
@@ -112,6 +112,24 @@ if bootstrap is not None:
                 HistoryActions.gpt_request_history_prev()
                 HistoryActions.gpt_request_history_next()
             show_entry.assert_not_called()
+
+        def test_history_show_latest_uses_drop_reason_when_no_directional(self):
+            import talon_user.lib.requestLog as requestlog  # type: ignore
+
+            with patch.object(requestlog, "notify"):
+                self._orig_append_entry(
+                    "rid-no-dir",
+                    "prompt",
+                    "resp",
+                    axes={"scope": ["focus"]},
+                )
+
+            with patch.object(history_actions, "notify") as notify_mock:
+                HistoryActions.gpt_request_history_show_latest()
+
+            notify_mock.assert_called()
+            self.assertIn("directional lens", str(notify_mock.call_args[0][0]))
+            self.assertIn("directional lens", requestlog.last_drop_reason())
 
         def test_history_list_and_save_respect_in_flight_guard(self):
             append_entry("rid-1", "prompt text", "answer text", "meta text")
@@ -182,9 +200,9 @@ if bootstrap is not None:
             open_mock.assert_not_called()
 
         def test_prev_next_navigation(self):
-            append_entry("rid-1", "p1", "resp1", "meta1")
-            append_entry("rid-2", "p2", "resp2", "meta2")
-            append_entry("rid-3", "p3", "resp3", "meta3")
+            append_entry("rid-1", "p1", "resp1", "meta1", axes={"directional": ["fog"]})
+            append_entry("rid-2", "p2", "resp2", "meta2", axes={"directional": ["fog"]})
+            append_entry("rid-3", "p3", "resp3", "meta3", axes={"directional": ["fog"]})
 
             HistoryActions.gpt_request_history_show_latest()
             HistoryActions.gpt_request_history_prev()
@@ -203,13 +221,54 @@ if bootstrap is not None:
             HistoryActions.gpt_request_history_next()
 
         def test_history_list_notifies(self):
-            append_entry("rid-1", "prompt one", "resp1", duration_ms=7)
+            append_entry(
+                "rid-1",
+                "prompt one",
+                "resp1",
+                duration_ms=7,
+                axes={"directional": ["fog"]},
+            )
             actions.user.calls.clear()
             actions.app.calls.clear()
             HistoryActions.gpt_request_history_list(2)
             notify_calls = [c for c in actions.user.calls if c[0] == "notify"]
             app_notify_calls = [c for c in actions.app.calls if c[0] == "notify"]
             self.assertGreaterEqual(len(notify_calls) + len(app_notify_calls), 1)
+
+        def test_history_list_filters_and_orders_directional_entries(self):
+            append_entry(
+                "rid-old",
+                "old prompt",
+                "old resp",
+                axes={"scope": ["focus"]},
+                require_directional=False,
+            )
+            append_entry(
+                "rid-mid",
+                "mid prompt",
+                "mid resp",
+                axes={"directional": ["jog"]},
+            )
+            # Recipe-only directional
+            append_entry(
+                "rid-new",
+                "new prompt",
+                "new resp",
+                recipe="infer · gist · focus · fog",
+                axes={},
+            )
+
+            with patch.object(history_actions, "notify") as notify_mock:
+                HistoryActions.gpt_request_history_list(3)
+
+            notify_mock.assert_called_once()
+            message = str(notify_mock.call_args[0][0])
+            self.assertIn("rid-new", message)
+            self.assertIn("rid-mid", message)
+            self.assertNotIn("rid-old", message)
+            new_idx = message.find("rid-new")
+            mid_idx = message.find("rid-mid")
+            self.assertLess(new_idx, mid_idx)
 
         def test_history_list_handles_entries_without_recipe(self):
             # Simulate legacy entries lacking a recipe attribute by monkeypatching all_entries.
@@ -220,6 +279,8 @@ if bootstrap is not None:
                     self.response = response
                     self.meta = meta
                     self.duration_ms = None
+                    self.recipe = "infer · gist · focus · fog"
+                    self.axes = {}
 
             saved_all_entries = all_entries
             try:
@@ -242,7 +303,13 @@ if bootstrap is not None:
                 HistoryActions.all_entries = staticmethod(saved_all_entries)  # type: ignore[attr-defined]
 
         def test_history_open_clears_presentation_and_pastes_entry(self):
-            append_entry("rid-1", "prompt one", "history answer", duration_ms=7)
+            append_entry(
+                "rid-1",
+                "prompt one",
+                "history answer",
+                duration_ms=7,
+                axes={"directional": ["fog"]},
+            )
             ConfirmationGUIState.current_presentation = ResponsePresentation(
                 display_text="old display",
                 paste_text="old paste",
@@ -271,6 +338,7 @@ if bootstrap is not None:
                 "resp",
                 "meta",
                 recipe="infer · full · rigor · jog",
+                axes={},  # rely on recipe directional token
             )
 
             HistoryActions.gpt_request_history_show_latest()
@@ -320,6 +388,7 @@ if bootstrap is not None:
                 "scope": ["bound", "edges"],
                 "method": ["rigor", "xp"],
                 "form": ["bullets"],
+                "directional": ["fog"],
             }
             append_entry(
                 "rid-axes",
@@ -334,7 +403,7 @@ if bootstrap is not None:
 
             # The recap recipe string is derived from tokens, not the legacy recipe.
             expected_recipe = " · ".join(
-                ["", "full", "bound edges", "rigor xp", "bullets"]
+                ["", "full", "bound edges", "rigor xp", "bullets", "fog"]
             ).strip(" ·")
             self.assertEqual(GPTState.last_recipe, expected_recipe)
 
@@ -372,6 +441,7 @@ if bootstrap is not None:
                 "scope": ["bound", "Invalid scope"],
                 "method": ["rigor", "Unknown method"],
                 "form": ["bullets", "Hydrated style"],
+                "directional": ["fog"],
             }
             append_entry(
                 "rid-axes",
@@ -388,8 +458,7 @@ if bootstrap is not None:
             self.assertEqual(GPTState.last_axes.get("scope"), ["bound"])
             self.assertEqual(GPTState.last_axes.get("method"), ["rigor"])
             self.assertEqual(GPTState.last_axes.get("form"), ["bullets"])
-            # Directional was absent; ensure no unknowns leaked through.
-            self.assertFalse(GPTState.last_axes.get("directional"))
+            self.assertEqual(GPTState.last_axes.get("directional"), ["fog"])
 
         def test_history_axes_for_filters_invalid_tokens(self):
             axes = {
@@ -478,9 +547,10 @@ if bootstrap is not None:
 
             notify_fn.assert_called()
             canvas_mock.assert_not_called()
-            self.assertEqual(GPTState.last_directional, "")
-            self.assertEqual(GPTState.last_response, "response")
-            self.assertEqual(getattr(GPTState, "current_provider_id", ""), "")
+            # State should remain unchanged when directional is missing.
+            self.assertEqual(GPTState.last_directional, "fog")
+            self.assertEqual(GPTState.last_response, "prev-response")
+            self.assertEqual(getattr(GPTState, "current_provider_id", ""), "prev-provider")
 
         def test_prev_keeps_navigation_when_directional_missing(self):
             append_entry(
@@ -489,6 +559,7 @@ if bootstrap is not None:
                 "resp missing dir",
                 "meta",
                 axes={"directional": []},
+                require_directional=False,
             )
             append_entry(
                 "rid-ok",
@@ -499,14 +570,10 @@ if bootstrap is not None:
             )
             HistoryActions.gpt_request_history_show_latest()
             self.assertEqual(GPTState.last_response, "resp ok")
-            # cursor at 0; prev should land on missing-directional entry, notify, and advance cursor
+            # cursor at 0; prev should skip missing-directional entry, notify, and keep cursor at latest
             with patch.object(history_actions, "notify") as notify_mock:
                 HistoryActions.gpt_request_history_prev()
             self.assertGreaterEqual(len(notify_mock.call_args_list), 1)
-            self.assertEqual(getattr(history_actions, "_cursor_offset"), 1)
-            self.assertEqual(GPTState.last_response, "resp missing dir")
-            # Next should return to latest entry.
-            HistoryActions.gpt_request_history_next()
             self.assertEqual(getattr(history_actions, "_cursor_offset"), 0)
             self.assertEqual(GPTState.last_response, "resp ok")
 
@@ -612,7 +679,7 @@ if bootstrap is not None:
                 HistoryActions.gpt_request_history_list()
 
             notify_mock.assert_called()
-            self.assertIn("directional lens", str(notify_mock.call_args[0][0]))
+            self.assertIn("No request history available", str(notify_mock.call_args[0][0]))
 
         def test_request_log_drops_missing_directional_and_notifies(self):
             import talon_user.lib.requestLog as requestlog  # type: ignore
@@ -647,10 +714,103 @@ if bootstrap is not None:
             with patch.object(history_actions, "notify") as list_notify:
                 HistoryActions.gpt_request_history_list()
             self.assertIn("directional lens", str(list_notify.call_args[0][0]))
-            # Second call should fall back to generic since reason is consumed.
+            # Reason should remain available (peeked, not consumed).
+            self.assertIn("directional lens", requestlog.last_drop_reason())
+
+        def test_drop_reason_not_consumed_when_drawer_peeks(self):
+            import talon_user.lib.requestHistoryDrawer as drawer  # type: ignore
+            import talon_user.lib.requestLog as requestlog  # type: ignore
+
+            with patch.object(requestlog, "notify"):
+                self._orig_append_entry(
+                    "rid-no-dir",
+                    "prompt",
+                    "resp",
+                    axes={"scope": ["focus"]},
+                )
+            # Drawer refresh should peek at last_drop_reason without consuming it.
+            drawer.HistoryDrawerState.showing = True
+            drawer.HistoryDrawerState.entries = []
+            with patch.object(drawer, "_ensure_canvas"):
+                drawer.UserActions.request_history_drawer_refresh()
+            self.assertIn("directional lens", drawer.HistoryDrawerState.last_message)
+            # History list should still see the same drop reason afterwards.
+            with patch.object(history_actions, "notify") as list_notify:
+                HistoryActions.gpt_request_history_list()
+            self.assertIn("directional lens", str(list_notify.call_args[0][0]))
+            self.assertIn("directional lens", requestlog.last_drop_reason())
+
+        def test_drop_reason_survives_history_list_for_drawer_refresh(self):
+            import talon_user.lib.requestHistoryDrawer as drawer  # type: ignore
+            import talon_user.lib.requestLog as requestlog  # type: ignore
+
+            # Seed a drop reason with a non-directional entry.
+            with patch.object(requestlog, "notify"):
+                self._orig_append_entry(
+                    "rid-no-dir",
+                    "prompt",
+                    "resp",
+                    axes={"scope": ["focus"]},
+                )
+            # History list should notify and leave the reason available.
+            with patch.object(history_actions, "notify") as list_notify:
+                HistoryActions.gpt_request_history_list()
+            self.assertIn("directional lens", str(list_notify.call_args[0][0]))
+            # Drawer refresh should still surface the same drop reason after list ran.
+            drawer.HistoryDrawerState.showing = True
+            drawer.HistoryDrawerState.entries = []
+            with patch.object(drawer, "_ensure_canvas"):
+                drawer.UserActions.request_history_drawer_refresh()
+            self.assertIn("directional lens", drawer.HistoryDrawerState.last_message)
+
+        def test_drop_reason_shared_between_latest_and_list(self):
+            import talon_user.lib.requestLog as requestlog  # type: ignore
+
+            with patch.object(requestlog, "notify"):
+                self._orig_append_entry(
+                    "rid-no-dir",
+                    "prompt",
+                    "resp",
+                    axes={"scope": ["focus"]},
+                )
+            # show_latest should surface the reason without consuming it.
+            messages: list[str] = []
+
+            def _capture(msg):
+                messages.append(msg)
+
+            with patch.object(history_actions, "notify") as notify:
+                notify.side_effect = _capture
+                HistoryActions.gpt_request_history_show_latest()
+            self.assertTrue(messages)
+            self.assertIn("directional lens", messages[0])
+            # history list should still see the same reason afterward.
+            messages = []
+            with patch.object(history_actions, "notify") as notify:
+                notify.side_effect = _capture
+                HistoryActions.gpt_request_history_list()
+            self.assertTrue(messages)
+            self.assertIn("directional lens", messages[0])
+
+        def test_drop_reason_persists_when_entries_filtered(self):
+            import talon_user.lib.requestLog as requestlog  # type: ignore
+
+            # Seed a drop reason and a non-directional entry that will be filtered.
+            with patch.object(requestlog, "notify"):
+                self._orig_append_entry(
+                    "rid-no-dir",
+                    "prompt",
+                    "resp",
+                    axes={"scope": ["focus"]},
+                )
+            with patch.object(history_actions, "notify") as list_notify:
+                HistoryActions.gpt_request_history_list()
+            self.assertIn("directional lens", str(list_notify.call_args[0][0]))
+            # Second call should still surface the drop reason (peeked, not consumed).
             with patch.object(history_actions, "notify") as list_notify2:
                 HistoryActions.gpt_request_history_list()
-            self.assertNotIn("directional lens", str(list_notify2.call_args[0][0]))
+            self.assertIn("directional lens", str(list_notify2.call_args[0][0]))
+            self.assertIn("directional lens", requestlog.last_drop_reason())
 
         def test_drop_reason_cleared_after_successful_append(self):
             import talon_user.lib.requestLog as requestlog  # type: ignore
@@ -672,6 +832,194 @@ if bootstrap is not None:
                 axes={"directional": ["fog"]},
             )
             self.assertEqual(requestlog.last_drop_reason(), "")
+            with patch.object(history_actions, "notify") as notify_mock:
+                HistoryActions.gpt_request_history_show_latest()
+            notify_mock.assert_not_called()
+
+        def test_show_latest_does_not_read_drop_reason_when_history_exists(self):
+            # Seed a directional entry so history is available.
+            append_entry(
+                "rid-ok",
+                "prompt ok",
+                "resp ok",
+                axes={"directional": ["fog"]},
+            )
+            with patch.object(history_actions, "last_drop_reason") as drop_mock, patch.object(
+                history_actions, "notify"
+            ) as notify_mock:
+                drop_mock.return_value = "stale reason"
+                HistoryActions.gpt_request_history_show_latest()
+            drop_mock.assert_not_called()
+            notify_mock.assert_not_called()
+
+        def test_drop_reason_cleared_by_clear_history(self):
+            import talon_user.lib.requestLog as requestlog  # type: ignore
+
+            with patch.object(requestlog, "notify"):
+                self._orig_append_entry(
+                    "rid-no-dir",
+                    "prompt",
+                    "resp",
+                    axes={"scope": ["focus"]},
+                )
+            # Clear history should also clear the drop reason.
+            requestlog.clear_history()
+            messages: list[str] = []
+
+            def _capture(msg):
+                messages.append(msg)
+
+            with patch.object(history_actions, "notify") as notify_mock:
+                notify_mock.side_effect = _capture
+                HistoryActions.gpt_request_history_list()
+            self.assertTrue(messages)
+            self.assertIn("No request history available", messages[0])
+            self.assertEqual(requestlog.last_drop_reason(), "")
+
+        def test_history_list_does_not_read_drop_reason_when_entries_exist(self):
+            # Seed a directional entry so list has content.
+            append_entry(
+                "rid-ok",
+                "prompt ok",
+                "resp ok",
+                axes={"directional": ["fog"]},
+            )
+            with patch.object(history_actions, "last_drop_reason") as drop_mock, patch.object(
+                history_actions, "notify"
+            ) as notify_mock:
+                drop_mock.side_effect = AssertionError("should not read drop reason")
+                HistoryActions.gpt_request_history_list()
+            drop_mock.assert_not_called()
+            notify_mock.assert_called()
+            self.assertNotIn("directional lens", str(notify_mock.call_args[0][0]))
+
+        def test_prev_skips_non_directional_entry_and_keeps_cursor(self):
+            import talon_user.lib.requestHistoryActions as actions_mod  # type: ignore
+            import talon_user.lib.requestLog as requestlog  # type: ignore
+
+            # Latest entry has directional; previous entry lacks directional but is stored (opt-out).
+            append_entry(
+                "rid-older",
+                "old prompt",
+                "old resp",
+                axes={"scope": ["focus"]},
+                require_directional=False,
+            )
+            append_entry(
+                "rid-latest",
+                "new prompt",
+                "new resp",
+                axes={"directional": ["fog"]},
+            )
+            actions_mod._cursor_offset = 0  # reset navigation cursor
+            with patch.object(history_actions, "notify") as notify_mock:
+                HistoryActions.gpt_request_history_prev()
+            notify_mock.assert_called()
+            self.assertIn("No older history entry", str(notify_mock.call_args[0][0]))
+            self.assertEqual(actions_mod._cursor_offset, 0)
+            # Drop reason should not leak when directional history exists.
+            self.assertEqual(requestlog.last_drop_reason(), "")
+
+        def test_prev_reports_drop_reason_when_no_directional_history(self):
+            import talon_user.lib.requestLog as requestlog  # type: ignore
+            import talon_user.lib.requestHistoryActions as actions_mod  # type: ignore
+
+            with patch.object(requestlog, "notify"):
+                self._orig_append_entry(
+                    "rid-no-dir",
+                    "prompt",
+                    "resp",
+                    axes={"scope": ["focus"]},
+                )
+            actions_mod._cursor_offset = 0
+            with patch.object(history_actions, "notify") as notify_mock:
+                HistoryActions.gpt_request_history_prev()
+            notify_mock.assert_called()
+            self.assertIn("directional lens", str(notify_mock.call_args[0][0]))
+            self.assertIn("directional lens", requestlog.last_drop_reason())
+
+        def test_next_reports_drop_reason_when_no_directional_history(self):
+            import talon_user.lib.requestLog as requestlog  # type: ignore
+            import talon_user.lib.requestHistoryActions as actions_mod  # type: ignore
+
+            with patch.object(requestlog, "notify"):
+                self._orig_append_entry(
+                    "rid-no-dir",
+                    "prompt",
+                    "resp",
+                    axes={"scope": ["focus"]},
+                )
+            actions_mod._cursor_offset = 0
+            with patch.object(history_actions, "notify") as notify_mock:
+                HistoryActions.gpt_request_history_next()
+            notify_mock.assert_called()
+            self.assertIn("directional lens", str(notify_mock.call_args[0][0]))
+            self.assertIn("directional lens", requestlog.last_drop_reason())
+
+        def test_next_generic_when_directional_history_exists(self):
+            import talon_user.lib.requestLog as requestlog  # type: ignore
+            import talon_user.lib.requestHistoryActions as actions_mod  # type: ignore
+
+            append_entry(
+                "rid-1",
+                "prompt1",
+                "resp1",
+                axes={"directional": ["fog"]},
+            )
+            actions_mod._cursor_offset = 0
+            with patch.object(history_actions, "notify") as notify_mock:
+                HistoryActions.gpt_request_history_next()
+            notify_mock.assert_called()
+            self.assertIn("Already at latest history entry", str(notify_mock.call_args[0][0]))
+            self.assertEqual(requestlog.last_drop_reason(), "")
+
+        def test_show_previous_reports_drop_reason_when_no_directional_history(self):
+            import talon_user.lib.requestLog as requestlog  # type: ignore
+
+            with patch.object(requestlog, "notify"):
+                self._orig_append_entry(
+                    "rid-no-dir",
+                    "prompt",
+                    "resp",
+                    axes={"scope": ["focus"]},
+                )
+            with patch.object(history_actions, "notify") as notify_mock:
+                HistoryActions.gpt_request_history_show_previous(1)
+            notify_mock.assert_called()
+            self.assertIn("directional lens", str(notify_mock.call_args[0][0]))
+            self.assertIn("directional lens", requestlog.last_drop_reason())
+
+        def test_show_previous_generic_when_directional_history_exists(self):
+            import talon_user.lib.requestLog as requestlog  # type: ignore
+
+            append_entry(
+                "rid-1",
+                "prompt1",
+                "resp1",
+                axes={"directional": ["fog"]},
+            )
+            with patch.object(history_actions, "notify") as notify_mock:
+                HistoryActions.gpt_request_history_show_previous(5)
+            notify_mock.assert_called()
+            self.assertIn("No older history entry", str(notify_mock.call_args[0][0]))
+            self.assertEqual(requestlog.last_drop_reason(), "")
+
+        def test_prev_generic_when_directional_history_exists(self):
+            import talon_user.lib.requestLog as requestlog  # type: ignore
+            import talon_user.lib.requestHistoryActions as actions_mod  # type: ignore
+
+            append_entry(
+                "rid-1",
+                "prompt1",
+                "resp1",
+                axes={"directional": ["fog"]},
+            )
+            actions_mod._cursor_offset = 0
+            with patch.object(history_actions, "notify") as notify_mock:
+                HistoryActions.gpt_request_history_prev()
+            notify_mock.assert_called()
+            self.assertIn("No older history entry", str(notify_mock.call_args[0][0]))
+            self.assertEqual(requestlog.last_drop_reason(), "")
 
         def test_show_entry_sets_provider(self):
             append_entry(
@@ -680,6 +1028,7 @@ if bootstrap is not None:
                 "resp3",
                 "meta3",
                 recipe="infer · full",
+                axes={"directional": ["fog"]},
                 provider_id="gemini",
             )
             HistoryActions.gpt_request_history_show_latest()
@@ -693,6 +1042,7 @@ if bootstrap is not None:
                 "resp3",
                 "meta3",
                 recipe="infer · full",
+                axes={"directional": ["fog"]},
             )
             HistoryActions.gpt_request_history_show_latest()
             self.assertEqual(getattr(GPTState, "current_provider_id", ""), "")

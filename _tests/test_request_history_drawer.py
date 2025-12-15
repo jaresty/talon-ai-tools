@@ -80,26 +80,14 @@ if bootstrap is not None:
                     self.duration_ms = 42
                     self.recipe = "infer · full · rigor"
                     self.provider_id = "gemini"
+                    self.axes = {"directional": ["fog"]}
 
             rendered = history_drawer_entries_from([DummyEntry()])
 
             self.assertEqual(len(rendered), 1)
             label, body = rendered[0]
             self.assertEqual(label, "rid-1 (42ms) [gemini]")
-            self.assertEqual(body, "infer · full · rigor · prompt one · provider=gemini")
-
-        def test_drawer_notifies_drop_reason_when_empty(self):
-            with patch.object(history_drawer, "notify") as notify_mock:
-                append_entry(
-                    "rid-no-dir",
-                    "prompt",
-                    "resp",
-                    "meta",
-                    axes={"scope": ["focus"]},
-                )
-                DrawerActions.request_history_drawer_open()
-            notify_mock.assert_called()
-            self.assertIn("directional lens", str(notify_mock.call_args[0][0]))
+            self.assertEqual(body, "infer · fog · prompt one · provider=gemini")
 
         def test_drawer_save_latest_source_refreshes_entries(self):
             from talon_user.lib import requestLog as requestlog  # type: ignore
@@ -202,6 +190,20 @@ if bootstrap is not None:
             refresh_mock.assert_called_once()
             self.assertTrue(dummy_canvas.shown)
             self.assertIn(("rid-new", "body"), HistoryDrawerState.entries)
+
+        def test_drawer_reports_drop_reason_when_no_directional_entries(self):
+            # Append an entry without directional; guardrail should drop and surface the reason.
+            append_entry("rid-nd", "p1", "r1", "m1", axes={"scope": ["focus"]})
+            HistoryDrawerState.showing = True
+            HistoryDrawerState.entries = []
+            with patch.object(history_drawer, "_ensure_canvas") as ensure_canvas:
+                class DummyCanvas:
+                    def show(self):
+                        pass
+                ensure_canvas.return_value = DummyCanvas()
+                DrawerActions.request_history_drawer_refresh()
+            self.assertEqual(HistoryDrawerState.entries, [])
+            self.assertIn("directional lens", HistoryDrawerState.last_message)
 
         def test_drawer_escape_closes(self):
             from types import SimpleNamespace

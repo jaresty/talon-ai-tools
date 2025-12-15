@@ -94,6 +94,11 @@ if bootstrap is not None:
                 info["stance_display"],
                 "persona stake (model write as facilitator to stakeholders directly) · intent teach",
             )
+            self.assertEqual(info["persona_display"], "persona stake")
+            self.assertEqual(
+                info["persona_axes_summary"],
+                "as facilitator · to stakeholders · directly",
+            )
 
         def test_non_persona_stance_display_prefers_raw_command(self):
             suggestion = modelSuggestionGUI.Suggestion(
@@ -111,6 +116,25 @@ if bootstrap is not None:
                 info["stance_display"],
                 "model write as teacher to junior engineer kindly",
             )
+
+        def test_persona_stance_synthesises_preset_command_when_missing(self):
+            suggestion = modelSuggestionGUI.Suggestion(
+                name="Preset only",
+                recipe="describe · gist · focus · plain · fog",
+                persona_voice="as facilitator",
+                persona_audience="to stakeholders",
+                persona_tone="directly",
+                intent_purpose="resolve",
+                stance_command="",
+            )
+
+            info = modelSuggestionGUI._suggestion_stance_info(suggestion)
+
+            self.assertEqual(
+                info["stance_display"],
+                "persona stake (model write as facilitator to stakeholders directly) · intent resolve",
+            )
+            self.assertEqual(info["persona_display"], "persona stake")
 
         def test_open_uses_cached_suggestions_and_shows_canvas(self):
             """model_prompt_recipe_suggestions_gui_open populates state and opens the canvas."""

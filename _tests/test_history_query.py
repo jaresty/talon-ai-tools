@@ -65,6 +65,7 @@ if bootstrap is not None:
                     self.duration_ms = 42
                     self.recipe = "infer · full · rigor"
                     self.provider_id = "gemini"
+                    self.axes = {"directional": ["fog"]}
 
             entries = [DummyEntry()]
             direct = drawer_entries_from(entries)
@@ -114,6 +115,134 @@ if bootstrap is not None:
             entries = [DummyEntry()]
             rendered = history_drawer_entries_from(entries)
             self.assertEqual(rendered, [])
+
+        def test_history_drawer_uses_directional_from_recipe_when_axes_missing(self) -> None:
+            class DummyEntry:
+                def __init__(self) -> None:
+                    self.request_id = "rid-recipe"
+                    self.prompt = "prompt one"
+                    self.response = "resp1"
+                    self.meta = "meta1"
+                    self.duration_ms = 10
+                    self.recipe = "infer · gist · focus · fog"
+                    self.axes = {}
+
+            entries = [DummyEntry()]
+            rendered = history_drawer_entries_from(entries)
+            self.assertEqual(len(rendered), 1)
+            label, body = rendered[0]
+            self.assertIn("rid-recipe", label)
+            self.assertIn("fog", body)
+
+        def test_history_summary_skips_entries_without_directional(self) -> None:
+            class DummyEntry:
+                def __init__(self) -> None:
+                    self.request_id = "rid-no-dir"
+                    self.prompt = "prompt one"
+                    self.response = "resp1"
+                    self.meta = "meta1"
+                    self.duration_ms = 10
+                    self.recipe = "infer · gist"
+                    self.axes = {"completeness": ["gist"], "directional": []}
+
+            entries = [DummyEntry()]
+            summary = history_summary_lines(entries)
+            self.assertEqual(summary, [])
+
+        def test_history_summary_includes_directional_token(self) -> None:
+            class DummyEntry:
+                def __init__(self) -> None:
+                    self.request_id = "rid-dir"
+                    self.prompt = "prompt one"
+                    self.response = "resp1"
+                    self.meta = "meta1"
+                    self.duration_ms = 10
+                    self.recipe = ""
+                    self.axes = {
+                        "completeness": ["gist"],
+                        "scope": ["focus"],
+                        "method": ["steps"],
+                        "form": ["adr"],
+                        "channel": ["slack"],
+                        "directional": ["fog"],
+                    }
+
+            summary = history_summary_lines([DummyEntry()])
+            self.assertEqual(len(summary), 1)
+            rendered = summary[0]
+            self.assertIn("fog", rendered)
+            self.assertIn("adr", rendered)
+            self.assertIn("slack", rendered)
+
+        def test_history_summary_normalizes_directional_from_axes(self) -> None:
+            class DummyEntry:
+                def __init__(self) -> None:
+                    self.request_id = "rid-case"
+                    self.prompt = "prompt one"
+                    self.response = "resp1"
+                    self.meta = "meta1"
+                    self.duration_ms = 10
+                    self.recipe = ""
+                    self.axes = {"directional": ["Fog"]}
+
+            summary = history_summary_lines([DummyEntry()])
+            self.assertEqual(len(summary), 1)
+            self.assertIn("fog", summary[0])
+
+        def test_history_summary_uses_directional_from_recipe_when_axes_missing(self) -> None:
+            class DummyEntry:
+                def __init__(self) -> None:
+                    self.request_id = "rid-recipe"
+                    self.prompt = "prompt one"
+                    self.response = "resp1"
+                    self.meta = "meta1"
+                    self.duration_ms = 10
+                    self.recipe = "infer · gist · focus · fog"
+                    self.axes = {}
+
+            summary = history_summary_lines([DummyEntry()])
+            self.assertEqual(len(summary), 1)
+            rendered = summary[0]
+            self.assertIn("fog", rendered)
+            self.assertIn("rid-recipe", rendered)
+
+        def test_history_summary_detects_directional_case_insensitive_recipe(self) -> None:
+            class DummyEntry:
+                def __init__(self) -> None:
+                    self.request_id = "rid-recipe-case"
+                    self.prompt = "prompt one"
+                    self.response = "resp1"
+                    self.meta = "meta1"
+                    self.duration_ms = 10
+                    self.recipe = "infer · gist · focus · Fog"
+                    self.axes = {}
+
+            summary = history_summary_lines([DummyEntry()])
+            self.assertEqual(len(summary), 1)
+            self.assertIn("fog", summary[0])
+
+        def test_history_summary_orders_newest_first_and_includes_ids(self) -> None:
+            class DummyEntry:
+                def __init__(self, request_id: str, dur: int) -> None:
+                    self.request_id = request_id
+                    self.prompt = f"prompt for {request_id}"
+                    self.response = "resp"
+                    self.meta = "meta"
+                    self.duration_ms = dur
+                    self.recipe = ""
+                    self.provider_id = "openai"
+                    self.axes = {"directional": ["fog"]}
+
+            old = DummyEntry("rid-old", 10)
+            new = DummyEntry("rid-new", 50)
+            summary = history_summary_lines([old, new])
+            self.assertEqual(len(summary), 2)
+            # Newest (last element) should appear first.
+            self.assertIn("rid-new", summary[0])
+            self.assertIn("50ms", summary[0])
+            self.assertIn("fog", summary[0])
+            self.assertIn("openai", summary[0])
+            self.assertIn("rid-old", summary[1])
 
 
 else:

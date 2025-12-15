@@ -1,8 +1,0 @@
-list: user.completenessModifier
-#
--
-full: full
-gist: gist
-max: max
-minimal: minimal
-skim: skim

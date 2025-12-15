@@ -20,7 +20,12 @@ from .modelHelpers import notify
 from .modelState import GPTState
 from .metaPromptConfig import META_INTERPRETATION_GUIDANCE
 from talon import Context, Module, settings
-from .staticPromptConfig import get_static_prompt_axes, get_static_prompt_profile
+from .staticPromptConfig import (
+    STATIC_PROMPT_CONFIG,
+    get_static_prompt_axes,
+    get_static_prompt_profile,
+    static_prompt_catalog,
+)
 
 # Backward-compatible alias for existing callers.
 DEFAULT_COMPLETENESS_VALUE = DEFAULT_COMPLETENESS_TOKEN
@@ -498,6 +503,69 @@ mod.list(
 )
 mod.list("formModifier", desc="GPT Form Modifiers")
 mod.list("channelModifier", desc="GPT Channel Modifiers")
+
+
+def _set_ctx_list(name: str, tokens: list[str]) -> None:
+    """Populate a Talon list if tokens are available."""
+
+    if not tokens:
+        return
+    if not hasattr(ctx, "lists"):
+        ctx.lists = {}
+    # Talon expects spoken -> value mapping; use identity for token lists.
+    ctx.lists[f"user.{name}"] = {token: token for token in tokens}
+
+
+def _populate_runtime_lists_from_catalog() -> None:
+    """Populate axis/static prompt lists from the Python catalog (SSOT).
+
+    This keeps grammar vocab aligned with axisConfig/staticPromptConfig without
+    requiring contributors to edit Talon list files. If the catalog is
+    unavailable (for example, older Talon runtime), fall back to Talon's
+    native list loading from disk.
+    """
+
+    try:
+        catalog = axis_catalog()
+    except Exception:
+        return
+
+    axes = catalog.get("axes", {}) or {}
+    axis_lists = catalog.get("axis_list_tokens", {}) or {}
+
+    def _axis_tokens(axis: str) -> list[str]:
+        list_tokens = list(axis_lists.get(axis) or [])
+        ssot_tokens = list((axes.get(axis) or {}).keys())
+        merged: list[str] = []
+        seen: set[str] = set()
+        for token in list_tokens + ssot_tokens:
+            if token and token not in seen:
+                merged.append(token)
+                seen.add(token)
+        # Keep order stable for deterministic ctx.lists, but uniqueness is enough.
+        return merged
+
+    _set_ctx_list("completenessModifier", _axis_tokens("completeness"))
+    _set_ctx_list("scopeModifier", _axis_tokens("scope"))
+    _set_ctx_list("methodModifier", _axis_tokens("method"))
+    _set_ctx_list("formModifier", _axis_tokens("form"))
+    _set_ctx_list("channelModifier", _axis_tokens("channel"))
+    _set_ctx_list("directionalModifier", _axis_tokens("directional"))
+
+    # Static prompts: prefer the catalog view, fall back to profiles if needed.
+    static_catalog = catalog.get("static_prompts") or static_prompt_catalog()
+    static_tokens = static_catalog.get("talon_list_tokens") or []
+    if not static_tokens:
+        static_tokens = [
+            entry.get("name", "")
+            for entry in static_catalog.get("profiled", [])
+            if entry.get("name")
+        ]
+    if not static_tokens:
+        static_tokens = list((STATIC_PROMPT_CONFIG or {}).keys())
+    _set_ctx_list("staticPrompt", sorted(set(static_tokens)))
+
+_populate_runtime_lists_from_catalog()
 
 
 def _spoken_axis_value(m, axis_name: str) -> str:

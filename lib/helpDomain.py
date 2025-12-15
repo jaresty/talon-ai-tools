@@ -27,7 +27,9 @@ def help_index(
     This constructs the logical help index over hub buttons, static prompts,
     axis modifiers, patterns, and prompt presets. Callers such as Help Hub can
     wrap the resulting entries in UI-specific types (for example ``HubButton``)
-    without re-encoding the indexing semantics.
+    without re-encoding the indexing semantics. When a catalog is provided, it
+    is treated as the SSOT for tokens; list file reads are only used as a
+    fallback when catalog data is missing.
     """
 
     entries: List[HelpIndexEntry] = []
@@ -57,13 +59,16 @@ def help_index(
         )
 
     # Static prompts (prefer catalog if provided).
-    static_prompts = []
+    static_prompts: List[str] = []
     if catalog:
-        static_prompts = [
+        catalog_static = catalog.get("static_prompts", {}) or {}
+        profiled = [
             entry.get("name", "")
-            for entry in catalog.get("static_prompts", {}).get("profiled", [])
+            for entry in catalog_static.get("profiled", [])
             if entry.get("name")
         ]
+        list_tokens = catalog_static.get("talon_list_tokens") or []
+        static_prompts = [p for p in profiled + list_tokens if p]
     if not static_prompts:
         static_prompts = read_list_items("staticPrompt.talon-list")
     for prompt in static_prompts:
@@ -89,7 +94,9 @@ def help_index(
         tokens: List[str] = []
         if catalog:
             axis_key = axis_label.lower()
-            tokens = list((catalog.get("axes", {}).get(axis_key) or {}).keys())
+            axis_tokens = list((catalog.get("axes", {}).get(axis_key) or {}).keys())
+            list_tokens = catalog.get("axis_list_tokens", {}).get(axis_key, []) if catalog else []
+            tokens = [t for t in list_tokens or axis_tokens if t]
         if not tokens:
             tokens = read_list_items(axis_file)
         for token in tokens:

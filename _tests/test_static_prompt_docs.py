@@ -11,6 +11,7 @@ else:
 
 if bootstrap is not None:
     import pathlib
+    import tempfile
 
     from talon_user.GPT.gpt import _build_axis_docs, _build_static_prompt_docs
     from talon_user.lib.staticPromptConfig import (
@@ -18,20 +19,9 @@ if bootstrap is not None:
         static_prompt_catalog,
     )
     from talon_user.lib.modelPatternGUI import PATTERNS, _parse_recipe
+    from talon_user.lib.axisCatalog import axis_catalog
 
     class StaticPromptDocsTests(unittest.TestCase):
-        def setUp(self) -> None:
-            # Ensure we start from the real staticPrompt.talon-list so this
-            # test characterises current behaviour rather than overwriting it.
-            root = pathlib.Path(__file__).resolve().parents[1]
-            self._static_list_path = (
-                root / "GPT" / "lists" / "staticPrompt.talon-list"
-            )
-            self.assertTrue(
-                self._static_list_path.is_file(),
-                "staticPrompt.talon-list should exist for this test",
-            )
-
         def test_static_prompt_catalog_exposes_profiles_and_tokens(self) -> None:
             catalog = static_prompt_catalog()
 
@@ -62,24 +52,8 @@ if bootstrap is not None:
 
         def test_all_profiled_prompts_have_static_prompt_token(self) -> None:
             """Guardrail: every profiled prompt key should appear in the Talon list."""
-            root = pathlib.Path(__file__).resolve().parents[1]
-            static_list_path = root / "GPT" / "lists" / "staticPrompt.talon-list"
-            talon_keys: set[str] = set()
-            with static_list_path.open("r", encoding="utf-8") as f:
-                for line in f:
-                    s = line.strip()
-                    if (
-                        not s
-                        or s.startswith("#")
-                        or s.startswith("list:")
-                        or s == "-"
-                    ):
-                        continue
-                    if ":" not in s:
-                        continue
-                    key, _ = s.split(":", 1)
-                    talon_keys.add(key.strip())
-
+            catalog = static_prompt_catalog()
+            talon_keys: set[str] = set(catalog.get("talon_list_tokens", []))
             config_keys = set(STATIC_PROMPT_CONFIG.keys())
             # The list may contain additional unprofiled prompts, but every
             # profiled prompt should have a corresponding token.
@@ -95,6 +69,34 @@ if bootstrap is not None:
                 "live only as form/channel/method axis values",
                 docs,
             )
+
+        def test_static_prompt_catalog_falls_back_when_list_missing(self) -> None:
+            """Guardrail: catalog should surface config tokens even without list files."""
+            with tempfile.TemporaryDirectory() as tmpdir:
+                missing_path = pathlib.Path(tmpdir) / "staticPrompt.talon-list"
+                catalog = static_prompt_catalog(static_prompt_list_path=missing_path)
+            talon_tokens = set(catalog.get("talon_list_tokens", []))
+            config_tokens = set(STATIC_PROMPT_CONFIG.keys())
+            self.assertTrue(
+                config_tokens.issubset(talon_tokens),
+                "Catalog talon_list_tokens should include config tokens when list file is absent",
+            )
+
+        def test_static_prompt_catalog_merges_partial_list_with_config(self) -> None:
+            """Guardrail: partial list files should not drop config tokens."""
+            with tempfile.TemporaryDirectory() as tmpdir:
+                partial_path = pathlib.Path(tmpdir) / "staticPrompt.talon-list"
+                partial_path.write_text(
+                    "list: user.staticPrompt\n-\ntodo: todo\n", encoding="utf-8"
+                )
+                catalog = static_prompt_catalog(static_prompt_list_path=partial_path)
+            talon_tokens = set(catalog.get("talon_list_tokens", []))
+            config_tokens = set(STATIC_PROMPT_CONFIG.keys())
+            self.assertTrue(
+                config_tokens.issubset(talon_tokens),
+                "Catalog talon_list_tokens should merge config tokens when list is partial",
+            )
+            self.assertIn("todo", talon_tokens, "List token should be preserved")
 
         def test_axis_docs_include_all_axis_sections(self) -> None:
             """Characterise the axis docs block for completeness."""
@@ -129,58 +131,11 @@ if bootstrap is not None:
 
         def test_new_completeness_and_method_tokens_present(self) -> None:
             """Ensure ADR 017's axis tokens exist in the Talon lists."""
-            root = pathlib.Path(__file__).resolve().parents[1]
-
-            completeness_list_path = root / "GPT" / "lists" / "completenessModifier.talon-list"
-            completeness_keys: set[str] = set()
-            with completeness_list_path.open("r", encoding="utf-8") as f:
-                for line in f:
-                    s = line.strip()
-                    if (
-                        not s
-                        or s.startswith("#")
-                        or s.startswith("list:")
-                        or s == "-"
-                    ):
-                        continue
-                    if ":" not in s:
-                        continue
-                    key, _ = s.split(":", 1)
-                    completeness_keys.add(key.strip())
-
-            method_list_path = root / "GPT" / "lists" / "methodModifier.talon-list"
-            method_keys: set[str] = set()
-            with method_list_path.open("r", encoding="utf-8") as f:
-                for line in f:
-                    s = line.strip()
-                    if (
-                        not s
-                        or s.startswith("#")
-                        or s.startswith("list:")
-                        or s == "-"
-                    ):
-                        continue
-                    if ":" not in s:
-                        continue
-                    key, _ = s.split(":", 1)
-                    method_keys.add(key.strip())
-
-            form_list_path = root / "GPT" / "lists" / "formModifier.talon-list"
-            form_keys: set[str] = set()
-            with form_list_path.open("r", encoding="utf-8") as f:
-                for line in f:
-                    s = line.strip()
-                    if (
-                        not s
-                        or s.startswith("#")
-                        or s.startswith("list:")
-                        or s == "-"
-                    ):
-                        continue
-                    if ":" not in s:
-                        continue
-                    key, _ = s.split(":", 1)
-                    form_keys.add(key.strip())
+            catalog = axis_catalog()
+            axes = catalog.get("axes", {}) or {}
+            completeness_keys: set[str] = set((axes.get("completeness") or {}).keys())
+            method_keys: set[str] = set((axes.get("method") or {}).keys())
+            form_keys: set[str] = set((axes.get("form") or {}).keys())
 
             self.assertIn(
                 "analysis",
@@ -197,22 +152,7 @@ if bootstrap is not None:
                 method_keys,
                 "Expected 'socratic' method token from ADR 018 to be present",
             )
-            channel_list_path = root / "GPT" / "lists" / "channelModifier.talon-list"
-            channel_keys: set[str] = set()
-            with channel_list_path.open("r", encoding="utf-8") as f:
-                for line in f:
-                    s = line.strip()
-                    if (
-                        not s
-                        or s.startswith("#")
-                        or s.startswith("list:")
-                        or s == "-"
-                    ):
-                        continue
-                    if ":" not in s:
-                        continue
-                    key, _ = s.split(":", 1)
-                    channel_keys.add(key.strip())
+            channel_keys: set[str] = set((axes.get("channel") or {}).keys())
 
             self.assertIn(
                 "faq",
@@ -227,23 +167,8 @@ if bootstrap is not None:
 
         def test_axis_only_tokens_do_not_appear_as_static_prompts(self) -> None:
             """Guardrail: axis-only tokens from ADR 012 must not be static prompts."""
-            root = pathlib.Path(__file__).resolve().parents[1]
-            static_list_path = root / "GPT" / "lists" / "staticPrompt.talon-list"
-            talon_keys: set[str] = set()
-            with static_list_path.open("r", encoding="utf-8") as f:
-                for line in f:
-                    s = line.strip()
-                    if (
-                        not s
-                        or s.startswith("#")
-                        or s.startswith("list:")
-                        or s == "-"
-                    ):
-                        continue
-                    if ":" not in s:
-                        continue
-                    key, _ = s.split(":", 1)
-                    talon_keys.add(key.strip())
+            catalog = static_prompt_catalog()
+            talon_keys: set[str] = set(catalog.get("talon_list_tokens", []))
 
             # Form/channel-only behaviours (ADR 012 axis-only styles moved to Form/Channel).
             form_channel_only = {
@@ -297,23 +222,10 @@ if bootstrap is not None:
 
         def test_directional_list_matches_adr_016_core_and_retired_tokens(self) -> None:
             """Guardrail: directional list includes core lenses and excludes retired tokens (ADR 016)."""
-            root = pathlib.Path(__file__).resolve().parents[1]
-            directional_list_path = root / "GPT" / "lists" / "directionalModifier.talon-list"
-            talon_keys: set[str] = set()
-            with directional_list_path.open("r", encoding="utf-8") as f:
-                for line in f:
-                    s = line.strip()
-                    if (
-                        not s
-                        or s.startswith("#")
-                        or s.startswith("list:")
-                        or s == "-"
-                    ):
-                        continue
-                    if ":" not in s:
-                        continue
-                    key, _ = s.split(":", 1)
-                    talon_keys.add(key.strip())
+            catalog = axis_catalog()
+            talon_keys: set[str] = set(
+                catalog.get("axis_list_tokens", {}).get("directional", [])
+            )
 
             # Core directional lenses from ADR 016 that must be present.
             core_lenses = {"fog", "fig", "dig", "ong", "rog", "bog", "jog"}

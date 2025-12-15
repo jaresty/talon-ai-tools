@@ -1,5 +1,4 @@
 import unittest
-from pathlib import Path
 from typing import TYPE_CHECKING
 
 try:
@@ -27,6 +26,7 @@ if bootstrap is not None:
         axis_key_to_value_map_for,
         axis_value_to_key_map_for,
     )
+    from talon_user.lib.axisCatalog import axis_catalog
 
     class AxisMappingTests(unittest.TestCase):
         def test_value_to_key_returns_tokens_only(self) -> None:
@@ -137,40 +137,13 @@ if bootstrap is not None:
 
         def test_talon_list_tokens_match_axis_config(self) -> None:
             """Guardrail: Talon list tokens must match axisConfig tokens (token-only ingress)."""
-            axis_to_file = {
-                "completeness": "completenessModifier.talon-list",
-                "scope": "scopeModifier.talon-list",
-                "method": "methodModifier.talon-list",
-                "form": "formModifier.talon-list",
-                "channel": "channelModifier.talon-list",
-                "directional": "directionalModifier.talon-list",
-            }
-
-            def _list_tokens(filename: str) -> set[str]:
-                path = Path(__file__).resolve().parent.parent / "GPT" / "lists" / filename
-                tokens: set[str] = set()
-                with path.open("r", encoding="utf-8") as f:
-                    for line in f:
-                        line = line.strip()
-                        if (
-                            not line
-                            or line.startswith("#")
-                            or line.startswith("list:")
-                            or line == "-"
-                        ):
-                            continue
-                        if ":" not in line:
-                            continue
-                        key, _value = line.split(":", 1)
-                        token = key.strip()
-                        if token:
-                            tokens.add(token)
-                return tokens
-
-            for axis, filename in axis_to_file.items():
+            catalog = axis_catalog()
+            axis_lists = catalog.get("axis_list_tokens", {}) or {}
+            for axis in ("completeness", "scope", "method", "form", "channel", "directional"):
                 with self.subTest(axis=axis):
                     config_tokens = set(AXIS_KEY_TO_VALUE[axis].keys())
-                    list_tokens = _list_tokens(filename)
+                    list_tokens = set(axis_lists.get(axis, []))
+                    self.assertTrue(list_tokens, f"Expected tokens for axis {axis} in axis_list_tokens")
                     self.assertEqual(
                         list_tokens,
                         config_tokens,

@@ -28,7 +28,10 @@ if bootstrap is not None:
             pattern_debug_view,
         )
         from talon_user.lib.modelState import GPTState
-        from talon_user.lib.staticPromptConfig import STATIC_PROMPT_CONFIG
+        from talon_user.lib.staticPromptConfig import (
+            STATIC_PROMPT_CONFIG,
+            static_prompt_catalog,
+        )
         import talon_user.lib.talonSettings as talonSettings
 
         class ModelPatternGUITests(unittest.TestCase):
@@ -661,24 +664,8 @@ if bootstrap is not None:
 
             def test_all_pattern_static_prompts_exist_in_config_and_list(self) -> None:
                 """Ensure every pattern's static prompt token is wired into config and the list."""
-                root = Path(__file__).resolve().parents[1]
-                static_list_path = root / "GPT" / "lists" / "staticPrompt.talon-list"
-                talon_keys: set[str] = set()
-                with static_list_path.open("r", encoding="utf-8") as f:
-                    for line in f:
-                        s = line.strip()
-                        if (
-                            not s
-                            or s.startswith("#")
-                            or s.startswith("list:")
-                            or s == "-"
-                        ):
-                            continue
-                        if ":" not in s:
-                            continue
-                        key, _ = s.split(":", 1)
-                        talon_keys.add(key.strip())
-
+                catalog = static_prompt_catalog()
+                talon_keys: set[str] = set(catalog.get("talon_list_tokens", []))
                 config_keys = set(STATIC_PROMPT_CONFIG.keys())
 
                 for pattern in PATTERNS:
@@ -693,7 +680,7 @@ if bootstrap is not None:
                         static_prompt,
                         talon_keys,
                         f"Pattern {pattern.name!r} uses static prompt {static_prompt!r} "
-                        "which is missing from staticPrompt.talon-list",
+                        "which is missing from the static prompt catalog tokens",
                     )
 
     except ImportError:

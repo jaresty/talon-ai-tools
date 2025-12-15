@@ -790,11 +790,12 @@ def _build_static_prompt_docs() -> str:
     # Then, any remaining static prompts from the list so the model sees the
     # full token vocabulary.
     other_prompts = catalog.get("unprofiled_tokens", [])
+    other_line = "- Other static prompts (tokens only; see docs for semantics): "
     if other_prompts:
-        lines.append(
-            "- Other static prompts (tokens only; see docs for semantics): "
-            + ", ".join(sorted(other_prompts))
-        )
+        other_line += ", ".join(sorted(other_prompts))
+    else:
+        other_line += "(none)"
+    lines.append(other_line)
 
     return "\n".join(lines)
 

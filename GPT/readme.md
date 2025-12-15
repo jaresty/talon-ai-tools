@@ -4,7 +4,7 @@ Query language models with voice commands. Helpful to automatically generate tex
 
 ## Help
 
-- See [the list of prompts](lists/staticPrompt.talon-list) for the current static prompts that can be used with the `model` command; note that some behaviours (for example, diagrams, Presenterm decks, ADRs, and shell scripts) now live only as form/channel/method axis values rather than static prompts (see ADR 012/013).
+- Static prompts and axis vocab are sourced from the Python catalog (`lib/staticPromptConfig.py`, `lib/axisConfig.py`) and are populated into Talon lists at runtime. Axis/static prompt .talon-lists are no longer tracked; if you need local list files, generate them ad hoc with `make talon-lists` or drift-check a lists directory with `make talon-lists-check`. Catalog validation is catalog-only by default (`axis-catalog-validate --skip-list-files`); pass `--lists-dir ... --no-skip-list-files` (lists-dir required when enforcing), for example `python3 scripts/tools/axis-catalog-validate.py --lists-dir /path/to/lists --no-skip-list-files`, to validate Talon list files. If you need to populate a lists directory before enforcing list checks, regenerate from the catalog with `make talon-lists` or `python3 scripts/tools/generate_talon_lists.py --out-dir <dir>`. Note that some behaviours (for example, diagrams, Presenterm decks, ADRs, and shell scripts) now live only as form/channel/method axis values rather than static prompts (see ADR 012/013).
 
 - See the [examples file](../.docs/usage-examples/examples.md) for gifs that show how to use the commands.
 

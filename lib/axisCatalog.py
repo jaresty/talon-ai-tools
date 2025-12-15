@@ -12,8 +12,9 @@ from .staticPromptConfig import (
     static_prompt_description_overrides as _static_prompt_description_overrides,
 )
 
-# Map axis names to their Talon list filenames so we can validate drift between
-# axisConfig and list tokens without each consumer re-implementing file parsing.
+# Map axis names to their Talon list filenames (optional/auxiliary) so we can
+# validate drift between axisConfig and list tokens without re-implementing
+# file parsing. Catalog remains the SSOT; lists are used only when present.
 _AXIS_LIST_FILES: Dict[str, str] = {
     "completeness": "completenessModifier.talon-list",
     "scope": "scopeModifier.talon-list",
@@ -48,13 +49,38 @@ def _read_list_tokens(path: Path) -> List[str]:
 
 
 def axis_list_tokens(axis_name: str, lists_dir: str | Path | None = None) -> List[str]:
-    """Return Talon list tokens for a given axis name, if a mapped list exists."""
+    """Return tokens for a given axis name, preferring Talon lists when present.
+
+    - Primary source: AXIS_KEY_TO_VALUE (catalog/SSOT).
+    - Optional: if a matching Talon list file exists, use its tokens so local
+      overrides or pending edits are visible; otherwise fall back to SSOT keys.
+    """
 
     filename = _AXIS_LIST_FILES.get(axis_name)
+    ssot_tokens = list((AXIS_KEY_TO_VALUE.get(axis_name) or {}).keys())
     if not filename:
-        return []
-    base_dir = Path(lists_dir) if lists_dir else Path(__file__).resolve().parent.parent / "GPT" / "lists"
-    return _read_list_tokens(base_dir / filename)
+        return ssot_tokens
+    # When lists_dir is falsy/None, skip on-disk list reads (catalog-only).
+    if not lists_dir:
+        return ssot_tokens
+    base_dir = (
+        Path(lists_dir)
+        if lists_dir
+        else Path(__file__).resolve().parent.parent / "GPT" / "lists"
+    )
+    tokens = _read_list_tokens(base_dir / filename)
+    if not tokens:
+        return ssot_tokens
+    # Merge list tokens with SSOT tokens so missing entries do not disappear
+    # when a list file is partial. Preserve list order, then append any missing
+    # SSOT tokens to keep drift visible in validators.
+    merged: list[str] = []
+    seen: set[str] = set()
+    for token in tokens + ssot_tokens:
+        if token and token not in seen:
+            merged.append(token)
+            seen.add(token)
+    return merged
 
 
 def get_static_prompt_profile(name: str):
@@ -88,7 +114,8 @@ def axis_catalog(
     """Return a consolidated view of axis tokens, Talon lists, and static prompts.
 
     - axes: raw axis token map from axisConfig.
-    - axis_list_tokens: Talon list tokens for axes with mapped list files.
+    - axis_list_tokens: Talon list tokens for axes with mapped list files (SSOT
+      when lists are absent).
     - static_prompts: catalog view from staticPromptConfig.
     - static_prompt_descriptions: description overrides for docs/help consumers.
     - static_prompt_profiles: raw profiles for callers that need direct access.
@@ -102,23 +129,20 @@ def axis_catalog(
         axis_lists[axis_name] = axis_list_tokens(axis_name, lists_dir=lists_dir)
 
     # Guard against accidental reintroduction of the legacy style list.
-    base_dir = (
-        Path(lists_dir)
-        if lists_dir
-        else Path(__file__).resolve().parent.parent / "GPT" / "lists"
-    )
-    style_list_path = base_dir / _LEGACY_STYLE_LIST
-    if style_list_path.exists():
-        style_tokens = _read_list_tokens(style_list_path)
-        if style_tokens:
-            raise ValueError(
-                f"styleModifier list is removed after form/channel split (found tokens: {style_tokens})"
-            )
+    if lists_dir:
+        base_dir = Path(lists_dir)
+        style_list_path = base_dir / _LEGACY_STYLE_LIST
+        if style_list_path.exists():
+            style_tokens = _read_list_tokens(style_list_path)
+            if style_tokens:
+                raise ValueError(
+                    f"styleModifier list is removed after form/channel split (found tokens: {style_tokens})"
+                )
 
     return {
         "axes": AXIS_KEY_TO_VALUE,
         "axis_list_tokens": axis_lists,
-        "static_prompts": static_prompt_catalog(static_prompt_list_path),
+        "static_prompts": static_prompt_catalog(static_prompt_list_path if lists_dir else ""),
         "static_prompt_descriptions": static_prompt_description_overrides(),
         "static_prompt_profiles": STATIC_PROMPT_CONFIG,
     }

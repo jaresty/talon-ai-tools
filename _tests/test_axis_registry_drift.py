@@ -13,6 +13,7 @@ else:
 if bootstrap is not None:
     from talon_user.lib.axisConfig import AXIS_KEY_TO_VALUE
     from talon_user.lib.axisMappings import axis_registry
+    from talon_user.lib.axisCatalog import axis_catalog
 
     class AxisRegistryDriftTests(unittest.TestCase):
         def setUp(self) -> None:
@@ -33,39 +34,13 @@ if bootstrap is not None:
 
         def test_registry_tokens_match_talon_lists(self) -> None:
             registry = axis_registry()
-            axis_to_list = {
-                "completeness": "completenessModifier.talon-list",
-                "scope": "scopeModifier.talon-list",
-                "method": "methodModifier.talon-list",
-                "form": "formModifier.talon-list",
-                "channel": "channelModifier.talon-list",
-                "directional": "directionalModifier.talon-list",
-            }
-
-            def _list_tokens(filename: str) -> set[str]:
-                path = Path(__file__).resolve().parent.parent / "GPT" / "lists" / filename
-                tokens: set[str] = set()
-                with path.open("r", encoding="utf-8") as f:
-                    for line in f:
-                        line = line.strip()
-                        if (
-                            not line
-                            or line.startswith("#")
-                            or line.startswith("list:")
-                            or line == "-"
-                        ):
-                            continue
-                        if ":" not in line:
-                            continue
-                        key, _value = line.split(":", 1)
-                        token = key.strip()
-                        if token:
-                            tokens.add(token)
-                return tokens
-
-            for axis, filename in axis_to_list.items():
+            catalog = axis_catalog()
+            axis_lists = catalog.get("axis_list_tokens", {}) or {}
+            for axis in ("completeness", "scope", "method", "form", "channel", "directional"):
                 with self.subTest(axis=axis):
-                    self.assertEqual(set(registry[axis]), _list_tokens(filename))
+                    list_tokens = set(axis_lists.get(axis, []))
+                    self.assertTrue(list_tokens, f"Expected tokens for axis {axis} from catalog axis_list_tokens")
+                    self.assertEqual(set(registry[axis]), list_tokens)
 
         def test_style_axis_and_lists_are_removed(self) -> None:
             """Guardrail: legacy style axis/list must not reappear after form/channel split."""
@@ -92,6 +67,59 @@ if bootstrap is not None:
 
             with self.assertRaises(ValueError):
                 axis_catalog(lists_dir=lists_dir)
+
+        def test_axis_catalog_falls_back_when_lists_missing(self) -> None:
+            """Guardrail: catalog should surface axis tokens even without list files."""
+            tmp = Path(self._tmp_dir.name)
+            empty_lists_dir = tmp / "no_lists"
+            empty_lists_dir.mkdir(parents=True, exist_ok=True)
+
+            from talon_user.lib.axisCatalog import axis_catalog
+
+            catalog = axis_catalog(lists_dir=empty_lists_dir)
+            axis_lists = catalog.get("axis_list_tokens", {}) or {}
+            for axis, mapping in AXIS_KEY_TO_VALUE.items():
+                with self.subTest(axis=axis):
+                    config_tokens = set(mapping.keys())
+                    catalog_tokens = set(axis_lists.get(axis, []))
+                    self.assertTrue(
+                        catalog_tokens,
+                        f"Expected catalog axis tokens for {axis} even when lists are missing",
+                    )
+                    self.assertEqual(
+                        catalog_tokens,
+                        config_tokens,
+                        f"Catalog axis tokens should fall back to axisConfig when lists are absent for {axis}",
+                    )
+
+        def test_axis_catalog_merges_partial_list_with_config_tokens(self) -> None:
+            """Guardrail: partial list files should not hide SSOT tokens."""
+            tmp = Path(self._tmp_dir.name)
+            lists_dir = tmp / "lists_partial"
+            lists_dir.mkdir(parents=True, exist_ok=True)
+
+            # Write a subset list for completeness (only 'full').
+            completeness_path = lists_dir / "completenessModifier.talon-list"
+            completeness_path.write_text(
+                "list: user.completenessModifier\n-\nfull: full\n",
+                encoding="utf-8",
+            )
+
+            from talon_user.lib.axisCatalog import axis_catalog
+
+            catalog = axis_catalog(lists_dir=lists_dir)
+            axis_lists = catalog.get("axis_list_tokens", {}) or {}
+            config_tokens = set(AXIS_KEY_TO_VALUE["completeness"].keys())
+            catalog_tokens = set(axis_lists.get("completeness", []))
+            self.assertTrue(
+                config_tokens.issubset(catalog_tokens),
+                "Completeness axis tokens from config should still be present when list is partial",
+            )
+            self.assertIn(
+                "full",
+                catalog_tokens,
+                "List-provided token should remain present after merge",
+            )
 
 else:
     if not TYPE_CHECKING:

@@ -4,7 +4,7 @@ from pathlib import Path
 from typing import Set, TypedDict, Union
 
 # Central configuration for static prompts:
-# - Each key is a canonical static prompt value (as used in GPT/lists/staticPrompt.talon-list).
+# - Each key is a canonical static prompt value (Talon list file is optional/auxiliary).
 # - "description" provides the human-readable Task line and help text.
 # - Optional completeness/scope/method/form/channel fields define per-prompt axis profiles.
 
@@ -483,11 +483,23 @@ def static_prompt_catalog(
     The catalog is the SSOT for docs and drift checks:
     - profiled entries come from STATIC_PROMPT_CONFIG with axes resolved via
       `get_static_prompt_axes`.
-    - talon_list_tokens reflects the live staticPrompt.talon-list entries.
-    - unprofiled_tokens lists tokens present in the Talon list but not in the
-      profiled set (so docs can mention the token vocabulary).
+    - talon_list_tokens reflects staticPrompt.talon-list entries when present,
+      merged with SSOT tokens so missing files do not hide profiles.
+    - unprofiled_tokens lists tokens present only in the Talon list (when present)
+      but not in the profiled set (so docs can mention the token vocabulary).
+    - If static_prompt_list_path is falsy (for example, ""), skip on-disk list
+      reads and rely solely on the SSOT.
     """
-    talon_tokens = _read_static_prompt_tokens(static_prompt_list_path)
+    list_tokens: list[str] = []
+    if static_prompt_list_path:
+        list_tokens = _read_static_prompt_tokens(static_prompt_list_path)
+    # Merge list tokens with SSOT tokens so partial lists do not hide config entries.
+    talon_tokens: list[str] = []
+    seen: set[str] = set()
+    for token in list_tokens + list(STATIC_PROMPT_CONFIG.keys()):
+        if token and token not in seen:
+            talon_tokens.append(token)
+            seen.add(token)
     profiled: list[StaticPromptCatalogEntry] = []
     for name in STATIC_PROMPT_CONFIG.keys():
         profile = get_static_prompt_profile(name)

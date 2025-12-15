@@ -12,6 +12,10 @@ record the blocker instead of writing a no-delta loop.
 - If an ADR still has a work-log embedded in the ADR body, migrate it to the
   separate `ADR-ID-work-log.md` file before adding new entries; do not keep
   parallel logs in both places.
+-
+- Aim for minimal, high-signal slices that change observable artefacts; prefer
+  deletion/simplification when it achieves the goal, but do not contort scope
+  just to delete code.
 
 The caller may either:
 - Specify the target ADR explicitly (for example, by id), or
@@ -88,6 +92,7 @@ When using this helper:
 - Once you have a focus area, **do not ask the caller to choose between candidate slices inside that ADR by default**. Instead, pick the slice that:
   - Exercises the highest‑coordination or highest‑risk area the ADR identifies as important or risky (and that already has sufficient test coverage), or
   - Retires a clearly‑defined ADR task end‑to‑end with minimal ambiguity.
+  - Do not delay riskier, central slices solely to do “safe” work first; tackle them when they are the most meaningful remaining slice and testable.
   Ask the caller to prioritise only when there is an explicit external constraint (for example, "do not touch streaming this week") or when there is a genuine cross‑ADR product/business priority call you cannot infer from code, tests, and ADR text alone—not merely because multiple subtasks exist.
 - If the ADR is parked (all tasks complete) and no new task/regression has been
   recorded in the ADR/work-log before this loop, do not run or log a loop.

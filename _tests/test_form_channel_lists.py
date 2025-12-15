@@ -1,5 +1,4 @@
 import unittest
-from pathlib import Path
 from typing import TYPE_CHECKING
 
 try:
@@ -21,10 +20,11 @@ if bootstrap is not None:
             self.assertTrue(axes["form"])
             self.assertTrue(axes["channel"])
 
-        def test_form_channel_list_files_exist(self) -> None:
-            root = Path(__file__).resolve().parents[1] / "GPT" / "lists"
-            self.assertTrue((root / "formModifier.talon-list").is_file())
-            self.assertTrue((root / "channelModifier.talon-list").is_file())
+        def test_form_channel_lists_seeded_from_catalog(self) -> None:
+            catalog = axis_catalog()
+            axis_lists = catalog.get("axis_list_tokens", {}) or {}
+            self.assertTrue(axis_lists.get("form"))
+            self.assertTrue(axis_lists.get("channel"))
 
 else:
     if not TYPE_CHECKING:

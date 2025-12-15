@@ -268,6 +268,46 @@ if bootstrap is not None:
                 [b.label for b in index_via_help_hub],
             )
 
+        def test_help_index_prefers_catalog_tokens(self) -> None:
+            """Catalog-provided vocab should be used even if list files are empty."""
+
+            buttons = [
+                HubButton(
+                    label="Quick help",
+                    description="Open quick help",
+                    handler=lambda: None,
+                    voice_hint="Say: model quick help",
+                )
+            ]
+
+            catalog = {
+                "static_prompts": {
+                    "profiled": [{"name": "catalog_static"}],
+                    "talon_list_tokens": ["catalog_static"],
+                },
+                "axes": {
+                    "scope": {"focus": "desc"},
+                },
+                "axis_list_tokens": {
+                    "scope": ["focus"],
+                },
+            }
+
+            def empty_read_list_items(_name: str) -> list[str]:
+                return []
+
+            index = help_index(
+                buttons,
+                patterns=[],
+                presets=[],
+                read_list_items=empty_read_list_items,
+                catalog=catalog,
+            )
+
+            labels = {entry.label for entry in index}
+            self.assertIn("Prompt: catalog_static", labels)
+            self.assertIn("Axis (Scope): focus", labels)
+
 
 else:
     if not TYPE_CHECKING:

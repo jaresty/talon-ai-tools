@@ -11,30 +11,12 @@ else:
 
 if bootstrap is not None:
     import os
-
-    BASE = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
-
-    def _read_axis_keys(filename: str) -> Set[str]:
-        path = os.path.join(BASE, "GPT", "lists", filename)
-        keys: Set[str] = set()
-        with open(path, encoding="utf-8") as f:
-            for line in f:
-                line = line.strip()
-                if (
-                    not line
-                    or line.startswith("#")
-                    or line.startswith("list:")
-                    or line == "-"
-                    or ":" not in line
-                ):
-                    continue
-                key, _ = line.split(":", 1)
-                keys.add(key.strip())
-        return keys
+    from talon_user.lib.axisCatalog import axis_catalog
 
     def _read_overlap_mapping() -> Dict[str, str]:
         """Parse tokens and fixed axes from the manual overlap analysis doc."""
-        path = os.path.join(BASE, "docs", "adr", "033-axis-overlap-analysis.md")
+        base = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+        path = os.path.join(base, "docs", "adr", "033-axis-overlap-analysis.md")
         mapping: Dict[str, str] = {}
         token_line = re.compile(r"- \*\*(.+?)\*\* .*Decision:\s*\*(\w+)\*", re.IGNORECASE)
         with open(path, encoding="utf-8") as f:
@@ -54,12 +36,14 @@ if bootstrap is not None:
 
     class AxisOverlapAlignmentTests(unittest.TestCase):
         def setUp(self) -> None:
+            catalog = axis_catalog()
+            axes = catalog.get("axes", {}) or {}
             self.axis_keys = {
-                "completeness": _read_axis_keys("completenessModifier.talon-list"),
-                "scope": _read_axis_keys("scopeModifier.talon-list"),
-                "method": _read_axis_keys("methodModifier.talon-list"),
-                "form": _read_axis_keys("formModifier.talon-list"),
-                "channel": _read_axis_keys("channelModifier.talon-list"),
+                "completeness": set((axes.get("completeness") or {}).keys()),
+                "scope": set((axes.get("scope") or {}).keys()),
+                "method": set((axes.get("method") or {}).keys()),
+                "form": set((axes.get("form") or {}).keys()),
+                "channel": set((axes.get("channel") or {}).keys()),
             }
             self.token_axis_map = _read_overlap_mapping()
 

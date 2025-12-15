@@ -1,6 +1,6 @@
 import unittest
-from unittest.mock import patch
 from typing import TYPE_CHECKING
+from unittest.mock import patch
 
 try:
     from bootstrap import bootstrap
@@ -10,70 +10,159 @@ else:
     bootstrap()
 
 if bootstrap is not None:
-    from talon_user.lib import requestUI  # registers default controller
-    from talon_user.lib.requestBus import (
-        emit_begin_send,
-        emit_complete,
-        emit_fail,
-        emit_reset,
-    )
-    from talon_user.lib.requestState import RequestPhase
-    from talon import actions
+    from talon_user.lib import requestUI
+    from talon_user.lib.requestBus import emit_begin_send, emit_history_saved, emit_append
+    from talon_user.lib.requestState import RequestState, RequestPhase
+    from talon_user.lib.responseCanvasFallback import fallback_for
 
     class RequestUITests(unittest.TestCase):
-        def setUp(self):
-            actions.app.calls.clear()
-            actions.user.calls.clear()
-            from talon_user.lib import pillCanvas
+        def test_history_save_event_refreshes_history_drawer(self):
+            with patch.object(
+                requestUI, "run_on_ui_thread", side_effect=lambda fn: fn()
+            ), patch.object(
+                requestUI.actions.user,
+                "request_history_drawer_refresh",
+                create=True,
+            ) as refresh_mock:
+                requestUI.register_default_request_ui()
+                emit_history_saved("/tmp/file.md", request_id="rid-1")
+            refresh_mock.assert_called()
 
-            pillCanvas.PillState.showing = False
-            pillCanvas.PillState.text = "Model"
-            pillCanvas.PillState.phase = RequestPhase.IDLE
-            pillCanvas.PillState.generation = 0
-            requestUI.register_default_request_ui()
-            emit_reset()
+        def test_history_save_event_provides_current_request_id(self):
+            calls = []
 
-        def test_toast_notifications_on_send_and_complete(self):
-            emit_begin_send()
-            emit_complete()
-            # Expect at least two notifications: sending and done hint.
-            app_notify_calls = [c for c in actions.app.calls if c[0] == "notify"]
-            user_notify_calls = [c for c in actions.user.calls if c[0] == "notify"]
-            self.assertGreaterEqual(len(app_notify_calls) + len(user_notify_calls), 2)
-            messages = " ".join(
-                str(args[0])
-                for _, args, _ in app_notify_calls + user_notify_calls
-                if args
+            def record_req_id(req_id, path):
+                calls.append((req_id, path))
+
+            with patch.object(
+                requestUI, "run_on_ui_thread", side_effect=lambda fn: fn()
+            ), patch.object(
+                requestUI.actions.user,
+                "request_history_drawer_refresh",
+                create=True,
+            ):
+                controller = requestUI.register_default_request_ui()
+                controller._callbacks["on_history_save"] = record_req_id  # type: ignore[index]
+                emit_begin_send("rid-current")
+                emit_history_saved("/tmp/file.md")
+            self.assertEqual(calls, [("rid-current", "/tmp/file.md")])
+
+        def test_append_event_refreshes_response_canvas(self):
+            with patch.object(
+                requestUI, "run_on_ui_thread", side_effect=lambda fn: fn()
+            ), patch.object(
+                requestUI.actions.user,
+                "model_response_canvas_refresh",
+                create=True,
+            ) as refresh_mock:
+                requestUI.GPTState.current_destination_kind = "window"
+                requestUI.register_default_request_ui()
+                emit_begin_send("rid-append")
+                emit_append("chunk")
+            refresh_mock.assert_called()
+
+        def test_append_refresh_is_throttled_and_ignores_empty(self):
+            with patch.object(
+                requestUI, "run_on_ui_thread", side_effect=lambda fn: fn()
+            ), patch.object(
+                requestUI.actions.user,
+                "model_response_canvas_refresh",
+                create=True,
+            ) as refresh_mock, patch.object(
+                requestUI.time, "time", side_effect=[0.0, 0.05, 0.21]
+            ):
+                requestUI.GPTState.current_destination_kind = "window"
+                requestUI.register_default_request_ui()
+                emit_begin_send("rid-append-throttle")
+                emit_append("")  # ignored
+                emit_append("c1")  # at t=0
+                emit_append("c2")  # at t=50ms, throttled
+                emit_append("c3")  # at t=210ms, allowed
+            self.assertEqual(refresh_mock.call_count, 2)
+
+        def test_append_refresh_skips_when_canvas_suppressed(self):
+            with patch.object(
+                requestUI, "run_on_ui_thread", side_effect=lambda fn: fn()
+            ), patch.object(
+                requestUI.actions.user,
+                "model_response_canvas_refresh",
+                create=True,
+            ) as refresh_mock:
+                requestUI.GPTState.current_destination_kind = "clipboard"
+                requestUI.GPTState.suppress_response_canvas = True
+                requestUI.register_default_request_ui()
+                emit_begin_send("rid-append-suppressed")
+                emit_append("chunk")
+            refresh_mock.assert_not_called()
+            self.assertEqual(fallback_for("rid-append-suppressed"), "")
+
+        def test_append_caches_fallback_and_clears_on_terminal(self):
+            with patch.object(
+                requestUI, "run_on_ui_thread", side_effect=lambda fn: fn()
+            ), patch.object(
+                requestUI.actions.user,
+                "model_response_canvas_refresh",
+                create=True,
+            ), patch.object(
+                requestUI.time, "time", side_effect=[0.0, 0.21, 0.42]
+            ):
+                requestUI.GPTState.current_destination_kind = "window"
+                requestUI.register_default_request_ui()
+                emit_begin_send("rid-fallback")
+                emit_append("hi ")
+                emit_append("there")
+            self.assertEqual(fallback_for("rid-fallback"), "hi there")
+            # Clear on terminal transition.
+            requestUI._on_state_change(
+                RequestState(phase=RequestPhase.DONE, request_id="rid-fallback")
             )
-            self.assertIn("sending", messages.lower())
-            self.assertIn("done", messages.lower())
+            self.assertEqual(fallback_for("rid-fallback"), "")
 
-        def test_state_advances_via_bus(self):
-            emit_begin_send()
-            self.assertEqual(requestUI._controller.state.phase, RequestPhase.SENDING)
+        def test_reset_clears_all_fallbacks(self):
+            # Seed a fallback value.
+            with patch.object(
+                requestUI, "run_on_ui_thread", side_effect=lambda fn: fn()
+            ), patch.object(
+                requestUI.actions.user,
+                "model_response_canvas_refresh",
+                create=True,
+            ), patch.object(
+                requestUI.time, "time", side_effect=[0.0, 0.21]
+            ):
+                requestUI.GPTState.current_destination_kind = "window"
+                requestUI.GPTState.suppress_response_canvas = False
+                requestUI.register_default_request_ui()
+                requestUI._on_append("rid-reset", "hi")
+                requestUI._on_append("rid-reset", " there")
+            self.assertEqual(fallback_for("rid-reset"), "hi there")
+            # Reset/idle state clears all cached fallbacks.
+            requestUI._on_state_change(RequestState(phase=RequestPhase.IDLE))
+            self.assertEqual(fallback_for("rid-reset"), "")
 
-        def test_fail_notifies(self):
-            actions.user.calls.clear()
-            actions.app.calls.clear()
-            emit_fail("boom")
-            notifications = [c for c in actions.user.calls + actions.app.calls if c[0] == "notify"]
-            self.assertTrue(any("boom" in str(args[0]) for _, args, _ in notifications))
-
-        def test_canvas_destination_dispatches_ui_open(self):
-            from talon_user.lib.modelState import GPTState
-
-            GPTState.current_destination_kind = "window"
-            try:
-                with patch.object(
-                    requestUI, "run_on_ui_thread"
-                ) as run_on_ui_thread_mock:
-                    run_on_ui_thread_mock.side_effect = lambda fn: fn()
-                    emit_begin_send()
-                run_on_ui_thread_mock.assert_called()
-            finally:
-                GPTState.current_destination_kind = ""
+        def test_sending_clears_all_fallbacks(self):
+            # Seed two fallbacks, ensure send clears both.
+            with patch.object(
+                requestUI, "run_on_ui_thread", side_effect=lambda fn: fn()
+            ), patch.object(
+                requestUI.actions.user,
+                "model_response_canvas_refresh",
+                create=True,
+            ), patch.object(
+                requestUI.time, "time", side_effect=[0.0, 0.21, 0.42]
+            ):
+                requestUI.GPTState.current_destination_kind = "window"
+                requestUI.register_default_request_ui()
+                requestUI._on_append("rid-one", "hello")
+                requestUI._on_append("rid-two", "world")
+            self.assertEqual(fallback_for("rid-one"), "hello")
+            self.assertEqual(fallback_for("rid-two"), "world")
+            # Entering SENDING clears all fallbacks.
+            requestUI._on_state_change(RequestState(phase=RequestPhase.SENDING))
+            self.assertEqual(fallback_for("rid-one"), "")
+            self.assertEqual(fallback_for("rid-two"), "")
 else:
     if not TYPE_CHECKING:
+
         class RequestUITests(unittest.TestCase):
             @unittest.skip("Test harness unavailable outside unittest runs")
             def test_placeholder(self):

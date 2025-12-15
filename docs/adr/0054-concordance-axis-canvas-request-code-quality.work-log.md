@@ -590,6 +590,146 @@
 - Checks: `python3 -m pytest _tests/test_make_static_prompt_refresh.py` (pass).
 - Removal test: reverting would drop the safeguard that prevents the refresh target from mutating README in-place, increasing risk of unintended edits and weakening ADR-0054 SSOT enforcement.
 
+## 2025-12-15 – Loop 166 (kind: behaviour/guardrail)
+- Focus: Make README axis refresh non-destructive and snapshot-driven.
+- Change: `readme-axis-refresh` now writes a catalog-generated snapshot to `tmp/readme-axis-readme.md` via an `--out` flag; added guardrail asserting the snapshot contains generated axis lines and README remains unchanged.
+- Artefact deltas: `scripts/tools/refresh_readme_axis_section.py`, `Makefile`, `_tests/test_make_readme_axis_refresh.py`.
+- Checks: `python3 -m pytest _tests/test_make_readme_axis_refresh.py` (pass).
+- Removal test: reverting would make README axis refresh mutate README directly and drop the snapshot guardrail, weakening ADR-0054 SSOT protection for README axis lines.
+
+## 2025-12-15 – Loop 167 (kind: behaviour/guardrail)
+- Focus: Exact parity between README axis snapshot and generator output.
+- Change: Hardened the README axis refresh guardrail to assert the snapshot’s axis block exactly matches the generator output while keeping README untouched.
+- Artefact delta: `_tests/test_make_readme_axis_refresh.py`.
+- Checks: `python3 -m pytest _tests/test_make_readme_axis_refresh.py` (pass).
+- Removal test: reverting would loosen the parity check between the axis snapshot and generator, increasing drift risk in the README refresh path under ADR-0054.
+
+## 2025-12-15 – Loop 168 (kind: behaviour/guardrail)
+- Focus: Exact parity for the README axis snapshot target and non-destructive behaviour.
+- Change: Strengthened `test_make_readme_axis_lines` to require the generated snapshot matches the axis generator output exactly and leaves README untouched.
+- Artefact delta: `_tests/test_make_readme_axis_lines.py`.
+- Checks: `python3 -m pytest _tests/test_make_readme_axis_lines.py` (pass).
+- Removal test: reverting would weaken the parity/non-destructive guardrail for the README axis snapshot, increasing drift risk against the catalog under ADR-0054.
+
+## 2025-12-15 – Loop 169 (kind: behaviour/guardrail)
+- Focus: Lists-dir support for README axis refresh helper.
+- Change: README axis refresh helper now accepts `--lists-dir` and threads it to the generator so snapshots can reflect Talon list tokens when provided; guardrail ensures the snapshot parity check remains green.
+- Artefact delta: `scripts/tools/refresh_readme_axis_section.py`.
+- Checks: `python3 -m pytest _tests/test_make_readme_axis_refresh.py` (pass).
+- Removal test: reverting would drop lists-dir support from the refresh helper, reducing SSOT fidelity for README axis snapshots when list tokens are needed under ADR-0054.
+
+## 2025-12-15 – Loop 170 (kind: behaviour/guardrail)
+- Focus: README axis generator respects lists-dir tokens.
+- Change: README axis generator now prefers catalog `axis_list_tokens` so lists-dir merges appear in generated lines; guardrail added to assert lists-dir tokens (e.g., novel scope entries) surface in the README axis refresh snapshot while leaving README untouched.
+- Artefact deltas: `scripts/tools/generate_readme_axis_lists.py`, `_tests/test_make_readme_axis_refresh.py`.
+- Checks: `python3 -m pytest _tests/test_make_readme_axis_refresh.py` (pass).
+- Removal test: reverting would drop lists-dir tokens from README axis snapshots and weaken SSOT alignment for README regeneration under ADR-0054.
+
+## 2025-12-15 – Loop 171 (kind: behaviour/guardrail)
+- Focus: lists-dir coverage for README axis snapshot target.
+- Change: Added lists-dir guardrail for `readme-axis-lines` generator to ensure list tokens are included when provided and kept parity/non-destructive behaviour.
+- Artefact delta: `_tests/test_make_readme_axis_lines.py`.
+- Checks: `python3 -m pytest _tests/test_make_readme_axis_lines.py` (pass).
+- Removal test: reverting would drop coverage that README axis snapshot generation respects lists-dir tokens, weakening SSOT enforcement for axis regen under ADR-0054.
+
+## 2025-12-15 – Loop 172 (kind: behaviour/guardrail)
+- Focus: Parity for README axis refresh snapshots when lists-dir is provided.
+- Change: Strengthened the README axis refresh guardrail to compare the snapshot axis block against the lists-dir-aware generator output, ensuring merged list tokens (e.g., custom scope entries) are honored while keeping README untouched.
+- Artefact delta: `_tests/test_make_readme_axis_refresh.py`.
+- Checks: `python3 -m pytest _tests/test_make_readme_axis_refresh.py` (pass).
+- Removal test: reverting would loosen coverage for lists-dir parity in the refresh path, increasing drift risk for README axis snapshots under ADR-0054.
+
+## 2025-12-15 – Loop 173 (kind: behaviour/guardrail)
+- Focus: Help text reflects snapshot-only README axis refresh.
+- Change: Updated `make help` messaging to state `readme-axis-refresh` produces a snapshot (`tmp/readme-axis-readme.md`) without touching README; guardrail remains in place to ensure discoverability.
+- Artefact deltas: `Makefile`, `_tests/test_make_help_guardrails.py`.
+- Checks: `python3 -m pytest _tests/test_make_help_guardrails.py` (pass).
+- Removal test: reverting would mislead contributors about README axis refresh behaviour and drop the aligned help text, increasing risk of unintended in-place edits against ADR-0054’s SSOT tooling.
+
+## 2025-12-15 – Loop 174 (kind: behaviour/guardrail)
+- Focus: Help text reflects snapshot-only static prompt refresh.
+- Change: Updated `make help` to clarify `static-prompt-refresh` writes a snapshot (`tmp/static-prompt-readme.md`) without touching README, and adjusted the help guardrail to assert the snapshot wording is present.
+- Artefact deltas: `Makefile`, `_tests/test_make_help_guardrails.py`.
+- Checks: `python3 -m pytest _tests/test_make_help_guardrails.py` (pass).
+- Removal test: reverting would make static prompt refresh appear in-place and drop the guardrail, increasing risk of inadvertent README edits under ADR-0054.
+
+## 2025-12-15 – Loop 175 (kind: behaviour/docs)
+- Focus: Document snapshot-only axis/static prompt regen entrypoints.
+- Change: Added README note pointing contributors at `make readme-axis-refresh` and `make static-prompt-refresh` snapshots (written to `tmp/…` without touching README) so doc updates use the catalog-driven outputs.
+- Artefact delta: `GPT/readme.md`.
+- Checks: not run (doc-only change).
+- Removal test: reverting would hide the snapshot workflow from README, reducing discoverability of the non-destructive catalog-driven refresh path under ADR-0054.
+
+## 2025-12-15 – Loop 176 (kind: behaviour/guardrail)
+- Focus: Guard static prompt refresh snapshot against drift.
+- Change: Added guardrail ensuring `static-prompt-refresh` snapshot block matches the static prompt generator output exactly while keeping README untouched.
+- Artefact delta: `_tests/test_make_static_prompt_refresh.py`.
+- Checks: `python3 -m pytest _tests/test_make_static_prompt_refresh.py` (pass).
+- Removal test: reverting would loosen coverage for static prompt snapshot parity, increasing drift risk between the generator and README refresh path under ADR-0054.
+
+## 2025-12-15 – Loop 177 (kind: behaviour/guardrail)
+- Focus: Lists-dir aware README axis refresh wiring and guardrail.
+- Change: `readme-axis-refresh` now accepts a lists-dir via env (`README_AXIS_LISTS_DIR`) when snapshotting axis lines; guardrail updated to assert lists-dir tokens appear in the snapshot while README stays untouched.
+- Artefact deltas: `Makefile`, `scripts/tools/refresh_readme_axis_section.py`, `_tests/test_make_readme_axis_refresh.py`.
+- Checks: `python3 -m pytest _tests/test_make_readme_axis_refresh.py` (pass).
+- Removal test: reverting would drop lists-dir support from the README axis refresh target and weaken coverage of catalog+list merges in snapshots under ADR-0054.
+
+## 2025-12-15 – Loop 178 (kind: docs/decision)
+- Focus: Pause new lists-dir README/static prompt guardrails.
+- Change: Recorded decision to stop adding further lists-dir-driven README/static prompt guardrails; keep existing snapshot tooling but avoid expanding guardrail surface unless the ADR explicitly calls for it.
+- Artefact delta: this work-log entry.
+- Checks: not run (doc-only decision).
+- Removal test: dropping this note would remove the explicit pause/decision, risking continued low-value guardrail additions against ADR-0054 intent.
+
+## 2025-12-15 – Loop 179 (kind: docs)
+- Focus: Clarify optional lists-dir snapshot usage.
+- Change: README now notes that `make readme-axis-refresh` can include list-file tokens via `README_AXIS_LISTS_DIR` or run catalog-only when omitted.
+- Artefact delta: `GPT/readme.md`.
+- Checks: not run (doc-only update).
+- Removal test: reverting would hide how to opt into lists-dir-aware snapshots, reducing clarity for catalog-driven README refresh under ADR-0054.
+
+## 2025-12-15 – Loop 180 (kind: behaviour/guardrail)
+- Focus: Expose lists-dir option in help text for axis snapshot refresh.
+- Change: `make help` now mentions the optional `README_AXIS_LISTS_DIR` for `readme-axis-refresh` (snapshot-only), and the guardrail asserts this wording so contributors see the env flag.
+- Artefact deltas: `Makefile`, `_tests/test_make_help_guardrails.py`.
+- Checks: `python3 -m pytest _tests/test_make_help_guardrails.py` (pass).
+- Removal test: reverting would hide the lists-dir env hint from help and drop coverage, reducing discoverability for list-token snapshots under ADR-0054.
+
+## 2025-12-15 – Loop 181 (kind: behaviour/guardrail)
+- Focus: One-shot doc snapshot guardrail.
+- Change: Added `doc-snapshots` target to emit all catalog-driven README axis/static prompt snapshots into `tmp/` (non-destructive) and a guardrail to ensure the target runs and produces all artifacts.
+- Artefact deltas: `Makefile`, `_tests/test_make_doc_snapshots.py`.
+- Checks: `python3 -m pytest _tests/test_make_doc_snapshots.py` (pass).
+- Removal test: reverting would drop the consolidated snapshot entrypoint and its guardrail, making it easier to miss doc drift under ADR-0054.
+
+## 2025-12-15 – Loop 182 (kind: behaviour/guardrail)
+- Focus: Discoverability of doc snapshot entrypoint in help text.
+- Change: Added `doc-snapshots` to `make help` and extended the help guardrail to assert its presence.
+- Artefact deltas: `Makefile`, `_tests/test_make_help_guardrails.py`.
+- Checks: `python3 -m pytest _tests/test_make_help_guardrails.py` (pass).
+- Removal test: reverting would hide the consolidated doc snapshot target from help and drop its coverage, reducing discoverability of the snapshot workflow under ADR-0054.
+
+## 2025-12-15 – Loop 183 (kind: behaviour/guardrail)
+- Focus: Parity guardrails for consolidated doc snapshots.
+- Change: Strengthened `doc-snapshots` guardrail to assert axis/static prompt snapshots match generator output and leave README untouched.
+- Artefact delta: `_tests/test_make_doc_snapshots.py`.
+- Checks: `python3 -m pytest _tests/test_make_doc_snapshots.py` (pass).
+- Removal test: reverting would weaken parity coverage for the consolidated snapshot target, increasing drift risk for README axis/static prompt snapshots under ADR-0054.
+
+## 2025-12-15 – Loop 184 (kind: docs)
+- Focus: Make snapshot entrypoints clearer in README.
+- Change: README now notes `make doc-snapshots` as the one-shot way to generate axis/static prompt snapshots (with optional `README_AXIS_LISTS_DIR` for axis tokens) while keeping README untouched.
+- Artefact delta: `GPT/readme.md`.
+- Checks: not run (doc-only update).
+- Removal test: reverting would hide the consolidated snapshot workflow from README, reducing discoverability for ADR-0054 doc regen.
+
+## 2025-12-15 – Loop 185 (kind: behaviour/guardrail)
+- Focus: CI guardrails include doc snapshot parity.
+- Change: Added `test_make_doc_snapshots` to the `ci-guardrails` target so CI enforces the consolidated doc snapshot parity/non-destructive guardrail.
+- Artefact delta: `Makefile`.
+- Checks: `python3 -m pytest _tests/test_make_doc_snapshots.py` (pass).
+- Removal test: reverting would drop doc snapshot parity from CI, increasing drift risk for README axis/static prompt snapshots under ADR-0054.
+
 ## 2025-12-15 – Loop 134 (kind: behaviour/guardrail)
 - Focus: Drawer UX improvements: escape-to-close and testable key handler.
 - Change: Added Escape/Esc key handling to close the history drawer and ensured state flips even when stubs lack the action. Exposed last key handler for tests and added guardrail for the escape-to-close path.
@@ -1225,3 +1365,143 @@
 - Artefact delta: `lib/modelHelpCanvas.py`.
 - Checks: `python3 -m pytest _tests/test_overlay_helpers.py _tests/test_overlay_lifecycle.py _tests/test_make_overlay_guardrails.py` (pass).
 - Removal test: reverting would leave help canvas openings with a narrower bespoke close set, increasing overlay overlap risk and weakening ADR-0054 lifecycle alignment.
+
+## 2025-12-15 – Loop 186 (kind: behaviour/guardrail)
+- Focus: Keep the history drawer in sync with request lifecycle history saves.
+- Change: Added a guarded drawer refresh action that rerenders entries only when showing and wired the default RequestUI on_history_save hook to invoke it so HISTORY_SAVED events refresh the drawer via the controller. Added guardrail tests for the refresh action and the UI hook.
+- Artefact deltas: `lib/requestHistoryDrawer.py`, `lib/requestUI.py`, `_tests/test_request_history_drawer.py`, `_tests/test_request_ui.py`.
+- Checks: `python3 -m pytest _tests/test_request_history_drawer.py _tests/test_request_ui.py` (pass).
+- Removal test: reverting would drop lifecycle-driven drawer refresh and its coverage, leaving HISTORY_SAVED events unable to update an open drawer and reducing ADR-0054 request pipeline alignment/guardrails.
+
+## 2025-12-15 – Loop 187 (kind: behaviour/guardrail)
+- Focus: Default request id for history-saved lifecycle hook.
+- Change: `emit_history_saved` now falls back to the current request id when callers omit it, so on_history_save consumers receive stable ids; added guardrails in the request bus and UI hook to assert the request id is populated.
+- Artefact deltas: `lib/requestBus.py`, `_tests/test_request_bus.py`, `_tests/test_request_ui.py`.
+- Checks: `python3 -m pytest _tests/test_request_bus.py _tests/test_request_ui.py _tests/test_request_history_drawer.py` (pass).
+- Removal test: reverting would drop the request-id defaulting and its coverage, leaving HISTORY_SAVED events without stable request ids for lifecycle hooks, weakening ADR-0054 request pipeline observability.
+
+## 2025-12-15 – Loop 188 (kind: behaviour/guardrail)
+- Focus: Expose request lifecycle append events to the controller.
+- Change: Added `APPEND` request events and `emit_append` so streaming chunks carry request ids to controller hooks; RequestUIController now supports an `on_append` callback, and streaming appends emit the event. Guardrails cover controller/bus handling and ensure append hooks fire with defaulted request ids.
+- Artefact deltas: `lib/requestState.py`, `lib/requestController.py`, `lib/requestBus.py`, `lib/modelHelpers.py`, `_tests/test_request_controller.py`, `_tests/test_request_bus.py`.
+- Checks: `python3 -m pytest _tests/test_request_bus.py _tests/test_request_controller.py _tests/test_request_ui.py _tests/test_request_history_drawer.py` (pass).
+- Removal test: reverting would drop append lifecycle events and their coverage, leaving streaming UI/hooks blind to per-chunk updates and weakening ADR-0054 request pipeline lifecycle alignment.
+
+## 2025-12-15 – Loop 189 (kind: behaviour/guardrail)
+- Focus: Wire append lifecycle events into the default UI for streaming refresh.
+- Change: Default RequestUI now registers an `on_append` hook that refreshes the response canvas on streaming chunks; added guardrail to assert the append event triggers the refresh.
+- Artefact deltas: `lib/requestUI.py`, `_tests/test_request_ui.py`.
+- Checks: `python3 -m pytest _tests/test_request_ui.py _tests/test_request_bus.py` (pass).
+- Removal test: reverting would drop the UI hook for append events and its coverage, leaving streaming append lifecycle signals unused by the default UI and weakening ADR-0054 request pipeline alignment.
+
+## 2025-12-15 – Loop 190 (kind: behaviour/guardrail)
+- Focus: Throttle streaming-driven UI refresh to avoid canvas churn.
+- Change: Added append refresh throttling and empty-chunk guard in default RequestUI so response canvas refreshes at most every 150ms during streaming; guardrail asserts throttling/ignore-empty behaviour.
+- Artefact deltas: `lib/requestUI.py`, `_tests/test_request_ui.py`.
+- Checks: `python3 -m pytest _tests/test_request_ui.py _tests/test_request_bus.py` (pass).
+- Removal test: reverting would remove throttling and its coverage, increasing canvas refresh churn on every chunk and weakening ADR-0054 request pipeline UX stability.
+
+## 2025-12-15 – Loop 191 (kind: behaviour/guardrail)
+- Focus: Avoid streaming refresh when the response canvas is suppressed or not the target.
+- Change: Gated append-driven response canvas refresh on destination preference/suppression flags (mirrors modelHelpers’ gating) and removed a duplicate handler; added guardrail ensuring suppressed destinations skip refresh.
+- Artefact deltas: `lib/requestUI.py`, `_tests/test_request_ui.py`.
+- Checks: `python3 -m pytest _tests/test_request_ui.py _tests/test_request_bus.py` (pass).
+- Removal test: reverting would reintroduce response canvas refreshes for non-canvas destinations and a duplicate handler, increasing risk of unnecessary UI churn and divergence from ADR-0054 request pipeline intent.
+
+## 2025-12-15 – Loop 192 (kind: behaviour/guardrail)
+- Focus: Keep streaming chunks visible in the response canvas before snapshots exist.
+- Change: Added a response canvas fallback buffer keyed by request id, populated via append lifecycle events; the canvas now renders cached chunks when snapshots are empty and clears the buffer on terminal states. Guardrails assert chunk caching, throttling, suppression gating, and terminal clearing.
+- Artefact deltas: `lib/responseCanvasFallback.py`, `lib/requestUI.py`, `lib/modelHelpers.py`, `lib/modelResponseCanvas.py`, `_tests/test_request_ui.py`.
+- Checks: `python3 -m pytest _tests/test_request_ui.py _tests/test_request_bus.py` (pass).
+- Removal test: reverting would drop cached streaming text before snapshots exist and its coverage, making the response canvas show “awaiting chunk” despite in-flight chunks and weakening ADR-0054 request pipeline UX clarity.
+
+## 2025-12-15 – Loop 193 (kind: guardrail/tests)
+- Focus: Bound response canvas fallback buffer growth and clear helpers.
+- Change: Capped cached streaming fallback text at 8000 chars per request (tail retained), added clear-all helper, and guardrails for append/clear/limit behaviour.
+- Artefact deltas: `lib/responseCanvasFallback.py`, `_tests/test_response_canvas_fallback.py`, `_tests/test_request_ui.py`.
+- Checks: `python3 -m pytest _tests/test_response_canvas_fallback.py _tests/test_request_ui.py _tests/test_request_bus.py` (pass).
+- Removal test: reverting would allow unbounded fallback growth and drop coverage for append/clear limits, weakening ADR-0054 request pipeline resilience and UI stability for streaming previews.
+
+## 2025-12-15 – Loop 194 (kind: guardrail/tests)
+- Focus: Ensure suppressed destinations skip streaming fallback/cache.
+- Change: Guardrail confirms append-driven refresh is skipped when response canvas is suppressed/non-target and that no fallback text is cached in that case.
+- Artefact deltas: `_tests/test_request_ui.py`.
+- Checks: `python3 -m pytest _tests/test_response_canvas_fallback.py _tests/test_request_ui.py _tests/test_request_bus.py` (pass).
+- Removal test: reverting would drop coverage for suppressed destinations, risking unnecessary refresh/cache churn when the response canvas is not the target, weakening ADR-0054 request pipeline UX alignment.
+
+## 2025-12-15 – Loop 195 (kind: guardrail/tests)
+- Focus: Prevent streaming fallback cache from lingering when canvas suppressed.
+- Change: Strengthened guardrail to assert that suppressed destinations skip both refresh and fallback caching during append events, so hidden canvases do not accumulate stale buffers.
+- Artefact delta: `_tests/test_request_ui.py`.
+- Checks: `python3 -m pytest _tests/test_response_canvas_fallback.py _tests/test_request_ui.py _tests/test_request_bus.py` (pass).
+- Removal test: reverting would drop coverage that suppressed canvases avoid caching, increasing risk of stale fallback buffers and unintended UI churn against ADR-0054 request pipeline goals.
+
+## 2025-12-15 – Loop 196 (kind: behaviour/guardrail)
+- Focus: Clear streaming fallback buffers when closing the response canvas.
+- Change: Response canvas close now clears cached fallback text for the last request; added guardrail to assert close hides the canvas and clears the fallback buffer.
+- Artefact deltas: `lib/modelResponseCanvas.py`, `_tests/test_model_response_canvas_close.py`.
+- Checks: `python3 -m pytest _tests/test_model_response_canvas_close.py _tests/test_request_ui.py _tests/test_response_canvas_fallback.py _tests/test_request_bus.py` (pass).
+- Removal test: reverting would leave cached streaming text after closing the canvas and drop coverage, risking stale fallback text on reopen and weakening ADR-0054 request pipeline UX clarity.
+
+## 2025-12-15 – Loop 197 (kind: behaviour/guardrail)
+- Focus: Reset streaming fallbacks when a new send starts.
+- Change: RequestUI now clears all fallback buffers on SENDING phase transitions so cached chunks from prior requests don’t leak into new sessions; guardrail asserts fallback caches clear on sending while append throttling remains intact.
+- Artefact deltas: `lib/requestUI.py`, `_tests/test_request_ui.py`.
+- Checks: `python3 -m pytest _tests/test_response_canvas_fallback.py _tests/test_request_ui.py _tests/test_request_bus.py` (pass).
+- Removal test: reverting would let streaming fallback text persist across new sends and drop coverage, risking stale chunk previews and weakening ADR-0054 request pipeline UX/guardrails.
+
+## 2025-12-15 – Loop 198 (kind: behaviour/guardrail)
+- Focus: Clear streaming fallback when the response canvas is closed or toggled shut.
+- Change: Response canvas toggle/close now clears cached fallback text for the last request; added guardrail to assert fallback clearing when closing via the toggle path.
+- Artefact deltas: `lib/modelResponseCanvas.py`, `_tests/test_model_response_canvas_close.py`.
+- Checks: `python3 -m pytest _tests/test_model_response_canvas_close.py _tests/test_request_ui.py _tests/test_response_canvas_fallback.py _tests/test_request_bus.py` (pass).
+- Removal test: reverting would leave cached streaming text after closing/toggling the response canvas and drop coverage, risking stale fallback text on reopen and weakening ADR-0054 request pipeline UX clarity.
+
+## 2025-12-15 – Loop 199 (kind: behaviour/guardrail)
+- Focus: Ensure reset events trigger cleanup hooks even from idle.
+- Change: RequestUIController now reconciles/executes on_state_change for RESET even when the state is already idle, so cleanup hooks (including fallback clears) fire reliably; added guardrail for the RESET callback path.
+- Artefact deltas: `lib/requestController.py`, `_tests/test_request_controller.py`.
+- Checks: `python3 -m pytest _tests/test_request_controller.py _tests/test_request_ui.py _tests/test_response_canvas_fallback.py _tests/test_model_response_canvas_close.py _tests/test_request_bus.py` (pass).
+- Removal test: reverting would skip on_state_change on reset-from-idle, leaving cleanup hooks (like fallback clears) dormant and weakening ADR-0054 lifecycle/reset guardrails.
+
+## 2025-12-15 – Loop 200 (kind: behaviour/guardrail)
+- Focus: Keep last_request_id in sync for lifecycle consumers even outside send_request.
+- Change: requestBus now records `GPTState.last_request_id` on begin_send/begin_stream, aligning fallback/preview consumers with lifecycle ids even when callers drive the bus directly; guardrails added for the bus id update.
+- Artefact deltas: `lib/requestBus.py`, `_tests/test_request_bus.py`.
+- Checks: `python3 -m pytest _tests/test_request_bus.py _tests/test_request_controller.py _tests/test_request_ui.py _tests/test_response_canvas_fallback.py _tests/test_model_response_canvas_close.py` (pass).
+- Removal test: reverting would leave `last_request_id` unset for bus-driven sends/streams, risking stale or missing streaming previews and weakening ADR-0054 request pipeline alignment.
+
+## 2025-12-15 – Loop 201 (kind: behaviour/guardrail)
+- Focus: Clear last_request_id on reset to avoid stale streaming context.
+- Change: requestBus now clears `GPTState.last_request_id` on reset and added guardrail to assert begin_send/stream set it and reset clears it; keeps downstream streaming/fallback consumers from reading stale ids after reset.
+- Artefact deltas: `lib/requestBus.py`, `_tests/test_request_bus.py`.
+- Checks: `python3 -m pytest _tests/test_request_bus.py _tests/test_request_controller.py _tests/test_request_ui.py _tests/test_response_canvas_fallback.py _tests/test_model_response_canvas_close.py` (pass).
+- Removal test: reverting would leave stale `last_request_id` across resets and drop coverage, risking incorrect streaming previews and weakening ADR-0054 request pipeline lifecycle hygiene.
+
+## 2025-12-15 – Loop 202 (kind: behaviour/guardrail)
+- Focus: Keep lifecycle ids present for complete/fail/cancel when callers omit them.
+- Change: requestBus now defaults COMPLETE/FAIL/CANCEL events to the current request id and updates `last_request_id`, ensuring downstream lifecycle consumers retain ids even when callers omit them; added guardrail for the default-id path.
+- Artefact deltas: `lib/requestBus.py`, `_tests/test_request_bus.py`.
+- Checks: `python3 -m pytest _tests/test_request_bus.py _tests/test_request_controller.py _tests/test_request_ui.py _tests/test_response_canvas_fallback.py _tests/test_model_response_canvas_close.py` (pass).
+- Removal test: reverting would drop default id propagation on lifecycle events and its coverage, weakening ADR-0054 request pipeline observability for downstream hooks/streaming previews.
+
+## 2025-12-15 – Loop 203 (kind: behaviour/guardrail)
+- Focus: Keep streaming append events aligned with lifecycle ids.
+- Change: `emit_append` now updates `last_request_id` even when callers omit the request id, so append-driven consumers (fallbacks, previews) stay aligned with the current request; guardrail added to assert append defaulting updates the tracked id.
+- Artefact deltas: `lib/requestBus.py`, `_tests/test_request_bus.py`.
+- Checks: `python3 -m pytest _tests/test_request_bus.py _tests/test_request_controller.py _tests/test_request_ui.py _tests/test_response_canvas_fallback.py _tests/test_model_response_canvas_close.py` (pass).
+- Removal test: reverting would let append events leave `last_request_id` stale when request ids are omitted, weakening ADR-0054 streaming lifecycle alignment.
+
+## 2025-12-15 – Loop 204 (kind: behaviour/guardrail)
+- Focus: Clear streaming fallback buffers when the response canvas is hidden externally.
+- Change: Response canvas now registers a hide handler even on pre-existing canvases and exposes it for testability; guardrail asserts hide events clear cached fallback text.
+- Artefact deltas: `lib/modelResponseCanvas.py`, `_tests/test_model_response_canvas_close.py`.
+- Checks: `python3 -m pytest _tests/test_model_response_canvas_close.py _tests/test_request_bus.py _tests/test_request_controller.py _tests/test_request_ui.py _tests/test_response_canvas_fallback.py` (pass).
+- Removal test: reverting would leave cached fallback text when the canvas is hidden outside the toggle/close paths and drop coverage, risking stale streaming previews and weakening ADR-0054 request pipeline UX clarity.
+
+## 2025-12-15 – Loop 205 (kind: behaviour/guardrail)
+- Focus: Hide events also reset response canvas state flag.
+- Change: Response canvas hide handler now marks `ResponseCanvasState.showing` false when the canvas hides (even externally) and the guardrail asserts this path, keeping state/fallbacks in sync when hidden outside toggle/close flows.
+- Artefact deltas: `lib/modelResponseCanvas.py`, `_tests/test_model_response_canvas_close.py`.
+- Checks: `python3 -m pytest _tests/test_model_response_canvas_close.py _tests/test_request_bus.py _tests/test_request_controller.py _tests/test_request_ui.py _tests/test_response_canvas_fallback.py` (pass).
+- Removal test: reverting would leave `showing` true after external hides and drop coverage, risking stale state/fallback coupling and weakening ADR-0054 request pipeline UX alignment.

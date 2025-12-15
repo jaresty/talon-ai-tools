@@ -12,6 +12,11 @@ from .requestState import (
     lifecycle_status_for,
 )
 
+try:
+    from .modelState import GPTState  # type: ignore
+except Exception:  # pragma: no cover - import may fail in tests without Talon
+    GPTState = None  # type: ignore[assignment]
+
 
 _controller: Optional[RequestUIController] = None
 _counter: int = 0
@@ -21,6 +26,26 @@ def set_controller(controller: Optional[RequestUIController]) -> None:
     """Register the controller that should receive request events."""
     global _controller
     _controller = controller
+
+
+def _set_last_request_id(request_id: str) -> None:
+    """Best-effort: record the last request id for downstream consumers."""
+    if not request_id or GPTState is None:
+        return
+    try:
+        GPTState.last_request_id = request_id
+    except Exception:
+        pass
+
+
+def _clear_last_request_id() -> None:
+    """Best-effort: clear the last request id."""
+    if GPTState is None:
+        return
+    try:
+        GPTState.last_request_id = ""
+    except Exception:
+        pass
 
 
 def next_request_id() -> str:
@@ -39,40 +64,61 @@ def _handle(event: RequestEvent) -> RequestState:
 
 
 def emit_reset() -> RequestState:
+    _clear_last_request_id()
     return _handle(RequestEvent(RequestEventKind.RESET))
 
 
 def emit_begin_send(request_id: Optional[str] = None) -> str:
     rid = request_id or next_request_id()
+    _set_last_request_id(rid)
     _handle(RequestEvent(RequestEventKind.BEGIN_SEND, request_id=rid))
     return rid
 
 
 def emit_begin_stream(request_id: Optional[str] = None) -> str:
     rid = request_id or next_request_id()
+    _set_last_request_id(rid)
     _handle(RequestEvent(RequestEventKind.BEGIN_STREAM, request_id=rid))
     return rid
 
+def emit_append(chunk: str, request_id: Optional[str] = None) -> RequestState:
+    rid = request_id or current_state().request_id
+    _set_last_request_id(rid or "")
+    return _handle(
+        RequestEvent(
+            RequestEventKind.APPEND,
+            request_id=rid,
+            payload=chunk,
+        )
+    )
+
 
 def emit_complete(request_id: Optional[str] = None) -> RequestState:
-    return _handle(RequestEvent(RequestEventKind.COMPLETE, request_id=request_id))
+    rid = request_id or current_state().request_id
+    _set_last_request_id(rid or "")
+    return _handle(RequestEvent(RequestEventKind.COMPLETE, request_id=rid))
 
 
 def emit_fail(error: str = "", request_id: Optional[str] = None) -> RequestState:
+    rid = request_id or current_state().request_id
+    _set_last_request_id(rid or "")
     return _handle(
-        RequestEvent(RequestEventKind.FAIL, request_id=request_id, error=error)
+        RequestEvent(RequestEventKind.FAIL, request_id=rid, error=error)
     )
 
 
 def emit_cancel(request_id: Optional[str] = None) -> RequestState:
-    return _handle(RequestEvent(RequestEventKind.CANCEL, request_id=request_id))
+    rid = request_id or current_state().request_id
+    _set_last_request_id(rid or "")
+    return _handle(RequestEvent(RequestEventKind.CANCEL, request_id=rid))
 
 
 def emit_history_saved(path: str, request_id: Optional[str] = None) -> RequestState:
+    req_id = request_id or current_state().request_id
     return _handle(
         RequestEvent(
             RequestEventKind.HISTORY_SAVED,
-            request_id=request_id,
+            request_id=req_id,
             payload=path,
         )
     )
@@ -103,6 +149,7 @@ __all__ = [
     "emit_complete",
     "emit_fail",
     "emit_cancel",
+    "emit_append",
     "emit_history_saved",
     "current_state",
     "current_lifecycle_state",

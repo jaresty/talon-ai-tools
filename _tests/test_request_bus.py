@@ -14,6 +14,7 @@ if bootstrap is not None:
         current_lifecycle_state,
         emit_begin_send,
         emit_begin_stream,
+        emit_append,
         emit_complete,
         emit_fail,
         emit_reset,
@@ -24,6 +25,7 @@ if bootstrap is not None:
     )
     from talon_user.lib.requestController import RequestUIController
     from talon_user.lib.requestState import RequestPhase, Surface
+    from talon_user.lib.modelState import GPTState
 
     class RequestBusTests(unittest.TestCase):
         def setUp(self):
@@ -101,6 +103,73 @@ if bootstrap is not None:
             rid = emit_begin_send()
             emit_history_saved("/tmp/file.md", request_id=rid)
             self.assertEqual(calls, [(rid, "/tmp/file.md")])
+
+        def test_emit_append_calls_controller_hook(self):
+            calls = []
+
+            def on_append(req_id, chunk):
+                calls.append((req_id, chunk))
+
+            set_controller(RequestUIController(on_append=on_append))
+            emit_reset()
+            rid = emit_begin_send()
+            emit_append("chunk-1", request_id=rid)
+            self.assertEqual(calls, [(rid, "chunk-1")])
+
+        def test_emit_history_saved_defaults_request_id(self):
+            calls = []
+
+            def on_history_save(req_id, path):
+                calls.append((req_id, path))
+
+            set_controller(RequestUIController(on_history_save=on_history_save))
+            emit_reset()
+            rid = emit_begin_send()
+            emit_history_saved("/tmp/file.md")
+            self.assertEqual(calls, [(rid, "/tmp/file.md")])
+
+        def test_emit_append_defaults_request_id(self):
+            calls = []
+
+            def on_append(req_id, chunk):
+                calls.append((req_id, chunk))
+
+            set_controller(RequestUIController(on_append=on_append))
+            emit_reset()
+            rid = emit_begin_send()
+            emit_append("chunk-2")
+            self.assertEqual(calls, [(rid, "chunk-2")])
+            self.assertEqual(getattr(GPTState, "last_request_id", None), rid)
+
+        def test_begin_send_sets_last_request_id(self):
+            emit_reset()
+            rid = emit_begin_send("rid-bus")
+            self.assertEqual(getattr(GPTState, "last_request_id", None), rid)
+
+        def test_begin_stream_sets_last_request_id(self):
+            emit_reset()
+            rid = emit_begin_stream("rid-stream")
+            self.assertEqual(getattr(GPTState, "last_request_id", None), rid)
+
+        def test_reset_clears_last_request_id(self):
+            emit_reset()
+            emit_begin_send("rid-reset")
+            self.assertEqual(getattr(GPTState, "last_request_id", None), "rid-reset")
+            emit_reset()
+            self.assertEqual(getattr(GPTState, "last_request_id", None), "")
+
+        def test_complete_fail_cancel_default_request_id_and_track_last(self):
+            emit_reset()
+            rid = emit_begin_send("rid-full")
+            # Complete without passing id defaults to current state and updates last_request_id.
+            emit_complete()
+            self.assertEqual(getattr(GPTState, "last_request_id", None), rid)
+            # Fail defaults to current state and updates last_request_id.
+            emit_fail("boom")
+            self.assertEqual(getattr(GPTState, "last_request_id", None), rid)
+            # Cancel defaults similarly.
+            emit_cancel()
+            self.assertEqual(getattr(GPTState, "last_request_id", None), rid)
 else:
     if not TYPE_CHECKING:
 

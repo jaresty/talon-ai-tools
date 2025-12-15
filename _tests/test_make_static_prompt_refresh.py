@@ -48,6 +48,40 @@ if not TYPE_CHECKING:
                 after,
                 "static-prompt-refresh target should not modify README in-place",
             )
+
+        def test_static_prompt_snapshot_matches_generator_block(self) -> None:
+            """Snapshot static prompt block should match generator output exactly."""
+
+            repo_root = Path(__file__).resolve().parents[1]
+            out_path = Path(repo_root) / "tmp" / "static-prompt-readme.md"
+            result = subprocess.run(
+                ["make", "static-prompt-refresh"],
+                cwd=str(repo_root),
+                capture_output=True,
+                text=True,
+                check=False,
+            )
+            if result.returncode != 0:
+                self.fail(
+                    "make static-prompt-refresh failed:\n"
+                    f"exit: {result.returncode}\nstdout:\n{result.stdout}\nstderr:\n{result.stderr}"
+                )
+            text = out_path.read_text(encoding="utf-8")
+            lines = text.splitlines()
+            try:
+                start_idx = next(i for i, line in enumerate(lines) if line.strip() == "## Help")
+                end_idx = next(
+                    i for i, line in enumerate(lines[start_idx:], start=start_idx) if line.strip().startswith("### Meta interpretation channel")
+                )
+            except StopIteration:
+                self.fail("Could not locate static prompt block in snapshot")
+            block = "\n".join(lines[start_idx + 1 : end_idx]).strip()
+            expected = _build_static_prompt_docs().strip()
+            self.assertEqual(
+                expected,
+                block,
+                "Static prompt snapshot block should match generator output",
+            )
 else:
     if not TYPE_CHECKING:
         class MakeStaticPromptRefreshTests(unittest.TestCase):

@@ -108,6 +108,34 @@ if bootstrap is not None:
             self.assertEqual(calls, [("rid-1", "/tmp/file.md")])
             # State unchanged.
             self.assertEqual(controller.state.phase, RequestPhase.IDLE)
+
+        def test_append_invokes_hook_without_state_change(self):
+            calls = []
+
+            def on_append(req_id, chunk):
+                calls.append((req_id, chunk))
+
+            controller = RequestUIController(on_append=on_append)
+            controller.handle(
+                RequestEvent(
+                    RequestEventKind.APPEND,
+                    request_id="rid-2",
+                    payload="hello",
+                )
+            )
+            self.assertEqual(calls, [("rid-2", "hello")])
+            self.assertEqual(controller.state.phase, RequestPhase.IDLE)
+
+        def test_reset_calls_state_change_even_when_idle(self):
+            calls = []
+
+            def on_state_change(state):
+                calls.append(state.phase)
+
+            controller = RequestUIController(on_state_change=on_state_change)
+            # Reset from idle; should still emit state change to allow cleanup hooks.
+            controller.handle(RequestEvent(RequestEventKind.RESET))
+            self.assertEqual(calls, [RequestPhase.IDLE])
 else:
     if not TYPE_CHECKING:
         class RequestUIControllerTests(unittest.TestCase):

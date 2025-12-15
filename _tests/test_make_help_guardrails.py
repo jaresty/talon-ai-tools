@@ -48,8 +48,11 @@ if not TYPE_CHECKING:
             self.assertIn("request-history-guardrails-fast", output)
             self.assertIn("readme-axis-lines", output)
             self.assertIn("readme-axis-refresh", output)
+            self.assertIn("README_AXIS_LISTS_DIR", output)
             self.assertIn("static-prompt-docs", output)
             self.assertIn("static-prompt-refresh", output)
+            self.assertIn("README snapshot", output)
+            self.assertIn("doc-snapshots", output)
 
 else:
 

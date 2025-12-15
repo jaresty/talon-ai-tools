@@ -40,6 +40,7 @@ class RequestEventKind(Enum):
     CONFIRM_SEND = "confirm_send"
     BEGIN_SEND = "begin_send"
     BEGIN_STREAM = "begin_stream"
+    APPEND = "append"
     COMPLETE = "complete"
     FAIL = "fail"
     CANCEL = "cancel"
@@ -103,6 +104,16 @@ def transition(state: RequestState, event: RequestEvent) -> RequestState:
             phase=RequestPhase.STREAMING,
             active_surface=Surface.PILL,
             request_id=event.request_id or state.request_id,
+        )
+
+    if kind is RequestEventKind.APPEND:
+        # Keep state/phase while allowing controllers to react to streaming chunks.
+        return RequestState(
+            phase=state.phase,
+            active_surface=state.active_surface,
+            request_id=state.request_id or event.request_id,
+            cancel_requested=state.cancel_requested,
+            last_error=state.last_error,
         )
 
     if kind is RequestEventKind.CANCEL:

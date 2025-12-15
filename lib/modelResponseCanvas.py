@@ -9,6 +9,12 @@ from .modelState import GPTState
 from .modelDestination import _parse_meta
 from .requestState import RequestPhase, RequestState
 from .requestBus import current_state
+from .responseCanvasFallback import (
+    append_response_fallback,
+    clear_response_fallback,
+    fallback_for,
+    clear_all_fallbacks,
+)
 from .axisConfig import axis_docs_for
 from .suggestionCoordinator import (
     last_recipe_snapshot,
@@ -128,6 +134,7 @@ _response_hover_close: bool = False
 _response_hover_button: Optional[str] = None
 _response_mouse_log_count: int = 0
 _response_handlers_registered: bool = False
+_last_hide_handler: Optional[Callable] = None
 _last_recap_log: Optional[tuple[str, str, str, str, str, str]] = None
 # Track the last rendered recap/meta tuple so meta is collapsed when a new
 # response arrives (prevents stale expanded meta on subsequent runs).
@@ -175,8 +182,18 @@ def _guard_response_canvas(allow_inflight: bool = False) -> bool:
 
 def _ensure_response_canvas() -> canvas.Canvas:
     """Create the response canvas if needed and register handlers."""
-    global _response_canvas, _response_handlers_registered
+    global _response_canvas, _response_handlers_registered, _last_hide_handler
     last_draw_error: Optional[str] = None
+    def _hide_handler():
+        try:
+            clear_response_fallback(getattr(GPTState, "last_request_id", None))
+        except Exception:
+            pass
+        try:
+            ResponseCanvasState.showing = False
+        except Exception:
+            pass
+    _last_hide_handler = _hide_handler
 
     def _prime_footer_bounds_for_tests(c: canvas.Canvas) -> None:
         """Populate footer button bounds when draw is not invoked (tests)."""
@@ -234,9 +251,6 @@ def _ensure_response_canvas() -> canvas.Canvas:
     except Exception:
         _response_canvas = canvas.Canvas.from_screen(screen)
 
-    if _response_canvas is not None:
-        apply_canvas_blocking(_response_canvas)
-
     def _on_draw(c: canvas.Canvas) -> None:  # pragma: no cover - visual only
         nonlocal last_draw_error
         for handler in list(_response_draw_handlers):
@@ -251,8 +265,27 @@ def _ensure_response_canvas() -> canvas.Canvas:
                         pass
                     last_draw_error = str(e)
 
-    if not _response_handlers_registered:
-        _response_canvas.register("draw", _on_draw)
+    if _response_canvas is not None:
+        try:
+            apply_canvas_blocking(_response_canvas)
+        except Exception:
+            pass
+        if not _response_handlers_registered:
+            _response_canvas.register("draw", _on_draw)
+            _response_handlers_registered = True
+
+        def _on_hide(*_args, **_kwargs):
+            _hide_handler()
+        try:
+            _last_hide_handler = _on_hide
+            _response_canvas.register("hide", _on_hide)
+        except Exception:
+            pass
+        try:
+            setattr(_response_canvas, "_on_hide_handler", _on_hide)
+        except Exception:
+            pass
+        return _response_canvas
 
     def _on_mouse(evt) -> None:  # pragma: no cover - visual only
         try:
@@ -1218,8 +1251,17 @@ def _default_draw_response(c: canvas.Canvas) -> None:  # pragma: no cover - visu
                 draw_text("Waiting for model response (sending)…", x, y)
                 return
             if phase is RequestPhase.STREAMING:
-                draw_text("Streaming… awaiting first chunk", x, y)
-                return
+                # If no streaming snapshot yet, show any cached append text.
+                try:
+                    req_id = getattr(GPTState, "last_request_id", "")
+                except Exception:
+                    req_id = ""
+                cached = fallback_for(req_id)
+                if cached:
+                    answer = cached
+                else:
+                    draw_text("Streaming… awaiting first chunk", x, y)
+                    return
             if phase is RequestPhase.CANCELLED:
                 draw_text("Cancel requested; waiting for model to stop…", x, y)
                 return
@@ -1406,6 +1448,10 @@ class UserActions:
                 canvas_obj.hide()
             except Exception:
                 pass
+            try:
+                clear_response_fallback(getattr(GPTState, "last_request_id", None))
+            except Exception:
+                pass
             return
 
         close_common_overlays(actions.user, exclude={"model_response_canvas_close"})
@@ -1421,6 +1467,10 @@ class UserActions:
         if _response_canvas is None:
             ResponseCanvasState.showing = False
             return
+        try:
+            clear_response_fallback(getattr(GPTState, "last_request_id", None))
+        except Exception:
+            pass
         ResponseCanvasState.showing = False
         ResponseCanvasState.scroll_y = 0.0
         ResponseCanvasState.meta_expanded = False

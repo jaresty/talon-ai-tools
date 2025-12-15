@@ -341,3 +341,16 @@ class UserActions:
         except Exception:
             pass
         return result
+
+    def request_history_drawer_refresh():
+        """Refresh entries when the drawer is showing (e.g., after a history save)."""
+        if not HistoryDrawerState.showing:
+            return
+        if _reject_if_request_in_flight():
+            return
+        _refresh_entries()
+        c = _ensure_canvas()
+        try:
+            c.show()
+        except Exception:
+            pass

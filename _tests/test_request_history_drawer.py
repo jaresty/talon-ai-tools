@@ -163,6 +163,46 @@ if bootstrap is not None:
             save_mock.assert_not_called()
             self.assertFalse(HistoryDrawerState.showing)
 
+        def test_drawer_refresh_noop_when_hidden(self):
+            HistoryDrawerState.showing = False
+            with patch.object(history_drawer, "_refresh_entries") as refresh_mock:
+                DrawerActions.request_history_drawer_refresh()
+            refresh_mock.assert_not_called()
+
+        def test_drawer_refresh_respects_inflight_guard(self):
+            HistoryDrawerState.showing = True
+            with patch.object(
+                history_drawer, "_reject_if_request_in_flight", return_value=True
+            ) as guard_mock, patch.object(history_drawer, "_refresh_entries") as refresh_mock:
+                DrawerActions.request_history_drawer_refresh()
+            guard_mock.assert_called()
+            refresh_mock.assert_not_called()
+
+        def test_drawer_refresh_updates_entries_when_showing(self):
+            HistoryDrawerState.showing = True
+            HistoryDrawerState.entries = []
+
+            class DummyCanvas:
+                def __init__(self):
+                    self.shown = False
+
+                def show(self):
+                    self.shown = True
+
+            dummy_canvas = DummyCanvas()
+            with patch.object(
+                history_drawer, "_ensure_canvas", return_value=dummy_canvas
+            ), patch.object(history_drawer, "_refresh_entries") as refresh_mock:
+                def _refresh():
+                    HistoryDrawerState.entries.append(("rid-new", "body"))
+
+                refresh_mock.side_effect = _refresh
+                DrawerActions.request_history_drawer_refresh()
+
+            refresh_mock.assert_called_once()
+            self.assertTrue(dummy_canvas.shown)
+            self.assertIn(("rid-new", "body"), HistoryDrawerState.entries)
+
         def test_drawer_escape_closes(self):
             from types import SimpleNamespace
             import talon_user.lib.requestHistoryDrawer as history_drawer  # type: ignore

@@ -33,6 +33,7 @@ class RequestUIController:
         hide_response_canvas: Optional[Callable[[], None]] = None,
         hide_help_hub: Optional[Callable[[], None]] = None,
         on_history_save: Optional[Callable[[Optional[str], Optional[str]], None]] = None,
+        on_append: Optional[Callable[[Optional[str], str], None]] = None,
         on_state_change: Optional[Callable[[RequestState], None]] = None,
     ):
         self._state = RequestState()
@@ -45,6 +46,7 @@ class RequestUIController:
             "hide_response_canvas": hide_response_canvas,
             "hide_help_hub": hide_help_hub,
             "on_history_save": on_history_save,
+            "on_append": on_append,
         }
         self._on_state_change = on_state_change
 
@@ -62,7 +64,27 @@ class RequestUIController:
                 except Exception:
                     pass
             return self._state
+        if event.kind is RequestEventKind.APPEND:
+            cb = self._callbacks.get("on_append")
+            if cb and isinstance(event.payload, str):
+                try:
+                    cb(event.request_id, event.payload)
+                except Exception:
+                    pass
+            # Keep state unchanged for append-only events.
+            return self._state
+        prev_state = self._state
         next_state = transition(self._state, event)
+        if event.kind is RequestEventKind.RESET:
+            # Always reconcile/emit on reset even when identical to current state.
+            self._reconcile_surfaces(prev=self._state, nxt=next_state)
+            self._state = next_state
+            if self._on_state_change:
+                try:
+                    self._on_state_change(self._state)
+                except Exception:
+                    pass
+            return self._state
         if next_state is self._state:
             return self._state
 

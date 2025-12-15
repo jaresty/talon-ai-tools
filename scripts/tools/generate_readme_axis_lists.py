@@ -29,6 +29,7 @@ def _render_axis_line(axis: str, label: str, tokens: list[str]) -> str:
 def render_readme_axis_lines(lists_dir: Path | None = None) -> str:
     catalog = axis_catalog(lists_dir=lists_dir)
     axes = catalog.get("axes", {}) or {}
+    axis_lists = catalog.get("axis_list_tokens", {}) or {}
     order = [
         ("completeness", "Completeness (`completenessModifier`)"),
         ("scope", "Scope (`scopeModifier`)"),
@@ -39,7 +40,10 @@ def render_readme_axis_lines(lists_dir: Path | None = None) -> str:
     ]
     lines: list[str] = []
     for axis, label in order:
-        tokens = sorted((axes.get(axis) or {}).keys())
+        tokens = axis_lists.get(axis)
+        if tokens is None:
+            tokens = (axes.get(axis) or {}).keys()
+        tokens = sorted(tokens)
         if not tokens:
             continue
         lines.append(_render_axis_line(axis, label, tokens))

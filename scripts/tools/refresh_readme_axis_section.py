@@ -25,7 +25,9 @@ START_MARKER = "Completeness (`completenessModifier`):"
 END_MARKER = "  - Additional form/channel notes:"
 
 
-def refresh_readme(readme_path: Path) -> None:
+def refresh_readme(
+    readme_path: Path, out_path: Path | None = None, lists_dir: Path | None = None
+) -> None:
     content = readme_path.read_text(encoding="utf-8").splitlines()
     try:
         start_idx = next(
@@ -42,10 +44,12 @@ def refresh_readme(readme_path: Path) -> None:
     if end_idx <= start_idx:
         raise RuntimeError("End marker appears before start marker in README")
 
-    generated_lines = render_readme_axis_lines().strip().splitlines()
+    generated_lines = render_readme_axis_lines(lists_dir=lists_dir).strip().splitlines()
     new_content = content[:start_idx] + generated_lines + content[end_idx:]
-    readme_path.write_text("\n".join(new_content) + "\n", encoding="utf-8")
-    print(f"Refreshed axis lines in {readme_path}")
+    target = out_path or readme_path
+    target.parent.mkdir(parents=True, exist_ok=True)
+    target.write_text("\n".join(new_content) + "\n", encoding="utf-8")
+    print(f"Wrote refreshed axis lines to {target}")
 
 
 def main() -> int:
@@ -56,8 +60,20 @@ def main() -> int:
         default=ROOT / "GPT" / "readme.md",
         help="Path to GPT README to update.",
     )
+    parser.add_argument(
+        "--out",
+        type=Path,
+        default=None,
+        help="Optional output path; when set, write merged README content there instead of in-place.",
+    )
+    parser.add_argument(
+        "--lists-dir",
+        type=Path,
+        default=None,
+        help="Optional Talon lists directory for axis list tokens (catalog-only when omitted).",
+    )
     args = parser.parse_args()
-    refresh_readme(args.readme)
+    refresh_readme(args.readme, args.out, args.lists_dir)
     return 0
 
 

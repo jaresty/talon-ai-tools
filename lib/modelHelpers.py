@@ -25,6 +25,7 @@ from .requestAsync import start_async
 from .requestBus import (
     emit_begin_send,
     emit_begin_stream,
+    emit_append,
     emit_complete,
     emit_fail,
     emit_reset,
@@ -1059,6 +1060,10 @@ def _send_request_streaming(request, request_id: str) -> str:
 
     def _append_text(text_piece: str):
         nonlocal first_chunk
+        try:
+            emit_append(text_piece, request_id=request_id)
+        except Exception:
+            pass
         record_streaming_chunk(streaming_run, text_piece)
         full_text = streaming_run.text
         _update_stream_state_from_text(
@@ -1276,6 +1281,10 @@ def send_request(max_attempts: int = 10):
         pass
 
     request_id = emit_begin_send()
+    try:
+        GPTState.last_request_id = request_id
+    except Exception:
+        pass
     try:
         GPTState.suppress_inflight_notify_request_id = request_id
     except Exception:

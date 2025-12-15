@@ -2360,6 +2360,17 @@ class UserActions:
         source: ModelSource = pass_configuration.model_source
         destination: ModelDestination = pass_configuration.model_destination
 
+        # Ensure pass flows respect the target destination (for example, file)
+        # instead of any stale destination kind from a prior request.
+        try:
+            dest_kind = (getattr(destination, "kind", "") or "").lower()
+            GPTState.current_destination_kind = dest_kind
+        except Exception:
+            try:
+                GPTState.current_destination_kind = ""
+            except Exception:
+                pass
+
         session = PromptSession(destination)
         session.begin(reuse_existing=True)
 

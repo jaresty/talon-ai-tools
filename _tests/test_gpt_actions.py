@@ -1491,6 +1491,7 @@ if bootstrap is not None:
                 model_source=MagicMock(),
                 model_destination=MagicMock(),
             )
+            configuration.model_destination.kind = "file"
             configuration.model_source.format_messages.return_value = [
                 format_message("pass")
             ]
@@ -1515,6 +1516,7 @@ if bootstrap is not None:
                     actions.user.gpt_insert_response.call_args.args[1],
                     configuration.model_destination,
                 )
+                self.assertEqual(GPTState.current_destination_kind, "file")
 
         def test_gpt_pass_honors_in_flight_guard(self):
             configuration = MagicMock(

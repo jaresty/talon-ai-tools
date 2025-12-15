@@ -6,6 +6,9 @@ Query language models with voice commands. Helpful to automatically generate tex
 
 Note: Some behaviours (for example, diagrams, Presenterm decks, ADRs, shell scripts, debugging, Slack/Jira formatting, taxonomy-style outputs) now live only as form/channel/method axis values rather than static prompts; see ADR 012/013 and the README cheat sheet for axis-based recipes.
 
+Snapshots for doc regen: use `make readme-axis-refresh` to write a catalog-driven axis snapshot to `tmp/readme-axis-readme.md` (README unchanged) and `make static-prompt-refresh` to write a static-prompt snapshot to `tmp/static-prompt-readme.md`; apply manually if you intend to update the README. To include tokens from local Talon axis list files in the axis snapshot, export `README_AXIS_LISTS_DIR=/path/to/lists` before running `make readme-axis-refresh` (omit to use catalog only). Use `make doc-snapshots` to generate all of these snapshots in one go under `tmp/`.
+To include tokens from local Talon axis list files in the axis snapshot, export `README_AXIS_LISTS_DIR=/path/to/lists` before running `make readme-axis-refresh`; omit it to use the catalog only.
+
 - infer: I'm not telling you what to do. Infer the task.
 - describe: Just describe this objectively.
 - undefined: List undefined terms only.

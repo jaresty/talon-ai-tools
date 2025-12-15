@@ -7,6 +7,7 @@ implemented. It keeps behaviour minimal to avoid disrupting existing flows.
 
 from __future__ import annotations
 
+import time
 from typing import Optional
 
 from talon import actions, app
@@ -17,6 +18,11 @@ from .requestState import RequestPhase, RequestState
 from .modelState import GPTState
 from .pillCanvas import show_pill, hide_pill
 from .uiDispatch import run_on_ui_thread
+from .responseCanvasFallback import (
+    append_response_fallback,
+    clear_response_fallback,
+    clear_all_fallbacks,
+)
 
 
 def _notify(message: str) -> None:
@@ -52,6 +58,16 @@ def _prefer_canvas_progress() -> bool:
     return kind in ("window", "default")
 
 
+def _should_show_response_canvas() -> bool:
+    """Mirror the modelHelpers gating for response canvas refreshes."""
+    try:
+        if getattr(GPTState, "suppress_response_canvas", False):
+            return False
+    except Exception:
+        pass
+    return _prefer_canvas_progress()
+
+
 def _show_pill() -> None:
     if _prefer_canvas_progress():
         # When the destination is the response window, surface progress in the
@@ -84,6 +100,37 @@ def _hide_help_hub() -> None:
     run_on_ui_thread(lambda: actions.user.help_hub_close())
 
 
+def _on_history_save(request_id: Optional[str], path: Optional[str]) -> None:
+    """Refresh the request history drawer when a save completes."""
+    try:
+        run_on_ui_thread(lambda: actions.user.request_history_drawer_refresh())
+    except Exception:
+        pass
+
+
+def _on_append(request_id: Optional[str], chunk: str) -> None:
+    """Refresh the response canvas incrementally when streaming chunks arrive."""
+    global _LAST_APPEND_REFRESH_MS
+    if not chunk:
+        return
+    if not _should_show_response_canvas():
+        return
+    now_ms = time.time() * 1000.0
+    if (
+        _LAST_APPEND_REFRESH_MS is not None
+        and (now_ms - _LAST_APPEND_REFRESH_MS) < _APPEND_REFRESH_THROTTLE_MS
+    ):
+        return
+    _LAST_APPEND_REFRESH_MS = now_ms
+    try:
+        # Cache chunk text so consumers can render something even if the
+        # response canvas isn’t yet backed by GPTState snapshots.
+        append_response_fallback(request_id, chunk)
+        run_on_ui_thread(lambda: actions.user.model_response_canvas_refresh())
+    except Exception:
+        pass
+
+
 def _on_state_change(state: RequestState) -> None:
     """Notify on terminal states so failures/cancels are visible."""
     try:
@@ -94,14 +141,28 @@ def _on_state_change(state: RequestState) -> None:
             _notify("Model cancel requested")
     except Exception:
         pass
+    # Clear cached fallback text when a request reaches a terminal phase.
+    try:
+        if state.phase is RequestPhase.SENDING:
+            clear_all_fallbacks()
+        if state.is_terminal:
+            clear_response_fallback(getattr(state, "request_id", None))
+        elif state.phase is RequestPhase.IDLE:
+            clear_all_fallbacks()
+    except Exception:
+        pass
 
 
 _controller: Optional[RequestUIController] = None
+_LAST_APPEND_REFRESH_MS: Optional[float] = None
+_APPEND_REFRESH_THROTTLE_MS = 150.0
 
 
 def register_default_request_ui() -> RequestUIController:
     """Register a default controller that emits simple toasts."""
     global _controller
+    global _LAST_APPEND_REFRESH_MS
+    _LAST_APPEND_REFRESH_MS = None
     _controller = RequestUIController(
         show_pill=_show_pill,
         hide_pill=_hide_pill,
@@ -109,6 +170,8 @@ def register_default_request_ui() -> RequestUIController:
         hide_confirmation=_hide_confirmation,
         show_response_canvas=_show_response_canvas_hint,
         hide_help_hub=_hide_help_hub,
+        on_history_save=_on_history_save,
+        on_append=_on_append,
         on_state_change=_on_state_change,
     )
     set_controller(_controller)

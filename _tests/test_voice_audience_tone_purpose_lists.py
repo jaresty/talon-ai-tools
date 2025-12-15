@@ -119,9 +119,6 @@ if bootstrap is not None:
                     "directly",
                     "gently",
                     "kindly",
-                    "plainly",
-                    "tightly",
-                    "headline first",
                 },
             )
 

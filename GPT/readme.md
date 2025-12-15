@@ -124,14 +124,14 @@ When the confirmation GUI is open, it also:
   - Completeness (`skim`, `gist`, `full`, etc.).
   - Scope (`narrow`, `focus`, `bound`, etc.).
   - Method (`steps`, `plan`, `cluster`, etc.).
-  - Form (`bullets`, `table`, `code`, `adr`, etc.); tone sits on persona (`tone=plainly`/`tightly`/`headline first`, etc.).
+  - Form (`bullets`, `table`, `code`, `adr`, etc.); tone sits on persona (`tone=kindly`/`directly`/`formally`, etc.).
   - Channel (`slack`, `jira`, `presenterm`, etc.).
-  - Tone (`kindly`, `directly`, `plainly`, `tightly`, `headline first`, etc.).
+  - Tone (`kindly`, `directly`, `formally`, `casually`, `gently`, etc.).
   - Directional lens (`fog`, `rog`, `ong`, etc.).
 - Examples:
 - `model again gist fog` – keep the last static prompt/scope/method/form/channel, but change completeness to `gist` and directional lens to `fog`.
 - `model again todo gist fog` – change static prompt to `todo` and completeness to `gist`, reuse the last scope/method/form/channel, and set directional lens to `fog`.
-- `model again steps tightly rog` – keep the last static prompt/completeness/scope, but switch method to `steps`, tone to `tightly`, and directional lens to `rog`.
+- `model again steps directly rog` – keep the last static prompt/completeness/scope, but switch method to `steps`, tone to `directly`, and directional lens to `rog`.
 
 ### Persona / Intent / Contract (Who / Why / How)
 
@@ -167,7 +167,7 @@ A couple of common prompts decomposed into the three families:
 - “Explain simply to a junior engineer”  
   - **Persona (Who)**: `as teacher` + `to junior engineer` + `tone=kindly`.  
   - **Intent (Why)**: `for teaching`.  
-  - **Contract (How)**: `completeness=gist` or `minimal`, `scope=focus`, `method=scaffold`, `tone=plainly` (optionally `tightly`/`headline first`), plus an optional form/channel when the medium matters (for example, `form=bullets`, `channel=slack`).  
+- **Contract (How)**: `completeness=gist` or `minimal`, `scope=focus`, `method=scaffold`, plus an optional form/channel when the medium matters (for example, `form=bullets`, `channel=slack`).  
   - **Do not** try to encode this entirely as a new audience or intent token; treat it as a recipe across existing axes.
 
 - “Executive brief for CEO” vs “Deep technical write-up for engineers”  
@@ -178,8 +178,8 @@ A couple of common prompts decomposed into the three families:
     - Exec brief → often `for deciding` or `for information`.  
     - Deep write-up → usually `for information` or `for evaluating`.  
   - **Contract (How)**:  
-    - Exec brief → `completeness=gist`, `scope=focus`, `method=headline`/`structure`, `tone=tightly` or `tone=headline first`, optionally `form=bullets`.  
-    - Deep write-up → `completeness=full` or `deep`, `scope=system`/`relations`, `method=structure`/`analysis`, `form=adr` or `form=table`, optionally `tone=plainly`.
+    - Exec brief → `completeness=gist`, `scope=focus`, `method=structure` (headline-first delivery in the prose), optionally `form=bullets`.  
+    - Deep write-up → `completeness=full` or `deep`, `scope=system`/`relations`, `method=structure`/`analysis`, `form=adr` or `form=table`, optionally `tone=directly` if you want a firmer stance.
   - Again, keep persona and intent focused on Who/Why; put coverage, territory, reasoning, and container into the contract axes.
 
 ### Modifier axes (advanced)
@@ -233,7 +233,7 @@ Some recommended multi-tag combinations:
 - Method:
   - `structure flow` – emphasise both structural decomposition and stepwise flow.
 - Form/Channel examples:
-  - `headline slack` – headline-first summary for Slack (channel bias).
+  - `bullets slack` – concise bullet list with Slack channel bias.
   - `adr presenterm` – ADR-format output with Presenterm channel bias.
 
 When you use these modifiers—either by speaking them or via a pattern/pattern menu—their semantics are applied in two places:
@@ -243,8 +243,8 @@ When you use these modifiers—either by speaking them or via a pattern/pattern 
 
 You normally say at most one or two of these per call. Examples:
 
-- `model fix skim plainly fog` – light grammar/typo fix in plain language.
-- `model fix full plainly rog` – full grammar/wording pass, still straightforward.
+- `model fix skim fog` – light grammar/typo fix.
+- `model fix full rog` – full grammar/wording pass.
 - `model todo gist checklist rog` – turn notes into a concise TODO list as an actionable checklist.
 - `model describe flow rog` – explain the flow of selected code or text step by step using the `flow` method.
 - `model describe diagram fog` – convert text to a mermaid-style Mermaid diagram, code-only.
@@ -319,7 +319,7 @@ If you were using some older, now-retired tokens, here are the closest replaceme
   - `as liberator` → `as facilitator` + `method=liberating` (or use the “Liberating facilitation” pattern).
 - Audiences:
   - `to receptive` / `to resistant` → keep the audience (for example, `to managers` / `to stakeholders`) and add `method=receptive` / `method=resistant`.  
-  - `to dummy` → keep a friendlier audience (for example, `to junior engineer`) and add `method=novice` + `gist`/`minimal` + `tone=plainly`.
+- `to dummy` → keep a friendlier audience (for example, `to junior engineer`) and add `method=novice` + `gist`/`minimal` + `tone=kindly`.
 - Intents / shape:
   - `for coding` → `goal=solve` + `form=code`.  
   - `for debugging` → `goal=solve` + `method=debugging`.  

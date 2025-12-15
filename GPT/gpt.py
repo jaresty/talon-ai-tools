@@ -763,7 +763,7 @@ def _build_persona_intent_docs() -> str:
     lines.append("Examples of valid stance commands:")
     lines.append("- Stance: model write as teacher to junior engineer kindly")
     lines.append("- Stance: model write as programmer to CEO directly")
-    lines.append("- Stance: model write as programmer to programmer plainly")
+    lines.append("- Stance: model write as programmer to programmer casually")
     return "\n".join(lines).rstrip()
 
 

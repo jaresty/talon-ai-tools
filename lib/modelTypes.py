@@ -257,11 +257,53 @@ class GPTSystemPrompt:
             hydrated = persona_hydrate_tokens(axis, tokens)
             return " ".join(hydrated) if hydrated else " ".join(tokens)
 
+        def _voice_phrase() -> str:
+            raw = " ".join(_tokens_for_axis("voice", self.get_voice()))
+            if raw.startswith("as a") or raw.startswith("as an"):
+                return raw
+            if raw.startswith("as "):
+                return "as a " + raw[len("as ") :]
+            return raw
+
+        def _tone_phrase() -> str:
+            raw = " ".join(_tokens_for_axis("tone", self.get_tone()))
+            desc = persona_docs_map("tone").get(raw, "")
+            if desc.lower().startswith("important:"):
+                desc = desc[len("important:") :].strip().lstrip()
+            if desc.lower().startswith("be "):
+                body = desc[len("be ") :].strip()
+                if "tone" not in body.lower():
+                    if "while" in body:
+                        leading, trailing = body.split("while", 1)
+                        leading = leading.replace(" and ", ", ").strip().rstrip(".")
+                        body = f"{leading} tone while {trailing.strip()}"
+                    else:
+                        body = body.replace(" and ", ", ").strip().rstrip(".") + " tone"
+                desc = "Use a " + body
+            return desc or raw
+
+        def _audience_phrase() -> str:
+            raw = " ".join(_tokens_for_axis("audience", self.get_audience()))
+            if raw.startswith("to "):
+                raw = raw[len("to ") :]
+            if not raw.startswith("the "):
+                raw = f"the {raw}".strip()
+            return f"The audience for this is {raw}".strip()
+
+        def _intent_phrase() -> str:
+            raw = " ".join(_tokens_for_axis("intent", self.get_intent()))
+            desc = persona_docs_map("intent").get(raw, "")
+            if desc.lower().startswith("important:"):
+                desc = desc[len("important:") :].strip().lstrip()
+            if desc.lower().startswith("aim to"):
+                desc = "The goal is to " + desc[len("aim to") :].strip()
+            return desc or raw
+
         lines = [
-            f"Voice: {hydrate_persona('voice', self.get_voice())}",
-            f"Tone: {hydrate_persona('tone', self.get_tone())}",
-            f"Audience: {hydrate_persona('audience', self.get_audience())}",
-            f"Intent: {hydrate_persona('intent', self.get_intent())}",
+            f"Voice: Act {_voice_phrase()}",
+            f"Tone: {_tone_phrase()}",
+            f"Audience: {_audience_phrase()}",
+            f"Intent: {_intent_phrase()}",
             f"Completeness: {hydrate('completeness', self.get_completeness())}",
             f"Scope: {hydrate('scope', self.get_scope())}",
             f"Method: {hydrate('method', self.get_method())}",

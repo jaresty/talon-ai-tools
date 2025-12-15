@@ -20,10 +20,13 @@ def record_suggestions(
     suggestions: Iterable[dict[str, str]], source_key: str | None
 ) -> None:
     """Persist the latest suggestions and source key in GPTState."""
+    debug_mode = bool(getattr(GPTState, "debug_enabled", False))
     suggestions_list: list[dict[str, str]] = []
     for item in suggestions:
         recipe = str(item.get("recipe", "") or "").strip()
         if recipe and not _recipe_has_directional(recipe):
+            if debug_mode:
+                print(f"record_suggestions skipped entry without directional: {recipe!r}")
             notify(
                 "GPT: Suggestion skipped because it has no directional lens; expected fog/fig/dig/ong/rog/bog/jog."
             )
@@ -31,6 +34,11 @@ def record_suggestions(
         suggestions_list.append(dict(item))
     GPTState.last_suggested_recipes = suggestions_list
     GPTState.last_suggest_source = source_key or ""
+    if debug_mode:
+        try:
+            print(f"record_suggestions stored {len(suggestions_list)} suggestions")
+        except Exception:
+            pass
 
 
 def last_suggestions() -> tuple[list[dict[str, str]], str]:

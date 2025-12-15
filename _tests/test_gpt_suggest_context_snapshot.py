@@ -227,10 +227,10 @@ def test_suggest_hydrates_system_prompt_defaults_from_settings():
         content = " ".join(parts)
 
         persona_expected = {
-            "Voice: " + persona_hydrate_tokens("voice", ["as programmer"])[0],
-            "Audience: " + persona_hydrate_tokens("audience", ["to stakeholders"])[0],
-            "Tone: " + persona_hydrate_tokens("tone", ["directly"])[0],
-            "Intent: " + persona_hydrate_tokens("intent", ["appreciate"])[0],
+            "Voice: Act as a programmer",
+            "Audience: The audience for this is the stakeholders",
+            "Tone: Use a direct, straightforward tone while remaining respectful.",
+            "Intent: The goal is to express appreciation or thanks.",
         }
         for needle in persona_expected:
             assert needle in content

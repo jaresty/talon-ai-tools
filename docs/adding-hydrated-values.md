@@ -2,11 +2,10 @@
 
 This is a crib sheet for adding new values for persona/intent (voice, audience, tone, intent, stance), directional lenses, static prompts, and contract axes (completeness, scope, method, form, channel) while keeping Talon lists, hydration helpers, and tests aligned.
 
-## 1) Add tokens to Talon lists (source of truth)
-- Persona/intent lists: `GPT/lists/modelVoice.talon-list`, `modelAudience.talon-list`, `modelTone.talon-list`, `modelIntent.talon-list`.
-- Contract axes: `GPT/lists/completenessModifier.talon-list`, `scopeModifier.talon-list`, `methodModifier.talon-list`, `formModifier.talon-list`, `channelModifier.talon-list`, `directionalModifier.talon-list`.
-- Static prompts: `GPT/lists/staticPrompt.talon-list`.
-- Keep file format: `token: description` lines; no free-form prose or multiple tokens on one line.
+## 1) Add tokens to the Python SSOT
+- Persona/intent tokens live in `lib/personaConfig.py` (`PERSONA_KEY_TO_VALUE` and helpers). Talon lists are populated dynamically at runtime from this map.
+- Contract axes live in `lib/axisConfig.py` (generated from the registry). Runtime Talon lists come from the catalog; no file edits needed.
+- Static prompts live in `lib/staticPromptConfig.py` / `static_prompt_catalog`. Talon lists are generated from the catalog (`make talon-lists`) but are not the source of truth.
 
 ## 2) Update structured configs
 - Axis docs (hydrated descriptions): `lib/axisConfig.py` is generated from the registry. After editing the Talon lists, regenerate:

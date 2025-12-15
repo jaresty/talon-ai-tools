@@ -1011,7 +1011,7 @@ if bootstrap is not None:
                 handle.result = PromptResult.from_messages(
                     [
                         format_message(
-                            "Name: Teach junior dev | Recipe: describe · gist · focus · scaffold · plain · fog | Stance: model write as teacher to junior engineer kindly for teaching | Why: Kind, stepwise explanation for less-experienced devs"
+                            "Name: Teach junior dev | Recipe: describe · gist · focus · scaffold · plain · fog | Stance: model write as teacher to junior engineer kindly | Why: Kind, stepwise explanation for less-experienced devs"
                         )
                     ]
                 )
@@ -1024,7 +1024,7 @@ if bootstrap is not None:
                         {
                             "name": "Teach junior dev",
                             "recipe": "describe · gist · focus · scaffold · plain · fog",
-                            "stance_command": "model write as teacher to junior engineer kindly for teaching",
+                            "stance_command": "model write as teacher to junior engineer kindly",
                             "why": "Kind, stepwise explanation for less-experienced devs",
                         }
                     ],

@@ -942,7 +942,7 @@ def _cheat_sheet_text() -> str:
         "- model help hub",
         "- model quick help / model show grammar",
         "- model patterns / model pattern menu <prompt>",
-        "- model run suggest / model run suggestions",
+        "- model run suggest / model suggestions",
         "- model history list / history drawer",
         "- model provider list / provider use <name> / provider status",
         "- model help (HTML docs)",
@@ -1044,7 +1044,7 @@ def _build_buttons() -> List[HubButton]:
             handler=_navigate_and_close(
                 lambda: actions.user.model_prompt_recipe_suggestions_gui_open()
             ),
-            voice_hint="Say: model run suggestions",
+            voice_hint="Say: model suggestions",
         ),
         HubButton(
             label="History",

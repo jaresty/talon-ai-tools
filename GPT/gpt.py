@@ -378,15 +378,17 @@ def _suggest_prompt_text(
         "- stance_command: a single-line, voice-friendly command that a user could\n"
         "  speak to set this stance. Valid forms are:\n"
         "  * Preferred (always valid):\n"
-        "    'model write <persona_voice> <persona_audience> <persona_tone> <intent_purpose>'\n"
-        "    using exactly the persona_voice/persona_audience/persona_tone/intent_purpose\n"
-        "    tokens you chose for this suggestion.\n"
-        "    You MUST include at least intent_purpose; never output 'model write'\n"
-        "    or 'model write for' on their own.\n"
+        "    'model write <persona_voice> <persona_audience> <persona_tone>'\n"
+        "    using exactly the persona_voice/persona_audience/persona_tone tokens\n"
+        "    you chose for this suggestion.\n"
+        "    Include at least one persona axis; never output 'model write',\n"
+        "    'model write plan', 'model write for teaching', or any other intent\n"
+        "    token inside stance_command.\n"
         "  * Optional (only when the stance matches a known preset):\n"
-        "    'persona <personaPreset>' and/or 'intent <intentPreset>' where\n"
-        "    <personaPreset> and <intentPreset> are names from the Persona/Intent\n"
-        "    preset lists (for example, 'persona teach junior dev', 'intent teach').\n"
+        "    'persona <personaPreset>' where <personaPreset> is a name from the\n"
+        "    Persona preset list (for example, 'persona teach junior dev').\n"
+        "  Do NOT include intent tokens or preset names in stance_command; intent is\n"
+        "  a separate `intent <intentPreset>` command captured via intent_purpose.\n"
         "  Never emit 'persona' followed directly by raw axis tokens; if you cannot\n"
         "  use a preset name, fall back to the 'model write' form above.\n"
         "- reasoning: 1–2 sentences describing why you chose this recipe/stance,\n"
@@ -403,7 +405,9 @@ def _suggest_prompt_text(
         "- When a different Persona/Intent stance would materially change how the\n"
         "  model should respond, you SHOULD fill persona_voice/persona_audience/\n"
         "  persona_tone/intent_purpose using ONLY the Persona/Intent token lists\n"
-        "  below, and you SHOULD provide a matching stance_command.\n"
+        "  below, and you SHOULD provide a matching stance_command for Persona\n"
+        "  (voice/audience/tone) only. Intent must be expressed via intent_purpose\n"
+        "  and the separate `intent <token>` command, not inside stance_command.\n"
         "- Across your 3 to 5 suggestions, include clear Persona/Intent stances for\n"
         "  at least two suggestions.\n"
         "- When you cannot sensibly express the stance with these tokens, leave\n"
@@ -746,7 +750,7 @@ def _build_persona_intent_docs() -> str:
             lines.append("")
 
         if INTENT_PRESETS:
-            lines.append("Intent presets (shortcut names for intent stances):")
+            lines.append("Intent presets (shortcut names for `intent` commands):")
             for preset in INTENT_PRESETS:
                 label = preset.label or preset.key
                 intent = preset.intent
@@ -757,11 +761,9 @@ def _build_persona_intent_docs() -> str:
 
     # Provide a few concrete stance examples that use only valid axis tokens.
     lines.append("Examples of valid stance commands:")
-    lines.append(
-        "- Stance: model write as teacher to junior engineer kindly for teaching"
-    )
-    lines.append("- Stance: model write as programmer to CEO directly for deciding")
-    lines.append("- Stance: model write as programmer to programmer for information")
+    lines.append("- Stance: model write as teacher to junior engineer kindly")
+    lines.append("- Stance: model write as programmer to CEO directly")
+    lines.append("- Stance: model write as programmer to programmer plainly")
     return "\n".join(lines).rstrip()
 
 
@@ -2327,11 +2329,31 @@ class UserActions:
         """Open the GPT help file in the web browser"""
         if _reject_if_request_in_flight():
             return
-        # Build a consolidated, scannable help page from all related lists
+        # Build a consolidated, scannable help page from catalog + persona SSOT
+        try:
+            catalog = axis_catalog()
+        except Exception:
+            catalog = {}
+
+        axis_lists = catalog.get("axis_list_tokens", {}) or {}
+        static_catalog = catalog.get("static_prompts") or static_prompt_catalog()
+        static_desc_overrides = (
+            catalog.get("static_prompt_descriptions") or static_prompt_description_overrides()
+        )
+
+        def _axis_tokens(axis: str) -> list[str]:
+            tokens = list(axis_lists.get(axis) or [])
+            if tokens:
+                return tokens
+            try:
+                return list(axis_docs_map(axis).keys())
+            except Exception:
+                return []
+
         current_dir = os.path.dirname(__file__)
         lists_dir = os.path.join(current_dir, "lists")
 
-        def read_list_lines(name: str) -> list[str]:
+        def _read_list_lines(name: str) -> list[str]:
             path = os.path.join(lists_dir, name)
             try:
                 with open(path, "r", encoding="utf-8") as f:
@@ -2340,30 +2362,15 @@ class UserActions:
             except FileNotFoundError:
                 return []
 
-        def render_list_as_tables(
+        def render_file_list_as_tables(
             title: str,
             filename: str,
             builder: Builder,
-            comment_mode: str = "section_headers",  # "section_headers", "preceding_description", or "static_prompts"
-            description_overrides: Optional[dict[str, str]] = None,
-            allowed_tokens: Optional[set[str]] = None,
+            comment_mode: str = "section_headers",
         ) -> None:
-            lines = read_list_lines(filename)
+            lines = _read_list_lines(filename)
             if not lines:
                 return
-            # Optionally filter tokens to keep core/primary values only.
-            if allowed_tokens is not None:
-                filtered: list[str] = []
-                for line in lines:
-                    # Lines follow "token: token" or comments; keep comments.
-                    stripped = line.strip()
-                    if not stripped or stripped.startswith("#"):
-                        filtered.append(line)
-                        continue
-                    token = stripped.split(":")[0].strip()
-                    if token in allowed_tokens:
-                        filtered.append(line)
-                lines = filtered
 
             builder.h2(title)
 
@@ -2386,31 +2393,13 @@ class UserActions:
             for raw in lines:
                 line = raw.strip()
                 if not line:
-                    # keep spacing logical but avoid empty rows
                     last_was_blank = True
                     continue
                 if line.startswith("#"):
-                    # Comments: either section headers or descriptions depending on mode
                     header = line.lstrip("# ")
                     if comment_mode == "preceding_description":
-                        # accumulate consecutive comment lines for the next key:value
                         if header:
                             last_comment_block.append(header)
-                    elif comment_mode == "static_prompts":
-                        # In static prompts, treat trailing-period comments as
-                        # descriptions, and other comments that follow a blank
-                        # line as section headers; remaining comments attach to
-                        # the next key as descriptions.
-                        if header.endswith("."):
-                            if header:
-                                last_comment_block.append(header)
-                        elif last_was_blank and not last_comment_block:
-                            close_table_if_open()
-                            if header:
-                                builder.h3(header)
-                        else:
-                            if header:
-                                last_comment_block.append(header)
                     else:
                         close_table_if_open()
                         if header:
@@ -2418,24 +2407,42 @@ class UserActions:
                     last_was_blank = False
                     continue
 
-                # Parse key: value rows (e.g., "emoji: Return only emoji.")
                 if ":" in line:
                     parts = line.split(":", 1)
                     key = parts[0].strip()
-                    if comment_mode in ("preceding_description", "static_prompts"):
-                        # Use accumulated comment(s) as description; fall back to inline text if none
+                    if comment_mode == "preceding_description":
                         desc = " ".join(last_comment_block).strip() or parts[1].strip()
                         last_comment_block = []
                     else:
                         desc = parts[1].strip()
-                    if description_overrides and key in description_overrides:
-                        desc = description_overrides[key]
-                    if key or desc:
-                        ensure_table_open()
-                        builder.add_row([key, desc])
+                    ensure_table_open()
+                    builder.add_row([key, desc])
                     last_was_blank = False
 
             close_table_if_open()
+
+        def render_token_table(
+            title: str,
+            tokens: list[str],
+            builder: Builder,
+            description_overrides: Optional[dict[str, str]] = None,
+            allowed_tokens: Optional[set[str]] = None,
+        ) -> None:
+            if not tokens:
+                return
+            rows: list[tuple[str, str]] = []
+            for token in sorted(tokens):
+                if allowed_tokens is not None and token not in allowed_tokens:
+                    continue
+                desc_map = description_overrides or {}
+                rows.append((token, desc_map.get(token, "")))
+            if not rows:
+                return
+            builder.h2(title)
+            builder.start_table(["Trigger", "Description"])
+            for key, desc in rows:
+                builder.add_row([key, desc])
+            builder.end_table()
 
         builder = Builder()
         builder.title("Talon GPT Reference")
@@ -2464,96 +2471,85 @@ class UserActions:
 
         # Order for easy scanning with Cmd-F
         # Static prompts prefer descriptions from the shared static prompt
-        # configuration façade so there is a single source of truth, while
-        # section headers in the Talon list still provide visual groupings in
-        # the help.
-        render_list_as_tables(
+        # configuration façade so there is a single source of truth.
+        render_token_table(
             "Static Prompts",
-            "staticPrompt.talon-list",
+            list(static_catalog.get("talon_list_tokens") or []),
             builder,
-            comment_mode="static_prompts",
-            description_overrides=static_prompt_description_overrides(),
+            description_overrides=static_desc_overrides,
         )
-        render_list_as_tables(
+        render_token_table(
             "Directional Modifiers",
-            "directionalModifier.talon-list",
-            builder,
-            description_overrides=axis_docs_map("directional"),
-        )
-        render_list_as_tables(
-            "Completeness Modifiers",
-            "completenessModifier.talon-list",
-            builder,
-            description_overrides=axis_docs_map("completeness"),
-        )
-        render_list_as_tables(
-            "Scope Modifiers",
-            "scopeModifier.talon-list",
-            builder,
-            description_overrides=axis_docs_map("scope"),
-        )
-        render_list_as_tables(
-            "Method Modifiers",
-            "methodModifier.talon-list",
-            builder,
-            description_overrides=axis_docs_map("method"),
-        )
-        render_list_as_tables(
-            "Form Modifiers",
-            "formModifier.talon-list",
-            builder,
-            description_overrides=axis_docs_map("form"),
-        )
-        render_list_as_tables(
-            "Channel Modifiers",
-            "channelModifier.talon-list",
-            builder,
-            description_overrides=axis_docs_map("channel"),
-        )
-        render_list_as_tables(
-            "Directional Modifiers",
-            "directionalModifier.talon-list",
+            _axis_tokens("directional"),
             builder,
             description_overrides=axis_docs_map("directional"),
             allowed_tokens={"fog", "fig", "dig", "ong", "rog", "bog", "jog"},
         )
-        # For persona and intent axes, keep the Talon lists as token carriers and
-        # pull rich descriptions from a Python persona config so we do not bake
-        # long instructions directly into the .talon files.
+        render_token_table(
+            "Completeness Modifiers",
+            _axis_tokens("completeness"),
+            builder,
+            description_overrides=axis_docs_map("completeness"),
+        )
+        render_token_table(
+            "Scope Modifiers",
+            _axis_tokens("scope"),
+            builder,
+            description_overrides=axis_docs_map("scope"),
+        )
+        render_token_table(
+            "Method Modifiers",
+            _axis_tokens("method"),
+            builder,
+            description_overrides=axis_docs_map("method"),
+        )
+        render_token_table(
+            "Form Modifiers",
+            _axis_tokens("form"),
+            builder,
+            description_overrides=axis_docs_map("form"),
+        )
+        render_token_table(
+            "Channel Modifiers",
+            _axis_tokens("channel"),
+            builder,
+            description_overrides=axis_docs_map("channel"),
+        )
+        # Persona/intent axes come from the persona SSOT.
         from ..lib.personaConfig import persona_docs_map
 
-        render_list_as_tables(
+        render_token_table(
             "Voice",
-            "modelVoice.talon-list",
+            list((persona_docs_map("voice") or {}).keys()),
             builder,
             description_overrides=persona_docs_map("voice"),
         )
-        render_list_as_tables(
+        render_token_table(
             "Tone",
-            "modelTone.talon-list",
+            list((persona_docs_map("tone") or {}).keys()),
             builder,
             description_overrides=persona_docs_map("tone"),
         )
-        render_list_as_tables(
+        render_token_table(
             "Audience",
-            "modelAudience.talon-list",
+            list((persona_docs_map("audience") or {}).keys()),
             builder,
             description_overrides=persona_docs_map("audience"),
         )
-        render_list_as_tables(
+        render_token_table(
             "Intent",
-            "modelIntent.talon-list",
+            list((persona_docs_map("intent") or {}).keys()),
             builder,
             description_overrides=persona_docs_map("intent"),
         )
         # For Sources/Destinations, descriptions live in the preceding comment lines
-        render_list_as_tables(
+        render_file_list_as_tables(
             "Sources",
             "modelSource.talon-list",
             builder,
             comment_mode="preceding_description",
         )
-        render_list_as_tables(
+        render_file_list_as_tables(
             "Destinations",
             "modelDestination.talon-list",
             builder,
@@ -2800,55 +2796,7 @@ def _suggest_prompt_recipes_core_impl(source: ModelSource, subject: str) -> None
     # text never opens the confirmation viewer.
     prev_suppress = getattr(GPTState, "suppress_response_canvas", False)
     GPTState.suppress_response_canvas = True
-    result = None
-    # Start a fresh request for suggestions so we don't accidentally
-    # reuse the previous GPTState.request (for example, from the last
-    # `model` call). This avoids leaking prior prompt content into
-    # the suggestion meta-prompt.
-    try:
-        session.begin()
-        session.add_system_prompt()
-        session.add_messages([format_messages("user", [format_message(user_text)])])
-        try:
-            handle = _prompt_pipeline.complete_async(session)
-            completed = False
-            try:
-                completed = bool(handle.wait(timeout=10.0))
-            except Exception:
-                completed = False
-            result = getattr(handle, "result", None)
-            error = getattr(handle, "error", None)
-            if error:
-                raise error
-            # If the async path is still running, wait for it to finish rather than
-            # dispatching a duplicate synchronous request.
-            is_done = bool(getattr(handle, "done", completed))
-            if not is_done and result is None:
-                try:
-                    handle.wait(timeout=None)
-                    is_done = True
-                except Exception:
-                    is_done = completed
-                result = getattr(handle, "result", None)
-            if result is None and is_done:
-                result = _prompt_pipeline.complete(session)
-        except Exception:
-            result = None
-        if result is None:
-            result = _prompt_pipeline.complete(session)
-        if manual_request_id is not None:
-            try:
-                emit_complete(request_id=manual_request_id)
-            except Exception:
-                pass
-    except Exception as exc:
-        if manual_request_id is not None:
-            try:
-                emit_fail(str(exc), request_id=manual_request_id)
-            except Exception:
-                pass
-        raise
-    finally:
+    def _restore_request_state():
         try:
             GPTState.suppress_response_canvas = prev_suppress
         except Exception:
@@ -2868,246 +2816,321 @@ def _suggest_prompt_recipes_core_impl(source: ModelSource, subject: str) -> None
         except Exception:
             pass
 
-    # Attempt to parse the result text into structured suggestions so
-    # future loops (for example, a suggestions GUI) can reuse them
-    # without re-calling the model. Prefer the JSON shape described in
-    # ADR 042; fall back to the legacy line-based format if needed.
-    suggestions: list[dict[str, str]] = []
-    raw_text = getattr(result, "text", "") or ""
-    raw_text = str(raw_text).strip()
+    def _process_suggest_result(result) -> None:
+        # Attempt to parse the result text into structured suggestions so
+        # future loops (for example, a suggestions GUI) can reuse them
+        # without re-calling the model. Prefer the JSON shape described in
+        # ADR 042; fall back to the legacy line-based format if needed.
+        suggestions: list[dict[str, str]] = []
+        raw_text = getattr(result, "text", "") or ""
+        raw_text = str(raw_text).strip()
+        debug_mode = bool(getattr(GPTState, "debug_enabled", False))
+        if debug_mode:
+            try:
+                print(f"GPT model suggest raw text ({len(raw_text)} chars): {raw_text[:200]!r}")
+            except Exception:
+                pass
 
-    def _normalise_recipe(value: str) -> str:
-        """Normalise a recipe string and enforce a single static prompt token.
+        def _normalise_recipe(value: str) -> str:
+            """Normalise a recipe string and enforce a single static prompt token.
 
-        This preserves the existing behaviour: we require a single
-        <staticPrompt> token and a single known directional token; we drop
-        any suggestion that does not meet these constraints. Axis caps are
-        enforced per ADR 048 (scope≤2, method≤3, form=1, channel=1).
-        """
-        recipe_value = (value or "").strip()
-        if not recipe_value:
-            return ""
-        parts = [t.strip() for t in recipe_value.split("·") if t.strip()]
-        if not parts:
-            return ""
-        static_tokens = parts[0].split()
-        if len(static_tokens) > 1:
-            parts[0] = static_tokens[0]
-        raw_directional = parts[-1] if len(parts) > 1 else ""
-        directional = _canonical_axis_value("directional", raw_directional)
-        if not directional:
-            return ""
-        parts[-1] = directional
-        # Enforce axis caps on the remaining segments when present.
-        # Expected shape: static · completeness · scope · method · form · channel · directional
-        if len(parts) >= 6:
-            scope_tokens = parts[2].split() if len(parts) > 2 else []
-            method_tokens = parts[3].split() if len(parts) > 3 else []
-            form_tokens = parts[4].split() if len(parts) > 4 else []
-            channel_tokens = parts[5].split() if len(parts) > 5 else []
-            if scope_tokens:
-                parts[2] = " ".join(scope_tokens[-2:])
-            if method_tokens:
-                parts[3] = " ".join(method_tokens[-3:])
-            if form_tokens:
-                parts[4] = form_tokens[-1]
-            if channel_tokens:
-                parts[5] = channel_tokens[-1]
-        return " · ".join(parts)
+            This preserves the existing behaviour: we require a single
+            <staticPrompt> token and a single known directional token; we drop
+            any suggestion that does not meet these constraints. Axis caps are
+            enforced per ADR 048 (scope≤2, method≤3, form=1, channel=1).
+            """
+            recipe_value = (value or "").strip()
+            if not recipe_value:
+                return ""
+            parts = [t.strip() for t in recipe_value.split("·") if t.strip()]
+            if not parts:
+                return ""
+            static_tokens = parts[0].split()
+            if len(static_tokens) > 1:
+                parts[0] = static_tokens[0]
+            raw_directional = parts[-1] if len(parts) > 1 else ""
+            directional = _canonical_axis_value("directional", raw_directional)
+            if not directional:
+                return ""
+            parts[-1] = directional
+            # Enforce axis caps on the remaining segments when present.
+            # Expected shape: static · completeness · scope · method · form · channel · directional
+            if len(parts) >= 6:
+                scope_tokens = parts[2].split() if len(parts) > 2 else []
+                method_tokens = parts[3].split() if len(parts) > 3 else []
+                form_tokens = parts[4].split() if len(parts) > 4 else []
+                channel_tokens = parts[5].split() if len(parts) > 5 else []
+                if scope_tokens:
+                    parts[2] = " ".join(scope_tokens[-2:])
+                if method_tokens:
+                    parts[3] = " ".join(method_tokens[-3:])
+                if form_tokens:
+                    parts[4] = form_tokens[-1]
+                if channel_tokens:
+                    parts[5] = channel_tokens[-1]
+            return " · ".join(parts)
 
-    if raw_text:
-        parsed_from_json = False
-        # First, try the structured JSON format.
-        try:
-            data = json.loads(raw_text)
-            if isinstance(data, dict):
-                raw_suggestions = data.get("suggestions", [])
-                if isinstance(raw_suggestions, list):
-                    debug_failures: list[dict[str, object]] = []
-                    for item in raw_suggestions:
-                        if not isinstance(item, dict):
-                            continue
-                        name = str(item.get("name", "")).strip()
-                        recipe_value = str(item.get("recipe", "")).strip()
-                        persona_voice = str(item.get("persona_voice", "")).strip()
-                        persona_audience = str(
-                            item.get("persona_audience", "")
-                        ).strip()
-                        persona_tone = str(item.get("persona_tone", "")).strip()
-                        intent_purpose = str(item.get("intent_purpose", "")).strip()
-                        raw_stance = str(item.get("stance_command", "")).strip()
-                        why_text = str(item.get("why", "")).strip()
-                        reasoning = str(item.get("reasoning", "")).strip()
+        if raw_text:
+            parsed_from_json = False
+            # First, try the structured JSON format.
+            try:
+                data = json.loads(raw_text)
+                if isinstance(data, dict):
+                    raw_suggestions = data.get("suggestions", [])
+                    if isinstance(raw_suggestions, list):
+                        debug_failures: list[dict[str, object]] = []
+                        for item in raw_suggestions:
+                            if not isinstance(item, dict):
+                                continue
+                            name = str(item.get("name", "")).strip()
+                            recipe_value = str(item.get("recipe", "")).strip()
+                            persona_voice = str(item.get("persona_voice", "")).strip()
+                            persona_audience = str(
+                                item.get("persona_audience", "")
+                            ).strip()
+                            persona_tone = str(item.get("persona_tone", "")).strip()
+                            intent_purpose = str(item.get("intent_purpose", "")).strip()
+                            raw_stance = str(item.get("stance_command", "")).strip()
+                            why_text = str(item.get("why", "")).strip()
+                            reasoning = str(item.get("reasoning", "")).strip()
 
-                        debug_record: dict[str, object] = {
-                            "name": name,
-                            "raw": {
-                                "recipe": recipe_value,
-                                "persona_voice": persona_voice,
-                                "persona_audience": persona_audience,
-                                "persona_tone": persona_tone,
-                                "intent_purpose": intent_purpose,
-                                "stance_command": raw_stance,
-                                "reasoning": reasoning,
-                            },
-                            "failures": [],
-                        }
-                        failures = cast(list[str], debug_record["failures"])
+                            debug_record: dict[str, object] = {
+                                "name": name,
+                                "raw": {
+                                    "recipe": recipe_value,
+                                    "persona_voice": persona_voice,
+                                    "persona_audience": persona_audience,
+                                    "persona_tone": persona_tone,
+                                    "intent_purpose": intent_purpose,
+                                    "stance_command": raw_stance,
+                                    "reasoning": reasoning,
+                                },
+                                "failures": [],
+                            }
+                            failures = cast(list[str], debug_record["failures"])
 
-                        if not name:
-                            failures.append("missing_name")
-                        if not recipe_value:
-                            failures.append("missing_recipe")
-                        if not name or not recipe_value:
+                            if not name:
+                                failures.append("missing_name")
+                            if not recipe_value:
+                                failures.append("missing_recipe")
+                            if not name or not recipe_value:
+                                if failures:
+                                    debug_failures.append(debug_record)
+                                continue
+
+                            recipe = _normalise_recipe(recipe_value)
+                            if not recipe:
+                                failures.append("recipe_invalid")
+                                debug_failures.append(debug_record)
+                                continue
+
+                            entry: dict[str, str] = {"name": name, "recipe": recipe}
+                            if persona_voice:
+                                entry["persona_voice"] = persona_voice
+                            if persona_audience:
+                                entry["persona_audience"] = persona_audience
+                            if persona_tone:
+                                entry["persona_tone"] = persona_tone
+                            if intent_purpose:
+                                entry["intent_purpose"] = intent_purpose
+
+                            if raw_stance:
+                                if _valid_stance_command(raw_stance):
+                                    entry["stance_command"] = raw_stance
+                                else:
+                                    failures.append("stance_invalid_form")
+
+                            if why_text:
+                                entry["why"] = why_text
+                            if reasoning:
+                                entry["reasoning"] = reasoning
+
+                            suggestions.append(entry)
                             if failures:
                                 debug_failures.append(debug_record)
-                            continue
 
-                        recipe = _normalise_recipe(recipe_value)
-                        if not recipe:
-                            failures.append("recipe_invalid")
-                            debug_failures.append(debug_record)
-                            continue
-
-                        entry: dict[str, str] = {"name": name, "recipe": recipe}
-                        if persona_voice:
-                            entry["persona_voice"] = persona_voice
-                        if persona_audience:
-                            entry["persona_audience"] = persona_audience
-                        if persona_tone:
-                            entry["persona_tone"] = persona_tone
-                        if intent_purpose:
-                            entry["intent_purpose"] = intent_purpose
-
-                        if raw_stance:
-                            if _valid_stance_command(raw_stance):
-                                entry["stance_command"] = raw_stance
-                            else:
-                                failures.append("stance_invalid_form")
-
-                        if why_text:
-                            entry["why"] = why_text
-                        if reasoning:
-                            entry["reasoning"] = reasoning
-
-                        suggestions.append(entry)
-                        if failures:
-                            debug_failures.append(debug_record)
-
-                    if debug_failures and getattr(GPTState, "debug_enabled", False):
-                        try:
-                            lines: list[str] = []
-                            for record in debug_failures[:5]:
-                                name = str(record.get("name") or "<unnamed>")
-                                raw = cast(dict[str, object], record.get("raw", {}))
-                                failures = cast(
-                                    list[str], record.get("failures") or []
+                        if debug_failures and getattr(GPTState, "debug_enabled", False):
+                            try:
+                                lines: list[str] = []
+                                for record in debug_failures[:5]:
+                                    name = str(record.get("name") or "<unnamed>")
+                                    raw = cast(dict[str, object], record.get("raw", {}))
+                                    failures = cast(
+                                        list[str], record.get("failures") or []
+                                    )
+                                    recipe_val = str(raw.get("recipe", ""))
+                                    stance_val = str(raw.get("stance_command", ""))
+                                    reasoning_val = str(raw.get("reasoning", ""))
+                                    line = (
+                                        f"{name}: {','.join(failures)} | "
+                                        f"recipe={recipe_val!r} stance={stance_val!r}"
+                                    )
+                                    if reasoning_val:
+                                        line += f" | reasoning={reasoning_val[:80]!r}"
+                                    lines.append(line)
+                                print(
+                                    "GPT model suggest: validation failures:\n"
+                                    + "\n".join(lines)
                                 )
-                                recipe_val = str(raw.get("recipe", ""))
-                                stance_val = str(raw.get("stance_command", ""))
-                                reasoning_val = str(raw.get("reasoning", ""))
-                                line = (
-                                    f"{name}: {','.join(failures)} | "
-                                    f"recipe={recipe_val!r} stance={stance_val!r}"
+                            except Exception:
+                                pass
+
+                parsed_from_json = bool(suggestions)
+            except Exception:
+                parsed_from_json = False
+
+            # Legacy fallback: parse pipe-separated lines if JSON was not usable.
+            if not parsed_from_json:
+                for raw_line in raw_text.splitlines():
+                    line = raw_line.strip()
+                    if not line or "|" not in line:
+                        continue
+                    segments = [seg.strip() for seg in line.split("|") if seg.strip()]
+                    if len(segments) < 2:
+                        continue
+                    name_part = segments[0]
+                    if "Name:" in name_part:
+                        _, name_value = name_part.split("Name:", 1)
+                        name = name_value.strip()
+                    else:
+                        name = name_part.strip().strip(":")
+                    if not name:
+                        continue
+
+                    recipe_value = ""
+                    for seg in segments[1:]:
+                        if "Recipe:" in seg:
+                            _, recipe_part = seg.split("Recipe:", 1)
+                            recipe_value = recipe_part.strip()
+                            break
+                    if not recipe_value and len(segments) > 1:
+                        candidate = segments[1].strip()
+                        if "·" in candidate:
+                            recipe_value = candidate
+                    recipe = _normalise_recipe(recipe_value)
+                    if not recipe:
+                        continue
+
+                    stance_command = ""
+                    why_text = ""
+                    for seg in segments[1:]:
+                        if "Stance:" in seg:
+                            _, stance_part = seg.split("Stance:", 1)
+                            stance_command = stance_part.strip()
+                        elif "Why:" in seg:
+                            _, why_part = seg.split("Why:", 1)
+                            why_text = why_part.strip()
+
+                    entry: dict[str, str] = {"name": name, "recipe": recipe}
+                    if stance_command:
+                        if _valid_stance_command(stance_command):
+                            entry["stance_command"] = stance_command
+                        elif getattr(GPTState, "debug_enabled", False):
+                            try:
+                                print(
+                                    "GPT model suggest: invalid legacy stance for "
+                                    f"'{name}': {stance_command}"
                                 )
-                                if reasoning_val:
-                                    line += f" | reasoning={reasoning_val[:80]!r}"
-                                lines.append(line)
-                            print(
-                                "GPT model suggest: validation failures:\n"
-                                + "\n".join(lines)
-                            )
-                        except Exception:
-                            pass
+                            except Exception:
+                                pass
+                    if why_text:
+                        entry["why"] = why_text
+                    suggestions.append(entry)
 
-            parsed_from_json = bool(suggestions)
-        except Exception:
-            parsed_from_json = False
-
-        # Legacy fallback: parse pipe-separated lines if JSON was not usable.
-        if not parsed_from_json:
-            for raw_line in raw_text.splitlines():
-                line = raw_line.strip()
-                if not line or "|" not in line:
-                    continue
-                segments = [seg.strip() for seg in line.split("|") if seg.strip()]
-                if len(segments) < 2:
-                    continue
-                name_part = segments[0]
-                if "Name:" in name_part:
-                    _, name_value = name_part.split("Name:", 1)
-                    name = name_value.strip()
-                else:
-                    name = name_part.strip().strip(":")
-                if not name:
-                    continue
-
-                recipe_value = ""
-                for seg in segments[1:]:
-                    if "Recipe:" in seg:
-                        _, recipe_part = seg.split("Recipe:", 1)
-                        recipe_value = recipe_part.strip()
-                        break
-                if not recipe_value and len(segments) > 1:
-                    candidate = segments[1].strip()
-                    if "·" in candidate:
-                        recipe_value = candidate
-                recipe = _normalise_recipe(recipe_value)
-                if not recipe:
-                    continue
-
-                stance_command = ""
-                why_text = ""
-                for seg in segments[1:]:
-                    if "Stance:" in seg:
-                        _, stance_part = seg.split("Stance:", 1)
-                        stance_command = stance_part.strip()
-                    elif "Why:" in seg:
-                        _, why_part = seg.split("Why:", 1)
-                        why_text = why_part.strip()
-
-                entry: dict[str, str] = {"name": name, "recipe": recipe}
-                if stance_command:
-                    if _valid_stance_command(stance_command):
-                        entry["stance_command"] = stance_command
-                    elif getattr(GPTState, "debug_enabled", False):
-                        try:
-                            print(
-                                "GPT model suggest: invalid legacy stance for "
-                                f"'{name}': {stance_command}"
-                            )
-                        except Exception:
-                            pass
-                if why_text:
-                    entry["why"] = why_text
-                suggestions.append(entry)
-
-    if suggestions:
-        record_suggestions(suggestions, suggest_source_key)
-        try:
+        if debug_mode or not suggestions:
             try:
-                notify("GPT: Opening prompt recipe suggestions window")
+                print(f"GPT model suggest parsed {len(suggestions)} suggestions")
             except Exception:
                 pass
-            actions.user.model_prompt_recipe_suggestions_gui_open()
+
+        if suggestions:
+            record_suggestions(suggestions, suggest_source_key)
             try:
-                notify("GPT: Prompt recipe suggestions window opened")
-            except Exception:
-                pass
-            # When the suggestion GUI opens successfully, we do not also
-            # open the confirmation GUI; the picker becomes the primary
-            # surface for these recipes.
-        except Exception as exc:
-            try:
-                notify(
-                    f"GPT: Suggestion GUI unavailable; inserting raw suggestions instead ({exc})"
-                )
-            except Exception:
-                pass
-            # If the GUI is not available for any reason, still insert the
-            # raw suggestions so the feature remains usable.
+                try:
+                    notify("GPT: Opening prompt recipe suggestions window")
+                except Exception:
+                    pass
+                actions.user.model_prompt_recipe_suggestions_gui_open()
+                try:
+                    notify("GPT: Prompt recipe suggestions window opened")
+                except Exception:
+                    pass
+                # When the suggestion GUI opens successfully, we do not also
+                # open the confirmation GUI; the picker becomes the primary
+                # surface for these recipes.
+            except Exception as exc:
+                try:
+                    notify(
+                        f"GPT: Suggestion GUI unavailable; inserting raw suggestions instead ({exc})"
+                    )
+                except Exception:
+                    pass
+                # If the GUI is not available for any reason, still insert the
+                # raw suggestions so the feature remains usable.
+                actions.user.gpt_insert_response(result, fallback_destination)
+        else:
+            # If we didn't recognise any suggestions, fall back to the normal
+            # insertion flow so the user can still see the raw output.
             actions.user.gpt_insert_response(result, fallback_destination)
+
+    # Start a fresh request for suggestions so we don't accidentally
+    # reuse the previous GPTState.request (for example, from the last
+    # `model` call). This avoids leaking prior prompt content into
+    # the suggestion meta-prompt.
+    session.begin()
+    session.add_system_prompt()
+    session.add_messages([format_messages("user", [format_message(user_text)])])
+
+    raw_block = settings.get(ASYNC_BLOCKING_SETTING, False)
+    block = False if raw_block is None else bool(raw_block)
+    # In test environments, prefer blocking so unit tests observe parsed suggestions immediately.
+    try:
+        import os
+        if os.environ.get("PYTEST_CURRENT_TEST"):
+            block = True
+    except Exception:
+        pass
+
+    def _finish_suggest(handle=None):
+        result = None
+        try:
+            if handle is not None:
+                try:
+                    handle.wait(timeout=None)
+                except Exception:
+                    pass
+                result = getattr(handle, "result", None)
+                error = getattr(handle, "error", None)
+                if isinstance(error, BaseException):
+                    raise error
+                if result is None:
+                    result = _prompt_pipeline.complete(session)
+            else:
+                result = _prompt_pipeline.complete(session)
+            if manual_request_id is not None:
+                try:
+                    emit_complete(request_id=manual_request_id)
+                except Exception:
+                    pass
+        except Exception as exc:
+            if manual_request_id is not None:
+                try:
+                    emit_fail(str(exc), request_id=manual_request_id)
+                except Exception:
+                    pass
+            _restore_request_state()
+            return
+
+        _restore_request_state()
+        if result is not None:
+            _process_suggest_result(result)
+
+    try:
+        handle = _prompt_pipeline.complete_async(session)
+    except Exception:
+        handle = None
+
+    if block or handle is None:
+        _finish_suggest(handle)
     else:
-        # If we didn't recognise any suggestions, fall back to the normal
-        # insertion flow so the user can still see the raw output.
-        actions.user.gpt_insert_response(result, fallback_destination)
+        threading.Thread(target=_finish_suggest, args=(handle,), daemon=True).start()

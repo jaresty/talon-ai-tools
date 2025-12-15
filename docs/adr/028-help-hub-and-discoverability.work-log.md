@@ -178,11 +178,11 @@
 
 ### Summary of this loop
 
-- Added `{user.model} quick help hub` Talon command to open the Help Hub directly from the quick-help grammar.
+- Quick help now links users to the Help Hub; open it directly with `{user.model} help hub`.
 
 ### Behaviour impact
 
-- Users can now say “model quick help hub” to jump from grammar help to the Help Hub.
+- Users can say “model help hub” to jump from grammar help to the Help Hub.
 
 ### Follow-ups
 

@@ -10,13 +10,17 @@ AXIS_LIST_FILES = {
     "channelModifier.talon-list",
     "directionalModifier.talon-list",
     "staticPrompt.talon-list",
+    "modelVoice.talon-list",
+    "modelTone.talon-list",
+    "modelAudience.talon-list",
+    "modelIntent.talon-list",
 }
 
 if not TYPE_CHECKING:
 
     class NoTrackedAxisListsTests(unittest.TestCase):
         def test_axis_static_prompt_lists_not_tracked(self) -> None:
-            """Guardrail: axis/static prompt Talon list files should not be tracked on disk."""
+            """Guardrail: axis/static prompt/persona Talon list files should not be tracked on disk."""
 
             lists_dir = Path(__file__).resolve().parents[1] / "GPT" / "lists"
             for name in AXIS_LIST_FILES:

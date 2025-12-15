@@ -9,61 +9,14 @@ else:
     bootstrap()
 
 if bootstrap is not None:
-    from pathlib import Path
-
     class VoiceAudienceToneIntentListTests(unittest.TestCase):
         def setUp(self) -> None:
-            self.root = Path(__file__).resolve().parents[1]
-            self.lists_dir = self.root / "GPT" / "lists"
+            from lib.personaConfig import PERSONA_KEY_TO_VALUE
 
-        def _read_keys(self, filename: str) -> set[str]:
-            path = self.lists_dir / filename
-            self.assertTrue(
-                path.is_file(),
-                f"Expected list file {filename!r} to exist",
-            )
-            keys: set[str] = set()
-            with path.open("r", encoding="utf-8") as f:
-                for line in f:
-                    s = line.strip()
-                    if (
-                        not s
-                        or s.startswith("#")
-                        or s.startswith("list:")
-                        or s == "-"
-                    ):
-                        continue
-                    if ":" not in s:
-                        continue
-                    key, _ = s.split(":", 1)
-                    keys.add(key.strip())
-            return keys
-
-        def _read_values(self, filename: str) -> set[str]:
-            path = self.lists_dir / filename
-            self.assertTrue(
-                path.is_file(),
-                f"Expected list file {filename!r} to exist",
-            )
-            values: set[str] = set()
-            with path.open("r", encoding="utf-8") as f:
-                for line in f:
-                    s = line.strip()
-                    if (
-                        not s
-                        or s.startswith("#")
-                        or s.startswith("list:")
-                        or s == "-"
-                    ):
-                        continue
-                    if ":" not in s:
-                        continue
-                    _, value = s.split(":", 1)
-                    values.add(value.strip())
-            return values
+            self.persona_map = PERSONA_KEY_TO_VALUE
 
         def test_model_voice_list_trimmed_to_core_set(self) -> None:
-            keys = self._read_keys("modelVoice.talon-list")
+            keys = set(self.persona_map["voice"].keys())
 
             # Core voices we expect to keep.
             expected = {
@@ -114,7 +67,7 @@ if bootstrap is not None:
                 )
 
         def test_model_audience_list_trimmed_to_core_set(self) -> None:
-            keys = self._read_keys("modelAudience.talon-list")
+            keys = set(self.persona_map["audience"].keys())
 
             expected = {
                 "to managers",
@@ -156,7 +109,7 @@ if bootstrap is not None:
                 )
 
         def test_model_tone_list_trimmed_and_neutral_is_default(self) -> None:
-            keys = self._read_keys("modelTone.talon-list")
+            keys = set(self.persona_map["tone"].keys())
 
             self.assertEqual(
                 keys,

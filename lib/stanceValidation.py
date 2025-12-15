@@ -3,9 +3,9 @@ from __future__ import annotations
 """Shared stance command validation for `model suggest`.
 
 This module centralises the logic for deciding whether a stance_command
-string is actually sayable under the current Persona/Intent preset and
-axis vocab. It is used by both the GPT suggestion parser and the
-suggestions GUI.
+string is actually sayable under the current Persona preset and axis
+vocab. It is used by both the GPT suggestion parser and the suggestions
+GUI.
 """
 
 from .personaConfig import (
@@ -39,11 +39,11 @@ def valid_stance_command(cmd: str) -> bool:
     """Return True if cmd is a sayable stance command.
 
     Allowed forms (case-insensitive, with optional whitespace):
-    - model write <persona_voice> <persona_audience> <persona_tone> <intent>
-      where at least one known intent token (for teaching/deciding/...) is present.
+    - model write <persona_voice> <persona_audience> <persona_tone>
+      (intent is set via the separate `intent <token>` command, not here).
     - persona <personaPreset>
-    - intent <intentPreset>
-    - persona <personaPreset> · intent <intentPreset> (or the reverse order).
+    - persona <personaPreset> · persona <personaPreset> (or other persona-only
+      combinations using presets).
     """
     if not cmd:
         return False
@@ -62,34 +62,22 @@ def valid_stance_command(cmd: str) -> bool:
         return name in _PERSONA_PRESET_SPOKEN_SET
 
     if lower.startswith("intent "):
-        name = lower[len("intent ") :].strip()
-        return name in _INTENT_PRESET_SPOKEN_SET
+        return False
 
     if lower.startswith("model write "):
         tail = lower[len("model write ") :].strip()
         if not tail:
             return False
 
-        # Require at least one known intent token to appear verbatim in the
-        # command (for example, 'for teaching', 'teach').
-        if not (
-            any(intent in lower for intent in INTENT_TOKENS)
-            or any(intent in lower for intent in INTENT_SPOKEN_TOKENS)
-        ):
-            return False
-
-        # Enforce that the tail can be composed entirely from known
-        # Persona/Intent axis phrases. This is intentionally conservative: we
-        # treat axis tokens as whole phrases (for example, "as teacher",
-        # "to junior engineer", "kindly", "for teaching") and require that
-        # they tile the tail without leftovers.
+        # Enforce that the tail can be composed entirely from known Persona
+        # axis phrases, and that there is at least one Persona axis
+        # (voice/audience/tone) token. Intent tokens are not allowed here;
+        # intent is set via the separate `intent <token>` command.
         remaining = tail
-        seen_intent = False
+        seen_persona_axis = False
         # Sort by length so longer multi-word phrases ("to junior engineer")
         # win over their substrings.
-        axis_phrases = sorted(
-            AXIS_TOKENS | INTENT_SPOKEN_TOKENS, key=len, reverse=True
-        )
+        axis_phrases = sorted(VOICE_TOKENS | AUDIENCE_TOKENS | TONE_TOKENS, key=len, reverse=True)
         while remaining:
             stripped = remaining.lstrip()
             if not stripped:
@@ -101,13 +89,13 @@ def valid_stance_command(cmd: str) -> bool:
                     continue
                 if stripped.startswith(phrase_l):
                     matched = True
-                    if phrase_l in INTENT_TOKENS or phrase_l in INTENT_SPOKEN_TOKENS:
-                        seen_intent = True
+                    if phrase_l in VOICE_TOKENS or phrase_l in AUDIENCE_TOKENS or phrase_l in TONE_TOKENS:
+                        seen_persona_axis = True
                     remaining = stripped[len(phrase_l) :]
                     break
             if not matched:
                 return False
-        # At least one intent phrase must have been matched explicitly.
-        return seen_intent
+        # At least one Persona axis token is required; intent-only tails are not valid.
+        return seen_persona_axis
 
     return False

@@ -23,6 +23,7 @@ from .suggestionCoordinator import (
     suggestion_grammar_phrase,
     suggestion_context,
 )
+from .personaConfig import normalize_intent_token
 from .modelPatternGUI import (
     _axis_value,
     _parse_recipe,
@@ -92,6 +93,9 @@ _suggestion_hover_close: bool = False
 _suggestion_hover_index: Optional[int] = None
 _suggestion_drag_offset: Optional[Tuple[float, float]] = None
 _scroll_debug_samples: int = 0
+_WHY_REASON_LABEL = "Why:"
+_AXES_LEGEND = "Axes: Completeness | Scope | Method | Form | Channel | Directional"
+_SECONDARY_INDENT = 12
 
 # Simple geometry defaults to keep the panel centered and readable.
 _PANEL_WIDTH = 840
@@ -146,6 +150,7 @@ def _measure_suggestion_height(
 ) -> int:
     """Approximate the rendered height of a suggestion row."""
     h = 0
+    stance_info = _suggestion_stance_info(suggestion)
     # Label, Say, Axes (axes summary always present if any recipe parts).
     h += line_h  # label
     source_key = getattr(GPTState, "last_suggest_source", "")
@@ -154,6 +159,7 @@ def _measure_suggestion_height(
     )
     say_lines = _wrap_lines_count(f"Say: {grammar_phrase}", x_pos + 4, rect, approx_char, line_h)
     h += line_h * max(say_lines, 1)
+    h += line_h // 2  # breathing room after commands
     # Axes line (may be empty but draw once when non-empty).
     (
         _static_prompt,
@@ -164,50 +170,40 @@ def _measure_suggestion_height(
         channel,
         directional,
     ) = _parse_recipe(suggestion.recipe)
-    summary_parts: list[str] = []
-    if completeness:
-        summary_parts.append(f"C:{completeness}")
-    if scope:
-        summary_parts.append(f"S:{scope}")
-    if method:
-        summary_parts.append(f"M:{method}")
-    if form:
-        summary_parts.append(f"F:{form}")
-    if channel:
-        summary_parts.append(f"Ch:{channel}")
-    if directional:
-        summary_parts.append(f"D:{directional}")
-    if summary_parts:
-        h += line_h
+    axes_text = _axes_summary(completeness, scope, method, form, channel, directional)
+    if axes_text:
+        lines = _wrap_lines_count(f"Axes: {axes_text}", x_pos + 4, rect, approx_char, line_h)
+        h += line_h * max(lines, 1)
+        h += line_h // 2  # separation before stance block
 
-    has_persona_axes = bool(
-        getattr(suggestion, "persona_voice", "")
-        or getattr(suggestion, "persona_audience", "")
-        or getattr(suggestion, "persona_tone", "")
-    )
-    has_intent_axis = bool(getattr(suggestion, "intent_purpose", ""))
-    raw_stance = (suggestion.stance_command or "").strip()
-    stance_text = raw_stance if valid_stance_command(raw_stance) else ""
+    persona_bits = stance_info["persona_bits"]
+    intent_display = stance_info["intent_display"]
+    stance_text = stance_info.get("stance_display", stance_info["stance_command"])
+    has_persona_axes = bool(persona_bits)
+    has_intent_axis = bool(intent_display)
     has_stance_command = bool(stance_text)
-    has_why = bool(suggestion.why)
+    why_text = stance_info["why_text"]
+    has_why = bool(why_text)
 
     if has_persona_axes or has_intent_axis or has_stance_command or has_why:
         h += line_h  # spacing before stance block
         if has_stance_command:
-            lines = _wrap_lines_count(f"Say: {stance_text}", x_pos + 4, rect, approx_char, line_h)
+            lines = _wrap_lines_count(
+                f"Say (stance): {stance_text}", x_pos + 4, rect, approx_char, line_h
+            )
             h += line_h * max(lines, 1)
-        if has_persona_axes or has_intent_axis:
-            h += line_h  # "Stance:" label
-            if has_persona_axes:
-                h += line_h  # persona line
-            if has_intent_axis:
-                h += line_h  # intent line
+        if has_persona_axes:
+            h += line_h  # persona line
+        if has_intent_axis:
+            h += line_h  # intent line
         if has_why:
-            lines = _wrap_lines_count(f"Why: {suggestion.why}", x_pos + 4, rect, approx_char, line_h)
+            reason_text = f"{_WHY_REASON_LABEL} {why_text[:200]}"
+            lines = _wrap_lines_count(reason_text, x_pos + 4, rect, approx_char, line_h)
             h += line_h * max(lines, 1)
+        h += line_h // 2  # breathing room before next suggestion
 
     # Spacer between rows to match the draw path's trailing gap.
-    h += line_h
+    h += line_h + (line_h // 2)
     return h
 
 
@@ -271,6 +267,66 @@ def _debug(msg: str) -> None:
         print(f"GPT suggestion canvas: {msg}")
     except Exception:
         pass
+
+
+def _axes_summary(
+    completeness: str,
+    scope: str,
+    method: str,
+    form: str,
+    channel: str,
+    directional: str,
+) -> str:
+    """Return a compact, legible axes summary with full axis names."""
+    parts: list[str] = []
+    if completeness:
+        parts.append(f"Completeness {completeness}")
+    if scope:
+        parts.append(f"Scope {scope}")
+    if method:
+        parts.append(f"Method {method}")
+    if form:
+        parts.append(f"Form {form}")
+    if channel:
+        parts.append(f"Channel {channel}")
+    if directional:
+        parts.append(f"Directional {directional}")
+    return " | ".join(parts)
+
+
+def _suggestion_stance_info(suggestion: Suggestion) -> dict[str, object]:
+    """Return precomputed stance fields (persona/intent/stance/why) for display."""
+    persona_bits = [
+        getattr(suggestion, "persona_voice", "").strip(),
+        getattr(suggestion, "persona_audience", "").strip(),
+        getattr(suggestion, "persona_tone", "").strip(),
+    ]
+    persona_bits = [bit for bit in persona_bits if bit]
+    intent_text = getattr(suggestion, "intent_purpose", "").strip()
+    intent_display = normalize_intent_token(intent_text) or intent_text
+    raw_stance = (getattr(suggestion, "stance_command", "") or "").strip()
+    stance_command = raw_stance if valid_stance_command(raw_stance) else ""
+
+    # If no explicit stance is provided, try to synthesise one from axes.
+    if not stance_command:
+        axis_parts = persona_bits
+        if axis_parts:
+            candidate = "model write " + " ".join(axis_parts)
+            if valid_stance_command(candidate):
+                stance_command = candidate
+
+    stance_display = stance_command
+
+    why_text = (getattr(suggestion, "why", "") or "").strip()
+
+    return {
+        "persona_bits": persona_bits,
+        "intent_text": intent_text,
+        "intent_display": intent_display,
+        "stance_command": stance_command,
+        "stance_display": stance_display,
+        "why_text": why_text,
+    }
 
 
 def _log_scroll_event(event_type: str, evt) -> None:
@@ -654,10 +710,16 @@ def _draw_suggestions(c: canvas.Canvas) -> None:  # pragma: no cover - visual on
     approx_char = 8
 
     def _draw_wrapped(
-        text: str, x_pos: int, y_pos: int, visible_top: int | None = None, visible_bottom: int | None = None
+        text: str,
+        x_pos: int,
+        y_pos: int,
+        indent: int = 0,
+        visible_top: int | None = None,
+        visible_bottom: int | None = None,
     ) -> int:
         """Draw text wrapped to the panel width and return new y."""
-        lines = _wrap_lines_count(text, x_pos, rect, approx_char, line_h)
+        x_draw = x_pos + indent
+        lines = _wrap_lines_count(text, x_draw, rect, approx_char, line_h)
         if not lines:
             return y_pos
         words = text.split()
@@ -665,7 +727,7 @@ def _draw_suggestions(c: canvas.Canvas) -> None:  # pragma: no cover - visual on
         try:
             if rect is not None and hasattr(rect, "width") and hasattr(rect, "x"):
                 right_margin = rect.x + rect.width - 40
-                available_px = max(right_margin - x_pos, 160)
+                available_px = max(right_margin - x_draw, 160)
                 max_chars = max(int(available_px // approx_char), 20)
         except Exception:
             max_chars = 80
@@ -680,7 +742,7 @@ def _draw_suggestions(c: canvas.Canvas) -> None:  # pragma: no cover - visual on
                     or visible_bottom is None
                     or (y_pos >= visible_top and y_pos <= visible_bottom - line_h)
                 ):
-                    draw_text(" ".join(current_line), x_pos, y_pos)
+                    draw_text(" ".join(current_line), x_draw, y_pos)
                 y_pos += line_h
                 current_line = [word]
                 current_len = len(word)
@@ -693,7 +755,7 @@ def _draw_suggestions(c: canvas.Canvas) -> None:  # pragma: no cover - visual on
                 or visible_bottom is None
                 or (y_pos >= visible_top and y_pos <= visible_bottom - line_h)
             ):
-                draw_text(" ".join(current_line), x_pos, y_pos)
+                draw_text(" ".join(current_line), x_draw, y_pos)
             y_pos += line_h
         return y_pos
 
@@ -719,16 +781,22 @@ def _draw_suggestions(c: canvas.Canvas) -> None:  # pragma: no cover - visual on
     # suggestion time; fall back to current stance/default settings).
     ctx = suggestion_context()
     stance_lines = stance_defaults_lines(ctx or None)
-    if stance_lines:
-        label = (
-            "Suggest context (stance/defaults):"
-            if ctx
-            else "Stance/defaults:"
-        )
+    # Hide the context block entirely if everything is empty.
+    show_context = any("Voice=" in line and "–" not in line for line in stance_lines) or any(
+        "Defaults" in line and not line.endswith("Defaults: C=– S=– M=– F=– Ch=– Provider=–") for line in stance_lines
+    )
+    if stance_lines and show_context:
+        label = "Context (stance/defaults):"
         draw_text(label, x, y)
         y += line_h
-        for line in stance_lines:
-            y = _draw_wrapped(line, x, y)
+        filtered = [line for line in stance_lines if not line.endswith("Defaults: C=– S=– M=– F=– Ch=– Provider=–")]
+        for line in filtered:
+            y = _draw_wrapped(line, x, y, indent=_SECONDARY_INDENT)
+        y += line_h // 2
+
+    # Axes legend for quick decoding of contract axes.
+    if suggestions:
+        y = _draw_wrapped(_AXES_LEGEND, x, y, indent=_SECONDARY_INDENT)
         y += line_h // 2
 
     if not suggestions:
@@ -815,11 +883,14 @@ def _draw_suggestions(c: canvas.Canvas) -> None:  # pragma: no cover - visual on
                 f"Say: {grammar_phrase}",
                 x + 4,
                 row_y,
+                indent=0,
                 visible_top=body_top,
                 visible_bottom=body_bottom,
             )
             if row_y >= body_bottom:
                 stop_rendering = True
+            if not stop_rendering:
+                row_y += line_h // 2
 
         (
             static_prompt,
@@ -829,48 +900,39 @@ def _draw_suggestions(c: canvas.Canvas) -> None:  # pragma: no cover - visual on
             form,
             channel,
             directional,
-        ) = _parse_recipe(
-            suggestion.recipe
-        )
-        # Render a compact axes summary instead of full hydrated descriptions
-        # to keep the suggestions panel readable.
-        summary_parts: list[str] = []
-        if completeness:
-            summary_parts.append(f"C:{completeness}")
-        if scope:
-            summary_parts.append(f"S:{scope}")
-        if method:
-            summary_parts.append(f"M:{method}")
-        if form:
-            summary_parts.append(f"F:{form}")
-        if channel:
-            summary_parts.append(f"Ch:{channel}")
-        if directional:
-            summary_parts.append(f"D:{directional}")
-        if summary_parts and not stop_rendering:
-            if row_y >= body_top and row_y <= body_bottom - line_h:
-                draw_text(f"Axes: {' '.join(summary_parts)}", x + 4, row_y)
-            row_y += line_h
+        ) = _parse_recipe(suggestion.recipe)
+        axes_text = _axes_summary(completeness, scope, method, form, channel, directional)
+        if axes_text and not stop_rendering:
+            row_y = _draw_wrapped(
+                f"Axes: {axes_text}",
+                x + 4,
+                row_y,
+                indent=_SECONDARY_INDENT,
+                visible_top=body_top,
+                visible_bottom=body_bottom,
+            )
             if row_y >= body_bottom:
                 stop_rendering = True
+            if not stop_rendering:
+                row_y += line_h // 2
 
         # Use the remaining row height to show an optional, compact stance
         # and explanation. Stance is expressed in terms of Persona/Intent axes
         # plus a flexible, voice-friendly stance_command when present.
-        has_persona_axes = bool(
-            getattr(suggestion, "persona_voice", "")
-            or getattr(suggestion, "persona_audience", "")
-            or getattr(suggestion, "persona_tone", "")
-        )
-        has_intent_axis = bool(getattr(suggestion, "intent_purpose", ""))
         raw_stance = (suggestion.stance_command or "").strip()
-        stance_text = raw_stance if valid_stance_command(raw_stance) else ""
-        if raw_stance and not stance_text:
+        stance_info = _suggestion_stance_info(suggestion)
+        persona_bits = stance_info["persona_bits"]
+        intent_display = stance_info["intent_display"]
+        stance_text = stance_info.get("stance_display", stance_info["stance_command"])
+        why_text = stance_info["why_text"]
+        if raw_stance and not stance_info["stance_command"]:
             _debug(
                 f"invalid stance_command for suggestion '{suggestion.name}': {raw_stance}"
             )
+        has_persona_axes = bool(persona_bits)
+        has_intent_axis = bool(intent_display)
         has_stance_command = bool(stance_text)
-        has_why = bool(suggestion.why)
+        has_why = bool(why_text)
 
         if (
             has_persona_axes or has_intent_axis or has_stance_command or has_why
@@ -879,63 +941,40 @@ def _draw_suggestions(c: canvas.Canvas) -> None:  # pragma: no cover - visual on
             # Put the concrete voice command first so users know exactly what to say.
             if has_stance_command:
                 row_y = _draw_wrapped(
-                    f"Say: {stance_text}",
+                    f"Say (stance): {stance_text}",
                     x + 4,
                     row_y,
+                    indent=0,
                     visible_top=body_top,
                     visible_bottom=body_bottom,
                 )
                 if row_y >= body_bottom:
                     stop_rendering = True
 
-            if has_persona_axes or has_intent_axis:
+            if has_persona_axes and not stop_rendering:
                 if row_y >= body_top and row_y <= body_bottom - line_h:
-                    draw_text("Stance:", x + 4, row_y)
+                    draw_text(
+                        "Who: " + " · ".join(persona_bits),
+                        x + 4 + _SECONDARY_INDENT,
+                        row_y,
+                    )
                 row_y += line_h
                 if row_y >= body_bottom:
                     stop_rendering = True
-                if has_persona_axes:
-                    persona_bits = [
-                        b
-                        for b in [
-                            getattr(suggestion, "persona_voice", ""),
-                            getattr(suggestion, "persona_audience", ""),
-                            getattr(suggestion, "persona_tone", ""),
-                        ]
-                        if b
-                    ]
-                    if persona_bits:
-                        # Label these as Who (axes) to distinguish them from the
-                        # `persona` command, which takes presets rather than raw
-                        # axis tokens.
-                        if row_y >= body_top and row_y <= body_bottom - line_h:
-                            draw_text(
-                                "  Who: " + " · ".join(persona_bits),
-                                x + 4,
-                                row_y,
-                            )
-                        row_y += line_h
-                        if row_y >= body_bottom:
-                            stop_rendering = True
-                if has_intent_axis:
-                    # Label the intent axis as Why (axis) so it is clearly the
-                    # Intent axis, not the `intent` command.
-                    if row_y >= body_top and row_y <= body_bottom - line_h:
-                        draw_text(
-                            f"  Why: {getattr(suggestion, 'intent_purpose', '')}",
-                            x + 4,
-                            row_y,
-                        )
-                    row_y += line_h
-                    if row_y >= body_bottom:
-                        stop_rendering = True
-            if has_why:
+            if has_intent_axis and not stop_rendering:
+                if row_y >= body_top and row_y <= body_bottom - line_h:
+                    draw_text(f"Intent: {intent_display}", x + 4 + _SECONDARY_INDENT, row_y)
+                row_y += line_h
+                if row_y >= body_bottom:
+                    stop_rendering = True
+            if has_why and not stop_rendering:
                 # Keep Why reasonably compact; truncate if extremely long, then wrap.
-                why_text = f"Why: {suggestion.why}"[:200]
+                reason_text = f"{_WHY_REASON_LABEL} {why_text[:200]}"
                 row_y = _draw_wrapped(
-                    why_text,
+                    reason_text,
                     x + 4,
                     row_y,
+                    indent=_SECONDARY_INDENT,
                     visible_top=body_top,
                     visible_bottom=body_bottom,
                 )
@@ -943,6 +982,8 @@ def _draw_suggestions(c: canvas.Canvas) -> None:  # pragma: no cover - visual on
                     stop_rendering = True
         # Lightweight spacer below each row; advance by measured height so
         # scroll math stays consistent even when we clip rendering.
+        if not stop_rendering:
+            row_y += line_h // 2
         current_y = row_draw_end
         if stop_rendering:
             break

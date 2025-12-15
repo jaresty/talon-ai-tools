@@ -2,7 +2,6 @@
 {user.model} help who$: user.model_help_canvas_open_who()
 {user.model} help why$: user.model_help_canvas_open_why()
 {user.model} help how$: user.model_help_canvas_open_how()
-{user.model} quick help hub$: user.help_hub_open()
 {user.model} quick help patterns$: user.model_pattern_gui_open()
 {user.model} quick help suggestions$: user.model_prompt_recipe_suggestions_gui_open()
 {user.model} quick help docs$: user.gpt_help()

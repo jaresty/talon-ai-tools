@@ -52,7 +52,7 @@ if bootstrap is not None:
                         "persona_audience": "to junior engineer",
                         "persona_tone": "kindly",
                     "intent_purpose": "for teaching",
-                    "stance_command": "model write as teacher to junior engineer kindly for teaching",
+                    "stance_command": "model write as teacher to junior engineer kindly",
                         "why": "For teaching-focused summaries.",
                         "reasoning": "Uses teaching persona and planning intent.",
                     },
@@ -63,7 +63,7 @@ if bootstrap is not None:
                         "persona_audience": "to stakeholders",
                         "persona_tone": "gently",
                     "intent_purpose": "for collaborating",
-                        "stance_command": "model write for",
+                        "stance_command": "model write for collaborating",
                         "why": "Bad stance should be dropped.",
                         "reasoning": "Tried to leave intent underspecified.",
                     },
@@ -115,7 +115,7 @@ if bootstrap is not None:
                         "persona_audience": "to junior engineer",
                         "persona_tone": "kindly",
                         "intent_purpose": "for teaching",
-                        "stance_command": "model write as teacher to junior engineer kindly for teaching",
+                        "stance_command": "model write as teacher to junior engineer kindly",
                         "why": "For teaching-focused summaries.",
                     }
                 ]
@@ -150,7 +150,7 @@ if bootstrap is not None:
                         "name": "Bad recipe",
                         # Missing directional; normaliser will reject this.
                         "recipe": "describe · gist · focus · bullets",
-                        "stance_command": "model write as teacher to junior engineer kindly for teaching",
+                        "stance_command": "model write as teacher to junior engineer kindly",
                         "why": "Should be dropped.",
                         "reasoning": "Recipe is missing a directional.",
                     }

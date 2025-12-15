@@ -10,6 +10,7 @@ from .axisMappings import (
     axis_value_to_key_map_for,
 )
 from .axisCatalog import axis_catalog
+from .personaConfig import persona_docs_map
 from .modelSource import CompoundSource, ModelSource, SourceStack, create_model_source
 from .modelDestination import (
     ModelDestination,
@@ -551,6 +552,16 @@ def _populate_runtime_lists_from_catalog() -> None:
     _set_ctx_list("formModifier", _axis_tokens("form"))
     _set_ctx_list("channelModifier", _axis_tokens("channel"))
     _set_ctx_list("directionalModifier", _axis_tokens("directional"))
+    # Persona/intent axes come from the persona SSOT (no Talon list files).
+    for axis_name, list_name in (
+        ("voice", "modelVoice"),
+        ("tone", "modelTone"),
+        ("audience", "modelAudience"),
+        ("intent", "modelIntent"),
+    ):
+        tokens = list((persona_docs_map(axis_name) or {}).keys())
+        if tokens:
+            _set_ctx_list(list_name, tokens)
 
     # Static prompts: prefer the catalog view, fall back to profiles if needed.
     static_catalog = catalog.get("static_prompts") or static_prompt_catalog()

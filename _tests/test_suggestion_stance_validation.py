@@ -31,6 +31,9 @@ if bootstrap is not None:
                 self.assertFalse(valid_stance_command("intent teach"))
                 self.assertFalse(valid_stance_command("persona teach junior dev · intent teach"))
 
+            def test_accepts_persona_preset_spoken_shorthand(self) -> None:
+                self.assertTrue(valid_stance_command("persona stake"))
+
             def test_rejects_axis_tokens_after_persona_or_intent(self) -> None:
                 # Raw axis tokens after persona/intent are not valid preset names.
                 self.assertFalse(

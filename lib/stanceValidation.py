@@ -24,9 +24,14 @@ INTENT_SPOKEN_TOKENS: set[str] = set(INTENT_SPOKEN_TO_CANONICAL.keys())
 AXIS_TOKENS: set[str] = VOICE_TOKENS | AUDIENCE_TOKENS | TONE_TOKENS | INTENT_TOKENS
 
 _PERSONA_PRESET_SPOKEN_SET: set[str] = {
-    (preset.label or preset.key).strip().lower()
+    name
     for preset in PERSONA_PRESETS
-    if (preset.label or preset.key).strip()
+    for name in {
+        (preset.spoken or "").strip().lower(),
+        (preset.label or "").strip().lower(),
+        (preset.key or "").strip().lower(),
+    }
+    if name
 }
 _INTENT_PRESET_SPOKEN_SET: set[str] = {
     (preset.key or "").strip().lower()

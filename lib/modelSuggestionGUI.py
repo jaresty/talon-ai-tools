@@ -23,7 +23,7 @@ from .suggestionCoordinator import (
     suggestion_grammar_phrase,
     suggestion_context,
 )
-from .personaConfig import normalize_intent_token
+from .personaConfig import PERSONA_PRESETS, normalize_intent_token
 from .modelPatternGUI import (
     _axis_value,
     _parse_recipe,
@@ -102,6 +102,17 @@ _PANEL_WIDTH = 840
 # Give suggestions more vertical room before scrolling while still
 # respecting screen margins on smaller displays.
 _PANEL_HEIGHT = 880
+
+_PERSONA_PRESET_NAME_TO_PRESET = {
+    name: preset
+    for preset in PERSONA_PRESETS
+    for name in {
+        (preset.spoken or "").strip().lower(),
+        (preset.label or "").strip().lower(),
+        (preset.key or "").strip().lower(),
+    }
+    if name
+}
 
 
 def _wrap_lines_count(
@@ -294,6 +305,26 @@ def _axes_summary(
     return " | ".join(parts)
 
 
+def _persona_long_form(stance_command: str, persona_bits: list[str]) -> str:
+    """Return a long-form 'model write ...' stance for persona presets."""
+    if not stance_command:
+        return ""
+    stance_l = stance_command.strip().lower()
+    if not stance_l.startswith("persona "):
+        return ""
+    preset_name = stance_l[len("persona ") :].strip()
+    if not preset_name:
+        return ""
+
+    axes = [bit for bit in persona_bits if bit]
+    preset = _PERSONA_PRESET_NAME_TO_PRESET.get(preset_name)
+    if not axes and preset:
+        axes = [value for value in (preset.voice, preset.audience, preset.tone) if value]
+    if not axes:
+        return ""
+    return "model write " + " ".join(axes)
+
+
 def _suggestion_stance_info(suggestion: Suggestion) -> dict[str, object]:
     """Return precomputed stance fields (persona/intent/stance/why) for display."""
     persona_bits = [
@@ -316,9 +347,12 @@ def _suggestion_stance_info(suggestion: Suggestion) -> dict[str, object]:
                 stance_command = candidate
 
     stance_display = stance_command
+    long_form = _persona_long_form(stance_command, persona_bits)
+    if long_form and long_form.lower() != stance_command.lower():
+        stance_display = f"{stance_command} ({long_form})"
     # Show companion intent command alongside the stance so users see both explicit commands.
     if intent_display and stance_command:
-        stance_display = f"{stance_command} · intent {intent_display}"
+        stance_display = f"{stance_display} · intent {intent_display}"
 
     why_text = (getattr(suggestion, "why", "") or "").strip()
 

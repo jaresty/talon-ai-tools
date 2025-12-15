@@ -77,6 +77,41 @@ if bootstrap is not None:
             actions.app.notify.assert_called_once()
             actions.user.gpt_apply_prompt.assert_not_called()
 
+        def test_persona_stance_display_includes_long_form_axes(self):
+            suggestion = modelSuggestionGUI.Suggestion(
+                name="With persona preset",
+                recipe="describe · gist · focus · plain · fog",
+                persona_voice="as facilitator",
+                persona_audience="to stakeholders",
+                persona_tone="directly",
+                stance_command="persona stake",
+                intent_purpose="teach",
+            )
+
+            info = modelSuggestionGUI._suggestion_stance_info(suggestion)
+
+            self.assertEqual(
+                info["stance_display"],
+                "persona stake (model write as facilitator to stakeholders directly) · intent teach",
+            )
+
+        def test_non_persona_stance_display_prefers_raw_command(self):
+            suggestion = modelSuggestionGUI.Suggestion(
+                name="Axes stance",
+                recipe="describe · gist · focus · plain · fog",
+                persona_voice="as teacher",
+                persona_audience="to junior engineer",
+                persona_tone="kindly",
+                stance_command="model write as teacher to junior engineer kindly",
+            )
+
+            info = modelSuggestionGUI._suggestion_stance_info(suggestion)
+
+            self.assertEqual(
+                info["stance_display"],
+                "model write as teacher to junior engineer kindly",
+            )
+
         def test_open_uses_cached_suggestions_and_shows_canvas(self):
             """model_prompt_recipe_suggestions_gui_open populates state and opens the canvas."""
             GPTState.last_suggested_recipes = [

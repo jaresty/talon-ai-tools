@@ -316,6 +316,9 @@ def _suggestion_stance_info(suggestion: Suggestion) -> dict[str, object]:
                 stance_command = candidate
 
     stance_display = stance_command
+    # Show companion intent command alongside the stance so users see both explicit commands.
+    if intent_display and stance_command:
+        stance_display = f"{stance_command} · intent {intent_display}"
 
     why_text = (getattr(suggestion, "why", "") or "").strip()
 

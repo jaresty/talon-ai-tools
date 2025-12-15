@@ -1505,3 +1505,17 @@
 - Artefact deltas: `lib/modelResponseCanvas.py`, `_tests/test_model_response_canvas_close.py`.
 - Checks: `python3 -m pytest _tests/test_model_response_canvas_close.py _tests/test_request_bus.py _tests/test_request_controller.py _tests/test_request_ui.py _tests/test_response_canvas_fallback.py` (pass).
 - Removal test: reverting would leave `showing` true after external hides and drop coverage, risking stale state/fallback coupling and weakening ADR-0054 request pipeline UX alignment.
+
+## 2025-12-15 – Loop 206 (kind: behaviour/guardrail)
+- Focus: Close response canvas on reset/idle to clear streaming UI state.
+- Change: RequestUI now closes the response canvas on IDLE/reset via `on_state_change` so stale canvases don’t linger; added guardrail to assert the close is invoked on reset while keeping fallback clears.
+- Artefact deltas: `lib/requestUI.py`, `_tests/test_request_ui.py`.
+- Checks: `python3 -m pytest _tests/test_request_ui.py _tests/test_request_bus.py _tests/test_request_controller.py _tests/test_response_canvas_fallback.py _tests/test_model_response_canvas_close.py` (pass).
+- Removal test: reverting would leave the response canvas open after resets and drop coverage, risking stale streaming UI and weakening ADR-0054 lifecycle alignment.
+
+## 2025-12-15 – Loop 207 (kind: behaviour/guardrail)
+- Focus: Reset response canvas state when hidden externally.
+- Change: Response canvas hide handler now also resets `ResponseCanvasState.showing`, `scroll_y`, and `meta_expanded` alongside clearing fallbacks; guardrail updated to assert hide clears state.
+- Artefact deltas: `lib/modelResponseCanvas.py`, `_tests/test_model_response_canvas_close.py`.
+- Checks: `python3 -m pytest _tests/test_model_response_canvas_close.py _tests/test_request_bus.py _tests/test_request_controller.py _tests/test_request_ui.py _tests/test_response_canvas_fallback.py` (pass).
+- Removal test: reverting would leave response canvas state dirty after external hides and drop coverage, risking stale scroll/meta state and weakening ADR-0054 request pipeline UX clarity.

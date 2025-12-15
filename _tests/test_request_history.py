@@ -56,7 +56,11 @@ if bootstrap is not None:
                 ]
             }
             requestLog.append_entry_from_request(
-                "req-1", request, "resp", provider_id="gemini"
+                "req-1",
+                request,
+                "resp",
+                provider_id="gemini",
+                axes={"directional": ["fog"]},
             )
             latest = requestLog.latest()
             assert latest is not None

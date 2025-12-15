@@ -31,9 +31,17 @@ if bootstrap is not None:
                 recipe="recipe1",
                 started_at_ms=1,
                 duration_ms=2,
-                axes={"method": ["steps"]},
+                axes={"method": ["steps"], "directional": ["fog"]},
             )
-            append_entry("r2", "p2", "resp2", "meta2", started_at_ms=3, duration_ms=4)
+            append_entry(
+                "r2",
+                "p2",
+                "resp2",
+                "meta2",
+                started_at_ms=3,
+                duration_ms=4,
+                axes={"directional": ["fog"]},
+            )
             self.assertEqual(latest().request_id, "r2")  # type: ignore[union-attr]
             self.assertEqual(nth_from_latest(1).request_id, "r1")  # type: ignore[union-attr]
             ids = [e.request_id for e in all_entries()]
@@ -64,7 +72,7 @@ if bootstrap is not None:
                 recipe="recipe3",
                 started_at_ms=5,
                 duration_ms=6,
-                axes=axes,
+                axes={**axes, "directional": ["fog"]},
             )
             entry = latest()  # type: ignore[assignment]
             self.assertIsNotNone(entry)
@@ -83,6 +91,7 @@ if bootstrap is not None:
             axes = {
                 "scope": ["focus", "Important: expand scope a lot"],
                 "method": ["steps", "Important: do many things"],
+                "directional": ["fog"],
             }
 
             append_entry(

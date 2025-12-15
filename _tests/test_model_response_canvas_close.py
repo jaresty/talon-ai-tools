@@ -93,6 +93,8 @@ if bootstrap is not None:
 
             clear_fallback_mock.assert_called_with("rid-hide")
             self.assertFalse(mrc.ResponseCanvasState.showing)
+            self.assertEqual(mrc.ResponseCanvasState.scroll_y, 0.0)
+            self.assertFalse(mrc.ResponseCanvasState.meta_expanded)
 else:
     class ModelResponseCanvasCloseTests(unittest.TestCase):
         @unittest.skip("Test harness unavailable outside unittest runs")

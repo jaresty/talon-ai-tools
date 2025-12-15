@@ -1993,6 +1993,7 @@ if bootstrap is not None:
                 "scope": ["bound", "Invalid scope"],
                 "method": ["rigor", "Unknown method"],
                 "form": ["adr", "Hydrated form"],
+                "directional": ["fog"],
             }
             append_entry(
                 "rid-axes",
@@ -2012,7 +2013,7 @@ if bootstrap is not None:
                     "method": ["rigor"],
                     "form": ["adr"],
                     "channel": [],
-                    "directional": [],
+                    "directional": ["fog"],
                 },
             )
 

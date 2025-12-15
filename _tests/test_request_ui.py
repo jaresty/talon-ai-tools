@@ -160,6 +160,21 @@ if bootstrap is not None:
             requestUI._on_state_change(RequestState(phase=RequestPhase.SENDING))
             self.assertEqual(fallback_for("rid-one"), "")
             self.assertEqual(fallback_for("rid-two"), "")
+
+        def test_reset_closes_response_canvas(self):
+            with patch.object(
+                requestUI, "run_on_ui_thread", side_effect=lambda fn: fn()
+            ), patch.object(
+                requestUI.actions.user,
+                "model_response_canvas_close",
+                create=True,
+            ) as close_mock, patch.object(
+                requestUI.actions.user,
+                "model_response_canvas_refresh",
+                create=True,
+            ):
+                requestUI._on_state_change(RequestState(phase=RequestPhase.IDLE))
+            close_mock.assert_called()
 else:
     if not TYPE_CHECKING:
 

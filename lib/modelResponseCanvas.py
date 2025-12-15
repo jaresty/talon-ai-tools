@@ -191,6 +191,12 @@ def _ensure_response_canvas() -> canvas.Canvas:
             pass
         try:
             ResponseCanvasState.showing = False
+            ResponseCanvasState.scroll_y = 0.0
+            ResponseCanvasState.meta_expanded = False
+        except Exception:
+            pass
+        try:
+            ResponseCanvasState.showing = False
         except Exception:
             pass
     _last_hide_handler = _hide_handler

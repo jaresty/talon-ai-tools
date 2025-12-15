@@ -149,6 +149,8 @@ def _on_state_change(state: RequestState) -> None:
             clear_response_fallback(getattr(state, "request_id", None))
         elif state.phase is RequestPhase.IDLE:
             clear_all_fallbacks()
+            # Ensure any open response canvas is closed on reset/idle.
+            run_on_ui_thread(lambda: actions.user.model_response_canvas_close())
     except Exception:
         pass
 

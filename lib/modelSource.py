@@ -234,10 +234,15 @@ def create_model_source(source_type: str) -> ModelSource:
         "thread": Thread,
         "style": Style,
         "gptResponse": GPTResponse,
+        "response": GPTResponse,
         "gptRequest": GPTRequest,
+        "request": GPTRequest,
         "gptExchange": GPTExchange,
+        "exchange": GPTExchange,
         "all": AllText,
         "meta": Meta,
+        "selection": SelectedText,
+        "select": SelectedText,
     }
 
     source_cls = source_map.get(source_type)

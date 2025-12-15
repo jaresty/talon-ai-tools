@@ -850,7 +850,7 @@ def _draw_pattern_canvas(c: canvas.Canvas) -> None:  # pragma: no cover - visual
             draw_text("  Intent (Why):", x, y)
             y += line_h
             for preset in INTENT_PRESETS[:4]:
-                label_line = f"    {preset.label}: {preset.purpose}"
+                label_line = f"    {preset.label}: {preset.intent}"
                 draw_text(label_line, x, y)
                 if rect is not None:
                     key = f"intent:{preset.key}"
@@ -902,7 +902,7 @@ def _draw_pattern_canvas(c: canvas.Canvas) -> None:  # pragma: no cover - visual
             draw_text("  Intent (Why):", x, y)
             y += line_h
             for preset in INTENT_PRESETS[:4]:
-                label_line = f"    {preset.label}: {preset.purpose}"
+                label_line = f"    {preset.label}: {preset.intent}"
                 draw_text(label_line, x, y)
                 if rect is not None:
                     key = f"intent:{preset.key}"

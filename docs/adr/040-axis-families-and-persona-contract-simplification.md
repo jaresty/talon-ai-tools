@@ -2,13 +2,13 @@
 
 - Status: Accepted  
 - Date: 2025-12-10  
-- Context: `talon-ai-tools` GPT `model` commands (static prompts + completeness/scope/method/style + directional modifiers + voice/audience/tone/purpose)  
+- Context: `talon-ai-tools` GPT `model` commands (static prompts + completeness/scope/method/style + directional modifiers + voice/audience/tone/intent)  
 - Related ADRs:  
   - 005 – Orthogonal Prompt Modifiers and Defaults  
   - 007 – Static Prompt Consolidation for Axis-Based Grammar  
   - 012 – Style and Method Prompt Refactor  
   - 013 – Static Prompt Axis Refinement and Streamlining  
-  - 015 – Voice, Audience, Tone, Purpose Axis Decomposition  
+  - 015 – Voice, Audience, Tone, Intent Axis Decomposition  
   - 018 – Axis Modifier Decomposition into Pure Elements  
   - 026 – Axis Multiplicity for Scope/Method/Style  
   - 032 – Constraint Hierarchy Meta-Spec for Completeness/Method/Scope/Style  
@@ -20,7 +20,7 @@
 
 The current grammar exposes **eight conceptual knobs** around a `model` command:
 
-- **Persona / social**: voice, audience, tone, purpose.  
+- **Persona / social**: voice, audience, tone, intent.  
 - **Contract / mechanics**: completeness, scope, method, style.
 
 Existing ADRs (005, 012, 015, 018, 026, 032, 033) have already:
@@ -33,12 +33,12 @@ However, when you are *actually* trying to speak or teach the grammar, these eig
 
 - “Is this ‘briefly’ or `gist` or `tight`?”  
 - “Am I talking to `to junior engineer`, using `scaffold`, or both?”  
-- “Is ‘adversarial review’ a voice, a purpose, or a method?”
+- “Is ‘adversarial review’ a voice, a intent, or a method?”
 
 This ADR does **not** add or remove axes. Instead, it introduces a **three-family mental model** and corresponding **teaching/UX constraints** so that, in practice, people experience:
 
 - **Who** → Persona family: `voice` + `audience` + `tone` (optionally bundled as presets).  
-- **Why** → Intent family: `purpose`.  
+- **Why** → Intent family: `intent`.  
 - **How** → Contract family: `completeness`, `scope`, `method`, `style`.
 
 We standardise question-based gates and adversarial tests for each family, and we recommend that default docs and GUIs **present families, not raw axes**, so most users see 3–4 big levers instead of 8.
@@ -52,7 +52,7 @@ This reduces cognitive load without removing power: advanced users can still man
 Prior ADRs give us:
 
 - A clear **contract layer** (completeness/scope/method/style) with orthogonality and hierarchy (005, 012, 018, 026, 032, 033).  
-- A trimmed, more principled **persona/intent layer** (voice/audience/tone/purpose) with most “how/shape” semantics moved into axes and recipes (015, 017, 018).
+- A trimmed, more principled **persona/intent layer** (voice/audience/tone/intent) with most “how/shape” semantics moved into axes and recipes (015, 017, 018).
 
 Despite this work, real-world usage and help-surface feedback show recurring confusion:
 
@@ -71,9 +71,9 @@ Despite this work, real-world usage and help-surface feedback show recurring con
      - `directly` vs “headline first” (`headline` style/method),  
      - “friendly but concise” → tone *and* style *and* completeness.
 
-3. **Purpose vs method/directional**  
+3. **Intent vs method/directional**  
    - ADR 015 already migrates `for diverging/converging/mapping/discovery/framing/sensemaking` into method + scope + directional.  
-   - Yet phrases like “brainstorm options then converge on a decision” still attract both purpose (`for brainstorming`, `for deciding`) and method (`diverge`, `converge`) and directional lenses.  
+   - Yet phrases like “brainstorm options then converge on a decision” still attract both intent (`for brainstorming`, `for deciding`) and method (`diverge`, `converge`) and directional lenses.  
    - Without a simple “which family?” gate, new purposes risk re-introducing method/contract semantics.
 
 4. **Voice vs audience overlap**  
@@ -81,7 +81,7 @@ Despite this work, real-world usage and help-surface feedback show recurring con
    - ADR 015 pushes org roles toward audience, but the **surface grammar** still encourages stacking (`as PM to PM to team`), which reads redundant and invites misuse (“should I say this as CEO or to CEO?”).
 
 5. **Axis proliferation at the point of use**  
-   - `model` help currently presents separate tables for: static prompts, directional/goal modifiers, voice/audience/tone/purpose, and four contract axes.  
+   - `model` help currently presents separate tables for: static prompts, directional/goal modifiers, voice/audience/tone/intent, and four contract axes.  
    - Even with small lists, that’s 8+ conceptual dimensions visible at once.  
    - New contributors must learn both **semantics** and **where to add new tokens** across multiple files and ADRs.
 
@@ -119,12 +119,12 @@ Desired behaviour:
 
 Possible encodings users try:
 
-- `as adversary` (voice, now retired) + `to resistant` (audience, now retired) + `for debugging` (purpose, retired) + some axes.  
+- `as adversary` (voice, now retired) + `to resistant` (audience, now retired) + `for debugging` (intent, retired) + some axes.  
 - Tone: `directly`, or an imagined `adversarial` tone.  
 - Method: `adversarial`, `case`, `debugging`.  
 - Style: `bug` or `table`.
 
-Even after ADR 015’s migration, it is easy to place “adversarial” in **voice, tone, purpose, method, or style** unless you carry the entire ADR stack in your head. The **family boundary** (“Is this about *who* is speaking, or *how* they reason?”) needs to be foregrounded, not buried in ADR prose.
+Even after ADR 015’s migration, it is easy to place “adversarial” in **voice, tone, intent, method, or style** unless you carry the entire ADR stack in your head. The **family boundary** (“Is this about *who* is speaking, or *how* they reason?”) needs to be foregrounded, not buried in ADR prose.
 
 ### Test 3 – “Executive brief vs deep technical write-up”
 
@@ -139,11 +139,11 @@ Desired contrast:
 Users often reach for:
 
 - Voice: `as CEO`, `as principal engineer`.  
-- Purpose: `for announcing`, `for mapping`.  
+- Intent: `for announcing`, `for mapping`.  
 - Tone: `formally`, `directly`.  
 - Contract axes.
 
-The line between **persona** (“this is for CEO”) and **contract** (“headline gist only”) is conceptually clean in ADR 005/015, but hard to see in the help tables. Adversarially, it is too easy to encode presentation/coverage/shape into voice/purpose tokens again.
+The line between **persona** (“this is for CEO”) and **contract** (“headline gist only”) is conceptually clean in ADR 005/015, but hard to see in the help tables. Adversarially, it is too easy to encode presentation/coverage/shape into voice/intent tokens again.
 
 ### Test 4 – “Playful but dense explanation”
 
@@ -158,7 +158,7 @@ Where does “playful but dense” live?
 - Tone: `casually`, `kindly`.  
 - Completeness: `full`.  
 - Style: `tight` (concise), maybe `plain`.  
-- Purpose: `for entertainment` or `for information`.
+- Intent: `for entertainment` or `for information`.
 
 Without a **family-first** framing, contributors are tempted to add playful-specific purposes, tones, or styles, re-introducing axis drift ADR 015/018 worked to eliminate.
 
@@ -176,7 +176,7 @@ We introduce an explicit **axis family model** and associated **design rules**:
      - `audience`: who is this for?  
      - `tone`: what emotional/relational register?  
    - **Intent (WHY)** – interaction-level intent:  
-     - `purpose`: why are we talking? (inform, persuade, decide, coach, etc.).  
+     - `intent`: why are we talking? (inform, persuade, decide, coach, etc.).  
    - **Contract (HOW)** – behavioural contract with the model:  
      - `completeness`: how much coverage?  
      - `scope`: what territory is in-bounds?  
@@ -193,7 +193,7 @@ We introduce an explicit **axis family model** and associated **design rules**:
    - Does this primarily change the **emotional feel** of the response?  
      - → Persona family (`tone`).  
    - Does this primarily change **why** the interaction is happening?  
-     - → Intent family (`purpose`).  
+     - → Intent family (`intent`).  
    - Does this primarily change **how much** must be covered?  
      - → Contract (`completeness`).  
    - Does this primarily change **what is in-bounds vs out-of-bounds**?  
@@ -221,7 +221,7 @@ We introduce an explicit **axis family model** and associated **design rules**:
    - Advanced users can override individual axes, but the **first-class UX primitive** is a small set of persona recipes, not the raw lists.
 
 4. **Intent presets layered on top of persona**  
-   Similarly, we recommend exposing `purpose` as **named intent presets** rather than a long flat list:
+   Similarly, we recommend exposing `intent` as **named intent presets** rather than a long flat list:
 
    - “Teach”, “Decide”, “Plan”, “Evaluate”, “Brainstorm”, “Appreciate”.  
    - These are already present as purposes; this ADR says:  
@@ -236,7 +236,7 @@ We introduce an explicit **axis family model** and associated **design rules**:
 
    This ADR adds one constraint: **persona and intent should not attempt to carry contract semantics**. When stress-tested:
 
-   - If an audience/voice/purpose description makes strong claims about coverage, territory, reasoning steps, or containers, those claims must be moved into contract axes or patterns.
+   - If an audience/voice/intent description makes strong claims about coverage, territory, reasoning steps, or containers, those claims must be moved into contract axes or patterns.
 
 6. **Teaching surfaces present families, not raw lists**  
    We standardise how help/GUI surfaces should present axes:
@@ -320,7 +320,7 @@ We introduce an explicit **axis family model** and associated **design rules**:
    - Define a small set of shared persona presets in a SSOT (for example, a `PERSONA_PRESETS` mapping in an appropriate module):  
      - Each preset: `{name, voice, audience, tone}`.  
    - Similarly define intent presets for common purposes.  
-   - Align `modelVoice.talon-list`, `modelAudience.talon-list`, `modelTone.talon-list`, and `modelPurpose.talon-list` with the axis list pattern by keeping them as token→key carriers (for example, `spoken: key` or effectively `key: key`), and move longer labels/descriptions into a Python-side doc/lookup layer that is only hydrated when constructing prompts for the model.  
+   - Align `modelVoice.talon-list`, `modelAudience.talon-list`, `modelTone.talon-list`, and `modelIntent.talon-list` with the axis list pattern by keeping them as token→key carriers (for example, `spoken: key` or effectively `key: key`), and move longer labels/descriptions into a Python-side doc/lookup layer that is only hydrated when constructing prompts for the model.  
    - Surface these presets in pattern GUIs, the suggestions modal, and/or a lightweight persona/intent picker, without changing the underlying lists or system prompt representation.
 
 3. **Axis-family contribution rules**  
@@ -328,14 +328,14 @@ We introduce an explicit **axis family model** and associated **design rules**:
      - Require using the question-gate list in this ADR when adding tokens.  
      - Explicitly answer “Which family?” and “Why not a recipe/pattern instead?” for any new behaviour.  
    - Optionally add a small lint/test helper that asserts:  
-     - New tokens in voice/audience/tone/purpose do not contain obviously contract-shaped words (for example, “brief”, “table”, “diagram”, “debugging”).  
+     - New tokens in voice/audience/tone/intent do not contain obviously contract-shaped words (for example, “brief”, “table”, “diagram”, “debugging”).  
      - New contract tokens do not contain obvious persona/intent words (“executive”, “novice”, “persuasion”).
  
   4. **Stance-aware suggestions (Who / Why / How)**  
    - See also ADR 041 for stance-aware prompt suggestions GUI behaviour and preset-free design.
 
    - When implementing prompt recipe suggestions (ADR 008) in this repo, treat each suggestion as a small, teachable three-step flow:
-     - Step 1 – **Set stance (Who / Why)** using Persona and Intent presets (for example, a `model write …` command that sets voice/audience/tone/purpose for writing).  
+     - Step 1 – **Set stance (Who / Why)** using Persona and Intent presets (for example, a `model write …` command that sets voice/audience/tone/intent for writing).  
     - Step 2 – **Run contract (How)** using `model run <staticPrompt> [completeness] [scope] [scope] [method] [method] [method] [form] [channel] <directional>` as today.  
      - Step 3 – **Optionally reset stance** (for example, `model reset writing`) to return to defaults after a focused interaction.  
    - When calling the LLM to generate suggestions, provide:
@@ -355,7 +355,7 @@ We introduce an explicit **axis family model** and associated **design rules**:
 
    - Add a small appendix (in README or quick help) that revisits the stress tests above (“Explain simply to a junior engineer”, “Adversarial review for resistant stakeholders”, “Executive brief vs deep write-up”) and shows:  
      - How each is expressed using Persona + Intent + Contract,  
-     - Where *not* to encode each behaviour (for example, not as a new purpose or voice).
+     - Where *not* to encode each behaviour (for example, not as a new intent or voice).
 
 5. **Work-log and guardrails**  
    - Track concrete slices of this ADR in a `docs/adr/040-axis-families-and-persona-contract-simplification.work-log.md` file as changes land.  

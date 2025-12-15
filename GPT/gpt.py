@@ -221,6 +221,14 @@ def _canonical_persona_value(axis: str, raw: str) -> str:
     if not raw_s:
         return ""
     lower = raw_s.lower()
+    if axis == "intent":
+        try:
+            from ..lib.personaConfig import normalize_intent_token
+        except Exception:
+            pass
+        else:
+            raw_s = normalize_intent_token(raw_s)
+            lower = raw_s.lower()
     try:
         docs = persona_docs_map(axis)
     except Exception:
@@ -249,7 +257,7 @@ def _suggest_context_snapshot(sys_prompt) -> dict[str, str]:
         "voice": _val("voice", persona_axis="voice"),
         "audience": _val("audience", persona_axis="audience"),
         "tone": _val("tone", persona_axis="tone"),
-        "purpose": _val("purpose", persona_axis="purpose"),
+        "intent": _val("intent", persona_axis="intent"),
         "completeness": _val("completeness", canonical_axis="completeness"),
         "scope": _val("scope", canonical_axis="scope"),
         "method": _val("method", canonical_axis="method"),
@@ -283,7 +291,7 @@ def _suggest_hydrated_context(sys_prompt) -> dict[str, str]:
         "voice": _val("voice"),
         "audience": _val("audience"),
         "tone": _val("tone"),
-        "purpose": _val("purpose"),
+        "intent": _val("intent"),
         "completeness": _val("completeness"),
         "scope": _val("scope"),
         "method": _val("method"),
@@ -305,8 +313,8 @@ def _format_context_lines(snapshot: dict[str, str]) -> list[str]:
     persona_bits = [b for b in persona_bits if b]
     if persona_bits:
         lines.append("Persona (Who): " + " · ".join(persona_bits))
-    if snapshot.get("purpose"):
-        lines.append(f"Intent (Why): {snapshot['purpose']}")
+    if snapshot.get("intent"):
+        lines.append(f"Intent (Why): {snapshot['intent']}")
     axis_bits: list[str] = []
     for label, key in (
         ("Completeness", "completeness"),
@@ -491,7 +499,7 @@ for preset in INTENT_PRESETS:
 VOICE_TOKENS: set[str] = set(persona_docs_map("voice").keys())
 AUDIENCE_TOKENS: set[str] = set(persona_docs_map("audience").keys())
 TONE_TOKENS: set[str] = set(persona_docs_map("tone").keys())
-PURPOSE_TOKENS: set[str] = set(persona_docs_map("purpose").keys())
+PURPOSE_TOKENS: set[str] = set(persona_docs_map("intent").keys())
 
 _PERSONA_PRESET_SPOKEN_SET: set[str] = set(_PERSONA_PRESET_SPOKEN_TO_KEY.keys())
 _INTENT_PRESET_SPOKEN_SET: set[str] = set(_INTENT_PRESET_SPOKEN_TO_KEY.keys())
@@ -702,7 +710,7 @@ def _build_persona_intent_docs() -> str:
         ("Voice", "voice"),
         ("Audience", "audience"),
         ("Tone", "tone"),
-        ("Purpose", "purpose"),
+        ("Intent", "intent"),
     )
     lines: list[str] = [
         "Persona (Who) and Intent (Why) tokens you may use in Stance commands:",
@@ -738,11 +746,11 @@ def _build_persona_intent_docs() -> str:
             lines.append("")
 
         if INTENT_PRESETS:
-            lines.append("Intent presets (shortcut names for purpose stances):")
+            lines.append("Intent presets (shortcut names for intent stances):")
             for preset in INTENT_PRESETS:
                 label = preset.label or preset.key
-                purpose = preset.purpose
-                lines.append(f"- intent {preset.key}: {label} ({purpose})")
+                intent = preset.intent
+                lines.append(f"- intent {preset.key}: {label} ({intent})")
             lines.append("")
     except Exception:
         pass
@@ -1023,7 +1031,7 @@ class UserActions:
     def gpt_set_system_prompt(
         modelVoice: str,
         modelAudience: str,
-        modelPurpose: str,
+        modelIntent: str,
         modelTone: str,
     ) -> None:
         """Set the system prompt to be used when the LLM responds to you"""
@@ -1035,12 +1043,12 @@ class UserActions:
             modelAudience = GPTState.system_prompt.audience
         if modelTone == "":
             modelTone = GPTState.system_prompt.tone
-        if modelPurpose == "":
-            modelPurpose = GPTState.system_prompt.purpose
+        if modelIntent == "":
+            modelIntent = GPTState.system_prompt.intent
         new_system_prompt = GPTSystemPrompt(
             voice=modelVoice,
             audience=modelAudience,
-            purpose=modelPurpose,
+            intent=modelIntent,
             tone=modelTone,
         )
         GPTState.system_prompt = new_system_prompt
@@ -1079,7 +1087,7 @@ class UserActions:
         new_prompt = GPTSystemPrompt(
             voice=preset.voice or current.voice,
             audience=preset.audience or current.audience,
-            purpose=current.purpose,
+            intent=current.intent,
             tone=preset.tone or current.tone,
             completeness=current.completeness,
             scope=current.scope,
@@ -1115,7 +1123,7 @@ class UserActions:
         new_prompt = GPTSystemPrompt(
             voice=current.voice,
             audience=current.audience,
-            purpose=preset.purpose or current.purpose,
+            intent=preset.intent or current.intent,
             tone=current.tone,
             completeness=current.completeness,
             scope=current.scope,
@@ -1127,7 +1135,7 @@ class UserActions:
         GPTState.system_prompt = new_prompt
         notify(
             "GPT: Intent stance set to "
-            f"purpose={new_prompt.purpose or current.get_purpose()}"
+            f"intent={new_prompt.intent or current.get_intent()}"
         )
 
     def persona_status() -> None:
@@ -1174,15 +1182,15 @@ class UserActions:
         if not isinstance(current, GPTSystemPrompt):
             current = GPTSystemPrompt()
 
-        purpose = current.get_purpose()
-        default_purpose = GPTSystemPrompt.default_purpose() or ""
+        intent = current.get_intent()
+        default_intent = GPTSystemPrompt.default_intent() or ""
 
-        if purpose != default_purpose:
+        if intent != default_intent:
             suffix = " (non-default)"
         else:
             suffix = " (default)"
 
-        notify(f"Intent stance: purpose={purpose or default_purpose}{suffix}")
+        notify(f"Intent stance: intent={intent or default_intent}{suffix}")
 
     def persona_reset() -> None:
         """Reset Persona (Who) stance to defaults without touching contract axes."""
@@ -1195,7 +1203,7 @@ class UserActions:
         new_prompt = GPTSystemPrompt(
             voice="",
             audience="",
-            purpose=current.purpose,
+            intent=current.intent,
             tone="",
             completeness=current.completeness,
             scope=current.scope,
@@ -1218,7 +1226,7 @@ class UserActions:
         new_prompt = GPTSystemPrompt(
             voice=current.voice,
             audience=current.audience,
-            purpose="",
+            intent="",
             tone=current.tone,
             completeness=current.completeness,
             scope=current.scope,
@@ -1803,7 +1811,7 @@ class UserActions:
             "voice": getattr(sys, "voice", "") if sys else "",
             "audience": getattr(sys, "audience", "") if sys else "",
             "tone": getattr(sys, "tone", "") if sys else "",
-            "purpose": getattr(sys, "purpose", "") if sys else "",
+            "intent": getattr(sys, "intent", "") if sys else "",
             "destination_kind": dest_kind or "",
         }
         notify(f"GPT: Preset '{preset_name}' saved")
@@ -1826,7 +1834,7 @@ class UserActions:
         voice = str(preset.get("voice", "") or "")
         audience = str(preset.get("audience", "") or "")
         tone = str(preset.get("tone", "") or "")
-        purpose = str(preset.get("purpose", "") or "")
+        intent = str(preset.get("intent", "") or "")
         destination_kind = str(preset.get("destination_kind", "") or "")
         # Seed state so rerun uses the preset axes.
         GPTState.last_static_prompt = static_prompt
@@ -1841,7 +1849,7 @@ class UserActions:
             GPTState.system_prompt.voice = voice
             GPTState.system_prompt.audience = audience
             GPTState.system_prompt.tone = tone
-            GPTState.system_prompt.purpose = purpose
+            GPTState.system_prompt.intent = intent
         except Exception:
             pass
         try:
@@ -2533,10 +2541,10 @@ class UserActions:
             description_overrides=persona_docs_map("audience"),
         )
         render_list_as_tables(
-            "Purpose",
-            "modelPurpose.talon-list",
+            "Intent",
+            "modelIntent.talon-list",
             builder,
-            description_overrides=persona_docs_map("purpose"),
+            description_overrides=persona_docs_map("intent"),
         )
         # For Sources/Destinations, descriptions live in the preceding comment lines
         render_list_as_tables(
@@ -2722,8 +2730,8 @@ def _suggest_prompt_recipes_core_impl(source: ModelSource, subject: str) -> None
     persona_bits = [b for b in persona_bits if b]
     if persona_bits:
         stance_lines.append("Persona (Who): " + " · ".join(persona_bits))
-    if context_snapshot.get("purpose"):
-        stance_lines.append(f"Intent (Why): {context_snapshot['purpose']}")
+    if context_snapshot.get("intent"):
+        stance_lines.append(f"Intent (Why): {context_snapshot['intent']}")
     axis_bits: list[str] = []
     for label, key in (
         ("Completeness", "completeness"),

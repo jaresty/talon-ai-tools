@@ -11,7 +11,7 @@ The current GPT voice command pipeline in `talon-ai-tools` already supports seve
 
 - **Goal / task**: via `staticPrompt` and `goalModifier` (for example, `fix`, `todo`, `product`).
 - **Thinking lens**: via `directionalModifier` (for example, `fog`, `fig`, `dig`, `ong`, `rog`, `bog`).
-- **System-level style**: via `modelVoice`, `modelTone`, `modelAudience`, `modelPurpose` and their corresponding `model_default_*` settings.
+- **System-level style**: via `modelVoice`, `modelTone`, `modelAudience`, `modelIntent` and their corresponding `model_default_*` settings.
 - **Source / destination**: via `modelSource`, `modelDestination`, stacks, and related captures.
 
 However, there are important dimensions of interaction that are not yet explicit or easy to control:
@@ -221,7 +221,7 @@ These will be:
 ### How the pieces interact
 
 - Baseline behavior:
-  - The system prompt incorporates `model_default_voice`, `model_default_audience`, `model_default_purpose`, `model_default_tone`, and the four contract-style axes (completeness, scope, method, style). For each axis, `modelPrompt` computes an effective value (spoken modifier > per-prompt profile > `user.model_default_*`) and writes it into `GPTState.system_prompt` before the request is built.
+  - The system prompt incorporates `model_default_voice`, `model_default_audience`, `model_default_intent`, `model_default_tone`, and the four contract-style axes (completeness, scope, method, style). For each axis, `modelPrompt` computes an effective value (spoken modifier > per-prompt profile > `user.model_default_*`) and writes it into `GPTState.system_prompt` before the request is built.
   - `modelPrompt` also builds a user-level `Task / Constraints` schema. The `Task` line contains the static prompt plus any goal modifier; the `Constraints` block contains any spoken modifiers and, where present, short per-prompt profile hints for completeness, scope, method, and style. Pure global defaults need not be repeated here, since they are already reflected in the system prompt lines.
   - If the user just says `model fix fog`, the response uses the effective axes in the system prompt (`Completeness: full`, `Scope: narrow`, and so on, based on the `fix` profile and global defaults), plus the profile-level completeness/scope hints for `fix` in the user prompt’s `Constraints` block. The directional lens (`fog`) is appended after the schema.
 
@@ -268,7 +268,7 @@ Rejected because:
 
 ### Modifiers-only approach (no defaults)
 
-Everything would be controlled ad hoc; there would be no sticky configuration beyond voice, audience, purpose, and tone.
+Everything would be controlled ad hoc; there would be no sticky configuration beyond voice, audience, intent, and tone.
 
 Rejected because:
 
@@ -356,7 +356,7 @@ The core design for ADR 005 is implemented and stable in this repo. Remaining wo
   - `shell` configures `{ description: "...", completeness: "full", scope: "bound", style: "code" }`.
   - `commit` configures `{ description: "...", completeness: "gist", scope: "bound", style: "plain" }`.
   - `ADR` configures `{ description: "...", completeness: "full", method: "rigor", scope: "focus", style: "plain" }`.
-- The `gpt_help` command renders help tables for static prompts, directional modifiers, goal modifiers, voice/tone/audience/purpose, and all four new modifier axes.
+- The `gpt_help` command renders help tables for static prompts, directional modifiers, goal modifiers, voice/tone/audience/intent, and all four new modifier axes.
 - Focused tests exist for:
   - `modelPrompt` composition across completeness/scope/method/style.
   - `GPTSystemPrompt` use of the new contract-style axes and Talon defaults.

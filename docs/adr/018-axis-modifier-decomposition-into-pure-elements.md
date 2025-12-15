@@ -2,12 +2,12 @@
 
 - Status: Accepted  
 - Date: 2025-12-05  
-- Context: `talon-ai-tools` GPT `model` commands (static prompts + completeness/scope/method/style + directional modifiers + voice/audience/tone/purpose + destination)  
+- Context: `talon-ai-tools` GPT `model` commands (static prompts + completeness/scope/method/style + directional modifiers + voice/audience/tone/intent + destination)  
 - Related ADRs:  
   - 005 – Orthogonal Prompt Modifiers and Defaults  
   - 012 – Style and Method Prompt Refactor  
   - 014 – Static Prompt Axis Simplification from Clusters  
-  - 015 – Voice, Audience, Tone, Purpose Axis Decomposition  
+  - 015 – Voice, Audience, Tone, Intent Axis Decomposition  
   - 016 – Directional and Axis Decomposition  
   - 017 – Goal Modifier Decomposition and Simplification  
 
@@ -20,7 +20,7 @@ ADR 005 introduced four contract-style axes – completeness, scope, method, and
 - **Method** – how reasoning proceeds / which tool is used.  
 - **Style** – how the answer is presented.
 
-ADR 012 and ADR 014 added and refined specific modifiers on these axes, and ADR 015 split out audience, tone, purpose, and voice as separate dimensions. ADR 016 decomposed the directional lenses.
+ADR 012 and ADR 014 added and refined specific modifiers on these axes, and ADR 015 split out audience, tone, intent, and voice as separate dimensions. ADR 016 decomposed the directional lenses.
 
 However, the concrete Talon lists that implement the axes (`GPT/lists/completenessModifier.talon-list`, `scopeModifier.talon-list`, `methodModifier.talon-list`, `styleModifier.talon-list`) now contain many **composite tokens** whose descriptions span multiple axes at once. Examples (as of this ADR’s date):
 
@@ -37,7 +37,7 @@ This blurs the intended orthogonality:
 - Behaviours are encoded as opaque bundles rather than visible axis combinations.  
 - Adding new composite tokens increases cross-coupling instead of reusing existing axis elements.
 
-We want to preserve the four contract axes (plus audience, tone, purpose, voice, and destination) but ensure each **axis token is “pure”**: its description lives on a single axis. Complex behaviours should be expressed as **recipes** (combinations across axes or patterns), not as single overloaded adjectives.
+We want to preserve the four contract axes (plus audience, tone, intent, voice, and destination) but ensure each **axis token is “pure”**: its description lives on a single axis. Complex behaviours should be expressed as **recipes** (combinations across axes or patterns), not as single overloaded adjectives.
 
 This ADR focuses on:
 

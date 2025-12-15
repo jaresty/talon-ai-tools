@@ -1,11 +1,11 @@
-# 015 – Voice, Audience, Tone, Purpose Axis Decomposition – Work-log
+# 015 – Voice, Audience, Tone, Intent Axis Decomposition – Work-log
 
 ## 2025-12-04 – Loop 1 – Wire core list and axis changes
 
 Focus:
 
 - Apply ADR 015’s current decisions to the concrete Talon lists and axes:
-  - Trim `modelVoice`, `modelAudience`, `modelTone`, and `modelPurpose` down to the agreed core sets.
+  - Trim `modelVoice`, `modelAudience`, `modelTone`, and `modelIntent` down to the agreed core sets.
   - Introduce the new method/style tokens (`xp`, `adversarial`, `receptive`, `resistant`, `novice`, `liberating`, `diverge`, `converge`, `mapping`, `codetour`) in the corresponding axis lists.
 
 Changes made (this loop):
@@ -24,7 +24,7 @@ Changes made (this loop):
   - Kept: `casually`, `formally`, `directly`, `gently`, `kindly`.
   - Removed: `neutrally` (treated as default when no tone is specified) and `briefly` (now represented via completeness/style).
 
-- `GPT/lists/modelPurpose.talon-list`
+- `GPT/lists/modelIntent.talon-list`
   - Kept: `for information`, `for entertainment`, `for persuasion`, `for brainstorming`, `for deciding`, `for planning`, `for evaluating`, `for coaching`, `for appreciation`, `for triage`, `for announcing`, `for walk through`, `for collaborating`, `for teaching`, `for project management`.
   - Removed: style/destination and method-shaped entries (`for coding`, `for debugging`, `for slack`, `for table`, `for prompting`, `for diverging`, `for converging`, `for comparison`, `for contrast`, `for mapping`, `for discovery`, `for framing`, `for sensemaking`, `for presenterm`, `for code tour`) in favour of axis methods/styles and recipes per ADR 015.
 
@@ -94,9 +94,9 @@ Follow-ups / next loops:
 
 - Add more patterns that exercise the remaining new methods:
   - Adversarial review, Liberating Structures facilitation, diverge/converge decision flows, mapping-heavy scans.  
-- Add a small migration/mapping table (old voice/audience/purpose tokens → recommended axis/recipe combinations) to `GPT/readme.md` or a dedicated doc.  
+- Add a small migration/mapping table (old voice/audience/intent tokens → recommended axis/recipe combinations) to `GPT/readme.md` or a dedicated doc.  
 - Consider adding targeted tests that:
-  - Assert that decommissioned voice/audience/tone/purpose tokens no longer appear in the grammar.  
+  - Assert that decommissioned voice/audience/tone/intent tokens no longer appear in the grammar.  
   - Assert that at least one pattern uses each of the highest-value new methods (`xp`, `novice`, `liberating`, `diverge`, `converge`, `mapping`) to keep them exercised.
 
 ## 2025-12-04 – Loop 3 – Tests for new methods and patterns
@@ -136,15 +136,15 @@ Checks / validation:
 Follow-ups / next loops:
 
 - Add a small, explicit test (or set of tests) that:
-  - Confirms the trimmed voice/audience/tone/purpose lists do not contain deprecated tokens listed in ADR 015.
+  - Confirms the trimmed voice/audience/tone/intent lists do not contain deprecated tokens listed in ADR 015.
   - Optionally, asserts that at least one pattern exists for each of the high-value new methods (`liberating`, `diverge`, `converge`, `mapping`) to keep them exercised.
 
-## 2025-12-04 – Loop 4 – Guardrails for trimmed voice/audience/tone/purpose lists
+## 2025-12-04 – Loop 4 – Guardrails for trimmed voice/audience/tone/intent lists
 
 Focus:
 
 - Add dedicated tests that:
-  - Assert the trimmed `modelVoice`, `modelAudience`, `modelTone`, and `modelPurpose` lists match the core sets defined by ADR 015.
+  - Assert the trimmed `modelVoice`, `modelAudience`, `modelTone`, and `modelIntent` lists match the core sets defined by ADR 015.
   - Ensure deprecated tokens are not accidentally reintroduced into these lists.
 
 Changes made (this loop):
@@ -162,7 +162,7 @@ Changes made (this loop):
     - `test_model_tone_list_trimmed_and_neutral_is_default`:
       - Asserts that `modelTone.talon-list` contains exactly: `casually`, `formally`, `directly`, `gently`, `kindly` (with `neutrally` treated as default when no tone is set and `briefly` retired into completeness/style).
     - `test_model_purpose_list_only_contains_interaction_level_intents`:
-      - Asserts that `modelPurpose.talon-list` contains only the interaction-level intents:
+      - Asserts that `modelIntent.talon-list` contains only the interaction-level intents:
         - `for information`, `for entertainment`, `for persuasion`, `for brainstorming`, `for deciding`, `for planning`, `for evaluating`, `for coaching`, `for appreciation`, `for triage`, `for announcing`, `for walk through`, `for collaborating`, `for teaching`, `for project management`.
       - This implicitly verifies that style/method/destination-shaped purposes (for example, `for coding`, `for debugging`, `for slack`, `for table`, `for diverging`, `for converging`, `for mapping`, `for discovery`, `for framing`, `for sensemaking`, `for presenterm`, `for code tour`) have been removed.
 
@@ -170,11 +170,11 @@ Checks / validation:
 
 - This loop did not run the test suite, but:
   - The new tests read from the same Talon list files used by the grammar and other tests, and encode ADR 015’s final sets directly; if these lists drift, tests will fail with clear messages.
-  - `modelTone.talon-list` and `modelPurpose.talon-list` were double-checked against the expectations in these tests to ensure alignment.
+  - `modelTone.talon-list` and `modelIntent.talon-list` were double-checked against the expectations in these tests to ensure alignment.
 
 Follow-ups / next loops:
 
-- Add a small migration/mapping table in the docs (for example, in `GPT/readme.md` or a dedicated file) that shows common retired voice/audience/purpose tokens (for example, `as XP enthusiast`, `to receptive`, `for debugging`, `for mapping`) and their recommended axis/recipe replacements.  
+- Add a small migration/mapping table in the docs (for example, in `GPT/readme.md` or a dedicated file) that shows common retired voice/audience/intent tokens (for example, `as XP enthusiast`, `to receptive`, `for debugging`, `for mapping`) and their recommended axis/recipe replacements.  
 - Consider adding a quick-help section that surfaces the new method tokens (`xp`, `novice`, `liberating`, `diverge`, `converge`, `mapping`) and example phrases, referencing ADR 015 for deeper rationale.
 
 ## 2025-12-04 – Loop 5 – Patterns for remaining new methods
@@ -230,11 +230,11 @@ Follow-ups / next loops:
 Focus:
 
 - Make ADR 015 easier to apply in day-to-day use by:
-  - Adding an explicit migration cheat sheet that maps commonly retired voice/audience/tone/purpose tokens to concrete axis and pattern equivalents.
+  - Adding an explicit migration cheat sheet that maps commonly retired voice/audience/tone/intent tokens to concrete axis and pattern equivalents.
 
 Changes made (this loop):
 
-- `docs/adr/015-voice-audience-tone-purpose-decomposition.md`
+- `docs/adr/015-voice-audience-tone-intent-decomposition.md`
   - Added a new appendix section, **“Appendix – Migration cheat sheet (old tokens → axis/recipes)”**, which consolidates the most important migrations:
     - Voices → methods/patterns:
       - `as XP enthusiast` → `as programmer` + `method=xp` (+ `scope=actions`/`system`), with an example command.  
@@ -249,7 +249,7 @@ Changes made (this loop):
       - `to systems thinker` → normal audience + `systemic`/`mapping` + systems/relations/dynamics scope.  
     - Tone → completeness/style:
       - `briefly` → `completeness=minimal` or `gist` + `style=tight`.  
-    - Purposes → methods/styles/goals:
+    - Intents → methods/styles/goals:
       - `for coding` → `goal=solve` + `style=code`.  
       - `for debugging` → `goal=solve` + `method=debugging`.  
       - Channel/format purposes (`for slack`, `for table`, `for presenterm`, `for code tour`) → `style=slack` / `table` / `presenterm` / `codetour`.  
@@ -284,7 +284,7 @@ Changes made (this loop):
     - Audiences:
       - `to receptive` / `to resistant` → keep the role audience (for example, `to managers`, `to stakeholders`) and add `method=receptive` / `method=resistant`.  
       - `to dummy` → use a friendlier audience (for example, `to junior engineer`) and add `method=novice` + `gist`/`minimal` + `plain`.
-    - Purposes / shape:
+    - Intents / shape:
       - `for coding` → `goal=solve` + `style=code`.  
       - `for debugging` → `goal=solve` + `method=debugging`.  
       - `for slack` / `for table` / `for presenterm` / `for code tour` → `style=slack` / `table` / `presenterm` / `codetour`.  
@@ -321,7 +321,7 @@ Changes made (this loop):
 Assessment:
 
 - For this repo, `B_015` (remaining in-scope work) is effectively ≈ 0:
-  - Voice/audience/tone/purpose lists are trimmed and locked by tests.  
+  - Voice/audience/tone/intent lists are trimmed and locked by tests.  
   - New methods/styles are implemented, surfaced in help/README, and exercised by patterns.  
   - Migration guidance is captured both in ADR 015 (detailed cheat sheet) and in `GPT/readme.md` (quick mapping).
 - Any future work related to this ADR is expected to be:
@@ -330,7 +330,7 @@ Assessment:
 
 Follow-ups / next loops:
 
-- None required specifically for ADR 015 in this repo. Future changes that affect voice/audience/tone/purpose or their axis counterparts should reference this ADR and update the work-log only if they materially revise its decisions.
+- None required specifically for ADR 015 in this repo. Future changes that affect voice/audience/tone/intent or their axis counterparts should reference this ADR and update the work-log only if they materially revise its decisions.
 
 ## 2025-12-04 – Loop 9 – Contributor guidance hook
 
@@ -342,12 +342,12 @@ Changes made (this loop):
 
 - `CONTRIBUTING.md`
   - In the “GPT prompts, axes, and ADRs” section, extended the short ADR list to include ADR 015:
-    - Added `docs/adr/015-voice-audience-tone-purpose-decomposition.md` to the “Before adding or changing static prompts or axis lists, read:” bullet list.
+    - Added `docs/adr/015-voice-audience-tone-intent-decomposition.md` to the “Before adding or changing static prompts or axis lists, read:” bullet list.
   - This makes ADR 015 part of the standard pre-reading for any changes to prompts, axes, or related lists, alongside ADR 012 and ADR 013.
 
 Checks / validation:
 
-- No code or tests were changed; this is a small but meaningful documentation hook so contributors see ADR 015 when editing voice/audience/tone/purpose or adjacent axes.
+- No code or tests were changed; this is a small but meaningful documentation hook so contributors see ADR 015 when editing voice/audience/tone/intent or adjacent axes.
 
 Follow-ups / next loops:
 

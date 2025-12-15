@@ -18,5 +18,5 @@
   - All passing.
 
 Follow-ups for ADR 043:
-- Consider tightening `valid_stance_command` so `model write` tails are restricted more strictly to the union of axis tokens, not just presence of a purpose token.
+- Consider tightening `valid_stance_command` so `model write` tails are restricted more strictly to the union of axis tokens, not just presence of a intent token.
 - Add optional hooks to surface `debug_failures` through a more structured debug logging facility if/when one is introduced for GPT flows.

@@ -5,7 +5,7 @@
 - Context: `talon-ai-tools` GPT `model` commands (axes: completeness, scope, method, style; static prompts; patterns)  
 - Related ADRs:  
   - 005 – Orthogonal Prompt Modifiers and Defaults  
-  - 012 – Retire Special‑Purpose Static Prompts into Style/Method Axes  
+  - 012 – Retire Special‑Intent Static Prompts into Style/Method Axes  
   - 013 – Static Prompt Axis Refinement and Streamlining  
   - 016 – Directional and Axis Decomposition  
   - 018 – Axis Modifier Decomposition Into Pure Elements  
@@ -37,7 +37,7 @@ This is a behavioural change in how axes are represented and combined, but it pr
 Existing ADRs already define:
 
 - Axes and their roles (`completeness`, `scope`, `method`, `style`) – ADR-005.  
-- Migration of many special-purpose static prompts into style/method axes – ADR-012/013.  
+- Migration of many special-intent static prompts into style/method axes – ADR-012/013.  
 - Decomposition of overloaded modifiers into “pure” axis values – ADR-018.
 
 Today, all four axes are effectively treated as **single-valued** in the core model prompt and GUIs:

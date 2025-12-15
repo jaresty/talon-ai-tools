@@ -71,7 +71,7 @@ if bootstrap is not None:
                         )
 
         def test_purpose_axis_does_not_include_how_or_artifact_tokens(self) -> None:
-            # Tokens that were re-homed off intent/purpose because they describe
+            # Tokens that were re-homed off intent/intent because they describe
             # process, collaboration style, or deliverables rather than motivation.
             disallowed = {
                 "for walk through",
@@ -86,10 +86,10 @@ if bootstrap is not None:
                 "for project management",
             }
 
-            purpose_keys = set(personaConfig.PERSONA_KEY_TO_VALUE.get("purpose", {}))
+            purpose_keys = set(personaConfig.PERSONA_KEY_TO_VALUE.get("intent", {}))
             self.assertFalse(
                 disallowed & purpose_keys,
-                f"Purpose axis should not contain how/artifact tokens: {sorted(disallowed & purpose_keys)}",
+                f"Intent axis should not contain how/artifact tokens: {sorted(disallowed & purpose_keys)}",
             )
 
 

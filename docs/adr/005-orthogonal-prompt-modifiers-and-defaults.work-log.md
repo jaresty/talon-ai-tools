@@ -109,7 +109,7 @@
 - Extended `GPTSystemPrompt` in `lib/modelTypes.py:40`:
   - Added a `completeness` field, with `get_completeness()` and `default_completeness()` methods.
   - `default_completeness()` reads from `user.model_default_completeness`.
-  - `format_as_array()` now includes a `Completeness: …` line alongside voice, tone, audience, and purpose.
+  - `format_as_array()` now includes a `Completeness: …` line alongside voice, tone, audience, and intent.
 - Updated `modelPrompt` in `lib/talonSettings.py:40` to handle missing completeness modifiers:
   - When a `completenessModifier` is present, it is concatenated as before.
   - When no completeness is spoken, it appends a generic instruction:
@@ -306,7 +306,7 @@
 ## 2025-12-01 – Slice: add default scope/method/style settings and thread into system prompt
 
 **ADR focus**: 005 – Orthogonal Prompt Modifiers and Defaults  
-**Loop goal**: Introduce sticky settings for scope, method, and style, and surface them in the system prompt alongside voice, audience, purpose, tone, and completeness.
+**Loop goal**: Introduce sticky settings for scope, method, and style, and surface them in the system prompt alongside voice, audience, intent, tone, and completeness.
 
 ### Summary of this loop
 
@@ -322,7 +322,7 @@
     - `Scope: …`
     - `Method: …`
     - `Style: …`
-    in addition to the existing voice, tone, audience, purpose, and completeness lines.
+    in addition to the existing voice, tone, audience, intent, and completeness lines.
 
 ### Behaviour impact
 
@@ -1637,7 +1637,7 @@
 - Updated `GPT/gpt.py`’s `gpt_help` helper so that the Static Prompts table:
   - Accepts an optional `description_overrides` mapping in `render_list_as_tables`.
   - Supplies overrides derived from `STATIC_PROMPT_CONFIG`, using each profile’s `description` when present.
-- Left all other lists (directional, completeness, scope, method, style, goal, voice/tone/audience/purpose, sources/destinations) unchanged; they still render from their `.talon-list` files.
+- Left all other lists (directional, completeness, scope, method, style, goal, voice/tone/audience/intent, sources/destinations) unchanged; they still render from their `.talon-list` files.
 
 ### Behaviour impact
 

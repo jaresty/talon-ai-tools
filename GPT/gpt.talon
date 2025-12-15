@@ -18,7 +18,7 @@
 ^{user.model} clear stack {user.letter}:
     user.gpt_clear_stack(letter)
 
-^{user.model} write [{user.modelVoice} | {user.modelAudience} | {user.modelPurpose} | {user.modelTone}]+: user.gpt_set_system_prompt(modelVoice or "", modelAudience or "", modelPurpose or "", modelTone or "")
+^{user.model} write [{user.modelVoice} | {user.modelAudience} | {user.modelIntent} | {user.modelTone}]+: user.gpt_set_system_prompt(modelVoice or "", modelAudience or "", modelIntent or "", modelTone or "")
 ^{user.model} reset writing$: user.gpt_reset_system_prompt()
 
 ^{user.model} set completeness {user.completenessModifier}$: user.gpt_set_default_completeness(completenessModifier)

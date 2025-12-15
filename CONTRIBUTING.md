@@ -4,7 +4,7 @@ Thank you for your interest in contributing to `talon-ai-tools`. We are happy to
 
 ## Contributing Python
 
-- For all PRs please describe the purpose of the PR and give an example of any non-trivial functionality.
+- For all PRs please describe the intent of the PR and give an example of any non-trivial functionality.
 - Do not use external Python dependencies with `pip install`
   - This pollutes the Talon Python interpreter and can have unintended side effects
 - Prefix all actions exposed from a module with `gpt_` or another appropriate prefix to distinguish it in the global namespace
@@ -33,11 +33,11 @@ Thank you for your interest in contributing to `talon-ai-tools`. We are happy to
 - Before adding or changing **static prompts** or axis lists, read:
   - `docs/adr/012-style-and-method-prompt-refactor.md`
   - `docs/adr/013-static-prompt-axis-refinement-and-streamlining.md`
-  - `docs/adr/015-voice-audience-tone-purpose-decomposition.md`
+  - `docs/adr/015-voice-audience-tone-intent-decomposition.md`
   - `docs/adr/040-axis-families-and-persona-contract-simplification.md`
 - Design rules (summarised from those ADRs):
 - Prefer **axes + patterns** (completeness/scope/method/style + directional lenses) for new behaviours.
-- Think in **families**: Persona (Who: voice/audience/tone), Intent (Why: purpose), Contract (How: completeness/scope/method/style). When adding a new behaviour, first decide which single question it primarily answers (Who, Why, or How); if it genuinely spans more than one, model it as a recipe/pattern that sets multiple axes rather than a new raw token.
+- Think in **families**: Persona (Who: voice/audience/tone), Intent (Why: intent), Contract (How: completeness/scope/method/style). When adding a new behaviour, first decide which single question it primarily answers (Who, Why, or How); if it genuinely spans more than one, model it as a recipe/pattern that sets multiple axes rather than a new raw token.
 - Add new static prompts only for clearly semantic/domain lenses or structured tasks that are not easily expressed via axes alone.
 - Keep Talon lists, pattern GUIs, help surfaces, and tests in sync whenever you change prompts or axes.
 - Name axis tokens for speech: use short, single, pronounceable words without hyphens (for example, `shellscript` instead of `shell-script`); avoid punctuation or multi-word phrases in axis keys so they remain easy to speak and remember.

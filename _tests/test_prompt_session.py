@@ -30,7 +30,7 @@ if bootstrap is not None:
             GPTState.reset_all()
             GPTState.system_prompt = GPTSystemPrompt(
                 voice="v",
-                purpose="p",
+                intent="p",
                 tone="t",
                 audience="a",
             )
@@ -137,7 +137,7 @@ if bootstrap is not None:
                 voice="as programmer",
                 audience="to stakeholders",
                 tone="directly",
-                purpose="for appreciation",
+                intent="for appreciation",
                 completeness="full",
                 scope="actions",
                 method="plan",
@@ -158,7 +158,7 @@ if bootstrap is not None:
             self.assertIn("Voice: Act as a programmer", hydrated)
             self.assertIn("Audience: The audience for this is the stakeholders", hydrated)
             self.assertIn("Tone: Use a direct, straightforward tone while remaining respectful.", hydrated)
-            self.assertIn("Purpose: The goal is to express appreciation or thanks.", hydrated)
+            self.assertIn("Intent: The goal is to express appreciation or thanks.", hydrated)
             self.assertIn("Completeness: Important: Provide a thorough answer", hydrated)
             self.assertIn("Scope: Important: Within the selected target, focus only on concrete actions", hydrated)
             self.assertIn("Method: Important: Give a short plan first, then carry it out", hydrated)

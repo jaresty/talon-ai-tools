@@ -7,7 +7,13 @@ from .canvasFont import apply_canvas_typeface
 from .helpUI import apply_scroll_delta, clamp_scroll
 from .axisConfig import axis_docs_for
 from .axisCatalog import axis_catalog
-from .personaConfig import INTENT_PRESETS, PERSONA_PRESETS, intent_bucket_presets
+from .personaConfig import (
+    INTENT_PRESETS,
+    PERSONA_PRESETS,
+    intent_bucket_presets,
+    intent_bucket_spoken_tokens,
+    normalize_intent_token,
+)
 
 from .modelState import GPTState
 from .talonSettings import _AXIS_SOFT_CAPS
@@ -931,16 +937,48 @@ def _default_draw_quick_help(
         pass
 
     try:
-        intent_buckets = intent_bucket_presets()
+        intent_buckets = intent_bucket_spoken_tokens()
     except Exception:
         intent_buckets = {}
     if intent_buckets:
-        task = (intent_buckets.get("task", []) or [])[:6]
-        relational = (intent_buckets.get("relational", []) or [])[:6]
+        task = intent_buckets.get("task", []) or []
+        relational = intent_buckets.get("relational", []) or []
+
+        def _canonical_list(tokens):
+            seen: set[str] = set()
+            canonical: list[str] = []
+            for t in tokens:
+                c = normalize_intent_token(t)
+                val = c or t
+                if val not in seen:
+                    canonical.append(val)
+                    seen.add(val)
+            return canonical
+
+        task_display = _canonical_list(task)
+        relational_display = _canonical_list(relational)
         if task:
-            y = _draw_wrapped_line("Task intents: " + " · ".join(task), x, y)
+            y = _draw_wrapped_commands(
+                "Task intents: ",
+                task_display,
+                draw_text,
+                x,
+                y,
+                rect,
+                line_h,
+                command_prefix=None,
+            )
         if relational:
-            y = _draw_wrapped_line("Relational intents: " + " · ".join(relational), x, y)
+            y = _draw_wrapped_commands(
+                "Relational intents: ",
+                relational_display,
+                draw_text,
+                x,
+                y,
+                rect,
+                line_h,
+                command_prefix=None,
+            )
     y = _draw_wrapped_line(
         "Status/reset: persona status/reset · intent status/reset",
         x,

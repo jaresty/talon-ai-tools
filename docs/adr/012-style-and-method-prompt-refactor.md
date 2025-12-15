@@ -1,4 +1,4 @@
-# 012 – Retire Special‑Purpose Static Prompts into Style/Method (Form/Channel) Axes
+# 012 – Retire Special‑Intent Static Prompts into Style/Method (Form/Channel) Axes
 
 - Status: Accepted  
 - Date: 2025-12-04  
@@ -107,9 +107,9 @@ The current state has drawbacks:
 
 We will:
 
-1. **Treat several special‑purpose static prompts as primarily style or method choices** and move their semantics into the `style` and `method` axes.
+1. **Treat several special‑intent static prompts as primarily style or method choices** and move their semantics into the `style` and `method` axes.
 
-2. **Remove those prompts from the static prompt surface** rather than preserving them as legacy shorthands. Users will access the behaviour via style/method axes and recipes instead of special-purpose prompt names.
+2. **Remove those prompts from the static prompt surface** rather than preserving them as legacy shorthands. Users will access the behaviour via style/method axes and recipes instead of special-intent prompt names.
 
 3. **Extend the form/channel axes to allow “heavier” styles** that encode strong formatting contracts and safety rules (not just “bullets vs table vs plain”).
 
@@ -262,7 +262,7 @@ Once the axis behaviour is correct and documented, remove `system`, `experiment`
      - `GPT/lists/styleModifier.talon-list` for the style values listed above.
      - `GPT/lists/methodModifier.talon-list` for `systems`, `experimental`, and `debugging`.
    - Move the long instruction strings and safety contracts from:
-     - `GPT/lists/staticPrompt.talon-list` and any `modelPurpose` entries into the corresponding style/method descriptions.
+     - `GPT/lists/staticPrompt.talon-list` and any `modelIntent` entries into the corresponding style/method descriptions.
 
 2. **Update static prompt configuration**
    - In `lib/staticPromptConfig.py`, ensure any residual profiles for the retired prompts are either:

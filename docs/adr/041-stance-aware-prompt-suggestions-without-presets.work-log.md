@@ -4,7 +4,7 @@
 
 - Captured the design intent that prompt recipe suggestions should:
   - Be driven by LLM-curated stance (Who/Why) and contract (How) recommendations, not by static Persona/Intent preset tables in the GUI.
-  - Express stance recommendations as full `model write` commands using raw axis tokens (voice/audience/tone/purpose), with a short `Why` explanation per suggestion where helpful.
+  - Express stance recommendations as full `model write` commands using raw axis tokens (voice/audience/tone/intent), with a short `Why` explanation per suggestion where helpful.
   - Keep the suggestions GUI focused on per-suggestion rows (`Name`, `Say: model run …`, `Axes: …`, optional `S1`/`Why` line) rather than a separate preset catalogue.
 - Noted that Persona/Intent presets remain useful for pattern GUIs and documentation, but should not be rendered as a dedicated section in the suggestions window.
 - No code changes in this slice; the current implementation (LLM-driven suggestions, optional stance/why metadata, no static preset table in the suggestions GUI) is already broadly aligned with this ADR.
@@ -33,7 +33,7 @@
 ## 2025-12-11 – Suggest meta-prompt stance/why alignment
 
 - Updated the `model suggest` meta-prompt in `GPT/gpt.py` so each suggestion line is still required to use the `Name: … | Recipe: …` shape, but may optionally append `| Stance: model write … | Why: …` segments when helpful.
-- Clarified in the prompt that `Stance:` commands must be full `model write` commands expressed directly in terms of Persona/Intent axis tokens (`voice` / `audience` / `tone` / `purpose`) plus a `purpose`, and that `Why:` is a short explanation of why that stance+contract fit the subject.
+- Clarified in the prompt that `Stance:` commands must be full `model write` commands expressed directly in terms of Persona/Intent axis tokens (`voice` / `audience` / `tone` / `intent`) plus a `intent`, and that `Why:` is a short explanation of why that stance+contract fit the subject.
 - Tightened formatting rules to keep all segments for a suggestion on a single line, use literal `Name:`, `Recipe:`, `Stance:`, and `Why:` labels, and avoid extra commentary or multi-line explanations.
 - Re-ran `_tests/test_gpt_actions.py`, `_tests/test_suggestion_coordinator.py`, and `_tests/test_model_suggestion_gui.py` to confirm parsing and GUI behaviour remain intact; 63 tests passed.
 - This slice advances ADR 041's "Meta-prompt alignment" task by explicitly teaching the LLM how to emit optional stance/why metadata in a way that matches the parser and GUI, without changing the underlying `Name | Recipe` contract format.

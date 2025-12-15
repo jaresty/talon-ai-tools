@@ -1,8 +1,8 @@
-# 015 – Voice, Audience, Tone, Purpose Axis Decomposition
+# 015 – Voice, Audience, Tone, Intent Axis Decomposition
 
 - Status: Accepted  
 - Date: 2025-12-04  
-- Context: `talon-ai-tools` GPT `model` commands (static prompts + completeness/scope/method/style + goal/directional modifiers + voice/audience/tone/purpose)  
+- Context: `talon-ai-tools` GPT `model` commands (static prompts + completeness/scope/method/style + goal/directional modifiers + voice/audience/tone/intent)  
 - Related ADRs:  
   - 005 – Orthogonal Prompt Modifiers and Defaults  
   - 007 – Static Prompt Consolidation for Axis-Based Grammar  
@@ -18,24 +18,24 @@ ADR 005/007/012/013/014 together did a lot of work to:
 - Reserve **static prompts** mostly for semantic/domain lenses and a few structured tasks.  
 - Move “how to think” and “in what shape” into axes and patterns.
 
-The `modelVoice`, `modelAudience`, `modelTone`, and `modelPurpose` lists were developed earlier and have grown organically. Today they carry a mix of:
+The `modelVoice`, `modelAudience`, `modelTone`, and `modelIntent` lists were developed earlier and have grown organically. Today they carry a mix of:
 
 - True **speaker identity** (`as programmer`, `as Kent Beck`, `as CEO`).  
 - True **audience identity** (`to managers`, `to team`, `to junior engineer`).  
 - **Method-shaped stances** that overlap with method/directional axes (`as XP enthusiast`, `as adversary`, `as various`, `as perspectives`, `as systems thinker`, `to receptive`, `to resistant`, `to various`, `to perspectives`, `to systems thinker`).  
 - **Completeness/shape constraints** that fit better into existing axes (`briefly`, parts of `to dummy`, `to receptive/resistant`).  
 - **Format/destination contracts** that duplicate style/destination (`for slack`, `for table`, `for presenterm`, `for code tour`).  
-- **Thinking frames** that are closer to method/goal than pure purpose (`for coding`, `for debugging`, `for prompting`).
+- **Thinking frames** that are closer to method/goal than pure intent (`for coding`, `for debugging`, `for prompting`).
 
 This leads to similar problems ADR 014 addressed for static prompts:
 
-- Behaviour is duplicated across **voice/audience/tone/purpose** and **axes**.  
+- Behaviour is duplicated across **voice/audience/tone/intent** and **axes**.  
 - Some items read more like **temporary hats or stances** than stable voices/audiences.  
 - Lists are harder to reason about because “what”, “who”, “how”, and “shape” are mixed.
 
 This ADR applies the same clustering and decomposition approach used in 014 to:
 
-- Clarify what each of `voice`, `audience`, `tone`, and `purpose` is for.  
+- Clarify what each of `voice`, `audience`, `tone`, and `intent` is for.  
 - Identify items that are actually **completeness/scope/method/style/goal**.  
 - Recommend retiring or demoting those items, expressing their behaviour via axes and/or recipes instead.
 
@@ -43,7 +43,7 @@ This ADR applies the same clustering and decomposition approach used in 014 to:
 
 We will:
 
-1. **Tighten the semantics** of `modelVoice`, `modelAudience`, `modelTone`, and `modelPurpose`.  
+1. **Tighten the semantics** of `modelVoice`, `modelAudience`, `modelTone`, and `modelIntent`.  
 2. **Cluster existing list items** by their dominant behaviour (identity vs method vs style vs completeness vs goal).  
 3. **Retire axis-shaped and style-shaped items** from these lists, representing them instead via:
    - Existing **completeness/scope/method/style** modifiers,  
@@ -94,7 +94,7 @@ We will:
   - Answer length or coverage (completeness),  
   - Output format (style).
 
-**Purpose (`GPT/lists/modelPurpose.talon-list`)**
+**Intent (`GPT/lists/modelIntent.talon-list`)**
 
 - Represents **why** the user is invoking the model in this interaction:  
   - Inform, entertain, persuade,  
@@ -136,8 +136,8 @@ In addition to the method-shaped items already discussed, we recommend **retirin
 
 - Method/stance-shaped (better as methods or purposes):  
   - `as logician` → use `method=rigor` / `method=compare`.  
-  - `as negotiator`, `as mediator` → use `purpose=for persuasion` / `for mapping` plus `method=adversarial` or `method=systems` where needed.  
-  - `as reader`, `as editor` → use `purpose=for evaluating` / `for coaching`.  
+  - `as negotiator`, `as mediator` → use `intent=for persuasion` / `for mapping` plus `method=adversarial` or `method=systems` where needed.  
+  - `as reader`, `as editor` → use `intent=for evaluating` / `for coaching`.  
 - Style- or medium-shaped:  
   - `as artist` → use `style=abstractvisual` / `style=diagram` plus appropriate purposes.  
 - Org-structural roles where audience is usually the better fit:  
@@ -159,7 +159,7 @@ Contributors who need additional voices beyond this core set can still add them 
     - Represent core behaviour via:  
       - Method axis: `experimental`, `steps`, possibly an `xp`-flavoured method token or recipe if needed.  
       - Scope: `actions` / `system` where relevant.  
-      - Purpose: `for project management`, `for coding`, `for debugging` as appropriate.  
+      - Intent: `for project management`, `for coding`, `for debugging` as appropriate.  
     - Provide a **pattern** such as “XP-flavoured recommendations” rather than a voice.
 
 - `as adversary`  
@@ -167,7 +167,7 @@ Contributors who need additional voices beyond this core set can still add them 
   - Decision:  
     - **Retire from voice**.  
     - Represent as:  
-      - Purpose: `for evaluating`,  
+      - Intent: `for evaluating`,  
       - Tone: `directly` (optionally combined with `kindly`),  
       - Potential method token or pattern for adversarial testing if needed.
 
@@ -185,7 +185,7 @@ Contributors who need additional voices beyond this core set can still add them 
     - Keep `as facilitator` as the **voice**.  
     - **Retire `as liberator`** from voice, and represent LS-heavy techniques as:  
       - Method: new `liberating` method token (see below), and/or  
-      - Purpose: `for project management`, `for discovery`, `for framing`, `for sensemaking`.
+      - Intent: `for project management`, `for discovery`, `for framing`, `for sensemaking`.
 
 - `as various`, `as perspectives`  
   - Behaviour: multi-perspective/multi-stakeholder synthesis → **method + completeness**.  
@@ -203,7 +203,7 @@ Contributors who need additional voices beyond this core set can still add them 
     - Use:  
       - Method: `systems`,  
       - Scope: `system`, `relations`, `dynamics` (per ADR 014),  
-      - Purpose: `for mapping`, `for discovery`, `for sensemaking` where needed.
+      - Intent: `for mapping`, `for discovery`, `for sensemaking` where needed.
 
 - `as other`  
   - Behaviour: “someone who does not know the author” → mainly audience context and information gap.  
@@ -308,7 +308,7 @@ Current tones:
 
 We also retire `neutrally` from the shared list and treat it as the **default** when no other tone is specified; users can still reach a neutral tone by omitting tone modifiers.
 
-#### 2.4 Purpose clusters
+#### 2.4 Intent clusters
 
 Current purposes include:
 
@@ -325,7 +325,7 @@ Current purposes include:
 - Method/contract heavy:  
   - `for coding`, `for debugging`, `for prompting`.
 
-**Purposes to keep (interaction-level intent)**
+**Intents to keep (interaction-level intent)**
 
 These are appropriate high-level “why” values:
 
@@ -342,45 +342,45 @@ These are appropriate high-level “why” values:
   - `for appreciation`,  
   - `for announcing`, `for walk through`, `for collaborating`, `for teaching`.
 
-As an aggressive simplification, we **retire** several purpose tokens whose semantics are better expressed as methods or directional lenses:
+As an aggressive simplification, we **retire** several intent tokens whose semantics are better expressed as methods or directional lenses:
 
 - Diverge / converge: treat `for diverging` and `for converging` as **methods** (see `diverge` / `converge` below), not purposes; keep `for brainstorming` / `for deciding` as the interaction-level “why”.  
-- Compare / contrast: represent both through `method=compare`; retire `for contrast` as a separate purpose.  
+- Compare / contrast: represent both through `method=compare`; retire `for contrast` as a separate intent.  
 - Mapping / discovery / framing / sensemaking: retire `for discovery`, `for framing`, `for sensemaking`, and `for mapping` as purposes and instead use combinations of:  
   - Directional lenses (`fog`, `fig`, `ong`, `rog`, `bog`, etc.),  
   - Scope (`system`, `relations`, `dynamics`),  
   - Methods (`systemic`, `mapping`, `motifs`, `structure`, `flow`).
 
-**Purposes to retire or demote (style/method/destination)**
+**Intents to retire or demote (style/method/destination)**
 
 - `for slack`  
   - Behaviour: Slack-specific formatting.  
   - Decision:  
-    - **Retire from purpose**.  
+    - **Retire from intent**.  
     - Use style `slack` (already in `styleModifier`) plus any other axes.
 
 - `for table`  
   - Behaviour: “format result as a table”.  
   - Decision:  
-    - **Retire from purpose**.  
+    - **Retire from intent**.  
     - Use style `table`.
 
 - `for presenterm`  
   - Behaviour: Presenterm deck with strict formatting and safety.  
   - Decision:  
-    - **Retire from purpose**.  
+    - **Retire from intent**.  
     - Use style `presenterm` (per ADR 012).
 
 - `for code tour`  
   - Behaviour: output strict VS Code CodeTour JSON and nothing else.  
   - Decision:  
-    - **Retire from purpose**.  
+    - **Retire from intent**.  
     - Represent via a dedicated **style** (for example, `codetour`) or static prompt/recipe for “Code Tour” with a strict output contract.
 
 - `for coding`  
   - Behaviour: “You are programming code. Return only syntactically valid code and comments. Explanation must be in comments.”  
   - Decision:  
-    - **Retire from purpose**.  
+    - **Retire from intent**.  
     - Represent via:  
       - Style: `code` (output only code/markup),  
       - Goal: `solve` from `goalModifier`,  
@@ -389,7 +389,7 @@ As an aggressive simplification, we **retire** several purpose tokens whose sema
 - `for debugging`  
   - Behaviour: blocked on an issue; need path forward → debugging method.  
   - Decision:  
-    - **Retire from purpose**.  
+    - **Retire from intent**.  
     - Represent via:  
       - Method axis: `debugging`,  
       - Goal modifier: `solve`,  
@@ -398,7 +398,7 @@ As an aggressive simplification, we **retire** several purpose tokens whose sema
 - `for prompting`  
   - Behaviour: building up context for subsequent prompts; concise, with examples and counterexamples.  
   - Decision:  
-    - Prefer to **demote** this into a pattern (and possibly a semantic static prompt) rather than a purpose, to keep `modelPurpose` focused on end-user intents.  
+    - Prefer to **demote** this into a pattern (and possibly a semantic static prompt) rather than a intent, to keep `modelIntent` focused on end-user intents.  
     - Represent via:  
       - Completeness: `framework`/`full`,  
       - Style: `plain` or `taxonomy`,  
@@ -406,7 +406,7 @@ As an aggressive simplification, we **retire** several purpose tokens whose sema
 
 #### 2.5 New axis tokens and canonical replacements
 
-To avoid losing expressive power when retiring voice/audience/purpose items, we introduce a small set of **new axis tokens** and explicit **axis recipes** as canonical replacements.
+To avoid losing expressive power when retiring voice/audience/intent items, we introduce a small set of **new axis tokens** and explicit **axis recipes** as canonical replacements.
 
 **New method tokens (`GPT/lists/methodModifier.talon-list`)**
 
@@ -418,7 +418,7 @@ To avoid losing expressive power when retiring voice/audience/purpose items, we 
 
 - `adversarial` – “Think like a constructive adversary: systematically search for weaknesses, edge cases, counterexamples, failure modes, and unstated assumptions; prioritise critique and stress-testing over agreement, while still aiming to improve the work.”  
   - Canonical replacement for `as adversary` (voice):  
-    - Use any suitable voice (for example, `as programmer`, `as editor`) plus `method=adversarial` and `purpose=for evaluating`.
+    - Use any suitable voice (for example, `as programmer`, `as editor`) plus `method=adversarial` and `intent=for evaluating`.
 
 - `headline` – “Use a headline-first structure: state the main point or recommendation up front, then layer in supporting details, evidence, and caveats in a simple, easy-to-skim order.”  
   - Canonical replacement for `to receptive` (audience):  
@@ -437,28 +437,28 @@ To avoid losing expressive power when retiring voice/audience/purpose items, we 
     - Use `as facilitator` plus `method=liberating`, combined with purposes such as `for discovery`, `for framing`, or `for sensemaking`.
 
 - `diverge` – “Open up the option space: generate multiple, diverse possibilities or angles without prematurely judging or collapsing to a single answer.”  
-  - Canonical replacement for `for diverging` (purpose):  
-    - Use `purpose=for brainstorming` plus `method=diverge` (and, if helpful, a directional lens like `fog`/`fig`).
+  - Canonical replacement for `for diverging` (intent):  
+    - Use `intent=for brainstorming` plus `method=diverge` (and, if helpful, a directional lens like `fog`/`fig`).
 
 - `converge` – “Narrow down and make a call: weigh trade-offs, eliminate weaker options, and arrive at a small set of recommendations or a single decision.”  
-  - Canonical replacement for `for converging` (purpose):  
-    - Use `purpose=for deciding` plus `method=converge`.
+  - Canonical replacement for `for converging` (intent):  
+    - Use `intent=for deciding` plus `method=converge`.
 
 - `mapping` – “Emphasise mapping over exposition: surface elements, relationships, and structure; organise them into a coherent map (textual, tabular, or visual), rather than a linear narrative.”  
-  - Canonical replacement for `for mapping` (purpose):  
+  - Canonical replacement for `for mapping` (intent):  
     - Use `method=mapping` plus appropriate scope (`system`, `relations`, `dynamics`) and, if needed, styles like `diagram`, `table`, or `abstractvisual`.
 
 **New style token (`GPT/lists/styleModifier.talon-list`)**
 
 - `codetour` – “Output only a valid VS Code CodeTour `.tour` JSON document (schema-compatible), using steps and fields appropriate to the task; do not include any extra prose or surrounding explanation.”  
-  - Canonical replacement for `for code tour` (purpose):  
-    - Use `style=codetour` plus whatever purpose best matches the intention (for example, `for teaching`, `for walk through`).
+  - Canonical replacement for `for code tour` (intent):  
+    - Use `style=codetour` plus whatever intent best matches the intention (for example, `for teaching`, `for walk through`).
 
 **Axis recipes for other retired items (no new tokens)**
 
 - `as liberator` (voice) → pattern such as “Liberating Structures facilitation”:  
   - Use `as facilitator` plus:  
-    - `purpose=for discovery` / `for framing` / `for sensemaking` as appropriate,  
+    - `intent=for discovery` / `for framing` / `for sensemaking` as appropriate,  
     - `scope=system` or `scope=relations`,  
     - and a recipe that names specific Liberating Structures where useful.
 
@@ -481,12 +481,12 @@ To avoid losing expressive power when retiring voice/audience/purpose items, we 
 - **Cleaner separation of concerns**:  
   - Voice/audience: “who”.  
   - Tone: “emotional register”.  
-  - Purpose: “why”.  
+  - Intent: “why”.  
   - Axes and patterns: “how”, “how much”, “where”, “in what shape”.  
 - **Reduced duplication and hidden coupling**:  
   - “XP-flavoured”, “systems-thinking”, “various perspectives”, “briefly”, “Slack-formatted”, “presenterm deck”, “code-only” no longer appear as voices/audiences/purposes when they’re really methods/styles/completeness.  
 - **More composable grammar**:  
-  - A single behavioural idea (for example adversarial evaluation, multi-angle view, extremely brief answer) lives in one place (method/style/completeness/directional) and can be reused with any voice/audience/purpose.  
+  - A single behavioural idea (for example adversarial evaluation, multi-angle view, extremely brief answer) lives in one place (method/style/completeness/directional) and can be reused with any voice/audience/intent.  
 - **Clearer mental model for users**:  
   - Voice/audience lists become recognisably about people and roles, not hats and stances.
 
@@ -514,7 +514,7 @@ We mitigate these by:
      - Remove: `to receptive`, `to resistant`, `to dummy`, `to various`, `to perspectives`, `to systems thinker`.  
    - `GPT/lists/modelTone.talon-list`:  
      - Remove: `briefly`.  
-   - `GPT/lists/modelPurpose.talon-list`:  
+   - `GPT/lists/modelIntent.talon-list`:  
      - Keep interaction-level intents.  
      - Remove or demote: `for slack`, `for table`, `for presenterm`, `for code tour`, `for coding`, `for debugging`, `for prompting` (if fully moved to patterns).
 
@@ -542,13 +542,13 @@ We mitigate these by:
 
 4. **Wire new behaviours into `talonSettings` / prompt composition**
 
-   - Ensure voice/audience/tone/purpose are only used for their refined roles when composing the combined prompt string in `lib/talonSettings.py`.  
+   - Ensure voice/audience/tone/intent are only used for their refined roles when composing the combined prompt string in `lib/talonSettings.py`.  
    - Move any retired-item-specific logic to the relevant axis or pattern layer.
 
 5. **Update documentation**
 
    - In `GPT/readme.md` (and any quick-help UIs), document:  
-     - The refined semantics of `voice`, `audience`, `tone`, `purpose`.  
+     - The refined semantics of `voice`, `audience`, `tone`, `intent`.  
      - The deprecations and their axis/recipe replacements (a small migration table).  
    - Mention that “XP enthusiast”, “systems thinker”, “various stakeholders/perspectives”, “briefly”, and format-heavy purposes are now expressed via axes and recipes.
 
@@ -560,7 +560,7 @@ We mitigate these by:
 
 ## Appendix – Migration cheat sheet (old tokens → axis/recipes)
 
-This appendix summarises concrete replacements for the most common retired tokens so existing habits can be carried over with minimal friction. When in doubt, prefer these axis/recipe forms over adding new voice/audience/purpose entries.
+This appendix summarises concrete replacements for the most common retired tokens so existing habits can be carried over with minimal friction. When in doubt, prefer these axis/recipe forms over adding new voice/audience/intent entries.
 
 ### Voices → methods / patterns
 
@@ -612,7 +612,7 @@ This appendix summarises concrete replacements for the most common retired token
   - Use: `completeness=minimal` or `gist` + `style=tight`.  
   - Example: `model describe gist tight fog`.
 
-### Purposes → methods / styles / goals
+### Intents → methods / styles / goals
 
 - `for coding`  
   - Use: `goal=solve` + `style=code` (and/or relevant static prompt such as `fix` / `describe`).  
@@ -641,7 +641,7 @@ This appendix summarises concrete replacements for the most common retired token
   - Example: `model describe mapping diagram fog`.
 
 - `for discovery` / `for framing` / `for sensemaking`  
-  - Use: combinations of directional lenses, scopes, and methods rather than a separate purpose:  
+  - Use: combinations of directional lenses, scopes, and methods rather than a separate intent:  
     - Discovery: `fog`/`fig` + `diverge` + `mapping` / `motifs`.  
     - Framing: `rog` + `structure` / `mapping`.  
     - Sensemaking: `fog`/`rog` + `systemic` / `mapping` / `motifs`.  
@@ -650,7 +650,7 @@ This appendix summarises concrete replacements for the most common retired token
 ## Current status (this repo)
 
 - Lists and axes:  
-  - `GPT/lists/modelVoice.talon-list`, `modelAudience.talon-list`, `modelTone.talon-list`, and `modelPurpose.talon-list` are trimmed to the core sets defined in this ADR.  
+  - `GPT/lists/modelVoice.talon-list`, `modelAudience.talon-list`, `modelTone.talon-list`, and `modelIntent.talon-list` are trimmed to the core sets defined in this ADR.  
   - New method/style tokens (`xp`, `adversarial`, `receptive`, `resistant`, `novice`, `liberating`, `diverge`, `converge`, `mapping`, `codetour`) are present in `methodModifier`/`styleModifier` and wired through `modelPatternGUI` and `modelHelpGUI`.
 
 - Patterns and UX:  
@@ -660,6 +660,6 @@ This appendix summarises concrete replacements for the most common retired token
 - Tests and guardrails:  
   - `tests/test_readme_axis_lists.py` enforces alignment between method/style lists and the README axis lines.  
   - `tests/test_model_pattern_gui.py` asserts that representative patterns use the expected method/scope/style combinations, including the new methods from this ADR.  
-  - `tests/test_voice_audience_tone_purpose_lists.py` locks in the trimmed voice/audience/tone/purpose sets and ensures deprecated tokens remain removed.
+  - `tests/test_voice_audience_tone_purpose_lists.py` locks in the trimmed voice/audience/tone/intent sets and ensures deprecated tokens remain removed.
 
 Taken together, these changes mean ADR 015 is fully implemented and guarded in this repo; remaining work, if any, should be limited to small pattern or documentation refinements rather than structural changes.

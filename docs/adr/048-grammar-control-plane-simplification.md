@@ -2,7 +2,7 @@
 
 - Status: Accepted  
 - Date: 2025-12-15  
-- Context: Current grammar exposes Persona (voice/audience/tone), Intent (purpose), Contract (completeness/scope/method/style/directional), static prompts, and destinations/sources all in one utterance. Directional lenses are mnemonic and opaque; style mixes container and channel; persona and purpose lists carry low-signal items. Users must remember 6–7 families, optional defaults, and composite directionals, leading to slow recall, mis-parses, and noisy confirmations.
+- Context: Current grammar exposes Persona (voice/audience/tone), Intent (intent), Contract (completeness/scope/method/style/directional), static prompts, and destinations/sources all in one utterance. Directional lenses are mnemonic and opaque; style mixes container and channel; persona and intent lists carry low-signal items. Users must remember 6–7 families, optional defaults, and composite directionals, leading to slow recall, mis-parses, and noisy confirmations.
 
 ---
 
@@ -26,7 +26,7 @@
 2) **Tighten persona/intent surface (required)**
    - Collapse persona into a small preset set (5–7 high-signal roles); keep raw axes accessible but de-emphasised.  
    - Trim/alias low-yield voice/audience entries (platform/stream-aligned/XP-enthusiast) into presets instead of raw axes.  
-   - Split purpose into task intents (decide/teach/evaluate/plan/brainstorm/inform/announce/walkthrough/triage) vs relational intents (persuade/appreciate/coach/collaborate/entertain). Keep a single `intent <preset>` grammar, surface both buckets in help, and allow combining task+relational via presets or sequential commands—not by widening the capture.
+   - Split intent into task intents (decide/teach/evaluate/plan/brainstorm/inform/announce/walkthrough/triage) vs relational intents (persuade/appreciate/coach/collaborate/entertain). Keep a single `intent <preset>` grammar, surface both buckets in help, and allow combining task+relational via presets or sequential commands—not by widening the capture.
 
 3) **Simplify directionals (no renames, required)**
    - Keep the seven core lenses as-is: `fog`, `fig`, `dig`, `ong`, `rog`, `bog`, `jog`. Provide short glosses in docs/help, but do not rename tokens.  
@@ -63,7 +63,7 @@
 
 ### Benefits
 
-- Lower recall burden: fewer visible directionals; style clarified; persona/purpose trimmed.  
+- Lower recall burden: fewer visible directionals; style clarified; persona/intent trimmed.  
 - Faster common paths: minimal `run` form; stance defaults reduce repetition; presets cover JTBDs.  
 - Clear state separation: stance/defaults vs per-call contract reduces accidental over-specification.  
 
@@ -90,7 +90,7 @@
 2) **Token surfacing**
    - Core directional names + aliases; hide composites from default help.  
    - Style lists refactored into Form/Channel buckets with no legacy style aliases retained.  
-   - Persona/purpose lists trimmed; keep aliases for retired items mapped to presets or canonical tokens.
+   - Persona/intent lists trimmed; keep aliases for retired items mapped to presets or canonical tokens.
 
 3) **Presets**
    - Store presets (prompt + persona + intent/relation + contract + directional + dest).  

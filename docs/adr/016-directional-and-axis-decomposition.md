@@ -2,14 +2,14 @@
 
 - Status: Accepted  
 - Date: 2025-12-05  
-- Context: `talon-ai-tools` GPT `model` commands (static prompts + completeness/scope/method/style + goal/directional modifiers + voice/audience/tone/purpose)  
+- Context: `talon-ai-tools` GPT `model` commands (static prompts + completeness/scope/method/style + goal/directional modifiers + voice/audience/tone/intent)  
 - Related ADRs:  
   - 005 – Orthogonal Prompt Modifiers and Defaults  
   - 007 – Static Prompt Consolidation for Axis-Based Grammar  
   - 012 – Style and Method Prompt Refactor  
   - 013 – Static Prompt Axis Refinement and Streamlining  
   - 014 – Static Prompt Axis Simplification from Clusters  
-  - 015 – Voice, Audience, Tone, Purpose Axis Decomposition  
+  - 015 – Voice, Audience, Tone, Intent Axis Decomposition  
 
 ## Context
 

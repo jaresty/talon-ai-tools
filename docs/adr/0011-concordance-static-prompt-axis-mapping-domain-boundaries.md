@@ -226,7 +226,7 @@ Concretely:
 - Behavior-changing refactors must not proceed without **adequate** characterization tests for the behavior being changed.
 - When existing tests already provide good behavioral and branch coverage for the relevant paths, we will **reuse and extend** those tests instead of adding near-duplicates.
 - Tests will favor behavioral/contract-level assertions over internal implementation details, and suites should stay reasonably fast and focused.
-- We will avoid tests whose sole purpose is to assert incidental static text (for example, boilerplate documentation wording) unless that text itself encodes a behavior-level contract.
+- We will avoid tests whose sole intent is to assert incidental static text (for example, boilerplate documentation wording) unless that text itself encodes a behavior-level contract.
 
 ---
 

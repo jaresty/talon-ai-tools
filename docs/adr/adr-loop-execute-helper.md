@@ -16,6 +16,10 @@ record the blocker instead of writing a no-delta loop.
 - Aim for minimal, high-signal slices that change observable artefacts; prefer
   deletion/simplification when it achieves the goal, but do not contort scope
   just to delete code.
+- When renaming or re-homing concepts, prefer codemod-style mechanical updates
+  (small, consistent passes) over bespoke one-offs to cut risk early.
+- Assume no backward-compatibility shims are needed unless an ADR explicitly
+  requires them; cut over cleanly by default.
 
 The caller may either:
 - Specify the target ADR explicitly (for example, by id), or

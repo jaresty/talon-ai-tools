@@ -8,13 +8,20 @@ axis vocab. It is used by both the GPT suggestion parser and the
 suggestions GUI.
 """
 
-from .personaConfig import persona_docs_map, PERSONA_PRESETS, INTENT_PRESETS
+from .personaConfig import (
+    INTENT_SPOKEN_TO_CANONICAL,
+    persona_docs_map,
+    PERSONA_PRESETS,
+    INTENT_PRESETS,
+)
 
 VOICE_TOKENS: set[str] = set(persona_docs_map("voice").keys())
 AUDIENCE_TOKENS: set[str] = set(persona_docs_map("audience").keys())
 TONE_TOKENS: set[str] = set(persona_docs_map("tone").keys())
-PURPOSE_TOKENS: set[str] = set(persona_docs_map("purpose").keys())
-AXIS_TOKENS: set[str] = VOICE_TOKENS | AUDIENCE_TOKENS | TONE_TOKENS | PURPOSE_TOKENS
+INTENT_TOKENS: set[str] = set(persona_docs_map("intent").keys())
+# Spoken variants for intent tokens (Talon list keys).
+INTENT_SPOKEN_TOKENS: set[str] = set(INTENT_SPOKEN_TO_CANONICAL.keys())
+AXIS_TOKENS: set[str] = VOICE_TOKENS | AUDIENCE_TOKENS | TONE_TOKENS | INTENT_TOKENS
 
 _PERSONA_PRESET_SPOKEN_SET: set[str] = {
     (preset.label or preset.key).strip().lower()
@@ -32,8 +39,8 @@ def valid_stance_command(cmd: str) -> bool:
     """Return True if cmd is a sayable stance command.
 
     Allowed forms (case-insensitive, with optional whitespace):
-    - model write <persona_voice> <persona_audience> <persona_tone> <intent_purpose>
-      where at least one known purpose token (for teaching/deciding/...) is present.
+    - model write <persona_voice> <persona_audience> <persona_tone> <intent>
+      where at least one known intent token (for teaching/deciding/...) is present.
     - persona <personaPreset>
     - intent <intentPreset>
     - persona <personaPreset> · intent <intentPreset> (or the reverse order).
@@ -63,9 +70,12 @@ def valid_stance_command(cmd: str) -> bool:
         if not tail:
             return False
 
-        # Require at least one known purpose token to appear verbatim in the
-        # command (for example, 'for teaching', 'for deciding').
-        if not any(purpose in lower for purpose in PURPOSE_TOKENS):
+        # Require at least one known intent token to appear verbatim in the
+        # command (for example, 'for teaching', 'teach').
+        if not (
+            any(intent in lower for intent in INTENT_TOKENS)
+            or any(intent in lower for intent in INTENT_SPOKEN_TOKENS)
+        ):
             return False
 
         # Enforce that the tail can be composed entirely from known
@@ -74,10 +84,12 @@ def valid_stance_command(cmd: str) -> bool:
         # "to junior engineer", "kindly", "for teaching") and require that
         # they tile the tail without leftovers.
         remaining = tail
-        seen_purpose = False
+        seen_intent = False
         # Sort by length so longer multi-word phrases ("to junior engineer")
         # win over their substrings.
-        axis_phrases = sorted(AXIS_TOKENS, key=len, reverse=True)
+        axis_phrases = sorted(
+            AXIS_TOKENS | INTENT_SPOKEN_TOKENS, key=len, reverse=True
+        )
         while remaining:
             stripped = remaining.lstrip()
             if not stripped:
@@ -89,13 +101,13 @@ def valid_stance_command(cmd: str) -> bool:
                     continue
                 if stripped.startswith(phrase_l):
                     matched = True
-                    if phrase_l in PURPOSE_TOKENS:
-                        seen_purpose = True
+                    if phrase_l in INTENT_TOKENS or phrase_l in INTENT_SPOKEN_TOKENS:
+                        seen_intent = True
                     remaining = stripped[len(phrase_l) :]
                     break
             if not matched:
                 return False
-        # At least one purpose phrase must have been matched explicitly.
-        return seen_purpose
+        # At least one intent phrase must have been matched explicitly.
+        return seen_intent
 
     return False

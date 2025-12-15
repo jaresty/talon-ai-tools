@@ -2,7 +2,11 @@ from __future__ import annotations
 
 from talon import settings
 from .axisMappings import axis_hydrate_tokens, axis_value_to_key_map_for
-from .personaConfig import persona_docs_map, persona_hydrate_tokens
+from .personaConfig import (
+    normalize_intent_token,
+    persona_docs_map,
+    persona_hydrate_tokens,
+)
 
 from .metaPromptConfig import META_INTERPRETATION_GUIDANCE
 from dataclasses import dataclass, field
@@ -46,7 +50,7 @@ class GPTRequest(TypedDict):
 @dataclass
 class GPTSystemPrompt:
     voice: str = field(default="")
-    purpose: str = field(default="")
+    intent: str = field(default="")
     tone: str = field(default="")
     audience: str = field(default="")
     # Completeness is a soft contract for how far to take answers.
@@ -65,10 +69,11 @@ class GPTSystemPrompt:
             self.voice = self.default_voice()
         return self.voice
 
-    def get_purpose(self) -> str:
-        if not self.purpose:
-            self.purpose = self.default_purpose()
-        return self.purpose
+    def get_intent(self) -> str:
+        if not self.intent:
+            self.intent = self.default_intent()
+        self.intent = normalize_intent_token(self.intent)
+        return self.intent
 
     def get_tone(self) -> str:
         if not self.tone:
@@ -123,11 +128,12 @@ class GPTSystemPrompt:
         return ""
 
     @staticmethod
-    def default_purpose() -> str:
-        raw = settings.get("user.model_default_purpose")
+    def default_intent() -> str:
+        raw = settings.get("user.model_default_intent")
         tokens = GPTSystemPrompt._coerce_tokens(raw)
         token = tokens[0] if tokens else str(raw or "").strip()
-        docs = persona_docs_map("purpose")
+        docs = persona_docs_map("intent")
+        token = normalize_intent_token(token)
         token_l = token.lower()
         for key in docs.keys():
             if str(key).strip().lower() == token_l:
@@ -225,7 +231,7 @@ class GPTSystemPrompt:
             normalized = str(value or "").strip()
             if not normalized:
                 return []
-            if axis in ("voice", "audience", "tone", "purpose"):
+            if axis in ("voice", "audience", "tone", "intent"):
                 # Persona/intent axes use phrase tokens; do not split on spaces.
                 return [normalized]
             if axis == "directional":
@@ -255,7 +261,7 @@ class GPTSystemPrompt:
             f"Voice: {hydrate_persona('voice', self.get_voice())}",
             f"Tone: {hydrate_persona('tone', self.get_tone())}",
             f"Audience: {hydrate_persona('audience', self.get_audience())}",
-            f"Purpose: {hydrate_persona('purpose', self.get_purpose())}",
+            f"Intent: {hydrate_persona('intent', self.get_intent())}",
             f"Completeness: {hydrate('completeness', self.get_completeness())}",
             f"Scope: {hydrate('scope', self.get_scope())}",
             f"Method: {hydrate('method', self.get_method())}",

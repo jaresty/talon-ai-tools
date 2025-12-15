@@ -94,7 +94,7 @@ The dated slices below record the concrete steps taken to reach this state. Each
 
 ## 2025-12-04 – Slice: add style/method axis vocab for retired prompts
 
-**ADR focus**: 012 – Retire Special‑Purpose Static Prompts into Style/Method Axes  
+**ADR focus**: 012 – Retire Special‑Intent Static Prompts into Style/Method Axes  
 **Loop goal**: Start wiring ADR 012 by extending the style and method axes so that behaviours from soon‑to‑be‑retired static prompts can be expressed via modifiers.
 
 ### Summary of this loop
@@ -110,20 +110,20 @@ The dated slices below record the concrete steps taken to reach this state. Each
 - No prompt routing or precedence changes yet:
   - `modelPrompt` already accepts style/method modifiers, so the new tokens are recognised and passed through, but no static prompt profiles have been migrated to rely on them.
   - Existing static prompts (`diagram`, `presenterm`, `HTML`, `gherkin`, `shell`, `emoji`, `format`, `recipe`, `lens`, `commit`, `ADR`, `system`, `experiment`, `science`, `debug`) remain active and unchanged.
-- Users *can* start experimenting with commands like `model describe diagram` or `model describe systems`, but the deeper behaviour (for example, full Presenterm/Mermaid/Jira guardrails) is still defined by the static prompt and model-purpose instructions rather than exclusively by these new axis descriptions.
+- Users *can* start experimenting with commands like `model describe diagram` or `model describe systems`, but the deeper behaviour (for example, full Presenterm/Mermaid/Jira guardrails) is still defined by the static prompt and model-intent instructions rather than exclusively by these new axis descriptions.
 
 ### Notes and follow-ups
 
 - Follow-up slices for ADR 012 should:
   - Migrate the long instruction strings and safety contracts from:
-    - `GPT/lists/staticPrompt.talon-list` (and `modelPurpose` where relevant) into the new style/method modifier descriptions or adjacent helpers.
+    - `GPT/lists/staticPrompt.talon-list` (and `modelIntent` where relevant) into the new style/method modifier descriptions or adjacent helpers.
   - Update `lib/staticPromptConfig.py` so that retired prompts encode their intended axes (`style`/`method`) before being removed from the static prompt list.
   - Remove the retired static prompts from `GPT/lists/staticPrompt.talon-list` once axis behaviour and docs are in place.
   - Update docs, help surfaces, and tests to reference the new axis tokens instead of the removed static prompts.
 
 ## 2025-12-04 – Slice: wire systems/experimental/debugging methods into static prompt profiles
 
-**ADR focus**: 012 – Retire Special‑Purpose Static Prompts into Style/Method Axes  
+**ADR focus**: 012 – Retire Special‑Intent Static Prompts into Style/Method Axes  
 **Loop goal**: Align the `system`, `experiment`, `science`, and `debug` static prompt profiles with the new method axis tokens so their behaviour is expressed through `methodModifier` values.
 
 ### Summary of this loop
@@ -156,7 +156,7 @@ The dated slices below record the concrete steps taken to reach this state. Each
 
 ## 2025-12-04 – Slice: migrate Presenterm from static prompt to style axis
 
-**ADR focus**: 012 – Retire Special‑Purpose Static Prompts into Style/Method Axes  
+**ADR focus**: 012 – Retire Special‑Intent Static Prompts into Style/Method Axes  
 **Loop goal**: Move the specialised Presenterm behaviour off the `staticPrompt` surface and into the `style` axis, then remove the `presenterm` static prompt token.
 
 ### Summary of this loop
@@ -186,7 +186,7 @@ The dated slices below record the concrete steps taken to reach this state. Each
 
 ## 2025-12-04 – Slice: migrate Diagram from static prompt to style axis
 
-**ADR focus**: 012 – Retire Special‑Purpose Static Prompts into Style/Method Axes  
+**ADR focus**: 012 – Retire Special‑Intent Static Prompts into Style/Method Axes  
 **Loop goal**: Move the Mermaid-diagram formatting behaviour off the `diagram` static prompt and into the `diagram` style modifier, then remove the `diagram` static prompt token.
 
 ### Summary of this loop
@@ -218,7 +218,7 @@ The dated slices below record the concrete steps taken to reach this state. Each
 
 ## 2025-12-04 – Slice: remove Diagram profile from STATIC_PROMPT_CONFIG
 
-**ADR focus**: 012 – Retire Special‑Purpose Static Prompts into Style/Method Axes  
+**ADR focus**: 012 – Retire Special‑Intent Static Prompts into Style/Method Axes  
 **Loop goal**: Bring configuration and guardrails in line with the decision to retire `diagram` as a static prompt by removing its profile from `STATIC_PROMPT_CONFIG`.
 
 ### Summary of this loop
@@ -242,7 +242,7 @@ The dated slices below record the concrete steps taken to reach this state. Each
 
 ## 2025-12-04 – Slice: retire gherkin static prompt in favour of gherkin style
 
-**ADR focus**: 012 – Retire Special‑Purpose Static Prompts into Style/Method Axes  
+**ADR focus**: 012 – Retire Special‑Intent Static Prompts into Style/Method Axes  
 **Loop goal**: Remove the remaining `gherkin` static prompt profile and token so Gherkin formatting is accessed only via the `gherkin` style modifier.
 
 ### Summary of this loop
@@ -272,7 +272,7 @@ The dated slices below record the concrete steps taken to reach this state. Each
 
 ## 2025-12-04 – Slice: retire HTML static prompt in favour of html style
 
-**ADR focus**: 012 – Retire Special‑Purpose Static Prompts into Style/Method Axes  
+**ADR focus**: 012 – Retire Special‑Intent Static Prompts into Style/Method Axes  
 **Loop goal**: Remove the remaining `HTML` static prompt profile and token so semantic HTML formatting is accessed only via the `html` style modifier.
 
 ### Summary of this loop
@@ -299,7 +299,7 @@ The dated slices below record the concrete steps taken to reach this state. Each
 
 ## 2025-12-04 – Slice: retire shell static prompt in favour of shellscript style
 
-**ADR focus**: 012 – Retire Special‑Purpose Static Prompts into Style/Method Axes  
+**ADR focus**: 012 – Retire Special‑Intent Static Prompts into Style/Method Axes  
 **Loop goal**: Remove the remaining `shell` static prompt profile and token so shell-script behaviour is accessed only via the `shellscript` style modifier.
 
 ### Summary of this loop
@@ -325,7 +325,7 @@ The dated slices below record the concrete steps taken to reach this state. Each
 
 ## 2025-12-04 – Slice: retire emoji static prompt in favour of emoji style
 
-**ADR focus**: 012 – Retire Special‑Purpose Static Prompts into Style/Method Axes  
+**ADR focus**: 012 – Retire Special‑Intent Static Prompts into Style/Method Axes  
 **Loop goal**: Remove the `emoji` static prompt profile and token so “emoji-only” behaviour is accessed only via the `emoji` style modifier.
 
 ### Summary of this loop
@@ -349,10 +349,10 @@ The dated slices below record the concrete steps taken to reach this state. Each
   - Sweep docs (including ADR 005/007/012 and README) for any references to `emoji` as a static prompt and update them to use `style emoji`.
   - Continue retiring remaining format-heavy static prompts (`format`, `recipe`, `lens`, `commit`, `ADR`) once their style/method semantics are in place.
 
-## 2025-12-04 – Slice: retire format static prompt in favour of style/purpose combos
+## 2025-12-04 – Slice: retire format static prompt in favour of style/intent combos
 
-**ADR focus**: 012 – Retire Special‑Purpose Static Prompts into Style/Method Axes  
-**Loop goal**: Remove the `format` static prompt profile and token so formatting is expressed via style and purpose axes (for example, `style slack`, `style jira`, `for slack`, `for table`) rather than a generic “format” task.
+**ADR focus**: 012 – Retire Special‑Intent Static Prompts into Style/Method Axes  
+**Loop goal**: Remove the `format` static prompt profile and token so formatting is expressed via style and intent axes (for example, `style slack`, `style jira`, `for slack`, `for table`) rather than a generic “format” task.
 
 ### Summary of this loop
 
@@ -372,12 +372,12 @@ The dated slices below record the concrete steps taken to reach this state. Each
 ### Notes and follow-ups
 
 - Future ADR 012 slices should:
-  - Update docs and examples that previously used `model format` to show concrete style/purpose combinations instead.
-  - Continue focusing static prompts on semantic tasks or lenses, keeping “how/shape” concerns on the style and purpose axes.
+  - Update docs and examples that previously used `model format` to show concrete style/intent combinations instead.
+  - Continue focusing static prompts on semantic tasks or lenses, keeping “how/shape” concerns on the style and intent axes.
 
 ## 2025-12-04 – Slice: retire commit static prompt in favour of commit style
 
-**ADR focus**: 012 – Retire Special‑Purpose Static Prompts into Style/Method Axes  
+**ADR focus**: 012 – Retire Special‑Intent Static Prompts into Style/Method Axes  
 **Loop goal**: Remove the `commit` static prompt profile and token so conventional commit messages are expressed only via the `commit` style modifier.
 
 ### Summary of this loop
@@ -403,7 +403,7 @@ The dated slices below record the concrete steps taken to reach this state. Each
 
 ## 2025-12-04 – Slice: retire recipe static prompt in favour of recipe style
 
-**ADR focus**: 012 – Retire Special‑Purpose Static Prompts into Style/Method Axes  
+**ADR focus**: 012 – Retire Special‑Intent Static Prompts into Style/Method Axes  
 **Loop goal**: Remove the `recipe` static prompt profile and token so “represent as a recipe with a mini-language and key” is accessed only via the `recipe` style modifier.
 
 ### Summary of this loop
@@ -429,7 +429,7 @@ The dated slices below record the concrete steps taken to reach this state. Each
 
 ## 2025-12-04 – Slice: retire lens static prompt in favour of abstractvisual style
 
-**ADR focus**: 012 – Retire Special‑Purpose Static Prompts into Style/Method Axes  
+**ADR focus**: 012 – Retire Special‑Intent Static Prompts into Style/Method Axes  
 **Loop goal**: Remove the `lens` static prompt profile and token so “abstract visualization that avoids diagrams or maps” is accessed via the `abstractvisual` style modifier.
 
 ### Summary of this loop
@@ -457,7 +457,7 @@ The dated slices below record the concrete steps taken to reach this state. Each
 
 ## 2025-12-04 – Slice: retire ADR static prompt in favour of adr style
 
-**ADR focus**: 012 – Retire Special‑Purpose Static Prompts into Style/Method Axes  
+**ADR focus**: 012 – Retire Special‑Intent Static Prompts into Style/Method Axes  
 **Loop goal**: Remove the `ADR` static prompt profile and token so ADR-shaped documents are expressed only via the `adr` style modifier.
 
 ### Summary of this loop
@@ -484,7 +484,7 @@ The dated slices below record the concrete steps taken to reach this state. Each
 
 ## 2025-12-04 – Slice: retire code static prompt in favour of code style
 
-**ADR focus**: 012 – Retire Special‑Purpose Static Prompts into Style/Method Axes  
+**ADR focus**: 012 – Retire Special‑Intent Static Prompts into Style/Method Axes  
 **Loop goal**: Remove the `code` static prompt profile and token so “code-only” behaviour is represented solely by the `code` style modifier.
 
 ### Summary of this loop
@@ -505,12 +505,12 @@ The dated slices below record the concrete steps taken to reach this state. Each
 ### Notes and follow-ups
 
 - Future ADR 012 slices should:
-  - Ensure docs and examples use `style code` (or purpose-based prompts such as `for coding`) instead of `model code`.
+  - Ensure docs and examples use `style code` (or intent-based prompts such as `for coding`) instead of `model code`.
   - Consider a short “code-only” pattern recipe (for example, “Implement only” using `describe · full · bound · code · rog`) to make this behaviour discoverable.
 
 ## 2025-12-04 – Slice: add Current Status section to ADR 012
 
-**ADR focus**: 012 – Retire Special‑Purpose Static Prompts into Style/Method Axes  
+**ADR focus**: 012 – Retire Special‑Intent Static Prompts into Style/Method Axes  
 **Loop goal**: Reconcile ADR 012’s narrative with the concrete work completed in this repo by adding a short “Current Status” snapshot.
 
 ### Summary of this loop
@@ -536,7 +536,7 @@ The dated slices below record the concrete steps taken to reach this state. Each
 
 ## 2025-12-04 – Slice: mark ADR 012 as Accepted for this repo
 
-**ADR focus**: 012 – Retire Special‑Purpose Static Prompts into Style/Method Axes  
+**ADR focus**: 012 – Retire Special‑Intent Static Prompts into Style/Method Axes  
 **Loop goal**: Update ADR 012’s metadata to reflect that its core decisions have been implemented in this repository.
 
 ### Summary of this loop
@@ -559,7 +559,7 @@ The dated slices below record the concrete steps taken to reach this state. Each
 
 ## 2025-12-04 – Slice: align GPT README examples and axis list with retired static prompts
 
-**ADR focus**: 012 – Retire Special‑Purpose Static Prompts into Style/Method Axes  
+**ADR focus**: 012 – Retire Special‑Intent Static Prompts into Style/Method Axes  
 **Loop goal**: Ensure `GPT/readme.md` no longer encourages use of retired static prompts like `diagram` as core tasks, and instead showcases axis-based usage with the new style modifiers.
 
 ### Summary of this loop
@@ -878,7 +878,7 @@ The dated slices below record the concrete steps taken to reach this state. Each
 
 ## 2025-12-04 – Slice: ensure patterns apply new style axis tokens
 
-**ADR focus**: 012 – Retire Special‑Purpose Static Prompts into Style/Method Axes  
+**ADR focus**: 012 – Retire Special‑Intent Static Prompts into Style/Method Axes  
 **Loop goal**: Make sure model patterns that are meant to use heavy styles (for example, `diagram`, `presenterm`, `adr`) actually set the style axis when executed, and guard this with a focused test.
 
 ### Summary of this loop
@@ -914,7 +914,7 @@ The dated slices below record the concrete steps taken to reach this state. Each
 
 ## 2025-12-04 – Slice: surface Slack/Jira styles in quick-help examples
 
-**ADR focus**: 012 – Retire Special‑Purpose Static Prompts into Style/Method Axes  
+**ADR focus**: 012 – Retire Special‑Intent Static Prompts into Style/Method Axes  
 **Loop goal**: Make the replacements for the old `format` static prompt (`slack`, `jira`, `html`) more discoverable by adding Slack/Jira style recipes to the model quick-help examples.
 
 ### Summary of this loop
@@ -941,7 +941,7 @@ The dated slices below record the concrete steps taken to reach this state. Each
 
 ## 2025-12-04 – Slice: align README cheat sheet with Slack/Jira styles
 
-**ADR focus**: 012 – Retire Special‑Purpose Static Prompts into Style/Method Axes  
+**ADR focus**: 012 – Retire Special‑Intent Static Prompts into Style/Method Axes  
 **Loop goal**: Make the Slack/Jira formatting styles visible in the main GPT README’s axis recipe cheat sheet so users see them alongside diagrams, ADRs, and shell scripts.
 
 ### Summary of this loop
@@ -967,7 +967,7 @@ The dated slices below record the concrete steps taken to reach this state. Each
 
 ## 2025-12-04 – Slice: ensure patterns treat new method tokens as methods
 
-**ADR focus**: 012 – Retire Special‑Purpose Static Prompts into Style/Method Axes  
+**ADR focus**: 012 – Retire Special‑Intent Static Prompts into Style/Method Axes  
 **Loop goal**: Make sure model patterns correctly recognise newer method axis tokens (for example, `debugging`, `flow`, `motifs`) when parsing recipes, instead of treating them as untyped tokens.
 
 ### Summary of this loop
@@ -1004,7 +1004,7 @@ The dated slices below record the concrete steps taken to reach this state. Each
 
 ## 2025-12-04 – Slice: add method recipes to README cheat sheet
 
-**ADR focus**: 012 – Retire Special‑Purpose Static Prompts into Style/Method Axes  
+**ADR focus**: 012 – Retire Special‑Intent Static Prompts into Style/Method Axes  
 **Loop goal**: Make the newer method axis values (`systems`, `experimental`, `motifs`) more discoverable in the main GPT README by adding concrete recipes alongside diagrams/ADRs/shell scripts.
 
 ### Summary of this loop
@@ -1032,7 +1032,7 @@ The dated slices below record the concrete steps taken to reach this state. Each
 
 ## 2025-12-04 – Slice: add Slack/Jira formatting patterns
 
-**ADR focus**: 012 – Retire Special‑Purpose Static Prompts into Style/Method Axes  
+**ADR focus**: 012 – Retire Special‑Intent Static Prompts into Style/Method Axes  
 **Loop goal**: Provide one-click patterns for Slack- and Jira-formatted output using the `slack`/`jira` styles, so users don’t have to remember the full axis recipes.
 
 ### Summary of this loop
@@ -1076,7 +1076,7 @@ The dated slices below record the concrete steps taken to reach this state. Each
 
 ## 2025-12-04 – Slice: surface systems/experimental methods in quick-help examples
 
-**ADR focus**: 012 – Retire Special‑Purpose Static Prompts into Style/Method Axes  
+**ADR focus**: 012 – Retire Special‑Intent Static Prompts into Style/Method Axes  
 **Loop goal**: Make the `systems` and `experimental` method axes more discoverable by adding concrete recipes to the model quick-help examples.
 
 ### Summary of this loop
@@ -1103,7 +1103,7 @@ The dated slices below record the concrete steps taken to reach this state. Each
 
 ## 2025-12-04 – Slice: add Motif scan pattern for motifs method
 
-**ADR focus**: 012 – Retire Special‑Purpose Static Prompts into Style/Method Axes  
+**ADR focus**: 012 – Retire Special‑Intent Static Prompts into Style/Method Axes  
 **Loop goal**: Provide a concrete pattern that exercises the `motifs` method axis in the way ADR 012/013 describe (relations scope, bullets style), making motif scanning easy to invoke.
 
 ### Summary of this loop
@@ -1139,7 +1139,7 @@ The dated slices below record the concrete steps taken to reach this state. Each
 
 ## 2025-12-04 – Slice: clarify ADR 007 consolidation story after ADR 012/013
 
-**ADR focus**: 012 – Retire Special‑Purpose Static Prompts into Style/Method Axes  
+**ADR focus**: 012 – Retire Special‑Intent Static Prompts into Style/Method Axes  
 **Loop goal**: Make ADR 007’s guidance on “keep format-heavy prompts as static prompts” explicitly acknowledge that ADR 012/013 have since moved many of those prompts into axes and patterns in this repo.
 
 ### Summary of this loop
@@ -1170,7 +1170,7 @@ The dated slices below record the concrete steps taken to reach this state. Each
 
 ## 2025-12-04 – Slice: add guardrail test to keep axis-only prompts off staticPrompt list
 
-**ADR focus**: 012 – Retire Special‑Purpose Static Prompts into Style/Method Axes  
+**ADR focus**: 012 – Retire Special‑Intent Static Prompts into Style/Method Axes  
 **Loop goal**: Prevent regressions where axis-only behaviours (for example, `diagram`, `presenterm`, `debugging`, `motifs`) accidentally reappear as static prompts in `staticPrompt.talon-list`.
 
 ### Summary of this loop
@@ -1197,7 +1197,7 @@ The dated slices below record the concrete steps taken to reach this state. Each
 
 ## 2025-12-04 – Slice: document new ADR-012 guardrail tests in ADR 012
 
-**ADR focus**: 012 – Retire Special‑Purpose Static Prompts into Style/Method Axes  
+**ADR focus**: 012 – Retire Special‑Intent Static Prompts into Style/Method Axes  
 **Loop goal**: Make ADR 012’s “Tests and guardrails” section explicitly reference the new tests that enforce axis-only tokens and axis-based patterns, so future maintainers can see where those checks live.
 
 ### Summary of this loop
@@ -1222,7 +1222,7 @@ The dated slices below record the concrete steps taken to reach this state. Each
 
 ## 2025-12-04 – Slice: remove stray motifs static prompt profile
 
-**ADR focus**: 012 – Retire Special‑Purpose Static Prompts into Style/Method Axes  
+**ADR focus**: 012 – Retire Special‑Intent Static Prompts into Style/Method Axes  
 **Loop goal**: Align configuration with ADR 012/013 by removing the leftover `motifs` static prompt profile so motifs behaviour is represented only via the method/style/scope axes.
 
 ### Summary of this loop
@@ -3077,7 +3077,7 @@ The dated slices below record the concrete steps taken to reach this state. Each
 
 ## 2025-12-04 – Slice: add axis-based patterns for diagram and ADR styles
 
-**ADR focus**: 012 – Retire Special‑Purpose Static Prompts into Style/Method Axes  
+**ADR focus**: 012 – Retire Special‑Intent Static Prompts into Style/Method Axes  
 **Loop goal**: Surface the new `diagram` and `adr` style modifiers in the pattern picker so users have ready-made recipes that don’t rely on the old static prompts.
 
 ### Summary of this loop
@@ -3107,7 +3107,7 @@ The dated slices below record the concrete steps taken to reach this state. Each
 
 ## 2025-12-04 – Slice: retire debug static prompt in favour of debugging method
 
-**ADR focus**: 012 – Retire Special‑Purpose Static Prompts into Style/Method Axes  
+**ADR focus**: 012 – Retire Special‑Intent Static Prompts into Style/Method Axes  
 **Loop goal**: Remove the `debug` static prompt profile and token now that the debugging stance is expressed via the `debugging` method axis and the “Debug bug” pattern no longer depends on `debug` as a static prompt.
 
 ### Summary of this loop
@@ -3135,7 +3135,7 @@ The dated slices below record the concrete steps taken to reach this state. Each
 
 ## 2025-12-04 – Slice: align experimental/debugging method descriptions with original static prompts
 
-**ADR focus**: 012 – Retire Special‑Purpose Static Prompts into Style/Method Axes  
+**ADR focus**: 012 – Retire Special‑Intent Static Prompts into Style/Method Axes  
 **Loop goal**: Preserve the process fidelity of the `experiment`, `science`, and `debug` behaviours when they are expressed via the `experimental` and `debugging` method modifiers.
 
 ### Summary of this loop
@@ -3164,7 +3164,7 @@ The dated slices below record the concrete steps taken to reach this state. Each
 
 ## 2025-12-04 – Slice: migrate Debug bug pattern to method axis
 
-**ADR focus**: 012 – Retire Special‑Purpose Static Prompts into Style/Method Axes  
+**ADR focus**: 012 – Retire Special‑Intent Static Prompts into Style/Method Axes  
 **Loop goal**: Move at least one real usage of a method-shaped static prompt off the static prompt key and onto the new `methodModifier` axis.
 
 ### Summary of this loop

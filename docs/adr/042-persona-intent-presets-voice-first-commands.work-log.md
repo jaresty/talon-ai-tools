@@ -8,9 +8,9 @@
   - Populated `ctx.lists["user.intentPreset"]` from `INTENT_PRESETS` using lowercased keys as spoken forms (for example, `teach`, `decide`, `brainstorm`).
 - Added stance actions to `GPT/gpt.py` under `UserActions` (ADR 042):
   - `persona_set_preset(preset_key: str)` – updates `GPTState.system_prompt` voice/audience/tone fields from a shared Persona preset while preserving Contract axes.
-  - `intent_set_preset(preset_key: str)` – updates the `purpose` field from an Intent preset while preserving Persona and Contract axes.
+  - `intent_set_preset(preset_key: str)` – updates the `intent` field from an Intent preset while preserving Persona and Contract axes.
   - `persona_status()` / `intent_status()` – show current Persona/Intent stance vs defaults via `notify`, including a simple non-default/default suffix.
-  - `persona_reset()` / `intent_reset()` – clear Persona (voice/audience/tone) or Intent (purpose) back to default/empty while leaving Contract axes unchanged.
+  - `persona_reset()` / `intent_reset()` – clear Persona (voice/audience/tone) or Intent (intent) back to default/empty while leaving Contract axes unchanged.
 - Extended `GPT/gpt.talon` with new voice commands:
   - `persona {user.personaPreset}` → `user.persona_set_preset(personaPreset)`.
   - `intent {user.intentPreset}` → `user.intent_set_preset(intentPreset)`.
@@ -30,10 +30,10 @@
 
 - Extended `lib/modelHelpCanvas.py` Who/Why/How section:
   - Kept the existing Persona/Intent preset summary lines.
-  - Added a stance recap that reads `GPTState.system_prompt` and compares Persona/Intent axes (voice, audience, tone, purpose) against their defaults.
+  - Added a stance recap that reads `GPTState.system_prompt` and compares Persona/Intent axes (voice, audience, tone, intent) against their defaults.
   - When Persona/Intent are non-default, show:
     - `Persona: <voice>, <audience>, <tone>`
-    - `Intent: <purpose>`
+    - `Intent: <intent>`
     - A short example command hint: `Say: persona teach junior dev · intent teach`.
   - When Persona/Intent are at defaults, show a single hint line: `Stance: defaults active (say 'persona teach junior dev' to switch)`.
 - This keeps ADR 042’s behaviour bounded to the help canvas for this loop; suggestions GUI stance recaps/buttons remain future work.

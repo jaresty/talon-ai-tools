@@ -52,6 +52,21 @@ def test_help_hub_search_can_trigger_provider_list():
     assert "model_provider_list" in labels
 
 
+def test_help_hub_cheat_sheet_includes_all_intent_tokens():
+    from lib.personaConfig import intent_bucket_spoken_tokens
+
+    cheat = helpHub._cheat_sheet_text()
+    buckets = intent_bucket_spoken_tokens()
+    for label, tokens in (
+        ("Intent tokens (task):", buckets.get("task", [])),
+        ("Intent tokens (relational):", buckets.get("relational", [])),
+        ):
+        for token in tokens:
+            assert token in cheat, f"{token} missing from {label} line"
+    # Ensure new intent preset keys are represented.
+    assert "understand" in " ".join(buckets.get("task", []))
+
+
 def test_help_hub_quick_help_closes_hub_before_open(monkeypatch):
     # Open the hub and patch quick help to assert close-before-open ordering.
     helpHub.help_hub_open()

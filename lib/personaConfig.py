@@ -46,23 +46,45 @@ PERSONA_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "tightly": "Be concise and dense; remove fluff and redundancy.",
         "headline first": "Lead with the main headline/point first, then layer brief supporting details.",
     },
-    "purpose": {
-        "for information": "The goal is to provide clear information.",
-        "for entertainment": "The goal is to entertain the audience.",
-        "for persuasion": "The goal is to persuade the audience toward a view or action.",
-        "for brainstorming": "The goal is to explore possibilities and surface multiple options.",
-        "for deciding": "The goal is to help converge on a decision.",
-        "for planning": "The goal is to organise work into a plan or roadmap.",
-        "for evaluating": "The goal is to assess something and form a judgment.",
-        "for coaching": "The goal is to support someone's growth through guidance and feedback.",
-        "for appreciation": "The goal is to express appreciation or thanks.",
-        "for triage": "The goal is to quickly sort and prioritise issues or options.",
-        "for announcing": "The goal is to share a clear, concise announcement with the chosen audience.",
-        "for teaching": "The goal is to help the audience learn and understand the material.",
-        "for learning": "The goal is to deepen understanding; the outcome is knowledge, not necessarily a fix.",
+    "intent": {
+        "inform": "The goal is to provide clear information.",
+        "entertain": "The goal is to entertain the audience.",
+        "persuade": "The goal is to persuade the audience toward a view or action.",
+        "brainstorm": "The goal is to explore possibilities and surface multiple options.",
+        "decide": "The goal is to help converge on a decision.",
+        "plan": "The goal is to organise work into a plan or roadmap.",
+        "evaluate": "The goal is to assess something and form a judgment.",
+        "coach": "The goal is to support someone's growth through guidance and feedback.",
+        "appreciate": "The goal is to express appreciation or thanks.",
+        "resolve": "The goal is to resolve a bug, problem, or issue.",
+        "understand": "The goal is to understand or absorb the input (for example, a ticket or problem statement).",
+        "announce": "The goal is to share a clear, concise announcement with the chosen audience.",
+        "teach": "The goal is to help the audience learn and understand the material.",
+        "learn": "The goal is to deepen understanding; the outcome is knowledge, not necessarily a fix.",
     },
 }
 
+INTENT_SPOKEN_TO_CANONICAL: Dict[str, str] = {
+    "for information": "inform",
+    "for entertainment": "entertain",
+    "for persuasion": "persuade",
+    "for brainstorming": "brainstorm",
+    "for deciding": "decide",
+    "for planning": "plan",
+    "for evaluating": "evaluate",
+    "for coaching": "coach",
+    "for appreciation": "appreciate",
+    "for resolving": "resolve",
+    "for understanding": "understand",
+    "for announcing": "announce",
+    "for teaching": "teach",
+    "for learning": "learn",
+}
+
+INTENT_CANONICAL_TOKENS: set[str] = set(PERSONA_KEY_TO_VALUE["intent"].keys())
+INTENT_CANONICAL_TO_SPOKEN: Dict[str, str] = {
+    canonical: spoken for spoken, canonical in INTENT_SPOKEN_TO_CANONICAL.items()
+}
 
 def persona_key_to_value_map(axis: str) -> dict[str, str]:
     """Return the key->description map for a persona/intent axis."""
@@ -82,6 +104,34 @@ def persona_docs_map(axis: str) -> dict[str, str]:
     return persona_key_to_value_map(axis)
 
 
+def normalize_intent_token(value: str) -> str:
+    """Normalize spoken or canonical intent tokens to the canonical single-word form."""
+    token = str(value or "").strip()
+    if not token:
+        return ""
+    token_l = token.lower()
+    for key in INTENT_CANONICAL_TOKENS:
+        if token_l == key.lower():
+            return key
+    for spoken, canonical in INTENT_SPOKEN_TO_CANONICAL.items():
+        if token_l == spoken.lower():
+            return canonical
+    return token
+
+
+def intent_bucket_spoken_tokens() -> dict[str, list[str]]:
+    """Return intent buckets with spoken tokens (for <...>) covering all canonical intents."""
+    spoken_buckets: dict[str, list[str]] = {}
+    # Invert spoken map to prefer the first spoken form for each canonical token.
+    for bucket, members in INTENT_BUCKETS.items():
+        bucket_spoken: list[str] = []
+        for canonical in members:
+            spoken = INTENT_CANONICAL_TO_SPOKEN.get(canonical)
+            bucket_spoken.append(spoken or canonical)
+        spoken_buckets[bucket] = bucket_spoken
+    return spoken_buckets
+
+
 @dataclass(frozen=True)
 class PersonaPreset:
     key: str
@@ -96,7 +146,7 @@ class PersonaPreset:
 class IntentPreset:
     key: str
     label: str
-    purpose: str
+    intent: str
 
 
 PERSONA_PRESETS: tuple[PersonaPreset, ...] = (
@@ -168,53 +218,89 @@ INTENT_PRESETS: tuple[IntentPreset, ...] = (
     IntentPreset(
         key="teach",
         label="Teach / explain",
-        purpose="for teaching",
+        intent="teach",
     ),
     IntentPreset(
         key="decide",
         label="Decide",
-        purpose="for deciding",
+        intent="decide",
     ),
     IntentPreset(
         key="plan",
         label="Plan / organise",
-        purpose="for planning",
+        intent="plan",
     ),
     IntentPreset(
         key="evaluate",
         label="Evaluate / review",
-        purpose="for evaluating",
+        intent="evaluate",
     ),
     IntentPreset(
         key="brainstorm",
         label="Brainstorm",
-        purpose="for brainstorming",
+        intent="brainstorm",
     ),
     IntentPreset(
         key="appreciate",
         label="Appreciate / thank",
-        purpose="for appreciation",
+        intent="appreciate",
     ),
     IntentPreset(
         key="persuade",
         label="Persuade",
-        purpose="for persuasion",
+        intent="persuade",
     ),
     IntentPreset(
         key="coach",
         label="Coach",
-        purpose="for coaching",
+        intent="coach",
     ),
     IntentPreset(
         key="entertain",
         label="Entertain",
-        purpose="for entertainment",
+        intent="entertain",
+    ),
+    IntentPreset(
+        key="resolve",
+        label="Resolve",
+        intent="resolve",
+    ),
+    IntentPreset(
+        key="understand",
+        label="Understand",
+        intent="understand",
+    ),
+    IntentPreset(
+        key="inform",
+        label="Inform",
+        intent="inform",
+    ),
+    IntentPreset(
+        key="announce",
+        label="Announce",
+        intent="announce",
+    ),
+    IntentPreset(
+        key="learn",
+        label="Learn",
+        intent="learn",
     ),
 )
 
 INTENT_BUCKETS: dict[str, tuple[str, ...]] = {
     # Task/intellectual intents (ADR 048 split)
-    "task": ("teach", "decide", "plan", "evaluate", "brainstorm"),
+    "task": (
+        "inform",
+        "brainstorm",
+        "decide",
+        "plan",
+        "evaluate",
+        "resolve",
+        "understand",
+        "announce",
+        "teach",
+        "learn",
+    ),
     # Relational/social intents (ADR 048 split)
     "relational": ("appreciate", "persuade", "coach", "entertain"),
 }

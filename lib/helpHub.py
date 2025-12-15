@@ -13,7 +13,11 @@ from .canvasFont import apply_canvas_typeface
 from .helpUI import apply_scroll_delta, clamp_scroll, scroll_fraction
 from .modelState import GPTState
 from .suggestionCoordinator import last_recipe_snapshot, suggestion_grammar_phrase
-from .personaConfig import intent_bucket_presets, PERSONA_PRESETS
+from .personaConfig import (
+    intent_bucket_presets,
+    intent_bucket_spoken_tokens,
+    PERSONA_PRESETS,
+)
 from .helpDomain import (
     help_index,
     help_search,
@@ -879,22 +883,41 @@ def _cheat_sheet_text() -> str:
             pass
         return names
 
-    intent_buckets = {}
+    intent_spoken_buckets = {}
     try:
-        intent_buckets = intent_bucket_presets()
+        intent_spoken_buckets = intent_bucket_spoken_tokens()
     except Exception:
-        intent_buckets = {}
-    task_intents = intent_buckets.get("task", [])
-    relational_intents = intent_buckets.get("relational", [])
+        intent_spoken_buckets = {}
+
+    # Prefer bucketed spoken tokens; fall back to the full spoken map dynamically.
+    task_intents = intent_spoken_buckets.get("task") or sorted(
+        intent_spoken_buckets.get("task", [])
+        or []  # type: ignore[operator]
+    )
+    relational_intents = intent_spoken_buckets.get("relational") or sorted(
+        intent_spoken_buckets.get("relational", [])
+        or []
+    )
+    # If buckets were empty due to an upstream failure, use all spoken tokens.
+    if not task_intents and not relational_intents:
+        try:
+            from lib.personaConfig import INTENT_SPOKEN_TO_CANONICAL
+        except Exception:
+            task_intents = []
+            relational_intents = []
+        else:
+            task_intents = sorted(INTENT_SPOKEN_TO_CANONICAL.keys())
+            relational_intents = []
+
     task_line = (
-        "Intent presets (task): " + " | ".join(task_intents)
+        "Intent tokens (task): " + " | ".join(task_intents)
         if task_intents
-        else "Intent presets (task): teach | decide | plan | evaluate | brainstorm"
+        else "Intent tokens (task):"
     )
     relational_line = (
-        "Intent presets (relational): " + " | ".join(relational_intents)
+        "Intent tokens (relational): " + " | ".join(relational_intents)
         if relational_intents
-        else "Intent presets (relational): appreciate | persuade | coach | entertain"
+        else "Intent tokens (relational):"
     )
     persona_presets = _persona_presets()
     persona_line = (
@@ -925,7 +948,7 @@ def _cheat_sheet_text() -> str:
         "- model help (HTML docs)",
         "Who / Why / How (ADR 040):",
         "- Persona (Who): voice, audience, tone",
-        "- Intent (Why): purpose",
+        "- Intent (Why): intent",
         "- Contract (How): completeness, scope, method, form, channel",
         "- Presets: small Who/Why bundles (for example, 'Teach junior dev', 'Executive brief').",
         "Axes (examples):",

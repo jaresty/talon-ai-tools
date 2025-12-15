@@ -47,7 +47,7 @@ if bootstrap is not None:
             def test_rejects_model_write_with_unknown_tail_words(self) -> None:
                 # Unknown words that are not part of any axis token should cause
                 # model write stances to be rejected even if they contain
-                # something that looks like a purpose.
+                # something that looks like a intent.
                 self.assertFalse(
                     valid_stance_command(
                         "model write as teacher to junior engineer kindly for teaching quickly"

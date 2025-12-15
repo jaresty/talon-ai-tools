@@ -77,12 +77,12 @@ We will:
      - `<persona_voice>` is either empty or one token from `GPT/lists/modelVoice.talon-list` (for example, `as programmer`, `as teacher`, `as facilitator`, …).
      - `<persona_audience>` is either empty or one token from `GPT/lists/modelAudience.talon-list` (for example, `to stakeholders`, `to team`, …).
      - `<persona_tone>` is either empty or one token from `GPT/lists/modelTone.talon-list` (for example, `gently`, `directly`, …).
-     - `<intent_purpose>` is **required** and must be a token from `GPT/lists/modelPurpose.talon-list` (for example, `for teaching`, `for collaborating`, …).
+     - `<intent_purpose>` is **required** and must be a token from `GPT/lists/modelIntent.talon-list` (for example, `for teaching`, `for collaborating`, …).
 
      In practice, this means:
 
      - NEVER allow bare `model write` or `model write for`.
-     - When the LLM uses this form, validators must ensure the tail tokens are drawn exclusively from the Persona/Intent axis vocab and include at least one valid purpose token.
+     - When the LLM uses this form, validators must ensure the tail tokens are drawn exclusively from the Persona/Intent axis vocab and include at least one valid intent token.
 
    - **Optional, preset-based**:
 
@@ -98,7 +98,7 @@ We will:
    - **Prohibited forms** include (non-exhaustive):
 
      - `persona as facilitator to stakeholders gently` (raw axis tokens after `persona`).
-     - `intent for collaborating` (raw purpose token after `intent`).
+     - `intent for collaborating` (raw intent token after `intent`).
      - Any `stance_command` that mixes axis tokens and preset syntax in ways not described above.
 
 3. **Add a `_valid_stance_command` validator and reject invalid stance commands.**
@@ -108,7 +108,7 @@ We will:
      - `def _valid_stance_command(cmd: str) -> bool:`
        - Strips and lowercases the command.
        - Accepts:
-         - `model write …` only when all tail tokens are from the union of Persona/Intent axis token sets and at least one valid purpose token is present.
+         - `model write …` only when all tail tokens are from the union of Persona/Intent axis token sets and at least one valid intent token is present.
          - `persona <preset>` / `intent <preset>` only when names match the current Persona/Intent preset spoken forms.
          - Combined `persona … · intent …` only when each side validates independently.
        - Returns `False` for:
@@ -220,7 +220,7 @@ We will:
 
    - Mitigation:
      - Build the validator token sets directly from the existing lists and presets:
-       - `modelVoice.talon-list`, `modelAudience.talon-list`, `modelTone.talon-list`, `modelPurpose.talon-list` for axis tokens.
+       - `modelVoice.talon-list`, `modelAudience.talon-list`, `modelTone.talon-list`, `modelIntent.talon-list` for axis tokens.
        - `PERSONA_PRESETS`, `INTENT_PRESETS` for preset names.
      - Add tests that assert `_valid_stance_command` accepts known-good examples (from docs/ADRs) and rejects known-bad ones.
 

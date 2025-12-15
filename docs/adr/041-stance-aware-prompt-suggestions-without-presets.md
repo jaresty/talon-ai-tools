@@ -16,7 +16,7 @@ Prompt recipe suggestions (`model run suggest …`) are meant to do two things:
 ADR 040 introduces Persona (Who), Intent (Why), and Contract (How). This ADR clarifies how prompt suggestions should surface **stance**:
 
 - The suggestions GUI is driven by the **LLM’s own recommendations**, not by a local Persona/Intent preset catalog.
-- Each suggestion may include a concrete **stance command** (`model write …`) and a short **Why** explanation, expressed directly in terms of `voice` / `audience` / `tone` / `purpose` axis tokens.
+- Each suggestion may include a concrete **stance command** (`model write …`) and a short **Why** explanation, expressed directly in terms of `voice` / `audience` / `tone` / `intent` axis tokens.
 - Persona/Intent **presets** remain useful in other surfaces (for example, the pattern GUI), but the suggestions GUI should not show a separate preset table or treat presets as first-class suggestion items.
 
 ---
@@ -50,7 +50,7 @@ We adopt the following principles for prompt recipe suggestions:
 1. **LLM-driven stance, raw axis tokens**  
    - Each suggestion line may include an optional **stance recommendation** expressed as a full `model write` command, for example:  
      - `Stance: model write as teacher to junior engineer kindly for teaching`  
-   - This stance is defined directly in terms of Persona/Intent **axis tokens** (`voice` / `audience` / `tone` / `purpose`), not via a preset name.
+   - This stance is defined directly in terms of Persona/Intent **axis tokens** (`voice` / `audience` / `tone` / `intent`), not via a preset name.
 
 2. **Why explanations are per suggestion**  
    - Each suggestion may also include a short `Why:` segment:  
@@ -101,7 +101,7 @@ We adopt the following principles for prompt recipe suggestions:
 
 1. **Meta-prompt alignment**  
    - Ensure the `model suggest` meta-prompt:
-     - Describes available Persona/Intent options primarily as **axis tokens** (voice/audience/tone/purpose) grouped by axis.  
+     - Describes available Persona/Intent options primarily as **axis tokens** (voice/audience/tone/intent) grouped by axis.  
      - Uses Persona/Intent presets only as **examples**, not as the primary format for suggestions.  
      - Clearly documents the `Stance:` and `Why:` segments and encourages the LLM to emit them when helpful.
 

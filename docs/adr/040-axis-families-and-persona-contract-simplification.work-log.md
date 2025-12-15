@@ -10,7 +10,7 @@
 - Updated `docs/adr/040-axis-families-and-persona-contract-simplification.md` to refer to the correct work-log filename and to point at the existing `_tests/test_voice_audience_tone_purpose_lists.py` rather than non-existent `tests/` paths.
 - Added a `Persona / Intent / Contract (Who / Why / How)` section to `GPT/readme.md` ahead of the modifier axes, briefly explaining:
   - Persona (Who) = voice + audience + tone.
-  - Intent (Why) = purpose.
+  - Intent (Why) = intent.
   - Contract (How) = completeness + scope + method + style.
 - Clarified that:
   - Persona/intent presets are optional “stance” controls for tailoring explanations.
@@ -40,16 +40,16 @@
   - `GPT/lists/modelVoice.talon-list` now uses `as programmer: as programmer`, etc.
   - `GPT/lists/modelAudience.talon-list` now uses `to managers: to managers`, etc.
   - `GPT/lists/modelTone.talon-list` now uses `casually: casually`, etc.
-  - `GPT/lists/modelPurpose.talon-list` now uses `for information: for information`, etc.
+  - `GPT/lists/modelIntent.talon-list` now uses `for information: for information`, etc.
 - Introduced `lib/personaConfig.py` as the Python SSOT for persona/intent semantics:
   - `voice` – keys like `as programmer`, `as teacher`, `as Kent Beck` mapped to rich “Act as …” descriptions.
   - `audience` – keys like `to managers`, `to junior engineer`, `to CEO`, `to XP enthusiast` mapped to audience descriptions.
   - `tone` – keys like `casually`, `formally`, `directly`, `gently`, `kindly` mapped to tone guidance.
-  - `purpose` – keys like `for information`, `for deciding`, `for brainstorming`, `for teaching`, etc., mapped to intent descriptions.
+  - `intent` – keys like `for information`, `for deciding`, `for brainstorming`, `for teaching`, etc., mapped to intent descriptions.
 - Updated `lib/modelTypes.GPTSystemPrompt.format_as_array` to hydrate persona and intent via `persona_hydrate_tokens` before sending the system prompt to the model:
-  - `Voice: …`, `Tone: …`, `Audience: …`, and `Purpose: …` lines now expand short keys into full descriptions while contract axes (`completeness`, `scope`, `method`, `style`, `directional`) continue to hydrate via `axis_hydrate_tokens`.
+  - `Voice: …`, `Tone: …`, `Audience: …`, and `Intent: …` lines now expand short keys into full descriptions while contract axes (`completeness`, `scope`, `method`, `style`, `directional`) continue to hydrate via `axis_hydrate_tokens`.
 - Kept Help docs rich after the list change by updating `GPT/gpt.py`’s `gpt_help` builder:
-  - When rendering the Voice/Tone/Audience/Purpose tables, pass `description_overrides` built from `persona_docs_map('voice'/'tone'/'audience'/'purpose')` so the HTML docs show the full Python-side descriptions instead of the key-only list values.
+  - When rendering the Voice/Tone/Audience/Intent tables, pass `description_overrides` built from `persona_docs_map('voice'/'tone'/'audience'/'intent')` so the HTML docs show the full Python-side descriptions instead of the key-only list values.
 - Added `_tests/test_gpt_system_prompt_axes_hydration.py` to assert that contract axes in the system prompt still hydrate via `axis_hydrate_tokens` (guarding against regressions while persona hydration moved to `personaConfig`).
 - Re-ran focused tests:
   - `_tests/test_voice_audience_tone_purpose_lists.py`
@@ -84,7 +84,7 @@
 - Updated `lib/helpHub._cheat_sheet_text` to include the Who / Why / How family model from ADR 040:
   - Added a “Who / Why / How (ADR 040)” section showing:
     - Persona (Who): voice, audience, tone.
-    - Intent (Why): purpose.
+    - Intent (Why): intent.
     - Contract (How): completeness, scope, method, style.
 - Extended `lib/helpHub._adr_links_text` so Help Hub’s “ADR links” button now also includes:
   - `docs/adr/040-axis-families-and-persona-contract-simplification.md`.
@@ -112,7 +112,7 @@
   - Add `docs/adr/040-axis-families-and-persona-contract-simplification.md` to the list of ADRs contributors should read before changing static prompts or axis lists.
   - Introduce a design rule that explicitly frames axes in terms of the three families from ADR 040:
     - Persona (Who): voice, audience, tone.
-    - Intent (Why): purpose.
+    - Intent (Why): intent.
     - Contract (How): completeness, scope, method, style.
   - Add a question-gate guideline: when adding a new behaviour, decide which single question it primarily answers (Who, Why, or How). If it honestly spans more than one family, encode it as a recipe/pattern that sets multiple axes, rather than introducing a new raw axis token.
 
@@ -135,13 +135,13 @@
 ### Changes
 
 - Extended the `Persona / Intent / Contract (Who / Why / How)` section in `GPT/readme.md` with a new subsection “Who / Why / How – examples” that decomposes common prompts into the three families:
-  - “Explain simply to a junior engineer” → Persona (`as teacher` + `to junior engineer` + `tone=kindly`), Intent (`for teaching`), Contract (`completeness=gist/minimal`, `scope=focus`, `method=scaffold`, `style=plain`/`tight`), with a note not to encode it as a single new audience or purpose token.
+  - “Explain simply to a junior engineer” → Persona (`as teacher` + `to junior engineer` + `tone=kindly`), Intent (`for teaching`), Contract (`completeness=gist/minimal`, `scope=focus`, `method=scaffold`, `style=plain`/`tight`), with a note not to encode it as a single new audience or intent token.
   - “Executive brief for CEO” vs “Deep technical write-up for engineers” → contrasting Persona (different audiences and tones), Intent (for deciding vs for information/evaluating), and Contract (gist/focus/headline/tight vs full/system/structure/analysis/plain/adr), again emphasising that coverage/territory/reasoning/containers live on the contract axes.
 
 ### Rationale
 
 - Gives contributors and users concrete, adversarial examples of how to apply the Persona / Intent / Contract model from ADR 040 in practice, directly in the main GPT README.
-- Reinforces the question-gate rule by showing where **not** to encode behaviours (for example, not as new purpose/audience tokens) and instead use recipes across existing axes.
+- Reinforces the question-gate rule by showing where **not** to encode behaviours (for example, not as new intent/audience tokens) and instead use recipes across existing axes.
 
 ### Follow-ups
 
@@ -158,7 +158,7 @@
 
 - Extended `lib/personaConfig.py` with dataclass-based presets:
   - `PERSONA_PRESETS`: small set of named persona recipes (for example, `peer_engineer_explanation`, `teach_junior_dev`, `executive_brief`) that map to existing `voice`/`audience`/`tone` tokens.
-  - `INTENT_PRESETS`: named intent presets (for example, `teach`, `decide`, `plan`, `evaluate`, `brainstorm`, `appreciate`) that map to existing `purpose` tokens.
+  - `INTENT_PRESETS`: named intent presets (for example, `teach`, `decide`, `plan`, `evaluate`, `brainstorm`, `appreciate`) that map to existing `intent` tokens.
 - Added `_tests/test_persona_presets.py` to ensure:
   - All persona and intent presets reference valid axis tokens from `PERSONA_KEY_TO_VALUE`.
   - Expected core presets are present.
@@ -188,7 +188,7 @@
 - Extended the default canvas renderer (`_default_draw_quick_help`) to show a concise axis-family summary immediately after the grammar/caps lines:
   - "Who / Why / How (ADR 040):" header.
   - "Who – Persona: voice, audience, tone."
-  - "Why – Intent: purpose."
+  - "Why – Intent: intent."
   - "How – Contract: completeness, scope, method, style."
 - Added lightweight persona/intent preset hints to the same section so users see concrete Who/Why recipes in quick help:
   - "Persona presets: …" using the first few `PERSONA_PRESETS` labels.
@@ -273,7 +273,7 @@
 - Extended the canvas renderer `_draw_pattern_canvas` so that, when a domain is selected, it shows a compact Who/Why section above the pattern list:
   - Heading: `Who / Why presets (ADR 040):`.
   - `Persona (Who):` followed by the first few persona presets, rendered as `label: voice · audience · tone` (omitting any empty axes).
-  - `Intent (Why):` followed by the first few intent presets, rendered as `label: purpose-token`.
+  - `Intent (Why):` followed by the first few intent presets, rendered as `label: intent-token`.
   - Both blocks are wrapped in `try/except` so the pattern picker still renders even if presets cannot be imported under the Talon test harness.
 - Left existing pattern buttons, recipes, and "Say: model …" hints unchanged so this remains a purely additive affordance.
 - Ran `python3 -m pytest _tests/test_model_pattern_gui.py` to confirm the pattern GUI tests remain green.
@@ -300,7 +300,7 @@
 - Extended `_draw_suggestions` so that, when there are suggestions to show, it renders a compact Who/Why section above the suggestion rows:
   - Heading: `Who / Why presets (ADR 040):`.
   - `Persona (Who):` followed by the first few persona presets, as `label: voice · audience · tone` (omitting empty axes).
-  - `Intent (Why):` followed by the first few intent presets, as `label: purpose-token`.
+  - `Intent (Why):` followed by the first few intent presets, as `label: intent-token`.
   - Both blocks are wrapped in `try/except` so the suggestions canvas still renders if presets cannot be imported under the Talon test harness.
 - Left the suggestion rows themselves unchanged: they still show `Say: model …` grammar phrases and a compact `Axes:` summary for the contract axes.
 - Ran `python3 -m pytest _tests/test_model_suggestion_gui.py` to confirm the suggestions GUI tests remain green.

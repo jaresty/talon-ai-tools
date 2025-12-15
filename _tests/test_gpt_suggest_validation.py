@@ -51,10 +51,10 @@ if bootstrap is not None:
                         "persona_voice": "as teacher",
                         "persona_audience": "to junior engineer",
                         "persona_tone": "kindly",
-                        "intent_purpose": "for teaching",
-                        "stance_command": "model write as teacher to junior engineer kindly for teaching",
+                    "intent_purpose": "for teaching",
+                    "stance_command": "model write as teacher to junior engineer kindly for teaching",
                         "why": "For teaching-focused summaries.",
-                        "reasoning": "Uses teaching persona and planning purpose.",
+                        "reasoning": "Uses teaching persona and planning intent.",
                     },
                     {
                         "name": "Invalid stance",
@@ -62,10 +62,10 @@ if bootstrap is not None:
                         "persona_voice": "as facilitator",
                         "persona_audience": "to stakeholders",
                         "persona_tone": "gently",
-                        "intent_purpose": "for collaborating",
+                    "intent_purpose": "for collaborating",
                         "stance_command": "model write for",
                         "why": "Bad stance should be dropped.",
-                        "reasoning": "Tried to leave purpose underspecified.",
+                        "reasoning": "Tried to leave intent underspecified.",
                     },
                 ]
             }

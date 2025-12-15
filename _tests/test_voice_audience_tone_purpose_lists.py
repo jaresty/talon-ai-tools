@@ -11,7 +11,7 @@ else:
 if bootstrap is not None:
     from pathlib import Path
 
-    class VoiceAudienceTonePurposeListTests(unittest.TestCase):
+    class VoiceAudienceToneIntentListTests(unittest.TestCase):
         def setUp(self) -> None:
             self.root = Path(__file__).resolve().parents[1]
             self.lists_dir = self.root / "GPT" / "lists"
@@ -38,6 +38,29 @@ if bootstrap is not None:
                     key, _ = s.split(":", 1)
                     keys.add(key.strip())
             return keys
+
+        def _read_values(self, filename: str) -> set[str]:
+            path = self.lists_dir / filename
+            self.assertTrue(
+                path.is_file(),
+                f"Expected list file {filename!r} to exist",
+            )
+            values: set[str] = set()
+            with path.open("r", encoding="utf-8") as f:
+                for line in f:
+                    s = line.strip()
+                    if (
+                        not s
+                        or s.startswith("#")
+                        or s.startswith("list:")
+                        or s == "-"
+                    ):
+                        continue
+                    if ":" not in s:
+                        continue
+                    _, value = s.split(":", 1)
+                    values.add(value.strip())
+            return values
 
         def test_model_voice_list_trimmed_to_core_set(self) -> None:
             keys = self._read_keys("modelVoice.talon-list")
@@ -149,36 +172,33 @@ if bootstrap is not None:
                 },
             )
 
-        def test_model_purpose_list_only_contains_interaction_level_intents(
-            self,
-        ) -> None:
-            keys = self._read_keys("modelPurpose.talon-list")
-
-            expected = {
-                "for information",
-                "for entertainment",
-                "for persuasion",
-                "for brainstorming",
-                "for deciding",
-                "for planning",
-                "for evaluating",
-                "for coaching",
-                "for appreciation",
-                "for triage",
-                "for announcing",
-                "for teaching",
-                "for learning",
-            }
-            self.assertEqual(
-                keys,
-                expected,
-                "modelPurpose list should contain only interaction-level intents after ADR 015",
+        def test_intent_buckets_cover_all_intents_and_spoken_tokens(self) -> None:
+            from lib.personaConfig import (
+                INTENT_BUCKETS,
+                INTENT_SPOKEN_TO_CANONICAL,
+                PERSONA_KEY_TO_VALUE,
             )
+
+            canonical_tokens = set(PERSONA_KEY_TO_VALUE["intent"].keys())
+            bucket_union = set().union(*INTENT_BUCKETS.values())
+            self.assertEqual(
+                canonical_tokens,
+                bucket_union,
+                "Intent buckets must cover all canonical intent tokens",
+            )
+            spoken_canonical = set(INTENT_SPOKEN_TO_CANONICAL.values())
+            self.assertEqual(
+                canonical_tokens,
+                spoken_canonical,
+                "Each canonical intent must have a spoken variant in the Talon list",
+            )
+            self.assertIn("understand", canonical_tokens)
+            self.assertIn("understand", spoken_canonical)
 
 else:
     if not TYPE_CHECKING:
 
-        class VoiceAudienceTonePurposeListTests(unittest.TestCase):
+        class VoiceAudienceToneIntentListTests(unittest.TestCase):
             @unittest.skip("Test harness unavailable outside unittest runs")
             def test_placeholder(self) -> None:
                 pass

@@ -30,11 +30,11 @@ if bootstrap is not None:
 
         def test_intent_presets_use_known_purposes(self) -> None:
             mapping = personaConfig.PERSONA_KEY_TO_VALUE
-            purpose_keys = set(mapping.get("purpose", {}).keys())
+            purpose_keys = set(mapping.get("intent", {}).keys())
 
             for preset in personaConfig.INTENT_PRESETS:
                 with self.subTest(preset=preset.key):
-                    self.assertIn(preset.purpose, purpose_keys)
+                    self.assertIn(preset.intent, purpose_keys)
 
         def test_expected_core_persona_presets_present(self) -> None:
             keys = {preset.key for preset in personaConfig.PERSONA_PRESETS}
@@ -64,6 +64,8 @@ if bootstrap is not None:
                     "persuade",
                     "coach",
                     "entertain",
+                    "resolve",
+                    "understand",
                 }
                 <= keys
             )
@@ -74,6 +76,15 @@ if bootstrap is not None:
 
             self.assertEqual(len(persona_keys), len(set(persona_keys)))
             self.assertEqual(len(intent_keys), len(set(intent_keys)))
+
+        def test_intent_presets_cover_all_canonical_intents(self) -> None:
+            purpose_keys = set(personaConfig.PERSONA_KEY_TO_VALUE.get("intent", {}))
+            preset_intents = {preset.intent for preset in personaConfig.INTENT_PRESETS}
+            self.assertEqual(
+                purpose_keys,
+                preset_intents,
+                "Intent presets must cover all canonical intents",
+            )
 
 
 else:

@@ -2,10 +2,10 @@
 
 - Status: Accepted  
 - Date: 2025-12-05  
-- Context: `talon-ai-tools` GPT `model` commands (static prompts + completeness/scope/method/style + directional modifiers + voice/audience/tone/purpose; legacy `goalModifier` shorthands)  
+- Context: `talon-ai-tools` GPT `model` commands (static prompts + completeness/scope/method/style + directional modifiers + voice/audience/tone/intent; legacy `goalModifier` shorthands)  
 - Related ADRs:  
   - 005 – Orthogonal Prompt Modifiers and Defaults  
-  - 015 – Voice, Audience, Tone, Purpose Axis Decomposition  
+  - 015 – Voice, Audience, Tone, Intent Axis Decomposition  
   - 016 – Directional Axis Decomposition and Simplification  
 
 ## Context
@@ -15,7 +15,7 @@ ADR 005 introduced `goalModifier` as part of the overall grammar:
 - **Goal / task**: via `staticPrompt` and `goalModifier` (for example, `fix`, `todo`, `product`).  
 - **Thinking lens**: via `directionalModifier`.  
 - **Contract axes**: completeness/scope/method/style.  
-- **System-level style**: via voice/audience/tone/purpose.  
+- **System-level style**: via voice/audience/tone/intent.  
 
 Historically, the `goalModifier` Talon list contained:
 
@@ -47,7 +47,7 @@ For reference, the legacy `goalModifier` tokens were:
     - **Goal/mode**: “describe/analyse only” vs “suggest/fix”.  
     - Implicit method bias: descriptive/explanatory, not “solve”.  
   - Axis-shaped aspects:
-    - Purpose (`for information`) or “describe” static prompt.  
+    - Intent (`for information`) or “describe” static prompt.  
     - Method leaning toward explanation/analysis, not `steps`/`plan`.  
   - Residual goal semantics:
     - A hard constraint that **forbids** solution proposals, even if axes might otherwise encourage them.
@@ -58,7 +58,7 @@ For reference, the legacy `goalModifier` tokens were:
     - **Goal/mode**: “take action / propose solutions” vs “just describe”.  
     - Implicit method bias: favour `steps`, `plan`, `diagnose`, `xp`, `experimental`.  
   - Axis-shaped aspects:
-    - Purpose (`for solving` / `for debugging` / `for project management`), already modelled via static prompts and axes.  
+    - Intent (`for solving` / `for debugging` / `for project management`), already modelled via static prompts and axes.  
   - Residual goal semantics:
     - A mode-level emphasis: prioritise problem-solving over neutral description when in doubt.
 
@@ -93,7 +93,7 @@ Unlike directional modifiers (which needed a richer decomposition and surface re
 We will:
 
 1. **Stop treating `goalModifier` as a first-class axis for new behaviour** and instead:
-   - Express “describe vs solve vs sample” semantics primarily via existing axes (static prompts, purpose, completeness/scope/method/style) and, where needed, new axis tokens.  
+   - Express “describe vs solve vs sample” semantics primarily via existing axes (static prompts, intent, completeness/scope/method/style) and, where needed, new axis tokens.  
    - Treat the existing `goalModifier` tokens as **legacy shorthands** that should not accumulate new semantics.
 2. **Migrate `just` semantics into the method axis**:
    - Introduce a method token (name to be finalised; for this ADR we call it `analysis`) that encodes “describe/analyse only; do not propose solutions”.  
@@ -103,7 +103,7 @@ We will:
    - Problem-solving is already the default stance for most action-oriented static prompts; `solve` does not introduce a distinct behaviour that cannot be expressed via static prompts, purposes, and methods.  
    - We will deprecate `solve` in docs and examples, and avoid adding new behaviours under it.
 5. **Discourage adding new `goalModifier` entries**:
-   - Any future behaviour that looks like a new “goal” should first be expressed via static prompts, purpose, or the contract axes; only if it fundamentally cannot fit there should we consider extending the grammar (likely via a dedicated ADR rather than this one).
+   - Any future behaviour that looks like a new “goal” should first be expressed via static prompts, intent, or the contract axes; only if it fundamentally cannot fit there should we consider extending the grammar (likely via a dedicated ADR rather than this one).
 
 ### Axis-level migration for existing tokens
 
@@ -111,7 +111,7 @@ We will:
   - Intended meaning:
     - “Describe or analyse only; do not propose changes, actions, or solutions.”  
   - Recommended axis defaults when designing recipes:
-    - Purpose: `for information` or other non-intervention purposes.  
+    - Intent: `for information` or other non-intervention purposes.  
     - Method: explanatory/structural methods (`structure`, `systemic`, `mapping`, `flow`, `motifs`, `diagnose`) rather than `steps`, `plan`, `xp`, `experimental`.  
 - Proposed method axis expression:
   - Add `method=analysis` (or similar) to `methodModifier.talon-list` with:
@@ -127,10 +127,10 @@ We will:
     - “Aim to produce or refine a solution, fix, or concrete set of next actions.”  
   - Axis / prompt expression:
     - Static prompts: `fix`, `todo`, `product`, `retro`, `risky`, etc. already carry a solving stance.  
-    - Purpose: `for debugging`, `for deciding`, `for planning`, `for project management`.  
+    - Intent: `for debugging`, `for deciding`, `for planning`, `for project management`.  
     - Method: `steps`, `plan`, `xp`, `experimental`, `diagnose`.  
   - Recommendation:
-    - Treat `solve` as **redundant** for new usage. When you mean “solve”, pick an appropriate static prompt + purpose + method combination instead (for example, `fix · steps · ong`).
+    - Treat `solve` as **redundant** for new usage. When you mean “solve”, pick an appropriate static prompt + intent + method combination instead (for example, `fix · steps · ong`).
 
 - `sample` – **Sampling goal → completeness + method + style**  
   - Intended meaning:
@@ -158,7 +158,7 @@ We will:
   - `solve` is treated as part of the default stance for many prompts rather than a separate spoken token.
 - **Easier mental model**:
   - Users can think in terms of:
-    - *What*: static prompt + purpose.  
+    - *What*: static prompt + intent.  
     - *How much / where / how / in what shape*: completeness/scope/method/style + directional.  
     - Only legacy flows still rely on `just`/`solve`/`sample` as goal modifiers.
 

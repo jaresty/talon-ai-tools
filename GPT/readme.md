@@ -18,7 +18,7 @@ For implementation details of the modifier axes, defaults, helpers, and rerun sh
 - `docs/adr/009-rerun-last-recipe-shorthand.md`
 - `docs/adr/012-style-and-method-prompt-refactor.md`
 - `docs/adr/013-static-prompt-axis-refinement-and-streamlining.md`
-- `docs/adr/015-voice-audience-tone-purpose-decomposition.md`
+- `docs/adr/015-voice-audience-tone-intent-decomposition.md`
 
 ### Meta interpretation channel (ADR 019) and richer structure (ADR 020)
 
@@ -144,8 +144,8 @@ When you are deciding how much of the grammar to use, it helps to think in three
   - You can usually ignore persona until you explicitly want to tailor an explanation for a specific role.
 
 - **Intent – Why**  
-  - `purpose` – interaction-level intent (for example, `for information`, `for deciding`, `for brainstorming`, `for teaching`, `for evaluating`).  
-  - Pick a purpose when you care about “why we’re talking” (teach vs decide vs explore), not about output container or reasoning steps.
+  - `intent` – interaction-level intent (for example, `for information`, `for deciding`, `for brainstorming`, `for teaching`, `for evaluating`).  
+  - Pick a intent when you care about “why we’re talking” (teach vs decide vs explore), not about output container or reasoning steps.
 
 - **Contract – How**  
   - `completeness` – how much coverage (`skim`, `gist`, `full`, `max`, `minimal`, `deep`).  
@@ -168,7 +168,7 @@ A couple of common prompts decomposed into the three families:
   - **Persona (Who)**: `as teacher` + `to junior engineer` + `tone=kindly`.  
   - **Intent (Why)**: `for teaching`.  
   - **Contract (How)**: `completeness=gist` or `minimal`, `scope=focus`, `method=scaffold`, `tone=plainly` (optionally `tightly`/`headline first`), plus an optional form/channel when the medium matters (for example, `form=bullets`, `channel=slack`).  
-  - **Do not** try to encode this entirely as a new audience or purpose token; treat it as a recipe across existing axes.
+  - **Do not** try to encode this entirely as a new audience or intent token; treat it as a recipe across existing axes.
 
 - “Executive brief for CEO” vs “Deep technical write-up for engineers”  
   - **Persona (Who)**:  
@@ -320,7 +320,7 @@ If you were using some older, now-retired tokens, here are the closest replaceme
 - Audiences:
   - `to receptive` / `to resistant` → keep the audience (for example, `to managers` / `to stakeholders`) and add `method=receptive` / `method=resistant`.  
   - `to dummy` → keep a friendlier audience (for example, `to junior engineer`) and add `method=novice` + `gist`/`minimal` + `tone=plainly`.
-- Purposes / shape:
+- Intents / shape:
   - `for coding` → `goal=solve` + `form=code`.  
   - `for debugging` → `goal=solve` + `method=debugging`.  
   - `for slack` / `for table` / `for presenterm` / `for code tour` → `channel=slack` / `form=table` / `channel=presenterm` / `channel=codetour`.  

@@ -106,11 +106,11 @@ These prompts primarily express *style, completeness, or tone* and add little se
   - Current role: meta-prompt about style instructions.
   - Overlaps with `styleModifier` axis and ADR 006 grammar help.
   - Decision: **demote**:
-    - Fold into `model quick help style` and/or pattern recipes; do not treat as a general-purpose static prompt, and remove it from the staticPrompt list once help/patterns cover its use.
+    - Fold into `model quick help style` and/or pattern recipes; do not treat as a general-intent static prompt, and remove it from the staticPrompt list once help/patterns cover its use.
 
 - `silly`
   - Current role: tonal change, not a task.
-  - Axis equivalent: a `modelTone` or `modelPurpose` flavour, or a pattern.
+  - Axis equivalent: a `modelTone` or `modelIntent` flavour, or a pattern.
   - Decision: **demote**:
     - Prefer modelling this as a tone axis value and/or pattern (“Silly recap”) rather than a standalone static prompt, and remove it from the staticPrompt list.
 

@@ -17,7 +17,7 @@ Today:
 - However:
   - There is **no voice command** to apply a preset directly.
   - Presets are **not clickable** in GUIs.
-  - Users must **manually reconstruct** presets via `model write …` (voice/audience/tone/purpose).
+  - Users must **manually reconstruct** presets via `model write …` (voice/audience/tone/intent).
 
 This ADR:
 
@@ -38,7 +38,7 @@ From ADR 040 and current implementation:
 
 - **Persona/Intent families (Who/Why)**:
   - Persona (Who) – `voice`, `audience`, `tone`.
-  - Intent (Why) – `purpose`.
+  - Intent (Why) – `intent`.
 - **Contract (How)**:
   - `completeness`, `scope`, `method`, `style`.
 
@@ -50,7 +50,7 @@ Implementation status (this repo, 2025-12-11):
     - `"peer_engineer_explanation"` → `"Peer engineer explanation"` → `as programmer · to programmer`.
     - `"teach_junior_dev"` → `"Teach junior dev"` → `as teacher · to junior engineer · kindly`.
     - `"executive_brief"` → `"Executive brief"` → `as programmer · to CEO · directly`.
-  - `INTENT_PRESETS` – similarly for `purpose` (`teach`, `decide`, `plan`, `evaluate`, `brainstorm`, `appreciate`).
+  - `INTENT_PRESETS` – similarly for `intent` (`teach`, `decide`, `plan`, `evaluate`, `brainstorm`, `appreciate`).
 - Help surfaces (quick help, pattern GUI, suggestions GUI) render these presets as **text only**:
   - Quick help:  
     - `Persona presets: Peer engineer explanation, Teach junior dev, Executive brief`  
@@ -62,7 +62,7 @@ Speech layer today:
 
 - Persona/Intent **axes** are only reachable via:
 
-  - `model write [{user.modelVoice} | {user.modelAudience} | {user.modelPurpose} | {user.modelTone}]+`
+  - `model write [{user.modelVoice} | {user.modelAudience} | {user.modelIntent} | {user.modelTone}]+`
   - `model reset writing`
 
 - `model run …` / `model …` commands only see:
@@ -144,7 +144,7 @@ We will:
      - Applies the corresponding preset’s `voice`/`audience`/`tone` to the current stance.
    - `intent <intentPreset>`  
      - Example: `intent teach`, `intent decide`, `intent brainstorm`.
-     - Applies the corresponding preset’s `purpose`.
+     - Applies the corresponding preset’s `intent`.
 
    These commands are defined over the existing SSOT:
 
@@ -180,10 +180,10 @@ We will:
      - Example recap:
        - `Persona: as teacher · to junior engineer · kindly (non-default)`
    - `intent status` – recap:
-     - Current `purpose`, whether it is non-default.
+     - Current `intent`, whether it is non-default.
    - `persona reset` – reset Persona axes to defaults:
      - Clears explicit `voice`/`audience`/`tone` stance.
-   - `intent reset` – reset `purpose` to default.
+   - `intent reset` – reset `intent` to default.
    - `persona clear` / `intent clear` can be aliases or folded into `reset` semantics depending on existing conventions.
 
    These coexist with the broader:
@@ -298,7 +298,7 @@ We will:
          - Applies `voice`/`audience`/`tone` via existing system prompt/`GPTState` setters.
        - `user.intent_set_preset(preset_key: str)`:
          - Looks up preset in `INTENT_PRESETS`.
-         - Applies `purpose`.
+         - Applies `intent`.
        - `user.persona_status()`, `user.intent_status()`:
          - Read current Persona/Intent from `GPTState.system_prompt`.
          - Show recap via notification / help canvas.
@@ -343,7 +343,7 @@ We will:
  
       - Keep listing of Persona/Intent presets in the Who/Why/How section.
       - Add a stance recap that reads `GPTState.system_prompt` Persona/Intent axes
-        (voice, audience, tone, purpose) versus defaults and shows a single
+        (voice, audience, tone, intent) versus defaults and shows a single
         example stance voice command, e.g. `Say: persona teach junior dev · intent teach`.
  
     - `lib/modelSuggestionGUI.py`:

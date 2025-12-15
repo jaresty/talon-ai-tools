@@ -128,7 +128,7 @@ if bootstrap is not None:
             m = SimpleNamespace(
                 staticPrompt="fix",
                 completenessModifier="COMP",
-                # scope/method/form/channel omitted on purpose; profiles may add hints,
+                # scope/method/form/channel omitted on intent; profiles may add hints,
                 # but we should not see the test sentinel tokens.
                 directionalModifier="DIR",
             )

@@ -641,7 +641,7 @@ if bootstrap is not None:
 
             prompt = GPTState.system_prompt
             self.assertIsInstance(prompt, gpt_module.GPTSystemPrompt)
-            self.assertEqual(prompt.purpose, "for deciding")
+            self.assertEqual(prompt.intent, "decide")
 
         def test_persona_and_intent_reset_restore_defaults(self) -> None:
             GPTState.reset_all()
@@ -649,7 +649,7 @@ if bootstrap is not None:
             GPTState.system_prompt = gpt_module.GPTSystemPrompt(
                 voice="as teacher",
                 audience="to junior engineer",
-                purpose="for teaching",
+                intent="teach",
                 tone="kindly",
             )
 
@@ -661,14 +661,14 @@ if bootstrap is not None:
             self.assertEqual(prompt.voice, "")
             self.assertEqual(prompt.audience, "")
             self.assertEqual(prompt.tone, "")
-            self.assertEqual(prompt.purpose, "")
+            self.assertEqual(prompt.intent, "")
 
         def test_persona_and_intent_status_notify(self) -> None:
             GPTState.reset_all()
             GPTState.system_prompt = gpt_module.GPTSystemPrompt(
                 voice="as teacher",
                 audience="to junior engineer",
-                purpose="for teaching",
+                intent="for teaching",
                 tone="kindly",
             )
             actions.app.calls.clear()
@@ -759,12 +759,12 @@ if bootstrap is not None:
             self.assertEqual(prompt.tone, "kindly")
 
         def test_intent_reset_respects_in_flight_guard(self) -> None:
-            GPTState.system_prompt = gpt_module.GPTSystemPrompt(purpose="for teaching")
+            GPTState.system_prompt = gpt_module.GPTSystemPrompt(intent="teach")
             with patch.object(gpt_module, "_reject_if_request_in_flight", return_value=True):
                 with patch.object(gpt_module, "notify") as notify_mock:
                     gpt_module.UserActions.intent_reset()
             notify_mock.assert_not_called()
-            self.assertEqual(GPTState.system_prompt.purpose, "for teaching")
+            self.assertEqual(GPTState.system_prompt.intent, "teach")
 
         def test_gpt_reset_system_prompt_respects_in_flight_guard(self) -> None:
             GPTState.system_prompt = gpt_module.GPTSystemPrompt(

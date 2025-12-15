@@ -494,7 +494,7 @@ mod.list(
     desc="Persona tone: emotional register (for example, 'kindly', 'formally').",
 )
 mod.list(
-    "modelPurpose",
+    "modelIntent",
     desc="Intent: why you're talking. For example, 'for teaching'.",
 )
 mod.list(
@@ -1190,7 +1190,7 @@ mod.setting(
     desc="Default voice (who is speaking). For example, 'as programmer'.",
 )
 mod.setting(
-    "model_default_purpose",
+    "model_default_intent",
     type=str,
     default="",
     desc="Default intent (why you're talking). For example, 'for teaching'.",

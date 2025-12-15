@@ -35,7 +35,7 @@ def test_suggest_context_snapshot_uses_canonical_tokens():
         voice="as programmer",
         audience="to stakeholders",
         tone="directly",
-        purpose="for appreciation",
+        intent="appreciate",
         completeness="full",
         scope="actions",
         method="plan",
@@ -49,7 +49,7 @@ def test_suggest_context_snapshot_uses_canonical_tokens():
         "voice": "as programmer",
         "audience": "to stakeholders",
         "tone": "directly",
-        "purpose": "for appreciation",
+        "intent": "appreciate",
         "completeness": "full",
         "scope": "actions",
         "method": "plan",
@@ -63,7 +63,7 @@ def test_suggest_context_snapshot_drops_hydrated_strings():
         voice="freeform voice description",
         audience="freeform audience description",
         tone="freeform tone description",
-        purpose="",
+        intent="",
         completeness="",
         scope="",
         method="",
@@ -90,7 +90,7 @@ def test_suggest_uses_hydrated_system_prompt_for_llm():
         voice="as programmer",
         audience="to stakeholders",
         tone="directly",
-        purpose="for appreciation",
+        intent="for appreciation",
         completeness="full",
         scope="actions",
         method="plan",
@@ -143,8 +143,8 @@ def test_suggest_uses_hydrated_system_prompt_for_llm():
     assert _contains_any(
         ["Tone: Use a direct, straightforward tone while remaining respectful."]
     ), content
-    # Intent purpose
-    assert _contains_any(["Purpose: The goal is to express appreciation or thanks."]), content
+    # Intent intent
+    assert _contains_any(["Intent: The goal is to express appreciation or thanks."]), content
     # Contract axes
     assert _contains_any(["Completeness: Important: Provide a thorough answer"]), content
     assert _contains_any(
@@ -180,7 +180,7 @@ def test_suggest_hydrates_system_prompt_defaults_from_settings():
         "user.model_default_voice": ["as programmer"],
         "user.model_default_audience": ["to stakeholders"],
         "user.model_default_tone": ["directly"],
-        "user.model_default_purpose": ["for appreciation"],
+            "user.model_default_intent": ["appreciate"],
         "user.model_default_completeness": "full",
         "user.model_default_scope": "actions",
         "user.model_default_method": "plan",
@@ -230,7 +230,7 @@ def test_suggest_hydrates_system_prompt_defaults_from_settings():
             "Voice: " + persona_hydrate_tokens("voice", ["as programmer"])[0],
             "Audience: " + persona_hydrate_tokens("audience", ["to stakeholders"])[0],
             "Tone: " + persona_hydrate_tokens("tone", ["directly"])[0],
-            "Purpose: " + persona_hydrate_tokens("purpose", ["for appreciation"])[0],
+            "Intent: " + persona_hydrate_tokens("intent", ["appreciate"])[0],
         }
         for needle in persona_expected:
             assert needle in content

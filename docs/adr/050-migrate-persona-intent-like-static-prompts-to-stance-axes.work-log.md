@@ -1,16 +1,16 @@
 # 2025-12-13 – Loop entry (kind: behaviour)
 - Focus: ADR 050 (stance-like static prompts) – establish stance homes before removing static prompts.
 - Changes:
-  - Added new intent/purpose tokens for JTBD/value/pain/DoD/facilitation/discovery/team mapping in `GPT/lists/modelPurpose.talon-list`.
-  - Hydrated the new purpose tokens with descriptions in `lib/personaConfig.py`.
-  - Updated purpose list guardrail test to expect the expanded stance set in `_tests/test_voice_audience_tone_purpose_lists.py`.
+  - Added new intent/intent tokens for JTBD/value/pain/DoD/facilitation/discovery/team mapping in `GPT/lists/modelIntent.talon-list`.
+  - Hydrated the new intent tokens with descriptions in `lib/personaConfig.py`.
+  - Updated intent list guardrail test to expect the expanded stance set in `_tests/test_voice_audience_tone_purpose_lists.py`.
   - Removed meta/transform static prompts (`LLM`, `shuffled`) from `lib/staticPromptConfig.py` and `GPT/lists/staticPrompt.talon-list` to reduce static prompt scope to task-oriented entries.
 - Loop 2 (2025-12-13, kind: behaviour):
   - Removed stance-like static prompts (`value`, `jobs`, `done`, `facilitate`, `pain`, `question`, `team`) from `lib/staticPromptConfig.py` and `GPT/lists/staticPrompt.talon-list`.
   - Kept filter/profile guardrail by redirecting the filter-style modelPrompt test to use `relevant` instead of `pain` in `_tests/test_talon_settings_model_prompt.py`.
   - Guardrail tests run: `python3 -m pytest _tests/test_static_prompt_axis_tokens.py _tests/test_static_prompt_completeness_hints.py _tests/test_talon_settings_model_prompt.py` (pass).
 - Tests: `python3 -m pytest _tests/test_voice_audience_tone_purpose_lists.py` (pass).
-- Removal test: Reverting would drop new purpose tokens and break the updated guardrail test; stance homes for migrating static prompts would be missing again.
+- Removal test: Reverting would drop new intent tokens and break the updated guardrail test; stance homes for migrating static prompts would be missing again.
 - Follow-ups:
   - Migrate static prompts (jobs/value/pain/team/question/facilitate/done/fix/shuffled/LLM/ticket) off `staticPrompt`, mapping to these stance tokens and structural axes; update dependent tests/patterns.
   - Revisit form/channel tone-like tokens (`announce`, `plain`, `tight`, `headline`) and consider tone/method re-homing.

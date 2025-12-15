@@ -918,7 +918,7 @@ def _draw_suggestions(c: canvas.Canvas) -> None:  # pragma: no cover - visual on
                         if row_y >= body_bottom:
                             stop_rendering = True
                 if has_intent_axis:
-                    # Label the purpose axis as Why (axis) so it is clearly the
+                    # Label the intent axis as Why (axis) so it is clearly the
                     # Intent axis, not the `intent` command.
                     if row_y >= body_top and row_y <= body_bottom - line_h:
                         draw_text(

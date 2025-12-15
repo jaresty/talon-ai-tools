@@ -186,7 +186,7 @@ Focus:
 
 Changes made (this loop):
 
-- `docs/adr/015-voice-audience-tone-purpose-decomposition.md`
+- `docs/adr/015-voice-audience-tone-intent-decomposition.md`
   - `as various` / `as perspectives` (voice cluster):
     - Removed the recommendation to represent these via directional `flop` (“various angles, presented separately”).
     - Kept and emphasised:

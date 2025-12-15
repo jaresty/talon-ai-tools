@@ -1,9 +1,9 @@
 # Adding Hydrated Axis/Persona Tokens
 
-This is a crib sheet for adding new values for persona/intent (voice, audience, tone, purpose, stance), directional lenses, static prompts, and contract axes (completeness, scope, method, form, channel) while keeping Talon lists, hydration helpers, and tests aligned.
+This is a crib sheet for adding new values for persona/intent (voice, audience, tone, intent, stance), directional lenses, static prompts, and contract axes (completeness, scope, method, form, channel) while keeping Talon lists, hydration helpers, and tests aligned.
 
 ## 1) Add tokens to Talon lists (source of truth)
-- Persona/intent lists: `GPT/lists/modelVoice.talon-list`, `modelAudience.talon-list`, `modelTone.talon-list`, `modelPurpose.talon-list`.
+- Persona/intent lists: `GPT/lists/modelVoice.talon-list`, `modelAudience.talon-list`, `modelTone.talon-list`, `modelIntent.talon-list`.
 - Contract axes: `GPT/lists/completenessModifier.talon-list`, `scopeModifier.talon-list`, `methodModifier.talon-list`, `formModifier.talon-list`, `channelModifier.talon-list`, `directionalModifier.talon-list`.
 - Static prompts: `GPT/lists/staticPrompt.talon-list`.
 - Keep file format: `token: description` lines; no free-form prose or multiple tokens on one line.

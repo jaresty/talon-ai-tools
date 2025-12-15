@@ -28,10 +28,10 @@ jobs:
       #     sudo apt-get update
 
       - name: Install Python dependencies
-        run: /usr/bin/python3 -m pip install -r ./.github/requirements-test.txt
+        run: python3 -m pip install -r ./.github/requirements-test.txt
 
       - name: Run guardrails
         run: make ci-guardrails
 
       - name: Run tests
-        run: /usr/bin/python3 -m unittest discover -s tests -v
+        run: python3 -m unittest discover -s tests -v

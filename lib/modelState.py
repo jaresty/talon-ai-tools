@@ -68,6 +68,11 @@ class GPTState:
     # Snapshot of stance/default axes sent with the last suggest request so
     # the suggestion UI can surface the context used for generation.
     last_suggest_context: ClassVar[Dict[str, str]] = {}
+    # Last subject string provided to `model suggest`, so we can rerun with
+    # updated stance/intent without re-entering the subject.
+    last_suggest_subject: ClassVar[str] = ""
+    # Cached content text for the last suggest call to avoid re-reading sources.
+    last_suggest_content: ClassVar[str] = ""
     # Last composed prompt text sent to the model (Task/Constraints/Directional).
     last_prompt_text: ClassVar[str] = ""
     context: ClassVar[List[Union[GPTTextItem, GPTImageItem]]] = []
@@ -273,6 +278,8 @@ class GPTState:
         cls.last_again_source = ""
         cls.last_suggest_source = ""
         cls.last_suggested_recipes = []
+        cls.last_suggest_subject = ""
+        cls.last_suggest_content = ""
         cls.last_prompt_text = ""
         cls.context = []
         cls.query = []

@@ -157,6 +157,7 @@ from ..lib.suggestionCoordinator import (
     set_last_recipe_from_selection,
     last_recap_snapshot,
     clear_recap_state,
+    suggestion_source,
 )
 
 # Backward-compatible alias for directional map used during parsing.
@@ -1600,6 +1601,29 @@ class UserActions:
         """Suggest model prompt recipes for an explicit source."""
         _suggest_prompt_recipes_core_impl(source, subject)
 
+    def gpt_rerun_last_suggest() -> None:
+        """Rerun prompt recipe suggestions using the last subject and source."""
+        if _reject_if_request_in_flight():
+            return
+        last_subject = getattr(GPTState, "last_suggest_subject", "") or ""
+        last_context = getattr(GPTState, "last_suggest_context", {}) or {}
+        last_recipes = getattr(GPTState, "last_suggested_recipes", []) or []
+        cached_content = getattr(GPTState, "last_suggest_content", "") or ""
+        if not cached_content and not last_subject and not last_context and not last_recipes:
+            notify("GPT: No previous suggestions to rerun")
+            return
+
+        source_key = suggestion_source(settings.get("user.model_default_source"))
+
+        class _CachedSuggestSource(ModelSource):
+            modelSimpleSource = source_key
+
+            def get_text(self):
+                return cached_content
+
+        source = _CachedSuggestSource()
+        _suggest_prompt_recipes_core_impl(source, last_subject)
+
     def gpt_replay(destination: str):
         """Replay the last request"""
         if _reject_if_request_in_flight():
@@ -2730,6 +2754,14 @@ def _suggest_prompt_recipes_core_impl(source: ModelSource, subject: str) -> None
     context_snapshot = _suggest_context_snapshot(sys_prompt)
     try:
         GPTState.last_suggest_context = dict(context_snapshot)
+    except Exception:
+        pass
+    try:
+        GPTState.last_suggest_subject = str(subject or "")
+    except Exception:
+        pass
+    try:
+        GPTState.last_suggest_content = content_text
     except Exception:
         pass
 

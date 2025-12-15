@@ -62,6 +62,7 @@
 
 {user.model} run <user.modelSimpleSource> suggest [for <user.modelPromptSuffix>]$: user.gpt_suggest_prompt_recipes_with_source(modelSimpleSource, modelPromptSuffix or "")
 {user.model} run suggest [for <user.modelPromptSuffix>]$: user.gpt_suggest_prompt_recipes(modelPromptSuffix or "")
+{user.model} run suggest again$: user.gpt_rerun_last_suggest()
 {user.model} suggestions$: user.model_prompt_recipe_suggestions_gui_open()
 
 # Select the last GPT response so you can edit it further

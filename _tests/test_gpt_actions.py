@@ -1443,6 +1443,23 @@ if bootstrap is not None:
             # When both subject and content are empty, leave the cached suggestions intact.
             self.assertEqual(GPTState.last_suggested_recipes, cached)
             self.assertEqual(GPTState.last_suggest_source, "clipboard")
+
+        def test_gpt_rerun_last_suggest_reuses_cached_content(self):
+            GPTState.last_suggest_content = "cached content"
+            GPTState.last_suggest_subject = "previous subject"
+            GPTState.last_suggest_source = "clipboard"
+            GPTState.last_suggested_recipes = [{"name": "n", "recipe": "describe · fog"}]
+
+            with patch.object(
+                gpt_module, "_reject_if_request_in_flight", return_value=False
+            ), patch.object(gpt_module, "_suggest_prompt_recipes_core_impl") as core:
+                gpt_module.UserActions.gpt_rerun_last_suggest()
+
+            core.assert_called_once()
+            src, subj = core.call_args[0][:2]
+            self.assertEqual(subj, "previous subject")
+            self.assertEqual(getattr(src, "modelSimpleSource", ""), "clipboard")
+            self.assertEqual(src.get_text(), "cached content")
             self.pipeline.complete_async.assert_not_called()
             self.pipeline.complete.assert_not_called()
 

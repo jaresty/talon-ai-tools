@@ -74,6 +74,8 @@ class Suggestion:
     stance_command: str = ""
     # Short natural-language explanation of when to use this suggestion.
     why: str = ""
+    # Model-provided reasoning for the stance/axes choice.
+    reasoning: str = ""
 
 
 class SuggestionGUIState:
@@ -96,6 +98,10 @@ _scroll_debug_samples: int = 0
 _WHY_REASON_LABEL = "Why:"
 _AXES_LEGEND = "Axes: Completeness | Scope | Method | Form | Channel | Directional"
 _SECONDARY_INDENT = 12
+_REASONING_COLOR = "555555"
+_WHY_COLOR = "111111"
+_REASONING_INDENT = _SECONDARY_INDENT + 8
+_AXES_WRAP_MAX_CHARS = 64
 
 # Simple geometry defaults to keep the panel centered and readable.
 _PANEL_WIDTH = 840
@@ -121,18 +127,20 @@ def _wrap_lines_count(
     rect: Optional["canvas.Rect"],
     approx_char: int = 8,
     line_h: int = 20,
+    max_chars_override: Optional[int] = None,
 ) -> int:
     """Return the number of wrapped lines for a given string."""
     if not text:
         return 0
-    max_chars = 80
+    max_chars = max_chars_override or 80
     try:
         if rect is not None and hasattr(rect, "width") and hasattr(rect, "x"):
             right_margin = rect.x + rect.width - 40
             available_px = max(right_margin - x_pos, 160)
-            max_chars = max(int(available_px // approx_char), 20)
+            candidate = max(int(available_px // approx_char), 20)
+            max_chars = min(max_chars, candidate) if max_chars_override else candidate
     except Exception:
-        max_chars = 80
+        max_chars = max_chars_override or 80
 
     words = text.split()
     line_words: list[str] = []
@@ -168,9 +176,11 @@ def _measure_suggestion_height(
     grammar_phrase = suggestion_grammar_phrase(
         suggestion.recipe, source_key, SOURCE_SPOKEN_MAP
     )
-    say_lines = _wrap_lines_count(f"Say: {grammar_phrase}", x_pos + 4, rect, approx_char, line_h)
+    say_lines = _wrap_lines_count(
+        f"Say: {grammar_phrase}", x_pos + 4, rect, approx_char, line_h
+    )
     h += line_h * max(say_lines, 1)
-    h += line_h // 2  # breathing room after commands
+    h += line_h // 3  # breathing room after commands
     # Axes line (may be empty but draw once when non-empty).
     (
         _static_prompt,
@@ -183,9 +193,16 @@ def _measure_suggestion_height(
     ) = _parse_recipe(suggestion.recipe)
     axes_text = _axes_summary(completeness, scope, method, form, channel, directional)
     if axes_text:
-        lines = _wrap_lines_count(f"Axes: {axes_text}", x_pos + 4, rect, approx_char, line_h)
+        lines = _wrap_lines_count(
+            f"Axes: {axes_text}",
+            x_pos + 4,
+            rect,
+            approx_char,
+            line_h,
+            max_chars_override=_AXES_WRAP_MAX_CHARS,
+        )
         h += line_h * max(lines, 1)
-        h += line_h // 2  # separation before stance block
+        h += line_h // 3  # separation before stance block
 
     persona_bits = stance_info["persona_bits"]
     intent_display = stance_info["intent_display"]
@@ -195,12 +212,25 @@ def _measure_suggestion_height(
     has_stance_command = bool(stance_text)
     why_text = stance_info["why_text"]
     has_why = bool(why_text)
+    reasoning_text = getattr(suggestion, "reasoning", "").strip()
+    has_reasoning = bool(reasoning_text)
 
-    if has_persona_axes or has_intent_axis or has_stance_command or has_why:
+    if (
+        has_persona_axes
+        or has_intent_axis
+        or has_stance_command
+        or has_why
+        or has_reasoning
+    ):
         h += line_h  # spacing before stance block
         if has_stance_command:
             lines = _wrap_lines_count(
-                f"Say (stance): {stance_text}", x_pos + 4, rect, approx_char, line_h
+                f"Say (stance): {stance_text}",
+                x_pos + 4,
+                rect,
+                approx_char,
+                line_h,
+                max_chars_override=_AXES_WRAP_MAX_CHARS,
             )
             h += line_h * max(lines, 1)
         if has_persona_axes:
@@ -208,13 +238,33 @@ def _measure_suggestion_height(
         if has_intent_axis:
             h += line_h  # intent line
         if has_why:
-            reason_text = f"{_WHY_REASON_LABEL} {why_text[:200]}"
-            lines = _wrap_lines_count(reason_text, x_pos + 4, rect, approx_char, line_h)
+            # Slight breathing room before the Why block to separate it from stance info.
+            h += line_h // 2
+            reason_text = f"{_WHY_REASON_LABEL} {why_text}"
+            lines = _wrap_lines_count(
+                reason_text,
+                x_pos + 4,
+                rect,
+                approx_char,
+                line_h,
+                max_chars_override=_AXES_WRAP_MAX_CHARS,
+            )
             h += line_h * max(lines, 1)
-        h += line_h // 2  # breathing room before next suggestion
+        if has_reasoning:
+            reason_text = f"Reasoning: {reasoning_text}"
+            lines = _wrap_lines_count(
+                reason_text,
+                x_pos + 4 + _REASONING_INDENT,
+                rect,
+                approx_char,
+                line_h,
+                max_chars_override=_AXES_WRAP_MAX_CHARS,
+            )
+            h += line_h * max(lines, 1)
+        h += line_h // 3  # breathing room before next suggestion
 
     # Spacer between rows to match the draw path's trailing gap.
-    h += line_h + (line_h // 2)
+    h += int(line_h * 2.2)
     return h
 
 
@@ -751,23 +801,28 @@ def _draw_suggestions(c: canvas.Canvas) -> None:  # pragma: no cover - visual on
         x_pos: int,
         y_pos: int,
         indent: int = 0,
-        visible_top: int | None = None,
-        visible_bottom: int | None = None,
+        visible_top: Optional[int] = None,
+        visible_bottom: Optional[int] = None,
+        color: Optional[str] = None,
+        max_chars_override: Optional[int] = None,
     ) -> int:
         """Draw text wrapped to the panel width and return new y."""
         x_draw = x_pos + indent
-        lines = _wrap_lines_count(text, x_draw, rect, approx_char, line_h)
+        lines = _wrap_lines_count(
+            text, x_draw, rect, approx_char, line_h, max_chars_override=max_chars_override
+        )
         if not lines:
             return y_pos
         words = text.split()
-        max_chars = 80
+        max_chars = max_chars_override or 80
         try:
             if rect is not None and hasattr(rect, "width") and hasattr(rect, "x"):
                 right_margin = rect.x + rect.width - 40
                 available_px = max(right_margin - x_draw, 160)
-                max_chars = max(int(available_px // approx_char), 20)
+                candidate = max(int(available_px // approx_char), 20)
+                max_chars = min(max_chars, candidate) if max_chars_override else candidate
         except Exception:
-            max_chars = 80
+            max_chars = max_chars_override or 80
 
         current_line: list[str] = []
         current_len = 0
@@ -779,7 +834,12 @@ def _draw_suggestions(c: canvas.Canvas) -> None:  # pragma: no cover - visual on
                     or visible_bottom is None
                     or (y_pos >= visible_top and y_pos <= visible_bottom - line_h)
                 ):
+                    old_color = getattr(paint, "color", None) if paint is not None else None
+                    if paint is not None and color:
+                        paint.color = color
                     draw_text(" ".join(current_line), x_draw, y_pos)
+                    if paint is not None and color:
+                        paint.color = old_color or "000000"
                 y_pos += line_h
                 current_line = [word]
                 current_len = len(word)
@@ -792,7 +852,12 @@ def _draw_suggestions(c: canvas.Canvas) -> None:  # pragma: no cover - visual on
                 or visible_bottom is None
                 or (y_pos >= visible_top and y_pos <= visible_bottom - line_h)
             ):
+                old_color = getattr(paint, "color", None) if paint is not None else None
+                if paint is not None and color:
+                    paint.color = color
                 draw_text(" ".join(current_line), x_draw, y_pos)
+                if paint is not None and color:
+                    paint.color = old_color or "000000"
             y_pos += line_h
         return y_pos
 
@@ -947,11 +1012,12 @@ def _draw_suggestions(c: canvas.Canvas) -> None:  # pragma: no cover - visual on
                 indent=_SECONDARY_INDENT,
                 visible_top=body_top,
                 visible_bottom=body_bottom,
+                max_chars_override=_AXES_WRAP_MAX_CHARS,
             )
             if row_y >= body_bottom:
                 stop_rendering = True
             if not stop_rendering:
-                row_y += line_h // 2
+                row_y += line_h // 3
 
         # Use the remaining row height to show an optional, compact stance
         # and explanation. Stance is expressed in terms of Persona/Intent axes
@@ -962,6 +1028,7 @@ def _draw_suggestions(c: canvas.Canvas) -> None:  # pragma: no cover - visual on
         intent_display = stance_info["intent_display"]
         stance_text = stance_info.get("stance_display", stance_info["stance_command"])
         why_text = stance_info["why_text"]
+        reasoning_text = (getattr(suggestion, "reasoning", "") or "").strip()
         if raw_stance and not stance_info["stance_command"]:
             _debug(
                 f"invalid stance_command for suggestion '{suggestion.name}': {raw_stance}"
@@ -970,9 +1037,14 @@ def _draw_suggestions(c: canvas.Canvas) -> None:  # pragma: no cover - visual on
         has_intent_axis = bool(intent_display)
         has_stance_command = bool(stance_text)
         has_why = bool(why_text)
+        has_reasoning = bool(reasoning_text)
 
         if (
-            has_persona_axes or has_intent_axis or has_stance_command or has_why
+            has_persona_axes
+            or has_intent_axis
+            or has_stance_command
+            or has_why
+            or has_reasoning
         ) and not stop_rendering:
             row_y += line_h
             # Put the concrete voice command first so users know exactly what to say.
@@ -988,25 +1060,25 @@ def _draw_suggestions(c: canvas.Canvas) -> None:  # pragma: no cover - visual on
                 if row_y >= body_bottom:
                     stop_rendering = True
 
-            if has_persona_axes and not stop_rendering:
+            if (has_persona_axes or has_intent_axis) and not stop_rendering:
                 if row_y >= body_top and row_y <= body_bottom - line_h:
+                    pieces: list[str] = []
+                    if has_persona_axes:
+                        pieces.append("Who: " + " · ".join(persona_bits))
+                    if has_intent_axis:
+                        pieces.append(f"Intent: {intent_display}")
                     draw_text(
-                        "Who: " + " · ".join(persona_bits),
+                        "   ".join(pieces),
                         x + 4 + _SECONDARY_INDENT,
                         row_y,
                     )
                 row_y += line_h
                 if row_y >= body_bottom:
                     stop_rendering = True
-            if has_intent_axis and not stop_rendering:
-                if row_y >= body_top and row_y <= body_bottom - line_h:
-                    draw_text(f"Intent: {intent_display}", x + 4 + _SECONDARY_INDENT, row_y)
-                row_y += line_h
-                if row_y >= body_bottom:
-                    stop_rendering = True
             if has_why and not stop_rendering:
-                # Keep Why reasonably compact; truncate if extremely long, then wrap.
-                reason_text = f"{_WHY_REASON_LABEL} {why_text[:200]}"
+                # Keep Why reasonably compact; wrap long lines.
+                row_y += line_h // 2
+                reason_text = f"{_WHY_REASON_LABEL} {why_text}"
                 row_y = _draw_wrapped(
                     reason_text,
                     x + 4,
@@ -1014,13 +1086,45 @@ def _draw_suggestions(c: canvas.Canvas) -> None:  # pragma: no cover - visual on
                     indent=_SECONDARY_INDENT,
                     visible_top=body_top,
                     visible_bottom=body_bottom,
+                    color=_WHY_COLOR,
+                    max_chars_override=_AXES_WRAP_MAX_CHARS,
+                )
+                if row_y >= body_bottom:
+                    stop_rendering = True
+            if has_reasoning and not stop_rendering:
+                reason_text = f"Reasoning: {reasoning_text}"
+                row_y = _draw_wrapped(
+                    reason_text,
+                    x + 4 + _REASONING_INDENT,
+                    row_y,
+                    indent=0,
+                    visible_top=body_top,
+                    visible_bottom=body_bottom,
+                    color=_REASONING_COLOR,
+                    max_chars_override=_AXES_WRAP_MAX_CHARS,
                 )
                 if row_y >= body_bottom:
                     stop_rendering = True
         # Lightweight spacer below each row; advance by measured height so
         # scroll math stays consistent even when we clip rendering.
         if not stop_rendering:
-            row_y += line_h // 2
+            # Subtle separator line to delineate suggestions without heavy boxes.
+            if rect is not None and paint is not None:
+                sep_y = row_y + line_h // 6
+                max_y = body_bottom - line_h // 4
+                if sep_y < max_y:
+                    old_color = getattr(paint, "color", None)
+                    paint.color = "EEEEEE"
+                    try:
+                        # Align to text column width (same inset as content).
+                        c.draw_rect(
+                            Rect(x, sep_y, rect.width - (x - rect.x) * 2, 1)
+                        )
+                    except Exception:
+                        pass
+                    if old_color is not None:
+                        paint.color = old_color
+            row_y += line_h // 3
         current_y = row_draw_end
         if stop_rendering:
             break
@@ -1079,6 +1183,7 @@ def _refresh_suggestions_from_state() -> None:
             intent_purpose=item.get("intent_purpose", ""),
             stance_command=item.get("stance_command", ""),
             why=item.get("why", ""),
+            reasoning=item.get("reasoning", ""),
         )
         for item in suggestion_entries_with_metadata()
     ]

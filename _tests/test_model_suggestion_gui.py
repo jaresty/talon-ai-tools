@@ -269,6 +269,28 @@ if bootstrap is not None:
             scroll_cb(_Evt(-1.0))
             self.assertGreater(SuggestionCanvasState.scroll_y, 0.0)
 
+        def test_reasoning_rendered_when_present(self):
+            suggestion = modelSuggestionGUI.Suggestion(
+                name="With reasoning",
+                recipe="describe · gist · focus · plain · fog",
+                reasoning="stance: kept; intent: kept understand; axes: chose fog for scan",
+            )
+            canvas_obj = modelSuggestionGUI._ensure_suggestion_canvas()
+            if not hasattr(canvas_obj, "rect") or canvas_obj.rect is None:
+                canvas_obj.rect = type(
+                    "R", (), {"x": 0, "y": 0, "width": 500, "height": 400}
+                )()
+            modelSuggestionGUI.SuggestionGUIState.suggestions = [suggestion]
+            callbacks = getattr(canvas_obj, "_callbacks", {})
+            draw_cbs = callbacks.get("draw") or []
+            if not draw_cbs:
+                self.skipTest("Canvas stub does not expose draw callbacks")
+            draw_cb = draw_cbs[0]
+
+            draw_cb(canvas_obj)
+            # Reasoning should be included in measured height and rendering path without errors.
+            self.assertTrue(modelSuggestionGUI.SuggestionGUIState.suggestions)
+
 else:
     if not TYPE_CHECKING:
         class ModelSuggestionGUITests(unittest.TestCase):

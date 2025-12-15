@@ -18,11 +18,13 @@ from .personaConfig import (
 from .modelState import GPTState
 from .talonSettings import _AXIS_SOFT_CAPS
 from .stanceDefaults import stance_defaults_lines
+from .overlayLifecycle import close_overlays, close_common_overlays
 
 from .metaPromptConfig import first_meta_preview_line, meta_preview_lines
 from .requestBus import current_state
 from .requestState import RequestPhase
 from .modelHelpers import notify
+from .overlayHelpers import apply_canvas_blocking
 from .requestBus import current_state
 from .requestState import RequestPhase
 from .modelHelpers import notify
@@ -414,14 +416,13 @@ def _ensure_canvas() -> canvas.Canvas:
             _last_rect = rect
         except Exception:
             pass
-        try:
-            _help_canvas.blocks_mouse = True
-        except Exception:
-            pass
         _debug("created new canvas instance from_rect")
     except Exception:
         _help_canvas = canvas.Canvas.from_screen(screen)
         _debug("created new canvas instance from_main_screen (fallback)")
+
+    if _help_canvas is not None:
+        apply_canvas_blocking(_help_canvas)
 
     def _on_draw(c: canvas.Canvas) -> None:  # pragma: no cover - visual only
         # Delegate to registered handlers so tests can replace or extend
@@ -1498,14 +1499,7 @@ class UserActions:
             return
 
         # Close other related menus to avoid overlapping overlays.
-        try:
-            actions.user.model_pattern_gui_close()
-        except Exception:
-            pass
-        try:
-            actions.user.prompt_pattern_gui_close()
-        except Exception:
-            pass
+        close_common_overlays(actions.user)
 
         _reset_help_state("all", None)
         _open_canvas()
@@ -1522,14 +1516,7 @@ class UserActions:
         if _reject_if_request_in_flight():
             return
         # Close other related menus to avoid overlapping overlays.
-        try:
-            actions.user.model_pattern_gui_close()
-        except Exception:
-            pass
-        try:
-            actions.user.prompt_pattern_gui_close()
-        except Exception:
-            pass
+        close_common_overlays(actions.user)
 
         # Match the legacy imgui semantics: reset back to the generic "all"
         # section and clear any static prompt focus when opening for the last
@@ -1542,14 +1529,7 @@ class UserActions:
         if _reject_if_request_in_flight():
             return
         # Close other related menus to avoid overlapping overlays.
-        try:
-            actions.user.model_pattern_gui_close()
-        except Exception:
-            pass
-        try:
-            actions.user.prompt_pattern_gui_close()
-        except Exception:
-            pass
+        close_common_overlays(actions.user)
 
         _reset_help_state("all", static_prompt)
         _open_canvas()

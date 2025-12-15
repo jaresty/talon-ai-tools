@@ -68,6 +68,16 @@ def emit_cancel(request_id: Optional[str] = None) -> RequestState:
     return _handle(RequestEvent(RequestEventKind.CANCEL, request_id=request_id))
 
 
+def emit_history_saved(path: str, request_id: Optional[str] = None) -> RequestState:
+    return _handle(
+        RequestEvent(
+            RequestEventKind.HISTORY_SAVED,
+            request_id=request_id,
+            payload=path,
+        )
+    )
+
+
 def current_state() -> RequestState:
     if _controller is None:
         return RequestState()
@@ -93,6 +103,7 @@ __all__ = [
     "emit_complete",
     "emit_fail",
     "emit_cancel",
+    "emit_history_saved",
     "current_state",
     "current_lifecycle_state",
     "next_request_id",

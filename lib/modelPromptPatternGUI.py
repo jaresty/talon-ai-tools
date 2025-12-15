@@ -13,6 +13,8 @@ from .axisMappings import axis_docs_map
 from .requestBus import current_state
 from .requestState import RequestPhase
 from .modelHelpers import notify
+from .overlayHelpers import apply_canvas_blocking
+from .overlayLifecycle import close_overlays, close_common_overlays
 
 try:
     # Prefer the shared static prompt domain helpers when available.
@@ -255,19 +257,15 @@ def _ensure_prompt_pattern_canvas() -> canvas.Canvas:
         start_x = screen_x + max((screen_width - panel_width) // 2, margin_x)
         start_y = screen_y + max((screen_height - panel_height) // 2, margin_y)
         rect = Rect(start_x, start_y, panel_width, panel_height)
-        # Mirror the plain pattern canvas creation: from_rect + blocks_mouse.
+        # Mirror the plain pattern canvas creation: from_rect + mouse capture.
         _prompt_pattern_canvas = canvas.Canvas.from_rect(rect)
-        try:
-            _prompt_pattern_canvas.blocks_mouse = True
-            # Some runtimes expose block_mouse instead; set both to be safe.
-            if hasattr(_prompt_pattern_canvas, "block_mouse"):
-                _prompt_pattern_canvas.block_mouse = True  # type: ignore[attr-defined]
-        except Exception:
-            pass
         _prompt_pattern_handlers_registered = False
     except Exception:
         _prompt_pattern_canvas = canvas.Canvas.from_screen(screen)
         _prompt_pattern_handlers_registered = False
+
+    if _prompt_pattern_canvas is not None:
+        apply_canvas_blocking(_prompt_pattern_canvas)
 
     def _on_draw(c: canvas.Canvas) -> None:  # pragma: no cover - visual only
         _draw_prompt_patterns(c)
@@ -858,14 +856,7 @@ class UserActions:
         if _reject_if_request_in_flight():
             return
         # Close other related menus to avoid overlapping overlays.
-        try:
-            actions.user.model_pattern_gui_close()
-        except Exception:
-            pass
-        try:
-            actions.user.model_help_canvas_close()
-        except Exception:
-            pass
+        close_common_overlays(actions.user)
         _open_prompt_pattern_canvas(static_prompt)
         ctx.tags = ["user.model_prompt_pattern_window_open"]
 

@@ -2,18 +2,24 @@ import datetime
 import os
 import re
 import sys
+from typing import Optional
 
 from talon import Module, actions, app, settings
 
 from .modelConfirmationGUI import ConfirmationGUIState
 from .modelHelpers import notify
 from .modelState import GPTState
-from .requestLog import latest, nth_from_latest, all_entries as requestlog_all_entries
+from .requestLog import (
+    latest,
+    nth_from_latest,
+    all_entries as requestlog_all_entries,
+    consume_last_drop_reason,
+)
+from .requestBus import current_state, emit_history_saved
 from .axisMappings import axis_key_to_value_map_for
 from .axisCatalog import axis_catalog
 from .axisCatalog import axis_catalog
 from .requestState import RequestPhase
-from .requestBus import current_state
 from .talonSettings import _canonicalise_axis_tokens
 
 mod = Module()
@@ -158,10 +164,9 @@ def history_summary_lines(entries: Sequence[object]) -> list[str]:
     for idx, entry in enumerate(reversed(entries)):
         axes = getattr(entry, "axes", {}) or {}
         dir_tokens = axes.get("directional") if isinstance(axes, dict) else None
-        if isinstance(axes, dict) and axes and not dir_tokens:
-            # Skip entries with axes present but no directional lens to keep
-            # summaries aligned with ADR 048 requirements. Legacy entries with
-            # no axes fall through.
+        if not dir_tokens:
+            # Skip entries without a directional lens to keep summaries aligned
+            # with ADR 048 requirements.
             continue
         prompt = (
             (getattr(entry, "prompt", "") or "").strip().splitlines()[0]
@@ -214,8 +219,8 @@ def history_summary_lines(entries: Sequence[object]) -> list[str]:
     return lines
 
 
-def _save_history_prompt_to_file(entry) -> None:
-    """Save the given history entry's prompt to a markdown file.
+def _save_history_prompt_to_file(entry) -> Optional[str]:
+    """Save the given history entry's prompt to a markdown file and return the path.
 
     Uses the shared `user.model_source_save_directory` setting and a
     timestamped/slugged filename so history-driven saves align with other
@@ -224,27 +229,43 @@ def _save_history_prompt_to_file(entry) -> None:
     _clear_notify_suppression()
     if entry is None:
         notify("GPT: No request history available to save")
-        return
+        try:
+            GPTState.last_history_save_path = ""  # type: ignore[attr-defined]
+        except Exception:
+            pass
+        return None
 
     prompt = (getattr(entry, "prompt", "") or "").strip()
     if not prompt:
         notify("GPT: No source content available to save for this history entry")
-        return
+        try:
+            GPTState.last_history_save_path = ""  # type: ignore[attr-defined]
+        except Exception:
+            pass
+        return None
 
-    base_dir = _model_source_save_dir()
+    base_dir = os.path.realpath(os.path.abspath(_model_source_save_dir()))
     try:
         os.makedirs(base_dir, exist_ok=True)
     except Exception as exc:
         notify(f"GPT: Could not create source directory: {exc}")
-        return
+        try:
+            GPTState.last_history_save_path = ""  # type: ignore[attr-defined]
+        except Exception:
+            pass
+        return None
 
     now = datetime.datetime.utcnow()
     timestamp = now.strftime("%Y-%m-%dT%H-%M-%SZ")
+
+    provider_id = (getattr(entry, "provider_id", "") or "").strip()
 
     slug_parts: list[str] = ["history"]
     request_id = getattr(entry, "request_id", "") or ""
     if request_id:
         slug_parts.append(_slugify_label(str(request_id)))
+    if provider_id:
+        slug_parts.append(_slugify_label(provider_id))
     recipe = (getattr(entry, "recipe", "") or "").strip()
     if recipe:
         # Use the first token of the recipe as an additional hint.
@@ -260,7 +281,14 @@ def _save_history_prompt_to_file(entry) -> None:
     if slug_parts:
         filename += "-" + "-".join(slug_parts)
     filename += ".md"
-    path = os.path.join(base_dir, filename)
+    path = os.path.realpath(os.path.join(base_dir, filename))
+    stem, ext = os.path.splitext(path)
+    final_path = path
+    counter = 1
+    while os.path.exists(final_path):
+        final_path = f"{stem}-{counter}{ext}"
+        counter += 1
+    path = final_path
 
     header_lines: list[str] = [
         f"saved_at: {now.isoformat()}Z",
@@ -268,6 +296,8 @@ def _save_history_prompt_to_file(entry) -> None:
     ]
     if request_id:
         header_lines.append(f"request_id: {request_id}")
+    if provider_id:
+        header_lines.append(f"provider_id: {provider_id}")
     if recipe:
         header_lines.append(f"recipe: {recipe}")
     axes = normalized_axes
@@ -286,17 +316,49 @@ def _save_history_prompt_to_file(entry) -> None:
             f.write(content)
     except Exception as exc:
         notify(f"GPT: Failed to save history source file: {exc}")
-        return
+        try:
+            GPTState.last_history_save_path = ""  # type: ignore[attr-defined]
+        except Exception:
+            pass
+        return None
 
     notify(f"GPT: Saved history source to {path}")
+    try:
+        GPTState.last_history_save_path = path  # type: ignore[attr-defined]
+    except Exception:
+        pass
+    try:
+        emit_history_saved(path, getattr(entry, "request_id", None))
+    except Exception:
+        pass
+    return path
 
 
-def _show_entry(entry) -> None:
+def _show_entry(entry) -> bool:
     """Populate GPTState with a historic entry and open the response canvas."""
     _clear_notify_suppression()
     if entry is None:
         notify("GPT: No request history available")
-        return
+        return False
+    provider_id = (getattr(entry, "provider_id", "") or "").strip()
+    raw_recipe = (getattr(entry, "recipe", "") or "").strip()
+    axes_payload = getattr(entry, "axes", None)
+    normalized_axes = (
+        history_axes_for(axes_payload or {})
+        if isinstance(axes_payload, dict) and axes_payload
+        else None
+    )
+    parsed_recipe_fields = None
+    if normalized_axes is None and raw_recipe:
+        try:
+            from .modelPatternGUI import _parse_recipe
+        except Exception:
+            _parse_recipe = None
+        if _parse_recipe is not None:
+            try:
+                parsed_recipe_fields = _parse_recipe(raw_recipe)
+            except Exception:
+                parsed_recipe_fields = None
     # Clear any stale presentation so paste uses the history entry text instead
     # of the last live model response.
     ConfirmationGUIState.current_presentation = None
@@ -306,22 +368,25 @@ def _show_entry(entry) -> None:
     GPTState.text_to_confirm = entry.response
     GPTState.last_response = entry.response
     GPTState.last_meta = entry.meta
-    provider_id = (getattr(entry, "provider_id", "") or "").strip()
     if provider_id:
         try:
             GPTState.current_provider_id = provider_id  # type: ignore[attr-defined]
         except Exception:
             pass
+    else:
+        try:
+            GPTState.current_provider_id = ""  # type: ignore[attr-defined]
+        except Exception:
+            pass
     # Keep structured axis fields in sync with the stored axes/recipe so recaps
     # match the history entry instead of whatever the live state held.
-    raw_recipe = getattr(entry, "recipe", "") or ""
-    if getattr(entry, "axes", None):
+    if normalized_axes is not None:
         axes = getattr(entry, "axes", {}) or {}
         if axes.get("style") or getattr(entry, "legacy_style", False):
             notify(
                 "GPT: style axis is removed; use form/channel instead (history entry)."
             )
-        GPTState.last_axes = history_axes_for(axes)
+        GPTState.last_axes = normalized_axes
 
         GPTState.last_static_prompt = raw_recipe.split(" · ")[0] if raw_recipe else ""
         GPTState.last_completeness = " ".join(
@@ -351,37 +416,32 @@ def _show_entry(entry) -> None:
 
     elif getattr(entry, "recipe", None):
         GPTState.last_recipe = raw_recipe
-        try:
-            from .modelPatternGUI import _parse_recipe
-        except Exception:
-            _parse_recipe = None
-        if _parse_recipe is not None:
-            try:
-                (
-                    static_prompt,
-                    completeness,
-                    scope,
-                    method,
-                    form,
-                    channel,
-                    directional,
-                ) = _parse_recipe(GPTState.last_recipe)
-                GPTState.last_static_prompt = static_prompt or ""
-                GPTState.last_completeness = completeness or ""
-                GPTState.last_scope = scope or ""
-                GPTState.last_method = method or ""
-                GPTState.last_form = form or ""
-                GPTState.last_channel = channel or ""
-                GPTState.last_directional = directional or ""
-                GPTState.last_axes = {
-                    "completeness": [completeness] if completeness else [],
-                    "scope": scope.split() if scope else [],
-                    "method": method.split() if method else [],
-                    "form": form.split() if form else [],
-                    "channel": channel.split() if channel else [],
-                }
-            except Exception:
-                pass
+        static_prompt = completeness = scope = method = form = channel = directional = ""
+        if parsed_recipe_fields and len(parsed_recipe_fields) >= 7:
+            (
+                static_prompt,
+                completeness,
+                scope,
+                method,
+                form,
+                channel,
+                directional,
+            ) = parsed_recipe_fields
+        GPTState.last_static_prompt = static_prompt or ""
+        GPTState.last_completeness = completeness or ""
+        GPTState.last_scope = scope or ""
+        GPTState.last_method = method or ""
+        GPTState.last_form = form or ""
+        GPTState.last_channel = channel or ""
+        GPTState.last_directional = directional or ""
+        GPTState.last_axes = {
+            "completeness": [completeness] if completeness else [],
+            "scope": scope.split() if scope else [],
+            "method": method.split() if method else [],
+            "form": form.split() if form else [],
+            "channel": channel.split() if channel else [],
+            "directional": directional.split() if directional else [],
+        }
     else:
         GPTState.last_static_prompt = ""
         GPTState.last_completeness = ""
@@ -402,7 +462,7 @@ def _show_entry(entry) -> None:
         notify(
             "GPT: History entry has no directional lens; replay requires fog/fig/dig/ong/rog/bog/jog."
         )
-        return
+        return True
     try:
         actions.user.model_response_canvas_open()
     except Exception:
@@ -410,6 +470,7 @@ def _show_entry(entry) -> None:
             app.notify("GPT: Open response canvas to view history entry")
         except Exception:
             pass
+    return True
 
 
 @mod.action_class
@@ -444,7 +505,8 @@ class UserActions:
             _cursor_offset -= 1
             notify("GPT: No older history entry")
             return
-        _show_entry(entry)
+        if not _show_entry(entry):
+            _cursor_offset -= 1
 
     def gpt_request_history_next():
         """Step forward in request history and open the entry"""
@@ -456,7 +518,8 @@ class UserActions:
             return
         _cursor_offset -= 1
         entry = nth_from_latest(_cursor_offset)
-        _show_entry(entry)
+        if not _show_entry(entry):
+            _cursor_offset += 1
 
     def gpt_request_history_list(count: int = 5):
         """Show a short summary of recent history entries"""
@@ -470,15 +533,101 @@ class UserActions:
         if not entries:
             entries = requestlog_all_entries()[-count:]
         if not entries:
-            notify("GPT: No request history available")
+            drop_reason = ""
+            try:
+                drop_reason = consume_last_drop_reason()
+            except Exception:
+                drop_reason = ""
+            if drop_reason:
+                notify(drop_reason)
+            else:
+                notify("GPT: No request history available")
             return
         lines = history_summary_lines(entries)
+        if not lines:
+            notify(
+                "GPT: No history entries include a directional lens; replay requires fog/fig/dig/ong/rog/bog/jog."
+            )
+            return
         message = "Recent model requests:\n" + "\n".join(lines)
         notify(message)
 
     def gpt_request_history_save_latest_source():
         """Save the latest request's source prompt to a markdown file."""
         if _reject_if_request_in_flight():
-            return
+            try:
+                GPTState.last_history_save_path = ""  # type: ignore[attr-defined]
+            except Exception:
+                pass
+            return None
         entry = latest()
-        _save_history_prompt_to_file(entry)
+        return _save_history_prompt_to_file(entry)
+
+    def gpt_request_history_last_save_path():
+        """Return the last saved history source path or notify when unavailable."""
+        try:
+            path = getattr(GPTState, "last_history_save_path", "")  # type: ignore[attr-defined]
+        except Exception:
+            path = ""
+        if not path:
+            notify("GPT: No saved history source path available; run 'model history save source' first")
+            return None
+        real_path = os.path.realpath(path)
+        if not os.path.exists(real_path) or not os.path.isfile(real_path):
+            notify(
+                f"GPT: Saved history path not found: {real_path}; rerun 'model history save source'"
+            )
+            try:
+                GPTState.last_history_save_path = ""  # type: ignore[attr-defined]
+            except Exception:
+                pass
+            return None
+        try:
+            GPTState.last_history_save_path = real_path  # type: ignore[attr-defined]
+        except Exception:
+            pass
+        return real_path
+
+    def gpt_request_history_copy_last_save_path():
+        """Copy the last saved history source path to the clipboard."""
+        path = UserActions.gpt_request_history_last_save_path()
+        if not path:
+            return None
+        try:
+            actions.clip.set_text(path)  # type: ignore[attr-defined]
+        except Exception:
+            try:
+                actions.user.paste(path)  # type: ignore[attr-defined]
+            except Exception:
+                notify(f"GPT: Unable to copy path: {path}")
+                return None
+        notify(f"GPT: Copied history save path: {path}")
+        return path
+
+    def gpt_request_history_open_last_save_path():
+        """Open the last saved history source file if available."""
+        path = UserActions.gpt_request_history_last_save_path()
+        if not path:
+            return None
+        if not os.path.exists(path):
+            notify(f"GPT: Saved history file not found: {path}")
+            try:
+                GPTState.last_history_save_path = ""  # type: ignore[attr-defined]
+            except Exception:
+                pass
+            return None
+        try:
+            actions.app.open(path)  # type: ignore[attr-defined]
+        except Exception as exc:
+            notify(f"GPT: Unable to open history save: {exc}")
+            return None
+        notify(f"GPT: Opened history save: {path}")
+        return path
+
+    def gpt_request_history_show_last_save_path():
+        """Show the last saved history source path."""
+        path = UserActions.gpt_request_history_last_save_path()
+        if not path:
+            return None
+        notify(f"GPT: Last saved history path: {path}")
+        return path

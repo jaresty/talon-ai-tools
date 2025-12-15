@@ -17,6 +17,8 @@ from .suggestionCoordinator import (
 )
 from .stanceDefaults import stance_defaults_lines
 from .modelHelpers import notify
+from .overlayHelpers import apply_canvas_blocking
+from .overlayLifecycle import close_overlays, close_common_overlays
 
 mod = Module()
 ctx = Context()
@@ -229,12 +231,11 @@ def _ensure_response_canvas() -> canvas.Canvas:
         start_y = screen_y + max((screen_height - panel_height) // 2, margin_y)
         rect = ui.Rect(start_x, start_y, panel_width, panel_height)
         _response_canvas = canvas.Canvas.from_rect(rect)
-        try:
-            _response_canvas.blocks_mouse = True
-        except Exception:
-            pass
     except Exception:
         _response_canvas = canvas.Canvas.from_screen(screen)
+
+    if _response_canvas is not None:
+        apply_canvas_blocking(_response_canvas)
 
     def _on_draw(c: canvas.Canvas) -> None:  # pragma: no cover - visual only
         nonlocal last_draw_error
@@ -308,20 +309,26 @@ def _ensure_response_canvas() -> canvas.Canvas:
                             _response_canvas.show()
                         elif key == "paste":
                             actions.user.model_response_canvas_close()
+                            close_overlays(
+                                (getattr(actions.user, "confirmation_gui_close", None),)
+                            )
                             actions.user.confirmation_gui_paste()
                         elif key == "copy":
                             actions.user.confirmation_gui_copy()
                             actions.user.model_response_canvas_close()
                         elif key == "discard":
-                            actions.user.confirmation_gui_close()
+                            close_overlays((getattr(actions.user, "confirmation_gui_close", None),))
                             actions.user.model_response_canvas_close()
                         elif key == "context":
+                            close_overlays((getattr(actions.user, "confirmation_gui_close", None),))
                             actions.user.confirmation_gui_pass_context()
                             actions.user.model_response_canvas_close()
                         elif key == "query":
+                            close_overlays((getattr(actions.user, "confirmation_gui_close", None),))
                             actions.user.confirmation_gui_pass_query()
                             actions.user.model_response_canvas_close()
                         elif key == "thread":
+                            close_overlays((getattr(actions.user, "confirmation_gui_close", None),))
                             actions.user.confirmation_gui_pass_thread()
                             actions.user.model_response_canvas_close()
                         elif key == "browser":
@@ -331,9 +338,11 @@ def _ensure_response_canvas() -> canvas.Canvas:
                                 actions.user.confirmation_gui_open_browser()
                             actions.user.model_response_canvas_close()
                         elif key == "analyze":
+                            close_overlays((getattr(actions.user, "confirmation_gui_close", None),))
                             actions.user.confirmation_gui_analyze_prompt()
                             actions.user.model_response_canvas_close()
                         elif key == "patterns":
+                            close_overlays((getattr(actions.user, "confirmation_gui_close", None),))
                             actions.user.confirmation_gui_open_pattern_menu_for_prompt()
                             actions.user.model_response_canvas_close()
                         elif key == "quick_help":
@@ -1373,6 +1382,7 @@ class UserActions:
             or getattr(GPTState, "text_to_confirm", "")
         ):
             return
+        close_common_overlays(actions.user, exclude={"model_response_canvas_close"})
         canvas_obj = _ensure_response_canvas()
         if ResponseCanvasState.showing:
             return
@@ -1398,6 +1408,7 @@ class UserActions:
                 pass
             return
 
+        close_common_overlays(actions.user, exclude={"model_response_canvas_close"})
         ResponseCanvasState.showing = True
         ResponseCanvasState.scroll_y = 0.0
         ResponseCanvasState.meta_expanded = False

@@ -1,4 +1,4 @@
-# ADR-0047 – Concordance Code Quality for Axis Registry, Canvas UIs, and Request Pipeline
+# ADR-0054 – Concordance Code Quality for Axis Registry, Canvas UIs, and Request Pipeline
 
 Status: Proposed  
 Date: 2025-12-15  
@@ -87,4 +87,3 @@ High coordination weight and churn sit in domains where contracts are spread acr
 - Introduce overlay helper layer atop `helpUI`; migrate pattern/prompt canvases first, then help hub/help canvas/response/suggestion canvases; align constants.
 - Define request lifecycle hooks in `requestController`; route `modelHelpers` streaming/error handling and history saves through them; update GPT entrypoints.
 - Expand/extend tests as outlined in the Tests-First plan before each refactor slice; keep runs via `python3 -m pytest`.
-

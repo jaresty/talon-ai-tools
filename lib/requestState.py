@@ -9,7 +9,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from enum import Enum
-from typing import Optional
+from typing import Optional, Any
 
 from .requestLifecycle import RequestLifecycleState, RequestStatus
 
@@ -43,6 +43,7 @@ class RequestEventKind(Enum):
     COMPLETE = "complete"
     FAIL = "fail"
     CANCEL = "cancel"
+    HISTORY_SAVED = "history_saved"
 
 
 @dataclass(frozen=True)
@@ -52,6 +53,7 @@ class RequestEvent:
     kind: RequestEventKind
     request_id: Optional[str] = None
     error: str = ""
+    payload: Optional[Any] = None
 
 
 @dataclass(frozen=True)
@@ -125,6 +127,16 @@ def transition(state: RequestState, event: RequestEvent) -> RequestState:
             active_surface=Surface.RESPONSE_CANVAS,
             request_id=state.request_id,
             last_error=event.error or state.last_error,
+        )
+
+    if kind is RequestEventKind.HISTORY_SAVED:
+        # Do not alter phase/surfaces; controller-level hooks may react.
+        return RequestState(
+            phase=state.phase,
+            active_surface=state.active_surface,
+            request_id=state.request_id or event.request_id,
+            cancel_requested=state.cancel_requested,
+            last_error=state.last_error,
         )
 
     # Unknown events leave state unchanged.

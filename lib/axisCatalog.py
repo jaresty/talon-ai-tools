@@ -146,3 +146,19 @@ def axis_catalog(
         "static_prompt_descriptions": static_prompt_description_overrides(),
         "static_prompt_profiles": STATIC_PROMPT_CONFIG,
     }
+
+
+def serialize_axis_config(
+    lists_dir: str | Path | None = None, include_axis_lists: bool = True
+) -> dict[str, object]:
+    """Produce a canonical axis config payload for regen/exports.
+
+    - axes: SSOT axis tokens from AXIS_KEY_TO_VALUE (style excluded).
+    - axis_list_tokens: optional Talon list token view (merged with SSOT).
+    """
+
+    catalog = axis_catalog(lists_dir=lists_dir)
+    payload: dict[str, object] = {"axes": catalog["axes"]}
+    if include_axis_lists:
+        payload["axis_list_tokens"] = catalog["axis_list_tokens"]
+    return payload

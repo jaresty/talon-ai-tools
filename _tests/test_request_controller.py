@@ -90,6 +90,24 @@ if bootstrap is not None:
             self.assertEqual(controller.state.phase, RequestPhase.ERROR)
             self.assertIn("hide_pill", calls)
             self.assertIn("hide_conf", calls)
+
+        def test_history_saved_invokes_hook(self):
+            calls = []
+
+            def on_history_save(req_id, path):
+                calls.append((req_id, path))
+
+            controller = RequestUIController(on_history_save=on_history_save)
+            controller.handle(
+                RequestEvent(
+                    RequestEventKind.HISTORY_SAVED,
+                    request_id="rid-1",
+                    payload="/tmp/file.md",
+                )
+            )
+            self.assertEqual(calls, [("rid-1", "/tmp/file.md")])
+            # State unchanged.
+            self.assertEqual(controller.state.phase, RequestPhase.IDLE)
 else:
     if not TYPE_CHECKING:
         class RequestUIControllerTests(unittest.TestCase):

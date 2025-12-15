@@ -55,6 +55,7 @@ os.environ["OPENAI_API_KEY"] = "YOUR-KEY-HERE"
 - `model patterns` / `model pattern menu <prompt>` – curated recipes and per-prompt presets.
 - `model suggest` / `model suggestions` – prompt recipe suggestions picker.
 - `model history drawer` / `model history list` – recent requests/responses.
+- `model history save source` – save the latest history entry’s prompt to a file; use `model history copy last save` / `model history open last save` / `model history show last save` to retrieve/copy/open the most recent save path. The history drawer shows inline guidance when empty and accepts `s` to save the latest source and refresh the list.
 
 ### Quickstart Video
 

@@ -106,6 +106,8 @@ class GPTState:
     last_raw_request: ClassVar[Dict] = {}
     last_raw_response: ClassVar[Dict] = {}
     system_prompt: ClassVar[GPTSystemPrompt] = GPTSystemPrompt()
+    # Path to the most recently saved history source file (if any).
+    last_history_save_path: ClassVar[str] = ""
 
     @classmethod
     def start_debug(cls):

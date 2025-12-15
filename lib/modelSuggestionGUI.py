@@ -38,6 +38,9 @@ from .requestBus import current_state
 from .requestState import RequestPhase
 from .modelHelpers import notify
 from .stanceDefaults import stance_defaults_lines
+from .overlayHelpers import apply_canvas_blocking
+from .overlayLifecycle import close_overlays, close_common_overlays
+from .overlayLifecycle import close_overlays
 
 mod = Module()
 ctx = Context()
@@ -512,13 +515,12 @@ def _ensure_suggestion_canvas() -> canvas.Canvas:
         start_y = screen_y + max((screen_height - panel_height) // 2, margin_y)
         rect = Rect(start_x, start_y, panel_width, panel_height)
         _suggestion_canvas = canvas.Canvas.from_rect(rect)
-        try:
-            _suggestion_canvas.blocks_mouse = True
-        except Exception as e:
-            _debug(f"could not set blocks_mouse: {e}")
     except Exception as e:
         _debug(f"falling back to screen canvas: {e}")
         _suggestion_canvas = canvas.Canvas.from_screen(screen)
+
+    if _suggestion_canvas is not None:
+        apply_canvas_blocking(_suggestion_canvas)
 
     def _on_draw(c: canvas.Canvas) -> None:  # pragma: no cover - visual only
         _draw_suggestions(c)
@@ -704,7 +706,9 @@ def _scroll_suggestions(raw_delta: float) -> None:  # pragma: no cover - visual 
         total_content_height = sum(measured_heights)
         # Match the draw path slack so the handler and renderer share bounds.
         max_scroll = max(total_content_height - visible_height + line_h * 6, 0)
-        new_scroll = SuggestionCanvasState.scroll_y - delta * 40.0
+        # Further slow the scroll sensitivity so wheel/trackpad deltas move the
+        # list in smaller steps; Talon surfaces high raw deltas on some platforms.
+        new_scroll = SuggestionCanvasState.scroll_y - delta * 10.0
         SuggestionCanvasState.scroll_y = max(min(new_scroll, max_scroll), 0.0)
     except Exception as e:
         _debug(f"suggestion scroll handler error: {e}")
@@ -1294,18 +1298,7 @@ class UserActions:
             return
 
         # Close related menus to avoid overlapping overlays.
-        try:
-            actions.user.model_pattern_gui_close()
-        except Exception:
-            pass
-        try:
-            actions.user.prompt_pattern_gui_close()
-        except Exception:
-            pass
-        try:
-            actions.user.model_help_canvas_close()
-        except Exception:
-            pass
+        close_common_overlays(actions.user)
 
         _open_suggestion_canvas()
         ctx.tags = ["user.model_suggestion_window_open"]

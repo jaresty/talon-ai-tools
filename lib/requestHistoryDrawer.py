@@ -7,11 +7,13 @@ from collections.abc import Sequence
 
 from talon import Module, actions, canvas, ui
 
-from .requestLog import all_entries
+from .requestLog import all_entries, consume_last_drop_reason
 from .historyQuery import history_drawer_entries_from
 from .requestBus import current_state
 from .requestState import RequestPhase
 from .modelHelpers import notify
+from .overlayHelpers import apply_canvas_blocking
+from .overlayLifecycle import close_overlays, close_common_overlays
 
 mod = Module()
 
@@ -20,10 +22,12 @@ class HistoryDrawerState:
     showing: bool = False
     entries: List[Tuple[str, str]] = []  # (request_id, prompt_snippet + recipe + provider)
     selected_index: int = 0
+    last_message: str = ""
 
 
 _history_canvas: Optional[canvas.Canvas] = None
 _button_bounds: List[Tuple[int, int, int, int, int]] = []  # (idx, x1, y1, x2, y2)
+_last_key_handler = None
 
 
 def _request_is_in_flight() -> bool:
@@ -57,12 +61,7 @@ def _ensure_canvas() -> canvas.Canvas:
 
     rect = ui.Rect(40, 80, 520, 260)
     _history_canvas = canvas.Canvas.from_rect(rect)
-    try:
-        _history_canvas.blocks_mouse = True
-        if hasattr(_history_canvas, "block_mouse"):
-            _history_canvas.block_mouse = True  # type: ignore[attr-defined]
-    except Exception:
-        pass
+    apply_canvas_blocking(_history_canvas)
 
     def _on_draw(c: canvas.Canvas):
         rect = getattr(c, "rect", None) or ui.Rect(40, 80, 520, 260)
@@ -86,7 +85,10 @@ def _ensure_canvas() -> canvas.Canvas:
         draw_text("Model request history", x, y)
         y += line_h
         if not HistoryDrawerState.entries:
-            draw_text("No history yet.", x, y)
+            message = HistoryDrawerState.last_message or "No history yet."
+            draw_text(message, x, y)
+            y += line_h
+            draw_text("Press s to save latest source.", x, y)
             return
 
         draw_text("Newest first (click to open):", x, y)
@@ -132,6 +134,21 @@ def _ensure_canvas() -> canvas.Canvas:
             actions.user.request_history_drawer_next_entry()
         elif key in ("enter", "return"):
             _open_selected()
+        elif key == "s":
+            try:
+                actions.user.request_history_drawer_save_latest_source()
+            except Exception:
+                pass
+        elif key in ("escape", "esc"):
+            try:
+                actions.user.request_history_drawer_close()
+            except Exception:
+                try:
+                    UserActions.request_history_drawer_close()  # type: ignore[attr-defined]
+                except Exception:
+                    pass
+            # Ensure state reflects closure even if actions stubs do nothing.
+            HistoryDrawerState.showing = False
 
     def _open_selected():
         idx = HistoryDrawerState.selected_index
@@ -182,6 +199,8 @@ def _ensure_canvas() -> canvas.Canvas:
         _history_canvas.register("draw", _on_draw)
         _history_canvas.register("mouse", _on_mouse)
         _history_canvas.register("key", _on_key)
+        global _last_key_handler
+        _last_key_handler = _on_key
     except Exception:
         pass
     return _history_canvas
@@ -197,6 +216,7 @@ def _refresh_entries() -> None:
             pass
         HistoryDrawerState.entries = []
         HistoryDrawerState.selected_index = 0
+        HistoryDrawerState.last_message = ""
         return
     try:
         print(f"[requestHistoryDrawer] refresh entries={len(entries)}")
@@ -204,6 +224,21 @@ def _refresh_entries() -> None:
         pass
     HistoryDrawerState.entries = history_drawer_entries_from(entries)
     HistoryDrawerState.selected_index = 0
+    HistoryDrawerState.last_message = ""
+    if not HistoryDrawerState.entries:
+        reason = ""
+        try:
+            reason = consume_last_drop_reason()
+        except Exception:
+            reason = ""
+        if reason:
+            try:
+                notify(reason)
+            except Exception:
+                pass
+            HistoryDrawerState.last_message = reason
+        else:
+            HistoryDrawerState.last_message = "GPT: No request history available"
 
 
 @mod.action_class
@@ -221,6 +256,7 @@ class UserActions:
         """Open the request history drawer"""
         if _reject_if_request_in_flight():
             return
+        close_common_overlays(actions.user)
         _refresh_entries()
         c = _ensure_canvas()
         HistoryDrawerState.showing = True
@@ -286,3 +322,22 @@ class UserActions:
             actions.user.request_history_drawer_close()
         except Exception:
             pass
+
+    def request_history_drawer_save_latest_source():
+        """Save latest source, refresh the drawer, and surface new entry if available."""
+        if _reject_if_request_in_flight():
+            return None
+        close_common_overlays(actions.user)
+        result = None
+        try:
+            result = actions.user.gpt_request_history_save_latest_source()  # type: ignore[attr-defined]
+        except Exception:
+            result = None
+        _refresh_entries()
+        c = _ensure_canvas()
+        HistoryDrawerState.showing = True
+        try:
+            c.show()
+        except Exception:
+            pass
+        return result

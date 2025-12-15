@@ -13,6 +13,7 @@ if bootstrap is not None:
     from pathlib import Path
 
     from talon_user.lib.axisCatalog import axis_catalog
+    from scripts.tools.generate_readme_axis_lists import render_readme_axis_lines
 
     class ReadmeAxisListTests(unittest.TestCase):
         def setUp(self) -> None:
@@ -23,56 +24,6 @@ if bootstrap is not None:
                 "GPT/readme.md should exist for this test",
             )
 
-        def _read_axis_keys_from_readme_line(self, marker: str) -> set[str]:
-            text = self.readme_path.read_text(encoding="utf-8")
-            line = None
-            for candidate in text.splitlines():
-                if marker in candidate:
-                    line = candidate
-                    break
-            self.assertIsNotNone(
-                line, f"Expected to find a README line containing {marker!r}"
-            )
-            # Extract tokens wrapped in backticks.
-            keys = set(re.findall(r"`([^`]+)`", line or ""))
-            self.assertTrue(
-                keys,
-                f"Expected at least one backticked token in README line containing {marker!r}",
-            )
-            return keys
-
-        def test_readme_axis_lists_match_catalog_for_core_axes(self) -> None:
-            """README token lists should match the axis catalog for core axes."""
-            catalog = axis_catalog()
-            axis_markers = {
-                "completeness": "Completeness (`completenessModifier`)",
-                "scope": "Scope (`scopeModifier`)",
-                "method": "Method (`methodModifier`)",
-                "form": "Form (`formModifier`)",
-                "channel": "Channel (`channelModifier`)",
-            }
-            for axis, marker in axis_markers.items():
-                with self.subTest(axis=axis):
-                    readme_keys = {
-                        key
-                        for key in self._read_axis_keys_from_readme_line(marker)
-                        if "Modifier" not in key
-                    }
-                    catalog_keys = set((catalog.get("axes", {}).get(axis) or {}).keys())
-                    # Presenterm moved to the channel axis; ignore legacy mentions under form.
-                    if axis == "form":
-                        readme_keys.discard("presenterm")
-                    missing = sorted(catalog_keys - readme_keys)
-                    extra = sorted(readme_keys - catalog_keys)
-                    self.assertFalse(
-                        missing,
-                        f"{axis} tokens missing from README list: {missing}",
-                    )
-                    self.assertFalse(
-                        extra,
-                        f"{axis} README tokens not present in catalog: {extra}",
-                    )
-
         def test_readme_does_not_reference_legacy_style_axis(self) -> None:
             """Guardrail: README should not reference the removed style axis."""
             text = self.readme_path.read_text(encoding="utf-8")
@@ -80,6 +31,20 @@ if bootstrap is not None:
             self.assertNotIn("model reset style", text)
             self.assertNotIn("style=", text)
             self.assertNotIn("style axis", text)
+
+        def test_readme_axis_lines_match_generator_snapshot(self) -> None:
+            """README axis lines should match the catalog-driven generator."""
+
+            expected_lines = render_readme_axis_lines().strip().splitlines()
+            readme_lines = self.readme_path.read_text(encoding="utf-8").splitlines()
+            for expected in expected_lines:
+                label = expected.split(":", 1)[0]
+                readme_line = next((line for line in readme_lines if line.startswith(label)), "")
+                self.assertEqual(
+                    expected,
+                    readme_line,
+                    f"Mismatch for README axis line {label!r}",
+                )
 
 else:
     if not TYPE_CHECKING:

@@ -6,6 +6,7 @@ from talon import Context, Module, actions, clip, cron, imgui, settings
 
 from .axisJoin import axis_join
 from .modelHelpers import GPTState, extract_message, notify
+from .overlayLifecycle import close_common_overlays
 from .requestBus import current_state
 from .requestState import RequestPhase
 from .modelPresentation import ResponsePresentation
@@ -218,6 +219,10 @@ class UserActions:
         """Add text to the confirmation surface (canvas-based viewer)"""
         if _reject_if_request_in_flight():
             return
+        try:
+            close_common_overlays(actions.user, exclude={"model_response_canvas_close"})
+        except Exception:
+            pass
         ctx.tags = ["user.model_window_open"]
         ConfirmationGUIState.show_advanced_actions = False
         if isinstance(model_output, ResponsePresentation):
@@ -237,12 +242,8 @@ class UserActions:
         ctx.tags = []
         ConfirmationGUIState.current_presentation = None
         ConfirmationGUIState.show_advanced_actions = False
-        # Always hide the response canvas as well so it never blocks focus
-        # after a voice-command-driven paste/copy/close.
-        try:
-            actions.user.model_response_canvas_close()
-        except Exception:
-            pass
+        # Close other overlays so confirmation does not leave stray surfaces open.
+        close_common_overlays(actions.user, exclude={"confirmation_gui_close"})
 
     def confirmation_gui_pass_context():
         """Add the model output to the context"""

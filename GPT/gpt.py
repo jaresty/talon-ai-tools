@@ -105,7 +105,7 @@ except ImportError:  # Talon may have a stale runtime without axisCatalog
     def axis_catalog():
         # Minimal fallback: expose axisConfig tokens without Talon list parsing.
         return {
-            "axes": {},
+            "axes": AXIS_KEY_TO_VALUE,
             "axis_list_tokens": {},
             "static_prompts": static_prompt_catalog(),
             "static_prompt_descriptions": static_prompt_description_overrides(),
@@ -370,8 +370,10 @@ def _suggest_prompt_text(
         "}\n\n"
         "Fields:\n"
         "- name: short human-friendly label for the suggestion.\n"
-        "- recipe: a contract-only axis string of the form\n"
-        "  '<staticPrompt> · <completeness> · <scopeTokens> · <methodTokens> · <formToken> · <channelToken> · <directional>'.\n"
+        "- recipe: a contract-only axis string ordered as\n"
+        "  '<staticPrompt> [· <completeness>] [· <scopeTokens>] [· <methodTokens>] [· <formToken>] [· <channelToken>] · <directional>'.\n"
+        "  Include completeness/scope/method/form/channel only when they add value;\n"
+        "  omit any segment entirely rather than leaving empty slots.\n"
         "- persona_voice / persona_audience / persona_tone / intent_purpose:\n"
         "  optional Persona/Intent axis tokens (Who/Why) using ONLY the values\n"
         "  from the Persona/Intent token lists below. Leave as an empty string\n"
@@ -411,10 +413,10 @@ def _suggest_prompt_text(
         "- why: 1–2 sentences explaining when this suggestion is useful.\n\n"
         "Recipe rules:\n"
         "- <staticPrompt> is exactly one static prompt token (do not include multiple static prompts or combine them).\n"
-        "- <completeness> and <directional> are single axis tokens.\n"
         "- Directional is required: always include exactly one directional modifier from the directional list; many valid tokens contain spaces (for example, 'fly ong')—keep the full token intact.\n"
-        "- <scopeTokens> and <methodTokens> are zero or more space-separated axis tokens for that axis (respecting small caps: scope ≤ 2 tokens, method ≤ 3 tokens).\n"
-        "- <formToken> and <channelToken> are single axis tokens (Form and Channel are singletons; omit them when no bias is needed).\n"
+        "- <completeness> is a single token; include it only when it meaningfully shapes the response.\n"
+        "- <scopeTokens> and <methodTokens> are zero or more space-separated axis tokens for that axis (respecting small caps: scope ≤ 2 tokens, method ≤ 3 tokens); omit the segment entirely when it adds no value.\n"
+        "- <formToken> and <channelToken> are single axis tokens (Form and Channel are singletons); omit them when no bias is needed.\n"
         "  Examples: scopeTokens='actions edges', methodTokens='structure flow', formToken='bullets', channelToken='slack'.\n\n"
         "Persona/Intent rules (Who/Why):\n"
         "- When a different Persona/Intent stance would materially change how the\n"

@@ -12,6 +12,7 @@ from talon import Module, actions, app, canvas, ui, settings, cron
 
 from .requestState import RequestPhase
 from .uiDispatch import run_on_ui_thread
+from .overlayHelpers import apply_canvas_blocking
 
 mod = Module()
 
@@ -142,10 +143,7 @@ def _ensure_pill_canvas() -> canvas.Canvas:
         # Leave as None; notify fallback will still show text.
         return None  # type: ignore[return-value]
 
-    try:
-        _pill_canvas.blocks_mouse = True
-    except Exception:
-        pass
+    apply_canvas_blocking(_pill_canvas)
 
     def _on_draw(c: canvas.Canvas):
         rect = getattr(c, "rect", _pill_rect)
@@ -222,6 +220,8 @@ def _apply_rect(rect: ui.Rect) -> None:
             _pill_canvas = canvas.Canvas.from_rect(_pill_rect)
         except Exception:
             _pill_canvas = None
+        if _pill_canvas is not None:
+            apply_canvas_blocking(_pill_canvas)
 
 
 def show_pill(text: str, phase: RequestPhase) -> None:

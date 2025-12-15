@@ -19,6 +19,8 @@ from .modelState import GPTState
 from .axisMappings import axis_docs_map
 from .patternDebugCoordinator import pattern_debug_view, pattern_debug_catalog as _pattern_debug_catalog
 from .personaConfig import PERSONA_PRESETS, INTENT_PRESETS
+from .overlayHelpers import apply_canvas_blocking
+from .overlayLifecycle import close_overlays
 
 mod = Module()
 ctx = Context()
@@ -423,12 +425,11 @@ def _ensure_pattern_canvas() -> canvas.Canvas:
         start_y = screen_y + max((screen_height - panel_height) // 2, margin_y)
         rect = Rect(start_x, start_y, panel_width, panel_height)
         _pattern_canvas = canvas.Canvas.from_rect(rect)
-        try:
-            _pattern_canvas.blocks_mouse = True
-        except Exception:
-            pass
     except Exception:
         _pattern_canvas = canvas.Canvas.from_screen(screen)
+
+    if _pattern_canvas is not None:
+        apply_canvas_blocking(_pattern_canvas)
 
     def _on_draw(c: canvas.Canvas) -> None:  # pragma: no cover - visual only
         _draw_pattern_canvas(c)
@@ -1230,14 +1231,7 @@ class UserActions:
         if _reject_if_request_in_flight():
             return
         # Close other related menus to avoid overlapping overlays.
-        try:
-            actions.user.prompt_pattern_gui_close()
-        except Exception:
-            pass
-        try:
-            actions.user.model_help_canvas_close()
-        except Exception:
-            pass
+        close_common_overlays(actions.user)
         _open_pattern_canvas(domain=None)
         ctx.tags = ["user.model_pattern_window_open"]
 
@@ -1245,14 +1239,7 @@ class UserActions:
         """Open the model pattern picker for coding patterns"""
         if _reject_if_request_in_flight():
             return
-        try:
-            actions.user.prompt_pattern_gui_close()
-        except Exception:
-            pass
-        try:
-            actions.user.model_help_canvas_close()
-        except Exception:
-            pass
+        close_common_overlays(actions.user)
         _open_pattern_canvas(domain="coding")
         ctx.tags = ["user.model_pattern_window_open"]
 
@@ -1260,14 +1247,7 @@ class UserActions:
         """Open the model pattern picker for writing/product/reflection patterns"""
         if _reject_if_request_in_flight():
             return
-        try:
-            actions.user.prompt_pattern_gui_close()
-        except Exception:
-            pass
-        try:
-            actions.user.model_help_canvas_close()
-        except Exception:
-            pass
+        close_common_overlays(actions.user)
         _open_pattern_canvas(domain="writing")
 
     def model_pattern_gui_close():

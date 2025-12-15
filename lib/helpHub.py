@@ -30,6 +30,8 @@ from .helpDomain import (
 from .requestBus import current_state
 from .requestState import RequestPhase
 from .modelHelpers import notify
+from .overlayHelpers import apply_canvas_blocking
+from .overlayLifecycle import close_overlays, close_common_overlays
 
 
 try:
@@ -167,17 +169,10 @@ def _block_key_event(evt) -> None:
 
 def _close_overlapping_surfaces() -> None:
     """Close other overlays to avoid stacking UIs."""
-    for closer in (
-        getattr(actions.user, "model_help_canvas_close", None),
-        getattr(actions.user, "model_pattern_gui_close", None),
-        getattr(actions.user, "prompt_pattern_gui_close", None),
-        getattr(actions.user, "model_prompt_recipe_suggestions_gui_close", None),
-    ):
-        try:
-            if closer:
-                closer()
-        except Exception:
-            continue
+    # Avoid closing help hub itself; keep parity with prior set by excluding response.
+    close_common_overlays(
+        actions.user, exclude={"model_help_canvas_close", "model_response_canvas_close"}
+    )
 
 
 def _ensure_canvas() -> None:
@@ -209,20 +204,7 @@ def _ensure_canvas() -> None:
 
     if _hub_canvas is None:
         return
-    try:
-        _hub_canvas.blocks_mouse = True  # type: ignore[attr-defined]
-    except Exception as e:
-        _log(f"failed to set blocks_mouse: {e}")
-    # Try to block keyboard input from reaching the foreground app while the hub is open.
-    for attr in ("blocks_keyboard", "block_keyboard"):
-        try:
-            setattr(_hub_canvas, attr, True)  # type: ignore[attr-defined]
-        except Exception as e:
-            _log(f"failed to set {attr}: {e}")
-    try:
-        _hub_canvas.block_mouse = True  # type: ignore[attr-defined]
-    except Exception as e:
-        _log(f"failed to set block_mouse: {e}")
+    apply_canvas_blocking(_hub_canvas)
     _log(
         "canvas created; size="
         f"{_PANEL_WIDTH}x{_panel_height_px}; rect={getattr(_hub_canvas, 'rect', None)}"

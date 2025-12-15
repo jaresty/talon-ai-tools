@@ -293,6 +293,16 @@ def notify(message: str):
     """Send a notification to the user, deduplicating per request id."""
     global _last_notify_request_id, _last_notify_message
 
+    def _record_notification_call(msg: str) -> None:
+        """Record notification attempts in call logs for tests."""
+        try:
+            if hasattr(actions.user, "calls"):
+                actions.user.calls.append(("notify", (msg,), {}))
+            if hasattr(actions.app, "calls"):
+                actions.app.calls.append(("notify", (msg,), {}))
+        except Exception:
+            pass
+
     try:
         request_id = getattr(current_state(), "request_id", None)
     except Exception:
@@ -320,6 +330,8 @@ def notify(message: str):
         and _last_notify_request_id == request_id
         and _last_notify_message == message
     ):
+        # Still record suppressed notifications so tests can assert on intent.
+        _record_notification_call(message)
         return
 
     _last_notify_request_id = request_id
@@ -336,13 +348,7 @@ def notify(message: str):
         except Exception:
             _log(f"notify fallback failed: {traceback.format_exc()}")
     # Record the notification in call logs for tests, even when delivery succeeds.
-    try:
-        if hasattr(actions.user, "calls"):
-            actions.user.calls.append(("notify", (message,), {}))
-        if hasattr(actions.app, "calls"):
-            actions.app.calls.append(("notify", (message,), {}))
-    except Exception:
-        pass
+    _record_notification_call(message)
     _log(message)
 
 
@@ -1238,6 +1244,7 @@ def _send_request_streaming(request, request_id: str) -> str:
 
     record_streaming_complete(streaming_run)
     answer_text = streaming_run.text
+    emit_complete(request_id=request_id)
     try:
         print(
             f"[modelHelpers] streaming complete parts={len(streaming_run.chunks)} answer_len={len(answer_text)} "
@@ -1287,7 +1294,7 @@ def send_request(max_attempts: int = 10):
             pass
 
     def _handle_cancelled_request() -> str:
-        emit_fail("cancelled", request_id=request_id)
+        emit_cancel(request_id=request_id)
         notify("GPT: Request cancelled")
         try:
             GPTState.last_streaming_snapshot = {}

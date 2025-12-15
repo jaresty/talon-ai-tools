@@ -5,10 +5,17 @@ from __future__ import annotations
 from typing import Optional
 from copy import deepcopy
 
+try:
+    from .modelHelpers import notify
+except Exception:  # pragma: no cover - defensive fallback for stubs
+    def notify(_msg: str) -> None:
+        return None
+
 from .axisMappings import axis_registry_tokens, axis_value_to_key_map_for
 from .axisCatalog import axis_catalog
 from .requestHistory import RequestHistory, RequestLogEntry
 _history = RequestHistory()
+_last_drop_reason: str = ""
 
 
 def _filter_axes_payload(
@@ -117,8 +124,11 @@ def append_entry(
     axes: Optional[dict[str, list[str]]] = None,
     provider_id: str = "",
     legacy_style: bool = False,
+    *,
+    require_directional: bool = True,
 ) -> None:
     """Append a request entry to the bounded history ring."""
+    global _last_drop_reason
     try:
         print(
             f"[requestLog] append id={request_id!r} prompt_len={len(prompt or '')} "
@@ -128,6 +138,23 @@ def append_entry(
     except Exception:
         pass
     axes_payload, legacy_style = _filter_axes_payload(axes)
+    if require_directional and (
+        not axes_payload
+        or not isinstance(axes_payload, dict)
+        or not axes_payload.get("directional")
+    ):
+        try:
+            print(f"[requestLog] drop id={request_id!r} missing directional")
+        except Exception:
+            pass
+        try:
+            message = "GPT: History entry dropped; add a directional lens (fog/fig/dig/ong/rog/bog/jog) and retry."
+            notify(message)
+        except Exception:
+            message = ""
+        _last_drop_reason = message
+        return
+    _last_drop_reason = ""
     _history.append(
         RequestLogEntry(
             request_id=request_id,
@@ -163,6 +190,7 @@ def append_entry_from_request(
     duration_ms: Optional[int] = None,
     axes: Optional[dict[str, list[str]]] = None,
     provider_id: str = "",
+    require_directional: bool = True,
 ) -> str:
     """Append a history entry derived from a request dict.
 
@@ -207,6 +235,7 @@ def append_entry_from_request(
         axes=axes_payload,
         provider_id=provider_id,
         legacy_style=legacy_style,
+        require_directional=require_directional,
     )
     return prompt_text
 
@@ -235,6 +264,19 @@ def all_entries():
 def clear_history() -> None:
     while len(_history):
         _history._entries.popleft()  # type: ignore[attr-defined]
+    global _last_drop_reason
+    _last_drop_reason = ""
+
+
+def last_drop_reason() -> str:
+    return _last_drop_reason
+
+
+def consume_last_drop_reason() -> str:
+    global _last_drop_reason
+    reason = _last_drop_reason
+    _last_drop_reason = ""
+    return reason
 
 
 __all__ = [
@@ -244,4 +286,6 @@ __all__ = [
     "nth_from_latest",
     "all_entries",
     "clear_history",
+    "last_drop_reason",
+    "consume_last_drop_reason",
 ]

@@ -43,6 +43,13 @@ if not TYPE_CHECKING:
             self.assertIn("guardrails", output)
             self.assertIn("run_guardrails_ci.sh [--help]", output)
             self.assertIn("GUARDRAILS_TARGET", output)
+            self.assertIn("request-history-guardrails", output)
+            self.assertIn("request-history-guardrails-fast", output)
+            self.assertIn("request-history-guardrails-fast", output)
+            self.assertIn("readme-axis-lines", output)
+            self.assertIn("readme-axis-refresh", output)
+            self.assertIn("static-prompt-docs", output)
+            self.assertIn("static-prompt-refresh", output)
 
 else:
 

@@ -531,6 +531,9 @@ def _populate_runtime_lists_from_catalog() -> None:
     except Exception:
         return
 
+    if not catalog:
+        return
+
     axes = catalog.get("axes", {}) or {}
     axis_lists = catalog.get("axis_list_tokens", {}) or {}
 

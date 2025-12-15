@@ -9,6 +9,13 @@ one **substantial, concrete slice** that changes an observable artefact
 loop entries in the ADR’s companion work‑log file (for example,
 `ADR-ID-work-log.md`), not in the ADR proper. If you find no safe slice,
 record the blocker instead of writing a no-delta loop.
+- Treat every invocation of this helper as a **fresh** request, even within
+  the same conversation. Re-read this helper and the target ADR/work-log,
+  and avoid assuming persistent state beyond artefacts recorded in the repo;
+  stale carry-over context is non-compliant.
+- If you suspect conversational drift, **palate cleanse**: restate the ADR id,
+  focus area, and current loop goal explicitly, disregard prior turn-by-turn
+  assumptions, and rebuild context only from the ADR/work-log and repo files.
 - If an ADR still has a work-log embedded in the ADR body, migrate it to the
   separate `ADR-ID-work-log.md` file before adding new entries; do not keep
   parallel logs in both places.

@@ -4,21 +4,82 @@ Query language models with voice commands. Helpful to automatically generate tex
 
 ## Help
 
-- Static prompts and axis vocab are sourced from the Python catalog (`lib/staticPromptConfig.py`, `lib/axisConfig.py`) and are populated into Talon lists at runtime. Axis/static prompt .talon-lists are no longer tracked; if you need local list files, generate them ad hoc with `make talon-lists` or drift-check a lists directory with `make talon-lists-check`. Catalog validation is catalog-only by default (`axis-catalog-validate --skip-list-files`); pass `--lists-dir ... --no-skip-list-files` (lists-dir required when enforcing), for example `python3 scripts/tools/axis-catalog-validate.py --lists-dir /path/to/lists --no-skip-list-files`, to validate Talon list files. If you need to populate a lists directory before enforcing list checks, regenerate from the catalog with `make talon-lists` or `python3 scripts/tools/generate_talon_lists.py --out-dir <dir>`. Note that some behaviours (for example, diagrams, Presenterm decks, ADRs, and shell scripts) now live only as form/channel/method axis values rather than static prompts (see ADR 012/013).
+Note: Some behaviours (for example, diagrams, Presenterm decks, ADRs, shell scripts, debugging, Slack/Jira formatting, taxonomy-style outputs) now live only as form/channel/method axis values rather than static prompts; see ADR 012/013 and the README cheat sheet for axis-based recipes.
 
-- See the [examples file](../.docs/usage-examples/examples.md) for gifs that show how to use the commands.
-
-- View the [docs](http://localhost:4321/talon-ai-tools/) for more detailed usage and help
-
-For implementation details of the modifier axes, defaults, helpers, and rerun shorthand, see the ADRs:
-
-- `docs/adr/005-orthogonal-prompt-modifiers-and-defaults.md`
-- `docs/adr/006-pattern-picker-and-recap.md`
-- `docs/adr/008-prompt-recipe-suggestion-assistant.md`
-- `docs/adr/009-rerun-last-recipe-shorthand.md`
-- `docs/adr/012-style-and-method-prompt-refactor.md`
-- `docs/adr/013-static-prompt-axis-refinement-and-streamlining.md`
-- `docs/adr/015-voice-audience-tone-intent-decomposition.md`
+- infer: I'm not telling you what to do. Infer the task.
+- describe: Just describe this objectively.
+- undefined: List undefined terms only.
+- who: Explain who.
+- what: Explain what.
+- when: Explain when.
+- where: Explain where.
+- why: Explain why.
+- how: Explain how.
+- assumption: Identify and explain the assumptions behind this.
+- objectivity: Assess objectivity with examples.
+- knowledge: Identify relevant academic or industry fields of knowledge and explain why each applies and what perspective it offers.
+- taste: Evaluate the taste of the subject by analysing harmony, proportion, restraint, authenticity, and cultural/historical appropriateness, explaining strengths, weaknesses, and contextual fit.
+- tao: Classify the subject through Taoist philosophy—relate it to Dao, De, Yin/Yang, Wu Wei, Ziran, Pu, Qi, and Li; identify which apply and why.
+- product: Frame this through a product lens. (defaults: completeness=gist, scope=focus, method=steps, form=bullets)
+- metrics: List metrics that result in these outcomes with concrete examples. (defaults: completeness=gist, scope=focus, method=steps, form=bullets)
+- operations: Infer an appropriate Operations Research or management science concept to apply. (defaults: completeness=gist, scope=focus, method=rigor)
+- jobs: Identify the key Jobs To Be Done, desired outcomes, and forces shaping them. (defaults: completeness=gist, scope=focus, method=analysis, form=bullets)
+- value: Describe the user/customer value and impact in a concise value narrative. (defaults: completeness=gist, scope=focus, method=analysis, form=bullets)
+- pain: List pain points and obstacles with brief prioritisation or severity. (defaults: completeness=gist, scope=focus, method=filter, form=bullets)
+- done: Draft a clear Definition of Done / acceptance criteria as a checklist. (defaults: completeness=full, scope=actions, method=structure, form=checklist)
+- team: Map the team/roles/responsibilities and handoffs needed for the work. (defaults: completeness=gist, scope=system, method=mapping, form=table)
+- challenge: Challenge this with questions so we can make it better.
+- critique: This looks bad. What is wrong with it?
+- retro: Help me introspect or reflect on this.
+- easier: This is too much work; propose something I can accomplish in a smaller timescale.
+- true: Assess whether this is true, based on the available information.
+- relevant: Identify what is relevant here. (defaults: completeness=gist, scope=focus, method=filter, form=bullets)
+- misunderstood: Identify what is misunderstood in this situation. (defaults: completeness=gist, scope=focus, method=filter, form=bullets)
+- risky: Highlight what is risky and why. (defaults: completeness=gist, scope=focus, method=filter, form=bullets)
+- split: Separate topics into clear sections; reformatted text only.
+- match: Rewrite to match the provided style; modified text only.
+- blend: Combine source and destination texts coherently, using the destination’s structure while reordering and renaming as needed; return only the final integrated text, treating additional_source as the destination.
+- join: Merge content into one coherent part, removing redundancy.
+- context: Add LLM-ready context only; do not rewrite the main text. (defaults: completeness=gist, scope=focus, method=contextualise)
+- math: Consider mathematical fields that apply to this and specify which are used.
+- orthogonal: Identify what is orthogonal in this situation.
+- bud: Apply addition/subtraction-like reasoning non-numerically.
+- boom: Apply limit/continuity-like reasoning non-numerically.
+- meld: Apply set theory reasoning non-numerically.
+- order: Apply order or lattice theory reasoning non-numerically.
+- logic: Apply propositional or predicate logic reasoning non-numerically.
+- probability: Apply probability or statistics reasoning non-numerically.
+- recurrence: Calculate the recurrence relation of this idea and explain its consequences in plain language.
+- map: Use data mapping and transformation concepts to describe this: identify source and target schemas, specify transformation rules, and describe information flow, including loss, duplication, or enrichment.
+- mod: Modulo the first idea by the second idea non-numerically.
+- dimension: Expand dimensions of this geometrically and describe each axis.
+- rotation: Compute the 90-degree rotation metaphorically.
+- reflection: Compute the reflection metaphorically.
+- invert: Invert the concept to reveal negative space.
+- graph: Apply graph or tree theory reasoning non-numerically: identify nodes and edges, describe direction, weight, and centrality, and explain how structure influences flow or dependency.
+- grove: Apply integral/derivative concepts non-numerically.
+- dub: Apply power/root concepts non-numerically.
+- drum: Apply multiplication/division concepts non-numerically.
+- document: List document or writing formats (e.g., ADRs, experiment logs, RFCs, briefs), explain why each fits, and what perspective it reveals.
+- com b: Analyze the subject using the COM-B model (Capability, Opportunity, Motivation, Behavior), identify key enablers and barriers across Capability, Opportunity, and Motivation, map them to Behavior Change Wheel intervention functions and behavior change techniques, and outline a minimal, testable implementation and evaluation plan. (defaults: completeness=full, scope=focus, method=rigor)
+- wardley: Generate a Wardley Map by identifying users, needs, and components, then output it as a Markdown table where rows are visibility levels and columns are evolution stages, plus a concise summary of dependencies and key strategic insights. (defaults: completeness=full, scope=focus, method=steps, form=table)
+- dependency: List dependencies and what they depend on. (defaults: scope=relations)
+- cochange: For multiple subjects, show how each directly cochanges with the others. (defaults: scope=relations)
+- interact: Explain how these elements interact. (defaults: scope=relations)
+- dependent: Explain how these elements are dependent on each other. (defaults: scope=relations)
+- independent: Explain how these elements are independent. (defaults: scope=relations)
+- parallel: Describe problems that could arise if these two items were parallelized. (defaults: scope=relations)
+- unknown: Imagine critical unknown unknowns in this situation and how they might impact the outcome.
+- jim: Analyze the subject for connascence (Strength, Degree, Locality), identify its type, compute Severity = Strength × Degree ÷ Locality, and propose remedies to reduce harmful connascence.
+- domain: Perform a connascence-driven discovery of business domains: group elements by coupling where multiple forms of connascence converge, describe obligations and change scenarios, and suggest boundary-strengthening remedies.
+- tune: Evaluate this design through the Concordance Frame: visibility, scope, and volatility of dependencies that must stay in tune. (defaults: completeness=full, scope=focus, method=rigor)
+- melody: Analyze the system for clusters that share coordination patterns in visibility, scope, and volatility, infer the shared intent or 'tune', and recommend ways to clarify or strengthen domains by reducing coordination cost. (defaults: completeness=full, scope=focus, method=rigor)
+- constraints: Identify the key constraint in this system, describe behaviours it promotes and discourages, and discuss how to balance it for long-term health. (defaults: completeness=full, scope=focus, method=rigor)
+- effects: Describe the second- and third-order effects of this situation or change. (defaults: completeness=full, scope=dynamics, method=steps)
+- fix: Fix grammar, spelling, and minor style issues while keeping meaning and tone; return only the modified text. (defaults: completeness=full, scope=narrow)
+- todo: Format this as a todo list. (defaults: completeness=gist, scope=actions, method=steps, form=checklist)
+- bridge: Guide me from the current state to the desired situation described in the additional source. (defaults: completeness=path, scope=focus, method=steps)
+- Other static prompts (tokens only; see docs for semantics): (none)
 
 ### Meta interpretation channel (ADR 019) and richer structure (ADR 020)
 
@@ -186,11 +247,12 @@ A couple of common prompts decomposed into the three families:
 
 The `model` command now supports several short, speech-friendly modifier axes you can tack on after the prompt:
 
-- Completeness (`completenessModifier`): `full`, `gist`, `max`, `minimal`, `skim`
-- Scope (`scopeModifier`): `actions`, `activities`, `bound`, `dynamics`, `edges`, `focus`, `interfaces`, `narrow`, `relations`, `system`
-- Method (`methodModifier`): `visual`, `adversarial`, `analysis`, `case`, `cluster`, `cocreate`, `compare`, `contextualise`, `converge`, `debugging`, `deep`, `diagnose`, `direct`, `diverge`, `experimental`, `facilitate`, `filter`, `flow`, `indirect`, `ladder`, `liberating`, `mapping`, `motifs`, `plan`, `prioritize`, `probe`, `rewrite`, `rigor`, `samples`, `scaffold`, `socratic`, `steps`, `structure`, `systemic`, `taxonomy`, `walkthrough`, `wasinawa`, `xp`
-- Form (`formModifier`): `adr`, `bug`, `bullets`, `cards`, `checklist`, `code`, `commit`, `faq`, `gherkin`, `log`, `recipe`, `shellscript`, `spike`, `story`, `table`, `visual`
-- Channel (`channelModifier`): `codetour`, `diagram`, `html`, `jira`, `presenterm`, `remote`, `slack`, `sync`, `svg`
+Completeness (`completenessModifier`): `full`, `gist`, `max`, `minimal`, `skim`
+Scope (`scopeModifier`): `actions`, `activities`, `bound`, `dynamics`, `edges`, `focus`, `interfaces`, `narrow`, `relations`, `system`
+Method (`methodModifier`): `adversarial`, `analysis`, `case`, `cluster`, `cocreate`, `compare`, `contextualise`, `converge`, `debugging`, `deep`, `diagnose`, `direct`, `diverge`, `experimental`, `facilitate`, `filter`, `flow`, `indirect`, `ladder`, `liberating`, `mapping`, `motifs`, `plan`, `prioritize`, `probe`, `rewrite`, `rigor`, `samples`, `scaffold`, `socratic`, `steps`, `structure`, `systemic`, `taxonomy`, `visual`, `walkthrough`, `wasinawa`, `xp`
+Form (`formModifier`): `adr`, `bug`, `bullets`, `cards`, `checklist`, `code`, `commit`, `faq`, `gherkin`, `log`, `recipe`, `shellscript`, `spike`, `story`, `table`, `visual`
+Channel (`channelModifier`): `codetour`, `diagram`, `html`, `jira`, `presenterm`, `remote`, `slack`, `svg`, `sync`
+Directional (`directionalModifier`): `bog`, `dig`, `dip bog`, `dip ong`, `dip rog`, `fig`, `fip bog`, `fip ong`, `fip rog`, `fly bog`, `fly ong`, `fly rog`, `fog`, `jog`, `ong`, `rog`
   - Additional form/channel notes:
     - `cards` – format the answer as discrete cards/items with clear headings and short bodies.
     - `story` – format the output as a user story using “As a…, I want…, so that…”, optionally with a short prose description and high-level acceptance criteria.

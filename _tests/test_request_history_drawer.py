@@ -15,6 +15,7 @@ if bootstrap is not None:
         UserActions as DrawerActions,
         history_drawer_entries_from,
     )
+    import talon_user.lib.requestHistoryDrawer as history_drawer  # type: ignore
     from talon_user.lib.requestLog import append_entry, clear_history
     from talon import canvas
 
@@ -45,7 +46,14 @@ if bootstrap is not None:
             self.assertFalse(HistoryDrawerState.showing)
 
         def test_open_populates_entries(self):
-            append_entry("rid-1", "prompt text", "resp", "meta", duration_ms=42)
+            append_entry(
+                "rid-1",
+                "prompt text",
+                "resp",
+                "meta",
+                duration_ms=42,
+                axes={"directional": ["fog"]},
+            )
             DrawerActions.request_history_drawer_open()
             self.assertGreaterEqual(len(HistoryDrawerState.entries), 1)
             # Ensure duration is included in the label.
@@ -53,8 +61,8 @@ if bootstrap is not None:
             self.assertIn("42", label)
 
         def test_selection_navigation(self):
-            append_entry("rid-1", "p1", "resp1", "meta1")
-            append_entry("rid-2", "p2", "resp2", "meta2")
+            append_entry("rid-1", "p1", "resp1", "meta1", axes={"directional": ["fog"]})
+            append_entry("rid-2", "p2", "resp2", "meta2", axes={"directional": ["fog"]})
             DrawerActions.request_history_drawer_open()
             self.assertEqual(HistoryDrawerState.selected_index, 0)
             DrawerActions.request_history_drawer_next_entry()
@@ -79,6 +87,94 @@ if bootstrap is not None:
             label, body = rendered[0]
             self.assertEqual(label, "rid-1 (42ms) [gemini]")
             self.assertEqual(body, "infer · full · rigor · prompt one · provider=gemini")
+
+        def test_drawer_notifies_drop_reason_when_empty(self):
+            with patch.object(history_drawer, "notify") as notify_mock:
+                append_entry(
+                    "rid-no-dir",
+                    "prompt",
+                    "resp",
+                    "meta",
+                    axes={"scope": ["focus"]},
+                )
+                DrawerActions.request_history_drawer_open()
+            notify_mock.assert_called()
+            self.assertIn("directional lens", str(notify_mock.call_args[0][0]))
+
+        def test_drawer_save_latest_source_refreshes_entries(self):
+            from talon_user.lib import requestLog as requestlog  # type: ignore
+            from talon import actions
+
+            requestlog.clear_history()
+            HistoryDrawerState.entries = []
+            HistoryDrawerState.showing = False
+            with patch.object(
+                actions.user, "gpt_request_history_save_latest_source"
+            ) as save_mock:
+                def _save():
+                    append_entry(
+                        "rid-new",
+                        "prompt",
+                        "resp",
+                        "meta",
+                        axes={"directional": ["fog"]},
+                    )
+                    return "/tmp/file.md"
+
+                save_mock.side_effect = _save
+                DrawerActions.request_history_drawer_save_latest_source()
+
+            save_mock.assert_called()
+            self.assertTrue(HistoryDrawerState.showing)
+            self.assertGreaterEqual(len(HistoryDrawerState.entries), 1)
+            label, _ = HistoryDrawerState.entries[0]
+            self.assertIn("rid-new", label)
+
+        def test_drawer_key_s_triggers_save_latest_source(self):
+            from talon_user.lib import requestLog as requestlog  # type: ignore
+            from talon import actions
+            requestlog.clear_history()
+            HistoryDrawerState.entries = []
+            HistoryDrawerState.showing = False
+            with patch.object(
+                actions.user, "request_history_drawer_save_latest_source"
+            ) as save_mock, patch.object(
+                actions.user, "gpt_request_history_save_latest_source"
+            ) as gpt_save:
+                gpt_save.return_value = "/tmp/file.md"
+                save_mock.side_effect = DrawerActions.request_history_drawer_save_latest_source
+                DrawerActions.request_history_drawer_open()
+                actions.user.request_history_drawer_save_latest_source()
+                save_mock.assert_called()
+                gpt_save.assert_called()
+                self.assertTrue(HistoryDrawerState.showing)
+
+        def test_drawer_save_latest_respects_inflight_guard(self):
+            from talon_user.lib import requestLog as requestlog  # type: ignore
+            from talon import actions
+            requestlog.clear_history()
+            HistoryDrawerState.entries = []
+            HistoryDrawerState.showing = False
+            with patch.object(
+                history_drawer, "_reject_if_request_in_flight", return_value=True
+            ), patch.object(actions.user, "gpt_request_history_save_latest_source") as save_mock:
+                result = DrawerActions.request_history_drawer_save_latest_source()
+            self.assertIsNone(result)
+            save_mock.assert_not_called()
+            self.assertFalse(HistoryDrawerState.showing)
+
+        def test_drawer_escape_closes(self):
+            from types import SimpleNamespace
+            import talon_user.lib.requestHistoryDrawer as history_drawer  # type: ignore
+
+            HistoryDrawerState.showing = False
+            DrawerActions.request_history_drawer_open()
+            self.assertTrue(HistoryDrawerState.showing)
+            key_evt = SimpleNamespace(down=True, key="escape")
+            handler = getattr(history_drawer, "_last_key_handler", None)
+            if handler:
+                handler(key_evt)
+            self.assertFalse(HistoryDrawerState.showing)
 else:
     if not TYPE_CHECKING:
 

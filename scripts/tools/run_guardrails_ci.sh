@@ -7,6 +7,7 @@ Usage: scripts/tools/run_guardrails_ci.sh [TARGET]
 
 CI-friendly guardrail runner: validates axis/static prompt catalog and list drift (catalog-only by default; no talon-lists generation).
 - TARGET: optional Make target (default: GUARDRAILS_TARGET env or "guardrails").
+          The default guardrails target runs overlay lifecycle/helper guardrails and request-history guardrails (see request-history-guardrails[-fast]).
 
 Examples:
   GUARDRAILS_TARGET=axis-guardrails-ci scripts/tools/run_guardrails_ci.sh

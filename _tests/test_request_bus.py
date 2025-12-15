@@ -18,6 +18,7 @@ if bootstrap is not None:
         emit_fail,
         emit_reset,
         emit_cancel,
+        emit_history_saved,
         next_request_id,
         set_controller,
     )
@@ -88,6 +89,18 @@ if bootstrap is not None:
             emit_cancel(request_id=rid3)
             lifecycle = current_lifecycle_state()
             self.assertEqual(lifecycle.status, "cancelled")
+
+        def test_emit_history_saved_calls_controller_hook(self):
+            calls = []
+
+            def on_history_save(req_id, path):
+                calls.append((req_id, path))
+
+            set_controller(RequestUIController(on_history_save=on_history_save))
+            emit_reset()
+            rid = emit_begin_send()
+            emit_history_saved("/tmp/file.md", request_id=rid)
+            self.assertEqual(calls, [(rid, "/tmp/file.md")])
 else:
     if not TYPE_CHECKING:
 

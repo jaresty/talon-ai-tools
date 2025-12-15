@@ -12,6 +12,7 @@ from typing import Callable, Optional
 
 from .requestState import (
     RequestEvent,
+    RequestEventKind,
     RequestState,
     RequestPhase,
     Surface,
@@ -31,6 +32,7 @@ class RequestUIController:
         show_response_canvas: Optional[Callable[[], None]] = None,
         hide_response_canvas: Optional[Callable[[], None]] = None,
         hide_help_hub: Optional[Callable[[], None]] = None,
+        on_history_save: Optional[Callable[[Optional[str], Optional[str]], None]] = None,
         on_state_change: Optional[Callable[[RequestState], None]] = None,
     ):
         self._state = RequestState()
@@ -42,6 +44,7 @@ class RequestUIController:
             "show_response_canvas": show_response_canvas,
             "hide_response_canvas": hide_response_canvas,
             "hide_help_hub": hide_help_hub,
+            "on_history_save": on_history_save,
         }
         self._on_state_change = on_state_change
 
@@ -51,6 +54,14 @@ class RequestUIController:
 
     def handle(self, event: RequestEvent) -> RequestState:
         """Apply an event, update state, and reconcile UI surfaces."""
+        if event.kind is RequestEventKind.HISTORY_SAVED:
+            cb = self._callbacks.get("on_history_save")
+            if cb:
+                try:
+                    cb(event.request_id, event.payload if isinstance(event.payload, str) else None)
+                except Exception:
+                    pass
+            return self._state
         next_state = transition(self._state, event)
         if next_state is self._state:
             return self._state

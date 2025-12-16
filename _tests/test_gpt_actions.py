@@ -1172,6 +1172,44 @@ if bootstrap is not None:
                 emit_complete.assert_called_once_with(request_id="req-suggest")
                 emit_fail.assert_not_called()
 
+        def test_gpt_suggest_prompt_recipes_fallback_avoids_response_canvas(self):
+            controller = RequestUIController()
+            set_controller(controller)
+            suggestion_text = '{"suggestions":[{"name":"Idea","recipe":"describe · gist · actions · flow · plain · fog"}]}'
+
+            class _Handle:
+                def __init__(self, result):
+                    self.result = result
+                    self.error = None
+
+                def wait(self, timeout=None):
+                    return True
+
+            handle = _Handle(PromptResult.from_messages([format_message(suggestion_text)]))
+            self.pipeline.complete_async.return_value = handle
+            GPTState.current_destination_kind = "window"
+
+            with (
+                patch.object(gpt_module, "create_model_source") as create_source,
+                patch.object(
+                    actions.user,
+                    "model_prompt_recipe_suggestions_gui_open",
+                    side_effect=Exception("gui unavailable"),
+                ),
+                patch.object(actions.user, "model_response_canvas_open") as open_canvas,
+            ):
+                source = MagicMock()
+                source.get_text.return_value = "content"
+                create_source.return_value = source
+
+                try:
+                    gpt_module.UserActions.gpt_suggest_prompt_recipes("subject")
+                finally:
+                    set_controller(None)
+
+            actions.user.gpt_insert_response.assert_called_once()
+            open_canvas.assert_not_called()
+
         def test_gpt_suggest_prompt_recipes_releases_request_state(self):
             controller = RequestUIController()
             set_controller(controller)

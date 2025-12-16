@@ -2556,8 +2556,34 @@ class UserActions:
             pass
         # If we're already showing the response canvas (window destination),
         # avoid inserting to a surface to prevent accidental paste.
+        # Derive the destination kind from the explicit destination argument rather
+        # than whatever is left in GPTState. This avoids opening the response canvas
+        # when callers route fallback text to non-window surfaces (for example,
+        # the suggest clipboard fallback).
         try:
-            if getattr(GPTState, "current_destination_kind", "") == "window":
+            dest_kind = ""
+            raw_kind = getattr(destination, "kind", "")
+            if isinstance(raw_kind, str):
+                dest_kind = raw_kind.lower()
+            elif isinstance(destination, str):
+                dest_kind = destination.lower()
+        except Exception:
+            dest_kind = ""
+
+        try:
+            current_kind = getattr(GPTState, "current_destination_kind", "") or ""
+        except Exception:
+            current_kind = ""
+
+        # Keep GPTState in sync with the explicit destination when provided.
+        if dest_kind:
+            try:
+                GPTState.current_destination_kind = dest_kind
+            except Exception:
+                pass
+
+        try:
+            if dest_kind == "window" or (not dest_kind and current_kind == "window"):
                 try:
                     actions.user.model_response_canvas_open()
                 except Exception:

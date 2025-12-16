@@ -7,13 +7,6 @@ from .canvasFont import apply_canvas_typeface
 from .overlayHelpers import apply_scroll_delta, clamp_scroll
 from .axisConfig import axis_docs_for
 from .axisCatalog import axis_catalog
-from .personaConfig import (
-    INTENT_PRESETS,
-    PERSONA_PRESETS,
-    intent_bucket_presets,
-    intent_bucket_spoken_tokens,
-    normalize_intent_token,
-)
 
 from .modelState import GPTState
 from .talonSettings import _AXIS_SOFT_CAPS
@@ -111,11 +104,51 @@ def _axis_keys(axis: str) -> list[str]:
     return [doc.key for doc in docs]
 
 
+def _persona_presets():
+    """Return the latest persona presets (reload-safe)."""
+    try:
+        from . import personaConfig
+
+        return tuple(getattr(personaConfig, "PERSONA_PRESETS", ()))
+    except Exception:
+        return ()
+
+
+def _intent_presets():
+    """Return the latest intent presets (reload-safe)."""
+    try:
+        from . import personaConfig
+
+        return tuple(getattr(personaConfig, "INTENT_PRESETS", ()))
+    except Exception:
+        return ()
+
+
+def _intent_spoken_buckets():
+    """Return the latest intent buckets keyed by spoken token."""
+    try:
+        from . import personaConfig
+
+        return personaConfig.intent_bucket_spoken_tokens()
+    except Exception:
+        return {}
+
+
+def _normalize_intent(value: str) -> str:
+    """Normalise an intent token using the latest personaConfig helpers."""
+    try:
+        from . import personaConfig
+
+        return personaConfig.normalize_intent_token(value)
+    except Exception:
+        return str(value or "").strip()
+
+
 def _persona_preset_commands() -> list[str]:
     """Return speakable persona preset commands in list order."""
 
     commands: list[str] = []
-    for preset in PERSONA_PRESETS:
+    for preset in _persona_presets():
         # Only show explicit spoken forms; labels/keys are too verbose for quick help.
         spoken = (preset.spoken or "").strip().lower()
         if not spoken:
@@ -128,7 +161,7 @@ def _intent_preset_commands() -> list[str]:
     """Return speakable intent preset commands in list order."""
 
     commands: list[str] = []
-    for preset in INTENT_PRESETS:
+    for preset in _intent_presets():
         spoken = (preset.key or "").strip().lower()
         if not spoken:
             continue
@@ -187,13 +220,20 @@ def _draw_wrapped_commands(
     return y
 
 
-# Axis summaries (keys only; descriptions remain in docs). Pulled directly from
-# the generated axis map so quick help follows the list files.
-COMPLETENESS_KEYS = sorted(_axis_keys("completeness"))
-SCOPE_KEYS = sorted(_axis_keys("scope"))
-METHOD_KEYS = sorted(_axis_keys("method"))
-FORM_KEYS = sorted(_axis_keys("form"))
-CHANNEL_KEYS = sorted(_axis_keys("channel"))
+def _axis_key_list(axis: str) -> list[str]:
+    """Return sorted axis keys so list edits are reflected without reload."""
+
+    return sorted(_axis_keys(axis))
+
+
+# Axis summaries (keys only; descriptions remain in docs). Computed at import
+# time but sourced from the live axis catalog so list edits are reflected on
+# the next render without a Talon reload.
+COMPLETENESS_KEYS = _axis_key_list("completeness")
+SCOPE_KEYS = _axis_key_list("scope")
+METHOD_KEYS = _axis_key_list("method")
+FORM_KEYS = _axis_key_list("form")
+CHANNEL_KEYS = _axis_key_list("channel")
 
 
 def _group_directional_keys() -> dict[str, list[str]]:
@@ -937,10 +977,7 @@ def _default_draw_quick_help(
     except Exception:
         pass
 
-    try:
-        intent_buckets = intent_bucket_spoken_tokens()
-    except Exception:
-        intent_buckets = {}
+    intent_buckets = _intent_spoken_buckets()
     if intent_buckets:
         task = intent_buckets.get("task", []) or []
         relational = intent_buckets.get("relational", []) or []
@@ -949,7 +986,7 @@ def _default_draw_quick_help(
             seen: set[str] = set()
             canonical: list[str] = []
             for t in tokens:
-                c = normalize_intent_token(t)
+                c = _normalize_intent(t)
                 val = c or t
                 if val not in seen:
                     canonical.append(val)
@@ -1129,14 +1166,14 @@ def _default_draw_quick_help(
 
     # Left column: completeness + scope
     y_left = _draw_axis_column(
-        "Completeness", "completeness", COMPLETENESS_KEYS, x_left, y_left
+        "Completeness", "completeness", _axis_key_list("completeness"), x_left, y_left
     )
-    y_left = _draw_axis_column("Scope", "scope", SCOPE_KEYS, x_left, y_left)
-    y_left = _draw_axis_column("Method", "method", METHOD_KEYS, x_left, y_left)
+    y_left = _draw_axis_column("Scope", "scope", _axis_key_list("scope"), x_left, y_left)
+    y_left = _draw_axis_column("Method", "method", _axis_key_list("method"), x_left, y_left)
 
     # Right column: form/channel stacked to save horizontal space.
-    y_right = _draw_axis_column("Form", "form", FORM_KEYS, x_right, y_right)
-    y_right = _draw_axis_column("Channel", "channel", CHANNEL_KEYS, x_right, y_right)
+    y_right = _draw_axis_column("Form", "form", _axis_key_list("form"), x_right, y_right)
+    y_right = _draw_axis_column("Channel", "channel", _axis_key_list("channel"), x_right, y_right)
 
     # Brief axis multiplicity hint.
     axes_bottom = max(y_left, y_right)

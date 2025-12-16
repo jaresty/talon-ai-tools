@@ -137,14 +137,16 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {'channel': {'codetour': 'Importa
                         'to frame the preceding prompt.',
                  'rog': 'Important: Apply a reflective-structural perspective as one synthesized '
                         'lens to frame the preceding prompt.'},
- 'form': {'adr': 'Important: Express the answer as an Architecture Decision Record (ADR) with '
-                 'sections for context, decision, and consequences, using a concise, document-like '
-                 'style.',
-          'bug': 'Important: Format the answer as a structured bug report with clear sections for '
-                 'Steps to Reproduce, Expected Behavior, Actual Behavior, and Environment/Context; '
-                 'focus on concise, testable details.',
-          'bullets': 'Important: Format the main answer as concise bullet points only; avoid long '
-                     'paragraphs.',
+'form': {'adr': 'Important: Express the answer as an Architecture Decision Record (ADR) with '
+                'sections for context, decision, and consequences, using a concise, document-like '
+                'style.',
+         'plain': 'Important: Write in plain prose with no enforced structure; use natural '
+                  'paragraphs and sentences rather than bullets, tables, or code blocks.',
+         'bug': 'Important: Format the answer as a structured bug report with clear sections for '
+                'Steps to Reproduce, Expected Behavior, Actual Behavior, and Environment/Context; '
+                'focus on concise, testable details.',
+         'bullets': 'Important: Format the main answer as concise bullet points only; avoid long '
+                    'paragraphs.',
           'cards': 'Important: Present the main answer as a set of discrete cards or items, each '
                    'with a clear heading and a short body; avoid long continuous prose.',
           'checklist': 'Important: Present the main answer as an actionable checklist; each item '
@@ -166,6 +168,8 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {'channel': {'codetour': 'Importa
                     'mini-language plus a short key for understanding it.',
           'shellscript': 'Important: Express the solution as a shell script, focusing on correct, '
                          'executable shell code rather than prose.',
+          'tight': 'Important: Write concise, dense prose; keep it freeform (no bullets, tables, or '
+                   'code) and avoid filler.',
           'spike': '"Important: Format the backlog item as a research spike: start with a brief '
                    'problem or decision statement, then list the key questions the spike should '
                    'answer; keep the emphasis on questions and learning, not implementation '

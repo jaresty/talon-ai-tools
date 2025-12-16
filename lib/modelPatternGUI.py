@@ -18,7 +18,6 @@ from .talonSettings import (
 from .modelState import GPTState
 from .axisMappings import axis_docs_map
 from .patternDebugCoordinator import pattern_debug_view, pattern_debug_catalog as _pattern_debug_catalog
-from .personaConfig import PERSONA_PRESETS, INTENT_PRESETS
 from .overlayHelpers import apply_canvas_blocking
 from .overlayLifecycle import close_overlays
 
@@ -35,6 +34,26 @@ PatternDomain = Literal["coding", "writing"]
 
 class PatternGUIState:
     domain: Optional[PatternDomain] = None
+
+
+def _persona_presets():
+    """Return the latest persona presets (reload-safe)."""
+    try:
+        from . import personaConfig
+
+        return tuple(getattr(personaConfig, "PERSONA_PRESETS", ()))
+    except Exception:
+        return ()
+
+
+def _intent_presets():
+    """Return the latest intent presets (reload-safe)."""
+    try:
+        from . import personaConfig
+
+        return tuple(getattr(personaConfig, "INTENT_PRESETS", ()))
+    except Exception:
+        return ()
 
 
 @dataclass(frozen=True)
@@ -822,10 +841,11 @@ def _draw_pattern_canvas(c: canvas.Canvas) -> None:  # pragma: no cover - visual
     y += line_h
 
     try:
-        if PERSONA_PRESETS:
+        persona_presets = _persona_presets()
+        if persona_presets:
             draw_text("  Persona (Who):", x, y)
             y += line_h
-            for preset in PERSONA_PRESETS[:3]:
+            for preset in persona_presets[:3]:
                 pieces: list[str] = []
                 if preset.voice:
                     pieces.append(preset.voice)
@@ -852,10 +872,11 @@ def _draw_pattern_canvas(c: canvas.Canvas) -> None:  # pragma: no cover - visual
         pass
 
     try:
-        if INTENT_PRESETS:
+        intent_presets = _intent_presets()
+        if intent_presets:
             draw_text("  Intent (Why):", x, y)
             y += line_h
-            for preset in INTENT_PRESETS[:4]:
+            for preset in intent_presets[:4]:
                 label_line = f"    {preset.label}: {preset.intent}"
                 draw_text(label_line, x, y)
                 if rect is not None:
@@ -874,10 +895,11 @@ def _draw_pattern_canvas(c: canvas.Canvas) -> None:  # pragma: no cover - visual
     y += line_h
 
     try:
-        if PERSONA_PRESETS:
+        persona_presets = _persona_presets()
+        if persona_presets:
             draw_text("  Persona (Who):", x, y)
             y += line_h
-            for preset in PERSONA_PRESETS[:3]:
+            for preset in persona_presets[:3]:
                 pieces: list[str] = []
                 if preset.voice:
                     pieces.append(preset.voice)
@@ -904,10 +926,11 @@ def _draw_pattern_canvas(c: canvas.Canvas) -> None:  # pragma: no cover - visual
         pass
 
     try:
-        if INTENT_PRESETS:
+        intent_presets = _intent_presets()
+        if intent_presets:
             draw_text("  Intent (Why):", x, y)
             y += line_h
-            for preset in INTENT_PRESETS[:4]:
+            for preset in intent_presets[:4]:
                 label_line = f"    {preset.label}: {preset.intent}"
                 draw_text(label_line, x, y)
                 if rect is not None:

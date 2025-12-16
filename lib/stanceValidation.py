@@ -11,33 +11,72 @@ GUI.
 from .personaConfig import (
     INTENT_SPOKEN_TO_CANONICAL,
     persona_docs_map,
-    PERSONA_PRESETS,
-    INTENT_PRESETS,
 )
 
-VOICE_TOKENS: set[str] = set(persona_docs_map("voice").keys())
-AUDIENCE_TOKENS: set[str] = set(persona_docs_map("audience").keys())
-TONE_TOKENS: set[str] = set(persona_docs_map("tone").keys())
-INTENT_TOKENS: set[str] = set(persona_docs_map("intent").keys())
-# Spoken variants for intent tokens (Talon list keys).
-INTENT_SPOKEN_TOKENS: set[str] = set(INTENT_SPOKEN_TO_CANONICAL.keys())
-AXIS_TOKENS: set[str] = VOICE_TOKENS | AUDIENCE_TOKENS | TONE_TOKENS | INTENT_TOKENS
+def _axis_tokens(axis: str) -> set[str]:
+    """Return the latest persona/intent tokens for the given axis."""
 
-_PERSONA_PRESET_SPOKEN_SET: set[str] = {
-    name
-    for preset in PERSONA_PRESETS
-    for name in {
-        (preset.spoken or "").strip().lower(),
-        (preset.label or "").strip().lower(),
-        (preset.key or "").strip().lower(),
-    }
-    if name
-}
-_INTENT_PRESET_SPOKEN_SET: set[str] = {
-    (preset.key or "").strip().lower()
-    for preset in INTENT_PRESETS
-    if (preset.key or "").strip()
-}
+    try:
+        return set(persona_docs_map(axis).keys())
+    except Exception:
+        return set()
+
+
+def _intent_spoken_tokens() -> set[str]:
+    """Return the latest spoken intent tokens."""
+
+    try:
+        return set(INTENT_SPOKEN_TO_CANONICAL.keys())
+    except Exception:
+        return set()
+
+
+def _persona_presets():
+    """Return the latest persona presets (reload-safe)."""
+
+    try:
+        from . import personaConfig
+
+        return tuple(getattr(personaConfig, "PERSONA_PRESETS", ()))
+    except Exception:
+        return ()
+
+
+def _intent_presets():
+    """Return the latest intent presets (reload-safe)."""
+
+    try:
+        from . import personaConfig
+
+        return tuple(getattr(personaConfig, "INTENT_PRESETS", ()))
+    except Exception:
+        return ()
+
+
+def _persona_preset_spoken_set() -> set[str]:
+    """Return spoken tokens for persona presets."""
+
+    spoken: set[str] = set()
+    for preset in _persona_presets():
+        for name in {
+            (preset.spoken or "").strip().lower(),
+            (preset.label or "").strip().lower(),
+            (preset.key or "").strip().lower(),
+        }:
+            if name:
+                spoken.add(name)
+    return spoken
+
+
+def _intent_preset_spoken_set() -> set[str]:
+    """Return spoken tokens for intent presets."""
+
+    spoken: set[str] = set()
+    for preset in _intent_presets():
+        key = (preset.key or "").strip().lower()
+        if key:
+            spoken.add(key)
+    return spoken
 
 
 def valid_stance_command(cmd: str) -> bool:
@@ -64,7 +103,7 @@ def valid_stance_command(cmd: str) -> bool:
     # Single-part commands.
     if lower.startswith("persona "):
         name = lower[len("persona ") :].strip()
-        return name in _PERSONA_PRESET_SPOKEN_SET
+        return name in _persona_preset_spoken_set()
 
     if lower.startswith("intent "):
         return False
@@ -82,7 +121,12 @@ def valid_stance_command(cmd: str) -> bool:
         seen_persona_axis = False
         # Sort by length so longer multi-word phrases ("to junior engineer")
         # win over their substrings.
-        axis_phrases = sorted(VOICE_TOKENS | AUDIENCE_TOKENS | TONE_TOKENS, key=len, reverse=True)
+        voice_tokens = _axis_tokens("voice")
+        audience_tokens = _axis_tokens("audience")
+        tone_tokens = _axis_tokens("tone")
+        axis_phrases = sorted(
+            voice_tokens | audience_tokens | tone_tokens, key=len, reverse=True
+        )
         while remaining:
             stripped = remaining.lstrip()
             if not stripped:
@@ -94,7 +138,11 @@ def valid_stance_command(cmd: str) -> bool:
                     continue
                 if stripped.startswith(phrase_l):
                     matched = True
-                    if phrase_l in VOICE_TOKENS or phrase_l in AUDIENCE_TOKENS or phrase_l in TONE_TOKENS:
+                    if (
+                        phrase_l in voice_tokens
+                        or phrase_l in audience_tokens
+                        or phrase_l in tone_tokens
+                    ):
                         seen_persona_axis = True
                     remaining = stripped[len(phrase_l) :]
                     break

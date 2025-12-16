@@ -144,7 +144,7 @@ from ..lib.modelPatternGUI import (
     _axis_value_from_token,
 )
 from ..lib.axisMappings import axis_key_to_value_map_for
-from ..lib.personaConfig import persona_docs_map, PERSONA_PRESETS, INTENT_PRESETS
+from ..lib.personaConfig import persona_docs_map
 from ..lib.stanceValidation import valid_stance_command as _valid_stance_command
 from ..lib.suggestionCoordinator import (
     record_suggestions,
@@ -464,31 +464,73 @@ mod.tag(
     desc="Tag for enabling the model window commands when the window is open",
 )
 
-# Persona/Intent preset lists for stance commands (ADR 042).
-_PERSONA_PRESET_SPOKEN_TO_KEY: dict[str, str] = {}
-for preset in PERSONA_PRESETS:
-    spoken = (preset.spoken or preset.label or preset.key).strip().lower()
-    if not spoken:
-        continue
-    # Last definition wins if duplicates occur.
-    _PERSONA_PRESET_SPOKEN_TO_KEY[spoken] = preset.key
+def _persona_presets():
+    """Return the latest persona presets (reload-safe)."""
 
-_INTENT_PRESET_SPOKEN_TO_KEY: dict[str, str] = {}
-for preset in INTENT_PRESETS:
-    spoken = (preset.key or "").strip().lower()
-    if not spoken:
-        continue
-    _INTENT_PRESET_SPOKEN_TO_KEY[spoken] = preset.key
+    try:
+        from ..lib import personaConfig
 
-# Token sets for Persona/Intent axes and presets used when validating
-# stance_command strings produced by the LLM for `model suggest`.
-VOICE_TOKENS: set[str] = set(persona_docs_map("voice").keys())
-AUDIENCE_TOKENS: set[str] = set(persona_docs_map("audience").keys())
-TONE_TOKENS: set[str] = set(persona_docs_map("tone").keys())
-PURPOSE_TOKENS: set[str] = set(persona_docs_map("intent").keys())
+        return tuple(getattr(personaConfig, "PERSONA_PRESETS", ()))
+    except Exception:
+        return ()
 
-_PERSONA_PRESET_SPOKEN_SET: set[str] = set(_PERSONA_PRESET_SPOKEN_TO_KEY.keys())
-_INTENT_PRESET_SPOKEN_SET: set[str] = set(_INTENT_PRESET_SPOKEN_TO_KEY.keys())
+
+def _intent_presets():
+    """Return the latest intent presets (reload-safe)."""
+
+    try:
+        from ..lib import personaConfig
+
+        return tuple(getattr(personaConfig, "INTENT_PRESETS", ()))
+    except Exception:
+        return ()
+
+
+def _persona_preset_spoken_map() -> dict[str, str]:
+    """Return spoken->key map for persona presets."""
+
+    mapping: dict[str, str] = {}
+    for preset in _persona_presets():
+        spoken = (preset.spoken or preset.label or preset.key).strip().lower()
+        if not spoken:
+            continue
+        mapping[spoken] = preset.key
+    return mapping
+
+
+def _intent_preset_spoken_map() -> dict[str, str]:
+    """Return spoken->key map for intent presets."""
+
+    mapping: dict[str, str] = {}
+    for preset in _intent_presets():
+        spoken = (preset.key or "").strip().lower()
+        if not spoken:
+            continue
+        mapping[spoken] = preset.key
+    return mapping
+
+
+def _axis_tokens(axis: str) -> set[str]:
+    """Return the latest persona/intent axis tokens."""
+
+    try:
+        return set(persona_docs_map(axis).keys())
+    except Exception:
+        return set()
+
+
+def _refresh_persona_intent_lists() -> None:
+    """Populate persona/intent preset lists from current presets."""
+
+    persona_map = _persona_preset_spoken_map()
+    intent_map = _intent_preset_spoken_map()
+    try:
+        ctx.lists["user.personaPreset"] = persona_map
+        ctx.lists["user.intentPreset"] = intent_map
+    except Exception:
+        # In some runtimes, Context may not be fully initialised; fail softly.
+        pass
+    return None
 
 mod.list("personaPreset", desc="Persona (Who) presets for GPT stance")
 mod.list("intentPreset", desc="Intent (Why) presets for GPT stance")
@@ -496,12 +538,7 @@ mod.list("intentPreset", desc="Intent (Why) presets for GPT stance")
 # Session-scoped presets (prompt + stance + contract + directional + destination).
 _PRESETS: dict[str, dict[str, object]] = {}
 
-try:
-    ctx.lists["user.personaPreset"] = _PERSONA_PRESET_SPOKEN_TO_KEY
-    ctx.lists["user.intentPreset"] = _INTENT_PRESET_SPOKEN_TO_KEY
-except Exception:
-    # In some runtimes, Context may not be fully initialised; fail softly.
-    pass
+_refresh_persona_intent_lists()
 
 
 _prompt_pipeline = PromptPipeline()
@@ -714,11 +751,12 @@ def _build_persona_intent_docs() -> str:
         lines.append("")
 
     try:
-        from ..lib.personaConfig import PERSONA_PRESETS, INTENT_PRESETS
+        persona_presets = _persona_presets()
+        intent_presets = _intent_presets()
 
-        if PERSONA_PRESETS:
+        if persona_presets:
             lines.append("Persona presets (speakable presets for stance commands):")
-            for preset in PERSONA_PRESETS:
+            for preset in persona_presets:
                 bits: list[str] = []
                 if preset.voice:
                     bits.append(preset.voice)
@@ -731,9 +769,9 @@ def _build_persona_intent_docs() -> str:
                 lines.append(f"- persona {preset.key}: {label} ({stance})")
             lines.append("")
 
-        if INTENT_PRESETS:
+        if intent_presets:
             lines.append("Intent presets (shortcut names for `intent` commands):")
-            for preset in INTENT_PRESETS:
+            for preset in intent_presets:
                 label = preset.label or preset.key
                 intent = preset.intent
                 lines.append(f"- intent {preset.key}: {label} ({intent})")
@@ -978,7 +1016,7 @@ class UserActions:
             return
         from ..lib.personaConfig import PersonaPreset  # Local import for Talon reloads
 
-        preset_map: dict[str, PersonaPreset] = {p.key: p for p in PERSONA_PRESETS}
+        preset_map: dict[str, PersonaPreset] = {p.key: p for p in _persona_presets()}
         preset = preset_map.get(preset_key)
         if preset is None:
             notify(f"GPT: Unknown persona preset: {preset_key}")
@@ -1014,7 +1052,7 @@ class UserActions:
             return
         from ..lib.personaConfig import IntentPreset  # Local import for Talon reloads
 
-        preset_map: dict[str, IntentPreset] = {p.key: p for p in INTENT_PRESETS}
+        preset_map: dict[str, IntentPreset] = {p.key: p for p in _intent_presets()}
         preset = preset_map.get(preset_key)
         if preset is None:
             notify(f"GPT: Unknown intent preset: {preset_key}")
@@ -1823,8 +1861,8 @@ class UserActions:
     def gpt_rerun_last_recipe(
         static_prompt: str,
         completeness: str,
-        scope: List[str],
-        method: List[str],
+        scope: Union[str, List[str]],
+        method: Union[str, List[str]],
         directional: str,
         form: Union[str, List[str]] = "",
         channel: Union[str, List[str]] = "",
@@ -1873,9 +1911,9 @@ class UserActions:
             valid = axis_key_to_value_map_for(axis)
             return [t for t in tokens if t in valid]
 
-        # Normalise incoming overrides to lists of tokens; treat non-lists as empty.
-        scope_value = scope if isinstance(scope, list) else []
-        method_value = method if isinstance(method, list) else []
+        # Normalise incoming overrides to lists of tokens; treat falsy values as empty.
+        scope_value = scope if isinstance(scope, list) else _tokens_list(scope)
+        method_value = method if isinstance(method, list) else _tokens_list(method)
         form_value = form if isinstance(form, list) else _tokens_list(form)
         channel_value = channel if isinstance(channel, list) else _tokens_list(channel)
 
@@ -2181,8 +2219,8 @@ class UserActions:
         source: ModelSource,
         static_prompt: str,
         completeness: str,
-        scope: List[str],
-        method: List[str],
+        scope: Union[str, List[str]],
+        method: Union[str, List[str]],
         directional: str,
         form: Union[str, List[str]] = "",
         channel: Union[str, List[str]] = "",

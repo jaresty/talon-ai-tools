@@ -13,11 +13,6 @@ from .canvasFont import apply_canvas_typeface
 from .overlayHelpers import apply_scroll_delta, clamp_scroll, scroll_fraction
 from .modelState import GPTState
 from .suggestionCoordinator import last_recipe_snapshot, suggestion_grammar_phrase
-from .personaConfig import (
-    intent_bucket_presets,
-    intent_bucket_spoken_tokens,
-    PERSONA_PRESETS,
-)
 from .helpDomain import (
     help_index,
     help_search,
@@ -138,6 +133,26 @@ def _rect_contains(rect: skia.Rect, x: float, y: float) -> bool:
     except Exception:
         return False
     return rx <= x <= rx + rw and ry <= y <= ry + rh
+
+
+def _persona_presets():
+    """Return the latest persona presets (reload-safe)."""
+    try:
+        from . import personaConfig
+
+        return tuple(getattr(personaConfig, "PERSONA_PRESETS", ()))
+    except Exception:
+        return ()
+
+
+def _intent_spoken_buckets():
+    """Return the latest intent buckets keyed by spoken token."""
+    try:
+        from . import personaConfig
+
+        return personaConfig.intent_bucket_spoken_tokens()
+    except Exception:
+        return {}
 
 
 def _log(msg: str) -> None:
@@ -857,7 +872,7 @@ def _cheat_sheet_text() -> str:
     def _persona_presets() -> List[str]:
         names: List[str] = []
         try:
-            for preset in PERSONA_PRESETS:
+            for preset in _persona_presets():
                 spoken = (preset.spoken or "").strip().lower()
                 if spoken:
                     names.append(spoken)
@@ -867,7 +882,7 @@ def _cheat_sheet_text() -> str:
 
     intent_spoken_buckets = {}
     try:
-        intent_spoken_buckets = intent_bucket_spoken_tokens()
+        intent_spoken_buckets = _intent_spoken_buckets()
     except Exception:
         intent_spoken_buckets = {}
 

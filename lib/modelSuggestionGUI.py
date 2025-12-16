@@ -23,7 +23,6 @@ from .suggestionCoordinator import (
     suggestion_grammar_phrase,
     suggestion_context,
 )
-from .personaConfig import PERSONA_PRESETS, normalize_intent_token
 from .modelPatternGUI import (
     _axis_value,
     _parse_recipe,
@@ -112,16 +111,39 @@ _PANEL_WIDTH = 840
 # respecting screen margins on smaller displays.
 _PANEL_HEIGHT = 880
 
-_PERSONA_PRESET_NAME_TO_PRESET = {
-    name: preset
-    for preset in PERSONA_PRESETS
-    for name in {
-        (preset.spoken or "").strip().lower(),
-        (preset.label or "").strip().lower(),
-        (preset.key or "").strip().lower(),
-    }
-    if name
-}
+def _persona_presets():
+    """Return the latest persona presets (reload-safe)."""
+    try:
+        from . import personaConfig
+
+        return tuple(getattr(personaConfig, "PERSONA_PRESETS", ()))
+    except Exception:
+        return ()
+
+
+def _persona_preset_map() -> dict[str, object]:
+    """Return a name->PersonaPreset map built from the latest presets."""
+    preset_map: dict[str, object] = {}
+    for preset in _persona_presets():
+        for name in {
+            (preset.spoken or "").strip().lower(),
+            (preset.label or "").strip().lower(),
+            (preset.key or "").strip().lower(),
+        }:
+            if not name:
+                continue
+            preset_map[name] = preset
+    return preset_map
+
+
+def _normalize_intent(value: str) -> str:
+    """Normalise an intent token using the latest personaConfig helpers."""
+    try:
+        from . import personaConfig
+
+        return personaConfig.normalize_intent_token(value)
+    except Exception:
+        return str(value or "").strip()
 
 
 def _wrap_lines_count(
@@ -370,7 +392,7 @@ def _persona_long_form(stance_command: str, persona_bits: list[str]) -> str:
         return ""
 
     axes = [bit for bit in persona_bits if bit]
-    preset = _PERSONA_PRESET_NAME_TO_PRESET.get(preset_name)
+    preset = _persona_preset_map().get(preset_name)
     if not axes and preset:
         axes = [value for value in (preset.voice, preset.audience, preset.tone) if value]
     if not axes:
@@ -386,7 +408,7 @@ def _match_persona_preset(
     voice_l = voice.strip().lower()
     audience_l = audience.strip().lower()
     tone_l = tone.strip().lower()
-    for preset in PERSONA_PRESETS:
+    for preset in _persona_presets():
         preset_voice = (preset.voice or "").strip().lower()
         preset_audience = (preset.audience or "").strip().lower()
         preset_tone = (preset.tone or "").strip().lower()
@@ -413,7 +435,7 @@ def _preset_from_command(stance_command: str) -> Optional["PersonaPreset"]:
     name = cmd[len("persona ") :].strip()
     if not name:
         return None
-    return _PERSONA_PRESET_NAME_TO_PRESET.get(name)
+    return _persona_preset_map().get(name)
 
 
 def _suggestion_stance_info(suggestion: Suggestion) -> dict[str, object]:
@@ -425,7 +447,7 @@ def _suggestion_stance_info(suggestion: Suggestion) -> dict[str, object]:
     ]
     persona_bits = [bit for bit in persona_bits if bit]
     intent_text = getattr(suggestion, "intent_purpose", "").strip()
-    intent_display = normalize_intent_token(intent_text) or intent_text
+    intent_display = _normalize_intent(intent_text) or intent_text
     raw_stance = (getattr(suggestion, "stance_command", "") or "").strip()
     stance_command = raw_stance if valid_stance_command(raw_stance) else ""
     generated_from_axes = False

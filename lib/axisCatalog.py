@@ -1,9 +1,10 @@
 from __future__ import annotations
 
+from importlib import reload
 from pathlib import Path
 from typing import Dict, List
 
-from .axisConfig import AXIS_KEY_TO_VALUE
+from . import axisConfig
 from .staticPromptConfig import (
     STATIC_PROMPT_CONFIG,
     get_static_prompt_axes as _get_static_prompt_axes,
@@ -25,6 +26,20 @@ _AXIS_LIST_FILES: Dict[str, str] = {
 }
 
 _LEGACY_STYLE_LIST = "styleModifier.talon-list"
+
+
+def _axis_config_map() -> Dict[str, Dict[str, str]]:
+    """Return the latest axis config map, reloading axisConfig if needed."""
+
+    try:
+        reload(axisConfig)
+    except Exception:
+        # Best effort: fall back to whatever is already loaded.
+        pass
+    try:
+        return getattr(axisConfig, "AXIS_KEY_TO_VALUE", {})
+    except Exception:
+        return {}
 
 
 def _read_list_tokens(path: Path) -> List[str]:
@@ -57,7 +72,7 @@ def axis_list_tokens(axis_name: str, lists_dir: str | Path | None = None) -> Lis
     """
 
     filename = _AXIS_LIST_FILES.get(axis_name)
-    ssot_tokens = list((AXIS_KEY_TO_VALUE.get(axis_name) or {}).keys())
+    ssot_tokens = list((_axis_config_map().get(axis_name) or {}).keys())
     if not filename:
         return ssot_tokens
     # When lists_dir is falsy/None, skip on-disk list reads (catalog-only).
@@ -121,7 +136,8 @@ def axis_catalog(
     - static_prompt_profiles: raw profiles for callers that need direct access.
     """
 
-    if "style" in AXIS_KEY_TO_VALUE:
+    axis_map = _axis_config_map()
+    if "style" in axis_map:
         raise ValueError("style axis is removed; drop legacy style before building the axis catalog.")
 
     axis_lists: Dict[str, List[str]] = {}
@@ -140,7 +156,7 @@ def axis_catalog(
                 )
 
     return {
-        "axes": AXIS_KEY_TO_VALUE,
+        "axes": axis_map,
         "axis_list_tokens": axis_lists,
         "static_prompts": static_prompt_catalog(static_prompt_list_path if lists_dir else ""),
         "static_prompt_descriptions": static_prompt_description_overrides(),

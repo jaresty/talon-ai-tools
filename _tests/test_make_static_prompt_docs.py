@@ -23,6 +23,8 @@ if not TYPE_CHECKING:
             output_path = repo_root / "tmp" / "static-prompt-docs.md"
             self.assertTrue(output_path.exists(), "Expected tmp/static-prompt-docs.md to be generated")
             text = output_path.read_text(encoding="utf-8")
+            self.assertIn("## Static prompt catalog snapshots", text)
+            self.assertIn("## Static prompt catalog details", text)
             self.assertIn("Other static prompts", text)
             self.assertIn("defaults:", text)
 else:

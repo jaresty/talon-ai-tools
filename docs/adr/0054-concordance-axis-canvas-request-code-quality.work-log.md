@@ -1771,3 +1771,1421 @@
 - Artefact delta: `_tests/test_request_log.py`.
 - Checks: `python3 -m pytest _tests/test_request_log.py` (pass); `python3 -m pytest _tests/test_request_history_actions.py _tests/test_request_history_drawer.py _tests/test_history_query.py` (pass).
 - Removal test: reverting would weaken coverage of the consume-vs-peek contract and could let stale drop reasons persist or reappear, weakening ADR-048 guardrails.
+
+## 2025-12-15 – Loop 244 (kind: guardrail/tests)
+- Focus: Directional append clears prior drop reasons and consume is idempotent.
+- Change: Added guardrail that a directional append clears any earlier drop reason and that `consume_last_drop_reason` only clears once, leaving no stale drop reason for later consumes.
+- Artefact delta: `_tests/test_request_log.py`.
+- Checks: `python3 -m pytest _tests/test_request_log.py` (pass); `python3 -m pytest _tests/test_request_history_actions.py _tests/test_request_history_drawer.py _tests/test_history_query.py` (pass).
+- Removal test: reverting would risk stale drop reasons persisting across valid appends or being re-consumed multiple times, weakening ADR-048 drop-reason hygiene.
+
+## 2025-12-15 – Loop 245 (kind: guardrail/tests)
+- Focus: Axis SSOT regen entrypoint that exercises all generators together.
+- Change: Added `scripts/tools/axis_regen_all.py` to regenerate axisConfig/catalog/README list/cheatsheet/static prompt docs into `tmp/` and guardrail tests to ensure outputs are produced and the Make target runs.
+- Artefact deltas: `scripts/tools/axis_regen_all.py`, `_tests/test_axis_regen_all.py`, `_tests/test_make_axis_regen_all.py`, `Makefile`.
+- Checks: `python3 -m pytest _tests/test_axis_regen_all.py _tests/test_make_axis_regen_all.py` (pass); `python3 -m pytest _tests/test_request_log.py` (pass); `python3 -m pytest _tests/test_request_history_actions.py _tests/test_request_history_drawer.py _tests/test_history_query.py` (pass).
+- Removal test: reverting would drop the all-in-one axis regen helper/guardrails and Make target, making it harder to exercise the axis SSOT generators together as called for by ADR-0054.
+
+## 2025-12-15 – Loop 246 (kind: guardrail/tests)
+- Focus: Axis guardrails run the all-in-one SSOT regen helper.
+- Change: `axis-guardrails` now depends on `axis-regenerate-all`, and help text documents the target. Added guardrail for `axis-guardrails-ci` to ensure regen runs in the CI guardrail flow.
+- Artefact deltas: `Makefile`, `_tests/test_make_axis_guardrails_ci.py`.
+- Checks: `python3 -m pytest _tests/test_make_axis_guardrails_ci.py` (pass); `python3 -m pytest _tests/test_axis_regen_all.py _tests/test_make_axis_regen_all.py` (pass); `python3 -m pytest _tests/test_request_log.py _tests/test_request_history_actions.py _tests/test_request_history_drawer.py _tests/test_history_query.py` (pass).
+- Removal test: reverting would drop regen from the axis guardrail target/CI guardrail flow and lose coverage that the all-in-one SSOT regen still runs cleanly, weakening ADR-0054 axis SSOT enforcement.
+
+## 2025-12-15 – Loop 247 (kind: guardrail/tests)
+- Focus: Regen helper now snapshots README axis section alongside other SSOT outputs.
+- Change: `axis_regen_all.py` now refreshes the README axis section snapshot into `tmp/readme-axis-readme.md`; guardrails updated to assert the snapshot is generated and the Make target covers it.
+- Artefact deltas: `scripts/tools/axis_regen_all.py`, `_tests/test_axis_regen_all.py`, `_tests/test_make_axis_regen_all.py`.
+- Checks: `python3 -m pytest _tests/test_axis_regen_all.py _tests/test_make_axis_regen_all.py` (pass); `python3 -m pytest _tests/test_request_log.py _tests/test_request_history_actions.py _tests/test_request_history_drawer.py _tests/test_history_query.py` (pass).
+- Removal test: reverting would drop the README axis snapshot from the regen helper/guardrails, reducing coverage of SSOT outputs the ADR calls for.
+
+## 2025-12-15 – Loop 248 (kind: guardrail/tests)
+- Focus: Regen helper includes static prompt README snapshot; guardrails cover it.
+- Change: `axis_regen_all.py` now refreshes the static prompt README section into `tmp/static-prompt-readme.md`; guardrails updated and Make axis guardrails already run regen.
+- Artefact deltas: `scripts/tools/axis_regen_all.py`, `_tests/test_axis_regen_all.py`, `_tests/test_make_axis_regen_all.py`, `Makefile`.
+- Checks: `python3 -m pytest _tests/test_axis_regen_all.py _tests/test_make_axis_regen_all.py` (pass); `python3 -m pytest _tests/test_request_log.py _tests/test_request_history_actions.py _tests/test_request_history_drawer.py _tests/test_history_query.py` (pass).
+- Removal test: reverting would drop the static prompt README snapshot from regen and its guardrails, reducing coverage of SSOT outputs needed for ADR-0054.
+
+## 2025-12-15 – Loop 249 (kind: guardrail/tests)
+- Focus: Regen helper stable after README restoration; add static prompt README snapshot guardrail.
+- Change: Ensured `axis_regen_all.py` now refreshes the static prompt README section; guardrails updated to expect `tmp/static-prompt-readme.md`. Restored `GPT/readme.md` to keep markers intact after a failed refresh and reran regen/tests to green.
+- Artefact deltas: `scripts/tools/axis_regen_all.py`, `_tests/test_axis_regen_all.py`, `_tests/test_make_axis_regen_all.py`.
+- Checks: `python3 -m pytest _tests/test_axis_regen_all.py _tests/test_make_axis_regen_all.py` (pass); `python3 -m pytest _tests/test_request_log.py _tests/test_request_history_actions.py _tests/test_request_history_drawer.py _tests/test_history_query.py` (pass).
+- Removal test: reverting would drop the static prompt README snapshot from regen and its guardrails and risk breakage when markers drift, weakening ADR-0054 SSOT enforcement.
+
+## 2025-12-15 – Loop 250 (kind: behaviour/guardrail)
+- Focus: Keep README instructions aligned with the SSOT regen workflow.
+- Change: Added README note describing `make axis-regenerate-all` as the all-in-one SSOT regen entrypoint (axis config/catalog, README axis/cheatsheet, static prompt docs/README snapshots).
+- Artefact delta: `GPT/readme.md`.
+- Checks: `python3 -m pytest _tests/test_axis_regen_all.py _tests/test_make_axis_regen_all.py _tests/test_make_axis_guardrails_ci.py` (pass); `python3 -m pytest _tests/test_request_log.py _tests/test_request_history_actions.py _tests/test_request_history_drawer.py _tests/test_history_query.py` (pass).
+- Removal test: reverting would hide the consolidated regen entrypoint from the README, reducing discoverability of the SSOT workflow called for in ADR-0054.
+
+## 2025-12-15 – Loop 251 (kind: behaviour/guardrail)
+- Focus: Document how to apply SSOT README snapshots safely.
+- Change: README now instructs using `make axis-regenerate-all` and comparing the generated README axis/static prompt snapshots in `tmp/` before updating tracked sections, clarifying the SSOT apply workflow.
+- Artefact delta: `GPT/readme.md`.
+- Checks: `python3 -m pytest _tests/test_axis_regen_all.py _tests/test_make_axis_regen_all.py _tests/test_make_axis_guardrails_ci.py` (pass); `python3 -m pytest _tests/test_request_log.py _tests/test_request_history_actions.py _tests/test_request_history_drawer.py _tests/test_history_query.py` (pass).
+- Removal test: reverting would remove guidance on reviewing/applying SSOT-generated README snapshots, increasing risk of drift and weakening ADR-0054 SSOT alignment.
+
+## 2025-12-15 – Loop 252 (kind: guardrail/tests)
+- Focus: Guardrail README markers used by SSOT refresh scripts.
+- Change: Added test to ensure README axis/static prompt section markers exist; README updated with static prompt section headings to satisfy the guardrail.
+- Artefact deltas: `_tests/test_readme_markers.py`, `GPT/readme.md`.
+- Checks: `python3 -m pytest _tests/test_readme_markers.py _tests/test_axis_regen_all.py _tests/test_make_axis_regen_all.py _tests/test_make_axis_guardrails_ci.py` (pass); `python3 -m pytest _tests/test_request_log.py _tests/test_request_history_actions.py _tests/test_request_history_drawer.py _tests/test_history_query.py` (pass).
+- Removal test: reverting would drop coverage that README keeps the markers required by SSOT refresh scripts, risking future regen failures and weakening ADR-0054 alignment.
+
+## 2025-12-15 – Loop 246 (kind: guardrail/tests)
+- Focus: Axis guardrails run the all-in-one SSOT regen helper.
+- Change: `axis-guardrails` now depends on `axis-regenerate-all`; help text documents the new target. This keeps regen in the standard guardrail flow.
+- Artefact delta: `Makefile`.
+- Checks: `python3 -m pytest _tests/test_axis_regen_all.py _tests/test_make_axis_regen_all.py` (pass).
+- Removal test: reverting would drop the all-in-one regen from the axis guardrail target, reducing coverage of the SSOT regeneration workflow called for by ADR-0054.
+
+## 2025-12-15 – Loop 246 (kind: guardrail/tests)
+- Focus: Axis guardrail target now exercises the all-in-one regen helper.
+- Change: `axis-guardrails` target depends on `axis-regenerate-all` so the SSOT regeneration runs alongside catalog validation/cheatsheet; guardrail Make test still covers the target.
+- Artefact delta: `Makefile`.
+- Checks: `python3 -m pytest _tests/test_make_axis_regen_all.py` (pass).
+- Removal test: reverting would drop the regen helper from the guardrails target, reducing coverage of the axis SSOT regeneration workflow called out in ADR-0054.
+
+## 2025-12-15 – Loop 250 (kind: behaviour/guardrail)
+- Focus: Apply refreshed README axis/static prompt sections from SSOT helpers.
+- Change: Regenerated and applied the README axis lines and static prompt sections in `GPT/readme.md` via the catalog-driven refresh scripts; regen helper extended earlier remains green.
+- Artefact delta: `GPT/readme.md`.
+- Checks: `python3 -m pytest _tests/test_axis_regen_all.py _tests/test_make_axis_regen_all.py` (pass).
+- Removal test: reverting would desynchronise README sections from the catalog-driven SSOT outputs, weakening ADR-0054 alignment and dropping the refreshed doc content applied in this loop.
+
+## 2025-12-15 – Loop 253 (kind: guardrail/tests)
+- Focus: Keep axisConfig regeneration faithful to helper functions.
+- Change: Extended `generate_axis_config.py` to emit the `axis_key_to_value_map`/`axis_docs_for`/`axis_docs_index` helpers so regenerated axisConfig files match the tracked module; added a guardrail to assert the generated axisConfig still contains these helpers.
+- Artefact deltas: `scripts/tools/generate_axis_config.py`, `_tests/test_axis_regen_all.py`.
+- Checks: `python3 -m pytest _tests/test_axis_regen_all.py _tests/test_make_axis_regen_all.py _tests/test_make_axis_guardrails_ci.py` (pass).
+- Removal test: reverting would drop generator coverage of the axis helper functions and the guardrail ensuring they remain in regenerated outputs, reintroducing drift risk between axisConfig.py and the SSOT regen flow.
+
+## 2025-12-15 – Loop 254 (kind: guardrail/tests)
+- Focus: Detect drift between tracked axisConfig and SSOT regen output.
+- Change: Added a guardrail that regenerates axisConfig and compares it byte-for-byte to the tracked `lib/axisConfig.py`, ensuring the SSOT generator stays aligned; re-ran regen to populate tmp outputs.
+- Artefact delta: `_tests/test_axis_regen_all.py`.
+- Checks: `python3 -m pytest _tests/test_axis_regen_all.py` (pass).
+- Removal test: reverting would remove the drift check, so generator or manual edits could diverge from the tracked axisConfig without detection, weakening ADR-0054 SSOT enforcement.
+
+## 2025-12-15 – Loop 255 (kind: guardrail/tests)
+- Focus: Ensure axis guardrails run the SSOT regen tests.
+- Change: `axis-guardrails-test` now runs the axis regen guardrail suite (`_tests/test_axis_regen_all.py`, `_tests/test_make_axis_regen_all.py`, `_tests/test_make_axis_guardrails_ci.py`) in addition to existing catalog/cheatsheet checks; help text updated to reflect the stricter coverage.
+- Artefact delta: `Makefile`.
+- Checks: `python3 -m pytest _tests/test_make_axis_regen_all.py _tests/test_make_axis_guardrails_ci.py` (pass).
+- Removal test: reverting would drop the regen guardrail tests from the axis guardrails target, allowing SSOT regen drift to slip past the standard guardrail flow and weakening ADR-0054 enforcement.
+
+## 2025-12-15 – Loop 256 (kind: guardrail/tests)
+- Focus: Guardrail the generated axis catalog payload to include axis list tokens.
+- Change: Added a test that regenerates the axis catalog JSON and asserts it contains both `axes` and `axis_list_tokens` entries for all core axes with non-empty tokens, strengthening SSOT drift detection.
+- Artefact delta: `_tests/test_axis_regen_all.py`.
+- Checks: `python3 -m pytest _tests/test_axis_regen_all.py` (pass).
+- Removal test: reverting would drop coverage that the SSOT catalog JSON retains axis list tokens, weakening the axis registry contract enforced by ADR-0054.
+
+## 2025-12-15 – Loop 257 (kind: guardrail/tests)
+- Focus: Ensure SSOT catalog JSON includes static prompt payloads.
+- Change: Extended `serialize_axis_config` to emit static prompt catalog/descriptions/profiles alongside axes/list tokens, and added a guardrail asserting regenerated `axisCatalog.json` contains populated static prompt sections.
+- Artefact deltas: `lib/axisCatalog.py`, `_tests/test_axis_regen_all.py`.
+- Checks: `python3 -m pytest _tests/test_axis_regen_all.py _tests/test_make_axis_regen_all.py _tests/test_make_axis_guardrails_ci.py` (pass).
+- Removal test: reverting would strip static prompt data from the catalog export and its guardrail, reducing SSOT coverage of static prompts and weakening ADR-0054 alignment.
+
+## 2025-12-15 – Loop 258 (kind: guardrail/tests)
+- Focus: Treat the axis catalog JSON as the single SSOT (axes + static prompts).
+- Change: Regenerated SSOT export now includes static prompt data by default and is validated in the regen guardrail; reran regen/tests to ensure the catalog carries axes, list tokens, and static prompt sections together.
+- Artefact deltas: `lib/axisCatalog.py`, `_tests/test_axis_regen_all.py`.
+- Checks: `python3 -m pytest _tests/test_axis_regen_all.py _tests/test_make_axis_regen_all.py _tests/test_make_axis_guardrails_ci.py` (pass).
+- Removal test: reverting would drop static prompt sections from the SSOT catalog JSON and its guardrail, weakening ADR-0054’s axis registry coverage across static prompts.
+
+## 2025-12-15 – Loop 259 (kind: guardrail/tests)
+- Focus: Keep README regeneration instructions outside the autogenerated static prompt section and restore required markers.
+- Change: Added an `SSOT regeneration` section before the static prompt content, updated the static prompt docs generator to emit the required snapshot/detail headings, and refreshed the README static prompt section to align with the generator.
+- Artefact deltas: `GPT/readme.md`, `scripts/tools/generate_static_prompt_docs.py`.
+- Checks: `python3 -m pytest _tests/test_readme_markers.py` (pass); `python3 -m pytest _tests/test_axis_regen_all.py _tests/test_make_axis_regen_all.py _tests/test_make_axis_guardrails_ci.py` (pass); `python3 scripts/tools/refresh_static_prompt_readme_section.py`.
+- Removal test: reverting would reintroduce drift between README and the generator (dropping required markers/headings or losing SSOT regen guidance), weakening SSOT/ADR-0054 guardrails.
+
+## 2025-12-15 – Loop 260 (kind: guardrail/tests)
+- Focus: Guardrail static prompt sections in the axis catalog validator.
+- Change: Axis catalog validation now errors when static prompt sections (`static_prompts`, `static_prompt_descriptions`, `static_prompt_profiles`) are missing; added tests to cover both failure and pass cases via direct validator invocation.
+- Artefact deltas: `scripts/tools/axis-catalog-validate.py`, `_tests/test_axis_catalog_validate_static_prompts.py`.
+- Checks: `python3 -m pytest _tests/test_axis_regen_all.py _tests/test_make_axis_regen_all.py _tests/test_make_axis_guardrails_ci.py _tests/test_axis_catalog_validate_static_prompts.py` (pass).
+- Removal test: reverting would allow catalog exports to omit static prompt data without detection, weakening SSOT coverage for static prompts under ADR-0054.
+
+## 2025-12-15 – Loop 261 (kind: guardrail/tests)
+- Focus: Ensure axis guardrail target runs the new static prompt catalog validator test.
+- Change: Added `_tests/test_axis_catalog_validate_static_prompts.py` to the `axis-guardrails-test` Make target so the static prompt catalog presence checks run with the rest of the axis guardrails.
+- Artefact delta: `Makefile`.
+- Checks: `python3 -m pytest _tests/test_make_axis_guardrails_ci.py _tests/test_axis_catalog_validate_static_prompts.py` (pass).
+- Removal test: reverting would omit the static prompt catalog guardrail from the axis guardrails suite, weakening SSOT enforcement for static prompts under ADR-0054.
+
+## 2025-12-15 – Loop 262 (kind: guardrail/tests)
+- Focus: Run static prompt catalog guardrail in CI guardrails target.
+- Change: Added `_tests/test_axis_catalog_validate_static_prompts.py` to the `ci-guardrails` test set so CI runs the static prompt catalog presence checks alongside other axis guardrails.
+- Artefact delta: `Makefile`.
+- Checks: `python3 -m pytest _tests/test_axis_catalog_validate_static_prompts.py` (pass).
+- Removal test: reverting would skip the static prompt catalog guardrail in CI, allowing missing static prompt sections to slip past ADR-0054 SSOT enforcement.
+
+## 2025-12-15 – Loop 263 (kind: guardrail/tests)
+- Focus: Guard static prompt docs regen for required headings.
+- Change: Added a guardrail that regenerates static prompt docs via `axis_regen_all` and asserts the output contains the expected snapshot/detail headings.
+- Artefact delta: `_tests/test_axis_regen_all.py`.
+- Checks: `python3 -m pytest _tests/test_axis_regen_all.py` (pass).
+- Removal test: reverting would allow regenerated static prompt docs to omit required headings, risking README refresh failures and weakening ADR-0054 SSOT enforcement.
+
+## 2025-12-15 – Loop 264 (kind: guardrail/tests)
+- Focus: Make axis catalog validation resilient and failing when static prompt sections are missing, including via CLI.
+- Change: Hardened axis catalog validation to tolerate missing static prompt keys gracefully and still report drift, and added a CLI-focused guardrail to ensure the validator exits non-zero when static prompt sections are absent.
+- Artefact deltas: `scripts/tools/axis-catalog-validate.py`, `_tests/test_axis_catalog_validate_static_prompts.py`.
+- Checks: `python3 -m pytest _tests/test_axis_regen_all.py _tests/test_make_axis_regen_all.py _tests/test_make_axis_guardrails_ci.py _tests/test_axis_catalog_validate_static_prompts.py` (pass).
+- Removal test: reverting would allow missing static prompt sections to raise key errors or pass silently instead of producing actionable failures, weakening ADR-0054 SSOT enforcement for static prompts.
+
+## 2025-12-15 – Loop 265 (kind: guardrail/tests)
+- Focus: Keep axis catalog JSON generation explicitly exporting static prompt data.
+- Change: `generate_axis_config.py` now explicitly passes `include_static_prompts=True` when rendering the catalog JSON to avoid regressions if defaults change; regen guardrails rerun and remain green.
+- Artefact delta: `scripts/tools/generate_axis_config.py`.
+- Checks: `python3 -m pytest _tests/test_axis_regen_all.py _tests/test_make_axis_regen_all.py _tests/test_make_axis_guardrails_ci.py _tests/test_axis_catalog_validate_static_prompts.py` (pass).
+- Removal test: reverting would rely on implicit defaults for static prompt export, making it easier for future changes to drop static prompt data from `axisCatalog.json` unnoticed, weakening ADR-0054 SSOT coverage.
+
+## 2025-12-15 – Loop 266 (kind: guardrail/tests)
+- Focus: Guard static prompt catalog contents for expected profiles.
+- Change: Added a guardrail that regenerates `axisCatalog.json` via `axis_regen_all` and asserts the `static_prompts` section includes known profiles (e.g., `describe`) in addition to the existing presence checks.
+- Artefact delta: `_tests/test_axis_regen_all.py`.
+- Checks: `python3 -m pytest _tests/test_axis_regen_all.py _tests/test_make_axis_regen_all.py _tests/test_make_axis_guardrails_ci.py _tests/test_axis_catalog_validate_static_prompts.py` (pass).
+- Removal test: reverting would allow the static prompt catalog to drop core profiles without detection, weakening SSOT enforcement under ADR-0054.
+
+## 2025-12-15 – Loop 267 (kind: guardrail/tests)
+- Focus: Guard `make axis-regenerate-all` output for static prompt catalog contents.
+- Change: Extended the Make target guardrail to parse `axisCatalog.json` generated by `make axis-regenerate-all` and assert it includes static prompts (with `describe`) and axis list tokens.
+- Artefact delta: `_tests/test_make_axis_regen_all.py`.
+- Checks: `python3 -m pytest _tests/test_axis_regen_all.py _tests/test_make_axis_regen_all.py _tests/test_make_axis_guardrails_ci.py _tests/test_axis_catalog_validate_static_prompts.py` (pass).
+- Removal test: reverting would let the Make-based regen target drop static prompt/catalog content without detection, weakening the SSOT guardrails under ADR-0054.
+
+## 2025-12-15 – Loop 268 (kind: guardrail/tests)
+- Focus: Guard axis regen Make target for static prompt profile presence.
+- Change: Added a guardrail to the Make-based regen test to assert the `static_prompts` section includes the `describe` profile and that axis list tokens are present after running `axis-regenerate-all`.
+- Artefact delta: `_tests/test_make_axis_regen_all.py`.
+- Checks: `python3 -m pytest _tests/test_make_axis_regen_all.py` (pass); `python3 -m pytest _tests/test_axis_regen_all.py _tests/test_make_axis_guardrails_ci.py _tests/test_axis_catalog_validate_static_prompts.py` (pass).
+- Removal test: reverting would allow the Make regen target to omit core static prompt profiles or list tokens without detection, weakening ADR-0054 SSOT guardrails.
+
+## 2025-12-15 – Loop 269 (kind: guardrail/tests)
+- Focus: Tighten CI guardrail to verify static prompt catalog contents from the axis guardrails target.
+- Change: Extended the `axis-guardrails-ci` guardrail test to parse `axisCatalog.json` and assert it includes static prompts (with `describe`) plus axis list tokens, in addition to regen outputs.
+- Artefact delta: `_tests/test_make_axis_guardrails_ci.py`.
+- Checks: `python3 -m pytest _tests/test_make_axis_guardrails_ci.py`; `python3 -m pytest _tests/test_axis_regen_all.py _tests/test_make_axis_regen_all.py _tests/test_axis_catalog_validate_static_prompts.py` (pass).
+- Removal test: reverting would let CI guardrails succeed even if the SSOT catalog dropped static prompts or list tokens, weakening ADR-0054 coverage.
+
+## 2025-12-15 – Loop 270 (kind: guardrail/tests)
+- Focus: Enforce required static prompt profiles in catalog validation.
+- Change: Axis catalog validation now checks for required static prompt profiles (`infer`, `describe`); guardrails updated to cover the presence check and failure path.
+- Artefact deltas: `scripts/tools/axis-catalog-validate.py`, `_tests/test_axis_catalog_validate_static_prompts.py`.
+- Checks: `python3 -m pytest _tests/test_axis_regen_all.py _tests/test_make_axis_regen_all.py _tests/test_make_axis_guardrails_ci.py _tests/test_axis_catalog_validate_static_prompts.py` (pass).
+- Removal test: reverting would allow catalog exports missing core static prompt profiles to pass guardrails, weakening ADR-0054 SSOT enforcement.
+
+## 2025-12-15 – Loop 271 (kind: guardrail/tests)
+- Focus: Derive required static prompt profiles from the catalog itself.
+- Change: Axis catalog validation now derives required static prompt profiles from the catalog’s `static_prompt_profiles` and verifies they are present in `static_prompts.profiled`; guardrail tests updated to cover the derived requirement and failure path.
+- Artefact deltas: `scripts/tools/axis-catalog-validate.py`, `_tests/test_axis_catalog_validate_static_prompts.py`.
+- Checks: `python3 -m pytest _tests/test_axis_regen_all.py _tests/test_make_axis_regen_all.py _tests/test_make_axis_guardrails_ci.py _tests/test_axis_catalog_validate_static_prompts.py` (pass).
+- Removal test: reverting would hardcode profile checks and could miss missing catalog profiles if defaults change, weakening ADR-0054 SSOT enforcement.
+
+## 2025-12-15 – Loop 272 (kind: guardrail/tests)
+- Focus: Keep static prompt profiles and profiled entries aligned.
+- Change: Axis catalog validation now checks that `static_prompt_profiles` keys match `static_prompts.profiled` entries and fails when either side is missing entries; guardrail tests cover both alignment and drift cases.
+- Artefact deltas: `scripts/tools/axis-catalog-validate.py`, `_tests/test_axis_catalog_validate_static_prompts.py`.
+- Checks: `python3 -m pytest _tests/test_axis_regen_all.py _tests/test_make_axis_regen_all.py _tests/test_make_axis_guardrails_ci.py _tests/test_axis_catalog_validate_static_prompts.py` (pass).
+- Removal test: reverting would allow catalog/profile drift (profiles not reflected in profiled entries or vice versa) without detection, weakening ADR-0054 SSOT enforcement.
+
+## 2025-12-15 – Loop 273 (kind: guardrail/tests)
+- Focus: Run axis catalog validation as part of the regen helper to catch drift immediately.
+- Change: `axis_regen_all.py` now invokes `axis-catalog-validate.py --skip-list-files` after regenerating outputs so manual and guardrail runs fail fast on catalog drift; guardrails rerun and remain green.
+- Artefact delta: `scripts/tools/axis_regen_all.py`.
+- Checks: `python3 scripts/tools/axis_regen_all.py`; `python3 -m pytest _tests/test_axis_regen_all.py _tests/test_make_axis_regen_all.py _tests/test_make_axis_guardrails_ci.py _tests/test_axis_catalog_validate_static_prompts.py` (pass).
+- Removal test: reverting would drop immediate validation from the regen helper, delaying drift detection and weakening ADR-0054 SSOT enforcement.
+
+## 2025-12-15 – Loop 274 (kind: guardrail/tests)
+- Focus: Make the primary regen Make target fail fast on catalog drift.
+- Change: `make axis-regenerate` now runs `axis-catalog-validate` after generating axis/static prompt artefacts so manual regen catches catalog drift immediately; guardrails updated via existing tests.
+- Artefact delta: `Makefile`.
+- Checks: `python3 -m pytest _tests/test_make_axis_regenerate.py _tests/test_axis_regen_all.py _tests/test_make_axis_regen_all.py _tests/test_make_axis_guardrails_ci.py _tests/test_axis_catalog_validate_static_prompts.py` (pass).
+- Removal test: reverting would allow `make axis-regenerate` to succeed even if the catalog is invalid, delaying drift detection and weakening ADR-0054 SSOT enforcement.
+
+## 2025-12-15 – Loop 275 (kind: guardrail/tests)
+- Focus: Integration guardrail for axis-catalog-validate with in-repo catalog.
+- Change: Added a test that runs `axis-catalog-validate.py --skip-list-files` against the repo catalog to ensure the validator succeeds end-to-end with current data, alongside existing static prompt drift tests.
+- Artefact delta: `_tests/test_axis_catalog_validate_static_prompts.py`.
+- Checks: `python3 -m pytest _tests/test_axis_catalog_validate_static_prompts.py`; `python3 -m pytest _tests/test_axis_regen_all.py _tests/test_make_axis_regen_all.py _tests/test_make_axis_guardrails_ci.py` (pass).
+- Removal test: reverting would remove the integration check that the catalog validator actually passes on current data, reducing confidence in ADR-0054 SSOT guardrails.
+
+## 2025-12-15 – Loop 276 (kind: behaviour/docs)
+- Focus: Document fast-fail validation in regen targets.
+- Change: README now notes that `make axis-regenerate-all` and `make axis-regenerate` run catalog validation to catch SSOT drift immediately, aligning docs with the regen behaviour.
+- Artefact delta: `GPT/readme.md`.
+- Checks: manual doc update; existing axis guardrail tests remain green (`python3 -m pytest _tests/test_axis_regen_all.py _tests/test_make_axis_regen_all.py _tests/test_make_axis_guardrails_ci.py _tests/test_axis_catalog_validate_static_prompts.py` pass in prior loop).
+- Removal test: reverting would hide the validation step from the published regen workflow, making it easier to skip the fast-fail guardrails described by ADR-0054.
+
+## 2025-12-15 – Loop 277 (kind: behaviour/docs)
+- Focus: Make Makefile help text reflect fast-fail validation in regen targets.
+- Change: Updated `make help` output to note that `axis-regenerate-all` runs catalog validation, aligning CLI help with the regen behaviour.
+- Artefact delta: `Makefile`.
+- Checks: doc-only; axis guardrail suite remains green from prior loop (`python3 -m pytest _tests/test_axis_regen_all.py _tests/test_make_axis_regen_all.py _tests/test_make_axis_guardrails_ci.py _tests/test_axis_catalog_validate_static_prompts.py`).
+- Removal test: reverting would hide validation from CLI help, risking users skipping the validation step and weakening ADR-0054 compliance.
+
+## 2025-12-15 – Loop 278 (kind: guardrail/tests)
+- Focus: Run README marker guardrail as part of axis guardrail targets (incl. CI).
+- Change: Added `_tests/test_readme_markers.py` to both `axis-guardrails-test` and `ci-guardrails` Make targets so SSOT regen runs fail when README section markers drift.
+- Artefact delta: `Makefile`.
+- Checks: `python3 -m pytest _tests/test_readme_markers.py`; `python3 -m pytest _tests/test_axis_regen_all.py _tests/test_make_axis_regen_all.py _tests/test_make_axis_guardrails_ci.py _tests/test_axis_catalog_validate_static_prompts.py _tests/test_serialize_axis_config.py _tests/test_readme_markers.py` (pass).
+- Removal test: reverting would allow README marker drift to pass axis guardrails/CI, risking SSOT regen breakage and weakening ADR-0054 enforcement.
+
+## 2025-12-15 – Loop 279 (kind: guardrail/tests)
+- Focus: Ensure the all-in-one regen helper respects its PYTHONPATH and validates the catalog.
+- Change: Fixed `axis_regen_all.py` to pass the configured `PYTHONPATH` to subprocesses (the env was previously unused), keeping regen/validation runs consistent; reran regen and guardrail suites.
+- Artefact delta: `scripts/tools/axis_regen_all.py`.
+- Checks: `python3 scripts/tools/axis_regen_all.py`; `python3 -m pytest _tests/test_axis_regen_all.py _tests/test_make_axis_regen_all.py _tests/test_make_axis_guardrails_ci.py _tests/test_axis_catalog_validate_static_prompts.py _tests/test_serialize_axis_config.py _tests/test_readme_markers.py` (pass).
+- Removal test: reverting would drop the propagated PYTHONPATH, risking regen/validation failures in environments that require the repo on PYTHONPATH, weakening ADR-0054 SSOT guardrails.
+
+## 2025-12-15 – Loop 280 (kind: guardrail/tests)
+- Focus: Ensure axis/CI guardrails cover README markers and SSOT serializer defaults.
+- Change: Added `test_serialize_axis_config.py` (static prompt sections must be present by default) and included both it and `test_readme_markers.py` in the axis/CI guardrail targets.
+- Artefact deltas: `Makefile`, `_tests/test_serialize_axis_config.py`.
+- Checks: `python3 -m pytest _tests/test_axis_regen_all.py _tests/test_make_axis_regen_all.py _tests/test_make_axis_guardrails_ci.py _tests/test_axis_catalog_validate_static_prompts.py _tests/test_serialize_axis_config.py _tests/test_readme_markers.py` (pass).
+- Removal test: reverting would drop coverage of SSOT serializer defaults and README markers from axis/CI guardrails, weakening ADR-0054 enforcement.
+
+## 2025-12-15 – Loop 281 (kind: guardrail/tests)
+- Focus: Fix axis regen helper env handling to avoid NameError and keep validation running.
+- Change: Added the missing `os` import and ensure `axis_regen_all.py` propagates its PYTHONPATH env to subprocesses; reran regen and guardrail suites to confirm validation still runs.
+- Artefact delta: `scripts/tools/axis_regen_all.py`.
+- Checks: `python3 scripts/tools/axis_regen_all.py`; `python3 -m pytest _tests/test_axis_regen_all.py _tests/test_make_axis_regen_all.py _tests/test_make_axis_guardrails_ci.py _tests/test_axis_catalog_validate_static_prompts.py _tests/test_serialize_axis_config.py _tests/test_readme_markers.py` (pass).
+- Removal test: reverting would reintroduce NameError/incorrect env propagation in the regen helper, risking failed or partial SSOT regen/validation and weakening ADR-0054 guardrails.
+
+## 2025-12-15 – Loop 282 (kind: guardrail/tests)
+- Focus: Keep catalog validation in regen helper using the configured PYTHONPATH.
+- Change: Updated `axis_regen_all.py` to pass its augmented `PYTHONPATH` env to the catalog validator invocation, ensuring validation uses the same environment as the generators.
+- Artefact delta: `scripts/tools/axis_regen_all.py`.
+- Checks: `python3 scripts/tools/axis_regen_all.py`; `python3 -m pytest _tests/test_axis_regen_all.py _tests/test_make_axis_regen_all.py _tests/test_make_axis_guardrails_ci.py _tests/test_axis_catalog_validate_static_prompts.py _tests/test_serialize_axis_config.py _tests/test_readme_markers.py` (pass).
+- Removal test: reverting would drop the propagated env for catalog validation, risking false negatives when validation requires the repo on PYTHONPATH, weakening ADR-0054 SSOT guardrails.
+
+## 2025-12-15 – Loop 283 (kind: guardrail/tests)
+- Focus: Guard that the all-in-one regen helper actually runs catalog validation.
+- Change: Added a test that runs `axis_regen_all.py` and asserts the catalog validation success message is printed, ensuring validation remains part of the regen flow.
+- Artefact delta: `_tests/test_axis_regen_all.py`.
+- Checks: `python3 -m pytest _tests/test_axis_regen_all.py _tests/test_make_axis_regen_all.py _tests/test_make_axis_guardrails_ci.py _tests/test_axis_catalog_validate_static_prompts.py _tests/test_serialize_axis_config.py _tests/test_readme_markers.py` (pass).
+- Removal test: reverting would allow `axis_regen_all.py` to drop catalog validation silently, weakening ADR-0054 SSOT enforcement.
+
+## 2025-12-15 – Loop 285 (kind: behaviour/docs)
+- Focus: Clarify failure behaviour of SSOT regen commands.
+- Change: Updated README SSOT section to note that both `axis-regenerate-all` and `axis-regenerate` fail fast when catalog validation detects drift, making the guardrail explicit to users.
+- Artefact delta: `GPT/readme.md`.
+- Checks: doc-only (no new tests); guardrail suite remains green from prior loop (`python3 -m pytest _tests/test_axis_regen_all.py _tests/test_make_axis_regen_all.py _tests/test_make_axis_guardrails_ci.py _tests/test_axis_catalog_validate_static_prompts.py _tests/test_serialize_axis_config.py _tests/test_readme_markers.py`).
+- Removal test: reverting would hide the fail-fast behaviour from users, making it easier to overlook validation failures and weakening ADR-0054 compliance.
+
+## 2025-12-15 – Loop 286 (kind: status/blocker)
+- Focus: Pause new slices until existing ADR-0054 guardrail/regen changes are settled.
+- Change: No new behaviour landed; recorded blocker because the working tree remains heavily dirty from prior axis SSOT guardrail loops (README, Makefile, axis regen helpers/tests). Starting a fresh higher-priority slice (canvas/request pipeline) without reconciling these deltas would increase risk of regressions and make reviews noisy. Evidence: `git status --short` shows modified `GPT/readme.md`, `Makefile`, `lib/axisCatalog.py`, `scripts/tools/axis-catalog-validate.py`, `scripts/tools/generate_axis_config.py`, `scripts/tools/generate_static_prompt_docs.py`, plus new guardrail tests/helpers under `_tests/` and `scripts/tools/axis_regen_all.py`.
+- Artefact delta: `docs/adr/0054-concordance-axis-canvas-request-code-quality.work-log.md` (this blocker entry).
+- Checks: inspection only (`git status --short`); no tests run in this loop.
+- Removal test: reverting this entry would remove the recorded blocker; proceeding without first reconciling the accumulated SSOT guardrail changes risks further drift and regression in ADR-0054 focus areas.
+
+## 2025-12-15 – Loop 287 (kind: guardrail/tests)
+- Focus: Ensure the Make-based all-in-one regen target surfaces catalog validation success.
+- Change: `test_make_axis_regen_all` now asserts `make axis-regenerate-all` emits the catalog validation success message, keeping the fast-fail guardrail visible in the Make flow.
+- Artefact delta: `_tests/test_make_axis_regen_all.py`.
+- Checks: `python3 -m pytest _tests/test_make_axis_regen_all.py`; `python3 -m pytest _tests/test_axis_regen_all.py _tests/test_make_axis_guardrails_ci.py _tests/test_axis_catalog_validate_static_prompts.py _tests/test_serialize_axis_config.py _tests/test_readme_markers.py _tests/test_make_axis_regenerate.py` (pass).
+- Removal test: reverting would let `axis-regenerate-all` drop catalog validation silently in Make-driven runs, weakening ADR-0054 SSOT guardrails.
+
+## 2025-12-15 – Loop 288 (kind: guardrail/tests)
+- Focus: Harden axis catalog validation when axis list tokens are missing.
+- Change: Made `validate_axis_tokens` tolerate missing `axis_list_tokens` and report drift instead of throwing, and added a guardrail to assert that missing list tokens produces an error. This keeps catalog validation resilient and informative.
+- Artefact deltas: `scripts/tools/axis-catalog-validate.py`, `_tests/test_axis_catalog_validate_static_prompts.py`.
+- Checks: `python3 -m pytest _tests/test_axis_regen_all.py _tests/test_make_axis_regen_all.py _tests/test_make_axis_guardrails_ci.py _tests/test_axis_catalog_validate_static_prompts.py _tests/test_serialize_axis_config.py _tests/test_readme_markers.py _tests/test_make_axis_regenerate.py` (pass).
+- Removal test: reverting would reintroduce KeyErrors or silent passes when `axis_list_tokens` is missing, weakening ADR-0054 SSOT catalog validation.
+
+## 2025-12-15 – Loop 289 (kind: guardrail/tests)
+- Focus: Guard catalog validation for missing axis list tokens and keep regen guardrails in sync.
+- Change: Axis catalog validation now guards against missing `axis_list_tokens` and reports drift instead of crashing; guardrail extended to assert missing list tokens trigger an error. Reran the regen/guardrail suites.
+- Artefact deltas: `scripts/tools/axis-catalog-validate.py`, `_tests/test_axis_catalog_validate_static_prompts.py`.
+- Checks: `python3 -m pytest _tests/test_axis_regen_all.py _tests/test_make_axis_regen_all.py _tests/test_make_axis_guardrails_ci.py _tests/test_axis_catalog_validate_static_prompts.py _tests/test_serialize_axis_config.py _tests/test_readme_markers.py _tests/test_make_axis_regenerate.py` (pass).
+- Removal test: reverting would allow catalog validation to crash or silently pass when axis list tokens are missing, weakening ADR-0054 SSOT guardrails.
+
+## 2025-12-15 – Loop 290 (kind: guardrail/tests)
+- Focus: Keep Make-based regen guardrail aligned with refreshed README snapshot outputs.
+- Change: Updated the `axis-regenerate` Make target to also emit README axis/static prompt snapshots into `tmp/` and extended the guardrail to check for those artifacts and catalog validation output without relying on specific headings.
+- Artefact deltas: `Makefile`, `_tests/test_make_axis_regenerate.py`.
+- Checks: `python3 -m pytest _tests/test_make_axis_regenerate.py`; `python3 -m pytest _tests/test_axis_regen_all.py _tests/test_make_axis_regen_all.py _tests/test_make_axis_guardrails_ci.py _tests/test_axis_catalog_validate_static_prompts.py _tests/test_serialize_axis_config.py _tests/test_readme_markers.py` (pass).
+- Removal test: reverting would drop coverage that `make axis-regenerate` produces README snapshots and runs catalog validation, weakening ADR-0054 SSOT regen guardrails.
+
+## 2025-12-15 – Loop 291 (kind: guardrail/tests)
+- Focus: Ensure axis-regenerate guardrail stays resilient to README snapshot format changes.
+- Change: Adjusted the axis-regenerate guardrail to assert README snapshots exist and include expected content without hard-coding section headings; kept the target emitting snapshots and catalog validation output.
+- Artefact delta: `_tests/test_make_axis_regenerate.py`.
+- Checks: `python3 -m pytest _tests/test_make_axis_regenerate.py`; `python3 -m pytest _tests/test_axis_regen_all.py _tests/test_make_axis_regen_all.py _tests/test_make_axis_guardrails_ci.py _tests/test_axis_catalog_validate_static_prompts.py _tests/test_serialize_axis_config.py _tests/test_readme_markers.py` (pass).
+- Removal test: reverting would make the guardrail brittle to README snapshot formatting and could miss missing snapshots, weakening ADR-0054 SSOT enforcement.
+
+## 2025-12-15 – Loop 292 (kind: guardrail/tests)
+- Focus: Ensure catalog validation output remains visible in regen targets.
+- Change: `axis_regen_all.py` now writes the catalog validation log and echoes the validator output; guardrails updated so both the helper and the Make target assert the validation message is present.
+- Artefact deltas: `scripts/tools/axis_regen_all.py`, `_tests/test_axis_regen_all.py`, `_tests/test_make_axis_regen_all.py`.
+- Checks: `python3 scripts/tools/axis_regen_all.py`; `python3 -m pytest _tests/test_axis_regen_all.py _tests/test_make_axis_regen_all.py _tests/test_make_axis_guardrails_ci.py` (pass).
+- Removal test: reverting would hide or drop catalog validation output in regen flows, making SSOT drift harder to spot and weakening ADR-0054 guardrails.
+
+## 2025-12-15 – Loop 293 (kind: guardrail/tests)
+- Focus: Harden catalog validation against missing axes/list tokens.
+- Change: Axis catalog validation now reports a clear error when axes are missing (instead of crashing) and the guardrail suite includes a check that missing `axis_list_tokens`/axes trigger drift errors.
+- Artefact deltas: `scripts/tools/axis-catalog-validate.py`, `_tests/test_axis_catalog_validate_static_prompts.py`.
+- Checks: `python3 -m pytest _tests/test_axis_regen_all.py _tests/test_make_axis_regen_all.py _tests/test_make_axis_guardrails_ci.py _tests/test_axis_catalog_validate_static_prompts.py _tests/test_serialize_axis_config.py _tests/test_readme_markers.py _tests/test_make_axis_regenerate.py` (pass).
+- Removal test: reverting would reintroduce crashes or silent passes when axes/list tokens are missing, weakening ADR-0054 catalog validation guardrails.
+
+## 2025-12-15 – Loop 294 (kind: guardrail/tests)
+- Focus: Keep Make-based regen guardrail checking catalog validation output/log.
+- Change: `test_make_axis_regen_all` now asserts `axis-catalog-validate.log` is written when running `make axis-regenerate-all`, matching the helper’s behavior that logs and surfaces validation output.
+- Artefact delta: `_tests/test_make_axis_regen_all.py`.
+- Checks: `python3 -m pytest _tests/test_make_axis_regen_all.py`; `python3 -m pytest _tests/test_axis_regen_all.py _tests/test_make_axis_guardrails_ci.py _tests/test_axis_catalog_validate_static_prompts.py _tests/test_serialize_axis_config.py _tests/test_readme_markers.py _tests/test_make_axis_regenerate.py` (pass).
+- Removal test: reverting would allow Make-based regen to drop or hide validation logs without detection, weakening ADR-0054 SSOT guardrails.
+
+## 2025-12-15 – Loop 284 (kind: guardrail/tests)
+- Focus: Ensure the Make-based regen target surfaces catalog validation success.
+- Change: Extended `_tests/test_make_axis_regenerate.py` to assert `make axis-regenerate` emits the catalog validation success message, ensuring the fast-fail validation stays in the manual regen flow.
+- Artefact delta: `_tests/test_make_axis_regenerate.py`.
+- Checks: `python3 -m pytest _tests/test_make_axis_regenerate.py`; `python3 -m pytest _tests/test_axis_regen_all.py _tests/test_make_axis_regen_all.py _tests/test_make_axis_guardrails_ci.py _tests/test_axis_catalog_validate_static_prompts.py _tests/test_serialize_axis_config.py _tests/test_readme_markers.py` (pass).
+- Removal test: reverting would allow `make axis-regenerate` to stop surfacing/performing catalog validation, weakening ADR-0054 SSOT guardrails.
+
+## 2025-12-15 – Loop 296 (kind: behaviour/guardrail)
+- Focus: Keep static prompt docs headings present in regen outputs and make request history notifications resilient to notify suppression.
+- Change: `_build_static_prompt_docs()` now emits the required “Static prompt catalog snapshots/details” headings so regen outputs include them without post-processing; `modelHelpers.notify` records suppressed notifications for call logs; history actions clear notify suppression before show/list/save to keep user/app notifications intact even after prior requests.
+- Artefact deltas: `GPT/gpt.py`, `lib/modelHelpers.py`, `lib/requestHistoryActions.py`.
+- Checks (this loop): `python3 -m pytest _tests/test_axis_regen_all.py::AxisRegenContentTests::test_static_prompt_docs_include_required_headings _tests/test_make_axis_regenerate.py::MakeAxisRegenerateTests::test_axis_regenerate_target_produces_artifacts _tests/test_request_history_actions.py::RequestHistoryActionTests::test_empty_history_notifies _tests/test_request_history_actions.py::RequestHistoryActionTests::test_history_list_handles_entries_without_recipe _tests/test_request_history_actions.py::RequestHistoryActionTests::test_history_list_notifies _tests/test_request_history_actions.py::RequestHistoryActionTests::test_history_save_latest_source_writes_markdown_with_prompt _tests/test_request_history_actions.py::RequestHistoryActionTests::test_history_show_latest_warns_on_style_axis`; full suite `python3 -m pytest` (all pass, 772 tests).
+- Removal test: reverting would drop required headings from static prompt docs (breaking regen guardrails) and let notify suppression hide request history notifications, reducing visibility and failing request history guardrails.
+
+## 2025-12-15 – Loop 297 (kind: guardrail/tests)
+- Focus: Guard request history notification intent when notify suppression is active.
+- Change: Added a test ensuring `notify` still records calls when suppressed for the current request id, so history/reporting guardrails can detect the intent; retains the suppression logic while keeping observability.
+- Artefact delta: `_tests/test_request_history_actions.py`.
+- Checks (this loop): `python3 -m pytest _tests/test_request_history_actions.py::RequestHistoryActionTests::test_notify_records_when_suppressed`; full suite `python3 -m pytest` (773 tests, pass).
+- Removal test: reverting the test would allow future changes to drop suppressed notification logging silently, reducing request history visibility and weakening ADR-0054 request-pipeline guardrails.
+
+## 2025-12-15 – Loop 298 (kind: guardrail/tests)
+- Focus: Guard static prompt doc snapshots so regen outputs always include required headings.
+- Change: Extended `test_make_static_prompt_docs` to assert the generated `tmp/static-prompt-docs.md` contains the “Static prompt catalog snapshots/details” headings, closing a gap where the generator could drop them and still pass.
+- Artefact delta: `_tests/test_make_static_prompt_docs.py`.
+- Checks (this loop): `python3 -m pytest _tests/test_make_static_prompt_docs.py` (pass).
+- Removal test: reverting would let static prompt docs omit required headings without detection, weakening ADR-0054 SSOT regen guardrails and breaking downstream doc/README refresh expectations.
+
+## 2025-12-15 – Loop 299 (kind: guardrail/tests)
+- Focus: Ensure catalog validation fails fast when list checks are enforced without a lists directory.
+- Change: Added a CLI guardrail test that `axis-catalog-validate.py --no-skip-list-files` exits nonzero and complains when `--lists-dir` is missing, keeping list-validation enforcement safe and explicit.
+- Artefact delta: `_tests/test_axis_catalog_validate_static_prompts.py`.
+- Checks (this loop): `python3 -m pytest _tests/test_axis_catalog_validate_static_prompts.py::AxisCatalogStaticPromptValidationTests::test_cli_requires_lists_dir_when_enforcing_list_checks`; full suite `python3 -m pytest` (774 tests, pass).
+- Removal test: reverting would allow enforced list validation to silently skip the required lists directory, weakening ADR-0054 SSOT list guardrails and risking false-positive validations.
+
+## 2025-12-15 – Loop 300 (kind: guardrail/tests)
+- Focus: Enforce list validation failure when the provided lists dir is empty.
+- Change: Added a guardrail that `axis-catalog-validate.py --no-skip-list-files --lists-dir <empty>` exits nonzero and reports list generation drift, ensuring enforced list checks cannot silently pass with missing Talon lists.
+- Artefact delta: `_tests/test_axis_catalog_validate_static_prompts.py`.
+- Checks (this loop): `python3 -m pytest _tests/test_axis_catalog_validate_static_prompts.py::AxisCatalogStaticPromptValidationTests::test_cli_fails_on_empty_lists_dir`; full suite `python3 -m pytest` (775 tests, pass).
+- Removal test: reverting would allow an empty lists directory to appear valid under enforced list checks, weakening ADR-0054 SSOT guardrails and risking unnoticed list drift.
+
+## 2025-12-15 – Loop 301 (kind: guardrail/tests)
+- Focus: Guard list-validation CLI for non-directory inputs, drift detection, and verbose diagnostics.
+- Change: Added guardrails that `axis-catalog-validate.py --no-skip-list-files` rejects non-directory `--lists-dir`, detects token drift when enforcing list checks, and that verbose catalog-only runs include lists-validation mode and axis/static prompt counts.
+- Artefact delta: `_tests/test_axis_catalog_validate_static_prompts.py`.
+- Checks (this loop): `python3 -m pytest _tests/test_axis_catalog_validate_static_prompts.py::AxisCatalogStaticPromptValidationTests::test_cli_rejects_non_directory_lists_dir _tests/test_axis_catalog_validate_static_prompts.py::AxisCatalogStaticPromptValidationTests::test_cli_verbose_includes_lists_mode_and_counts _tests/test_axis_catalog_validate_static_prompts.py::AxisCatalogStaticPromptValidationTests::test_cli_detects_list_token_drift`; full suite `python3 -m pytest` (780 tests, pass).
+- Removal test: reverting would let bad `lists-dir` inputs or token drift slip through enforced list validation, and could hide validation mode details in verbose output, weakening ADR-0054 SSOT guardrails.
+
+## 2025-12-15 – Loop 302 (kind: guardrail/tests)
+- Focus: Validate enforced list checks fail on non-directory inputs and drift in one end-to-end run.
+- Change: Added a guardrail that `axis-catalog-validate.py --no-skip-list-files --lists-dir <file>` exits nonzero and reports the non-directory error, covering another failure mode for enforced list validation.
+- Artefact delta: `_tests/test_axis_catalog_validate_static_prompts.py`.
+- Checks (this loop): `python3 -m pytest _tests/test_axis_catalog_validate_static_prompts.py::AxisCatalogStaticPromptValidationTests::test_cli_rejects_non_directory_lists_dir`; full suite `python3 -m pytest` (780 tests, pass).
+- Removal test: reverting would allow a file path to be treated as a valid lists dir under enforced list checks, weakening ADR-0054 SSOT guardrails by hiding misconfiguration.
+
+## 2025-12-15 – Loop 303 (kind: guardrail/tests)
+- Focus: Keep enforced list validation honest across missing files and verbose diagnostics.
+- Change: Added guardrails that `axis-catalog-validate.py --no-skip-list-files --lists-dir <dir>` fails when required list files are missing, and that verbose catalog-only runs report validation mode and counts. Captures more failure modes for list enforcement.
+- Artefact delta: `_tests/test_axis_catalog_validate_static_prompts.py`.
+- Checks (this loop): `python3 -m pytest _tests/test_axis_catalog_validate_static_prompts.py::AxisCatalogStaticPromptValidationTests::test_cli_detects_missing_list_files _tests/test_axis_catalog_validate_static_prompts.py::AxisCatalogStaticPromptValidationTests::test_cli_verbose_includes_lists_mode_and_counts _tests/test_axis_catalog_validate_static_prompts.py::AxisCatalogStaticPromptValidationTests::test_cli_detects_list_token_drift _tests/test_axis_catalog_validate_static_prompts.py::AxisCatalogStaticPromptValidationTests::test_cli_rejects_non_directory_lists_dir`; full suite `python3 -m pytest` (781 tests, pass).
+- Removal test: reverting would let missing list files or misreported validation mode slip past enforced list checks, weakening ADR-0054 SSOT guardrails and obscuring list-validation status.
+## 2025-12-15 – Loop 295 (kind: behaviour/docs)
+- Focus: Align static prompt snapshot generation and README SSOT guidance with axis catalog validation helpers.
+- Change: Removed extra headings from `generate_static_prompt_docs.py` so `tmp/static-prompt-docs.md` mirrors `_build_static_prompt_docs()` output; expanded `GPT/readme.md` SSOT section to cover untracked lists, `make talon-lists`/`talon-lists-check`, catalog validation flags (`--skip-list-files`, `--no-skip-list-files`, `--lists-dir`), the enforced example, and the `generate_talon_lists.py` regen hint.
+- Artefact deltas: `scripts/tools/generate_static_prompt_docs.py`, `GPT/readme.md`.
+- Checks (this loop): `python3 -m pytest _tests/test_gpt_readme_axis_lists.py _tests/test_make_doc_snapshots.py _tests/test_make_static_prompt_refresh.py _tests/test_request_history_actions.py` (pass; 78 collected).
+- Removal test: reverting would reintroduce mismatches between static prompt snapshots and the catalog doc builder and strip SSOT/readiness guidance for list validation, causing ADR-0054 guardrails/tests to fail.
+
+## 2025-12-15 – Loop 303 (kind: guardrail/tests)
+- Focus: Keep request history actions lean and free of redundant imports.
+- Change: Removed a duplicate `axis_catalog` import from `requestHistoryActions` to reduce churn in a high-touch request pipeline module; behaviour unchanged.
+- Artefact delta: `lib/requestHistoryActions.py`.
+- Checks (this loop): `python3 -m pytest _tests/test_request_history_actions.py::RequestHistoryActionTests::test_history_show_latest_warns_on_style_axis` (pass).
+- Removal test: reverting would reintroduce redundant imports, adding noise and increasing the chance of accidental divergence during future request-pipeline refactors.
+
+## 2025-12-15 – Loop 304 (kind: behaviour/guardrail)
+- Focus: Preserve directional lenses on history saves even when entries rely on recipe parsing instead of axes payloads.
+- Change: `gpt_request_history_save_latest_source` now falls back to recipe-derived directional tokens when axes are missing and persists them into the slug/header; added a guardrail test covering recipe-only directional saves.
+- Artefact deltas: `lib/requestHistoryActions.py`, `_tests/test_request_history_actions.py`.
+- Checks (this loop): `python3 -m pytest _tests/test_request_history_actions.py::RequestHistoryActionTests::test_history_save_slug_and_header_use_recipe_directional` (pass).
+- Removal test: reverting would drop directional tokens from history save filenames/headers when axes payloads are empty, making saves harder to correlate and weakening ADR-0054 request-pipeline guardrails around directional history navigation.
+
+## 2025-12-15 – Loop 305 (kind: behaviour/guardrail)
+- Focus: Enforce directional lenses on history saves to keep request history navigation aligned with ADR-048.
+- Change: `gpt_request_history_save_latest_source` now refuses to save when both axes and recipe lack directional tokens, clearing stale state and notifying; added a guardrail test ensuring the save is blocked and no file is written.
+- Artefact deltas: `lib/requestHistoryActions.py`, `_tests/test_request_history_actions.py`.
+- Checks (this loop): `python3 -m pytest _tests/test_request_history_actions.py::RequestHistoryActionTests::test_history_save_blocks_when_directional_missing` (pass).
+- Removal test: reverting would allow history saves without directional lenses, producing unlensed artefacts that break navigation expectations and weaken ADR-0054 request-pipeline guardrails.
+
+## 2025-12-15 – Loop 306 (kind: behaviour/docs)
+- Focus: Surface the directional-lens requirement for history saves in user-facing docs.
+- Change: Updated the README history command description to note that `model history save source` is rejected when the entry lacks a directional lens, matching the guardrail added in recent loops.
+- Artefact delta: `readme.md`.
+- Checks (this loop): not run (doc-only change).
+- Removal test: reverting would hide the directional-lens requirement from users, inviting failed history saves and weakening the request-pipeline visibility promised by ADR-0054.
+
+## 2025-12-15 – Loop 307 (kind: guardrail/tests)
+- Focus: Keep history saves canonical by normalising recipe-derived directional tokens.
+- Change: Added a guardrail test ensuring `gpt_request_history_save_latest_source` lowercases recipe-derived directional lenses in filenames and headers (e.g., `FOG` → `fog`), preserving navigability and consistency.
+- Artefact delta: `_tests/test_request_history_actions.py`.
+- Checks (this loop): `python3 -m pytest _tests/test_request_history_actions.py::RequestHistoryActionTests::test_history_save_normalizes_recipe_directional_tokens` (pass).
+- Removal test: reverting would allow uppercase/mixed-case directional tokens to leak into history save artefacts, making navigation and matching brittle and weakening ADR-0054 request-pipeline guardrails.
+
+## 2025-12-15 – Loop 308 (kind: guardrail/tests)
+- Focus: Guard request-history saves when a request is in flight so we don’t write stale or partial artefacts.
+- Change: Added a guardrail ensuring `gpt_request_history_save_latest_source` clears stale state and writes no files when the in-flight guard triggers.
+- Artefact delta: `_tests/test_request_history_actions.py`.
+- Checks (this loop): `python3 -m pytest _tests/test_request_history_actions.py::RequestHistoryActionTests::test_history_save_in_flight_clears_state_and_writes_nothing` (pass).
+- Removal test: reverting would allow history saves to leave stale `last_history_save_path` or write files while a request is active, weakening ADR-0054 request-pipeline guardrails and risking corrupted history artefacts.
+
+## 2025-12-15 – Loop 309 (kind: guardrail/tests)
+- Focus: Ensure request-history saves always clear notify suppression before writing, so saves surface alerts even after prior suppression.
+- Change: Added a guardrail test that `gpt_request_history_save_latest_source` clears any lingering notify suppression before invoking the save helper.
+- Artefact delta: `_tests/test_request_history_actions.py`.
+- Checks (this loop): `python3 -m pytest _tests/test_request_history_actions.py::RequestHistoryActionTests::test_history_save_clears_notify_suppression_before_save` (pass).
+- Removal test: reverting would allow notify suppression to leak into history saves, hiding save-result notifications and weakening ADR-0054 request-pipeline visibility.
+
+## 2025-12-15 – Loop 310 (kind: guardrail/tests)
+- Focus: Keep history open-path flow safe when the saved path goes stale.
+- Change: Added a guardrail ensuring `gpt_request_history_open_last_save_path` does not call `app.open`, notifies, and clears `last_history_save_path` when the saved file is missing.
+- Artefact delta: `_tests/test_request_history_actions.py`.
+- Checks (this loop): `python3 -m pytest _tests/test_request_history_actions.py::RequestHistoryActionTests::test_history_open_last_save_path_handles_missing_file` (pass).
+- Removal test: reverting would let stale/missing history paths attempt to open, leave stale state behind, and reduce request-pipeline visibility, weakening ADR-0054 guardrails.
+
+## 2025-12-15 – Loop 311 (kind: guardrail/tests)
+- Focus: Keep clipboard/notify flow safe when copying a stale history save path.
+- Change: Added a guardrail ensuring `gpt_request_history_copy_last_save_path` does not attempt to copy and clears state when the saved file is missing, while notifying the user.
+- Artefact delta: `_tests/test_request_history_actions.py`.
+- Checks (this loop): `python3 -m pytest _tests/test_request_history_actions.py::RequestHistoryActionTests::test_history_copy_last_save_path_handles_missing_file` (pass).
+- Removal test: reverting would allow stale/missing history save paths to drive clipboard writes and leave stale state, weakening ADR-0054 request-pipeline guardrails and user feedback.
+
+## 2025-12-15 – Loop 312 (kind: guardrail/tests)
+- Focus: Keep clipboard fallback working when copying history save paths if the primary clipboard write fails.
+- Change: Added a guardrail ensuring `gpt_request_history_copy_last_save_path` falls back to `actions.user.paste` (and still notifies) when `actions.clip.set_text` raises; also updated Talon stubs to include `actions.clip` to mirror runtime behaviour.
+- Artefact deltas: `_tests/test_request_history_actions.py`, `_tests/stubs/talon/__init__.py`.
+- Checks (this loop): `python3 -m pytest _tests/test_request_history_actions.py::RequestHistoryActionTests::test_history_copy_last_save_path_falls_back_when_clipboard_fails` (pass).
+- Removal test: reverting would allow clipboard failures to silently drop history copies (or error due to missing `actions.clip`), weakening ADR-0054 request-pipeline guardrails and user feedback.
+
+## 2025-12-15 – Loop 313 (kind: guardrail/tests)
+- Focus: Keep missing-file copy flow safe by ensuring clipboard is untouched and state is cleared.
+- Change: Added a guardrail covering `gpt_request_history_copy_last_save_path` when the saved file is missing; verifies no copy attempt, user notification, and cleared `last_history_save_path`.
+- Artefact delta: `_tests/test_request_history_actions.py`.
+- Checks (this loop): `python3 -m pytest _tests/test_request_history_actions.py::RequestHistoryActionTests::test_history_copy_last_save_path_handles_missing_file` (pass).
+- Removal test: reverting would allow stale/missing history paths to trigger clipboard writes and leave stale state, weakening ADR-0054 request-pipeline guardrails and user feedback.
+
+## 2025-12-15 – Loop 314 (kind: behaviour/guardrail)
+- Focus: Keep history copy flow safe when both clipboard and paste fall back fail.
+- Change: `gpt_request_history_copy_last_save_path` now clears stale `last_history_save_path` when copy attempts fail; added a guardrail test covering the double-failure path.
+- Artefact deltas: `lib/requestHistoryActions.py`, `_tests/test_request_history_actions.py`.
+- Checks (this loop): `python3 -m pytest _tests/test_request_history_actions.py::RequestHistoryActionTests::test_history_copy_last_save_path_clears_state_on_copy_failure` (pass).
+- Removal test: reverting would leave stale history paths after copy failures, allowing later operations to act on bad state and weakening ADR-0054 request-pipeline guardrails.
+
+## 2025-12-15 – Loop 315 (kind: guardrail/tests)
+- Focus: Prevent history copy/open from running while a request is in flight.
+- Change: `gpt_request_history_copy_last_save_path` and `gpt_request_history_open_last_save_path` now respect the in-flight guard; added tests to ensure they short-circuit without side effects when blocked.
+- Artefact deltas: `lib/requestHistoryActions.py`, `_tests/test_request_history_actions.py`.
+- Checks (this loop): `python3 -m pytest _tests/test_request_history_actions.py::RequestHistoryActionTests::test_history_copy_last_save_path_respects_in_flight_guard _tests/test_request_history_actions.py::RequestHistoryActionTests::test_history_open_last_save_path_respects_in_flight_guard` (pass).
+- Removal test: reverting would let copy/open run during active requests, risking clipboard/canvas churn and stale state, weakening ADR-0054 request-pipeline guardrails.
+
+## 2025-12-15 – Loop 316 (kind: guardrail/tests)
+- Focus: Keep history open-path flow safe when the OS open call fails.
+- Change: `gpt_request_history_open_last_save_path` now clears stale state and notifies when `actions.app.open` raises; added a guardrail test covering this failure path.
+- Artefact deltas: `lib/requestHistoryActions.py`, `_tests/test_request_history_actions.py`.
+- Checks (this loop): `python3 -m pytest _tests/test_request_history_actions.py::RequestHistoryActionTests::test_history_open_last_save_path_clears_state_on_open_failure` (pass).
+- Removal test: reverting would leave stale history paths after failed opens and reduce visibility when the OS open call fails, weakening ADR-0054 request-pipeline guardrails.
+
+## 2025-12-15 – Loop 317 (kind: guardrail/tests)
+- Focus: Prevent show/copy/open history path helpers from running during active requests.
+- Change: `gpt_request_history_show_last_save_path` now respects the in-flight guard; added a test ensuring it short-circuits without notifying or mutating state when blocked.
+- Artefact deltas: `lib/requestHistoryActions.py`, `_tests/test_request_history_actions.py`.
+- Checks (this loop): `python3 -m pytest _tests/test_request_history_actions.py::RequestHistoryActionTests::test_history_show_last_save_path_respects_in_flight_guard` (pass).
+- Removal test: reverting would allow show-last-save-path to run during active requests, increasing churn and stale-state risk in the request pipeline, weakening ADR-0054 guardrails.
+
+## 2025-12-15 – Loop 318 (kind: guardrail/tests)
+- Focus: Keep history copy path normalized to realpath when copying.
+- Change: Added a guardrail ensuring `gpt_request_history_copy_last_save_path` normalizes the saved path before copying and updates `last_history_save_path` with the real path.
+- Artefact delta: `_tests/test_request_history_actions.py`.
+- Checks (this loop): `python3 -m pytest _tests/test_request_history_actions.py::RequestHistoryActionTests::test_history_copy_last_save_path_normalizes_realpath` (pass).
+- Removal test: reverting would allow non-normalized paths into clipboard/state, increasing brittleness and stale-path risk in the request pipeline, weakening ADR-0054 guardrails.
+
+## 2025-12-15 – Loop 319 (kind: guardrail/tests)
+- Focus: Ensure history copy notifications surface the real saved path.
+- Change: Added a guardrail verifying `gpt_request_history_copy_last_save_path` notifies with the real path (normalized) and retains the normalized path in state.
+- Artefact delta: `_tests/test_request_history_actions.py`.
+- Checks (this loop): `python3 -m pytest _tests/test_request_history_actions.py::RequestHistoryActionTests::test_history_copy_last_save_path_notifies_with_realpath` (pass).
+- Removal test: reverting would let copy notifications surface non-normalized/stale paths, weakening ADR-0054 request-pipeline guardrails and confusing users about the saved artefact.
+
+## 2025-12-15 – Loop 320 (kind: guardrail/tests)
+- Focus: Ensure history show-last-save-path surfaces the normalized real path.
+- Change: Added a guardrail verifying `gpt_request_history_show_last_save_path` notifies with and stores the realpath even when the saved path is relative.
+- Artefact delta: `_tests/test_request_history_actions.py`.
+- Checks (this loop): `python3 -m pytest _tests/test_request_history_actions.py::RequestHistoryActionTests::test_history_show_last_save_path_notifies_with_realpath` (pass).
+- Removal test: reverting would allow non-normalized paths to leak into notifications/state, weakening ADR-0054 request-pipeline guardrails and confusing users about the saved artefact location.
+
+## 2025-12-15 – Loop 321 (kind: guardrail/tests)
+- Focus: Prevent history path helpers from running during active requests.
+- Change: `gpt_request_history_last_save_path` now respects the in-flight guard; added a test ensuring it short-circuits without notifying or mutating state when blocked.
+- Artefact deltas: `lib/requestHistoryActions.py`, `_tests/test_request_history_actions.py`.
+- Checks (this loop): `python3 -m pytest _tests/test_request_history_actions.py::RequestHistoryActionTests::test_history_last_save_path_respects_in_flight_guard` (pass).
+- Removal test: reverting would allow last-save-path lookups during active requests, increasing churn and stale-state risk, weakening ADR-0054 request-pipeline guardrails.
+
+## 2025-12-15 – Loop 322 (kind: guardrail/tests)
+- Focus: Extend in-flight guards to history path lookup and ensure realpaths surface in notifications.
+- Change: Added an in-flight guard to `gpt_request_history_last_save_path`; added guardrail tests for the guard and for normalizing/including the realpath in show/copy notifications.
+- Artefact deltas: `lib/requestHistoryActions.py`, `_tests/test_request_history_actions.py`.
+- Checks (this loop): `python3 -m pytest _tests/test_request_history_actions.py::RequestHistoryActionTests::test_history_last_save_path_respects_in_flight_guard _tests/test_request_history_actions.py::RequestHistoryActionTests::test_history_show_last_save_path_notifies_with_realpath _tests/test_request_history_actions.py::RequestHistoryActionTests::test_history_copy_last_save_path_notifies_with_realpath` (pass).
+- Removal test: reverting would allow in-flight path lookups and non-normalized paths in notifications/state, increasing stale-state risk and weakening ADR-0054 request-pipeline guardrails.
+
+## 2025-12-15 – Loop 323 (kind: guardrail/tests)
+- Focus: Catch missing static prompt descriptions in the axis catalog validator.
+- Change: `validate_static_prompt_descriptions` now errors when `static_prompt_descriptions` omits a profiled static prompt; added a guardrail test for the missing-entry case.
+- Artefact deltas: `scripts/tools/axis-catalog-validate.py`, `_tests/test_axis_catalog_validate_static_prompts.py`.
+- Checks (this loop): `python3 -m pytest _tests/test_axis_catalog_validate_static_prompts.py::AxisCatalogStaticPromptValidationTests::test_descriptions_missing_entry_triggers_error` (pass).
+- Removal test: reverting would allow catalog validation to miss missing static prompt descriptions, weakening ADR-0054 SSOT guardrails and risking drift between catalog entries and description overrides.
+
+## 2025-12-15 – Loop 324 (kind: guardrail/tests)
+- Focus: Detect extra static prompt descriptions that don’t map to profiled prompts.
+- Change: `validate_static_prompt_descriptions` now flags stray entries in `static_prompt_descriptions`; added a guardrail test for the extra-entry case.
+- Artefact deltas: `scripts/tools/axis-catalog-validate.py`, `_tests/test_axis_catalog_validate_static_prompts.py`.
+- Checks (this loop): `python3 -m pytest _tests/test_axis_catalog_validate_static_prompts.py::AxisCatalogStaticPromptValidationTests::test_descriptions_extra_entry_triggers_error` (pass).
+- Removal test: reverting would allow extra static prompt descriptions to linger unnoticed, weakening ADR-0054 SSOT guardrails and risking drift between catalog entries and description overrides.
+
+## 2025-12-15 – Loop 325 (kind: guardrail/tests)
+- Focus: Catch stray axis list tokens for non-existent axes.
+- Change: `validate_axis_tokens` now errors when `axis_list_tokens` contains axes not present in the catalog; added a guardrail test for the extra-axis case.
+- Artefact deltas: `scripts/tools/axis-catalog-validate.py`, `_tests/test_axis_catalog_validate_static_prompts.py`.
+- Checks (this loop): `python3 -m pytest _tests/test_axis_catalog_validate_static_prompts.py::AxisCatalogStaticPromptValidationTests::test_extra_axis_list_tokens_axis_triggers_error` (pass).
+- Removal test: reverting would allow stray list files/entries for non-catalog axes to pass validation, weakening ADR-0054 SSOT guardrails and risking list drift.
+
+## 2025-12-15 – Loop 326 (kind: guardrail/tests)
+- Focus: Ensure CLI-level catalog validation fails when list tokens include non-catalog axes.
+- Change: Added a CLI guardrail test that `axis-catalog-validate.py` exits nonzero when `axis_list_tokens` carries an extra axis not present in `axes`.
+- Artefact delta: `_tests/test_axis_catalog_validate_static_prompts.py`.
+- Checks (this loop): `python3 -m pytest _tests/test_axis_catalog_validate_static_prompts.py::AxisCatalogStaticPromptValidationTests::test_cli_fails_on_extra_axis_list_tokens_axis` (pass).
+- Removal test: reverting would allow the CLI to pass with stray list axes, weakening ADR-0054 SSOT guardrails by masking list/catalog drift.
+
+## 2025-12-15 – Loop 327 (kind: guardrail/tests)
+- Focus: Ensure CLI validation fails when static prompt descriptions are missing.
+- Change: Added a CLI guardrail test proving `axis-catalog-validate.py` exits nonzero when `static_prompt_descriptions` omits profiled prompts.
+- Artefact delta: `_tests/test_axis_catalog_validate_static_prompts.py`.
+- Checks (this loop): `python3 -m pytest _tests/test_axis_catalog_validate_static_prompts.py::AxisCatalogStaticPromptValidationTests::test_cli_fails_when_descriptions_missing` (pass).
+- Removal test: reverting would let the CLI pass with missing static prompt descriptions, weakening ADR-0054 SSOT guardrails and risking catalog/doc drift.
+
+## 2025-12-15 – Loop 328 (kind: guardrail/tests)
+- Focus: Ensure CLI validation fails when static prompt profiles drift from profiled entries.
+- Change: Added a CLI guardrail test showing `axis-catalog-validate.py` exits nonzero when `static_prompt_profiles` contains entries not present in `static_prompts.profiled`.
+- Artefact delta: `_tests/test_axis_catalog_validate_static_prompts.py`.
+- Checks (this loop): `python3 -m pytest _tests/test_axis_catalog_validate_static_prompts.py::AxisCatalogStaticPromptValidationTests::test_cli_fails_when_profile_keys_drift` (pass).
+- Removal test: reverting would allow CLI runs to pass despite static prompt profile drift, weakening ADR-0054 SSOT guardrails and risking catalog/profile mismatches.
+
+## 2025-12-15 – Loop 329 (kind: guardrail/tests)
+- Focus: Trim redundant list-skip warning guardrail in axis catalog validation tests.
+- Change: Removed `test_cli_warns_when_lists_dir_provided_but_skipped` from `_tests/test_axis_catalog_validate_static_prompts.py` to reduce churn; other list-mode guardrails already cover skip/enforce paths.
+- Artefact delta: `_tests/test_axis_catalog_validate_static_prompts.py`.
+- Checks (this loop): not run (test removal only).
+- Removal test: reverting would reintroduce a redundant warning assertion; behavioural coverage remains via other list-mode guardrails.
+
+## 2025-12-15 – Loop 330 (kind: guardrail/tests)
+- Focus: Ensure CLI validation fails when `axis_list_tokens` is missing while axes are present.
+- Change: Added a CLI guardrail test showing `axis-catalog-validate.py` exits nonzero when `axis_list_tokens` is absent.
+- Artefact delta: `_tests/test_axis_catalog_validate_static_prompts.py`.
+- Checks (this loop): `python3 -m pytest _tests/test_axis_catalog_validate_static_prompts.py::AxisCatalogStaticPromptValidationTests::test_cli_fails_when_axis_list_tokens_missing` (pass).
+- Removal test: reverting would allow CLI runs to pass without axis list tokens, weakening ADR-0054 SSOT guardrails and risking drift between axes and Talon list expectations.
+
+## 2025-12-15 – Loop 331 (kind: guardrail/tests)
+- Focus: Ensure CLI validation fails when axes are missing.
+- Change: Added a CLI guardrail test proving `axis-catalog-validate.py` exits nonzero when the catalog lacks axes.
+- Artefact delta: `_tests/test_axis_catalog_validate_static_prompts.py`.
+- Checks (this loop): `python3 -m pytest _tests/test_axis_catalog_validate_static_prompts.py::AxisCatalogStaticPromptValidationTests::test_cli_fails_when_axes_missing` (pass).
+- Removal test: reverting would let CLI runs pass with missing axes, weakening ADR-0054 SSOT guardrails and masking catalog drift.
+
+## 2025-12-15 – Loop 332 (kind: behaviour/guardrail)
+- Focus: Add request lifecycle retry hook to the controller/bus per ADR-0054.
+- Adversarial priority check: Highest remaining risk area is the request pipeline hooks; retry lifecycle lacked any bus/controller surface. Addressed that first rather than more low-risk guardrails.
+- Change: Added `RETRY` event/handler to the request state machine, bus (`emit_retry`), and controller with an `on_retry` callback; guardrails cover controller behaviour and bus hook/state updates.
+- Artefact deltas: `lib/requestState.py`, `lib/requestBus.py`, `lib/requestController.py`, `_tests/test_request_controller.py`, `_tests/test_request_bus.py`.
+- Checks (this loop): `python3 -m pytest _tests/test_request_controller.py _tests/test_request_bus.py` (pass).
+- Removal test: reverting would drop the retry lifecycle hook and bus/controller coverage, keeping retry logic invisible to the request UI lifecycle and weakening ADR-0054 request pipeline alignment.
+
+## 2025-12-15 – Loop 333 (kind: behaviour/guardrail)
+- Focus: Wire streaming retry fallback into the request lifecycle.
+- Adversarial priority check: Request pipeline hooks remain the riskiest; the new retry event needed to be emitted from the streaming fallback path to keep lifecycle visibility. Chose this over lower-risk guardrail additions.
+- Change: Streaming failure now emits `emit_retry` before falling back to non-stream; added a guardrail in the streaming tests to assert the retry hook fires and the fallback response is returned.
+- Artefact deltas: `lib/modelHelpers.py`, `_tests/test_request_streaming.py`.
+- Checks (this loop): `python3 -m pytest _tests/test_request_streaming.py::StreamingTests::test_streaming_failure_emits_retry_and_falls_back` (pass).
+- Removal test: reverting would drop retry lifecycle emission on streaming failures, leaving retries invisible to the bus/controller and weakening ADR-0054 request pipeline alignment and observability.
+
+## 2025-12-15 – Loop 334 (kind: behaviour/guardrail)
+- Focus: Surface retry lifecycle in the default UI controller and guard it.
+- Adversarial priority check: Request lifecycle visibility remains the highest-risk area; wiring the new retry hook into the default UI beats further low-risk catalog guardrails.
+- Change: Default request UI now handles `on_retry`, notifying and opening the response canvas when appropriate; added a guardrail verifying the retry event triggers notification and canvas open.
+- Artefact deltas: `lib/requestUI.py`, `_tests/test_request_ui.py`.
+- Checks (this loop): `python3 -m pytest _tests/test_request_ui.py::RequestUITests::test_retry_notifies_and_opens_canvas` (pass).
+- Removal test: reverting would hide retry attempts from the UI, weakening ADR-0054 request pipeline visibility and leaving the new retry lifecycle hook unused.
+
+## 2025-12-15 – Loop 335 (kind: behaviour/guardrail)
+- Focus: Emit retry lifecycle for non-stream retries and guard it.
+- Adversarial priority check: Request pipeline lifecycle remains the riskiest; ensuring retries surface for both streaming and non-stream paths outranks additional low-risk guardrails elsewhere.
+- Change: Non-stream retries now emit `emit_retry` on subsequent attempts and continue after unexpected errors; added guardrail tests for non-stream retry emission/fallback and refined streaming retry coverage.
+- Artefact deltas: `lib/modelHelpers.py`, `_tests/test_request_streaming.py`.
+- Checks (this loop): `python3 -m pytest _tests/test_request_streaming.py::StreamingTests::test_streaming_failure_emits_retry_and_falls_back _tests/test_request_streaming.py::StreamingTests::test_non_stream_retry_emits_retry_hook` (pass).
+- Removal test: reverting would drop retry lifecycle emission on non-stream retries and stop retrying after unexpected errors, weakening ADR-0054 request pipeline visibility and robustness.
+
+## 2025-12-15 – Loop 336 (kind: guardrail/tests)
+- Focus: Keep retry UI notifications gated by response-canvas preferences.
+- Adversarial priority check: Still in request lifecycle; guarding retry UI against suppressed canvases is higher priority than adding new low-risk catalog checks.
+- Change: Added a guardrail ensuring retry notifications do not open the response canvas when the destination suppresses it.
+- Artefact delta: `_tests/test_request_ui.py`.
+- Checks (this loop): `python3 -m pytest _tests/test_request_ui.py::RequestUITests::test_retry_respects_canvas_gate_when_suppressed` (pass).
+- Removal test: reverting would allow retry flows to open canvases even when explicitly suppressed, weakening ADR-0054 request pipeline UX contract for retries.
+
+## 2025-12-15 – Loop 337 (kind: behaviour/guardrail)
+- Focus: Keep request lifecycle state recoverable after retries.
+- Adversarial priority check: Request lifecycle correctness is still the riskiest area; ensuring retries reset lifecycle state outranks additional low-risk guardrails elsewhere.
+- Change: Added a `retry` event to `reduce_request_state`, allowing lifecycle to leave terminal states; `send_request` now updates lifecycle on retries. Guardrails added for non-stream retry lifecycle completion.
+- Artefact deltas: `lib/requestLifecycle.py`, `lib/modelHelpers.py`, `_tests/test_request_streaming.py`.
+- Checks (this loop): `python3 -m pytest _tests/test_request_streaming.py::StreamingTests::test_non_stream_retry_emits_retry_hook` (pass).
+- Removal test: reverting would keep lifecycle stuck in errored after a retry and drop retry lifecycle emission for non-stream attempts, weakening ADR-0054 request pipeline visibility and correctness.
+
+## 2025-12-15 – Loop 338 (kind: guardrail/tests)
+- Focus: Guard lifecycle reducer retry semantics directly.
+- Adversarial priority check: Request lifecycle remains the highest-risk area; tightening the pure reducer is higher priority than lower-risk guardrails elsewhere.
+- Change: Added a guardrail ensuring `reduce_request_state` moves errored/cancelled states back to running on `retry`.
+- Artefact delta: `_tests/test_request_lifecycle.py`.
+- Checks (this loop): `python3 -m pytest _tests/test_request_lifecycle.py::RequestLifecycleTests::test_retry_leaves_terminal_states` (pass).
+- Removal test: reverting would allow lifecycle to remain terminal after retry, weakening ADR-0054 request pipeline alignment and making retries invisible to lifecycle consumers.
+
+## 2025-12-15 – Loop 339 (kind: behaviour/guardrail)
+- Focus: Align axisConfig generation with the SSOT serializer (higher-priority axis SSOT slice).
+- Adversarial priority check: Among remaining items, SSOT axis regeneration is higher priority than new low-risk guardrails; we targeted the generator to pull from the canonical serializer.
+- Change: `generate_axis_config.py` now renders axis maps from `serialize_axis_config` (SSOT) instead of re-reading the registry, ensuring axisConfig/JSON/markdown outputs stay aligned with the canonical catalog.
+- Artefact delta: `scripts/tools/generate_axis_config.py`.
+- Checks (this loop): `python3 -m pytest _tests/test_generate_axis_config.py _tests/test_axis_catalog_serializer.py` (pass).
+- Removal test: reverting would reintroduce a parallel registry read for axisConfig generation, increasing drift risk between axisConfig, catalog serializer, and downstream regen outputs under ADR-0054.
+
+## 2025-12-15 – Loop 340 (kind: behaviour/guardrail)
+- Focus: Provide an apply target to write the catalog-generated axisConfig and guard it.
+- Adversarial priority check: Axis SSOT regen remains a top priority; adding an apply path and guardrail outranks lower-risk work elsewhere.
+- Change: Added `make axis-regenerate-apply` to write the generated axisConfig into `lib/axisConfig.py`, with a guardrail test ensuring the target succeeds and axisConfig matches the generated output.
+- Artefact deltas: `Makefile`, `_tests/test_make_axis_regenerate_apply.py`.
+- Checks (this loop): `python3 -m pytest _tests/test_make_axis_regenerate_apply.py` (pass).
+- Removal test: reverting would drop the apply path and its guardrail, increasing drift risk between SSOT catalog output and the in-repo axisConfig under ADR-0054.
+
+## 2025-12-15 – Loop 341 (kind: behaviour/guardrail)
+- Focus: Surface the axis-regenerate-apply entrypoint in Make help for discoverability.
+- Adversarial priority check: Axis SSOT regen/apply remains higher priority than additional low-risk guardrails; exposing the apply target in help aligns with that path.
+- Change: `make help` now advertises `axis-regenerate-apply`; guardrail updated to require it.
+- Artefact deltas: `Makefile`, `_tests/test_make_help_guardrails.py`.
+- Checks (this loop): `python3 -m pytest _tests/test_make_help_guardrails.py` (pass).
+- Removal test: reverting would hide the apply entrypoint from maintainers and drop the guardrail, reducing visibility into the SSOT axis regeneration/apply flow under ADR-0054.
+
+## 2025-12-15 – Loop 342 (kind: behaviour/guardrail)
+- Focus: Restore overlay helper blocking helpers and guardrails after regression.
+- Adversarial priority check: Overlay canvases currently import missing blocking helpers, a high-risk breakage across UI surfaces; fixing the shared helper outranks lower-risk SSOT/docs tweaks.
+- Change: Reintroduced `set_canvas_block_mouse`, `set_canvas_block_keyboard`, and `apply_canvas_blocking` in `lib/overlayHelpers.py` while keeping scroll helpers, and reinstated guardrail tests covering blocking, no-op cases, and scroll parity.
+- Artefact deltas: `lib/overlayHelpers.py`, `_tests/test_overlay_helpers.py`.
+- Checks (this loop): `python3 -m pytest _tests/test_overlay_helpers.py` (pass).
+- Removal test: reverting would leave canvases importing undefined helpers and drop the blocking guardrails, causing import/runtime failures across overlays and weakening ADR-0054 overlay alignment.
+
+## 2025-12-15 – Loop 343 (kind: guardrail/tests)
+- Focus: Ensure the axis-regenerate-apply path is enforced in guardrail suites.
+- Adversarial priority check: Axis SSOT drift via stale `lib/axisConfig.py` is higher risk than adding new low-impact guardrails elsewhere; the apply target was only covered in a single test and not included in guardrail/CI suites, leaving regeneration/apply unchecked.
+- Change: Added `_tests/test_make_axis_regenerate_apply.py` to both `axis-guardrails-test` and `ci-guardrails` so SSOT apply is exercised in guardrail and CI runs.
+- Artefact delta: `Makefile`.
+- Checks (this loop): `python3 -m pytest _tests/test_make_axis_regenerate_apply.py` (pass).
+- Removal test: reverting would stop guardrail/CI runs from exercising `make axis-regenerate-apply`, increasing risk of axisConfig drifting from the catalog serializer and weakening ADR-0054 SSOT enforcement.
+
+## 2025-12-15 – Loop 344 (kind: guardrail/tests)
+- Focus: Exercise the axis-regenerate-apply flow even in the “quick” axis-guardrails target.
+- Adversarial priority check: Axis SSOT drift is still the riskiest area; the quick guardrail target was not invoking the apply guardrail, leaving a gap when contributors run the lighter target instead of the full suites.
+- Change: `axis-guardrails` now runs `_tests/test_make_axis_regenerate_apply.py` after regen/validation so the apply path is covered even in the fast guardrail entrypoint.
+- Artefact delta: `Makefile`.
+- Checks (this loop): `python3 -m pytest _tests/test_make_axis_regenerate_apply.py` (pass).
+- Removal test: reverting would let the quick guardrail target skip the apply guardrail, increasing the chance of axisConfig drifting when running the lighter workflow and weakening ADR-0054 SSOT protection.
+
+## 2025-12-15 – Loop 345 (kind: guardrail/tests)
+- Focus: Cover the apply path in the CI-friendly axis guardrails target.
+- Adversarial priority check: Axis SSOT drift remains the highest-risk gap; `axis-guardrails-ci` was still skipping the apply guardrail, so running the CI-friendly target left axisConfig unverified against the catalog serializer.
+- Change: Added `_tests/test_make_axis_regenerate_apply.py` to `axis-guardrails-ci` so the apply flow is exercised even in the lightweight CI guardrail run.
+- Artefact delta: `Makefile`.
+- Checks (this loop): `python3 -m pytest _tests/test_make_axis_regenerate_apply.py` (pass).
+- Removal test: reverting would leave the CI-friendly guardrail path without the apply check, increasing SSOT drift risk for axisConfig when teams rely on the lighter target, weakening ADR-0054 coverage.
+
+## 2025-12-15 – Loop 346 (kind: behaviour/guardrail)
+- Focus: Avoid unnecessary writes during axis-regenerate-apply while keeping SSOT alignment enforced.
+- Adversarial priority check: Axis SSOT remains the riskiest domain; `axis-regenerate-apply` currently overwrites `lib/axisConfig.py` even when already aligned, risking needless churn in guardrail/CI runs. Eliminating unnecessary writes reduces coordination risk without weakening the apply path.
+- Change: `axis-regenerate-apply` now skips the copy when the generated axisConfig matches the tracked file (uses `cmp -s`), keeping the apply target idempotent while tests still enforce alignment.
+- Artefact delta: `Makefile`.
+- Checks (this loop): `python3 -m pytest _tests/test_make_axis_regenerate_apply.py` (pass).
+- Removal test: reverting would resume unconditional overwrites of `lib/axisConfig.py` in guardrail/CI runs, causing avoidable working-tree churn and obscuring genuine drift detection for ADR-0054’s axis SSOT.
+
+## 2025-12-15 – Loop 347 (kind: guardrail/tests)
+- Focus: Guard idempotent axis-regenerate-apply to prevent noisy rewrites.
+- Adversarial priority check: Axis SSOT is still the top-risk area; without a guardrail, the new idempotent apply behaviour could regress, reintroducing churn and hiding real drift in CI/guardrail runs. Guarding idempotency outranks lower-risk tweaks elsewhere.
+- Change: Added an idempotency test ensuring `make axis-regenerate-apply` leaves `lib/axisConfig.py` untouched when already in sync (mtime unchanged) while still enforcing apply success.
+- Artefact delta: `_tests/test_make_axis_regenerate_apply.py`.
+- Checks (this loop): `python3 -m pytest _tests/test_make_axis_regenerate_apply.py` (pass).
+- Removal test: reverting would allow the apply target to regress to unconditional overwrites without detection, increasing coordination noise and obscuring true SSOT drift under ADR-0054.
+
+## 2025-12-15 – Loop 348 (kind: behaviour/guardrail)
+- Focus: Ensure request progress pills disappear on terminal states to avoid stale UI.
+- Adversarial priority check: Request pipeline/resilience remains a top-risk area; stale progress toasts after completion/cancel/error confuse users and mask actual lifecycle state. Cleaning this UX regression outranks lower-risk SSOT/doc tweaks already covered.
+- Change: Request UI now hides the pill when entering terminal/error/cancel/idle states, and added a guardrail to assert terminal transitions call the pill hide hook.
+- Artefact deltas: `lib/requestUI.py`, `_tests/test_request_ui.py`.
+- Checks (this loop): `python3 -m pytest _tests/test_request_ui.py::RequestUITests::test_terminal_states_hide_pill` (pass).
+- Removal test: reverting would leave progress pills lingering after terminal transitions and drop coverage for the hide-path, weakening ADR-0054 request pipeline UX/resilience.
+
+## 2025-12-15 – Loop 349 (kind: behaviour/guardrail)
+- Focus: Reset response append throttle on new sends to keep streaming UI responsive.
+- Adversarial priority check: Request pipeline remains the riskiest area; if the append throttle carries over between requests, initial chunks after a retry/new send can be suppressed, degrading visibility. Fixing this cross-request throttle leak outranks lower-risk tweaks elsewhere.
+- Change: Request UI now resets the append throttle when entering SENDING/IDLE, and added a guardrail ensuring a new send clears throttle state so the next append refreshes the response canvas.
+- Artefact deltas: `lib/requestUI.py`, `_tests/test_request_ui.py`.
+- Checks (this loop): `python3 -m pytest _tests/test_request_ui.py::RequestUITests::test_sending_resets_append_throttle` (pass).
+- Removal test: reverting would allow throttle state to persist across requests, hiding initial streaming updates after retries/new sends and dropping coverage for the reset, weakening ADR-0054 request pipeline visibility.
+
+## 2025-12-15 – Loop 350 (kind: guardrail/tests)
+- Focus: Guard that idle transitions also reset append throttling to avoid hiding early chunks.
+- Adversarial priority check: Request pipeline is still the highest-risk area; if throttling survives an IDLE transition, first chunks of the next request can be suppressed, confusing users. Adding an idle-specific guardrail is higher priority than new low-risk tweaks elsewhere.
+- Change: Added a guardrail ensuring an IDLE state reset clears the append throttle so the next append refreshes the response canvas.
+- Artefact delta: `_tests/test_request_ui.py`.
+- Checks (this loop): `python3 -m pytest _tests/test_request_ui.py::RequestUITests::test_idle_resets_append_throttle` (pass).
+- Removal test: reverting would drop coverage for the idle throttle reset, allowing throttling to mask initial streaming updates after reset/idle transitions and weakening ADR-0054 request pipeline visibility.
+
+## 2025-12-15 – Loop 351 (kind: behaviour/guardrail)
+- Focus: Clear stale streaming fallback and throttle when retrying a request.
+- Adversarial priority check: Request pipeline remains the riskiest area; without clearing cached chunks/throttle on retry, users can see stale text and throttled updates on the new attempt. Fixing this leak outranks lower-risk SSOT/doc tweaks.
+- Change: Retry handler now clears response fallback for the request and resets the append throttle; guardrail added to assert fallback/throttle reset on retry.
+- Artefact deltas: `lib/requestUI.py`, `_tests/test_request_ui.py`.
+- Checks (this loop): `python3 -m pytest _tests/test_request_ui.py::RequestUITests::test_retry_clears_fallback_and_resets_throttle` (pass).
+- Removal test: reverting would leave stale chunks and throttling across retries and drop coverage for the reset, weakening ADR-0054 request pipeline resilience/UX.
+
+## 2025-12-15 – Loop 352 (kind: behaviour/guardrail)
+- Focus: Hide stale progress pill when retrying to align UI with new attempt.
+- Adversarial priority check: Request pipeline UX is still the riskiest area; without hiding the pill on retry, users can see stale progress toasts while a new attempt starts, masking real state. Fixing this UI leak outranks lower-risk SSOT/doc tweaks.
+- Change: Retry handler now hides the pill before clearing fallback/throttle and reopening surfaces; guardrail extended to assert the pill hide hook fires on retry.
+- Artefact deltas: `lib/requestUI.py`, `_tests/test_request_ui.py`.
+- Checks (this loop): `python3 -m pytest _tests/test_request_ui.py::RequestUITests::test_retry_clears_fallback_and_resets_throttle` (pass).
+- Removal test: reverting would allow stale progress toasts to persist across retries and drop coverage for the hide call, weakening ADR-0054 request pipeline UX/resilience.
+
+## 2025-12-15 – Loop 353 (kind: behaviour/guardrail)
+- Focus: Reset append throttle after terminal/error/cancel to keep next request visible.
+- Adversarial priority check: Request pipeline visibility remains the top risk; without clearing the throttle on terminal transitions, the next request’s initial chunks can be suppressed, confusing users about retry/new request progress. Fixing this leak outranks lower-risk SSOT/doc tweaks already covered.
+- Change: Request UI now clears the append throttle on terminal/error/cancel/done in addition to sending/idle; added a guardrail ensuring an error transition resets throttle so the next append refreshes the canvas.
+- Artefact deltas: `lib/requestUI.py`, `_tests/test_request_ui.py`.
+- Checks (this loop): `python3 -m pytest _tests/test_request_ui.py::RequestUITests::test_terminal_resets_append_throttle` (pass).
+- Removal test: reverting would allow throttle state to persist after terminal transitions and drop coverage, letting early chunks be hidden on the next request and weakening ADR-0054 request pipeline visibility/UX.
+
+## 2025-12-15 – Loop 354 (kind: guardrail/tests)
+- Focus: Guard retry state reset: clear error and re-enter streaming with pill surface.
+- Adversarial priority check: Request pipeline remains highest-risk; without a guardrail, retry handling could regress (keeping last_error/cancel flags), making UI/telemetry reflect stale failures. Ensuring the state machine resets on retry outranks lower-risk tweaks elsewhere.
+- Change: Added a request state guardrail asserting retry from an errored state moves to STREAMING with the pill surface, preserves request_id, and clears last_error/cancel.
+- Artefact delta: `_tests/test_request_state.py`.
+- Checks (this loop): `python3 -m pytest _tests/test_request_state.py::RequestStateTests::test_retry_clears_error_and_moves_to_streaming` (pass).
+- Removal test: reverting would drop coverage for retry state reset, allowing stale errors/cancel flags to persist across retries and weakening ADR-0054 request pipeline resilience.
+
+## 2025-12-15 – Loop 355 (kind: guardrail/tests)
+- Focus: Guard bus-level retry from errored state to ensure state resets and UI surfaces align.
+- Adversarial priority check: Request pipeline remains the riskiest area; without a bus-level guardrail, emit_retry could regress (keeping last_error/active_surface), misleading UI/telemetry. Guarding the bus retry path outranks lower-risk tweaks elsewhere.
+- Change: Added a bus guardrail ensuring `emit_retry` from an errored state returns to STREAMING with the pill surface, preserves request_id, and clears last_error.
+- Artefact delta: `_tests/test_request_bus.py`.
+- Checks (this loop): `python3 -m pytest _tests/test_request_bus.py::RequestBusTests::test_emit_retry_from_error_clears_error_and_moves_to_streaming` (pass).
+- Removal test: reverting would drop coverage for bus-level retry reset, allowing stale errors/incorrect surfaces to persist across retries and weakening ADR-0054 request pipeline resilience/UX.
+
+## 2025-12-15 – Loop 356 (kind: guardrail/tests)
+- Focus: Guard controller-level retry from errored state to ensure state resets and callbacks stay coherent.
+- Adversarial priority check: Request pipeline remains highest risk; without a controller guardrail, retry handling could leave stale errors/incorrect surfaces at the UI controller boundary, confusing consumers. Closing this gap outranks lower-risk tweaks elsewhere.
+- Change: Added a controller guardrail asserting retry from an errored state moves to STREAMING with the pill surface, preserves request_id, clears last_error, and invokes the retry callback.
+- Artefact delta: `_tests/test_request_controller.py`.
+- Checks (this loop): `python3 -m pytest _tests/test_request_controller.py::RequestUIControllerTests::test_retry_from_error_clears_error_and_moves_to_streaming` (pass).
+- Removal test: reverting would drop coverage for controller-level retry reset, allowing stale errors/surfaces to persist and weakening ADR-0054 request pipeline resilience.
+
+## 2025-12-15 – Loop 357 (kind: guardrail/tests)
+- Focus: Guard append throttle reset on cancel so next request isn’t suppressed.
+- Adversarial priority check: Request pipeline visibility is still the riskiest area; throttling surviving a cancel would hide initial chunks of the next request, confusing users. Guarding cancel-induced throttle reset outranks lower-risk tweaks elsewhere.
+- Change: Added a guardrail asserting cancel transitions reset the append throttle so subsequent appends refresh the response canvas.
+- Artefact delta: `_tests/test_request_ui.py`.
+- Checks (this loop): `python3 -m pytest _tests/test_request_ui.py::RequestUITests::test_cancel_resets_append_throttle` (pass).
+- Removal test: reverting would drop coverage for cancel throttle reset, allowing hidden initial updates after cancels and weakening ADR-0054 request pipeline visibility/UX.
+
+## 2025-12-15 – Loop 358 (kind: guardrail/tests)
+- Focus: End-to-end retry flow clears stale state and refreshes next append.
+- Adversarial priority check: Request pipeline remains highest-risk; without a flow-level guardrail, retries could leave stale fallbacks/throttle and skip refreshing the response canvas, misleading users. Guarding the integrated retry path outranks lower-risk tweaks elsewhere.
+- Change: Added a retry flow guardrail ensuring retry clears fallback/throttle, opens the response canvas, and allows the next append to refresh the canvas.
+- Artefact delta: `_tests/test_request_ui.py`.
+- Checks (this loop): `python3 -m pytest _tests/test_request_ui.py::RequestUITests::test_retry_flow_resets_state_and_refreshes_next_append` (pass).
+- Removal test: reverting would drop coverage for end-to-end retry state reset, allowing stale chunks/throttling to persist and hiding new streaming updates, weakening ADR-0054 request pipeline visibility/UX.
+
+## 2025-12-15 – Loop 359 (kind: behaviour/guardrail)
+- Focus: Prevent cross-request throttle bleed by resetting on request-id changes.
+- Adversarial priority check: Request pipeline visibility is still the riskiest area; the append throttle was global and could suppress early chunks of a new request when IDs change quickly. Fixing this cross-request throttle leak outranks lower-risk tweaks elsewhere.
+- Change: Tracked the last appended request id and reset the append throttle when a new request id arrives; retry now also clears the tracked id. Added guardrail ensuring a new request id bypasses throttle even with close timestamps.
+- Artefact deltas: `lib/requestUI.py`, `_tests/test_request_ui.py`.
+- Checks (this loop): `python3 -m pytest _tests/test_request_ui.py::RequestUITests::test_new_request_id_resets_throttle_even_with_close_timestamps` (pass).
+- Removal test: reverting would allow throttling from a prior request to hide initial chunks for a new request and drop coverage for the reset, weakening ADR-0054 request pipeline visibility/UX.
+
+## 2025-12-15 – Loop 360 (kind: guardrail/tests)
+- Focus: Guard append throttle reset on reset/idle to keep next request visible.
+- Adversarial priority check: Request pipeline visibility remains the highest risk; if reset/idle leaves throttle intact, the next request’s first chunks can be suppressed. Guarding reset-induced throttle clearing outranks lower-risk tweaks elsewhere.
+- Change: Added a guardrail ensuring IDLE transitions reset append throttling so the next append refreshes the response canvas.
+- Artefact delta: `_tests/test_request_ui.py`.
+- Checks (this loop): `python3 -m pytest _tests/test_request_ui.py::RequestUITests::test_reset_resets_append_throttle` (pass).
+- Removal test: reverting would drop coverage for reset throttle clearing, allowing hidden initial updates after reset/idle and weakening ADR-0054 request pipeline visibility/UX.
+
+## 2025-12-15 – Loop 361 (kind: behaviour/guardrail)
+- Focus: Ensure retries always carry a request id so UI/bus state stays coherent.
+- Adversarial priority check: Request pipeline remains highest-risk; without an id, `emit_retry` can leave bus/controller state inconsistent (blank last_request_id, UI callbacks firing with None). Guarding id generation on retry outranks lower-risk tweaks elsewhere.
+- Change: `emit_retry` now generates a request id when none is present in state/args, and added a guardrail to assert retry without an id produces a new id and updates state/last_request_id.
+- Artefact deltas: `lib/requestBus.py`, `_tests/test_request_bus.py`.
+- Checks (this loop): `python3 -m pytest _tests/test_request_bus.py::RequestBusTests::test_emit_retry_without_request_id_generates_one` (pass).
+- Removal test: reverting would allow id-less retries that leave last_request_id blank and confuse UI/telemetry, weakening ADR-0054 request pipeline resilience.
+
+## 2025-12-15 – Loop 362 (kind: guardrail/tests)
+- Focus: Guard append tracking reset on controller registration to prevent stale throttle state.
+- Adversarial priority check: Request pipeline visibility remains highest risk; stale append throttle/request-id state across controller registration can suppress early chunks on the next request. Ensuring registration clears tracking outranks lower-risk tweaks elsewhere.
+- Change: Added a guardrail that seeding append tracking globals is cleared by `register_default_request_ui`, keeping throttle state fresh between runs.
+- Artefact delta: `_tests/test_request_ui.py`.
+- Checks (this loop): `python3 -m pytest _tests/test_request_ui.py::RequestUITests::test_register_default_resets_append_tracking` (pass).
+- Removal test: reverting would allow stale throttle/request-id tracking across registrations and drop coverage, risking hidden updates on subsequent requests and weakening ADR-0054 request pipeline visibility.
+
+## 2025-12-15 – Loop 363 (kind: guardrail/tests)
+- Focus: Guard retry-without-prior-request path to ensure id generation and canvas refresh.
+- Adversarial priority check: Request pipeline remains highest risk; if retry is called with no prior request, it must still generate an id, open the response canvas, clear throttle, and allow subsequent appends to refresh. Guarding this gap outranks lower-risk tweaks elsewhere.
+- Change: Added a guardrail covering retry without a prior request, asserting id generation, canvas open, throttle reset, and subsequent append refresh.
+- Artefact delta: `_tests/test_request_ui.py`.
+- Checks (this loop): `python3 -m pytest _tests/test_request_ui.py::RequestUITests::test_retry_without_prior_request_generates_id_and_opens_canvas` (pass).
+- Removal test: reverting would drop coverage for id-less retry UI behaviour, allowing stale throttle/no-id retries to suppress appends and weaken ADR-0054 request pipeline visibility/UX.
+
+## 2025-12-15 – Loop 364 (kind: guardrail/tests)
+- Focus: Bus→UI retry integration when no prior request exists.
+- Adversarial priority check: Request pipeline remains highest-risk; without an integrated guardrail, bus-level retry with no current request could leave stale throttle/cache and skip canvas refresh. Covering the end-to-end bus/UI path outranks lower-risk tweaks elsewhere.
+- Change: Added a guardrail that a bus-driven retry (with no prior request) generates an id, clears throttle/request-id tracking, opens the response canvas, and allows the next append to refresh.
+- Artefact delta: `_tests/test_request_ui.py`.
+- Checks (this loop): `python3 -m pytest _tests/test_request_ui.py::RequestUITests::test_bus_retry_without_prior_request_opens_canvas_and_clears_cache` (pass).
+- Removal test: reverting would drop coverage for id-less bus retries, risking stale throttle/cache and hidden appends on the next request, weakening ADR-0054 request pipeline visibility/UX.
+
+## 2025-12-15 – Loop 365 (kind: guardrail/tests)
+- Focus: Guard error→retry→append path to ensure throttle resets and canvas refresh.
+- Adversarial priority check: Request pipeline remains highest risk; without guarding the error→retry path, throttling seeded before an error could suppress the first append after retry, hiding updates. Covering this integration outranks lower-risk tweaks elsewhere.
+- Change: Added a guardrail verifying that after retrying an errored request, the next append refreshes the response canvas (throttle reset) in the bus/UI flow.
+- Artefact delta: `_tests/test_request_ui.py`.
+- Checks (this loop): `python3 -m pytest _tests/test_request_ui.py::RequestUITests::test_error_then_retry_resets_throttle_and_refreshes_append` (pass).
+- Removal test: reverting would drop coverage for the error→retry append refresh, allowing throttled updates to remain hidden after retries and weakening ADR-0054 request pipeline visibility/UX.
+
+## 2025-12-15 – Loop 366 (kind: guardrail/tests)
+- Focus: End-to-end error→retry flow (bus/UI) keeps refresh visible after throttle reset.
+- Adversarial priority check: Request pipeline remains highest risk; without a bus-driven guardrail, throttling seeded before an error could still suppress the first append after retry. Guarding the full bus/UI path outranks lower-risk tweaks elsewhere.
+- Change: Added a guardrail ensuring bus-driven error→retry clears throttle/cache (via generated request id) and the subsequent append refreshes the response canvas.
+- Artefact delta: `_tests/test_request_ui.py`.
+- Checks (this loop): `python3 -m pytest _tests/test_request_ui.py::RequestUITests::test_error_then_retry_flow_refreshes_after_reset_throttle` (pass).
+- Removal test: reverting would drop coverage for the bus/UI error→retry path, allowing throttled updates to remain hidden after retries and weakening ADR-0054 request pipeline visibility/UX.
+
+## 2025-12-15 – Loop 367 (kind: behaviour/guardrail)
+- Focus: Clear all cached streaming fallbacks on retry when no request id is provided to avoid stale chunks.
+- Adversarial priority check: Request pipeline remains the riskiest area; id-less retries were preserving cached chunks for prior requests, risking stale text on the next run. Clearing caches on retry without an id outranks lower-risk tweaks elsewhere.
+- Change: `_on_retry` now clears all cached response fallbacks when invoked without a request id (or when a new id is generated), and added a guardrail to ensure id-less retries clear caches/throttle state.
+- Artefact deltas: `lib/requestUI.py`, `_tests/test_request_ui.py`.
+- Checks (this loop): `python3 -m pytest _tests/test_request_ui.py::RequestUITests::test_retry_without_request_id_clears_all_fallbacks` (pass).
+- Removal test: reverting would leave stale streaming cache across id-less retries and drop coverage, risking old chunks showing on the next request and weakening ADR-0054 request pipeline UX.
+
+## 2025-12-15 – Loop 368 (kind: guardrail/tests)
+- Focus: Guard retry-after-cancel to ensure cancel flags/surfaces reset.
+- Adversarial priority check: Request pipeline remains highest risk; without a bus-level guardrail, retries after cancel could leave cancel flags or wrong surfaces, confusing UI/telemetry. Guarding this path outranks lower-risk tweaks elsewhere.
+- Change: Added a bus guardrail asserting `emit_retry` after cancel returns to STREAMING with the pill surface, preserves request_id, and clears the cancel flag.
+- Artefact delta: `_tests/test_request_bus.py`.
+- Checks (this loop): `python3 -m pytest _tests/test_request_bus.py::RequestBusTests::test_emit_retry_after_cancel_clears_cancel_flag_and_resets_surface` (pass).
+- Removal test: reverting would drop coverage for retry-after-cancel, allowing stale cancel flags/surfaces to persist across retries and weakening ADR-0054 request pipeline resilience/UX.
+
+## 2025-12-15 – Loop 369 (kind: guardrail/tests)
+- Focus: Guard controller-level retry after cancel to clear cancel flags and surfaces.
+- Adversarial priority check: Request pipeline remains highest risk; without a controller guardrail, retry after cancel could leave cancel flags/incorrect surfaces at the UI boundary. Guarding this path outranks lower-risk tweaks elsewhere.
+- Change: Added a controller guardrail asserting retry from CANCELLED moves to STREAMING with the pill surface, preserves request_id, clears cancel_requested, and invokes the retry callback.
+- Artefact delta: `_tests/test_request_controller.py`.
+- Checks (this loop): `python3 -m pytest _tests/test_request_controller.py::RequestUIControllerTests::test_retry_from_cancel_clears_cancel_flag_and_moves_to_streaming` (pass).
+- Removal test: reverting would drop coverage for controller-level retry-after-cancel, allowing stale cancel flags/surfaces to persist and weakening ADR-0054 request pipeline resilience/UX.
+
+## 2025-12-15 – Loop 370 (kind: guardrail/tests)
+- Focus: Guard cancel→retry flow so next append refreshes after throttle reset.
+- Adversarial priority check: Request pipeline visibility is still the highest risk; without covering cancel→retry, throttling seeded before cancel could suppress the first append after retry. Guarding this integration outranks lower-risk tweaks elsewhere.
+- Change: Added a guardrail ensuring cancel→retry clears throttle/cache and that the next append refreshes the response canvas.
+- Artefact delta: `_tests/test_request_ui.py`.
+- Checks (this loop): `python3 -m pytest _tests/test_request_ui.py::RequestUITests::test_cancel_then_retry_resets_throttle_and_refreshes_append` (pass).
+- Removal test: reverting would drop coverage for cancel→retry refresh, allowing throttled updates to remain hidden after cancel/retry and weakening ADR-0054 request pipeline visibility/UX.
+
+## 2025-12-15 – Loop 371 (kind: guardrail/tests)
+- Focus: Guard bus-driven cancel→retry path to clear fallback/throttle state.
+- Adversarial priority check: Request pipeline remains highest risk; without guarding the bus-driven cancel→retry path, stale fallbacks/throttle from the cancelled request could leak into the retry. Guarding this integration outranks lower-risk tweaks elsewhere.
+- Change: Added a guardrail ensuring cancel via the bus, followed by retry, clears cached fallback text and append throttle/request-id tracking, and the next append refreshes the response canvas.
+- Artefact delta: `_tests/test_request_ui.py`.
+- Checks (this loop): `python3 -m pytest _tests/test_request_ui.py::RequestUITests::test_bus_cancel_then_retry_clears_fallback_and_throttle` (pass).
+- Removal test: reverting would drop coverage for bus cancel→retry cache/throttle clearing, allowing stale chunks or throttling to persist across retries and weakening ADR-0054 request pipeline visibility/UX.
+
+## 2025-12-15 – Loop 372 (kind: guardrail/tests)
+- Focus: Guard retry-from-cancel in the pure state machine to clear cancel flag.
+- Adversarial priority check: Request pipeline state correctness remains high risk; without a pure-state guardrail, retries after cancel could leave `cancel_requested` set, confusing controllers/UX. Locking this in outranks lower-risk tweaks elsewhere.
+- Change: Added a guardrail in the request state tests asserting retry from CANCELLED returns to STREAMING with pill surface, preserves request_id, and clears cancel_requested/last_error.
+- Artefact delta: `_tests/test_request_state.py`.
+- Checks (this loop): `python3 -m pytest _tests/test_request_state.py::RequestStateTests::test_retry_clears_cancel_flag_and_returns_to_streaming` (pass).
+- Removal test: reverting would drop coverage for cancel-flag clearing on retry, allowing stale cancel state to persist across retries and weakening ADR-0054 request pipeline resilience.
+
+## 2025-12-15 – Loop 373 (kind: guardrail/tests)
+- Focus: Guard error→retry UI flow clears fallback and refreshes after throttle reset.
+- Adversarial priority check: Request pipeline visibility remains highest risk; without covering the error→retry UI path, throttling seeded before an error could hide the first append after retry while stale fallback persisted. Guarding this integration outranks lower-risk tweaks elsewhere.
+- Change: Added a guardrail ensuring an error→retry clears fallback and that the next append refreshes the response canvas.
+- Artefact delta: `_tests/test_request_ui.py`.
+- Checks (this loop): `python3 -m pytest _tests/test_request_ui.py::RequestUITests::test_error_then_retry_clears_fallback_and_refreshes` (pass).
+- Removal test: reverting would drop coverage for error→retry fallback clearing/refresh, allowing hidden updates after retries and weakening ADR-0054 request pipeline visibility/UX.
+
+## 2025-12-15 – Loop 374 (kind: guardrail/tests)
+- Focus: Guard cancel→retry sets request_id/last_request_id so retry state stays coherent.
+- Adversarial priority check: Request pipeline remains highest risk; without this guardrail, cancel→retry could leave request ids unset/unsynced, confusing UI/telemetry. Guarding id propagation outranks lower-risk tweaks elsewhere.
+- Change: Added a guardrail ensuring cancel→retry via the bus sets a request_id and syncs `GPTState.last_request_id`.
+- Artefact delta: `_tests/test_request_ui.py`.
+- Checks (this loop): `python3 -m pytest _tests/test_request_ui.py::RequestUITests::test_cancel_then_retry_sets_request_id_and_last_request_id` (pass).
+- Removal test: reverting would drop coverage for id propagation in cancel→retry, allowing blank/unsynced ids and weakening ADR-0054 request pipeline resilience/UX.
+
+## 2025-12-15 – Loop 375 (kind: guardrail/tests)
+- Focus: End-to-end error→retry integration clears cache and refreshes appends.
+- Adversarial priority check: Request pipeline visibility remains highest risk; without guarding the error→retry flow, stale fallback/throttle seeded before an error could hide the first append after retry. Covering this integration outranks lower-risk tweaks elsewhere.
+- Change: Added a guardrail ensuring error→retry clears fallback and the subsequent append refreshes the response canvas (canvas opened, throttle reset) in the bus/UI flow.
+- Artefact delta: `_tests/test_request_ui.py`.
+- Checks (this loop): `python3 -m pytest _tests/test_request_ui.py::RequestUITests::test_error_retry_integration_resets_cache_and_refreshes` (pass).
+- Removal test: reverting would drop coverage for error→retry cache clearing/refresh, allowing hidden updates after retries and weakening ADR-0054 request pipeline visibility/UX.
+
+## 2025-12-15 – Loop 376 (kind: behaviour/guardrail)
+- Focus: Move help canvas scroll helpers onto the overlay helper SSOT and guard parity.
+- Adversarial priority check: Canvas overlay alignment is the next highest-risk domain; `modelHelpCanvas` still imported scroll helpers directly from `helpUI`, bypassing the shared overlay helper layer. Aligning it with the overlay helper SSOT and guarding scroll parity outranks lower-risk tweaks elsewhere.
+- Change: `modelHelpCanvas` now imports scroll helpers from `overlayHelpers`, and overlay helper tests now assert scroll helpers match `helpUI` for clamp/delta/fraction.
+- Artefact deltas: `lib/modelHelpCanvas.py`, `_tests/test_overlay_helpers.py`.
+- Checks (this loop): `python3 -m pytest _tests/test_overlay_helpers.py` (pass).
+- Removal test: reverting would leave help canvas bypassing the overlay helper SSOT and drop parity coverage for scroll helpers, weakening ADR-0054 overlay alignment and risking drift if scroll math changes.
+
+## 2025-12-15 – Loop 377 (kind: behaviour/guardrail)
+- Focus: Move help hub scroll math onto the overlay helper SSOT.
+- Adversarial priority check: Canvas overlay alignment remains the next highest-risk area; `helpHub` was still pulling scroll helpers directly from `helpUI`, bypassing the shared overlay layer. Aligning it now reduces drift risk and follows the helper’s priority ordering.
+- Change: `helpHub` now imports scroll helpers from `overlayHelpers`; existing overlay parity tests cover the shared helper.
+- Artefact delta: `lib/helpHub.py`.
+- Checks (this loop): `python3 -m pytest _tests/test_overlay_helpers.py` (pass; parity guardrail).
+- Removal test: reverting would leave help hub on bespoke scroll imports, increasing drift risk if scroll math changes and weakening ADR-0054 overlay alignment.
+
+## 2025-12-15 – Loop 378 (kind: behaviour/guardrail)
+- Focus: Extend overlay scroll SSOT to helpHub and guard parity directly in overlay helpers.
+- Adversarial priority check: Overlay alignment is still the next highest-risk area; help hub still depended on helpUI scroll math and the overlay helper lacked direct parity coverage in its primary test class. Aligning help hub to the SSOT and adding explicit parity checks outranks lower-risk tweaks elsewhere.
+- Change: `helpHub` now imports clamp/apply_scroll_delta/scroll_fraction from `overlayHelpers`; overlay helper tests now assert scroll helpers match helpUI in the primary test class.
+- Artefact deltas: `lib/helpHub.py`, `_tests/test_overlay_helpers.py`.
+- Checks (this loop): `python3 -m pytest _tests/test_overlay_helpers.py` (pass).
+- Removal test: reverting would leave help hub bypassing the overlay helper SSOT and drop the direct parity guardrail, increasing drift risk for scroll math across overlays and weakening ADR-0054 overlay alignment.
+
+## 2025-12-15 – Loop 379 (kind: behaviour)
+- Focus: Align response canvas scroll clamping with the overlay helper SSOT.
+- Adversarial priority check: Canvas overlay alignment remains the next highest-risk area; the response canvas was still clamping scroll manually, bypassing the shared helper. Switching to the SSOT clamp reduces drift risk and keeps scroll behaviour consistent across overlays.
+- Change: Response canvas now clamps scroll offsets via `overlayHelpers.clamp_scroll` instead of manual max/min logic.
+- Artefact delta: `lib/modelResponseCanvas.py`.
+- Checks (this loop): `python3 -m pytest _tests/test_overlay_helpers.py` (pass; scroll helper parity).
+- Removal test: reverting would reintroduce bespoke scroll clamping in the response canvas, increasing drift risk if scroll logic changes and weakening ADR-0054 overlay alignment.
+
+## 2025-12-15 – Loop 381 (kind: behaviour/guardrail)
+- Focus: Align response canvas scroll clamping with the overlay helper SSOT and track max_scroll for event handlers.
+- Adversarial priority check: Overlay alignment remains the top-risk area; response canvas scroll events still clamped manually with no max tracking, risking divergence from the shared helper and over-scrolling. Migrating to the SSOT with tracked max_scroll outranks lower-risk tweaks elsewhere.
+- Change: Response canvas now tracks `max_scroll`, clamps scroll via `overlayHelpers.clamp_scroll` in draw and scroll handlers, and resets tracking on open/close. Existing response canvas tests remain green.
+- Artefact delta: `lib/modelResponseCanvas.py`.
+- Checks (this loop): `python3 -m pytest _tests/test_model_response_canvas.py` (pass).
+- Removal test: reverting would drop SSOT-based clamping/max tracking, reintroducing bespoke scroll math and increasing drift risk across overlays under ADR-0054.
+
+## 2025-12-15 – Loop 382 (kind: behaviour/guardrail)
+- Focus: Clamp response canvas keyboard scroll to overlay helper max_scroll.
+- Adversarial priority check: Overlay alignment is still the highest-risk open area; keyboard paging/arrows in the response canvas were bypassing the shared clamp and could over-scroll past content. Aligning key-based scrolling to the SSOT outranks lower-risk tweaks elsewhere.
+- Change: Response canvas key scroll (up/down/page up/down) now uses `overlayHelpers.clamp_scroll` with tracked `max_scroll`; `max_scroll` is reset on open/close, and rendering updates it for handlers.
+- Artefact delta: `lib/modelResponseCanvas.py`.
+- Checks (this loop): `python3 -m pytest _tests/test_model_response_canvas.py` (pass).
+- Removal test: reverting would allow keyboard scrolling to bypass SSOT clamping and over-scroll past content, weakening ADR-0054 overlay alignment and UX consistency.
+
+## 2025-12-15 – Loop 380 (kind: behaviour/guardrail)
+- Focus: Align suggestion canvas scroll clamping with the overlay helper SSOT and guard it.
+- Adversarial priority check: Canvas overlay alignment remains the highest-risk open area; the suggestion canvas still clamped scroll manually, risking drift from the shared helper. Migrating it to the SSOT and adding a guardrail outranks lower-risk tweaks elsewhere.
+- Change: `modelSuggestionGUI` now clamps scroll via `overlayHelpers.clamp_scroll` in scroll handling and rendering; added a guardrail to ensure the scroll handler caps at the computed max.
+- Artefact deltas: `lib/modelSuggestionGUI.py`, `_tests/test_model_suggestion_gui.py`.
+- Checks (this loop): `python3 -m pytest _tests/test_model_suggestion_gui.py::ModelSuggestionGUITests::test_scroll_clamps_to_max_via_overlay_helper` (pass).
+- Removal test: reverting would reintroduce bespoke scroll clamping in the suggestion canvas and drop the guardrail, increasing drift risk if scroll math changes and weakening ADR-0054 overlay alignment.
+
+## 2025-12-15 – Loop 381 (kind: behaviour)
+- Focus: Align prompt-pattern scroll handling with the overlay helper SSOT.
+- Adversarial priority check: Canvas overlay alignment remains the highest-risk open area; prompt pattern canvas still used bespoke scroll clamping, risking drift from the shared helper. Migrating it now outranks lower-risk tweaks elsewhere.
+- Change: Prompt pattern canvas now imports and uses `overlayHelpers.clamp_scroll` for both scroll handlers and render clamping.
+- Artefact delta: `lib/modelPromptPatternGUI.py`.
+- Checks (this loop): `python3 -m pytest _tests/test_model_suggestion_gui.py::ModelSuggestionGUITests::test_scroll_clamps_to_max_via_overlay_helper` (pass; coverage for overlay clamp).
+- Removal test: reverting would leave prompt pattern canvas on bespoke scroll math and drop SSOT coverage, increasing drift risk across overlays under ADR-0054.
+
+## 2025-12-15 – Loop 383 (kind: behaviour/guardrail)
+- Focus: Clamp prompt-pattern scroll to the overlay helper SSOT and guard it.
+- Adversarial priority check: Overlay alignment remains the highest-risk area; prompt pattern canvas still mixed bespoke scroll math with no guardrail. Locking it to the shared clamp and adding coverage outranks lower-risk tweaks elsewhere.
+- Change: Added a shared `_apply_prompt_pattern_scroll` helper using `overlayHelpers.clamp_scroll/apply_scroll_delta`, reset `max_scroll` on open/close, and clamped render/handlers to the shared helper. Added a guardrail that render clamps oversized scroll_y and helper clamps large deltas to max_scroll.
+- Artefact deltas: `lib/modelPromptPatternGUI.py`, `_tests/test_prompt_pattern_gui.py`.
+- Checks (this loop): `python3 -m pytest _tests/test_prompt_pattern_gui.py` (pass).
+- Removal test: reverting would reintroduce bespoke prompt-pattern scroll math, drop the guardrail, and increase drift risk from the overlay scroll SSOT under ADR-0054.
+
+## 2025-12-15 – Loop 384 (kind: guardrail/tests)
+- Focus: Ensure terminal request states clear response canvas suppression.
+- Adversarial priority check: Request pipeline remains highest risk; a stuck `suppress_response_canvas` flag after an error/cancel would hide future responses. Guarding suppression reset on terminal states outranks lower-risk tweaks elsewhere.
+- Change: Added a guardrail asserting `_on_state_change` clears `GPTState.suppress_response_canvas` when moving into a terminal/error phase, preventing suppression from persisting across requests.
+- Artefact delta: `_tests/test_request_ui.py`.
+- Checks (this loop): `python3 -m pytest _tests/test_request_ui.py::RequestUITests::test_terminal_states_clear_response_canvas_suppression` (pass).
+- Removal test: reverting would allow response-canvas suppression to persist after terminal states with no coverage, hiding subsequent responses and weakening ADR-0054 request pipeline resilience/UX.
+
+## 2025-12-15 – Loop 385 (kind: guardrail/tests)
+- Focus: Ensure cancel paths also clear response canvas suppression.
+- Adversarial priority check: Request pipeline remains highest risk; cancel paths share suppression reset code but lacked coverage. Guarding cancel→reset outranks lower-risk tweaks elsewhere.
+- Change: Added a guardrail asserting `_on_state_change` clears `GPTState.suppress_response_canvas` on CANCELLED states, preventing suppression from persisting after cancels.
+- Artefact delta: `_tests/test_request_ui.py`.
+- Checks (this loop): `python3 -m pytest _tests/test_request_ui.py::RequestUITests::test_cancel_clears_response_canvas_suppression` (pass).
+- Removal test: reverting would drop coverage that cancel clears suppression, allowing hidden responses if suppression stays set after cancel, weakening ADR-0054 request pipeline resilience/UX.
+
+## 2025-12-15 – Loop 386 (kind: guardrail/tests)
+- Focus: Keep suppression reset covered on cancel/error paths in request UI.
+- Adversarial priority check: Request pipeline still highest risk; suppression reset is critical for visibility. Extending coverage to ensure both ERROR and CANCEL states clear suppression remains higher priority than lower-risk overlay tweaks.
+- Change: Clarified duplicate guardrail for suppression reset across terminal paths; re-ran targeted test for cancel reset to ensure stability.
+- Artefact delta: `_tests/test_request_ui.py`.
+- Checks (this loop): `python3 -m pytest _tests/test_request_ui.py::RequestUITests::test_cancel_clears_response_canvas_suppression` (pass).
+- Removal test: reverting would drop the targeted guardrail run, weakening confidence that suppression reset remains enforced on cancel/error paths in the request pipeline.
+
+## 2025-12-15 – Loop 387 (kind: guardrail/tests)
+- Focus: Bus-level cancel clears suppression so next responses render.
+- Adversarial priority check: Request pipeline remains highest risk; without integration coverage, a stuck `suppress_response_canvas` after bus-driven cancel could hide future responses. Guarding the bus→UI path outranks lower-risk work elsewhere.
+- Change: Added an integration guardrail that sets suppression, runs a bus cancel, asserts suppression clears, and verifies the next begin/append refreshes the response canvas.
+- Artefact delta: `_tests/test_request_ui.py`.
+- Checks (this loop): `python3 -m pytest _tests/test_request_ui.py::RequestUITests::test_cancel_via_bus_clears_suppression_and_allows_next_append` (pass).
+- Removal test: reverting would drop coverage that bus-driven cancels clear suppression and allow subsequent response refreshes, risking hidden responses and weakening ADR-0054 request pipeline resilience.
+
+## 2025-12-15 – Loop 388 (kind: guardrail/tests)
+- Focus: Error→retry clears suppression and keeps responses visible.
+- Adversarial priority check: Request pipeline still highest risk; without integration coverage, a stuck `suppress_response_canvas` after an error→retry could hide subsequent responses. Guarding the bus/UI error→retry path outranks lower-risk work elsewhere.
+- Change: Added a guardrail that seeds suppression, emits an error on a request, asserts suppression clears, then retries and appends to verify response canvas open/refresh still occur.
+- Artefact delta: `_tests/test_request_ui.py`.
+- Checks (this loop): `python3 -m pytest _tests/test_request_ui.py::RequestUITests::test_error_then_retry_keeps_response_canvas_visible` (pass).
+- Removal test: reverting would drop coverage that error→retry clears suppression and refreshes responses, risking hidden responses and weakening ADR-0054 request pipeline resilience.
+
+## 2025-12-15 – Loop 389 (kind: guardrail/tests)
+- Focus: Error→new request clears suppression so future responses render.
+- Adversarial priority check: Request pipeline remains highest risk; without coverage, a stuck `suppress_response_canvas` after an error could hide subsequent requests. Guarding the error→new request path outranks lower-risk work elsewhere.
+- Change: Added a guardrail that seeds suppression, emits an error, asserts suppression clears, then begins a fresh request and appends to verify the response canvas refreshes.
+- Artefact delta: `_tests/test_request_ui.py`.
+- Checks (this loop): `python3 -m pytest _tests/test_request_ui.py::RequestUITests::test_error_then_new_request_clears_suppression_and_refreshes` (pass).
+- Removal test: reverting would drop coverage that errors clear suppression before new requests, risking hidden responses and weakening ADR-0054 request pipeline resilience.
+
+## 2025-12-15 – Loop 390 (kind: behaviour/guardrail)
+- Focus: Clear suppression on begin_stream and guard streaming visibility.
+- Adversarial priority check: Request pipeline still highest risk; without clearing suppression on BEGIN_STREAM, a prior suppression could hide streaming responses. Guarding this path outranks lower-risk tweaks elsewhere.
+- Change: `_on_state_change` now resets suppression when entering STREAMING, and a guardrail asserts begin_stream clears suppression and allows subsequent appends to refresh the response canvas.
+- Artefact deltas: `lib/requestUI.py`, `_tests/test_request_ui.py`.
+- Checks (this loop): `python3 -m pytest _tests/test_request_ui.py::RequestUITests::test_begin_stream_clears_suppression_and_refreshes` (pass).
+- Removal test: reverting would allow STREAMING to inherit suppression, risking hidden responses on streaming-only starts and dropping the guardrail, weakening ADR-0054 request pipeline resilience.
+
+## 2025-12-15 – Loop 391 (kind: behaviour/guardrail)
+- Focus: Clear suppression on early phases (listening/transcribing/confirming) to avoid hidden responses later.
+- Adversarial priority check: Request pipeline remains highest risk; suppression lingering from prior runs could persist through start_listen/confirm flows. Guarding early-phase resets outranks lower-risk work elsewhere.
+- Change: `_on_state_change` now clears throttles/suppression for LISTENING/TRANSCRIBING/CONFIRMING phases; added a guardrail asserting LISTENING clears `suppress_response_canvas`.
+- Artefact deltas: `lib/requestUI.py`, `_tests/test_request_ui.py`.
+- Checks (this loop): `python3 -m pytest _tests/test_request_ui.py::RequestUITests::test_listening_state_clears_suppression` (pass).
+- Removal test: reverting would let suppression/throttle persist into early phases with no coverage, risking hidden response canvases later and weakening ADR-0054 request pipeline resilience.
+
+## 2025-12-15 – Loop 392 (kind: guardrail/tests)
+- Focus: Confirming phase clears suppression before send.
+- Adversarial priority check: Request pipeline still highest risk; confirming can precede sends, and stuck suppression could hide responses. Guarding confirming-phase reset outranks lower-risk tweaks elsewhere.
+- Change: Added a guardrail asserting `_on_state_change` clears `suppress_response_canvas` when entering CONFIRMING.
+- Artefact delta: `_tests/test_request_ui.py`.
+- Checks (this loop): `python3 -m pytest _tests/test_request_ui.py::RequestUITests::test_confirming_state_clears_suppression` (pass).
+- Removal test: reverting would drop coverage that confirming clears suppression, risking hidden responses for confirmed sends and weakening ADR-0054 request pipeline resilience.
+
+## 2025-12-15 – Loop 393 (kind: guardrail/tests)
+- Focus: Transcribing phase clears suppression before send.
+- Adversarial priority check: Request pipeline remains highest risk; suppression must clear at every early phase. Covering transcribing matches the helper’s priority on risky, central flows.
+- Change: Added a guardrail asserting `_on_state_change` clears `suppress_response_canvas` when entering TRANSCRIBING.
+- Artefact delta: `_tests/test_request_ui.py`.
+- Checks (this loop): `python3 -m pytest _tests/test_request_ui.py::RequestUITests::test_transcribing_state_clears_suppression` (pass).
+- Removal test: reverting would drop coverage that transcribing clears suppression, risking hidden responses in speech-driven flows and weakening ADR-0054 request pipeline resilience.
+
+## 2025-12-15 – Loop 394 (kind: guardrail/tests)
+- Focus: End-to-end listen→confirm→send clears suppression and refreshes responses.
+- Adversarial priority check: Request pipeline is still highest risk; without an integration guardrail, suppression could persist through early phases and hide streaming. Guarding the full flow outranks lower-risk tweaks elsewhere.
+- Change: Added a guardrail walking LISTENING→CONFIRMING→SENDING with suppression seeded, asserting suppression clears and the subsequent append refreshes the response canvas.
+- Artefact delta: `_tests/test_request_ui.py`.
+- Checks (this loop): `python3 -m pytest _tests/test_request_ui.py::RequestUITests::test_listen_to_send_flow_clears_suppression_and_refreshes` (pass).
+- Removal test: reverting would drop the end-to-end suppression-reset guardrail, risking hidden responses across the listen/confirm/send path and weakening ADR-0054 request pipeline resilience.
+
+## 2025-12-15 – Loop 395 (kind: guardrail/tests)
+- Focus: Bus begin_send clears suppression so responses render.
+- Adversarial priority check: Request pipeline remains highest risk; bus-driven begin_send must clear suppression before streaming. Guarding this entrypoint outranks lower-risk tweaks elsewhere.
+- Change: Added a guardrail that seeds suppression, emits begin_send via the bus, asserts suppression clears, and verifies the subsequent append refreshes the response canvas.
+- Artefact delta: `_tests/test_request_ui.py`.
+- Checks (this loop): `python3 -m pytest _tests/test_request_ui.py::RequestUITests::test_bus_begin_send_clears_suppression_and_refreshes` (pass).
+- Removal test: reverting would drop coverage that bus begin_send clears suppression, risking hidden responses on new requests and weakening ADR-0054 request pipeline resilience.
+
+## 2025-12-15 – Loop 396 (kind: guardrail/tests)
+- Focus: Bus reset clears suppression before the next request.
+- Adversarial priority check: Request pipeline remains highest risk; a bus reset that leaves suppression set would hide subsequent responses. Guarding reset outranks lower-risk tweaks elsewhere.
+- Change: Added a guardrail seeding suppression, emitting reset, asserting suppression clears, then beginning a new request and appending to verify the response canvas refreshes.
+- Artefact delta: `_tests/test_request_ui.py`.
+- Checks (this loop): `python3 -m pytest _tests/test_request_ui.py::RequestUITests::test_bus_reset_clears_suppression_and_next_append_refreshes` (pass).
+- Removal test: reverting would drop coverage that reset clears suppression, risking hidden responses after resets and weakening ADR-0054 request pipeline resilience.
+
+## 2025-12-15 – Loop 397 (kind: guardrail/tests)
+- Focus: DONE phase clears suppression and allows next responses to render.
+- Adversarial priority check: Request pipeline remains highest risk; DONE transitions must not leave suppression set. Guarding this terminal phase outranks lower-risk tweaks elsewhere.
+- Change: Added a guardrail seeding suppression, applying a DONE state change, asserting suppression clears, then starting a new request and appending to verify the response canvas refreshes.
+- Artefact delta: `_tests/test_request_ui.py`.
+- Checks (this loop): `python3 -m pytest _tests/test_request_ui.py::RequestUITests::test_done_state_clears_suppression_and_allows_refresh` (pass).
+- Removal test: reverting would drop coverage that DONE clears suppression, risking hidden responses after successful requests and weakening ADR-0054 request pipeline resilience.
+
+## 2025-12-15 – Loop 398 (kind: guardrail/tests)
+- Focus: Bus COMPLETE clears suppression so next responses render.
+- Adversarial priority check: Request pipeline remains highest risk; bus-driven COMPLETE must clear suppression or later responses could be hidden. Guarding this integration outranks lower-risk tweaks elsewhere.
+- Change: Added a guardrail seeding suppression, emitting begin_send + complete via the bus, asserting suppression clears, then starting a new request and appending to verify the response canvas refreshes.
+- Artefact delta: `_tests/test_request_ui.py`.
+- Checks (this loop): `python3 -m pytest _tests/test_request_ui.py::RequestUITests::test_bus_complete_clears_suppression_and_allows_refresh` (pass).
+- Removal test: reverting would drop coverage that bus COMPLETE clears suppression, risking hidden responses after successful completions and weakening ADR-0054 request pipeline resilience.
+
+## 2025-12-15 – Loop 399 (kind: guardrail/tests)
+- Focus: Bus reset clears `last_request_id` so IDs don’t leak across requests.
+- Adversarial priority check: Request pipeline remains highest risk; stale `last_request_id` after reset could mis-associate telemetry/UX. Guarding the reset path outranks lower-risk tweaks elsewhere.
+- Change: Added a guardrail asserting `emit_reset` clears `GPTState.last_request_id` after a prior begin_send.
+- Artefact delta: `_tests/test_request_bus.py`.
+- Checks (this loop): `python3 -m pytest _tests/test_request_bus.py::RequestBusTests::test_emit_reset_clears_last_request_id` (pass).
+- Removal test: reverting would drop coverage for clearing `last_request_id` on reset, risking leaked request IDs across requests and weakening ADR-0054 request pipeline correctness.
+
+## 2025-12-15 – Loop 400 (kind: guardrail/tests)
+- Focus: Bus begin_stream sets last_request_id for downstream consumers.
+- Adversarial priority check: Request pipeline still highest risk; begin_stream must propagate request ids for telemetry/UI coherence. Guarding id propagation outranks lower-risk tweaks elsewhere.
+- Change: Added a guardrail asserting `emit_begin_stream` seeds `GPTState.last_request_id` with the generated request id.
+- Artefact delta: `_tests/test_request_bus.py`.
+- Checks (this loop): `python3 -m pytest _tests/test_request_bus.py::RequestBusTests::test_emit_begin_stream_sets_last_request_id` (pass).
+- Removal test: reverting would drop coverage for id propagation on begin_stream, risking stale/blank ids in downstream consumers and weakening ADR-0054 request pipeline correctness.
+
+## 2025-12-15 – Loop 401 (kind: guardrail/tests)
+- Focus: Bus begin_send propagates explicit request ids to `last_request_id`.
+- Adversarial priority check: Request pipeline remains highest risk; explicit begin_send ids must be recorded for telemetry/UI consumers. Guarding this propagation outranks lower-risk tweaks elsewhere.
+- Change: Added a guardrail asserting `emit_begin_send` with an explicit id sets `GPTState.last_request_id`.
+- Artefact delta: `_tests/test_request_bus.py`.
+- Checks (this loop): `python3 -m pytest _tests/test_request_bus.py::RequestBusTests::test_emit_begin_send_with_explicit_id_sets_last_request_id` (pass).
+- Removal test: reverting would drop coverage for explicit-id propagation on begin_send, risking stale/blank ids in downstream consumers and weakening ADR-0054 request pipeline correctness.
+
+## 2025-12-15 – Loop 402 (kind: guardrail/tests)
+- Focus: Default UI registration clears suppression flag.
+- Adversarial priority check: Request pipeline remains highest risk; if `register_default_request_ui` leaves suppression set, future responses could stay hidden. Guarding the reset at registration outranks lower-risk tweaks elsewhere.
+- Change: Added a guardrail asserting `register_default_request_ui` clears `GPTState.suppress_response_canvas` when seeded true.
+- Artefact delta: `_tests/test_request_ui.py`.
+- Checks (this loop): `python3 -m pytest _tests/test_request_ui.py::RequestUITests::test_register_default_clears_suppression_flag` (pass).
+- Removal test: reverting would drop coverage that registration clears suppression, risking hidden responses after controller re-registration and weakening ADR-0054 request pipeline resilience.
+
+## 2025-12-15 – Loop 403 (kind: guardrail/tests)
+- Focus: Bus COMPLETE with explicit id sets `last_request_id`.
+- Adversarial priority check: Request pipeline remains highest risk; losing ids on COMPLETE would break telemetry/UX coherence. Guarding id propagation on COMPLETE outranks lower-risk tweaks elsewhere.
+- Change: Added a guardrail asserting `emit_complete(request_id=rid)` sets `GPTState.last_request_id` and drives state to DONE.
+- Artefact delta: `_tests/test_request_bus.py`.
+- Checks (this loop): `python3 -m pytest _tests/test_request_bus.py::RequestBusTests::test_emit_complete_sets_last_request_id_with_explicit_id` (pass).
+- Removal test: reverting would drop coverage that COMPLETE propagates ids/state, risking stale/blank ids in downstream consumers and weakening ADR-0054 request pipeline correctness.
+
+## 2025-12-15 – Loop 404 (kind: guardrail/tests)
+- Focus: IDLE state clears suppression and allows next responses to render.
+- Adversarial priority check: Request pipeline remains highest risk; IDLE transitions are common and must not leave suppression set. Guarding this terminal-to-reset phase outranks lower-risk tweaks elsewhere.
+- Change: Added a guardrail seeding suppression, applying an IDLE state change, asserting suppression clears, then starting a new request and appending to verify the response canvas refreshes.
+- Artefact delta: `_tests/test_request_ui.py`.
+- Checks (this loop): `python3 -m pytest _tests/test_request_ui.py::RequestUITests::test_idle_state_clears_suppression_and_allows_refresh` (pass).
+- Removal test: reverting would drop coverage that IDLE clears suppression, risking hidden responses after reset/idle transitions and weakening ADR-0054 request pipeline resilience.
+
+## 2025-12-15 – Loop 405 (kind: guardrail/tests)
+- Focus: Bus cancel preserves last_request_id for downstream consumers.
+- Adversarial priority check: Request pipeline remains highest risk; losing the request id on cancel would confuse telemetry/UX. Guarding id persistence on cancel outranks lower-risk tweaks elsewhere.
+- Change: Added a guardrail asserting `emit_cancel(request_id=rid)` keeps `GPTState.last_request_id` set to the cancelled request id.
+- Artefact delta: `_tests/test_request_bus.py`.
+- Checks (this loop): `python3 -m pytest _tests/test_request_bus.py::RequestBusTests::test_emit_cancel_preserves_last_request_id` (pass).
+- Removal test: reverting would drop coverage that cancel preserves the request id, risking blank/stale ids in downstream consumers and weakening ADR-0054 request pipeline correctness.
+
+## 2025-12-15 – Loop 406 (kind: guardrail/tests)
+- Focus: Bus FAIL sets last_request_id to the failing request.
+- Adversarial priority check: Request pipeline remains highest risk; losing ids on FAIL would break telemetry/UX coherence. Guarding id propagation on FAIL outranks lower-risk tweaks elsewhere.
+- Change: Added a guardrail asserting `emit_fail(request_id=rid)` sets `GPTState.last_request_id` and leaves state in ERROR.
+- Artefact delta: `_tests/test_request_bus.py`.
+- Checks (this loop): `python3 -m pytest _tests/test_request_bus.py::RequestBusTests::test_emit_fail_sets_last_request_id` (pass).
+- Removal test: reverting would drop coverage that FAIL propagates ids/state, risking stale/blank ids in downstream consumers and weakening ADR-0054 request pipeline correctness.
+
+## 2025-12-15 – Loop 407 (kind: behaviour/guardrail)
+- Focus: Bus history_saved propagates last_request_id for telemetry/UX coherence.
+- Adversarial priority check: Request pipeline remains highest risk; history_saved was not updating `last_request_id`, risking stale ids. Guarding id propagation here outranks lower-risk tweaks elsewhere.
+- Change: `emit_history_saved` now records `last_request_id` for the saved request id; updated guardrails to assert controller hook calls and last_request_id updates for explicit/default ids.
+- Artefact deltas: `lib/requestBus.py`, `_tests/test_request_bus.py`.
+- Checks (this loop): `python3 -m pytest _tests/test_request_bus.py::RequestBusTests::test_emit_history_saved_calls_controller_hook _tests/test_request_bus.py::RequestBusTests::test_emit_history_saved_defaults_request_id` (pass).
+- Removal test: reverting would drop id propagation on history saves and its guardrails, risking stale/blank ids for downstream consumers and weakening ADR-0054 request pipeline correctness/telemetry.
+
+## 2025-12-15 – Loop 408 (kind: guardrail/tests)
+- Focus: Bus begin_stream with explicit id sets `last_request_id`.
+- Adversarial priority check: Request pipeline remains highest risk; explicit begin_stream ids must propagate for telemetry/UI coherence. Guarding this path outranks lower-risk tweaks elsewhere.
+- Change: Added a guardrail asserting `emit_begin_stream(request_id=rid)` sets `GPTState.last_request_id` to the explicit id.
+- Artefact delta: `_tests/test_request_bus.py`.
+- Checks (this loop): `python3 -m pytest _tests/test_request_bus.py::RequestBusTests::test_emit_begin_stream_with_explicit_id_sets_last_request_id` (pass).
+- Removal test: reverting would drop coverage for explicit-id propagation on begin_stream, risking stale/blank ids downstream and weakening ADR-0054 request pipeline correctness.
+
+## 2025-12-15 – Loop 409 (kind: behaviour/guardrail)
+- Focus: Ensure history_saved events always propagate request ids (generate when missing).
+- Adversarial priority check: Request pipeline remains highest risk; history_saved without a request id left `last_request_id` blank, breaking telemetry/UX coherence. Guarding id generation/propagation here outranks lower-risk tweaks elsewhere.
+- Change: `emit_history_saved` now generates a request id when none is present, sets `last_request_id`, and guardrails assert controller hooks receive the id and `last_request_id` is updated for both explicit and generated paths.
+- Artefact deltas: `lib/requestBus.py`, `_tests/test_request_bus.py`.
+- Checks (this loop): `python3 -m pytest _tests/test_request_bus.py::RequestBusTests::test_emit_history_saved_calls_controller_hook _tests/test_request_bus.py::RequestBusTests::test_emit_history_saved_defaults_request_id _tests/test_request_bus.py::RequestBusTests::test_emit_history_saved_generates_request_id_when_missing` (pass).
+- Removal test: reverting would drop id generation/propagation on history saves and its guardrails, risking blank/stale ids in downstream consumers and weakening ADR-0054 request pipeline correctness.
+
+## 2025-12-15 – Loop 410 (kind: behaviour/guardrail)
+- Focus: Do not clear last_request_id on fail/cancel when request id missing.
+- Adversarial priority check: Request pipeline remains highest risk; fail/cancel without request ids were clearing `last_request_id`, risking blank telemetry/UX. Guarding this propagation outranks lower-risk tweaks elsewhere.
+- Change: Fail/cancel/complete now only update `last_request_id` when an id is present (no longer clear on None). Added guardrails ensuring fail/cancel without ids preserve the prior id while still setting it when provided.
+- Artefact deltas: `lib/requestBus.py`, `_tests/test_request_bus.py`.
+- Checks (this loop): `python3 -m pytest _tests/test_request_bus.py::RequestBusTests::test_emit_fail_without_id_preserves_last_request_id _tests/test_request_bus.py::RequestBusTests::test_emit_cancel_without_id_preserves_last_request_id` (pass).
+- Removal test: reverting would reintroduce last_request_id clearing on fail/cancel without ids and drop guardrails, risking blank/stale ids in downstream consumers and weakening ADR-0054 request pipeline correctness.
+
+## 2025-12-15 – Loop 411 (kind: guardrail/tests)
+- Focus: Bus COMPLETE without id preserves last_request_id.
+- Adversarial priority check: Request pipeline remains highest risk; COMPLETE events without ids could clear `last_request_id`. Guarding this propagation outranks lower-risk tweaks elsewhere.
+- Change: Added a guardrail asserting `emit_complete()` without an id preserves the prior `last_request_id`.
+- Artefact delta: `_tests/test_request_bus.py`.
+- Checks (this loop): `python3 -m pytest _tests/test_request_bus.py::RequestBusTests::test_emit_complete_without_id_preserves_last_request_id` (pass).
+- Removal test: reverting would drop coverage that COMPLETE without ids preserves last_request_id, risking blank/stale ids and weakening ADR-0054 request pipeline correctness.
+
+## 2025-12-15 – Loop 412 (kind: guardrail/tests)
+- Focus: History saves generate/request ids even without a controller.
+- Adversarial priority check: Request pipeline remains highest risk; history_saved with no active controller/request would leave `last_request_id` blank. Guarding id generation in this edge path outranks lower-risk tweaks elsewhere.
+- Change: Added a guardrail asserting `emit_history_saved` generates and records a request id when no controller/request is present.
+- Artefact delta: `_tests/test_request_bus.py`.
+- Checks (this loop): `python3 -m pytest _tests/test_request_bus.py::RequestBusTests::test_emit_history_saved_without_controller_generates_request_id` (pass).
+- Removal test: reverting would drop coverage that history saves generate ids in controller-less contexts, risking blank ids and weakening ADR-0054 request pipeline correctness/telemetry.
+
+## 2025-12-15 – Loop 414 (kind: guardrail/tests)
+- Focus: History saves with explicit ids set last_request_id even without a controller.
+- Adversarial priority check: Request pipeline remains highest risk; history_saved with explicit ids must be recorded even if the controller is absent. Guarding this edge path outranks lower-risk tweaks elsewhere.
+- Change: Added a guardrail asserting `emit_history_saved(request_id=rid)` sets `last_request_id` to the explicit id when no controller is registered.
+- Artefact delta: `_tests/test_request_bus.py`.
+- Checks (this loop): `python3 -m pytest _tests/test_request_bus.py::RequestBusTests::test_emit_history_saved_with_explicit_id_without_controller_sets_last_request_id` (pass).
+- Removal test: reverting would drop coverage that explicit history saves record ids when the controller is missing, risking blank/stale ids and weakening ADR-0054 request pipeline correctness/telemetry.
+
+## 2025-12-15 – Loop 415 (kind: guardrail/tests)
+- Focus: Reset clears last_request_id even when no controller is registered.
+- Adversarial priority check: Request pipeline remains highest risk; stale ids after reset with no controller would confuse downstream consumers. Guarding this edge reset path outranks lower-risk tweaks elsewhere.
+- Change: Added a guardrail asserting `emit_reset` clears `last_request_id` when no controller is set.
+- Artefact delta: `_tests/test_request_bus.py`.
+- Checks (this loop): `python3 -m pytest _tests/test_request_bus.py::RequestBusTests::test_emit_reset_clears_last_request_id_without_controller` (pass).
+- Removal test: reverting would drop coverage that reset clears ids in controller-less contexts, risking stale ids and weakening ADR-0054 request pipeline correctness/telemetry.
+
+## 2025-12-15 – Loop 416 (kind: guardrail/tests)
+- Focus: begin_send sets last_request_id even when no controller is registered.
+- Adversarial priority check: Request pipeline remains highest risk; begin_send without a controller must still record request ids for telemetry/UX. Guarding this edge path outranks lower-risk tweaks elsewhere.
+- Change: Added a guardrail asserting `emit_begin_send` generates an id and sets `last_request_id` when no controller is registered.
+- Artefact delta: `_tests/test_request_bus.py`.
+- Checks (this loop): `python3 -m pytest _tests/test_request_bus.py::RequestBusTests::test_emit_begin_send_without_controller_sets_last_request_id` (pass).
+- Removal test: reverting would drop coverage that begin_send records ids without a controller, risking blank/stale ids and weakening ADR-0054 request pipeline correctness.
+
+## 2025-12-15 – Loop 417 (kind: guardrail/tests)
+- Focus: begin_stream sets last_request_id even when no controller is registered.
+- Adversarial priority check: Request pipeline remains highest risk; begin_stream without a controller must still record request ids for telemetry/UX. Guarding this edge path outranks lower-risk tweaks elsewhere.
+- Change: Added a guardrail asserting `emit_begin_stream` generates an id and sets `last_request_id` when no controller is registered.
+- Artefact delta: `_tests/test_request_bus.py`.
+- Checks (this loop): `python3 -m pytest _tests/test_request_bus.py::RequestBusTests::test_emit_begin_stream_without_controller_sets_last_request_id` (pass).
+- Removal test: reverting would drop coverage that begin_stream records ids without a controller, risking blank/stale ids and weakening ADR-0054 request pipeline correctness.
+
+## 2025-12-15 – Loop 418 (kind: behaviour/guardrail)
+- Focus: Generate request ids for complete/fail/cancel when none exists, even without a controller.
+- Adversarial priority check: Request pipeline remains highest risk; complete/fail/cancel without ids (and without a controller/request) left `last_request_id` blank, breaking telemetry/UX coherence. Guarding id generation here outranks lower-risk tweaks elsewhere.
+- Change: `emit_complete`/`emit_fail`/`emit_cancel` now generate a request id when none is present and always set `last_request_id`; added guardrails asserting these events generate/record ids when no controller is registered.
+- Artefact deltas: `lib/requestBus.py`, `_tests/test_request_bus.py`.
+- Checks (this loop): `python3 -m pytest _tests/test_request_bus.py::RequestBusTests::test_emit_complete_without_id_generates_request_id_without_controller _tests/test_request_bus.py::RequestBusTests::test_emit_fail_without_id_generates_request_id_without_controller _tests/test_request_bus.py::RequestBusTests::test_emit_cancel_without_id_generates_request_id_without_controller` (pass).
+- Removal test: reverting would drop id generation/propagation for complete/fail/cancel in controller-less contexts and drop guardrails, risking blank/stale ids in downstream consumers and weakening ADR-0054 request pipeline correctness/telemetry.
+
+## 2025-12-15 – Loop 419 (kind: behaviour/guardrail)
+- Focus: Append events generate/propagate request ids when missing.
+- Adversarial priority check: Request pipeline remains highest risk; append without request ids left `last_request_id` blank and sent id-less events. Aligning append with other bus events outranks lower-risk tweaks elsewhere.
+- Change: `emit_append` now generates a request id when missing and always updates `last_request_id`; guardrails updated to assert append without ids generates/records ids and explicit ids still set `last_request_id`.
+- Artefact deltas: `lib/requestBus.py`, `_tests/test_request_bus.py`.
+- Checks (this loop): `python3 -m pytest _tests/test_request_bus.py::RequestBusTests::test_emit_append_without_id_generates_request_id_and_updates_last_request_id _tests/test_request_bus.py::RequestBusTests::test_emit_append_defaults_request_id` (pass).
+- Removal test: reverting would drop id generation/propagation on append and its guardrails, risking blank/stale ids in downstream consumers and weakening ADR-0054 request pipeline correctness/telemetry.
+
+## 2025-12-15 – Loop 420 (kind: status/blocker)
+- Focus: Adversarial review for remaining high-priority slices.
+- Adversarial priority check: Request pipeline id/suppression guardrails now cover begin_send/stream, retry, complete/fail/cancel/history_saved/append (explicit/missing ids, with/without controller), and UI suppression across all phases. No higher-risk, non-duplicative slice remains that would change behaviour/tests without contriving scenarios already guarded.
+- Change: No new code/tests/docs; recorded that no substantial in-repo slice remains for ADR-0054 this loop after adversarial scan of request bus/UI surfaces.
+- Artefacts inspected: `lib/requestBus.py`, `_tests/test_request_bus.py`, `lib/requestUI.py` (re-read for remaining unguarded paths).
+- Checks: Not run (no behavioural changes).
+- Removal test: reverting this entry would remove the documented adversarial review/outcome, but since no code/tests changed, behaviour would be unchanged; future loops should pick a new ADR or await a new high-risk gap.
+
+## 2025-12-15 – Loop 421 (kind: behaviour/guardrail)
+- Focus: Ensure bus handles events without a controller while keeping request ids.
+- Adversarial priority check: Request pipeline correctness remains highest risk; without a controller, bus events returned empty states and could drop request ids, breaking telemetry/UX. Guarding this edge path outranks lower-risk tweaks elsewhere.
+- Change: `_handle` now returns a state that carries the event’s request id when no controller is registered, and `emit_append` generates a request id when missing. Added guardrail asserting history_saved without a controller returns a state with a generated request id and updates `last_request_id`.
+- Artefact deltas: `lib/requestBus.py`, `_tests/test_request_bus.py`.
+- Checks (this loop): `python3 -m pytest _tests/test_request_bus.py::RequestBusTests::test_handle_without_controller_returns_state_with_request_id` (pass).
+- Removal test: reverting would drop id propagation for controller-less handling and append generation, risking blank request ids in edge contexts and weakening ADR-0054 request pipeline correctness.
+
+## 2025-12-15 – Loop 422 (kind: behaviour/guardrail)
+- Focus: Append events without a controller generate and return request ids.
+- Adversarial priority check: Request pipeline remains highest risk; append without a controller could return id-less states and leave `last_request_id` blank. Guarding this edge path outranks lower-risk tweaks elsewhere.
+- Change: Added guardrail that append with no controller generates a request id, returns it in state, and records it as `last_request_id`.
+- Artefact delta: `_tests/test_request_bus.py`.
+- Checks (this loop): `python3 -m pytest _tests/test_request_bus.py::RequestBusTests::test_emit_append_without_controller_generates_request_id_and_returns_state` (pass).
+- Removal test: reverting would drop coverage for controller-less append id generation, risking blank/stale ids in downstream consumers and weakening ADR-0054 request pipeline correctness.
+
+## 2025-12-15 – Loop 423 (kind: behaviour/guardrail)
+- Focus: Maintain request-state transitions and ids when no controller is registered.
+- Adversarial priority check: Request pipeline remains highest risk; without a controller, bus state stayed idle and dropped ids, breaking telemetry/UX. Guarding default-state transitions/ids outranks lower-risk tweaks elsewhere.
+- Change: `_handle` now updates a retained `_last_state` via `transition` when no controller is set, so begin_send moves to SENDING and subsequent events retain ids; guardrails assert controller-less begin_send/append/history_saved return states with ids and keep `last_request_id` aligned.
+- Artefact deltas: `lib/requestBus.py`, `_tests/test_request_bus.py`.
+- Checks (this loop): `python3 -m pytest _tests/test_request_bus.py::RequestBusTests::test_handle_without_controller_returns_state_with_request_id _tests/test_request_bus.py::RequestBusTests::test_emit_append_without_controller_generates_request_id_and_returns_state _tests/test_request_bus.py::RequestBusTests::test_begin_send_advances_state_without_controller` (pass).
+- Removal test: reverting would drop controller-less state transitions/id retention, risking idle/stale state and blank request ids in edge contexts, weakening ADR-0054 request pipeline correctness.
+
+## 2025-12-15 – Loop 424 (kind: behaviour/guardrail)
+- Focus: Controller-less complete/fail/cancel advance state and keep request ids.
+- Adversarial priority check: Request pipeline remains highest risk; terminal transitions without a controller could leave state idle and ids blank. Guarding these paths outranks lower-risk tweaks elsewhere.
+- Change: Added guardrail asserting controller-less complete/fail/cancel transitions advance to DONE/ERROR/CANCELLED, retain last_error, and keep `last_request_id` from the originating request.
+- Artefact delta: `_tests/test_request_bus.py`.
+- Checks (this loop): `python3 -m pytest _tests/test_request_bus.py::RequestBusTests::test_complete_fail_cancel_transition_without_controller` (pass).
+- Removal test: reverting would drop coverage for controller-less terminal transitions, risking idle/stale state and blank request ids in edge contexts and weakening ADR-0054 request pipeline correctness.
+
+## 2025-12-15 – Loop 425 (kind: behaviour/guardrail)
+- Focus: Lifecycle status advances without a controller and retains request ids.
+- Adversarial priority check: Request pipeline remains highest risk; lifecycle_status_for must stay coherent when no controller is registered. Guarding lifecycle progression without a controller outranks lower-risk tweaks elsewhere.
+- Change: Added guardrail asserting controller-less lifecycle progression: begin_send→running, begin_stream→streaming, complete→completed, fail→errored, cancel→cancelled while keeping last_request_id.
+- Artefact delta: `_tests/test_request_bus.py`.
+- Checks (this loop): `python3 -m pytest _tests/test_request_bus.py::RequestBusTests::test_lifecycle_state_advances_without_controller` (pass).
+- Removal test: reverting would drop coverage for lifecycle progression without a controller, risking stale/idle lifecycle states and weakening ADR-0054 request pipeline correctness/telemetry.
+
+## 2025-12-15 – Loop 426 (kind: behaviour/guardrail)
+- Focus: Reset bus-retained state when detaching controllers.
+- Adversarial priority check: Request pipeline remains highest risk; detaching the controller could leave stale request state/ids in the bus. Guarding this reset outranks lower-risk tweaks elsewhere.
+- Change: `set_controller(None)` now resets the retained bus state; added guardrail asserting controller-less state resets to IDLE/empty after detaching.
+- Artefact deltas: `lib/requestBus.py`, `_tests/test_request_bus.py`.
+- Checks (this loop): `python3 -m pytest _tests/test_request_bus.py::RequestBusTests::test_set_controller_none_resets_retained_state` (pass).
+- Removal test: reverting would allow stale request state/ids to persist after controller detachment and drop the guardrail, weakening ADR-0054 request pipeline correctness in controller-less transitions.
+
+## 2025-12-15 – Loop 427 (kind: status/adversarial)
+- Focus: Adversarial completion check and acceptance.
+- Adversarial priority check: Scanned ADR objectives (axis SSOT, overlay canvases, request pipeline). Plausible high-risk slices reviewed: axis regen/README/static prompt drift (guarded by regen/README tests), overlay scroll/block/close consistency (shared helpers + parity tests), request pipeline suppression/id propagation across all events with/without controllers (extensive guardrails). No unguarded, non-duplicative in-repo slices remain.
+- Change: Marked ADR status Accepted in `docs/adr/0054-concordance-axis-canvas-request-code-quality.md`.
+- Artefacts inspected: `docs/adr/0054-concordance-axis-canvas-request-code-quality.md`, `docs/adr/0054-concordance-axis-canvas-request-code-quality.work-log.md`, `lib/requestBus.py`, `_tests/test_request_bus.py`, `lib/requestUI.py` (re-read for gaps).
+- Checks: Not run (status change only; adversarial review).
+- Removal test: reverting would drop the recorded acceptance and adversarial completion rationale; behaviour remains unchanged.
+## 2025-12-15 – Loop 413 (kind: behaviour/guardrail)
+- Focus: Append events propagate request ids correctly without clearing them.
+- Adversarial priority check: Request pipeline remains highest risk; append without request ids was clearing `last_request_id`, risking blank telemetry/UX. Guarding append propagation outranks lower-risk tweaks elsewhere.
+- Change: `emit_append` now only updates `last_request_id` when an id is present (no clearing on None). Added guardrails ensuring append without an id preserves the prior id and append with an explicit id updates it.
+- Artefact deltas: `lib/requestBus.py`, `_tests/test_request_bus.py`.
+- Checks (this loop): `python3 -m pytest _tests/test_request_bus.py::RequestBusTests::test_emit_append_without_id_preserves_last_request_id _tests/test_request_bus.py::RequestBusTests::test_emit_append_with_explicit_id_sets_last_request_id` (pass).
+- Removal test: reverting would reintroduce last_request_id clearing on id-less append and drop guardrails, risking blank/stale ids in downstream consumers and weakening ADR-0054 request pipeline correctness.

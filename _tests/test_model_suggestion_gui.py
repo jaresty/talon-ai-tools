@@ -16,6 +16,7 @@ if bootstrap is not None:
         UserActions,
         SuggestionGUIState,
         SuggestionCanvasState,
+        _scroll_suggestions,
     )
     from talon_user.lib import modelSuggestionGUI
     import talon_user.lib.talonSettings as talonSettings
@@ -76,6 +77,33 @@ if bootstrap is not None:
 
             actions.app.notify.assert_called_once()
             actions.user.gpt_apply_prompt.assert_not_called()
+
+        def test_scroll_clamps_to_max_via_overlay_helper(self):
+            # Prepare a stub canvas and suggestions to drive a positive max_scroll.
+            class RectStub:
+                def __init__(self):
+                    self.x = 0
+                    self.y = 0
+                    self.width = 800
+                    self.height = 200
+
+            class CanvasStub:
+                rect = RectStub()
+
+            SuggestionGUIState.suggestions = [
+                modelSuggestionGUI.Suggestion(name="One", recipe="describe · fog"),
+                modelSuggestionGUI.Suggestion(name="Two", recipe="describe · fog"),
+                modelSuggestionGUI.Suggestion(name="Three", recipe="describe · fog"),
+            ]
+            modelSuggestionGUI._suggestion_canvas = CanvasStub()
+            SuggestionCanvasState.scroll_y = 1000.0
+
+            with patch.object(modelSuggestionGUI, "_measure_suggestion_height", return_value=200):
+                _scroll_suggestions(raw_delta=1.0)
+
+            # With 3 rows @200px, visible height 120px and slack 120px,
+            # clamp_scroll should cap at max_scroll = 600.
+            self.assertEqual(SuggestionCanvasState.scroll_y, 600.0)
 
         def test_persona_stance_display_includes_long_form_axes(self):
             suggestion = modelSuggestionGUI.Suggestion(

@@ -110,6 +110,34 @@ if bootstrap is not None:
                     self.assertIsInstance(lifecycle, RequestLifecycleState)
                     self.assertEqual(lifecycle.status, expected)
 
+        def test_retry_clears_error_and_moves_to_streaming(self):
+            errored = RequestState(
+                phase=RequestPhase.ERROR,
+                active_surface=Surface.RESPONSE_CANVAS,
+                request_id="rid-retry-state",
+                last_error="boom",
+            )
+            retried = transition(errored, RequestEvent(RequestEventKind.RETRY))
+            self.assertEqual(retried.phase, RequestPhase.STREAMING)
+            self.assertEqual(retried.active_surface, Surface.PILL)
+            self.assertEqual(retried.request_id, "rid-retry-state")
+            self.assertFalse(retried.cancel_requested)
+            self.assertEqual(retried.last_error, "")
+
+        def test_retry_clears_cancel_flag_and_returns_to_streaming(self):
+            cancelled = RequestState(
+                phase=RequestPhase.CANCELLED,
+                active_surface=Surface.NONE,
+                request_id="rid-retry-cancel",
+                cancel_requested=True,
+            )
+            retried = transition(cancelled, RequestEvent(RequestEventKind.RETRY))
+            self.assertEqual(retried.phase, RequestPhase.STREAMING)
+            self.assertEqual(retried.active_surface, Surface.PILL)
+            self.assertEqual(retried.request_id, "rid-retry-cancel")
+            self.assertFalse(retried.cancel_requested)
+            self.assertEqual(retried.last_error, "")
+
 else:
     if not TYPE_CHECKING:
 

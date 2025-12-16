@@ -59,6 +59,21 @@ if bootstrap is not None:
             new_state = reduce_request_state(state, "unknown-event")
             self.assertIs(new_state, state)
 
+        def test_retry_leaves_terminal_states(self) -> None:
+            # Retry from errored should return to running.
+            state = RequestLifecycleState(status="errored")
+            retried = reduce_request_state(state, "retry")
+            self.assertEqual(retried.status, "running")
+            # Retry from cancelled should also return to running.
+            state = RequestLifecycleState(status="cancelled")
+            retried = reduce_request_state(state, "retry")
+            self.assertEqual(retried.status, "running")
+            # Retry from completed/pending should leave state unchanged.
+            for status in ("completed", "pending"):
+                with self.subTest(status=status):
+                    state = RequestLifecycleState(status=status)
+                    retried = reduce_request_state(state, "retry")
+                    self.assertEqual(retried.status, "running")
         def test_is_terminal_matches_error_and_cancel_contract(self) -> None:
             # Pending, running, streaming, and completed are non-terminal.
             for status in ("pending", "running", "streaming", "completed"):

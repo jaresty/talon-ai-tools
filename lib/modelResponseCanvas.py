@@ -8,6 +8,7 @@ from .canvasFont import apply_canvas_typeface, draw_text_with_emoji_fallback
 from .modelState import GPTState
 from .modelDestination import _parse_meta
 from .requestState import RequestPhase, RequestState
+from .overlayHelpers import clamp_scroll
 from .requestBus import current_state
 from .responseCanvasFallback import (
     append_response_fallback,
@@ -23,7 +24,7 @@ from .suggestionCoordinator import (
 )
 from .stanceDefaults import stance_defaults_lines
 from .modelHelpers import notify
-from .overlayHelpers import apply_canvas_blocking
+from .overlayHelpers import apply_canvas_blocking, clamp_scroll
 from .overlayLifecycle import close_overlays, close_common_overlays
 
 mod = Module()
@@ -36,6 +37,8 @@ class ResponseCanvasState:
     showing: bool = False
     scroll_y: float = 0.0
     meta_expanded: bool = False
+    max_scroll: float = 1e9
+    max_scroll: float = 1e9
 
 
 def _request_is_in_flight() -> bool:
@@ -470,8 +473,8 @@ def _ensure_response_canvas() -> canvas.Canvas:
                 return
             if raw:
                 # Treat negative pixel.y (scroll down) as increasing scroll_y.
-                ResponseCanvasState.scroll_y = max(
-                    ResponseCanvasState.scroll_y - raw, 0.0
+                ResponseCanvasState.scroll_y = clamp_scroll(
+                    ResponseCanvasState.scroll_y - raw, ResponseCanvasState.max_scroll
                 )
         except Exception:
             return
@@ -495,15 +498,21 @@ def _ensure_response_canvas() -> canvas.Canvas:
                 except Exception:
                     pass
             elif key in ("pagedown", "page_down"):
-                ResponseCanvasState.scroll_y += 200
+                ResponseCanvasState.scroll_y = clamp_scroll(
+                    ResponseCanvasState.scroll_y + 200, ResponseCanvasState.max_scroll
+                )
             elif key in ("pageup", "page_up"):
-                ResponseCanvasState.scroll_y = max(
-                    ResponseCanvasState.scroll_y - 200, 0
+                ResponseCanvasState.scroll_y = clamp_scroll(
+                    ResponseCanvasState.scroll_y - 200, ResponseCanvasState.max_scroll
                 )
             elif key in ("down", "j"):
-                ResponseCanvasState.scroll_y += 40
+                ResponseCanvasState.scroll_y = clamp_scroll(
+                    ResponseCanvasState.scroll_y + 40, ResponseCanvasState.max_scroll
+                )
             elif key in ("up", "k"):
-                ResponseCanvasState.scroll_y = max(ResponseCanvasState.scroll_y - 40, 0)
+                ResponseCanvasState.scroll_y = clamp_scroll(
+                    ResponseCanvasState.scroll_y - 40, ResponseCanvasState.max_scroll
+                )
         except Exception:
             return
 
@@ -1286,7 +1295,7 @@ def _default_draw_response(c: canvas.Canvas) -> None:  # pragma: no cover - visu
     # the end of the content.
     content_height = len(lines) * line_h
     max_scroll = max(content_height - visible_height, 0)
-    scroll_y = max(min(ResponseCanvasState.scroll_y, max_scroll), 0)
+    scroll_y = clamp_scroll(ResponseCanvasState.scroll_y, max_scroll)
     ResponseCanvasState.scroll_y = scroll_y
     start_index = int(scroll_y // line_h)
     offset_y = body_top - (scroll_y % line_h)
@@ -1347,6 +1356,9 @@ def _default_draw_response(c: canvas.Canvas) -> None:  # pragma: no cover - visu
                 paint.color = old_color
         except Exception:
             pass
+
+    # Record max_scroll for event handlers that clamp scroll offsets.
+    ResponseCanvasState.max_scroll = max_scroll
 
     # Footer buttons. We intentionally do not clear _response_button_bounds
     # here so that the header meta toggle bounds remain registered; the
@@ -1434,6 +1446,7 @@ class UserActions:
             return
         ResponseCanvasState.showing = True
         ResponseCanvasState.scroll_y = 0.0
+        ResponseCanvasState.max_scroll = 1e9
         # Always start with meta collapsed; the band still shows a short
         # summary so the initial view is response-first.
         ResponseCanvasState.meta_expanded = False
@@ -1447,6 +1460,7 @@ class UserActions:
         if ResponseCanvasState.showing:
             ResponseCanvasState.showing = False
             ResponseCanvasState.scroll_y = 0.0
+            ResponseCanvasState.max_scroll = 1e9
             ResponseCanvasState.meta_expanded = False
             try:
                 canvas_obj.hide()
@@ -1461,6 +1475,7 @@ class UserActions:
         close_common_overlays(actions.user, exclude={"model_response_canvas_close"})
         ResponseCanvasState.showing = True
         ResponseCanvasState.scroll_y = 0.0
+        ResponseCanvasState.max_scroll = 1e9
         ResponseCanvasState.meta_expanded = False
         canvas_obj.show()
 
@@ -1477,6 +1492,7 @@ class UserActions:
             pass
         ResponseCanvasState.showing = False
         ResponseCanvasState.scroll_y = 0.0
+        ResponseCanvasState.max_scroll = 1e9
         ResponseCanvasState.meta_expanded = False
         try:
             _response_canvas.hide()

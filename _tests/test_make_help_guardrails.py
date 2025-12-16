@@ -33,6 +33,7 @@ if not TYPE_CHECKING:
             self.assertIn("axis-guardrails", output)
             self.assertIn("axis-guardrails-ci", output)
             self.assertIn("axis-guardrails-test", output)
+            self.assertIn("axis-regenerate-apply", output)
             self.assertIn("talon-lists", output)
             self.assertIn("talon-lists-check", output)
             self.assertIn("optional: export axis/static prompt Talon lists locally", output)

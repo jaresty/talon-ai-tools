@@ -1,6 +1,13 @@
-"""Shared helpers for Talon canvas overlays."""
+"""Shared overlay helpers for canvases (blocking, scroll, clamp, fractions).
+
+This module centralises overlay behaviour so canvases can depend on a single
+surface instead of duplicating helpers. It delegates to helpUI for now to
+avoid behaviour drift while we migrate canvases incrementally.
+"""
 
 from __future__ import annotations
+
+from .helpUI import clamp_scroll, apply_scroll_delta, scroll_fraction  # re-export
 
 
 def set_canvas_block_mouse(canvas_obj) -> None:
@@ -33,3 +40,13 @@ def apply_canvas_blocking(canvas_obj) -> None:
         return
     set_canvas_block_mouse(canvas_obj)
     set_canvas_block_keyboard(canvas_obj)
+
+
+__all__ = [
+    "apply_canvas_blocking",
+    "set_canvas_block_mouse",
+    "set_canvas_block_keyboard",
+    "clamp_scroll",
+    "apply_scroll_delta",
+    "scroll_fraction",
+]

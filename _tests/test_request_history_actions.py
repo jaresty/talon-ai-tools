@@ -435,6 +435,25 @@ if bootstrap is not None:
             self.assertEqual(GPTState.last_channel, "slack")
             self.assertEqual(GPTState.last_directional, "rog")
 
+        def test_notify_records_when_suppressed(self):
+            """Even when notifications are suppressed, intent should be logged for guardrails."""
+            from types import SimpleNamespace
+
+            with patch.object(history_actions, "current_state", return_value=SimpleNamespace(request_id="req-suppress")):
+                try:
+                    GPTState.suppress_inflight_notify_request_id = "req-suppress"
+                    actions.user.calls.clear()
+                    actions.app.calls.clear()
+                    history_actions.notify("suppressed message")
+                    notify_calls = [c for c in actions.user.calls if c[0] == "notify"]
+                    app_notify_calls = [c for c in actions.app.calls if c[0] == "notify"]
+                    self.assertGreaterEqual(len(notify_calls) + len(app_notify_calls), 1)
+                finally:
+                    try:
+                        delattr(GPTState, "suppress_inflight_notify_request_id")
+                    except Exception:
+                        pass
+
         def test_history_show_latest_filters_invalid_axis_tokens(self):
             axes = {
                 "completeness": ["full", "Important: Hydrated completeness"],
@@ -1060,6 +1079,7 @@ if bootstrap is not None:
                 "resp1",
                 "meta1",
                 recipe="infer · full · rigor",
+                axes={"directional": ["fog"]},
                 duration_ms=7,
             )
 
@@ -1149,6 +1169,30 @@ if bootstrap is not None:
             notify_mock.assert_called()
             self.assertEqual(GPTState.last_history_save_path, "")
 
+        def test_history_save_blocks_when_directional_missing(self):
+            tmpdir = tempfile.mkdtemp()
+            from talon import settings as talon_settings  # type: ignore
+
+            talon_settings.set("user.model_source_save_directory", tmpdir)
+            append_entry(
+                "rid-no-dir",
+                "prompt",
+                "resp",
+                "meta",
+                recipe="infer · gist · focus",  # no directional token
+                axes={"directional": []},
+                require_directional=False,
+            )
+
+            with patch.object(history_actions, "notify") as notify_mock:
+                result = HistoryActions.gpt_request_history_save_latest_source()
+
+            self.assertIsNone(result)
+            notify_mock.assert_called()
+            self.assertIn("directional lens", str(notify_mock.call_args[0][0]))
+            self.assertEqual(GPTState.last_history_save_path, "")
+            self.assertEqual(os.listdir(tmpdir), [])
+
         def test_history_last_save_path_returns_realpath(self):
             tmpdir = tempfile.mkdtemp()
             rel_path = os.path.join(tmpdir, "..", os.path.basename(tmpdir), "file.md")
@@ -1204,6 +1248,224 @@ if bootstrap is not None:
             self.assertIn("model history save source", str(notify_mock.call_args[0][0]))
             self.assertEqual(GPTState.last_history_save_path, "")
 
+        def test_history_copy_last_save_path_handles_missing_file(self):
+            missing = os.path.join(tempfile.mkdtemp(), "missing.md")
+            GPTState.last_history_save_path = missing
+            with (
+                patch.object(history_actions, "notify") as notify_mock,
+                patch.object(actions.user, "paste") as paste_mock,
+            ):
+                result = HistoryActions.gpt_request_history_copy_last_save_path()
+
+            self.assertIsNone(result)
+            paste_mock.assert_not_called()
+            notify_mock.assert_called()
+            self.assertIn("model history save source", str(notify_mock.call_args[0][0]))
+            self.assertEqual(GPTState.last_history_save_path, "")
+
+        def test_history_copy_last_save_path_falls_back_when_clipboard_fails(self):
+            tmpdir = tempfile.mkdtemp()
+            path = os.path.join(tmpdir, "saved-history.md")
+            with open(path, "w", encoding="utf-8") as f:
+                f.write("content")
+            GPTState.last_history_save_path = path
+            called = {"paste": False}
+
+            def _set_text(_):
+                raise RuntimeError("clipboard unavailable")
+
+            def _paste(text):
+                called["paste"] = True
+                actions.user.pasted.append(text)
+
+            with (
+                patch.object(actions.clip, "set_text", side_effect=_set_text),
+                patch.object(actions.user, "paste", side_effect=_paste),
+                patch.object(history_actions, "notify") as notify_mock,
+            ):
+                result = HistoryActions.gpt_request_history_copy_last_save_path()
+
+            self.assertEqual(result, os.path.realpath(path))
+            self.assertTrue(called["paste"])
+            self.assertIn(os.path.realpath(path), actions.user.pasted)
+            notify_mock.assert_called()
+            self.assertIn("Copied history save path", str(notify_mock.call_args[0][0]))
+            self.assertEqual(GPTState.last_history_save_path, os.path.realpath(path))
+
+        def test_history_copy_last_save_path_clears_state_on_copy_failure(self):
+            tmpdir = tempfile.mkdtemp()
+            path = os.path.join(tmpdir, "saved-history.md")
+            with open(path, "w", encoding="utf-8") as f:
+                f.write("content")
+            GPTState.last_history_save_path = path
+
+            with (
+                patch.object(actions.clip, "set_text", side_effect=RuntimeError("clip down")),
+                patch.object(actions.user, "paste", side_effect=RuntimeError("paste down")),
+                patch.object(history_actions, "notify") as notify_mock,
+            ):
+                result = HistoryActions.gpt_request_history_copy_last_save_path()
+
+            self.assertIsNone(result)
+            notify_mock.assert_called()
+            self.assertIn("Unable to copy path", str(notify_mock.call_args[0][0]))
+            self.assertEqual(GPTState.last_history_save_path, "")
+
+        def test_history_copy_last_save_path_normalizes_realpath(self):
+            tmpdir = tempfile.mkdtemp()
+            rel_path = os.path.join(tmpdir, "..", os.path.basename(tmpdir), "saved-history.md")
+            os.makedirs(os.path.dirname(rel_path), exist_ok=True)
+            with open(rel_path, "w", encoding="utf-8") as f:
+                f.write("content")
+            GPTState.last_history_save_path = rel_path
+            clip_calls: list[tuple[str, tuple, dict]] = []
+
+            def _set_text(val):
+                clip_calls.append(("set_text", (val,), {}))
+
+            with patch.object(actions.clip, "set_text", side_effect=_set_text):
+                result = HistoryActions.gpt_request_history_copy_last_save_path()
+
+            real = os.path.realpath(rel_path)
+            self.assertEqual(result, real)
+            self.assertEqual(GPTState.last_history_save_path, real)
+            self.assertTrue(any(args[0] == real for _, args, _ in clip_calls))
+
+        def test_history_copy_last_save_path_notifies_with_realpath(self):
+            tmpdir = tempfile.mkdtemp()
+            rel_path = os.path.join(tmpdir, "..", os.path.basename(tmpdir), "saved-history.md")
+            os.makedirs(os.path.dirname(rel_path), exist_ok=True)
+            with open(rel_path, "w", encoding="utf-8") as f:
+                f.write("content")
+            GPTState.last_history_save_path = rel_path
+            with (
+                patch.object(actions.clip, "set_text"),
+                patch.object(history_actions, "notify") as notify_mock,
+            ):
+                result = HistoryActions.gpt_request_history_copy_last_save_path()
+
+            real = os.path.realpath(rel_path)
+            self.assertEqual(result, real)
+            notify_mock.assert_called()
+            message = str(notify_mock.call_args[0][0])
+            self.assertIn(os.path.basename(real), message)
+            self.assertEqual(GPTState.last_history_save_path, real)
+
+        def test_history_last_save_path_respects_in_flight_guard(self):
+            GPTState.last_history_save_path = "/tmp/saved-history.md"
+            with (
+                patch.object(history_actions, "_reject_if_request_in_flight", return_value=True),
+                patch.object(history_actions, "notify") as notify_mock,
+            ):
+                result = HistoryActions.gpt_request_history_last_save_path()
+
+            self.assertIsNone(result)
+            notify_mock.assert_not_called()
+            self.assertEqual(GPTState.last_history_save_path, "/tmp/saved-history.md")
+
+        def test_history_copy_last_save_path_respects_in_flight_guard(self):
+            tmpdir = tempfile.mkdtemp()
+            path = os.path.join(tmpdir, "saved-history.md")
+            with open(path, "w", encoding="utf-8") as f:
+                f.write("content")
+            GPTState.last_history_save_path = path
+            with (
+                patch.object(history_actions, "_reject_if_request_in_flight", return_value=True),
+                patch.object(actions.clip, "set_text") as clip_mock,
+                patch.object(actions.user, "paste") as paste_mock,
+                patch.object(history_actions, "notify") as notify_mock,
+            ):
+                result = HistoryActions.gpt_request_history_copy_last_save_path()
+
+            self.assertIsNone(result)
+            clip_mock.assert_not_called()
+            paste_mock.assert_not_called()
+            notify_mock.assert_not_called()
+            self.assertEqual(GPTState.last_history_save_path, path)
+
+        def test_history_open_last_save_path_handles_missing_file(self):
+            missing = os.path.join(tempfile.mkdtemp(), "saved-history-missing.md")
+            GPTState.last_history_save_path = missing
+            with patch.object(history_actions, "notify") as notify_mock, patch.object(
+                actions.app, "open"
+            ) as open_mock:
+                result = HistoryActions.gpt_request_history_open_last_save_path()
+
+            self.assertIsNone(result)
+            open_mock.assert_not_called()
+            notify_mock.assert_called()
+            self.assertIn("model history save source", str(notify_mock.call_args[0][0]))
+            self.assertEqual(GPTState.last_history_save_path, "")
+
+        def test_history_open_last_save_path_clears_state_on_open_failure(self):
+            tmpdir = tempfile.mkdtemp()
+            path = os.path.join(tmpdir, "saved-history.md")
+            with open(path, "w", encoding="utf-8") as f:
+                f.write("content")
+            GPTState.last_history_save_path = path
+            with (
+                patch.object(actions.app, "open", side_effect=RuntimeError("boom")) as open_mock,
+                patch.object(history_actions, "notify") as notify_mock,
+            ):
+                result = HistoryActions.gpt_request_history_open_last_save_path()
+
+            self.assertIsNone(result)
+            open_mock.assert_called()
+            notify_mock.assert_called()
+            self.assertIn("Unable to open history save", str(notify_mock.call_args[0][0]))
+            self.assertEqual(GPTState.last_history_save_path, "")
+
+        def test_history_open_last_save_path_respects_in_flight_guard(self):
+            tmpdir = tempfile.mkdtemp()
+            path = os.path.join(tmpdir, "saved-history.md")
+            with open(path, "w", encoding="utf-8") as f:
+                f.write("content")
+            GPTState.last_history_save_path = path
+            with (
+                patch.object(history_actions, "_reject_if_request_in_flight", return_value=True),
+                patch.object(actions.app, "open") as open_mock,
+                patch.object(history_actions, "notify") as notify_mock,
+            ):
+                result = HistoryActions.gpt_request_history_open_last_save_path()
+
+            self.assertIsNone(result)
+            open_mock.assert_not_called()
+            notify_mock.assert_not_called()
+            self.assertEqual(GPTState.last_history_save_path, path)
+
+        def test_history_show_last_save_path_respects_in_flight_guard(self):
+            tmpdir = tempfile.mkdtemp()
+            path = os.path.join(tmpdir, "saved-history.md")
+            with open(path, "w", encoding="utf-8") as f:
+                f.write("content")
+            GPTState.last_history_save_path = path
+            with (
+                patch.object(history_actions, "_reject_if_request_in_flight", return_value=True),
+                patch.object(history_actions, "notify") as notify_mock,
+            ):
+                result = HistoryActions.gpt_request_history_show_last_save_path()
+
+            self.assertIsNone(result)
+            notify_mock.assert_not_called()
+            self.assertEqual(GPTState.last_history_save_path, path)
+
+        def test_history_show_last_save_path_notifies_with_realpath(self):
+            tmpdir = tempfile.mkdtemp()
+            rel_path = os.path.join(tmpdir, "..", os.path.basename(tmpdir), "saved-history.md")
+            os.makedirs(os.path.dirname(rel_path), exist_ok=True)
+            with open(rel_path, "w", encoding="utf-8") as f:
+                f.write("content")
+            GPTState.last_history_save_path = rel_path
+
+            with patch.object(history_actions, "notify") as notify_mock:
+                result = HistoryActions.gpt_request_history_show_last_save_path()
+
+            real = os.path.realpath(rel_path)
+            self.assertEqual(result, real)
+            notify_mock.assert_called()
+            self.assertIn(real, str(notify_mock.call_args[0][0]))
+            self.assertEqual(GPTState.last_history_save_path, real)
+
         def test_history_save_filename_includes_request_and_directional_slug(self):
             tmpdir = tempfile.mkdtemp()
             from talon import settings as talon_settings  # type: ignore
@@ -1226,6 +1488,56 @@ if bootstrap is not None:
             filename = files[0]
             self.assertIn("rid-slug", filename)
             self.assertIn("fog", filename)
+
+        def test_history_save_slug_and_header_use_recipe_directional(self):
+            tmpdir = tempfile.mkdtemp()
+            from talon import settings as talon_settings  # type: ignore
+
+            talon_settings.set("user.model_source_save_directory", tmpdir)
+
+            append_entry(
+                "rid-recipe-dir",
+                "prompt with recipe directional",
+                "resp",
+                "meta",
+                recipe="infer · full · rigor · fog",
+                axes={},  # directional is implied by recipe
+            )
+
+            HistoryActions.gpt_request_history_save_latest_source()
+
+            files = list(os.listdir(tmpdir))
+            self.assertEqual(len(files), 1, files)
+            filename = files[0]
+            self.assertIn("fog", filename)
+            content = open(os.path.join(tmpdir, filename), "r", encoding="utf-8").read()
+            self.assertIn("directional_tokens: fog", content)
+
+        def test_history_save_normalizes_recipe_directional_tokens(self):
+            tmpdir = tempfile.mkdtemp()
+            from talon import settings as talon_settings  # type: ignore
+
+            talon_settings.set("user.model_source_save_directory", tmpdir)
+
+            append_entry(
+                "rid-recipe-dir-caps",
+                "prompt with uppercase directional",
+                "resp",
+                "meta",
+                recipe="infer · full · rigor · FOG",
+                axes={},  # directional derived from recipe
+            )
+
+            HistoryActions.gpt_request_history_save_latest_source()
+
+            files = list(os.listdir(tmpdir))
+            self.assertEqual(len(files), 1, files)
+            filename = files[0]
+            self.assertIn("fog", filename)
+            self.assertNotIn("FOG", filename)
+            content = open(os.path.join(tmpdir, filename), "r", encoding="utf-8").read()
+            self.assertIn("directional_tokens: fog", content)
+            self.assertNotIn("directional_tokens: FOG", content)
 
         def test_history_save_filename_includes_provider_slug(self):
             tmpdir = tempfile.mkdtemp()
@@ -1288,6 +1600,55 @@ if bootstrap is not None:
                 result = HistoryActions.gpt_request_history_save_latest_source()
             save_mock.assert_not_called()
             self.assertIsNone(result)
+            self.assertEqual(GPTState.last_history_save_path, "")
+
+        def test_history_save_in_flight_clears_state_and_writes_nothing(self):
+            tmpdir = tempfile.mkdtemp()
+            from talon import settings as talon_settings  # type: ignore
+
+            talon_settings.set("user.model_source_save_directory", tmpdir)
+            append_entry(
+                "rid-guard",
+                "prompt",
+                "resp",
+                "meta",
+                recipe="infer · full · rigor",
+                axes={"directional": ["fog"]},
+            )
+            GPTState.last_history_save_path = "stale"
+
+            with patch.object(history_actions, "_reject_if_request_in_flight", return_value=True):
+                result = HistoryActions.gpt_request_history_save_latest_source()
+
+            self.assertIsNone(result)
+            self.assertEqual(GPTState.last_history_save_path, "")
+            self.assertEqual(os.listdir(tmpdir), [])
+
+        def test_history_save_clears_notify_suppression_before_save(self):
+            """Ensure save clears notify suppression before writing."""
+            from types import SimpleNamespace
+
+            entry = SimpleNamespace(request_id="rid-clear", prompt="p", response="r", axes={"directional": ["fog"]})
+            clear_called = False
+
+            def _clear():
+                nonlocal clear_called
+                clear_called = True
+
+            def _save(arg):
+                self.assertTrue(clear_called, "notify suppression should be cleared before saving")
+                return "/tmp/history-path"
+
+            with (
+                patch.object(history_actions, "_clear_notify_suppression", side_effect=_clear),
+                patch.object(history_actions, "_reject_if_request_in_flight", return_value=False),
+                patch.object(history_actions, "latest", return_value=entry),
+                patch.object(history_actions, "_save_history_prompt_to_file", side_effect=_save),
+            ):
+                result = HistoryActions.gpt_request_history_save_latest_source()
+
+            self.assertTrue(clear_called)
+            self.assertEqual(result, "/tmp/history-path")
             self.assertEqual(GPTState.last_history_save_path, "")
 
         def test_history_save_includes_provider_id_in_header(self):

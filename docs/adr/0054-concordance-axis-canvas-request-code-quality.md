@@ -1,6 +1,6 @@
 # ADR-0054 – Concordance Code Quality for Axis Registry, Canvas UIs, and Request Pipeline
 
-Status: Proposed  
+Status: Accepted  
 Date: 2025-12-15  
 Owners: Talon AI tools maintainers
 

@@ -10,7 +10,7 @@ from talon import skia
 from .axisCatalog import axis_catalog
 
 from .canvasFont import apply_canvas_typeface
-from .helpUI import apply_scroll_delta, clamp_scroll, scroll_fraction
+from .overlayHelpers import apply_scroll_delta, clamp_scroll, scroll_fraction
 from .modelState import GPTState
 from .suggestionCoordinator import last_recipe_snapshot, suggestion_grammar_phrase
 from .personaConfig import (

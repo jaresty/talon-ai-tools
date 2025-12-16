@@ -2,12 +2,28 @@
 
 Query language models with voice commands. Helpful to automatically generate text, fix errors from dictation automatically, and generally speed up your Talon workflow.
 
+## SSOT regeneration
+
+- Run `make axis-regenerate-all` to refresh axis config/catalog snapshots, README axis lines/cheatsheet, and static prompt docs/README sections into `tmp/` for review; the helper also validates the catalog for drift.
+- `make axis-regenerate` is the manual variant; it now runs catalog validation after generating assets so failures are caught immediately.
+- Both commands fail fast when catalog validation detects drift; fix the catalog/list/static prompt data before applying refreshed docs.
+- Axis/static prompt `.talon-list` files are catalog-driven and no longer tracked; regenerate them into `tmp/` before applying updates.
+- For list-only refresh, `make talon-lists` is available as an optional helper.
+- To spot drift without regenerating, use `make talon-lists-check` to validate list outputs against the catalog.
+- For catalog-only validation (skip list file rendering), pass `--skip-list-files` to `scripts/tools/axis-catalog-validate.py`.
+- To force list checks even when skipping by default, add `--no-skip-list-files` to include talon-list validation.
+- When enforcing list checks, pass `--lists-dir GPT/lists` (or your lists directory) so the validator can render `.talon-list` outputs.
+- Example enforced run: `python3 scripts/tools/axis-catalog-validate.py --lists-dir /path/to/lists --no-skip-list-files`.
+- Regenerate list files before enforced checks via `python3 scripts/tools/generate_talon_lists.py` (or `make talon-lists`) so the validator can diff outputs.
+- Compare `tmp/readme-axis-readme.md` and `tmp/static-prompt-readme.md` before updating tracked README sections when shipping catalog changes.
+
 ## Help
 
-Note: Some behaviours (for example, diagrams, Presenterm decks, ADRs, shell scripts, debugging, Slack/Jira formatting, taxonomy-style outputs) now live only as form/channel/method axis values rather than static prompts; see ADR 012/013 and the README cheat sheet for axis-based recipes. Axis/static prompt `.talon-list` files are catalog-driven and **no longer tracked**; regenerate snapshots via the catalog helpers below when needed.
+## Static prompt catalog snapshots
+## Static prompt catalog details
 
-Snapshots for doc regen: use `make readme-axis-refresh` to write a catalog-driven axis snapshot to `tmp/readme-axis-readme.md` (README unchanged) and `make static-prompt-refresh` to write a static-prompt snapshot to `tmp/static-prompt-readme.md`; apply manually if you intend to update the README. To include tokens from local Talon axis list files in the axis snapshot, export `README_AXIS_LISTS_DIR=/path/to/lists` before running `make readme-axis-refresh` (omit to use catalog only). Use `make doc-snapshots` to generate all of these snapshots in one go under `tmp/`. If you still keep local axis/static prompt `.talon-list` files for your own use, `make talon-lists` will regenerate them from the catalog (untracked), and `make talon-lists-check` will diff locally generated lists for drift; pass `--skip-list-files` to catalog-only validation when you want to ignore local lists entirely, and `--no-skip-list-files` plus `--lists-dir=/path/to/lists` to opt back into list checks when you want them enforced with an explicit source (for example, `axis-catalog-validate.py --lists-dir /path/to/lists --no-skip-list-files`); regenerate concrete list files first if needed via `generate_talon_lists.py --lists-dir /path/to/lists`.
-To include tokens from local Talon axis list files in the axis snapshot, export `README_AXIS_LISTS_DIR=/path/to/lists` before running `make readme-axis-refresh`; omit it to use the catalog only.
+
+Note: Some behaviours (for example, diagrams, Presenterm decks, ADRs, shell scripts, debugging, Slack/Jira formatting, taxonomy-style outputs) now live only as form/channel/method axis values rather than static prompts; see ADR 012/013 and the README cheat sheet for axis-based recipes.
 
 - infer: I'm not telling you what to do. Infer the task.
 - describe: Just describe this objectively.

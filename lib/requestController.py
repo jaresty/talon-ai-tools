@@ -33,6 +33,7 @@ class RequestUIController:
         hide_response_canvas: Optional[Callable[[], None]] = None,
         hide_help_hub: Optional[Callable[[], None]] = None,
         on_history_save: Optional[Callable[[Optional[str], Optional[str]], None]] = None,
+        on_retry: Optional[Callable[[Optional[str]], None]] = None,
         on_append: Optional[Callable[[Optional[str], str], None]] = None,
         on_state_change: Optional[Callable[[RequestState], None]] = None,
     ):
@@ -46,6 +47,7 @@ class RequestUIController:
             "hide_response_canvas": hide_response_canvas,
             "hide_help_hub": hide_help_hub,
             "on_history_save": on_history_save,
+            "on_retry": on_retry,
             "on_append": on_append,
         }
         self._on_state_change = on_state_change
@@ -73,6 +75,13 @@ class RequestUIController:
                     pass
             # Keep state unchanged for append-only events.
             return self._state
+        if event.kind is RequestEventKind.RETRY:
+            cb = self._callbacks.get("on_retry")
+            if cb:
+                try:
+                    cb(event.request_id)
+                except Exception:
+                    pass
         prev_state = self._state
         next_state = transition(self._state, event)
         if event.kind is RequestEventKind.RESET:

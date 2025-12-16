@@ -30,6 +30,7 @@ from .requestBus import (
     emit_fail,
     emit_reset,
     emit_cancel,
+    emit_retry,
     set_controller,
     current_state,
 )
@@ -324,6 +325,7 @@ def notify(message: str):
 
     if suppress_id is not None and request_id is not None:
         if request_id == suppress_id:
+            _record_notification_call(message)
             return
 
     if (
@@ -1438,6 +1440,10 @@ def send_request(max_attempts: int = 10):
                 traceback.print_exc()
             except Exception:
                 pass
+            try:
+                emit_retry(request_id=request_id)
+            except Exception:
+                pass
             message_content = None
         if message_content is None:
             try:
@@ -1465,13 +1471,25 @@ def send_request(max_attempts: int = 10):
             return _handle_cancelled_request()
 
         try:
+            if attempts > 0:
+                try:
+                    emit_retry(request_id=request_id)
+                except Exception:
+                    pass
+                try:
+                    lifecycle = reduce_request_state(lifecycle, "retry")
+                    GPTState.last_lifecycle = lifecycle
+                except Exception:
+                    pass
             json_response = send_request_internal(GPTState.request)
         except GPTRequestError as e:
             _handle_request_error(e)
             raise
         except Exception as e:
             _handle_request_error(e)
-            raise
+            # Retry on unexpected errors until max_attempts is reached.
+            attempts += 1
+            continue
 
         message_response = json_response["choices"][0]["message"]
         message_content = message_response.get("content")

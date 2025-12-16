@@ -5,7 +5,7 @@ from typing import Dict, Literal, Optional, Tuple
 from talon import Context, Module, actions, canvas, settings, ui
 
 from .canvasFont import apply_canvas_typeface
-from .helpUI import clamp_scroll
+from .overlayHelpers import clamp_scroll
 
 from .modelDestination import create_model_destination
 from .modelSource import create_model_source

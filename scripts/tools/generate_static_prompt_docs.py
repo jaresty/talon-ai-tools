@@ -30,7 +30,7 @@ def main() -> int:
     )
     args = parser.parse_args()
 
-    content = _build_static_prompt_docs()
+    content = _build_static_prompt_docs() + "\n"
 
     if args.out in ("-", "/dev/stdout"):
         print(content)

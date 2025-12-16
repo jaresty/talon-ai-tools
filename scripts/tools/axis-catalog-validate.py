@@ -45,8 +45,18 @@ def _format_list(items: List[str]) -> str:
 
 def validate_axis_tokens(catalog) -> List[str]:
     errors: List[str] = []
-    axes = catalog["axes"]
-    list_tokens = catalog["axis_list_tokens"]
+    axes = catalog.get("axes", {}) or {}
+    list_tokens = catalog.get("axis_list_tokens", {}) or {}
+    if not axes:
+        errors.append("[axis catalog drift] catalog missing axes")
+        return errors
+
+    extra_axes = set(list_tokens.keys()) - set(axes.keys())
+    if extra_axes:
+        errors.append(
+            "[axis list drift] axis_list_tokens contains axes not present in catalog axes: "
+            f"{_format_list(list(extra_axes))}"
+        )
 
     for axis_name, token_map in axes.items():
         axis_tokens = set((token_map or {}).keys())
@@ -66,8 +76,8 @@ def validate_axis_tokens(catalog) -> List[str]:
 
 def validate_static_prompt_axes(catalog) -> List[str]:
     errors: List[str] = []
-    axes = catalog["axes"]
-    profiled = catalog["static_prompts"].get("profiled", [])
+    axes = catalog.get("axes", {})
+    profiled = (catalog.get("static_prompts") or {}).get("profiled", [])
 
     for entry in profiled:
         name = entry.get("name", "<unknown>")
@@ -89,10 +99,16 @@ def validate_static_prompt_axes(catalog) -> List[str]:
 def validate_static_prompt_descriptions(catalog) -> List[str]:
     errors: List[str] = []
     descriptions = catalog.get("static_prompt_descriptions", {}) or {}
-    profiled = catalog.get("static_prompts", {}).get("profiled", []) or []
+    profiled = (catalog.get("static_prompts") or {}).get("profiled", []) or []
+    profiled_names = {entry.get("name", "") for entry in profiled if entry.get("name")}
     for entry in profiled:
         name = entry.get("name", "")
         if not name:
+            continue
+        if name not in descriptions:
+            errors.append(
+                f"[static prompt description drift] static_prompt_descriptions missing entry for {name!r}"
+            )
             continue
         desc = (descriptions.get(name) or "").strip()
         catalog_desc = (entry.get("description") or "").strip()
@@ -100,6 +116,60 @@ def validate_static_prompt_descriptions(catalog) -> List[str]:
             errors.append(
                 f"[static prompt description drift] {name!r} catalog description mismatch between overrides and catalog entry"
             )
+    extra_descriptions = set(descriptions.keys()) - profiled_names
+    if extra_descriptions:
+        for name in sorted(extra_descriptions):
+            errors.append(
+                f"[static prompt description drift] static_prompt_descriptions contains entry not in static_prompts.profiled: {name}"
+            )
+    return errors
+
+
+def validate_static_prompt_sections_present(catalog) -> List[str]:
+    """Ensure catalog carries the static prompt sections expected by SSOT."""
+
+    errors: List[str] = []
+    if not catalog.get("static_prompts"):
+        errors.append("[static prompt drift] catalog missing static_prompts")
+    if not catalog.get("static_prompt_descriptions"):
+        errors.append("[static prompt drift] catalog missing static_prompt_descriptions")
+    if not catalog.get("static_prompt_profiles"):
+        errors.append("[static prompt drift] catalog missing static_prompt_profiles")
+    return errors
+
+
+def validate_static_prompt_required_profiles(catalog, required: list[str] | None = None) -> List[str]:
+    """Ensure key static prompt profiles exist in the catalog."""
+
+    errors: List[str] = []
+    profiled = (catalog.get("static_prompts") or {}).get("profiled", []) or []
+    names = {entry.get("name") for entry in profiled if entry.get("name")}
+    # Default required set is the static prompt profiles advertised in the catalog.
+    required_names = required or list((catalog.get("static_prompt_profiles") or {}).keys())
+    missing = [name for name in required_names if name and name not in names]
+    if missing:
+        errors.append(
+            f"[static prompt drift] required static prompt profiles missing from catalog: {', '.join(sorted(missing))}"
+        )
+    return errors
+
+
+def validate_static_prompt_profile_keys(catalog) -> List[str]:
+    """Ensure static prompt profile keys and profiled entries stay aligned."""
+
+    errors: List[str] = []
+    profiles = set((catalog.get("static_prompt_profiles") or {}).keys())
+    profiled = {entry.get("name") for entry in (catalog.get("static_prompts") or {}).get("profiled", [])}
+    missing_profiles = profiled - profiles
+    missing_profiled = profiles - profiled
+    if missing_profiles:
+        errors.append(
+            f"[static prompt drift] profiled static prompts missing from static_prompt_profiles: {', '.join(sorted(missing_profiles))}"
+        )
+    if missing_profiled:
+        errors.append(
+            f"[static prompt drift] static_prompt_profiles contains entries not in static_prompts.profiled: {', '.join(sorted(missing_profiled))}"
+        )
     return errors
 
 
@@ -225,6 +295,9 @@ def main() -> int:
     errors.extend(validate_axis_tokens(catalog))
     errors.extend(validate_static_prompt_axes(catalog))
     errors.extend(validate_static_prompt_descriptions(catalog))
+    errors.extend(validate_static_prompt_sections_present(catalog))
+    errors.extend(validate_static_prompt_required_profiles(catalog))
+    errors.extend(validate_static_prompt_profile_keys(catalog))
     if not args.skip_list_files:
         errors.extend(validate_generated_lists(catalog, lists_dir))
 

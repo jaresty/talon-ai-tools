@@ -4,7 +4,7 @@ from talon import Context, Module, actions, canvas, ui
 from talon import skia
 
 from .canvasFont import apply_canvas_typeface
-from .helpUI import apply_scroll_delta, clamp_scroll
+from .overlayHelpers import apply_scroll_delta, clamp_scroll
 from .axisConfig import axis_docs_for
 from .axisCatalog import axis_catalog
 from .personaConfig import (

@@ -68,6 +68,8 @@ if not TYPE_CHECKING:
                 )
             text = out_path.read_text(encoding="utf-8")
             lines = text.splitlines()
+            self.assertIn("## Static prompt catalog snapshots", text)
+            self.assertIn("## Static prompt catalog details", text)
             try:
                 start_idx = next(i for i, line in enumerate(lines) if line.strip() == "## Help")
                 end_idx = next(

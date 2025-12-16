@@ -24,6 +24,7 @@ if not TYPE_CHECKING:
                     "make axis-regenerate failed:\n"
                     f"exit: {result.returncode}\nstdout:\n{result.stdout}\nstderr:\n{result.stderr}"
                 )
+            self.assertIn("Axis catalog validation passed.", result.stdout)
 
             generated_py = repo_root / "tmp" / "axisConfig.generated.py"
             generated_md = repo_root / "tmp" / "readme-axis-tokens.md"
@@ -32,6 +33,8 @@ if not TYPE_CHECKING:
             generated_cheatsheet = repo_root / "tmp" / "readme-axis-cheatsheet.md"
             generated_static_prompts = repo_root / "tmp" / "static-prompt-docs.md"
             generated_readme_axis = repo_root / "tmp" / "readme-axis-lists.md"
+            generated_readme_axis_section = repo_root / "tmp" / "readme-axis-readme.md"
+            generated_static_prompt_readme = repo_root / "tmp" / "static-prompt-readme.md"
 
             for artifact in (
                 generated_py,
@@ -41,6 +44,8 @@ if not TYPE_CHECKING:
                 generated_cheatsheet,
                 generated_static_prompts,
                 generated_readme_axis,
+                generated_readme_axis_section,
+                generated_static_prompt_readme,
             ):
                 self.assertTrue(
                     artifact.exists(),
@@ -63,6 +68,10 @@ if not TYPE_CHECKING:
             readme_axis_text = generated_readme_axis.read_text(encoding="utf-8")
             self.assertIn("Completeness (`completenessModifier`)", readme_axis_text)
             self.assertIn("Scope (`scopeModifier`)", readme_axis_text)
+            axis_section_text = generated_readme_axis_section.read_text(encoding="utf-8")
+            self.assertIn("Completeness (`completenessModifier`)", axis_section_text)
+            static_prompt_readme_text = generated_static_prompt_readme.read_text(encoding="utf-8")
+            self.assertIn("Static prompt catalog", static_prompt_readme_text)
 
 else:
     if not TYPE_CHECKING:

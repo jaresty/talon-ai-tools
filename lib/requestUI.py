@@ -110,11 +110,14 @@ def _on_history_save(request_id: Optional[str], path: Optional[str]) -> None:
 
 def _on_append(request_id: Optional[str], chunk: str) -> None:
     """Refresh the response canvas incrementally when streaming chunks arrive."""
-    global _LAST_APPEND_REFRESH_MS
+    global _LAST_APPEND_REFRESH_MS, _LAST_APPEND_REQUEST_ID
     if not chunk:
         return
     if not _should_show_response_canvas():
         return
+    if request_id and request_id != _LAST_APPEND_REQUEST_ID:
+        _LAST_APPEND_REFRESH_MS = None
+        _LAST_APPEND_REQUEST_ID = request_id
     now_ms = time.time() * 1000.0
     if (
         _LAST_APPEND_REFRESH_MS is not None
@@ -131,6 +134,29 @@ def _on_append(request_id: Optional[str], chunk: str) -> None:
         pass
 
 
+def _on_retry(request_id: Optional[str]) -> None:
+    """Surface retry intent and keep progress visible."""
+    global _LAST_APPEND_REFRESH_MS, _LAST_APPEND_REQUEST_ID
+    try:
+        _hide_pill()
+    except Exception:
+        pass
+    # Clear stale streaming cache before a retry to avoid showing old chunks.
+    try:
+        # Clear all cached chunks so the new attempt starts clean.
+        clear_all_fallbacks()
+    except Exception:
+        pass
+    _LAST_APPEND_REFRESH_MS = None
+    _LAST_APPEND_REQUEST_ID = None
+    _notify("Model: retrying…")
+    try:
+        if _should_show_response_canvas():
+            run_on_ui_thread(lambda: actions.user.model_response_canvas_open())
+    except Exception:
+        pass
+
+
 def _on_state_change(state: RequestState) -> None:
     """Notify on terminal states so failures/cancels are visible."""
     try:
@@ -141,6 +167,33 @@ def _on_state_change(state: RequestState) -> None:
             _notify("Model cancel requested")
     except Exception:
         pass
+    # Always clear the pill/progress toast when moving out of the happy path.
+    if state.is_terminal or state.phase in (RequestPhase.IDLE, RequestPhase.ERROR, RequestPhase.CANCELLED):
+        try:
+            _hide_pill()
+        except Exception:
+            pass
+    # Reset append throttle when a new send starts or after any transition that
+    # ends a request (idle/terminal) so the next request isn't throttled.
+    global _LAST_APPEND_REFRESH_MS, _LAST_APPEND_REQUEST_ID
+    if state.phase in (
+        RequestPhase.SENDING,
+        RequestPhase.IDLE,
+        RequestPhase.ERROR,
+        RequestPhase.CANCELLED,
+        RequestPhase.DONE,
+        RequestPhase.STREAMING,
+        RequestPhase.LISTENING,
+        RequestPhase.TRANSCRIBING,
+        RequestPhase.CONFIRMING,
+    ):
+        _LAST_APPEND_REFRESH_MS = None
+        _LAST_APPEND_REQUEST_ID = None
+        try:
+            # Do not carry suppression flags across requests; fall back to defaults.
+            GPTState.suppress_response_canvas = False
+        except Exception:
+            pass
     # Clear cached fallback text when a request reaches a terminal phase.
     try:
         if state.phase is RequestPhase.SENDING:
@@ -160,14 +213,20 @@ def _on_state_change(state: RequestState) -> None:
 
 _controller: Optional[RequestUIController] = None
 _LAST_APPEND_REFRESH_MS: Optional[float] = None
+_LAST_APPEND_REQUEST_ID: Optional[str] = None
 _APPEND_REFRESH_THROTTLE_MS = 150.0
 
 
 def register_default_request_ui() -> RequestUIController:
     """Register a default controller that emits simple toasts."""
     global _controller
-    global _LAST_APPEND_REFRESH_MS
+    global _LAST_APPEND_REFRESH_MS, _LAST_APPEND_REQUEST_ID
     _LAST_APPEND_REFRESH_MS = None
+    _LAST_APPEND_REQUEST_ID = None
+    try:
+        GPTState.suppress_response_canvas = False  # reset per registration
+    except Exception:
+        pass
     _controller = RequestUIController(
         show_pill=_show_pill,
         hide_pill=_hide_pill,
@@ -176,6 +235,7 @@ def register_default_request_ui() -> RequestUIController:
         show_response_canvas=_show_response_canvas_hint,
         hide_help_hub=_hide_help_hub,
         on_history_save=_on_history_save,
+        on_retry=_on_retry,
         on_append=_on_append,
         on_state_change=_on_state_change,
     )

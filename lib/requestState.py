@@ -39,6 +39,7 @@ class RequestEventKind(Enum):
     GOT_TRANSCRIPT = "got_transcript"
     CONFIRM_SEND = "confirm_send"
     BEGIN_SEND = "begin_send"
+    RETRY = "retry"
     BEGIN_STREAM = "begin_stream"
     APPEND = "append"
     COMPLETE = "complete"
@@ -99,7 +100,7 @@ def transition(state: RequestState, event: RequestEvent) -> RequestState:
             request_id=event.request_id or state.request_id,
         )
 
-    if kind is RequestEventKind.BEGIN_STREAM:
+    if kind in (RequestEventKind.RETRY, RequestEventKind.BEGIN_STREAM):
         return RequestState(
             phase=RequestPhase.STREAMING,
             active_surface=Surface.PILL,

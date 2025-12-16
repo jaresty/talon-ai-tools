@@ -217,6 +217,98 @@ if bootstrap is not None:
                 self.assertIsInstance(GPTState.last_lifecycle, RequestLifecycleState)
                 self.assertEqual(GPTState.last_lifecycle.status, "completed")
 
+        def test_streaming_failure_emits_retry_and_falls_back(self) -> None:
+            """Streaming failures should emit a retry lifecycle event before falling back."""
+
+            def fake_get(key, default=None):
+                if key == "user.model_endpoint":
+                    return "http://example.com"
+                if key == "user.model_request_timeout_seconds":
+                    return 120
+                if key == "user.model_streaming":
+                    return True
+                return default
+
+            def fake_stream(_req, _req_id):
+                raise RuntimeError("stream boom")
+
+            def fake_send_internal(_req):
+                return {
+                    "choices": [
+                        {"message": {"content": "non-stream response"}},
+                    ]
+                }
+
+            retry_calls = []
+
+            def fake_retry(request_id=None):
+                retry_calls.append(request_id)
+
+            GPTState.request = {
+                "model": "dummy-model",
+                "messages": [
+                    {"role": "user", "content": "hi"},
+                ],
+            }
+
+            with (
+                patch.object(modelHelpers.settings, "get", side_effect=fake_get),
+                patch.object(modelHelpers, "_send_request_streaming", side_effect=fake_stream),
+                patch.object(modelHelpers, "send_request_internal", side_effect=fake_send_internal),
+                patch.object(modelHelpers, "emit_retry", side_effect=fake_retry),
+            ):
+                result = send_request(max_attempts=1)
+
+            self.assertEqual(result.get("text"), "non-stream response")
+            self.assertEqual(len(retry_calls), 1)
+            # Request id should propagate through retry hook; it may be None if state was unset.
+            self.assertIsNotNone(retry_calls[0])
+
+        def test_non_stream_retry_emits_retry_hook(self) -> None:
+            """When non-stream retries, emit_retry should fire on subsequent attempts."""
+
+            def fake_get(key, default=None):
+                if key == "user.model_endpoint":
+                    return "http://example.com"
+                if key == "user.model_request_timeout_seconds":
+                    return 120
+                if key == "user.model_streaming":
+                    return False
+                return default
+
+            attempts = {"count": 0}
+
+            def fake_send_internal(_req):
+                attempts["count"] += 1
+                if attempts["count"] == 1:
+                    raise RuntimeError("first attempt fails")
+                return {"choices": [{"message": {"content": "retry success"}}]}
+
+            retry_calls = []
+
+            def fake_retry(request_id=None):
+                retry_calls.append(request_id)
+
+            GPTState.request = {
+                "model": "dummy-model",
+                "messages": [
+                    {"role": "user", "content": "hi"},
+                ],
+            }
+
+            with (
+                patch.object(modelHelpers.settings, "get", side_effect=fake_get),
+                patch.object(modelHelpers, "send_request_internal", side_effect=fake_send_internal),
+                patch.object(modelHelpers, "emit_retry", side_effect=fake_retry),
+            ):
+                result = send_request(max_attempts=2)
+
+            self.assertEqual(result.get("text"), "retry success")
+            self.assertEqual(len(retry_calls), 1)
+            if RequestLifecycleState is not None:
+                self.assertIsInstance(GPTState.last_lifecycle, RequestLifecycleState)
+                self.assertEqual(GPTState.last_lifecycle.status, "completed")
+
         def test_streaming_cancel_during_sse_marks_snapshot_errored(self) -> None:
             """Cancelling mid-SSE stream should mark the snapshot errored."""
 

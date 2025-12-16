@@ -18,7 +18,6 @@ from .requestLog import (
 from .requestBus import current_state, emit_history_saved
 from .axisMappings import axis_key_to_value_map_for
 from .axisCatalog import axis_catalog
-from .axisCatalog import axis_catalog
 from .requestState import RequestPhase
 from .talonSettings import _canonicalise_axis_tokens
 
@@ -291,6 +290,24 @@ def _save_history_prompt_to_file(entry) -> Optional[str]:
     # self-describing for catalog-aligned history saves.
     normalized_axes = history_axes_for(getattr(entry, "axes", {}) or {})
     dir_tokens = normalized_axes.get("directional") or []
+    if not dir_tokens:
+        # Fall back to recipe-derived directional tokens so history saves remain
+        # navigable even when axes payloads are missing direction.
+        dir_tokens = _directional_tokens_for_entry(entry)
+        if dir_tokens:
+            normalized_axes = dict(normalized_axes)
+            normalized_axes["directional"] = _canonicalise_axis_tokens(
+                "directional", dir_tokens
+            )
+    if not dir_tokens:
+        notify(
+            "GPT: Cannot save history source; entry is missing a directional lens (fog/fig/dig/ong/rog/bog/jog)."
+        )
+        try:
+            GPTState.last_history_save_path = ""  # type: ignore[attr-defined]
+        except Exception:
+            pass
+        return None
     for token in dir_tokens:
         slug_parts.append(_slugify_label(str(token)))
 
@@ -562,6 +579,7 @@ def _show_entry(entry) -> bool:
 class UserActions:
     def gpt_request_history_show_latest():
         """Open the last request/response/meta in the response canvas"""
+        _clear_notify_suppression()
         if _reject_if_request_in_flight():
             return
         global _cursor_offset
@@ -678,6 +696,7 @@ class UserActions:
 
     def gpt_request_history_save_latest_source():
         """Save the latest request's source prompt to a markdown file."""
+        _clear_notify_suppression()
         if _reject_if_request_in_flight():
             try:
                 GPTState.last_history_save_path = ""  # type: ignore[attr-defined]
@@ -689,6 +708,8 @@ class UserActions:
 
     def gpt_request_history_last_save_path():
         """Return the last saved history source path or notify when unavailable."""
+        if _reject_if_request_in_flight():
+            return None
         try:
             path = getattr(GPTState, "last_history_save_path", "")  # type: ignore[attr-defined]
         except Exception:
@@ -714,6 +735,8 @@ class UserActions:
 
     def gpt_request_history_copy_last_save_path():
         """Copy the last saved history source path to the clipboard."""
+        if _reject_if_request_in_flight():
+            return None
         path = UserActions.gpt_request_history_last_save_path()
         if not path:
             return None
@@ -724,12 +747,18 @@ class UserActions:
                 actions.user.paste(path)  # type: ignore[attr-defined]
             except Exception:
                 notify(f"GPT: Unable to copy path: {path}")
+                try:
+                    GPTState.last_history_save_path = ""  # type: ignore[attr-defined]
+                except Exception:
+                    pass
                 return None
         notify(f"GPT: Copied history save path: {path}")
         return path
 
     def gpt_request_history_open_last_save_path():
         """Open the last saved history source file if available."""
+        if _reject_if_request_in_flight():
+            return None
         path = UserActions.gpt_request_history_last_save_path()
         if not path:
             return None
@@ -744,12 +773,18 @@ class UserActions:
             actions.app.open(path)  # type: ignore[attr-defined]
         except Exception as exc:
             notify(f"GPT: Unable to open history save: {exc}")
+            try:
+                GPTState.last_history_save_path = ""  # type: ignore[attr-defined]
+            except Exception:
+                pass
             return None
         notify(f"GPT: Opened history save: {path}")
         return path
 
     def gpt_request_history_show_last_save_path():
         """Show the last saved history source path."""
+        if _reject_if_request_in_flight():
+            return None
         path = UserActions.gpt_request_history_last_save_path()
         if not path:
             return None

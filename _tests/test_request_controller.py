@@ -14,6 +14,7 @@ if bootstrap is not None:
         RequestEvent,
         RequestEventKind,
         RequestPhase,
+        RequestState,
         Surface,
     )
 
@@ -136,6 +137,63 @@ if bootstrap is not None:
             # Reset from idle; should still emit state change to allow cleanup hooks.
             controller.handle(RequestEvent(RequestEventKind.RESET))
             self.assertEqual(calls, [RequestPhase.IDLE])
+
+        def test_retry_invokes_hook_and_updates_state(self):
+            calls = []
+
+            def on_retry(req_id):
+                calls.append(req_id)
+
+            controller = RequestUIController(on_retry=on_retry)
+            controller.handle(RequestEvent(RequestEventKind.RETRY, request_id="rid-retry"))
+
+            self.assertEqual(calls, ["rid-retry"])
+            self.assertEqual(controller.state.phase, RequestPhase.STREAMING)
+            self.assertEqual(controller.state.request_id, "rid-retry")
+            self.assertEqual(controller.state.active_surface, Surface.PILL)
+
+        def test_retry_from_error_clears_error_and_moves_to_streaming(self):
+            calls = []
+
+            def on_retry(req_id):
+                calls.append(req_id)
+
+            controller = RequestUIController(on_retry=on_retry)
+            controller._state = RequestState(
+                phase=RequestPhase.ERROR,
+                active_surface=Surface.RESPONSE_CANVAS,
+                request_id="rid-error",
+                last_error="boom",
+            )
+            controller.handle(RequestEvent(RequestEventKind.RETRY, request_id="rid-error"))
+
+            self.assertEqual(calls, ["rid-error"])
+            self.assertEqual(controller.state.phase, RequestPhase.STREAMING)
+            self.assertEqual(controller.state.active_surface, Surface.PILL)
+            self.assertEqual(controller.state.request_id, "rid-error")
+            self.assertEqual(controller.state.last_error, "")
+
+        def test_retry_from_cancel_clears_cancel_flag_and_moves_to_streaming(self):
+            calls = []
+
+            def on_retry(req_id):
+                calls.append(req_id)
+
+            controller = RequestUIController(on_retry=on_retry)
+            controller._state = RequestState(
+                phase=RequestPhase.CANCELLED,
+                active_surface=Surface.NONE,
+                request_id="rid-cancel",
+                cancel_requested=True,
+            )
+            controller.handle(RequestEvent(RequestEventKind.RETRY, request_id="rid-cancel"))
+
+            self.assertEqual(calls, ["rid-cancel"])
+            self.assertEqual(controller.state.phase, RequestPhase.STREAMING)
+            self.assertEqual(controller.state.active_surface, Surface.PILL)
+            self.assertEqual(controller.state.request_id, "rid-cancel")
+            self.assertFalse(controller.state.cancel_requested)
+            self.assertEqual(controller.state.active_surface, Surface.PILL)
 else:
     if not TYPE_CHECKING:
         class RequestUIControllerTests(unittest.TestCase):

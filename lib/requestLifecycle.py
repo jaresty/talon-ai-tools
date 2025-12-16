@@ -50,6 +50,7 @@ def reduce_request_state(
     - "complete": non-streaming request completed.
     - "error": a terminal error occurred.
     - "cancel": the request was cancelled.
+    - "retry": a retry was initiated after an error.
 
     This helper does not perform side effects; it is a building block for a
     future RequestLifecycle façade that will sit over modelHelpers and
@@ -57,7 +58,9 @@ def reduce_request_state(
     """
 
     s = state.status
-    # Once errored or cancelled, the reducer treats the state as terminal.
+    # Allow "retry" to leave terminal states; otherwise treat errored/cancelled as terminal.
+    if event == "retry":
+        return RequestLifecycleState(status="running")
     if s in ("errored", "cancelled"):
         if event in {
             "start",

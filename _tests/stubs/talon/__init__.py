@@ -76,20 +76,6 @@ class _CodeActions(_ActionRecorder):
         return ""
 
 
-class _Actions(SimpleNamespace):
-    def __init__(self):
-        super().__init__(
-            user=_UserActions(),
-            app=_AppActions(),
-            edit=_EditActions(),
-            code=_CodeActions(),
-        )
-
-
-actions = _Actions()
-cron = SimpleNamespace(after=lambda _, fn: fn())
-
-
 class _Clip:
     def __init__(self):
         self._text: str | None = None
@@ -105,6 +91,21 @@ class _Clip:
 
 
 clip = _Clip()
+
+
+class _Actions(SimpleNamespace):
+    def __init__(self):
+        super().__init__(
+            user=_UserActions(),
+            app=_AppActions(),
+            edit=_EditActions(),
+            code=_CodeActions(),
+            clip=clip,
+        )
+
+
+actions = _Actions()
+cron = SimpleNamespace(after=lambda _, fn: fn())
 
 
 class _Settings:

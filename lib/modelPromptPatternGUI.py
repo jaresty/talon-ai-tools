@@ -13,7 +13,7 @@ from .axisMappings import axis_docs_map
 from .requestBus import current_state
 from .requestState import RequestPhase
 from .modelHelpers import notify
-from .overlayHelpers import apply_canvas_blocking
+from .overlayHelpers import apply_canvas_blocking, apply_scroll_delta, clamp_scroll
 from .overlayLifecycle import close_overlays, close_common_overlays
 
 try:
@@ -415,9 +415,7 @@ def _ensure_prompt_pattern_canvas() -> canvas.Canvas:
                 return
             if not raw:
                 return
-            max_scroll = max(PromptPatternCanvasState.max_scroll, 0.0)
-            new_scroll = PromptPatternCanvasState.scroll_y - raw * 40.0
-            PromptPatternCanvasState.scroll_y = max(min(new_scroll, max_scroll), 0.0)
+            _apply_prompt_pattern_scroll(raw)
             try:
                 _prompt_pattern_canvas.show()
             except Exception:
@@ -469,11 +467,21 @@ def _ensure_prompt_pattern_canvas() -> canvas.Canvas:
     return _prompt_pattern_canvas
 
 
+def _apply_prompt_pattern_scroll(raw_delta: float) -> None:
+    """Apply scroll delta using the shared overlay clamp helper."""
+    max_scroll = max(PromptPatternCanvasState.max_scroll, 0.0)
+    PromptPatternCanvasState.scroll_y = clamp_scroll(
+        apply_scroll_delta(PromptPatternCanvasState.scroll_y, -raw_delta * 40.0, max_scroll),
+        max_scroll,
+    )
+
+
 def _open_prompt_pattern_canvas(static_prompt: str) -> None:
     canvas_obj = _ensure_prompt_pattern_canvas()
     PromptPatternGUIState.static_prompt = static_prompt
     PromptPatternCanvasState.showing = True
     PromptPatternCanvasState.scroll_y = 0.0
+    PromptPatternCanvasState.max_scroll = 0.0
     # Reset per-show debug counters and drag state.
     globals()["_mouse_log_count"] = 0
     globals()["_mouse_experiment_count"] = 0
@@ -492,6 +500,7 @@ def _close_prompt_pattern_canvas() -> None:
         _prompt_pattern_hover_close, \
         _prompt_pattern_hover_name
     PromptPatternCanvasState.showing = False
+    PromptPatternCanvasState.max_scroll = 0.0
     _prompt_pattern_hover_close = False
     _prompt_pattern_hover_name = None
     if _prompt_pattern_canvas is None:
@@ -671,7 +680,7 @@ def _draw_prompt_patterns(c: canvas.Canvas) -> None:  # pragma: no cover - visua
 
     total_content_height = sum(h for _, h, _ in flat_lines)
     max_scroll = max(total_content_height - visible_height, 0)
-    scroll_y = max(min(PromptPatternCanvasState.scroll_y, max_scroll), 0)
+    scroll_y = clamp_scroll(PromptPatternCanvasState.scroll_y, max_scroll)
     PromptPatternCanvasState.scroll_y = scroll_y
     PromptPatternCanvasState.max_scroll = max_scroll
 

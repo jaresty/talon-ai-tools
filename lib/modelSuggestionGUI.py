@@ -38,7 +38,7 @@ from .requestBus import current_state
 from .requestState import RequestPhase
 from .modelHelpers import notify
 from .stanceDefaults import stance_defaults_lines
-from .overlayHelpers import apply_canvas_blocking
+from .overlayHelpers import apply_canvas_blocking, clamp_scroll
 from .overlayLifecycle import close_overlays, close_common_overlays
 from .overlayLifecycle import close_overlays
 
@@ -770,7 +770,7 @@ def _scroll_suggestions(raw_delta: float) -> None:  # pragma: no cover - visual 
         # Further slow the scroll sensitivity so wheel/trackpad deltas move the
         # list in smaller steps; Talon surfaces high raw deltas on some platforms.
         new_scroll = SuggestionCanvasState.scroll_y - delta * 10.0
-        SuggestionCanvasState.scroll_y = max(min(new_scroll, max_scroll), 0.0)
+        SuggestionCanvasState.scroll_y = clamp_scroll(new_scroll, max_scroll)
     except Exception as e:
         _debug(f"suggestion scroll handler error: {e}")
 
@@ -990,7 +990,7 @@ def _draw_suggestions(c: canvas.Canvas) -> None:  # pragma: no cover - visual on
     # when rounding/measurement errors accumulate or line measurement
     # underestimates wrap. A few lines of slack avoids clipping the last row.
     max_scroll = max(total_content_height - visible_height + line_h * 6, 0)
-    scroll_y = max(min(SuggestionCanvasState.scroll_y, max_scroll), 0)
+    scroll_y = clamp_scroll(SuggestionCanvasState.scroll_y, max_scroll)
     SuggestionCanvasState.scroll_y = scroll_y
 
     current_y = body_top - scroll_y

@@ -112,6 +112,11 @@ When using this helper:
   substantial, in‑repo work remaining for this ADR in this repo (for example,
   status is Accepted and there are no clearly remaining in‑repo tasks or
   subtasks you can name), you MUST first:
+  - Perform an adversarial prioritisation pass: actively hunt for the most
+    risk-bearing or high-signal slice you could take on next, challenge the
+    default ordering, and pick the best candidate based on that adversarial
+    review. Once the slice is chosen, drop the adversarial stance and execute
+    collaboratively and pragmatically.
   - Run the adversarial check described below in this helper and record it in
     the ADR’s work‑log (listing at least one plausible area or task and why it
     is out‑of‑scope for this repo, requires a separate ADR, or is genuinely no

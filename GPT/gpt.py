@@ -826,7 +826,14 @@ def _build_static_prompt_docs() -> str:
         other_line += "(none)"
     lines.append(other_line)
 
-    return "\n".join(lines)
+    body = "\n".join(lines).strip()
+    heading_lines = [
+        "## Static prompt catalog snapshots",
+        "",
+        "## Static prompt catalog details",
+        "",
+    ]
+    return "\n".join(heading_lines + [body])
 
 
 def _save_source_snapshot_to_file() -> Optional[str]:

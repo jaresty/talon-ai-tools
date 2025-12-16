@@ -19,18 +19,17 @@ ROOT = Path(__file__).resolve().parents[2]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from lib.axisConfig import axis_docs_for  # type: ignore  # noqa: E402
-from lib.axisMappings import axis_registry  # type: ignore  # noqa: E402
 from lib.axisCatalog import serialize_axis_config  # type: ignore  # noqa: E402
 
 
 def _axis_mapping() -> dict[str, dict[str, str]]:
-    """Return axis token -> description mapping from the registry."""
-    mapping: dict[str, dict[str, str]] = {}
-    for axis in sorted(axis_registry().keys()):
-        docs = axis_docs_for(axis)
-        mapping[axis] = {doc.key: doc.description for doc in docs}
-    return mapping
+    """Return axis token -> description mapping from the SSOT catalog serializer."""
+    payload = serialize_axis_config(
+        lists_dir=None, include_axis_lists=False, include_static_prompts=False
+    )
+    axes = payload.get("axes", {}) or {}
+    # Ensure deterministic ordering for stable renders.
+    return {axis: dict(sorted((axes.get(axis) or {}).items())) for axis in sorted(axes.keys())}
 
 
 def render_axis_config() -> str:
@@ -60,11 +59,41 @@ def render_axis_config() -> str:
             flags: FrozenSet[str] = field(default_factory=frozenset)
         """
     )
+    helpers = textwrap.dedent(
+        """\
+
+        def axis_key_to_value_map(axis: str) -> dict[str, str]:
+            \"\"\"Return the key->description map for a given axis.\"\"\"
+            return AXIS_KEY_TO_VALUE.get(axis, {})
+
+
+        def axis_docs_for(axis: str) -> list[AxisDoc]:
+            \"\"\"Return AxisDoc objects for a given axis.\"\"\"
+            mapping = axis_key_to_value_map(axis)
+            return [
+                AxisDoc(axis=axis, key=key, description=desc, group=None, flags=frozenset())
+                for key, desc in mapping.items()
+            ]
+
+
+        def axis_docs_index() -> dict[str, list[AxisDoc]]:
+            \"\"\"Return AxisDoc entries for all axes.\"\"\"
+
+            index: dict[str, list[AxisDoc]] = {}
+            for axis, mapping in AXIS_KEY_TO_VALUE.items():
+                index[axis] = [
+                    AxisDoc(axis=axis, key=key, description=desc, group=None, flags=frozenset())
+                    for key, desc in mapping.items()
+                ]
+            return index
+        """
+    )
     return "\n\n".join(
         [
             header.rstrip(),
             f"AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {body}",
             dataclasses.rstrip(),
+            helpers.rstrip(),
         ]
     ).rstrip() + "\n"
 
@@ -84,7 +113,9 @@ def render_axis_markdown() -> str:
 def render_axis_catalog_json(lists_dir: Path | None = None) -> str:
     """Render the canonical axis catalog payload (axes + optional list tokens)."""
 
-    payload = serialize_axis_config(lists_dir=lists_dir, include_axis_lists=True)
+    payload = serialize_axis_config(
+        lists_dir=lists_dir, include_axis_lists=True, include_static_prompts=True
+    )
     return json.dumps(payload, indent=2, sort_keys=True)
 
 

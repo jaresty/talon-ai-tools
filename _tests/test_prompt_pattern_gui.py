@@ -31,6 +31,57 @@ if bootstrap is not None:
                 actions.user.gpt_apply_prompt = MagicMock()
                 actions.user.prompt_pattern_gui_close = MagicMock()
 
+            def test_scroll_clamps_to_max_via_overlay_helper(self) -> None:
+                class RectStub:
+                    def __init__(self):
+                        self.x = 0
+                        self.y = 0
+                        self.width = 360
+                        self.height = 180
+
+                class PaintStub:
+                    class StyleEnum:
+                        STROKE = "stroke"
+                        FILL = "fill"
+
+                    Style = StyleEnum
+
+                    def __init__(self):
+                        self.style = self.Style.STROKE
+                        self.color = "000000"
+
+                class CanvasStub:
+                    def __init__(self):
+                        self.rect = RectStub()
+                        self.paint = PaintStub()
+
+                    def draw_text(self, *args, **kwargs):
+                        pass
+
+                    def draw_rect(self, *args, **kwargs):
+                        pass
+
+                # Drive render to compute max_scroll and clamp the stored offset.
+                promptPatternGUI.PromptPatternCanvasState.scroll_y = 1000.0
+                promptPatternGUI.PromptPatternCanvasState.max_scroll = 0.0
+                promptPatternGUI._draw_prompt_patterns(CanvasStub())
+
+                self.assertGreater(
+                    promptPatternGUI.PromptPatternCanvasState.max_scroll, 0.0
+                )
+                self.assertEqual(
+                    promptPatternGUI.PromptPatternCanvasState.scroll_y,
+                    promptPatternGUI.PromptPatternCanvasState.max_scroll,
+                )
+
+                # Large deltas clamp via the overlay helper when overshooting max_scroll.
+                promptPatternGUI.PromptPatternCanvasState.scroll_y = 0.0
+                promptPatternGUI._apply_prompt_pattern_scroll(-100.0)
+                self.assertEqual(
+                    promptPatternGUI.PromptPatternCanvasState.scroll_y,
+                    promptPatternGUI.PromptPatternCanvasState.max_scroll,
+                )
+
             def test_run_prompt_pattern_executes_and_updates_last_recipe(self) -> None:
                 pattern = PROMPT_PRESETS[0]
 

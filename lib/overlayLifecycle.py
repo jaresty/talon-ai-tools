@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from typing import Callable, Iterable, Optional, Set, Sequence
+import traceback
 
 COMMON_OVERLAY_CLOSERS: Sequence[str] = (
     "model_pattern_gui_close",
@@ -19,6 +20,16 @@ def close_overlays(closers: Iterable[Optional[Callable[[], None]]]) -> None:
     for closer in closers:
         if closer is None:
             continue
+        try:
+            name = getattr(closer, "__name__", str(closer))
+        except Exception:
+            name = str(closer)
+        if "model_response_canvas_close" in name:
+            try:
+                stack = "".join(traceback.format_stack(limit=6))
+                print(f"[overlayLifecycle] closing response canvas via {name}\n{stack}")
+            except Exception:
+                pass
         try:
             closer()
         except Exception:

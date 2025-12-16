@@ -82,6 +82,13 @@ def _show_pill() -> None:
 
 def _hide_pill() -> None:
     run_on_ui_thread(hide_pill)
+    # Trace unexpected pill-triggered canvas closes for debugging.
+    try:
+        from .modelResponseCanvas import _log_canvas_close  # type: ignore
+    except Exception:
+        _log_canvas_close = None
+    if _log_canvas_close:
+        _log_canvas_close("hide_pill")
 
 
 def _show_confirmation() -> None:

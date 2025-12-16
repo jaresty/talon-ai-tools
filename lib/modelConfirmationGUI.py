@@ -243,7 +243,10 @@ class UserActions:
         ConfirmationGUIState.current_presentation = None
         ConfirmationGUIState.show_advanced_actions = False
         # Close other overlays so confirmation does not leave stray surfaces open.
-        close_common_overlays(actions.user, exclude={"confirmation_gui_close"})
+        close_common_overlays(
+            actions.user,
+            exclude={"confirmation_gui_close", "model_response_canvas_close"},
+        )
 
     def confirmation_gui_pass_context():
         """Add the model output to the context"""

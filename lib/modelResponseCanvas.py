@@ -171,6 +171,27 @@ def _debug(msg: str) -> None:
         pass
 
 
+def _log_canvas_close(reason: str) -> None:
+    """Best-effort tracing for unexpected canvas closes."""
+    try:
+        state = _current_request_state()
+    except Exception:
+        state = RequestState()
+    try:
+        phase = getattr(state, "phase", None)
+        surface = getattr(state, "active_surface", None)
+    except Exception:
+        phase = None
+        surface = None
+    try:
+        showing = getattr(ResponseCanvasState, "showing", False)
+    except Exception:
+        showing = False
+    _debug(
+        f"close reason={reason} showing={showing} phase={phase} surface={surface}"
+    )
+
+
 def _guard_response_canvas(allow_inflight: bool = False) -> bool:
     """Return True when the action should abort due to an in-flight request.
 
@@ -192,6 +213,7 @@ def _ensure_response_canvas() -> canvas.Canvas:
             clear_response_fallback(getattr(GPTState, "last_request_id", None))
         except Exception:
             pass
+        _log_canvas_close("canvas hide handler")
         try:
             ResponseCanvasState.showing = False
             ResponseCanvasState.scroll_y = 0.0
@@ -1458,6 +1480,7 @@ class UserActions:
             return
         canvas_obj = _ensure_response_canvas()
         if ResponseCanvasState.showing:
+            _log_canvas_close("toggle close")
             ResponseCanvasState.showing = False
             ResponseCanvasState.scroll_y = 0.0
             ResponseCanvasState.max_scroll = 1e9
@@ -1484,12 +1507,14 @@ class UserActions:
         if _guard_response_canvas(allow_inflight=True):
             return
         if _response_canvas is None:
+            _log_canvas_close("close w/o canvas")
             ResponseCanvasState.showing = False
             return
         try:
             clear_response_fallback(getattr(GPTState, "last_request_id", None))
         except Exception:
             pass
+        _log_canvas_close("explicit close")
         ResponseCanvasState.showing = False
         ResponseCanvasState.scroll_y = 0.0
         ResponseCanvasState.max_scroll = 1e9

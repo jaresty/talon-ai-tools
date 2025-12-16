@@ -1695,11 +1695,6 @@ if bootstrap is not None:
             }
 
             with (
-                patch.object(
-                    gpt_module,
-                    "_axis_value_from_token",
-                    side_effect=lambda token, mapping: token,
-                ) as axis_value,
                 patch.object(gpt_module, "modelPrompt") as model_prompt,
                 patch.object(gpt_module, "create_model_source") as create_source,
                 patch.object(
@@ -1718,13 +1713,6 @@ if bootstrap is not None:
                 gpt_module.UserActions.gpt_rerun_last_recipe(
                     "todo", "gist", [], [], "rog", "", ""
                 )
-
-                # Axis mapping should be invoked for all non-empty axes.
-                axis_tokens = [call.args[0] for call in axis_value.call_args_list]
-                self.assertIn("gist", axis_tokens)
-                self.assertIn("relations", axis_tokens)
-                self.assertIn("cluster", axis_tokens)
-                self.assertIn("rog", axis_tokens)
 
                 # modelPrompt should receive a match object with merged axes.
                 model_prompt.assert_called_once()
@@ -1810,11 +1798,6 @@ if bootstrap is not None:
             GPTState.last_directional = "fog"
 
             with (
-                patch.object(
-                    gpt_module,
-                    "_axis_value_from_token",
-                    side_effect=lambda token, mapping: token,
-                ),
                 patch.object(gpt_module, "modelPrompt") as model_prompt,
                 patch.object(gpt_module, "create_model_source") as create_source,
                 patch.object(
@@ -1899,11 +1882,6 @@ if bootstrap is not None:
             GPTState.last_axes["method"].append("Unknown method")
 
             with (
-                patch.object(
-                    gpt_module,
-                    "_axis_value_from_token",
-                    side_effect=lambda token, mapping: token,
-                ) as axis_value,
                 patch.object(gpt_module, "modelPrompt") as model_prompt,
                 patch.object(gpt_module, "create_model_source") as create_source,
                 patch.object(
@@ -1918,12 +1896,6 @@ if bootstrap is not None:
                 model_prompt.return_value = "PROMPT"
 
                 gpt_module.UserActions.gpt_rerun_last_recipe("", "", [], [], "rog", "", "")
-
-            mapped_tokens = [call.args[0] for call in axis_value.call_args_list]
-            self.assertIn("full", mapped_tokens)
-            self.assertIn("bound edges", mapped_tokens)
-            self.assertIn("rigor", mapped_tokens)
-            self.assertIn("rog", mapped_tokens)
 
             match = model_prompt.call_args.args[0]
             self.assertEqual(match.staticPrompt, "infer")
@@ -1972,11 +1944,6 @@ if bootstrap is not None:
             )
 
             with (
-                patch.object(
-                    gpt_module,
-                    "_axis_value_from_token",
-                    side_effect=lambda token, mapping: token,
-                ) as axis_value,
                 patch.object(gpt_module, "modelPrompt") as model_prompt,
                 patch.object(gpt_module, "create_model_source") as create_source,
                 patch.object(
@@ -1992,10 +1959,6 @@ if bootstrap is not None:
 
                 gpt_module.UserActions.gpt_rerun_last_recipe("", "", [], [], "rog", "", "")
 
-            mapped_tokens = [call.args[0] for call in axis_value.call_args_list]
-            self.assertTrue(
-                {"full", "bound", "rigor", "rog"}.issubset(set(mapped_tokens))
-            )
             self.assertEqual(
                 GPTState.last_axes,
                 {
@@ -2026,11 +1989,6 @@ if bootstrap is not None:
             }
 
             with (
-                patch.object(
-                    gpt_module,
-                    "_axis_value_from_token",
-                    side_effect=lambda token, mapping: token,
-                ) as axis_value,
                 patch.object(gpt_module, "modelPrompt") as model_prompt,
                 patch.object(gpt_module, "create_model_source") as create_source,
                 patch.object(
@@ -2052,10 +2010,6 @@ if bootstrap is not None:
                     "",
                     "",
                 )
-
-                mapped_tokens = [call.args[0] for call in axis_value.call_args_list]
-                self.assertIn("rigor xp", mapped_tokens)
-                self.assertIn("jog", mapped_tokens)
 
             match = model_prompt.call_args.args[0]
             self.assertEqual(match.methodModifier, "rigor xp")
@@ -2128,11 +2082,6 @@ if bootstrap is not None:
             }
 
             with (
-                patch.object(
-                    gpt_module,
-                    "_axis_value_from_token",
-                    side_effect=lambda token, mapping: token,
-                ) as axis_value,
                 patch.object(gpt_module, "modelPrompt") as model_prompt,
                 patch.object(gpt_module, "create_model_source") as create_source,
                 patch.object(
@@ -2156,9 +2105,6 @@ if bootstrap is not None:
                     "",
                 )
 
-            mapped_tokens = [call.args[0] for call in axis_value.call_args_list]
-            self.assertIn("fog", mapped_tokens)
-            self.assertNotIn("invalid-directional", mapped_tokens)
             match = model_prompt.call_args.args[0]
             self.assertEqual(match.directionalModifier, "fog")
             self.assertEqual(GPTState.last_axes.get("directional"), ["fog"])
@@ -2181,11 +2127,6 @@ if bootstrap is not None:
             }
 
             with (
-                patch.object(
-                    gpt_module,
-                    "_axis_value_from_token",
-                    side_effect=lambda token, mapping: token,
-                ) as axis_value,
                 patch.object(gpt_module, "modelPrompt") as model_prompt,
                 patch.object(gpt_module, "create_model_source") as create_source,
                 patch.object(
@@ -2209,21 +2150,11 @@ if bootstrap is not None:
                     "html",
                 )
 
-                # Only known tokens should be mapped.
-                mapped_tokens = [call.args[0] for call in axis_value.call_args_list]
-                self.assertIn("full", mapped_tokens)
-                self.assertIn("bound", mapped_tokens)
-                self.assertIn("rigor", mapped_tokens)
-                self.assertIn("fig", mapped_tokens)
-                self.assertNotIn("invalid-scope", mapped_tokens)
-                self.assertNotIn("hydrated-method", mapped_tokens)
-                self.assertNotIn("UnknownStyle", mapped_tokens)
-
                 match = model_prompt.call_args.args[0]
                 self.assertEqual(match.scopeModifier, "bound")
                 self.assertEqual(match.methodModifier, "rigor")
-            self.assertEqual(match.formModifier, "bullets")
-            self.assertEqual(match.channelModifier, "html")
+                self.assertEqual(match.formModifier, "bullets")
+                self.assertEqual(match.channelModifier, "html")
 
             self.assertEqual(
                 GPTState.last_axes,
@@ -2344,11 +2275,6 @@ if bootstrap is not None:
             GPTState.last_directional = "fog"
 
             with (
-                patch.object(
-                    gpt_module,
-                    "_axis_value_from_token",
-                    side_effect=lambda token, mapping: token,
-                ),
                 patch.object(gpt_module, "modelPrompt") as model_prompt,
                 patch.object(gpt_module, "create_model_source") as create_source,
                 patch.object(

@@ -139,13 +139,7 @@ from ..lib.modelTypes import GPTSystemPrompt
 from ..lib.promptPipeline import PromptPipeline, PromptResult
 from ..lib.promptSession import PromptSession
 from ..lib.recursiveOrchestrator import RecursiveOrchestrator
-from ..lib.modelPatternGUI import (
-    _axis_value as _axis_value_from_token,
-    COMPLETENESS_MAP as _COMPLETENESS_MAP,
-    SCOPE_MAP as _SCOPE_MAP,
-    METHOD_MAP as _METHOD_MAP,
-    DIRECTIONAL_MAP as _DIRECTIONAL_MAP,
-)
+from ..lib.modelPatternGUI import DIRECTIONAL_MAP as _DIRECTIONAL_MAP
 from ..lib.axisMappings import axis_key_to_value_map_for
 from ..lib.personaConfig import persona_docs_map, PERSONA_PRESETS, INTENT_PRESETS
 from ..lib.stanceValidation import valid_stance_command as _valid_stance_command
@@ -2089,33 +2083,17 @@ class UserActions:
         match = Match()
         setattr(match, "staticPrompt", new_static)
         if new_completeness:
-            setattr(
-                match,
-                "completenessModifier",
-                _axis_value_from_token(new_completeness, _COMPLETENESS_MAP),
-            )
+            setattr(match, "completenessModifier", new_completeness)
         if new_scope:
-            setattr(
-                match,
-                "scopeModifier",
-                _axis_value_from_token(new_scope, _SCOPE_MAP),
-            )
+            setattr(match, "scopeModifier", new_scope)
         if new_method:
-            setattr(
-                match,
-                "methodModifier",
-                _axis_value_from_token(new_method, _METHOD_MAP),
-            )
+            setattr(match, "methodModifier", new_method)
         if new_form:
             setattr(match, "formModifier", new_form)
         if new_channel:
             setattr(match, "channelModifier", new_channel)
         if new_directional:
-            setattr(
-                match,
-                "directionalModifier",
-                _axis_value_from_token(new_directional, _DIRECTIONAL_MAP),
-            )
+            setattr(match, "directionalModifier", new_directional)
 
         # Keep GPTState.last_recipe and structured fields in sync with the
         # effective recipe for this rerun.

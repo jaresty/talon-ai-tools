@@ -108,6 +108,8 @@ class GPTState:
     system_prompt: ClassVar[GPTSystemPrompt] = GPTSystemPrompt()
     # Path to the most recently saved history source file (if any).
     last_history_save_path: ClassVar[str] = ""
+    # When True, confirmation_gui_close should avoid closing the response canvas.
+    suppress_response_canvas_close: ClassVar[bool] = False
 
     @classmethod
     def start_debug(cls):

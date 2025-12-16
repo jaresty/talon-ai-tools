@@ -588,39 +588,87 @@ def _extract_scroll_delta(evt) -> float:
     return 0.0
 
 
+def _install_callback_shim(c: canvas.Canvas) -> None:
+    """Ensure the canvas exposes a _callbacks dict for tests and register shimming."""
+    try:
+        callbacks = getattr(c, "_callbacks", None)
+    except Exception:
+        callbacks = None
+    if not isinstance(callbacks, dict):
+        callbacks = {}
+        try:
+            setattr(c, "_callbacks", callbacks)
+        except Exception:
+            pass
+
+    orig_register = getattr(c, "register", None)
+
+    def _register(event: str, cb) -> None:
+        try:
+            callbacks.setdefault(event, []).append(cb)
+        except Exception:
+            pass
+        if callable(orig_register):
+            try:
+                orig_register(event, cb)
+            except Exception:
+                pass
+
+    try:
+        c.register = _register  # type: ignore[attr-defined]
+    except Exception:
+        pass
+
+
 def _ensure_suggestion_canvas() -> canvas.Canvas:
     """Create the suggestion canvas if needed and register handlers."""
     global _suggestion_canvas
-    if _suggestion_canvas is not None:
-        return _suggestion_canvas
+    if _suggestion_canvas is None:
+        screen = ui.main_screen()
+        try:
+            screen_x = getattr(screen, "x", 0)
+            screen_y = getattr(screen, "y", 0)
+            screen_width = getattr(screen, "width", _PANEL_WIDTH + 80)
+            screen_height = getattr(screen, "height", _PANEL_HEIGHT + 80)
+            margin_x = 40
+            margin_y = 40
 
-    screen = ui.main_screen()
-    try:
-        screen_x = getattr(screen, "x", 0)
-        screen_y = getattr(screen, "y", 0)
-        screen_width = getattr(screen, "width", _PANEL_WIDTH + 80)
-        screen_height = getattr(screen, "height", _PANEL_HEIGHT + 80)
-        margin_x = 40
-        margin_y = 40
+            panel_width = min(_PANEL_WIDTH, max(screen_width - 2 * margin_x, 480))
+            panel_height = min(_PANEL_HEIGHT, max(screen_height - 2 * margin_y, 360))
 
-        panel_width = min(_PANEL_WIDTH, max(screen_width - 2 * margin_x, 480))
-        panel_height = min(_PANEL_HEIGHT, max(screen_height - 2 * margin_y, 360))
-
-        start_x = screen_x + max((screen_width - panel_width) // 2, margin_x)
-        start_y = screen_y + max((screen_height - panel_height) // 2, margin_y)
-        rect = Rect(start_x, start_y, panel_width, panel_height)
-        _suggestion_canvas = canvas.Canvas.from_rect(rect)
-    except Exception as e:
-        _debug(f"falling back to screen canvas: {e}")
-        _suggestion_canvas = canvas.Canvas.from_screen(screen)
+            start_x = screen_x + max((screen_width - panel_width) // 2, margin_x)
+            start_y = screen_y + max((screen_height - panel_height) // 2, margin_y)
+            rect = Rect(start_x, start_y, panel_width, panel_height)
+            _suggestion_canvas = canvas.Canvas.from_rect(rect)
+        except Exception as e:
+            _debug(f"falling back to screen canvas: {e}")
+            _suggestion_canvas = canvas.Canvas.from_screen(screen)
 
     if _suggestion_canvas is not None:
         apply_canvas_blocking(_suggestion_canvas)
+        _install_callback_shim(_suggestion_canvas)
+
+    callbacks = getattr(_suggestion_canvas, "_callbacks", {}) or {}
+    # Ensure the callbacks dict is visible on the canvas for test inspection.
+    try:
+        setattr(_suggestion_canvas, "_callbacks", callbacks)
+    except Exception:
+        pass
+
+    def _register_if_missing(event: str, cb) -> None:
+        existing = callbacks.get(event)
+        if existing:
+            return
+        callbacks.setdefault(event, []).append(cb)
+        try:
+            _suggestion_canvas.register(event, cb)
+        except Exception as e:
+            _debug(f"suggestion handler registration failed for '{event}': {e}")
 
     def _on_draw(c: canvas.Canvas) -> None:  # pragma: no cover - visual only
         _draw_suggestions(c)
 
-    _suggestion_canvas.register("draw", _on_draw)
+    _register_if_missing("draw", _on_draw)
 
     def _on_mouse(evt) -> None:  # pragma: no cover - visual only
         """Handle close hotspot, suggestion selection, hover, and drag."""
@@ -736,10 +784,7 @@ def _ensure_suggestion_canvas() -> canvas.Canvas:
             _debug(f"suggestion canvas mouse handler error: {e}")
             return
 
-    try:
-        _suggestion_canvas.register("mouse", _on_mouse)
-    except Exception as e:
-        _debug(f"mouse handler registration failed for suggestion canvas: {e}")
+    _register_if_missing("mouse", _on_mouse)
 
     def _on_scroll(evt) -> None:  # pragma: no cover - visual only
         """Handle scroll events exposed separately from mouse callbacks."""
@@ -750,10 +795,7 @@ def _ensure_suggestion_canvas() -> canvas.Canvas:
             _debug(f"suggestion scroll handler error: {e}")
 
     for evt_name in ("scroll", "wheel", "mouse_scroll", "mouse_wheel", "mousewheel"):
-        try:
-            _suggestion_canvas.register(evt_name, _on_scroll)
-        except Exception as e:
-            _debug(f"suggestion scroll handler registration failed for '{evt_name}': {e}")
+        _register_if_missing(evt_name, _on_scroll)
 
     def _on_key(evt) -> None:  # pragma: no cover - visual only
         try:

@@ -2591,7 +2591,15 @@ class UserActions:
                 return
         except Exception:
             pass
+        try:
+            GPTState.suppress_response_canvas_close = True
+        except Exception:
+            pass
         actions.user.confirmation_gui_close()
+        try:
+            GPTState.suppress_response_canvas_close = False
+        except Exception:
+            pass
         destination.insert(gpt_result)
 
     def gpt_get_source_text(spoken_text: str) -> str:

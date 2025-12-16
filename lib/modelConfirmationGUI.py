@@ -243,10 +243,13 @@ class UserActions:
         ConfirmationGUIState.current_presentation = None
         ConfirmationGUIState.show_advanced_actions = False
         # Close other overlays so confirmation does not leave stray surfaces open.
-        close_common_overlays(
-            actions.user,
-            exclude={"confirmation_gui_close", "model_response_canvas_close"},
-        )
+        # Always go through the shared closer so ordering stays consistent; it
+        # will call model_response_canvas_close unless suppressed.
+        suppress_canvas = getattr(GPTState, "suppress_response_canvas_close", False)
+        exclude = {"confirmation_gui_close"}
+        if suppress_canvas:
+            exclude.add("model_response_canvas_close")
+        close_common_overlays(actions.user, exclude=exclude)
 
     def confirmation_gui_pass_context():
         """Add the model output to the context"""

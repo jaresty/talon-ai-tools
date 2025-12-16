@@ -139,7 +139,10 @@ from ..lib.modelTypes import GPTSystemPrompt
 from ..lib.promptPipeline import PromptPipeline, PromptResult
 from ..lib.promptSession import PromptSession
 from ..lib.recursiveOrchestrator import RecursiveOrchestrator
-from ..lib.modelPatternGUI import DIRECTIONAL_MAP as _DIRECTIONAL_MAP
+from ..lib.modelPatternGUI import (
+    DIRECTIONAL_MAP as _DIRECTIONAL_MAP,
+    _axis_value_from_token,
+)
 from ..lib.axisMappings import axis_key_to_value_map_for
 from ..lib.personaConfig import persona_docs_map, PERSONA_PRESETS, INTENT_PRESETS
 from ..lib.stanceValidation import valid_stance_command as _valid_stance_command

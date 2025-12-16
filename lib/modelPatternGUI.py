@@ -99,6 +99,11 @@ def _axis_value(token: str, mapping: dict[str, str]) -> str:
     return mapping.get(token, token)
 
 
+def _axis_value_from_token(token: str, mapping: dict[str, str]) -> str:
+    """Legacy helper: map a canonical axis token to its hydrated value if present."""
+    return _axis_value(token, mapping)
+
+
 def _debug(msg: str) -> None:
     """Lightweight debug logging for the pattern canvas."""
     try:

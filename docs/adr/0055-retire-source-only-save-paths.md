@@ -1,6 +1,6 @@
 # ADR-0055 – Retire Source-Only Save Paths in Favour of File Destination
 
-Status: Proposed  
+Status: Accepted  
 Date: 2025-03-11  
 Owners: Talon AI tools maintainers
 

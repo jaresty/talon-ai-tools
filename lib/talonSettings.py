@@ -1293,8 +1293,8 @@ mod.setting(
     type=str,
     default="",
     desc=(
-        "Optional directory where 'model source save file' and 'model history save source' "
-        "write markdown files. When empty, Talon defaults to a 'talon-ai-model-sources' "
+        "Optional directory where the 'file' destination (including history saves) "
+        "writes markdown files. When empty, Talon defaults to a 'talon-ai-model-sources' "
         "folder under the Talon user directory."
     ),
 )

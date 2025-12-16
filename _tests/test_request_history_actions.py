@@ -1094,8 +1094,10 @@ if bootstrap is not None:
             path = os.path.join(tmpdir, new_files[0])
             with open(path, "r", encoding="utf-8") as f:
                 content = f.read()
-            self.assertIn("# Source", content)
+            self.assertIn("# Prompt / Context", content)
+            self.assertIn("# Response", content)
             self.assertIn("prompt one", content)
+            self.assertIn("resp1", content)
             self.assertTrue(os.path.realpath(path).startswith(os.path.realpath(tmpdir)), "save dir should respect setting")
 
             notify_calls = [c for c in actions.user.calls if c[0] == "notify"]
@@ -1103,7 +1105,7 @@ if bootstrap is not None:
             self.assertGreaterEqual(
                 len(notify_calls) + len(app_notify_calls),
                 1,
-                "Expected at least one notification about saving history source",
+                "Expected at least one notification about saving history",
             )
             result_path = HistoryActions.gpt_request_history_save_latest_source()
             self.assertIsNotNone(result_path)
@@ -1234,7 +1236,7 @@ if bootstrap is not None:
                 result = HistoryActions.gpt_request_history_last_save_path()
             self.assertIsNone(result)
             notify_mock.assert_called()
-            self.assertIn("model history save source", str(notify_mock.call_args[0][0]))
+            self.assertIn("model history save exchange", str(notify_mock.call_args[0][0]))
 
         def test_history_last_save_path_clears_missing_file(self):
             missing = "/tmp/saved-history-missing.md"
@@ -1245,7 +1247,7 @@ if bootstrap is not None:
                 result = HistoryActions.gpt_request_history_last_save_path()
             self.assertIsNone(result)
             notify_mock.assert_called()
-            self.assertIn("model history save source", str(notify_mock.call_args[0][0]))
+            self.assertIn("model history save exchange", str(notify_mock.call_args[0][0]))
             self.assertEqual(GPTState.last_history_save_path, "")
 
         def test_history_copy_last_save_path_handles_missing_file(self):
@@ -1260,7 +1262,7 @@ if bootstrap is not None:
             self.assertIsNone(result)
             paste_mock.assert_not_called()
             notify_mock.assert_called()
-            self.assertIn("model history save source", str(notify_mock.call_args[0][0]))
+            self.assertIn("model history save exchange", str(notify_mock.call_args[0][0]))
             self.assertEqual(GPTState.last_history_save_path, "")
 
         def test_history_copy_last_save_path_falls_back_when_clipboard_fails(self):
@@ -1394,7 +1396,7 @@ if bootstrap is not None:
             self.assertIsNone(result)
             open_mock.assert_not_called()
             notify_mock.assert_called()
-            self.assertIn("model history save source", str(notify_mock.call_args[0][0]))
+            self.assertIn("model history save exchange", str(notify_mock.call_args[0][0]))
             self.assertEqual(GPTState.last_history_save_path, "")
 
         def test_history_open_last_save_path_clears_state_on_open_failure(self):
@@ -1765,7 +1767,7 @@ if bootstrap is not None:
                 HistoryActions.gpt_request_history_save_latest_source()
 
             notify_calls = [args[0] for args, _ in notify_mock.call_args_list]
-            self.assertTrue(any("Saved history source to" in str(msg) for msg in notify_calls))
+            self.assertTrue(any("Saved history to" in str(msg) for msg in notify_calls))
 
         def test_history_save_creates_unique_files_for_multiple_entries(self):
             tmpdir = tempfile.mkdtemp()

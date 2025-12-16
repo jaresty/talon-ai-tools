@@ -42,7 +42,7 @@ settings():
     # Enable streaming responses by default (set to 0 to disable).
     user.model_streaming = 1
 
-    # Optional: directory where `model source save file` writes markdown files
+    # Optional: directory where the `file` destination (including history saves) writes markdown files
     # If unset, Talon defaults to a `talon-ai-model-sources` folder under the
     # Talon user directory.
     # user.model_source_save_directory = "/path/to/talon-ai-model-sources"

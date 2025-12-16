@@ -455,11 +455,23 @@ def _suggestion_stance_info(suggestion: Suggestion) -> dict[str, object]:
         spoken = (preset_for_command.spoken or "").strip() or preset_for_command.key
         persona_display = f"persona {spoken}"
 
-    stance_display_base = persona_display or stance_command
-    stance_display = stance_display_base
     long_form = _persona_long_form(stance_command, persona_bits)
-    if long_form and long_form.lower() != stance_command.lower():
-        stance_display = f"{stance_display_base} ({long_form})"
+    # Prefer a model-write form for the Say line so it always matches grammar.
+    primary_command = long_form or stance_command or ""
+    secondary_command = None
+    if persona_display and primary_command and not primary_command.lower().startswith("persona "):
+        secondary_command = persona_display
+    if not primary_command:
+        primary_command = persona_display or ""
+    stance_display = primary_command
+    if secondary_command:
+        stance_display = f"{primary_command} ({secondary_command})"
+    if stance_display and not stance_display.lower().startswith(("model write", "persona ")):
+        axes_phrase = " ".join(persona_bits)
+        if axes_phrase:
+            stance_display = f"model write {axes_phrase}"
+            if secondary_command:
+                stance_display = f"{stance_display} ({secondary_command})"
     # Show companion intent command alongside the stance so users see both explicit commands.
     if intent_display and stance_command:
         stance_display = f"{stance_display} · intent {intent_display}"
@@ -1106,7 +1118,14 @@ def _draw_suggestions(c: canvas.Canvas) -> None:  # pragma: no cover - visual on
         has_stance_command = bool(stance_text)
         has_why = bool(why_text)
         has_reasoning = bool(reasoning_text)
-        primary_command = (persona_display or stance_info.get("stance_command", "")).strip()
+        primary_command = (
+            stance_text
+            or persona_display
+            or stance_info.get("stance_command", "")
+            or ""
+        ).strip()
+        if not primary_command and persona_bits:
+            primary_command = "model write " + " ".join(persona_bits)
 
         if (
             has_persona_axes
@@ -1118,6 +1137,8 @@ def _draw_suggestions(c: canvas.Canvas) -> None:  # pragma: no cover - visual on
             row_y += line_h
             # Put the concrete voice command first so users know exactly what to say.
             intent_command = f"intent {intent_display}" if has_intent_axis else ""
+            if intent_command and intent_command.lower() in primary_command.lower():
+                intent_command = ""
             say_parts = [part for part in (primary_command, intent_command) if part]
             if say_parts:
                 row_y = _draw_wrapped(

@@ -26,7 +26,7 @@ if bootstrap is not None:
                 result = HistoryActions.gpt_request_history_open_last_save_path()
             self.assertIsNone(result)
             notify_mock.assert_called()
-            self.assertIn("model history save source", str(notify_mock.call_args[0][0]))
+            self.assertIn("model history save exchange", str(notify_mock.call_args[0][0]))
 
         def test_open_last_save_path_opens_when_available(self) -> None:
             tmpdir = tempfile.mkdtemp()
@@ -52,6 +52,25 @@ if bootstrap is not None:
             self.assertIsNone(result)
             notify_mock.assert_called()
             self.assertEqual(GPTState.last_history_save_path, "")
+
+        def test_open_last_save_path_handles_missing_app_open(self) -> None:
+            tmpdir = tempfile.mkdtemp()
+            path = os.path.join(tmpdir, "saved-history.md")
+            with open(path, "w", encoding="utf-8") as f:
+                f.write("content")
+            GPTState.last_history_save_path = path
+            with (
+                patch("os.path.exists", return_value=True),
+                patch.object(history_actions.actions, "app") as app_actions,
+                patch.object(history_actions, "notify") as notify_mock,
+            ):
+                app_actions.open = None  # type: ignore[attr-defined]
+                result = HistoryActions.gpt_request_history_open_last_save_path()
+
+            expected = os.path.realpath(path)
+            self.assertEqual(result, expected)
+            notify_mock.assert_called()
+            self.assertIn("app.open action is unavailable", str(notify_mock.call_args[0][0]))
 
 else:
     if not TYPE_CHECKING:

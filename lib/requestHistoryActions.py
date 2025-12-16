@@ -236,11 +236,11 @@ def history_summary_lines(entries: Sequence[object]) -> list[str]:
 
 
 def _save_history_prompt_to_file(entry) -> Optional[str]:
-    """Save the given history entry's prompt to a markdown file and return the path.
+    """Save the given history entry's prompt/response to a markdown file and return the path.
 
     Uses the shared `user.model_source_save_directory` setting and a
-    timestamped/slugged filename so history-driven saves align with other
-    source saves.
+    timestamped/slugged filename so history-driven saves align with the
+    unified `file` destination (prompt + response + meta).
     """
     _clear_notify_suppression()
     if entry is None:
@@ -252,8 +252,11 @@ def _save_history_prompt_to_file(entry) -> Optional[str]:
         return None
 
     prompt = (getattr(entry, "prompt", "") or "").strip()
+    response = (getattr(entry, "response", "") or "").strip()
+    meta = (getattr(entry, "meta", "") or "").strip()
+
     if not prompt:
-        notify("GPT: No source content available to save for this history entry")
+        notify("GPT: No prompt content available to save for this history entry")
         try:
             GPTState.last_history_save_path = ""  # type: ignore[attr-defined]
         except Exception:
@@ -342,8 +345,15 @@ def _save_history_prompt_to_file(entry) -> Optional[str]:
             if joined:
                 header_lines.append(f"{axis}_tokens: {joined}")
 
-    body = "# Source\n" + prompt
-    content = "\n".join(header_lines) + "\n---\n\n" + body
+    sections: list[str] = []
+    if prompt:
+        sections.append("# Prompt / Context\n" + prompt)
+    if response:
+        sections.append("# Response\n" + response)
+    if meta:
+        sections.append("# Meta\n" + meta)
+
+    content = "\n".join(header_lines) + "\n---\n\n" + "\n\n".join(sections)
 
     try:
         with open(path, "w", encoding="utf-8") as f:
@@ -356,7 +366,7 @@ def _save_history_prompt_to_file(entry) -> Optional[str]:
             pass
         return None
 
-    notify(f"GPT: Saved history source to {path}")
+    notify(f"GPT: Saved history to {path}")
     try:
         GPTState.last_history_save_path = path  # type: ignore[attr-defined]
     except Exception:
@@ -710,34 +720,13 @@ class UserActions:
         """Return the last saved history source path or notify when unavailable."""
         if _reject_if_request_in_flight():
             return None
-        try:
-            path = getattr(GPTState, "last_history_save_path", "")  # type: ignore[attr-defined]
-        except Exception:
-            path = ""
-        if not path:
-            notify("GPT: No saved history source path available; run 'model history save source' first")
-            return None
-        real_path = os.path.realpath(path)
-        if not os.path.exists(real_path) or not os.path.isfile(real_path):
-            notify(
-                f"GPT: Saved history path not found: {real_path}; rerun 'model history save source'"
-            )
-            try:
-                GPTState.last_history_save_path = ""  # type: ignore[attr-defined]
-            except Exception:
-                pass
-            return None
-        try:
-            GPTState.last_history_save_path = real_path  # type: ignore[attr-defined]
-        except Exception:
-            pass
-        return real_path
+        return _last_history_save_path()
 
     def gpt_request_history_copy_last_save_path():
         """Copy the last saved history source path to the clipboard."""
         if _reject_if_request_in_flight():
             return None
-        path = UserActions.gpt_request_history_last_save_path()
+        path = _last_history_save_path()
         if not path:
             return None
         try:
@@ -759,7 +748,7 @@ class UserActions:
         """Open the last saved history source file if available."""
         if _reject_if_request_in_flight():
             return None
-        path = UserActions.gpt_request_history_last_save_path()
+        path = _last_history_save_path()
         if not path:
             return None
         if not os.path.exists(path):
@@ -769,15 +758,20 @@ class UserActions:
             except Exception:
                 pass
             return None
-        try:
-            actions.app.open(path)  # type: ignore[attr-defined]
-        except Exception as exc:
-            notify(f"GPT: Unable to open history save: {exc}")
+        open_action = getattr(actions.app, "open", None)  # type: ignore[attr-defined]
+        if callable(open_action):
             try:
-                GPTState.last_history_save_path = ""  # type: ignore[attr-defined]
-            except Exception:
-                pass
-            return None
+                open_action(path)
+            except Exception as exc:
+                notify(f"GPT: Unable to open history save: {exc}")
+                try:
+                    GPTState.last_history_save_path = ""  # type: ignore[attr-defined]
+                except Exception:
+                    pass
+                return None
+        else:
+            notify("GPT: Unable to open history save; app.open action is unavailable.")
+            return path
         notify(f"GPT: Opened history save: {path}")
         return path
 
@@ -785,8 +779,34 @@ class UserActions:
         """Show the last saved history source path."""
         if _reject_if_request_in_flight():
             return None
-        path = UserActions.gpt_request_history_last_save_path()
+        path = _last_history_save_path()
         if not path:
             return None
         notify(f"GPT: Last saved history path: {path}")
         return path
+
+
+def _last_history_save_path() -> Optional[str]:
+    """Internal helper for history save path retrieval with notifications."""
+    try:
+        path = getattr(GPTState, "last_history_save_path", "")  # type: ignore[attr-defined]
+    except Exception:
+        path = ""
+    if not path:
+        notify("GPT: No saved history path available; run 'model history save exchange' first")
+        return None
+    real_path = os.path.realpath(path)
+    if not os.path.exists(real_path) or not os.path.isfile(real_path):
+        notify(
+            f"GPT: Saved history path not found: {real_path}; rerun 'model history save exchange'"
+        )
+        try:
+            GPTState.last_history_save_path = ""  # type: ignore[attr-defined]
+        except Exception:
+            pass
+        return None
+    try:
+        GPTState.last_history_save_path = real_path  # type: ignore[attr-defined]
+    except Exception:
+        pass
+    return real_path

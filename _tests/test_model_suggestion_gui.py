@@ -120,7 +120,7 @@ if bootstrap is not None:
 
             self.assertEqual(
                 info["stance_display"],
-                "persona stake (model write as facilitator to stakeholders directly) · intent teach",
+                "model write as facilitator to stakeholders directly (persona stake) · intent teach",
             )
             self.assertEqual(info["persona_display"], "persona stake")
             self.assertEqual(
@@ -160,9 +160,26 @@ if bootstrap is not None:
 
             self.assertEqual(
                 info["stance_display"],
-                "persona stake (model write as facilitator to stakeholders directly) · intent resolve",
+                "model write as facilitator to stakeholders directly (persona stake) · intent resolve",
             )
             self.assertEqual(info["persona_display"], "persona stake")
+
+        def test_stance_display_defaults_to_model_write_when_prefix_missing(self):
+            suggestion = modelSuggestionGUI.Suggestion(
+                name="Audience + tone only",
+                recipe="describe · gist · focus · plain · rog",
+                persona_voice="",
+                persona_audience="to team",
+                persona_tone="directly",
+                intent_purpose="inform",
+                stance_command="",
+            )
+
+            info = modelSuggestionGUI._suggestion_stance_info(suggestion)
+
+            self.assertEqual(
+                info["stance_display"], "model write to team directly · intent inform"
+            )
 
         def test_open_uses_cached_suggestions_and_shows_canvas(self):
             """model_prompt_recipe_suggestions_gui_open populates state and opens the canvas."""

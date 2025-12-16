@@ -219,8 +219,12 @@ Execute the slice end‑to‑end:
     artefact delta is available, skip the loop. After parking an ADR, any new
     loop must start by recording a new task/regression in the ADR/work‑log.
 
-The loop is complete once you have landed a coherent slice that:
+Before wrapping any loop, run an adversarial check to decide whether the
+ADR’s in-repo work is genuinely done; if it is, immediately perform the full
+adversarial completion check on the whole implementation before marking the
+ADR as accepted.
 
+The loop is complete once you have landed a coherent slice that:
 - Lands at least one concrete change in this repo (code, tests, or docs
   that change behaviour in the ADR’s target area or how ADR scope/status is
   applied).

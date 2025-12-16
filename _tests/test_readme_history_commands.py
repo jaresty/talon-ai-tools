@@ -18,7 +18,7 @@ if bootstrap is not None:
             root = Path(__file__).resolve().parents[1]
             readme = root / "readme.md"
             text = readme.read_text(encoding="utf-8")
-            self.assertIn("model history save source", text)
+            self.assertIn("model history save exchange", text)
             self.assertIn("model history copy last save", text)
             self.assertIn("model history open last save", text)
             self.assertIn("model history show last save", text)

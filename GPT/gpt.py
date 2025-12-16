@@ -2,7 +2,6 @@ import json
 import os
 import threading
 from typing import List, Optional, Union, cast
-import datetime
 import re
 
 from ..lib.talonSettings import (
@@ -178,13 +177,6 @@ try:
     from ..lib import requestUI  # noqa: F401
 except Exception:
     pass
-
-
-def _slugify(value: str) -> str:
-    """Create a filesystem-friendly slug from a label."""
-    value = (value or "").strip().lower().replace(" ", "-")
-    value = re.sub(r"[^a-z0-9._-]+", "", value)
-    return value or "source"
 
 
 def _canonical_axis_value(axis: str, raw: str) -> str:
@@ -452,32 +444,6 @@ def _suggest_prompt_text(
         "Content:\n"
         f"{content_text}\n"
     )
-
-
-def _model_source_save_dir() -> str:
-    """Return the base directory for saved model sources.
-
-    Prefers the explicit `user.model_source_save_directory` setting when set;
-    otherwise falls back to a best-effort default rooted at the Talon user
-    directory (or this repository in test environments).
-    """
-    try:
-        base = settings.get("user.model_source_save_directory")
-        if isinstance(base, str) and base.strip():
-            return os.path.expanduser(base)
-    except Exception:
-        pass
-
-    # Default to `<talon user root>/talon-ai-model-sources/` in Talon, or the
-    # repository root + `/talon-ai-model-sources/` under tests.
-    try:
-        current_dir = os.path.dirname(__file__)
-        # GPT/ -> repo or user tools dir; walk up three levels to user root
-        user_root = os.path.dirname(os.path.dirname(os.path.dirname(current_dir)))
-        return os.path.join(user_root, "talon-ai-model-sources")
-    except Exception:
-        # Last-resort fallback: local directory next to this module.
-        return os.path.join(os.path.dirname(__file__), "talon-ai-model-sources")
 
 
 def _set_setting(key: str, value) -> None:
@@ -834,93 +800,6 @@ def _build_static_prompt_docs() -> str:
         "",
     ]
     return "\n".join(heading_lines + [body])
-
-
-def _save_source_snapshot_to_file() -> Optional[str]:
-    """Persist the last model source to a markdown file.
-
-    Returns the filesystem path on success, or None on failure.
-    """
-    # Prefer the cached primary source messages from the last run.
-    messages = getattr(GPTState, "last_source_messages", []) or []
-    source_text: str = ""
-    source_type: str = ""
-
-    if messages:
-        try:
-            source_text = messages_to_string(messages)
-        except Exception:
-            source_text = ""
-
-        source_type = getattr(GPTState, "last_source_key", "") or ""
-    if not source_text:
-        # Fallback to the current default source.
-        try:
-            default_source_key = settings.get("user.model_default_source")
-        except Exception:
-            default_source_key = ""
-        try:
-            source = create_model_source(default_source_key or "")
-            source_text = str(source.get_text() or "")
-            source_type = getattr(source, "modelSimpleSource", "") or str(
-                default_source_key or ""
-            )
-        except Exception as exc:
-            notify(f"GPT: No source available to save ({exc})")
-            return None
-
-    if not source_text.strip():
-        notify("GPT: No source content available to save")
-        return None
-
-    base_dir = _model_source_save_dir()
-    try:
-        os.makedirs(base_dir, exist_ok=True)
-    except Exception as exc:
-        notify(f"GPT: Could not create source directory: {exc}")
-        return None
-
-    now = datetime.datetime.utcnow()
-    timestamp = now.strftime("%Y-%m-%dT%H-%M-%SZ")
-
-    slug_parts: list[str] = []
-    if isinstance(source_type, str) and source_type.strip():
-        slug_parts.append(_slugify(source_type))
-    # Include static prompt/axes when available so files are self-describing.
-    snapshot = last_recipe_snapshot()
-    static_prompt = snapshot.get("static_prompt", "") or getattr(
-        GPTState, "last_static_prompt", ""
-    )
-    if static_prompt:
-        slug_parts.append(_slugify(str(static_prompt)))
-
-    filename = timestamp
-    if slug_parts:
-        filename += "-" + "-".join(slug_parts)
-    filename += ".md"
-    path = os.path.join(base_dir, filename)
-
-    header_lines: list[str] = [
-        f"saved_at: {now.isoformat()}Z",
-    ]
-    if source_type:
-        header_lines.append(f"source_type: {source_type}")
-    # Delegate recipe/axis header details to the suggestion coordinator
-    # snapshot helper so all recap/snapshot surfaces stay aligned.
-    header_lines.extend(recipe_header_lines_from_snapshot(snapshot))
-
-    body = "# Source\n" + source_text
-    content = "\n".join(header_lines) + "\n---\n\n" + body
-
-    try:
-        with open(path, "w", encoding="utf-8") as f:
-            f.write(content)
-    except Exception as exc:
-        notify(f"GPT: Failed to save source file: {exc}")
-        return None
-
-    notify(f"GPT: Saved model source to {path}")
-    return path
 
 
 def gpt_query():
@@ -1344,18 +1223,6 @@ class UserActions:
         _set_setting("user.model_default_channel", "")
         GPTState.user_overrode_channel = False
 
-    def gpt_save_source_to_file() -> None:
-        """Save the last model source to a markdown file.
-
-        Uses the last source snapshot from GPTState when available and falls
-        back to the current default source when no snapshot exists.
-        """
-        if _reject_if_request_in_flight():
-            return
-        path = _save_source_snapshot_to_file()
-        if not path:
-            return
-
     def gpt_select_last() -> None:
         """select all the text in the last GPT output"""
         if _reject_if_request_in_flight():
@@ -1425,8 +1292,8 @@ class UserActions:
         except Exception:
             GPTState.last_source_messages = []
 
-        # Remember the canonical source key (when available) so features like
-        # "model source save file" can include a meaningful source type label.
+        # Remember the canonical source key (when available) so debug source
+        # snapshots can include a meaningful source type label.
         try:
             GPTState.last_source_key = getattr(source, "modelSimpleSource", "")
         except Exception:
@@ -2991,6 +2858,25 @@ def _suggest_prompt_recipes_core_impl(source: ModelSource, subject: str) -> None
                                 failures.append("recipe_invalid")
                                 debug_failures.append(debug_record)
                                 continue
+
+                            def _validated_persona_value(axis: str, raw_value: str) -> str:
+                                token = _canonical_persona_value(axis, raw_value)
+                                if token:
+                                    return token
+                                if str(raw_value or "").strip():
+                                    failures.append(f"{axis}_invalid")
+                                return ""
+
+                            persona_voice = _validated_persona_value(
+                                "voice", persona_voice
+                            )
+                            persona_audience = _validated_persona_value(
+                                "audience", persona_audience
+                            )
+                            persona_tone = _validated_persona_value("tone", persona_tone)
+                            intent_purpose = _validated_persona_value(
+                                "intent", intent_purpose
+                            )
 
                             entry: dict[str, str] = {"name": name, "recipe": recipe}
                             if persona_voice:

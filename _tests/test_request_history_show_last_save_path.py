@@ -25,7 +25,7 @@ if bootstrap is not None:
                 result = HistoryActions.gpt_request_history_show_last_save_path()
             self.assertIsNone(result)
             notify_mock.assert_called()
-            self.assertIn("model history save source", str(notify_mock.call_args[0][0]))
+            self.assertIn("model history save exchange", str(notify_mock.call_args[0][0]))
 
         def test_show_last_save_path_notifies_and_returns_path(self) -> None:
             tmpdir = tempfile.mkdtemp()

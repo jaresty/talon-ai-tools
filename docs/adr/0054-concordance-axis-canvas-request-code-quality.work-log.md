@@ -242,14 +242,14 @@
 
 ## 2025-12-15 – Loop 116 (kind: behaviour/guardrail)
 - Focus: Missing-history-path UX and canonical return from last-save API.
-- Change: `gpt_request_history_last_save_path` now notifies with guidance to rerun `model history save source` when missing, clears stale state on missing files, and still returns canonical paths for existing files; updated copy/open/show guardrails to expect the guidance.
+- Change: `gpt_request_history_last_save_path` now notifies with guidance to rerun `model history save exchange` (renamed from `save source`) when missing, clears stale state on missing files, and still returns canonical paths for existing files; updated copy/open/show guardrails to expect the guidance.
 - Artefact deltas: `lib/requestHistoryActions.py`, `_tests/test_request_history_actions.py`, `_tests/test_request_history_copy_last_save_path.py`, `_tests/test_request_history_open_last_save_path.py`, `_tests/test_request_history_show_last_save_path.py`.
 - Checks: `python3 -m pytest _tests/test_request_history_actions.py _tests/test_request_history_copy_last_save_path.py _tests/test_request_history_open_last_save_path.py _tests/test_request_history_show_last_save_path.py _tests/test_readme_history_commands.py _tests/test_run_guardrails_ci_history_docs.py _tests/test_request_history_talon_commands.py _tests/test_make_help_guardrails.py` (pass).
 - Removal test: reverting would drop the missing-path guidance/clearance and its coverage, weakening ADR-0054 request pipeline resilience and UX for history saves.
 
 ## 2025-12-15 – Loop 117 (kind: behaviour/guardrail)
 - Focus: Ignore directory paths for last history save and clear stale state.
-- Change: `gpt_request_history_last_save_path` now realpaths and returns only existing files, clearing stored state and notifying users to rerun `model history save source` when the path is a directory (or otherwise invalid); added guardrail for directory inputs and kept save helper paths canonical.
+- Change: `gpt_request_history_last_save_path` now realpaths and returns only existing files, clearing stored state and notifying users to rerun `model history save exchange` when the path is a directory (or otherwise invalid); added guardrail for directory inputs and kept save helper paths canonical.
 - Artefact deltas: `lib/requestHistoryActions.py`, `_tests/test_request_history_actions.py`.
 - Checks: `python3 -m pytest _tests/test_request_history_actions.py _tests/test_request_history_copy_last_save_path.py _tests/test_request_history_open_last_save_path.py _tests/test_request_history_show_last_save_path.py _tests/test_readme_history_commands.py _tests/test_run_guardrails_ci_history_docs.py _tests/test_request_history_talon_commands.py _tests/test_make_help_guardrails.py` (pass).
 - Removal test: reverting would allow directory last-save paths to persist/return and drop coverage for clearing/notification, weakening ADR-0054 request pipeline resilience and UX.
@@ -347,7 +347,7 @@
 
 ## 2025-12-15 – Loop 131 (kind: behaviour/guardrail)
 - Focus: Avoid duplicative voice commands; keep drawer CTA internal.
-- Change: Removed the separate Talon command `history drawer save latest`, keeping the existing `history save source` voice entry and wiring the drawer CTA/shortcut to use it internally. Updated Talon grammar guardrail accordingly.
+- Change: Removed the separate Talon command `history drawer save latest`, keeping the existing `history save exchange` voice entry (renamed from `history save source`) and wiring the drawer CTA/shortcut to use it internally. Updated Talon grammar guardrail accordingly.
 - Artefact deltas: `GPT/request-history.talon`, `_tests/test_request_history_talon_commands.py`.
 - Checks: `python3 -m pytest _tests/test_request_history_actions.py _tests/test_request_history_copy_last_save_path.py _tests/test_request_history_open_last_save_path.py _tests/test_request_history_show_last_save_path.py _tests/test_request_history_drawer.py _tests/test_request_history_talon_commands.py _tests/test_readme_history_commands.py _tests/test_run_guardrails_ci_history_docs.py _tests/test_make_help_guardrails.py` (pass).
 - Removal test: reverting would reintroduce a redundant voice command, drift from the single canonical save phrase, and drop coverage that the Talon grammar only lists the supported commands.
@@ -977,7 +977,7 @@
 
 ## 2025-12-15 – Loop 100 (kind: behaviour/docs)
 - Focus: Document history save/show/copy/open commands in README.
-- Change: Updated `readme.md` to describe `model history save source`, `model history copy last save` / `model history open last save` / `model history show last save`.
+- Change: Updated `readme.md` to describe `model history save exchange`, `model history copy last save` / `model history open last save` / `model history show last save`.
 - Artefact delta: `readme.md`.
 - Checks: `python3 -m pytest _tests/test_make_help_guardrails.py` (pass; ensures help text still includes guardrail targets).
 - Removal test: reverting would hide the new history save/copy/open/show commands from README, reducing discoverability and weakening ADR-0054 UI integration.
@@ -1102,7 +1102,7 @@
 
 ## 2025-12-15 – Loop 100 (kind: behaviour/docs)
 - Focus: Document history save/show/copy/open commands in README.
-- Change: Updated `readme.md` to describe `model history save source`, `model history copy/open/show last save`.
+- Change: Updated `readme.md` to describe `model history save exchange`, `model history copy/open/show last save`.
 - Artefact delta: `readme.md`.
 - Checks: `python3 -m pytest _tests/test_make_help_guardrails.py` (pass; ensures help text still includes guardrail targets).
 - Removal test: reverting would hide the new history save/copy/open/show commands from README, reducing discoverability and weakening ADR-0054 UI integration.
@@ -2235,7 +2235,7 @@
 
 ## 2025-12-15 – Loop 306 (kind: behaviour/docs)
 - Focus: Surface the directional-lens requirement for history saves in user-facing docs.
-- Change: Updated the README history command description to note that `model history save source` is rejected when the entry lacks a directional lens, matching the guardrail added in recent loops.
+- Change: Updated the README history command description to note that `model history save exchange` is rejected when the entry lacks a directional lens, matching the guardrail added in recent loops.
 - Artefact delta: `readme.md`.
 - Checks (this loop): not run (doc-only change).
 - Removal test: reverting would hide the directional-lens requirement from users, inviting failed history saves and weakening the request-pipeline visibility promised by ADR-0054.

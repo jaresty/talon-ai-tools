@@ -104,6 +104,49 @@ if bootstrap is not None:
             self.assertEqual(second["name"], "Invalid stance")
             self.assertNotIn("stance_command", second)
 
+        def test_json_suggestions_validate_persona_axes(self) -> None:
+            # Persona/intent fields should be canonicalised to known tokens; unknowns are dropped.
+            payload = {
+                "suggestions": [
+                    {
+                        "name": "Bad persona",
+                        "recipe": "describe · gist · edges · rog",
+                        "persona_voice": "as product manager",  # invalid token (canonical is 'as PM')
+                        "persona_audience": "to team",  # valid token
+                        "persona_tone": "firmly",  # invalid token
+                        "intent_purpose": "for collaborating",  # invalid token
+                        "stance_command": "model write as product manager to team firmly",
+                        "why": "Ensure invalid persona tokens do not leak through.",
+                        "reasoning": "Deliberately uses invalid persona/intent tokens.",
+                    }
+                ]
+            }
+            self.pipeline.complete.return_value = PromptResult.from_messages(
+                [format_message(json.dumps(payload))]
+            )
+
+            with (
+                patch.object(gpt_module, "create_model_source") as create_source,
+                patch.object(gpt_module, "PromptSession") as session_cls,
+            ):
+                source = MagicMock()
+                source.get_text.return_value = "content"
+                create_source.return_value = source
+                session = session_cls.return_value
+                session._destination = "paste"
+
+                gpt_module.UserActions.gpt_suggest_prompt_recipes("subject")
+
+            self.assertEqual(len(GPTState.last_suggested_recipes), 1)
+            suggestion = GPTState.last_suggested_recipes[0]
+            self.assertEqual(suggestion["name"], "Bad persona")
+            self.assertNotIn("persona_voice", suggestion)
+            self.assertEqual(suggestion.get("persona_audience"), "to team")
+            self.assertNotIn("persona_tone", suggestion)
+            self.assertNotIn("intent_purpose", suggestion)
+            # Stance should also be rejected because it uses an invalid persona token.
+            self.assertNotIn("stance_command", suggestion)
+
         def test_json_suggestions_without_reasoning_still_parse(self) -> None:
             # Payload omits reasoning entirely; validation should still succeed.
             payload = {

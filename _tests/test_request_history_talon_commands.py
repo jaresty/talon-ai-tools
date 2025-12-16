@@ -18,7 +18,7 @@ if bootstrap is not None:
             root = Path(__file__).resolve().parents[1]
             talon_file = root / "GPT" / "request-history.talon"
             text = talon_file.read_text(encoding="utf-8")
-            self.assertIn("history save source", text)
+            self.assertIn("history save exchange", text)
             self.assertIn("history copy last save", text)
             self.assertIn("history open last save", text)
             self.assertIn("history show last save", text)

@@ -254,19 +254,42 @@ def split_answer_and_meta(text: str) -> tuple[str, str]:
         return "", ""
 
     lines = text.split("\n")
-    split_index = None
+    # Track both the line index and character offset where the heading starts
+    # so we can handle cases where '## Model interpretation' appears mid-line
+    # after emojis or other content.
+    split_line_idx: int | None = None
+    split_col: int | None = None
 
-    heading_pattern = re.compile(r"^\s*#+\s*model interpretation\b", re.IGNORECASE)
+    # Match a 'Model interpretation' heading whether or not Markdown '#' markers
+    # are still present (some callers strip Markdown before splitting).
+    heading_pattern = re.compile(r"(?:#+\s*)?model interpretation\b", re.IGNORECASE)
     for idx, line in enumerate(lines):
-        if heading_pattern.match(line):
-            split_index = idx
+        match = heading_pattern.search(line)
+        if match:
+            split_line_idx = idx
+            split_col = match.start()
             break
 
-    if split_index is None:
+    if split_line_idx is None or split_col is None:
         return text, ""
 
-    answer = "\n".join(lines[:split_index]).rstrip()
-    meta = "\n".join(lines[split_index:]).lstrip()
+    # Everything before the heading (including any text earlier on the same
+    # line, such as an emoji-only poem) is treated as answer. The heading and
+    # everything after it are treated as meta.
+    before_lines = lines[:split_line_idx]
+    heading_line = lines[split_line_idx]
+    if split_col > 0:
+        leading = heading_line[:split_col].rstrip()
+        if leading:
+            before_lines.append(leading)
+        meta_first = heading_line[split_col:].lstrip()
+    else:
+        meta_first = heading_line.lstrip()
+
+    meta_lines = [meta_first] + lines[split_line_idx + 1 :]
+
+    answer = "\n".join(before_lines).rstrip()
+    meta = "\n".join(meta_lines).lstrip()
     return answer, meta
 
 
@@ -319,7 +342,9 @@ def notify(message: str):
             # Optional import to pick up the module-level flag if available.
             from talon_user.GPT import gpt as gpt_module  # type: ignore
 
-            suppress_id = getattr(gpt_module, "_suppress_inflight_notify_request_id", None)
+            suppress_id = getattr(
+                gpt_module, "_suppress_inflight_notify_request_id", None
+            )
         except Exception:
             pass
 
@@ -662,7 +687,9 @@ def build_system_prompt_messages(
     context_lines: list[str] = []
     if include_request_context:
         try:
-            context_lines = _build_request_context(destination if destination is not None else "")
+            context_lines = _build_request_context(
+                destination if destination is not None else ""
+            )
         except Exception:
             context_lines = []
     for line in context_lines:
@@ -1299,7 +1326,10 @@ def send_request(max_attempts: int = 10):
 
     def _clear_notify_suppress():
         try:
-            if getattr(GPTState, "suppress_inflight_notify_request_id", None) == request_id:
+            if (
+                getattr(GPTState, "suppress_inflight_notify_request_id", None)
+                == request_id
+            ):
                 GPTState.suppress_inflight_notify_request_id = None
         except Exception:
             pass

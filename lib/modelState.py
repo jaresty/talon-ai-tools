@@ -110,6 +110,8 @@ class GPTState:
     last_history_save_path: ClassVar[str] = ""
     # When True, confirmation_gui_close should avoid closing the response canvas.
     suppress_response_canvas_close: ClassVar[bool] = False
+    # True when the canvas-based response viewer is currently open.
+    response_canvas_showing: ClassVar[bool] = False
 
     @classmethod
     def start_debug(cls):

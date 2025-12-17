@@ -314,6 +314,10 @@ def _ensure_response_canvas() -> canvas.Canvas:
             pass
         try:
             ResponseCanvasState.showing = False
+            try:
+                GPTState.response_canvas_showing = False
+            except Exception:
+                pass
         except Exception:
             pass
 
@@ -1388,20 +1392,17 @@ def _default_draw_response(c: canvas.Canvas) -> None:  # pragma: no cover - visu
     text_to_confirm_raw = getattr(GPTState, "text_to_confirm", "")
     text_to_confirm = _coerce_text(text_to_confirm_raw)
     last_response = _coerce_text(recap_snapshot.get("response", ""))
-    use_streaming_text = streaming_text and (
-        (inflight and prefer_progress)
-        or streaming_errored
-        or (streaming_completed and not text_to_confirm and not last_response)
-    )
-    answer = (
-        streaming_text
-        if use_streaming_text
-        else (
-            text_to_confirm
-            if inflight and prefer_progress
-            else (text_to_confirm or last_response or streaming_text)
-        )
-    )
+
+    # Use the same text pipeline for streaming and final views by preferring
+    # the confirmation text (which has already gone through meta/markdown
+    # splitting) when available. Fall back to the last recorded response and
+    # then, as a last resort, the raw streaming text.
+    if text_to_confirm:
+        answer = text_to_confirm
+    elif last_response:
+        answer = last_response
+    else:
+        answer = streaming_text
 
     # Limit debug logging to inflight progress draws; stay silent on DONE/IDLE.
     # Debug logging silenced for steady state; re-enable selectively when needed.
@@ -1616,6 +1617,10 @@ class UserActions:
         if ResponseCanvasState.showing:
             return
         ResponseCanvasState.showing = True
+        try:
+            GPTState.response_canvas_showing = True
+        except Exception:
+            pass
         ResponseCanvasState.scroll_y = 0.0
         ResponseCanvasState.max_scroll = 1e9
         ResponseCanvasState.lines_cache_key = None
@@ -1638,6 +1643,10 @@ class UserActions:
         if ResponseCanvasState.showing:
             _log_canvas_close("toggle close")
             ResponseCanvasState.showing = False
+            try:
+                GPTState.response_canvas_showing = False
+            except Exception:
+                pass
             ResponseCanvasState.scroll_y = 0.0
             ResponseCanvasState.max_scroll = 1e9
             ResponseCanvasState.lines_cache_key = None
@@ -1660,6 +1669,10 @@ class UserActions:
 
         close_common_overlays(actions.user, exclude={"model_response_canvas_close"})
         ResponseCanvasState.showing = True
+        try:
+            GPTState.response_canvas_showing = True
+        except Exception:
+            pass
         ResponseCanvasState.scroll_y = 0.0
         ResponseCanvasState.max_scroll = 1e9
         ResponseCanvasState.lines_cache_key = None
@@ -1686,6 +1699,10 @@ class UserActions:
             pass
         _log_canvas_close("explicit close")
         ResponseCanvasState.showing = False
+        try:
+            GPTState.response_canvas_showing = False
+        except Exception:
+            pass
         ResponseCanvasState.scroll_y = 0.0
         ResponseCanvasState.max_scroll = 1e9
         ResponseCanvasState.lines_cache_key = None

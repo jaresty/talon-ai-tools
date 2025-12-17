@@ -103,10 +103,14 @@ def apply_canvas_typeface(
     if families is None:
         families = DEFAULT_CANVAS_FAMILIES
 
+    # Treat an override as the first candidate in the family list rather than
+    # a hard replacement so we still fall back to emoji-capable defaults (for
+    # example, Apple Color Emoji) when the preferred monospace font lacks
+    # glyphs for some codepoints.
+    candidate_families: list[str] = []
     if override_family:
-        candidate_families = [str(override_family)]
-    else:
-        candidate_families = families
+        candidate_families.append(str(override_family))
+    candidate_families.extend(families)
 
     selected: Optional[str] = None
     for fam in candidate_families:
@@ -187,6 +191,7 @@ def draw_text_with_emoji_fallback(
     *,
     approx_char_width: float = 8.0,
     emoji_families: Optional[list[str]] = None,
+    debug: Optional[Callable[[str], None]] = None,
 ) -> None:
     """Draw text, using an emoji-capable typeface for emoji runs when possible.
 
@@ -212,6 +217,14 @@ def draw_text_with_emoji_fallback(
         return
 
     runs = _split_emoji_runs(text)
+    if not runs:
+        draw_text(text, x, y)
+        return
+
+    # Unified path: handle mixed and all-emoji lines the same way by
+    # consistently splitting into runs and swapping typefaces per run. This
+    # avoids special-casing all-emoji lines while still allowing emoji-aware
+    # fonts where available.
     if len(runs) <= 1:
         draw_text(text, x, y)
         return
@@ -224,17 +237,72 @@ def draw_text_with_emoji_fallback(
     families = emoji_families or DEFAULT_EMOJI_FAMILIES
     cursor_x = x
 
+    def _describe_typeface() -> str:
+        if paint is None:
+            return "paint=None"
+        try:
+            tf = getattr(paint, "typeface", None)
+        except Exception:
+            return "typeface=<unavailable>"
+        if tf is None:
+            return "typeface=None"
+        # Try common Skia-style family name accessors first.
+        name = None
+        try:
+            get_family = getattr(tf, "getFamilyName", None)
+            if callable(get_family):
+                name = get_family()
+            else:
+                name = getattr(tf, "familyName", None)
+        except Exception:
+            name = None
+        ident = f"id={id(tf)}"
+        # String-based typefaces (older runtimes) just expose the family name.
+        if isinstance(tf, str):
+            return f"typeface=str:{tf!r} {ident}"
+        if name:
+            return f"typeface=skia:{name!r} {ident}"
+        # Fall back to the class name and repr so we can still distinguish
+        # different objects even when the family name API is unavailable.
+        try:
+            tf_repr = repr(tf)
+        except Exception:
+            tf_repr = "<repr-unavailable>"
+        return f"typeface={type(tf).__name__!s} {ident} repr={tf_repr!r}"
+
+    # Optional debug logging for emoji runs; enabled only when a debug callback
+    # is provided so normal usage stays quiet.
+    if debug is not None:
+        try:
+            debug(
+                f"emoji_draw text={text!r} runs="
+                + "|".join(("E:" if is_e else "T:") + seg for (is_e, seg) in runs)
+            )
+            debug(f"emoji_draw initial {_describe_typeface()}")
+        except Exception:
+            pass
+
     for is_emoji, segment in runs:
         if not segment:
             continue
 
+        # For now, favour a simple, deterministic rule: use an explicit
+        # emoji-capable typeface for emoji runs, and restore the original
+        # base/canvas typeface for non-emoji runs. Glyph-based detection can be
+        # unreliable when the base font claims coverage but still renders tofu.
         if is_emoji and families:
-            # Try the configured emoji families; if all fail we still draw
-            # with the existing typeface so content is visible.
             applied = False
             for family in families:
                 if _try_set_typeface(paint, family):
                     applied = True
+                    if debug is not None:
+                        try:
+                            debug(
+                                f"emoji_draw applied family={family!r} for segment={segment!r} "
+                                f"-> {_describe_typeface()}"
+                            )
+                        except Exception:
+                            pass
                     break
             if not applied and original_typeface is not None:
                 try:
@@ -242,7 +310,8 @@ def draw_text_with_emoji_fallback(
                 except Exception:
                     pass
         else:
-            # Restore the original typeface for non-emoji spans.
+            # Non-emoji or no emoji families configured: stick with the
+            # original/base typeface so normal text stays consistent.
             if original_typeface is not None:
                 try:
                     paint.typeface = original_typeface
@@ -267,4 +336,3 @@ def draw_text_with_emoji_fallback(
             paint.typeface = original_typeface
         except Exception:
             pass
-

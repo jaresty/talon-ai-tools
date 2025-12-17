@@ -36,11 +36,7 @@ if bootstrap is not None:
             self.assertIn("Meta line two", meta)
 
         def test_interpretation_heading_detection_is_case_insensitive(self) -> None:
-            text = (
-                "Body\n"
-                "## MODEL INTERPRETATION\n"
-                "Meta content"
-            )
+            text = "Body\n## MODEL INTERPRETATION\nMeta content"
 
             answer, meta = split_answer_and_meta(text)
 
@@ -48,11 +44,7 @@ if bootstrap is not None:
             self.assertTrue(meta.strip().startswith("## MODEL INTERPRETATION"))
 
         def test_leading_whitespace_before_heading_is_ignored(self) -> None:
-            text = (
-                "Body\n"
-                "   ## Model interpretation\n"
-                "Meta content"
-            )
+            text = "Body\n   ## Model interpretation\nMeta content"
 
             answer, meta = split_answer_and_meta(text)
 
@@ -60,11 +52,7 @@ if bootstrap is not None:
             self.assertIn("Model interpretation", meta)
 
         def test_does_not_split_on_unrelated_interpretation_heading(self) -> None:
-            text = (
-                "Body\n"
-                "## Interpretation of results\n"
-                "Still part of the main answer"
-            )
+            text = "Body\n## Interpretation of results\nStill part of the main answer"
 
             answer, meta = split_answer_and_meta(text)
 
@@ -75,9 +63,7 @@ if bootstrap is not None:
 
         def test_splits_when_heading_has_suffix_text(self) -> None:
             text = (
-                "Body\n"
-                "## Model interpretation- Interpretation: details\n"
-                "Meta content"
+                "Body\n## Model interpretation- Interpretation: details\nMeta content"
             )
 
             answer, meta = split_answer_and_meta(text)
@@ -98,8 +84,25 @@ if bootstrap is not None:
             self.assertEqual(answer.strip(), "Body")
             self.assertTrue(meta.strip().startswith("###   Model interpretation"))
 
+        def test_splits_when_heading_and_body_share_line_with_emoji(self) -> None:
+            text = (
+                "📷✨🌱\n"
+                "📷✨🌱## Model interpretation- Approach: explain emoji poem.\n"
+                "Meta body line.\n"
+            )
+
+            answer, meta = split_answer_and_meta(text)
+
+            # Answer keeps only the emoji runs from the first and second lines.
+            self.assertEqual(answer.strip(), "📷✨🌱\n📷✨🌱")
+            # Meta starts at the '## Model interpretation- …' heading.
+            self.assertIn("Model interpretation", meta)
+            self.assertIn("Meta body line.", meta)
+
+
 else:
     if not TYPE_CHECKING:
+
         class SplitAnswerAndMetaTests(unittest.TestCase):
             @unittest.skip("Test harness unavailable outside unittest runs")
             def test_placeholder(self) -> None:

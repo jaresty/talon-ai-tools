@@ -21,6 +21,19 @@ def _set_destination_kind(kind: str) -> None:
         pass
 
 
+def _response_canvas_showing() -> bool:
+    """Return True when the canvas-based response viewer is currently open.
+
+    When the response window is showing, destination insertions that would
+    normally paste or type into the target application should instead route
+    through the window/confirmation flow so users can review output first.
+    """
+    try:
+        return bool(getattr(GPTState, "response_canvas_showing", False))
+    except Exception:
+        return False
+
+
 PromptPayload = Union[PromptResult, Sequence[GPTItem], GPTItem]
 
 
@@ -360,7 +373,8 @@ class File(ModelDestination):
             slug_bits.append(static_prompt)
         last_completeness = axis_join(
             axes_tokens,
-            "completeness", getattr(GPTState, "last_completeness", "") or ""
+            "completeness",
+            getattr(GPTState, "last_completeness", "") or "",
         )
         last_scope = axis_join(
             axes_tokens, "scope", getattr(GPTState, "last_scope", "") or ""
@@ -523,7 +537,8 @@ class Browser(ModelDestination):
             axis_parts.append(static_prompt)
         last_completeness = axis_join(
             axes_tokens,
-            "completeness", getattr(GPTState, "last_completeness", "") or ""
+            "completeness",
+            getattr(GPTState, "last_completeness", "") or "",
         )
         last_scope = axis_join(
             axes_tokens, "scope", getattr(GPTState, "last_scope", "") or ""
@@ -560,7 +575,15 @@ class Browser(ModelDestination):
         # prompt + directional), prefer the richer last_recipe string when present.
         if last_recipe_value:
             populated_axes = sum(
-                1 for v in (last_completeness, last_scope, last_method, last_form, last_channel) if v
+                1
+                for v in (
+                    last_completeness,
+                    last_scope,
+                    last_method,
+                    last_form,
+                    last_channel,
+                )
+                if v
             )
             if len(axis_parts) < 4 or populated_axes < 3:
                 recipe = last_recipe_value
@@ -656,6 +679,14 @@ class Paste(ModelDestination):
 
     def insert(self, gpt_output):
         result = _coerce_prompt_result(gpt_output)
+
+        # When the response canvas is already open, treat paste as a logical
+        # window destination so users can review the output instead of
+        # inserting it directly into the target application.
+        if _response_canvas_showing():
+            _set_destination_kind("window")
+            return super().insert(result)
+
         if (
             getattr(self, "is_default_destination", False)
             and not self.inside_textarea()
@@ -672,6 +703,14 @@ class ForcePaste(ModelDestination):
 
     def insert(self, gpt_output):
         result = _coerce_prompt_result(gpt_output)
+
+        # Even for force-paste, if the response canvas is already open we
+        # respect the user's review intent and route through the window
+        # instead of typing into the target application.
+        if _response_canvas_showing():
+            _set_destination_kind("window")
+            return super().insert(result)
+
         GPTState.last_was_pasted = True
         presentation = result.presentation_for("paste")
         actions.user.paste(presentation.paste_text)

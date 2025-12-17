@@ -32,13 +32,21 @@ ctx = Context()
 
 
 class ResponseCanvasState:
-    """State specific to the canvas-based response viewer."""
+    """State specific to the canvas-based response viewer.
+
+    The scroll implementation for the answer body does a fair amount of
+    line-wrapping work on each draw. To keep scroll and scrollbar updates
+    responsive for long responses, we cache the wrapped lines keyed by the
+    answer text and an approximate character width.
+    """
 
     showing: bool = False
     scroll_y: float = 0.0
     meta_expanded: bool = False
     max_scroll: float = 1e9
-    max_scroll: float = 1e9
+    # Cache for wrapped answer lines so scroll draws stay lightweight.
+    lines_cache_key: tuple[str, int] | None = None
+    lines_cache: list[str] | None = None
     # Request id the user pinned when expanding meta; used to avoid collapsing
     # within the same request even if ids firm up mid-stream.
     meta_pinned_request_id: str = ""
@@ -47,6 +55,7 @@ class ResponseCanvasState:
 
 _EVENT_LOG_LIMIT = 0  # disable event logging in production
 _event_log_count = 0
+_last_draw_error: Optional[str] = None
 
 
 def _request_is_in_flight() -> bool:
@@ -269,7 +278,21 @@ def _ensure_response_canvas() -> canvas.Canvas:
     """Create the response canvas if needed and register handlers."""
     global _response_canvas, _response_handlers_registered, _last_hide_handler
     _reset_event_log()
-    last_draw_error: Optional[str] = None
+
+    def _reset_response_scroll_state() -> None:
+        """Reset scroll-related state when the canvas is hidden or reopened.
+
+        This keeps wrapped-line caches in sync with the current answer text
+        and avoids carrying large cached lists across unrelated responses.
+        """
+        try:
+            ResponseCanvasState.showing = False
+            ResponseCanvasState.scroll_y = 0.0
+            ResponseCanvasState.max_scroll = 1e9
+            ResponseCanvasState.lines_cache_key = None
+            ResponseCanvasState.lines_cache = None
+        except Exception:
+            pass
 
     def _hide_handler():
         try:
@@ -280,8 +303,7 @@ def _ensure_response_canvas() -> canvas.Canvas:
         try:
             reset_ok = not getattr(ResponseCanvasState, "suppress_hide_reset", False)
             if reset_ok:
-                ResponseCanvasState.showing = False
-                ResponseCanvasState.scroll_y = 0.0
+                _reset_response_scroll_state()
                 ResponseCanvasState.meta_expanded = False
                 ResponseCanvasState.meta_pinned_request_id = ""
                 try:
@@ -354,18 +376,18 @@ def _ensure_response_canvas() -> canvas.Canvas:
         _response_canvas = canvas.Canvas.from_screen(screen)
 
     def _on_draw(c: canvas.Canvas) -> None:  # pragma: no cover - visual only
-        nonlocal last_draw_error
+        global _last_draw_error
         for handler in list(_response_draw_handlers):
             try:
                 handler(c)
             except Exception as e:
                 # Log the first error per draw; suppress repeats until next draw.
-                if last_draw_error != str(e):
+                if _last_draw_error != str(e):
                     try:
                         _debug(f"response canvas draw handler error: {e}")
                     except Exception:
                         pass
-                    last_draw_error = str(e)
+                    _last_draw_error = str(e)
 
     if _response_canvas is not None:
         try:
@@ -818,11 +840,7 @@ def _default_draw_response(c: canvas.Canvas) -> None:  # pragma: no cover - visu
     approx_char = 8
     state = _current_request_state()
     phase = getattr(state, "phase", RequestPhase.IDLE)
-    request_id = (
-        getattr(state, "request_id", None)
-        or getattr(GPTState, "last_request_id", "")
-        or ""
-    )
+    state_request_id = getattr(state, "request_id", None) or ""
     cancel_requested = getattr(state, "cancel_requested", False)
     prefer_progress = _prefer_canvas_progress()
     inflight = phase in (
@@ -906,7 +924,14 @@ def _default_draw_response(c: canvas.Canvas) -> None:  # pragma: no cover - visu
     # token-based even if older code paths stored a verbose last_recipe.
     recipe_snapshot = last_recipe_snapshot()
     recap_snapshot = last_recap_snapshot()
-    _reset_meta_if_new_signature(recipe_snapshot, recap_snapshot, request_id)
+    # Use the request id from the current request state when deciding whether
+    # meta should reset; when the id is missing, preserve the previous pinned
+    # id instead of falling back to any global last_request_id.
+    _reset_meta_if_new_signature(
+        recipe_snapshot,
+        recap_snapshot,
+        state_request_id,
+    )
     recipe = recipe_snapshot.get("recipe", "") or ""
     static_prompt = recipe_snapshot.get("static_prompt", "") or ""
     axes_tokens = {
@@ -1411,7 +1436,20 @@ def _default_draw_response(c: canvas.Canvas) -> None:  # pragma: no cover - visu
     # including basic bullet formatting, wrapping, and blank-line compression.
     approx_char_width = 8
     max_chars = max(int((rect.width - 80) // approx_char_width), 40) if rect else 80
-    lines = _format_answer_lines(answer, max_chars)
+
+    # Cache wrapped lines so scroll and scrollbar updates stay responsive even
+    # for long answers. The cache key is the current answer text plus the
+    # approximate wrap width so resizes or very different layouts naturally
+    # invalidate it.
+    cache_key = (answer, max_chars)
+    lines_cache_key = getattr(ResponseCanvasState, "lines_cache_key", None)
+    cached_lines = getattr(ResponseCanvasState, "lines_cache", None)
+    if lines_cache_key != cache_key or not cached_lines:
+        lines = _format_answer_lines(answer, max_chars)
+        ResponseCanvasState.lines_cache_key = cache_key
+        ResponseCanvasState.lines_cache = list(lines)
+    else:
+        lines = cached_lines
 
     # Compute content height and clamp scroll offset so we cannot scroll past
     # the end of the content.
@@ -1580,6 +1618,8 @@ class UserActions:
         ResponseCanvasState.showing = True
         ResponseCanvasState.scroll_y = 0.0
         ResponseCanvasState.max_scroll = 1e9
+        ResponseCanvasState.lines_cache_key = None
+        ResponseCanvasState.lines_cache = None
         # Always start with meta collapsed; the band still shows a short
         # summary so the initial view is response-first.
         ResponseCanvasState.meta_expanded = False
@@ -1600,6 +1640,8 @@ class UserActions:
             ResponseCanvasState.showing = False
             ResponseCanvasState.scroll_y = 0.0
             ResponseCanvasState.max_scroll = 1e9
+            ResponseCanvasState.lines_cache_key = None
+            ResponseCanvasState.lines_cache = None
             ResponseCanvasState.meta_expanded = False
             ResponseCanvasState.meta_pinned_request_id = ""
             try:
@@ -1620,6 +1662,8 @@ class UserActions:
         ResponseCanvasState.showing = True
         ResponseCanvasState.scroll_y = 0.0
         ResponseCanvasState.max_scroll = 1e9
+        ResponseCanvasState.lines_cache_key = None
+        ResponseCanvasState.lines_cache = None
         ResponseCanvasState.meta_expanded = False
         ResponseCanvasState.meta_pinned_request_id = ""
         try:
@@ -1644,6 +1688,8 @@ class UserActions:
         ResponseCanvasState.showing = False
         ResponseCanvasState.scroll_y = 0.0
         ResponseCanvasState.max_scroll = 1e9
+        ResponseCanvasState.lines_cache_key = None
+        ResponseCanvasState.lines_cache = None
         ResponseCanvasState.meta_expanded = False
         ResponseCanvasState.meta_pinned_request_id = ""
         try:

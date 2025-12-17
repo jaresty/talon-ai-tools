@@ -27,8 +27,15 @@ if bootstrap is not None:
         def setUp(self) -> None:
             ResponseCanvasState.showing = False
             ResponseCanvasState.scroll_y = 0.0
+            ResponseCanvasState.meta_expanded = False
+            ResponseCanvasState.meta_pinned_request_id = ""
             GPTState.text_to_confirm = ""
             GPTState.last_streaming_snapshot = {}
+            try:
+                import talon_user.lib.modelResponseCanvas as mrc
+                mrc._last_meta_signature = None  # type: ignore[attr-defined]
+            except Exception:
+                modelResponseCanvas._last_meta_signature = None  # type: ignore[attr-defined]
             self._state_patch = patch.object(
                 modelResponseCanvas,
                 "current_state",
@@ -55,6 +62,24 @@ if bootstrap is not None:
             UserActions.model_response_canvas_toggle()
             self.assertFalse(ResponseCanvasState.showing)
 
+        def test_refresh_preserves_expanded_meta(self) -> None:
+            """Hiding/showing during refresh should not collapse meta."""
+            GPTState.last_response = "line one\nline two"
+            ResponseCanvasState.meta_expanded = True
+            ResponseCanvasState.meta_pinned_request_id = "req-refresh"
+            canvas_obj = _ensure_response_canvas()
+            if not hasattr(canvas_obj, "rect") or canvas_obj.rect is None:
+                canvas_obj.rect = type(
+                    "R", (), {"x": 0, "y": 0, "width": 400, "height": 300}
+                )()
+            canvas_obj.show()
+            ResponseCanvasState.showing = True
+
+            UserActions.model_response_canvas_refresh()
+
+            self.assertTrue(ResponseCanvasState.meta_expanded)
+            self.assertEqual(ResponseCanvasState.meta_pinned_request_id, "req-refresh")
+
         def test_open_without_answer_is_safe(self) -> None:
             GPTState.last_response = ""
             _ensure_response_canvas()
@@ -66,25 +91,175 @@ if bootstrap is not None:
         def test_meta_collapses_on_new_recap_signature(self) -> None:
             """Expanded meta should reset when a new response/meta is rendered."""
             ResponseCanvasState.meta_expanded = True
-            modelResponseCanvas._last_meta_signature = ("old", "old_meta", "old_recipe")  # type: ignore[attr-defined]
+            ResponseCanvasState.meta_pinned_request_id = "req-old"
+            modelResponseCanvas._last_meta_signature = (  # type: ignore[attr-defined]
+                "req-old",
+                "old",
+                "old_meta",
+                "old_recipe",
+            )
             GPTState.last_response = "new response text"
             GPTState.last_meta = "meta block"
             GPTState.last_recipe = "new recipe"
-            canvas_obj = _ensure_response_canvas()
-            if not hasattr(canvas_obj, "rect") or canvas_obj.rect is None:
-                canvas_obj.rect = type(
-                    "R", (), {"x": 0, "y": 0, "width": 500, "height": 400}
-                )()
-            callbacks = getattr(canvas_obj, "_callbacks", {})
-            draw_cbs = callbacks.get("draw") or []
-            for cb in draw_cbs:
-                cb(canvas_obj)
+            with patch.object(
+                modelResponseCanvas,
+                "_current_request_state",
+                return_value=RequestState(request_id="req-new"),
+            ):
+                canvas_obj = _ensure_response_canvas()
+                if not hasattr(canvas_obj, "rect") or canvas_obj.rect is None:
+                    canvas_obj.rect = type(
+                        "R", (), {"x": 0, "y": 0, "width": 500, "height": 400}
+                    )()
+                callbacks = getattr(canvas_obj, "_callbacks", {})
+                draw_cbs = callbacks.get("draw") or []
+                for cb in draw_cbs:
+                    cb(canvas_obj)
 
             self.assertFalse(ResponseCanvasState.meta_expanded)
+            self.assertEqual(ResponseCanvasState.meta_pinned_request_id, "")
             self.assertEqual(
                 modelResponseCanvas._last_meta_signature,  # type: ignore[attr-defined]
-                ("new response text", "meta block", "new recipe"),
+                ("req-new", "new response text", "meta block", "new recipe"),
             )
+
+        def test_meta_stays_expanded_for_inflight_updates(self) -> None:
+            """User-expanded meta should stay open as a request streams new content."""
+            ResponseCanvasState.meta_expanded = True
+            modelResponseCanvas._last_meta_signature = (  # type: ignore[attr-defined]
+                "req-same",
+                "old",
+                "old_meta",
+                "old_recipe",
+            )
+            GPTState.last_response = "new response text"
+            GPTState.last_meta = "meta block"
+            GPTState.last_recipe = "new recipe"
+            with patch.object(
+                modelResponseCanvas,
+                "_current_request_state",
+                return_value=RequestState(
+                    phase=RequestPhase.STREAMING, request_id="req-same"
+                ),
+            ):
+                canvas_obj = _ensure_response_canvas()
+                if not hasattr(canvas_obj, "rect") or canvas_obj.rect is None:
+                    canvas_obj.rect = type(
+                        "R", (), {"x": 0, "y": 0, "width": 500, "height": 400}
+                    )()
+                callbacks = getattr(canvas_obj, "_callbacks", {})
+                draw_cbs = callbacks.get("draw") or []
+                for cb in draw_cbs:
+                    cb(canvas_obj)
+
+            self.assertTrue(ResponseCanvasState.meta_expanded)
+            self.assertEqual(ResponseCanvasState.meta_pinned_request_id, "req-same")
+            self.assertEqual(
+                modelResponseCanvas._last_meta_signature,  # type: ignore[attr-defined]
+                ("req-same", "new response text", "meta block", "new recipe"),
+            )
+
+        def test_meta_stays_expanded_when_request_id_missing_on_completion(self) -> None:
+            """If request id drops after completion, keep meta open using last known id."""
+            ResponseCanvasState.meta_expanded = True
+            modelResponseCanvas._last_meta_signature = (  # type: ignore[attr-defined]
+                "req-same",
+                "old",
+                "old_meta",
+                "old_recipe",
+            )
+            GPTState.last_response = "final response"
+            GPTState.last_meta = "final meta"
+            GPTState.last_recipe = "final recipe"
+            # Simulate a completion draw where the request id is missing in state.
+            with patch.object(
+                modelResponseCanvas,
+                "_current_request_state",
+                return_value=RequestState(phase=RequestPhase.DONE, request_id=""),
+            ):
+                canvas_obj = _ensure_response_canvas()
+                if not hasattr(canvas_obj, "rect") or canvas_obj.rect is None:
+                    canvas_obj.rect = type(
+                        "R", (), {"x": 0, "y": 0, "width": 500, "height": 400}
+                    )()
+                callbacks = getattr(canvas_obj, "_callbacks", {})
+                draw_cbs = callbacks.get("draw") or []
+                for cb in draw_cbs:
+                    cb(canvas_obj)
+
+            self.assertTrue(ResponseCanvasState.meta_expanded)
+            self.assertEqual(ResponseCanvasState.meta_pinned_request_id, "req-same")
+            self.assertEqual(
+                modelResponseCanvas._last_meta_signature,  # type: ignore[attr-defined]
+                ("req-same", "final response", "final meta", "final recipe"),
+            )
+
+        def test_meta_stays_expanded_when_request_id_appears_mid_request(self) -> None:
+            """Avoid collapsing when a late-arriving request id matches the same inflight request."""
+            ResponseCanvasState.meta_expanded = True
+            modelResponseCanvas._last_meta_signature = (  # type: ignore[attr-defined]
+                "",
+                "old",
+                "old_meta",
+                "old_recipe",
+            )
+            GPTState.last_response = "later response"
+            GPTState.last_meta = "later meta"
+            GPTState.last_recipe = "later recipe"
+            with patch.object(
+                modelResponseCanvas,
+                "_current_request_state",
+                return_value=RequestState(
+                    phase=RequestPhase.STREAMING, request_id="req-now"
+                ),
+            ):
+                canvas_obj = _ensure_response_canvas()
+                if not hasattr(canvas_obj, "rect") or canvas_obj.rect is None:
+                    canvas_obj.rect = type(
+                        "R", (), {"x": 0, "y": 0, "width": 500, "height": 400}
+                    )()
+                callbacks = getattr(canvas_obj, "_callbacks", {})
+                draw_cbs = callbacks.get("draw") or []
+                for cb in draw_cbs:
+                    cb(canvas_obj)
+
+            self.assertTrue(ResponseCanvasState.meta_expanded)
+            self.assertEqual(ResponseCanvasState.meta_pinned_request_id, "req-now")
+            self.assertEqual(
+                modelResponseCanvas._last_meta_signature,  # type: ignore[attr-defined]
+                ("req-now", "later response", "later meta", "later recipe"),
+            )
+
+        def test_meta_collapse_when_pinned_request_changes(self) -> None:
+            """Pinned meta should collapse when a different non-empty request id arrives."""
+            ResponseCanvasState.meta_expanded = True
+            ResponseCanvasState.meta_pinned_request_id = "req-a"
+            modelResponseCanvas._last_meta_signature = (  # type: ignore[attr-defined]
+                "req-a",
+                "old",
+                "old_meta",
+                "old_recipe",
+            )
+            GPTState.last_response = "other response"
+            GPTState.last_meta = "other meta"
+            GPTState.last_recipe = "other recipe"
+            with patch.object(
+                modelResponseCanvas,
+                "_current_request_state",
+                return_value=RequestState(phase=RequestPhase.DONE, request_id="req-b"),
+            ):
+                canvas_obj = _ensure_response_canvas()
+                if not hasattr(canvas_obj, "rect") or canvas_obj.rect is None:
+                    canvas_obj.rect = type(
+                        "R", (), {"x": 0, "y": 0, "width": 500, "height": 400}
+                    )()
+                callbacks = getattr(canvas_obj, "_callbacks", {})
+                draw_cbs = callbacks.get("draw") or []
+                for cb in draw_cbs:
+                    cb(canvas_obj)
+
+            self.assertFalse(ResponseCanvasState.meta_expanded)
+            self.assertEqual(ResponseCanvasState.meta_pinned_request_id, "")
 
         def test_open_allows_inflight_progress_without_answer(self) -> None:
             GPTState.last_response = ""

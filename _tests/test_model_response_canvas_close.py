@@ -25,6 +25,7 @@ if bootstrap is not None:
             mrc.ResponseCanvasState.showing = True
             mrc._response_canvas = DummyCanvas()  # type: ignore[attr-defined]
             mrc.GPTState.last_request_id = "rid-close"
+            mrc.GPTState.suppress_response_canvas_close = True
 
             with patch.object(
                 mrc, "clear_response_fallback"
@@ -35,6 +36,7 @@ if bootstrap is not None:
             clear_fallback_mock.assert_called_with("rid-close")
             self.assertFalse(mrc.ResponseCanvasState.showing)
             self.assertTrue(getattr(mrc._response_canvas, "hidden", False))
+            self.assertFalse(mrc.GPTState.suppress_response_canvas_close)
 
         def test_toggle_close_clears_fallback(self):
             class DummyCanvas:
@@ -47,6 +49,7 @@ if bootstrap is not None:
             mrc.ResponseCanvasState.showing = True
             mrc._response_canvas = DummyCanvas()  # type: ignore[attr-defined]
             mrc.GPTState.last_request_id = "rid-toggle"
+            mrc.GPTState.suppress_response_canvas_close = True
 
             with patch.object(
                 mrc, "clear_response_fallback"
@@ -56,6 +59,7 @@ if bootstrap is not None:
             clear_fallback_mock.assert_called_with("rid-toggle")
             self.assertFalse(mrc.ResponseCanvasState.showing)
             self.assertTrue(getattr(mrc._response_canvas, "hidden", False))
+            self.assertFalse(mrc.GPTState.suppress_response_canvas_close)
 
         def test_canvas_hide_clears_fallback(self):
             class DummyCanvas:

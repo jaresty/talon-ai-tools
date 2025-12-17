@@ -39,6 +39,10 @@ class ResponseCanvasState:
     meta_expanded: bool = False
     max_scroll: float = 1e9
     max_scroll: float = 1e9
+    # Request id the user pinned when expanding meta; used to avoid collapsing
+    # within the same request even if ids firm up mid-stream.
+    meta_pinned_request_id: str = ""
+    suppress_hide_reset: bool = False
 
 
 def _request_is_in_flight() -> bool:
@@ -115,18 +119,62 @@ def _current_request_state() -> RequestState:
 
 
 def _reset_meta_if_new_signature(
-    recipe_snapshot: dict[str, object], recap_snapshot: dict[str, str]
+    recipe_snapshot: dict[str, object],
+    recap_snapshot: dict[str, str],
+    request_id: str,
 ) -> None:
-    """Collapse meta when a new response/meta/recipe arrives."""
+    """Collapse meta when a new request arrives; preserve it for inflight updates."""
     global _last_meta_signature
+    last_signature = _last_meta_signature
+    prev_request_id = last_signature[0] if last_signature else ""
+    effective_request_id = request_id or prev_request_id
     signature = (
+        effective_request_id,
         str(recap_snapshot.get("response", "")),
         str(recap_snapshot.get("meta", "")),
         str(recipe_snapshot.get("recipe", "")),
     )
-    if signature != _last_meta_signature:
-        ResponseCanvasState.meta_expanded = False
+    if last_signature is None:
         _last_meta_signature = signature
+        return
+
+    pinned_id = getattr(ResponseCanvasState, "meta_pinned_request_id", "") or ""
+    if ResponseCanvasState.meta_expanded and not pinned_id and effective_request_id:
+        # Remember the request id associated with this manual expansion so we
+        # can keep meta open across streaming → completion updates.
+        ResponseCanvasState.meta_pinned_request_id = effective_request_id
+        pinned_id = effective_request_id
+
+    is_new_request = False
+    if (
+        ResponseCanvasState.meta_expanded
+        and pinned_id
+        and effective_request_id
+        and effective_request_id != pinned_id
+    ):
+        is_new_request = True
+    elif (
+        not ResponseCanvasState.meta_expanded
+        and bool(prev_request_id)
+        and bool(request_id)
+        and request_id != prev_request_id
+    ):
+        is_new_request = True
+
+    if is_new_request:
+        ResponseCanvasState.meta_expanded = False
+        ResponseCanvasState.meta_pinned_request_id = ""
+        try:
+            GPTState.suppress_response_canvas_close = False
+        except Exception:
+            pass
+    elif signature != last_signature and not ResponseCanvasState.meta_expanded:
+        # Only collapse on updates for the same request when the user has not
+        # explicitly expanded meta.
+        ResponseCanvasState.meta_expanded = False
+        ResponseCanvasState.meta_pinned_request_id = ""
+
+    _last_meta_signature = signature
 
 
 _response_canvas: Optional[canvas.Canvas] = None
@@ -139,9 +187,10 @@ _response_mouse_log_count: int = 0
 _response_handlers_registered: bool = False
 _last_hide_handler: Optional[Callable] = None
 _last_recap_log: Optional[tuple[str, str, str, str, str, str]] = None
-# Track the last rendered recap/meta tuple so meta is collapsed when a new
-# response arrives (prevents stale expanded meta on subsequent runs).
-_last_meta_signature: Optional[tuple[str, str, str]] = None
+# Track the last rendered recap/meta tuple (including request id) so meta is
+# collapsed when a new request arrives, while still allowing inflight updates
+# to keep an intentionally expanded meta panel open.
+_last_meta_signature: Optional[tuple[str, str, str, str]] = None
 
 
 def _coerce_text(value) -> str:
@@ -215,9 +264,16 @@ def _ensure_response_canvas() -> canvas.Canvas:
             pass
         _log_canvas_close("canvas hide handler")
         try:
-            ResponseCanvasState.showing = False
-            ResponseCanvasState.scroll_y = 0.0
-            ResponseCanvasState.meta_expanded = False
+            reset_ok = not getattr(ResponseCanvasState, "suppress_hide_reset", False)
+            if reset_ok:
+                ResponseCanvasState.showing = False
+                ResponseCanvasState.scroll_y = 0.0
+                ResponseCanvasState.meta_expanded = False
+                ResponseCanvasState.meta_pinned_request_id = ""
+                try:
+                    GPTState.suppress_response_canvas_close = False
+                except Exception:
+                    pass
         except Exception:
             pass
         try:
@@ -368,6 +424,14 @@ def _ensure_response_canvas() -> canvas.Canvas:
                             ResponseCanvasState.meta_expanded = (
                                 not ResponseCanvasState.meta_expanded
                             )
+                            if ResponseCanvasState.meta_expanded:
+                                # Pin to the current request id so inflight
+                                # completions don't auto-collapse meta.
+                                ResponseCanvasState.meta_pinned_request_id = (
+                                    getattr(GPTState, "last_request_id", "") or ""
+                                )
+                            else:
+                                ResponseCanvasState.meta_pinned_request_id = ""
                             _response_canvas.show()
                         elif key == "paste":
                             actions.user.model_response_canvas_close()
@@ -716,6 +780,11 @@ def _default_draw_response(c: canvas.Canvas) -> None:  # pragma: no cover - visu
     approx_char = 8
     state = _current_request_state()
     phase = getattr(state, "phase", RequestPhase.IDLE)
+    request_id = (
+        getattr(state, "request_id", None)
+        or getattr(GPTState, "last_request_id", "")
+        or ""
+    )
     cancel_requested = getattr(state, "cancel_requested", False)
     prefer_progress = _prefer_canvas_progress()
     inflight = phase in (
@@ -799,7 +868,7 @@ def _default_draw_response(c: canvas.Canvas) -> None:  # pragma: no cover - visu
     # token-based even if older code paths stored a verbose last_recipe.
     recipe_snapshot = last_recipe_snapshot()
     recap_snapshot = last_recap_snapshot()
-    _reset_meta_if_new_signature(recipe_snapshot, recap_snapshot)
+    _reset_meta_if_new_signature(recipe_snapshot, recap_snapshot, request_id)
     recipe = recipe_snapshot.get("recipe", "") or ""
     static_prompt = recipe_snapshot.get("static_prompt", "") or ""
     axes_tokens = {
@@ -1439,12 +1508,23 @@ class UserActions:
         if _response_canvas is None:
             return
         try:
+            restore_meta_expanded = ResponseCanvasState.meta_expanded
+            restore_meta_pinned = ResponseCanvasState.meta_pinned_request_id
+            ResponseCanvasState.suppress_hide_reset = True
             if ResponseCanvasState.showing:
                 _response_canvas.hide()
             _response_canvas.show()
             ResponseCanvasState.showing = True
+            ResponseCanvasState.meta_expanded = restore_meta_expanded
+            ResponseCanvasState.meta_pinned_request_id = restore_meta_pinned
+            try:
+                GPTState.suppress_response_canvas_close = True
+            except Exception:
+                pass
         except Exception:
             pass
+        finally:
+            ResponseCanvasState.suppress_hide_reset = False
 
     def model_response_canvas_open():
         """Open the canvas-based response viewer for the last model answer (idempotent)."""
@@ -1472,6 +1552,11 @@ class UserActions:
         # Always start with meta collapsed; the band still shows a short
         # summary so the initial view is response-first.
         ResponseCanvasState.meta_expanded = False
+        ResponseCanvasState.meta_pinned_request_id = ""
+        try:
+            GPTState.suppress_response_canvas_close = True
+        except Exception:
+            pass
         canvas_obj.show()
 
     def model_response_canvas_toggle():
@@ -1485,12 +1570,17 @@ class UserActions:
             ResponseCanvasState.scroll_y = 0.0
             ResponseCanvasState.max_scroll = 1e9
             ResponseCanvasState.meta_expanded = False
+            ResponseCanvasState.meta_pinned_request_id = ""
             try:
                 canvas_obj.hide()
             except Exception:
                 pass
             try:
                 clear_response_fallback(getattr(GPTState, "last_request_id", None))
+            except Exception:
+                pass
+            try:
+                GPTState.suppress_response_canvas_close = False
             except Exception:
                 pass
             return
@@ -1500,6 +1590,11 @@ class UserActions:
         ResponseCanvasState.scroll_y = 0.0
         ResponseCanvasState.max_scroll = 1e9
         ResponseCanvasState.meta_expanded = False
+        ResponseCanvasState.meta_pinned_request_id = ""
+        try:
+            GPTState.suppress_response_canvas_close = True
+        except Exception:
+            pass
         canvas_obj.show()
 
     def model_response_canvas_close():
@@ -1519,7 +1614,12 @@ class UserActions:
         ResponseCanvasState.scroll_y = 0.0
         ResponseCanvasState.max_scroll = 1e9
         ResponseCanvasState.meta_expanded = False
+        ResponseCanvasState.meta_pinned_request_id = ""
         try:
             _response_canvas.hide()
+        except Exception:
+            pass
+        try:
+            GPTState.suppress_response_canvas_close = False
         except Exception:
             pass

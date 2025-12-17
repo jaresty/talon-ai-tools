@@ -3,10 +3,14 @@ from pathlib import Path
 import subprocess
 import json
 
+from .helpers_axis_artifacts import cleanup_axis_regen_outputs
+
 
 class AxisRegenAllTests(unittest.TestCase):
     def test_axis_regen_all_writes_outputs(self):
         repo_root = Path(__file__).resolve().parents[1]
+        cleanup_axis_regen_outputs(repo_root)
+        self.addCleanup(cleanup_axis_regen_outputs, repo_root)
         tmp_dir = repo_root / "tmp"
         if tmp_dir.exists():
             # Clean out known outputs to ensure the script regenerates them.
@@ -47,6 +51,8 @@ class AxisRegenAllTests(unittest.TestCase):
 class AxisRegenContentTests(unittest.TestCase):
     def test_generated_axis_config_keeps_helper_functions(self):
         repo_root = Path(__file__).resolve().parents[1]
+        cleanup_axis_regen_outputs(repo_root)
+        self.addCleanup(cleanup_axis_regen_outputs, repo_root)
         tmp_dir = repo_root / "tmp"
         subprocess.check_call(
             ["python3", "scripts/tools/axis_regen_all.py"],
@@ -58,6 +64,8 @@ class AxisRegenContentTests(unittest.TestCase):
 
     def test_generated_axis_config_matches_tracked(self):
         repo_root = Path(__file__).resolve().parents[1]
+        cleanup_axis_regen_outputs(repo_root)
+        self.addCleanup(cleanup_axis_regen_outputs, repo_root)
         tmp_dir = repo_root / "tmp"
         subprocess.check_call(
             ["python3", "scripts/tools/axis_regen_all.py"],
@@ -69,6 +77,8 @@ class AxisRegenContentTests(unittest.TestCase):
 
     def test_axis_catalog_json_includes_axes_and_list_tokens(self):
         repo_root = Path(__file__).resolve().parents[1]
+        cleanup_axis_regen_outputs(repo_root)
+        self.addCleanup(cleanup_axis_regen_outputs, repo_root)
         tmp_dir = repo_root / "tmp"
         subprocess.check_call(
             ["python3", "scripts/tools/axis_regen_all.py"],
@@ -95,6 +105,8 @@ class AxisRegenContentTests(unittest.TestCase):
 
     def test_static_prompt_docs_include_required_headings(self):
         repo_root = Path(__file__).resolve().parents[1]
+        cleanup_axis_regen_outputs(repo_root)
+        self.addCleanup(cleanup_axis_regen_outputs, repo_root)
         tmp_dir = repo_root / "tmp"
         subprocess.check_call(
             ["python3", "scripts/tools/axis_regen_all.py"],
@@ -108,6 +120,8 @@ class AxisRegenContentTests(unittest.TestCase):
 
     def test_axis_regen_all_runs_catalog_validation(self):
         repo_root = Path(__file__).resolve().parents[1]
+        cleanup_axis_regen_outputs(repo_root)
+        self.addCleanup(cleanup_axis_regen_outputs, repo_root)
         output = subprocess.check_output(
             ["python3", "scripts/tools/axis_regen_all.py"],
             cwd=repo_root,

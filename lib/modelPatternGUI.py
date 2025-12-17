@@ -17,9 +17,12 @@ from .talonSettings import (
 )
 from .modelState import GPTState
 from .axisMappings import axis_docs_map
-from .patternDebugCoordinator import pattern_debug_view, pattern_debug_catalog as _pattern_debug_catalog
+from .patternDebugCoordinator import (
+    pattern_debug_view,
+    pattern_debug_catalog as _pattern_debug_catalog,
+)
 from .overlayHelpers import apply_canvas_blocking
-from .overlayLifecycle import close_overlays
+from .overlayLifecycle import close_overlays, close_common_overlays
 
 mod = Module()
 ctx = Context()
@@ -80,7 +83,7 @@ _line_height = 18
 
 # Default geometry for the pattern picker window.
 _PANEL_WIDTH = 720
-_PANEL_HEIGHT = 600
+_PANEL_HEIGHT = 800
 
 try:  # Talon runtime
     from talon.types import Rect
@@ -196,7 +199,10 @@ DIRECTIONAL_MAP = _load_axis_map("directionalModifier.talon-list")
 def _visible_rows(rect: Rect) -> int:
     """Compute how many pattern rows fit in the visible body region."""
     row_height = _line_height * 3
-    body_top = rect.y + 60 + _line_height * 4
+    # Account for the header plus Who/Why presets block before the
+    # scrollable pattern rows so max scroll is computed against the
+    # actual visible height available to patterns.
+    body_top = rect.y + 60 + _line_height * 13
     body_bottom = rect.y + rect.height - (_line_height // 2)
     visible_height = max(body_bottom - body_top, row_height)
     return max(int((visible_height + row_height - 1) // row_height), 1)
@@ -215,6 +221,7 @@ def _scroll_pattern_list(
         return float(current_offset or 0)
     max_offset = _max_scroll_offset(rect, patterns)
     return clamp_scroll(float(current_offset or 0) + step, float(max_offset))
+
 
 # NOTE: For spoken commands, Talon list values for completeness/scope/method/form/channel
 # are already the full "Important: …" descriptions. For pattern buttons, we
@@ -469,15 +476,17 @@ def _ensure_pattern_canvas() -> canvas.Canvas:
             if rect is None or pos is None:
                 return
 
-            event_type = getattr(evt, "event", "") or ""
+            event_type_raw = getattr(evt, "event", "") or ""
+            event_type = str(event_type_raw).lower()
             button = getattr(evt, "button", None)
             gpos = getattr(evt, "gpos", None) or pos
-            _debug(
-                f"pattern canvas mouse evt={event_type} button={button} "
-                f"pos=({getattr(pos, 'x', None)},{getattr(pos, 'y', None)}) "
-                f"gpos=({getattr(gpos, 'x', None)},{getattr(gpos, 'y', None)}) "
-                f"drag_offset={_pattern_drag_offset}"
-            )
+            try:
+                from talon import ctrl as _ctrl  # type: ignore
+
+                mouse_x, mouse_y = _ctrl.mouse_pos()
+            except Exception:
+                mouse_x = getattr(gpos, "x", 0.0)
+                mouse_y = getattr(gpos, "y", 0.0)
 
             local_x = pos.x
             local_y = pos.y
@@ -548,7 +557,7 @@ def _ensure_pattern_canvas() -> canvas.Canvas:
 
                 # If we didn't hit a button or close hotspot, start a drag from
                 # anywhere in the panel, mirroring the response canvas.
-                _pattern_drag_offset = (gpos.x - rect.x, gpos.y - rect.y)
+                _pattern_drag_offset = (mouse_x - rect.x, mouse_y - rect.y)
                 _debug(f"pattern drag start at offset {_pattern_drag_offset}")
                 return
 
@@ -557,14 +566,15 @@ def _ensure_pattern_canvas() -> canvas.Canvas:
                 return
 
             if (
-                event_type in ("mousemove", "mouse_move")
+                event_type
+                in ("mouse", "mousemove", "mouse_move", "mouse_drag", "mouse_dragged")
                 and _pattern_drag_offset is not None
             ):
                 dx, dy = _pattern_drag_offset
-                new_x = gpos.x - dx
-                new_y = gpos.y - dy
+                new_x = mouse_x - dx
+                new_y = mouse_y - dy
                 _debug(
-                    f"pattern drag move new=({new_x},{new_y}) from gpos=({gpos.x},{gpos.y}) offset={_pattern_drag_offset}"
+                    f"pattern drag move new=({new_x},{new_y}) from mouse=({mouse_x},{mouse_y}) offset={_pattern_drag_offset}"
                 )
                 try:
                     _pattern_canvas.move(new_x, new_y)
@@ -834,10 +844,11 @@ def _draw_pattern_canvas(c: canvas.Canvas) -> None:  # pragma: no cover - visual
     draw_text("Tip: Say 'close patterns' to close this menu.", x, y)
     y += line_h
 
-    # Surface a small Who / Why section so users can see how patterns relate
-    # to Persona (Who) and Intent (Why) presets from ADR 040. Each preset row
-    # is also a clickable button that applies the corresponding stance.
-    draw_text("Who / Why presets (ADR 040):", x, y)
+    # Surface a compact Who / Why section so users can see how patterns
+    # relate to Persona (Who) and Intent (Why) presets from ADR 040 without
+    # pushing the pattern list too far down the viewport. Each preset row is
+    # still a clickable button that applies the corresponding stance.
+    draw_text("Who / Why presets (optional stance):", x, y)
     y += line_h
 
     try:
@@ -846,17 +857,8 @@ def _draw_pattern_canvas(c: canvas.Canvas) -> None:  # pragma: no cover - visual
             draw_text("  Persona (Who):", x, y)
             y += line_h
             for preset in persona_presets[:3]:
-                pieces: list[str] = []
-                if preset.voice:
-                    pieces.append(preset.voice)
-                if preset.audience:
-                    pieces.append(preset.audience)
-                if preset.tone:
-                    pieces.append(preset.tone)
-                axes = " · ".join(pieces)
-                label_line = (
-                    f"    {preset.label}: {axes}" if axes else f"    {preset.label}"
-                )
+                spoken = getattr(preset, "spoken", None) or preset.key.replace("_", " ")
+                label_line = f"    {preset.label} (say: persona {spoken})"
                 draw_text(label_line, x, y)
                 if rect is not None:
                     key = f"persona:{preset.key}"
@@ -877,7 +879,10 @@ def _draw_pattern_canvas(c: canvas.Canvas) -> None:  # pragma: no cover - visual
             draw_text("  Intent (Why):", x, y)
             y += line_h
             for preset in intent_presets[:4]:
-                label_line = f"    {preset.label}: {preset.intent}"
+                say_token = getattr(preset, "intent", None) or getattr(
+                    preset, "key", ""
+                )
+                label_line = f"    {preset.label} (say: intent {say_token})"
                 draw_text(label_line, x, y)
                 if rect is not None:
                     key = f"intent:{preset.key}"

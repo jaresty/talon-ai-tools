@@ -4,6 +4,7 @@ import sys
 import unittest
 from pathlib import Path
 from typing import TYPE_CHECKING
+from .helpers_axis_artifacts import cleanup_axis_regen_outputs
 
 if not TYPE_CHECKING:
 
@@ -12,6 +13,8 @@ if not TYPE_CHECKING:
             """Guardrail: axis-regenerate target should run clean and emit artifacts."""
 
             repo_root = Path(__file__).resolve().parents[1]
+            cleanup_axis_regen_outputs(repo_root)
+            self.addCleanup(cleanup_axis_regen_outputs, repo_root)
             result = subprocess.run(
                 ["make", "axis-regenerate"],
                 cwd=str(repo_root),

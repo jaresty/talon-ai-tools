@@ -295,9 +295,17 @@ def _ensure_prompt_pattern_canvas() -> canvas.Canvas:
             if rect is None or pos is None:
                 return
 
-            event_type = getattr(evt, "event", "") or ""
+            event_type_raw = getattr(evt, "event", "") or ""
+            event_type = str(event_type_raw).lower()
             button = getattr(evt, "button", None)
             gpos = getattr(evt, "gpos", None) or pos
+            try:
+                from talon import ctrl as _ctrl  # type: ignore
+
+                mouse_x, mouse_y = _ctrl.mouse_pos()
+            except Exception:
+                mouse_x = getattr(gpos, "x", 0.0)
+                mouse_y = getattr(gpos, "y", 0.0)
 
             local_x = pos.x
             local_y = pos.y
@@ -352,7 +360,7 @@ def _ensure_prompt_pattern_canvas() -> canvas.Canvas:
                     return
 
                 # Start drag anywhere else.
-                _prompt_pattern_drag_offset = (gpos.x - rect.x, gpos.y - rect.y)
+                _prompt_pattern_drag_offset = (mouse_x - rect.x, mouse_y - rect.y)
                 _prompt_pattern_dragging = True
                 return
 
@@ -364,12 +372,13 @@ def _ensure_prompt_pattern_canvas() -> canvas.Canvas:
 
             # Drag while moving (include mouse_drag).
             if (
-                event_type in ("mousemove", "mouse_move", "mouse_drag")
+                event_type
+                in ("mouse", "mousemove", "mouse_move", "mouse_drag", "mouse_dragged")
                 and _prompt_pattern_drag_offset is not None
             ):
                 dx, dy = _prompt_pattern_drag_offset
-                new_x = gpos.x - dx
-                new_y = gpos.y - dy
+                new_x = mouse_x - dx
+                new_y = mouse_y - dy
                 try:
                     _prompt_pattern_canvas.move(new_x, new_y)
                 except Exception:
@@ -471,7 +480,9 @@ def _apply_prompt_pattern_scroll(raw_delta: float) -> None:
     """Apply scroll delta using the shared overlay clamp helper."""
     max_scroll = max(PromptPatternCanvasState.max_scroll, 0.0)
     PromptPatternCanvasState.scroll_y = clamp_scroll(
-        apply_scroll_delta(PromptPatternCanvasState.scroll_y, -raw_delta * 40.0, max_scroll),
+        apply_scroll_delta(
+            PromptPatternCanvasState.scroll_y, -raw_delta * 40.0, max_scroll
+        ),
         max_scroll,
     )
 

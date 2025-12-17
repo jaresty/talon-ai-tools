@@ -3,10 +3,14 @@ import subprocess
 from pathlib import Path
 import json
 
+from .helpers_axis_artifacts import cleanup_axis_regen_outputs
+
 
 class MakeAxisRegenAllTests(unittest.TestCase):
     def test_make_axis_regenerate_all(self):
         repo_root = Path(__file__).resolve().parents[1]
+        cleanup_axis_regen_outputs(repo_root)
+        self.addCleanup(cleanup_axis_regen_outputs, repo_root)
         result = subprocess.run(
             ["make", "axis-regenerate-all"],
             cwd=repo_root,

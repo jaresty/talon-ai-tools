@@ -97,6 +97,7 @@ _suggestion_hover_close: bool = False
 _suggestion_hover_index: Optional[int] = None
 _suggestion_drag_offset: Optional[Tuple[float, float]] = None
 _scroll_debug_samples: int = 0
+_scroll_state_debug_samples: int = 0
 _WHY_REASON_LABEL = "Why:"
 _AXES_LEGEND = "Axes: Completeness | Scope | Method | Form | Channel | Directional"
 _SECONDARY_INDENT = 12
@@ -110,6 +111,7 @@ _PANEL_WIDTH = 840
 # Give suggestions more vertical room before scrolling while still
 # respecting screen margins on smaller displays.
 _PANEL_HEIGHT = 880
+
 
 def _persona_presets():
     """Return the latest persona presets (reload-safe)."""
@@ -394,7 +396,9 @@ def _persona_long_form(stance_command: str, persona_bits: list[str]) -> str:
     axes = [bit for bit in persona_bits if bit]
     preset = _persona_preset_map().get(preset_name)
     if not axes and preset:
-        axes = [value for value in (preset.voice, preset.audience, preset.tone) if value]
+        axes = [
+            value for value in (preset.voice, preset.audience, preset.tone) if value
+        ]
     if not axes:
         return ""
     return "model write " + " ".join(axes)
@@ -481,14 +485,20 @@ def _suggestion_stance_info(suggestion: Suggestion) -> dict[str, object]:
     # Prefer a model-write form for the Say line so it always matches grammar.
     primary_command = long_form or stance_command or ""
     secondary_command = None
-    if persona_display and primary_command and not primary_command.lower().startswith("persona "):
+    if (
+        persona_display
+        and primary_command
+        and not primary_command.lower().startswith("persona ")
+    ):
         secondary_command = persona_display
     if not primary_command:
         primary_command = persona_display or ""
     stance_display = primary_command
     if secondary_command:
         stance_display = f"{primary_command} ({secondary_command})"
-    if stance_display and not stance_display.lower().startswith(("model write", "persona ")):
+    if stance_display and not stance_display.lower().startswith(
+        ("model write", "persona ")
+    ):
         axes_phrase = " ".join(persona_bits)
         if axes_phrase:
             stance_display = f"model write {axes_phrase}"
@@ -687,6 +697,13 @@ def _ensure_suggestion_canvas() -> canvas.Canvas:
             event_type = str(event_type_raw).lower()
             button = getattr(evt, "button", None)
             gpos = getattr(evt, "gpos", None) or pos
+            try:
+                from talon import ctrl as _ctrl  # type: ignore
+
+                mouse_x, mouse_y = _ctrl.mouse_pos()
+            except Exception:
+                mouse_x = getattr(gpos, "x", 0.0)
+                mouse_y = getattr(gpos, "y", 0.0)
 
             local_x = pos.x
             local_y = pos.y
@@ -746,7 +763,7 @@ def _ensure_suggestion_canvas() -> canvas.Canvas:
 
                 # Start drag anywhere that was not a button hit.
                 if not handled_click:
-                    _suggestion_drag_offset = (gpos.x - rect.x, gpos.y - rect.y)
+                    _suggestion_drag_offset = (mouse_x - rect.x, mouse_y - rect.y)
                     return
 
             if event_type in ("mouseup", "mouse_up", "mouse_drag_end"):
@@ -755,12 +772,13 @@ def _ensure_suggestion_canvas() -> canvas.Canvas:
 
             # Drag while moving with an active drag offset.
             if (
-                event_type in ("mousemove", "mouse_move", "mouse_drag", "mouse_dragged")
+                event_type
+                in ("mouse", "mousemove", "mouse_move", "mouse_drag", "mouse_dragged")
                 and _suggestion_drag_offset is not None
             ):
                 dx, dy = _suggestion_drag_offset
-                new_x = gpos.x - dx
-                new_y = gpos.y - dy
+                new_x = mouse_x - dx
+                new_y = mouse_y - dy
                 try:
                     _suggestion_canvas.move(new_x, new_y)
                 except Exception:
@@ -819,23 +837,37 @@ def _ensure_suggestion_canvas() -> canvas.Canvas:
 def _scroll_suggestions(raw_delta: float) -> None:  # pragma: no cover - visual only
     """Apply a scroll delta to the suggestion list."""
     try:
-        global _scroll_debug_samples
+        global _scroll_state_debug_samples
         rect = getattr(_suggestion_canvas, "rect", None)
+
         if rect is None:
             return
         delta = float(raw_delta or 0.0)
         if not delta:
             return
         line_h = 20
-        stance_lines = stance_defaults_lines(suggestion_context() or None)
+        approx_char = 8
+        ctx = suggestion_context()
+        stance_lines = stance_defaults_lines(ctx or None)
         body_top = rect.y + 60 + line_h * 2
         if stance_lines:
             body_top += line_h  # label
             body_top += line_h * len(stance_lines)
             body_top += line_h // 2
+        # Account for the axes legend row so scroll math matches the draw path.
+        if SuggestionGUIState.suggestions:
+            legend_lines = _wrap_lines_count(
+                _AXES_LEGEND,
+                rect.x + 40 + _SECONDARY_INDENT,
+                rect,
+                approx_char,
+                line_h,
+            )
+            if legend_lines:
+                body_top += line_h * legend_lines
+                body_top += line_h // 2
         body_bottom = rect.y + rect.height - line_h * 4
-        visible_height = max(body_bottom - body_top, line_h * 6)
-        approx_char = 8
+        visible_height = max(body_bottom - body_top, line_h * 4)
         measured_heights = [
             _measure_suggestion_height(s, rect.x + 40, rect, approx_char, line_h)
             for s in SuggestionGUIState.suggestions
@@ -845,8 +877,25 @@ def _scroll_suggestions(raw_delta: float) -> None:  # pragma: no cover - visual 
         max_scroll = max(total_content_height - visible_height + line_h * 6, 0)
         # Further slow the scroll sensitivity so wheel/trackpad deltas move the
         # list in smaller steps; Talon surfaces high raw deltas on some platforms.
-        new_scroll = SuggestionCanvasState.scroll_y - delta * 10.0
-        SuggestionCanvasState.scroll_y = clamp_scroll(new_scroll, max_scroll)
+        old_scroll = float(getattr(SuggestionCanvasState, "scroll_y", 0.0) or 0.0)
+        new_scroll = old_scroll - delta * 10.0
+        clamped = clamp_scroll(new_scroll, max_scroll)
+        SuggestionCanvasState.scroll_y = clamped
+        # Lightweight debug logging so we can inspect scroll behaviour at the edges
+        if _scroll_state_debug_samples < 50:
+            _debug(
+                "scroll delta=%s old=%s new=%s clamped=%s max_scroll=%s visible_height=%s total_content_height=%s"
+                % (
+                    delta,
+                    old_scroll,
+                    new_scroll,
+                    clamped,
+                    max_scroll,
+                    visible_height,
+                    total_content_height,
+                )
+            )
+            _scroll_state_debug_samples += 1
     except Exception as e:
         _debug(f"suggestion scroll handler error: {e}")
 
@@ -950,7 +999,12 @@ def _draw_suggestions(c: canvas.Canvas) -> None:  # pragma: no cover - visual on
         """Draw text wrapped to the panel width and return new y."""
         x_draw = x_pos + indent
         lines = _wrap_lines_count(
-            text, x_draw, rect, approx_char, line_h, max_chars_override=max_chars_override
+            text,
+            x_draw,
+            rect,
+            approx_char,
+            line_h,
+            max_chars_override=max_chars_override,
         )
         if not lines:
             return y_pos
@@ -961,7 +1015,9 @@ def _draw_suggestions(c: canvas.Canvas) -> None:  # pragma: no cover - visual on
                 right_margin = rect.x + rect.width - 40
                 available_px = max(right_margin - x_draw, 160)
                 candidate = max(int(available_px // approx_char), 20)
-                max_chars = min(max_chars, candidate) if max_chars_override else candidate
+                max_chars = (
+                    min(max_chars, candidate) if max_chars_override else candidate
+                )
         except Exception:
             max_chars = max_chars_override or 80
 
@@ -975,7 +1031,9 @@ def _draw_suggestions(c: canvas.Canvas) -> None:  # pragma: no cover - visual on
                     or visible_bottom is None
                     or (y_pos >= visible_top and y_pos <= visible_bottom - line_h)
                 ):
-                    old_color = getattr(paint, "color", None) if paint is not None else None
+                    old_color = (
+                        getattr(paint, "color", None) if paint is not None else None
+                    )
                     if paint is not None and color:
                         paint.color = color
                     draw_text(" ".join(current_line), x_draw, y_pos)
@@ -1025,14 +1083,22 @@ def _draw_suggestions(c: canvas.Canvas) -> None:  # pragma: no cover - visual on
     ctx = suggestion_context()
     stance_lines = stance_defaults_lines(ctx or None)
     # Hide the context block entirely if everything is empty.
-    show_context = any("Voice=" in line and "–" not in line for line in stance_lines) or any(
-        "Defaults" in line and not line.endswith("Defaults: C=– S=– M=– F=– Ch=– Provider=–") for line in stance_lines
+    show_context = any(
+        "Voice=" in line and "–" not in line for line in stance_lines
+    ) or any(
+        "Defaults" in line
+        and not line.endswith("Defaults: C=– S=– M=– F=– Ch=– Provider=–")
+        for line in stance_lines
     )
     if stance_lines and show_context:
         label = "Context (stance/defaults):"
         draw_text(label, x, y)
         y += line_h
-        filtered = [line for line in stance_lines if not line.endswith("Defaults: C=– S=– M=– F=– Ch=– Provider=–")]
+        filtered = [
+            line
+            for line in stance_lines
+            if not line.endswith("Defaults: C=– S=– M=– F=– Ch=– Provider=–")
+        ]
         for line in filtered:
             y = _draw_wrapped(line, x, y, indent=_SECONDARY_INDENT)
         y += line_h // 2
@@ -1107,7 +1173,11 @@ def _draw_suggestions(c: canvas.Canvas) -> None:  # pragma: no cover - visual on
         stop_rendering = False
         if label_y >= body_top and label_y <= body_bottom - line_h:
             draw_text(label, x, label_y)
-            if _suggestion_hover_index == index and rect is not None and paint is not None:
+            if (
+                _suggestion_hover_index == index
+                and rect is not None
+                and paint is not None
+            ):
                 try:
                     underline_rect = Rect(x, label_y + 4, label_width, 1)
                     c.draw_rect(underline_rect)
@@ -1144,7 +1214,9 @@ def _draw_suggestions(c: canvas.Canvas) -> None:  # pragma: no cover - visual on
             channel,
             directional,
         ) = _parse_recipe(suggestion.recipe)
-        axes_text = _axes_summary(completeness, scope, method, form, channel, directional)
+        axes_text = _axes_summary(
+            completeness, scope, method, form, channel, directional
+        )
         if axes_text and not stop_rendering:
             row_y = _draw_wrapped(
                 f"Axes: {axes_text}",
@@ -1237,12 +1309,20 @@ def _draw_suggestions(c: canvas.Canvas) -> None:  # pragma: no cover - visual on
             if (has_persona_axes or has_intent_axis) and not stop_rendering:
                 if row_y >= body_top and row_y <= body_bottom - line_h:
                     persona_line = persona_axes_summary
-                    if persona_display and persona_axes_summary and persona_display != persona_axes_summary:
+                    if (
+                        persona_display
+                        and persona_axes_summary
+                        and persona_display != persona_axes_summary
+                    ):
                         persona_line = f"{persona_display} ({persona_axes_summary})"
                     elif persona_display and not persona_line:
                         persona_line = persona_display
                     # Skip the Who line when it would duplicate the primary command verbatim.
-                    if persona_line and primary_command and persona_line.lower() == primary_command.lower():
+                    if (
+                        persona_line
+                        and primary_command
+                        and persona_line.lower() == primary_command.lower()
+                    ):
                         persona_line = ""
                     if persona_line:
                         persona_line = f"Who: {persona_line}"
@@ -1298,9 +1378,7 @@ def _draw_suggestions(c: canvas.Canvas) -> None:  # pragma: no cover - visual on
                     paint.color = "EEEEEE"
                     try:
                         # Align to text column width (same inset as content).
-                        c.draw_rect(
-                            Rect(x, sep_y, rect.width - (x - rect.x) * 2, 1)
-                        )
+                        c.draw_rect(Rect(x, sep_y, rect.width - (x - rect.x) * 2, 1))
                     except Exception:
                         pass
                     if old_color is not None:

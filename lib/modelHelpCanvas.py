@@ -333,11 +333,12 @@ class HelpCanvasState:
 
 _help_canvas: Optional[canvas.Canvas] = None
 _draw_handlers: list[Callable] = []
-_drag_offset: Optional[tuple[float, float]] = None
+_drag_offset: Optional[tuple[float, float]] = None  # gpos-based anchor
 _hover_close: bool = False
 _hover_panel: bool = False
 _hover_toggle: bool = False
 _last_rect: Optional["Rect"] = None
+_dragging: bool = False
 
 # Default geometry for the quick help window. Kept in one place so future
 # tweaks do not require hunting for magic numbers.
@@ -430,7 +431,11 @@ def _ensure_canvas() -> canvas.Canvas:
         margin_y = 40
 
         # Constrain panel size so it always fits within the screen margins.
-        desired_height = _PANEL_HEIGHT_COMPACT if getattr(HelpCanvasState, "compact", False) else _PANEL_HEIGHT
+        desired_height = (
+            _PANEL_HEIGHT_COMPACT
+            if getattr(HelpCanvasState, "compact", False)
+            else _PANEL_HEIGHT
+        )
         panel_width = min(_PANEL_WIDTH, max(screen_width - 2 * margin_x, 480))
         panel_height = min(desired_height, max(screen_height - 2 * margin_y, 480))
 
@@ -478,56 +483,99 @@ def _ensure_canvas() -> canvas.Canvas:
     _debug("registered draw handler on canvas")
 
     def _on_mouse(evt) -> None:  # pragma: no cover - visual only
-        """Minimal mouse handler to support close and drag affordances."""
-        global _drag_offset, _hover_close, _hover_panel, _hover_toggle, _help_canvas
+        """Minimal mouse handler to support close and drag affordances.
+
+        Drag behaviour now mirrors talon_hud's base_widget more literally:
+        - Use the canvas-relative `pos` plus global `gpos` for coordinates.
+        - Record a drag anchor on left-button press outside header controls.
+        - Apply a 5px movement threshold before committing to drag.
+        - Fire header close / compact-toggle on left-button release.
+        """
+        global \
+            _drag_offset, \
+            _dragging, \
+            _hover_close, \
+            _hover_panel, \
+            _hover_toggle, \
+            _help_canvas
         try:
             rect = getattr(_help_canvas, "rect", None)
             pos = getattr(evt, "pos", None)
             if rect is None or pos is None:
                 return
 
-            event_type = getattr(evt, "event", "") or ""
+            # Normalise event info similarly to talon_hud and other canvases.
+            event_type_raw = getattr(evt, "event", "") or ""
+            event_type = str(event_type_raw).lower()
             button = getattr(evt, "button", None)
             gpos = getattr(evt, "gpos", None) or pos
+            try:
+                from talon import ctrl as _ctrl  # type: ignore
 
-            # In Talon canvas events, `pos` is already local to the canvas.
-            local_x = pos.x
-            local_y = pos.y
-            if local_y < 0 or local_x < 0:
+                mouse_x, mouse_y = _ctrl.mouse_pos()
+            except Exception:
+                mouse_x = getattr(gpos, "x", 0.0)
+                mouse_y = getattr(gpos, "y", 0.0)
+
+            local_x = getattr(pos, "x", None)
+            local_y = getattr(pos, "y", None)
+            if local_x is None or local_y is None:
                 return
+
+            # Ignore obviously off-panel positions unless we're already dragging.
+            if (local_x < 0 or local_y < 0) and _drag_offset is None:
+                return
+
+            abs_x = rect.x + local_x
+            abs_y = rect.y + local_y
 
             header_height = 32
             inside_panel = 0 <= local_x <= rect.width and 0 <= local_y <= rect.height
-            toggle_label = "[compact]" if not getattr(HelpCanvasState, "compact", False) else "[full]"
+            toggle_label = (
+                "[compact]"
+                if not getattr(HelpCanvasState, "compact", False)
+                else "[full]"
+            )
             close_label = "[X]"
             close_left = rect.width - (len(close_label) * 8) - 16
             close_right = rect.width - 16
             toggle_right = close_left - 12
             toggle_left = toggle_right - (len(toggle_label) * 8)
 
-            # Track hover state for the close hotspot so the renderer can
-            # provide visual feedback.
-            if event_type in ("mousemove", "mouse_move"):
-                _hover_close = (
-                    0 <= local_y <= header_height
-                    and close_left <= local_x <= close_right
-                )
-                _hover_toggle = (
-                    0 <= local_y <= header_height
-                    and toggle_left <= local_x <= toggle_right
-                )
+            in_close = (
+                0 <= local_y <= header_height and close_left <= local_x <= close_right
+            )
+            in_toggle = (
+                0 <= local_y <= header_height and toggle_left <= local_x <= toggle_right
+            )
+
+            # Track hover state for the header hotspots.
+            if event_type in ("mousemove", "mouse_move", "mouse_drag", "mouse_dragged"):
+                _hover_close = in_close
+                _hover_toggle = in_toggle
                 _hover_panel = inside_panel
 
-            # Close hotspot: primary-button press in the top-right corner.
-            if event_type in ("mousedown", "mouse_down") and button in (0, 1):
-                if 0 <= local_y <= header_height and close_left <= local_x <= close_right:
+            # Left-button press inside the panel starts a potential drag, unless
+            # the press lands on a header control (mirrors talon_hud widgets).
+            if event_type in ("mousedown", "mouse_down") and button == 0:
+                if inside_panel and not in_close and not in_toggle:
+                    _drag_offset = (mouse_x - rect.x, mouse_y - rect.y)
+                    _dragging = False  # grace until movement exceeds threshold
+                return
+
+            # Left-button release: header clicks first, then end any drag.
+            if event_type in ("mouseup", "mouse_up") and button == 0:
+                if in_close:
                     _debug("close click detected in canvas header")
                     _reset_help_state("all", None)
                     _close_canvas()
                     _drag_offset = None
+                    _dragging = False
                     return
-                if 0 <= local_y <= header_height and toggle_left <= local_x <= toggle_right:
-                    HelpCanvasState.compact = not getattr(HelpCanvasState, "compact", False)
+                if in_toggle:
+                    HelpCanvasState.compact = not getattr(
+                        HelpCanvasState, "compact", False
+                    )
                     _debug(f"compact toggle -> {HelpCanvasState.compact}")
                     try:
                         _help_canvas.hide()
@@ -535,62 +583,81 @@ def _ensure_canvas() -> canvas.Canvas:
                         pass
                     _help_canvas = None
                     _open_canvas()
+                    _drag_offset = None
+                    _dragging = False
                     return
 
-                # Start drag anywhere else in the panel.
-                _drag_offset = (gpos.x - rect.x, gpos.y - rect.y)
-                _debug(f"drag start at offset {_drag_offset}")
-                return
-
-            # End drag on mouse up.
-            if event_type in ("mouseup", "mouse_up"):
-                if _drag_offset is not None:
-                    _debug("drag end")
+                # End drag on mouse up anywhere else.
                 _drag_offset = None
+                _dragging = False
                 _hover_panel = inside_panel
                 return
 
-            # Drag while moving with offset set.
-            if event_type in ("mousemove", "mouse_move") and _drag_offset is not None:
+            # Drag while moving with an active drag offset. This mirrors the
+            # talon_hud pattern of anchoring to the initial global mouse
+            # position and then moving the canvas by subtracting that offset.
+            if (
+                event_type
+                in ("mouse", "mousemove", "mouse_move", "mouse_drag", "mouse_dragged")
+                and _drag_offset is not None
+            ):
                 dx, dy = _drag_offset
-                new_x = gpos.x - dx
-                new_y = gpos.y - dy
+                new_x = mouse_x - dx
+                new_y = mouse_y - dy
+
+                # Apply a small grace to avoid accidental drags (5px threshold),
+                # matching talon_hud's base_widget.
+                if not _dragging:
+                    if abs(new_x - rect.x) < 5 and abs(new_y - rect.y) < 5:
+                        return
+                    _dragging = True
                 try:
-                    # Use the canvas move API, as other Talon canvas UIs do, to
-                    # keep dragging responsive and avoid unnecessary rect
-                    # recreation on every frame.
                     _help_canvas.move(new_x, new_y)
-                except Exception:
-                    # If rect assignment fails for any reason, stop dragging.
+                except Exception as e:
+                    _debug(f"drag move failed: {e}")
                     _drag_offset = None
+                    _dragging = False
                 return
 
             # Vertical scroll via mouse wheel when available.
             if event_type in ("mouse_scroll", "wheel", "scroll"):
-                dy = getattr(evt, "dy", 0) or getattr(evt, "wheel_y", 0)
+                dy_scroll = getattr(evt, "dy", 0) or getattr(evt, "wheel_y", 0)
                 try:
-                    dy = float(dy)
+                    dy_scroll = float(dy_scroll)
                 except Exception:
-                    dy = 0.0
-                if dy:
+                    dy_scroll = 0.0
+                if dy_scroll:
                     # Positive dy scrolls down (content up). Keep the bound
                     # conservative; the content is mostly text and fits well
                     # within a couple of thousand pixels.
-                    new_scroll = HelpCanvasState.scroll_y - dy * 40.0
+                    new_scroll = HelpCanvasState.scroll_y - dy_scroll * 40.0
                     HelpCanvasState.scroll_y = clamp_scroll(new_scroll, 2000.0)
                 return
 
         except Exception:
-            # Mouse handling should never crash Talon; ignore errors.
+            # Mouse handling should never crash Talon; log and ignore.
+            try:
+                import traceback
+
+                _debug(f"mouse handler exception: {traceback.format_exc()}")
+            except Exception:
+                pass
             return
 
+    # Register a single mouse handler to avoid duplicate drag moves across
+    # runtimes that alias events (mouse vs mouse_move). Fall back once if the
+    # primary registration fails.
     try:
         _help_canvas.register("mouse", _on_mouse)
         _debug("registered mouse handler on canvas")
     except Exception:
-        # Older Talon versions or the unittest stubs may not support mouse
-        # registration; treat this as an optional enhancement.
-        _debug("mouse handler registration failed; close hotspot disabled")
+        try:
+            _help_canvas.register("mouse_move", _on_mouse)
+            _debug("registered mouse_move handler on canvas (fallback)")
+        except Exception:
+            # Older Talon versions or the unittest stubs may not support mouse
+            # registration; treat this as an optional enhancement.
+            _debug("mouse handler registration failed; close+drag hotspot disabled")
 
     def _on_key(evt) -> None:  # pragma: no cover - visual only
         """Key handler for quick help (Escape + basic scrolling)."""
@@ -678,10 +745,19 @@ def _open_canvas() -> None:
 
 def _close_canvas() -> None:
     """Hide the canvas-based quick help."""
-    global _help_canvas, _last_rect
+    global \
+        _help_canvas, \
+        _last_rect, \
+        _drag_offset, \
+        _drag_offset_global, \
+        _hover_close, \
+        _hover_panel, \
+        _hover_toggle, \
+        _dragging
     if _help_canvas is None:
         HelpCanvasState.showing = False
         HelpGUIState.showing = False
+        _drag_offset = None
         return
     rect = getattr(_help_canvas, "rect", None)
     if rect is not None:
@@ -697,6 +773,12 @@ def _close_canvas() -> None:
         _help_canvas.hide()
     except Exception:
         pass
+    _drag_offset = None
+    _drag_offset_global = None
+    _dragging = False
+    _hover_close = False
+    _hover_panel = False
+    _hover_toggle = False
     _help_canvas = None
 
 
@@ -789,7 +871,9 @@ def _default_draw_quick_help(
         y = 60 - int(scroll_y)
     line_h = 18
 
-    def _draw_section_label(title: str, start_x: int, start_y: int, accent: str = "E8EEF7") -> int:
+    def _draw_section_label(
+        title: str, start_x: int, start_y: int, accent: str = "E8EEF7"
+    ) -> int:
         """Draw a wide, aligned band heading to segment the layout."""
         if rect is not None and paint is not None and hasattr(rect, "width"):
             try:
@@ -803,7 +887,9 @@ def _default_draw_quick_help(
                 content_width = max(rect.width - 32, 120)
                 min_width = (len(title) * 8) + 2 * pad_x
                 band_width = max(content_width, min_width)
-                bg_rect = Rect(content_left, start_y - pad_y, band_width, line_h + (2 * pad_y))
+                bg_rect = Rect(
+                    content_left, start_y - pad_y, band_width, line_h + (2 * pad_y)
+                )
                 paint.color = accent
                 if hasattr(paint, "Style") and hasattr(paint, "style"):
                     paint.style = paint.Style.FILL
@@ -819,7 +905,9 @@ def _default_draw_quick_help(
         draw_text(title, start_x, start_y + (line_h // 4))
         return start_y + line_h + (line_h // 3)
 
-    def _draw_wrapped_line(text: str, start_x: int, start_y: int, indent: int = 0) -> int:
+    def _draw_wrapped_line(
+        text: str, start_x: int, start_y: int, indent: int = 0
+    ) -> int:
         """Draw text wrapped to fit the canvas width; returns new y position."""
         if not text:
             return start_y
@@ -887,7 +975,9 @@ def _default_draw_quick_help(
         and hasattr(rect, "y")
     ):
         close_label = "[X]"
-        toggle_label = "[compact]" if not getattr(HelpCanvasState, "compact", False) else "[full]"
+        toggle_label = (
+            "[compact]" if not getattr(HelpCanvasState, "compact", False) else "[full]"
+        )
         close_y = rect.y + 24
         # Align close label within the same horizontal band as the title.
         close_x = rect.x + rect.width - (len(close_label) * 8) - 16
@@ -948,14 +1038,18 @@ def _default_draw_quick_help(
 
     # --- Band 2: Grammar + commands ---------------------------------------------------------
     y = _draw_section_label("Commands & grammar", x, y, accent="F3F3F3")
-    y = _draw_wrapped_line("Grammar: model run <staticPrompt> [axes…] <directional lens>", x, y)
+    y = _draw_wrapped_line(
+        "Grammar: model run <staticPrompt> [axes…] <directional lens>", x, y
+    )
     y = _draw_wrapped_line(
         "Say: model run <prompt> <directional>  |  model again [axes] [directional]",
         x,
         y,
         indent=2,
     )
-    y = _draw_wrapped_line("Axes: use one directional; form/channel are singletons.", x, y, indent=2)
+    y = _draw_wrapped_line(
+        "Axes: use one directional; form/channel are singletons.", x, y, indent=2
+    )
     y += line_h // 2
 
     # Persona / Intent quick grammar and presets (compressed).
@@ -1168,18 +1262,24 @@ def _default_draw_quick_help(
     y_left = _draw_axis_column(
         "Completeness", "completeness", _axis_key_list("completeness"), x_left, y_left
     )
-    y_left = _draw_axis_column("Scope", "scope", _axis_key_list("scope"), x_left, y_left)
-    y_left = _draw_axis_column("Method", "method", _axis_key_list("method"), x_left, y_left)
+    y_left = _draw_axis_column(
+        "Scope", "scope", _axis_key_list("scope"), x_left, y_left
+    )
+    y_left = _draw_axis_column(
+        "Method", "method", _axis_key_list("method"), x_left, y_left
+    )
 
     # Right column: form/channel stacked to save horizontal space.
-    y_right = _draw_axis_column("Form", "form", _axis_key_list("form"), x_right, y_right)
-    y_right = _draw_axis_column("Channel", "channel", _axis_key_list("channel"), x_right, y_right)
+    y_right = _draw_axis_column(
+        "Form", "form", _axis_key_list("form"), x_right, y_right
+    )
+    y_right = _draw_axis_column(
+        "Channel", "channel", _axis_key_list("channel"), x_right, y_right
+    )
 
     # Brief axis multiplicity hint.
     axes_bottom = max(y_left, y_right)
-    note = (
-        f"Note: C single; S≤{scope_cap}, M≤{method_cap}, F≤{form_cap}, Ch≤{channel_cap}; combine tags like actions edges."
-    )
+    note = f"Note: C single; S≤{scope_cap}, M≤{method_cap}, F≤{form_cap}, Ch≤{channel_cap}; combine tags like actions edges."
     y = _draw_wrapped_line(note, x_left, axes_bottom)
     y += line_h
 

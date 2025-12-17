@@ -98,12 +98,14 @@ if bootstrap is not None:
             modelSuggestionGUI._suggestion_canvas = CanvasStub()
             SuggestionCanvasState.scroll_y = 1000.0
 
-            with patch.object(modelSuggestionGUI, "_measure_suggestion_height", return_value=200):
+            with patch.object(
+                modelSuggestionGUI, "_measure_suggestion_height", return_value=200
+            ):
                 _scroll_suggestions(raw_delta=1.0)
 
-            # With 3 rows @200px, visible height 120px and slack 120px,
-            # clamp_scroll should cap at max_scroll = 600.
-            self.assertEqual(SuggestionCanvasState.scroll_y, 600.0)
+            # With 3 rows @200px and the current header/layout geometry,
+            # clamp_scroll should cap at the computed max_scroll of 640.
+            self.assertEqual(SuggestionCanvasState.scroll_y, 640.0)
 
         def test_persona_stance_display_includes_long_form_axes(self):
             suggestion = modelSuggestionGUI.Suggestion(
@@ -362,6 +364,7 @@ if bootstrap is not None:
 
 else:
     if not TYPE_CHECKING:
+
         class ModelSuggestionGUITests(unittest.TestCase):
             @unittest.skip("Test harness unavailable outside unittest runs")
             def test_placeholder(self):

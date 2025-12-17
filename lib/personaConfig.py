@@ -205,6 +205,14 @@ PERSONA_PRESETS: tuple[PersonaPreset, ...] = (
         tone="directly",
     ),
     PersonaPreset(
+        key="scientist_to_analyst",
+        label="Scientist to analyst",
+        spoken="science",
+        voice="as scientist",
+        audience="to analyst",
+        tone="formally",
+    ),
+    PersonaPreset(
         key="fun_mode",
         label="Fun mode",
         spoken="fun",

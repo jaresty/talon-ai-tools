@@ -3,10 +3,14 @@ import sys
 import unittest
 from pathlib import Path
 
+from .helpers_axis_artifacts import cleanup_axis_regen_outputs
+
 
 class MakeAxisRegenerateApplyTests(unittest.TestCase):
     def test_axis_regenerate_apply_updates_axis_config(self):
         repo_root = Path(__file__).resolve().parents[1]
+        cleanup_axis_regen_outputs(repo_root)
+        self.addCleanup(cleanup_axis_regen_outputs, repo_root)
         axis_config = repo_root / "lib" / "axisConfig.py"
         generated = repo_root / "tmp" / "axisConfig.generated.py"
 
@@ -33,6 +37,8 @@ class MakeAxisRegenerateApplyTests(unittest.TestCase):
 
     def test_axis_regenerate_apply_is_idempotent_when_already_synced(self):
         repo_root = Path(__file__).resolve().parents[1]
+        cleanup_axis_regen_outputs(repo_root)
+        self.addCleanup(cleanup_axis_regen_outputs, repo_root)
         axis_config = repo_root / "lib" / "axisConfig.py"
         self.assertTrue(axis_config.exists(), "axisConfig.py should exist before running make target")
 

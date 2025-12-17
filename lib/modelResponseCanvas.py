@@ -45,6 +45,10 @@ class ResponseCanvasState:
     suppress_hide_reset: bool = False
 
 
+_EVENT_LOG_LIMIT = 0  # disable event logging in production
+_event_log_count = 0
+
+
 def _request_is_in_flight() -> bool:
     """Return True when a GPT request is currently running."""
     try:
@@ -220,6 +224,16 @@ def _debug(msg: str) -> None:
         pass
 
 
+def _reset_event_log() -> None:
+    """No-op: event logging disabled in production for performance."""
+    globals()["_event_log_count"] = 0
+
+
+def _log_event(evt, extra: str = "") -> None:
+    """No-op when logging is disabled."""
+    return
+
+
 def _log_canvas_close(reason: str) -> None:
     """Best-effort tracing for unexpected canvas closes."""
     try:
@@ -236,9 +250,7 @@ def _log_canvas_close(reason: str) -> None:
         showing = getattr(ResponseCanvasState, "showing", False)
     except Exception:
         showing = False
-    _debug(
-        f"close reason={reason} showing={showing} phase={phase} surface={surface}"
-    )
+    _debug(f"close reason={reason} showing={showing} phase={phase} surface={surface}")
 
 
 def _guard_response_canvas(allow_inflight: bool = False) -> bool:
@@ -256,7 +268,9 @@ def _guard_response_canvas(allow_inflight: bool = False) -> bool:
 def _ensure_response_canvas() -> canvas.Canvas:
     """Create the response canvas if needed and register handlers."""
     global _response_canvas, _response_handlers_registered, _last_hide_handler
+    _reset_event_log()
     last_draw_error: Optional[str] = None
+
     def _hide_handler():
         try:
             clear_response_fallback(getattr(GPTState, "last_request_id", None))
@@ -280,6 +294,7 @@ def _ensure_response_canvas() -> canvas.Canvas:
             ResponseCanvasState.showing = False
         except Exception:
             pass
+
     _last_hide_handler = _hide_handler
 
     def _prime_footer_bounds_for_tests(c: canvas.Canvas) -> None:
@@ -362,6 +377,7 @@ def _ensure_response_canvas() -> canvas.Canvas:
 
         def _on_hide(*_args, **_kwargs):
             _hide_handler()
+
         try:
             _last_hide_handler = _on_hide
             _response_canvas.register("hide", _on_hide)
@@ -384,9 +400,17 @@ def _ensure_response_canvas() -> canvas.Canvas:
             if rect is None or pos is None:
                 return
 
-            event_type = getattr(evt, "event", "") or ""
+            event_type_raw = getattr(evt, "event", "") or ""
+            event_type = str(event_type_raw).lower()
             button = getattr(evt, "button", None)
             gpos = getattr(evt, "gpos", None) or pos
+            try:
+                from talon import ctrl as _ctrl  # type: ignore
+
+                mouse_x, mouse_y = _ctrl.mouse_pos()
+            except Exception:
+                mouse_x = getattr(gpos, "x", 0.0)
+                mouse_y = getattr(gpos, "y", 0.0)
 
             local_x = pos.x
             local_y = pos.y
@@ -443,18 +467,26 @@ def _ensure_response_canvas() -> canvas.Canvas:
                             actions.user.confirmation_gui_copy()
                             actions.user.model_response_canvas_close()
                         elif key == "discard":
-                            close_overlays((getattr(actions.user, "confirmation_gui_close", None),))
+                            close_overlays(
+                                (getattr(actions.user, "confirmation_gui_close", None),)
+                            )
                             actions.user.model_response_canvas_close()
                         elif key == "context":
-                            close_overlays((getattr(actions.user, "confirmation_gui_close", None),))
+                            close_overlays(
+                                (getattr(actions.user, "confirmation_gui_close", None),)
+                            )
                             actions.user.confirmation_gui_pass_context()
                             actions.user.model_response_canvas_close()
                         elif key == "query":
-                            close_overlays((getattr(actions.user, "confirmation_gui_close", None),))
+                            close_overlays(
+                                (getattr(actions.user, "confirmation_gui_close", None),)
+                            )
                             actions.user.confirmation_gui_pass_query()
                             actions.user.model_response_canvas_close()
                         elif key == "thread":
-                            close_overlays((getattr(actions.user, "confirmation_gui_close", None),))
+                            close_overlays(
+                                (getattr(actions.user, "confirmation_gui_close", None),)
+                            )
                             actions.user.confirmation_gui_pass_thread()
                             actions.user.model_response_canvas_close()
                         elif key == "browser":
@@ -464,11 +496,15 @@ def _ensure_response_canvas() -> canvas.Canvas:
                                 actions.user.confirmation_gui_open_browser()
                             actions.user.model_response_canvas_close()
                         elif key == "analyze":
-                            close_overlays((getattr(actions.user, "confirmation_gui_close", None),))
+                            close_overlays(
+                                (getattr(actions.user, "confirmation_gui_close", None),)
+                            )
                             actions.user.confirmation_gui_analyze_prompt()
                             actions.user.model_response_canvas_close()
                         elif key == "patterns":
-                            close_overlays((getattr(actions.user, "confirmation_gui_close", None),))
+                            close_overlays(
+                                (getattr(actions.user, "confirmation_gui_close", None),)
+                            )
                             actions.user.confirmation_gui_open_pattern_menu_for_prompt()
                             actions.user.model_response_canvas_close()
                         elif key == "quick_help":
@@ -487,7 +523,7 @@ def _ensure_response_canvas() -> canvas.Canvas:
                     return
 
                 # Start drag anywhere else.
-                _response_drag_offset = (gpos.x - rect.x, gpos.y - rect.y)
+                _response_drag_offset = (mouse_x - rect.x, mouse_y - rect.y)
                 return
 
             if event_type in ("mouseup", "mouse_up"):
@@ -511,12 +547,13 @@ def _ensure_response_canvas() -> canvas.Canvas:
 
             # Drag while moving.
             if (
-                event_type in ("mousemove", "mouse_move")
+                event_type
+                in ("mouse", "mousemove", "mouse_move", "mouse_drag", "mouse_dragged")
                 and _response_drag_offset is not None
             ):
                 dx, dy = _response_drag_offset
-                new_x = gpos.x - dx
-                new_y = gpos.y - dy
+                new_x = mouse_x - dx
+                new_y = mouse_y - dy
                 try:
                     _response_canvas.move(new_x, new_y)
                 except Exception:
@@ -536,6 +573,7 @@ def _ensure_response_canvas() -> canvas.Canvas:
             rect = getattr(_response_canvas, "rect", None)
             if rect is None:
                 return
+            _log_event(evt, extra="scroll_evt")
             dy = getattr(evt, "dy", None)
             delta_y = getattr(evt, "delta_y", None)
             pixels = getattr(evt, "pixels", None)
@@ -883,8 +921,7 @@ def _default_draw_response(c: canvas.Canvas) -> None:  # pragma: no cover - visu
     if static_prompt:
         axis_parts.append(static_prompt)
     last_completeness = axis_join(
-        axes_tokens,
-        "completeness", getattr(GPTState, "last_completeness", "") or ""
+        axes_tokens, "completeness", getattr(GPTState, "last_completeness", "") or ""
     )
     last_scope = axis_join(
         axes_tokens, "scope", getattr(GPTState, "last_scope", "") or ""
@@ -892,9 +929,7 @@ def _default_draw_response(c: canvas.Canvas) -> None:  # pragma: no cover - visu
     last_method = axis_join(
         axes_tokens, "method", getattr(GPTState, "last_method", "") or ""
     )
-    last_form = axis_join(
-        axes_tokens, "form", getattr(GPTState, "last_form", "") or ""
-    )
+    last_form = axis_join(axes_tokens, "form", getattr(GPTState, "last_form", "") or "")
     last_channel = axis_join(
         axes_tokens, "channel", getattr(GPTState, "last_channel", "") or ""
     )
@@ -1309,17 +1344,13 @@ def _default_draw_response(c: canvas.Canvas) -> None:  # pragma: no cover - visu
     except Exception:
         streaming_adapter = None
     streaming_text = _coerce_text(streaming_snapshot.get("text", ""))
-    streaming_error_message = _coerce_text(
-        streaming_snapshot.get("error_message", "")
-    )
+    streaming_error_message = _coerce_text(streaming_snapshot.get("error_message", ""))
     streaming_completed = bool(streaming_snapshot.get("completed"))
     streaming_errored = bool(streaming_snapshot.get("errored"))
     if streaming_adapter is not None and streaming_snapshot:
         try:
             snapshot_view = streaming_adapter(streaming_snapshot) or {}
-            streaming_text = _coerce_text(
-                snapshot_view.get("text", streaming_text)
-            )
+            streaming_text = _coerce_text(snapshot_view.get("text", streaming_text))
             streaming_error_message = _coerce_text(
                 snapshot_view.get("error_message", streaming_error_message)
             )

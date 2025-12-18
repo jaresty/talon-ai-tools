@@ -170,7 +170,7 @@ if bootstrap is not None:
             entry = latest()  # type: ignore[assignment]
             self.assertIsNotNone(entry)
             self.assertEqual(entry.axes.get("directional"), ["bog"])
-            self.assertEqual(entry.axes.get("custom"), ["keep_me"])
+            self.assertIsNone(entry.axes.get("custom"))
 
         def test_append_entry_requires_directional_by_default(self):
             """Guardrail: history entries should be dropped if directional axis is missing."""

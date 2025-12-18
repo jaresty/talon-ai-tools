@@ -28,6 +28,7 @@ from .requestState import is_in_flight, try_start_request
 from .modelHelpers import notify
 from .overlayHelpers import apply_canvas_blocking
 from .overlayLifecycle import close_overlays, close_common_overlays
+from .personaConfig import persona_intent_maps
 
 
 try:
@@ -153,23 +154,43 @@ def _rect_contains(rect: skia.Rect, x: float, y: float) -> bool:
 def _persona_presets():
     """Return the latest persona presets (reload-safe).
 
-    Prefer the persona catalog helper when available so callers share a
-    single, typed preset surface, falling back to PERSONA_PRESETS when
-    running in stubs or older runtimes.
+    Prefer the shared persona intent maps so callers consume the same
+    catalogue-backed preset surface.
     """
+    try:
+        maps = persona_intent_maps()
+    except Exception:
+        return ()
+    return tuple(maps.persona_presets.values())
+
+
+def _canonical_persona_token(axis: str, value: str) -> str:
     try:
         from . import personaConfig
 
-        catalog = getattr(personaConfig, "persona_catalog", None)
-        if callable(catalog):
-            return tuple(catalog().values())
-        return tuple(getattr(personaConfig, "PERSONA_PRESETS", ()))
+        return personaConfig.canonical_persona_token(axis, value)
     except Exception:
-        return ()
+        return str(value or "").strip()
 
 
 def _intent_spoken_buckets():
     """Return the latest intent buckets keyed by spoken token."""
+    try:
+        from . import personaConfig
+
+        snapshot = personaConfig.persona_intent_catalog_snapshot()
+        buckets: dict[str, list[str]] = {}
+        for bucket, canonicals in snapshot.intent_buckets.items():
+            spoken_tokens: list[str] = []
+            for canonical in canonicals:
+                spoken = snapshot.intent_display_map.get(canonical, canonical)
+                spoken_tokens.append(spoken)
+            if spoken_tokens:
+                buckets[bucket] = spoken_tokens
+        if buckets:
+            return buckets
+    except Exception:
+        pass
     try:
         from . import personaConfig
 
@@ -897,16 +918,19 @@ def _cheat_sheet_text() -> str:
         try:
             from . import personaConfig
 
-            catalog = getattr(personaConfig, "persona_catalog", None)
-            presets = (
-                catalog().values()
-                if callable(catalog)
-                else getattr(personaConfig, "PERSONA_PRESETS", ())
+            snapshot_fn = getattr(
+                personaConfig, "persona_intent_catalog_snapshot", None
             )
-            for preset in presets:
-                spoken = (preset.spoken or "").strip().lower()
-                if spoken:
-                    names.append(spoken)
+            if callable(snapshot_fn):
+                snapshot = snapshot_fn()
+                names = sorted(snapshot.persona_spoken_map.keys())
+            else:
+                presets = getattr(personaConfig, "PERSONA_PRESETS", ())
+                for preset in presets:
+                    spoken = (preset.spoken or "").strip().lower()
+                    if spoken:
+                        names.append(spoken)
+                names.sort()
         except Exception:
             pass
         return names

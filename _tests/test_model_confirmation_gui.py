@@ -1,5 +1,6 @@
 import unittest
 from typing import TYPE_CHECKING
+from unittest.mock import patch
 
 try:
     from bootstrap import bootstrap
@@ -9,17 +10,23 @@ else:
     bootstrap()
 
 if bootstrap is not None:
-    from talon_user.lib.modelConfirmationGUI import confirmation_gui
     from talon_user.lib.modelConfirmationGUI import (
+        confirmation_gui,
+        ConfirmationGUIState,
         UserActions as ConfirmationActions,
     )
     from talon_user.lib.modelState import GPTState
+    from talon_user.lib import modelDestination as model_destination_module
     from talon import actions
 
     class ConfirmationGUIMetaTests(unittest.TestCase):
         def setUp(self) -> None:
             GPTState.reset_all()
             actions.user.calls.clear()
+            actions.user.pasted.clear()
+            ConfirmationGUIState.current_presentation = None
+            ConfirmationGUIState.display_thread = False
+            ConfirmationGUIState.last_item_text = ""
 
         def test_includes_meta_preview_when_last_meta_present(self) -> None:
             GPTState.text_to_confirm = "Body"
@@ -212,7 +219,12 @@ if bootstrap is not None:
                     ConfirmationActions.confirmation_gui_close
                 )  # type: ignore[attr-defined]
                 actions.user.model_response_canvas_close = _record_canvas_close  # type: ignore[attr-defined]
-                ConfirmationActions.confirmation_gui_paste()
+                with patch.object(
+                    model_destination_module.Paste,
+                    "inside_textarea",
+                    return_value=True,
+                ):
+                    ConfirmationActions.confirmation_gui_paste()
             finally:
                 actions.user.confirmation_gui_close = orig_close  # type: ignore[attr-defined]
                 if orig_canvas_close is not None:
@@ -228,6 +240,46 @@ if bootstrap is not None:
                 labels.index("paste"),
             )
             self.assertEqual(actions.user.pasted[-1], "Paste me")
+
+        def test_paste_records_calls_with_mocked_paste(self) -> None:
+            GPTState.text_to_confirm = "Paste me"
+            actions.user.calls.clear()
+            actions.user.pasted.clear()
+
+            with patch.object(
+                model_destination_module.Paste, "inside_textarea", return_value=True
+            ):
+                with patch.object(actions.user, "paste") as paste_mock:
+                    ConfirmationActions.confirmation_gui_paste()
+                    paste_mock.assert_called_once()
+
+            labels = [call[0] for call in actions.user.calls]
+            self.assertIn("paste", labels)
+            self.assertEqual(actions.user.pasted[-1], "Paste me")
+
+        def test_paste_falls_back_to_canvas_when_no_textarea(self) -> None:
+            GPTState.text_to_confirm = "Review me"
+            actions.user.calls.clear()
+            actions.user.pasted.clear()
+            ConfirmationGUIState.current_presentation = None
+
+            with patch.object(
+                model_destination_module.Paste,
+                "inside_textarea",
+                return_value=False,
+            ):
+                ConfirmationActions.confirmation_gui_paste()
+
+            self.assertFalse(actions.user.pasted)
+            append_calls = [
+                call
+                for call in actions.user.calls
+                if call[0] == "confirmation_gui_append"
+            ]
+            self.assertTrue(append_calls)
+            self.assertEqual(
+                getattr(GPTState, "current_destination_kind", ""), "window"
+            )
 
 else:
     if not TYPE_CHECKING:

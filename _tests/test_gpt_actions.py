@@ -123,6 +123,15 @@ if bootstrap is not None:
                 "GPT _intent_presets must cover the same IntentPreset keys as intent_catalog",
             )
 
+        def test_canonical_persona_value_delegates_to_persona_config(self) -> None:
+            with patch(
+                "talon_user.lib.personaConfig.canonical_persona_token",
+                return_value="catalog-token",
+            ) as canonical_mock:
+                result = gpt_module._canonical_persona_value("voice", "As Programmer")
+            self.assertEqual(result, "catalog-token")
+            canonical_mock.assert_called_once_with("voice", "As Programmer")
+
         def test_debug_toggles_respect_in_flight_guard(self):
             with (
                 patch.object(
@@ -651,11 +660,33 @@ if bootstrap is not None:
             self.assertEqual(prompt.audience, "to junior engineer")
             self.assertEqual(prompt.tone, "kindly")
 
+        def test_persona_set_preset_accepts_spoken_alias(self) -> None:
+            GPTState.reset_all()
+            GPTState.system_prompt = gpt_module.GPTSystemPrompt()
+
+            gpt_module.UserActions.persona_set_preset("mentor")
+
+            prompt = GPTState.system_prompt
+            self.assertIsInstance(prompt, gpt_module.GPTSystemPrompt)
+            self.assertEqual(prompt.voice, "as teacher")
+            self.assertEqual(prompt.audience, "to junior engineer")
+            self.assertEqual(prompt.tone, "kindly")
+
         def test_intent_set_preset_updates_purpose_axis(self) -> None:
             GPTState.reset_all()
             GPTState.system_prompt = gpt_module.GPTSystemPrompt()
 
             gpt_module.UserActions.intent_set_preset("decide")
+
+            prompt = GPTState.system_prompt
+            self.assertIsInstance(prompt, gpt_module.GPTSystemPrompt)
+            self.assertEqual(prompt.intent, "decide")
+
+        def test_intent_set_preset_accepts_display_alias(self) -> None:
+            GPTState.reset_all()
+            GPTState.system_prompt = gpt_module.GPTSystemPrompt()
+
+            gpt_module.UserActions.intent_set_preset("for deciding")
 
             prompt = GPTState.system_prompt
             self.assertIsInstance(prompt, gpt_module.GPTSystemPrompt)
@@ -752,6 +783,90 @@ if bootstrap is not None:
                     gpt_module._canonical_persona_value("intent", preset.intent),
                     preset.intent,
                 )
+
+        def test_build_persona_intent_docs_uses_catalog_snapshot(self) -> None:
+            from talon_user.lib.personaConfig import persona_intent_catalog_snapshot
+
+            snapshot = persona_intent_catalog_snapshot()
+            with patch(
+                "talon_user.lib.personaConfig.persona_intent_catalog_snapshot",
+                return_value=snapshot,
+            ) as snapshot_mock:
+                doc = gpt_module._build_persona_intent_docs()
+            snapshot_mock.assert_called_once()
+            self.assertIn("Intent buckets", doc)
+            for bucket in snapshot.intent_buckets.keys():
+                self.assertIn(bucket, doc)
+
+        def test_build_persona_intent_docs_renders_snapshot_content(self) -> None:
+            from talon_user.lib.personaConfig import (
+                IntentPreset,
+                PersonaIntentCatalogSnapshot,
+                PersonaPreset,
+            )
+
+            custom_snapshot = PersonaIntentCatalogSnapshot(
+                persona_presets={
+                    "custom_preset": PersonaPreset(
+                        key="custom_preset",
+                        label="Custom Label",
+                        spoken="custom spoken",
+                        voice="as pioneer",
+                        audience="to scouts",
+                        tone="kindly",
+                    )
+                },
+                persona_spoken_map={"custom spoken": "custom_preset"},
+                persona_axis_tokens={
+                    "voice": ["as pioneer"],
+                    "audience": ["to scouts"],
+                    "tone": ["kindly"],
+                },
+                intent_presets={
+                    "vision": IntentPreset(
+                        key="vision",
+                        label="Vision Label",
+                        intent="vision",
+                    )
+                },
+                intent_spoken_map={"vision spoken": "vision"},
+                intent_axis_tokens={"intent": ["vision"]},
+                intent_buckets={"strategy": ["vision"]},
+                intent_display_map={"vision": "Vision for Execs"},
+            )
+
+            def fake_persona_docs_map(axis: str):
+                mapping = {
+                    "voice": {"as pioneer": "desc"},
+                    "audience": {"to scouts": "desc"},
+                    "tone": {"kindly": "desc"},
+                    "intent": {"vision": "desc"},
+                }
+                return mapping[axis]
+
+            with (
+                patch(
+                    "talon_user.lib.personaConfig.persona_intent_catalog_snapshot",
+                    return_value=custom_snapshot,
+                ) as snapshot_mock,
+                patch(
+                    "talon_user.GPT.gpt.persona_docs_map",
+                    side_effect=fake_persona_docs_map,
+                ) as docs_mock,
+            ):
+                doc = gpt_module._build_persona_intent_docs()
+
+            snapshot_mock.assert_called_once()
+            docs_mock.assert_called()
+            self.assertIn(
+                "- persona custom_preset: Custom Label (as pioneer to scouts kindly)",
+                doc,
+            )
+            self.assertIn(
+                "- intent vision: Vision for Execs (vision)",
+                doc,
+            )
+            self.assertIn("- strategy: Vision for Execs", doc)
 
         def test_persona_status_respects_in_flight_guard(self) -> None:
             with patch.object(

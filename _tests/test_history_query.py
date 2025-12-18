@@ -71,6 +71,20 @@ if bootstrap is not None:
             self.assertEqual(via_facade, direct)
             self.assertTrue(any("provider=gemini" in line for line in via_facade))
 
+        def test_history_summary_lines_reject_unknown_axis_keys(self) -> None:
+            class DummyEntry:
+                def __init__(self) -> None:
+                    self.request_id = "rid-bad"
+                    self.prompt = "prompt one"
+                    self.duration_ms = 7
+                    self.recipe = "infer · full · rigor"
+                    self.provider_id = "gemini"
+                    self.axes = {"directional": ["fog"], "unknown": ["value"]}
+
+            entries = [DummyEntry()]
+            with self.assertRaisesRegex(ValueError, "unknown axis keys"):
+                history_summary_lines(entries)
+
         def test_history_drawer_entries_from_delegates_to_drawer_helper(self) -> None:
             class DummyEntry:
                 def __init__(self) -> None:
@@ -116,6 +130,26 @@ if bootstrap is not None:
             self.assertIn("slack", body)
             self.assertIn("fog", body)
             self.assertNotIn("recipe", body)
+
+        def test_history_drawer_rejects_unknown_axis_keys(self) -> None:
+            class DummyEntry:
+                def __init__(self) -> None:
+                    self.request_id = "rid-unknown"
+                    self.prompt = "prompt"
+                    self.response = "resp"
+                    self.meta = "meta"
+                    self.duration_ms = 5
+                    self.recipe = "infer · gist"
+                    self.provider_id = "openai"
+                    self.axes = {
+                        "directional": ["fog"],
+                        "completeness": ["gist"],
+                        "mystery": ["value"],
+                    }
+
+            entries = [DummyEntry()]
+            with self.assertRaisesRegex(ValueError, "unknown axis keys"):
+                history_drawer_entries_from(entries)
 
         def test_history_drawer_skips_entries_without_directional(self) -> None:
             class DummyEntry:

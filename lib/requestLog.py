@@ -2,9 +2,10 @@
 
 from __future__ import annotations
 
+from collections import deque
 from dataclasses import dataclass, field
 from types import MappingProxyType
-from typing import Mapping, Optional, Tuple
+from typing import Iterable, Mapping, Optional, Tuple
 from copy import deepcopy
 
 from .requestState import RequestDropReason
@@ -48,85 +49,52 @@ class AxisSnapshot:
     """Structured view of Concordance-relevant axes for history/log surfaces."""
 
     axes: Mapping[str, Tuple[str, ...]] = field(default_factory=dict)
-    extras: Mapping[str, Tuple[str, ...]] = field(default_factory=dict)
-    legacy_style: bool = False
 
     def __post_init__(self) -> None:
         axes_source = self.axes or {}
-        extras_source = self.extras or {}
         axes_map = {
             key: tuple(str(value).strip() for value in values if str(value).strip())
             for key, values in axes_source.items()
         }
-        extras_map = {
-            key: tuple(str(value).strip() for value in values if str(value).strip())
-            for key, values in extras_source.items()
-        }
         object.__setattr__(self, "axes", MappingProxyType(axes_map))
-        object.__setattr__(self, "extras", MappingProxyType(extras_map))
 
     def get(self, key: str, default: Optional[list[str]] = None) -> Optional[list[str]]:
         if key in self.axes:
             return list(self.axes[key])
-        if key in self.extras:
-            return list(self.extras[key])
         return default
 
     def keys(self):
-        seen: set[str] = set()
-        for key in self.axes.keys():
-            seen.add(key)
-            yield key
-        for key in self.extras.keys():
-            if key not in seen:
-                yield key
+        return iter(self.axes.keys())
 
     def items(self):
-        yielded: set[str] = set()
         for key, values in self.axes.items():
-            yielded.add(key)
             yield key, list(values)
-        for key, values in self.extras.items():
-            if key not in yielded:
-                yield key, list(values)
 
     def values(self):
-        for _key, values in self.items():
+        for values in self.axes.values():
             yield list(values)
 
     def __contains__(self, key: object) -> bool:
-        return key in self.axes or key in self.extras
+        return key in self.axes
 
     def __iter__(self):
         return self.keys()
 
     def __len__(self) -> int:
-        return len(set(self.axes).union(self.extras))
+        return len(self.axes)
 
-    def as_dict(self, include_extras: bool = True) -> dict[str, list[str]]:
-        data: dict[str, list[str]] = {
-            key: list(values) for key, values in self.axes.items()
-        }
-        if include_extras:
-            for key, values in self.extras.items():
-                if key not in data:
-                    data[key] = list(values)
-        return data
+    def as_dict(self) -> dict[str, list[str]]:
+        return {key: list(values) for key, values in self.axes.items()}
 
     def known_axes(self) -> dict[str, list[str]]:
         """Return only Concordance-recognised axes."""
 
         return {key: list(values) for key, values in self.axes.items()}
 
-    def extra_axes(self) -> dict[str, list[str]]:
-        """Return passthrough axis keys that are not part of the Concordance set."""
-
-        return {key: list(values) for key, values in self.extras.items()}
-
 
 def _filter_axes_payload(
     axes: Optional[dict[str, list[str]]],
-) -> tuple[dict[str, list[str]], bool]:
+) -> dict[str, list[str]]:
     """Normalise and filter axes payload for request history.
 
     Ensures token-only axis state per ADR-034/ADR-0045/ADR-048 by:
@@ -134,11 +102,11 @@ def _filter_axes_payload(
     - Dropping obviously hydrated values that start with 'Important:'
     - Keeping known axis tokens when present in axisMappings
     - Applying axis caps/deduplication (scope×2, method×3, form×1, channel×1)
-    - Rejecting legacy style axis payloads in favour of form/channel
-    - Passing through non-axis keys (if any) after basic trimming
+    - Rejecting the legacy ``style`` axis in favour of form/channel
+    - Dropping non-catalog axis keys instead of passing them through
     """
     if not axes:
-        return {}, False
+        return {}
 
     # Lazy imports to avoid cycles with modelHelpers/talonSettings callers.
     try:
@@ -147,13 +115,6 @@ def _filter_axes_payload(
 
         def _canonicalise_axis_tokens(axis: str, tokens: list[str]) -> list[str]:
             return tokens
-
-    try:
-        from .modelHelpers import notify
-    except Exception:  # pragma: no cover - defensive fallback for stubs
-
-        def notify(_msg: str) -> None:
-            return None
 
     catalog = axis_catalog()
     axis_tokens = {
@@ -164,7 +125,6 @@ def _filter_axes_payload(
     }
 
     filtered: dict[str, list[str]] = {}
-    legacy_style = False
 
     for axis_name, raw_values in axes.items():
         values: list[str]
@@ -179,14 +139,7 @@ def _filter_axes_payload(
             continue
 
         if axis_name == "style":
-            try:
-                notify(
-                    "GPT: style axis is removed; use form/channel instead (history log)."
-                )
-            except Exception:
-                pass
-            legacy_style = True
-            continue
+            raise ValueError("style axis is removed; use form/channel instead.")
 
         if axis_name in (
             "completeness",
@@ -222,32 +175,18 @@ def _filter_axes_payload(
                 if axis_name != "completeness":
                     kept = _canonicalise_axis_tokens(axis_name, kept)
                 filtered[axis_name] = kept
-            continue
 
-        # For any unexpected axis keys, keep trimmed non-empty values as-is.
-        passthrough: list[str] = []
-        for token in values:
-            if token:
-                passthrough.append(token)
-        if passthrough:
-            filtered[axis_name] = passthrough
-
-    return filtered, legacy_style
+    return filtered
 
 
 def axis_snapshot_from_axes(axes: Optional[dict[str, list[str]]]) -> AxisSnapshot:
     """Pure helper: normalise axes into a Concordance-aligned snapshot."""
 
-    filtered, legacy_style = _filter_axes_payload(axes)
+    filtered = _filter_axes_payload(axes)
     known_axes = {
         key: list(values) for key, values in filtered.items() if key in KNOWN_AXIS_KEYS
     }
-    extras = {
-        key: list(values)
-        for key, values in filtered.items()
-        if key not in KNOWN_AXIS_KEYS
-    }
-    return AxisSnapshot(axes=known_axes, extras=extras, legacy_style=legacy_style)
+    return AxisSnapshot(axes=known_axes)
 
 
 def append_entry(
@@ -260,11 +199,12 @@ def append_entry(
     duration_ms: Optional[int] = None,
     axes: Optional[dict[str, list[str]]] = None,
     provider_id: str = "",
-    legacy_style: bool = False,
-    *,
-    require_directional: bool = True,
 ) -> None:
-    """Append a request entry to the bounded history ring."""
+    """Append a request entry to the bounded history ring.
+
+    Entries missing a directional lens are dropped immediately in line with
+    ADR-048/ADR-0056 concordance requirements.
+    """
     if not request_id or not str(request_id).strip():
         message = drop_reason_message("missing_request_id")
         try:
@@ -281,8 +221,8 @@ def append_entry(
         )
     except Exception:
         pass
-    axes_payload, legacy_style = _filter_axes_payload(axes)
-    if require_directional and (
+    axes_payload = _filter_axes_payload(axes)
+    if (
         not axes_payload
         or not isinstance(axes_payload, dict)
         or not axes_payload.get("directional")
@@ -310,7 +250,6 @@ def append_entry(
             duration_ms=duration_ms,
             axes=axes_payload,
             provider_id=provider_id or "",
-            legacy_style=legacy_style,
         )
     )
     try:
@@ -334,7 +273,6 @@ def append_entry_from_request(
     duration_ms: Optional[int] = None,
     axes: Optional[dict[str, list[str]]] = None,
     provider_id: str = "",
-    require_directional: bool = True,
 ) -> str:
     """Append a history entry derived from a request dict.
 
@@ -366,7 +304,7 @@ def append_entry_from_request(
     except Exception:
         axes_copy = dict(axes_source)
 
-    axes_payload, legacy_style = _filter_axes_payload(axes_copy)
+    axes_payload = _filter_axes_payload(axes_copy)
 
     append_entry(
         request_id,
@@ -378,8 +316,6 @@ def append_entry_from_request(
         duration_ms=duration_ms,
         axes=axes_payload,
         provider_id=provider_id,
-        legacy_style=legacy_style,
-        require_directional=require_directional,
     )
     return prompt_text
 
@@ -449,6 +385,98 @@ def drop_reason_message(reason: RequestDropReason) -> str:
             "(fog/fig/dig/ong/rog/bog/jog)."
         )
     return ""
+
+
+def validate_history_axes() -> None:
+    """Ensure stored history entries use Concordance-recognised axes with directional lenses."""
+
+    for entry in _history.all():
+        axes = entry.axes or {}
+        if not isinstance(axes, dict):
+            try:
+                axes = dict(axes)
+            except Exception:
+                axes = {}
+
+        directional = axes.get("directional")
+        if isinstance(directional, list):
+            directional_tokens = [
+                str(token).strip() for token in directional if str(token).strip()
+            ]
+        elif directional:
+            directional_tokens = [str(directional).strip()]
+        else:
+            directional_tokens = []
+
+        if not directional_tokens:
+            request_id = entry.request_id or "?"
+            raise ValueError(
+                f"History entry {request_id!r} is missing a directional lens; Concordance requires one."
+            )
+
+        unknown = sorted(key for key in axes.keys() if key not in KNOWN_AXIS_KEYS)
+        if unknown:
+            keys = ", ".join(unknown)
+            request_id = entry.request_id or "?"
+            raise ValueError(
+                f"History entry {request_id!r} includes unsupported axis keys: {keys}"
+            )
+
+
+def remediate_history_axes(
+    *,
+    drop_if_missing_directional: bool = False,
+    dry_run: bool = False,
+) -> dict[str, int]:
+    """Rewrite stored history axes to match Concordance guardrails.
+
+    Returns a stats dictionary containing counts for `total`, `updated`, `dropped`,
+    and `unchanged`. When `drop_if_missing_directional` is true, entries whose
+    cleaned axes lack a directional lens are removed. When `dry_run` is true the
+    stats are computed without mutating the in-memory history ring.
+    """
+
+    entries = list(_history.all())
+    stats = {"total": len(entries), "updated": 0, "dropped": 0, "unchanged": 0}
+    new_entries = []
+
+    for entry in entries:
+        original_axes = entry.axes or {}
+        try:
+            cleaned_axes = _filter_axes_payload(original_axes)
+        except ValueError:
+            stats["dropped"] += 1
+            continue
+
+        has_directional = bool(cleaned_axes.get("directional"))
+        if drop_if_missing_directional and not has_directional:
+            stats["dropped"] += 1
+            continue
+
+        if cleaned_axes != original_axes:
+            stats["updated"] += 1
+            new_entries.append(
+                RequestLogEntry(
+                    request_id=entry.request_id,
+                    prompt=entry.prompt,
+                    response=entry.response,
+                    meta=entry.meta,
+                    recipe=entry.recipe,
+                    started_at_ms=entry.started_at_ms,
+                    duration_ms=entry.duration_ms,
+                    axes=cleaned_axes,
+                    provider_id=entry.provider_id,
+                )
+            )
+        else:
+            stats["unchanged"] += 1
+            new_entries.append(entry)
+
+    if not dry_run:
+        _history._entries = deque(new_entries, maxlen=_history._max)  # type: ignore[attr-defined]
+        set_drop_reason("")
+
+    return stats
 
 
 def set_drop_reason(reason: RequestDropReason, message: str | None = None) -> None:

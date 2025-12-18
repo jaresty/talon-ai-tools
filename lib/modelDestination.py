@@ -1,6 +1,7 @@
 import datetime
 import os
 import re
+import traceback
 from typing import Iterable, List, Sequence, Union, cast, Iterator, Dict, Optional
 
 from ..lib.modelSource import GPTItem
@@ -9,9 +10,17 @@ from ..lib.modelConfirmationGUI import confirmation_gui
 from talon import actions, clip, settings, ui
 from ..lib.modelState import GPTState
 from ..lib.axisJoin import axis_join
-from ..lib.modelHelpers import format_messages, notify
+from ..lib.modelHelpers import (
+    format_messages,
+    initialise_destination_runtime_state,
+    notify,
+)
 from ..lib.HTMLBuilder import Builder
 from ..lib.promptPipeline import PromptResult
+from ..lib.suggestionCoordinator import (
+    last_recipe_snapshot,
+    recipe_header_lines_from_snapshot,
+)
 
 
 def _set_destination_kind(kind: str) -> None:
@@ -32,6 +41,30 @@ def _response_canvas_showing() -> bool:
         return bool(getattr(GPTState, "response_canvas_showing", False))
     except Exception:
         return False
+
+
+def _trace_canvas_flow(event: str, **data) -> None:
+    try:
+        enabled = bool(settings.get("user.gpt_trace_canvas_flow", 1))
+    except Exception:
+        enabled = False
+    if not enabled:
+        return
+    parts = [f"[canvas-flow] {event}"]
+    if data:
+        details = " ".join(f"{key}={value!r}" for key, value in data.items())
+        parts.append(details)
+    message = " ".join(parts)
+    try:
+        print(message)
+    except Exception:
+        pass
+    try:
+        stack = "".join(traceback.format_stack(limit=8))
+        if stack:
+            print(stack)
+    except Exception:
+        pass
 
 
 PromptPayload = Union[PromptResult, Sequence[GPTItem], GPTItem]
@@ -234,13 +267,123 @@ def _parse_meta(meta_text: str) -> Dict[str, Union[str, List[str]]]:
 class ModelDestination:
     kind = "window"
 
+    def __init__(self) -> None:
+        initialise_destination_runtime_state(self)
+
     def insert(self, gpt_output: PromptPayload):
         result = _coerce_prompt_result(gpt_output)
         presentation = result.presentation_for("default")
         # Always route through the confirmation surface (canvas-based viewer),
         # even for long responses. Opening a browser becomes an explicit user
         # action rather than an automatic fallback.
+        _trace_canvas_flow(
+            "confirmation_append",
+            dest=getattr(self, "kind", "window"),
+            confirmation_showing=getattr(confirmation_gui, "showing", False),
+        )
         actions.user.confirmation_gui_append(presentation)
+
+    def _textarea_available_now(self) -> bool:
+        method = getattr(self, "inside_textarea", None)
+        if callable(method):
+            try:
+                return bool(method())
+            except Exception:
+                return False
+        return False
+
+    def _complete_via_window(self, result: PromptResult) -> None:
+        if getattr(self, "_completed_via_window", False):
+            return
+        _trace_canvas_flow(
+            "complete_via_window.start",
+            dest=getattr(self, "kind", "window"),
+            current_kind=getattr(GPTState, "current_destination_kind", None),
+        )
+        _set_destination_kind("window")
+        try:
+            GPTState.current_destination_kind = "window"
+        except Exception:
+            pass
+        try:
+            self._promoted_to_window = True
+        except Exception:
+            pass
+        try:
+            self._effective_destination_kind = "window"
+        except Exception:
+            pass
+        ModelDestination.insert(self, result)
+        _trace_canvas_flow(
+            "complete_via_window.end",
+            dest=getattr(self, "kind", "window"),
+            completed_via_window=getattr(self, "_completed_via_window", False),
+        )
+        try:
+            self._completed_via_window = True
+        except Exception:
+            pass
+
+    def _ensure_textarea_and_maybe_fallback(self, result: PromptResult) -> bool:
+        if getattr(self, "_initial_promoted_to_window", False):
+            _trace_canvas_flow(
+                "fallback_to_window",
+                dest=getattr(self, "kind", "window"),
+                trigger="initial_promoted_to_window",
+            )
+            self._complete_via_window(result)
+            return False
+        if _response_canvas_showing():
+            _trace_canvas_flow(
+                "fallback_to_window",
+                dest=getattr(self, "kind", "window"),
+                trigger="canvas_already_showing",
+            )
+            _trace_canvas_flow(
+                "fallback_skip_close",
+                dest=getattr(self, "kind", "window"),
+            )
+            self._complete_via_window(result)
+            return False
+
+        expects_textarea = getattr(self, "_expects_textarea_insert", None)
+        if expects_textarea is None:
+            expects_textarea = self._textarea_available_now()
+            try:
+                self._expects_textarea_insert = expects_textarea
+            except Exception:
+                pass
+
+        if expects_textarea:
+            if self._textarea_available_now():
+                return True
+            _trace_canvas_flow(
+                "fallback_to_window",
+                dest=getattr(self, "kind", "window"),
+                trigger="expected_textarea_lost",
+            )
+            self._complete_via_window(result)
+            return False
+
+        initial_inside = getattr(self, "_initial_inside_textarea", None)
+        if initial_inside is None:
+            initial_inside = self._textarea_available_now()
+            try:
+                self._initial_inside_textarea = initial_inside
+            except Exception:
+                pass
+
+        if initial_inside and self._textarea_available_now():
+            return True
+
+        _trace_canvas_flow(
+            "fallback_to_window",
+            dest=getattr(self, "kind", "window"),
+            trigger="textarea_unavailable",
+            initial_inside=initial_inside,
+        )
+        self._complete_via_window(result)
+        return False
 
     # If this isn't working, you may need to turn on dication for electron apps
     #  ui.apps(bundle="com.microsoft.VSCode")[0].element.AXManualAccessibility = True
@@ -292,7 +435,16 @@ class ModelDestination:
                 app_name = actions.app.name()
                 if isinstance(app_name, str):
                     lowered = app_name.lower()
-                    tokens = {"code", "studio", "editor", "text", "notebook", "notes"}
+                    tokens = {
+                        "code",
+                        "studio",
+                        "editor",
+                        "text",
+                        "notebook",
+                        "notes",
+                        "slack",
+                        "chat",
+                    }
                     if any(token in lowered for token in tokens):
                         return f"fallback via app name '{app_name}'"
             except Exception:
@@ -406,12 +558,8 @@ class Above(ModelDestination):
 
     def insert(self, gpt_output):
         result = _coerce_prompt_result(gpt_output)
-        if (
-            getattr(self, "is_default_destination", False)
-            and not self.inside_textarea()
-        ):
-            _set_destination_kind("window")
-            return super().insert(result)
+        if not self._ensure_textarea_and_maybe_fallback(result):
+            return
 
         actions.key("left")
         actions.edit.line_insert_up()
@@ -425,12 +573,8 @@ class Chunked(ModelDestination):
 
     def insert(self, gpt_output):
         result = _coerce_prompt_result(gpt_output)
-        if (
-            getattr(self, "is_default_destination", False)
-            and not self.inside_textarea()
-        ):
-            _set_destination_kind("window")
-            return super().insert(result)
+        if not self._ensure_textarea_and_maybe_fallback(result):
+            return
 
         GPTState.last_was_pasted = True
         presentation = result.presentation_for("chunked")
@@ -446,12 +590,8 @@ class Below(ModelDestination):
 
     def insert(self, gpt_output):
         result = _coerce_prompt_result(gpt_output)
-        if (
-            getattr(self, "is_default_destination", False)
-            and not self.inside_textarea()
-        ):
-            _set_destination_kind("window")
-            return super().insert(result)
+        if not self._ensure_textarea_and_maybe_fallback(result):
+            return
         actions.key("right")
         actions.edit.line_insert_down()
         GPTState.last_was_pasted = True
@@ -606,12 +746,8 @@ class Snip(ModelDestination):
 
     def insert(self, gpt_output):
         result = _coerce_prompt_result(gpt_output)
-        if (
-            getattr(self, "is_default_destination", False)
-            and not self.inside_textarea()
-        ):
-            _set_destination_kind("window")
-            return super().insert(result)
+        if not self._ensure_textarea_and_maybe_fallback(result):
+            return
         presentation = result.presentation_for("snip")
         actions.user.insert_snippet(presentation.paste_text)
 
@@ -803,8 +939,8 @@ class Chain(ModelDestination):
 
     def insert(self, gpt_output):
         result = _coerce_prompt_result(gpt_output)
-        if not self.inside_textarea():
-            return super().insert(result)
+        if not self._ensure_textarea_and_maybe_fallback(result):
+            return
         GPTState.last_was_pasted = True
         presentation = result.presentation_for("chain")
         actions.user.paste(presentation.paste_text)
@@ -817,19 +953,9 @@ class Paste(ModelDestination):
     def insert(self, gpt_output):
         result = _coerce_prompt_result(gpt_output)
 
-        # When the response canvas is already open, treat paste as a logical
-        # window destination so users can review the output instead of
-        # inserting it directly into the target application.
-        if _response_canvas_showing():
-            _set_destination_kind("window")
-            return super().insert(result)
+        if not self._ensure_textarea_and_maybe_fallback(result):
+            return
 
-        if (
-            getattr(self, "is_default_destination", False)
-            and not self.inside_textarea()
-        ):
-            _set_destination_kind("window")
-            return super().insert(result)
         GPTState.last_was_pasted = True
         presentation = result.presentation_for("paste")
         actions.user.paste(presentation.paste_text)
@@ -841,12 +967,8 @@ class ForcePaste(ModelDestination):
     def insert(self, gpt_output):
         result = _coerce_prompt_result(gpt_output)
 
-        # Even for force-paste, if the response canvas is already open we
-        # respect the user's review intent and route through the window
-        # instead of typing into the target application.
-        if _response_canvas_showing():
-            _set_destination_kind("window")
-            return super().insert(result)
+        if not self._ensure_textarea_and_maybe_fallback(result):
+            return
 
         GPTState.last_was_pasted = True
         presentation = result.presentation_for("paste")
@@ -870,12 +992,8 @@ class Typed(ModelDestination):
 
     def insert(self, gpt_output):
         result = _coerce_prompt_result(gpt_output)
-        if (
-            getattr(self, "is_default_destination", False)
-            and not self.inside_textarea()
-        ):
-            _set_destination_kind("window")
-            return super().insert(result)
+        if not self._ensure_textarea_and_maybe_fallback(result):
+            return
         GPTState.last_was_pasted = True
         presentation = result.presentation_for("typed")
         actions.auto_insert(presentation.paste_text)
@@ -904,6 +1022,7 @@ class Stack(ModelDestination):
     kind = "stack"
 
     def __init__(self, stack_name):
+        super().__init__()
         self.stack_name = stack_name
 
     def insert(self, gpt_output):
@@ -960,10 +1079,16 @@ def create_model_destination(destination_type: str) -> ModelDestination:
     }
 
     if destination_type == "window":
-        return ModelDestination()
+        destination = ModelDestination()
+        initialise_destination_runtime_state(destination)
+        return destination
 
     destination_cls = destination_map.get(destination_type)
     if destination_cls is not None:
-        return destination_cls()
+        destination = destination_cls()
+        initialise_destination_runtime_state(destination)
+        return destination
 
-    return Default()
+    destination = Default()
+    initialise_destination_runtime_state(destination)
+    return destination

@@ -12,6 +12,9 @@ else:
 if bootstrap is not None:
     from talon_user.lib import personaConfig
 
+    from unittest.mock import patch
+    from talon_user.GPT import gpt
+
     class PersonaPresetTests(unittest.TestCase):
         def test_persona_presets_use_known_tokens(self) -> None:
             mapping = personaConfig.PERSONA_KEY_TO_VALUE
@@ -85,6 +88,52 @@ if bootstrap is not None:
                 preset_intents,
                 "Intent presets must cover all canonical intents",
             )
+
+        def test_canonical_persona_token_normalizes_tokens(self) -> None:
+            self.assertEqual(
+                personaConfig.canonical_persona_token("voice", "As Programmer"),
+                "as programmer",
+            )
+            self.assertEqual(
+                personaConfig.canonical_persona_token("intent", "for planning"),
+                "plan",
+            )
+
+        def test_canonical_persona_token_rejects_unknown_values(self) -> None:
+            self.assertEqual(
+                personaConfig.canonical_persona_token("tone", "invented-tone"), ""
+            )
+
+        def test_persona_intent_catalog_snapshot_shapes(self) -> None:
+            snapshot = personaConfig.persona_intent_catalog_snapshot()
+            self.assertTrue(snapshot.persona_presets)
+            self.assertIn("voice", snapshot.persona_axis_tokens)
+            self.assertIn("intent", snapshot.intent_axis_tokens)
+            self.assertIn("task", snapshot.intent_buckets)
+            for spoken, key in snapshot.persona_spoken_map.items():
+                self.assertIn(key, snapshot.persona_presets)
+                self.assertTrue(spoken)
+            for spoken, key in snapshot.intent_spoken_map.items():
+                self.assertIn(key, snapshot.intent_presets)
+                self.assertTrue(spoken)
+            for bucket, keys in snapshot.intent_buckets.items():
+                for key in keys:
+                    self.assertIn(key, snapshot.intent_presets)
+                    self.assertIn(key, snapshot.intent_display_map)
+
+        def test_persona_docs_guardrail_rejects_unknown_axis_tokens(self) -> None:
+            bad_preset = personaConfig.PersonaPreset(
+                key="bad",
+                label="Bad",
+                voice="as programmer",
+                audience="to programmer",
+                tone="invented-tone",
+            )
+            patched_presets = personaConfig.PERSONA_PRESETS + (bad_preset,)
+
+            with patch("talon_user.lib.personaConfig.PERSONA_PRESETS", patched_presets):
+                with self.assertRaisesRegex(ValueError, "unsupported axis tokens"):
+                    gpt._build_persona_intent_docs()
 
 
 else:

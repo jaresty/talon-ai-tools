@@ -1,3 +1,5 @@
+from unittest.mock import MagicMock, patch
+
 from talon import actions, clip
 
 from lib import helpHub
@@ -105,6 +107,52 @@ def test_help_hub_search_runs_handler():
     assert "model_help_canvas_open" in labels
 
 
+def test_help_hub_search_persona_preset_triggers(monkeypatch):
+    from lib.personaConfig import persona_intent_catalog_snapshot
+
+    persona_mock = MagicMock()
+    monkeypatch.setattr(actions.user, "persona_set_preset", persona_mock)
+    snapshot = persona_intent_catalog_snapshot()
+    assert snapshot.persona_spoken_map.get("mentor") == "teach_junior_dev"
+    helpHub.help_hub_open()
+    search_labels = [
+        btn.label
+        for btn in getattr(helpHub, "_search_index", [])
+        if "Persona preset:" in btn.label
+    ]
+    assert search_labels, "Persona presets missing from search index"
+    assert "mentor" in " ".join(search_labels).lower(), search_labels
+    helpHub.help_hub_set_filter("mentor")
+    persona_labels = [
+        btn.label
+        for btn in getattr(helpHub, "_search_results", [])
+        if "Persona preset:" in btn.label
+    ]
+    assert persona_labels, "Expected persona preset search result"
+    helpHub.help_hub_test_click(persona_labels[0])
+    persona_mock.assert_called()
+    helpHub.help_hub_close()
+
+
+def test_help_hub_search_intent_preset_triggers(monkeypatch):
+    intent_mock = MagicMock()
+    monkeypatch.setattr(actions.user, "intent_set_preset", intent_mock)
+    helpHub.help_hub_open()
+    assert any(
+        "Intent preset:" in btn.label for btn in getattr(helpHub, "_search_index", [])
+    ), "Intent presets missing from search index"
+    helpHub.help_hub_set_filter("for deciding")
+    intent_labels = [
+        btn.label
+        for btn in getattr(helpHub, "_search_results", [])
+        if "Intent preset:" in btn.label
+    ]
+    assert intent_labels, "Expected intent preset search result"
+    helpHub.help_hub_test_click(intent_labels[0])
+    intent_mock.assert_called()
+    helpHub.help_hub_close()
+
+
 def test_help_hub_onboarding_flag():
     helpHub.help_hub_onboarding()
     assert helpHub.HelpHubState.show_onboarding is True
@@ -189,6 +237,36 @@ def test_cheat_sheet_persona_line_uses_persona_catalog():
     # Every catalog spoken token should be present in the cheat sheet.
     missing = catalog_spoken - line_tokens
     assert not missing, f"Missing persona presets in cheat sheet: {sorted(missing)}"
+
+
+def test_persona_presets_use_catalog_snapshot():
+    from lib.personaConfig import persona_intent_catalog_snapshot
+
+    snapshot = persona_intent_catalog_snapshot()
+    with patch(
+        "lib.personaConfig.persona_intent_catalog_snapshot",
+        return_value=snapshot,
+    ) as snapshot_mock:
+        presets = helpHub._persona_presets()
+    snapshot_mock.assert_called_once()
+    assert {preset.key for preset in presets} == set(snapshot.persona_presets.keys())
+
+
+def test_intent_spoken_buckets_use_catalog_snapshot():
+    from lib.personaConfig import persona_intent_catalog_snapshot
+
+    snapshot = persona_intent_catalog_snapshot()
+    with patch(
+        "lib.personaConfig.persona_intent_catalog_snapshot",
+        return_value=snapshot,
+    ) as snapshot_mock:
+        buckets = helpHub._intent_spoken_buckets()
+    snapshot_mock.assert_called_once()
+    expected_buckets = set(snapshot.intent_buckets.keys())
+    assert expected_buckets.issubset(buckets.keys())
+    for bucket, tokens in buckets.items():
+        for token in tokens:
+            assert token
 
 
 def test_help_hub_key_handler_swallows_keys(monkeypatch):

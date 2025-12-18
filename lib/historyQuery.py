@@ -11,12 +11,31 @@ behaviour.
 from collections.abc import Sequence
 from typing import List, Tuple
 
+from .requestLog import KNOWN_AXIS_KEYS
 from .requestHistoryActions import history_axes_for as _history_axes_for_impl
 from .requestHistoryActions import history_summary_lines as _history_summary_lines_impl
 from .requestHistoryActions import (
     axis_snapshot_from_axes as _axis_snapshot_from_axes_impl,
 )
 from .requestHistoryActions import _directional_tokens_for_entry
+
+_ALLOWED_HISTORY_AXIS_KEYS = frozenset(KNOWN_AXIS_KEYS)
+
+
+def _ensure_known_axis_keys(entries: Sequence[object]) -> None:
+    for entry in entries:
+        axes = getattr(entry, "axes", {}) or {}
+        if not isinstance(axes, dict):
+            continue
+        unknown = sorted(
+            key for key in axes.keys() if key not in _ALLOWED_HISTORY_AXIS_KEYS
+        )
+        if unknown:
+            request_id = getattr(entry, "request_id", "") or "?"
+            unknown_list = ", ".join(unknown)
+            raise ValueError(
+                f"HistoryQuery received unknown axis keys: {unknown_list} (entry={request_id})"
+            )
 
 
 def history_axes_for(axes: dict[str, list[str]]) -> dict[str, list[str]]:
@@ -35,6 +54,7 @@ def history_summary_lines(entries: Sequence[object]) -> list[str]:
     Delegates to `requestHistoryActions.history_summary_lines`.
     """
 
+    _ensure_known_axis_keys(entries)
     return _history_summary_lines_impl(entries)
 
 
@@ -45,6 +65,8 @@ def history_drawer_entries_from(entries: Sequence[object]) -> List[Tuple[str, st
     depend on HistoryQuery as the single source of truth for history drawer
     labels and bodies.
     """
+
+    _ensure_known_axis_keys(entries)
 
     rendered: List[Tuple[str, str]] = []
     for entry in entries:

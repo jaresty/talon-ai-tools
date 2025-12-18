@@ -118,6 +118,115 @@ def _destination_kind(destination: object) -> str:
         return ""
 
 
+_PASTE_DESTINATIONS = {
+    "above",
+    "below",
+    "chunked",
+    "forcepaste",
+    "paste",
+    "snip",
+    "typed",
+    "chain",
+}
+
+_DESTINATION_RUNTIME_DEFAULTS = {
+    "_initial_destination_kind": "",
+    "_effective_destination_kind": "",
+    "_initial_inside_textarea": None,
+    "_expects_textarea_insert": None,
+    "_initial_promoted_to_window": False,
+    "_promoted_to_window": False,
+    "_completed_via_window": False,
+    "_canvas_open_at_request_start": False,
+}
+
+
+def initialise_destination_runtime_state(destination: object) -> None:
+    for attr, value in _DESTINATION_RUNTIME_DEFAULTS.items():
+        try:
+            setattr(destination, attr, value)
+        except Exception:
+            continue
+
+
+def prepare_destination_surface(destination: object) -> dict[str, object]:
+    initialise_destination_runtime_state(destination)
+
+    original_kind = _destination_kind(destination) or ""
+    method = getattr(destination, "inside_textarea", None)
+    inside_textarea = False
+    if callable(method):
+        try:
+            inside_textarea = bool(method())
+        except Exception as error:
+            inside_textarea = False
+            if bool(getattr(GPTState, "debug_enabled", False)):
+                _log(f"inside_textarea check failed: {error}")
+
+    canvas_open = bool(getattr(GPTState, "response_canvas_showing", False))
+    paste_like = original_kind in _PASTE_DESTINATIONS
+    promoted = False
+    expects_textarea_insert = False
+
+    final_kind = original_kind or ""
+    if paste_like:
+        if canvas_open or not inside_textarea:
+            promoted = True
+            final_kind = "window"
+        else:
+            expects_textarea_insert = True
+
+    if not final_kind:
+        final_kind = "window" if promoted else original_kind or "window"
+
+    try:
+        setattr(destination, "_initial_destination_kind", original_kind)
+    except Exception:
+        pass
+    try:
+        setattr(destination, "_initial_inside_textarea", inside_textarea)
+    except Exception:
+        pass
+    try:
+        setattr(destination, "_expects_textarea_insert", expects_textarea_insert)
+    except Exception:
+        pass
+    try:
+        setattr(destination, "_initial_promoted_to_window", promoted)
+    except Exception:
+        pass
+    try:
+        setattr(destination, "_promoted_to_window", promoted)
+    except Exception:
+        pass
+    try:
+        setattr(destination, "_effective_destination_kind", final_kind)
+    except Exception:
+        pass
+    try:
+        setattr(destination, "_canvas_open_at_request_start", canvas_open)
+    except Exception:
+        pass
+    try:
+        setattr(destination, "_completed_via_window", False)
+    except Exception:
+        pass
+
+    try:
+        GPTState.current_destination_kind = final_kind
+    except Exception:
+        pass
+
+    return {
+        "original_kind": original_kind,
+        "kind": final_kind,
+        "inside_textarea": inside_textarea,
+        "promoted_to_window": promoted,
+        "expects_textarea_insert": expects_textarea_insert,
+        "canvas_open": canvas_open,
+    }
+
+
 def _prefer_canvas_progress() -> bool:
     """Return True when the destination prefers in-canvas progress over a pill."""
     try:
@@ -732,7 +841,8 @@ BUILTIN_ASK_CHATGPT_TOOL = {
 def build_request(destination: object):
     """Orchestrate the GPT request build process."""
     notify(_build_request_notification())
-    kind = _destination_kind(destination)
+    surface = prepare_destination_surface(destination)
+    kind = surface.get("kind") or _destination_kind(destination)
     try:
         print(f"[modelHelpers] build_request destination kind={kind}")
     except Exception:
@@ -741,48 +851,40 @@ def build_request(destination: object):
         debug_enabled = bool(getattr(GPTState, "debug_enabled", False))
     except Exception:
         debug_enabled = False
+    if debug_enabled:
+        try:
+            print(
+                "[modelHelpers] inside_textarea check "
+                f"kind={surface.get('original_kind')} "
+                f"result={surface.get('inside_textarea')}"
+            )
+            print(
+                "[modelHelpers] destination surface"
+                f" kind={surface.get('original_kind')} "
+                f"inside_textarea={surface.get('inside_textarea')} "
+                f"canvas_open={surface.get('canvas_open')} "
+                f"promoted={surface.get('promoted_to_window')}"
+            )
+        except Exception:
+            pass
+    if surface.get("promoted_to_window"):
+        try:
+            print(
+                "[modelHelpers] promotion: using response canvas instead of paste "
+                f"(kind={kind})"
+            )
+        except Exception:
+            pass
+    try:
+        GPTState.current_destination_kind = kind
+    except Exception:
+        GPTState.current_destination_kind = ""
     # Reset per-request buffers so stale meta/stream text do not bleed into the
     # next response.
     try:
         GPTState.text_to_confirm = ""
         GPTState.last_meta = ""
         GPTState.last_streaming_snapshot = {}
-    except Exception:
-        pass
-    # For paste-like destinations, if there is no focused textarea we fall back
-    # to the window surface; detect that up front so progress is routed to the
-    # response canvas instead of a pill.
-    try:
-        if kind in {"paste", "above", "below", "chunked", "snip", "typed"}:
-            method = getattr(destination, "inside_textarea", None)
-            if callable(method):
-                inside_result = False
-                try:
-                    inside_result = bool(method())
-                except Exception as inside_error:
-                    if debug_enabled:
-                        print(
-                            f"[modelHelpers] inside_textarea check error: {inside_error}"
-                        )
-                else:
-                    if debug_enabled:
-                        print(
-                            f"[modelHelpers] inside_textarea check kind={kind} "
-                            f"result={inside_result}"
-                        )
-                if not inside_result:
-                    kind = "window"
-                    print(
-                        "[modelHelpers] inside_textarea=False; forcing destination kind=window"
-                    )
-    except Exception:
-        pass
-    try:
-        GPTState.current_destination_kind = kind
-    except Exception:
-        GPTState.current_destination_kind = ""
-    try:
-        GPTState.text_to_confirm = ""
     except Exception:
         pass
     full_system_messages = _build_request_context(destination)

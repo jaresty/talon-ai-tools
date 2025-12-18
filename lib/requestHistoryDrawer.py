@@ -106,8 +106,12 @@ def _ensure_canvas() -> canvas.Canvas:
         y += line_h
         if not HistoryDrawerState.entries:
             message = HistoryDrawerState.last_message or "No history yet."
-            draw_text(message, x, y)
-            y += line_h
+            for line in message.splitlines() or [message]:
+                if not line:
+                    y += line_h
+                    continue
+                draw_text(line, x, y)
+                y += line_h
             draw_text("Press s to save latest source.", x, y)
             return
 
@@ -242,7 +246,23 @@ def _refresh_entries() -> None:
         print(f"[requestHistoryDrawer] refresh entries={len(entries)}")
     except Exception:
         pass
-    HistoryDrawerState.entries = history_drawer_entries_from(entries)
+    try:
+        HistoryDrawerState.entries = history_drawer_entries_from(entries)
+    except ValueError as exc:
+        HistoryDrawerState.entries = []
+        HistoryDrawerState.selected_index = 0
+        details = str(exc).strip()
+        problem_line = (
+            f"Details: {details}"
+            if details
+            else "Unsupported axis keys detected in stored entries."
+        )
+        HistoryDrawerState.last_message = (
+            "History validation failed: stored entries include unsupported axis keys.\n"
+            f"{problem_line}\n"
+            "Run `python3 scripts/tools/history-axis-validate.py` to inspect and clean legacy entries."
+        )
+        return
     HistoryDrawerState.selected_index = 0
     HistoryDrawerState.last_message = ""
     if not HistoryDrawerState.entries:

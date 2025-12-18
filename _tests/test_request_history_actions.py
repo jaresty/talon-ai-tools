@@ -1,7 +1,7 @@
 import os
 import tempfile
 import unittest
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Optional
 from unittest.mock import patch
 
 try:
@@ -22,18 +22,22 @@ if bootstrap is not None:
         _model_source_save_dir,
     )
     import talon_user.lib.requestHistoryActions as history_actions
+    from talon_user.lib.requestHistory import RequestLogEntry
     from talon_user.lib.requestLog import (
         append_entry,
         clear_history,
         all_entries,
         last_drop_reason_code,
+        remediate_history_axes,
         set_drop_reason,
+        validate_history_axes,
     )
     from talon_user.lib.modelState import GPTState
     from talon_user.lib.modelConfirmationGUI import (
         ConfirmationGUIState,
         UserActions as ConfirmationActions,
     )
+    from talon_user.lib import modelDestination as model_destination_module
     from talon_user.lib.modelPresentation import ResponsePresentation
     from talon_user.lib.requestState import RequestPhase
     from talon import actions
@@ -47,29 +51,40 @@ if bootstrap is not None:
             GPTState.last_response = ""
             GPTState.last_meta = ""
             GPTState.text_to_confirm = ""
-            # Allow tests to write entries without enforcing directional guardrails.
-            import talon_user.lib.requestLog as requestlog  # type: ignore
-
-            self._orig_append_entry = requestlog.append_entry
-
-            def _append_entry_no_directional(*args, **kwargs):
-                kwargs.setdefault("require_directional", False)
-                return self._orig_append_entry(*args, **kwargs)
-
-            requestlog.append_entry = _append_entry_no_directional  # type: ignore[attr-defined]
-            globals()["append_entry"] = _append_entry_no_directional
-            self.addCleanup(
-                lambda: setattr(requestlog, "append_entry", self._orig_append_entry)
-            )
-            self.addCleanup(
-                lambda: globals().__setitem__("append_entry", self._orig_append_entry)
-            )
 
             # Stub canvas open to record invocation.
             def _open_canvas():
                 actions.user.calls.append(("model_response_canvas_open", tuple(), {}))
 
             actions.user.model_response_canvas_open = _open_canvas  # type: ignore[attr-defined]
+
+        def _append_raw_entry(
+            self,
+            request_id: str,
+            prompt: str,
+            response: str,
+            *,
+            meta: str = "",
+            recipe: str = "",
+            axes: Optional[dict[str, list[str]]] = None,
+            started_at_ms: Optional[int] = None,
+            duration_ms: Optional[int] = None,
+            provider_id: str = "",
+        ) -> None:
+            import talon_user.lib.requestLog as requestlog  # type: ignore
+
+            entry = RequestLogEntry(
+                request_id=request_id,
+                prompt=prompt,
+                response=response,
+                meta=meta,
+                recipe=recipe,
+                started_at_ms=started_at_ms,
+                duration_ms=duration_ms,
+                axes=axes or {},
+                provider_id=provider_id,
+            )
+            requestlog._history.append(entry)  # type: ignore[attr-defined]
 
         def test_show_latest_populates_state_and_opens_canvas(self):
             append_entry(
@@ -130,7 +145,7 @@ if bootstrap is not None:
             import talon_user.lib.requestLog as requestlog  # type: ignore
 
             with patch.object(requestlog, "notify"):
-                self._orig_append_entry(
+                append_entry(
                     "rid-no-dir",
                     "prompt",
                     "resp",
@@ -228,6 +243,7 @@ if bootstrap is not None:
                 "resp",
                 "meta",
                 recipe="infer · full · rigor",
+                axes={"directional": ["fog"]},
             )
 
             import talon_user.lib.streamingCoordinator as streaming
@@ -336,12 +352,12 @@ if bootstrap is not None:
             self.assertGreaterEqual(len(notify_calls) + len(app_notify_calls), 1)
 
         def test_history_list_filters_and_orders_directional_entries(self):
-            append_entry(
+            # Legacy entry missing directional should be skipped.
+            self._append_raw_entry(
                 "rid-old",
                 "old prompt",
                 "old resp",
                 axes={"scope": ["focus"]},
-                require_directional=False,
             )
             append_entry(
                 "rid-mid",
@@ -349,8 +365,8 @@ if bootstrap is not None:
                 "mid resp",
                 axes={"directional": ["jog"]},
             )
-            # Recipe-only directional
-            append_entry(
+            # Legacy recipe-only directional fallback should still be recognised.
+            self._append_raw_entry(
                 "rid-new",
                 "new prompt",
                 "new resp",
@@ -418,7 +434,12 @@ if bootstrap is not None:
             ConfirmationGUIState.last_item_text = "thread chunk"
 
             HistoryActions.gpt_request_history_show_latest()
-            ConfirmationActions.confirmation_gui_paste()
+            with patch.object(
+                model_destination_module.Paste,
+                "inside_textarea",
+                return_value=True,
+            ):
+                ConfirmationActions.confirmation_gui_paste()
 
             self.assertIsNone(ConfirmationGUIState.current_presentation)
             self.assertFalse(ConfirmationGUIState.display_thread)
@@ -432,11 +453,11 @@ if bootstrap is not None:
             GPTState.last_method = "steps"
             GPTState.last_directional = "rog"
 
-            append_entry(
+            self._append_raw_entry(
                 "rid-1",
                 "prompt text",
                 "resp",
-                "meta",
+                meta="meta",
                 recipe="infer · full · rigor · jog",
                 axes={},  # rely on recipe directional token
             )
@@ -523,36 +544,23 @@ if bootstrap is not None:
             self.assertNotIn("custom", GPTState.last_axes)
             self.assertEqual(GPTState.last_axes.get("directional"), ["fog"])
 
-        def test_history_show_latest_warns_on_style_axis(self):
+        def test_history_rejects_style_axis_entries(self):
             axes = {
                 "style": ["plain"],
                 "form": ["table"],
                 "channel": ["slack"],
                 "directional": ["rog"],
             }
-            append_entry(
-                "rid-style",
-                "prompt text",
-                "resp axes",
-                "meta axes",
-                recipe="legacy · plain",
-                axes=axes,
-            )
-            actions.user.calls.clear()
 
-            HistoryActions.gpt_request_history_show_latest()
-
-            notifications = [c for c in actions.user.calls if c[0] == "notify"]
-            self.assertTrue(
-                any(
-                    "style axis is removed" in str(args[0]).lower()
-                    for _, args, _ in notifications
+            with self.assertRaisesRegex(ValueError, "style axis is removed"):
+                append_entry(
+                    "rid-style",
+                    "prompt text",
+                    "resp axes",
+                    "meta axes",
+                    recipe="legacy · plain",
+                    axes=axes,
                 )
-            )
-            # Style is ignored; form/channel/directional still hydrate.
-            self.assertEqual(GPTState.last_form, "table")
-            self.assertEqual(GPTState.last_channel, "slack")
-            self.assertEqual(GPTState.last_directional, "rog")
 
         def test_notify_records_when_suppressed(self):
             """Even when notifications are suppressed, intent should be logged for guardrails."""
@@ -642,7 +650,7 @@ if bootstrap is not None:
 
         def test_history_entry_without_directional_notifies_and_returns(self):
             # History entries lacking directional should not open the canvas or update last state.
-            append_entry(
+            self._append_raw_entry(
                 "rid-no-dir",
                 "prompt",
                 "response",
@@ -673,7 +681,7 @@ if bootstrap is not None:
             GPTState.last_directional = "fog"
             GPTState.last_response = "prev-response"
             setattr(GPTState, "current_provider_id", "prev-provider")
-            append_entry(
+            self._append_raw_entry(
                 "rid-no-dir-2",
                 "prompt",
                 "response",
@@ -705,13 +713,12 @@ if bootstrap is not None:
             )
 
         def test_prev_keeps_navigation_when_directional_missing(self):
-            append_entry(
+            self._append_raw_entry(
                 "rid-no-dir",
                 "prompt",
                 "resp missing dir",
-                "meta",
+                meta="meta",
                 axes={"directional": []},
-                require_directional=False,
             )
             append_entry(
                 "rid-ok",
@@ -818,11 +825,12 @@ if bootstrap is not None:
             self.assertEqual(len(lines), 0)
 
         def test_history_list_notifies_when_no_directional_entries(self):
-            append_entry(
+            # Legacy lens-less entry should surface the directional guardrail.
+            self._append_raw_entry(
                 "rid-no-dir",
                 "prompt",
                 "resp",
-                "meta",
+                meta="meta",
                 recipe="infer · gist · focus",
                 axes={"completeness": ["gist"], "directional": []},
             )
@@ -832,14 +840,15 @@ if bootstrap is not None:
 
             notify_mock.assert_called()
             self.assertIn(
-                "No request history available", str(notify_mock.call_args[0][0])
+                "No request history available",
+                str(notify_mock.call_args[0][0]),
             )
 
         def test_request_log_drops_missing_directional_and_notifies(self):
             import talon_user.lib.requestLog as requestlog  # type: ignore
 
             with patch.object(requestlog, "notify") as notify_mock:
-                self._orig_append_entry(
+                append_entry(
                     "rid-no-dir",
                     "prompt",
                     "resp",
@@ -859,7 +868,7 @@ if bootstrap is not None:
             import talon_user.lib.requestLog as requestlog  # type: ignore
 
             with patch.object(requestlog, "notify"):
-                self._orig_append_entry(
+                append_entry(
                     "rid-no-dir",
                     "prompt",
                     "resp",
@@ -876,7 +885,7 @@ if bootstrap is not None:
             import talon_user.lib.requestLog as requestlog  # type: ignore
 
             with patch.object(requestlog, "notify"):
-                self._orig_append_entry(
+                append_entry(
                     "rid-no-dir",
                     "prompt",
                     "resp",
@@ -902,7 +911,7 @@ if bootstrap is not None:
 
             # Seed a drop reason with a non-directional entry.
             with patch.object(requestlog, "notify"):
-                self._orig_append_entry(
+                append_entry(
                     "rid-no-dir",
                     "prompt",
                     "resp",
@@ -924,7 +933,7 @@ if bootstrap is not None:
             import talon_user.lib.requestLog as requestlog  # type: ignore
 
             with patch.object(requestlog, "notify"):
-                self._orig_append_entry(
+                append_entry(
                     "rid-no-dir",
                     "prompt",
                     "resp",
@@ -956,7 +965,7 @@ if bootstrap is not None:
 
             # Seed a drop reason and a non-directional entry that will be filtered.
             with patch.object(requestlog, "notify"):
-                self._orig_append_entry(
+                append_entry(
                     "rid-no-dir",
                     "prompt",
                     "resp",
@@ -978,7 +987,7 @@ if bootstrap is not None:
 
             # seed a drop to set the reason
             with patch.object(requestlog, "notify"):
-                self._orig_append_entry(
+                append_entry(
                     "rid-no-dir",
                     "prompt",
                     "resp",
@@ -1018,7 +1027,7 @@ if bootstrap is not None:
             import talon_user.lib.requestLog as requestlog  # type: ignore
 
             with patch.object(requestlog, "notify"):
-                self._orig_append_entry(
+                append_entry(
                     "rid-no-dir",
                     "prompt",
                     "resp",
@@ -1061,12 +1070,11 @@ if bootstrap is not None:
             import talon_user.lib.requestLog as requestlog  # type: ignore
 
             # Latest entry has directional; previous entry lacks directional but is stored (opt-out).
-            append_entry(
+            self._append_raw_entry(
                 "rid-older",
                 "old prompt",
                 "old resp",
                 axes={"scope": ["focus"]},
-                require_directional=False,
             )
             append_entry(
                 "rid-latest",
@@ -1088,7 +1096,7 @@ if bootstrap is not None:
             import talon_user.lib.requestHistoryActions as actions_mod  # type: ignore
 
             with patch.object(requestlog, "notify"):
-                self._orig_append_entry(
+                append_entry(
                     "rid-no-dir",
                     "prompt",
                     "resp",
@@ -1107,7 +1115,7 @@ if bootstrap is not None:
             import talon_user.lib.requestHistoryActions as actions_mod  # type: ignore
 
             with patch.object(requestlog, "notify"):
-                self._orig_append_entry(
+                append_entry(
                     "rid-no-dir",
                     "prompt",
                     "resp",
@@ -1143,7 +1151,7 @@ if bootstrap is not None:
             import talon_user.lib.requestLog as requestlog  # type: ignore
 
             with patch.object(requestlog, "notify"):
-                self._orig_append_entry(
+                append_entry(
                     "rid-no-dir",
                     "prompt",
                     "resp",
@@ -1322,6 +1330,7 @@ if bootstrap is not None:
                 "resp",
                 "meta",
                 recipe="infer · full · rigor",
+                axes={"directional": ["fog"]},
             )
 
             with patch.object(history_actions, "notify") as notify_mock:
@@ -1366,14 +1375,13 @@ if bootstrap is not None:
             from talon import settings as talon_settings  # type: ignore
 
             talon_settings.set("user.model_source_save_directory", tmpdir)
-            append_entry(
+            self._append_raw_entry(
                 "rid-no-dir",
                 "prompt",
                 "resp",
-                "meta",
+                meta="meta",
                 recipe="infer · gist · focus",  # no directional token
                 axes={"directional": []},
-                require_directional=False,
             )
 
             with patch.object(history_actions, "notify") as notify_mock:
@@ -1777,11 +1785,11 @@ if bootstrap is not None:
 
             talon_settings.set("user.model_source_save_directory", tmpdir)
 
-            append_entry(
+            self._append_raw_entry(
                 "rid-recipe-dir",
                 "prompt with recipe directional",
                 "resp",
-                "meta",
+                meta="meta",
                 recipe="infer · full · rigor · fog",
                 axes={},  # directional is implied by recipe
             )
@@ -1801,11 +1809,11 @@ if bootstrap is not None:
 
             talon_settings.set("user.model_source_save_directory", tmpdir)
 
-            append_entry(
+            self._append_raw_entry(
                 "rid-recipe-dir-caps",
                 "prompt with uppercase directional",
                 "resp",
-                "meta",
+                meta="meta",
                 recipe="infer · full · rigor · FOG",
                 axes={},  # directional derived from recipe
             )
@@ -1845,6 +1853,88 @@ if bootstrap is not None:
             content = open(os.path.join(tmpdir, filename), "r", encoding="utf-8").read()
             self.assertIn("directional_tokens: fog", content)
             self.assertNotIn("custom_tokens:", content)
+
+        def test_remediate_history_axes_removes_unknown_tokens(self) -> None:
+            append_entry(
+                "rid-custom",
+                "prompt with extras",
+                "resp",
+                "meta",
+                axes={"directional": ["fog"]},
+            )
+            history_entry = all_entries()[-1]
+            history_entry.axes["custom"] = ["legacy"]  # type: ignore[index]
+
+            stats = remediate_history_axes()
+            self.assertEqual(stats["updated"], 1)
+            self.assertEqual(stats["dropped"], 0)
+            entry = all_entries()[-1]
+            self.assertEqual(entry.axes, {"directional": ["fog"]})
+
+        def test_remediate_history_axes_drops_entries_missing_directional(self) -> None:
+            self._append_raw_entry(
+                "rid-no-directional",
+                "prompt",
+                "resp",
+                meta="meta",
+                axes={},
+            )
+            history_entry = all_entries()[-1]
+            history_entry.axes["custom"] = ["legacy"]  # type: ignore[index]
+
+            stats = remediate_history_axes(drop_if_missing_directional=True)
+            self.assertEqual(stats["dropped"], 1)
+            self.assertFalse(all_entries())
+
+        def test_remediate_history_axes_dry_run_preserves_entries(self) -> None:
+            self._append_raw_entry(
+                "rid-dry",
+                "prompt",
+                "resp",
+                meta="meta",
+                axes={},
+            )
+            history_entry = all_entries()[-1]
+            history_entry.axes["custom"] = ["legacy"]  # type: ignore[index]
+
+            stats = remediate_history_axes(
+                drop_if_missing_directional=True, dry_run=True
+            )
+            self.assertEqual(stats["dropped"], 1)
+            self.assertEqual(len(all_entries()), 1)
+            self.assertIn("custom", set(all_entries()[-1].axes.keys()))
+
+        def test_validate_history_axes_requires_directional_lens(self) -> None:
+            self._append_raw_entry(
+                "rid-missing-directional",
+                "prompt",
+                "resp",
+                axes={"scope": ["focus"]},
+            )
+
+            with self.assertRaisesRegex(ValueError, "directional"):
+                validate_history_axes()
+
+            clear_history()
+
+        def test_validate_history_axes_detects_unknown_keys(self):
+            import talon_user.lib.requestLog as requestlog  # type: ignore
+
+            append_entry(
+                "rid-clean",
+                "prompt",
+                "response",
+                axes={"directional": ["fog"]},
+            )
+            validate_history_axes()
+
+            entry = requestlog._history._entries[-1]
+            entry.axes.setdefault("mystery", []).append("foo")
+            try:
+                with self.assertRaisesRegex(ValueError, "mystery"):
+                    validate_history_axes()
+            finally:
+                entry.axes.pop("mystery", None)
 
         def test_history_save_filename_includes_provider_slug(self):
             tmpdir = tempfile.mkdtemp()

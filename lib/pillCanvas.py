@@ -23,9 +23,11 @@ class PillState:
     phase: RequestPhase = RequestPhase.IDLE
     hover: bool = False
     generation: int = 0  # increments each show/hide to ignore stale UI-thread work
+    action_mode: str = "none"  # "dual" for cancel+show, "show" for show-only
 
 
 _pill_canvas: Optional[canvas.Canvas] = None
+_pill_button_bounds: list[tuple[str, ui.Rect]] = []
 _pill_rect = ui.Rect(20, 20, 220, 40)
 _DEFAULT_WIDTH = 220
 _DEFAULT_HEIGHT = 40
@@ -157,10 +159,50 @@ def _ensure_pill_canvas() -> canvas.Canvas:
             paint.color = _pill_color_for_phase(PillState.phase)
             c.draw_rect(rect)
             paint.color = "FFFFFF"
-            text = PillState.text or "Model"
-            # Center text vertically
-            text_y = rect.y + rect.height // 2 + 5
-            c.draw_text(text, rect.x + 12, text_y)
+            label = PillState.text or "Model"
+            label_y = rect.y + 16
+            c.draw_text(label, rect.x + 12, label_y)
+            _pill_button_bounds.clear()
+            action_baseline = rect.y + rect.height - 10
+            if PillState.action_mode == "dual":
+                cancel_text = "Cancel"
+                show_text = "Show response"
+                c.draw_text(cancel_text, rect.x + 12, action_baseline)
+                show_x = rect.x + rect.width // 2 + 12
+                c.draw_text(show_text, show_x, action_baseline)
+                _pill_button_bounds.append(
+                    (
+                        "cancel",
+                        ui.Rect(
+                            rect.x,
+                            rect.y + rect.height // 2,
+                            rect.width // 2,
+                            rect.height // 2,
+                        ),
+                    )
+                )
+                _pill_button_bounds.append(
+                    (
+                        "show",
+                        ui.Rect(
+                            rect.x + rect.width // 2,
+                            rect.y + rect.height // 2,
+                            rect.width // 2,
+                            rect.height // 2,
+                        ),
+                    )
+                )
+            elif PillState.action_mode == "show":
+                show_text = "Show response"
+                c.draw_text(show_text, rect.x + 12, action_baseline)
+                _pill_button_bounds.append(
+                    (
+                        "show",
+                        ui.Rect(rect.x, rect.y, rect.width, rect.height),
+                    )
+                )
+            else:
+                _pill_button_bounds.clear()
             paint.color = old_color
         except Exception:
             pass
@@ -168,8 +210,23 @@ def _ensure_pill_canvas() -> canvas.Canvas:
     def _on_mouse(evt):
         event_type = getattr(evt, "event", "") or ""
         button = getattr(evt, "button", None)
-        if event_type in ("mousedown", "mouse_down") and button in (0, 1):
+        if event_type not in ("mousedown", "mouse_down") or button not in (0, 1):
+            return
+        pos = getattr(evt, "pos", None)
+        rect = getattr(_pill_canvas, "rect", None)
+        if pos is None or rect is None:
             handle_pill_click(PillState.phase)
+            return
+        abs_x = rect.x + getattr(pos, "x", 0)
+        abs_y = rect.y + getattr(pos, "y", 0)
+        for action, bounds in list(_pill_button_bounds):
+            if (
+                bounds.x <= abs_x <= bounds.x + bounds.width
+                and bounds.y <= abs_y <= bounds.y + bounds.height
+            ):
+                handle_pill_click(PillState.phase, action)
+                return
+        handle_pill_click(PillState.phase)
 
     try:
         _pill_canvas.register("draw", _on_draw)
@@ -185,7 +242,9 @@ def _ensure_pill_canvas() -> canvas.Canvas:
     return _pill_canvas
 
 
-def _show_canvas(display_text: str, phase: RequestPhase, rect: Optional[ui.Rect]) -> None:
+def _show_canvas(
+    display_text: str, phase: RequestPhase, rect: Optional[ui.Rect]
+) -> None:
     """Create/show the canvas; must be called on the main thread."""
     target_rect = rect or _pill_rect
     c = _ensure_pill_canvas()
@@ -227,13 +286,20 @@ def _apply_rect(rect: ui.Rect) -> None:
 def show_pill(text: str, phase: RequestPhase) -> None:
     # Surface a simple affordance hint depending on phase.
     if phase in (RequestPhase.SENDING, RequestPhase.STREAMING):
-        display_text = f"{text} (click to cancel)"
+        display_text = text
+        PillState.action_mode = "dual"
     elif phase in (RequestPhase.DONE, RequestPhase.ERROR, RequestPhase.CANCELLED):
-        display_text = f"{text} (open response)"
+        display_text = text
+        PillState.action_mode = "show"
     else:
         display_text = text
+        PillState.action_mode = "none"
     # Avoid redundant UI-thread dispatch if nothing changed.
-    if PillState.showing and PillState.phase == phase and PillState.text == display_text:
+    if (
+        PillState.showing
+        and PillState.phase == phase
+        and PillState.text == display_text
+    ):
         _debug("skip redundant pill show (same phase/text)")
         return
     PillState.text = display_text
@@ -249,6 +315,7 @@ def show_pill(text: str, phase: RequestPhase) -> None:
             app.notify(display_text)
         except Exception:
             pass
+
     # Schedule on the main thread to ensure an active resource context; also
     # retry shortly after in case the resource context is briefly unavailable.
     def _try_show():
@@ -284,17 +351,20 @@ def hide_pill() -> None:
     run_on_ui_thread(_hide)
 
 
-def handle_pill_click(phase: RequestPhase) -> None:
+def handle_pill_click(phase: RequestPhase, action: Optional[str] = None) -> None:
     """Handle a pill click based on the current request phase."""
     try:
-        if phase in (RequestPhase.SENDING, RequestPhase.STREAMING):
-            # Best-effort cancel while in-flight.
-            actions.user.gpt_cancel_request()
-            _debug(f"Pill click: cancel (phase={phase.name})")
-        elif phase in (RequestPhase.DONE, RequestPhase.ERROR, RequestPhase.CANCELLED):
-            # After completion/error, let users reopen the last response canvas.
+        if action == "show" or (
+            action is None
+            and phase in (RequestPhase.DONE, RequestPhase.ERROR, RequestPhase.CANCELLED)
+        ):
             actions.user.model_response_canvas_open()
             _debug(f"Pill click: open response (phase={phase.name})")
+        elif action == "cancel" or (
+            action is None and phase in (RequestPhase.SENDING, RequestPhase.STREAMING)
+        ):
+            actions.user.gpt_cancel_request()
+            _debug(f"Pill click: cancel (phase={phase.name})")
     except Exception:
         # Swallow to avoid breaking the pill overlay on click.
         pass

@@ -54,6 +54,62 @@ if bootstrap is not None:
                 "modelSuggestionGUI _persona_presets must cover the same PersonaPreset keys as persona_catalog",
             )
 
+        def test_persona_presets_use_catalog_snapshot(self) -> None:
+            from talon_user.lib.personaConfig import persona_intent_catalog_snapshot
+            from talon_user.lib import modelSuggestionGUI as suggestion_module
+
+            snapshot = persona_intent_catalog_snapshot()
+            with patch(
+                "talon_user.lib.personaConfig.persona_intent_catalog_snapshot",
+                return_value=snapshot,
+            ) as snapshot_mock:
+                presets = suggestion_module._persona_presets()
+            snapshot_mock.assert_called_once()
+            self.assertEqual(
+                {preset.key for preset in presets},
+                set(snapshot.persona_presets.keys()),
+            )
+
+        def test_intent_snapshot_used_in_suggestion_info(self) -> None:
+            from talon_user.lib.personaConfig import persona_intent_catalog_snapshot
+            from talon_user.lib import modelSuggestionGUI as suggestion_module
+
+            snapshot = persona_intent_catalog_snapshot()
+            suggestion = suggestion_module.Suggestion(
+                name="Intent snapshot",
+                recipe="describe · gist · focus · plain · fog",
+                persona_voice="As Facilitator",
+                persona_audience="To Stakeholders",
+                persona_tone="Directly",
+                intent_purpose="for planning",
+            )
+
+            with patch(
+                "talon_user.lib.personaConfig.persona_intent_catalog_snapshot",
+                return_value=snapshot,
+            ) as snapshot_mock:
+                info = suggestion_module._suggestion_stance_info(suggestion)
+            snapshot_mock.assert_called()
+            self.assertIn("intent plan", info["stance_display"])
+
+        def test_persona_preset_map_includes_catalog_synonyms(self) -> None:
+            from talon_user.lib import modelSuggestionGUI as suggestion_module
+
+            preset_map = suggestion_module._persona_preset_map()
+            for preset in suggestion_module._persona_presets():
+                key = (preset.key or "").strip().lower()
+                spoken = (preset.spoken or "").strip().lower()
+                label = (preset.label or "").strip().lower()
+                if key:
+                    self.assertIn(key, preset_map)
+                    self.assertIs(preset_map[key], preset)
+                if spoken:
+                    self.assertIn(spoken, preset_map)
+                    self.assertIs(preset_map[spoken], preset)
+                if label:
+                    self.assertIn(label, preset_map)
+                    self.assertIs(preset_map[label], preset)
+
         def test_run_index_executes_suggestion_and_closes_gui(self):
             GPTState.last_suggested_recipes = [
                 {
@@ -126,9 +182,9 @@ if bootstrap is not None:
             suggestion = modelSuggestionGUI.Suggestion(
                 name="With persona preset",
                 recipe="describe · gist · focus · plain · fog",
-                persona_voice="as facilitator",
-                persona_audience="to stakeholders",
-                persona_tone="directly",
+                persona_voice="As Facilitator",
+                persona_audience="To Stakeholders",
+                persona_tone="Directly",
                 stance_command="persona stake",
                 intent_purpose="teach",
             )
@@ -166,9 +222,9 @@ if bootstrap is not None:
             suggestion = modelSuggestionGUI.Suggestion(
                 name="Preset only",
                 recipe="describe · gist · focus · plain · fog",
-                persona_voice="as facilitator",
-                persona_audience="to stakeholders",
-                persona_tone="directly",
+                persona_voice="As Facilitator",
+                persona_audience="To Stakeholders",
+                persona_tone="Directly",
                 intent_purpose="resolve",
                 stance_command="",
             )
@@ -180,6 +236,24 @@ if bootstrap is not None:
                 "model write as facilitator to stakeholders directly (persona stake) · intent resolve",
             )
             self.assertEqual(info["persona_display"], "persona stake")
+
+        def test_persona_stance_handles_whitespace_and_case(self):
+            suggestion = modelSuggestionGUI.Suggestion(
+                name="Case insensitive",
+                recipe="describe · gist · focus · plain · fog",
+                persona_voice="  AS FACILITATOR   ",
+                persona_audience="TO STAKEHOLDERS",
+                persona_tone="DIRECTLY ",
+                stance_command="",
+            )
+
+            info = modelSuggestionGUI._suggestion_stance_info(suggestion)
+
+            self.assertIn("persona stake", info["stance_display"].lower())
+            self.assertEqual(
+                info["persona_axes_summary"],
+                "as facilitator · to stakeholders · directly",
+            )
 
         def test_stance_display_defaults_to_model_write_when_prefix_missing(self):
             suggestion = modelSuggestionGUI.Suggestion(

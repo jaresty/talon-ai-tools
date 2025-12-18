@@ -28,6 +28,7 @@ class Module:
 
     def action_class(self, cls=None):  # pragma: no cover - simple passthrough
         if cls is None:
+
             def decorator(target):
                 return target
 
@@ -139,15 +140,32 @@ class _UIElement:
         return None
 
 
+class _UIWindow:
+    def __init__(self):
+        self.focused = False
+
+    def focus(self):
+        self.focused = True
+
+
 class _UI:
     # Minimal subset needed for tests; real Talon exposes main_screen().
     Rect = _UIElement
+
+    def __init__(self):
+        self._active_window = _UIWindow()
 
     def main_screen(self):
         return _UIElement()
 
     def focused_element(self):
         return _UIElement()
+
+    def active_window(self):
+        return self._active_window
+
+    def set_active_window(self, window):
+        self._active_window = window
 
 
 ui = _UI()

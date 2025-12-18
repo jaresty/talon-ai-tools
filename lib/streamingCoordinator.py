@@ -194,20 +194,22 @@ class StreamingSession:
         drop outcomes remain observable in tests.
         """
 
-        answer_text = str(kwargs.get("answer_text") or "")
-        meta_text = str(kwargs.get("meta_text") or "")
-        axes = kwargs.get("axes")
+        payload = dict(kwargs)
+        answer_text = str(payload.get("answer_text") or "")
+        meta_text = str(payload.get("meta_text") or "")
+        axes = payload.get("axes")
         axes_keys = sorted(list(axes.keys())) if isinstance(axes, dict) else []
-        require_directional = bool(kwargs.get("require_directional", True))
+        # Legacy callers may still pass require_directional; drop it now that
+        # the runtime enforces directional lenses unconditionally.
+        payload.pop("require_directional", None)
 
         self._record_event(
             "history_write_requested",
             answer_len=len(answer_text),
             meta_len=len(meta_text),
             axes_keys=axes_keys,
-            require_directional=require_directional,
         )
-        prompt_text = append_entry_from_request(**kwargs)
+        prompt_text = append_entry_from_request(**payload)
         self._record_event("log_entry", prompt_len=len(str(prompt_text or "")))
         return prompt_text
 

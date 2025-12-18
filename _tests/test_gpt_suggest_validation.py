@@ -51,8 +51,8 @@ if bootstrap is not None:
                         "persona_voice": "as teacher",
                         "persona_audience": "to junior engineer",
                         "persona_tone": "kindly",
-                    "intent_purpose": "for teaching",
-                    "stance_command": "model write as teacher to junior engineer kindly",
+                        "intent_purpose": "for teaching",
+                        "stance_command": "model write as teacher to junior engineer kindly",
                         "why": "For teaching-focused summaries.",
                         "reasoning": "Uses teaching persona and planning intent.",
                     },
@@ -62,7 +62,7 @@ if bootstrap is not None:
                         "persona_voice": "as facilitator",
                         "persona_audience": "to stakeholders",
                         "persona_tone": "gently",
-                    "intent_purpose": "for collaborating",
+                        "intent_purpose": "for collaborating",
                         "stance_command": "model write for collaborating",
                         "why": "Bad stance should be dropped.",
                         "reasoning": "Tried to leave intent underspecified.",
@@ -98,7 +98,10 @@ if bootstrap is not None:
             self.assertEqual(first["name"], "Valid stance")
             self.assertIn("stance_command", first)
             # Axis caps should be enforced when normalising the recipe.
-            self.assertEqual(first["recipe"], "describe · gist · focus bound · structure flow plan · table · jira · rog")
+            self.assertEqual(
+                first["recipe"],
+                "describe · gist · focus bound · structure flow plan · table · jira · rog",
+            )
 
             # The invalid stance suggestion is kept but without a stance_command.
             self.assertEqual(second["name"], "Invalid stance")
@@ -146,6 +149,91 @@ if bootstrap is not None:
             self.assertNotIn("intent_purpose", suggestion)
             # Stance should also be rejected because it uses an invalid persona token.
             self.assertNotIn("stance_command", suggestion)
+
+        def test_json_suggestions_accept_snapshot_display_intent(self) -> None:
+            # Display names from the persona/intent snapshot should canonicalise to intent tokens.
+            payload = {
+                "suggestions": [
+                    {
+                        "name": "Display intent",
+                        "recipe": "describe · rog",
+                        "intent_purpose": "Vision for Execs",
+                        "why": "Ensure snapshot display names are accepted.",
+                    }
+                ]
+            }
+            self.pipeline.complete.return_value = PromptResult.from_messages(
+                [format_message(json.dumps(payload))]
+            )
+
+            from talon_user.lib import personaConfig
+
+            PersonaIntentCatalogSnapshot = personaConfig.PersonaIntentCatalogSnapshot
+            IntentPreset = personaConfig.IntentPreset
+
+            custom_snapshot = PersonaIntentCatalogSnapshot(
+                persona_presets={},
+                persona_spoken_map={},
+                persona_axis_tokens={
+                    "voice": ["as pioneer"],
+                    "audience": ["to scouts"],
+                    "tone": ["kindly"],
+                },
+                intent_presets={
+                    "vision": IntentPreset(
+                        key="vision",
+                        label="Vision label",
+                        intent="vision",
+                    )
+                },
+                intent_spoken_map={"vision spoken": "vision"},
+                intent_axis_tokens={"intent": ["vision"]},
+                intent_buckets={"strategy": ["vision"]},
+                intent_display_map={"vision": "Vision for Execs"},
+            )
+
+            original_docs_map = gpt_module.persona_docs_map
+
+            def fake_persona_docs_map(axis: str):
+                if axis == "intent":
+                    return {"vision": "Vision intent"}
+                return original_docs_map(axis)
+
+            original_canonical = personaConfig.canonical_persona_token
+
+            def fake_canonical(axis: str, raw: str) -> str:
+                if str(raw or "").strip().lower() == "vision for execs".lower():
+                    return ""
+                return original_canonical(axis, raw)
+
+            with (
+                patch.object(gpt_module, "create_model_source") as create_source,
+                patch.object(gpt_module, "PromptSession") as session_cls,
+                patch(
+                    "talon_user.lib.personaConfig.persona_intent_catalog_snapshot",
+                    return_value=custom_snapshot,
+                ),
+                patch(
+                    "talon_user.GPT.gpt.persona_docs_map",
+                    side_effect=fake_persona_docs_map,
+                ),
+                patch(
+                    "talon_user.lib.personaConfig.canonical_persona_token",
+                    side_effect=fake_canonical,
+                ),
+            ):
+                source = MagicMock()
+                source.get_text.return_value = "content"
+                create_source.return_value = source
+                session = session_cls.return_value
+                session._destination = "paste"
+
+                gpt_module.UserActions.gpt_suggest_prompt_recipes("subject")
+
+            self.assertEqual(len(GPTState.last_suggested_recipes), 1)
+            suggestion = GPTState.last_suggested_recipes[0]
+            self.assertEqual(suggestion["name"], "Display intent")
+            self.assertEqual(suggestion.get("intent_purpose"), "vision")
 
         def test_json_suggestions_without_reasoning_still_parse(self) -> None:
             # Payload omits reasoning entirely; validation should still succeed.

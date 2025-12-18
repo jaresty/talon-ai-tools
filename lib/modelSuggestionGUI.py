@@ -15,6 +15,7 @@ from .talonSettings import (
     safe_model_prompt,
     _canonicalise_axis_tokens,
 )
+from .personaConfig import persona_intent_maps
 from .stanceValidation import valid_stance_command
 from .suggestionCoordinator import (
     suggestion_entries_with_metadata,
@@ -114,35 +115,43 @@ _PANEL_WIDTH = 840
 _PANEL_HEIGHT = 880
 
 
-def _persona_presets():
-    """Return the latest persona presets (reload-safe).
+def _persona_maps():
+    try:
+        return persona_intent_maps()
+    except Exception:
+        return None
 
-    Prefer the persona catalog when available so suggestions share the same
-    PersonaPreset surface as other Concordance-facing UIs.
-    """
+
+def _canonical_persona_token(axis: str, value: str) -> str:
     try:
         from . import personaConfig
 
-        catalog = getattr(personaConfig, "persona_catalog", None)
-        if callable(catalog):
-            return tuple(catalog().values())
-        return tuple(getattr(personaConfig, "PERSONA_PRESETS", ()))
+        return personaConfig.canonical_persona_token(axis, value)
     except Exception:
+        return str(value or "").strip()
+
+
+def _persona_presets():
+    """Return the latest persona presets (reload-safe)."""
+
+    maps = _persona_maps()
+    if maps is None:
         return ()
+    return tuple(maps.persona_presets.values())
 
 
 def _persona_preset_map() -> dict[str, object]:
     """Return a name->PersonaPreset map built from the latest presets."""
+
+    maps = _persona_maps()
+    if maps is None:
+        return {}
+
     preset_map: dict[str, object] = {}
-    for preset in _persona_presets():
-        for name in {
-            (preset.spoken or "").strip().lower(),
-            (preset.label or "").strip().lower(),
-            (preset.key or "").strip().lower(),
-        }:
-            if not name:
-                continue
-            preset_map[name] = preset
+    for alias, canonical in maps.persona_preset_aliases.items():
+        preset = maps.persona_presets.get(canonical)
+        if preset is not None:
+            preset_map.setdefault(alias, preset)
     return preset_map
 
 
@@ -430,20 +439,23 @@ def _match_persona_preset(
 ) -> Optional["PersonaPreset"]:
     """Return a PersonaPreset matching the provided axes, if any."""
 
-    voice_l = voice.strip().lower()
-    audience_l = audience.strip().lower()
-    tone_l = tone.strip().lower()
-    for preset in _persona_presets():
-        preset_voice = (preset.voice or "").strip().lower()
-        preset_audience = (preset.audience or "").strip().lower()
-        preset_tone = (preset.tone or "").strip().lower()
+    voice_token = _canonical_persona_token("voice", voice)
+    audience_token = _canonical_persona_token("audience", audience)
+    tone_token = _canonical_persona_token("tone", tone)
+    maps = _persona_maps()
+    if maps is None:
+        return None
+    for preset in maps.persona_presets.values():
+        preset_voice = (preset.voice or "").strip()
+        preset_audience = (preset.audience or "").strip()
+        preset_tone = (preset.tone or "").strip()
         # Require a match for each axis the preset declares; ignore axes the
         # preset leaves empty (for example, tone is optional).
-        if preset_voice and preset_voice != voice_l:
+        if preset_voice and preset_voice != voice_token:
             continue
-        if preset_audience and preset_audience != audience_l:
+        if preset_audience and preset_audience != audience_token:
             continue
-        if preset_tone and preset_tone != tone_l:
+        if preset_tone and preset_tone != tone_token:
             continue
         # Avoid false positives when no axes are present.
         if not (preset_voice or preset_audience or preset_tone):
@@ -465,12 +477,16 @@ def _preset_from_command(stance_command: str) -> Optional["PersonaPreset"]:
 
 def _suggestion_stance_info(suggestion: Suggestion) -> dict[str, object]:
     """Return precomputed stance fields (persona/intent/stance/why) for display."""
-    persona_bits = [
-        getattr(suggestion, "persona_voice", "").strip(),
-        getattr(suggestion, "persona_audience", "").strip(),
-        getattr(suggestion, "persona_tone", "").strip(),
-    ]
-    persona_bits = [bit for bit in persona_bits if bit]
+    voice_token = _canonical_persona_token(
+        "voice", getattr(suggestion, "persona_voice", "")
+    )
+    audience_token = _canonical_persona_token(
+        "audience", getattr(suggestion, "persona_audience", "")
+    )
+    tone_token = _canonical_persona_token(
+        "tone", getattr(suggestion, "persona_tone", "")
+    )
+    persona_bits = [bit for bit in (voice_token, audience_token, tone_token) if bit]
     intent_text = getattr(suggestion, "intent_purpose", "").strip()
     intent_display = _normalize_intent(intent_text) or intent_text
     raw_stance = (getattr(suggestion, "stance_command", "") or "").strip()
@@ -489,10 +505,7 @@ def _suggestion_stance_info(suggestion: Suggestion) -> dict[str, object]:
     # preset, surface the persona command so the Say section always shows a
     # concrete utterance (for example, "persona stake").
     if (not raw_stance or generated_from_axes) and persona_bits:
-        voice = getattr(suggestion, "persona_voice", "")
-        audience = getattr(suggestion, "persona_audience", "")
-        tone = getattr(suggestion, "persona_tone", "")
-        preset = _match_persona_preset(voice, audience, tone)
+        preset = _match_persona_preset(voice_token, audience_token, tone_token)
         if preset is not None:
             stance_command = f"persona {preset.key}"
 

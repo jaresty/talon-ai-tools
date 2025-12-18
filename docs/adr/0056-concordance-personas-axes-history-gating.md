@@ -75,10 +75,12 @@ Reducing Concordance scores here requires clarifying these domains and boundarie
   - Axis semantics are catalogued in `axisCatalog`/`axisConfig` and static prompt config, but history/log payloads and `history_axes_for`/`_filter_axis_tokens` reinvent axis projections per call site.
   - Concordance-relevant axis signals for history summaries and logs are not expressed as a single, typed snapshot; contributors must infer which axes matter from scattered filters.
 - **Scope**
-  - Changes to axis definitions or filters affect: Concordance scoring, history drawers, request logs, README/help docs, GPT help output, and multiple tests.
-  - Tests and docs act as coordination fabric; drift in one place often forces brittle updates elsewhere.
-- **Volatility**
-  - Recent churn in `axisConfig`, `staticPromptConfig`, `talonSettings` axis functions, and request history/log helpers indicates an evolving story around which axes are recorded, where, and with what defaults.
+   - Changes to axis definitions or filters affect: Concordance scoring, history drawers, request logs, README/help docs, GPT help output, and multiple tests.
+   - Tests and docs act as coordination fabric; drift in one place often forces brittle updates elsewhere.
+   - Legacy guardrails that once allowed lens-less history entries (for example, `require_directional=False`) have been removed. A repo-wide search on 2025-12-17 found no remaining in-repo consumers, and no external macros or scripts remain; the runtime’s immediate-failure stance now holds end-to-end.
+   - **Volatility**
+   - Recent churn in `axisConfig`, `staticPromptConfig`, `talonSettings` axis functions, and request history/log helpers indicates an evolving story around which axes are recorded, where, and with what defaults.
+
 
 **Hidden domain / tune**: *Axis Snapshot & History Concordance Domain* — the shared intent is to record and present a consistent, Concordance-relevant snapshot of axes and static prompt semantics across history summaries, logs, docs, and GUIs.
 
@@ -165,21 +167,17 @@ For all three domains, the intended long-term effect is to **reduce sustained Co
 - **Revised Recommendation**
   - **Axis snapshot type**
     - Define a small `AxisSnapshot` structure (Python type or dict schema) derived from `axisCatalog` that represents the Concordance-relevant view of axes for a given request/history entry (e.g., enabled axes, key values, derived flags).
+    - Ensure the snapshot drops legacy or non-catalog axes (for example, the retired `style` axis and bespoke caller metadata) so Concordance-facing surfaces only carry the agreed axis set. Legacy style handling has now been removed from request history/log code entirely; incoming data that still references the style axis now raises errors rather than emitting warnings.
     - Make `requestLog._filter_axes_payload`, `requestHistoryActions.{_filter_axis_tokens,history_axes_for,history_summary_lines,_directional_tokens_for_entry}`, and `historyQuery.history_drawer_entries_from` consume this type instead of ad hoc filters.
-  - **Single source of truth for axis names and descriptions**
-    - Extend the existing `axis_catalog` façade described in ADR-0046/0054 so that:
-      - `talonSettings` axis helpers, static prompt catalogs, and README/help generators pull labels and descriptions from the same catalog.
-      - History and log summaries reference catalog metadata rather than hard-coded strings.
-  - **Explicit Concordance alignment**
-    - Make Concordance scoring code paths consume `AxisSnapshot` explicitly, so changing which axes are recorded for history/logs is a catalog-driven decision rather than an incidental filter tweak.
-- **Phasing**
-  - **Phase 1 – AxisSnapshot type and adapters**
-    - Introduce `AxisSnapshot` and a helper to build it from `axisCatalog` + request settings.
-    - Add adapters in `requestLog` and `requestHistoryActions` that wrap existing behaviour but log usage of `AxisSnapshot`.
-  - **Phase 2 – Migrate history and log helpers**
-    - Update `history_axes_for`, `history_summary_lines`, `_filter_axis_tokens`, `_filter_axes_payload`, and related tests to use `AxisSnapshot` consistently.
-    - Remove duplicate axis-name/description tables from history/log modules where they overlap with the catalog.
-  - **Phase 3 – Docs/help alignment**
+   - Remove duplicate axis-name/description tables from history/log modules where they overlap with the catalog and retire the legacy “extra axes” passthrough once all consumers rely on the shared snapshot.
+    - (Completed 2025-12-17) Runtime guardrails now reject any request-history writes lacking a directional lens (the `require_directional` escape hatch is gone); remaining effort focuses on auditing and, when necessary, purging legacy data outside this repo that still lacks directional metadata.
+
+
+   - **Phase 3 – Docs/help alignment**
+      - Ensure README/help and static prompt docs that present axes do so via the catalog façade and/or a shared doc-generation helper, reusing ADR-0046/0054 patterns.
+      - Clearly document that requests missing a directional lens fail immediately; there is no remediation path or compatibility shim once the guardrails are removed.
+
+
     - Ensure README/help and static prompt docs that present axes do so via the catalog façade and/or a shared doc-generation helper, reusing ADR-0046/0054 patterns.
 
 ### 2. Persona & Intent Preset Concordance Domain
@@ -262,6 +260,7 @@ For each domain, we will align with the existing test suites and add characteriz
     - Add focused tests that characterize current axis content for a representative history/log entry (which axes appear, how missing/extra axes are handled).
   - After wiring `AxisSnapshot`:
     - Reuse and, where needed, extend these tests to assert that history/log outputs derive from the catalog and that Concordance-relevant axes are preserved.
+    - Add a regression test (or CI assertion) that fails when a history append omits directional axes, proving the guardrail remains enforced.
 
 ### Persona & Intent Preset Concordance
 
@@ -273,6 +272,8 @@ For each domain, we will align with the existing test suites and add characteriz
 - **Plan**
   - Characterize the current mapping between persona/intent presets, axis tokens, and GUI/help surfaces for a small set of presets.
   - Add tests around the persona/intent catalog API (once introduced) that assert round-tripping between config, GPT actions, help hub presets, suggestion GUIs, and lists.
+  - Add integration coverage (for example, extending `tests/test_integration_suggestions.py`) that fails when catalog alignment regresses so GUI/help/doc flows stay in sync.
+  - Add a persona/intent CI guardrail (lint/test) that rejects bypasses of the catalog API before landing.
   - When refactoring `_validated_persona_value`, `_canonical_persona_value`, and related helpers, ensure existing integration tests remain the primary guardrails; only add new tests where behaviour is currently untested.
 
 ### Request Gating & Streaming Lifecycle
@@ -302,6 +303,7 @@ Across all domains, we will continue to run `python3 -m pytest` from the repo ro
   - A unified **Persona & Intent** catalog stabilizes presets across GPT actions, help hub, and suggestion GUIs, reducing churn and surprises when tuning personas/intents.
   - Centralized **Request Gating & Streaming Lifecycle** semantics reduce duplicated gating logic, make error/cancellation handling more predictable, and simplify reasoning about when history/log entries are written.
   - Concordance scores for the identified hotspots should decrease over time as visibility increases, scope narrows, and volatility is absorbed by focused facades and types.
+  - CI guardrails that fail on lens-less history writes keep the directional requirement non-negotiable, providing an automated early warning before regressions reach production.
 - **Risks**
   - Introducing new catalogs and lifecycle APIs can temporarily increase complexity and surface hidden inconsistencies.
   - Misaligned migrations (e.g., partially adopted `AxisSnapshot` or persona catalog) could create confusing states where some surfaces see new behaviour and others see old.
@@ -309,6 +311,7 @@ Across all domains, we will continue to run `python3 -m pytest` from the repo ro
   - Land changes in small, test-backed slices following the Tests-First Refactor Plan.
   - Keep new facades thin, documented, and aligned with ADR-0045/0046/0054/0055 patterns.
   - Monitor statement-level churn × complexity heatmaps and Concordance scores after each slice to confirm improvements come from structural gains, not weakened checks.
+  - Enforce CI guardrails and integration coverage that fail when directional lenses or persona/intent catalog alignment regress, so violations surface before landing.
 
 ---
 
@@ -317,13 +320,18 @@ Across all domains, we will continue to run `python3 -m pytest` from the repo ro
 1. **Axis Snapshot & History**
    - Define an `AxisSnapshot` type driven by `axisCatalog` and add adapters in `requestLog` and `requestHistoryActions` that wrap existing axis filters.
    - Update `history_axes_for`, `history_summary_lines`, `_filter_axis_tokens`, and `_filter_axes_payload` to consume `AxisSnapshot`, trimming duplicate axis tables and aligning tests.
-   - Ensure README/help/static prompt docs that present axes reuse the same catalog and snapshot helpers, building on ADR-0046/0054.
+    - Ensure README/help/static prompt docs that present axes reuse the same catalog and snapshot helpers, building on ADR-0046/0054.
+    - (Completed 2025-12-17) Audit of this repo’s Talon overlays, CLI scripts, and automation confirmed no residual `require_directional=False` usage, and no external automation paths remain.
+    - (Completed 2025-12-17) Added a CI/guardrail check by invoking `scripts/tools/history-axis-validate.py` from `make request-history-guardrails`, failing when new code paths attempt to append history entries without directional lenses.
+
 2. **Persona & Intent Presets**
    - Introduce a persona/intent catalog backed by `personaConfig` and wire GPT persona/intent actions, help hub presets, suggestion GUIs, and list files through it.
    - Refactor `_validated_persona_value`, `_canonical_persona_value`, and `_build_persona_intent_docs` to operate solely on the catalog and axis metadata, updating tests as needed.
+   - Add integration coverage (e.g., in `tests/test_integration_suggestions.py` or similar) that fails when persona/intent catalog alignment regresses, proving that GUIs, docs, and help flows remain in sync.
 3. **Request Gating & Streaming Lifecycle**
    - Add `is_in_flight`/`try_start_request` helpers to `requestController`/`requestState`/`requestLifecycle` and migrate high-churn `_request_is_in_flight` / `_reject_if_request_in_flight` call sites to them.
    - Implement `StreamingSession` aligned with ADR-0046/0054 and move `modelHelpers` streaming/error helpers and history/log writes to consume its events.
    - Complete ADR-0055 by deprecating remaining prompt-only history save helpers in favour of the `file` destination, covered by existing `modelDestination` and history tests.
+   - Add focused regression tests for gating/streaming paths (e.g., `tests/test_request_streaming.py`, `tests/test_gpt_actions.py`) that fail if the centralized lifecycle is bypassed or concurrency guardrails regress.
 
 The execution of these tasks should be coordinated with existing Concordance ADRs so that this ADR serves as a focused completion path for persona, axis snapshot, and request gating hotspots revealed by the latest churn × complexity analysis.

@@ -34,9 +34,17 @@ def axis_snapshot_from_axes(axes: dict[str, list[str]] | None) -> AxisSnapshot:
     """Build a Concordance-aligned axis snapshot for history.
 
     Delegate to the request log snapshot builder so history and log surfaces use
-    a single normalisation contract.
+    a single normalisation contract while trimming legacy style axes.
     """
-    return requestlog_axis_snapshot_from_axes(axes or {})
+    payload = dict(axes or {})
+    payload.pop("style", None)
+    try:
+        return requestlog_axis_snapshot_from_axes(payload)
+    except ValueError as exc:
+        if "style axis is removed" not in str(exc):
+            raise
+        payload.pop("style", None)
+        return requestlog_axis_snapshot_from_axes(payload)
 
 
 def _request_is_in_flight() -> bool:
@@ -549,10 +557,6 @@ def _show_entry(entry) -> bool:
     # match the history entry instead of whatever the live state held.
     if normalized_axes is not None:
         axes = getattr(entry, "axes", {}) or {}
-        if axes.get("style") or getattr(entry, "legacy_style", False):
-            notify(
-                "GPT: style axis is removed; use form/channel instead (history entry)."
-            )
         # Fill missing axis tokens from the parsed recipe when available.
         parsed_static = parsed_recipe_fields[0] if parsed_recipe_fields else ""
         parsed_completeness = parsed_recipe_fields[1] if parsed_recipe_fields else ""

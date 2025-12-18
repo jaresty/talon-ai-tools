@@ -13,7 +13,11 @@ if bootstrap is not None:
     from talon import actions, clip
     from talon_user.lib.modelDestination import ModelDestination
     from talon_user.lib import modelDestination as model_destination_module
-    from talon_user.lib.modelHelpers import build_request, format_message
+    from talon_user.lib.modelHelpers import (
+        build_request,
+        format_message,
+        prepare_destination_surface,
+    )
     from talon_user.lib.modelPresentation import (
         ResponsePresentation,
         render_for_destination,
@@ -98,6 +102,31 @@ if bootstrap is not None:
             message = " ".join(str(arg) for arg in mock_print.call_args.args)
             self.assertIn("inside_textarea=True", message)
             self.assertIn("fallback via language context 'python'", message)
+
+        def test_inside_textarea_fallbacks_with_slack_app_name(self):
+            with (
+                patch.object(
+                    model_destination_module.ui,
+                    "focused_element",
+                    side_effect=RuntimeError("No element found."),
+                ),
+                patch.object(
+                    model_destination_module.actions.code,
+                    "language",
+                    return_value="",
+                ),
+                patch.object(
+                    model_destination_module.actions.app,
+                    "name",
+                    return_value="Slack",
+                ),
+                patch("talon_user.lib.modelDestination.print") as mock_print,
+            ):
+                self.assertTrue(ModelDestination().inside_textarea())
+
+            message = " ".join(str(arg) for arg in mock_print.call_args.args)
+            self.assertIn("inside_textarea=True", message)
+            self.assertIn("fallback via app name 'Slack'", message)
 
         def test_inside_textarea_returns_false_when_no_fallback(self):
             with (
@@ -284,6 +313,66 @@ if bootstrap is not None:
                         return self._wrapped.text
 
                 ModelDestination().insert(ForeignPromptResult(inner))
+
+        def test_paste_destination_promotes_when_no_textarea(self):
+            GPTState.reset_all()
+            paste = model_destination_module.Paste()
+            result = PromptResult.from_messages([format_message("response")])
+
+            with (
+                patch.object(
+                    paste, "inside_textarea", side_effect=[False, False, False]
+                ),
+                patch.object(actions.user, "confirmation_gui_append") as gui_append,
+                patch.object(actions.user, "paste") as paste_action,
+            ):
+                surface = prepare_destination_surface(paste)
+                self.assertTrue(surface["promoted_to_window"])
+                paste.insert(result)
+
+            gui_append.assert_called_once()
+            paste_action.assert_not_called()
+            self.assertEqual(
+                getattr(GPTState, "current_destination_kind", ""), "window"
+            )
+
+        def test_paste_destination_rechecks_focus_before_inserting(self):
+            GPTState.reset_all()
+            paste = model_destination_module.Paste()
+            result = PromptResult.from_messages([format_message("response")])
+
+            with patch.object(
+                paste, "inside_textarea", side_effect=[True, False, False]
+            ):
+                prepare_destination_surface(paste)
+                with (
+                    patch.object(actions.user, "confirmation_gui_append") as gui_append,
+                    patch.object(actions.user, "paste") as paste_action,
+                ):
+                    paste.insert(result)
+
+            gui_append.assert_called_once()
+            paste_action.assert_not_called()
+            self.assertEqual(
+                getattr(GPTState, "current_destination_kind", ""), "window"
+            )
+
+        def test_paste_destination_pastes_when_focus_stable(self):
+            GPTState.reset_all()
+            paste = model_destination_module.Paste()
+            result = PromptResult.from_messages([format_message("response")])
+
+            with patch.object(paste, "inside_textarea", side_effect=[True, True, True]):
+                prepare_destination_surface(paste)
+                with (
+                    patch.object(actions.user, "confirmation_gui_append") as gui_append,
+                    patch.object(actions.user, "paste") as paste_action,
+                ):
+                    paste.insert(result)
+
+            gui_append.assert_not_called()
+            paste_action.assert_called_once()
+            self.assertEqual(getattr(GPTState, "current_destination_kind", ""), "paste")
 
         @patch.object(model_destination_module, "Builder")
         def test_browser_renders_bulleted_response_as_list(self, builder_cls):

@@ -100,6 +100,7 @@ overlay-lifecycle-guardrails:
 	python3 -m pytest _tests/test_overlay_lifecycle.py
 
 request-history-guardrails:
+	python3 scripts/tools/history-axis-validate.py
 	python3 -m pytest _tests/test_request_history_actions.py
 
 request-history-guardrails-fast:

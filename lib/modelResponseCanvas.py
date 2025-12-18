@@ -1,6 +1,7 @@
 from typing import Callable, Optional
 
-from talon import Context, Module, actions, canvas, clip, ui, skia
+from talon import Context, Module, actions, canvas, clip, ui, skia, settings
+import traceback
 
 from .axisJoin import axis_join
 from .canvasFont import apply_canvas_typeface, draw_text_with_emoji_fallback
@@ -52,11 +53,49 @@ class ResponseCanvasState:
     # within the same request even if ids firm up mid-stream.
     meta_pinned_request_id: str = ""
     suppress_hide_reset: bool = False
+    previous_window = None
+    last_close_event: float = 0.0
 
 
 _EVENT_LOG_LIMIT = 0  # disable event logging in production
 _event_log_count = 0
 _last_draw_error: Optional[str] = None
+
+
+def _capture_previous_focus() -> None:
+    if getattr(ResponseCanvasState, "showing", False):
+        return
+    try:
+        window = ui.active_window()
+    except Exception:
+        window = None
+    try:
+        has_focus = callable(getattr(window, "focus", None))
+    except Exception:
+        has_focus = False
+    try:
+        ResponseCanvasState.previous_window = window if has_focus else None
+    except Exception:
+        pass
+
+
+def _restore_previous_focus() -> None:
+    try:
+        window = getattr(ResponseCanvasState, "previous_window", None)
+    except Exception:
+        window = None
+    try:
+        ResponseCanvasState.previous_window = None
+    except Exception:
+        pass
+    if not window:
+        return
+    try:
+        focus = getattr(window, "focus", None)
+        if callable(focus):
+            focus()
+    except Exception:
+        pass
 
 
 def _request_is_in_flight() -> bool:
@@ -91,6 +130,30 @@ def _reject_if_request_in_flight() -> bool:
             set_drop_reason("in_flight")
         except Exception:
             pass
+        try:
+            GPTState.suppress_response_canvas_close = False
+        except Exception:
+            pass
+        try:
+            state = _current_request_state()
+        except Exception:
+            state = None
+        if state and getattr(state, "phase", None) in (
+            RequestPhase.SENDING,
+            RequestPhase.STREAMING,
+        ):
+            try:
+                from .pillCanvas import show_pill  # type: ignore circular
+
+                phase_label = (
+                    "Model: sending…"
+                    if state.phase is RequestPhase.SENDING
+                    else "Model: streaming…"
+                )
+                show_pill(phase_label, state.phase)
+            except Exception:
+                pass
+
         notify(message)
         return True
     return False
@@ -247,6 +310,30 @@ def _debug(msg: str) -> None:
         pass
 
 
+def _trace_canvas_event(event: str, **data) -> None:
+    try:
+        enabled = bool(settings.get("user.gpt_trace_canvas_flow", 1))
+    except Exception:
+        enabled = False
+    if not enabled:
+        return
+    parts = [f"[canvas-flow] {event}"]
+    if data:
+        details = " ".join(f"{key}={value!r}" for key, value in data.items())
+        parts.append(details)
+    message = " ".join(parts)
+    try:
+        print(message)
+    except Exception:
+        pass
+    try:
+        stack = "".join(traceback.format_stack(limit=8))
+        if stack:
+            print(stack)
+    except Exception:
+        pass
+
+
 def _reset_event_log() -> None:
     """No-op: event logging disabled in production for performance."""
     globals()["_event_log_count"] = 0
@@ -274,6 +361,13 @@ def _log_canvas_close(reason: str) -> None:
     except Exception:
         showing = False
     _debug(f"close reason={reason} showing={showing} phase={phase} surface={surface}")
+    _trace_canvas_event(
+        "canvas_close",
+        reason=reason,
+        showing=showing,
+        phase=str(phase),
+        surface=str(surface),
+    )
 
 
 def _guard_response_canvas(allow_inflight: bool = False) -> bool:
@@ -334,6 +428,7 @@ def _ensure_response_canvas() -> canvas.Canvas:
                 pass
         except Exception:
             pass
+        _restore_previous_focus()
 
     _last_hide_handler = _hide_handler
 
@@ -498,10 +593,42 @@ def _ensure_response_canvas() -> canvas.Canvas:
                                 ResponseCanvasState.meta_pinned_request_id = ""
                             _response_canvas.show()
                         elif key == "paste":
+                            try:
+                                from .modelConfirmationGUI import (
+                                    ConfirmationGUIState,
+                                )  # type: ignore circular
+                            except Exception:
+                                ConfirmationGUIState = None  # type: ignore
+                            presentation = None
+                            display_thread = False
+                            last_item_text = ""
+                            if ConfirmationGUIState is not None:
+                                try:
+                                    presentation = (
+                                        ConfirmationGUIState.current_presentation
+                                    )
+                                    display_thread = ConfirmationGUIState.display_thread
+                                    last_item_text = ConfirmationGUIState.last_item_text
+                                except Exception:
+                                    presentation = None
                             actions.user.model_response_canvas_close()
                             close_overlays(
                                 (getattr(actions.user, "confirmation_gui_close", None),)
                             )
+                            if ConfirmationGUIState is not None:
+                                try:
+                                    ConfirmationGUIState.current_presentation = (
+                                        presentation
+                                    )
+                                    ConfirmationGUIState.display_thread = display_thread
+                                    ConfirmationGUIState.last_item_text = last_item_text
+                                except Exception:
+                                    pass
+                            if answer:
+                                try:
+                                    GPTState.text_to_confirm = answer
+                                except Exception:
+                                    pass
                             actions.user.confirmation_gui_paste()
                         elif key == "copy":
                             actions.user.confirmation_gui_copy()
@@ -1626,13 +1753,31 @@ class UserActions:
             or getattr(GPTState, "text_to_confirm", "")
         ):
             return
+        _capture_previous_focus()
         close_common_overlays(actions.user, exclude={"model_response_canvas_close"})
         canvas_obj = _ensure_response_canvas()
         if ResponseCanvasState.showing:
             return
         ResponseCanvasState.showing = True
+        _trace_canvas_event(
+            "canvas_open",
+            inflight=inflight,
+            prefer_progress=prefer_progress,
+            phase=str(getattr(state, "phase", None)),
+            destination=getattr(GPTState, "current_destination_kind", None),
+        )
+        try:
+            ctx.tags = ["user.model_window_open"]
+        except Exception:
+            pass
         try:
             GPTState.response_canvas_showing = True
+        except Exception:
+            pass
+        try:
+            from .pillCanvas import hide_pill  # type: ignore circular
+
+            hide_pill()
         except Exception:
             pass
         ResponseCanvasState.scroll_y = 0.0
@@ -1654,9 +1799,15 @@ class UserActions:
         if _guard_response_canvas(allow_inflight=True):
             return
         canvas_obj = _ensure_response_canvas()
+        state = None
         if ResponseCanvasState.showing:
-            _log_canvas_close("toggle close")
-            ResponseCanvasState.showing = False
+        _log_canvas_close("toggle close")
+        try:
+            ResponseCanvasState.last_close_event = time.time()
+        except Exception:
+            pass
+        ResponseCanvasState.showing = False
+
             try:
                 GPTState.response_canvas_showing = False
             except Exception:
@@ -1679,33 +1830,72 @@ class UserActions:
                 GPTState.suppress_response_canvas_close = False
             except Exception:
                 pass
-            return
+            try:
+                ctx.tags = []
+            except Exception:
+                pass
+            try:
+                state = _current_request_state()
+            except Exception:
+                state = None
+            _restore_previous_focus()
+        else:
+            _capture_previous_focus()
+            close_common_overlays(actions.user, exclude={"model_response_canvas_close"})
+            ResponseCanvasState.showing = True
+            try:
+                ctx.tags = ["user.model_window_open"]
+            except Exception:
+                pass
+            try:
+                GPTState.response_canvas_showing = True
+            except Exception:
+                pass
+            ResponseCanvasState.scroll_y = 0.0
+            ResponseCanvasState.max_scroll = 1e9
+            ResponseCanvasState.lines_cache_key = None
+            ResponseCanvasState.lines_cache = None
+            ResponseCanvasState.meta_expanded = False
+            ResponseCanvasState.meta_pinned_request_id = ""
+            try:
+                GPTState.suppress_response_canvas_close = True
+            except Exception:
+                pass
+            canvas_obj.show()
 
-        close_common_overlays(actions.user, exclude={"model_response_canvas_close"})
-        ResponseCanvasState.showing = True
-        try:
-            GPTState.response_canvas_showing = True
-        except Exception:
-            pass
-        ResponseCanvasState.scroll_y = 0.0
-        ResponseCanvasState.max_scroll = 1e9
-        ResponseCanvasState.lines_cache_key = None
-        ResponseCanvasState.lines_cache = None
-        ResponseCanvasState.meta_expanded = False
-        ResponseCanvasState.meta_pinned_request_id = ""
-        try:
-            GPTState.suppress_response_canvas_close = True
-        except Exception:
-            pass
-        canvas_obj.show()
+        if state and getattr(state, "phase", None) in (
+            RequestPhase.SENDING,
+            RequestPhase.STREAMING,
+        ):
+            try:
+                from .pillCanvas import show_pill  # type: ignore circular
+
+                phase_label = (
+                    "Model: sending…"
+                    if state.phase is RequestPhase.SENDING
+                    else "Model: streaming…"
+                )
+                show_pill(phase_label, state.phase)
+            except Exception:
+                pass
 
     def model_response_canvas_close():
         """Explicitly close the response viewer"""
+        _trace_canvas_event(
+            "canvas_close.begin",
+            showing=getattr(ResponseCanvasState, "showing", False),
+            destination=getattr(GPTState, "current_destination_kind", None),
+        )
         if _guard_response_canvas(allow_inflight=True):
             return
         if _response_canvas is None:
             _log_canvas_close("close w/o canvas")
             ResponseCanvasState.showing = False
+            try:
+                ctx.tags = []
+            except Exception:
+                pass
+            _restore_previous_focus()
             return
         try:
             clear_response_fallback(getattr(GPTState, "last_request_id", None))
@@ -1713,6 +1903,10 @@ class UserActions:
             pass
         _log_canvas_close("explicit close")
         ResponseCanvasState.showing = False
+        try:
+            ctx.tags = []
+        except Exception:
+            pass
         try:
             GPTState.response_canvas_showing = False
         except Exception:
@@ -1731,3 +1925,29 @@ class UserActions:
             GPTState.suppress_response_canvas_close = False
         except Exception:
             pass
+        try:
+            state = _current_request_state()
+        except Exception:
+            state = None
+        _restore_previous_focus()
+        if state and getattr(state, "phase", None) in (
+            RequestPhase.SENDING,
+            RequestPhase.STREAMING,
+        ):
+            try:
+                from .pillCanvas import show_pill  # type: ignore circular
+
+                phase_label = (
+                    "Model: sending…"
+                    if state.phase is RequestPhase.SENDING
+                    else "Model: streaming…"
+                )
+                show_pill(phase_label, state.phase)
+            except Exception:
+                pass
+        _trace_canvas_event(
+            "canvas_close.end",
+            showing=getattr(ResponseCanvasState, "showing", False),
+            destination=getattr(GPTState, "current_destination_kind", None),
+            phase=str(getattr(state, "phase", None)),
+        )

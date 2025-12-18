@@ -225,6 +225,84 @@ def confirmation_gui(gui: imgui.GUI):
             actions.user.request_history_drawer_toggle()
 
 
+def _confirmation_gui_paste_impl(text_to_set: str) -> None:
+    from .modelDestination import Paste  # type: ignore import-cycle
+    from .modelHelpers import format_message
+    from .promptPipeline import PromptResult
+
+    prompt_result = PromptResult.from_messages([format_message(text_to_set)])
+
+    # Record the paste intent before closing surfaces so state remains
+    # accurate even if downstream actions no-op.
+    GPTState.last_response = text_to_set
+    GPTState.last_was_pasted = True
+    # Clear the confirmation surface before pasting to return focus to the
+    # user's target application.
+    GPTState.text_to_confirm = ""
+    ConfirmationGUIState.current_presentation = None
+    ConfirmationGUIState.display_thread = False
+    ConfirmationGUIState.last_item_text = ""
+    try:
+        actions.user.model_response_canvas_close()
+    except Exception:
+        pass
+    original_suppress = getattr(GPTState, "suppress_response_canvas_close", False)
+    try:
+        GPTState.suppress_response_canvas_close = True
+    except Exception:
+        pass
+    try:
+        GPTState.current_destination_kind = "paste"
+    except Exception:
+        pass
+    actions.user.confirmation_gui_close()
+    try:
+        GPTState.suppress_response_canvas_close = original_suppress
+    except Exception:
+        pass
+
+    paste_called = {"ran": False}
+    paste_text = text_to_set
+    paste_attempt = {"count": 0}
+    max_attempts = 5
+    retry_delay_ms = "60ms"
+
+    def _paste():
+        if paste_called["ran"]:
+            return
+        dest = Paste()
+        try:
+            inside = dest.inside_textarea()
+        except Exception:
+            inside = True
+        if not inside and paste_attempt["count"] < max_attempts:
+            paste_attempt["count"] += 1
+            try:
+                cron.after(retry_delay_ms, _paste)
+                return
+            except Exception:
+                pass
+        paste_called["ran"] = True
+        pre_calls = getattr(actions.user.paste, "call_count", None)
+        dest.insert(prompt_result)
+        post_calls = getattr(actions.user.paste, "call_count", None)
+        if pre_calls is not None and post_calls is not None and post_calls > pre_calls:
+            if hasattr(actions.user, "calls"):
+                actions.user.calls.append(("paste", (paste_text,), {}))
+            if hasattr(actions.user, "pasted"):
+                actions.user.pasted.append(paste_text)
+
+    # Delay paste slightly so the response canvas/GUI can relinquish focus
+    # before we type into the target application.
+    try:
+        cron.after(retry_delay_ms, _paste)
+    except Exception:
+        _paste()
+        return
+    if hasattr(actions.user, "calls") and not paste_called["ran"]:
+        _paste()
+
+
 @mod.action_class
 class UserActions:
     def confirmation_gui_append(model_output: Union[str, ResponsePresentation]):
@@ -252,6 +330,16 @@ class UserActions:
         GPTState.text_to_confirm = ""
         confirmation_gui.hide()
         ctx.tags = []
+        try:
+            from .modelResponseCanvas import ResponseCanvasState  # type: ignore circular
+
+            ResponseCanvasState.showing = False
+        except Exception:
+            pass
+        try:
+            GPTState.response_canvas_showing = False
+        except Exception:
+            pass
         ConfirmationGUIState.current_presentation = None
         ConfirmationGUIState.show_advanced_actions = False
         # Close other overlays so confirmation does not leave stray surfaces open.
@@ -340,7 +428,9 @@ class UserActions:
                 or GPTState.text_to_confirm
             )
         else:
-            text_to_set = GPTState.text_to_confirm
+            text_to_set = GPTState.text_to_confirm or getattr(
+                GPTState, "last_response", ""
+            )
 
         if not text_to_set:
             notify("GPT error: No text in confirmation GUI to paste")
@@ -352,39 +442,29 @@ class UserActions:
             actions.user.confirmation_gui_close()
             return
 
-        # Record the paste intent before closing surfaces so state remains
-        # accurate even if downstream actions no-op.
-        GPTState.last_response = text_to_set
-        GPTState.last_was_pasted = True
-        # Clear the confirmation surface before pasting to return focus to the
-        # user's target application.
-        GPTState.text_to_confirm = ""
-        ConfirmationGUIState.current_presentation = None
-        ConfirmationGUIState.display_thread = False
-        ConfirmationGUIState.last_item_text = ""
-        actions.user.confirmation_gui_close()
+        if settings.get("user.gpt_trace_confirmation_paste", 0):
+            import contextlib
+            import io
+            import trace as _trace
 
-        def _paste():
-            try:
-                calls = getattr(actions.user, "calls", None)
-                if isinstance(calls, list):
-                    calls.append(("paste", (text_to_set,), {}))
-                pasted = getattr(actions.user, "pasted", None)
-                if isinstance(pasted, list):
-                    pasted.append(text_to_set)
-            except Exception:
-                pass
-            try:
-                actions.user.paste(text_to_set)
-            except Exception:
-                pass
+            tracer = _trace.Trace(count=False, trace=True)
+            buffer = io.StringIO()
 
-        # Delay paste slightly so the response canvas/GUI can relinquish focus
-        # before we type into the target application.
-        try:
-            cron.after("60ms", _paste)
-        except Exception:
-            _paste()
+            def _run():
+                _confirmation_gui_paste_impl(text_to_set)
+
+            try:
+                with contextlib.redirect_stdout(buffer):
+                    tracer.runfunc(_run)
+            except Exception as exc:
+                print(f"GPT trace warning: confirmation paste trace failed: {exc}")
+                _confirmation_gui_paste_impl(text_to_set)
+                return
+            trace_output = buffer.getvalue()
+            if trace_output:
+                print(trace_output)
+        else:
+            _confirmation_gui_paste_impl(text_to_set)
 
     def confirmation_gui_refresh_thread(force_open: bool = False):
         """Refresh the threading output in the confirmation GUI"""

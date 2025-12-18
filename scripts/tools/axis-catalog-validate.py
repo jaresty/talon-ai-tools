@@ -74,6 +74,36 @@ def validate_axis_tokens(catalog) -> List[str]:
     return errors
 
 
+def validate_no_legacy_style_axis(catalog) -> List[str]:
+    errors: List[str] = []
+    axes = catalog.get("axes", {}) or {}
+    list_tokens = catalog.get("axis_list_tokens", {}) or {}
+
+    if "style" in axes:
+        errors.append(
+            "[axis legacy style] catalog axes still include legacy 'style' axis; drop it in favour of form/channel per ADR-0056."
+        )
+    if "style" in list_tokens:
+        errors.append(
+            "[axis legacy style] axis_list_tokens still expose legacy 'style' axis; regenerate Talon lists without styleModifier."
+        )
+
+    profiled = (catalog.get("static_prompts") or {}).get("profiled", []) or []
+    legacy_prompts: List[str] = []
+    for entry in profiled:
+        axes_map = entry.get("axes")
+        if isinstance(axes_map, dict) and "style" in axes_map:
+            legacy_prompts.append(str(entry.get("name") or "<unnamed>"))
+    if legacy_prompts:
+        joined = ", ".join(sorted(set(legacy_prompts)))
+        errors.append(
+            "[axis legacy style] static_prompts.profiled still reference legacy 'style' axis for: "
+            f"{joined}. Remove style assignments before regenerating docs."
+        )
+
+    return errors
+
+
 def validate_static_prompt_axes(catalog) -> List[str]:
     errors: List[str] = []
     axes = catalog.get("axes", {})
@@ -132,20 +162,26 @@ def validate_static_prompt_sections_present(catalog) -> List[str]:
     if not catalog.get("static_prompts"):
         errors.append("[static prompt drift] catalog missing static_prompts")
     if not catalog.get("static_prompt_descriptions"):
-        errors.append("[static prompt drift] catalog missing static_prompt_descriptions")
+        errors.append(
+            "[static prompt drift] catalog missing static_prompt_descriptions"
+        )
     if not catalog.get("static_prompt_profiles"):
         errors.append("[static prompt drift] catalog missing static_prompt_profiles")
     return errors
 
 
-def validate_static_prompt_required_profiles(catalog, required: list[str] | None = None) -> List[str]:
+def validate_static_prompt_required_profiles(
+    catalog, required: list[str] | None = None
+) -> List[str]:
     """Ensure key static prompt profiles exist in the catalog."""
 
     errors: List[str] = []
     profiled = (catalog.get("static_prompts") or {}).get("profiled", []) or []
     names = {entry.get("name") for entry in profiled if entry.get("name")}
     # Default required set is the static prompt profiles advertised in the catalog.
-    required_names = required or list((catalog.get("static_prompt_profiles") or {}).keys())
+    required_names = required or list(
+        (catalog.get("static_prompt_profiles") or {}).keys()
+    )
     missing = [name for name in required_names if name and name not in names]
     if missing:
         errors.append(
@@ -159,7 +195,10 @@ def validate_static_prompt_profile_keys(catalog) -> List[str]:
 
     errors: List[str] = []
     profiles = set((catalog.get("static_prompt_profiles") or {}).keys())
-    profiled = {entry.get("name") for entry in (catalog.get("static_prompts") or {}).get("profiled", [])}
+    profiled = {
+        entry.get("name")
+        for entry in (catalog.get("static_prompts") or {}).get("profiled", [])
+    }
     missing_profiles = profiled - profiles
     missing_profiled = profiles - profiled
     if missing_profiles:
@@ -278,11 +317,17 @@ def main() -> int:
 
     if not args.skip_list_files:
         if lists_dir is None:
-            errors.append("[list generation drift] lists_dir is required when enforcing list checks (pass --lists-dir; regenerate via scripts/tools/generate_talon_lists.py --out-dir <dir>)")
+            errors.append(
+                "[list generation drift] lists_dir is required when enforcing list checks (pass --lists-dir; regenerate via scripts/tools/generate_talon_lists.py --out-dir <dir>)"
+            )
         elif not lists_dir.exists():
-            errors.append(f"[list generation drift] lists_dir not found: {lists_dir} (pass --lists-dir to point at Talon lists; regenerate via scripts/tools/generate_talon_lists.py --out-dir <dir>)")
+            errors.append(
+                f"[list generation drift] lists_dir not found: {lists_dir} (pass --lists-dir to point at Talon lists; regenerate via scripts/tools/generate_talon_lists.py --out-dir <dir>)"
+            )
         elif not lists_dir.is_dir():
-            errors.append(f"[list generation drift] lists_dir is not a directory: {lists_dir} (pass --lists-dir to point at Talon lists; regenerate via scripts/tools/generate_talon_lists.py --out-dir <dir>)")
+            errors.append(
+                f"[list generation drift] lists_dir is not a directory: {lists_dir} (pass --lists-dir to point at Talon lists; regenerate via scripts/tools/generate_talon_lists.py --out-dir <dir>)"
+            )
 
         if errors:
             print(f"Axis catalog validation failed (errors: {len(errors)}):")
@@ -293,6 +338,7 @@ def main() -> int:
     effective_lists_dir: Path | None = None if args.skip_list_files else lists_dir
     catalog = axis_catalog(lists_dir=effective_lists_dir)
     errors.extend(validate_axis_tokens(catalog))
+    errors.extend(validate_no_legacy_style_axis(catalog))
     errors.extend(validate_static_prompt_axes(catalog))
     errors.extend(validate_static_prompt_descriptions(catalog))
     errors.extend(validate_static_prompt_sections_present(catalog))
@@ -310,7 +356,9 @@ def main() -> int:
     axes = catalog.get("axes", {}) or {}
     lists_mode = "skipped" if args.skip_list_files else f"validated@{lists_dir}"
     lists_dir_display = "<skipped>" if args.skip_list_files else str(lists_dir)
-    lists_dir_arg = f" lists_dir_arg={lists_dir}" if args.skip_list_files and lists_dir else ""
+    lists_dir_arg = (
+        f" lists_dir_arg={lists_dir}" if args.skip_list_files and lists_dir else ""
+    )
     note = ""
     if args.skip_list_files and lists_dir:
         note = (

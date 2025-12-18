@@ -1,6 +1,7 @@
 import textwrap
 import unittest
 from typing import TYPE_CHECKING
+from unittest.mock import patch
 
 try:
     from bootstrap import bootstrap
@@ -37,7 +38,9 @@ if bootstrap is not None:
             # Talon list tokens should be present for drift checks.
             self.assertIn("todo", catalog["talon_list_tokens"])
 
-        def test_static_prompt_docs_include_profiled_and_unprofiled_prompts(self) -> None:
+        def test_static_prompt_docs_include_profiled_and_unprofiled_prompts(
+            self,
+        ) -> None:
             docs = _build_static_prompt_docs()
 
             # A profiled prompt like "todo" should appear with its description
@@ -97,6 +100,25 @@ if bootstrap is not None:
                 "Catalog talon_list_tokens should merge config tokens when list is partial",
             )
             self.assertIn("todo", talon_tokens, "List token should be preserved")
+
+        def test_static_prompt_docs_reject_unknown_axis_keys(self) -> None:
+            """Guardrail: doc generation should fail when catalog axes drift."""
+            catalog = static_prompt_catalog()
+            mutated = dict(catalog)
+            profiled = list(mutated.get("profiled", []))
+            self.assertTrue(profiled, "Expected at least one profiled static prompt")
+            bad_entry = dict(profiled[0])
+            axes = dict(bad_entry.get("axes", {}))
+            axes["mystery"] = ["foo"]
+            bad_entry["axes"] = axes
+            profiled[0] = bad_entry
+            mutated["profiled"] = profiled
+
+            with patch(
+                "talon_user.GPT.gpt.static_prompt_catalog", return_value=mutated
+            ):
+                with self.assertRaisesRegex(ValueError, "unsupported axis keys"):
+                    _build_static_prompt_docs()
 
         def test_axis_docs_include_all_axis_sections(self) -> None:
             """Characterise the axis docs block for completeness."""
@@ -246,6 +268,7 @@ if bootstrap is not None:
 
 else:
     if not TYPE_CHECKING:
+
         class StaticPromptDocsTests(unittest.TestCase):
             @unittest.skip("Test harness unavailable outside unittest runs")
             def test_placeholder(self) -> None:

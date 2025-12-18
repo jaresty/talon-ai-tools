@@ -18,6 +18,7 @@ from ..lib.talonSettings import (
 
 from ..lib.axisMappings import axis_docs_map
 from ..lib.staticPromptConfig import STATIC_PROMPT_CONFIG
+from ..lib.requestLog import KNOWN_AXIS_KEYS
 
 try:
     from ..lib.axisCatalog import (
@@ -144,7 +145,12 @@ from ..lib.modelPatternGUI import (
     _axis_value_from_token,
 )
 from ..lib.axisMappings import axis_key_to_value_map_for
-from ..lib.personaConfig import persona_docs_map
+from ..lib.personaConfig import (
+    persona_docs_map,
+    validate_intent_presets,
+    validate_persona_presets,
+    persona_intent_maps,
+)
 from ..lib.stanceValidation import valid_stance_command as _valid_stance_command
 from ..lib.suggestionCoordinator import (
     record_suggestions,
@@ -211,6 +217,15 @@ def _canonical_persona_value(axis: str, raw: str) -> str:
     raw_s = str(raw).strip()
     if not raw_s:
         return ""
+    try:
+        from ..lib.personaConfig import canonical_persona_token
+    except Exception:
+        canonical = ""
+    else:
+        canonical = canonical_persona_token(axis, raw_s)
+        if canonical:
+            return canonical
+
     lower = raw_s.lower()
     if axis == "intent":
         try:
@@ -761,6 +776,17 @@ def _build_axis_docs() -> str:
 
 def _build_persona_intent_docs() -> str:
     """Build a compact cheat sheet for Persona/Intent stance tokens."""
+    validate_persona_presets()
+    validate_intent_presets()
+
+    snapshot = None
+    try:
+        from ..lib import personaConfig
+
+        snapshot = personaConfig.persona_intent_catalog_snapshot()
+    except Exception:
+        snapshot = None
+
     axes = (
         ("Voice", "voice"),
         ("Audience", "audience"),
@@ -782,34 +808,47 @@ def _build_persona_intent_docs() -> str:
         lines.append(f"- {tokens}")
         lines.append("")
 
-    try:
-        persona_presets = _persona_presets()
-        intent_presets = _intent_presets()
+    persona_presets = (
+        tuple(snapshot.persona_presets.values()) if snapshot else _persona_presets()
+    )
+    intent_presets = (
+        tuple(snapshot.intent_presets.values()) if snapshot else _intent_presets()
+    )
 
-        if persona_presets:
-            lines.append("Persona presets (speakable presets for stance commands):")
-            for preset in persona_presets:
-                bits: list[str] = []
-                if preset.voice:
-                    bits.append(preset.voice)
-                if preset.audience:
-                    bits.append(preset.audience)
-                if preset.tone:
-                    bits.append(preset.tone)
-                stance = " ".join(bits)
-                label = preset.label or preset.key
-                lines.append(f"- persona {preset.key}: {label} ({stance})")
-            lines.append("")
+    if persona_presets:
+        lines.append("Persona presets (speakable presets for stance commands):")
+        for preset in persona_presets:
+            bits: list[str] = []
+            if preset.voice:
+                bits.append(preset.voice)
+            if preset.audience:
+                bits.append(preset.audience)
+            if preset.tone:
+                bits.append(preset.tone)
+            stance = " ".join(bits)
+            label = preset.label or preset.key
+            lines.append(f"- persona {preset.key}: {label} ({stance})")
+        lines.append("")
 
-        if intent_presets:
-            lines.append("Intent presets (shortcut names for `intent` commands):")
-            for preset in intent_presets:
-                label = preset.label or preset.key
-                intent = preset.intent
-                lines.append(f"- intent {preset.key}: {label} ({intent})")
-            lines.append("")
-    except Exception:
-        pass
+    if intent_presets:
+        intent_display_map = snapshot.intent_display_map if snapshot else {}
+        lines.append("Intent presets (shortcut names for `intent` commands):")
+        for preset in intent_presets:
+            display = intent_display_map.get(preset.key, preset.label or preset.key)
+            intent = preset.intent
+            lines.append(f"- intent {preset.key}: {display} ({intent})")
+        lines.append("")
+
+    if snapshot and snapshot.intent_buckets:
+        lines.append("Intent buckets (canonical groups):")
+        for bucket, keys in snapshot.intent_buckets.items():
+            display_tokens = [
+                snapshot.intent_display_map.get(key, key) for key in keys if key
+            ]
+            if not display_tokens:
+                continue
+            lines.append(f"- {bucket}: {', '.join(display_tokens)}")
+        lines.append("")
 
     # Provide a few concrete stance examples that use only valid axis tokens.
     lines.append("Examples of valid stance commands:")
@@ -819,9 +858,34 @@ def _build_persona_intent_docs() -> str:
     return "\n".join(lines).rstrip()
 
 
+_ALLOWED_STATIC_PROMPT_AXIS_KEYS = frozenset(KNOWN_AXIS_KEYS)
+
+
+def _assert_supported_static_prompt_axes(catalog: dict[str, object]) -> None:
+    profiled = catalog.get("profiled") or []
+    if not isinstance(profiled, list):
+        return
+    for entry in profiled:
+        if not isinstance(entry, dict):
+            continue
+        axes = entry.get("axes") or {}
+        if not isinstance(axes, dict):
+            continue
+        unknown = sorted(
+            key for key in axes.keys() if key not in _ALLOWED_STATIC_PROMPT_AXIS_KEYS
+        )
+        if unknown:
+            name = str(entry.get("name", "<unknown>")).strip() or "<unknown>"
+            joined = ", ".join(unknown)
+            raise ValueError(
+                f"Static prompt '{name}' includes unsupported axis keys: {joined}"
+            )
+
+
 def _build_static_prompt_docs() -> str:
     """Build a text block describing static prompts and their semantics."""
     catalog = static_prompt_catalog()
+    _assert_supported_static_prompt_axes(catalog)
     # Prefer descriptions from the catalog (STATIC_PROMPT_CONFIG), and include
     # default axes when present; fall back to listing unprofiled prompts by name.
     lines: list[str] = [
@@ -1046,13 +1110,31 @@ class UserActions:
         """Set Persona (Who) stance from a shared preset (ADR 042)."""
         if _reject_if_request_in_flight():
             return
-        from ..lib.personaConfig import PersonaPreset  # Local import for Talon reloads
 
-        preset_map: dict[str, PersonaPreset] = {p.key: p for p in _persona_presets()}
-        preset = preset_map.get(preset_key)
-        if preset is None:
-            notify(f"GPT: Unknown persona preset: {preset_key}")
+        maps = persona_intent_maps()
+        persona_preset_lookup = maps.persona_presets
+        persona_preset_key_map = maps.persona_preset_aliases
+
+        preset_key_clean = str(preset_key or "").strip()
+        if not preset_key_clean:
+            notify("GPT: Persona preset name required")
             return
+
+        canonical_key: str | None = None
+        preset = None
+        lookup_key = preset_key_clean.lower()
+        if persona_preset_key_map and persona_preset_lookup:
+            canonical_key = persona_preset_key_map.get(lookup_key)
+            if canonical_key:
+                preset = persona_preset_lookup.get(canonical_key)
+
+        if preset is None:
+            preset_map = {p.key: p for p in _persona_presets()}
+            preset = preset_map.get(preset_key_clean)
+            if preset is None:
+                notify(f"GPT: Unknown persona preset: {preset_key_clean}")
+                return
+            canonical_key = preset.key
 
         current = getattr(GPTState, "system_prompt", GPTSystemPrompt())
         if not isinstance(current, GPTSystemPrompt):
@@ -1082,13 +1164,31 @@ class UserActions:
         """Set Intent (Why) stance from a shared preset (ADR 042)."""
         if _reject_if_request_in_flight():
             return
-        from ..lib.personaConfig import IntentPreset  # Local import for Talon reloads
 
-        preset_map: dict[str, IntentPreset] = {p.key: p for p in _intent_presets()}
-        preset = preset_map.get(preset_key)
-        if preset is None:
-            notify(f"GPT: Unknown intent preset: {preset_key}")
+        maps = persona_intent_maps()
+        intent_preset_lookup = maps.intent_presets
+        intent_preset_key_map = maps.intent_preset_aliases
+
+        preset_key_clean = str(preset_key or "").strip()
+        if not preset_key_clean:
+            notify("GPT: Intent preset name required")
             return
+
+        canonical_key: str | None = None
+        preset = None
+        lookup_key = preset_key_clean.lower()
+        if intent_preset_key_map and intent_preset_lookup:
+            canonical_key = intent_preset_key_map.get(lookup_key)
+            if canonical_key:
+                preset = intent_preset_lookup.get(canonical_key)
+
+        if preset is None:
+            preset_map = {p.key: p for p in _intent_presets()}
+            preset = preset_map.get(preset_key_clean)
+            if preset is None:
+                notify(f"GPT: Unknown intent preset: {preset_key_clean}")
+                return
+            canonical_key = preset.key
 
         current = getattr(GPTState, "system_prompt", GPTSystemPrompt())
         if not isinstance(current, GPTSystemPrompt):
@@ -2512,7 +2612,6 @@ class UserActions:
             description_overrides=axis_docs_map("channel"),
         )
         # Persona/intent axes come from the persona SSOT.
-        from ..lib.personaConfig import persona_docs_map
 
         render_token_table(
             "Voice",
@@ -2642,14 +2741,21 @@ class UserActions:
         except Exception:
             pass
         try:
-            GPTState.suppress_response_canvas_close = True
-        except Exception:
-            pass
-        actions.user.confirmation_gui_close()
-        try:
             GPTState.suppress_response_canvas_close = False
         except Exception:
             pass
+        try:
+            canvas_showing = bool(getattr(GPTState, "response_canvas_showing", False))
+        except Exception:
+            canvas_showing = False
+        try:
+            tracing_enabled = bool(settings.get("user.gpt_trace_canvas_flow", 1))
+        except Exception:
+            tracing_enabled = False
+        if canvas_showing and tracing_enabled:
+            print("[canvas-flow] skip_confirmation_close canvas already showing")
+        if not canvas_showing:
+            actions.user.confirmation_gui_close()
         destination.insert(gpt_result)
 
     def gpt_get_source_text(spoken_text: str) -> str:
@@ -2690,44 +2796,46 @@ def gpt_beta_paste_prompt(match: str) -> None:
 
 def _suggest_prompt_recipes_core_impl(source: ModelSource, subject: str) -> None:
     """Core suggest handler; shared by action entrypoints to avoid deprecated calls."""
+
     if _reject_if_request_in_flight():
         return
+
+    try:
+        maps = persona_intent_maps()
+    except Exception:
+        maps = None
+
+    persona_axis_token_map = maps.persona_axis_tokens if maps else {}
+    intent_synonyms_map = maps.intent_synonyms if maps else {}
 
     subject = subject or ""
     try:
         content = source.get_text()
     except Exception:
-        # Underlying helpers (for example, Context/GPTResponse) already
-        # notify the user when no content is available. Keep any cached
-        # suggestions intact so `model suggestions` can still reopen the
-        # last successful set after a transient failure to read the source.
+        # Underlying helpers already notify when no content is available.
         return
 
     content_text = str(content)
     if GPTState.debug_enabled:
         preview = content_text[:200].replace("\n", "\\n")
-        notify(
-            "GPT debug: model suggest content length="
-            f"{len(content_text)}, preview={preview!r}"
-        )
+        try:
+            notify(
+                "GPT debug: model suggest content length="
+                f"{len(content_text)}, preview={preview!r}"
+            )
+        except Exception:
+            pass
 
     if not content_text.strip() and not subject.strip():
-        # If we have neither source content nor a subject, keep any cached
-        # suggestions so they remain available via `model suggestions`.
         notify("GPT: No source or subject available for suggestions")
         return
 
-    # Remember the canonical source key used for these suggestions so the
-    # suggestion GUI can both display and reuse it when running recipes.
     source_key = getattr(source, "modelSimpleSource", "")
     if isinstance(source_key, str) and source_key:
         suggest_source_key = source_key
     else:
         suggest_source_key = ""
 
-    # For suggestions, avoid opening the response canvas as a progress
-    # surface; treat this as a distinct destination kind so the default
-    # RequestUI controller uses the pill instead of the response viewer.
     prev_dest_kind = getattr(GPTState, "current_destination_kind", "")
     try:
         GPTState.current_destination_kind = "suggest"
@@ -2738,8 +2846,6 @@ def _suggest_prompt_recipes_core_impl(source: ModelSource, subject: str) -> None
     persona_intent_docs = _build_persona_intent_docs()
     static_prompt_docs = _build_static_prompt_docs()
 
-    # Capture current persona/intent + axis defaults (canonical tokens only)
-    # so the LLM can tailor suggestions and the UI can surface what was sent.
     sys_prompt = getattr(GPTState, "system_prompt", None)
     context_snapshot = _suggest_context_snapshot(sys_prompt)
     try:
@@ -2761,7 +2867,7 @@ def _suggest_prompt_recipes_core_impl(source: ModelSource, subject: str) -> None
         context_snapshot.get("audience", "").strip(),
         context_snapshot.get("tone", "").strip(),
     ]
-    persona_bits = [b for b in persona_bits if b]
+    persona_bits = [bit for bit in persona_bits if bit]
     if persona_bits:
         stance_lines.append("Persona (Who): " + " · ".join(persona_bits))
     if context_snapshot.get("intent"):
@@ -2779,13 +2885,12 @@ def _suggest_prompt_recipes_core_impl(source: ModelSource, subject: str) -> None
             axis_bits.append(f"{label}: {val}")
     if axis_bits:
         stance_lines.append("Defaults: " + " · ".join(axis_bits))
-    if not stance_lines:
-        stance_lines.append("Persona/Intent/Defaults: (none set)")
 
-    prompt_subject = subject.strip() if subject else "unspecified"
     context_lines = _format_context_lines(_suggest_hydrated_context(sys_prompt))
     if not context_lines:
-        context_lines = stance_lines
+        context_lines = stance_lines or ["Persona/Intent/Defaults: (none set)"]
+
+    prompt_subject = subject.strip() if subject else "unspecified"
     user_text = _suggest_prompt_text(
         axis_docs=axis_docs,
         persona_intent_docs=persona_intent_docs,
@@ -2795,31 +2900,11 @@ def _suggest_prompt_recipes_core_impl(source: ModelSource, subject: str) -> None
         context_lines=context_lines,
     )
 
-    try:
-        sys_messages = [
-            format_message(m)
-            for m in getattr(GPTState.system_prompt, "format_as_array", lambda: [])()
-        ]
-        sys_debug = " | ".join(m.get("text", str(m)) for m in sys_messages)
-    except Exception:
-        sys_debug = ""
-    try:
-        snippet = user_text[:1200].replace("\n", "\\n")
-        print(
-            "GPT model suggest prompt (truncated to 1200 chars): "
-            f"{snippet} | system={sys_debug}"
-        )
-    except Exception:
-        pass
-
-    # Run suggestions through a silent destination so we never open the
-    # confirmation surface for this helper. Keep a clipboard fallback to
-    # expose the raw output without popping UI if parsing/GUI fails.
     destination = Silent()
     fallback_destination = Clipboard()
     session = PromptSession(destination)
-    # Always emit UI lifecycle events so the pill shows even when the
-    # pipeline is swapped out or does not drive the request bus.
+
+    global _suppress_inflight_notify_request_id
     manual_request_id: Optional[str] = None
     try:
         manual_request_id = emit_begin_send()
@@ -2830,12 +2915,11 @@ def _suggest_prompt_recipes_core_impl(source: ModelSource, subject: str) -> None
             pass
     except Exception:
         manual_request_id = None
-    # Suppress response canvas while suggestions are running so streaming
-    # text never opens the confirmation viewer.
+
     prev_suppress = getattr(GPTState, "suppress_response_canvas", False)
     GPTState.suppress_response_canvas = True
 
-    def _restore_request_state():
+    def _restore_request_state() -> None:
         try:
             GPTState.suppress_response_canvas = prev_suppress
         except Exception:
@@ -2845,7 +2929,6 @@ def _suggest_prompt_recipes_core_impl(source: ModelSource, subject: str) -> None
         except Exception:
             pass
         try:
-            # Clear the suppression flag so future requests notify as normal.
             if (
                 manual_request_id is not None
                 and getattr(GPTState, "suppress_inflight_notify_request_id", None)
@@ -2878,13 +2961,8 @@ def _suggest_prompt_recipes_core_impl(source: ModelSource, subject: str) -> None
                 pass
 
         def _normalise_recipe(value: str) -> str:
-            """Normalise a recipe string and enforce a single static prompt token.
+            """Normalise a recipe string and enforce a single static prompt token."""
 
-            This preserves the existing behaviour: we require a single
-            <staticPrompt> token and a single known directional token; we drop
-            any suggestion that does not meet these constraints. Axis caps are
-            enforced per ADR 048 (scope≤2, method≤3, form=1, channel=1).
-            """
             recipe_value = (value or "").strip()
             if not recipe_value:
                 return ""
@@ -2899,8 +2977,6 @@ def _suggest_prompt_recipes_core_impl(source: ModelSource, subject: str) -> None
             if not directional:
                 return ""
             parts[-1] = directional
-            # Enforce axis caps on the remaining segments when present.
-            # Expected shape: static · completeness · scope · method · form · channel · directional
             if len(parts) >= 6:
                 scope_tokens = parts[2].split() if len(parts) > 2 else []
                 method_tokens = parts[3].split() if len(parts) > 3 else []
@@ -2918,7 +2994,6 @@ def _suggest_prompt_recipes_core_impl(source: ModelSource, subject: str) -> None
 
         if raw_text:
             parsed_from_json = False
-            # First, try the structured JSON format.
             try:
                 data = json.loads(raw_text)
                 if isinstance(data, dict):
@@ -2973,11 +3048,35 @@ def _suggest_prompt_recipes_core_impl(source: ModelSource, subject: str) -> None
                             def _validated_persona_value(
                                 axis: str, raw_value: str
                             ) -> str:
-                                token = _canonical_persona_value(axis, raw_value)
+                                raw_str = str(raw_value or "").strip()
+                                if not raw_str:
+                                    return ""
+                                axis_key = str(axis or "").strip().lower()
+                                normalised = raw_str.lower()
+                                if persona_axis_token_map:
+                                    if axis_key == "intent":
+                                        canonical_from_synonym = (
+                                            intent_synonyms_map.get(normalised)
+                                        )
+                                        if canonical_from_synonym:
+                                            canonical_lower = (
+                                                canonical_from_synonym.strip().lower()
+                                            )
+                                            axis_map = persona_axis_token_map.get(
+                                                "intent", {}
+                                            )
+                                            if axis_map and canonical_lower in axis_map:
+                                                return axis_map[canonical_lower]
+                                            return canonical_from_synonym
+                                    axis_map = persona_axis_token_map.get(axis_key)
+                                    if axis_map:
+                                        canonical_token = axis_map.get(normalised)
+                                        if canonical_token:
+                                            return canonical_token
+                                token = _canonical_persona_value(axis, raw_str)
                                 if token:
                                     return token
-                                if str(raw_value or "").strip():
-                                    failures.append(f"{axis}_invalid")
+                                failures.append(f"{axis}_invalid")
                                 return ""
 
                             persona_voice = _validated_persona_value(
@@ -3048,7 +3147,6 @@ def _suggest_prompt_recipes_core_impl(source: ModelSource, subject: str) -> None
             except Exception:
                 parsed_from_json = False
 
-            # Legacy fallback: parse pipe-separated lines if JSON was not usable.
             if not parsed_from_json:
                 for raw_line in raw_text.splitlines():
                     line = raw_line.strip()
@@ -3124,9 +3222,6 @@ def _suggest_prompt_recipes_core_impl(source: ModelSource, subject: str) -> None
                     notify("GPT: Prompt recipe suggestions window opened")
                 except Exception:
                     pass
-                # When the suggestion GUI opens successfully, we do not also
-                # open the confirmation GUI; the picker becomes the primary
-                # surface for these recipes.
             except Exception as exc:
                 try:
                     notify(
@@ -3134,25 +3229,16 @@ def _suggest_prompt_recipes_core_impl(source: ModelSource, subject: str) -> None
                     )
                 except Exception:
                     pass
-                # If the GUI is not available for any reason, still insert the
-                # raw suggestions so the feature remains usable.
                 actions.user.gpt_insert_response(result, fallback_destination)
         else:
-            # If we didn't recognise any suggestions, fall back to the normal
-            # insertion flow so the user can still see the raw output.
             actions.user.gpt_insert_response(result, fallback_destination)
 
-    # Start a fresh request for suggestions so we don't accidentally
-    # reuse the previous GPTState.request (for example, from the last
-    # `model` call). This avoids leaking prior prompt content into
-    # the suggestion meta-prompt.
     session.begin()
     session.add_system_prompt()
     session.add_messages([format_messages("user", [format_message(user_text)])])
 
     raw_block = settings.get(ASYNC_BLOCKING_SETTING, False)
     block = False if raw_block is None else bool(raw_block)
-    # In test environments, prefer blocking so unit tests observe parsed suggestions immediately.
     try:
         import os
 

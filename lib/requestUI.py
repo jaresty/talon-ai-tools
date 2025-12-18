@@ -80,7 +80,16 @@ def _show_pill() -> None:
     _notify("Model: sending…")
 
 
+_LAST_PILL_HIDE: float = 0.0
+_DEBOUNCE_WINDOW = 0.15  # seconds
+
+
 def _hide_pill() -> None:
+    global _LAST_PILL_HIDE
+    now = time.monotonic()
+    if now - _LAST_PILL_HIDE < _DEBOUNCE_WINDOW:
+        return
+    _LAST_PILL_HIDE = now
     run_on_ui_thread(hide_pill)
     # Trace unexpected pill-triggered canvas closes for debugging.
     try:
@@ -175,7 +184,11 @@ def _on_state_change(state: RequestState) -> None:
     except Exception:
         pass
     # Always clear the pill/progress toast when moving out of the happy path.
-    if state.is_terminal or state.phase in (RequestPhase.IDLE, RequestPhase.ERROR, RequestPhase.CANCELLED):
+    if state.is_terminal or state.phase in (
+        RequestPhase.IDLE,
+        RequestPhase.ERROR,
+        RequestPhase.CANCELLED,
+    ):
         try:
             _hide_pill()
         except Exception:

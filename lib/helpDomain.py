@@ -95,7 +95,9 @@ def help_index(
         if catalog:
             axis_key = axis_label.lower()
             axis_tokens = list((catalog.get("axes", {}).get(axis_key) or {}).keys())
-            list_tokens = catalog.get("axis_list_tokens", {}).get(axis_key, []) if catalog else []
+            list_tokens = (
+                catalog.get("axis_list_tokens", {}).get(axis_key, []) if catalog else []
+            )
             tokens = [t for t in list_tokens or axis_tokens if t]
         if not tokens:
             tokens = read_list_items(axis_file)
@@ -135,6 +137,83 @@ def help_index(
                 "choose this preset"
             ),
         )
+
+    # Surface persona and intent presets so Help Hub search can jump directly to
+    # the underlying stance commands. Prefer the unified snapshot so aliases and
+    # display names stay aligned with the GPT actions and GUIs.
+    try:
+        from .personaConfig import persona_intent_maps
+
+        maps = persona_intent_maps()
+    except Exception:
+        maps = None
+
+    if maps is not None:
+        for preset in maps.persona_presets.values():
+            key = (getattr(preset, "key", "") or "").strip()
+            if not key:
+                continue
+            label = (getattr(preset, "label", "") or key).strip()
+            spoken = (getattr(preset, "spoken", "") or "").strip()
+            if not spoken:
+                alias = next(
+                    (
+                        alias_key
+                        for alias_key, canonical in maps.persona_preset_aliases.items()
+                        if canonical == key and alias_key != key.lower()
+                    ),
+                    "",
+                )
+                if alias:
+                    spoken = alias.replace("_", " ")
+                else:
+                    spoken = label
+            voice_hint = f"Say: persona {spoken}"
+            axes_parts = [
+                part
+                for part in (
+                    getattr(preset, "voice", ""),
+                    getattr(preset, "audience", ""),
+                    getattr(preset, "tone", ""),
+                )
+                if part
+            ]
+            axes_desc = " · ".join(axes_parts) if axes_parts else "No explicit axes"
+            entry_label = f"Persona preset: {label} (say: persona {spoken})"
+            description = f"Apply persona stance ({axes_desc})"
+            _add(
+                entry_label,
+                description,
+                lambda preset_key=key: actions.user.persona_set_preset(preset_key),  # type: ignore[attr-defined]
+                voice_hint=voice_hint,
+            )
+
+        for preset in maps.intent_presets.values():
+            key = (getattr(preset, "key", "") or "").strip()
+            if not key:
+                continue
+            display = (
+                maps.intent_display_map.get(key) or getattr(preset, "label", "") or key
+            ).strip()
+            canonical_intent = (getattr(preset, "intent", "") or key).strip()
+            spoken_alias = next(
+                (
+                    alias
+                    for alias, canonical in maps.intent_preset_aliases.items()
+                    if canonical == key and alias != key.lower()
+                ),
+                "",
+            )
+            spoken_alias = spoken_alias or display or key
+            voice_hint = f"Say: intent {spoken_alias}"
+            entry_label = f"Intent preset: {display} (say: intent {spoken_alias})"
+            description = f"Apply intent stance ({canonical_intent})"
+            _add(
+                entry_label,
+                description,
+                lambda preset_key=key: actions.user.intent_set_preset(preset_key),  # type: ignore[attr-defined]
+                voice_hint=voice_hint,
+            )
 
     return entries
 

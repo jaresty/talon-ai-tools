@@ -235,6 +235,39 @@ if bootstrap is not None:
             # Showing the message should consume the underlying drop reason.
             self.assertEqual(last_drop_reason_code(), "")
 
+        def test_drawer_surfaces_unknown_axis_errors(self):
+            HistoryDrawerState.showing = True
+            HistoryDrawerState.entries = []
+            error_message = (
+                "HistoryQuery received unknown axis keys: mystery (entry=rid-old)"
+            )
+            with (
+                patch.object(history_drawer, "_ensure_canvas") as ensure_canvas,
+                patch.object(
+                    history_drawer,
+                    "history_drawer_entries_from",
+                    side_effect=ValueError(error_message),
+                ),
+            ):
+
+                class DummyCanvas:
+                    def show(self):
+                        pass
+
+                ensure_canvas.return_value = DummyCanvas()
+                DrawerActions.request_history_drawer_refresh()
+
+            self.assertEqual(HistoryDrawerState.entries, [])
+            message_lines = HistoryDrawerState.last_message.splitlines()
+            self.assertGreaterEqual(len(message_lines), 3)
+            self.assertIn("unsupported axis keys", HistoryDrawerState.last_message)
+            self.assertTrue(any("mystery" in line for line in message_lines))
+            self.assertTrue(
+                any("history-axis-validate.py" in line for line in message_lines),
+                HistoryDrawerState.last_message,
+            )
+            self.assertEqual(last_drop_reason_code(), "")
+
         def test_drawer_escape_closes(self):
             from types import SimpleNamespace
             import talon_user.lib.requestHistoryDrawer as history_drawer  # type: ignore

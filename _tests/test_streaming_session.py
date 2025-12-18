@@ -80,7 +80,7 @@ else:
                 ["history_write_requested", "log_entry"],
             )
             self.assertEqual(events[0].get("axes_keys"), [])
-            self.assertTrue(events[0].get("require_directional"))
+            self.assertNotIn("require_directional", events[0])
 
         def test_session_ui_refresh_records_event(self) -> None:
             session = new_streaming_session("rid-ui")

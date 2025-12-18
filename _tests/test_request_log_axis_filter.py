@@ -18,19 +18,17 @@ if bootstrap is not None:
                 "method": ["steps", ""],
             }
 
-            filtered, legacy = _filter_axes_payload(axes)
+            filtered = _filter_axes_payload(axes)
 
             self.assertEqual(filtered["scope"], ["bound"])
             self.assertEqual(filtered["method"], ["steps"])
-            self.assertFalse(legacy)
 
-        def test_passthrough_unknown_axis_keys(self) -> None:
+        def test_drops_unknown_axis_keys(self) -> None:
             axes = {"custom": ["value", ""]}
 
-            filtered, legacy = _filter_axes_payload(axes)
+            filtered = _filter_axes_payload(axes)
 
-            self.assertEqual(filtered["custom"], ["value"])
-            self.assertFalse(legacy)
+            self.assertNotIn("custom", filtered)
 
         def test_axis_snapshot_matches_filtered_axes_payload(self) -> None:
             axes = {
@@ -42,21 +40,17 @@ if bootstrap is not None:
                 "custom": ["value", ""],
             }
 
-            filtered, legacy = _filter_axes_payload(axes)
+            filtered = _filter_axes_payload(axes)
             snapshot = axis_snapshot_from_axes(axes)
 
             self.assertEqual(snapshot.as_dict(), filtered)
-            self.assertFalse(legacy)
-            self.assertEqual(snapshot.extra_axes().get("custom"), ["value"])
-            self.assertFalse(snapshot.legacy_style)
-            self.assertIn("custom", snapshot)
+            self.assertNotIn("custom", snapshot)
 
         def test_axis_snapshot_is_immutable(self) -> None:
             axes = {
                 "scope": ["focus"],
                 "method": ["steps"],
                 "directional": ["fog"],
-                "custom": ["value"],
             }
 
             snapshot = axis_snapshot_from_axes(axes)
@@ -68,7 +62,7 @@ if bootstrap is not None:
             mutated = snapshot.as_dict()
             mutated["scope"].append("extra")
             self.assertEqual(snapshot.get("scope"), ["focus"])
-            self.assertEqual(snapshot.extra_axes().get("custom"), ["value"])
+            self.assertNotIn("custom", snapshot)
 
         def test_caps_and_style_rejection(self) -> None:
             axes = {
@@ -80,16 +74,8 @@ if bootstrap is not None:
                 "style": ["plain"],
             }
 
-            filtered, legacy = _filter_axes_payload(axes)
-
-            self.assertEqual(filtered["scope"], ["edges", "focus"])
-            self.assertEqual(filtered["method"], ["plan", "steps", "xp"])
-            self.assertEqual(filtered["form"], ["table"])
-            self.assertEqual(filtered["channel"], ["jira"])
-            # Directional is now capped to a single value (last wins).
-            self.assertEqual(filtered["directional"], ["rog"])
-            self.assertNotIn("style", filtered)
-            self.assertTrue(legacy)
+            with self.assertRaisesRegex(ValueError, "style axis is removed"):
+                _filter_axes_payload(axes)
 
 else:
     if not TYPE_CHECKING:

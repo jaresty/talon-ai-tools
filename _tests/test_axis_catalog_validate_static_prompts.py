@@ -9,7 +9,9 @@ MODULE_PATH = Path("scripts/tools/axis-catalog-validate.py")
 
 
 def _load_module():
-    loader = importlib.machinery.SourceFileLoader("axis_catalog_validate", str(MODULE_PATH))
+    loader = importlib.machinery.SourceFileLoader(
+        "axis_catalog_validate", str(MODULE_PATH)
+    )
     module = types.ModuleType(loader.name)
     module.__file__ = str(MODULE_PATH)
     loader.exec_module(module)  # type: ignore
@@ -30,7 +32,9 @@ class AxisCatalogStaticPromptValidationTests(unittest.TestCase):
         errors = mod.validate_axis_tokens(catalog)
         self.assertTrue(errors)
         self.assertIn("axis list drift", " ".join(errors))
-        errors = mod.validate_axis_tokens({"axis_list_tokens": {"scope": ["focus"]}})  # axes missing
+        errors = mod.validate_axis_tokens(
+            {"axis_list_tokens": {"scope": ["focus"]}}
+        )  # axes missing
         self.assertTrue(errors)
         self.assertIn("catalog missing axes", " ".join(errors))
 
@@ -55,7 +59,9 @@ class AxisCatalogStaticPromptValidationTests(unittest.TestCase):
         # Description alignment passes
         self.assertFalse(mod.validate_static_prompt_descriptions(catalog))
         # Required profile check passes
-        self.assertFalse(mod.validate_static_prompt_required_profiles(catalog, required=None))
+        self.assertFalse(
+            mod.validate_static_prompt_required_profiles(catalog, required=None)
+        )
         # Profile key alignment passes
         self.assertFalse(mod.validate_static_prompt_profile_keys(catalog))
 
@@ -85,11 +91,15 @@ class AxisCatalogStaticPromptValidationTests(unittest.TestCase):
         catalog = {
             "axes": {},
             "axis_list_tokens": {},
-            "static_prompts": {"profiled": [{"name": "describe", "axes": {}, "description": ""}]},
+            "static_prompts": {
+                "profiled": [{"name": "describe", "axes": {}, "description": ""}]
+            },
             "static_prompt_descriptions": {"describe": ""},
             "static_prompt_profiles": {"describe": {}},
         }
-        errors = mod.validate_static_prompt_required_profiles(catalog, required=["infer", "describe"])
+        errors = mod.validate_static_prompt_required_profiles(
+            catalog, required=["infer", "describe"]
+        )
         self.assertTrue(errors)
         self.assertIn("infer", " ".join(errors))
 
@@ -98,7 +108,9 @@ class AxisCatalogStaticPromptValidationTests(unittest.TestCase):
         catalog = {
             "axes": {},
             "axis_list_tokens": {},
-            "static_prompts": {"profiled": [{"name": "describe", "axes": {}, "description": ""}]},
+            "static_prompts": {
+                "profiled": [{"name": "describe", "axes": {}, "description": ""}]
+            },
             "static_prompt_descriptions": {"describe": ""},
             "static_prompt_profiles": {"describe": {}, "infer": {}},
         }
@@ -122,7 +134,9 @@ class AxisCatalogStaticPromptValidationTests(unittest.TestCase):
         }
         errors = mod.validate_static_prompt_descriptions(catalog)
         self.assertTrue(errors)
-        self.assertIn("static_prompt_descriptions missing entry for 'infer'", " ".join(errors))
+        self.assertIn(
+            "static_prompt_descriptions missing entry for 'infer'", " ".join(errors)
+        )
 
     def test_descriptions_extra_entry_triggers_error(self):
         mod = _load_module()
@@ -159,6 +173,70 @@ class AxisCatalogStaticPromptValidationTests(unittest.TestCase):
             "axis_list_tokens contains axes not present in catalog axes: channel",
             " ".join(errors),
         )
+
+    def test_validate_detects_legacy_style_axis(self):
+        mod = _load_module()
+        catalog = {
+            "axes": {
+                "scope": {"focus": ""},
+                "style": {"plain": ""},
+            },
+            "axis_list_tokens": {
+                "scope": ["focus"],
+                "style": ["plain"],
+            },
+            "static_prompts": {
+                "profiled": [
+                    {
+                        "name": "describe",
+                        "axes": {"style": ["plain"]},
+                        "description": "desc",
+                    }
+                ]
+            },
+            "static_prompt_descriptions": {"describe": "desc"},
+            "static_prompt_profiles": {"describe": {}},
+        }
+        errors = mod.validate_no_legacy_style_axis(catalog)
+        self.assertTrue(errors)
+        self.assertIn("legacy 'style' axis", " ".join(errors))
+
+    def test_cli_fails_when_legacy_style_axis_present(self):
+        mod = _load_module()
+        original_axis_catalog = mod.axis_catalog
+        try:
+            mod.axis_catalog = lambda lists_dir=None: {  # type: ignore
+                "axes": {
+                    "scope": {"focus": ""},
+                    "style": {"plain": ""},
+                },
+                "axis_list_tokens": {
+                    "scope": ["focus"],
+                    "style": ["plain"],
+                },
+                "static_prompts": {
+                    "profiled": [
+                        {
+                            "name": "describe",
+                            "axes": {"style": ["plain"]},
+                            "description": "desc",
+                        }
+                    ]
+                },
+                "static_prompt_descriptions": {"describe": "desc"},
+                "static_prompt_profiles": {"describe": {}},
+            }
+            import sys
+
+            original_argv = sys.argv
+            sys.argv = ["axis-catalog-validate"]
+            rc = mod.main()
+            self.assertNotEqual(rc, 0)
+        finally:
+            mod.axis_catalog = original_axis_catalog
+            import sys as _sys
+
+            _sys.argv = original_argv
 
     def test_cli_fails_on_extra_axis_list_tokens_axis(self):
         mod = _load_module()
@@ -200,7 +278,11 @@ class AxisCatalogStaticPromptValidationTests(unittest.TestCase):
                 "axis_list_tokens": {"scope": ["focus"]},
                 "static_prompts": {
                     "profiled": [
-                        {"name": "describe", "axes": {"scope": "focus"}, "description": "desc"}
+                        {
+                            "name": "describe",
+                            "axes": {"scope": "focus"},
+                            "description": "desc",
+                        }
                     ]
                 },
                 "static_prompt_descriptions": {},
@@ -272,11 +354,18 @@ class AxisCatalogStaticPromptValidationTests(unittest.TestCase):
                 "axis_list_tokens": {"scope": ["focus"]},
                 "static_prompts": {
                     "profiled": [
-                        {"name": "describe", "axes": {"scope": "focus"}, "description": "desc"},
+                        {
+                            "name": "describe",
+                            "axes": {"scope": "focus"},
+                            "description": "desc",
+                        },
                     ]
                 },
                 "static_prompt_descriptions": {"describe": "desc"},
-                "static_prompt_profiles": {"describe": {}, "infer": {}},  # extra profile drift
+                "static_prompt_profiles": {
+                    "describe": {},
+                    "infer": {},
+                },  # extra profile drift
             }
             import sys
 
@@ -293,7 +382,11 @@ class AxisCatalogStaticPromptValidationTests(unittest.TestCase):
     def test_cli_requires_lists_dir_when_enforcing_list_checks(self):
         # Enforcing list validation without a lists dir should fail fast.
         proc = subprocess.run(
-            ["python3", "scripts/tools/axis-catalog-validate.py", "--no-skip-list-files"],
+            [
+                "python3",
+                "scripts/tools/axis-catalog-validate.py",
+                "--no-skip-list-files",
+            ],
             cwd=Path(__file__).resolve().parents[1],
             capture_output=True,
             text=True,
@@ -327,12 +420,19 @@ class AxisCatalogStaticPromptValidationTests(unittest.TestCase):
         lists_dir = repo_root / "tmp" / "generated-lists-dir"
         lists_dir.mkdir(parents=True, exist_ok=True)
         gen = subprocess.run(
-            ["python3", "scripts/tools/generate_talon_lists.py", "--out-dir", str(lists_dir)],
+            [
+                "python3",
+                "scripts/tools/generate_talon_lists.py",
+                "--out-dir",
+                str(lists_dir),
+            ],
             cwd=repo_root,
             capture_output=True,
             text=True,
         )
-        self.assertEqual(gen.returncode, 0, f"list generation failed: {gen.stdout}\n{gen.stderr}")
+        self.assertEqual(
+            gen.returncode, 0, f"list generation failed: {gen.stdout}\n{gen.stderr}"
+        )
 
         proc = subprocess.run(
             [
@@ -346,7 +446,9 @@ class AxisCatalogStaticPromptValidationTests(unittest.TestCase):
             capture_output=True,
             text=True,
         )
-        self.assertEqual(proc.returncode, 0, f"validation failed: {proc.stdout}\n{proc.stderr}")
+        self.assertEqual(
+            proc.returncode, 0, f"validation failed: {proc.stdout}\n{proc.stderr}"
+        )
 
     def test_cli_warns_when_lists_dir_provided_but_skipped(self):
         repo_root = Path(__file__).resolve().parents[1]
@@ -395,12 +497,19 @@ class AxisCatalogStaticPromptValidationTests(unittest.TestCase):
         lists_dir = repo_root / "tmp" / "drift-lists-dir"
         lists_dir.mkdir(parents=True, exist_ok=True)
         gen = subprocess.run(
-            ["python3", "scripts/tools/generate_talon_lists.py", "--out-dir", str(lists_dir)],
+            [
+                "python3",
+                "scripts/tools/generate_talon_lists.py",
+                "--out-dir",
+                str(lists_dir),
+            ],
             cwd=repo_root,
             capture_output=True,
             text=True,
         )
-        self.assertEqual(gen.returncode, 0, f"list generation failed: {gen.stdout}\n{gen.stderr}")
+        self.assertEqual(
+            gen.returncode, 0, f"list generation failed: {gen.stdout}\n{gen.stderr}"
+        )
 
         # Remove a token from completeness list to simulate drift.
         completeness_path = lists_dir / "completenessModifier.talon-list"

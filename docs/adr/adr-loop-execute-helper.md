@@ -198,6 +198,12 @@ Execute the slice end‑to‑end:
   inspected. Include a brief removal test statement (what would change if
   this loop were reverted) and the test command/exit or files/sections
   reviewed this loop.
+- Include an **adversarial “what remains” check** in the work‑log entry:
+  - List plausible remaining gaps or risky areas *specific to the ADR* (keep it concise, but do not force an arbitrary count).
+  - For each, name the next candidate slice you would take (module + goal).
+  - If you believe nothing substantial remains, say so **and** give at least one
+    concrete reason why (tests run / code reviewed), without changing status unless
+    you also run the full completion check described below.
 - Avoid hollow artefact citations: note a substantive change or observation
   (not whitespace/format-only) so reversion would alter behaviour/tests or
   task/status. If the change is small, call out the specific observable it
@@ -219,10 +225,11 @@ Execute the slice end‑to‑end:
     artefact delta is available, skip the loop. After parking an ADR, any new
     loop must start by recording a new task/regression in the ADR/work‑log.
 
-Before wrapping any loop, run an adversarial check to decide whether the
-ADR’s in-repo work is genuinely done; if it is, immediately perform the full
-adversarial completion check on the whole implementation before marking the
-ADR as accepted.
+Before wrapping any loop, run an adversarial check to decide what remains.
+Record a short version of that check in the loop’s work‑log entry (see above).
+If the check suggests the ADR’s in-repo work is genuinely done, immediately
+perform the full adversarial completion check on the whole implementation
+before marking the ADR as accepted.
 
 The loop is complete once you have landed a coherent slice that:
 - Lands at least one concrete change in this repo (code, tests, or docs

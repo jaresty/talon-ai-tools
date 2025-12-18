@@ -26,6 +26,22 @@ if bootstrap is not None:
     )
 
     class HistoryQueryTests(unittest.TestCase):
+        def test_axis_snapshot_helper_matches_history_axes_for(self) -> None:
+            axes = {
+                "completeness": ["full", "Important: Hydrated completeness"],
+                "scope": ["bound", "Invalid scope"],
+                "method": ["rigor", "Unknown method"],
+                "form": ["plain", "Hydrated style"],
+                "channel": ["slack", "Hydrated channel"],
+                "directional": ["fog", "rog"],
+            }
+
+            from talon_user.lib.requestHistoryActions import axis_snapshot_from_axes
+
+            direct = actions_axes_for(axes)
+            snapshot = axis_snapshot_from_axes(axes)
+            self.assertEqual(snapshot.known_axes(), direct)
+
         def test_history_axes_for_delegates_to_actions_helper(self) -> None:
             axes = {
                 "completeness": ["full", "Important: Hydrated completeness"],
@@ -116,7 +132,9 @@ if bootstrap is not None:
             rendered = history_drawer_entries_from(entries)
             self.assertEqual(rendered, [])
 
-        def test_history_drawer_uses_directional_from_recipe_when_axes_missing(self) -> None:
+        def test_history_drawer_uses_directional_from_recipe_when_axes_missing(
+            self,
+        ) -> None:
             class DummyEntry:
                 def __init__(self) -> None:
                     self.request_id = "rid-recipe"
@@ -189,7 +207,9 @@ if bootstrap is not None:
             self.assertEqual(len(summary), 1)
             self.assertIn("fog", summary[0])
 
-        def test_history_summary_uses_directional_from_recipe_when_axes_missing(self) -> None:
+        def test_history_summary_uses_directional_from_recipe_when_axes_missing(
+            self,
+        ) -> None:
             class DummyEntry:
                 def __init__(self) -> None:
                     self.request_id = "rid-recipe"
@@ -206,7 +226,9 @@ if bootstrap is not None:
             self.assertIn("fog", rendered)
             self.assertIn("rid-recipe", rendered)
 
-        def test_history_summary_detects_directional_case_insensitive_recipe(self) -> None:
+        def test_history_summary_detects_directional_case_insensitive_recipe(
+            self,
+        ) -> None:
             class DummyEntry:
                 def __init__(self) -> None:
                     self.request_id = "rid-recipe-case"

@@ -1,7 +1,7 @@
 import datetime
 import os
 import re
-from typing import Iterable, List, Sequence, Union, cast, Iterator, Dict
+from typing import Iterable, List, Sequence, Union, cast, Iterator, Dict, Optional
 
 from ..lib.modelSource import GPTItem
 from ..lib.modelTypes import GPTTextItem
@@ -245,23 +245,160 @@ class ModelDestination:
     # If this isn't working, you may need to turn on dication for electron apps
     #  ui.apps(bundle="com.microsoft.VSCode")[0].element.AXManualAccessibility = True
     def inside_textarea(self):
-        try:
-            return ui.focused_element().get("AXRole") in [
-                "AXTextArea",
-                "AXTextField",
-                "AXComboBox",
-                "AXStaticText",
-            ]
-        except Exception as e:
-            # Suppress noisy UI lookup errors unless debug is explicitly enabled.
-            try:
-                from .modelState import GPTState
+        debug_enabled = bool(getattr(GPTState, "debug_enabled", False))
 
-                if getattr(GPTState, "debug_enabled", False):
-                    print(f"[modelDestination] inside_textarea error: {e}")
+        def log_detection(
+            result: bool,
+            reason: str,
+            *,
+            info: Optional[Dict[str, object]] = None,
+            error: Optional[Exception] = None,
+            force: bool = False,
+        ) -> None:
+            if not (force or debug_enabled or not result):
+                return
+            parts = [
+                f"[modelDestination] inside_textarea={result} reason={reason}",
+            ]
+            if info:
+                value = info.get("AXValue")
+                if isinstance(value, str):
+                    value_summary = f"str(len={len(value)})"
+                elif value is None:
+                    value_summary = "None"
+                else:
+                    value_summary = type(value).__name__
+                fields = [
+                    f"AXRole={info.get('AXRole')!r}",
+                    f"AXSubrole={info.get('AXSubrole')!r}",
+                    f"AXRoleDescription={info.get('AXRoleDescription')!r}",
+                    f"AXSupportsTextSelection={info.get('AXSupportsTextSelection')!r}",
+                    f"AXEditable={info.get('AXEditable')!r}",
+                    f"AXValue={value_summary}",
+                ]
+                parts.append("; " + ", ".join(fields))
+            if error is not None:
+                parts.append(f" error={error}")
+            print(" ".join(parts))
+
+        def fallback_reason() -> Optional[str]:
+            try:
+                language = actions.code.language()
+                if isinstance(language, str) and language.strip():
+                    return f"fallback via language context '{language.strip()}'"
             except Exception:
                 pass
+            try:
+                app_name = actions.app.name()
+                if isinstance(app_name, str):
+                    lowered = app_name.lower()
+                    tokens = {"code", "studio", "editor", "text", "notebook", "notes"}
+                    if any(token in lowered for token in tokens):
+                        return f"fallback via app name '{app_name}'"
+            except Exception:
+                pass
+            try:
+                bundle = actions.app.bundle()
+                if isinstance(bundle, str):
+                    lowered = bundle.lower()
+                    known_bundles = (
+                        "com.microsoft.vscode",
+                        "com.microsoft.vscodeinsiders",
+                        "com.visualstudio.code",
+                        "com.jetbrains.",
+                        "com.apple.dt.xcode",
+                        "org.gnu.emacs",
+                    )
+                    if any(token in lowered for token in known_bundles):
+                        return f"fallback via app bundle '{bundle}'"
+            except Exception:
+                pass
+            return None
+
+        try:
+            element = ui.focused_element()
+        except Exception as error:  # noqa: PERF203 - transparency outweighs perf here
+            reason = fallback_reason()
+            if reason:
+                log_detection(True, reason, error=error, force=True)
+                return True
+            log_detection(False, "focused element lookup failed", error=error)
             return False
+
+        if not element or not hasattr(element, "get"):
+            reason = fallback_reason()
+            if reason:
+                log_detection(True, reason, force=True)
+                return True
+            log_detection(False, "no focused element")
+            return False
+
+        def attr(name: str):
+            try:
+                return element.get(name)
+            except Exception:
+                return None
+
+        info = cast(
+            Dict[str, object],
+            {
+                "AXRole": attr("AXRole"),
+                "AXSubrole": attr("AXSubrole"),
+                "AXRoleDescription": attr("AXRoleDescription"),
+                "AXSupportsTextSelection": attr("AXSupportsTextSelection"),
+                "AXEditable": attr("AXEditable"),
+                "AXValue": attr("AXValue"),
+            },
+        )
+
+        text_roles = {
+            "AXTextArea",
+            "AXTextField",
+            "AXComboBox",
+            "AXStaticText",
+            "AXSearchField",
+        }
+
+        def is_text_role(value):
+            if not isinstance(value, str):
+                return False
+            if value in text_roles:
+                return True
+            return value.lower().startswith("axtext")
+
+        role = info["AXRole"]
+        subrole = info["AXSubrole"]
+        role_description = info["AXRoleDescription"]
+        supports_selection_raw = info["AXSupportsTextSelection"]
+        value = info["AXValue"]
+        editable_raw = info["AXEditable"]
+
+        result = False
+        reason = "no match"
+
+        if is_text_role(role):
+            result = True
+            reason = "AXRole matches text role"
+        elif is_text_role(subrole):
+            result = True
+            reason = "AXSubrole matches text role"
+        elif isinstance(role_description, str) and role_description.lower() in {
+            "text area",
+            "text field",
+            "text input",
+            "editor",
+        }:
+            result = True
+            reason = "AXRoleDescription indicates text input"
+        elif bool(supports_selection_raw) and isinstance(value, str):
+            result = True
+            reason = "AXSupportsTextSelection with string AXValue"
+        elif bool(editable_raw):
+            result = True
+            reason = "AXEditable is truthy"
+
+        log_detection(result, reason, info=info)
+        return result
 
 
 class Above(ModelDestination):

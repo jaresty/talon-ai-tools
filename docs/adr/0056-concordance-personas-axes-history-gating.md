@@ -1,0 +1,329 @@
+# ADR-0056 – Concordance Personas, Axes, and History Gating
+
+Status: Proposed  
+Date: 2025-12-17  
+Owners: Talon AI tools maintainers
+
+---
+
+## Context
+
+- Statement-level churn × complexity heatmap (since “90 days ago”, scope: `lib/`, `GPT/`, `copilot/`, `tests/`) read from `tmp/churn-scan/line-hotspots.json`.
+- Git log fixture for the same window and scope lives at `tmp/churn-scan/git-log-stat.txt`.
+- Top node-level hotspots from the latest scan highlight three strongly coupled areas (scores approximate):
+  - **Axis and token configuration + docs**
+    - `lib/axisConfig.py` (File, line 1) — score ≈ **28k**, very high churn and coordination.
+    - `lib/talonSettings.py::{_read_axis_value_to_key_map,_read_axis_default_from_list,_axis_tokens,_resolve_axis_for_token,AxisValues}`.
+    - `lib/staticPromptConfig.py::{completeness_freeform_allowlist,static_prompt_catalog,_read_static_prompt_tokens}`.
+    - `lib/axisCatalog.py::{axis_catalog,axis_list_tokens}`.
+    - `GPT/gpt.py::{static_prompt_catalog,_build_axis_docs,_build_static_prompt_docs,axis_catalog,_axis_drop_summary,_read_list_items}`.
+    - Talon lists under `GPT/lists/*.talon-list` and docs in `GPT/readme.md`.
+  - **Personas, intent presets, and Concordance-facing help/suggestion surfaces**
+    - `lib/personaConfig.py` (File) and `IntentPreset`.
+    - `GPT/gpt.py::{_validated_persona_value,_canonical_persona_value,_build_persona_intent_docs,_refresh_persona_intent_lists,persona_set_preset,intent_set_preset,gpt_preset_save}`.
+    - `lib/helpHub.py::_persona_presets`.
+    - `lib/modelSuggestionGUI.py::{_match_persona_preset,_suggestion_stance_info,_measure_suggestion_height}`.
+    - Tests: `tests/test_voice_audience_tone_purpose_lists.py`, `tests/test_model_types_system_prompt.py`, `tests/test_model_suggestion_gui.py`, `tests/test_integration_suggestions.py`.
+  - **Request lifecycle, history/log summaries, and “request in flight” gating**
+    - `lib/requestHistoryActions.py::{requestHistoryActions.py,_request_is_in_flight,_reject_if_request_in_flight,_notify_with_drop_reason,_clear_notify_suppression,_model_source_save_dir,_filter_axis_tokens,history_axes_for,history_summary_lines,_directional_tokens_for_entry,gpt_request_history_show_latest,_save_history_prompt_to_file}`.
+    - `lib/requestLog.py::{_filter_axes_payload,notify,append_entry}`.
+    - `lib/historyQuery.py::history_drawer_entries_from`.
+    - `lib/requestController.py::{__init__,handle}`, `lib/requestState.py::transition`, `lib/requestLifecycle.py::reduce_request_state`, `lib/requestBus.py`, `lib/requestUI.py::{_notify,_on_state_change}`.
+    - `lib/modelHelpers.py::{build_system_prompt_messages,build_request,build_chatgpt_request,_build_request_context,_build_timeout_context,_send_request_streaming,_update_streaming_snapshot,build_exchange_snapshot,_warn_streaming_disabled,_handle_streaming_error,_handle_max_attempts_exceeded,_ensure_request_supported,call_tool,_build_snippet_context,chats_to_string}`.
+    - GUI gating and canvas helpers: `_request_is_in_flight` / `_reject_if_request_in_flight` variants across `GPT/gpt.py`, `lib/helpHub.py`, `lib/modelHelpCanvas.py`, `lib/modelPromptPatternGUI.py`, `lib/modelSuggestionGUI.py`, `lib/requestHistoryDrawer.py`, `lib/modelConfirmationGUI.py`, `lib/providerCommands.py`.
+    - Tests: `tests/test_gpt_actions.py`, `tests/test_request_history_actions.py`, `tests/test_request_history.py`, `tests/test_request_streaming.py`, `tests/test_model_help_gui.py`, `tests/test_model_help_canvas.py`, `tests/test_model_suggestion_gui.py`, `tests/test_integration_suggestions.py`.
+- Recent Concordance ADRs already in this repo:
+  - **ADR-0045** and **ADR-0046**: define Axis & Static Prompt, Help Navigation, Pattern Debug, and Streaming Response domains.
+  - **ADR-0054**: raises code-quality expectations for axis registry, canvas overlays, and the request pipeline, with a tests-first refactor plan.
+  - **ADR-0055**: retires source-only save paths in favour of the unified `file` destination.
+- Despite these decisions, the latest heatmap shows sustained or newly prominent hotspots in persona/preset handling, axis token hydration into history/logs, and duplicated request-in-flight gating across canvases and helpers.
+
+---
+
+## Problem
+
+High churn and coordination weight now concentrate in three overlapping Concordance domains that build on but are not fully resolved by ADR-0045/0046/0054/0055:
+
+1. **Axis tokens and history/log summaries** remain split across `axisConfig`, `axisCatalog`, `talonSettings`, `staticPromptConfig`, `requestLog`, and `requestHistoryActions`. Axis semantics feed Concordance scoring and health snapshots, but payload shapes and axis filters are duplicated and partially implicit, making it hard to reason about which axes are present where, and why.
+2. **Personas, intent presets, and Concordance-facing help/suggestion flows** share an implicit domain: persona definitions in `personaConfig`, GPT actions and docs, help hub preset UIs, and suggestion canvases. Contracts between persona presets, axis tokens, and on-screen guidance are under-specified, leading to frequent edits across config, GPT actions, help hub, and GUI logic.
+3. **Request-in-flight gating and streaming lifecycle** logic is repeated across GPT actions, canvases, confirmation/help/suggestion GUIs, and history drawers. Each module carries its own `_request_is_in_flight` / `_reject_if_request_in_flight` helpers, while `requestController`/`requestState`/`requestLifecycle` and `modelHelpers` already form a partial orchestrator. This duplication creates unclear ownership of concurrency policies and error handling.
+
+These domains exhibit:
+
+- **Low visibility**: contracts between catalogued axes, persona presets, history/log payloads, and GUI surfaces are encoded in scattered helpers and booleans rather than explicit types and facades.
+- **Wide scope**: changes must touch `lib/`, `GPT/`, Talon lists, docs, and multiple test suites at once, raising coordination cost and refactor risk.
+- **High volatility**: recent commits show repeated adjustments to persona presets, axis filters, history summaries, and gating conditions, with Concordance and heatmap scores staying elevated.
+
+Reducing Concordance scores here requires clarifying these domains and boundaries, not weakening tests or Concordance checks.
+
+---
+
+## Hidden Domains (“Tunes”) and Concordance Analysis
+
+### 1. Axis Tokens & History Snapshot Domain
+
+- **Members (sample)**
+  - `lib/axisConfig.py` (file), `lib/axisCatalog.py::{axis_catalog,axis_list_tokens}`.
+  - `lib/talonSettings.py::{_read_axis_value_to_key_map,_read_axis_default_from_list,_axis_tokens,_resolve_axis_for_token,AxisValues}`.
+  - `lib/staticPromptConfig.py::{completeness_freeform_allowlist,static_prompt_catalog,_read_static_prompt_tokens}`.
+  - `lib/requestLog.py::{_filter_axes_payload,notify,append_entry}`.
+  - `lib/requestHistoryActions.py::{_filter_axis_tokens,history_axes_for,history_summary_lines,_directional_tokens_for_entry,gpt_request_history_show_latest}`.
+  - `lib/historyQuery.py::history_drawer_entries_from`.
+  - `GPT/gpt.py::{axis_catalog,_build_axis_docs,_axis_drop_summary,static_prompt_catalog,_build_static_prompt_docs,_read_list_items}`.
+  - Tests: `tests/test_axis_mapping.py`, `tests/test_static_prompt_config.py`, `tests/test_static_prompt_docs.py`, `tests/test_readme_axis_lists.py`, `tests/test_request_history_actions.py`, `tests/test_request_history.py`, `tests/test_request_log.py`.
+- **Visibility**
+  - Axis semantics are catalogued in `axisCatalog`/`axisConfig` and static prompt config, but history/log payloads and `history_axes_for`/`_filter_axis_tokens` reinvent axis projections per call site.
+  - Concordance-relevant axis signals for history summaries and logs are not expressed as a single, typed snapshot; contributors must infer which axes matter from scattered filters.
+- **Scope**
+  - Changes to axis definitions or filters affect: Concordance scoring, history drawers, request logs, README/help docs, GPT help output, and multiple tests.
+  - Tests and docs act as coordination fabric; drift in one place often forces brittle updates elsewhere.
+- **Volatility**
+  - Recent churn in `axisConfig`, `staticPromptConfig`, `talonSettings` axis functions, and request history/log helpers indicates an evolving story around which axes are recorded, where, and with what defaults.
+
+**Hidden domain / tune**: *Axis Snapshot & History Concordance Domain* — the shared intent is to record and present a consistent, Concordance-relevant snapshot of axes and static prompt semantics across history summaries, logs, docs, and GUIs.
+
+### 2. Persona & Intent Preset Concordance Domain
+
+- **Members (sample)**
+  - `lib/personaConfig.py` (file), `IntentPreset`.
+  - `GPT/gpt.py::{_validated_persona_value,_canonical_persona_value,_build_persona_intent_docs,_refresh_persona_intent_lists,persona_set_preset,intent_set_preset,gpt_preset_save}`.
+  - `lib/helpHub.py::_persona_presets`.
+  - `lib/modelSuggestionGUI.py::{_match_persona_preset,_suggestion_stance_info,_measure_suggestion_height}`.
+  - Axis-aware persona and style lists under `GPT/lists/*.talon-list`.
+  - Tests: `tests/test_voice_audience_tone_purpose_lists.py`, `tests/test_model_types_system_prompt.py`, `tests/test_model_suggestion_gui.py`, `tests/test_integration_suggestions.py`, `tests/test_gpt_actions.py`.
+- **Visibility**
+  - Persona/intent presets are defined in `personaConfig` and surfaced via GPT actions, help hub presets, and suggestion canvases, but the contract between axis tokens, persona presets, and Concordance scoring is implicit.
+  - Validation and canonicalization helpers in `gpt.py` encode rules that are not clearly tied back to the axis catalog or persona presets.
+- **Scope**
+  - Changes propagate to model settings, GUI presets, suggestion tunes, voice/tone/purpose lists, docs, and tests.
+  - Personas and intents influence how Concordance interprets health snapshots (e.g., “persona not set”, “tone misaligned”), so unstable semantics affect scoring.
+- **Volatility**
+  - High churn in persona validation, preset matching, and related tests suggests ongoing tuning of how personas/intents are represented and surfaced.
+
+**Hidden domain / tune**: *Persona & Intent Preset Concordance Domain* — the shared intent is to provide a stable, axis-aware contract for personas and intents that spans config, GPT actions, help hub, and suggestion canvases.
+
+### 3. Request Gating, Streaming, and History Lifecycle Domain
+
+- **Members (sample)**
+  - `lib/requestController.py::{__init__,handle}`, `lib/requestState.py::transition`, `lib/requestLifecycle.py::reduce_request_state`, `lib/requestBus.py`, `lib/requestUI.py::{requestUI.py,_notify,_on_state_change}`.
+  - `lib/modelHelpers.py::{build_request,build_chatgpt_request,build_system_prompt_messages,_build_request_context,_build_timeout_context,_send_request_streaming,_update_streaming_snapshot,build_exchange_snapshot,_warn_streaming_disabled,_handle_streaming_error,_handle_max_attempts_exceeded,_ensure_request_supported,call_tool,_build_snippet_context,chats_to_string,_update_lifecycle,_send_request_streaming,_build_request_context,_build_timeout_context}`.
+  - Per-surface gating helpers: `_request_is_in_flight` / `_reject_if_request_in_flight` in `GPT/gpt.py`, `lib/helpHub.py`, `lib/modelHelpCanvas.py`, `lib/modelPromptPatternGUI.py`, `lib/modelSuggestionGUI.py`, `lib/modelConfirmationGUI.py`, `lib/requestHistoryDrawer.py`, `lib/providerCommands.py`, `lib/requestHistoryActions.py`.
+  - History/destination helpers: `lib/requestHistoryActions.py::{_save_history_prompt_to_file,_model_source_save_dir,gpt_request_history_show_latest}`, `lib/modelDestination.py::{append_text,insert,_slug}`, plus ADR-0055’s migration to `file` destination.
+  - Tests: `tests/test_gpt_actions.py`, `tests/test_request_history_actions.py`, `tests/test_request_history.py`, `tests/test_request_streaming.py`, `tests/test_model_destination.py`, `tests/test_model_help_gui.py`, `tests/test_model_help_canvas.py`, `tests/test_model_suggestion_gui.py`, `tests/test_integration_suggestions.py`.
+- **Visibility**
+  - Request lifecycle policies (what it means for a request to be “in flight”, how cancellations and retries work, when history entries are written) are encoded in many small helpers rather than a single orchestrated API.
+  - GUI surfaces and GPT actions implement their own gating logic instead of delegating to `requestController`/`requestState`/`requestLifecycle`.
+- **Scope**
+  - Behaviour changes affect GPT actions, GUI canvases, history drawers, destinations, logs, and Concordance scoring hooks that read history/streaming state.
+  - Bugs or inconsistencies in gating can cause double-requests, dropped history entries, or misleading Concordance snapshots.
+- **Volatility**
+  - The heatmap shows repeated edits to `_request_is_in_flight` / `_reject_if_request_in_flight`, streaming helpers, and history actions, indicating an unstable coordination surface.
+
+**Hidden domain / tune**: *Request Gating & Streaming Lifecycle Domain* — the shared intent is to centralize request concurrency, streaming, and history write policies so GUIs and GPT actions consume a single, testable lifecycle.
+
+---
+
+## Decision
+
+We will treat the **Axis Snapshot & History**, **Persona & Intent Preset**, and **Request Gating & Streaming Lifecycle** domains as first-class Concordance domains, building on ADR-0045/0046/0054/0055, and evolve the code to:
+
+1. **Axis Snapshot & History Concordance**
+   - Extend the existing `axisCatalog` / axis registry façade so that **history and log payloads derive their axis views from a single, typed “axis snapshot” representation**, not bespoke filters per call site.
+   - Make the relationship between `axisConfig`, `axisCatalog`, `talonSettings` axis helpers, `staticPromptConfig`, `requestLog`, `requestHistoryActions`, and README/help/doc surfaces explicit through a small set of APIs.
+2. **Persona & Intent Preset Concordance**
+   - Treat `personaConfig` and persona/intent helpers in `GPT/gpt.py` and `helpHub` as a single **Persona & Intent domain**, backed by axis-aware presets.
+   - Expose a canonical persona/intent catalog that GUIs, GPT actions, and docs consume, aligning semantics across config, lists, and Concordance checks.
+3. **Request Gating & Streaming Lifecycle**
+   - Centralize “request in flight” and streaming lifecycle policies in `requestController`/`requestState`/`requestLifecycle` and `modelHelpers`, and have canvases, GPT actions, and history drawers **call into these policies instead of carrying their own gating helpers**.
+   - Complete the migration started in ADR-0055 by routing remaining history saves through the unified `file` destination and treating history writes as lifecycle events rather than bespoke helpers.
+
+For all three domains, the intended long-term effect is to **reduce sustained Concordance scores for the relevant hotspots** by increasing visibility, narrowing scope, and reducing volatility. We explicitly will not relax Concordance thresholds, drop meaningful checks, or weaken tests to achieve lower scores.
+
+---
+
+## Tests-First Principle
+
+> At each step in these domains, we will first analyze existing tests to ensure that the behaviour we intend to change is well covered. Where coverage is insufficient, we will add focused characterization tests capturing current behaviour (including relevant branches and error paths), and then proceed with the refactor guarded by those tests. Where coverage is already strong and branch-focused for the paths we are changing, we will rely on and, if needed, extend those existing tests rather than adding redundant characterization tests.
+>
+> Behaviour-changing refactors must not proceed without **adequate** characterization tests for the behaviour being changed. When existing tests already provide good behavioural and branch coverage for the paths being changed, prefer **reusing and extending** those tests over adding near-duplicate ones; focus tests on behavioural/contract-level assertions instead of internal implementation details.
+
+---
+
+## Refactor Plan (with Prior Art Alignment)
+
+### 1. Axis Snapshot & History Concordance Domain
+
+- **Original Draft Idea**
+  - High churn and coordination around axis token readers, static prompt config, axis catalog, history axes filters, and log payloads suggest a single domain that governs **what axes we record and surface where**.
+- **Similar Existing Behavior / Prior Art**
+  - ADR-0045/0046/0054 already establish an **Axis & Static Prompt Concordance** domain and recommend an `axis_catalog` façade.
+  - `lib/axisCatalog.py` exposes axis metadata; `lib/axisConfig.py` and `lib/axisMappings.py` define tokens and mappings.
+  - `lib/staticPromptConfig.py` and `GPT/gpt.py::static_prompt_catalog` provide static prompt profiles and catalog views.
+  - `lib/talonSettings.py` contains axis token readers and mappings, used by Talon settings UIs.
+  - `lib/requestLog.py::_filter_axes_payload` and `lib/requestHistoryActions.py::{_filter_axis_tokens,history_axes_for,history_summary_lines}` filter and summarize axes for logs and history drawers.
+  - Tests under `tests/test_axis_mapping.py`, `tests/test_static_prompt_config.py`, `tests/test_static_prompt_docs.py`, `tests/test_readme_axis_lists.py`, `tests/test_request_history_actions.py`, `tests/test_request_history.py`, and `tests/test_request_log.py` already exercise parts of this contract.
+- **Revised Recommendation**
+  - **Axis snapshot type**
+    - Define a small `AxisSnapshot` structure (Python type or dict schema) derived from `axisCatalog` that represents the Concordance-relevant view of axes for a given request/history entry (e.g., enabled axes, key values, derived flags).
+    - Make `requestLog._filter_axes_payload`, `requestHistoryActions.{_filter_axis_tokens,history_axes_for,history_summary_lines,_directional_tokens_for_entry}`, and `historyQuery.history_drawer_entries_from` consume this type instead of ad hoc filters.
+  - **Single source of truth for axis names and descriptions**
+    - Extend the existing `axis_catalog` façade described in ADR-0046/0054 so that:
+      - `talonSettings` axis helpers, static prompt catalogs, and README/help generators pull labels and descriptions from the same catalog.
+      - History and log summaries reference catalog metadata rather than hard-coded strings.
+  - **Explicit Concordance alignment**
+    - Make Concordance scoring code paths consume `AxisSnapshot` explicitly, so changing which axes are recorded for history/logs is a catalog-driven decision rather than an incidental filter tweak.
+- **Phasing**
+  - **Phase 1 – AxisSnapshot type and adapters**
+    - Introduce `AxisSnapshot` and a helper to build it from `axisCatalog` + request settings.
+    - Add adapters in `requestLog` and `requestHistoryActions` that wrap existing behaviour but log usage of `AxisSnapshot`.
+  - **Phase 2 – Migrate history and log helpers**
+    - Update `history_axes_for`, `history_summary_lines`, `_filter_axis_tokens`, `_filter_axes_payload`, and related tests to use `AxisSnapshot` consistently.
+    - Remove duplicate axis-name/description tables from history/log modules where they overlap with the catalog.
+  - **Phase 3 – Docs/help alignment**
+    - Ensure README/help and static prompt docs that present axes do so via the catalog façade and/or a shared doc-generation helper, reusing ADR-0046/0054 patterns.
+
+### 2. Persona & Intent Preset Concordance Domain
+
+- **Original Draft Idea**
+  - Persona and intent presets are encoded across `personaConfig`, GPT helpers, help hub, suggestion GUIs, and Talon lists with high churn and coordination but no explicit domain boundary.
+- **Similar Existing Behavior / Prior Art**
+  - `lib/personaConfig.py` defines personas/intents used by GPT flows.
+  - `GPT/gpt.py` implements persona validation, canonicalization, and preset actions; ADR-0037 and ADR-0046 already encourage orchestrator-based designs for GPT actions.
+  - `lib/helpHub.py::_persona_presets` and `lib/modelSuggestionGUI.py::{_match_persona_preset,_suggestion_stance_info}` surface presets and stance info to users.
+  - Axis and static prompt domains (ADRs 0036/0044/0045/0046/0054) treat axes as first-class Concordance inputs but do not yet fully align persona/intents with those axes.
+  - Tests under `tests/test_voice_audience_tone_purpose_lists.py`, `tests/test_model_types_system_prompt.py`, `tests/test_model_suggestion_gui.py`, `tests/test_integration_suggestions.py`, and `tests/test_gpt_actions.py` exercise persona/intent behaviours from different angles.
+- **Revised Recommendation**
+  - **Persona/intent catalog**
+    - Introduce or extend a `persona_catalog` / `intent_catalog` helper, backed by `personaConfig`, that:
+      - Exposes typed persona/intent presets, including associated axis tokens (voice, tone, purpose) and defaults.
+      - Provides a single API used by GPT actions (`persona_set_preset`, `intent_set_preset`, `gpt_preset_save`), help hub (`_persona_presets`), suggestion GUIs, and docs.
+  - **Canonicalization and validation alignment**
+    - Refactor `_validated_persona_value`, `_canonical_persona_value`, and `_build_persona_intent_docs` in `GPT/gpt.py` to operate entirely in terms of the persona/intent catalog and axis catalog, rather than bespoke string logic.
+    - Ensure persona/intent lists under `GPT/lists/*.talon-list` are generated or validated against this catalog, similar to axis list validation in ADR-0046.
+  - **Concordance visibility**
+    - Make Concordance scoring and health snapshots consume persona/intent state explicitly (via the catalog), so that missing or conflicting persona/intent assignments are visible and testable rather than inferred from scattered strings.
+- **Phasing**
+  - **Phase 1 – Persona/intent catalog and tests**
+    - Define the catalog shape and add tests that assert round-tripping between `personaConfig`, GPT actions, help hub presets, suggestion GUIs, and list files for a representative subset.
+  - **Phase 2 – GPT and GUI refactor**
+    - Route GPT persona/intent commands and help hub/suggestion GUIs through the catalog, trimming redundant preset/stance logic.
+  - **Phase 3 – Concordance integration**
+    - Update Concordance-related code to read persona/intent state from the catalog and surface it in axis/history snapshots where appropriate.
+
+### 3. Request Gating & Streaming Lifecycle Domain
+
+- **Original Draft Idea**
+  - High churn in `_request_is_in_flight` / `_reject_if_request_in_flight` helpers, streaming functions in `modelHelpers`, and history actions suggests that request gating and streaming lifecycle should be owned by a single orchestrated domain rather than duplicated per surface.
+- **Similar Existing Behavior / Prior Art**
+  - ADR-0045/0046/0054 already designate **Request Pipeline and Resilience** as a Concordance domain and recommend a `StreamingSession`-style façade.
+  - `lib/requestController.py`, `lib/requestState.py`, `lib/requestLifecycle.py`, and `lib/requestBus.py` form an implicit orchestrator for request state transitions.
+  - `lib/modelHelpers.py` centralizes streaming and error-handling helpers but callers still interpret “in flight” and retries locally.
+  - `lib/requestHistoryActions.py` and `lib/requestHistoryDrawer.py` control when history entries appear and how they’re summarized.
+  - ADR-0055 migrates source-only saves toward the unified `file` destination but remaining helpers like `_save_history_prompt_to_file` and `_model_source_save_dir` still appear as hotspots.
+- **Revised Recommendation**
+  - **Central request gating API**
+    - Extend `requestController`/`requestState`/`requestLifecycle` with explicit helpers for:
+      - Asking whether a request is in flight (`is_in_flight`),
+      - Attempting to start a new request (`try_start_request` with structured drop reasons), and
+      - Handling cancellations and retries.
+    - Replace duplicated `_request_is_in_flight` / `_reject_if_request_in_flight` helpers in GPT actions and canvases with calls into this API.
+  - **StreamingSession and history hooks**
+    - Implement a `StreamingSession` (as sketched in ADR-0046/0054) that:
+      - Owns chunk accumulation, error classification, and refresh throttling.
+      - Emits structured events for “history/write snapshot”, “log entry”, and “UI refresh”, consumed by `requestHistoryActions`, `requestLog`, `modelResponseCanvas`, and GUIs.
+    - Retire or narrow `_save_history_prompt_to_file` and `_model_source_save_dir` to thin adapters over the `file` destination and history events, in line with ADR-0055.
+  - **Concordance-aware gating**
+    - Make drop reasons and gating outcomes visible in logs/history (`_notify_with_drop_reason`, `history_summary_lines`) using a small, typed schema. Concordance checks should be able to distinguish “blocked for good reason” from “dropped silently”.
+- **Phasing**
+  - **Phase 1 – Gating helpers on controller/state**
+    - Introduce `is_in_flight`/`try_start_request` on `requestController`/`requestState` and update a small, well-tested subset of callers (`GPT/gpt.py`, `modelConfirmationGUI`) to use them.
+  - **Phase 2 – StreamingSession and history writes**
+    - Introduce `StreamingSession` and move streaming helpers in `modelHelpers` to delegate lifecycle decisions to it.
+    - Route history/log writes via StreamingSession events and the `file` destination; deprecate direct prompt-only writers.
+  - **Phase 3 – Canvas and GUI migration**
+    - Update help/suggestion/history canvases and provider GUIs to rely on the centralized gating API and StreamingSession events, trimming local `_request_is_in_flight` / `_reject_if_request_in_flight` clones.
+
+---
+
+## Tests-First Refactor Plan
+
+For each domain, we will align with the existing test suites and add characterization only where necessary.
+
+### Axis Snapshot & History Concordance
+
+- **Existing coverage (non-exhaustive)**
+  - `tests/test_axis_mapping.py` — axis token and mapping behaviour.
+  - `tests/test_static_prompt_config.py` — static prompt config profiles.
+  - `tests/test_static_prompt_docs.py` — static prompt docs/list alignment.
+  - `tests/test_readme_axis_lists.py` — README axis list rendering.
+  - `tests/test_request_history_actions.py`, `tests/test_request_history.py`, `tests/test_request_log.py` — history/log axis behaviour and summaries.
+- **Plan**
+  - Before introducing `AxisSnapshot`:
+    - Add focused tests that characterize current axis content for a representative history/log entry (which axes appear, how missing/extra axes are handled).
+  - After wiring `AxisSnapshot`:
+    - Reuse and, where needed, extend these tests to assert that history/log outputs derive from the catalog and that Concordance-relevant axes are preserved.
+
+### Persona & Intent Preset Concordance
+
+- **Existing coverage (non-exhaustive)**
+  - `tests/test_voice_audience_tone_purpose_lists.py` — persona/voice/tone/purpose lists.
+  - `tests/test_model_types_system_prompt.py` — model/system prompt type handling.
+  - `tests/test_model_suggestion_gui.py` — suggestion canvas behaviour including stance presets.
+  - `tests/test_integration_suggestions.py`, `tests/test_gpt_actions.py` — end-to-end GPT flows involving personas/intents.
+- **Plan**
+  - Characterize the current mapping between persona/intent presets, axis tokens, and GUI/help surfaces for a small set of presets.
+  - Add tests around the persona/intent catalog API (once introduced) that assert round-tripping between config, GPT actions, help hub presets, suggestion GUIs, and lists.
+  - When refactoring `_validated_persona_value`, `_canonical_persona_value`, and related helpers, ensure existing integration tests remain the primary guardrails; only add new tests where behaviour is currently untested.
+
+### Request Gating & Streaming Lifecycle
+
+- **Existing coverage (non-exhaustive)**
+  - `tests/test_gpt_actions.py` — GPT action request flows and gating.
+  - `tests/test_request_history_actions.py`, `tests/test_request_history.py` — history entries and summaries.
+  - `tests/test_request_streaming.py` — streaming behaviour and basic error handling.
+  - `tests/test_model_destination.py` — file destination semantics (per ADR-0039/0055).
+  - `tests/test_model_help_gui.py`, `tests/test_model_help_canvas.py`, `tests/test_model_suggestion_gui.py`, `tests/test_integration_suggestions.py` — GUI-level behaviour for help/suggestion/history overlays.
+- **Plan**
+  - Before centralizing gating:
+    - Identify representative true/false branches for “request in flight” across GPT actions and one or two canvases; add characterization tests where missing.
+    - Ensure error/cancellation branches in `modelHelpers` streaming helpers and history writers are covered.
+  - As `StreamingSession` and gating APIs are introduced:
+    - Add small, focused tests for the new APIs (e.g., `try_start_request` drop reasons, StreamingSession event ordering) while keeping integration tests as the main behavioural guardrails.
+    - Avoid duplicating GUI behaviour tests; instead, validate that GUIs respond correctly to lifecycle events.
+
+Across all domains, we will continue to run `python3 -m pytest` from the repo root during each slice, relying on existing suites as primary regression protection.
+
+---
+
+## Consequences
+
+- **Positive**
+  - Clearer **Axis Snapshot & History** boundaries reduce coordination cost when axis semantics change, making Concordance scoring inputs more visible and easier to evolve.
+  - A unified **Persona & Intent** catalog stabilizes presets across GPT actions, help hub, and suggestion GUIs, reducing churn and surprises when tuning personas/intents.
+  - Centralized **Request Gating & Streaming Lifecycle** semantics reduce duplicated gating logic, make error/cancellation handling more predictable, and simplify reasoning about when history/log entries are written.
+  - Concordance scores for the identified hotspots should decrease over time as visibility increases, scope narrows, and volatility is absorbed by focused facades and types.
+- **Risks**
+  - Introducing new catalogs and lifecycle APIs can temporarily increase complexity and surface hidden inconsistencies.
+  - Misaligned migrations (e.g., partially adopted `AxisSnapshot` or persona catalog) could create confusing states where some surfaces see new behaviour and others see old.
+- **Mitigations**
+  - Land changes in small, test-backed slices following the Tests-First Refactor Plan.
+  - Keep new facades thin, documented, and aligned with ADR-0045/0046/0054/0055 patterns.
+  - Monitor statement-level churn × complexity heatmaps and Concordance scores after each slice to confirm improvements come from structural gains, not weakened checks.
+
+---
+
+## Salient Tasks
+
+1. **Axis Snapshot & History**
+   - Define an `AxisSnapshot` type driven by `axisCatalog` and add adapters in `requestLog` and `requestHistoryActions` that wrap existing axis filters.
+   - Update `history_axes_for`, `history_summary_lines`, `_filter_axis_tokens`, and `_filter_axes_payload` to consume `AxisSnapshot`, trimming duplicate axis tables and aligning tests.
+   - Ensure README/help/static prompt docs that present axes reuse the same catalog and snapshot helpers, building on ADR-0046/0054.
+2. **Persona & Intent Presets**
+   - Introduce a persona/intent catalog backed by `personaConfig` and wire GPT persona/intent actions, help hub presets, suggestion GUIs, and list files through it.
+   - Refactor `_validated_persona_value`, `_canonical_persona_value`, and `_build_persona_intent_docs` to operate solely on the catalog and axis metadata, updating tests as needed.
+3. **Request Gating & Streaming Lifecycle**
+   - Add `is_in_flight`/`try_start_request` helpers to `requestController`/`requestState`/`requestLifecycle` and migrate high-churn `_request_is_in_flight` / `_reject_if_request_in_flight` call sites to them.
+   - Implement `StreamingSession` aligned with ADR-0046/0054 and move `modelHelpers` streaming/error helpers and history/log writes to consume its events.
+   - Complete ADR-0055 by deprecating remaining prompt-only history save helpers in favour of the `file` destination, covered by existing `modelDestination` and history tests.
+
+The execution of these tasks should be coordinated with existing Concordance ADRs so that this ADR serves as a focused completion path for persona, axis snapshot, and request gating hotspots revealed by the latest churn × complexity analysis.

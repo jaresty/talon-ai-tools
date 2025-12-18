@@ -16,8 +16,27 @@ if bootstrap is not None:
         class SuggestionStanceValidationTests(unittest.TestCase):
             def test_accepts_model_write_with_persona_axes(self) -> None:
                 self.assertTrue(
-                    valid_stance_command("model write as teacher to junior engineer kindly")
+                    valid_stance_command(
+                        "model write as teacher to junior engineer kindly"
+                    )
                 )
+
+            def test_persona_catalog_spoken_tokens_are_valid_persona_commands(
+                self,
+            ) -> None:
+                from talon_user.lib.personaConfig import persona_catalog
+
+                catalog = persona_catalog()
+                for preset in catalog.values():
+                    spoken = (preset.spoken or "").strip()
+                    if not spoken:
+                        continue
+                    cmd = f"persona {spoken}"
+                    with self.subTest(spoken=spoken):
+                        self.assertTrue(
+                            valid_stance_command(cmd),
+                            f"persona stance for spoken preset {spoken!r} should be valid",
+                        )
 
             def test_rejects_bare_model_write_and_model_write_for(self) -> None:
                 self.assertFalse(valid_stance_command("model write"))
@@ -29,7 +48,9 @@ if bootstrap is not None:
                 # Persona presets are valid stance commands; intent is a separate command.
                 self.assertTrue(valid_stance_command("persona teach junior dev"))
                 self.assertFalse(valid_stance_command("intent teach"))
-                self.assertFalse(valid_stance_command("persona teach junior dev · intent teach"))
+                self.assertFalse(
+                    valid_stance_command("persona teach junior dev · intent teach")
+                )
 
             def test_accepts_persona_preset_spoken_shorthand(self) -> None:
                 self.assertTrue(valid_stance_command("persona stake"))

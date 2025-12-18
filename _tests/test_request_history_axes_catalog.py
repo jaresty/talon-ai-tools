@@ -43,6 +43,42 @@ if bootstrap is not None:
             self.assertEqual(filtered["directional"], ["fog"])
             self.assertNotIn("style", filtered)
 
+        def test_history_axes_for_drops_unknown_axes_and_tokens(self) -> None:
+            """Guardrail: history_axes_for drops unknown axes/tokens."""
+
+            axes = {
+                "completeness": ["full", "unknown"],
+                "scope": ["focus", "unknown"],
+                "method": ["steps", "unknown"],
+                "form": ["bullets", "unknown"],
+                "channel": ["slack", "unknown"],
+                "directional": ["fog", "unknown-dir"],
+                "style": ["plain"],
+                "custom": ["value", "other"],
+            }
+
+            filtered = history_axes_for(axes)
+
+            # Known axes are retained and cleaned; unknown axes/tokens are dropped.
+            for key in (
+                "completeness",
+                "scope",
+                "method",
+                "form",
+                "channel",
+                "directional",
+            ):
+                self.assertIn(key, filtered)
+
+            self.assertEqual(filtered["completeness"], ["full"])
+            self.assertEqual(filtered["scope"], ["focus"])
+            self.assertEqual(filtered["method"], ["steps"])
+            self.assertEqual(filtered["form"], ["bullets"])
+            self.assertEqual(filtered["channel"], ["slack"])
+            self.assertEqual(filtered["directional"], ["fog"])
+            self.assertNotIn("style", filtered)
+            self.assertNotIn("custom", filtered)
+
         def test_save_history_includes_directional_header(self) -> None:
             """Guardrail: saved history files include directional tokens."""
 

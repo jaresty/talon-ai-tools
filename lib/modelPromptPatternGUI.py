@@ -11,7 +11,8 @@ from .modelSource import create_model_source
 from .modelState import GPTState
 from .axisMappings import axis_docs_map
 from .requestBus import current_state
-from .requestState import RequestPhase
+from .requestState import RequestPhase, is_in_flight, try_start_request
+from .requestLog import drop_reason_message, set_drop_reason
 from .modelHelpers import notify
 from .overlayHelpers import apply_canvas_blocking, apply_scroll_delta, clamp_scroll
 from .overlayLifecycle import close_overlays, close_common_overlays
@@ -67,25 +68,38 @@ class PromptPatternGUIState:
 
 
 def _request_is_in_flight() -> bool:
-    """Return True when a GPT request is currently running."""
+    """Return True when a GPT request is currently running.
+
+    This delegates to the central ``is_in_flight`` helper so prompt-pattern
+    gating stays aligned with the RequestState/RequestLifecycle contract.
+    """
     try:
-        phase = getattr(current_state(), "phase", RequestPhase.IDLE)
-        return phase not in (
-            RequestPhase.IDLE,
-            RequestPhase.DONE,
-            RequestPhase.ERROR,
-            RequestPhase.CANCELLED,
-        )
+        state = current_state()
+    except Exception:
+        return False
+    try:
+        return is_in_flight(state)  # type: ignore[arg-type]
     except Exception:
         return False
 
 
 def _reject_if_request_in_flight() -> bool:
     """Notify and return True when a GPT request is already running."""
-    if _request_is_in_flight():
-        notify(
-            "GPT: A request is already running; wait for it to finish or cancel it first."
-        )
+    try:
+        state = current_state()
+    except Exception:
+        return False
+    try:
+        allowed, reason = try_start_request(state)  # type: ignore[arg-type]
+    except Exception:
+        return False
+    if not allowed and reason == "in_flight":
+        message = drop_reason_message("in_flight")
+        try:
+            set_drop_reason("in_flight")
+        except Exception:
+            pass
+        notify(message)
         return True
     return False
 

@@ -45,6 +45,34 @@ if bootstrap is not None:
                 # Ensure talon_user.lib is importable for patch targets.
                 importlib.import_module("talon_user.lib.patternDebugCoordinator")
 
+            def test_persona_presets_align_with_persona_catalog(self) -> None:
+                from talon_user.lib.personaConfig import persona_catalog
+                from talon_user.lib import modelPatternGUI as pattern_module
+
+                catalog = persona_catalog()
+                helper_presets = pattern_module._persona_presets()
+                catalog_keys = {preset.key for preset in catalog.values()}
+                helper_keys = {preset.key for preset in helper_presets}
+                self.assertEqual(
+                    catalog_keys,
+                    helper_keys,
+                    "modelPatternGUI _persona_presets must cover the same PersonaPreset keys as persona_catalog",
+                )
+
+            def test_intent_presets_align_with_intent_catalog(self) -> None:
+                from talon_user.lib.personaConfig import intent_catalog
+                from talon_user.lib import modelPatternGUI as pattern_module
+
+                catalog = intent_catalog()
+                helper_presets = pattern_module._intent_presets()
+                catalog_keys = {preset.key for preset in catalog.values()}
+                helper_keys = {preset.key for preset in helper_presets}
+                self.assertEqual(
+                    catalog_keys,
+                    helper_keys,
+                    "modelPatternGUI _intent_presets must cover the same IntentPreset keys as intent_catalog",
+                )
+
             def test_axis_value_returns_description_when_present(self) -> None:
                 mapping = {"gist": "Important: Provide a short but complete answer."}
                 self.assertEqual(
@@ -107,7 +135,9 @@ if bootstrap is not None:
                 target = next(p for p in PATTERNS if p.name == "Debug bug")
                 # Simulate modelPrompt raising on legacy style tokens.
                 with patch.object(
-                    talonSettings, "modelPrompt", side_effect=ValueError("style axis is removed")
+                    talonSettings,
+                    "modelPrompt",
+                    side_effect=ValueError("style axis is removed"),
                 ):
                     UserActions.model_pattern_run_name(target.name)
 
@@ -122,7 +152,11 @@ if bootstrap is not None:
                     if args
                 ]
                 self.assertTrue(
-                    any("style axis is removed" in note or "styleModifier is no longer supported" in note for note in notifications),
+                    any(
+                        "style axis is removed" in note
+                        or "styleModifier is no longer supported" in note
+                        for note in notifications
+                    ),
                     f"Expected migration hint notification, got {notifications}",
                 )
 

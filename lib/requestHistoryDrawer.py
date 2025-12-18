@@ -7,10 +7,15 @@ from collections.abc import Sequence
 
 from talon import Module, actions, canvas, ui
 
-from .requestLog import all_entries, last_drop_reason
+from .requestLog import (
+    all_entries,
+    consume_last_drop_reason_record,
+    drop_reason_message,
+    set_drop_reason,
+)
 from .historyQuery import history_drawer_entries_from
 from .requestBus import current_state
-from .requestState import RequestPhase
+from .requestState import is_in_flight, try_start_request
 from .modelHelpers import notify
 from .overlayHelpers import apply_canvas_blocking
 from .overlayLifecycle import close_overlays, close_common_overlays
@@ -20,7 +25,9 @@ mod = Module()
 
 class HistoryDrawerState:
     showing: bool = False
-    entries: List[Tuple[str, str]] = []  # (request_id, prompt_snippet + recipe + provider)
+    entries: List[
+        Tuple[str, str]
+    ] = []  # (request_id, prompt_snippet + recipe + provider)
     selected_index: int = 0
     last_message: str = ""
 
@@ -31,25 +38,38 @@ _last_key_handler = None
 
 
 def _request_is_in_flight() -> bool:
-    """Return True when a GPT request is currently running."""
+    """Return True when a GPT request is currently running.
+
+    This delegates to the central ``is_in_flight`` helper so history drawer
+    gating stays aligned with the RequestState/RequestLifecycle contract.
+    """
     try:
-        phase = getattr(current_state(), "phase", RequestPhase.IDLE)
-        return phase not in (
-            RequestPhase.IDLE,
-            RequestPhase.DONE,
-            RequestPhase.ERROR,
-            RequestPhase.CANCELLED,
-        )
+        state = current_state()
+    except Exception:
+        return False
+    try:
+        return is_in_flight(state)  # type: ignore[arg-type]
     except Exception:
         return False
 
 
 def _reject_if_request_in_flight() -> bool:
     """Notify and return True when a GPT request is already running."""
-    if _request_is_in_flight():
-        notify(
-            "GPT: A request is already running; wait for it to finish or cancel it first."
-        )
+    try:
+        state = current_state()
+    except Exception:
+        return False
+    try:
+        allowed, reason = try_start_request(state)  # type: ignore[arg-type]
+    except Exception:
+        return False
+    if not allowed and reason == "in_flight":
+        message = drop_reason_message("in_flight")
+        try:
+            set_drop_reason("in_flight")
+        except Exception:
+            pass
+        notify(message)
         return True
     return False
 
@@ -227,13 +247,12 @@ def _refresh_entries() -> None:
     HistoryDrawerState.last_message = ""
     if not HistoryDrawerState.entries:
         try:
-            HistoryDrawerState.last_message = last_drop_reason()
+            record = consume_last_drop_reason_record()
+            HistoryDrawerState.last_message = record.message
         except Exception:
             HistoryDrawerState.last_message = ""
         if not HistoryDrawerState.last_message:
-            HistoryDrawerState.last_message = (
-                "GPT: No history entries include a directional lens; replay requires fog/fig/dig/ong/rog/bog/jog."
-            )
+            HistoryDrawerState.last_message = "GPT: No history entries include a directional lens; replay requires fog/fig/dig/ong/rog/bog/jog."
 
 
 @mod.action_class

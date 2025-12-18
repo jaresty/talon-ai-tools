@@ -29,9 +29,14 @@ class ConfirmationGUIGuardTests(unittest.TestCase):
         ConfirmationGUIState.show_advanced_actions = False
 
     def test_confirmation_actions_respect_in_flight_guard(self):
-        with patch.object(
-            confirm_module, "_reject_if_request_in_flight", return_value=True
-        ), patch.object(confirm_module.actions.user, "model_response_canvas_open") as canvas_open:
+        with (
+            patch.object(
+                confirm_module, "_reject_if_request_in_flight", return_value=True
+            ),
+            patch.object(
+                confirm_module.actions.user, "model_response_canvas_open"
+            ) as canvas_open,
+        ):
             ConfirmActions.confirmation_gui_append("text")
             ConfirmActions.confirmation_gui_close()
             ConfirmActions.confirmation_gui_pass_context()
@@ -52,13 +57,41 @@ class ConfirmationGUIGuardTests(unittest.TestCase):
         if bootstrap is None:
             self.skipTest("Talon runtime not available")
         presentation = ResponsePresentation(display_text="out", paste_text="out")
-        with patch.object(
-            confirm_module, "_reject_if_request_in_flight", return_value=True
-        ), patch.object(confirm_module.actions.user, "model_response_canvas_open") as canvas_open:
+        with (
+            patch.object(
+                confirm_module, "_reject_if_request_in_flight", return_value=True
+            ),
+            patch.object(
+                confirm_module.actions.user, "model_response_canvas_open"
+            ) as canvas_open,
+        ):
             ConfirmActions.confirmation_gui_append(presentation)
         canvas_open.assert_not_called()
         self.assertIsNone(ConfirmationGUIState.current_presentation)
         self.assertEqual(GPTState.text_to_confirm, "")
+
+    def test_reject_if_request_in_flight_records_drop_reason(self):
+        with (
+            patch.object(
+                confirm_module, "try_start_request", return_value=(False, "in_flight")
+            ),
+            patch.object(confirm_module, "current_state"),
+            patch.object(confirm_module, "set_drop_reason") as set_reason,
+            patch.object(confirm_module, "notify") as notify_mock,
+        ):
+            self.assertTrue(confirm_module._reject_if_request_in_flight())
+        set_reason.assert_called_once_with("in_flight")
+        notify_mock.assert_called_once()
+
+        with (
+            patch.object(confirm_module, "try_start_request", return_value=(True, "")),
+            patch.object(confirm_module, "current_state"),
+            patch.object(confirm_module, "set_drop_reason") as set_reason,
+            patch.object(confirm_module, "notify") as notify_mock,
+        ):
+            self.assertFalse(confirm_module._reject_if_request_in_flight())
+        set_reason.assert_not_called()
+        notify_mock.assert_not_called()
 
 
 if __name__ == "__main__":

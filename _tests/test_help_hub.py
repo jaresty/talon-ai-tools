@@ -60,7 +60,7 @@ def test_help_hub_cheat_sheet_includes_all_intent_tokens():
     for label, tokens in (
         ("Intent tokens (task):", buckets.get("task", [])),
         ("Intent tokens (relational):", buckets.get("relational", [])),
-        ):
+    ):
         for token in tokens:
             assert token in cheat, f"{token} missing from {label} line"
     # Ensure new intent preset keys are represented.
@@ -158,6 +158,37 @@ def test_cheat_sheet_calls_out_form_channel_defaults_and_directional_requirement
     assert "form and channel are optional singletons" in text
     assert "stance/defaults appear in quick help" in text
     assert "directional lens" in text
+
+
+def test_cheat_sheet_persona_line_uses_persona_catalog():
+    """Persona presets line should reflect the persona catalog spoken tokens."""
+    from lib.personaConfig import persona_catalog
+
+    text = helpHub._cheat_sheet_text()
+    persona_line = next(
+        (line for line in text.splitlines() if line.startswith("Persona presets:")),
+        "",
+    )
+    assert persona_line, "Persona presets line missing from cheat sheet"
+
+    # Extract spoken preset names from the line.
+    tokens = [
+        token.strip().lower()
+        for token in persona_line.split("Persona presets:", 1)[1].split("|")
+        if token.strip()
+    ]
+    line_tokens = set(tokens)
+
+    # Collect spoken tokens from the persona catalog.
+    catalog_spoken = {
+        (preset.spoken or "").strip().lower()
+        for preset in persona_catalog().values()
+        if (preset.spoken or "").strip()
+    }
+
+    # Every catalog spoken token should be present in the cheat sheet.
+    missing = catalog_spoken - line_tokens
+    assert not missing, f"Missing persona presets in cheat sheet: {sorted(missing)}"
 
 
 def test_help_hub_key_handler_swallows_keys(monkeypatch):

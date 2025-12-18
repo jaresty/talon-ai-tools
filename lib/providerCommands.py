@@ -2,14 +2,19 @@ from typing import Optional
 
 from talon import Context, Module, actions, settings
 
-from .providerCanvas import ProviderCanvasState, hide_provider_canvas, show_provider_canvas
+from .providerCanvas import (
+    ProviderCanvasState,
+    hide_provider_canvas,
+    show_provider_canvas,
+)
 from .providerRegistry import (
     AmbiguousProviderError,
     ProviderLookupError,
     provider_registry,
 )
 from .requestBus import current_state
-from .requestState import RequestPhase
+from .requestState import is_in_flight, try_start_request
+from .requestLog import drop_reason_message, set_drop_reason
 from .modelHelpers import notify
 
 try:
@@ -20,7 +25,9 @@ mod = Module()
 ctx = Context()
 
 
-def _render_provider_lines(entries: list[dict], message: Optional[str] = None) -> list[str]:
+def _render_provider_lines(
+    entries: list[dict], message: Optional[str] = None
+) -> list[str]:
     lines: list[str] = []
     if message:
         lines.append(message)
@@ -52,7 +59,9 @@ def _render_provider_lines(entries: list[dict], message: Optional[str] = None) -
             streaming = "on" if features.get("streaming", True) else "off"
             vision = "on" if features.get("vision", False) else "off"
             images = "on" if features.get("images", False) else "off"
-            lines.append(f"   caps: stream {streaming} · vision {vision} · images {images}")
+            lines.append(
+                f"   caps: stream {streaming} · vision {vision} · images {images}"
+            )
         if "streaming_enabled" in entry:
             streaming_enabled = entry.get("streaming_enabled")
             streaming_label = "on" if streaming_enabled else "off"
@@ -109,7 +118,7 @@ def _model_aliases(provider_id: str) -> dict[str, str]:
             "flash": "gemini-1.5-flash",
             "pro": "gemini-1.5-pro",
         }
-        aliases.update({ _normalize_model_key(k): v for k, v in defaults.items() })
+        aliases.update({_normalize_model_key(k): v for k, v in defaults.items()})
         try:
             extra = settings.get("user.model_provider_model_aliases_gemini", "") or ""
         except Exception:
@@ -142,7 +151,7 @@ def _model_aliases(provider_id: str) -> dict[str, str]:
             "fifth": "gpt-5",
             "g p t five": "gpt-5",
         }
-        aliases.update({ _normalize_model_key(k): v for k, v in defaults.items() })
+        aliases.update({_normalize_model_key(k): v for k, v in defaults.items()})
         try:
             extra = settings.get("user.model_provider_model_aliases_openai", "") or ""
         except Exception:
@@ -191,25 +200,38 @@ def _set_provider_model(provider_id: str, model: str) -> None:
 
 
 def _request_is_in_flight() -> bool:
-    """Return True when a GPT request is currently running."""
+    """Return True when a GPT request is currently running.
+
+    This delegates to the central ``is_in_flight`` helper so provider gating
+    stays aligned with the RequestState/RequestLifecycle contract.
+    """
     try:
-        phase = getattr(current_state(), "phase", RequestPhase.IDLE)
-        return phase not in (
-            RequestPhase.IDLE,
-            RequestPhase.DONE,
-            RequestPhase.ERROR,
-            RequestPhase.CANCELLED,
-        )
+        state = current_state()
+    except Exception:
+        return False
+    try:
+        return is_in_flight(state)  # type: ignore[arg-type]
     except Exception:
         return False
 
 
 def _reject_if_request_in_flight() -> bool:
     """Notify and return True when a GPT request is already running."""
-    if _request_is_in_flight():
-        notify(
-            "GPT: A request is already running; wait for it to finish or cancel it first."
-        )
+    try:
+        state = current_state()
+    except Exception:
+        return False
+    try:
+        allowed, reason = try_start_request(state)  # type: ignore[arg-type]
+    except Exception:
+        return False
+    if not allowed and reason == "in_flight":
+        message = drop_reason_message("in_flight")
+        try:
+            set_drop_reason("in_flight")
+        except Exception:
+            pass
+        notify(message)
         return True
     return False
 
@@ -241,7 +263,9 @@ class UserActions:
         for entry in registry.status_entries(probe=probe):
             if entry.get("id") != current:
                 continue
-            entry["streaming_enabled"] = bool(settings.get("user.model_streaming", True))
+            entry["streaming_enabled"] = bool(
+                settings.get("user.model_streaming", True)
+            )
             entries.append(entry)
         if not entries:
             lines = _render_error("No providers configured", [])
@@ -261,7 +285,9 @@ class UserActions:
             if model:
                 resolved_model = _resolve_model_alias(provider.id, model)
                 _set_provider_model(provider.id, resolved_model)
-            lines = _render_provider_lines(registry.status_entries(), f"Switched to {provider.display_name}")
+            lines = _render_provider_lines(
+                registry.status_entries(), f"Switched to {provider.display_name}"
+            )
             show_provider_canvas("Provider switched", lines)
         except AmbiguousProviderError as exc:
             lines = _render_error(
@@ -291,7 +317,9 @@ class UserActions:
 
         registry = provider_registry()
         provider = registry.cycle(direction=1)
-        lines = _render_provider_lines(registry.status_entries(), f"Switched to {provider.display_name}")
+        lines = _render_provider_lines(
+            registry.status_entries(), f"Switched to {provider.display_name}"
+        )
         show_provider_canvas("Provider switched", lines)
 
     def model_provider_previous():
@@ -302,7 +330,9 @@ class UserActions:
 
         registry = provider_registry()
         provider = registry.cycle(direction=-1)
-        lines = _render_provider_lines(registry.status_entries(), f"Switched to {provider.display_name}")
+        lines = _render_provider_lines(
+            registry.status_entries(), f"Switched to {provider.display_name}"
+        )
         show_provider_canvas("Provider switched", lines)
 
     def model_provider_close():

@@ -2,20 +2,126 @@
 
 from __future__ import annotations
 
-from typing import Optional
+from dataclasses import dataclass, field
+from types import MappingProxyType
+from typing import Mapping, Optional, Tuple
 from copy import deepcopy
+
+from .requestState import RequestDropReason
 
 try:
     from .modelHelpers import notify
 except Exception:  # pragma: no cover - defensive fallback for stubs
+
     def notify(_msg: str) -> None:
         return None
+
 
 from .axisMappings import axis_registry_tokens, axis_value_to_key_map_for
 from .axisCatalog import axis_catalog
 from .requestHistory import RequestHistory, RequestLogEntry
+
 _history = RequestHistory()
-_last_drop_reason: str = ""
+
+
+@dataclass(frozen=True)
+class DropReason:
+    code: RequestDropReason = ""
+    message: str = ""
+
+
+_last_drop_reason = DropReason()
+
+
+KNOWN_AXIS_KEYS: tuple[str, ...] = (
+    "completeness",
+    "scope",
+    "method",
+    "form",
+    "channel",
+    "directional",
+)
+
+
+@dataclass(frozen=True)
+class AxisSnapshot:
+    """Structured view of Concordance-relevant axes for history/log surfaces."""
+
+    axes: Mapping[str, Tuple[str, ...]] = field(default_factory=dict)
+    extras: Mapping[str, Tuple[str, ...]] = field(default_factory=dict)
+    legacy_style: bool = False
+
+    def __post_init__(self) -> None:
+        axes_source = self.axes or {}
+        extras_source = self.extras or {}
+        axes_map = {
+            key: tuple(str(value).strip() for value in values if str(value).strip())
+            for key, values in axes_source.items()
+        }
+        extras_map = {
+            key: tuple(str(value).strip() for value in values if str(value).strip())
+            for key, values in extras_source.items()
+        }
+        object.__setattr__(self, "axes", MappingProxyType(axes_map))
+        object.__setattr__(self, "extras", MappingProxyType(extras_map))
+
+    def get(self, key: str, default: Optional[list[str]] = None) -> Optional[list[str]]:
+        if key in self.axes:
+            return list(self.axes[key])
+        if key in self.extras:
+            return list(self.extras[key])
+        return default
+
+    def keys(self):
+        seen: set[str] = set()
+        for key in self.axes.keys():
+            seen.add(key)
+            yield key
+        for key in self.extras.keys():
+            if key not in seen:
+                yield key
+
+    def items(self):
+        yielded: set[str] = set()
+        for key, values in self.axes.items():
+            yielded.add(key)
+            yield key, list(values)
+        for key, values in self.extras.items():
+            if key not in yielded:
+                yield key, list(values)
+
+    def values(self):
+        for _key, values in self.items():
+            yield list(values)
+
+    def __contains__(self, key: object) -> bool:
+        return key in self.axes or key in self.extras
+
+    def __iter__(self):
+        return self.keys()
+
+    def __len__(self) -> int:
+        return len(set(self.axes).union(self.extras))
+
+    def as_dict(self, include_extras: bool = True) -> dict[str, list[str]]:
+        data: dict[str, list[str]] = {
+            key: list(values) for key, values in self.axes.items()
+        }
+        if include_extras:
+            for key, values in self.extras.items():
+                if key not in data:
+                    data[key] = list(values)
+        return data
+
+    def known_axes(self) -> dict[str, list[str]]:
+        """Return only Concordance-recognised axes."""
+
+        return {key: list(values) for key, values in self.axes.items()}
+
+    def extra_axes(self) -> dict[str, list[str]]:
+        """Return passthrough axis keys that are not part of the Concordance set."""
+
+        return {key: list(values) for key, values in self.extras.items()}
 
 
 def _filter_axes_payload(
@@ -38,11 +144,14 @@ def _filter_axes_payload(
     try:
         from .talonSettings import _canonicalise_axis_tokens
     except Exception:  # pragma: no cover - defensive fallback for stubs
+
         def _canonicalise_axis_tokens(axis: str, tokens: list[str]) -> list[str]:
             return tokens
+
     try:
         from .modelHelpers import notify
     except Exception:  # pragma: no cover - defensive fallback for stubs
+
         def notify(_msg: str) -> None:
             return None
 
@@ -79,7 +188,14 @@ def _filter_axes_payload(
             legacy_style = True
             continue
 
-        if axis_name in ("completeness", "scope", "method", "form", "channel", "directional"):
+        if axis_name in (
+            "completeness",
+            "scope",
+            "method",
+            "form",
+            "channel",
+            "directional",
+        ):
             mapping = axis_value_to_key_map_for(axis_name)
             known_tokens = axis_registry_tokens(axis_name)
             # Include tokens from the axis catalog and Talon lists to catch drift.
@@ -96,7 +212,11 @@ def _filter_axes_payload(
                 if known_tokens_lower and lower in known_tokens_lower:
                     kept.append(lower)
                     continue
-                if not known_tokens_lower and mapping_lower_keys and lower in mapping_lower_keys:
+                if (
+                    not known_tokens_lower
+                    and mapping_lower_keys
+                    and lower in mapping_lower_keys
+                ):
                     kept.append(lower)
             if kept:
                 if axis_name != "completeness":
@@ -115,6 +235,21 @@ def _filter_axes_payload(
     return filtered, legacy_style
 
 
+def axis_snapshot_from_axes(axes: Optional[dict[str, list[str]]]) -> AxisSnapshot:
+    """Pure helper: normalise axes into a Concordance-aligned snapshot."""
+
+    filtered, legacy_style = _filter_axes_payload(axes)
+    known_axes = {
+        key: list(values) for key, values in filtered.items() if key in KNOWN_AXIS_KEYS
+    }
+    extras = {
+        key: list(values)
+        for key, values in filtered.items()
+        if key not in KNOWN_AXIS_KEYS
+    }
+    return AxisSnapshot(axes=known_axes, extras=extras, legacy_style=legacy_style)
+
+
 def append_entry(
     request_id: str,
     prompt: str,
@@ -130,14 +265,13 @@ def append_entry(
     require_directional: bool = True,
 ) -> None:
     """Append a request entry to the bounded history ring."""
-    global _last_drop_reason
     if not request_id or not str(request_id).strip():
-        message = "GPT: History entry dropped; missing request id."
+        message = drop_reason_message("missing_request_id")
         try:
             notify(message)
         except Exception:
             pass
-        _last_drop_reason = message
+        set_drop_reason("missing_request_id")
         return
     try:
         print(
@@ -157,14 +291,14 @@ def append_entry(
             print(f"[requestLog] drop id={request_id!r} missing directional")
         except Exception:
             pass
+        message = drop_reason_message("missing_directional")
         try:
-            message = "GPT: History entry dropped; add a directional lens (fog/fig/dig/ong/rog/bog/jog) and retry."
             notify(message)
         except Exception:
-            message = ""
-        _last_drop_reason = message
+            pass
+        set_drop_reason("missing_directional")
         return
-    _last_drop_reason = ""
+    set_drop_reason("")
     _history.append(
         RequestLogEntry(
             request_id=request_id,
@@ -274,21 +408,86 @@ def all_entries():
 def clear_history() -> None:
     while len(_history):
         _history._entries.popleft()  # type: ignore[attr-defined]
+    set_drop_reason("")
+
+
+def drop_reason_message(reason: RequestDropReason) -> str:
+    """Render a user-facing drop reason message for a reason code."""
+
+    if reason == "in_flight":
+        return "GPT: A request is already running; wait for it to finish or cancel it first."
+    if reason == "missing_request_id":
+        return "GPT: History entry dropped; missing request id."
+    if reason == "missing_directional":
+        return (
+            "GPT: History entry dropped; add a directional lens "
+            "(fog/fig/dig/ong/rog/bog/jog) and retry."
+        )
+    if reason == "history_save_failed":
+        return "GPT: Failed to save history entry."
+    if reason == "history_save_no_entry":
+        return "GPT: No request history available to save."
+    if reason == "history_save_empty_prompt":
+        return "GPT: No prompt content available to save for this history entry."
+    if reason == "history_save_copy_failed":
+        return "GPT: Unable to copy history save path."
+    if reason == "history_save_open_action_unavailable":
+        return "GPT: Unable to open history save; app.open action is unavailable."
+    if reason == "history_save_open_exception":
+        return "GPT: Unable to open history save path."
+    if reason == "history_save_path_unset":
+        return "GPT: No saved history path available; run 'model history save exchange' first."
+    if reason == "history_save_path_not_found":
+        return "GPT: Saved history path not found; rerun 'model history save exchange'."
+    if reason == "history_save_dir_create_failed":
+        return "GPT: Could not create history save directory."
+    if reason == "history_save_write_failed":
+        return "GPT: Failed to write history save file."
+    if reason == "history_save_missing_directional":
+        return (
+            "GPT: Cannot save history source; entry is missing a directional lens "
+            "(fog/fig/dig/ong/rog/bog/jog)."
+        )
+    return ""
+
+
+def set_drop_reason(reason: RequestDropReason, message: str | None = None) -> None:
+    """Set the last drop reason for Concordance-facing surfaces.
+
+    Store both a structured drop reason code and the rendered message so surfaces
+    can reason about why something was blocked without parsing free-form text.
+    """
+
     global _last_drop_reason
-    _last_drop_reason = ""
+    if not reason:
+        _last_drop_reason = DropReason()
+        return
+    rendered = message if message is not None else drop_reason_message(reason)
+    _last_drop_reason = DropReason(code=reason, message=rendered)
 
 
 def last_drop_reason() -> str:
-    return _last_drop_reason
+    return _last_drop_reason.message
+
+
+def last_drop_reason_code() -> RequestDropReason:
+    return _last_drop_reason.code
 
 
 def consume_last_drop_reason() -> str:
     """Return and clear the last drop reason (consuming)."""
 
-    global _last_drop_reason
-    reason = _last_drop_reason
-    _last_drop_reason = ""
+    reason = _last_drop_reason.message
+    set_drop_reason("")
     return reason
+
+
+def consume_last_drop_reason_record() -> DropReason:
+    """Return and clear the last drop reason record (consuming)."""
+
+    record = _last_drop_reason
+    set_drop_reason("")
+    return record
 
 
 __all__ = [
@@ -298,6 +497,12 @@ __all__ = [
     "nth_from_latest",
     "all_entries",
     "clear_history",
+    "drop_reason_message",
+    "set_drop_reason",
     "last_drop_reason",
+    "last_drop_reason_code",
     "consume_last_drop_reason",
+    "consume_last_drop_reason_record",
+    "axis_snapshot_from_axes",
+    "AxisSnapshot",
 ]

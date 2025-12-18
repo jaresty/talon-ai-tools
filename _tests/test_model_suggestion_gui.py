@@ -19,6 +19,7 @@ if bootstrap is not None:
         _scroll_suggestions,
     )
     from talon_user.lib import modelSuggestionGUI
+    from talon_user.lib.requestState import RequestPhase
     import talon_user.lib.talonSettings as talonSettings
 
     class ModelSuggestionGUITests(unittest.TestCase):
@@ -38,6 +39,20 @@ if bootstrap is not None:
             # rely on the stubbed `actions.app.calls` behaviour continue to
             # work as expected.
             actions.app.notify = self._original_notify
+
+        def test_persona_presets_align_with_persona_catalog(self) -> None:
+            from talon_user.lib.personaConfig import persona_catalog
+            from talon_user.lib import modelSuggestionGUI as suggestion_module
+
+            catalog = persona_catalog()
+            helper_presets = suggestion_module._persona_presets()
+            catalog_keys = {preset.key for preset in catalog.values()}
+            helper_keys = {preset.key for preset in helper_presets}
+            self.assertEqual(
+                catalog_keys,
+                helper_keys,
+                "modelSuggestionGUI _persona_presets must cover the same PersonaPreset keys as persona_catalog",
+            )
 
         def test_run_index_executes_suggestion_and_closes_gui(self):
             GPTState.last_suggested_recipes = [
@@ -343,7 +358,7 @@ if bootstrap is not None:
         def test_reasoning_rendered_when_present(self):
             suggestion = modelSuggestionGUI.Suggestion(
                 name="With reasoning",
-                recipe="describe · gist · focus · plain · fog",
+                recipe="describe gist focus plain fog",
                 reasoning="stance: kept; intent: kept understand; axes: chose fog for scan",
             )
             canvas_obj = modelSuggestionGUI._ensure_suggestion_canvas()
@@ -361,6 +376,57 @@ if bootstrap is not None:
             draw_cb(canvas_obj)
             # Reasoning should be included in measured height and rendering path without errors.
             self.assertTrue(modelSuggestionGUI.SuggestionGUIState.suggestions)
+
+        def test_request_is_in_flight_handles_request_phases(self) -> None:
+            class State:
+                def __init__(self, phase):
+                    self.phase = phase
+
+            with patch.object(
+                modelSuggestionGUI,
+                "current_state",
+                return_value=State(RequestPhase.STREAMING),
+            ):
+                self.assertTrue(modelSuggestionGUI._request_is_in_flight())
+
+            for terminal in (
+                RequestPhase.IDLE,
+                RequestPhase.DONE,
+                RequestPhase.ERROR,
+                RequestPhase.CANCELLED,
+            ):
+                with patch.object(
+                    modelSuggestionGUI, "current_state", return_value=State(terminal)
+                ):
+                    self.assertFalse(modelSuggestionGUI._request_is_in_flight())
+
+        def test_reject_if_request_in_flight_notifies_and_blocks(self) -> None:
+            with (
+                patch.object(
+                    modelSuggestionGUI,
+                    "try_start_request",
+                    return_value=(False, "in_flight"),
+                ),
+                patch.object(modelSuggestionGUI, "current_state"),
+                patch.object(modelSuggestionGUI, "set_drop_reason") as set_reason,
+                patch.object(modelSuggestionGUI, "notify") as notify_mock,
+            ):
+                self.assertTrue(modelSuggestionGUI._reject_if_request_in_flight())
+            set_reason.assert_called_once_with("in_flight")
+            notify_mock.assert_called_once()
+
+            with (
+                patch.object(
+                    modelSuggestionGUI, "try_start_request", return_value=(True, "")
+                ),
+                patch.object(modelSuggestionGUI, "current_state"),
+                patch.object(modelSuggestionGUI, "set_drop_reason") as set_reason,
+                patch.object(modelSuggestionGUI, "notify") as notify_mock,
+            ):
+                self.assertFalse(modelSuggestionGUI._reject_if_request_in_flight())
+            set_reason.assert_not_called()
+            notify_mock.assert_not_called()
+
 
 else:
     if not TYPE_CHECKING:

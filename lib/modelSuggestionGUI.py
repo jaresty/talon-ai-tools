@@ -34,7 +34,8 @@ from .modelPatternGUI import (
     DIRECTIONAL_MAP,
 )
 from .requestBus import current_state
-from .requestState import RequestPhase
+from .requestState import RequestPhase, is_in_flight, try_start_request
+from .requestLog import drop_reason_message, set_drop_reason
 from .modelHelpers import notify
 from .stanceDefaults import stance_defaults_lines
 from .overlayHelpers import apply_canvas_blocking, clamp_scroll
@@ -114,10 +115,17 @@ _PANEL_HEIGHT = 880
 
 
 def _persona_presets():
-    """Return the latest persona presets (reload-safe)."""
+    """Return the latest persona presets (reload-safe).
+
+    Prefer the persona catalog when available so suggestions share the same
+    PersonaPreset surface as other Concordance-facing UIs.
+    """
     try:
         from . import personaConfig
 
+        catalog = getattr(personaConfig, "persona_catalog", None)
+        if callable(catalog):
+            return tuple(catalog().values())
         return tuple(getattr(personaConfig, "PERSONA_PRESETS", ()))
     except Exception:
         return ()
@@ -296,25 +304,38 @@ def _measure_suggestion_height(
 
 
 def _request_is_in_flight() -> bool:
-    """Return True when a GPT request is currently running."""
+    """Return True when a GPT request is currently running.
+
+    This delegates to the central ``is_in_flight`` helper so suggestion gating
+    stays aligned with the RequestState/RequestLifecycle contract.
+    """
     try:
-        phase = getattr(current_state(), "phase", RequestPhase.IDLE)
-        return phase not in (
-            RequestPhase.IDLE,
-            RequestPhase.DONE,
-            RequestPhase.ERROR,
-            RequestPhase.CANCELLED,
-        )
+        state = current_state()
+    except Exception:
+        return False
+    try:
+        return is_in_flight(state)  # type: ignore[arg-type]
     except Exception:
         return False
 
 
 def _reject_if_request_in_flight() -> bool:
     """Notify and return True when a GPT request is already running."""
-    if _request_is_in_flight():
-        notify(
-            "GPT: A request is already running; wait for it to finish or cancel it first."
-        )
+    try:
+        state = current_state()
+    except Exception:
+        return False
+    try:
+        allowed, reason = try_start_request(state)  # type: ignore[arg-type]
+    except Exception:
+        return False
+    if not allowed and reason == "in_flight":
+        message = drop_reason_message("in_flight")
+        try:
+            set_drop_reason("in_flight")
+        except Exception:
+            pass
+        notify(message)
         return True
     return False
 

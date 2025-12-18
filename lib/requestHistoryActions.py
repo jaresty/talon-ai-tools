@@ -13,12 +13,16 @@ from .requestLog import (
     latest,
     nth_from_latest,
     all_entries as requestlog_all_entries,
+    consume_last_drop_reason_record,
+    drop_reason_message,
     last_drop_reason,
+    set_drop_reason,
+    axis_snapshot_from_axes as requestlog_axis_snapshot_from_axes,
+    AxisSnapshot,
 )
 from .requestBus import current_state, emit_history_saved
-from .axisMappings import axis_key_to_value_map_for
 from .axisCatalog import axis_catalog
-from .requestState import RequestPhase
+from .requestState import RequestPhase, is_in_flight, try_start_request
 from .talonSettings import _canonicalise_axis_tokens
 
 mod = Module()
@@ -26,26 +30,49 @@ mod = Module()
 _cursor_offset = 0
 
 
+def axis_snapshot_from_axes(axes: dict[str, list[str]] | None) -> AxisSnapshot:
+    """Build a Concordance-aligned axis snapshot for history.
+
+    Delegate to the request log snapshot builder so history and log surfaces use
+    a single normalisation contract.
+    """
+    return requestlog_axis_snapshot_from_axes(axes or {})
+
+
 def _request_is_in_flight() -> bool:
-    """Return True when a GPT request is currently running."""
+    """Return True when a GPT request is currently running.
+
+    This delegates to the central ``is_in_flight`` helper so gating semantics
+    stay aligned across RequestState and GUI/history callers.
+    """
     try:
-        phase = getattr(current_state(), "phase", RequestPhase.IDLE)
-        return phase not in (
-            RequestPhase.IDLE,
-            RequestPhase.DONE,
-            RequestPhase.ERROR,
-            RequestPhase.CANCELLED,
-        )
+        state = current_state()
+    except Exception:
+        return False
+    try:
+        return is_in_flight(state)  # type: ignore[arg-type]
     except Exception:
         return False
 
 
 def _reject_if_request_in_flight() -> bool:
     """Notify and return True when a GPT request is already running."""
-    if _request_is_in_flight():
-        notify(
-            "GPT: A request is already running; wait for it to finish or cancel it first."
-        )
+    try:
+        state = current_state()
+    except Exception:
+        return False
+    try:
+        allowed, reason = try_start_request(state)  # type: ignore[arg-type]
+    except Exception:
+        return False
+    if not allowed and reason == "in_flight":
+        message = drop_reason_message("in_flight")
+        try:
+            set_drop_reason("in_flight")
+        except Exception:
+            pass
+
+        notify(message)
         return True
     return False
 
@@ -67,7 +94,8 @@ def _notify_with_drop_reason(fallback: str, *, use_drop_reason: bool) -> None:
 
     if use_drop_reason:
         try:
-            reason = last_drop_reason()
+            record = consume_last_drop_reason_record()
+            reason = record.message
         except Exception:
             reason = ""
         if reason:
@@ -82,56 +110,25 @@ def _notify_with_drop_reason(fallback: str, *, use_drop_reason: bool) -> None:
         pass
 
 
-def _filter_axis_tokens(axis: str, tokens: list[str]) -> list[str]:
-    """Filter history axis tokens against the known axis map.
-
-    This helper centralises the token filtering semantics used when hydrating
-    GPTState from history entries so tests and future RequestLifecycle/History
-    façades can treat it as a single contract.
-    """
-    valid = axis_key_to_value_map_for(axis)
-    return [t for t in tokens if t in valid]
-
-
 def history_axes_for(axes: dict[str, list[str]]) -> dict[str, list[str]]:
-    """Pure helper: normalise stored history axes via the axis map.
+    """Pure helper: return the canonical axis snapshot for history.
 
-    This centralises how history entries' axis tokens are filtered against the
-    configured axis keys so RequestLifecycle/HistoryQuery façades and tests
-    can reuse it without depending on GPTState.
+    This is a thin wrapper over ``axis_snapshot_from_axes`` that trims the
+    snapshot down to the known axis keys used by history drawers/saves.
+
+    Keeping this wrapper (rather than duplicating filtering logic) ensures
+    history callers and tests stay aligned with the request-log axis snapshot
+    contract.
     """
-    axes = axes or {}
-    catalog = axis_catalog()
-    catalog_tokens = {
-        axis: set((tokens or {}).keys())
-        for axis, tokens in (catalog.get("axes") or {}).items()
-    }
-    filtered_completeness = _filter_axis_tokens(
-        "completeness", list(axes.get("completeness", []) or [])
-    )
-    filtered_scope = _filter_axis_tokens("scope", list(axes.get("scope", []) or []))
-    filtered_method = _filter_axis_tokens("method", list(axes.get("method", []) or []))
-    filtered_form = _filter_axis_tokens("form", list(axes.get("form", []) or []))
-    filtered_channel = _filter_axis_tokens(
-        "channel", list(axes.get("channel", []) or [])
-    )
-    filtered_directional = [
-        t
-        for t in _filter_axis_tokens(
-            "directional", list(axes.get("directional", []) or [])
-        )
-        if t in catalog_tokens.get("directional", set())
-    ]
 
+    snapshot = axis_snapshot_from_axes(axes or {})
     return {
-        # Completeness remains scalar; leave ordering intact.
-        "completeness": filtered_completeness,
-        # Apply the shared canonicalisation (caps and dedupe) for the remaining axes.
-        "scope": _canonicalise_axis_tokens("scope", filtered_scope),
-        "method": _canonicalise_axis_tokens("method", filtered_method),
-        "form": _canonicalise_axis_tokens("form", filtered_form),
-        "channel": _canonicalise_axis_tokens("channel", filtered_channel),
-        "directional": _canonicalise_axis_tokens("directional", filtered_directional),
+        "completeness": list(snapshot.get("completeness", []) or []),
+        "scope": list(snapshot.get("scope", []) or []),
+        "method": list(snapshot.get("method", []) or []),
+        "form": list(snapshot.get("form", []) or []),
+        "channel": list(snapshot.get("channel", []) or []),
+        "directional": list(snapshot.get("directional", []) or []),
     }
 
 
@@ -197,7 +194,8 @@ def history_summary_lines(entries: Sequence[object]) -> list[str]:
         label = request_id if not dur else f"{request_id} ({dur})"
         recipe = (getattr(entry, "recipe", "") or "").strip()
         if axes:
-            axes_tokens = history_axes_for(axes)
+            snapshot = axis_snapshot_from_axes(axes)
+            axes_tokens = snapshot.known_axes()
             recipe_parts = recipe.split(" · ") if recipe else []
             static_token = recipe_parts[0] if recipe_parts else ""
             comp = " ".join(axes_tokens.get("completeness", [])) or (
@@ -230,7 +228,11 @@ def history_summary_lines(entries: Sequence[object]) -> list[str]:
         payload = " · ".join(parts) if parts else prompt_snippet
         provider_id = (getattr(entry, "provider_id", "") or "").strip()
         if provider_id:
-            payload = f"{payload} · provider={provider_id}" if payload else f"provider={provider_id}"
+            payload = (
+                f"{payload} · provider={provider_id}"
+                if payload
+                else f"provider={provider_id}"
+            )
         lines.append(f"{idx}: {label} | {payload}")
     return lines
 
@@ -244,34 +246,76 @@ def _save_history_prompt_to_file(entry) -> Optional[str]:
     """
     _clear_notify_suppression()
     if entry is None:
-        notify("GPT: No request history available to save")
+        message = "GPT: No request history available to save"
+        notify(message)
+        try:
+            set_drop_reason("history_save_no_entry", message)
+        except Exception:
+            pass
         try:
             GPTState.last_history_save_path = ""  # type: ignore[attr-defined]
         except Exception:
             pass
+        # Best-effort: record the failure on the latest streaming session so the
+        # lifecycle event stream captures no-entry outcomes too.
+        try:
+            session = getattr(GPTState, "last_streaming_session", None)
+            if session is not None and hasattr(session, "record_history_saved"):
+                session.record_history_saved("", success=False, error=message)
+        except Exception:
+            pass
         return None
+
+    request_id = getattr(entry, "request_id", "") or ""
+
+    def _record_history_save_event(
+        *, success: bool, path: str = "", error: str = ""
+    ) -> None:
+        try:
+            session = getattr(GPTState, "last_streaming_session", None)
+            if session is None:
+                return
+            if getattr(session, "request_id", "") != request_id:
+                return
+            if not hasattr(session, "record_history_saved"):
+                return
+            session.record_history_saved(path, success=success, error=error)
+        except Exception:
+            pass
 
     prompt = (getattr(entry, "prompt", "") or "").strip()
     response = (getattr(entry, "response", "") or "").strip()
     meta = (getattr(entry, "meta", "") or "").strip()
 
     if not prompt:
-        notify("GPT: No prompt content available to save for this history entry")
+        message = "GPT: No prompt content available to save for this history entry"
+        notify(message)
+        try:
+            set_drop_reason("history_save_empty_prompt", message)
+        except Exception:
+            pass
         try:
             GPTState.last_history_save_path = ""  # type: ignore[attr-defined]
         except Exception:
             pass
+        _record_history_save_event(success=False, error=message)
         return None
 
     base_dir = os.path.realpath(os.path.abspath(_model_source_save_dir()))
     try:
         os.makedirs(base_dir, exist_ok=True)
     except Exception as exc:
-        notify(f"GPT: Could not create source directory: {exc}")
+        message = f"GPT: Could not create source directory: {exc}"
+        notify(message)
+        try:
+            set_drop_reason("history_save_dir_create_failed", message)
+        except Exception:
+            pass
         try:
             GPTState.last_history_save_path = ""  # type: ignore[attr-defined]
         except Exception:
             pass
+        _record_history_save_event(success=False, error=message)
         return None
 
     now = datetime.datetime.utcnow()
@@ -280,7 +324,6 @@ def _save_history_prompt_to_file(entry) -> Optional[str]:
     provider_id = (getattr(entry, "provider_id", "") or "").strip()
 
     slug_parts: list[str] = ["history"]
-    request_id = getattr(entry, "request_id", "") or ""
     if request_id:
         slug_parts.append(_slugify_label(str(request_id)))
     if provider_id:
@@ -291,25 +334,32 @@ def _save_history_prompt_to_file(entry) -> Optional[str]:
         slug_parts.append(_slugify_label(recipe.split(" · ", 1)[0]))
     # Include directional axis tokens when present to make the slug more
     # self-describing for catalog-aligned history saves.
-    normalized_axes = history_axes_for(getattr(entry, "axes", {}) or {})
-    dir_tokens = normalized_axes.get("directional") or []
+    snapshot = axis_snapshot_from_axes(getattr(entry, "axes", {}) or {})
+    axes_map = {key: list(values) for key, values in snapshot.known_axes().items()}
+    dir_tokens = list(axes_map.get("directional", []) or [])
     if not dir_tokens:
         # Fall back to recipe-derived directional tokens so history saves remain
         # navigable even when axes payloads are missing direction.
         dir_tokens = _directional_tokens_for_entry(entry)
         if dir_tokens:
-            normalized_axes = dict(normalized_axes)
-            normalized_axes["directional"] = _canonicalise_axis_tokens(
+            axes_map["directional"] = _canonicalise_axis_tokens(
                 "directional", dir_tokens
             )
     if not dir_tokens:
-        notify(
-            "GPT: Cannot save history source; entry is missing a directional lens (fog/fig/dig/ong/rog/bog/jog)."
+        message = (
+            "GPT: Cannot save history source; entry is missing a directional lens "
+            "(fog/fig/dig/ong/rog/bog/jog)."
         )
+        notify(message)
+        try:
+            set_drop_reason("history_save_missing_directional", message)
+        except Exception:
+            pass
         try:
             GPTState.last_history_save_path = ""  # type: ignore[attr-defined]
         except Exception:
             pass
+        _record_history_save_event(success=False, error=message)
         return None
     for token in dir_tokens:
         slug_parts.append(_slugify_label(str(token)))
@@ -337,7 +387,7 @@ def _save_history_prompt_to_file(entry) -> Optional[str]:
         header_lines.append(f"provider_id: {provider_id}")
     if recipe:
         header_lines.append(f"recipe: {recipe}")
-    axes = normalized_axes
+    axes = axes_map
     for axis in ("completeness", "scope", "method", "form", "channel", "directional"):
         tokens = axes.get(axis) or []
         if isinstance(tokens, list) and tokens:
@@ -359,11 +409,17 @@ def _save_history_prompt_to_file(entry) -> Optional[str]:
         with open(path, "w", encoding="utf-8") as f:
             f.write(content)
     except Exception as exc:
-        notify(f"GPT: Failed to save history source file: {exc}")
+        message = f"GPT: Failed to save history source file: {exc}"
+        notify(message)
+        try:
+            set_drop_reason("history_save_write_failed", message)
+        except Exception:
+            pass
         try:
             GPTState.last_history_save_path = ""  # type: ignore[attr-defined]
         except Exception:
             pass
+        _record_history_save_event(success=False, path=path, error=message)
         return None
 
     notify(f"GPT: Saved history to {path}")
@@ -375,6 +431,9 @@ def _save_history_prompt_to_file(entry) -> Optional[str]:
         emit_history_saved(path, getattr(entry, "request_id", None))
     except Exception:
         pass
+
+    _record_history_save_event(success=True, path=path)
+
     return path
 
 
@@ -385,7 +444,9 @@ def _directional_tokens_for_entry(entry) -> list[str]:
     if isinstance(axes, dict) and axes.get("directional"):
         raw = axes.get("directional") or []
         try:
-            known = set((axis_catalog().get("axes") or {}).get("directional", {}).keys())
+            known = set(
+                (axis_catalog().get("axes") or {}).get("directional", {}).keys()
+            )
         except Exception:
             known = set()
         canon = []
@@ -432,11 +493,12 @@ def _show_entry(entry) -> bool:
     provider_id = (getattr(entry, "provider_id", "") or "").strip()
     raw_recipe = (getattr(entry, "recipe", "") or "").strip()
     axes_payload = getattr(entry, "axes", None)
-    normalized_axes = (
-        history_axes_for(axes_payload or {})
-        if isinstance(axes_payload, dict) and axes_payload
-        else None
-    )
+    if isinstance(axes_payload, dict):
+        snapshot = axis_snapshot_from_axes(axes_payload or {})
+    else:
+        snapshot = axis_snapshot_from_axes({})
+    normalized_axes = snapshot.known_axes()
+
     parsed_recipe_fields = None
     if raw_recipe:
         try:
@@ -453,7 +515,11 @@ def _show_entry(entry) -> bool:
     directional_tokens: list[str] = []
     if normalized_axes is not None:
         directional_tokens = normalized_axes.get("directional", []) or []
-    if not directional_tokens and parsed_recipe_fields and len(parsed_recipe_fields) >= 7:
+    if (
+        not directional_tokens
+        and parsed_recipe_fields
+        and len(parsed_recipe_fields) >= 7
+    ):
         directional_tokens = (parsed_recipe_fields[6] or "").split()
     if not directional_tokens:
         notify(
@@ -496,17 +562,27 @@ def _show_entry(entry) -> bool:
         parsed_channel = parsed_recipe_fields[5] if parsed_recipe_fields else ""
 
         merged_axes = {
-            "completeness": normalized_axes.get("completeness") or ([parsed_completeness] if parsed_completeness else []),
-            "scope": normalized_axes.get("scope") or (parsed_scope.split() if parsed_scope else []),
-            "method": normalized_axes.get("method") or (parsed_method.split() if parsed_method else []),
-            "form": normalized_axes.get("form") or (parsed_form.split() if parsed_form else []),
-            "channel": normalized_axes.get("channel") or (parsed_channel.split() if parsed_channel else []),
-            "directional": normalized_axes.get("directional") or (directional_tokens if directional_tokens else []),
+            "completeness": normalized_axes.get("completeness")
+            or ([parsed_completeness] if parsed_completeness else []),
+            "scope": normalized_axes.get("scope")
+            or (parsed_scope.split() if parsed_scope else []),
+            "method": normalized_axes.get("method")
+            or (parsed_method.split() if parsed_method else []),
+            "form": normalized_axes.get("form")
+            or (parsed_form.split() if parsed_form else []),
+            "channel": normalized_axes.get("channel")
+            or (parsed_channel.split() if parsed_channel else []),
+            "directional": normalized_axes.get("directional")
+            or (directional_tokens if directional_tokens else []),
         }
         GPTState.last_axes = merged_axes
 
-        GPTState.last_static_prompt = (raw_recipe.split(" · ")[0] if raw_recipe else "") or parsed_static
-        GPTState.last_completeness = " ".join(merged_axes.get("completeness", [])).strip()
+        GPTState.last_static_prompt = (
+            raw_recipe.split(" · ")[0] if raw_recipe else ""
+        ) or parsed_static
+        GPTState.last_completeness = " ".join(
+            merged_axes.get("completeness", [])
+        ).strip()
         GPTState.last_scope = " ".join(merged_axes.get("scope", [])).strip()
         GPTState.last_method = " ".join(merged_axes.get("method", [])).strip()
         GPTState.last_form = " ".join(merged_axes.get("form", [])).strip()
@@ -528,7 +604,9 @@ def _show_entry(entry) -> bool:
 
     elif getattr(entry, "recipe", None):
         GPTState.last_recipe = raw_recipe
-        static_prompt = completeness = scope = method = form = channel = directional = ""
+        static_prompt = completeness = scope = method = form = channel = directional = (
+            ""
+        )
         if parsed_recipe_fields and len(parsed_recipe_fields) >= 7:
             (
                 static_prompt,
@@ -597,15 +675,9 @@ class UserActions:
         entry = entries[-1] if entries else None
         _cursor_offset = 0
         if entry is None:
-            reason = ""
-            try:
-                reason = last_drop_reason()
-            except Exception:
-                reason = ""
-            if reason:
-                notify(reason)
-            else:
-                notify("GPT: No request history available")
+            _notify_with_drop_reason(
+                "GPT: No request history available", use_drop_reason=True
+            )
             return
         _show_entry(entry)
 
@@ -677,29 +749,16 @@ class UserActions:
         except Exception:
             entries = []
         if not entries:
-            drop_reason = ""
-            try:
-                drop_reason = last_drop_reason()
-            except Exception:
-                drop_reason = ""
-            if drop_reason:
-                notify(drop_reason)
-            else:
-                notify("GPT: No request history available")
+            _notify_with_drop_reason(
+                "GPT: No request history available", use_drop_reason=True
+            )
             return
         lines = history_summary_lines(entries)
         if not lines:
-            drop_reason = ""
-            try:
-                drop_reason = last_drop_reason()
-            except Exception:
-                drop_reason = ""
-            if drop_reason:
-                notify(drop_reason)
-            else:
-                notify(
-                    "GPT: No history entries include a directional lens; replay requires fog/fig/dig/ong/rog/bog/jog."
-                )
+            _notify_with_drop_reason(
+                "GPT: No history entries include a directional lens; replay requires fog/fig/dig/ong/rog/bog/jog.",
+                use_drop_reason=True,
+            )
             return
         message = "Recent model requests:\n" + "\n".join(lines)
         notify(message)
@@ -720,7 +779,14 @@ class UserActions:
         """Return the last saved history source path or notify when unavailable."""
         if _reject_if_request_in_flight():
             return None
-        return _last_history_save_path()
+        path = _last_history_save_path()
+        if not path:
+            return None
+        try:
+            set_drop_reason("")
+        except Exception:
+            pass
+        return path
 
     def gpt_request_history_copy_last_save_path():
         """Copy the last saved history source path to the clipboard."""
@@ -735,12 +801,21 @@ class UserActions:
             try:
                 actions.user.paste(path)  # type: ignore[attr-defined]
             except Exception:
-                notify(f"GPT: Unable to copy path: {path}")
+                message = f"GPT: Unable to copy path: {path}"
+                notify(message)
+                try:
+                    set_drop_reason("history_save_copy_failed", message)
+                except Exception:
+                    pass
                 try:
                     GPTState.last_history_save_path = ""  # type: ignore[attr-defined]
                 except Exception:
                     pass
                 return None
+        try:
+            set_drop_reason("")
+        except Exception:
+            pass
         notify(f"GPT: Copied history save path: {path}")
         return path
 
@@ -752,7 +827,12 @@ class UserActions:
         if not path:
             return None
         if not os.path.exists(path):
-            notify(f"GPT: Saved history file not found: {path}")
+            message = f"GPT: Saved history file not found: {path}"
+            notify(message)
+            try:
+                set_drop_reason("history_save_path_not_found", message)
+            except Exception:
+                pass
             try:
                 GPTState.last_history_save_path = ""  # type: ignore[attr-defined]
             except Exception:
@@ -763,15 +843,31 @@ class UserActions:
             try:
                 open_action(path)
             except Exception as exc:
-                notify(f"GPT: Unable to open history save: {exc}")
+                message = f"GPT: Unable to open history save: {exc}"
+                notify(message)
+                try:
+                    set_drop_reason("history_save_open_exception", message)
+                except Exception:
+                    pass
                 try:
                     GPTState.last_history_save_path = ""  # type: ignore[attr-defined]
                 except Exception:
                     pass
                 return None
         else:
-            notify("GPT: Unable to open history save; app.open action is unavailable.")
+            message = (
+                "GPT: Unable to open history save; app.open action is unavailable."
+            )
+            notify(message)
+            try:
+                set_drop_reason("history_save_open_action_unavailable", message)
+            except Exception:
+                pass
             return path
+        try:
+            set_drop_reason("")
+        except Exception:
+            pass
         notify(f"GPT: Opened history save: {path}")
         return path
 
@@ -782,6 +878,10 @@ class UserActions:
         path = _last_history_save_path()
         if not path:
             return None
+        try:
+            set_drop_reason("")
+        except Exception:
+            pass
         notify(f"GPT: Last saved history path: {path}")
         return path
 
@@ -793,13 +893,21 @@ def _last_history_save_path() -> Optional[str]:
     except Exception:
         path = ""
     if not path:
-        notify("GPT: No saved history path available; run 'model history save exchange' first")
+        message = "GPT: No saved history path available; run 'model history save exchange' first"
+        notify(message)
+        try:
+            set_drop_reason("history_save_path_unset", message)
+        except Exception:
+            pass
         return None
     real_path = os.path.realpath(path)
     if not os.path.exists(real_path) or not os.path.isfile(real_path):
-        notify(
-            f"GPT: Saved history path not found: {real_path}; rerun 'model history save exchange'"
-        )
+        message = f"GPT: Saved history path not found: {real_path}; rerun 'model history save exchange'"
+        notify(message)
+        try:
+            set_drop_reason("history_save_path_not_found", message)
+        except Exception:
+            pass
         try:
             GPTState.last_history_save_path = ""  # type: ignore[attr-defined]
         except Exception:

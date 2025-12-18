@@ -9,7 +9,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from enum import Enum
-from typing import Optional, Any
+from typing import Optional, Any, Literal
 
 from .requestLifecycle import RequestLifecycleState, RequestStatus
 
@@ -187,6 +187,54 @@ def lifecycle_status_for(state: RequestState) -> RequestLifecycleState:
     return RequestLifecycleState(status=status)
 
 
+def is_in_flight(state: RequestState) -> bool:
+    """Return True when the request is currently in flight.
+
+    For gating decisions, treat idle/done/error/cancelled as non in-flight so
+    follow-up commands are allowed once a request reaches a terminal phase.
+    """
+
+    phase = state.phase
+    return phase not in (
+        RequestPhase.IDLE,
+        RequestPhase.DONE,
+        RequestPhase.ERROR,
+        RequestPhase.CANCELLED,
+    )
+
+
+RequestDropReason = Literal[
+    "",
+    "in_flight",
+    "missing_request_id",
+    "missing_directional",
+    "history_save_failed",
+    "history_save_no_entry",
+    "history_save_empty_prompt",
+    "history_save_copy_failed",
+    "history_save_open_action_unavailable",
+    "history_save_open_exception",
+    "history_save_path_unset",
+    "history_save_path_not_found",
+    "history_save_dir_create_failed",
+    "history_save_write_failed",
+    "history_save_missing_directional",
+]
+
+
+def try_start_request(state: RequestState) -> tuple[bool, RequestDropReason]:
+    """Return whether a new request may start.
+
+    This is a thin, testable façade over ``is_in_flight`` that callers can use
+    to centralise drop reasons (for example, "in_flight") instead of duplicating
+    phase checks.
+    """
+
+    if is_in_flight(state):
+        return False, "in_flight"
+    return True, ""
+
+
 __all__ = [
     "RequestPhase",
     "Surface",
@@ -194,5 +242,8 @@ __all__ = [
     "RequestEvent",
     "RequestState",
     "transition",
+    "is_in_flight",
+    "try_start_request",
+    "RequestDropReason",
     "lifecycle_status_for",
 ]

@@ -9,6 +9,7 @@ else:
     bootstrap()
 
 if bootstrap is not None:
+
     class VoiceAudienceToneIntentListTests(unittest.TestCase):
         def setUp(self) -> None:
             from lib.personaConfig import PERSONA_KEY_TO_VALUE
@@ -127,6 +128,10 @@ if bootstrap is not None:
                 INTENT_BUCKETS,
                 INTENT_SPOKEN_TO_CANONICAL,
                 PERSONA_KEY_TO_VALUE,
+                PERSONA_PRESETS,
+                INTENT_PRESETS,
+                persona_catalog,
+                intent_catalog,
             )
 
             canonical_tokens = set(PERSONA_KEY_TO_VALUE["intent"].keys())
@@ -144,6 +149,59 @@ if bootstrap is not None:
             )
             self.assertIn("understand", canonical_tokens)
             self.assertIn("understand", spoken_canonical)
+
+            # Persona and intent presets should align with the persona maps.
+            voice_keys = set(PERSONA_KEY_TO_VALUE["voice"].keys())
+            audience_keys = set(PERSONA_KEY_TO_VALUE["audience"].keys())
+            tone_keys = set(PERSONA_KEY_TO_VALUE["tone"].keys())
+
+            for preset in PERSONA_PRESETS:
+                if preset.voice:
+                    self.assertIn(
+                        preset.voice,
+                        voice_keys,
+                        f"Persona preset {preset.key!r} uses unknown voice {preset.voice!r}",
+                    )
+                if preset.audience:
+                    self.assertIn(
+                        preset.audience,
+                        audience_keys,
+                        f"Persona preset {preset.key!r} uses unknown audience {preset.audience!r}",
+                    )
+                if preset.tone:
+                    self.assertIn(
+                        preset.tone,
+                        tone_keys,
+                        f"Persona preset {preset.key!r} uses unknown tone {preset.tone!r}",
+                    )
+
+            for preset in INTENT_PRESETS:
+                self.assertIn(
+                    preset.intent,
+                    canonical_tokens,
+                    f"Intent preset {preset.key!r} uses unknown intent {preset.intent!r}",
+                )
+
+            # Persona/intent catalogs should round-trip all presets by key.
+            persona_map = persona_catalog()
+            preset_persona_keys = {preset.key for preset in PERSONA_PRESETS}
+            self.assertEqual(set(persona_map.keys()), preset_persona_keys)
+            for key, preset in persona_map.items():
+                self.assertEqual(
+                    key,
+                    preset.key,
+                    f"persona_catalog entry for {key!r} must expose matching preset.key",
+                )
+
+            intent_map = intent_catalog()
+            preset_intent_keys = {preset.key for preset in INTENT_PRESETS}
+            self.assertEqual(set(intent_map.keys()), preset_intent_keys)
+            for key, preset in intent_map.items():
+                self.assertEqual(
+                    key,
+                    preset.key,
+                    f"intent_catalog entry for {key!r} must expose matching preset.key",
+                )
 
 else:
     if not TYPE_CHECKING:

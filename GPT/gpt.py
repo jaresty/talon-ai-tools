@@ -158,7 +158,7 @@ from ..lib.suggestionCoordinator import (
 
 # Backward-compatible alias for directional map used during parsing.
 DIRECTIONAL_MAP = _DIRECTIONAL_MAP
-from ..lib.requestState import RequestPhase
+from ..lib.requestState import RequestPhase, is_in_flight, try_start_request
 from ..lib.requestBus import (
     emit_begin_send,
     emit_cancel,
@@ -167,6 +167,7 @@ from ..lib.requestBus import (
     current_state,
     set_controller,
 )
+from ..lib.requestLog import drop_reason_message, set_drop_reason
 from ..lib.requestController import RequestUIController
 
 # Ensure a default request UI controller is registered so cancel events have a sink.
@@ -233,7 +234,11 @@ def _canonical_persona_value(axis: str, raw: str) -> str:
 def _suggest_context_snapshot(sys_prompt) -> dict[str, str]:
     """Return canonical persona/intent + contract defaults for suggest."""
 
-    def _val(attr: str, canonical_axis: Optional[str] = None, persona_axis: Optional[str] = None) -> str:
+    def _val(
+        attr: str,
+        canonical_axis: Optional[str] = None,
+        persona_axis: Optional[str] = None,
+    ) -> str:
         if not sys_prompt:
             return ""
         raw = str(getattr(sys_prompt, attr, "") or "").strip()
@@ -366,7 +371,7 @@ def _suggest_prompt_text(
         "- persona_voice / persona_audience / persona_tone / intent_purpose:\n"
         "  optional Persona/Intent axis tokens (Who/Why) using ONLY the values\n"
         "  from the Persona/Intent token lists below. Leave as an empty string\n"
-        '  (\"\") when you cannot reasonably express the stance with these tokens.\n'
+        '  ("") when you cannot reasonably express the stance with these tokens.\n'
         "- The stance/defaults above were provided with this request. Prefer keeping\n"
         "  them. Only change persona_voice/persona_audience/persona_tone/\n"
         "  intent_purpose when it clearly improves the subject, and justify every\n"
@@ -464,23 +469,38 @@ mod.tag(
     desc="Tag for enabling the model window commands when the window is open",
 )
 
+
 def _persona_presets():
-    """Return the latest persona presets (reload-safe)."""
+    """Return the latest persona presets (reload-safe).
+
+    Prefer the persona catalog when available so GPT actions share the same
+    PersonaPreset surface as other Concordance-facing UIs.
+    """
 
     try:
         from ..lib import personaConfig
 
+        catalog = getattr(personaConfig, "persona_catalog", None)
+        if callable(catalog):
+            return tuple(catalog().values())
         return tuple(getattr(personaConfig, "PERSONA_PRESETS", ()))
     except Exception:
         return ()
 
 
 def _intent_presets():
-    """Return the latest intent presets (reload-safe)."""
+    """Return the latest intent presets (reload-safe).
+
+    Prefer the intent catalog when available so GPT actions share the same
+    IntentPreset surface as other Concordance-facing UIs.
+    """
 
     try:
         from ..lib import personaConfig
 
+        catalog = getattr(personaConfig, "intent_catalog", None)
+        if callable(catalog):
+            return tuple(catalog().values())
         return tuple(getattr(personaConfig, "INTENT_PRESETS", ()))
     except Exception:
         return ()
@@ -532,6 +552,7 @@ def _refresh_persona_intent_lists() -> None:
         pass
     return None
 
+
 mod.list("personaPreset", desc="Persona (Who) presets for GPT stance")
 mod.list("intentPreset", desc="Intent (Why) presets for GPT stance")
 
@@ -549,18 +570,17 @@ _suppress_inflight_notify_request_id = None
 
 
 def _request_is_in_flight() -> bool:
-    """Return True when a GPT request is already running."""
+    """Return True when a GPT request is already running.
+
+    This delegates to the central ``is_in_flight`` helper so GPT gating matches
+    the RequestState/RequestLifecycle contract used by other callers.
+    """
     try:
-        phase = getattr(current_state(), "phase", RequestPhase.IDLE)
-        # Treat terminal phases as idle so follow-up requests are allowed.
-        if phase in (
-            RequestPhase.IDLE,
-            RequestPhase.DONE,
-            RequestPhase.ERROR,
-            RequestPhase.CANCELLED,
-        ):
-            return False
-        return phase != RequestPhase.IDLE
+        state = current_state()
+    except Exception:
+        return False
+    try:
+        return is_in_flight(state)  # type: ignore[arg-type]
     except Exception:
         return False
 
@@ -572,7 +592,9 @@ def _reject_if_request_in_flight() -> bool:
 
     suppress_id = _suppress_inflight_notify_request_id
     try:
-        suppress_id = suppress_id or getattr(GPTState, "suppress_inflight_notify_request_id", None)
+        suppress_id = suppress_id or getattr(
+            GPTState, "suppress_inflight_notify_request_id", None
+        )
     except Exception:
         pass
 
@@ -582,25 +604,30 @@ def _reject_if_request_in_flight() -> bool:
         state = None
 
     try:
-        phase = getattr(state, "phase", RequestPhase.IDLE)
+        allowed, reason = try_start_request(state)  # type: ignore[arg-type]
+    except Exception:
+        allowed, reason = True, ""
+
+    try:
         request_id = getattr(state, "request_id", None)
     except Exception:
-        phase = RequestPhase.IDLE
         request_id = None
 
-    if phase in (
-        RequestPhase.IDLE,
-        RequestPhase.DONE,
-        RequestPhase.ERROR,
-        RequestPhase.CANCELLED,
-    ):
+    if allowed:
         _last_inflight_warning_request_id = None
         _suppress_inflight_notify_request_id = None
         try:
-            if suppress_id and getattr(GPTState, "suppress_inflight_notify_request_id", None) == suppress_id:
+            if (
+                suppress_id
+                and getattr(GPTState, "suppress_inflight_notify_request_id", None)
+                == suppress_id
+            ):
                 GPTState.suppress_inflight_notify_request_id = None
         except Exception:
             pass
+        return False
+
+    if reason != "in_flight":
         return False
 
     if request_id is None:
@@ -615,7 +642,12 @@ def _reject_if_request_in_flight() -> bool:
     if request_id == _last_inflight_warning_request_id:
         return True
 
-    notify("GPT: A request is already running; wait for it to finish or cancel it first.")
+    message = drop_reason_message("in_flight")
+    try:
+        set_drop_reason("in_flight")
+    except Exception:
+        pass
+    notify(message)
     _last_inflight_warning_request_id = request_id
     return True
 
@@ -1520,7 +1552,12 @@ class UserActions:
         last_context = getattr(GPTState, "last_suggest_context", {}) or {}
         last_recipes = getattr(GPTState, "last_suggested_recipes", []) or []
         cached_content = getattr(GPTState, "last_suggest_content", "") or ""
-        if not cached_content and not last_subject and not last_context and not last_recipes:
+        if (
+            not cached_content
+            and not last_subject
+            and not last_context
+            and not last_recipes
+        ):
             notify("GPT: No previous suggestions to rerun")
             return
 
@@ -1749,8 +1786,8 @@ class UserActions:
             return
         preset_name = name.strip().lower()
         axes = getattr(GPTState, "last_axes", {}) or {}
-        dest_kind = (
-            getattr(GPTState, "current_destination_kind", "") or settings.get("user.model_default_destination")
+        dest_kind = getattr(GPTState, "current_destination_kind", "") or settings.get(
+            "user.model_default_destination"
         )
         sys = getattr(GPTState, "system_prompt", None)
         _PRESETS[preset_name] = {
@@ -1818,7 +1855,18 @@ class UserActions:
             "directional": directional_tokens,
         }
         # Compose a concise recipe for recap surfaces.
-        recipe_parts = [p for p in (static_prompt, completeness, " ".join(scope), " ".join(method), " ".join(form_tokens), " ".join(channel_tokens)) if p]
+        recipe_parts = [
+            p
+            for p in (
+                static_prompt,
+                completeness,
+                " ".join(scope),
+                " ".join(method),
+                " ".join(form_tokens),
+                " ".join(channel_tokens),
+            )
+            if p
+        ]
         GPTState.last_recipe = " · ".join(recipe_parts)
         UserActions.gpt_rerun_last_recipe(
             static_prompt,
@@ -1971,7 +2019,8 @@ class UserActions:
         )
         new_channel = _axis_tokens_to_string(merged_channel_tokens[:1])
         base_directional_tokens = _filter_known(
-            "directional", _map_axis_tokens("directional", _tokens_list(base_directional))
+            "directional",
+            _map_axis_tokens("directional", _tokens_list(base_directional)),
         )
         override_directional_tokens = _filter_known(
             "directional", _map_axis_tokens("directional", _tokens_list(directional))
@@ -2284,7 +2333,8 @@ class UserActions:
         axis_lists = catalog.get("axis_list_tokens", {}) or {}
         static_catalog = catalog.get("static_prompts") or static_prompt_catalog()
         static_desc_overrides = (
-            catalog.get("static_prompt_descriptions") or static_prompt_description_overrides()
+            catalog.get("static_prompt_descriptions")
+            or static_prompt_description_overrides()
         )
 
         def _axis_tokens(axis: str) -> list[str]:
@@ -2784,6 +2834,7 @@ def _suggest_prompt_recipes_core_impl(source: ModelSource, subject: str) -> None
     # text never opens the confirmation viewer.
     prev_suppress = getattr(GPTState, "suppress_response_canvas", False)
     GPTState.suppress_response_canvas = True
+
     def _restore_request_state():
         try:
             GPTState.suppress_response_canvas = prev_suppress
@@ -2795,11 +2846,16 @@ def _suggest_prompt_recipes_core_impl(source: ModelSource, subject: str) -> None
             pass
         try:
             # Clear the suppression flag so future requests notify as normal.
-            if manual_request_id is not None and getattr(
-                GPTState, "suppress_inflight_notify_request_id", None
-            ) == manual_request_id:
+            if (
+                manual_request_id is not None
+                and getattr(GPTState, "suppress_inflight_notify_request_id", None)
+                == manual_request_id
+            ):
                 GPTState.suppress_inflight_notify_request_id = None
-            if manual_request_id is not None and _suppress_inflight_notify_request_id == manual_request_id:
+            if (
+                manual_request_id is not None
+                and _suppress_inflight_notify_request_id == manual_request_id
+            ):
                 _suppress_inflight_notify_request_id = None
         except Exception:
             pass
@@ -2815,7 +2871,9 @@ def _suggest_prompt_recipes_core_impl(source: ModelSource, subject: str) -> None
         debug_mode = bool(getattr(GPTState, "debug_enabled", False))
         if debug_mode:
             try:
-                print(f"GPT model suggest raw text ({len(raw_text)} chars): {raw_text[:200]!r}")
+                print(
+                    f"GPT model suggest raw text ({len(raw_text)} chars): {raw_text[:200]!r}"
+                )
             except Exception:
                 pass
 
@@ -2912,7 +2970,9 @@ def _suggest_prompt_recipes_core_impl(source: ModelSource, subject: str) -> None
                                 debug_failures.append(debug_record)
                                 continue
 
-                            def _validated_persona_value(axis: str, raw_value: str) -> str:
+                            def _validated_persona_value(
+                                axis: str, raw_value: str
+                            ) -> str:
                                 token = _canonical_persona_value(axis, raw_value)
                                 if token:
                                     return token
@@ -2926,7 +2986,9 @@ def _suggest_prompt_recipes_core_impl(source: ModelSource, subject: str) -> None
                             persona_audience = _validated_persona_value(
                                 "audience", persona_audience
                             )
-                            persona_tone = _validated_persona_value("tone", persona_tone)
+                            persona_tone = _validated_persona_value(
+                                "tone", persona_tone
+                            )
                             intent_purpose = _validated_persona_value(
                                 "intent", intent_purpose
                             )
@@ -3093,6 +3155,7 @@ def _suggest_prompt_recipes_core_impl(source: ModelSource, subject: str) -> None
     # In test environments, prefer blocking so unit tests observe parsed suggestions immediately.
     try:
         import os
+
         if os.environ.get("PYTEST_CURRENT_TEST"):
             block = True
     except Exception:

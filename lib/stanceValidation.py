@@ -13,6 +13,7 @@ from .personaConfig import (
     persona_docs_map,
 )
 
+
 def _axis_tokens(axis: str) -> set[str]:
     """Return the latest persona/intent tokens for the given axis."""
 
@@ -32,22 +33,36 @@ def _intent_spoken_tokens() -> set[str]:
 
 
 def _persona_presets():
-    """Return the latest persona presets (reload-safe)."""
+    """Return the latest persona presets (reload-safe).
+
+    Prefer the persona catalog when available so stance validation shares the
+    same preset surface as GPT actions, Help Hub, and suggestion GUIs.
+    """
 
     try:
         from . import personaConfig
 
+        catalog = getattr(personaConfig, "persona_catalog", None)
+        if callable(catalog):
+            return tuple(catalog().values())
         return tuple(getattr(personaConfig, "PERSONA_PRESETS", ()))
     except Exception:
         return ()
 
 
 def _intent_presets():
-    """Return the latest intent presets (reload-safe)."""
+    """Return the latest intent presets (reload-safe).
+
+    Prefer the intent catalog when available so stance validation stays aligned
+    with the canonical IntentPreset set.
+    """
 
     try:
         from . import personaConfig
 
+        catalog = getattr(personaConfig, "intent_catalog", None)
+        if callable(catalog):
+            return tuple(catalog().values())
         return tuple(getattr(personaConfig, "INTENT_PRESETS", ()))
     except Exception:
         return ()

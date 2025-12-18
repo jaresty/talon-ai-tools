@@ -85,6 +85,7 @@ INTENT_CANONICAL_TO_SPOKEN: Dict[str, str] = {
     canonical: spoken for spoken, canonical in INTENT_SPOKEN_TO_CANONICAL.items()
 }
 
+
 def persona_key_to_value_map(axis: str) -> dict[str, str]:
     """Return the key->description map for a persona/intent axis."""
     return PERSONA_KEY_TO_VALUE.get(axis, {})
@@ -329,3 +330,23 @@ def intent_bucket_presets() -> dict[str, list[str]]:
         if filtered:
             buckets[bucket] = filtered
     return buckets
+
+
+def persona_catalog() -> dict[str, PersonaPreset]:
+    """Return a keyed persona preset catalog.
+
+    This provides a single, typed view over PERSONA_PRESETS for GPT actions,
+    help hub, suggestion GUIs, and docs to consume.
+    """
+
+    return {preset.key: preset for preset in PERSONA_PRESETS}
+
+
+def intent_catalog() -> dict[str, IntentPreset]:
+    """Return a keyed intent preset catalog.
+
+    This aligns INTENT_PRESETS with the intent axis and bucket maps so callers
+    can treat it as the canonical intent preset surface.
+    """
+
+    return {preset.key: preset for preset in INTENT_PRESETS}

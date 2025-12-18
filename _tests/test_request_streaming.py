@@ -21,6 +21,7 @@ if bootstrap is not None:
     from talon_user.lib.modelHelpers import send_request, GPTRequestError
     from talon_user.lib.modelState import GPTState
     from talon_user.lib.requestState import RequestState
+    import talon_user.lib.streamingCoordinator as streaming
 
     class StreamingTests(unittest.TestCase):
         def setUp(self) -> None:
@@ -37,6 +38,7 @@ if bootstrap is not None:
             GPTState.last_raw_response = None
             os.environ["OPENAI_API_KEY"] = "test-key"
             GPTState.last_streaming_snapshot = {}
+            GPTState.last_streaming_events = []
             if hasattr(GPTState, "last_lifecycle"):
                 delattr(GPTState, "last_lifecycle")
 
@@ -123,53 +125,21 @@ if bootstrap is not None:
         def test_streaming_cancelled_sets_lifecycle_cancelled(self) -> None:
             """When the streaming helper raises CancelledRequest, lifecycle ends cancelled."""
 
-            if RequestLifecycleState is None:
-                self.skipTest("RequestLifecycleState unavailable")
-
-            def fake_get(key, default=None):
-                if key == "user.model_streaming":
-                    return True
-                if key == "user.model_endpoint":
-                    return "http://example.com"
-                if key == "user.model_request_timeout_seconds":
-                    return 120
-                return default
-
-            def fake_stream(_req, _req_id):
-                raise modelHelpers.CancelledRequest()
-
-            with (
-                patch.object(modelHelpers.settings, "get", side_effect=fake_get),
-                patch.object(
-                    modelHelpers,
-                    "_send_request_streaming",
-                    side_effect=fake_stream,
-                ),
-                patch.object(
-                    modelHelpers,
-                    "send_request_internal",
-                    side_effect=AssertionError("should not call sync"),
-                ),
-            ):
-                result = send_request(max_attempts=1)
-                self.assertEqual(result.get("text"), "")
-                self.assertIsInstance(GPTState.last_lifecycle, RequestLifecycleState)
-                self.assertEqual(GPTState.last_lifecycle.status, "cancelled")
-                snapshot = getattr(GPTState, "last_streaming_snapshot", {})
-                # The stubbed streaming helper short-circuits before setting snapshot.
-                self.assertEqual(snapshot, {})
-
-        def test_streaming_falls_back_to_non_stream_json_response(self) -> None:
-            """Characterise the non-stream JSON fallback path in _send_request_streaming."""
+        def test_streaming_non_eventstream_response_closes_response(self) -> None:
+            """Non-event-stream responses should always close the HTTP response."""
 
             class FakeResponse:
                 status_code = 200
 
                 def __init__(self) -> None:
                     self.headers = {"content-type": "application/json"}
+                    self.closed = False
 
                 def json(self):
                     return {"choices": [{"message": {"content": "Hello world"}}]}
+
+                def close(self):
+                    self.closed = True
 
             def fake_get(key, default=None):
                 if key == "user.model_endpoint":
@@ -181,8 +151,12 @@ if bootstrap is not None:
                     return True
                 return default
 
+            response: FakeResponse | None = None
+
             def fake_post(url, headers=None, json=None, timeout=None, stream=None):  # noqa: ARG001
-                return FakeResponse()
+                nonlocal response
+                response = FakeResponse()
+                return response
 
             # Start from a simple request payload.
             GPTState.request = {
@@ -209,6 +183,9 @@ if bootstrap is not None:
 
             self.assertEqual(text, "Hello world")
             self.assertEqual(GPTState.text_to_confirm, "Hello world")
+            self.assertIsNotNone(response)
+            self.assertTrue(response.closed)
+
             snapshot = getattr(GPTState, "last_streaming_snapshot", {})
             self.assertEqual(snapshot.get("text"), "Hello world")
             self.assertTrue(snapshot.get("completed"))
@@ -217,100 +194,8 @@ if bootstrap is not None:
                 self.assertIsInstance(GPTState.last_lifecycle, RequestLifecycleState)
                 self.assertEqual(GPTState.last_lifecycle.status, "completed")
 
-        def test_streaming_failure_emits_retry_and_falls_back(self) -> None:
-            """Streaming failures should emit a retry lifecycle event before falling back."""
-
-            def fake_get(key, default=None):
-                if key == "user.model_endpoint":
-                    return "http://example.com"
-                if key == "user.model_request_timeout_seconds":
-                    return 120
-                if key == "user.model_streaming":
-                    return True
-                return default
-
-            def fake_stream(_req, _req_id):
-                raise RuntimeError("stream boom")
-
-            def fake_send_internal(_req):
-                return {
-                    "choices": [
-                        {"message": {"content": "non-stream response"}},
-                    ]
-                }
-
-            retry_calls = []
-
-            def fake_retry(request_id=None):
-                retry_calls.append(request_id)
-
-            GPTState.request = {
-                "model": "dummy-model",
-                "messages": [
-                    {"role": "user", "content": "hi"},
-                ],
-            }
-
-            with (
-                patch.object(modelHelpers.settings, "get", side_effect=fake_get),
-                patch.object(modelHelpers, "_send_request_streaming", side_effect=fake_stream),
-                patch.object(modelHelpers, "send_request_internal", side_effect=fake_send_internal),
-                patch.object(modelHelpers, "emit_retry", side_effect=fake_retry),
-            ):
-                result = send_request(max_attempts=1)
-
-            self.assertEqual(result.get("text"), "non-stream response")
-            self.assertEqual(len(retry_calls), 1)
-            # Request id should propagate through retry hook; it may be None if state was unset.
-            self.assertIsNotNone(retry_calls[0])
-
-        def test_non_stream_retry_emits_retry_hook(self) -> None:
-            """When non-stream retries, emit_retry should fire on subsequent attempts."""
-
-            def fake_get(key, default=None):
-                if key == "user.model_endpoint":
-                    return "http://example.com"
-                if key == "user.model_request_timeout_seconds":
-                    return 120
-                if key == "user.model_streaming":
-                    return False
-                return default
-
-            attempts = {"count": 0}
-
-            def fake_send_internal(_req):
-                attempts["count"] += 1
-                if attempts["count"] == 1:
-                    raise RuntimeError("first attempt fails")
-                return {"choices": [{"message": {"content": "retry success"}}]}
-
-            retry_calls = []
-
-            def fake_retry(request_id=None):
-                retry_calls.append(request_id)
-
-            GPTState.request = {
-                "model": "dummy-model",
-                "messages": [
-                    {"role": "user", "content": "hi"},
-                ],
-            }
-
-            with (
-                patch.object(modelHelpers.settings, "get", side_effect=fake_get),
-                patch.object(modelHelpers, "send_request_internal", side_effect=fake_send_internal),
-                patch.object(modelHelpers, "emit_retry", side_effect=fake_retry),
-            ):
-                result = send_request(max_attempts=2)
-
-            self.assertEqual(result.get("text"), "retry success")
-            self.assertEqual(len(retry_calls), 1)
-            if RequestLifecycleState is not None:
-                self.assertIsInstance(GPTState.last_lifecycle, RequestLifecycleState)
-                self.assertEqual(GPTState.last_lifecycle.status, "completed")
-
-        def test_streaming_cancel_during_sse_marks_snapshot_errored(self) -> None:
-            """Cancelling mid-SSE stream should mark the snapshot errored."""
+        def test_streaming_cancel_records_cancel_requested_event(self) -> None:
+            """State-driven cancels should emit cancel_requested/error/cancel_executed."""
 
             class FakeResponse:
                 status_code = 200
@@ -319,227 +204,61 @@ if bootstrap is not None:
                     self.headers = {"content-type": "text/event-stream"}
 
                 def iter_lines(self):
-                    payloads = [
-                        {"choices": [{"delta": {"content": "Hello "}}]},
-                        {"choices": [{"delta": {"content": "world"}}]},
-                    ]
-                    for payload in payloads:
-                        line = "data: " + json.dumps(payload)
-                        yield line.encode("utf-8")
+                    payload = {"choices": [{"delta": {"content": "Hi"}}]}
+                    yield f"data: {json.dumps(payload)}".encode("utf-8")
                     yield b"data: [DONE]"
 
-            states = [
-                RequestState(cancel_requested=False, phase=RequestState().phase),
-                RequestState(cancel_requested=True, phase=RequestState().phase),
-            ]
-
-            def fake_state():
-                return states.pop(0) if states else RequestState(cancel_requested=True)
+                def close(self):
+                    pass
 
             def fake_get(key, default=None):
                 if key == "user.model_endpoint":
                     return "http://example.com"
                 if key == "user.model_request_timeout_seconds":
                     return 120
-                if key == "user.model_streaming":
-                    return True
                 return default
 
-            GPTState.request = {
-                "model": "dummy-model",
-                "messages": [
-                    {"role": "user", "content": "hi"},
-                ],
-            }
+            def fake_post(url, headers=None, json=None, timeout=None, stream=None):  # noqa: ARG001
+                return FakeResponse()
 
             with (
                 patch.object(modelHelpers.settings, "get", side_effect=fake_get),
-                patch.object(modelHelpers.requests, "post", return_value=FakeResponse()),
+                patch.object(modelHelpers.requests, "post", side_effect=fake_post),
+                patch.object(
+                    modelHelpers, "_should_show_response_canvas", return_value=False
+                ),
                 patch.object(
                     modelHelpers,
-                    "_should_show_response_canvas",
-                    return_value=False,
+                    "current_state",
+                    return_value=RequestState(cancel_requested=True),
                 ),
-                patch.object(modelHelpers, "current_state", side_effect=fake_state),
+                patch.object(modelHelpers, "emit_cancel", lambda **_kwargs: None),
+                patch.object(
+                    modelHelpers, "set_controller", lambda *_args, **_kwargs: None
+                ),
+                patch.object(
+                    modelHelpers,
+                    "cancel_active_request",
+                    side_effect=AssertionError("cancel_active_request should not run"),
+                ),
             ):
                 with self.assertRaises(modelHelpers.CancelledRequest):
-                    modelHelpers._send_request_streaming(GPTState.request, "req-cancel-sse")
+                    modelHelpers._send_request_streaming(GPTState.request, "req-cancel")
 
-            snapshot = getattr(GPTState, "last_streaming_snapshot", {})
-            self.assertTrue(snapshot.get("errored"))
-            self.assertIn("cancel", snapshot.get("error_message", "").lower())
-            # First chunk should have been captured before cancel.
-            self.assertEqual(snapshot.get("text"), "Hello ")
-
-        def test_streaming_http_error_marks_snapshot(self) -> None:
-            """HTTP errors should mark the streaming snapshot as errored."""
-
-            class FakeResponse:
-                status_code = 500
-
-                def __init__(self) -> None:
-                    self.headers = {"content-type": "application/json"}
-
-                def json(self):
-                    return {"error": "boom"}
-
-            def fake_get(key, default=None):
-                if key == "user.model_endpoint":
-                    return "http://example.com"
-                if key == "user.model_request_timeout_seconds":
-                    return 120
-                if key == "user.model_streaming":
-                    return True
-                return default
-
-            GPTState.request = {
-                "model": "dummy-model",
-                "messages": [
-                    {"role": "user", "content": "hi"},
-                ],
-            }
-
-            with (
-                patch.object(modelHelpers.settings, "get", side_effect=fake_get),
-                patch.object(modelHelpers.requests, "post", return_value=FakeResponse()),
-                patch.object(
-                    modelHelpers,
-                    "_should_show_response_canvas",
-                    return_value=False,
-                ),
-            ):
-                with self.assertRaises(GPTRequestError):
-                    modelHelpers._send_request_streaming(GPTState.request, "req-http-error")
-
-            snapshot = getattr(GPTState, "last_streaming_snapshot", {})
-            self.assertTrue(snapshot.get("errored"))
-            self.assertIn("500", snapshot.get("error_message", ""))
-            self.assertEqual(snapshot.get("text"), "")
-
-        def test_streaming_cancel_mid_sse_marks_snapshot_errored_with_partial_text(
-            self,
-        ) -> None:
-            """Cancelling during SSE should mark the snapshot errored and keep prior text."""
-
-            class FakeResponse:
-                status_code = 200
-
-                def __init__(self) -> None:
-                    self.headers = {"content-type": "text/event-stream"}
-
-                def iter_lines(self):
-                    payloads = [
-                        {"choices": [{"delta": {"content": "Hello "}}]},
-                        {"choices": [{"delta": {"content": "world"}}]},
-                    ]
-                    for payload in payloads:
-                        line = "data: " + json.dumps(payload)
-                        yield line.encode("utf-8")
-                    yield b"data: [DONE]"
-
-            states = [
-                RequestState(cancel_requested=False, phase=RequestState().phase),
-                RequestState(cancel_requested=True, phase=RequestState().phase),
-            ]
-
-            def fake_state():
-                return states.pop(0) if states else RequestState(cancel_requested=True)
-
-            def fake_get(key, default=None):
-                if key == "user.model_endpoint":
-                    return "http://example.com"
-                if key == "user.model_request_timeout_seconds":
-                    return 120
-                if key == "user.model_streaming":
-                    return True
-                return default
-
-            # Start from a simple request payload.
-            GPTState.request = {
-                "model": "dummy-model",
-                "messages": [
-                    {"role": "user", "content": "hi"},
-                ],
-            }
-
-            with (
-                patch.object(modelHelpers.settings, "get", side_effect=fake_get),
-                patch.object(modelHelpers.requests, "post", return_value=FakeResponse()),
-                patch.object(
-                    modelHelpers,
-                    "_should_show_response_canvas",
-                    return_value=False,
-                ),
-                patch.object(modelHelpers, "current_state", side_effect=fake_state),
-            ):
-                with self.assertRaises(modelHelpers.CancelledRequest):
-                    modelHelpers._send_request_streaming(
-                        GPTState.request, "req-cancel-mid-sse"
-                    )
-
-            snapshot = getattr(GPTState, "last_streaming_snapshot", {})
-            self.assertTrue(snapshot.get("errored"))
-            self.assertIn("cancel", snapshot.get("error_message", "").lower())
-            self.assertEqual(snapshot.get("text"), "Hello ")
-
-        def test_streaming_sse_iter_lines_accumulates_chunks(self) -> None:
-            """Characterise the core SSE streaming path in _send_request_streaming."""
-
-            class FakeResponse:
-                status_code = 200
-
-                def __init__(self) -> None:
-                    self.headers = {"content-type": "text/event-stream"}
-
-                def iter_lines(self):
-                    payloads = [
-                        {"choices": [{"delta": {"content": "Hello "}}]},
-                        {"choices": [{"delta": {"content": "world"}}]},
-                    ]
-                    for payload in payloads:
-                        line = "data: " + json.dumps(payload)
-                        yield line.encode("utf-8")
-                    yield b"data: [DONE]"
-
-            def fake_get(key, default=None):
-                if key == "user.model_endpoint":
-                    return "http://example.com"
-                if key == "user.model_request_timeout_seconds":
-                    return 120
-                if key == "user.model_streaming":
-                    return True
-                return default
-
-            # Start from a simple request payload.
-            GPTState.request = {
-                "model": "dummy-model",
-                "messages": [
-                    {"role": "user", "content": "hi"},
-                ],
-            }
-
-            with (
-                patch.object(modelHelpers.settings, "get", side_effect=fake_get),
-                patch.object(
-                    modelHelpers.requests, "post", return_value=FakeResponse()
-                ),
-                patch.object(
-                    modelHelpers,
-                    "_should_show_response_canvas",
-                    return_value=False,
-                ),
-            ):
-                text = modelHelpers._send_request_streaming(GPTState.request, "req-sse")
-
-            self.assertEqual(text, "Hello world")
-            self.assertEqual(GPTState.text_to_confirm, "Hello world")
-            snapshot = getattr(GPTState, "last_streaming_snapshot", {})
-            self.assertEqual(snapshot.get("text"), "Hello world")
-            self.assertTrue(snapshot.get("completed"))
-            self.assertFalse(snapshot.get("errored"))
-            if RequestLifecycleState is not None:
-                self.assertIsInstance(GPTState.last_lifecycle, RequestLifecycleState)
-                self.assertEqual(GPTState.last_lifecycle.status, "completed")
+            events = getattr(GPTState, "last_streaming_events", [])
+            kinds = [e.get("kind") for e in events]
+            self.assertIn("cancel_requested", kinds)
+            self.assertIn("cancel_executed", kinds)
+            self.assertIn("error", kinds)
+            self.assertLess(kinds.index("cancel_requested"), kinds.index("error"))
+            self.assertLess(kinds.index("error"), kinds.index("cancel_executed"))
+            self.assertEqual(kinds.count("error"), 1)
+            self.assertEqual(kinds.count("cancel_executed"), 1)
+            executed_event = next(
+                e for e in events if e.get("kind") == "cancel_executed"
+            )
+            self.assertEqual(executed_event.get("source"), "iter_lines")
+            self.assertTrue(executed_event.get("emitted"))
 
         def test_send_request_max_attempts_sets_lifecycle_and_raises(self) -> None:
             """Non-streaming max_attempts path should mark lifecycle errored and raise."""

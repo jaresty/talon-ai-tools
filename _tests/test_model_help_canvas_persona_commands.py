@@ -61,8 +61,49 @@ if bootstrap is not None:
             # With a narrow rect, the persona commands should wrap to multiple lines.
             self.assertGreaterEqual(len(persona_lines), 2)
 
+        def test_persona_commands_cover_catalog_spoken_tokens(self) -> None:
+            from talon_user.lib.personaConfig import persona_catalog
+
+            canvas = _DummyCanvas()
+            _default_draw_quick_help(canvas)
+
+            prefix = "  Persona: "
+            persona_lines = [
+                line
+                for line in canvas.text
+                if line.startswith(prefix) or line.startswith(" " * len(prefix))
+            ]
+            self.assertTrue(persona_lines, "Persona presets line not rendered")
+            combined = " ".join(persona_lines).lower()
+
+            catalog_spoken = {
+                (preset.spoken or "").strip().lower()
+                for preset in persona_catalog().values()
+                if (preset.spoken or "").strip()
+            }
+            missing = {token for token in catalog_spoken if token not in combined}
+            self.assertFalse(
+                missing,
+                f"Quick help persona block missing spoken presets: {sorted(missing)}",
+            )
+
+        def test_intent_presets_align_with_intent_catalog(self) -> None:
+            from talon_user.lib.personaConfig import intent_catalog
+            from talon_user.lib import modelHelpCanvas as help_module
+
+            catalog = intent_catalog()
+            helper_presets = help_module._intent_presets()
+            catalog_keys = {preset.key for preset in catalog.values()}
+            helper_keys = {preset.key for preset in helper_presets}
+            self.assertEqual(
+                catalog_keys,
+                helper_keys,
+                "modelHelpCanvas _intent_presets must cover the same IntentPreset keys as intent_catalog",
+            )
+
 else:
     if not TYPE_CHECKING:
+
         class ModelHelpPersonaCommandTests(unittest.TestCase):
             @unittest.skip("Test harness unavailable outside unittest runs")
             def test_placeholder(self) -> None:

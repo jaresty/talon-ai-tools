@@ -13,6 +13,9 @@ from typing import List, Tuple
 
 from .requestHistoryActions import history_axes_for as _history_axes_for_impl
 from .requestHistoryActions import history_summary_lines as _history_summary_lines_impl
+from .requestHistoryActions import (
+    axis_snapshot_from_axes as _axis_snapshot_from_axes_impl,
+)
 from .requestHistoryActions import _directional_tokens_for_entry
 
 
@@ -64,7 +67,7 @@ def history_drawer_entries_from(entries: Sequence[object]) -> List[Tuple[str, st
             label = f"{label} ({dur})"
         recipe = (getattr(entry, "recipe", "") or "").strip()
         if axes:
-            axes_tokens = _history_axes_for_impl(axes)
+            axes_tokens = _axis_snapshot_from_axes_impl(axes)
             recipe_tokens: list[str] = []
             if recipe:
                 static_token = recipe.split(" · ")[0]
@@ -88,6 +91,10 @@ def history_drawer_entries_from(entries: Sequence[object]) -> List[Tuple[str, st
         if provider_id:
             label = f"{label} [{provider_id}]"
         if provider_id:
-            body = f"{body} · provider={provider_id}" if body else f"provider={provider_id}"
+            body = (
+                f"{body} · provider={provider_id}"
+                if body
+                else f"provider={provider_id}"
+            )
         rendered.append((label, body))
     return rendered

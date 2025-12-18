@@ -11,7 +11,7 @@ import re
 import traceback
 import time
 import codecs
-from typing import Literal, List, Sequence, Optional, Union
+from typing import Callable, Literal, List, Sequence, Optional, Union
 
 import requests
 
@@ -40,13 +40,10 @@ from .requestLog import append_entry_from_request
 from .uiDispatch import run_on_ui_thread
 from .requestLifecycle import RequestLifecycleState, reduce_request_state
 from .streamingCoordinator import (
-    new_streaming_run,
-    StreamingRun,
-    record_streaming_snapshot,
-    record_streaming_chunk,
-    record_streaming_complete,
-    record_streaming_error,
+    new_streaming_session,
+    StreamingSession,
 )
+
 from .providerRegistry import (
     OPENAI_ENDPOINT,
     ProviderConfig,
@@ -740,6 +737,10 @@ def build_request(destination: object):
         print(f"[modelHelpers] build_request destination kind={kind}")
     except Exception:
         pass
+    try:
+        debug_enabled = bool(getattr(GPTState, "debug_enabled", False))
+    except Exception:
+        debug_enabled = False
     # Reset per-request buffers so stale meta/stream text do not bleed into the
     # next response.
     try:
@@ -753,10 +754,23 @@ def build_request(destination: object):
     # response canvas instead of a pill.
     try:
         if kind in {"paste", "above", "below", "chunked", "snip", "typed"}:
-            if hasattr(destination, "inside_textarea") and callable(
-                getattr(destination, "inside_textarea", None)
-            ):
-                if not destination.inside_textarea():
+            method = getattr(destination, "inside_textarea", None)
+            if callable(method):
+                inside_result = False
+                try:
+                    inside_result = bool(method())
+                except Exception as inside_error:
+                    if debug_enabled:
+                        print(
+                            f"[modelHelpers] inside_textarea check error: {inside_error}"
+                        )
+                else:
+                    if debug_enabled:
+                        print(
+                            f"[modelHelpers] inside_textarea check kind={kind} "
+                            f"result={inside_result}"
+                        )
+                if not inside_result:
                     kind = "window"
                     print(
                         "[modelHelpers] inside_textarea=False; forcing destination kind=window"
@@ -912,38 +926,18 @@ def _send_request_streaming(request, request_id: str) -> str:
     timeout_seconds: int = settings.get("user.model_request_timeout_seconds", 120)  # type: ignore
 
     decoder = codecs.getincrementaldecoder("utf-8")()
-    streaming_run: StreamingRun = new_streaming_run(request_id)
+    session: StreamingSession = new_streaming_session(request_id)
+    streaming_run: StreamingRun = session.run
     try:
-        catalog = axis_catalog()
-        axes_map = catalog.get("axes", {}) or {}
-        filtered_axes: dict[str, list[str]] = {}
-        axes = request.get("axes") or {}
-        for axis in (
-            "completeness",
-            "scope",
-            "method",
-            "form",
-            "channel",
-            "directional",
-        ):
-            vals = axes.get(axis) or []
-            if isinstance(vals, list):
-                tokens = [str(v) for v in vals if str(v)]
-            else:
-                tokens = [str(vals)] if vals else []
-            known = set((axes_map.get(axis) or {}).keys())
-            kept = [t for t in tokens if t in known]
-            if kept:
-                filtered_axes[axis] = kept
-        streaming_run.axes = filtered_axes
+        session.set_axes_from_request(request)
     except Exception:
         pass
     parts: list[str] = streaming_run.chunks
 
     def _update_streaming_snapshot() -> None:
-        record_streaming_snapshot(streaming_run)
+        session.record_snapshot()
 
-    record_streaming_snapshot(streaming_run)
+    session.record_snapshot()
     first_chunk = True
     refresh_interval_ms = 250
     last_canvas_refresh_ms = 0
@@ -979,6 +973,30 @@ def _send_request_streaming(request, request_id: str) -> str:
         except Exception:
             pass
 
+    def _raise_cancel(*, source: str, emit_cancel_event: bool) -> None:
+        """Record cancel state, clean up, and raise CancelledRequest."""
+
+        session.record_error("cancelled")
+        emitted_ok = False
+        emitted_err = ""
+        if emit_cancel_event:
+            try:
+                set_controller(RequestUIController())
+                emit_cancel(request_id=request_id)
+                emitted_ok = True
+            except Exception as exc:
+                emitted_err = str(exc)
+
+        _set_active_response(None)
+        try:
+            session.record_cancel_executed(
+                source=source, emitted=emitted_ok, error=emitted_err
+            )
+        except Exception:
+            pass
+        _update_lifecycle("cancel")
+        raise CancelledRequest()
+
     # Explicitly request streaming from the API; some endpoints require the
     # `stream` flag in the JSON payload as well as an HTTP streaming response.
     request_with_stream = dict(request)
@@ -993,6 +1011,18 @@ def _send_request_streaming(request, request_id: str) -> str:
             stream=True,
         )
         _set_active_response(raw_response)
+        raw_response_closed = False
+
+        def _close_raw_response() -> None:
+            nonlocal raw_response_closed
+            if raw_response_closed:
+                return
+            raw_response_closed = True
+            try:
+                raw_response.close()
+            except Exception:
+                pass
+
         try:
             print("[modelHelpers] streaming request started")
             content_type = raw_response.headers.get("content-type", "")
@@ -1007,8 +1037,8 @@ def _send_request_streaming(request, request_id: str) -> str:
                     parsed_full = raw_response.json()
                     if raw_response.status_code != 200:
                         error_info = parsed_full or raw_response.text
-                        streaming_run.on_error(f"HTTP {raw_response.status_code}")
-                        record_streaming_snapshot(streaming_run)
+                        session.record_error(f"HTTP {raw_response.status_code}")
+                        session.record_snapshot()
                         notify(
                             f"GPT Failure: HTTP {raw_response.status_code} | {error_info}"
                         )
@@ -1019,7 +1049,7 @@ def _send_request_streaming(request, request_id: str) -> str:
                         .get("content", "")
                     )
                     if text_piece:
-                        record_streaming_chunk(streaming_run, text_piece)
+                        session.record_chunk(text_piece)
                     full_text = streaming_run.text
                     _update_stream_state_from_text(
                         full_text,
@@ -1029,6 +1059,12 @@ def _send_request_streaming(request, request_id: str) -> str:
                     _update_lifecycle("stream_start")
                     _update_lifecycle("stream_end")
                     if _should_show_response_canvas():
+                        try:
+                            session.record_ui_refresh_requested(
+                                forced=True, reason="canvas_refresh"
+                            )
+                        except Exception:
+                            pass
                         _refresh_response_canvas()
                     try:
                         print(
@@ -1037,10 +1073,11 @@ def _send_request_streaming(request, request_id: str) -> str:
                         )
                     except Exception:
                         pass
-                    record_streaming_complete(streaming_run)
+                    session.record_complete()
                     answer_text = full_text
                     GPTState.last_raw_response = parsed_full
                     _set_active_response(None)
+                    _close_raw_response()
                     return answer_text
                 except Exception as e:
                     print(f"[modelHelpers] non-stream parse failed: {e!r}")
@@ -1051,13 +1088,13 @@ def _send_request_streaming(request, request_id: str) -> str:
         error_msg = f"Request timed out after {timeout_seconds} seconds"
         notify(f"GPT Failure: {error_msg}")
         err = GPTRequestError(408, error_msg)
-        record_streaming_error(streaming_run, error_msg)
+        session.record_error(error_msg)
         _handle_streaming_error(err)
         raise err
     except Exception as e:
         print(f"[modelHelpers] streaming requests.post failed: {e!r}")
         traceback.print_exc()
-        record_streaming_error(streaming_run, str(e))
+        session.record_error(str(e))
         _handle_streaming_error(e)
         raise
     if raw_response.status_code != 200:
@@ -1066,8 +1103,9 @@ def _send_request_streaming(request, request_id: str) -> str:
             error_info = raw_response.json()
         except Exception:
             error_info = raw_response.text
-        record_streaming_error(streaming_run, f"HTTP {raw_response.status_code}")
+        session.record_error(f"HTTP {raw_response.status_code}")
         notify(f"GPT Failure: HTTP {raw_response.status_code} | {error_info}")
+        _close_raw_response()
         raise GPTRequestError(raw_response.status_code, error_info)
 
     def _maybe_refresh_canvas(force: bool = False) -> None:
@@ -1075,17 +1113,37 @@ def _send_request_streaming(request, request_id: str) -> str:
         if not _should_show_response_canvas():
             return
         now_ms = int(time.time() * 1000)
-        if (
+        throttled = (
             not force
             and last_canvas_refresh_ms
             and now_ms - last_canvas_refresh_ms < refresh_interval_ms
-        ):
+        )
+        if throttled:
+            try:
+                session.record_ui_refresh_requested(forced=force, reason="throttled")
+            except Exception:
+                pass
             return
+        try:
+            session.record_ui_refresh_requested(forced=force, reason="canvas_refresh")
+        except Exception:
+            pass
         try:
             actions.user.model_response_canvas_refresh()
             last_canvas_refresh_ms = now_ms
-        except Exception:
-            pass
+            try:
+                session.record_ui_refresh_executed(
+                    forced=force, reason="canvas_refresh", success=True
+                )
+            except Exception:
+                pass
+        except Exception as e:
+            try:
+                session.record_ui_refresh_executed(
+                    forced=force, reason="canvas_refresh", success=False, error=str(e)
+                )
+            except Exception:
+                pass
 
     def _append_text(text_piece: str):
         nonlocal first_chunk
@@ -1093,7 +1151,7 @@ def _send_request_streaming(request, request_id: str) -> str:
             emit_append(text_piece, request_id=request_id)
         except Exception:
             pass
-        record_streaming_chunk(streaming_run, text_piece)
+        session.record_chunk(text_piece)
         full_text = streaming_run.text
         _update_stream_state_from_text(
             full_text,
@@ -1118,7 +1176,7 @@ def _send_request_streaming(request, request_id: str) -> str:
                 state = current_state()
             except Exception:
                 state = RequestState()
-            if getattr(state, "cancel_requested", False):
+            if session.cancel_requested(state, source="iter_lines"):
                 try:
                     print("[modelHelpers] streaming cancel detected; closing stream")
                     try:
@@ -1128,22 +1186,7 @@ def _send_request_streaming(request, request_id: str) -> str:
                         pass
                 except Exception:
                     pass
-                record_streaming_error(streaming_run, "cancelled")
-                try:
-                    set_controller(RequestUIController())
-                    emit_cancel(request_id=request_id)
-                except Exception:
-                    pass
-                try:
-                    cancel_active_request()
-                except Exception:
-                    pass
-                try:
-                    raw_response.close()
-                except Exception:
-                    pass
-                _set_active_response(None)
-                raise CancelledRequest()
+                _raise_cancel(source="iter_lines", emit_cancel_event=True)
             if not raw_line:
                 continue
             if raw_line.startswith(b":"):
@@ -1170,18 +1213,12 @@ def _send_request_streaming(request, request_id: str) -> str:
             state_after_stream = current_state()
         except Exception:
             state_after_stream = RequestState()
-        if getattr(state_after_stream, "cancel_requested", False):
+        if session.cancel_requested(state_after_stream, source="after_stream"):
             try:
                 print("[modelHelpers] streaming ended; cancel requested, aborting")
             except Exception:
                 pass
-            record_streaming_error(streaming_run, "cancelled")
-            try:
-                set_controller(RequestUIController())
-                emit_cancel(request_id=request_id)
-            except Exception:
-                pass
-            raise CancelledRequest()
+            _raise_cancel(source="after_stream", emit_cancel_event=True)
         tail = decoder.decode(b"", final=True)
         if tail:
             _append_text(tail)
@@ -1196,7 +1233,7 @@ def _send_request_streaming(request, request_id: str) -> str:
                     .get("content", "")
                 )
                 if text_piece:
-                    record_streaming_chunk(streaming_run, text_piece)
+                    session.record_chunk(text_piece)
                     full_text = streaming_run.text
                     _update_stream_state_from_text(
                         full_text,
@@ -1204,6 +1241,12 @@ def _send_request_streaming(request, request_id: str) -> str:
                         last_meta_update_ms=last_meta_refresh_ms,
                     )
                     if _should_show_response_canvas():
+                        try:
+                            session.record_ui_refresh_requested(
+                                forced=True, reason="canvas_refresh"
+                            )
+                        except Exception:
+                            pass
                         _refresh_response_canvas()
                     print(
                         "[modelHelpers] streaming fallback parsed full JSON, "
@@ -1219,22 +1262,6 @@ def _send_request_streaming(request, request_id: str) -> str:
             except Exception:
                 pass
     except CancelledRequest:
-        # Cancel was requested upstream; just propagate without extra notifications.
-        try:
-            print("[modelHelpers] streaming CancelledRequest caught, closing")
-        except Exception:
-            pass
-        try:
-            cancel_active_request()
-        except Exception:
-            pass
-        try:
-            raw_response.close()
-        except Exception:
-            pass
-        _set_active_response(None)
-        record_streaming_error(streaming_run, "cancelled")
-        _update_lifecycle("cancel")
         raise
     except Exception as e:
         # If cancel was requested (regardless of exception type), treat as cancel.
@@ -1242,41 +1269,34 @@ def _send_request_streaming(request, request_id: str) -> str:
             state = current_state()
         except Exception:
             state = RequestState()
-        if getattr(state, "cancel_requested", False):
+        if session.cancel_requested(state, source="exception", detail=str(e)):
             try:
                 print(f"[modelHelpers] streaming exception during cancel: {e!r}")
             except Exception:
                 pass
-            try:
-                raw_response.close()
-            except Exception:
-                pass
-            _set_active_response(None)
-            try:
-                cancel_active_request()
-            except Exception:
-                pass
-            raise CancelledRequest()
+            _raise_cancel(source="exception", emit_cancel_event=False)
         # Some transports surface cancellation as AttributeError on the underlying
         # stream; treat those as cancels to avoid noisy tracebacks.
         if isinstance(e, AttributeError):
-            try:
-                raw_response.close()
-            except Exception:
-                pass
-            _set_active_response(None)
-            raise CancelledRequest()
-        record_streaming_error(streaming_run, str(e))
+
+            class _AttributeErrorCancelState:
+                cancel_requested = True
+                phase = ""
+
+            session.cancel_requested(
+                _AttributeErrorCancelState(),
+                source="attribute_error",
+                detail=str(e),
+            )
+            _raise_cancel(source="attribute_error", emit_cancel_event=False)
+        session.record_error(str(e))
         _handle_streaming_error(e)
         raise
 
     finally:
-        try:
-            raw_response.close()
-        except Exception:
-            pass
+        _close_raw_response()
 
-    record_streaming_complete(streaming_run)
+    session.record_complete()
     answer_text = streaming_run.text
     emit_complete(request_id=request_id)
     try:
@@ -1602,17 +1622,33 @@ def send_request(max_attempts: int = 10):
 
     try:
         axes = getattr(GPTState, "last_axes", {}) or {}
-        prompt_text = append_entry_from_request(
-            request_id=request_id,
-            request=getattr(GPTState, "request", None),
-            answer_text=answer_text,
-            meta_text=meta_text,
-            recipe=last_recipe,
-            started_at_ms=started_at_ms,
-            duration_ms=duration_ms,
-            axes=axes,
-            provider_id=getattr(provider, "id", ""),
-        )
+        session = getattr(GPTState, "last_streaming_session", None)
+        if getattr(session, "request_id", None) == request_id and hasattr(
+            session, "record_log_entry"
+        ):
+            prompt_text = session.record_log_entry(
+                request_id=request_id,
+                request=getattr(GPTState, "request", None),
+                answer_text=answer_text,
+                meta_text=meta_text,
+                recipe=last_recipe,
+                started_at_ms=started_at_ms,
+                duration_ms=duration_ms,
+                axes=axes,
+                provider_id=getattr(provider, "id", ""),
+            )
+        else:
+            prompt_text = append_entry_from_request(
+                request_id=request_id,
+                request=getattr(GPTState, "request", None),
+                answer_text=answer_text,
+                meta_text=meta_text,
+                recipe=last_recipe,
+                started_at_ms=started_at_ms,
+                duration_ms=duration_ms,
+                axes=axes,
+                provider_id=getattr(provider, "id", ""),
+            )
         try:
             print(
                 "[modelHelpers] append_entry_from_request succeeded "

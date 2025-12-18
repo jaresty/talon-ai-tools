@@ -9,7 +9,7 @@ else:
     bootstrap()
 
 if bootstrap is not None:
-    from talon_user.lib.requestLog import _filter_axes_payload
+    from talon_user.lib.requestLog import _filter_axes_payload, axis_snapshot_from_axes
 
     class RequestLogAxisFilterTests(unittest.TestCase):
         def test_keeps_only_known_axis_tokens_and_drops_hydrated(self) -> None:
@@ -31,6 +31,44 @@ if bootstrap is not None:
 
             self.assertEqual(filtered["custom"], ["value"])
             self.assertFalse(legacy)
+
+        def test_axis_snapshot_matches_filtered_axes_payload(self) -> None:
+            axes = {
+                "scope": ["bound", "edges"],
+                "method": ["rigor", "steps"],
+                "form": ["code"],
+                "channel": ["slack"],
+                "directional": ["fog"],
+                "custom": ["value", ""],
+            }
+
+            filtered, legacy = _filter_axes_payload(axes)
+            snapshot = axis_snapshot_from_axes(axes)
+
+            self.assertEqual(snapshot.as_dict(), filtered)
+            self.assertFalse(legacy)
+            self.assertEqual(snapshot.extra_axes().get("custom"), ["value"])
+            self.assertFalse(snapshot.legacy_style)
+            self.assertIn("custom", snapshot)
+
+        def test_axis_snapshot_is_immutable(self) -> None:
+            axes = {
+                "scope": ["focus"],
+                "method": ["steps"],
+                "directional": ["fog"],
+                "custom": ["value"],
+            }
+
+            snapshot = axis_snapshot_from_axes(axes)
+
+            self.assertIsInstance(snapshot.axes["scope"], tuple)
+            with self.assertRaises(TypeError):
+                snapshot.axes["scope"] += ("bound",)
+
+            mutated = snapshot.as_dict()
+            mutated["scope"].append("extra")
+            self.assertEqual(snapshot.get("scope"), ["focus"])
+            self.assertEqual(snapshot.extra_axes().get("custom"), ["value"])
 
         def test_caps_and_style_rejection(self) -> None:
             axes = {

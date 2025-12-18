@@ -92,12 +92,45 @@ if bootstrap is not None:
             gpt_module._recursive_orchestrator = self._original_orchestrator
             actions.app.calls.clear()
 
+        def test_gpt_persona_presets_align_with_persona_catalog(self) -> None:
+            """GPT._persona_presets should reflect the persona catalog helpers."""
+            from talon_user.lib.personaConfig import persona_catalog
+
+            catalog = persona_catalog()
+            presets = gpt_module._persona_presets()
+
+            # Keys should match between catalog and the presets tuple.
+            catalog_keys = {preset.key for preset in catalog.values()}
+            preset_keys = {preset.key for preset in presets}
+            self.assertEqual(
+                catalog_keys,
+                preset_keys,
+                "GPT _persona_presets must cover the same PersonaPreset keys as persona_catalog",
+            )
+
+        def test_gpt_intent_presets_align_with_intent_catalog(self) -> None:
+            """GPT._intent_presets should reflect the intent catalog helpers."""
+            from talon_user.lib.personaConfig import intent_catalog
+
+            catalog = intent_catalog()
+            presets = gpt_module._intent_presets()
+
+            catalog_keys = {preset.key for preset in catalog.values()}
+            preset_keys = {preset.key for preset in presets}
+            self.assertEqual(
+                catalog_keys,
+                preset_keys,
+                "GPT _intent_presets must cover the same IntentPreset keys as intent_catalog",
+            )
+
         def test_debug_toggles_respect_in_flight_guard(self):
-            with patch.object(
-                gpt_module, "_reject_if_request_in_flight", return_value=True
-            ), patch.object(GPTState, "start_debug") as start_debug, patch.object(
-                GPTState, "stop_debug"
-            ) as stop_debug:
+            with (
+                patch.object(
+                    gpt_module, "_reject_if_request_in_flight", return_value=True
+                ),
+                patch.object(GPTState, "start_debug") as start_debug,
+                patch.object(GPTState, "stop_debug") as stop_debug,
+            ):
                 gpt_module.UserActions.gpt_start_debug()
                 gpt_module.UserActions.gpt_stop_debug()
             start_debug.assert_not_called()
@@ -143,15 +176,24 @@ if bootstrap is not None:
                 styleModifier = "plain"
                 directionalModifier = "fog"
 
-            with patch.object(gpt_module, "safe_model_prompt", side_effect=ValueError("style axis is removed")):
+            with patch.object(
+                gpt_module,
+                "safe_model_prompt",
+                side_effect=ValueError("style axis is removed"),
+            ):
                 gpt_module.gpt_beta_paste_prompt(Match)
 
             actions.user.paste.assert_not_called()
             notifications = [
-                call for call in actions.user.calls + actions.app.calls if call[0] == "notify"
+                call
+                for call in actions.user.calls + actions.app.calls
+                if call[0] == "notify"
             ]
             self.assertTrue(
-                any("style axis is removed" in str(args[0]) for _name, args, _kwargs in notifications),
+                any(
+                    "style axis is removed" in str(args[0])
+                    for _name, args, _kwargs in notifications
+                ),
                 f"Expected migration hint notification, got: {notifications}",
             )
 
@@ -166,7 +208,9 @@ if bootstrap is not None:
                 staticPrompt = "fix"
                 directionalModifier = "fog"
 
-            with patch.object(gpt_module, "_reject_if_request_in_flight", return_value=True):
+            with patch.object(
+                gpt_module, "_reject_if_request_in_flight", return_value=True
+            ):
                 gpt_module.gpt_beta_paste_prompt(Match)
 
             actions.user.paste.assert_not_called()
@@ -413,7 +457,9 @@ if bootstrap is not None:
                 # Axis caps applied during replay.
                 # Scope cap keeps the last two tokens (order canonicalised).
                 self.assertEqual(set(GPTState.last_scope.split()), {"edges", "focus"})
-                self.assertEqual(set(GPTState.last_method.split()), {"steps", "plan", "xp"})
+                self.assertEqual(
+                    set(GPTState.last_method.split()), {"steps", "plan", "xp"}
+                )
                 self.assertEqual(GPTState.last_form, "table")
                 self.assertEqual(GPTState.last_channel, "jira")
 
@@ -444,7 +490,9 @@ if bootstrap is not None:
         def test_gpt_show_last_recipe_respects_in_flight_guard(self):
             GPTState.reset_all()
             with (
-                patch.object(gpt_module, "_reject_if_request_in_flight", return_value=True),
+                patch.object(
+                    gpt_module, "_reject_if_request_in_flight", return_value=True
+                ),
                 patch.object(actions.app, "notify") as app_notify,
             ):
                 gpt_module.UserActions.gpt_show_last_recipe()
@@ -453,7 +501,9 @@ if bootstrap is not None:
 
         def test_gpt_clear_last_recap_respects_in_flight_guard(self):
             with (
-                patch.object(gpt_module, "_reject_if_request_in_flight", return_value=True),
+                patch.object(
+                    gpt_module, "_reject_if_request_in_flight", return_value=True
+                ),
                 patch.object(gpt_module, "clear_recap_state") as clear_recap,
             ):
                 gpt_module.UserActions.gpt_clear_last_recap()
@@ -463,7 +513,9 @@ if bootstrap is not None:
         def test_gpt_show_last_meta_respects_in_flight_guard(self):
             GPTState.reset_all()
             with (
-                patch.object(gpt_module, "_reject_if_request_in_flight", return_value=True),
+                patch.object(
+                    gpt_module, "_reject_if_request_in_flight", return_value=True
+                ),
                 patch.object(actions.app, "notify") as app_notify,
             ):
                 gpt_module.UserActions.gpt_show_last_meta()
@@ -472,35 +524,45 @@ if bootstrap is not None:
 
         def test_gpt_show_pattern_debug_respects_in_flight_guard(self):
             with (
-                patch.object(gpt_module, "_reject_if_request_in_flight", return_value=True),
+                patch.object(
+                    gpt_module, "_reject_if_request_in_flight", return_value=True
+                ),
                 patch.object(actions.app, "notify") as app_notify,
             ):
                 gpt_module.UserActions.gpt_show_pattern_debug("foo")
             app_notify.assert_not_called()
 
         def test_insert_helpers_respect_in_flight_guard(self):
-            with patch.object(
-                gpt_module, "_reject_if_request_in_flight", return_value=True
-            ), patch.object(actions.user, "gpt_insert_response") as insert_resp:
+            with (
+                patch.object(
+                    gpt_module, "_reject_if_request_in_flight", return_value=True
+                ),
+                patch.object(actions.user, "gpt_insert_response") as insert_resp,
+            ):
                 gpt_module.UserActions.gpt_insert_text("hello")
                 gpt_module.UserActions.gpt_open_browser("hello")
             insert_resp.assert_not_called()
 
         def test_gpt_select_last_respects_in_flight_guard(self):
-            with patch.object(
-                gpt_module, "_reject_if_request_in_flight", return_value=True
-            ), patch.object(actions.edit, "extend_up") as extend_up, patch.object(
-                actions.edit, "extend_line_end"
-            ) as extend_line_end:
+            with (
+                patch.object(
+                    gpt_module, "_reject_if_request_in_flight", return_value=True
+                ),
+                patch.object(actions.edit, "extend_up") as extend_up,
+                patch.object(actions.edit, "extend_line_end") as extend_line_end,
+            ):
                 gpt_module.UserActions.gpt_select_last()
             extend_up.assert_not_called()
             extend_line_end.assert_not_called()
 
         def test_source_and_prepare_helpers_respect_in_flight_guard(self):
             source = MagicMock()
-            with patch.object(
-                gpt_module, "_reject_if_request_in_flight", return_value=True
-            ), patch.object(gpt_module, "PromptSession") as session_cls:
+            with (
+                patch.object(
+                    gpt_module, "_reject_if_request_in_flight", return_value=True
+                ),
+                patch.object(gpt_module, "PromptSession") as session_cls,
+            ):
                 text = gpt_module.UserActions.gpt_get_source_text("clipboard")
                 session = gpt_module.UserActions.gpt_prepare_message(
                     source, None, "prompt"
@@ -568,7 +630,9 @@ if bootstrap is not None:
         def test_gpt_copy_last_raw_exchange_respects_in_flight_guard(self):
             clip.set_text("sentinel")
 
-            with patch.object(gpt_module, "_reject_if_request_in_flight", return_value=True):
+            with patch.object(
+                gpt_module, "_reject_if_request_in_flight", return_value=True
+            ):
                 gpt_module.UserActions.gpt_copy_last_raw_exchange()
 
             # Clipboard should remain unchanged and no copy attempt made.
@@ -648,53 +712,116 @@ if bootstrap is not None:
             self.assertTrue(persona_notifies, "Expected persona_status to notify")
             self.assertTrue(intent_notifies, "Expected intent_status to notify")
 
+        def test_canonical_persona_values_align_with_persona_and_intent_catalogs(
+            self,
+        ) -> None:
+            """Canonical persona/intent helper must accept all catalog tokens.
+
+            This ties GPT's internal canonicaliser directly to the Persona & Intent
+            catalogs so future refactors stay aligned with ADR-0056.
+            """
+            from talon_user.lib.personaConfig import persona_catalog, intent_catalog
+
+            # Persona presets should use only canonical persona tokens.
+            personas = persona_catalog()
+            self.assertTrue(personas, "persona_catalog should not be empty")
+            for preset in personas.values():
+                if preset.voice:
+                    self.assertEqual(
+                        gpt_module._canonical_persona_value("voice", preset.voice),
+                        preset.voice,
+                    )
+                if preset.audience:
+                    self.assertEqual(
+                        gpt_module._canonical_persona_value(
+                            "audience", preset.audience
+                        ),
+                        preset.audience,
+                    )
+                if preset.tone:
+                    self.assertEqual(
+                        gpt_module._canonical_persona_value("tone", preset.tone),
+                        preset.tone,
+                    )
+
+            # Intent presets should use only canonical intent tokens.
+            intents = intent_catalog()
+            self.assertTrue(intents, "intent_catalog should not be empty")
+            for preset in intents.values():
+                self.assertEqual(
+                    gpt_module._canonical_persona_value("intent", preset.intent),
+                    preset.intent,
+                )
+
         def test_persona_status_respects_in_flight_guard(self) -> None:
-            with patch.object(gpt_module, "_reject_if_request_in_flight", return_value=True):
+            with patch.object(
+                gpt_module, "_reject_if_request_in_flight", return_value=True
+            ):
                 with patch.object(gpt_module, "notify") as notify_mock:
                     gpt_module.UserActions.persona_status()
             notify_mock.assert_not_called()
 
         def test_intent_status_respects_in_flight_guard(self) -> None:
-            with patch.object(gpt_module, "_reject_if_request_in_flight", return_value=True):
+            with patch.object(
+                gpt_module, "_reject_if_request_in_flight", return_value=True
+            ):
                 with patch.object(gpt_module, "notify") as notify_mock:
                     gpt_module.UserActions.intent_status()
             notify_mock.assert_not_called()
 
         def test_gpt_help_respects_in_flight_guard(self) -> None:
-            with patch.object(
-                gpt_module, "_reject_if_request_in_flight", return_value=True
-            ), patch.object(gpt_module, "open", side_effect=AssertionError("should not open")):
+            with (
+                patch.object(
+                    gpt_module, "_reject_if_request_in_flight", return_value=True
+                ),
+                patch.object(
+                    gpt_module, "open", side_effect=AssertionError("should not open")
+                ),
+            ):
                 gpt_module.UserActions.gpt_help()
 
         def test_clear_context_respects_in_flight_guard(self):
-            with patch.object(
-                gpt_module, "_reject_if_request_in_flight", return_value=True
-            ), patch.object(gpt_module.GPTState, "clear_context") as clear_ctx:
+            with (
+                patch.object(
+                    gpt_module, "_reject_if_request_in_flight", return_value=True
+                ),
+                patch.object(gpt_module.GPTState, "clear_context") as clear_ctx,
+            ):
                 gpt_module.UserActions.gpt_clear_context()
             clear_ctx.assert_not_called()
 
         def test_clear_stack_respects_in_flight_guard(self):
-            with patch.object(
-                gpt_module, "_reject_if_request_in_flight", return_value=True
-            ), patch.object(gpt_module.GPTState, "clear_stack") as clear_stack:
+            with (
+                patch.object(
+                    gpt_module, "_reject_if_request_in_flight", return_value=True
+                ),
+                patch.object(gpt_module.GPTState, "clear_stack") as clear_stack,
+            ):
                 gpt_module.UserActions.gpt_clear_stack("a")
             clear_stack.assert_not_called()
 
         def test_clear_all_respects_in_flight_guard(self):
-            with patch.object(
-                gpt_module, "_reject_if_request_in_flight", return_value=True
-            ), patch.object(gpt_module.GPTState, "clear_all") as clear_all:
+            with (
+                patch.object(
+                    gpt_module, "_reject_if_request_in_flight", return_value=True
+                ),
+                patch.object(gpt_module.GPTState, "clear_all") as clear_all,
+            ):
                 gpt_module.UserActions.gpt_clear_all()
             clear_all.assert_not_called()
 
         def test_persona_set_preset_respects_in_flight_guard(self) -> None:
-            with patch.object(gpt_module, "_reject_if_request_in_flight", return_value=True):
+            with patch.object(
+                gpt_module, "_reject_if_request_in_flight", return_value=True
+            ):
                 with patch.object(gpt_module, "notify") as notify_mock:
                     gpt_module.UserActions.persona_set_preset("teach_junior_dev")
             notify_mock.assert_not_called()
 
         def test_intent_set_preset_respects_in_flight_guard(self) -> None:
-            with patch.object(gpt_module, "_reject_if_request_in_flight", return_value=True):
+            with patch.object(
+                gpt_module, "_reject_if_request_in_flight", return_value=True
+            ):
                 with patch.object(gpt_module, "notify") as notify_mock:
                     gpt_module.UserActions.intent_set_preset("decide")
             notify_mock.assert_not_called()
@@ -703,7 +830,9 @@ if bootstrap is not None:
             GPTState.system_prompt = gpt_module.GPTSystemPrompt(
                 voice="as teacher", audience="to junior engineer", tone="kindly"
             )
-            with patch.object(gpt_module, "_reject_if_request_in_flight", return_value=True):
+            with patch.object(
+                gpt_module, "_reject_if_request_in_flight", return_value=True
+            ):
                 with patch.object(gpt_module, "notify") as notify_mock:
                     gpt_module.UserActions.persona_reset()
             notify_mock.assert_not_called()
@@ -714,7 +843,9 @@ if bootstrap is not None:
 
         def test_intent_reset_respects_in_flight_guard(self) -> None:
             GPTState.system_prompt = gpt_module.GPTSystemPrompt(intent="teach")
-            with patch.object(gpt_module, "_reject_if_request_in_flight", return_value=True):
+            with patch.object(
+                gpt_module, "_reject_if_request_in_flight", return_value=True
+            ):
                 with patch.object(gpt_module, "notify") as notify_mock:
                     gpt_module.UserActions.intent_reset()
             notify_mock.assert_not_called()
@@ -724,11 +855,13 @@ if bootstrap is not None:
             GPTState.system_prompt = gpt_module.GPTSystemPrompt(
                 voice="as teacher", audience="to junior engineer", tone="kindly"
             )
-            with patch.object(
-                gpt_module, "_reject_if_request_in_flight", return_value=True
-            ), patch.object(gpt_module, "_set_setting") as set_setting, patch.object(
-                gpt_module, "GPTSystemPrompt"
-            ) as prompt_cls:
+            with (
+                patch.object(
+                    gpt_module, "_reject_if_request_in_flight", return_value=True
+                ),
+                patch.object(gpt_module, "_set_setting") as set_setting,
+                patch.object(gpt_module, "GPTSystemPrompt") as prompt_cls,
+            ):
                 gpt_module.UserActions.gpt_reset_system_prompt()
             set_setting.assert_not_called()
             prompt_cls.assert_not_called()
@@ -761,11 +894,13 @@ if bootstrap is not None:
 
         def test_gpt_set_async_blocking_respects_in_flight_guard(self):
             gpt_module.settings.set("user.model_async_blocking", False)
-            with patch.object(
-                gpt_module, "_reject_if_request_in_flight", return_value=True
-            ), patch.object(gpt_module, "_set_setting") as set_setting, patch.object(
-                actions.app, "notify"
-            ) as app_notify:
+            with (
+                patch.object(
+                    gpt_module, "_reject_if_request_in_flight", return_value=True
+                ),
+                patch.object(gpt_module, "_set_setting") as set_setting,
+                patch.object(actions.app, "notify") as app_notify,
+            ):
                 gpt_module.UserActions.gpt_set_async_blocking(1)
             set_setting.assert_not_called()
             app_notify.assert_not_called()
@@ -792,10 +927,18 @@ if bootstrap is not None:
             self.assertEqual(
                 gpt_module.settings.get("user.model_default_completeness"), "full"
             )
-            self.assertEqual(gpt_module.settings.get("user.model_default_scope"), "narrow")
-            self.assertEqual(gpt_module.settings.get("user.model_default_method"), "steps")
-            self.assertEqual(gpt_module.settings.get("user.model_default_form"), "bullets")
-            self.assertEqual(gpt_module.settings.get("user.model_default_channel"), "slack")
+            self.assertEqual(
+                gpt_module.settings.get("user.model_default_scope"), "narrow"
+            )
+            self.assertEqual(
+                gpt_module.settings.get("user.model_default_method"), "steps"
+            )
+            self.assertEqual(
+                gpt_module.settings.get("user.model_default_form"), "bullets"
+            )
+            self.assertEqual(
+                gpt_module.settings.get("user.model_default_channel"), "slack"
+            )
             self.assertTrue(GPTState.user_overrode_completeness)
             self.assertTrue(GPTState.user_overrode_scope)
             self.assertTrue(GPTState.user_overrode_method)
@@ -830,9 +973,12 @@ if bootstrap is not None:
 
         def test_gpt_search_engine_respects_in_flight_guard(self):
             source = MagicMock()
-            with patch.object(
-                gpt_module, "_reject_if_request_in_flight", return_value=True
-            ), patch.object(actions.user, "gpt_run_prompt") as run_prompt:
+            with (
+                patch.object(
+                    gpt_module, "_reject_if_request_in_flight", return_value=True
+                ),
+                patch.object(actions.user, "gpt_run_prompt") as run_prompt,
+            ):
                 result = gpt_module.UserActions.gpt_search_engine("google", source)
             self.assertEqual(result, "")
             run_prompt.assert_not_called()
@@ -843,9 +989,12 @@ if bootstrap is not None:
             GPTState.user_overrode_method = True
             GPTState.user_overrode_form = True
             GPTState.user_overrode_channel = True
-            with patch.object(
-                gpt_module, "_reject_if_request_in_flight", return_value=True
-            ), patch.object(gpt_module, "_set_setting") as set_setting:
+            with (
+                patch.object(
+                    gpt_module, "_reject_if_request_in_flight", return_value=True
+                ),
+                patch.object(gpt_module, "_set_setting") as set_setting,
+            ):
                 gpt_module.UserActions.gpt_reset_default_completeness()
                 gpt_module.UserActions.gpt_reset_default_scope()
                 gpt_module.UserActions.gpt_reset_default_method()
@@ -864,25 +1013,33 @@ if bootstrap is not None:
             gpt_module.settings.set("user.model_default_method", "")
             gpt_module.settings.set("user.model_default_form", "")
             gpt_module.settings.set("user.model_default_channel", "")
-            with patch.object(
-                gpt_module, "_reject_if_request_in_flight", return_value=True
-            ), patch.object(gpt_module, "_set_setting") as set_setting:
+            with (
+                patch.object(
+                    gpt_module, "_reject_if_request_in_flight", return_value=True
+                ),
+                patch.object(gpt_module, "_set_setting") as set_setting,
+            ):
                 gpt_module.UserActions.gpt_set_default_completeness("full")
                 gpt_module.UserActions.gpt_set_default_scope("narrow")
                 gpt_module.UserActions.gpt_set_default_method("steps")
                 gpt_module.UserActions.gpt_set_default_form("bullets")
                 gpt_module.UserActions.gpt_set_default_channel("slack")
             set_setting.assert_not_called()
-            self.assertEqual(gpt_module.settings.get("user.model_default_completeness"), "")
+            self.assertEqual(
+                gpt_module.settings.get("user.model_default_completeness"), ""
+            )
             self.assertEqual(gpt_module.settings.get("user.model_default_scope"), "")
             self.assertEqual(gpt_module.settings.get("user.model_default_method"), "")
             self.assertEqual(gpt_module.settings.get("user.model_default_form"), "")
             self.assertEqual(gpt_module.settings.get("user.model_default_channel"), "")
 
         def test_gpt_help_respects_in_flight_guard(self):
-            with patch.object(
-                gpt_module, "_reject_if_request_in_flight", return_value=True
-            ), patch.object(actions.app, "open") as app_open:
+            with (
+                patch.object(
+                    gpt_module, "_reject_if_request_in_flight", return_value=True
+                ),
+                patch.object(actions.app, "open") as app_open,
+            ):
                 gpt_module.UserActions.gpt_help()
             app_open.assert_not_called()
 
@@ -1185,7 +1342,9 @@ if bootstrap is not None:
                 def wait(self, timeout=None):
                     return True
 
-            handle = _Handle(PromptResult.from_messages([format_message(suggestion_text)]))
+            handle = _Handle(
+                PromptResult.from_messages([format_message(suggestion_text)])
+            )
             self.pipeline.complete_async.return_value = handle
             GPTState.current_destination_kind = "window"
 
@@ -1233,7 +1392,9 @@ if bootstrap is not None:
                 mock_session._destination = "paste"
 
                 # Force the suggest flow to take the synchronous path we control.
-                self.pipeline.complete_async.side_effect = Exception("async unavailable")
+                self.pipeline.complete_async.side_effect = Exception(
+                    "async unavailable"
+                )
                 self.pipeline.complete.return_value = PromptResult.from_messages(
                     [format_message(suggestion_text)]
                 )
@@ -1252,12 +1413,16 @@ if bootstrap is not None:
             controller = RequestUIController()
             set_controller(controller)
             try:
-                with patch.object(gpt_module, "notify") as notify_mock:
+                with (
+                    patch.object(gpt_module, "set_drop_reason") as set_reason,
+                    patch.object(gpt_module, "notify") as notify_mock,
+                ):
                     rid = emit_begin_send()
 
                     self.assertTrue(gpt_module._reject_if_request_in_flight())
                     self.assertTrue(gpt_module._reject_if_request_in_flight())
 
+                set_reason.assert_called_once_with("in_flight")
                 notify_mock.assert_called_once()
 
                 emit_complete(request_id=rid)
@@ -1293,7 +1458,9 @@ if bootstrap is not None:
                     patch.object(actions.user, "notify") as notify_user,
                     patch.object(actions.app, "notify") as notify_app,
                 ):
-                    gpt_module.notify("GPT: A request is already running; wait for it to finish or cancel it first.")
+                    gpt_module.notify(
+                        "GPT: A request is already running; wait for it to finish or cancel it first."
+                    )
                 notify_user.assert_not_called()
                 notify_app.assert_not_called()
             finally:
@@ -1311,9 +1478,10 @@ if bootstrap is not None:
 
                 self.assertEqual(current_state().request_id, rid)
 
-                with patch.object(actions.user, "notify") as notify_user, patch.object(
-                    actions.app, "notify"
-                ) as notify_app:
+                with (
+                    patch.object(actions.user, "notify") as notify_user,
+                    patch.object(actions.app, "notify") as notify_app,
+                ):
                     # Multiple guards should only emit one notification for the same request.
                     self.assertTrue(suggestion_module._reject_if_request_in_flight())
                     self.assertEqual(modelHelpers._last_notify_request_id, rid)
@@ -1440,11 +1608,16 @@ if bootstrap is not None:
             GPTState.last_suggest_content = "cached content"
             GPTState.last_suggest_subject = "previous subject"
             GPTState.last_suggest_source = "clipboard"
-            GPTState.last_suggested_recipes = [{"name": "n", "recipe": "describe · fog"}]
+            GPTState.last_suggested_recipes = [
+                {"name": "n", "recipe": "describe · fog"}
+            ]
 
-            with patch.object(
-                gpt_module, "_reject_if_request_in_flight", return_value=False
-            ), patch.object(gpt_module, "_suggest_prompt_recipes_core_impl") as core:
+            with (
+                patch.object(
+                    gpt_module, "_reject_if_request_in_flight", return_value=False
+                ),
+                patch.object(gpt_module, "_suggest_prompt_recipes_core_impl") as core,
+            ):
                 gpt_module.UserActions.gpt_rerun_last_suggest()
 
             core.assert_called_once()
@@ -1466,7 +1639,9 @@ if bootstrap is not None:
             GPTState.last_suggest_source = "clipboard"
 
             with (
-                patch.object(gpt_module, "_reject_if_request_in_flight", return_value=True),
+                patch.object(
+                    gpt_module, "_reject_if_request_in_flight", return_value=True
+                ),
                 patch.object(gpt_module, "create_model_source") as create_source,
             ):
                 source = MagicMock()
@@ -1528,9 +1703,12 @@ if bootstrap is not None:
             self.pipeline.run_async.assert_not_called()
 
         def test_gpt_query_honors_in_flight_guard(self):
-            with patch.object(
-                gpt_module, "_reject_if_request_in_flight", return_value=True
-            ), patch.object(gpt_module, "send_request") as send_req:
+            with (
+                patch.object(
+                    gpt_module, "_reject_if_request_in_flight", return_value=True
+                ),
+                patch.object(gpt_module, "send_request") as send_req,
+            ):
                 result = gpt_module.gpt_query()
 
             self.assertEqual(result, "")
@@ -1561,28 +1739,36 @@ if bootstrap is not None:
             handle_async.assert_called_once_with(handle, "thread", block=False)
 
         def test_thread_state_helpers_respect_in_flight_guard(self):
-            with patch.object(
-                gpt_module, "_reject_if_request_in_flight", return_value=True
-            ), patch.object(GPTState, "new_thread") as new_thread:
+            with (
+                patch.object(
+                    gpt_module, "_reject_if_request_in_flight", return_value=True
+                ),
+                patch.object(GPTState, "new_thread") as new_thread,
+            ):
                 gpt_module.UserActions.gpt_clear_thread()
             new_thread.assert_not_called()
 
-            with patch.object(
-                gpt_module, "_reject_if_request_in_flight", return_value=True
-            ), patch.object(GPTState, "enable_thread") as enable_thread, patch.object(
-                GPTState, "disable_thread"
-            ) as disable_thread:
+            with (
+                patch.object(
+                    gpt_module, "_reject_if_request_in_flight", return_value=True
+                ),
+                patch.object(GPTState, "enable_thread") as enable_thread,
+                patch.object(GPTState, "disable_thread") as disable_thread,
+            ):
                 gpt_module.UserActions.gpt_enable_threading()
                 gpt_module.UserActions.gpt_disable_threading()
             enable_thread.assert_not_called()
             disable_thread.assert_not_called()
 
         def test_context_push_respects_in_flight_guard(self):
-            with patch.object(
-                gpt_module, "_reject_if_request_in_flight", return_value=True
-            ), patch.object(GPTState, "push_context") as push_ctx, patch.object(
-                GPTState, "push_query"
-            ) as push_query, patch.object(GPTState, "push_thread") as push_thread:
+            with (
+                patch.object(
+                    gpt_module, "_reject_if_request_in_flight", return_value=True
+                ),
+                patch.object(GPTState, "push_context") as push_ctx,
+                patch.object(GPTState, "push_query") as push_query,
+                patch.object(GPTState, "push_thread") as push_thread,
+            ):
                 gpt_module.UserActions.gpt_push_context("ctx")
                 gpt_module.UserActions.gpt_push_query("q")
                 gpt_module.UserActions.gpt_push_thread("t")
@@ -1785,10 +1971,17 @@ if bootstrap is not None:
                 "directional": ["fog"],
             }
 
-            with patch.object(
-                gpt_module, "_reject_if_request_in_flight", return_value=True
-            ), patch.object(actions.user, "gpt_apply_prompt", MagicMock()) as apply_mock:
-                gpt_module.UserActions.gpt_rerun_last_recipe("", "", [], [], "fog", "", "")
+            with (
+                patch.object(
+                    gpt_module, "_reject_if_request_in_flight", return_value=True
+                ),
+                patch.object(
+                    actions.user, "gpt_apply_prompt", MagicMock()
+                ) as apply_mock,
+            ):
+                gpt_module.UserActions.gpt_rerun_last_recipe(
+                    "", "", [], [], "fog", "", ""
+                )
 
             self.assertFalse(apply_mock.called)
 
@@ -1810,9 +2003,14 @@ if bootstrap is not None:
             class DummySource:
                 modelSimpleSource = "clipboard"
 
-            with patch.object(
-                gpt_module, "_reject_if_request_in_flight", return_value=True
-            ), patch.object(actions.user, "gpt_apply_prompt", MagicMock()) as apply_mock:
+            with (
+                patch.object(
+                    gpt_module, "_reject_if_request_in_flight", return_value=True
+                ),
+                patch.object(
+                    actions.user, "gpt_apply_prompt", MagicMock()
+                ) as apply_mock,
+            ):
                 gpt_module.UserActions.gpt_rerun_last_recipe_with_source(
                     DummySource(), "", "", [], [], "fog", "", ""
                 )
@@ -1933,7 +2131,9 @@ if bootstrap is not None:
                 create_destination.return_value = destination
                 model_prompt.return_value = "PROMPT"
 
-                gpt_module.UserActions.gpt_rerun_last_recipe("", "", [], [], "rog", "", "")
+                gpt_module.UserActions.gpt_rerun_last_recipe(
+                    "", "", [], [], "rog", "", ""
+                )
 
             match = model_prompt.call_args.args[0]
             self.assertEqual(match.staticPrompt, "infer")
@@ -1995,7 +2195,9 @@ if bootstrap is not None:
                 create_destination.return_value = destination
                 model_prompt.return_value = "PROMPT"
 
-                gpt_module.UserActions.gpt_rerun_last_recipe("", "", [], [], "rog", "", "")
+                gpt_module.UserActions.gpt_rerun_last_recipe(
+                    "", "", [], [], "rog", "", ""
+                )
 
             self.assertEqual(
                 GPTState.last_axes,
@@ -2086,17 +2288,22 @@ if bootstrap is not None:
                 "directional": [],
             }
 
-            with patch.object(gpt_module, "modelPrompt") as model_prompt, patch.object(
-                gpt_module.actions.user, "gpt_apply_prompt"
-            ) as apply_prompt, patch.object(
-                gpt_module.actions.user, "notify"
-            ) as user_notify:
+            with (
+                patch.object(gpt_module, "modelPrompt") as model_prompt,
+                patch.object(
+                    gpt_module.actions.user, "gpt_apply_prompt"
+                ) as apply_prompt,
+                patch.object(gpt_module.actions.user, "notify") as user_notify,
+            ):
                 gpt_module.UserActions.gpt_rerun_last_recipe("", "", [], [], "", "", "")
 
             model_prompt.assert_not_called()
             apply_prompt.assert_not_called()
             self.assertTrue(
-                any("directional" in str(call.args[0]).lower() for call in user_notify.call_args_list)
+                any(
+                    "directional" in str(call.args[0]).lower()
+                    for call in user_notify.call_args_list
+                )
             )
 
         def test_gpt_rerun_last_recipe_filters_unknown_directional(self):

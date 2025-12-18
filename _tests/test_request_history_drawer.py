@@ -16,7 +16,11 @@ if bootstrap is not None:
         history_drawer_entries_from,
     )
     import talon_user.lib.requestHistoryDrawer as history_drawer  # type: ignore
-    from talon_user.lib.requestLog import append_entry, clear_history
+    from talon_user.lib.requestLog import (
+        append_entry,
+        clear_history,
+        last_drop_reason_code,
+    )
     from talon import canvas
 
     class RequestHistoryDrawerTests(unittest.TestCase):
@@ -35,7 +39,9 @@ if bootstrap is not None:
             import sys
 
             module = sys.modules["talon_user.lib.requestHistoryDrawer"]
-            with patch.object(module, "_reject_if_request_in_flight", return_value=True):
+            with patch.object(
+                module, "_reject_if_request_in_flight", return_value=True
+            ):
                 DrawerActions.request_history_drawer_open()
                 DrawerActions.request_history_drawer_toggle()
                 DrawerActions.request_history_drawer_close()
@@ -99,6 +105,7 @@ if bootstrap is not None:
             with patch.object(
                 actions.user, "gpt_request_history_save_latest_source"
             ) as save_mock:
+
                 def _save():
                     append_entry(
                         "rid-new",
@@ -121,16 +128,22 @@ if bootstrap is not None:
         def test_drawer_key_s_triggers_save_latest_source(self):
             from talon_user.lib import requestLog as requestlog  # type: ignore
             from talon import actions
+
             requestlog.clear_history()
             HistoryDrawerState.entries = []
             HistoryDrawerState.showing = False
-            with patch.object(
-                actions.user, "request_history_drawer_save_latest_source"
-            ) as save_mock, patch.object(
-                actions.user, "gpt_request_history_save_latest_source"
-            ) as gpt_save:
+            with (
+                patch.object(
+                    actions.user, "request_history_drawer_save_latest_source"
+                ) as save_mock,
+                patch.object(
+                    actions.user, "gpt_request_history_save_latest_source"
+                ) as gpt_save,
+            ):
                 gpt_save.return_value = "/tmp/file.md"
-                save_mock.side_effect = DrawerActions.request_history_drawer_save_latest_source
+                save_mock.side_effect = (
+                    DrawerActions.request_history_drawer_save_latest_source
+                )
                 DrawerActions.request_history_drawer_open()
                 actions.user.request_history_drawer_save_latest_source()
                 save_mock.assert_called()
@@ -140,12 +153,18 @@ if bootstrap is not None:
         def test_drawer_save_latest_respects_inflight_guard(self):
             from talon_user.lib import requestLog as requestlog  # type: ignore
             from talon import actions
+
             requestlog.clear_history()
             HistoryDrawerState.entries = []
             HistoryDrawerState.showing = False
-            with patch.object(
-                history_drawer, "_reject_if_request_in_flight", return_value=True
-            ), patch.object(actions.user, "gpt_request_history_save_latest_source") as save_mock:
+            with (
+                patch.object(
+                    history_drawer, "_reject_if_request_in_flight", return_value=True
+                ),
+                patch.object(
+                    actions.user, "gpt_request_history_save_latest_source"
+                ) as save_mock,
+            ):
                 result = DrawerActions.request_history_drawer_save_latest_source()
             self.assertIsNone(result)
             save_mock.assert_not_called()
@@ -159,9 +178,12 @@ if bootstrap is not None:
 
         def test_drawer_refresh_respects_inflight_guard(self):
             HistoryDrawerState.showing = True
-            with patch.object(
-                history_drawer, "_reject_if_request_in_flight", return_value=True
-            ) as guard_mock, patch.object(history_drawer, "_refresh_entries") as refresh_mock:
+            with (
+                patch.object(
+                    history_drawer, "_reject_if_request_in_flight", return_value=True
+                ) as guard_mock,
+                patch.object(history_drawer, "_refresh_entries") as refresh_mock,
+            ):
                 DrawerActions.request_history_drawer_refresh()
             guard_mock.assert_called()
             refresh_mock.assert_not_called()
@@ -178,9 +200,13 @@ if bootstrap is not None:
                     self.shown = True
 
             dummy_canvas = DummyCanvas()
-            with patch.object(
-                history_drawer, "_ensure_canvas", return_value=dummy_canvas
-            ), patch.object(history_drawer, "_refresh_entries") as refresh_mock:
+            with (
+                patch.object(
+                    history_drawer, "_ensure_canvas", return_value=dummy_canvas
+                ),
+                patch.object(history_drawer, "_refresh_entries") as refresh_mock,
+            ):
+
                 def _refresh():
                     HistoryDrawerState.entries.append(("rid-new", "body"))
 
@@ -197,13 +223,17 @@ if bootstrap is not None:
             HistoryDrawerState.showing = True
             HistoryDrawerState.entries = []
             with patch.object(history_drawer, "_ensure_canvas") as ensure_canvas:
+
                 class DummyCanvas:
                     def show(self):
                         pass
+
                 ensure_canvas.return_value = DummyCanvas()
                 DrawerActions.request_history_drawer_refresh()
             self.assertEqual(HistoryDrawerState.entries, [])
             self.assertIn("directional lens", HistoryDrawerState.last_message)
+            # Showing the message should consume the underlying drop reason.
+            self.assertEqual(last_drop_reason_code(), "")
 
         def test_drawer_escape_closes(self):
             from types import SimpleNamespace

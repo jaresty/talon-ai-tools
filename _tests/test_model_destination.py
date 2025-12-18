@@ -13,7 +13,7 @@ if bootstrap is not None:
     from talon import actions, clip
     from talon_user.lib.modelDestination import ModelDestination
     from talon_user.lib import modelDestination as model_destination_module
-    from talon_user.lib.modelHelpers import format_message
+    from talon_user.lib.modelHelpers import build_request, format_message
     from talon_user.lib.modelPresentation import (
         ResponsePresentation,
         render_for_destination,
@@ -22,10 +22,119 @@ if bootstrap is not None:
     from talon_user.lib.modelState import GPTState
 
     class ModelDestinationTests(unittest.TestCase):
+        class FakeElement:
+            def __init__(self, attrs):
+                self._attrs = attrs
+
+            def get(self, name):
+                return self._attrs.get(name)
+
         def setUp(self):
             actions.user.calls.clear()
             clip.set_text(None)
             GPTState.reset_all()
+            GPTState.debug_enabled = False
+
+        @patch.object(model_destination_module.ui, "focused_element")
+        def test_inside_textarea_accepts_text_entry_role(self, focused_element):
+            focused_element.return_value = self.FakeElement({"AXRole": "AXTextEntry"})
+            self.assertTrue(ModelDestination().inside_textarea())
+
+        @patch.object(model_destination_module.ui, "focused_element")
+        def test_inside_textarea_uses_accessibility_hints(self, focused_element):
+            focused_element.return_value = self.FakeElement(
+                {"AXRole": "AXGroup", "AXSubrole": "AXSearchField"}
+            )
+            self.assertTrue(ModelDestination().inside_textarea())
+
+            focused_element.return_value = self.FakeElement(
+                {"AXRole": "AXGroup", "AXRoleDescription": "Text Field"}
+            )
+            self.assertTrue(ModelDestination().inside_textarea())
+
+            focused_element.return_value = self.FakeElement(
+                {
+                    "AXRole": "AXGroup",
+                    "AXSupportsTextSelection": True,
+                    "AXValue": "draft note",
+                }
+            )
+            self.assertTrue(ModelDestination().inside_textarea())
+
+            focused_element.return_value = self.FakeElement({"AXRole": "AXButton"})
+            self.assertFalse(ModelDestination().inside_textarea())
+
+        @patch.object(model_destination_module.ui, "focused_element")
+        def test_inside_textarea_logs_when_debug_enabled(self, focused_element):
+            GPTState.debug_enabled = True
+            self.addCleanup(lambda: setattr(GPTState, "debug_enabled", False))
+
+            focused_element.return_value = self.FakeElement({"AXRole": "AXTextField"})
+            with patch("talon_user.lib.modelDestination.print") as mock_print:
+                ModelDestination().inside_textarea()
+
+            mock_print.assert_called()
+            message = " ".join(str(arg) for arg in mock_print.call_args.args)
+            self.assertIn("inside_textarea=True", message)
+            self.assertIn("AXRole='AXTextField'", message)
+            self.assertIn("reason=AXRole matches text role", message)
+
+        def test_inside_textarea_fallbacks_with_language_context(self):
+            with (
+                patch.object(
+                    model_destination_module.ui,
+                    "focused_element",
+                    side_effect=RuntimeError("No element found."),
+                ),
+                patch.object(
+                    model_destination_module.actions.code,
+                    "language",
+                    return_value="python",
+                ),
+                patch("talon_user.lib.modelDestination.print") as mock_print,
+            ):
+                self.assertTrue(ModelDestination().inside_textarea())
+
+            message = " ".join(str(arg) for arg in mock_print.call_args.args)
+            self.assertIn("inside_textarea=True", message)
+            self.assertIn("fallback via language context 'python'", message)
+
+        def test_inside_textarea_returns_false_when_no_fallback(self):
+            with (
+                patch.object(
+                    model_destination_module.ui,
+                    "focused_element",
+                    side_effect=RuntimeError("No element found."),
+                ),
+                patch.object(
+                    model_destination_module.actions.code, "language", return_value=""
+                ),
+                patch.object(
+                    model_destination_module.actions.app, "name", return_value="Preview"
+                ),
+                patch("talon_user.lib.modelDestination.print") as mock_print,
+            ):
+                self.assertFalse(ModelDestination().inside_textarea())
+
+            message = " ".join(str(arg) for arg in mock_print.call_args.args)
+            self.assertIn("inside_textarea=False", message)
+            self.assertIn("focused element lookup failed", message)
+
+        @patch("talon_user.lib.modelHelpers.print")
+        def test_build_request_logs_textarea_check_when_debug(self, mock_helpers_print):
+            GPTState.debug_enabled = True
+            self.addCleanup(lambda: setattr(GPTState, "debug_enabled", False))
+
+            build_request(model_destination_module.Above())
+
+            messages = [
+                " ".join(str(arg) for arg in call.args)
+                for call in mock_helpers_print.call_args_list
+            ]
+            self.assertTrue(
+                any("inside_textarea check" in message for message in messages),
+                "Expected build_request to log textarea detection when debug is enabled",
+            )
 
         @patch.object(model_destination_module, "Builder")
         def test_browser_includes_recipe_metadata_from_gpt_state(self, builder_cls):

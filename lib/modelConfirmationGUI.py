@@ -8,7 +8,8 @@ from .axisJoin import axis_join
 from .modelHelpers import GPTState, extract_message, notify
 from .overlayLifecycle import close_common_overlays
 from .requestBus import current_state
-from .requestState import RequestPhase
+from .requestState import RequestPhase, is_in_flight, try_start_request
+from .requestLog import drop_reason_message, set_drop_reason
 from .modelPresentation import ResponsePresentation
 from .metaPromptConfig import first_meta_preview_line, meta_preview_lines
 
@@ -39,25 +40,38 @@ class ConfirmationGUIState:
 
 
 def _request_is_in_flight() -> bool:
-    """Return True when a GPT request is currently running."""
+    """Return True when a GPT request is currently running.
+
+    This delegates to the central ``is_in_flight`` helper so confirmation
+    gating stays aligned with the RequestState/RequestLifecycle contract.
+    """
     try:
-        phase = getattr(current_state(), "phase", RequestPhase.IDLE)
-        return phase not in (
-            RequestPhase.IDLE,
-            RequestPhase.DONE,
-            RequestPhase.ERROR,
-            RequestPhase.CANCELLED,
-        )
+        state = current_state()
+    except Exception:
+        return False
+    try:
+        return is_in_flight(state)  # type: ignore[arg-type]
     except Exception:
         return False
 
 
 def _reject_if_request_in_flight() -> bool:
     """Notify and return True when a GPT request is already running."""
-    if _request_is_in_flight():
-        notify(
-            "GPT: A request is already running; wait for it to finish or cancel it first."
-        )
+    try:
+        state = current_state()
+    except Exception:
+        return False
+    try:
+        allowed, reason = try_start_request(state)  # type: ignore[arg-type]
+    except Exception:
+        return False
+    if not allowed and reason == "in_flight":
+        message = drop_reason_message("in_flight")
+        try:
+            set_drop_reason("in_flight")
+        except Exception:
+            pass
+        notify(message)
         return True
     return False
 
@@ -93,9 +107,7 @@ def confirmation_gui(gui: imgui.GUI):
     last_method = axis_join(
         axes_tokens, "method", getattr(GPTState, "last_method", "") or ""
     )
-    last_form = axis_join(
-        axes_tokens, "form", getattr(GPTState, "last_form", "") or ""
-    )
+    last_form = axis_join(axes_tokens, "form", getattr(GPTState, "last_form", "") or "")
     last_channel = axis_join(
         axes_tokens, "channel", getattr(GPTState, "last_channel", "") or ""
     )

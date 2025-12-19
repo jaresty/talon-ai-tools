@@ -1,6 +1,8 @@
 import os
+import shutil
 import tempfile
 import unittest
+from dataclasses import replace
 from typing import TYPE_CHECKING, Optional
 from unittest.mock import patch
 
@@ -31,15 +33,16 @@ if bootstrap is not None:
         remediate_history_axes,
         set_drop_reason,
         validate_history_axes,
+        history_validation_stats,
     )
     from talon_user.lib.modelState import GPTState
     from talon_user.lib.modelConfirmationGUI import (
         ConfirmationGUIState,
         UserActions as ConfirmationActions,
     )
+    from talon_user.lib.personaConfig import persona_intent_maps_reset
     from talon_user.lib import modelDestination as model_destination_module
     from talon_user.lib.modelPresentation import ResponsePresentation
-    from talon_user.lib.requestState import RequestPhase
     from talon import actions
 
     class RequestHistoryActionTests(unittest.TestCase):
@@ -175,619 +178,146 @@ if bootstrap is not None:
             app_notify_calls = [c for c in actions.app.calls if c[0] == "notify"]
             self.assertEqual(len(notify_calls) + len(app_notify_calls), 0)
 
-        def test_request_is_in_flight_handles_request_phases(self):
-            class State:
-                def __init__(self, phase):
-                    self.phase = phase
-
-            with patch.object(
-                history_actions,
-                "current_state",
-                return_value=State(RequestPhase.STREAMING),
-            ):
-                self.assertTrue(_request_is_in_flight())
-
-            for terminal in (
-                RequestPhase.IDLE,
-                RequestPhase.DONE,
-                RequestPhase.ERROR,
-                RequestPhase.CANCELLED,
-            ):
-                with patch.object(
-                    history_actions, "current_state", return_value=State(terminal)
-                ):
-                    self.assertFalse(_request_is_in_flight())
-
-        def test_reject_if_request_in_flight_notifies_and_blocks(self):
-            with (
-                patch.object(
-                    history_actions,
-                    "try_start_request",
-                    return_value=(False, "in_flight"),
-                ),
-                patch.object(history_actions, "current_state"),
-                patch.object(history_actions, "set_drop_reason") as set_reason,
-                patch.object(history_actions, "notify") as notify_mock,
-            ):
-                self.assertTrue(_reject_if_request_in_flight())
-            set_reason.assert_called_once_with("in_flight")
-            notify_mock.assert_called_once()
-
-            with (
-                patch.object(
-                    history_actions, "try_start_request", return_value=(True, "")
-                ),
-                patch.object(history_actions, "current_state"),
-                patch.object(history_actions, "set_drop_reason") as set_reason,
-                patch.object(history_actions, "notify") as notify_mock,
-            ):
-                self.assertFalse(_reject_if_request_in_flight())
-            set_reason.assert_not_called()
-            notify_mock.assert_not_called()
-
-        def test_model_source_save_dir_prefers_setting_and_expands_user(self):
-            with patch.object(settings, "get", return_value="~/example-dir"):
-                path = _model_source_save_dir()
-            self.assertTrue(path.endswith("example-dir"))
-            self.assertFalse(path.startswith("~"), path)
-
-        def test_model_source_save_dir_falls_back_to_repo_talon_root(self):
-            with patch.object(settings, "get", return_value=""):
-                path = _model_source_save_dir()
-            self.assertTrue(path.endswith("talon-ai-model-sources"))
-
-        def test_history_save_handles_directory_creation_failure(self):
-            append_entry(
-                "rid-err",
-                "prompt",
-                "resp",
-                "meta",
-                recipe="infer · full · rigor",
-                axes={"directional": ["fog"]},
+        def test_history_save_includes_persona_and_intent_metadata(self):
+            original_dir = settings.get("user.model_source_save_directory", "")
+            self.addCleanup(
+                lambda: settings.set("user.model_source_save_directory", original_dir)
             )
 
-            import talon_user.lib.streamingCoordinator as streaming
-
-            GPTState.last_streaming_events = []
-            streaming.new_streaming_session("rid-err")
-
-            with (
-                patch.object(history_actions, "notify") as notify_mock,
-                patch("os.makedirs", side_effect=OSError("boom")),
-                patch("builtins.open") as open_mock,
-            ):
-                HistoryActions.gpt_request_history_save_latest_source()
-            notify_mock.assert_called()
-            open_mock.assert_not_called()
-            self.assertEqual(last_drop_reason_code(), "history_save_dir_create_failed")
-
-            events = getattr(GPTState, "last_streaming_events", [])
-            history_event = next(e for e in events if e.get("kind") == "history_saved")
-            self.assertFalse(history_event.get("success"))
-            self.assertEqual(history_event.get("path"), "")
-            self.assertIn(
-                "Could not create source directory", history_event.get("error")
-            )
-
-        def test_history_save_handles_write_failure(self):
             tmpdir = tempfile.mkdtemp()
-            from talon import settings as talon_settings  # type: ignore
+            self.addCleanup(lambda: shutil.rmtree(tmpdir, ignore_errors=True))
+            settings.set("user.model_source_save_directory", tmpdir)
 
-            talon_settings.set("user.model_source_save_directory", tmpdir)
-            GPTState.last_history_save_path = "stale"
+            persona_intent_maps_reset()
+            GPTState.reset_all()
+            self.addCleanup(lambda: GPTState.reset_all())
 
-            append_entry(
-                "rid-write-err",
-                "prompt",
-                "resp",
-                "meta",
-                recipe="infer · full · rigor",
-                axes={"directional": ["fog"]},
-            )
-
-            import talon_user.lib.streamingCoordinator as streaming
-
-            GPTState.last_streaming_events = []
-            streaming.new_streaming_session("rid-write-err")
-
-            with (
-                patch.object(history_actions, "notify") as notify_mock,
-                patch("builtins.open", side_effect=OSError("boom")) as open_mock,
-            ):
-                result = HistoryActions.gpt_request_history_save_latest_source()
-
-            self.assertIsNone(result)
-            notify_mock.assert_called()
-            open_mock.assert_called()
-            self.assertEqual(GPTState.last_history_save_path, "")
-            self.assertEqual(last_drop_reason_code(), "history_save_write_failed")
-
-            events = getattr(GPTState, "last_streaming_events", [])
-            history_event = next(e for e in events if e.get("kind") == "history_saved")
-            self.assertFalse(history_event.get("success"))
-            self.assertIn("rid-write-err", history_event.get("path") or "")
-            self.assertTrue(
-                os.path.realpath(history_event.get("path") or "").startswith(
-                    os.path.realpath(tmpdir)
-                )
-            )
-            self.assertIn(
-                "Failed to save history source file", history_event.get("error")
-            )
-
-        def test_prev_next_navigation(self):
-            append_entry("rid-1", "p1", "resp1", "meta1", axes={"directional": ["fog"]})
-            append_entry("rid-2", "p2", "resp2", "meta2", axes={"directional": ["fog"]})
-            append_entry("rid-3", "p3", "resp3", "meta3", axes={"directional": ["fog"]})
-
-            HistoryActions.gpt_request_history_show_latest()
-            HistoryActions.gpt_request_history_prev()
-            self.assertEqual(GPTState.last_response, "resp2")
-            HistoryActions.gpt_request_history_prev()
-            self.assertEqual(GPTState.last_response, "resp1")
-            # Attempting to go past oldest should not change.
-            HistoryActions.gpt_request_history_prev()
-            self.assertEqual(GPTState.last_response, "resp1")
-            # Step forward to newer entries.
-            HistoryActions.gpt_request_history_next()
-            self.assertEqual(GPTState.last_response, "resp2")
-            HistoryActions.gpt_request_history_next()
-            self.assertEqual(GPTState.last_response, "resp3")
-            # Already at latest.
-            HistoryActions.gpt_request_history_next()
-
-        def test_history_list_notifies(self):
-            append_entry(
-                "rid-1",
-                "prompt one",
-                "resp1",
-                duration_ms=7,
-                axes={"directional": ["fog"]},
-            )
-            actions.user.calls.clear()
-            actions.app.calls.clear()
-            HistoryActions.gpt_request_history_list(2)
-            notify_calls = [c for c in actions.user.calls if c[0] == "notify"]
-            app_notify_calls = [c for c in actions.app.calls if c[0] == "notify"]
-            self.assertGreaterEqual(len(notify_calls) + len(app_notify_calls), 1)
-
-        def test_history_list_filters_and_orders_directional_entries(self):
-            # Legacy entry missing directional should be skipped.
-            self._append_raw_entry(
-                "rid-old",
-                "old prompt",
-                "old resp",
-                axes={"scope": ["focus"]},
-            )
-            append_entry(
-                "rid-mid",
-                "mid prompt",
-                "mid resp",
-                axes={"directional": ["jog"]},
-            )
-            # Legacy recipe-only directional fallback should still be recognised.
-            self._append_raw_entry(
-                "rid-new",
-                "new prompt",
-                "new resp",
-                recipe="infer · gist · focus · fog",
-                axes={},
-            )
-
-            with patch.object(history_actions, "notify") as notify_mock:
-                HistoryActions.gpt_request_history_list(3)
-
-            notify_mock.assert_called_once()
-            message = str(notify_mock.call_args[0][0])
-            self.assertIn("rid-new", message)
-            self.assertIn("rid-mid", message)
-            self.assertNotIn("rid-old", message)
-            new_idx = message.find("rid-new")
-            mid_idx = message.find("rid-mid")
-            self.assertLess(new_idx, mid_idx)
-
-        def test_history_list_handles_entries_without_recipe(self):
-            # Simulate legacy entries lacking a recipe attribute by monkeypatching all_entries.
-            class LegacyEntry:
-                def __init__(self, request_id, prompt, response, meta=""):
-                    self.request_id = request_id
-                    self.prompt = prompt
-                    self.response = response
-                    self.meta = meta
-                    self.duration_ms = None
-                    self.recipe = "infer · gist · focus · fog"
-                    self.axes = {}
-
-            saved_all_entries = all_entries
-            try:
-
-                def legacy_all_entries():
-                    return [
-                        LegacyEntry(
-                            "rid-legacy", "prompt legacy", "resp legacy", "meta legacy"
-                        )
-                    ]
-
-                HistoryActions.all_entries = staticmethod(legacy_all_entries)  # type: ignore[attr-defined]
-                actions.user.calls.clear()
-                actions.app.calls.clear()
-                HistoryActions.gpt_request_history_list(1)
-                notify_calls = [c for c in actions.user.calls if c[0] == "notify"]
-                app_notify_calls = [c for c in actions.app.calls if c[0] == "notify"]
-                self.assertGreaterEqual(len(notify_calls) + len(app_notify_calls), 1)
-            finally:
-                HistoryActions.all_entries = staticmethod(saved_all_entries)  # type: ignore[attr-defined]
-
-        def test_history_open_clears_presentation_and_pastes_entry(self):
-            append_entry(
-                "rid-1",
-                "prompt one",
-                "history answer",
-                duration_ms=7,
-                axes={"directional": ["fog"]},
-            )
-            ConfirmationGUIState.current_presentation = ResponsePresentation(
-                display_text="old display",
-                paste_text="old paste",
-            )
-            ConfirmationGUIState.display_thread = True
-            ConfirmationGUIState.last_item_text = "thread chunk"
-
-            HistoryActions.gpt_request_history_show_latest()
-            with patch.object(
-                model_destination_module.Paste,
-                "inside_textarea",
-                return_value=True,
-            ):
-                ConfirmationActions.confirmation_gui_paste()
-
-            self.assertIsNone(ConfirmationGUIState.current_presentation)
-            self.assertFalse(ConfirmationGUIState.display_thread)
-            self.assertEqual(actions.user.pasted[-1], "history answer")
-
-        def test_history_open_syncs_axes_from_recipe(self):
-            # Seed stale live axes and ensure the history entry recipe replaces them.
-            GPTState.last_static_prompt = "todo"
-            GPTState.last_completeness = "gist"
-            GPTState.last_scope = "actions"
-            GPTState.last_method = "steps"
-            GPTState.last_directional = "rog"
-
-            self._append_raw_entry(
-                "rid-1",
-                "prompt text",
-                "resp",
-                meta="meta",
-                recipe="infer · full · rigor · jog",
-                axes={},  # rely on recipe directional token
-            )
-
-            HistoryActions.gpt_request_history_show_latest()
-
-            self.assertEqual(GPTState.last_static_prompt, "infer")
-            self.assertEqual(GPTState.last_completeness, "full")
-            self.assertEqual(GPTState.last_method, "rigor")
-            self.assertEqual(GPTState.last_directional, "jog")
-
-        def test_history_show_latest_prefers_axes_dict(self):
-            # If an entry includes an axes dict, it should win over the legacy recipe string.
-            axes = {
-                "completeness": ["max"],
-                "scope": ["edges", "bound"],
-                "method": ["rigor"],
-                "form": ["bullets"],
-                "channel": ["jira"],
-                "directional": ["fog"],
-            }
-            expected_axes = history_axes_for(axes)
-            append_entry(
-                "rid-axes",
-                "prompt text",
-                "resp axes",
-                "meta axes",
-                recipe="infer · full · bound · steps · bullets",
-                axes=axes,
-            )
-
-            HistoryActions.gpt_request_history_show_latest()
-
-            self.assertEqual(GPTState.last_axes, expected_axes)
-            # last_* strings should be derived from the axes tokens (not the legacy recipe).
-            self.assertEqual(GPTState.last_completeness, "max")
-            self.assertEqual(
-                GPTState.last_scope, " ".join(expected_axes.get("scope", []))
-            )
-            self.assertEqual(GPTState.last_method, "rigor")
-            self.assertEqual(GPTState.last_form, "bullets")
-            self.assertEqual(GPTState.last_channel, "jira")
-            self.assertEqual(GPTState.last_directional, "fog")
-            self.assertIn("fog", GPTState.last_recipe)
-
-        def test_history_show_latest_recap_uses_last_axes_tokens(self):
-            axes = {
-                "completeness": ["full"],
-                "scope": ["bound", "edges"],
-                "method": ["rigor", "xp"],
-                "form": ["bullets"],
-                "directional": ["fog"],
-            }
-            append_entry(
-                "rid-axes",
-                "prompt text",
-                "resp axes",
-                "meta axes",
-                recipe="legacy · should · be · ignored",
-                axes=axes,
-            )
-
-            HistoryActions.gpt_request_history_show_latest()
-
-            # The recap recipe string is derived from tokens, not the legacy recipe.
-            expected_recipe = " · ".join(
-                ["", "full", "bound edges", "rigor xp", "bullets", "fog"]
-            ).strip(" ·")
-            self.assertEqual(GPTState.last_recipe, expected_recipe)
-
-        def test_history_show_latest_ignores_extra_axes(self):
-            axes = {"directional": ["fog"], "custom": ["value"]}
-            append_entry(
-                "rid-extra",
-                "prompt text",
-                "resp extra",
-                "meta extra",
-                recipe="infer · gist",
-                axes=axes,
-            )
-
-            HistoryActions.gpt_request_history_show_latest()
-
-            self.assertNotIn("custom", GPTState.last_axes)
-            self.assertEqual(GPTState.last_axes.get("directional"), ["fog"])
-
-        def test_history_rejects_style_axis_entries(self):
-            axes = {
-                "style": ["plain"],
-                "form": ["table"],
-                "channel": ["slack"],
-                "directional": ["rog"],
-            }
-
-            with self.assertRaisesRegex(ValueError, "style axis is removed"):
-                append_entry(
-                    "rid-style",
-                    "prompt text",
-                    "resp axes",
-                    "meta axes",
-                    recipe="legacy · plain",
-                    axes=axes,
-                )
-
-        def test_notify_records_when_suppressed(self):
-            """Even when notifications are suppressed, intent should be logged for guardrails."""
-            from types import SimpleNamespace
-
-            with patch.object(
-                history_actions,
-                "current_state",
-                return_value=SimpleNamespace(request_id="req-suppress"),
-            ):
-                try:
-                    GPTState.suppress_inflight_notify_request_id = "req-suppress"
-                    actions.user.calls.clear()
-                    actions.app.calls.clear()
-                    history_actions.notify("suppressed message")
-                    notify_calls = [c for c in actions.user.calls if c[0] == "notify"]
-                    app_notify_calls = [
-                        c for c in actions.app.calls if c[0] == "notify"
-                    ]
-                    self.assertGreaterEqual(
-                        len(notify_calls) + len(app_notify_calls), 1
-                    )
-                finally:
-                    try:
-                        delattr(GPTState, "suppress_inflight_notify_request_id")
-                    except Exception:
-                        pass
-
-        def test_history_show_latest_filters_invalid_axis_tokens(self):
-            axes = {
-                "completeness": ["full", "Important: Hydrated completeness"],
-                "scope": ["bound", "Invalid scope"],
-                "method": ["rigor", "Unknown method"],
-                "form": ["bullets", "Hydrated style"],
-                "directional": ["fog"],
-            }
-            append_entry(
-                "rid-axes",
-                "prompt text",
-                "resp axes",
-                "meta axes",
-                recipe="legacy · should · be · ignored",
-                axes=axes,
-            )
-
-            HistoryActions.gpt_request_history_show_latest()
-
-            self.assertEqual(GPTState.last_axes.get("completeness"), ["full"])
-            self.assertEqual(GPTState.last_axes.get("scope"), ["bound"])
-            self.assertEqual(GPTState.last_axes.get("method"), ["rigor"])
-            self.assertEqual(GPTState.last_axes.get("form"), ["bullets"])
-            self.assertEqual(GPTState.last_axes.get("directional"), ["fog"])
-
-        def test_history_axes_for_filters_invalid_tokens(self):
-            axes = {
-                "completeness": ["full", "Important: Hydrated completeness"],
-                "scope": ["bound", "Invalid scope"],
-                "method": ["rigor", "Unknown method"],
-                "form": ["bullets", "Hydrated style"],
-            }
-
-            filtered = history_axes_for(axes)
-
-            self.assertEqual(filtered.get("completeness"), ["full"])
-            self.assertEqual(filtered.get("scope"), ["bound"])
-            self.assertEqual(filtered.get("method"), ["rigor"])
-            self.assertEqual(filtered.get("form"), ["bullets"])
-            self.assertFalse(filtered.get("directional"))
-
-        def test_history_axes_for_applies_axis_caps(self):
-            axes = {
-                "scope": ["bound", "edges", "focus"],
-                "method": ["rigor", "xp", "steps", "plan"],
-                "form": ["code", "table"],
-                "channel": ["slack", "jira"],
-                "directional": ["fog"],
-            }
-
-            filtered = history_axes_for(axes)
-
-            self.assertEqual(filtered.get("scope"), ["edges", "focus"])
-            self.assertEqual(filtered.get("method"), ["plan", "steps", "xp"])
-            # Form/channel are singletons post-split; caps enforce last-wins.
-            self.assertEqual(filtered.get("form"), ["table"])
-            self.assertEqual(filtered.get("channel"), ["jira"])
-            self.assertEqual(filtered.get("directional"), ["fog"])
-
-        def test_history_entry_without_directional_notifies_and_returns(self):
-            # History entries lacking directional should not open the canvas or update last state.
-            self._append_raw_entry(
-                "rid-no-dir",
-                "prompt",
-                "response",
-                meta="",
-                recipe="describe · gist · focus · flow",
-                axes={
-                    "completeness": ["gist"],
-                    "scope": ["focus"],
-                    "method": ["flow"],
-                    "form": ["bullets"],
-                    "channel": ["slack"],
-                    "directional": [],
-                },
-            )
-            GPTState.last_directional = ""
-            with (
-                patch.object(app, "notify") as notify_mock,
-                patch.object(actions.user, "model_response_canvas_open") as canvas_mock,
-                patch.object(history_actions, "notify") as notify_fn,
-            ):
-                HistoryActions.gpt_request_history_show_latest()
-
-            notify_fn.assert_called()
-            canvas_mock.assert_not_called()
-            self.assertEqual(GPTState.last_directional, "")
-
-        def test_history_entry_without_directional_hydrates_state_but_no_canvas(self):
+            GPTState.last_recipe = "describe · full · focus · plan · plain · fog"
+            GPTState.last_static_prompt = "describe"
+            GPTState.last_completeness = "full"
+            GPTState.last_scope = "focus"
+            GPTState.last_method = "plan"
+            GPTState.last_form = "plain"
+            GPTState.last_channel = "slack"
             GPTState.last_directional = "fog"
-            GPTState.last_response = "prev-response"
-            setattr(GPTState, "current_provider_id", "prev-provider")
-            self._append_raw_entry(
-                "rid-no-dir-2",
-                "prompt",
-                "response",
-                meta="",
-                recipe="describe · gist · focus",
-                axes={
-                    "completeness": ["gist"],
-                    "scope": ["focus"],
-                    "method": ["flow"],
-                    "form": ["bullets"],
-                    "channel": ["slack"],
-                    "directional": [],
-                },
-            )
-            with (
-                patch.object(app, "notify"),
-                patch.object(actions.user, "model_response_canvas_open") as canvas_mock,
-                patch.object(history_actions, "notify") as notify_fn,
-            ):
-                HistoryActions.gpt_request_history_show_latest()
+            GPTState.last_axes = {
+                "completeness": ["full"],
+                "scope": ["focus"],
+                "method": ["plan"],
+                "form": ["plain"],
+                "channel": ["slack"],
+                "directional": ["fog"],
+            }
+            GPTState.last_suggest_context = {
+                "persona_preset_key": "teach_junior_dev",
+                "intent_preset_key": "decide",
+            }
 
-            notify_fn.assert_called()
-            canvas_mock.assert_not_called()
-            # State should remain unchanged when directional is missing.
-            self.assertEqual(GPTState.last_directional, "fog")
-            self.assertEqual(GPTState.last_response, "prev-response")
-            self.assertEqual(
-                getattr(GPTState, "current_provider_id", ""), "prev-provider"
-            )
-
-        def test_prev_keeps_navigation_when_directional_missing(self):
-            self._append_raw_entry(
-                "rid-no-dir",
-                "prompt",
-                "resp missing dir",
-                meta="meta",
-                axes={"directional": []},
-            )
             append_entry(
-                "rid-ok",
-                "prompt ok",
-                "resp ok",
+                "rid-persona",
+                "prompt persona",
+                "resp",
                 "meta",
-                axes={"directional": ["fog"]},
-            )
-            HistoryActions.gpt_request_history_show_latest()
-            self.assertEqual(GPTState.last_response, "resp ok")
-            # cursor at 0; prev should skip missing-directional entry, notify, and keep cursor at latest
-            with patch.object(history_actions, "notify") as notify_mock:
-                HistoryActions.gpt_request_history_prev()
-            self.assertGreaterEqual(len(notify_mock.call_args_list), 1)
-            self.assertEqual(getattr(history_actions, "_cursor_offset"), 0)
-            self.assertEqual(GPTState.last_response, "resp ok")
-
-        def test_history_summary_lines_matches_existing_formatting(self):
-            append_entry(
-                "rid-1",
-                "prompt one",
-                "resp1",
-                "meta1",
-                recipe="infer · full · rigor",
-                duration_ms=7,
-                axes={"directional": ["fog"]},
-            )
-
-            entries = all_entries()[-1:]
-            lines = history_summary_lines(entries)
-
-            self.assertEqual(
-                lines, ["0: rid-1 (7ms) | infer · full · rigor · fog · prompt one"]
-            )
-
-        def test_history_summary_lines_prefers_axes_tokens(self):
-            append_entry(
-                "rid-axes",
-                "prompt one",
-                "resp1",
-                "meta1",
-                recipe="infer · legacy-style",
+                recipe="describe · full · focus · plan · plain · fog",
                 axes={
                     "completeness": ["full"],
-                    "scope": ["actions"],
-                    "method": ["rigor"],
-                    "form": ["adr"],
+                    "scope": ["focus"],
+                    "method": ["plan"],
+                    "form": ["plain"],
                     "channel": ["slack"],
                     "directional": ["fog"],
                 },
             )
 
-            lines = history_summary_lines(all_entries()[-1:])
-
-            self.assertTrue(any("adr" in line and "slack" in line for line in lines))
-            self.assertFalse(any("legacy-style" in line for line in lines))
-
-        def test_history_summary_lines_include_provider(self):
-            append_entry(
-                "rid-2",
-                "prompt provider",
-                "resp2",
-                "meta2",
-                recipe="infer · full · rog",
-                axes={"directional": ["rog"]},
-                provider_id="gemini",
-            )
             lines = history_summary_lines(all_entries())
-            self.assertTrue(any("provider=gemini" in line for line in lines))
+            persona_line = next(line for line in lines if "persona" in line.lower())
+            intent_line = next(line for line in lines if "intent" in line.lower())
+            persona_lower = persona_line.lower()
+            intent_lower = intent_line.lower()
+            self.assertIn("persona mentor", persona_lower)
+            self.assertIn("key=teach_junior_dev", persona_lower)
+            self.assertIn("say: persona mentor", persona_lower)
+            self.assertIn("intent for deciding", intent_lower)
+            self.assertIn("key=decide", intent_lower)
+            self.assertIn("say: intent for deciding", intent_lower)
+
+        def test_history_list_includes_persona_and_intent_metadata(self):
+            persona_intent_maps_reset()
+            GPTState.reset_all()
+            self.addCleanup(lambda: GPTState.reset_all())
+
+            GPTState.last_recipe = "describe · full · focus · plan · plain · fog"
+            GPTState.last_static_prompt = "describe"
+            GPTState.last_completeness = "full"
+            GPTState.last_scope = "focus"
+            GPTState.last_method = "plan"
+            GPTState.last_form = "plain"
+            GPTState.last_channel = "slack"
+            GPTState.last_directional = "fog"
+            GPTState.last_axes = {
+                "completeness": ["full"],
+                "scope": ["focus"],
+                "method": ["plan"],
+                "form": ["plain"],
+                "channel": ["slack"],
+                "directional": ["fog"],
+            }
+            GPTState.last_suggest_context = {
+                "persona_preset_key": "teach_junior_dev",
+                "intent_preset_key": "decide",
+            }
+
+            append_entry(
+                "rid-persona",
+                "prompt persona",
+                "resp",
+                "meta",
+                recipe="describe · full · focus · plan · plain · fog",
+                axes={
+                    "completeness": ["full"],
+                    "scope": ["focus"],
+                    "method": ["plan"],
+                    "form": ["plain"],
+                    "channel": ["slack"],
+                    "directional": ["fog"],
+                },
+            )
+
+            with patch.object(history_actions, "notify") as notify_mock:
+                HistoryActions.gpt_request_history_list(1)
+
+            notify_mock.assert_called()
+            message = str(notify_mock.call_args[0][0]).lower()
+            self.assertIn("recent model requests", message)
+            self.assertIn("persona mentor", message)
+            self.assertIn("key=teach_junior_dev", message)
+            self.assertIn("say: persona mentor", message)
+            self.assertIn("intent for deciding", message)
+            self.assertIn("key=decide", message)
+            self.assertIn("say: intent for deciding", message)
+
+        def test_history_validation_stats_include_persona_intent_pairs(self):
+            persona_intent_maps_reset()
+            GPTState.reset_all()
+            append_entry(
+                "rid-alias",
+                "prompt",
+                "resp",
+                "meta",
+                axes={"directional": ["fog"]},
+                persona={
+                    "persona_preset_spoken": "mentor",
+                    "intent_display": "For deciding",
+                },
+            )
+
+            stats = history_validation_stats()
+            persona_pairs = stats.get("persona_alias_pairs", {})
+            self.assertIn("teach_junior_dev", persona_pairs)
+            self.assertEqual(persona_pairs["teach_junior_dev"].get("mentor"), 1)
+            intent_pairs = stats.get("intent_display_pairs", {})
+            self.assertIn("decide", intent_pairs)
+            self.assertEqual(intent_pairs["decide"].get("For deciding"), 1)
 
         def test_history_summary_lines_skips_entries_without_directional(self):
             append_entry(
@@ -823,6 +353,31 @@ if bootstrap is not None:
             lines = history_summary_lines(all_entries())
 
             self.assertEqual(len(lines), 0)
+
+        def test_append_entry_normalises_persona_intent_snapshot(self):
+            persona_intent_maps_reset()
+            GPTState.reset_all()
+            self.addCleanup(lambda: GPTState.reset_all())
+
+            append_entry(
+                "rid-alias",
+                "prompt",
+                "resp",
+                axes={"directional": ["fog"]},
+                persona={
+                    "persona_preset_spoken": "mentor",
+                    "intent_display": "For deciding",
+                },
+            )
+
+            lines = history_summary_lines(all_entries())
+            persona_line = next(line for line in lines if "persona" in line.lower())
+            intent_line = next(line for line in lines if "intent" in line.lower())
+
+            self.assertIn("persona mentor", persona_line.lower())
+            self.assertIn("key=teach_junior_dev", persona_line.lower())
+            self.assertIn("intent for deciding", intent_line.lower())
+            self.assertIn("key=decide", intent_line.lower())
 
         def test_history_list_notifies_when_no_directional_entries(self):
             # Legacy lens-less entry should surface the directional guardrail.
@@ -1929,12 +1484,94 @@ if bootstrap is not None:
             validate_history_axes()
 
             entry = requestlog._history._entries[-1]
-            entry.axes.setdefault("mystery", []).append("foo")
+            mutated = replace(entry, axes={**entry.axes, "mystery": ["foo"]})
+            requestlog._history._entries[-1] = mutated
             try:
                 with self.assertRaisesRegex(ValueError, "mystery"):
                     validate_history_axes()
             finally:
-                entry.axes.pop("mystery", None)
+                requestlog._history._entries[-1] = entry
+
+        def test_validate_history_axes_requires_persona_headers_when_snapshot_present(
+            self,
+        ) -> None:
+            import talon_user.lib.requestLog as requestlog  # type: ignore
+
+            append_entry(
+                "rid-persona",
+                "prompt",
+                "response",
+                axes={"directional": ["fog"]},
+            )
+            entry = requestlog._history._entries[-1]
+            mutated = replace(entry, persona={"unexpected": "value"})
+            requestlog._history._entries[-1] = mutated
+            try:
+                with self.assertRaisesRegex(ValueError, "persona snapshot"):
+                    validate_history_axes()
+            finally:
+                requestlog._history._entries[-1] = entry
+
+        def test_validate_history_axes_requires_persona_say_hint(self) -> None:
+            import talon_user.lib.requestLog as requestlog  # type: ignore
+
+            append_entry(
+                "rid-persona-say",
+                "prompt",
+                "response",
+                axes={"directional": ["fog"]},
+            )
+            entry = requestlog._history._entries[-1]
+            mutated = replace(
+                entry,
+                persona={
+                    "persona_preset_key": "teach_junior_dev",
+                    "intent_preset_key": "decide",
+                },
+            )
+            requestlog._history._entries[-1] = mutated
+            try:
+                with patch(
+                    "talon_user.lib.requestHistoryActions._persona_header_lines",
+                    return_value=[
+                        "persona_preset: teach_junior_dev (label=Teach junior dev)"
+                    ],
+                ):
+                    with self.assertRaisesRegex(ValueError, "say hint"):
+                        validate_history_axes()
+            finally:
+                requestlog._history._entries[-1] = entry
+
+        def test_validate_history_axes_requires_intent_say_hint(self) -> None:
+            import talon_user.lib.requestLog as requestlog  # type: ignore
+
+            append_entry(
+                "rid-intent-say",
+                "prompt",
+                "response",
+                axes={"directional": ["fog"]},
+            )
+            entry = requestlog._history._entries[-1]
+            mutated = replace(
+                entry,
+                persona={
+                    "persona_preset_key": "teach_junior_dev",
+                    "intent_preset_key": "decide",
+                },
+            )
+            requestlog._history._entries[-1] = mutated
+            try:
+                with patch(
+                    "talon_user.lib.requestHistoryActions._persona_header_lines",
+                    return_value=[
+                        "intent_preset: decide (label=Decide)",
+                        "persona_preset: teach_junior_dev (label=Teach junior dev; say: persona mentor)",
+                    ],
+                ):
+                    with self.assertRaisesRegex(ValueError, "say hint"):
+                        validate_history_axes()
+            finally:
+                requestlog._history._entries[-1] = entry
 
         def test_history_save_filename_includes_provider_slug(self):
             tmpdir = tempfile.mkdtemp()
@@ -2110,7 +1747,7 @@ if bootstrap is not None:
             content = open(os.path.join(tmpdir, files[0]), "r", encoding="utf-8").read()
             self.assertRegex(content, r"^saved_at: .*Z", "saved_at should be UTC (Z)")
 
-        def test_history_save_blocks_when_current_state_in_flight(self):
+        def test_history_save_blocks_when_request_in_flight(self):
             append_entry(
                 "rid-flight",
                 "prompt",
@@ -2119,15 +1756,11 @@ if bootstrap is not None:
                 recipe="infer · full · rigor",
             )
 
-            class State:
-                def __init__(self, phase):
-                    self.phase = phase
-
             with (
                 patch.object(
                     history_actions,
-                    "current_state",
-                    return_value=State(RequestPhase.STREAMING),
+                    "try_begin_request",
+                    return_value=(False, "in_flight"),
                 ),
                 patch.object(history_actions, "notify") as notify_mock,
                 patch.object(
@@ -2152,12 +1785,8 @@ if bootstrap is not None:
                 axes={"directional": ["fog"]},
             )
 
-            class State:
-                def __init__(self, phase):
-                    self.phase = phase
-
             with patch.object(
-                history_actions, "current_state", return_value=State(RequestPhase.DONE)
+                history_actions, "try_begin_request", return_value=(True, "")
             ):
                 HistoryActions.gpt_request_history_save_latest_source()
 
@@ -2178,15 +1807,11 @@ if bootstrap is not None:
                 axes={"directional": ["fog"]},
             )
 
-            class State:
-                def __init__(self, phase):
-                    self.phase = phase
-
             with (
                 patch.object(
                     history_actions,
-                    "current_state",
-                    return_value=State(RequestPhase.DONE),
+                    "try_begin_request",
+                    return_value=(True, ""),
                 ),
                 patch.object(history_actions, "notify") as notify_mock,
             ):
@@ -2296,15 +1921,11 @@ if bootstrap is not None:
                 axes={"directional": ["fog"]},
             )
 
-            class State:
-                def __init__(self, phase):
-                    self.phase = phase
-
             with (
                 patch.object(
                     history_actions,
-                    "current_state",
-                    return_value=State(RequestPhase.SENDING),
+                    "try_begin_request",
+                    return_value=(False, "in_flight"),
                 ),
                 patch.object(
                     history_actions, "_save_history_prompt_to_file"
@@ -2314,7 +1935,7 @@ if bootstrap is not None:
             save_mock.assert_not_called()
 
             with patch.object(
-                history_actions, "current_state", return_value=State(RequestPhase.DONE)
+                history_actions, "try_begin_request", return_value=(True, "")
             ):
                 HistoryActions.gpt_request_history_save_latest_source()
             files = os.listdir(tmpdir)

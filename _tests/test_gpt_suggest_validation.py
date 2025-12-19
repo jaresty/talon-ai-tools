@@ -235,6 +235,69 @@ if bootstrap is not None:
             self.assertEqual(suggestion["name"], "Display intent")
             self.assertEqual(suggestion.get("intent_purpose"), "vision")
 
+        def test_json_suggestions_alias_only_fields_canonicalise(self) -> None:
+            payload = {
+                "suggestions": [
+                    {
+                        "name": "Alias metadata",
+                        "recipe": "describe · full · focus · plan · plain · fog",
+                        "persona_preset_label": "TEACH JUNIOR DEV",
+                        "intent_display": "For-Deciding!",
+                        "why": "Ensure alias-only presets canonicalise before storage.",
+                    }
+                ]
+            }
+            self.pipeline.complete.return_value = PromptResult.from_messages(
+                [format_message(json.dumps(payload))]
+            )
+
+            captured: list[dict[str, str]] = []
+
+            def fake_record_suggestions(suggestions, source_key) -> None:
+                for entry in suggestions:
+                    captured.append(dict(entry))
+                GPTState.last_suggested_recipes = list(suggestions)
+                GPTState.last_suggest_source = source_key or ""
+
+            with (
+                patch.object(gpt_module, "create_model_source") as create_source,
+                patch.object(gpt_module, "PromptSession") as session_cls,
+                patch(
+                    "talon_user.GPT.gpt.record_suggestions",
+                    side_effect=fake_record_suggestions,
+                ),
+            ):
+                source = MagicMock()
+                source.get_text.return_value = "content"
+                create_source.return_value = source
+                session = session_cls.return_value
+                session._destination = "paste"
+
+                gpt_module.UserActions.gpt_suggest_prompt_recipes("subject")
+
+            self.assertEqual(len(captured), 1)
+            entry = captured[0]
+            self.assertEqual(entry.get("persona_preset_key"), "teach_junior_dev")
+            self.assertEqual(entry.get("persona_preset_label"), "Teach junior dev")
+            self.assertEqual(entry.get("persona_preset_spoken"), "mentor")
+            self.assertEqual(entry.get("persona_voice"), "as teacher")
+            self.assertEqual(entry.get("persona_audience"), "to junior engineer")
+            self.assertEqual(entry.get("persona_tone"), "kindly")
+            self.assertEqual(entry.get("intent_purpose"), "decide")
+            self.assertEqual(entry.get("intent_preset_key"), "decide")
+            self.assertEqual(entry.get("intent_preset_label"), "Decide")
+            self.assertEqual(entry.get("intent_display"), "for deciding")
+
+        def test_canonical_persona_value_normalises_aliases(self) -> None:
+            self.assertEqual(
+                gpt_module._canonical_persona_value("intent", "For-Deciding!"),
+                "decide",
+            )
+            self.assertEqual(
+                gpt_module._canonical_persona_value("voice", "AS TEACHER!!!"),
+                "as teacher",
+            )
+
         def test_json_suggestions_without_reasoning_still_parse(self) -> None:
             # Payload omits reasoning entirely; validation should still succeed.
             payload = {

@@ -20,6 +20,7 @@ if bootstrap is not None:
         last_recipe_snapshot,
         last_recap_snapshot,
         suggestion_entries_with_metadata,
+        suggestion_context,
     )
     from talon_user.lib.modelState import GPTState
 
@@ -179,8 +180,169 @@ if bootstrap is not None:
             self.assertEqual(GPTState.last_suggested_recipes, [])
             notifications = [c for c in actions.user.calls if c[0] == "notify"]
             self.assertTrue(
-                any("directional" in str(args[0]).lower() for _, args, _ in notifications)
+                any(
+                    "directional" in str(args[0]).lower()
+                    for _, args, _ in notifications
+                )
             )
+
+        def test_record_suggestions_hydrates_persona_and_intent_aliases(self) -> None:
+            from talon_user.lib.personaConfig import persona_intent_maps
+
+            maps = persona_intent_maps(force_refresh=True)
+            persona_preset = next(iter(maps.persona_presets.values()))
+            intent_preset = next(iter(maps.intent_presets.values()))
+            display_alias = (
+                maps.intent_display_map.get(intent_preset.key)
+                or maps.intent_display_map.get(intent_preset.intent)
+                or intent_preset.label
+                or intent_preset.key
+                or intent_preset.intent
+                or ""
+            ).strip()
+            self.assertTrue(display_alias)
+
+            record_suggestions(
+                [
+                    {
+                        "name": "Hydrate aliases",
+                        "recipe": "describe · gist · focus · plain · fog",
+                        "persona_voice": persona_preset.voice or "",
+                        "persona_audience": persona_preset.audience or "",
+                        "persona_tone": persona_preset.tone or "",
+                        "intent_purpose": intent_preset.intent,
+                    }
+                ],
+                "clipboard",
+            )
+
+            entries = suggestion_entries_with_metadata()
+            self.assertEqual(len(entries), 1)
+            entry = entries[0]
+            expected_persona_label = persona_preset.label or persona_preset.key
+            expected_persona_spoken = (
+                persona_preset.spoken or persona_preset.label or persona_preset.key
+            )
+            expected_intent_label = intent_preset.label or intent_preset.key
+
+            self.assertEqual(entry.get("persona_preset_key"), persona_preset.key)
+            self.assertEqual(entry.get("persona_preset_label"), expected_persona_label)
+            self.assertEqual(
+                entry.get("persona_preset_spoken"), expected_persona_spoken
+            )
+            self.assertEqual(entry.get("persona_voice"), persona_preset.voice or "")
+            self.assertEqual(
+                entry.get("persona_audience"), persona_preset.audience or ""
+            )
+            self.assertEqual(entry.get("persona_tone"), persona_preset.tone or "")
+            self.assertEqual(entry.get("intent_preset_key"), intent_preset.key)
+            self.assertEqual(entry.get("intent_preset_label"), expected_intent_label)
+            self.assertEqual(entry.get("intent_purpose"), intent_preset.intent)
+            self.assertEqual(entry.get("intent_display"), display_alias)
+
+        def test_suggestion_context_hydrates_aliases_from_state(self) -> None:
+            from talon_user.lib.personaConfig import persona_intent_maps
+
+            maps = persona_intent_maps(force_refresh=True)
+            persona_preset = next(iter(maps.persona_presets.values()))
+            intent_preset = next(iter(maps.intent_presets.values()))
+
+            GPTState.last_suggest_context = {
+                "persona_preset_key": persona_preset.key,
+                "intent_purpose": intent_preset.intent,
+            }
+
+            hydrated = suggestion_context()
+
+            expected_persona_spoken = (
+                persona_preset.spoken or persona_preset.label or persona_preset.key
+            )
+            expected_intent_display = (
+                maps.intent_display_map.get(intent_preset.key)
+                or maps.intent_display_map.get(intent_preset.intent)
+                or intent_preset.label
+                or intent_preset.key
+            )
+
+            self.assertEqual(
+                hydrated.get("persona_preset_label"),
+                persona_preset.label or persona_preset.key,
+            )
+            self.assertEqual(
+                hydrated.get("persona_preset_spoken"), expected_persona_spoken
+            )
+            self.assertEqual(hydrated.get("persona_voice"), persona_preset.voice or "")
+            self.assertEqual(
+                hydrated.get("persona_audience"), persona_preset.audience or ""
+            )
+            self.assertEqual(hydrated.get("persona_tone"), persona_preset.tone or "")
+            self.assertEqual(hydrated.get("intent_preset_key"), intent_preset.key)
+            self.assertEqual(
+                hydrated.get("intent_preset_label"),
+                intent_preset.label or intent_preset.key,
+            )
+            self.assertEqual(hydrated.get("intent_display"), expected_intent_display)
+
+            GPTState.last_suggest_context = {}
+            hydrated_default = suggestion_context({"foo": "bar"})
+            self.assertEqual(hydrated_default.get("foo"), "bar")
+
+        def test_last_recipe_snapshot_includes_aliases_from_context(self) -> None:
+            from talon_user.lib.personaConfig import persona_intent_maps
+
+            maps = persona_intent_maps(force_refresh=True)
+            persona_preset = next(iter(maps.persona_presets.values()))
+            intent_preset = next(iter(maps.intent_presets.values()))
+
+            GPTState.last_recipe = "describe · gist · fog"
+            GPTState.last_axes = {
+                "completeness": ["gist"],
+                "scope": ["focus"],
+                "method": ["plain"],
+                "form": [],
+                "channel": [],
+                "directional": ["fog"],
+            }
+            GPTState.last_static_prompt = "describe"
+            GPTState.last_suggest_context = {
+                "persona_preset_key": persona_preset.key,
+                "intent_purpose": intent_preset.intent,
+            }
+
+            snapshot = last_recipe_snapshot()
+
+            expected_persona_spoken = (
+                persona_preset.spoken or persona_preset.label or persona_preset.key
+            )
+            expected_intent_display = (
+                maps.intent_display_map.get(intent_preset.key)
+                or maps.intent_display_map.get(intent_preset.intent)
+                or intent_preset.label
+                or intent_preset.key
+            )
+
+            self.assertEqual(snapshot.get("persona_preset_key"), persona_preset.key)
+            self.assertEqual(
+                snapshot.get("persona_preset_label"),
+                persona_preset.label or persona_preset.key,
+            )
+            self.assertEqual(
+                snapshot.get("persona_preset_spoken"), expected_persona_spoken
+            )
+            self.assertEqual(snapshot.get("persona_voice"), persona_preset.voice or "")
+            self.assertEqual(
+                snapshot.get("persona_audience"), persona_preset.audience or ""
+            )
+            self.assertEqual(snapshot.get("persona_tone"), persona_preset.tone or "")
+            self.assertEqual(snapshot.get("intent_preset_key"), intent_preset.key)
+            self.assertEqual(
+                snapshot.get("intent_preset_label"),
+                intent_preset.label or intent_preset.key,
+            )
+            self.assertEqual(snapshot.get("intent_display"), expected_intent_display)
+            self.assertEqual(snapshot.get("intent_purpose"), intent_preset.intent)
+
+            GPTState.last_suggest_context = {}
 
 else:
     if not TYPE_CHECKING:

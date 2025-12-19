@@ -2,11 +2,12 @@
 
 from __future__ import annotations
 
-from typing import Iterable, List, Dict, Optional
+from typing import Iterable, List, Dict, Optional, Any
 
 from .modelState import GPTState
 from .axisMappings import axis_registry_tokens
 from .modelHelpers import notify
+from .personaConfig import persona_intent_maps
 
 
 def _recipe_has_directional(recipe: str) -> bool:
@@ -21,19 +22,136 @@ def record_suggestions(
 ) -> None:
     """Persist the latest suggestions and source key in GPTState."""
     debug_mode = bool(getattr(GPTState, "debug_enabled", False))
+    try:
+        maps = persona_intent_maps()
+    except Exception:
+        maps = None
+
     suggestions_list: list[dict[str, str]] = []
     for item in suggestions:
         recipe = str(item.get("recipe", "") or "").strip()
         if recipe and not _recipe_has_directional(recipe):
             if debug_mode:
-                print(f"record_suggestions skipped entry without directional: {recipe!r}")
+                print(
+                    f"record_suggestions skipped entry without directional: {recipe!r}"
+                )
             notify(
                 "GPT: Suggestion skipped because it has no directional lens; expected fog/fig/dig/ong/rog/bog/jog."
             )
             continue
-        suggestions_list.append(dict(item))
+        data = dict(item)
+        if maps is not None:
+            persona_key = str(data.get("persona_preset_key") or "").strip()
+            persona_label = str(data.get("persona_preset_label") or "").strip()
+            persona_spoken = str(data.get("persona_preset_spoken") or "").strip()
+            persona_voice = str(data.get("persona_voice") or "").strip()
+            persona_audience = str(data.get("persona_audience") or "").strip()
+            persona_tone = str(data.get("persona_tone") or "").strip()
+
+            preset = None
+            if persona_key:
+                preset = maps.persona_presets.get(persona_key)
+            else:
+                for alias in (persona_spoken, persona_label):
+                    alias_l = alias.lower()
+                    if alias_l:
+                        canonical = maps.persona_preset_aliases.get(alias_l)
+                        if canonical:
+                            preset = maps.persona_presets.get(canonical)
+                            if preset is not None:
+                                persona_key = canonical
+                                break
+            if preset is None and (persona_voice or persona_audience or persona_tone):
+                voice_l = persona_voice.lower()
+                audience_l = persona_audience.lower()
+                tone_l = persona_tone.lower()
+                for candidate in maps.persona_presets.values():
+                    c_voice = (candidate.voice or "").lower()
+                    c_audience = (candidate.audience or "").lower()
+                    c_tone = (candidate.tone or "").lower()
+                    if c_voice and c_voice != voice_l:
+                        continue
+                    if c_audience and c_audience != audience_l:
+                        continue
+                    if c_tone and c_tone != tone_l:
+                        continue
+                    if not (c_voice or c_audience or c_tone):
+                        continue
+                    preset = candidate
+                    persona_key = candidate.key
+                    break
+
+            if preset is not None:
+                if not persona_key:
+                    persona_key = preset.key
+                if not persona_label:
+                    persona_label = preset.label or preset.key
+                if not persona_spoken:
+                    persona_spoken = preset.spoken or persona_label or preset.key
+                if not persona_voice:
+                    persona_voice = preset.voice or ""
+                if not persona_audience:
+                    persona_audience = preset.audience or ""
+                if not persona_tone:
+                    persona_tone = preset.tone or ""
+                data["persona_preset_key"] = persona_key
+                data["persona_preset_label"] = persona_label
+                data["persona_preset_spoken"] = persona_spoken
+                if persona_voice:
+                    data["persona_voice"] = persona_voice
+                if persona_audience:
+                    data["persona_audience"] = persona_audience
+                if persona_tone:
+                    data["persona_tone"] = persona_tone
+
+            intent_key = str(data.get("intent_preset_key") or "").strip()
+            intent_label = str(data.get("intent_preset_label") or "").strip()
+            intent_display = str(data.get("intent_display") or "").strip()
+            intent_purpose = str(data.get("intent_purpose") or "").strip()
+
+            canonical_intent = ""
+            if intent_key:
+                canonical_intent = intent_key
+            else:
+                for alias in (intent_display, intent_label, intent_purpose):
+                    alias_l = alias.lower()
+                    if alias_l:
+                        canonical_intent = (
+                            maps.intent_preset_aliases.get(alias_l)
+                            or maps.intent_synonyms.get(alias_l)
+                            or ""
+                        )
+                        if canonical_intent:
+                            break
+            if not canonical_intent and intent_purpose:
+                canonical_intent = (
+                    maps.intent_synonyms.get(intent_purpose.lower()) or intent_purpose
+                )
+
+            intent_preset = (
+                maps.intent_presets.get(canonical_intent) if canonical_intent else None
+            )
+            if intent_preset is not None:
+                if not intent_key:
+                    intent_key = intent_preset.key
+                    data["intent_preset_key"] = intent_key
+                if not intent_label:
+                    intent_label = intent_preset.label or intent_preset.key
+                    data["intent_preset_label"] = intent_label
+                if not intent_purpose:
+                    intent_purpose = intent_preset.intent
+                    data["intent_purpose"] = intent_purpose
+                display_value = maps.intent_display_map.get(
+                    intent_preset.key
+                ) or maps.intent_display_map.get(intent_preset.intent)
+                if display_value and not intent_display:
+                    intent_display = display_value
+                    data["intent_display"] = intent_display
+
+        suggestions_list.append(data)
     GPTState.last_suggested_recipes = suggestions_list
     GPTState.last_suggest_source = source_key or ""
+
     if debug_mode:
         try:
             print(f"record_suggestions stored {len(suggestions_list)} suggestions")
@@ -116,7 +234,8 @@ def last_recipe_snapshot() -> dict[str, object]:
         directional = _directional_token(directional_tokens)
     else:
         directional = _directional_token(getattr(GPTState, "last_directional", ""))
-    return {
+
+    snapshot: dict[str, object] = {
         "recipe": recipe_str,
         "static_prompt": getattr(GPTState, "last_static_prompt", "") or "",
         "completeness": (
@@ -129,6 +248,26 @@ def last_recipe_snapshot() -> dict[str, object]:
         "directional": directional,
     }
 
+    context_hydrated = _hydrate_context_aliases(
+        getattr(GPTState, "last_suggest_context", {}) or {}
+    )
+    for key in (
+        "persona_preset_key",
+        "persona_preset_label",
+        "persona_preset_spoken",
+        "persona_voice",
+        "persona_audience",
+        "persona_tone",
+        "intent_preset_key",
+        "intent_preset_label",
+        "intent_display",
+        "intent_purpose",
+    ):
+        if key in context_hydrated:
+            snapshot[key] = context_hydrated[key]
+
+    return snapshot
+
 
 def recipe_header_lines_from_snapshot(snapshot: dict[str, object]) -> list[str]:
     """Build axis/recipe header lines from a last_recipe_snapshot dict.
@@ -140,6 +279,13 @@ def recipe_header_lines_from_snapshot(snapshot: dict[str, object]) -> list[str]:
     """
 
     header_lines: list[str] = []
+
+    def _text(value: object) -> str:
+        if isinstance(value, str):
+            return value.strip()
+        if value is None:
+            return ""
+        return str(value).strip()
 
     recipe = snapshot.get("recipe", "") or ""
     if recipe:
@@ -159,6 +305,64 @@ def recipe_header_lines_from_snapshot(snapshot: dict[str, object]) -> list[str]:
     directional = snapshot.get("directional", "") or ""
     if directional:
         header_lines.append(f"directional: {directional}")
+
+    persona_key = _text(snapshot.get("persona_preset_key"))
+    persona_label = _text(snapshot.get("persona_preset_label"))
+    persona_spoken = _text(snapshot.get("persona_preset_spoken"))
+    persona_voice = _text(snapshot.get("persona_voice"))
+    persona_audience = _text(snapshot.get("persona_audience"))
+    persona_tone = _text(snapshot.get("persona_tone"))
+
+    if any(
+        (
+            persona_key,
+            persona_label,
+            persona_spoken,
+            persona_voice,
+            persona_audience,
+            persona_tone,
+        )
+    ):
+        descriptor = persona_key or persona_label or persona_spoken or "persona"
+        say_hint = persona_spoken or persona_label or persona_key or descriptor
+        details: list[str] = []
+        if persona_label and persona_label != descriptor:
+            details.append(f"label={persona_label}")
+        if say_hint:
+            details.append(f"say: persona {say_hint}")
+        axis_bits: list[str] = []
+        if persona_voice:
+            axis_bits.append(f"voice={persona_voice}")
+        if persona_audience:
+            axis_bits.append(f"audience={persona_audience}")
+        if persona_tone:
+            axis_bits.append(f"tone={persona_tone}")
+        if axis_bits:
+            details.append("axes " + ", ".join(axis_bits))
+        else:
+            details.append("axes none")
+        header_lines.append(f"persona_preset: {descriptor} ({'; '.join(details)})")
+
+    intent_key = _text(snapshot.get("intent_preset_key"))
+    intent_label = _text(snapshot.get("intent_preset_label"))
+    intent_display = _text(snapshot.get("intent_display"))
+    intent_purpose = _text(snapshot.get("intent_purpose"))
+
+    if any((intent_key, intent_label, intent_display, intent_purpose)):
+        descriptor = (
+            intent_key or intent_display or intent_label or intent_purpose or "intent"
+        )
+        say_hint = intent_display or intent_label or intent_key or descriptor
+        details = []
+        if intent_label and intent_label != descriptor:
+            details.append(f"label={intent_label}")
+        if intent_display and intent_display != descriptor:
+            details.append(f"display={intent_display}")
+        if say_hint:
+            details.append(f"say: intent {say_hint}")
+        if intent_purpose:
+            details.append(f"purpose={intent_purpose}")
+        header_lines.append(f"intent_preset: {descriptor} ({'; '.join(details)})")
 
     return header_lines
 
@@ -258,9 +462,119 @@ def suggestion_entries_with_metadata() -> list[dict[str, str]]:
     return entries
 
 
+def _hydrate_context_aliases(context: dict[str, Any]) -> dict[str, Any]:
+    if not context:
+        return context
+    try:
+        maps = persona_intent_maps()
+    except Exception:
+        return context
+
+    hydrated = dict(context)
+
+    persona_key = str(hydrated.get("persona_preset_key") or "").strip()
+    persona_label = str(hydrated.get("persona_preset_label") or "").strip()
+    persona_spoken = str(hydrated.get("persona_preset_spoken") or "").strip()
+    persona_voice = str(hydrated.get("persona_voice") or "").strip()
+    persona_audience = str(hydrated.get("persona_audience") or "").strip()
+    persona_tone = str(hydrated.get("persona_tone") or "").strip()
+
+    preset = None
+    if persona_key:
+        preset = maps.persona_presets.get(persona_key)
+    else:
+        for alias in (persona_spoken, persona_label):
+            alias_l = alias.lower()
+            if alias_l:
+                canonical = maps.persona_preset_aliases.get(alias_l)
+                if canonical:
+                    preset = maps.persona_presets.get(canonical)
+                    if preset is not None:
+                        persona_key = canonical
+                        break
+    if preset is None and (persona_voice or persona_audience or persona_tone):
+        voice_l = persona_voice.lower()
+        audience_l = persona_audience.lower()
+        tone_l = persona_tone.lower()
+        for candidate in maps.persona_presets.values():
+            c_voice = (candidate.voice or "").lower()
+            c_audience = (candidate.audience or "").lower()
+            c_tone = (candidate.tone or "").lower()
+            if c_voice and c_voice != voice_l:
+                continue
+            if c_audience and c_audience != audience_l:
+                continue
+            if c_tone and c_tone != tone_l:
+                continue
+            if not (c_voice or c_audience or c_tone):
+                continue
+            preset = candidate
+            persona_key = candidate.key
+            break
+
+    if preset is not None:
+        if not persona_key:
+            persona_key = preset.key
+        hydrated.setdefault("persona_preset_key", persona_key)
+        hydrated.setdefault("persona_preset_label", preset.label or preset.key)
+        hydrated.setdefault(
+            "persona_preset_spoken", preset.spoken or preset.label or preset.key
+        )
+
+        if not persona_voice:
+            hydrated["persona_voice"] = preset.voice or ""
+        if not persona_audience:
+            hydrated["persona_audience"] = preset.audience or ""
+        if not persona_tone:
+            hydrated["persona_tone"] = preset.tone or ""
+
+    intent_key = str(hydrated.get("intent_preset_key") or "").strip()
+    intent_label = str(hydrated.get("intent_preset_label") or "").strip()
+    intent_display = str(hydrated.get("intent_display") or "").strip()
+    intent_purpose = str(hydrated.get("intent_purpose") or "").strip()
+
+    canonical_intent = ""
+    if intent_key:
+        canonical_intent = intent_key
+    else:
+        for alias in (intent_display, intent_label, intent_purpose):
+            alias_l = alias.lower()
+            if alias_l:
+                canonical_intent = (
+                    maps.intent_preset_aliases.get(alias_l)
+                    or maps.intent_synonyms.get(alias_l)
+                    or ""
+                )
+                if canonical_intent:
+                    break
+    if not canonical_intent and intent_purpose:
+        canonical_intent = (
+            maps.intent_synonyms.get(intent_purpose.lower()) or intent_purpose
+        )
+
+    intent_preset = (
+        maps.intent_presets.get(canonical_intent) if canonical_intent else None
+    )
+    if intent_preset is not None:
+        hydrated.setdefault("intent_preset_key", intent_preset.key)
+        hydrated.setdefault(
+            "intent_preset_label", intent_preset.label or intent_preset.key
+        )
+        hydrated.setdefault("intent_purpose", intent_preset.intent)
+        display_value = maps.intent_display_map.get(
+            intent_preset.key
+        ) or maps.intent_display_map.get(intent_preset.intent)
+        if display_value:
+            hydrated.setdefault("intent_display", display_value)
+
+    return hydrated
+
+
 def suggestion_context(default: Optional[dict[str, str]] = None) -> dict[str, str]:
     """Return the context snapshot sent with the last suggest request."""
     ctx = getattr(GPTState, "last_suggest_context", {}) or {}
     if ctx:
-        return dict(ctx)
-    return dict(default or {})
+        return _hydrate_context_aliases(dict(ctx))
+    if default:
+        return _hydrate_context_aliases(dict(default))
+    return {}

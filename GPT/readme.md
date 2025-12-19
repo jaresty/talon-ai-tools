@@ -167,6 +167,8 @@ When the confirmation GUI is open, it also:
 
 #### Quick reference (ADR 006 commands)
 
+> **Regenerate before editing**: Refresh AxisSnapshot-backed helpers (for example, run `make readme-axis-refresh` and `python3 scripts/tools/generate-axis-cheatsheet.py`) before updating this quick reference so token lists stay aligned with `lib/axisCatalog.py`.
+
 - Patterns:
   - `model patterns` / `model coding patterns` / `model writing patterns`
   - `model pattern menu <staticPrompt>`

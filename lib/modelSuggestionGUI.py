@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 import os
+import re
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 
@@ -34,8 +35,7 @@ from .modelPatternGUI import (
     CHANNEL_MAP,
     DIRECTIONAL_MAP,
 )
-from .requestBus import current_state
-from .requestState import RequestPhase, is_in_flight, try_start_request
+from .requestGating import request_is_in_flight, try_begin_request
 from .requestLog import drop_reason_message, set_drop_reason
 from .modelHelpers import notify
 from .stanceDefaults import stance_defaults_lines
@@ -62,6 +62,18 @@ except Exception:  # Tests / stubs
             self.height = height
 
 
+_ALIAS_NORMALISE_PATTERN = re.compile(r"[^a-z0-9]+")
+
+
+def _normalise_alias_token(raw: str) -> str:
+    token = str(raw or "").strip().lower()
+    if not token:
+        return ""
+    token = _ALIAS_NORMALISE_PATTERN.sub(" ", token)
+    token = re.sub(r"\s+", " ", token)
+    return token.strip()
+
+
 @dataclass
 class Suggestion:
     name: str
@@ -80,6 +92,13 @@ class Suggestion:
     why: str = ""
     # Model-provided reasoning for the stance/axes choice.
     reasoning: str = ""
+    # Snapshot metadata for presets/aliases captured during suggestion parsing.
+    persona_preset_key: str = ""
+    persona_preset_label: str = ""
+    persona_preset_spoken: str = ""
+    intent_preset_key: str = ""
+    intent_preset_label: str = ""
+    intent_display: str = ""
 
 
 class SuggestionGUIState:
@@ -313,31 +332,15 @@ def _measure_suggestion_height(
 
 
 def _request_is_in_flight() -> bool:
-    """Return True when a GPT request is currently running.
+    """Return True when a GPT request is currently running."""
 
-    This delegates to the central ``is_in_flight`` helper so suggestion gating
-    stays aligned with the RequestState/RequestLifecycle contract.
-    """
-    try:
-        state = current_state()
-    except Exception:
-        return False
-    try:
-        return is_in_flight(state)  # type: ignore[arg-type]
-    except Exception:
-        return False
+    return request_is_in_flight()
 
 
 def _reject_if_request_in_flight() -> bool:
     """Notify and return True when a GPT request is already running."""
-    try:
-        state = current_state()
-    except Exception:
-        return False
-    try:
-        allowed, reason = try_start_request(state)  # type: ignore[arg-type]
-    except Exception:
-        return False
+
+    allowed, reason = try_begin_request()
     if not allowed and reason == "in_flight":
         message = drop_reason_message("in_flight")
         try:
@@ -488,8 +491,62 @@ def _suggestion_stance_info(suggestion: Suggestion) -> dict[str, object]:
     )
     persona_bits = [bit for bit in (voice_token, audience_token, tone_token) if bit]
     intent_text = getattr(suggestion, "intent_purpose", "").strip()
-    intent_display = _normalize_intent(intent_text) or intent_text
+    intent_display_meta = (getattr(suggestion, "intent_display", "") or "").strip()
+    intent_display = (
+        intent_display_meta or _normalize_intent(intent_text) or intent_text
+    )
+    persona_preset_key = (getattr(suggestion, "persona_preset_key", "") or "").strip()
+    persona_preset_spoken = (
+        getattr(suggestion, "persona_preset_spoken", "") or ""
+    ).strip()
+    persona_preset_label = (
+        getattr(suggestion, "persona_preset_label", "") or ""
+    ).strip()
+    intent_preset_key = (getattr(suggestion, "intent_preset_key", "") or "").strip()
+    intent_preset_label = (getattr(suggestion, "intent_preset_label", "") or "").strip()
+    maps = _persona_maps()
+    if maps is not None:
+        display_map_raw = getattr(maps, "intent_display_map", {}) or {}
+        display_map: dict[str, str] = {}
+        try:
+            display_map = {
+                str(key or "").strip(): str(value or "").strip()
+                for key, value in dict(display_map_raw).items()
+                if str(key or "").strip()
+            }
+        except Exception:
+            display_map = {}
+        if display_map:
+            intent_candidates = []
+            if intent_display_meta:
+                intent_candidates.extend(
+                    [intent_display_meta, intent_display_meta.lower()]
+                )
+            normalized_intent = _normalize_intent(intent_text)
+            if normalized_intent:
+                intent_candidates.extend([normalized_intent, normalized_intent.lower()])
+            if intent_preset_key:
+                intent_candidates.extend([intent_preset_key, intent_preset_key.lower()])
+            if intent_preset_label:
+                intent_candidates.extend(
+                    [intent_preset_label, intent_preset_label.lower()]
+                )
+            if intent_text:
+                intent_candidates.extend([intent_text, intent_text.lower()])
+            for candidate in intent_candidates:
+                candidate_key = str(candidate or "").strip()
+                if not candidate_key:
+                    continue
+                alias = display_map.get(candidate_key) or display_map.get(
+                    candidate_key.lower()
+                )
+                if alias:
+                    intent_display = alias
+                    break
+    if not intent_display and (intent_preset_label or intent_preset_key):
+        intent_display = intent_preset_label or intent_preset_key
     raw_stance = (getattr(suggestion, "stance_command", "") or "").strip()
+
     stance_command = raw_stance if valid_stance_command(raw_stance) else ""
     generated_from_axes = False
 
@@ -510,10 +567,28 @@ def _suggestion_stance_info(suggestion: Suggestion) -> dict[str, object]:
             stance_command = f"persona {preset.key}"
 
     preset_for_command = _preset_from_command(stance_command)
+    if preset_for_command is None and persona_preset_key:
+        maps = _persona_maps()
+        if maps is not None:
+            preset_candidate = maps.persona_presets.get(persona_preset_key)
+            if preset_candidate is not None:
+                preset_for_command = preset_candidate
+                if not stance_command:
+                    candidate_command = f"persona {persona_preset_key}"
+                    if valid_stance_command(candidate_command):
+                        stance_command = candidate_command
+
+    persona_display_alias = (
+        persona_preset_spoken or persona_preset_label or persona_preset_key
+    )
+    if persona_display_alias.lower().startswith("persona "):
+        persona_display_alias = persona_display_alias[len("persona ") :].strip()
     persona_display = None
     if preset_for_command is not None:
         spoken = (preset_for_command.spoken or "").strip() or preset_for_command.key
         persona_display = f"persona {spoken}"
+    if persona_display is None and persona_display_alias:
+        persona_display = f"persona {persona_display_alias}"
 
     long_form = _persona_long_form(stance_command, persona_bits)
     # Prefer a model-write form for the Say line so it always matches grammar.
@@ -1466,20 +1541,211 @@ def _draw_suggestions(c: canvas.Canvas) -> None:  # pragma: no cover - visual on
 
 
 def _refresh_suggestions_from_state() -> None:
-    SuggestionGUIState.suggestions = [
-        Suggestion(
-            name=item["name"],
-            recipe=item["recipe"],
-            persona_voice=item.get("persona_voice", ""),
-            persona_audience=item.get("persona_audience", ""),
-            persona_tone=item.get("persona_tone", ""),
-            intent_purpose=item.get("intent_purpose", ""),
-            stance_command=item.get("stance_command", ""),
-            why=item.get("why", ""),
-            reasoning=item.get("reasoning", ""),
+    try:
+        maps = persona_intent_maps()
+    except Exception:
+        _debug(
+            "persona_intent_maps unavailable; falling back to raw suggestion metadata"
         )
-        for item in suggestion_entries_with_metadata()
-    ]
+        maps = None
+
+    hydrated: list[Suggestion] = []
+    persona_presets = (
+        getattr(maps, "persona_presets", {}) or {} if maps is not None else {}
+    )
+    persona_aliases = (
+        getattr(maps, "persona_preset_aliases", {}) or {} if maps is not None else {}
+    )
+    intent_presets = (
+        getattr(maps, "intent_presets", {}) or {} if maps is not None else {}
+    )
+    intent_aliases = (
+        getattr(maps, "intent_preset_aliases", {}) or {} if maps is not None else {}
+    )
+    intent_synonyms = (
+        getattr(maps, "intent_synonyms", {}) or {} if maps is not None else {}
+    )
+    intent_display_map = (
+        getattr(maps, "intent_display_map", {}) or {} if maps is not None else {}
+    )
+
+    raw_suggestions = tuple(suggestion_entries_with_metadata())
+    if not raw_suggestions:
+        SuggestionGUIState.suggestions = []
+        return
+
+    for item in raw_suggestions:
+        name = str(item.get("name") or "").strip()
+        recipe = str(item.get("recipe") or "").strip()
+        if not name or not recipe:
+            continue
+
+        data = dict(item)
+        if maps is not None:
+            persona_key = str(data.get("persona_preset_key") or "").strip()
+            persona_label = str(data.get("persona_preset_label") or "").strip()
+            persona_spoken = str(data.get("persona_preset_spoken") or "").strip()
+            preset = None
+            canonical_persona = ""
+            if persona_key:
+                canonical_persona = persona_key
+                preset = persona_presets.get(canonical_persona)
+            else:
+                for alias in (persona_spoken, persona_label):
+                    alias_clean = str(alias or "").strip()
+                    if not alias_clean:
+                        continue
+                    alias_lower = alias_clean.lower()
+                    alias_norm = _normalise_alias_token(alias_clean)
+                    canonical = ""
+                    for lookup in filter(None, [alias_lower, alias_norm]):
+                        canonical = persona_aliases.get(lookup, "")
+                        if canonical:
+                            preset = persona_presets.get(canonical)
+                            if preset is not None:
+                                canonical_persona = canonical
+                                break
+                    if canonical_persona:
+                        break
+                    for lookup in filter(None, [alias_clean, alias_lower, alias_norm]):
+                        candidate = persona_presets.get(lookup)
+                        if candidate is not None:
+                            preset = candidate
+                            canonical_persona = getattr(candidate, "key", "") or ""
+                            break
+                    if canonical_persona:
+                        break
+            if preset is not None:
+                target_key = preset.key
+                target_label = preset.label or target_key
+                target_spoken = preset.spoken or target_label or target_key
+                if persona_key != target_key:
+                    data["persona_preset_key"] = target_key
+                if target_label and persona_label != target_label:
+                    data["persona_preset_label"] = target_label
+                if target_spoken and persona_spoken != target_spoken:
+                    data["persona_preset_spoken"] = target_spoken
+                if not str(data.get("persona_voice") or "").strip():
+                    data["persona_voice"] = preset.voice or ""
+                if not str(data.get("persona_audience") or "").strip():
+                    data["persona_audience"] = preset.audience or ""
+                if not str(data.get("persona_tone") or "").strip():
+                    data["persona_tone"] = preset.tone or ""
+
+            intent_key = str(data.get("intent_preset_key") or "").strip()
+            intent_purpose = str(data.get("intent_purpose") or "").strip()
+            intent_display = str(data.get("intent_display") or "").strip()
+            intent_canonical = ""
+            if intent_key:
+                intent_canonical = intent_key
+            else:
+                for alias in (intent_display, intent_purpose):
+                    alias_clean = str(alias or "").strip()
+                    if not alias_clean:
+                        continue
+                    alias_lower = alias_clean.lower()
+                    alias_norm = _normalise_alias_token(alias_clean)
+                    for lookup in filter(None, [alias_lower, alias_norm]):
+                        candidate = (
+                            intent_aliases.get(lookup)
+                            or intent_synonyms.get(lookup)
+                            or ""
+                        )
+                        if candidate:
+                            intent_canonical = candidate
+                            break
+                    if intent_canonical:
+                        break
+            if not intent_canonical and intent_purpose:
+                normalized_purpose = (
+                    _normalise_alias_token(intent_purpose) or intent_purpose
+                )
+                intent_canonical = (
+                    intent_synonyms.get(normalized_purpose)
+                    or intent_aliases.get(normalized_purpose)
+                    or intent_synonyms.get(intent_purpose.lower())
+                    or intent_purpose
+                )
+            intent_preset = (
+                intent_presets.get(intent_canonical) if intent_canonical else None
+            )
+            if intent_preset is None and intent_presets:
+                for alias in (intent_display, intent_purpose):
+                    alias_clean = str(alias or "").strip()
+                    if not alias_clean:
+                        continue
+                    alias_lower = alias_clean.lower()
+                    alias_norm = _normalise_alias_token(alias_clean)
+                    for preset_candidate in intent_presets.values():
+                        preset_key = (
+                            getattr(preset_candidate, "key", "") or ""
+                        ).strip()
+                        preset_label = (
+                            getattr(preset_candidate, "label", "") or ""
+                        ).strip()
+                        preset_intent = (
+                            getattr(preset_candidate, "intent", "") or ""
+                        ).strip()
+                        preset_keys = {
+                            value
+                            for value in (
+                                preset_key.lower() if preset_key else "",
+                                preset_label.lower() if preset_label else "",
+                                preset_intent.lower() if preset_intent else "",
+                                _normalise_alias_token(preset_label)
+                                if preset_label
+                                else "",
+                                _normalise_alias_token(preset_intent)
+                                if preset_intent
+                                else "",
+                            )
+                            if value
+                        }
+                        if alias_lower in preset_keys or (
+                            alias_norm and alias_norm in preset_keys
+                        ):
+                            intent_preset = preset_candidate
+                            intent_canonical = preset_key
+                            break
+                    if intent_preset is not None:
+                        break
+            if intent_preset is not None:
+                target_key = intent_preset.key
+                target_label = intent_preset.label or target_key
+                if intent_key != target_key:
+                    data["intent_preset_key"] = target_key
+                current_label = str(data.get("intent_preset_label") or "").strip()
+                if target_label and current_label != target_label:
+                    data["intent_preset_label"] = target_label
+                if not intent_purpose:
+                    data["intent_purpose"] = intent_preset.intent
+                display_value = intent_display_map.get(
+                    intent_preset.key
+                ) or intent_display_map.get(intent_preset.intent)
+                if display_value:
+                    data["intent_display"] = display_value
+
+        hydrated.append(
+            Suggestion(
+                name=name,
+                recipe=recipe,
+                persona_voice=str(data.get("persona_voice") or ""),
+                persona_audience=str(data.get("persona_audience") or ""),
+                persona_tone=str(data.get("persona_tone") or ""),
+                intent_purpose=str(data.get("intent_purpose") or ""),
+                stance_command=str(data.get("stance_command") or ""),
+                why=str(data.get("why") or ""),
+                reasoning=str(data.get("reasoning") or ""),
+                persona_preset_key=str(data.get("persona_preset_key") or ""),
+                persona_preset_label=str(data.get("persona_preset_label") or ""),
+                persona_preset_spoken=str(data.get("persona_preset_spoken") or ""),
+                intent_preset_key=str(data.get("intent_preset_key") or ""),
+                intent_preset_label=str(data.get("intent_preset_label") or ""),
+                intent_display=str(data.get("intent_display") or ""),
+            )
+        )
+
+    SuggestionGUIState.suggestions = hydrated
 
 
 def _run_suggestion(suggestion: Suggestion) -> None:

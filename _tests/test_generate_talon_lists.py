@@ -9,7 +9,12 @@ if not TYPE_CHECKING:
 
     class GenerateTalonListsTests(unittest.TestCase):
         def test_generate_lists_writes_axis_and_static_prompt_tokens(self) -> None:
-            script = Path(__file__).resolve().parents[1] / "scripts" / "tools" / "generate_talon_lists.py"
+            script = (
+                Path(__file__).resolve().parents[1]
+                / "scripts"
+                / "tools"
+                / "generate_talon_lists.py"
+            )
             with tempfile.TemporaryDirectory() as tmpdir:
                 result = subprocess.run(
                     [sys.executable, str(script), "--out-dir", tmpdir],
@@ -26,8 +31,12 @@ if not TYPE_CHECKING:
                 out_dir = Path(tmpdir)
                 completeness_list = out_dir / "completenessModifier.talon-list"
                 static_prompt_list = out_dir / "staticPrompt.talon-list"
+                persona_list = out_dir / "personaPreset.talon-list"
+                intent_list = out_dir / "intentPreset.talon-list"
                 self.assertTrue(completeness_list.is_file())
                 self.assertTrue(static_prompt_list.is_file())
+                self.assertTrue(persona_list.is_file())
+                self.assertTrue(intent_list.is_file())
 
                 completeness_text = completeness_list.read_text(encoding="utf-8")
                 self.assertIn("full: full", completeness_text)
@@ -35,10 +44,21 @@ if not TYPE_CHECKING:
                 static_text = static_prompt_list.read_text(encoding="utf-8")
                 self.assertIn("infer: infer", static_text)
 
+                persona_text = persona_list.read_text(encoding="utf-8").lower()
+                self.assertIn("teach junior dev: teach_junior_dev", persona_text)
+
+                intent_text = intent_list.read_text(encoding="utf-8").lower()
+                self.assertIn("for deciding: decide", intent_text)
+
         def test_generated_lists_are_self_consistent_under_check(self) -> None:
             """Guardrail: generator --check should pass against its own output."""
 
-            script = Path(__file__).resolve().parents[1] / "scripts" / "tools" / "generate_talon_lists.py"
+            script = (
+                Path(__file__).resolve().parents[1]
+                / "scripts"
+                / "tools"
+                / "generate_talon_lists.py"
+            )
             with tempfile.TemporaryDirectory() as tmpdir:
                 tmp_path = Path(tmpdir)
                 # Generate baseline
@@ -68,7 +88,12 @@ if not TYPE_CHECKING:
 
         def test_generate_lists_check_mode_passes(self) -> None:
             """Guardrail: --check should pass when lists match catalog."""
-            script = Path(__file__).resolve().parents[1] / "scripts" / "tools" / "generate_talon_lists.py"
+            script = (
+                Path(__file__).resolve().parents[1]
+                / "scripts"
+                / "tools"
+                / "generate_talon_lists.py"
+            )
             with tempfile.TemporaryDirectory() as tmpdir:
                 tmp_path = Path(tmpdir)
                 gen_result = subprocess.run(
@@ -97,7 +122,12 @@ if not TYPE_CHECKING:
 
         def test_generate_lists_check_mode_fails_on_drift(self) -> None:
             """Guardrail: --check should flag drift when lists differ from catalog."""
-            script = Path(__file__).resolve().parents[1] / "scripts" / "tools" / "generate_talon_lists.py"
+            script = (
+                Path(__file__).resolve().parents[1]
+                / "scripts"
+                / "tools"
+                / "generate_talon_lists.py"
+            )
             with tempfile.TemporaryDirectory() as tmpdir:
                 tmp_dir = Path(tmpdir)
                 out_dir = tmp_dir / "lists"
@@ -114,8 +144,12 @@ if not TYPE_CHECKING:
                     "channelModifier.talon-list",
                     "directionalModifier.talon-list",
                     "staticPrompt.talon-list",
+                    "personaPreset.talon-list",
+                    "intentPreset.talon-list",
                 ]:
-                    (out_dir / name).write_text("list: user.placeholder\n-\n", encoding="utf-8")
+                    (out_dir / name).write_text(
+                        "list: user.placeholder\n-\n", encoding="utf-8"
+                    )
 
                 result = subprocess.run(
                     [sys.executable, str(script), "--out-dir", str(out_dir), "--check"],
@@ -132,6 +166,7 @@ if not TYPE_CHECKING:
                 self.assertIn("extra", result.stdout + result.stderr)
 
 else:
+
     class GenerateTalonListsTests(unittest.TestCase):  # pragma: no cover
         @unittest.skip("Test harness unavailable in TYPE_CHECKING mode")
         def test_placeholder(self) -> None:

@@ -50,9 +50,8 @@ class ModelPatternGUIGuardTests(unittest.TestCase):
 
         with (
             patch.object(
-                pattern_module, "try_start_request", return_value=(False, "in_flight")
+                pattern_module, "try_begin_request", return_value=(False, "in_flight")
             ),
-            patch.object(pattern_module, "current_state"),
             patch.object(pattern_module, "set_drop_reason") as set_reason,
             patch.object(pattern_module, "notify") as notify_mock,
         ):
@@ -61,8 +60,7 @@ class ModelPatternGUIGuardTests(unittest.TestCase):
         notify_mock.assert_called_once()
 
         with (
-            patch.object(pattern_module, "try_start_request", return_value=(True, "")),
-            patch.object(pattern_module, "current_state"),
+            patch.object(pattern_module, "try_begin_request", return_value=(True, "")),
             patch.object(pattern_module, "set_drop_reason") as set_reason,
             patch.object(pattern_module, "notify") as notify_mock,
         ):

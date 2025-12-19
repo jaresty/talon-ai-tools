@@ -1,3 +1,4 @@
+import json
 import unittest
 from typing import TYPE_CHECKING
 from unittest.mock import MagicMock, patch
@@ -16,6 +17,7 @@ if bootstrap is not None:
     from talon_user.lib.promptPipeline import PromptResult
     from talon_user.GPT import gpt as gpt_module
     from talon_user.lib import modelSuggestionGUI as suggestion_module
+    from talon_user.lib import suggestionCoordinator as suggestion_coordinator
 
     class SuggestionIntegrationTests(unittest.TestCase):
         def setUp(self):
@@ -48,25 +50,21 @@ if bootstrap is not None:
 
         def test_suggest_then_run_index_executes_recipe(self):
             # Arrange suggestion text returned from the pipeline.
-            suggestion_text = (
-                "Name: Deep map | Recipe: describe · full · relations · cluster · bullets · fog"
-            )
+            suggestion_text = "Name: Deep map | Recipe: describe · full · relations · cluster · bullets · fog"
             self.pipeline.complete.return_value = PromptResult.from_messages(
                 [format_message(suggestion_text)]
             )
 
-            with patch.object(
-                gpt_module, "create_model_source"
-            ) as create_source, patch.object(
-                gpt_module, "PromptSession"
-            ) as session_cls:
+            with (
+                patch.object(gpt_module, "create_model_source") as create_source,
+                patch.object(gpt_module, "PromptSession") as session_cls,
+            ):
                 source = MagicMock()
                 source.get_text.return_value = "content"
                 create_source.return_value = source
                 session = session_cls.return_value
                 session._destination = "paste"
 
-                # First, run `model suggest` to populate GPTState.last_suggested_recipes.
                 gpt_module.UserActions.gpt_suggest_prompt_recipes("subject")
 
             # Now, run the first suggestion by index through the suggestion GUI helper.
@@ -77,21 +75,128 @@ if bootstrap is not None:
             self.assertIn("describe", GPTState.last_recipe)
             self.assertIn("full", GPTState.last_recipe)
 
+        def test_suggest_populates_persona_intent_metadata_end_to_end(self):
+            payload = {
+                "suggestions": [
+                    {
+                        "name": "Mentor junior dev",
+                        "recipe": "describe · full · focus · scaffold · plain · fog",
+                        "persona_voice": "as teacher",
+                        "persona_audience": "to junior engineer",
+                        "persona_tone": "kindly",
+                        "intent_purpose": "teach",
+                        "why": "Coaching stance for junior engineers",
+                    }
+                ]
+            }
+            handle = self.pipeline.complete_async.return_value
+            handle.wait = MagicMock(return_value=True)
+            handle.result = PromptResult.from_messages(
+                [format_message(json.dumps(payload))]
+            )
+            self.pipeline.complete.return_value = handle.result
+
+            with (
+                patch.object(gpt_module, "create_model_source") as create_source,
+                patch.object(gpt_module, "PromptSession") as session_cls,
+            ):
+                source = MagicMock()
+                source.get_text.return_value = "content"
+                create_source.return_value = source
+                session = session_cls.return_value
+                session._destination = "paste"
+
+                gpt_module.UserActions.gpt_suggest_prompt_recipes("subject")
+
+            entries = suggestion_coordinator.suggestion_entries_with_metadata()
+            self.assertEqual(len(entries), 1)
+            entry = entries[0]
+            self.assertEqual(entry["persona_preset_key"], "teach_junior_dev")
+            self.assertEqual(entry["persona_preset_spoken"], "mentor")
+            self.assertEqual(entry["intent_preset_key"], "teach")
+            self.assertEqual(entry["intent_display"], "for teaching")
+
+            suggestion_module.SuggestionGUIState.suggestions = []
+            suggestion_module.UserActions.model_prompt_recipe_suggestions_run_index(1)
+            self.assertTrue(suggestion_module.SuggestionGUIState.suggestions)
+            hydrated = suggestion_module.SuggestionGUIState.suggestions[0]
+            self.assertEqual(hydrated.persona_preset_spoken, "mentor")
+            self.assertEqual(hydrated.intent_display, "for teaching")
+            self.assertEqual(hydrated.persona_voice, "as teacher")
+            self.assertEqual(hydrated.persona_audience, "to junior engineer")
+            self.assertEqual(hydrated.persona_tone, "kindly")
+
+        def test_suggest_alias_only_metadata_round_trip(self):
+            payload = {
+                "suggestions": [
+                    {
+                        "name": "Decide with mentor",
+                        "recipe": "describe · full · focus · plan · plain · fog",
+                        "persona_preset_spoken": "mentor",
+                        "intent_display": "for deciding",
+                        "why": "Alias-only metadata from Concordance catalog",
+                    }
+                ]
+            }
+            handle = self.pipeline.complete_async.return_value
+            handle.wait = MagicMock(return_value=True)
+            handle.result = PromptResult.from_messages(
+                [format_message(json.dumps(payload))]
+            )
+            self.pipeline.complete.return_value = handle.result
+
+            with (
+                patch.object(gpt_module, "create_model_source") as create_source,
+                patch.object(gpt_module, "PromptSession") as session_cls,
+            ):
+                source = MagicMock()
+                source.get_text.return_value = "content"
+                create_source.return_value = source
+                session = session_cls.return_value
+                session._destination = "paste"
+
+                gpt_module.UserActions.gpt_suggest_prompt_recipes("subject")
+
+            entries = suggestion_coordinator.suggestion_entries_with_metadata()
+            self.assertEqual(len(entries), 1)
+            entry = entries[0]
+            self.assertEqual(entry["persona_preset_key"], "teach_junior_dev")
+            self.assertEqual(entry["persona_preset_label"], "Teach junior dev")
+            self.assertEqual(entry["persona_preset_spoken"], "mentor")
+            self.assertEqual(entry["persona_voice"], "as teacher")
+            self.assertEqual(entry["persona_audience"], "to junior engineer")
+            self.assertEqual(entry["persona_tone"], "kindly")
+            self.assertEqual(entry["intent_preset_key"], "decide")
+            self.assertEqual(entry["intent_preset_label"], "Decide")
+            self.assertEqual(entry["intent_display"], "for deciding")
+            self.assertEqual(entry["intent_purpose"], "decide")
+
+            suggestion_module.SuggestionGUIState.suggestions = []
+            suggestion_module.UserActions.model_prompt_recipe_suggestions_run_index(1)
+            self.assertTrue(suggestion_module.SuggestionGUIState.suggestions)
+            hydrated = suggestion_module.SuggestionGUIState.suggestions[0]
+            self.assertEqual(hydrated.persona_preset_spoken, "mentor")
+            self.assertEqual(hydrated.persona_preset_label, "Teach junior dev")
+            self.assertEqual(hydrated.intent_display, "for deciding")
+            self.assertEqual(hydrated.intent_preset_key, "decide")
+            self.assertEqual(hydrated.intent_preset_label, "Decide")
+            self.assertEqual(hydrated.intent_purpose, "decide")
+            self.assertEqual(hydrated.persona_voice, "as teacher")
+            self.assertEqual(hydrated.persona_audience, "to junior engineer")
+            self.assertEqual(hydrated.persona_tone, "kindly")
+
         def test_suggest_then_again_merges_overrides(self):
             # Arrange suggestion text returned from the pipeline.
-            suggestion_text = (
-                "Name: Deep map | Recipe: describe · full · relations · cluster · bullets · fog"
-            )
+            suggestion_text = "Name: Deep map | Recipe: describe · full · relations · cluster · bullets · fog"
             self.pipeline.complete.return_value = PromptResult.from_messages(
                 [format_message(suggestion_text)]
             )
 
             # First, run `model suggest` to populate GPTState.last_suggested_recipes.
-            with patch.object(
-                gpt_module, "create_model_source"
-            ) as create_source, patch.object(
-                gpt_module, "PromptSession"
-            ) as session_cls:
+            with (
+                patch.object(gpt_module, "create_model_source") as create_source,
+                patch.object(gpt_module, "PromptSession") as session_cls,
+            ):
                 source = MagicMock()
                 source.get_text.return_value = "content"
                 create_source.return_value = source
@@ -149,19 +254,16 @@ if bootstrap is not None:
             """End-to-end: multi-tag suggestion followed by overrides respects form/channel singleton caps."""
             # Arrange a multi-tag suggestion that includes both a form and channel token;
             # the normaliser should keep singletons when rerun.
-            suggestion_text = (
-                "Name: Jira/ADR ticket | Recipe: ticket · full · actions edges · structure flow · adr · jira · fog"
-            )
+            suggestion_text = "Name: Jira/ADR ticket | Recipe: ticket · full · actions edges · structure flow · adr · jira · fog"
             self.pipeline.complete.return_value = PromptResult.from_messages(
                 [format_message(suggestion_text)]
             )
 
             # Run `model suggest` to populate last_suggested_recipes.
-            with patch.object(
-                gpt_module, "create_model_source"
-            ) as create_source, patch.object(
-                gpt_module, "PromptSession"
-            ) as session_cls:
+            with (
+                patch.object(gpt_module, "create_model_source") as create_source,
+                patch.object(gpt_module, "PromptSession") as session_cls,
+            ):
                 source = MagicMock()
                 source.get_text.return_value = "content"
                 create_source.return_value = source
@@ -214,19 +316,16 @@ if bootstrap is not None:
             # - scope: actions edges relations (3 tokens, cap 2)
             # - form: bullets faq checklist (cap 1)
             # - channel: slack jira html (cap 1)
-            suggestion_text = (
-                "Name: Over-cap ticket | Recipe: ticket · full · actions edges relations · structure flow · bullets faq checklist · slack jira html · fog"
-            )
+            suggestion_text = "Name: Over-cap ticket | Recipe: ticket · full · actions edges relations · structure flow · bullets faq checklist · slack jira html · fog"
             self.pipeline.complete.return_value = PromptResult.from_messages(
                 [format_message(suggestion_text)]
             )
 
             # Run `model suggest` to populate last_suggested_recipes.
-            with patch.object(
-                gpt_module, "create_model_source"
-            ) as create_source, patch.object(
-                gpt_module, "PromptSession"
-            ) as session_cls:
+            with (
+                patch.object(gpt_module, "create_model_source") as create_source,
+                patch.object(gpt_module, "PromptSession") as session_cls,
+            ):
                 source = MagicMock()
                 source.get_text.return_value = "content"
                 create_source.return_value = source
@@ -258,7 +357,9 @@ if bootstrap is not None:
                 create_dest_again.return_value = dest_again
                 model_prompt.return_value = "PROMPT-OVER-CAP-AGAIN"
 
-                gpt_module.UserActions.gpt_rerun_last_recipe("", "", [], [], "rog", "", "")
+                gpt_module.UserActions.gpt_rerun_last_recipe(
+                    "", "", [], [], "rog", "", ""
+                )
 
                 config = actions.user.gpt_apply_prompt.call_args.args[0]
                 self.assertEqual(config.please_prompt, "PROMPT-OVER-CAP-AGAIN")
@@ -276,10 +377,13 @@ if bootstrap is not None:
                 channel_tokens = GPTState.last_channel.split()
                 self.assertLessEqual(len(form_tokens), 1)
                 self.assertLessEqual(len(channel_tokens), 1)
-                self.assertTrue(set(form_tokens).issubset({"bullets", "faq", "checklist"}))
+                self.assertTrue(
+                    set(form_tokens).issubset({"bullets", "faq", "checklist"})
+                )
                 self.assertTrue(set(channel_tokens).issubset({"slack", "jira", "html"}))
 else:
     if not TYPE_CHECKING:
+
         class SuggestionIntegrationTests(unittest.TestCase):
             @unittest.skip("Test harness unavailable outside unittest runs")
             def test_placeholder(self):

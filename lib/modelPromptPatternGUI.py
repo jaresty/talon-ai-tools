@@ -10,8 +10,7 @@ from .modelDestination import create_model_destination
 from .modelSource import create_model_source
 from .modelState import GPTState
 from .axisMappings import axis_docs_map
-from .requestBus import current_state
-from .requestState import RequestPhase, is_in_flight, try_start_request
+from .requestGating import request_is_in_flight, try_begin_request
 from .requestLog import drop_reason_message, set_drop_reason
 from .modelHelpers import notify
 from .overlayHelpers import apply_canvas_blocking, apply_scroll_delta, clamp_scroll
@@ -68,31 +67,15 @@ class PromptPatternGUIState:
 
 
 def _request_is_in_flight() -> bool:
-    """Return True when a GPT request is currently running.
+    """Return True when a GPT request is currently running."""
 
-    This delegates to the central ``is_in_flight`` helper so prompt-pattern
-    gating stays aligned with the RequestState/RequestLifecycle contract.
-    """
-    try:
-        state = current_state()
-    except Exception:
-        return False
-    try:
-        return is_in_flight(state)  # type: ignore[arg-type]
-    except Exception:
-        return False
+    return request_is_in_flight()
 
 
 def _reject_if_request_in_flight() -> bool:
     """Notify and return True when a GPT request is already running."""
-    try:
-        state = current_state()
-    except Exception:
-        return False
-    try:
-        allowed, reason = try_start_request(state)  # type: ignore[arg-type]
-    except Exception:
-        return False
+
+    allowed, reason = try_begin_request()
     if not allowed and reason == "in_flight":
         message = drop_reason_message("in_flight")
         try:

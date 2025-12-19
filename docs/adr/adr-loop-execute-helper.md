@@ -226,10 +226,12 @@ Execute the slice end‑to‑end:
     loop must start by recording a new task/regression in the ADR/work‑log.
 
 Before wrapping any loop, run an adversarial check to decide what remains.
-Record a short version of that check in the loop’s work‑log entry (see above).
-If the check suggests the ADR’s in-repo work is genuinely done, immediately
-perform the full adversarial completion check on the whole implementation
-before marking the ADR as accepted.
+Use this check to confirm the landed artefacts match the loop’s stated intent;
+if they diverge, capture the discrepancy and adjust the work‑log entry before
+closing. Record a short version of that check in the loop’s work‑log entry (see
+above). If the check suggests the ADR’s in-repo work is genuinely done,
+immediately perform the full adversarial completion check on the whole
+implementation before marking the ADR as accepted.
 
 The loop is complete once you have landed a coherent slice that:
 - Lands at least one concrete change in this repo (code, tests, or docs

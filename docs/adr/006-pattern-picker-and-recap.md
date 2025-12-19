@@ -160,6 +160,8 @@ As a concrete end-to-end flow that exercises ADR 006 helpers:
 
 ## Command quick reference (this repo)
 
+> **Regenerate before editing**: Axis and static prompt vocab referenced here comes from the AxisSnapshot façade. Run `make readme-axis-refresh` (and, when needed, `python3 scripts/tools/generate-axis-cheatsheet.py`) before updating these lists so they stay aligned with `lib/axisCatalog.py` and the shared helpers.
+
 For convenience, the main ADR 006-related commands in this repo are:
 
 - Patterns:

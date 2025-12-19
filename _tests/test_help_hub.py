@@ -134,6 +134,25 @@ def test_help_hub_search_persona_preset_triggers(monkeypatch):
     helpHub.help_hub_close()
 
 
+def test_help_hub_persona_search_labels_surface_alias_metadata():
+    helpHub.help_hub_open()
+    try:
+        helpHub.help_hub_set_filter("mentor")
+        persona_results = [
+            btn
+            for btn in getattr(helpHub, "_search_results", [])
+            if btn.label.startswith("Persona preset:")
+        ]
+        assert persona_results, "Expected persona preset search result"
+        entry = persona_results[0]
+        label_lower = entry.label.lower()
+        assert "(say: persona mentor)" in label_lower
+        assert "apply persona stance" in entry.description.lower()
+        assert "say: persona mentor" in entry.voice_hint.lower()
+    finally:
+        helpHub.help_hub_close()
+
+
 def test_help_hub_search_intent_preset_triggers(monkeypatch):
     intent_mock = MagicMock()
     monkeypatch.setattr(actions.user, "intent_set_preset", intent_mock)
@@ -151,6 +170,25 @@ def test_help_hub_search_intent_preset_triggers(monkeypatch):
     helpHub.help_hub_test_click(intent_labels[0])
     intent_mock.assert_called()
     helpHub.help_hub_close()
+
+
+def test_help_hub_intent_search_labels_surface_alias_metadata():
+    helpHub.help_hub_open()
+    try:
+        helpHub.help_hub_set_filter("for deciding")
+        intent_results = [
+            btn
+            for btn in getattr(helpHub, "_search_results", [])
+            if btn.label.startswith("Intent preset:")
+        ]
+        assert intent_results, "Expected intent preset search result"
+        entry = intent_results[0]
+        label_lower = entry.label.lower()
+        assert "(say: intent for deciding)" in label_lower
+        assert "apply intent stance" in entry.description.lower()
+        assert "say: intent for deciding" in entry.voice_hint.lower()
+    finally:
+        helpHub.help_hub_close()
 
 
 def test_help_hub_onboarding_flag():
@@ -213,30 +251,81 @@ def test_cheat_sheet_persona_line_uses_persona_catalog():
     from lib.personaConfig import persona_catalog
 
     text = helpHub._cheat_sheet_text()
-    persona_line = next(
-        (line for line in text.splitlines() if line.startswith("Persona presets:")),
-        "",
-    )
-    assert persona_line, "Persona presets line missing from cheat sheet"
+    lines = text.splitlines()
+    persona_lines = [line for line in lines if line.startswith("- persona ")]
+    alias_tokens = set()
+    if persona_lines:
+        for line in persona_lines:
+            if "(say: persona " not in line:
+                continue
+            alias_part = line.split("(say: persona ", 1)[1]
+            alias_token = alias_part.split(")", 1)[0].strip().lower()
+            if alias_token:
+                alias_tokens.add(alias_token)
+        assert alias_tokens, "Persona preset entries missing say: persona hints"
+    else:
+        fallback_line = next(
+            (line for line in lines if line.startswith("Persona presets:")),
+            "",
+        )
+        assert fallback_line, "Persona presets section missing from cheat sheet"
+        alias_tokens = {
+            token.strip().lower()
+            for token in fallback_line.split("Persona presets:", 1)[1].split("|")
+            if token.strip()
+        }
 
-    # Extract spoken preset names from the line.
-    tokens = [
-        token.strip().lower()
-        for token in persona_line.split("Persona presets:", 1)[1].split("|")
-        if token.strip()
-    ]
-    line_tokens = set(tokens)
-
-    # Collect spoken tokens from the persona catalog.
     catalog_spoken = {
         (preset.spoken or "").strip().lower()
         for preset in persona_catalog().values()
         if (preset.spoken or "").strip()
     }
 
-    # Every catalog spoken token should be present in the cheat sheet.
-    missing = catalog_spoken - line_tokens
+    missing = {token for token in catalog_spoken if token and token not in alias_tokens}
     assert not missing, f"Missing persona presets in cheat sheet: {sorted(missing)}"
+
+
+def test_help_hub_copy_cheat_sheet_includes_snapshot_aliases(monkeypatch):
+    """Clipboard copy should reuse snapshot-backed persona/intent alias phrasing."""
+    from lib.personaConfig import persona_intent_catalog_snapshot
+
+    captured: dict[str, str] = {}
+
+    monkeypatch.setattr(helpHub, "_reject_if_request_in_flight", lambda: False)
+    monkeypatch.setattr(actions.app, "notify", lambda _: None)
+    monkeypatch.setattr(
+        clip, "set_text", lambda value: captured.setdefault("text", value)
+    )
+
+    helpHub._copy_cheat_sheet()
+
+    text = captured.get("text", "")
+    assert text, "Cheat sheet copy did not set clipboard text"
+    lower_text = text.lower()
+
+    snapshot = persona_intent_catalog_snapshot()
+    persona_aliases = {
+        (preset.spoken or preset.label or preset.key or "").strip().lower()
+        for preset in snapshot.persona_presets.values()
+        if (preset.spoken or preset.label or preset.key)
+    }
+    for alias in sorted(filter(None, persona_aliases)):
+        assert f"(say: persona {alias}" in lower_text, (
+            f"Persona alias {alias!r} missing from cheat sheet copy"
+        )
+
+    intent_aliases = set()
+    for key, preset in snapshot.intent_presets.items():
+        display = (
+            snapshot.intent_display_map.get(key) or preset.label or key or ""
+        ).strip()
+        alias = display or preset.intent or key or ""
+        if alias:
+            intent_aliases.add(alias.lower())
+    for alias in sorted(intent_aliases):
+        assert f"(say: intent {alias}" in lower_text, (
+            f"Intent alias {alias!r} missing from cheat sheet copy"
+        )
 
 
 def test_persona_presets_use_catalog_snapshot():

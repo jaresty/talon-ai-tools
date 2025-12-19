@@ -22,9 +22,8 @@ from .helpDomain import (
     help_edit_filter_text,
     HelpIndexEntry,
 )
-from .requestBus import current_state
+from .requestGating import request_is_in_flight, try_begin_request
 from .requestLog import drop_reason_message, set_drop_reason
-from .requestState import is_in_flight, try_start_request
 from .modelHelpers import notify
 from .overlayHelpers import apply_canvas_blocking
 from .overlayLifecycle import close_overlays, close_common_overlays
@@ -82,31 +81,15 @@ _handlers_registered = False
 
 
 def _request_is_in_flight() -> bool:
-    """Return True when a GPT request is currently running.
+    """Return True when a GPT request is currently running."""
 
-    This delegates to the central ``is_in_flight`` helper so Help Hub gating
-    stays aligned with the RequestState/RequestLifecycle contract.
-    """
-    try:
-        state = current_state()
-    except Exception:
-        return False
-    try:
-        return is_in_flight(state)  # type: ignore[arg-type]
-    except Exception:
-        return False
+    return request_is_in_flight()
 
 
 def _reject_if_request_in_flight() -> bool:
     """Notify and return True when a GPT request is already running."""
-    try:
-        state = current_state()
-    except Exception:
-        return False
-    try:
-        allowed, reason = try_start_request(state)  # type: ignore[arg-type]
-    except Exception:
-        return False
+
+    allowed, reason = try_begin_request()
     if not allowed and reason == "in_flight":
         message = drop_reason_message("in_flight")
         try:
@@ -935,46 +918,75 @@ def _cheat_sheet_text() -> str:
             pass
         return names
 
-    intent_spoken_buckets = {}
+    persona_lines: List[str] = []
+    intent_lines: List[str] = []
+    intent_bucket_lines: List[str] = []
+
+    snapshot = None
     try:
-        intent_spoken_buckets = _intent_spoken_buckets()
+        from . import personaConfig as _persona_config_module
     except Exception:
-        intent_spoken_buckets = {}
-
-    # Prefer bucketed spoken tokens; fall back to the full spoken map dynamically.
-    task_intents = intent_spoken_buckets.get("task") or sorted(
-        intent_spoken_buckets.get("task", []) or []  # type: ignore[operator]
-    )
-    relational_intents = intent_spoken_buckets.get("relational") or sorted(
-        intent_spoken_buckets.get("relational", []) or []
-    )
-    # If buckets were empty due to an upstream failure, use all spoken tokens.
-    if not task_intents and not relational_intents:
+        _persona_config_module = None
+    else:
         try:
-            from lib.personaConfig import INTENT_SPOKEN_TO_CANONICAL
+            snapshot = _persona_config_module.persona_intent_catalog_snapshot()
         except Exception:
-            task_intents = []
-            relational_intents = []
-        else:
-            task_intents = sorted(INTENT_SPOKEN_TO_CANONICAL.keys())
-            relational_intents = []
+            snapshot = None
 
-    task_line = (
-        "Intent tokens (task): " + " | ".join(task_intents)
-        if task_intents
-        else "Intent tokens (task):"
-    )
-    relational_line = (
-        "Intent tokens (relational): " + " | ".join(relational_intents)
-        if relational_intents
-        else "Intent tokens (relational):"
-    )
-    persona_presets = _persona_presets()
-    persona_line = (
-        "Persona presets: " + " | ".join(persona_presets)
-        if persona_presets
-        else "Persona presets: peer | coach | mentor | stakeholder | design | pm | exec"
-    )
+    try:
+        maps = persona_intent_maps()
+    except Exception:
+        maps = None
+
+    if maps is not None:
+        persona_items = sorted((maps.persona_presets or {}).items())
+        for key, preset in persona_items:
+            label = (getattr(preset, "label", "") or key).strip()
+            spoken = (getattr(preset, "spoken", "") or label or key).strip()
+            stance_bits: List[str] = []
+            for attr in ("voice", "audience", "tone"):
+                raw_value = str(getattr(preset, attr, "") or "").strip()
+                if raw_value:
+                    stance_bits.append(raw_value)
+            stance_summary = (
+                " ".join(stance_bits) if stance_bits else "no explicit axes"
+            )
+            say_hint = f"persona {spoken}".strip()
+            persona_lines.append(
+                f"- persona {key} (say: {say_hint}): {label} ({stance_summary})"
+            )
+
+        intent_items = sorted((maps.intent_presets or {}).items())
+        display_map = dict(maps.intent_display_map or {})
+        for key, preset in intent_items:
+            display = (
+                display_map.get(key) or getattr(preset, "label", "") or key
+            ).strip()
+            intent_token = str(getattr(preset, "intent", "") or key).strip()
+            spoken_alias = display or intent_token or key
+            say_hint = f"intent {spoken_alias}".strip()
+            intent_lines.append(
+                f"- intent {key} (say: {say_hint}): {display or key} ({intent_token or key})"
+            )
+
+    if snapshot and getattr(snapshot, "intent_buckets", None):
+        for bucket, keys in sorted(snapshot.intent_buckets.items()):
+            display_tokens = [
+                (snapshot.intent_display_map.get(key, key) or "").strip()
+                for key in keys or []
+            ]
+            display_tokens = [token for token in display_tokens if token]
+            if display_tokens:
+                intent_bucket_lines.append(f"- {bucket}: {', '.join(display_tokens)}")
+    else:
+        try:
+            bucket_tokens = _intent_spoken_buckets()
+        except Exception:
+            bucket_tokens = {}
+        for bucket, tokens in sorted((bucket_tokens or {}).items()):
+            cleaned = [token for token in tokens if token]
+            if cleaned:
+                intent_bucket_lines.append(f"- {bucket}: {', '.join(cleaned)}")
     completeness_tokens = _axis_examples(
         "completeness", ["skim", "gist", "full", "deep"]
     )
@@ -1008,12 +1020,35 @@ def _cheat_sheet_text() -> str:
         "Hints:",
         "- Form and channel are optional singletons; set/override explicitly. Current stance/defaults appear in quick help and the response recap.",
         "- Every run needs exactly one directional lens (fog/fig/dig/ong/rog/bog/jog).",
-        persona_line,
-        task_line,
-        relational_line,
-        "- Use More actions… → Open Help Hub in confirmation",
-        "- Say 'model help filter <phrase>' to search in Hub",
     ]
+
+    if persona_lines:
+        lines.append("")
+        lines.append("Persona presets (shortcut names for `persona` commands):")
+        lines.extend(persona_lines)
+    else:
+        lines.append("")
+        lines.append(
+            "Persona presets: peer | coach | mentor | stakeholder | design | pm | exec"
+        )
+
+    if intent_lines:
+        lines.append("")
+        lines.append("Intent presets (shortcut names for `intent` commands):")
+        lines.extend(intent_lines)
+
+    if intent_bucket_lines:
+        lines.append("")
+        lines.append("Intent buckets (canonical groups):")
+        lines.extend(intent_bucket_lines)
+
+    lines.extend(
+        [
+            "",
+            "- Use More actions… → Open Help Hub in confirmation",
+            "- Say 'model help filter <phrase>' to search in Hub",
+        ]
+    )
     return "\n".join(lines)
 
 

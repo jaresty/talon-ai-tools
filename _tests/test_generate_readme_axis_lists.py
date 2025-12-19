@@ -2,6 +2,7 @@ import tempfile
 import unittest
 from pathlib import Path
 from typing import TYPE_CHECKING
+from unittest.mock import patch
 
 try:
     from bootstrap import bootstrap
@@ -35,12 +36,59 @@ if bootstrap is not None:
                 lists_dir = Path(tmpdir)
                 lists_dir.mkdir(parents=True, exist_ok=True)
                 scope_list = lists_dir / "scopeModifier.talon-list"
-                scope_list.write_text("list: user.scopeModifier\nfocus: focus\n", encoding="utf-8")
-                lines = render_readme_axis_lines(lists_dir=lists_dir).strip().splitlines()
+                scope_list.write_text(
+                    "list: user.scopeModifier\nfocus: focus\n", encoding="utf-8"
+                )
+                lines = (
+                    render_readme_axis_lines(lists_dir=lists_dir).strip().splitlines()
+                )
             scope_line = next((line for line in lines if line.startswith("Scope ")), "")
             self.assertIn("`focus`", scope_line)
 
+        def test_generator_normalises_tokens_via_axis_snapshot(self) -> None:
+            snapshots = {
+                "axes": {
+                    "completeness": {"Full": "desc"},
+                    "scope": {"Focus": "desc"},
+                    "method": {},
+                    "form": {},
+                    "channel": {},
+                    "directional": {"Fog": "desc"},
+                },
+                "axis_list_tokens": {
+                    "completeness": ["Full", "full", "Important: extra"],
+                    "scope": ["Focus"],
+                    "method": [],
+                    "form": [],
+                    "channel": [],
+                    "directional": ["Fog"],
+                },
+            }
+            with patch(
+                "scripts.tools.generate_readme_axis_lists.axis_catalog",
+                return_value=snapshots,
+            ):
+                lines = render_readme_axis_lines().strip().splitlines()
+            completeness_line = next(
+                (line for line in lines if line.startswith("Completeness")),
+                "",
+            )
+            scope_line = next(
+                (line for line in lines if line.startswith("Scope")),
+                "",
+            )
+            directional_line = next(
+                (line for line in lines if line.startswith("Directional")),
+                "",
+            )
+            self.assertIn("`full`", completeness_line)
+            self.assertNotIn("Full", completeness_line)
+            self.assertNotIn("Important:", completeness_line)
+            self.assertIn("`focus`", scope_line)
+            self.assertIn("`fog`", directional_line)
+
 else:
+
     class GenerateReadmeAxisListsTests(unittest.TestCase):  # pragma: no cover
         @unittest.skip("Test harness unavailable outside unittest runs")
         def test_placeholder(self) -> None:

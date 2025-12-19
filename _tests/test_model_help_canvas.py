@@ -1,5 +1,6 @@
 import unittest
 from typing import TYPE_CHECKING
+from unittest.mock import patch
 
 try:
     from bootstrap import bootstrap
@@ -68,7 +69,12 @@ if bootstrap is not None:
             """Primary directional grid should surface only core lenses (no composites)."""
             groups = _group_directional_keys()
             all_tokens = {token for lst in groups.values() for token in lst}
-            self.assertTrue(all(token in {"fog", "fig", "dig", "rog", "bog", "ong", "jog"} for token in all_tokens))
+            self.assertTrue(
+                all(
+                    token in {"fog", "fig", "dig", "rog", "bog", "ong", "jog"}
+                    for token in all_tokens
+                )
+            )
 
         def test_open_for_last_recipe_resets_static_prompt(self) -> None:
             HelpGUIState.static_prompt = "fix"
@@ -168,7 +174,9 @@ if bootstrap is not None:
             if axes:
                 self.assertIn("Profile axes:", canvas.drawn)
 
-        def test_quick_help_surfaces_form_channel_defaults_and_directional_requirement(self) -> None:
+        def test_quick_help_surfaces_form_channel_defaults_and_directional_requirement(
+            self,
+        ) -> None:
             """Quick help should remind users about form/channel singleton defaults and required directional lens."""
 
             HelpGUIState.section = "all"
@@ -195,6 +203,40 @@ if bootstrap is not None:
                 hint,
                 "Expected quick help to include form/channel defaults and directional requirement hint",
             )
+
+        def test_quick_help_intent_commands_use_catalog_spoken_aliases(self) -> None:
+            from types import SimpleNamespace
+
+            from talon_user.lib.personaConfig import IntentPreset
+            from talon_user.lib import modelHelpCanvas as help_module
+
+            preset = IntentPreset(key="decide", label="Decide", intent="decide")
+            maps = SimpleNamespace(
+                intent_presets={"decide": preset},
+                intent_display_map={"decide": "For deciding"},
+            )
+
+            with patch(
+                "talon_user.lib.modelHelpCanvas.persona_intent_maps",
+                return_value=maps,
+            ):
+                commands = help_module._intent_preset_commands()
+
+            self.assertIn("for deciding", commands)
+            self.assertNotIn("decide", commands)
+
+            maps_no_display = SimpleNamespace(
+                intent_presets={"decide": preset},
+                intent_display_map={},
+            )
+
+            with patch(
+                "talon_user.lib.modelHelpCanvas.persona_intent_maps",
+                return_value=maps_no_display,
+            ):
+                commands = help_module._intent_preset_commands()
+
+            self.assertIn("decide", commands)
 
 
 else:

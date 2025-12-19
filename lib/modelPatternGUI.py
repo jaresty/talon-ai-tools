@@ -23,10 +23,10 @@ from .patternDebugCoordinator import (
 )
 from .overlayHelpers import apply_canvas_blocking
 from .overlayLifecycle import close_overlays, close_common_overlays
-from .requestBus import current_state
-from .requestState import is_in_flight, try_start_request
+from .requestGating import request_is_in_flight, try_begin_request
 from .requestLog import drop_reason_message, set_drop_reason
 from .modelHelpers import notify
+from .personaConfig import persona_intent_maps
 
 mod = Module()
 ctx = Context()
@@ -46,35 +46,45 @@ class PatternGUIState:
 def _persona_presets():
     """Return the latest persona presets (reload-safe).
 
-    Prefer the persona catalog when available so pattern presets share the
-    same PersonaPreset surface as other Concordance-facing UIs.
+    Prefer the shared persona intent maps so pattern presets stay aligned with
+    other Concordance-facing UIs. Fall back to the legacy catalog constants
+    when maps are unavailable (for example, during bootstrap).
     """
     try:
-        from . import personaConfig
-
-        catalog = getattr(personaConfig, "persona_catalog", None)
-        if callable(catalog):
-            return tuple(catalog().values())
-        return tuple(getattr(personaConfig, "PERSONA_PRESETS", ()))
+        maps = persona_intent_maps()
+        return tuple(maps.persona_presets.values())
     except Exception:
-        return ()
+        try:
+            from . import personaConfig
+
+            catalog = getattr(personaConfig, "persona_catalog", None)
+            if callable(catalog):
+                return tuple(catalog().values())
+            return tuple(getattr(personaConfig, "PERSONA_PRESETS", ()))
+        except Exception:
+            return ()
 
 
 def _intent_presets():
     """Return the latest intent presets (reload-safe).
 
-    Prefer the intent catalog when available so pattern presets share the same
-    IntentPreset surface as other Concordance-facing UIs.
+    Prefer the shared persona intent maps so pattern presets stay aligned with
+    other Concordance-facing UIs. Fall back to the legacy catalog constants
+    when maps are unavailable (for example, during bootstrap).
     """
     try:
-        from . import personaConfig
-
-        catalog = getattr(personaConfig, "intent_catalog", None)
-        if callable(catalog):
-            return tuple(catalog().values())
-        return tuple(getattr(personaConfig, "INTENT_PRESETS", ()))
+        maps = persona_intent_maps()
+        return tuple(maps.intent_presets.values())
     except Exception:
-        return ()
+        try:
+            from . import personaConfig
+
+            catalog = getattr(personaConfig, "intent_catalog", None)
+            if callable(catalog):
+                return tuple(catalog().values())
+            return tuple(getattr(personaConfig, "INTENT_PRESETS", ()))
+        except Exception:
+            return ()
 
 
 @dataclass(frozen=True)
@@ -893,17 +903,34 @@ def _draw_pattern_canvas(c: canvas.Canvas) -> None:  # pragma: no cover - visual
 
     try:
         intent_presets = _intent_presets()
+        maps = persona_intent_maps()
+        raw_display_map = getattr(maps, "intent_display_map", {}) if maps else {}
+        display_map: dict[str, str] = {}
+        try:
+            display_map = {
+                str(key or "").strip(): str(value or "").strip()
+                for key, value in dict(raw_display_map or {}).items()
+                if str(key or "").strip()
+            }
+        except Exception:
+            display_map = {}
         if intent_presets:
             draw_text("  Intent (Why):", x, y)
             y += line_h
             for preset in intent_presets[:4]:
-                say_token = getattr(preset, "intent", None) or getattr(
-                    preset, "key", ""
+                intent_key = getattr(preset, "key", "") or ""
+                intent_token = getattr(preset, "intent", "") or intent_key
+                display_alias = (
+                    display_map.get(intent_key)
+                    or display_map.get(intent_token)
+                    or getattr(preset, "label", "")
+                    or intent_key
                 )
+                say_token = display_alias or intent_token or intent_key
                 label_line = f"    {preset.label} (say: intent {say_token})"
                 draw_text(label_line, x, y)
                 if rect is not None:
-                    key = f"intent:{preset.key}"
+                    key = f"intent:{intent_key}"
                     _pattern_button_bounds[key] = (
                         x,
                         y - line_h,
@@ -950,14 +977,41 @@ def _draw_pattern_canvas(c: canvas.Canvas) -> None:  # pragma: no cover - visual
 
     try:
         intent_presets = _intent_presets()
+        maps = persona_intent_maps()
+        raw_display_map = getattr(maps, "intent_display_map", {}) if maps else {}
+        display_map: dict[str, str] = {}
+        try:
+            display_map = {
+                str(key or "").strip(): str(value or "").strip()
+                for key, value in dict(raw_display_map or {}).items()
+                if str(key or "").strip()
+            }
+        except Exception:
+            display_map = {}
         if intent_presets:
             draw_text("  Intent (Why):", x, y)
             y += line_h
             for preset in intent_presets[:4]:
-                label_line = f"    {preset.label}: {preset.intent}"
+                intent_key = getattr(preset, "key", "") or ""
+                intent_token = getattr(preset, "intent", "") or intent_key
+                display_alias = (
+                    display_map.get(intent_key)
+                    or display_map.get(intent_token)
+                    or getattr(preset, "label", "")
+                    or intent_key
+                )
+                if (
+                    display_alias
+                    and intent_token
+                    and display_alias.lower() != intent_token.lower()
+                ):
+                    display_summary = f"{display_alias} ({intent_token})"
+                else:
+                    display_summary = display_alias or intent_token or intent_key
+                label_line = f"    {preset.label}: {display_summary}"
                 draw_text(label_line, x, y)
                 if rect is not None:
-                    key = f"intent:{preset.key}"
+                    key = f"intent:{intent_key}"
                     _pattern_button_bounds[key] = (
                         x,
                         y - line_h,
@@ -1249,31 +1303,15 @@ def _run_pattern(pattern: PromptPattern) -> None:
 
 
 def _request_is_in_flight() -> bool:
-    """Return True when a GPT request is currently running.
+    """Return True when a GPT request is currently running."""
 
-    This delegates to the central ``is_in_flight`` helper so pattern picker
-    gating stays aligned with the RequestState/RequestLifecycle contract.
-    """
-    try:
-        state = current_state()
-    except Exception:
-        return False
-    try:
-        return is_in_flight(state)  # type: ignore[arg-type]
-    except Exception:
-        return False
+    return request_is_in_flight()
 
 
 def _reject_if_request_in_flight() -> bool:
     """Notify and return True when a GPT request is already running."""
-    try:
-        state = current_state()
-    except Exception:
-        return False
-    try:
-        allowed, reason = try_start_request(state)  # type: ignore[arg-type]
-    except Exception:
-        return False
+
+    allowed, reason = try_begin_request()
     if not allowed and reason == "in_flight":
         message = drop_reason_message("in_flight")
         try:

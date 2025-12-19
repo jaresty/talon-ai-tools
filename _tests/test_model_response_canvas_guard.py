@@ -38,9 +38,8 @@ class ModelResponseCanvasGuardTests(unittest.TestCase):
     def test_reject_if_request_in_flight_records_drop_reason(self):
         with (
             patch.object(
-                canvas_module, "try_start_request", return_value=(False, "in_flight")
+                canvas_module, "try_begin_request", return_value=(False, "in_flight")
             ),
-            patch.object(canvas_module, "current_state"),
             patch.object(canvas_module, "set_drop_reason") as set_reason,
             patch.object(canvas_module, "notify") as notify_mock,
         ):
@@ -49,8 +48,7 @@ class ModelResponseCanvasGuardTests(unittest.TestCase):
         notify_mock.assert_called_once()
 
         with (
-            patch.object(canvas_module, "try_start_request", return_value=(True, "")),
-            patch.object(canvas_module, "current_state"),
+            patch.object(canvas_module, "try_begin_request", return_value=(True, "")),
             patch.object(canvas_module, "set_drop_reason") as set_reason,
             patch.object(canvas_module, "notify") as notify_mock,
         ):

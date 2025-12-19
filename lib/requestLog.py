@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from collections import deque
+from collections import Counter, deque
 from dataclasses import dataclass, field
 from types import MappingProxyType
 from typing import Iterable, Mapping, Optional, Tuple
@@ -20,6 +20,7 @@ except Exception:  # pragma: no cover - defensive fallback for stubs
 
 from .axisMappings import axis_registry_tokens, axis_value_to_key_map_for
 from .axisCatalog import axis_catalog
+from .personaConfig import persona_intent_maps
 from .requestHistory import RequestHistory, RequestLogEntry
 
 _history = RequestHistory()
@@ -32,6 +33,37 @@ class DropReason:
 
 
 _last_drop_reason = DropReason()
+_gating_drop_counts: Counter[RequestDropReason] = Counter()
+
+
+def record_gating_drop(reason: RequestDropReason) -> None:
+    """Record a request gating drop for telemetry/guardrail reporting."""
+
+    if not reason:
+        return
+    try:
+        _gating_drop_counts[reason] += 1
+    except Exception:
+        pass
+
+
+def gating_drop_stats(*, reset: bool = False) -> dict[str, int]:
+    """Return counts of gating drops grouped by reason code.
+
+    When ``reset`` is True the internal counters are cleared after reading to
+    support periodic telemetry snapshots (for example, CI guardrails).
+    """
+
+    stats = {code: int(count) for code, count in _gating_drop_counts.items() if count}
+    if reset:
+        _gating_drop_counts.clear()
+    return stats
+
+
+def consume_gating_drop_stats() -> dict[str, int]:
+    """Return and clear the current gating drop statistics."""
+
+    return gating_drop_stats(reset=True)
 
 
 KNOWN_AXIS_KEYS: tuple[str, ...] = (
@@ -41,6 +73,19 @@ KNOWN_AXIS_KEYS: tuple[str, ...] = (
     "form",
     "channel",
     "directional",
+)
+
+_PERSONA_SNAPSHOT_KEYS: tuple[str, ...] = (
+    "persona_preset_key",
+    "persona_preset_label",
+    "persona_preset_spoken",
+    "persona_voice",
+    "persona_audience",
+    "persona_tone",
+    "intent_preset_key",
+    "intent_preset_label",
+    "intent_display",
+    "intent_purpose",
 )
 
 
@@ -179,6 +224,131 @@ def _filter_axes_payload(
     return filtered
 
 
+def _normalise_persona_snapshot(
+    snapshot: Optional[dict[str, object]],
+) -> dict[str, str]:
+    if not snapshot:
+        return {}
+    payload: dict[str, str] = {}
+    for key in _PERSONA_SNAPSHOT_KEYS:
+        value = snapshot.get(key) if isinstance(snapshot, dict) else None
+        if value is None:
+            continue
+        if isinstance(value, str):
+            trimmed = value.strip()
+            if trimmed:
+                payload[key] = trimmed
+            continue
+        text = str(value).strip()
+        if text:
+            payload[key] = text
+
+    try:
+        maps = persona_intent_maps()
+    except Exception:
+        maps = None
+
+    if maps is not None:
+        persona_aliases = getattr(maps, "persona_preset_aliases", {}) or {}
+        persona_presets = getattr(maps, "persona_presets", {}) or {}
+        intent_aliases = getattr(maps, "intent_preset_aliases", {}) or {}
+        intent_synonyms = getattr(maps, "intent_synonyms", {}) or {}
+        intent_presets = getattr(maps, "intent_presets", {}) or {}
+        intent_display_map = getattr(maps, "intent_display_map", {}) or {}
+
+        persona_key = payload.get("persona_preset_key", "")
+        persona_label = payload.get("persona_preset_label", "")
+        persona_spoken = payload.get("persona_preset_spoken", "")
+
+        if not persona_key:
+            for alias in (persona_spoken, persona_label):
+                alias_l = (alias or "").strip().lower()
+                if alias_l:
+                    canonical = persona_aliases.get(alias_l)
+                    if canonical:
+                        persona_key = canonical.strip()
+                        if persona_key:
+                            payload["persona_preset_key"] = persona_key
+                            break
+
+        preset = persona_presets.get(persona_key) if persona_key else None
+        if preset is not None:
+            if not persona_label:
+                label_value = getattr(preset, "label", "") or preset.key
+                if label_value:
+                    payload["persona_preset_label"] = label_value
+                    persona_label = label_value
+            if not persona_spoken:
+                spoken_value = (
+                    getattr(preset, "spoken", "") or persona_label or preset.key
+                )
+                if spoken_value:
+                    payload["persona_preset_spoken"] = spoken_value
+            if not payload.get("persona_voice") and getattr(preset, "voice", None):
+                payload["persona_voice"] = preset.voice or ""
+            if not payload.get("persona_audience") and getattr(
+                preset, "audience", None
+            ):
+                payload["persona_audience"] = preset.audience or ""
+            if not payload.get("persona_tone") and getattr(preset, "tone", None):
+                payload["persona_tone"] = preset.tone or ""
+
+        intent_key = payload.get("intent_preset_key", "")
+        intent_label = payload.get("intent_preset_label", "")
+        intent_display = payload.get("intent_display", "")
+        intent_purpose = payload.get("intent_purpose", "")
+
+        if not intent_key:
+            for alias in (intent_display, intent_label, intent_purpose):
+                alias_l = (alias or "").strip().lower()
+                if not alias_l:
+                    continue
+                canonical = intent_aliases.get(alias_l) or intent_synonyms.get(alias_l)
+                if canonical:
+                    intent_key = canonical.strip()
+                    if intent_key:
+                        payload["intent_preset_key"] = intent_key
+                        break
+
+        preset_intent = intent_presets.get(intent_key) if intent_key else None
+        if preset_intent is not None:
+            if not intent_label:
+                label_value = getattr(preset_intent, "label", "") or preset_intent.key
+                if label_value:
+                    payload["intent_preset_label"] = label_value
+                    intent_label = label_value
+            if not intent_purpose:
+                purpose_value = (
+                    getattr(preset_intent, "intent", "") or preset_intent.key
+                )
+                if purpose_value:
+                    payload["intent_purpose"] = purpose_value
+                    intent_purpose = purpose_value
+            if not intent_display:
+                display_value = intent_display_map.get(
+                    preset_intent.key
+                ) or intent_display_map.get(getattr(preset_intent, "intent", ""))
+                if display_value:
+                    payload["intent_display"] = display_value
+        elif intent_key and not intent_display:
+            display_value = intent_display_map.get(intent_key)
+            if display_value:
+                payload["intent_display"] = display_value
+
+    return payload
+
+
+def _current_persona_snapshot() -> dict[str, object]:
+    try:
+        from .suggestionCoordinator import (
+            last_recipe_snapshot,
+        )  # local import to avoid cycles
+
+        return last_recipe_snapshot()
+    except Exception:
+        return {}
+
+
 def axis_snapshot_from_axes(axes: Optional[dict[str, list[str]]]) -> AxisSnapshot:
     """Pure helper: normalise axes into a Concordance-aligned snapshot."""
 
@@ -199,12 +369,17 @@ def append_entry(
     duration_ms: Optional[int] = None,
     axes: Optional[dict[str, list[str]]] = None,
     provider_id: str = "",
+    persona: Optional[dict[str, object]] = None,
 ) -> None:
     """Append a request entry to the bounded history ring.
 
     Entries missing a directional lens are dropped immediately in line with
     ADR-048/ADR-0056 concordance requirements.
     """
+    if persona is None:
+        persona = _current_persona_snapshot()
+    persona_payload = _normalise_persona_snapshot(persona)
+
     if not request_id or not str(request_id).strip():
         message = drop_reason_message("missing_request_id")
         try:
@@ -250,6 +425,7 @@ def append_entry(
             duration_ms=duration_ms,
             axes=axes_payload,
             provider_id=provider_id or "",
+            persona=persona_payload,
         )
     )
     try:
@@ -306,6 +482,8 @@ def append_entry_from_request(
 
     axes_payload = _filter_axes_payload(axes_copy)
 
+    persona_snapshot: dict[str, object] = _current_persona_snapshot()
+
     append_entry(
         request_id,
         prompt_text,
@@ -316,6 +494,7 @@ def append_entry_from_request(
         duration_ms=duration_ms,
         axes=axes_payload,
         provider_id=provider_id,
+        persona=persona_snapshot,
     )
     return prompt_text
 
@@ -387,10 +566,29 @@ def drop_reason_message(reason: RequestDropReason) -> str:
     return ""
 
 
-def validate_history_axes() -> None:
-    """Ensure stored history entries use Concordance-recognised axes with directional lenses."""
+def _scan_history_entries(raise_on_failure: bool) -> dict[str, int]:
+    from .requestHistoryActions import _persona_header_lines, _parse_summary_line
+
+    stats = {
+        "total_entries": 0,
+        "entries_missing_directional": 0,
+        "entries_with_unsupported_axes": 0,
+        "entries_with_persona_snapshot": 0,
+        "entries_missing_persona_headers": 0,
+        "persona_preset_missing_say_hint": 0,
+        "persona_preset_missing_descriptor": 0,
+        "intent_preset_missing_say_hint": 0,
+        "intent_preset_missing_descriptor": 0,
+        "unexpected_persona_header": 0,
+        "persona_alias_pairs": {},
+        "intent_display_pairs": {},
+    }
+
+    persona_alias_pairs = stats["persona_alias_pairs"]
+    intent_display_pairs = stats["intent_display_pairs"]
 
     for entry in _history.all():
+        stats["total_entries"] += 1
         axes = entry.axes or {}
         if not isinstance(axes, dict):
             try:
@@ -409,18 +607,127 @@ def validate_history_axes() -> None:
             directional_tokens = []
 
         if not directional_tokens:
-            request_id = entry.request_id or "?"
-            raise ValueError(
-                f"History entry {request_id!r} is missing a directional lens; Concordance requires one."
-            )
+            stats["entries_missing_directional"] += 1
+            if raise_on_failure:
+                request_id = entry.request_id or "?"
+                raise ValueError(
+                    f"History entry {request_id!r} is missing a directional lens; Concordance requires one."
+                )
 
         unknown = sorted(key for key in axes.keys() if key not in KNOWN_AXIS_KEYS)
         if unknown:
-            keys = ", ".join(unknown)
+            stats["entries_with_unsupported_axes"] += 1
+            if raise_on_failure:
+                keys = ", ".join(unknown)
+                request_id = entry.request_id or "?"
+                raise ValueError(
+                    f"History entry {request_id!r} includes unsupported axis keys: {keys}"
+                )
+
+        persona_snapshot = getattr(entry, "persona", {}) or {}
+        if persona_snapshot:
+            stats["entries_with_persona_snapshot"] += 1
+            persona_lines = _persona_header_lines(entry)
             request_id = entry.request_id or "?"
-            raise ValueError(
-                f"History entry {request_id!r} includes unsupported axis keys: {keys}"
-            )
+            if not persona_lines:
+                stats["entries_missing_persona_headers"] += 1
+                if raise_on_failure:
+                    raise ValueError(
+                        "History persona metadata missing required catalog-backed header lines; "
+                        f"entry {request_id!r} has persona snapshot without persona/intent headers."
+                    )
+                else:
+                    continue
+            for line in persona_lines:
+                lower = line.lower()
+                if line.startswith("persona_preset: "):
+                    descriptor, details = _parse_summary_line(line, "persona_preset: ")
+                    canonical = descriptor.strip()
+                    if not canonical:
+                        stats["persona_preset_missing_descriptor"] += 1
+                        if raise_on_failure:
+                            raise ValueError(
+                                "History persona preset entry missing descriptor; "
+                                f"entry {request_id!r} header: {line}"
+                            )
+                    alias = ""
+                    for part in details:
+                        part_lower = part.lower()
+                        if part_lower.startswith("say: persona "):
+                            alias = part[len("say: persona ") :].strip()
+                            break
+                    if not alias:
+                        stats["persona_preset_missing_say_hint"] += 1
+                        if raise_on_failure:
+                            raise ValueError(
+                                "History persona preset entry missing say hint; "
+                                f"entry {request_id!r} header: {line}"
+                            )
+                    if canonical and alias:
+                        canon_map = persona_alias_pairs.setdefault(canonical, {})
+                        canon_map[alias] = canon_map.get(alias, 0) + 1
+                elif line.startswith("intent_preset: "):
+                    descriptor, details = _parse_summary_line(line, "intent_preset: ")
+                    canonical_intent = descriptor.strip()
+                    if not canonical_intent:
+                        stats["intent_preset_missing_descriptor"] += 1
+                        if raise_on_failure:
+                            raise ValueError(
+                                "History intent preset entry missing descriptor; "
+                                f"entry {request_id!r} header: {line}"
+                            )
+                    display_value = ""
+                    spoken_alias = ""
+                    for part in details:
+                        part_lower = part.lower()
+                        if part_lower.startswith("display="):
+                            display_value = part.split("=", 1)[1].strip()
+                        elif part_lower.startswith("say: intent "):
+                            spoken_alias = part[len("say: intent ") :].strip()
+                        elif part_lower.startswith("label=") and not display_value:
+                            display_value = part.split("=", 1)[1].strip()
+                    if "say: intent " not in lower:
+                        stats["intent_preset_missing_say_hint"] += 1
+                        if raise_on_failure:
+                            raise ValueError(
+                                "History intent preset entry missing say hint; "
+                                f"entry {request_id!r} header: {line}"
+                            )
+                    alias_value = display_value or spoken_alias
+                    if canonical_intent and alias_value:
+                        canon_map = intent_display_pairs.setdefault(
+                            canonical_intent, {}
+                        )
+                        canon_map[alias_value] = canon_map.get(alias_value, 0) + 1
+                else:
+                    stats["unexpected_persona_header"] += 1
+                    if raise_on_failure:
+                        raise ValueError(
+                            "History persona metadata included unexpected header line; "
+                            f"entry {request_id!r} header: {line}"
+                        )
+    return stats
+
+
+def validate_history_axes() -> None:
+    """Ensure stored history entries use Concordance-recognised axes with directional lenses."""
+
+    _ = _scan_history_entries(raise_on_failure=True)
+
+
+def history_validation_stats() -> dict[str, object]:
+    """Return validation statistics without raising on failures.
+
+    Includes request gating drop counts so Concordance summaries can
+    contextualise how often in-flight guards rejected new requests.
+    """
+
+    stats = _scan_history_entries(raise_on_failure=False)
+    gating_counts = gating_drop_stats()
+    stats = dict(stats)
+    stats["gating_drop_total"] = sum(gating_counts.values())
+    stats["gating_drop_counts"] = dict(gating_counts)
+    return stats
 
 
 def remediate_history_axes(
@@ -531,6 +838,9 @@ __all__ = [
     "last_drop_reason_code",
     "consume_last_drop_reason",
     "consume_last_drop_reason_record",
+    "record_gating_drop",
+    "gating_drop_stats",
+    "consume_gating_drop_stats",
     "axis_snapshot_from_axes",
     "AxisSnapshot",
 ]

@@ -120,6 +120,40 @@ if bootstrap is not None:
                 with self.assertRaisesRegex(ValueError, "unsupported axis keys"):
                     _build_static_prompt_docs()
 
+        def test_static_prompt_docs_normalise_axes_via_snapshot(self) -> None:
+            """Static prompt docs should reuse AxisSnapshot normalisation."""
+            catalog = {
+                "profiled": [
+                    {
+                        "name": "diagnostic",
+                        "description": "Format diagnostic output.",
+                        "axes": {
+                            "completeness": ["Full", "Important: extra"],
+                            "scope": ["Focus"],
+                            "method": ["Steps"],
+                            "directional": ["Fog"],
+                        },
+                    }
+                ],
+                "talon_list_tokens": ["diagnostic"],
+                "unprofiled_tokens": [],
+            }
+
+            with patch(
+                "talon_user.GPT.gpt.static_prompt_catalog", return_value=catalog
+            ):
+                docs = _build_static_prompt_docs()
+
+            self.assertIn("diagnostic", docs)
+            self.assertIn("completeness=full", docs)
+            self.assertIn("scope=focus", docs)
+            self.assertIn("method=steps", docs)
+            self.assertIn("directional=fog", docs)
+            self.assertNotIn("Important:", docs)
+            self.assertNotIn("Full", docs)
+            self.assertNotIn("Focus", docs)
+            self.assertNotIn("Fog", docs)
+
         def test_axis_docs_include_all_axis_sections(self) -> None:
             """Characterise the axis docs block for completeness."""
             docs = _build_axis_docs()

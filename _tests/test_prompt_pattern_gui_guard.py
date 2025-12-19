@@ -42,10 +42,9 @@ class PromptPatternGUIGuardTests(unittest.TestCase):
         with (
             patch.object(
                 prompt_pattern_module,
-                "try_start_request",
+                "try_begin_request",
                 return_value=(False, "in_flight"),
             ),
-            patch.object(prompt_pattern_module, "current_state"),
             patch.object(prompt_pattern_module, "set_drop_reason") as set_reason,
             patch.object(prompt_pattern_module, "notify") as notify_mock,
         ):
@@ -55,9 +54,8 @@ class PromptPatternGUIGuardTests(unittest.TestCase):
 
         with (
             patch.object(
-                prompt_pattern_module, "try_start_request", return_value=(True, "")
+                prompt_pattern_module, "try_begin_request", return_value=(True, "")
             ),
-            patch.object(prompt_pattern_module, "current_state"),
             patch.object(prompt_pattern_module, "set_drop_reason") as set_reason,
             patch.object(prompt_pattern_module, "notify") as notify_mock,
         ):

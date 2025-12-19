@@ -1,4 +1,6 @@
 import unittest
+from contextlib import ExitStack
+from types import SimpleNamespace
 from typing import TYPE_CHECKING
 from unittest.mock import patch
 
@@ -22,6 +24,7 @@ if bootstrap is not None:
     from talon_user.lib import streamingCoordinator
     from talon_user.lib import modelResponseCanvas
     from talon_user.lib.requestState import RequestPhase, RequestState
+    from talon_user.lib.personaConfig import PersonaPreset
 
     class ModelResponseCanvasTests(unittest.TestCase):
         def setUp(self) -> None:
@@ -33,15 +36,75 @@ if bootstrap is not None:
             GPTState.last_streaming_snapshot = {}
             try:
                 import talon_user.lib.modelResponseCanvas as mrc
+
                 mrc._last_meta_signature = None  # type: ignore[attr-defined]
             except Exception:
                 modelResponseCanvas._last_meta_signature = None  # type: ignore[attr-defined]
+            modelResponseCanvas.reset_persona_intent_maps_cache()
             self._state_patch = patch.object(
                 modelResponseCanvas,
                 "current_state",
                 return_value=RequestState(),
             )
             self._state_patch.start()
+
+        def _render_recap_lines(
+            self,
+            recipe_snapshot: dict[str, object],
+            grammar_phrase: str,
+            recap_snapshot: dict[str, str] | None = None,
+            persona_maps=None,
+        ) -> list[str]:
+            captured: list[str] = []
+            effective_recap = recap_snapshot or {"response": "answer body", "meta": ""}
+            with ExitStack() as stack:
+                stack.enter_context(
+                    patch.object(
+                        modelResponseCanvas,
+                        "last_recipe_snapshot",
+                        return_value=recipe_snapshot,
+                    )
+                )
+                stack.enter_context(
+                    patch.object(
+                        modelResponseCanvas,
+                        "last_recap_snapshot",
+                        return_value=effective_recap,
+                    )
+                )
+                stack.enter_context(
+                    patch.object(
+                        modelResponseCanvas,
+                        "suggestion_grammar_phrase",
+                        return_value=grammar_phrase,
+                    )
+                )
+                if persona_maps is not None:
+                    stack.enter_context(
+                        patch.object(
+                            modelResponseCanvas,
+                            "persona_intent_maps",
+                            return_value=persona_maps,
+                        )
+                    )
+                canvas_obj = _ensure_response_canvas()
+                if not hasattr(canvas_obj, "rect") or canvas_obj.rect is None:
+                    canvas_obj.rect = type(
+                        "R", (), {"x": 0, "y": 0, "width": 500, "height": 400}
+                    )()
+                original_draw_text = getattr(canvas_obj, "draw_text", None)
+
+                def _capture(text, *args, **kwargs):
+                    captured.append(str(text))
+                    if original_draw_text:
+                        return original_draw_text(text, *args, **kwargs)
+                    return None
+
+                stack.enter_context(patch.object(canvas_obj, "draw_text", new=_capture))
+                callbacks = getattr(canvas_obj, "_callbacks", {})
+                for cb in callbacks.get("draw") or []:
+                    cb(canvas_obj)
+            return captured
 
         def tearDown(self) -> None:
             try:
@@ -159,7 +222,9 @@ if bootstrap is not None:
                 ("req-same", "new response text", "meta block", "new recipe"),
             )
 
-        def test_meta_stays_expanded_when_request_id_missing_on_completion(self) -> None:
+        def test_meta_stays_expanded_when_request_id_missing_on_completion(
+            self,
+        ) -> None:
             """If request id drops after completion, keep meta open using last known id."""
             ResponseCanvasState.meta_expanded = True
             modelResponseCanvas._last_meta_signature = (  # type: ignore[attr-defined]
@@ -381,19 +446,22 @@ if bootstrap is not None:
                 "error_message": "",
             }
 
-            with patch.object(
-                modelResponseCanvas,
-                "_current_request_state",
-                return_value=RequestState(phase=RequestPhase.STREAMING),
-            ), patch.object(
-                streamingCoordinator,
-                "canvas_view_from_snapshot",
-                side_effect=lambda snapshot: {
-                    "text": snapshot.get("text", ""),
-                    "status": "inflight",
-                    "error_message": "",
-                },
-            ) as mock_view:
+            with (
+                patch.object(
+                    modelResponseCanvas,
+                    "_current_request_state",
+                    return_value=RequestState(phase=RequestPhase.STREAMING),
+                ),
+                patch.object(
+                    streamingCoordinator,
+                    "canvas_view_from_snapshot",
+                    side_effect=lambda snapshot: {
+                        "text": snapshot.get("text", ""),
+                        "status": "inflight",
+                        "error_message": "",
+                    },
+                ) as mock_view,
+            ):
                 canvas_obj = _ensure_response_canvas()
                 callbacks = getattr(canvas_obj, "_callbacks", {})
                 draw_cbs = callbacks.get("draw") or []
@@ -426,7 +494,9 @@ if bootstrap is not None:
                     cb(canvas_obj)
 
             bounds = modelResponseCanvas._response_button_bounds.get("cancel")  # type: ignore[attr-defined]
-            self.assertIsNotNone(bounds, "Expected cancel button bounds to be registered")
+            self.assertIsNotNone(
+                bounds, "Expected cancel button bounds to be registered"
+            )
 
         def test_error_canvas_passes_errored_snapshot_to_streaming_adapter(
             self,
@@ -440,19 +510,22 @@ if bootstrap is not None:
                 "error_message": "timeout",
             }
 
-            with patch.object(
-                modelResponseCanvas,
-                "_current_request_state",
-                return_value=RequestState(phase=RequestPhase.ERROR),
-            ), patch.object(
-                streamingCoordinator,
-                "canvas_view_from_snapshot",
-                side_effect=lambda snapshot: {
-                    "text": snapshot.get("text", ""),
-                    "status": "errored",
-                    "error_message": "timeout",
-                },
-            ) as mock_view:
+            with (
+                patch.object(
+                    modelResponseCanvas,
+                    "_current_request_state",
+                    return_value=RequestState(phase=RequestPhase.ERROR),
+                ),
+                patch.object(
+                    streamingCoordinator,
+                    "canvas_view_from_snapshot",
+                    side_effect=lambda snapshot: {
+                        "text": snapshot.get("text", ""),
+                        "status": "errored",
+                        "error_message": "timeout",
+                    },
+                ) as mock_view,
+            ):
                 canvas_obj = _ensure_response_canvas()
                 callbacks = getattr(canvas_obj, "_callbacks", {})
                 draw_cbs = callbacks.get("draw") or []
@@ -475,19 +548,22 @@ if bootstrap is not None:
                 "error_message": "",
             }
 
-            with patch.object(
-                modelResponseCanvas,
-                "_current_request_state",
-                return_value=RequestState(phase=RequestPhase.DONE),
-            ), patch.object(
-                streamingCoordinator,
-                "canvas_view_from_snapshot",
-                side_effect=lambda snapshot: {
-                    "text": snapshot.get("text", ""),
-                    "status": "completed",
-                    "error_message": "",
-                },
-            ) as mock_view:
+            with (
+                patch.object(
+                    modelResponseCanvas,
+                    "_current_request_state",
+                    return_value=RequestState(phase=RequestPhase.DONE),
+                ),
+                patch.object(
+                    streamingCoordinator,
+                    "canvas_view_from_snapshot",
+                    side_effect=lambda snapshot: {
+                        "text": snapshot.get("text", ""),
+                        "status": "completed",
+                        "error_message": "",
+                    },
+                ) as mock_view,
+            ):
                 canvas_obj = _ensure_response_canvas()
                 callbacks = getattr(canvas_obj, "_callbacks", {})
                 draw_cbs = callbacks.get("draw") or []
@@ -512,47 +588,20 @@ if bootstrap is not None:
             GPTState.last_form = "bullets"
             GPTState.last_channel = "slack"
 
-            captured: list[str] = []
-            with patch.object(
-                modelResponseCanvas,
-                "last_recipe_snapshot",
-                return_value={
-                    "recipe": "infer · full · focus · steps · bullets · slack",
-                    "static_prompt": "infer",
-                    "completeness": "full",
-                    "scope_tokens": ["focus"],
-                    "method_tokens": ["steps"],
-                    "form_tokens": ["bullets"],
-                    "channel_tokens": ["slack"],
-                    "directional": "fog",
-                },
-            ), patch.object(
-                modelResponseCanvas,
-                "last_recap_snapshot",
-                return_value={"response": "answer body", "meta": ""},
-            ), patch.object(
-                modelResponseCanvas,
-                "suggestion_grammar_phrase",
-                return_value="model again fog",
-            ):
-                canvas_obj = _ensure_response_canvas()
-                if not hasattr(canvas_obj, "rect") or canvas_obj.rect is None:
-                    canvas_obj.rect = type(
-                        "R", (), {"x": 0, "y": 0, "width": 500, "height": 400}
-                    )()
-                original_draw_text = getattr(canvas_obj, "draw_text", None)
-
-                def _capture(text, *args, **kwargs):
-                    captured.append(str(text))
-                    if original_draw_text:
-                        return original_draw_text(text, *args, **kwargs)
-                    return None
-
-                canvas_obj.draw_text = _capture  # type: ignore[attr-defined]
-                callbacks = getattr(canvas_obj, "_callbacks", {})
-                draw_cbs = callbacks.get("draw") or []
-                for cb in draw_cbs:
-                    cb(canvas_obj)
+            recipe_snapshot = {
+                "recipe": "infer · full · focus · steps · bullets · slack",
+                "static_prompt": "infer",
+                "completeness": "full",
+                "scope_tokens": ["focus"],
+                "method_tokens": ["steps"],
+                "form_tokens": ["bullets"],
+                "channel_tokens": ["slack"],
+                "directional": "fog",
+            }
+            captured = self._render_recap_lines(
+                recipe_snapshot=recipe_snapshot,
+                grammar_phrase="model again fog",
+            )
 
             axes_hint = [
                 line for line in captured if "Axes: single directional lens" in line
@@ -562,11 +611,290 @@ if bootstrap is not None:
                 "Expected response recap to surface directional + form/channel singleton hint",
             )
             stance_lines = [line for line in captured if line.startswith("Stance:")]
-            defaults_lines = [
-                line for line in captured if line.startswith("Defaults:")
-            ]
+            defaults_lines = [line for line in captured if line.startswith("Defaults:")]
             self.assertTrue(stance_lines, "Expected stance summary in response recap")
-            self.assertTrue(defaults_lines, "Expected defaults summary in response recap")
+            self.assertTrue(
+                defaults_lines, "Expected defaults summary in response recap"
+            )
+
+        def test_recap_surfaces_persona_and_intent_aliases(self) -> None:
+            GPTState.last_response = "answer body"
+            GPTState.last_recipe = "describe · gist"
+
+            persona_maps = SimpleNamespace(
+                persona_presets={},
+                persona_preset_aliases={},
+                intent_presets={
+                    "decide": SimpleNamespace(
+                        key="decide", label="Decide", intent="decide"
+                    )
+                },
+                intent_preset_aliases={},
+                intent_synonyms={},
+                intent_display_map={"decide": "For deciding"},
+            )
+
+            recipe_snapshot = {
+                "recipe": "describe · gist",
+                "static_prompt": "describe",
+                "form_tokens": [],
+                "channel_tokens": [],
+                "persona_preset_key": "teach_junior_dev",
+                "persona_preset_label": "Teach junior dev",
+                "persona_preset_spoken": "mentor",
+                "persona_voice": "as teacher",
+                "persona_audience": "to junior dev",
+                "persona_tone": "kindly",
+                "intent_preset_key": "decide",
+                "intent_purpose": "decide",
+                "intent_display": "",
+            }
+
+            captured = self._render_recap_lines(
+                recipe_snapshot=recipe_snapshot,
+                grammar_phrase="model run describe gist",
+                persona_maps=persona_maps,
+            )
+
+            persona_lines = [line for line in captured if "Persona:" in line]
+            intent_lines = [line for line in captured if "Intent:" in line]
+            self.assertTrue(
+                any("mentor" in line.lower() for line in persona_lines),
+                f"Expected persona alias in recap, saw: {persona_lines}",
+            )
+            self.assertTrue(
+                any("teach_junior_dev" in line for line in persona_lines),
+                f"Expected canonical persona key in recap, saw: {persona_lines}",
+            )
+            self.assertTrue(
+                any(
+                    "intent" in line.lower() and "for deciding" in line.lower()
+                    for line in intent_lines
+                ),
+                f"Expected intent display alias in recap, saw: {intent_lines}",
+            )
+
+            stance_lines = [line for line in captured if line.startswith("Stance:")]
+            defaults_lines = [line for line in captured if line.startswith("Defaults:")]
+            self.assertTrue(stance_lines, "Expected stance summary in response recap")
+            self.assertTrue(
+                defaults_lines, "Expected defaults summary in response recap"
+            )
+
+        def test_recap_persona_falls_back_to_catalog_alias(self) -> None:
+            GPTState.last_response = "answer body"
+            GPTState.last_recipe = "describe · gist"
+
+            persona_preset = PersonaPreset(
+                key="teach_junior_dev",
+                label="Teach junior dev",
+                spoken="mentor",
+                voice="as teacher",
+                audience="to junior dev",
+                tone="kindly",
+            )
+            persona_maps = SimpleNamespace(
+                persona_presets={"teach_junior_dev": persona_preset},
+                persona_preset_aliases={
+                    "teach_junior_dev": "teach_junior_dev",
+                    "mentor": "teach_junior_dev",
+                    "teach junior dev": "teach_junior_dev",
+                },
+                intent_presets={},
+                intent_preset_aliases={},
+                intent_synonyms={},
+                intent_display_map={"decide": "For deciding"},
+            )
+
+            recipe_snapshot = {
+                "recipe": "describe · gist",
+                "static_prompt": "describe",
+                "form_tokens": [],
+                "channel_tokens": [],
+                "persona_preset_key": "teach_junior_dev",
+                "persona_preset_label": "",
+                "persona_preset_spoken": "",
+                "persona_voice": "as teacher",
+                "persona_audience": "to junior dev",
+                "persona_tone": "kindly",
+                "intent_preset_key": "decide",
+                "intent_purpose": "decide",
+                "intent_display": "",
+            }
+
+            captured = self._render_recap_lines(
+                recipe_snapshot=recipe_snapshot,
+                grammar_phrase="model run describe gist",
+                persona_maps=persona_maps,
+            )
+
+            persona_lines = [line for line in captured if "Persona:" in line]
+            self.assertTrue(
+                any("mentor" in line.lower() for line in persona_lines),
+                f"Expected persona alias fallback, saw: {persona_lines}",
+            )
+            self.assertTrue(
+                any("teach_junior_dev" in line for line in persona_lines),
+                f"Expected canonical persona key fallback, saw: {persona_lines}",
+            )
+
+        def test_recap_header_surfaces_recipe_axes_persona_intent(self) -> None:
+            GPTState.last_response = "answer body"
+            GPTState.last_recipe = "describe · gist"
+            GPTState.last_completeness = "full"
+            GPTState.last_scope = "focus"
+            GPTState.last_method = "steps"
+            GPTState.last_form = "bullets"
+            GPTState.last_channel = "slack"
+
+            persona_preset = PersonaPreset(
+                key="teach_junior_dev",
+                label="Teach junior dev",
+                spoken="mentor",
+                voice="as teacher",
+                audience="to junior dev",
+                tone="kindly",
+            )
+            persona_maps = SimpleNamespace(
+                persona_presets={"teach_junior_dev": persona_preset},
+                persona_preset_aliases={
+                    "teach_junior_dev": "teach_junior_dev",
+                    "mentor": "teach_junior_dev",
+                    "teach junior dev": "teach_junior_dev",
+                },
+                intent_presets={
+                    "decide": SimpleNamespace(
+                        key="decide", label="Decide", intent="decide"
+                    )
+                },
+                intent_preset_aliases={},
+                intent_synonyms={},
+                intent_display_map={"decide": "For deciding"},
+            )
+
+            recipe_snapshot = {
+                "recipe": "describe · full · focus · steps · bullets · slack",
+                "static_prompt": "describe",
+                "completeness": "full",
+                "scope_tokens": ["focus"],
+                "method_tokens": ["steps"],
+                "form_tokens": ["bullets"],
+                "channel_tokens": ["slack"],
+                "directional": "fog",
+                "persona_preset_key": "teach_junior_dev",
+                "persona_preset_label": "",
+                "persona_preset_spoken": "mentor",
+                "persona_voice": "as teacher",
+                "persona_audience": "to junior dev",
+                "persona_tone": "kindly",
+                "intent_preset_key": "decide",
+                "intent_purpose": "decide",
+                "intent_display": "",
+            }
+
+            captured = self._render_recap_lines(
+                recipe_snapshot=recipe_snapshot,
+                grammar_phrase="say describe fog",
+                persona_maps=persona_maps,
+            )
+
+            header_lines = [
+                line
+                for line in captured
+                if line
+                in (
+                    "Talon GPT Result",
+                    "Prompt recap",
+                    "Recipe: describe · full · focus · steps · bullets · slack · fog",
+                    "Say: say describe fog",
+                )
+            ]
+            self.assertEqual(
+                header_lines,
+                [
+                    "Talon GPT Result",
+                    "Prompt recap",
+                    "Recipe: describe · full · focus · steps · bullets · slack · fog",
+                    "Say: say describe fog",
+                ],
+            )
+
+            persona_line = next(
+                (line for line in captured if line.startswith("Persona:")), ""
+            )
+            self.assertIn("mentor", persona_line.lower())
+            self.assertIn("teach_junior_dev", persona_line)
+
+            intent_line = next(
+                (line for line in captured if line.startswith("Intent:")), ""
+            )
+            self.assertIn("For deciding", intent_line)
+            self.assertIn("decide", intent_line)
+
+            axes_hint = [
+                line for line in captured if "Axes: single directional lens" in line
+            ]
+            self.assertTrue(axes_hint, "Expected axes hint in recap header")
+
+            # Reset GPTState overrides to avoid influencing later tests.
+            GPTState.last_completeness = ""
+            GPTState.last_scope = ""
+            GPTState.last_method = ""
+            GPTState.last_form = ""
+            GPTState.last_channel = ""
+
+        def test_persona_intent_maps_cached_across_draws(self) -> None:
+            modelResponseCanvas.reset_persona_intent_maps_cache()
+            recipe_snapshot = {
+                "recipe": "describe · gist",
+                "static_prompt": "describe",
+                "form_tokens": [],
+                "channel_tokens": [],
+                "persona_preset_key": "teach_junior_dev",
+                "persona_preset_label": "Teach junior dev",
+                "persona_preset_spoken": "mentor",
+                "persona_voice": "as teacher",
+                "persona_audience": "to junior dev",
+                "persona_tone": "kindly",
+                "intent_preset_key": "decide",
+                "intent_purpose": "decide",
+                "intent_display": "For deciding",
+            }
+
+            with patch.object(
+                modelResponseCanvas,
+                "persona_intent_maps",
+                wraps=modelResponseCanvas.persona_intent_maps,
+            ) as mock_maps:
+                self._render_recap_lines(
+                    recipe_snapshot=recipe_snapshot,
+                    grammar_phrase="model run describe gist",
+                )
+                self._render_recap_lines(
+                    recipe_snapshot=recipe_snapshot,
+                    grammar_phrase="model run describe gist",
+                )
+            self.assertEqual(
+                mock_maps.call_count,
+                1,
+                "Expected persona_intent_maps to be cached between draws",
+            )
+
+            modelResponseCanvas.reset_persona_intent_maps_cache()
+            with patch.object(
+                modelResponseCanvas,
+                "persona_intent_maps",
+                wraps=modelResponseCanvas.persona_intent_maps,
+            ) as mock_maps_after_reset:
+                self._render_recap_lines(
+                    recipe_snapshot=recipe_snapshot,
+                    grammar_phrase="model run describe gist",
+                )
+            self.assertEqual(
+                mock_maps_after_reset.call_count,
+                1,
+                "Expected persona_intent_maps to be invoked after cache reset",
+            )
 
 
 else:

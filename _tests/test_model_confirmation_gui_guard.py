@@ -73,9 +73,8 @@ class ConfirmationGUIGuardTests(unittest.TestCase):
     def test_reject_if_request_in_flight_records_drop_reason(self):
         with (
             patch.object(
-                confirm_module, "try_start_request", return_value=(False, "in_flight")
+                confirm_module, "try_begin_request", return_value=(False, "in_flight")
             ),
-            patch.object(confirm_module, "current_state"),
             patch.object(confirm_module, "set_drop_reason") as set_reason,
             patch.object(confirm_module, "notify") as notify_mock,
         ):
@@ -84,8 +83,7 @@ class ConfirmationGUIGuardTests(unittest.TestCase):
         notify_mock.assert_called_once()
 
         with (
-            patch.object(confirm_module, "try_start_request", return_value=(True, "")),
-            patch.object(confirm_module, "current_state"),
+            patch.object(confirm_module, "try_begin_request", return_value=(True, "")),
             patch.object(confirm_module, "set_drop_reason") as set_reason,
             patch.object(confirm_module, "notify") as notify_mock,
         ):

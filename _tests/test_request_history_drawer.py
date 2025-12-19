@@ -21,6 +21,8 @@ if bootstrap is not None:
         clear_history,
         last_drop_reason_code,
     )
+    from talon_user.lib.modelState import GPTState
+    from talon_user.lib.personaConfig import persona_intent_maps_reset
     from talon import canvas
 
     class RequestHistoryDrawerTests(unittest.TestCase):
@@ -94,6 +96,87 @@ if bootstrap is not None:
             label, body = rendered[0]
             self.assertEqual(label, "rid-1 (42ms) [gemini]")
             self.assertEqual(body, "infer · fog · prompt one · provider=gemini")
+
+        def test_history_drawer_includes_persona_and_intent_metadata(self):
+            persona_intent_maps_reset()
+            GPTState.reset_all()
+            GPTState.last_recipe = "describe · full · focus · plan · plain · fog"
+            GPTState.last_static_prompt = "describe"
+            GPTState.last_completeness = "full"
+            GPTState.last_scope = "focus"
+            GPTState.last_method = "plan"
+            GPTState.last_form = "plain"
+            GPTState.last_channel = "slack"
+            GPTState.last_directional = "fog"
+            GPTState.last_axes = {
+                "completeness": ["full"],
+                "scope": ["focus"],
+                "method": ["plan"],
+                "form": ["plain"],
+                "channel": ["slack"],
+                "directional": ["fog"],
+            }
+            GPTState.last_suggest_context = {
+                "persona_preset_key": "teach_junior_dev",
+                "intent_preset_key": "decide",
+            }
+
+            append_entry(
+                "rid-persona",
+                "prompt text",
+                "response",
+                "meta",
+                recipe="describe · full · focus · plan · plain · fog",
+                axes={
+                    "completeness": ["full"],
+                    "scope": ["focus"],
+                    "method": ["plan"],
+                    "form": ["plain"],
+                    "channel": ["slack"],
+                    "directional": ["fog"],
+                },
+            )
+
+            DrawerActions.request_history_drawer_open()
+            try:
+                self.assertGreaterEqual(len(HistoryDrawerState.entries), 1)
+                _, body = HistoryDrawerState.entries[0]
+                lower_body = body.lower()
+                self.assertIn("persona mentor", lower_body)
+                self.assertIn("key=teach_junior_dev", lower_body)
+                self.assertIn("say: persona mentor", lower_body)
+                self.assertIn("intent for deciding", lower_body)
+                self.assertIn("key=decide", lower_body)
+                self.assertIn("say: intent for deciding", lower_body)
+            finally:
+                DrawerActions.request_history_drawer_close()
+
+        def test_history_drawer_alias_only_metadata_normalises_via_catalog(self):
+            persona_intent_maps_reset()
+            GPTState.reset_all()
+            append_entry(
+                "rid-alias",
+                "prompt text",
+                "response",
+                "meta",
+                axes={"directional": ["fog"]},
+                persona={
+                    "persona_preset_spoken": "mentor",
+                    "intent_display": "For deciding",
+                },
+            )
+
+            DrawerActions.request_history_drawer_open()
+            try:
+                self.assertGreaterEqual(len(HistoryDrawerState.entries), 1)
+                _, body = HistoryDrawerState.entries[0]
+                lower_body = body.lower()
+                self.assertIn("persona mentor", lower_body)
+                self.assertIn("key=teach_junior_dev", lower_body)
+                self.assertIn("intent for deciding", lower_body)
+                self.assertIn("key=decide", lower_body)
+            finally:
+                DrawerActions.request_history_drawer_close()
 
         def test_drawer_save_latest_source_refreshes_entries(self):
             from talon_user.lib import requestLog as requestlog  # type: ignore

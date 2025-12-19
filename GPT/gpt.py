@@ -18,7 +18,7 @@ from ..lib.talonSettings import (
 
 from ..lib.axisMappings import axis_docs_map
 from ..lib.staticPromptConfig import STATIC_PROMPT_CONFIG
-from ..lib.requestLog import KNOWN_AXIS_KEYS
+from ..lib.requestLog import KNOWN_AXIS_KEYS, axis_snapshot_from_axes
 
 try:
     from ..lib.axisCatalog import (
@@ -164,7 +164,8 @@ from ..lib.suggestionCoordinator import (
 
 # Backward-compatible alias for directional map used during parsing.
 DIRECTIONAL_MAP = _DIRECTIONAL_MAP
-from ..lib.requestState import RequestPhase, is_in_flight, try_start_request
+from ..lib.requestState import RequestPhase
+from ..lib.requestGating import request_is_in_flight, try_begin_request
 from ..lib.requestBus import (
     emit_begin_send,
     emit_cancel,
@@ -181,6 +182,20 @@ try:
     from ..lib import requestUI  # noqa: F401
 except Exception:
     pass
+
+
+_ALIAS_NORMALISE_PATTERN = re.compile(r"[^a-z0-9]+")
+
+
+def _normalise_persona_alias_token(raw: str) -> str:
+    """Return a lowercase token stripped of punctuation/extra whitespace."""
+
+    token = str(raw or "").strip().lower()
+    if not token:
+        return ""
+    token = _ALIAS_NORMALISE_PATTERN.sub(" ", token)
+    token = re.sub(r"\s+", " ", token)
+    return token.strip()
 
 
 def _canonical_axis_value(axis: str, raw: str) -> str:
@@ -227,6 +242,7 @@ def _canonical_persona_value(axis: str, raw: str) -> str:
             return canonical
 
     lower = raw_s.lower()
+    normalised = _normalise_persona_alias_token(raw_s)
     if axis == "intent":
         try:
             from ..lib.personaConfig import normalize_intent_token
@@ -235,13 +251,43 @@ def _canonical_persona_value(axis: str, raw: str) -> str:
         else:
             raw_s = normalize_intent_token(raw_s)
             lower = raw_s.lower()
+            normalised = _normalise_persona_alias_token(raw_s)
+    axis_key = str(axis or "").strip().lower()
+    axis_map = {}
+    intent_synonyms_map = {}
+    intent_alias_map = {}
+    try:
+        maps = persona_intent_maps()
+    except Exception:
+        maps = None
+    if maps:
+        axis_map = maps.persona_axis_tokens.get(axis_key, {}) or {}
+        intent_synonyms_map = maps.intent_synonyms or {}
+        intent_alias_map = maps.intent_preset_aliases or {}
+    for candidate in (lower, normalised):
+        if candidate and axis_map and candidate in axis_map:
+            return axis_map[candidate]
+    if axis_key == "intent":
+        for candidate in (lower, normalised):
+            if not candidate:
+                continue
+            synonym = intent_synonyms_map.get(candidate) or intent_alias_map.get(
+                candidate
+            )
+            if synonym:
+                return synonym
     try:
         docs = persona_docs_map(axis)
     except Exception:
         docs = {}
     for key, desc in docs.items():
         key_s = str(key).strip()
-        if key_s and lower == key_s.lower():
+        if not key_s:
+            continue
+        key_lower = key_s.lower()
+        if lower == key_lower:
+            return key_s
+        if normalised and normalised == _normalise_persona_alias_token(key_s):
             return key_s
     return ""
 
@@ -488,10 +534,17 @@ mod.tag(
 def _persona_presets():
     """Return the latest persona presets (reload-safe).
 
-    Prefer the persona catalog when available so GPT actions share the same
-    PersonaPreset surface as other Concordance-facing UIs.
+    Prefer the shared persona intent maps so GPT actions stay aligned with
+    other Concordance-facing UIs. Fall back to legacy catalog helpers when
+    maps are unavailable (for example, during bootstrap).
     """
 
+    try:
+        maps = persona_intent_maps()
+        if maps and maps.persona_presets:
+            return tuple(maps.persona_presets.values())
+    except Exception:
+        maps = None
     try:
         from ..lib import personaConfig
 
@@ -506,10 +559,17 @@ def _persona_presets():
 def _intent_presets():
     """Return the latest intent presets (reload-safe).
 
-    Prefer the intent catalog when available so GPT actions share the same
-    IntentPreset surface as other Concordance-facing UIs.
+    Prefer the shared persona intent maps so GPT actions stay aligned with
+    other Concordance-facing UIs. Fall back to legacy catalog helpers when
+    maps are unavailable (for example, during bootstrap).
     """
 
+    try:
+        maps = persona_intent_maps()
+        if maps and maps.intent_presets:
+            return tuple(maps.intent_presets.values())
+    except Exception:
+        maps = None
     try:
         from ..lib import personaConfig
 
@@ -525,11 +585,23 @@ def _persona_preset_spoken_map() -> dict[str, str]:
     """Return spoken->key map for persona presets."""
 
     mapping: dict[str, str] = {}
+    try:
+        maps = persona_intent_maps()
+    except Exception:
+        maps = None
+    if maps and maps.persona_preset_aliases:
+        for alias, canonical in maps.persona_preset_aliases.items():
+            alias_key = str(alias or "").strip()
+            canonical_key = str(canonical or "").strip()
+            if alias_key and canonical_key:
+                mapping[alias_key.lower()] = canonical_key
+        if mapping:
+            return mapping
     for preset in _persona_presets():
-        spoken = (preset.spoken or preset.label or preset.key).strip().lower()
+        spoken = (preset.spoken or preset.label or preset.key).strip()
         if not spoken:
             continue
-        mapping[spoken] = preset.key
+        mapping[spoken.lower()] = preset.key
     return mapping
 
 
@@ -537,19 +609,53 @@ def _intent_preset_spoken_map() -> dict[str, str]:
     """Return spoken->key map for intent presets."""
 
     mapping: dict[str, str] = {}
+    try:
+        maps = persona_intent_maps()
+    except Exception:
+        maps = None
+    if maps and maps.intent_preset_aliases:
+        for alias, canonical in maps.intent_preset_aliases.items():
+            alias_key = str(alias or "").strip()
+            canonical_key = str(canonical or "").strip()
+            if alias_key and canonical_key:
+                mapping[alias_key.lower()] = canonical_key
+        if mapping:
+            return mapping
     for preset in _intent_presets():
-        spoken = (preset.key or "").strip().lower()
+        spoken = (preset.key or "").strip()
         if not spoken:
             continue
-        mapping[spoken] = preset.key
+        mapping[spoken.lower()] = preset.key
     return mapping
 
 
 def _axis_tokens(axis: str) -> set[str]:
     """Return the latest persona/intent axis tokens."""
 
+    axis_key = str(axis or "").strip().lower()
     try:
-        return set(persona_docs_map(axis).keys())
+        maps = persona_intent_maps()
+    except Exception:
+        maps = None
+    if maps:
+        if axis_key == "intent" and maps.intent_axis_tokens:
+            tokens = maps.intent_axis_tokens.get("intent", []) or []
+            return {
+                str(token or "").strip() for token in tokens if str(token or "").strip()
+            }
+        persona_axis_map = maps.persona_axis_tokens.get(axis_key)
+        if persona_axis_map:
+            return {
+                str(token or "").strip()
+                for token in persona_axis_map.values()
+                if str(token or "").strip()
+            }
+    try:
+        return {
+            str(key or "").strip()
+            for key in persona_docs_map(axis).keys()
+            if str(key or "").strip()
+        }
     except Exception:
         return set()
 
@@ -585,19 +691,9 @@ _suppress_inflight_notify_request_id = None
 
 
 def _request_is_in_flight() -> bool:
-    """Return True when a GPT request is already running.
+    """Return True when a GPT request is already running."""
 
-    This delegates to the central ``is_in_flight`` helper so GPT gating matches
-    the RequestState/RequestLifecycle contract used by other callers.
-    """
-    try:
-        state = current_state()
-    except Exception:
-        return False
-    try:
-        return is_in_flight(state)  # type: ignore[arg-type]
-    except Exception:
-        return False
+    return request_is_in_flight()
 
 
 def _reject_if_request_in_flight() -> bool:
@@ -618,10 +714,7 @@ def _reject_if_request_in_flight() -> bool:
     except Exception:
         state = None
 
-    try:
-        allowed, reason = try_start_request(state)  # type: ignore[arg-type]
-    except Exception:
-        allowed, reason = True, ""
+    allowed, reason = try_begin_request(state)
 
     try:
         request_id = getattr(state, "request_id", None)
@@ -745,31 +838,56 @@ def _build_axis_docs() -> str:
     ]
     catalog = axis_catalog()
     axis_tokens = catalog.get("axes", {}) or {}
+    axis_lists = catalog.get("axis_list_tokens", {}) or {}
     lines: list[str] = [
         "Note: Axes capture how and in what shape the model should respond (completeness, scope, method, form, channel, directional lens). "
         "Hierarchy: Completeness > Method > Scope > Form > Channel. Ambiguous tokens are assigned in that order unless explicitly prefixed "
-        "(Completeness:/Method:/Scope:/Form:/Channel:). For full semantics and examples, see ADR 005/012/013/016/032 and the GPT README axis cheat sheet.\n"
+        "(Completeness:/Method:/Scope:/Form:/Channel:). For full semantics and examples, see ADR 005/012/013/016 and the GPT README axis cheat sheet.\n"
     ]
+
+    fallback_files = {
+        "completeness": "completenessModifier.talon-list",
+        "scope": "scopeModifier.talon-list",
+        "method": "methodModifier.talon-list",
+        "form": "formModifier.talon-list",
+        "channel": "channelModifier.talon-list",
+        "directional": "directionalModifier.talon-list",
+    }
+
     for label, axis_name in sections:
         token_map = axis_tokens.get(axis_name, {}) or {}
-        if not token_map:
-            # Fallback to Talon list parsing if catalog data is missing.
-            filename = {
-                "completeness": "completenessModifier.talon-list",
-                "scope": "scopeModifier.talon-list",
-                "method": "methodModifier.talon-list",
-                "form": "formModifier.talon-list",
-                "channel": "channelModifier.talon-list",
-                "directional": "directionalModifier.talon-list",
-            }.get(axis_name)
-            items = _read_list_items(filename) if filename else []
+        list_tokens = axis_lists.get(axis_name, []) or []
+        candidates: list[tuple[str, str]] = []
+        if token_map:
+            candidates.extend(token_map.items())
         else:
-            items = sorted(token_map.items(), key=lambda kv: kv[0])
-        if not items:
+            filename = fallback_files.get(axis_name)
+            if filename:
+                candidates.extend(_read_list_items(filename))
+
+        if not candidates:
             continue
+
+        canonical_entries: dict[str, str] = {}
+        for token, desc in candidates:
+            snapshot = axis_snapshot_from_axes({axis_name: [token]})
+            canonical = snapshot.get(axis_name, []) or []
+            if canonical:
+                canonical_token = canonical[0]
+            else:
+                cleaned = str(token).strip()
+                if not cleaned or cleaned.lower().startswith("important:"):
+                    continue
+                canonical_token = cleaned.lower()
+            if canonical_token not in canonical_entries:
+                canonical_entries[canonical_token] = desc
+
+        if not canonical_entries:
+            continue
+
         lines.append(f"{label}:")
-        for key, desc in items:
-            lines.append(f"- {key}: {desc}")
+        for key in sorted(canonical_entries):
+            lines.append(f"- {key}: {canonical_entries[key]}")
         lines.append("")
     return "\n".join(lines).rstrip()
 
@@ -815,8 +933,38 @@ def _build_persona_intent_docs() -> str:
         tuple(snapshot.intent_presets.values()) if snapshot else _intent_presets()
     )
 
+    intent_display_map: dict[str, str] = {}
+    if snapshot and getattr(snapshot, "intent_display_map", None):
+        intent_display_map = {
+            str(key or "").strip(): str(value or "").strip()
+            for key, value in snapshot.intent_display_map.items()
+            if str(key or "").strip()
+        }
+    else:
+        maps = _persona_maps()
+        if maps is not None:
+            raw_map = getattr(maps, "intent_display_map", {}) or {}
+            intent_display_map = {
+                str(key or "").strip(): str(value or "").strip()
+                for key, value in dict(raw_map).items()
+                if str(key or "").strip()
+            }
+
+    def _intent_display_alias(preset) -> str:
+        key = str(getattr(preset, "key", "") or "").strip()
+        intent_value = str(getattr(preset, "intent", "") or "").strip()
+        label = str(getattr(preset, "label", "") or "").strip()
+        alias = intent_display_map.get(key) or intent_display_map.get(intent_value)
+        if alias:
+            return alias.strip()
+        if label:
+            return label
+        if intent_value:
+            return intent_value
+        return key
+
     if persona_presets:
-        lines.append("Persona presets (speakable presets for stance commands):")
+        lines.append("Persona presets (shortcut names for `persona` commands):")
         for preset in persona_presets:
             bits: list[str] = []
             if preset.voice:
@@ -826,17 +974,33 @@ def _build_persona_intent_docs() -> str:
             if preset.tone:
                 bits.append(preset.tone)
             stance = " ".join(bits)
-            label = preset.label or preset.key
-            lines.append(f"- persona {preset.key}: {label} ({stance})")
+            label = (preset.label or preset.key).strip()
+            spoken = (preset.spoken or label or preset.key).strip()
+            say_hint = f"persona {spoken}".strip()
+            lines.append(
+                f"- persona {preset.key} (say: {say_hint}): {label} ({stance or 'no explicit axes'})"
+            )
         lines.append("")
 
     if intent_presets:
-        intent_display_map = snapshot.intent_display_map if snapshot else {}
         lines.append("Intent presets (shortcut names for `intent` commands):")
         for preset in intent_presets:
-            display = intent_display_map.get(preset.key, preset.label or preset.key)
-            intent = preset.intent
-            lines.append(f"- intent {preset.key}: {display} ({intent})")
+            display_alias = _intent_display_alias(preset)
+            spoken_alias = display_alias or preset.key
+            canonical_intent = (preset.intent or preset.key).strip()
+            lines.append(
+                f"- intent {preset.key} (say: intent {spoken_alias}): {display_alias or canonical_intent} ({canonical_intent or 'unknown intent'})"
+            )
+        lines.append("")
+
+    if intent_presets:
+        lines.append("Intent presets (canonical mapping):")
+        for preset in intent_presets:
+            display_alias = _intent_display_alias(preset)
+            canonical_intent = (preset.intent or preset.key).strip()
+            lines.append(
+                f"- intent {preset.key}: {display_alias or canonical_intent} ({canonical_intent or 'unknown intent'})"
+            )
         lines.append("")
 
     if snapshot and snapshot.intent_buckets:
@@ -898,14 +1062,22 @@ def _build_static_prompt_docs() -> str:
         if not description:
             continue
         axes_bits: list[str] = []
-        for label in ("completeness", "scope", "method", "form", "channel"):
-            value = entry.get("axes", {}).get(label)
-            if not value:
+        axes_payload = entry.get("axes") or {}
+        snapshot = None
+        if isinstance(axes_payload, dict) and axes_payload:
+            snapshot = axis_snapshot_from_axes(dict(axes_payload))
+        for label in (
+            "completeness",
+            "scope",
+            "method",
+            "form",
+            "channel",
+            "directional",
+        ):
+            values = snapshot.get(label, []) if snapshot else []
+            if not values:
                 continue
-            if isinstance(value, list):
-                rendered = " ".join(str(v) for v in value)
-            else:
-                rendered = str(value)
+            rendered = " ".join(str(v).strip() for v in values if str(v).strip())
             if rendered:
                 axes_bits.append(f"{label}={rendered}")
         if axes_bits:
@@ -2807,6 +2979,11 @@ def _suggest_prompt_recipes_core_impl(source: ModelSource, subject: str) -> None
 
     persona_axis_token_map = maps.persona_axis_tokens if maps else {}
     intent_synonyms_map = maps.intent_synonyms if maps else {}
+    persona_presets = maps.persona_presets if maps else {}
+    persona_preset_aliases = maps.persona_preset_aliases if maps else {}
+    intent_presets = maps.intent_presets if maps else {}
+    intent_preset_aliases = maps.intent_preset_aliases if maps else {}
+    intent_display_map = maps.intent_display_map if maps else {}
 
     subject = subject or ""
     try:
@@ -3014,6 +3191,217 @@ def _suggest_prompt_recipes_core_impl(source: ModelSource, subject: str) -> None
                             raw_stance = str(item.get("stance_command", "")).strip()
                             why_text = str(item.get("why", "")).strip()
                             reasoning = str(item.get("reasoning", "")).strip()
+                            persona_preset_key_raw = str(
+                                item.get("persona_preset_key", "")
+                            ).strip()
+                            persona_preset_label_raw = str(
+                                item.get("persona_preset_label", "")
+                            ).strip()
+                            persona_preset_spoken_raw = str(
+                                item.get("persona_preset_spoken", "")
+                            ).strip()
+                            intent_preset_key_raw = str(
+                                item.get("intent_preset_key", "")
+                            ).strip()
+                            intent_preset_label_raw = str(
+                                item.get("intent_preset_label", "")
+                            ).strip()
+                            intent_display_raw = str(
+                                item.get("intent_display", "")
+                            ).strip()
+
+                            preset_from_alias = None
+                            if persona_presets:
+                                for candidate in (
+                                    persona_preset_key_raw,
+                                    persona_preset_label_raw,
+                                    persona_preset_spoken_raw,
+                                ):
+                                    alias = str(candidate or "").strip()
+                                    if not alias:
+                                        continue
+                                    alias_lower = alias.lower()
+                                    alias_norm = _normalise_persona_alias_token(
+                                        alias_lower
+                                    )
+                                    canonical_key = (
+                                        persona_preset_aliases.get(alias_lower)
+                                        if persona_preset_aliases
+                                        else ""
+                                    )
+                                    if (
+                                        not canonical_key
+                                        and alias_norm
+                                        and persona_preset_aliases
+                                    ):
+                                        canonical_key = persona_preset_aliases.get(
+                                            alias_norm, ""
+                                        )
+                                    if canonical_key:
+                                        preset_from_alias = persona_presets.get(
+                                            canonical_key
+                                        )
+                                    else:
+                                        preset_from_alias = (
+                                            persona_presets.get(alias)
+                                            or persona_presets.get(alias_lower)
+                                            or (
+                                                persona_presets.get(alias_norm)
+                                                if alias_norm
+                                                else None
+                                            )
+                                        )
+                                    if preset_from_alias is not None:
+                                        break
+
+                            preset_key_hint = ""
+                            preset_label_hint = ""
+                            preset_spoken_hint = ""
+                            preset_voice_hint = ""
+                            preset_audience_hint = ""
+                            preset_tone_hint = ""
+                            if preset_from_alias is not None:
+                                preset_key_hint = (
+                                    getattr(preset_from_alias, "key", "") or ""
+                                ).strip()
+                                preset_label_hint = (
+                                    getattr(preset_from_alias, "label", "")
+                                    or preset_key_hint
+                                ).strip()
+                                preset_spoken_hint = (
+                                    getattr(preset_from_alias, "spoken", "")
+                                    or preset_label_hint
+                                    or preset_key_hint
+                                ).strip()
+                                preset_voice_hint = (
+                                    getattr(preset_from_alias, "voice", "") or ""
+                                ).strip()
+                                preset_audience_hint = (
+                                    getattr(preset_from_alias, "audience", "") or ""
+                                ).strip()
+                                preset_tone_hint = (
+                                    getattr(preset_from_alias, "tone", "") or ""
+                                ).strip()
+
+                            canonical_intent_hint = ""
+                            if intent_synonyms_map or intent_presets:
+                                for candidate in (
+                                    intent_purpose,
+                                    intent_preset_key_raw,
+                                    intent_preset_label_raw,
+                                    intent_display_raw,
+                                ):
+                                    alias = str(candidate or "").strip()
+                                    if not alias:
+                                        continue
+                                    alias_lower = alias.lower()
+                                    alias_norm = _normalise_persona_alias_token(
+                                        alias_lower
+                                    )
+                                    canonical_candidate = (
+                                        intent_synonyms_map.get(alias_lower, "")
+                                        if intent_synonyms_map
+                                        else ""
+                                    )
+                                    if (
+                                        not canonical_candidate
+                                        and intent_synonyms_map
+                                        and alias_norm
+                                        and alias_norm != alias_lower
+                                    ):
+                                        canonical_candidate = intent_synonyms_map.get(
+                                            alias_norm, ""
+                                        )
+                                    if (
+                                        not canonical_candidate
+                                        and intent_preset_aliases
+                                    ):
+                                        canonical_candidate = intent_preset_aliases.get(
+                                            alias_lower, ""
+                                        )
+                                    if (
+                                        not canonical_candidate
+                                        and intent_preset_aliases
+                                        and alias_norm
+                                        and alias_norm != alias_lower
+                                    ):
+                                        canonical_candidate = intent_preset_aliases.get(
+                                            alias_norm, ""
+                                        )
+                                    if (
+                                        not canonical_candidate
+                                        and intent_presets
+                                        and (incident := intent_presets.get(alias))
+                                    ):
+                                        canonical_candidate = (
+                                            getattr(incident, "key", "") or ""
+                                        ).strip()
+                                    if (
+                                        not canonical_candidate
+                                        and intent_presets
+                                        and alias_norm
+                                        and alias_norm != alias_lower
+                                        and (incident := intent_presets.get(alias_norm))
+                                    ):
+                                        canonical_candidate = (
+                                            getattr(incident, "key", "") or ""
+                                        ).strip()
+                                    if not canonical_candidate and intent_presets:
+                                        lookup = intent_presets.get(alias_lower)
+                                        if lookup is not None:
+                                            canonical_candidate = (
+                                                getattr(lookup, "key", "") or ""
+                                            ).strip()
+                                    if (
+                                        not canonical_candidate
+                                        and intent_presets
+                                        and alias_norm
+                                        and alias_norm != alias_lower
+                                    ):
+                                        lookup = intent_presets.get(alias_norm)
+                                        if lookup is not None:
+                                            canonical_candidate = (
+                                                getattr(lookup, "key", "") or ""
+                                            ).strip()
+                                    if not canonical_candidate and intent_presets:
+                                        for preset in intent_presets.values():
+                                            preset_label = (
+                                                getattr(preset, "label", "") or ""
+                                            ).strip()
+                                            preset_intent = (
+                                                getattr(preset, "intent", "") or ""
+                                            ).strip()
+                                            if alias_lower == preset_label.lower() or (
+                                                alias_norm
+                                                and alias_norm
+                                                == _normalise_persona_alias_token(
+                                                    preset_label.lower()
+                                                )
+                                            ):
+                                                canonical_candidate = (
+                                                    getattr(preset, "key", "") or ""
+                                                ).strip()
+                                                break
+                                            if alias_lower == preset_intent.lower() or (
+                                                alias_norm
+                                                and alias_norm
+                                                == _normalise_persona_alias_token(
+                                                    preset_intent.lower()
+                                                )
+                                            ):
+                                                canonical_candidate = (
+                                                    getattr(preset, "key", "") or ""
+                                                ).strip()
+                                                break
+
+                                            if alias_lower == preset_intent.lower():
+                                                canonical_candidate = (
+                                                    getattr(preset, "key", "") or ""
+                                                ).strip()
+                                                break
+                                    if canonical_candidate:
+                                        canonical_intent_hint = canonical_candidate
+                                        break
 
                             debug_record: dict[str, object] = {
                                 "name": name,
@@ -3092,6 +3480,115 @@ def _suggest_prompt_recipes_core_impl(source: ModelSource, subject: str) -> None
                                 "intent", intent_purpose
                             )
 
+                            if not persona_voice and preset_voice_hint:
+                                persona_voice = preset_voice_hint
+                            if not persona_audience and preset_audience_hint:
+                                persona_audience = preset_audience_hint
+                            if not persona_tone and preset_tone_hint:
+                                persona_tone = preset_tone_hint
+                            if not intent_purpose and canonical_intent_hint:
+                                intent_purpose = canonical_intent_hint
+
+                            persona_preset_key = ""
+                            persona_preset_label = ""
+                            persona_preset_spoken = ""
+                            if persona_presets:
+                                preset_candidate = preset_from_alias
+                                stance_raw = str(raw_stance or "").strip().lower()
+                                if stance_raw.startswith("persona "):
+                                    command_name = stance_raw[len("persona ") :].strip()
+                                    if command_name:
+                                        canonical_key = persona_preset_aliases.get(
+                                            command_name.lower(), command_name
+                                        )
+                                        preset_candidate = persona_presets.get(
+                                            canonical_key
+                                        )
+                                if preset_candidate is None and (
+                                    persona_voice or persona_audience or persona_tone
+                                ):
+                                    for preset in persona_presets.values():
+                                        preset_voice = (
+                                            getattr(preset, "voice", "") or ""
+                                        ).strip()
+                                        preset_audience = (
+                                            getattr(preset, "audience", "") or ""
+                                        ).strip()
+                                        preset_tone = (
+                                            getattr(preset, "tone", "") or ""
+                                        ).strip()
+                                        if not (
+                                            preset_voice
+                                            or preset_audience
+                                            or preset_tone
+                                        ):
+                                            continue
+                                        if (
+                                            preset_voice
+                                            and preset_voice != persona_voice
+                                        ):
+                                            continue
+                                        if (
+                                            preset_audience
+                                            and preset_audience != persona_audience
+                                        ):
+                                            continue
+                                        if preset_tone and preset_tone != persona_tone:
+                                            continue
+                                        preset_candidate = preset
+                                        break
+                                if preset_candidate is not None:
+                                    persona_preset_key = (
+                                        getattr(preset_candidate, "key", "") or ""
+                                    ).strip()
+                                    persona_preset_label = (
+                                        getattr(preset_candidate, "label", "") or ""
+                                    ).strip()
+                                    persona_preset_spoken = (
+                                        getattr(preset_candidate, "spoken", "")
+                                        or persona_preset_label
+                                        or persona_preset_key
+                                    ).strip()
+                                elif preset_key_hint:
+                                    persona_preset_key = preset_key_hint
+                                    persona_preset_label = (
+                                        preset_label_hint or preset_key_hint
+                                    ).strip()
+                                    persona_preset_spoken = (
+                                        preset_spoken_hint
+                                        or preset_label_hint
+                                        or preset_key_hint
+                                    ).strip()
+
+                            intent_preset_key = ""
+                            intent_preset_label = ""
+                            intent_display_value = ""
+                            if intent_purpose and intent_presets:
+                                for preset in intent_presets.values():
+                                    preset_intent = (
+                                        getattr(preset, "intent", "") or ""
+                                    ).strip()
+                                    if (
+                                        preset_intent
+                                        and preset_intent == intent_purpose
+                                    ):
+                                        intent_preset_key = (
+                                            getattr(preset, "key", "") or ""
+                                        ).strip()
+                                        intent_preset_label = (
+                                            getattr(preset, "label", "") or ""
+                                        ).strip()
+                                        break
+                                intent_display_value = (
+                                    intent_display_map.get(intent_purpose, "")
+                                    if intent_display_map
+                                    else ""
+                                )
+                                if not intent_display_value:
+                                    intent_display_value = (
+                                        intent_preset_label or intent_purpose
+                                    )
+
                             entry: dict[str, str] = {"name": name, "recipe": recipe}
                             if persona_voice:
                                 entry["persona_voice"] = persona_voice
@@ -3101,6 +3598,32 @@ def _suggest_prompt_recipes_core_impl(source: ModelSource, subject: str) -> None
                                 entry["persona_tone"] = persona_tone
                             if intent_purpose:
                                 entry["intent_purpose"] = intent_purpose
+                            if persona_preset_key:
+                                entry["persona_preset_key"] = persona_preset_key
+                            elif persona_preset_key_raw:
+                                entry["persona_preset_key"] = persona_preset_key_raw
+                            if persona_preset_label:
+                                entry["persona_preset_label"] = persona_preset_label
+                            elif persona_preset_label_raw:
+                                entry["persona_preset_label"] = persona_preset_label_raw
+                            if persona_preset_spoken:
+                                entry["persona_preset_spoken"] = persona_preset_spoken
+                            elif persona_preset_spoken_raw:
+                                entry["persona_preset_spoken"] = (
+                                    persona_preset_spoken_raw
+                                )
+                            if intent_preset_key:
+                                entry["intent_preset_key"] = intent_preset_key
+                            elif intent_preset_key_raw:
+                                entry["intent_preset_key"] = intent_preset_key_raw
+                            if intent_preset_label:
+                                entry["intent_preset_label"] = intent_preset_label
+                            elif intent_preset_label_raw:
+                                entry["intent_preset_label"] = intent_preset_label_raw
+                            if intent_display_value:
+                                entry["intent_display"] = intent_display_value
+                            elif intent_display_raw:
+                                entry["intent_display"] = intent_display_raw
 
                             if raw_stance:
                                 if _valid_stance_command(raw_stance):

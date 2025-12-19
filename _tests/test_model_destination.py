@@ -1,6 +1,6 @@
 import unittest
 from typing import TYPE_CHECKING
-from unittest.mock import patch
+from unittest.mock import patch, mock_open
 
 try:
     from bootstrap import bootstrap
@@ -24,6 +24,7 @@ if bootstrap is not None:
     )
     from talon_user.lib.promptPipeline import PromptResult
     from talon_user.lib.modelState import GPTState
+    from talon_user.lib.personaConfig import persona_intent_maps_reset
 
     class ModelDestinationTests(unittest.TestCase):
         class FakeElement:
@@ -274,6 +275,79 @@ if bootstrap is not None:
                 "Model interpretation heading should not be rendered as a body paragraph",
             )
 
+        @patch.object(model_destination_module, "notify")
+        def test_file_destination_includes_persona_and_intent_metadata(
+            self, notify_mock
+        ):
+            persona_intent_maps_reset()
+            GPTState.reset_all()
+            GPTState.last_recipe = "describe · full · focus · plan · plain · fog"
+            GPTState.last_static_prompt = "describe"
+            GPTState.last_directional = "fog"
+            GPTState.last_completeness = "full"
+            GPTState.last_scope = "focus"
+            GPTState.last_method = "plan"
+            GPTState.last_form = "plain"
+            GPTState.last_channel = "slack"
+            GPTState.last_axes = {
+                "completeness": ["full"],
+                "scope": ["focus"],
+                "method": ["plan"],
+                "form": ["plain"],
+                "channel": ["slack"],
+                "directional": ["fog"],
+            }
+            GPTState.last_suggest_context = {
+                "persona_preset_key": "teach_junior_dev",
+                "intent_preset_key": "decide",
+            }
+
+            result = PromptResult.from_messages([format_message("response body")])
+
+            snapshot_payload = {
+                "prompt_text": "prompt details",
+                "response_text": "response body",
+                "meta_text": "",
+            }
+
+            config_values = {
+                "user.model_source_save_directory": "/tmp/talon-adr-test",
+                "user.openai_model": "gpt-test",
+            }
+
+            with (
+                patch(
+                    "talon_user.lib.modelHelpers.build_exchange_snapshot",
+                    return_value=snapshot_payload,
+                ),
+                patch.object(
+                    model_destination_module.settings,
+                    "get",
+                    side_effect=lambda key, default=None: config_values.get(
+                        key, default
+                    ),
+                ),
+                patch.object(model_destination_module.os, "makedirs"),
+                patch("builtins.open", mock_open()) as mocked_open,
+            ):
+                file_destination = model_destination_module.File()
+                file_destination.insert(result)
+
+            written = "".join(
+                call.args[0] for call in mocked_open.return_value.write.call_args_list
+            )
+            self.assertIn("persona_preset: teach_junior_dev", written)
+            self.assertIn("label=Teach junior dev", written)
+            self.assertIn("say: persona mentor", written)
+            self.assertIn(
+                "axes voice=as teacher, audience=to junior engineer, tone=kindly",
+                written,
+            )
+            self.assertIn("intent_preset: decide", written)
+            self.assertIn("label=Decide", written)
+            self.assertIn("purpose=decide", written)
+            self.assertIn("say: intent", written)
+
         @patch.object(model_destination_module, "Browser")
         def test_insert_uses_response_presentation(self, browser_cls):
             with (
@@ -488,7 +562,7 @@ if bootstrap is not None:
                 content = f.read()
 
             # Header should include axis tokens derived from last_axes.
-            self.assertIn("completeness_tokens: full", content)
+            self.assertIn("completeness: full", content)
             self.assertIn("scope_tokens: bound edges", content)
             self.assertIn("method_tokens: rigor", content)
             self.assertIn("form_tokens: plain", content)

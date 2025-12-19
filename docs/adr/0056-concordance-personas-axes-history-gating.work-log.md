@@ -388,7 +388,6 @@
   - Extend `_suggest_prompt_recipes_core_impl` to surface preset alias metadata in the prompt payload so future cards can highlight spoken forms without recomputing maps.
   - Add an end-to-end CLI/help doc render check that exercises the shared helper to guard against future drift when catalog structure evolves.
 
-
 ## 2025-12-18 – Loop 110 (kind: guardrail/tests)
 - Focus: Persona & Intent Presets – align GPT preset actions with snapshot-backed aliases.
 - Change: Updated `GPT/gpt.py` to load `persona_intent_catalog_snapshot()` via `_get_persona_intent_maps` so `persona_set_preset` and `intent_set_preset` accept spoken and display aliases; added `_tests/test_gpt_actions.py` coverage for the “mentor” persona alias and “for deciding” intent display name.
@@ -398,5 +397,245 @@
   - Extend Help Hub and Suggestion GUI actions to reuse `_get_persona_intent_maps` so voice/tone intent pickers honour spoken/display aliases end-to-end.
   - Add integration coverage that drives `help_hub` persona preset commands through alias inputs to confirm the shared snapshot wiring.
   - Evaluate caching/invalidating snapshot lookups during Talon reloads to avoid stale preset metadata after runtime catalog updates.
+
+## 2025-12-18 – Loop 152 (kind: behaviour)
+- Focus: Request Gating & Streaming – centralise in-flight guards for GPT canvases and helpers.
+- Change: Added the shared helper in `lib/requestGating.py`, rewired gating wrappers across `GPT/gpt.py`, `lib/modelSuggestionGUI.py`, `lib/helpHub.py`, `lib/modelResponseCanvas.py`, `lib/modelConfirmationGUI.py`, `lib/modelHelpCanvas.py`, `lib/modelPromptPatternGUI.py`, `lib/modelPatternGUI.py`, `lib/providerCommands.py`, and `lib/requestHistoryActions.py` to use it, and updated guardrail tests plus the new `_tests/test_request_gating.py` to lock the behaviour.
+- Checks: `python3 -m pytest _tests/test_request_gating.py _tests/test_model_suggestion_gui.py _tests/test_provider_commands.py _tests/test_request_history_drawer_gating.py _tests/test_model_response_canvas_guard.py _tests/test_model_confirmation_gui_guard.py _tests/test_model_help_canvas_guard.py _tests/test_prompt_pattern_gui_guard.py _tests/test_model_pattern_gui_guard.py _tests/test_help_hub_guard.py _tests/test_request_history_actions.py` (pass; 129 passed in 0.66s).
+- Removal test: Reverting would reinstate duplicated `_request_is_in_flight` implementations, drop `lib/requestGating.py`, and strip the new gating tests, undoing the Concordance guardrail alignment and reintroducing inconsistent drop-notify behaviour.
+- Adversarial “what remains” check:
+  - Extend `try_begin_request` to emit structured telemetry so CI and ops can ingest drop counts alongside the history validator summary.
+  - Integrate the helper with the pending `StreamingSession` façade to keep gating and lifecycle orchestration on the same API surface (ADR-0056 §3).
+  - Audit provider/Talon overlays for any bespoke gating code paths still bypassing the helper before centralising retry/cancel affordances in a follow-up loop.
+
+## 2025-12-18 – Loop 153 (kind: guardrail/tests)
+- Focus: Request Gating & Streaming – capture structured drop telemetry for in-flight guards.
+- Change: Updated `lib/requestGating.py` to record rejected `try_begin_request` calls via `record_gating_drop`; extended `lib/requestLog.py` with gating drop counters exposed through `history_validation_stats`; surfaced the drop summary in `scripts/tools/history-axis-validate.py`; added `_tests/test_request_gating.py::test_try_begin_request_records_gating_drop_stats` to lock the telemetry contract.
+- Checks: `python3 -m pytest _tests/test_request_gating.py` (pass; excerpt: `5 passed in 0.05s`).
+- Removal test: reverting would drop the shared telemetry counters, remove the CLI summary, and break the new gating telemetry test, leaving Concordance without observable drop rates.
+- Adversarial “what remains” check:
+  - Wire the telemetry counters into upcoming `StreamingSession` events so drop, retry, and cancel flows share one reporting surface.
+  - Consider adding a guardrail script flag to reset/emit gating telemetry snapshots for nightly Concordance runs.
+  - Audit Talon overlays for residual gating bypasses before consuming gating telemetry in Concordance dashboards.
+
+## 2025-12-18 – Loop 154 (kind: guardrail/tests)
+- Focus: Request Gating & Streaming – allow the history validator to reset drop telemetry between runs.
+- Change: Added `--reset-gating` to `scripts/tools/history-axis-validate.py` so Concordance guardrails can clear `requestLog` gating counters after reporting; extended `_tests/test_request_gating.py` with coverage for history validation stats and the new flag to lock the telemetry contract.
+- Checks: `python3 -m pytest _tests/test_request_gating.py` (pass; excerpt: `7 passed in 0.07s`).
+- Removal test: Reverting would drop the CLI reset flag and the regression tests, preventing Concordance automation from clearing telemetry snapshots and causing the new tests to fail.
+- Adversarial “what remains” check:
+  - Integrate gating telemetry resets with the upcoming `StreamingSession` event hooks so drop/retry reporting shares one surface.
+  - Provide a guardrail recipe that captures telemetry via `--summary-path` before invoking `--reset-gating` for nightly Concordance runs.
+- Complete the Talon overlay audit for gating bypasses before wiring telemetry into Concordance dashboards.
+
+## 2025-12-18 – Loop 156 (kind: guardrail/tests)
+- Focus: Request Gating & Streaming – prevent telemetry resets without archiving drop counts.
+- Change: Updated `scripts/tools/history-axis-validate.py` so `--reset-gating` now requires `--summary` or `--summary-path`; refreshed `_tests/test_request_gating.py` to cover the new contract and the failure path.
+- Checks: `python3 -m pytest _tests/test_request_gating.py` (pass; excerpt: `8 passed in 0.06s`).
+- Removal test: Reverting would allow guardrail runs to clear gating telemetry without capturing counts, violating ADR-0056 requirements and making the new regression test fail.
+- Adversarial “what remains” check:
+  - Update `make request-history-guardrails` documentation to highlight that the summary file must be archived before counters reset.
+  - Integrate the summary archiving workflow into nightly Concordance automation so telemetry is preserved off-box.
+- Continue planning the `StreamingSession` hook integration so all drop/ retry telemetry is centralized before enforcing additional guardrails.
+
+## 2025-12-18 – Loop 157 (kind: docs)
+- Focus: Request Gating & Streaming – make guardrail usage requirements visible in developer tooling.
+- Change: Updated `Makefile` help output so `make request-history-guardrails` explicitly notes that the target captures a summary before resetting gating telemetry.
+- Checks: Documentation-only change; no tests run.
+- Removal test: Reverting would hide the telemetry-archiving requirement from developers running guardrails locally, increasing the chance they clear counters without persisting summaries.
+- Adversarial “what remains” check:
+  - Ensure Concordance runbooks and onboarding docs mirror the guardrail help text so operations teams rely on the same instructions.
+  - Integrate summary snapshot archival into the guardrail CI workflow once runbook updates land.
+- Continue wiring telemetry through the forthcoming `StreamingSession` hooks before expanding gating guardrails.
+
+## 2025-12-18 – Loop 158 (kind: docs)
+- Focus: Request Gating & Streaming – codify the runbook step for preserving gating summaries.
+- Change: Updated the Persona & Intent tests plan in ADR-0056 to note that Concordance runbooks must archive the `history-axis-validate.py --summary-path …` output (to the shared logs bucket) before invoking `--reset-gating`.
+- Checks: Documentation-only change; no tests run.
+- Removal test: Reverting would leave runbook owners without an explicit archival step, increasing the risk that telemetry is cleared without being captured for Concordance dashboards.
+- Adversarial “what remains” check:
+  - Mirror the same instruction in the Concordance operations runbook and onboarding materials.
+  - Ensure the guardrail CI job archives the summary automatically so manual runs stay aligned.
+  - Continue planning the `StreamingSession` telemetry integration before adding further guardrails.
+
+## 2025-12-18 – Loop 159 (kind: docs)
+- Focus: Request Gating & Streaming – clarify where automation stores gating summaries.
+- Change: Updated ADR-0056 to mention the canonical archive location (GitHub Actions guardrail job artifacts, e.g., `artifacts/history-axis-summaries/history-validation-summary.json`) for history validator summaries prior to `--reset-gating`.
+- Checks: Documentation-only change; no tests run.
+- Removal test: Reverting would remove the explicit archive location, forcing automation owners to rediscover the destination and risking inconsistent telemetry storage.
+- Adversarial “what remains” check:
+  - Update the Concordance operations runbook with the same artifact path and retention expectations.
+  - Ensure guardrail CI automation writes to that artifact location with appropriate retention settings in place.
+- Continue planning the `StreamingSession` telemetry integration before extending guardrail coverage.
+
+## 2025-12-18 – Loop 161 (kind: docs)
+- Focus: Request Gating & Streaming – align archival guidance with available infrastructure.
+- Change: Updated ADR-0056 to reference GitHub Actions guardrail job artifacts (e.g., `artifacts/history-axis-summaries/history-validation-summary.json`) as the storage target for `history-axis-validate` summaries instead of the prior S3 placeholder.
+- Checks: Documentation-only change; no tests run.
+- Removal test: Reverting would send readers back to an unusable S3 path, increasing the risk that summaries are not archived before `--reset-gating`.
+- Adversarial “what remains” check:
+  - Update the Concordance operations runbook to match the GitHub Actions artifact path and describe retention expectations.
+  - Verify guardrail CI automation publishes the summary artifact to GitHub Actions and alerts when uploads fail.
+  - Continue preparing the `StreamingSession` telemetry integration before expanding gating guardrails.
+
+## 2025-12-18 – Loop 170 (kind: behaviour)
+- Focus: Persona & Intent Presets – align quick help (`lib/modelHelpCanvas.py`) and pattern picker (`lib/modelPatternGUI.py`) canvases with the shared persona/intent catalog.
+- Change: `_persona_presets()` and `_intent_presets()` now consume `persona_intent_maps()` with bootstrap fallbacks so Talon canvases stay aligned with the catalog snapshot.
+- Checks: `python3 -m pytest _tests/test_model_help_canvas.py _tests/test_model_pattern_gui.py` (pass; excerpt: `41 passed in 0.66s`).
+- Removal test: Reverting would send those canvases back to bespoke tuple constants, reintroducing drift whenever the catalog updates without touching the canvases.
+- Adversarial “what remains” check:
+  - `GPT/gpt.py`: route persona/intent helpers through `persona_intent_maps()` so GPT actions share the same SSOT.
+  - `lib/modelSuggestionGUI.py` / `lib/modelPromptPatternGUI.py`: update suggestion canvases and guardrail tests to consume the shared maps and broaden alias coverage.
+  - Talon list guardrails: add a drift check for `GPT/lists/*.talon-list` regeneration so list outputs track the catalog snapshot.
+
+## 2025-12-18 – Loop 171 (kind: behaviour)
+- Focus: Persona & Intent Presets – route GPT persona/intent actions and voice lists through the shared catalog maps.
+- Change: `_persona_presets()`, `_intent_presets()`, `_persona_preset_spoken_map()`, `_intent_preset_spoken_map()`, and `_axis_tokens()` now read from `persona_intent_maps()` with catalog fallbacks; new tests lock alias coverage for spoken and label forms.
+- Checks: `python3 -m pytest _tests/test_gpt_actions.py` (pass; excerpt: `113 passed in 4.66s`).
+- Removal test: Reverting would drop map-derived alias coverage and axis tokens, causing the new alias guardrail tests to fail and leaving voice lists out of sync with the catalog.
+- Adversarial “what remains” check:
+  - Quick help & suggestion canvases: surface `intent_display_map` strings everywhere commands render so GUIs show the same spoken aliases as the catalog.
+  - Talon list guardrails: add regeneration checks so voice lists fail when the catalog drifts.
+  - GPT persona docs: update `_build_persona_intent_docs` and related helpers to emit the same spoken aliases recorded in the snapshot.
+
+## 2025-12-18 – Loop 172 (kind: behaviour)
+- Focus: Persona & Intent Presets – surface catalog spoken aliases in quick help intent commands.
+- Change: `_intent_preset_commands()` now reads `persona_intent_maps().intent_display_map` with fallbacks and deduplicates aliases; added `_tests/test_model_help_canvas.py::test_quick_help_intent_commands_use_catalog_spoken_aliases` to guard both alias and fallback paths.
+- Checks: `python3 -m pytest _tests/test_model_help_canvas.py` → `11 passed in 0.26s`.
+- Removal test: Reverting would reintroduce canonical intent tokens in quick help, causing the new regression test to fail and hiding catalog alias drift from users.
+- Adversarial “what remains” check:
+  - `lib/modelSuggestionGUI.py`: ensure intent badges and command hints reuse the same display aliases end-to-end.
+  - Talon list guardrails: add regeneration checks for `GPT/lists/*.talon-list` to fail when catalog aliases drift from on-device spoken tokens.
+  - GPT persona docs: align `_build_persona_intent_docs` output with `intent_display_map` so documentation mirrors the spoken aliases surfaced in quick help.
+
+## 2025-12-18 – Loop 173 (kind: behaviour)
+- Focus: Persona & Intent Presets – align pattern picker intent commands with catalog display aliases.
+- Change: `lib/modelPatternGUI.py` now resolves intent preset display names via `persona_intent_maps().intent_display_map` for both “say” hints and summary rows, retaining canonical tokens in parentheses; added `_tests/test_model_pattern_gui.py::test_pattern_canvas_uses_intent_display_alias` to lock the behaviour.
+- Checks: `python3 -m pytest _tests/test_model_pattern_gui.py` → `32 passed in 0.38s`.
+- Removal test: Reverting would drop display aliases from the pattern picker, causing the new regression test to fail and reintroducing divergent spoken hints compared to the catalog.
+- Adversarial “what remains” check:
+  - `lib/modelSuggestionGUI.py`: confirm intent badges and voice hints consistently surface catalog display aliases.
+  - Talon list guardrails: add regeneration checks for `GPT/lists/*.talon-list` to fail when catalog aliases drift.
+  - GPT persona docs: update `_build_persona_intent_docs` to emit the same aliases shown in canvases.
+
+## 2025-12-18 – Loop 174 (kind: behaviour) – Align suggestion GUI intent surfaces with catalog aliases
+- Focus: Persona & Intent Presets – suggestion canvas (`lib/modelSuggestionGUI.py`) command hints and summaries.
+- Change: `_suggestion_stance_info()` now consults `persona_intent_maps().intent_display_map` to hydrate the intent alias when preset metadata omits it; suggestion canvas rendering uses the hydrated alias for both “Say” hints and intent summaries. Added `_tests/test_model_suggestion_gui.py::test_stance_info_fetches_alias_when_not_provided` plus updated existing stance tests to expect catalog aliases.
+- Checks: `python3 -m pytest _tests/test_model_suggestion_gui.py` → `28 passed in 0.11s`.
+- Removal test: Reverting would drop display aliases from suggestion rows, restoring canonical tokens and causing the refreshed regression suite to fail.
+- Adversarial “what remains” check:
+  - Talon list guardrails: add regeneration checks so `GPT/lists/*.talon-list` stay aligned with catalog display aliases.
+  - GPT persona docs: update `_build_persona_intent_docs` to emit the same display aliases shown in help/pattern/suggestion surfaces.
+  - Response canvas: confirm `lib/modelResponseCanvas.py` uses `intent_display` for recap banners to keep Concordance surfaces consistent.
+
+## 2025-12-18 – Loop 175 (kind: guardrail/tests) – Guard Talon list regeneration against catalog drift
+- Focus: Persona & Intent Presets – Talon list generation/guardrails (`scripts/tools/generate_talon_lists.py`).
+- Change: generator now emits `personaPreset.talon-list` and `intentPreset.talon-list` with catalog-driven alias→canonical mappings sourced from `persona_intent_maps().intent_display_map`; guardrail tests assert the generated files contain the expected spoken/display aliases and that `--check` flags drift. Updated `_tests/test_generate_talon_lists.py` to cover the new lists and ensured list-drift fixtures in `_tests/test_axis_catalog_validate_lists_dir.py` remain green.
+- Checks: `python3 -m pytest _tests/test_generate_talon_lists.py` (4 passed in 0.28s); `python3 -m pytest _tests/test_axis_catalog_validate_lists_dir.py` (17 passed in 0.97s).
+- Removal test: Reverting would drop the persona/intent lists and alias coverage, causing the refreshed guardrail tests to fail and allowing Talon list drift to go undetected.
+- Adversarial “what remains” check:
+  - GPT persona docs: update `_build_persona_intent_docs` to emit display aliases so documentation matches the shared SSOT.
+  - Response canvas: ensure `lib/modelResponseCanvas.py` surfaces `intent_display` alongside persona axes to keep recap banners aligned.
+  - Consider adding an integration guard that runs `generate_talon_lists.py --check` in CI once local regeneration workflows stabilize.
+
+## 2025-12-18 – Loop 162 (kind: behaviour)
+- Focus: Persona & Intent Presets – ensure alias-only suggestions stay catalog-aligned.
+- Change: Updated `GPT/gpt.py` to retain raw persona/intent alias metadata when model suggestions only provide spoken/display presets, allowing `lib/suggestionCoordinator.record_suggestions` to canonicalize via `persona_intent_maps`, and added `_tests/test_integration_suggestions.py::test_suggest_alias_only_metadata_round_trip` to cover the alias-only path end-to-end through the suggestion GUI helpers.
+- Checks: `python3 -m pytest _tests/test_integration_suggestions.py` (pass; excerpt: `6 passed in 2.16s`).
+- Removal test: Reverting would drop the alias-preservation path so suggestions that only supply spoken/display presets would lose persona/intent metadata, making the new integration test fail and reopening the ADR-0056 Salient Task 2 gap.
+- Adversarial “what remains” check:
+  - `GPT/gpt.py::_validated_persona_value`: extend coverage for alias-only intent tokens so prompt recipe commands surface canonical keys when inputs vary in case or punctuation.
+  - `lib/modelSuggestionGUI.py`: add an integration slice that drives voice commands with display aliases to confirm GUI actions reuse the shared persona/intent maps.
+  - Concordance guardrails: consider a CI assertion that fails when suggestion entries reach `record_suggestions` without persona/intent preset keys to complement the new integration test.
+
+## 2025-12-18 – Loop 163 (kind: behaviour)
+- Focus: Persona & Intent Presets – canonicalise alias-only suggestion metadata before reaching the coordinator.
+- Change: Updated `GPT/gpt.py::_suggest_prompt_recipes_core_impl` to resolve persona/intent presets from label/spoken/display aliases ahead of `record_suggestions`, ensuring axis hints and preset keys populate even when JSON omits canonical tokens, and added `_tests/test_gpt_suggest_validation.py::test_json_suggestions_alias_only_fields_canonicalise` to guard the new behaviour.
+- Checks: `python3 -m pytest _tests/test_gpt_suggest_validation.py _tests/test_integration_suggestions.py` (pass; excerpt: `12 passed in 4.51s`).
+- Removal test: Reverting would leave alias-only suggestions without canonical persona/intent metadata upstream of `record_suggestions`, causing the new validation test to fail and risking future regressions when alternative coordinators bypass the fallback.
+- Adversarial “what remains” check:
+  - `lib/modelSuggestionGUI.py`: extend voice-command coverage so GUI actions exercise preset aliases without relying on the coordinator fallback.
+  - `GPT/gpt.py::_validated_persona_value`: tighten canonicalisation for mixed-case intent tokens provided via `intent_purpose` to close out the remaining tests-first bullet.
+  - Guardrails: explore a CI assertion (or lint) that fails when suggestion payloads emit persona/intent metadata without canonical preset keys.
+
+## 2025-12-18 – Loop 164 (kind: behaviour)
+- Focus: Persona & Intent Presets – harden `_validated_persona_value` against mixed-case and punctuation-heavy aliases.
+- Change: Extended `_suggest_prompt_recipes_core_impl` with `_normalise_alias_token` so persona/intent alias lookups strip punctuation and compare normalised keys before falling back to hints, and added `_tests/test_gpt_suggest_validation.py::test_json_suggestions_alias_only_fields_canonicalise` coverage for uppercase/punctuated aliases.
+- Checks: `python3 -m pytest _tests/test_gpt_suggest_validation.py _tests/test_integration_suggestions.py` (pass; excerpt: `12 passed in 5.08s`).
+- Removal test: Reverting would drop the alias normalisation path, causing the new validation test to fail and allowing hyphenated/display intent aliases to bypass canonicalisation, reintroducing the ADR-0056 Salient Task 2 regression.
+- Adversarial “what remains” check:
+  - `lib/modelSuggestionGUI.py`: broaden voice-command regression coverage so GUI presets exercise puny-coded aliases without coordinator fallbacks.
+  - `GPT/gpt.py::_canonical_persona_value`: consider sharing `_normalise_alias_token` so direct persona command entry benefits from the same sanitisation.
+  - Guardrails: add a lint/test that rejects suggestion payloads whose persona/intent fields still lack canonical preset keys after normalisation.
+
+## 2025-12-18 – Loop 165 (kind: behaviour)
+- Focus: Persona & Intent Presets – align `_canonical_persona_value` with shared alias normalisation.
+- Change: Promoted `_normalise_persona_alias_token` to a module helper and reused it across `_canonical_persona_value` and `_suggest_prompt_recipes_core_impl`, while extending `_canonical_persona_value` to consult `persona_intent_maps` alias tables; added `_tests/test_gpt_suggest_validation.py::test_canonical_persona_value_normalises_aliases` to cover direct canonicalisation.
+- Checks: `python3 -m pytest _tests/test_gpt_suggest_validation.py _tests/test_integration_suggestions.py` (pass; excerpt: `13 passed in 4.47s`).
+- Removal test: Reverting would cause `_canonical_persona_value("intent", "For-Deciding!")` to return an empty string, breaking the new test and allowing mixed-case / punctuated aliases to bypass canonicalisation in persona status surfaces.
+- Adversarial “what remains” check:
+  - `lib/modelSuggestionGUI.py`: create a voice-command regression that ensures GUI presets round-trip aliases without relying on suggestion coordinator fallbacks.
+  - Guardrails: consider a lint that asserts canonical persona/intent keys are present before suggestions are persisted.
+  - `_canonical_persona_value`: evaluate whether Talon runtime persona commands should use the shared normaliser for interactive inputs.
+
+## 2025-12-18 – Loop 166 (kind: behaviour)
+- Focus: Persona & Intent Presets – ensure suggestion GUI hydrates canonical persona/intent metadata from alias-only payloads.
+- Change: Updated `lib/modelSuggestionGUI.py` to share the `_normalise_alias_token` helper, normalise preset aliases before dictionary lookups, canonicalise stored labels/spoken names, and expand `_refresh_suggestions_from_state` to align cached GUI suggestions with `persona_intent_maps` output.
+- Checks: `python3 -m pytest _tests/test_model_suggestion_gui.py` (pass; excerpt: `27 passed in 0.15s`), `python3 -m pytest _tests/test_gpt_suggest_validation.py _tests/test_integration_suggestions.py` (pass; excerpt: `13 passed in 5.12s`).
+- Removal test: Reverting would leave the GUI cache with raw uppercased/punctuated aliases, causing `_tests/test_model_suggestion_gui.py::test_open_normalises_alias_only_metadata` to fail and reintroducing divergence between Suggestion GUI state and canonical persona/intent presets.
+- Adversarial “what remains” check:
+  - `lib/modelSuggestionGUI.py`: add an integration covering voice-command driven preset selection after GUI hydration to guarantee follow-on actions receive the canonical keys.
+  - `lib/suggestionCoordinator.py`: consider asserting that recorded suggestions always include canonical preset keys before dispatch to GUI surfaces.
+  - Guardrails: evaluate a lint ensuring GUI hydration continues to round-trip with `persona_intent_maps` outputs when presets are added or renamed.
+
+## 2025-12-18 – Loop 167 (kind: tests)
+- Focus: Persona & Intent Presets – guard voice-command execution after alias-only hydration.
+- Change: Added `_tests/test_model_suggestion_gui.py::test_run_index_normalises_alias_only_metadata`, calling `UserActions.model_prompt_recipe_suggestions_run_index` with uppercase/punctuated preset metadata and asserting the GUI cache normalises to canonical persona/intent keys before running the suggestion.
+- Checks: `python3 -m pytest _tests/test_model_suggestion_gui.py` (pass; excerpt: `28 passed in 0.13s`), `python3 -m pytest _tests/test_gpt_suggest_validation.py _tests/test_integration_suggestions.py` (pass; excerpt: `13 passed in 4.86s`).
+- Removal test: Reverting would allow the new test to fail and reopen the gap where run-index execution consumed raw alias strings instead of canonical presets.
+- Adversarial “what remains” check:
+  - `lib/suggestionCoordinator.py`: consider adding a guard that rejects suggestions lacking canonical preset keys before they reach GUI callers.
+  - `lib/modelSuggestionGUI.py`: explore a small integration that verifies voice-command preset selection after the GUI closes, ensuring canonical metadata flows through to downstream apply routines.
+  - Guardrails: investigate a CI lint that spots suggestion payloads persisting alias-only persona/intent fields without canonical keys.
+
+## 2025-12-18 – Loop 168 (kind: guardrail/tests)
+- Focus: Persona & Intent Presets – harden suggestion GUI refresh against missing catalog attributes.
+- Change: Updated `lib/modelSuggestionGUI.py::_refresh_suggestions_from_state` to tolerate absent `persona_intent_maps` fields by normalising lookups through safe dict fallbacks and alias normalisation, and added `_tests/test_model_suggestion_gui.py::test_missing_persona_intent_maps_data` to assert the GUI handles stubbed map objects without preset metadata.
+- Checks: `python3 -m pytest _tests/test_model_suggestion_gui.py` (pass; excerpt: `28 passed in 0.14s`), `python3 -m pytest _tests/test_gpt_suggest_validation.py _tests/test_integration_suggestions.py` (pass; excerpt: `13 passed in 4.49s`).
+- Removal test: Reverting would reintroduce AttributeError crashes when persona/intent catalog snapshots omit preset alias tables, causing the new guard test to fail.
+- Adversarial “what remains” check:
+  - `lib/suggestionCoordinator.py`: consider adding a guard that rejects suggestions lacking canonical preset keys before they reach GUI callers.
+  - `lib/modelSuggestionGUI.py`: consider logging a user-facing warning when hydration falls back to raw metadata so operators can detect catalog drift.
+  - Guardrails: evaluate adding a CI stub that simulates partially populated `persona_intent_maps` snapshots to ensure future changes keep the refresh path resilient.
+
+## 2025-12-18 – Loop 169 (kind: behaviour)
+- Focus: Persona & Intent Presets – ensure GUI refresh handles empty suggestion feeds and logs missing catalogs.
+- Change: Added an early return in `_refresh_suggestions_from_state` to short-circuit when `suggestion_entries_with_metadata()` yields no entries, and introduced a `_debug` log when `persona_intent_maps()` is unavailable so Concordance operators can detect fallback hydration.
+- Checks: `python3 -m pytest _tests/test_model_suggestion_gui.py` (pass; excerpt: `28 passed in 0.13s`), `python3 -m pytest _tests/test_gpt_suggest_validation.py _tests/test_integration_suggestions.py` (pass; excerpt: `13 passed in 4.51s`).
+- Removal test: Reverting would reintroduce potential `SuggestionGUIState` drift (stale data left behind) and remove the observability signal when persona catalogs fail to load.
+- Adversarial “what remains” check:
+  - `lib/modelSuggestionGUI.py`: consider emitting a user-facing notification when catalog hydration falls back entirely so voice users know to regenerate presets.
+  - `lib/suggestionCoordinator.py`: explore rejecting empty suggestion feeds earlier to surface upstream failures.
+  - Guardrails: add a test that simulates an empty suggestions list followed by a refreshed one to ensure state resets remain correct.
+
+## 2025-12-19 – Loop 188 (kind: guardrail/tests)
+- Focus: Request Gating & Streaming – publish guardrail summaries via GitHub Actions artifacts.
+- Change: Added a `history-axis-summary` upload step to `.github/workflows/test.yml` so `make ci-guardrails` outputs at `artifacts/history-axis-summaries/history-validation-summary.json` are persisted as GitHub Actions build artifacts with `if-no-files-found: warn` safeguards.
+- Checks: (workflow change) `python3 -m pytest _tests/test_run_guardrails_ci.py` (pass; excerpt: `4 passed in 12.6s`).
+- Removal test: Reverting would drop the upload-artifact step, leaving CI without the preserved summary and weakening ADR-0056’s guardrail telemetry requirement.
+- Adversarial “what remains” check:
+  - Confirm the GitHub Actions job retains artifacts across branches and adjust naming if multiple summaries are needed simultaneously.
+  - Update Concordance runbooks to link to the workflow artifact for on-call retrieval once CI artifact retention policies are documented.
+  - Evaluate adding an Actions-level summary annotation that links directly to the uploaded JSON for faster inspection.
+
+## 2025-12-19 – Loop 189 (kind: guardrail/tests)
+- Focus: Request Gating & Streaming – enforce artifact persistence across guardrail variants.
+- Change: Updated `scripts/tools/run_guardrails_ci.sh` to require the history summary for guardrail targets (failing when absent), taught `Makefile::request-history-guardrails-fast` to emit `artifacts/history-axis-summaries/history-validation-summary.json`, and added `_tests/test_make_request_history_guardrails.py::test_make_request_history_guardrails_fast_produces_summary` plus `_tests/test_run_guardrails_ci.py::test_run_guardrails_ci_history_target_produces_summary`.
+- Checks: `python3 -m pytest _tests/test_make_request_history_guardrails.py _tests/test_run_guardrails_ci.py` (pass; excerpt: `7 passed in 14.97s`).
+- Removal test: Reverting would let guardrail targets succeed without persisting the summary artifact, undoing ADR-0056’s telemetry guardrail and breaking the new regression tests.
+- Adversarial “what remains” check:
+  - Confirm Actions artifact retention aligns with Concordance operational needs and document retrieval steps in runbooks.
+  - Consider including the commit SHA or workflow run ID in artifact names when parallel guardrail runs are expected.
+  - Explore adding a GitHub Actions step that surfaces a direct link to the uploaded JSON in the job summary for faster triage.
 
 

@@ -33,5 +33,13 @@ jobs:
       - name: Run guardrails
         run: make ci-guardrails
 
+      - name: Upload history axis summary artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: history-axis-summary
+          path: artifacts/history-axis-summaries/history-validation-summary.json
+          if-no-files-found: warn
+
       - name: Run tests
         run: python3 -m unittest discover -s tests -v

@@ -100,14 +100,17 @@ overlay-lifecycle-guardrails:
 	python3 -m pytest _tests/test_overlay_lifecycle.py
 
 request-history-guardrails:
-	python3 scripts/tools/history-axis-validate.py
+	mkdir -p artifacts/history-axis-summaries
+	python3 scripts/tools/history-axis-validate.py --summary-path artifacts/history-axis-summaries/history-validation-summary.json --reset-gating
 	python3 -m pytest _tests/test_request_history_actions.py
 
 request-history-guardrails-fast:
+	mkdir -p artifacts/history-axis-summaries
+	python3 scripts/tools/history-axis-validate.py --summary-path artifacts/history-axis-summaries/history-validation-summary.json
 	python3 -m pytest \
 		_tests/test_request_history_actions.py::RequestHistoryActionTests::test_history_save_filename_includes_provider_slug \
 		_tests/test_request_history_actions.py::RequestHistoryActionTests::test_history_save_includes_provider_id_in_header \
-		_tests/test_request_history_actions.py::RequestHistoryActionTests::test_history_save_blocks_when_current_state_in_flight \
+		_tests/test_request_history_actions.py::RequestHistoryActionTests::test_history_save_blocks_when_request_in_flight \
 		_tests/test_request_history_actions.py::RequestHistoryActionTests::test_history_save_sequence_inflight_then_terminal
 
 help:
@@ -126,9 +129,9 @@ help:
 	@echo "  make overlay-lifecycle-guardrails # run overlay lifecycle guardrail tests"
 	@echo "  scripts/tools/run_guardrails_ci.sh [--help]   # CI entrypoint (honours GUARDRAILS_TARGET, default guardrails)"
 	@echo "  make overlay-guardrails     # run overlay helper guardrail tests"
-	@echo "  make request-history-guardrails # run history save/resilience guardrail tests"
+	@echo "  make request-history-guardrails # run history guardrails (writes summary to artifacts/history-axis-summaries/history-validation-summary.json then resets gating telemetry)"
 	@echo "  make request-history-guardrails-fast # run a fast subset of history guardrails"
-	@echo "  make request-history-guardrails # run history save/resilience guardrail tests"
+	@echo "  make request-history-guardrails # run history guardrails (writes summary to artifacts/history-axis-summaries/history-validation-summary.json then resets gating telemetry)"
 	@echo "  make readme-axis-lines      # generate catalog-derived README axis lines into tmp/readme-axis-lists.md"
 	@echo "  make readme-axis-refresh    # generate catalog-derived README axis snapshot to tmp/readme-axis-readme.md (README untouched; optional README_AXIS_LISTS_DIR for list tokens)"
 	@echo "  make static-prompt-docs     # generate catalog-derived static prompt docs snapshot (tmp/static-prompt-docs.md)"

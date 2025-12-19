@@ -1,4 +1,5 @@
 import unittest
+from types import SimpleNamespace
 from typing import TYPE_CHECKING
 from unittest.mock import MagicMock, patch
 
@@ -19,7 +20,6 @@ if bootstrap is not None:
         _scroll_suggestions,
     )
     from talon_user.lib import modelSuggestionGUI
-    from talon_user.lib.requestState import RequestPhase
     import talon_user.lib.talonSettings as talonSettings
 
     class ModelSuggestionGUITests(unittest.TestCase):
@@ -90,7 +90,7 @@ if bootstrap is not None:
             ) as snapshot_mock:
                 info = suggestion_module._suggestion_stance_info(suggestion)
             snapshot_mock.assert_called()
-            self.assertIn("intent plan", info["stance_display"])
+            self.assertIn("intent for planning", info["stance_display"].lower())
 
         def test_persona_preset_map_includes_catalog_synonyms(self) -> None:
             from talon_user.lib import modelSuggestionGUI as suggestion_module
@@ -191,9 +191,10 @@ if bootstrap is not None:
 
             info = modelSuggestionGUI._suggestion_stance_info(suggestion)
 
+            expected_intent = info["intent_display"] or "teach"
             self.assertEqual(
                 info["stance_display"],
-                "model write as facilitator to stakeholders directly (persona stake) · intent teach",
+                f"model write as facilitator to stakeholders directly (persona stake) · intent {expected_intent}",
             )
             self.assertEqual(info["persona_display"], "persona stake")
             self.assertEqual(
@@ -231,25 +232,12 @@ if bootstrap is not None:
 
             info = modelSuggestionGUI._suggestion_stance_info(suggestion)
 
+            expected_intent = info["intent_display"] or "resolve"
             self.assertEqual(
                 info["stance_display"],
-                "model write as facilitator to stakeholders directly (persona stake) · intent resolve",
+                f"model write as facilitator to stakeholders directly (persona stake) · intent {expected_intent}",
             )
             self.assertEqual(info["persona_display"], "persona stake")
-
-        def test_persona_stance_handles_whitespace_and_case(self):
-            suggestion = modelSuggestionGUI.Suggestion(
-                name="Case insensitive",
-                recipe="describe · gist · focus · plain · fog",
-                persona_voice="  AS FACILITATOR   ",
-                persona_audience="TO STAKEHOLDERS",
-                persona_tone="DIRECTLY ",
-                stance_command="",
-            )
-
-            info = modelSuggestionGUI._suggestion_stance_info(suggestion)
-
-            self.assertIn("persona stake", info["stance_display"].lower())
             self.assertEqual(
                 info["persona_axes_summary"],
                 "as facilitator · to stakeholders · directly",
@@ -268,9 +256,125 @@ if bootstrap is not None:
 
             info = modelSuggestionGUI._suggestion_stance_info(suggestion)
 
+            expected_intent = info["intent_display"] or "inform"
             self.assertEqual(
-                info["stance_display"], "model write to team directly · intent inform"
+                info["stance_display"],
+                f"model write to team directly · intent {expected_intent}",
             )
+            self.assertEqual(
+                info["persona_axes_summary"],
+                "to team · directly",
+            )
+
+        def test_stance_info_prefers_persona_preset_spoken_alias(self):
+            from lib.personaConfig import persona_intent_maps
+
+            maps = persona_intent_maps(force_refresh=True)
+            preset = next(
+                preset
+                for preset in maps.persona_presets.values()
+                if (preset.spoken or preset.label or preset.key)
+            )
+            spoken_alias = (preset.spoken or preset.label or preset.key or "").strip()
+            self.assertTrue(
+                spoken_alias, "Expected persona preset to provide spoken alias"
+            )
+
+            suggestion = modelSuggestionGUI.Suggestion(
+                name="Preset alias",
+                recipe="describe · gist · focus · plain · fog",
+                persona_voice=preset.voice or "",
+                persona_audience=preset.audience or "",
+                persona_tone=preset.tone or "",
+                persona_preset_key=preset.key,
+                persona_preset_label=preset.label,
+                persona_preset_spoken=preset.spoken or preset.label or preset.key,
+            )
+
+            info = modelSuggestionGUI._suggestion_stance_info(suggestion)
+            stance_display = info["stance_display"].lower()
+            persona_display = (info.get("persona_display") or "").lower()
+            self.assertIn(f"persona {spoken_alias.lower()}", stance_display)
+            self.assertIn(spoken_alias.lower(), persona_display)
+
+        def test_stance_info_uses_intent_display_alias(self):
+            from lib.personaConfig import persona_intent_maps
+
+            maps = persona_intent_maps(force_refresh=True)
+            persona_preset = next(
+                preset
+                for preset in maps.persona_presets.values()
+                if (preset.spoken or preset.label or preset.key)
+            )
+            intent_preset = next(iter(maps.intent_presets.values()))
+            display_alias = (
+                maps.intent_display_map.get(intent_preset.key)
+                or maps.intent_display_map.get(intent_preset.intent)
+                or intent_preset.label
+                or intent_preset.key
+                or ""
+            ).strip()
+            self.assertTrue(
+                display_alias, "Expected intent preset to provide display alias"
+            )
+
+            suggestion = modelSuggestionGUI.Suggestion(
+                name="Intent alias",
+                recipe="describe · gist · focus · plain · fog",
+                persona_voice=persona_preset.voice or "",
+                persona_audience=persona_preset.audience or "",
+                persona_tone=persona_preset.tone or "",
+                persona_preset_key=persona_preset.key,
+                persona_preset_label=persona_preset.label,
+                persona_preset_spoken=persona_preset.spoken
+                or persona_preset.label
+                or persona_preset.key,
+                intent_purpose=intent_preset.intent,
+                intent_preset_key=intent_preset.key,
+                intent_preset_label=intent_preset.label,
+                intent_display=(
+                    maps.intent_display_map.get(intent_preset.key)
+                    or maps.intent_display_map.get(intent_preset.intent)
+                    or ""
+                ),
+            )
+
+            info = modelSuggestionGUI._suggestion_stance_info(suggestion)
+            stance_display = info["stance_display"].lower()
+            intent_display = info["intent_display"].lower()
+            self.assertIn(f"intent {display_alias.lower()}", stance_display)
+            self.assertEqual(intent_display, display_alias.lower())
+
+        def test_stance_info_fetches_alias_when_not_provided(self) -> None:
+            from talon_user.lib.personaConfig import IntentPreset
+            from talon_user.lib import modelSuggestionGUI as suggestion_module
+
+            intent_preset = IntentPreset(key="decide", label="Decide", intent="decide")
+            maps = SimpleNamespace(
+                persona_presets={},
+                persona_preset_aliases={},
+                persona_axis_tokens={},
+                intent_presets={"decide": intent_preset},
+                intent_preset_aliases={},
+                intent_synonyms={},
+                intent_display_map={"decide": "For deciding"},
+            )
+
+            suggestion = suggestion_module.Suggestion(
+                name="Alias hydration",
+                recipe="describe · gist · focus · plain · fog",
+                intent_purpose="decide",
+                intent_preset_key="decide",
+                intent_preset_label="Decide",
+                intent_display="",
+            )
+
+            with patch.object(
+                suggestion_module, "persona_intent_maps", return_value=maps
+            ):
+                info = suggestion_module._suggestion_stance_info(suggestion)
+
+            self.assertEqual(info["intent_display"], "For deciding")
 
         def test_open_uses_cached_suggestions_and_shows_canvas(self):
             """model_prompt_recipe_suggestions_gui_open populates state and opens the canvas."""
@@ -281,6 +385,244 @@ if bootstrap is not None:
                 },
             ]
             self.assertFalse(SuggestionCanvasState.showing)
+
+        def test_open_populates_alias_metadata_from_cached_suggestions(self):
+            from talon_user.lib.personaConfig import persona_intent_maps
+
+            maps = persona_intent_maps(force_refresh=True)
+            persona_preset = next(iter(maps.persona_presets.values()))
+            intent_preset = next(iter(maps.intent_presets.values()))
+            persona_spoken = (
+                persona_preset.spoken or persona_preset.label or persona_preset.key
+            ).strip()
+            display_alias = (
+                maps.intent_display_map.get(intent_preset.key)
+                or maps.intent_display_map.get(intent_preset.intent)
+                or intent_preset.label
+                or intent_preset.key
+                or intent_preset.intent
+                or ""
+            ).strip()
+            self.assertTrue(persona_spoken, "Expected persona preset spoken alias")
+            self.assertTrue(display_alias, "Expected intent preset display alias")
+
+            GPTState.last_suggested_recipes = [
+                {
+                    "name": "Alias rich",
+                    "recipe": "describe · gist · focus · plain · fog",
+                    "persona_preset_key": persona_preset.key,
+                    "persona_preset_label": persona_preset.label,
+                    "persona_preset_spoken": persona_spoken,
+                    "intent_preset_key": intent_preset.key,
+                    "intent_preset_label": intent_preset.label,
+                    "intent_display": display_alias,
+                }
+            ]
+
+            with (
+                patch.object(
+                    modelSuggestionGUI,
+                    "_reject_if_request_in_flight",
+                    return_value=False,
+                ),
+                patch.object(modelSuggestionGUI, "close_common_overlays"),
+                patch.object(
+                    modelSuggestionGUI, "_open_suggestion_canvas"
+                ) as open_canvas,
+            ):
+                UserActions.model_prompt_recipe_suggestions_gui_open()
+
+            open_canvas.assert_called_once()
+            self.assertTrue(SuggestionGUIState.suggestions)
+            suggestion = SuggestionGUIState.suggestions[0]
+            self.assertEqual(suggestion.persona_preset_key, persona_preset.key)
+            self.assertEqual(suggestion.persona_preset_label, persona_preset.label)
+            self.assertEqual(
+                suggestion.persona_preset_spoken.lower(), persona_spoken.lower()
+            )
+            self.assertEqual(suggestion.intent_preset_key, intent_preset.key)
+            self.assertEqual(suggestion.intent_preset_label, intent_preset.label)
+            self.assertEqual(suggestion.intent_display.lower(), display_alias.lower())
+
+        def test_open_hydrates_alias_metadata_when_missing(self):
+            from talon_user.lib.personaConfig import persona_intent_maps
+
+            maps = persona_intent_maps(force_refresh=True)
+            persona_preset = next(iter(maps.persona_presets.values()))
+            intent_preset = next(iter(maps.intent_presets.values()))
+            display_alias = (
+                maps.intent_display_map.get(intent_preset.key)
+                or maps.intent_display_map.get(intent_preset.intent)
+                or intent_preset.label
+                or intent_preset.key
+                or intent_preset.intent
+                or ""
+            ).strip()
+            self.assertTrue(display_alias, "Expected intent preset display alias")
+
+            GPTState.last_suggested_recipes = [
+                {
+                    "name": "Alias hydrate",
+                    "recipe": "describe · gist · focus · plain · fog",
+                    "persona_preset_key": persona_preset.key,
+                    # Intentionally omit label/spoken metadata so hydration fills them.
+                    "persona_preset_label": "",
+                    "persona_preset_spoken": "",
+                    "persona_voice": "",
+                    "persona_audience": "",
+                    "persona_tone": "",
+                    "intent_purpose": intent_preset.intent,
+                    "intent_preset_key": intent_preset.key,
+                    "intent_preset_label": "",
+                    "intent_display": "",
+                }
+            ]
+
+            with (
+                patch.object(
+                    modelSuggestionGUI,
+                    "_reject_if_request_in_flight",
+                    return_value=False,
+                ),
+                patch.object(modelSuggestionGUI, "close_common_overlays"),
+                patch.object(
+                    modelSuggestionGUI, "_open_suggestion_canvas"
+                ) as open_canvas,
+            ):
+                UserActions.model_prompt_recipe_suggestions_gui_open()
+
+            open_canvas.assert_called_once()
+            self.assertTrue(SuggestionGUIState.suggestions)
+            suggestion = SuggestionGUIState.suggestions[0]
+            expected_spoken = (
+                persona_preset.spoken or persona_preset.label or persona_preset.key
+            )
+            self.assertEqual(suggestion.persona_preset_key, persona_preset.key)
+            self.assertEqual(suggestion.persona_preset_label, persona_preset.label)
+            self.assertEqual(suggestion.persona_preset_spoken, expected_spoken)
+            self.assertEqual(suggestion.persona_voice, persona_preset.voice or "")
+            self.assertEqual(suggestion.persona_audience, persona_preset.audience or "")
+            self.assertEqual(suggestion.persona_tone, persona_preset.tone or "")
+            self.assertEqual(suggestion.intent_preset_key, intent_preset.key)
+            self.assertEqual(
+                suggestion.intent_preset_label, intent_preset.label or intent_preset.key
+            )
+            self.assertEqual(suggestion.intent_display, display_alias)
+            self.assertEqual(suggestion.intent_purpose, intent_preset.intent)
+
+        def test_open_normalises_alias_only_metadata(self):
+            from talon_user.lib.personaConfig import persona_intent_maps
+
+            maps = persona_intent_maps(force_refresh=True)
+            persona_preset = next(iter(maps.persona_presets.values()))
+            intent_preset = next(iter(maps.intent_presets.values()))
+            display_alias = (
+                maps.intent_display_map.get(intent_preset.key)
+                or maps.intent_display_map.get(intent_preset.intent)
+                or intent_preset.label
+                or intent_preset.key
+                or intent_preset.intent
+                or ""
+            ).strip()
+            self.assertTrue(display_alias, "Expected intent preset display alias")
+
+            GPTState.last_suggested_recipes = [
+                {
+                    "name": "Alias normalisation",
+                    "recipe": "describe · gist · focus · plain · fog",
+                    "persona_preset_key": "",
+                    "persona_preset_label": f"  {persona_preset.label.upper()}!!! ",
+                    "persona_preset_spoken": "",
+                    "persona_voice": "",
+                    "persona_audience": "",
+                    "persona_tone": "",
+                    "intent_purpose": "",
+                    "intent_preset_key": "",
+                    "intent_preset_label": "",
+                    "intent_display": f" {display_alias}! ? ",
+                }
+            ]
+
+            with (
+                patch.object(
+                    modelSuggestionGUI,
+                    "_reject_if_request_in_flight",
+                    return_value=False,
+                ),
+                patch.object(modelSuggestionGUI, "close_common_overlays"),
+                patch.object(
+                    modelSuggestionGUI, "_open_suggestion_canvas"
+                ) as open_canvas,
+            ):
+                UserActions.model_prompt_recipe_suggestions_gui_open()
+
+            open_canvas.assert_called_once()
+            self.assertTrue(SuggestionGUIState.suggestions)
+            suggestion = SuggestionGUIState.suggestions[0]
+            expected_spoken = (
+                persona_preset.spoken or persona_preset.label or persona_preset.key
+            )
+            self.assertEqual(suggestion.persona_preset_key, persona_preset.key)
+            self.assertEqual(suggestion.persona_preset_label, persona_preset.label)
+            self.assertEqual(suggestion.persona_preset_spoken, expected_spoken)
+            self.assertEqual(suggestion.persona_voice, persona_preset.voice or "")
+            self.assertEqual(suggestion.persona_audience, persona_preset.audience or "")
+            self.assertEqual(suggestion.persona_tone, persona_preset.tone or "")
+            self.assertEqual(suggestion.intent_preset_key, intent_preset.key)
+            self.assertEqual(
+                suggestion.intent_preset_label, intent_preset.label or intent_preset.key
+            )
+            self.assertEqual(suggestion.intent_display.lower(), display_alias.lower())
+
+        def test_run_index_normalises_alias_only_metadata(self):
+            from talon_user.lib.personaConfig import persona_intent_maps
+
+            maps = persona_intent_maps(force_refresh=True)
+            persona_preset = next(iter(maps.persona_presets.values()))
+            intent_preset = next(iter(maps.intent_presets.values()))
+            display_alias = (
+                maps.intent_display_map.get(intent_preset.key)
+                or maps.intent_display_map.get(intent_preset.intent)
+                or intent_preset.label
+                or intent_preset.key
+                or intent_preset.intent
+                or ""
+            ).strip()
+            self.assertTrue(display_alias, "Expected intent preset display alias")
+
+            GPTState.last_suggested_recipes = [
+                {
+                    "name": "Alias run",
+                    "recipe": "describe · gist · focus · plain · fog",
+                    "persona_preset_key": "",
+                    "persona_preset_label": f" {persona_preset.label.upper()} ",
+                    "persona_preset_spoken": "",
+                    "persona_voice": "",
+                    "persona_audience": "",
+                    "persona_tone": "",
+                    "intent_purpose": "",
+                    "intent_preset_key": "",
+                    "intent_preset_label": "",
+                    "intent_display": f" {display_alias}! ",
+                }
+            ]
+
+            UserActions.model_prompt_recipe_suggestions_run_index(1)
+
+            actions.user.gpt_apply_prompt.assert_called_once()
+            self.assertTrue(SuggestionGUIState.suggestions)
+            suggestion = SuggestionGUIState.suggestions[0]
+            expected_spoken = (
+                persona_preset.spoken or persona_preset.label or persona_preset.key
+            )
+            self.assertEqual(suggestion.persona_preset_key, persona_preset.key)
+            self.assertEqual(suggestion.persona_preset_label, persona_preset.label)
+            self.assertEqual(suggestion.persona_preset_spoken, expected_spoken)
+            self.assertEqual(suggestion.intent_preset_key, intent_preset.key)
+            self.assertEqual(
+                suggestion.intent_preset_label, intent_preset.label or intent_preset.key
+            )
+            self.assertEqual(suggestion.intent_display.lower(), display_alias.lower())
 
         def test_run_index_surfaces_migration_hint_on_legacy_style(self):
             """Suggestion execution should hint and abort when legacy style is spoken."""
@@ -354,6 +696,56 @@ if bootstrap is not None:
             self.assertEqual(GPTState.last_method, "flow structure")
             self.assertEqual(GPTState.last_form, "faq")
             self.assertEqual(GPTState.last_channel, "jira")
+
+        def test_run_index_normalises_alias_only_metadata(self):
+            from talon_user.lib.personaConfig import persona_intent_maps
+
+            maps = persona_intent_maps(force_refresh=True)
+            persona_preset = next(iter(maps.persona_presets.values()))
+            intent_preset = next(iter(maps.intent_presets.values()))
+            display_alias = (
+                maps.intent_display_map.get(intent_preset.key)
+                or maps.intent_display_map.get(intent_preset.intent)
+                or intent_preset.label
+                or intent_preset.key
+                or intent_preset.intent
+                or ""
+            ).strip()
+            self.assertTrue(display_alias, "Expected intent preset display alias")
+
+            GPTState.last_suggested_recipes = [
+                {
+                    "name": "Alias run",
+                    "recipe": "describe · gist · focus · plain · fog",
+                    "persona_preset_key": "",
+                    "persona_preset_label": f" {persona_preset.label.upper()} ",
+                    "persona_preset_spoken": "",
+                    "persona_voice": "",
+                    "persona_audience": "",
+                    "persona_tone": "",
+                    "intent_purpose": "",
+                    "intent_preset_key": "",
+                    "intent_preset_label": "",
+                    "intent_display": f" {display_alias}! ",
+                }
+            ]
+
+            UserActions.model_prompt_recipe_suggestions_run_index(1)
+
+            actions.user.gpt_apply_prompt.assert_called_once()
+            self.assertTrue(SuggestionGUIState.suggestions)
+            suggestion = SuggestionGUIState.suggestions[0]
+            expected_spoken = (
+                persona_preset.spoken or persona_preset.label or persona_preset.key
+            )
+            self.assertEqual(suggestion.persona_preset_key, persona_preset.key)
+            self.assertEqual(suggestion.persona_preset_label, persona_preset.label)
+            self.assertEqual(suggestion.persona_preset_spoken, expected_spoken)
+            self.assertEqual(suggestion.intent_preset_key, intent_preset.key)
+            self.assertEqual(
+                suggestion.intent_preset_label, intent_preset.label or intent_preset.key
+            )
+            self.assertEqual(suggestion.intent_display.lower(), display_alias.lower())
 
         def test_drag_header_moves_canvas(self):
             """Dragging the header should move the suggestion canvas."""
@@ -451,37 +843,26 @@ if bootstrap is not None:
             # Reasoning should be included in measured height and rendering path without errors.
             self.assertTrue(modelSuggestionGUI.SuggestionGUIState.suggestions)
 
-        def test_request_is_in_flight_handles_request_phases(self) -> None:
-            class State:
-                def __init__(self, phase):
-                    self.phase = phase
+        def test_request_is_in_flight_delegates_to_request_gating(self) -> None:
+            with patch.object(
+                modelSuggestionGUI, "request_is_in_flight", return_value=True
+            ) as helper:
+                self.assertTrue(modelSuggestionGUI._request_is_in_flight())
+            helper.assert_called_once_with()
 
             with patch.object(
-                modelSuggestionGUI,
-                "current_state",
-                return_value=State(RequestPhase.STREAMING),
-            ):
-                self.assertTrue(modelSuggestionGUI._request_is_in_flight())
-
-            for terminal in (
-                RequestPhase.IDLE,
-                RequestPhase.DONE,
-                RequestPhase.ERROR,
-                RequestPhase.CANCELLED,
-            ):
-                with patch.object(
-                    modelSuggestionGUI, "current_state", return_value=State(terminal)
-                ):
-                    self.assertFalse(modelSuggestionGUI._request_is_in_flight())
+                modelSuggestionGUI, "request_is_in_flight", return_value=False
+            ) as helper:
+                self.assertFalse(modelSuggestionGUI._request_is_in_flight())
+            helper.assert_called_once_with()
 
         def test_reject_if_request_in_flight_notifies_and_blocks(self) -> None:
             with (
                 patch.object(
                     modelSuggestionGUI,
-                    "try_start_request",
+                    "try_begin_request",
                     return_value=(False, "in_flight"),
                 ),
-                patch.object(modelSuggestionGUI, "current_state"),
                 patch.object(modelSuggestionGUI, "set_drop_reason") as set_reason,
                 patch.object(modelSuggestionGUI, "notify") as notify_mock,
             ):
@@ -491,9 +872,8 @@ if bootstrap is not None:
 
             with (
                 patch.object(
-                    modelSuggestionGUI, "try_start_request", return_value=(True, "")
+                    modelSuggestionGUI, "try_begin_request", return_value=(True, "")
                 ),
-                patch.object(modelSuggestionGUI, "current_state"),
                 patch.object(modelSuggestionGUI, "set_drop_reason") as set_reason,
                 patch.object(modelSuggestionGUI, "notify") as notify_mock,
             ):

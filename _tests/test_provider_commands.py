@@ -11,7 +11,6 @@ else:
 if bootstrap is not None:
     from talon_user.lib import providerCommands as provider_module
     from talon_user.lib.providerCommands import UserActions as ProviderActions
-    from talon_user.lib.requestState import RequestPhase
     from talon import actions
 
 
@@ -46,47 +45,30 @@ class ProviderCommandGuardTests(unittest.TestCase):
             ProviderActions.model_provider_switch("openai")
         user_use.assert_not_called()
 
-    def test_request_is_in_flight_delegates_to_request_state_helper(self):
+    def test_request_is_in_flight_delegates_to_gating_helper(self):
         if bootstrap is None:
             self.skipTest("Talon runtime not available")
 
-        class State:
-            def __init__(self, phase):
-                self.phase = phase
-
-        with (
-            patch.object(
-                provider_module,
-                "current_state",
-                return_value=State(RequestPhase.SENDING),
-            ),
-            patch.object(
-                provider_module, "is_in_flight", return_value=True
-            ) as inflight,
-        ):
+        with patch.object(
+            provider_module, "request_is_in_flight", return_value=True
+        ) as helper:
             self.assertTrue(provider_module._request_is_in_flight())
-            inflight.assert_called_once()
+        helper.assert_called_once_with()
 
-        with (
-            patch.object(
-                provider_module, "current_state", return_value=State(RequestPhase.DONE)
-            ),
-            patch.object(
-                provider_module, "is_in_flight", return_value=False
-            ) as inflight,
-        ):
+        with patch.object(
+            provider_module, "request_is_in_flight", return_value=False
+        ) as helper:
             self.assertFalse(provider_module._request_is_in_flight())
-            inflight.assert_called_once()
+        helper.assert_called_once_with()
 
-    def test_reject_if_request_in_flight_uses_try_start_request_drop_reason(self):
+    def test_reject_if_request_in_flight_uses_try_begin_request_drop_reason(self):
         if bootstrap is None:
             self.skipTest("Talon runtime not available")
 
         with (
             patch.object(
-                provider_module, "try_start_request", return_value=(False, "in_flight")
+                provider_module, "try_begin_request", return_value=(False, "in_flight")
             ),
-            patch.object(provider_module, "current_state"),
             patch.object(provider_module, "set_drop_reason") as set_reason,
             patch.object(provider_module, "notify") as notify_mock,
         ):
@@ -95,8 +77,7 @@ class ProviderCommandGuardTests(unittest.TestCase):
         notify_mock.assert_called_once()
 
         with (
-            patch.object(provider_module, "try_start_request", return_value=(True, "")),
-            patch.object(provider_module, "current_state"),
+            patch.object(provider_module, "try_begin_request", return_value=(True, "")),
             patch.object(provider_module, "set_drop_reason") as set_reason,
             patch.object(provider_module, "notify") as notify_mock,
         ):

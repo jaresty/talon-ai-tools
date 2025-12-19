@@ -6,6 +6,8 @@ from typing import Any, Callable, List, Optional, Tuple
 
 from talon import actions
 
+from .requestLog import axis_snapshot_from_axes
+
 
 @dataclass(frozen=True)
 class HelpIndexEntry:
@@ -82,6 +84,38 @@ def help_index(
         )
 
     # Axes (prefer catalog axis tokens).
+    def _canonical_axis_tokens(axis_key: str, axis_file: str) -> List[str]:
+        token_candidates: List[str] = []
+        if catalog:
+            axis_tokens = list((catalog.get("axes", {}).get(axis_key) or {}).keys())
+            list_tokens = catalog.get("axis_list_tokens", {}).get(axis_key, []) or []
+            token_candidates.extend(axis_tokens)
+            token_candidates.extend(list_tokens)
+        if not token_candidates:
+            token_candidates = read_list_items(axis_file)
+        seen: set[str] = set()
+        for token in token_candidates:
+            snapshot = axis_snapshot_from_axes({axis_key: [token]})
+            canonical = snapshot.get(axis_key, []) or []
+            if canonical:
+                for value in canonical:
+                    if value not in seen:
+                        seen.add(value)
+                continue
+            cleaned = str(token).strip()
+            if not cleaned or cleaned.lower().startswith("important:"):
+                continue
+            lowered = cleaned.lower()
+            if lowered not in seen:
+                seen.add(lowered)
+        if not seen and token_candidates:
+            for token in token_candidates:
+                cleaned = str(token).strip()
+                if not cleaned or cleaned.lower().startswith("important:"):
+                    continue
+                seen.add(cleaned.lower())
+        return sorted(seen)
+
     axis_sources = {
         "Completeness": "completenessModifier.talon-list",
         "Scope": "scopeModifier.talon-list",
@@ -91,21 +125,13 @@ def help_index(
         "Directional": "directionalModifier.talon-list",
     }
     for axis_label, axis_file in axis_sources.items():
-        tokens: List[str] = []
-        if catalog:
-            axis_key = axis_label.lower()
-            axis_tokens = list((catalog.get("axes", {}).get(axis_key) or {}).keys())
-            list_tokens = (
-                catalog.get("axis_list_tokens", {}).get(axis_key, []) if catalog else []
-            )
-            tokens = [t for t in list_tokens or axis_tokens if t]
-        if not tokens:
-            tokens = read_list_items(axis_file)
+        axis_key = axis_label.lower()
+        tokens = _canonical_axis_tokens(axis_key, axis_file)
         for token in tokens:
             _add(
                 f"Axis ({axis_label}): {token}",
                 "Open quick help",
-                lambda _a=axis_label.lower(): actions.user.model_help_canvas_open()  # type: ignore[attr-defined]
+                lambda _a=axis_key: actions.user.model_help_canvas_open()  # type: ignore[attr-defined]
                 or None,
                 voice_hint=f"Say: model run … {token}",
             )

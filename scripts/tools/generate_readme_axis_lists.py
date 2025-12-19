@@ -19,6 +19,7 @@ else:
     bootstrap()
 
 from talon_user.lib.axisCatalog import axis_catalog  # type: ignore  # noqa: E402
+from talon_user.lib.requestLog import axis_snapshot_from_axes  # type: ignore  # noqa: E402
 
 
 def _render_axis_line(axis: str, label: str, tokens: list[str]) -> str:
@@ -38,12 +39,35 @@ def render_readme_axis_lines(lists_dir: Path | None = None) -> str:
         ("channel", "Channel (`channelModifier`)"),
         ("directional", "Directional (`directionalModifier`)"),
     ]
+
+    canonical_axes: dict[str, list[str]] = {}
+    for axis, _ in order:
+        token_candidates: list[str] = []
+        list_tokens = axis_lists.get(axis)
+        if list_tokens:
+            token_candidates.extend(list_tokens)
+        axis_tokens = axes.get(axis) or {}
+        token_candidates.extend(axis_tokens.keys())
+        seen: set[str] = set()
+        for token in token_candidates:
+            snapshot = axis_snapshot_from_axes({axis: [token]})
+            canonical = snapshot.get(axis, []) or []
+            if canonical:
+                for value in canonical:
+                    if value not in seen:
+                        seen.add(value)
+                continue
+            cleaned = str(token).strip()
+            if not cleaned or cleaned.lower().startswith("important:"):
+                continue
+            lowered = cleaned.lower()
+            if lowered not in seen:
+                seen.add(lowered)
+        canonical_axes[axis] = sorted(seen)
+
     lines: list[str] = []
     for axis, label in order:
-        tokens = axis_lists.get(axis)
-        if tokens is None:
-            tokens = (axes.get(axis) or {}).keys()
-        tokens = sorted(tokens)
+        tokens = canonical_axes.get(axis, [])
         if not tokens:
             continue
         lines.append(_render_axis_line(axis, label, tokens))

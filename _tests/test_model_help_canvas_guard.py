@@ -55,10 +55,9 @@ class ModelHelpCanvasGuardTests(unittest.TestCase):
         with (
             patch.object(
                 help_canvas_module,
-                "try_start_request",
+                "try_begin_request",
                 return_value=(False, "in_flight"),
             ),
-            patch.object(help_canvas_module, "current_state"),
             patch.object(help_canvas_module, "set_drop_reason") as set_reason,
             patch.object(help_canvas_module, "notify") as notify_mock,
         ):
@@ -68,9 +67,8 @@ class ModelHelpCanvasGuardTests(unittest.TestCase):
 
         with (
             patch.object(
-                help_canvas_module, "try_start_request", return_value=(True, "")
+                help_canvas_module, "try_begin_request", return_value=(True, "")
             ),
-            patch.object(help_canvas_module, "current_state"),
             patch.object(help_canvas_module, "set_drop_reason") as set_reason,
             patch.object(help_canvas_module, "notify") as notify_mock,
         ):

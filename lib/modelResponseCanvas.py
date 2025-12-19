@@ -8,16 +8,14 @@ from .canvasFont import apply_canvas_typeface, draw_text_with_emoji_fallback
 
 from .modelState import GPTState
 from .modelDestination import _parse_meta
-from .requestState import RequestPhase, RequestState, is_in_flight, try_start_request
-from .requestLog import drop_reason_message, set_drop_reason
-from .overlayHelpers import clamp_scroll
+from .requestState import RequestPhase, RequestState
+from .requestGating import request_is_in_flight, try_begin_request
 from .requestBus import current_state
-from .responseCanvasFallback import (
-    append_response_fallback,
-    clear_response_fallback,
-    fallback_for,
-    clear_all_fallbacks,
+from .requestLog import (
+    drop_reason_message,
+    set_drop_reason,
 )
+
 from .axisConfig import axis_docs_for
 from .suggestionCoordinator import (
     last_recipe_snapshot,
@@ -28,6 +26,8 @@ from .stanceDefaults import stance_defaults_lines
 from .modelHelpers import notify
 from .overlayHelpers import apply_canvas_blocking, clamp_scroll
 from .overlayLifecycle import close_overlays, close_common_overlays
+from .personaConfig import persona_intent_maps
+from . import personaConfig as _persona_config_module
 
 mod = Module()
 ctx = Context()
@@ -99,31 +99,16 @@ def _restore_previous_focus() -> None:
 
 
 def _request_is_in_flight() -> bool:
-    """Return True when a GPT request is currently running.
+    """Return True when a GPT request is currently running."""
 
-    This delegates to the central ``is_in_flight`` helper so response canvas
-    gating stays aligned with the RequestState/RequestLifecycle contract.
-    """
-    try:
-        state = current_state()
-    except Exception:
-        return False
-    try:
-        return is_in_flight(state)  # type: ignore[arg-type]
-    except Exception:
-        return False
+    return request_is_in_flight()
 
 
 def _reject_if_request_in_flight() -> bool:
     """Notify and return True when a GPT request is already running."""
-    try:
-        state = current_state()
-    except Exception:
-        return False
-    try:
-        allowed, reason = try_start_request(state)  # type: ignore[arg-type]
-    except Exception:
-        return False
+
+    state = _current_request_state()
+    allowed, reason = try_begin_request(state)
     if not allowed and reason == "in_flight":
         message = drop_reason_message("in_flight")
         try:
@@ -134,11 +119,7 @@ def _reject_if_request_in_flight() -> bool:
             GPTState.suppress_response_canvas_close = False
         except Exception:
             pass
-        try:
-            state = _current_request_state()
-        except Exception:
-            state = None
-        if state and getattr(state, "phase", None) in (
+        if getattr(state, "phase", None) in (
             RequestPhase.SENDING,
             RequestPhase.STREAMING,
         ):
@@ -277,10 +258,31 @@ _response_mouse_log_count: int = 0
 _response_handlers_registered: bool = False
 _last_hide_handler: Optional[Callable] = None
 _last_recap_log: Optional[tuple[str, str, str, str, str, str]] = None
-# Track the last rendered recap/meta tuple (including request id) so meta is
-# collapsed when a new request arrives, while still allowing inflight updates
-# to keep an intentionally expanded meta panel open.
-_last_meta_signature: Optional[tuple[str, str, str, str]] = None
+_PERSONA_INTENT_MAPS_CACHE = None
+
+
+def reset_persona_intent_maps_cache() -> None:
+    global _PERSONA_INTENT_MAPS_CACHE
+    _PERSONA_INTENT_MAPS_CACHE = None
+
+
+def _persona_intent_maps_cached():
+    global _PERSONA_INTENT_MAPS_CACHE
+    if _PERSONA_INTENT_MAPS_CACHE is None:
+        _PERSONA_INTENT_MAPS_CACHE = persona_intent_maps()
+    return _PERSONA_INTENT_MAPS_CACHE
+
+
+if hasattr(_persona_config_module, "persona_intent_maps_reset"):
+    _original_persona_intent_maps_reset = (
+        _persona_config_module.persona_intent_maps_reset
+    )
+
+    def _persona_intent_maps_reset_proxy(*args, **kwargs):
+        reset_persona_intent_maps_cache()
+        return _original_persona_intent_maps_reset(*args, **kwargs)
+
+    _persona_config_module.persona_intent_maps_reset = _persona_intent_maps_reset_proxy
 
 
 def _coerce_text(value) -> str:
@@ -377,7 +379,7 @@ def _guard_response_canvas(allow_inflight: bool = False) -> bool:
     (for example, streaming to the response window). Setting `allow_inflight`
     skips the guard when a request is currently running.
     """
-    if allow_inflight and _request_is_in_flight():
+    if allow_inflight:
         return False
     return _reject_if_request_in_flight()
 
@@ -1087,6 +1089,30 @@ def _default_draw_response(c: canvas.Canvas) -> None:  # pragma: no cover - visu
         "channel": recipe_snapshot.get("channel_tokens", []) or [],
     }
 
+    try:
+        persona_maps = _persona_intent_maps_cached()
+    except Exception:
+        persona_maps = None
+    intent_display_lookup: dict[str, str] = {}
+    if persona_maps is not None:
+        raw_display_map = getattr(persona_maps, "intent_display_map", {}) or {}
+        intent_display_lookup = {}
+        for key, value in dict(raw_display_map).items():
+            key_str = str(key or "").strip().lower()
+            if not key_str:
+                continue
+            intent_display_lookup[key_str] = str(value or "").strip()
+
+    def _lookup_intent_display(*candidates: str) -> str:
+        for candidate in candidates:
+            key_str = str(candidate or "").strip().lower()
+            if not key_str:
+                continue
+            display_value = intent_display_lookup.get(key_str)
+            if display_value:
+                return display_value
+        return ""
+
     axis_parts: list[str] = []
     if static_prompt:
         axis_parts.append(static_prompt)
@@ -1112,7 +1138,98 @@ def _default_draw_response(c: canvas.Canvas) -> None:  # pragma: no cover - visu
     ):
         if value:
             axis_parts.append(value)
+
+    persona_key = str(recipe_snapshot.get("persona_preset_key") or "").strip()
+    persona_label = str(recipe_snapshot.get("persona_preset_label") or "").strip()
+    persona_spoken = str(recipe_snapshot.get("persona_preset_spoken") or "").strip()
+    persona_voice = str(recipe_snapshot.get("persona_voice") or "").strip()
+    persona_audience = str(recipe_snapshot.get("persona_audience") or "").strip()
+    persona_tone = str(recipe_snapshot.get("persona_tone") or "").strip()
+    persona_axes_bits = [
+        bit for bit in (persona_voice, persona_audience, persona_tone) if bit
+    ]
+    persona_axes_compact = " · ".join(persona_axes_bits)
+    persona_alias = (persona_spoken or persona_label or persona_key).strip()
+    canonical_persona = persona_key
+    preset_for_persona = None
+    if persona_maps is not None:
+        raw_alias_map = getattr(persona_maps, "persona_preset_aliases", {}) or {}
+        alias_map = {
+            str(k or "").strip().lower(): str(v or "").strip()
+            for k, v in dict(raw_alias_map).items()
+            if str(k or "").strip() and str(v or "").strip()
+        }
+        for candidate in (
+            persona_alias,
+            persona_spoken,
+            persona_label,
+            persona_key,
+        ):
+            candidate_key = str(candidate or "").strip()
+            if not candidate_key:
+                continue
+            canonical_lookup = alias_map.get(candidate_key.lower())
+            if canonical_lookup:
+                canonical_persona = canonical_lookup.strip() or canonical_persona
+                break
+        persona_presets_lookup = getattr(persona_maps, "persona_presets", {}) or {}
+        if canonical_persona:
+            preset_for_persona = persona_presets_lookup.get(canonical_persona)
+    if preset_for_persona is not None:
+        fallback_display = (
+            getattr(preset_for_persona, "spoken", None)
+            or getattr(preset_for_persona, "label", None)
+            or canonical_persona
+        )
+        fallback_display = str(fallback_display or "").strip()
+        if fallback_display and (
+            not persona_alias or persona_alias.lower() == canonical_persona.lower()
+        ):
+            persona_alias = fallback_display
+    persona_display = persona_alias or canonical_persona
+    persona_summary_line = ""
+    if persona_display:
+        descriptor = persona_display
+        if (
+            canonical_persona
+            and descriptor
+            and descriptor.lower() != canonical_persona.lower()
+        ):
+            descriptor = f"{descriptor} ({canonical_persona})"
+        persona_summary_line = descriptor
+        if persona_axes_compact:
+            persona_summary_line = f"{persona_summary_line} ({persona_axes_compact})"
+    elif persona_axes_compact:
+        persona_summary_line = persona_axes_compact
+
+    intent_key = str(recipe_snapshot.get("intent_preset_key") or "").strip()
+    intent_label = str(recipe_snapshot.get("intent_preset_label") or "").strip()
+    intent_purpose = str(recipe_snapshot.get("intent_purpose") or "").strip()
+    intent_display = str(recipe_snapshot.get("intent_display") or "").strip()
+    if not intent_display:
+        intent_display = _lookup_intent_display(
+            intent_key,
+            intent_purpose,
+            intent_label,
+        )
+    canonical_intent = intent_purpose or intent_key or intent_label
+    if not intent_display:
+        intent_display = canonical_intent
+    intent_summary_line = ""
+    if intent_display:
+        if canonical_intent and intent_display.lower() != canonical_intent.lower():
+            intent_summary_line = f"{intent_display} ({canonical_intent})"
+        else:
+            intent_summary_line = intent_display
+    elif canonical_intent:
+        intent_summary_line = canonical_intent
+
     hydrated_parts: list[str] = []
+    if persona_summary_line:
+        hydrated_parts.append(f"Persona: {persona_summary_line}")
+    if intent_summary_line:
+        hydrated_parts.append(f"Intent: {intent_summary_line}")
+
     recipe_tokens = " · ".join(axis_parts) if axis_parts else ""
     if recipe_tokens:
         recipe = recipe_tokens
@@ -1150,6 +1267,14 @@ def _default_draw_response(c: canvas.Canvas) -> None:  # pragma: no cover - visu
             y,
         )
         y += line_h
+        if persona_summary_line:
+            for wrapped in _wrap_text(f"Persona: {persona_summary_line}"):
+                draw_text(wrapped, x, y)
+                y += line_h
+        if intent_summary_line:
+            for wrapped in _wrap_text(f"Intent: {intent_summary_line}"):
+                draw_text(wrapped, x, y)
+                y += line_h
         # Hydrated axis details stay hidden until the meta panel is expanded.
         last_completeness = axis_join(
             axes_tokens,
@@ -1395,8 +1520,9 @@ def _default_draw_response(c: canvas.Canvas) -> None:  # pragma: no cover - visu
             return lines or [text]
 
         if hydrated_parts:
-            details_text = f"Axes: {' · '.join(hydrated_parts)}"
-            for wrapped in _wrap_meta(details_text):
+            details_text = " · ".join(hydrated_parts)
+            label = "Stance details"
+            for wrapped in _wrap_meta(f"{label}: {details_text}"):
                 draw_text(wrapped, detail_x, y)
                 y += line_h
             y += line_h // 2
@@ -1801,12 +1927,12 @@ class UserActions:
         canvas_obj = _ensure_response_canvas()
         state = None
         if ResponseCanvasState.showing:
-        _log_canvas_close("toggle close")
-        try:
-            ResponseCanvasState.last_close_event = time.time()
-        except Exception:
-            pass
-        ResponseCanvasState.showing = False
+            _log_canvas_close("toggle close")
+            try:
+                ResponseCanvasState.last_close_event = time.time()
+            except Exception:
+                pass
+            ResponseCanvasState.showing = False
 
             try:
                 GPTState.response_canvas_showing = False

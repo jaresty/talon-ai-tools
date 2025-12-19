@@ -23,6 +23,7 @@ class RequestLogEntry:
     # Token-only axes per ADR 034.
     axes: Dict[str, List[str]] = field(default_factory=dict)
     provider_id: str = ""
+    persona: Dict[str, str] = field(default_factory=dict)
 
 
 class RequestHistory:

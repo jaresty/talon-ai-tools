@@ -14,11 +14,11 @@ from .stanceDefaults import stance_defaults_lines
 from .overlayLifecycle import close_overlays, close_common_overlays
 
 from .metaPromptConfig import first_meta_preview_line, meta_preview_lines
-from .requestBus import current_state
+from .requestGating import request_is_in_flight, try_begin_request
 from .requestLog import drop_reason_message, set_drop_reason
-from .requestState import is_in_flight, try_start_request
 from .modelHelpers import notify
 from .overlayHelpers import apply_canvas_blocking
+from .personaConfig import persona_intent_maps
 
 
 try:
@@ -64,31 +64,15 @@ except ImportError:  # Talon may have a stale staticPromptConfig loaded
 
 
 def _request_is_in_flight() -> bool:
-    """Return True when a GPT request is currently running.
+    """Return True when a GPT request is currently running."""
 
-    This delegates to the central ``is_in_flight`` helper so quick-help gating
-    stays aligned with the RequestState/RequestLifecycle contract.
-    """
-    try:
-        state = current_state()
-    except Exception:
-        return False
-    try:
-        return is_in_flight(state)  # type: ignore[arg-type]
-    except Exception:
-        return False
+    return request_is_in_flight()
 
 
 def _reject_if_request_in_flight() -> bool:
     """Notify and return True when a GPT request is already running."""
-    try:
-        state = current_state()
-    except Exception:
-        return False
-    try:
-        allowed, reason = try_start_request(state)  # type: ignore[arg-type]
-    except Exception:
-        return False
+
+    allowed, reason = try_begin_request()
     if not allowed and reason == "in_flight":
         message = drop_reason_message("in_flight")
         try:
@@ -118,35 +102,45 @@ def _axis_keys(axis: str) -> list[str]:
 def _persona_presets():
     """Return the latest persona presets (reload-safe).
 
-    Prefer the persona catalog when available so quick help shares the same
-    PersonaPreset surface as other Concordance-facing UIs.
+    Prefer the shared persona intent maps so quick help stays aligned with
+    other Concordance-facing UIs. Fall back to the legacy catalog constants
+    when maps are unavailable (for example, during bootstrap).
     """
     try:
-        from . import personaConfig
-
-        catalog = getattr(personaConfig, "persona_catalog", None)
-        if callable(catalog):
-            return tuple(catalog().values())
-        return tuple(getattr(personaConfig, "PERSONA_PRESETS", ()))
+        maps = persona_intent_maps()
+        return tuple(maps.persona_presets.values())
     except Exception:
-        return ()
+        try:
+            from . import personaConfig
+
+            catalog = getattr(personaConfig, "persona_catalog", None)
+            if callable(catalog):
+                return tuple(catalog().values())
+            return tuple(getattr(personaConfig, "PERSONA_PRESETS", ()))
+        except Exception:
+            return ()
 
 
 def _intent_presets():
     """Return the latest intent presets (reload-safe).
 
-    Prefer the intent catalog when available so quick help shares the same
-    IntentPreset surface as other Concordance-facing UIs.
+    Prefer the shared persona intent maps so quick help stays aligned with
+    other Concordance-facing UIs. Fall back to the legacy catalog constants
+    when maps are unavailable (for example, during bootstrap).
     """
     try:
-        from . import personaConfig
-
-        catalog = getattr(personaConfig, "intent_catalog", None)
-        if callable(catalog):
-            return tuple(catalog().values())
-        return tuple(getattr(personaConfig, "INTENT_PRESETS", ()))
+        maps = persona_intent_maps()
+        return tuple(maps.intent_presets.values())
     except Exception:
-        return ()
+        try:
+            from . import personaConfig
+
+            catalog = getattr(personaConfig, "intent_catalog", None)
+            if callable(catalog):
+                return tuple(catalog().values())
+            return tuple(getattr(personaConfig, "INTENT_PRESETS", ()))
+        except Exception:
+            return ()
 
 
 def _intent_spoken_buckets():
@@ -186,10 +180,38 @@ def _intent_preset_commands() -> list[str]:
     """Return speakable intent preset commands in list order."""
 
     commands: list[str] = []
+    intent_display_map: dict[str, str] = {}
+    try:
+        maps = persona_intent_maps()
+    except Exception:
+        maps = None
+    if maps is not None:
+        display_map = getattr(maps, "intent_display_map", {}) or {}
+        if isinstance(display_map, dict):
+            intent_display_map = {
+                str(k or "").strip(): str(v or "").strip()
+                for k, v in display_map.items()
+                if str(k or "").strip()
+            }
+        else:
+            try:
+                intent_display_map = {
+                    str(k or "").strip(): str(v or "").strip()
+                    for k, v in dict(display_map).items()
+                    if str(k or "").strip()
+                }
+            except Exception:
+                intent_display_map = {}
+    seen: set[str] = set()
     for preset in _intent_presets():
-        spoken = (preset.key or "").strip().lower()
-        if not spoken:
+        canonical = (preset.key or "").strip()
+        if not canonical:
             continue
+        display = intent_display_map.get(canonical) or (preset.label or "")
+        spoken = (display or canonical).strip().lower()
+        if not spoken or spoken in seen:
+            continue
+        seen.add(spoken)
         commands.append(spoken)
     return commands
 

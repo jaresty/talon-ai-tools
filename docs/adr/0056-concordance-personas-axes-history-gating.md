@@ -273,10 +273,14 @@ For each domain, we will align with the existing test suites and add characteriz
   - Characterize the current mapping between persona/intent presets, axis tokens, and GUI/help surfaces for a small set of presets.
   - Add tests around the persona/intent catalog API (once introduced) that assert round-tripping between config, GPT actions, help hub presets, suggestion GUIs, and lists.
   - Add integration coverage (for example, extending `tests/test_integration_suggestions.py`) that fails when catalog alignment regresses so GUI/help/doc flows stay in sync.
-  - Add a persona/intent CI guardrail (lint/test) that rejects bypasses of the catalog API before landing.
-  - When refactoring `_validated_persona_value`, `_canonical_persona_value`, and related helpers, ensure existing integration tests remain the primary guardrails; only add new tests where behaviour is currently untested.
+    - Add a persona/intent CI guardrail (lint/test) that rejects bypasses of the catalog API before landing.
+    - When refactoring `_validated_persona_value`, `_canonical_persona_value`, and related helpers, ensure existing integration tests remain the primary guardrails; only add new tests where behaviour is currently untested.
+ 
+  - Archive history validation summaries before resets: guardrail automation **must** capture the JSON output from `history-axis-validate.py --summary-path …` before invoking `--reset-gating` so Concordance drop telemetry is preserved for dashboards. Concordance runbooks need an explicit step that saves the summary artifact to our GitHub Actions build artifacts (for example, `artifacts/history-axis-summaries/history-validation-summary.json` in the guardrails job) before the reset runs.
+
 
 ### Request Gating & Streaming Lifecycle
+
 
 - **Existing coverage (non-exhaustive)**
   - `tests/test_gpt_actions.py` — GPT action request flows and gating.
@@ -304,6 +308,7 @@ Across all domains, we will continue to run `python3 -m pytest` from the repo ro
   - Centralized **Request Gating & Streaming Lifecycle** semantics reduce duplicated gating logic, make error/cancellation handling more predictable, and simplify reasoning about when history/log entries are written.
   - Concordance scores for the identified hotspots should decrease over time as visibility increases, scope narrows, and volatility is absorbed by focused facades and types.
   - CI guardrails that fail on lens-less history writes keep the directional requirement non-negotiable, providing an automated early warning before regressions reach production.
+  - Guardrail automation archives `history-axis-validate.py --summary-path` output before applying `--reset-gating`, preserving drop telemetry for Concordance dashboards.
 - **Risks**
   - Introducing new catalogs and lifecycle APIs can temporarily increase complexity and surface hidden inconsistencies.
   - Misaligned migrations (e.g., partially adopted `AxisSnapshot` or persona catalog) could create confusing states where some surfaces see new behaviour and others see old.
@@ -318,9 +323,23 @@ Across all domains, we will continue to run `python3 -m pytest` from the repo ro
 ## Salient Tasks
 
 1. **Axis Snapshot & History**
-   - Define an `AxisSnapshot` type driven by `axisCatalog` and add adapters in `requestLog` and `requestHistoryActions` that wrap existing axis filters.
-   - Update `history_axes_for`, `history_summary_lines`, `_filter_axis_tokens`, and `_filter_axes_payload` to consume `AxisSnapshot`, trimming duplicate axis tables and aligning tests.
-    - Ensure README/help/static prompt docs that present axes reuse the same catalog and snapshot helpers, building on ADR-0046/0054.
+   - (Completed 2025-12-18) Define an `AxisSnapshot` type driven by `axisCatalog` and add adapters in `lib/requestLog.py:61` and `lib/requestHistoryActions.py:34` so history/log surfaces share the normalisation contract.
+   - (Completed 2025-12-18) Update `history_axes_for`, `history_summary_lines`, and `lib/requestLog._filter_axes_payload` to consume `AxisSnapshot`, keeping Talon-side filtering via `talonSettings._filter_axis_tokens` only for live settings.
+   - Ensure README/help/static prompt docs that present axes reuse the same catalog and snapshot helpers, building on ADR-0046/0054.
+     - (Completed 2025-12-18) Static prompt docs (`GPT/gpt.py::_build_static_prompt_docs`) now derive axis defaults via `AxisSnapshot`, keeping doc output aligned with history/log canonicalisation.
+     - (Completed 2025-12-18) README axis list generation (`scripts/tools/generate_readme_axis_lists.py`) now normalises tokens via `AxisSnapshot`, dropping hydrated artefacts while preserving catalog/list drift visibility.
+      - (Completed 2025-12-18) Axis cheat sheet export (`scripts/tools/generate-axis-cheatsheet.py`) now consumes `AxisSnapshot`, so help surfaces display the canonical, lower-cased tokens used across history/log/docs.
+      - (Completed 2025-12-18) `GPT/readme.md` now embeds the refreshed `make readme-axis-refresh` snapshot so the tracked README shows AxisSnapshot-normalised tokens.
+      - (Completed 2025-12-18) Help Hub quick help (`lib/helpDomain.py`) now sources axis tokens via `AxisSnapshot`, aligning in-Talon guidance with the shared façade.
+      - (Completed 2025-12-18) History axis validator messaging now reports that docs/help share the AxisSnapshot façade, keeping guardrail output in sync with doc surfaces.
+       - (Completed 2025-12-18) Axis docs generation (`GPT/gpt.py::_build_axis_docs`) now canonicalises tokens via `AxisSnapshot`, so long-form help mirrors README/help surfaces.
+       - (Completed 2025-12-18) ADR-005 quick reference now points at the AxisSnapshot façade/regeneration helpers so documentation stays aligned with the SSOT.
+       - (Completed 2025-12-18) ADR-006 command quick reference now instructs maintainers to regenerate AxisSnapshot-backed helpers before editing.
+       - (Completed 2025-12-18) GPT README quick reference now carries the same regeneration note so user-facing docs stay in sync with AxisSnapshot helpers.
+ 
+
+
+
     - (Completed 2025-12-17) Audit of this repo’s Talon overlays, CLI scripts, and automation confirmed no residual `require_directional=False` usage, and no external automation paths remain.
     - (Completed 2025-12-17) Added a CI/guardrail check by invoking `scripts/tools/history-axis-validate.py` from `make request-history-guardrails`, failing when new code paths attempt to append history entries without directional lenses.
 
@@ -329,9 +348,12 @@ Across all domains, we will continue to run `python3 -m pytest` from the repo ro
    - Refactor `_validated_persona_value`, `_canonical_persona_value`, and `_build_persona_intent_docs` to operate solely on the catalog and axis metadata, updating tests as needed.
    - Add integration coverage (e.g., in `tests/test_integration_suggestions.py` or similar) that fails when persona/intent catalog alignment regresses, proving that GUIs, docs, and help flows remain in sync.
 3. **Request Gating & Streaming Lifecycle**
-   - Add `is_in_flight`/`try_start_request` helpers to `requestController`/`requestState`/`requestLifecycle` and migrate high-churn `_request_is_in_flight` / `_reject_if_request_in_flight` call sites to them.
-   - Implement `StreamingSession` aligned with ADR-0046/0054 and move `modelHelpers` streaming/error helpers and history/log writes to consume its events.
-   - Complete ADR-0055 by deprecating remaining prompt-only history save helpers in favour of the `file` destination, covered by existing `modelDestination` and history tests.
-   - Add focused regression tests for gating/streaming paths (e.g., `tests/test_request_streaming.py`, `tests/test_gpt_actions.py`) that fail if the centralized lifecycle is bypassed or concurrency guardrails regress.
+    - Add `is_in_flight`/`try_start_request` helpers to `requestController`/`requestState`/`requestLifecycle` and migrate high-churn `_request_is_in_flight` / `_reject_if_request_in_flight` call sites to them.
+    - Implement `StreamingSession` aligned with ADR-0046/0054 and move `modelHelpers` streaming/error helpers and history/log writes to consume its events.
+    - Complete ADR-0055 by deprecating remaining prompt-only history save helpers in favour of the `file` destination, covered by existing `modelDestination` and history tests.
+    - Add focused regression tests for gating/streaming paths (e.g., `tests/test_request_streaming.py`, `tests/test_gpt_actions.py`) that fail if the centralized lifecycle is bypassed or concurrency guardrails regress.
+    - Update Concordance operations runbooks so history guardrail steps confirm the `artifacts/history-axis-summaries/history-validation-summary.json` output (produced by `make request-history-guardrails`) is archived to GitHub Actions guardrail job artifacts before invoking `--reset-gating`, replacing the legacy `tmp/history-validation-summary.json` workflow.
+    - (Completed 2025-12-19) Ensure guardrail CI jobs persist the archived summaries to the same GitHub Actions artifact location with agreed retention/expiry settings whenever the guardrails target runs.
+
 
 The execution of these tasks should be coordinated with existing Concordance ADRs so that this ADR serves as a focused completion path for persona, axis snapshot, and request gating hotspots revealed by the latest churn × complexity analysis.

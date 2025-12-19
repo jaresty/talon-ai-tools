@@ -85,6 +85,8 @@ This keeps the current `model` command usable, adds richer control in an increme
 
 ### New modifier lists (per-prompt)
 
+> **Source of truth**: Modifier vocab now lives in the axis catalog / AxisSnapshot façade. Regenerate the living references with `make readme-axis-refresh` or `python3 scripts/tools/generate-axis-cheatsheet.py` before editing this ADR so examples stay aligned with `lib/axisCatalog.py` and the shared helpers.
+
 For all modifier axes, the design constraint is:
 
 - Single, short words (ideally one or two syllables).

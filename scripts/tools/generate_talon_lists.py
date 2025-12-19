@@ -19,6 +19,7 @@ if str(ROOT) not in sys.path:
 
 from lib.axisCatalog import axis_catalog  # type: ignore  # noqa: E402
 from lib.staticPromptConfig import static_prompt_catalog  # type: ignore  # noqa: E402
+from lib.personaConfig import persona_intent_maps  # type: ignore  # noqa: E402
 
 
 LIST_NAMES = [
@@ -29,6 +30,8 @@ LIST_NAMES = [
     "channelModifier.talon-list",
     "directionalModifier.talon-list",
     "staticPrompt.talon-list",
+    "personaPreset.talon-list",
+    "intentPreset.talon-list",
 ]
 
 
@@ -38,6 +41,21 @@ def _write_list(filename: Path, list_name: str, tokens: list[str]) -> None:
     for token in sorted(tokens):
         if token:
             lines.append(f"{token}: {token}")
+    text = "\n".join(lines) + "\n"
+    filename.write_text(text, encoding="utf-8")
+
+
+def _write_mapping_list(
+    filename: Path, list_name: str, mapping: dict[str, str]
+) -> None:
+    filename.parent.mkdir(parents=True, exist_ok=True)
+    lines = [f"list: user.{list_name}", "-"]
+    for alias, canonical in sorted(mapping.items(), key=lambda item: item[0].lower()):
+        alias = alias.strip()
+        canonical = canonical.strip()
+        if not alias or not canonical:
+            continue
+        lines.append(f"{alias}: {canonical}")
     text = "\n".join(lines) + "\n"
     filename.write_text(text, encoding="utf-8")
 
@@ -64,6 +82,65 @@ def generate(out_dir: Path) -> None:
     static_tokens = static_catalog.get("talon_list_tokens") or []
     _write_list(out_dir / "staticPrompt.talon-list", "staticPrompt", static_tokens)
 
+    maps = persona_intent_maps()
+    persona_mapping: dict[str, str] = {}
+    intent_mapping: dict[str, str] = {}
+    if maps is not None:
+        persona_presets = getattr(maps, "persona_presets", {}) or {}
+        persona_aliases = getattr(maps, "persona_preset_aliases", {}) or {}
+        for key, preset in persona_presets.items():
+            canonical = str(getattr(preset, "key", key) or "").strip()
+            if not canonical:
+                continue
+            persona_mapping.setdefault(canonical, canonical)
+            spoken = str(getattr(preset, "spoken", "") or "").strip()
+            label = str(getattr(preset, "label", "") or "").strip()
+            for alias in (spoken, label):
+                if alias:
+                    persona_mapping.setdefault(alias, canonical)
+        for alias, canonical in persona_aliases.items():
+            alias_str = str(alias or "").strip()
+            canonical_str = str(canonical or "").strip()
+            if alias_str and canonical_str:
+                persona_mapping.setdefault(alias_str, canonical_str)
+
+        intent_presets = getattr(maps, "intent_presets", {}) or {}
+        intent_aliases = getattr(maps, "intent_preset_aliases", {}) or {}
+        intent_synonyms = getattr(maps, "intent_synonyms", {}) or {}
+        intent_display_map = getattr(maps, "intent_display_map", {}) or {}
+        for key, preset in intent_presets.items():
+            canonical = str(getattr(preset, "key", key) or "").strip()
+            if not canonical:
+                continue
+            intent_mapping.setdefault(canonical, canonical)
+            label = str(getattr(preset, "label", "") or "").strip()
+            intent_value = str(getattr(preset, "intent", "") or "").strip()
+            display_alias = str(
+                intent_display_map.get(canonical)
+                or intent_display_map.get(intent_value)
+                or ""
+            ).strip()
+            for alias in (label, intent_value, display_alias):
+                if alias:
+                    intent_mapping.setdefault(alias, canonical)
+        for alias, canonical in intent_aliases.items():
+            alias_str = str(alias or "").strip()
+            canonical_str = str(canonical or "").strip()
+            if alias_str and canonical_str:
+                intent_mapping.setdefault(alias_str, canonical_str)
+        for alias, canonical in intent_synonyms.items():
+            alias_str = str(alias or "").strip()
+            canonical_str = str(canonical or "").strip()
+            if alias_str and canonical_str:
+                intent_mapping.setdefault(alias_str, canonical_str)
+
+    _write_mapping_list(
+        out_dir / "personaPreset.talon-list", "personaPreset", persona_mapping
+    )
+    _write_mapping_list(
+        out_dir / "intentPreset.talon-list", "intentPreset", intent_mapping
+    )
+
 
 def _read_tokens(path: Path) -> list[str]:
     tokens: list[str] = []
@@ -75,10 +152,11 @@ def _read_tokens(path: Path) -> list[str]:
                     continue
                 if ":" not in s:
                     continue
-                key, _ = s.split(":", 1)
-                key = key.strip()
-                if key:
-                    tokens.append(key)
+                alias, value = s.split(":", 1)
+                alias = alias.strip()
+                value = value.strip()
+                if alias:
+                    tokens.append(f"{alias}:{value}")
     except FileNotFoundError:
         return []
     return tokens

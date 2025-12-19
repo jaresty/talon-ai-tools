@@ -12,50 +12,30 @@ else:
 
 if bootstrap is not None:
     import talon_user.lib.requestHistoryDrawer as history_drawer  # type: ignore
-    from talon_user.lib.requestState import RequestPhase
 
     class RequestHistoryDrawerGatingTests(unittest.TestCase):
-        def test_request_is_in_flight_delegates_to_request_state_helper(self) -> None:
-            class State:
-                def __init__(self, phase):
-                    self.phase = phase
-
-            with (
-                patch.object(
-                    history_drawer,
-                    "current_state",
-                    return_value=State(RequestPhase.STREAMING),
-                ),
-                patch.object(
-                    history_drawer, "is_in_flight", return_value=True
-                ) as inflight,
-            ):
+        def test_request_is_in_flight_delegates_to_gating_helper(self) -> None:
+            with patch.object(
+                history_drawer, "request_is_in_flight", return_value=True
+            ) as helper:
                 self.assertTrue(history_drawer._request_is_in_flight())
-                inflight.assert_called_once()
+            helper.assert_called_once_with()
 
-            with (
-                patch.object(
-                    history_drawer,
-                    "current_state",
-                    return_value=State(RequestPhase.DONE),
-                ),
-                patch.object(
-                    history_drawer, "is_in_flight", return_value=False
-                ) as inflight,
-            ):
+            with patch.object(
+                history_drawer, "request_is_in_flight", return_value=False
+            ) as helper:
                 self.assertFalse(history_drawer._request_is_in_flight())
-                inflight.assert_called_once()
+            helper.assert_called_once_with()
 
-        def test_reject_if_request_in_flight_uses_try_start_request_drop_reason(
+        def test_reject_if_request_in_flight_uses_try_begin_request_drop_reason(
             self,
         ) -> None:
             with (
                 patch.object(
                     history_drawer,
-                    "try_start_request",
+                    "try_begin_request",
                     return_value=(False, "in_flight"),
                 ),
-                patch.object(history_drawer, "current_state"),
                 patch.object(history_drawer, "set_drop_reason") as set_reason,
                 patch.object(history_drawer, "notify") as notify_mock,
             ):
@@ -65,9 +45,8 @@ if bootstrap is not None:
 
             with (
                 patch.object(
-                    history_drawer, "try_start_request", return_value=(True, "")
+                    history_drawer, "try_begin_request", return_value=(True, "")
                 ),
-                patch.object(history_drawer, "current_state"),
                 patch.object(history_drawer, "set_drop_reason") as set_reason,
                 patch.object(history_drawer, "notify") as notify_mock,
             ):

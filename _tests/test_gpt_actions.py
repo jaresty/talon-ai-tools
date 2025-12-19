@@ -1,4 +1,5 @@
 import inspect
+import json
 import os
 import tempfile
 import unittest
@@ -692,6 +693,17 @@ if bootstrap is not None:
             self.assertIsInstance(prompt, gpt_module.GPTSystemPrompt)
             self.assertEqual(prompt.intent, "decide")
 
+        def test_persona_preset_spoken_map_includes_aliases(self) -> None:
+            mapping = gpt_module._persona_preset_spoken_map()
+            self.assertEqual(mapping.get("teach_junior_dev"), "teach_junior_dev")
+            self.assertEqual(mapping.get("mentor"), "teach_junior_dev")
+            self.assertEqual(mapping.get("teach junior dev"), "teach_junior_dev")
+
+        def test_intent_preset_spoken_map_includes_aliases(self) -> None:
+            mapping = gpt_module._intent_preset_spoken_map()
+            self.assertEqual(mapping.get("decide"), "decide")
+            self.assertEqual(mapping.get("for deciding"), "decide")
+
         def test_persona_and_intent_reset_restore_defaults(self) -> None:
             GPTState.reset_all()
             # Seed a non-default stance first.
@@ -859,11 +871,11 @@ if bootstrap is not None:
             snapshot_mock.assert_called_once()
             docs_mock.assert_called()
             self.assertIn(
-                "- persona custom_preset: Custom Label (as pioneer to scouts kindly)",
+                "- persona custom_preset (say: persona custom spoken): Custom Label (as pioneer to scouts kindly)",
                 doc,
             )
             self.assertIn(
-                "- intent vision: Vision for Execs (vision)",
+                "- intent vision (say: intent Vision for Execs): Vision for Execs (vision)",
                 doc,
             )
             self.assertIn("- strategy: Vision for Execs", doc)
@@ -1255,6 +1267,48 @@ if bootstrap is not None:
                         }
                     ],
                 )
+
+        def test_gpt_suggest_prompt_recipes_includes_persona_intent_metadata(self):
+            with (
+                patch.object(gpt_module, "PromptSession") as session_cls,
+                patch.object(gpt_module, "create_model_source") as create_source,
+            ):
+                source = MagicMock()
+                source.get_text.return_value = "content"
+                create_source.return_value = source
+                mock_session = session_cls.return_value
+                mock_session._destination = "paste"
+
+                handle = self.pipeline.complete_async.return_value
+                handle.wait = MagicMock(return_value=True)
+                payload = {
+                    "suggestions": [
+                        {
+                            "name": "Mentor junior dev",
+                            "recipe": "describe · full · focus · scaffold · plain · fog",
+                            "persona_voice": "as teacher",
+                            "persona_audience": "to junior engineer",
+                            "persona_tone": "kindly",
+                            "intent_purpose": "teach",
+                            "why": "Coaching stance for junior engineers",
+                        }
+                    ]
+                }
+                handle.result = PromptResult.from_messages(
+                    [format_message(json.dumps(payload))]
+                )
+                self.pipeline.complete.return_value = handle.result
+
+                gpt_module.UserActions.gpt_suggest_prompt_recipes("subject")
+
+                self.assertEqual(len(GPTState.last_suggested_recipes), 1)
+                entry = GPTState.last_suggested_recipes[0]
+                self.assertEqual(entry["persona_preset_key"], "teach_junior_dev")
+                self.assertEqual(entry["persona_preset_label"], "Teach junior dev")
+                self.assertEqual(entry["persona_preset_spoken"], "mentor")
+                self.assertEqual(entry["intent_preset_key"], "teach")
+                self.assertEqual(entry["intent_preset_label"], "Teach / explain")
+                self.assertEqual(entry["intent_display"], "for teaching")
 
         def test_gpt_suggest_prompt_recipes_accepts_label_without_name_prefix(self):
             with (

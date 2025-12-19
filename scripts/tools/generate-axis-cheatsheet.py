@@ -22,10 +22,36 @@ else:
     bootstrap()
 
 from talon_user.lib.axisCatalog import axis_catalog  # noqa: E402
+from talon_user.lib.requestLog import axis_snapshot_from_axes  # noqa: E402
+
+
+def _canonical_axis_tokens(
+    axis: str, axis_tokens: dict[str, dict[str, str]], axis_lists: dict[str, list[str]]
+) -> list[str]:
+    token_candidates: list[str] = []
+    token_candidates.extend(axis_lists.get(axis, []) or [])
+    token_candidates.extend((axis_tokens.get(axis) or {}).keys())
+    seen: set[str] = set()
+    for token in token_candidates:
+        snapshot = axis_snapshot_from_axes({axis: [token]})
+        canonical = snapshot.get(axis, []) or []
+        if canonical:
+            for value in canonical:
+                if value not in seen:
+                    seen.add(value)
+            continue
+        cleaned = str(token).strip()
+        if not cleaned or cleaned.lower().startswith("important:"):
+            continue
+        lowered = cleaned.lower()
+        if lowered not in seen:
+            seen.add(lowered)
+    return sorted(seen)
 
 
 def render_cheatsheet(catalog: dict) -> str:
     axes = catalog.get("axes", {}) or {}
+    axis_lists = catalog.get("axis_list_tokens", {}) or {}
     lines: list[str] = [
         "# Axis Cheat Sheet (catalog-generated)",
         "",
@@ -41,10 +67,11 @@ def render_cheatsheet(catalog: dict) -> str:
         ("directional", "Direction (`directionalModifier`)"),
     ]
     for axis, heading in order:
-        tokens = list((axes.get(axis) or {}).keys())
+        tokens = _canonical_axis_tokens(axis, axes, axis_lists)
         if not tokens:
             continue
         lines.append(f"- {heading}: " + ", ".join(f"`{t}`" for t in tokens))
+
     lines.append("")
     return "\n".join(lines)
 

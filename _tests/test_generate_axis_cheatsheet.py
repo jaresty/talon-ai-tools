@@ -11,7 +11,12 @@ if not TYPE_CHECKING:
         def test_generate_axis_cheatsheet_includes_catalog_tokens(self) -> None:
             """Guardrail: cheat sheet generator emits catalog-backed sections/tokens."""
 
-            script = Path(__file__).resolve().parents[1] / "scripts" / "tools" / "generate-axis-cheatsheet.py"
+            script = (
+                Path(__file__).resolve().parents[1]
+                / "scripts"
+                / "tools"
+                / "generate-axis-cheatsheet.py"
+            )
             with tempfile.TemporaryDirectory() as tmpdir:
                 out_path = Path(tmpdir) / "cheatsheet.md"
                 result = subprocess.run(
@@ -36,14 +41,39 @@ if not TYPE_CHECKING:
         def test_generate_axis_cheatsheet_tokens_match_catalog(self) -> None:
             """Guardrail: cheat sheet tokens mirror axis_catalog tokens."""
 
-            script = Path(__file__).resolve().parents[1] / "scripts" / "tools" / "generate-axis-cheatsheet.py"
+            script = (
+                Path(__file__).resolve().parents[1]
+                / "scripts"
+                / "tools"
+                / "generate-axis-cheatsheet.py"
+            )
             from talon_user.lib.axisCatalog import axis_catalog
+            from talon_user.lib.requestLog import axis_snapshot_from_axes
 
             catalog = axis_catalog()
-            expected = {
-                axis: set((tokens or {}).keys())
-                for axis, tokens in (catalog.get("axes") or {}).items()
-            }
+            axes = catalog.get("axes", {}) or {}
+            axis_lists = catalog.get("axis_list_tokens", {}) or {}
+
+            def expected_tokens(axis: str) -> set[str]:
+                token_candidates: list[str] = []
+                token_candidates.extend(axis_lists.get(axis, []) or [])
+                token_candidates.extend((axes.get(axis) or {}).keys())
+                seen: set[str] = set()
+                for token in token_candidates:
+                    snapshot = axis_snapshot_from_axes({axis: [token]})
+                    canonical = snapshot.get(axis, []) or []
+                    if canonical:
+                        for value in canonical:
+                            if value not in seen:
+                                seen.add(value)
+                        continue
+                    cleaned = str(token).strip()
+                    if not cleaned or cleaned.lower().startswith("important:"):
+                        continue
+                    lowered = cleaned.lower()
+                    if lowered not in seen:
+                        seen.add(lowered)
+                return seen
 
             with tempfile.TemporaryDirectory() as tmpdir:
                 out_path = Path(tmpdir) / "cheatsheet.md"
@@ -78,6 +108,6 @@ if not TYPE_CHECKING:
                     }
                     self.assertSetEqual(
                         tokens,
-                        expected[axis],
-                        f"Cheat sheet tokens for {axis} differ from catalog",
+                        expected_tokens(axis),
+                        f"Cheat sheet tokens for {axis} differ from canonical snapshot",
                     )

@@ -29,6 +29,44 @@ def test_recipe_header_lines_include_recipe_and_axes() -> None:
     assert "directional: fog" in lines
 
 
+def test_recipe_header_lines_include_persona_and_intent_metadata() -> None:
+    snapshot = {
+        "recipe": "describe \u00b7 full \u00b7 focus \u00b7 plan \u00b7 plain \u00b7 fog",
+        "completeness": "full",
+        "scope_tokens": ["focus"],
+        "method_tokens": ["plan"],
+        "form_tokens": ["plain"],
+        "channel_tokens": ["slack"],
+        "directional": "fog",
+        "persona_preset_key": "teach_junior_dev",
+        "persona_preset_label": "Teach junior dev",
+        "persona_preset_spoken": "mentor",
+        "persona_voice": "mentor voice",
+        "persona_audience": "junior developers",
+        "persona_tone": "encouraging",
+        "intent_preset_key": "decide",
+        "intent_preset_label": "Decision making",
+        "intent_display": "for deciding",
+        "intent_purpose": "decide",
+    }
+
+    lines = recipe_header_lines_from_snapshot(snapshot)
+
+    persona_line = next(line for line in lines if line.startswith("persona_preset:"))
+    assert "label=Teach junior dev" in persona_line
+    assert "say: persona mentor" in persona_line
+    assert (
+        "axes voice=mentor voice, audience=junior developers, tone=encouraging"
+        in persona_line
+    )
+
+    intent_line = next(line for line in lines if line.startswith("intent_preset:"))
+    assert "label=Decision making" in intent_line
+    assert "display=for deciding" in intent_line
+    assert "say: intent for deciding" in intent_line
+    assert "purpose=decide" in intent_line
+
+
 def test_recipe_header_lines_skip_empty_axes() -> None:
     snapshot = {
         "recipe": "describe · full",

@@ -308,6 +308,93 @@ if bootstrap is not None:
             self.assertIn("Prompt: catalog_static", labels)
             self.assertIn("Axis (Scope): focus", labels)
 
+        def test_help_index_persona_intent_entries_use_snapshot_aliases(self) -> None:
+            """Persona/intent entries should mirror snapshot-backed alias metadata."""
+            from lib.personaConfig import persona_intent_maps
+
+            maps = persona_intent_maps(force_refresh=True)
+
+            index = help_index(
+                [],
+                patterns=[],
+                presets=[],
+                read_list_items=lambda _name: [],
+                catalog={},
+            )
+
+            persona_entries = [
+                entry for entry in index if entry.label.startswith("Persona preset: ")
+            ]
+            self.assertTrue(persona_entries, "Persona presets missing from help index")
+
+            for key, preset in maps.persona_presets.items():
+                label = (getattr(preset, "label", "") or key).strip()
+                entry = next(
+                    (
+                        e
+                        for e in persona_entries
+                        if e.label.startswith(f"Persona preset: {label}")
+                    ),
+                    None,
+                )
+                self.assertIsNotNone(entry, f"Persona preset entry missing for {key}")
+                spoken = (getattr(preset, "spoken", "") or "").strip()
+                if not spoken:
+                    spoken = label or key
+                spoken_alias = spoken.strip()
+                self.assertIn(
+                    f"(say: persona {spoken_alias}".lower(), entry.label.lower()
+                )
+                self.assertEqual(entry.voice_hint, f"Say: persona {spoken_alias}")
+                axes_parts = [
+                    (getattr(preset, attr, "") or "").strip()
+                    for attr in ("voice", "audience", "tone")
+                ]
+                axes_parts = [part for part in axes_parts if part]
+                if axes_parts:
+                    for token in axes_parts:
+                        self.assertIn(token, entry.description)
+                else:
+                    self.assertIn("No explicit axes", entry.description)
+
+            intent_entries = [
+                entry for entry in index if entry.label.startswith("Intent preset: ")
+            ]
+            self.assertTrue(intent_entries, "Intent presets missing from help index")
+
+            for key, preset in maps.intent_presets.items():
+                display = (
+                    maps.intent_display_map.get(key)
+                    or getattr(preset, "label", "")
+                    or key
+                ).strip()
+                entry = next(
+                    (
+                        e
+                        for e in intent_entries
+                        if e.label.startswith(f"Intent preset: {display}")
+                    ),
+                    None,
+                )
+                self.assertIsNotNone(entry, f"Intent preset entry missing for {key}")
+                spoken_alias = next(
+                    (
+                        alias
+                        for alias, canonical in maps.intent_preset_aliases.items()
+                        if canonical == key and alias != key.lower()
+                    ),
+                    "",
+                )
+                if not spoken_alias:
+                    spoken_alias = display or getattr(preset, "intent", "") or key
+                self.assertIn(
+                    f"(say: intent {spoken_alias}".lower(), entry.label.lower()
+                )
+                self.assertEqual(entry.voice_hint, f"Say: intent {spoken_alias}")
+                canonical_intent = (getattr(preset, "intent", "") or key).strip()
+                if canonical_intent:
+                    self.assertIn(canonical_intent, entry.description)
+
 
 else:
     if not TYPE_CHECKING:

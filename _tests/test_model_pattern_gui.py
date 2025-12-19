@@ -1,6 +1,7 @@
 import unittest
 from typing import TYPE_CHECKING
 from unittest.mock import MagicMock, patch
+from types import SimpleNamespace
 import importlib
 
 try:
@@ -71,6 +72,66 @@ if bootstrap is not None:
                     catalog_keys,
                     helper_keys,
                     "modelPatternGUI _intent_presets must cover the same IntentPreset keys as intent_catalog",
+                )
+
+            def test_pattern_canvas_uses_intent_display_alias(self) -> None:
+                from talon_user.lib import modelPatternGUI as pattern_module
+                from talon_user.lib.personaConfig import IntentPreset
+
+                intent_preset = IntentPreset(
+                    key="decide",
+                    label="Decide",
+                    intent="decide",
+                )
+                maps = SimpleNamespace(
+                    intent_presets={"decide": intent_preset},
+                    intent_display_map={"decide": "For deciding"},
+                )
+
+                class StubCanvas:
+                    def __init__(self) -> None:
+                        self.rect = pattern_module.Rect(0, 0, 800, 600)
+                        self.drawn: list[str] = []
+                        self.paint = None
+
+                    def draw_text(self, text, x, y) -> None:  # type: ignore[override]
+                        self.drawn.append(str(text))
+
+                    def draw_rect(self, rect) -> None:  # type: ignore[override]
+                        pass
+
+                canvas = StubCanvas()
+                pattern_module.PatternGUIState.domain = "coding"
+                pattern_module.PatternCanvasState.scroll_y = 0.0
+
+                with (
+                    patch.object(
+                        pattern_module, "persona_intent_maps", return_value=maps
+                    ),
+                    patch.object(
+                        pattern_module, "_intent_presets", return_value=[intent_preset]
+                    ),
+                    patch.object(pattern_module, "_persona_presets", return_value=[]),
+                    patch.object(pattern_module, "PATTERNS", []),
+                ):
+                    pattern_module._draw_pattern_canvas(canvas)
+
+                pattern_module.PatternGUIState.domain = None
+
+                say_lines = [line for line in canvas.drawn if "(say: intent" in line]
+                self.assertTrue(
+                    any("intent For deciding" in line for line in say_lines),
+                    f"Expected intent alias in say lines, got {say_lines}",
+                )
+
+                summary_lines = [line for line in canvas.drawn if "Decide:" in line]
+                self.assertTrue(
+                    any("For deciding" in line for line in summary_lines),
+                    f"Expected display alias in summary lines, got {summary_lines}",
+                )
+                self.assertTrue(
+                    any("(decide)" in line for line in summary_lines),
+                    f"Expected canonical intent in summary lines, got {summary_lines}",
                 )
 
             def test_axis_value_returns_description_when_present(self) -> None:

@@ -18,6 +18,9 @@ from .requestHistoryActions import (
     axis_snapshot_from_axes as _axis_snapshot_from_axes_impl,
 )
 from .requestHistoryActions import _directional_tokens_for_entry
+from .requestHistoryActions import (
+    _persona_summary_fragments as _persona_summary_fragments_impl,
+)
 
 _ALLOWED_HISTORY_AXIS_KEYS = frozenset(KNOWN_AXIS_KEYS)
 
@@ -118,5 +121,9 @@ def history_drawer_entries_from(entries: Sequence[object]) -> List[Tuple[str, st
                 if body
                 else f"provider={provider_id}"
             )
+        persona_lines = _persona_summary_fragments_impl(entry)
+        if persona_lines:
+            persona_summary = " · ".join(persona_lines)
+            body = f"{body} · {persona_summary}" if body else persona_summary
         rendered.append((label, body))
     return rendered

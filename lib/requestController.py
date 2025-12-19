@@ -11,12 +11,15 @@ from __future__ import annotations
 from typing import Callable, Optional
 
 from .requestState import (
+    RequestDropReason,
     RequestEvent,
     RequestEventKind,
     RequestState,
     RequestPhase,
     Surface,
+    is_in_flight as state_is_in_flight,
     transition,
+    try_start_request as state_try_start_request,
 )
 
 
@@ -32,7 +35,9 @@ class RequestUIController:
         show_response_canvas: Optional[Callable[[], None]] = None,
         hide_response_canvas: Optional[Callable[[], None]] = None,
         hide_help_hub: Optional[Callable[[], None]] = None,
-        on_history_save: Optional[Callable[[Optional[str], Optional[str]], None]] = None,
+        on_history_save: Optional[
+            Callable[[Optional[str], Optional[str]], None]
+        ] = None,
         on_retry: Optional[Callable[[Optional[str]], None]] = None,
         on_append: Optional[Callable[[Optional[str], str], None]] = None,
         on_state_change: Optional[Callable[[RequestState], None]] = None,
@@ -56,13 +61,26 @@ class RequestUIController:
     def state(self) -> RequestState:
         return self._state
 
+    def is_in_flight(self) -> bool:
+        """Return True when the controller's request is currently in flight."""
+
+        return state_is_in_flight(self._state)
+
+    def try_start_request(self) -> tuple[bool, RequestDropReason]:
+        """Return whether a new request may start plus the drop reason."""
+
+        return state_try_start_request(self._state)
+
     def handle(self, event: RequestEvent) -> RequestState:
         """Apply an event, update state, and reconcile UI surfaces."""
         if event.kind is RequestEventKind.HISTORY_SAVED:
             cb = self._callbacks.get("on_history_save")
             if cb:
                 try:
-                    cb(event.request_id, event.payload if isinstance(event.payload, str) else None)
+                    cb(
+                        event.request_id,
+                        event.payload if isinstance(event.payload, str) else None,
+                    )
                 except Exception:
                     pass
             return self._state
@@ -132,7 +150,9 @@ class RequestUIController:
             except Exception:
                 pass
 
-    def _close_surface(self, surface: Optional[Surface], force_hub: bool = False) -> None:
+    def _close_surface(
+        self, surface: Optional[Surface], force_hub: bool = False
+    ) -> None:
         cb = None
         if force_hub:
             cb = self._callbacks.get("hide_help_hub")

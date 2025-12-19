@@ -276,7 +276,7 @@ For each domain, we will align with the existing test suites and add characteriz
     - Add a persona/intent CI guardrail (lint/test) that rejects bypasses of the catalog API before landing.
     - When refactoring `_validated_persona_value`, `_canonical_persona_value`, and related helpers, ensure existing integration tests remain the primary guardrails; only add new tests where behaviour is currently untested.
  
-  - Archive history validation summaries before resets: guardrail automation **must** capture the JSON output from `history-axis-validate.py --summary-path …` before invoking `--reset-gating` so Concordance drop telemetry is preserved for dashboards. Concordance runbooks need an explicit step that saves the summary artifact to our GitHub Actions build artifacts (for example, `artifacts/history-axis-summaries/history-validation-summary.json` in the guardrails job) before the reset runs.
+  - Archive history validation summaries before resets: guardrail automation **must** capture the JSON output from `history-axis-validate.py --summary-path …` before invoking `--reset-gating` so Concordance drop telemetry is preserved for dashboards. Concordance runbooks need an explicit step that saves the summary artifact to our GitHub Actions build artifacts (for example, `artifacts/history-axis-summaries/history-validation-summary.json` in the guardrails job) before the reset runs. The CI workflow now publishes the `history-axis-summary` artifact with a 30-day retention window; runbooks should direct operators to the job summary link (Actions → ci → history-axis-summary) so the JSON is downloaded before counters reset.
 
 
 ### Request Gating & Streaming Lifecycle
@@ -344,16 +344,16 @@ Across all domains, we will continue to run `python3 -m pytest` from the repo ro
     - (Completed 2025-12-17) Added a CI/guardrail check by invoking `scripts/tools/history-axis-validate.py` from `make request-history-guardrails`, failing when new code paths attempt to append history entries without directional lenses.
 
 2. **Persona & Intent Presets**
-   - Introduce a persona/intent catalog backed by `personaConfig` and wire GPT persona/intent actions, help hub presets, suggestion GUIs, and list files through it.
-   - Refactor `_validated_persona_value`, `_canonical_persona_value`, and `_build_persona_intent_docs` to operate solely on the catalog and axis metadata, updating tests as needed.
-   - Add integration coverage (e.g., in `tests/test_integration_suggestions.py` or similar) that fails when persona/intent catalog alignment regresses, proving that GUIs, docs, and help flows remain in sync.
+   - (Completed 2025-12-19) Introduced a persona/intent catalog backed by `personaConfig.persona_intent_catalog_snapshot`, with GPT persona/intent actions, help hub presets, suggestion GUIs, and list files consuming the shared façade.
+   - (Completed 2025-12-19) Refactored `_validated_persona_value`, `_canonical_persona_value`, and `_build_persona_intent_docs` to rely on catalog-backed `persona_intent_maps`, keeping persona/intents aligned with axis metadata.
+   - (Completed 2025-12-19) Added integration coverage (e.g., `_tests/test_persona_presets.py`, `_tests/test_integration_suggestions.py::SuggestionIntegrationTests::test_suggest_alias_only_metadata_round_trip`) that fails when persona/intent catalog alignment regresses, keeping GUIs, docs, and help flows in sync.
 3. **Request Gating & Streaming Lifecycle**
     - Add `is_in_flight`/`try_start_request` helpers to `requestController`/`requestState`/`requestLifecycle` and migrate high-churn `_request_is_in_flight` / `_reject_if_request_in_flight` call sites to them.
     - Implement `StreamingSession` aligned with ADR-0046/0054 and move `modelHelpers` streaming/error helpers and history/log writes to consume its events.
-    - Complete ADR-0055 by deprecating remaining prompt-only history save helpers in favour of the `file` destination, covered by existing `modelDestination` and history tests.
+    - (Completed 2025-12-19) Completed ADR-0055 by delegating request history saves to the shared `modelDestination` file helper so prompt-only helpers remain thin adapters covered by existing history tests.
     - Add focused regression tests for gating/streaming paths (e.g., `tests/test_request_streaming.py`, `tests/test_gpt_actions.py`) that fail if the centralized lifecycle is bypassed or concurrency guardrails regress.
     - Update Concordance operations runbooks so history guardrail steps confirm the `artifacts/history-axis-summaries/history-validation-summary.json` output (produced by `make request-history-guardrails`) is archived to GitHub Actions guardrail job artifacts before invoking `--reset-gating`, replacing the legacy `tmp/history-validation-summary.json` workflow.
-    - (Completed 2025-12-19) Ensure guardrail CI jobs persist the archived summaries to the same GitHub Actions artifact location with agreed retention/expiry settings whenever the guardrails target runs.
+    - (Completed 2025-12-19) Ensure guardrail CI jobs persist the archived summaries to the same GitHub Actions artifact location with a 30-day retention window and surface the job-summary download link whenever the guardrails target runs.
 
 
 The execution of these tasks should be coordinated with existing Concordance ADRs so that this ADR serves as a focused completion path for persona, axis snapshot, and request gating hotspots revealed by the latest churn × complexity analysis.

@@ -6,6 +6,7 @@ from .requestBus import current_state
 from .requestLog import record_gating_drop
 from .requestState import (
     RequestDropReason,
+    RequestPhase,
     RequestState,
     is_in_flight as state_is_in_flight,
     try_start_request as state_try_start_request,
@@ -21,6 +22,58 @@ def _safe_state(state: Optional[RequestState] = None) -> Optional[RequestState]:
         return current_state()
     except Exception:
         return None
+
+
+def _record_streaming_gating_event(
+    state: Optional[RequestState], reason: RequestDropReason
+) -> None:
+    """Record a gating drop event on the active streaming session, if any."""
+
+    if not reason:
+        return
+    try:
+        from .modelState import GPTState
+    except Exception:
+        return
+
+    session = getattr(GPTState, "last_streaming_session", None)
+    if session is None or not hasattr(session, "record_gating_drop"):
+        return
+
+    try:
+        session_request_id = getattr(session, "request_id", None)
+    except Exception:
+        session_request_id = None
+
+    request_id = None
+    phase_value = ""
+    if state is not None:
+        try:
+            request_id = getattr(state, "request_id", None)
+        except Exception:
+            request_id = None
+        try:
+            phase_obj = getattr(state, "phase", "")
+        except Exception:
+            phase_obj = ""
+        if isinstance(phase_obj, RequestPhase):
+            phase_value = getattr(phase_obj, "value", "")
+        else:
+            phase_value = ""
+            for choice in RequestPhase:
+                if phase_obj is choice:
+                    phase_value = getattr(choice, "value", "")
+                    break
+            if not phase_value:
+                phase_value = str(phase_obj or "")
+
+    if session_request_id and request_id and session_request_id != request_id:
+        return
+
+    try:
+        session.record_gating_drop(reason=reason, phase=phase_value)
+    except Exception:
+        pass
 
 
 def request_is_in_flight(state: Optional[RequestState] = None) -> bool:
@@ -52,6 +105,7 @@ def try_begin_request(
             record_gating_drop(reason)
         except Exception:
             pass
+        _record_streaming_gating_event(candidate, reason)
     return allowed, reason
 
 

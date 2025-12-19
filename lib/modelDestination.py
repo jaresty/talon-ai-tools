@@ -86,6 +86,154 @@ def _coerce_prompt_result(payload: PromptPayload) -> PromptResult:
     return PromptResult.from_messages(payload)
 
 
+def slugify_label(value: str) -> str:
+    """Create a filesystem-friendly slug from a label."""
+
+    value = (value or "").strip().lower().replace(" ", "-")
+    value = re.sub(r"[^a-z0-9._-]+", "", value)
+    return value or "history"
+
+
+def resolve_model_source_directory() -> str:
+    """Return the base directory for file-backed history snapshots."""
+
+    try:
+        base = settings.get("user.model_source_save_directory")
+        if isinstance(base, str) and base.strip():
+            return os.path.expanduser(base)
+    except Exception:
+        pass
+
+    try:
+        current_dir = os.path.dirname(__file__)
+        user_root = os.path.dirname(os.path.dirname(current_dir))
+        return os.path.join(user_root, "talon-ai-model-sources")
+    except Exception:
+        return os.path.join(os.path.dirname(__file__), "talon-ai-model-sources")
+
+
+class HistorySaveError(RuntimeError):
+    """Raised when history snapshot persistence fails."""
+
+    def __init__(self, message: str, drop_reason: str):
+        super().__init__(message)
+        self.drop_reason = drop_reason
+        self.message = message
+
+
+def save_history_snapshot_to_file(
+    *,
+    request_id: str,
+    provider_id: str,
+    recipe: str,
+    prompt: str,
+    response: str,
+    meta: str,
+    axes_map: Dict[str, Sequence[str]],
+    directional_tokens: Sequence[str],
+    persona_header_lines: Sequence[str],
+    timestamp: Optional[datetime.datetime] = None,
+    base_dir: Optional[str] = None,
+) -> str:
+    """Persist a history snapshot to disk and return the file path."""
+
+    prompt_clean = (prompt or "").strip()
+    if not prompt_clean:
+        raise HistorySaveError(
+            "GPT: No prompt content available to save for this history entry",
+            "history_save_empty_prompt",
+        )
+
+    directional_list = [
+        str(token).strip() for token in directional_tokens if str(token).strip()
+    ]
+    if not directional_list:
+        raise HistorySaveError(
+            "GPT: Cannot save history source; entry is missing a directional lens (fog/fig/dig/ong/rog/bog/jog).",
+            "history_save_missing_directional",
+        )
+
+    now = timestamp or datetime.datetime.utcnow()
+
+    target_dir = base_dir or resolve_model_source_directory()
+    target_dir = os.path.realpath(os.path.abspath(target_dir))
+
+    try:
+        os.makedirs(target_dir, exist_ok=True)
+    except Exception as exc:
+        raise HistorySaveError(
+            f"GPT: Could not create source directory: {exc}",
+            "history_save_dir_create_failed",
+        ) from exc
+
+    slug_parts = ["history"]
+    if request_id:
+        slug_parts.append(slugify_label(request_id))
+    if provider_id:
+        slug_parts.append(slugify_label(provider_id))
+    if recipe:
+        slug_parts.append(slugify_label(recipe.split(" · ", 1)[0]))
+    for token in directional_list:
+        slug_parts.append(slugify_label(token))
+
+    timestamp_str = now.strftime("%Y-%m-%dT%H-%M-%SZ")
+    filename = timestamp_str
+    if slug_parts:
+        filename += "-" + "-".join(slug_parts)
+    filename += ".md"
+
+    path = os.path.realpath(os.path.join(target_dir, filename))
+    stem, ext = os.path.splitext(path)
+    final_path = path
+    counter = 1
+    while os.path.exists(final_path):
+        final_path = f"{stem}-{counter}{ext}"
+        counter += 1
+
+    header_lines: List[str] = [
+        f"saved_at: {now.isoformat()}Z",
+        "source_type: history",
+    ]
+    if request_id:
+        header_lines.append(f"request_id: {request_id}")
+    if provider_id:
+        header_lines.append(f"provider_id: {provider_id}")
+    if recipe:
+        header_lines.append(f"recipe: {recipe}")
+
+    for axis in ("completeness", "scope", "method", "form", "channel", "directional"):
+        values = list(axes_map.get(axis, []))
+        joined = " ".join(str(token).strip() for token in values if str(token).strip())
+        if joined:
+            header_lines.append(f"{axis}_tokens: {joined}")
+
+    for line in persona_header_lines:
+        header_lines.append(str(line or ""))
+
+    sections: List[str] = []
+    if prompt_clean:
+        sections.append("# Prompt / Context\n" + prompt_clean)
+    response_clean = (response or "").strip()
+    if response_clean:
+        sections.append("# Response\n" + response_clean)
+    meta_clean = (meta or "").strip()
+    if meta_clean:
+        sections.append("# Meta\n" + meta_clean)
+
+    content = "\n".join(header_lines) + "\n---\n\n" + "\n\n".join(sections)
+
+    try:
+        with open(final_path, "w", encoding="utf-8") as handle:
+            handle.write(content)
+    except Exception as exc:
+        raise HistorySaveError(
+            f"GPT: Failed to save history source file: {exc}",
+            "history_save_write_failed",
+        ) from exc
+
+    return final_path
+
+
 def _emit_paragraphs(builder: Builder, lines: List[str]) -> None:
     """
     Render logical paragraphs from a sequence of lines.

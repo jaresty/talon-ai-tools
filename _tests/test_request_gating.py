@@ -17,6 +17,8 @@ if bootstrap is not None:
     from talon_user.lib import requestGating
     from talon_user.lib import requestLog
     from talon_user.lib.requestState import RequestPhase, RequestState
+    from talon_user.lib.modelState import GPTState
+    from talon_user.lib.streamingCoordinator import new_streaming_session
 
     _HISTORY_VALIDATE_PATH = (
         Path(__file__).resolve().parents[1]
@@ -66,6 +68,49 @@ if bootstrap is not None:
             idle_state = RequestState(phase=RequestPhase.IDLE)
             requestGating.try_begin_request(idle_state)
             self.assertEqual(requestLog.gating_drop_stats().get("in_flight", 0), 0)
+
+        def test_try_begin_request_records_streaming_event(self) -> None:
+            requestLog.clear_history()
+            requestLog.consume_gating_drop_stats()
+
+            session = new_streaming_session("rid-stream")
+            GPTState.last_streaming_events = []
+            streaming_state = RequestState(
+                phase=RequestPhase.SENDING,
+                request_id="rid-stream",
+            )
+
+            allowed, reason = requestGating.try_begin_request(streaming_state)
+            self.assertFalse(allowed)
+            self.assertEqual(reason, "in_flight")
+
+            events = getattr(GPTState, "last_streaming_events", [])
+            self.assertTrue(events)
+            first = events[-1]
+            self.assertEqual(first.get("kind"), "gating_drop")
+            self.assertEqual(first.get("reason"), "in_flight")
+            self.assertEqual(first.get("phase"), RequestPhase.SENDING.value)
+            self.assertEqual(first.get("reason_count"), 1)
+            self.assertEqual(first.get("total_count"), 1)
+            self.assertEqual(first.get("counts", {}).get("in_flight"), 1)
+            self.assertEqual(session.events[-1], first)
+
+            allowed_again, reason_again = requestGating.try_begin_request(
+                streaming_state
+            )
+            self.assertFalse(allowed_again)
+            self.assertEqual(reason_again, "in_flight")
+
+            events = getattr(GPTState, "last_streaming_events", [])
+            self.assertGreaterEqual(len(events), 2)
+            final = events[-1]
+            self.assertEqual(final.get("kind"), "gating_drop")
+            self.assertEqual(final.get("reason"), "in_flight")
+            self.assertEqual(final.get("phase"), RequestPhase.SENDING.value)
+            self.assertEqual(final.get("reason_count"), 2)
+            self.assertEqual(final.get("total_count"), 2)
+            self.assertEqual(final.get("counts", {}).get("in_flight"), 2)
+            self.assertEqual(session.events[-1], final)
 
         def test_try_begin_request_handles_current_state_failure(self) -> None:
             with patch.object(requestGating, "current_state", side_effect=RuntimeError):

@@ -1,11 +1,15 @@
 import datetime
 import os
-import re
-import sys
 from typing import Optional
 
 from talon import Module, actions, app, settings
 
+from .modelDestination import (
+    HistorySaveError,
+    resolve_model_source_directory,
+    save_history_snapshot_to_file,
+    slugify_label,
+)
 from .modelConfirmationGUI import ConfirmationGUIState
 from .modelHelpers import notify
 from .modelState import GPTState
@@ -245,30 +249,14 @@ from collections.abc import Sequence
 
 def _slugify_label(value: str) -> str:
     """Create a filesystem-friendly slug from a label."""
-    value = (value or "").strip().lower().replace(" ", "-")
-    value = re.sub(r"[^a-z0-9._-]+", "", value)
-    return value or "history"
+
+    return slugify_label(value)
 
 
 def _model_source_save_dir() -> str:
-    """Return the base directory for saved history/model sources.
+    """Return the base directory for saved history/model sources."""
 
-    Shares the same setting key as the GPT helpers so users have a single
-    place to configure where source files are written.
-    """
-    try:
-        base = settings.get("user.model_source_save_directory")
-        if isinstance(base, str) and base.strip():
-            return os.path.expanduser(base)
-    except Exception:
-        pass
-
-    try:
-        current_dir = os.path.dirname(__file__)
-        user_root = os.path.dirname(os.path.dirname(current_dir))
-        return os.path.join(user_root, "talon-ai-model-sources")
-    except Exception:
-        return os.path.join(os.path.dirname(__file__), "talon-ai-model-sources")
+    return resolve_model_source_directory()
 
 
 def history_summary_lines(entries: Sequence[object]) -> list[str]:
@@ -350,12 +338,8 @@ def history_summary_lines(entries: Sequence[object]) -> list[str]:
 
 
 def _save_history_prompt_to_file(entry) -> Optional[str]:
-    """Save the given history entry's prompt/response to a markdown file and return the path.
+    """Save the given history entry's prompt/response to a markdown file and return the path."""
 
-    Uses the shared `user.model_source_save_directory` setting and a
-    timestamped/slugged filename so history-driven saves align with the
-    unified `file` destination (prompt + response + meta).
-    """
     _clear_notify_suppression()
     if entry is None:
         message = "GPT: No request history available to save"
@@ -368,8 +352,6 @@ def _save_history_prompt_to_file(entry) -> Optional[str]:
             GPTState.last_history_save_path = ""  # type: ignore[attr-defined]
         except Exception:
             pass
-        # Best-effort: record the failure on the latest streaming session so the
-        # lifecycle event stream captures no-entry outcomes too.
         try:
             session = getattr(GPTState, "last_streaming_session", None)
             if session is not None and hasattr(session, "record_history_saved"):
@@ -395,76 +377,41 @@ def _save_history_prompt_to_file(entry) -> Optional[str]:
         except Exception:
             pass
 
-    prompt = (getattr(entry, "prompt", "") or "").strip()
-    response = (getattr(entry, "response", "") or "").strip()
-    meta = (getattr(entry, "meta", "") or "").strip()
+    prompt = getattr(entry, "prompt", "") or ""
+    response = getattr(entry, "response", "") or ""
+    meta = getattr(entry, "meta", "") or ""
 
-    if not prompt:
-        message = "GPT: No prompt content available to save for this history entry"
-        notify(message)
-        try:
-            set_drop_reason("history_save_empty_prompt", message)
-        except Exception:
-            pass
-        try:
-            GPTState.last_history_save_path = ""  # type: ignore[attr-defined]
-        except Exception:
-            pass
-        _record_history_save_event(success=False, error=message)
-        return None
-
-    base_dir = os.path.realpath(os.path.abspath(_model_source_save_dir()))
-    try:
-        os.makedirs(base_dir, exist_ok=True)
-    except Exception as exc:
-        message = f"GPT: Could not create source directory: {exc}"
-        notify(message)
-        try:
-            set_drop_reason("history_save_dir_create_failed", message)
-        except Exception:
-            pass
-        try:
-            GPTState.last_history_save_path = ""  # type: ignore[attr-defined]
-        except Exception:
-            pass
-        _record_history_save_event(success=False, error=message)
-        return None
-
-    now = datetime.datetime.utcnow()
-    timestamp = now.strftime("%Y-%m-%dT%H-%M-%SZ")
-
-    provider_id = (getattr(entry, "provider_id", "") or "").strip()
-
-    slug_parts: list[str] = ["history"]
-    if request_id:
-        slug_parts.append(_slugify_label(str(request_id)))
-    if provider_id:
-        slug_parts.append(_slugify_label(provider_id))
-    recipe = (getattr(entry, "recipe", "") or "").strip()
-    if recipe:
-        # Use the first token of the recipe as an additional hint.
-        slug_parts.append(_slugify_label(recipe.split(" · ", 1)[0]))
-    # Include directional axis tokens when present to make the slug more
-    # self-describing for catalog-aligned history saves.
     snapshot = axis_snapshot_from_axes(getattr(entry, "axes", {}) or {})
     axes_map = {key: list(values) for key, values in snapshot.known_axes().items()}
     dir_tokens = list(axes_map.get("directional", []) or [])
     if not dir_tokens:
-        # Fall back to recipe-derived directional tokens so history saves remain
-        # navigable even when axes payloads are missing direction.
-        dir_tokens = _directional_tokens_for_entry(entry)
-        if dir_tokens:
-            axes_map["directional"] = _canonicalise_axis_tokens(
-                "directional", dir_tokens
-            )
-    if not dir_tokens:
-        message = (
-            "GPT: Cannot save history source; entry is missing a directional lens "
-            "(fog/fig/dig/ong/rog/bog/jog)."
+        fallback_tokens = _directional_tokens_for_entry(entry)
+        if fallback_tokens:
+            canonical = _canonicalise_axis_tokens("directional", fallback_tokens)
+            axes_map["directional"] = canonical
+            dir_tokens = list(canonical)
+
+    persona_lines = _persona_header_lines(entry)
+    recipe = (getattr(entry, "recipe", "") or "").strip()
+    provider_id = (getattr(entry, "provider_id", "") or "").strip()
+
+    try:
+        path = save_history_snapshot_to_file(
+            request_id=request_id,
+            provider_id=provider_id,
+            recipe=recipe,
+            prompt=prompt,
+            response=response,
+            meta=meta,
+            axes_map=axes_map,
+            directional_tokens=dir_tokens,
+            persona_header_lines=persona_lines,
         )
+    except HistorySaveError as exc:
+        message = exc.message
         notify(message)
         try:
-            set_drop_reason("history_save_missing_directional", message)
+            set_drop_reason(exc.drop_reason, message)
         except Exception:
             pass
         try:
@@ -472,70 +419,6 @@ def _save_history_prompt_to_file(entry) -> Optional[str]:
         except Exception:
             pass
         _record_history_save_event(success=False, error=message)
-        return None
-    for token in dir_tokens:
-        slug_parts.append(_slugify_label(str(token)))
-
-    filename = timestamp
-    if slug_parts:
-        filename += "-" + "-".join(slug_parts)
-    filename += ".md"
-    path = os.path.realpath(os.path.join(base_dir, filename))
-    stem, ext = os.path.splitext(path)
-    final_path = path
-    counter = 1
-    while os.path.exists(final_path):
-        final_path = f"{stem}-{counter}{ext}"
-        counter += 1
-    path = final_path
-
-    header_lines: list[str] = [
-        f"saved_at: {now.isoformat()}Z",
-        "source_type: history",
-    ]
-    if request_id:
-        header_lines.append(f"request_id: {request_id}")
-    if provider_id:
-        header_lines.append(f"provider_id: {provider_id}")
-    if recipe:
-        header_lines.append(f"recipe: {recipe}")
-    axes = axes_map
-    for axis in ("completeness", "scope", "method", "form", "channel", "directional"):
-        tokens = axes.get(axis) or []
-        if isinstance(tokens, list) and tokens:
-            joined = " ".join(str(t) for t in tokens if str(t).strip())
-            if joined:
-                header_lines.append(f"{axis}_tokens: {joined}")
-
-    persona_lines = _persona_header_lines(entry)
-    if persona_lines:
-        header_lines.extend(persona_lines)
-
-    sections: list[str] = []
-    if prompt:
-        sections.append("# Prompt / Context\n" + prompt)
-    if response:
-        sections.append("# Response\n" + response)
-    if meta:
-        sections.append("# Meta\n" + meta)
-
-    content = "\n".join(header_lines) + "\n---\n\n" + "\n\n".join(sections)
-
-    try:
-        with open(path, "w", encoding="utf-8") as f:
-            f.write(content)
-    except Exception as exc:
-        message = f"GPT: Failed to save history source file: {exc}"
-        notify(message)
-        try:
-            set_drop_reason("history_save_write_failed", message)
-        except Exception:
-            pass
-        try:
-            GPTState.last_history_save_path = ""  # type: ignore[attr-defined]
-        except Exception:
-            pass
-        _record_history_save_event(success=False, path=path, error=message)
         return None
 
     notify(f"GPT: Saved history to {path}")

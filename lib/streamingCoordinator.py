@@ -150,6 +150,7 @@ class StreamingSession:
 
     run: StreamingRun
     events: List[Dict[str, Any]] = field(default_factory=list)
+    gating_drop_counts: Dict[str, int] = field(default_factory=dict)
 
     @property
     def request_id(self) -> str:
@@ -185,6 +186,30 @@ class StreamingSession:
     def record_complete(self) -> Dict[str, Any]:
         self._record_event("complete")
         return record_streaming_complete(self.run)
+
+    def record_gating_drop(
+        self, *, reason: str, phase: str = "", source: str = ""
+    ) -> None:
+        """Record that a gating drop occurred for the active request."""
+
+        reason_value = str(reason or "")
+        payload: Dict[str, Any] = {
+            "reason": reason_value,
+            "phase": str(phase or ""),
+        }
+        source_value = str(source or "")
+        if source_value:
+            payload["source"] = source_value
+
+        reason_key = reason_value or ""
+        current = self.gating_drop_counts.get(reason_key, 0) + 1
+        self.gating_drop_counts[reason_key] = current
+        total = sum(self.gating_drop_counts.values())
+        payload["reason_count"] = current
+        payload["total_count"] = total
+        payload["counts"] = dict(self.gating_drop_counts)
+
+        self._record_event("gating_drop", **payload)
 
     def record_log_entry(self, **kwargs: Any) -> str:
         """Record a request-history entry and emit streaming events.

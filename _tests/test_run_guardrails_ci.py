@@ -51,6 +51,10 @@ if not TYPE_CHECKING:
                 result.stdout,
                 "Expected optional summary message for axis guardrails target",
             )
+            self.assertIn(
+                "History summary not required for target axis-guardrails-ci; no job summary entry created.",
+                result.stdout,
+            )
 
         def test_run_guardrails_ci_help(self) -> None:
             """Guardrail: CI helper script should expose help/usage."""
@@ -151,6 +155,14 @@ if not TYPE_CHECKING:
             with summary_path.open("r", encoding="utf-8") as handle:
                 stats = json.load(handle)
             self.assertIn("gating_drop_counts", stats)
+            self.assertIn(
+                "History summary stats: total_entries=0 gating_drop_total=0",
+                result.stdout,
+            )
+            self.assertIn(
+                "History summary recorded at artifacts/history-axis-summaries/history-validation-summary.json; job summary will reference this file when running in GitHub Actions.",
+                result.stdout,
+            )
 
         def test_run_guardrails_ci_invalid_target(self) -> None:
             """Guardrail: CI helper should fail clearly on invalid targets."""

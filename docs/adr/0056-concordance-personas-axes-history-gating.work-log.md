@@ -638,4 +638,53 @@
   - Consider including the commit SHA or workflow run ID in artifact names when parallel guardrail runs are expected.
   - Explore adding a GitHub Actions step that surfaces a direct link to the uploaded JSON in the job summary for faster triage.
 
+## 2025-12-19 – Loop 190 (kind: guardrail/tests)
+- Focus: Request Gating & Streaming – surface guardrail summaries directly in CI logs and job summary.
+- Change: Added a GitHub Actions step in `.github/workflows/test.yml` that appends summary metrics and a direct artifact link (when available) to `GITHUB_STEP_SUMMARY`, taught `scripts/tools/run_guardrails_ci.sh` to log the same metrics and link hint, and refreshed `_tests/test_run_guardrails_ci.py` expectations for the new messaging.
+- Checks: `python3 -m pytest _tests/test_run_guardrails_ci.py` (pass; excerpt: `5 passed in 15.02s`); `python3 -m pytest _tests/test_make_request_history_guardrails.py` (pass; excerpt: `2 passed in 0.93s`).
+- Removal test: Reverting would drop the surfaced metrics/link, causing the updated guardrail tests to fail and reducing operator visibility into where to retrieve summaries.
+- Adversarial “what remains” check:
+  - Confirm GitHub Actions artifact retention meets Concordance retention requirements and codify retrieval steps in runbooks.
+  - Explore including the workflow run URL or artifact download shortcut in contributor-facing docs so on-call operators can find summaries quickly.
+  - Monitor whether future guardrail targets need similar summary annotations before broadening the helper logic.
+
+## 2025-12-19 – Loop 191 (kind: guardrail/tests)
+- Focus: Request Gating & Streaming – guardrail summary retention and retrieval guidance.
+- Change: Set the GitHub Actions upload step in `.github/workflows/test.yml` to keep the `history-axis-summary` artifact for 30 days, updated `scripts/tools/run_guardrails_ci.sh` to restate the job-summary reference and retention window, and expanded `docs/adr/0056-concordance-personas-axes-history-gating.md` guidance so runbooks point operators to the job-summary download link.
+- Checks: `python3 -m pytest _tests/test_run_guardrails_ci.py` (pass; excerpt: `5 passed in 14.81s`).
+- Removal test: Reverting would drop the explicit retention window and retrieval messaging, causing the updated guardrail test to fail and leaving runbooks without actionable instructions.
+- Adversarial “what remains” check:
+  - Confirm Actions artifact retention settings match Concordance SLOs (e.g., adjust if 30 days proves insufficient) and note any changes in the operations runbook.
+  - Consider including the workflow run URL in the scripted output once the pending job-summary enhancements land, giving operators a single-click path to the uploaded JSON.
+  - Evaluate whether other guardrail targets (axis docs, persona catalog) need matching retention notes before broadening this pattern.
+
+## 2025-12-19 – Loop 192 (kind: behaviour)
+- Focus: Request Gating & Streaming – emit in-flight gating events on the streaming session.
+- Change: Added `StreamingSession.record_gating_drop` in `lib/streamingCoordinator.py` and taught `lib/requestGating.try_begin_request` to call it so drop reasons appear in the shared event stream; extended `_tests/test_request_gating.py::test_try_begin_request_records_streaming_event` to lock the behaviour.
+- Checks: `python3 -m pytest _tests/test_request_gating.py` @ 2025-12-19T18:43:55Z (fail; excerpt: `AssertionError: [] is not true`), `python3 -m pytest _tests/test_request_gating.py` @ 2025-12-19T18:46:12Z (pass; excerpt: `9 passed in 0.06s`).
+- Removal test: Reverting would drop the streaming `gating_drop` event, causing `_tests/test_request_gating.py::test_try_begin_request_records_streaming_event` to fail and hiding in-flight drop telemetry from the session event log.
+- Adversarial “what remains” check:
+  - Extend `StreamingSession.record_gating_drop` to include per-reason counts (mirroring `requestLog.gating_drop_stats`) so session telemetry matches request log summaries.
+  - Audit non-GPT gating call sites for direct state checks and migrate them to `try_begin_request` before adding integration coverage that expects streaming events in those surfaces.
+  - Consider emitting a consolidated drop summary when a request exits the in-flight phases so Concordance dashboards can correlate guards with lifecycle completions.
+
+## 2025-12-19 – Loop 193 (kind: behaviour)
+- Focus: Request Gating & Streaming – expose RequestUIController gating helpers.
+- Change: Added `RequestUIController.is_in_flight` and `RequestUIController.try_start_request` delegating to `requestState` gating helpers so UI callers share the central contract, and extended `_tests/test_request_controller.py` with gating coverage that fails when the delegation is missing.
+- Checks: `python3 -m pytest _tests/test_request_controller.py::RequestUIControllerTests::test_is_in_flight_delegates_to_request_state_helper _tests/test_request_controller.py::RequestUIControllerTests::test_try_start_request_returns_drop_reason` @ 2025-12-19T18:58:30Z (fail; excerpt: `AttributeError: 'RequestUIController' object has no attribute 'is_in_flight'`), `python3 -m pytest _tests/test_request_controller.py::RequestUIControllerTests::test_is_in_flight_delegates_to_request_state_helper _tests/test_request_controller.py::RequestUIControllerTests::test_try_start_request_returns_drop_reason` @ 2025-12-19T18:59:04Z (pass; excerpt: `2 passed in 0.02s`).
+- Removal test: Reverting would drop the controller-level gating façade and the new tests would fail, reintroducing duplicate gating logic across UIs.
+- Adversarial “what remains” check:
+  - Add matching gating helpers to `lib/requestLifecycle.py` so lifecycle-oriented orchestrators consume the same gating contract before migrating streaming/session callers.
+  - Migrate `_request_is_in_flight` wrappers (for example, `lib/modelHelpCanvas.py`) to call the controller façade and extend an integration guardrail such as `_tests/test_model_help_canvas_guard.py` to exercise the shared helper.
+  - Evaluate exposing a bus-level `try_begin_request` wrapper that forwards to the controller to simplify future call-site migrations.
+
+## 2025-12-19 – Loop 194 (kind: guardrail/tests)
+- Focus: Request Gating & Streaming – keep streaming gating telemetry aligned with request log counters.
+- Change: Updated `lib/streamingCoordinator.py::StreamingSession.record_gating_drop` to track per-reason/total drop counts and include them in emitted `gating_drop` events, and extended `_tests/test_request_gating.py::test_try_begin_request_records_streaming_event` to assert successive drops increment the counts.
+- Checks: `python3 -m pytest _tests/test_request_gating.py::RequestGatingTests::test_try_begin_request_records_streaming_event` @ 2025-12-19T19:05:20Z (fail; excerpt: `AssertionError: None != 1`), `python3 -m pytest _tests/test_request_gating.py::RequestGatingTests::test_try_begin_request_records_streaming_event` @ 2025-12-19T19:07:11Z (pass; excerpt: `1 passed in 0.04s`).
+- Removal test: Reverting would drop the per-reason gating counters from streaming events, causing the refreshed guardrail test to fail and leaving streaming telemetry out of sync with `requestLog.gating_drop_stats`.
+- Adversarial “what remains” check:
+  - Surface aggregated gating counts alongside other session telemetry (for example, `last_streaming_snapshot`) so dashboards can consume them without parsing event history.
+  - Add coverage for mixed drop reasons to ensure the counts map reports separate tallies per reason.
+  - Consider emitting a session-level gating summary when a request transitions to a terminal phase so Concordance tooling can correlate drops with lifecycle outcomes.
 

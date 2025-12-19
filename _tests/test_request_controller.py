@@ -145,7 +145,9 @@ if bootstrap is not None:
                 calls.append(req_id)
 
             controller = RequestUIController(on_retry=on_retry)
-            controller.handle(RequestEvent(RequestEventKind.RETRY, request_id="rid-retry"))
+            controller.handle(
+                RequestEvent(RequestEventKind.RETRY, request_id="rid-retry")
+            )
 
             self.assertEqual(calls, ["rid-retry"])
             self.assertEqual(controller.state.phase, RequestPhase.STREAMING)
@@ -165,7 +167,9 @@ if bootstrap is not None:
                 request_id="rid-error",
                 last_error="boom",
             )
-            controller.handle(RequestEvent(RequestEventKind.RETRY, request_id="rid-error"))
+            controller.handle(
+                RequestEvent(RequestEventKind.RETRY, request_id="rid-error")
+            )
 
             self.assertEqual(calls, ["rid-error"])
             self.assertEqual(controller.state.phase, RequestPhase.STREAMING)
@@ -186,7 +190,9 @@ if bootstrap is not None:
                 request_id="rid-cancel",
                 cancel_requested=True,
             )
-            controller.handle(RequestEvent(RequestEventKind.RETRY, request_id="rid-cancel"))
+            controller.handle(
+                RequestEvent(RequestEventKind.RETRY, request_id="rid-cancel")
+            )
 
             self.assertEqual(calls, ["rid-cancel"])
             self.assertEqual(controller.state.phase, RequestPhase.STREAMING)
@@ -194,8 +200,45 @@ if bootstrap is not None:
             self.assertEqual(controller.state.request_id, "rid-cancel")
             self.assertFalse(controller.state.cancel_requested)
             self.assertEqual(controller.state.active_surface, Surface.PILL)
+
+        def test_is_in_flight_delegates_to_request_state_helper(self) -> None:
+            controller = RequestUIController()
+            self.assertFalse(
+                controller.is_in_flight(),
+                "Idle controller state should not be considered in-flight",
+            )
+
+            controller.handle(
+                RequestEvent(RequestEventKind.BEGIN_SEND, request_id="rid-inflight")
+            )
+            self.assertTrue(
+                controller.is_in_flight(),
+                "BEGIN_SEND should mark the controller as in-flight",
+            )
+
+            controller.handle(
+                RequestEvent(RequestEventKind.COMPLETE, request_id="rid-inflight")
+            )
+            self.assertFalse(
+                controller.is_in_flight(),
+                "Terminal states should clear in-flight gating",
+            )
+
+        def test_try_start_request_returns_drop_reason(self) -> None:
+            controller = RequestUIController()
+            allowed, reason = controller.try_start_request()
+            self.assertTrue(allowed)
+            self.assertEqual(reason, "")
+
+            controller.handle(
+                RequestEvent(RequestEventKind.BEGIN_STREAM, request_id="rid-gating")
+            )
+            allowed, reason = controller.try_start_request()
+            self.assertFalse(allowed)
+            self.assertEqual(reason, "in_flight")
 else:
     if not TYPE_CHECKING:
+
         class RequestUIControllerTests(unittest.TestCase):
             @unittest.skip("Test harness unavailable outside unittest runs")
             def test_placeholder(self):

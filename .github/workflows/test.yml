@@ -40,6 +40,77 @@ jobs:
           name: history-axis-summary
           path: artifacts/history-axis-summaries/history-validation-summary.json
           if-no-files-found: warn
+          retention-days: 30
+
+      - name: Summarize history guardrail artifact
+        if: always()
+        run: |
+          SUMMARY_FILE="artifacts/history-axis-summaries/history-validation-summary.json"
+          if [ -f "${SUMMARY_FILE}" ]; then
+            if [ -n "${GITHUB_REPOSITORY:-}" ] && [ -n "${GITHUB_RUN_ID:-}" ]; then
+              ARTIFACT_URL="${GITHUB_SERVER_URL:-https://github.com}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}#artifacts"
+            else
+              ARTIFACT_URL=""
+            fi
+            SUMMARY_OUTPUT=$(python3 - "$SUMMARY_FILE" "$ARTIFACT_URL" <<'PY'
+import json
+import pathlib
+import sys
+summary_path = pathlib.Path(sys.argv[1])
+artifact_url = sys.argv[2]
+try:
+    data = json.loads(summary_path.read_text())
+except Exception:
+    data = {}
+lines = [
+    "### History Guardrail Summary",
+    "",
+    f"- Saved `{summary_path}`",
+    f"- Entries validated: {data.get('total_entries', 'unknown')}",
+    f"- Gating drops recorded: {data.get('gating_drop_total', 'unknown')}",
+]
+if artifact_url:
+    lines.append(f"- [Download artifact]({artifact_url})")
+else:
+    lines.append("- Artifact link unavailable outside GitHub Actions.")
+print("\n".join(lines))
+PY
+)
+            echo "${SUMMARY_OUTPUT}"
+            if [ -n "${GITHUB_STEP_SUMMARY:-}" ]; then
+              printf '%s
+' "${SUMMARY_OUTPUT}" >> "${GITHUB_STEP_SUMMARY}"
+            fi
+            echo "History summary noted in job summary."
+          else
+            SUMMARY_OUTPUT="### History Guardrail Summary
+
+- No history summary was produced in this run."
+            echo "${SUMMARY_OUTPUT}"
+            if [ -n "${GITHUB_STEP_SUMMARY:-}" ]; then
+              printf '%s
+' "${SUMMARY_OUTPUT}" >> "${GITHUB_STEP_SUMMARY}"
+            fi
+            echo "History summary missing; job summary updated to reflect absence."
+          fi
+
+            {
+              echo "### History Guardrail Summary"
+              echo
+              echo "- Saved \`${SUMMARY_FILE}\`"
+              echo "- Entries validated: ${TOTAL_ENTRIES}"
+              echo "- Gating drops recorded: ${GATING_DROPS}"
+              echo "${LINK_LINE}"
+            } >> "$GITHUB_STEP_SUMMARY"
+            echo "History summary noted in job summary."
+          else
+            {
+              echo "### History Guardrail Summary"
+              echo
+              echo "- No history summary was produced in this run."
+            } >> "$GITHUB_STEP_SUMMARY"
+            echo "History summary missing; job summary updated to reflect absence."
+          fi
 
       - name: Run tests
         run: python3 -m unittest discover -s tests -v

@@ -9,10 +9,39 @@ the response canvas) can consume snapshots via `canvas_view_from_snapshot`.
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import List, Optional, Dict, Any
+from typing import List, Optional, Dict, Any, Tuple, cast
 
 from .axisCatalog import axis_catalog
 from .requestLog import append_entry_from_request
+
+GATING_SNAPSHOT_KEYS = (
+    "gating_drop_counts",
+    "gating_drop_counts_sorted",
+    "gating_drop_total",
+    "gating_drop_last",
+)
+
+
+def _coerce_int(value: Any) -> Optional[int]:
+    try:
+        if isinstance(value, bool):
+            return int(value)
+        if isinstance(value, int):
+            return value
+        if isinstance(value, float):
+            return int(value)
+        if isinstance(value, str):
+            stripped = value.strip()
+            if not stripped:
+                return None
+            return int(stripped)
+    except Exception:
+        return None
+    return None
+
+
+def _sorted_counts(items: Dict[str, int]) -> List[Tuple[str, int]]:
+    return sorted(items.items(), key=lambda pair: (-pair[1], pair[0]))
 
 
 @dataclass
@@ -167,7 +196,7 @@ class StreamingSession:
         try:
             from .modelState import GPTState
 
-            GPTState.last_streaming_events = list(self.events)
+            setattr(GPTState, "last_streaming_events", list(self.events))
         except Exception:
             pass
 
@@ -210,6 +239,13 @@ class StreamingSession:
         payload["counts"] = dict(self.gating_drop_counts)
 
         self._record_event("gating_drop", **payload)
+
+        snapshot_extra = {
+            "gating_drop_counts": dict(self.gating_drop_counts),
+            "gating_drop_total": total,
+            "gating_drop_last": {"reason": reason_key, "reason_count": current},
+        }
+        record_streaming_snapshot(self.run, extra=snapshot_extra)
 
     def record_log_entry(self, **kwargs: Any) -> str:
         """Record a request-history entry and emit streaming events.
@@ -335,8 +371,9 @@ def new_streaming_session(request_id: str) -> StreamingSession:
     try:
         from .modelState import GPTState
 
-        GPTState.last_streaming_events = []
-        GPTState.last_streaming_session = session
+        setattr(GPTState, "last_streaming_events", [])
+        setattr(GPTState, "last_streaming_session", session)
+        setattr(GPTState, "last_streaming_snapshot", {})
     except Exception:
         pass
     return session
@@ -389,16 +426,200 @@ def current_streaming_snapshot() -> Dict[str, Any]:
         return {}
 
 
-def record_streaming_snapshot(run: StreamingRun) -> Dict[str, Any]:
+def current_streaming_gating_summary() -> Dict[str, Any]:
+    """Return the aggregated gating-drop summary for the active streaming run."""
+
+    snapshot = cast(Dict[str, Any], current_streaming_snapshot())
+    counts_raw = snapshot.get("gating_drop_counts")
+    counts: Dict[str, int] = {}
+    if isinstance(counts_raw, dict):
+        for reason, value in counts_raw.items():
+            coerced = _coerce_int(value)
+            if coerced is None or coerced < 0:
+                continue
+            counts[str(reason)] = coerced
+
+    total_raw = snapshot.get("gating_drop_total")
+    total = _coerce_int(total_raw)
+    if total is None or total < 0:
+        total = sum(counts.values())
+
+    counts_sorted_raw = snapshot.get("gating_drop_counts_sorted")
+    ordered: List[Tuple[str, int]] = []
+    if isinstance(counts_sorted_raw, list) and counts_sorted_raw:
+        for item in counts_sorted_raw:
+            if not isinstance(item, dict):
+                continue
+            reason = item.get("reason")
+            count_value = _coerce_int(item.get("count"))
+            if not isinstance(reason, str) or not reason:
+                continue
+            if count_value is None or count_value < 0:
+                continue
+            ordered.append((reason, count_value))
+            counts.setdefault(reason, count_value)
+    elif counts:
+        ordered = _sorted_counts(counts)
+
+    last_raw = snapshot.get("gating_drop_last")
+    last: Dict[str, Any] = {}
+    if isinstance(last_raw, dict):
+        reason = str(last_raw.get("reason") or "")
+        reason_count_value = last_raw.get("reason_count")
+        reason_count = _coerce_int(reason_count_value)
+        if reason_count is None and reason:
+            reason_count = counts.get(reason, 0)
+        if reason or (reason_count or 0):
+            last = {
+                "reason": reason,
+                "reason_count": reason_count or 0,
+            }
+
+    counts_sorted = [{"reason": reason, "count": count} for reason, count in ordered]
+
+    return {
+        "total": total,
+        "counts": counts,
+        "counts_sorted": counts_sorted,
+        "last": last,
+    }
+
+
+def record_streaming_snapshot(
+    run: StreamingRun, *, extra: Optional[Dict[str, Any]] = None
+) -> Dict[str, Any]:
     """Persist the current streaming snapshot to GPTState and return it."""
 
-    snapshot = run.snapshot()
+    base_snapshot = run.snapshot()
+    snapshot = dict(base_snapshot)
+
     try:
         from .modelState import GPTState
-
-        GPTState.last_streaming_snapshot = snapshot
     except Exception:
-        pass
+        GPTState = None  # type: ignore[assignment]
+
+    prior_snapshot: Dict[str, Any] = {}
+    if GPTState is not None:
+        try:
+            prior_snapshot = cast(
+                Dict[str, Any], getattr(GPTState, "last_streaming_snapshot", {}) or {}
+            )
+        except Exception:
+            prior_snapshot = {}
+
+    same_request = prior_snapshot.get("request_id") == snapshot.get("request_id")
+
+    if extra:
+        extra_dict = cast(Dict[str, Any], extra)
+        extra_counts = extra_dict.get("gating_drop_counts")
+        extra_total = extra_dict.get("gating_drop_total")
+        extra_last = extra_dict.get("gating_drop_last")
+
+        merged_counts: Dict[str, int] = {}
+        prior_counts: Dict[str, Any] = {}
+        if same_request:
+            prior_counts_raw = prior_snapshot.get("gating_drop_counts", {}) or {}
+            if isinstance(prior_counts_raw, dict):
+                prior_counts = prior_counts_raw
+
+        if isinstance(extra_counts, dict):
+            if extra_total is not None:
+                for reason, value in extra_counts.items():
+                    coerced = _coerce_int(value)
+                    if coerced is None:
+                        continue
+                    merged_counts[str(reason)] = coerced
+                # Preserve prior reasons not present in the extra payload.
+                for reason, value in prior_counts.items():
+                    if str(reason) in merged_counts:
+                        continue
+                    coerced = _coerce_int(value)
+                    if coerced is None:
+                        continue
+                    merged_counts[str(reason)] = coerced
+            else:
+                for reason, value in prior_counts.items():
+                    coerced = _coerce_int(value)
+                    if coerced is None:
+                        continue
+                    merged_counts[str(reason)] = coerced
+                for reason, value in extra_counts.items():
+                    coerced = _coerce_int(value)
+                    if coerced is None:
+                        continue
+                    reason_key = str(reason)
+                    merged_counts[reason_key] = (
+                        merged_counts.get(reason_key, 0) + coerced
+                    )
+        elif same_request:
+            for reason, value in prior_counts.items():
+                coerced = _coerce_int(value)
+                if coerced is None:
+                    continue
+                merged_counts[str(reason)] = coerced
+
+        if merged_counts:
+            snapshot["gating_drop_counts"] = merged_counts
+            snapshot["gating_drop_counts_sorted"] = [
+                {"reason": reason, "count": count}
+                for reason, count in _sorted_counts(merged_counts)
+            ]
+            if extra_total is not None:
+                coerced_total = _coerce_int(extra_total)
+                snapshot["gating_drop_total"] = (
+                    coerced_total
+                    if coerced_total is not None
+                    else sum(merged_counts.values())
+                )
+            else:
+                snapshot["gating_drop_total"] = sum(merged_counts.values())
+        elif same_request:
+            # Preserve prior counts/total when no new counts arrived.
+            if "gating_drop_counts" in prior_snapshot:
+                snapshot["gating_drop_counts"] = dict(
+                    prior_snapshot["gating_drop_counts"]
+                )
+            if "gating_drop_counts_sorted" in prior_snapshot:
+                prior_sorted = prior_snapshot["gating_drop_counts_sorted"]
+                if isinstance(prior_sorted, list):
+                    snapshot["gating_drop_counts_sorted"] = list(prior_sorted)
+            if "gating_drop_total" in prior_snapshot:
+                snapshot["gating_drop_total"] = prior_snapshot["gating_drop_total"]
+
+        if isinstance(extra_last, dict):
+            snapshot["gating_drop_last"] = {
+                "reason": str(extra_last.get("reason") or ""),
+                "reason_count": _coerce_int(extra_last.get("reason_count"))
+                or merged_counts.get(str(extra_last.get("reason") or ""), 0),
+            }
+        elif same_request and "gating_drop_last" in prior_snapshot:
+            snapshot["gating_drop_last"] = prior_snapshot["gating_drop_last"]
+
+        # Apply any remaining metadata outside the gating summary keys.
+        for key, value in extra_dict.items():
+            if key in GATING_SNAPSHOT_KEYS:
+                continue
+            snapshot[key] = value
+    elif same_request:
+        for key in GATING_SNAPSHOT_KEYS:
+            if key in prior_snapshot and key not in snapshot:
+                if key == "gating_drop_counts":
+                    snapshot[key] = dict(prior_snapshot[key])
+                elif key == "gating_drop_counts_sorted":
+                    prior_sorted = prior_snapshot[key]
+                    if isinstance(prior_sorted, list):
+                        snapshot[key] = list(prior_sorted)
+                else:
+                    snapshot[key] = prior_snapshot[key]
+
+    if "gating_drop_counts" not in snapshot:
+        snapshot.pop("gating_drop_counts_sorted", None)
+
+    if GPTState is not None:
+        try:
+            setattr(GPTState, "last_streaming_snapshot", snapshot)
+        except Exception:
+            pass
     return snapshot
 
 

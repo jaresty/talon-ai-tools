@@ -18,6 +18,11 @@ if not TYPE_CHECKING:
                 contents,
                 "CI should run the main test suite via python3 -m unittest",
             )
+            self.assertIn(
+                "history-validation-summary.telemetry.json",
+                contents,
+                "CI should upload the telemetry summary artifact",
+            )
 
 else:
 

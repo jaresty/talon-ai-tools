@@ -108,10 +108,17 @@ work-log, and current repo state; do not rely on conversational history.
 3c. **Implement the slice.**
     - Apply code/config/doc changes, staying within the chosen focus area.
     - Keep edits minimal yet complete for the intended behaviour.
+    - Before rerunning validation, inspect the diff and remove any change not
+      required to flip the failing test; treat unexpected edits as suspect until
+      they are justified.
 
 3d. **Re-run for green.**
     - Execute the same validation command(s) after implementation edits to
       confirm the behaviour passes.
+    - Before accepting the final green run, temporarily roll back the behaviour
+      change and re-run the validation; if it stays green, you either left
+      incidental edits or loosened the guardrail—shrink or tighten until the red
+      returns.
     - Avoid repo-wide runs unless cross-cutting changes demand them; justify when
       broader runs are necessary.
     - Capture relevant output in the evidence block (pass/fail summary, key log
@@ -158,7 +165,9 @@ Add a work-log entry containing:
     - green | 2025-12-19T17:55Z | exit 0 | scripts/__tests__/property/bootstrap-coordinator.test.ts
         helpers include apollo.userDetectedAnalyticsV2
     ```
-- **Removal test:** What breaks or regresses if this slice is reverted?
+- **Removal test:** What breaks or regresses if this slice is reverted? Explicitly
+  confirm the targeted guardrail fails when the behaviour change is rolled back
+  (e.g., `git checkout -- path/to/file`) and tighten the test if it remains green.
 - **Adversarial “what remains” check:** Enumerate plausible gaps or next slices.
   For each, either schedule the next loop (component + goal) or mark it
   out-of-repo/no-longer-required with supporting evidence.
@@ -180,7 +189,7 @@ When you suspect the ADR is satisfied:
       any unchanged sections explicitly.
 
 3. Confirm all ADR tasks/subtasks are closed or formally reclassified.
-4. Update ADR status metadata if appropriate and mark the ADR “parked” in the
+4. Update ADR status metadata if appropriate and mark the ADR “Accepted” in the
    work-log. No further loops should run unless a new task/regression (with
    trigger) is recorded.
 

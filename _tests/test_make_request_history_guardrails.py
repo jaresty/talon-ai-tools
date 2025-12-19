@@ -32,6 +32,16 @@ if not TYPE_CHECKING:
                     "make request-history-guardrails failed:\n"
                     f"exit: {result.returncode}\nstdout:\n{result.stdout}\nstderr:\n{result.stderr}"
                 )
+            lines = [line for line in result.stdout.splitlines() if line.strip()]
+            self.assertTrue(lines, "make output unexpectedly empty")
+            self.assertIn(
+                "Streaming gating summary: total=0; counts=none; last=n/a",
+                result.stdout,
+            )
+            self.assertIn(
+                "Streaming gating summary (json):",
+                result.stdout,
+            )
             self.assertTrue(
                 summary_path.exists(),
                 "request-history-guardrails did not produce history-validation-summary.json",
@@ -40,6 +50,34 @@ if not TYPE_CHECKING:
                 stats = json.load(handle)
             self.assertIn("total_entries", stats)
             self.assertIn("entries_missing_directional", stats)
+            self.assertIn("streaming_gating_summary", stats)
+
+            streaming_summary_path = summary_path.with_name(
+                "history-validation-summary.streaming.json"
+            )
+            self.assertTrue(
+                streaming_summary_path.exists(),
+                "Streaming JSON summary was not produced",
+            )
+            with streaming_summary_path.open("r", encoding="utf-8") as handle:
+                streaming_data = json.load(handle)
+            self.assertEqual(
+                streaming_data.get("streaming_gating_summary"),
+                {"counts": {}, "counts_sorted": [], "last": {}, "total": 0},
+            )
+
+            telemetry_path = summary_path.with_name(
+                "history-validation-summary.telemetry.json"
+            )
+            self.assertTrue(
+                telemetry_path.exists(),
+                "Telemetry export was not produced",
+            )
+            telemetry_payload = json.loads(telemetry_path.read_text(encoding="utf-8"))
+            self.assertEqual(telemetry_payload.get("total_entries"), 0)
+            self.assertEqual(telemetry_payload.get("gating_drop_total"), 0)
+            self.assertIn("generated_at", telemetry_payload)
+            self.assertEqual(telemetry_payload.get("top_gating_reasons"), [])
 
         def test_make_request_history_guardrails_fast_produces_summary(self) -> None:
             """Guardrail: request-history-guardrails-fast should export the validation summary."""
@@ -65,6 +103,16 @@ if not TYPE_CHECKING:
                     "make request-history-guardrails-fast failed:\n"
                     f"exit: {result.returncode}\nstdout:\n{result.stdout}\nstderr:\n{result.stderr}"
                 )
+            lines = [line for line in result.stdout.splitlines() if line.strip()]
+            self.assertTrue(lines, "make output unexpectedly empty")
+            self.assertIn(
+                "Streaming gating summary: total=0; counts=none; last=n/a",
+                result.stdout,
+            )
+            self.assertIn(
+                "Streaming gating summary (json):",
+                result.stdout,
+            )
             self.assertTrue(
                 summary_path.exists(),
                 "request-history-guardrails-fast did not produce history-validation-summary.json",
@@ -73,6 +121,34 @@ if not TYPE_CHECKING:
                 stats = json.load(handle)
             self.assertIn("total_entries", stats)
             self.assertIn("entries_missing_directional", stats)
+            self.assertIn("streaming_gating_summary", stats)
+
+            streaming_summary_path = summary_path.with_name(
+                "history-validation-summary.streaming.json"
+            )
+            self.assertTrue(
+                streaming_summary_path.exists(),
+                "Streaming JSON summary was not produced (fast target)",
+            )
+            with streaming_summary_path.open("r", encoding="utf-8") as handle:
+                streaming_data = json.load(handle)
+            self.assertEqual(
+                streaming_data.get("streaming_gating_summary"),
+                {"counts": {}, "counts_sorted": [], "last": {}, "total": 0},
+            )
+
+            telemetry_path = summary_path.with_name(
+                "history-validation-summary.telemetry.json"
+            )
+            self.assertTrue(
+                telemetry_path.exists(),
+                "Telemetry export was not produced (fast target)",
+            )
+            telemetry_payload = json.loads(telemetry_path.read_text(encoding="utf-8"))
+            self.assertEqual(telemetry_payload.get("total_entries"), 0)
+            self.assertEqual(telemetry_payload.get("gating_drop_total"), 0)
+            self.assertIn("generated_at", telemetry_payload)
+            self.assertEqual(telemetry_payload.get("top_gating_reasons"), [])
 
 
 else:

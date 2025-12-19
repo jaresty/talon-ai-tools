@@ -21,7 +21,7 @@ if not TYPE_CHECKING:
             if result.returncode != 0:
                 self.fail(
                     f"`make help` failed with code {result.returncode}\nstdout:\n{result.stdout}\nstderr:\n{result.stderr}"
-            )
+                )
             output = result.stdout
             self.assertIn("axis-catalog-validate", output)
             self.assertIn(
@@ -36,16 +36,26 @@ if not TYPE_CHECKING:
             self.assertIn("axis-regenerate-apply", output)
             self.assertIn("talon-lists", output)
             self.assertIn("talon-lists-check", output)
-            self.assertIn("optional: export axis/static prompt Talon lists locally", output)
+            self.assertIn(
+                "optional: export axis/static prompt Talon lists locally", output
+            )
             self.assertIn("optional: drift-check local Talon lists", output)
-            self.assertIn("untracked", output, "Expected make help to mention talon-lists outputs are untracked")
-            self.assertIn("lists-dir", output, "Expected make help to mention lists-dir when enforcing list checks")
+            self.assertIn(
+                "untracked",
+                output,
+                "Expected make help to mention talon-lists outputs are untracked",
+            )
+            self.assertIn(
+                "lists-dir",
+                output,
+                "Expected make help to mention lists-dir when enforcing list checks",
+            )
             self.assertIn("ci-guardrails", output)
             self.assertIn("guardrails", output)
             self.assertIn("run_guardrails_ci.sh [--help]", output)
             self.assertIn("GUARDRAILS_TARGET", output)
             self.assertIn("request-history-guardrails", output)
-            self.assertIn("request-history-guardrails-fast", output)
+            self.assertIn("streaming + telemetry summaries", output)
             self.assertIn("request-history-guardrails-fast", output)
             self.assertIn("readme-axis-lines", output)
             self.assertIn("readme-axis-refresh", output)

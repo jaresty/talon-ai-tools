@@ -12,10 +12,13 @@ if bootstrap is not None:
     from talon_user.lib.streamingCoordinator import (
         StreamingRun,
         new_streaming_run,
+        new_streaming_session,
         canvas_view_from_snapshot,
         current_streaming_snapshot,
         record_streaming_snapshot,
+        current_streaming_gating_summary,
     )
+
     from talon_user.lib.modelState import GPTState
 
     class StreamingCoordinatorTests(unittest.TestCase):
@@ -152,6 +155,53 @@ if bootstrap is not None:
             self.assertEqual(
                 getattr(GPTState, "last_streaming_snapshot", {}),
                 snap,
+            )
+
+        def test_new_streaming_session_resets_gating_summary(self) -> None:
+            GPTState.last_streaming_snapshot = {
+                "request_id": "req-old",
+                "gating_drop_counts": {"in_flight": 2},
+                "gating_drop_total": 2,
+                "gating_drop_last": {"reason": "in_flight", "reason_count": 2},
+            }
+
+            session = new_streaming_session("req-new")
+            self.assertEqual(session.request_id, "req-new")
+
+            summary = getattr(GPTState, "last_streaming_snapshot", {})
+            self.assertEqual(summary, {})
+
+        def test_current_streaming_gating_summary_returns_counts(self) -> None:
+            session = new_streaming_session("req-gating")
+            session.record_gating_drop(reason="in_flight", phase="SENDING")
+            summary = current_streaming_gating_summary()
+            self.assertEqual(summary.get("total"), 1)
+            self.assertEqual(summary.get("counts", {}).get("in_flight"), 1)
+            self.assertEqual(
+                summary.get("counts_sorted"),
+                [{"reason": "in_flight", "count": 1}],
+            )
+            self.assertEqual(
+                summary.get("last"),
+                {"reason": "in_flight", "reason_count": 1},
+            )
+
+            session.record_gating_drop(reason="history_save_failed", phase="SAVE")
+            summary = current_streaming_gating_summary()
+            self.assertEqual(summary.get("total"), 2)
+            counts = summary.get("counts", {})
+            self.assertEqual(counts.get("in_flight"), 1)
+            self.assertEqual(counts.get("history_save_failed"), 1)
+            self.assertEqual(
+                summary.get("counts_sorted"),
+                [
+                    {"reason": "history_save_failed", "count": 1},
+                    {"reason": "in_flight", "count": 1},
+                ],
+            )
+            self.assertEqual(
+                summary.get("last"),
+                {"reason": "history_save_failed", "reason_count": 1},
             )
 
 

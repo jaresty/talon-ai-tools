@@ -5,7 +5,7 @@ from __future__ import annotations
 from collections import Counter, deque
 from dataclasses import dataclass, field
 from types import MappingProxyType
-from typing import Iterable, Mapping, Optional, Tuple
+from typing import Iterable, Mapping, Optional, Tuple, cast
 from copy import deepcopy
 
 from .requestState import RequestDropReason
@@ -724,10 +724,106 @@ def history_validation_stats() -> dict[str, object]:
 
     stats = _scan_history_entries(raise_on_failure=False)
     gating_counts = gating_drop_stats()
-    stats = dict(stats)
-    stats["gating_drop_total"] = sum(gating_counts.values())
-    stats["gating_drop_counts"] = dict(gating_counts)
-    return stats
+    stats_obj = cast(dict[str, object], dict(stats))
+    stats_obj["gating_drop_total"] = sum(gating_counts.values())
+    stats_obj["gating_drop_counts"] = dict(gating_counts)
+
+    def _convert_to_int(candidate: object) -> Optional[int]:
+        if isinstance(candidate, bool):
+            return int(candidate)
+        if isinstance(candidate, int):
+            return candidate
+        if isinstance(candidate, float):
+            return int(candidate)
+        if isinstance(candidate, str):
+            value = candidate.strip()
+            if not value:
+                return None
+            try:
+                return int(value)
+            except ValueError:
+                return None
+        return None
+
+    normalized_counts: dict[str, int] = {}
+    streaming_last: dict[str, object] = {}
+    total_int = 0
+    counts_sorted_pairs: list[Tuple[str, int]] = []
+
+    summary_data: Mapping[str, object] | None = None
+    try:
+        from .streamingCoordinator import current_streaming_gating_summary
+    except Exception:
+        summary_data = None
+    else:
+        try:
+            candidate = current_streaming_gating_summary()
+        except Exception:
+            candidate = None
+        if isinstance(candidate, Mapping):
+            summary_data = candidate
+
+    if summary_data is not None:
+        counts_obj = summary_data.get("counts")
+        if isinstance(counts_obj, Mapping):
+            for reason, value in counts_obj.items():
+                count_value = _convert_to_int(value)
+                if count_value is None or count_value < 0:
+                    continue
+                normalized_counts[str(reason)] = count_value
+        counts_sorted_obj = summary_data.get("counts_sorted")
+        if isinstance(counts_sorted_obj, list):
+            for item in counts_sorted_obj:
+                if not isinstance(item, Mapping):
+                    continue
+                reason_text = str(item.get("reason") or "")
+                count_value = _convert_to_int(item.get("count"))
+                if not reason_text or count_value is None or count_value < 0:
+                    continue
+                counts_sorted_pairs.append((reason_text, count_value))
+                normalized_counts.setdefault(reason_text, count_value)
+        total_candidate = _convert_to_int(summary_data.get("total"))
+        if total_candidate is not None and total_candidate >= 0:
+            total_int = total_candidate
+        last_obj = summary_data.get("last")
+        if isinstance(last_obj, Mapping):
+            reason_text = str(last_obj.get("reason") or "")
+            reason_count = _convert_to_int(last_obj.get("reason_count"))
+            if reason_text:
+                streaming_last["reason"] = reason_text
+            if reason_count is None:
+                if reason_text:
+                    streaming_last["reason_count"] = normalized_counts.get(
+                        reason_text, 0
+                    )
+            else:
+                streaming_last["reason_count"] = reason_count
+            if (
+                not streaming_last.get("reason")
+                and streaming_last.get("reason_count") is None
+            ):
+                streaming_last = {}
+
+    counts_total = sum(normalized_counts.values())
+    if counts_total and (total_int < counts_total):
+        total_int = counts_total
+    if not streaming_last:
+        streaming_last = {}
+
+    if not counts_sorted_pairs:
+        counts_sorted_pairs = sorted(
+            normalized_counts.items(), key=lambda item: (-item[1], item[0])
+        )
+
+    stats_obj["streaming_gating_summary"] = {
+        "counts": normalized_counts,
+        "counts_sorted": [
+            {"reason": reason, "count": count} for reason, count in counts_sorted_pairs
+        ],
+        "last": streaming_last,
+        "total": total_int,
+    }
+    return stats_obj
 
 
 def remediate_history_axes(

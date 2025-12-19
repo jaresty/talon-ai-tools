@@ -95,6 +95,14 @@ if bootstrap is not None:
             self.assertEqual(first.get("counts", {}).get("in_flight"), 1)
             self.assertEqual(session.events[-1], first)
 
+            snapshot = getattr(GPTState, "last_streaming_snapshot", {})
+            self.assertEqual(snapshot.get("gating_drop_total"), 1)
+            self.assertEqual(snapshot.get("gating_drop_counts", {}).get("in_flight"), 1)
+            self.assertEqual(
+                snapshot.get("gating_drop_last"),
+                {"reason": "in_flight", "reason_count": 1},
+            )
+
             allowed_again, reason_again = requestGating.try_begin_request(
                 streaming_state
             )
@@ -112,22 +120,109 @@ if bootstrap is not None:
             self.assertEqual(final.get("counts", {}).get("in_flight"), 2)
             self.assertEqual(session.events[-1], final)
 
+            snapshot = getattr(GPTState, "last_streaming_snapshot", {})
+            self.assertEqual(snapshot.get("gating_drop_total"), 2)
+            self.assertEqual(snapshot.get("gating_drop_counts", {}).get("in_flight"), 2)
+            self.assertEqual(
+                snapshot.get("gating_drop_last"),
+                {"reason": "in_flight", "reason_count": 2},
+            )
+
         def test_try_begin_request_handles_current_state_failure(self) -> None:
             with patch.object(requestGating, "current_state", side_effect=RuntimeError):
                 allowed, reason = requestGating.try_begin_request()
             self.assertTrue(allowed)
             self.assertEqual(reason, "")
 
+        def test_gating_snapshot_persists_across_session_updates(self) -> None:
+            requestLog.clear_history()
+            requestLog.consume_gating_drop_stats()
+
+            session = new_streaming_session("rid-session")
+            GPTState.last_streaming_events = []
+            streaming_state = RequestState(
+                phase=RequestPhase.SENDING,
+                request_id="rid-session",
+            )
+
+            allowed, reason = requestGating.try_begin_request(streaming_state)
+            self.assertFalse(allowed)
+            self.assertEqual(reason, "in_flight")
+
+            snapshot = getattr(GPTState, "last_streaming_snapshot", {})
+            self.assertEqual(snapshot.get("gating_drop_total"), 1)
+
+            # Simulate streaming progress; gating summary should remain intact.
+            from talon_user.lib.streamingCoordinator import (
+                record_streaming_chunk,
+                record_streaming_snapshot,
+            )
+
+            record_streaming_chunk(session.run, "partial chunk")
+            persisted = getattr(GPTState, "last_streaming_snapshot", {})
+            self.assertEqual(persisted.get("gating_drop_total"), 1)
+            self.assertEqual(
+                persisted.get("gating_drop_counts", {}).get("in_flight"),
+                1,
+            )
+
+            # Introduce a second gating drop reason via snapshot metadata.
+            record_streaming_snapshot(
+                session.run,
+                extra={
+                    "request_id": "rid-session",
+                    "gating_drop_counts": {"history_save_failed": 1},
+                    "gating_drop_last": {
+                        "reason": "history_save_failed",
+                        "reason_count": 1,
+                    },
+                },
+            )
+
+            summary = getattr(GPTState, "last_streaming_snapshot", {})
+            self.assertEqual(summary.get("gating_drop_total"), 2)
+            counts = summary.get("gating_drop_counts", {})
+            self.assertEqual(counts.get("in_flight"), 1)
+            self.assertEqual(counts.get("history_save_failed"), 1)
+            self.assertEqual(
+                summary.get("gating_drop_counts_sorted"),
+                [
+                    {"reason": "history_save_failed", "count": 1},
+                    {"reason": "in_flight", "count": 1},
+                ],
+            )
+            self.assertEqual(
+                summary.get("gating_drop_last"),
+                {"reason": "history_save_failed", "reason_count": 1},
+            )
+
         def test_history_validation_stats_include_gating_counts(self) -> None:
             requestLog.clear_history()
             requestLog.consume_gating_drop_stats()
 
-            streaming_state = RequestState(phase=RequestPhase.SENDING)
+            session = new_streaming_session("rid-stats")
+            GPTState.last_streaming_events = []
+            streaming_state = RequestState(
+                phase=RequestPhase.SENDING,
+                request_id="rid-stats",
+            )
             requestGating.try_begin_request(streaming_state)
 
             stats = requestLog.history_validation_stats()
             self.assertEqual(stats.get("gating_drop_total"), 1)
             self.assertEqual(stats.get("gating_drop_counts", {}).get("in_flight"), 1)
+            summary = stats.get("streaming_gating_summary", {})
+            self.assertIsInstance(summary, dict)
+            self.assertEqual(summary.get("total"), 1)
+            self.assertEqual(summary.get("counts", {}).get("in_flight"), 1)
+            self.assertEqual(
+                summary.get("counts_sorted"),
+                [{"reason": "in_flight", "count": 1}],
+            )
+            self.assertEqual(
+                summary.get("last"),
+                {"reason": "in_flight", "reason_count": 1},
+            )
 
         def test_history_axis_validate_reset_gating_flag(self) -> None:
             requestLog.clear_history()

@@ -3,6 +3,7 @@ import subprocess
 import sys
 import tempfile
 import unittest
+from pathlib import Path
 from typing import TYPE_CHECKING
 
 try:
@@ -65,6 +66,10 @@ if bootstrap is not None:
             self.assertEqual(result.returncode, 0, msg=result.stderr)
             lines = [line for line in result.stdout.splitlines() if line.strip()]
             self.assertGreaterEqual(len(lines), 2)
+            self.assertTrue(
+                any(line.startswith("Streaming gating summary:") for line in lines),
+                msg=result.stdout,
+            )
             import json
 
             summary_line = next(
@@ -72,6 +77,7 @@ if bootstrap is not None:
                 None,
             )
             self.assertIsNotNone(summary_line, msg=result.stdout)
+            assert summary_line is not None
             stats = json.loads(summary_line)
             self.assertIn("total_entries", stats)
             self.assertIn("entries_missing_directional", stats)
@@ -117,6 +123,98 @@ if bootstrap is not None:
                 self.assertIn("total_entries", stats)
                 self.assertIn("entries_missing_directional", stats)
             clear_history()
+
+        def test_summarize_json_outputs_summary(self) -> None:
+            import json
+
+            with tempfile.TemporaryDirectory() as tmpdir:
+                summary_path = Path(tmpdir) / "history-summary.json"
+                payload = {
+                    "total_entries": 3,
+                    "gating_drop_total": 2,
+                    "streaming_gating_summary": {
+                        "counts": {"in_flight": 2},
+                        "last": {"reason": "in_flight", "reason_count": 2},
+                        "total": 2,
+                    },
+                }
+                summary_path.write_text(json.dumps(payload), encoding="utf-8")
+                result = subprocess.run(
+                    [
+                        sys.executable,
+                        "scripts/tools/history-axis-validate.py",
+                        "--summarize-json",
+                        str(summary_path),
+                        "--summary-format",
+                        "streaming",
+                    ],
+                    check=False,
+                    capture_output=True,
+                    text=True,
+                )
+                self.assertEqual(result.returncode, 0, msg=result.stderr)
+                output = result.stdout.strip()
+                expected = (
+                    "Streaming gating summary: total=2; counts=in_flight=2; "
+                    "last=in_flight (count=2)"
+                )
+                self.assertEqual(output, expected)
+                self.assertNotIn("### History Guardrail Summary", result.stdout)
+
+                result_json = subprocess.run(
+                    [
+                        sys.executable,
+                        "scripts/tools/history-axis-validate.py",
+                        "--summarize-json",
+                        str(summary_path),
+                        "--summary-format",
+                        "json",
+                        "--artifact-url",
+                        "https://example.com/artifact",
+                    ],
+                    check=False,
+                    capture_output=True,
+                    text=True,
+                )
+                self.assertEqual(result_json.returncode, 0, msg=result_json.stderr)
+                json_output = json.loads(result_json.stdout.strip())
+                streaming_summary = json_output.get("streaming_gating_summary")
+                self.assertEqual(
+                    streaming_summary,
+                    {
+                        "counts": {"in_flight": 2},
+                        "counts_sorted": [{"reason": "in_flight", "count": 2}],
+                        "last": {"reason": "in_flight", "reason_count": 2},
+                        "total": 2,
+                    },
+                )
+                self.assertEqual(
+                    json_output.get("artifact_url"), "https://example.com/artifact"
+                )
+
+                result_markdown = subprocess.run(
+                    [
+                        sys.executable,
+                        "scripts/tools/history-axis-validate.py",
+                        "--summarize-json",
+                        str(summary_path),
+                        "--artifact-url",
+                        "https://example.com/artifact",
+                    ],
+                    check=False,
+                    capture_output=True,
+                    text=True,
+                )
+                self.assertEqual(
+                    result_markdown.returncode, 0, msg=result_markdown.stderr
+                )
+                markdown_output = result_markdown.stdout
+                self.assertIn("### History Guardrail Summary", markdown_output)
+                self.assertIn(
+                    "- Streaming gating summary: total=2; counts=in_flight=2; last=in_flight (count=2)",
+                    markdown_output,
+                )
+                self.assertIn("Download artifact", markdown_output)
 
         def test_script_fails_when_persona_metadata_missing(self) -> None:
             from talon_user.lib.requestLog import clear_history  # type: ignore

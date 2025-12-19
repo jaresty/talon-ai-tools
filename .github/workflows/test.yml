@@ -38,7 +38,10 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: history-axis-summary
-          path: artifacts/history-axis-summaries/history-validation-summary.json
+          path: |
+            artifacts/history-axis-summaries/history-validation-summary.json
+            artifacts/history-axis-summaries/history-validation-summary.streaming.json
+            artifacts/history-axis-summaries/history-validation-summary.telemetry.json
           if-no-files-found: warn
           retention-days: 30
 
@@ -52,30 +55,7 @@ jobs:
             else
               ARTIFACT_URL=""
             fi
-            SUMMARY_OUTPUT=$(python3 - "$SUMMARY_FILE" "$ARTIFACT_URL" <<'PY'
-import json
-import pathlib
-import sys
-summary_path = pathlib.Path(sys.argv[1])
-artifact_url = sys.argv[2]
-try:
-    data = json.loads(summary_path.read_text())
-except Exception:
-    data = {}
-lines = [
-    "### History Guardrail Summary",
-    "",
-    f"- Saved `{summary_path}`",
-    f"- Entries validated: {data.get('total_entries', 'unknown')}",
-    f"- Gating drops recorded: {data.get('gating_drop_total', 'unknown')}",
-]
-if artifact_url:
-    lines.append(f"- [Download artifact]({artifact_url})")
-else:
-    lines.append("- Artifact link unavailable outside GitHub Actions.")
-print("\n".join(lines))
-PY
-)
+            SUMMARY_OUTPUT=$(python3 scripts/tools/history-axis-validate.py --summarize-json "${SUMMARY_FILE}" --artifact-url "${ARTIFACT_URL}")
             echo "${SUMMARY_OUTPUT}"
             if [ -n "${GITHUB_STEP_SUMMARY:-}" ]; then
               printf '%s
@@ -91,24 +71,6 @@ PY
               printf '%s
 ' "${SUMMARY_OUTPUT}" >> "${GITHUB_STEP_SUMMARY}"
             fi
-            echo "History summary missing; job summary updated to reflect absence."
-          fi
-
-            {
-              echo "### History Guardrail Summary"
-              echo
-              echo "- Saved \`${SUMMARY_FILE}\`"
-              echo "- Entries validated: ${TOTAL_ENTRIES}"
-              echo "- Gating drops recorded: ${GATING_DROPS}"
-              echo "${LINK_LINE}"
-            } >> "$GITHUB_STEP_SUMMARY"
-            echo "History summary noted in job summary."
-          else
-            {
-              echo "### History Guardrail Summary"
-              echo
-              echo "- No history summary was produced in this run."
-            } >> "$GITHUB_STEP_SUMMARY"
             echo "History summary missing; job summary updated to reflect absence."
           fi
 

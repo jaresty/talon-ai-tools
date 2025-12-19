@@ -168,9 +168,11 @@ Add a work-log entry containing:
 - **Removal test:** What breaks or regresses if this slice is reverted? Explicitly
   confirm the targeted guardrail fails when the behaviour change is rolled back
   (e.g., `git checkout -- path/to/file`) and tighten the test if it remains green.
-- **Adversarial “what remains” check:** Enumerate plausible gaps or next slices.
-  For each, either schedule the next loop (component + goal) or mark it
-  out-of-repo/no-longer-required with supporting evidence.
+- **Adversarial “what remains” check:** Re-scan the ADR objectives, tasks, and
+  recent loops for unresolved gaps—not just the current slice. Treat this like a
+  mini completion pass: for each gap you uncover, either schedule the next loop
+  (component + goal) or mark it out-of-repo/no-longer-required with supporting
+  evidence.
 
 ### 5. Completion & Parking
 

@@ -8,8 +8,12 @@ without Talon imports.
 
 from __future__ import annotations
 
-from typing import Callable, Optional
+from typing import Callable, Optional, cast
 
+from .requestLifecycle import (
+    is_in_flight as lifecycle_is_in_flight,
+    try_start_request as lifecycle_try_start_request,
+)
 from .requestState import (
     RequestDropReason,
     RequestEvent,
@@ -17,9 +21,8 @@ from .requestState import (
     RequestState,
     RequestPhase,
     Surface,
-    is_in_flight as state_is_in_flight,
+    lifecycle_status_for,
     transition,
-    try_start_request as state_try_start_request,
 )
 
 
@@ -64,12 +67,15 @@ class RequestUIController:
     def is_in_flight(self) -> bool:
         """Return True when the controller's request is currently in flight."""
 
-        return state_is_in_flight(self._state)
+        lifecycle_state = lifecycle_status_for(self._state)
+        return lifecycle_is_in_flight(lifecycle_state)
 
     def try_start_request(self) -> tuple[bool, RequestDropReason]:
         """Return whether a new request may start plus the drop reason."""
 
-        return state_try_start_request(self._state)
+        lifecycle_state = lifecycle_status_for(self._state)
+        allowed, reason = lifecycle_try_start_request(lifecycle_state)
+        return allowed, cast(RequestDropReason, reason)
 
     def handle(self, event: RequestEvent) -> RequestState:
         """Apply an event, update state, and reconcile UI surfaces."""

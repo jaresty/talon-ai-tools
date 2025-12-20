@@ -112,9 +112,11 @@ def build_payload(
         elif sum_counts:
             streaming_total = sum_counts
 
+    total_entries = _coerce_int(data.get("total_entries"))
+
     payload: Dict[str, Any] = {
         "generated_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
-        "total_entries": _coerce_int(data.get("total_entries")),
+        "total_entries": total_entries,
         "gating_drop_total": streaming_total,
         "top_gating_reasons": top_reasons,
     }
@@ -123,6 +125,8 @@ def build_payload(
         payload["artifact_url"] = artifact_url
     if other_total:
         payload["other_gating_drops"] = other_total
+    if total_entries > 0:
+        payload["gating_drop_rate"] = round(streaming_total / total_entries, 4)
 
     return payload
 

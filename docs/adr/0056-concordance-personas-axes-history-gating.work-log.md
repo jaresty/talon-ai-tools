@@ -967,6 +967,36 @@
   - Surface the same normalized ordering through Concordance telemetry exports so dashboards match CLI/CI previews.
   - Evaluate truncating or highlighting top-N reasons once real multi-reason data accumulates to keep summaries scannable without losing detail in the JSON artifact.
 
+## 2025-12-19 – Loop 228 (kind: guardrail/tests)
+- Focus: Request Gating & Streaming – expose drop-rate telemetry for gating dashboards.
+- Deliverables:
+  - Added `_tests/test_history_axis_export_telemetry.py::HistoryAxisExportTelemetryTests::test_includes_gating_drop_rate` to require a `gating_drop_rate` field when totals are available.
+  - Updated `scripts/tools/history-axis-export-telemetry.py::build_payload` to compute the drop rate (falling back to zero entries) alongside the existing totals and top reasons.
+- Guardrail: `python3 -m pytest _tests/test_history_axis_export_telemetry.py`.
+- Evidence:
+  - red | 2025-12-19T23:55Z | exit 1 | python3 -m pytest _tests/test_history_axis_export_telemetry.py
+      TypeError: unsupported operand type(s) for -: 'NoneType' and 'float'
+  - green | 2025-12-19T23:57Z | exit 0 | python3 -m pytest _tests/test_history_axis_export_telemetry.py
+      4 passed in 0.20s
+- Removal test: Reverting either the new guardrail or the drop-rate computation removes the field, causing `_tests/test_history_axis_export_telemetry.py::HistoryAxisExportTelemetryTests::test_includes_gating_drop_rate` to fail and hiding rate trends from telemetry consumers.
+- Adversarial “what remains” check:
+  - Add guardrails for malformed summary input once CLI error handling slices land, so exporters fail loudly in CI when JSON is missing or corrupt.
+  - Thread `gating_drop_rate` through downstream ETL dashboards after confirming Concordance ingestion expects the new field.
+
+## 2025-12-19 – Loop 227 (kind: guardrail/tests)
+- Focus: Request Gating & Streaming – extend telemetry exporter guardrails for artifact links and stdout mode.
+- Deliverables:
+  - Added `_tests/test_history_axis_export_telemetry.py::HistoryAxisExportTelemetryTests::test_preserves_artifact_url_when_provided` to lock the `--artifact-url` passthrough contract.
+  - Added `_tests/test_history_axis_export_telemetry.py::HistoryAxisExportTelemetryTests::test_stdout_mode_emits_json_payload` to guard the stdout JSON path when `--output` is omitted.
+- Guardrail: `python3 -m pytest _tests/test_history_axis_export_telemetry.py` (existing behaviour already satisfied the new assertions; no implementation changes required).
+- Evidence:
+  - green | 2025-12-19T23:58Z | exit 0 | python3 -m pytest _tests/test_history_axis_export_telemetry.py
+      3 passed in 0.12s
+- Removal test: Deleting the new tests allows regressions (dropping `artifact_url` or breaking stdout output) to land unnoticed; retaining them ensures `python3 -m pytest _tests/test_history_axis_export_telemetry.py` fails if the exporter regresses.
+- Adversarial “what remains” check:
+  - Add negative-path coverage for malformed JSON or missing summary files if future slices harden CLI error handling.
+  - Once Concordance ETL integration lands, consider adding a smoke test that exercises artifact upload wiring end-to-end via the guardrail scripts.
+
 ## 2025-12-19 – Loop 226 (kind: guardrail/tests)
 - Focus: Request Gating & Streaming – harden telemetry export totals when streaming summaries omit `total`.
 - Deliverables:
@@ -1101,4 +1131,36 @@
 - Adversarial “what remains” check:
   - Thread the `counts_sorted` data into Concordance telemetry/dashboard exporters so dashboards match CLI/CI ordering.
   - Evaluate including top-N reason callouts in future job summaries once real multi-reason gating data appears.
+
+## 2025-12-19 – Loop 229 (kind: guardrail/tests)
+- Focus: Request Gating & Streaming – add lifecycle gating helpers to mirror request state guardrails.
+- Deliverables:
+  - Added `is_in_flight` and `try_start_request` helpers to `lib/requestLifecycle.py`, aligning lifecycle gating with the existing request-state façade.
+  - Extended `_tests/test_request_lifecycle.py` with regression coverage for lifecycle gating semantics (in-flight detection and drop reasons).
+- Guardrail: `python3 -m pytest _tests/test_request_lifecycle.py`.
+- Evidence:
+  - red | 2025-12-19T20:07Z | exit 1 | python3 -m pytest _tests/test_request_lifecycle.py
+      ImportError: cannot import name 'is_in_flight' from 'talon_user.lib.requestLifecycle'
+  - green | 2025-12-19T20:12Z | exit 0 | python3 -m pytest _tests/test_request_lifecycle.py
+      8 passed in 0.02s
+- Removal test: Reverting the lifecycle helpers or test updates would resurrect the import failure and drop the shared gating guardrail, causing `_tests/test_request_lifecycle.py` to fail.
+- Adversarial “what remains” check:
+  - Migrate controller and lifecycle orchestrators (`requestController`, downstream canvases) to consume the new lifecycle gating helpers instead of bespoke checks.
+  - Extend integration coverage (e.g., `_tests/test_model_help_canvas_guard.py`) so UI gating surfaces fail when they bypass the lifecycle façade.
+
+## 2025-12-19 – Loop 230 (kind: guardrail/tests)
+- Focus: Request Gating & Streaming – route `RequestUIController` gating through the lifecycle façade.
+- Deliverables:
+  - Updated `_tests/test_request_controller.py` to assert `RequestUIController` delegates gating checks to shared requestLifecycle helpers.
+  - Refactored `lib/requestController.py` to derive lifecycle status from `requestState` and call the centralized requestLifecycle gating helpers.
+- Guardrail: `python3 -m pytest _tests/test_request_controller.py`.
+- Evidence:
+  - red | 2025-12-19T20:22Z | exit 1 | python3 -m pytest _tests/test_request_controller.py
+      AssertionError: Expected 'is_in_flight' to have been called once. Called 0 times.
+  - green | 2025-12-19T20:34Z | exit 0 | python3 -m pytest _tests/test_request_controller.py
+      12 passed in 0.03s
+- Removal test: Reverting the controller refactor or the new delegation tests would drop lifecycle-level gating coverage, causing `_tests/test_request_controller.py` to fail and allowing bespoke gating checks to creep back in.
+- Adversarial “what remains” check:
+  - Migrate downstream canvases and helpers (`requestUI`, `modelHelpers`, overlay commands) to consume `RequestUIController.try_start_request` so lifecycle gating remains centralized.
+  - Extend integration tests (e.g., `_tests/test_model_help_canvas_guard.py`, `_tests/test_model_suggestion_gui.py`) to assert lifecycle drop reasons propagate through UI surfaces.
 

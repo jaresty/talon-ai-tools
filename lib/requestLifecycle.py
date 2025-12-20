@@ -13,6 +13,8 @@ RequestStatus = Literal[
     "cancelled",
 ]
 
+RequestLifecycleDropReason = Literal["", "in_flight"]
+
 
 @dataclass(frozen=True)
 class RequestLifecycleState:
@@ -28,12 +30,7 @@ class RequestLifecycleState:
 
 
 def is_terminal(state: RequestLifecycleState) -> bool:
-    """Return True if the lifecycle state is terminal.
-
-    Under ADR-0037, ``errored`` and ``cancelled`` are treated as terminal
-    states for lifecycle purposes: once reached, subsequent lifecycle events
-    do not move the request back into a non-terminal state.
-    """
+    """Return True if the lifecycle state is terminal."""
 
     return state.status in ("errored", "cancelled")
 
@@ -98,3 +95,19 @@ def reduce_request_state(
         return state
     # Unknown events are ignored to keep the reducer total.
     return state
+
+
+def is_in_flight(state: RequestLifecycleState) -> bool:
+    """Return True when the lifecycle reflects an in-flight request."""
+
+    return state.status in ("running", "streaming")
+
+
+def try_start_request(
+    state: RequestLifecycleState,
+) -> tuple[bool, RequestLifecycleDropReason]:
+    """Return whether callers may begin a new request for this lifecycle."""
+
+    if is_in_flight(state):
+        return False, "in_flight"
+    return True, ""

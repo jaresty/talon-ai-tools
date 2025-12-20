@@ -14,6 +14,8 @@ if bootstrap is not None:
         RequestLifecycleState,
         reduce_request_state,
         is_terminal,
+        is_in_flight,
+        try_start_request,
     )
 
     class RequestLifecycleTests(unittest.TestCase):
@@ -74,6 +76,7 @@ if bootstrap is not None:
                     state = RequestLifecycleState(status=status)
                     retried = reduce_request_state(state, "retry")
                     self.assertEqual(retried.status, "running")
+
         def test_is_terminal_matches_error_and_cancel_contract(self) -> None:
             # Pending, running, streaming, and completed are non-terminal.
             for status in ("pending", "running", "streaming", "completed"):
@@ -84,6 +87,28 @@ if bootstrap is not None:
             for status in ("errored", "cancelled"):
                 with self.subTest(status=status):
                     self.assertTrue(is_terminal(RequestLifecycleState(status=status)))
+
+        def test_is_in_flight_covers_active_statuses(self) -> None:
+            for status in ("running", "streaming"):
+                with self.subTest(status=status):
+                    self.assertTrue(is_in_flight(RequestLifecycleState(status=status)))
+
+            for status in ("pending", "completed", "errored", "cancelled"):
+                with self.subTest(status=status):
+                    self.assertFalse(is_in_flight(RequestLifecycleState(status=status)))
+
+        def test_try_start_request_returns_drop_reason(self) -> None:
+            allowed, reason = try_start_request(RequestLifecycleState(status="pending"))
+            self.assertTrue(allowed)
+            self.assertEqual(reason, "")
+
+            for status in ("running", "streaming"):
+                with self.subTest(status=status):
+                    allowed, reason = try_start_request(
+                        RequestLifecycleState(status=status)
+                    )
+                    self.assertFalse(allowed)
+                    self.assertEqual(reason, "in_flight")
 
 
 else:

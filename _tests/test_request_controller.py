@@ -9,6 +9,8 @@ else:
     bootstrap()
 
 if bootstrap is not None:
+    from unittest.mock import patch
+
     from talon_user.lib.requestController import RequestUIController
     from talon_user.lib.requestState import (
         RequestEvent,
@@ -236,6 +238,41 @@ if bootstrap is not None:
             allowed, reason = controller.try_start_request()
             self.assertFalse(allowed)
             self.assertEqual(reason, "in_flight")
+
+        def test_is_in_flight_uses_request_lifecycle_facade(self) -> None:
+            controller = RequestUIController()
+            controller.handle(
+                RequestEvent(RequestEventKind.BEGIN_SEND, request_id="rid-lifecycle")
+            )
+
+            with patch(
+                "talon_user.lib.requestController.lifecycle_is_in_flight",
+                return_value=True,
+            ) as mock_is_in_flight:
+                result = controller.is_in_flight()
+
+            self.assertTrue(result)
+            mock_is_in_flight.assert_called_once()
+            lifecycle_state = mock_is_in_flight.call_args[0][0]
+            self.assertEqual(lifecycle_state.status, "running")
+
+        def test_try_start_request_uses_request_lifecycle_facade(self) -> None:
+            controller = RequestUIController()
+            controller.handle(
+                RequestEvent(RequestEventKind.BEGIN_STREAM, request_id="rid-lifecycle")
+            )
+
+            with patch(
+                "talon_user.lib.requestController.lifecycle_try_start_request",
+                return_value=(False, "in_flight"),
+            ) as mock_try_start:
+                allowed, reason = controller.try_start_request()
+
+            self.assertFalse(allowed)
+            self.assertEqual(reason, "in_flight")
+            mock_try_start.assert_called_once()
+            lifecycle_state = mock_try_start.call_args[0][0]
+            self.assertEqual(lifecycle_state.status, "streaming")
 else:
     if not TYPE_CHECKING:
 

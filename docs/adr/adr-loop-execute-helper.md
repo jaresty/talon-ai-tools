@@ -51,6 +51,7 @@ A loop entry is compliant when all statements hold:
 **Evidence block complete**
 - The work-log entry carries paired red/green summaries with command, timestamp (UTC preferred), exit status, and either a key snippet or a checksum.
 - When summaries alone are insufficient, transcripts are appended to `<ARTEFACT_LOG>` rather than creating per-loop files; reference the exact heading from the work-log.
+- By default, helper automation sets `<ARTEFACT_LOG>` to `<EVIDENCE_ROOT>/<adr>/artefacts.md` and records the pointer as `inline` when the summary is sufficient; contributors override by declaring alternatives in the loop header.
 - The removal test is recorded in the same block (command and outcome). If revert attempts fail, the blocker evidence is logged.
 - When no transcript is needed, the pointer field is recorded as `inline`.
 

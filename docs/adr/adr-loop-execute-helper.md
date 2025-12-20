@@ -1,293 +1,103 @@
 # ADR Loop / Execute Helper Prompt (Single-Agent Sequential Process)
 
-This helper defines the loop for advancing any ADR. It protects safety and
-observability while keeping a single agent efficient by bundling only when the
-behaviour, documentation, and guardrails share the same objective.
+This helper keeps ADR loops observable and safe while letting a single agent advance work in concise, auditable slices.
 
-**Current helper version:** `helper:v20251220` (update this string when the helper
-changes; work-log entries must reference it exactly).
+**Current helper version:** `helper:v20251220` (update this string when the helper changes; work-log entries must reference it exactly).
 
-**Treat every invocation as fresh.** Rebuild context from the ADR text, its
-work-log, and current repo state; do not rely on conversational history.
+**Treat every invocation as fresh.** Rebuild context from the ADR text, its work-log, and current repo state; do not rely on conversational history.
+
+---
+
+## Named Placeholders
+
+- `<EVIDENCE_ROOT>` – directory that stores detailed transcripts. Default: `docs/adr/evidence`.
+- `<VALIDATION_TARGET>` – minimal command or scripted set proving the slice end-to-end (e.g., `python3 -m pytest tests/foo_test.py::case`).
+- `<ARTEFACT_LOG>` – aggregated markdown (e.g., `<EVIDENCE_ROOT>/<adr>/2025-Q1.md`) that records full red/green transcripts when summaries are insufficient.
+- `<VCS_REVERT>` – revert command for the repository (default `git checkout -- <path>`). Adjust these placeholders per repo and cite the mapping once per ADR.
 
 ---
 
 ## Core Principles
 
-1. **Test before change.** Characterise or re-verify behaviour with automated
-   checks *before* implementation edits land. Add or update tests first, or cite
-   and re-run existing ones explicitly. When landing a behaviour change, ensure a
-   targeted test is failing (new or existing) **before** modifying implementation
-   code. If existing coverage currently passes, update the expectation to reflect
-   the desired behaviour and re-run to capture the failure before touching
-   implementation. For refactors, rely on characterization tests and temporarily
-   break the implementation to prove the tests detect the regression before
-   carrying the refactor through.
-2. **One substantial slice per loop.** Work is sequential; finish the current
-   slice (including validation and logging) before planning the next.
-3. **Observable deltas only.** Each loop must change code, tests, docs, config,
-   or ADR task/status in a way that would matter if reverted.
-4. **Lean process, rich evidence.** Keep planning lightweight (scratch notes are
-   fine) but record concrete evidence: commands run, output, files touched, and
-   removal tests.
-5. **Adversarial mindset.** Assume the ADR may still be incomplete; look for
-   gaps each loop and especially before declaring completion.
+1. **Guardrails first.** Surface a failing automated check before behaviour edits. Documentation-only loops meet this bar by citing the governing guardrail and recording the removal-evidence summary; run the guardrail when automation exists.
+2. **Single meaningful slice.** Each loop addresses one behaviour, guardrail, or documented decision end-to-end.
+3. **Observable delta.** Every loop produces a change that matters if reverted and carries a rollback plan.
+4. **Evidence-led logging.** Keep planning light but capture commands, outputs, touched files, and removal tests for every slice.
+5. **Adversarial mindset.** Assume gaps remain; re-scan goals before declaring completion.
 
 ---
 
-## Loop Outline
+## Loop Contract
 
-### 0. Clear Relevant Red Checks
+A loop entry is compliant when all statements hold:
 
-- If failures relate to the target ADR, fix or triage them first.
-- When a failure cannot be resolved now, record the blocker (with evidence) in
-  the ADR work-log before proceeding.
+**Focus declared**
+- Relevant red checks for the ADR are cleared or logged with evidence.
+- The contributor re-reads the ADR/work-log sections tied to the slice and notes which parts were refreshed.
+- In-repo work remains for the ADR; otherwise record a status-only loop with evidence.
 
-### 1. Rebuild Context & Choose the Focus Area
+**Slice qualifies**
+- All edits address the same behaviour, feature flag, or guardrail decision.
+- At most one major component boundary is crossed; config + implementation + docs counts as one when governed by the same behaviour.
+- Exactly one `<VALIDATION_TARGET>` proves the slice, even though it will run twice (red then green). Additional commands require justification in the work-log before execution.
+- Documentation-only loops cite the relevant ADR clause, include a removal test, and identify the guardrail (or explain why automation is unavailable).
 
-- Re-read the ADR body and work-log to refresh objectives, tasks, and recent
-  slices. For large ADRs, re-scan only the sections relevant to today’s slice and
-  note which sections you inspected.
-- Confirm the ADR still has in-repo work. When unsure, perform an adversarial
-  scan (see completion section) before editing.
-- Select one focus area aligned with ADR goals (e.g., specific module, workflow,
-  guardrail, or documented task). Prefer high-signal slices that reduce risk or
-  retire tasks outright.
+**Validation registered**
+- The pre-plan names the `<VALIDATION_TARGET>` and where evidence artefacts will live.
+- Before implementation edits, the contributor captures red evidence: updated expectation, fresh failing test, or, if coverage is missing, a minimal reversible regression (toggle, assertion, etc.) that is removed immediately after recording the failure.
+- After edits, the same `<VALIDATION_TARGET>` is rerun for green.
+- The contributor temporarily reverts the behaviour change using `<VCS_REVERT>` (or finer-grained equivalent) to confirm the guardrail fails again; if it stays green, the slice is tightened until the failure returns.
 
-### 2. Plan a Substantial Slice (Bundling Checklist)
+**Evidence block complete**
+- The work-log entry carries paired red/green summaries with command, timestamp (UTC preferred), exit status, and either a key snippet or a checksum.
+- When summaries alone are insufficient, transcripts are appended to `<ARTEFACT_LOG>` rather than creating per-loop files; reference the exact heading from the work-log.
+- The removal test is recorded in the same block (command and outcome). If revert attempts fail, the blocker evidence is logged.
+- When no transcript is needed, the pointer field is recorded as `inline`.
 
-- Capture a quick pre-plan (scratch notes allowed) listing involved files,
-  intended behaviour change, validation commands, and documentation updates. Note
-  the exact command(s) you will run for red/green evidence so they can be cited
-  later without guesswork.
-- A slice qualifies when it:
-  - Changes a single user-visible behaviour or guardrail end-to-end, **or**
-  - Completes an ADR task/subtask, **or**
-  - Tightens CI/telemetry coverage for an existing behaviour.
-- **Bundling checklist (all must be true):**
-  1. All edits address the same behaviour, feature flag, or guardrail decision.
-  2. Exactly one minimal acceptance/validation command (or scripted command set)
-     must prove the entire bundle. If you believe additional commands are
-     unavoidable, note that rationale explicitly in the work-log entry before
-     proceeding.
-  3. No more than one major component boundary is crossed (config + implementation
-     + docs counts as one if governed by the same behaviour). If uncertain, split
-     into separate loops or seek review before bundling.
-  4. A clear rollback plan exists: reverting this slice must restore the previous
-     behaviour cleanly.
-- If any criterion fails, split the work into multiple loops.
-- Always document the exact validation command(s) in your pre-plan and stick to
-  that list. When you must widen coverage mid-loop, amend the entry with the
-  additional command and justification *before* executing it, then capture full
-  red/green evidence (with stored transcripts) for every added command.
-- If no safe behaviour slice exists, record the blocker (with evidence) and the
-  follow-up plan instead of forcing a no-op loop. Status-only loops still require
-  an observable change (e.g., reclassifying a task with evidence) and must be
-  separated by behaviour/guardrail loops.
-
-### 3. Execute & Validate (Testing-First)
-
-3a. **Draft or update targeted tests.**
-    - Add/extend targeted tests, or re-run existing ones that cover the affected
-      paths.
-    - Survey existing suites and harnesses before adding new tests; extend the
-      canonical seam when possible and document any divergence.
-    - When relying on existing coverage, cite the exact test cases and explain
-      why they cover the behaviour. For every code edit, name the specific
-      test(s) that would fail if that change were reverted.
-
-3b. **Capture the failing run (red-first proof).**
-    - Before touching implementation, run the chosen validation command and
-      capture the failing result (new test or updated expectation). If existing
-      coverage currently passes, update the expectation to reflect the desired
-      behaviour and re-run to capture the failure before touching
-      implementation. For refactors, rely on characterization tests and
-      temporarily break the implementation to prove the tests detect the
-      regression before carrying the refactor through.
-    - The failing state must originate from the guardrail test or expectation
-      change itself—not ad-hoc instrumentation. Temporary code edits to induce
-      red runs are disallowed **except** when backfilling missing coverage; in
-      that case, revert the intentional regression immediately after proving the
-      test detects it.
-    - Record each command in a structured evidence block: command, timestamp,
-      exit status, and a short excerpt or checksum proving the outcome.
-    - Persist the raw command output (or a checksum of the captured log) for the
-      failing run under version control. Default pattern: `docs/adr/evidence/<adr>/<loop>.md`
-      containing both red and green transcripts with headings. For large outputs,
-      store a SHA-256 file (`<loop>-red.sha256`) plus reconstruction instructions.
-      Reference the artefact explicitly in the work-log entry so the red evidence
-      can be audited later.
-    - Logging only the passing run is non-compliant; if the red command cannot
-      execute, capture the attempted invocation and blocker evidence before
-      proceeding.
-    - When automation is impossible, log the blocker and the attempted command
-      before continuing, including the command you attempted to run.
-
-3c. **Implement the slice.**
-    - Apply code/config/doc changes, staying within the chosen focus area.
-    - Keep edits minimal yet complete for the intended behaviour.
-    - Before rerunning validation, inspect the diff and remove any change not
-      required to flip the failing test; treat unexpected edits as suspect until
-      they are justified.
-
-3d. **Re-run for green.**
-    - Execute the same validation command(s) after implementation edits to
-      confirm the behaviour passes.
-    - Before accepting the final green run, temporarily roll back the behaviour
-      change and re-run the validation; if it stays green, you either left
-      incidental edits or loosened the guardrail—shrink or tighten until the red
-      returns.
-    - Avoid repo-wide runs unless cross-cutting changes demand them; justify when
-      broader runs are necessary.
-    - Capture relevant output in the evidence block (pass/fail summary, key log
-      lines, or hashes) and persist the raw output (or checksum) for the green
-      rerun alongside the red artefact (e.g., the shared `<loop>.md` file or
-      `<loop>-green.sha256`).
-
-**Red/green checklist (do not advance until all are satisfied):**
-- 3b captured the failing command before implementation edits (red).
-- 3c landed the implementation change for the focused slice.
-- 3d re-ran the same command(s) and captured the passing result (green).
-
-If the green rerun still fails, resolve it within the loop or record a blocker
-entry (including the failing evidence) before proceeding to Step 4.
-
-### 4. Record the Loop & Queue Next Work
-
-Add a work-log entry containing:
-
-
-- **Heading:** Date + `kind: behaviour`, `kind: guardrail/tests`, or
-  `kind: status` (status entries still require an artefact change grounded in
-  evidence).
-- **Metadata:** Record a monotonically increasing loop identifier, the helper
-  version applied (exactly as listed at the top of this document), and the UTC
-  timestamp for this entry. If numbering ever drifts, backfill the log to restore
-  uniqueness before adding new loops.
-- **Context:** Focus area and objective.
-- **Helper upgrades:** When a new helper version applies, note the change in the
-  entry and schedule a follow-up behaviour/guardrail loop (or amendment) within
-  the next work-log entry to backfill any now-required evidence (red transcripts,
-  artefacts, numbering fixes). If you cannot close the gap immediately, record a
-  blocker entry with evidence and a deadline; do not leave legacy gaps once the
-  stricter rules are known.
-- **Deliverables:** Updated artefacts (files, scripts, docs). Keep bullet points
-  short and factual. For each code edit, include a `Guardrail` bullet naming the
-  failing/passing test or command (e.g., `tests/path/to_case::suite::check`).
-- **Plan vs. outcome:** If the landed work diverged from the initial plan,
-  briefly note what changed and why (e.g., “Deferred doc update pending new
-  schema”).
-- **Status-only loop guard:** If this entry only captures status or documentation
-  deltas, queue the next behaviour/guardrail slice before closing the loop so the
-  workflow keeps moving.
-- **Evidence block:** For each validation command, provide two separate entries:
-  one for the failing (red) run captured before implementation and one for the
-  passing (green) rerun after edits. Do not merge red/green output into a single
-  execution log, and do not omit the red entry even if it predates the helper
-  version you are using.
-  - Command executed (label each entry red or green).
-  - Timestamp (UTC preferred).
-  - Exit status or summary line (non-zero for the red run, zero for green).
-  - Pointer to the stored transcript or checksum file committed under
-    `docs/adr/evidence/…` (or documented repository-specific path) proving the
-    captured output. When using aggregated files, include the heading/section
-    reference inside that artefact.
-  - Optional checksum or key output snippet.
-  - Example evidence block:
-    ```
-    - red | 2025-12-19T17:42Z | exit 1 | scripts/__tests__/property/bootstrap-coordinator.test.ts
-        expected helpers: apollo.userDetectedAnalyticsV2
-    - green | 2025-12-19T17:55Z | exit 0 | scripts/__tests__/property/bootstrap-coordinator.test.ts
-        helpers include apollo.userDetectedAnalyticsV2
-    ```
-- **Removal test:** What breaks or regresses if this slice is reverted? Explicitly
-  confirm the targeted guardrail fails when the behaviour change is rolled back
-  (e.g., `git checkout -- path/to/file`) and tighten the test if it remains green.
-- **Adversarial “what remains” check:** Re-scan the ADR objectives, tasks, and
-  recent loops for unresolved gaps—not just the current slice. Treat this like a
-  mini completion pass: for each gap you uncover, either schedule the next loop
-  (component + goal) or mark it out-of-repo/no-longer-required with supporting
-  evidence.
-
-### 5. Completion & Parking
-
-When you suspect the ADR is satisfied:
-
-1. Re-read all ADR/work-log sections covering its objectives.
-2. Run an adversarial completion check and log it as a final entry:
-   - Restate the ADR motivation and outcomes in your own words.
-   - Hunt for realistic gaps (missing guardrails, untested surfaces, stale tasks).
-     For each gap:
-     - Land a slice now, **or** note a follow-up task with trigger/evidence,
-     - Or mark it out-of-repo/no-longer-required with explicit justification.
-    - Provide fresh evidence from this loop (tests rerun today, files re-read,
-      dependency diffs) and tie it back to the red/green commands captured in Step
-      3/4. If referencing prior evidence, explain why it remains valid and note
-      any unchanged sections explicitly.
-
-3. Confirm all ADR tasks/subtasks are closed or formally reclassified.
-4. Update ADR status metadata if appropriate and mark the ADR “Accepted” in the
-   work-log. No further loops should run unless a new task/regression (with
-   trigger) is recorded.
+**Next work queued**
+- Deliverables and guardrails are bullet-listed (e.g., `Guardrail: tests/foo_test.py::case`).
+- Status-only entries schedule the next behaviour/guardrail slice before closing the loop.
+- Helper upgrades (new version strings) note the change and queue any reconciliation loop required by the stricter rules.
 
 ---
 
-## Additional Guidance
+## Evidence Specification
 
-- **Scratch planning:** Maintain a private list of upcoming slices, validation
-  commands, and file pointers to accelerate future loops. Refresh it whenever the
-  plan changes.
-- **Task shedding:** To drop a low-value task, use a loop to capture new evidence
-  (test output, code review, external decision) showing the task is unnecessary,
-  update the ADR task list, and ensure a behaviour/guardrail loop occurs before
-  any status-only entry.
-- **Targeted tooling:** Prefer focused commands; document rationale and evidence
-  when running broad suites or formatters. Include tool versions if relevant.
-- **Test placement:** Before writing new tests, confirm the canonical suite or
-  harness for the behaviour and note the rationale if creating a new seam.
-- **Test value:** Treat automated tests as behavioural guardrails that keep
-  refactors safe. Default to high coverage with fast, independent tests. Surface a
-  failing test before implementation changes; fall back to manual observation only
-  when an automated check cannot expose the issue. Avoid duplicating low-value
-  tests by restructuring suites so existing coverage carries the behaviour when it
-  already guards the slice.
-- **Manual observation evidence:** Behaviour changes may not land without a
-  failing automated check. When automation is currently impossible, document the
-  attempted commands, why they failed to expose the behaviour, and attach concrete
-  artefacts (logs, timestamps, interpretations) before recording the blocker in the
-  work-log.
-- **Documentation-only slices:** Only acceptable when they encode a concrete
-  contract/task decision or retire work with evidence. Each doc-only slice must
-  cite the governing ADR clause or requirement, include a removal test
-  demonstrating why the doc change matters, and attach a concrete artefact (e.g.,
-  guardrail command output committed under `docs/adr/evidence/<adr>/`, checksum of
-  the touched file, or captured log). Store artefacts as plain text or JSON (you
-  may aggregate multiple loops into dated files if each section is clearly
-  labelled); if a
-  binary asset is unavoidable, include a recorded SHA-256 checksum. This keeps the
-  evidence auditable and versioned.
-  If the documentation updates testing guidance or
-  guardrail expectations, rerun (or cite fresh evidence from) the referenced
-  guardrail. The failing automated test rule applies to behaviour changes; doc-only
-  loops satisfy evidence through their cited removal test and stored artefact.
-- **Hand-off template:** When another contributor must take over, append a
-  hand-off note to the work-log with the following fields:
-  - Current focus area and objective.
-  - Pending tests or validations.
-  - Known risks/open questions.
-  - Next candidate slice (component + goal).
-- **Project adaptation:** Replace example commands with your repository’s test or
-  build tooling. If repo-specific policies exist (e.g., formatting, linting,
-  release checklists), follow them alongside this helper. Consider adding a short
-  appendix mapping the structured evidence block to local tooling conventions.
-- **Helper upgrade playbook:** When the helper changes, perform a reconciliation
-  pass before the next completion/status entry: re-run affected guardrail
-  commands with the new evidence format, attach artefacts in the evidence
-  directory (updating aggregated files as needed), update older entries so the
-  entire work-log meets the latest requirements, and log a blocking status if
-  reconciliation cannot finish immediately.
+Every compliant loop includes a structured block similar to:
+```
+- red | 2025-12-19T17:42Z | exit 1 | <VALIDATION_TARGET>
+    expected helpers: apollo.userDetectedAnalyticsV2 | inline
+- green | 2025-12-19T17:55Z | exit 0 | <VALIDATION_TARGET>
+    helpers include apollo.userDetectedAnalyticsV2 | <ARTEFACT_LOG>#loop-217
+- removal | 2025-12-19T18:01Z | exit 1 | <VCS_REVERT> <path> && <VALIDATION_TARGET>
+    guardrail fails when reverted | inline
+```
+Replace placeholders with real commands, timestamps, and pointers. When aggregation is used, append headings inside `<ARTEFACT_LOG>` (`## loop-217 red`, `## loop-217 green`) so auditors can trace evidence quickly.
 
+---
 
-By following this helper, each loop lands a well-tested, observable slice; the
-work-log remains the single source of truth; and completion checks are decisive
-without overfitting to a specific codebase.
+## Completion Bar
+
+An ADR can be marked complete when:
+1. All loop entries satisfy the contract above and reference the same helper version string.
+2. Every ADR task/subtask is closed, reclassified with evidence, or explicitly parked with a trigger.
+3. A final adversarial entry restates motivations, lists remaining realistic gaps (if any), cites fresh guardrail runs or explains why prior evidence still holds, and confirms the next trigger required to reopen work.
+4. Repository metadata reflects the new status (e.g., ADR header/state, issue labels) if applicable.
+
+---
+
+## Portable Defaults & Overrides
+
+- Override `<EVIDENCE_ROOT>`, `<ARTEFACT_LOG>`, and `<VCS_REVERT>` in the ADR header or initial loop entry when repositories require different paths or tooling. Subsequent entries inherit the mapping unless restated.
+- Prefer text artefacts (markdown, JSON). When binary evidence is unavoidable, store a SHA-256 checksum alongside reconstruction notes.
+- Tooling may auto-validate loops by checking for the placeholders above; keep names stable to stay compatible.
+
+---
+
+## Operational Tips (Optional)
+
+- Maintain a scratch list of candidate slices, validation targets, and file pointers; refresh after every loop.
+- Inspect diffs before recording green runs to ensure only intentional edits remain.
+- Favour narrow tooling (single tests, targeted scripts) and document rationale before running broader suites or formatters.
+
+By following this helper, each loop lands a well-tested, observable slice; the work-log remains the single source of truth; and completion checks stay decisive without overfitting to a specific codebase.

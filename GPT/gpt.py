@@ -714,7 +714,7 @@ def _reject_if_request_in_flight() -> bool:
     except Exception:
         state = None
 
-    allowed, reason = try_begin_request(state)
+    allowed, reason = try_begin_request(state, source="GPT.gpt")
 
     try:
         request_id = getattr(state, "request_id", None)

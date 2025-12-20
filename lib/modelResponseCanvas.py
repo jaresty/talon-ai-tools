@@ -108,7 +108,7 @@ def _reject_if_request_in_flight() -> bool:
     """Notify and return True when a GPT request is already running."""
 
     state = _current_request_state()
-    allowed, reason = try_begin_request(state)
+    allowed, reason = try_begin_request(state, source="modelResponseCanvas")
     if not allowed and reason == "in_flight":
         message = drop_reason_message("in_flight")
         try:

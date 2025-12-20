@@ -58,6 +58,16 @@ def _normalize_streaming_summary(summary: object) -> dict[str, object]:
                 continue
             counts[str(reason)] = count_value
 
+    sources: dict[str, int] = {}
+    raw_sources = summary_dict.get("sources")
+    if isinstance(raw_sources, dict):
+        raw_sources_dict = cast(dict[str, Any], raw_sources)
+        for source, raw_value in raw_sources_dict.items():
+            count_value = _coerce_int(raw_value)
+            if count_value is None or count_value < 0:
+                continue
+            sources[str(source)] = count_value
+
     total = _coerce_int(summary_dict.get("total")) or 0
     counts_total = sum(counts.values())
     if counts_total and total < counts_total:
@@ -66,6 +76,10 @@ def _normalize_streaming_summary(summary: object) -> dict[str, object]:
     sorted_items = _sorted_counts(counts)
     counts_sorted = [
         {"reason": reason, "count": count} for reason, count in sorted_items
+    ]
+    sorted_sources = _sorted_counts(sources)
+    sources_sorted = [
+        {"source": source, "count": count} for source, count in sorted_sources
     ]
 
     last_payload: dict[str, object] = {}
@@ -83,10 +97,28 @@ def _normalize_streaming_summary(summary: object) -> dict[str, object]:
         if not last_payload.get("reason") and "reason_count" not in last_payload:
             last_payload = {}
 
+    last_source_payload: dict[str, object] = {}
+    raw_last_source = summary_dict.get("last_source")
+    if isinstance(raw_last_source, dict):
+        raw_last_source_dict = cast(dict[str, Any], raw_last_source)
+        source_name = raw_last_source_dict.get("source")
+        if isinstance(source_name, str) and source_name:
+            last_source_payload["source"] = source_name
+        source_count = _coerce_int(raw_last_source_dict.get("count"))
+        if source_count is None and isinstance(source_name, str) and source_name:
+            source_count = sources.get(source_name, 0)
+        if source_count is not None:
+            last_source_payload["count"] = source_count
+        if not last_source_payload.get("source") and "count" not in last_source_payload:
+            last_source_payload = {}
+
     return {
         "counts": counts,
         "counts_sorted": counts_sorted,
+        "sources": sources,
+        "sources_sorted": sources_sorted,
         "last": last_payload,
+        "last_source": last_source_payload,
         "total": total,
     }
 
@@ -102,6 +134,12 @@ def _format_streaming_summary_line(normalized: dict[str, object]) -> str:
         if counts_dict
         else "none"
     )
+    sources_dict = cast(dict[str, int], normalized.get("sources") or {})
+    sources_text = (
+        ", ".join(f"{source}={count}" for source, count in _sorted_counts(sources_dict))
+        if sources_dict
+        else "none"
+    )
     last_dict = cast(dict[str, Any], normalized.get("last") or {})
     if last_dict:
         last_reason = str(last_dict.get("reason") or "n/a")
@@ -109,8 +147,19 @@ def _format_streaming_summary_line(normalized: dict[str, object]) -> str:
         last_text = f"{last_reason} (count={last_count})"
     else:
         last_text = "n/a"
+    last_source_dict = cast(dict[str, Any], normalized.get("last_source") or {})
+    if last_source_dict:
+        last_source = str(last_source_dict.get("source") or "n/a")
+        last_source_count = cast(int, last_source_dict.get("count", 0))
+        last_source_text = f"{last_source} (count={last_source_count})"
+    else:
+        last_source_text = "n/a"
     total_value = cast(int, normalized.get("total", 0))
-    return f"Streaming gating summary: total={total_value}; counts={counts_text}; last={last_text}"
+    return (
+        "Streaming gating summary: "
+        f"total={total_value}; counts={counts_text}; sources={sources_text}; "
+        f"last={last_text}; last_source={last_source_text}"
+    )
 
 
 def _format_history_summary_from_data(
@@ -126,6 +175,17 @@ def _format_history_summary_from_data(
         f"- Gating drops recorded: {data.get('gating_drop_total', 'unknown')}",
         f"- {streaming_line}",
     ]
+
+    sources_summary = summary.get("sources", {})
+    if isinstance(sources_summary, dict) and sources_summary:
+        ordered_sources = sorted(
+            ((name, count) for name, count in sources_summary.items()),
+            key=lambda item: (-int(item[1]), str(item[0])),
+        )
+        sources_text = ", ".join(f"{name}={count}" for name, count in ordered_sources)
+    else:
+        sources_text = "none"
+    lines.append(f"- Streaming gating sources: {sources_text}")
     if artifact_url:
         lines.append(f"- [Download artifact]({artifact_url})")
     else:

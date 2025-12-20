@@ -41,35 +41,62 @@ def _sorted_counts(summary: Dict[str, Any]) -> List[Tuple[str, int]]:
         return []
 
     counts_sorted = streaming.get("counts_sorted")
+    ordered: List[Tuple[str, int]] = []
     if isinstance(counts_sorted, list):
-        ordered: List[Tuple[str, int]] = []
         for item in counts_sorted:
             if not isinstance(item, dict):
                 continue
             reason = item.get("reason")
-            count = item.get("count")
-            if isinstance(reason, str) and reason:
-                try:
-                    ordered.append((reason, int(count)))
-                except (TypeError, ValueError):
-                    continue
-        if ordered:
-            return ordered
+            count_value = _coerce_int(item.get("count"))
+            if not isinstance(reason, str) or not reason:
+                continue
+            ordered.append((reason, count_value))
+    if ordered:
+        return ordered
 
     counts = streaming.get("counts")
     if not isinstance(counts, dict):
         return []
 
-    ordered_counts: List[Tuple[str, int]] = []
     for reason, value in counts.items():
         if not isinstance(reason, str) or not reason:
             continue
-        try:
-            ordered_counts.append((reason, int(value)))
-        except (TypeError, ValueError):
+        count_value = _coerce_int(value)
+        ordered.append((reason, count_value))
+    ordered.sort(key=lambda item: (-item[1], item[0]))
+    return ordered
+
+
+def _sorted_sources(summary: Dict[str, Any]) -> List[Tuple[str, int]]:
+    streaming = summary.get("streaming_gating_summary")
+    if not isinstance(streaming, dict):
+        return []
+
+    sources_sorted = streaming.get("sources_sorted")
+    ordered: List[Tuple[str, int]] = []
+    if isinstance(sources_sorted, list):
+        for item in sources_sorted:
+            if not isinstance(item, dict):
+                continue
+            source = item.get("source")
+            count_value = _coerce_int(item.get("count"))
+            if not isinstance(source, str) or not source:
+                continue
+            ordered.append((source, count_value))
+    if ordered:
+        return ordered
+
+    sources = streaming.get("sources")
+    if not isinstance(sources, dict):
+        return []
+
+    for source, value in sources.items():
+        if not isinstance(source, str) or not source:
             continue
-    ordered_counts.sort(key=lambda item: (-item[1], item[0]))
-    return ordered_counts
+        count_value = _coerce_int(value)
+        ordered.append((source, count_value))
+    ordered.sort(key=lambda item: (-item[1], item[0]))
+    return ordered
 
 
 def _top_reasons(
@@ -90,6 +117,24 @@ def _top_reasons(
     return reasons, remaining
 
 
+def _top_sources(
+    counts: Iterable[Tuple[str, int]],
+    *,
+    limit: int,
+) -> Tuple[List[Dict[str, Any]], int]:
+    sources: List[Dict[str, Any]] = []
+    remaining = 0
+
+    for index, (source, count) in enumerate(counts):
+        if count <= 0:
+            continue
+        if index < limit:
+            sources.append({"source": source, "count": count})
+        else:
+            remaining += count
+    return sources, remaining
+
+
 def build_payload(
     data: Dict[str, Any],
     *,
@@ -103,6 +148,9 @@ def build_payload(
     ordered_counts = _sorted_counts(data)
     sum_counts = sum(count for _, count in ordered_counts)
     top_reasons, other_total = _top_reasons(ordered_counts, limit=top_n)
+
+    ordered_sources = _sorted_sources(data)
+    top_sources, other_sources_total = _top_sources(ordered_sources, limit=top_n)
 
     streaming_total = _coerce_int(streaming.get("total"))
     legacy_total = _coerce_int(data.get("gating_drop_total"))
@@ -119,12 +167,15 @@ def build_payload(
         "total_entries": total_entries,
         "gating_drop_total": streaming_total,
         "top_gating_reasons": top_reasons,
+        "top_gating_sources": top_sources,
     }
 
     if artifact_url:
         payload["artifact_url"] = artifact_url
     if other_total:
         payload["other_gating_drops"] = other_total
+    if other_sources_total:
+        payload["other_gating_source_drops"] = other_sources_total
     if total_entries > 0:
         payload["gating_drop_rate"] = round(streaming_total / total_entries, 4)
 

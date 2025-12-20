@@ -80,7 +80,9 @@ if bootstrap is not None:
                 request_id="rid-stream",
             )
 
-            allowed, reason = requestGating.try_begin_request(streaming_state)
+            allowed, reason = requestGating.try_begin_request(
+                streaming_state, source="test_case"
+            )
             self.assertFalse(allowed)
             self.assertEqual(reason, "in_flight")
 
@@ -90,21 +92,31 @@ if bootstrap is not None:
             self.assertEqual(first.get("kind"), "gating_drop")
             self.assertEqual(first.get("reason"), "in_flight")
             self.assertEqual(first.get("phase"), RequestPhase.SENDING.value)
+            self.assertEqual(first.get("source"), "test_case")
             self.assertEqual(first.get("reason_count"), 1)
             self.assertEqual(first.get("total_count"), 1)
             self.assertEqual(first.get("counts", {}).get("in_flight"), 1)
+            self.assertEqual(first.get("sources", {}).get("test_case"), 1)
+            self.assertEqual(first.get("source_count"), 1)
             self.assertEqual(session.events[-1], first)
 
             snapshot = getattr(GPTState, "last_streaming_snapshot", {})
             self.assertEqual(snapshot.get("gating_drop_total"), 1)
             self.assertEqual(snapshot.get("gating_drop_counts", {}).get("in_flight"), 1)
             self.assertEqual(
+                snapshot.get("gating_drop_sources", {}).get("test_case"), 1
+            )
+            self.assertEqual(
                 snapshot.get("gating_drop_last"),
                 {"reason": "in_flight", "reason_count": 1},
             )
+            self.assertEqual(
+                snapshot.get("gating_drop_last_source"),
+                {"source": "test_case", "count": 1},
+            )
 
             allowed_again, reason_again = requestGating.try_begin_request(
-                streaming_state
+                streaming_state, source="test_case"
             )
             self.assertFalse(allowed_again)
             self.assertEqual(reason_again, "in_flight")
@@ -115,9 +127,12 @@ if bootstrap is not None:
             self.assertEqual(final.get("kind"), "gating_drop")
             self.assertEqual(final.get("reason"), "in_flight")
             self.assertEqual(final.get("phase"), RequestPhase.SENDING.value)
+            self.assertEqual(final.get("source"), "test_case")
             self.assertEqual(final.get("reason_count"), 2)
             self.assertEqual(final.get("total_count"), 2)
             self.assertEqual(final.get("counts", {}).get("in_flight"), 2)
+            self.assertEqual(final.get("sources", {}).get("test_case"), 2)
+            self.assertEqual(final.get("source_count"), 2)
             self.assertEqual(session.events[-1], final)
 
             snapshot = getattr(GPTState, "last_streaming_snapshot", {})
@@ -206,22 +221,32 @@ if bootstrap is not None:
                 phase=RequestPhase.SENDING,
                 request_id="rid-stats",
             )
-            requestGating.try_begin_request(streaming_state)
+            requestGating.try_begin_request(streaming_state, source="test_case")
 
             stats = requestLog.history_validation_stats()
             self.assertEqual(stats.get("gating_drop_total"), 1)
             self.assertEqual(stats.get("gating_drop_counts", {}).get("in_flight"), 1)
+            self.assertEqual(stats.get("gating_drop_sources", {}).get("test_case"), 1)
             summary = stats.get("streaming_gating_summary", {})
             self.assertIsInstance(summary, dict)
             self.assertEqual(summary.get("total"), 1)
             self.assertEqual(summary.get("counts", {}).get("in_flight"), 1)
+            self.assertEqual(summary.get("sources", {}).get("test_case"), 1)
             self.assertEqual(
                 summary.get("counts_sorted"),
                 [{"reason": "in_flight", "count": 1}],
             )
             self.assertEqual(
+                summary.get("sources_sorted"),
+                [{"source": "test_case", "count": 1}],
+            )
+            self.assertEqual(
                 summary.get("last"),
                 {"reason": "in_flight", "reason_count": 1},
+            )
+            self.assertEqual(
+                summary.get("last_source"),
+                {"source": "test_case", "count": 1},
             )
 
         def test_history_axis_validate_reset_gating_flag(self) -> None:

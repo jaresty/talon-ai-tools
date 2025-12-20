@@ -35,7 +35,7 @@ if not TYPE_CHECKING:
             lines = [line for line in result.stdout.splitlines() if line.strip()]
             self.assertTrue(lines, "make output unexpectedly empty")
             self.assertIn(
-                "Streaming gating summary: total=0; counts=none; last=n/a",
+                "Streaming gating summary: total=0; counts=none; sources=none; last=n/a; last_source=n/a",
                 result.stdout,
             )
             self.assertIn(
@@ -63,7 +63,15 @@ if not TYPE_CHECKING:
                 streaming_data = json.load(handle)
             self.assertEqual(
                 streaming_data.get("streaming_gating_summary"),
-                {"counts": {}, "counts_sorted": [], "last": {}, "total": 0},
+                {
+                    "counts": {},
+                    "counts_sorted": [],
+                    "sources": {},
+                    "sources_sorted": [],
+                    "last": {},
+                    "last_source": {},
+                    "total": 0,
+                },
             )
 
             telemetry_path = summary_path.with_name(
@@ -78,6 +86,7 @@ if not TYPE_CHECKING:
             self.assertEqual(telemetry_payload.get("gating_drop_total"), 0)
             self.assertIn("generated_at", telemetry_payload)
             self.assertEqual(telemetry_payload.get("top_gating_reasons"), [])
+            self.assertEqual(telemetry_payload.get("top_gating_sources"), [])
 
         def test_make_request_history_guardrails_fast_produces_summary(self) -> None:
             """Guardrail: request-history-guardrails-fast should export the validation summary."""
@@ -106,7 +115,7 @@ if not TYPE_CHECKING:
             lines = [line for line in result.stdout.splitlines() if line.strip()]
             self.assertTrue(lines, "make output unexpectedly empty")
             self.assertIn(
-                "Streaming gating summary: total=0; counts=none; last=n/a",
+                "Streaming gating summary: total=0; counts=none; sources=none; last=n/a; last_source=n/a",
                 result.stdout,
             )
             self.assertIn(
@@ -134,7 +143,15 @@ if not TYPE_CHECKING:
                 streaming_data = json.load(handle)
             self.assertEqual(
                 streaming_data.get("streaming_gating_summary"),
-                {"counts": {}, "counts_sorted": [], "last": {}, "total": 0},
+                {
+                    "counts": {},
+                    "counts_sorted": [],
+                    "sources": {},
+                    "sources_sorted": [],
+                    "last": {},
+                    "last_source": {},
+                    "total": 0,
+                },
             )
 
             telemetry_path = summary_path.with_name(
@@ -149,6 +166,7 @@ if not TYPE_CHECKING:
             self.assertEqual(telemetry_payload.get("gating_drop_total"), 0)
             self.assertIn("generated_at", telemetry_payload)
             self.assertEqual(telemetry_payload.get("top_gating_reasons"), [])
+            self.assertEqual(telemetry_payload.get("top_gating_sources"), [])
 
 
 else:

@@ -4,6 +4,9 @@ This helper defines the loop for advancing any ADR. It protects safety and
 observability while keeping a single agent efficient by bundling only when the
 behaviour, documentation, and guardrails share the same objective.
 
+**Current helper version:** `helper:v20251220` (update this string when the helper
+changes; work-log entries must reference it exactly).
+
 **Treat every invocation as fresh.** Rebuild context from the ADR text, its
 work-log, and current repo state; do not rely on conversational history.
 
@@ -63,14 +66,20 @@ work-log, and current repo state; do not rely on conversational history.
   - Tightens CI/telemetry coverage for an existing behaviour.
 - **Bundling checklist (all must be true):**
   1. All edits address the same behaviour, feature flag, or guardrail decision.
-  2. Exactly one acceptance/validation command (or command set) will prove the
-     entire bundle.
+  2. Exactly one minimal acceptance/validation command (or scripted command set)
+     must prove the entire bundle. If you believe additional commands are
+     unavoidable, note that rationale explicitly in the work-log entry before
+     proceeding.
   3. No more than one major component boundary is crossed (config + implementation
      + docs counts as one if governed by the same behaviour). If uncertain, split
      into separate loops or seek review before bundling.
   4. A clear rollback plan exists: reverting this slice must restore the previous
      behaviour cleanly.
 - If any criterion fails, split the work into multiple loops.
+- Always document the exact validation command(s) in your pre-plan and stick to
+  that list. When you must widen coverage mid-loop, amend the entry with the
+  additional command and justification *before* executing it, then capture full
+  red/green evidence (with stored transcripts) for every added command.
 - If no safe behaviour slice exists, record the blocker (with evidence) and the
   follow-up plan instead of forcing a no-op loop. Status-only loops still require
   an observable change (e.g., reclassifying a task with evidence) and must be
@@ -102,6 +111,15 @@ work-log, and current repo state; do not rely on conversational history.
       test detects it.
     - Record each command in a structured evidence block: command, timestamp,
       exit status, and a short excerpt or checksum proving the outcome.
+    - Persist the raw command output (or a checksum of the captured log) for the
+      failing run under version control. Default pattern: `docs/adr/evidence/<adr>/<loop>.md`
+      containing both red and green transcripts with headings. For large outputs,
+      store a SHA-256 file (`<loop>-red.sha256`) plus reconstruction instructions.
+      Reference the artefact explicitly in the work-log entry so the red evidence
+      can be audited later.
+    - Logging only the passing run is non-compliant; if the red command cannot
+      execute, capture the attempted invocation and blocker evidence before
+      proceeding.
     - When automation is impossible, log the blocker and the attempted command
       before continuing, including the command you attempted to run.
 
@@ -122,7 +140,9 @@ work-log, and current repo state; do not rely on conversational history.
     - Avoid repo-wide runs unless cross-cutting changes demand them; justify when
       broader runs are necessary.
     - Capture relevant output in the evidence block (pass/fail summary, key log
-      lines, or hashes).
+      lines, or hashes) and persist the raw output (or checksum) for the green
+      rerun alongside the red artefact (e.g., the shared `<loop>.md` file or
+      `<loop>-green.sha256`).
 
 **Red/green checklist (do not advance until all are satisfied):**
 - 3b captured the failing command before implementation edits (red).
@@ -140,7 +160,17 @@ Add a work-log entry containing:
 - **Heading:** Date + `kind: behaviour`, `kind: guardrail/tests`, or
   `kind: status` (status entries still require an artefact change grounded in
   evidence).
+- **Metadata:** Record a monotonically increasing loop identifier, the helper
+  version applied (exactly as listed at the top of this document), and the UTC
+  timestamp for this entry. If numbering ever drifts, backfill the log to restore
+  uniqueness before adding new loops.
 - **Context:** Focus area and objective.
+- **Helper upgrades:** When a new helper version applies, note the change in the
+  entry and schedule a follow-up behaviour/guardrail loop (or amendment) within
+  the next work-log entry to backfill any now-required evidence (red transcripts,
+  artefacts, numbering fixes). If you cannot close the gap immediately, record a
+  blocker entry with evidence and a deadline; do not leave legacy gaps once the
+  stricter rules are known.
 - **Deliverables:** Updated artefacts (files, scripts, docs). Keep bullet points
   short and factual. For each code edit, include a `Guardrail` bullet naming the
   failing/passing test or command (e.g., `tests/path/to_case::suite::check`).
@@ -153,10 +183,15 @@ Add a work-log entry containing:
 - **Evidence block:** For each validation command, provide two separate entries:
   one for the failing (red) run captured before implementation and one for the
   passing (green) rerun after edits. Do not merge red/green output into a single
-  execution log.
+  execution log, and do not omit the red entry even if it predates the helper
+  version you are using.
   - Command executed (label each entry red or green).
   - Timestamp (UTC preferred).
   - Exit status or summary line (non-zero for the red run, zero for green).
+  - Pointer to the stored transcript or checksum file committed under
+    `docs/adr/evidence/…` (or documented repository-specific path) proving the
+    captured output. When using aggregated files, include the heading/section
+    reference inside that artefact.
   - Optional checksum or key output snippet.
   - Example evidence block:
     ```
@@ -223,11 +258,18 @@ When you suspect the ADR is satisfied:
   work-log.
 - **Documentation-only slices:** Only acceptable when they encode a concrete
   contract/task decision or retire work with evidence. Each doc-only slice must
-  cite the governing ADR clause or requirement and include a removal test
-  demonstrating why the doc change matters. If the documentation updates testing
-  guidance or guardrail expectations, rerun (or cite fresh evidence from) the
-  referenced guardrail. The failing automated test rule applies to behaviour
-  changes; doc-only loops satisfy evidence through their cited removal test.
+  cite the governing ADR clause or requirement, include a removal test
+  demonstrating why the doc change matters, and attach a concrete artefact (e.g.,
+  guardrail command output committed under `docs/adr/evidence/<adr>/`, checksum of
+  the touched file, or captured log). Store artefacts as plain text or JSON (you
+  may aggregate multiple loops into dated files if each section is clearly
+  labelled); if a
+  binary asset is unavoidable, include a recorded SHA-256 checksum. This keeps the
+  evidence auditable and versioned.
+  If the documentation updates testing guidance or
+  guardrail expectations, rerun (or cite fresh evidence from) the referenced
+  guardrail. The failing automated test rule applies to behaviour changes; doc-only
+  loops satisfy evidence through their cited removal test and stored artefact.
 - **Hand-off template:** When another contributor must take over, append a
   hand-off note to the work-log with the following fields:
   - Current focus area and objective.
@@ -238,6 +280,13 @@ When you suspect the ADR is satisfied:
   build tooling. If repo-specific policies exist (e.g., formatting, linting,
   release checklists), follow them alongside this helper. Consider adding a short
   appendix mapping the structured evidence block to local tooling conventions.
+- **Helper upgrade playbook:** When the helper changes, perform a reconciliation
+  pass before the next completion/status entry: re-run affected guardrail
+  commands with the new evidence format, attach artefacts in the evidence
+  directory (updating aggregated files as needed), update older entries so the
+  entire work-log meets the latest requirements, and log a blocking status if
+  reconciliation cannot finish immediately.
+
 
 By following this helper, each loop lands a well-tested, observable slice; the
 work-log remains the single source of truth; and completion checks are decisive

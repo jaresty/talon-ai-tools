@@ -1,5 +1,6 @@
 import unittest
 from typing import TYPE_CHECKING
+from unittest import mock
 
 try:
     from bootstrap import bootstrap
@@ -23,6 +24,8 @@ if bootstrap is not None:
         emit_history_saved,
         next_request_id,
         set_controller,
+        is_in_flight as bus_is_in_flight,
+        try_start_request as bus_try_start_request,
     )
     from talon_user.lib.requestController import RequestUIController
     from talon_user.lib.requestState import RequestPhase, Surface
@@ -160,7 +163,9 @@ if bootstrap is not None:
             self.assertEqual(calls, [(rid, "chunk-2")])
             self.assertEqual(getattr(GPTState, "last_request_id", None), rid)
 
-        def test_emit_append_without_id_generates_request_id_and_updates_last_request_id(self):
+        def test_emit_append_without_id_generates_request_id_and_updates_last_request_id(
+            self,
+        ):
             calls = []
 
             def on_append(req_id, chunk):
@@ -252,7 +257,9 @@ if bootstrap is not None:
             self.assertTrue(state.request_id)
             self.assertEqual(calls, [state.request_id])
             self.assertEqual(state.phase, RequestPhase.STREAMING)
-            self.assertEqual(getattr(GPTState, "last_request_id", None), state.request_id)
+            self.assertEqual(
+                getattr(GPTState, "last_request_id", None), state.request_id
+            )
 
         def test_emit_retry_from_error_clears_error_and_moves_to_streaming(self):
             emit_reset()
@@ -320,11 +327,15 @@ if bootstrap is not None:
             # Restore a controller for cleanliness.
             set_controller(RequestUIController())
 
-        def test_emit_history_saved_with_explicit_id_without_controller_sets_last_request_id(self):
+        def test_emit_history_saved_with_explicit_id_without_controller_sets_last_request_id(
+            self,
+        ):
             set_controller(None)
             emit_reset()
             emit_history_saved("/tmp/explicit.md", request_id="rid-explicit-history")
-            self.assertEqual(getattr(GPTState, "last_request_id", None), "rid-explicit-history")
+            self.assertEqual(
+                getattr(GPTState, "last_request_id", None), "rid-explicit-history"
+            )
             set_controller(RequestUIController())
 
         def test_emit_reset_clears_last_request_id_without_controller(self):
@@ -383,12 +394,16 @@ if bootstrap is not None:
             self.assertEqual(current_state().phase, RequestPhase.IDLE)
             set_controller(RequestUIController())
 
-        def test_emit_append_without_controller_generates_request_id_and_returns_state(self):
+        def test_emit_append_without_controller_generates_request_id_and_returns_state(
+            self,
+        ):
             set_controller(None)
             emit_reset()
             state = emit_append("chunk-no-controller")
             self.assertTrue(state.request_id.startswith("req-"))
-            self.assertEqual(getattr(GPTState, "last_request_id", None), state.request_id)
+            self.assertEqual(
+                getattr(GPTState, "last_request_id", None), state.request_id
+            )
             self.assertEqual(current_state().request_id, state.request_id)
             self.assertEqual(current_state().phase, RequestPhase.IDLE)
             set_controller(RequestUIController())
@@ -512,6 +527,45 @@ if bootstrap is not None:
             # Cancel defaults similarly.
             emit_cancel()
             self.assertEqual(getattr(GPTState, "last_request_id", None), rid)
+
+        def test_try_start_request_delegates_to_controller(self):
+            controller = RequestUIController()
+            set_controller(controller)
+            emit_reset()
+            with mock.patch.object(
+                controller, "try_start_request", return_value=(False, "in_flight")
+            ) as patched:
+                allowed, reason = bus_try_start_request()
+            self.assertFalse(allowed)
+            self.assertEqual(reason, "in_flight")
+            patched.assert_called_once_with()
+
+        def test_try_start_request_without_controller_defaults_to_state(self):
+            set_controller(None)
+            emit_reset()
+            allowed, reason = bus_try_start_request()
+            self.assertTrue(allowed)
+            self.assertEqual(reason, "")
+            set_controller(RequestUIController())
+
+        def test_is_in_flight_delegates_to_controller(self):
+            controller = RequestUIController()
+            set_controller(controller)
+            emit_reset()
+            with mock.patch.object(
+                controller, "is_in_flight", return_value=True
+            ) as patched:
+                result = bus_is_in_flight()
+            self.assertTrue(result)
+            patched.assert_called_once_with()
+
+        def test_is_in_flight_without_controller_defaults_to_state(self):
+            set_controller(None)
+            emit_reset()
+            result = bus_is_in_flight()
+            self.assertFalse(result)
+            set_controller(RequestUIController())
+
 else:
     if not TYPE_CHECKING:
 

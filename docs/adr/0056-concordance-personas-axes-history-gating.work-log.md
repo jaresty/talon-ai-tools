@@ -1164,3 +1164,115 @@
   - Migrate downstream canvases and helpers (`requestUI`, `modelHelpers`, overlay commands) to consume `RequestUIController.try_start_request` so lifecycle gating remains centralized.
   - Extend integration tests (e.g., `_tests/test_model_help_canvas_guard.py`, `_tests/test_model_suggestion_gui.py`) to assert lifecycle drop reasons propagate through UI surfaces.
 
+## 2025-12-19 – Loop 231 (kind: guardrail/tests)
+- Focus: Request Gating & Streaming – expose bus-level gating helpers backed by the shared controller façade.
+- Deliverables:
+  - Added `try_start_request` and `is_in_flight` wrappers to `lib/requestBus.py` that delegate to `RequestUIController` when available and fall back to `requestState` semantics.
+  - Updated `lib/requestGating.py` to route default gating checks through the bus helpers while preserving explicit state handling and telemetry recording.
+  - Extended `_tests/test_request_bus.py` with delegation coverage ensuring the bus helpers call into the controller when present and revert to stored state when detached.
+- Guardrail: `python3.11 -m pytest _tests/test_request_bus.py`; supporting `python3.11 -m pytest _tests/test_request_gating.py`.
+- Evidence:
+  - red | 2025-12-19T20:45Z | exit 1 | python3.11 -m pytest _tests/test_request_bus.py::RequestBusTests::test_try_start_request_delegates_to_controller
+      ImportError: cannot import name 'is_in_flight' from 'talon_user.lib.requestBus'
+  - green | 2025-12-19T20:52Z | exit 0 | python3.11 -m pytest _tests/test_request_bus.py::RequestBusTests::test_try_start_request_delegates_to_controller
+      1 passed in 0.04s
+  - green | 2025-12-19T20:53Z | exit 0 | python3.11 -m pytest _tests/test_request_bus.py
+      47 passed in 0.04s
+  - green | 2025-12-19T20:54Z | exit 0 | python3.11 -m pytest _tests/test_request_gating.py
+      10 passed in 0.05s
+- Removal test: Reverting the bus helpers or gating delegation would cause `_tests/test_request_bus.py::RequestBusTests::test_try_start_request_delegates_to_controller` to fail and drop controller-backed gating coverage, undoing the ADR guardrail alignment.
+- Adversarial “what remains” check:
+  - Migrate UI canvases and helpers that still import `requestGating` wrappers onto the bus/controller façade so drop reasons and telemetry stay centralized end-to-end.
+  - Extend integration guardrails (e.g., `_tests/test_model_help_canvas_guard.py`) to assert controller-sourced drop reasons propagate through user-facing surfaces once downstream callers adopt the bus helpers.
+
+## 2025-12-19 – Loop 232 (kind: guardrail/tests)
+- Focus: Request Gating & Streaming – align provider commands with the request bus gating façade.
+- Deliverables:
+  - Updated `_tests/test_provider_commands.py` to require `_request_is_in_flight` to delegate to the bus-level helper.
+  - Refactored `lib/providerCommands.py` to import `requestBus.is_in_flight` as `bus_is_in_flight` and fall back safely, keeping `try_begin_request` for telemetry.
+- Guardrail: `python3.11 -m pytest _tests/test_provider_commands.py`; supporting `python3.11 -m pytest _tests/test_request_gating.py`.
+- Evidence:
+  - red | 2025-12-19T21:05Z | exit 1 | python3.11 -m pytest _tests/test_provider_commands.py::ProviderCommandGuardTests::test_request_is_in_flight_delegates_to_request_bus
+      AttributeError: <module 'talon_user.lib.providerCommands' from '/Users/tkma6d4/.talon/user/talon-ai-tools/lib/providerCommands.py'> does not have the attribute 'bus_is_in_flight'
+  - green | 2025-12-19T21:09Z | exit 0 | python3.11 -m pytest _tests/test_provider_commands.py
+      4 passed in 0.05s
+  - green | 2025-12-19T21:09Z | exit 0 | python3.11 -m pytest _tests/test_request_gating.py
+      10 passed in 0.05s
+- Removal test: Reverting the provider delegation would drop the `bus_is_in_flight` import, causing the refreshed provider guard test to fail and leaving provider commands on the old gating helper.
+- Adversarial “what remains” check:
+  - Continue migrating other canvases (`modelHelpCanvas`, `modelPatternGUI`, `modelPromptPatternGUI`, `modelSuggestionGUI`, `requestHistoryActions`, `requestHistoryDrawer`) so their gating checks also rely on the bus/controller façade.
+  - Extend integration guardrails (e.g., `_tests/test_model_help_canvas_guard.py`, `_tests/test_model_pattern_gui.py`) to ensure UI-level drop messaging reflects controller-sourced reasons after migration.
+
+## 2025-12-19 – Loop 233 (kind: guardrail/tests)
+- Focus: Request Gating & Streaming – migrate the model help canvas onto the request bus gating façade.
+- Deliverables:
+  - Updated `_tests/test_model_help_canvas_guard.py` to assert `_request_is_in_flight` patches `bus_is_in_flight` when present.
+  - Refactored `lib/modelHelpCanvas.py` to import `requestBus.is_in_flight` and keep `_reject_if_request_in_flight` telemetry via `try_begin_request(source="modelHelpCanvas")`.
+- Guardrail: `python3.11 -m pytest _tests/test_model_help_canvas_guard.py`; supporting `python3.11 -m pytest _tests/test_request_gating.py`.
+- Evidence:
+  - red | 2025-12-19T21:18Z | exit 1 | python3.11 -m pytest _tests/test_model_help_canvas_guard.py::ModelHelpCanvasGuardTests::test_request_is_in_flight_delegates_to_request_bus
+      AttributeError: <module 'talon_user.lib.modelHelpCanvas' from '/Users/tkma6d4/.talon/user/talon-ai-tools/lib/modelHelpCanvas.py'> does not have the attribute 'bus_is_in_flight'
+  - green | 2025-12-19T21:22Z | exit 0 | python3.11 -m pytest _tests/test_model_help_canvas_guard.py
+      3 passed in 0.05s
+  - green | 2025-12-19T21:22Z | exit 0 | python3.11 -m pytest _tests/test_request_gating.py
+      10 passed in 0.04s
+- Removal test: Reverting the help-canvas import would drop `bus_is_in_flight`, causing the refreshed guard test to fail and returning the helper to the deprecated request gating path.
+- Adversarial “what remains” check:
+  - Continue migrating the remaining canvases (`modelPatternGUI`, `modelPromptPatternGUI`, `modelSuggestionGUI`, `requestHistoryActions`, `requestHistoryDrawer`) onto the bus/controller façade.
+  - After migrations, extend integration guardrails to ensure drop messaging across canvases reflects bus-sourced gating reasons.
+
+## 2025-12-19 – Loop 234 (kind: guardrail/tests)
+- Focus: Request Gating & Streaming – align the prompt pattern GUI with the request bus gating façade.
+- Deliverables:
+  - Updated `_tests/test_prompt_pattern_gui_guard.py` to require `_request_is_in_flight` to patch `bus_is_in_flight` when present.
+  - Refactored `lib/modelPromptPatternGUI.py` to import `requestBus.is_in_flight` and to call `try_begin_request(source="modelPromptPatternGUI")` for telemetry when rejecting requests.
+- Guardrail: `python3.11 -m pytest _tests/test_prompt_pattern_gui_guard.py`; supporting `python3.11 -m pytest _tests/test_request_gating.py`.
+- Evidence:
+  - red | 2025-12-19T21:28Z | exit 1 | python3.11 -m pytest _tests/test_prompt_pattern_gui_guard.py::PromptPatternGUIGuardTests::test_request_is_in_flight_delegates_to_request_bus
+      AttributeError: <module 'talon_user.lib.modelPromptPatternGUI' from '/Users/tkma6d4/.talon/user/talon-ai-tools/lib/modelPromptPatternGUI.py'> does not have the attribute 'bus_is_in_flight'
+  - green | 2025-12-19T21:33Z | exit 0 | python3.11 -m pytest _tests/test_prompt_pattern_gui_guard.py
+      3 passed in 0.06s
+  - green | 2025-12-19T21:33Z | exit 0 | python3.11 -m pytest _tests/test_request_gating.py
+      10 passed in 0.05s
+- Removal test: Reverting the prompt pattern GUI import would drop `bus_is_in_flight`, causing the refreshed guard test to fail and sending the GUI back through the deprecated gating helper.
+- Adversarial “what remains” check:
+  - Continue migrating the remaining canvases (`modelPatternGUI`, `modelSuggestionGUI`, `requestHistoryActions`, `requestHistoryDrawer`) to the bus/controller façade.
+  - Once canvases migrate, extend integration guardrails to verify drop messaging reflects controller-sourced reasons across UI surfaces.
+
+## 2025-12-19 – Loop 235 (kind: guardrail/tests)
+- Focus: Request Gating & Streaming – migrate the model pattern picker onto the request bus gating façade.
+- Deliverables:
+  - Updated `_tests/test_model_pattern_gui_guard.py` to assert `_request_is_in_flight` delegates to `bus_is_in_flight`.
+  - Refactored `lib/modelPatternGUI.py` to import `requestBus.is_in_flight`, wrap `_request_is_in_flight` with a safe bus check, and call `try_begin_request(source="modelPatternGUI")` when rejecting requests.
+- Guardrail: `python3.11 -m pytest _tests/test_model_pattern_gui_guard.py`; supporting `python3.11 -m pytest _tests/test_request_gating.py`.
+- Evidence:
+  - red | 2025-12-19T21:38Z | exit 1 | python3.11 -m pytest _tests/test_model_pattern_gui_guard.py::ModelPatternGUIGuardTests::test_request_is_in_flight_delegates_to_request_bus
+      AttributeError: <module 'talon_user.lib.modelPatternGUI' from '/Users/tkma6d4/.talon/user/talon-ai-tools/lib/modelPatternGUI.py'> does not have the attribute 'bus_is_in_flight'
+  - green | 2025-12-19T21:42Z | exit 0 | python3.11 -m pytest _tests/test_model_pattern_gui_guard.py
+      3 passed in 0.05s
+  - green | 2025-12-19T21:42Z | exit 0 | python3.11 -m pytest _tests/test_request_gating.py
+      10 passed in 0.06s
+- Removal test: Reverting the pattern GUI import would drop `bus_is_in_flight`, causing the refreshed guard test to fail and restoring the deprecated gating helper.
+- Adversarial “what remains” check:
+  - Continue migrating the remaining canvases (`modelSuggestionGUI`, `requestHistoryActions`, `requestHistoryDrawer`) to the bus/controller façade.
+  - After migrations, extend integration guardrails to verify drop messaging reflects controller-sourced reasons across UI surfaces.
+
+## 2025-12-19 – Loop 236 (kind: guardrail/tests)
+- Focus: Request Gating & Streaming – migrate the suggestion GUI onto the request bus gating façade.
+- Deliverables:
+  - Updated `_tests/test_model_suggestion_gui_guard.py` to assert `_request_is_in_flight` delegates to `bus_is_in_flight`.
+  - Refactored `lib/modelSuggestionGUI.py` to import `requestBus.is_in_flight`, wrap `_request_is_in_flight` with a safe bus check, and preserve telemetry via `try_begin_request(source="modelSuggestionGUI")`.
+- Guardrail: `python3.11 -m pytest _tests/test_model_suggestion_gui_guard.py`; supporting `python3.11 -m pytest _tests/test_request_gating.py`.
+- Evidence:
+  - red | 2025-12-19T21:47Z | exit 1 | python3.11 -m pytest _tests/test_model_suggestion_gui_guard.py::ModelSuggestionGUIGuardTests::test_request_is_in_flight_delegates_to_request_bus
+      AttributeError: <module 'talon_user.lib.modelSuggestionGUI' from '/Users/tkma6d4/.talon/user/talon-ai-tools/lib/modelSuggestionGUI.py'> does not have the attribute 'bus_is_in_flight'
+  - green | 2025-12-19T21:51Z | exit 0 | python3.11 -m pytest _tests/test_model_suggestion_gui_guard.py
+      3 passed in 0.05s
+  - green | 2025-12-19T21:51Z | exit 0 | python3.11 -m pytest _tests/test_request_gating.py
+      10 passed in 0.06s
+- Removal test: Reverting the suggestion GUI import would drop `bus_is_in_flight`, causing the refreshed guard test to fail and restoring the deprecated gating helper.
+- Adversarial “what remains” check:
+  - Migrate `requestHistoryActions` and `requestHistoryDrawer` to the bus/controller façade.
+  - After migrations, extend integration guardrails so history drawers and other canvases surface controller-sourced drop reasons end-to-end.
+
+

@@ -164,6 +164,93 @@ PY
     printf '%s\n' "${GATING_REASONS_TABLE}"
   fi
 
+  GATING_SOURCES=$(python3 - "$SUMMARY_FILE" <<'PY'
+import json, sys
+from pathlib import Path
+path = Path(sys.argv[1])
+try:
+    data = json.loads(path.read_text())
+except Exception:
+    data = {}
+summary = data.get("streaming_gating_summary", {})
+sources = summary.get("sources")
+sources_sorted = summary.get("sources_sorted")
+ordered = []
+if isinstance(sources_sorted, list) and sources_sorted:
+    for item in sources_sorted:
+        if not isinstance(item, dict):
+            continue
+        source = item.get("source")
+        value = item.get("count")
+        if isinstance(source, str) and source:
+            try:
+                ordered.append((source, int(value)))
+            except Exception:
+                continue
+elif isinstance(sources, dict) and sources:
+    for source, raw_value in sources.items():
+        if not isinstance(source, str) or not source:
+            continue
+        try:
+            count_value = int(raw_value)
+        except Exception:
+            continue
+        ordered.append((source, count_value))
+    ordered.sort(key=lambda item: (-item[1], item[0]))
+
+if ordered:
+    print(", ".join(f"{source}={value}" for source, value in ordered))
+else:
+    print("none")
+PY
+)
+  GATING_SOURCES_TABLE=$(python3 - "$SUMMARY_FILE" <<'PY'
+import json, sys
+from pathlib import Path
+path = Path(sys.argv[1])
+try:
+    data = json.loads(path.read_text())
+except Exception:
+    data = {}
+summary = data.get("streaming_gating_summary", {})
+sources = summary.get("sources")
+sources_sorted = summary.get("sources_sorted")
+ordered = []
+if isinstance(sources_sorted, list) and sources_sorted:
+    for item in sources_sorted:
+        if not isinstance(item, dict):
+            continue
+        source = item.get("source")
+        value = item.get("count")
+        if isinstance(source, str) and source:
+            try:
+                ordered.append((source, int(value)))
+            except Exception:
+                continue
+elif isinstance(sources, dict) and sources:
+    for source, raw_value in sources.items():
+        if not isinstance(source, str) or not source:
+            continue
+        try:
+            count_value = int(raw_value)
+        except Exception:
+            continue
+        ordered.append((source, count_value))
+    ordered.sort(key=lambda item: (-item[1], item[0]))
+
+if ordered:
+    print("| Source | Count |")
+    print("| --- | --- |")
+    for source, value in ordered:
+        print(f"| {source} | {value} |")
+PY
+)
+  echo "History summary gating sources: ${GATING_SOURCES}"
+  if [[ -n "${GATING_SOURCES_TABLE}" ]]; then
+    printf '%s\n' "Streaming gating sources:"
+    printf '%s\n' "${GATING_SOURCES_TABLE}"
+  fi
+
   if [[ -n "${GITHUB_REPOSITORY:-}" ]] && [[ -n "${GITHUB_RUN_ID:-}" ]]; then
 
     ARTIFACT_URL="${GITHUB_SERVER_URL:-https://github.com}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}#artifacts"

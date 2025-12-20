@@ -12,7 +12,8 @@ from .providerRegistry import (
     ProviderLookupError,
     provider_registry,
 )
-from .requestGating import request_is_in_flight, try_begin_request
+from .requestBus import is_in_flight as bus_is_in_flight
+from .requestGating import try_begin_request
 from .requestLog import drop_reason_message, set_drop_reason
 from .modelHelpers import notify
 
@@ -201,13 +202,16 @@ def _set_provider_model(provider_id: str, model: str) -> None:
 def _request_is_in_flight() -> bool:
     """Return True when a GPT request is currently running."""
 
-    return request_is_in_flight()
+    try:
+        return bus_is_in_flight()
+    except Exception:
+        return False
 
 
 def _reject_if_request_in_flight() -> bool:
     """Notify and return True when a GPT request is already running."""
 
-    allowed, reason = try_begin_request()
+    allowed, reason = try_begin_request(source="providerCommands")
     if not allowed and reason == "in_flight":
         message = drop_reason_message("in_flight")
         try:

@@ -161,7 +161,7 @@ if not TYPE_CHECKING:
                 result.stdout,
             )
             self.assertIn(
-                "Streaming gating summary: total=0; counts=none; last=n/a",
+                "Streaming gating summary: total=0; counts=none; sources=none; last=n/a; last_source=n/a",
                 result.stdout,
             )
             self.assertIn(
@@ -169,7 +169,7 @@ if not TYPE_CHECKING:
                 result.stdout,
             )
             self.assertIn(
-                "- Streaming gating summary: total=0; counts=none; last=n/a",
+                "- Streaming gating summary: total=0; counts=none; sources=none; last=n/a; last_source=n/a",
                 result.stdout,
             )
             self.assertIn(
@@ -189,11 +189,20 @@ if not TYPE_CHECKING:
                 streaming_summary_path.exists(),
                 "run_guardrails_ci.sh did not produce streaming JSON summary",
             )
+
             with streaming_summary_path.open("r", encoding="utf-8") as handle:
                 streaming_data = json.load(handle)
             self.assertEqual(
                 streaming_data.get("streaming_gating_summary"),
-                {"counts": {}, "counts_sorted": [], "last": {}, "total": 0},
+                {
+                    "counts": {},
+                    "counts_sorted": [],
+                    "sources": {},
+                    "sources_sorted": [],
+                    "last": {},
+                    "last_source": {},
+                    "total": 0,
+                },
             )
 
             telemetry_path = summary_path.with_name(
@@ -206,7 +215,9 @@ if not TYPE_CHECKING:
             telemetry_payload = json.loads(telemetry_path.read_text(encoding="utf-8"))
             self.assertEqual(telemetry_payload.get("total_entries"), 0)
             self.assertEqual(telemetry_payload.get("gating_drop_total"), 0)
+            self.assertIn("generated_at", telemetry_payload)
             self.assertEqual(telemetry_payload.get("top_gating_reasons"), [])
+            self.assertEqual(telemetry_payload.get("top_gating_sources"), [])
 
             self.assertIn(
                 "Streaming JSON summary recorded at artifacts/history-axis-summaries/history-validation-summary.streaming.json; job summary will reference this file when running in GitHub Actions.",
@@ -286,12 +297,17 @@ if not TYPE_CHECKING:
                     summary_text,
                 )
                 self.assertIn(
+                    "- Streaming gating sources: none",
+                    summary_text,
+                )
+                self.assertIn(
                     "- Telemetry summary recorded at artifacts/history-axis-summaries/history-validation-summary.telemetry.json",
                     summary_text,
                 )
                 self.assertIn("```json", summary_text)
                 self.assertIn('"streaming_gating_summary"', summary_text)
                 self.assertIn('"top_gating_reasons"', summary_text)
+                self.assertIn('"top_gating_sources"', summary_text)
                 self.assertIn("```", summary_text.strip())
 
         def test_run_guardrails_ci_gating_reasons_table_with_counts(self) -> None:
@@ -321,6 +337,10 @@ if not TYPE_CHECKING:
                     "counts": {
                         "rate_limited": 1,
                         "streaming_disabled": 2,
+                    },
+                    "sources": {
+                        "modelHelpCanvas": 2,
+                        "providerCommands": 1,
                     },
                     "total": 3,
                     "last": {
@@ -356,52 +376,58 @@ if not TYPE_CHECKING:
                         "run_guardrails_ci.sh request-history-guardrails failed with code "
                         f"{result.returncode}\nstdout:\n{result.stdout}\nstderr:\n{result.stderr}"
                     )
-                stdout = result.stdout
-                self.assertIn("Streaming gating reasons:", stdout)
-                self.assertIn("| Reason | Count |", stdout)
-                self.assertIn(
-                    "Streaming gating summary: total=3; counts=streaming_disabled=2, rate_limited=1; last=streaming_disabled (count=2)",
-                    stdout,
-                )
-                table_lines = [
-                    line for line in stdout.splitlines() if line.startswith("|")
-                ]
-                self.assertEqual(
-                    table_lines[:3],
-                    [
-                        "| Reason | Count |",
-                        "| --- | --- |",
-                        "| streaming_disabled | 2 |",
-                    ],
-                    "Expected gating table to list highest counts first",
-                )
-                self.assertIn("| rate_limited | 1 |", stdout)
+            stdout = result.stdout
+            self.assertIn("Streaming gating reasons:", stdout)
+            self.assertIn("| Reason | Count |", stdout)
+            self.assertIn("Streaming gating sources:", stdout)
+            self.assertIn("| Source | Count |", stdout)
+            self.assertIn(
+                "Streaming gating summary: total=3; counts=streaming_disabled=2, rate_limited=1; sources=modelHelpCanvas=2, providerCommands=1; last=streaming_disabled (count=2); last_source=n/a",
+                stdout,
+            )
+            table_lines = [line for line in stdout.splitlines() if line.startswith("|")]
+            self.assertEqual(
+                table_lines[:3],
+                [
+                    "| Reason | Count |",
+                    "| --- | --- |",
+                    "| streaming_disabled | 2 |",
+                ],
+                "Expected gating table to list highest counts first",
+            )
+            self.assertIn("| rate_limited | 1 |", stdout)
+            self.assertIn("| modelHelpCanvas | 2 |", stdout)
+            self.assertIn("| providerCommands | 1 |", stdout)
 
-                self.assertTrue(
-                    step_summary_path.exists(),
-                    "run_guardrails_ci.sh did not append to the GitHub step summary file",
-                )
-                summary_text = step_summary_path.read_text(encoding="utf-8")
-                self.assertIn("Streaming gating reasons:", summary_text)
-                self.assertIn("| Reason | Count |", summary_text)
-                self.assertIn(
-                    "Streaming gating summary: total=3; counts=streaming_disabled=2, rate_limited=1; last=streaming_disabled (count=2)",
-                    summary_text,
-                )
-                summary_lines = [
-                    line for line in summary_text.splitlines() if line.startswith("|")
-                ]
-                self.assertEqual(
-                    summary_lines[:3],
-                    [
-                        "| Reason | Count |",
-                        "| --- | --- |",
-                        "| streaming_disabled | 2 |",
-                    ],
-                    "GitHub summary should list highest counts first",
-                )
-                self.assertIn("| rate_limited | 1 |", summary_text)
-                self.assertNotIn("- Streaming gating reasons: none", summary_text)
+            self.assertTrue(
+                step_summary_path.exists(),
+                "run_guardrails_ci.sh did not append to the GitHub step summary file",
+            )
+            summary_text = step_summary_path.read_text(encoding="utf-8")
+            self.assertIn("Streaming gating reasons:", summary_text)
+            self.assertIn("| Reason | Count |", summary_text)
+            self.assertIn("Streaming gating sources:", summary_text)
+            self.assertIn("| Source | Count |", summary_text)
+            self.assertIn(
+                "Streaming gating summary: total=3; counts=streaming_disabled=2, rate_limited=1; sources=modelHelpCanvas=2, providerCommands=1; last=streaming_disabled (count=2); last_source=n/a",
+                summary_text,
+            )
+            summary_lines = [
+                line for line in summary_text.splitlines() if line.startswith("|")
+            ]
+            self.assertEqual(
+                summary_lines[:3],
+                [
+                    "| Reason | Count |",
+                    "| --- | --- |",
+                    "| streaming_disabled | 2 |",
+                ],
+                "GitHub summary should list highest counts first",
+            )
+            self.assertIn("| rate_limited | 1 |", summary_text)
+            self.assertIn("| modelHelpCanvas | 2 |", summary_text)
+            self.assertIn("| providerCommands | 1 |", summary_text)
+            self.assertNotIn("- Streaming gating reasons: none", summary_text)
 
             if summary_path.exists():
                 summary_path.unlink()

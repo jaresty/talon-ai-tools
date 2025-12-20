@@ -6,11 +6,14 @@ from typing import Optional
 
 from .requestController import RequestUIController
 from .requestState import (
+    RequestDropReason,
     RequestEvent,
     RequestEventKind,
     RequestState,
     lifecycle_status_for,
     transition,
+    is_in_flight as state_is_in_flight,
+    try_start_request as state_try_start_request,
 )
 
 try:
@@ -95,6 +98,7 @@ def emit_retry(request_id: Optional[str] = None) -> RequestState:
     _set_last_request_id(rid or "")
     return _handle(RequestEvent(RequestEventKind.RETRY, request_id=rid))
 
+
 def emit_append(chunk: str, request_id: Optional[str] = None) -> RequestState:
     rid = request_id or current_state().request_id or next_request_id()
     _set_last_request_id(rid or "")
@@ -116,9 +120,7 @@ def emit_complete(request_id: Optional[str] = None) -> RequestState:
 def emit_fail(error: str = "", request_id: Optional[str] = None) -> RequestState:
     rid = request_id or current_state().request_id or next_request_id()
     _set_last_request_id(rid or "")
-    return _handle(
-        RequestEvent(RequestEventKind.FAIL, request_id=rid, error=error)
-    )
+    return _handle(RequestEvent(RequestEventKind.FAIL, request_id=rid, error=error))
 
 
 def emit_cancel(request_id: Optional[str] = None) -> RequestState:
@@ -145,6 +147,36 @@ def current_state() -> RequestState:
     return _controller.state
 
 
+def try_start_request() -> tuple[bool, RequestDropReason]:
+    """Return whether a new request may start plus the drop reason."""
+
+    if _controller is not None:
+        try:
+            return _controller.try_start_request()
+        except Exception:
+            pass
+    state = current_state()
+    try:
+        return state_try_start_request(state)
+    except Exception:
+        return True, ""
+
+
+def is_in_flight() -> bool:
+    """Return True when the current request is currently in flight."""
+
+    if _controller is not None:
+        try:
+            return _controller.is_in_flight()
+        except Exception:
+            pass
+    state = current_state()
+    try:
+        return state_is_in_flight(state)
+    except Exception:
+        return False
+
+
 def current_lifecycle_state():
     """Return the logical RequestLifecycle state for the current request.
 
@@ -168,6 +200,8 @@ __all__ = [
     "emit_append",
     "emit_history_saved",
     "current_state",
+    "try_start_request",
+    "is_in_flight",
     "current_lifecycle_state",
     "next_request_id",
 ]

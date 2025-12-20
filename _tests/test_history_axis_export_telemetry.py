@@ -26,6 +26,10 @@ if bootstrap is not None and not TYPE_CHECKING:
                         "streaming_disabled": 2,
                         "rate_limited": 1,
                     },
+                    "sources": {
+                        "modelHelpCanvas": 2,
+                        "providerCommands": 1,
+                    },
                     # deliberately omit `total` to exercise fallback behaviour
                 },
             }
@@ -65,6 +69,11 @@ if bootstrap is not None and not TYPE_CHECKING:
                     [{"reason": "streaming_disabled", "count": 2}],
                 )
                 self.assertEqual(payload.get("other_gating_drops"), 1)
+                self.assertEqual(
+                    payload.get("top_gating_sources"),
+                    [{"source": "modelHelpCanvas", "count": 2}],
+                )
+                self.assertEqual(payload.get("other_gating_source_drops"), 1)
 
         def test_preserves_artifact_url_when_provided(self) -> None:
             summary = {
@@ -115,6 +124,8 @@ if bootstrap is not None and not TYPE_CHECKING:
                     [{"reason": "streaming_disabled", "count": 1}],
                 )
                 self.assertEqual(payload.get("other_gating_drops"), 1)
+                self.assertEqual(payload.get("top_gating_sources"), [])
+                self.assertFalse(payload.get("other_gating_source_drops"))
 
         def test_stdout_mode_emits_json_payload(self) -> None:
             summary = {
@@ -155,6 +166,7 @@ if bootstrap is not None and not TYPE_CHECKING:
                     payload.get("top_gating_reasons"),
                     [{"reason": "rate_limited", "count": 1}],
                 )
+                self.assertEqual(payload.get("top_gating_sources"), [])
 
         def test_includes_gating_drop_rate(self) -> None:
             summary = {
@@ -197,6 +209,7 @@ if bootstrap is not None and not TYPE_CHECKING:
                 payload = json.loads(output_path.read_text(encoding="utf-8"))
                 self.assertEqual(payload.get("gating_drop_total"), 3)
                 self.assertAlmostEqual(payload.get("gating_drop_rate"), 0.3, places=4)
+                self.assertEqual(payload.get("top_gating_sources"), [])
 
 else:
 

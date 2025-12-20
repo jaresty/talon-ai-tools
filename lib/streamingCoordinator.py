@@ -19,6 +19,9 @@ GATING_SNAPSHOT_KEYS = (
     "gating_drop_counts_sorted",
     "gating_drop_total",
     "gating_drop_last",
+    "gating_drop_sources",
+    "gating_drop_sources_sorted",
+    "gating_drop_last_source",
 )
 
 
@@ -180,6 +183,7 @@ class StreamingSession:
     run: StreamingRun
     events: List[Dict[str, Any]] = field(default_factory=list)
     gating_drop_counts: Dict[str, int] = field(default_factory=dict)
+    gating_drop_sources: Dict[str, int] = field(default_factory=dict)
 
     @property
     def request_id(self) -> str:
@@ -227,8 +231,8 @@ class StreamingSession:
             "phase": str(phase or ""),
         }
         source_value = str(source or "")
-        if source_value:
-            payload["source"] = source_value
+        source_key = source_value.strip() or "unspecified"
+        payload["source"] = source_key
 
         reason_key = reason_value or ""
         current = self.gating_drop_counts.get(reason_key, 0) + 1
@@ -238,12 +242,23 @@ class StreamingSession:
         payload["total_count"] = total
         payload["counts"] = dict(self.gating_drop_counts)
 
+        source_current = self.gating_drop_sources.get(source_key, 0) + 1
+        self.gating_drop_sources[source_key] = source_current
+        payload["source_count"] = source_current
+        payload["sources"] = dict(self.gating_drop_sources)
+
         self._record_event("gating_drop", **payload)
 
         snapshot_extra = {
             "gating_drop_counts": dict(self.gating_drop_counts),
+            "gating_drop_sources": dict(self.gating_drop_sources),
+            "gating_drop_sources_sorted": [
+                {"source": name, "count": count}
+                for name, count in _sorted_counts(self.gating_drop_sources)
+            ],
             "gating_drop_total": total,
             "gating_drop_last": {"reason": reason_key, "reason_count": current},
+            "gating_drop_last_source": {"source": source_key, "count": source_current},
         }
         record_streaming_snapshot(self.run, extra=snapshot_extra)
 
@@ -461,6 +476,32 @@ def current_streaming_gating_summary() -> Dict[str, Any]:
     elif counts:
         ordered = _sorted_counts(counts)
 
+    sources_raw = snapshot.get("gating_drop_sources")
+    sources: Dict[str, int] = {}
+    if isinstance(sources_raw, dict):
+        for source_name, value in sources_raw.items():
+            coerced = _coerce_int(value)
+            if coerced is None or coerced < 0:
+                continue
+            sources[str(source_name)] = coerced
+
+    sources_sorted_raw = snapshot.get("gating_drop_sources_sorted")
+    ordered_sources: List[Tuple[str, int]] = []
+    if isinstance(sources_sorted_raw, list) and sources_sorted_raw:
+        for item in sources_sorted_raw:
+            if not isinstance(item, dict):
+                continue
+            source_name = item.get("source")
+            count_value = _coerce_int(item.get("count"))
+            if not isinstance(source_name, str) or not source_name:
+                continue
+            if count_value is None or count_value < 0:
+                continue
+            ordered_sources.append((source_name, count_value))
+            sources.setdefault(source_name, count_value)
+    elif sources:
+        ordered_sources = _sorted_counts(sources)
+
     last_raw = snapshot.get("gating_drop_last")
     last: Dict[str, Any] = {}
     if isinstance(last_raw, dict):
@@ -475,13 +516,34 @@ def current_streaming_gating_summary() -> Dict[str, Any]:
                 "reason_count": reason_count or 0,
             }
 
+    last_source_raw = snapshot.get("gating_drop_last_source")
+    last_source: Dict[str, Any] = {}
+    if isinstance(last_source_raw, dict):
+        source_text = str(last_source_raw.get("source") or "")
+        source_count_value = last_source_raw.get("count")
+        source_count = _coerce_int(source_count_value)
+        if source_count is None and source_text:
+            source_count = sources.get(source_text, 0)
+        if source_text or (source_count or 0):
+            last_source = {
+                "source": source_text,
+                "count": source_count or 0,
+            }
+
     counts_sorted = [{"reason": reason, "count": count} for reason, count in ordered]
+    sources_sorted = [
+        {"source": source_name, "count": count}
+        for source_name, count in ordered_sources
+    ]
 
     return {
         "total": total,
         "counts": counts,
         "counts_sorted": counts_sorted,
+        "sources": sources,
+        "sources_sorted": sources_sorted,
         "last": last,
+        "last_source": last_source,
     }
 
 
@@ -514,6 +576,9 @@ def record_streaming_snapshot(
         extra_counts = extra_dict.get("gating_drop_counts")
         extra_total = extra_dict.get("gating_drop_total")
         extra_last = extra_dict.get("gating_drop_last")
+        extra_sources = extra_dict.get("gating_drop_sources")
+        extra_sources_sorted = extra_dict.get("gating_drop_sources_sorted")
+        extra_last_source = extra_dict.get("gating_drop_last_source")
 
         merged_counts: Dict[str, int] = {}
         prior_counts: Dict[str, Any] = {}
@@ -595,6 +660,74 @@ def record_streaming_snapshot(
         elif same_request and "gating_drop_last" in prior_snapshot:
             snapshot["gating_drop_last"] = prior_snapshot["gating_drop_last"]
 
+        merged_sources: Dict[str, int] = {}
+        if isinstance(extra_sources, dict):
+            for source_name, value in extra_sources.items():
+                coerced = _coerce_int(value)
+                if coerced is None:
+                    continue
+                merged_sources[str(source_name)] = coerced
+        elif same_request and "gating_drop_sources" in prior_snapshot:
+            prior_sources_raw = prior_snapshot.get("gating_drop_sources", {}) or {}
+            if isinstance(prior_sources_raw, dict):
+                for source_name, value in prior_sources_raw.items():
+                    coerced = _coerce_int(value)
+                    if coerced is None:
+                        continue
+                    merged_sources[str(source_name)] = coerced
+
+        if merged_sources:
+            snapshot["gating_drop_sources"] = merged_sources
+            if isinstance(extra_sources_sorted, list):
+                normalized_sorted: List[Dict[str, Any]] = []
+                for item in extra_sources_sorted:
+                    if not isinstance(item, dict):
+                        continue
+                    source_text = str(item.get("source") or "")
+                    count_value = _coerce_int(item.get("count"))
+                    if not source_text or count_value is None:
+                        continue
+                    normalized_sorted.append(
+                        {"source": source_text, "count": count_value}
+                    )
+                if normalized_sorted:
+                    snapshot["gating_drop_sources_sorted"] = normalized_sorted
+                else:
+                    snapshot["gating_drop_sources_sorted"] = [
+                        {"source": name, "count": count}
+                        for name, count in _sorted_counts(merged_sources)
+                    ]
+            else:
+                snapshot["gating_drop_sources_sorted"] = [
+                    {"source": name, "count": count}
+                    for name, count in _sorted_counts(merged_sources)
+                ]
+        elif same_request:
+            if "gating_drop_sources" in prior_snapshot:
+                snapshot["gating_drop_sources"] = dict(
+                    prior_snapshot.get("gating_drop_sources", {})
+                )
+            if "gating_drop_sources_sorted" in prior_snapshot:
+                prior_sorted_sources = prior_snapshot.get(
+                    "gating_drop_sources_sorted", []
+                )
+                if isinstance(prior_sorted_sources, list):
+                    snapshot["gating_drop_sources_sorted"] = list(prior_sorted_sources)
+
+        if isinstance(extra_last_source, dict):
+            source_text = str(extra_last_source.get("source") or "")
+            source_count = _coerce_int(extra_last_source.get("count"))
+            snapshot["gating_drop_last_source"] = {
+                "source": source_text,
+                "count": source_count
+                if source_count is not None
+                else merged_sources.get(source_text, 0),
+            }
+        elif same_request and "gating_drop_last_source" in prior_snapshot:
+            snapshot["gating_drop_last_source"] = prior_snapshot[
+                "gating_drop_last_source"
+            ]
+
         # Apply any remaining metadata outside the gating summary keys.
         for key, value in extra_dict.items():
             if key in GATING_SNAPSHOT_KEYS:
@@ -614,6 +747,9 @@ def record_streaming_snapshot(
 
     if "gating_drop_counts" not in snapshot:
         snapshot.pop("gating_drop_counts_sorted", None)
+    if "gating_drop_sources" not in snapshot:
+        snapshot.pop("gating_drop_sources_sorted", None)
+        snapshot.pop("gating_drop_last_source", None)
 
     if GPTState is not None:
         try:

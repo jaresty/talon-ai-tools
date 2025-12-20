@@ -843,15 +843,15 @@ if bootstrap is not None:
             # Reasoning should be included in measured height and rendering path without errors.
             self.assertTrue(modelSuggestionGUI.SuggestionGUIState.suggestions)
 
-        def test_request_is_in_flight_delegates_to_request_gating(self) -> None:
+        def test_request_is_in_flight_delegates_to_request_bus(self) -> None:
             with patch.object(
-                modelSuggestionGUI, "request_is_in_flight", return_value=True
+                modelSuggestionGUI, "bus_is_in_flight", return_value=True
             ) as helper:
                 self.assertTrue(modelSuggestionGUI._request_is_in_flight())
             helper.assert_called_once_with()
 
             with patch.object(
-                modelSuggestionGUI, "request_is_in_flight", return_value=False
+                modelSuggestionGUI, "bus_is_in_flight", return_value=False
             ) as helper:
                 self.assertFalse(modelSuggestionGUI._request_is_in_flight())
             helper.assert_called_once_with()

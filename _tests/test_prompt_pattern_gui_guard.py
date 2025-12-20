@@ -35,6 +35,22 @@ class PromptPatternGUIGuardTests(unittest.TestCase):
         open_canvas.assert_not_called()
         close_canvas.assert_not_called()
 
+    def test_request_is_in_flight_delegates_to_request_bus(self):
+        if bootstrap is None:
+            self.skipTest("Talon runtime not available")
+
+        with patch.object(
+            prompt_pattern_module, "bus_is_in_flight", return_value=True
+        ) as helper:
+            self.assertTrue(prompt_pattern_module._request_is_in_flight())
+        helper.assert_called_once_with()
+
+        with patch.object(
+            prompt_pattern_module, "bus_is_in_flight", return_value=False
+        ) as helper:
+            self.assertFalse(prompt_pattern_module._request_is_in_flight())
+        helper.assert_called_once_with()
+
     def test_reject_if_request_in_flight_records_drop_reason(self):
         if bootstrap is None:
             self.skipTest("Talon runtime not available")

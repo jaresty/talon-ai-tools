@@ -1,17 +1,19 @@
 output_tags:
 	/opt/homebrew/bin/ctags -Rx GPT
 
+PYTHON ?= python3.11
+
 .PHONY: output_tags test churn-scan adr010-check adr010-status axis-regenerate axis-regenerate-apply axis-regenerate-all axis-catalog-validate axis-cheatsheet axis-guardrails axis-guardrails-ci axis-guardrails-test talon-lists talon-lists-check adr0046-guardrails ci-guardrails guardrails help overlay-guardrails overlay-lifecycle-guardrails request-history-guardrails request-history-guardrails-fast readme-axis-lines readme-axis-refresh static-prompt-docs static-prompt-refresh doc-snapshots
 
 test:
-	python3 -m unittest discover -s tests
+	$(PYTHON) -m unittest discover -s tests
 
 churn-scan:
-	python3 scripts/tools/churn-git-log-stat.py
-	python3 scripts/tools/line-churn-heatmap.py
+	$(PYTHON) scripts/tools/churn-git-log-stat.py
+	$(PYTHON) scripts/tools/line-churn-heatmap.py
 
 adr010-check:
-	python3 -m unittest \
+	$(PYTHON) -m unittest \
 		tests.test_static_prompt_config \
 		tests.test_axis_mapping \
 		tests.test_model_pattern_gui \
@@ -20,20 +22,20 @@ adr010-check:
 		tests.test_model_help_gui
 
 adr010-status:
-	python3 scripts/tools/adr010-status.py
+	$(PYTHON) scripts/tools/adr010-status.py
 
 axis-regenerate:
 	mkdir -p tmp
-	PYTHONPATH=. python3 scripts/tools/generate_axis_config.py --out tmp/axisConfig.generated.py
-	PYTHONPATH=. python3 scripts/tools/generate_axis_config.py --markdown --out tmp/readme-axis-tokens.md
-	PYTHONPATH=. python3 scripts/tools/generate_axis_config.py --json --out tmp/axisConfig.json
-	PYTHONPATH=. python3 scripts/tools/generate_axis_config.py --catalog-json --out tmp/axisCatalog.json
-	PYTHONPATH=. python3 scripts/tools/generate-axis-cheatsheet.py --out tmp/readme-axis-cheatsheet.md
-	PYTHONPATH=. python3 scripts/tools/generate_static_prompt_docs.py --out tmp/static-prompt-docs.md
-	PYTHONPATH=. python3 scripts/tools/generate_readme_axis_lists.py --out tmp/readme-axis-lists.md
-	PYTHONPATH=. python3 scripts/tools/refresh_readme_axis_section.py --out tmp/readme-axis-readme.md
-	PYTHONPATH=. python3 scripts/tools/refresh_static_prompt_readme_section.py --out tmp/static-prompt-readme.md
-	PYTHONPATH=. python3 scripts/tools/axis-catalog-validate.py --skip-list-files
+	PYTHONPATH=. $(PYTHON) scripts/tools/generate_axis_config.py --out tmp/axisConfig.generated.py
+	PYTHONPATH=. $(PYTHON) scripts/tools/generate_axis_config.py --markdown --out tmp/readme-axis-tokens.md
+	PYTHONPATH=. $(PYTHON) scripts/tools/generate_axis_config.py --json --out tmp/axisConfig.json
+	PYTHONPATH=. $(PYTHON) scripts/tools/generate_axis_config.py --catalog-json --out tmp/axisCatalog.json
+	PYTHONPATH=. $(PYTHON) scripts/tools/generate-axis-cheatsheet.py --out tmp/readme-axis-cheatsheet.md
+	PYTHONPATH=. $(PYTHON) scripts/tools/generate_static_prompt_docs.py --out tmp/static-prompt-docs.md
+	PYTHONPATH=. $(PYTHON) scripts/tools/generate_readme_axis_lists.py --out tmp/readme-axis-lists.md
+	PYTHONPATH=. $(PYTHON) scripts/tools/refresh_readme_axis_section.py --out tmp/readme-axis-readme.md
+	PYTHONPATH=. $(PYTHON) scripts/tools/refresh_static_prompt_readme_section.py --out tmp/static-prompt-readme.md
+	PYTHONPATH=. $(PYTHON) scripts/tools/axis-catalog-validate.py --skip-list-files
 
 axis-regenerate-apply: axis-regenerate
 	@if ! cmp -s tmp/axisConfig.generated.py lib/axisConfig.py; then \
@@ -42,11 +44,11 @@ axis-regenerate-apply: axis-regenerate
 
 axis-regenerate-all:
 	mkdir -p tmp
-	PYTHONPATH=. python3 scripts/tools/axis_regen_all.py
+	PYTHONPATH=. $(PYTHON) scripts/tools/axis_regen_all.py
 
 readme-axis-lines:
 	mkdir -p tmp
-	PYTHONPATH=. python3 scripts/tools/generate_readme_axis_lists.py --out tmp/readme-axis-lists.md
+	PYTHONPATH=. $(PYTHON) scripts/tools/generate_readme_axis_lists.py --out tmp/readme-axis-lists.md
 
 readme-axis-refresh:
 	mkdir -p tmp
@@ -55,68 +57,68 @@ readme-axis-refresh:
 		if [ -n "$$README_AXIS_LISTS_DIR" ]; then \
 			LISTS_ARG="--lists-dir $$README_AXIS_LISTS_DIR"; \
 		fi; \
-		python3 scripts/tools/refresh_readme_axis_section.py --out tmp/readme-axis-readme.md $$LISTS_ARG \
+		$(PYTHON) scripts/tools/refresh_readme_axis_section.py --out tmp/readme-axis-readme.md $$LISTS_ARG \
 	'
 
 static-prompt-docs:
 	mkdir -p tmp
-	PYTHONPATH=. python3 scripts/tools/generate_static_prompt_docs.py --out tmp/static-prompt-docs.md
+	PYTHONPATH=. $(PYTHON) scripts/tools/generate_static_prompt_docs.py --out tmp/static-prompt-docs.md
 
 static-prompt-refresh:
 	mkdir -p tmp
-	PYTHONPATH=. python3 scripts/tools/refresh_static_prompt_readme_section.py --out tmp/static-prompt-readme.md
+	PYTHONPATH=. $(PYTHON) scripts/tools/refresh_static_prompt_readme_section.py --out tmp/static-prompt-readme.md
 
 doc-snapshots: readme-axis-lines readme-axis-refresh static-prompt-docs static-prompt-refresh
 	@echo "Doc snapshots generated in tmp/ (README untouched)"
 	@echo "Apply manually if you want to update README sections."
 axis-catalog-validate:
-	python3 scripts/tools/axis-catalog-validate.py --verbose --skip-list-files
+	$(PYTHON) scripts/tools/axis-catalog-validate.py --verbose --skip-list-files
 
 axis-cheatsheet:
 	mkdir -p tmp
-	python3 scripts/tools/generate-axis-cheatsheet.py --out tmp/readme-axis-cheatsheet.md
+	$(PYTHON) scripts/tools/generate-axis-cheatsheet.py --out tmp/readme-axis-cheatsheet.md
 
 axis-guardrails: axis-regenerate-all axis-catalog-validate axis-cheatsheet
 	@echo "Axis guardrails completed (catalog validation + cheat sheet; list files skipped)"
-	python3 -m pytest _tests/test_make_axis_regenerate_apply.py
+	$(PYTHON) -m pytest _tests/test_make_axis_regenerate_apply.py
 
 axis-guardrails-ci: axis-regenerate-all axis-catalog-validate
 	@echo "Axis guardrails (CI-friendly) completed (catalog validation; list files skipped)"
-	python3 -m pytest _tests/test_make_axis_regenerate_apply.py
+	$(PYTHON) -m pytest _tests/test_make_axis_regenerate_apply.py
 
 axis-guardrails-test: axis-guardrails
-	python3 -m pytest _tests/test_axis_catalog_validate.py _tests/test_axis_catalog_validate_lists_dir.py _tests/test_axis_catalog_skip_lists.py _tests/test_axis_catalog_merge_lists.py _tests/test_static_prompt_catalog_skip_lists.py _tests/test_static_prompt_catalog_merge_lists.py _tests/test_help_index_catalog_only.py _tests/test_talon_settings_catalog_lists.py _tests/test_generate_axis_cheatsheet.py _tests/test_readme_axis_lists.py _tests/test_generate_readme_axis_lists.py _tests/test_generate_talon_lists.py _tests/test_run_guardrails_ci.py _tests/test_make_help_guardrails.py _tests/test_readme_guardrails_docs.py _tests/test_contributing_guardrails_docs.py _tests/test_make_guardrail_skip_list_files.py _tests/test_no_tracked_axis_lists.py _tests/test_gitignore_talon_lists.py _tests/test_gpt_readme_axis_lists.py _tests/test_axis_catalog_validate_help.py _tests/test_axis_catalog_validate_defaults.py _tests/test_guardrail_targets_no_talon_lists.py _tests/test_run_guardrails_ci_default_target.py _tests/test_ci_workflow_guardrails.py _tests/test_make_axis_regenerate.py _tests/test_make_axis_regenerate_apply.py _tests/test_make_readme_axis_lines.py _tests/test_make_readme_axis_refresh.py _tests/test_make_static_prompt_docs.py _tests/test_make_static_prompt_refresh.py _tests/test_make_doc_snapshots.py _tests/test_axis_regen_all.py _tests/test_make_axis_regen_all.py _tests/test_make_axis_guardrails_ci.py _tests/test_axis_catalog_validate_static_prompts.py _tests/test_readme_markers.py _tests/test_serialize_axis_config.py
+	$(PYTHON) -m pytest _tests/test_axis_catalog_validate.py _tests/test_axis_catalog_validate_lists_dir.py _tests/test_axis_catalog_skip_lists.py _tests/test_axis_catalog_merge_lists.py _tests/test_static_prompt_catalog_skip_lists.py _tests/test_static_prompt_catalog_merge_lists.py _tests/test_help_index_catalog_only.py _tests/test_talon_settings_catalog_lists.py _tests/test_generate_axis_cheatsheet.py _tests/test_readme_axis_lists.py _tests/test_generate_readme_axis_lists.py _tests/test_generate_talon_lists.py _tests/test_run_guardrails_ci.py _tests/test_make_help_guardrails.py _tests/test_readme_guardrails_docs.py _tests/test_contributing_guardrails_docs.py _tests/test_make_guardrail_skip_list_files.py _tests/test_no_tracked_axis_lists.py _tests/test_gitignore_talon_lists.py _tests/test_gpt_readme_axis_lists.py _tests/test_axis_catalog_validate_help.py _tests/test_axis_catalog_validate_defaults.py _tests/test_guardrail_targets_no_talon_lists.py _tests/test_run_guardrails_ci_default_target.py _tests/test_ci_workflow_guardrails.py _tests/test_make_axis_regenerate.py _tests/test_make_axis_regenerate_apply.py _tests/test_make_readme_axis_lines.py _tests/test_make_readme_axis_refresh.py _tests/test_make_static_prompt_docs.py _tests/test_make_static_prompt_refresh.py _tests/test_make_doc_snapshots.py _tests/test_axis_regen_all.py _tests/test_make_axis_regen_all.py _tests/test_make_axis_guardrails_ci.py _tests/test_axis_catalog_validate_static_prompts.py _tests/test_readme_markers.py _tests/test_serialize_axis_config.py
 
 ci-guardrails: axis-guardrails-ci overlay-guardrails overlay-lifecycle-guardrails request-history-guardrails
-	python3 -m pytest _tests/test_axis_catalog_validate.py _tests/test_axis_catalog_validate_lists_dir.py _tests/test_axis_catalog_skip_lists.py _tests/test_axis_catalog_merge_lists.py _tests/test_static_prompt_catalog_skip_lists.py _tests/test_static_prompt_catalog_merge_lists.py _tests/test_help_index_catalog_only.py _tests/test_talon_settings_catalog_lists.py _tests/test_generate_talon_lists.py _tests/test_generate_axis_cheatsheet.py _tests/test_readme_axis_lists.py _tests/test_generate_readme_axis_lists.py _tests/test_make_readme_axis_lines.py _tests/test_make_readme_axis_refresh.py _tests/test_make_static_prompt_docs.py _tests/test_make_static_prompt_refresh.py _tests/test_make_doc_snapshots.py _tests/test_run_guardrails_ci.py _tests/test_make_help_guardrails.py _tests/test_readme_guardrails_docs.py _tests/test_contributing_guardrails_docs.py _tests/test_make_guardrail_skip_list_files.py _tests/test_no_tracked_axis_lists.py _tests/test_gitignore_talon_lists.py _tests/test_gpt_readme_axis_lists.py _tests/test_axis_catalog_validate_help.py _tests/test_axis_catalog_validate_defaults.py _tests/test_guardrail_targets_no_talon_lists.py _tests/test_run_guardrails_ci_default_target.py _tests/test_ci_workflow_guardrails.py _tests/test_make_axis_regenerate.py _tests/test_make_axis_regenerate_apply.py _tests/test_make_request_history_guardrails.py _tests/test_axis_catalog_validate_static_prompts.py _tests/test_readme_markers.py _tests/test_serialize_axis_config.py
+	$(PYTHON) -m pytest _tests/test_axis_catalog_validate.py _tests/test_axis_catalog_validate_lists_dir.py _tests/test_axis_catalog_skip_lists.py _tests/test_axis_catalog_merge_lists.py _tests/test_static_prompt_catalog_skip_lists.py _tests/test_static_prompt_catalog_merge_lists.py _tests/test_help_index_catalog_only.py _tests/test_talon_settings_catalog_lists.py _tests/test_generate_talon_lists.py _tests/test_generate_axis_cheatsheet.py _tests/test_readme_axis_lists.py _tests/test_generate_readme_axis_lists.py _tests/test_make_readme_axis_lines.py _tests/test_make_readme_axis_refresh.py _tests/test_make_static_prompt_docs.py _tests/test_make_static_prompt_refresh.py _tests/test_make_doc_snapshots.py _tests/test_run_guardrails_ci.py _tests/test_make_help_guardrails.py _tests/test_readme_guardrails_docs.py _tests/test_contributing_guardrails_docs.py _tests/test_make_guardrail_skip_list_files.py _tests/test_no_tracked_axis_lists.py _tests/test_gitignore_talon_lists.py _tests/test_gpt_readme_axis_lists.py _tests/test_axis_catalog_validate_help.py _tests/test_axis_catalog_validate_defaults.py _tests/test_guardrail_targets_no_talon_lists.py _tests/test_run_guardrails_ci_default_target.py _tests/test_ci_workflow_guardrails.py _tests/test_make_axis_regenerate.py _tests/test_make_axis_regenerate_apply.py _tests/test_make_request_history_guardrails.py _tests/test_axis_catalog_validate_static_prompts.py _tests/test_readme_markers.py _tests/test_serialize_axis_config.py
 
 guardrails: ci-guardrails overlay-guardrails overlay-lifecycle-guardrails request-history-guardrails
 	@echo "Guardrails complete (CI + parity checks)"
 
 overlay-guardrails:
-	python3 -m pytest _tests/test_overlay_helpers.py _tests/test_overlay_lifecycle.py
+	$(PYTHON) -m pytest _tests/test_overlay_helpers.py _tests/test_overlay_lifecycle.py
 
 overlay-lifecycle-guardrails:
-	python3 -m pytest _tests/test_overlay_lifecycle.py
+	$(PYTHON) -m pytest _tests/test_overlay_lifecycle.py
 
 request-history-guardrails:
 	mkdir -p artifacts/history-axis-summaries
-	python3 scripts/tools/history-axis-validate.py --summary-path artifacts/history-axis-summaries/history-validation-summary.json --reset-gating
-	python3 -m pytest _tests/test_request_history_actions.py
-	python3 scripts/tools/history-axis-validate.py --summarize-json artifacts/history-axis-summaries/history-validation-summary.json --summary-format streaming
-	python3 scripts/tools/history-axis-validate.py --summarize-json artifacts/history-axis-summaries/history-validation-summary.json --summary-format json > artifacts/history-axis-summaries/history-validation-summary.streaming.json
+	$(PYTHON) scripts/tools/history-axis-validate.py --summary-path artifacts/history-axis-summaries/history-validation-summary.json --reset-gating
+	$(PYTHON) -m pytest _tests/test_request_history_actions.py
+	$(PYTHON) scripts/tools/history-axis-validate.py --summarize-json artifacts/history-axis-summaries/history-validation-summary.json --summary-format streaming
+	$(PYTHON) scripts/tools/history-axis-validate.py --summarize-json artifacts/history-axis-summaries/history-validation-summary.json --summary-format json > artifacts/history-axis-summaries/history-validation-summary.streaming.json
 	printf 'Streaming gating summary (json): ' && cat artifacts/history-axis-summaries/history-validation-summary.streaming.json && printf '\n'
-	python3 scripts/tools/history-axis-export-telemetry.py artifacts/history-axis-summaries/history-validation-summary.json --output artifacts/history-axis-summaries/history-validation-summary.telemetry.json --top 5 --pretty
+	$(PYTHON) scripts/tools/history-axis-export-telemetry.py artifacts/history-axis-summaries/history-validation-summary.json --output artifacts/history-axis-summaries/history-validation-summary.telemetry.json --top 5 --pretty
 	printf 'Telemetry summary (json): ' && cat artifacts/history-axis-summaries/history-validation-summary.telemetry.json && printf '\n'
 
 request-history-guardrails-fast:
 	mkdir -p artifacts/history-axis-summaries
-	python3 scripts/tools/history-axis-validate.py --summary-path artifacts/history-axis-summaries/history-validation-summary.json
-	python3 -m pytest _tests/test_request_history_actions.py::RequestHistoryActionTests::test_history_save_filename_includes_provider_slug _tests/test_request_history_actions.py::RequestHistoryActionTests::test_history_save_includes_provider_id_in_header _tests/test_request_history_actions.py::RequestHistoryActionTests::test_history_save_blocks_when_request_in_flight _tests/test_request_history_actions.py::RequestHistoryActionTests::test_history_save_sequence_inflight_then_terminal
-	python3 scripts/tools/history-axis-validate.py --summarize-json artifacts/history-axis-summaries/history-validation-summary.json --summary-format streaming
-	python3 scripts/tools/history-axis-validate.py --summarize-json artifacts/history-axis-summaries/history-validation-summary.json --summary-format json > artifacts/history-axis-summaries/history-validation-summary.streaming.json
+	$(PYTHON) scripts/tools/history-axis-validate.py --summary-path artifacts/history-axis-summaries/history-validation-summary.json
+	$(PYTHON) -m pytest _tests/test_request_history_actions.py::RequestHistoryActionTests::test_history_save_filename_includes_provider_slug _tests/test_request_history_actions.py::RequestHistoryActionTests::test_history_save_includes_provider_id_in_header _tests/test_request_history_actions.py::RequestHistoryActionTests::test_history_save_blocks_when_request_in_flight _tests/test_request_history_actions.py::RequestHistoryActionTests::test_history_save_sequence_inflight_then_terminal
+	$(PYTHON) scripts/tools/history-axis-validate.py --summarize-json artifacts/history-axis-summaries/history-validation-summary.json --summary-format streaming
+	$(PYTHON) scripts/tools/history-axis-validate.py --summarize-json artifacts/history-axis-summaries/history-validation-summary.json --summary-format json > artifacts/history-axis-summaries/history-validation-summary.streaming.json
 	printf 'Streaming gating summary (json): ' && cat artifacts/history-axis-summaries/history-validation-summary.streaming.json && printf '\n'
-	python3 scripts/tools/history-axis-export-telemetry.py artifacts/history-axis-summaries/history-validation-summary.json --output artifacts/history-axis-summaries/history-validation-summary.telemetry.json --top 5 --pretty
+	$(PYTHON) scripts/tools/history-axis-export-telemetry.py artifacts/history-axis-summaries/history-validation-summary.json --output artifacts/history-axis-summaries/history-validation-summary.telemetry.json --top 5 --pretty
 	printf 'Telemetry summary (json): ' && cat artifacts/history-axis-summaries/history-validation-summary.telemetry.json && printf '\n'
 
 
@@ -146,14 +148,14 @@ help:
 	@echo "  make doc-snapshots          # generate all doc snapshots into tmp/ (README untouched)"
 
 talon-lists:
-	PYTHONPATH=. python3 scripts/tools/generate_talon_lists.py --out-dir GPT/lists
+	PYTHONPATH=. $(PYTHON) scripts/tools/generate_talon_lists.py --out-dir GPT/lists
 
 talon-lists-check:
-	PYTHONPATH=. python3 scripts/tools/generate_talon_lists.py --out-dir GPT/lists --check
+	PYTHONPATH=. $(PYTHON) scripts/tools/generate_talon_lists.py --out-dir GPT/lists --check
 
 adr0046-guardrails:
 	make axis-guardrails-test
-	python3 -m pytest \
+	$(PYTHON) -m pytest \
 		_tests/test_model_destination.py \
 		_tests/test_request_history_actions.py \
 		_tests/test_recipe_header_lines.py \

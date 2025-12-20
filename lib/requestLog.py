@@ -13,9 +13,9 @@ from .requestState import RequestDropReason
 try:
     from .modelHelpers import notify
 except Exception:  # pragma: no cover - defensive fallback for stubs
+    from typing import Callable
 
-    def notify(_msg: str) -> None:
-        return None
+    notify = cast(Callable[[str], None], lambda message: None)
 
 
 from .axisMappings import axis_registry_tokens, axis_value_to_key_map_for
@@ -34,9 +34,17 @@ class DropReason:
 
 _last_drop_reason = DropReason()
 _gating_drop_counts: Counter[RequestDropReason] = Counter()
+_gating_drop_sources: Counter[str] = Counter()
+_gating_drop_reason_sources: Counter[tuple[RequestDropReason, str]] = Counter()
+_last_gating_drop_source: str = ""
 
 
-def record_gating_drop(reason: RequestDropReason) -> None:
+def _normalise_gating_source(source: object) -> str:
+    text = str(source or "").strip()
+    return text if text else "unspecified"
+
+
+def record_gating_drop(reason: RequestDropReason, *, source: object = "") -> None:
     """Record a request gating drop for telemetry/guardrail reporting."""
 
     if not reason:
@@ -45,6 +53,20 @@ def record_gating_drop(reason: RequestDropReason) -> None:
         _gating_drop_counts[reason] += 1
     except Exception:
         pass
+
+    source_key = _normalise_gating_source(source)
+    try:
+        _gating_drop_sources[source_key] += 1
+    except Exception:
+        pass
+
+    try:
+        _gating_drop_reason_sources[(reason, source_key)] += 1
+    except Exception:
+        pass
+
+    global _last_gating_drop_source
+    _last_gating_drop_source = source_key
 
 
 def gating_drop_stats(*, reset: bool = False) -> dict[str, int]:
@@ -57,13 +79,33 @@ def gating_drop_stats(*, reset: bool = False) -> dict[str, int]:
     stats = {code: int(count) for code, count in _gating_drop_counts.items() if count}
     if reset:
         _gating_drop_counts.clear()
+        _gating_drop_sources.clear()
+        _gating_drop_reason_sources.clear()
+        global _last_gating_drop_source
+        _last_gating_drop_source = ""
+    return stats
+
+
+def gating_drop_source_stats(*, reset: bool = False) -> dict[str, int]:
+    """Return counts of gating drops grouped by source identifier."""
+
+    stats = {
+        source: int(count) for source, count in _gating_drop_sources.items() if count
+    }
+    if reset:
+        _gating_drop_sources.clear()
+        _gating_drop_reason_sources.clear()
+        global _last_gating_drop_source
+        _last_gating_drop_source = ""
     return stats
 
 
 def consume_gating_drop_stats() -> dict[str, int]:
     """Return and clear the current gating drop statistics."""
 
-    return gating_drop_stats(reset=True)
+    counts = gating_drop_stats(reset=True)
+    gating_drop_source_stats(reset=True)
+    return counts
 
 
 KNOWN_AXIS_KEYS: tuple[str, ...] = (
@@ -162,12 +204,24 @@ def _filter_axes_payload(
             return tokens
 
     catalog = axis_catalog()
-    axis_tokens = {
-        axis: set((tokens or {}).keys()) for axis, tokens in catalog["axes"].items()
-    }
-    axis_list_tokens = {
-        axis: set(tokens or []) for axis, tokens in catalog["axis_list_tokens"].items()
-    }
+    raw_axis_catalog = catalog.get("axes", {}) if isinstance(catalog, dict) else {}
+    axis_tokens: dict[str, set[str]] = {}
+    if isinstance(raw_axis_catalog, Mapping):
+        for axis, tokens in raw_axis_catalog.items():
+            try:
+                axis_tokens[str(axis)] = set((tokens or {}).keys())  # type: ignore[attr-defined]
+            except AttributeError:
+                axis_tokens[str(axis)] = set()
+    raw_axis_lists = (
+        catalog.get("axis_list_tokens", {}) if isinstance(catalog, dict) else {}
+    )
+    axis_list_tokens: dict[str, set[str]] = {}
+    if isinstance(raw_axis_lists, Mapping):
+        for axis, tokens in raw_axis_lists.items():
+            values: set[str] = set()
+            if isinstance(tokens, (list, tuple, set)):
+                values = {str(token) for token in tokens if str(token)}
+            axis_list_tokens[str(axis)] = values
 
     filtered: dict[str, list[str]] = {}
 
@@ -724,9 +778,11 @@ def history_validation_stats() -> dict[str, object]:
 
     stats = _scan_history_entries(raise_on_failure=False)
     gating_counts = gating_drop_stats()
+    gating_sources = gating_drop_source_stats()
     stats_obj = cast(dict[str, object], dict(stats))
     stats_obj["gating_drop_total"] = sum(gating_counts.values())
     stats_obj["gating_drop_counts"] = dict(gating_counts)
+    stats_obj["gating_drop_sources"] = dict(gating_sources)
 
     def _convert_to_int(candidate: object) -> Optional[int]:
         if isinstance(candidate, bool):
@@ -746,9 +802,12 @@ def history_validation_stats() -> dict[str, object]:
         return None
 
     normalized_counts: dict[str, int] = {}
+    normalized_sources: dict[str, int] = {}
     streaming_last: dict[str, object] = {}
+    streaming_last_source: dict[str, object] = {}
     total_int = 0
     counts_sorted_pairs: list[Tuple[str, int]] = []
+    sources_sorted_pairs: list[Tuple[str, int]] = []
 
     summary_data: Mapping[str, object] | None = None
     try:
@@ -782,6 +841,24 @@ def history_validation_stats() -> dict[str, object]:
                     continue
                 counts_sorted_pairs.append((reason_text, count_value))
                 normalized_counts.setdefault(reason_text, count_value)
+        sources_obj = summary_data.get("sources")
+        if isinstance(sources_obj, Mapping):
+            for source_name, value in sources_obj.items():
+                count_value = _convert_to_int(value)
+                if count_value is None or count_value < 0:
+                    continue
+                normalized_sources[str(source_name)] = count_value
+        sources_sorted_obj = summary_data.get("sources_sorted")
+        if isinstance(sources_sorted_obj, list):
+            for item in sources_sorted_obj:
+                if not isinstance(item, Mapping):
+                    continue
+                source_text = str(item.get("source") or "")
+                count_value = _convert_to_int(item.get("count"))
+                if not source_text or count_value is None or count_value < 0:
+                    continue
+                sources_sorted_pairs.append((source_text, count_value))
+                normalized_sources.setdefault(source_text, count_value)
         total_candidate = _convert_to_int(summary_data.get("total"))
         if total_candidate is not None and total_candidate >= 0:
             total_int = total_candidate
@@ -803,6 +880,40 @@ def history_validation_stats() -> dict[str, object]:
                 and streaming_last.get("reason_count") is None
             ):
                 streaming_last = {}
+        last_source_obj = summary_data.get("last_source")
+        if isinstance(last_source_obj, Mapping):
+            source_text = str(last_source_obj.get("source") or "")
+            source_count = _convert_to_int(last_source_obj.get("count"))
+            if source_text:
+                streaming_last_source["source"] = source_text
+            if source_count is None:
+                if source_text:
+                    streaming_last_source["count"] = normalized_sources.get(
+                        source_text, 0
+                    )
+            else:
+                streaming_last_source["count"] = source_count
+            if (
+                not streaming_last_source.get("source")
+                and streaming_last_source.get("count") is None
+            ):
+                streaming_last_source = {}
+
+    if not normalized_sources and gating_sources:
+        normalized_sources = dict(gating_sources)
+    if not sources_sorted_pairs and normalized_sources:
+        sources_sorted_pairs = sorted(
+            normalized_sources.items(), key=lambda item: (-item[1], item[0])
+        )
+    if (
+        not streaming_last_source
+        and _last_gating_drop_source
+        and normalized_sources.get(_last_gating_drop_source) is not None
+    ):
+        streaming_last_source = {
+            "source": _last_gating_drop_source,
+            "count": normalized_sources.get(_last_gating_drop_source, 0),
+        }
 
     counts_total = sum(normalized_counts.values())
     if counts_total and (total_int < counts_total):
@@ -820,7 +931,12 @@ def history_validation_stats() -> dict[str, object]:
         "counts_sorted": [
             {"reason": reason, "count": count} for reason, count in counts_sorted_pairs
         ],
+        "sources": normalized_sources,
+        "sources_sorted": [
+            {"source": source, "count": count} for source, count in sources_sorted_pairs
+        ],
         "last": streaming_last,
+        "last_source": streaming_last_source,
         "total": total_int,
     }
     return stats_obj

@@ -20,7 +20,7 @@ This helper keeps ADR loops observable and safe while letting a single agent adv
 ## Core Principles
 
 1. **Guardrails first.** Surface a failing automated check before behaviour edits. Documentation-only loops meet this bar by citing the governing guardrail and recording the removal-evidence summary; run the guardrail when automation exists.
-2. **Single meaningful slice.** Each loop addresses one behaviour, guardrail, or documented decision end-to-end.
+2. **Single meaningful slice.** Each loop addresses one cohesive behaviour, guardrail, or documented decision end-to-end—even when that means touching several files (e.g., CLI + docs + tests). When you need to touch multiple guardrails for the same behaviour, spell out the plan up front and keep the work observable.
 3. **Observable delta.** Every loop produces a change that matters if reverted and carries a rollback plan.
 4. **Evidence-led logging.** Keep planning light but capture commands, outputs, touched files, and removal tests for every slice.
 5. **Adversarial mindset.** Assume gaps remain; re-scan goals before declaring completion.
@@ -39,22 +39,23 @@ A loop entry is compliant when all statements hold:
 - In-repo work remains for the ADR; otherwise record a status-only loop with evidence.
 
 **Slice qualifies**
-- All edits address the same behaviour, feature flag, or guardrail decision.
-- At most one major component boundary is crossed; config + implementation + docs counts as one when governed by the same behaviour.
-- Exactly one `<VALIDATION_TARGET>` proves the slice, even though it will run twice (red then green). Additional commands require justification in the work-log before execution.
+- All edits address the same cohesive behaviour, feature flag, or guardrail decision. Crossing multiple files or components is fine when the behaviour demands it, provided the loop keeps the change observable.
+- For multi-guardrail slices, write a short sub-plan (list the guardrails / files) before editing and close each item with its own evidence summary.
+- Exactly one `<VALIDATION_TARGET>` proves the slice, even though it will run twice (red then green). When multiple guardrails are involved, treat the list as a superset plan and run the same `<VALIDATION_TARGET>` for each sub-check unless a different guardrail is explicitly called out in the plan. Additional commands require justification in the work-log before execution.
 - Documentation-only loops cite the relevant ADR clause, include a removal test, and identify the guardrail (or explain why automation is unavailable).
 
 **Validation registered**
-- The pre-plan names the `<VALIDATION_TARGET>` and where evidence artefacts will live.
+- The pre-plan names the `<VALIDATION_TARGET>` and where evidence artefacts will live; multi-guardrail plans enumerate each sub-check.
 - Before implementation edits, the contributor captures red evidence: updated expectation, fresh failing test, or, if coverage is missing, a minimal reversible regression (toggle, assertion, etc.) that is removed immediately after recording the failure.
 - After edits, the same `<VALIDATION_TARGET>` is rerun for green.
 - The contributor temporarily reverts the behaviour change using `<VCS_REVERT>` (or finer-grained equivalent) to confirm the guardrail fails again; if it stays green, the slice is tightened until the failure returns.
 
 **Evidence block complete**
-- The work-log entry carries paired red/green summaries with command, timestamp (UTC preferred), exit status, and either a key snippet or a checksum.
+- The work-log entry carries paired red/green summaries with command, timestamp (UTC preferred), exit status, and either a key snippet or a checksum. Include a short diff/hash snapshot (e.g., `git diff --stat` or a checksum) so reviewers can verify the observable delta quickly.
 - When summaries alone are insufficient, transcripts are appended to `<ARTEFACT_LOG>` rather than creating per-loop files; reference the exact heading from the work-log.
 - By default, helper automation sets `<ARTEFACT_LOG>` to `<EVIDENCE_ROOT>/<adr>/artefacts.md` and records the pointer as `inline` when the summary is sufficient; contributors override by declaring alternatives in the loop header.
 - The removal test is recorded in the same block (command and outcome). If revert attempts fail, the blocker evidence is logged.
+- Close each loop with an adversarial “risk recap” paragraph calling out any gaps, assumptions, or monitoring steps, especially when the slice covered multiple guardrails.
 - When no transcript is needed, the pointer field is recorded as `inline`.
 
 **Next work queued**

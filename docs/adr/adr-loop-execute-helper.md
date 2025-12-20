@@ -24,6 +24,7 @@ This helper keeps ADR loops observable and safe while letting a single agent adv
 3. **Observable delta.** Every loop produces a change that matters if reverted and carries a rollback plan.
 4. **Evidence-led logging.** Keep planning light but capture commands, outputs, touched files, and removal tests for every slice.
 5. **Adversarial mindset.** Assume gaps remain; re-scan goals before declaring completion.
+6. **No bypassed guardrails.** Tests must never be marked 'skipped'; when deleting or adjusting expectations, adversarially evaluate to confirm coverage stays intact and suites remain well organized.
 
 ---
 

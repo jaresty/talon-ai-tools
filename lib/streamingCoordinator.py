@@ -9,7 +9,7 @@ the response canvas) can consume snapshots via `canvas_view_from_snapshot`.
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import List, Optional, Dict, Any, Tuple, cast
+from typing import List, Optional, Dict, Any, Tuple, cast, Mapping
 
 from .axisCatalog import axis_catalog
 from .requestLog import append_entry_from_request
@@ -22,6 +22,7 @@ GATING_SNAPSHOT_KEYS = (
     "gating_drop_sources",
     "gating_drop_sources_sorted",
     "gating_drop_last_source",
+    "gating_summary_status",
 )
 
 
@@ -135,15 +136,40 @@ def filtered_axes_from_request(request: Dict[str, Any]) -> Dict[str, List[str]]:
     - Empty/unknown tokens are dropped.
     """
 
-    axes = (request or {}).get("axes") or {}
-    if not isinstance(axes, dict):
-        return {}
+    axes_source: Any = {}
+    candidate = request
+    if isinstance(candidate, Mapping):
+        axes_source = candidate.get("axes", {})
+    else:
+        maybe_axes = getattr(candidate, "axes", None)
+        if isinstance(maybe_axes, Mapping):
+            axes_source = maybe_axes
+        elif hasattr(candidate, "get"):
+            try:
+                axes_source = candidate.get("axes")  # type: ignore[attr-defined]
+            except Exception:
+                axes_source = {}
 
+    if not isinstance(axes_source, Mapping):
+        axes_container: Dict[str, Any] = {}
+    else:
+        axes_container = {
+            str(axis_key): value
+            for axis_key, value in axes_source.items()
+            if isinstance(axis_key, str)
+        }
+
+    axes_map: Dict[str, Dict[str, Any]] = {}
     try:
-        catalog = axis_catalog()
-        axes_map = catalog.get("axes", {}) or {}
+        catalog_raw = axis_catalog()
     except Exception:
-        axes_map = {}
+        catalog_raw = {}
+    catalog_data: Dict[str, Any] = {}
+    if isinstance(catalog_raw, dict):
+        catalog_data = cast(Dict[str, Any], catalog_raw)
+    axes_value = catalog_data.get("axes", {}) if catalog_data else {}
+    if isinstance(axes_value, dict):
+        axes_map = cast(Dict[str, Dict[str, Any]], axes_value or {})
 
     filtered: Dict[str, List[str]] = {}
     for axis in (
@@ -154,7 +180,7 @@ def filtered_axes_from_request(request: Dict[str, Any]) -> Dict[str, List[str]]:
         "channel",
         "directional",
     ):
-        vals = axes.get(axis) or []
+        vals = axes_container.get(axis) or []
         if isinstance(vals, list):
             tokens = [str(v) for v in vals if str(v)]
         else:
@@ -214,11 +240,116 @@ class StreamingSession:
 
     def record_error(self, message: str) -> Dict[str, Any]:
         self._record_event("error", message=str(message or ""))
-        return record_streaming_error(self.run, message)
+        snapshot = record_streaming_error(self.run, message)
+        self._record_gating_summary(status="errored")
+        return snapshot
 
     def record_complete(self) -> Dict[str, Any]:
         self._record_event("complete")
-        return record_streaming_complete(self.run)
+        snapshot = record_streaming_complete(self.run)
+        self._record_gating_summary(status="completed")
+        return snapshot
+
+    def _record_gating_summary(self, *, status: str) -> None:
+        try:
+            summary_raw = current_streaming_gating_summary()
+        except Exception:
+            summary_raw = {}
+        summary = cast(
+            Dict[str, Any], summary_raw if isinstance(summary_raw, dict) else {}
+        )
+        status_value = str(status or "").strip()
+
+        def _normalize_counts(mapping: Any) -> Dict[str, int]:
+            result: Dict[str, int] = {}
+            if isinstance(mapping, dict):
+                for key, value in mapping.items():
+                    name = str(key)
+                    coerced = _coerce_int(value)
+                    if coerced is None or coerced < 0:
+                        continue
+                    result[name] = coerced
+            return result
+
+        counts_payload = _normalize_counts(summary.get("counts"))
+        sources_payload = _normalize_counts(summary.get("sources"))
+
+        total = _coerce_int(summary.get("total")) if summary else None
+        if total is None or total < 0:
+            total = sum(counts_payload.values())
+
+        def _normalize_sorted(entries: Any, *, key_name: str) -> List[Dict[str, Any]]:
+            normalized: List[Dict[str, Any]] = []
+            if isinstance(entries, list):
+                for item in entries:
+                    if not isinstance(item, dict):
+                        continue
+                    key_value = item.get(key_name)
+                    count_value = _coerce_int(item.get("count"))
+                    if (
+                        not isinstance(key_value, str)
+                        or count_value is None
+                        or count_value < 0
+                    ):
+                        continue
+                    normalized.append({key_name: key_value, "count": count_value})
+            return normalized
+
+        counts_sorted = _normalize_sorted(
+            summary.get("counts_sorted"), key_name="reason"
+        )
+        if not counts_sorted and counts_payload:
+            counts_sorted = [
+                {"reason": reason, "count": count}
+                for reason, count in _sorted_counts(counts_payload)
+            ]
+
+        sources_sorted = _normalize_sorted(
+            summary.get("sources_sorted"), key_name="source"
+        )
+        if not sources_sorted and sources_payload:
+            sources_sorted = [
+                {"source": source, "count": count}
+                for source, count in _sorted_counts(sources_payload)
+            ]
+
+        last_payload = summary.get("last") if summary else None
+        last: Dict[str, Any] = {}
+        if isinstance(last_payload, dict):
+            reason_value = str(last_payload.get("reason") or "")
+            reason_count = _coerce_int(last_payload.get("reason_count"))
+            if reason_count is None or reason_count < 0:
+                reason_count = counts_payload.get(reason_value, 0)
+            if reason_value or reason_count:
+                last = {"reason": reason_value, "reason_count": reason_count}
+
+        last_source_payload = summary.get("last_source") if summary else None
+        last_source: Dict[str, Any] = {}
+        if isinstance(last_source_payload, dict):
+            source_value = str(last_source_payload.get("source") or "")
+            source_count = _coerce_int(last_source_payload.get("count"))
+            if source_count is None or source_count < 0:
+                source_count = sources_payload.get(source_value, 0)
+            if source_value or source_count:
+                last_source = {"source": source_value, "count": source_count}
+
+        self._record_event(
+            "gating_summary",
+            status=status_value,
+            total=total or 0,
+            counts=counts_payload,
+            counts_sorted=counts_sorted,
+            sources=sources_payload,
+            sources_sorted=sources_sorted,
+            last=last,
+            last_source=last_source,
+        )
+        record_streaming_snapshot(
+            self.run,
+            extra={
+                "gating_summary_status": status_value,
+            },
+        )
 
     def record_gating_drop(
         self, *, reason: str, phase: str = "", source: str = ""
@@ -476,6 +607,11 @@ def current_streaming_gating_summary() -> Dict[str, Any]:
     elif counts:
         ordered = _sorted_counts(counts)
 
+    status_raw = snapshot.get("gating_summary_status")
+    status_text = ""
+    if isinstance(status_raw, str):
+        status_text = status_raw.strip()
+
     sources_raw = snapshot.get("gating_drop_sources")
     sources: Dict[str, int] = {}
     if isinstance(sources_raw, dict):
@@ -544,6 +680,7 @@ def current_streaming_gating_summary() -> Dict[str, Any]:
         "sources_sorted": sources_sorted,
         "last": last,
         "last_source": last_source,
+        "status": status_text,
     }
 
 
@@ -727,6 +864,16 @@ def record_streaming_snapshot(
             snapshot["gating_drop_last_source"] = prior_snapshot[
                 "gating_drop_last_source"
             ]
+
+        summary_status_value = extra_dict.get("gating_summary_status")
+        if isinstance(summary_status_value, str):
+            snapshot["gating_summary_status"] = summary_status_value.strip()
+        elif same_request and "gating_summary_status" in prior_snapshot:
+            snapshot["gating_summary_status"] = str(
+                prior_snapshot.get("gating_summary_status", "") or ""
+            ).strip()
+        elif not same_request:
+            snapshot["gating_summary_status"] = ""
 
         # Apply any remaining metadata outside the gating summary keys.
         for key, value in extra_dict.items():

@@ -204,6 +204,89 @@ if bootstrap is not None:
                 {"reason": "history_save_failed", "reason_count": 1},
             )
 
+        def test_record_complete_emits_gating_summary_event(self) -> None:
+            session = new_streaming_session("req-gating-complete")
+            session.record_gating_drop(
+                reason="in_flight", phase="SENDING", source="gpt.apply"
+            )
+            session.record_gating_drop(
+                reason="history_save_failed", phase="SAVE", source="history"
+            )
+            session.record_gating_drop(
+                reason="in_flight", phase="STREAMING", source="gpt.apply"
+            )
+
+            snapshot = session.record_complete()
+            self.assertTrue(snapshot.get("completed"))
+            self.assertFalse(snapshot.get("errored"))
+
+            self.assertGreaterEqual(len(session.events), 2)
+            self.assertEqual(session.events[-2].get("kind"), "complete")
+
+            summary_event = session.events[-1]
+            self.assertEqual(summary_event.get("kind"), "gating_summary")
+            self.assertEqual(summary_event.get("status"), "completed")
+            self.assertEqual(summary_event.get("total"), 3)
+
+            counts = summary_event.get("counts", {})
+            self.assertEqual(counts.get("in_flight"), 2)
+            self.assertEqual(counts.get("history_save_failed"), 1)
+
+            self.assertEqual(
+                summary_event.get("counts_sorted"),
+                [
+                    {"reason": "in_flight", "count": 2},
+                    {"reason": "history_save_failed", "count": 1},
+                ],
+            )
+
+            sources = summary_event.get("sources", {})
+            self.assertEqual(sources.get("gpt.apply"), 2)
+            self.assertEqual(sources.get("history"), 1)
+
+            self.assertEqual(
+                summary_event.get("sources_sorted"),
+                [
+                    {"source": "gpt.apply", "count": 2},
+                    {"source": "history", "count": 1},
+                ],
+            )
+
+            last_drop = summary_event.get("last", {})
+            self.assertEqual(last_drop.get("reason"), "in_flight")
+            self.assertEqual(last_drop.get("reason_count"), 2)
+
+            last_source = summary_event.get("last_source", {})
+            self.assertEqual(last_source.get("source"), "gpt.apply")
+            self.assertEqual(last_source.get("count"), 2)
+
+            summary_snapshot = current_streaming_gating_summary()
+            self.assertEqual(summary_snapshot.get("status"), "completed")
+
+        def test_record_error_emits_gating_summary_event(self) -> None:
+            session = new_streaming_session("req-gating-error")
+
+            snapshot = session.record_error("timeout")
+            self.assertTrue(snapshot.get("errored"))
+            self.assertFalse(snapshot.get("completed"))
+
+            self.assertGreaterEqual(len(session.events), 2)
+            self.assertEqual(session.events[-2].get("kind"), "error")
+
+            summary_event = session.events[-1]
+            self.assertEqual(summary_event.get("kind"), "gating_summary")
+            self.assertEqual(summary_event.get("status"), "errored")
+            self.assertEqual(summary_event.get("total"), 0)
+            self.assertEqual(summary_event.get("counts"), {})
+            self.assertEqual(summary_event.get("counts_sorted"), [])
+            self.assertEqual(summary_event.get("sources"), {})
+            self.assertEqual(summary_event.get("sources_sorted"), [])
+            self.assertEqual(summary_event.get("last"), {})
+            self.assertEqual(summary_event.get("last_source"), {})
+
+            summary_snapshot = current_streaming_gating_summary()
+            self.assertEqual(summary_snapshot.get("status"), "errored")
+
 
 else:
     if not TYPE_CHECKING:

@@ -44,7 +44,16 @@ def _coerce_int(value: object) -> Optional[int]:
 
 def _normalize_streaming_summary(summary: object) -> dict[str, object]:
     if not isinstance(summary, dict):
-        return {"counts": {}, "counts_sorted": [], "last": {}, "total": 0}
+        return {
+            "counts": {},
+            "counts_sorted": [],
+            "sources": {},
+            "sources_sorted": [],
+            "last": {},
+            "last_source": {},
+            "total": 0,
+            "status": "unknown",
+        }
 
     summary_dict: dict[str, Any] = summary
 
@@ -79,10 +88,18 @@ def _normalize_streaming_summary(summary: object) -> dict[str, object]:
     ]
     sorted_sources = _sorted_counts(sources)
     sources_sorted = [
-        {"source": source, "count": count} for source, count in sorted_sources
+        {"source": source, "count": count} for source, count in _sorted_counts(sources)
     ]
 
+    status_raw = summary_dict.get("status")
+    status_value = ""
+    if isinstance(status_raw, str):
+        status_value = status_raw.strip()
+    if not status_value:
+        status_value = "unknown"
+
     last_payload: dict[str, object] = {}
+
     raw_last = summary_dict.get("last")
     if isinstance(raw_last, dict):
         raw_last_dict = cast(dict[str, Any], raw_last)
@@ -120,6 +137,7 @@ def _normalize_streaming_summary(summary: object) -> dict[str, object]:
         "last": last_payload,
         "last_source": last_source_payload,
         "total": total,
+        "status": status_value,
     }
 
 
@@ -155,10 +173,11 @@ def _format_streaming_summary_line(normalized: dict[str, object]) -> str:
     else:
         last_source_text = "n/a"
     total_value = cast(int, normalized.get("total", 0))
+    status_value = str(normalized.get("status") or "").strip() or "unknown"
     return (
         "Streaming gating summary: "
-        f"total={total_value}; counts={counts_text}; sources={sources_text}; "
-        f"last={last_text}; last_source={last_source_text}"
+        f"status={status_value}; total={total_value}; counts={counts_text}; "
+        f"sources={sources_text}; last={last_text}; last_source={last_source_text}"
     )
 
 

@@ -1,4 +1,6 @@
 import os
+import json
+import os
 import subprocess
 import sys
 import tempfile
@@ -66,11 +68,13 @@ if bootstrap is not None:
             self.assertEqual(result.returncode, 0, msg=result.stderr)
             lines = [line for line in result.stdout.splitlines() if line.strip()]
             self.assertGreaterEqual(len(lines), 2)
+            streaming_lines = [
+                line for line in lines if line.startswith("Streaming gating summary:")
+            ]
+            self.assertTrue(streaming_lines, msg=result.stdout)
             self.assertTrue(
-                any(line.startswith("Streaming gating summary:") for line in lines),
-                msg=result.stdout,
+                any("status=" in line for line in streaming_lines), msg=result.stdout
             )
-            import json
 
             summary_line = next(
                 (line for line in lines if line.lstrip().startswith("{")),
@@ -81,6 +85,9 @@ if bootstrap is not None:
             stats = json.loads(summary_line)
             self.assertIn("total_entries", stats)
             self.assertIn("entries_missing_directional", stats)
+            streaming_summary = stats.get("streaming_gating_summary", {})
+            self.assertIsInstance(streaming_summary, dict)
+            self.assertIn("status", streaming_summary)
             persona_pairs = stats.get("persona_alias_pairs", {})
             self.assertIn("teach_junior_dev", persona_pairs)
             self.assertEqual(persona_pairs["teach_junior_dev"].get("mentor"), 1)
@@ -116,7 +123,6 @@ if bootstrap is not None:
                 )
                 self.assertEqual(result.returncode, 0, msg=result.stderr)
                 self.assertTrue(os.path.exists(summary_path))
-                import json
 
                 with open(summary_path, "r", encoding="utf-8") as fh:
                     stats = json.load(fh)
@@ -125,8 +131,6 @@ if bootstrap is not None:
             clear_history()
 
         def test_summarize_json_outputs_summary(self) -> None:
-            import json
-
             with tempfile.TemporaryDirectory() as tmpdir:
                 summary_path = Path(tmpdir) / "history-summary.json"
                 payload = {
@@ -155,8 +159,8 @@ if bootstrap is not None:
                 self.assertEqual(result.returncode, 0, msg=result.stderr)
                 output = result.stdout.strip()
                 expected = (
-                    "Streaming gating summary: total=2; counts=in_flight=2; "
-                    "last=in_flight (count=2)"
+                    "Streaming gating summary: status=unknown; total=2; "
+                    "counts=in_flight=2; sources=none; last=in_flight (count=2); last_source=n/a"
                 )
                 self.assertEqual(output, expected)
                 self.assertNotIn("### History Guardrail Summary", result.stdout)
@@ -184,8 +188,12 @@ if bootstrap is not None:
                     {
                         "counts": {"in_flight": 2},
                         "counts_sorted": [{"reason": "in_flight", "count": 2}],
+                        "sources": {},
+                        "sources_sorted": [],
                         "last": {"reason": "in_flight", "reason_count": 2},
+                        "last_source": {},
                         "total": 2,
+                        "status": "unknown",
                     },
                 )
                 self.assertEqual(
@@ -211,7 +219,7 @@ if bootstrap is not None:
                 markdown_output = result_markdown.stdout
                 self.assertIn("### History Guardrail Summary", markdown_output)
                 self.assertIn(
-                    "- Streaming gating summary: total=2; counts=in_flight=2; last=in_flight (count=2)",
+                    "- Streaming gating summary: status=unknown; total=2; counts=in_flight=2; sources=none; last=in_flight (count=2); last_source=n/a",
                     markdown_output,
                 )
                 self.assertIn("Download artifact", markdown_output)

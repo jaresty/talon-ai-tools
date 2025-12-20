@@ -70,6 +70,22 @@ print(data.get("gating_drop_total", "unknown"))
 PY
 )
   echo "History summary stats: total_entries=${TOTAL_ENTRIES} gating_drop_total=${GATING_DROPS}"
+  GATING_STATUS=$(python3 - "$SUMMARY_FILE" <<'PY'
+import json, sys
+from pathlib import Path
+path = Path(sys.argv[1])
+try:
+    data = json.loads(path.read_text())
+except Exception:
+    data = {}
+summary = data.get("streaming_gating_summary")
+status = ""
+if isinstance(summary, dict):
+    status = str(summary.get("status") or "").strip()
+print(status or "unknown")
+PY
+)
+  echo "History summary gating status: ${GATING_STATUS}"
   GATING_REASONS=$(python3 - "$SUMMARY_FILE" <<'PY'
 import json, sys
 from pathlib import Path
@@ -280,6 +296,7 @@ PY
   fi
   python3 scripts/tools/history-axis-export-telemetry.py "${TELEMETRY_ARGS[@]}"
   TELEMETRY_JSON=$(cat "${TELEMETRY_PATH}")
+  echo "Telemetry summary saved at ${TELEMETRY_PATH}"
   echo "Telemetry summary (json): ${TELEMETRY_JSON}"
 
   SUMMARY_ARGS=(--summarize-json "${SUMMARY_FILE}")
@@ -297,11 +314,13 @@ PY
       printf '\n'
       if [[ -n "${ARTIFACT_URL}" ]]; then
         printf '%s\n' "- Download summary artifact: [History axis summary](${ARTIFACT_URL})"
+        printf '%s\n' "- Download telemetry summary: [Telemetry payload](${ARTIFACT_URL})"
       else
         printf '%s\n' "- Download summary artifact: [History axis summary](${STREAMING_JSON_PATH})"
       fi
       printf '%s\n' "- Streaming JSON summary recorded at ${STREAMING_JSON_PATH}"
       printf '%s\n' "- Streaming gating summary (text): ${STREAMING_LINE}"
+      printf '%s\n' "- streaming status: ${GATING_STATUS}"
       printf '%s\n' "- total entries: ${TOTAL_ENTRIES:-unknown}"
       printf '%s\n' "- gating drops: ${GATING_DROPS:-unknown}"
       if [[ -n "${GATING_REASONS_TABLE}" ]]; then
@@ -310,7 +329,11 @@ PY
       else
         printf '%s\n' "- Streaming gating reasons: ${GATING_REASONS:-none}"
       fi
-      printf '%s\n' "- Telemetry summary recorded at ${TELEMETRY_PATH}"
+      if [[ -n "${GATING_SOURCES_TABLE}" ]]; then
+        printf '%s\n' "Streaming gating sources:"
+        printf '%s\n' "${GATING_SOURCES_TABLE}"
+      fi
+      printf '%s\n' "- Telemetry summary saved at ${TELEMETRY_PATH}"
       printf '\n'
       printf '%s\n' "Streaming summary (json):"
       printf '```json\n%s\n```\n' "${STREAMING_JSON}"
@@ -318,6 +341,7 @@ PY
       printf '```json\n%s\n```\n' "${TELEMETRY_JSON}"
     } >> "${GITHUB_STEP_SUMMARY}"
   fi
+
 elif [[ "${REQUIRE_SUMMARY}" == "true" ]]; then
   echo "History validation summary required for target ${TARGET} but not found at ${SUMMARY_FILE}" >&2
   exit 1

@@ -140,6 +140,7 @@ def build_payload(
     *,
     top_n: int,
     artifact_url: str | None,
+    summary_path: Path,
 ) -> Dict[str, Any]:
     streaming = data.get("streaming_gating_summary")
     if not isinstance(streaming, dict):
@@ -151,6 +152,13 @@ def build_payload(
 
     ordered_sources = _sorted_sources(data)
     top_sources, other_sources_total = _top_sources(ordered_sources, limit=top_n)
+
+    status_raw = streaming.get("status") if isinstance(streaming, dict) else None
+    status_text = ""
+    if isinstance(status_raw, str):
+        status_text = status_raw.strip()
+    if not status_text:
+        status_text = "unknown"
 
     streaming_total = _coerce_int(streaming.get("total"))
     legacy_total = _coerce_int(data.get("gating_drop_total"))
@@ -168,6 +176,8 @@ def build_payload(
         "gating_drop_total": streaming_total,
         "top_gating_reasons": top_reasons,
         "top_gating_sources": top_sources,
+        "streaming_status": status_text,
+        "summary_path": str(summary_path),
     }
 
     if artifact_url:
@@ -225,6 +235,7 @@ def main() -> int:
         data,
         top_n=args.top,
         artifact_url=args.artifact_url,
+        summary_path=args.summary_path,
     )
 
     if args.output is None:

@@ -74,6 +74,8 @@ if bootstrap is not None and not TYPE_CHECKING:
                     [{"source": "modelHelpCanvas", "count": 2}],
                 )
                 self.assertEqual(payload.get("other_gating_source_drops"), 1)
+                self.assertEqual(payload.get("streaming_status"), "unknown")
+                self.assertEqual(payload.get("summary_path"), str(summary_path))
 
         def test_preserves_artifact_url_when_provided(self) -> None:
             summary = {
@@ -126,6 +128,8 @@ if bootstrap is not None and not TYPE_CHECKING:
                 self.assertEqual(payload.get("other_gating_drops"), 1)
                 self.assertEqual(payload.get("top_gating_sources"), [])
                 self.assertFalse(payload.get("other_gating_source_drops"))
+                self.assertEqual(payload.get("streaming_status"), "unknown")
+                self.assertEqual(payload.get("summary_path"), str(summary_path))
 
         def test_stdout_mode_emits_json_payload(self) -> None:
             summary = {
@@ -167,6 +171,8 @@ if bootstrap is not None and not TYPE_CHECKING:
                     [{"reason": "rate_limited", "count": 1}],
                 )
                 self.assertEqual(payload.get("top_gating_sources"), [])
+                self.assertEqual(payload.get("streaming_status"), "unknown")
+                self.assertEqual(payload.get("summary_path"), str(summary_path))
 
         def test_includes_gating_drop_rate(self) -> None:
             summary = {
@@ -210,6 +216,8 @@ if bootstrap is not None and not TYPE_CHECKING:
                 self.assertEqual(payload.get("gating_drop_total"), 3)
                 self.assertAlmostEqual(payload.get("gating_drop_rate"), 0.3, places=4)
                 self.assertEqual(payload.get("top_gating_sources"), [])
+                self.assertEqual(payload.get("streaming_status"), "unknown")
+                self.assertEqual(payload.get("summary_path"), str(summary_path))
 
 else:
 

@@ -161,7 +161,11 @@ if not TYPE_CHECKING:
                 result.stdout,
             )
             self.assertIn(
-                "Streaming gating summary: total=0; counts=none; sources=none; last=n/a; last_source=n/a",
+                "History summary gating status: unknown",
+                result.stdout,
+            )
+            self.assertIn(
+                "Streaming gating summary: status=unknown; total=0; counts=none; sources=none; last=n/a; last_source=n/a",
                 result.stdout,
             )
             self.assertIn(
@@ -169,7 +173,7 @@ if not TYPE_CHECKING:
                 result.stdout,
             )
             self.assertIn(
-                "- Streaming gating summary: total=0; counts=none; sources=none; last=n/a; last_source=n/a",
+                "- Streaming gating summary: status=unknown; total=0; counts=none; sources=none; last=n/a; last_source=n/a",
                 result.stdout,
             )
             self.assertIn(
@@ -202,6 +206,7 @@ if not TYPE_CHECKING:
                     "last": {},
                     "last_source": {},
                     "total": 0,
+                    "status": "unknown",
                 },
             )
 
@@ -219,6 +224,10 @@ if not TYPE_CHECKING:
             self.assertEqual(telemetry_payload.get("top_gating_reasons"), [])
             self.assertEqual(telemetry_payload.get("top_gating_sources"), [])
 
+            self.assertIn(
+                "Telemetry summary saved at artifacts/history-axis-summaries/history-validation-summary.telemetry.json",
+                result.stdout,
+            )
             self.assertIn(
                 "Streaming JSON summary recorded at artifacts/history-axis-summaries/history-validation-summary.streaming.json; job summary will reference this file when running in GitHub Actions.",
                 result.stdout,
@@ -246,6 +255,9 @@ if not TYPE_CHECKING:
                 step_summary_path = Path(tmpdir) / "gha-summary.md"
                 env = os.environ.copy()
                 env["GITHUB_STEP_SUMMARY"] = str(step_summary_path)
+                env.setdefault("GITHUB_SERVER_URL", "https://github.com")
+                env["GITHUB_REPOSITORY"] = "example/repo"
+                env["GITHUB_RUN_ID"] = "12345"
                 result = subprocess.run(
                     ["/bin/bash", str(script), "request-history-guardrails"],
                     check=False,
@@ -262,10 +274,25 @@ if not TYPE_CHECKING:
                     step_summary_path.exists(),
                     "run_guardrails_ci.sh did not create the GitHub step summary file",
                 )
+                self.assertIn(
+                    "History summary gating status: unknown",
+                    result.stdout,
+                )
                 summary_text = step_summary_path.read_text(encoding="utf-8")
                 self.assertIn("### History Guardrail Summary", summary_text)
                 self.assertIn(
                     "Streaming JSON summary recorded at artifacts/history-axis-summaries/history-validation-summary.streaming.json",
+                    summary_text,
+                )
+                expected_artifact = (
+                    "https://github.com/example/repo/actions/runs/12345#artifacts"
+                )
+                self.assertIn(
+                    f"- Download telemetry summary: [Telemetry payload]({expected_artifact})",
+                    summary_text,
+                )
+                self.assertIn(
+                    "Telemetry summary saved at artifacts/history-axis-summaries/history-validation-summary.telemetry.json",
                     summary_text,
                 )
                 self.assertIn(
@@ -293,6 +320,10 @@ if not TYPE_CHECKING:
                     summary_text,
                 )
                 self.assertIn(
+                    "- streaming status: unknown",
+                    summary_text,
+                )
+                self.assertIn(
                     "- Streaming gating reasons: none",
                     summary_text,
                 )
@@ -301,7 +332,7 @@ if not TYPE_CHECKING:
                     summary_text,
                 )
                 self.assertIn(
-                    "- Telemetry summary recorded at artifacts/history-axis-summaries/history-validation-summary.telemetry.json",
+                    "- Telemetry summary saved at artifacts/history-axis-summaries/history-validation-summary.telemetry.json",
                     summary_text,
                 )
                 self.assertIn("```json", summary_text)
@@ -355,6 +386,7 @@ if not TYPE_CHECKING:
             if streaming_summary_path.exists():
                 streaming_summary_path.unlink()
 
+            summary_text = ""
             with tempfile.TemporaryDirectory() as tmpdir:
                 fake_make = Path(tmpdir) / "make"
                 fake_make.write_text("#!/usr/bin/env bash\nexit 0\n", encoding="utf-8")
@@ -376,13 +408,19 @@ if not TYPE_CHECKING:
                         "run_guardrails_ci.sh request-history-guardrails failed with code "
                         f"{result.returncode}\nstdout:\n{result.stdout}\nstderr:\n{result.stderr}"
                     )
+                self.assertTrue(
+                    step_summary_path.exists(),
+                    "run_guardrails_ci.sh did not append to the GitHub step summary file",
+                )
+                summary_text = step_summary_path.read_text(encoding="utf-8")
             stdout = result.stdout
+            self.assertIn("History summary gating status: unknown", stdout)
             self.assertIn("Streaming gating reasons:", stdout)
             self.assertIn("| Reason | Count |", stdout)
             self.assertIn("Streaming gating sources:", stdout)
             self.assertIn("| Source | Count |", stdout)
             self.assertIn(
-                "Streaming gating summary: total=3; counts=streaming_disabled=2, rate_limited=1; sources=modelHelpCanvas=2, providerCommands=1; last=streaming_disabled (count=2); last_source=n/a",
+                "Streaming gating summary: status=unknown; total=3; counts=streaming_disabled=2, rate_limited=1; sources=modelHelpCanvas=2, providerCommands=1; last=streaming_disabled (count=2); last_source=n/a",
                 stdout,
             )
             table_lines = [line for line in stdout.splitlines() if line.startswith("|")]
@@ -399,17 +437,13 @@ if not TYPE_CHECKING:
             self.assertIn("| modelHelpCanvas | 2 |", stdout)
             self.assertIn("| providerCommands | 1 |", stdout)
 
-            self.assertTrue(
-                step_summary_path.exists(),
-                "run_guardrails_ci.sh did not append to the GitHub step summary file",
-            )
-            summary_text = step_summary_path.read_text(encoding="utf-8")
+            self.assertIn("- streaming status: unknown", summary_text)
             self.assertIn("Streaming gating reasons:", summary_text)
             self.assertIn("| Reason | Count |", summary_text)
             self.assertIn("Streaming gating sources:", summary_text)
             self.assertIn("| Source | Count |", summary_text)
             self.assertIn(
-                "Streaming gating summary: total=3; counts=streaming_disabled=2, rate_limited=1; sources=modelHelpCanvas=2, providerCommands=1; last=streaming_disabled (count=2); last_source=n/a",
+                "Streaming gating summary: status=unknown; total=3; counts=streaming_disabled=2, rate_limited=1; sources=modelHelpCanvas=2, providerCommands=1; last=streaming_disabled (count=2); last_source=n/a",
                 summary_text,
             )
             summary_lines = [

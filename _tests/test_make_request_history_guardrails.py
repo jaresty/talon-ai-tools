@@ -35,7 +35,7 @@ if not TYPE_CHECKING:
             lines = [line for line in result.stdout.splitlines() if line.strip()]
             self.assertTrue(lines, "make output unexpectedly empty")
             self.assertIn(
-                "Streaming gating summary: total=0; counts=none; sources=none; last=n/a; last_source=n/a",
+                "Streaming gating summary: status=unknown; total=0; counts=none; sources=none; last=n/a; last_source=n/a",
                 result.stdout,
             )
             self.assertIn(
@@ -71,6 +71,7 @@ if not TYPE_CHECKING:
                     "last": {},
                     "last_source": {},
                     "total": 0,
+                    "status": "unknown",
                 },
             )
 
@@ -87,6 +88,7 @@ if not TYPE_CHECKING:
             self.assertIn("generated_at", telemetry_payload)
             self.assertEqual(telemetry_payload.get("top_gating_reasons"), [])
             self.assertEqual(telemetry_payload.get("top_gating_sources"), [])
+            self.assertEqual(telemetry_payload.get("streaming_status"), "unknown")
 
         def test_make_request_history_guardrails_fast_produces_summary(self) -> None:
             """Guardrail: request-history-guardrails-fast should export the validation summary."""
@@ -115,7 +117,7 @@ if not TYPE_CHECKING:
             lines = [line for line in result.stdout.splitlines() if line.strip()]
             self.assertTrue(lines, "make output unexpectedly empty")
             self.assertIn(
-                "Streaming gating summary: total=0; counts=none; sources=none; last=n/a; last_source=n/a",
+                "Streaming gating summary: status=unknown; total=0; counts=none; sources=none; last=n/a; last_source=n/a",
                 result.stdout,
             )
             self.assertIn(
@@ -151,6 +153,7 @@ if not TYPE_CHECKING:
                     "last": {},
                     "last_source": {},
                     "total": 0,
+                    "status": "unknown",
                 },
             )
 
@@ -167,6 +170,7 @@ if not TYPE_CHECKING:
             self.assertIn("generated_at", telemetry_payload)
             self.assertEqual(telemetry_payload.get("top_gating_reasons"), [])
             self.assertEqual(telemetry_payload.get("top_gating_sources"), [])
+            self.assertEqual(telemetry_payload.get("streaming_status"), "unknown")
 
 
 else:

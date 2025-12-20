@@ -805,6 +805,7 @@ def history_validation_stats() -> dict[str, object]:
     normalized_sources: dict[str, int] = {}
     streaming_last: dict[str, object] = {}
     streaming_last_source: dict[str, object] = {}
+    status_value = ""
     total_int = 0
     counts_sorted_pairs: list[Tuple[str, int]] = []
     sources_sorted_pairs: list[Tuple[str, int]] = []
@@ -899,6 +900,12 @@ def history_validation_stats() -> dict[str, object]:
             ):
                 streaming_last_source = {}
 
+        status_candidate = summary_data.get("status")
+        if isinstance(status_candidate, str):
+            candidate_text = status_candidate.strip()
+            if candidate_text:
+                status_value = candidate_text
+
     if not normalized_sources and gating_sources:
         normalized_sources = dict(gating_sources)
     if not sources_sorted_pairs and normalized_sources:
@@ -914,6 +921,9 @@ def history_validation_stats() -> dict[str, object]:
             "source": _last_gating_drop_source,
             "count": normalized_sources.get(_last_gating_drop_source, 0),
         }
+
+    if not status_value:
+        status_value = "unknown"
 
     counts_total = sum(normalized_counts.values())
     if counts_total and (total_int < counts_total):
@@ -938,6 +948,7 @@ def history_validation_stats() -> dict[str, object]:
         "last": streaming_last,
         "last_source": streaming_last_source,
         "total": total_int,
+        "status": status_value,
     }
     return stats_obj
 

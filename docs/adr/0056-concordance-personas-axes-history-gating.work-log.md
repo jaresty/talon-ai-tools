@@ -1275,4 +1275,158 @@
   - Migrate `requestHistoryActions` and `requestHistoryDrawer` to the bus/controller façade.
   - After migrations, extend integration guardrails so history drawers and other canvases surface controller-sourced drop reasons end-to-end.
 
+## 2025-12-19 – Loop 237 (kind: guardrail/tests)
+- Focus: Request Gating & Streaming – migrate history actions onto the request bus gating façade.
+- Deliverables:
+  - Updated `_tests/test_request_history_actions.py` to assert `_request_is_in_flight` patches `bus_is_in_flight`.
+  - Refactored `lib/requestHistoryActions.py` to import `requestBus.is_in_flight` and keep `_reject_if_request_in_flight` telemetry via `try_begin_request(source="requestHistoryActions")`.
+- Guardrail: `python3.11 -m pytest _tests/test_request_history_actions.py`; supporting `python3.11 -m pytest _tests/test_request_gating.py`.
+- Evidence:
+  - red | 2025-12-19T21:55Z | exit 1 | python3.11 -m pytest _tests/test_request_history_actions.py::RequestHistoryActionTests::test_request_is_in_flight_delegates_to_request_bus
+      AttributeError: <module 'talon_user.lib.requestHistoryActions' from '/Users/tkma6d4/.talon/user/talon-ai-tools/lib/requestHistoryActions.py'> does not have the attribute 'bus_is_in_flight'
+  - green | 2025-12-19T21:59Z | exit 0 | python3.11 -m pytest _tests/test_request_history_actions.py
+      83 passed in 0.45s
+  - green | 2025-12-19T21:59Z | exit 0 | python3.11 -m pytest _tests/test_request_gating.py
+      10 passed in 0.05s
+- Removal test: Reverting the history actions import would drop `bus_is_in_flight`, causing the refreshed guard test to fail and restoring the deprecated gating helper.
+- Adversarial “what remains” check:
+  - Migrate `requestHistoryDrawer` onto the bus/controller façade.
+  - Once drawers migrate, extend integration guardrails so history surfaces surface controller-sourced drop reasons end-to-end.
+
+## 2025-12-20 – Loop 238 (kind: guardrail/tests)
+- Helper: helper:v20251220 @ 2025-12-20T05:50:17Z
+- Focus: Request Gating & Streaming – migrate history drawer gating onto the request bus façade.
+- Change: Added `_tests/test_request_history_drawer.py::test_request_is_in_flight_delegates_to_request_bus` and refactored `lib/requestHistoryDrawer._request_is_in_flight` to call `requestBus.is_in_flight()` with safe fallbacks while keeping `try_begin_request` telemetry.
+- Guardrail: `python3.11 -m pytest _tests/test_request_history_drawer.py` (python3 in this environment lacks pytest, so python3.11 was used).
+- Evidence: `docs/adr/evidence/0056/loop-0238.md`
+- Removal test: Reverting either the guardrail test or the bus delegation causes `_tests/test_request_history_drawer.py::RequestHistoryDrawerTests::test_request_is_in_flight_delegates_to_request_bus` to fail, restoring the deprecated gating helper.
+- Adversarial “what remains” check:
+  - Extend history drawer integration coverage so drop notifications surface controller-provided reasons when gating rejects new requests.
+  - Audit other history drawer helpers for direct `_request_is_in_flight` usage before wiring gating telemetry into dashboards.
+  - Confirm guardrail scripts capture history drawer gating drop counts alongside existing streaming summaries.
+
+## 2025-12-20 – Loop 239 (kind: guardrail/tests)
+- Helper: helper:v20251220 @ 2025-12-20T06:36:48Z
+- Focus: Request Gating & Streaming – surface history drawer gating drop reasons beyond `in_flight`.
+- Change: Added `_tests/test_request_history_drawer.py::test_reject_if_request_in_flight_notifies_other_drop_reasons` and updated `lib/requestHistoryDrawer._reject_if_request_in_flight` to notify and record drop reasons for any gating failure returned by `try_begin_request`.
+- Guardrail: `python3.11 -m pytest _tests/test_request_history_drawer.py` (red before implementation, green after).
+- Evidence: `docs/adr/evidence/0056/loop-0239.md`
+- Removal test: Reverting either the guardrail test or the `_reject_if_request_in_flight` change causes the new test to fail, allowing non-`in_flight` drop reasons to proceed without notification.
+- Adversarial “what remains” check:
+  - Add an integration test that exercises history drawer toggle during streaming-disabled scenarios to ensure notifications surface in Talon overlays.
+  - Confirm gating telemetry (`history-validation-summary.telemetry.json`) captures non-`in_flight` drop reasons once end-to-end tests produce them.
+  - Evaluate aligning other history surfaces (e.g., quick-save shortcuts) with the broader drop reason notifications to keep Concordance messaging consistent.
+
+## 2025-12-20 – Loop 240 (kind: guardrail/tests)
+- Helper: helper:v20251220 @ 2025-12-20T06:55:30Z
+- Focus: Request Gating & Streaming – emit terminal gating summaries from the streaming coordinator.
+- Deliverables:
+  - Added `_tests/test_streaming_coordinator.py::StreamingCoordinatorTests::test_record_complete_emits_gating_summary_event` and `test_record_error_emits_gating_summary_event` to guard the streaming gating summary event stream.
+  - Updated `lib/streamingCoordinator.py` to type-harden `filtered_axes_from_request` and emit `gating_summary` events on completion/error using `current_streaming_gating_summary` data.
+- Guardrail: `python3.11 -m pytest _tests/test_streaming_coordinator.py::StreamingCoordinatorTests::test_record_complete_emits_gating_summary_event _tests/test_streaming_coordinator.py::StreamingCoordinatorTests::test_record_error_emits_gating_summary_event`.
+- Evidence: `docs/adr/evidence/0056/loop-0240.md`
+- Removal test: Reverting `lib/streamingCoordinator.py` drops the gating summary event, causing the new streaming coordinator tests to fail (`python3.11 -m pytest …test_record_complete_emits_gating_summary_event …test_record_error_emits_gating_summary_event`).
+- Adversarial “what remains” check:
+  - Thread the `gating_summary` event into guardrail telemetry exporters so CI job summaries and history-axis artifacts surface terminal drop totals without parsing raw events.
+  - Add an integration test that confirms request/UI canvases consume the summary snapshot when rendering Concordance diagnostics.
+  - Evaluate emitting a lifecycle completion event that persists the gating summary alongside other terminal request metrics.
+
+## 2025-12-20 – Loop 241 (kind: guardrail/tests)
+- Helper: helper:v20251220 @ 2025-12-20T07:30:05Z
+- Focus: Request Gating & Streaming – surface gating status across telemetry, CLI summaries, and CI job summaries.
+- Deliverables:
+  - Propagated streaming gating status via `lib/streamingCoordinator.py` snapshots and `lib/requestLog.history_validation_stats` so summary exports expose `status` metadata.
+  - Updated `scripts/tools/history-axis-validate.py`, `scripts/tools/run_guardrails_ci.sh`, and `scripts/tools/history-axis-export-telemetry.py` to print the status in console output, JSON summaries, job summaries, and telemetry payloads.
+  - Extended regression coverage (`_tests/test_streaming_coordinator.py`, `_tests/test_history_axis_validate.py`, `_tests/test_run_guardrails_ci.py`, `_tests/test_history_axis_export_telemetry.py`, `_tests/test_make_request_history_guardrails.py`) to guard the new status signals.
+- Guardrail: `python3.11 -m pytest _tests/test_streaming_coordinator.py _tests/test_history_axis_validate.py _tests/test_run_guardrails_ci.py _tests/test_history_axis_export_telemetry.py _tests/test_make_request_history_guardrails.py`.
+- Evidence: `docs/adr/evidence/0056/loop-0241.md`
+- Removal test: `git checkout HEAD -- lib/streamingCoordinator.py lib/requestLog.py scripts/tools/history-axis-validate.py scripts/tools/run_guardrails_ci.sh scripts/tools/history-axis-export-telemetry.py && python3.11 -m pytest _tests/test_streaming_coordinator.py` (fails: gating summary status absent and gating summary tests fail).
+- Adversarial “what remains” check:
+  - Consider surfacing the same status metadata in external dashboards or telemetry pipelines that consume history exports.
+  - Evaluate exposing status in operator-facing overlays so Concordance drop reasons remain visible even when history guardrails fire.
+  - Monitor CI/workflow output to ensure the additional status line remains readable when multiple drop reasons accumulate.
+
+## 2025-12-20 – Loop 242 (kind: guardrail/tests)
+- Helper: helper:v20251220 @ 2025-12-20T08:45:00Z
+- Focus: Request Gating & Streaming – restore gating status metadata across coordinator snapshots, history stats, and guardrail tooling.
+- Deliverables:
+  - Hardened `lib/streamingCoordinator.filtered_axes_from_request` to guard against non-mapping payloads and reinstated `gating_summary` events that persist status in streaming snapshots.
+  - Extended `lib/requestLog.history_validation_stats` to propagate the status field and taught `scripts/tools/history-axis-validate.py`, `scripts/tools/run_guardrails_ci.sh`, and `scripts/tools/history-axis-export-telemetry.py` to surface the status in CLI output, job summaries, and telemetry payloads with sensible defaults.
+  - Ensured guardrail-facing summaries render `status=unknown` when none is recorded while preserving structured status data within JSON artifacts for downstream automation.
+- Guardrail: `python3.11 -m pytest _tests/test_streaming_coordinator.py::StreamingCoordinatorTests::test_record_complete_emits_gating_summary_event _tests/test_history_axis_validate.py::HistoryAxisValidateTests::test_script_summary_outputs_stats`.
+- Evidence: `docs/adr/evidence/0056/loop-0242.md`
+- Removal test: `git checkout -- lib/streamingCoordinator.py lib/requestLog.py scripts/tools/history-axis-validate.py scripts/tools/run_guardrails_ci.sh scripts/tools/history-axis-export-telemetry.py && python3.11 -m pytest _tests/test_streaming_coordinator.py::StreamingCoordinatorTests::test_record_complete_emits_gating_summary_event _tests/test_history_axis_validate.py::HistoryAxisValidateTests::test_script_summary_outputs_stats` (fails: status emission removed and targeted guardrails regress).
+- Adversarial “what remains” check:
+  - Re-run broader guardrail suites (`_tests/test_run_guardrails_ci.py`, `_tests/test_history_axis_export_telemetry.py`) in follow-up loop to capture the status-aware telemetry pathways end-to-end.
+  - Thread the restored status metadata into Concordance dashboard ingestion so external reporting reflects the same lifecycle state.
+  - Audit downstream consumers of `history_validation_stats` for assumptions about missing status values and backfill defaults where necessary.
+
+## 2025-12-20 – Loop 243 (kind: guardrail/tests)
+- Helper: helper:v20251220 @ 2025-12-20T17:15:00Z
+- Focus: Request Gating & Streaming – ensure guardrail CI job summaries surface the streaming gating status and sources table.
+- Deliverables:
+  - Updated `scripts/tools/run_guardrails_ci.sh` to log the streaming gating status line in stdout and, when data exists, render a Markdown table of gating sources in the GitHub step summary alongside the existing reasons table.
+  - Confirmed the history guardrail target now preserves the status field throughout stdout, job summary output, and telemetry exports without regressing status fallbacks for empty summaries.
+- Guardrail: `python3.11 -m pytest _tests/test_run_guardrails_ci.py`.
+- Evidence: `docs/adr/evidence/0056/loop-0243.md`
+- Removal test: `git checkout -- scripts/tools/run_guardrails_ci.sh && python3.11 -m pytest _tests/test_run_guardrails_ci.py` (fails: status line and sources table disappear, breaking the refreshed guardrail expectations).
+- Adversarial “what remains” check:
+  - Re-run `_tests/test_history_axis_export_telemetry.py` in a subsequent slice to verify downstream telemetry continues to capture the status string end-to-end.
+  - Consider adding a CLI flag to emit a concise, machine-readable summary when running guardrails locally so operators can spot gating trends without parsing Markdown tables.
+
+## 2025-12-20 – Loop 244 (kind: guardrail/tests)
+- Helper: helper:v20251220 @ 2025-12-20T17:28:00Z
+- Focus: Request Gating & Streaming – normalize streaming gating status in history validation summaries and artifacts.
+- Deliverables:
+  - Updated `scripts/tools/history-axis-validate.py` to default missing streaming status values to "unknown" across streaming, JSON, and Markdown outputs.
+  - Taught `lib/requestLog.history_validation_stats` to propagate the normalized status so guardrail consumers inherit the same fallback.
+  - Adjusted request-history guardrail tests to assert that generated summaries and streaming JSON exports retain the explicit status field.
+- Guardrail: `python3.11 -m pytest _tests/test_history_axis_validate.py::HistoryAxisValidateTests::test_summarize_json_outputs_summary`.
+- Evidence: `docs/adr/evidence/0056/loop-0244.md`
+- Removal test: `git checkout -- lib/requestLog.py scripts/tools/history-axis-validate.py && python3.11 -m pytest _tests/test_history_axis_validate.py::HistoryAxisValidateTests::test_summarize_json_outputs_summary` (fails: streaming gating status field drops back to a blank value).
+- Adversarial “what remains” check:
+  - Reconfirm that `_tests/test_history_axis_export_telemetry.py` continues to verify the status fallback end-to-end after the normalization change.
+  - Evaluate threading the explicit status through any external telemetry pipelines that still rely on blank values as a sentinel.
+  - Consider rehydrating request-history summaries that may have been archived with blank status fields so dashboards display consistent signals.
+
+## 2025-12-20 – Loop 245 (kind: guardrail/tests)
+- Helper: helper:v20251220 @ 2025-12-20T17:58:00Z
+- Focus: Request Gating & Streaming – expose the history summary path alongside normalized status in telemetry exports.
+- Deliverables:
+  - Enhanced `scripts/tools/history-axis-export-telemetry.py` to embed both the normalized streaming status and the originating summary path in the telemetry payload.
+  - Updated `_tests/test_history_axis_export_telemetry.py` to require the new fields across stdout and file-output modes, guarding future regressions.
+- Guardrail: `python3.11 -m pytest _tests/test_history_axis_export_telemetry.py`.
+- Evidence: `docs/adr/evidence/0056/loop-0245.md`
+- Removal test: `git checkout -- scripts/tools/history-axis-export-telemetry.py && python3.11 -m pytest _tests/test_history_axis_export_telemetry.py` (fails: telemetry payload no longer includes the summary path or normalized status).
+- Adversarial “what remains” check:
+  - Ensure downstream Concordance ingestion pipelines capture the new `summary_path` metadata before rotating dashboards.
+  - Consider extending the exporter to emit a checksum of the summary file so dashboards can detect stale artifacts.
+  - Audit other telemetry consumers for assumptions about the payload schema and update documentation accordingly.
+
+## 2025-12-20 – Loop 246 (kind: guardrail/tests)
+- Helper: helper:v20251220 @ 2025-12-20T19:58:00Z
+- Focus: Request Gating & Streaming – deduplicate telemetry summary messaging in CI output.
+- Deliverables:
+  - Updated `scripts/tools/run_guardrails_ci.sh` to print a single "Telemetry summary saved at …" line in stdout and GitHub step summaries, keeping JSON output unchanged.
+  - Extended `_tests/test_run_guardrails_ci.py` assertions to require the new wording and avoid accepting redundant lines.
+- Guardrail: `python3.11 -m pytest _tests/test_run_guardrails_ci.py`.
+- Evidence: `docs/adr/evidence/0056/loop-0246.md`
+- Removal test: `git checkout -- scripts/tools/run_guardrails_ci.sh && python3.11 -m pytest _tests/test_run_guardrails_ci.py` (fails: telemetry summary line disappears and guardrail re-fails).
+- Adversarial “what remains” check:
+  - Consider surfacing the telemetry summary path directly in CI artifacts (e.g., step summary link) to streamline operator navigation.
+  - Audit other guardrail scripts for similar duplicate messaging so CI output stays readable.
+
+## 2025-12-20 – Loop 247 (kind: guardrail/tests)
+- Helper: helper:v20251220 @ 2025-12-20T21:10:00Z
+- Focus: Request Gating & Streaming – add telemetry artifact hyperlink to CI job summary.
+- Deliverables:
+  - `scripts/tools/run_guardrails_ci.sh` now emits a “Download telemetry summary” bullet pointing at the GitHub Actions artifact when available, while retaining the local path fallback.
+  - `_tests/test_run_guardrails_ci.py` seeds GitHub env variables during job-summary checks and asserts the new hyperlink alongside the saved-path bullet.
+- Guardrail: `python3.11 -m pytest _tests/test_run_guardrails_ci.py`.
+- Evidence: `docs/adr/evidence/0056/loop-0247.md`
+- Removal test: `git checkout -- scripts/tools/run_guardrails_ci.sh && python3.11 -m pytest _tests/test_run_guardrails_ci.py` (fails: telemetry download link disappears from the job summary).
+- Adversarial “what remains” check:
+  - Consider emitting a direct stdout line with the artifact URL to help local runs when GitHub env vars are present.
+  - Review other guardrail helpers for similar artifact-link gaps.
+
 

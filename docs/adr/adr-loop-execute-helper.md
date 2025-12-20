@@ -25,6 +25,7 @@ This helper keeps ADR loops observable and safe while letting a single agent adv
 4. **Evidence-led logging.** Keep planning light but capture commands, outputs, touched files, and removal tests for every slice.
 5. **Adversarial mindset.** Assume gaps remain; re-scan goals before declaring completion.
 6. **No bypassed guardrails.** Tests must never be marked 'skipped'; when deleting or adjusting expectations, adversarially evaluate to confirm coverage stays intact and suites remain well organized.
+7. **Current-directory tooling.** Validation commands should run from the working folder without relying on global directories such as `/tmp` so the agent retains the necessary permissions to execute them.
 
 ---
 

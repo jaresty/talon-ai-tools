@@ -32,6 +32,9 @@ if bootstrap is not None and not TYPE_CHECKING:
                         "modelHelpCanvas": 2,
                         "providerCommands": 1,
                     },
+                    "last": {"reason": "streaming_disabled", "reason_count": 2},
+                    "last_message": "Streaming disabled guardrail",
+                    "last_code": "streaming_disabled",
                     # deliberately omit `total` to exercise fallback behaviour
                 },
             }
@@ -82,6 +85,13 @@ if bootstrap is not None and not TYPE_CHECKING:
                     payload.get("last_drop_message"), "Streaming disabled guardrail"
                 )
                 self.assertEqual(payload.get("last_drop_code"), "streaming_disabled")
+                self.assertEqual(
+                    payload.get("streaming_last_drop_message"),
+                    "Streaming disabled guardrail",
+                )
+                self.assertEqual(
+                    payload.get("streaming_last_drop_code"), "streaming_disabled"
+                )
 
         def test_preserves_artifact_url_when_provided(self) -> None:
             summary = {
@@ -138,6 +148,8 @@ if bootstrap is not None and not TYPE_CHECKING:
                 self.assertEqual(payload.get("summary_path"), str(summary_path))
                 self.assertEqual(payload.get("last_drop_message"), "none")
                 self.assertIsNone(payload.get("last_drop_code"))
+                self.assertEqual(payload.get("streaming_last_drop_message"), "none")
+                self.assertIsNone(payload.get("streaming_last_drop_code"))
 
         def test_stdout_mode_emits_json_payload(self) -> None:
             summary = {
@@ -183,6 +195,8 @@ if bootstrap is not None and not TYPE_CHECKING:
                 self.assertEqual(payload.get("summary_path"), str(summary_path))
                 self.assertEqual(payload.get("last_drop_message"), "none")
                 self.assertIsNone(payload.get("last_drop_code"))
+                self.assertEqual(payload.get("streaming_last_drop_message"), "none")
+                self.assertIsNone(payload.get("streaming_last_drop_code"))
 
         def test_includes_gating_drop_rate(self) -> None:
             summary = {

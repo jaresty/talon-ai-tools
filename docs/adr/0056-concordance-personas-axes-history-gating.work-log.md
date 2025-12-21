@@ -1608,4 +1608,16 @@
   - Evaluate extending the simulation hook to accept alternate drop reasons for broader coverage.
   - Confirm downstream guardrail helpers reuse this env var instead of re-implementing drop simulations.
 
+## 2025-12-21 – Loop 262 (kind: guardrail/tests)
+- Helper: helper:v20251220.5 @ 2025-12-21T16:36:30Z
+- Focus: Request Gating & Streaming – ensure telemetry exports carry streaming last-drop metadata.
+- Change: Extended `history-axis-export-telemetry.py` to emit `streaming_last_drop_message`/`_code` fields alongside the existing gating summary and tightened the telemetry guardrail tests to assert the new payload contract.
+- Guardrail: `python3.11 -m pytest _tests/test_history_axis_export_telemetry.py`
+- Evidence: `docs/adr/evidence/0056/loop-0262.md`
+- Removal test: `git stash push -k -u -- scripts/tools/history-axis-export-telemetry.py && python3.11 -m pytest _tests/test_history_axis_export_telemetry.py && git stash pop`
+- Adversarial “what remains” check:
+  - Coordinate with Concordance telemetry consumers to ingest the new streaming fields.
+  - Update dashboard schemas and runbooks once downstream ingestion confirms the additional metadata.
+  - Monitor guardrail artefacts to ensure the new fields remain populated when streaming summaries are present.
+
 

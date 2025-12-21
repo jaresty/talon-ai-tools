@@ -150,11 +150,16 @@ def build_payload(
     last_message = ""
     if isinstance(raw_last_message, str):
         last_message = raw_last_message.strip()
-    streaming_last_message = (
+    streaming_last_message_raw = (
         streaming.get("last_message") if isinstance(streaming, dict) else ""
     )
-    if not last_message and isinstance(streaming_last_message, str):
-        last_message = streaming_last_message.strip()
+    streaming_last_message_text = ""
+    if isinstance(streaming_last_message_raw, str):
+        streaming_last_message_text = streaming_last_message_raw.replace(
+            "\n", " "
+        ).strip()
+    if not last_message and streaming_last_message_text:
+        last_message = streaming_last_message_text
     last_message = last_message.replace("\n", " ").strip()
     if not last_message:
         last_message = "none"
@@ -163,11 +168,14 @@ def build_payload(
     last_code = ""
     if isinstance(raw_last_code, str):
         last_code = raw_last_code.strip()
-    streaming_last_code = (
+    streaming_last_code_raw = (
         streaming.get("last_code") if isinstance(streaming, dict) else ""
     )
-    if not last_code and isinstance(streaming_last_code, str):
-        last_code = streaming_last_code.strip()
+    streaming_last_code_text = ""
+    if isinstance(streaming_last_code_raw, str):
+        streaming_last_code_text = streaming_last_code_raw.strip()
+    if not last_code and streaming_last_code_text:
+        last_code = streaming_last_code_text
 
     ordered_counts = _sorted_counts(data)
     sum_counts = sum(count for _, count in ordered_counts)
@@ -204,6 +212,12 @@ def build_payload(
         "last_drop_message": last_message,
     }
 
+    payload["streaming_last_drop_message"] = (
+        streaming_last_message_text if streaming_last_message_text else "none"
+    )
+
+    if streaming_last_code_text:
+        payload["streaming_last_drop_code"] = streaming_last_code_text
     if last_code:
         payload["last_drop_code"] = last_code
     if artifact_url:

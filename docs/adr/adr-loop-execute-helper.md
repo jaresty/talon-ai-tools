@@ -36,6 +36,7 @@ A loop entry is compliant when all statements hold:
 **Focus declared**
 - Relevant red checks for the ADR are cleared or logged with evidence.
 - Refreshed ADR/work-log sections tied to the slice are identified in the entry.
+- The entry names the highest-risk assumption or behaviour it de-risks and explains why this slice was prioritized.
 - Remaining in-repo work is noted; when none exists, the loop records a status-only update with evidence.
 
 **Slice qualifies**

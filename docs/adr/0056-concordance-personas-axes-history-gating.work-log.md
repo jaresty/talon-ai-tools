@@ -1641,4 +1641,13 @@
 - Adversarial “what remains” check:
   - Expand the operations runbook task to highlight the new streaming status and last-drop telemetry fields so operators archive the full dataset.
 
+## 2025-12-21 – Loop 265 (kind: docs)
+- Helper: helper:v20251220.5 @ 2025-12-21T18:05Z
+- Focus: Request Gating & Streaming – extend operations guidance to cover the new streaming telemetry artefacts.
+- Change: Expanded the operations Salient Task bullet to call out archiving the streaming status line, last-drop bullets, and gating reason/source tables, noting their corresponding telemetry fields for dashboards.
+- Checks: Documentation-only loop (no tests run).
+- Removal test: Reverting the ADR edits would drop the explicit streaming status and gating table guidance, leaving runbooks without the telemetry capture requirements.
+- Adversarial “what remains” check:
+  - Sync external Concordance runbooks with the updated instructions and include direct links to the archived telemetry artefacts.
+
 

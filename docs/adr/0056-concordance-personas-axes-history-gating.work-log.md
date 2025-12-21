@@ -1800,6 +1800,16 @@
   - Consider a future Talon-side command if live history snapshots become important.
   - Communicate the same limitation in README/help surfaces if we expose guardrail commands to others.
 
+## 2025-12-21 – Loop 283 (kind: docs)
+- Helper: helper:v20251221.0 @ 2025-12-21T23:05Z
+- Focus: Monitoring simplification – formally retire the old checklist-focused work-log entries.
+- Change: Marked loops 270–272 as superseded in the work log.
+- Checks: Documentation-only loop (no automated guardrail required).
+- Evidence: `docs/adr/evidence/0056/loop-0283.md`.
+- Removal test: Reverting would reintroduce checklist guidance that no longer applies.
+- Adversarial “what remains” check:
+  - Continue to keep later loops aligned with the simplified workflow.
+
 ## 2025-12-21 – Loop 284 (status only)
 - Helper: helper:v20251221.0 @ 2025-12-21T23:10Z
 - Focus: Audit README/help surfaces for the retired guardrail checklist references.
@@ -1807,5 +1817,4 @@
 - Evidence: `docs/adr/evidence/0056/loop-0284.md`.
 - Adversarial “what remains” check:
   - Re-run the audit if we later document guardrail commands in README/help for other users.
-
 

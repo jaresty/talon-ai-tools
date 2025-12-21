@@ -1722,4 +1722,16 @@
 - Adversarial “what remains” check:
   - Capture the guardrail checklist in personal notes (next loop) so telemetry steps stay visible before future resets.
 
+## 2025-12-21 – Loop 274 (kind: guardrail/tests)
+- Helper: helper:v20251221.0 @ 2025-12-21T21:25Z
+- Focus: Monitoring & Next Steps – surface the guardrail checklist as an executable helper so telemetry commands stay memorable before resets.
+- Change: Added `scripts/tools/history-guardrail-checklist.py` to print the manual guardrail steps (plain text and JSON formats) and `_tests/test_history_guardrail_checklist.py` to guard the helper output against regressions.
+- Guardrail: `python3.11 -m pytest _tests/test_history_guardrail_checklist.py`.
+- Evidence: `docs/adr/evidence/0056/loop-0274.md`
+- Removal test: `mv scripts/tools/history-guardrail-checklist.py scripts/tools/history-guardrail-checklist.py.tmp && python3.11 -m pytest _tests/test_history_guardrail_checklist.py` (fails when the helper is absent; restore with `mv scripts/tools/history-guardrail-checklist.py.tmp scripts/tools/history-guardrail-checklist.py`).
+- Adversarial “what remains” check:
+  - Add a Makefile target so the checklist is one command away for local operators.
+  - Document the helper in ADR-0056 evidence/runbook notes so the manual checklist stays visible.
+  - Evaluate a Markdown output format once operations handbooks adopt the helper.
+
 

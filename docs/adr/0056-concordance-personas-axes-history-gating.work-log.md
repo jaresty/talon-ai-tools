@@ -1677,4 +1677,13 @@
 - Adversarial “what remains” check:
   - Track upcoming guardrail CLI upgrades and append new suites/scripts once directionality or axis token checks expand.
 
+## 2025-12-21 – Loop 269 (kind: docs)
+- Helper: helper:v20251220.5 @ 2025-12-21T19:20Z
+- Focus: Request Gating & Streaming – spell out the ongoing guardrail commands and runbook follow-ups for streaming telemetry.
+- Change: Added a Monitoring & Next Steps section capturing guardrail commands (`make request-history-guardrails`, `run_guardrails_ci.sh`, `history-axis-validate.py`) and the outstanding operations runbook sync so telemetry reminders stay front of mind.
+- Checks: Documentation-only loop (no tests run).
+- Removal test: Reverting the ADR edits would remove the explicit guardrail/reminder list, making it easier to miss the streaming telemetry archive obligations.
+- Adversarial “what remains” check:
+  - Coordinate with operations to update external runbooks and attach the streaming telemetry examples once the handbook edit clears review.
+
 

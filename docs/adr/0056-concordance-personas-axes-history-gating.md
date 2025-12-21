@@ -369,3 +369,9 @@ Across all domains, we will continue to run `python3 -m pytest` from the repo ro
 
 
 The execution of these tasks should be coordinated with existing Concordance ADRs so that this ADR serves as a focused completion path for persona, axis snapshot, and request gating hotspots revealed by the latest churn × complexity analysis.
+
+## Monitoring & Next Steps
+- Guardrail: `make request-history-guardrails` — operations runbook update to capture `Streaming status`, `Last gating drop`, `Streaming last drop`, and gating tables before invoking `--reset-gating`.
+- Guardrail: `scripts/tools/run_guardrails_ci.sh request-history-guardrails` — confirm telemetry artefacts (`history-validation-summary.json`, `.streaming.json`, `.telemetry.json`) stay archived for the 30-day retention window.
+- Guardrail: `python3 scripts/tools/history-axis-validate.py --summarize-json artifacts/history-axis-summaries/history-validation-summary.json --summary-format streaming` — cross-check that new telemetry fields surface in streaming summaries; add corresponding tests when fields expand.
+- Follow-up: operations runbook (Concordance handbook) — sync external documentation with the streaming telemetry requirements and artefact archive locations.

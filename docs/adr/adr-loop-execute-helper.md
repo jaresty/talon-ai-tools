@@ -11,7 +11,7 @@ This helper keeps ADR loops observable and safe while letting a single agent adv
 ## Named Placeholders
 
 - `<EVIDENCE_ROOT>` – project-defined store for detailed transcripts that auditors can read (e.g., `docs/evidence`, `ops/adr/evidence`).
-- `<VALIDATION_TARGET>` – minimal command or scripted set proving the slice end-to-end (e.g., `python3 -m pytest tests/foo_test.py::case`).
+- `<VALIDATION_TARGET>` – project-specific minimal guardrail command or script that proves the slice end-to-end (e.g., the smallest test, lint, or validation command that exercises the targeted behaviour).
 - `<ARTEFACT_LOG>` – aggregated evidence record (markdown, JSON, database entry, etc.) that captures full red/green transcripts when summaries are insufficient.
 - `<VCS_REVERT>` – capability that temporarily rolls back the slice so guardrails can re-fail. Document the concrete command or procedure once per ADR (e.g., `git restore --source=HEAD`, `p4 revert`, migration rollback script).
 
@@ -36,20 +36,20 @@ A loop entry is compliant when all statements hold:
 **Focus declared**
 - Relevant red checks for the ADR are cleared or logged with evidence.
 - Refreshed ADR/work-log sections tied to the slice are identified in the entry.
-- The entry names the highest-risk assumption or behaviour it de-risks and explains why this slice was prioritized.
-- Remaining in-repo work is noted; when none exists, the loop records a status-only update with evidence.
+- The entry identifies the single highest-risk behaviour still open for the ADR, explains why this slice addresses it now, and documents any higher-risk items intentionally deferred.
+- Remaining work is noted; if a higher-risk item cannot proceed, the loop records the blocker and supporting evidence, otherwise a status-only update confirms completion.
 
 **Slice qualifies**
 - All edits address the same cohesive behaviour, feature flag, or guardrail decision. Crossing multiple files or components is fine when the behaviour demands it, provided the loop keeps the change observable.
 - Multi-guardrail slices list the guardrails/files covered and record evidence for each item.
 - A single `<VALIDATION_TARGET>` is recorded when one command exercises all guardrails. When guardrails require different commands, the entry documents a minimal list mapping each guardrail to a target; every target has red/green/removal evidence and any extra command is justified in the work-log.
-- Documentation-only loops cite the relevant ADR clause, record the governing guardrail (or justify missing automation), and capture a reversible red failure or equivalent detection signal before edits land.
+- Documentation-only loops are allowed only when the documentation resolves the highest outstanding risk (or records a blocked risk with evidence); they cite the relevant ADR clause, record the governing guardrail (or justify missing automation), and capture a reversible red failure or equivalent detection signal before edits land.
 
 **Validation registered**
-- The pre-plan names the `<VALIDATION_TARGET>` (or bounded list) and the evidence locations, enumerating the guardrail-to-target mapping.
-- Red evidence is captured before behaviour edits land: updated expectation, fresh failing test, or, if coverage is missing, a minimal reversible regression removed immediately after recording the failure. The entry states why the failure output corresponds to the targeted behaviour and demonstrates the full guardrail surface under change; partial failures cite missing facets and queue tightening work before proceeding.
-- After edits, the same `<VALIDATION_TARGET>` (or mapped target) reruns for green evidence.
-- A temporary revert using `<VCS_REVERT>` (or finer-grained equivalent) confirms the guardrail fails again; if it stays green, the slice is tightened until the failure returns.
+- Loop pre-plan identifies the `<VALIDATION_TARGET>` (or bounded list) and the evidence locations, mapping each guardrail to its target.
+- Red evidence exists before behaviour edits land: updated expectation, fresh failing test, or, where coverage is absent, a minimal reversible regression removed immediately after the failure is recorded. The entry states why the failure output covers the targeted behaviour and demonstrates the full guardrail surface; partial failures cite missing facets and queue tightening work before proceeding.
+- Green evidence reuses the same `<VALIDATION_TARGET>` (or mapped target).
+- Removal evidence uses `<VCS_REVERT>` (or finer-grained equivalent) to confirm the guardrail fails again; if it stays green, tighten the slice until the failure returns.
 
 **Evidence block complete**
 - The work-log entry carries paired red/green summaries with command, timestamp (UTC preferred), exit status, and either a key snippet or a checksum. Include a short diff/hash snapshot (e.g., `git diff --stat` or a checksum) so reviewers can verify the observable delta quickly. For the red line, capture the salient failure text or hash and note explicitly why it proves the intended behaviour failed.
@@ -101,10 +101,8 @@ Completion is eligible once every loop satisfies this contract under a single he
 
 ---
 
-## Operational Tips (Optional)
+## Optional Patterns
 
-- Maintain a scratch list of candidate slices, validation targets, and file pointers; refresh after every loop.
-- Inspect diffs before recording green runs to ensure only intentional edits remain.
-- Favour narrow tooling (single tests, targeted scripts) and document rationale before running broader suites or formatters.
+Teams may keep local scratch notes or checklists to help satisfy the contract, but compliance is determined solely by the declarative rules above.
 
 By following this helper, each loop lands a well-tested, observable slice; the work-log remains the single source of truth; and completion checks stay decisive without overfitting to a specific codebase.

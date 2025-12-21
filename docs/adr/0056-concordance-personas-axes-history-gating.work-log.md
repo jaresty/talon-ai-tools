@@ -1632,4 +1632,13 @@
   - Confirm downstream dashboard schemas are revised once ingestion work lands.
   - Consider adding a future loop to cross-link telemetry key names with guardrail CLI output examples.
 
+## 2025-12-21 – Loop 264 (kind: docs)
+- Helper: helper:v20251220.5 @ 2025-12-21T17:45Z
+- Focus: Request Gating & Streaming – align Salient Tasks with the centralized gating façade and tests already in place.
+- Change: Marked the request gating Salient Task bullets as completed for the shared helpers, StreamingSession orchestration, and regression/guardrail suites so the ADR reflects the landed work.
+- Checks: Documentation-only loop (no tests run).
+- Removal test: Reverting the ADR edits would make the gating façade and guardrail suites appear pending, obscuring completion of the centralized lifecycle.
+- Adversarial “what remains” check:
+  - Expand the operations runbook task to highlight the new streaming status and last-drop telemetry fields so operators archive the full dataset.
+
 

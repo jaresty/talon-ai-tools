@@ -1771,4 +1771,15 @@
   - Update ADR-0056 (next loop) to remove references to the helper and related automation expectations.
   - Re-scan the plan for other automation that presumes multi-operator workflows or dashboards.
 
+## 2025-12-21 – Loop 279 (kind: docs)
+- Helper: helper:v20251221.0 @ 2025-12-21T22:40Z
+- Focus: Monitoring simplification – align ADR-0056 consequences and monitoring notes with the solo guardrail workflow.
+- Change: Updated the Consequences bullet to emphasise local guardrail output and rewrote Monitoring & Next Steps to frame guardrail commands as optional solo spot-checks.
+- Checks: Documentation-only loop (no automated guardrail required).
+- Evidence: `docs/adr/evidence/0056/loop-0279.md`.
+- Removal test: Reverting the ADR updates would reintroduce instructions that assume CI artefact archiving and multi-operator dashboards.
+- Adversarial “what remains” check:
+  - Confirm Makefile help text lines match the simplified guardrail messaging (next loop).
+  - Keep an eye on new telemetry fields so tests cover them without relying on manual runs.
+
 

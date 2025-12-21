@@ -319,8 +319,7 @@ Across all domains, we will continue to run `python3 -m pytest` from the repo ro
   - Guardrail automation archives `history-axis-validate.py --summary-path` output before applying `--reset-gating`, so local runs can capture drop telemetry prior to clearing counters.
 - Guardrail runs export `history-validation-summary.telemetry.json` (top gating reasons, totals, artifact link) so the same machine-readable snapshot is available if you need to inspect trends manually.
 - Guardrail telemetry now includes the last-drop message/code and the streaming last-drop message/code so you can surface actionable gating context without parsing raw logs.
-- Guardrail job summaries render both `Last gating drop` and `Streaming last drop` bullets, giving operators immediate visibility into history vs streaming rejection context when auditing incidents.
-- Local `make request-history-guardrails(-fast)` runs now print the same last-drop bullets as the CI helper, so contributors can verify guardrail output without relying on GitHub Actions logs.
+- Local `make request-history-guardrails(-fast)` runs print the `Last gating drop` and `Streaming last drop` lines alongside the JSON summaries, giving you quick visibility into history vs streaming rejections without digging through logs.
 - **Risks**
   - Introducing new catalogs and lifecycle APIs can temporarily increase complexity and surface hidden inconsistencies.
   - Misaligned migrations (e.g., partially adopted `AxisSnapshot` or persona catalog) could create confusing states where some surfaces see new behaviour and others see old.
@@ -372,7 +371,6 @@ Across all domains, we will continue to run `python3 -m pytest` from the repo ro
 The execution of these tasks should be coordinated with existing Concordance ADRs so that this ADR serves as a focused completion path for persona, axis snapshot, and request gating hotspots revealed by the latest churn × complexity analysis.
 
 ## Monitoring & Next Steps
-- Guardrail: `make request-history-guardrails` — operations runbook update to capture `Streaming status`, `Last gating drop`, `Streaming last drop`, and gating tables before invoking `--reset-gating`.
-- Guardrail: `scripts/tools/run_guardrails_ci.sh request-history-guardrails` — confirm telemetry artefacts (`history-validation-summary.json`, `.streaming.json`, `.telemetry.json`) stay archived for the 30-day retention window.
-- Guardrail: `python3 scripts/tools/history-axis-validate.py --summarize-json artifacts/history-axis-summaries/history-validation-summary.json --summary-format streaming` — cross-check that new telemetry fields surface in streaming summaries; add corresponding tests when fields expand.
-- Guardrail: `python3 scripts/tools/history-axis-validate.py --summarize-json artifacts/history-axis-summaries/history-validation-summary.json --summary-format json` — monitor persona alias/tone tables and queue catalog/test updates when telemetry highlights drift.
+- Optional guardrail: run `make request-history-guardrails` when you want fresh JSON summaries (`history-validation-summary.json`, `.streaming.json`, `.telemetry.json`) before a reset.
+- Optional spot-check: `python3 scripts/tools/history-axis-validate.py --summary-path artifacts/history-axis-summaries/history-validation-summary.json --reset-gating` still enforces directional axes; use `--summarize-json` variants when you want to inspect streaming/persona tables.
+- When telemetry fields expand, add or extend targeted tests so the new data stays covered without relying on manual guardrails.

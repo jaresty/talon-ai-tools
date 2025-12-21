@@ -22,12 +22,15 @@ This helper keeps ADR loops observable and safe while letting a single agent adv
 
 - Guardrail failure recorded before behaviour changes, or automation gap justified with evidence.
 - Slice scope describes a single cohesive behaviour or decision, with multi-guardrail plans enumerated and observable.
+- Each loop probes or resolves the highest-impact open assumption whose failure would jeopardize the ADR outcome before tackling lower-risk work.
 - Observable delta and rollback plan documented so reverts clearly undo the slice.
 - Evidence block captures commands, outputs, touched files, and removal tests without excess narrative.
 - Residual risks, mitigations, and monitoring triggers listed at loop close.
 - Validation commands execute within the project workspace (no external directories required).
 
 ---
+
+**Risk heuristic.** Risk refers to unproven assumptions whose failure would derail or materially delay the ADR’s objective; loops surface or resolve the riskiest remaining assumption as early as possible, using smaller slices to reach confidence quickly. Documentation work is only prioritized when it directly unlocks probing that assumption.
 
 ## Loop Contract
 
@@ -36,14 +39,14 @@ A loop entry is compliant when all statements hold:
 **Focus declared**
 - Relevant red checks for the ADR are cleared or logged with evidence.
 - Refreshed ADR/work-log sections tied to the slice are identified in the entry.
-- The entry identifies the single highest-risk behaviour still open for the ADR, explains why this slice addresses it now, and documents any higher-risk items intentionally deferred.
-- Remaining work is noted; if a higher-risk item cannot proceed, the loop records the blocker and supporting evidence, otherwise a status-only update confirms completion.
+- The entry names the riskiest open assumption (i.e., the unproven behaviour most likely to derail or delay the ADR) and explains how the slice tests or resolves it now, documenting any higher-risk items intentionally deferred.
+- Remaining work is noted; when the riskiest assumption cannot be advanced, the loop records the blocker and supporting evidence, otherwise a status-only update confirms completion.
 
 **Slice qualifies**
 - All edits address the same cohesive behaviour, feature flag, or guardrail decision. Crossing multiple files or components is fine when the behaviour demands it, provided the loop keeps the change observable.
 - Multi-guardrail slices list the guardrails/files covered and record evidence for each item.
 - A single `<VALIDATION_TARGET>` is recorded when one command exercises all guardrails. When guardrails require different commands, the entry documents a minimal list mapping each guardrail to a target; every target has red/green/removal evidence and any extra command is justified in the work-log.
-- Documentation-only loops are allowed only when the documentation resolves the highest outstanding risk (or records a blocked risk with evidence); they cite the relevant ADR clause, record the governing guardrail (or justify missing automation), and capture a reversible red failure or equivalent detection signal before edits land.
+- Documentation-only loops occur only when they unblock or record progress on the riskiest open assumption; they cite the relevant ADR clause, record the governing guardrail (or justify missing automation), and capture a reversible red failure or equivalent detection signal before edits land.
 
 **Validation registered**
 - Loop pre-plan identifies the `<VALIDATION_TARGET>` (or bounded list) and the evidence locations, mapping each guardrail to its target.

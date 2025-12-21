@@ -56,23 +56,43 @@ def axis_snapshot_from_axes(axes: dict[str, list[str]] | None) -> AxisSnapshot:
 def _request_is_in_flight() -> bool:
     """Return True when a GPT request is currently running."""
 
-    return request_is_in_flight()
+    try:
+        return request_is_in_flight()
+    except Exception:
+        return False
 
 
 def _reject_if_request_in_flight() -> bool:
     """Notify and return True when a GPT request is already running."""
 
     allowed, reason = try_begin_request(source="requestHistoryActions")
-    if not allowed and reason == "in_flight":
-        message = drop_reason_message("in_flight")
-        try:
-            set_drop_reason("in_flight")
-        except Exception:
-            pass
+    if allowed:
+        return False
 
-        notify(message)
-        return True
-    return False
+    if not reason:
+        return False
+
+    message = ""
+    try:
+        message = drop_reason_message(reason)
+    except Exception:
+        message = ""
+    if not message:
+        reason_text = str(reason or "unknown").strip() or "unknown"
+        message = f"GPT: Request blocked; reason={reason_text}."
+
+    try:
+        set_drop_reason(reason, message)
+    except Exception:
+        pass
+
+    try:
+        if message:
+            notify(message)
+    except Exception:
+        pass
+
+    return True
 
 
 def _clear_notify_suppression() -> None:

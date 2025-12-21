@@ -39,7 +39,10 @@ _last_key_handler = None
 def _request_is_in_flight() -> bool:
     """Return True when a GPT request is currently running."""
 
-    return request_is_in_flight()
+    try:
+        return request_is_in_flight()
+    except Exception:
+        return False
 
 
 def _reject_if_request_in_flight() -> bool:

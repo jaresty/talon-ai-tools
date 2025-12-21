@@ -144,6 +144,78 @@ if bootstrap is not None:
                 HistoryActions.gpt_request_history_next()
             show_entry.assert_not_called()
 
+        def test_history_actions_request_is_in_flight_handles_errors(self):
+            if bootstrap is None:
+                self.skipTest("Talon runtime not available")
+
+            with patch.object(
+                history_actions, "request_is_in_flight", return_value=True
+            ) as helper:
+                self.assertTrue(_request_is_in_flight())
+            helper.assert_called_once_with()
+
+            with patch.object(
+                history_actions,
+                "request_is_in_flight",
+                side_effect=RuntimeError("boom"),
+            ) as helper:
+                self.assertFalse(_request_is_in_flight())
+            helper.assert_called_once_with()
+
+        def test_history_actions_reject_if_in_flight_notifies_with_drop_message(self):
+            if bootstrap is None:
+                self.skipTest("Talon runtime not available")
+
+            with (
+                patch.object(
+                    history_actions,
+                    "try_begin_request",
+                    return_value=(False, "in_flight"),
+                ) as try_begin,
+                patch.object(
+                    history_actions,
+                    "drop_reason_message",
+                    return_value="Request running",
+                ) as drop_message,
+                patch.object(history_actions, "set_drop_reason") as set_reason,
+                patch.object(history_actions, "notify") as notify_mock,
+            ):
+                self.assertTrue(history_actions._reject_if_request_in_flight())
+            try_begin.assert_called_once_with(source="requestHistoryActions")
+            drop_message.assert_called_once_with("in_flight")
+            set_reason.assert_called_once_with("in_flight", "Request running")
+            notify_mock.assert_called_once_with("Request running")
+
+            with (
+                patch.object(
+                    history_actions,
+                    "try_begin_request",
+                    return_value=(False, "unknown_reason"),
+                ),
+                patch.object(history_actions, "drop_reason_message", return_value=""),
+                patch.object(history_actions, "set_drop_reason") as set_reason,
+                patch.object(history_actions, "notify") as notify_mock,
+            ):
+                self.assertTrue(history_actions._reject_if_request_in_flight())
+            set_reason.assert_called_once_with(
+                "unknown_reason", "GPT: Request blocked; reason=unknown_reason."
+            )
+            notify_mock.assert_called_once_with(
+                "GPT: Request blocked; reason=unknown_reason."
+            )
+
+            with (
+                patch.object(
+                    history_actions, "try_begin_request", return_value=(True, "")
+                ) as try_begin,
+                patch.object(history_actions, "set_drop_reason") as set_reason,
+                patch.object(history_actions, "notify") as notify_mock,
+            ):
+                self.assertFalse(history_actions._reject_if_request_in_flight())
+            try_begin.assert_called_once_with(source="requestHistoryActions")
+            set_reason.assert_not_called()
+            notify_mock.assert_not_called()
+
         def test_history_show_latest_uses_drop_reason_when_no_directional(self):
             import talon_user.lib.requestLog as requestlog  # type: ignore
 

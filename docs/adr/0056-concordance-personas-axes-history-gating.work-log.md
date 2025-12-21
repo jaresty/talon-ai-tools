@@ -1965,3 +1965,18 @@
   - Mitigation: continue migrating those surfaces to `requestGating` with guard coverage before closing the gating consolidation effort.
   - Trigger: guardrail failures or new references to `bus_is_in_flight` in remaining surfaces indicate unfinished migration work.
 
+## 2025-12-21 – Loop 297 (kind: behaviour)
+- Helper: helper:v20251221.3 @ 2025-12-21T23:45Z
+- Focus: Request Gating & Streaming – migrate request history drawer/actions gating to the shared facade.
+- Deliverables:
+  - Updated `lib/requestHistoryDrawer._request_is_in_flight` and `_reject_if_request_in_flight` to wrap gating calls with exception handling, drop-message fallback text, and drop-reason clearing tied to the UI state.
+  - Updated `lib/requestHistoryActions._request_is_in_flight` and `_reject_if_request_in_flight` to delegate to `requestGating`, handle errors, and preserve drop-reason messaging for downstream history surfaces.
+  - Extended `_tests/test_request_history_drawer_gating.py` and `_tests/test_request_history_actions.py` to assert facade delegation, drop-message fallback, drop-reason preservation, and exception handling behaviour.
+- `<VALIDATION_TARGET>`: `python3.11 -m pytest _tests/test_request_history_drawer_gating.py _tests/test_request_history_actions.py`
+- Evidence: `docs/adr/evidence/0056/loop-0297.md`
+- Removal test: `git checkout -- lib/requestHistoryDrawer.py lib/requestHistoryActions.py && python3.11 -m pytest _tests/test_request_history_drawer_gating.py _tests/test_request_history_actions.py` (fails: request_is_in_flight exceptions propagate and drop-reason messaging regresses)
+- Adversarial “risk recap”:
+  - Residual risk: GPT command wrappers still rely on bespoke gating helpers; migrate them next.
+  - Mitigation: keep guardrail tests watching drop-reason flows to ensure messaging stays intact after each migration.
+  - Trigger: any remaining references to `bus_is_in_flight` or missing drop-reason notifications must block completion of the gating consolidation work.
+

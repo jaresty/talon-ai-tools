@@ -27,7 +27,15 @@ if bootstrap is not None:
                 self.assertFalse(history_drawer._request_is_in_flight())
             helper.assert_called_once_with()
 
-        def test_reject_if_request_in_flight_uses_try_begin_request_drop_reason(
+            with patch.object(
+                history_drawer,
+                "request_is_in_flight",
+                side_effect=RuntimeError("boom"),
+            ) as helper:
+                self.assertFalse(history_drawer._request_is_in_flight())
+            helper.assert_called_once_with()
+
+        def test_reject_if_request_in_flight_notifies_with_drop_message(
             self,
         ) -> None:
             with (
@@ -35,23 +43,49 @@ if bootstrap is not None:
                     history_drawer,
                     "try_begin_request",
                     return_value=(False, "in_flight"),
-                ),
+                ) as try_begin,
+                patch.object(
+                    history_drawer,
+                    "drop_reason_message",
+                    return_value="Request running",
+                ) as drop_message,
                 patch.object(history_drawer, "set_drop_reason") as set_reason,
                 patch.object(history_drawer, "notify") as notify_mock,
             ):
                 self.assertTrue(history_drawer._reject_if_request_in_flight())
-            set_reason.assert_called_once_with("in_flight")
-            notify_mock.assert_called_once()
+            try_begin.assert_called_once_with(source="requestHistoryDrawer")
+            drop_message.assert_called_once_with("in_flight")
+            set_reason.assert_called_once_with("in_flight", "Request running")
+            notify_mock.assert_called_once_with("Request running")
+
+            with (
+                patch.object(
+                    history_drawer,
+                    "try_begin_request",
+                    return_value=(False, "unknown_reason"),
+                ),
+                patch.object(history_drawer, "drop_reason_message", return_value=""),
+                patch.object(history_drawer, "set_drop_reason") as set_reason,
+                patch.object(history_drawer, "notify") as notify_mock,
+            ):
+                self.assertTrue(history_drawer._reject_if_request_in_flight())
+            set_reason.assert_called_once_with(
+                "unknown_reason", "GPT: Request blocked; reason=unknown_reason."
+            )
+            notify_mock.assert_called_once_with(
+                "GPT: Request blocked; reason=unknown_reason."
+            )
 
             with (
                 patch.object(
                     history_drawer, "try_begin_request", return_value=(True, "")
-                ),
+                ) as try_begin,
                 patch.object(history_drawer, "set_drop_reason") as set_reason,
                 patch.object(history_drawer, "notify") as notify_mock,
             ):
                 self.assertFalse(history_drawer._reject_if_request_in_flight())
-            set_reason.assert_not_called()
+            try_begin.assert_called_once_with(source="requestHistoryDrawer")
+            set_reason.assert_called_once_with("")
             notify_mock.assert_not_called()
 
 else:

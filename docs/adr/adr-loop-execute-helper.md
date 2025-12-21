@@ -2,7 +2,7 @@
 
 This helper keeps ADR loops observable and safe while letting a single agent advance work in concise, auditable slices.
 
-**Current helper version:** `helper:v20251220.5` (update this string when the helper changes; work-log entries must reference it exactly).
+**Current helper version:** `helper:v20251221.0` (update this string when the helper changes; work-log entries must reference it exactly).
 
 **Context cited per loop.** Entries state which ADR sections, work-log notes, and repository evidence informed the slice; conversational history is out of scope.
 

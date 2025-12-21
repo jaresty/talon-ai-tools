@@ -1713,4 +1713,13 @@
 - Adversarial “what remains” check:
   - Coordinate with the operations handbook owner to include the persona checklist alongside the streaming telemetry instructions.
 
+## 2025-12-21 – Loop 273 (kind: docs)
+- Helper: helper:v20251221.0 @ 2025-12-21T20:25Z
+- Focus: Risk framing – align the ADR risk/mitigation language with the single-maintainer workflow the helper now expects.
+- Change: Replaced the imaginary operations hand-off risk with the real assumption (remembering to archive telemetry before resets), updated mitigations, and pointed the follow-up checklist at my personal guardrail notes.
+- Checks: Documentation-only loop (no tests run).
+- Removal test: Reverting the edits would reintroduce the invalid operations references and hide the solo-maintainer risk the new helper focuses on.
+- Adversarial “what remains” check:
+  - Capture the guardrail checklist in personal notes (next loop) so telemetry steps stay visible before future resets.
+
 

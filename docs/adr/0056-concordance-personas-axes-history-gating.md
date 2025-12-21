@@ -321,6 +321,7 @@ Across all domains, we will continue to run `python3 -m pytest` from the repo ro
 - Guardrail telemetry now includes the last-drop message/code and the streaming last-drop message/code so dashboards and ETL consumers can surface actionable gating context without parsing logs.
 - Guardrail job summaries render both `Last gating drop` and `Streaming last drop` bullets, giving operators immediate visibility into history vs streaming rejection context when auditing incidents.
 - Local `make request-history-guardrails(-fast)` runs now print the same last-drop bullets as the CI helper, so contributors can verify guardrail output without relying on GitHub Actions logs.
+- Maintainers can run `scripts/tools/history-guardrail-checklist.py` (or `make history-guardrail-checklist`) for the documented manual telemetry checklist at `docs/adr/evidence/0056/history-guardrail-checklist.md` before resetting gating counters.
 - **Risks**
   - Introducing new catalogs and lifecycle APIs can temporarily increase complexity and surface hidden inconsistencies.
   - Misaligned migrations (e.g., partially adopted `AxisSnapshot` or persona catalog) could create confusing states where some surfaces see new behaviour and others see old.
@@ -377,4 +378,4 @@ The execution of these tasks should be coordinated with existing Concordance ADR
 - Guardrail: `scripts/tools/run_guardrails_ci.sh request-history-guardrails` — confirm telemetry artefacts (`history-validation-summary.json`, `.streaming.json`, `.telemetry.json`) stay archived for the 30-day retention window.
 - Guardrail: `python3 scripts/tools/history-axis-validate.py --summarize-json artifacts/history-axis-summaries/history-validation-summary.json --summary-format streaming` — cross-check that new telemetry fields surface in streaming summaries; add corresponding tests when fields expand.
 - Guardrail: `python3 scripts/tools/history-axis-validate.py --summarize-json artifacts/history-axis-summaries/history-validation-summary.json --summary-format json` — monitor persona alias/tone tables and queue catalog/test updates when telemetry highlights drift.
-- Follow-up: personal guardrail checklist — capture the streaming/persona telemetry commands and artefact locations so future manual runs preserve those signals.
+- Follow-up: personal guardrail checklist — reference `docs/adr/evidence/0056/history-guardrail-checklist.md` (and the `history-guardrail-checklist` helper) so streaming/persona telemetry commands and artefact locations stay captured before every reset.

@@ -1746,4 +1746,15 @@
   - Capture the checklist output in the personal guardrail notes (next loop) so telemetry steps stay visible.
   - Consider adding a CI smoke test that runs the Makefile target alongside the CLI helper once operations adopt it.
 
+## 2025-12-21 – Loop 276 (kind: docs)
+- Helper: helper:v20251221.0 @ 2025-12-21T21:55Z
+- Focus: Monitoring & Next Steps – record the personal guardrail checklist so telemetry steps stay visible before resets.
+- Change: Added `docs/adr/evidence/0056/history-guardrail-checklist.md` with the manual command sequence and updated ADR-0056 to reference the helper/Make target in Consequences and Monitoring & Next Steps.
+- Checks: Documentation-only loop (no tests run).
+- Evidence: inline (`docs/adr/evidence/0056/history-guardrail-checklist.md`).
+- Removal test: Reverting the doc/ADR updates would drop the explicit checklist, making it easier to forget telemetry archiving steps before gating resets.
+- Adversarial “what remains” check:
+  - Sync external operations runbooks with the checklist so the helper path and artefact expectations stay aligned.
+  - Monitor upcoming telemetry fields and extend the checklist when guardrail outputs expand.
+
 

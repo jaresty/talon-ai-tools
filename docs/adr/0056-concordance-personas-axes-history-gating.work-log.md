@@ -1925,3 +1925,15 @@
   - Mitigation: continue migrating each remaining surface to `requestGating` with corresponding guard tests before removing local helpers.
   - Trigger: any new references to `bus_is_in_flight` or weakened drop-message assertions should block gating consolidation sign-off.
 
+## 2025-12-21 – Loop 294 (kind: docs)
+- Helper: helper:v20251221.2 @ 2025-12-21T23:27Z
+- Focus: Request Gating & Streaming – update ADR guidance now that pattern/prompt pattern GUIs use the shared facade.
+- Change: Refreshed the Salient Tasks bullet to list the migrated canvases and narrowed the remaining surfaces to help hub, provider commands, and history overlays.
+- Checks: Documentation-only loop (no automated guardrail required).
+- Evidence: inline
+- Removal test: Reverting would imply pattern/prompt pattern GUIs still bypass the facade, obscuring progress on the gating migration.
+- Adversarial “risk recap”:
+  - Residual risk: help hub, provider commands, history drawers/actions, and GPT wrappers still need migration.
+  - Mitigation: keep the updated Salient Task visible until those surfaces delegate to `requestGating` with guard coverage.
+  - Trigger: when additional surfaces land or drift, refresh the ADR summary before closing the gating consolidation effort.
+

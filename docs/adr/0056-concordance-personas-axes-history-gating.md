@@ -367,8 +367,8 @@ Across all domains, we will continue to run `python3 -m pytest` from the repo ro
     - (Completed 2025-12-19) Completed ADR-0055 by delegating request history saves to the shared `modelDestination` file helper so prompt-only helpers remain thin adapters covered by existing history tests.
     - (Completed 2025-12-21) Added focused regression tests for gating/streaming paths (e.g., `tests/test_request_gating.py`, `tests/test_streaming_coordinator.py`, guardrail CLI helpers) that fail when the centralized lifecycle or telemetry guardrails regress.
     - (In progress 2025-12-21) GUI gating migration status:
-      - `lib/modelHelpCanvas` and `lib/modelSuggestionGUI` now delegate `_request_is_in_flight` / `_reject_if_request_in_flight` to `requestGating`, with guard tests locking drop-message fallback and drop-reason clearing.
-      - Remaining surfaces (pattern/prompt pattern GUIs, help hub, provider commands, history overlays) still carry bespoke wrappers; keep the shared facade migration plan open until they delegate to `requestGating` with matching guard rails.
+      - `lib/modelHelpCanvas`, `lib/modelSuggestionGUI`, `lib/modelPatternGUI`, and `lib/modelPromptPatternGUI` now delegate `_request_is_in_flight` / `_reject_if_request_in_flight` to `requestGating`, with guard tests locking drop-message fallback and drop-reason clearing.
+      - Remaining surfaces (help hub overlays, provider commands, history drawers/actions, and GPT command wrappers) still carry bespoke gating helpers; keep the shared facade migration plan open until they delegate to `requestGating` with matching guard rails.
     - For solo workflows, capture any history snapshot you care about by running `python3 scripts/tools/history-axis-validate.py --summary-path artifacts/history-axis-summaries/history-validation-summary.json` before invoking `--reset-gating`; skip CI artifact archiving unless you reintroduce shared automation.
 
 

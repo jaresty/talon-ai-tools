@@ -1800,4 +1800,12 @@
   - Consider a future Talon-side command if live history snapshots become important.
   - Communicate the same limitation in README/help surfaces if we expose guardrail commands to others.
 
+## 2025-12-21 – Loop 284 (status only)
+- Helper: helper:v20251221.0 @ 2025-12-21T23:10Z
+- Focus: Audit README/help surfaces for the retired guardrail checklist references.
+- Change: No code changes required; grep confirmed references are isolated to historical evidence entries.
+- Evidence: `docs/adr/evidence/0056/loop-0284.md`.
+- Adversarial “what remains” check:
+  - Re-run the audit if we later document guardrail commands in README/help for other users.
+
 

@@ -1951,3 +1951,17 @@
   - Mitigation: migrate those surfaces to `requestGating` with guard coverage before closing the request gating consolidation efforts.
   - Trigger: guardrail failures or new references to `bus_is_in_flight` indicate unfinished gating migration work.
 
+## 2025-12-21 – Loop 296 (kind: behaviour)
+- Helper: helper:v20251221.3 @ 2025-12-21T23:33Z
+- Focus: Request Gating & Streaming – migrate provider command gating to the shared facade.
+- Deliverables:
+  - Updated `lib/providerCommands._request_is_in_flight` and `_reject_if_request_in_flight` to delegate to `requestGating`, add drop-message fallback text, and clear cached drop reasons on success.
+  - Extended `_tests/test_provider_commands.py` to assert facade delegation, drop-message fallback, and drop-reason clearing behaviour.
+- `<VALIDATION_TARGET>`: `python3.11 -m pytest _tests/test_provider_commands.py`
+- Evidence: `docs/adr/evidence/0056/loop-0296.md`
+- Removal test: `git checkout -- lib/providerCommands.py && python3.11 -m pytest _tests/test_provider_commands.py` (fails: shared facade messaging expectations regress)
+- Adversarial “risk recap”:
+  - Residual risk: history overlays/actions and GPT command wrappers still rely on bespoke gating helpers.
+  - Mitigation: continue migrating those surfaces to `requestGating` with guard coverage before closing the gating consolidation effort.
+  - Trigger: guardrail failures or new references to `bus_is_in_flight` in remaining surfaces indicate unfinished migration work.
+

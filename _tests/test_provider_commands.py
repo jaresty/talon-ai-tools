@@ -45,23 +45,23 @@ class ProviderCommandGuardTests(unittest.TestCase):
             ProviderActions.model_provider_switch("openai")
         user_use.assert_not_called()
 
-    def test_request_is_in_flight_delegates_to_request_bus(self):
+    def test_request_is_in_flight_delegates_to_request_gating(self):
         if bootstrap is None:
             self.skipTest("Talon runtime not available")
 
         with patch.object(
-            provider_module, "bus_is_in_flight", return_value=True
+            provider_module, "request_is_in_flight", return_value=True
         ) as helper:
             self.assertTrue(provider_module._request_is_in_flight())
         helper.assert_called_once_with()
 
         with patch.object(
-            provider_module, "bus_is_in_flight", return_value=False
+            provider_module, "request_is_in_flight", return_value=False
         ) as helper:
             self.assertFalse(provider_module._request_is_in_flight())
         helper.assert_called_once_with()
 
-    def test_reject_if_request_in_flight_uses_try_begin_request_drop_reason(self):
+    def test_reject_if_request_in_flight_notifies_with_drop_message(self):
         if bootstrap is None:
             self.skipTest("Talon runtime not available")
 
@@ -71,13 +71,37 @@ class ProviderCommandGuardTests(unittest.TestCase):
                 "try_begin_request",
                 return_value=(False, "in_flight"),
             ) as try_begin,
+            patch.object(
+                provider_module,
+                "drop_reason_message",
+                return_value="Request running",
+            ) as drop_message,
             patch.object(provider_module, "set_drop_reason") as set_reason,
             patch.object(provider_module, "notify") as notify_mock,
         ):
             self.assertTrue(provider_module._reject_if_request_in_flight())
         try_begin.assert_called_once_with(source="providerCommands")
-        set_reason.assert_called_once_with("in_flight")
-        notify_mock.assert_called_once()
+        drop_message.assert_called_once_with("in_flight")
+        set_reason.assert_called_once_with("in_flight", "Request running")
+        notify_mock.assert_called_once_with("Request running")
+
+        with (
+            patch.object(
+                provider_module,
+                "try_begin_request",
+                return_value=(False, "unknown_reason"),
+            ),
+            patch.object(provider_module, "drop_reason_message", return_value=""),
+            patch.object(provider_module, "set_drop_reason") as set_reason,
+            patch.object(provider_module, "notify") as notify_mock,
+        ):
+            self.assertTrue(provider_module._reject_if_request_in_flight())
+        set_reason.assert_called_once_with(
+            "unknown_reason", "GPT: Request blocked; reason=unknown_reason."
+        )
+        notify_mock.assert_called_once_with(
+            "GPT: Request blocked; reason=unknown_reason."
+        )
 
         with (
             patch.object(
@@ -88,7 +112,7 @@ class ProviderCommandGuardTests(unittest.TestCase):
         ):
             self.assertFalse(provider_module._reject_if_request_in_flight())
         try_begin.assert_called_once_with(source="providerCommands")
-        set_reason.assert_not_called()
+        set_reason.assert_called_once_with("")
         notify_mock.assert_not_called()
 
 

@@ -1734,4 +1734,16 @@
   - Document the helper in ADR-0056 evidence/runbook notes so the manual checklist stays visible.
   - Evaluate a Markdown output format once operations handbooks adopt the helper.
 
+## 2025-12-21 – Loop 275 (kind: guardrail/tests)
+- Helper: helper:v20251221.0 @ 2025-12-21T21:45Z
+- Focus: Monitoring & Next Steps – expose the guardrail checklist via the Makefile so manual runs stay one command away.
+- Change: Added a `history-guardrail-checklist` Makefile target that invokes the helper and extended `_tests/test_make_request_history_guardrails.py` with a guard that asserts the target prints the telemetry commands.
+- Guardrail: `python3.11 -m pytest _tests/test_make_request_history_guardrails.py::MakeRequestHistoryGuardrailsTests::test_make_history_guardrail_checklist_outputs_helper`.
+- Evidence: `docs/adr/evidence/0056/loop-0275.md`
+- Removal test: `git stash push -k -u -- Makefile && python3.11 -m pytest _tests/test_make_request_history_guardrails.py::MakeRequestHistoryGuardrailsTests::test_make_history_guardrail_checklist_outputs_helper` (fails when the target is absent; restore with `git stash pop`).
+- Adversarial “what remains” check:
+  - Document the helper/Makefile target in ADR-0056 so the checklist location is obvious to future operators.
+  - Capture the checklist output in the personal guardrail notes (next loop) so telemetry steps stay visible.
+  - Consider adding a CI smoke test that runs the Makefile target alongside the CLI helper once operations adopt it.
+
 

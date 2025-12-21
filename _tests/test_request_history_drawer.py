@@ -19,6 +19,7 @@ if bootstrap is not None:
     from talon_user.lib.requestLog import (
         append_entry,
         clear_history,
+        consume_last_drop_reason_record,
         last_drop_reason_code,
     )
     from talon_user.lib.modelState import GPTState
@@ -299,6 +300,25 @@ if bootstrap is not None:
             notify_mock.assert_called_once_with(message)
             self.assertFalse(HistoryDrawerState.showing)
             self.assertEqual(HistoryDrawerState.last_message, message)
+
+        def test_history_drawer_guard_records_fallback_message(self):
+            HistoryDrawerState.last_message = ""
+            with (
+                patch.object(
+                    history_drawer,
+                    "try_begin_request",
+                    return_value=(False, "history_save_missing_directional"),
+                ),
+                patch.object(history_drawer, "drop_reason_message", return_value=""),
+                patch.object(history_drawer, "notify"),
+            ):
+                history_drawer._reject_if_request_in_flight()
+            record = consume_last_drop_reason_record()
+            self.assertEqual(
+                record.message,
+                "GPT: Request blocked; reason=history_save_missing_directional.",
+            )
+            self.assertEqual(record.code, "history_save_missing_directional")
 
         def test_drawer_refresh_noop_when_hidden(self):
             HistoryDrawerState.showing = False

@@ -1458,3 +1458,17 @@
   - Verify the drop message clears after a successful drawer open so stale messaging does not persist.
   - Wire the cached message into telemetry snapshots if downstream dashboards need to surface it.
 
+## 2025-12-21 – Loop 250 (kind: guardrail/tests)
+- Helper: helper:v20251220.3 @ 2025-12-21T11:05:00Z
+- Focus: Request Gating & Streaming – record fallback drop messaging for history drawer guardrails.
+- Deliverables:
+  - Extend `_tests/test_request_history_drawer.py` with a guardrail that forces `drop_reason_message` to return an empty string and asserts the recorded drop reason surfaces the fallback message.
+  - Update `lib/requestHistoryDrawer._reject_if_request_in_flight` to pass the rendered message into `set_drop_reason` so downstream surfaces and telemetry receive the same wording.
+- Guardrail: `python3.11 -m pytest _tests/test_request_history_drawer.py::RequestHistoryDrawerTests::test_history_drawer_guard_records_fallback_message`
+- Evidence: `docs/adr/evidence/0056/loop-0250.md`
+- Removal test: `<VCS_REVERT> && python3.11 -m pytest _tests/test_request_history_drawer.py::RequestHistoryDrawerTests::test_history_drawer_guard_records_fallback_message`
+- Adversarial “what remains” check:
+  - Audit other gating surfaces that call `set_drop_reason` to ensure they pass explicit messages when overriding defaults.
+  - Verify guardrail telemetry exports include the fallback text for non-catalog drop reasons.
+  - Consider consolidating fallback phrasing into `drop_reason_message` to reduce duplication across guardrails.
+

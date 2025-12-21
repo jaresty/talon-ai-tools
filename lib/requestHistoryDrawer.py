@@ -52,12 +52,12 @@ def _reject_if_request_in_flight() -> bool:
             message = drop_reason_message(reason)
         except Exception:
             message = ""
-        try:
-            set_drop_reason(reason)
-        except Exception:
-            pass
         if not message:
             message = f"GPT: Request blocked; reason={reason}."
+        try:
+            set_drop_reason(reason, message)
+        except Exception:
+            pass
         if message:
             HistoryDrawerState.last_message = message
             try:

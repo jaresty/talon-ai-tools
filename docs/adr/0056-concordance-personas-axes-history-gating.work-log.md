@@ -1836,3 +1836,20 @@
 - Adversarial “what remains” check:
   - Revisit the command list if guardrail tooling changes.
 
+## 2025-12-21 – Loop 288 (status only)
+- Helper: helper:v20251221.0 @ 2025-12-21T23:36Z
+- Focus: Monitoring wrap-up – confirm no additional ADR edits are pending for the solo guardrail plan.
+- Change: No code changes; this status notes the monitoring track is complete.
+- Evidence: `docs/adr/evidence/0056/loop-0288.md`.
+- Adversarial “what remains” check:
+  - Any future telemetry tooling should document the Talon vs CLI boundary explicitly when introduced.
+
+- Helper: helper:v20251221.0 @ 2025-12-21T23:32Z
+- Focus: Monitoring clarity – make the mitigation guidance concrete for future me.
+- Change: Expanded the Mitigations bullet to list the specific guardrail commands worth jotting down.
+- Checks: Documentation-only loop (no automated guardrail required).
+- Evidence: `docs/adr/evidence/0056/loop-0287.md`.
+- Removal test: Reverting would make the guidance vague about which commands matter.
+- Adversarial “what remains” check:
+  - Revisit the command list if guardrail tooling changes.
+

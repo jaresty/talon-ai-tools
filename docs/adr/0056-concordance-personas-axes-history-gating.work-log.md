@@ -1686,4 +1686,13 @@
 - Adversarial “what remains” check:
   - Coordinate with operations to update external runbooks and attach the streaming telemetry examples once the handbook edit clears review.
 
+## 2025-12-21 – Loop 270 (kind: docs)
+- Helper: helper:v20251220.5 @ 2025-12-21T19:40Z
+- Focus: Request Gating & Streaming – note the residual risk around operations sign-off for streaming telemetry guardrails.
+- Change: Expanded the Risks/Mitigations section to call out delayed operations handoffs and tie the new Monitoring & Next Steps checklist to securing sign-off before guardrail resets.
+- Checks: Documentation-only loop (no tests run).
+- Removal test: Reverting the ADR edits would drop the explicit operations risk/mitigation, making it easier to overlook telemetry archiving gaps during incidents.
+- Adversarial “what remains” check:
+  - Follow through on the operations runbook update and record the sign-off once the handbook change lands.
+
 

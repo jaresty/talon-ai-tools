@@ -324,11 +324,13 @@ Across all domains, we will continue to run `python3 -m pytest` from the repo ro
 - **Risks**
   - Introducing new catalogs and lifecycle APIs can temporarily increase complexity and surface hidden inconsistencies.
   - Misaligned migrations (e.g., partially adopted `AxisSnapshot` or persona catalog) could create confusing states where some surfaces see new behaviour and others see old.
+  - Operations handoffs may lag the new streaming telemetry guardrails, leaving history resets without archived `Streaming status`/last-drop artefacts during incidents.
 - **Mitigations**
   - Land changes in small, test-backed slices following the Tests-First Refactor Plan.
   - Keep new facades thin, documented, and aligned with ADR-0045/0046/0054/0055 patterns.
   - Monitor statement-level churn × complexity heatmaps and Concordance scores after each slice to confirm improvements come from structural gains, not weakened checks.
   - Enforce CI guardrails and integration coverage that fail when directional lenses or persona/intent catalog alignment regress, so violations surface before landing.
+  - Maintain the Monitoring & Next Steps checklist and secure operations sign-off before guardrail resets that rely on the new telemetry fields.
 
 ---
 

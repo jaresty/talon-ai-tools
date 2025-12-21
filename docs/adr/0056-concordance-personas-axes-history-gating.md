@@ -330,7 +330,7 @@ Across all domains, we will continue to run `python3 -m pytest` from the repo ro
   - Keep new facades thin, documented, and aligned with ADR-0045/0046/0054/0055 patterns.
   - Monitor statement-level churn × complexity heatmaps and Concordance scores after each slice to confirm improvements come from structural gains, not weakened checks.
   - Enforce CI guardrails and integration coverage that fail when directional lenses or persona/intent catalog alignment regress, so violations surface before landing.
-  - Keep a lightweight personal note of the guardrail commands you care about and run them before resetting counters when you want fresh telemetry snapshots.
+  - Keep a lightweight personal note of the guardrail commands you care about (for example, `make request-history-guardrails`, `python3 scripts/tools/history-axis-validate.py --summary-path …`, `run_guardrails_ci.sh request-history-guardrails`) and run them before resetting counters when you want fresh telemetry snapshots.
 
 ---
 

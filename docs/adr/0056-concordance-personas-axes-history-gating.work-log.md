@@ -1826,3 +1826,13 @@
 - Adversarial “what remains” check:
   - Any future guardrail tooling should document whether it touches live Talon state before assuming telemetry coverage.
 
+## 2025-12-21 – Loop 287 (kind: docs)
+- Helper: helper:v20251221.0 @ 2025-12-21T23:32Z
+- Focus: Monitoring clarity – make the mitigation guidance concrete for future me.
+- Change: Expanded the Mitigations bullet to list the specific guardrail commands worth jotting down.
+- Checks: Documentation-only loop (no automated guardrail required).
+- Evidence: `docs/adr/evidence/0056/loop-0287.md`.
+- Removal test: Reverting would make the guidance vague about which commands matter.
+- Adversarial “what remains” check:
+  - Revisit the command list if guardrail tooling changes.
+

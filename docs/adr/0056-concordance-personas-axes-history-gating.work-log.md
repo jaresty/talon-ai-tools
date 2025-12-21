@@ -1868,3 +1868,18 @@
   - Mitigation: schedule follow-on loops to apply the same facade + message fallback pattern across remaining surfaces before removing local helpers.
   - Trigger: guardrail failures or new references to `bus_is_in_flight` indicate migration gaps and should block completion of the gating consolidation work.
 
+## 2025-12-21 – Loop 290 (kind: behaviour)
+- Helper: helper:v20251221.2 @ 2025-12-21T23:11Z
+- Focus: Request Gating & Streaming – migrate the model suggestion GUI to the shared gating facade.
+- Deliverables:
+  - Updated `lib/modelSuggestionGUI._request_is_in_flight` to delegate to `requestGating.request_is_in_flight` instead of the request bus helper.
+  - Reworked `_reject_if_request_in_flight` to reuse `try_begin_request` drop messaging for all reasons, add fallback text, and clear the cached drop reason on success.
+  - Extended `_tests/test_model_suggestion_gui.py` and `_tests/test_model_suggestion_gui_guard.py` to assert facade delegation, drop message fallback, and drop-reason clearing behaviour.
+- `<VALIDATION_TARGET>`: `python3.11 -m pytest _tests/test_model_suggestion_gui.py _tests/test_model_suggestion_gui_guard.py`
+- Evidence: `docs/adr/evidence/0056/loop-0290.md`
+- Removal test: `git checkout -- lib/modelSuggestionGUI.py && python3.11 -m pytest _tests/test_model_suggestion_gui.py _tests/test_model_suggestion_gui_guard.py` (fails: facade attribute missing and drop message assertions regress)
+- Adversarial “risk recap”:
+  - Residual risk: other gating surfaces (pattern/prompt pattern GUIs, help hub, provider commands, history actions) still duplicate local helpers.
+  - Mitigation: continue migrating each surface to the shared facade before removing the bespoke wrappers, keeping guard tests aligned with the centralized messaging contract.
+  - Trigger: any new references to `bus_is_in_flight` or missing drop message assertions should block completion of the gating consolidation work.
+

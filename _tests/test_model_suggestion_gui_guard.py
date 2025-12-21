@@ -31,18 +31,18 @@ class ModelSuggestionGUIGuardTests(unittest.TestCase):
         # No notifications or GUI actions should be emitted when guarded.
         self.assertFalse(actions_mock.app.notify.called)
 
-    def test_request_is_in_flight_delegates_to_request_bus(self):
+    def test_request_is_in_flight_delegates_to_request_gating(self):
         if bootstrap is None:
             self.skipTest("Talon runtime not available")
 
         with patch.object(
-            suggestion_module, "bus_is_in_flight", return_value=True
+            suggestion_module, "request_is_in_flight", return_value=True
         ) as helper:
             self.assertTrue(suggestion_module._request_is_in_flight())
         helper.assert_called_once_with()
 
         with patch.object(
-            suggestion_module, "bus_is_in_flight", return_value=False
+            suggestion_module, "request_is_in_flight", return_value=False
         ) as helper:
             self.assertFalse(suggestion_module._request_is_in_flight())
         helper.assert_called_once_with()

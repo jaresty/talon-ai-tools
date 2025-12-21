@@ -1883,3 +1883,15 @@
   - Mitigation: continue migrating each surface to the shared facade before removing the bespoke wrappers, keeping guard tests aligned with the centralized messaging contract.
   - Trigger: any new references to `bus_is_in_flight` or missing drop message assertions should block completion of the gating consolidation work.
 
+## 2025-12-21 – Loop 291 (kind: docs)
+- Helper: helper:v20251221.2 @ 2025-12-21T23:18Z
+- Focus: Request Gating & Streaming – record GUI gating migration progress and remaining surfaces in the ADR.
+- Change: Added a Salient Tasks bullet noting that `modelHelpCanvas` and `modelSuggestionGUI` now delegate to `requestGating`, and enumerated the remaining GUIs/helpers that still need to migrate to the shared facade.
+- Checks: Documentation-only loop (no automated guardrail required).
+- Evidence: inline
+- Removal test: Reverting would hide the migration progress and make the outstanding gating surfaces harder to track.
+- Adversarial “risk recap”:
+  - Residual risk: pattern/prompt pattern GUIs, help hub, provider commands, history overlays, and other callers still carry bespoke gating wrappers.
+  - Mitigation: keep the Salient Task bullet visible until follow-on loops migrate each surface and update the ADR accordingly.
+  - Trigger: if new gating helpers land outside `requestGating` (or the bullet becomes stale), schedule additional loops before declaring the gating consolidation complete.
+

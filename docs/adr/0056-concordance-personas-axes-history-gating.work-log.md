@@ -1472,3 +1472,18 @@
   - Verify guardrail telemetry exports include the fallback text for non-catalog drop reasons.
   - Consider consolidating fallback phrasing into `drop_reason_message` to reduce duplication across guardrails.
 
+## 2025-12-21 – Loop 251 (kind: guardrail/tests)
+- Helper: helper:v20251220 @ 2025-12-21T11:18:00Z
+- Focus: Request Gating & Streaming – clear cached history drawer messages after successful opens.
+- Deliverables:
+  - Added `_tests/test_request_history_drawer.py::RequestHistoryDrawerTests::test_history_drawer_message_clears_after_success` to guard against stale drop messaging after a permitted request.
+  - Updated `lib/requestHistoryDrawer._reject_if_request_in_flight` to clear `HistoryDrawerState.last_message` and reset drop reasons when gating allows the action.
+  - `<VCS_REVERT>` mapping: `git stash push -k -u -- lib/requestHistoryDrawer.py` (restore with `git stash pop`).
+- Guardrail: `python3.11 -m pytest _tests/test_request_history_drawer.py::RequestHistoryDrawerTests::test_history_drawer_message_clears_after_success`
+- Evidence: `docs/adr/evidence/0056/loop-0251.md`
+- Removal test: `<VCS_REVERT> && python3.11 -m pytest _tests/test_request_history_drawer.py::RequestHistoryDrawerTests::test_history_drawer_message_clears_after_success`
+- Adversarial “what remains” check:
+  - Ensure history drawer toggle/refresh paths propagate the cleared message consistently when gating succeeds.
+  - Confirm guardrail telemetry drops (`history_validation_stats`) reflect cleared drop reasons after successful actions.
+  - Evaluate whether other gating helpers should clear cached messaging on success for parity.
+

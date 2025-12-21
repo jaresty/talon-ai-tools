@@ -65,6 +65,13 @@ def _reject_if_request_in_flight() -> bool:
             except Exception:
                 pass
         return True
+
+    if allowed:
+        HistoryDrawerState.last_message = ""
+        try:
+            set_drop_reason("")
+        except Exception:
+            pass
     return False
 
 

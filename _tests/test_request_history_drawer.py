@@ -301,6 +301,29 @@ if bootstrap is not None:
             self.assertFalse(HistoryDrawerState.showing)
             self.assertEqual(HistoryDrawerState.last_message, message)
 
+        def test_history_drawer_message_clears_after_success(self):
+            HistoryDrawerState.last_message = "stale warning"
+            HistoryDrawerState.showing = False
+            HistoryDrawerState.entries = []
+
+            class DummyCanvas:
+                def show(self):
+                    pass
+
+            with (
+                patch.object(
+                    history_drawer,
+                    "try_begin_request",
+                    return_value=(True, ""),
+                ),
+                patch.object(history_drawer, "_refresh_entries"),
+                patch.object(
+                    history_drawer, "_ensure_canvas", return_value=DummyCanvas()
+                ),
+            ):
+                DrawerActions.request_history_drawer_open()
+            self.assertEqual(HistoryDrawerState.last_message, "")
+
         def test_history_drawer_guard_records_fallback_message(self):
             HistoryDrawerState.last_message = ""
             with (

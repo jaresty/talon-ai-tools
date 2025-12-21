@@ -108,6 +108,7 @@ request-history-guardrails:
 	$(PYTHON) scripts/tools/history-axis-validate.py --summarize-json artifacts/history-axis-summaries/history-validation-summary.json --summary-format streaming
 	$(PYTHON) scripts/tools/history-axis-validate.py --summarize-json artifacts/history-axis-summaries/history-validation-summary.json --summary-format json > artifacts/history-axis-summaries/history-validation-summary.streaming.json
 	printf 'Streaming gating summary (json): ' && cat artifacts/history-axis-summaries/history-validation-summary.streaming.json && printf '\n'
+	$(PYTHON) scripts/tools/history-axis-validate.py --summarize-json artifacts/history-axis-summaries/history-validation-summary.json
 	$(PYTHON) scripts/tools/history-axis-export-telemetry.py artifacts/history-axis-summaries/history-validation-summary.json --output artifacts/history-axis-summaries/history-validation-summary.telemetry.json --top 5 --pretty
 	printf 'Telemetry summary (json): ' && cat artifacts/history-axis-summaries/history-validation-summary.telemetry.json && printf '\n'
 
@@ -118,6 +119,7 @@ request-history-guardrails-fast:
 	$(PYTHON) scripts/tools/history-axis-validate.py --summarize-json artifacts/history-axis-summaries/history-validation-summary.json --summary-format streaming
 	$(PYTHON) scripts/tools/history-axis-validate.py --summarize-json artifacts/history-axis-summaries/history-validation-summary.json --summary-format json > artifacts/history-axis-summaries/history-validation-summary.streaming.json
 	printf 'Streaming gating summary (json): ' && cat artifacts/history-axis-summaries/history-validation-summary.streaming.json && printf '\n'
+	$(PYTHON) scripts/tools/history-axis-validate.py --summarize-json artifacts/history-axis-summaries/history-validation-summary.json
 	$(PYTHON) scripts/tools/history-axis-export-telemetry.py artifacts/history-axis-summaries/history-validation-summary.json --output artifacts/history-axis-summaries/history-validation-summary.telemetry.json --top 5 --pretty
 	printf 'Telemetry summary (json): ' && cat artifacts/history-axis-summaries/history-validation-summary.telemetry.json && printf '\n'
 

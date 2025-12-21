@@ -1573,3 +1573,16 @@
   - Confirm future documentation updates keep dashboards, telemetry, and job summaries aligned on the streaming last-drop semantics.
   - Monitor whether additional guardrail tooling needs similar documentation (e.g., persona guardrails).
 
+## 2025-12-21 – Loop 259 (kind: guardrail/tests)
+- Helper: helper:v20251220.5 @ 2025-12-21T07:28:00Z
+- Focus: Request Gating & Streaming – keep local request-history guardrails emitting the last-drop bullets surfaced in CI job summaries.
+- Change: Added assertions in `_tests/test_make_request_history_guardrails.py` for the history/streaming last-drop lines and updated `Makefile` guardrail targets to call `history-axis-validate --summarize-json` so local runs print the same markdown summary.
+- Guardrail: `python3.11 -m pytest _tests/test_make_request_history_guardrails.py` (pass; excerpt: `2 passed in 1.36s`).
+- Evidence: `docs/adr/evidence/0056/loop-0259.md`
+- Removal test: `git stash push -k -u -- Makefile && python3.11 -m pytest _tests/test_make_request_history_guardrails.py` (fails: last-drop bullet missing from output).
+- Adversarial “what remains” check:
+  - Update ADR guidance/runbooks to note that local guardrail targets now surface last-drop lines alongside CI job summaries.
+  - Ensure `scripts/tools/run_guardrails_ci.sh` keeps emitting the same summary even if Makefile recipes evolve (add regression coverage if needed).
+  - Consider a follow-up loop to assert the markdown summary lines surface in fast guardrail job summaries when running inside CI logs.
+
+

@@ -42,6 +42,8 @@ if not TYPE_CHECKING:
                 "Streaming gating summary (json):",
                 result.stdout,
             )
+            self.assertIn("- Last gating drop: none", result.stdout)
+            self.assertIn("- Streaming last drop: none", result.stdout)
             self.assertTrue(
                 summary_path.exists(),
                 "request-history-guardrails did not produce history-validation-summary.json",
@@ -128,6 +130,8 @@ if not TYPE_CHECKING:
                 "Streaming gating summary (json):",
                 result.stdout,
             )
+            self.assertIn("- Last gating drop: none", result.stdout)
+            self.assertIn("- Streaming last drop: none", result.stdout)
             self.assertTrue(
                 summary_path.exists(),
                 "request-history-guardrails-fast did not produce history-validation-summary.json",

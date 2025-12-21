@@ -275,6 +275,31 @@ if bootstrap is not None:
             notify_mock.assert_called_once_with(message)
             self.assertTrue(result)
 
+        def test_history_drawer_open_surfaces_drop_message(self):
+            message = (
+                "GPT: Cannot save history source; entry is missing a directional lens."
+            )
+            HistoryDrawerState.showing = False
+            HistoryDrawerState.entries = []
+            HistoryDrawerState.last_message = ""
+            with (
+                patch.object(
+                    history_drawer,
+                    "try_begin_request",
+                    return_value=(False, "history_save_missing_directional"),
+                ),
+                patch.object(
+                    history_drawer, "drop_reason_message", return_value=message
+                ),
+                patch.object(history_drawer, "set_drop_reason") as set_reason,
+                patch.object(history_drawer, "notify") as notify_mock,
+            ):
+                DrawerActions.request_history_drawer_open()
+            set_reason.assert_called_once_with("history_save_missing_directional")
+            notify_mock.assert_called_once_with(message)
+            self.assertFalse(HistoryDrawerState.showing)
+            self.assertEqual(HistoryDrawerState.last_message, message)
+
         def test_drawer_refresh_noop_when_hidden(self):
             HistoryDrawerState.showing = False
             with patch.object(history_drawer, "_refresh_entries") as refresh_mock:

@@ -1444,3 +1444,17 @@
   - Verify gating telemetry aggregates capture non-`in_flight` drop reason codes for history drawer actions.
   - Confirm Concordance dashboards ingest the expanded drop reason set before rotating guardrail fixtures.
 
+## 2025-12-21 – Loop 249 (kind: guardrail/tests)
+- Helper: helper:v20251220.3 @ 2025-12-21T10:50:00Z
+- Focus: Request Gating & Streaming – persist drop messaging for history drawer guardrails.
+- Deliverables:
+  - Extend `_tests/test_request_history_drawer.py` with an integration test that drives `request_history_drawer_open` under a non-`in_flight` drop reason and asserts the drawer surfaces the message.
+  - Update `lib/requestHistoryDrawer._reject_if_request_in_flight` to cache the drop message in `HistoryDrawerState.last_message` while continuing to notify and record the drop reason.
+- Guardrail: `python3.11 -m pytest _tests/test_request_history_drawer.py::RequestHistoryDrawerTests::test_history_drawer_open_surfaces_drop_message`
+- Evidence: `docs/adr/evidence/0056/loop-0249.md`
+- Removal test: `<VCS_REVERT> && python3.11 -m pytest _tests/test_request_history_drawer.py::RequestHistoryDrawerTests::test_history_drawer_open_surfaces_drop_message`
+- Adversarial “what remains” check:
+  - Confirm history drawer toggle and refresh actions emit the cached message consistently across other guardrails (e.g., history save shortcuts).
+  - Verify the drop message clears after a successful drawer open so stale messaging does not persist.
+  - Wire the cached message into telemetry snapshots if downstream dashboards need to surface it.
+

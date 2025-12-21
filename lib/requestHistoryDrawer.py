@@ -59,6 +59,7 @@ def _reject_if_request_in_flight() -> bool:
         if not message:
             message = f"GPT: Request blocked; reason={reason}."
         if message:
+            HistoryDrawerState.last_message = message
             try:
                 notify(message)
             except Exception:

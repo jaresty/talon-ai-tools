@@ -1695,4 +1695,13 @@
 - Adversarial “what remains” check:
   - Follow through on the operations runbook update and record the sign-off once the handbook change lands.
 
+## 2025-12-21 – Loop 271 (kind: docs)
+- Helper: helper:v20251220.5 @ 2025-12-21T19:55Z
+- Focus: Persona & Intent Presets – ensure telemetry monitoring captures persona alias/tone drift alongside streaming fields.
+- Change: Added a Monitoring & Next Steps bullet for the JSON summary command so persona telemetry stays visible and catalog/test updates queue when drift appears.
+- Checks: Documentation-only loop (no tests run).
+- Removal test: Reverting the ADR edits would drop the persona telemetry reminder, increasing the odds that alias/tone drift slips through guardrails.
+- Adversarial “what remains” check:
+  - Extend onboarding/runbook guidance to link the JSON summary output with persona catalog regeneration steps.
+
 

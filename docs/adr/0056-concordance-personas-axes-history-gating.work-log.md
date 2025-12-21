@@ -1620,4 +1620,16 @@
   - Update dashboard schemas and runbooks once downstream ingestion confirms the additional metadata.
   - Monitor guardrail artefacts to ensure the new fields remain populated when streaming summaries are present.
 
+## 2025-12-21 – Loop 263 (kind: docs)
+- Helper: helper:v20251220.5 @ 2025-12-21T16:38:00Z
+- Focus: Request Gating & Streaming – document streaming last-drop telemetry fields for guardrails and runbooks.
+- Change: Updated ADR-0056 consequences and Salient Tasks to note the new `streaming_last_drop_*` telemetry fields and reinforce runbook expectations around archiving them.
+- Checks: Documentation-only loop (no tests run).
+- Evidence: inline
+- Removal test: Reverting the doc change would hide the streaming telemetry guidance, making it easier for runbooks to miss the new fields.
+- Adversarial “what remains” check:
+  - Ensure Concordance operations/runbooks explicitly list the new telemetry keys alongside existing drop fields.
+  - Confirm downstream dashboard schemas are revised once ingestion work lands.
+  - Consider adding a future loop to cross-link telemetry key names with guardrail CLI output examples.
+
 

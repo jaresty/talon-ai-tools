@@ -46,7 +46,7 @@ A loop entry is compliant when all statements hold:
 
 **Validation registered**
 - The pre-plan names the `<VALIDATION_TARGET>` (or bounded list) and the evidence locations, enumerating the guardrail-to-target mapping.
-- Red evidence is captured before behaviour edits land: updated expectation, fresh failing test, or, if coverage is missing, a minimal reversible regression removed immediately after recording the failure. The entry states why the failure output corresponds to the targeted behaviour; ambiguous messages prompt guardrail tightening before proceeding.
+- Red evidence is captured before behaviour edits land: updated expectation, fresh failing test, or, if coverage is missing, a minimal reversible regression removed immediately after recording the failure. The entry states why the failure output corresponds to the targeted behaviour and demonstrates the full guardrail surface under change; partial failures cite missing facets and queue tightening work before proceeding.
 - After edits, the same `<VALIDATION_TARGET>` (or mapped target) reruns for green evidence.
 - A temporary revert using `<VCS_REVERT>` (or finer-grained equivalent) confirms the guardrail fails again; if it stays green, the slice is tightened until the failure returns.
 

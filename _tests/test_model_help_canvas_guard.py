@@ -51,33 +51,60 @@ class ModelHelpCanvasGuardTests(unittest.TestCase):
         reset_help.assert_not_called()
         self.assertFalse(HelpCanvasState.showing)
 
-    def test_request_is_in_flight_delegates_to_request_bus(self):
+    def test_request_is_in_flight_delegates_to_request_gating(self):
         with patch.object(
-            help_canvas_module, "bus_is_in_flight", return_value=True
+            help_canvas_module, "request_is_in_flight", return_value=True
         ) as helper:
             self.assertTrue(help_canvas_module._request_is_in_flight())
         helper.assert_called_once_with()
 
         with patch.object(
-            help_canvas_module, "bus_is_in_flight", return_value=False
+            help_canvas_module, "request_is_in_flight", return_value=False
         ) as helper:
             self.assertFalse(help_canvas_module._request_is_in_flight())
         helper.assert_called_once_with()
 
-    def test_reject_if_request_in_flight_records_drop_reason(self):
+    def test_reject_if_request_in_flight_notifies_with_drop_message(self):
         with (
             patch.object(
                 help_canvas_module,
                 "try_begin_request",
                 return_value=(False, "in_flight"),
-            ),
+            ) as try_begin,
+            patch.object(
+                help_canvas_module,
+                "drop_reason_message",
+                return_value="Request running",
+            ) as drop_message,
             patch.object(help_canvas_module, "set_drop_reason") as set_reason,
             patch.object(help_canvas_module, "notify") as notify_mock,
         ):
             self.assertTrue(help_canvas_module._reject_if_request_in_flight())
-        set_reason.assert_called_once_with("in_flight")
-        notify_mock.assert_called_once()
+        try_begin.assert_called_once_with(source="modelHelpCanvas")
+        drop_message.assert_called_once_with("in_flight")
+        set_reason.assert_called_once_with("in_flight", "Request running")
+        notify_mock.assert_called_once_with("Request running")
 
+    def test_reject_if_request_in_flight_falls_back_to_reason_text(self):
+        with (
+            patch.object(
+                help_canvas_module,
+                "try_begin_request",
+                return_value=(False, "unknown_reason"),
+            ),
+            patch.object(help_canvas_module, "drop_reason_message", return_value=""),
+            patch.object(help_canvas_module, "set_drop_reason") as set_reason,
+            patch.object(help_canvas_module, "notify") as notify_mock,
+        ):
+            self.assertTrue(help_canvas_module._reject_if_request_in_flight())
+        set_reason.assert_called_once_with(
+            "unknown_reason", "GPT: Request blocked; reason=unknown_reason."
+        )
+        notify_mock.assert_called_once_with(
+            "GPT: Request blocked; reason=unknown_reason."
+        )
+
+    def test_reject_if_request_in_flight_clears_drop_reason_on_success(self):
         with (
             patch.object(
                 help_canvas_module, "try_begin_request", return_value=(True, "")
@@ -86,7 +113,7 @@ class ModelHelpCanvasGuardTests(unittest.TestCase):
             patch.object(help_canvas_module, "notify") as notify_mock,
         ):
             self.assertFalse(help_canvas_module._reject_if_request_in_flight())
-        set_reason.assert_not_called()
+        set_reason.assert_called_once_with("")
         notify_mock.assert_not_called()
 
 

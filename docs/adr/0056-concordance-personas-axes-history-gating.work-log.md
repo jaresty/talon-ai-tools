@@ -1853,3 +1853,18 @@
 - Adversarial “what remains” check:
   - Revisit the command list if guardrail tooling changes.
 
+## 2025-12-21 – Loop 289 (kind: behaviour)
+- Helper: helper:v20251221.2 @ 2025-12-21T22:58Z
+- Focus: Request Gating & Streaming – align the model help canvas gating helpers with the centralized facade.
+- Deliverables:
+  - Updated `lib/modelHelpCanvas._request_is_in_flight` to delegate to `requestGating.request_is_in_flight` instead of the request bus fallback.
+  - Reworked `_reject_if_request_in_flight` to reuse `try_begin_request` drop messaging for all reasons, set explicit fallback text, and clear the cached drop reason on success.
+  - Extended `_tests/test_model_help_canvas_guard.py` to assert the gating facade, drop message fallback, and drop-reason clearing behaviour.
+- `<VALIDATION_TARGET>`: `python3.11 -m pytest _tests/test_model_help_canvas_guard.py`
+- Evidence: `docs/adr/evidence/0056/loop-0289.md`
+- Removal test: `git checkout -- lib/modelHelpCanvas.py && python3.11 -m pytest _tests/test_model_help_canvas_guard.py` (fails: facade attribute missing and drop-reason assertions regress)
+- Adversarial “risk recap”:
+  - Residual risk: other GPT/help canvases (e.g., `modelSuggestionGUI`, `modelPatternGUI`) still carry bespoke gating wrappers; migrate them to the shared facade next.
+  - Mitigation: schedule follow-on loops to apply the same facade + message fallback pattern across remaining surfaces before removing local helpers.
+  - Trigger: guardrail failures or new references to `bus_is_in_flight` indicate migration gaps and should block completion of the gating consolidation work.
+

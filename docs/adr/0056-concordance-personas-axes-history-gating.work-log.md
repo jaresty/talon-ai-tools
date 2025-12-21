@@ -1980,3 +1980,15 @@
   - Mitigation: keep guardrail tests watching drop-reason flows to ensure messaging stays intact after each migration.
   - Trigger: any remaining references to `bus_is_in_flight` or missing drop-reason notifications must block completion of the gating consolidation work.
 
+## 2025-12-21 – Loop 298 (kind: docs)
+- Helper: helper:v20251221.3 @ 2025-12-21T23:48Z
+- Focus: Monitoring & Next Steps – document the remaining gating work and validation targets.
+- Change: Updated the Monitoring & Next Steps section to queue GPT command wrapper migrations and capture the regression commands to rerun once they delegate to `requestGating`.
+- Checks: Documentation-only loop (no automated guardrail required).
+- Evidence: inline
+- Removal test: Reverting would drop the queued gating tasks, obscuring the path to finish the shared facade migration.
+- Adversarial “risk recap”:
+  - Residual risk: GPT command wrappers still need migration; this entry records the follow-up so it remains visible.
+  - Mitigation: schedule the wrapper migration loops before closing ADR-0056.
+  - Trigger: new gating helpers or missing regression commands should prompt another doc update.
+

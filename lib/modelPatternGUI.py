@@ -23,8 +23,7 @@ from .patternDebugCoordinator import (
 )
 from .overlayHelpers import apply_canvas_blocking
 from .overlayLifecycle import close_overlays, close_common_overlays
-from .requestBus import is_in_flight as bus_is_in_flight
-from .requestGating import try_begin_request
+from .requestGating import request_is_in_flight, try_begin_request
 from .requestLog import drop_reason_message, set_drop_reason
 from .modelHelpers import notify
 from .personaConfig import persona_intent_maps
@@ -1307,7 +1306,7 @@ def _request_is_in_flight() -> bool:
     """Return True when a GPT request is currently running."""
 
     try:
-        return bus_is_in_flight()
+        return request_is_in_flight()
     except Exception:
         return False
 
@@ -1316,15 +1315,37 @@ def _reject_if_request_in_flight() -> bool:
     """Notify and return True when a GPT request is already running."""
 
     allowed, reason = try_begin_request(source="modelPatternGUI")
-    if not allowed and reason == "in_flight":
-        message = drop_reason_message("in_flight")
+    if allowed:
         try:
-            set_drop_reason("in_flight")
+            set_drop_reason("")
         except Exception:
             pass
-        notify(message)
-        return True
-    return False
+        return False
+
+    if not reason:
+        return False
+
+    message = ""
+    try:
+        message = drop_reason_message(reason)
+    except Exception:
+        message = ""
+    if not message:
+        reason_text = str(reason or "unknown").strip() or "unknown"
+        message = f"GPT: Request blocked; reason={reason_text}."
+
+    try:
+        set_drop_reason(reason, message)
+    except Exception:
+        pass
+
+    try:
+        if message:
+            notify(message)
+    except Exception:
+        pass
+
+    return True
 
 
 @mod.action_class

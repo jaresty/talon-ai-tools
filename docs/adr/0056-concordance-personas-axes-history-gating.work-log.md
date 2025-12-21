@@ -1895,3 +1895,18 @@
   - Mitigation: keep the Salient Task bullet visible until follow-on loops migrate each surface and update the ADR accordingly.
   - Trigger: if new gating helpers land outside `requestGating` (or the bullet becomes stale), schedule additional loops before declaring the gating consolidation complete.
 
+## 2025-12-21 – Loop 292 (kind: behaviour)
+- Helper: helper:v20251221.2 @ 2025-12-21T23:20Z
+- Focus: Request Gating & Streaming – migrate the model pattern GUI to the shared gating facade.
+- Deliverables:
+  - Updated `lib/modelPatternGUI._request_is_in_flight` to delegate to `requestGating.request_is_in_flight` and drop the direct request bus dependency.
+  - Reworked `_reject_if_request_in_flight` to reuse `try_begin_request` drop messaging for all reasons, add fallback text, and clear the cached drop reason on success.
+  - Extended `_tests/test_model_pattern_gui_guard.py` to assert facade delegation, drop message fallback, and drop-reason clearing behaviour.
+- `<VALIDATION_TARGET>`: `python3.11 -m pytest _tests/test_model_pattern_gui.py _tests/test_model_pattern_gui_guard.py`
+- Evidence: `docs/adr/evidence/0056/loop-0292.md`
+- Removal test: `git checkout -- lib/modelPatternGUI.py && python3.11 -m pytest _tests/test_model_pattern_gui.py _tests/test_model_pattern_gui_guard.py` (fails: facade attribute missing and drop message assertions regress)
+- Adversarial “risk recap”:
+  - Residual risk: prompt pattern GUI, help hub, provider commands, and history overlays still use bespoke gating wrappers.
+  - Mitigation: continue migrating each remaining surface to `requestGating` with guard tests before retiring local helpers.
+  - Trigger: any new references to `bus_is_in_flight` or missing drop message assertions signal unfinished gating consolidation work.
+

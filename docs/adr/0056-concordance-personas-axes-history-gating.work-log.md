@@ -1659,4 +1659,13 @@
 - Adversarial “what remains” check:
   - Monitor upcoming telemetry automation and add new suites to the tests-first list when additional streaming fields are introduced.
 
+## 2025-12-21 – Loop 267 (kind: docs)
+- Helper: helper:v20251220.5 @ 2025-12-21T18:40Z
+- Focus: Persona & Intent Presets – document the guardrail/test suites that hold catalog alignment across GUIs, history, and telemetry.
+- Change: Added tests-first guidance pointing to `_tests/test_persona_presets.py`, `_tests/test_model_suggestion_gui.py`, `_tests/test_history_axis_validate.py`, and the `history-axis-validate.py` guardrail so persona metadata drift remains observable.
+- Checks: Documentation-only loop (no tests run).
+- Removal test: Reverting the ADR edits would drop the explicit guardrail references, weakening the paper trail for persona catalog drift detection.
+- Adversarial “what remains” check:
+  - Ensure external guardrail documentation links back to these suites when the persona catalog evolves.
+
 

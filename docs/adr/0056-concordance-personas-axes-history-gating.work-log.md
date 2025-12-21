@@ -1804,4 +1804,15 @@
   - Review README/help docs later if we broaden the audience beyond a solo workflow.
   - Keep future ADR loops honest about the Talon runtime vs CLI guardrails boundary.
 
+## 2025-12-21 – Loop 282 (kind: docs)
+- Helper: helper:v20251221.0 @ 2025-12-21T22:59Z
+- Focus: Monitoring clarity – record the boundary between CLI guardrails and Talon runtime history snapshots.
+- Change: Added a Consequences bullet explaining that CLI guardrails run out-of-process and do not capture live history.
+- Checks: Documentation-only loop (no automated guardrail required).
+- Evidence: `docs/adr/evidence/0056/loop-0282.md`.
+- Removal test: Reverting the ADR update would obscure this limitation and could lead to false assumptions about telemetry coverage.
+- Adversarial “what remains” check:
+  - Consider a future Talon-side command if live history snapshots become important.
+  - Communicate the same limitation in README/help surfaces if we expose guardrail commands to others.
+
 

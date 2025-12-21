@@ -320,6 +320,7 @@ Across all domains, we will continue to run `python3 -m pytest` from the repo ro
 - Guardrail runs export `history-validation-summary.telemetry.json` (top gating reasons, totals, artifact link) so the same machine-readable snapshot is available if you need to inspect trends manually.
 - Guardrail telemetry now includes the last-drop message/code and the streaming last-drop message/code so you can surface actionable gating context without parsing raw logs.
 - Local `make request-history-guardrails(-fast)` runs print the `Last gating drop` and `Streaming last drop` lines alongside the JSON summaries, giving you quick visibility into history vs streaming rejections without digging through logs.
+- CLI guardrail commands operate in standalone Python processes; they validate repository logic but do not snapshot Talon’s live in-memory history. Capturing runtime history still requires a Talon-side command or manual export.
 - **Risks**
   - Introducing new catalogs and lifecycle APIs can temporarily increase complexity and surface hidden inconsistencies.
   - Misaligned migrations (e.g., partially adopted `AxisSnapshot` or persona catalog) could create confusing states where some surfaces see new behaviour and others see old.

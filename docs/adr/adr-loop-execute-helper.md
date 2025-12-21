@@ -2,30 +2,30 @@
 
 This helper keeps ADR loops observable and safe while letting a single agent advance work in concise, auditable slices.
 
-**Current helper version:** `helper:v20251220` (update this string when the helper changes; work-log entries must reference it exactly).
+**Current helper version:** `helper:v20251220.5` (update this string when the helper changes; work-log entries must reference it exactly).
 
-**Treat every invocation as fresh.** Rebuild context from the ADR text, its work-log, and current repo state; do not rely on conversational history.
+**Context cited per loop.** Entries state which ADR sections, work-log notes, and repository evidence informed the slice; conversational history is out of scope.
 
 ---
 
 ## Named Placeholders
 
-- `<EVIDENCE_ROOT>` – directory that stores detailed transcripts. Default: `docs/adr/evidence`.
+- `<EVIDENCE_ROOT>` – project-defined store for detailed transcripts that auditors can read (e.g., `docs/evidence`, `ops/adr/evidence`).
 - `<VALIDATION_TARGET>` – minimal command or scripted set proving the slice end-to-end (e.g., `python3 -m pytest tests/foo_test.py::case`).
-- `<ARTEFACT_LOG>` – aggregated markdown (e.g., `<EVIDENCE_ROOT>/<adr>/2025-Q1.md`) that records full red/green transcripts when summaries are insufficient.
-- `<VCS_REVERT>` – revert command for the repository (default `git checkout -- <path>`). Adjust these placeholders per repo and cite the mapping once per ADR.
+- `<ARTEFACT_LOG>` – aggregated evidence record (markdown, JSON, database entry, etc.) that captures full red/green transcripts when summaries are insufficient.
+- `<VCS_REVERT>` – capability that temporarily rolls back the slice so guardrails can re-fail. Document the concrete command or procedure once per ADR (e.g., `git restore --source=HEAD`, `p4 revert`, migration rollback script).
+
 
 ---
 
-## Core Principles
+## Compliance Signals
 
-1. **Guardrails first.** Surface a failing automated check before behaviour edits. Documentation-only loops meet this bar by citing the governing guardrail and recording the removal-evidence summary; run the guardrail when automation exists.
-2. **Single meaningful slice.** Each loop addresses one cohesive behaviour, guardrail, or documented decision end-to-end—even when that means touching several files (e.g., CLI + docs + tests). When you need to touch multiple guardrails for the same behaviour, spell out the plan up front and keep the work observable.
-3. **Observable delta.** Every loop produces a change that matters if reverted and carries a rollback plan.
-4. **Evidence-led logging.** Keep planning light but capture commands, outputs, touched files, and removal tests for every slice.
-5. **Adversarial mindset.** Assume gaps remain; re-scan goals before declaring completion.
-6. **No bypassed guardrails.** Tests must never be marked 'skipped'; when deleting or adjusting expectations, adversarially evaluate to confirm coverage stays intact and suites remain well organized.
-7. **Current-directory tooling.** Validation commands should run from the working folder without relying on global directories such as `/tmp` so the agent retains the necessary permissions to execute them.
+- Guardrail failure recorded before behaviour changes, or automation gap justified with evidence.
+- Slice scope describes a single cohesive behaviour or decision, with multi-guardrail plans enumerated and observable.
+- Observable delta and rollback plan documented so reverts clearly undo the slice.
+- Evidence block captures commands, outputs, touched files, and removal tests without excess narrative.
+- Residual risks, mitigations, and monitoring triggers listed at loop close.
+- Validation commands execute within the project workspace (no external directories required).
 
 ---
 
@@ -35,27 +35,26 @@ A loop entry is compliant when all statements hold:
 
 **Focus declared**
 - Relevant red checks for the ADR are cleared or logged with evidence.
-- The contributor re-reads the ADR/work-log sections tied to the slice and notes which parts were refreshed.
-- In-repo work remains for the ADR; otherwise record a status-only loop with evidence.
+- Refreshed ADR/work-log sections tied to the slice are identified in the entry.
+- Remaining in-repo work is noted; when none exists, the loop records a status-only update with evidence.
 
 **Slice qualifies**
 - All edits address the same cohesive behaviour, feature flag, or guardrail decision. Crossing multiple files or components is fine when the behaviour demands it, provided the loop keeps the change observable.
-- For multi-guardrail slices, write a short sub-plan (list the guardrails / files) before editing and close each item with its own evidence summary.
-- Exactly one `<VALIDATION_TARGET>` proves the slice, even though it will run twice (red then green). When multiple guardrails are involved, treat the list as a superset plan and run the same `<VALIDATION_TARGET>` for each sub-check unless a different guardrail is explicitly called out in the plan. Additional commands require justification in the work-log before execution.
-- Documentation-only loops cite the relevant ADR clause, include a removal test, and identify the guardrail (or explain why automation is unavailable).
+- Multi-guardrail slices list the guardrails/files covered and record evidence for each item.
+- A single `<VALIDATION_TARGET>` is recorded when one command exercises all guardrails. When guardrails require different commands, the entry documents a minimal list mapping each guardrail to a target; every target has red/green/removal evidence and any extra command is justified in the work-log.
+- Documentation-only loops cite the relevant ADR clause, record the governing guardrail (or justify missing automation), and capture a reversible red failure or equivalent detection signal before edits land.
 
 **Validation registered**
-- The pre-plan names the `<VALIDATION_TARGET>` and where evidence artefacts will live; multi-guardrail plans enumerate each sub-check.
-- Before implementation edits, the contributor captures red evidence: updated expectation, fresh failing test, or, if coverage is missing, a minimal reversible regression (toggle, assertion, etc.) that is removed immediately after recording the failure.
-- After edits, the same `<VALIDATION_TARGET>` is rerun for green.
-- The contributor temporarily reverts the behaviour change using `<VCS_REVERT>` (or finer-grained equivalent) to confirm the guardrail fails again; if it stays green, the slice is tightened until the failure returns.
+- The pre-plan names the `<VALIDATION_TARGET>` (or bounded list) and the evidence locations, enumerating the guardrail-to-target mapping.
+- Red evidence is captured before behaviour edits land: updated expectation, fresh failing test, or, if coverage is missing, a minimal reversible regression removed immediately after recording the failure. The entry states why the failure output corresponds to the targeted behaviour; ambiguous messages prompt guardrail tightening before proceeding.
+- After edits, the same `<VALIDATION_TARGET>` (or mapped target) reruns for green evidence.
+- A temporary revert using `<VCS_REVERT>` (or finer-grained equivalent) confirms the guardrail fails again; if it stays green, the slice is tightened until the failure returns.
 
 **Evidence block complete**
-- The work-log entry carries paired red/green summaries with command, timestamp (UTC preferred), exit status, and either a key snippet or a checksum. Include a short diff/hash snapshot (e.g., `git diff --stat` or a checksum) so reviewers can verify the observable delta quickly.
-- When summaries alone are insufficient, transcripts are appended to `<ARTEFACT_LOG>` rather than creating per-loop files; reference the exact heading from the work-log.
-- By default, helper automation sets `<ARTEFACT_LOG>` to `<EVIDENCE_ROOT>/<adr>/artefacts.md` and records the pointer as `inline` when the summary is sufficient; contributors override by declaring alternatives in the loop header.
+- The work-log entry carries paired red/green summaries with command, timestamp (UTC preferred), exit status, and either a key snippet or a checksum. Include a short diff/hash snapshot (e.g., `git diff --stat` or a checksum) so reviewers can verify the observable delta quickly. For the red line, capture the salient failure text or hash and note explicitly why it proves the intended behaviour failed.
+- When summaries alone are insufficient, transcripts are appended to `<ARTEFACT_LOG>` rather than creating per-loop files; the entry references the exact heading and notes any temporary per-loop files with a migration plan. Evidence writers append to the declared aggregated location and mark pointers as `inline` only when the inline-size rule is satisfied.
 - The removal test is recorded in the same block (command and outcome). If revert attempts fail, the blocker evidence is logged.
-- Close each loop with an adversarial “risk recap” paragraph calling out any gaps, assumptions, or monitoring steps, especially when the slice covered multiple guardrails.
+- Close each loop with an adversarial “risk recap” paragraph naming at least one residual risk, the mitigation or monitoring action queued, and any triggers that would reopen the work.
 - When no transcript is needed, the pointer field is recorded as `inline`.
 
 **Next work queued**
@@ -70,29 +69,32 @@ A loop entry is compliant when all statements hold:
 Every compliant loop includes a structured block similar to:
 ```
 - red | 2025-12-19T17:42Z | exit 1 | <VALIDATION_TARGET>
-    expected helpers: apollo.userDetectedAnalyticsV2 | inline
+    guardrail <name> fails with missing expectation <id> | inline
 - green | 2025-12-19T17:55Z | exit 0 | <VALIDATION_TARGET>
-    helpers include apollo.userDetectedAnalyticsV2 | <ARTEFACT_LOG>#loop-217
-- removal | 2025-12-19T18:01Z | exit 1 | <VCS_REVERT> <path> && <VALIDATION_TARGET>
-    guardrail fails when reverted | inline
+    guardrail <name> passes with expectation <id> restored | <ARTEFACT_LOG>#loop-217
+- removal | 2025-12-19T18:01Z | exit 1 | <VCS_REVERT> && <VALIDATION_TARGET>
+    guardrail <name> fails again after temporary revert | inline
 ```
-Replace placeholders with real commands, timestamps, and pointers. When aggregation is used, append headings inside `<ARTEFACT_LOG>` (`## loop-217 red`, `## loop-217 green`) so auditors can trace evidence quickly.
+Replace placeholders with real commands, timestamps, and pointers. When aggregation is used, append headings inside `<ARTEFACT_LOG>` (`## loop-217 red`, `## loop-217 green`) so auditors can trace evidence quickly. Teams using multiple validation targets should append one red/green/removal trio per target under a shared loop heading.
+
+---
+
+## Helper Upgrades
+
+- Work-log entries for a given ADR cite a single helper version; when the version changes, a reconciliation entry records the migration outcome before new loops land.
+- Version changes note any required follow-up (e.g., aggregated evidence adoption, refreshed validation mappings) so remaining tasks are queued explicitly.
 
 ---
 
 ## Completion Bar
 
-An ADR can be marked complete when:
-1. All loop entries satisfy the contract above and reference the same helper version string.
-2. Every ADR task/subtask is closed, reclassified with evidence, or explicitly parked with a trigger.
-3. A final adversarial entry restates motivations, lists remaining realistic gaps (if any), cites fresh guardrail runs or explains why prior evidence still holds, and confirms the next trigger required to reopen work.
-4. Repository metadata reflects the new status (e.g., ADR header/state, issue labels) if applicable.
+Completion is eligible once every loop satisfies this contract under a single helper version, outstanding tasks are closed or parked with evidence, a final adversarial entry restates motivations and residual gaps, and repository metadata reflects the updated ADR state.
 
 ---
 
 ## Portable Defaults & Overrides
 
-- Override `<EVIDENCE_ROOT>`, `<ARTEFACT_LOG>`, and `<VCS_REVERT>` in the ADR header or initial loop entry when repositories require different paths or tooling. Subsequent entries inherit the mapping unless restated.
+- Override `<EVIDENCE_ROOT>`, `<ARTEFACT_LOG>`, and `<VCS_REVERT>` in the ADR header or initial loop entry when repositories require different paths or tooling. Subsequent entries inherit the mapping unless restated, and aggregated artefact paths must be kept in sync with automation templates.
 - Prefer text artefacts (markdown, JSON). When binary evidence is unavoidable, store a SHA-256 checksum alongside reconstruction notes.
 - Tooling may auto-validate loops by checking for the placeholders above; keep names stable to stay compatible.
 

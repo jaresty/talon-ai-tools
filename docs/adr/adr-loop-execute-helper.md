@@ -2,7 +2,7 @@
 
 This helper keeps ADR loops observable and safe while letting a single agent advance work in concise, auditable slices.
 
-**Current helper version:** `helper:v20251221.0` (update this string when the helper changes; work-log entries must reference it exactly).
+**Current helper version:** `helper:v20251221.2` (update this string when the helper changes; work-log entries must reference it exactly).
 
 **Context cited per loop.** Entries state which ADR sections, work-log notes, and repository evidence informed the slice; conversational history is out of scope.
 
@@ -23,6 +23,7 @@ This helper keeps ADR loops observable and safe while letting a single agent adv
 - Guardrail failure recorded before behaviour changes, or automation gap justified with evidence.
 - Slice scope describes a single cohesive behaviour or decision, with multi-guardrail plans enumerated and observable.
 - Each loop probes or resolves the highest-impact open assumption whose failure would jeopardize the ADR outcome before tackling lower-risk work.
+- Loop summary demonstrates the ADR completion horizon changed (or remained unchanged with justification) since the prior entry, naming the domains or tasks still open.
 - Observable delta and rollback plan documented so reverts clearly undo the slice.
 - Evidence block captures commands, outputs, touched files, and removal tests without excess narrative.
 - Residual risks, mitigations, and monitoring triggers listed at loop close.
@@ -39,20 +40,20 @@ A loop entry is compliant when all statements hold:
 **Focus declared**
 - Relevant red checks for the ADR are cleared or logged with evidence.
 - Refreshed ADR/work-log sections tied to the slice are identified in the entry.
-- The entry names the riskiest open assumption (i.e., the unproven behaviour most likely to derail or delay the ADR) and explains how the slice tests or resolves it now, documenting any higher-risk items intentionally deferred.
-- Remaining work is noted; when the riskiest assumption cannot be advanced, the loop records the blocker and supporting evidence, otherwise a status-only update confirms completion.
+- The entry names the riskiest open assumption (i.e., the unproven behaviour most likely to derail or delay the ADR) based on probability × impact, defaulting to the least-validated dependency when uncertainty ties, and explains how the slice tests or resolves it now, documenting any higher-risk items intentionally deferred.
+- Remaining work is noted; when the riskiest assumption cannot be advanced, the loop records the blocker with concrete evidence (e.g., guardrail output, failing log), otherwise a status-only update confirms completion.
 
 **Slice qualifies**
 - All edits address the same cohesive behaviour, feature flag, or guardrail decision. Crossing multiple files or components is fine when the behaviour demands it, provided the loop keeps the change observable.
 - Multi-guardrail slices list the guardrails/files covered and record evidence for each item.
 - A single `<VALIDATION_TARGET>` is recorded when one command exercises all guardrails. When guardrails require different commands, the entry documents a minimal list mapping each guardrail to a target; every target has red/green/removal evidence and any extra command is justified in the work-log.
-- Documentation-only loops occur only when they unblock or record progress on the riskiest open assumption; they cite the relevant ADR clause, record the governing guardrail (or justify missing automation), and capture a reversible red failure or equivalent detection signal before edits land.
+- Documentation-only loops occur only when they unblock or record progress on the riskiest open assumption; they pair with a behaviour slice in the same cycle or provide the blocker evidence above, cite the relevant ADR clause, record the governing guardrail (or justify missing automation), and capture a reversible red failure or equivalent detection signal before edits land.
 
 **Validation registered**
 - Loop pre-plan identifies the `<VALIDATION_TARGET>` (or bounded list) and the evidence locations, mapping each guardrail to its target.
 - Red evidence exists before behaviour edits land: updated expectation, fresh failing test, or, where coverage is absent, a minimal reversible regression removed immediately after the failure is recorded. The entry states why the failure output covers the targeted behaviour and demonstrates the full guardrail surface; partial failures cite missing facets and queue tightening work before proceeding.
 - Green evidence reuses the same `<VALIDATION_TARGET>` (or mapped target).
-- Removal evidence uses `<VCS_REVERT>` (or finer-grained equivalent) to confirm the guardrail fails again; if it stays green, tighten the slice until the failure returns.
+- Removal evidence uses `<VCS_REVERT>` (or finer-grained equivalent) and re-runs the primary guardrail so the targeted failure is observable again; if it stays green, tighten the slice until the failure returns.
 
 **Evidence block complete**
 - The work-log entry carries paired red/green summaries with command, timestamp (UTC preferred), exit status, and either a key snippet or a checksum. Include a short diff/hash snapshot (e.g., `git diff --stat` or a checksum) so reviewers can verify the observable delta quickly. For the red line, capture the salient failure text or hash and note explicitly why it proves the intended behaviour failed.
@@ -63,6 +64,7 @@ A loop entry is compliant when all statements hold:
 
 **Next work queued**
 - Deliverables and guardrails are bullet-listed (e.g., `Guardrail: tests/foo_test.py::case`).
+- New high-level tasks appear only when they replace or consolidate existing scope while interrogating the riskiest assumption, and the entry states that relationship explicitly.
 - Status-only entries schedule the next behaviour/guardrail slice before closing the loop.
 - Helper upgrades (new version strings) note the change and queue any reconciliation loop required by the stricter rules.
 

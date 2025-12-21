@@ -1704,4 +1704,13 @@
 - Adversarial “what remains” check:
   - Extend onboarding/runbook guidance to link the JSON summary output with persona catalog regeneration steps.
 
+## 2025-12-21 – Loop 272 (kind: docs)
+- Helper: helper:v20251220.5 @ 2025-12-21T20:05Z
+- Focus: Monitoring & Next Steps – clarify the runbook follow-up so operations capture both streaming and persona telemetry requirements.
+- Change: Updated the follow-up bullet to cite streaming artefact archiving, persona alias tracking, and the shared handbook update.
+- Checks: Documentation-only loop (no tests run).
+- Removal test: Reverting the ADR edits would narrow the runbook reminder back to streaming-only, making persona telemetry drift easier to miss in operations docs.
+- Adversarial “what remains” check:
+  - Coordinate with the operations handbook owner to include the persona checklist alongside the streaming telemetry instructions.
+
 

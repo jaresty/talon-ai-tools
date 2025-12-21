@@ -46,13 +46,23 @@ def _reject_if_request_in_flight() -> bool:
     """Notify and return True when a GPT request is already running."""
 
     allowed, reason = try_begin_request(source="requestHistoryDrawer")
-    if not allowed and reason == "in_flight":
-        message = drop_reason_message("in_flight")
+    if not allowed and reason:
+        message = ""
         try:
-            set_drop_reason("in_flight")
+            message = drop_reason_message(reason)
+        except Exception:
+            message = ""
+        try:
+            set_drop_reason(reason)
         except Exception:
             pass
-        notify(message)
+        if not message:
+            message = f"GPT: Request blocked; reason={reason}."
+        if message:
+            try:
+                notify(message)
+            except Exception:
+                pass
         return True
     return False
 

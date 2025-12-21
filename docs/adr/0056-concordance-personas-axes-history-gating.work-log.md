@@ -1429,4 +1429,18 @@
   - Consider emitting a direct stdout line with the artifact URL to help local runs when GitHub env vars are present.
   - Review other guardrail helpers for similar artifact-link gaps.
 
+## 2025-12-21 – Loop 248 (kind: guardrail/tests)
+- Helper: helper:v20251220.3 @ 2025-12-21T10:30:00Z
+- Focus: Request Gating & Streaming – surface non-`in_flight` drop reasons in the history drawer guard.
+- Deliverables:
+  - Extend `_tests/test_request_history_drawer.py` with `test_reject_if_request_in_flight_surfaces_drop_reason` covering drop reasons beyond `in_flight`.
+  - Update `lib/requestHistoryDrawer._reject_if_request_in_flight` to notify and record any drop reason returned by `try_begin_request`, including fallback messaging.
+  - `<VCS_REVERT>` mapping: `git stash push -k -u -- lib/requestHistoryDrawer.py` (pop with `git stash pop` after removal evidence) for helper:v20251220.3 loops on ADR-0056.
+- Guardrail: `python3.11 -m pytest _tests/test_request_history_drawer.py::RequestHistoryDrawerTests::test_reject_if_request_in_flight_surfaces_drop_reason`
+- Evidence: `docs/adr/evidence/0056/loop-0248.md`
+- Removal test: `<VCS_REVERT> && python3.11 -m pytest _tests/test_request_history_drawer.py::RequestHistoryDrawerTests::test_reject_if_request_in_flight_surfaces_drop_reason` (restore with `git stash pop`)
+- Adversarial “what remains” check:
+  - Add overlay-level integration coverage ensuring history drawer toggle surfaces drop messages when streaming is disabled.
+  - Verify gating telemetry aggregates capture non-`in_flight` drop reason codes for history drawer actions.
+  - Confirm Concordance dashboards ingest the expanded drop reason set before rotating guardrail fixtures.
 

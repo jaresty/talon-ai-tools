@@ -146,6 +146,29 @@ def build_payload(
     if not isinstance(streaming, dict):
         streaming = {}
 
+    raw_last_message = data.get("gating_drop_last_message")
+    last_message = ""
+    if isinstance(raw_last_message, str):
+        last_message = raw_last_message.strip()
+    streaming_last_message = (
+        streaming.get("last_message") if isinstance(streaming, dict) else ""
+    )
+    if not last_message and isinstance(streaming_last_message, str):
+        last_message = streaming_last_message.strip()
+    last_message = last_message.replace("\n", " ").strip()
+    if not last_message:
+        last_message = "none"
+
+    raw_last_code = data.get("gating_drop_last_code")
+    last_code = ""
+    if isinstance(raw_last_code, str):
+        last_code = raw_last_code.strip()
+    streaming_last_code = (
+        streaming.get("last_code") if isinstance(streaming, dict) else ""
+    )
+    if not last_code and isinstance(streaming_last_code, str):
+        last_code = streaming_last_code.strip()
+
     ordered_counts = _sorted_counts(data)
     sum_counts = sum(count for _, count in ordered_counts)
     top_reasons, other_total = _top_reasons(ordered_counts, limit=top_n)
@@ -178,8 +201,11 @@ def build_payload(
         "top_gating_sources": top_sources,
         "streaming_status": status_text,
         "summary_path": str(summary_path),
+        "last_drop_message": last_message,
     }
 
+    if last_code:
+        payload["last_drop_code"] = last_code
     if artifact_url:
         payload["artifact_url"] = artifact_url
     if other_total:

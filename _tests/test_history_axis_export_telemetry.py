@@ -21,6 +21,8 @@ if bootstrap is not None and not TYPE_CHECKING:
             summary = {
                 "total_entries": 5,
                 "gating_drop_total": 0,
+                "gating_drop_last_message": "Streaming disabled guardrail",
+                "gating_drop_last_code": "streaming_disabled",
                 "streaming_gating_summary": {
                     "counts": {
                         "streaming_disabled": 2,
@@ -76,6 +78,10 @@ if bootstrap is not None and not TYPE_CHECKING:
                 self.assertEqual(payload.get("other_gating_source_drops"), 1)
                 self.assertEqual(payload.get("streaming_status"), "unknown")
                 self.assertEqual(payload.get("summary_path"), str(summary_path))
+                self.assertEqual(
+                    payload.get("last_drop_message"), "Streaming disabled guardrail"
+                )
+                self.assertEqual(payload.get("last_drop_code"), "streaming_disabled")
 
         def test_preserves_artifact_url_when_provided(self) -> None:
             summary = {
@@ -130,6 +136,8 @@ if bootstrap is not None and not TYPE_CHECKING:
                 self.assertFalse(payload.get("other_gating_source_drops"))
                 self.assertEqual(payload.get("streaming_status"), "unknown")
                 self.assertEqual(payload.get("summary_path"), str(summary_path))
+                self.assertEqual(payload.get("last_drop_message"), "none")
+                self.assertIsNone(payload.get("last_drop_code"))
 
         def test_stdout_mode_emits_json_payload(self) -> None:
             summary = {
@@ -173,6 +181,8 @@ if bootstrap is not None and not TYPE_CHECKING:
                 self.assertEqual(payload.get("top_gating_sources"), [])
                 self.assertEqual(payload.get("streaming_status"), "unknown")
                 self.assertEqual(payload.get("summary_path"), str(summary_path))
+                self.assertEqual(payload.get("last_drop_message"), "none")
+                self.assertIsNone(payload.get("last_drop_code"))
 
         def test_includes_gating_drop_rate(self) -> None:
             summary = {
@@ -218,6 +228,8 @@ if bootstrap is not None and not TYPE_CHECKING:
                 self.assertEqual(payload.get("top_gating_sources"), [])
                 self.assertEqual(payload.get("streaming_status"), "unknown")
                 self.assertEqual(payload.get("summary_path"), str(summary_path))
+                self.assertEqual(payload.get("last_drop_message"), "none")
+                self.assertIsNone(payload.get("last_drop_code"))
 
 else:
 

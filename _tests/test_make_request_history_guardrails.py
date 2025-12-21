@@ -91,6 +91,8 @@ if not TYPE_CHECKING:
             self.assertEqual(telemetry_payload.get("top_gating_reasons"), [])
             self.assertEqual(telemetry_payload.get("top_gating_sources"), [])
             self.assertEqual(telemetry_payload.get("streaming_status"), "unknown")
+            self.assertEqual(telemetry_payload.get("last_drop_message"), "none")
+            self.assertIsNone(telemetry_payload.get("last_drop_code"))
 
         def test_make_request_history_guardrails_fast_produces_summary(self) -> None:
             """Guardrail: request-history-guardrails-fast should export the validation summary."""
@@ -175,6 +177,8 @@ if not TYPE_CHECKING:
             self.assertEqual(telemetry_payload.get("top_gating_reasons"), [])
             self.assertEqual(telemetry_payload.get("top_gating_sources"), [])
             self.assertEqual(telemetry_payload.get("streaming_status"), "unknown")
+            self.assertEqual(telemetry_payload.get("last_drop_message"), "none")
+            self.assertIsNone(telemetry_payload.get("last_drop_code"))
 
 
 else:

@@ -1513,3 +1513,15 @@
   - Ensure the history guardrail JSON artefacts surface the last-drop text for downstream automation consumers.
   - Audit other guardrail helpers (e.g., fast targets) to confirm they reuse the shared summary helpers before expanding messaging further.
 
+## 2025-12-21 – Loop 254 (kind: guardrail/tests)
+- Helper: helper:v20251220.5 @ 2025-12-21T07:25:00Z
+- Focus: Request Gating & Streaming – push last drop messaging/code into telemetry exports and guardrail JSON artefacts.
+- Change: Extended `scripts/tools/history-axis-export-telemetry.py` to include the last drop message/code in emitted payloads, updated guardrail smoke tests (`_tests/test_history_axis_export_telemetry.py`, `_tests/test_run_guardrails_ci.py`, `_tests/test_make_request_history_guardrails.py`) to assert the new fields, and aligned guardrail CLI output expectations with the normalized summary.
+- Guardrail: `python3.11 -m pytest _tests/test_history_axis_export_telemetry.py _tests/test_run_guardrails_ci.py _tests/test_make_request_history_guardrails.py`
+- Evidence: `docs/adr/evidence/0056/loop-0254.md`
+- Removal test: `git checkout -- scripts/tools/history-axis-export-telemetry.py && python3.11 -m pytest _tests/test_history_axis_export_telemetry.py _tests/test_run_guardrails_ci.py _tests/test_make_request_history_guardrails.py`
+- Adversarial “what remains” check:
+  - Thread the last-drop metadata into downstream dashboards/ETL consumers (e.g., Concordance telemetry ingestion) so the new fields drive alerting.
+  - Revisit other guardrail wrappers (fast variants, `run_guardrails_ci.sh` options) to confirm they relay the augmented telemetry payloads consistently.
+  - Monitor guardrail outputs for newline-heavy drop messages and consider truncation/formatting rules if multi-line content becomes noisy.
+

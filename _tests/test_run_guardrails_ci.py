@@ -227,6 +227,8 @@ if not TYPE_CHECKING:
             self.assertIn("generated_at", telemetry_payload)
             self.assertEqual(telemetry_payload.get("top_gating_reasons"), [])
             self.assertEqual(telemetry_payload.get("top_gating_sources"), [])
+            self.assertEqual(telemetry_payload.get("last_drop_message"), "none")
+            self.assertIsNone(telemetry_payload.get("last_drop_code"))
 
             self.assertIn(
                 "Telemetry summary saved at artifacts/history-axis-summaries/history-validation-summary.telemetry.json",
@@ -347,6 +349,7 @@ if not TYPE_CHECKING:
                 self.assertIn('"streaming_gating_summary"', summary_text)
                 self.assertIn('"top_gating_reasons"', summary_text)
                 self.assertIn('"top_gating_sources"', summary_text)
+                self.assertIn('"last_drop_message": "none"', summary_text)
                 self.assertIn("```", summary_text.strip())
 
         def test_run_guardrails_ci_gating_reasons_table_with_counts(self) -> None:
@@ -365,6 +368,7 @@ if not TYPE_CHECKING:
             streaming_summary_path = (
                 summary_dir / "history-validation-summary.streaming.json"
             )
+
             summary_data = {
                 "total_entries": 5,
                 "gating_drop_counts": {
@@ -372,6 +376,8 @@ if not TYPE_CHECKING:
                     "rate_limited": 1,
                 },
                 "gating_drop_total": 3,
+                "gating_drop_last_message": "Streaming disabled guardrail",
+                "gating_drop_last_code": "streaming_disabled",
                 "streaming_gating_summary": {
                     "counts": {
                         "rate_limited": 1,
@@ -386,11 +392,15 @@ if not TYPE_CHECKING:
                         "reason": "streaming_disabled",
                         "reason_count": 2,
                     },
+                    "last_message": "Streaming disabled guardrail",
+                    "last_code": "streaming_disabled",
                 },
             }
+
             summary_path.write_text(
                 json.dumps(summary_data, indent=2), encoding="utf-8"
             )
+
             if streaming_summary_path.exists():
                 streaming_summary_path.unlink()
 
@@ -423,14 +433,18 @@ if not TYPE_CHECKING:
                 summary_text = step_summary_path.read_text(encoding="utf-8")
             stdout = result.stdout
             self.assertIn("History summary gating status: unknown", stdout)
-            self.assertIn("History summary last drop: none", stdout)
-            self.assertIn("Streaming gating reasons:", stdout)
+            self.assertIn(
+                "History summary last drop: Streaming disabled guardrail",
+                stdout,
+            )
 
+            self.assertIn("Streaming gating reasons:", stdout)
             self.assertIn("| Reason | Count |", stdout)
+
             self.assertIn("Streaming gating sources:", stdout)
             self.assertIn("| Source | Count |", stdout)
             self.assertIn(
-                "Streaming gating summary: status=unknown; total=3; counts=streaming_disabled=2, rate_limited=1; sources=modelHelpCanvas=2, providerCommands=1; last=streaming_disabled (count=2); last_source=n/a; last_message=none",
+                "Streaming gating summary: status=unknown; total=3; counts=streaming_disabled=2, rate_limited=1; sources=modelHelpCanvas=2, providerCommands=1; last=streaming_disabled (count=2); last_source=n/a; last_message=Streaming disabled guardrail (code=streaming_disabled)",
                 result.stdout,
             )
 
@@ -449,13 +463,32 @@ if not TYPE_CHECKING:
             self.assertIn("| providerCommands | 1 |", stdout)
 
             self.assertIn("- streaming status: unknown", summary_text)
-            self.assertIn("- last drop: none", summary_text)
+            self.assertIn(
+                "- last drop: Streaming disabled guardrail",
+                summary_text,
+            )
             self.assertIn("Streaming gating reasons:", summary_text)
             self.assertIn("| Reason | Count |", summary_text)
             self.assertIn("Streaming gating sources:", summary_text)
             self.assertIn("| Source | Count |", summary_text)
             self.assertIn(
-                "Streaming gating summary: status=unknown; total=3; counts=streaming_disabled=2, rate_limited=1; sources=modelHelpCanvas=2, providerCommands=1; last=streaming_disabled (count=2); last_source=n/a; last_message=none",
+                "Streaming gating summary: status=unknown; total=3; counts=streaming_disabled=2, rate_limited=1; sources=modelHelpCanvas=2, providerCommands=1; last=streaming_disabled (count=2); last_source=n/a; last_message=Streaming disabled guardrail (code=streaming_disabled)",
+                summary_text,
+            )
+            telemetry_payload = json.loads(
+                summary_path.with_name(
+                    "history-validation-summary.telemetry.json"
+                ).read_text(encoding="utf-8")
+            )
+            self.assertEqual(
+                telemetry_payload.get("last_drop_message"),
+                "Streaming disabled guardrail",
+            )
+            self.assertEqual(
+                telemetry_payload.get("last_drop_code"), "streaming_disabled"
+            )
+            self.assertIn(
+                '"last_drop_message": "Streaming disabled guardrail"',
                 summary_text,
             )
             summary_lines = [

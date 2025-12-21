@@ -2,7 +2,7 @@
 
 This helper keeps ADR loops observable and safe while letting a single agent advance work in concise, auditable slices.
 
-**Current helper version:** `helper:v20251221.2` (update this string when the helper changes; work-log entries must reference it exactly).
+**Current helper version:** `helper:v20251221.3` (update this string when the helper changes; work-log entries must reference it exactly).
 
 **Context cited per loop.** Entries state which ADR sections, work-log notes, and repository evidence informed the slice; conversational history is out of scope.
 
@@ -53,10 +53,10 @@ A loop entry is compliant when all statements hold:
 - Loop pre-plan identifies the `<VALIDATION_TARGET>` (or bounded list) and the evidence locations, mapping each guardrail to its target.
 - Red evidence exists before behaviour edits land: updated expectation, fresh failing test, or, where coverage is absent, a minimal reversible regression removed immediately after the failure is recorded. The entry states why the failure output covers the targeted behaviour and demonstrates the full guardrail surface; partial failures cite missing facets and queue tightening work before proceeding.
 - Green evidence reuses the same `<VALIDATION_TARGET>` (or mapped target).
-- Removal evidence uses `<VCS_REVERT>` (or finer-grained equivalent) and re-runs the primary guardrail so the targeted failure is observable again; if it stays green, tighten the slice until the failure returns.
+- Removal evidence uses `<VCS_REVERT>` (or finer-grained equivalent) to restore the pre-change baseline, states when the baseline is back in place, and re-runs the primary guardrail so the targeted failure is observable again; if it stays green, tighten the slice until the failure returns.
 
 **Evidence block complete**
-- The work-log entry carries paired red/green summaries with command, timestamp (UTC preferred), exit status, and either a key snippet or a checksum. Include a short diff/hash snapshot (e.g., `git diff --stat` or a checksum) so reviewers can verify the observable delta quickly. For the red line, capture the salient failure text or hash and note explicitly why it proves the intended behaviour failed.
+- The work-log entry carries paired red/green summaries with command, timestamp (UTC preferred), exit status, and either a key snippet or a checksum. Include a short diff/hash snapshot (e.g., `git diff --stat` or a checksum) so reviewers can verify the observable delta quickly. Red evidence includes the minimal failure excerpt (assertion, traceback line, or error code) demonstrating the targeted behaviour.
 - When summaries alone are insufficient, transcripts are appended to `<ARTEFACT_LOG>` rather than creating per-loop files; the entry references the exact heading and notes any temporary per-loop files with a migration plan. Evidence writers append to the declared aggregated location and mark pointers as `inline` only when the inline-size rule is satisfied.
 - The removal test is recorded in the same block (command and outcome). If revert attempts fail, the blocker evidence is logged.
 - Close each loop with an adversarial “risk recap” paragraph naming at least one residual risk, the mitigation or monitoring action queued, and any triggers that would reopen the work.

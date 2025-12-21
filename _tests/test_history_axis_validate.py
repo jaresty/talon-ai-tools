@@ -135,6 +135,47 @@ if bootstrap is not None:
                 self.assertIn("entries_missing_directional", stats)
             clear_history()
 
+        def test_summary_path_includes_gating_last_drop_metadata(self) -> None:
+            from talon_user.lib.requestLog import clear_history  # type: ignore
+
+            clear_history()
+            with tempfile.TemporaryDirectory() as tmpdir:
+                summary_path = os.path.join(tmpdir, "history-summary.json")
+                env = os.environ.copy()
+                env["HISTORY_AXIS_VALIDATE_SIMULATE_GATING_DROP"] = (
+                    "Simulated gating drop for tests"
+                )
+                result = subprocess.run(
+                    [
+                        sys.executable,
+                        "scripts/tools/history-axis-validate.py",
+                        "--summary-path",
+                        summary_path,
+                    ],
+                    check=False,
+                    capture_output=True,
+                    text=True,
+                    env=env,
+                )
+                self.assertEqual(result.returncode, 0, msg=result.stderr)
+                self.assertTrue(os.path.exists(summary_path))
+
+                with open(summary_path, "r", encoding="utf-8") as fh:
+                    stats = json.load(fh)
+                self.assertEqual(
+                    stats.get("gating_drop_last_message"),
+                    "Simulated gating drop for tests",
+                )
+                self.assertEqual(stats.get("gating_drop_last_code"), "in_flight")
+                streaming_summary = stats.get("streaming_gating_summary", {})
+                self.assertIsInstance(streaming_summary, dict)
+                self.assertEqual(
+                    streaming_summary.get("last_message"),
+                    "Simulated gating drop for tests",
+                )
+                self.assertEqual(streaming_summary.get("last_code"), "in_flight")
+            clear_history()
+
         def test_summarize_json_outputs_summary(self) -> None:
             with tempfile.TemporaryDirectory() as tmpdir:
                 summary_path = Path(tmpdir) / "history-summary.json"

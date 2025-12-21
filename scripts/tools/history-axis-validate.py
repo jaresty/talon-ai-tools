@@ -342,6 +342,21 @@ def main() -> int:
         )
         return 1
 
+    gating_sim_message = os.environ.get(
+        "HISTORY_AXIS_VALIDATE_SIMULATE_GATING_DROP", ""
+    ).strip()
+    if gating_sim_message:
+        try:
+            requestLog.set_drop_reason("in_flight", gating_sim_message)
+        except Exception:
+            requestLog.set_drop_reason("in_flight")
+        try:
+            requestLog.record_gating_drop(
+                "in_flight", source="history-axis-validate:test"
+            )
+        except Exception:
+            pass
+
     if os.environ.get("HISTORY_AXIS_VALIDATE_SIMULATE_PERSONA_FAILURE"):
         try:
             requestLog.clear_history()

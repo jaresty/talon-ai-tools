@@ -1596,4 +1596,16 @@
   - Monitor for future guardrail additions so the doc stays aligned with CLI behaviour.
   - Consider a follow-up to add screenshots or quick references once operations materials consolidate the new flow.
 
+## 2025-12-21 – Loop 261 (kind: guardrail/tests)
+- Helper: helper:v20251220.5 @ 2025-12-21T16:34:00Z
+- Focus: Request Gating & Streaming – guardrail that history-axis-validate summaries surface last-drop metadata.
+- Change: Added a test-only `HISTORY_AXIS_VALIDATE_SIMULATE_GATING_DROP` path so `history-axis-validate` records a synthetic gating drop, and introduced a guardrail test asserting the JSON summary and streaming snapshot include the last-drop message/code.
+- Guardrail: `python3.11 -m pytest _tests/test_history_axis_validate.py::HistoryAxisValidateTests::test_summary_path_includes_gating_last_drop_metadata`
+- Evidence: `docs/adr/evidence/0056/loop-0261.md`
+- Removal test: `git stash push -k -u -- scripts/tools/history-axis-validate.py && python3.11 -m pytest _tests/test_history_axis_validate.py::HistoryAxisValidateTests::test_summary_path_includes_gating_last_drop_metadata && git stash pop`
+- Adversarial “what remains” check:
+  - Document the new simulation env var in ADR guardrail notes so contributors know how to reproduce the check locally.
+  - Evaluate extending the simulation hook to accept alternate drop reasons for broader coverage.
+  - Confirm downstream guardrail helpers reuse this env var instead of re-implementing drop simulations.
+
 

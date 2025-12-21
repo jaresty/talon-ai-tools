@@ -1686,32 +1686,17 @@
 - Adversarial “what remains” check:
   - Coordinate with operations to update external runbooks and attach the streaming telemetry examples once the handbook edit clears review.
 
-## 2025-12-21 – Loop 270 (kind: docs)
+## 2025-12-21 – Loop 270 (superseded)
 - Helper: helper:v20251220.5 @ 2025-12-21T19:40Z
-- Focus: Request Gating & Streaming – note the residual risk around operations sign-off for streaming telemetry guardrails.
-- Change: Expanded the Risks/Mitigations section to call out delayed operations handoffs and tie the new Monitoring & Next Steps checklist to securing sign-off before guardrail resets.
-- Checks: Documentation-only loop (no tests run).
-- Removal test: Reverting the ADR edits would drop the explicit operations risk/mitigation, making it easier to overlook telemetry archiving gaps during incidents.
-- Adversarial “what remains” check:
-  - Follow through on the operations runbook update and record the sign-off once the handbook change lands.
+- Decision: Original risk/mitigation text assumed operations sign-off and a Monitoring & Next Steps checklist; superseded by later loops now that the workflow is solo-owned.
 
-## 2025-12-21 – Loop 271 (kind: docs)
+## 2025-12-21 – Loop 271 (superseded)
 - Helper: helper:v20251220.5 @ 2025-12-21T19:55Z
-- Focus: Persona & Intent Presets – ensure telemetry monitoring captures persona alias/tone drift alongside streaming fields.
-- Change: Added a Monitoring & Next Steps bullet for the JSON summary command so persona telemetry stays visible and catalog/test updates queue when drift appears.
-- Checks: Documentation-only loop (no tests run).
-- Removal test: Reverting the ADR edits would drop the persona telemetry reminder, increasing the odds that alias/tone drift slips through guardrails.
-- Adversarial “what remains” check:
-  - Extend onboarding/runbook guidance to link the JSON summary output with persona catalog regeneration steps.
+- Decision: Persona telemetry reminders were written for the retired checklist; see newer loops for the simplified solo guidance.
 
-## 2025-12-21 – Loop 272 (kind: docs)
+## 2025-12-21 – Loop 272 (superseded)
 - Helper: helper:v20251220.5 @ 2025-12-21T20:05Z
-- Focus: Monitoring & Next Steps – clarify the runbook follow-up so operations capture both streaming and persona telemetry requirements.
-- Change: Updated the follow-up bullet to cite streaming artefact archiving, persona alias tracking, and the shared handbook update.
-- Checks: Documentation-only loop (no tests run).
-- Removal test: Reverting the ADR edits would narrow the runbook reminder back to streaming-only, making persona telemetry drift easier to miss in operations docs.
-- Adversarial “what remains” check:
-  - Coordinate with the operations handbook owner to include the persona checklist alongside the streaming telemetry instructions.
+- Decision: Operations handbook follow-ups no longer apply; later loops document the solo Monitoring & Next Steps guidance.
 
 ## 2025-12-21 – Loop 273 (kind: docs)
 - Helper: helper:v20251221.0 @ 2025-12-21T20:25Z

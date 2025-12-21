@@ -165,17 +165,19 @@ if not TYPE_CHECKING:
                 result.stdout,
             )
             self.assertIn(
-                "Streaming gating summary: status=unknown; total=0; counts=none; sources=none; last=n/a; last_source=n/a",
+                "History summary last drop: none",
                 result.stdout,
             )
             self.assertIn(
-                "Streaming gating summary (json):",
+                "Streaming gating summary: status=unknown; total=0; counts=none; sources=none; last=n/a; last_source=n/a; last_message=none",
                 result.stdout,
             )
+
             self.assertIn(
-                "- Streaming gating summary: status=unknown; total=0; counts=none; sources=none; last=n/a; last_source=n/a",
+                "- Streaming gating summary: status=unknown; total=0; counts=none; sources=none; last=n/a; last_source=n/a; last_message=none",
                 result.stdout,
             )
+            self.assertIn("- Last gating drop: none", result.stdout)
             self.assertIn(
                 "- Artifact link unavailable outside GitHub Actions.",
                 result.stdout,
@@ -207,6 +209,8 @@ if not TYPE_CHECKING:
                     "last_source": {},
                     "total": 0,
                     "status": "unknown",
+                    "last_message": "",
+                    "last_code": "",
                 },
             )
 
@@ -320,6 +324,10 @@ if not TYPE_CHECKING:
                     summary_text,
                 )
                 self.assertIn(
+                    "- last drop: none",
+                    summary_text,
+                )
+                self.assertIn(
                     "- streaming status: unknown",
                     summary_text,
                 )
@@ -415,14 +423,17 @@ if not TYPE_CHECKING:
                 summary_text = step_summary_path.read_text(encoding="utf-8")
             stdout = result.stdout
             self.assertIn("History summary gating status: unknown", stdout)
+            self.assertIn("History summary last drop: none", stdout)
             self.assertIn("Streaming gating reasons:", stdout)
+
             self.assertIn("| Reason | Count |", stdout)
             self.assertIn("Streaming gating sources:", stdout)
             self.assertIn("| Source | Count |", stdout)
             self.assertIn(
-                "Streaming gating summary: status=unknown; total=3; counts=streaming_disabled=2, rate_limited=1; sources=modelHelpCanvas=2, providerCommands=1; last=streaming_disabled (count=2); last_source=n/a",
-                stdout,
+                "Streaming gating summary: status=unknown; total=3; counts=streaming_disabled=2, rate_limited=1; sources=modelHelpCanvas=2, providerCommands=1; last=streaming_disabled (count=2); last_source=n/a; last_message=none",
+                result.stdout,
             )
+
             table_lines = [line for line in stdout.splitlines() if line.startswith("|")]
             self.assertEqual(
                 table_lines[:3],
@@ -438,12 +449,13 @@ if not TYPE_CHECKING:
             self.assertIn("| providerCommands | 1 |", stdout)
 
             self.assertIn("- streaming status: unknown", summary_text)
+            self.assertIn("- last drop: none", summary_text)
             self.assertIn("Streaming gating reasons:", summary_text)
             self.assertIn("| Reason | Count |", summary_text)
             self.assertIn("Streaming gating sources:", summary_text)
             self.assertIn("| Source | Count |", summary_text)
             self.assertIn(
-                "Streaming gating summary: status=unknown; total=3; counts=streaming_disabled=2, rate_limited=1; sources=modelHelpCanvas=2, providerCommands=1; last=streaming_disabled (count=2); last_source=n/a",
+                "Streaming gating summary: status=unknown; total=3; counts=streaming_disabled=2, rate_limited=1; sources=modelHelpCanvas=2, providerCommands=1; last=streaming_disabled (count=2); last_source=n/a; last_message=none",
                 summary_text,
             )
             summary_lines = [

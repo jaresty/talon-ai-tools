@@ -129,6 +129,16 @@ def _normalize_streaming_summary(summary: object) -> dict[str, object]:
         if not last_source_payload.get("source") and "count" not in last_source_payload:
             last_source_payload = {}
 
+    last_message_value = ""
+    raw_last_message = summary_dict.get("last_message")
+    if isinstance(raw_last_message, str):
+        last_message_value = raw_last_message.strip()
+
+    last_code_value = ""
+    raw_last_code = summary_dict.get("last_code")
+    if isinstance(raw_last_code, str):
+        last_code_value = raw_last_code.strip()
+
     return {
         "counts": counts,
         "counts_sorted": counts_sorted,
@@ -138,6 +148,8 @@ def _normalize_streaming_summary(summary: object) -> dict[str, object]:
         "last_source": last_source_payload,
         "total": total,
         "status": status_value,
+        "last_message": last_message_value,
+        "last_code": last_code_value,
     }
 
 
@@ -174,10 +186,16 @@ def _format_streaming_summary_line(normalized: dict[str, object]) -> str:
         last_source_text = "n/a"
     total_value = cast(int, normalized.get("total", 0))
     status_value = str(normalized.get("status") or "").strip() or "unknown"
+    last_message_raw = str(normalized.get("last_message") or "").strip()
+    last_message_text = last_message_raw if last_message_raw else "none"
+    last_code_raw = str(normalized.get("last_code") or "").strip()
+    if last_code_raw:
+        last_message_text = f"{last_message_text} (code={last_code_raw})"
     return (
         "Streaming gating summary: "
         f"status={status_value}; total={total_value}; counts={counts_text}; "
-        f"sources={sources_text}; last={last_text}; last_source={last_source_text}"
+        f"sources={sources_text}; last={last_text}; last_source={last_source_text}; "
+        f"last_message={last_message_text}"
     )
 
 
@@ -192,8 +210,19 @@ def _format_history_summary_from_data(
         f"- Saved `{summary_path}`",
         f"- Entries validated: {data.get('total_entries', 'unknown')}",
         f"- Gating drops recorded: {data.get('gating_drop_total', 'unknown')}",
-        f"- {streaming_line}",
     ]
+
+    last_message_raw = str(data.get("gating_drop_last_message") or "").strip()
+    last_message_clean = last_message_raw.replace("\n", " ").strip()
+    last_code_raw = str(data.get("gating_drop_last_code") or "").strip()
+    if last_message_clean:
+        drop_line = f"- Last gating drop: {last_message_clean}"
+    else:
+        drop_line = "- Last gating drop: none"
+    if last_code_raw:
+        drop_line = f"{drop_line} (code={last_code_raw})"
+    lines.append(drop_line)
+    lines.append(f"- {streaming_line}")
 
     sources_summary = summary.get("sources", {})
     if isinstance(sources_summary, dict) and sources_summary:

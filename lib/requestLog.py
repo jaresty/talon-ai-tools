@@ -949,6 +949,8 @@ def history_validation_stats() -> dict[str, object]:
         "last_source": streaming_last_source,
         "total": total_int,
         "status": status_value,
+        "last_message": _last_drop_reason.message,
+        "last_code": _last_drop_reason.code,
     }
     stats_obj["gating_drop_last_message"] = _last_drop_reason.message
     stats_obj["gating_drop_last_code"] = _last_drop_reason.code

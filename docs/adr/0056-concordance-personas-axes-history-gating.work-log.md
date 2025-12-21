@@ -1501,3 +1501,15 @@
   - Confirm streaming gating summaries also carry the message or an equivalent hint when drop reasons repeat.
   - Audit other request surfaces (GPT actions, provider commands) to ensure they set explicit drop messages before delegating to telemetry exports.
 
+## 2025-12-21 – Loop 253 (kind: guardrail/tests)
+- Helper: helper:v20251220.5 @ 2025-12-21T06:58:00Z
+- Focus: Request Gating & Streaming – surface the last drop message/code across guardrail CLI summaries and CI job outputs.
+- Change: Updated `lib/requestLog.history_validation_stats` to embed the cached drop message/code in the streaming summary, taught `scripts/tools/history-axis-validate.py` to render the message in streaming/markdown summaries, and wired `scripts/tools/run_guardrails_ci.sh` plus guardrail tests to log and append the last-drop line in stdout and GitHub step summaries.
+- Guardrail: `python3.11 -m pytest _tests/test_history_axis_validate.py _tests/test_run_guardrails_ci.py _tests/test_make_request_history_guardrails.py`
+- Evidence: `docs/adr/evidence/0056/loop-0253.md`
+- Removal test: `git checkout -- lib/requestLog.py scripts/tools/history-axis-validate.py scripts/tools/run_guardrails_ci.sh && python3.11 -m pytest _tests/test_history_axis_validate.py _tests/test_run_guardrails_ci.py _tests/test_make_request_history_guardrails.py`
+- Adversarial “what remains” check:
+  - Propagate the last-drop message into telemetry exports and streaming session events so dashboards receive the same payload (next loop).
+  - Ensure the history guardrail JSON artefacts surface the last-drop text for downstream automation consumers.
+  - Audit other guardrail helpers (e.g., fast targets) to confirm they reuse the shared summary helpers before expanding messaging further.
+

@@ -75,6 +75,10 @@ if bootstrap is not None:
             self.assertTrue(
                 any("status=" in line for line in streaming_lines), msg=result.stdout
             )
+            self.assertTrue(
+                any("last_message=" in line for line in streaming_lines),
+                msg=result.stdout,
+            )
 
             summary_line = next(
                 (line for line in lines if line.lstrip().startswith("{")),
@@ -88,6 +92,7 @@ if bootstrap is not None:
             streaming_summary = stats.get("streaming_gating_summary", {})
             self.assertIsInstance(streaming_summary, dict)
             self.assertIn("status", streaming_summary)
+            self.assertIn("last_message", streaming_summary)
             persona_pairs = stats.get("persona_alias_pairs", {})
             self.assertIn("teach_junior_dev", persona_pairs)
             self.assertEqual(persona_pairs["teach_junior_dev"].get("mentor"), 1)
@@ -160,7 +165,8 @@ if bootstrap is not None:
                 output = result.stdout.strip()
                 expected = (
                     "Streaming gating summary: status=unknown; total=2; "
-                    "counts=in_flight=2; sources=none; last=in_flight (count=2); last_source=n/a"
+                    "counts=in_flight=2; sources=none; last=in_flight (count=2); "
+                    "last_source=n/a; last_message=none"
                 )
                 self.assertEqual(output, expected)
                 self.assertNotIn("### History Guardrail Summary", result.stdout)
@@ -194,6 +200,8 @@ if bootstrap is not None:
                         "last_source": {},
                         "total": 2,
                         "status": "unknown",
+                        "last_message": "",
+                        "last_code": "",
                     },
                 )
                 self.assertEqual(
@@ -219,9 +227,10 @@ if bootstrap is not None:
                 markdown_output = result_markdown.stdout
                 self.assertIn("### History Guardrail Summary", markdown_output)
                 self.assertIn(
-                    "- Streaming gating summary: status=unknown; total=2; counts=in_flight=2; sources=none; last=in_flight (count=2); last_source=n/a",
+                    "- Streaming gating summary: status=unknown; total=2; counts=in_flight=2; sources=none; last=in_flight (count=2); last_source=n/a; last_message=none",
                     markdown_output,
                 )
+                self.assertIn("- Last gating drop: none", markdown_output)
                 self.assertIn("Download artifact", markdown_output)
 
         def test_script_fails_when_persona_metadata_missing(self) -> None:

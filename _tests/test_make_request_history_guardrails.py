@@ -35,7 +35,7 @@ if not TYPE_CHECKING:
             lines = [line for line in result.stdout.splitlines() if line.strip()]
             self.assertTrue(lines, "make output unexpectedly empty")
             self.assertIn(
-                "Streaming gating summary: status=unknown; total=0; counts=none; sources=none; last=n/a; last_source=n/a",
+                "Streaming gating summary: status=unknown; total=0; counts=none; sources=none; last=n/a; last_source=n/a; last_message=none",
                 result.stdout,
             )
             self.assertIn(
@@ -72,6 +72,8 @@ if not TYPE_CHECKING:
                     "last_source": {},
                     "total": 0,
                     "status": "unknown",
+                    "last_message": "",
+                    "last_code": "",
                 },
             )
 
@@ -117,7 +119,7 @@ if not TYPE_CHECKING:
             lines = [line for line in result.stdout.splitlines() if line.strip()]
             self.assertTrue(lines, "make output unexpectedly empty")
             self.assertIn(
-                "Streaming gating summary: status=unknown; total=0; counts=none; sources=none; last=n/a; last_source=n/a",
+                "Streaming gating summary: status=unknown; total=0; counts=none; sources=none; last=n/a; last_source=n/a; last_message=none",
                 result.stdout,
             )
             self.assertIn(
@@ -154,6 +156,8 @@ if not TYPE_CHECKING:
                     "last_source": {},
                     "total": 0,
                     "status": "unknown",
+                    "last_message": "",
+                    "last_code": "",
                 },
             )
 

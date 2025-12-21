@@ -84,8 +84,37 @@ if isinstance(summary, dict):
     status = str(summary.get("status") or "").strip()
 print(status or "unknown")
 PY
+ )
+
+  IFS=$'\n' read -r GATING_LAST_MESSAGE GATING_LAST_CODE <<EOF
+$(python3 - "$SUMMARY_FILE" <<'PY'
+import json, sys
+from pathlib import Path
+path = Path(sys.argv[1])
+try:
+    data = json.loads(path.read_text())
+except Exception:
+    data = {}
+message = str(data.get("gating_drop_last_message") or "").strip().replace("\n", " ")
+code = str(data.get("gating_drop_last_code") or "").strip().replace("\n", " ")
+if not message:
+    message = "none"
+print(message)
+print(code)
+PY
 )
+EOF
+  GATING_LAST_MESSAGE=${GATING_LAST_MESSAGE:-none}
+  GATING_LAST_CODE=${GATING_LAST_CODE:-}
+  if [[ -n "${GATING_LAST_CODE}" ]]; then
+    GATING_LAST_SUMMARY="${GATING_LAST_MESSAGE} (code=${GATING_LAST_CODE})"
+  else
+    GATING_LAST_SUMMARY="${GATING_LAST_MESSAGE}"
+  fi
+
   echo "History summary gating status: ${GATING_STATUS}"
+  echo "History summary last drop: ${GATING_LAST_SUMMARY}"
+
   GATING_REASONS=$(python3 - "$SUMMARY_FILE" <<'PY'
 import json, sys
 from pathlib import Path
@@ -321,6 +350,7 @@ PY
       printf '%s\n' "- Streaming JSON summary recorded at ${STREAMING_JSON_PATH}"
       printf '%s\n' "- Streaming gating summary (text): ${STREAMING_LINE}"
       printf '%s\n' "- streaming status: ${GATING_STATUS}"
+      printf '%s\n' "- last drop: ${GATING_LAST_SUMMARY}"
       printf '%s\n' "- total entries: ${TOTAL_ENTRIES:-unknown}"
       printf '%s\n' "- gating drops: ${GATING_DROPS:-unknown}"
       if [[ -n "${GATING_REASONS_TABLE}" ]]; then

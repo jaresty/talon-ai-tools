@@ -249,6 +249,31 @@ if bootstrap is not None:
                 {"source": "test_case", "count": 1},
             )
 
+        def test_history_validation_stats_reports_last_drop_message(self) -> None:
+            requestLog.clear_history()
+            requestLog.consume_gating_drop_stats()
+            requestLog.set_drop_reason("")
+
+            streaming_state = RequestState(phase=RequestPhase.SENDING)
+            allowed, reason = requestGating.try_begin_request(
+                streaming_state, source="message_case"
+            )
+            self.assertFalse(allowed)
+            self.assertEqual(reason, "in_flight")
+            expected_message = requestLog.drop_reason_message(reason)
+
+            requestLog.set_drop_reason(reason, expected_message)
+
+            stats = requestLog.history_validation_stats()
+            self.assertEqual(
+                stats.get("gating_drop_last_message"),
+                expected_message,
+            )
+
+            requestLog.set_drop_reason("")
+            stats_after_clear = requestLog.history_validation_stats()
+            self.assertEqual(stats_after_clear.get("gating_drop_last_message"), "")
+
         def test_history_axis_validate_reset_gating_flag(self) -> None:
             requestLog.clear_history()
             requestLog.consume_gating_drop_stats()

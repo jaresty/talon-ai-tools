@@ -1487,3 +1487,17 @@
   - Confirm guardrail telemetry drops (`history_validation_stats`) reflect cleared drop reasons after successful actions.
   - Evaluate whether other gating helpers should clear cached messaging on success for parity.
 
+## 2025-12-21 – Loop 252 (kind: guardrail/tests)
+- Helper: helper:v20251220 @ 2025-12-21T11:28:00Z
+- Focus: Request Gating & Streaming – expose last drop messaging in history validation telemetry.
+- Deliverables:
+  - Added `_tests/test_request_gating.py::RequestGatingTests::test_history_validation_stats_reports_last_drop_message` to require telemetry summaries surface the most recent drop message and clear it after success.
+  - Updated `lib/requestLog.history_validation_stats` to publish `gating_drop_last_message` and `gating_drop_last_code` derived from the cached drop reason record.
+- Guardrail: `python3.11 -m pytest _tests/test_request_gating.py::RequestGatingTests::test_history_validation_stats_reports_last_drop_message`
+- Evidence: `docs/adr/evidence/0056/loop-0252.md`
+- Removal test: `<VCS_REVERT> && python3.11 -m pytest _tests/test_request_gating.py::RequestGatingTests::test_history_validation_stats_reports_last_drop_message`
+- Adversarial “what remains” check:
+  - Thread the last drop message into guardrail CLI summaries (e.g., `history-axis-validate`) so operators see it without inspecting JSON.
+  - Confirm streaming gating summaries also carry the message or an equivalent hint when drop reasons repeat.
+  - Audit other request surfaces (GPT actions, provider commands) to ensure they set explicit drop messages before delegating to telemetry exports.
+

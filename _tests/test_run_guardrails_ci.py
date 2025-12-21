@@ -169,6 +169,10 @@ if not TYPE_CHECKING:
                 result.stdout,
             )
             self.assertIn(
+                "Streaming gating last drop: none",
+                result.stdout,
+            )
+            self.assertIn(
                 "Streaming gating summary: status=unknown; total=0; counts=none; sources=none; last=n/a; last_source=n/a; last_message=none",
                 result.stdout,
             )
@@ -178,6 +182,7 @@ if not TYPE_CHECKING:
                 result.stdout,
             )
             self.assertIn("- Last gating drop: none", result.stdout)
+            self.assertIn("- Streaming last drop: none", result.stdout)
             self.assertIn(
                 "- Artifact link unavailable outside GitHub Actions.",
                 result.stdout,
@@ -330,6 +335,10 @@ if not TYPE_CHECKING:
                     summary_text,
                 )
                 self.assertIn(
+                    "- streaming last drop: none",
+                    summary_text,
+                )
+                self.assertIn(
                     "- streaming status: unknown",
                     summary_text,
                 )
@@ -437,8 +446,13 @@ if not TYPE_CHECKING:
                 "History summary last drop: Streaming disabled guardrail",
                 stdout,
             )
+            self.assertIn(
+                "Streaming gating last drop: Streaming disabled guardrail (code=streaming_disabled)",
+                stdout,
+            )
 
             self.assertIn("Streaming gating reasons:", stdout)
+
             self.assertIn("| Reason | Count |", stdout)
 
             self.assertIn("Streaming gating sources:", stdout)
@@ -465,6 +479,10 @@ if not TYPE_CHECKING:
             self.assertIn("- streaming status: unknown", summary_text)
             self.assertIn(
                 "- last drop: Streaming disabled guardrail",
+                summary_text,
+            )
+            self.assertIn(
+                "- streaming last drop: Streaming disabled guardrail (code=streaming_disabled)",
                 summary_text,
             )
             self.assertIn("Streaming gating reasons:", summary_text)

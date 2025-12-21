@@ -222,6 +222,17 @@ def _format_history_summary_from_data(
     if last_code_raw:
         drop_line = f"{drop_line} (code={last_code_raw})"
     lines.append(drop_line)
+
+    streaming_last_message_raw = str(summary.get("last_message") or "").strip()
+    streaming_last_message_clean = streaming_last_message_raw.replace("\n", " ").strip()
+    streaming_last_code_raw = str(summary.get("last_code") or "").strip()
+    if streaming_last_message_clean:
+        streaming_drop_line = f"- Streaming last drop: {streaming_last_message_clean}"
+    else:
+        streaming_drop_line = "- Streaming last drop: none"
+    if streaming_last_code_raw:
+        streaming_drop_line = f"{streaming_drop_line} (code={streaming_last_code_raw})"
+    lines.append(streaming_drop_line)
     lines.append(f"- {streaming_line}")
 
     sources_summary = summary.get("sources", {})

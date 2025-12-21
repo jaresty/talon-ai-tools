@@ -231,6 +231,7 @@ if bootstrap is not None:
                     markdown_output,
                 )
                 self.assertIn("- Last gating drop: none", markdown_output)
+                self.assertIn("- Streaming last drop: none", markdown_output)
                 self.assertIn("Download artifact", markdown_output)
 
         def test_script_fails_when_persona_metadata_missing(self) -> None:

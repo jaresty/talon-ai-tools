@@ -1549,3 +1549,15 @@
   - Audit UI canvases/models that consume `current_streaming_gating_summary` so they display or log the enriched metadata where appropriate.
   - Monitor request bus/controller call sites for any direct `_reject_if_request_in_flight` helpers that might bypass the centralized message propagation.
 
+## 2025-12-21 – Loop 257 (kind: guardrail/tests)
+- Helper: helper:v20251220.5 @ 2025-12-21T08:22:00Z
+- Focus: Request Gating & Streaming – surface streaming last-drop message/code in guardrail CLI summaries.
+- Change: Extended `scripts/tools/history-axis-validate.py` to emit a `Streaming last drop` line, taught `scripts/tools/run_guardrails_ci.sh` to parse streaming JSON for the last-drop message/code, print it in stdout, and add the bullet to GitHub step summaries; refreshed `_tests/test_history_axis_validate.py` and `_tests/test_run_guardrails_ci.py` to assert the new output while keeping make-target guardrail smoke tests stable.
+- Guardrail: `python3.11 -m pytest _tests/test_history_axis_validate.py _tests/test_run_guardrails_ci.py`
+- Evidence: `docs/adr/evidence/0056/loop-0257.md`
+- Removal test: `git checkout -- scripts/tools/history-axis-validate.py scripts/tools/run_guardrails_ci.sh && python3.11 -m pytest _tests/test_history_axis_validate.py _tests/test_run_guardrails_ci.py`
+- Adversarial “what remains” check:
+  - Ensure telemetry exporters (loop 254) continue to include the last-drop fields so dashboards remain in sync with CLI output.
+  - Confirm make targets and documentation that quote guardrail output mention the new streaming bullet where relevant.
+  - Evaluate whether fast guardrail targets should also surface the streaming last-drop line explicitly for parity.
+

@@ -318,6 +318,32 @@ PY
   printf '%s\n' "${STREAMING_JSON}" > "${STREAMING_JSON_PATH}"
   echo "Streaming JSON summary recorded at ${STREAMING_JSON_PATH}; job summary will reference this file when running in GitHub Actions."
 
+  STREAMING_LAST_OUTPUT=$(python3 - "${SUMMARY_FILE}" <<'PY'
+import json, sys
+from pathlib import Path
+path = Path(sys.argv[1])
+try:
+    data = json.loads(path.read_text())
+except Exception:
+    data = {}
+summary = data.get("streaming_gating_summary") or {}
+message = str(summary.get("last_message") or "").strip().replace("\n", " ")
+code = str(summary.get("last_code") or "").strip().replace("\n", " ")
+if not message:
+    message = "none"
+sys.stdout.write(f"{message}\t{code}")
+PY
+)
+  IFS=$'\t' read -r STREAMING_LAST_MESSAGE STREAMING_LAST_CODE <<<"${STREAMING_LAST_OUTPUT}"
+  STREAMING_LAST_MESSAGE=${STREAMING_LAST_MESSAGE:-none}
+  STREAMING_LAST_CODE=${STREAMING_LAST_CODE:-}
+  if [[ -n "${STREAMING_LAST_CODE}" ]]; then
+    STREAMING_LAST_SUMMARY="${STREAMING_LAST_MESSAGE} (code=${STREAMING_LAST_CODE})"
+  else
+    STREAMING_LAST_SUMMARY="${STREAMING_LAST_MESSAGE}"
+  fi
+  echo "Streaming gating last drop: ${STREAMING_LAST_SUMMARY}"
+
   TELEMETRY_PATH="${SUMMARY_DIR}/history-validation-summary.telemetry.json"
   TELEMETRY_ARGS=("${SUMMARY_FILE}" --output "${TELEMETRY_PATH}" --top 5 --pretty)
   if [[ -n "${ARTIFACT_URL}" ]]; then
@@ -350,6 +376,7 @@ PY
       printf '%s\n' "- Streaming JSON summary recorded at ${STREAMING_JSON_PATH}"
       printf '%s\n' "- Streaming gating summary (text): ${STREAMING_LINE}"
       printf '%s\n' "- streaming status: ${GATING_STATUS}"
+      printf '%s\n' "- streaming last drop: ${STREAMING_LAST_SUMMARY}"
       printf '%s\n' "- last drop: ${GATING_LAST_SUMMARY}"
       printf '%s\n' "- total entries: ${TOTAL_ENTRIES:-unknown}"
       printf '%s\n' "- gating drops: ${GATING_DROPS:-unknown}"

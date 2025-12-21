@@ -1793,4 +1793,15 @@
   - Audit other docs for lingering references to CI-only guardrail workflows (next loop).
   - Consider adding a short README note explaining the separation between Talon runtime history and CLI guardrails.
 
+## 2025-12-21 – Loop 281 (kind: docs)
+- Helper: helper:v20251221.0 @ 2025-12-21T22:53Z
+- Focus: Monitoring simplification – remove the last dashboard/CI runbook reference from ADR-0056.
+- Change: Replaced the persona domain plan note about CI artefact uploads with a solo-friendly reminder to run `history-axis-validate.py` locally when needed.
+- Checks: Documentation-only loop (no automated guardrail required).
+- Evidence: `docs/adr/evidence/0056/loop-0281.md`.
+- Removal test: Reverting the change would bring back instructions that assume GitHub Actions artefact retention.
+- Adversarial “what remains” check:
+  - Review README/help docs later if we broaden the audience beyond a solo workflow.
+  - Keep future ADR loops honest about the Talon runtime vs CLI guardrails boundary.
+
 

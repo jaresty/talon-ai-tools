@@ -280,7 +280,7 @@ For each domain, we will align with the existing test suites and add characteriz
   - Keep guardrail and regression suites (e.g., `_tests/test_persona_presets.py`, `_tests/test_model_suggestion_gui.py`, `_tests/test_history_axis_validate.py`) asserting that persona/intents surfaced through GUIs, history summaries, and telemetry snapshots match the catalog façade.
   - Ensure `scripts/tools/history-axis-validate.py` and related guardrail targets continue reporting persona alias/tone tables so operations can detect drift across catalog, history, and suggestion outputs.
  
-  - Archive history validation summaries before resets: guardrail automation **must** capture the JSON output from `history-axis-validate.py --summary-path …` before invoking `--reset-gating` so Concordance drop telemetry is preserved for dashboards. Concordance runbooks need an explicit step that saves the summary artifact to our GitHub Actions build artifacts (for example, `artifacts/history-axis-summaries/history-validation-summary.json` in the guardrails job) before the reset runs. The CI workflow now publishes the `history-axis-summary` artifact with a 30-day retention window; runbooks should direct operators to the job summary link (Actions → ci → history-axis-summary) so the JSON is downloaded before counters reset.
+  - Before resetting counters, run `python3 scripts/tools/history-axis-validate.py --summary-path artifacts/history-axis-summaries/history-validation-summary.json` (and optional `--summarize-json` variants) locally if you want to keep a snapshot. Skip CI artifact uploads unless the workflow expands beyond a solo maintainer.
 
 
 

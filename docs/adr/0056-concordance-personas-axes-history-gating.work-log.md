@@ -1585,4 +1585,15 @@
   - Ensure `scripts/tools/run_guardrails_ci.sh` keeps emitting the same summary even if Makefile recipes evolve (add regression coverage if needed).
   - Consider a follow-up loop to assert the markdown summary lines surface in fast guardrail job summaries when running inside CI logs.
 
+## 2025-12-21 – Loop 260 (kind: docs)
+- Helper: helper:v20251220.5 @ 2025-12-21T07:35:00Z
+- Focus: Request Gating & Streaming – document local guardrail parity with CI last-drop bullets.
+- Change: Added a Consequences bullet in ADR-0056 noting that `make request-history-guardrails(-fast)` now prints the same `Last gating drop` and `Streaming last drop` lines exposed in CI job summaries.
+- Checks: Documentation-only loop (no tests run).
+- Removal test: Reverting the doc change would obscure that on-box guardrails surface the new messaging, making it harder for contributors to know the parity exists.
+- Adversarial “what remains” check:
+  - Update Concordance operations/runbooks to point at the local guardrail output when training operators.
+  - Monitor for future guardrail additions so the doc stays aligned with CLI behaviour.
+  - Consider a follow-up to add screenshots or quick references once operations materials consolidate the new flow.
+
 

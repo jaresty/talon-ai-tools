@@ -312,6 +312,7 @@ Across all domains, we will continue to run `python3 -m pytest` from the repo ro
 - Guardrail runs export `history-validation-summary.telemetry.json` (top gating reasons, totals, artifact link) so Concordance dashboards and ETL pipelines ingest the same machine-readable data referenced in CI job summaries.
 - Guardrail telemetry now includes the last-drop message/code so dashboards and ETL consumers can surface actionable gating context without parsing logs.
 - Guardrail job summaries render both `Last gating drop` and `Streaming last drop` bullets, giving operators immediate visibility into history vs streaming rejection context when auditing incidents.
+- Local `make request-history-guardrails(-fast)` runs now print the same last-drop bullets as the CI helper, so contributors can verify guardrail output without relying on GitHub Actions logs.
 - **Risks**
   - Introducing new catalogs and lifecycle APIs can temporarily increase complexity and surface hidden inconsistencies.
   - Misaligned migrations (e.g., partially adopted `AxisSnapshot` or persona catalog) could create confusing states where some surfaces see new behaviour and others see old.

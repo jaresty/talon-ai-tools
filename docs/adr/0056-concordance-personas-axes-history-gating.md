@@ -292,11 +292,14 @@ For each domain, we will align with the existing test suites and add characteriz
   - Before centralizing gating:
     - Identify representative true/false branches for “request in flight” across GPT actions and one or two canvases; add characterization tests where missing.
     - Ensure error/cancellation branches in `modelHelpers` streaming helpers and history writers are covered.
-  - As `StreamingSession` and gating APIs are introduced:
-    - Add small, focused tests for the new APIs (e.g., `try_start_request` drop reasons, StreamingSession event ordering) while keeping integration tests as the main behavioural guardrails.
-    - Avoid duplicating GUI behaviour tests; instead, validate that GUIs respond correctly to lifecycle events.
+    - As `StreamingSession` and gating APIs are introduced:
+      - Add small, focused tests for the new APIs (e.g., `try_start_request` drop reasons, StreamingSession event ordering) while keeping integration tests as the main behavioural guardrails.
+      - Avoid duplicating GUI behaviour tests; instead, validate that GUIs respond correctly to lifecycle events.
+      - Keep guardrail and telemetry suites (e.g., `_tests/test_run_guardrails_ci.py`, `_tests/test_history_axis_validate.py`, `_tests/test_history_axis_export_telemetry.py`) asserting streaming status, last-drop messages/codes, and gating reason/source tables so CLI summaries and machine-readable payloads fail when those fields regress.
+      - Ensure local guardrail targets continue surfacing the same last-drop bullets as CI (`_tests/test_make_request_history_guardrails.py`) so operator workflows stay aligned with automation output.
 
 Across all domains, we will continue to run `python3 -m pytest` from the repo root during each slice, relying on existing suites as primary regression protection.
+
 
 ---
 

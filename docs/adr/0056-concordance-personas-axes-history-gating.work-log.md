@@ -1650,4 +1650,13 @@
 - Adversarial “what remains” check:
   - Sync external Concordance runbooks with the updated instructions and include direct links to the archived telemetry artefacts.
 
+## 2025-12-21 – Loop 266 (kind: docs)
+- Helper: helper:v20251220.5 @ 2025-12-21T18:20Z
+- Focus: Request Gating & Streaming – tighten tests-first guidance around streaming telemetry guardrails.
+- Change: Expanded the tests-first plan to highlight guardrail and telemetry suites that lock streaming status, last-drop messaging, and local-vs-CI parity for the request history guardrails.
+- Checks: Documentation-only loop (no tests run).
+- Removal test: Reverting the ADR edits would drop the explicit telemetry test guidance, making it easier for future slices to skip coverage when new fields land.
+- Adversarial “what remains” check:
+  - Monitor upcoming telemetry automation and add new suites to the tests-first list when additional streaming fields are introduced.
+
 

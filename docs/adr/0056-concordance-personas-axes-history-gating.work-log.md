@@ -1746,15 +1746,29 @@
   - Capture the checklist output in the personal guardrail notes (next loop) so telemetry steps stay visible.
   - Consider adding a CI smoke test that runs the Makefile target alongside the CLI helper once operations adopt it.
 
-## 2025-12-21 – Loop 276 (kind: docs)
+## 2025-12-21 – Loop 276 (superseded)
 - Helper: helper:v20251221.0 @ 2025-12-21T21:55Z
-- Focus: Monitoring & Next Steps – record the personal guardrail checklist so telemetry steps stay visible before resets.
-- Change: Added `docs/adr/evidence/0056/history-guardrail-checklist.md` with the manual command sequence and updated ADR-0056 to reference the helper/Make target in Consequences and Monitoring & Next Steps.
+- Decision: This loop introduced the now-removed guardrail checklist helper documentation. See Loop 277 for the follow-up reversal; no action needed.
+
+## 2025-12-21 – Loop 277 (kind: docs)
+- Helper: helper:v20251221.0 @ 2025-12-21T22:10Z
+- Focus: Monitoring reassessment – decide whether the guardrail checklist helper and related artefacts deliver value for a solo workflow.
+- Decision: Determined the helper runs in isolation, cannot access Talon’s live in-memory history, and therefore adds maintenance cost without delivering telemetry preservation. Will remove the helper, tests, Make target, and doc references next.
 - Checks: Documentation-only loop (no tests run).
-- Evidence: inline (`docs/adr/evidence/0056/history-guardrail-checklist.md`).
-- Removal test: Reverting the doc/ADR updates would drop the explicit checklist, making it easier to forget telemetry archiving steps before gating resets.
+- Evidence: `docs/adr/evidence/0056/loop-0277.md`.
 - Adversarial “what remains” check:
-  - Sync external operations runbooks with the checklist so the helper path and artefact expectations stay aligned.
-  - Monitor upcoming telemetry fields and extend the checklist when guardrail outputs expand.
+  - Proceed with helper removal and tidy ADR references (next loop).
+  - Audit ADR-0056 plan for any other automation that assumes multi-operator workflows.
+
+## 2025-12-21 – Loop 278 (kind: guardrail/tests)
+- Helper: helper:v20251221.0 @ 2025-12-21T22:24Z
+- Focus: Monitoring simplification – remove the unused guardrail checklist helper, tests, Make target, and evidence artefact.
+- Change: Deleted `scripts/tools/history-guardrail-checklist.py`, `_tests/test_history_guardrail_checklist.py`, the Makefile target/help text, and the helper evidence doc; trimmed `_tests/test_make_request_history_guardrails.py` accordingly.
+- Guardrail: `python3.11 -m pytest _tests/test_make_request_history_guardrails.py`.
+- Evidence: `docs/adr/evidence/0056/loop-0278.md`.
+- Removal test: `python3.11 -m pytest _tests/test_history_guardrail_checklist.py` (fails because the guardrail helper test no longer exists, confirming the removal).
+- Adversarial “what remains” check:
+  - Update ADR-0056 (next loop) to remove references to the helper and related automation expectations.
+  - Re-scan the plan for other automation that presumes multi-operator workflows or dashboards.
 
 

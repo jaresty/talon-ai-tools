@@ -184,36 +184,6 @@ if not TYPE_CHECKING:
             self.assertEqual(telemetry_payload.get("last_drop_message"), "none")
             self.assertIsNone(telemetry_payload.get("last_drop_code"))
 
-        def test_make_history_guardrail_checklist_outputs_helper(self) -> None:
-            """Guardrail: checklist target should surface the manual telemetry commands."""
-
-            repo_root = Path(__file__).resolve().parents[1]
-            result = subprocess.run(
-                ["make", "history-guardrail-checklist"],
-                cwd=str(repo_root),
-                capture_output=True,
-                text=True,
-                check=False,
-            )
-            if result.returncode != 0:
-                self.fail(
-                    "make history-guardrail-checklist failed:\n"
-                    f"exit: {result.returncode}\nstdout:\n{result.stdout}\nstderr:\n{result.stderr}"
-                )
-
-            output = result.stdout
-            self.assertIn("History guardrail checklist", output)
-            self.assertIn(
-                "python3 scripts/tools/history-axis-validate.py --summary-path",
-                output,
-            )
-            self.assertIn(
-                "scripts/tools/run_guardrails_ci.sh request-history-guardrails",
-                output,
-            )
-            self.assertIn("make request-history-guardrails", output)
-
-
 else:
     if not TYPE_CHECKING:
 

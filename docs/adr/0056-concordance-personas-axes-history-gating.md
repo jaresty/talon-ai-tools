@@ -261,6 +261,8 @@ For each domain, we will align with the existing test suites and add characteriz
   - After wiring `AxisSnapshot`:
     - Reuse and, where needed, extend these tests to assert that history/log outputs derive from the catalog and that Concordance-relevant axes are preserved.
     - Add a regression test (or CI assertion) that fails when a history append omits directional axes, proving the guardrail remains enforced.
+  - Keep guardrail suites (e.g., `_tests/test_run_guardrails_ci.py`, `_tests/test_history_axis_validate.py`, `_tests/test_history_axis_export_telemetry.py`, `_tests/test_make_axis_guardrails_ci.py`) and `scripts/tools/run_guardrails_ci.sh` catching axis/catalog drift, directionality guardrails, and telemetry exports before refactors land.
+  - Ensure doc-generation helpers (`scripts/tools/generate_readme_axis_lists.py`, `scripts/tools/generate-axis-cheatsheet.py`, `GPT/gpt.py::_build_axis_docs`) stay tied to the same snapshot so README/help/cheatsheet artefacts fail CI when catalog tokens diverge.
 
 ### Persona & Intent Preset Concordance
 

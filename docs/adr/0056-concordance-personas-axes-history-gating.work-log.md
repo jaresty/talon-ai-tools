@@ -1668,4 +1668,13 @@
 - Adversarial “what remains” check:
   - Ensure external guardrail documentation links back to these suites when the persona catalog evolves.
 
+## 2025-12-21 – Loop 268 (kind: docs)
+- Helper: helper:v20251220.5 @ 2025-12-21T19:00Z
+- Focus: Axis Snapshot & History – capture the test/guardrail harnesses that enforce axis/catalog alignment and directional guardrails.
+- Change: Added tests-first notes referencing `_tests/test_run_guardrails_ci.py`, `_tests/test_history_axis_validate.py`, `_tests/test_history_axis_export_telemetry.py`, `_tests/test_make_axis_guardrails_ci.py`, and the axis doc-generation helpers so drift across catalog, docs, and telemetry remains observable.
+- Checks: Documentation-only loop (no tests run).
+- Removal test: Reverting the ADR edits would remove the explicit guardrail/test references, obscuring how axis drifts are detected before landing.
+- Adversarial “what remains” check:
+  - Track upcoming guardrail CLI upgrades and append new suites/scripts once directionality or axis token checks expand.
+
 

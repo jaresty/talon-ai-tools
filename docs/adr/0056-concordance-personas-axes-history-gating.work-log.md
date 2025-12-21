@@ -1937,3 +1937,17 @@
   - Mitigation: keep the updated Salient Task visible until those surfaces delegate to `requestGating` with guard coverage.
   - Trigger: when additional surfaces land or drift, refresh the ADR summary before closing the gating consolidation effort.
 
+## 2025-12-21 – Loop 295 (kind: behaviour)
+- Helper: helper:v20251221.3 @ 2025-12-21T23:28Z
+- Focus: Request Gating & Streaming – migrate the help hub gating helpers to the shared facade.
+- Deliverables:
+  - Updated `lib/helpHub._request_is_in_flight` and `_reject_if_request_in_flight` to delegate to `requestGating`, add drop-message fallback text, and clear cached drop reasons on success.
+  - Extended `_tests/test_help_hub_guard.py` to assert facade delegation, drop-message fallback, and drop-reason clearing behaviour.
+- `<VALIDATION_TARGET>`: `python3.11 -m pytest _tests/test_help_hub_guard.py`
+- Evidence: `docs/adr/evidence/0056/loop-0295.md`
+- Removal test: `git checkout -- lib/helpHub.py && python3.11 -m pytest _tests/test_help_hub_guard.py` (fails: shared facade messaging expectations regress)
+- Adversarial “risk recap”:
+  - Residual risk: provider commands, history overlays/actions, and GPT command wrappers still rely on bespoke gating helpers.
+  - Mitigation: migrate those surfaces to `requestGating` with guard coverage before closing the request gating consolidation efforts.
+  - Trigger: guardrail failures or new references to `bus_is_in_flight` indicate unfinished gating migration work.
+

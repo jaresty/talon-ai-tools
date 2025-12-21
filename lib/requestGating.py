@@ -7,7 +7,7 @@ from .requestBus import (
     is_in_flight as bus_is_in_flight,
     try_start_request as bus_try_start_request,
 )
-from .requestLog import record_gating_drop
+from .requestLog import record_gating_drop, drop_reason_message, set_drop_reason
 from .requestState import (
     RequestDropReason,
     RequestPhase,
@@ -32,6 +32,7 @@ def _record_streaming_gating_event(
     state: Optional[RequestState],
     reason: RequestDropReason,
     source: str = "",
+    message: str = "",
 ) -> None:
     """Record a gating drop event on the active streaming session, if any."""
 
@@ -76,9 +77,19 @@ def _record_streaming_gating_event(
     if session_request_id and request_id and session_request_id != request_id:
         return
 
+    message_value = str(message or "")
+    if not message_value:
+        try:
+            message_value = drop_reason_message(reason)  # type: ignore[arg-type]
+        except Exception:
+            message_value = ""
+
     try:
         session.record_gating_drop(
-            reason=reason, phase=phase_value, source=str(source or "")
+            reason=reason,
+            phase=phase_value,
+            source=str(source or ""),
+            message=message_value,
         )
     except Exception:
         pass
@@ -134,11 +145,25 @@ def try_begin_request(
             return True, ""
 
     if not allowed and reason:
+        message_value = ""
+        try:
+            message_value = drop_reason_message(reason)  # type: ignore[arg-type]
+        except Exception:
+            message_value = ""
         try:
             record_gating_drop(reason, source=source)
         except Exception:
             pass
-        _record_streaming_gating_event(candidate, reason, source=source)
+        try:
+            if message_value:
+                set_drop_reason(reason, message_value)
+            else:
+                set_drop_reason(reason)
+        except Exception:
+            pass
+        _record_streaming_gating_event(
+            candidate, reason, source=source, message=message_value
+        )
     return allowed, reason
 
 

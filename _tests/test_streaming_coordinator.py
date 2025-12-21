@@ -20,6 +20,7 @@ if bootstrap is not None:
     )
 
     from talon_user.lib.modelState import GPTState
+    from talon_user.lib.requestLog import drop_reason_message
 
     class StreamingCoordinatorTests(unittest.TestCase):
         def test_accumulates_chunks_and_marks_complete(self) -> None:
@@ -185,6 +186,11 @@ if bootstrap is not None:
                 summary.get("last"),
                 {"reason": "in_flight", "reason_count": 1},
             )
+            self.assertEqual(
+                summary.get("last_message"),
+                drop_reason_message("in_flight"),  # type: ignore[arg-type]
+            )
+            self.assertEqual(summary.get("last_code"), "in_flight")
 
             session.record_gating_drop(reason="history_save_failed", phase="SAVE")
             summary = current_streaming_gating_summary()
@@ -203,6 +209,11 @@ if bootstrap is not None:
                 summary.get("last"),
                 {"reason": "history_save_failed", "reason_count": 1},
             )
+            self.assertEqual(
+                summary.get("last_message"),
+                drop_reason_message("history_save_failed"),  # type: ignore[arg-type]
+            )
+            self.assertEqual(summary.get("last_code"), "history_save_failed")
 
         def test_record_complete_emits_gating_summary_event(self) -> None:
             session = new_streaming_session("req-gating-complete")
@@ -255,6 +266,11 @@ if bootstrap is not None:
             last_drop = summary_event.get("last", {})
             self.assertEqual(last_drop.get("reason"), "in_flight")
             self.assertEqual(last_drop.get("reason_count"), 2)
+            self.assertEqual(
+                summary_event.get("last_message"),
+                drop_reason_message("in_flight"),  # type: ignore[arg-type]
+            )
+            self.assertEqual(summary_event.get("last_code"), "in_flight")
 
             last_source = summary_event.get("last_source", {})
             self.assertEqual(last_source.get("source"), "gpt.apply")
@@ -262,6 +278,11 @@ if bootstrap is not None:
 
             summary_snapshot = current_streaming_gating_summary()
             self.assertEqual(summary_snapshot.get("status"), "completed")
+            self.assertEqual(
+                summary_snapshot.get("last_message"),
+                drop_reason_message("in_flight"),  # type: ignore[arg-type]
+            )
+            self.assertEqual(summary_snapshot.get("last_code"), "in_flight")
 
         def test_record_error_emits_gating_summary_event(self) -> None:
             session = new_streaming_session("req-gating-error")
@@ -283,9 +304,13 @@ if bootstrap is not None:
             self.assertEqual(summary_event.get("sources_sorted"), [])
             self.assertEqual(summary_event.get("last"), {})
             self.assertEqual(summary_event.get("last_source"), {})
+            self.assertEqual(summary_event.get("last_message"), "")
+            self.assertEqual(summary_event.get("last_code"), "")
 
             summary_snapshot = current_streaming_gating_summary()
             self.assertEqual(summary_snapshot.get("status"), "errored")
+            self.assertEqual(summary_snapshot.get("last_message"), "")
+            self.assertEqual(summary_snapshot.get("last_code"), "")
 
 
 else:

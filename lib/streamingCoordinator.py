@@ -12,7 +12,7 @@ from dataclasses import dataclass, field
 from typing import List, Optional, Dict, Any, Tuple, cast, Mapping
 
 from .axisCatalog import axis_catalog
-from .requestLog import append_entry_from_request
+from .requestLog import append_entry_from_request, drop_reason_message
 
 GATING_SNAPSHOT_KEYS = (
     "gating_drop_counts",
@@ -23,6 +23,8 @@ GATING_SNAPSHOT_KEYS = (
     "gating_drop_sources_sorted",
     "gating_drop_last_source",
     "gating_summary_status",
+    "gating_drop_last_message",
+    "gating_drop_last_code",
 )
 
 
@@ -210,6 +212,8 @@ class StreamingSession:
     events: List[Dict[str, Any]] = field(default_factory=list)
     gating_drop_counts: Dict[str, int] = field(default_factory=dict)
     gating_drop_sources: Dict[str, int] = field(default_factory=dict)
+    gating_drop_last_message: str = ""
+    gating_drop_last_code: str = ""
 
     @property
     def request_id(self) -> str:
@@ -333,6 +337,13 @@ class StreamingSession:
             if source_value or source_count:
                 last_source = {"source": source_value, "count": source_count}
 
+        last_message_value = str(summary.get("last_message") or "")
+        last_code_value = str(summary.get("last_code") or "")
+        if not last_message_value:
+            last_message_value = self.gating_drop_last_message
+        if not last_code_value:
+            last_code_value = self.gating_drop_last_code
+
         self._record_event(
             "gating_summary",
             status=status_value,
@@ -343,16 +354,25 @@ class StreamingSession:
             sources_sorted=sources_sorted,
             last=last,
             last_source=last_source,
+            last_message=last_message_value,
+            last_code=last_code_value,
         )
         record_streaming_snapshot(
             self.run,
             extra={
                 "gating_summary_status": status_value,
+                "gating_drop_last_message": last_message_value,
+                "gating_drop_last_code": last_code_value,
             },
         )
 
     def record_gating_drop(
-        self, *, reason: str, phase: str = "", source: str = ""
+        self,
+        *,
+        reason: str,
+        phase: str = "",
+        source: str = "",
+        message: str = "",
     ) -> None:
         """Record that a gating drop occurred for the active request."""
 
@@ -364,6 +384,14 @@ class StreamingSession:
         source_value = str(source or "")
         source_key = source_value.strip() or "unspecified"
         payload["source"] = source_key
+
+        message_value = str(message or "").strip()
+        if not message_value and reason_value:
+            try:
+                message_value = drop_reason_message(reason_value)  # type: ignore[arg-type]
+            except Exception:
+                message_value = ""
+        payload["message"] = message_value
 
         reason_key = reason_value or ""
         current = self.gating_drop_counts.get(reason_key, 0) + 1
@@ -378,6 +406,9 @@ class StreamingSession:
         payload["source_count"] = source_current
         payload["sources"] = dict(self.gating_drop_sources)
 
+        self.gating_drop_last_message = message_value
+        self.gating_drop_last_code = reason_key
+
         self._record_event("gating_drop", **payload)
 
         snapshot_extra = {
@@ -390,6 +421,8 @@ class StreamingSession:
             "gating_drop_total": total,
             "gating_drop_last": {"reason": reason_key, "reason_count": current},
             "gating_drop_last_source": {"source": source_key, "count": source_current},
+            "gating_drop_last_message": message_value,
+            "gating_drop_last_code": reason_key,
         }
         record_streaming_snapshot(self.run, extra=snapshot_extra)
 
@@ -672,6 +705,16 @@ def current_streaming_gating_summary() -> Dict[str, Any]:
         for source_name, count in ordered_sources
     ]
 
+    last_message_raw = snapshot.get("gating_drop_last_message")
+    last_message = ""
+    if isinstance(last_message_raw, str):
+        last_message = last_message_raw.strip()
+
+    last_code_raw = snapshot.get("gating_drop_last_code")
+    last_code = ""
+    if isinstance(last_code_raw, str):
+        last_code = last_code_raw.strip()
+
     return {
         "total": total,
         "counts": counts,
@@ -681,6 +724,8 @@ def current_streaming_gating_summary() -> Dict[str, Any]:
         "last": last,
         "last_source": last_source,
         "status": status_text,
+        "last_message": last_message,
+        "last_code": last_code,
     }
 
 
@@ -864,6 +909,22 @@ def record_streaming_snapshot(
             snapshot["gating_drop_last_source"] = prior_snapshot[
                 "gating_drop_last_source"
             ]
+
+        if "gating_drop_last_message" in extra_dict:
+            snapshot["gating_drop_last_message"] = str(
+                extra_dict.get("gating_drop_last_message") or ""
+            )
+        elif same_request and "gating_drop_last_message" in prior_snapshot:
+            snapshot["gating_drop_last_message"] = prior_snapshot[
+                "gating_drop_last_message"
+            ]
+
+        if "gating_drop_last_code" in extra_dict:
+            snapshot["gating_drop_last_code"] = str(
+                extra_dict.get("gating_drop_last_code") or ""
+            )
+        elif same_request and "gating_drop_last_code" in prior_snapshot:
+            snapshot["gating_drop_last_code"] = prior_snapshot["gating_drop_last_code"]
 
         summary_status_value = extra_dict.get("gating_summary_status")
         if isinstance(summary_status_value, str):

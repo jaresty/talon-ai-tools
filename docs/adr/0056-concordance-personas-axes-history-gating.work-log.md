@@ -1537,3 +1537,15 @@
   - Surface follow-up once dashboards ingest the new metadata end-to-end.
   - Monitor future telemetry schema changes to ensure ADR-0056 stays synchronized.
 
+## 2025-12-21 – Loop 256 (kind: guardrail/tests)
+- Helper: helper:v20251220.5 @ 2025-12-21T07:52:00Z
+- Focus: Request Gating & Streaming – persist and surface the last drop message/code through streaming sessions and gating summaries.
+- Change: Updated `lib/streamingCoordinator.StreamingSession` to track last-drop message/code, emit them in gating events/snapshots, and extend `current_streaming_gating_summary`; taught `lib/requestGating.try_begin_request` to derive the drop message, set `requestLog`’s last-drop record, and forward it to streaming sessions; refreshed `_tests/test_streaming_coordinator.py` and `_tests/test_request_gating.py` to assert the new telemetry contract.
+- Guardrail: `python3.11 -m pytest _tests/test_streaming_coordinator.py _tests/test_request_gating.py`
+- Evidence: `docs/adr/evidence/0056/loop-0256.md`
+- Removal test: `git checkout -- lib/streamingCoordinator.py lib/requestGating.py && python3.11 -m pytest _tests/test_streaming_coordinator.py _tests/test_request_gating.py`
+- Adversarial “what remains” check:
+  - Ensure guardrail CLI wrappers (e.g., `history-axis-validate`) propagate streaming last-drop metadata alongside history summaries (next loop).
+  - Audit UI canvases/models that consume `current_streaming_gating_summary` so they display or log the enriched metadata where appropriate.
+  - Monitor request bus/controller call sites for any direct `_reject_if_request_in_flight` helpers that might bypass the centralized message propagation.
+

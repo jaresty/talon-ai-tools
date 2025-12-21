@@ -248,6 +248,11 @@ if bootstrap is not None:
                 summary.get("last_source"),
                 {"source": "test_case", "count": 1},
             )
+            self.assertEqual(
+                summary.get("last_message"),
+                requestLog.drop_reason_message("in_flight"),  # type: ignore[arg-type]
+            )
+            self.assertEqual(summary.get("last_code"), "in_flight")
 
         def test_history_validation_stats_reports_last_drop_message(self) -> None:
             requestLog.clear_history()

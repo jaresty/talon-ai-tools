@@ -1782,4 +1782,15 @@
   - Confirm Makefile help text lines match the simplified guardrail messaging (next loop).
   - Keep an eye on new telemetry fields so tests cover them without relying on manual runs.
 
+## 2025-12-21 – Loop 280 (kind: guardrail/tests)
+- Helper: helper:v20251221.0 @ 2025-12-21T22:45Z
+- Focus: Monitoring simplification – ensure `make help` mirrors the new optional guardrail language.
+- Change: Updated Makefile help entries for `request-history-guardrails(-fast)` and adjusted `_tests/test_make_help_guardrails.py` expectations.
+- Guardrail: `python3.11 -m pytest _tests/test_make_help_guardrails.py`.
+- Evidence: `docs/adr/evidence/0056/loop-0280.md`.
+- Removal test: `git restore --source=HEAD~1 Makefile _tests/test_make_help_guardrails.py` (not executed; would reinstate CI-focused messaging).
+- Adversarial “what remains” check:
+  - Audit other docs for lingering references to CI-only guardrail workflows (next loop).
+  - Consider adding a short README note explaining the separation between Talon runtime history and CLI guardrails.
+
 

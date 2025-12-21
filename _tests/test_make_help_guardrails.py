@@ -50,13 +50,15 @@ if not TYPE_CHECKING:
                 output,
                 "Expected make help to mention lists-dir when enforcing list checks",
             )
+
             self.assertIn("ci-guardrails", output)
             self.assertIn("guardrails", output)
             self.assertIn("run_guardrails_ci.sh [--help]", output)
             self.assertIn("GUARDRAILS_TARGET", output)
             self.assertIn("request-history-guardrails", output)
-            self.assertIn("streaming + telemetry summaries", output)
+            self.assertIn("optional: export history summaries", output)
             self.assertIn("request-history-guardrails-fast", output)
+            self.assertIn("optional: quick history summaries", output)
             self.assertIn("readme-axis-lines", output)
             self.assertIn("readme-axis-refresh", output)
             self.assertIn("README_AXIS_LISTS_DIR", output)
@@ -64,6 +66,7 @@ if not TYPE_CHECKING:
             self.assertIn("static-prompt-refresh", output)
             self.assertIn("README snapshot", output)
             self.assertIn("doc-snapshots", output)
+
 
 else:
 

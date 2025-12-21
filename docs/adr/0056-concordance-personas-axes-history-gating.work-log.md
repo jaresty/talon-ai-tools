@@ -1525,3 +1525,15 @@
   - Revisit other guardrail wrappers (fast variants, `run_guardrails_ci.sh` options) to confirm they relay the augmented telemetry payloads consistently.
   - Monitor guardrail outputs for newline-heavy drop messages and consider truncation/formatting rules if multi-line content becomes noisy.
 
+## 2025-12-21 – Loop 255 (kind: docs)
+- Helper: helper:v20251220.5 @ 2025-12-21T07:32:00Z
+- Focus: Request Gating & Streaming – document the new telemetry fields in ADR-0056 consequences.
+- Change: Added a positive consequence noting that guardrail telemetry now emits the last-drop message/code so dashboards/ETL pipelines have actionable gating context without parsing logs.
+- Checks: Documentation-only loop (no tests run).
+- Evidence: inline
+- Removal test: Reverting the doc update would hide the new telemetry requirement, making it easier for future slices to drop the last-drop fields without noticing.
+- Adversarial “what remains” check:
+  - Fold the updated telemetry expectations into Concordance operations/runbook guidance so on-call engineers know the fields exist.
+  - Surface follow-up once dashboards ingest the new metadata end-to-end.
+  - Monitor future telemetry schema changes to ensure ADR-0056 stays synchronized.
+

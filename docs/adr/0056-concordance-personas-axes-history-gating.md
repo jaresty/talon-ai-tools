@@ -310,6 +310,7 @@ Across all domains, we will continue to run `python3 -m pytest` from the repo ro
   - CI guardrails that fail on lens-less history writes keep the directional requirement non-negotiable, providing an automated early warning before regressions reach production.
   - Guardrail automation archives `history-axis-validate.py --summary-path` output before applying `--reset-gating`, preserving drop telemetry for Concordance dashboards.
 - Guardrail runs export `history-validation-summary.telemetry.json` (top gating reasons, totals, artifact link) so Concordance dashboards and ETL pipelines ingest the same machine-readable data referenced in CI job summaries.
+- Guardrail telemetry now includes the last-drop message/code so dashboards and ETL consumers can surface actionable gating context without parsing logs.
 - **Risks**
   - Introducing new catalogs and lifecycle APIs can temporarily increase complexity and surface hidden inconsistencies.
   - Misaligned migrations (e.g., partially adopted `AxisSnapshot` or persona catalog) could create confusing states where some surfaces see new behaviour and others see old.

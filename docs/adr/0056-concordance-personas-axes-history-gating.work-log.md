@@ -1561,3 +1561,15 @@
   - Confirm make targets and documentation that quote guardrail output mention the new streaming bullet where relevant.
   - Evaluate whether fast guardrail targets should also surface the streaming last-drop line explicitly for parity.
 
+## 2025-12-21 – Loop 258 (kind: docs)
+- Helper: helper:v20251220.5 @ 2025-12-21T08:30:00Z
+- Focus: Request Gating & Streaming – document the new streaming last-drop bullet for runbooks/operators.
+- Change: Updated ADR-0056 consequences and Salient Tasks to call out the `Streaming last drop` line alongside the history drop bullet and to instruct operations runbooks to capture both when auditing guardrail jobs.
+- Checks: Documentation-only loop (no tests run).
+- Evidence: inline
+- Removal test: Reverting the doc updates would leave operations guidance ambiguous about the new streaming-specific summary line.
+- Adversarial “what remains” check:
+  - Ensure Concordance runbooks explicitly reference both bullet lines when enumerating guardrail output.
+  - Confirm future documentation updates keep dashboards, telemetry, and job summaries aligned on the streaming last-drop semantics.
+  - Monitor whether additional guardrail tooling needs similar documentation (e.g., persona guardrails).
+

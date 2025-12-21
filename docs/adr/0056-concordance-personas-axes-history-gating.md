@@ -311,6 +311,7 @@ Across all domains, we will continue to run `python3 -m pytest` from the repo ro
   - Guardrail automation archives `history-axis-validate.py --summary-path` output before applying `--reset-gating`, preserving drop telemetry for Concordance dashboards.
 - Guardrail runs export `history-validation-summary.telemetry.json` (top gating reasons, totals, artifact link) so Concordance dashboards and ETL pipelines ingest the same machine-readable data referenced in CI job summaries.
 - Guardrail telemetry now includes the last-drop message/code so dashboards and ETL consumers can surface actionable gating context without parsing logs.
+- Guardrail job summaries render both `Last gating drop` and `Streaming last drop` bullets, giving operators immediate visibility into history vs streaming rejection context when auditing incidents.
 - **Risks**
   - Introducing new catalogs and lifecycle APIs can temporarily increase complexity and surface hidden inconsistencies.
   - Misaligned migrations (e.g., partially adopted `AxisSnapshot` or persona catalog) could create confusing states where some surfaces see new behaviour and others see old.
@@ -354,7 +355,7 @@ Across all domains, we will continue to run `python3 -m pytest` from the repo ro
     - Implement `StreamingSession` aligned with ADR-0046/0054 and move `modelHelpers` streaming/error helpers and history/log writes to consume its events.
     - (Completed 2025-12-19) Completed ADR-0055 by delegating request history saves to the shared `modelDestination` file helper so prompt-only helpers remain thin adapters covered by existing history tests.
     - Add focused regression tests for gating/streaming paths (e.g., `tests/test_request_streaming.py`, `tests/test_gpt_actions.py`) that fail if the centralized lifecycle is bypassed or concurrency guardrails regress.
-    - Update Concordance operations runbooks so history guardrail steps confirm the `artifacts/history-axis-summaries/history-validation-summary.json` output (produced by `make request-history-guardrails`) is archived to GitHub Actions guardrail job artifacts before invoking `--reset-gating`, replacing the legacy `tmp/history-validation-summary.json` workflow.
+    - Update Concordance operations runbooks so history guardrail steps confirm the `artifacts/history-axis-summaries/history-validation-summary.json` output (produced by `make request-history-guardrails`) is archived to GitHub Actions guardrail job artifacts before invoking `--reset-gating`, replacing the legacy `tmp/history-validation-summary.json` workflow; runbooks should also instruct operators to record both the `Last gating drop` and `Streaming last drop` lines from job summaries when triaging incidents.
     - (Completed 2025-12-19) Ensure guardrail CI jobs persist the archived summaries to the same GitHub Actions artifact location with a 30-day retention window and surface the job-summary download link whenever the guardrails target runs.
 
 

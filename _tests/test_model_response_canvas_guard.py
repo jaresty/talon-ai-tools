@@ -16,6 +16,7 @@ UserActions: Any = None
 if bootstrap is not None:
     from talon_user.lib import modelResponseCanvas as canvas_module
     from talon_user.lib.modelResponseCanvas import ResponseCanvasState, UserActions
+    import talon_user.lib.dropReasonUtils as drop_reason_module
 
 
 class ModelResponseCanvasGuardTests(unittest.TestCase):
@@ -58,20 +59,19 @@ class ModelResponseCanvasGuardTests(unittest.TestCase):
             patch.object(
                 canvas_module, "try_begin_request", return_value=(False, "in_flight")
             ),
+            patch.object(
+                canvas_module,
+                "render_drop_reason",
+                return_value="Request running",
+                create=True,
+            ) as render_message,
             patch.object(canvas_module, "set_drop_reason") as set_reason,
             patch.object(canvas_module, "notify") as notify_mock,
         ):
             self.assertTrue(canvas_module._reject_if_request_in_flight())
-        set_reason.assert_called_once()
-        args, _kwargs = set_reason.call_args
-        self.assertEqual(args[0], "in_flight")
-        self.assertEqual(
-            args[1],
-            "GPT: A request is already running; wait for it to finish or cancel it first.",
-        )
-        notify_mock.assert_called_once_with(
-            "GPT: A request is already running; wait for it to finish or cancel it first."
-        )
+        render_message.assert_called_once_with("in_flight")
+        set_reason.assert_called_once_with("in_flight", "Request running")
+        notify_mock.assert_called_once_with("Request running")
 
         with (
             patch.object(
@@ -79,17 +79,24 @@ class ModelResponseCanvasGuardTests(unittest.TestCase):
                 "try_begin_request",
                 return_value=(False, "rate_limited"),
             ),
-            patch.object(canvas_module, "drop_reason_message", return_value=""),
+            patch.object(
+                drop_reason_module,
+                "drop_reason_message",
+                return_value="",
+            ),
+            patch.object(
+                canvas_module,
+                "render_drop_reason",
+                return_value="Rendered fallback",
+                create=True,
+            ) as render_message,
             patch.object(canvas_module, "set_drop_reason") as set_reason,
             patch.object(canvas_module, "notify") as notify_mock,
         ):
             self.assertTrue(canvas_module._reject_if_request_in_flight())
-        set_reason.assert_called_once_with(
-            "rate_limited", "GPT: Request blocked; reason=rate_limited."
-        )
-        notify_mock.assert_called_once_with(
-            "GPT: Request blocked; reason=rate_limited."
-        )
+        render_message.assert_called_once_with("rate_limited")
+        set_reason.assert_called_once_with("rate_limited", "Rendered fallback")
+        notify_mock.assert_called_once_with("Rendered fallback")
 
         with (
             patch.object(canvas_module, "try_begin_request", return_value=(True, "")),

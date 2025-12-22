@@ -12,10 +12,10 @@ from .requestState import RequestPhase, RequestState
 from .requestGating import request_is_in_flight, try_begin_request
 from .requestBus import current_state
 from .requestLog import (
-    drop_reason_message,
     last_drop_reason,
     set_drop_reason,
 )
+from .dropReasonUtils import render_drop_reason
 
 from .axisConfig import axis_docs_for
 from .suggestionCoordinator import (
@@ -120,10 +120,14 @@ def _reject_if_request_in_flight() -> bool:
     allowed, reason = try_begin_request(state, source="modelResponseCanvas")
     if allowed:
         try:
-            if not last_drop_reason():
-                set_drop_reason("")
+            pending_message = last_drop_reason()
         except Exception:
-            pass
+            pending_message = ""
+        if not pending_message:
+            try:
+                set_drop_reason("")
+            except Exception:
+                pass
         return False
 
     if not reason:
@@ -131,12 +135,9 @@ def _reject_if_request_in_flight() -> bool:
 
     message = ""
     try:
-        message = drop_reason_message(reason)
+        message = render_drop_reason(reason)
     except Exception:
-        message = ""
-    if not message:
-        reason_text = str(reason or "unknown").strip() or "unknown"
-        message = f"GPT: Request blocked; reason={reason_text}."
+        pass
 
     try:
         set_drop_reason(reason, message)

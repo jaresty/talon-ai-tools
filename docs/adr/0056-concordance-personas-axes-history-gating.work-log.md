@@ -2378,3 +2378,17 @@
   - Mitigation: Keep extending guardrail suites that patch `render_drop_reason` before altering each surface.
   - Trigger: Guardrail output with raw `reason=` codes or blank drop messaging should block landing until the helper is reused.
 
+## 2025-12-22 – Loop 328 (kind: guardrail/tests)
+- Helper: helper:v20251221.4 @ 2025-12-22T16:33Z
+- Focus: Request Gating & Streaming – align response canvas gating with the shared renderer.
+- Deliverables:
+  - Updated `lib/modelResponseCanvas._reject_if_request_in_flight` to reuse `render_drop_reason`, preserve pending drop state, and reuse existing streaming pill notifications.
+  - Extended `_tests/test_model_response_canvas_guard.py` to patch the shared helper, assert fallback propagation, and confirm success paths keep existing drop reasons intact.
+- `<VALIDATION_TARGET>`: `python3 -m pytest _tests/test_model_response_canvas_guard.py::ModelResponseCanvasGuardTests::test_reject_if_request_in_flight_records_drop_reason`
+- Evidence: `docs/adr/evidence/0056/loop-0328.md`
+- Removal test: `git stash push -k -u && git checkout stash@{0} -- _tests/test_model_response_canvas_guard.py && python3 -m pytest _tests/test_model_response_canvas_guard.py::ModelResponseCanvasGuardTests::test_reject_if_request_in_flight_records_drop_reason`
+- Adversarial “risk recap”:
+  - Residual risk: History drawer and request history actions still carry bespoke drop messaging; queue follow-up slices to migrate them onto the shared helper.
+  - Mitigation: Continue extending guardrail suites before changing each surface so bypasses fail fast.
+  - Trigger: Guardrail output with raw `reason=` codes or missing fallback text indicates the helper was bypassed and should block landing until fixed.
+

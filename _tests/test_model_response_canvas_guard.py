@@ -1,4 +1,5 @@
 import unittest
+from typing import Any
 from unittest.mock import patch
 
 try:
@@ -8,6 +9,10 @@ except ModuleNotFoundError:
 else:
     bootstrap()
 
+canvas_module: Any = None
+ResponseCanvasState: Any = None
+UserActions: Any = None
+
 if bootstrap is not None:
     from talon_user.lib import modelResponseCanvas as canvas_module
     from talon_user.lib.modelResponseCanvas import ResponseCanvasState, UserActions
@@ -15,7 +20,7 @@ if bootstrap is not None:
 
 class ModelResponseCanvasGuardTests(unittest.TestCase):
     def setUp(self):
-        if bootstrap is None:
+        if bootstrap is None or ResponseCanvasState is None:
             self.skipTest("Talon runtime not available")
         ResponseCanvasState.showing = False
         ResponseCanvasState.scroll_y = 0.0
@@ -31,6 +36,22 @@ class ModelResponseCanvasGuardTests(unittest.TestCase):
             UserActions.model_response_canvas_open()
         ensure.assert_not_called()
         self.assertFalse(ResponseCanvasState.showing)
+
+    def test_reset_meta_signature_initialises_attribute(self):
+        if canvas_module is None:
+            self.skipTest("Talon runtime not available")
+        original_present = hasattr(canvas_module, "_last_meta_signature")
+        original_value = getattr(canvas_module, "_last_meta_signature", None)
+        if original_present:
+            delattr(canvas_module, "_last_meta_signature")
+        try:
+            canvas_module._reset_meta_if_new_signature({}, {}, "req-init")
+            self.assertTrue(hasattr(canvas_module, "_last_meta_signature"))
+        finally:
+            if original_present:
+                setattr(canvas_module, "_last_meta_signature", original_value)
+            elif hasattr(canvas_module, "_last_meta_signature"):
+                delattr(canvas_module, "_last_meta_signature")
 
     def test_reject_if_request_in_flight_records_drop_reason(self):
         with (

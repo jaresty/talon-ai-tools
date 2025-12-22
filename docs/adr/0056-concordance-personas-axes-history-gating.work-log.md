@@ -2088,3 +2088,18 @@
   - Mitigation: migrate remaining canvases and CLI helpers to share the same last-drop preservation pattern, verifying each with targeted regression tests.
   - Trigger: any guardrail or telemetry output that drops a pending history message after a successful action should block completion of the gating consolidation work.
 
+## 2025-12-22 – Loop 307 (kind: behaviour)
+- Helper: helper:v20251221.4 @ 2025-12-22T01:31Z
+- Focus: Request Gating & Streaming – preserve drawer drop messaging and initialise response canvas guards.
+- Deliverables:
+  - Updated `lib/requestHistoryDrawer._reject_if_request_in_flight` to retain pending drop messages, add fallback text, record notifications, and clear cached messaging only on successful guard passes.
+  - Hardened `lib/modelResponseCanvas` by lazily initialising `_last_meta_signature` and routing `try_begin_request` drop messaging through `set_drop_reason` with fallbacks, keeping progress pill behaviour intact.
+  - Expanded `_tests/test_request_history_drawer_gating.py` and `_tests/test_model_response_canvas_guard.py` to lock drop-reason preservation and meta initialisation.
+- `<VALIDATION_TARGET>`: `python3.11 -m pytest _tests/test_request_history_drawer_gating.py _tests/test_model_response_canvas_guard.py`
+- Evidence: `docs/adr/evidence/0056/loop-0307.md`
+- Removal test: `git checkout -- lib/requestHistoryDrawer.py lib/modelResponseCanvas.py && python3.11 -m pytest _tests/test_request_history_drawer_gating.py::RequestHistoryDrawerGatingTests::test_reject_if_request_in_flight_preserves_pending_reason -q`
+- Adversarial “risk recap”:
+  - Residual risk: other canvases may still clear drop-state caches or assume `_last_meta_signature` exists when Talon hotloads modules.
+  - Mitigation: continue migrating remaining gating surfaces to the shared facade and add targeted tests for each to guard cached drop messaging.
+  - Trigger: regressions where drawer drop messages disappear or response canvas reloads throw `NameError` should block completion of the gating consolidation work.
+

@@ -61,6 +61,11 @@ _EVENT_LOG_LIMIT = 0  # disable event logging in production
 _event_log_count = 0
 _last_draw_error: Optional[str] = None
 
+try:
+    _last_meta_signature
+except NameError:
+    _last_meta_signature = None
+
 
 def _capture_previous_focus() -> None:
     if getattr(ResponseCanvasState, "showing", False):
@@ -220,8 +225,9 @@ def _reset_meta_if_new_signature(
     request_id: str,
 ) -> None:
     """Collapse meta when a new request arrives; preserve it for inflight updates."""
-    global _last_meta_signature
-    last_signature = _last_meta_signature
+    last_signature = globals().get("_last_meta_signature")
+    if not isinstance(last_signature, tuple):
+        last_signature = None
     prev_request_id = last_signature[0] if last_signature else ""
     effective_request_id = request_id or prev_request_id
     signature = (
@@ -231,7 +237,7 @@ def _reset_meta_if_new_signature(
         str(recipe_snapshot.get("recipe", "")),
     )
     if last_signature is None:
-        _last_meta_signature = signature
+        globals()["_last_meta_signature"] = signature
         return
 
     pinned_id = getattr(ResponseCanvasState, "meta_pinned_request_id", "") or ""
@@ -270,7 +276,7 @@ def _reset_meta_if_new_signature(
         ResponseCanvasState.meta_expanded = False
         ResponseCanvasState.meta_pinned_request_id = ""
 
-    _last_meta_signature = signature
+    globals()["_last_meta_signature"] = signature
 
 
 _response_canvas: Optional[canvas.Canvas] = None

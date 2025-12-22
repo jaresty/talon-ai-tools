@@ -88,6 +88,21 @@ if bootstrap is not None:
             set_reason.assert_called_once_with("")
             notify_mock.assert_not_called()
 
+        def test_reject_if_request_in_flight_preserves_pending_reason(self) -> None:
+            with (
+                patch.object(
+                    history_drawer, "try_begin_request", return_value=(True, "")
+                ),
+                patch.object(
+                    history_drawer, "last_drop_reason", return_value="pending"
+                ),
+                patch.object(history_drawer, "set_drop_reason") as set_reason,
+                patch.object(history_drawer, "notify") as notify_mock,
+            ):
+                self.assertFalse(history_drawer._reject_if_request_in_flight())
+            set_reason.assert_not_called()
+            notify_mock.assert_not_called()
+
 else:
     if not TYPE_CHECKING:
 

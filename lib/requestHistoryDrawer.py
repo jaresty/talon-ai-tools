@@ -11,6 +11,7 @@ from .requestLog import (
     all_entries,
     consume_last_drop_reason_record,
     drop_reason_message,
+    last_drop_reason,
     set_drop_reason,
 )
 from .historyQuery import history_drawer_entries_from
@@ -72,7 +73,8 @@ def _reject_if_request_in_flight() -> bool:
     if allowed:
         HistoryDrawerState.last_message = ""
         try:
-            set_drop_reason("")
+            if not last_drop_reason():
+                set_drop_reason("")
         except Exception:
             pass
     return False

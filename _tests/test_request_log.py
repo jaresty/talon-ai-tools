@@ -1,5 +1,5 @@
 import unittest
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, get_args
 from unittest.mock import patch
 
 try:
@@ -11,6 +11,7 @@ else:
 
 if bootstrap is not None:
     import talon_user.lib.requestLog as requestlog_module
+    from talon_user.lib.requestState import RequestDropReason
     from talon_user.lib.requestLog import (
         append_entry,
         append_entry_from_request,
@@ -298,6 +299,28 @@ if bootstrap is not None:
             second = consume_last_drop_reason()
             self.assertEqual(second, "")
             self.assertEqual(last_drop_reason(), "")
+
+        def test_drop_reason_message_covers_known_reasons(self) -> None:
+            reasons = [reason for reason in get_args(RequestDropReason) if reason]
+            missing: list[str] = []
+            for reason in reasons:
+                message = requestlog_module.drop_reason_message(reason)
+                self.assertIsInstance(message, str)
+                if not message.strip():
+                    missing.append(reason)
+            self.assertFalse(
+                missing,
+                f"Missing drop reason messages for: {', '.join(missing)}",
+            )
+
+        def test_drop_reason_message_falls_back_for_unknown_reason(self) -> None:
+            message = requestlog_module.drop_reason_message(
+                "streaming_disabled"  # type: ignore[arg-type]
+            )
+            self.assertEqual(
+                message,
+                "GPT: Request blocked; reason=streaming_disabled.",
+            )
 
 
 else:

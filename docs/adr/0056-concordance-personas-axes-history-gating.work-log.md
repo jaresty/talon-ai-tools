@@ -2254,3 +2254,16 @@
   - Mitigation: document intentional resets and rely on history list/drawer guardrails to consume messages; focus subsequent loops on Talon macro coverage instead of Python helpers.
   - Trigger: telemetry showing missing drop messaging from macros rather than Python helpers should prompt additional slices.
 
+## 2025-12-22 – Loop 319 (kind: guardrail/tests)
+- Helper: helper:v20251221.4 @ 2025-12-22T14:16Z
+- Focus: Request Gating & Streaming – ensure drop-reason helpers surface fallback messaging before guardrails run.
+- Deliverables:
+  - Added `_tests/test_request_log.py` guardrails asserting `drop_reason_message` returns non-empty text for every enumerated `RequestDropReason` and emits a standardized fallback for unknown codes.
+  - Updated `lib/requestLog.drop_reason_message` to return `GPT: Request blocked; reason={code}.` when callers supply an unmapped reason, so UI/CLI guardrails no longer rely on bespoke fallbacks.
+- `<VALIDATION_TARGET>`: `python3 -m pytest _tests/test_request_log.py::RequestLogTests::test_drop_reason_message_covers_known_reasons _tests/test_request_log.py::RequestLogTests::test_drop_reason_message_falls_back_for_unknown_reason`
+- Evidence: `docs/adr/evidence/0056/loop-0319.md`
+- Removal test: `git checkout -- lib/requestLog.py && python3 -m pytest _tests/test_request_log.py::RequestLogTests::test_drop_reason_message_falls_back_for_unknown_reason`
+- Adversarial “risk recap”:
+  - Residual risk: Surface-level guards still implement local fallbacks for resilience; leave the tests that patch `drop_reason_message` returning `""` in place so future regressions stay observable.
+  - Mitigation: Follow up with a documentation slice noting the shared fallback contract so macros/CLI helpers don’t reintroduce divergent phrasing.
+  - Trigger: Any guardrail output showing raw reason codes (instead of the standard fallback) should block completion until the affected surface routes through `drop_reason_message`.

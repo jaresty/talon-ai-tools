@@ -583,6 +583,8 @@ def clear_history() -> None:
 def drop_reason_message(reason: RequestDropReason) -> str:
     """Render a user-facing drop reason message for a reason code."""
 
+    if not reason:
+        return ""
     if reason == "in_flight":
         return "GPT: A request is already running; wait for it to finish or cancel it first."
     if reason == "missing_request_id":
@@ -617,7 +619,8 @@ def drop_reason_message(reason: RequestDropReason) -> str:
             "GPT: Cannot save history source; entry is missing a directional lens "
             "(fog/fig/dig/ong/rog/bog/jog)."
         )
-    return ""
+    reason_text = str(reason).strip() or "unknown"
+    return f"GPT: Request blocked; reason={reason_text}."
 
 
 def _scan_history_entries(raise_on_failure: bool) -> dict[str, int]:

@@ -2772,3 +2772,37 @@
   - Loop 350: add logging/telemetry around scheduler reschedules to detect misconfigurations.
   - Loop 351: evaluate an interactive CLI retry flag for stale telemetry.
 
+## 2025-12-22 – Loop 350 (kind: guardrail/tests)
+- helper_version: helper:v20251221.5
+- focus: Request Gating & Streaming – capture scheduler reschedule stats in telemetry outputs.
+- riskiest_assumption: Without visibility into scheduler cadence, operators cannot detect missed exports or interval drift (probability medium, impact medium-high for Concordance monitoring).
+- validation_targets:
+  - `python3 -m pytest _tests/test_telemetry_export_scheduler.py`
+  - `python3 -m pytest _tests/test_telemetry_export.py`
+- evidence: `docs/adr/evidence/0056/loop-0350.md`
+- rollback_plan: `git restore -- lib/telemetryExportScheduler.py lib/telemetryExport.py lib/telemetryExportCommand.py _tests/test_telemetry_export_scheduler.py _tests/test_telemetry_export.py docs/adr/0056-concordance-personas-axes-history-gating.md docs/adr/0056-concordance-personas-axes-history-gating.work-log.md docs/adr/evidence/0056/loop-0350.md`
+- delta_summary: helper:diff-snapshot=8 files changed, 217 insertions(+), 51 deletions(-); scheduler instrumentation now logs reschedules, telemetry payloads/markers expose the stats, and tests/assertions cover the new data.
+- residual_risks:
+  - CLI surfaces still need to display the scheduler stats; wire the values into guardrail job summaries in a follow-up loop.
+  - Waiting logic remains manual; add an interactive CLI retry flag to help operators refresh telemetry without re-running commands.
+- next_work:
+  - Loop 351: evaluate an interactive CLI retry flag for stale telemetry so CLI users can pause until Talon completes exports.
+  - Loop 352: surface scheduler telemetry in guardrail job summaries and CLI logs.
+
+## 2025-12-22 – Loop 351 (kind: guardrail/tests)
+- helper_version: helper:v20251221.5
+- focus: Request Gating & Streaming – allow CLI guardrails to wait for fresh telemetry exports.
+- riskiest_assumption: Without a wait option, operators must rerun guardrails manually after exporting telemetry, risking stale Concordance data (probability high, impact high for monitoring accuracy).
+- validation_targets:
+  - `python3 -m pytest _tests/test_check_telemetry_export_marker.py`
+  - `python3 -m pytest _tests/test_make_request_history_guardrails.py _tests/test_run_guardrails_ci.py`
+- evidence: `docs/adr/evidence/0056/loop-0351.md`
+- rollback_plan: `git restore -- scripts/tools/check-telemetry-export-marker.py _tests/test_check_telemetry_export_marker.py docs/adr/0056-concordance-personas-axes-history-gating.md docs/adr/0056-concordance-personas-axes-history-gating.work-log.md docs/adr/evidence/0056/loop-0351.md`
+- delta_summary: helper:diff-snapshot=9 files changed, 260 insertions(+), 51 deletions(-); telemetry marker helper gained a wait flag, scheduler stats surface in telemetry outputs, and guardrail docs/tests capture the updated workflow.
+- residual_risks:
+  - Wait mode still relies on fixed polling; consider exposing configurable poll intervals or interactive prompts if operators need immediate feedback.
+  - Guardrail job summaries must surface the new wait behaviour to avoid confusion; wire narrative output in a follow-up loop.
+- next_work:
+  - Loop 352: surface scheduler telemetry in guardrail job summaries and CLI logs.
+  - Loop 353: evaluate interactive prompts/poll interval configuration for long-running exports.
+

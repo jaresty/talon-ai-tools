@@ -2,6 +2,8 @@ import json
 import os
 import subprocess
 import sys
+import threading
+import time
 import unittest
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
@@ -96,3 +98,52 @@ if not TYPE_CHECKING:
                 self.assertEqual(result.returncode, 2)
                 self.assertIn("stale", result.stderr)
                 self.assertIn("TIP:", result.stderr)
+
+        def test_wait_allows_marker_refresh(self) -> None:
+            with TemporaryDirectory() as tmpdir:
+                marker = Path(tmpdir) / "talon-export-marker.json"
+
+                def writer() -> None:
+                    time.sleep(0.5)
+                    marker.write_text(
+                        json.dumps(
+                            {"exported_at": datetime.now(timezone.utc).isoformat()}
+                        ),
+                        encoding="utf-8",
+                    )
+
+                thread = threading.Thread(target=writer, daemon=True)
+                thread.start()
+                start = time.time()
+                result = self._run_helper(
+                    marker,
+                    "--no-auto-export",
+                    "--wait",
+                    "--wait-seconds",
+                    "5",
+                )
+                thread.join(timeout=1)
+                duration = time.time() - start
+                if result.returncode != 0:
+                    self.fail(
+                        "helper should succeed after wait\n"
+                        f"exit={result.returncode}\nstdout=\n{result.stdout}\nstderr=\n{result.stderr}"
+                    )
+                self.assertLess(duration, 5.0)
+                self.assertTrue(marker.exists())
+                payload = json.loads(marker.read_text(encoding="utf-8"))
+                self.assertIn("exported_at", payload)
+                self.assertIn("Waiting for telemetry export marker", result.stderr)
+
+        def test_wait_times_out_without_refresh(self) -> None:
+            with TemporaryDirectory() as tmpdir:
+                marker = Path(tmpdir) / "talon-export-marker.json"
+                result = self._run_helper(
+                    marker,
+                    "--no-auto-export",
+                    "--wait",
+                    "--wait-seconds",
+                    "1",
+                )
+                self.assertEqual(result.returncode, 2)
+                self.assertIn("Waiting for telemetry export marker", result.stderr)

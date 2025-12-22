@@ -7,6 +7,7 @@ import argparse
 import json
 import os
 import sys
+import time
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Optional
@@ -51,6 +52,17 @@ def parse_args() -> argparse.Namespace:
         dest="auto_export",
         action="store_false",
         help="Disable automatic telemetry export attempts when the marker is missing or stale.",
+    )
+    parser.add_argument(
+        "--wait",
+        action="store_true",
+        help="Wait up to --wait-seconds for the marker to refresh instead of failing immediately.",
+    )
+    parser.add_argument(
+        "--wait-seconds",
+        type=int,
+        default=60,
+        help="Maximum seconds to wait for telemetry export when --wait is set (default: 60).",
     )
     parser.set_defaults(auto_export=True)
     return parser.parse_args()
@@ -109,6 +121,45 @@ def print_refresh_tip(marker: Path) -> None:
     )
 
 
+def _marker_status(
+    marker: Path, max_age_minutes: int
+) -> tuple[bool, Optional[datetime], Optional[float], bool]:
+    exists = marker.exists()
+    timestamp = load_timestamp(marker) if exists else None
+    if timestamp is None:
+        return exists, None, None, False
+    age_minutes = (datetime.now(timezone.utc) - timestamp).total_seconds() / 60
+    return exists, timestamp, age_minutes, age_minutes <= max_age_minutes
+
+
+def _wait_for_marker(
+    marker: Path, args: argparse.Namespace, reason: str
+) -> tuple[bool, Optional[datetime], Optional[float], bool]:
+    deadline = time.time() + max(0, args.wait_seconds)
+    emitted = False
+    while time.time() <= deadline:
+        exists, timestamp, age_minutes, is_fresh = _marker_status(
+            marker, args.max_age_minutes
+        )
+        if timestamp is not None and is_fresh:
+            if emitted:
+                print(
+                    "Telemetry export marker is fresh after waiting.",
+                    file=sys.stderr,
+                )
+            return exists, timestamp, age_minutes, True
+        if not emitted:
+            print(
+                f"Waiting for telemetry export marker ({reason}); will retry for up to {args.wait_seconds} seconds...",
+                file=sys.stderr,
+            )
+            emitted = True
+        if args.auto_export:
+            attempt_auto_export(marker)
+        time.sleep(1 if deadline - time.time() > 1 else max(0, deadline - time.time()))
+    return _marker_status(marker, args.max_age_minutes)
+
+
 def main() -> int:
     args = parse_args()
     allow_env = args.allow_env
@@ -116,16 +167,25 @@ def main() -> int:
         return 0
 
     marker = args.marker
-    marker_exists = marker.exists()
-    timestamp: Optional[datetime] = load_timestamp(marker) if marker_exists else None
+    exists, timestamp, age_minutes, is_fresh = _marker_status(
+        marker, args.max_age_minutes
+    )
 
     if timestamp is None and args.auto_export:
         if attempt_auto_export(marker):
-            marker_exists = True
-            timestamp = load_timestamp(marker)
+            exists, timestamp, age_minutes, is_fresh = _marker_status(
+                marker, args.max_age_minutes
+            )
 
     if timestamp is None:
-        if not marker_exists:
+        reason = "missing" if not exists else "invalid"
+        if args.wait:
+            exists, timestamp, age_minutes, is_fresh = _wait_for_marker(
+                marker, args, reason
+            )
+
+    if timestamp is None:
+        if not exists:
             print(
                 "Telemetry export marker missing at"
                 f" {marker}. Run `model export telemetry` inside Talon first.",
@@ -140,18 +200,20 @@ def main() -> int:
         print_refresh_tip(marker)
         return 2
 
-    age_minutes = (datetime.now(timezone.utc) - timestamp).total_seconds() / 60
-    if age_minutes > args.max_age_minutes:
+    if not is_fresh:
         if args.auto_export and attempt_auto_export(marker):
-            timestamp = load_timestamp(marker)
-            if timestamp is not None:
-                age_minutes = (
-                    datetime.now(timezone.utc) - timestamp
-                ).total_seconds() / 60
-        if timestamp is None or age_minutes > args.max_age_minutes:
+            exists, timestamp, age_minutes, is_fresh = _marker_status(
+                marker, args.max_age_minutes
+            )
+        if not is_fresh and args.wait:
+            exists, timestamp, age_minutes, is_fresh = _wait_for_marker(
+                marker, args, "stale"
+            )
+        if not is_fresh:
+            stale_minutes = age_minutes if age_minutes is not None else float("inf")
             print(
                 "Telemetry export marker is stale (last export"
-                f" {age_minutes:.1f} minutes ago). Run `model export telemetry`"
+                f" {stale_minutes:.1f} minutes ago). Run `model export telemetry`"
                 " inside Talon before invoking guardrails.",
                 file=sys.stderr,
             )

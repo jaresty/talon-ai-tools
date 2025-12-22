@@ -46,11 +46,21 @@ def export_model_telemetry(
 
     DEFAULT_OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
     marker_path = DEFAULT_OUTPUT_DIR / "talon-export-marker.json"
+    scheduler_stats = None
+    try:
+        from .telemetryExportScheduler import get_scheduler_stats  # type: ignore
+    except Exception:
+        scheduler_stats = None
+    else:
+        scheduler_stats = get_scheduler_stats()
+
     marker_payload = {
         "exported_at": datetime.now(timezone.utc).isoformat(),
         "reset_gating": reset_gating,
         "artifacts": {key: str(path) for key, path in result.items()},
     }
+    if scheduler_stats:
+        marker_payload["scheduler"] = scheduler_stats
     marker_path.write_text(json.dumps(marker_payload, indent=2), encoding="utf-8")
 
     if notify_user:

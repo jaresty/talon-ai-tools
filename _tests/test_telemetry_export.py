@@ -4,7 +4,9 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 
+import talon_user.lib.telemetryExport as telemetry_module
 from talon_user.lib import requestLog
+from talon_user.lib import telemetryExportScheduler as scheduler
 from talon_user.lib.modelState import GPTState
 from talon_user.lib.telemetryExport import snapshot_telemetry
 
@@ -14,11 +16,13 @@ class TelemetryExportTests(unittest.TestCase):
         requestLog.clear_history()
         requestLog.consume_gating_drop_stats()
         GPTState.last_suggest_skip_counts = {}
+        scheduler._reset_for_tests()
 
     def tearDown(self) -> None:
         requestLog.clear_history()
         requestLog.consume_gating_drop_stats()
         GPTState.last_suggest_skip_counts = {}
+        scheduler._reset_for_tests()
 
     def test_snapshot_telemetry_writes_expected_files(self) -> None:
         requestLog.append_entry(
@@ -54,6 +58,10 @@ class TelemetryExportTests(unittest.TestCase):
             self.assertEqual(telemetry_data.get("total_entries"), 1)
             self.assertIn("suggestion_skip", telemetry_data)
             self.assertEqual(telemetry_data.get("suggestion_skip", {}).get("total"), 3)
+            self.assertIn("scheduler", telemetry_data)
+            scheduler_payload = telemetry_data["scheduler"]
+            self.assertIsInstance(scheduler_payload, dict)
+            self.assertIn("reschedule_count", scheduler_payload)
 
             skip_data = json.loads(skip_path.read_text())
             self.assertEqual(skip_data.get("total_skipped"), 3)
@@ -68,39 +76,65 @@ class TelemetryExportCommandTests(unittest.TestCase):
     def test_export_model_telemetry_notifies_success(self) -> None:
         from talon_user.lib import telemetryExportCommand as command
 
-        fake_result = {
-            "history": Path("history.json"),
-            "streaming": Path("streaming.json"),
-            "telemetry": Path("telemetry.json"),
-            "suggestion_skip": Path("suggestion.json"),
-        }
+        with tempfile.TemporaryDirectory() as tmpdir:
+            temp_path = Path(tmpdir)
+            fake_result = {
+                "history": temp_path / "history.json",
+                "streaming": temp_path / "history.streaming.json",
+                "telemetry": temp_path / "history.telemetry.json",
+                "suggestion_skip": temp_path / "suggestion.json",
+            }
+            for path in fake_result.values():
+                path.write_text("{}", encoding="utf-8")
 
-        with patch.object(
-            command, "snapshot_telemetry", return_value=fake_result
-        ) as snapshot:
-            with patch.object(command.app, "notify") as notify:
-                result = command.export_model_telemetry(
-                    reset_gating=False, notify_user=True
-                )
+            with (
+                patch.object(telemetry_module, "DEFAULT_OUTPUT_DIR", temp_path),
+                patch.object(command, "DEFAULT_OUTPUT_DIR", temp_path),
+            ):
+                with (
+                    patch.object(
+                        command, "snapshot_telemetry", return_value=fake_result
+                    ) as snapshot,
+                    patch.object(command.app, "notify") as notify,
+                ):
+                    result = command.export_model_telemetry(
+                        reset_gating=False, notify_user=True
+                    )
 
-        snapshot.assert_called_once_with(
-            output_dir=command.DEFAULT_OUTPUT_DIR,
-            reset_gating=False,
-            top_n=command.DEFAULT_TOP_N,
-        )
-        notify.assert_called_once()
-        self.assertIn("exported", notify.call_args.args[0])
-        self.assertEqual(result, fake_result)
+                    snapshot.assert_called_once_with(
+                        output_dir=temp_path,
+                        reset_gating=False,
+                        top_n=command.DEFAULT_TOP_N,
+                    )
+                    notify.assert_called_once()
+                    self.assertIn("exported", notify.call_args.args[0])
+                    self.assertEqual(result, fake_result)
+
+                    marker_path = temp_path / "talon-export-marker.json"
+                    self.assertTrue(marker_path.exists())
+                    marker_payload = json.loads(marker_path.read_text(encoding="utf-8"))
+                    self.assertIn("scheduler", marker_payload)
 
     def test_export_model_telemetry_handles_reset(self) -> None:
         from talon_user.lib import telemetryExportCommand as command
 
-        with patch.object(command, "snapshot_telemetry", return_value={}) as snapshot:
-            with patch.object(command.app, "notify") as notify:
-                command.export_model_telemetry(reset_gating=True, notify_user=True)
+        with tempfile.TemporaryDirectory() as tmpdir:
+            temp_path = Path(tmpdir)
+            with (
+                patch.object(telemetry_module, "DEFAULT_OUTPUT_DIR", temp_path),
+                patch.object(command, "DEFAULT_OUTPUT_DIR", temp_path),
+            ):
+                with (
+                    patch.object(
+                        command, "snapshot_telemetry", return_value={}
+                    ) as snapshot,
+                    patch.object(command.app, "notify") as notify,
+                    patch.object(scheduler, "get_scheduler_stats", return_value=None),
+                ):
+                    command.export_model_telemetry(reset_gating=True, notify_user=True)
 
         snapshot.assert_called_once_with(
-            output_dir=command.DEFAULT_OUTPUT_DIR,
+            output_dir=temp_path,
             reset_gating=True,
             top_n=command.DEFAULT_TOP_N,
         )
@@ -111,10 +145,21 @@ class TelemetryExportCommandTests(unittest.TestCase):
         from talon_user.lib import telemetryExportCommand as command
 
         exc = RuntimeError("boom")
-        with patch.object(command, "snapshot_telemetry", side_effect=exc):
-            with patch.object(command.app, "notify") as notify:
-                with self.assertRaises(RuntimeError):
-                    command.export_model_telemetry(reset_gating=False, notify_user=True)
+        with tempfile.TemporaryDirectory() as tmpdir:
+            temp_path = Path(tmpdir)
+            with (
+                patch.object(telemetry_module, "DEFAULT_OUTPUT_DIR", temp_path),
+                patch.object(command, "DEFAULT_OUTPUT_DIR", temp_path),
+            ):
+                with (
+                    patch.object(command, "snapshot_telemetry", side_effect=exc),
+                    patch.object(command.app, "notify") as notify,
+                    patch.object(scheduler, "get_scheduler_stats", return_value=None),
+                ):
+                    with self.assertRaises(RuntimeError):
+                        command.export_model_telemetry(
+                            reset_gating=False, notify_user=True
+                        )
 
         notify.assert_called_once()
         self.assertIn("failed", notify.call_args.args[0])
@@ -129,29 +174,32 @@ class TelemetryExportCommandTests(unittest.TestCase):
         export.assert_called_once_with(reset_gating=True, notify_user=True)
 
     def test_default_output_dir_is_repo_root(self) -> None:
-        from talon_user.lib import telemetryExport
-
         repo_root = Path(__file__).resolve().parents[1]
         expected = repo_root / "artifacts" / "telemetry"
-        self.assertEqual(telemetryExport.DEFAULT_OUTPUT_DIR, expected)
-        self.assertTrue(telemetryExport.DEFAULT_OUTPUT_DIR.is_absolute())
+        self.assertEqual(telemetry_module.DEFAULT_OUTPUT_DIR, expected)
+        self.assertTrue(telemetry_module.DEFAULT_OUTPUT_DIR.is_absolute())
 
     def test_export_model_telemetry_respects_default_directory(self) -> None:
-        from talon_user.lib import telemetryExport as export_module
         from talon_user.lib import telemetryExportCommand as command
 
         with tempfile.TemporaryDirectory() as tmpdir:
             temp_path = Path(tmpdir)
-            with patch.object(export_module, "DEFAULT_OUTPUT_DIR", temp_path):
-                with patch.object(command, "DEFAULT_OUTPUT_DIR", temp_path):
-                    result = command.export_model_telemetry(
-                        reset_gating=False, notify_user=False
-                    )
+            with (
+                patch.object(telemetry_module, "DEFAULT_OUTPUT_DIR", temp_path),
+                patch.object(command, "DEFAULT_OUTPUT_DIR", temp_path),
+                patch.object(scheduler, "get_scheduler_stats", return_value=None),
+            ):
+                result = command.export_model_telemetry(
+                    reset_gating=False, notify_user=False
+                )
 
-        for path in result.values():
-            self.assertTrue(path.is_absolute())
-            self.assertTrue(str(path).startswith(str(temp_path)))
-            self.assertTrue(path.exists())
+                for path in result.values():
+                    self.assertTrue(path.is_absolute())
+                    self.assertTrue(str(path).startswith(str(temp_path)))
+                    self.assertTrue(path.exists())
+
+                marker_path = temp_path / "talon-export-marker.json"
+                self.assertTrue(marker_path.exists())
 
 
 if __name__ == "__main__":  # pragma: no cover

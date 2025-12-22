@@ -2,7 +2,7 @@
 
 This helper keeps ADR loops observable and safe while letting a single agent advance work in concise, auditable slices.
 
-**Current helper version:** `helper:v20251221.4` (update this string when the helper changes; work-log entries must reference it exactly).
+**Current helper version:** `helper:v20251221.5` (update this string when the helper changes; work-log entries must reference it exactly).
 
 **Context cited per loop.** Entries state which ADR sections, work-log notes, and repository evidence informed the slice; conversational history is out of scope.
 
@@ -15,6 +15,15 @@ This helper keeps ADR loops observable and safe while letting a single agent adv
 - `<ARTEFACT_LOG>` – aggregated evidence record (markdown, JSON, database entry, etc.) that captures full red/green transcripts when summaries are insufficient.
 - `<VCS_REVERT>` – capability that temporarily rolls back the slice so guardrails can re-fail. Document the concrete command or procedure once per ADR (e.g., `git restore --source=HEAD`, `p4 revert`, migration rollback script).
 
+## Canonical Helper Commands
+
+Use the following named helpers unless the ADR header overrides them. When a local equivalent is required, cite it explicitly in the loop entry.
+
+- `helper:diff-snapshot` → `git diff --stat`
+- `helper:rerun <command>` → re-executes the recorded `<VALIDATION_TARGET>` using the same working directory and environment.
+- `helper:timestamp` → UTC ISO-8601 stamp (e.g., `2025-12-21T17:42:00Z`).
+
+The `<ARTEFACT_LOG>` must record headings matching the helper command names when transcripts are aggregated (e.g., `## loop-217 green | helper:diff-snapshot`).
 
 ---
 
@@ -32,36 +41,52 @@ This helper keeps ADR loops observable and safe while letting a single agent adv
 
 ---
 
-**Risk heuristic.** Risk refers to unproven assumptions whose failure would derail or materially delay the ADR’s objective; loops surface or resolve the riskiest remaining assumption as early as possible, using smaller slices to reach confidence quickly. Documentation work is only prioritized when it directly unlocks probing that assumption.
+## Loop Entry Field Checklist
+
+Each entry must populate the following fields; omit none. References column lists the helper section governing the requirement.
+
+| Field | Required Content | References |
+| --- | --- | --- |
+| `helper_version` | Literal `helper:v20251221.5` | **Loop Contract → Focus declared** |
+| `focus` | ADR/section IDs plus short summary of slice scope | **Loop Contract → Focus declared** |
+| `riskiest_assumption` | Statement of probability × impact; include deferrals | **Loop Contract → Focus declared** |
+| `validation_targets` | List of commands; one per guardrail | **Loop Contract → Validation registered** |
+| `evidence` | Triplets of `red/green/removal` records (command, UTC timestamp, exit status, pointer) | **Evidence Specification** |
+| `rollback_plan` | `<VCS_REVERT>` command plus reminder to replay red failure | **Loop Contract → Focus declared** |
+| `delta_summary` | `helper:diff-snapshot` hash or stat plus change rationale | **Evidence Specification** |
+| `residual_risks` | At least one risk with mitigation and monitoring trigger | **Loop Contract → Slice qualifies** |
+| `next_work` | Guardrail/task bullets covering remaining scope | **Loop Contract → Next work queued** |
+
+---
 
 ## Loop Contract
+
 
 A loop entry is compliant when all statements hold:
 
 **Focus declared**
-- Relevant red checks for the ADR are cleared or logged with evidence.
-- Refreshed ADR/work-log sections tied to the slice are identified in the entry.
-- The entry names the riskiest open assumption (i.e., the unproven behaviour most likely to derail or delay the ADR) based on probability × impact, defaulting to the least-validated dependency when uncertainty ties, and explains how the slice tests or resolves it now, documenting any higher-risk items intentionally deferred.
-- Remaining work is noted; when the riskiest assumption cannot be advanced, the loop records the blocker with concrete evidence (e.g., guardrail output, failing log), otherwise a status-only update confirms completion.
+- For every guardrail in scope, the corresponding red check is either cleared within the slice or logged with command/timestamp/exit evidence linked to the guardrail ID.
+- The entry cites the exact ADR sections and work-log notes refreshed by this slice; omit generic references.
+- The riskiest open assumption is named with probability × impact rationale. Each higher-risk deferral includes the evidence pointer documenting the blocker.
+- When the riskiest assumption cannot advance, blocker evidence (command, failure excerpt, pointer) is present. Status-only entries must additionally state the next riskiest assumption.
 
 **Slice qualifies**
 - All edits address the same cohesive behaviour, feature flag, or guardrail decision. Crossing multiple files or components is fine when the behaviour demands it, provided the loop keeps the change observable.
-- Multi-guardrail slices list the guardrails/files covered and record evidence for each item.
-- A single `<VALIDATION_TARGET>` is recorded when one command exercises all guardrails. When guardrails require different commands, the entry documents a minimal list mapping each guardrail to a target; every target has red/green/removal evidence and any extra command is justified in the work-log.
-- Documentation-only loops occur only when they unblock or record progress on the riskiest open assumption; they pair with a behaviour slice in the same cycle or provide the blocker evidence above, cite the relevant ADR clause, record the governing guardrail (or justify missing automation), and capture a reversible red failure or equivalent detection signal before edits land.
+- For every guardrail touched, the entry names the updated artefacts and attaches guardrail-specific evidence.
+- When one `<VALIDATION_TARGET>` covers multiple guardrails, the mapping is explicit. When multiple commands are required, each additional command carries justification and a 1:1 red/green/removal trio per guardrail.
+- Documentation-only loops are allowed only when paired with blocker evidence, governing ADR clause, named guardrail or automation gap, and reversible red failure before edits land.
 
 **Validation registered**
-- Loop pre-plan identifies the `<VALIDATION_TARGET>` (or bounded list) and the evidence locations, mapping each guardrail to its target.
-- Red evidence exists before behaviour edits land: updated expectation, fresh failing test, or, where coverage is absent, a minimal reversible regression removed immediately after the failure is recorded. The entry states why the failure output covers the targeted behaviour and demonstrates the full guardrail surface; partial failures cite missing facets and queue tightening work before proceeding.
-- Green evidence reuses the same `<VALIDATION_TARGET>` (or mapped target).
-- Removal evidence uses `<VCS_REVERT>` (or finer-grained equivalent) to restore the pre-change baseline, states when the baseline is back in place, and re-runs the primary guardrail so the targeted failure is observable again; if it stays green, tighten the slice until the failure returns.
+- Loop pre-plan identifies the `<VALIDATION_TARGET>` (or bounded list) and the evidence locations, mapping each guardrail to its target before edits begin.
+- Red evidence exists before behaviour edits land: command fails with non-zero exit, UTC ISO-8601 timestamp, and failure excerpt demonstrating the targeted behaviour surface end-to-end. Partial coverage notes missing facets and lists the tightening work.
+- Green evidence reuses the same `<VALIDATION_TARGET>` command (or mapped target) and records exit 0 with matching timestamp format.
+- Removal evidence concatenates `<VCS_REVERT>` with the red command, shows baseline restoration (non-zero re-run), and records the UTC timestamp of restoration. If failure does not reappear, the entry states the tightening action required.
 
 **Evidence block complete**
-- The work-log entry carries paired red/green summaries with command, timestamp (UTC preferred), exit status, and either a key snippet or a checksum. Include a short diff/hash snapshot (e.g., `git diff --stat` or a checksum) so reviewers can verify the observable delta quickly. Red evidence includes the minimal failure excerpt (assertion, traceback line, or error code) demonstrating the targeted behaviour.
-- When summaries alone are insufficient, transcripts are appended to `<ARTEFACT_LOG>` rather than creating per-loop files; the entry references the exact heading and notes any temporary per-loop files with a migration plan. Evidence writers append to the declared aggregated location and mark pointers as `inline` only when the inline-size rule is satisfied.
-- The removal test is recorded in the same block (command and outcome). If revert attempts fail, the blocker evidence is logged.
-- Close each loop with an adversarial “risk recap” paragraph naming at least one residual risk, the mitigation or monitoring action queued, and any triggers that would reopen the work.
-- When no transcript is needed, the pointer field is recorded as `inline`.
+- Each red/green/removal record lists: command string, UTC ISO-8601 timestamp, exit status, diff/hash snapshot (`helper:diff-snapshot` output or checksum), and a pointer (`inline` or `<ARTEFACT_LOG>#heading`). Red evidence must include the failure excerpt proving the targeted behaviour.
+- When summaries are insufficient, transcripts append to `<ARTEFACT_LOG>` using headings of the form `loop-### {kind} | helper:diff-snapshot`; temporary per-loop files note their migration plan. Use `inline` pointers only when the excerpt fits within existing size limits.
+- Removal records document the same command pairing, the `<VCS_REVERT>` invocation, and the re-run failure snippet. If any step fails (e.g., revert blocked), log the blocker evidence immediately.
+- The adversarial “risk recap” paragraph names at least one residual risk, the mitigation, the monitoring trigger, and the reopen condition.
 
 **Next work queued**
 - Deliverables and guardrails are bullet-listed (e.g., `Guardrail: tests/foo_test.py::case`).
@@ -75,11 +100,14 @@ A loop entry is compliant when all statements hold:
 
 Every compliant loop includes a structured block similar to:
 ```
-- red | 2025-12-19T17:42Z | exit 1 | <VALIDATION_TARGET>
+- red | 2025-12-19T17:42:00Z | exit 1 | <VALIDATION_TARGET>
+    helper:diff-snapshot=2 files changed, 4 insertions(+)
     guardrail <name> fails with missing expectation <id> | inline
-- green | 2025-12-19T17:55Z | exit 0 | <VALIDATION_TARGET>
-    guardrail <name> passes with expectation <id> restored | <ARTEFACT_LOG>#loop-217
-- removal | 2025-12-19T18:01Z | exit 1 | <VCS_REVERT> && <VALIDATION_TARGET>
+- green | 2025-12-19T17:55:12Z | exit 0 | <VALIDATION_TARGET>
+    helper:diff-snapshot=2 files changed, 4 insertions(+)
+    guardrail <name> passes with expectation <id> restored | <ARTEFACT_LOG>#loop-217 green
+- removal | 2025-12-19T18:01:20Z | exit 1 | <VCS_REVERT> && <VALIDATION_TARGET>
+    helper:diff-snapshot=0 files changed
     guardrail <name> fails again after temporary revert | inline
 ```
 Replace placeholders with real commands, timestamps, and pointers. When aggregation is used, append headings inside `<ARTEFACT_LOG>` (`## loop-217 red`, `## loop-217 green`) so auditors can trace evidence quickly. Teams using multiple validation targets should append one red/green/removal trio per target under a shared loop heading.

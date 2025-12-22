@@ -94,9 +94,16 @@ if not TYPE_CHECKING:
                     result.stdout,
                 )
                 self.assertIn(
-                    "Streaming gating summary (json):",
+                    "Suggestion skip summary (json):",
                     result.stdout,
                 )
+                self.assertIn("Suggestion skip total: 3", result.stdout)
+                self.assertIn(
+                    "Suggestion skip reasons: streaming_disabled=2, rate_limited=1",
+                    result.stdout,
+                )
+                self.assertIn("Telemetry scheduler stats:", result.stdout)
+
                 self.assertIn("- Last gating drop: none", result.stdout)
                 self.assertIn("- Streaming last drop: none", result.stdout)
                 self.assertIn("Suggestion skip summary (json):", result.stdout)
@@ -158,6 +165,15 @@ if not TYPE_CHECKING:
                 self.assertEqual(telemetry_payload.get("streaming_status"), "unknown")
                 self.assertEqual(telemetry_payload.get("last_drop_message"), "none")
                 self.assertIsNone(telemetry_payload.get("last_drop_code"))
+                self.assertEqual(
+                    telemetry_payload.get("scheduler"),
+                    {
+                        "reschedule_count": 0,
+                        "last_interval_minutes": None,
+                        "last_reason": "",
+                        "last_timestamp": "",
+                    },
+                )
                 skip_path = summary_path.with_name("suggestion-skip-summary.json")
                 self.assertTrue(
                     skip_path.exists(),
@@ -241,9 +257,16 @@ if not TYPE_CHECKING:
                     result.stdout,
                 )
                 self.assertIn(
-                    "Streaming gating summary (json):",
+                    "Suggestion skip summary (json):",
                     result.stdout,
                 )
+                self.assertIn("Suggestion skip total: 3", result.stdout)
+                self.assertIn(
+                    "Suggestion skip reasons: streaming_disabled=2, rate_limited=1",
+                    result.stdout,
+                )
+                self.assertIn("Telemetry scheduler stats:", result.stdout)
+
                 self.assertIn("- Last gating drop: none", result.stdout)
                 self.assertIn("- Streaming last drop: none", result.stdout)
                 self.assertIn("Suggestion skip summary (json):", result.stdout)
@@ -305,6 +328,15 @@ if not TYPE_CHECKING:
                 self.assertEqual(telemetry_payload.get("streaming_status"), "unknown")
                 self.assertEqual(telemetry_payload.get("last_drop_message"), "none")
                 self.assertIsNone(telemetry_payload.get("last_drop_code"))
+                self.assertEqual(
+                    telemetry_payload.get("scheduler"),
+                    {
+                        "reschedule_count": 0,
+                        "last_interval_minutes": None,
+                        "last_reason": "",
+                        "last_timestamp": "",
+                    },
+                )
                 skip_path = summary_path.with_name("suggestion-skip-summary.json")
                 self.assertTrue(
                     skip_path.exists(),

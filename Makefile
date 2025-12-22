@@ -120,6 +120,57 @@ request-history-guardrails:
 	printf 'Suggestion skip summary (json): ' && cat artifacts/telemetry/suggestion-skip-summary.json && printf '\n'
 	$(PYTHON) -c "import json; from pathlib import Path; path = Path('artifacts/telemetry/suggestion-skip-summary.json'); data = json.loads(path.read_text(encoding='utf-8')) if path.exists() else {}; total = data.get('total_skipped', 0); reasons = data.get('reason_counts', []); formatted = ', '.join('{0}={1}'.format(item.get('reason'), item.get('count')) for item in reasons if isinstance(item, dict) and item.get('reason')) if isinstance(reasons, list) and reasons else 'none'; print('Suggestion skip total: {}'.format(total)); print('Suggestion skip reasons: {}'.format(formatted))"
 	printf 'Telemetry summary (json): ' && cat artifacts/telemetry/history-validation-summary.telemetry.json && printf '\n'
+	printf '%s\n' \
+	    "import json" \
+	    "from pathlib import Path" \
+	    "" \
+	    "telemetry_path = Path('artifacts/telemetry/history-validation-summary.telemetry.json')" \
+	    "marker_path = telemetry_path.with_name('talon-export-marker.json')" \
+	    "" \
+	    "defaults = {'reschedule_count': 0, 'last_interval_minutes': None, 'last_reason': '', 'last_timestamp': ''}" \
+	    "" \
+	    "def normalize(payload):" \
+	    "    scheduler = defaults.copy()" \
+	    "    if not isinstance(payload, dict):" \
+	    "        return scheduler" \
+	    "    rc = payload.get('reschedule_count')" \
+	    "    if isinstance(rc, (int, float)) and not isinstance(rc, bool):" \
+	    "        scheduler['reschedule_count'] = int(rc)" \
+	    "    elif isinstance(rc, str) and rc.strip():" \
+	    "        try:" \
+	    "            scheduler['reschedule_count'] = int(rc.strip())" \
+	    "        except ValueError:" \
+	    "            pass" \
+	    "    li = payload.get('last_interval_minutes')" \
+	    "    if li is None:" \
+	    "        scheduler['last_interval_minutes'] = None" \
+	    "    elif isinstance(li, (int, float)) and not isinstance(li, bool):" \
+	    "        scheduler['last_interval_minutes'] = int(li)" \
+	    "    elif isinstance(li, str) and li.strip():" \
+	    "        try:" \
+	    "            scheduler['last_interval_minutes'] = int(li.strip())" \
+	    "        except ValueError:" \
+	    "            scheduler['last_interval_minutes'] = None" \
+	    "    lr = payload.get('last_reason')" \
+	    "    if isinstance(lr, str):" \
+	    "        scheduler['last_reason'] = lr.strip()" \
+	    "    lt = payload.get('last_timestamp')" \
+	    "    if isinstance(lt, str):" \
+	    "        scheduler['last_timestamp'] = lt.strip()" \
+	    "    return scheduler" \
+	    "" \
+	    "def load(path):" \
+	    "    try:" \
+	    "        return json.loads(path.read_text(encoding='utf-8'))" \
+	    "    except Exception:" \
+	    "        return {}" \
+	    "" \
+	    "payload = load(telemetry_path)" \
+	    "scheduler = normalize(payload.get('scheduler'))" \
+	    "if scheduler == defaults:" \
+	    "    scheduler = normalize(load(marker_path).get('scheduler'))" \
+	    "print('Telemetry scheduler stats: {}'.format(json.dumps(scheduler)))" \
+	| $(PYTHON)
 
 request-history-guardrails-fast:
 	mkdir -p artifacts/telemetry
@@ -140,6 +191,57 @@ request-history-guardrails-fast:
 	printf 'Suggestion skip summary (json): ' && cat artifacts/telemetry/suggestion-skip-summary.json && printf '\n'
 	$(PYTHON) -c "import json; from pathlib import Path; path = Path('artifacts/telemetry/suggestion-skip-summary.json'); data = json.loads(path.read_text(encoding='utf-8')) if path.exists() else {}; total = data.get('total_skipped', 0); reasons = data.get('reason_counts', []); formatted = ', '.join('{0}={1}'.format(item.get('reason'), item.get('count')) for item in reasons if isinstance(item, dict) and item.get('reason')) if isinstance(reasons, list) and reasons else 'none'; print('Suggestion skip total: {}'.format(total)); print('Suggestion skip reasons: {}'.format(formatted))"
 	printf 'Telemetry summary (json): ' && cat artifacts/telemetry/history-validation-summary.telemetry.json && printf '\n'
+	printf '%s\n' \
+	    "import json" \
+	    "from pathlib import Path" \
+	    "" \
+	    "telemetry_path = Path('artifacts/telemetry/history-validation-summary.telemetry.json')" \
+	    "marker_path = telemetry_path.with_name('talon-export-marker.json')" \
+	    "" \
+	    "defaults = {'reschedule_count': 0, 'last_interval_minutes': None, 'last_reason': '', 'last_timestamp': ''}" \
+	    "" \
+	    "def normalize(payload):" \
+	    "    scheduler = defaults.copy()" \
+	    "    if not isinstance(payload, dict):" \
+	    "        return scheduler" \
+	    "    rc = payload.get('reschedule_count')" \
+	    "    if isinstance(rc, (int, float)) and not isinstance(rc, bool):" \
+	    "        scheduler['reschedule_count'] = int(rc)" \
+	    "    elif isinstance(rc, str) and rc.strip():" \
+	    "        try:" \
+	    "            scheduler['reschedule_count'] = int(rc.strip())" \
+	    "        except ValueError:" \
+	    "            pass" \
+	    "    li = payload.get('last_interval_minutes')" \
+	    "    if li is None:" \
+	    "        scheduler['last_interval_minutes'] = None" \
+	    "    elif isinstance(li, (int, float)) and not isinstance(li, bool):" \
+	    "        scheduler['last_interval_minutes'] = int(li)" \
+	    "    elif isinstance(li, str) and li.strip():" \
+	    "        try:" \
+	    "            scheduler['last_interval_minutes'] = int(li.strip())" \
+	    "        except ValueError:" \
+	    "            scheduler['last_interval_minutes'] = None" \
+	    "    lr = payload.get('last_reason')" \
+	    "    if isinstance(lr, str):" \
+	    "        scheduler['last_reason'] = lr.strip()" \
+	    "    lt = payload.get('last_timestamp')" \
+	    "    if isinstance(lt, str):" \
+	    "        scheduler['last_timestamp'] = lt.strip()" \
+	    "    return scheduler" \
+	    "" \
+	    "def load(path):" \
+	    "    try:" \
+	    "        return json.loads(path.read_text(encoding='utf-8'))" \
+	    "    except Exception:" \
+	    "        return {}" \
+	    "" \
+	    "payload = load(telemetry_path)" \
+	    "scheduler = normalize(payload.get('scheduler'))" \
+	    "if scheduler == defaults:" \
+	    "    scheduler = normalize(load(marker_path).get('scheduler'))" \
+	    "print('Telemetry scheduler stats: {}'.format(json.dumps(scheduler)))" \
+	| $(PYTHON)
 
 
 help:

@@ -243,6 +243,7 @@ if not TYPE_CHECKING:
                     "Suggestion skip reasons: streaming_disabled=2, rate_limited=1",
                     result.stdout,
                 )
+                self.assertIn("Telemetry scheduler stats:", result.stdout)
 
                 self.assertIn(
                     "- Streaming gating summary: status=unknown; total=0; counts=none; sources=none; last=n/a; last_source=n/a; last_message=none",
@@ -303,6 +304,15 @@ if not TYPE_CHECKING:
                 self.assertEqual(telemetry_payload.get("top_gating_sources"), [])
                 self.assertEqual(telemetry_payload.get("last_drop_message"), "none")
                 self.assertIsNone(telemetry_payload.get("last_drop_code"))
+                self.assertEqual(
+                    telemetry_payload.get("scheduler"),
+                    {
+                        "reschedule_count": 0,
+                        "last_interval_minutes": None,
+                        "last_reason": "",
+                        "last_timestamp": "",
+                    },
+                )
                 telemetry_skip = telemetry_payload.get("suggestion_skip", {})
                 self.assertEqual(telemetry_skip.get("total"), 3)
                 self.assertEqual(
@@ -406,6 +416,7 @@ if not TYPE_CHECKING:
                 "- suggestion skip reasons: streaming_disabled=2, rate_limited=1",
                 summary_text,
             )
+            self.assertIn("### Scheduler Telemetry", summary_text)
 
         def test_run_guardrails_ci_gating_reasons_table_with_counts(self) -> None:
             """Guardrail: summary table should render when gating counts exist."""
@@ -586,6 +597,15 @@ if not TYPE_CHECKING:
                 )
                 self.assertEqual(
                     telemetry_payload.get("last_drop_code"), "streaming_disabled"
+                )
+                self.assertEqual(
+                    telemetry_payload.get("scheduler"),
+                    {
+                        "reschedule_count": 0,
+                        "last_interval_minutes": None,
+                        "last_reason": "",
+                        "last_timestamp": "",
+                    },
                 )
                 self.assertIn(
                     '"last_drop_message": "Streaming disabled guardrail"',

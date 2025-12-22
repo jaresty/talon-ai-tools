@@ -328,17 +328,26 @@ def snapshot_telemetry(
         top_n=top_n,
     )
 
-    scheduler_stats: Dict[str, Any] | None = None
+    scheduler_stats: Dict[str, Any] = {
+        "reschedule_count": 0,
+        "last_interval_minutes": None,
+        "last_reason": "",
+        "last_timestamp": "",
+    }
     try:
         from . import telemetryExportScheduler as scheduler_module  # type: ignore
     except Exception:
-        scheduler_stats = None
+        pass
     else:
         get_stats = getattr(scheduler_module, "get_scheduler_stats", None)
         if callable(get_stats):
-            scheduler_stats = get_stats()  # type: ignore[assignment]
-    if scheduler_stats:
-        telemetry_payload["scheduler"] = scheduler_stats
+            try:
+                fetched = get_stats()
+            except Exception:
+                fetched = None
+            if isinstance(fetched, dict):
+                scheduler_stats.update(fetched)
+    telemetry_payload["scheduler"] = scheduler_stats
 
     telemetry_path = base_dir / "history-validation-summary.telemetry.json"
     telemetry_path.write_text(json.dumps(telemetry_payload, sort_keys=True, indent=2))

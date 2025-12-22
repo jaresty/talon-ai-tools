@@ -347,7 +347,99 @@ PY
   printf '%s\n' "${STREAMING_JSON}" > "${STREAMING_JSON_PATH}"
   echo "Streaming JSON summary recorded at ${STREAMING_JSON_PATH}; job summary will reference this file when running in GitHub Actions."
 
+  SCHEDULER_JSON=$(python3 - "${SUMMARY_FILE}" <<'PY'
+import json, sys
+from pathlib import Path
+
+summary_path = Path(sys.argv[1])
+telemetry_path = summary_path.with_name("history-validation-summary.telemetry.json")
+marker_path = summary_path.with_name("talon-export-marker.json")
+
+defaults = {
+    "reschedule_count": 0,
+    "last_interval_minutes": None,
+    "last_reason": "",
+    "last_timestamp": "",
+}
+
+
+def _read_json(path: Path) -> dict:
+    try:
+        return json.loads(path.read_text(encoding="utf-8"))
+    except Exception:
+        return {}
+
+
+def _normalize(payload: object) -> dict:
+    scheduler = defaults.copy()
+    if not isinstance(payload, dict):
+        return scheduler
+
+    reschedule_count = payload.get("reschedule_count")
+    if isinstance(reschedule_count, (int, float)) and not isinstance(
+        reschedule_count, bool
+    ):
+        scheduler["reschedule_count"] = int(reschedule_count)
+    elif isinstance(reschedule_count, str) and reschedule_count.strip():
+        try:
+            scheduler["reschedule_count"] = int(reschedule_count.strip())
+        except ValueError:
+            pass
+
+    last_interval = payload.get("last_interval_minutes")
+    if last_interval is None:
+        scheduler["last_interval_minutes"] = None
+    elif isinstance(last_interval, (int, float)) and not isinstance(
+        last_interval, bool
+    ):
+        scheduler["last_interval_minutes"] = int(last_interval)
+    elif isinstance(last_interval, str) and last_interval.strip():
+        try:
+            scheduler["last_interval_minutes"] = int(last_interval.strip())
+        except ValueError:
+            scheduler["last_interval_minutes"] = None
+
+    last_reason = payload.get("last_reason")
+    if isinstance(last_reason, str):
+        scheduler["last_reason"] = last_reason.strip()
+
+    last_timestamp = payload.get("last_timestamp")
+    if isinstance(last_timestamp, str):
+        scheduler["last_timestamp"] = last_timestamp.strip()
+
+    return scheduler
+
+
+for data in (
+    _read_json(telemetry_path),
+    _read_json(summary_path),
+    _read_json(marker_path),
+):
+    if isinstance(data, dict):
+        scheduler = _normalize(data.get("scheduler"))
+        if scheduler != defaults:
+            print(json.dumps(scheduler))
+            break
+else:
+    print(json.dumps(defaults))
+PY
+)
+  if [[ -n "${SCHEDULER_JSON}" ]]; then
+    echo "Telemetry scheduler stats: ${SCHEDULER_JSON}"
+    if [[ -n "${GITHUB_STEP_SUMMARY:-}" ]]; then
+      {
+        echo
+        echo "### Scheduler Telemetry"
+        echo
+        echo '```json'
+        echo "${SCHEDULER_JSON}"
+        echo '```'
+      } >> "${GITHUB_STEP_SUMMARY}"
+    fi
+  fi
+
   STREAMING_LAST_OUTPUT=$(python3 - "${SUMMARY_FILE}" <<'PY'
+
 import json, sys
 from pathlib import Path
 path = Path(sys.argv[1])

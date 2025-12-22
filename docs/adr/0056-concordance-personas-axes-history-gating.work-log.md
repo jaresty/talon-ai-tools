@@ -77,6 +77,22 @@
 - next_work:
   - Evaluate invoking `user.model_export_telemetry` automatically from Talon guardrail macros so manual exports remain optional.
 
+## 2025-12-22 – Loop 352 (kind: guardrail/tests)
+- helper_version: helper:v20251221.5
+- focus: Request Gating & Streaming – guardrail CLI surfaces scheduler telemetry (ADR-0056 §Monitoring & Next Steps).
+- riskiest_assumption: Without emitting scheduler stats in guardrail output, operators cannot spot telemetry export cadence drift (probability medium, impact high for diagnosing Concordance regressions).
+- validation_targets:
+  - python3 -m pytest _tests/test_make_request_history_guardrails.py
+  - python3 -m pytest _tests/test_run_guardrails_ci.py
+- evidence: docs/adr/evidence/0056/loop-0352.md
+- rollback_plan: git restore --source=HEAD -- Makefile lib/telemetryExport.py lib/telemetryExportCommand.py scripts/tools/history-axis-export-telemetry.py scripts/tools/run_guardrails_ci.sh docs/adr/0056-concordance-personas-axes-history-gating.md && python3 -m pytest _tests/test_make_request_history_guardrails.py _tests/test_run_guardrails_ci.py
+- delta_summary: helper:diff-snapshot=8 files changed, 353 insertions(+), 15 deletions(-); ensured telemetry exports always embed scheduler stats, taught the CLI runner and Make targets to print the JSON snapshot (and append it to GitHub summaries), and added regression tests asserting the scheduler block is present alongside updated ADR guidance.
+- residual_risks:
+  - Offline runs still report the zeroed scheduler defaults; improvements could parse Talon markers when exports are unavailable.
+  - Future telemetry schema changes must preserve the scheduler shape; otherwise the CLI output will degrade without explicit guardrails.
+- next_work:
+  - Consider summarising scheduler cadence in the GitHub summary table (e.g., last reason/interval bullets) so operators can scan drop causes quickly.
+
 ## 2025-12-22 – Loop 349 (kind: docs)
 - helper_version: helper:v20251221.5
 - focus: Persona & Intent Presets – update monitoring guidance to mention the new Talon export action and runbook integration.

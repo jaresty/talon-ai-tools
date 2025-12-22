@@ -14,7 +14,7 @@ import argparse
 import json
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Dict, Iterable, List, Tuple
+from typing import Any, Dict, Iterable, List, Mapping, Tuple
 
 DEFAULT_TOP_N = 5
 
@@ -33,6 +33,78 @@ def _load_summary(path: Path) -> Dict[str, Any]:
         raise SystemExit(f"summary file not found: {path}") from exc
     except json.JSONDecodeError as exc:
         raise SystemExit(f"summary file is not valid JSON: {path}") from exc
+
+
+def _scheduler_defaults() -> Dict[str, Any]:
+    return {
+        "reschedule_count": 0,
+        "last_interval_minutes": None,
+        "last_reason": "",
+        "last_timestamp": "",
+    }
+
+
+def _normalize_scheduler(payload: object) -> Dict[str, Any]:
+    defaults = _scheduler_defaults()
+    if not isinstance(payload, Mapping):
+        return defaults
+
+    scheduler: Dict[str, Any] = _scheduler_defaults()
+
+    reschedule_count = payload.get("reschedule_count")
+    if isinstance(reschedule_count, (int, float)) and not isinstance(
+        reschedule_count, bool
+    ):
+        scheduler["reschedule_count"] = int(reschedule_count)
+    elif isinstance(reschedule_count, str) and reschedule_count.strip():
+        try:
+            scheduler["reschedule_count"] = int(reschedule_count.strip())
+        except ValueError:
+            pass
+
+    last_interval = payload.get("last_interval_minutes")
+    if last_interval is None:
+        scheduler["last_interval_minutes"] = None
+    elif isinstance(last_interval, (int, float)) and not isinstance(
+        last_interval, bool
+    ):
+        scheduler["last_interval_minutes"] = int(last_interval)
+    elif isinstance(last_interval, str) and last_interval.strip():
+        try:
+            scheduler["last_interval_minutes"] = int(last_interval.strip())
+        except ValueError:
+            scheduler["last_interval_minutes"] = None
+
+    last_reason = payload.get("last_reason")
+    if isinstance(last_reason, str):
+        scheduler["last_reason"] = last_reason.strip()
+
+    last_timestamp = payload.get("last_timestamp")
+    if isinstance(last_timestamp, str):
+        scheduler["last_timestamp"] = last_timestamp.strip()
+
+    return scheduler
+
+
+def _load_scheduler_stats(
+    summary_path: Path, summary_data: Dict[str, Any]
+) -> Dict[str, Any]:
+    defaults = _scheduler_defaults()
+    scheduler = _normalize_scheduler(summary_data.get("scheduler"))
+    if scheduler != defaults:
+        return scheduler
+
+    marker_path = summary_path.with_name("talon-export-marker.json")
+    try:
+        marker_data = json.loads(marker_path.read_text(encoding="utf-8"))
+    except (FileNotFoundError, json.JSONDecodeError):
+        marker_data = {}
+    if isinstance(marker_data, Mapping):
+        scheduler_candidate = _normalize_scheduler(marker_data.get("scheduler"))
+        if scheduler_candidate != defaults:
+            return scheduler_candidate
+
+    return scheduler
 
 
 def _sorted_counts(summary: Dict[str, Any]) -> List[Tuple[str, int]]:
@@ -260,6 +332,8 @@ def build_payload(
         "total": skip_total,
         "reasons": skip_reasons,
     }
+
+    payload["scheduler"] = _load_scheduler_stats(summary_path, data)
 
     return payload
 

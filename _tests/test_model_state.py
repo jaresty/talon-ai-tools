@@ -18,14 +18,17 @@ if bootstrap is not None:
             GPTState.clear_all()
 
             self.assertEqual(GPTState.last_suggested_recipes, [])
+            self.assertEqual(GPTState.last_suggest_skip_counts, {})
             self.assertEqual(GPTState.last_meta, "")
 
         def test_reset_all_resets_last_suggested_recipes(self):
             GPTState.last_suggested_recipes = [{"name": "n", "recipe": "r"}]
+            GPTState.last_suggest_skip_counts = {"unknown": 2}
 
             GPTState.reset_all()
 
             self.assertEqual(GPTState.last_suggested_recipes, [])
+            self.assertEqual(GPTState.last_suggest_skip_counts, {})
             self.assertEqual(GPTState.last_meta, "")
 
         def test_reset_all_preserves_axis_keys(self):
@@ -40,11 +43,19 @@ if bootstrap is not None:
 
             GPTState.reset_all()
 
-            for axis in ("completeness", "scope", "method", "form", "channel", "directional"):
+            for axis in (
+                "completeness",
+                "scope",
+                "method",
+                "form",
+                "channel",
+                "directional",
+            ):
                 self.assertIn(axis, GPTState.last_axes)
                 self.assertEqual(GPTState.last_axes[axis], [])
 else:
     if not TYPE_CHECKING:
+
         class GPTStateSuggestionResetTests(unittest.TestCase):
             @unittest.skip("Test harness unavailable outside unittest runs")
             def test_placeholder(self):

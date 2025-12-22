@@ -28,6 +28,7 @@ def record_suggestions(
         maps = None
 
     suggestions_list: list[dict[str, str]] = []
+    skip_counts: dict[str, int] = {}
     for item in suggestions:
         recipe = str(item.get("recipe", "") or "").strip()
         if recipe and not _recipe_has_directional(recipe):
@@ -37,6 +38,9 @@ def record_suggestions(
                 )
             notify(
                 "GPT: Suggestion skipped because it has no directional lens; expected fog/fig/dig/ong/rog/bog/jog."
+            )
+            skip_counts["missing_directional"] = (
+                skip_counts.get("missing_directional", 0) + 1
             )
             continue
         data = dict(item)
@@ -80,6 +84,25 @@ def record_suggestions(
                     preset = candidate
                     persona_key = candidate.key
                     break
+
+            persona_hints_present = any(
+                (
+                    persona_key,
+                    persona_label,
+                    persona_spoken,
+                    persona_voice,
+                    persona_audience,
+                    persona_tone,
+                )
+            )
+            if preset is None and persona_hints_present:
+                notify(
+                    "GPT: Suggestion skipped because its persona preset is unknown; regenerate persona lists and try again."
+                )
+                skip_counts["unknown_persona"] = (
+                    skip_counts.get("unknown_persona", 0) + 1
+                )
+                continue
 
             if preset is not None:
                 if not persona_key:
@@ -131,6 +154,15 @@ def record_suggestions(
             intent_preset = (
                 maps.intent_presets.get(canonical_intent) if canonical_intent else None
             )
+            intent_hints_present = any(
+                (intent_key, intent_label, intent_display, intent_purpose)
+            )
+            if intent_preset is None and intent_hints_present:
+                notify(
+                    "GPT: Suggestion skipped because its intent preset is unknown; regenerate intent lists and try again."
+                )
+                skip_counts["unknown_intent"] = skip_counts.get("unknown_intent", 0) + 1
+                continue
             if intent_preset is not None:
                 if not intent_key:
                     intent_key = intent_preset.key
@@ -151,6 +183,21 @@ def record_suggestions(
         suggestions_list.append(data)
     GPTState.last_suggested_recipes = suggestions_list
     GPTState.last_suggest_source = source_key or ""
+    GPTState.last_suggest_skip_counts = dict(skip_counts)
+
+    if skip_counts:
+        total_skipped = sum(skip_counts.values())
+        breakdown = ", ".join(
+            f"{key}={value}" for key, value in sorted(skip_counts.items()) if value > 0
+        )
+        message = "GPT: Skipped"
+        if total_skipped == 1:
+            message += " 1 suggestion"
+        else:
+            message += f" {total_skipped} suggestions"
+        if breakdown:
+            message += f"; breakdown: {breakdown}"
+        notify(message)
 
     if debug_mode:
         try:
@@ -176,6 +223,21 @@ def suggestion_entries() -> list[Dict[str, str]]:
         if name and recipe:
             entries.append({"name": str(name), "recipe": str(recipe)})
     return entries
+
+
+def suggestion_skip_counts() -> dict[str, int]:
+    """Return counts of skipped suggestions keyed by reason code."""
+
+    stats = getattr(GPTState, "last_suggest_skip_counts", {}) or {}
+    result: dict[str, int] = {}
+    for key, value in stats.items():
+        try:
+            count = int(value)
+        except Exception:
+            continue
+        if count > 0:
+            result[str(key)] = count
+    return result
 
 
 def suggestion_source(default_source: Optional[str] = None) -> str:

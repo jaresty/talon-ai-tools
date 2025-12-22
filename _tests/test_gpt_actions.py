@@ -21,6 +21,7 @@ if bootstrap is not None:
     from talon_user.lib.modelDestination import ModelDestination
     from talon_user.lib.promptPipeline import PromptResult
     from talon_user.GPT import gpt as gpt_module
+    from talon_user.lib.suggestionCoordinator import suggestion_skip_counts
     from talon_user.lib.requestBus import (
         current_state,
         emit_begin_send,
@@ -1434,6 +1435,54 @@ if bootstrap is not None:
                 self.assertEqual(entry["intent_preset_key"], "teach")
                 self.assertEqual(entry["intent_preset_label"], "Teach / explain")
                 self.assertEqual(entry["intent_display"], "for teaching")
+
+        def test_gpt_suggest_prompt_recipes_skips_unknown_presets(self):
+            with (
+                patch.object(gpt_module, "PromptSession") as session_cls,
+                patch.object(gpt_module, "create_model_source") as create_source,
+                patch("talon_user.lib.suggestionCoordinator.notify") as notify_mock,
+            ):
+                source = MagicMock()
+                source.get_text.return_value = "content"
+                create_source.return_value = source
+                mock_session = session_cls.return_value
+                mock_session._destination = "paste"
+
+                handle = self.pipeline.complete_async.return_value
+                handle.wait = MagicMock(return_value=True)
+                payload = {
+                    "suggestions": [
+                        {"name": "No dir", "recipe": "describe · gist"},
+                        {
+                            "name": "Unknown persona",
+                            "recipe": "describe · gist · focus · fog",
+                            "persona_preset_key": "mystery_persona",
+                        },
+                        {
+                            "name": "Unknown intent",
+                            "recipe": "describe · gist · focus · fog",
+                            "intent_preset_key": "mystery_intent",
+                        },
+                        {
+                            "name": "Valid",
+                            "recipe": "describe · gist · focus · fog",
+                        },
+                    ]
+                }
+                handle.result = PromptResult.from_messages(
+                    [format_message(json.dumps(payload))]
+                )
+                self.pipeline.complete.return_value = handle.result
+
+                gpt_module.UserActions.gpt_suggest_prompt_recipes("subject")
+
+                self.assertEqual(len(GPTState.last_suggested_recipes), 1)
+                self.assertEqual(GPTState.last_suggested_recipes[0]["name"], "Valid")
+                counts = suggestion_skip_counts()
+                self.assertEqual(counts.get("unknown_persona"), 1)
+                self.assertEqual(counts.get("unknown_intent"), 1)
+                self.assertIsNone(counts.get("missing_directional"))
+                self.assertGreaterEqual(notify_mock.call_count, 2)
 
         def test_gpt_suggest_prompt_recipes_accepts_label_without_name_prefix(self):
             with (

@@ -65,6 +65,7 @@ class GPTState:
     # Last set of prompt recipe suggestions, if any, as a list of
     # {"name": ..., "recipe": ...} dictionaries derived from `model suggest`.
     last_suggested_recipes: ClassVar[List[Dict[str, str]]] = []
+    last_suggest_skip_counts: ClassVar[Dict[str, int]] = {}
     # Snapshot of stance/default axes sent with the last suggest request so
     # the suggestion UI can surface the context used for generation.
     last_suggest_context: ClassVar[Dict[str, str]] = {}
@@ -160,6 +161,7 @@ class GPTState:
         cls.last_again_source = ""
         cls.last_suggest_source = ""
         cls.last_suggested_recipes = []
+        cls.last_suggest_skip_counts = {}
         cls.last_suggest_context = {}
         cls.last_prompt_text = ""
         cls.context = []
@@ -284,6 +286,7 @@ class GPTState:
         cls.last_again_source = ""
         cls.last_suggest_source = ""
         cls.last_suggested_recipes = []
+        cls.last_suggest_skip_counts = {}
         cls.last_suggest_subject = ""
         cls.last_suggest_content = ""
         cls.last_prompt_text = ""

@@ -2421,3 +2421,59 @@
   - Mitigation: Keep patching `render_drop_reason` in guardrail suites before each migration so bypasses fail immediately.
   - Trigger: Guardrail output with raw `reason=` codes or blank drop messaging indicates the helper was bypassed and should block landing until fixed.
 
+## 2025-12-22 – Loop 333 (kind: guardrail/tests)
+- Helper: helper:v20251221.5 @ 2025-12-22T17:24Z
+- Focus: Persona & Intent Presets – capture skip reason counts for suggestion filtering.
+- Deliverables:
+  - Added skip-count tracking to `lib/suggestionCoordinator.record_suggestions`, exposing `suggestion_skip_counts()` for downstream telemetry.
+  - Reset skip counts in `lib/modelState.GPTState` and extended `_tests/test_model_state.py` coverage.
+  - Added `_tests/test_suggestion_coordinator.py::SuggestionCoordinatorTests::test_record_suggestions_tracks_skip_counts` to guard skip logging and notifications.
+- `<VALIDATION_TARGET>`: `python3.11 -m pytest _tests/test_suggestion_coordinator.py::SuggestionCoordinatorTests::test_record_suggestions_tracks_skip_counts`
+- Supporting guardrail: `python3.11 -m pytest _tests/test_model_state.py`
+- Evidence:
+  - red | 2025-12-22T17:20Z | exit n/a | New guardrail; no pre-change failure available | docs/adr/evidence/0056/loop-0333.md
+  - green | 2025-12-22T17:24Z | exit 0 | `python3.11 -m pytest _tests/test_suggestion_coordinator.py::SuggestionCoordinatorTests::test_record_suggestions_tracks_skip_counts` | docs/adr/evidence/0056/loop-0333.md
+  - green | 2025-12-22T17:26Z | exit 0 | `python3.11 -m pytest _tests/test_model_state.py` | docs/adr/evidence/0056/loop-0333.md
+- Removal test: `git checkout -- lib/suggestionCoordinator.py lib/modelState.py _tests/test_suggestion_coordinator.py _tests/test_model_state.py`
+- Adversarial “risk recap”:
+  - Residual risk: CLI/telemetry summaries do not yet surface skip counts, so operators may miss recurring persona/intent drops.
+  - Mitigation: Extend guardrail/telemetry tooling to consume `suggestion_skip_counts()` before closing ADR.
+  - Trigger: Guardrail output lacking skip reason visibility should block ADR completion.
+
+## 2025-12-22 – Loop 334 (kind: guardrail/tests)
+- Helper: helper:v20251221.5 @ 2025-12-22T17:29Z
+- Focus: Persona & Intent Presets – warn macros when suggestions lack canonical persona/intent presets.
+- Deliverables:
+  - Taught `UserActions.gpt_suggest_prompt_recipes` to surface skip notifications by reusing skip counts from `suggestionCoordinator`.
+  - Added `_tests/test_gpt_actions.py::GPTActionPromptSessionTests::test_gpt_suggest_prompt_recipes_skips_unknown_presets` to cover skip notifications and last-suggestion cache handling.
+  - Reused persona metadata guardrail to confirm enriched entries remain intact after filtering.
+- `<VALIDATION_TARGET>`: `python3.11 -m pytest _tests/test_gpt_actions.py::GPTActionPromptSessionTests::test_gpt_suggest_prompt_recipes_skips_unknown_presets`
+- Supporting guardrail: `python3.11 -m pytest _tests/test_gpt_actions.py::GPTActionPromptSessionTests::test_gpt_suggest_prompt_recipes_includes_persona_intent_metadata`
+- Evidence:
+  - red | 2025-12-22T17:28Z | exit n/a | New guardrail; no pre-change failure available | docs/adr/evidence/0056/loop-0334.md
+  - green | 2025-12-22T17:29Z | exit 0 | `python3.11 -m pytest _tests/test_gpt_actions.py::GPTActionPromptSessionTests::test_gpt_suggest_prompt_recipes_skips_unknown_presets` | docs/adr/evidence/0056/loop-0334.md
+  - green | 2025-12-22T17:30Z | exit 0 | `python3.11 -m pytest _tests/test_gpt_actions.py::GPTActionPromptSessionTests::test_gpt_suggest_prompt_recipes_includes_persona_intent_metadata` | docs/adr/evidence/0056/loop-0334.md
+- Removal test: `git checkout -- _tests/test_gpt_actions.py lib/suggestionCoordinator.py`
+- Adversarial “risk recap”:
+  - Residual risk: Suggestion telemetry still omits skip counts, so Concordance dashboards cannot detect repeated drop reasons.
+  - Mitigation: Thread skip reasoning into guardrail output and telemetry exporters in the next slice.
+  - Trigger: Missing skip metrics in guardrail summaries should block ADR closure until telemetry integration lands.
+
+## 2025-12-22 – Loop 335 (kind: guardrail/tests)
+- Helper: helper:v20251221.5 @ 2025-12-22T17:24Z
+- Focus: Persona & Intent Presets – notify aggregated skip counts when recording suggestions.
+- Deliverables:
+  - Added aggregated skip summary notifications in `lib/suggestionCoordinator.record_suggestions`.
+  - Patched `_tests/test_suggestion_coordinator.py` to assert the summary message and guard ordering.
+- `<VALIDATION_TARGET>`: `python3.11 -m pytest _tests/test_suggestion_coordinator.py::SuggestionCoordinatorTests::test_record_suggestions_notifies_skip_summary`
+- Supporting guardrail: `python3.11 -m pytest _tests/test_suggestion_coordinator.py`
+- Evidence:
+  - red | 2025-12-22T17:36Z | exit 1 | `python3.11 -m pytest _tests/test_suggestion_coordinator.py::SuggestionCoordinatorTests::test_record_suggestions_notifies_skip_summary` | docs/adr/evidence/0056/loop-0335.md
+  - green | 2025-12-22T17:40Z | exit 0 | `python3.11 -m pytest _tests/test_suggestion_coordinator.py::SuggestionCoordinatorTests::test_record_suggestions_notifies_skip_summary` | docs/adr/evidence/0056/loop-0335.md
+  - green | 2025-12-22T17:40Z | exit 0 | `python3.11 -m pytest _tests/test_suggestion_coordinator.py` | docs/adr/evidence/0056/loop-0335.md
+- Removal test: `git stash push -k -u -- lib/suggestionCoordinator.py _tests/test_suggestion_coordinator.py && python3.11 -m pytest _tests/test_suggestion_coordinator.py::SuggestionCoordinatorTests::test_record_suggestions_notifies_skip_summary`
+- Adversarial “risk recap”:
+  - Residual risk: Skip counts are still absent from telemetry/CLI summaries; operations cannot audit repeated skips without inspecting logs.
+  - Mitigation: Extend suggestion guardrail tooling to emit skip-count telemetry (see next loop).
+  - Trigger: Guardrail runs lacking skip-count output should block ADR completion until telemetry coverage is added.
+

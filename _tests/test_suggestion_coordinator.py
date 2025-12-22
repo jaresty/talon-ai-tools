@@ -10,6 +10,7 @@ else:
 
 if bootstrap is not None:
     from talon import actions
+    from unittest.mock import patch
     from talon_user.lib.suggestionCoordinator import (
         last_suggestions,
         record_suggestions,
@@ -21,6 +22,7 @@ if bootstrap is not None:
         last_recap_snapshot,
         suggestion_entries_with_metadata,
         suggestion_context,
+        suggestion_skip_counts,
     )
     from talon_user.lib.modelState import GPTState
 
@@ -239,6 +241,68 @@ if bootstrap is not None:
             self.assertEqual(entry.get("intent_preset_label"), expected_intent_label)
             self.assertEqual(entry.get("intent_purpose"), intent_preset.intent)
             self.assertEqual(entry.get("intent_display"), display_alias)
+
+        def test_record_suggestions_tracks_skip_counts(self) -> None:
+            record_suggestions(
+                [
+                    {"name": "No dir", "recipe": "describe · gist"},
+                    {
+                        "name": "Unknown persona",
+                        "recipe": "describe · gist · focus · fog",
+                        "persona_preset_key": "mystery_persona",
+                    },
+                    {
+                        "name": "Unknown intent",
+                        "recipe": "describe · gist · focus · fog",
+                        "intent_preset_key": "mystery_intent",
+                    },
+                    {
+                        "name": "Valid",
+                        "recipe": "describe · gist · focus · fog",
+                    },
+                ],
+                "clipboard",
+            )
+
+            counts = suggestion_skip_counts()
+            self.assertEqual(counts.get("missing_directional"), 1)
+            self.assertEqual(counts.get("unknown_persona"), 1)
+            self.assertEqual(counts.get("unknown_intent"), 1)
+            self.assertFalse(counts.get("unknown"))
+
+            stored, _ = last_suggestions()
+            self.assertEqual(len(stored), 1)
+            self.assertEqual(stored[0]["name"], "Valid")
+
+        def test_record_suggestions_notifies_skip_summary(self) -> None:
+            with patch("talon_user.lib.suggestionCoordinator.notify") as notify_mock:
+                record_suggestions(
+                    [
+                        {"name": "No dir", "recipe": "describe · gist"},
+                        {
+                            "name": "Unknown persona",
+                            "recipe": "describe · gist · focus · fog",
+                            "persona_preset_key": "mystery_persona",
+                        },
+                        {
+                            "name": "Unknown intent",
+                            "recipe": "describe · gist · focus · fog",
+                            "intent_preset_key": "mystery_intent",
+                        },
+                        {
+                            "name": "Valid",
+                            "recipe": "describe · gist · focus · fog",
+                        },
+                    ],
+                    "clipboard",
+                )
+
+            messages = [call.args[0] for call in notify_mock.call_args_list]
+            summary = [msg for msg in messages if "Skipped" in msg]
+            self.assertEqual(len(summary), 1)
+            self.assertIn("missing_directional=1", summary[0])
+            self.assertIn("unknown_persona=1", summary[0])
+            self.assertIn("unknown_intent=1", summary[0])
 
         def test_suggestion_context_hydrates_aliases_from_state(self) -> None:
             from talon_user.lib.personaConfig import persona_intent_maps

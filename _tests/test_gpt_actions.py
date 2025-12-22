@@ -4,6 +4,7 @@ import os
 import tempfile
 import unittest
 from typing import TYPE_CHECKING
+from types import SimpleNamespace
 from unittest.mock import MagicMock, patch
 
 try:
@@ -564,6 +565,77 @@ if bootstrap is not None:
                 gpt_module.UserActions.gpt_select_last()
             extend_up.assert_not_called()
             extend_line_end.assert_not_called()
+
+        def test_gpt_request_is_in_flight_handles_errors(self):
+            if bootstrap is None:
+                self.skipTest("Talon runtime not available")
+
+            with patch.object(
+                gpt_module, "request_is_in_flight", return_value=True
+            ) as helper:
+                self.assertTrue(gpt_module._request_is_in_flight())
+            helper.assert_called_once_with()
+
+            with patch.object(
+                gpt_module, "request_is_in_flight", side_effect=RuntimeError("boom")
+            ) as helper:
+                self.assertFalse(gpt_module._request_is_in_flight())
+            helper.assert_called_once_with()
+
+        def test_gpt_reject_if_request_in_flight_fallbacks_to_reason_text(self):
+            if bootstrap is None:
+                self.skipTest("Talon runtime not available")
+
+            fake_state = SimpleNamespace(request_id="req-123")
+            gpt_module._last_inflight_warning_request_id = None
+            gpt_module._suppress_inflight_notify_request_id = None
+            with (
+                patch.object(gpt_module, "current_state", return_value=fake_state),
+                patch.object(
+                    gpt_module, "try_begin_request", return_value=(False, "in_flight")
+                ) as try_begin,
+                patch.object(gpt_module, "drop_reason_message", return_value=""),
+                patch.object(gpt_module, "set_drop_reason") as set_reason,
+                patch.object(gpt_module, "notify") as notify_mock,
+            ):
+                self.assertTrue(gpt_module._reject_if_request_in_flight())
+            try_begin.assert_called_once_with(fake_state, source="GPT.gpt")
+            set_reason.assert_called_once_with(
+                "in_flight", "GPT: Request blocked; reason=in_flight."
+            )
+            notify_mock.assert_called_once_with(
+                "GPT: Request blocked; reason=in_flight."
+            )
+            gpt_module._last_inflight_warning_request_id = None
+            gpt_module._suppress_inflight_notify_request_id = None
+
+        def test_gpt_reject_if_request_in_flight_handles_other_reasons(self):
+            if bootstrap is None:
+                self.skipTest("Talon runtime not available")
+
+            gpt_module._last_inflight_warning_request_id = None
+            gpt_module._suppress_inflight_notify_request_id = None
+            with (
+                patch.object(gpt_module, "current_state", return_value=None),
+                patch.object(
+                    gpt_module,
+                    "try_begin_request",
+                    return_value=(False, "unknown_reason"),
+                ) as try_begin,
+                patch.object(gpt_module, "drop_reason_message", return_value=""),
+                patch.object(gpt_module, "set_drop_reason") as set_reason,
+                patch.object(gpt_module, "notify") as notify_mock,
+            ):
+                self.assertTrue(gpt_module._reject_if_request_in_flight())
+            try_begin.assert_called_once_with(None, source="GPT.gpt")
+            set_reason.assert_called_once_with(
+                "unknown_reason", "GPT: Request blocked; reason=unknown_reason."
+            )
+            notify_mock.assert_called_once_with(
+                "GPT: Request blocked; reason=unknown_reason."
+            )
+            gpt_module._last_inflight_warning_request_id = None
+            gpt_module._suppress_inflight_notify_request_id = None
 
         def test_source_and_prepare_helpers_respect_in_flight_guard(self):
             source = MagicMock()
@@ -1591,7 +1663,12 @@ if bootstrap is not None:
                     self.assertTrue(gpt_module._reject_if_request_in_flight())
                     self.assertTrue(gpt_module._reject_if_request_in_flight())
 
-                set_reason.assert_called_once_with("in_flight")
+                set_reason.assert_called_once()
+                args, kwargs = set_reason.call_args
+                self.assertTrue(
+                    args, "set_drop_reason should be called with at least the reason"
+                )
+                self.assertEqual(args[0], "in_flight")
                 notify_mock.assert_called_once()
 
                 emit_complete(request_id=rid)

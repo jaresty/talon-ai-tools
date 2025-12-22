@@ -1992,3 +1992,18 @@
   - Mitigation: schedule the wrapper migration loops before closing ADR-0056.
   - Trigger: new gating helpers or missing regression commands should prompt another doc update.
 
+## 2025-12-22 – Loop 299 (kind: behaviour)
+- Helper: helper:v20251221.3 @ 2025-12-22T00:08Z
+- Focus: Request Gating & Streaming – migrate GPT command gating to the shared facade.
+- Deliverables:
+  - Updated `GPT/gpt.py::_request_is_in_flight` to wrap `requestGating.request_is_in_flight` with error handling and cache clears tied to successful guard passes.
+  - Reworked `GPT/gpt.py::_reject_if_request_in_flight` to use `requestGating.try_begin_request` drop reasons, fall back to reason text, and set `set_drop_reason(reason, message)` across non in-flight cases while deduplicating notifications.
+  - Extended `_tests/test_gpt_actions.py` with request gating guard coverage for error handling, fallback messaging, and notification deduplication.
+- `<VALIDATION_TARGET>`: `python3.11 -m pytest _tests/test_gpt_actions.py`
+- Evidence: `docs/adr/evidence/0056/loop-0299.md`
+- Removal test: `git checkout -- GPT/gpt.py && python3.11 -m pytest _tests/test_gpt_actions.py` (fails: shared drop-reason messaging and request_is_in_flight error handling regress)
+- Adversarial “risk recap”:
+  - Residual risk: GPT Talon macros and request telemetry still assume the old drop-reason schema; confirm downstream consumers handle the structured message payloads before closing the gating migration.
+  - Mitigation: follow up with a telemetry/CLI slice to verify drop-reason tables capture the new messages and add regression coverage for macro wrappers that forward `_reject_if_request_in_flight`.
+  - Trigger: unexpected drop-reason telemetry or duplicate notifications should prompt immediate review before migrating remaining GPT helpers.
+

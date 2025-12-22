@@ -693,7 +693,10 @@ _suppress_inflight_notify_request_id = None
 def _request_is_in_flight() -> bool:
     """Return True when a GPT request is already running."""
 
-    return request_is_in_flight()
+    try:
+        return request_is_in_flight()
+    except Exception:
+        return False
 
 
 def _reject_if_request_in_flight() -> bool:
@@ -733,10 +736,35 @@ def _reject_if_request_in_flight() -> bool:
                 GPTState.suppress_inflight_notify_request_id = None
         except Exception:
             pass
+        try:
+            set_drop_reason("")
+        except Exception:
+            pass
         return False
 
-    if reason != "in_flight":
+    if not reason:
         return False
+
+    message = ""
+    try:
+        message = drop_reason_message(reason)
+    except Exception:
+        message = ""
+    if not message:
+        reason_text = str(reason or "unknown").strip() or "unknown"
+        message = f"GPT: Request blocked; reason={reason_text}."
+
+    if reason != "in_flight":
+        try:
+            set_drop_reason(reason, message)
+        except Exception:
+            pass
+        if message:
+            try:
+                notify(message)
+            except Exception:
+                pass
+        return True
 
     if request_id is None:
         request_id = suppress_id or "__none__"
@@ -750,12 +778,16 @@ def _reject_if_request_in_flight() -> bool:
     if request_id == _last_inflight_warning_request_id:
         return True
 
-    message = drop_reason_message("in_flight")
     try:
-        set_drop_reason("in_flight")
+        set_drop_reason("in_flight", message)
     except Exception:
         pass
-    notify(message)
+
+    if message:
+        try:
+            notify(message)
+        except Exception:
+            pass
     _last_inflight_warning_request_id = request_id
     return True
 

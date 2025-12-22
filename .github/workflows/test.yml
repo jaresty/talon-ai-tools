@@ -39,18 +39,18 @@ jobs:
         with:
           name: history-axis-summary
           path: |
-            artifacts/history-axis-summaries/history-validation-summary.json
-            artifacts/history-axis-summaries/history-validation-summary.streaming.json
-            artifacts/history-axis-summaries/history-validation-summary.telemetry.json
-            artifacts/history-axis-summaries/suggestion-skip-summary.json
+            artifacts/telemetry/history-validation-summary.json
+            artifacts/telemetry/history-validation-summary.streaming.json
+            artifacts/telemetry/history-validation-summary.telemetry.json
+            artifacts/telemetry/suggestion-skip-summary.json
           if-no-files-found: warn
           retention-days: 30
 
       - name: Summarize history guardrail artifact
         if: always()
         run: |
-          SUMMARY_FILE="artifacts/history-axis-summaries/history-validation-summary.json"
-          SKIP_FILE="artifacts/history-axis-summaries/suggestion-skip-summary.json"
+          SUMMARY_FILE="artifacts/telemetry/history-validation-summary.json"
+          SKIP_FILE="artifacts/telemetry/suggestion-skip-summary.json"
           if [ -f "${SUMMARY_FILE}" ]; then
             if [ -n "${GITHUB_REPOSITORY:-}" ] && [ -n "${GITHUB_RUN_ID:-}" ]; then
               ARTIFACT_URL="${GITHUB_SERVER_URL:-https://github.com}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}#artifacts"

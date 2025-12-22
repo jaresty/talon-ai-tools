@@ -23,7 +23,7 @@ if not TYPE_CHECKING:
             summary_path = (
                 repo_root
                 / "artifacts"
-                / "history-axis-summaries"
+                / "telemetry"
                 / "history-validation-summary.json"
             )
             if summary_path.exists():
@@ -128,7 +128,7 @@ if not TYPE_CHECKING:
             summary_path = (
                 repo_root
                 / "artifacts"
-                / "history-axis-summaries"
+                / "telemetry"
                 / "history-validation-summary.json"
             )
             if summary_path.exists():
@@ -198,7 +198,7 @@ if not TYPE_CHECKING:
             )
             self.assertIn("### History Guardrail Summary", result.stdout)
             self.assertIn(
-                "History summary recorded at artifacts/history-axis-summaries/history-validation-summary.json; job summary will reference this file when running in GitHub Actions.",
+                "History summary recorded at artifacts/telemetry/history-validation-summary.json; job summary will reference this file when running in GitHub Actions.",
                 result.stdout,
             )
 
@@ -245,11 +245,11 @@ if not TYPE_CHECKING:
             self.assertIsNone(telemetry_payload.get("last_drop_code"))
 
             self.assertIn(
-                "Telemetry summary saved at artifacts/history-axis-summaries/history-validation-summary.telemetry.json",
+                "Telemetry summary saved at artifacts/telemetry/history-validation-summary.telemetry.json",
                 result.stdout,
             )
             self.assertIn(
-                "Streaming JSON summary recorded at artifacts/history-axis-summaries/history-validation-summary.streaming.json; job summary will reference this file when running in GitHub Actions.",
+                "Streaming JSON summary recorded at artifacts/telemetry/history-validation-summary.streaming.json; job summary will reference this file when running in GitHub Actions.",
                 result.stdout,
             )
 
@@ -266,7 +266,7 @@ if not TYPE_CHECKING:
             summary_path = (
                 repo_root
                 / "artifacts"
-                / "history-axis-summaries"
+                / "telemetry"
                 / "history-validation-summary.json"
             )
             if summary_path.exists():
@@ -301,7 +301,7 @@ if not TYPE_CHECKING:
                 summary_text = step_summary_path.read_text(encoding="utf-8")
                 self.assertIn("### History Guardrail Summary", summary_text)
                 self.assertIn(
-                    "Streaming JSON summary recorded at artifacts/history-axis-summaries/history-validation-summary.streaming.json",
+                    "Streaming JSON summary recorded at artifacts/telemetry/history-validation-summary.streaming.json",
                     summary_text,
                 )
                 expected_artifact = (
@@ -312,7 +312,7 @@ if not TYPE_CHECKING:
                     summary_text,
                 )
                 self.assertIn(
-                    "Telemetry summary saved at artifacts/history-axis-summaries/history-validation-summary.telemetry.json",
+                    "Telemetry summary saved at artifacts/telemetry/history-validation-summary.telemetry.json",
                     summary_text,
                 )
                 self.assertIn(
@@ -360,7 +360,7 @@ if not TYPE_CHECKING:
                     summary_text,
                 )
                 self.assertIn(
-                    "- Telemetry summary saved at artifacts/history-axis-summaries/history-validation-summary.telemetry.json",
+                    "- Telemetry summary saved at artifacts/telemetry/history-validation-summary.telemetry.json",
                     summary_text,
                 )
                 self.assertIn("```json", summary_text)
@@ -380,7 +380,7 @@ if not TYPE_CHECKING:
                 / "run_guardrails_ci.sh"
             )
             repo_root = Path(__file__).resolve().parents[1]
-            summary_dir = repo_root / "artifacts" / "history-axis-summaries"
+            summary_dir = repo_root / "artifacts" / "telemetry"
             summary_dir.mkdir(parents=True, exist_ok=True)
             summary_path = summary_dir / "history-validation-summary.json"
             streaming_summary_path = (

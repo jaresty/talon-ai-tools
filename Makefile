@@ -102,32 +102,34 @@ overlay-lifecycle-guardrails:
 	$(PYTHON) -m pytest _tests/test_overlay_lifecycle.py
 
 request-history-guardrails:
-	mkdir -p artifacts/history-axis-summaries
-	$(PYTHON) scripts/tools/history-axis-validate.py --summary-path artifacts/history-axis-summaries/history-validation-summary.json --reset-gating
+	mkdir -p artifacts/telemetry
+	PYTHONPATH=. $(PYTHON) -m lib.telemetryExport --output-dir artifacts/telemetry --reset-gating || \
+		(( $(PYTHON) scripts/tools/history-axis-validate.py --summary-path artifacts/telemetry/history-validation-summary.json ) && \
+		 ( $(PYTHON) scripts/tools/suggestion-skip-export.py --output artifacts/telemetry/suggestion-skip-summary.json --pretty ) && \
+		 ( $(PYTHON) scripts/tools/history-axis-export-telemetry.py artifacts/telemetry/history-validation-summary.json --output artifacts/telemetry/history-validation-summary.telemetry.json --top 5 --pretty --skip-summary artifacts/telemetry/suggestion-skip-summary.json ))
 	$(PYTHON) -m pytest _tests/test_request_history_actions.py
-	$(PYTHON) scripts/tools/history-axis-validate.py --summarize-json artifacts/history-axis-summaries/history-validation-summary.json --summary-format streaming
-	$(PYTHON) scripts/tools/history-axis-validate.py --summarize-json artifacts/history-axis-summaries/history-validation-summary.json --summary-format json > artifacts/history-axis-summaries/history-validation-summary.streaming.json
-	printf 'Streaming gating summary (json): ' && cat artifacts/history-axis-summaries/history-validation-summary.streaming.json && printf '\n'
-	$(PYTHON) scripts/tools/history-axis-validate.py --summarize-json artifacts/history-axis-summaries/history-validation-summary.json
-	$(PYTHON) scripts/tools/history-axis-export-telemetry.py artifacts/history-axis-summaries/history-validation-summary.json --output artifacts/history-axis-summaries/history-validation-summary.telemetry.json --top 5 --pretty
-	printf 'Telemetry summary (json): ' && cat artifacts/history-axis-summaries/history-validation-summary.telemetry.json && printf '\n'
-	$(PYTHON) scripts/tools/suggestion-skip-export.py --output artifacts/history-axis-summaries/suggestion-skip-summary.json --pretty
-	printf 'Suggestion skip summary (json): ' && cat artifacts/history-axis-summaries/suggestion-skip-summary.json && printf '\n'
-	$(PYTHON) -c "import json; from pathlib import Path; path = Path('artifacts/history-axis-summaries/suggestion-skip-summary.json'); data = json.loads(path.read_text(encoding='utf-8')) if path.exists() else {}; total = data.get('total_skipped', 0); reasons = data.get('reason_counts', []); formatted = ', '.join('{0}={1}'.format(item.get('reason'), item.get('count')) for item in reasons if isinstance(item, dict) and item.get('reason')) if isinstance(reasons, list) and reasons else 'none'; print('Suggestion skip total: {}'.format(total)); print('Suggestion skip reasons: {}'.format(formatted))"
+	$(PYTHON) scripts/tools/history-axis-validate.py --summarize-json artifacts/telemetry/history-validation-summary.json --summary-format streaming
+	$(PYTHON) scripts/tools/history-axis-validate.py --summarize-json artifacts/telemetry/history-validation-summary.json --summary-format json > artifacts/telemetry/history-validation-summary.streaming.json
+	printf 'Streaming gating summary (json): ' && cat artifacts/telemetry/history-validation-summary.streaming.json && printf '\n'
+	$(PYTHON) scripts/tools/history-axis-validate.py --summarize-json artifacts/telemetry/history-validation-summary.json
+	printf 'Suggestion skip summary (json): ' && cat artifacts/telemetry/suggestion-skip-summary.json && printf '\n'
+	$(PYTHON) -c "import json; from pathlib import Path; path = Path('artifacts/telemetry/suggestion-skip-summary.json'); data = json.loads(path.read_text(encoding='utf-8')) if path.exists() else {}; total = data.get('total_skipped', 0); reasons = data.get('reason_counts', []); formatted = ', '.join('{0}={1}'.format(item.get('reason'), item.get('count')) for item in reasons if isinstance(item, dict) and item.get('reason')) if isinstance(reasons, list) and reasons else 'none'; print('Suggestion skip total: {}'.format(total)); print('Suggestion skip reasons: {}'.format(formatted))"
+	printf 'Telemetry summary (json): ' && cat artifacts/telemetry/history-validation-summary.telemetry.json && printf '\n'
 
 request-history-guardrails-fast:
-	mkdir -p artifacts/history-axis-summaries
-	$(PYTHON) scripts/tools/history-axis-validate.py --summary-path artifacts/history-axis-summaries/history-validation-summary.json
+	mkdir -p artifacts/telemetry
+	PYTHONPATH=. $(PYTHON) -m lib.telemetryExport --output-dir artifacts/telemetry || \
+		(( $(PYTHON) scripts/tools/history-axis-validate.py --summary-path artifacts/telemetry/history-validation-summary.json ) && \
+		 ( $(PYTHON) scripts/tools/suggestion-skip-export.py --output artifacts/telemetry/suggestion-skip-summary.json --pretty ) && \
+		 ( $(PYTHON) scripts/tools/history-axis-export-telemetry.py artifacts/telemetry/history-validation-summary.json --output artifacts/telemetry/history-validation-summary.telemetry.json --top 5 --pretty --skip-summary artifacts/telemetry/suggestion-skip-summary.json ))
 	$(PYTHON) -m pytest _tests/test_request_history_actions.py::RequestHistoryActionTests::test_history_save_filename_includes_provider_slug _tests/test_request_history_actions.py::RequestHistoryActionTests::test_history_save_includes_provider_id_in_header _tests/test_request_history_actions.py::RequestHistoryActionTests::test_history_save_blocks_when_request_in_flight _tests/test_request_history_actions.py::RequestHistoryActionTests::test_history_save_sequence_inflight_then_terminal
-	$(PYTHON) scripts/tools/history-axis-validate.py --summarize-json artifacts/history-axis-summaries/history-validation-summary.json --summary-format streaming
-	$(PYTHON) scripts/tools/history-axis-validate.py --summarize-json artifacts/history-axis-summaries/history-validation-summary.json --summary-format json > artifacts/history-axis-summaries/history-validation-summary.streaming.json
-	printf 'Streaming gating summary (json): ' && cat artifacts/history-axis-summaries/history-validation-summary.streaming.json && printf '\n'
-	$(PYTHON) scripts/tools/history-axis-validate.py --summarize-json artifacts/history-axis-summaries/history-validation-summary.json
-	$(PYTHON) scripts/tools/history-axis-export-telemetry.py artifacts/history-axis-summaries/history-validation-summary.json --output artifacts/history-axis-summaries/history-validation-summary.telemetry.json --top 5 --pretty
-	printf 'Telemetry summary (json): ' && cat artifacts/history-axis-summaries/history-validation-summary.telemetry.json && printf '\n'
-	$(PYTHON) scripts/tools/suggestion-skip-export.py --output artifacts/history-axis-summaries/suggestion-skip-summary.json --pretty
-	printf 'Suggestion skip summary (json): ' && cat artifacts/history-axis-summaries/suggestion-skip-summary.json && printf '\n'
-	$(PYTHON) -c "import json; from pathlib import Path; path = Path('artifacts/history-axis-summaries/suggestion-skip-summary.json'); data = json.loads(path.read_text(encoding='utf-8')) if path.exists() else {}; total = data.get('total_skipped', 0); reasons = data.get('reason_counts', []); formatted = ', '.join('{0}={1}'.format(item.get('reason'), item.get('count')) for item in reasons if isinstance(item, dict) and item.get('reason')) if isinstance(reasons, list) and reasons else 'none'; print('Suggestion skip total: {}'.format(total)); print('Suggestion skip reasons: {}'.format(formatted))"
+	$(PYTHON) scripts/tools/history-axis-validate.py --summarize-json artifacts/telemetry/history-validation-summary.json --summary-format streaming
+	$(PYTHON) scripts/tools/history-axis-validate.py --summarize-json artifacts/telemetry/history-validation-summary.json --summary-format json > artifacts/telemetry/history-validation-summary.streaming.json
+	printf 'Streaming gating summary (json): ' && cat artifacts/telemetry/history-validation-summary.streaming.json && printf '\n'
+	$(PYTHON) scripts/tools/history-axis-validate.py --summarize-json artifacts/telemetry/history-validation-summary.json
+	printf 'Suggestion skip summary (json): ' && cat artifacts/telemetry/suggestion-skip-summary.json && printf '\n'
+	$(PYTHON) -c "import json; from pathlib import Path; path = Path('artifacts/telemetry/suggestion-skip-summary.json'); data = json.loads(path.read_text(encoding='utf-8')) if path.exists() else {}; total = data.get('total_skipped', 0); reasons = data.get('reason_counts', []); formatted = ', '.join('{0}={1}'.format(item.get('reason'), item.get('count')) for item in reasons if isinstance(item, dict) and item.get('reason')) if isinstance(reasons, list) and reasons else 'none'; print('Suggestion skip total: {}'.format(total)); print('Suggestion skip reasons: {}'.format(formatted))"
+	printf 'Telemetry summary (json): ' && cat artifacts/telemetry/history-validation-summary.telemetry.json && printf '\n'
 
 
 help:

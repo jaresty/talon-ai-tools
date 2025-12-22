@@ -15,6 +15,18 @@ Examples:
 EOF
 }
 
+run_telemetry_export() {
+  if PYTHONPATH=. python3 -m lib.telemetryExport --output-dir "artifacts/telemetry" --reset-gating; then
+    return 0
+  fi
+  if python3 -m talon_user.lib.telemetryExport --output-dir "artifacts/telemetry" --reset-gating; then
+    return 0
+  fi
+  python3 scripts/tools/history-axis-validate.py --summary-path "artifacts/telemetry/history-validation-summary.json"
+  python3 scripts/tools/suggestion-skip-export.py --output "artifacts/telemetry/suggestion-skip-summary.json" --pretty
+  python3 scripts/tools/history-axis-export-telemetry.py "artifacts/telemetry/history-validation-summary.json" --output "artifacts/telemetry/history-validation-summary.telemetry.json" --top 5 --pretty --skip-summary "artifacts/telemetry/suggestion-skip-summary.json"
+}
+
 if [[ ${1-} == "-h" || ${1-} == "--help" ]]; then
   usage
   exit 0
@@ -40,8 +52,23 @@ cd "${ROOT}"
 echo "Running guardrails target: ${TARGET}"
 make "${TARGET}"
 
-SUMMARY_DIR="artifacts/history-axis-summaries"
+TELEMETRY_DIR="artifacts/telemetry"
+mkdir -p "${TELEMETRY_DIR}"
+
+SUMMARY_DIR="${TELEMETRY_DIR}"
 SUMMARY_FILE="${SUMMARY_DIR}/history-validation-summary.json"
+
+if [[ ! -f "${SUMMARY_FILE}" ]]; then
+  if [[ "${REQUIRE_SUMMARY}" == "true" ]]; then
+    if ! run_telemetry_export; then
+      echo "Talon telemetry exporter unavailable; history summary remains unset." >&2
+    fi
+  else
+    echo "History validation summary not found at ${SUMMARY_FILE}; target ${TARGET} does not require it."
+    echo "History summary not required for target ${TARGET}; no job summary entry created."
+    exit 0
+  fi
+fi
 
 if [[ -f "${SUMMARY_FILE}" ]]; then
   echo "History validation summary (JSON): ${SUMMARY_FILE}"
@@ -344,16 +371,6 @@ PY
   fi
   echo "Streaming gating last drop: ${STREAMING_LAST_SUMMARY}"
 
-  TELEMETRY_PATH="${SUMMARY_DIR}/history-validation-summary.telemetry.json"
-  TELEMETRY_ARGS=("${SUMMARY_FILE}" --output "${TELEMETRY_PATH}" --top 5 --pretty)
-  if [[ -n "${ARTIFACT_URL}" ]]; then
-    TELEMETRY_ARGS+=(--artifact-url "${ARTIFACT_URL}")
-  fi
-  python3 scripts/tools/history-axis-export-telemetry.py "${TELEMETRY_ARGS[@]}"
-  TELEMETRY_JSON=$(cat "${TELEMETRY_PATH}")
-  echo "Telemetry summary saved at ${TELEMETRY_PATH}"
-  echo "Telemetry summary (json): ${TELEMETRY_JSON}"
-
   SKIP_SUMMARY_PATH="${SUMMARY_DIR}/suggestion-skip-summary.json"
   python3 scripts/tools/suggestion-skip-export.py --output "${SKIP_SUMMARY_PATH}" --pretty
   SKIP_JSON=$(cat "${SKIP_SUMMARY_PATH}")
@@ -401,10 +418,21 @@ PY
   echo "Suggestion skip total: ${SKIP_TOTAL}"
   echo "Suggestion skip reasons: ${SKIP_REASONS}"
  
+  TELEMETRY_PATH="${SUMMARY_DIR}/history-validation-summary.telemetry.json"
+  python3 scripts/tools/history-axis-export-telemetry.py "${SUMMARY_FILE}" --output "${TELEMETRY_PATH}" --top 5 --pretty --skip-summary "${SKIP_SUMMARY_PATH}"
+  if [[ -f "${TELEMETRY_PATH}" ]]; then
+    TELEMETRY_JSON=$(cat "${TELEMETRY_PATH}")
+    echo "Telemetry summary saved at ${TELEMETRY_PATH}"
+    echo "Telemetry summary (json): ${TELEMETRY_JSON}"
+  else
+    echo "Telemetry summary missing at ${TELEMETRY_PATH}; run the Talon telemetry exporter to populate it." >&2
+  fi
+ 
   SUMMARY_ARGS=(--summarize-json "${SUMMARY_FILE}")
 
 
   if [[ -n "${ARTIFACT_URL}" ]]; then
+
     SUMMARY_ARGS+=(--artifact-url "${ARTIFACT_URL}")
   fi
   SUMMARY_DETAILS=$(python3 scripts/tools/history-axis-validate.py "${SUMMARY_ARGS[@]}")

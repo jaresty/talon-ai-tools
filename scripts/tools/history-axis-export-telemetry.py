@@ -135,12 +135,38 @@ def _top_sources(
     return sources, remaining
 
 
+def _load_skip_summary(path: Path | None) -> tuple[int, List[Dict[str, Any]]]:
+    if path is None:
+        return 0, []
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except FileNotFoundError:
+        return 0, []
+    except json.JSONDecodeError:
+        return 0, []
+
+    total = _coerce_int(data.get("total_skipped")) or 0
+    reasons_raw = data.get("reason_counts", [])
+    reasons: List[Dict[str, Any]] = []
+    if isinstance(reasons_raw, list):
+        for item in reasons_raw:
+            if not isinstance(item, dict):
+                continue
+            reason = item.get("reason")
+            count_value = _coerce_int(item.get("count"))
+            if not isinstance(reason, str) or not reason or count_value <= 0:
+                continue
+            reasons.append({"reason": reason, "count": count_value})
+    return total, reasons
+
+
 def build_payload(
     data: Dict[str, Any],
     *,
     top_n: int,
     artifact_url: str | None,
     summary_path: Path,
+    skip_summary_path: Path | None,
 ) -> Dict[str, Any]:
     streaming = data.get("streaming_gating_summary")
     if not isinstance(streaming, dict):
@@ -229,6 +255,12 @@ def build_payload(
     if total_entries > 0:
         payload["gating_drop_rate"] = round(streaming_total / total_entries, 4)
 
+    skip_total, skip_reasons = _load_skip_summary(skip_summary_path)
+    payload["suggestion_skip"] = {
+        "total": skip_total,
+        "reasons": skip_reasons,
+    }
+
     return payload
 
 
@@ -258,6 +290,11 @@ def parse_args() -> argparse.Namespace:
         help="Optional artifact URL to embed in the telemetry payload.",
     )
     parser.add_argument(
+        "--skip-summary",
+        type=Path,
+        help="Optional path to suggestion skip summary JSON for inclusion in the payload.",
+    )
+    parser.add_argument(
         "--pretty",
         action="store_true",
         help="Pretty-print the JSON output with indentation.",
@@ -270,12 +307,15 @@ def main() -> int:
     if args.top < 1:
         raise SystemExit("--top must be >= 1")
 
-    data = _load_summary(args.summary_path)
+    summary_data = _load_summary(args.summary_path)
+    skip_summary_path = args.skip_summary.resolve() if args.skip_summary else None
+
     payload = build_payload(
-        data,
+        summary_data,
         top_n=args.top,
         artifact_url=args.artifact_url,
         summary_path=args.summary_path,
+        skip_summary_path=skip_summary_path,
     )
 
     if args.output is None:

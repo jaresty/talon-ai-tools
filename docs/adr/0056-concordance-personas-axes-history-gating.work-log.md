@@ -7,6 +7,32 @@
   - `scripts/tools/axis-catalog-validate.py`: ensure validator tooling enforces the absence of style tokens under all axis catalogs/lists.
   - Axis docs/help generators: confirm generated docs have no residual style references before removing runtime guards.
 
+## 2025-12-22 – Loop 346 (kind: guardrail/tests)
+- helper_version: helper:v20251221.5
+- focus: Request Gating & Streaming – guardrail make/CI entrypoints use the telemetry exporter with CLI fallback and relocate artifacts to `artifacts/telemetry`.
+- riskiest_assumption: CLI fallback (history-axis-validate plus telemetry synthesis) matches Talon exporter outputs when Talon modules are unavailable (probability medium, impact high if guardrails stay broken outside Talon).
+- validation_targets:
+  - python3 -m pytest _tests/test_make_request_history_guardrails.py
+  - python3 -m pytest _tests/test_run_guardrails_ci.py
+- evidence:
+  - red | 2025-12-22T19:26:31Z | exit 2 | python3 -m pytest _tests/test_make_request_history_guardrails.py
+      helper:diff-snapshot=0 files changed
+      ModuleNotFoundError: No module named 'talon_user'
+  - green | 2025-12-22T19:48:06Z | exit 0 | python3 -m pytest _tests/test_make_request_history_guardrails.py
+      helper:diff-snapshot=8 files changed, 164 insertions(+), 63 deletions(-)
+      2 passed in 1.55s
+  - green | 2025-12-22T19:48:24Z | exit 0 | python3 -m pytest _tests/test_run_guardrails_ci.py
+      helper:diff-snapshot=8 files changed, 164 insertions(+), 63 deletions(-)
+      7 passed in 17.66s
+- rollback_plan: git restore --source=HEAD -- . && python3 -m pytest _tests/test_make_request_history_guardrails.py
+- delta_summary: helper:diff-snapshot=8 files changed, 164 insertions(+), 63 deletions(-); rewired `Makefile` guardrail targets and `scripts/tools/run_guardrails_ci.sh` to invoke `lib.telemetryExport` with CLI fallback, moved guardrail outputs and automation to `artifacts/telemetry`, refreshed `_tests/test_make_request_history_guardrails.py`, `_tests/test_run_guardrails_ci.py`, `.github/workflows/test.yml`, and hardened `scripts/tools/history-axis-export-telemetry.py`.
+- residual_risks:
+  - Suggestion skip counts remain zero outside Talon until the exporter writes real telemetry (planned Loop 347); monitor guardrail output for stale totals.
+  - CLI fallback depends on `history-axis-validate.py`; if summaries shift format, telemetry synthesis may drift without new guardrails.
+- next_work:
+  - Loop 347: update CLI helpers (`history-axis-export-telemetry.py`, `suggestion-skip-export.py`, guardrail wrappers) to consume the Talon-exported JSON directly.
+  - Verify Talon runtime invocation still resolves `talon_user.lib.telemetryExport` after the import fallback lands.
+
 ## 2025-12-17 – Loop 72 (kind: behaviour)
 - Focus: Axis Snapshot & History – remove the legacy “extra axes” passthrough from request logs.
 - Change: Updated `lib/requestLog.py` so `_filter_axes_payload` now drops unknown axis keys outright and the `AxisSnapshot` dataclass no longer carries an `extras` map; callers receive only Concordance-recognised axes. Adjusted `_tests/test_request_log_axis_filter.py` and `_tests/test_request_log.py` expectations accordingly.
@@ -460,7 +486,7 @@
 
 ## 2025-12-18 – Loop 159 (kind: docs)
 - Focus: Request Gating & Streaming – clarify where automation stores gating summaries.
-- Change: Updated ADR-0056 to mention the canonical archive location (GitHub Actions guardrail job artifacts, e.g., `artifacts/history-axis-summaries/history-validation-summary.json`) for history validator summaries prior to `--reset-gating`.
+- Change: Updated ADR-0056 to mention the canonical archive location (GitHub Actions guardrail job artifacts, e.g., `artifacts/telemetry/history-validation-summary.json`) for history validator summaries prior to `--reset-gating`.
 - Checks: Documentation-only change; no tests run.
 - Removal test: Reverting would remove the explicit archive location, forcing automation owners to rediscover the destination and risking inconsistent telemetry storage.
 - Adversarial “what remains” check:
@@ -470,7 +496,7 @@
 
 ## 2025-12-18 – Loop 161 (kind: docs)
 - Focus: Request Gating & Streaming – align archival guidance with available infrastructure.
-- Change: Updated ADR-0056 to reference GitHub Actions guardrail job artifacts (e.g., `artifacts/history-axis-summaries/history-validation-summary.json`) as the storage target for `history-axis-validate` summaries instead of the prior S3 placeholder.
+- Change: Updated ADR-0056 to reference GitHub Actions guardrail job artifacts (e.g., `artifacts/telemetry/history-validation-summary.json`) as the storage target for `history-axis-validate` summaries instead of the prior S3 placeholder.
 - Checks: Documentation-only change; no tests run.
 - Removal test: Reverting would send readers back to an unusable S3 path, increasing the risk that summaries are not archived before `--reset-gating`.
 - Adversarial “what remains” check:
@@ -620,7 +646,7 @@
 
 ## 2025-12-19 – Loop 188 (kind: guardrail/tests)
 - Focus: Request Gating & Streaming – publish guardrail summaries via GitHub Actions artifacts.
-- Change: Added a `history-axis-summary` upload step to `.github/workflows/test.yml` so `make ci-guardrails` outputs at `artifacts/history-axis-summaries/history-validation-summary.json` are persisted as GitHub Actions build artifacts with `if-no-files-found: warn` safeguards.
+- Change: Added a `history-axis-summary` upload step to `.github/workflows/test.yml` so `make ci-guardrails` outputs at `artifacts/telemetry/history-validation-summary.json` are persisted as GitHub Actions build artifacts with `if-no-files-found: warn` safeguards.
 - Checks: (workflow change) `python3 -m pytest _tests/test_run_guardrails_ci.py` (pass; excerpt: `4 passed in 12.6s`).
 - Removal test: Reverting would drop the upload-artifact step, leaving CI without the preserved summary and weakening ADR-0056’s guardrail telemetry requirement.
 - Adversarial “what remains” check:
@@ -630,7 +656,7 @@
 
 ## 2025-12-19 – Loop 189 (kind: guardrail/tests)
 - Focus: Request Gating & Streaming – enforce artifact persistence across guardrail variants.
-- Change: Updated `scripts/tools/run_guardrails_ci.sh` to require the history summary for guardrail targets (failing when absent), taught `Makefile::request-history-guardrails-fast` to emit `artifacts/history-axis-summaries/history-validation-summary.json`, and added `_tests/test_make_request_history_guardrails.py::test_make_request_history_guardrails_fast_produces_summary` plus `_tests/test_run_guardrails_ci.py::test_run_guardrails_ci_history_target_produces_summary`.
+- Change: Updated `scripts/tools/run_guardrails_ci.sh` to require the history summary for guardrail targets (failing when absent), taught `Makefile::request-history-guardrails-fast` to emit `artifacts/telemetry/history-validation-summary.json`, and added `_tests/test_make_request_history_guardrails.py::test_make_request_history_guardrails_fast_produces_summary` plus `_tests/test_run_guardrails_ci.py::test_run_guardrails_ci_history_target_produces_summary`.
 - Checks: `python3 -m pytest _tests/test_make_request_history_guardrails.py _tests/test_run_guardrails_ci.py` (pass; excerpt: `7 passed in 14.97s`).
 - Removal test: Reverting would let guardrail targets succeed without persisting the summary artifact, undoing ADR-0056’s telemetry guardrail and breaking the new regression tests.
 - Adversarial “what remains” check:
@@ -748,7 +774,7 @@
 ## 2025-12-19 – Loop 207 (kind: guardrail/tests)
 - Focus: Request Gating & Streaming – ensure history guardrail make targets emit JSON summaries and logs alongside streaming lines.
 - Deliverables:
-  - Repaired the `Makefile` recipes for `request-history-guardrails` and `request-history-guardrails-fast`, wiring both targets to create `artifacts/history-axis-summaries/history-validation-summary.streaming.json` and print the JSON line.
+  - Repaired the `Makefile` recipes for `request-history-guardrails` and `request-history-guardrails-fast`, wiring both targets to create `artifacts/telemetry/history-validation-summary.streaming.json` and print the JSON line.
   - Confirmed the shared summary helper now surfaces in local guardrail runs, keeping CLI output aligned with the new `_tests/test_make_request_history_guardrails.py` expectations.
 - Guardrail: `python3 -m pytest _tests/test_make_request_history_guardrails.py`.
 - Evidence:
@@ -769,7 +795,7 @@
 - Guardrail: `python3 -m pytest _tests/test_run_guardrails_ci.py::RunGuardrailsCITests::test_run_guardrails_ci_history_target_produces_summary`.
 - Evidence:
   - red | 2025-12-19T23:09Z | exit 1 | python3 -m pytest _tests/test_run_guardrails_ci.py::RunGuardrailsCITests::test_run_guardrails_ci_history_target_produces_summary
-      AssertionError: 'Streaming JSON summary recorded at artifacts/history-axis-summaries/history-validation-summary.streaming.json; job summary will reference this file when running in GitHub Actions.' not found
+      AssertionError: 'Streaming JSON summary recorded at artifacts/telemetry/history-validation-summary.streaming.json; job summary will reference this file when running in GitHub Actions.' not found
   - green | 2025-12-19T23:14Z | exit 0 | python3 -m pytest _tests/test_run_guardrails_ci.py::RunGuardrailsCITests::test_run_guardrails_ci_history_target_produces_summary
       1 passed in 0.96s
 - Removal test: Reverting the script update or test expectation removes the streaming JSON log line, causing the guardrail test to fail and obscuring the artifact for CI operators.
@@ -2527,7 +2553,6 @@
   - Trigger: CI runs missing `Suggestion skip summary` output should block ADR completion until the workflow integration lands.
 
 ## 2025-12-22 – Loop 339 (kind: guardrail/tests)
-...
 - Helper: helper:v20251221.5 @ 2025-12-22T18:20Z
 - Focus: Persona & Intent Presets – ensure CI artifacts include suggestion skip telemetry.
 - Deliverables:
@@ -2542,6 +2567,7 @@
   - Mitigation: Confirm the GitHub Actions artifact bundle includes `suggestion-skip-summary.json`; if absent, inspect the build logs before closing the ADR.
   - Trigger: Missing skip summary artifact or job-summary section in CI should block completion until resolved.
 
+
 ## 2025-12-22 – Loop 340 (kind: docs)
 - Helper: helper:v20251221.5 @ 2025-12-22T18:24Z
 - Focus: Persona & Intent Presets – document suggestion skip telemetry usage in ADR guidance.
@@ -2549,9 +2575,48 @@
   - Updated the Monitoring & Next Steps section to reference `suggestion-skip-summary.json` and the CLI exporter for manual inspection.
 - Checks: Documentation-only loop (no automated guardrail).
 - Evidence: inline
-- Removal test: Reverting the ADR removes operator guidance for the new telemetry artefact, increasing risk that skip metrics are overlooked.
 - Adversarial “risk recap”:
   - Residual risk: Operators may still overlook skip telemetry unless the CI workflow surfaces it prominently; monitor upcoming runs to ensure the new job-summary section is visible.
   - Mitigation: Confirm CI job summaries include the added guidance before closing the persona domain.
   - Trigger: Absent skip telemetry in future job summaries should prompt another documentation loop or tooling update.
 
+## 2025-12-22 – Loop 343 (kind: docs)
+- Helper: helper:v20251221.5 @ 2025-12-22T18:37Z
+- Focus: Persona & Intent Presets – add plan item for Talon-side suggestion skip exporter.
+- Deliverables:
+  - Updated the Persona & Intent Concordance “Salient Tasks” list to track the missing Talon exporter that will persist skip telemetry before CLI guardrails run.
+- Checks: Documentation-only loop (no automated guardrail).
+- Evidence: inline
+- Adversarial “risk recap”:
+  - Residual risk: Without the exporter, CLI artefacts continue reporting zero data; prioritize Talon implementation.
+  - Mitigation: Schedule a follow-up loop to add the Talon guardrail exporter and extend guardrail tests once it lands.
+  - Trigger: Guardrail runs still showing `suggestion_skip.total=0` after exporter deployment should block ADR completion until resolved.
+
+## 2025-12-22 – Loop 344 (kind: docs)
+- Helper: helper:v20251221.5 @ 2025-12-22T18:45Z
+- Focus: Cross-domain telemetry plan – clarify Talon-side exporter responsibilities.
+- Deliverables:
+  - Updated ADR Salient Tasks to call out a unified Talon telemetry exporter (history + suggestion skips) plus tooling rewires so CLI guardrails consume the exported JSON.
+  - Refined monitoring guidance to state that CLI summaries must read the persisted artefacts instead of live Talon state.
+- Checks: Documentation-only loop (no automated guardrail).
+- Evidence: inline
+- Adversarial “risk recap”:
+  - Residual risk: Until the Talon exporter and CLI rewires land, telemetry artefacts remain empty. Track that implementation as a follow-up behaviour loop.
+  - Mitigation: Schedule the Talon exporter and automation rewiring as the next executable slices before closing the ADR.
+  - Trigger: If guardrail runs still emit zero telemetry after the exporter ships, block ADR completion and re-run the unified exporter.
+
+## 2025-12-22 – Loop 345 (kind: behaviour/tests)
+- Helper: helper:v20251221.5 @ 2025-12-22T18:58Z
+- Focus: Persona & Intent Presets / Request Gating telemetry – add Talon-side exporter to persist history + suggestion skip telemetry.
+- Riskiest assumption: Without a Talon runtime snapshot we continue exporting zeros to Concordance, so build the exporter before rewiring CLI guardrails.
+- Validation targets: `python3 -m pytest _tests/test_telemetry_export.py`
+- Evidence:
+  - red | 2025-12-22T18:50Z | exit n/a | No existing guardrail covered Talon telemetry export (automation gap logged in Loop 344).
+  - green | 2025-12-22T18:55Z | exit 0 | `python3 -m pytest _tests/test_telemetry_export.py`
+- Rollback plan: `git checkout -- lib/telemetryExport.py _tests/test_telemetry_export.py`
+- Delta summary (helper:diff-snapshot): `5 files changed, 226 insertions(+)`
+- Residual risks:
+  - CLI guardrails still need to consume the exported artefacts; tracked in Loop 346/347.
+- Next work:
+  - Loop 346: rewire guardrail scripts (Make, CI) to read `artifacts/telemetry/` outputs.
+  - Loop 347: update CLI helpers to rely on exported JSON rather than live memory.

@@ -15,7 +15,7 @@ if not TYPE_CHECKING:
             summary_path = (
                 repo_root
                 / "artifacts"
-                / "history-axis-summaries"
+                / "telemetry"
                 / "history-validation-summary.json"
             )
             if summary_path.exists():
@@ -113,7 +113,7 @@ if not TYPE_CHECKING:
             summary_path = (
                 repo_root
                 / "artifacts"
-                / "history-axis-summaries"
+                / "telemetry"
                 / "history-validation-summary.json"
             )
             if summary_path.exists():

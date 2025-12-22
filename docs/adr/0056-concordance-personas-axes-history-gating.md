@@ -304,6 +304,7 @@ For each domain, we will align with the existing test suites and add characteriz
       - Ensure local guardrail targets continue surfacing the same last-drop bullets as CI (`_tests/test_make_request_history_guardrails.py`) so operator workflows stay aligned with automation output.
       - Lock drop-reason messaging via `_tests/test_request_log.py::RequestLogTests::test_drop_reason_message_covers_known_reasons` so new `RequestDropReason` codes fail fast when phrasing is missing.
       - Reuse `lib/dropReasonUtils.render_drop_reason` across gating surfaces so bespoke fallbacks cannot drift and shared tests can patch a single helper.
+      - Migrate help hub, pattern, and confirmation canvases onto the shared helper to keep GUI messaging aligned with request log/history behaviour.
 
 Across all domains, we will continue to run `python3 -m pytest` from the repo root during each slice, relying on existing suites as primary regression protection.
 

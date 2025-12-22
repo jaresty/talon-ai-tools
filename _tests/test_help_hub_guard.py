@@ -11,6 +11,7 @@ else:
 if bootstrap is not None:
     from talon_user.lib import helpHub as help_module
     from talon_user.lib.helpHub import UserActions as HelpActions, HelpHubState
+    import talon_user.lib.dropReasonUtils as drop_reason_module
 
 
 class HelpHubGuardTests(unittest.TestCase):
@@ -60,15 +61,16 @@ class HelpHubGuardTests(unittest.TestCase):
             ) as try_begin,
             patch.object(
                 help_module,
-                "drop_reason_message",
+                "render_drop_reason",
                 return_value="Request running",
-            ) as drop_message,
+                create=True,
+            ) as render_message,
             patch.object(help_module, "set_drop_reason") as set_reason,
             patch.object(help_module, "notify") as notify_mock,
         ):
             self.assertTrue(help_module._reject_if_request_in_flight())
         try_begin.assert_called_once_with(source="helpHub")
-        drop_message.assert_called_once_with("in_flight")
+        render_message.assert_called_once_with("in_flight")
         set_reason.assert_called_once_with("in_flight", "Request running")
         notify_mock.assert_called_once_with("Request running")
 
@@ -78,17 +80,24 @@ class HelpHubGuardTests(unittest.TestCase):
                 "try_begin_request",
                 return_value=(False, "unknown_reason"),
             ),
-            patch.object(help_module, "drop_reason_message", return_value=""),
+            patch.object(
+                drop_reason_module,
+                "drop_reason_message",
+                return_value="",
+            ),
+            patch.object(
+                help_module,
+                "render_drop_reason",
+                return_value="Rendered fallback",
+                create=True,
+            ) as render_message,
             patch.object(help_module, "set_drop_reason") as set_reason,
             patch.object(help_module, "notify") as notify_mock,
         ):
             self.assertTrue(help_module._reject_if_request_in_flight())
-        set_reason.assert_called_once_with(
-            "unknown_reason", "GPT: Request blocked; reason=unknown_reason."
-        )
-        notify_mock.assert_called_once_with(
-            "GPT: Request blocked; reason=unknown_reason."
-        )
+        render_message.assert_called_once_with("unknown_reason")
+        set_reason.assert_called_once_with("unknown_reason", "Rendered fallback")
+        notify_mock.assert_called_once_with("Rendered fallback")
 
         with (
             patch.object(help_module, "try_begin_request", return_value=(True, "")),

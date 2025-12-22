@@ -23,7 +23,8 @@ from .helpDomain import (
     HelpIndexEntry,
 )
 from .requestGating import request_is_in_flight, try_begin_request
-from .requestLog import drop_reason_message, last_drop_reason, set_drop_reason
+from .requestLog import last_drop_reason, set_drop_reason
+from .dropReasonUtils import render_drop_reason
 from .modelHelpers import notify
 from .overlayHelpers import apply_canvas_blocking
 from .overlayLifecycle import close_overlays, close_common_overlays
@@ -95,23 +96,20 @@ def _reject_if_request_in_flight() -> bool:
     allowed, reason = try_begin_request(source="helpHub")
     if allowed:
         try:
-            if not last_drop_reason():
-                set_drop_reason("")
+            pending_message = last_drop_reason()
         except Exception:
-            pass
+            pending_message = ""
+        if not pending_message:
+            try:
+                set_drop_reason("")
+            except Exception:
+                pass
         return False
 
     if not reason:
         return False
 
-    message = ""
-    try:
-        message = drop_reason_message(reason)
-    except Exception:
-        message = ""
-    if not message:
-        reason_text = str(reason or "unknown").strip() or "unknown"
-        message = f"GPT: Request blocked; reason={reason_text}."
+    message = render_drop_reason(reason)
 
     try:
         set_drop_reason(reason, message)

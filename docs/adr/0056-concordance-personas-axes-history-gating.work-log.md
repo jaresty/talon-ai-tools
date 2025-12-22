@@ -2321,3 +2321,17 @@
   - Mitigation: Apply the shared helper slice-by-slice, keeping guardrail tests patching `render_drop_reason` so regressions stay observable.
   - Trigger: Guardrail output from any surface showing raw `reason=` codes indicates the helper was bypassed and should block landing until fixed.
 
+## 2025-12-22 – Loop 324 (kind: guardrail/tests)
+- Helper: helper:v20251221.4 @ 2025-12-22T15:46Z
+- Focus: Request Gating & Streaming – migrate Help Hub gating to the shared drop-reason renderer.
+- Deliverables:
+  - Updated `lib/helpHub._reject_if_request_in_flight` to call `render_drop_reason` and preserve pending drop placeholders before clearing state.
+  - Extended `_tests/test_help_hub_guard.py` to patch the shared helper and assert fallback messaging.
+- `<VALIDATION_TARGET>`: `python3 -m pytest _tests/test_help_hub_guard.py::HelpHubGuardTests::test_reject_if_request_in_flight_notifies_with_drop_message`
+- Evidence: `docs/adr/evidence/0056/loop-0324.md`
+- Removal test: `git checkout -- lib/helpHub.py && python3 -m pytest _tests/test_help_hub_guard.py::HelpHubGuardTests::test_reject_if_request_in_flight_notifies_with_drop_message`
+- Adversarial “risk recap”:
+  - Residual risk: Other GUI gating surfaces (model/pattern canvases) still inline fallback strings; migrate them in subsequent loops.
+  - Mitigation: Continue extending guardrail tests to patch `render_drop_reason` so shared coverage blocks regressions.
+  - Trigger: Guardrail output showing raw `reason=` codes or missing fallback messaging should block completion until the helper is reused.
+

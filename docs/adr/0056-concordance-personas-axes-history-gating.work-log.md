@@ -2364,3 +2364,17 @@
   - Mitigation: Continue extending guardrail tests that patch `render_drop_reason` before adjusting each surface.
   - Trigger: Guardrail output showing raw `reason=` codes or missing fallback messaging indicates a caller bypassed the helper and should block landing until fixed.
 
+## 2025-12-22 – Loop 327 (kind: guardrail/tests)
+- Helper: helper:v20251221.4 @ 2025-12-22T16:29Z
+- Focus: Request Gating & Streaming – migrate confirmation GUI drop messaging to the shared renderer.
+- Deliverables:
+  - Updated `lib/modelConfirmationGUI._reject_if_request_in_flight` to reuse `render_drop_reason`, preserve pending drop messages, and stop formatting inline fallback strings.
+  - Extended `_tests/test_model_confirmation_gui_guard.py` to patch the shared helper, assert fallback propagation, and confirm success paths keep existing drop reasons intact.
+- `<VALIDATION_TARGET>`: `python3 -m pytest _tests/test_model_confirmation_gui_guard.py::ConfirmationGUIGuardTests::test_reject_if_request_in_flight_records_drop_reason`
+- Evidence: `docs/adr/evidence/0056/loop-0327.md`
+- Removal test: `git stash push -k -u && git checkout stash@{0} -- _tests/test_model_confirmation_gui_guard.py && python3 -m pytest _tests/test_model_confirmation_gui_guard.py::ConfirmationGUIGuardTests::test_reject_if_request_in_flight_records_drop_reason`
+- Adversarial “risk recap”:
+  - Residual risk: Response canvas gating still formats fallback strings; migrate it next to close out Concordance-facing overlays.
+  - Mitigation: Keep extending guardrail suites that patch `render_drop_reason` before altering each surface.
+  - Trigger: Guardrail output with raw `reason=` codes or blank drop messaging should block landing until the helper is reused.
+

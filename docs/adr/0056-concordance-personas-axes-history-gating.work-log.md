@@ -2335,3 +2335,17 @@
   - Mitigation: Continue extending guardrail tests to patch `render_drop_reason` so shared coverage blocks regressions.
   - Trigger: Guardrail output showing raw `reason=` codes or missing fallback messaging should block completion until the helper is reused.
 
+## 2025-12-22 – Loop 325 (kind: guardrail/tests)
+- Helper: helper:v20251221.4 @ 2025-12-22T15:54Z
+- Focus: Request Gating & Streaming – migrate model help canvas gating to the shared drop-reason renderer.
+- Deliverables:
+  - Updated `lib/modelHelpCanvas._reject_if_request_in_flight` to reuse `render_drop_reason` and avoid clearing pending drop placeholders prematurely.
+  - Extended `_tests/test_model_help_canvas_guard.py` to patch the shared helper and assert fallback messaging paths.
+- `<VALIDATION_TARGET>`: `python3 -m pytest _tests/test_model_help_canvas_guard.py::ModelHelpCanvasGuardTests::test_reject_if_request_in_flight_notifies_with_drop_message`
+- Evidence: `docs/adr/evidence/0056/loop-0325.md`
+- Removal test: `git checkout -- lib/modelHelpCanvas.py && python3 -m pytest _tests/test_model_help_canvas_guard.py::ModelHelpCanvasGuardTests::test_reject_if_request_in_flight_notifies_with_drop_message`
+- Adversarial “risk recap”:
+  - Residual risk: Pattern and confirmation canvases still inline fallback strings; migrate them next so all Concordance-facing GUIs share the renderer.
+  - Mitigation: Continue expanding guardrail coverage to patch `render_drop_reason` per surface to block regressions.
+  - Trigger: Guardrail output with raw `reason=` codes implies a caller bypassed the shared helper and should halt landing until corrected.
+

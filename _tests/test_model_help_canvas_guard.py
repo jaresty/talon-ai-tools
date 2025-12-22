@@ -14,6 +14,7 @@ if bootstrap is not None:
         HelpCanvasState,
         UserActions as HelpActions,
     )
+    import talon_user.lib.dropReasonUtils as drop_reason_module
 
 
 class ModelHelpCanvasGuardTests(unittest.TestCase):
@@ -73,15 +74,16 @@ class ModelHelpCanvasGuardTests(unittest.TestCase):
             ) as try_begin,
             patch.object(
                 help_canvas_module,
-                "drop_reason_message",
+                "render_drop_reason",
                 return_value="Request running",
-            ) as drop_message,
+                create=True,
+            ) as render_message,
             patch.object(help_canvas_module, "set_drop_reason") as set_reason,
             patch.object(help_canvas_module, "notify") as notify_mock,
         ):
             self.assertTrue(help_canvas_module._reject_if_request_in_flight())
         try_begin.assert_called_once_with(source="modelHelpCanvas")
-        drop_message.assert_called_once_with("in_flight")
+        render_message.assert_called_once_with("in_flight")
         set_reason.assert_called_once_with("in_flight", "Request running")
         notify_mock.assert_called_once_with("Request running")
 
@@ -92,17 +94,24 @@ class ModelHelpCanvasGuardTests(unittest.TestCase):
                 "try_begin_request",
                 return_value=(False, "unknown_reason"),
             ),
-            patch.object(help_canvas_module, "drop_reason_message", return_value=""),
+            patch.object(
+                drop_reason_module,
+                "drop_reason_message",
+                return_value="",
+            ),
+            patch.object(
+                help_canvas_module,
+                "render_drop_reason",
+                return_value="Rendered fallback",
+                create=True,
+            ) as render_message,
             patch.object(help_canvas_module, "set_drop_reason") as set_reason,
             patch.object(help_canvas_module, "notify") as notify_mock,
         ):
             self.assertTrue(help_canvas_module._reject_if_request_in_flight())
-        set_reason.assert_called_once_with(
-            "unknown_reason", "GPT: Request blocked; reason=unknown_reason."
-        )
-        notify_mock.assert_called_once_with(
-            "GPT: Request blocked; reason=unknown_reason."
-        )
+        render_message.assert_called_once_with("unknown_reason")
+        set_reason.assert_called_once_with("unknown_reason", "Rendered fallback")
+        notify_mock.assert_called_once_with("Rendered fallback")
 
     def test_reject_if_request_in_flight_clears_drop_reason_on_success(self):
         with (

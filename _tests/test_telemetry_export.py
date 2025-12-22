@@ -1,7 +1,9 @@
 import json
+import json
 import tempfile
 import unittest
 from pathlib import Path
+from unittest.mock import MagicMock, patch
 
 from talon_user.lib import requestLog
 from talon_user.lib.modelState import GPTState
@@ -61,6 +63,73 @@ class TelemetryExportTests(unittest.TestCase):
             self.assertEqual(len(reasons), 2)
 
             self.assertEqual(requestLog.gating_drop_stats(), {})
+
+
+class TelemetryExportCommandTests(unittest.TestCase):
+    def test_export_history_telemetry_notifies_success(self) -> None:
+        from talon_user.lib import telemetryExportCommand as command
+
+        fake_result = {
+            "history": Path("history.json"),
+            "streaming": Path("streaming.json"),
+            "telemetry": Path("telemetry.json"),
+            "suggestion_skip": Path("suggestion.json"),
+        }
+
+        with patch.object(
+            command, "snapshot_telemetry", return_value=fake_result
+        ) as snapshot:
+            with patch.object(command.app, "notify") as notify:
+                result = command.export_history_telemetry(
+                    reset_gating=False, notify_user=True
+                )
+
+        snapshot.assert_called_once_with(
+            output_dir=command.DEFAULT_OUTPUT_DIR,
+            reset_gating=False,
+            top_n=command.DEFAULT_TOP_N,
+        )
+        notify.assert_called_once()
+        self.assertIn("exported", notify.call_args.args[0])
+        self.assertEqual(result, fake_result)
+
+    def test_export_history_telemetry_handles_reset(self) -> None:
+        from talon_user.lib import telemetryExportCommand as command
+
+        with patch.object(command, "snapshot_telemetry", return_value={}) as snapshot:
+            with patch.object(command.app, "notify") as notify:
+                command.export_history_telemetry(reset_gating=True, notify_user=True)
+
+        snapshot.assert_called_once_with(
+            output_dir=command.DEFAULT_OUTPUT_DIR,
+            reset_gating=True,
+            top_n=command.DEFAULT_TOP_N,
+        )
+        notify.assert_called_once()
+        self.assertIn("reset", notify.call_args.args[0])
+
+    def test_export_history_telemetry_notifies_failure(self) -> None:
+        from talon_user.lib import telemetryExportCommand as command
+
+        exc = RuntimeError("boom")
+        with patch.object(command, "snapshot_telemetry", side_effect=exc):
+            with patch.object(command.app, "notify") as notify:
+                with self.assertRaises(RuntimeError):
+                    command.export_history_telemetry(
+                        reset_gating=False, notify_user=True
+                    )
+
+        notify.assert_called_once()
+        self.assertIn("failed", notify.call_args.args[0])
+
+    def test_action_invokes_helper(self) -> None:
+        from talon_user.lib import telemetryExportCommand as command
+
+        with patch.object(command, "export_history_telemetry") as export:
+            export.return_value = {}
+            command.UserActions.history_export_telemetry(True)
+
+        export.assert_called_once_with(reset_gating=True, notify_user=True)
 
 
 if __name__ == "__main__":  # pragma: no cover

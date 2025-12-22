@@ -33,6 +33,28 @@
   - Implement the Talon-side telemetry exporter loop so CLI guardrails start from live suggestion-skip counts.
   - Audit remaining CLI helpers to ensure they prefer exported telemetry artefacts over in-memory Talon state.
 
+## 2025-12-22 – Loop 348 (kind: guardrail/tests)
+- helper_version: helper:v20251221.5
+- focus: Request Gating & Streaming – expose a Talon telemetry export action so guardrails can snapshot live skip counts.
+- riskiest_assumption: Without an in-Talon command, maintainers would continue running guardrails on stale telemetry (probability medium, impact high for Concordance scoring).
+- validation_targets:
+  - python3 -m pytest _tests/test_telemetry_export.py
+- evidence:
+  - red | 2025-12-22T20:06:50Z | exit 1 | python3 -m pytest _tests/test_telemetry_export.py
+      helper:diff-snapshot=0 files changed
+      ImportError: cannot import name 'telemetryExportCommand' from 'talon_user.lib'
+  - green | 2025-12-22T20:35:12Z | exit 0 | python3 -m pytest _tests/test_telemetry_export.py
+      helper:diff-snapshot=5 files changed, 159 insertions(+), 5 deletions(-)
+      5 passed in 0.12s
+- rollback_plan: git restore --source=HEAD -- lib/telemetryExportCommand.py GPT/request-history.talon _tests/test_telemetry_export.py docs/adr/0056-concordance-personas-axes-history-gating.md && python3 -m pytest _tests/test_telemetry_export.py
+- delta_summary: helper:diff-snapshot=5 files changed, 159 insertions(+), 5 deletions(-); added `telemetryExportCommand` with an export helper, wired new voice/action commands, tightened telemetry export tests, and refreshed ADR guidance.
+- residual_risks:
+  - Telemetry export still requires manual invocation; integrate the command into guardrail runbooks to avoid missed snapshots.
+  - Notifications rely on Talon’s desktop UI; in headless sessions they may be swallowed, so monitor guardrail output for confirmation.
+- next_work:
+  - Document the new `history export telemetry` voice command in operator runbooks and automate invocation before CI guardrail bundles.
+  - Evaluate invoking `user.history_export_telemetry` automatically when the guardrail Make targets are triggered from Talon.
+
 ## 2025-12-22 – Loop 346 (kind: guardrail/tests)
 - helper_version: helper:v20251221.5
 - focus: Request Gating & Streaming – guardrail make/CI entrypoints use the telemetry exporter with CLI fallback and relocate artifacts to `artifacts/telemetry`.

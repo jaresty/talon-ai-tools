@@ -2526,3 +2526,18 @@
   - Mitigation: Ensure CI workflow uploads the skip summary alongside existing history artefacts and surface it in GitHub job summaries.
   - Trigger: CI runs missing `Suggestion skip summary` output should block ADR completion until the workflow integration lands.
 
+## 2025-12-22 – Loop 339 (kind: guardrail/tests)
+- Helper: helper:v20251221.5 @ 2025-12-22T18:20Z
+- Focus: Persona & Intent Presets – ensure CI artifacts include suggestion skip telemetry.
+- Deliverables:
+  - Updated `.github/workflows/test.yml` to upload `suggestion-skip-summary.json` and append skip totals/reasons to the job summary alongside existing history outputs.
+- `<VALIDATION_TARGET>`: `python3 -m pytest _tests/test_run_guardrails_ci.py::RunGuardrailsCITests::test_run_guardrails_ci_history_target_produces_summary`
+- Evidence:
+  - red | 2025-12-22T18:18Z | exit n/a | no pre-change guardrail covered workflow artifact uploads (gap documented) | docs/adr/evidence/0056/loop-0339.md
+  - green | 2025-12-22T18:20Z | exit 0 | `python3 -m pytest _tests/test_run_guardrails_ci.py::RunGuardrailsCITests::test_run_guardrails_ci_history_target_produces_summary` | docs/adr/evidence/0056/loop-0339.md
+- Removal test: `git checkout -- .github/workflows/test.yml`
+- Adversarial “risk recap”:
+  - Residual risk: CI workflow must still upload the skip summary artifact (now configured) and rely on future scripts to consume it; monitor upcoming runs for the new artefact.
+  - Mitigation: Confirm the GitHub Actions artifact bundle includes `suggestion-skip-summary.json`; if absent, inspect the build logs before closing the ADR.
+  - Trigger: Missing skip summary artifact or job-summary section in CI should block completion until resolved.
+

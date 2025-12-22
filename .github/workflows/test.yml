@@ -42,6 +42,7 @@ jobs:
             artifacts/history-axis-summaries/history-validation-summary.json
             artifacts/history-axis-summaries/history-validation-summary.streaming.json
             artifacts/history-axis-summaries/history-validation-summary.telemetry.json
+            artifacts/history-axis-summaries/suggestion-skip-summary.json
           if-no-files-found: warn
           retention-days: 30
 
@@ -49,6 +50,7 @@ jobs:
         if: always()
         run: |
           SUMMARY_FILE="artifacts/history-axis-summaries/history-validation-summary.json"
+          SKIP_FILE="artifacts/history-axis-summaries/suggestion-skip-summary.json"
           if [ -f "${SUMMARY_FILE}" ]; then
             if [ -n "${GITHUB_REPOSITORY:-}" ] && [ -n "${GITHUB_RUN_ID:-}" ]; then
               ARTIFACT_URL="${GITHUB_SERVER_URL:-https://github.com}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}#artifacts"
@@ -60,6 +62,37 @@ jobs:
             if [ -n "${GITHUB_STEP_SUMMARY:-}" ]; then
               printf '%s
 ' "${SUMMARY_OUTPUT}" >> "${GITHUB_STEP_SUMMARY}"
+            fi
+            if [ -f "${SKIP_FILE}" ]; then
+              SKIP_OUTPUT=$(python3 - <<'PY'
+import json, sys
+from pathlib import Path
+path = Path(sys.argv[1])
+try:
+    data = json.loads(path.read_text(encoding="utf-8"))
+except Exception:
+    data = {}
+total = data.get("total_skipped", 0)
+reasons = data.get("reason_counts", [])
+if isinstance(reasons, list) and reasons:
+    formatted = [
+        f"{item.get('reason')}={item.get('count')}"
+        for item in reasons
+        if isinstance(item, dict) and item.get("reason")
+    ]
+    reason_line = ", ".join(formatted)
+else:
+    reason_line = "none"
+print(f"### Suggestion Skip Summary\n\n- Total skipped suggestions: {total}\n- Skip reasons: {reason_line}")
+PY
+              "${SKIP_FILE}")
+              echo "${SKIP_OUTPUT}"
+              if [ -n "${GITHUB_STEP_SUMMARY:-}" ]; then
+                printf '%s
+' "${SKIP_OUTPUT}" >> "${GITHUB_STEP_SUMMARY}"
+              fi
+            else
+              echo "Suggestion skip summary missing; skipping job summary entry."
             fi
             echo "History summary noted in job summary."
           else

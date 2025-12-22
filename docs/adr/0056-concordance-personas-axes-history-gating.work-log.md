@@ -2477,3 +2477,19 @@
   - Mitigation: Extend suggestion guardrail tooling to emit skip-count telemetry (see next loop).
   - Trigger: Guardrail runs lacking skip-count output should block ADR completion until telemetry coverage is added.
 
+## 2025-12-22 – Loop 336 (kind: guardrail/tests)
+- Helper: helper:v20251221.5 @ 2025-12-22T17:44Z
+- Focus: Persona & Intent Presets – expose suggestion skip counts via telemetry CLI.
+- Deliverables:
+  - Added `scripts/tools/suggestion-skip-export.py` to emit JSON payloads summarising `suggestion_skip_counts()`.
+  - Introduced `_tests/test_suggestion_skip_export.py` guardrails covering file/STDOUT modes and sorted reason ordering.
+- `<VALIDATION_TARGET>`: `python3.11 -m pytest _tests/test_suggestion_skip_export.py`
+- Evidence:
+  - red | 2025-12-22T17:44Z | exit 2 | `python3.11 -m pytest _tests/test_suggestion_skip_export.py` | docs/adr/evidence/0056/loop-0336.md
+  - green | 2025-12-22T17:52Z | exit 0 | `python3.11 -m pytest _tests/test_suggestion_skip_export.py` | docs/adr/evidence/0056/loop-0336.md
+- Removal test: `mv _tests/test_suggestion_skip_export.py _tests/test_suggestion_skip_export.py.bak && mv scripts/tools/suggestion-skip-export.py scripts/tools/suggestion-skip-export.py.bak && python3.11 -m pytest _tests/test_suggestion_skip_export.py`
+- Adversarial “risk recap”:
+  - Residual risk: Guardrail workflows must be updated to call the exporter and archive outputs alongside request history artefacts.
+  - Mitigation: Wire the new CLI into guardrail scripts (e.g., `run_guardrails_ci.sh`) so skip telemetry is uploaded with existing artifacts.
+  - Trigger: Missing suggestion skip telemetry in CI job summaries should block ADR completion until integration lands.
+

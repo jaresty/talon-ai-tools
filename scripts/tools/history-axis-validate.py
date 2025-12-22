@@ -345,9 +345,13 @@ def main() -> int:
     gating_sim_message = os.environ.get(
         "HISTORY_AXIS_VALIDATE_SIMULATE_GATING_DROP", ""
     ).strip()
+    use_default_gating_message = gating_sim_message == "__DEFAULT__"
     if gating_sim_message:
         try:
-            requestLog.set_drop_reason("in_flight", gating_sim_message)
+            if use_default_gating_message:
+                requestLog.set_drop_reason("in_flight")
+            else:
+                requestLog.set_drop_reason("in_flight", gating_sim_message)
         except Exception:
             requestLog.set_drop_reason("in_flight")
         try:
@@ -418,6 +422,31 @@ def main() -> int:
     normalized_streaming = _normalize_streaming_summary(
         stats.get("streaming_gating_summary")
     )
+
+    last_drop_message = str(stats.get("gating_drop_last_message") or "").strip()
+    last_drop_code = str(stats.get("gating_drop_last_code") or "").strip()
+    if last_drop_message:
+        last_drop_line = f"Last gating drop: {last_drop_message}"
+    else:
+        last_drop_line = "Last gating drop: none"
+    if last_drop_code:
+        last_drop_line = f"{last_drop_line} (code={last_drop_code})"
+    print(last_drop_line)
+
+    streaming_last_message = str(normalized_streaming.get("last_message") or "").strip()
+    streaming_last_code = str(normalized_streaming.get("last_code") or "").strip()
+    if not streaming_last_message and last_drop_message:
+        streaming_last_message = last_drop_message
+    if not streaming_last_code and last_drop_code:
+        streaming_last_code = last_drop_code
+    if streaming_last_message:
+        streaming_last_line = f"Streaming last drop: {streaming_last_message}"
+    else:
+        streaming_last_line = "Streaming last drop: none"
+    if streaming_last_code:
+        streaming_last_line = f"{streaming_last_line} (code={streaming_last_code})"
+    print(streaming_last_line)
+
     print(_format_streaming_summary_line(normalized_streaming))
 
     if args.summary or args.summary_path:

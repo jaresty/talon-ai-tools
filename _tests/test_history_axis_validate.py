@@ -176,6 +176,39 @@ if bootstrap is not None:
                 self.assertEqual(streaming_summary.get("last_code"), "in_flight")
             clear_history()
 
+        def test_script_summary_reports_default_gating_drop_lines(self) -> None:
+            env = os.environ.copy()
+            env["HISTORY_AXIS_VALIDATE_SIMULATE_GATING_DROP"] = "__DEFAULT__"
+            result = subprocess.run(
+                [
+                    sys.executable,
+                    "scripts/tools/history-axis-validate.py",
+                    "--summary",
+                ],
+                check=False,
+                capture_output=True,
+                text=True,
+                env=env,
+            )
+            self.assertEqual(result.returncode, 0, msg=result.stderr)
+
+            stdout = result.stdout.replace("\r\n", "\n")
+            expected_message = "GPT: A request is already running; wait for it to finish or cancel it first."
+            self.assertIn(
+                f"Last gating drop: {expected_message} (code=in_flight)", stdout
+            )
+            self.assertIn(
+                f"Streaming last drop: {expected_message} (code=in_flight)", stdout
+            )
+
+            summary_line = next(
+                (line for line in stdout.splitlines() if line.startswith("{")), None
+            )
+            self.assertIsNotNone(summary_line, msg=stdout)
+            stats = json.loads(summary_line or "{}")
+            self.assertEqual(stats.get("gating_drop_last_message"), expected_message)
+            self.assertEqual(stats.get("gating_drop_last_code"), "in_flight")
+
         def test_summarize_json_outputs_summary(self) -> None:
             with tempfile.TemporaryDirectory() as tmpdir:
                 summary_path = Path(tmpdir) / "history-summary.json"

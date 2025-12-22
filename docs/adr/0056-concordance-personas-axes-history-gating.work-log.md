@@ -2048,3 +2048,17 @@
   - Mitigation: reuse the planned telemetry audit to confirm confirmation actions surface the structured message and add regression checks for any macro wrappers discovered.
   - Trigger: missing confirmation drop messages or macro-specific gating duplicates should trigger another loop before closing ADR-0056.
 
+## 2025-12-22 – Loop 304 (kind: behaviour)
+- Helper: helper:v20251221.3 @ 2025-12-22T00:43Z
+- Focus: Request Gating & Streaming – surface structured drop messaging in history-axis CLI output.
+- Deliverables:
+  - Updated `scripts/tools/history-axis-validate.py` to treat `HISTORY_AXIS_VALIDATE_SIMULATE_GATING_DROP="__DEFAULT__"` as a default-message simulation, emit explicit `Last gating drop` / `Streaming last drop` lines, and fall back to the gating summary message when streaming data lacks one.
+  - Added `_tests/test_history_axis_validate.py::test_script_summary_reports_default_gating_drop_lines` to lock the CLI output and JSON summary contract.
+- `<VALIDATION_TARGET>`: `python3.11 -m pytest _tests/test_history_axis_validate.py`
+- Evidence: `docs/adr/evidence/0056/loop-0304.md`
+- Removal test: `git checkout -- scripts/tools/history-axis-validate.py && python3.11 -m pytest _tests/test_history_axis_validate.py::HistoryAxisValidateTests::test_script_summary_reports_default_gating_drop_lines` (fails: CLI output lacks structured drop lines)
+- Adversarial “risk recap”:
+  - Residual risk: Talon macros still need manual verification; schedule the audit next and monitor telemetry for unexpected drop messages once the macros review lands.
+  - Mitigation: extend guardrail runs to parse the new CLI lines so humans can spot mismatched drop messages without inspecting JSON.
+  - Trigger: any CLI summary missing the structured drop lines or reporting unexpected codes should block ADR closure and prompt another behavioural loop.
+

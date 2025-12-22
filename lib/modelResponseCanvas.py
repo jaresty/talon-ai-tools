@@ -101,7 +101,10 @@ def _restore_previous_focus() -> None:
 def _request_is_in_flight() -> bool:
     """Return True when a GPT request is currently running."""
 
-    return request_is_in_flight()
+    try:
+        return request_is_in_flight()
+    except Exception:
+        return False
 
 
 def _reject_if_request_in_flight() -> bool:
@@ -109,12 +112,31 @@ def _reject_if_request_in_flight() -> bool:
 
     state = _current_request_state()
     allowed, reason = try_begin_request(state, source="modelResponseCanvas")
-    if not allowed and reason == "in_flight":
-        message = drop_reason_message("in_flight")
+    if allowed:
         try:
-            set_drop_reason("in_flight")
+            set_drop_reason("")
         except Exception:
             pass
+        return False
+
+    if not reason:
+        return False
+
+    message = ""
+    try:
+        message = drop_reason_message(reason)
+    except Exception:
+        message = ""
+    if not message:
+        reason_text = str(reason or "unknown").strip() or "unknown"
+        message = f"GPT: Request blocked; reason={reason_text}."
+
+    try:
+        set_drop_reason(reason, message)
+    except Exception:
+        pass
+
+    if reason == "in_flight":
         try:
             GPTState.suppress_response_canvas_close = False
         except Exception:
@@ -135,9 +157,12 @@ def _reject_if_request_in_flight() -> bool:
             except Exception:
                 pass
 
-        notify(message)
-        return True
-    return False
+    if message:
+        try:
+            notify(message)
+        except Exception:
+            pass
+    return True
 
 
 def _hydrate_axis(axis: str, token_str: str) -> str:

@@ -55,6 +55,19 @@
   - Document the new `history export telemetry` voice command in operator runbooks and automate invocation before CI guardrail bundles.
   - Evaluate invoking `user.history_export_telemetry` automatically when the guardrail Make targets are triggered from Talon.
 
+## 2025-12-22 – Loop 349 (kind: docs)
+- helper_version: helper:v20251221.5
+- focus: Persona & Intent Presets – update monitoring guidance to mention the new Talon export action and runbook integration.
+- riskiest_assumption: Without documentation, operators might forget to run the Talon telemetry export before CLI guardrails (probability medium, impact medium for stale Concordance metrics).
+- validation_targets: [] (docs-only loop justified by completed guardrail slice and new helper)
+- evidence: inline (ADR monitoring bullet edited to reference `user.history_export_telemetry` and runbook integration).
+- rollback_plan: git restore --source=HEAD -- docs/adr/0056-concordance-personas-axes-history-gating.md docs/adr/0056-concordance-personas-axes-history-gating.work-log.md
+- delta_summary: helper:diff-snapshot=1 file changed, 2 insertions(+), concretised monitoring guidance with the new Talon export action and runbook reminder.
+- residual_risks:
+  - Operators may still skip the command if runbooks lag; follow up with automation to trigger the export before CLI guardrails.
+- next_work:
+  - Automate invocation of `user.history_export_telemetry` (Loop 350) when Talon-side guardrail macros fire.
+
 ## 2025-12-22 – Loop 346 (kind: guardrail/tests)
 - helper_version: helper:v20251221.5
 - focus: Request Gating & Streaming – guardrail make/CI entrypoints use the telemetry exporter with CLI fallback and relocate artifacts to `artifacts/telemetry`.

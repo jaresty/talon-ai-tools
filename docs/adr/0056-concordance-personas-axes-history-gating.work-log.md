@@ -2062,3 +2062,15 @@
   - Mitigation: extend guardrail runs to parse the new CLI lines so humans can spot mismatched drop messages without inspecting JSON.
   - Trigger: any CLI summary missing the structured drop lines or reporting unexpected codes should block ADR closure and prompt another behavioural loop.
 
+## 2025-12-22 – Loop 305 (kind: docs)
+- Helper: helper:v20251221.3 @ 2025-12-22T00:45Z
+- Focus: Request Gating & Streaming – record the macro/telemetry audit plan now that CLI drop lines exist.
+- Change: Updated the Monitoring & Next Steps bullet to note the completed macro audit and ongoing monitoring of the new `history-axis-validate` drop-line output.
+- Checks: Documentation-only loop (no automated guardrail required).
+- Evidence: inline
+- Removal test: Reverting would obscure the telemetry check and macro audit follow-through.
+- Adversarial “risk recap”:
+  - Residual risk: future Talon macros could bypass the shared facade; keep the updated monitoring note visible until the next macro audit lands.
+  - Mitigation: revisit the monitoring bullet whenever new macros surface or CLI output changes.
+  - Trigger: missing drop-line output or new ungated macros should spawn another behaviour loop before closing the ADR.
+

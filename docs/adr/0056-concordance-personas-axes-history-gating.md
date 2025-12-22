@@ -377,6 +377,6 @@ The execution of these tasks should be coordinated with existing Concordance ADR
 ## Monitoring & Next Steps
 - Optional guardrail: run `make request-history-guardrails` when you want fresh JSON summaries (`history-validation-summary.json`, `.streaming.json`, `.telemetry.json`) before a reset.
 - Optional spot-check: `python3 scripts/tools/history-axis-validate.py --summary-path artifacts/history-axis-summaries/history-validation-summary.json --reset-gating` still enforces directional axes; use `--summarize-json` variants when you want to inspect streaming/persona tables.
-- Audit GPT Talon macros and drop-reason telemetry for the shared facade now that `GPT/gpt.py`, `modelResponseCanvas`, and `modelConfirmationGUI` delegate to `requestGating`; add guard tests mirroring the structured message contract wherever gaps appear.
+- Confirm GPT Talon macros continue to route through guarded actions, and monitor new macros plus CLI `history-axis-validate` drop-line output for regressions now that structured messages surface by default.
 - When telemetry fields expand, add or extend targeted tests so the new data stays covered without relying on manual guardrails.
 - Continue rerunning `python3.11 -m pytest _tests/test_gpt_actions.py _tests/test_request_history_actions.py` after telemetry or macro adjustments to confirm gating, drop-reason messaging, and history flows stay green under the shared facade.

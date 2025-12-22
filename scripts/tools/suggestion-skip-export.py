@@ -35,7 +35,10 @@ def _load_counts(args: argparse.Namespace) -> tuple[Dict[str, int], str | None]:
             raise ValueError("--counts-json must contain a JSON object")
         return _coerce_counts(data), str(counts_path)
 
-    from talon_user.lib.suggestionCoordinator import suggestion_skip_counts
+    try:
+        from talon_user.lib.suggestionCoordinator import suggestion_skip_counts  # type: ignore
+    except Exception:
+        return {}, None
 
     counts = suggestion_skip_counts()
     if not isinstance(counts, dict):  # pragma: no cover - sanity guard

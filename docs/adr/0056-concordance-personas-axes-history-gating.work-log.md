@@ -2493,3 +2493,20 @@
   - Mitigation: Wire the new CLI into guardrail scripts (e.g., `run_guardrails_ci.sh`) so skip telemetry is uploaded with existing artifacts.
   - Trigger: Missing suggestion skip telemetry in CI job summaries should block ADR completion until integration lands.
 
+## 2025-12-22 – Loop 337 (kind: guardrail/tests)
+- Helper: helper:v20251221.5 @ 2025-12-22T18:04Z
+- Focus: Persona & Intent Presets – surface suggestion skip counts in CI guardrail output.
+- Deliverables:
+  - Extended `scripts/tools/run_guardrails_ci.sh` to invoke `suggestion-skip-export.py`, emit skip totals/reasons, and include them in GitHub job summaries.
+  - Added guardrail assertions in `_tests/test_run_guardrails_ci.py` ensuring the CI helper reports skip telemetry.
+  - Hardened `suggestion-skip-export.py` to tolerate environments without Talon modules (returns empty counts instead of raising).
+- `<VALIDATION_TARGET>`: `python3 -m pytest _tests/test_run_guardrails_ci.py::RunGuardrailsCITests::test_run_guardrails_ci_history_target_produces_summary`
+- Evidence:
+  - red | 2025-12-22T18:00Z | exit 2 | `python3 -m pytest _tests/test_run_guardrails_ci.py::RunGuardrailsCITests::test_run_guardrails_ci_history_target_produces_summary` | docs/adr/evidence/0056/loop-0337.md
+  - green | 2025-12-22T18:04Z | exit 0 | `python3 -m pytest _tests/test_run_guardrails_ci.py::RunGuardrailsCITests::test_run_guardrails_ci_history_target_produces_summary` | docs/adr/evidence/0056/loop-0337.md
+- Removal test: `git stash push -u scripts/tools/run_guardrails_ci.sh scripts/tools/suggestion-skip-export.py && python3 -m pytest _tests/test_run_guardrails_ci.py::RunGuardrailsCITests::test_run_guardrails_ci_history_target_produces_summary`
+- Adversarial “risk recap”:
+  - Residual risk: local make targets and guardrail wrappers do not yet archive suggestion skip telemetry alongside history summaries.
+  - Mitigation: Update Makefile guardrail targets and `history-axis-validate` consumers (next loop) to record/print skip counts when running outside CI.
+  - Trigger: Guardrail runs missing `Suggestion skip summary` lines should block ADR completion until telemetry parity lands.
+

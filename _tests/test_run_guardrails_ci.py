@@ -178,6 +178,15 @@ if not TYPE_CHECKING:
             )
 
             self.assertIn(
+                "Suggestion skip summary (json):",
+                result.stdout,
+            )
+            self.assertIn(
+                "Suggestion skip total:",
+                result.stdout,
+            )
+
+            self.assertIn(
                 "- Streaming gating summary: status=unknown; total=0; counts=none; sources=none; last=n/a; last_source=n/a; last_message=none",
                 result.stdout,
             )

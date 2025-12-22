@@ -354,7 +354,55 @@ PY
   echo "Telemetry summary saved at ${TELEMETRY_PATH}"
   echo "Telemetry summary (json): ${TELEMETRY_JSON}"
 
+  SKIP_SUMMARY_PATH="${SUMMARY_DIR}/suggestion-skip-summary.json"
+  python3 scripts/tools/suggestion-skip-export.py --output "${SKIP_SUMMARY_PATH}" --pretty
+  SKIP_JSON=$(cat "${SKIP_SUMMARY_PATH}")
+  echo "Suggestion skip summary (json): ${SKIP_JSON}"
+  SKIP_TOTAL=$(python3 - "${SKIP_SUMMARY_PATH}" <<'PY'
+import json, sys
+from pathlib import Path
+path = Path(sys.argv[1])
+try:
+    data = json.loads(path.read_text())
+except Exception:
+    data = {}
+print(data.get("total_skipped", 0))
+PY
+)
+  SKIP_REASONS=$(python3 - "${SKIP_SUMMARY_PATH}" <<'PY'
+import json, sys
+from pathlib import Path
+path = Path(sys.argv[1])
+try:
+    data = json.loads(path.read_text())
+except Exception:
+    data = {}
+reasons = data.get("reason_counts", [])
+if not isinstance(reasons, list):
+    reasons = []
+formatted = []
+for item in reasons:
+    if not isinstance(item, dict):
+        continue
+    reason = item.get("reason")
+    count = item.get("count")
+    if isinstance(reason, str) and reason:
+        try:
+            formatted.append((reason, int(count)))
+        except Exception:
+            continue
+if formatted:
+    formatted.sort(key=lambda item: (-item[1], item[0]))
+    print(", ".join(f"{reason}={count}" for reason, count in formatted))
+else:
+    print("none")
+PY
+ )
+  echo "Suggestion skip total: ${SKIP_TOTAL}"
+  echo "Suggestion skip reasons: ${SKIP_REASONS}"
+ 
   SUMMARY_ARGS=(--summarize-json "${SUMMARY_FILE}")
+
 
   if [[ -n "${ARTIFACT_URL}" ]]; then
     SUMMARY_ARGS+=(--artifact-url "${ARTIFACT_URL}")
@@ -366,6 +414,7 @@ PY
   if [[ -n "${GITHUB_STEP_SUMMARY:-}" ]]; then
     {
       printf '%s\n' "${SUMMARY_DETAILS}"
+
       printf '\n'
       if [[ -n "${ARTIFACT_URL}" ]]; then
         printf '%s\n' "- Download summary artifact: [History axis summary](${ARTIFACT_URL})"
@@ -390,12 +439,21 @@ PY
         printf '%s\n' "Streaming gating sources:"
         printf '%s\n' "${GATING_SOURCES_TABLE}"
       fi
+      printf '%s\n' "- suggestion skips total: ${SKIP_TOTAL}"
+      if [[ "${SKIP_REASONS}" != "none" ]]; then
+        printf '%s\n' "- suggestion skip reasons: ${SKIP_REASONS}"
+      else
+        printf '%s\n' "- suggestion skip reasons: none"
+      fi
+      printf '%s\n' "- Suggestion skip summary saved at ${SKIP_SUMMARY_PATH}"
       printf '%s\n' "- Telemetry summary saved at ${TELEMETRY_PATH}"
       printf '\n'
       printf '%s\n' "Streaming summary (json):"
       printf '```json\n%s\n```\n' "${STREAMING_JSON}"
       printf '%s\n' "Telemetry payload (json):"
       printf '```json\n%s\n```\n' "${TELEMETRY_JSON}"
+      printf '%s\n' "Suggestion skip summary (json):"
+      printf '```json\n%s\n```\n' "${SKIP_JSON}"
     } >> "${GITHUB_STEP_SUMMARY}"
   fi
 

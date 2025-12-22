@@ -52,8 +52,8 @@
   - Telemetry export still requires manual invocation; integrate the command into guardrail runbooks to avoid missed snapshots.
   - Notifications rely on Talon’s desktop UI; in headless sessions they may be swallowed, so monitor guardrail output for confirmation.
 - next_work:
-  - Document the new `history export telemetry` voice command in operator runbooks and automate invocation before CI guardrail bundles.
-  - Evaluate invoking `user.history_export_telemetry` automatically when the guardrail Make targets are triggered from Talon.
+  - Document the new `model export telemetry` voice command in operator runbooks and automate invocation before CI guardrail bundles.
+  - Evaluate invoking `user.model_export_telemetry` automatically when the guardrail Make targets are triggered from Talon.
 
 ## 2025-12-22 – Loop 350 (kind: guardrail/tests)
 - helper_version: helper:v20251221.5
@@ -75,20 +75,20 @@
 - residual_risks:
   - Developers running guardrails in non-Talon environments must remember to set `ALLOW_STALE_TELEMETRY=1`; follow-up automation could prompt or invoke Talon export automatically.
 - next_work:
-  - Evaluate invoking `user.history_export_telemetry` automatically from Talon guardrail macros so manual exports remain optional.
+  - Evaluate invoking `user.model_export_telemetry` automatically from Talon guardrail macros so manual exports remain optional.
 
 ## 2025-12-22 – Loop 349 (kind: docs)
 - helper_version: helper:v20251221.5
 - focus: Persona & Intent Presets – update monitoring guidance to mention the new Talon export action and runbook integration.
 - riskiest_assumption: Without documentation, operators might forget to run the Talon telemetry export before CLI guardrails (probability medium, impact medium for stale Concordance metrics).
 - validation_targets: [] (docs-only loop justified by completed guardrail slice and new helper)
-- evidence: inline (ADR monitoring bullet edited to reference `user.history_export_telemetry` and runbook integration).
+- evidence: inline (ADR monitoring bullet edited to reference `user.model_export_telemetry` and runbook integration).
 - rollback_plan: git restore --source=HEAD -- docs/adr/0056-concordance-personas-axes-history-gating.md docs/adr/0056-concordance-personas-axes-history-gating.work-log.md
 - delta_summary: helper:diff-snapshot=1 file changed, 2 insertions(+), concretised monitoring guidance with the new Talon export action and runbook reminder.
 - residual_risks:
   - Operators may still skip the command if runbooks lag; follow up with automation to trigger the export before CLI guardrails.
 - next_work:
-  - Automate invocation of `user.history_export_telemetry` (Loop 350) when Talon-side guardrail macros fire.
+  - Automate invocation of `user.model_export_telemetry` (Loop 350) when Talon-side guardrail macros fire.
 
 ## 2025-12-22 – Loop 346 (kind: guardrail/tests)
 - helper_version: helper:v20251221.5
@@ -2701,5 +2701,25 @@
 - Residual risks:
   - CLI guardrails still need to consume the exported artefacts; tracked in Loop 346/347.
 - Next work:
-  - Loop 346: rewire guardrail scripts (Make, CI) to read `artifacts/telemetry/` outputs.
-  - Loop 347: update CLI helpers to rely on exported JSON rather than live memory.
+  - Loop 347: teach guardrail macros to invoke `user.model_export_telemetry` automatically before CLI guardrails run.
+  - Loop 348: update CLI helpers to rely on exported JSON rather than live memory.
+
+## 2025-12-22 – Loop 346 (kind: guardrail/tests)
+- helper_version: helper:v20251221.5
+- focus: Request Gating & Streaming – schedule automatic telemetry exports inside Talon so guardrail runs stay fresh without manual voice commands.
+- riskiest_assumption: Without automation, it’s easy to forget a pre-run export and ship stale drop/skip telemetry into the CLI guardrail bundles (probability high, impact high for Concordance monitoring gaps).
+- validation_targets:
+  - `python3 -m pytest _tests/test_telemetry_export_scheduler.py`
+  - `python3 -m pytest _tests/test_check_telemetry_export_marker.py`
+  - `python3 -m pytest _tests/test_telemetry_export.py`
+  - `python3 -m pytest _tests/test_make_request_history_guardrails.py _tests/test_run_guardrails_ci.py`
+- evidence: `docs/adr/evidence/0056/loop-0346.md`
+- rollback_plan: `git restore -- lib/telemetryExportScheduler.py GPT/request-history.talon docs/adr/0056-concordance-personas-axes-history-gating.md docs/adr/0056-concordance-personas-axes-history-gating.work-log.md _tests/test_telemetry_export_scheduler.py`
+- delta_summary: helper:diff-snapshot=7 files changed, 82 insertions(+), 42 deletions(-); added a Talon cron scheduler for telemetry exports, updated ADR guidance, and refreshed tests/stubs to cover the automation.
+- residual_risks:
+  - Automated exports rely on Talon being open; add CLI prompts for stale telemetry as a belt-and-suspenders follow-up if operators frequently run guardrails without Talon running.
+  - Future setting changes won’t reschedule the cron job automatically; consider listening for `setting_change` if operators need on-the-fly adjustments.
+- next_work:
+  - Loop 347: add CLI-side prompts when the telemetry export marker is stale, giving operators another reminder before guardrails run.
+  - Loop 348: expose a Talon setting to change the export cadence at runtime without editing configuration files.
+

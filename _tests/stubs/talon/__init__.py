@@ -106,7 +106,32 @@ class _Actions(SimpleNamespace):
 
 
 actions = _Actions()
-cron = SimpleNamespace(after=lambda _, fn: fn())
+
+
+class _Cron:
+    def __init__(self):
+        self.interval_calls: list[tuple[str, object]] = []
+
+    def after(self, _spec: str, fn):
+        fn()
+        return ("after", fn)
+
+    def interval(self, spec: str, fn):
+        handle = (spec, fn)
+        self.interval_calls.append(handle)
+        return handle
+
+    def cancel(self, handle):
+        try:
+            self.interval_calls.remove(handle)
+        except ValueError:
+            pass
+
+    def reset(self):
+        self.interval_calls.clear()
+
+
+cron = _Cron()
 
 
 class _Settings:
@@ -329,10 +354,31 @@ class _AppNamespace(SimpleNamespace):
     def __init__(self):
         super().__init__()
         self.calls: list[tuple[str, tuple, dict]] = []
+        self._callbacks: dict[str, list] = {}
 
     def notify(self, message: str, *args, **kwargs):
         self.calls.append(("notify", (message, *args), kwargs))
         return None
+
+    def register(self, event: str, callback):  # pragma: no cover - simple bookkeeping
+        self._callbacks.setdefault(event, []).append(callback)
+
+    def unregister(self, event: str, callback):  # pragma: no cover - simple bookkeeping
+        callbacks = self._callbacks.get(event)
+        if not callbacks:
+            return
+        try:
+            callbacks.remove(callback)
+        except ValueError:
+            pass
+
+    def trigger(self, event: str):
+        for callback in list(self._callbacks.get(event, [])):
+            callback()
+
+    def reset(self):
+        self.calls.clear()
+        self._callbacks.clear()
 
 
 app = _AppNamespace()

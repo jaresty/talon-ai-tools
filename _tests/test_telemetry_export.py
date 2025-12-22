@@ -66,7 +66,7 @@ class TelemetryExportTests(unittest.TestCase):
 
 
 class TelemetryExportCommandTests(unittest.TestCase):
-    def test_export_history_telemetry_notifies_success(self) -> None:
+    def test_export_model_telemetry_notifies_success(self) -> None:
         from talon_user.lib import telemetryExportCommand as command
 
         fake_result = {
@@ -80,7 +80,7 @@ class TelemetryExportCommandTests(unittest.TestCase):
             command, "snapshot_telemetry", return_value=fake_result
         ) as snapshot:
             with patch.object(command.app, "notify") as notify:
-                result = command.export_history_telemetry(
+                result = command.export_model_telemetry(
                     reset_gating=False, notify_user=True
                 )
 
@@ -93,12 +93,12 @@ class TelemetryExportCommandTests(unittest.TestCase):
         self.assertIn("exported", notify.call_args.args[0])
         self.assertEqual(result, fake_result)
 
-    def test_export_history_telemetry_handles_reset(self) -> None:
+    def test_export_model_telemetry_handles_reset(self) -> None:
         from talon_user.lib import telemetryExportCommand as command
 
         with patch.object(command, "snapshot_telemetry", return_value={}) as snapshot:
             with patch.object(command.app, "notify") as notify:
-                command.export_history_telemetry(reset_gating=True, notify_user=True)
+                command.export_model_telemetry(reset_gating=True, notify_user=True)
 
         snapshot.assert_called_once_with(
             output_dir=command.DEFAULT_OUTPUT_DIR,
@@ -108,16 +108,14 @@ class TelemetryExportCommandTests(unittest.TestCase):
         notify.assert_called_once()
         self.assertIn("reset", notify.call_args.args[0])
 
-    def test_export_history_telemetry_notifies_failure(self) -> None:
+    def test_export_model_telemetry_notifies_failure(self) -> None:
         from talon_user.lib import telemetryExportCommand as command
 
         exc = RuntimeError("boom")
         with patch.object(command, "snapshot_telemetry", side_effect=exc):
             with patch.object(command.app, "notify") as notify:
                 with self.assertRaises(RuntimeError):
-                    command.export_history_telemetry(
-                        reset_gating=False, notify_user=True
-                    )
+                    command.export_model_telemetry(reset_gating=False, notify_user=True)
 
         notify.assert_called_once()
         self.assertIn("failed", notify.call_args.args[0])
@@ -125,9 +123,9 @@ class TelemetryExportCommandTests(unittest.TestCase):
     def test_action_invokes_helper(self) -> None:
         from talon_user.lib import telemetryExportCommand as command
 
-        with patch.object(command, "export_history_telemetry") as export:
+        with patch.object(command, "export_model_telemetry") as export:
             export.return_value = {}
-            command.UserActions.history_export_telemetry(True)
+            command.UserActions.model_export_telemetry(True)
 
         export.assert_called_once_with(reset_gating=True, notify_user=True)
 

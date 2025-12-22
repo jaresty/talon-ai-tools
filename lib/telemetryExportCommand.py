@@ -17,10 +17,10 @@ def _notify(message: str) -> None:
         pass
 
 
-def export_history_telemetry(
+def export_model_telemetry(
     *, reset_gating: bool, notify_user: bool = False
 ) -> Dict[str, Path]:
-    """Snapshot request history telemetry into ``artifacts/telemetry``.
+    """Snapshot AI tools telemetry into ``artifacts/telemetry``.
 
     Parameters
     ----------
@@ -41,7 +41,7 @@ def export_history_telemetry(
         )
     except Exception as exc:
         if notify_user:
-            _notify(f"History telemetry export failed: {exc}")
+            _notify(f"Model telemetry export failed: {exc}")
         raise
 
     DEFAULT_OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
@@ -54,9 +54,9 @@ def export_history_telemetry(
     marker_path.write_text(json.dumps(marker_payload, indent=2), encoding="utf-8")
 
     if notify_user:
-        message = "History telemetry exported."
+        message = "Model telemetry exported."
         if reset_gating:
-            message = "History telemetry exported and gating counters reset."
+            message = "Model telemetry exported and gating counters reset."
         _notify(message)
 
     return result
@@ -64,7 +64,7 @@ def export_history_telemetry(
 
 @mod.action_class
 class UserActions:
-    def history_export_telemetry(reset_gating: bool = False):
-        """Export request history telemetry artifacts for guardrail tooling."""
+    def model_export_telemetry(reset_gating: bool = False):
+        """Export AI tools telemetry artifacts for guardrail tooling."""
 
-        export_history_telemetry(reset_gating=reset_gating, notify_user=True)
+        export_model_telemetry(reset_gating=reset_gating, notify_user=True)

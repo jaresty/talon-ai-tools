@@ -2,7 +2,7 @@
 
 This helper keeps ADR loops observable and safe while letting a single agent advance work in concise, auditable slices.
 
-**Current helper version:** `helper:v20251221.3` (update this string when the helper changes; work-log entries must reference it exactly).
+**Current helper version:** `helper:v20251221.4` (update this string when the helper changes; work-log entries must reference it exactly).
 
 **Context cited per loop.** Entries state which ADR sections, work-log notes, and repository evidence informed the slice; conversational history is out of scope.
 
@@ -23,6 +23,7 @@ This helper keeps ADR loops observable and safe while letting a single agent adv
 - Guardrail failure recorded before behaviour changes, or automation gap justified with evidence.
 - Slice scope describes a single cohesive behaviour or decision, with multi-guardrail plans enumerated and observable.
 - Each loop probes or resolves the highest-impact open assumption whose failure would jeopardize the ADR outcome before tackling lower-risk work.
+- When multiple candidate slices exist, the executor selects the slice that interrogates the riskiest assumption without waiting for external direction; if choices appear indistinguishable, the executor picks any of them without blocking.
 - Loop summary demonstrates the ADR completion horizon changed (or remained unchanged with justification) since the prior entry, naming the domains or tasks still open.
 - Observable delta and rollback plan documented so reverts clearly undo the slice.
 - Evidence block captures commands, outputs, touched files, and removal tests without excess narrative.

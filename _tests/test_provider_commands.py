@@ -12,6 +12,7 @@ if bootstrap is not None:
     from talon_user.lib import providerCommands as provider_module
     from talon_user.lib.providerCommands import UserActions as ProviderActions
     from talon import actions
+    import talon_user.lib.dropReasonUtils as drop_reason_module
 
 
 class ProviderCommandGuardTests(unittest.TestCase):
@@ -73,15 +74,16 @@ class ProviderCommandGuardTests(unittest.TestCase):
             ) as try_begin,
             patch.object(
                 provider_module,
-                "drop_reason_message",
+                "render_drop_reason",
                 return_value="Request running",
-            ) as drop_message,
+                create=True,
+            ) as render_message,
             patch.object(provider_module, "set_drop_reason") as set_reason,
             patch.object(provider_module, "notify") as notify_mock,
         ):
             self.assertTrue(provider_module._reject_if_request_in_flight())
         try_begin.assert_called_once_with(source="providerCommands")
-        drop_message.assert_called_once_with("in_flight")
+        render_message.assert_called_once_with("in_flight")
         set_reason.assert_called_once_with("in_flight", "Request running")
         notify_mock.assert_called_once_with("Request running")
 
@@ -91,17 +93,24 @@ class ProviderCommandGuardTests(unittest.TestCase):
                 "try_begin_request",
                 return_value=(False, "unknown_reason"),
             ),
-            patch.object(provider_module, "drop_reason_message", return_value=""),
+            patch.object(
+                drop_reason_module,
+                "drop_reason_message",
+                return_value="",
+            ),
+            patch.object(
+                provider_module,
+                "render_drop_reason",
+                return_value="Rendered fallback",
+                create=True,
+            ) as render_message,
             patch.object(provider_module, "set_drop_reason") as set_reason,
             patch.object(provider_module, "notify") as notify_mock,
         ):
             self.assertTrue(provider_module._reject_if_request_in_flight())
-        set_reason.assert_called_once_with(
-            "unknown_reason", "GPT: Request blocked; reason=unknown_reason."
-        )
-        notify_mock.assert_called_once_with(
-            "GPT: Request blocked; reason=unknown_reason."
-        )
+        render_message.assert_called_once_with("unknown_reason")
+        set_reason.assert_called_once_with("unknown_reason", "Rendered fallback")
+        notify_mock.assert_called_once_with("Rendered fallback")
 
         with (
             patch.object(

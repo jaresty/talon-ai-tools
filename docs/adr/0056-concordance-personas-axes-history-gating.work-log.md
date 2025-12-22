@@ -2307,3 +2307,17 @@
   - Mitigation: Reuse the shared tests and add guard coverage when migrating each surface so bypasses fail fast.
   - Trigger: Any new drop-reason helper recreated outside `dropReasonUtils` should block landing until the shared renderer is reused.
 
+## 2025-12-22 – Loop 323 (kind: guardrail/tests)
+- Helper: helper:v20251221.4 @ 2025-12-22T15:36Z
+- Focus: Request Gating & Streaming – route provider gating through the shared drop-reason renderer.
+- Deliverables:
+  - Updated `lib/providerCommands._reject_if_request_in_flight` to call `render_drop_reason` and avoid clearing pending drop placeholders prematurely.
+  - Extended `_tests/test_provider_commands.py` guardrails to patch the shared helper and verify fallback propagation.
+- `<VALIDATION_TARGET>`: `python3 -m pytest _tests/test_provider_commands.py::ProviderCommandGuardTests::test_reject_if_request_in_flight_notifies_with_drop_message`
+- Evidence: `docs/adr/evidence/0056/loop-0323.md`
+- Removal test: `git stash push -k -u && python3 -m pytest _tests/test_provider_commands.py::ProviderCommandGuardTests::test_reject_if_request_in_flight_notifies_with_drop_message`
+- Adversarial “risk recap”:
+  - Residual risk: Canvas-based gating helpers (help/model/pattern GUIs) still inline fallback strings; prioritize migrating them next.
+  - Mitigation: Apply the shared helper slice-by-slice, keeping guardrail tests patching `render_drop_reason` so regressions stay observable.
+  - Trigger: Guardrail output from any surface showing raw `reason=` codes indicates the helper was bypassed and should block landing until fixed.
+

@@ -2019,3 +2019,32 @@
   - Mitigation: schedule a telemetry/CLI slice to validate structured drop-reason payloads and add regression checks for macro wrappers.
   - Trigger: telemetry anomalies or duplicate notifications should prompt immediate review before declaring the gating work complete.
 
+## 2025-12-22 – Loop 301 (kind: behaviour)
+- Helper: helper:v20251221.3 @ 2025-12-22T00:23Z
+- Focus: Request Gating & Streaming – align the response canvas guard with the shared facade messaging contract.
+- Deliverables:
+  - Updated `lib/modelResponseCanvas._request_is_in_flight` to swallow facade import failures, keeping Talon startup resilient when gating helpers are unavailable.
+  - Reworked `lib/modelResponseCanvas._reject_if_request_in_flight` to clear drop state on success, pass structured messages to `set_drop_reason`, and fall back to reason text when `drop_reason_message` returns empty strings while preserving the progress-pill behaviour for active sends.
+  - Extended `_tests/test_model_response_canvas_guard.py` to assert the structured message contract for `in_flight` drops, fallback messaging for other reasons, and drop-reason clearing when the guard allows the action.
+- `<VALIDATION_TARGET>`: `python3.11 -m pytest _tests/test_model_response_canvas_guard.py`
+- Evidence: `docs/adr/evidence/0056/loop-0301.md`
+- Removal test: `git checkout -- lib/modelResponseCanvas.py && python3.11 -m pytest _tests/test_model_response_canvas_guard.py` (fails: structured drop-reason expectations regress)
+- Adversarial “risk recap”:
+  - Residual risk: streaming telemetry and Talon macros still rely on historical drop summaries; audit them to ensure the structured messages surface end-to-end before closing the gating migration.
+  - Mitigation: plan a telemetry slice that exercises `history-axis-validate` summaries after a simulated drop and confirm macro wrappers do not bypass `_reject_if_request_in_flight`.
+  - Trigger: telemetry exports without `last_message` content or duplicate notifications should prompt an immediate follow-up loop.
+
+## 2025-12-22 – Loop 302 (kind: behaviour)
+- Helper: helper:v20251221.3 @ 2025-12-22T00:26Z
+- Focus: Request Gating & Streaming – bring the confirmation GUI guard onto the shared facade messaging contract.
+- Deliverables:
+  - Updated `lib/modelConfirmationGUI._request_is_in_flight` to tolerate facade import failures and `lib/modelConfirmationGUI._reject_if_request_in_flight` to clear drop state on success, forward structured messages to `set_drop_reason`, and fall back to reason text when `drop_reason_message` is empty.
+  - Extended `_tests/test_model_confirmation_gui_guard.py` to assert the structured `in_flight` message, fallback messaging for non-`in_flight` reasons, and drop-reason clearing when the guard permits the action.
+- `<VALIDATION_TARGET>`: `python3.11 -m pytest _tests/test_model_confirmation_gui_guard.py`
+- Evidence: `docs/adr/evidence/0056/loop-0302.md`
+- Removal test: `git checkout -- lib/modelConfirmationGUI.py && python3.11 -m pytest _tests/test_model_confirmation_gui_guard.py` (fails: structured drop-reason expectations regress)
+- Adversarial “risk recap”:
+  - Residual risk: confirmation flow macros (e.g., saved Talon scripts) and request telemetry still assume legacy drop messages; audit them alongside the response canvas telemetry slice to ensure structured messages propagate.
+  - Mitigation: reuse the planned telemetry audit to confirm confirmation actions surface the structured message and add regression checks for any macro wrappers discovered.
+  - Trigger: missing confirmation drop messages or macro-specific gating duplicates should trigger another loop before closing ADR-0056.
+

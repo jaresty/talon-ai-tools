@@ -55,6 +55,28 @@
   - Document the new `history export telemetry` voice command in operator runbooks and automate invocation before CI guardrail bundles.
   - Evaluate invoking `user.history_export_telemetry` automatically when the guardrail Make targets are triggered from Talon.
 
+## 2025-12-22 – Loop 350 (kind: guardrail/tests)
+- helper_version: helper:v20251221.5
+- focus: Request Gating & Streaming – enforce telemetry export freshness before guardrail runs.
+- riskiest_assumption: Without an automated freshness check, guardrail Make targets run on stale telemetry (probability medium, impact high for Concordance accuracy).
+- validation_targets:
+  - python3 -m pytest _tests/test_make_request_history_guardrails.py
+  - python3 -m pytest _tests/test_run_guardrails_ci.py
+  - python3 -m pytest _tests/test_telemetry_export.py
+- evidence:
+  - red | 2025-12-22T20:38:02Z | exit 1 | Talon module loader (cron) importing telemetryExportCommand.py
+      helper:diff-snapshot=0 files changed
+      Action definition failed because `from __future__ import annotations` produced string-typed parameters; guardrail leaked before slice landed.
+  - green | 2025-12-22T20:47:18Z | exit 0 | python3 -m pytest _tests/test_make_request_history_guardrails.py _tests/test_run_guardrails_ci.py _tests/test_telemetry_export.py
+      helper:diff-snapshot=7 files changed, 150 insertions(+), 3 deletions(-)
+      14 passed in 19.30s
+- rollback_plan: git restore --source=HEAD -- Makefile lib/telemetryExportCommand.py scripts/tools/check-telemetry-export-marker.py _tests/test_make_request_history_guardrails.py _tests/test_run_guardrails_ci.py docs/adr/0056-concordance-personas-axes-history-gating.md docs/adr/0056-concordance-personas-axes-history-gating.work-log.md && python3 -m pytest _tests/test_make_request_history_guardrails.py
+- delta_summary: helper:diff-snapshot=7 files changed, 150 insertions(+), 3 deletions(-); removed the problematic future annotations import, added a telemetry export marker, wired a freshness check into history guardrail targets, updated guardrail tests to honor the bypass env var, and documented the new enforcement.
+- residual_risks:
+  - Developers running guardrails in non-Talon environments must remember to set `ALLOW_STALE_TELEMETRY=1`; follow-up automation could prompt or invoke Talon export automatically.
+- next_work:
+  - Evaluate invoking `user.history_export_telemetry` automatically from Talon guardrail macros so manual exports remain optional.
+
 ## 2025-12-22 – Loop 349 (kind: docs)
 - helper_version: helper:v20251221.5
 - focus: Persona & Intent Presets – update monitoring guidance to mention the new Talon export action and runbook integration.

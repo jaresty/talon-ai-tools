@@ -1,5 +1,5 @@
-from __future__ import annotations
-
+import json
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Dict
 
@@ -43,6 +43,15 @@ def export_history_telemetry(
         if notify_user:
             _notify(f"History telemetry export failed: {exc}")
         raise
+
+    DEFAULT_OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+    marker_path = DEFAULT_OUTPUT_DIR / "talon-export-marker.json"
+    marker_payload = {
+        "exported_at": datetime.now(timezone.utc).isoformat(),
+        "reset_gating": reset_gating,
+        "artifacts": {key: str(path) for key, path in result.items()},
+    }
+    marker_path.write_text(json.dumps(marker_payload, indent=2), encoding="utf-8")
 
     if notify_user:
         message = "History telemetry exported."

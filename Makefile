@@ -103,6 +103,9 @@ overlay-lifecycle-guardrails:
 
 request-history-guardrails:
 	mkdir -p artifacts/telemetry
+	@if [ -z "$$CI" ]; then \
+		$(PYTHON) scripts/tools/check-telemetry-export-marker.py || exit $$?; \
+	fi
 	PYTHONPATH=. $(PYTHON) -m lib.telemetryExport --output-dir artifacts/telemetry --reset-gating || \
 		( $(PYTHON) scripts/tools/history-axis-validate.py --summary-path artifacts/telemetry/history-validation-summary.json ; \
 		  if [ ! -f artifacts/telemetry/suggestion-skip-summary.json ]; then \
@@ -120,6 +123,9 @@ request-history-guardrails:
 
 request-history-guardrails-fast:
 	mkdir -p artifacts/telemetry
+	@if [ -z "$$CI" ]; then \
+		$(PYTHON) scripts/tools/check-telemetry-export-marker.py || exit $$?; \
+	fi
 	PYTHONPATH=. $(PYTHON) -m lib.telemetryExport --output-dir artifacts/telemetry || \
 		( $(PYTHON) scripts/tools/history-axis-validate.py --summary-path artifacts/telemetry/history-validation-summary.json ; \
 		  if [ ! -f artifacts/telemetry/suggestion-skip-summary.json ]; then \

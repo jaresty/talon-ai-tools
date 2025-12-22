@@ -1,4 +1,5 @@
 import json
+import os
 import subprocess
 import sys
 import unittest
@@ -44,12 +45,15 @@ if not TYPE_CHECKING:
             )
             if streaming_summary_path.exists():
                 streaming_summary_path.unlink()
+            env = os.environ.copy()
+            env["ALLOW_STALE_TELEMETRY"] = "1"
             result = subprocess.run(
                 ["make", "request-history-guardrails"],
                 cwd=str(repo_root),
                 capture_output=True,
                 text=True,
                 check=False,
+                env=env,
             )
             if result.returncode != 0:
                 self.fail(
@@ -185,12 +189,15 @@ if not TYPE_CHECKING:
             )
             if streaming_summary_path.exists():
                 streaming_summary_path.unlink()
+            env = os.environ.copy()
+            env["ALLOW_STALE_TELEMETRY"] = "1"
             result = subprocess.run(
                 ["make", "request-history-guardrails-fast"],
                 cwd=str(repo_root),
                 capture_output=True,
                 text=True,
                 check=False,
+                env=env,
             )
             if result.returncode != 0:
                 self.fail(

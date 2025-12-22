@@ -5,6 +5,7 @@ import sys
 import tempfile
 import unittest
 from pathlib import Path
+
 from typing import TYPE_CHECKING
 
 if not TYPE_CHECKING:
@@ -157,12 +158,15 @@ if not TYPE_CHECKING:
             skip_path.write_text(
                 json.dumps(skip_payload_seed, indent=2), encoding="utf-8"
             )
+            env = os.environ.copy()
+            env["ALLOW_STALE_TELEMETRY"] = "1"
             result = subprocess.run(
                 ["/bin/bash", str(script), "request-history-guardrails"],
                 check=False,
                 capture_output=True,
                 text=True,
                 cwd=str(repo_root),
+                env=env,
             )
             if result.returncode != 0:
                 self.fail(
@@ -342,6 +346,7 @@ if not TYPE_CHECKING:
             with tempfile.TemporaryDirectory() as tmpdir:
                 step_summary_path = Path(tmpdir) / "gha-summary.md"
                 env = os.environ.copy()
+                env["ALLOW_STALE_TELEMETRY"] = "1"
                 env["GITHUB_STEP_SUMMARY"] = str(step_summary_path)
                 env.setdefault("GITHUB_SERVER_URL", "https://github.com")
                 env["GITHUB_REPOSITORY"] = "example/repo"
@@ -524,6 +529,7 @@ if not TYPE_CHECKING:
                 fake_make.chmod(0o755)
                 step_summary_path = Path(tmpdir) / "gha-summary.md"
                 env = os.environ.copy()
+                env["ALLOW_STALE_TELEMETRY"] = "1"
                 env["PATH"] = f"{tmpdir}{os.pathsep}{env.get('PATH', '')}"
                 env["GITHUB_STEP_SUMMARY"] = str(step_summary_path)
                 result = subprocess.run(

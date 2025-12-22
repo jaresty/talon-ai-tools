@@ -2115,3 +2115,17 @@
   - Mitigation: rerun guardrails after macro updates and extend the ADR when new surfaces migrate to `requestGating`.
   - Trigger: discovery of additional ungated canvases/macros should prompt another documentation loop before declaring the gating domain complete.
 
+## 2025-12-22 – Loop 309 (kind: behaviour)
+- Helper: helper:v20251221.4 @ 2025-12-22T02:59Z
+- Focus: Request Gating & Streaming – keep Help Hub from clearing pending drop messages on successful guard passes.
+- Deliverables:
+  - Updated `lib/helpHub._reject_if_request_in_flight` to consult `last_drop_reason()` before clearing state and to retain cached drop messaging when a guard had previously fired.
+  - Extended `_tests/test_help_hub_guard.py` to cover both the preserved drop message path and the fallback that still clears when no pending reason exists.
+- `<VALIDATION_TARGET>`: `python3.11 -m pytest _tests/test_help_hub_guard.py::HelpHubGuardTests::test_reject_if_request_in_flight_notifies_with_drop_message`
+- Evidence: `docs/adr/evidence/0056/loop-0309.md`
+- Removal test: `git checkout -- lib/helpHub.py && python3.11 -m pytest _tests/test_help_hub_guard.py::HelpHubGuardTests::test_reject_if_request_in_flight_notifies_with_drop_message`
+- Adversarial “risk recap”:
+  - Residual risk: other gating surfaces (provider commands, model canvases) still clear drop state unconditionally and need the same preservation logic.
+  - Mitigation: migrate those callers in subsequent loops before declaring the gating consolidation complete.
+  - Trigger: telemetry showing missing last-drop messaging from other surfaces should block closure until their guards match the new contract.
+

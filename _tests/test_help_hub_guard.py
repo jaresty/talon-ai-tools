@@ -92,12 +92,26 @@ class HelpHubGuardTests(unittest.TestCase):
 
         with (
             patch.object(help_module, "try_begin_request", return_value=(True, "")),
+            patch.object(help_module, "last_drop_reason", return_value="", create=True),
             patch.object(help_module, "set_drop_reason") as set_reason,
             patch.object(help_module, "notify") as notify_mock,
         ):
             self.assertFalse(help_module._reject_if_request_in_flight())
         set_reason.assert_called_once_with("")
         notify_mock.assert_not_called()
+
+        with (
+            patch.object(help_module, "try_begin_request", return_value=(True, "")),
+            patch.object(
+                help_module,
+                "last_drop_reason",
+                return_value="drop_pending",
+                create=True,
+            ),
+            patch.object(help_module, "set_drop_reason") as set_reason,
+        ):
+            self.assertFalse(help_module._reject_if_request_in_flight())
+        set_reason.assert_not_called()
 
 
 if __name__ == "__main__":

@@ -2103,3 +2103,15 @@
   - Mitigation: continue migrating remaining gating surfaces to the shared facade and add targeted tests for each to guard cached drop messaging.
   - Trigger: regressions where drawer drop messages disappear or response canvas reloads throw `NameError` should block completion of the gating consolidation work.
 
+## 2025-12-22 – Loop 308 (kind: docs)
+- Helper: helper:v20251221.4 @ 2025-12-22T01:35Z
+- Focus: Request Gating & Streaming – capture the Loop 306–307 guardrail coverage in ADR guidance.
+- Change: Updated the GUI gating migration bullet to call out the new drop-reason preservation tests and refreshed the monitoring checklist so future canvases/macros mirror those guardrails.
+- Checks: Documentation-only loop (no tests run).
+- Evidence: inline
+- Removal test: Reverting would hide the recorded guardrail coverage and follow-up monitoring tasks, making it easier to regress the new drop-message contract without documentation.
+- Adversarial “risk recap”:
+  - Residual risk: pending macro audits may still uncover bespoke gating helpers; keep the monitoring checklist visible until those audits complete.
+  - Mitigation: rerun guardrails after macro updates and extend the ADR when new surfaces migrate to `requestGating`.
+  - Trigger: discovery of additional ungated canvases/macros should prompt another documentation loop before declaring the gating domain complete.
+

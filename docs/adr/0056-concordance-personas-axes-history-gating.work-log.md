@@ -2129,3 +2129,17 @@
   - Mitigation: migrate those callers in subsequent loops before declaring the gating consolidation complete.
   - Trigger: telemetry showing missing last-drop messaging from other surfaces should block closure until their guards match the new contract.
 
+## 2025-12-22 – Loop 310 (kind: behaviour)
+- Helper: helper:v20251221.4 @ 2025-12-22T03:02Z
+- Focus: Request Gating & Streaming – align provider commands with the preserved drop-message contract.
+- Deliverables:
+  - Updated `lib/providerCommands._reject_if_request_in_flight` to check `last_drop_reason()` before clearing state so previously surfaced drop messages survive across guard successes.
+  - Extended `_tests/test_provider_commands.py` to cover both the preserved drop path and the fallback that still clears when no pending reason is recorded.
+- `<VALIDATION_TARGET>`: `python3.11 -m pytest _tests/test_provider_commands.py::ProviderCommandGuardTests::test_reject_if_request_in_flight_notifies_with_drop_message`
+- Evidence: `docs/adr/evidence/0056/loop-0310.md`
+- Removal test: `git checkout -- lib/providerCommands.py && python3.11 -m pytest _tests/test_provider_commands.py::ProviderCommandGuardTests::test_reject_if_request_in_flight_notifies_with_drop_message`
+- Adversarial “risk recap”:
+  - Residual risk: model help/suggestion canvases still clear drop state unconditionally and need equivalent coverage.
+  - Mitigation: migrate those canvases next so every UI guard shares the same drop-preservation behaviour.
+  - Trigger: telemetry missing last-drop messages from those canvases should block ADR completion until they receive matching fixes.
+

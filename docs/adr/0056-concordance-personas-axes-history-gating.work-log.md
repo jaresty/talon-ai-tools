@@ -7,6 +7,32 @@
   - `scripts/tools/axis-catalog-validate.py`: ensure validator tooling enforces the absence of style tokens under all axis catalogs/lists.
   - Axis docs/help generators: confirm generated docs have no residual style references before removing runtime guards.
 
+## 2025-12-22 – Loop 347 (kind: guardrail/tests)
+- helper_version: helper:v20251221.5
+- focus: Request Gating & Streaming – CLI guardrails reuse exported telemetry JSON instead of recomputing skip counts.
+- riskiest_assumption: Guardrail scripts preserve Talon-exported telemetry without overwriting counts when Talon is unavailable (probability medium, impact high for CLI-only runs).
+- validation_targets:
+  - python3 -m pytest _tests/test_make_request_history_guardrails.py
+  - python3 -m pytest _tests/test_run_guardrails_ci.py
+- evidence:
+  - red | 2025-12-22T20:06:50Z | exit 1 | python3 -m pytest _tests/test_make_request_history_guardrails.py
+      helper:diff-snapshot=0 files changed
+      Guardrail output still reported `Suggestion skip total: 0`; CLI fallback rewrote the exported summary to zero counts.
+  - green | 2025-12-22T20:09:12Z | exit 0 | python3 -m pytest _tests/test_make_request_history_guardrails.py
+      helper:diff-snapshot=4 files changed, 220 insertions(+), 17 deletions(-)
+      2 passed in 1.50s
+  - green | 2025-12-22T20:29:00Z | exit 0 | python3 -m pytest _tests/test_run_guardrails_ci.py
+      helper:diff-snapshot=4 files changed, 220 insertions(+), 17 deletions(-)
+      7 passed in 18.77s
+- rollback_plan: git restore --source=HEAD -- Makefile scripts/tools/run_guardrails_ci.sh _tests/test_make_request_history_guardrails.py _tests/test_run_guardrails_ci.py && python3 -m pytest _tests/test_make_request_history_guardrails.py
+- delta_summary: helper:diff-snapshot=4 files changed, 220 insertions(+), 17 deletions(-); seeded guardrail tests with telemetry fixtures, updated Makefile and `scripts/tools/run_guardrails_ci.sh` to reuse exported suggestion-skip telemetry, and tightened job-summary expectations for non-zero skip totals.
+- residual_risks:
+  - Talon exporter still pending; without a fresh snapshot the CLI will continue to surface whatever counts were last exported (including zeros).
+  - If telemetry schema changes, the Python snippets that summarise counts may need updates to avoid misreporting skip reasons.
+- next_work:
+  - Implement the Talon-side telemetry exporter loop so CLI guardrails start from live suggestion-skip counts.
+  - Audit remaining CLI helpers to ensure they prefer exported telemetry artefacts over in-memory Talon state.
+
 ## 2025-12-22 – Loop 346 (kind: guardrail/tests)
 - helper_version: helper:v20251221.5
 - focus: Request Gating & Streaming – guardrail make/CI entrypoints use the telemetry exporter with CLI fallback and relocate artifacts to `artifacts/telemetry`.

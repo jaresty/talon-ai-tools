@@ -23,7 +23,9 @@ run_telemetry_export() {
     return 0
   fi
   python3 scripts/tools/history-axis-validate.py --summary-path "artifacts/telemetry/history-validation-summary.json"
-  python3 scripts/tools/suggestion-skip-export.py --output "artifacts/telemetry/suggestion-skip-summary.json" --pretty
+  if [[ ! -f "artifacts/telemetry/suggestion-skip-summary.json" ]]; then
+    python3 scripts/tools/suggestion-skip-export.py --output "artifacts/telemetry/suggestion-skip-summary.json" --pretty
+  fi
   python3 scripts/tools/history-axis-export-telemetry.py "artifacts/telemetry/history-validation-summary.json" --output "artifacts/telemetry/history-validation-summary.telemetry.json" --top 5 --pretty --skip-summary "artifacts/telemetry/suggestion-skip-summary.json"
 }
 
@@ -372,7 +374,9 @@ PY
   echo "Streaming gating last drop: ${STREAMING_LAST_SUMMARY}"
 
   SKIP_SUMMARY_PATH="${SUMMARY_DIR}/suggestion-skip-summary.json"
-  python3 scripts/tools/suggestion-skip-export.py --output "${SKIP_SUMMARY_PATH}" --pretty
+  if [[ ! -f "${SKIP_SUMMARY_PATH}" ]]; then
+    python3 scripts/tools/suggestion-skip-export.py --output "${SKIP_SUMMARY_PATH}" --pretty
+  fi
   SKIP_JSON=$(cat "${SKIP_SUMMARY_PATH}")
   echo "Suggestion skip summary (json): ${SKIP_JSON}"
   SKIP_TOTAL=$(python3 - "${SKIP_SUMMARY_PATH}" <<'PY'

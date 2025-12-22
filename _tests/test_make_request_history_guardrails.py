@@ -18,8 +18,32 @@ if not TYPE_CHECKING:
                 / "telemetry"
                 / "history-validation-summary.json"
             )
+            summary_dir = summary_path.parent
+            summary_dir.mkdir(parents=True, exist_ok=True)
             if summary_path.exists():
                 summary_path.unlink()
+            skip_path = summary_path.with_name("suggestion-skip-summary.json")
+            skip_payload_seed = {
+                "counts": {"streaming_disabled": 2, "rate_limited": 1},
+                "total_skipped": 3,
+                "reason_counts": [
+                    {"reason": "streaming_disabled", "count": 2},
+                    {"reason": "rate_limited", "count": 1},
+                ],
+            }
+            skip_path.write_text(
+                json.dumps(skip_payload_seed, indent=2), encoding="utf-8"
+            )
+            telemetry_path = summary_path.with_name(
+                "history-validation-summary.telemetry.json"
+            )
+            if telemetry_path.exists():
+                telemetry_path.unlink()
+            streaming_summary_path = summary_path.with_name(
+                "history-validation-summary.streaming.json"
+            )
+            if streaming_summary_path.exists():
+                streaming_summary_path.unlink()
             result = subprocess.run(
                 ["make", "request-history-guardrails"],
                 cwd=str(repo_root),
@@ -44,6 +68,12 @@ if not TYPE_CHECKING:
             )
             self.assertIn("- Last gating drop: none", result.stdout)
             self.assertIn("- Streaming last drop: none", result.stdout)
+            self.assertIn("Suggestion skip summary (json):", result.stdout)
+            self.assertIn("Suggestion skip total: 3", result.stdout)
+            self.assertIn(
+                "Suggestion skip reasons: streaming_disabled=2, rate_limited=1",
+                result.stdout,
+            )
             self.assertTrue(
                 summary_path.exists(),
                 "request-history-guardrails did not produce history-validation-summary.json",
@@ -95,16 +125,29 @@ if not TYPE_CHECKING:
             self.assertEqual(telemetry_payload.get("streaming_status"), "unknown")
             self.assertEqual(telemetry_payload.get("last_drop_message"), "none")
             self.assertIsNone(telemetry_payload.get("last_drop_code"))
-            self.assertIn("Suggestion skip summary (json):", result.stdout)
-            self.assertIn("Suggestion skip total:", result.stdout)
             skip_path = summary_path.with_name("suggestion-skip-summary.json")
             self.assertTrue(
                 skip_path.exists(),
                 "Suggestion skip summary was not produced",
             )
             skip_payload = json.loads(skip_path.read_text(encoding="utf-8"))
-            self.assertEqual(skip_payload.get("total_skipped"), 0)
-            self.assertEqual(skip_payload.get("reason_counts"), [])
+            self.assertEqual(skip_payload.get("total_skipped"), 3)
+            self.assertEqual(
+                skip_payload.get("reason_counts"),
+                [
+                    {"reason": "streaming_disabled", "count": 2},
+                    {"reason": "rate_limited", "count": 1},
+                ],
+            )
+            telemetry_skip = telemetry_payload.get("suggestion_skip", {})
+            self.assertEqual(telemetry_skip.get("total"), 3)
+            self.assertEqual(
+                telemetry_skip.get("reasons"),
+                [
+                    {"reason": "streaming_disabled", "count": 2},
+                    {"reason": "rate_limited", "count": 1},
+                ],
+            )
 
         def test_make_request_history_guardrails_fast_produces_summary(self) -> None:
             """Guardrail: request-history-guardrails-fast should export the validation summary."""
@@ -116,8 +159,32 @@ if not TYPE_CHECKING:
                 / "telemetry"
                 / "history-validation-summary.json"
             )
+            summary_dir = summary_path.parent
+            summary_dir.mkdir(parents=True, exist_ok=True)
             if summary_path.exists():
                 summary_path.unlink()
+            skip_path = summary_path.with_name("suggestion-skip-summary.json")
+            skip_payload_seed = {
+                "counts": {"streaming_disabled": 2, "rate_limited": 1},
+                "total_skipped": 3,
+                "reason_counts": [
+                    {"reason": "streaming_disabled", "count": 2},
+                    {"reason": "rate_limited", "count": 1},
+                ],
+            }
+            skip_path.write_text(
+                json.dumps(skip_payload_seed, indent=2), encoding="utf-8"
+            )
+            telemetry_path = summary_path.with_name(
+                "history-validation-summary.telemetry.json"
+            )
+            if telemetry_path.exists():
+                telemetry_path.unlink()
+            streaming_summary_path = summary_path.with_name(
+                "history-validation-summary.streaming.json"
+            )
+            if streaming_summary_path.exists():
+                streaming_summary_path.unlink()
             result = subprocess.run(
                 ["make", "request-history-guardrails-fast"],
                 cwd=str(repo_root),
@@ -142,6 +209,12 @@ if not TYPE_CHECKING:
             )
             self.assertIn("- Last gating drop: none", result.stdout)
             self.assertIn("- Streaming last drop: none", result.stdout)
+            self.assertIn("Suggestion skip summary (json):", result.stdout)
+            self.assertIn("Suggestion skip total: 3", result.stdout)
+            self.assertIn(
+                "Suggestion skip reasons: streaming_disabled=2, rate_limited=1",
+                result.stdout,
+            )
             self.assertTrue(
                 summary_path.exists(),
                 "request-history-guardrails-fast did not produce history-validation-summary.json",
@@ -193,16 +266,29 @@ if not TYPE_CHECKING:
             self.assertEqual(telemetry_payload.get("streaming_status"), "unknown")
             self.assertEqual(telemetry_payload.get("last_drop_message"), "none")
             self.assertIsNone(telemetry_payload.get("last_drop_code"))
-            self.assertIn("Suggestion skip summary (json):", result.stdout)
-            self.assertIn("Suggestion skip total:", result.stdout)
             skip_path = summary_path.with_name("suggestion-skip-summary.json")
             self.assertTrue(
                 skip_path.exists(),
                 "Suggestion skip summary was not produced (fast target)",
             )
             skip_payload = json.loads(skip_path.read_text(encoding="utf-8"))
-            self.assertEqual(skip_payload.get("total_skipped"), 0)
-            self.assertEqual(skip_payload.get("reason_counts"), [])
+            self.assertEqual(skip_payload.get("total_skipped"), 3)
+            self.assertEqual(
+                skip_payload.get("reason_counts"),
+                [
+                    {"reason": "streaming_disabled", "count": 2},
+                    {"reason": "rate_limited", "count": 1},
+                ],
+            )
+            telemetry_skip = telemetry_payload.get("suggestion_skip", {})
+            self.assertEqual(telemetry_skip.get("total"), 3)
+            self.assertEqual(
+                telemetry_skip.get("reasons"),
+                [
+                    {"reason": "streaming_disabled", "count": 2},
+                    {"reason": "rate_limited", "count": 1},
+                ],
+            )
 
 else:
     if not TYPE_CHECKING:

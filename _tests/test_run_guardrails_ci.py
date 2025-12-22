@@ -131,8 +131,32 @@ if not TYPE_CHECKING:
                 / "telemetry"
                 / "history-validation-summary.json"
             )
+            summary_dir = summary_path.parent
+            summary_dir.mkdir(parents=True, exist_ok=True)
             if summary_path.exists():
                 summary_path.unlink()
+            streaming_summary_path = summary_path.with_name(
+                "history-validation-summary.streaming.json"
+            )
+            if streaming_summary_path.exists():
+                streaming_summary_path.unlink()
+            telemetry_path = summary_path.with_name(
+                "history-validation-summary.telemetry.json"
+            )
+            if telemetry_path.exists():
+                telemetry_path.unlink()
+            skip_path = summary_path.with_name("suggestion-skip-summary.json")
+            skip_payload_seed = {
+                "counts": {"streaming_disabled": 2, "rate_limited": 1},
+                "total_skipped": 3,
+                "reason_counts": [
+                    {"reason": "streaming_disabled", "count": 2},
+                    {"reason": "rate_limited", "count": 1},
+                ],
+            }
+            skip_path.write_text(
+                json.dumps(skip_payload_seed, indent=2), encoding="utf-8"
+            )
             result = subprocess.run(
                 ["/bin/bash", str(script), "request-history-guardrails"],
                 check=False,
@@ -181,8 +205,9 @@ if not TYPE_CHECKING:
                 "Suggestion skip summary (json):",
                 result.stdout,
             )
+            self.assertIn("Suggestion skip total: 3", result.stdout)
             self.assertIn(
-                "Suggestion skip total:",
+                "Suggestion skip reasons: streaming_disabled=2, rate_limited=1",
                 result.stdout,
             )
 
@@ -243,6 +268,25 @@ if not TYPE_CHECKING:
             self.assertEqual(telemetry_payload.get("top_gating_sources"), [])
             self.assertEqual(telemetry_payload.get("last_drop_message"), "none")
             self.assertIsNone(telemetry_payload.get("last_drop_code"))
+            telemetry_skip = telemetry_payload.get("suggestion_skip", {})
+            self.assertEqual(telemetry_skip.get("total"), 3)
+            self.assertEqual(
+                telemetry_skip.get("reasons"),
+                [
+                    {"reason": "streaming_disabled", "count": 2},
+                    {"reason": "rate_limited", "count": 1},
+                ],
+            )
+
+            skip_payload = json.loads(skip_path.read_text(encoding="utf-8"))
+            self.assertEqual(skip_payload.get("total_skipped"), 3)
+            self.assertEqual(
+                skip_payload.get("reason_counts"),
+                [
+                    {"reason": "streaming_disabled", "count": 2},
+                    {"reason": "rate_limited", "count": 1},
+                ],
+            )
 
             self.assertIn(
                 "Telemetry summary saved at artifacts/telemetry/history-validation-summary.telemetry.json",
@@ -269,8 +313,32 @@ if not TYPE_CHECKING:
                 / "telemetry"
                 / "history-validation-summary.json"
             )
+            summary_dir = summary_path.parent
+            summary_dir.mkdir(parents=True, exist_ok=True)
             if summary_path.exists():
                 summary_path.unlink()
+            streaming_summary_path = summary_path.with_name(
+                "history-validation-summary.streaming.json"
+            )
+            if streaming_summary_path.exists():
+                streaming_summary_path.unlink()
+            telemetry_path = summary_path.with_name(
+                "history-validation-summary.telemetry.json"
+            )
+            if telemetry_path.exists():
+                telemetry_path.unlink()
+            skip_path = summary_path.with_name("suggestion-skip-summary.json")
+            skip_payload_seed = {
+                "counts": {"streaming_disabled": 2, "rate_limited": 1},
+                "total_skipped": 3,
+                "reason_counts": [
+                    {"reason": "streaming_disabled", "count": 2},
+                    {"reason": "rate_limited", "count": 1},
+                ],
+            }
+            skip_path.write_text(
+                json.dumps(skip_payload_seed, indent=2), encoding="utf-8"
+            )
             with tempfile.TemporaryDirectory() as tmpdir:
                 step_summary_path = Path(tmpdir) / "gha-summary.md"
                 env = os.environ.copy()
@@ -360,6 +428,18 @@ if not TYPE_CHECKING:
                     summary_text,
                 )
                 self.assertIn(
+                    "- suggestion skips total: 3",
+                    summary_text,
+                )
+                self.assertIn(
+                    "- suggestion skip reasons: streaming_disabled=2, rate_limited=1",
+                    summary_text,
+                )
+                self.assertIn(
+                    "- Suggestion skip summary saved at artifacts/telemetry/suggestion-skip-summary.json",
+                    summary_text,
+                )
+                self.assertIn(
                     "- Telemetry summary saved at artifacts/telemetry/history-validation-summary.telemetry.json",
                     summary_text,
                 )
@@ -421,6 +501,21 @@ if not TYPE_CHECKING:
 
             if streaming_summary_path.exists():
                 streaming_summary_path.unlink()
+            telemetry_path = summary_dir / "history-validation-summary.telemetry.json"
+            if telemetry_path.exists():
+                telemetry_path.unlink()
+            skip_path = summary_dir / "suggestion-skip-summary.json"
+            skip_payload_seed = {
+                "counts": {"streaming_disabled": 2, "rate_limited": 1},
+                "total_skipped": 3,
+                "reason_counts": [
+                    {"reason": "streaming_disabled", "count": 2},
+                    {"reason": "rate_limited", "count": 1},
+                ],
+            }
+            skip_path.write_text(
+                json.dumps(skip_payload_seed, indent=2), encoding="utf-8"
+            )
 
             summary_text = ""
             with tempfile.TemporaryDirectory() as tmpdir:
@@ -449,6 +544,14 @@ if not TYPE_CHECKING:
                     "run_guardrails_ci.sh did not append to the GitHub step summary file",
                 )
                 summary_text = step_summary_path.read_text(encoding="utf-8")
+            self.assertIn(
+                "- suggestion skips total: 3",
+                summary_text,
+            )
+            self.assertIn(
+                "- suggestion skip reasons: streaming_disabled=2, rate_limited=1",
+                summary_text,
+            )
             stdout = result.stdout
             self.assertIn("History summary gating status: unknown", stdout)
             self.assertIn(
@@ -459,6 +562,11 @@ if not TYPE_CHECKING:
                 "Streaming gating last drop: Streaming disabled guardrail (code=streaming_disabled)",
                 stdout,
             )
+            self.assertIn("Suggestion skip total: 3", stdout)
+            self.assertIn(
+                "Suggestion skip reasons: streaming_disabled=2, rate_limited=1",
+                stdout,
+            )
 
             self.assertIn("Streaming gating reasons:", stdout)
 
@@ -466,6 +574,7 @@ if not TYPE_CHECKING:
 
             self.assertIn("Streaming gating sources:", stdout)
             self.assertIn("| Source | Count |", stdout)
+
             self.assertIn(
                 "Streaming gating summary: status=unknown; total=3; counts=streaming_disabled=2, rate_limited=1; sources=modelHelpCanvas=2, providerCommands=1; last=streaming_disabled (count=2); last_source=n/a; last_message=Streaming disabled guardrail (code=streaming_disabled)",
                 result.stdout,

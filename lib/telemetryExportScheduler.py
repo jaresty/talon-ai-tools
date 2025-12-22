@@ -60,5 +60,19 @@ def _on_app_ready() -> None:
         _export_telemetry()
 
 
+def _on_interval_setting_change(_value: object) -> None:
+    if _initialized:
+        _maybe_schedule()
+
+
 if hasattr(app, "register"):
     app.register("ready", _on_app_ready)
+
+if hasattr(settings, "register"):
+    try:
+        settings.register(
+            "user.guardrail_telemetry_export_interval_minutes",
+            _on_interval_setting_change,
+        )
+    except Exception:
+        pass

@@ -2739,3 +2739,19 @@
   - Loop 348: expose a Talon setting change listener so export cadence updates automatically when the interval is tweaked.
   - Loop 349: evaluate an interactive CLI retry flag for operators who want to pause until Talon finishes the export.
 
+## 2025-12-22 – Loop 348 (kind: guardrail/tests)
+- helper_version: helper:v20251221.5
+- focus: Request Gating & Streaming – reschedule telemetry exports when the cadence setting changes.
+- riskiest_assumption: Operators adjusting `guardrail_telemetry_export_interval_minutes` expect Talon to adopt the new cadence immediately; if it doesn’t, exports drift or stop entirely (probability medium, impact medium-high for stale guardrail data).
+- validation_targets:
+  - `python3 -m pytest _tests/test_telemetry_export_scheduler.py`
+- evidence: `docs/adr/evidence/0056/loop-0348.md`
+- rollback_plan: `git restore -- lib/telemetryExportScheduler.py _tests/stubs/talon/__init__.py _tests/test_telemetry_export_scheduler.py docs/adr/0056-concordance-personas-axes-history-gating.md docs/adr/0056-concordance-personas-axes-history-gating.work-log.md docs/adr/evidence/0056/loop-0348.md`
+- delta_summary: helper:diff-snapshot=4 files changed, 71 insertions(+); Talon stubs now support settings callbacks, the scheduler listens for cadence updates, tests cover the reschedule path, and ADR guidance notes the behaviour.
+- residual_risks:
+  - Scheduler ignores invalid values; add CLI validation or telemetry alerts if operators repeatedly input nonsense.
+  - Multiple settings changes in rapid succession could thrash the cron handle; monitor for performance regressions and debounce if necessary.
+- next_work:
+  - Loop 349: evaluate an interactive CLI retry flag for guardrails that waits for Talon exports to finish when stale.
+  - Loop 350: add logging/telemetry around scheduler reschedules to detect misconfigurations.
+

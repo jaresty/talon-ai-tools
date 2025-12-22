@@ -11,6 +11,7 @@ class TelemetryExportSchedulerTests(unittest.TestCase):
         actions.app.calls = []
         cron.reset()
         app.reset()
+        settings.reset()
         sys.modules.pop("talon_user.lib.telemetryExportScheduler", None)
 
     def _load_scheduler(self):
@@ -36,3 +37,17 @@ class TelemetryExportSchedulerTests(unittest.TestCase):
 
         self.assertEqual(actions.user.calls, [])
         self.assertEqual(cron.interval_calls, [])
+
+    def test_setting_change_reschedules_interval(self) -> None:
+        settings.set("user.guardrail_telemetry_export_interval_minutes", 10)
+        self._load_scheduler()
+        app.trigger("ready")
+
+        self.assertTrue(cron.interval_calls)
+        self.assertEqual(cron.interval_calls[0][0], "10m")
+        actions.user.calls.clear()
+
+        settings.set("user.guardrail_telemetry_export_interval_minutes", 5)
+        self.assertEqual(len(cron.interval_calls), 1)
+        self.assertEqual(cron.interval_calls[0][0], "5m")
+        self.assertEqual(actions.user.calls, [])

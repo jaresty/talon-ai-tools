@@ -1,6 +1,7 @@
 """Lightweight Talon stubs for running unit tests outside the Talon runtime."""
 
 from types import SimpleNamespace
+from typing import Callable
 
 
 class Context:
@@ -137,6 +138,7 @@ cron = _Cron()
 class _Settings:
     def __init__(self):
         self._values: dict[str, object] = {}
+        self._callbacks: dict[str, list[Callable[[object], None]]] = {}
 
     def _register_default(self, key: str, value):
         if key not in self._values and value is not None:
@@ -149,6 +151,15 @@ class _Settings:
 
     def set(self, key: str, value):
         self._values[key] = value
+        for callback in self._callbacks.get(key, []):
+            callback(value)
+
+    def register(self, key: str, callback: Callable[[object], None]):
+        self._callbacks.setdefault(key, []).append(callback)
+
+    def reset(self):
+        self._values.clear()
+        self._callbacks.clear()
 
 
 settings = _Settings()

@@ -380,9 +380,10 @@ Across all domains, we will continue to run `python3 -m pytest` from the repo ro
 The execution of these tasks should be coordinated with existing Concordance ADRs so that this ADR serves as a focused completion path for persona, axis snapshot, and request gating hotspots revealed by the latest churn × complexity analysis.
 
 ## Monitoring & Next Steps
-- Optional guardrail: run `make request-history-guardrails` when you want fresh JSON summaries (`history-validation-summary.json`, `.streaming.json`, `.telemetry.json`) before a reset.
+- Optional guardrail: run `make request-history-guardrails` when you want fresh JSON summaries (`history-validation-summary.json`, `.streaming.json`, `.telemetry.json`, `suggestion-skip-summary.json`) before a reset.
 - Optional spot-check: `python3 scripts/tools/history-axis-validate.py --summary-path artifacts/history-axis-summaries/history-validation-summary.json --reset-gating` still enforces directional axes; use `--summarize-json` variants when you want to inspect streaming/persona tables.
 - Confirm GPT Talon macros continue to route through guarded actions; the CLI `history-axis-validate` drop-line output is a debugging aid for agents (not an end-user surface) but still provides an early warning when drop messaging regresses.
+- When investigating persona/int suggestion churn, review `suggestion-skip-summary.json` produced by guardrail runs or call `python3 scripts/tools/suggestion-skip-export.py --pretty` to emit the current counts directly.
 - When migrating additional canvases or macros, mirror the new drop-reason preservation tests (`_tests/test_request_history_actions.py`, `_tests/test_request_history_drawer_gating.py`, `_tests/test_model_response_canvas_guard.py`) so each surface locks its messaging contract before behaviour changes land.
 - When telemetry fields expand, add or extend targeted tests so the new data stays covered without relying on manual guardrails.
 - Continue rerunning `python3.11 -m pytest _tests/test_gpt_actions.py _tests/test_request_history_actions.py` after telemetry or macro adjustments to confirm gating, drop-reason messaging, and history flows stay green under the shared facade.

@@ -2527,6 +2527,7 @@
   - Trigger: CI runs missing `Suggestion skip summary` output should block ADR completion until the workflow integration lands.
 
 ## 2025-12-22 – Loop 339 (kind: guardrail/tests)
+...
 - Helper: helper:v20251221.5 @ 2025-12-22T18:20Z
 - Focus: Persona & Intent Presets – ensure CI artifacts include suggestion skip telemetry.
 - Deliverables:
@@ -2540,4 +2541,17 @@
   - Residual risk: CI workflow must still upload the skip summary artifact (now configured) and rely on future scripts to consume it; monitor upcoming runs for the new artefact.
   - Mitigation: Confirm the GitHub Actions artifact bundle includes `suggestion-skip-summary.json`; if absent, inspect the build logs before closing the ADR.
   - Trigger: Missing skip summary artifact or job-summary section in CI should block completion until resolved.
+
+## 2025-12-22 – Loop 340 (kind: docs)
+- Helper: helper:v20251221.5 @ 2025-12-22T18:24Z
+- Focus: Persona & Intent Presets – document suggestion skip telemetry usage in ADR guidance.
+- Deliverables:
+  - Updated the Monitoring & Next Steps section to reference `suggestion-skip-summary.json` and the CLI exporter for manual inspection.
+- Checks: Documentation-only loop (no automated guardrail).
+- Evidence: inline
+- Removal test: Reverting the ADR removes operator guidance for the new telemetry artefact, increasing risk that skip metrics are overlooked.
+- Adversarial “risk recap”:
+  - Residual risk: Operators may still overlook skip telemetry unless the CI workflow surfaces it prominently; monitor upcoming runs to ensure the new job-summary section is visible.
+  - Mitigation: Confirm CI job summaries include the added guidance before closing the persona domain.
+  - Trigger: Absent skip telemetry in future job summaries should prompt another documentation loop or tooling update.
 

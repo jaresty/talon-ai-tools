@@ -1,9 +1,8 @@
 import json
-import json
 import tempfile
 import unittest
 from pathlib import Path
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 
 from talon_user.lib import requestLog
 from talon_user.lib.modelState import GPTState
@@ -128,6 +127,31 @@ class TelemetryExportCommandTests(unittest.TestCase):
             command.UserActions.model_export_telemetry(True)
 
         export.assert_called_once_with(reset_gating=True, notify_user=True)
+
+    def test_default_output_dir_is_repo_root(self) -> None:
+        from talon_user.lib import telemetryExport
+
+        repo_root = Path(__file__).resolve().parents[1]
+        expected = repo_root / "artifacts" / "telemetry"
+        self.assertEqual(telemetryExport.DEFAULT_OUTPUT_DIR, expected)
+        self.assertTrue(telemetryExport.DEFAULT_OUTPUT_DIR.is_absolute())
+
+    def test_export_model_telemetry_respects_default_directory(self) -> None:
+        from talon_user.lib import telemetryExport as export_module
+        from talon_user.lib import telemetryExportCommand as command
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            temp_path = Path(tmpdir)
+            with patch.object(export_module, "DEFAULT_OUTPUT_DIR", temp_path):
+                with patch.object(command, "DEFAULT_OUTPUT_DIR", temp_path):
+                    result = command.export_model_telemetry(
+                        reset_gating=False, notify_user=False
+                    )
+
+        for path in result.values():
+            self.assertTrue(path.is_absolute())
+            self.assertTrue(str(path).startswith(str(temp_path)))
+            self.assertTrue(path.exists())
 
 
 if __name__ == "__main__":  # pragma: no cover

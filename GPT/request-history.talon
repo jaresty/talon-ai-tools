@@ -8,6 +8,4 @@
 {user.model} history copy last save$: user.gpt_request_history_copy_last_save_path()
 {user.model} history open last save$: user.gpt_request_history_open_last_save_path()
 {user.model} history show last save$: user.gpt_request_history_show_last_save_path()
-{user.model} model export telemetry$: user.model_export_telemetry()
-{user.model} model export telemetry reset$: user.model_export_telemetry(True)
 {user.model} history drawer$: user.request_history_drawer_toggle()

@@ -25,7 +25,8 @@ except Exception:  # pragma: no cover - Talon runtime unavailable
 
     GPTState = _FallbackGPTState  # type: ignore[assignment]
 
-DEFAULT_OUTPUT_DIR = Path("artifacts/telemetry")
+REPO_ROOT = Path(__file__).resolve().parents[1]
+DEFAULT_OUTPUT_DIR = REPO_ROOT / "artifacts" / "telemetry"
 DEFAULT_TOP_N = 5
 
 

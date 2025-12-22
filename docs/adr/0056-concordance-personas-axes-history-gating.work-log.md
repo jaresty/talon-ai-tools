@@ -2755,3 +2755,20 @@
   - Loop 349: evaluate an interactive CLI retry flag for guardrails that waits for Talon exports to finish when stale.
   - Loop 350: add logging/telemetry around scheduler reschedules to detect misconfigurations.
 
+## 2025-12-22 – Loop 349 (kind: guardrail/tests)
+- helper_version: helper:v20251221.5
+- focus: Request Gating & Streaming – anchor telemetry artifacts to the repo regardless of working directory.
+- riskiest_assumption: If Talon or guardrail scripts run from a different cwd, telemetry exports might land outside the repo, leaving guardrail runs with stale data (probability medium, impact high for Concordance telemetry).
+- validation_targets:
+  - `python3 -m pytest _tests/test_telemetry_export.py`
+  - `python3 -m pytest _tests/test_make_request_history_guardrails.py _tests/test_run_guardrails_ci.py`
+- evidence: `docs/adr/evidence/0056/loop-0349.md`
+- rollback_plan: `git restore -- lib/telemetryExport.py _tests/test_telemetry_export.py GPT/request-history.talon GPT/gpt-telemetry.talon docs/adr/0056-concordance-personas-axes-history-gating.md docs/adr/0056-concordance-personas-axes-history-gating.work-log.md docs/adr/evidence/0056/loop-0349.md`
+- delta_summary: helper:diff-snapshot=5 files changed, 788 insertions(+), 635 deletions(-); telemetry exports now resolve relative to repo root, tests sandbox telemetry directories, and telemetry voice commands moved to `GPT/gpt-telemetry.talon`.
+- residual_risks:
+  - Existing scripts that expect relative artifact paths may need the updated absolute location; review downstream tooling.
+  - Macros calling `model export telemetry` must load `GPT/gpt-telemetry.talon`; ensure Talon config includes the file.
+- next_work:
+  - Loop 350: add logging/telemetry around scheduler reschedules to detect misconfigurations.
+  - Loop 351: evaluate an interactive CLI retry flag for stale telemetry.
+

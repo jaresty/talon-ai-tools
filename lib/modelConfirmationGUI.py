@@ -41,22 +41,46 @@ class ConfirmationGUIState:
 def _request_is_in_flight() -> bool:
     """Return True when a GPT request is currently running."""
 
-    return request_is_in_flight()
+    try:
+        return request_is_in_flight()
+    except Exception:
+        return False
 
 
 def _reject_if_request_in_flight() -> bool:
     """Notify and return True when a GPT request is already running."""
 
     allowed, reason = try_begin_request(source="modelConfirmationGUI")
-    if not allowed and reason == "in_flight":
-        message = drop_reason_message("in_flight")
+    if allowed:
         try:
-            set_drop_reason("in_flight")
+            set_drop_reason("")
         except Exception:
             pass
-        notify(message)
-        return True
-    return False
+        return False
+
+    if not reason:
+        return False
+
+    message = ""
+    try:
+        message = drop_reason_message(reason)
+    except Exception:
+        message = ""
+    if not message:
+        reason_text = str(reason or "unknown").strip() or "unknown"
+        message = f"GPT: Request blocked; reason={reason_text}."
+
+    try:
+        set_drop_reason(reason, message)
+    except Exception:
+        pass
+
+    if message:
+        try:
+            notify(message)
+        except Exception:
+            pass
+    return True
 
 
 @imgui.open()

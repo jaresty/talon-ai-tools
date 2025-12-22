@@ -302,6 +302,7 @@ For each domain, we will align with the existing test suites and add characteriz
       - Avoid duplicating GUI behaviour tests; instead, validate that GUIs respond correctly to lifecycle events.
       - Keep guardrail and telemetry suites (e.g., `_tests/test_run_guardrails_ci.py`, `_tests/test_history_axis_validate.py`, `_tests/test_history_axis_export_telemetry.py`) asserting streaming status, last-drop messages/codes, and gating reason/source tables so CLI summaries and machine-readable payloads fail when those fields regress.
       - Ensure local guardrail targets continue surfacing the same last-drop bullets as CI (`_tests/test_make_request_history_guardrails.py`) so operator workflows stay aligned with automation output.
+      - Lock drop-reason messaging via `_tests/test_request_log.py::RequestLogTests::test_drop_reason_message_covers_known_reasons` so new `RequestDropReason` codes fail fast when phrasing is missing.
 
 Across all domains, we will continue to run `python3 -m pytest` from the repo root during each slice, relying on existing suites as primary regression protection.
 
@@ -320,6 +321,7 @@ Across all domains, we will continue to run `python3 -m pytest` from the repo ro
 - Guardrail runs export `history-validation-summary.telemetry.json` (top gating reasons, totals, artifact link) so the same machine-readable snapshot is available if you need to inspect trends manually.
 - Guardrail telemetry now includes the last-drop message/code and the streaming last-drop message/code so you can surface actionable gating context without parsing raw logs.
 - Local `make request-history-guardrails(-fast)` runs print the `Last gating drop` and `Streaming last drop` lines alongside the JSON summaries, giving you quick visibility into history vs streaming rejections without digging through logs.
+- `drop_reason_message` now returns a standardized fallback message for unknown codes, keeping UI and CLI guardrails readable when new request drop reasons appear before dedicated phrasing is added.
 - CLI guardrail commands operate in standalone Python processes; they validate repository logic but do not snapshot Talon’s live in-memory history. Capturing runtime history still requires a Talon-side command or manual export.
 - **Risks**
   - Introducing new catalogs and lifecycle APIs can temporarily increase complexity and surface hidden inconsistencies.

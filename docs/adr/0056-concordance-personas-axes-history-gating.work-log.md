@@ -2267,3 +2267,15 @@
   - Residual risk: Surface-level guards still implement local fallbacks for resilience; leave the tests that patch `drop_reason_message` returning `""` in place so future regressions stay observable.
   - Mitigation: Follow up with a documentation slice noting the shared fallback contract so macros/CLI helpers don’t reintroduce divergent phrasing.
   - Trigger: Any guardrail output showing raw reason codes (instead of the standard fallback) should block completion until the affected surface routes through `drop_reason_message`.
+
+## 2025-12-22 – Loop 320 (kind: docs)
+- Helper: helper:v20251221.4 @ 2025-12-22T14:18Z
+- Focus: Request Gating & Streaming – capture the shared drop-reason fallback guardrail in ADR guidance.
+- Change: Updated the Request Gating tests-first plan and Consequences to note the `_tests/test_request_log.py` coverage and the standardized fallback message emitted by `drop_reason_message` when unknown codes appear.
+- Checks: Documentation-only loop (no tests run).
+- Evidence: inline
+- Adversarial “risk recap”:
+  - Residual risk: Future drop reasons could bypass the helper if callers hard-code messages; keep the new plan bullet visible so additional guardrails land alongside new codes.
+  - Mitigation: Continue referencing `_tests/test_request_log.py` guardrail when introducing new drop reasons and extend the helper when phrasing changes.
+  - Trigger: Guardrail output showing raw reason codes should trigger another behaviour loop to add helper messaging before landing the change.
+

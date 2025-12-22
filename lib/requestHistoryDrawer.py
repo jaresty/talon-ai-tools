@@ -10,10 +10,10 @@ from talon import Module, actions, canvas, ui
 from .requestLog import (
     all_entries,
     consume_last_drop_reason_record,
-    drop_reason_message,
     last_drop_reason,
     set_drop_reason,
 )
+from .requestHistoryActions import render_drop_reason
 from .historyQuery import history_drawer_entries_from
 from .requestGating import request_is_in_flight, try_begin_request
 from .modelHelpers import notify
@@ -51,13 +51,7 @@ def _reject_if_request_in_flight() -> bool:
 
     allowed, reason = try_begin_request(source="requestHistoryDrawer")
     if not allowed and reason:
-        message = ""
-        try:
-            message = drop_reason_message(reason)
-        except Exception:
-            message = ""
-        if not message:
-            message = f"GPT: Request blocked; reason={reason}."
+        message = render_drop_reason(reason)
         try:
             set_drop_reason(reason, message)
         except Exception:

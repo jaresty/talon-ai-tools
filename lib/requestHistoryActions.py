@@ -26,7 +26,7 @@ from .requestLog import (
 )
 from .requestBus import emit_history_saved
 from .axisCatalog import axis_catalog
-from .requestState import RequestPhase
+from .requestState import RequestDropReason, RequestPhase
 from .requestGating import request_is_in_flight, try_begin_request
 from .suggestionCoordinator import recipe_header_lines_from_snapshot
 from .talonSettings import _canonicalise_axis_tokens
@@ -34,6 +34,19 @@ from .talonSettings import _canonicalise_axis_tokens
 mod = Module()
 
 _cursor_offset = 0
+
+
+def render_drop_reason(reason: RequestDropReason) -> str:
+    """Return a user-facing drop message, falling back to the canonical template."""
+
+    try:
+        message = drop_reason_message(reason)
+    except Exception:
+        message = ""
+    if message and message.strip():
+        return message
+    reason_text = str(reason).strip() or "unknown"
+    return f"GPT: Request blocked; reason={reason_text}."
 
 
 def axis_snapshot_from_axes(axes: dict[str, list[str]] | None) -> AxisSnapshot:
@@ -77,14 +90,7 @@ def _reject_if_request_in_flight() -> bool:
     if not reason:
         return False
 
-    message = ""
-    try:
-        message = drop_reason_message(reason)
-    except Exception:
-        message = ""
-    if not message:
-        reason_text = str(reason or "unknown").strip() or "unknown"
-        message = f"GPT: Request blocked; reason={reason_text}."
+    message = render_drop_reason(reason)
 
     try:
         set_drop_reason(reason, message)

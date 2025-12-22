@@ -2279,3 +2279,17 @@
   - Mitigation: Continue referencing `_tests/test_request_log.py` guardrail when introducing new drop reasons and extend the helper when phrasing changes.
   - Trigger: Guardrail output showing raw reason codes should trigger another behaviour loop to add helper messaging before landing the change.
 
+## 2025-12-22 – Loop 321 (kind: guardrail/tests)
+- Helper: helper:v20251221.4 @ 2025-12-22T14:47Z
+- Focus: Request Gating & Streaming – centralise drop-reason rendering across history actions and drawer guardrails.
+- Deliverables:
+  - Added `render_drop_reason` helper in `lib/requestHistoryActions.py` and updated both `_reject_if_request_in_flight` implementations to reuse it, trimming bespoke fallback strings.
+  - Extended `_tests/test_request_history_actions.py` and `_tests/test_request_history_drawer_gating.py` to patch the shared helper and assert the rendered message propagates through `set_drop_reason`/`notify`.
+- `<VALIDATION_TARGET>`: `python3 -m pytest _tests/test_request_history_actions.py _tests/test_request_history_drawer_gating.py`
+- Evidence: `docs/adr/evidence/0056/loop-0321.md`
+- Removal test: `git checkout -- lib/requestHistoryActions.py lib/requestHistoryDrawer.py && python3 -m pytest _tests/test_request_history_actions.py _tests/test_request_history_drawer_gating.py`
+- Adversarial “risk recap”:
+  - Residual risk: Other gating surfaces still carry bespoke fallback strings; schedule follow-up slices to migrate provider/help canvases once their guardrail coverage is tightened.
+  - Mitigation: Keep the new tests patching `render_drop_reason` to ensure future refactors cannot bypass the shared helper without failing guardrails.
+  - Trigger: Any guardrail output recreating bespoke “reason=…” strings indicates a caller skipped the helper and should block landing until migrated.
+

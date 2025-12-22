@@ -174,15 +174,16 @@ if bootstrap is not None:
                 ) as try_begin,
                 patch.object(
                     history_actions,
-                    "drop_reason_message",
+                    "render_drop_reason",
                     return_value="Request running",
-                ) as drop_message,
+                    create=True,
+                ) as render_message,
                 patch.object(history_actions, "set_drop_reason") as set_reason,
                 patch.object(history_actions, "notify") as notify_mock,
             ):
                 self.assertTrue(history_actions._reject_if_request_in_flight())
             try_begin.assert_called_once_with(source="requestHistoryActions")
-            drop_message.assert_called_once_with("in_flight")
+            render_message.assert_called_once_with("in_flight")
             set_reason.assert_called_once_with("in_flight", "Request running")
             notify_mock.assert_called_once_with("Request running")
 
@@ -192,17 +193,24 @@ if bootstrap is not None:
                     "try_begin_request",
                     return_value=(False, "unknown_reason"),
                 ),
-                patch.object(history_actions, "drop_reason_message", return_value=""),
+                patch.object(
+                    history_actions,
+                    "drop_reason_message",
+                    return_value="",
+                ),
+                patch.object(
+                    history_actions,
+                    "render_drop_reason",
+                    return_value="Rendered fallback",
+                    create=True,
+                ) as render_message,
                 patch.object(history_actions, "set_drop_reason") as set_reason,
                 patch.object(history_actions, "notify") as notify_mock,
             ):
                 self.assertTrue(history_actions._reject_if_request_in_flight())
-            set_reason.assert_called_once_with(
-                "unknown_reason", "GPT: Request blocked; reason=unknown_reason."
-            )
-            notify_mock.assert_called_once_with(
-                "GPT: Request blocked; reason=unknown_reason."
-            )
+            render_message.assert_called_once_with("unknown_reason")
+            set_reason.assert_called_once_with("unknown_reason", "Rendered fallback")
+            notify_mock.assert_called_once_with("Rendered fallback")
 
             with (
                 patch.object(

@@ -12,7 +12,8 @@ from dataclasses import dataclass, field
 from typing import List, Optional, Dict, Any, Tuple, cast, Mapping
 
 from .axisCatalog import axis_catalog
-from .requestLog import append_entry_from_request, drop_reason_message
+from .requestLog import append_entry_from_request
+from .dropReasonUtils import render_drop_reason
 
 GATING_SNAPSHOT_KEYS = (
     "gating_drop_counts",
@@ -388,7 +389,7 @@ class StreamingSession:
         message_value = str(message or "").strip()
         if not message_value and reason_value:
             try:
-                message_value = drop_reason_message(reason_value)  # type: ignore[arg-type]
+                message_value = render_drop_reason(reason_value)
             except Exception:
                 message_value = ""
         payload["message"] = message_value

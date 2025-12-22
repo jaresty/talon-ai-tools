@@ -2392,6 +2392,21 @@
   - Mitigation: Continue extending guardrail suites before changing each surface so bypasses fail fast.
   - Trigger: Guardrail output with raw `reason=` codes or missing fallback text indicates the helper was bypassed and should block landing until fixed.
 
+## 2025-12-22 – Loop 330 (kind: guardrail/tests)
+- Helper: helper:v20251221.4 @ 2025-12-22T16:48Z
+- Focus: Request Gating & Streaming – migrate the streaming coordinator gating summary to the shared renderer.
+- Deliverables:
+  - Updated `lib/streamingCoordinator.StreamingSession.record_gating_drop` to call `render_drop_reason` when constructing gating summary messages.
+  - Updated `_tests/test_streaming_coordinator.py` to patch the shared helper, assert summary snapshots reuse the rendered messaging, and cover both incremental and completion summaries.
+- `<VALIDATION_TARGET>`: `python3 -m pytest _tests/test_streaming_coordinator.py::StreamingCoordinatorTests::test_current_streaming_gating_summary_returns_counts`
+- Additional guardrail: `python3 -m pytest _tests/test_streaming_coordinator.py::StreamingCoordinatorTests::test_record_complete_emits_gating_summary_event`
+- Evidence: `docs/adr/evidence/0056/loop-0330.md`
+- Removal test: `git stash push -k -u && git checkout stash@{0} -- _tests/test_streaming_coordinator.py && python3 -m pytest _tests/test_streaming_coordinator.py::StreamingCoordinatorTests::test_current_streaming_gating_summary_returns_counts`
+- Adversarial “risk recap”:
+  - Residual risk: Request history actions still format bespoke drop messages; migrate them next to keep Concordance telemetry aligned.
+  - Mitigation: Keep patching `render_drop_reason` in guardrail suites and require staged red/green/removal evidence before landing.
+  - Trigger: Streaming or history guardrails emitting raw `reason=` codes or empty fallbacks should block landing until the helper is reused.
+
 ## 2025-12-22 – Loop 329 (kind: guardrail/tests)
 - Helper: helper:v20251221.4 @ 2025-12-22T16:40Z
 - Focus: Request Gating & Streaming – route the suggestion GUI through the shared drop-reason renderer.

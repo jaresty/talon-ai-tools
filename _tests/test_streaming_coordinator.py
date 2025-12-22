@@ -1,5 +1,6 @@
 import unittest
 from typing import TYPE_CHECKING
+from unittest.mock import patch
 
 try:
     from bootstrap import bootstrap
@@ -20,7 +21,7 @@ if bootstrap is not None:
     )
 
     from talon_user.lib.modelState import GPTState
-    from talon_user.lib.requestLog import drop_reason_message
+    import talon_user.lib.dropReasonUtils as drop_reason_module
 
     class StreamingCoordinatorTests(unittest.TestCase):
         def test_accumulates_chunks_and_marks_complete(self) -> None:
@@ -173,116 +174,124 @@ if bootstrap is not None:
             self.assertEqual(summary, {})
 
         def test_current_streaming_gating_summary_returns_counts(self) -> None:
-            session = new_streaming_session("req-gating")
-            session.record_gating_drop(reason="in_flight", phase="SENDING")
-            summary = current_streaming_gating_summary()
-            self.assertEqual(summary.get("total"), 1)
-            self.assertEqual(summary.get("counts", {}).get("in_flight"), 1)
-            self.assertEqual(
-                summary.get("counts_sorted"),
-                [{"reason": "in_flight", "count": 1}],
-            )
-            self.assertEqual(
-                summary.get("last"),
-                {"reason": "in_flight", "reason_count": 1},
-            )
-            self.assertEqual(
-                summary.get("last_message"),
-                drop_reason_message("in_flight"),  # type: ignore[arg-type]
-            )
-            self.assertEqual(summary.get("last_code"), "in_flight")
+            with patch(
+                "talon_user.lib.streamingCoordinator.render_drop_reason",
+                side_effect=lambda reason: f"Rendered {reason}",
+                create=True,
+            ) as render_reason:
+                session = new_streaming_session("req-gating")
+                session.record_gating_drop(reason="in_flight", phase="SENDING")
+                summary = current_streaming_gating_summary()
+                self.assertEqual(summary.get("total"), 1)
+                self.assertEqual(summary.get("counts", {}).get("in_flight"), 1)
+                self.assertEqual(
+                    summary.get("counts_sorted"),
+                    [{"reason": "in_flight", "count": 1}],
+                )
+                self.assertEqual(
+                    summary.get("last"),
+                    {"reason": "in_flight", "reason_count": 1},
+                )
+                self.assertEqual(summary.get("last_message"), "Rendered in_flight")
+                self.assertEqual(summary.get("last_code"), "in_flight")
 
-            session.record_gating_drop(reason="history_save_failed", phase="SAVE")
-            summary = current_streaming_gating_summary()
-            self.assertEqual(summary.get("total"), 2)
-            counts = summary.get("counts", {})
-            self.assertEqual(counts.get("in_flight"), 1)
-            self.assertEqual(counts.get("history_save_failed"), 1)
-            self.assertEqual(
-                summary.get("counts_sorted"),
-                [
-                    {"reason": "history_save_failed", "count": 1},
-                    {"reason": "in_flight", "count": 1},
-                ],
-            )
-            self.assertEqual(
-                summary.get("last"),
-                {"reason": "history_save_failed", "reason_count": 1},
-            )
-            self.assertEqual(
-                summary.get("last_message"),
-                drop_reason_message("history_save_failed"),  # type: ignore[arg-type]
-            )
-            self.assertEqual(summary.get("last_code"), "history_save_failed")
+                session.record_gating_drop(reason="history_save_failed", phase="SAVE")
+                summary = current_streaming_gating_summary()
+                self.assertEqual(summary.get("total"), 2)
+                counts = summary.get("counts", {})
+                self.assertEqual(counts.get("in_flight"), 1)
+                self.assertEqual(counts.get("history_save_failed"), 1)
+                self.assertEqual(
+                    summary.get("counts_sorted"),
+                    [
+                        {"reason": "history_save_failed", "count": 1},
+                        {"reason": "in_flight", "count": 1},
+                    ],
+                )
+                self.assertEqual(
+                    summary.get("last"),
+                    {"reason": "history_save_failed", "reason_count": 1},
+                )
+                self.assertEqual(
+                    summary.get("last_message"), "Rendered history_save_failed"
+                )
+                self.assertEqual(summary.get("last_code"), "history_save_failed")
+
+                self.assertGreaterEqual(render_reason.call_count, 2)
 
         def test_record_complete_emits_gating_summary_event(self) -> None:
-            session = new_streaming_session("req-gating-complete")
-            session.record_gating_drop(
-                reason="in_flight", phase="SENDING", source="gpt.apply"
-            )
-            session.record_gating_drop(
-                reason="history_save_failed", phase="SAVE", source="history"
-            )
-            session.record_gating_drop(
-                reason="in_flight", phase="STREAMING", source="gpt.apply"
-            )
+            with patch(
+                "talon_user.lib.streamingCoordinator.render_drop_reason",
+                side_effect=lambda reason: f"Rendered {reason}",
+                create=True,
+            ) as render_reason:
+                session = new_streaming_session("req-gating-complete")
+                session.record_gating_drop(
+                    reason="in_flight", phase="SENDING", source="gpt.apply"
+                )
+                session.record_gating_drop(
+                    reason="history_save_failed", phase="SAVE", source="history"
+                )
+                session.record_gating_drop(
+                    reason="in_flight", phase="STREAMING", source="gpt.apply"
+                )
 
-            snapshot = session.record_complete()
-            self.assertTrue(snapshot.get("completed"))
-            self.assertFalse(snapshot.get("errored"))
+                snapshot = session.record_complete()
+                self.assertTrue(snapshot.get("completed"))
+                self.assertFalse(snapshot.get("errored"))
 
-            self.assertGreaterEqual(len(session.events), 2)
-            self.assertEqual(session.events[-2].get("kind"), "complete")
+                self.assertGreaterEqual(len(session.events), 2)
+                self.assertEqual(session.events[-2].get("kind"), "complete")
 
-            summary_event = session.events[-1]
-            self.assertEqual(summary_event.get("kind"), "gating_summary")
-            self.assertEqual(summary_event.get("status"), "completed")
-            self.assertEqual(summary_event.get("total"), 3)
+                summary_event = session.events[-1]
+                self.assertEqual(summary_event.get("kind"), "gating_summary")
+                self.assertEqual(summary_event.get("status"), "completed")
+                self.assertEqual(summary_event.get("total"), 3)
 
-            counts = summary_event.get("counts", {})
-            self.assertEqual(counts.get("in_flight"), 2)
-            self.assertEqual(counts.get("history_save_failed"), 1)
+                counts = summary_event.get("counts", {})
+                self.assertEqual(counts.get("in_flight"), 2)
+                self.assertEqual(counts.get("history_save_failed"), 1)
 
-            self.assertEqual(
-                summary_event.get("counts_sorted"),
-                [
-                    {"reason": "in_flight", "count": 2},
-                    {"reason": "history_save_failed", "count": 1},
-                ],
-            )
+                self.assertEqual(
+                    summary_event.get("counts_sorted"),
+                    [
+                        {"reason": "in_flight", "count": 2},
+                        {"reason": "history_save_failed", "count": 1},
+                    ],
+                )
 
-            sources = summary_event.get("sources", {})
-            self.assertEqual(sources.get("gpt.apply"), 2)
-            self.assertEqual(sources.get("history"), 1)
+                sources = summary_event.get("sources", {})
+                self.assertEqual(sources.get("gpt.apply"), 2)
+                self.assertEqual(sources.get("history"), 1)
 
-            self.assertEqual(
-                summary_event.get("sources_sorted"),
-                [
-                    {"source": "gpt.apply", "count": 2},
-                    {"source": "history", "count": 1},
-                ],
-            )
+                self.assertEqual(
+                    summary_event.get("sources_sorted"),
+                    [
+                        {"source": "gpt.apply", "count": 2},
+                        {"source": "history", "count": 1},
+                    ],
+                )
 
-            last_drop = summary_event.get("last", {})
-            self.assertEqual(last_drop.get("reason"), "in_flight")
-            self.assertEqual(last_drop.get("reason_count"), 2)
-            self.assertEqual(
-                summary_event.get("last_message"),
-                drop_reason_message("in_flight"),  # type: ignore[arg-type]
-            )
-            self.assertEqual(summary_event.get("last_code"), "in_flight")
+                last_drop = summary_event.get("last", {})
+                self.assertEqual(last_drop.get("reason"), "in_flight")
+                self.assertEqual(last_drop.get("reason_count"), 2)
+                self.assertEqual(
+                    summary_event.get("last_message"), "Rendered in_flight"
+                )
+                self.assertEqual(summary_event.get("last_code"), "in_flight")
 
-            last_source = summary_event.get("last_source", {})
-            self.assertEqual(last_source.get("source"), "gpt.apply")
-            self.assertEqual(last_source.get("count"), 2)
+                last_source = summary_event.get("last_source", {})
+                self.assertEqual(last_source.get("source"), "gpt.apply")
+                self.assertEqual(last_source.get("count"), 2)
 
-            summary_snapshot = current_streaming_gating_summary()
-            self.assertEqual(summary_snapshot.get("status"), "completed")
-            self.assertEqual(
-                summary_snapshot.get("last_message"),
-                drop_reason_message("in_flight"),  # type: ignore[arg-type]
-            )
-            self.assertEqual(summary_snapshot.get("last_code"), "in_flight")
+                summary_snapshot = current_streaming_gating_summary()
+                self.assertEqual(summary_snapshot.get("status"), "completed")
+                self.assertEqual(
+                    summary_snapshot.get("last_message"), "Rendered in_flight"
+                )
+                self.assertEqual(summary_snapshot.get("last_code"), "in_flight")
+
+                self.assertGreaterEqual(render_reason.call_count, 3)
 
         def test_record_error_emits_gating_summary_event(self) -> None:
             session = new_streaming_session("req-gating-error")

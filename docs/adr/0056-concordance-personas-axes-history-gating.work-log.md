@@ -2007,3 +2007,15 @@
   - Mitigation: follow up with a telemetry/CLI slice to verify drop-reason tables capture the new messages and add regression coverage for macro wrappers that forward `_reject_if_request_in_flight`.
   - Trigger: unexpected drop-reason telemetry or duplicate notifications should prompt immediate review before migrating remaining GPT helpers.
 
+## 2025-12-22 – Loop 300 (kind: docs)
+- Helper: helper:v20251221.3 @ 2025-12-22T00:10Z
+- Focus: Request Gating & Streaming – document GPT gating follow-up now that the wrappers delegate to the shared facade.
+- Change: Updated `docs/adr/0056-concordance-personas-axes-history-gating.md` to note the GPT wrappers now use `requestGating`, and queued telemetry/macro audits that verify the new drop-reason messaging contract.
+- Checks: Documentation-only loop (no automated guardrail required).
+- Evidence: inline
+- Removal test: Reverting would hide that GPT gating migrated and drop the audit task, making it easier for bespoke helpers to reappear without documentation.
+- Adversarial “risk recap”:
+  - Residual risk: Talon macros and telemetry tables may still assume the legacy drop-reason schema; audit them before closing the gating consolidation effort.
+  - Mitigation: schedule a telemetry/CLI slice to validate structured drop-reason payloads and add regression checks for macro wrappers.
+  - Trigger: telemetry anomalies or duplicate notifications should prompt immediate review before declaring the gating work complete.
+

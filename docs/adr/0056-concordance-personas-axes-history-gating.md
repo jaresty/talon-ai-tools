@@ -368,7 +368,7 @@ Across all domains, we will continue to run `python3 -m pytest` from the repo ro
     - (Completed 2025-12-21) Added focused regression tests for gating/streaming paths (e.g., `tests/test_request_gating.py`, `tests/test_streaming_coordinator.py`, guardrail CLI helpers) that fail when the centralized lifecycle or telemetry guardrails regress.
     - (In progress 2025-12-21) GUI gating migration status:
       - `lib/modelHelpCanvas`, `lib/modelSuggestionGUI`, `lib/modelPatternGUI`, `lib/modelPromptPatternGUI`, `lib/helpHub`, `lib/providerCommands`, `lib/requestHistoryDrawer`, and `lib/requestHistoryActions` now delegate `_request_is_in_flight` / `_reject_if_request_in_flight` to `requestGating`, with guard tests locking drop-message fallback, drop-reason preservation where needed, and exception handling.
-      - Remaining surfaces (GPT command wrappers and any bespoke gating helpers discovered in follow-up audits) still carry local gating logic; keep the shared facade migration plan open until they delegate to `requestGating` with matching guard rails.
+      - GPT command wrappers now delegate to `requestGating`; audit Talon macros and any newly discovered gating helpers for lingering local logic and migrate them immediately to keep the shared messaging contract intact.
     - For solo workflows, capture any history snapshot you care about by running `python3 scripts/tools/history-axis-validate.py --summary-path artifacts/history-axis-summaries/history-validation-summary.json` before invoking `--reset-gating`; skip CI artifact archiving unless you reintroduce shared automation.
 
 
@@ -377,6 +377,6 @@ The execution of these tasks should be coordinated with existing Concordance ADR
 ## Monitoring & Next Steps
 - Optional guardrail: run `make request-history-guardrails` when you want fresh JSON summaries (`history-validation-summary.json`, `.streaming.json`, `.telemetry.json`) before a reset.
 - Optional spot-check: `python3 scripts/tools/history-axis-validate.py --summary-path artifacts/history-axis-summaries/history-validation-summary.json --reset-gating` still enforces directional axes; use `--summarize-json` variants when you want to inspect streaming/persona tables.
-- Queue follow-up loops to migrate GPT command wrappers (`GPT/gpt.py` request helpers and related macros) onto `requestGating` once their call paths are characterised; add guard tests mirroring the shared facade expectations.
+- Audit GPT Talon macros and drop-reason telemetry for the shared facade now that `GPT/gpt.py` wrappers delegate to `requestGating`; add guard tests mirroring the structured message contract wherever gaps appear.
 - When telemetry fields expand, add or extend targeted tests so the new data stays covered without relying on manual guardrails.
-- After wrappers migrate, rerun `python3.11 -m pytest _tests/test_gpt_actions.py _tests/test_request_history_actions.py` to confirm gating, drop-reason messaging, and history list flows stay green under the shared facade.
+- Continue rerunning `python3.11 -m pytest _tests/test_gpt_actions.py _tests/test_request_history_actions.py` after telemetry or macro adjustments to confirm gating, drop-reason messaging, and history flows stay green under the shared facade.

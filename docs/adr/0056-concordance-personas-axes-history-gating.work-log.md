@@ -2349,3 +2349,18 @@
   - Mitigation: Continue expanding guardrail coverage to patch `render_drop_reason` per surface to block regressions.
   - Trigger: Guardrail output with raw `reason=` codes implies a caller bypassed the shared helper and should halt landing until corrected.
 
+## 2025-12-22 – Loop 326 (kind: guardrail/tests)
+- Helper: helper:v20251221.4 @ 2025-12-22T16:24Z
+- Focus: Request Gating & Streaming – align pattern GUIs with the shared drop-reason renderer.
+- Deliverables:
+  - Updated `lib/modelPromptPatternGUI._reject_if_request_in_flight` to reuse `render_drop_reason` and clear pending drop state only when the shared helper returns an empty message.
+  - Updated `lib/modelPatternGUI._reject_if_request_in_flight` to call `render_drop_reason` instead of formatting inline fallback strings, keeping the user-facing pattern picker aligned with Concordance drop messaging.
+  - Extended `_tests/test_model_pattern_gui_guard.py` to patch the shared helper, assert fallback propagation, and preserve pending drop reasons on successful guard checks.
+- `<VALIDATION_TARGET>`: `python3 -m pytest _tests/test_model_pattern_gui_guard.py::ModelPatternGUIGuardTests::test_reject_if_request_in_flight_notifies_with_drop_message`
+- Evidence: `docs/adr/evidence/0056/loop-0326.md`
+- Removal test: `git stash push -k -u && git checkout stash@{0} -- _tests/test_model_pattern_gui_guard.py && python3 -m pytest _tests/test_model_pattern_gui_guard.py::ModelPatternGUIGuardTests::test_reject_if_request_in_flight_notifies_with_drop_message`
+- Adversarial “risk recap”:
+  - Residual risk: Confirmation and response canvases still inline drop-reason messaging; migrate them next so every Concordance surface reuses the renderer.
+  - Mitigation: Continue extending guardrail tests that patch `render_drop_reason` before adjusting each surface.
+  - Trigger: Guardrail output showing raw `reason=` codes or missing fallback messaging indicates a caller bypassed the helper and should block landing until fixed.
+

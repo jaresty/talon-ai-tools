@@ -21,6 +21,7 @@ if bootstrap is not None:
     )
     from talon_user.lib import modelSuggestionGUI
     import talon_user.lib.talonSettings as talonSettings
+    import talon_user.lib.dropReasonUtils as drop_reason_module
 
     class ModelSuggestionGUITests(unittest.TestCase):
         def setUp(self):
@@ -865,15 +866,16 @@ if bootstrap is not None:
                 ) as try_begin,
                 patch.object(
                     modelSuggestionGUI,
-                    "drop_reason_message",
+                    "render_drop_reason",
                     return_value="Request running",
-                ) as drop_message,
+                    create=True,
+                ) as render_message,
                 patch.object(modelSuggestionGUI, "set_drop_reason") as set_reason,
                 patch.object(modelSuggestionGUI, "notify") as notify_mock,
             ):
                 self.assertTrue(modelSuggestionGUI._reject_if_request_in_flight())
             try_begin.assert_called_once_with(source="modelSuggestionGUI")
-            drop_message.assert_called_once_with("in_flight")
+            render_message.assert_called_once_with("in_flight")
             set_reason.assert_called_once_with("in_flight", "Request running")
             notify_mock.assert_called_once_with("Request running")
 
@@ -884,18 +886,23 @@ if bootstrap is not None:
                     return_value=(False, "unknown_reason"),
                 ),
                 patch.object(
-                    modelSuggestionGUI, "drop_reason_message", return_value=""
+                    drop_reason_module,
+                    "drop_reason_message",
+                    return_value="",
                 ),
+                patch.object(
+                    modelSuggestionGUI,
+                    "render_drop_reason",
+                    return_value="Rendered fallback",
+                    create=True,
+                ) as render_message,
                 patch.object(modelSuggestionGUI, "set_drop_reason") as set_reason,
                 patch.object(modelSuggestionGUI, "notify") as notify_mock,
             ):
                 self.assertTrue(modelSuggestionGUI._reject_if_request_in_flight())
-            set_reason.assert_called_once_with(
-                "unknown_reason", "GPT: Request blocked; reason=unknown_reason."
-            )
-            notify_mock.assert_called_once_with(
-                "GPT: Request blocked; reason=unknown_reason."
-            )
+            render_message.assert_called_once_with("unknown_reason")
+            set_reason.assert_called_once_with("unknown_reason", "Rendered fallback")
+            notify_mock.assert_called_once_with("Rendered fallback")
 
             with (
                 patch.object(

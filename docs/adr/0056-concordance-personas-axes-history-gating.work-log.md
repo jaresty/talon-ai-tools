@@ -2392,3 +2392,17 @@
   - Mitigation: Continue extending guardrail suites before changing each surface so bypasses fail fast.
   - Trigger: Guardrail output with raw `reason=` codes or missing fallback text indicates the helper was bypassed and should block landing until fixed.
 
+## 2025-12-22 – Loop 329 (kind: guardrail/tests)
+- Helper: helper:v20251221.4 @ 2025-12-22T16:40Z
+- Focus: Request Gating & Streaming – route the suggestion GUI through the shared drop-reason renderer.
+- Deliverables:
+  - Updated `lib/modelSuggestionGUI._reject_if_request_in_flight` to reuse `render_drop_reason`, preserve pending drop state, and avoid formatting inline fallback strings.
+  - Extended `_tests/test_model_suggestion_gui.py` to patch the shared helper, assert fallback propagation, and confirm success paths keep existing drop reasons intact.
+- `<VALIDATION_TARGET>`: `python3 -m pytest _tests/test_model_suggestion_gui.py::ModelSuggestionGUITests::test_reject_if_request_in_flight_notifies_and_blocks`
+- Evidence: `docs/adr/evidence/0056/loop-0329.md`
+- Removal test: `git stash push -k -u && git checkout stash@{0} -- _tests/test_model_suggestion_gui.py && python3 -m pytest _tests/test_model_suggestion_gui.py::ModelSuggestionGUITests::test_reject_if_request_in_flight_notifies_and_blocks`
+- Adversarial “risk recap”:
+  - Residual risk: `streamingCoordinator` and request history actions still format bespoke drop messaging; continue migrating them to `render_drop_reason`.
+  - Mitigation: Keep patching `render_drop_reason` in guardrail suites before each migration so bypasses fail immediately.
+  - Trigger: Guardrail output with raw `reason=` codes or blank drop messaging indicates the helper was bypassed and should block landing until fixed.
+

@@ -65,11 +65,9 @@ if bootstrap is not None:
                     "try_begin_request",
                     return_value=(False, "unknown_reason"),
                 ),
-                patch.object(
-                    history_drawer,
-                    "drop_reason_message",
+                patch(
+                    "talon_user.lib.dropReasonUtils.drop_reason_message",
                     return_value="",
-                    create=True,
                 ),
                 patch.object(
                     history_drawer,

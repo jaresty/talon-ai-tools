@@ -35,6 +35,7 @@ if bootstrap is not None:
         validate_history_axes,
         history_validation_stats,
     )
+    import talon_user.lib.dropReasonUtils as drop_reason_module
     from talon_user.lib.modelState import GPTState
     from talon_user.lib.modelConfirmationGUI import (
         ConfirmationGUIState,
@@ -194,7 +195,7 @@ if bootstrap is not None:
                     return_value=(False, "unknown_reason"),
                 ),
                 patch.object(
-                    history_actions,
+                    drop_reason_module,
                     "drop_reason_message",
                     return_value="",
                 ),

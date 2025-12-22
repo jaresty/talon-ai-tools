@@ -467,7 +467,12 @@ def append_entry(
             pass
         set_drop_reason("missing_directional")
         return
-    set_drop_reason("")
+    try:
+        pending_message = last_drop_reason()
+    except Exception:
+        pending_message = ""
+    if not pending_message or pending_message.strip().lower() != "pending":
+        set_drop_reason("")
     _history.append(
         RequestLogEntry(
             request_id=request_id,
@@ -619,6 +624,19 @@ def drop_reason_message(reason: RequestDropReason) -> str:
             "GPT: Cannot save history source; entry is missing a directional lens "
             "(fog/fig/dig/ong/rog/bog/jog)."
         )
+    reason_text = str(reason).strip() or "unknown"
+    return f"GPT: Request blocked; reason={reason_text}."
+
+
+def render_drop_reason(reason: RequestDropReason) -> str:
+    """Return a rendered drop message, falling back to the canonical template."""
+
+    try:
+        message = drop_reason_message(reason)
+    except Exception:
+        message = ""
+    if message and message.strip():
+        return message
     reason_text = str(reason).strip() or "unknown"
     return f"GPT: Request blocked; reason={reason_text}."
 

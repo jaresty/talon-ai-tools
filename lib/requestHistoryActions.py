@@ -18,15 +18,15 @@ from .requestLog import (
     nth_from_latest,
     all_entries as requestlog_all_entries,
     consume_last_drop_reason_record,
-    drop_reason_message,
     last_drop_reason,
     set_drop_reason,
     axis_snapshot_from_axes as requestlog_axis_snapshot_from_axes,
     AxisSnapshot,
 )
+from .dropReasonUtils import render_drop_reason
 from .requestBus import emit_history_saved
 from .axisCatalog import axis_catalog
-from .requestState import RequestDropReason, RequestPhase
+from .requestState import RequestPhase
 from .requestGating import request_is_in_flight, try_begin_request
 from .suggestionCoordinator import recipe_header_lines_from_snapshot
 from .talonSettings import _canonicalise_axis_tokens
@@ -34,19 +34,6 @@ from .talonSettings import _canonicalise_axis_tokens
 mod = Module()
 
 _cursor_offset = 0
-
-
-def render_drop_reason(reason: RequestDropReason) -> str:
-    """Return a user-facing drop message, falling back to the canonical template."""
-
-    try:
-        message = drop_reason_message(reason)
-    except Exception:
-        message = ""
-    if message and message.strip():
-        return message
-    reason_text = str(reason).strip() or "unknown"
-    return f"GPT: Request blocked; reason={reason_text}."
 
 
 def axis_snapshot_from_axes(axes: dict[str, list[str]] | None) -> AxisSnapshot:

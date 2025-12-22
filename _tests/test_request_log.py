@@ -11,6 +11,7 @@ else:
 
 if bootstrap is not None:
     import talon_user.lib.requestLog as requestlog_module
+    import talon_user.lib.dropReasonUtils as drop_reason_module
     from talon_user.lib.requestState import RequestDropReason
     from talon_user.lib.requestLog import (
         append_entry,
@@ -313,14 +314,29 @@ if bootstrap is not None:
                 f"Missing drop reason messages for: {', '.join(missing)}",
             )
 
-        def test_drop_reason_message_falls_back_for_unknown_reason(self) -> None:
-            message = requestlog_module.drop_reason_message(
-                "streaming_disabled"  # type: ignore[arg-type]
-            )
-            self.assertEqual(
-                message,
-                "GPT: Request blocked; reason=streaming_disabled.",
-            )
+        def test_render_drop_reason_uses_helper_and_fallback(self) -> None:
+            reasons = [reason for reason in get_args(RequestDropReason) if reason]
+            for reason in reasons:
+                with patch.object(
+                    drop_reason_module,
+                    "drop_reason_message",
+                    return_value="Rendered message",
+                ) as drop_patch:
+                    self.assertEqual(
+                        drop_reason_module.render_drop_reason(reason),
+                        "Rendered message",
+                    )
+                drop_patch.assert_called_once_with(reason)
+
+            with patch.object(
+                drop_reason_module,
+                "drop_reason_message",
+                side_effect=lambda _: "",
+            ):
+                self.assertEqual(
+                    drop_reason_module.render_drop_reason("streaming_disabled"),
+                    "GPT: Request blocked; reason=streaming_disabled.",
+                )
 
 
 else:

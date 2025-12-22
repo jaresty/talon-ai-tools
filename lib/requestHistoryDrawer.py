@@ -13,8 +13,9 @@ from .requestLog import (
     last_drop_reason,
     set_drop_reason,
 )
-from .requestHistoryActions import render_drop_reason
+from .dropReasonUtils import render_drop_reason
 from .historyQuery import history_drawer_entries_from
+
 from .requestGating import request_is_in_flight, try_begin_request
 from .modelHelpers import notify
 from .overlayHelpers import apply_canvas_blocking

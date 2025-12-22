@@ -95,6 +95,16 @@ if not TYPE_CHECKING:
             self.assertEqual(telemetry_payload.get("streaming_status"), "unknown")
             self.assertEqual(telemetry_payload.get("last_drop_message"), "none")
             self.assertIsNone(telemetry_payload.get("last_drop_code"))
+            self.assertIn("Suggestion skip summary (json):", result.stdout)
+            self.assertIn("Suggestion skip total:", result.stdout)
+            skip_path = summary_path.with_name("suggestion-skip-summary.json")
+            self.assertTrue(
+                skip_path.exists(),
+                "Suggestion skip summary was not produced",
+            )
+            skip_payload = json.loads(skip_path.read_text(encoding="utf-8"))
+            self.assertEqual(skip_payload.get("total_skipped"), 0)
+            self.assertEqual(skip_payload.get("reason_counts"), [])
 
         def test_make_request_history_guardrails_fast_produces_summary(self) -> None:
             """Guardrail: request-history-guardrails-fast should export the validation summary."""
@@ -183,6 +193,16 @@ if not TYPE_CHECKING:
             self.assertEqual(telemetry_payload.get("streaming_status"), "unknown")
             self.assertEqual(telemetry_payload.get("last_drop_message"), "none")
             self.assertIsNone(telemetry_payload.get("last_drop_code"))
+            self.assertIn("Suggestion skip summary (json):", result.stdout)
+            self.assertIn("Suggestion skip total:", result.stdout)
+            skip_path = summary_path.with_name("suggestion-skip-summary.json")
+            self.assertTrue(
+                skip_path.exists(),
+                "Suggestion skip summary was not produced (fast target)",
+            )
+            skip_payload = json.loads(skip_path.read_text(encoding="utf-8"))
+            self.assertEqual(skip_payload.get("total_skipped"), 0)
+            self.assertEqual(skip_payload.get("reason_counts"), [])
 
 else:
     if not TYPE_CHECKING:

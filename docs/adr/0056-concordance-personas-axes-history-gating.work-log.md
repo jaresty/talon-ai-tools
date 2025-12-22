@@ -2510,3 +2510,19 @@
   - Mitigation: Update Makefile guardrail targets and `history-axis-validate` consumers (next loop) to record/print skip counts when running outside CI.
   - Trigger: Guardrail runs missing `Suggestion skip summary` lines should block ADR completion until telemetry parity lands.
 
+## 2025-12-22 – Loop 338 (kind: guardrail/tests)
+- Helper: helper:v20251221.5 @ 2025-12-22T18:12Z
+- Focus: Persona & Intent Presets – propagate suggestion skip telemetry into local guardrail targets.
+- Deliverables:
+  - Updated `Makefile` targets `request-history-guardrails(-fast)` to emit suggestion skip summaries via `suggestion-skip-export.py` and print totals/reasons.
+  - Extended `_tests/test_make_request_history_guardrails.py` to assert skip telemetry output and artifact creation for both targets.
+- `<VALIDATION_TARGET>`: `python3 -m pytest _tests/test_make_request_history_guardrails.py`
+- Evidence:
+  - red | 2025-12-22T18:07Z | exit 2 | `python3 -m pytest _tests/test_make_request_history_guardrails.py` | docs/adr/evidence/0056/loop-0338.md
+  - green | 2025-12-22T18:12Z | exit 0 | `python3 -m pytest _tests/test_make_request_history_guardrails.py` | docs/adr/evidence/0056/loop-0338.md
+- Removal test: `git stash push -u Makefile && python3 -m pytest _tests/test_make_request_history_guardrails.py::MakeRequestHistoryGuardrailsTests::test_make_request_history_guardrails_runs_clean`
+- Adversarial “risk recap”:
+  - Residual risk: CI job summaries still lack aggregated skip telemetry until `run_guardrails_ci.sh` uploads the new `suggestion-skip-summary.json` artifact; confirm in a follow-up loop.
+  - Mitigation: Ensure CI workflow uploads the skip summary alongside existing history artefacts and surface it in GitHub job summaries.
+  - Trigger: CI runs missing `Suggestion skip summary` output should block ADR completion until the workflow integration lands.
+

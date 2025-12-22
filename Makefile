@@ -111,6 +111,9 @@ request-history-guardrails:
 	$(PYTHON) scripts/tools/history-axis-validate.py --summarize-json artifacts/history-axis-summaries/history-validation-summary.json
 	$(PYTHON) scripts/tools/history-axis-export-telemetry.py artifacts/history-axis-summaries/history-validation-summary.json --output artifacts/history-axis-summaries/history-validation-summary.telemetry.json --top 5 --pretty
 	printf 'Telemetry summary (json): ' && cat artifacts/history-axis-summaries/history-validation-summary.telemetry.json && printf '\n'
+	$(PYTHON) scripts/tools/suggestion-skip-export.py --output artifacts/history-axis-summaries/suggestion-skip-summary.json --pretty
+	printf 'Suggestion skip summary (json): ' && cat artifacts/history-axis-summaries/suggestion-skip-summary.json && printf '\n'
+	$(PYTHON) -c "import json; from pathlib import Path; path = Path('artifacts/history-axis-summaries/suggestion-skip-summary.json'); data = json.loads(path.read_text(encoding='utf-8')) if path.exists() else {}; total = data.get('total_skipped', 0); reasons = data.get('reason_counts', []); formatted = ', '.join('{0}={1}'.format(item.get('reason'), item.get('count')) for item in reasons if isinstance(item, dict) and item.get('reason')) if isinstance(reasons, list) and reasons else 'none'; print('Suggestion skip total: {}'.format(total)); print('Suggestion skip reasons: {}'.format(formatted))"
 
 request-history-guardrails-fast:
 	mkdir -p artifacts/history-axis-summaries
@@ -122,6 +125,9 @@ request-history-guardrails-fast:
 	$(PYTHON) scripts/tools/history-axis-validate.py --summarize-json artifacts/history-axis-summaries/history-validation-summary.json
 	$(PYTHON) scripts/tools/history-axis-export-telemetry.py artifacts/history-axis-summaries/history-validation-summary.json --output artifacts/history-axis-summaries/history-validation-summary.telemetry.json --top 5 --pretty
 	printf 'Telemetry summary (json): ' && cat artifacts/history-axis-summaries/history-validation-summary.telemetry.json && printf '\n'
+	$(PYTHON) scripts/tools/suggestion-skip-export.py --output artifacts/history-axis-summaries/suggestion-skip-summary.json --pretty
+	printf 'Suggestion skip summary (json): ' && cat artifacts/history-axis-summaries/suggestion-skip-summary.json && printf '\n'
+	$(PYTHON) -c "import json; from pathlib import Path; path = Path('artifacts/history-axis-summaries/suggestion-skip-summary.json'); data = json.loads(path.read_text(encoding='utf-8')) if path.exists() else {}; total = data.get('total_skipped', 0); reasons = data.get('reason_counts', []); formatted = ', '.join('{0}={1}'.format(item.get('reason'), item.get('count')) for item in reasons if isinstance(item, dict) and item.get('reason')) if isinstance(reasons, list) and reasons else 'none'; print('Suggestion skip total: {}'.format(total)); print('Suggestion skip reasons: {}'.format(formatted))"
 
 
 help:

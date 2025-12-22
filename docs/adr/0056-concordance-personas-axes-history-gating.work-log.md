@@ -2143,3 +2143,17 @@
   - Mitigation: migrate those canvases next so every UI guard shares the same drop-preservation behaviour.
   - Trigger: telemetry missing last-drop messages from those canvases should block ADR completion until they receive matching fixes.
 
+## 2025-12-22 – Loop 311 (kind: behaviour)
+- Helper: helper:v20251221.4 @ 2025-12-22T03:06Z
+- Focus: Request Gating & Streaming – ensure the model help canvas preserves pending drop messaging after guard passes.
+- Deliverables:
+  - Updated `lib/modelHelpCanvas._reject_if_request_in_flight` to clear drop state only when `last_drop_reason()` reports no pending message.
+  - Extended `_tests/test_model_help_canvas_guard.py` with preserved-drop and fallback scenarios covering both clear and retain paths.
+- `<VALIDATION_TARGET>`: `python3.11 -m pytest _tests/test_model_help_canvas_guard.py::ModelHelpCanvasGuardTests::test_reject_if_request_in_flight_clears_drop_reason_on_success`
+- Evidence: `docs/adr/evidence/0056/loop-0311.md`
+- Removal test: `git checkout -- lib/modelHelpCanvas.py && python3.11 -m pytest _tests/test_model_help_canvas_guard.py::ModelHelpCanvasGuardTests::test_reject_if_request_in_flight_clears_drop_reason_on_success`
+- Adversarial “risk recap”:
+  - Residual risk: model suggestion and prompt pattern canvases still need matching tests to guard their drop-preservation logic.
+  - Mitigation: extend the same test coverage to those canvases in follow-up loops before closing the gating consolidation track.
+  - Trigger: telemetry lacking last-drop messaging from remaining canvases should prompt additional slices.
+

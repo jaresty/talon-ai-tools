@@ -2157,3 +2157,100 @@
   - Mitigation: extend the same test coverage to those canvases in follow-up loops before closing the gating consolidation track.
   - Trigger: telemetry lacking last-drop messaging from remaining canvases should prompt additional slices.
 
+## 2025-12-22 – Loop 312 (kind: behaviour)
+- Helper: helper:v20251221.4 @ 2025-12-22T05:16Z
+- Focus: Request Gating & Streaming – keep the prompt pattern picker from clearing pending drop messaging after a guard pass.
+- Deliverables:
+  - Updated `lib/modelPromptPatternGUI._reject_if_request_in_flight` to consult `last_drop_reason()` before clearing state so previously surfaced drop messages persist.
+  - Extended `_tests/test_prompt_pattern_gui_guard.py` with success/pending scenarios to cover both clearing and preservation paths.
+- `<VALIDATION_TARGET>`: `python3.11 -m pytest _tests/test_prompt_pattern_gui_guard.py::PromptPatternGUIGuardTests::test_reject_if_request_in_flight_preserves_drop_reason_on_success`
+- Evidence: `docs/adr/evidence/0056/loop-0312.md`
+- Removal test: `git checkout -- lib/modelPromptPatternGUI.py && python3.11 -m pytest _tests/test_prompt_pattern_gui_guard.py::PromptPatternGUIGuardTests::test_reject_if_request_in_flight_preserves_drop_reason_on_success`
+- Adversarial “risk recap”:
+  - Residual risk: the model pattern picker still clears drop state unconditionally and needs the same guard coverage.
+  - Mitigation: migrate the pattern picker in the next slice to share the preserved-drop contract and tests.
+  - Trigger: telemetry missing prompt/pattern drop messaging should block completion until both canvases align.
+
+## 2025-12-22 – Loop 313 (kind: behaviour)
+- Helper: helper:v20251221.4 @ 2025-12-22T05:23Z
+- Focus: Request Gating & Streaming – align the model pattern picker with the preserved drop-message contract.
+- Deliverables:
+  - Updated `lib/modelPatternGUI._reject_if_request_in_flight` to retain pending drop messaging when `last_drop_reason()` reports an existing value.
+  - Extended `_tests/test_model_pattern_gui_guard.py` with success/pending assertions mirroring the prompt pattern guard coverage.
+- `<VALIDATION_TARGET>`: `python3.11 -m pytest _tests/test_model_pattern_gui_guard.py::ModelPatternGUIGuardTests::test_reject_if_request_in_flight_preserves_drop_reason_on_success`
+- Evidence: `docs/adr/evidence/0056/loop-0313.md`
+- Removal test: `git checkout -- lib/modelPatternGUI.py && python3.11 -m pytest _tests/test_model_pattern_gui_guard.py::ModelPatternGUIGuardTests::test_reject_if_request_in_flight_preserves_drop_reason_on_success`
+- Adversarial “risk recap”:
+  - Residual risk: GPT command guards and the confirmation GUI still clear drop state unconditionally; audit those surfaces next.
+  - Mitigation: apply the same `last_drop_reason()` preservation pattern and targeted guard tests before declaring gating consolidation complete.
+  - Trigger: telemetry showing missing drop messaging from GPT actions or confirmation canvases should block completion until their guards match the shared contract.
+
+## 2025-12-22 – Loop 314 (kind: behaviour)
+- Helper: helper:v20251221.4 @ 2025-12-22T05:44Z
+- Focus: Request Gating & Streaming – keep GPT command guards from clearing pending drop messaging after a successful guard pass.
+- Deliverables:
+  - Updated `GPT/gpt.py::_reject_if_request_in_flight` to consult `last_drop_reason()` before clearing state so previously surfaced drop messages persist.
+  - Added `_tests/test_gpt_actions.py::GPTActionPromptSessionTests::test_gpt_reject_if_request_in_flight_preserves_drop_reason_on_success` covering both clear/preserve paths.
+- `<VALIDATION_TARGET>`: `python3.11 -m pytest _tests/test_gpt_actions.py::GPTActionPromptSessionTests::test_gpt_reject_if_request_in_flight_preserves_drop_reason_on_success`
+- Evidence: `docs/adr/evidence/0056/loop-0314.md`
+- Removal test: `git checkout -- GPT/gpt.py && python3.11 -m pytest _tests/test_gpt_actions.py::GPTActionPromptSessionTests::test_gpt_reject_if_request_in_flight_preserves_drop_reason_on_success`
+- Adversarial “risk recap”:
+  - Residual risk: the confirmation GUI still clears drop state unconditionally and needs matching guard coverage.
+  - Mitigation: migrate the confirmation GUI in the next slice to share the preserved-drop contract and tests.
+  - Trigger: telemetry missing drop messaging from confirmation flows should block closure until the GUI adopts the shared logic.
+
+## 2025-12-22 – Loop 315 (kind: behaviour)
+- Helper: helper:v20251221.4 @ 2025-12-22T05:51Z
+- Focus: Request Gating & Streaming – align the confirmation GUI with the preserved drop-message contract.
+- Deliverables:
+  - Updated `lib/modelConfirmationGUI._reject_if_request_in_flight` to clear drop state only when `last_drop_reason()` reports no pending message.
+  - Added `_tests/test_model_confirmation_gui_guard.py::ConfirmationGUIGuardTests::test_reject_if_request_in_flight_preserves_drop_reason_on_success` to cover both clear and preserve paths.
+- `<VALIDATION_TARGET>`: `python3.11 -m pytest _tests/test_model_confirmation_gui_guard.py::ConfirmationGUIGuardTests::test_reject_if_request_in_flight_preserves_drop_reason_on_success`
+- Evidence: `docs/adr/evidence/0056/loop-0315.md`
+- Removal test: `git checkout -- lib/modelConfirmationGUI.py && python3.11 -m pytest _tests/test_model_confirmation_gui_guard.py::ConfirmationGUIGuardTests::test_reject_if_request_in_flight_preserves_drop_reason_on_success`
+- Adversarial “risk recap”:
+  - Residual risk: history drawer and related canvases now share the preserved-drop contract, but we still need to audit any Talon macros or external callers that may cache drop state.
+  - Mitigation: survey remaining macros/voice commands for bespoke drop handling and route them through `requestGating` before closing the gating consolidation.
+  - Trigger: telemetry showing missing drop messaging from external macros should prompt an additional loop before sign-off.
+
+## 2025-12-22 – Loop 316 (kind: behaviour)
+- Helper: helper:v20251221.4 @ 2025-12-22T06:17Z
+- Focus: Request Gating & Streaming – keep the response canvas from clearing pending drop messaging after a guard pass.
+- Deliverables:
+  - Updated `lib/modelResponseCanvas._reject_if_request_in_flight` to consult `last_drop_reason()` before clearing state.
+  - Added `_tests/test_model_response_canvas_guard.py::ModelResponseCanvasGuardTests::test_reject_if_request_in_flight_preserves_drop_reason_on_success` covering both clear/preserve paths.
+- `<VALIDATION_TARGET>`: `python3.11 -m pytest _tests/test_model_response_canvas_guard.py::ModelResponseCanvasGuardTests::test_reject_if_request_in_flight_preserves_drop_reason_on_success`
+- Evidence: `docs/adr/evidence/0056/loop-0316.md`
+- Removal test: `git checkout -- lib/modelResponseCanvas.py && python3.11 -m pytest _tests/test_model_response_canvas_guard.py::ModelResponseCanvasGuardTests::test_reject_if_request_in_flight_preserves_drop_reason_on_success`
+- Adversarial “risk recap”:
+  - Residual risk: request log success paths still clear drop state even when the drop reason is pending.
+  - Mitigation: tighten request log drop clearing in the next slice so Concordance telemetry continues to surface the last meaningful reason.
+  - Trigger: telemetry losing drop messages after history writes should block completion until request log behaviour matches the shared contract.
+
+## 2025-12-22 – Loop 317 (kind: behaviour)
+- Helper: helper:v20251221.4 @ 2025-12-22T06:24Z
+- Focus: Request Gating & Streaming – keep request log success paths from clearing pending drop messaging.
+- Deliverables:
+  - Updated `lib/requestLog.append_entry` and the rewriter to clear drop state only when `last_drop_reason()` is empty.
+  - Added `_tests/test_request_log.py::RequestLogTests::test_append_entry_preserves_pending_drop_reason` guarding the preserved-drop contract.
+- `<VALIDATION_TARGET>`: `python3.11 -m pytest _tests/test_request_log.py::RequestLogTests::test_append_entry_preserves_pending_drop_reason`
+- Evidence: `docs/adr/evidence/0056/loop-0317.md`
+- Removal test: `git checkout -- lib/requestLog.py && python3.11 -m pytest _tests/test_request_log.py::RequestLogTests::test_append_entry_preserves_pending_drop_reason`
+- Adversarial “risk recap”:
+  - Residual risk: Talon macros and any external history exporters may still cache drop messages locally; audit those callers before signing off.
+  - Mitigation: extend the shared preserved-drop checks to macro/helper surfaces and document the contract in ADR-0056 when those audits complete.
+  - Trigger: telemetry or macro logs showing missing drop messaging after guard passes should prompt another loop.
+
+## 2025-12-22 – Loop 318 (kind: audit)
+- Helper: helper:v20251221.4 @ 2025-12-22T06:33Z
+- Focus: Request Gating & Streaming – locate remaining success-path drop resets lacking `last_drop_reason()` guards.
+- Findings:
+  - `lib/requestHistoryActions.py::{806,836,888,902}` clear drop state unconditionally for history path utilities.
+  - `lib/requestLog.py::{470,581,1013}` success paths still call `set_drop_reason("")` without checking for pending reasons.
+  - Guardrail tests assert these helpers clear drop messaging so Concordance surfaces don’t retain stale errors; no change landed.
+- Evidence: `docs/adr/evidence/0056/loop-0318.md`
+- Adversarial “risk recap”:
+  - Residual risk: History helper commands clear drop messaging eagerly by design; further consolidation should ensure new facades don’t reintroduce stale/stuck reasons.
+  - Mitigation: document intentional resets and rely on history list/drawer guardrails to consume messages; focus subsequent loops on Talon macro coverage instead of Python helpers.
+  - Trigger: telemetry showing missing drop messaging from macros rather than Python helpers should prompt additional slices.
+

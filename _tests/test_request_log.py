@@ -1,5 +1,6 @@
 import unittest
 from typing import TYPE_CHECKING
+from unittest.mock import patch
 
 try:
     from bootstrap import bootstrap
@@ -9,6 +10,7 @@ else:
     bootstrap()
 
 if bootstrap is not None:
+    import talon_user.lib.requestLog as requestlog_module
     from talon_user.lib.requestLog import (
         append_entry,
         append_entry_from_request,
@@ -145,6 +147,24 @@ if bootstrap is not None:
                 "Important: expand scope a lot", entry.axes.get("scope", [])
             )
             self.assertNotIn("Important: do many things", entry.axes.get("method", []))
+
+        def test_append_entry_preserves_pending_drop_reason(self) -> None:
+            axes = {"directional": ["fog"]}
+
+            with (
+                patch.object(
+                    requestlog_module, "last_drop_reason", return_value="pending"
+                ),
+                patch.object(requestlog_module, "set_drop_reason") as set_reason,
+            ):
+                append_entry(
+                    "r_pending",
+                    "prompt",
+                    "resp",
+                    "meta",
+                    axes=axes,
+                )
+            set_reason.assert_not_called()
 
         def test_append_entry_uses_axis_catalog_tokens(self):
             """Guardrail: requestLog axis filtering honors catalog/list tokens."""

@@ -36,7 +36,7 @@ from .modelPatternGUI import (
     DIRECTIONAL_MAP,
 )
 from .requestGating import request_is_in_flight, try_begin_request
-from .requestLog import drop_reason_message, set_drop_reason
+from .requestLog import drop_reason_message, last_drop_reason, set_drop_reason
 from .modelHelpers import notify
 from .stanceDefaults import stance_defaults_lines
 from .overlayHelpers import apply_canvas_blocking, clamp_scroll
@@ -346,7 +346,8 @@ def _reject_if_request_in_flight() -> bool:
     allowed, reason = try_begin_request(source="modelSuggestionGUI")
     if allowed:
         try:
-            set_drop_reason("")
+            if not last_drop_reason():
+                set_drop_reason("")
         except Exception:
             pass
         return False

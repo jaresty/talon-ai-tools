@@ -11,7 +11,7 @@ from .modelSource import create_model_source
 from .modelState import GPTState
 from .axisMappings import axis_docs_map
 from .requestGating import request_is_in_flight, try_begin_request
-from .requestLog import drop_reason_message, set_drop_reason
+from .requestLog import drop_reason_message, last_drop_reason, set_drop_reason
 from .modelHelpers import notify
 from .overlayHelpers import apply_canvas_blocking, apply_scroll_delta, clamp_scroll
 from .overlayLifecycle import close_overlays, close_common_overlays
@@ -81,7 +81,8 @@ def _reject_if_request_in_flight() -> bool:
     allowed, reason = try_begin_request(source="modelPromptPatternGUI")
     if allowed:
         try:
-            set_drop_reason("")
+            if not last_drop_reason():
+                set_drop_reason("")
         except Exception:
             pass
         return False

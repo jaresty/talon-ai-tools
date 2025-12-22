@@ -174,7 +174,7 @@ from ..lib.requestBus import (
     current_state,
     set_controller,
 )
-from ..lib.requestLog import drop_reason_message, set_drop_reason
+from ..lib.requestLog import drop_reason_message, last_drop_reason, set_drop_reason
 from ..lib.requestController import RequestUIController
 
 # Ensure a default request UI controller is registered so cancel events have a sink.
@@ -737,7 +737,8 @@ def _reject_if_request_in_flight() -> bool:
         except Exception:
             pass
         try:
-            set_drop_reason("")
+            if not last_drop_reason():
+                set_drop_reason("")
         except Exception:
             pass
         return False

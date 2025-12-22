@@ -100,6 +100,38 @@ class ModelResponseCanvasGuardTests(unittest.TestCase):
         set_reason.assert_called_once_with("")
         notify_mock.assert_not_called()
 
+    def test_reject_if_request_in_flight_preserves_drop_reason_on_success(self):
+        if bootstrap is None or canvas_module is None:
+            self.skipTest("Talon runtime not available")
+
+        with (
+            patch.object(canvas_module, "try_begin_request", return_value=(True, "")),
+            patch.object(
+                canvas_module,
+                "last_drop_reason",
+                return_value="",
+                create=True,
+            ),
+            patch.object(canvas_module, "set_drop_reason") as set_reason,
+            patch.object(canvas_module, "notify") as notify_mock,
+        ):
+            self.assertFalse(canvas_module._reject_if_request_in_flight())
+        set_reason.assert_called_once_with("")
+        notify_mock.assert_not_called()
+
+        with (
+            patch.object(canvas_module, "try_begin_request", return_value=(True, "")),
+            patch.object(
+                canvas_module,
+                "last_drop_reason",
+                return_value="drop_pending",
+                create=True,
+            ),
+            patch.object(canvas_module, "set_drop_reason") as set_reason,
+        ):
+            self.assertFalse(canvas_module._reject_if_request_in_flight())
+        set_reason.assert_not_called()
+
 
 if __name__ == "__main__":
     unittest.main()

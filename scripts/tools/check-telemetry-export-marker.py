@@ -101,6 +101,14 @@ def attempt_auto_export(marker: Path) -> bool:
     return marker.exists()
 
 
+def print_refresh_tip(marker: Path) -> None:
+    print(
+        "TIP: open Talon and run the `model export telemetry` command (voice or GUI).\n"
+        f"After it finishes, rerun this helper so guardrails use the fresh snapshot (marker: {marker}).",
+        file=sys.stderr,
+    )
+
+
 def main() -> int:
     args = parse_args()
     allow_env = args.allow_env
@@ -129,6 +137,7 @@ def main() -> int:
                 " inside Talon to refresh the artefacts.",
                 file=sys.stderr,
             )
+        print_refresh_tip(marker)
         return 2
 
     age_minutes = (datetime.now(timezone.utc) - timestamp).total_seconds() / 60
@@ -146,6 +155,7 @@ def main() -> int:
                 " inside Talon before invoking guardrails.",
                 file=sys.stderr,
             )
+            print_refresh_tip(marker)
             return 2
 
     return 0

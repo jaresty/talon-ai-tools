@@ -81,3 +81,18 @@ if not TYPE_CHECKING:
                 result = self._run_helper(marker, "--no-auto-export")
                 self.assertEqual(result.returncode, 2)
                 self.assertIn("model export telemetry", result.stderr)
+                self.assertIn("TIP:", result.stderr)
+
+        def test_disabled_auto_export_reports_tip_for_stale_marker(self) -> None:
+            with TemporaryDirectory() as tmpdir:
+                marker = Path(tmpdir) / "talon-export-marker.json"
+                marker.parent.mkdir(parents=True, exist_ok=True)
+                stale_time = datetime.now(timezone.utc) - timedelta(hours=3)
+                marker.write_text(
+                    json.dumps({"exported_at": stale_time.isoformat()}),
+                    encoding="utf-8",
+                )
+                result = self._run_helper(marker, "--no-auto-export")
+                self.assertEqual(result.returncode, 2)
+                self.assertIn("stale", result.stderr)
+                self.assertIn("TIP:", result.stderr)

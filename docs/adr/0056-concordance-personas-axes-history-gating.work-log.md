@@ -2723,3 +2723,19 @@
   - Loop 347: add CLI-side prompts when the telemetry export marker is stale, giving operators another reminder before guardrails run.
   - Loop 348: expose a Talon setting to change the export cadence at runtime without editing configuration files.
 
+## 2025-12-22 – Loop 347 (kind: guardrail/tests)
+- helper_version: helper:v20251221.5
+- focus: Request Gating & Streaming – surface CLI guidance when telemetry exports are missing or stale.
+- riskiest_assumption: Without an explicit CLI reminder, operators still skip the Talon export and run guardrails on stale telemetry (probability high, impact high for Concordance accuracy).
+- validation_targets:
+  - `python3 -m pytest _tests/test_check_telemetry_export_marker.py`
+- evidence: `docs/adr/evidence/0056/loop-0347.md`
+- rollback_plan: `git restore -- scripts/tools/check-telemetry-export-marker.py _tests/test_check_telemetry_export_marker.py docs/adr/0056-concordance-personas-axes-history-gating.md docs/adr/0056-concordance-personas-axes-history-gating.work-log.md docs/adr/evidence/0056/loop-0347.md`
+- delta_summary: helper:diff-snapshot=5 files changed, 53 insertions(+); CLI helper prints a TIP message, tests assert the guidance, and documentation captures the new workflow.
+- residual_risks:
+  - Users running guardrails entirely outside Talon still need a smoother retry flow; consider an interactive `--wait` mode or TTY prompt in a follow-up loop.
+  - Messages depend on English phrasing; add localization guidance if shared beyond internal operators.
+- next_work:
+  - Loop 348: expose a Talon setting change listener so export cadence updates automatically when the interval is tweaked.
+  - Loop 349: evaluate an interactive CLI retry flag for operators who want to pause until Talon finishes the export.
+

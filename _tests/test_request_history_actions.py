@@ -208,11 +208,27 @@ if bootstrap is not None:
                 patch.object(
                     history_actions, "try_begin_request", return_value=(True, "")
                 ) as try_begin,
+                patch.object(history_actions, "last_drop_reason", return_value=""),
                 patch.object(history_actions, "set_drop_reason") as set_reason,
                 patch.object(history_actions, "notify") as notify_mock,
             ):
                 self.assertFalse(history_actions._reject_if_request_in_flight())
             try_begin.assert_called_once_with(source="requestHistoryActions")
+            set_reason.assert_called_once_with("")
+            notify_mock.assert_not_called()
+
+        def test_reject_if_request_in_flight_preserves_pending_reason(self):
+            with (
+                patch.object(
+                    history_actions, "try_begin_request", return_value=(True, "")
+                ),
+                patch.object(
+                    history_actions, "last_drop_reason", return_value="pending"
+                ),
+                patch.object(history_actions, "set_drop_reason") as set_reason,
+                patch.object(history_actions, "notify") as notify_mock,
+            ):
+                self.assertFalse(history_actions._reject_if_request_in_flight())
             set_reason.assert_not_called()
             notify_mock.assert_not_called()
 
@@ -633,7 +649,7 @@ if bootstrap is not None:
                 HistoryActions.gpt_request_history_show_latest()
             notify_mock.assert_not_called()
 
-        def test_show_latest_does_not_read_drop_reason_when_history_exists(self):
+        def test_show_latest_does_not_surface_drop_reason_when_history_exists(self):
             # Seed a directional entry so history is available.
             append_entry(
                 "rid-ok",
@@ -642,12 +658,13 @@ if bootstrap is not None:
                 axes={"directional": ["fog"]},
             )
             with (
-                patch.object(history_actions, "last_drop_reason") as drop_mock,
+                patch.object(
+                    history_actions, "last_drop_reason", return_value="stale reason"
+                ) as drop_mock,
                 patch.object(history_actions, "notify") as notify_mock,
             ):
-                drop_mock.return_value = "stale reason"
                 HistoryActions.gpt_request_history_show_latest()
-            drop_mock.assert_not_called()
+            drop_mock.assert_called_once_with()
             notify_mock.assert_not_called()
 
         def test_drop_reason_cleared_by_clear_history(self):
@@ -674,7 +691,7 @@ if bootstrap is not None:
             self.assertIn("No request history available", messages[0])
             self.assertEqual(requestlog.last_drop_reason(), "")
 
-        def test_history_list_does_not_read_drop_reason_when_entries_exist(self):
+        def test_history_list_with_entries_ignores_drop_reason(self):
             # Seed a directional entry so list has content.
             append_entry(
                 "rid-ok",
@@ -683,12 +700,13 @@ if bootstrap is not None:
                 axes={"directional": ["fog"]},
             )
             with (
-                patch.object(history_actions, "last_drop_reason") as drop_mock,
+                patch.object(
+                    history_actions, "last_drop_reason", return_value="stale reason"
+                ) as drop_mock,
                 patch.object(history_actions, "notify") as notify_mock,
             ):
-                drop_mock.side_effect = AssertionError("should not read drop reason")
                 HistoryActions.gpt_request_history_list()
-            drop_mock.assert_not_called()
+            drop_mock.assert_called_once_with()
             notify_mock.assert_called()
             self.assertNotIn("directional lens", str(notify_mock.call_args[0][0]))
 

@@ -2074,3 +2074,17 @@
   - Mitigation: revisit the monitoring bullet whenever new macros surface or CLI output changes.
   - Trigger: missing drop-line output or new ungated macros should spawn another behaviour loop before closing the ADR.
 
+## 2025-12-22 – Loop 306 (kind: behaviour)
+- Helper: helper:v20251221.4 @ 2025-12-22T01:27Z
+- Focus: Request Gating & Streaming – keep history actions drop messaging coherent after guard checks.
+- Deliverables:
+  - Hardened `lib/requestHistoryActions._reject_if_request_in_flight` to clear cached drop state only when no pending reason exists and to populate fallback messaging when the guard blocks a request.
+  - Updated `_tests/test_request_history_actions.py` with coverage for the "clear on success" and "preserve drop reason" paths to lock the new contract.
+- `<VALIDATION_TARGET>`: `python3.11 -m pytest _tests/test_request_history_actions.py _tests/test_request_history_drawer_gating.py`
+- Evidence: `docs/adr/evidence/0056/loop-0306.md`
+- Removal test: `git checkout -- lib/requestHistoryActions.py _tests/test_request_history_actions.py && python3.11 -m pytest _tests/test_request_history_actions.py::RequestHistoryActionTests::test_history_actions_reject_if_in_flight_notifies_with_drop_message -q`
+- Adversarial “risk recap”:
+  - Residual risk: other gating surfaces may still clear drop messaging too aggressively when guard checks pass.
+  - Mitigation: migrate remaining canvases and CLI helpers to share the same last-drop preservation pattern, verifying each with targeted regression tests.
+  - Trigger: any guardrail or telemetry output that drops a pending history message after a successful action should block completion of the gating consolidation work.
+

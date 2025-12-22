@@ -67,6 +67,11 @@ def _reject_if_request_in_flight() -> bool:
 
     allowed, reason = try_begin_request(source="requestHistoryActions")
     if allowed:
+        try:
+            if not last_drop_reason():
+                set_drop_reason("")
+        except Exception:
+            pass
         return False
 
     if not reason:

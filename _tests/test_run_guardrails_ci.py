@@ -1,14 +1,39 @@
 import json
 import os
+import shutil
 import subprocess
 import sys
 import tempfile
 import unittest
+from contextlib import contextmanager
 from pathlib import Path
 
 from typing import TYPE_CHECKING
 
 if not TYPE_CHECKING:
+
+    @contextmanager
+    def isolate_telemetry_dir():
+        repo_root = Path(__file__).resolve().parents[1]
+        telemetry_dir = repo_root / "artifacts" / "telemetry"
+        artifacts_root = telemetry_dir.parent
+        backup_dir = None
+        try:
+            artifacts_root.mkdir(parents=True, exist_ok=True)
+            if telemetry_dir.exists():
+                backup_dir = Path(
+                    tempfile.mkdtemp(
+                        prefix="telemetry-backup-", dir=str(artifacts_root)
+                    )
+                )
+                shutil.rmtree(backup_dir)
+                telemetry_dir.rename(backup_dir)
+            telemetry_dir.mkdir(parents=True, exist_ok=True)
+            yield telemetry_dir
+        finally:
+            shutil.rmtree(telemetry_dir, ignore_errors=True)
+            if backup_dir is not None and backup_dir.exists():
+                backup_dir.rename(telemetry_dir)
 
     class RunGuardrailsCITests(unittest.TestCase):
         def test_run_guardrails_ci_script(self) -> None:
@@ -21,21 +46,22 @@ if not TYPE_CHECKING:
                 / "run_guardrails_ci.sh"
             )
             repo_root = Path(__file__).resolve().parents[1]
-            summary_path = (
-                repo_root
-                / "artifacts"
-                / "telemetry"
-                / "history-validation-summary.json"
-            )
-            if summary_path.exists():
-                summary_path.unlink()
-            result = subprocess.run(
-                ["/bin/bash", str(script), "axis-guardrails-ci"],
-                check=False,
-                capture_output=True,
-                text=True,
-                cwd=str(repo_root),
-            )
+            with isolate_telemetry_dir():
+                summary_path = (
+                    repo_root
+                    / "artifacts"
+                    / "telemetry"
+                    / "history-validation-summary.json"
+                )
+                if summary_path.exists():
+                    summary_path.unlink()
+                result = subprocess.run(
+                    ["/bin/bash", str(script), "axis-guardrails-ci"],
+                    check=False,
+                    capture_output=True,
+                    text=True,
+                    cwd=str(repo_root),
+                )
             if result.returncode != 0:
                 self.fail(
                     f"run_guardrails_ci.sh failed with code {result.returncode}\nstdout:\n{result.stdout}\nstderr:\n{result.stderr}"
@@ -126,412 +152,42 @@ if not TYPE_CHECKING:
                 / "run_guardrails_ci.sh"
             )
             repo_root = Path(__file__).resolve().parents[1]
-            summary_path = (
-                repo_root
-                / "artifacts"
-                / "telemetry"
-                / "history-validation-summary.json"
-            )
-            summary_dir = summary_path.parent
-            summary_dir.mkdir(parents=True, exist_ok=True)
-            if summary_path.exists():
-                summary_path.unlink()
-            streaming_summary_path = summary_path.with_name(
-                "history-validation-summary.streaming.json"
-            )
-            if streaming_summary_path.exists():
-                streaming_summary_path.unlink()
-            telemetry_path = summary_path.with_name(
-                "history-validation-summary.telemetry.json"
-            )
-            if telemetry_path.exists():
-                telemetry_path.unlink()
-            skip_path = summary_path.with_name("suggestion-skip-summary.json")
-            skip_payload_seed = {
-                "counts": {"streaming_disabled": 2, "rate_limited": 1},
-                "total_skipped": 3,
-                "reason_counts": [
-                    {"reason": "streaming_disabled", "count": 2},
-                    {"reason": "rate_limited", "count": 1},
-                ],
-            }
-            skip_path.write_text(
-                json.dumps(skip_payload_seed, indent=2), encoding="utf-8"
-            )
-            env = os.environ.copy()
-            env["ALLOW_STALE_TELEMETRY"] = "1"
-            result = subprocess.run(
-                ["/bin/bash", str(script), "request-history-guardrails"],
-                check=False,
-                capture_output=True,
-                text=True,
-                cwd=str(repo_root),
-                env=env,
-            )
-            if result.returncode != 0:
-                self.fail(
-                    f"run_guardrails_ci.sh request-history-guardrails failed with code {result.returncode}\nstdout:\n{result.stdout}\nstderr:\n{result.stderr}"
+            with isolate_telemetry_dir():
+                summary_path = (
+                    repo_root
+                    / "artifacts"
+                    / "telemetry"
+                    / "history-validation-summary.json"
                 )
-            self.assertIn(
-                "History validation summary (JSON):",
-                result.stdout,
-                "Expected CI helper to log the saved history summary",
-            )
-            self.assertTrue(
-                summary_path.exists(),
-                "run_guardrails_ci.sh did not write the history summary artifact",
-            )
-            with summary_path.open("r", encoding="utf-8") as handle:
-                stats = json.load(handle)
-            self.assertIn("gating_drop_counts", stats)
-            self.assertIn(
-                "History summary stats: total_entries=0 gating_drop_total=0",
-                result.stdout,
-            )
-            self.assertIn(
-                "History summary gating status: unknown",
-                result.stdout,
-            )
-            self.assertIn(
-                "History summary last drop: none",
-                result.stdout,
-            )
-            self.assertIn(
-                "Streaming gating last drop: none",
-                result.stdout,
-            )
-            self.assertIn(
-                "Streaming gating summary: status=unknown; total=0; counts=none; sources=none; last=n/a; last_source=n/a; last_message=none",
-                result.stdout,
-            )
+                summary_dir = summary_path.parent
+                summary_dir.mkdir(parents=True, exist_ok=True)
+                if summary_path.exists():
+                    summary_path.unlink()
+                streaming_summary_path = summary_path.with_name(
+                    "history-validation-summary.streaming.json"
+                )
+                if streaming_summary_path.exists():
+                    streaming_summary_path.unlink()
+                telemetry_path = summary_path.with_name(
+                    "history-validation-summary.telemetry.json"
+                )
+                if telemetry_path.exists():
+                    telemetry_path.unlink()
+                skip_path = summary_path.with_name("suggestion-skip-summary.json")
+                skip_payload_seed = {
+                    "counts": {"streaming_disabled": 2, "rate_limited": 1},
+                    "total_skipped": 3,
+                    "reason_counts": [
+                        {"reason": "streaming_disabled", "count": 2},
+                        {"reason": "rate_limited", "count": 1},
+                    ],
+                }
+                skip_path.write_text(
+                    json.dumps(skip_payload_seed, indent=2), encoding="utf-8"
+                )
 
-            self.assertIn(
-                "Suggestion skip summary (json):",
-                result.stdout,
-            )
-            self.assertIn("Suggestion skip total: 3", result.stdout)
-            self.assertIn(
-                "Suggestion skip reasons: streaming_disabled=2, rate_limited=1",
-                result.stdout,
-            )
-
-            self.assertIn(
-                "- Streaming gating summary: status=unknown; total=0; counts=none; sources=none; last=n/a; last_source=n/a; last_message=none",
-                result.stdout,
-            )
-            self.assertIn("- Last gating drop: none", result.stdout)
-            self.assertIn("- Streaming last drop: none", result.stdout)
-            self.assertIn(
-                "- Artifact link unavailable outside GitHub Actions.",
-                result.stdout,
-            )
-            self.assertIn("### History Guardrail Summary", result.stdout)
-            self.assertIn(
-                "History summary recorded at artifacts/telemetry/history-validation-summary.json; job summary will reference this file when running in GitHub Actions.",
-                result.stdout,
-            )
-
-            streaming_summary_path = summary_path.with_name(
-                "history-validation-summary.streaming.json"
-            )
-            self.assertTrue(
-                streaming_summary_path.exists(),
-                "run_guardrails_ci.sh did not produce streaming JSON summary",
-            )
-
-            with streaming_summary_path.open("r", encoding="utf-8") as handle:
-                streaming_data = json.load(handle)
-            self.assertEqual(
-                streaming_data.get("streaming_gating_summary"),
-                {
-                    "counts": {},
-                    "counts_sorted": [],
-                    "sources": {},
-                    "sources_sorted": [],
-                    "last": {},
-                    "last_source": {},
-                    "total": 0,
-                    "status": "unknown",
-                    "last_message": "",
-                    "last_code": "",
-                },
-            )
-
-            telemetry_path = summary_path.with_name(
-                "history-validation-summary.telemetry.json"
-            )
-            self.assertTrue(
-                telemetry_path.exists(),
-                "run_guardrails_ci.sh did not produce telemetry export",
-            )
-            telemetry_payload = json.loads(telemetry_path.read_text(encoding="utf-8"))
-            self.assertEqual(telemetry_payload.get("total_entries"), 0)
-            self.assertEqual(telemetry_payload.get("gating_drop_total"), 0)
-            self.assertIn("generated_at", telemetry_payload)
-            self.assertEqual(telemetry_payload.get("top_gating_reasons"), [])
-            self.assertEqual(telemetry_payload.get("top_gating_sources"), [])
-            self.assertEqual(telemetry_payload.get("last_drop_message"), "none")
-            self.assertIsNone(telemetry_payload.get("last_drop_code"))
-            telemetry_skip = telemetry_payload.get("suggestion_skip", {})
-            self.assertEqual(telemetry_skip.get("total"), 3)
-            self.assertEqual(
-                telemetry_skip.get("reasons"),
-                [
-                    {"reason": "streaming_disabled", "count": 2},
-                    {"reason": "rate_limited", "count": 1},
-                ],
-            )
-
-            skip_payload = json.loads(skip_path.read_text(encoding="utf-8"))
-            self.assertEqual(skip_payload.get("total_skipped"), 3)
-            self.assertEqual(
-                skip_payload.get("reason_counts"),
-                [
-                    {"reason": "streaming_disabled", "count": 2},
-                    {"reason": "rate_limited", "count": 1},
-                ],
-            )
-
-            self.assertIn(
-                "Telemetry summary saved at artifacts/telemetry/history-validation-summary.telemetry.json",
-                result.stdout,
-            )
-            self.assertIn(
-                "Streaming JSON summary recorded at artifacts/telemetry/history-validation-summary.streaming.json; job summary will reference this file when running in GitHub Actions.",
-                result.stdout,
-            )
-
-        def test_run_guardrails_ci_writes_job_summary(self) -> None:
-            """Guardrail: CI helper should append history summary to GitHub step summary when provided."""
-
-            script = (
-                Path(__file__).resolve().parents[1]
-                / "scripts"
-                / "tools"
-                / "run_guardrails_ci.sh"
-            )
-            repo_root = Path(__file__).resolve().parents[1]
-            summary_path = (
-                repo_root
-                / "artifacts"
-                / "telemetry"
-                / "history-validation-summary.json"
-            )
-            summary_dir = summary_path.parent
-            summary_dir.mkdir(parents=True, exist_ok=True)
-            if summary_path.exists():
-                summary_path.unlink()
-            streaming_summary_path = summary_path.with_name(
-                "history-validation-summary.streaming.json"
-            )
-            if streaming_summary_path.exists():
-                streaming_summary_path.unlink()
-            telemetry_path = summary_path.with_name(
-                "history-validation-summary.telemetry.json"
-            )
-            if telemetry_path.exists():
-                telemetry_path.unlink()
-            skip_path = summary_path.with_name("suggestion-skip-summary.json")
-            skip_payload_seed = {
-                "counts": {"streaming_disabled": 2, "rate_limited": 1},
-                "total_skipped": 3,
-                "reason_counts": [
-                    {"reason": "streaming_disabled", "count": 2},
-                    {"reason": "rate_limited", "count": 1},
-                ],
-            }
-            skip_path.write_text(
-                json.dumps(skip_payload_seed, indent=2), encoding="utf-8"
-            )
-            with tempfile.TemporaryDirectory() as tmpdir:
-                step_summary_path = Path(tmpdir) / "gha-summary.md"
                 env = os.environ.copy()
                 env["ALLOW_STALE_TELEMETRY"] = "1"
-                env["GITHUB_STEP_SUMMARY"] = str(step_summary_path)
-                env.setdefault("GITHUB_SERVER_URL", "https://github.com")
-                env["GITHUB_REPOSITORY"] = "example/repo"
-                env["GITHUB_RUN_ID"] = "12345"
-                result = subprocess.run(
-                    ["/bin/bash", str(script), "request-history-guardrails"],
-                    check=False,
-                    capture_output=True,
-                    text=True,
-                    cwd=str(repo_root),
-                    env=env,
-                )
-                if result.returncode != 0:
-                    self.fail(
-                        f"run_guardrails_ci.sh request-history-guardrails failed with code {result.returncode}\nstdout:\n{result.stdout}\nstderr:\n{result.stderr}"
-                    )
-                self.assertTrue(
-                    step_summary_path.exists(),
-                    "run_guardrails_ci.sh did not create the GitHub step summary file",
-                )
-                self.assertIn(
-                    "History summary gating status: unknown",
-                    result.stdout,
-                )
-                summary_text = step_summary_path.read_text(encoding="utf-8")
-                self.assertIn("### History Guardrail Summary", summary_text)
-                self.assertIn(
-                    "Streaming JSON summary recorded at artifacts/telemetry/history-validation-summary.streaming.json",
-                    summary_text,
-                )
-                expected_artifact = (
-                    "https://github.com/example/repo/actions/runs/12345#artifacts"
-                )
-                self.assertIn(
-                    f"- Download telemetry summary: [Telemetry payload]({expected_artifact})",
-                    summary_text,
-                )
-                self.assertIn(
-                    "Telemetry summary saved at artifacts/telemetry/history-validation-summary.telemetry.json",
-                    summary_text,
-                )
-                self.assertIn(
-                    "Download summary artifact",
-                    summary_text,
-                )
-                self.assertIn(
-                    "[History axis summary]",
-                    summary_text,
-                )
-                self.assertIn(
-                    "Streaming summary (json)",
-                    summary_text,
-                )
-                self.assertIn(
-                    "Telemetry payload (json)",
-                    summary_text,
-                )
-                self.assertIn(
-                    "- total entries: 0",
-                    summary_text,
-                )
-                self.assertIn(
-                    "- gating drops: 0",
-                    summary_text,
-                )
-                self.assertIn(
-                    "- last drop: none",
-                    summary_text,
-                )
-                self.assertIn(
-                    "- streaming last drop: none",
-                    summary_text,
-                )
-                self.assertIn(
-                    "- streaming status: unknown",
-                    summary_text,
-                )
-                self.assertIn(
-                    "- Streaming gating reasons: none",
-                    summary_text,
-                )
-                self.assertIn(
-                    "- Streaming gating sources: none",
-                    summary_text,
-                )
-                self.assertIn(
-                    "- suggestion skips total: 3",
-                    summary_text,
-                )
-                self.assertIn(
-                    "- suggestion skip reasons: streaming_disabled=2, rate_limited=1",
-                    summary_text,
-                )
-                self.assertIn(
-                    "- Suggestion skip summary saved at artifacts/telemetry/suggestion-skip-summary.json",
-                    summary_text,
-                )
-                self.assertIn(
-                    "- Telemetry summary saved at artifacts/telemetry/history-validation-summary.telemetry.json",
-                    summary_text,
-                )
-                self.assertIn("```json", summary_text)
-                self.assertIn('"streaming_gating_summary"', summary_text)
-                self.assertIn('"top_gating_reasons"', summary_text)
-                self.assertIn('"top_gating_sources"', summary_text)
-                self.assertIn('"last_drop_message": "none"', summary_text)
-                self.assertIn("```", summary_text.strip())
-
-        def test_run_guardrails_ci_gating_reasons_table_with_counts(self) -> None:
-            """Guardrail: summary table should render when gating counts exist."""
-
-            script = (
-                Path(__file__).resolve().parents[1]
-                / "scripts"
-                / "tools"
-                / "run_guardrails_ci.sh"
-            )
-            repo_root = Path(__file__).resolve().parents[1]
-            summary_dir = repo_root / "artifacts" / "telemetry"
-            summary_dir.mkdir(parents=True, exist_ok=True)
-            summary_path = summary_dir / "history-validation-summary.json"
-            streaming_summary_path = (
-                summary_dir / "history-validation-summary.streaming.json"
-            )
-
-            summary_data = {
-                "total_entries": 5,
-                "gating_drop_counts": {
-                    "streaming_disabled": 2,
-                    "rate_limited": 1,
-                },
-                "gating_drop_total": 3,
-                "gating_drop_last_message": "Streaming disabled guardrail",
-                "gating_drop_last_code": "streaming_disabled",
-                "streaming_gating_summary": {
-                    "counts": {
-                        "rate_limited": 1,
-                        "streaming_disabled": 2,
-                    },
-                    "sources": {
-                        "modelHelpCanvas": 2,
-                        "providerCommands": 1,
-                    },
-                    "total": 3,
-                    "last": {
-                        "reason": "streaming_disabled",
-                        "reason_count": 2,
-                    },
-                    "last_message": "Streaming disabled guardrail",
-                    "last_code": "streaming_disabled",
-                },
-            }
-
-            summary_path.write_text(
-                json.dumps(summary_data, indent=2), encoding="utf-8"
-            )
-
-            if streaming_summary_path.exists():
-                streaming_summary_path.unlink()
-            telemetry_path = summary_dir / "history-validation-summary.telemetry.json"
-            if telemetry_path.exists():
-                telemetry_path.unlink()
-            skip_path = summary_dir / "suggestion-skip-summary.json"
-            skip_payload_seed = {
-                "counts": {"streaming_disabled": 2, "rate_limited": 1},
-                "total_skipped": 3,
-                "reason_counts": [
-                    {"reason": "streaming_disabled", "count": 2},
-                    {"reason": "rate_limited", "count": 1},
-                ],
-            }
-            skip_path.write_text(
-                json.dumps(skip_payload_seed, indent=2), encoding="utf-8"
-            )
-
-            summary_text = ""
-            with tempfile.TemporaryDirectory() as tmpdir:
-                fake_make = Path(tmpdir) / "make"
-                fake_make.write_text("#!/usr/bin/env bash\nexit 0\n", encoding="utf-8")
-                fake_make.chmod(0o755)
-                step_summary_path = Path(tmpdir) / "gha-summary.md"
-                env = os.environ.copy()
-                env["ALLOW_STALE_TELEMETRY"] = "1"
-                env["PATH"] = f"{tmpdir}{os.pathsep}{env.get('PATH', '')}"
-                env["GITHUB_STEP_SUMMARY"] = str(step_summary_path)
                 result = subprocess.run(
                     ["/bin/bash", str(script), "request-history-guardrails"],
                     check=False,
@@ -545,115 +201,412 @@ if not TYPE_CHECKING:
                         "run_guardrails_ci.sh request-history-guardrails failed with code "
                         f"{result.returncode}\nstdout:\n{result.stdout}\nstderr:\n{result.stderr}"
                     )
-                self.assertTrue(
-                    step_summary_path.exists(),
-                    "run_guardrails_ci.sh did not append to the GitHub step summary file",
+                self.assertIn(
+                    "History validation summary (JSON):",
+                    result.stdout,
+                    "Expected CI helper to log the saved history summary",
                 )
-                summary_text = step_summary_path.read_text(encoding="utf-8")
-            self.assertIn(
-                "- suggestion skips total: 3",
-                summary_text,
+                self.assertTrue(
+                    summary_path.exists(),
+                    "run_guardrails_ci.sh did not write the history summary artifact",
+                )
+                with summary_path.open("r", encoding="utf-8") as handle:
+                    stats = json.load(handle)
+                self.assertIn("gating_drop_counts", stats)
+                self.assertIn(
+                    "History summary stats: total_entries=0 gating_drop_total=0",
+                    result.stdout,
+                )
+                self.assertIn(
+                    "History summary gating status: unknown",
+                    result.stdout,
+                )
+                self.assertIn(
+                    "History summary last drop: none",
+                    result.stdout,
+                )
+                self.assertIn(
+                    "Streaming gating last drop: none",
+                    result.stdout,
+                )
+                self.assertIn(
+                    "Streaming gating summary: status=unknown; total=0; counts=none; sources=none; last=n/a; last_source=n/a; last_message=none",
+                    result.stdout,
+                )
+
+                self.assertIn(
+                    "Suggestion skip summary (json):",
+                    result.stdout,
+                )
+                self.assertIn("Suggestion skip total: 3", result.stdout)
+                self.assertIn(
+                    "Suggestion skip reasons: streaming_disabled=2, rate_limited=1",
+                    result.stdout,
+                )
+
+                self.assertIn(
+                    "- Streaming gating summary: status=unknown; total=0; counts=none; sources=none; last=n/a; last_source=n/a; last_message=none",
+                    result.stdout,
+                )
+                self.assertIn("- Last gating drop: none", result.stdout)
+                self.assertIn("- Streaming last drop: none", result.stdout)
+                self.assertIn(
+                    "- Artifact link unavailable outside GitHub Actions.",
+                    result.stdout,
+                )
+                self.assertIn("### History Guardrail Summary", result.stdout)
+                self.assertIn(
+                    "History summary recorded at artifacts/telemetry/history-validation-summary.json; job summary will reference this file when running in GitHub Actions.",
+                    result.stdout,
+                )
+
+                streaming_summary_path = summary_path.with_name(
+                    "history-validation-summary.streaming.json"
+                )
+                self.assertTrue(
+                    streaming_summary_path.exists(),
+                    "run_guardrails_ci.sh did not produce streaming JSON summary",
+                )
+
+                with streaming_summary_path.open("r", encoding="utf-8") as handle:
+                    streaming_data = json.load(handle)
+                self.assertEqual(
+                    streaming_data.get("streaming_gating_summary"),
+                    {
+                        "counts": {},
+                        "counts_sorted": [],
+                        "sources": {},
+                        "sources_sorted": [],
+                        "last": {},
+                        "last_source": {},
+                        "total": 0,
+                        "status": "unknown",
+                        "last_message": "",
+                        "last_code": "",
+                    },
+                )
+
+                telemetry_path = summary_path.with_name(
+                    "history-validation-summary.telemetry.json"
+                )
+                self.assertTrue(
+                    telemetry_path.exists(),
+                    "run_guardrails_ci.sh did not produce telemetry export",
+                )
+                telemetry_payload = json.loads(
+                    telemetry_path.read_text(encoding="utf-8")
+                )
+                self.assertEqual(telemetry_payload.get("total_entries"), 0)
+                self.assertEqual(telemetry_payload.get("gating_drop_total"), 0)
+                self.assertIn("generated_at", telemetry_payload)
+                self.assertEqual(telemetry_payload.get("top_gating_reasons"), [])
+                self.assertEqual(telemetry_payload.get("top_gating_sources"), [])
+                self.assertEqual(telemetry_payload.get("last_drop_message"), "none")
+                self.assertIsNone(telemetry_payload.get("last_drop_code"))
+                telemetry_skip = telemetry_payload.get("suggestion_skip", {})
+                self.assertEqual(telemetry_skip.get("total"), 3)
+                self.assertEqual(
+                    telemetry_skip.get("reasons"),
+                    [
+                        {"reason": "streaming_disabled", "count": 2},
+                        {"reason": "rate_limited", "count": 1},
+                    ],
+                )
+
+                skip_payload = json.loads(skip_path.read_text(encoding="utf-8"))
+                self.assertEqual(skip_payload.get("total_skipped"), 3)
+                self.assertEqual(
+                    skip_payload.get("reason_counts"),
+                    [
+                        {"reason": "streaming_disabled", "count": 2},
+                        {"reason": "rate_limited", "count": 1},
+                    ],
+                )
+
+                self.assertIn(
+                    "Telemetry summary saved at artifacts/telemetry/history-validation-summary.telemetry.json",
+                    result.stdout,
+                )
+                self.assertIn(
+                    "Streaming JSON summary recorded at artifacts/telemetry/history-validation-summary.streaming.json; job summary will reference this file when running in GitHub Actions.",
+                    result.stdout,
+                )
+
+        def test_run_guardrails_ci_writes_job_summary(self) -> None:
+            """Guardrail: CI helper should append history summary to GitHub step summary when provided."""
+
+            script = (
+                Path(__file__).resolve().parents[1]
+                / "scripts"
+                / "tools"
+                / "run_guardrails_ci.sh"
             )
+            repo_root = Path(__file__).resolve().parents[1]
+            with isolate_telemetry_dir():
+                summary_path = (
+                    repo_root
+                    / "artifacts"
+                    / "telemetry"
+                    / "history-validation-summary.json"
+                )
+                summary_dir = summary_path.parent
+                summary_dir.mkdir(parents=True, exist_ok=True)
+                if summary_path.exists():
+                    summary_path.unlink()
+                streaming_summary_path = summary_path.with_name(
+                    "history-validation-summary.streaming.json"
+                )
+                if streaming_summary_path.exists():
+                    streaming_summary_path.unlink()
+                telemetry_path = summary_path.with_name(
+                    "history-validation-summary.telemetry.json"
+                )
+                if telemetry_path.exists():
+                    telemetry_path.unlink()
+                skip_path = summary_path.with_name("suggestion-skip-summary.json")
+                skip_payload_seed = {
+                    "counts": {"streaming_disabled": 2, "rate_limited": 1},
+                    "total_skipped": 3,
+                    "reason_counts": [
+                        {"reason": "streaming_disabled", "count": 2},
+                        {"reason": "rate_limited", "count": 1},
+                    ],
+                }
+                skip_path.write_text(
+                    json.dumps(skip_payload_seed, indent=2), encoding="utf-8"
+                )
+                with tempfile.TemporaryDirectory() as tmpdir:
+                    step_summary_path = Path(tmpdir) / "gha-summary.md"
+                    env = os.environ.copy()
+                    env["ALLOW_STALE_TELEMETRY"] = "1"
+                    env["GITHUB_STEP_SUMMARY"] = str(step_summary_path)
+                    env.setdefault("GITHUB_SERVER_URL", "https://github.com")
+
+                    env["GITHUB_REPOSITORY"] = "example/repo"
+                    env["GITHUB_RUN_ID"] = "12345"
+                    result = subprocess.run(
+                        ["/bin/bash", str(script), "request-history-guardrails"],
+                        check=False,
+                        capture_output=True,
+                        text=True,
+                        cwd=str(repo_root),
+                        env=env,
+                    )
+                    if result.returncode != 0:
+                        self.fail(
+                            "run_guardrails_ci.sh request-history-guardrails failed with code "
+                            f"{result.returncode}\nstdout:\n{result.stdout}\nstderr:\n{result.stderr}"
+                        )
+                    self.assertTrue(
+                        step_summary_path.exists(),
+                        "run_guardrails_ci.sh did not append to the GitHub step summary file",
+                    )
+                    summary_text = step_summary_path.read_text(encoding="utf-8")
             self.assertIn(
                 "- suggestion skip reasons: streaming_disabled=2, rate_limited=1",
                 summary_text,
             )
-            stdout = result.stdout
-            self.assertIn("History summary gating status: unknown", stdout)
-            self.assertIn(
-                "History summary last drop: Streaming disabled guardrail",
-                stdout,
-            )
-            self.assertIn(
-                "Streaming gating last drop: Streaming disabled guardrail (code=streaming_disabled)",
-                stdout,
-            )
-            self.assertIn("Suggestion skip total: 3", stdout)
-            self.assertIn(
-                "Suggestion skip reasons: streaming_disabled=2, rate_limited=1",
-                stdout,
-            )
 
-            self.assertIn("Streaming gating reasons:", stdout)
+        def test_run_guardrails_ci_gating_reasons_table_with_counts(self) -> None:
+            """Guardrail: summary table should render when gating counts exist."""
 
-            self.assertIn("| Reason | Count |", stdout)
+            script = (
+                Path(__file__).resolve().parents[1]
+                / "scripts"
+                / "tools"
+                / "run_guardrails_ci.sh"
+            )
+            repo_root = Path(__file__).resolve().parents[1]
+            with isolate_telemetry_dir():
+                summary_dir = repo_root / "artifacts" / "telemetry"
+                summary_dir.mkdir(parents=True, exist_ok=True)
+                summary_path = summary_dir / "history-validation-summary.json"
+                streaming_summary_path = (
+                    summary_dir / "history-validation-summary.streaming.json"
+                )
 
-            self.assertIn("Streaming gating sources:", stdout)
-            self.assertIn("| Source | Count |", stdout)
+                summary_data = {
+                    "total_entries": 5,
+                    "gating_drop_counts": {
+                        "streaming_disabled": 2,
+                        "rate_limited": 1,
+                    },
+                    "gating_drop_total": 3,
+                    "gating_drop_last_message": "Streaming disabled guardrail",
+                    "gating_drop_last_code": "streaming_disabled",
+                    "streaming_gating_summary": {
+                        "counts": {
+                            "rate_limited": 1,
+                            "streaming_disabled": 2,
+                        },
+                        "sources": {
+                            "modelHelpCanvas": 2,
+                            "providerCommands": 1,
+                        },
+                        "total": 3,
+                        "last": {
+                            "reason": "streaming_disabled",
+                            "reason_count": 2,
+                        },
+                        "last_message": "Streaming disabled guardrail",
+                        "last_code": "streaming_disabled",
+                    },
+                }
 
-            self.assertIn(
-                "Streaming gating summary: status=unknown; total=3; counts=streaming_disabled=2, rate_limited=1; sources=modelHelpCanvas=2, providerCommands=1; last=streaming_disabled (count=2); last_source=n/a; last_message=Streaming disabled guardrail (code=streaming_disabled)",
-                result.stdout,
-            )
+                summary_path.write_text(
+                    json.dumps(summary_data, indent=2), encoding="utf-8"
+                )
 
-            table_lines = [line for line in stdout.splitlines() if line.startswith("|")]
-            self.assertEqual(
-                table_lines[:3],
-                [
-                    "| Reason | Count |",
-                    "| --- | --- |",
-                    "| streaming_disabled | 2 |",
-                ],
-                "Expected gating table to list highest counts first",
-            )
-            self.assertIn("| rate_limited | 1 |", stdout)
-            self.assertIn("| modelHelpCanvas | 2 |", stdout)
-            self.assertIn("| providerCommands | 1 |", stdout)
+                if streaming_summary_path.exists():
+                    streaming_summary_path.unlink()
+                telemetry_path = (
+                    summary_dir / "history-validation-summary.telemetry.json"
+                )
+                if telemetry_path.exists():
+                    telemetry_path.unlink()
+                skip_path = summary_dir / "suggestion-skip-summary.json"
+                skip_payload_seed = {
+                    "counts": {"streaming_disabled": 2, "rate_limited": 1},
+                    "total_skipped": 3,
+                    "reason_counts": [
+                        {"reason": "streaming_disabled", "count": 2},
+                        {"reason": "rate_limited", "count": 1},
+                    ],
+                }
+                skip_path.write_text(
+                    json.dumps(skip_payload_seed, indent=2), encoding="utf-8"
+                )
 
-            self.assertIn("- streaming status: unknown", summary_text)
-            self.assertIn(
-                "- last drop: Streaming disabled guardrail",
-                summary_text,
-            )
-            self.assertIn(
-                "- streaming last drop: Streaming disabled guardrail (code=streaming_disabled)",
-                summary_text,
-            )
-            self.assertIn("Streaming gating reasons:", summary_text)
-            self.assertIn("| Reason | Count |", summary_text)
-            self.assertIn("Streaming gating sources:", summary_text)
-            self.assertIn("| Source | Count |", summary_text)
-            self.assertIn(
-                "Streaming gating summary: status=unknown; total=3; counts=streaming_disabled=2, rate_limited=1; sources=modelHelpCanvas=2, providerCommands=1; last=streaming_disabled (count=2); last_source=n/a; last_message=Streaming disabled guardrail (code=streaming_disabled)",
-                summary_text,
-            )
-            telemetry_payload = json.loads(
-                summary_path.with_name(
-                    "history-validation-summary.telemetry.json"
-                ).read_text(encoding="utf-8")
-            )
-            self.assertEqual(
-                telemetry_payload.get("last_drop_message"),
-                "Streaming disabled guardrail",
-            )
-            self.assertEqual(
-                telemetry_payload.get("last_drop_code"), "streaming_disabled"
-            )
-            self.assertIn(
-                '"last_drop_message": "Streaming disabled guardrail"',
-                summary_text,
-            )
-            summary_lines = [
-                line for line in summary_text.splitlines() if line.startswith("|")
-            ]
-            self.assertEqual(
-                summary_lines[:3],
-                [
-                    "| Reason | Count |",
-                    "| --- | --- |",
-                    "| streaming_disabled | 2 |",
-                ],
-                "GitHub summary should list highest counts first",
-            )
-            self.assertIn("| rate_limited | 1 |", summary_text)
-            self.assertIn("| modelHelpCanvas | 2 |", summary_text)
-            self.assertIn("| providerCommands | 1 |", summary_text)
-            self.assertNotIn("- Streaming gating reasons: none", summary_text)
+                summary_text = ""
+                with tempfile.TemporaryDirectory() as tmpdir:
+                    fake_make = Path(tmpdir) / "make"
+                    fake_make.write_text(
+                        "#!/usr/bin/env bash\nexit 0\n", encoding="utf-8"
+                    )
+                    fake_make.chmod(0o755)
+                    step_summary_path = Path(tmpdir) / "gha-summary.md"
+                    env = os.environ.copy()
+                    env["ALLOW_STALE_TELEMETRY"] = "1"
+                    env["PATH"] = f"{tmpdir}{os.pathsep}{env.get('PATH', '')}"
+                    env["GITHUB_STEP_SUMMARY"] = str(step_summary_path)
+                    result = subprocess.run(
+                        ["/bin/bash", str(script), "request-history-guardrails"],
+                        check=False,
+                        capture_output=True,
+                        text=True,
+                        cwd=str(repo_root),
+                        env=env,
+                    )
+                    if result.returncode != 0:
+                        self.fail(
+                            "run_guardrails_ci.sh request-history-guardrails failed with code "
+                            f"{result.returncode}\nstdout:\n{result.stdout}\nstderr:\n{result.stderr}"
+                        )
+                    self.assertTrue(
+                        step_summary_path.exists(),
+                        "run_guardrails_ci.sh did not append to the GitHub step summary file",
+                    )
+                    summary_text = step_summary_path.read_text(encoding="utf-8")
 
-            if summary_path.exists():
-                summary_path.unlink()
-            if streaming_summary_path.exists():
-                streaming_summary_path.unlink()
+                self.assertIn(
+                    "- suggestion skips total: 3",
+                    summary_text,
+                )
+                self.assertIn(
+                    "- suggestion skip reasons: streaming_disabled=2, rate_limited=1",
+                    summary_text,
+                )
+                stdout = result.stdout
+                self.assertIn("History summary gating status: unknown", stdout)
+                self.assertIn(
+                    "History summary last drop: Streaming disabled guardrail",
+                    stdout,
+                )
+                self.assertIn(
+                    "Streaming gating last drop: Streaming disabled guardrail (code=streaming_disabled)",
+                    stdout,
+                )
+                self.assertIn("Suggestion skip total: 3", stdout)
+                self.assertIn(
+                    "Suggestion skip reasons: streaming_disabled=2, rate_limited=1",
+                    stdout,
+                )
+
+                self.assertIn("Streaming gating reasons:", stdout)
+                self.assertIn("| Reason | Count |", stdout)
+                self.assertIn("Streaming gating sources:", stdout)
+                self.assertIn("| Source | Count |", stdout)
+
+                self.assertIn(
+                    "Streaming gating summary: status=unknown; total=3; counts=streaming_disabled=2, rate_limited=1; sources=modelHelpCanvas=2, providerCommands=1; last=streaming_disabled (count=2); last_source=n/a; last_message=Streaming disabled guardrail (code=streaming_disabled)",
+                    stdout,
+                )
+
+                table_lines = [
+                    line for line in stdout.splitlines() if line.startswith("|")
+                ]
+                self.assertEqual(
+                    table_lines[:3],
+                    [
+                        "| Reason | Count |",
+                        "| --- | --- |",
+                        "| streaming_disabled | 2 |",
+                    ],
+                    "Expected gating table to list highest counts first",
+                )
+                self.assertIn("| rate_limited | 1 |", stdout)
+                self.assertIn("| modelHelpCanvas | 2 |", stdout)
+                self.assertIn("| providerCommands | 1 |", stdout)
+
+                self.assertIn("- streaming status: unknown", summary_text)
+                self.assertIn(
+                    "- last drop: Streaming disabled guardrail",
+                    summary_text,
+                )
+                self.assertIn(
+                    "- streaming last drop: Streaming disabled guardrail (code=streaming_disabled)",
+                    summary_text,
+                )
+                self.assertIn("Streaming gating reasons:", summary_text)
+                self.assertIn("| Reason | Count |", summary_text)
+                self.assertIn("Streaming gating sources:", summary_text)
+                self.assertIn("| Source | Count |", summary_text)
+                self.assertIn(
+                    "Streaming gating summary: status=unknown; total=3; counts=streaming_disabled=2, rate_limited=1; sources=modelHelpCanvas=2, providerCommands=1; last=streaming_disabled (count=2); last_source=n/a; last_message=Streaming disabled guardrail (code=streaming_disabled)",
+                    summary_text,
+                )
+                telemetry_payload = json.loads(
+                    summary_path.with_name(
+                        "history-validation-summary.telemetry.json"
+                    ).read_text(encoding="utf-8")
+                )
+                self.assertEqual(
+                    telemetry_payload.get("last_drop_message"),
+                    "Streaming disabled guardrail",
+                )
+                self.assertEqual(
+                    telemetry_payload.get("last_drop_code"), "streaming_disabled"
+                )
+                self.assertIn(
+                    '"last_drop_message": "Streaming disabled guardrail"',
+                    summary_text,
+                )
+                summary_lines = [
+                    line for line in summary_text.splitlines() if line.startswith("|")
+                ]
+                self.assertEqual(
+                    summary_lines[:3],
+                    [
+                        "| Reason | Count |",
+                        "| --- | --- |",
+                        "| streaming_disabled | 2 |",
+                    ],
+                    "GitHub summary should list highest counts first",
+                )
+                self.assertIn("| rate_limited | 1 |", summary_text)
+                self.assertIn("| modelHelpCanvas | 2 |", summary_text)
+                self.assertIn("| providerCommands | 1 |", summary_text)
+                self.assertNotIn("- Streaming gating reasons: none", summary_text)
 
         def test_run_guardrails_ci_invalid_target(self) -> None:
             """Guardrail: CI helper should fail clearly on invalid targets."""

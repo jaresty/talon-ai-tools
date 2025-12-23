@@ -253,6 +253,10 @@ if not TYPE_CHECKING:
                     "Suggestion skip reasons: streaming_disabled=2, rate_limited=1",
                     result.stdout,
                 )
+                self.assertIn(
+                    "- Streak alert: 2 consecutive warnings (reason: missing)",
+                    result.stdout,
+                )
                 self.assertIn("Telemetry export streak state:", result.stdout)
                 self.assertIn(
                     "- Telemetry export warning streak: 2",
@@ -490,6 +494,10 @@ if not TYPE_CHECKING:
                 summary_text,
             )
             self.assertIn("### Telemetry Export Streak", summary_text)
+            self.assertIn(
+                "- Streak alert: 2 consecutive warnings (reason: missing)",
+                summary_text,
+            )
             self.assertIn("Telemetry export streak state:", summary_text)
             self.assertIn("- Telemetry export warning streak: 2", summary_text)
             self.assertIn("- Telemetry export last reason: missing", summary_text)
@@ -657,6 +665,10 @@ if not TYPE_CHECKING:
                     summary_text,
                 )
                 self.assertIn(
+                    "- Streak alert: 3 consecutive warnings (reason: stale)",
+                    summary_text,
+                )
+                self.assertIn(
                     "- Telemetry export warning streak: 3",
                     summary_text,
                 )
@@ -678,6 +690,10 @@ if not TYPE_CHECKING:
                 )
                 self.assertIn(
                     "Telemetry export streak state:",
+                    stdout,
+                )
+                self.assertIn(
+                    "- Streak alert: 3 consecutive warnings (reason: stale)",
                     stdout,
                 )
                 self.assertIn(

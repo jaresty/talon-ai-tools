@@ -543,12 +543,46 @@ print(f"- Telemetry export last updated: {updated_text}")
 print(f"- Telemetry export last command: {command_text}")
 PY
 )
+  STREAK_ALERT=$(python3 - "${STREAK_LOG}" <<'PY'
+import json
+import sys
+from pathlib import Path
+
+path = Path(sys.argv[1])
+try:
+    raw = json.loads(path.read_text(encoding="utf-8"))
+except (FileNotFoundError, json.JSONDecodeError):
+    raw = {}
+if not isinstance(raw, dict):
+    raw = {}
+streak_value = raw.get("streak")
+if isinstance(streak_value, bool):
+    streak_value = int(streak_value)
+try:
+    streak = int(streak_value)
+except Exception:
+    streak = 0
+reason_raw = raw.get("last_reason")
+if isinstance(reason_raw, str):
+    reason_text = reason_raw.strip() or "unknown"
+else:
+    reason_text = "unknown"
+if streak > 0:
+    print(f"- Streak alert: {streak} consecutive warnings (reason: {reason_text})")
+PY
+)
+  if [[ -n "${STREAK_ALERT}" ]]; then
+    printf '%s\n' "${STREAK_ALERT}"
+  fi
   printf '%s\n' "${STREAK_REPORT}"
   if [[ -n "${GITHUB_STEP_SUMMARY:-}" ]]; then
     {
       echo
       echo "### Telemetry Export Streak"
       echo
+      if [[ -n "${STREAK_ALERT}" ]]; then
+        printf '%s\n' "${STREAK_ALERT}"
+      fi
       printf '%s\n' "${STREAK_REPORT}"
     } >> "${GITHUB_STEP_SUMMARY}"
   fi

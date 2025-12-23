@@ -269,6 +269,20 @@
 - next_work:
   - Guardrail: highlight non-zero telemetry export streaks in the GitHub step summary header so escalations stand out immediately.
 
+## 2025-12-23 – Loop 365 (kind: guardrail/tests)
+- helper_version: helper:v20251221.5
+- focus: Request Gating & Streaming – highlight non-zero telemetry export streaks in guardrail summaries so escalations pop in CI logs.
+- riskiest_assumption: Without an explicit alert line, operators may skim past consecutive telemetry warnings in CI summaries (probability medium, impact medium-high for Concordance monitoring).
+- validation_targets:
+  - python3.11 -m pytest _tests/test_run_guardrails_ci.py::RunGuardrailsCITests::test_run_guardrails_ci_history_target_produces_summary
+- evidence: docs/adr/evidence/0056/loop-0365.md
+- rollback_plan: git restore --source=HEAD -- _tests/test_run_guardrails_ci.py scripts/tools/run_guardrails_ci.sh && python3.11 -m pytest _tests/test_run_guardrails_ci.py::RunGuardrailsCITests::test_run_guardrails_ci_history_target_produces_summary
+- delta_summary: helper:diff-snapshot=2 files changed, 50 insertions(+); added a streak alert line to CLI output and GitHub step summaries and expanded guardrail tests to require the alert while keeping zero-streak runs quiet.
+- residual_risks:
+  - Alerts still rely on manual copying into work logs; mitigation: follow-up loop to surface alert counts in automated CI summaries, monitoring trigger: streak alert present without corresponding work-log escalation notes.
+- next_work:
+  - Guardrail: bubble the streak alert into the aggregated GitHub summary table so non-zero streaks appear alongside gating totals.
+
 ## 2025-12-22 – Loop 349 (kind: docs)
 
 

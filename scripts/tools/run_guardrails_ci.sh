@@ -440,7 +440,23 @@ if source != "defaults":
     qualifiers.append("non-default")
 if is_stale:
     qualifiers.append("stale")
+invalid_timestamp = timestamp_text != "none" and parsed_timestamp is None
+if invalid_timestamp:
+    qualifiers.append("invalid-timestamp")
 suffix = f" ({', '.join(qualifiers)})" if qualifiers else ""
+warnings = []
+if source != "defaults" and qualifiers:
+    warnings.append(
+        f"WARNING: Scheduler telemetry uses {source}{suffix}; refresh Talon exports."
+    )
+elif source != "defaults":
+    warnings.append(
+        f"WARNING: Scheduler telemetry uses {source}; refresh Talon exports."
+    )
+if invalid_timestamp:
+    warnings.append(
+        f"WARNING: Scheduler telemetry timestamp '{timestamp_text}' could not be parsed; refresh Talon exports."
+    )
 
 lines = [
     f"- Scheduler reschedules: {reschedules}",
@@ -449,6 +465,7 @@ lines = [
     f"- Scheduler last timestamp: {timestamp_text}",
     f"- Scheduler data source: {source}{suffix}",
 ]
+lines.extend(warnings)
 print("\n".join(lines))
 PY
 )

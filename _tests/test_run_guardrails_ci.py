@@ -440,6 +440,7 @@ if not TYPE_CHECKING:
             )
             self.assertIn("- Scheduler last reason: none", summary_text)
             self.assertIn("- Scheduler last timestamp: none", summary_text)
+            self.assertNotIn("WARNING: Scheduler telemetry uses", summary_text)
 
         def test_run_guardrails_ci_gating_reasons_table_with_counts(self) -> None:
             """Guardrail: summary table should render when gating counts exist."""
@@ -581,6 +582,14 @@ if not TYPE_CHECKING:
                     "- Scheduler data source: summary (non-default, stale)",
                     stdout,
                 )
+                self.assertIn(
+                    "WARNING: Scheduler telemetry uses summary (non-default, stale); refresh Talon exports.",
+                    summary_text,
+                )
+                self.assertIn(
+                    "WARNING: Scheduler telemetry uses summary (non-default, stale); refresh Talon exports.",
+                    stdout,
+                )
                 summary_lines = [
                     line for line in summary_text.splitlines() if line.startswith("|")
                 ]
@@ -597,6 +606,126 @@ if not TYPE_CHECKING:
                 self.assertIn("| modelHelpCanvas | 2 |", summary_text)
                 self.assertIn("| providerCommands | 1 |", summary_text)
                 self.assertNotIn("- Streaming gating reasons: none", summary_text)
+
+        def test_run_guardrails_ci_warns_on_invalid_scheduler_timestamp(self) -> None:
+            """Guardrail: warn when scheduler timestamp cannot be parsed."""
+
+            script = (
+                Path(__file__).resolve().parents[1]
+                / "scripts"
+                / "tools"
+                / "run_guardrails_ci.sh"
+            )
+            repo_root = Path(__file__).resolve().parents[1]
+            with isolate_telemetry_dir():
+                summary_dir = repo_root / "artifacts" / "telemetry"
+                summary_dir.mkdir(parents=True, exist_ok=True)
+                summary_path = summary_dir / "history-validation-summary.json"
+                streaming_summary_path = (
+                    summary_dir / "history-validation-summary.streaming.json"
+                )
+
+                summary_data = {
+                    "total_entries": 1,
+                    "gating_drop_counts": {},
+                    "gating_drop_total": 0,
+                    "streaming_gating_summary": {
+                        "counts": {},
+                        "sources": {},
+                        "total": 0,
+                        "last": {},
+                        "last_message": "",
+                        "last_code": "",
+                    },
+                    "scheduler": {
+                        "reschedule_count": 2,
+                        "last_interval_minutes": 30,
+                        "last_reason": "summary fallback",
+                        "last_timestamp": "invalid-timestamp",
+                    },
+                }
+
+                summary_path.write_text(
+                    json.dumps(summary_data, indent=2), encoding="utf-8"
+                )
+
+                if streaming_summary_path.exists():
+                    streaming_summary_path.unlink()
+                telemetry_path = (
+                    summary_dir / "history-validation-summary.telemetry.json"
+                )
+                if telemetry_path.exists():
+                    telemetry_path.unlink()
+                skip_path = summary_dir / "suggestion-skip-summary.json"
+                skip_payload_seed = {
+                    "counts": {},
+                    "total_skipped": 0,
+                    "reason_counts": [],
+                }
+                skip_path.write_text(
+                    json.dumps(skip_payload_seed, indent=2), encoding="utf-8"
+                )
+
+                summary_text = ""
+                with tempfile.TemporaryDirectory() as tmpdir:
+                    fake_make = Path(tmpdir) / "make"
+                    fake_make.write_text(
+                        "#!/usr/bin/env bash\nexit 0\n", encoding="utf-8"
+                    )
+                    fake_make.chmod(0o755)
+                    step_summary_path = Path(tmpdir) / "gha-summary.md"
+                    env = os.environ.copy()
+                    env["ALLOW_STALE_TELEMETRY"] = "1"
+                    env["PATH"] = f"{tmpdir}{os.pathsep}{env.get('PATH', '')}"
+                    env["GITHUB_STEP_SUMMARY"] = str(step_summary_path)
+                    result = subprocess.run(
+                        ["/bin/bash", str(script), "request-history-guardrails"],
+                        check=False,
+                        capture_output=True,
+                        text=True,
+                        cwd=str(repo_root),
+                        env=env,
+                    )
+                    if result.returncode != 0:
+                        self.fail(
+                            "run_guardrails_ci.sh request-history-guardrails failed with code "
+                            f"{result.returncode}\nstdout:\n{result.stdout}\nstderr:\n{result.stderr}"
+                        )
+                    self.assertTrue(
+                        step_summary_path.exists(),
+                        "run_guardrails_ci.sh did not append to the GitHub step summary file",
+                    )
+                    summary_text = step_summary_path.read_text(encoding="utf-8")
+
+                stdout = result.stdout
+                self.assertIn(
+                    "- Scheduler last timestamp: invalid-timestamp",
+                    summary_text,
+                )
+                self.assertIn(
+                    "- Scheduler data source: summary (non-default, invalid-timestamp)",
+                    summary_text,
+                )
+                self.assertIn(
+                    "- Scheduler data source: summary (non-default, invalid-timestamp)",
+                    stdout,
+                )
+                self.assertIn(
+                    "WARNING: Scheduler telemetry uses summary (non-default, invalid-timestamp); refresh Talon exports.",
+                    summary_text,
+                )
+                self.assertIn(
+                    "WARNING: Scheduler telemetry uses summary (non-default, invalid-timestamp); refresh Talon exports.",
+                    stdout,
+                )
+                self.assertIn(
+                    "WARNING: Scheduler telemetry timestamp 'invalid-timestamp' could not be parsed; refresh Talon exports.",
+                    summary_text,
+                )
+                self.assertIn(
+                    "WARNING: Scheduler telemetry timestamp 'invalid-timestamp' could not be parsed; refresh Talon exports.",
+                    stdout,
+                )
 
         def test_run_guardrails_ci_invalid_target(self) -> None:
             """Guardrail: CI helper should fail clearly on invalid targets."""

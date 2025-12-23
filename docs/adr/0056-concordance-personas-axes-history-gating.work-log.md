@@ -136,7 +136,7 @@
 - residual_risks:
   - CLI output still prints raw values even when scheduler stats are stale; consider flagging aged timestamps in a follow-up loop.
 - next_work:
-  - Surface a warning when telemetry timestamps exceed a freshness threshold so operators catch stale cadence data quickly.
+  - Log when scheduler timestamps cannot be parsed so operators notice format drift early.
 
 ## 2025-12-23 – Loop 356 (kind: guardrail/tests)
 - helper_version: helper:v20251221.5
@@ -150,9 +150,24 @@
 - residual_risks:
   - Timestamp parsing fails on unexpected formats; the helper currently ignores parsing errors. Consider logging a warning when parsing fails.
 - next_work:
-  - Surface a warning when telemetry timestamps exceed a freshness threshold so operators catch stale cadence data quickly.
-
+  - Expose a CLI hint when stale scheduler data appears repeatedly so teams know to refresh Talon exports.
+ 
+## 2025-12-23 – Loop 357 (kind: guardrail/tests)
+- helper_version: helper:v20251221.5
+- focus: Request Gating & Streaming – log invalid scheduler timestamps in guardrail summaries (ADR-0056 §Monitoring & Next Steps; Loop 356 residual risk).
+- riskiest_assumption: Without surfacing parse failures, operators may miss telemetry format drift (probability medium, impact high for Concordance telemetry accuracy).
+- validation_targets:
+  - python3.11 -m pytest _tests/test_run_guardrails_ci.py
+- evidence: docs/adr/evidence/0056/loop-0357.md
+- rollback_plan: git restore --source=HEAD -- Makefile scripts/tools/run_guardrails_ci.sh _tests/test_run_guardrails_ci.py docs/adr/0056-concordance-personas-axes-history-gating.md docs/adr/0056-concordance-personas-axes-history-gating.work-log.md docs/adr/evidence/0056/loop-0357.md && python3.11 -m pytest _tests/test_run_guardrails_ci.py
+- delta_summary: helper:diff-snapshot=4 files changed, 174 insertions(+), 3 deletions(-); added invalid timestamp handling to the guardrail script/Makefile, extended guardrail tests to assert the new warnings, and recorded the loop evidence/work-log update.
+- residual_risks:
+  - Guardrail output remains silent when scheduler telemetry falls back to defaults; highlight missing snapshots in the next loop.
+- next_work:
+  - Warn when scheduler telemetry source is defaults so operators refresh exports (Loop 358).
+ 
 ## 2025-12-22 – Loop 349 (kind: docs)
+
 - helper_version: helper:v20251221.5
 - focus: Persona & Intent Presets – update monitoring guidance to mention the new Talon export action and runbook integration.
 - riskiest_assumption: Without documentation, operators might forget to run the Talon telemetry export before CLI guardrails (probability medium, impact medium for stale Concordance metrics).

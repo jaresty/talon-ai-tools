@@ -228,13 +228,25 @@ request-history-guardrails:
 	    "    qualifiers.append('non-default')" \
 	    "if is_stale:" \
 	    "    qualifiers.append('stale')" \
+	    "invalid_timestamp = timestamp_text != 'none' and parsed_timestamp is None" \
+	    "if invalid_timestamp:" \
+	    "    qualifiers.append('invalid-timestamp')" \
 	    "suffix = '' if not qualifiers else ' (' + ', '.join(qualifiers) + ')'" \
+	    "warnings = []" \
+	    "if source_label != 'defaults' and qualifiers:" \
+	    "    warnings.append(f'WARNING: Scheduler telemetry uses {source_label}{suffix}; refresh Talon exports.')" \
+	    "elif source_label != 'defaults':" \
+	    "    warnings.append(f'WARNING: Scheduler telemetry uses {source_label}; refresh Talon exports.')" \
+	    "if invalid_timestamp:" \
+	    "    warnings.append(f\"WARNING: Scheduler telemetry timestamp '{timestamp_text}' could not be parsed; refresh Talon exports.\")" \
 	    "print('Telemetry scheduler stats: {}'.format(json.dumps(scheduler)))" \
 	    "print(f'- Scheduler reschedules: {reschedules}')" \
 	    "print(f'- Scheduler last interval (minutes): {interval_text}')" \
 	    "print(f'- Scheduler last reason: {reason_text}')" \
 	    "print(f'- Scheduler last timestamp: {timestamp_text}')" \
 	    "print(f'- Scheduler data source: {source_label}{suffix}')" \
+	    "for warning in warnings:" \
+	    "    print(warning)" \
 	| $(PYTHON)
 
 
@@ -365,13 +377,25 @@ request-history-guardrails-fast:
 	    "    qualifiers.append('non-default')" \
 	    "if is_stale:" \
 	    "    qualifiers.append('stale')" \
+	    "invalid_timestamp = timestamp_text != 'none' and parsed_timestamp is None" \
+	    "if invalid_timestamp:" \
+	    "    qualifiers.append('invalid-timestamp')" \
 	    "suffix = '' if not qualifiers else ' (' + ', '.join(qualifiers) + ')'" \
+	    "warnings = []" \
+	    "if source_label != 'defaults' and qualifiers:" \
+	    "    warnings.append(f'WARNING: Scheduler telemetry uses {source_label}{suffix}; refresh Talon exports.')" \
+	    "elif source_label != 'defaults':" \
+	    "    warnings.append(f'WARNING: Scheduler telemetry uses {source_label}; refresh Talon exports.')" \
+	    "if invalid_timestamp:" \
+	    "    warnings.append(f\"WARNING: Scheduler telemetry timestamp '{timestamp_text}' could not be parsed; refresh Talon exports.\")" \
 	    "print('Telemetry scheduler stats: {}'.format(json.dumps(scheduler)))" \
 	    "print(f'- Scheduler reschedules: {reschedules}')" \
 	    "print(f'- Scheduler last interval (minutes): {interval_text}')" \
 	    "print(f'- Scheduler last reason: {reason_text}')" \
 	    "print(f'- Scheduler last timestamp: {timestamp_text}')" \
 	    "print(f'- Scheduler data source: {source_label}{suffix}')" \
+	    "for warning in warnings:" \
+	    "    print(warning)" \
 	| $(PYTHON)
 
 

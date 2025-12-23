@@ -83,7 +83,7 @@ def export_model_telemetry(
 
 @mod.action_class
 class UserActions:
-    def model_export_telemetry(reset_gating: bool = False):
+    def model_export_telemetry(reset_gating: bool = True):
         """Export AI tools telemetry artifacts for guardrail tooling."""
 
         export_model_telemetry(reset_gating=reset_gating, notify_user=True)

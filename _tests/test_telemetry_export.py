@@ -98,21 +98,23 @@ class TelemetryExportCommandTests(unittest.TestCase):
                     patch.object(command.app, "notify") as notify,
                 ):
                     result = command.export_model_telemetry(
-                        reset_gating=False, notify_user=True
+                        reset_gating=True, notify_user=True
                     )
 
                     snapshot.assert_called_once_with(
                         output_dir=temp_path,
-                        reset_gating=False,
+                        reset_gating=True,
                         top_n=command.DEFAULT_TOP_N,
                     )
                     notify.assert_called_once()
-                    self.assertIn("exported", notify.call_args.args[0])
+                    message = notify.call_args.args[0]
+                    self.assertIn("reset", message)
                     self.assertEqual(result, fake_result)
 
                     marker_path = temp_path / "talon-export-marker.json"
                     self.assertTrue(marker_path.exists())
                     marker_payload = json.loads(marker_path.read_text(encoding="utf-8"))
+                    self.assertTrue(marker_payload.get("reset_gating"))
                     self.assertIn("scheduler", marker_payload)
 
     def test_export_model_telemetry_handles_reset(self) -> None:
@@ -131,15 +133,15 @@ class TelemetryExportCommandTests(unittest.TestCase):
                     patch.object(command.app, "notify") as notify,
                     patch.object(scheduler, "get_scheduler_stats", return_value=None),
                 ):
-                    command.export_model_telemetry(reset_gating=True, notify_user=True)
+                    command.export_model_telemetry(reset_gating=False, notify_user=True)
 
         snapshot.assert_called_once_with(
             output_dir=temp_path,
-            reset_gating=True,
+            reset_gating=False,
             top_n=command.DEFAULT_TOP_N,
         )
         notify.assert_called_once()
-        self.assertIn("reset", notify.call_args.args[0])
+        self.assertNotIn("reset", notify.call_args.args[0])
 
     def test_export_model_telemetry_notifies_failure(self) -> None:
         from talon_user.lib import telemetryExportCommand as command
@@ -169,9 +171,13 @@ class TelemetryExportCommandTests(unittest.TestCase):
 
         with patch.object(command, "export_model_telemetry") as export:
             export.return_value = {}
-            command.UserActions.model_export_telemetry(True)
-
+            command.UserActions.model_export_telemetry()
         export.assert_called_once_with(reset_gating=True, notify_user=True)
+
+        with patch.object(command, "export_model_telemetry") as export_false:
+            export_false.return_value = {}
+            command.UserActions.model_export_telemetry(False)
+        export_false.assert_called_once_with(reset_gating=False, notify_user=True)
 
     def test_default_output_dir_is_repo_root(self) -> None:
         repo_root = Path(__file__).resolve().parents[1]

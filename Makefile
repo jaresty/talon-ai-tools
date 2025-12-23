@@ -122,6 +122,8 @@ request-history-guardrails:
 	printf 'Telemetry summary (json): ' && cat artifacts/telemetry/history-validation-summary.telemetry.json && printf '\n'
 	printf '%s\n' \
 	    "import json" \
+	    "import os" \
+	    "from datetime import datetime, timezone" \
 	    "from pathlib import Path" \
 	    "" \
 	    "telemetry_path = Path('artifacts/telemetry/history-validation-summary.telemetry.json')" \
@@ -173,14 +175,27 @@ request-history-guardrails:
 	    "]" \
 	    "source_label = 'defaults'" \
 	    "scheduler = defaults.copy()" \
-	    "suffix = '' if source_label == 'defaults' else ' (non-default)'" \
+	    "threshold_env = os.environ.get('SCHEDULER_STALE_THRESHOLD_MINUTES')" \
+	    "try:" \
+	    "    stale_threshold = max(0, int(threshold_env))" \
+	    "except (TypeError, ValueError):" \
+	    "    stale_threshold = 360" \
+	    "now_override = os.environ.get('SCHEDULER_STALE_NOW')" \
+	    "if now_override:" \
+	    "    try:" \
+	    "        now = datetime.fromisoformat(now_override.replace('Z', '+00:00'))" \
+	    "        if now.tzinfo is None:" \
+	    "            now = now.replace(tzinfo=timezone.utc)" \
+	    "    except ValueError:" \
+	    "        now = datetime.utcnow().replace(tzinfo=timezone.utc)" \
+	    "else:" \
+	    "    now = datetime.utcnow().replace(tzinfo=timezone.utc)" \
 	    "for label, sched_payload in sources:" \
 	    "    normalized = normalize(sched_payload)" \
 	    "    if normalized != defaults:" \
 	    "        scheduler = normalized" \
 	    "        source_label = label" \
 	    "        break" \
-	    "print('Telemetry scheduler stats: {}'.format(json.dumps(scheduler)))" \
 	    "reschedules = scheduler.get('reschedule_count', 0)" \
 	    "try:" \
 	    "    reschedules = int(reschedules)" \
@@ -191,9 +206,30 @@ request-history-guardrails:
 	    "reason_text = scheduler.get('last_reason')" \
 	    "if not isinstance(reason_text, str) or not reason_text.strip():" \
 	    "    reason_text = 'none'" \
-	    "timestamp_text = scheduler.get('last_timestamp')" \
-	    "if not isinstance(timestamp_text, str) or not timestamp_text.strip():" \
-	    "    timestamp_text = 'none'" \
+	    "timestamp_raw = scheduler.get('last_timestamp')" \
+	    "timestamp_text = 'none'" \
+	    "parsed_timestamp = None" \
+	    "if isinstance(timestamp_raw, str):" \
+	    "    stripped = timestamp_raw.strip()" \
+	    "    if stripped:" \
+	    "        timestamp_text = stripped" \
+	    "        try:" \
+	    "            parsed_timestamp = datetime.fromisoformat(stripped.replace('Z', '+00:00'))" \
+	    "            if parsed_timestamp.tzinfo is None:" \
+	    "                parsed_timestamp = parsed_timestamp.replace(tzinfo=timezone.utc)" \
+	    "        except ValueError:" \
+	    "            parsed_timestamp = None" \
+	    "is_stale = False" \
+	    "if parsed_timestamp is not None:" \
+	    "    age_minutes = (now - parsed_timestamp).total_seconds() / 60.0" \
+	    "    is_stale = age_minutes > stale_threshold" \
+	    "qualifiers = []" \
+	    "if source_label != 'defaults':" \
+	    "    qualifiers.append('non-default')" \
+	    "if is_stale:" \
+	    "    qualifiers.append('stale')" \
+	    "suffix = '' if not qualifiers else ' (' + ', '.join(qualifiers) + ')'" \
+	    "print('Telemetry scheduler stats: {}'.format(json.dumps(scheduler)))" \
 	    "print(f'- Scheduler reschedules: {reschedules}')" \
 	    "print(f'- Scheduler last interval (minutes): {interval_text}')" \
 	    "print(f'- Scheduler last reason: {reason_text}')" \
@@ -223,6 +259,8 @@ request-history-guardrails-fast:
 	printf 'Telemetry summary (json): ' && cat artifacts/telemetry/history-validation-summary.telemetry.json && printf '\n'
 	printf '%s\n' \
 	    "import json" \
+	    "import os" \
+	    "from datetime import datetime, timezone" \
 	    "from pathlib import Path" \
 	    "" \
 	    "telemetry_path = Path('artifacts/telemetry/history-validation-summary.telemetry.json')" \
@@ -274,14 +312,27 @@ request-history-guardrails-fast:
 	    "]" \
 	    "source_label = 'defaults'" \
 	    "scheduler = defaults.copy()" \
-	    "suffix = '' if source_label == 'defaults' else ' (non-default)'" \
+	    "threshold_env = os.environ.get('SCHEDULER_STALE_THRESHOLD_MINUTES')" \
+	    "try:" \
+	    "    stale_threshold = max(0, int(threshold_env))" \
+	    "except (TypeError, ValueError):" \
+	    "    stale_threshold = 360" \
+	    "now_override = os.environ.get('SCHEDULER_STALE_NOW')" \
+	    "if now_override:" \
+	    "    try:" \
+	    "        now = datetime.fromisoformat(now_override.replace('Z', '+00:00'))" \
+	    "        if now.tzinfo is None:" \
+	    "            now = now.replace(tzinfo=timezone.utc)" \
+	    "    except ValueError:" \
+	    "        now = datetime.utcnow().replace(tzinfo=timezone.utc)" \
+	    "else:" \
+	    "    now = datetime.utcnow().replace(tzinfo=timezone.utc)" \
 	    "for label, sched_payload in sources:" \
 	    "    normalized = normalize(sched_payload)" \
 	    "    if normalized != defaults:" \
 	    "        scheduler = normalized" \
 	    "        source_label = label" \
 	    "        break" \
-	    "print('Telemetry scheduler stats: {}'.format(json.dumps(scheduler)))" \
 	    "reschedules = scheduler.get('reschedule_count', 0)" \
 	    "try:" \
 	    "    reschedules = int(reschedules)" \
@@ -292,9 +343,30 @@ request-history-guardrails-fast:
 	    "reason_text = scheduler.get('last_reason')" \
 	    "if not isinstance(reason_text, str) or not reason_text.strip():" \
 	    "    reason_text = 'none'" \
-	    "timestamp_text = scheduler.get('last_timestamp')" \
-	    "if not isinstance(timestamp_text, str) or not timestamp_text.strip():" \
-	    "    timestamp_text = 'none'" \
+	    "timestamp_raw = scheduler.get('last_timestamp')" \
+	    "timestamp_text = 'none'" \
+	    "parsed_timestamp = None" \
+	    "if isinstance(timestamp_raw, str):" \
+	    "    stripped = timestamp_raw.strip()" \
+	    "    if stripped:" \
+	    "        timestamp_text = stripped" \
+	    "        try:" \
+	    "            parsed_timestamp = datetime.fromisoformat(stripped.replace('Z', '+00:00'))" \
+	    "            if parsed_timestamp.tzinfo is None:" \
+	    "                parsed_timestamp = parsed_timestamp.replace(tzinfo=timezone.utc)" \
+	    "        except ValueError:" \
+	    "            parsed_timestamp = None" \
+	    "is_stale = False" \
+	    "if parsed_timestamp is not None:" \
+	    "    age_minutes = (now - parsed_timestamp).total_seconds() / 60.0" \
+	    "    is_stale = age_minutes > stale_threshold" \
+	    "qualifiers = []" \
+	    "if source_label != 'defaults':" \
+	    "    qualifiers.append('non-default')" \
+	    "if is_stale:" \
+	    "    qualifiers.append('stale')" \
+	    "suffix = '' if not qualifiers else ' (' + ', '.join(qualifiers) + ')'" \
+	    "print('Telemetry scheduler stats: {}'.format(json.dumps(scheduler)))" \
 	    "print(f'- Scheduler reschedules: {reschedules}')" \
 	    "print(f'- Scheduler last interval (minutes): {interval_text}')" \
 	    "print(f'- Scheduler last reason: {reason_text}')" \

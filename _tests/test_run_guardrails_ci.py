@@ -529,6 +529,8 @@ if not TYPE_CHECKING:
                     env["ALLOW_STALE_TELEMETRY"] = "1"
                     env["PATH"] = f"{tmpdir}{os.pathsep}{env.get('PATH', '')}"
                     env["GITHUB_STEP_SUMMARY"] = str(step_summary_path)
+                    env["SCHEDULER_STALE_THRESHOLD_MINUTES"] = "5"
+                    env["SCHEDULER_STALE_NOW"] = "2025-12-23T01:55:00Z"
                     result = subprocess.run(
                         ["/bin/bash", str(script), "request-history-guardrails"],
                         check=False,
@@ -572,10 +574,11 @@ if not TYPE_CHECKING:
                     summary_text,
                 )
                 self.assertIn(
-                    "- Scheduler data source: summary (non-default)", summary_text
+                    "- Scheduler data source: summary (non-default, stale)",
+                    summary_text,
                 )
                 self.assertIn(
-                    "- Scheduler data source: summary (non-default)",
+                    "- Scheduler data source: summary (non-default, stale)",
                     stdout,
                 )
                 summary_lines = [

@@ -138,6 +138,20 @@
 - next_work:
   - Surface a warning when telemetry timestamps exceed a freshness threshold so operators catch stale cadence data quickly.
 
+## 2025-12-23 – Loop 356 (kind: guardrail/tests)
+- helper_version: helper:v20251221.5
+- focus: Request Gating & Streaming – flag stale scheduler telemetry alongside non-default sources (ADR-0056 §Monitoring & Next Steps).
+- riskiest_assumption: Operators might miss cadence drift when scheduler stats fall back to summaries but timestamps are old (probability medium, impact medium-high for diagnosing exporter outages).
+- validation_targets:
+  - python3 -m pytest _tests/test_run_guardrails_ci.py
+- evidence: docs/adr/evidence/0056/loop-0356.md
+- rollback_plan: git restore --source=HEAD -- scripts/tools/run_guardrails_ci.sh Makefile _tests/test_run_guardrails_ci.py docs/adr/0056-concordance-personas-axes-history-gating.md docs/adr/0056-concordance-personas-axes-history-gating.work-log.md && python3 -m pytest _tests/test_run_guardrails_ci.py
+- delta_summary: helper:diff-snapshot=5 files changed, 145 insertions(+), 17 deletions(-); added stale-age detection and `(stale)` suffix in CLI/Make guardrail outputs, expanded guardrail tests with deterministic thresholds, and refreshed ADR monitoring guidance.
+- residual_risks:
+  - Timestamp parsing fails on unexpected formats; the helper currently ignores parsing errors. Consider logging a warning when parsing fails.
+- next_work:
+  - Surface a warning when telemetry timestamps exceed a freshness threshold so operators catch stale cadence data quickly.
+
 ## 2025-12-22 – Loop 349 (kind: docs)
 - helper_version: helper:v20251221.5
 - focus: Persona & Intent Presets – update monitoring guidance to mention the new Talon export action and runbook integration.

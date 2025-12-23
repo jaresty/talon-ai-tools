@@ -362,7 +362,9 @@ print(json.dumps(stats, separators=(", ", ": ")))
 PY
 )
   SCHEDULER_LINES=$(SCHEDULER_INFO_DATA="${SCHEDULER_INFO}" python3 - <<'PY'
-import json, os
+import datetime
+import json
+import os
 
 try:
     info = json.loads(os.environ.get("SCHEDULER_INFO_DATA") or "{}")
@@ -370,7 +372,23 @@ except json.JSONDecodeError:
     info = {}
 stats = info.get("stats") or {}
 source = str(info.get("source") or "defaults")
-suffix = "" if source == "defaults" else " (non-default)"
+
+threshold_env = os.environ.get("SCHEDULER_STALE_THRESHOLD_MINUTES")
+try:
+    stale_threshold = max(0, int(threshold_env))
+except (TypeError, ValueError):
+    stale_threshold = 360
+
+now_override = os.environ.get("SCHEDULER_STALE_NOW")
+if now_override:
+    try:
+        now = datetime.datetime.fromisoformat(now_override.replace("Z", "+00:00"))
+        if now.tzinfo is None:
+            now = now.replace(tzinfo=datetime.timezone.utc)
+    except ValueError:
+        now = datetime.datetime.utcnow().replace(tzinfo=datetime.timezone.utc)
+else:
+    now = datetime.datetime.utcnow().replace(tzinfo=datetime.timezone.utc)
 
 reschedule_raw = stats.get("reschedule_count")
 if isinstance(reschedule_raw, bool):
@@ -398,10 +416,31 @@ else:
     reason_text = "none"
 
 timestamp_raw = stats.get("last_timestamp")
+timestamp_text = "none"
+parsed_timestamp = None
 if isinstance(timestamp_raw, str):
-    timestamp_text = timestamp_raw.strip() or "none"
+    stripped = timestamp_raw.strip()
+    if stripped:
+        timestamp_text = stripped
+        try:
+            parsed_timestamp = datetime.datetime.fromisoformat(stripped.replace("Z", "+00:00"))
+            if parsed_timestamp.tzinfo is None:
+                parsed_timestamp = parsed_timestamp.replace(tzinfo=datetime.timezone.utc)
+        except ValueError:
+            parsed_timestamp = None
+
+if parsed_timestamp is not None:
+    age_minutes = (now - parsed_timestamp).total_seconds() / 60.0
+    is_stale = age_minutes > stale_threshold
 else:
-    timestamp_text = "none"
+    is_stale = False
+
+qualifiers = []
+if source != "defaults":
+    qualifiers.append("non-default")
+if is_stale:
+    qualifiers.append("stale")
+suffix = f" ({', '.join(qualifiers)})" if qualifiers else ""
 
 lines = [
     f"- Scheduler reschedules: {reschedules}",

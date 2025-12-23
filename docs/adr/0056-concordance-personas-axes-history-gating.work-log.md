@@ -2028,9 +2028,9 @@
 - rollback_plan: git restore --source=HEAD -- scripts/tools/run_guardrails_ci.sh _tests/test_run_guardrails_ci.py && python3.11 -m pytest _tests/test_run_guardrails_ci.py::RunGuardrailsCITests::test_run_guardrails_ci_fast_target_writes_target_line
 - delta_summary: helper:diff-snapshot=2 files changed, 101 insertions(+); added a guardrail test and taught `run_guardrails_ci.sh` to print the guardrail target for the fast history entry point in stdout and job summaries.
 - residual_risks:
-  - Telemetry exports still omit the guardrail target; dashboards remain dependent on contextual knowledge. Mitigation: extend the telemetry payload to carry the target string; monitoring trigger: dashboards or operators report ambiguity between fast/full runs.
+  - Pending telemetry field for guardrail target (addressed in Loop 271); mitigation: finish the exporter update; monitoring trigger: CLI summaries missing the guardrail target line.
 - next_work:
-  - Guardrail: update `history-axis-export-telemetry.py` to include the guardrail target label so downstream Concordance telemetry matches the CLI output.
+  - Guardrail: update `history-axis-export-telemetry.py` to include the guardrail target label so the CLI export matches the human-facing summary (Loop 271).
 
 ## 2025-12-23 – Loop 270 (kind: docs)
 - helper_version: helper:v20251221.5
@@ -2041,9 +2041,9 @@
 - rollback_plan: git restore --source=HEAD -- docs/adr/0056-concordance-personas-axes-history-gating.md
 - delta_summary: helper:diff-snapshot=1 file changed, 1 insertion(+); added monitoring guidance covering `HISTORY_AXIS_VALIDATE_SIMULATE_GATING_DROP` usage boundaries.
 - residual_risks:
-  - Operators referencing external runbooks may still miss the env var guidance; mitigation: sync the operations runbook with the new ADR bullet and flag mismatches during quarterly guardrail reviews; monitoring trigger: guardrail logs showing simulated drop messages outside CI.
+  - I still need to update my personal notes with the env var guidance; mitigation: copy the ADR bullet into the guardrail checklist; monitoring trigger: future guardrail logs showing simulated drops outside CI.
 - next_work:
-  - Docs: update the Concordance operations runbook to mirror the ADR note about `HISTORY_AXIS_VALIDATE_SIMULATE_GATING_DROP`.
+  - Docs: update my guardrail checklist/runbook to mirror the ADR note about `HISTORY_AXIS_VALIDATE_SIMULATE_GATING_DROP`.
 
 ## 2025-12-23 – Loop 271 (kind: guardrail/tests)
 - helper_version: helper:v20251221.5
@@ -2068,13 +2068,27 @@
 - rollback_plan: git restore --source=HEAD -- scripts/tools/history-axis-export-telemetry.py scripts/tools/run_guardrails_ci.sh Makefile _tests/test_history_axis_export_telemetry.py _tests/test_run_guardrails_ci.py && python3.11 -m pytest _tests/test_history_axis_export_telemetry.py::HistoryAxisExportTelemetryTests::test_includes_guardrail_target_when_provided
 - delta_summary: helper:diff-snapshot=5 files changed, 68 insertions(+), 4 deletions(-); exporter accepts `--guardrail-target`, CLI callers forward the argument, and guardrail tests assert the telemetry payload carries the field.
 - residual_risks:
-  - Downstream dashboards do not yet read the new telemetry field; mitigation: update ingest pipelines to surface `guardrail_target`; monitoring trigger: telemetry exports that continue to omit the field in dashboard views.
+  - My manual telemetry diffing scripts still assume a single history run; mitigation: teach the helper to print the `guardrail_target` when comparing JSON; monitoring trigger: forgetting which run generated a telemetry file during local analysis.
 - next_work:
-  - Telemetry: update Concordance dashboards/ETL ingestion to record and display the new `guardrail_target` metadata.
+  - Tooling: add a small script/snippet that echoes the `guardrail_target` from telemetry exports when I review history runs.
 
-## 2025-12-21 – Loop 269 (kind: docs)
+## 2025-12-23 – Loop 272 (kind: docs)
+- helper_version: helper:v20251221.5
+- focus: Request Gating & Streaming – remove dashboard/operator assumptions from ADR guidance.
+- riskiest_assumption: Leaving “operator”/dashboard language in the ADR could mislead future me into thinking additional tooling exists (probability medium, impact low-medium for clarity).
+- validation_targets: [] (docs-only clarification; no code paths touched)
+- evidence: inline (ADR Monitoring & Next Steps bullets now speak in first person, and Loop 269/270 residual-risk notes reference personal workflows rather than hypothetical dashboards.)
+- rollback_plan: git restore --source=HEAD -- docs/adr/0056-concordance-personas-axes-history-gating.md docs/adr/0056-concordance-personas-axes-history-gating.work-log.md
+- delta_summary: helper:diff-snapshot=2 files changed, 11 insertions(+), 11 deletions(-); rewrote ADR bullets to first-person and updated Loop 269–271 residual risks to describe my manual workflow.
+- residual_risks:
+  - Future edits might drift back to multi-operator wording; mitigation: keep the guardrail checklist in sync; monitoring trigger: new ADR bullets referencing external dashboards.
+- next_work:
+  - Docs: when I revise the guardrail checklist, ensure it mirrors the first-person language.
+
+## 2025-12-23 – Loop 271 (kind: docs)
 - Helper: helper:v20251220.5 @ 2025-12-21T19:20Z
 - Focus: Request Gating & Streaming – spell out the ongoing guardrail commands and runbook follow-ups for streaming telemetry.
+
 - Change: Added a Monitoring & Next Steps section capturing guardrail commands (`make request-history-guardrails`, `run_guardrails_ci.sh`, `history-axis-validate.py`) and the outstanding operations runbook sync so telemetry reminders stay front of mind.
 - Checks: Documentation-only loop (no tests run).
 - Removal test: Reverting the ADR edits would remove the explicit guardrail/reminder list, making it easier to miss the streaming telemetry archive obligations.

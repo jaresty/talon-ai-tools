@@ -1882,8 +1882,6 @@ class UserActions:
             restore_meta_expanded = ResponseCanvasState.meta_expanded
             restore_meta_pinned = ResponseCanvasState.meta_pinned_request_id
             ResponseCanvasState.suppress_hide_reset = True
-            if ResponseCanvasState.showing:
-                _response_canvas.hide()
             _response_canvas.show()
             ResponseCanvasState.showing = True
             ResponseCanvasState.meta_expanded = restore_meta_expanded

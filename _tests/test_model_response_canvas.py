@@ -143,6 +143,32 @@ if bootstrap is not None:
             self.assertTrue(ResponseCanvasState.meta_expanded)
             self.assertEqual(ResponseCanvasState.meta_pinned_request_id, "req-refresh")
 
+        def test_refresh_does_not_hide_when_showing(self) -> None:
+            class DummyCanvas:
+                def __init__(self):
+                    self.hide_called = False
+                    self.show_calls = 0
+
+                def hide(self):
+                    self.hide_called = True
+
+                def show(self):
+                    self.show_calls += 1
+
+            dummy = DummyCanvas()
+            modelResponseCanvas._response_canvas = dummy  # type: ignore[attr-defined]
+            ResponseCanvasState.showing = True
+            ResponseCanvasState.scroll_y = 123.0
+
+            with patch.object(
+                modelResponseCanvas, "_guard_response_canvas", return_value=False
+            ):
+                UserActions.model_response_canvas_refresh()
+
+            self.assertFalse(dummy.hide_called)
+            self.assertGreater(dummy.show_calls, 0)
+            self.assertEqual(ResponseCanvasState.scroll_y, 123.0)
+
         def test_open_without_answer_is_safe(self) -> None:
             GPTState.last_response = ""
             _ensure_response_canvas()

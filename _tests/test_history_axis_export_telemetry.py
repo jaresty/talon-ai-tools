@@ -245,6 +245,47 @@ if bootstrap is not None and not TYPE_CHECKING:
                 self.assertEqual(payload.get("last_drop_message"), "none")
                 self.assertIsNone(payload.get("last_drop_code"))
 
+        def test_includes_guardrail_target_when_provided(self) -> None:
+            summary = {
+                "total_entries": 1,
+                "streaming_gating_summary": {
+                    "total": 1,
+                    "counts": {"streaming_disabled": 1},
+                },
+            }
+            guardrail_target = "request-history-guardrails-fast"
+
+            with tempfile.TemporaryDirectory() as tmpdir:
+                tmp_path = Path(tmpdir)
+                summary_path = tmp_path / "history-validation-summary.json"
+                output_path = tmp_path / "telemetry.json"
+                summary_path.write_text(json.dumps(summary), encoding="utf-8")
+
+                result = subprocess.run(
+                    [
+                        sys.executable,
+                        "scripts/tools/history-axis-export-telemetry.py",
+                        str(summary_path),
+                        "--output",
+                        str(output_path),
+                        "--top",
+                        "5",
+                        "--guardrail-target",
+                        guardrail_target,
+                    ],
+                    check=False,
+                    capture_output=True,
+                    text=True,
+                )
+
+                self.assertEqual(
+                    result.returncode,
+                    0,
+                    msg=f"telemetry exporter failed: {result.stdout}\n{result.stderr}",
+                )
+                payload = json.loads(output_path.read_text(encoding="utf-8"))
+                self.assertEqual(payload.get("guardrail_target"), guardrail_target)
+
 else:
 
     class HistoryAxisExportTelemetryTests(unittest.TestCase):  # pragma: no cover

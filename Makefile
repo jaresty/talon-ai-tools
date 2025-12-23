@@ -111,7 +111,7 @@ request-history-guardrails:
 		  if [ ! -f artifacts/telemetry/suggestion-skip-summary.json ]; then \
 		    $(PYTHON) scripts/tools/suggestion-skip-export.py --output artifacts/telemetry/suggestion-skip-summary.json --pretty ; \
 		  fi ; \
-		  $(PYTHON) scripts/tools/history-axis-export-telemetry.py artifacts/telemetry/history-validation-summary.json --output artifacts/telemetry/history-validation-summary.telemetry.json --top 5 --pretty --skip-summary artifacts/telemetry/suggestion-skip-summary.json )
+		  $(PYTHON) scripts/tools/history-axis-export-telemetry.py artifacts/telemetry/history-validation-summary.json --output artifacts/telemetry/history-validation-summary.telemetry.json --top 5 --pretty --skip-summary artifacts/telemetry/suggestion-skip-summary.json --guardrail-target request-history-guardrails )
 	$(PYTHON) -m pytest _tests/test_request_history_actions.py
 	$(PYTHON) scripts/tools/history-axis-validate.py --summarize-json artifacts/telemetry/history-validation-summary.json --summary-format streaming
 	$(PYTHON) scripts/tools/history-axis-validate.py --summarize-json artifacts/telemetry/history-validation-summary.json --summary-format json > artifacts/telemetry/history-validation-summary.streaming.json
@@ -262,7 +262,7 @@ request-history-guardrails-fast:
 		  if [ ! -f artifacts/telemetry/suggestion-skip-summary.json ]; then \
 		    $(PYTHON) scripts/tools/suggestion-skip-export.py --output artifacts/telemetry/suggestion-skip-summary.json --pretty ; \
 		  fi ; \
-		  $(PYTHON) scripts/tools/history-axis-export-telemetry.py artifacts/telemetry/history-validation-summary.json --output artifacts/telemetry/history-validation-summary.telemetry.json --top 5 --pretty --skip-summary artifacts/telemetry/suggestion-skip-summary.json )
+		  $(PYTHON) scripts/tools/history-axis-export-telemetry.py artifacts/telemetry/history-validation-summary.json --output artifacts/telemetry/history-validation-summary.telemetry.json --top 5 --pretty --skip-summary artifacts/telemetry/suggestion-skip-summary.json --guardrail-target request-history-guardrails-fast )
 	$(PYTHON) -m pytest _tests/test_request_history_actions.py::RequestHistoryActionTests::test_history_save_filename_includes_provider_slug _tests/test_request_history_actions.py::RequestHistoryActionTests::test_history_save_includes_provider_id_in_header _tests/test_request_history_actions.py::RequestHistoryActionTests::test_history_save_blocks_when_request_in_flight _tests/test_request_history_actions.py::RequestHistoryActionTests::test_history_save_sequence_inflight_then_terminal
 	$(PYTHON) scripts/tools/history-axis-validate.py --summarize-json artifacts/telemetry/history-validation-summary.json --summary-format streaming
 	$(PYTHON) scripts/tools/history-axis-validate.py --summarize-json artifacts/telemetry/history-validation-summary.json --summary-format json > artifacts/telemetry/history-validation-summary.streaming.json

@@ -239,6 +239,7 @@ def build_payload(
     artifact_url: str | None,
     summary_path: Path,
     skip_summary_path: Path | None,
+    guardrail_target: str | None = None,
 ) -> Dict[str, Any]:
     streaming = data.get("streaming_gating_summary")
     if not isinstance(streaming, dict):
@@ -310,6 +311,9 @@ def build_payload(
         "last_drop_message": last_message,
     }
 
+    if guardrail_target:
+        payload["guardrail_target"] = guardrail_target
+
     payload["streaming_last_drop_message"] = (
         streaming_last_message_text if streaming_last_message_text else "none"
     )
@@ -369,6 +373,12 @@ def parse_args() -> argparse.Namespace:
         help="Optional path to suggestion skip summary JSON for inclusion in the payload.",
     )
     parser.add_argument(
+        "--guardrail-target",
+        type=str,
+        default=None,
+        help="Optional guardrail target identifier to embed in the telemetry payload.",
+    )
+    parser.add_argument(
         "--pretty",
         action="store_true",
         help="Pretty-print the JSON output with indentation.",
@@ -390,6 +400,7 @@ def main() -> int:
         artifact_url=args.artifact_url,
         summary_path=args.summary_path,
         skip_summary_path=skip_summary_path,
+        guardrail_target=args.guardrail_target,
     )
 
     if args.output is None:

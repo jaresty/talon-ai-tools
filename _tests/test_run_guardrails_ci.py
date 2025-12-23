@@ -343,6 +343,10 @@ if not TYPE_CHECKING:
                 telemetry_payload = json.loads(
                     telemetry_path.read_text(encoding="utf-8")
                 )
+                self.assertEqual(
+                    telemetry_payload.get("guardrail_target"),
+                    "request-history-guardrails",
+                )
                 self.assertEqual(telemetry_payload.get("total_entries"), 0)
                 self.assertEqual(telemetry_payload.get("gating_drop_total"), 0)
                 self.assertIn("generated_at", telemetry_payload)
@@ -521,6 +525,7 @@ if not TYPE_CHECKING:
                 / "run_guardrails_ci.sh"
             )
             repo_root = Path(__file__).resolve().parents[1]
+            telemetry_payload: dict[str, object] = {}
             with isolate_telemetry_dir():
                 summary_dir = repo_root / "artifacts" / "telemetry"
                 summary_dir.mkdir(parents=True, exist_ok=True)
@@ -600,6 +605,9 @@ if not TYPE_CHECKING:
                         "run_guardrails_ci.sh did not append to the GitHub step summary file for the fast target",
                     )
                     summary_text = step_summary_path.read_text(encoding="utf-8")
+                    telemetry_payload = json.loads(
+                        telemetry_path.read_text(encoding="utf-8")
+                    )
 
             self.assertIn(
                 "History guardrail target: request-history-guardrails-fast",
@@ -608,6 +616,10 @@ if not TYPE_CHECKING:
             self.assertIn(
                 "- guardrail target: request-history-guardrails-fast",
                 summary_text,
+            )
+            self.assertEqual(
+                telemetry_payload.get("guardrail_target"),
+                "request-history-guardrails-fast",
             )
 
         def test_run_guardrails_ci_gating_reasons_table_with_counts(self) -> None:

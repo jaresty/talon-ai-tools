@@ -26,7 +26,7 @@ run_telemetry_export() {
   if [[ ! -f "artifacts/telemetry/suggestion-skip-summary.json" ]]; then
     python3 scripts/tools/suggestion-skip-export.py --output "artifacts/telemetry/suggestion-skip-summary.json" --pretty
   fi
-  python3 scripts/tools/history-axis-export-telemetry.py "artifacts/telemetry/history-validation-summary.json" --output "artifacts/telemetry/history-validation-summary.telemetry.json" --top 5 --pretty --skip-summary "artifacts/telemetry/suggestion-skip-summary.json"
+  python3 scripts/tools/history-axis-export-telemetry.py "artifacts/telemetry/history-validation-summary.json" --output "artifacts/telemetry/history-validation-summary.telemetry.json" --top 5 --pretty --skip-summary "artifacts/telemetry/suggestion-skip-summary.json" --guardrail-target "${TARGET}"
 }
 
 if [[ ${1-} == "-h" || ${1-} == "--help" ]]; then
@@ -668,7 +668,7 @@ PY
   echo "Suggestion skip reasons: ${SKIP_REASONS}"
  
   TELEMETRY_PATH="${SUMMARY_DIR}/history-validation-summary.telemetry.json"
-  python3 scripts/tools/history-axis-export-telemetry.py "${SUMMARY_FILE}" --output "${TELEMETRY_PATH}" --top 5 --pretty --skip-summary "${SKIP_SUMMARY_PATH}"
+  python3 scripts/tools/history-axis-export-telemetry.py "${SUMMARY_FILE}" --output "${TELEMETRY_PATH}" --top 5 --pretty --skip-summary "${SKIP_SUMMARY_PATH}" --guardrail-target "${TARGET}"
   if [[ -f "${TELEMETRY_PATH}" ]]; then
     TELEMETRY_JSON=$(cat "${TELEMETRY_PATH}")
     echo "Telemetry summary saved at ${TELEMETRY_PATH}"

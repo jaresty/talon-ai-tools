@@ -2045,6 +2045,33 @@
 - next_work:
   - Docs: update the Concordance operations runbook to mirror the ADR note about `HISTORY_AXIS_VALIDATE_SIMULATE_GATING_DROP`.
 
+## 2025-12-23 – Loop 271 (kind: guardrail/tests)
+- helper_version: helper:v20251221.5
+- focus: Request Gating & Streaming – embed guardrail target metadata in telemetry exports.
+- riskiest_assumption: Without the guardrail target in telemetry, dashboards cannot distinguish fast vs full history runs (probability medium, impact medium-high for Concordance auditing).
+- validation_targets:
+  - python3.11 -m pytest _tests/test_history_axis_export_telemetry.py::HistoryAxisExportTelemetryTests::test_includes_guardrail_target_when_provided
+  - python3.11 -m pytest _tests/test_run_guardrails_ci.py
+- evidence:
+  - red | 2025-12-23T05:59:06Z | exit 1 | python3.11 -m pytest _tests/test_history_axis_export_telemetry.py::HistoryAxisExportTelemetryTests::test_includes_guardrail_target_when_provided
+      helper:diff-snapshot=0 files changed
+      history-axis-export-telemetry.py rejected --guardrail-target, proving the missing metadata | inline
+  - green | 2025-12-23T06:01:05Z | exit 0 | python3.11 -m pytest _tests/test_history_axis_export_telemetry.py::HistoryAxisExportTelemetryTests::test_includes_guardrail_target_when_provided
+      helper:diff-snapshot=5 files changed, 68 insertions(+), 4 deletions(-)
+      Guardrail export accepts the target argument and populates the telemetry field | inline
+  - green | 2025-12-23T06:01:37Z | exit 0 | python3.11 -m pytest _tests/test_run_guardrails_ci.py
+      helper:diff-snapshot=5 files changed, 68 insertions(+), 4 deletions(-)
+      CI helper now propagates the guardrail target through telemetry and job summaries | inline
+  - removal | 2025-12-23T06:00:42Z | exit 1 | git stash push -k -u -- scripts/tools/history-axis-export-telemetry.py && python3.11 -m pytest _tests/test_history_axis_export_telemetry.py::HistoryAxisExportTelemetryTests::test_includes_guardrail_target_when_provided
+      helper:diff-snapshot=0 files changed
+      Reverting the exporter drops the telemetry field and the guardrail test fails again | inline
+- rollback_plan: git restore --source=HEAD -- scripts/tools/history-axis-export-telemetry.py scripts/tools/run_guardrails_ci.sh Makefile _tests/test_history_axis_export_telemetry.py _tests/test_run_guardrails_ci.py && python3.11 -m pytest _tests/test_history_axis_export_telemetry.py::HistoryAxisExportTelemetryTests::test_includes_guardrail_target_when_provided
+- delta_summary: helper:diff-snapshot=5 files changed, 68 insertions(+), 4 deletions(-); exporter accepts `--guardrail-target`, CLI callers forward the argument, and guardrail tests assert the telemetry payload carries the field.
+- residual_risks:
+  - Downstream dashboards do not yet read the new telemetry field; mitigation: update ingest pipelines to surface `guardrail_target`; monitoring trigger: telemetry exports that continue to omit the field in dashboard views.
+- next_work:
+  - Telemetry: update Concordance dashboards/ETL ingestion to record and display the new `guardrail_target` metadata.
+
 ## 2025-12-21 – Loop 269 (kind: docs)
 - Helper: helper:v20251220.5 @ 2025-12-21T19:20Z
 - Focus: Request Gating & Streaming – spell out the ongoing guardrail commands and runbook follow-ups for streaming telemetry.

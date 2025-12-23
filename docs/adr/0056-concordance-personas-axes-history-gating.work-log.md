@@ -3425,3 +3425,25 @@ PY
   - ADR-0056 still references the warning in general terms; update monitoring guidance to mention the “WARNING:” prefix and optional-target behaviour.
 - next_work:
   - Documentation: refresh ADR-0056 monitoring notes with the strengthened warning wording — docs/adr/0056-concordance-personas-axes-history-gating.md
+
+## 2025-12-23 – Loop 389 (kind: documentation)
+- helper_version: helper:v20251221.5
+- focus: Monitoring & Next Steps – document the exact warning strings emitted by the guardrail runner.
+- riskiest_assumption: Without quoting the `WARNING:` messages verbatim, operators may overlook that optional targets now continue after the warning (probability medium, impact medium for audit visibility); the doc lint script must fail until the strings are recorded.
+- validation_targets:
+  - python3 - <<'PY'
+      from pathlib import Path
+      text = Path('docs/adr/0056-concordance-personas-axes-history-gating.md').read_text(encoding='utf-8')
+      if 'WARNING: ALLOW_STALE_TELEMETRY is set; skipping telemetry export freshness check' not in text:
+          raise SystemExit('missing warning prefix note')
+      if 'WARNING: telemetry export freshness check failed (exit' not in text:
+          raise SystemExit('missing optional target warning note')
+      print('doc updated')
+    PY
+- evidence: `docs/adr/evidence/0056/loop-0389.md`
+- rollback_plan: `git restore --source=HEAD -- docs/adr/0056-concordance-personas-axes-history-gating.md && python3 - <<'PY' ...`
+- delta_summary: helper:diff-snapshot=1 file changed, 1 insertion(+), 1 deletion(-); Monitoring & Next Steps now quotes the `WARNING:` prefix and the optional-target continuation message so the behaviour is auditable.
+- residual_risks:
+  - None; the ADR now captures the exact warning text and optional-target behaviour.
+- next_work:
+  - None queued; monitoring guidance is aligned with the guardrail runner output.

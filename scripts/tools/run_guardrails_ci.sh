@@ -493,6 +493,66 @@ PY
     fi
   fi
 
+  STREAK_LOG="${SUMMARY_DIR}/cli-warning-streak.json"
+  STREAK_REPORT=$(python3 - "${STREAK_LOG}" <<'PY'
+import json
+import sys
+from pathlib import Path
+
+path = Path(sys.argv[1])
+try:
+    raw = json.loads(path.read_text(encoding="utf-8"))
+except FileNotFoundError:
+    raw = {}
+except json.JSONDecodeError:
+    raw = {}
+if not isinstance(raw, dict):
+    raw = {}
+streak_value = raw.get("streak")
+if isinstance(streak_value, bool):
+    streak_value = int(streak_value)
+try:
+    streak = int(streak_value)
+except Exception:
+    streak = 0
+reason_raw = raw.get("last_reason")
+if isinstance(reason_raw, str):
+    reason_text = reason_raw.strip() or "none"
+else:
+    reason_text = "none"
+command_raw = raw.get("last_command")
+if isinstance(command_raw, str):
+    command_text = command_raw.strip() or "unknown"
+else:
+    command_text = "unknown"
+updated_raw = raw.get("updated_at")
+if isinstance(updated_raw, str):
+    updated_text = updated_raw.strip() or "unknown"
+else:
+    updated_text = "unknown"
+json_state = {
+    "streak": streak,
+    "last_reason": reason_raw if isinstance(reason_raw, str) else None,
+    "last_command": command_raw if isinstance(command_raw, str) else None,
+    "updated_at": updated_raw if isinstance(updated_raw, str) else None,
+}
+print(f"Telemetry export streak state: {json.dumps(json_state, separators=(', ', ': '))}")
+print(f"- Telemetry export warning streak: {streak}")
+print(f"- Telemetry export last reason: {reason_text}")
+print(f"- Telemetry export last updated: {updated_text}")
+print(f"- Telemetry export last command: {command_text}")
+PY
+)
+  printf '%s\n' "${STREAK_REPORT}"
+  if [[ -n "${GITHUB_STEP_SUMMARY:-}" ]]; then
+    {
+      echo
+      echo "### Telemetry Export Streak"
+      echo
+      printf '%s\n' "${STREAK_REPORT}"
+    } >> "${GITHUB_STEP_SUMMARY}"
+  fi
+
   STREAMING_LAST_OUTPUT=$(python3 - "${SUMMARY_FILE}" <<'PY'
 
 import json, sys

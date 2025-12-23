@@ -255,6 +255,20 @@
 - next_work:
   - Guardrail: surface the streak summary inside `run_guardrails_ci.sh` job output (Loop 364) so CI logs stay aligned with the new helper messaging.
 
+## 2025-12-23 – Loop 364 (kind: guardrail/tests)
+- helper_version: helper:v20251221.5
+- focus: Request Gating & Streaming – guardrail CI runner surfaces telemetry export streak summary lines (ADR-0056 §Monitoring & Next Steps).
+- riskiest_assumption: Without emitting the streak summary from the CI runner, operators will miss consecutive defaults/non-default telemetry warnings in CI logs (probability medium, impact high for Concordance auditability).
+- validation_targets:
+  - python3.11 -m pytest _tests/test_run_guardrails_ci.py::RunGuardrailsCITests::test_run_guardrails_ci_history_target_produces_summary
+- evidence: docs/adr/evidence/0056/loop-0364.md
+- rollback_plan: git restore --source=HEAD -- _tests/test_run_guardrails_ci.py scripts/tools/run_guardrails_ci.sh && python3.11 -m pytest _tests/test_run_guardrails_ci.py::RunGuardrailsCITests::test_run_guardrails_ci_history_target_produces_summary
+- delta_summary: helper:diff-snapshot=2 files changed, 163 insertions(+); taught `run_guardrails_ci.sh` to load the streak log, print telemetry export streak lines, append them to GitHub step summaries, and expanded guardrail tests with seeded streak fixtures verifying the new messaging.
+- residual_risks:
+  - Operators may overlook non-zero streaks buried in the summary bullets; mitigation: follow up by highlighting streaks above zero in the GitHub summary header, monitoring trigger: review CI guardrail logs for streak > 0 without operator acknowledgement.
+- next_work:
+  - Guardrail: highlight non-zero telemetry export streaks in the GitHub step summary header so escalations stand out immediately.
+
 ## 2025-12-22 – Loop 349 (kind: docs)
 
 

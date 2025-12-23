@@ -179,8 +179,22 @@
   - CLI still relies on manual Talon exports; consider auto-invoking the telemetry command when defaults warnings persist.
 - next_work:
   - Evaluate prompting or auto-invoking `model export telemetry` when defaults warnings repeat (Loop 359).
- 
+
+## 2025-12-23 – Loop 359 (kind: docs)
+- helper_version: helper:v20251221.5
+- focus: ADR-0056 §Monitoring & Next Steps – evaluate auto-invoking the telemetry export when defaults warnings repeat.
+- riskiest_assumption: Auto-triggering `model export telemetry` after repeated defaults warnings could emit Talon voice commands without operator intent (probability medium, impact high for Talon safety).
+- validation_targets: [] (docs-only evaluation; decision recorded in ADR Monitoring guidance).
+- evidence: inline (Monitoring & Next Steps now documents the manual escalation guidance after the evaluation).
+- rollback_plan: git restore --source=HEAD -- docs/adr/0056-concordance-personas-axes-history-gating.md docs/adr/0056-concordance-personas-axes-history-gating.work-log.md
+- delta_summary: helper:diff-snapshot=2 files changed, 16 insertions(+), 1 deletion(-); captured the evaluation outcome and this loop entry.
+- residual_risks:
+  - Operators may still ignore repeated defaults warnings; mitigation: highlight incidents in guardrail runbooks and training; monitoring trigger: review guardrail logs weekly for consecutive `(missing)` or `(non-default)` scheduler sources.
+- next_work:
+  - Guardrail: capture counts of consecutive defaults warnings in CLI output to prompt operators (Loop 360).
+
 ## 2025-12-22 – Loop 349 (kind: docs)
+
 
 - helper_version: helper:v20251221.5
 - focus: Persona & Intent Presets – update monitoring guidance to mention the new Talon export action and runbook integration.

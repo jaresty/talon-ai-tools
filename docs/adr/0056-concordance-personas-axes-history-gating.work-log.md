@@ -2223,6 +2223,38 @@ PY
 - next_work:
   - Docs: note the expanded summary defaults when next updating ADR monitoring bullets so future slices know these fields are guaranteed.
 
+## 2025-12-23 – Loop 377 (kind: docs)
+- helper_version: helper:v20251221.5
+- focus: ADR-0056 §Monitoring & Next Steps – record that telemetry summary output now includes `summary_path`, `total_entries`, and `streaming_status` by default.
+- riskiest_assumption: Without documenting the baked-in summary fields, future slices might reintroduce redundant `--field` flags or miss the guaranteed metadata (probability medium, impact medium for doc clarity).
+- validation_targets:
+  - python3 - <<'PY'
+from pathlib import Path
+text = Path('docs/adr/0056-concordance-personas-axes-history-gating.md').read_text()
+if 'summary_path=' in text:
+    raise SystemExit(0)
+raise SystemExit(1)
+PY
+  - python3 - <<'PY'
+from pathlib import Path
+text = Path('docs/adr/0056-concordance-personas-axes-history-gating.md').read_text()
+if 'summary_path=' not in text:
+    raise SystemExit(1)
+PY
+- evidence: docs/adr/evidence/0056/loop-0377.md
+- rollback_plan: git restore --source=HEAD -- docs/adr/0056-concordance-personas-axes-history-gating.md docs/adr/0056-concordance-personas-axes-history-gating.work-log.md && python3 - <<'PY'
+from pathlib import Path
+text = Path('docs/adr/0056-concordance-personas-axes-history-gating.md').read_text()
+if 'summary_path=' in text:
+    raise SystemExit(0)
+raise SystemExit(1)
+PY
+- delta_summary: helper:diff-snapshot=2 files changed, 18 insertions(+), 1 deletion(-); Monitoring guidance now explains that the telemetry summary line always includes `summary_path`, `total_entries`, and `streaming_status`, and the work log captures the documentation update.
+- residual_risks:
+  - If future inspector changes adjust the default field set, refresh this section alongside the tooling update so documentation stays aligned; monitoring trigger: inspector PRs touching `SUMMARY_FIELDS`.
+- next_work:
+  - None; documentation now reflects the summary defaults landed in Loop 376.
+
 ## 2025-12-23 – Loop 271 (kind: docs)
 
 

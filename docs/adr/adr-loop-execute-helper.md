@@ -2,7 +2,7 @@
 
 This helper keeps ADR loops observable and safe while letting a single agent advance work in concise, auditable slices.
 
-**Current helper version:** `helper:v20251221.5` (update this string when the helper changes; work-log entries must reference it exactly).
+**Current helper version:** `helper:v20251223.1` (update this string when the helper changes; work-log entries must reference it exactly).
 
 **Context cited per loop.** Entries state which ADR sections, work-log notes, and repository evidence informed the slice; conversational history is out of scope.
 
@@ -16,6 +16,9 @@ This helper keeps ADR loops observable and safe while letting a single agent adv
 - **Residual risk** – a remaining operational or process risk, recorded with mitigation and monitoring trigger in `residual_risks`.
 - **Risk severity** – classification of a behaviour outcome’s probability × impact. When severity is low (probability low or impact low), the item stays in `residual_risks` and does not drive new slices.
 - **Diminishing return** – additional effort that only reduces low-severity residual risk; such work is optional unless governance explicitly requires it.
+- **Canonical intent** – the minimal, shared representation of a behaviour outcome that loops converge on (e.g., a single helper, type, or invariant).
+- **Equivalence evidence** – observations showing multiple implementations express the same behaviour (tests, telemetry comparisons, structural analysis) that justify canonicalization.
+- **Future-shaping action** – a change that biases future contributors and tooling toward the canonical intent (examples: centralising helpers, documenting invariants, tightening type contracts).
 
 ## Named Placeholders
 
@@ -40,7 +43,7 @@ The `<ARTEFACT_LOG>` must record headings matching the helper command names when
 
 - Red evidence is captured before behaviour changes, or an automation gap is documented with blocking evidence.
 - Slice scope describes a single cohesive behaviour or decision. Guardrail evidence is part of that behaviour’s contract, not a separate deliverable.
-- Each loop interrogates the highest-impact behaviour outcome still at risk. Document the severity rationale for the chosen behaviour; once evidence reduces severity to low, move the remaining risk to `residual_risks` instead of opening a new loop. The `riskiest_assumption` states the falsifiable, higher-severity uncertainty; placeholder reminders or restated edits are non-compliant.
+- Each loop interrogates the highest-impact behaviour outcome still at risk. Document the severity rationale for the chosen behaviour, explain why it outranks any other medium/high risks, and name the canonical intent it reinforces. Once evidence reduces severity to low, move the remaining risk to `residual_risks` instead of opening a new loop. The `riskiest_assumption` states the falsifiable, higher-severity uncertainty; placeholder reminders or restated edits are non-compliant.
 - When multiple candidate slices exist, the executor selects the slice that interrogates the riskiest assumption without waiting for external direction; if choices appear indistinguishable, the executor picks any of them without blocking.
 
 - Loop summary demonstrates the ADR completion horizon changed (or remained unchanged with justification) since the prior entry, naming the domains or tasks still open.
@@ -77,7 +80,7 @@ A loop entry is compliant when all statements hold:
 **Focus declared**
 - Record red evidence for each behaviour outcome before edits land, then green/removal evidence after; guardrail commands exist only as the evidence channel for that behaviour.
 - Cite the exact ADR sections and work-log notes refreshed by this slice; omit generic references.
-- State the riskiest open assumption with probability × impact rationale and note why the severity remains medium/high. If the severity is low, demote it to `residual_risks`; do not treat low-severity items as the riskiest assumption. Defer higher-severity blockers by citing their blocker evidence.
+- State the riskiest open assumption with probability × impact rationale, explain why it outranks any other medium/high risks, and reference the canonical intent (with equivalence evidence) that this slice reinforces. If the severity is low, demote it to `residual_risks`; do not treat low-severity items as the riskiest assumption. Defer higher-severity blockers by citing their blocker evidence.
 - Articulate the riskiest assumption as a falsifiable uncertainty about the behaviour outcome, and name the validation command or blocker evidence that will falsify it; restating the planned work or generic reminders is non-compliant.
 - When the riskiest assumption cannot advance, blocker evidence (command, failure excerpt, pointer) is present. Status-only or documentation-only entries must explicitly defer to the next riskiest assumption and cite the blocker evidence.
 
@@ -100,7 +103,7 @@ A loop entry is compliant when all statements hold:
 - The adversarial “risk recap” paragraph names at least one residual risk, the mitigation, the monitoring trigger, and the reopen condition.
 
 **Next work queued**
-- `next_work` lists `Behaviour:` bullets, each citing the validation command or blocker evidence that advances the stated higher-severity assumption (e.g., `Behaviour: history drawer drop messaging — python3 -m pytest …`). Low-severity residual risks stay parked in `residual_risks`.
+- `next_work` lists `Behaviour:` bullets, each citing the validation command or blocker evidence that advances the stated higher-severity assumption and notes the future-shaping action that will keep contributors aligned with the canonical intent (e.g., `Behaviour: history drawer drop messaging — python3 -m pytest … — future-shaping: consolidate helper in requestGating`). Low-severity residual risks stay parked in `residual_risks`.
 - New bullets only appear when they replace or consolidate existing scope interrogating the riskiest assumption; discoveries outside the ADR’s behaviours record the blocker and queue ADR-level triage instead of speculative tasks.
 - Status-only entries schedule the next behaviour slice (or evidence refresh for that behaviour) before closing the loop.
 - Helper upgrades (new version strings) note the change and queue any reconciliation loop required by the stricter rules.

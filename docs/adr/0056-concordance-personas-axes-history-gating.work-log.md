@@ -2008,6 +2008,30 @@
 - Adversarial “what remains” check:
   - Track upcoming guardrail CLI upgrades and append new suites/scripts once directionality or axis token checks expand.
 
+## 2025-12-23 – Loop 269 (kind: guardrail/tests)
+- helper_version: helper:v20251221.5
+- focus: Request Gating & Streaming – fast guardrail summaries label their target.
+- riskiest_assumption: Without an explicit guardrail target line in fast summaries, operators may misinterpret CI output (probability medium, impact medium-high for Concordance auditing).
+- validation_targets:
+  - python3.11 -m pytest _tests/test_run_guardrails_ci.py::RunGuardrailsCITests::test_run_guardrails_ci_fast_target_writes_target_line
+  - python3.11 -m pytest _tests/test_run_guardrails_ci.py
+- evidence:
+  - red | 2025-12-23T05:37:37Z | exit 1 | python3.11 -m pytest _tests/test_run_guardrails_ci.py::RunGuardrailsCITests::test_run_guardrails_ci_fast_target_writes_target_line
+      helper:diff-snapshot=0 files changed
+      Fast target stdout and job summary omitted the guardrail target label, so the new guardrail test failed | inline
+  - green | 2025-12-23T05:38:02Z | exit 0 | python3.11 -m pytest _tests/test_run_guardrails_ci.py
+      helper:diff-snapshot=2 files changed, 101 insertions(+)
+      9 passed in 17.71s; fast target output now includes the guardrail target line in stdout and GitHub summaries | inline
+  - removal | 2025-12-23T05:37:37Z | exit 1 | git stash push -k -u -- scripts/tools/run_guardrails_ci.sh && python3.11 -m pytest _tests/test_run_guardrails_ci.py::RunGuardrailsCITests::test_run_guardrails_ci_fast_target_writes_target_line
+      helper:diff-snapshot=0 files changed
+      Reverting the helper drops the target label and the guardrail test fails again | inline
+- rollback_plan: git restore --source=HEAD -- scripts/tools/run_guardrails_ci.sh _tests/test_run_guardrails_ci.py && python3.11 -m pytest _tests/test_run_guardrails_ci.py::RunGuardrailsCITests::test_run_guardrails_ci_fast_target_writes_target_line
+- delta_summary: helper:diff-snapshot=2 files changed, 101 insertions(+); added a guardrail test and taught `run_guardrails_ci.sh` to print the guardrail target for the fast history entry point in stdout and job summaries.
+- residual_risks:
+  - Telemetry exports still omit the guardrail target; dashboards remain dependent on contextual knowledge. Mitigation: extend the telemetry payload to carry the target string; monitoring trigger: dashboards or operators report ambiguity between fast/full runs.
+- next_work:
+  - Guardrail: update `history-axis-export-telemetry.py` to include the guardrail target label so downstream Concordance telemetry matches the CLI output.
+
 ## 2025-12-21 – Loop 269 (kind: docs)
 - Helper: helper:v20251220.5 @ 2025-12-21T19:20Z
 - Focus: Request Gating & Streaming – spell out the ongoing guardrail commands and runbook follow-ups for streaming telemetry.

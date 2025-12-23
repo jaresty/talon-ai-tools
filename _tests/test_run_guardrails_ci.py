@@ -511,6 +511,105 @@ if not TYPE_CHECKING:
                 summary_text,
             )
 
+        def test_run_guardrails_ci_fast_target_writes_target_line(self) -> None:
+            """Guardrail: fast history target should label the guardrail target in summaries."""
+
+            script = (
+                Path(__file__).resolve().parents[1]
+                / "scripts"
+                / "tools"
+                / "run_guardrails_ci.sh"
+            )
+            repo_root = Path(__file__).resolve().parents[1]
+            with isolate_telemetry_dir():
+                summary_dir = repo_root / "artifacts" / "telemetry"
+                summary_dir.mkdir(parents=True, exist_ok=True)
+                summary_path = summary_dir / "history-validation-summary.json"
+                streaming_summary_path = (
+                    summary_dir / "history-validation-summary.streaming.json"
+                )
+                telemetry_path = (
+                    summary_dir / "history-validation-summary.telemetry.json"
+                )
+                skip_path = summary_dir / "suggestion-skip-summary.json"
+                streak_path = summary_dir / "cli-warning-streak.json"
+
+                for path in (
+                    summary_path,
+                    streaming_summary_path,
+                    telemetry_path,
+                    skip_path,
+                    streak_path,
+                ):
+                    if path.exists():
+                        path.unlink()
+
+                # Seed suggestion skip + streak artefacts to avoid CLI fallbacks.
+                skip_payload_seed = {
+                    "counts": {"streaming_disabled": 1},
+                    "total_skipped": 1,
+                    "reason_counts": [
+                        {"reason": "streaming_disabled", "count": 1},
+                    ],
+                }
+                skip_path.write_text(
+                    json.dumps(skip_payload_seed, indent=2), encoding="utf-8"
+                )
+                streak_state = {
+                    "streak": 0,
+                    "last_reason": None,
+                    "last_command": "python3 scripts/tools/check-telemetry-export-marker.py",
+                    "updated_at": "2025-12-23T02:12:00Z",
+                }
+                streak_path.write_text(
+                    json.dumps(streak_state, indent=2), encoding="utf-8"
+                )
+
+                # Provide a no-op make so the script relies on the prepared artefacts.
+                with tempfile.TemporaryDirectory() as tmpdir:
+                    fake_make = Path(tmpdir) / "make"
+                    fake_make.write_text(
+                        "#!/usr/bin/env bash\nexit 0\n", encoding="utf-8"
+                    )
+                    fake_make.chmod(0o755)
+                    step_summary_path = Path(tmpdir) / "gha-summary.md"
+                    env = os.environ.copy()
+                    env["ALLOW_STALE_TELEMETRY"] = "1"
+                    env["PATH"] = f"{tmpdir}{os.pathsep}{env.get('PATH', '')}"
+                    env["GITHUB_STEP_SUMMARY"] = str(step_summary_path)
+                    env.setdefault("GITHUB_SERVER_URL", "https://github.com")
+                    env["GITHUB_REPOSITORY"] = "example/repo"
+                    env["GITHUB_RUN_ID"] = "67890"
+
+                    result = subprocess.run(
+                        ["/bin/bash", str(script), "request-history-guardrails-fast"],
+                        check=False,
+                        capture_output=True,
+                        text=True,
+                        cwd=str(repo_root),
+                        env=env,
+                    )
+
+                    if result.returncode != 0:
+                        self.fail(
+                            "run_guardrails_ci.sh request-history-guardrails-fast failed with code "
+                            f"{result.returncode}\nstdout:\n{result.stdout}\nstderr:\n{result.stderr}"
+                        )
+                    self.assertTrue(
+                        step_summary_path.exists(),
+                        "run_guardrails_ci.sh did not append to the GitHub step summary file for the fast target",
+                    )
+                    summary_text = step_summary_path.read_text(encoding="utf-8")
+
+            self.assertIn(
+                "History guardrail target: request-history-guardrails-fast",
+                result.stdout,
+            )
+            self.assertIn(
+                "- guardrail target: request-history-guardrails-fast",
+                summary_text,
+            )
+
         def test_run_guardrails_ci_gating_reasons_table_with_counts(self) -> None:
             """Guardrail: summary table should render when gating counts exist."""
 

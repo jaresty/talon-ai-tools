@@ -76,6 +76,7 @@ if [[ -f "${SUMMARY_FILE}" ]]; then
   echo "History validation summary (JSON): ${SUMMARY_FILE}"
   cat "${SUMMARY_FILE}"
   echo "History summary recorded at ${SUMMARY_FILE}; job summary will reference this file when running in GitHub Actions."
+  echo "History guardrail target: ${TARGET}"
   TOTAL_ENTRIES=$(python3 - "$SUMMARY_FILE" <<'PY'
 import json, sys
 from pathlib import Path
@@ -698,6 +699,7 @@ PY
       else
         printf '%s\n' "- Download summary artifact: [History axis summary](${STREAMING_JSON_PATH})"
       fi
+      printf '%s\n' "- guardrail target: ${TARGET}"
       printf '%s\n' "- Streaming JSON summary recorded at ${STREAMING_JSON_PATH}"
       printf '%s\n' "- Streaming gating summary (text): ${STREAMING_LINE}"
       printf '%s\n' "- streaming status: ${GATING_STATUS}"

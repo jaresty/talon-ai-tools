@@ -88,7 +88,7 @@ A loop entry is compliant when all statements hold:
 - Documentation-only loops require blocker evidence naming the behaviour, the governing ADR clause, and the reversible red failure captured before edits land.
 
 **Validation registered**
-- Loop pre-plan identifies the `<VALIDATION_TARGET>` (or bounded list) and the evidence locations, mapping each targeted behaviour to its command before edits begin.
+- Loop pre-plan identifies the `<VALIDATION_TARGET>` (or bounded list) and the evidence locations, mapping each targeted behaviour to its command before edits begin. Documentation-only loops may omit validation commands when no behaviour outcome changes, provided they cite the governing ADR clause and blocker evidence.
 - Red evidence exists before behaviour edits land: command fails with non-zero exit, UTC ISO-8601 timestamp, and failure excerpt demonstrating the targeted behaviour surface end-to-end. Partial coverage notes missing facets and lists the tightening work.
 - Green evidence reuses the same `<VALIDATION_TARGET>` command (or mapped target) and records exit 0 with matching timestamp format for that behaviour.
 - Removal evidence concatenates `<VCS_REVERT>` with the red command, shows baseline restoration (non-zero re-run), and records the UTC timestamp of restoration. If failure does not reappear, the entry states the tightening action required.

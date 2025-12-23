@@ -3503,3 +3503,17 @@ PY
   - Operators might ignore the warning; mitigation: document the new output and remind maintainers during guardrail reviews; monitoring trigger: repeated warnings in guardrail logs without the files being removed.
 - next_work:
   - Loop 393: update guardrail runner output so CI logs surface the legacy streak warning alongside freshness and bypass notices.
+
+## 2025-12-23 – Loop 393 (kind: guardrail/tests)
+- helper_version: helper:v20251223.1
+- focus: Request Gating & Streaming – mirror legacy streak warnings in `run_guardrails_ci.sh` and GitHub step summaries.
+- riskiest_assumption: Without surfacing the warning in runner output/summary, stale streak artefacts remain invisible (probability medium, impact medium for manual guardrail runs).
+- validation_targets:
+  - python3 -m pytest _tests/test_run_guardrails_ci.py
+- evidence: `docs/adr/evidence/0056/loop-0393.md`
+- rollback_plan: `git restore --source=HEAD -- scripts/tools/run_guardrails_ci.sh _tests/test_run_guardrails_ci.py docs/adr/evidence/0056/loop-0393.md && python3 -m pytest _tests/test_run_guardrails_ci.py`
+- delta_summary: helper:diff-snapshot=2 files changed, 31 insertions(+), 1 deletion(-); the runner now echoes the legacy streak warning, adds a GitHub summary note, and the guardrail CI tests cover both outputs.
+- residual_risks:
+  - Warning repetition may still be ignored when export telemetry is intentionally stale; mitigation: document follow-up procedure and monitor guardrail logs during manual runs.
+- next_work:
+  - Loop 394: reassess guardrail automation overhead now that the script includes heavier messaging.

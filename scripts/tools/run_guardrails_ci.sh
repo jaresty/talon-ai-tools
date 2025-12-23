@@ -513,15 +513,24 @@ PY
   TELEMETRY_CHECK_OUTPUT=$(python3 scripts/tools/check-telemetry-export-marker.py --wait --wait-seconds 30 2>&1)
   TELEMETRY_CHECK_STATUS=$?
   set -e
+  LEGACY_STREAK_WARNING=""
   if [[ -n "${TELEMETRY_CHECK_OUTPUT}" ]]; then
-
+    if grep -q "legacy telemetry streak artefacts" <<<"${TELEMETRY_CHECK_OUTPUT}"; then
+      LEGACY_STREAK_WARNING="WARNING: Legacy telemetry streak artefacts detected; delete cli-warning-streak*.json files listed above."
+    fi
     printf '%s\n' "${TELEMETRY_CHECK_OUTPUT}"
+    if [[ -n "${LEGACY_STREAK_WARNING}" ]]; then
+      echo "${LEGACY_STREAK_WARNING}"
+    fi
     if [[ -n "${GITHUB_STEP_SUMMARY:-}" ]]; then
       {
         echo
         echo "### Telemetry Export Check"
         echo
         printf '%s\n' "${TELEMETRY_CHECK_OUTPUT}"
+        if [[ -n "${LEGACY_STREAK_WARNING}" ]]; then
+          echo "${LEGACY_STREAK_WARNING}"
+        fi
       } >> "${GITHUB_STEP_SUMMARY}"
     fi
   fi

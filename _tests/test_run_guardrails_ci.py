@@ -173,6 +173,9 @@ if not TYPE_CHECKING:
                 )
                 if telemetry_path.exists():
                     telemetry_path.unlink()
+                legacy_warning_path = summary_path.with_name("cli-warning-streak.json")
+                legacy_warning_path.write_text("{}", encoding="utf-8")
+                github_summary_path = summary_path.with_name("github-summary.md")
                 skip_path = summary_path.with_name("suggestion-skip-summary.json")
                 skip_payload_seed = {
                     "counts": {"streaming_disabled": 2, "rate_limited": 1},
@@ -187,6 +190,10 @@ if not TYPE_CHECKING:
                 )
                 env = os.environ.copy()
                 env["ALLOW_STALE_TELEMETRY"] = "1"
+                env["GITHUB_STEP_SUMMARY"] = str(github_summary_path)
+                env.setdefault("GITHUB_SERVER_URL", "https://github.com")
+                env.setdefault("GITHUB_REPOSITORY", "example/repo")
+                env.setdefault("GITHUB_RUN_ID", "12345")
                 result = subprocess.run(
                     ["/bin/bash", str(script), "request-history-guardrails"],
                     check=False,
@@ -200,6 +207,20 @@ if not TYPE_CHECKING:
                         "run_guardrails_ci.sh request-history-guardrails failed with code "
                         f"{result.returncode}\nstdout:\n{result.stdout}\nstderr:\n{result.stderr}"
                     )
+                legacy_message = (
+                    "WARNING: Legacy telemetry streak artefacts detected; delete "
+                    "cli-warning-streak*.json files listed above."
+                )
+                relative_warning = legacy_warning_path.relative_to(repo_root)
+                self.assertIn(legacy_message, result.stdout)
+                self.assertIn(str(relative_warning), result.stdout)
+                self.assertTrue(
+                    github_summary_path.exists(),
+                    "run_guardrails_ci.sh did not append telemetry warnings to the GitHub step summary file",
+                )
+                summary_text = github_summary_path.read_text(encoding="utf-8")
+                self.assertIn(legacy_message, summary_text)
+                self.assertIn(str(relative_warning), summary_text)
                 self.assertIn(
                     "History validation summary (JSON):",
                     result.stdout,

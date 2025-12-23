@@ -495,11 +495,12 @@ if not TYPE_CHECKING:
             )
             self.assertIn("### Telemetry Export Streak", summary_text)
             self.assertIn(
-                "- Streak alert: 2 consecutive warnings (reason: missing)",
+                "| Telemetry export streak | 2 consecutive warnings (reason: missing) |",
                 summary_text,
             )
             self.assertIn("Telemetry export streak state:", summary_text)
             self.assertIn("- Telemetry export warning streak: 2", summary_text)
+
             self.assertIn("- Telemetry export last reason: missing", summary_text)
             self.assertIn(
                 "- Telemetry export last command: python3 scripts/tools/check-telemetry-export-marker.py",
@@ -629,113 +630,130 @@ if not TYPE_CHECKING:
                     )
                     summary_text = step_summary_path.read_text(encoding="utf-8")
 
-                stdout = result.stdout
-                self.assertIn(
-                    "- suggestion skips total: 3",
-                    summary_text,
-                )
-                self.assertIn(
-                    "- suggestion skip reasons: streaming_disabled=2, rate_limited=1",
-                    summary_text,
-                )
-                self.assertIn("### Scheduler Telemetry", summary_text)
-                self.assertIn("- Scheduler reschedules: 4", summary_text)
-                self.assertIn(
-                    "- Scheduler last interval (minutes): 45",
-                    summary_text,
-                )
-                self.assertIn(
-                    "- Scheduler last reason: summary fallback",
-                    summary_text,
-                )
-                self.assertIn(
-                    "- Scheduler last timestamp: 2025-12-23T01:10:00Z",
-                    summary_text,
-                )
-                self.assertIn(
-                    "- Scheduler data source: summary (non-default, stale)",
-                    summary_text,
-                )
-                self.assertIn(
-                    "### Telemetry Export Streak",
-                    summary_text,
-                )
-                self.assertIn(
-                    "Telemetry export streak state:",
-                    summary_text,
-                )
-                self.assertIn(
-                    "- Streak alert: 3 consecutive warnings (reason: stale)",
-                    summary_text,
-                )
-                self.assertIn(
-                    "- Telemetry export warning streak: 3",
-                    summary_text,
-                )
-                self.assertIn(
-                    "- Telemetry export last reason: stale",
-                    summary_text,
-                )
-                self.assertIn(
-                    "- Telemetry export last updated: 2025-12-23T01:50:00Z",
-                    summary_text,
-                )
-                self.assertIn(
-                    "- Telemetry export last command: python3 scripts/tools/check-telemetry-export-marker.py --wait",
-                    summary_text,
-                )
-                self.assertIn(
-                    "- Scheduler data source: summary (non-default, stale)",
-                    stdout,
-                )
-                self.assertIn(
-                    "Telemetry export streak state:",
-                    stdout,
-                )
-                self.assertIn(
-                    "- Streak alert: 3 consecutive warnings (reason: stale)",
-                    stdout,
-                )
-                self.assertIn(
-                    "- Telemetry export warning streak: 3",
-                    stdout,
-                )
-                self.assertIn(
-                    "- Telemetry export last reason: stale",
-                    stdout,
-                )
-                self.assertIn(
-                    "- Telemetry export last updated: 2025-12-23T01:50:00Z",
-                    stdout,
-                )
-                self.assertIn(
-                    "- Telemetry export last command: python3 scripts/tools/check-telemetry-export-marker.py --wait",
-                    stdout,
-                )
-                self.assertIn(
-                    "WARNING: Scheduler telemetry uses summary (non-default, stale); refresh Talon exports.",
-                    summary_text,
-                )
-                self.assertIn(
-                    "WARNING: Scheduler telemetry uses summary (non-default, stale); refresh Talon exports.",
-                    stdout,
-                )
-                summary_lines = [
-                    line for line in summary_text.splitlines() if line.startswith("|")
-                ]
-                self.assertEqual(
-                    summary_lines[:3],
-                    [
-                        "| Reason | Count |",
-                        "| --- | --- |",
-                        "| streaming_disabled | 2 |",
-                    ],
-                    "GitHub summary should list highest counts first",
-                )
-                self.assertIn("| rate_limited | 1 |", summary_text)
-                self.assertIn("| modelHelpCanvas | 2 |", summary_text)
-                self.assertIn("| providerCommands | 1 |", summary_text)
-                self.assertNotIn("- Streaming gating reasons: none", summary_text)
+            stdout = result.stdout
+            self.assertIn(
+                "- suggestion skips total: 3",
+                summary_text,
+            )
+            self.assertIn(
+                "- suggestion skip reasons: streaming_disabled=2, rate_limited=1",
+                summary_text,
+            )
+            self.assertIn("### Scheduler Telemetry", summary_text)
+            self.assertIn("- Scheduler reschedules: 4", summary_text)
+            self.assertIn(
+                "- Scheduler last interval (minutes): 45",
+                summary_text,
+            )
+            self.assertIn(
+                "- Scheduler last reason: summary fallback",
+                summary_text,
+            )
+            self.assertIn(
+                "- Scheduler last timestamp: 2025-12-23T01:10:00Z",
+                summary_text,
+            )
+            self.assertIn(
+                "- Scheduler data source: summary (non-default, stale)",
+                summary_text,
+            )
+            self.assertIn("### Telemetry Export Streak", summary_text)
+            self.assertIn(
+                "Telemetry export streak state:",
+                summary_text,
+            )
+            self.assertIn(
+                "- Telemetry export warning streak: 3",
+                summary_text,
+            )
+            self.assertIn(
+                "- Telemetry export last reason: stale",
+                summary_text,
+            )
+            self.assertIn(
+                "- Telemetry export last updated: 2025-12-23T01:50:00Z",
+                summary_text,
+            )
+            self.assertIn(
+                "- Telemetry export last command: python3 scripts/tools/check-telemetry-export-marker.py --wait",
+                summary_text,
+            )
+            self.assertIn(
+                "- Streak alert: 3 consecutive warnings (reason: stale)",
+                summary_text,
+            )
+            self.assertIn(
+                "- Scheduler data source: summary (non-default, stale)",
+                stdout,
+            )
+            self.assertIn(
+                "Telemetry export streak state:",
+                stdout,
+            )
+            self.assertIn(
+                "- Telemetry export warning streak: 3",
+                stdout,
+            )
+            self.assertIn(
+                "- Telemetry export last reason: stale",
+                stdout,
+            )
+            self.assertIn(
+                "- Telemetry export last updated: 2025-12-23T01:50:00Z",
+                stdout,
+            )
+            self.assertIn(
+                "- Telemetry export last command: python3 scripts/tools/check-telemetry-export-marker.py --wait",
+                stdout,
+            )
+            self.assertIn(
+                "- Streak alert: 3 consecutive warnings (reason: stale)",
+                stdout,
+            )
+            self.assertIn(
+                "WARNING: Scheduler telemetry uses summary (non-default, stale); refresh Talon exports.",
+                summary_text,
+            )
+            self.assertIn(
+                "WARNING: Scheduler telemetry uses summary (non-default, stale); refresh Talon exports.",
+                stdout,
+            )
+            summary_lines = [
+                line for line in summary_text.splitlines() if line.startswith("|")
+            ]
+
+            self.assertEqual(
+                summary_lines[:3],
+                [
+                    "| Alert | Detail |",
+                    "| --- | --- |",
+                    "| Telemetry export streak | 3 consecutive warnings (reason: stale) |",
+                ],
+            )
+            reason_header_idx = summary_lines.index("| Reason | Count |", 3)
+            self.assertEqual(
+                summary_lines[reason_header_idx : reason_header_idx + 3],
+                [
+                    "| Reason | Count |",
+                    "| --- | --- |",
+                    "| streaming_disabled | 2 |",
+                ],
+                "GitHub summary should list highest counts first",
+            )
+            self.assertIn("| rate_limited | 1 |", summary_text)
+            source_header_idx = summary_lines.index(
+                "| Source | Count |", reason_header_idx + 3
+            )
+            self.assertEqual(
+                summary_lines[source_header_idx : source_header_idx + 3],
+                [
+                    "| Source | Count |",
+                    "| --- | --- |",
+                    "| modelHelpCanvas | 2 |",
+                ],
+            )
+            self.assertIn("| providerCommands | 1 |", summary_text)
+            self.assertNotIn("- Streaming gating reasons: none", summary_text)
 
         def test_run_guardrails_ci_warns_on_invalid_scheduler_timestamp(self) -> None:
             """Guardrail: warn when scheduler timestamp cannot be parsed."""

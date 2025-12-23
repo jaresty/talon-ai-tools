@@ -568,11 +568,11 @@ if isinstance(reason_raw, str):
 else:
     reason_text = "unknown"
 if streak > 0:
-    print(f"- Streak alert: {streak} consecutive warnings (reason: {reason_text})")
+    print(f"{streak} consecutive warnings (reason: {reason_text})")
 PY
 )
   if [[ -n "${STREAK_ALERT}" ]]; then
-    printf '%s\n' "${STREAK_ALERT}"
+    printf '%s\n' "- Streak alert: ${STREAK_ALERT}"
   fi
   printf '%s\n' "${STREAK_REPORT}"
   if [[ -n "${GITHUB_STEP_SUMMARY:-}" ]]; then
@@ -581,7 +581,10 @@ PY
       echo "### Telemetry Export Streak"
       echo
       if [[ -n "${STREAK_ALERT}" ]]; then
-        printf '%s\n' "${STREAK_ALERT}"
+        echo "| Alert | Detail |"
+        echo "| --- | --- |"
+        echo "| Telemetry export streak | ${STREAK_ALERT} |"
+        printf '%s\n' "- Streak alert: ${STREAK_ALERT}"
       fi
       printf '%s\n' "${STREAK_REPORT}"
     } >> "${GITHUB_STEP_SUMMARY}"

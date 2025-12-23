@@ -283,6 +283,20 @@
 - next_work:
   - Guardrail: bubble the streak alert into the aggregated GitHub summary table so non-zero streaks appear alongside gating totals.
 
+## 2025-12-23 – Loop 366 (kind: guardrail/tests)
+- helper_version: helper:v20251221.5
+- focus: Request Gating & Streaming – add telemetry streak alert row to guardrail GitHub summaries.
+- riskiest_assumption: Without a table row, streak alerts remain buried in prose and easy to miss (probability medium, impact medium for Concordance escalation visibility).
+- validation_targets:
+  - python3.11 -m pytest _tests/test_run_guardrails_ci.py::RunGuardrailsCITests::test_run_guardrails_ci_writes_job_summary
+- evidence: docs/adr/evidence/0056/loop-0366.md
+- rollback_plan: git restore --source=HEAD -- scripts/tools/run_guardrails_ci.sh && python3.11 -m pytest _tests/test_run_guardrails_ci.py::RunGuardrailsCITests::test_run_guardrails_ci_writes_job_summary
+- delta_summary: helper:diff-snapshot=2 files changed, 52 insertions(+), 50 deletions(-); inserted a `Telemetry export streak` table row plus alert bullet, updated guardrail tests for the new table, and documented the table addition in ADR guidance.
+- residual_risks:
+  - Alert visibility still depends on the manual work-log copy; mitigation: feed the streak alert into the history telemetry JSON so dashboards can surface escalation trends, monitoring trigger: repeated alerts without telemetry export reconciliation.
+- next_work:
+  - Guardrail: publish streak alert details into the history telemetry export JSON so automated dashboards can track consecutive warning trends.
+
 ## 2025-12-22 – Loop 349 (kind: docs)
 
 

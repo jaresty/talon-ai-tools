@@ -223,7 +223,7 @@ request-history-guardrails:
 	    "if parsed_timestamp is not None:" \
 	    "    age_minutes = (now - parsed_timestamp).total_seconds() / 60.0" \
 	    "    is_stale = age_minutes > stale_threshold" \
-	    "qualifiers = []" \
+	    "qualifiers = ['missing'] if source_label == 'defaults' else []" \
 	    "if source_label != 'defaults':" \
 	    "    qualifiers.append('non-default')" \
 	    "if is_stale:" \
@@ -239,6 +239,8 @@ request-history-guardrails:
 	    "    warnings.append(f'WARNING: Scheduler telemetry uses {source_label}; refresh Talon exports.')" \
 	    "if invalid_timestamp:" \
 	    "    warnings.append(f\"WARNING: Scheduler telemetry timestamp '{timestamp_text}' could not be parsed; refresh Talon exports.\")" \
+	    "if source_label == 'defaults':" \
+	    "    warnings.append(\"WARNING: Scheduler telemetry missing; run `model export telemetry` inside Talon to populate stats.\")" \
 	    "print('Telemetry scheduler stats: {}'.format(json.dumps(scheduler)))" \
 	    "print(f'- Scheduler reschedules: {reschedules}')" \
 	    "print(f'- Scheduler last interval (minutes): {interval_text}')" \
@@ -372,7 +374,7 @@ request-history-guardrails-fast:
 	    "if parsed_timestamp is not None:" \
 	    "    age_minutes = (now - parsed_timestamp).total_seconds() / 60.0" \
 	    "    is_stale = age_minutes > stale_threshold" \
-	    "qualifiers = []" \
+	    "qualifiers = ['missing'] if source_label == 'defaults' else []" \
 	    "if source_label != 'defaults':" \
 	    "    qualifiers.append('non-default')" \
 	    "if is_stale:" \
@@ -388,6 +390,8 @@ request-history-guardrails-fast:
 	    "    warnings.append(f'WARNING: Scheduler telemetry uses {source_label}; refresh Talon exports.')" \
 	    "if invalid_timestamp:" \
 	    "    warnings.append(f\"WARNING: Scheduler telemetry timestamp '{timestamp_text}' could not be parsed; refresh Talon exports.\")" \
+	    "if source_label == 'defaults':" \
+	    "    warnings.append(\"WARNING: Scheduler telemetry missing; run `model export telemetry` inside Talon to populate stats.\")" \
 	    "print('Telemetry scheduler stats: {}'.format(json.dumps(scheduler)))" \
 	    "print(f'- Scheduler reschedules: {reschedules}')" \
 	    "print(f'- Scheduler last interval (minutes): {interval_text}')" \

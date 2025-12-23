@@ -435,12 +435,14 @@ if parsed_timestamp is not None:
 else:
     is_stale = False
 
-qualifiers = []
+qualifiers = ["missing"] if source == "defaults" else []
 if source != "defaults":
     qualifiers.append("non-default")
 if is_stale:
     qualifiers.append("stale")
+missing_scheduler = source == "defaults"
 invalid_timestamp = timestamp_text != "none" and parsed_timestamp is None
+
 if invalid_timestamp:
     qualifiers.append("invalid-timestamp")
 suffix = f" ({', '.join(qualifiers)})" if qualifiers else ""
@@ -456,6 +458,10 @@ elif source != "defaults":
 if invalid_timestamp:
     warnings.append(
         f"WARNING: Scheduler telemetry timestamp '{timestamp_text}' could not be parsed; refresh Talon exports."
+    )
+if missing_scheduler:
+    warnings.append(
+        "WARNING: Scheduler telemetry missing; run `model export telemetry` inside Talon to populate stats."
     )
 
 lines = [

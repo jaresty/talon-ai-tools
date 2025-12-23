@@ -166,6 +166,20 @@
 - next_work:
   - Warn when scheduler telemetry source is defaults so operators refresh exports (Loop 358).
  
+## 2025-12-23 – Loop 358 (kind: guardrail/tests)
+- helper_version: helper:v20251221.5
+- focus: Request Gating & Streaming – flag missing scheduler telemetry defaults in guardrail outputs (ADR-0056 §Monitoring & Next Steps; Loop 357 residual risk).
+- riskiest_assumption: Without warning on defaults fallback, operators miss stale telemetry exports (probability medium, impact high for Concordance accuracy).
+- validation_targets:
+  - python3.11 -m pytest _tests/test_run_guardrails_ci.py
+- evidence: docs/adr/evidence/0056/loop-0358.md
+- rollback_plan: git restore --source=HEAD -- Makefile scripts/tools/run_guardrails_ci.sh _tests/test_run_guardrails_ci.py docs/adr/0056-concordance-personas-axes-history-gating.md docs/adr/0056-concordance-personas-axes-history-gating.work-log.md docs/adr/evidence/0056/loop-0358.md && python3.11 -m pytest _tests/test_run_guardrails_ci.py
+- delta_summary: helper:diff-snapshot=3 files changed, 26 insertions(+), 5 deletions(-); added defaults `(missing)` qualifier and warning to guardrail CLI/Make targets, extended guardrail tests to require the new messaging, and captured the loop evidence/work-log update.
+- residual_risks:
+  - CLI still relies on manual Talon exports; consider auto-invoking the telemetry command when defaults warnings persist.
+- next_work:
+  - Evaluate prompting or auto-invoking `model export telemetry` when defaults warnings repeat (Loop 359).
+ 
 ## 2025-12-22 – Loop 349 (kind: docs)
 
 - helper_version: helper:v20251221.5

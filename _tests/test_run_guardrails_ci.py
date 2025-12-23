@@ -251,7 +251,14 @@ if not TYPE_CHECKING:
                 )
                 self.assertIn("- Scheduler last reason: none", result.stdout)
                 self.assertIn("- Scheduler last timestamp: none", result.stdout)
-                self.assertIn("- Scheduler data source: defaults", result.stdout)
+                self.assertIn(
+                    "- Scheduler data source: defaults (missing)",
+                    result.stdout,
+                )
+                self.assertIn(
+                    "WARNING: Scheduler telemetry missing; run `model export telemetry` inside Talon to populate stats.",
+                    result.stdout,
+                )
 
                 self.assertIn(
                     "- Streaming gating summary: status=unknown; total=0; counts=none; sources=none; last=n/a; last_source=n/a; last_message=none",
@@ -440,7 +447,11 @@ if not TYPE_CHECKING:
             )
             self.assertIn("- Scheduler last reason: none", summary_text)
             self.assertIn("- Scheduler last timestamp: none", summary_text)
-            self.assertNotIn("WARNING: Scheduler telemetry uses", summary_text)
+            self.assertIn("- Scheduler data source: defaults (missing)", summary_text)
+            self.assertIn(
+                "WARNING: Scheduler telemetry missing; run `model export telemetry` inside Talon to populate stats.",
+                summary_text,
+            )
 
         def test_run_guardrails_ci_gating_reasons_table_with_counts(self) -> None:
             """Guardrail: summary table should render when gating counts exist."""

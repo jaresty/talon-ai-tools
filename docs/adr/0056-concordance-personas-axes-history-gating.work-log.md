@@ -108,6 +108,21 @@
 - next_work:
   - Evaluate highlighting non-zero reschedules in the GitHub summary (for example, bolding when cadence drifts) so operators spot issues faster.
 
+## 2025-12-23 – Loop 354 (kind: guardrail/tests)
+- helper_version: helper:v20251221.5
+- focus: Request Gating & Streaming – show scheduler telemetry source across CLI guardrails (ADR-0056 §Monitoring & Next Steps).
+- riskiest_assumption: Without labeling the scheduler source, operators cannot tell whether telemetry comes from the exporter, fallback summary, marker, or defaults (probability medium, impact high for diagnosing cadence drift).
+- validation_targets:
+  - python3 -m pytest _tests/test_make_request_history_guardrails.py
+  - python3 -m pytest _tests/test_run_guardrails_ci.py
+- evidence: docs/adr/evidence/0056/loop-0354.md
+- rollback_plan: git restore --source=HEAD -- scripts/tools/run_guardrails_ci.sh scripts/tools/scheduler_source.py Makefile _tests/test_make_request_history_guardrails.py _tests/test_run_guardrails_ci.py docs/adr/0056-concordance-personas-axes-history-gating.md docs/adr/0056-concordance-personas-axes-history-gating.work-log.md && python3 -m pytest _tests/test_make_request_history_guardrails.py _tests/test_run_guardrails_ci.py
+- delta_summary: helper:diff-snapshot=6 files changed, 110 insertions(+), 110 deletions(-); added a scheduler_source helper, taught run_guardrails_ci.sh and Make guardrail targets to label the scheduler source, updated guardrail tests, and refreshed ADR monitoring guidance.
+- residual_risks:
+  - When telemetry JSON omits scheduler stats, the helper falls back to "defaults"; future loops should highlight when the fallback is used repeatedly.
+- next_work:
+  - Extend GitHub summaries to highlight non-default sources (e.g., marker or summary) so cadence anomalies stand out without inspecting raw JSON.
+
 ## 2025-12-22 – Loop 349 (kind: docs)
 - helper_version: helper:v20251221.5
 - focus: Persona & Intent Presets – update monitoring guidance to mention the new Talon export action and runbook integration.

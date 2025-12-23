@@ -110,6 +110,7 @@ if not TYPE_CHECKING:
                 )
                 self.assertIn("- Scheduler last reason: none", result.stdout)
                 self.assertIn("- Scheduler last timestamp: none", result.stdout)
+                self.assertIn("- Scheduler data source: defaults", result.stdout)
 
                 self.assertIn("- Last gating drop: none", result.stdout)
                 self.assertIn("- Streaming last drop: none", result.stdout)
@@ -280,6 +281,7 @@ if not TYPE_CHECKING:
                 )
                 self.assertIn("- Scheduler last reason: none", result.stdout)
                 self.assertIn("- Scheduler last timestamp: none", result.stdout)
+                self.assertIn("- Scheduler data source: defaults", result.stdout)
 
                 self.assertIn("- Last gating drop: none", result.stdout)
                 self.assertIn("- Streaming last drop: none", result.stdout)

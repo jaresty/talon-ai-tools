@@ -126,6 +126,7 @@ request-history-guardrails:
 	    "" \
 	    "telemetry_path = Path('artifacts/telemetry/history-validation-summary.telemetry.json')" \
 	    "marker_path = telemetry_path.with_name('talon-export-marker.json')" \
+	    "summary_path = Path('artifacts/telemetry/history-validation-summary.json')" \
 	    "" \
 	    "defaults = {'reschedule_count': 0, 'last_interval_minutes': None, 'last_reason': '', 'last_timestamp': ''}" \
 	    "" \
@@ -165,10 +166,19 @@ request-history-guardrails:
 	    "    except Exception:" \
 	    "        return {}" \
 	    "" \
-	    "payload = load(telemetry_path)" \
-	    "scheduler = normalize(payload.get('scheduler'))" \
-	    "if scheduler == defaults:" \
-	    "    scheduler = normalize(load(marker_path).get('scheduler'))" \
+	    "sources = [" \
+	    "    ('telemetry', load(telemetry_path).get('scheduler'))," \
+	    "    ('summary', load(summary_path).get('scheduler'))," \
+	    "    ('marker', load(marker_path).get('scheduler'))," \
+	    "]" \
+	    "source_label = 'defaults'" \
+	    "scheduler = defaults.copy()" \
+	    "for label, sched_payload in sources:" \
+	    "    normalized = normalize(sched_payload)" \
+	    "    if normalized != defaults:" \
+	    "        scheduler = normalized" \
+	    "        source_label = label" \
+	    "        break" \
 	    "print('Telemetry scheduler stats: {}'.format(json.dumps(scheduler)))" \
 	    "reschedules = scheduler.get('reschedule_count', 0)" \
 	    "try:" \
@@ -187,6 +197,7 @@ request-history-guardrails:
 	    "print(f'- Scheduler last interval (minutes): {interval_text}')" \
 	    "print(f'- Scheduler last reason: {reason_text}')" \
 	    "print(f'- Scheduler last timestamp: {timestamp_text}')" \
+	    "print(f'- Scheduler data source: {source_label}')" \
 	| $(PYTHON)
 
 
@@ -215,6 +226,7 @@ request-history-guardrails-fast:
 	    "" \
 	    "telemetry_path = Path('artifacts/telemetry/history-validation-summary.telemetry.json')" \
 	    "marker_path = telemetry_path.with_name('talon-export-marker.json')" \
+	    "summary_path = Path('artifacts/telemetry/history-validation-summary.json')" \
 	    "" \
 	    "defaults = {'reschedule_count': 0, 'last_interval_minutes': None, 'last_reason': '', 'last_timestamp': ''}" \
 	    "" \
@@ -254,10 +266,19 @@ request-history-guardrails-fast:
 	    "    except Exception:" \
 	    "        return {}" \
 	    "" \
-	    "payload = load(telemetry_path)" \
-	    "scheduler = normalize(payload.get('scheduler'))" \
-	    "if scheduler == defaults:" \
-	    "    scheduler = normalize(load(marker_path).get('scheduler'))" \
+	    "sources = [" \
+	    "    ('telemetry', load(telemetry_path).get('scheduler'))," \
+	    "    ('summary', load(summary_path).get('scheduler'))," \
+	    "    ('marker', load(marker_path).get('scheduler'))," \
+	    "]" \
+	    "source_label = 'defaults'" \
+	    "scheduler = defaults.copy()" \
+	    "for label, sched_payload in sources:" \
+	    "    normalized = normalize(sched_payload)" \
+	    "    if normalized != defaults:" \
+	    "        scheduler = normalized" \
+	    "        source_label = label" \
+	    "        break" \
 	    "print('Telemetry scheduler stats: {}'.format(json.dumps(scheduler)))" \
 	    "reschedules = scheduler.get('reschedule_count', 0)" \
 	    "try:" \
@@ -276,6 +297,7 @@ request-history-guardrails-fast:
 	    "print(f'- Scheduler last interval (minutes): {interval_text}')" \
 	    "print(f'- Scheduler last reason: {reason_text}')" \
 	    "print(f'- Scheduler last timestamp: {timestamp_text}')" \
+	    "print(f'- Scheduler data source: {source_label}')" \
 	| $(PYTHON)
 
 

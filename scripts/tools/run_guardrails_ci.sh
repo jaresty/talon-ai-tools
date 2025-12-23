@@ -347,117 +347,74 @@ PY
   printf '%s\n' "${STREAMING_JSON}" > "${STREAMING_JSON_PATH}"
   echo "Streaming JSON summary recorded at ${STREAMING_JSON_PATH}; job summary will reference this file when running in GitHub Actions."
 
-  SCHEDULER_JSON=$(python3 - "${SUMMARY_FILE}" <<'PY'
-import json, sys
-from pathlib import Path
+  TELEMETRY_PATH="${SUMMARY_DIR}/history-validation-summary.telemetry.json"
+  MARKER_PATH="${SUMMARY_DIR}/talon-export-marker.json"
+  SCHEDULER_INFO=$(python3 scripts/tools/scheduler_source.py --summary "${SUMMARY_FILE}" --telemetry "${TELEMETRY_PATH}" --marker "${MARKER_PATH}")
+  SCHEDULER_JSON=$(SCHEDULER_INFO_DATA="${SCHEDULER_INFO}" python3 - <<'PY'
+import json, os
 
-summary_path = Path(sys.argv[1])
-telemetry_path = summary_path.with_name("history-validation-summary.telemetry.json")
-marker_path = summary_path.with_name("talon-export-marker.json")
+try:
+    info = json.loads(os.environ.get("SCHEDULER_INFO_DATA") or "{}")
+except json.JSONDecodeError:
+    info = {}
+stats = info.get("stats") or {}
+print(json.dumps(stats, separators=(", ", ": ")))
+PY
+)
+  SCHEDULER_LINES=$(SCHEDULER_INFO_DATA="${SCHEDULER_INFO}" python3 - <<'PY'
+import json, os
 
-defaults = {
-    "reschedule_count": 0,
-    "last_interval_minutes": None,
-    "last_reason": "",
-    "last_timestamp": "",
-}
+try:
+    info = json.loads(os.environ.get("SCHEDULER_INFO_DATA") or "{}")
+except json.JSONDecodeError:
+    info = {}
+stats = info.get("stats") or {}
+source = str(info.get("source") or "defaults")
 
-
-def _read_json(path: Path) -> dict:
-    try:
-        return json.loads(path.read_text(encoding="utf-8"))
-    except Exception:
-        return {}
-
-
-def _normalize(payload: object) -> dict:
-    scheduler = defaults.copy()
-    if not isinstance(payload, dict):
-        return scheduler
-
-    reschedule_count = payload.get("reschedule_count")
-    if isinstance(reschedule_count, (int, float)) and not isinstance(
-        reschedule_count, bool
-    ):
-        scheduler["reschedule_count"] = int(reschedule_count)
-    elif isinstance(reschedule_count, str) and reschedule_count.strip():
-        try:
-            scheduler["reschedule_count"] = int(reschedule_count.strip())
-        except ValueError:
-            pass
-
-    last_interval = payload.get("last_interval_minutes")
-    if last_interval is None:
-        scheduler["last_interval_minutes"] = None
-    elif isinstance(last_interval, (int, float)) and not isinstance(
-        last_interval, bool
-    ):
-        scheduler["last_interval_minutes"] = int(last_interval)
-    elif isinstance(last_interval, str) and last_interval.strip():
-        try:
-            scheduler["last_interval_minutes"] = int(last_interval.strip())
-        except ValueError:
-            scheduler["last_interval_minutes"] = None
-
-    last_reason = payload.get("last_reason")
-    if isinstance(last_reason, str):
-        scheduler["last_reason"] = last_reason.strip()
-
-    last_timestamp = payload.get("last_timestamp")
-    if isinstance(last_timestamp, str):
-        scheduler["last_timestamp"] = last_timestamp.strip()
-
-    return scheduler
-
-
-for data in (
-    _read_json(telemetry_path),
-    _read_json(summary_path),
-    _read_json(marker_path),
-):
-    if isinstance(data, dict):
-        scheduler = _normalize(data.get("scheduler"))
-        if scheduler != defaults:
-            print(json.dumps(scheduler))
-            break
+reschedule_raw = stats.get("reschedule_count")
+if isinstance(reschedule_raw, bool):
+    reschedules = 0
 else:
-    print(json.dumps(defaults))
+    try:
+        reschedules = int(reschedule_raw)
+    except Exception:
+        reschedules = 0
+
+interval_raw = stats.get("last_interval_minutes")
+if isinstance(interval_raw, bool):
+    interval_text = "none"
+elif isinstance(interval_raw, (int, float)):
+    interval_text = str(int(interval_raw))
+elif isinstance(interval_raw, str):
+    interval_text = interval_raw.strip() or "none"
+else:
+    interval_text = "none"
+
+reason_raw = stats.get("last_reason")
+if isinstance(reason_raw, str):
+    reason_text = reason_raw.strip() or "none"
+else:
+    reason_text = "none"
+
+timestamp_raw = stats.get("last_timestamp")
+if isinstance(timestamp_raw, str):
+    timestamp_text = timestamp_raw.strip() or "none"
+else:
+    timestamp_text = "none"
+
+lines = [
+    f"- Scheduler reschedules: {reschedules}",
+    f"- Scheduler last interval (minutes): {interval_text}",
+    f"- Scheduler last reason: {reason_text}",
+    f"- Scheduler last timestamp: {timestamp_text}",
+    f"- Scheduler data source: {source}",
+]
+print("\n".join(lines))
 PY
 )
   if [[ -n "${SCHEDULER_JSON}" ]]; then
     echo "Telemetry scheduler stats: ${SCHEDULER_JSON}"
-    SCHEDULER_SUMMARY=$(SCHEDULER_JSON_DATA="${SCHEDULER_JSON}" python3 - <<'PY'
-import json, os
-
-raw = os.environ.get("SCHEDULER_JSON_DATA") or "{}"
-try:
-    data = json.loads(raw)
-except Exception:
-    data = {}
-
-def _coerce_int(value):
-    try:
-        return int(value)
-    except Exception:
-        return 0
-
-def _fmt(value):
-    if value in (None, ""):
-        return "none"
-    return str(value)
-
-count = _coerce_int(data.get("reschedule_count"))
-interval = data.get("last_interval_minutes")
-summary_lines = [
-    f"- Scheduler reschedules: {count}",
-    f"- Scheduler last interval (minutes): {_fmt(interval)}",
-    f"- Scheduler last reason: {_fmt(data.get('last_reason'))}",
-    f"- Scheduler last timestamp: {_fmt(data.get('last_timestamp'))}",
-]
-print("\n".join(summary_lines))
-PY
-)
-    printf '%s\n' "${SCHEDULER_SUMMARY}"
+    printf '%s\n' "${SCHEDULER_LINES}"
     if [[ -n "${GITHUB_STEP_SUMMARY:-}" ]]; then
       {
         echo
@@ -467,7 +424,7 @@ PY
         echo "${SCHEDULER_JSON}"
         echo '```'
         echo
-        printf '%s\n' "${SCHEDULER_SUMMARY}"
+        printf '%s\n' "${SCHEDULER_LINES}"
       } >> "${GITHUB_STEP_SUMMARY}"
     fi
   fi

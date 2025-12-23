@@ -251,6 +251,7 @@ if not TYPE_CHECKING:
                 )
                 self.assertIn("- Scheduler last reason: none", result.stdout)
                 self.assertIn("- Scheduler last timestamp: none", result.stdout)
+                self.assertIn("- Scheduler data source: defaults", result.stdout)
 
                 self.assertIn(
                     "- Streaming gating summary: status=unknown; total=0; counts=none; sources=none; last=n/a; last_source=n/a; last_message=none",
@@ -438,6 +439,7 @@ if not TYPE_CHECKING:
             )
             self.assertIn("- Scheduler last reason: none", summary_text)
             self.assertIn("- Scheduler last timestamp: none", summary_text)
+            self.assertIn("- Scheduler data source: defaults", summary_text)
 
         def test_run_guardrails_ci_gating_reasons_table_with_counts(self) -> None:
             """Guardrail: summary table should render when gating counts exist."""
@@ -639,6 +641,7 @@ if not TYPE_CHECKING:
                 )
                 self.assertIn("- Scheduler last reason: none", summary_text)
                 self.assertIn("- Scheduler last timestamp: none", summary_text)
+                self.assertIn("- Scheduler data source: defaults", summary_text)
                 summary_lines = [
                     line for line in summary_text.splitlines() if line.startswith("|")
                 ]

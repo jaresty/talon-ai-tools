@@ -56,7 +56,7 @@ Each entry must populate the following fields; omit none. References column list
 | `evidence` | Triplets of `red/green/removal` records (command, UTC timestamp, exit status, pointer) | **Evidence Specification** |
 | `rollback_plan` | `<VCS_REVERT>` command plus reminder to replay red failure | **Loop Contract → Focus declared** |
 | `delta_summary` | `helper:diff-snapshot` hash or stat plus change rationale | **Evidence Specification** |
-| `residual_risks` | At least one risk with mitigation and monitoring trigger | **Loop Contract → Slice qualifies** |
+| `residual_risks` | At least one risk with mitigation and monitoring trigger; reminder-style notes live here, not in `riskiest_assumption` | **Loop Contract → Slice qualifies** |
 | `next_work` | Guardrail/task bullets covering remaining scope | **Loop Contract → Next work queued** |
 
 ---
@@ -94,6 +94,7 @@ A loop entry is compliant when all statements hold:
 **Next work queued**
 - Deliverables and guardrails are bullet-listed (e.g., `Guardrail: tests/foo_test.py::case`).
 - New high-level tasks appear only when they replace or consolidate existing scope while interrogating the riskiest assumption, and the entry states that relationship explicitly.
+- Each `next_work` bullet references the assumption or blocker evidence it advances; if work is deferred, the bullet must cite the pointer recorded in this entry.
 - Status-only entries schedule the next behaviour/guardrail slice before closing the loop.
 - Helper upgrades (new version strings) note the change and queue any reconciliation loop required by the stricter rules.
 

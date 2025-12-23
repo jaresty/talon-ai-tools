@@ -77,7 +77,7 @@ A loop entry is compliant when all statements hold:
 **Focus declared**
 - Record red evidence for each behaviour outcome before edits land, then green/removal evidence after; guardrail commands exist only as the evidence channel for that behaviour.
 - Cite the exact ADR sections and work-log notes refreshed by this slice; omit generic references.
-- State the riskiest open assumption with probability × impact rationale. If the severity is low, demote it to `residual_risks`; do not treat low-severity items as the riskiest assumption. Defer higher-severity blockers by citing their blocker evidence.
+- State the riskiest open assumption with probability × impact rationale and note why the severity remains medium/high. If the severity is low, demote it to `residual_risks`; do not treat low-severity items as the riskiest assumption. Defer higher-severity blockers by citing their blocker evidence.
 - Articulate the riskiest assumption as a falsifiable uncertainty about the behaviour outcome, and name the validation command or blocker evidence that will falsify it; restating the planned work or generic reminders is non-compliant.
 - When the riskiest assumption cannot advance, blocker evidence (command, failure excerpt, pointer) is present. Status-only or documentation-only entries must explicitly defer to the next riskiest assumption and cite the blocker evidence.
 

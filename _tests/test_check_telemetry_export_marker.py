@@ -154,7 +154,7 @@ if not TYPE_CHECKING:
                     env_overrides={"ALLOW_STALE_TELEMETRY": "1"},
                 )
                 self.assertEqual(result.returncode, 0)
-                self.assertIn("ALLOW_STALE_TELEMETRY is set", result.stderr)
+                self.assertIn("WARNING: ALLOW_STALE_TELEMETRY is set", result.stderr)
                 self.assertIn(
                     "skipping telemetry export freshness check", result.stderr
                 )

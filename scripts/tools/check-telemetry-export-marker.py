@@ -132,7 +132,7 @@ def main() -> int:
     allow_value = os.environ.get(allow_env) if allow_env else None
     if allow_env and allow_value:
         print(
-            f"{allow_env} is set; skipping telemetry export freshness check for marker {marker}."
+            f"WARNING: {allow_env} is set; skipping telemetry export freshness check for marker {marker}."
             " Remove the override after running `model export telemetry` inside Talon.",
             file=sys.stderr,
         )

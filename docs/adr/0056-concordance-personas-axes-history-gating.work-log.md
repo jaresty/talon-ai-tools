@@ -3397,3 +3397,17 @@ PY
   - Broader documentation still references manual telemetry exports elsewhere; audit the guardrail onboarding docs if the helper behaviour changes again.
 - next_work:
   - None queued; monitoring guidance now reflects the telemetry bypass warning output.
+
+## 2025-12-23 – Loop 387 (kind: guardrail/tests)
+- helper_version: helper:v20251221.5
+- focus: Monitoring & Next Steps – flag ALLOW_STALE_TELEMETRY bypass warnings as high severity.
+- riskiest_assumption: Without a `WARNING` prefix, maintainers may skim past the bypass message (probability medium, impact high for Concordance telemetry freshness) even though the env var disables guardrail enforcement; `python3 - <<'PY' ...` fails until the prefix is added.
+- validation_targets:
+  - python3 -m pytest _tests/test_check_telemetry_export_marker.py
+- evidence: `docs/adr/evidence/0056/loop-0387.md`
+- rollback_plan: `git restore --source=HEAD -- _tests/test_check_telemetry_export_marker.py scripts/tools/check-telemetry-export-marker.py && python3 - <<'PY' ...`
+- delta_summary: helper:diff-snapshot=2 files changed, 2 insertions(+), 2 deletions(-); the telemetry marker helper now prefixes the env override bypass with `WARNING` and the regression test asserts the higher-severity phrasing.
+- residual_risks:
+  - Guardrail runner output and GitHub summary still echo the helper message without verifying the `WARNING` prefix; ensure the higher-severity phrasing propagates through CI logs.
+- next_work:
+  - Behaviour: update `run_guardrails_ci` tests to assert the new `WARNING` prefix surfaces in logs — python3 -m pytest _tests/test_run_guardrails_ci.py

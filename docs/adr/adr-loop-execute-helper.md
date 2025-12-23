@@ -8,10 +8,17 @@ This helper keeps ADR loops observable and safe while letting a single agent adv
 
 ---
 
+## Named Concepts
+
+- **Behaviour outcome** – the ADR-defined behaviour or decision this loop changes or observes.
+- **Validation command** – the smallest executable that exercises a behaviour outcome and records red/green/removal evidence.
+- **Blocker evidence** – the command, excerpt, and pointer proving a behaviour cannot advance in this slice (logged as `red` evidence).
+- **Residual risk** – a remaining operational or process risk, recorded with mitigation and monitoring trigger in `residual_risks`.
+
 ## Named Placeholders
 
 - `<EVIDENCE_ROOT>` – project-defined store for detailed transcripts that auditors can read (e.g., `docs/evidence`, `ops/adr/evidence`).
-- `<VALIDATION_TARGET>` – project-specific minimal guardrail command or script that proves the slice end-to-end (e.g., the smallest test, lint, or validation command that exercises the targeted behaviour).
+- `<VALIDATION_TARGET>` – project-specific minimal command or script that proves the slice end-to-end (e.g., the smallest test, lint, or validation command that exercises the targeted behaviour).
 - `<ARTEFACT_LOG>` – aggregated evidence record (markdown, JSON, database entry, etc.) that captures full red/green transcripts when summaries are insufficient.
 - `<VCS_REVERT>` – capability that temporarily rolls back the slice so guardrails can re-fail. Document the concrete command or procedure once per ADR (e.g., `git restore --source=HEAD`, `p4 revert`, migration rollback script).
 
@@ -50,8 +57,8 @@ Each entry must populate the following fields; omit none. References column list
 | --- | --- | --- |
 | `helper_version` | Literal `helper:v20251221.5` | **Loop Contract → Focus declared** |
 | `focus` | ADR/section IDs plus short summary of slice scope | **Loop Contract → Focus declared** |
-| `riskiest_assumption` | Falsifiable highest-impact uncertainty stated as probability × impact, naming the planned red/green evidence or blocker; include deferrals | **Loop Contract → Focus declared** |
-| `validation_targets` | Commands that exercise the behaviour under change; one per outcome being validated | **Loop Contract → Validation registered** |
+| `riskiest_assumption` | Falsifiable highest-impact uncertainty (probability × impact) about a behaviour outcome, naming the validation command or blocker evidence; include deferrals | **Loop Contract → Focus declared** |
+| `validation_targets` | Validation commands for the behaviours under change; one command per outcome being validated | **Loop Contract → Validation registered** |
 | `evidence` | Triplets of `red/green/removal` records (command, UTC timestamp, exit status, pointer) | **Evidence Specification** |
 | `rollback_plan` | `<VCS_REVERT>` command plus reminder to replay red failure | **Loop Contract → Focus declared** |
 | `delta_summary` | `helper:diff-snapshot` hash or stat plus change rationale | **Evidence Specification** |
@@ -66,10 +73,10 @@ Each entry must populate the following fields; omit none. References column list
 A loop entry is compliant when all statements hold:
 
 **Focus declared**
-- Record red evidence for each targeted behaviour before edits land, then green/removal evidence after; guardrail commands exist only as the evidence channel for that behaviour.
-- The entry cites the exact ADR sections and work-log notes refreshed by this slice; omit generic references.
-- The riskiest open assumption is named with probability × impact rationale. Each higher-risk deferral includes the evidence pointer documenting the blocker.
-- The riskiest assumption is articulated as a falsifiable uncertainty that this slice will test or gather evidence for, and the statement names the validation target or evidence pointer that will falsify it; restating the planned work or generic reminders does not satisfy this field.
+- Record red evidence for each behaviour outcome before edits land, then green/removal evidence after; guardrail commands exist only as the evidence channel for that behaviour.
+- Cite the exact ADR sections and work-log notes refreshed by this slice; omit generic references.
+- State the riskiest open assumption with probability × impact rationale; defer to higher-risk blockers by citing their blocker evidence.
+- Articulate the riskiest assumption as a falsifiable uncertainty about the behaviour outcome, and name the validation command or blocker evidence that will falsify it; restating the planned work or generic reminders is non-compliant.
 - When the riskiest assumption cannot advance, blocker evidence (command, failure excerpt, pointer) is present. Status-only or documentation-only entries must explicitly defer to the next riskiest assumption and cite the blocker evidence.
 
 **Slice qualifies**

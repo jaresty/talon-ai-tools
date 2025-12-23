@@ -29,6 +29,34 @@ def record_suggestions(
 
     suggestions_list: list[dict[str, str]] = []
     skip_counts: dict[str, int] = {}
+
+    persona_axis_catalog = {
+        axis: {token.lower(): token for token in axis_registry_tokens(axis)}
+        for axis in ("voice", "audience", "tone")
+    }
+    persona_axis_aliases: dict[str, dict[str, str]] = {}
+    if maps is not None:
+        raw_aliases = getattr(maps, "persona_axis_tokens", {}) or {}
+        persona_axis_aliases = {
+            axis: {str(key).lower(): str(value) for key, value in aliases.items()}
+            for axis, aliases in raw_aliases.items()
+        }
+
+    def _canonical_persona_axis(axis: str, raw: str) -> tuple[str, bool]:
+        token = str(raw or "").strip()
+        if not token:
+            return "", True
+        lower = token.lower()
+        alias_map = persona_axis_aliases.get(axis, {})
+        canonical = alias_map.get(lower)
+        if canonical:
+            return canonical, True
+        catalog_map = persona_axis_catalog.get(axis, {})
+        canonical = catalog_map.get(lower)
+        if canonical:
+            return canonical, True
+        return token, False
+
     for item in suggestions:
         recipe = str(item.get("recipe", "") or "").strip()
         if recipe and not _recipe_has_directional(recipe):
@@ -48,9 +76,17 @@ def record_suggestions(
             persona_key = str(data.get("persona_preset_key") or "").strip()
             persona_label = str(data.get("persona_preset_label") or "").strip()
             persona_spoken = str(data.get("persona_preset_spoken") or "").strip()
-            persona_voice = str(data.get("persona_voice") or "").strip()
-            persona_audience = str(data.get("persona_audience") or "").strip()
-            persona_tone = str(data.get("persona_tone") or "").strip()
+
+            persona_voice_raw = str(data.get("persona_voice") or "").strip()
+            persona_voice, voice_valid = _canonical_persona_axis(
+                "voice", persona_voice_raw
+            )
+            persona_audience_raw = str(data.get("persona_audience") or "").strip()
+            persona_audience, audience_valid = _canonical_persona_axis(
+                "audience", persona_audience_raw
+            )
+            persona_tone_raw = str(data.get("persona_tone") or "").strip()
+            persona_tone, tone_valid = _canonical_persona_axis("tone", persona_tone_raw)
 
             preset = None
             if persona_key:
@@ -95,14 +131,19 @@ def record_suggestions(
                     persona_tone,
                 )
             )
+            preset_alias_hints_present = any(
+                (persona_key, persona_label, persona_spoken)
+            )
+            axis_hints_valid = voice_valid and audience_valid and tone_valid
             if preset is None and persona_hints_present:
-                notify(
-                    "GPT: Suggestion skipped because its persona preset is unknown; regenerate persona lists and try again."
-                )
-                skip_counts["unknown_persona"] = (
-                    skip_counts.get("unknown_persona", 0) + 1
-                )
-                continue
+                if preset_alias_hints_present or not axis_hints_valid:
+                    notify(
+                        "GPT: Suggestion skipped because its persona preset is unknown; regenerate persona lists and try again."
+                    )
+                    skip_counts["unknown_persona"] = (
+                        skip_counts.get("unknown_persona", 0) + 1
+                    )
+                    continue
 
             if preset is not None:
                 if not persona_key:
@@ -120,12 +161,13 @@ def record_suggestions(
                 data["persona_preset_key"] = persona_key
                 data["persona_preset_label"] = persona_label
                 data["persona_preset_spoken"] = persona_spoken
-                if persona_voice:
-                    data["persona_voice"] = persona_voice
-                if persona_audience:
-                    data["persona_audience"] = persona_audience
-                if persona_tone:
-                    data["persona_tone"] = persona_tone
+
+            if persona_voice:
+                data["persona_voice"] = persona_voice
+            if persona_audience:
+                data["persona_audience"] = persona_audience
+            if persona_tone:
+                data["persona_tone"] = persona_tone
 
             intent_key = str(data.get("intent_preset_key") or "").strip()
             intent_label = str(data.get("intent_preset_label") or "").strip()

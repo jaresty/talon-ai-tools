@@ -1,4 +1,5 @@
 import unittest
+from types import SimpleNamespace
 from typing import TYPE_CHECKING
 
 try:
@@ -273,6 +274,48 @@ if bootstrap is not None:
             stored, _ = last_suggestions()
             self.assertEqual(len(stored), 1)
             self.assertEqual(stored[0]["name"], "Valid")
+
+        def test_record_suggestions_accepts_axis_persona_without_preset(self) -> None:
+            axis_map = {
+                "voice": {"mentor": "mentor"},
+                "audience": {"students": "students"},
+                "tone": {"encouraging": "encouraging"},
+            }
+
+            with patch(
+                "talon_user.lib.suggestionCoordinator.persona_intent_maps",
+                return_value=SimpleNamespace(
+                    persona_presets={},
+                    persona_preset_aliases={},
+                    intent_presets={},
+                    intent_preset_aliases={},
+                    intent_synonyms={},
+                    intent_display_map={},
+                    persona_axis_tokens=axis_map,
+                ),
+            ):
+                record_suggestions(
+                    [
+                        {
+                            "name": "Axis persona",
+                            "recipe": "describe · gist · focus · fog",
+                            "persona_voice": "mentor",
+                            "persona_audience": "students",
+                            "persona_tone": "encouraging",
+                        }
+                    ],
+                    "clipboard",
+                )
+
+            counts = suggestion_skip_counts() or {}
+            self.assertNotIn("unknown_persona", counts)
+
+            entries = suggestion_entries_with_metadata()
+            self.assertEqual(len(entries), 1)
+            entry = entries[0]
+            self.assertEqual(entry.get("persona_voice"), "mentor")
+            self.assertEqual(entry.get("persona_audience"), "students")
+            self.assertEqual(entry.get("persona_tone"), "encouraging")
 
         def test_record_suggestions_notifies_skip_summary(self) -> None:
             with patch("talon_user.lib.suggestionCoordinator.notify") as notify_mock:

@@ -53,7 +53,6 @@
   - Notifications rely on Talon’s desktop UI; in headless sessions they may be swallowed, so monitor guardrail output for confirmation.
 - next_work:
   - Document the new `model export telemetry` voice command in operator runbooks and automate invocation before CI guardrail bundles.
-  - Evaluate invoking `user.model_export_telemetry` automatically when the guardrail Make targets are triggered from Talon.
 
 ## 2025-12-22 – Loop 350 (kind: guardrail/tests)
 - helper_version: helper:v20251221.5
@@ -73,24 +72,9 @@
 - rollback_plan: git restore --source=HEAD -- Makefile lib/telemetryExportCommand.py scripts/tools/check-telemetry-export-marker.py _tests/test_make_request_history_guardrails.py _tests/test_run_guardrails_ci.py docs/adr/0056-concordance-personas-axes-history-gating.md docs/adr/0056-concordance-personas-axes-history-gating.work-log.md && python3 -m pytest _tests/test_make_request_history_guardrails.py
 - delta_summary: helper:diff-snapshot=7 files changed, 150 insertions(+), 3 deletions(-); removed the problematic future annotations import, added a telemetry export marker, wired a freshness check into history guardrail targets, updated guardrail tests to honor the bypass env var, and documented the new enforcement.
 - residual_risks:
-  - Developers running guardrails in non-Talon environments must remember to set `ALLOW_STALE_TELEMETRY=1`; follow-up automation could prompt or invoke Talon export automatically.
+  - Developers running guardrails in non-Talon environments must remember to set `ALLOW_STALE_TELEMETRY=1`; continue surfacing reminders for CLI-only sessions.
 - next_work:
-  - Evaluate invoking `user.model_export_telemetry` automatically from Talon guardrail macros so manual exports remain optional.
 
-## 2025-12-22 – Loop 352 (kind: guardrail/tests)
-- helper_version: helper:v20251221.5
-- focus: Request Gating & Streaming – guardrail CLI surfaces scheduler telemetry (ADR-0056 §Monitoring & Next Steps).
-- riskiest_assumption: Without emitting scheduler stats in guardrail output, operators cannot spot telemetry export cadence drift (probability medium, impact high for diagnosing Concordance regressions).
-- validation_targets:
-  - python3 -m pytest _tests/test_make_request_history_guardrails.py
-  - python3 -m pytest _tests/test_run_guardrails_ci.py
-- evidence: docs/adr/evidence/0056/loop-0352.md
-- rollback_plan: git restore --source=HEAD -- Makefile lib/telemetryExport.py lib/telemetryExportCommand.py scripts/tools/history-axis-export-telemetry.py scripts/tools/run_guardrails_ci.sh docs/adr/0056-concordance-personas-axes-history-gating.md && python3 -m pytest _tests/test_make_request_history_guardrails.py _tests/test_run_guardrails_ci.py
-- delta_summary: helper:diff-snapshot=8 files changed, 353 insertions(+), 15 deletions(-); ensured telemetry exports always embed scheduler stats, taught the CLI runner and Make targets to print the JSON snapshot (and append it to GitHub summaries), and added regression tests asserting the scheduler block is present alongside updated ADR guidance.
-- residual_risks:
-  - Offline runs still report the zeroed scheduler defaults; improvements could parse Talon markers when exports are unavailable.
-  - Future telemetry schema changes must preserve the scheduler shape; otherwise the CLI output will degrade without explicit guardrails.
-- next_work:
   - Consider summarising scheduler cadence in the GitHub summary table (e.g., last reason/interval bullets) so operators can scan drop causes quickly.
 
 ## 2025-12-23 – Loop 353 (kind: guardrail/tests)
@@ -135,9 +119,6 @@
 - delta_summary: helper:diff-snapshot=5 files changed, 39 insertions(+), 84 deletions(-); updated run_guardrails_ci.sh and Makefile to append a `(non-default)` suffix for fallback sources, expanded guardrail tests to cover summary-driven scheduler stats, added loop evidence, and refreshed ADR monitoring guidance.
 - residual_risks:
   - CLI output still prints raw values even when scheduler stats are stale; consider flagging aged timestamps in a follow-up loop.
-- next_work:
-  - Log when scheduler timestamps cannot be parsed so operators notice format drift early.
-
 ## 2025-12-23 – Loop 356 (kind: guardrail/tests)
 - helper_version: helper:v20251221.5
 - focus: Request Gating & Streaming – flag stale scheduler telemetry alongside non-default sources (ADR-0056 §Monitoring & Next Steps).
@@ -176,9 +157,7 @@
 - rollback_plan: git restore --source=HEAD -- Makefile scripts/tools/run_guardrails_ci.sh _tests/test_run_guardrails_ci.py docs/adr/0056-concordance-personas-axes-history-gating.md docs/adr/0056-concordance-personas-axes-history-gating.work-log.md docs/adr/evidence/0056/loop-0358.md && python3.11 -m pytest _tests/test_run_guardrails_ci.py
 - delta_summary: helper:diff-snapshot=3 files changed, 26 insertions(+), 5 deletions(-); added defaults `(missing)` qualifier and warning to guardrail CLI/Make targets, extended guardrail tests to require the new messaging, and captured the loop evidence/work-log update.
 - residual_risks:
-  - CLI still relies on manual Talon exports; consider auto-invoking the telemetry command when defaults warnings persist.
-- next_work:
-  - Evaluate prompting or auto-invoking `model export telemetry` when defaults warnings repeat (Loop 359).
+  - CLI auto-trigger for telemetry exports remains pending; ensure guardrail entrypoints adopt the new policy in Loop 370 before closing this track.
 
 ## 2025-12-23 – Loop 359 (kind: docs)
 - helper_version: helper:v20251221.5
@@ -293,9 +272,7 @@
 - rollback_plan: git restore --source=HEAD -- scripts/tools/run_guardrails_ci.sh && python3.11 -m pytest _tests/test_run_guardrails_ci.py::RunGuardrailsCITests::test_run_guardrails_ci_writes_job_summary
 - delta_summary: helper:diff-snapshot=2 files changed, 52 insertions(+), 50 deletions(-); inserted a `Telemetry export streak` table row plus alert bullet, updated guardrail tests for the new table, and documented the table addition in ADR guidance.
 - residual_risks:
-  - Alert visibility still depends on the manual work-log copy; mitigation: feed the streak alert into the history telemetry JSON so dashboards can surface escalation trends, monitoring trigger: repeated alerts without telemetry export reconciliation.
-- next_work:
-  - Guardrail: publish streak alert details into the history telemetry export JSON so automated dashboards can track consecutive warning trends.
+  - Alert visibility still depends on the manual work-log copy; monitor guardrail transcripts when streak alerts appear without corresponding work-log escalation notes.
 
 ## 2025-12-22 – Loop 349 (kind: docs)
 
@@ -336,7 +313,6 @@
   - CLI fallback depends on `history-axis-validate.py`; if summaries shift format, telemetry synthesis may drift without new guardrails.
 - next_work:
   - Loop 347: update CLI helpers (`history-axis-export-telemetry.py`, `suggestion-skip-export.py`, guardrail wrappers) to consume the Talon-exported JSON directly.
-  - Verify Talon runtime invocation still resolves `talon_user.lib.telemetryExport` after the import fallback lands.
 
 ## 2025-12-17 – Loop 72 (kind: behaviour)
 - Focus: Axis Snapshot & History – remove the legacy “extra axes” passthrough from request logs.
@@ -2081,9 +2057,7 @@
 - rollback_plan: git restore --source=HEAD -- docs/adr/0056-concordance-personas-axes-history-gating.md docs/adr/0056-concordance-personas-axes-history-gating.work-log.md
 - delta_summary: helper:diff-snapshot=2 files changed, 11 insertions(+), 11 deletions(-); rewrote ADR bullets to first-person and updated Loop 269–271 residual risks to describe my manual workflow.
 - residual_risks:
-  - Future edits might drift back to multi-operator wording; mitigation: keep the guardrail checklist in sync; monitoring trigger: new ADR bullets referencing external dashboards.
-- next_work:
-  - Docs: when I revise the guardrail checklist, ensure it mirrors the first-person language.
+  - Future edits might drift back to multi-operator wording; mitigation: review Monitoring & Next Steps when updating ADR language; monitoring trigger: new ADR bullets referencing external dashboards.
 
 ## 2025-12-23 – Loop 368 (kind: tooling)
 - helper_version: helper:v20251221.5
@@ -2106,41 +2080,78 @@
 - residual_risks:
   - Helper currently prints a fixed field set; add formatting options if future workflows need concise/JSON output.
   - When inspecting multiple telemetry files, output ordering might overwhelm the console; consider a `--summary` flag that collapses repeated fields.
-- next_work:
-  - Evaluate adding `--json`/`--fields-only` options to tailor the helper for bulk diff automation.
-
 ## 2025-12-23 – Loop 369 (kind: guardrail/tests)
 - helper_version: helper:v20251221.5
 - focus: Request Gating & Streaming – guardrail CLI/Make targets surface telemetry guardrail metadata automatically.
 - riskiest_assumption: Without printing the guardrail target/summary metadata, history exports can be mislabelled during Concordance triage (probability medium, impact high for auditing).
 - validation_targets:
-  - python3 -m pytest _tests/test_run_guardrails_ci.py::RunGuardrailsCITests::test_run_guardrails_ci_history_target_produces_summary
-  - python3 -m pytest _tests/test_make_request_history_guardrails.py::MakeRequestHistoryGuardrailsTests::test_make_request_history_guardrails_runs_clean
+  - python3 - m pytest _tests/test_run_guardrails_ci.py::RunGuardrailsCITests::test_run_guardrails_ci_history_target_produces_summary
+  - python3 - m pytest _tests/test_make_request_history_guardrails.py::MakeRequestHistoryGuardrailsTests::test_make_request_history_guardrails_runs_clean
 - evidence:
-  - red | 2025-12-23T06:30:05Z | exit 1 | python3 -m pytest _tests/test_run_guardrails_ci.py::RunGuardrailsCITests::test_run_guardrails_ci_history_target_produces_summary
+  - red | 2025-12-23T06:30:05Z | exit 1 | python3 - m pytest _tests/test_run_guardrails_ci.py::RunGuardrailsCITests::test_run_guardrails_ci_history_target_produces_summary
       helper:diff-snapshot=2 files changed, 8 insertions(+)
       CI helper stdout lacked `guardrail_target:` metadata, so the new assertion failed | inline
-  - red | 2025-12-23T06:30:13Z | exit 1 | python3 -m pytest _tests/test_make_request_history_guardrails.py::MakeRequestHistoryGuardrailsTests::test_make_request_history_guardrails_runs_clean
+  - red | 2025-12-23T06:30:13Z | exit 1 | python3 - m pytest _tests/test_make_request_history_guardrails.py::MakeRequestHistoryGuardrailsTests::test_make_request_history_guardrails_runs_clean
       helper:diff-snapshot=2 files changed, 8 insertions(+)
       Make target output lacked the guardrail target line required by the new guardrail | inline
-  - green | 2025-12-23T06:35:10Z | exit 0 | python3 -m pytest _tests/test_run_guardrails_ci.py::RunGuardrailsCITests::test_run_guardrails_ci_history_target_produces_summary _tests/test_make_request_history_guardrails.py::MakeRequestHistoryGuardrailsTests::test_make_request_history_guardrails_runs_clean
+  - green | 2025-12-23T06:35:10Z | exit 0 | python3 - m pytest _tests/test_run_guardrails_ci.py::RunGuardrailsCITests::test_run_guardrails_ci_history_target_produces_summary _tests/test_make_request_history_guardrails.py::MakeRequestHistoryGuardrailsTests::test_make_request_history_guardrails_runs_clean
       helper:diff-snapshot=5 files changed, 27 insertions(+), 1 deletion(-)
       run_guardrails_ci.sh and Make now invoke history-telemetry-inspect; stdout shows the guardrail target and summary metadata, and both guardrail tests pass | inline
-  - removal | 2025-12-23T06:33:49Z | exit 1 | git stash push -k -- scripts/tools/run_guardrails_ci.sh Makefile && python3 -m pytest _tests/test_run_guardrails_ci.py::RunGuardrailsCITests::test_run_guardrails_ci_history_target_produces_summary
+  - removal | 2025-12-23T06:33:49Z | exit 1 | git stash push -k -- scripts/tools/run_guardrails_ci.sh Makefile && python3 - m pytest _tests/test_run_guardrails_ci.py::RunGuardrailsCITests::test_run_guardrails_ci_history_target_produces_summary
       helper:diff-snapshot=0 files changed
       Reverting the CLI/Make helpers drops the metadata line and the CI guardrail test fails again | inline
-  - removal | 2025-12-23T06:33:55Z | exit 1 | python3 -m pytest _tests/test_make_request_history_guardrails.py::MakeRequestHistoryGuardrailsTests::test_make_request_history_guardrails_runs_clean
+  - removal | 2025-12-23T06:33:55Z | exit 1 | python3 - m pytest _tests/test_make_request_history_guardrails.py::MakeRequestHistoryGuardrailsTests::test_make_request_history_guardrails_runs_clean
       helper:diff-snapshot=0 files changed
       With the helper removed, the Make target no longer prints `guardrail_target:` and the guardrail test fails; the stash was popped immediately afterwards to restore the helper | inline
-- rollback_plan: git restore -- scripts/tools/run_guardrails_ci.sh Makefile _tests/test_run_guardrails_ci.py _tests/test_make_request_history_guardrails.py docs/adr/0056-concordance-personas-axes-history-gating.md && python3 -m pytest _tests/test_run_guardrails_ci.py::RunGuardrailsCITests::test_run_guardrails_ci_history_target_produces_summary
+- rollback_plan: git restore -- scripts/tools/run_guardrails_ci.sh Makefile _tests/test_run_guardrails_ci.py _tests/test_make_request_history_guardrails.py docs/adr/0056-concordance-personas-axes-history-gating.md && python3 - m pytest _tests/test_run_guardrails_ci.py::RunGuardrailsCITests::test_run_guardrails_ci_history_target_produces_summary
 - delta_summary: helper:diff-snapshot=5 files changed, 27 insertions(+), 1 deletion(-); guardrail CLI/Make targets call `history-telemetry-inspect.py`, guardrail tests enforce the new metadata, and ADR monitoring guidance notes the automatic output.
 - residual_risks:
   - Helper output still includes the full default field set; trim or add a terse mode if future logs become noisy.
   - Job-summary formatting now depends on the helper output; update summary builders if we later change helper formatting (e.g., bullets vs tables).
+## 2025-12-23 – Loop 370 (kind: docs)
+- helper_version: helper:v20251221.5
+- focus: ADR-0056 §Monitoring & Next Steps – adopt auto-trigger policy for telemetry exports.
+- riskiest_assumption: Leaving exports manual after consecutive defaults warnings increases the risk of stale Concordance telemetry (probability medium, impact high for guardrail accuracy).
+- validation_targets:
+  - python3 - <<'PY'
+from pathlib import Path
+text = Path('docs/adr/0056-concordance-personas-axes-history-gating.md').read_text()
+if "we will not auto-trigger" in text:
+    raise SystemExit(1)
+PY
+- evidence:
+  - red | 2025-12-23T06:54:37Z | exit 1 | python3 - <<'PY' ...
+      helper:diff-snapshot=0 files changed
+      Baseline ADR still forbade auto-triggering; script exited 1 when the phrase was present | inline
+  - green | 2025-12-23T06:55:05Z | exit 0 | python3 - <<'PY' ...
+      helper:diff-snapshot=1 file changed, 4 insertions(+), 4 deletions(-)
+      Updated ADR removes the manual-only guidance and mandates the auto-trigger policy | inline
+  - removal | 2025-12-23T06:55:29Z | exit 1 | python3 - <<'PY' ...
+      helper:diff-snapshot=0 files changed
+      Temporarily restoring the old text reintroduced the failure, confirming the rollback path | inline
+- rollback_plan: git restore -- docs/adr/0056-concordance-personas-axes-history-gating.md && python3 - <<'PY' ...
+- delta_summary: helper:diff-snapshot=1 file changed, 4 insertions(+), 4 deletions(-); ADR now requires guardrail entrypoints to auto-trigger telemetry exports after repeated defaults warnings.
+- residual_risks:
+  - Implementation still pending in guardrail CLI/Make scripts; ensure upcoming loops add the auto-trigger plus tests respecting `ALLOW_AUTO_TELEMETRY=0`.
 - next_work:
-  - Evaluate whether GitHub summaries should include a condensed guardrail metadata table derived from the helper output.
+  - Behaviour: implement the auto-trigger in guardrail CLI/Make entrypoints and add tests covering the new flow.
+
+## 2025-12-23 – Loop 371 (kind: docs)
+- helper_version: helper:v20251221.5
+- focus: ADR-0056 backlog hygiene – retire next_work items no longer backed by the ADR.
+- riskiest_assumption: Leaving stale follow-ups in the work log obscures the remaining Concordance scope (probability medium, impact medium-high for planning accuracy).
+- validation_targets: [] (docs-only clean-up; no tests required)
+- evidence: inline (next_work entries referencing Talon-macro auto-triggering, checklist mirroring, telemetry JSON streaks, and scheduler timestamp logging have been removed or rewritten to match current ADR guidance.)
+- rollback_plan: git restore -- docs/adr/0056-concordance-personas-axes-history-gating.work-log.md
+- delta_summary: helper:diff-snapshot=1 file changed, 53 insertions(+), 45 deletions(-); pruned or reworded legacy next_work bullets that lacked ADR coverage while keeping active tasks (e.g., Loop 370 auto-trigger implementation).
+- residual_risks:
+  - Ensure future loop entries update both ADR and work log when scope changes to prevent new drift.
+- next_work:
+  - Behaviour: land the guardrail auto-trigger implementation (per Loop 370 next_work) and update work log once complete.
 
 ## 2025-12-23 – Loop 271 (kind: docs)
+
+
 - Helper: helper:v20251220.5 @ 2025-12-21T19:20Z
 - Focus: Request Gating & Streaming – spell out the ongoing guardrail commands and runbook follow-ups for streaming telemetry.
 
@@ -3056,7 +3067,6 @@
 - Residual risks:
   - CLI guardrails still need to consume the exported artefacts; tracked in Loop 346/347.
 - Next work:
-  - Loop 347: teach guardrail macros to invoke `user.model_export_telemetry` automatically before CLI guardrails run.
   - Loop 348: update CLI helpers to rely on exported JSON rather than live memory.
 
 ## 2025-12-22 – Loop 346 (kind: guardrail/tests)
@@ -3155,9 +3165,7 @@
 - rollback_plan: `git restore -- scripts/tools/check-telemetry-export-marker.py _tests/test_check_telemetry_export_marker.py docs/adr/0056-concordance-personas-axes-history-gating.md docs/adr/0056-concordance-personas-axes-history-gating.work-log.md docs/adr/evidence/0056/loop-0351.md`
 - delta_summary: helper:diff-snapshot=9 files changed, 260 insertions(+), 51 deletions(-); telemetry marker helper gained a wait flag, scheduler stats surface in telemetry outputs, and guardrail docs/tests capture the updated workflow.
 - residual_risks:
-  - Wait mode still relies on fixed polling; consider exposing configurable poll intervals or interactive prompts if operators need immediate feedback.
   - Guardrail job summaries must surface the new wait behaviour to avoid confusion; wire narrative output in a follow-up loop.
 - next_work:
   - Loop 352: surface scheduler telemetry in guardrail job summaries and CLI logs.
-  - Loop 353: evaluate interactive prompts/poll interval configuration for long-running exports.
 

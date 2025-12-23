@@ -3275,3 +3275,20 @@ PY
 - next_work:
   - Loop 352: surface scheduler telemetry in guardrail job summaries and CLI logs.
 
+
+## 2025-12-23 – Loop 379 (kind: guardrail/tests)
+- helper_version: helper:v20251221.5
+- focus: Request Gating & Streaming – remove telemetry streak automation and make CLI guardrails fail fast when Talon exports are stale.
+- riskiest_assumption: The streak logger and auto-trigger messaging could mask stale telemetry for solo operation; replacing it with a hard failure must keep guardrail tests green (probability medium, impact high for Concordance evidence).
+- validation_targets:
+  - python3 -m pytest _tests/test_check_telemetry_export_marker.py _tests/test_run_guardrails_ci.py
+- evidence:
+  - green | 2025-12-23T05:42:00Z | exit 0 | python3 -m pytest _tests/test_check_telemetry_export_marker.py _tests/test_run_guardrails_ci.py
+      helper:diff-snapshot=6 files changed, 64 insertions(+), 465 deletions(-)
+      Fresh marker helper rejects missing/stale exports and guardrail CI tests confirm the new fail-fast messaging | inline
+- rollback_plan: git restore --source=HEAD -- scripts/tools/check-telemetry-export-marker.py scripts/tools/run_guardrails_ci.sh _tests/test_check_telemetry_export_marker.py _tests/test_run_guardrails_ci.py docs/adr/0056-concordance-personas-axes-history-gating.md docs/adr/0056-concordance-personas-axes-history-gating.work-log.md && python3 -m pytest _tests/test_check_telemetry_export_marker.py _tests/test_run_guardrails_ci.py
+- delta_summary: helper:diff-snapshot=6 files changed, 64 insertions(+), 465 deletions(-); removed streak persistence/auto-trigger code, made the helper exit non-zero on stale telemetry, updated guardrail script/tests to log a one-line freshness banner, and documented the manual-only workflow.
+- residual_risks:
+  - Setting `ALLOW_STALE_TELEMETRY=1` still bypasses the freshness check; reserve that env var for CI-only fixtures and monitor guardrail logs for accidental use in production.
+- next_work:
+  - Consider deleting the stale streak artifacts under `artifacts/telemetry/` during guardrail runs so operators aren’t tempted to rely on the old JSON trail.

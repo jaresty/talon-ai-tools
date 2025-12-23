@@ -185,17 +185,6 @@ if not TYPE_CHECKING:
                 skip_path.write_text(
                     json.dumps(skip_payload_seed, indent=2), encoding="utf-8"
                 )
-                streak_path = summary_path.with_name("cli-warning-streak.json")
-                streak_state = {
-                    "streak": 2,
-                    "last_reason": "missing",
-                    "last_command": "python3 scripts/tools/check-telemetry-export-marker.py",
-                    "updated_at": "2025-12-23T02:12:00Z",
-                }
-                streak_path.write_text(
-                    json.dumps(streak_state, indent=2), encoding="utf-8"
-                )
-
                 env = os.environ.copy()
                 env["ALLOW_STALE_TELEMETRY"] = "1"
                 result = subprocess.run(
@@ -258,24 +247,7 @@ if not TYPE_CHECKING:
                     result.stdout,
                 )
                 self.assertIn(
-                    "- Streak alert: 2 consecutive warnings (reason: missing)",
-                    result.stdout,
-                )
-                self.assertIn("Telemetry export streak state:", result.stdout)
-                self.assertIn(
-                    "- Telemetry export warning streak: 2",
-                    result.stdout,
-                )
-                self.assertIn(
-                    "- Telemetry export last reason: missing",
-                    result.stdout,
-                )
-                self.assertIn(
-                    "- Telemetry export last updated: 2025-12-23T02:12:00Z",
-                    result.stdout,
-                )
-                self.assertIn(
-                    "- Telemetry export last command: python3 scripts/tools/check-telemetry-export-marker.py",
+                    "Checking telemetry export freshness...",
                     result.stdout,
                 )
                 self.assertIn("Telemetry scheduler stats:", result.stdout)
@@ -446,16 +418,7 @@ if not TYPE_CHECKING:
                 skip_path.write_text(
                     json.dumps(skip_payload_seed, indent=2), encoding="utf-8"
                 )
-                streak_path = summary_path.with_name("cli-warning-streak.json")
-                streak_state = {
-                    "streak": 2,
-                    "last_reason": "missing",
-                    "last_command": "python3 scripts/tools/check-telemetry-export-marker.py",
-                    "updated_at": "2025-12-23T02:12:00Z",
-                }
-                streak_path.write_text(
-                    json.dumps(streak_state, indent=2), encoding="utf-8"
-                )
+
                 with tempfile.TemporaryDirectory() as tmpdir:
                     step_summary_path = Path(tmpdir) / "gha-summary.md"
                     env = os.environ.copy()
@@ -489,9 +452,10 @@ if not TYPE_CHECKING:
                 summary_text,
             )
             self.assertIn(
-                "summary: guardrail_target=request-history-guardrails",
+                "- suggestion skip reasons: streaming_disabled=2, rate_limited=1",
                 summary_text,
             )
+
             self.assertIn("### Scheduler Telemetry", summary_text)
             self.assertIn("- Scheduler reschedules: 0", summary_text)
             self.assertIn(
@@ -503,22 +467,6 @@ if not TYPE_CHECKING:
             self.assertIn("- Scheduler data source: defaults (missing)", summary_text)
             self.assertIn(
                 "WARNING: Scheduler telemetry missing; run `model export telemetry` inside Talon to populate stats.",
-                summary_text,
-            )
-            self.assertIn("### Telemetry Export Streak", summary_text)
-            self.assertIn(
-                "| Telemetry export streak | 2 consecutive warnings (reason: missing) |",
-                summary_text,
-            )
-            self.assertIn("Telemetry export streak state:", summary_text)
-            self.assertIn("- Telemetry export warning streak: 2", summary_text)
-            self.assertIn("- Telemetry export last reason: missing", summary_text)
-            self.assertIn(
-                "- Telemetry export last command: python3 scripts/tools/check-telemetry-export-marker.py",
-                summary_text,
-            )
-            self.assertIn(
-                "- Telemetry export last updated: 2025-12-23T02:12:00Z",
                 summary_text,
             )
 
@@ -544,19 +492,16 @@ if not TYPE_CHECKING:
                     summary_dir / "history-validation-summary.telemetry.json"
                 )
                 skip_path = summary_dir / "suggestion-skip-summary.json"
-                streak_path = summary_dir / "cli-warning-streak.json"
-
                 for path in (
                     summary_path,
                     streaming_summary_path,
                     telemetry_path,
                     skip_path,
-                    streak_path,
                 ):
                     if path.exists():
                         path.unlink()
 
-                # Seed suggestion skip + streak artefacts to avoid CLI fallbacks.
+                # Seed suggestion skip artefact to avoid CLI fallbacks.
                 skip_payload_seed = {
                     "counts": {"streaming_disabled": 1},
                     "total_skipped": 1,
@@ -566,15 +511,6 @@ if not TYPE_CHECKING:
                 }
                 skip_path.write_text(
                     json.dumps(skip_payload_seed, indent=2), encoding="utf-8"
-                )
-                streak_state = {
-                    "streak": 0,
-                    "last_reason": None,
-                    "last_command": "python3 scripts/tools/check-telemetry-export-marker.py",
-                    "updated_at": "2025-12-23T02:12:00Z",
-                }
-                streak_path.write_text(
-                    json.dumps(streak_state, indent=2), encoding="utf-8"
                 )
 
                 # Provide a no-op make so the script relies on the prepared artefacts.
@@ -713,17 +649,6 @@ if not TYPE_CHECKING:
                 skip_path.write_text(
                     json.dumps(skip_payload_seed, indent=2), encoding="utf-8"
                 )
-                streak_path = summary_dir / "cli-warning-streak.json"
-                streak_state = {
-                    "streak": 3,
-                    "last_reason": "stale",
-                    "last_command": "python3 scripts/tools/check-telemetry-export-marker.py --wait",
-                    "updated_at": "2025-12-23T01:50:00Z",
-                }
-                streak_path.write_text(
-                    json.dumps(streak_state, indent=2), encoding="utf-8"
-                )
-
                 summary_text = ""
                 with tempfile.TemporaryDirectory() as tmpdir:
                     fake_make = Path(tmpdir) / "make"
@@ -784,57 +709,12 @@ if not TYPE_CHECKING:
                 "- Scheduler data source: summary (non-default, stale)",
                 summary_text,
             )
-            self.assertIn("### Telemetry Export Streak", summary_text)
-            self.assertIn(
-                "Telemetry export streak state:",
-                summary_text,
-            )
-            self.assertIn(
-                "- Telemetry export warning streak: 3",
-                summary_text,
-            )
-            self.assertIn(
-                "- Telemetry export last reason: stale",
-                summary_text,
-            )
-            self.assertIn(
-                "- Telemetry export last updated: 2025-12-23T01:50:00Z",
-                summary_text,
-            )
-            self.assertIn(
-                "- Telemetry export last command: python3 scripts/tools/check-telemetry-export-marker.py --wait",
-                summary_text,
-            )
-            self.assertIn(
-                "- Streak alert: 3 consecutive warnings (reason: stale)",
-                summary_text,
-            )
             self.assertIn(
                 "- Scheduler data source: summary (non-default, stale)",
                 stdout,
             )
             self.assertIn(
-                "Telemetry export streak state:",
-                stdout,
-            )
-            self.assertIn(
-                "- Telemetry export warning streak: 3",
-                stdout,
-            )
-            self.assertIn(
-                "- Telemetry export last reason: stale",
-                stdout,
-            )
-            self.assertIn(
-                "- Telemetry export last updated: 2025-12-23T01:50:00Z",
-                stdout,
-            )
-            self.assertIn(
-                "- Telemetry export last command: python3 scripts/tools/check-telemetry-export-marker.py --wait",
-                stdout,
-            )
-            self.assertIn(
-                "- Streak alert: 3 consecutive warnings (reason: stale)",
+                "Checking telemetry export freshness...",
                 stdout,
             )
             self.assertIn(
@@ -849,15 +729,7 @@ if not TYPE_CHECKING:
                 line for line in summary_text.splitlines() if line.startswith("|")
             ]
 
-            self.assertEqual(
-                summary_lines[:3],
-                [
-                    "| Alert | Detail |",
-                    "| --- | --- |",
-                    "| Telemetry export streak | 3 consecutive warnings (reason: stale) |",
-                ],
-            )
-            reason_header_idx = summary_lines.index("| Reason | Count |", 3)
+            reason_header_idx = summary_lines.index("| Reason | Count |")
             self.assertEqual(
                 summary_lines[reason_header_idx : reason_header_idx + 3],
                 [

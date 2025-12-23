@@ -45,47 +45,26 @@ if not TYPE_CHECKING:
                 env=env,
             )
 
-        def test_auto_export_populates_missing_marker(self) -> None:
+        def test_missing_marker_fails_with_instruction(self) -> None:
             with TemporaryDirectory() as tmpdir:
                 marker = Path(tmpdir) / "talon-export-marker.json"
                 result = self._run_helper(marker)
-                if result.returncode != 0:
-                    self.fail(
-                        "helper should auto-export missing marker\n"
-                        f"exit={result.returncode}\nstdout=\n{result.stdout}\nstderr=\n{result.stderr}"
-                    )
-                self.assertTrue(marker.exists(), "auto-export did not create marker")
-                payload = json.loads(marker.read_text(encoding="utf-8"))
-                self.assertIn("exported_at", payload)
-
-        def test_auto_export_refreshes_stale_marker(self) -> None:
-            with TemporaryDirectory() as tmpdir:
-                marker = Path(tmpdir) / "talon-export-marker.json"
-                marker.parent.mkdir(parents=True, exist_ok=True)
-                stale_time = datetime.now(timezone.utc) - timedelta(hours=2)
-                marker.write_text(
-                    json.dumps({"exported_at": stale_time.isoformat()}),
-                    encoding="utf-8",
-                )
-                result = self._run_helper(marker)
-                if result.returncode != 0:
-                    self.fail(
-                        "helper should refresh stale marker\n"
-                        f"exit={result.returncode}\nstdout=\n{result.stdout}\nstderr=\n{result.stderr}"
-                    )
-                payload = json.loads(marker.read_text(encoding="utf-8"))
-                refreshed_at = datetime.fromisoformat(payload["exported_at"])
-                self.assertGreater(refreshed_at, stale_time)
-
-        def test_disabled_auto_export_fails_when_marker_missing(self) -> None:
-            with TemporaryDirectory() as tmpdir:
-                marker = Path(tmpdir) / "talon-export-marker.json"
-                result = self._run_helper(marker, "--no-auto-export")
                 self.assertEqual(result.returncode, 2)
+                self.assertIn("Telemetry export marker missing", result.stderr)
                 self.assertIn("model export telemetry", result.stderr)
                 self.assertIn("TIP:", result.stderr)
 
-        def test_disabled_auto_export_reports_tip_for_stale_marker(self) -> None:
+        def test_invalid_marker_prompts_refresh(self) -> None:
+            with TemporaryDirectory() as tmpdir:
+                marker = Path(tmpdir) / "talon-export-marker.json"
+                marker.parent.mkdir(parents=True, exist_ok=True)
+                marker.write_text("not json", encoding="utf-8")
+                result = self._run_helper(marker)
+                self.assertEqual(result.returncode, 2)
+                self.assertIn("Unable to parse telemetry export marker", result.stderr)
+                self.assertIn("TIP:", result.stderr)
+
+        def test_stale_marker_fails(self) -> None:
             with TemporaryDirectory() as tmpdir:
                 marker = Path(tmpdir) / "talon-export-marker.json"
                 marker.parent.mkdir(parents=True, exist_ok=True)
@@ -94,10 +73,25 @@ if not TYPE_CHECKING:
                     json.dumps({"exported_at": stale_time.isoformat()}),
                     encoding="utf-8",
                 )
-                result = self._run_helper(marker, "--no-auto-export")
+                result = self._run_helper(marker)
                 self.assertEqual(result.returncode, 2)
-                self.assertIn("stale", result.stderr)
-                self.assertIn("TIP:", result.stderr)
+                self.assertIn("Telemetry export marker is stale", result.stderr)
+                self.assertIn("model export telemetry", result.stderr)
+
+        def test_fresh_marker_passes(self) -> None:
+            with TemporaryDirectory() as tmpdir:
+                marker = Path(tmpdir) / "talon-export-marker.json"
+                marker.parent.mkdir(parents=True, exist_ok=True)
+                marker.write_text(
+                    json.dumps({"exported_at": datetime.now(timezone.utc).isoformat()}),
+                    encoding="utf-8",
+                )
+                result = self._run_helper(marker)
+                if result.returncode != 0:
+                    self.fail(
+                        "helper should succeed when marker is fresh\n"
+                        f"exit={result.returncode}\nstdout=\n{result.stdout}\nstderr=\n{result.stderr}"
+                    )
 
         def test_wait_allows_marker_refresh(self) -> None:
             with TemporaryDirectory() as tmpdir:
@@ -117,7 +111,6 @@ if not TYPE_CHECKING:
                 start = time.time()
                 result = self._run_helper(
                     marker,
-                    "--no-auto-export",
                     "--wait",
                     "--wait-seconds",
                     "5",
@@ -140,61 +133,10 @@ if not TYPE_CHECKING:
                 marker = Path(tmpdir) / "talon-export-marker.json"
                 result = self._run_helper(
                     marker,
-                    "--no-auto-export",
                     "--wait",
                     "--wait-seconds",
                     "1",
                 )
                 self.assertEqual(result.returncode, 2)
                 self.assertIn("Waiting for telemetry export marker", result.stderr)
-
-        def test_warning_streak_triggers_after_threshold(self) -> None:
-            with TemporaryDirectory() as tmpdir:
-                marker = Path(tmpdir) / "talon-export-marker.json"
-                streak_log = Path(tmpdir) / "streak.json"
-
-                first = self._run_helper(
-                    marker,
-                    "--no-auto-export",
-                    "--streak-log",
-                    str(streak_log),
-                    "--streak-threshold",
-                    "2",
-                )
-                self.assertEqual(first.returncode, 2)
-                self.assertTrue(streak_log.exists())
-                payload = json.loads(streak_log.read_text(encoding="utf-8"))
-                self.assertEqual(payload.get("streak"), 1)
-                self.assertNotIn("Telemetry export warning streak", first.stderr)
-
-                second = self._run_helper(
-                    marker,
-                    "--no-auto-export",
-                    "--streak-log",
-                    str(streak_log),
-                    "--streak-threshold",
-                    "2",
-                )
-                self.assertEqual(second.returncode, 2)
-                self.assertIn("Telemetry export warning streak: 2", second.stderr)
-                self.assertIn("Last command:", second.stderr)
-                payload = json.loads(streak_log.read_text(encoding="utf-8"))
-                self.assertEqual(payload.get("streak"), 2)
-
-                marker.parent.mkdir(parents=True, exist_ok=True)
-                marker.write_text(
-                    json.dumps({"exported_at": datetime.now(timezone.utc).isoformat()}),
-                    encoding="utf-8",
-                )
-                third = self._run_helper(
-                    marker,
-                    "--no-auto-export",
-                    "--streak-log",
-                    str(streak_log),
-                    "--streak-threshold",
-                    "2",
-                )
-                self.assertEqual(third.returncode, 0)
-                if streak_log.exists():
-                    payload = json.loads(streak_log.read_text(encoding="utf-8"))
-                    self.assertEqual(payload.get("streak"), 0)
+                self.assertIn("model export telemetry", result.stderr)

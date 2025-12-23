@@ -1,6 +1,6 @@
 # ADR-0056 – Concordance Personas, Axes, and History Gating
 
-Status: Proposed  
+Status: Accepted  
 Date: 2025-12-17  
 Owners: Talon AI tools maintainers
 
@@ -261,7 +261,7 @@ For each domain, we will align with the existing test suites and add characteriz
   - After wiring `AxisSnapshot`:
     - Reuse and, where needed, extend these tests to assert that history/log outputs derive from the catalog and that Concordance-relevant axes are preserved.
     - Add a regression test (or CI assertion) that fails when a history append omits directional axes, proving the guardrail remains enforced.
-  - Keep guardrail suites (e.g., `_tests/test_run_guardrails_ci.py`, `_tests/test_history_axis_validate.py`, `_tests/test_history_axis_export_telemetry.py`, `_tests/test_make_axis_guardrails_ci.py`) and `scripts/tools/run_guardrails_ci.sh` catching axis/catalog drift, directionality guardrails, and telemetry exports before refactors land.
+  - Keep automated guardrail suites focused on catalog drift (`_tests/test_history_axis_validate.py`, `_tests/test_history_axis_export_telemetry.py`, `_tests/test_make_axis_guardrails_ci.py`). History telemetry helpers are now manual; see the Monitoring section for the lightweight workflow.
   - Ensure doc-generation helpers (`scripts/tools/generate_readme_axis_lists.py`, `scripts/tools/generate-axis-cheatsheet.py`, `GPT/gpt.py::_build_axis_docs`) stay tied to the same snapshot so README/help/cheatsheet artefacts fail CI when catalog tokens diverge.
 
 ### Persona & Intent Preset Concordance
@@ -277,7 +277,7 @@ For each domain, we will align with the existing test suites and add characteriz
   - Add integration coverage (for example, extending `tests/test_integration_suggestions.py`) that fails when catalog alignment regresses so GUI/help/doc flows stay in sync.
     - Add a persona/intent CI guardrail (lint/test) that rejects bypasses of the catalog API before landing.
     - When refactoring `_validated_persona_value`, `_canonical_persona_value`, and related helpers, ensure existing integration tests remain the primary guardrails; only add new tests where behaviour is currently untested.
-  - Keep guardrail and regression suites (e.g., `_tests/test_persona_presets.py`, `_tests/test_model_suggestion_gui.py`, `_tests/test_history_axis_validate.py`) asserting that persona/intents surfaced through GUIs, history summaries, and telemetry snapshots match the catalog façade.
+  - Keep guardrail and regression suites (e.g., `_tests/test_persona_presets.py`, `_tests/test_model_suggestion_gui.py`, `_tests/test_history_axis_validate.py`) asserting that persona/intents surfaced through GUIs, history summaries, and telemetry snapshots match the catalog façade. Telemetry checks themselves are now manual.
   - Ensure `scripts/tools/history-axis-validate.py` and related guardrail targets continue reporting persona alias/tone tables so operations can detect drift across catalog, history, and suggestion outputs.
  
   - Before resetting counters, run `python3 scripts/tools/history-axis-validate.py --summary-path artifacts/telemetry/history-validation-summary.json` (and optional `--summarize-json` variants) locally if you want to keep a snapshot. Skip CI artifact uploads unless the workflow expands beyond a solo maintainer.
@@ -300,8 +300,8 @@ For each domain, we will align with the existing test suites and add characteriz
     - As `StreamingSession` and gating APIs are introduced:
       - Add small, focused tests for the new APIs (e.g., `try_start_request` drop reasons, StreamingSession event ordering) while keeping integration tests as the main behavioural guardrails.
       - Avoid duplicating GUI behaviour tests; instead, validate that GUIs respond correctly to lifecycle events.
-      - Keep guardrail and telemetry suites (e.g., `_tests/test_run_guardrails_ci.py`, `_tests/test_history_axis_validate.py`, `_tests/test_history_axis_export_telemetry.py`) asserting streaming status, last-drop messages/codes, and gating reason/source tables so CLI summaries and machine-readable payloads fail when those fields regress.
-      - Ensure local guardrail targets continue surfacing the same last-drop bullets as CI (`_tests/test_make_request_history_guardrails.py`) so operator workflows stay aligned with automation output.
+      - Keep automated suites (`_tests/test_history_axis_validate.py`, `_tests/test_history_axis_export_telemetry.py`) asserting streaming status, last-drop messages/codes, and gating reason/source tables. Manual telemetry reviews replace the retired CI helper.
+      - When running history telemetry manually, ensure the helper surfaces last-drop bullets so personal workflows stay aligned with the automated assertions.
       - Lock drop-reason messaging via `_tests/test_request_log.py::RequestLogTests::test_drop_reason_message_covers_known_reasons` so new `RequestDropReason` codes fail fast when phrasing is missing.
       - Reuse `lib/dropReasonUtils.render_drop_reason` across gating surfaces so bespoke fallbacks cannot drift and shared tests can patch a single helper.
       - Migrate help hub, pattern, and confirmation canvases onto the shared helper to keep GUI messaging aligned with request log/history behaviour.
@@ -319,13 +319,10 @@ Across all domains, we will continue to run `python3 -m pytest` from the repo ro
   - Centralized **Request Gating & Streaming Lifecycle** semantics reduce duplicated gating logic, make error/cancellation handling more predictable, and simplify reasoning about when history/log entries are written.
   - Concordance scores for the identified hotspots should decrease over time as visibility increases, scope narrows, and volatility is absorbed by focused facades and types.
   - CI guardrails that fail on lens-less history writes keep the directional requirement non-negotiable, providing an automated early warning before regressions reach production.
-  - Guardrail automation archives `history-axis-validate.py --summary-path` output before applying `--reset-gating`, so local runs can capture drop telemetry prior to clearing counters.
-- Guardrail runs export `history-validation-summary.telemetry.json` (top gating reasons, totals, artifact link) so the same machine-readable snapshot is available if you need to inspect trends manually.
-- Guardrail telemetry now includes the last-drop message/code and the streaming last-drop message/code so you can surface actionable gating context without parsing raw logs.
-- Local `make request-history-guardrails(-fast)` runs print the `Last gating drop` and `Streaming last drop` lines alongside the JSON summaries, giving you quick visibility into history vs streaming rejections without digging through logs.
-- `drop_reason_message` now returns a standardized fallback message for unknown codes, keeping UI and CLI guardrails readable when new request drop reasons appear before dedicated phrasing is added.
-- `lib/dropReasonUtils.render_drop_reason` centralises the fallback so history actions/drawers (and future surfaces) share one renderer that tests can patch.
-- CLI guardrail commands operate in standalone Python processes; they validate repository logic but do not snapshot Talon’s live in-memory history. Capturing runtime history still requires a Talon-side command or manual export.
+  - Manual telemetry checks remain available: export from Talon with `model export telemetry`, then run the validation helpers locally before clearing counters.
+  - `drop_reason_message` continues to return a standardized fallback message for unknown codes, keeping UI guardrails readable when new request drop reasons appear before dedicated phrasing is added.
+  - `lib/dropReasonUtils.render_drop_reason` centralises the fallback so history actions/drawers (and future surfaces) share one renderer that tests can patch.
+  - CLI helpers operate in standalone Python processes; they validate repository logic but do not snapshot Talon’s live in-memory history. Capturing runtime history still requires a Talon-side command or manual export.
 - **Risks**
   - Introducing new catalogs and lifecycle APIs can temporarily increase complexity and surface hidden inconsistencies.
   - Misaligned migrations (e.g., partially adopted `AxisSnapshot` or persona catalog) could create confusing states where some surfaces see new behaviour and others see old.
@@ -337,7 +334,7 @@ Across all domains, we will continue to run `python3 -m pytest` from the repo ro
   - Monitor statement-level churn × complexity heatmaps and Concordance scores after each slice to confirm improvements come from structural gains, not weakened checks.
   - Enforce CI guardrails and integration coverage that fail when directional lenses or persona/intent catalog alignment regress, so violations surface before landing.
   - Treat manual Talon telemetry exports as a gating step once streak alerts appear; pause guardrail runs until the export completes and the helper reports fresh markers.
-  - Keep a lightweight personal note of the guardrail commands you care about (for example, `make request-history-guardrails`, `python3 scripts/tools/history-axis-validate.py --summary-path …`, `run_guardrails_ci.sh request-history-guardrails`) and run them before resetting counters when you want fresh telemetry snapshots.
+  - Keep a lightweight personal note of the manual helpers you care about (for example, `make request-history-guardrails`, `python3 scripts/tools/history-axis-validate.py --summary-path …`) and run them before resetting counters when you want fresh telemetry snapshots.
 
 ---
 
@@ -368,41 +365,28 @@ Across all domains, we will continue to run `python3 -m pytest` from the repo ro
    - (Completed 2025-12-19) Introduced a persona/intent catalog backed by `personaConfig.persona_intent_catalog_snapshot`, with GPT persona/intent actions, help hub presets, suggestion GUIs, and list files consuming the shared façade.
    - (Completed 2025-12-19) Refactored `_validated_persona_value`, `_canonical_persona_value`, and `_build_persona_intent_docs` to rely on catalog-backed `persona_intent_maps`, keeping persona/intents aligned with axis metadata.
     - (Completed 2025-12-19) Added integration coverage (e.g., `_tests/test_persona_presets.py`, `_tests/test_integration_suggestions.py::SuggestionIntegrationTests::test_suggest_alias_only_metadata_round_trip`) that fails when persona/intent catalog alignment regresses, keeping GUIs, docs, and help flows in sync.
-    - (Completed 2025-12-22) Added a Talon guardrail command (`user.model_export_telemetry`) that snapshots suggestion skip telemetry alongside history gating so CLI artefacts stay accurate.
-    - (Completed 2025-12-22) Routed the Talon exporter to the shared `artifacts/telemetry/` directory and updated Make/CI guardrails (scripts, tests, CI workflow) to read from that location. The Talon command runs with its baked-in defaults; CLI helpers accept optional flags for offline testing only.
-    - (Completed 2025-12-22) Updated CLI guardrail scripts to consume the Talon-generated JSON snapshots (instead of querying live state) via `--summarize-json` / `--counts-json` so they operate solely on the exported files.
+    - (Completed 2025-12-22) Added a Talon guardrail command (`user.model_export_telemetry`) that snapshots suggestion skip telemetry alongside history gating for manual inspection when needed.
+    - (Updated 2025-12-23) Retired the automation that consumed those snapshots in CI; exports now feed only ad-hoc debugging runs.
 
 3. **Request Gating & Streaming Lifecycle**
     - (Completed 2025-12-21) Added `is_in_flight`/`try_start_request` helpers on `requestController`, `requestState`, and `requestLifecycle`, migrated request bus/controller/GUI gating wrappers to the shared façade, and kept telemetry routing through `requestGating`.
     - (Completed 2025-12-21) Implemented `StreamingSession` aligned with ADR-0046/0054 and moved streaming/error helpers plus history/log writers onto its events so gating summaries, snapshots, and telemetry stay in sync.
     - (Completed 2025-12-19) Completed ADR-0055 by delegating request history saves to the shared `modelDestination` file helper so prompt-only helpers remain thin adapters covered by existing history tests.
-    - (Completed 2025-12-21) Added focused regression tests for gating/streaming paths (e.g., `tests/test_request_gating.py`, `tests/test_streaming_coordinator.py`, guardrail CLI helpers) that fail when the centralized lifecycle or telemetry guardrails regress.
-    - (Completed 2025-12-22) Added a Talon guardrail command that snapshots history/gating and suggestion-skip telemetry into `artifacts/telemetry/` before CLI helpers run so the exported JSON reflects live Talon state.
-    - (Completed 2025-12-22) Added a CLI freshness check (`scripts/tools/check-telemetry-export-marker.py`) that request-history guardrail targets invoke before running, failing fast when Talon telemetry hasn’t been exported recently.
-    - (Completed 2025-12-23) Added `scripts/tools/scheduler_source.py` and wired guardrail CLI/Make targets to label the scheduler telemetry source so I can see whether stats come from the telemetry export, summary, marker, or defaults.
+    - (Completed 2025-12-21) Added focused regression tests for gating/streaming paths (e.g., `tests/test_request_gating.py`, `tests/test_streaming_coordinator.py`) that fail when the centralized lifecycle regresses.
+    - (Updated 2025-12-23) History telemetry review is manual: export from Talon and run the validation helpers locally when you need a snapshot; the Make targets no longer orchestrate telemetry or freshness checks.
     - (Completed 2025-12-23) GUI gating migration status:
       - `lib/modelHelpCanvas`, `lib/modelSuggestionGUI`, `lib/modelPatternGUI`, `lib/modelPromptPatternGUI`, `lib/helpHub`, `lib/providerCommands`, `lib/requestHistoryDrawer`, `lib/requestHistoryActions`, `lib/modelResponseCanvas`, and `lib/modelConfirmationGUI` now delegate `_request_is_in_flight` / `_reject_if_request_in_flight` to `requestGating`, with Loop 306–307 adding dedicated tests so the history actions/drawer preserve drop reasons correctly and the response canvas initialises its meta signature safely.
       - GPT command wrappers now delegate to `requestGating`; `_tests/test_request_gating_macros.py` guards against Talon macros or new helpers bypassing the shared façade by flagging any direct `requestBus.is_in_flight` usage.
     - (Updated 2025-12-23) Guardrail CLI now fails immediately when the telemetry export marker is missing, invalid, or stale, printing a reminder to run `model export telemetry` inside Talon before rerunning guardrails. The former streak log (`artifacts/telemetry/cli-warning-streak.json`) has been removed. Remove any leftover `cli-warning-streak*.json` files manually—they are no longer used.
-    - (Updated 2025-12-23) `scripts/tools/run_guardrails_ci.sh` invokes the freshness helper directly and aborts on the same failure, so CI shells cannot proceed without a fresh Talon export.
+    - (Retired 2025-12-23) The CI guardrail runner has been removed; freshness checks now occur only when you run the manual helpers.
     - For solo workflows, capture any history snapshot you care about by running `python3 scripts/tools/history-axis-validate.py --summary-path artifacts/telemetry/history-validation-summary.json` before invoking `--reset-gating`; skip CI artifact archiving unless you reintroduce shared automation.
 
 
 The execution of these tasks should be coordinated with existing Concordance ADRs so that this ADR serves as a focused completion path for persona, axis snapshot, and request gating hotspots revealed by the latest churn × complexity analysis.
 
 ## Monitoring & Next Steps
-- Optional guardrail: from within Talon, run `user.model_export_telemetry` (or the `model export telemetry` voice command) to snapshot telemetry into `artifacts/telemetry/` before invoking CLI guardrails; subsequent CLI helpers consume the exported JSON (via `--summarize-json` / `--counts-json`) rather than querying live state. The guardrail targets now call `scripts/tools/check-telemetry-export-marker.py` to enforce freshness, and when `ALLOW_STALE_TELEMETRY=1` is set for offline shells the helper now prints `WARNING: ALLOW_STALE_TELEMETRY is set; skipping telemetry export freshness check` so the bypass is unmistakable. The CI runner now echoes that warning to stdout, adds a `Telemetry Export Check` section to GitHub summaries, and only continues for non-history targets after printing `WARNING: telemetry export freshness check failed (exit N) … summary was optional so the run continued.`
-- CLI guardrail tip: when the export marker is missing or stale, `check-telemetry-export-marker.py` now prints a `TIP:` reminder telling me to run `model export telemetry` before continuing, and supports `--wait` / `--wait-seconds` to pause until telemetry is fresh.
-- Defaults escalation: Guardrail CLI/Make targets cannot auto-trigger `model export telemetry` because the Talon runtime modules are unavailable to CLI processes. After two consecutive `(missing)` or `(non-default)` scheduler sources, the guardrail run must stop and instruct the operator to refresh telemetry from inside Talon before continuing; this holds even when `ALLOW_AUTO_TELEMETRY` appears enabled.
-- Fail-fast guardrail: `check-telemetry-export-marker.py` now exits immediately when the telemetry marker is missing, invalid, or stale, printing instructions to refresh from Talon and halting CLI guardrails until a fresh export is detected.
-- Guardrail runner output: `scripts/tools/run_guardrails_ci.sh` prints a freshness check banner before executing guardrails and relies on the helper’s exit code to stop the run when exports are out of date. Telemetry guardrail metadata still uses `history-telemetry-inspect.py --format summary`, so CLI/Make runs show a single `summary: guardrail_target=…` line alongside streaming status and last-drop details, plus the default `summary_path`, `total_entries`, and `streaming_status` fields without extra `--field` flags.
-- Talon cadence updates: changing the `guardrail_telemetry_export_interval_minutes` setting now reschedules the background exporter immediately, so I can tighten or loosen the cadence without restarting Talon.
-- Scheduler telemetry: each export now records scheduler reschedule stats in the telemetry payload and marker, so CLI guardrails can surface cadence drift and last reschedule reasons. Guardrail CLI output now prints the reschedule count, last interval, reason, timestamp, and the data source (telemetry, summary, marker, or defaults), highlighting non-default sources with a `(non-default)` suffix and stale readings with `(stale)`; job summaries embed both the JSON snapshot and the bullet summary.
-- Optional spot-check: `python3 scripts/tools/history-axis-validate.py --summary-path artifacts/telemetry/history-validation-summary.json --reset-gating` still enforces directional axes; use `--summarize-json` variants when you want to inspect streaming/persona tables.
-- Guardrail simulation: set `HISTORY_AXIS_VALIDATE_SIMULATE_GATING_DROP=__DEFAULT__` (or assign a custom message string) before running `python3 scripts/tools/history-axis-validate.py` in CI to synthesize a gating drop; leave the variable unset during production guardrail runs so real telemetry remains authoritative.
-- Telemetry inspection: guardrail targets now print the telemetry metadata automatically; run `python3 scripts/tools/history-telemetry-inspect.py artifacts/telemetry/history-validation-summary.telemetry.json --format summary` (or pass another telemetry path) when you want the same concise guardrail target, drop totals, and last-drop messages during manual comparisons.
-- Confirm GPT Talon macros continue to route through guarded actions; the CLI `history-axis-validate` drop-line output is a debugging aid for agents (not an end-user surface) but still provides an early warning when drop messaging regresses.
-- When investigating persona/int suggestion churn, review `suggestion-skip-summary.json` produced by guardrail runs or call `python3 scripts/tools/suggestion-skip-export.py --pretty` to emit the current counts directly. (Until a Talon-side exporter lands, these CLI helpers emit zeros because they do not have access to Talon runtime memory; add a Talon guardrail slice to persist skip counts before running the CLI tooling.)
-- When migrating additional canvases or macros, mirror the new drop-reason preservation tests (`_tests/test_request_history_actions.py`, `_tests/test_request_history_drawer_gating.py`, `_tests/test_model_response_canvas_guard.py`) so each surface locks its messaging contract before behaviour changes land.
-- When telemetry fields expand, add or extend targeted tests so the new data stays covered without relying on manual guardrails.
-- Continue rerunning `python3.11 -m pytest _tests/test_gpt_actions.py _tests/test_request_history_actions.py` after telemetry or macro adjustments to confirm gating, drop-reason messaging, and history flows stay green under the shared facade.
+- Manual telemetry workflow: export from Talon (`model export telemetry`) when you need a fresh snapshot, then run `python3 scripts/tools/history-axis-validate.py --summary-path artifacts/telemetry/history-validation-summary.json` locally to inspect summaries. Skip the export entirely when you are only iterating on code in isolation.
+- Use `python3 scripts/tools/history-axis-validate.py --summarize-json ...` and `python3 scripts/tools/history-telemetry-inspect.py ... --format summary` ad hoc to review gating drops or persona tables; these helpers no longer gate CI.
+- `python3 scripts/tools/check-telemetry-export-marker.py` remains handy when you purposely export telemetry and want a reminder to clean up stale streak artefacts.
+- Keep `suggestion-skip-summary.json` in mind for debugging: run `python3 scripts/tools/suggestion-skip-export.py --pretty` after exporting telemetry if you want the latest counts.
+- Continue rerunning `python3.11 -m pytest _tests/test_gpt_actions.py _tests/test_request_history_actions.py` after telemetry or macro adjustments to confirm gating, drop-reason messaging, and history flows stay green under the shared façade.

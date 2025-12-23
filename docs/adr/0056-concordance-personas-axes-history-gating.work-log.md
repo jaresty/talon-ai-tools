@@ -3517,3 +3517,77 @@ PY
   - Warning repetition may still be ignored when export telemetry is intentionally stale; mitigation: document follow-up procedure and monitor guardrail logs during manual runs.
 - next_work:
   - Loop 394: reassess guardrail automation overhead now that the script includes heavier messaging.
+
+## 2025-12-23 – Loop 394 (kind: documentation)
+- helper_version: helper:v20251223.1
+- focus: Request Gating & Streaming – record plan to retire the CI guardrail runner and manualize telemetry checks (ADR §Tests-First, Monitoring).
+- riskiest_assumption: Continuing to rely on `scripts/tools/run_guardrails_ci.sh` adds maintenance overhead for a solo workflow (probability medium, impact medium-high for wasted CI effort); `python3 - <<'PY' ...` fails until the helper references are removed.
+- validation_targets:
+  - python3 - <<'PY'
+      from pathlib import Path
+      repo = Path('.').resolve()
+      script = repo / 'scripts/tools/run_guardrails_ci.sh'
+      if script.exists():
+          raise SystemExit('run_guardrails_ci.sh still present')
+      text = (repo / 'readme.md').read_text(encoding='utf-8')
+      if 'run_guardrails_ci.sh' in text:
+          raise SystemExit('README still references run_guardrails_ci.sh')
+      contrib = (repo / 'CONTRIBUTING.md').read_text(encoding='utf-8')
+      if 'run_guardrails_ci.sh' in contrib:
+          raise SystemExit('CONTRIBUTING still references run_guardrails_ci.sh')
+      print('guardrail runner already retired')
+    PY
+- evidence: `docs/adr/evidence/0056/loop-0394.md`
+- rollback_plan: `git restore --source=HEAD -- docs/adr/0056-concordance-personas-axes-history-gating.work-log.md`
+- delta_summary: helper:diff-snapshot=1 file changed, 15 insertions(+); work log now tracks the plan to retire the CI helper before edits land.
+- residual_risks:
+  - Legacy helper references still exist in code/docs; mitigation: execute Loop 395 to remove them; monitor future docs for lingering mentions.
+- next_work:
+  - Loop 395: implement the manual-only workflow and remove the CI helper/tests (validation via the same absence check command).
+
+## 2025-12-23 – Loop 395 (kind: guardrail/tests)
+- helper_version: helper:v20251223.1
+- focus: Request Gating & Streaming – remove the CI helper/tests and document the manual-only telemetry workflow (ADR §§Tests-First, Consequences, Monitoring).
+- riskiest_assumption: Retiring `scripts/tools/run_guardrails_ci.sh` and related tests could leave stale references that confuse future runs (probability medium, impact high for failed guardrail execution); the absence check command fails until references are removed.
+- validation_targets:
+  - python3 - <<'PY'
+      from pathlib import Path
+      repo = Path('.').resolve()
+      script = repo / 'scripts/tools/run_guardrails_ci.sh'
+      if script.exists():
+          raise SystemExit('run_guardrails_ci.sh still present')
+      text = (repo / 'readme.md').read_text(encoding='utf-8')
+      if 'run_guardrails_ci.sh' in text:
+          raise SystemExit('README still references run_guardrails_ci.sh')
+      contrib = (repo / 'CONTRIBUTING.md').read_text(encoding='utf-8')
+      if 'run_guardrails_ci.sh' in contrib:
+          raise SystemExit('CONTRIBUTING still references run_guardrails_ci.sh')
+      print('guardrail runner already retired')
+    PY
+- evidence: `docs/adr/evidence/0056/loop-0395.md`
+- rollback_plan: `git restore --source=HEAD -- scripts/tools/run_guardrails_ci.sh _tests/test_run_guardrails_ci.py _tests/test_run_guardrails_ci_default_target.py _tests/test_run_guardrails_ci_history_docs.py _tests/test_make_request_history_guardrails.py _tests/test_make_request_history_guardrails_fast.py Makefile readme.md CONTRIBUTING.md docs/adr/0056-concordance-personas-axes-history-gating.md docs/adr/0056-concordance-personas-axes-history-gating.work-log.md && rm docs/adr/evidence/0056/loop-0395.md` (then rerun the absence check to replay the failure)
+- delta_summary: helper:diff-snapshot=11 files changed, 62 insertions(+), 2189 deletions(-); removed the CI helper/tests, simplified Make targets, and rewrote README/CONTRIBUTING/ADR guidance for manual telemetry checks.
+- residual_risks:
+  - Manual telemetry workflow depends on the maintainer remembering to export from Talon; mitigation: work log and ADR now emphasize the manual steps; monitor future guardrail loops for drift.
+- next_work:
+  - None queued; continue to rely on manual exports when history telemetry is required.
+
+## 2025-12-23 – Loop 396 (kind: documentation)
+- helper_version: helper:v20251223.1
+- focus: ADR status and monitoring — mark ADR-0056 as Accepted after retiring CI telemetry automation (ADR §Tests-First, Consequences).
+- riskiest_assumption: Leaving the ADR in Proposed status suggests the plan is unfinished (probability medium, impact medium for decision traceability); the acceptance check command fails until the status line is updated.
+- validation_targets:
+  - python3 - <<'PY'
+      from pathlib import Path
+      text = Path('docs/adr/0056-concordance-personas-axes-history-gating.md').read_text(encoding='utf-8')
+      if 'Status: Accepted' not in text:
+          raise SystemExit('ADR status not yet marked Accepted')
+      print('ADR status already Accepted')
+    PY
+- evidence: `docs/adr/evidence/0056/loop-0396.md`
+- rollback_plan: `git restore --source=HEAD -- docs/adr/0056-concordance-personas-axes-history-gating.md docs/adr/0056-concordance-personas-axes-history-gating.work-log.md && rm docs/adr/evidence/0056/loop-0396.md`
+- delta_summary: helper:diff-snapshot=1 file changed, 9 insertions(+), 9 deletions(-); ADR-0056 now records Status: Accepted and trims lingering CI guidance to reflect the manual telemetry workflow.
+- residual_risks:
+  - None; ADR status and monitoring guidance now align with the manual-only telemetry process.
+- next_work:
+  - None queued.

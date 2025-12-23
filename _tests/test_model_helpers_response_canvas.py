@@ -11,6 +11,7 @@ else:
 if bootstrap is not None:
     from talon_user.lib import modelHelpers
     from talon_user.lib.modelState import GPTState
+    from talon_user.lib.modelResponseCanvas import ResponseCanvasState
     from talon import actions
 
     class ResponseCanvasRefreshTests(unittest.TestCase):
@@ -19,11 +20,15 @@ if bootstrap is not None:
             actions.app.calls.clear()
             GPTState.current_destination_kind = "window"
             GPTState.suppress_response_canvas = False  # type: ignore[attr-defined]
+            if hasattr(GPTState, "response_canvas_manual_close"):
+                delattr(GPTState, "response_canvas_manual_close")
 
         def tearDown(self):
             GPTState.current_destination_kind = ""
             if hasattr(GPTState, "suppress_response_canvas"):
                 delattr(GPTState, "suppress_response_canvas")
+            if hasattr(GPTState, "response_canvas_manual_close"):
+                delattr(GPTState, "response_canvas_manual_close")
 
         def test_refresh_uses_ui_dispatch(self):
             run_calls = []
@@ -33,9 +38,15 @@ if bootstrap is not None:
                 fn()
 
             with (
-                patch.object(modelHelpers, "run_on_ui_thread", side_effect=run_on_ui_thread),
-                patch.object(modelHelpers.actions.user, "model_response_canvas_refresh") as refresh,
-                patch.object(modelHelpers.actions.user, "model_response_canvas_open") as open_canvas,
+                patch.object(
+                    modelHelpers, "run_on_ui_thread", side_effect=run_on_ui_thread
+                ),
+                patch.object(
+                    modelHelpers.actions.user, "model_response_canvas_refresh"
+                ) as refresh,
+                patch.object(
+                    modelHelpers.actions.user, "model_response_canvas_open"
+                ) as open_canvas,
             ):
                 modelHelpers._refresh_response_canvas()
 
@@ -48,12 +59,45 @@ if bootstrap is not None:
             # Ensure no exception is raised if refresh/open throw.
             with (
                 patch.object(modelHelpers, "run_on_ui_thread") as run_mock,
-                patch.object(modelHelpers.actions.user, "model_response_canvas_refresh", side_effect=Exception("boom")),
-                patch.object(modelHelpers.actions.user, "model_response_canvas_open", side_effect=Exception("boom")),
+                patch.object(
+                    modelHelpers.actions.user,
+                    "model_response_canvas_refresh",
+                    side_effect=Exception("boom"),
+                ),
+                patch.object(
+                    modelHelpers.actions.user,
+                    "model_response_canvas_open",
+                    side_effect=Exception("boom"),
+                ),
             ):
                 run_mock.side_effect = lambda fn, delay_ms=0: fn()
                 modelHelpers._refresh_response_canvas()
+
+        def test_refresh_skips_after_manual_close(self):
+            ResponseCanvasState.showing = False
+            GPTState.response_canvas_manual_close = True
+
+            def run_on_ui_thread(fn, delay_ms=0):
+                fn()
+
+            with (
+                patch.object(
+                    modelHelpers, "run_on_ui_thread", side_effect=run_on_ui_thread
+                ),
+                patch.object(
+                    modelHelpers.actions.user, "model_response_canvas_open"
+                ) as open_canvas,
+                patch.object(
+                    modelHelpers.actions.user, "model_response_canvas_refresh"
+                ) as refresh,
+            ):
+                modelHelpers._refresh_response_canvas()
+
+            open_canvas.assert_not_called()
+            refresh.assert_not_called()
+
 else:
+
     class ResponseCanvasRefreshTests(unittest.TestCase):
         @unittest.skip("Test harness unavailable outside unittest runs")
         def test_placeholder(self):

@@ -1967,6 +1967,10 @@ class UserActions:
             except Exception:
                 pass
             ResponseCanvasState.showing = False
+            try:
+                setattr(GPTState, "response_canvas_manual_close", True)
+            except Exception:
+                pass
 
             try:
                 GPTState.response_canvas_showing = False
@@ -2001,7 +2005,15 @@ class UserActions:
             _restore_previous_focus()
         else:
             _capture_previous_focus()
-            close_common_overlays(actions.user, exclude={"model_response_canvas_close"})
+            close_common_overlays(
+                actions.user, exclude={"model_response_canvas_close"}, passive=True
+            )
+
+            try:
+                setattr(GPTState, "response_canvas_manual_close", False)
+            except Exception:
+                pass
+
             ResponseCanvasState.showing = True
             try:
                 ctx.tags = ["user.model_window_open"]
@@ -2048,9 +2060,17 @@ class UserActions:
         )
         if _guard_response_canvas(allow_inflight=True):
             return
+        try:
+            setattr(GPTState, "response_canvas_manual_close", True)
+        except Exception:
+            pass
         if _response_canvas is None:
             _log_canvas_close("close w/o canvas")
             ResponseCanvasState.showing = False
+            try:
+                setattr(GPTState, "response_canvas_manual_close", True)
+            except Exception:
+                pass
             try:
                 ctx.tags = []
             except Exception:

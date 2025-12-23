@@ -249,6 +249,12 @@ def _should_show_response_canvas() -> bool:
 def _refresh_response_canvas() -> None:
     """Open (if needed) and refresh the response canvas once on the UI thread."""
 
+    try:
+        if getattr(GPTState, "response_canvas_manual_close", False):
+            return
+    except Exception:
+        pass
+
     def _open_and_refresh():
         try:
             actions.user.model_response_canvas_open()

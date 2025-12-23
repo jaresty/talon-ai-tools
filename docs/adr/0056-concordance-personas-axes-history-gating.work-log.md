@@ -3362,3 +3362,17 @@ PY
   - Guardrail runner scripts still return success without surfacing the warning inline; ensure CI shells print the message so humans notice when the bypass is active.
 - next_work:
   - Behaviour: have guardrail runners echo the warning when ALLOW_STALE_TELEMETRY is set — python3 -m pytest _tests/test_run_guardrails_ci.py
+
+## 2025-12-23 – Loop 385 (kind: guardrail/tests)
+- helper_version: helper:v20251221.5
+- focus: Monitoring & Next Steps – surface the ALLOW_STALE_TELEMETRY bypass warning in guardrail runner output.
+- riskiest_assumption: Without echoing the helper output, CI logs and summaries could hide that `ALLOW_STALE_TELEMETRY` bypassed freshness checks (probability medium, impact high for Concordance telemetry integrity); `python3 -m pytest _tests/test_run_guardrails_ci.py` must fail before the runner surfaces the warning.
+- validation_targets:
+  - python3 -m pytest _tests/test_run_guardrails_ci.py
+- evidence: `docs/adr/evidence/0056/loop-0385.md`
+- rollback_plan: `git restore --source=HEAD -- _tests/test_run_guardrails_ci.py scripts/tools/run_guardrails_ci.sh docs/adr/0056-concordance-personas-axes-history-gating.work-log.md && python3 -m pytest _tests/test_run_guardrails_ci.py`
+- delta_summary: helper:diff-snapshot=2 files changed, 20 insertions(+), 1 deletion(-); captured the telemetry helper output, echoed it to stdout and GitHub summaries, and locked the behaviour in the guardrail CI tests.
+- residual_risks:
+  - Monitoring guidance still references manual env overrides without mentioning the new summary section; document the emitted warning so operators know what to expect.
+- next_work:
+  - Behaviour: refresh ADR-0056 monitoring guidance with the new telemetry warning output — docs/adr/0056-concordance-personas-axes-history-gating.md

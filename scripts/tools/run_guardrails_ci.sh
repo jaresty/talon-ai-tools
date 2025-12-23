@@ -509,7 +509,22 @@ PY
   fi
 
   echo "Checking telemetry export freshness..."
-  python3 scripts/tools/check-telemetry-export-marker.py --wait --wait-seconds 30
+  TELEMETRY_CHECK_OUTPUT=$(python3 scripts/tools/check-telemetry-export-marker.py --wait --wait-seconds 30 2>&1)
+  TELEMETRY_CHECK_STATUS=$?
+  if [[ -n "${TELEMETRY_CHECK_OUTPUT}" ]]; then
+    printf '%s\n' "${TELEMETRY_CHECK_OUTPUT}"
+    if [[ -n "${GITHUB_STEP_SUMMARY:-}" ]]; then
+      {
+        echo
+        echo "### Telemetry Export Check"
+        echo
+        printf '%s\n' "${TELEMETRY_CHECK_OUTPUT}"
+      } >> "${GITHUB_STEP_SUMMARY}"
+    fi
+  fi
+  if [[ ${TELEMETRY_CHECK_STATUS} -ne 0 ]]; then
+    exit "${TELEMETRY_CHECK_STATUS}"
+  fi
 
 
   STREAMING_LAST_OUTPUT=$(python3 - "${SUMMARY_FILE}" <<'PY'

@@ -250,6 +250,10 @@ if not TYPE_CHECKING:
                     "Checking telemetry export freshness...",
                     result.stdout,
                 )
+                self.assertIn(
+                    "ALLOW_STALE_TELEMETRY is set; skipping telemetry export freshness check",
+                    result.stdout,
+                )
                 self.assertIn("Telemetry scheduler stats:", result.stdout)
                 self.assertIn("- Scheduler reschedules: 0", result.stdout)
                 self.assertIn(

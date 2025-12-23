@@ -3468,3 +3468,24 @@ PY
   - Legacy `cli-warning-streak` files may still exist on old workstations; clean them manually if encountered and reopen this track only if new guardrail code reintroduces the artifact.
 - next_work:
   - None queued; telemetry monitoring now focuses on the ALLOW_STALE_TELEMETRY warning flow.
+
+## 2025-12-23 – Loop 391 (kind: documentation)
+- helper_version: helper:v20251221.5
+- focus: Monitoring & Next Steps – document the manual cleanup note in ADR-0056.
+- riskiest_assumption: Without mentioning leftover `cli-warning-streak` files, the ADR could imply automation still handles them (probability medium, impact medium for operator clarity); `python3 - <<'PY' ...` fails until the note is present.
+- validation_targets:
+  - python3 - <<'PY'
+      from pathlib import Path
+      text = Path('docs/adr/0056-concordance-personas-axes-history-gating.md').read_text(encoding='utf-8').lower()
+      if 'remove any leftover `cli-warning-streak` files manually' in text:
+          print('cleanup note present')
+      else:
+          raise SystemExit('cleanup note missing')
+    PY
+- evidence: `docs/adr/evidence/0056/loop-0391.md`
+- rollback_plan: `git restore --source=HEAD -- docs/adr/0056-concordance-personas-axes-history-gating.md docs/adr/0056-concordance-personas-axes-history-gating.work-log.md && python3 - <<'PY' ...`
+- delta_summary: helper:diff-snapshot=2 files changed, 7 insertions(+), 1 deletion(-); ADR-0056 now explicitly directs operators to delete leftover streak artifacts and the work log records the rationale.
+- residual_risks:
+  - None; the manual cleanup note closes the documentation gap.
+- next_work:
+  - None queued; Monitoring & Next Steps reflects the current guardrail posture.

@@ -24,6 +24,23 @@ if not TYPE_CHECKING:
                 "CI should upload the telemetry summary artifact",
             )
 
+        def test_workflow_printf_guard(self) -> None:
+            """Ensure workflow keeps printf format strings on a single line."""
+
+            repo_root = Path(__file__).resolve().parents[1]
+            workflow = repo_root / ".github" / "workflows" / "test.yml"
+            self.assertTrue(workflow.exists(), "Expected CI workflow file to exist")
+            lines = workflow.read_text(encoding="utf-8").splitlines()
+            target = "printf '%s"
+            for idx, line in enumerate(lines, start=1):
+                if target in line:
+                    tail = line.split(target, 1)[1]
+                    if "'" not in tail:
+                        self.fail(
+                            "printf format string must include the closing quote on the same line "
+                            f"(line {idx})"
+                        )
+
 else:
 
     class CiWorkflowGuardrailsTests(unittest.TestCase):  # pragma: no cover

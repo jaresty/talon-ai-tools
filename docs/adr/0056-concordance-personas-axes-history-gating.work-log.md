@@ -3334,3 +3334,17 @@ PY
   - Additional guardrail entry points (e.g., custom scripts) must be updated if they diverge from `ci-guardrails`; rerun the checker after editing automation scripts.
 - next_work:
   - None queued; guardrail automation now exercises the macro audit test.
+
+## 2025-12-23 – Loop 383 (kind: guardrail/tests)
+- helper_version: helper:v20251221.5
+- focus: Monitoring & Next Steps – guard GitHub workflow printf quoting.
+- riskiest_assumption: Without a test, future edits could reintroduce multi-line `printf` strings and break workflow YAML parsing (probability medium, impact high for CI guardrails).
+- validation_targets:
+  - python3 -m pytest _tests/test_ci_workflow_guardrails.py
+- evidence: `docs/adr/evidence/0056/loop-0383.md`
+- rollback_plan: `git checkout -- _tests/test_ci_workflow_guardrails.py && python3 -m pytest _tests/test_ci_workflow_guardrails.py`
+- delta_summary: helper:diff-snapshot=1 file changed, 17 insertions(+); added `test_workflow_printf_guard` to ensure CI workflow `printf` format strings stay on a single line.
+- residual_risks:
+  - Additional workflows should run the same guard if new files are added; extend the test when more YAML files appear.
+- next_work:
+  - Address the `ALLOW_STALE_TELEMETRY` bypass risk by warning when the env var disables freshness checks.

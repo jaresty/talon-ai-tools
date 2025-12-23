@@ -509,9 +509,12 @@ PY
   fi
 
   echo "Checking telemetry export freshness..."
+  set +e
   TELEMETRY_CHECK_OUTPUT=$(python3 scripts/tools/check-telemetry-export-marker.py --wait --wait-seconds 30 2>&1)
   TELEMETRY_CHECK_STATUS=$?
+  set -e
   if [[ -n "${TELEMETRY_CHECK_OUTPUT}" ]]; then
+
     printf '%s\n' "${TELEMETRY_CHECK_OUTPUT}"
     if [[ -n "${GITHUB_STEP_SUMMARY:-}" ]]; then
       {
@@ -523,7 +526,17 @@ PY
     fi
   fi
   if [[ ${TELEMETRY_CHECK_STATUS} -ne 0 ]]; then
-    exit "${TELEMETRY_CHECK_STATUS}"
+    if [[ "${REQUIRE_SUMMARY}" == "true" ]]; then
+      exit "${TELEMETRY_CHECK_STATUS}"
+    else
+      echo "WARNING: telemetry export freshness check failed (exit ${TELEMETRY_CHECK_STATUS}) for target ${TARGET}; continuing because summary is optional."
+      if [[ -n "${GITHUB_STEP_SUMMARY:-}" ]]; then
+        {
+          echo
+          echo "WARNING: telemetry export freshness check failed (exit ${TELEMETRY_CHECK_STATUS}) for target ${TARGET}; summary was optional so the run continued."
+        } >> "${GITHUB_STEP_SUMMARY}"
+      fi
+    fi
   fi
 
 

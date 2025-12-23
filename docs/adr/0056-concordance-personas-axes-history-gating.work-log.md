@@ -3411,3 +3411,17 @@ PY
   - Guardrail runner output and GitHub summary still echo the helper message without verifying the `WARNING` prefix; ensure the higher-severity phrasing propagates through CI logs.
 - next_work:
   - Behaviour: update `run_guardrails_ci` tests to assert the new `WARNING` prefix surfaces in logs — python3 -m pytest _tests/test_run_guardrails_ci.py
+
+## 2025-12-23 – Loop 388 (kind: guardrail/tests)
+- helper_version: helper:v20251221.5
+- focus: Monitoring & Next Steps – keep optional guardrail targets logging the `WARNING` prefix without failing the run.
+- riskiest_assumption: Axis-only guardrail targets (summary optional) exit non-zero when `ALLOW_STALE_TELEMETRY` bypasses freshness checks, stopping CI even though the behaviour is already warned (probability medium, impact high for CI availability); `python3 -m pytest _tests/test_run_guardrails_ci.py` must fail before the runner tolerates the bypass with a warning.
+- validation_targets:
+  - python3 -m pytest _tests/test_run_guardrails_ci.py
+- evidence: `docs/adr/evidence/0056/loop-0388.md`
+- rollback_plan: `git restore --source=HEAD -- _tests/test_run_guardrails_ci.py scripts/tools/run_guardrails_ci.sh && python3 -m pytest _tests/test_run_guardrails_ci.py`
+- delta_summary: helper:diff-snapshot=2 files changed, 15 insertions(+), 2 deletions(-); allowed non-required targets to continue after the marker helper exits non-zero, surfaced the new warning in CLI output and GitHub summaries, and tightened the regression test to expect the prefixed wording.
+- residual_risks:
+  - ADR-0056 still references the warning in general terms; update monitoring guidance to mention the “WARNING:” prefix and optional-target behaviour.
+- next_work:
+  - Documentation: refresh ADR-0056 monitoring notes with the strengthened warning wording — docs/adr/0056-concordance-personas-axes-history-gating.md

@@ -2149,6 +2149,21 @@ PY
 - next_work:
   - Behaviour: land the guardrail auto-trigger implementation (per Loop 370 next_work) and update work log once complete.
 
+## 2025-12-23 – Loop 372 (kind: tooling)
+- helper_version: helper:v20251221.5
+- focus: ADR-0056 §Monitoring & Next Steps – add summary/JSON output modes to history telemetry inspector.
+- riskiest_assumption: Without concise or machine-readable output, telemetry reviews stay noisy and scripts must reimplement parsing (probability medium, impact medium-high for telemetry triage).
+- validation_targets:
+  - python3 -m pytest _tests/test_history_telemetry_inspect.py
+- evidence: docs/adr/evidence/0056/loop-0372.md
+- rollback_plan: git restore -- scripts/tools/history-telemetry-inspect.py _tests/test_history_telemetry_inspect.py docs/adr/evidence/0056/loop-0372.md
+- delta_summary: helper:diff-snapshot=3 files changed, 138 insertions(+), 5 deletions(-); telemetry inspector now supports table, summary, and JSON formats with tests covering each mode and an evidence log.
+- residual_risks:
+  - Guardrail CLI/Make targets still rely on table output; migrate them to the summary mode before telemetry logs grow noisier.
+  - JSON output emits one object per line; add field filtering if future workflows require slimmer payloads.
+- next_work:
+  - Rewire guardrail scripts to adopt the summary mode for concise logs.
+
 ## 2025-12-23 – Loop 271 (kind: docs)
 
 

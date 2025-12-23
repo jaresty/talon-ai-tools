@@ -25,6 +25,16 @@ DEFAULT_FIELDS: tuple[str, ...] = (
     "streaming_last_drop_code",
 )
 
+SUMMARY_FIELDS: tuple[str, ...] = (
+    "guardrail_target",
+    "gating_drop_total",
+    "gating_drop_rate",
+    "last_drop_message",
+    "last_drop_code",
+    "streaming_last_drop_message",
+    "streaming_last_drop_code",
+)
+
 
 def _load_payload(path: Path) -> dict[str, Any]:
     try:
@@ -83,23 +93,47 @@ def parse_args() -> argparse.Namespace:
             "fields. Defaults include guardrail target and key gating stats."
         ),
     )
+    parser.add_argument(
+        "--format",
+        choices=("table", "summary", "json"),
+        default="table",
+        help="Output format: human-readable table (default), summary line, or JSON payload.",
+    )
     return parser.parse_args()
 
 
 def main() -> int:
     args = parse_args()
-    fields = list(DEFAULT_FIELDS)
+    if args.format == "summary":
+        base_fields = list(SUMMARY_FIELDS)
+    else:
+        base_fields = list(DEFAULT_FIELDS)
+    fields = base_fields
     if args.fields:
+        fields = list(fields)
         fields.extend(args.fields)
 
     for index, path in enumerate(args.telemetry_paths):
         payload = _load_payload(path)
         if index > 0:
             print()  # separator line between files
-        print(f"telemetry: {path}")
-        for field in _iter_fields(fields):
-            value = payload.get(field, "none")
-            print(f"  {field}: {_format_value(value)}")
+        if args.format == "table":
+            print(f"telemetry: {path}")
+            for field in _iter_fields(fields):
+                value = payload.get(field, "none")
+                print(f"  {field}: {_format_value(value)}")
+        elif args.format == "summary":
+            summary_values = []
+            for field in _iter_fields(fields):
+                value = payload.get(field, "none")
+                summary_values.append(f"{field}={_format_value(value)}")
+            print(f"telemetry: {path}")
+            print(f"  summary: {'; '.join(summary_values)}")
+        else:  # json
+            json_payload: dict[str, Any] = {"telemetry": str(path)}
+            for field in _iter_fields(fields):
+                json_payload[field] = payload.get(field)
+            print(json.dumps(json_payload, separators=(",", ":")))
     return 0
 
 

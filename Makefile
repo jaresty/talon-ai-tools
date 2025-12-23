@@ -121,7 +121,7 @@ request-history-guardrails:
 	$(PYTHON) -c "import json; from pathlib import Path; path = Path('artifacts/telemetry/suggestion-skip-summary.json'); data = json.loads(path.read_text(encoding='utf-8')) if path.exists() else {}; total = data.get('total_skipped', 0); reasons = data.get('reason_counts', []); formatted = ', '.join('{0}={1}'.format(item.get('reason'), item.get('count')) for item in reasons if isinstance(item, dict) and item.get('reason')) if isinstance(reasons, list) and reasons else 'none'; print('Suggestion skip total: {}'.format(total)); print('Suggestion skip reasons: {}'.format(formatted))"
 	printf 'Telemetry summary (json): ' && cat artifacts/telemetry/history-validation-summary.telemetry.json && printf '\n'
 	printf 'Telemetry guardrail metadata:\n'
-	$(PYTHON) scripts/tools/history-telemetry-inspect.py artifacts/telemetry/history-validation-summary.telemetry.json --field summary_path --field total_entries --field gating_drop_total --field streaming_status
+	$(PYTHON) scripts/tools/history-telemetry-inspect.py artifacts/telemetry/history-validation-summary.telemetry.json --format summary --field summary_path --field total_entries --field streaming_status
 	printf '%s\n' \
 	    "import json" \
 	    "import os" \
@@ -274,7 +274,7 @@ request-history-guardrails-fast:
 	$(PYTHON) -c "import json; from pathlib import Path; path = Path('artifacts/telemetry/suggestion-skip-summary.json'); data = json.loads(path.read_text(encoding='utf-8')) if path.exists() else {}; total = data.get('total_skipped', 0); reasons = data.get('reason_counts', []); formatted = ', '.join('{0}={1}'.format(item.get('reason'), item.get('count')) for item in reasons if isinstance(item, dict) and item.get('reason')) if isinstance(reasons, list) and reasons else 'none'; print('Suggestion skip total: {}'.format(total)); print('Suggestion skip reasons: {}'.format(formatted))"
 	printf 'Telemetry summary (json): ' && cat artifacts/telemetry/history-validation-summary.telemetry.json && printf '\n'
 	printf 'Telemetry guardrail metadata:\n'
-	$(PYTHON) scripts/tools/history-telemetry-inspect.py artifacts/telemetry/history-validation-summary.telemetry.json --field summary_path --field total_entries --field gating_drop_total --field streaming_status
+	$(PYTHON) scripts/tools/history-telemetry-inspect.py artifacts/telemetry/history-validation-summary.telemetry.json --format summary --field summary_path --field total_entries --field streaming_status
 	printf '%s\n' \
 	    "import json" \
 	    "import os" \

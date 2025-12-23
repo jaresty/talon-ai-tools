@@ -228,7 +228,7 @@ if not TYPE_CHECKING:
                     result.stdout,
                 )
                 self.assertIn(
-                    "guardrail_target: request-history-guardrails",
+                    "summary: guardrail_target=request-history-guardrails",
                     result.stdout,
                 )
                 self.assertIn(
@@ -618,9 +618,10 @@ if not TYPE_CHECKING:
                 result.stdout,
             )
             self.assertIn(
-                "guardrail_target: request-history-guardrails-fast",
+                "summary: guardrail_target=request-history-guardrails-fast",
                 result.stdout,
             )
+
             self.assertIn(
                 "- guardrail target: request-history-guardrails-fast",
                 summary_text,

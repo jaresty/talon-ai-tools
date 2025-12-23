@@ -2164,6 +2164,21 @@ PY
 - next_work:
   - Rewire guardrail scripts to adopt the summary mode for concise logs.
 
+## 2025-12-23 – Loop 373 (kind: guardrail/tests)
+- helper_version: helper:v20251221.5
+- focus: ADR-0056 §Monitoring & Next Steps – guardrail scripts emit summary-form telemetry metadata.
+- riskiest_assumption: Without adopting the summary format, guardrail output stays verbose and duplicates telemetry lines (probability medium, impact medium for telemetry triage).
+- validation_targets:
+  - python3 -m pytest _tests/test_run_guardrails_ci.py::RunGuardrailsCITests::test_run_guardrails_ci_history_target_produces_summary _tests/test_make_request_history_guardrails.py::MakeRequestHistoryGuardrailsTests::test_make_request_history_guardrails_runs_clean
+- evidence: docs/adr/evidence/0056/loop-0373.md
+- rollback_plan: git restore -- scripts/tools/run_guardrails_ci.sh Makefile _tests/test_run_guardrails_ci.py _tests/test_make_request_history_guardrails.py docs/adr/evidence/0056/loop-0373.md
+- delta_summary: helper:diff-snapshot=4 files changed, 8 insertions(+), 7 deletions(-); guardrail CLI/Make targets call the telemetry inspector with summary mode and tests expect the concise output.
+- residual_risks:
+  - GitHub job summaries still print the table-form telemetry JSON; evaluate using the summary format there if logs stay noisy.
+  - Summary output currently lists all default fields; add filtering flags if future telemetry slices need slimmer highlights.
+- next_work:
+  - Refresh ADR guidance and job summary notes to reference the new summary output.
+
 ## 2025-12-23 – Loop 271 (kind: docs)
 
 

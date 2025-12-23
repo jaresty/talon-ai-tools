@@ -350,7 +350,7 @@ PY
 
   TELEMETRY_PATH="${SUMMARY_DIR}/history-validation-summary.telemetry.json"
   if [[ -f "${TELEMETRY_PATH}" ]]; then
-    TELEMETRY_METADATA=$(python3 scripts/tools/history-telemetry-inspect.py "${TELEMETRY_PATH}" --field summary_path --field total_entries --field gating_drop_total --field streaming_status)
+    TELEMETRY_METADATA=$(python3 scripts/tools/history-telemetry-inspect.py "${TELEMETRY_PATH}" --format summary --field summary_path --field total_entries --field streaming_status)
     echo "Telemetry guardrail metadata:"
     printf '%s\n' "${TELEMETRY_METADATA}" | sed 's/^/  /'
   fi

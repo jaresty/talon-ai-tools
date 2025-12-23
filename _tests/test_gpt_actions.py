@@ -95,6 +95,21 @@ if bootstrap is not None:
             gpt_module._recursive_orchestrator = self._original_orchestrator
             actions.app.calls.clear()
 
+        def test_suggest_prompt_text_emphasises_axis_tokens(self) -> None:
+            text = gpt_module._suggest_prompt_text(
+                axis_docs="Axis docs",
+                persona_intent_docs="Persona docs",
+                static_prompt_docs="Static docs",
+                prompt_subject="Subject",
+                content_text="Content",
+                context_lines=[],
+            )
+
+            self.assertIn('Leave them as an empty string ("") when', text)
+            self.assertIn(
+                "Never invent new preset names—keep relying\n  on axis tokens.", text
+            )
+
         def test_gpt_persona_presets_align_with_persona_catalog(self) -> None:
             """GPT._persona_presets should reflect the persona catalog helpers."""
             from talon_user.lib.personaConfig import persona_catalog

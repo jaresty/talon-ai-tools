@@ -1,7 +1,7 @@
 # 0058 – Align suggest telemetry with axis-first stance guardrails
 
 ## Status
-Proposed
+Accepted
 
 ## Context
 - `model run suggest` runs use the standard request logging pipeline (`lib/modelHelpers.py:1725` → `lib/streamingCoordinator.py:430` → `lib/requestLog.py:454`), so the Silent destination still attempts to append a history entry. Because the suggest payload lacks a directional axis, the log helper emits a `missing_directional` drop, which is surfaced in the latest telemetry snapshot (`artifacts/telemetry/history-validation-summary.telemetry.json`).

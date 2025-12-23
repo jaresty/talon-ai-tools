@@ -2179,6 +2179,19 @@ PY
 - next_work:
   - Refresh ADR guidance and job summary notes to reference the new summary output.
 
+## 2025-12-23 – Loop 374 (kind: docs)
+- helper_version: helper:v20251221.5
+- focus: ADR-0056 §Monitoring & Next Steps – document the telemetry summary output for guardrail scripts.
+- riskiest_assumption: Without updated guidance, it would be easy to overlook the new summary line and continue expecting the verbose table output (probability medium, impact medium for operator clarity).
+- validation_targets: [] (docs-only update; no automated guardrail required)
+- evidence: inline (Monitoring & Next Steps now references `history-telemetry-inspect.py --format summary` and the concise guardrail metadata line.)
+- rollback_plan: git restore -- docs/adr/0056-concordance-personas-axes-history-gating.md docs/adr/0056-concordance-personas-axes-history-gating.work-log.md
+- delta_summary: helper:diff-snapshot=1 file changed, 2 insertions(+), 2 deletions(-); Monitoring notes highlight the summary-mode telemetry output for CLI/Make guardrails.
+- residual_risks:
+  - Future telemetry formatting tweaks must update this guidance; review the section whenever `history-telemetry-inspect.py` flags change.
+- next_work:
+  - None; documentation now mirrors the summary output adopted in Loop 373.
+
 ## 2025-12-23 – Loop 271 (kind: docs)
 
 

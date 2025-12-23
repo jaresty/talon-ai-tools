@@ -193,6 +193,19 @@
 - next_work:
   - Guardrail: capture counts of consecutive defaults warnings in CLI output to prompt operators (Loop 360).
 
+## 2025-12-23 – Loop 360 (kind: docs)
+- helper_version: helper:v20251221.5
+- focus: ADR-0056 §Salient Tasks & Monitoring – document the manual counter for consecutive defaults warnings while CLI instrumentation is pending.
+- riskiest_assumption: Without a documented manual counter, repeated defaults warnings may go unnoticed while automation is pending (probability medium, impact medium-high for Concordance monitoring).
+- validation_targets: [] (docs-only slice; updates captured in Salient Tasks and Monitoring guidance).
+- evidence: inline (Salient Tasks now track the planned CLI instrumentation; Monitoring & Next Steps records the manual logging procedure).
+- rollback_plan: git restore --source=HEAD -- docs/adr/0056-concordance-personas-axes-history-gating.md docs/adr/0056-concordance-personas-axes-history-gating.work-log.md
+- delta_summary: helper:diff-snapshot=2 files changed, 15 insertions(+), 0 deletions(-); added manual tracking guidance and backlog entry.
+- residual_risks:
+  - Manual logging may drift or be skipped; mitigation: review guardrail CLI output after each run; monitoring trigger: defaults escalations without corresponding work-log streak entries.
+- next_work:
+  - Guardrail: prototype a CLI streak counter to surface prompts automatically (Loop 361).
+
 ## 2025-12-22 – Loop 349 (kind: docs)
 
 

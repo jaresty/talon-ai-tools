@@ -219,6 +219,29 @@
 - next_work:
   - Guardrail: implement the CLI streak counter in `scripts/tools/check-telemetry-export-marker.py` and related tests (Loop 362).
 
+## 2025-12-23 – Loop 362 (kind: guardrail/tests)
+- helper_version: helper:v20251221.5
+- focus: ADR-0056 §Salient Tasks & Monitoring – implement the CLI warning streak counter and persist escalation metadata.
+- riskiest_assumption: Without automated streak tracking, repeated `(missing)` / `(non-default)` warnings may go unnoticed or lack auditable context (probability medium-high, impact high for Concordance guardrail accuracy).
+- validation_targets:
+  - python3.11 -m pytest _tests/test_check_telemetry_export_marker.py
+- evidence:
+  - red | 2025-12-23T04:53:02Z | exit 1 | python3.11 -m pytest _tests/test_check_telemetry_export_marker.py
+      helper:diff-snapshot=0 files changed
+      Helper failed to create the streak log; warning streak prompt never appeared | inline
+  - green | 2025-12-23T04:53:19Z | exit 0 | python3.11 -m pytest _tests/test_check_telemetry_export_marker.py
+      helper:diff-snapshot=2 files changed, 155 insertions(+), 17 deletions(-)
+      CLI now persists warning streaks, prints the streak prompt, and resets after success | inline
+  - removal | 2025-12-23T04:53:39Z | exit 1 | git restore --source=HEAD -- scripts/tools/check-telemetry-export-marker.py && python3.11 -m pytest _tests/test_check_telemetry_export_marker.py
+      helper:diff-snapshot=0 files changed
+      Restoring the helper drops the streak log, causing the new test to fail again | inline
+- rollback_plan: git restore --source=HEAD -- scripts/tools/check-telemetry-export-marker.py _tests/test_check_telemetry_export_marker.py && python3.11 -m pytest _tests/test_check_telemetry_export_marker.py
+- delta_summary: helper:diff-snapshot=2 files changed, 155 insertions(+), 17 deletions(-); added warning streak persistence/output plus characterization tests.
+- residual_risks:
+  - Operators might ignore the emitted streak lines; mitigation: guardrail runbooks now require copying the prompt into the work log; monitoring trigger: repeated defaults warnings without matching streak entries.
+- next_work:
+  - Docs: update ADR-0056 monitoring guidance to describe the new streak metadata artefact and logging expectations (Loop 363).
+
 ## 2025-12-22 – Loop 349 (kind: docs)
 
 

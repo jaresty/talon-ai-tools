@@ -147,3 +147,54 @@ if not TYPE_CHECKING:
                 )
                 self.assertEqual(result.returncode, 2)
                 self.assertIn("Waiting for telemetry export marker", result.stderr)
+
+        def test_warning_streak_triggers_after_threshold(self) -> None:
+            with TemporaryDirectory() as tmpdir:
+                marker = Path(tmpdir) / "talon-export-marker.json"
+                streak_log = Path(tmpdir) / "streak.json"
+
+                first = self._run_helper(
+                    marker,
+                    "--no-auto-export",
+                    "--streak-log",
+                    str(streak_log),
+                    "--streak-threshold",
+                    "2",
+                )
+                self.assertEqual(first.returncode, 2)
+                self.assertTrue(streak_log.exists())
+                payload = json.loads(streak_log.read_text(encoding="utf-8"))
+                self.assertEqual(payload.get("streak"), 1)
+                self.assertNotIn("Telemetry export warning streak", first.stderr)
+
+                second = self._run_helper(
+                    marker,
+                    "--no-auto-export",
+                    "--streak-log",
+                    str(streak_log),
+                    "--streak-threshold",
+                    "2",
+                )
+                self.assertEqual(second.returncode, 2)
+                self.assertIn("Telemetry export warning streak: 2", second.stderr)
+                self.assertIn("Last command:", second.stderr)
+                payload = json.loads(streak_log.read_text(encoding="utf-8"))
+                self.assertEqual(payload.get("streak"), 2)
+
+                marker.parent.mkdir(parents=True, exist_ok=True)
+                marker.write_text(
+                    json.dumps({"exported_at": datetime.now(timezone.utc).isoformat()}),
+                    encoding="utf-8",
+                )
+                third = self._run_helper(
+                    marker,
+                    "--no-auto-export",
+                    "--streak-log",
+                    str(streak_log),
+                    "--streak-threshold",
+                    "2",
+                )
+                self.assertEqual(third.returncode, 0)
+                if streak_log.exists():
+                    payload = json.loads(streak_log.read_text(encoding="utf-8"))
+                    self.assertEqual(payload.get("streak"), 0)

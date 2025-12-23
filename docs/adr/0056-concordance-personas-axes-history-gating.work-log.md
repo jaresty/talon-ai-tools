@@ -3292,3 +3292,17 @@ PY
   - Setting `ALLOW_STALE_TELEMETRY=1` still bypasses the freshness check; reserve that env var for CI-only fixtures and monitor guardrail logs for accidental use in production.
 - next_work:
   - Consider deleting the stale streak artifacts under `artifacts/telemetry/` during guardrail runs so operators aren’t tempted to rely on the old JSON trail.
+
+## 2025-12-23 – Loop 380 (kind: guardrail/tests)
+- helper_version: helper:v20251221.5
+- focus: Monitoring & Next Steps – fix GitHub workflow summary quoting so guardrail CI jobs parse.
+- riskiest_assumption: Without repairing the split printf format string, the workflow YAML stays invalid (probability high) and guardrail summaries never run (impact high).
+- validation_targets:
+  - See `docs/adr/evidence/0056/loop-0380.md` (inline Python checker for split `printf` lines).
+- evidence: `docs/adr/evidence/0056/loop-0380.md`
+- rollback_plan: `git restore --source=HEAD -- .github/workflows/test.yml && python3 - <<'PY' …` (see evidence file for the checker script).
+- delta_summary: helper:diff-snapshot=1 file changed, 3 insertions(+), 6 deletions(-); normalized the GitHub workflow summary step so `printf` format strings stay on one line and the YAML parses.
+- residual_risks:
+  - Other workflow steps may still contain split `printf` strings; rerun the checker after editing workflows or when GitHub Actions reports YAML syntax errors.
+- next_work:
+  - Behaviour: audit Talon macros for lingering local request-gating helpers — `rg "_request_is_in_flight" GPT lib` followed by targeted guardrail tests.

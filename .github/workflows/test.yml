@@ -60,8 +60,7 @@ jobs:
             SUMMARY_OUTPUT=$(python3 scripts/tools/history-axis-validate.py --summarize-json "${SUMMARY_FILE}" --artifact-url "${ARTIFACT_URL}")
             echo "${SUMMARY_OUTPUT}"
             if [ -n "${GITHUB_STEP_SUMMARY:-}" ]; then
-              printf '%s
-' "${SUMMARY_OUTPUT}" >> "${GITHUB_STEP_SUMMARY}"
+              printf '%s\n' "${SUMMARY_OUTPUT}" >> "${GITHUB_STEP_SUMMARY}"
             fi
             if [ -f "${SKIP_FILE}" ]; then
               SKIP_OUTPUT=$(python3 - <<'PY'
@@ -88,8 +87,7 @@ PY
               "${SKIP_FILE}")
               echo "${SKIP_OUTPUT}"
               if [ -n "${GITHUB_STEP_SUMMARY:-}" ]; then
-                printf '%s
-' "${SKIP_OUTPUT}" >> "${GITHUB_STEP_SUMMARY}"
+                printf '%s\n' "${SKIP_OUTPUT}" >> "${GITHUB_STEP_SUMMARY}"
               fi
             else
               echo "Suggestion skip summary missing; skipping job summary entry."
@@ -101,8 +99,7 @@ PY
 - No history summary was produced in this run."
             echo "${SUMMARY_OUTPUT}"
             if [ -n "${GITHUB_STEP_SUMMARY:-}" ]; then
-              printf '%s
-' "${SUMMARY_OUTPUT}" >> "${GITHUB_STEP_SUMMARY}"
+              printf '%s\n' "${SUMMARY_OUTPUT}" >> "${GITHUB_STEP_SUMMARY}"
             fi
             echo "History summary missing; job summary updated to reflect absence."
           fi

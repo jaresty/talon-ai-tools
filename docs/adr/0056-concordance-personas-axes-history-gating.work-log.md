@@ -242,6 +242,19 @@
 - next_work:
   - Docs: update ADR-0056 monitoring guidance to describe the new streak metadata artefact and logging expectations (Loop 363).
 
+## 2025-12-23 – Loop 363 (kind: docs)
+- helper_version: helper:v20251221.5
+- focus: ADR-0056 §Salient Tasks & Monitoring – align documentation with the streak counter implementation.
+- riskiest_assumption: Without updated guidance, operators may continue manual streak logging and miss the new CLI artefacts (probability medium, impact medium-high for auditability).
+- validation_targets: [] (docs-only update tied to the completed guardrail slice).
+- evidence: inline (Salient Tasks now mark the CLI work complete; Monitoring & Next Steps describe the streak JSON and logging workflow).
+- rollback_plan: git restore --source=HEAD -- docs/adr/0056-concordance-personas-axes-history-gating.md docs/adr/0056-concordance-personas-axes-history-gating.work-log.md
+- delta_summary: helper:diff-snapshot=2 files changed, 18 insertions(+), 4 deletions(-); refreshed ADR guidance and recorded this loop entry.
+- residual_risks:
+  - Operators might skip copying the streak prompt into the work log; mitigation: audit guardrail transcripts weekly; monitoring trigger: streak JSON increments without matching work-log notes.
+- next_work:
+  - Guardrail: surface the streak summary inside `run_guardrails_ci.sh` job output (Loop 364) so CI logs stay aligned with the new helper messaging.
+
 ## 2025-12-22 – Loop 349 (kind: docs)
 
 

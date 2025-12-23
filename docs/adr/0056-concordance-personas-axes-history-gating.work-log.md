@@ -3376,3 +3376,24 @@ PY
   - Monitoring guidance still references manual env overrides without mentioning the new summary section; document the emitted warning so operators know what to expect.
 - next_work:
   - Behaviour: refresh ADR-0056 monitoring guidance with the new telemetry warning output — docs/adr/0056-concordance-personas-axes-history-gating.md
+
+## 2025-12-23 – Loop 386 (kind: documentation)
+- helper_version: helper:v20251221.5
+- focus: Monitoring & Next Steps – document the telemetry bypass warning in ADR-0056 guidance.
+- riskiest_assumption: Without updating ADR-0056, operators may miss the new `Telemetry Export Check` output and leave `ALLOW_STALE_TELEMETRY` enabled longer than intended (probability medium, impact medium for Concordance evidence visibility); `python3 - <<'PY' ...` fails until the note is present.
+- validation_targets:
+  - python3 - <<'PY'
+      from pathlib import Path
+      path = Path('docs/adr/0056-concordance-personas-axes-history-gating.md')
+      text = path.read_text(encoding='utf-8')
+      if 'Telemetry Export Check' not in text:
+          raise SystemExit('Telemetry Export Check section missing from ADR-0056')
+      print('Telemetry Export Check section documented in ADR-0056')
+    PY
+- evidence: `docs/adr/evidence/0056/loop-0386.md`
+- rollback_plan: `git restore --source=HEAD -- docs/adr/0056-concordance-personas-axes-history-gating.md docs/adr/0056-concordance-personas-axes-history-gating.work-log.md && python3 - <<'PY' ...`
+- delta_summary: helper:diff-snapshot=1 file changed, 1 insertion(+), 1 deletion(-); updated Monitoring & Next Steps to mention the stdout warning and GitHub summary section the guardrail runner now emits when the env override is active.
+- residual_risks:
+  - Broader documentation still references manual telemetry exports elsewhere; audit the guardrail onboarding docs if the helper behaviour changes again.
+- next_work:
+  - None queued; monitoring guidance now reflects the telemetry bypass warning output.

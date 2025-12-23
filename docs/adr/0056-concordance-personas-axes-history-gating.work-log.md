@@ -2192,6 +2192,21 @@ PY
 - next_work:
   - None; documentation now mirrors the summary output adopted in Loop 373.
 
+## 2025-12-23 – Loop 375 (kind: guardrail/tests)
+- helper_version: helper:v20251221.5
+- focus: Request Gating & Streaming – guardrail CI summaries repeat telemetry target metadata.
+- riskiest_assumption: Without echoing the guardrail target in summary-mode output, it is easy to mislabel history runs when comparing telemetry snapshots (probability medium, impact medium-high for Concordance triage).
+- validation_targets:
+  - python3 -m pytest _tests/test_run_guardrails_ci.py::RunGuardrailsCITests::test_run_guardrails_ci_writes_job_summary
+  - python3 -m pytest _tests/test_run_guardrails_ci.py::RunGuardrailsCITests::test_run_guardrails_ci_fast_target_writes_target_line
+- evidence: docs/adr/evidence/0056/loop-0375.md
+- rollback_plan: git restore --source=HEAD -- scripts/tools/run_guardrails_ci.sh _tests/test_run_guardrails_ci.py docs/adr/evidence/0056/loop-0375.md && python3 -m pytest _tests/test_run_guardrails_ci.py::RunGuardrailsCITests::test_run_guardrails_ci_writes_job_summary && python3 -m pytest _tests/test_run_guardrails_ci.py::RunGuardrailsCITests::test_run_guardrails_ci_fast_target_writes_target_line
+- delta_summary: helper:diff-snapshot=2 files changed, 16 insertions(+), 1 deletion(-); taught `run_guardrails_ci.sh` to print `summary: guardrail_target=…` in CLI output and GitHub step summaries and tightened guardrail tests for both full and fast history targets.
+- residual_risks:
+  - Summary-mode output still depends on telemetry inspector defaults; revisit guardrail messaging if upcoming telemetry slices adjust the field list.
+- next_work:
+  - Docs: refresh monitoring snippets again if future telemetry summary slices adjust the phrasing established here.
+
 ## 2025-12-23 – Loop 271 (kind: docs)
 
 

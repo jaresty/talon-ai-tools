@@ -488,6 +488,10 @@ if not TYPE_CHECKING:
                 "- suggestion skip reasons: streaming_disabled=2, rate_limited=1",
                 summary_text,
             )
+            self.assertIn(
+                "summary: guardrail_target=request-history-guardrails",
+                summary_text,
+            )
             self.assertIn("### Scheduler Telemetry", summary_text)
             self.assertIn("- Scheduler reschedules: 0", summary_text)
             self.assertIn(
@@ -508,7 +512,6 @@ if not TYPE_CHECKING:
             )
             self.assertIn("Telemetry export streak state:", summary_text)
             self.assertIn("- Telemetry export warning streak: 2", summary_text)
-
             self.assertIn("- Telemetry export last reason: missing", summary_text)
             self.assertIn(
                 "- Telemetry export last command: python3 scripts/tools/check-telemetry-export-marker.py",
@@ -624,6 +627,10 @@ if not TYPE_CHECKING:
 
             self.assertIn(
                 "- guardrail target: request-history-guardrails-fast",
+                summary_text,
+            )
+            self.assertIn(
+                "summary: guardrail_target=request-history-guardrails-fast",
                 summary_text,
             )
             self.assertEqual(

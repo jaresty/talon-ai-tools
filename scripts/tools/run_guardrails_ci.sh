@@ -353,6 +353,14 @@ PY
     TELEMETRY_METADATA=$(python3 scripts/tools/history-telemetry-inspect.py "${TELEMETRY_PATH}" --format summary --field summary_path --field total_entries --field streaming_status)
     echo "Telemetry guardrail metadata:"
     printf '%s\n' "${TELEMETRY_METADATA}" | sed 's/^/  /'
+    if [[ -n "${GITHUB_STEP_SUMMARY:-}" ]]; then
+      {
+        echo
+        echo "### Telemetry Guardrail Metadata"
+        echo
+        printf '%s\n' "${TELEMETRY_METADATA}"
+      } >> "${GITHUB_STEP_SUMMARY}"
+    fi
   fi
 
   MARKER_PATH="${SUMMARY_DIR}/talon-export-marker.json"

@@ -96,6 +96,16 @@ if bootstrap is not None:
             open_canvas.assert_not_called()
             refresh.assert_not_called()
 
+        def test_should_refresh_canvas_now_respects_manual_close(self):
+            setattr(GPTState, "response_canvas_manual_close", True)
+            self.assertFalse(modelHelpers._should_refresh_canvas_now())
+
+        def test_should_refresh_canvas_now_follows_destination_kind(self):
+            GPTState.current_destination_kind = "suggest"
+            self.assertFalse(modelHelpers._should_refresh_canvas_now())
+            GPTState.current_destination_kind = "window"
+            self.assertTrue(modelHelpers._should_refresh_canvas_now())
+
 else:
 
     class ResponseCanvasRefreshTests(unittest.TestCase):

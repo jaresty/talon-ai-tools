@@ -246,6 +246,15 @@ def _should_show_response_canvas() -> bool:
     return _prefer_canvas_progress()
 
 
+def _should_refresh_canvas_now() -> bool:
+    try:
+        if getattr(GPTState, "response_canvas_manual_close", False):
+            return False
+    except Exception:
+        pass
+    return _should_show_response_canvas()
+
+
 def _refresh_response_canvas() -> None:
     """Open (if needed) and refresh the response canvas once on the UI thread."""
 
@@ -1166,7 +1175,7 @@ def _send_request_streaming(request, request_id: str) -> str:
                     )
                     _update_lifecycle("stream_start")
                     _update_lifecycle("stream_end")
-                    if _should_show_response_canvas():
+                    if _should_refresh_canvas_now():
                         try:
                             session.record_ui_refresh_requested(
                                 forced=True, reason="canvas_refresh"
@@ -1218,7 +1227,7 @@ def _send_request_streaming(request, request_id: str) -> str:
 
     def _maybe_refresh_canvas(force: bool = False) -> None:
         nonlocal last_canvas_refresh_ms
-        if not _should_show_response_canvas():
+        if not _should_refresh_canvas_now():
             return
         now_ms = int(time.time() * 1000)
         throttled = (
@@ -1348,7 +1357,7 @@ def _send_request_streaming(request, request_id: str) -> str:
                         meta_throttle_ms=refresh_interval_ms,
                         last_meta_update_ms=last_meta_refresh_ms,
                     )
-                    if _should_show_response_canvas():
+                    if _should_refresh_canvas_now():
                         try:
                             session.record_ui_refresh_requested(
                                 forced=True, reason="canvas_refresh"
@@ -1713,7 +1722,7 @@ def send_request(max_attempts: int = 10):
 
     # When using the canvas for progress (response window/default), refresh it
     # after the final content is ready so the body redraws with the answer.
-    if _should_show_response_canvas():
+    if _should_refresh_canvas_now():
         _refresh_response_canvas()
 
     if GPTState.thread_enabled:

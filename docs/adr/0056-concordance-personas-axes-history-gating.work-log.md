@@ -3306,3 +3306,17 @@ PY
   - Other workflow steps may still contain split `printf` strings; rerun the checker after editing workflows or when GitHub Actions reports YAML syntax errors.
 - next_work:
   - Behaviour: audit Talon macros for lingering local request-gating helpers — `rg "_request_is_in_flight" GPT lib` followed by targeted guardrail tests.
+
+## 2025-12-23 – Loop 381 (kind: guardrail/tests)
+- helper_version: helper:v20251221.5
+- focus: Request Gating & Streaming – add a macro audit guard so Talon commands cannot bypass `requestGating`.
+- riskiest_assumption: Without an explicit guard test, future macros could call `requestBus.is_in_flight` directly (probability medium, impact high for Concordance gating consistency).
+- validation_targets:
+  - `python3 -m pytest _tests/test_request_gating_macros.py`
+- evidence: `docs/adr/evidence/0056/loop-0381.md`
+- rollback_plan: `rm _tests/test_request_gating_macros.py && python3 -m pytest _tests/test_request_gating_macros.py`
+- delta_summary: helper:diff-snapshot=2 files changed, 120 insertions(+); added `_tests/test_request_gating_macros.py` to scan Talon command files and wrappers for direct `requestBus` usage and updated ADR-0056 to mark the GUI/macro gating status complete with the new guard.
+- residual_risks:
+  - New directories containing Talon files must be added to the guard allowlist; rerun the test whenever new macro packages land.
+- next_work:
+  - Keep running `python3 -m pytest _tests/test_request_gating_macros.py` in guardrail slices when new macro surfaces are added.

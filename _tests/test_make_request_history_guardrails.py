@@ -103,6 +103,13 @@ if not TYPE_CHECKING:
                     result.stdout,
                 )
                 self.assertIn("Telemetry scheduler stats:", result.stdout)
+                self.assertIn("- Scheduler reschedules: 0", result.stdout)
+                self.assertIn(
+                    "- Scheduler last interval (minutes): none",
+                    result.stdout,
+                )
+                self.assertIn("- Scheduler last reason: none", result.stdout)
+                self.assertIn("- Scheduler last timestamp: none", result.stdout)
 
                 self.assertIn("- Last gating drop: none", result.stdout)
                 self.assertIn("- Streaming last drop: none", result.stdout)
@@ -266,6 +273,13 @@ if not TYPE_CHECKING:
                     result.stdout,
                 )
                 self.assertIn("Telemetry scheduler stats:", result.stdout)
+                self.assertIn("- Scheduler reschedules: 0", result.stdout)
+                self.assertIn(
+                    "- Scheduler last interval (minutes): none",
+                    result.stdout,
+                )
+                self.assertIn("- Scheduler last reason: none", result.stdout)
+                self.assertIn("- Scheduler last timestamp: none", result.stdout)
 
                 self.assertIn("- Last gating drop: none", result.stdout)
                 self.assertIn("- Streaming last drop: none", result.stdout)

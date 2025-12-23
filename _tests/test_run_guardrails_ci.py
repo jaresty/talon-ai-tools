@@ -244,6 +244,13 @@ if not TYPE_CHECKING:
                     result.stdout,
                 )
                 self.assertIn("Telemetry scheduler stats:", result.stdout)
+                self.assertIn("- Scheduler reschedules: 0", result.stdout)
+                self.assertIn(
+                    "- Scheduler last interval (minutes): none",
+                    result.stdout,
+                )
+                self.assertIn("- Scheduler last reason: none", result.stdout)
+                self.assertIn("- Scheduler last timestamp: none", result.stdout)
 
                 self.assertIn(
                     "- Streaming gating summary: status=unknown; total=0; counts=none; sources=none; last=n/a; last_source=n/a; last_message=none",
@@ -341,6 +348,13 @@ if not TYPE_CHECKING:
                     "Streaming JSON summary recorded at artifacts/telemetry/history-validation-summary.streaming.json; job summary will reference this file when running in GitHub Actions.",
                     result.stdout,
                 )
+                self.assertIn("- Scheduler reschedules: 0", result.stdout)
+                self.assertIn(
+                    "- Scheduler last interval (minutes): none",
+                    result.stdout,
+                )
+                self.assertIn("- Scheduler last reason: none", result.stdout)
+                self.assertIn("- Scheduler last timestamp: none", result.stdout)
 
         def test_run_guardrails_ci_writes_job_summary(self) -> None:
             """Guardrail: CI helper should append history summary to GitHub step summary when provided."""
@@ -417,6 +431,13 @@ if not TYPE_CHECKING:
                 summary_text,
             )
             self.assertIn("### Scheduler Telemetry", summary_text)
+            self.assertIn("- Scheduler reschedules: 0", summary_text)
+            self.assertIn(
+                "- Scheduler last interval (minutes): none",
+                summary_text,
+            )
+            self.assertIn("- Scheduler last reason: none", summary_text)
+            self.assertIn("- Scheduler last timestamp: none", summary_text)
 
         def test_run_guardrails_ci_gating_reasons_table_with_counts(self) -> None:
             """Guardrail: summary table should render when gating counts exist."""
@@ -611,6 +632,13 @@ if not TYPE_CHECKING:
                     '"last_drop_message": "Streaming disabled guardrail"',
                     summary_text,
                 )
+                self.assertIn("- Scheduler reschedules: 0", summary_text)
+                self.assertIn(
+                    "- Scheduler last interval (minutes): none",
+                    summary_text,
+                )
+                self.assertIn("- Scheduler last reason: none", summary_text)
+                self.assertIn("- Scheduler last timestamp: none", summary_text)
                 summary_lines = [
                     line for line in summary_text.splitlines() if line.startswith("|")
                 ]

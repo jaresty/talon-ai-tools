@@ -93,6 +93,21 @@
 - next_work:
   - Consider summarising scheduler cadence in the GitHub summary table (e.g., last reason/interval bullets) so operators can scan drop causes quickly.
 
+## 2025-12-23 – Loop 353 (kind: guardrail/tests)
+- helper_version: helper:v20251221.5
+- focus: Request Gating & Streaming – add human-readable scheduler cadence summary to guardrail output and GitHub step summaries (ADR-0056 §Monitoring & Next Steps).
+- riskiest_assumption: Operators may overlook scheduler drift if only the raw JSON is printed (probability medium, impact medium for diagnosing telemetry freshness issues).
+- validation_targets:
+  - python3 -m pytest _tests/test_make_request_history_guardrails.py
+  - python3 -m pytest _tests/test_run_guardrails_ci.py
+- evidence: docs/adr/evidence/0056/loop-0353.md
+- rollback_plan: git restore --source=HEAD -- Makefile scripts/tools/run_guardrails_ci.sh _tests/test_make_request_history_guardrails.py _tests/test_run_guardrails_ci.py docs/adr/0056-concordance-personas-axes-history-gating.md docs/adr/0056-concordance-personas-axes-history-gating.work-log.md && python3 -m pytest _tests/test_make_request_history_guardrails.py _tests/test_run_guardrails_ci.py
+- delta_summary: helper:diff-snapshot=6 files changed, 140 insertions(+), 13 deletions(-); updated guardrail Make targets and the CI runner to print scheduler summary bullets, adjusted guardrail tests to assert the new messaging, and refreshed ADR monitoring guidance.
+- residual_risks:
+  - When Talon exports are stale the summary still reports defaults; consider indicating when data came from the fallback JSON.
+- next_work:
+  - Evaluate highlighting non-zero reschedules in the GitHub summary (for example, bolding when cadence drifts) so operators spot issues faster.
+
 ## 2025-12-22 – Loop 349 (kind: docs)
 - helper_version: helper:v20251221.5
 - focus: Persona & Intent Presets – update monitoring guidance to mention the new Talon export action and runbook integration.

@@ -170,7 +170,25 @@ request-history-guardrails:
 	    "if scheduler == defaults:" \
 	    "    scheduler = normalize(load(marker_path).get('scheduler'))" \
 	    "print('Telemetry scheduler stats: {}'.format(json.dumps(scheduler)))" \
+	    "reschedules = scheduler.get('reschedule_count', 0)" \
+	    "try:" \
+	    "    reschedules = int(reschedules)" \
+	    "except Exception:" \
+	    "    reschedules = 0" \
+	    "interval = scheduler.get('last_interval_minutes')" \
+	    "interval_text = 'none' if interval in (None, '') else str(interval)" \
+	    "reason_text = scheduler.get('last_reason')" \
+	    "if not isinstance(reason_text, str) or not reason_text.strip():" \
+	    "    reason_text = 'none'" \
+	    "timestamp_text = scheduler.get('last_timestamp')" \
+	    "if not isinstance(timestamp_text, str) or not timestamp_text.strip():" \
+	    "    timestamp_text = 'none'" \
+	    "print(f'- Scheduler reschedules: {reschedules}')" \
+	    "print(f'- Scheduler last interval (minutes): {interval_text}')" \
+	    "print(f'- Scheduler last reason: {reason_text}')" \
+	    "print(f'- Scheduler last timestamp: {timestamp_text}')" \
 	| $(PYTHON)
+
 
 request-history-guardrails-fast:
 	mkdir -p artifacts/telemetry
@@ -241,7 +259,25 @@ request-history-guardrails-fast:
 	    "if scheduler == defaults:" \
 	    "    scheduler = normalize(load(marker_path).get('scheduler'))" \
 	    "print('Telemetry scheduler stats: {}'.format(json.dumps(scheduler)))" \
+	    "reschedules = scheduler.get('reschedule_count', 0)" \
+	    "try:" \
+	    "    reschedules = int(reschedules)" \
+	    "except Exception:" \
+	    "    reschedules = 0" \
+	    "interval = scheduler.get('last_interval_minutes')" \
+	    "interval_text = 'none' if interval in (None, '') else str(interval)" \
+	    "reason_text = scheduler.get('last_reason')" \
+	    "if not isinstance(reason_text, str) or not reason_text.strip():" \
+	    "    reason_text = 'none'" \
+	    "timestamp_text = scheduler.get('last_timestamp')" \
+	    "if not isinstance(timestamp_text, str) or not timestamp_text.strip():" \
+	    "    timestamp_text = 'none'" \
+	    "print(f'- Scheduler reschedules: {reschedules}')" \
+	    "print(f'- Scheduler last interval (minutes): {interval_text}')" \
+	    "print(f'- Scheduler last reason: {reason_text}')" \
+	    "print(f'- Scheduler last timestamp: {timestamp_text}')" \
 	| $(PYTHON)
+
 
 
 help:

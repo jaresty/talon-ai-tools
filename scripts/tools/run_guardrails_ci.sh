@@ -426,6 +426,38 @@ PY
 )
   if [[ -n "${SCHEDULER_JSON}" ]]; then
     echo "Telemetry scheduler stats: ${SCHEDULER_JSON}"
+    SCHEDULER_SUMMARY=$(SCHEDULER_JSON_DATA="${SCHEDULER_JSON}" python3 - <<'PY'
+import json, os
+
+raw = os.environ.get("SCHEDULER_JSON_DATA") or "{}"
+try:
+    data = json.loads(raw)
+except Exception:
+    data = {}
+
+def _coerce_int(value):
+    try:
+        return int(value)
+    except Exception:
+        return 0
+
+def _fmt(value):
+    if value in (None, ""):
+        return "none"
+    return str(value)
+
+count = _coerce_int(data.get("reschedule_count"))
+interval = data.get("last_interval_minutes")
+summary_lines = [
+    f"- Scheduler reschedules: {count}",
+    f"- Scheduler last interval (minutes): {_fmt(interval)}",
+    f"- Scheduler last reason: {_fmt(data.get('last_reason'))}",
+    f"- Scheduler last timestamp: {_fmt(data.get('last_timestamp'))}",
+]
+print("\n".join(summary_lines))
+PY
+)
+    printf '%s\n' "${SCHEDULER_SUMMARY}"
     if [[ -n "${GITHUB_STEP_SUMMARY:-}" ]]; then
       {
         echo
@@ -434,6 +466,8 @@ PY
         echo '```json'
         echo "${SCHEDULER_JSON}"
         echo '```'
+        echo
+        printf '%s\n' "${SCHEDULER_SUMMARY}"
       } >> "${GITHUB_STEP_SUMMARY}"
     fi
   fi

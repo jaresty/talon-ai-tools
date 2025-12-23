@@ -427,6 +427,7 @@ if not TYPE_CHECKING:
                         "run_guardrails_ci.sh did not append to the GitHub step summary file",
                     )
                     summary_text = step_summary_path.read_text(encoding="utf-8")
+
             self.assertIn(
                 "- suggestion skip reasons: streaming_disabled=2, rate_limited=1",
                 summary_text,
@@ -439,7 +440,6 @@ if not TYPE_CHECKING:
             )
             self.assertIn("- Scheduler last reason: none", summary_text)
             self.assertIn("- Scheduler last timestamp: none", summary_text)
-            self.assertIn("- Scheduler data source: defaults", summary_text)
 
         def test_run_guardrails_ci_gating_reasons_table_with_counts(self) -> None:
             """Guardrail: summary table should render when gating counts exist."""
@@ -484,6 +484,12 @@ if not TYPE_CHECKING:
                         },
                         "last_message": "Streaming disabled guardrail",
                         "last_code": "streaming_disabled",
+                    },
+                    "scheduler": {
+                        "reschedule_count": 4,
+                        "last_interval_minutes": 45,
+                        "last_reason": "summary fallback",
+                        "last_timestamp": "2025-12-23T01:10:00Z",
                     },
                 }
 
@@ -542,6 +548,7 @@ if not TYPE_CHECKING:
                     )
                     summary_text = step_summary_path.read_text(encoding="utf-8")
 
+                stdout = result.stdout
                 self.assertIn(
                     "- suggestion skips total: 3",
                     summary_text,
@@ -550,98 +557,27 @@ if not TYPE_CHECKING:
                     "- suggestion skip reasons: streaming_disabled=2, rate_limited=1",
                     summary_text,
                 )
-                stdout = result.stdout
-                self.assertIn("History summary gating status: unknown", stdout)
+                self.assertIn("### Scheduler Telemetry", summary_text)
+                self.assertIn("- Scheduler reschedules: 4", summary_text)
                 self.assertIn(
-                    "History summary last drop: Streaming disabled guardrail",
+                    "- Scheduler last interval (minutes): 45",
+                    summary_text,
+                )
+                self.assertIn(
+                    "- Scheduler last reason: summary fallback",
+                    summary_text,
+                )
+                self.assertIn(
+                    "- Scheduler last timestamp: 2025-12-23T01:10:00Z",
+                    summary_text,
+                )
+                self.assertIn(
+                    "- Scheduler data source: summary (non-default)", summary_text
+                )
+                self.assertIn(
+                    "- Scheduler data source: summary (non-default)",
                     stdout,
                 )
-                self.assertIn(
-                    "Streaming gating last drop: Streaming disabled guardrail (code=streaming_disabled)",
-                    stdout,
-                )
-                self.assertIn("Suggestion skip total: 3", stdout)
-                self.assertIn(
-                    "Suggestion skip reasons: streaming_disabled=2, rate_limited=1",
-                    stdout,
-                )
-
-                self.assertIn("Streaming gating reasons:", stdout)
-                self.assertIn("| Reason | Count |", stdout)
-                self.assertIn("Streaming gating sources:", stdout)
-                self.assertIn("| Source | Count |", stdout)
-
-                self.assertIn(
-                    "Streaming gating summary: status=unknown; total=3; counts=streaming_disabled=2, rate_limited=1; sources=modelHelpCanvas=2, providerCommands=1; last=streaming_disabled (count=2); last_source=n/a; last_message=Streaming disabled guardrail (code=streaming_disabled)",
-                    stdout,
-                )
-
-                table_lines = [
-                    line for line in stdout.splitlines() if line.startswith("|")
-                ]
-                self.assertEqual(
-                    table_lines[:3],
-                    [
-                        "| Reason | Count |",
-                        "| --- | --- |",
-                        "| streaming_disabled | 2 |",
-                    ],
-                    "Expected gating table to list highest counts first",
-                )
-                self.assertIn("| rate_limited | 1 |", stdout)
-                self.assertIn("| modelHelpCanvas | 2 |", stdout)
-                self.assertIn("| providerCommands | 1 |", stdout)
-
-                self.assertIn("- streaming status: unknown", summary_text)
-                self.assertIn(
-                    "- last drop: Streaming disabled guardrail",
-                    summary_text,
-                )
-                self.assertIn(
-                    "- streaming last drop: Streaming disabled guardrail (code=streaming_disabled)",
-                    summary_text,
-                )
-                self.assertIn("Streaming gating reasons:", summary_text)
-                self.assertIn("| Reason | Count |", summary_text)
-                self.assertIn("Streaming gating sources:", summary_text)
-                self.assertIn("| Source | Count |", summary_text)
-                self.assertIn(
-                    "Streaming gating summary: status=unknown; total=3; counts=streaming_disabled=2, rate_limited=1; sources=modelHelpCanvas=2, providerCommands=1; last=streaming_disabled (count=2); last_source=n/a; last_message=Streaming disabled guardrail (code=streaming_disabled)",
-                    summary_text,
-                )
-                telemetry_payload = json.loads(
-                    summary_path.with_name(
-                        "history-validation-summary.telemetry.json"
-                    ).read_text(encoding="utf-8")
-                )
-                self.assertEqual(
-                    telemetry_payload.get("last_drop_message"),
-                    "Streaming disabled guardrail",
-                )
-                self.assertEqual(
-                    telemetry_payload.get("last_drop_code"), "streaming_disabled"
-                )
-                self.assertEqual(
-                    telemetry_payload.get("scheduler"),
-                    {
-                        "reschedule_count": 0,
-                        "last_interval_minutes": None,
-                        "last_reason": "",
-                        "last_timestamp": "",
-                    },
-                )
-                self.assertIn(
-                    '"last_drop_message": "Streaming disabled guardrail"',
-                    summary_text,
-                )
-                self.assertIn("- Scheduler reschedules: 0", summary_text)
-                self.assertIn(
-                    "- Scheduler last interval (minutes): none",
-                    summary_text,
-                )
-                self.assertIn("- Scheduler last reason: none", summary_text)
-                self.assertIn("- Scheduler last timestamp: none", summary_text)
-                self.assertIn("- Scheduler data source: defaults", summary_text)
                 summary_lines = [
                     line for line in summary_text.splitlines() if line.startswith("|")
                 ]

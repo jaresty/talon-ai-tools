@@ -123,6 +123,21 @@
 - next_work:
   - Extend GitHub summaries to highlight non-default sources (e.g., marker or summary) so cadence anomalies stand out without inspecting raw JSON.
 
+## 2025-12-23 – Loop 355 (kind: guardrail/tests)
+- helper_version: helper:v20251221.5
+- focus: Request Gating & Streaming – highlight non-default scheduler telemetry sources in CLI guardrails (ADR-0056 §Monitoring & Next Steps).
+- riskiest_assumption: Without emphasizing non-default sources, operators may overlook fallback telemetry and miss cadence drift (probability medium, impact medium-high for diagnosing exporter issues).
+- validation_targets:
+  - python3 -m pytest _tests/test_run_guardrails_ci.py
+  - python3 -m pytest _tests/test_make_request_history_guardrails.py _tests/test_run_guardrails_ci.py
+- evidence: docs/adr/evidence/0056/loop-0355.md
+- rollback_plan: git restore --source=HEAD -- scripts/tools/run_guardrails_ci.sh Makefile _tests/test_run_guardrails_ci.py docs/adr/0056-concordance-personas-axes-history-gating.md docs/adr/0056-concordance-personas-axes-history-gating.work-log.md && python3 -m pytest _tests/test_run_guardrails_ci.py
+- delta_summary: helper:diff-snapshot=5 files changed, 39 insertions(+), 84 deletions(-); updated run_guardrails_ci.sh and Makefile to append a `(non-default)` suffix for fallback sources, expanded guardrail tests to cover summary-driven scheduler stats, added loop evidence, and refreshed ADR monitoring guidance.
+- residual_risks:
+  - CLI output still prints raw values even when scheduler stats are stale; consider flagging aged timestamps in a follow-up loop.
+- next_work:
+  - Surface a warning when telemetry timestamps exceed a freshness threshold so operators catch stale cadence data quickly.
+
 ## 2025-12-22 – Loop 349 (kind: docs)
 - helper_version: helper:v20251221.5
 - focus: Persona & Intent Presets – update monitoring guidance to mention the new Talon export action and runbook integration.

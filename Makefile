@@ -173,6 +173,7 @@ request-history-guardrails:
 	    "]" \
 	    "source_label = 'defaults'" \
 	    "scheduler = defaults.copy()" \
+	    "suffix = '' if source_label == 'defaults' else ' (non-default)'" \
 	    "for label, sched_payload in sources:" \
 	    "    normalized = normalize(sched_payload)" \
 	    "    if normalized != defaults:" \
@@ -197,7 +198,7 @@ request-history-guardrails:
 	    "print(f'- Scheduler last interval (minutes): {interval_text}')" \
 	    "print(f'- Scheduler last reason: {reason_text}')" \
 	    "print(f'- Scheduler last timestamp: {timestamp_text}')" \
-	    "print(f'- Scheduler data source: {source_label}')" \
+	    "print(f'- Scheduler data source: {source_label}{suffix}')" \
 	| $(PYTHON)
 
 
@@ -273,6 +274,7 @@ request-history-guardrails-fast:
 	    "]" \
 	    "source_label = 'defaults'" \
 	    "scheduler = defaults.copy()" \
+	    "suffix = '' if source_label == 'defaults' else ' (non-default)'" \
 	    "for label, sched_payload in sources:" \
 	    "    normalized = normalize(sched_payload)" \
 	    "    if normalized != defaults:" \
@@ -297,7 +299,7 @@ request-history-guardrails-fast:
 	    "print(f'- Scheduler last interval (minutes): {interval_text}')" \
 	    "print(f'- Scheduler last reason: {reason_text}')" \
 	    "print(f'- Scheduler last timestamp: {timestamp_text}')" \
-	    "print(f'- Scheduler data source: {source_label}')" \
+	    "print(f'- Scheduler data source: {source_label}{suffix}')" \
 	| $(PYTHON)
 
 

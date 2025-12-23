@@ -370,6 +370,7 @@ except json.JSONDecodeError:
     info = {}
 stats = info.get("stats") or {}
 source = str(info.get("source") or "defaults")
+suffix = "" if source == "defaults" else " (non-default)"
 
 reschedule_raw = stats.get("reschedule_count")
 if isinstance(reschedule_raw, bool):
@@ -407,11 +408,12 @@ lines = [
     f"- Scheduler last interval (minutes): {interval_text}",
     f"- Scheduler last reason: {reason_text}",
     f"- Scheduler last timestamp: {timestamp_text}",
-    f"- Scheduler data source: {source}",
+    f"- Scheduler data source: {source}{suffix}",
 ]
 print("\n".join(lines))
 PY
 )
+
   if [[ -n "${SCHEDULER_JSON}" ]]; then
     echo "Telemetry scheduler stats: ${SCHEDULER_JSON}"
     printf '%s\n' "${SCHEDULER_LINES}"

@@ -206,6 +206,19 @@
 - next_work:
   - Guardrail: prototype a CLI streak counter to surface prompts automatically (Loop 361).
 
+## 2025-12-23 – Loop 361 (kind: docs)
+- helper_version: helper:v20251221.5
+- focus: ADR-0056 §Salient Tasks & Monitoring – capture acceptance criteria for the CLI streak counter.
+- riskiest_assumption: Without defined acceptance criteria, a future CLI streak counter might auto-run Talon commands or omit auditable output (probability medium, impact high for operator safety and Concordance evidence).
+- validation_targets: [] (docs-only design slice recorded in the ADR).
+- evidence: inline (Salient Tasks now spell out threshold/reporting requirements; Monitoring & Next Steps frames the CLI counter guidance).
+- rollback_plan: git restore --source=HEAD -- docs/adr/0056-concordance-personas-axes-history-gating.md docs/adr/0056-concordance-personas-axes-history-gating.work-log.md
+- delta_summary: helper:diff-snapshot=2 files changed, 16 insertions(+), 0 deletions(-); documented acceptance criteria for the planned CLI counter.
+- residual_risks:
+  - Implementation may still drift from the documented criteria; mitigation: review guardrail PRs against this ADR; monitoring trigger: CLI outputs missing streak counts once the counter lands.
+- next_work:
+  - Guardrail: implement the CLI streak counter in `scripts/tools/check-telemetry-export-marker.py` and related tests (Loop 362).
+
 ## 2025-12-22 – Loop 349 (kind: docs)
 
 

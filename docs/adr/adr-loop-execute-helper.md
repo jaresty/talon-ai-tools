@@ -14,6 +14,8 @@ This helper keeps ADR loops observable and safe while letting a single agent adv
 - **Validation command** – the smallest executable that exercises a behaviour outcome and records red/green/removal evidence.
 - **Blocker evidence** – the command, excerpt, and pointer proving a behaviour cannot advance in this slice (logged as `red` evidence).
 - **Residual risk** – a remaining operational or process risk, recorded with mitigation and monitoring trigger in `residual_risks`.
+- **Risk severity** – classification of a behaviour outcome’s probability × impact. When severity is low (probability low or impact low), the item stays in `residual_risks` and does not drive new slices.
+- **Diminishing return** – additional effort that only reduces low-severity residual risk; such work is optional unless governance explicitly requires it.
 
 ## Named Placeholders
 
@@ -38,7 +40,7 @@ The `<ARTEFACT_LOG>` must record headings matching the helper command names when
 
 - Red evidence is captured before behaviour changes, or an automation gap is documented with blocking evidence.
 - Slice scope describes a single cohesive behaviour or decision. Guardrail evidence is part of that behaviour’s contract, not a separate deliverable.
-- Each loop interrogates the highest-impact behaviour outcome still at risk. The `riskiest_assumption` states that falsifiable uncertainty; placeholder reminders or restated edits are non-compliant.
+- Each loop interrogates the highest-impact behaviour outcome still at risk. Once evidence reduces severity to low, the remaining risk moves to `residual_risks` and no new loop is required. The `riskiest_assumption` states the falsifiable, higher-severity uncertainty; placeholder reminders or restated edits are non-compliant.
 - When multiple candidate slices exist, the executor selects the slice that interrogates the riskiest assumption without waiting for external direction; if choices appear indistinguishable, the executor picks any of them without blocking.
 
 - Loop summary demonstrates the ADR completion horizon changed (or remained unchanged with justification) since the prior entry, naming the domains or tasks still open.
@@ -55,7 +57,7 @@ Each entry must populate the following fields; omit none. References column list
 
 | Field | Required Content | References |
 | --- | --- | --- |
-| `helper_version` | Literal `helper:v20251221.5` | **Loop Contract → Focus declared** |
+| `helper_version` | Literal `helper:v20251223.1` | **Loop Contract → Focus declared** |
 | `focus` | ADR/section IDs plus short summary of slice scope | **Loop Contract → Focus declared** |
 | `riskiest_assumption` | Falsifiable highest-impact uncertainty (probability × impact) about a behaviour outcome, naming the validation command or blocker evidence; include deferrals | **Loop Contract → Focus declared** |
 | `validation_targets` | Validation commands for the behaviours under change; one command per outcome being validated | **Loop Contract → Validation registered** |
@@ -75,7 +77,7 @@ A loop entry is compliant when all statements hold:
 **Focus declared**
 - Record red evidence for each behaviour outcome before edits land, then green/removal evidence after; guardrail commands exist only as the evidence channel for that behaviour.
 - Cite the exact ADR sections and work-log notes refreshed by this slice; omit generic references.
-- State the riskiest open assumption with probability × impact rationale; defer to higher-risk blockers by citing their blocker evidence.
+- State the riskiest open assumption with probability × impact rationale. If the severity is low, demote it to `residual_risks`; do not treat low-severity items as the riskiest assumption. Defer higher-severity blockers by citing their blocker evidence.
 - Articulate the riskiest assumption as a falsifiable uncertainty about the behaviour outcome, and name the validation command or blocker evidence that will falsify it; restating the planned work or generic reminders is non-compliant.
 - When the riskiest assumption cannot advance, blocker evidence (command, failure excerpt, pointer) is present. Status-only or documentation-only entries must explicitly defer to the next riskiest assumption and cite the blocker evidence.
 
@@ -98,7 +100,7 @@ A loop entry is compliant when all statements hold:
 - The adversarial “risk recap” paragraph names at least one residual risk, the mitigation, the monitoring trigger, and the reopen condition.
 
 **Next work queued**
-- `next_work` lists `Behaviour:` bullets, each citing the validation command or blocker evidence that advances the stated assumption (e.g., `Behaviour: history drawer drop messaging — python3 -m pytest …`).
+- `next_work` lists `Behaviour:` bullets, each citing the validation command or blocker evidence that advances the stated higher-severity assumption (e.g., `Behaviour: history drawer drop messaging — python3 -m pytest …`). Low-severity residual risks stay parked in `residual_risks`.
 - New bullets only appear when they replace or consolidate existing scope interrogating the riskiest assumption; discoveries outside the ADR’s behaviours record the blocker and queue ADR-level triage instead of speculative tasks.
 - Status-only entries schedule the next behaviour slice (or evidence refresh for that behaviour) before closing the loop.
 - Helper upgrades (new version strings) note the change and queue any reconciliation loop required by the stricter rules.

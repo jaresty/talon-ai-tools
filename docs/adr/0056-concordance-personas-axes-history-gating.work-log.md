@@ -3348,3 +3348,17 @@ PY
   - Additional workflows should run the same guard if new files are added; extend the test when more YAML files appear.
 - next_work:
   - Address the `ALLOW_STALE_TELEMETRY` bypass risk by warning when the env var disables freshness checks.
+
+## 2025-12-23 – Loop 384 (kind: guardrail/tests)
+- helper_version: helper:v20251221.5
+- focus: Monitoring & Next Steps – warn when ALLOW_STALE_TELEMETRY bypasses freshness checks.
+- riskiest_assumption: Without a visible warning, maintainers might leave `ALLOW_STALE_TELEMETRY` set (probability medium) and guardrail runs would quietly skip freshness enforcement (impact high for Concordance telemetry integrity); `python3 -m pytest _tests/test_check_telemetry_export_marker.py` must fail before the warning exists.
+- validation_targets:
+  - python3 -m pytest _tests/test_check_telemetry_export_marker.py
+- evidence: `docs/adr/evidence/0056/loop-0384.md`
+- rollback_plan: `git restore --source=HEAD -- _tests/test_check_telemetry_export_marker.py scripts/tools/check-telemetry-export-marker.py docs/adr/0056-concordance-personas-axes-history-gating.md docs/adr/0056-concordance-personas-axes-history-gating.work-log.md && python3 -m pytest _tests/test_check_telemetry_export_marker.py`
+- delta_summary: helper:diff-snapshot=3 files changed, 29 insertions(+), 4 deletions(-); added a regression test for the bypass warning, updated the helper to emit the warning when the env override is present, and documented the new guardrail reminder in ADR-0056.
+- residual_risks:
+  - Guardrail runner scripts still return success without surfacing the warning inline; ensure CI shells print the message so humans notice when the bypass is active.
+- next_work:
+  - Behaviour: have guardrail runners echo the warning when ALLOW_STALE_TELEMETRY is set — python3 -m pytest _tests/test_run_guardrails_ci.py

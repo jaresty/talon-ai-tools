@@ -14,7 +14,10 @@ if not TYPE_CHECKING:
 
     class CheckTelemetryExportMarkerTests(unittest.TestCase):
         def _run_helper(
-            self, marker_path: Path, *extra_args: str
+            self,
+            marker_path: Path,
+            *extra_args: str,
+            env_overrides: dict[str, str] | None = None,
         ) -> subprocess.CompletedProcess[str]:
             repo_root = Path(__file__).resolve().parents[1]
             command = [
@@ -36,6 +39,8 @@ if not TYPE_CHECKING:
                 pythonpath_entries.append(original_pythonpath)
             env["PYTHONPATH"] = os.pathsep.join(pythonpath_entries)
             env.setdefault("ALLOW_STALE_TELEMETRY", "")
+            if env_overrides:
+                env.update(env_overrides)
             return subprocess.run(
                 command,
                 cwd=str(repo_root),
@@ -140,3 +145,17 @@ if not TYPE_CHECKING:
                 self.assertEqual(result.returncode, 2)
                 self.assertIn("Waiting for telemetry export marker", result.stderr)
                 self.assertIn("model export telemetry", result.stderr)
+
+        def test_allow_env_warns_and_exits_zero(self) -> None:
+            with TemporaryDirectory() as tmpdir:
+                marker = Path(tmpdir) / "talon-export-marker.json"
+                result = self._run_helper(
+                    marker,
+                    env_overrides={"ALLOW_STALE_TELEMETRY": "1"},
+                )
+                self.assertEqual(result.returncode, 0)
+                self.assertIn("ALLOW_STALE_TELEMETRY is set", result.stderr)
+                self.assertIn(
+                    "skipping telemetry export freshness check", result.stderr
+                )
+                self.assertIn(str(marker), result.stderr)

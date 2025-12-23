@@ -127,11 +127,17 @@ def _wait_for_marker(
 def main() -> int:
     args = parse_args()
 
+    marker = args.marker
     allow_env = args.allow_env
-    if allow_env and os.environ.get(allow_env):
+    allow_value = os.environ.get(allow_env) if allow_env else None
+    if allow_env and allow_value:
+        print(
+            f"{allow_env} is set; skipping telemetry export freshness check for marker {marker}."
+            " Remove the override after running `model export telemetry` inside Talon.",
+            file=sys.stderr,
+        )
         return 0
 
-    marker = args.marker
     exists, timestamp, age_minutes, is_fresh = _marker_status(
         marker, args.max_age_minutes
     )

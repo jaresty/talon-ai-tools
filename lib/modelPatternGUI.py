@@ -1312,8 +1312,11 @@ def _request_is_in_flight() -> bool:
         return False
 
 
-def _reject_if_request_in_flight() -> bool:
+def _reject_if_request_in_flight(*, passive: bool = False) -> bool:
     """Notify and return True when a GPT request is already running."""
+
+    if passive:
+        return False
 
     allowed, reason = try_begin_request(source="modelPatternGUI")
     if allowed:
@@ -1354,7 +1357,7 @@ class UserActions:
         if _reject_if_request_in_flight():
             return
         # Close other related menus to avoid overlapping overlays.
-        close_common_overlays(actions.user)
+        close_common_overlays(actions.user, passive=True)
         _open_pattern_canvas(domain=None)
         ctx.tags = ["user.model_pattern_window_open"]
 
@@ -1375,8 +1378,6 @@ class UserActions:
 
     def model_pattern_gui_close():
         """Close the model pattern picker GUI"""
-        if _reject_if_request_in_flight():
-            return
         _close_pattern_canvas()
         ctx.tags = []
 

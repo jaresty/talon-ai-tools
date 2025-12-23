@@ -76,6 +76,14 @@ def _request_is_in_flight() -> bool:
 def _reject_if_request_in_flight() -> bool:
     """Notify and return True when a GPT request is already running."""
 
+    try:
+        from .modelState import GPTState
+
+        if getattr(GPTState, "suppress_overlay_inflight_guard", False):
+            return False
+    except Exception:
+        pass
+
     allowed, reason = try_begin_request(source="modelHelpCanvas")
     if allowed:
         try:
@@ -1707,15 +1715,13 @@ class UserActions:
             return
 
         # Close other related menus to avoid overlapping overlays.
-        close_common_overlays(actions.user)
+        close_common_overlays(actions.user, passive=True)
 
         _reset_help_state("all", None)
         _open_canvas()
 
     def model_help_canvas_close():
         """Explicitly close the canvas-based quick help and reset state"""
-        if _reject_if_request_in_flight():
-            return
         _reset_help_state("all", None)
         _close_canvas()
 

@@ -37,23 +37,59 @@ def close_overlays(closers: Iterable[Optional[Callable[[], None]]]) -> None:
 
 
 def close_common_overlays(
-    actions_obj, exclude: Iterable[str] | None = None, extra: Iterable[str] | None = None
+    actions_obj,
+    exclude: Iterable[str] | None = None,
+    extra: Iterable[str] | None = None,
+    *,
+    passive: bool = False,
 ) -> None:
     """Close a standard set of overlays if present on actions_obj, plus any extras."""
     if actions_obj is None:
         return
-    exclude_set: Set[str] = set(exclude or ())
-    closers = []
-    seen: Set[str] = set()
-    for name in COMMON_OVERLAY_CLOSERS:
-        if name in exclude_set or name in seen:
-            continue
-        seen.add(name)
-        closers.append(getattr(actions_obj, name, None))
-    if extra:
-        for name in extra:
+
+    if not passive:
+        try:
+            from .requestGating import request_is_in_flight
+
+            if request_is_in_flight():
+                passive = True
+        except Exception:
+            pass
+
+    suppress_token = None
+    if passive:
+        try:
+            from .modelState import GPTState  # local import to avoid cycles
+
+            suppress_token = getattr(GPTState, "suppress_overlay_inflight_guard", False)
+            setattr(GPTState, "suppress_overlay_inflight_guard", True)
+        except Exception:
+            suppress_token = None
+
+    try:
+        exclude_set: Set[str] = set(exclude or ())
+        closers = []
+        seen: Set[str] = set()
+        for name in COMMON_OVERLAY_CLOSERS:
             if name in exclude_set or name in seen:
                 continue
             seen.add(name)
             closers.append(getattr(actions_obj, name, None))
-    close_overlays(closers)
+        if extra:
+            for name in extra:
+                if name in exclude_set or name in seen:
+                    continue
+                seen.add(name)
+                closers.append(getattr(actions_obj, name, None))
+        close_overlays(closers)
+    finally:
+        if passive:
+            try:
+                from .modelState import GPTState  # type: ignore
+
+                if suppress_token is None:
+                    delattr(GPTState, "suppress_overlay_inflight_guard")
+                else:
+                    setattr(GPTState, "suppress_overlay_inflight_guard", suppress_token)
+            except Exception:
+                pass

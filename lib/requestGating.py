@@ -121,6 +121,14 @@ def try_begin_request(
 ) -> Tuple[bool, RequestDropReason]:
     """Return whether a new request may start plus the drop reason."""
 
+    try:
+        from .modelState import GPTState
+
+        if getattr(GPTState, "suppress_overlay_inflight_guard", False):
+            return True, ""
+    except Exception:
+        pass
+
     candidate: Optional[RequestState]
     if state is None:
         try:

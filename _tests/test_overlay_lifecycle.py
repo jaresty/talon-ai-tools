@@ -1,5 +1,9 @@
 import unittest
+from types import SimpleNamespace
 from typing import TYPE_CHECKING
+from unittest.mock import patch
+
+from unittest.mock import patch
 
 if not TYPE_CHECKING:
 
@@ -51,7 +55,14 @@ if not TYPE_CHECKING:
             close_common_overlays(Actions())
             self.assertEqual(
                 calls,
-                ["pattern", "prompt", "suggestions", "help", "response", "confirmation"],
+                [
+                    "pattern",
+                    "prompt",
+                    "suggestions",
+                    "help",
+                    "response",
+                    "confirmation",
+                ],
             )
 
         def test_close_common_overlays_noop_when_missing_attrs(self) -> None:
@@ -87,7 +98,9 @@ if not TYPE_CHECKING:
         def test_common_overlay_closers_are_unique(self) -> None:
             from talon_user.lib.overlayLifecycle import COMMON_OVERLAY_CLOSERS
 
-            self.assertEqual(len(COMMON_OVERLAY_CLOSERS), len(set(COMMON_OVERLAY_CLOSERS)))
+            self.assertEqual(
+                len(COMMON_OVERLAY_CLOSERS), len(set(COMMON_OVERLAY_CLOSERS))
+            )
 
         def test_close_common_overlays_ignores_non_callables(self) -> None:
             from talon_user.lib.overlayLifecycle import close_common_overlays
@@ -127,7 +140,9 @@ if not TYPE_CHECKING:
                 def extra_close(self):
                     calls.append("extra")
 
-            close_common_overlays(Actions(), exclude={"extra_close"}, extra=["extra_close"])
+            close_common_overlays(
+                Actions(), exclude={"extra_close"}, extra=["extra_close"]
+            )
             self.assertEqual(calls, [])
 
         def test_close_common_overlays_dedupes_names(self) -> None:
@@ -144,7 +159,8 @@ if not TYPE_CHECKING:
                     calls.append("response")
 
             close_common_overlays(
-                Actions(), extra=["model_pattern_gui_close", "model_response_canvas_close"]
+                Actions(),
+                extra=["model_pattern_gui_close", "model_response_canvas_close"],
             )
             self.assertEqual(calls, ["pattern", "response"])
 
@@ -174,13 +190,14 @@ if not TYPE_CHECKING:
                 def model_response_canvas_close(self):
                     calls.append("response")
 
-            close_common_overlays(
-                Actions(), exclude={"model_response_canvas_close"}
-            )
+            close_common_overlays(Actions(), exclude={"model_response_canvas_close"})
             self.assertEqual(calls, ["pattern"])
 
         def test_close_common_overlays_respects_declared_order(self) -> None:
-            from talon_user.lib.overlayLifecycle import COMMON_OVERLAY_CLOSERS, close_common_overlays
+            from talon_user.lib.overlayLifecycle import (
+                COMMON_OVERLAY_CLOSERS,
+                close_common_overlays,
+            )
 
             calls = []
 
@@ -240,3 +257,66 @@ if not TYPE_CHECKING:
 
             close_common_overlays(Actions())
             self.assertEqual(calls, ["pattern"])
+
+        def test_common_overlay_closers_do_not_call_gating(self) -> None:
+            from talon_user.lib import (
+                modelHelpCanvas,
+                modelPatternGUI,
+                modelPromptPatternGUI,
+                modelSuggestionGUI,
+            )
+            from talon_user.lib.overlayLifecycle import close_common_overlays
+
+            calls = []
+
+            def fake_try_begin_request(state=None, *, source=""):
+                from talon_user.lib.modelState import GPTState
+
+                self.assertTrue(
+                    getattr(GPTState, "suppress_overlay_inflight_guard", False),
+                    "passive close should set suppress flag",
+                )
+                calls.append(source)
+                return True, ""
+
+            with (
+                patch.object(
+                    modelHelpCanvas,
+                    "try_begin_request",
+                    side_effect=fake_try_begin_request,
+                ),
+                patch.object(
+                    modelPatternGUI,
+                    "try_begin_request",
+                    side_effect=fake_try_begin_request,
+                ),
+                patch.object(
+                    modelPromptPatternGUI,
+                    "try_begin_request",
+                    side_effect=fake_try_begin_request,
+                ),
+                patch.object(
+                    modelSuggestionGUI,
+                    "try_begin_request",
+                    side_effect=fake_try_begin_request,
+                ),
+                patch.object(modelHelpCanvas, "_reset_help_state"),
+                patch.object(modelHelpCanvas, "_close_canvas"),
+                patch.object(modelPatternGUI, "_close_pattern_canvas"),
+                patch.object(modelPatternGUI, "ctx", SimpleNamespace(tags=[])),
+                patch.object(modelPromptPatternGUI, "_close_prompt_pattern_canvas"),
+                patch.object(modelPromptPatternGUI, "ctx", SimpleNamespace(tags=[])),
+                patch.object(modelSuggestionGUI, "_close_suggestion_canvas"),
+                patch.object(modelSuggestionGUI, "ctx", SimpleNamespace(tags=[])),
+            ):
+                actions_stub = SimpleNamespace(
+                    model_pattern_gui_close=modelPatternGUI.UserActions.model_pattern_gui_close,
+                    prompt_pattern_gui_close=modelPromptPatternGUI.UserActions.prompt_pattern_gui_close,
+                    model_prompt_recipe_suggestions_gui_close=modelSuggestionGUI.UserActions.model_prompt_recipe_suggestions_gui_close,
+                    model_help_canvas_close=modelHelpCanvas.UserActions.model_help_canvas_close,
+                    model_response_canvas_close=lambda: None,
+                    confirmation_gui_close=lambda: None,
+                )
+                close_common_overlays(actions_stub, passive=True)
+
+            self.assertTrue(calls)

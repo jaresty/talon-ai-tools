@@ -2207,6 +2207,22 @@ PY
 - next_work:
   - Docs: refresh monitoring snippets again if future telemetry summary slices adjust the phrasing established here.
 
+## 2025-12-23 – Loop 376 (kind: tooling)
+- helper_version: helper:v20251221.5
+- focus: Request Gating & Streaming – telemetry inspector summary defaults carry location and status metadata.
+- riskiest_assumption: Relying on callers to pass `--field summary_path --field streaming_status` risks dropping key metadata from guardrail summaries (probability medium, impact medium for Concordance triage).
+- validation_targets:
+  - python3 -m pytest _tests/test_history_telemetry_inspect.py::HistoryTelemetryInspectTests::test_summary_format_outputs_selected_fields
+  - python3 -m pytest _tests/test_run_guardrails_ci.py::RunGuardrailsCITests::test_run_guardrails_ci_writes_job_summary
+  - python3 -m pytest _tests/test_run_guardrails_ci.py::RunGuardrailsCITests::test_run_guardrails_ci_fast_target_writes_target_line
+- evidence: docs/adr/evidence/0056/loop-0376.md
+- rollback_plan: git restore --source=HEAD -- scripts/tools/history-telemetry-inspect.py scripts/tools/run_guardrails_ci.sh _tests/test_history_telemetry_inspect.py docs/adr/evidence/0056/loop-0376.md && python3 -m pytest _tests/test_history_telemetry_inspect.py::HistoryTelemetryInspectTests::test_summary_format_outputs_selected_fields && python3 -m pytest _tests/test_run_guardrails_ci.py::RunGuardrailsCITests::test_run_guardrails_ci_writes_job_summary && python3 -m pytest _tests/test_run_guardrails_ci.py::RunGuardrailsCITests::test_run_guardrails_ci_fast_target_writes_target_line
+- delta_summary: helper:diff-snapshot=3 files changed, 12 insertions(+), 2 deletions(-); summary-mode defaults now include `summary_path`, `total_entries`, and `streaming_status`, and `run_guardrails_ci.sh` stops passing redundant `--field` flags while summary tests and guardrail checks lock the behaviour.
+- residual_risks:
+  - Other tooling invoking `history-telemetry-inspect.py --format summary` with custom field lists may still override defaults; audit callers before trimming legacy flags elsewhere.
+- next_work:
+  - Docs: note the expanded summary defaults when next updating ADR monitoring bullets so future slices know these fields are guaranteed.
+
 ## 2025-12-23 – Loop 271 (kind: docs)
 
 

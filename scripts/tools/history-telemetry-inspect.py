@@ -27,6 +27,9 @@ DEFAULT_FIELDS: tuple[str, ...] = (
 
 SUMMARY_FIELDS: tuple[str, ...] = (
     "guardrail_target",
+    "summary_path",
+    "total_entries",
+    "streaming_status",
     "gating_drop_total",
     "gating_drop_rate",
     "last_drop_message",

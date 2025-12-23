@@ -53,9 +53,11 @@ if bootstrap is not None and not TYPE_CHECKING:
         def test_summary_format_outputs_selected_fields(self) -> None:
             telemetry = {
                 "guardrail_target": "request-history-guardrails-fast",
+                "summary_path": "artifacts/telemetry/history-validation-summary.json",
                 "total_entries": 9,
                 "gating_drop_total": 4,
                 "gating_drop_rate": 0.44,
+                "streaming_status": "ok",
                 "last_drop_message": "GPT: Request blocked; reason=in_flight",
                 "streaming_last_drop_message": "none",
             }
@@ -88,7 +90,12 @@ if bootstrap is not None and not TYPE_CHECKING:
                     result.stdout,
                 )
                 self.assertIn("gating_drop_total=4", result.stdout)
-                self.assertNotIn("summary_path=", result.stdout)
+                self.assertIn(
+                    "summary_path=artifacts/telemetry/history-validation-summary.json",
+                    result.stdout,
+                )
+                self.assertIn("total_entries=9", result.stdout)
+                self.assertIn("streaming_status=ok", result.stdout)
 
         def test_json_format_returns_machine_readable_payload(self) -> None:
             telemetry = {

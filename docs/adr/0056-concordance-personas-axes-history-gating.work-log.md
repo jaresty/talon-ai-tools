@@ -2032,6 +2032,19 @@
 - next_work:
   - Guardrail: update `history-axis-export-telemetry.py` to include the guardrail target label so downstream Concordance telemetry matches the CLI output.
 
+## 2025-12-23 – Loop 270 (kind: docs)
+- helper_version: helper:v20251221.5
+- focus: Request Gating & Streaming – document the gating-drop simulation env var for `history-axis-validate`.
+- riskiest_assumption: Without documenting `HISTORY_AXIS_VALIDATE_SIMULATE_GATING_DROP`, contributors may inadvertently leave it set in production guardrail runs (probability low, impact medium for telemetry integrity).
+- validation_targets: [] (docs-only clarification tied to Loop 261 guardrail work)
+- evidence: inline (Monitoring & Next Steps now calls out the env var usage and warns operators to leave it unset during real guardrail runs.)
+- rollback_plan: git restore --source=HEAD -- docs/adr/0056-concordance-personas-axes-history-gating.md
+- delta_summary: helper:diff-snapshot=1 file changed, 1 insertion(+); added monitoring guidance covering `HISTORY_AXIS_VALIDATE_SIMULATE_GATING_DROP` usage boundaries.
+- residual_risks:
+  - Operators referencing external runbooks may still miss the env var guidance; mitigation: sync the operations runbook with the new ADR bullet and flag mismatches during quarterly guardrail reviews; monitoring trigger: guardrail logs showing simulated drop messages outside CI.
+- next_work:
+  - Docs: update the Concordance operations runbook to mirror the ADR note about `HISTORY_AXIS_VALIDATE_SIMULATE_GATING_DROP`.
+
 ## 2025-12-21 – Loop 269 (kind: docs)
 - Helper: helper:v20251220.5 @ 2025-12-21T19:20Z
 - Focus: Request Gating & Streaming – spell out the ongoing guardrail commands and runbook follow-ups for streaming telemetry.

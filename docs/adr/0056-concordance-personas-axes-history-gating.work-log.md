@@ -3320,3 +3320,17 @@ PY
   - New directories containing Talon files must be added to the guard allowlist; rerun the test whenever new macro packages land.
 - next_work:
   - Keep running `python3 -m pytest _tests/test_request_gating_macros.py` in guardrail slices when new macro surfaces are added.
+
+## 2025-12-23 – Loop 382 (kind: guardrail/tests)
+- helper_version: helper:v20251221.5
+- focus: Request Gating & Streaming – ensure guardrail CI runs the new macro gating test.
+- riskiest_assumption: Without wiring `_tests/test_request_gating_macros.py` into `ci-guardrails`, future macro drift could escape CI (probability medium, impact high for Concordance gating consistency).
+- validation_targets:
+  - Inline Makefile checker (see `docs/adr/evidence/0056/loop-0382.md`).
+- evidence: `docs/adr/evidence/0056/loop-0382.md`
+- rollback_plan: `git checkout -- Makefile && python3 - <<'PY' ...`
+- delta_summary: helper:diff-snapshot=1 file changed, 1 insertion(+), 1 deletion(-); `ci-guardrails` now runs `_tests/test_request_gating_macros.py` alongside the existing guardrail suite.
+- residual_risks:
+  - Additional guardrail entry points (e.g., custom scripts) must be updated if they diverge from `ci-guardrails`; rerun the checker after editing automation scripts.
+- next_work:
+  - None queued; guardrail automation now exercises the macro audit test.

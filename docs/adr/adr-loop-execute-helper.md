@@ -32,6 +32,7 @@ The `<ARTEFACT_LOG>` must record headings matching the helper command names when
 - Guardrail failure recorded before behaviour changes, or automation gap justified with evidence.
 - Slice scope describes a single cohesive behaviour or decision, with multi-guardrail plans enumerated and observable.
 - Each loop probes or resolves the highest-impact open assumption whose failure would jeopardize the ADR outcome before tackling lower-risk work.
+- The riskiest assumption names a falsifiable, highest-impact uncertainty rather than a restatement of planned work or low-impact reminders.
 - When multiple candidate slices exist, the executor selects the slice that interrogates the riskiest assumption without waiting for external direction; if choices appear indistinguishable, the executor picks any of them without blocking.
 - Loop summary demonstrates the ADR completion horizon changed (or remained unchanged with justification) since the prior entry, naming the domains or tasks still open.
 - Observable delta and rollback plan documented so reverts clearly undo the slice.
@@ -49,7 +50,7 @@ Each entry must populate the following fields; omit none. References column list
 | --- | --- | --- |
 | `helper_version` | Literal `helper:v20251221.5` | **Loop Contract → Focus declared** |
 | `focus` | ADR/section IDs plus short summary of slice scope | **Loop Contract → Focus declared** |
-| `riskiest_assumption` | Statement of probability × impact; include deferrals | **Loop Contract → Focus declared** |
+| `riskiest_assumption` | Falsifiable highest-impact uncertainty stated as probability × impact with planned evidence; include deferrals | **Loop Contract → Focus declared** |
 | `validation_targets` | List of commands; one per guardrail | **Loop Contract → Validation registered** |
 | `evidence` | Triplets of `red/green/removal` records (command, UTC timestamp, exit status, pointer) | **Evidence Specification** |
 | `rollback_plan` | `<VCS_REVERT>` command plus reminder to replay red failure | **Loop Contract → Focus declared** |
@@ -68,6 +69,7 @@ A loop entry is compliant when all statements hold:
 - For every guardrail in scope, the corresponding red check is either cleared within the slice or logged with command/timestamp/exit evidence linked to the guardrail ID.
 - The entry cites the exact ADR sections and work-log notes refreshed by this slice; omit generic references.
 - The riskiest open assumption is named with probability × impact rationale. Each higher-risk deferral includes the evidence pointer documenting the blocker.
+- The riskiest assumption is articulated as a falsifiable uncertainty that this slice will test or gather evidence for; restating the planned work or generic reminders does not satisfy this field.
 - When the riskiest assumption cannot advance, blocker evidence (command, failure excerpt, pointer) is present. Status-only entries must additionally state the next riskiest assumption.
 
 **Slice qualifies**

@@ -94,6 +94,10 @@ if not TYPE_CHECKING:
                     result.stdout,
                 )
                 self.assertIn(
+                    "guardrail_target: request-history-guardrails",
+                    result.stdout,
+                )
+                self.assertIn(
                     "Suggestion skip summary (json):",
                     result.stdout,
                 )
@@ -262,6 +266,10 @@ if not TYPE_CHECKING:
                 self.assertTrue(lines, "make output unexpectedly empty")
                 self.assertIn(
                     "Streaming gating summary: status=unknown; total=0; counts=none; sources=none; last=n/a; last_source=n/a; last_message=none",
+                    result.stdout,
+                )
+                self.assertIn(
+                    "guardrail_target: request-history-guardrails-fast",
                     result.stdout,
                 )
                 self.assertIn(

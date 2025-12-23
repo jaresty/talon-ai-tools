@@ -228,6 +228,10 @@ if not TYPE_CHECKING:
                     result.stdout,
                 )
                 self.assertIn(
+                    "guardrail_target: request-history-guardrails",
+                    result.stdout,
+                )
+                self.assertIn(
                     "History summary gating status: unknown",
                     result.stdout,
                 )
@@ -611,6 +615,10 @@ if not TYPE_CHECKING:
 
             self.assertIn(
                 "History guardrail target: request-history-guardrails-fast",
+                result.stdout,
+            )
+            self.assertIn(
+                "guardrail_target: request-history-guardrails-fast",
                 result.stdout,
             )
             self.assertIn(

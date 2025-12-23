@@ -349,6 +349,12 @@ PY
   echo "Streaming JSON summary recorded at ${STREAMING_JSON_PATH}; job summary will reference this file when running in GitHub Actions."
 
   TELEMETRY_PATH="${SUMMARY_DIR}/history-validation-summary.telemetry.json"
+  if [[ -f "${TELEMETRY_PATH}" ]]; then
+    TELEMETRY_METADATA=$(python3 scripts/tools/history-telemetry-inspect.py "${TELEMETRY_PATH}" --field summary_path --field total_entries --field gating_drop_total --field streaming_status)
+    echo "Telemetry guardrail metadata:"
+    printf '%s\n' "${TELEMETRY_METADATA}" | sed 's/^/  /'
+  fi
+
   MARKER_PATH="${SUMMARY_DIR}/talon-export-marker.json"
   SCHEDULER_INFO=$(python3 scripts/tools/scheduler_source.py --summary "${SUMMARY_FILE}" --telemetry "${TELEMETRY_PATH}" --marker "${MARKER_PATH}")
   SCHEDULER_JSON=$(SCHEDULER_INFO_DATA="${SCHEDULER_INFO}" python3 - <<'PY'

@@ -2109,6 +2109,37 @@
 - next_work:
   - Evaluate adding `--json`/`--fields-only` options to tailor the helper for bulk diff automation.
 
+## 2025-12-23 – Loop 369 (kind: guardrail/tests)
+- helper_version: helper:v20251221.5
+- focus: Request Gating & Streaming – guardrail CLI/Make targets surface telemetry guardrail metadata automatically.
+- riskiest_assumption: Without printing the guardrail target/summary metadata, history exports can be mislabelled during Concordance triage (probability medium, impact high for auditing).
+- validation_targets:
+  - python3 -m pytest _tests/test_run_guardrails_ci.py::RunGuardrailsCITests::test_run_guardrails_ci_history_target_produces_summary
+  - python3 -m pytest _tests/test_make_request_history_guardrails.py::MakeRequestHistoryGuardrailsTests::test_make_request_history_guardrails_runs_clean
+- evidence:
+  - red | 2025-12-23T06:30:05Z | exit 1 | python3 -m pytest _tests/test_run_guardrails_ci.py::RunGuardrailsCITests::test_run_guardrails_ci_history_target_produces_summary
+      helper:diff-snapshot=2 files changed, 8 insertions(+)
+      CI helper stdout lacked `guardrail_target:` metadata, so the new assertion failed | inline
+  - red | 2025-12-23T06:30:13Z | exit 1 | python3 -m pytest _tests/test_make_request_history_guardrails.py::MakeRequestHistoryGuardrailsTests::test_make_request_history_guardrails_runs_clean
+      helper:diff-snapshot=2 files changed, 8 insertions(+)
+      Make target output lacked the guardrail target line required by the new guardrail | inline
+  - green | 2025-12-23T06:35:10Z | exit 0 | python3 -m pytest _tests/test_run_guardrails_ci.py::RunGuardrailsCITests::test_run_guardrails_ci_history_target_produces_summary _tests/test_make_request_history_guardrails.py::MakeRequestHistoryGuardrailsTests::test_make_request_history_guardrails_runs_clean
+      helper:diff-snapshot=5 files changed, 27 insertions(+), 1 deletion(-)
+      run_guardrails_ci.sh and Make now invoke history-telemetry-inspect; stdout shows the guardrail target and summary metadata, and both guardrail tests pass | inline
+  - removal | 2025-12-23T06:33:49Z | exit 1 | git stash push -k -- scripts/tools/run_guardrails_ci.sh Makefile && python3 -m pytest _tests/test_run_guardrails_ci.py::RunGuardrailsCITests::test_run_guardrails_ci_history_target_produces_summary
+      helper:diff-snapshot=0 files changed
+      Reverting the CLI/Make helpers drops the metadata line and the CI guardrail test fails again | inline
+  - removal | 2025-12-23T06:33:55Z | exit 1 | python3 -m pytest _tests/test_make_request_history_guardrails.py::MakeRequestHistoryGuardrailsTests::test_make_request_history_guardrails_runs_clean
+      helper:diff-snapshot=0 files changed
+      With the helper removed, the Make target no longer prints `guardrail_target:` and the guardrail test fails; the stash was popped immediately afterwards to restore the helper | inline
+- rollback_plan: git restore -- scripts/tools/run_guardrails_ci.sh Makefile _tests/test_run_guardrails_ci.py _tests/test_make_request_history_guardrails.py docs/adr/0056-concordance-personas-axes-history-gating.md && python3 -m pytest _tests/test_run_guardrails_ci.py::RunGuardrailsCITests::test_run_guardrails_ci_history_target_produces_summary
+- delta_summary: helper:diff-snapshot=5 files changed, 27 insertions(+), 1 deletion(-); guardrail CLI/Make targets call `history-telemetry-inspect.py`, guardrail tests enforce the new metadata, and ADR monitoring guidance notes the automatic output.
+- residual_risks:
+  - Helper output still includes the full default field set; trim or add a terse mode if future logs become noisy.
+  - Job-summary formatting now depends on the helper output; update summary builders if we later change helper formatting (e.g., bullets vs tables).
+- next_work:
+  - Evaluate whether GitHub summaries should include a condensed guardrail metadata table derived from the helper output.
+
 ## 2025-12-23 – Loop 271 (kind: docs)
 - Helper: helper:v20251220.5 @ 2025-12-21T19:20Z
 - Focus: Request Gating & Streaming – spell out the ongoing guardrail commands and runbook follow-ups for streaming telemetry.

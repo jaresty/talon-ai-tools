@@ -2085,6 +2085,30 @@
 - next_work:
   - Docs: when I revise the guardrail checklist, ensure it mirrors the first-person language.
 
+## 2025-12-23 – Loop 368 (kind: tooling)
+- helper_version: helper:v20251221.5
+- focus: ADR-0056 §Monitoring & Next Steps – telemetry guardrail target inspection helper.
+- riskiest_assumption: Without a CLI helper, manual telemetry reviews could mislabel history exports by guardrail target, leading to incorrect Concordance comparisons (probability medium, impact high for telemetry triage).
+- validation_targets:
+  - python3 -m pytest _tests/test_history_telemetry_inspect.py
+- evidence:
+  - red | 2025-12-23T06:21:10Z | exit 1 | python3 -m pytest _tests/test_history_telemetry_inspect.py
+      helper:diff-snapshot=1 file changed, 55 insertions(+)
+      history-telemetry-inspect CLI missing; Python reported it could not open the script | inline
+  - green | 2025-12-23T06:23:20Z | exit 0 | python3 -m pytest _tests/test_history_telemetry_inspect.py
+      helper:diff-snapshot=3 files changed, 163 insertions(+)
+      helper prints guardrail target, drop totals, and last-drop metadata from telemetry exports | inline
+  - removal | 2025-12-23T06:24:40Z | exit 1 | mv scripts/tools/history-telemetry-inspect.py scripts/tools/history-telemetry-inspect.py.bak && python3 -m pytest _tests/test_history_telemetry_inspect.py
+      helper:diff-snapshot=2 files changed, 55 insertions(+)
+      removing the CLI reinstates the failure because the script is no longer available | inline
+- rollback_plan: git rm scripts/tools/history-telemetry-inspect.py _tests/test_history_telemetry_inspect.py && git restore -- docs/adr/0056-concordance-personas-axes-history-gating.md && python3 -m pytest _tests/test_history_telemetry_inspect.py
+- delta_summary: helper:diff-snapshot=3 files changed, 163 insertions(+); added a telemetry inspection CLI, guardrail-backed test, and ADR monitoring note covering the new workflow.
+- residual_risks:
+  - Helper currently prints a fixed field set; add formatting options if future workflows need concise/JSON output.
+  - When inspecting multiple telemetry files, output ordering might overwhelm the console; consider a `--summary` flag that collapses repeated fields.
+- next_work:
+  - Evaluate adding `--json`/`--fields-only` options to tailor the helper for bulk diff automation.
+
 ## 2025-12-23 – Loop 271 (kind: docs)
 - Helper: helper:v20251220.5 @ 2025-12-21T19:20Z
 - Focus: Request Gating & Streaming – spell out the ongoing guardrail commands and runbook follow-ups for streaming telemetry.

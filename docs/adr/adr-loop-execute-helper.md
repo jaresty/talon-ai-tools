@@ -40,7 +40,7 @@ The `<ARTEFACT_LOG>` must record headings matching the helper command names when
 
 - Red evidence is captured before behaviour changes, or an automation gap is documented with blocking evidence.
 - Slice scope describes a single cohesive behaviour or decision. Guardrail evidence is part of that behaviour’s contract, not a separate deliverable.
-- Each loop interrogates the highest-impact behaviour outcome still at risk. Once evidence reduces severity to low, the remaining risk moves to `residual_risks` and no new loop is required. The `riskiest_assumption` states the falsifiable, higher-severity uncertainty; placeholder reminders or restated edits are non-compliant.
+- Each loop interrogates the highest-impact behaviour outcome still at risk. Document the severity rationale for the chosen behaviour; once evidence reduces severity to low, move the remaining risk to `residual_risks` instead of opening a new loop. The `riskiest_assumption` states the falsifiable, higher-severity uncertainty; placeholder reminders or restated edits are non-compliant.
 - When multiple candidate slices exist, the executor selects the slice that interrogates the riskiest assumption without waiting for external direction; if choices appear indistinguishable, the executor picks any of them without blocking.
 
 - Loop summary demonstrates the ADR completion horizon changed (or remained unchanged with justification) since the prior entry, naming the domains or tasks still open.

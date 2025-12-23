@@ -1,7 +1,7 @@
 # 0059 – Response canvas refresh and overlay gating cleanup
 
 ## Status
-Proposed
+Accepted
 
 ## Context
 - Telemetry exports from `model run …` streaming sessions show repeated `in_flight` drops attributed to GUI surfaces (`modelHelpCanvas`, `modelPatternGUI`, `modelPromptPatternGUI`, `modelSuggestionGUI`) even when those canvases were never opened. The drops are emitted via `close_common_overlays` inside `model_response_canvas_open/refresh`, which call each GUI closer while a request is still in flight (`lib/modelResponseCanvas.py:1917`, `lib/overlayLifecycle.py:39`). Every closer calls `_reject_if_request_in_flight()` → `try_begin_request`, inflating gating stats and reintroducing history noise that ADR-0058 tried to eliminate.
@@ -33,7 +33,9 @@ Proposed
 - `python3 -m pytest` (or targeted suites) passes.
 
 ## Verification
-Pending implementation.
+- `python3 -m pytest _tests/test_overlay_lifecycle.py::OverlayLifecycleTests::test_common_overlay_closers_do_not_call_gating`
+- `python3 -m pytest _tests/test_model_helpers_response_canvas.py`
+- `python3 -m pytest _tests/test_model_response_canvas.py`
 
 ## Consequences
 - Telemetry dashboards regain signal for genuine overlay conflicts or in-flight rejections.

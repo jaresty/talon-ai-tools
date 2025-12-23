@@ -1725,7 +1725,17 @@ def send_request(max_attempts: int = 10):
     try:
         axes = getattr(GPTState, "last_axes", {}) or {}
         session = getattr(GPTState, "last_streaming_session", None)
-        if getattr(session, "request_id", None) == request_id and hasattr(
+        destination_kind = str(
+            getattr(GPTState, "current_destination_kind", "") or ""
+        ).lower()
+        skip_history = destination_kind == "suggest"
+        if skip_history:
+            prompt_text = ""
+            try:
+                print("[modelHelpers] skipping history append for suggest destination")
+            except Exception:
+                pass
+        elif getattr(session, "request_id", None) == request_id and hasattr(
             session, "record_log_entry"
         ):
             prompt_text = session.record_log_entry(

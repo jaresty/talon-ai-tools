@@ -2,6 +2,7 @@ import os
 import unittest
 import json
 from typing import TYPE_CHECKING
+from types import SimpleNamespace
 from unittest.mock import patch
 
 try:
@@ -393,6 +394,60 @@ if bootstrap is not None:
                 send_request(max_attempts=1)
 
             self.assertEqual(GPTState.last_streaming_snapshot, {})
+
+        def test_non_stream_suggest_skips_history_logging(self) -> None:
+            """Suggest runs should not append to request history."""
+
+            def fake_get(key, default=None):
+                if key == "user.model_streaming":
+                    return False
+                if key == "user.model_endpoint":
+                    return "http://example.com"
+                if key == "user.model_request_timeout_seconds":
+                    return 120
+                return default
+
+            def fake_send_request_internal(_req):  # noqa: ARG001
+                return {"choices": [{"message": {"content": "assistant reply"}}]}
+
+            provider = SimpleNamespace(
+                features={"streaming": False}, id="stub-provider"
+            )
+
+            GPTState.request = {
+                "model": "dummy-model",
+                "messages": [
+                    {"role": "user", "content": "hi"},
+                ],
+            }
+
+            previous_kind = getattr(GPTState, "current_destination_kind", None)
+            GPTState.current_destination_kind = "suggest"
+
+            try:
+                with (
+                    patch.object(modelHelpers.settings, "get", side_effect=fake_get),
+                    patch.object(
+                        modelHelpers,
+                        "send_request_internal",
+                        side_effect=fake_send_request_internal,
+                    ),
+                    patch.object(
+                        modelHelpers, "append_entry_from_request"
+                    ) as append_entry,
+                    patch.object(modelHelpers, "bound_provider", return_value=provider),
+                    patch.object(modelHelpers, "_ensure_request_supported"),
+                ):
+                    send_request(max_attempts=1)
+            finally:
+                if previous_kind is None and hasattr(
+                    GPTState, "current_destination_kind"
+                ):
+                    delattr(GPTState, "current_destination_kind")
+                else:
+                    GPTState.current_destination_kind = previous_kind
+
+            append_entry.assert_not_called()
 
 else:
     if not TYPE_CHECKING:

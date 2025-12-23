@@ -87,6 +87,22 @@ def print_refresh_tip(marker: Path) -> None:
     )
 
 
+def warn_legacy_streak_files(marker: Path) -> None:
+    directory = marker.parent
+    legacy_files = (
+        sorted(directory.glob("cli-warning-streak*.json")) if directory else []
+    )
+    if not legacy_files:
+        return
+    print(
+        "WARNING: Found legacy telemetry streak artefacts; delete cli-warning-streak*.json files manually\n"
+        "They are no longer used by guardrail tooling.",
+        file=sys.stderr,
+    )
+    for legacy_file in legacy_files:
+        print(f" - {legacy_file}", file=sys.stderr)
+
+
 def _marker_status(
     marker: Path, max_age_minutes: int
 ) -> tuple[bool, Optional[datetime], Optional[float], bool]:
@@ -128,6 +144,7 @@ def main() -> int:
     args = parse_args()
 
     marker = args.marker
+    warn_legacy_streak_files(marker)
     allow_env = args.allow_env
     allow_value = os.environ.get(allow_env) if allow_env else None
     if allow_env and allow_value:

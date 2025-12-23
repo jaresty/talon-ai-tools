@@ -3489,3 +3489,17 @@ PY
   - None; the manual cleanup note closes the documentation gap.
 - next_work:
   - None queued; Monitoring & Next Steps reflects the current guardrail posture.
+
+## 2025-12-23 – Loop 392 (kind: guardrail/tests)
+- helper_version: helper:v20251223.1
+- focus: Request Gating & Streaming – warn when legacy `cli-warning-streak*.json` artefacts linger alongside the telemetry export marker.
+- riskiest_assumption: Without an automated warning, leftover streak artefacts could mislead operators into thinking the helper still manages streak counts (probability medium, impact medium-high for Concordance guardrail accuracy).
+- validation_targets:
+  - python3 -m pytest _tests/test_check_telemetry_export_marker.py
+- evidence: `docs/adr/evidence/0056/loop-0392.md`
+- rollback_plan: `git restore --source=HEAD -- scripts/tools/check-telemetry-export-marker.py _tests/test_check_telemetry_export_marker.py docs/adr/evidence/0056/loop-0392.md && python3 -m pytest _tests/test_check_telemetry_export_marker.py`
+- delta_summary: helper:diff-snapshot=2 files changed, 41 insertions(+); telemetry marker helper now emits a warning listing legacy streak files and the pytest suite covers the new messaging.
+- residual_risks:
+  - Operators might ignore the warning; mitigation: document the new output and remind maintainers during guardrail reviews; monitoring trigger: repeated warnings in guardrail logs without the files being removed.
+- next_work:
+  - Loop 393: update guardrail runner output so CI logs surface the legacy streak warning alongside freshness and bypass notices.

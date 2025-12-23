@@ -159,3 +159,27 @@ if not TYPE_CHECKING:
                     "skipping telemetry export freshness check", result.stderr
                 )
                 self.assertIn(str(marker), result.stderr)
+
+        def test_warns_when_legacy_streak_files_exist(self) -> None:
+            with TemporaryDirectory() as tmpdir:
+                marker = Path(tmpdir) / "talon-export-marker.json"
+                marker.parent.mkdir(parents=True, exist_ok=True)
+                marker.write_text(
+                    json.dumps({"exported_at": datetime.now(timezone.utc).isoformat()}),
+                    encoding="utf-8",
+                )
+                legacy_file = marker.parent / "cli-warning-streak.json"
+                legacy_file.write_text("{}", encoding="utf-8")
+                extra_legacy = marker.parent / "cli-warning-streak.old.json"
+                extra_legacy.write_text("{}", encoding="utf-8")
+
+                result = self._run_helper(marker)
+
+                if result.returncode != 0:
+                    self.fail(
+                        "helper should succeed when only legacy streak files exist\n"
+                        f"exit={result.returncode}\nstdout=\n{result.stdout}\nstderr=\n{result.stderr}"
+                    )
+                self.assertIn("legacy telemetry streak artefacts", result.stderr)
+                self.assertIn(str(legacy_file), result.stderr)
+                self.assertIn(str(extra_legacy), result.stderr)

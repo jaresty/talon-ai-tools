@@ -3290,8 +3290,9 @@ PY
 - delta_summary: helper:diff-snapshot=6 files changed, 64 insertions(+), 465 deletions(-); removed streak persistence/auto-trigger code, made the helper exit non-zero on stale telemetry, updated guardrail script/tests to log a one-line freshness banner, and documented the manual-only workflow.
 - residual_risks:
   - Setting `ALLOW_STALE_TELEMETRY=1` still bypasses the freshness check; reserve that env var for CI-only fixtures and monitor guardrail logs for accidental use in production.
+  - Legacy `cli-warning-streak` artifacts may linger on machines that never ran the cleanup; treat this as low severity and rely on guardrail tests to flag any reintroduced streak files.
 - next_work:
-  - Consider deleting the stale streak artifacts under `artifacts/telemetry/` during guardrail runs so operators aren’t tempted to rely on the old JSON trail.
+  - None queued; streak artifact follow-up is complete after Loop 390.
 
 ## 2025-12-23 – Loop 380 (kind: guardrail/tests)
 - helper_version: helper:v20251221.5
@@ -3447,3 +3448,23 @@ PY
   - None; the ADR now captures the exact warning text and optional-target behaviour.
 - next_work:
   - None queued; monitoring guidance is aligned with the guardrail runner output.
+
+## 2025-12-23 – Loop 390 (kind: documentation)
+- helper_version: helper:v20251221.5
+- focus: Monitoring & Next Steps – retire the stale streak artifact follow-up.
+- riskiest_assumption: Leaving the `cli-warning-streak` next_work item in place suggests additional cleanup is required (probability medium, impact medium for planning accuracy); `python3 - <<'PY' ...` fails until the note is removed.
+- validation_targets:
+  - python3 - <<'PY'
+      from pathlib import Path
+      for line in Path('docs/adr/0056-concordance-personas-axes-history-gating.work-log.md').read_text(encoding='utf-8').splitlines():
+          if line.lstrip().startswith('- Consider deleting the stale streak artifacts'):
+              raise SystemExit('streak cleanup bullet still present')
+      print('streak cleanup bullet removed')
+    PY
+- evidence: `docs/adr/evidence/0056/loop-0390.md`
+- rollback_plan: `git restore --source=HEAD -- docs/adr/0056-concordance-personas-axes-history-gating.work-log.md && python3 - <<'PY' ...`
+- delta_summary: helper:diff-snapshot=1 file changed, 6 insertions(+), 1 deletion(-); removed the lingering next_work bullet and documented the low-severity residual risk.
+- residual_risks:
+  - Legacy `cli-warning-streak` files may still exist on old workstations; clean them manually if encountered and reopen this track only if new guardrail code reintroduces the artifact.
+- next_work:
+  - None queued; telemetry monitoring now focuses on the ALLOW_STALE_TELEMETRY warning flow.

@@ -68,3 +68,15 @@
 - next_work:
   - Behaviour: Assess completion horizon and document residual risks for ADR 0061 — review outstanding docs/tests and update summary.
 
+## 2025-12-24 – Loop 6 (kind: documentation)
+- helper_version: helper:v20251223.1
+- focus: ADR 0061 §§Summary, Consequences — update ADR status/residual risks to reflect completed loops and ongoing monitoring.
+- riskiest_assumption: Without explicitly documenting the remaining monitoring guidance, contributors may assume the ADR is incomplete or miss the need to watch for persona-less history snapshots (probability medium, impact medium for operational hygiene).
+- validation_targets: (documentation-only loop)
+- evidence: n/a (no executable behaviour changed)
+- rollback_plan: git restore --source=HEAD -- docs/adr/0061-retire-spoken-intent-aliases.md docs/adr/0061-retire-spoken-intent-aliases.work-log.md
+- delta_summary: helper:diff-snapshot=1 file changed, 7 insertions(+); ADR now marked Accepted with a residual-risk note covering history snapshots without persona metadata.
+- residual_risks:
+  - Risk: Residual doc references outside ADR 0061 may still mention legacy phrases; mitigation: refresh docs opportunistically; trigger: documentation reviews encountering “for …” intent examples.
+- next_work: none (monitor via guardrails).
+

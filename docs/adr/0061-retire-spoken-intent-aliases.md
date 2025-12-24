@@ -1,6 +1,6 @@
 # 0061 – Retire Spoken Intent Aliases in Favour of Canonical Tokens
 
-- Status: Proposed  
+- Status: Accepted  
 - Date: 2025-12-23  
 - Context: `talon-ai-tools` persona/intent SSOT (`lib/personaConfig.py`), GPT intent commands/helpers, docs and help surfaces that hydrate intent synonyms.  
 - Related ADRs:  
@@ -49,4 +49,11 @@ We are collapsing intent back to **single-word canonical tokens** such as `infor
 1. Delete the spoken alias constants and adjust `persona_intent_catalog_snapshot()` so the snapshot only contains canonical tokens.  
 2. Refresh Talon lists (`GPT/lists/modelIntent.talon-list`), command grammars, and help hub copy to show canonical intent tokens.  
 3. Update tests and guardrails (for example `_tests/test_gpt_actions.py`, `_tests/test_gpt_suggest_context_snapshot.py`) to assert canonical-only behaviour and fail on multi-word inputs.  
-4. Announce the change in release notes / help surfaces so users know to speak the canonical tokens directly.
+4. Announce the change in release notes / help surfaces so users know to speak the canonical tokens directly.  
+5. `history-axis-validate` now fails fast when legacy intent alias keys appear in stored history, highlighting the `Intent invalid tokens` count for remediation.
+
+---
+
+## Residual risks
+
+- Historical history snapshots without persona metadata still bypass invalid-intent detection. Continue running `history-axis-validate --summary` and remediate entries missing `intent_preset` headers.

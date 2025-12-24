@@ -167,79 +167,40 @@ if bootstrap is not None:
             if bootstrap is None:
                 self.skipTest("Talon runtime not available")
 
-            with (
-                patch.object(
-                    history_actions,
-                    "try_begin_request",
-                    return_value=(False, "in_flight"),
-                ) as try_begin,
-                patch.object(
-                    history_actions,
-                    "render_drop_reason",
-                    return_value="Request running",
-                    create=True,
-                ) as render_message,
-                patch.object(history_actions, "set_drop_reason") as set_reason,
-                patch.object(history_actions, "notify") as notify_mock,
-            ):
+            with patch.object(
+                history_actions,
+                "guard_surface_request",
+                return_value=True,
+            ) as guard:
                 self.assertTrue(history_actions._reject_if_request_in_flight())
-            try_begin.assert_called_once_with(source="requestHistoryActions")
-            render_message.assert_called_once_with("in_flight")
-            set_reason.assert_called_once_with("in_flight", "Request running")
-            notify_mock.assert_called_once_with("Request running")
+            guard.assert_called_once()
+            kwargs = guard.call_args.kwargs
+            self.assertEqual(kwargs.get("surface"), "history_actions")
+            self.assertEqual(kwargs.get("source"), "requestHistoryActions")
 
             with (
                 patch.object(
-                    history_actions,
-                    "try_begin_request",
-                    return_value=(False, "unknown_reason"),
-                ),
-                patch.object(
-                    drop_reason_module,
-                    "drop_reason_message",
-                    return_value="",
-                ),
-                patch.object(
-                    history_actions,
-                    "render_drop_reason",
-                    return_value="Rendered fallback",
-                    create=True,
-                ) as render_message,
-                patch.object(history_actions, "set_drop_reason") as set_reason,
-                patch.object(history_actions, "notify") as notify_mock,
-            ):
-                self.assertTrue(history_actions._reject_if_request_in_flight())
-            render_message.assert_called_once_with("unknown_reason")
-            set_reason.assert_called_once_with("unknown_reason", "Rendered fallback")
-            notify_mock.assert_called_once_with("Rendered fallback")
-
-            with (
-                patch.object(
-                    history_actions, "try_begin_request", return_value=(True, "")
-                ) as try_begin,
+                    history_actions, "guard_surface_request", return_value=False
+                ) as guard,
                 patch.object(history_actions, "last_drop_reason", return_value=""),
                 patch.object(history_actions, "set_drop_reason") as set_reason,
-                patch.object(history_actions, "notify") as notify_mock,
             ):
                 self.assertFalse(history_actions._reject_if_request_in_flight())
-            try_begin.assert_called_once_with(source="requestHistoryActions")
+            guard.assert_called_once()
             set_reason.assert_called_once_with("")
-            notify_mock.assert_not_called()
 
         def test_reject_if_request_in_flight_preserves_pending_reason(self):
             with (
                 patch.object(
-                    history_actions, "try_begin_request", return_value=(True, "")
+                    history_actions, "guard_surface_request", return_value=False
                 ),
                 patch.object(
                     history_actions, "last_drop_reason", return_value="pending"
                 ),
                 patch.object(history_actions, "set_drop_reason") as set_reason,
-                patch.object(history_actions, "notify") as notify_mock,
             ):
                 self.assertFalse(history_actions._reject_if_request_in_flight())
             set_reason.assert_not_called()
-            notify_mock.assert_not_called()
 
         def test_history_show_latest_uses_drop_reason_when_no_directional(self):
             import talon_user.lib.requestLog as requestlog  # type: ignore
@@ -1857,18 +1818,15 @@ if bootstrap is not None:
 
             with (
                 patch.object(
-                    history_actions,
-                    "try_begin_request",
-                    return_value=(False, "in_flight"),
-                ),
-                patch.object(history_actions, "notify") as notify_mock,
+                    history_actions, "guard_surface_request", return_value=True
+                ) as guard,
                 patch.object(
                     history_actions, "_save_history_prompt_to_file"
                 ) as save_mock,
             ):
                 HistoryActions.gpt_request_history_save_latest_source()
+            guard.assert_called_once()
             save_mock.assert_not_called()
-            notify_mock.assert_called()
 
         def test_history_save_succeeds_after_terminal_phase(self):
             tmpdir = tempfile.mkdtemp()
@@ -1885,7 +1843,7 @@ if bootstrap is not None:
             )
 
             with patch.object(
-                history_actions, "try_begin_request", return_value=(True, "")
+                history_actions, "guard_surface_request", return_value=False
             ):
                 HistoryActions.gpt_request_history_save_latest_source()
 
@@ -1908,9 +1866,7 @@ if bootstrap is not None:
 
             with (
                 patch.object(
-                    history_actions,
-                    "try_begin_request",
-                    return_value=(True, ""),
+                    history_actions, "guard_surface_request", return_value=False
                 ),
                 patch.object(history_actions, "notify") as notify_mock,
             ):
@@ -2023,8 +1979,8 @@ if bootstrap is not None:
             with (
                 patch.object(
                     history_actions,
-                    "try_begin_request",
-                    return_value=(False, "in_flight"),
+                    "guard_surface_request",
+                    return_value=True,
                 ),
                 patch.object(
                     history_actions, "_save_history_prompt_to_file"
@@ -2034,7 +1990,7 @@ if bootstrap is not None:
             save_mock.assert_not_called()
 
             with patch.object(
-                history_actions, "try_begin_request", return_value=(True, "")
+                history_actions, "guard_surface_request", return_value=False
             ):
                 HistoryActions.gpt_request_history_save_latest_source()
             files = os.listdir(tmpdir)

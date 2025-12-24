@@ -53,3 +53,17 @@
   - Request history actions/log modules still duplicate gating logic. Mitigation: migrate them to the shared facade in the next loop and validate via `_tests/test_request_history_actions.py`.
 - next_work:
   - Behaviour: Adopt surface guidance in `requestHistoryActions` and related log helpers — python3 -m pytest _tests/test_request_history_actions.py — future-shaping: remove remaining bespoke gating before introducing the history lifecycle orchestrator.
+
+## 2025-12-24 – Loop 005 (kind: implementation)
+- helper_version: helper:v20251223.1
+- focus: ADR-0062 §Refactor Plan – Guidance Surface Coordinator (request history actions)
+- riskiest_assumption: History actions still duplicate `_reject_if_request_in_flight`, leading to inconsistent saves; `python3 -m pytest _tests/test_request_history_actions.py` fails when tests expect the shared guard (probability medium, impact high on history volatility).
+- validation_targets:
+  - python3 -m pytest _tests/test_request_history_actions.py
+- evidence: docs/adr/evidence/0062/loop-0005.md
+- rollback_plan: git restore --source=HEAD -- lib/requestHistoryActions.py && python3 -m pytest _tests/test_request_history_actions.py
+- delta_summary: helper:diff-snapshot=2 files changed, 33 insertions(+), 90 deletions(-); history actions now delegate gating to `guard_surface_request`, and save workflows respect shared guard semantics.
+- residual_risks:
+  - Downstream history log/save helpers may still assume local drop-reason messaging. Mitigation: audit `_notify_with_drop_reason` flows alongside the planned history lifecycle orchestrator.
+- next_work:
+  - Behaviour: Prepare history lifecycle façade — gather coverage around request log snapshots via python3 -m pytest _tests/test_request_history_actions.py::RequestHistoryActionTests::test_history_save_writes_axes_headers — future-shaping: consolidate axis snapshot assembly before introducing the lifecycle orchestrator.

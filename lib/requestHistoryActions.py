@@ -23,11 +23,11 @@ from .requestLog import (
     axis_snapshot_from_axes as requestlog_axis_snapshot_from_axes,
     AxisSnapshot,
 )
-from .dropReasonUtils import render_drop_reason
 from .requestBus import emit_history_saved
 from .axisCatalog import axis_catalog
 from .requestState import RequestPhase
-from .requestGating import request_is_in_flight, try_begin_request
+from .requestGating import request_is_in_flight
+from .surfaceGuidance import guard_surface_request
 from .suggestionCoordinator import recipe_header_lines_from_snapshot
 from .talonSettings import _canonicalise_axis_tokens
 
@@ -63,34 +63,21 @@ def _request_is_in_flight() -> bool:
 
 
 def _reject_if_request_in_flight() -> bool:
-    """Notify and return True when a GPT request is already running."""
+    """Return True when history actions should abort due to gating."""
 
-    allowed, reason = try_begin_request(source="requestHistoryActions")
-    if allowed:
-        try:
-            if not last_drop_reason():
-                set_drop_reason("")
-        except Exception:
-            pass
-        return False
-
-    if not reason:
-        return False
-
-    message = render_drop_reason(reason)
+    blocked = guard_surface_request(
+        surface="history_actions",
+        source="requestHistoryActions",
+    )
+    if blocked:
+        return True
 
     try:
-        set_drop_reason(reason, message)
+        if not last_drop_reason():
+            set_drop_reason("")
     except Exception:
         pass
-
-    try:
-        if message:
-            notify(message)
-    except Exception:
-        pass
-
-    return True
+    return False
 
 
 def _clear_notify_suppression() -> None:

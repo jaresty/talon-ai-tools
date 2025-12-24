@@ -888,19 +888,16 @@ if bootstrap is not None:
 
         def test_reject_if_request_in_flight_notifies_and_blocks(self) -> None:
             with (
-                patch.object(
-                    modelSuggestionGUI,
-                    "try_begin_request",
+                patch(
+                    "talon_user.lib.surfaceGuidance.try_begin_request",
                     return_value=(False, "in_flight"),
                 ) as try_begin,
-                patch.object(
-                    modelSuggestionGUI,
-                    "render_drop_reason",
+                patch(
+                    "talon_user.lib.surfaceGuidance.render_drop_reason",
                     return_value="Request running",
-                    create=True,
                 ) as render_message,
-                patch.object(modelSuggestionGUI, "set_drop_reason") as set_reason,
-                patch.object(modelSuggestionGUI, "notify") as notify_mock,
+                patch("talon_user.lib.surfaceGuidance.set_drop_reason") as set_reason,
+                patch("talon_user.lib.surfaceGuidance.notify") as notify_mock,
             ):
                 self.assertTrue(modelSuggestionGUI._reject_if_request_in_flight())
             try_begin.assert_called_once_with(source="modelSuggestionGUI")
@@ -909,9 +906,8 @@ if bootstrap is not None:
             notify_mock.assert_called_once_with("Request running")
 
             with (
-                patch.object(
-                    modelSuggestionGUI,
-                    "try_begin_request",
+                patch(
+                    "talon_user.lib.surfaceGuidance.try_begin_request",
                     return_value=(False, "unknown_reason"),
                 ),
                 patch.object(
@@ -919,14 +915,12 @@ if bootstrap is not None:
                     "drop_reason_message",
                     return_value="",
                 ),
-                patch.object(
-                    modelSuggestionGUI,
-                    "render_drop_reason",
+                patch(
+                    "talon_user.lib.surfaceGuidance.render_drop_reason",
                     return_value="Rendered fallback",
-                    create=True,
                 ) as render_message,
-                patch.object(modelSuggestionGUI, "set_drop_reason") as set_reason,
-                patch.object(modelSuggestionGUI, "notify") as notify_mock,
+                patch("talon_user.lib.surfaceGuidance.set_drop_reason") as set_reason,
+                patch("talon_user.lib.surfaceGuidance.notify") as notify_mock,
             ):
                 self.assertTrue(modelSuggestionGUI._reject_if_request_in_flight())
             render_message.assert_called_once_with("unknown_reason")
@@ -934,11 +928,16 @@ if bootstrap is not None:
             notify_mock.assert_called_once_with("Rendered fallback")
 
             with (
-                patch.object(
-                    modelSuggestionGUI, "try_begin_request", return_value=(True, "")
+                patch(
+                    "talon_user.lib.surfaceGuidance.try_begin_request",
+                    return_value=(True, ""),
                 ),
-                patch.object(modelSuggestionGUI, "set_drop_reason") as set_reason,
-                patch.object(modelSuggestionGUI, "notify") as notify_mock,
+                patch(
+                    "talon_user.lib.surfaceGuidance.last_drop_reason",
+                    return_value="",
+                ),
+                patch("talon_user.lib.surfaceGuidance.set_drop_reason") as set_reason,
+                patch("talon_user.lib.surfaceGuidance.notify") as notify_mock,
             ):
                 self.assertFalse(modelSuggestionGUI._reject_if_request_in_flight())
             set_reason.assert_called_once_with("")

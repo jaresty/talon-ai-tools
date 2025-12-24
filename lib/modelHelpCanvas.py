@@ -15,11 +15,10 @@ from .overlayLifecycle import close_overlays, close_common_overlays
 
 from .metaPromptConfig import first_meta_preview_line, meta_preview_lines
 from .requestGating import request_is_in_flight, try_begin_request
-from .requestLog import last_drop_reason, set_drop_reason
-from .dropReasonUtils import render_drop_reason
 from .modelHelpers import notify
 from .overlayHelpers import apply_canvas_blocking
 from .personaConfig import persona_intent_maps
+from .surfaceGuidance import guard_surface_request
 
 
 try:
@@ -74,46 +73,13 @@ def _request_is_in_flight() -> bool:
 
 
 def _reject_if_request_in_flight() -> bool:
-    """Notify and return True when a GPT request is already running."""
+    """Return True when help surfaces should abort due to gating."""
 
-    try:
-        from .modelState import GPTState
-
-        if getattr(GPTState, "suppress_overlay_inflight_guard", False):
-            return False
-    except Exception:
-        pass
-
-    allowed, reason = try_begin_request(source="modelHelpCanvas")
-    if allowed:
-        try:
-            pending_message = last_drop_reason()
-        except Exception:
-            pending_message = ""
-        if not pending_message:
-            try:
-                set_drop_reason("")
-            except Exception:
-                pass
-        return False
-
-    if not reason:
-        return False
-
-    message = render_drop_reason(reason)
-
-    try:
-        set_drop_reason(reason, message)
-    except Exception:
-        pass
-
-    try:
-        if message:
-            notify(message)
-    except Exception:
-        pass
-
-    return True
+    return guard_surface_request(
+        surface="help",
+        source="modelHelpCanvas",
+        suppress_attr="suppress_overlay_inflight_guard",
+    )
 
 
 def _axis_keys(axis: str) -> list[str]:
@@ -1722,6 +1688,8 @@ class UserActions:
 
     def model_help_canvas_close():
         """Explicitly close the canvas-based quick help and reset state"""
+        if _reject_if_request_in_flight():
+            return
         _reset_help_state("all", None)
         _close_canvas()
 

@@ -67,19 +67,16 @@ class ModelHelpCanvasGuardTests(unittest.TestCase):
 
     def test_reject_if_request_in_flight_notifies_with_drop_message(self):
         with (
-            patch.object(
-                help_canvas_module,
-                "try_begin_request",
+            patch(
+                "talon_user.lib.surfaceGuidance.try_begin_request",
                 return_value=(False, "in_flight"),
             ) as try_begin,
-            patch.object(
-                help_canvas_module,
-                "render_drop_reason",
+            patch(
+                "talon_user.lib.surfaceGuidance.render_drop_reason",
                 return_value="Request running",
-                create=True,
             ) as render_message,
-            patch.object(help_canvas_module, "set_drop_reason") as set_reason,
-            patch.object(help_canvas_module, "notify") as notify_mock,
+            patch("talon_user.lib.surfaceGuidance.set_drop_reason") as set_reason,
+            patch("talon_user.lib.surfaceGuidance.notify") as notify_mock,
         ):
             self.assertTrue(help_canvas_module._reject_if_request_in_flight())
         try_begin.assert_called_once_with(source="modelHelpCanvas")
@@ -89,9 +86,8 @@ class ModelHelpCanvasGuardTests(unittest.TestCase):
 
     def test_reject_if_request_in_flight_falls_back_to_reason_text(self):
         with (
-            patch.object(
-                help_canvas_module,
-                "try_begin_request",
+            patch(
+                "talon_user.lib.surfaceGuidance.try_begin_request",
                 return_value=(False, "unknown_reason"),
             ),
             patch.object(
@@ -99,14 +95,12 @@ class ModelHelpCanvasGuardTests(unittest.TestCase):
                 "drop_reason_message",
                 return_value="",
             ),
-            patch.object(
-                help_canvas_module,
-                "render_drop_reason",
+            patch(
+                "talon_user.lib.surfaceGuidance.render_drop_reason",
                 return_value="Rendered fallback",
-                create=True,
             ) as render_message,
-            patch.object(help_canvas_module, "set_drop_reason") as set_reason,
-            patch.object(help_canvas_module, "notify") as notify_mock,
+            patch("talon_user.lib.surfaceGuidance.set_drop_reason") as set_reason,
+            patch("talon_user.lib.surfaceGuidance.notify") as notify_mock,
         ):
             self.assertTrue(help_canvas_module._reject_if_request_in_flight())
         render_message.assert_called_once_with("unknown_reason")
@@ -115,30 +109,31 @@ class ModelHelpCanvasGuardTests(unittest.TestCase):
 
     def test_reject_if_request_in_flight_clears_drop_reason_on_success(self):
         with (
-            patch.object(
-                help_canvas_module, "try_begin_request", return_value=(True, "")
+            patch(
+                "talon_user.lib.surfaceGuidance.try_begin_request",
+                return_value=(True, ""),
             ),
-            patch.object(
-                help_canvas_module, "last_drop_reason", return_value="", create=True
+            patch(
+                "talon_user.lib.surfaceGuidance.last_drop_reason",
+                return_value="",
             ),
-            patch.object(help_canvas_module, "set_drop_reason") as set_reason,
-            patch.object(help_canvas_module, "notify") as notify_mock,
+            patch("talon_user.lib.surfaceGuidance.set_drop_reason") as set_reason,
+            patch("talon_user.lib.surfaceGuidance.notify") as notify_mock,
         ):
             self.assertFalse(help_canvas_module._reject_if_request_in_flight())
         set_reason.assert_called_once_with("")
         notify_mock.assert_not_called()
 
         with (
-            patch.object(
-                help_canvas_module, "try_begin_request", return_value=(True, "")
+            patch(
+                "talon_user.lib.surfaceGuidance.try_begin_request",
+                return_value=(True, ""),
             ),
-            patch.object(
-                help_canvas_module,
-                "last_drop_reason",
+            patch(
+                "talon_user.lib.surfaceGuidance.last_drop_reason",
                 return_value="drop_pending",
-                create=True,
             ),
-            patch.object(help_canvas_module, "set_drop_reason") as set_reason,
+            patch("talon_user.lib.surfaceGuidance.set_drop_reason") as set_reason,
         ):
             self.assertFalse(help_canvas_module._reject_if_request_in_flight())
         set_reason.assert_not_called()

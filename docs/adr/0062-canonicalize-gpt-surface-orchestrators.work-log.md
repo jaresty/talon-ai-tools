@@ -25,3 +25,17 @@
   - Guidance canvases still duplicate `_reject_if_request_in_flight` and stance summaries; mitigation: extract shared surface coordinator (Loop 3) and validate via `_tests/test_model_suggestion_gui.py`; monitor GPT UI churn hotspots for regressions.
 - next_work:
   - Behaviour: Centralise canvas/help gating via guidance coordinator — python3 -m pytest _tests/test_model_suggestion_gui.py — future-shaping: move shared event handlers into new surface facade and align with orchestrator outputs.
+
+## 2025-12-24 – Loop 003 (kind: implementation)
+- helper_version: helper:v20251223.1
+- focus: ADR-0062 §Refactor Plan – Guidance Surface Coordinator (unify request gating across canvases)
+- riskiest_assumption: Without a shared guard, suggestion/help canvases continue duplicating `_reject_if_request_in_flight`, risking inconsistent Concordance messaging; `python3 -m pytest _tests/test_surface_guidance.py` fails due to missing facade (probability medium, impact high on visibility/scope).
+- validation_targets:
+  - python3 -m pytest _tests/test_surface_guidance.py _tests/test_model_suggestion_gui.py _tests/test_model_help_canvas_guard.py
+- evidence: docs/adr/evidence/0062/loop-0003.md
+- rollback_plan: git restore --source=HEAD -- lib/modelSuggestionGUI.py lib/modelHelpCanvas.py && git clean -f _tests/test_surface_guidance.py lib/surfaceGuidance.py && python3 -m pytest _tests/test_surface_guidance.py
+- delta_summary: helper:diff-snapshot=4 files changed, 64 insertions(+), 139 deletions(-); introduces `lib/surfaceGuidance.py`, delegates suggestion/help canvases to shared guard, and realigns guard tests to the new facade.
+- residual_risks:
+  - Request history drawers still implement bespoke gating. Mitigation: fold them into the same facade in a follow-up loop and validate via `_tests/test_request_history_drawer_gating.py`.
+- next_work:
+  - Behaviour: Extend surface guidance to request history drawers — python3 -m pytest _tests/test_request_history_drawer_gating.py — future-shaping: collapse remaining `_reject_if_request_in_flight` helpers into the new facade.

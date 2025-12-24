@@ -204,16 +204,17 @@ def _render_intent_summary(line: str) -> str:
             purpose = part.split("=", 1)[1].strip()
             continue
         others.append(part)
-    primary = spoken or display or label or descriptor or "intent"
+    primary = descriptor or display or label or "intent"
     details: list[str] = []
-    if descriptor and descriptor != primary:
+    if descriptor:
         details.append(f"key={descriptor}")
     if label and label not in (primary, display):
         details.append(f"label={label}")
     if display and display != primary:
         details.append(f"display={display}")
-    if spoken:
-        details.append(f"say: intent {spoken}")
+    say_value = spoken or descriptor or primary
+    if say_value:
+        details.append(f"say: intent {say_value}")
     if purpose:
         details.append(f"purpose={purpose}")
     details.extend(others)

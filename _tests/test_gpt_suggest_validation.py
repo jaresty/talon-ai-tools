@@ -51,7 +51,7 @@ if bootstrap is not None:
                         "persona_voice": "as teacher",
                         "persona_audience": "to junior engineer",
                         "persona_tone": "kindly",
-                        "intent_purpose": "for teaching",
+                        "intent_purpose": "teach",
                         "stance_command": "model write as teacher to junior engineer kindly",
                         "why": "For teaching-focused summaries.",
                         "reasoning": "Uses teaching persona and planning intent.",
@@ -286,12 +286,12 @@ if bootstrap is not None:
             self.assertEqual(entry.get("intent_purpose"), "decide")
             self.assertEqual(entry.get("intent_preset_key"), "decide")
             self.assertEqual(entry.get("intent_preset_label"), "Decide")
-            self.assertEqual(entry.get("intent_display"), "for deciding")
+            self.assertEqual(entry.get("intent_display"), "Decide")
 
         def test_canonical_persona_value_normalises_aliases(self) -> None:
             self.assertEqual(
                 gpt_module._canonical_persona_value("intent", "For-Deciding!"),
-                "decide",
+                "",
             )
             self.assertEqual(
                 gpt_module._canonical_persona_value("voice", "AS TEACHER!!!"),
@@ -308,7 +308,7 @@ if bootstrap is not None:
                         "persona_voice": "as teacher",
                         "persona_audience": "to junior engineer",
                         "persona_tone": "kindly",
-                        "intent_purpose": "for teaching",
+                        "intent_purpose": "teach",
                         "stance_command": "model write as teacher to junior engineer kindly",
                         "why": "For teaching-focused summaries.",
                     }

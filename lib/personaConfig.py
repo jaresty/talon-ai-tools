@@ -64,28 +64,7 @@ PERSONA_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
     },
 }
 
-INTENT_SPOKEN_TO_CANONICAL: Dict[str, str] = {
-    "for information": "inform",
-    "for entertainment": "entertain",
-    "for persuasion": "persuade",
-    "for brainstorming": "brainstorm",
-    "for deciding": "decide",
-    "for planning": "plan",
-    "for evaluating": "evaluate",
-    "for coaching": "coach",
-    "for appreciation": "appreciate",
-    "for resolving": "resolve",
-    "for understanding": "understand",
-    "for tracing": "trace",
-    "for announcing": "announce",
-    "for teaching": "teach",
-    "for learning": "learn",
-}
-
 INTENT_CANONICAL_TOKENS: set[str] = set(PERSONA_KEY_TO_VALUE["intent"].keys())
-INTENT_CANONICAL_TO_SPOKEN: Dict[str, str] = {
-    canonical: spoken for spoken, canonical in INTENT_SPOKEN_TO_CANONICAL.items()
-}
 
 ALLOWED_PERSONA_AXES = frozenset({"voice", "audience", "tone"})
 
@@ -153,14 +132,19 @@ def normalize_intent_token(value: str) -> str:
 
 
 def intent_bucket_spoken_tokens() -> dict[str, list[str]]:
-    """Return intent buckets with spoken tokens (for <...>) covering all canonical intents."""
+    """Return intent buckets with display labels covering all canonical intents."""
+
+    label_lookup: Dict[str, str] = {}
+    for preset in INTENT_PRESETS:
+        canonical = (preset.intent or "").strip()
+        label_lookup.setdefault(canonical, (preset.label or canonical).strip())
+
     spoken_buckets: dict[str, list[str]] = {}
-    # Invert spoken map to prefer the first spoken form for each canonical token.
     for bucket, members in INTENT_BUCKETS.items():
         bucket_spoken: list[str] = []
         for canonical in members:
-            spoken = INTENT_CANONICAL_TO_SPOKEN.get(canonical)
-            bucket_spoken.append(spoken or canonical)
+            label = label_lookup.get(canonical) or canonical
+            bucket_spoken.append(label)
         spoken_buckets[bucket] = bucket_spoken
     return spoken_buckets
 
@@ -382,13 +366,15 @@ def _persona_spoken_map_from_presets(
 
 
 def _intent_spoken_map() -> Dict[str, str]:
-    mapping = {
-        spoken.lower(): canonical
-        for spoken, canonical in INTENT_SPOKEN_TO_CANONICAL.items()
-    }
-    for canonical in INTENT_CANONICAL_TOKENS:
-        canonical_l = canonical.lower()
-        mapping.setdefault(canonical_l, canonical)
+    mapping: Dict[str, str] = {}
+    for preset in INTENT_PRESETS:
+        canonical = (preset.intent or preset.key or "").strip()
+        if not canonical:
+            continue
+        mapping.setdefault(canonical.lower(), canonical)
+        key_value = (preset.key or "").strip()
+        if key_value:
+            mapping.setdefault(key_value.lower(), canonical)
     return mapping
 
 
@@ -479,10 +465,6 @@ def _build_persona_intent_maps_from_snapshot(
         canonical_str = (canonical or "").strip()
         if not canonical_str:
             continue
-        display_str = (display or "").strip()
-        if display_str:
-            intent_synonyms.setdefault(display_str.lower(), canonical_str)
-            intent_aliases.setdefault(display_str.lower(), canonical_str)
         intent_synonyms.setdefault(canonical_str.lower(), canonical_str)
         intent_aliases.setdefault(canonical_str.lower(), canonical_str)
     for key, preset in intent_presets.items():
@@ -490,9 +472,6 @@ def _build_persona_intent_maps_from_snapshot(
         if not canonical_key:
             continue
         intent_aliases.setdefault(canonical_key.lower(), canonical_key)
-        label = (getattr(preset, "label", "") or "").strip()
-        if label:
-            intent_aliases.setdefault(label.lower(), canonical_key)
         intent_value = (getattr(preset, "intent", "") or "").strip()
         if intent_value:
             intent_aliases.setdefault(intent_value.lower(), canonical_key)
@@ -612,10 +591,16 @@ def persona_intent_catalog_snapshot() -> PersonaIntentCatalogSnapshot:
         bucket: [key for key in keys if key in intents]
         for bucket, keys in raw_buckets.items()
     }
-    intent_display_map = {
-        canonical: INTENT_CANONICAL_TO_SPOKEN.get(canonical, canonical)
-        for canonical in intents.keys()
-    }
+    intent_display_map: Dict[str, str] = {}
+    for preset in intents.values():
+        canonical = (preset.intent or preset.key or "").strip()
+        if not canonical:
+            continue
+        label = (preset.label or "").strip() or canonical
+        intent_display_map.setdefault(canonical, label)
+        key_value = (preset.key or "").strip()
+        if key_value:
+            intent_display_map.setdefault(key_value, label)
     return PersonaIntentCatalogSnapshot(
         persona_presets=personas,
         persona_spoken_map=persona_spoken_map,

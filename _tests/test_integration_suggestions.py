@@ -114,14 +114,14 @@ if bootstrap is not None:
             self.assertEqual(entry["persona_preset_key"], "teach_junior_dev")
             self.assertEqual(entry["persona_preset_spoken"], "mentor")
             self.assertEqual(entry["intent_preset_key"], "teach")
-            self.assertEqual(entry["intent_display"], "for teaching")
+            self.assertEqual(entry["intent_display"], "Teach / explain")
 
             suggestion_module.SuggestionGUIState.suggestions = []
             suggestion_module.UserActions.model_prompt_recipe_suggestions_run_index(1)
             self.assertTrue(suggestion_module.SuggestionGUIState.suggestions)
             hydrated = suggestion_module.SuggestionGUIState.suggestions[0]
             self.assertEqual(hydrated.persona_preset_spoken, "mentor")
-            self.assertEqual(hydrated.intent_display, "for teaching")
+            self.assertEqual(hydrated.intent_display, "Teach / explain")
             self.assertEqual(hydrated.persona_voice, "as teacher")
             self.assertEqual(hydrated.persona_audience, "to junior engineer")
             self.assertEqual(hydrated.persona_tone, "kindly")
@@ -133,8 +133,8 @@ if bootstrap is not None:
                         "name": "Decide with mentor",
                         "recipe": "describe · full · focus · plan · plain · fog",
                         "persona_preset_spoken": "mentor",
-                        "intent_display": "for deciding",
-                        "why": "Alias-only metadata from Concordance catalog",
+                        "intent_display": "Decide",
+                        "why": "Alias metadata from Concordance catalog",
                     }
                 ]
             }
@@ -168,7 +168,7 @@ if bootstrap is not None:
             self.assertEqual(entry["persona_tone"], "kindly")
             self.assertEqual(entry["intent_preset_key"], "decide")
             self.assertEqual(entry["intent_preset_label"], "Decide")
-            self.assertEqual(entry["intent_display"], "for deciding")
+            self.assertEqual(entry["intent_display"], "Decide")
             self.assertEqual(entry["intent_purpose"], "decide")
 
             suggestion_module.SuggestionGUIState.suggestions = []
@@ -177,7 +177,7 @@ if bootstrap is not None:
             hydrated = suggestion_module.SuggestionGUIState.suggestions[0]
             self.assertEqual(hydrated.persona_preset_spoken, "mentor")
             self.assertEqual(hydrated.persona_preset_label, "Teach junior dev")
-            self.assertEqual(hydrated.intent_display, "for deciding")
+            self.assertEqual(hydrated.intent_display, "Decide")
             self.assertEqual(hydrated.intent_preset_key, "decide")
             self.assertEqual(hydrated.intent_preset_label, "Decide")
             self.assertEqual(hydrated.intent_purpose, "decide")

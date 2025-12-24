@@ -334,9 +334,9 @@ if bootstrap is not None:
             self.assertIn("persona mentor", persona_lower)
             self.assertIn("key=teach_junior_dev", persona_lower)
             self.assertIn("say: persona mentor", persona_lower)
-            self.assertIn("intent for deciding", intent_lower)
+            self.assertIn("intent decide", intent_lower)
             self.assertIn("key=decide", intent_lower)
-            self.assertIn("say: intent for deciding", intent_lower)
+            self.assertIn("say: intent decide", intent_lower)
 
         def test_history_list_includes_persona_and_intent_metadata(self):
             persona_intent_maps_reset()
@@ -389,9 +389,9 @@ if bootstrap is not None:
             self.assertIn("persona mentor", message)
             self.assertIn("key=teach_junior_dev", message)
             self.assertIn("say: persona mentor", message)
-            self.assertIn("intent for deciding", message)
+            self.assertIn("intent decide", message)
             self.assertIn("key=decide", message)
-            self.assertIn("say: intent for deciding", message)
+            self.assertIn("say: intent decide", message)
 
         def test_history_validation_stats_include_persona_intent_pairs(self):
             persona_intent_maps_reset()
@@ -404,7 +404,7 @@ if bootstrap is not None:
                 axes={"directional": ["fog"]},
                 persona={
                     "persona_preset_spoken": "mentor",
-                    "intent_display": "For deciding",
+                    "intent_display": "Decide",
                 },
             )
 
@@ -414,7 +414,7 @@ if bootstrap is not None:
             self.assertEqual(persona_pairs["teach_junior_dev"].get("mentor"), 1)
             intent_pairs = stats.get("intent_display_pairs", {})
             self.assertIn("decide", intent_pairs)
-            self.assertEqual(intent_pairs["decide"].get("For deciding"), 1)
+            self.assertEqual(intent_pairs["decide"].get("Decide"), 1)
 
         def test_history_summary_lines_skips_entries_without_directional(self):
             append_entry(
@@ -463,7 +463,7 @@ if bootstrap is not None:
                 axes={"directional": ["fog"]},
                 persona={
                     "persona_preset_spoken": "mentor",
-                    "intent_display": "For deciding",
+                    "intent_display": "Decide",
                 },
             )
 
@@ -473,7 +473,7 @@ if bootstrap is not None:
 
             self.assertIn("persona mentor", persona_line.lower())
             self.assertIn("key=teach_junior_dev", persona_line.lower())
-            self.assertIn("intent for deciding", intent_line.lower())
+            self.assertIn("intent decide", intent_line.lower())
             self.assertIn("key=decide", intent_line.lower())
 
         def test_history_list_notifies_when_no_directional_entries(self):

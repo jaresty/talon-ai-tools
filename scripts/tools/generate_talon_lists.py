@@ -105,34 +105,14 @@ def generate(out_dir: Path) -> None:
                 persona_mapping.setdefault(alias_str, canonical_str)
 
         intent_presets = getattr(maps, "intent_presets", {}) or {}
-        intent_aliases = getattr(maps, "intent_preset_aliases", {}) or {}
-        intent_synonyms = getattr(maps, "intent_synonyms", {}) or {}
-        intent_display_map = getattr(maps, "intent_display_map", {}) or {}
         for key, preset in intent_presets.items():
             canonical = str(getattr(preset, "key", key) or "").strip()
             if not canonical:
                 continue
             intent_mapping.setdefault(canonical, canonical)
-            label = str(getattr(preset, "label", "") or "").strip()
             intent_value = str(getattr(preset, "intent", "") or "").strip()
-            display_alias = str(
-                intent_display_map.get(canonical)
-                or intent_display_map.get(intent_value)
-                or ""
-            ).strip()
-            for alias in (label, intent_value, display_alias):
-                if alias:
-                    intent_mapping.setdefault(alias, canonical)
-        for alias, canonical in intent_aliases.items():
-            alias_str = str(alias or "").strip()
-            canonical_str = str(canonical or "").strip()
-            if alias_str and canonical_str:
-                intent_mapping.setdefault(alias_str, canonical_str)
-        for alias, canonical in intent_synonyms.items():
-            alias_str = str(alias or "").strip()
-            canonical_str = str(canonical or "").strip()
-            if alias_str and canonical_str:
-                intent_mapping.setdefault(alias_str, canonical_str)
+            if intent_value and intent_value.lower() != canonical.lower():
+                intent_mapping.setdefault(intent_value, canonical)
 
     _write_mapping_list(
         out_dir / "personaPreset.talon-list", "personaPreset", persona_mapping

@@ -8,10 +8,7 @@ vocab. It is used by both the GPT suggestion parser and the suggestions
 GUI.
 """
 
-from .personaConfig import (
-    INTENT_SPOKEN_TO_CANONICAL,
-    persona_docs_map,
-)
+from .personaConfig import persona_docs_map
 
 
 def _axis_tokens(axis: str) -> set[str]:
@@ -19,15 +16,6 @@ def _axis_tokens(axis: str) -> set[str]:
 
     try:
         return set(persona_docs_map(axis).keys())
-    except Exception:
-        return set()
-
-
-def _intent_spoken_tokens() -> set[str]:
-    """Return the latest spoken intent tokens."""
-
-    try:
-        return set(INTENT_SPOKEN_TO_CANONICAL.keys())
     except Exception:
         return set()
 

@@ -213,7 +213,7 @@ if bootstrap is not None:
             preset = IntentPreset(key="decide", label="Decide", intent="decide")
             maps = SimpleNamespace(
                 intent_presets={"decide": preset},
-                intent_display_map={"decide": "For deciding"},
+                intent_display_map={"decide": "Decide"},
             )
 
             with patch(
@@ -222,8 +222,8 @@ if bootstrap is not None:
             ):
                 commands = help_module._intent_preset_commands()
 
-            self.assertIn("for deciding", commands)
-            self.assertNotIn("decide", commands)
+            self.assertIn("decide", commands)
+            self.assertNotIn("for deciding", commands)
 
             maps_no_display = SimpleNamespace(
                 intent_presets={"decide": preset},

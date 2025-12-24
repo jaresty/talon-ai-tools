@@ -456,7 +456,7 @@ def recipe_header_lines_from_snapshot(snapshot: dict[str, object]) -> list[str]:
         descriptor = (
             intent_key or intent_display or intent_label or intent_purpose or "intent"
         )
-        say_hint = intent_display or intent_label or intent_key or descriptor
+        say_hint = intent_key or intent_purpose or descriptor
         details = []
         if intent_label and intent_label != descriptor:
             details.append(f"label={intent_label}")

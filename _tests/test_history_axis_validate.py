@@ -49,7 +49,9 @@ if bootstrap is not None:
                 axes={"directional": ["fog"]},
                 persona={
                     "persona_preset_spoken": "mentor",
-                    "intent_display": "For deciding",
+                    "intent_preset_key": "decide",
+                    "intent_preset_label": "Decide",
+                    "intent_display": "Decide",
                 },
             )
             env = os.environ.copy()
@@ -98,7 +100,7 @@ if bootstrap is not None:
             self.assertEqual(persona_pairs["teach_junior_dev"].get("mentor"), 1)
             intent_pairs = stats.get("intent_display_pairs", {})
             self.assertIn("decide", intent_pairs)
-            self.assertEqual(intent_pairs["decide"].get("For deciding"), 1)
+            self.assertEqual(intent_pairs["decide"].get("Decide"), 1)
             clear_history()
 
         def test_script_summary_path_writes_file(self) -> None:

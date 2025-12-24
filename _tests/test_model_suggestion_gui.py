@@ -387,7 +387,7 @@ if bootstrap is not None:
                 intent_presets={"decide": intent_preset},
                 intent_preset_aliases={},
                 intent_synonyms={},
-                intent_display_map={"decide": "For deciding"},
+                intent_display_map={"decide": "Decide"},
             )
 
             suggestion = suggestion_module.Suggestion(
@@ -404,7 +404,7 @@ if bootstrap is not None:
             ):
                 info = suggestion_module._suggestion_stance_info(suggestion)
 
-            self.assertEqual(info["intent_display"], "For deciding")
+            self.assertEqual(info["intent_display"], "Decide")
 
         def test_open_uses_cached_suggestions_and_shows_canvas(self):
             """model_prompt_recipe_suggestions_gui_open populates state and opens the canvas."""

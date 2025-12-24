@@ -146,9 +146,9 @@ if bootstrap is not None:
                 self.assertIn("persona mentor", lower_body)
                 self.assertIn("key=teach_junior_dev", lower_body)
                 self.assertIn("say: persona mentor", lower_body)
-                self.assertIn("intent for deciding", lower_body)
+                self.assertIn("intent decide", lower_body)
                 self.assertIn("key=decide", lower_body)
-                self.assertIn("say: intent for deciding", lower_body)
+                self.assertIn("say: intent decide", lower_body)
             finally:
                 DrawerActions.request_history_drawer_close()
 
@@ -163,7 +163,7 @@ if bootstrap is not None:
                 axes={"directional": ["fog"]},
                 persona={
                     "persona_preset_spoken": "mentor",
-                    "intent_display": "For deciding",
+                    "intent_display": "Decide",
                 },
             )
 
@@ -174,7 +174,7 @@ if bootstrap is not None:
                 lower_body = body.lower()
                 self.assertIn("persona mentor", lower_body)
                 self.assertIn("key=teach_junior_dev", lower_body)
-                self.assertIn("intent for deciding", lower_body)
+                self.assertIn("intent decide", lower_body)
                 self.assertIn("key=decide", lower_body)
             finally:
                 DrawerActions.request_history_drawer_close()

@@ -85,7 +85,7 @@ if bootstrap is not None:
                 )
                 maps = SimpleNamespace(
                     intent_presets={"decide": intent_preset},
-                    intent_display_map={"decide": "For deciding"},
+                    intent_display_map={"decide": "Decide"},
                 )
 
                 class StubCanvas:
@@ -120,18 +120,14 @@ if bootstrap is not None:
 
                 say_lines = [line for line in canvas.drawn if "(say: intent" in line]
                 self.assertTrue(
-                    any("intent For deciding" in line for line in say_lines),
-                    f"Expected intent alias in say lines, got {say_lines}",
+                    any("intent decide" in line.lower() for line in say_lines),
+                    f"Expected canonical intent in say lines, got {say_lines}",
                 )
 
                 summary_lines = [line for line in canvas.drawn if "Decide:" in line]
                 self.assertTrue(
-                    any("For deciding" in line for line in summary_lines),
-                    f"Expected display alias in summary lines, got {summary_lines}",
-                )
-                self.assertTrue(
-                    any("(decide)" in line for line in summary_lines),
-                    f"Expected canonical intent in summary lines, got {summary_lines}",
+                    any("Decide" in line for line in summary_lines),
+                    f"Expected intent label in summary lines, got {summary_lines}",
                 )
 
             def test_axis_value_returns_description_when_present(self) -> None:

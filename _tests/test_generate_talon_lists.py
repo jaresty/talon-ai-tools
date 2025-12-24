@@ -48,7 +48,8 @@ if not TYPE_CHECKING:
                 self.assertIn("teach junior dev: teach_junior_dev", persona_text)
 
                 intent_text = intent_list.read_text(encoding="utf-8").lower()
-                self.assertIn("for deciding: decide", intent_text)
+                self.assertIn("decide: decide", intent_text)
+                self.assertNotIn("for deciding:", intent_text)
 
         def test_generated_lists_are_self_consistent_under_check(self) -> None:
             """Guardrail: generator --check should pass against its own output."""

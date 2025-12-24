@@ -657,7 +657,7 @@ if bootstrap is not None:
                 },
                 intent_preset_aliases={},
                 intent_synonyms={},
-                intent_display_map={"decide": "For deciding"},
+                intent_display_map={"decide": "Decide"},
             )
 
             recipe_snapshot = {
@@ -694,10 +694,10 @@ if bootstrap is not None:
             )
             self.assertTrue(
                 any(
-                    "intent" in line.lower() and "for deciding" in line.lower()
+                    "intent" in line.lower() and "decide" in line.lower()
                     for line in intent_lines
                 ),
-                f"Expected intent display alias in recap, saw: {intent_lines}",
+                f"Expected canonical intent in recap, saw: {intent_lines}",
             )
 
             stance_lines = [line for line in captured if line.startswith("Stance:")]
@@ -729,7 +729,7 @@ if bootstrap is not None:
                 intent_presets={},
                 intent_preset_aliases={},
                 intent_synonyms={},
-                intent_display_map={"decide": "For deciding"},
+                intent_display_map={"decide": "Decide"},
             )
 
             recipe_snapshot = {
@@ -795,7 +795,7 @@ if bootstrap is not None:
                 },
                 intent_preset_aliases={},
                 intent_synonyms={},
-                intent_display_map={"decide": "For deciding"},
+                intent_display_map={"decide": "Decide"},
             )
 
             recipe_snapshot = {
@@ -854,12 +854,13 @@ if bootstrap is not None:
             intent_line = next(
                 (line for line in captured if line.startswith("Intent:")), ""
             )
-            self.assertIn("For deciding", intent_line)
-            self.assertIn("decide", intent_line)
+            self.assertIn("Decide", intent_line)
+            self.assertIn("decide", intent_line.lower())
 
             axes_hint = [
                 line for line in captured if "Axes: single directional lens" in line
             ]
+
             self.assertTrue(axes_hint, "Expected axes hint in recap header")
 
             # Reset GPTState overrides to avoid influencing later tests.
@@ -884,7 +885,7 @@ if bootstrap is not None:
                 "persona_tone": "kindly",
                 "intent_preset_key": "decide",
                 "intent_purpose": "decide",
-                "intent_display": "For deciding",
+                "intent_display": "Decide",
             }
 
             with patch.object(

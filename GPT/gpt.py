@@ -141,6 +141,7 @@ from ..lib.promptSession import PromptSession
 from ..lib.recursiveOrchestrator import RecursiveOrchestrator
 from ..lib.modelPatternGUI import (
     DIRECTIONAL_MAP as _DIRECTIONAL_MAP,
+    _axis_value_from_token,
 )
 from ..lib.axisMappings import axis_key_to_value_map_for
 from ..lib.personaConfig import (
@@ -1018,10 +1019,9 @@ def _build_persona_intent_docs() -> str:
         lines.append("Intent presets (shortcut names for `intent` commands):")
         for preset in intent_presets:
             display_alias = _intent_display_alias(preset)
-            spoken_alias = display_alias or preset.key
             canonical_intent = (preset.intent or preset.key).strip()
             lines.append(
-                f"- intent {preset.key} (say: intent {spoken_alias}): {display_alias or canonical_intent} ({canonical_intent or 'unknown intent'})"
+                f"- intent {preset.key} (say: intent {canonical_intent}): {display_alias or canonical_intent} ({canonical_intent or 'unknown intent'})"
             )
         lines.append("")
 

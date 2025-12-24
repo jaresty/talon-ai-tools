@@ -826,15 +826,18 @@ if bootstrap is not None:
             self.assertIsInstance(prompt, gpt_module.GPTSystemPrompt)
             self.assertEqual(prompt.intent, "decide")
 
-        def test_intent_set_preset_accepts_display_alias(self) -> None:
+        def test_intent_set_preset_rejects_spoken_alias(self) -> None:
             GPTState.reset_all()
             GPTState.system_prompt = gpt_module.GPTSystemPrompt()
 
-            gpt_module.UserActions.intent_set_preset("for deciding")
+            with patch.object(gpt_module, "notify") as notify_mock:
+                gpt_module.UserActions.intent_set_preset("for deciding")
 
             prompt = GPTState.system_prompt
             self.assertIsInstance(prompt, gpt_module.GPTSystemPrompt)
-            self.assertEqual(prompt.intent, "decide")
+            self.assertEqual(prompt.intent, "")
+            notify_mock.assert_called()
+            self.assertIn("Unknown intent preset", notify_mock.call_args[0][0])
 
         def test_persona_preset_spoken_map_includes_aliases(self) -> None:
             mapping = gpt_module._persona_preset_spoken_map()
@@ -842,10 +845,10 @@ if bootstrap is not None:
             self.assertEqual(mapping.get("mentor"), "teach_junior_dev")
             self.assertEqual(mapping.get("teach junior dev"), "teach_junior_dev")
 
-        def test_intent_preset_spoken_map_includes_aliases(self) -> None:
+        def test_intent_preset_spoken_map_exposes_canonical_tokens(self) -> None:
             mapping = gpt_module._intent_preset_spoken_map()
             self.assertEqual(mapping.get("decide"), "decide")
-            self.assertEqual(mapping.get("for deciding"), "decide")
+            self.assertIsNone(mapping.get("for deciding"))
 
         def test_persona_and_intent_reset_restore_defaults(self) -> None:
             GPTState.reset_all()
@@ -872,7 +875,7 @@ if bootstrap is not None:
             GPTState.system_prompt = gpt_module.GPTSystemPrompt(
                 voice="as teacher",
                 audience="to junior engineer",
-                intent="for teaching",
+                intent="teach",
                 tone="kindly",
             )
             actions.app.calls.clear()
@@ -1451,7 +1454,7 @@ if bootstrap is not None:
                 self.assertEqual(entry["persona_preset_spoken"], "mentor")
                 self.assertEqual(entry["intent_preset_key"], "teach")
                 self.assertEqual(entry["intent_preset_label"], "Teach / explain")
-                self.assertEqual(entry["intent_display"], "for teaching")
+                self.assertEqual(entry["intent_display"], "Teach / explain")
 
         def test_gpt_suggest_prompt_recipes_skips_unknown_presets(self):
             with (

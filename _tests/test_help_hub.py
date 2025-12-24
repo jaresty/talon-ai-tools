@@ -64,9 +64,9 @@ def test_help_hub_cheat_sheet_includes_all_intent_tokens():
         ("Intent tokens (relational):", buckets.get("relational", [])),
     ):
         for token in tokens:
-            assert token in cheat, f"{token} missing from {label} line"
+            assert token.lower() in cheat.lower(), f"{token} missing from {label} line"
     # Ensure new intent preset keys are represented.
-    assert "understand" in " ".join(buckets.get("task", []))
+    assert "understand" in " ".join(buckets.get("task", [])).lower()
 
 
 def test_help_hub_quick_help_closes_hub_before_open(monkeypatch):
@@ -160,7 +160,7 @@ def test_help_hub_search_intent_preset_triggers(monkeypatch):
     assert any(
         "Intent preset:" in btn.label for btn in getattr(helpHub, "_search_index", [])
     ), "Intent presets missing from search index"
-    helpHub.help_hub_set_filter("for deciding")
+    helpHub.help_hub_set_filter("decide")
     intent_labels = [
         btn.label
         for btn in getattr(helpHub, "_search_results", [])
@@ -175,7 +175,7 @@ def test_help_hub_search_intent_preset_triggers(monkeypatch):
 def test_help_hub_intent_search_labels_surface_alias_metadata():
     helpHub.help_hub_open()
     try:
-        helpHub.help_hub_set_filter("for deciding")
+        helpHub.help_hub_set_filter("decide")
         intent_results = [
             btn
             for btn in getattr(helpHub, "_search_results", [])
@@ -184,9 +184,9 @@ def test_help_hub_intent_search_labels_surface_alias_metadata():
         assert intent_results, "Expected intent preset search result"
         entry = intent_results[0]
         label_lower = entry.label.lower()
-        assert "(say: intent for deciding)" in label_lower
+        assert "(say: intent decide)" in label_lower
         assert "apply intent stance" in entry.description.lower()
-        assert "say: intent for deciding" in entry.voice_hint.lower()
+        assert "say: intent decide" in entry.voice_hint.lower()
     finally:
         helpHub.help_hub_close()
 

@@ -927,7 +927,7 @@ def _draw_pattern_canvas(c: canvas.Canvas) -> None:  # pragma: no cover - visual
                     or getattr(preset, "label", "")
                     or intent_key
                 )
-                say_token = display_alias or intent_token or intent_key
+                say_token = intent_token or intent_key
                 label_line = f"    {preset.label} (say: intent {say_token})"
                 draw_text(label_line, x, y)
                 if rect is not None:

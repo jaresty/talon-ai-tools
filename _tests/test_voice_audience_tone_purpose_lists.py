@@ -126,12 +126,13 @@ if bootstrap is not None:
         def test_intent_buckets_cover_all_intents_and_spoken_tokens(self) -> None:
             from lib.personaConfig import (
                 INTENT_BUCKETS,
-                INTENT_SPOKEN_TO_CANONICAL,
                 PERSONA_KEY_TO_VALUE,
                 PERSONA_PRESETS,
                 INTENT_PRESETS,
                 persona_catalog,
                 intent_catalog,
+                intent_bucket_spoken_tokens,
+                persona_intent_catalog_snapshot,
             )
 
             canonical_tokens = set(PERSONA_KEY_TO_VALUE["intent"].keys())
@@ -141,14 +142,19 @@ if bootstrap is not None:
                 bucket_union,
                 "Intent buckets must cover all canonical intent tokens",
             )
-            spoken_canonical = set(INTENT_SPOKEN_TO_CANONICAL.values())
-            self.assertEqual(
-                canonical_tokens,
-                spoken_canonical,
-                "Each canonical intent must have a spoken variant in the Talon list",
+            snapshot = persona_intent_catalog_snapshot()
+            display_map = snapshot.intent_display_map
+            self.assertTrue(
+                all(display_map.get(token) for token in canonical_tokens),
+                "Each canonical intent must have a display label",
             )
-            self.assertIn("understand", canonical_tokens)
-            self.assertIn("understand", spoken_canonical)
+            buckets_with_labels = intent_bucket_spoken_tokens()
+            bucket_labels = {
+                label for labels in buckets_with_labels.values() for label in labels
+            }
+            self.assertTrue(
+                bucket_labels, "Expected intent bucket labels to be populated"
+            )
 
             # Persona and intent presets should align with the persona maps.
             voice_keys = set(PERSONA_KEY_TO_VALUE["voice"].keys())

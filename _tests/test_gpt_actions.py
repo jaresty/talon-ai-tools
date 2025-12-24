@@ -640,7 +640,9 @@ if bootstrap is not None:
                 patch.object(gpt_module, "notify") as notify_mock,
             ):
                 self.assertTrue(gpt_module._reject_if_request_in_flight())
-            try_begin.assert_called_once_with(source="GPT.gpt")
+            try_begin.assert_called_once()
+            args, kwargs = try_begin.call_args
+            self.assertEqual(kwargs.get("source"), "GPT.gpt")
             set_reason.assert_called_once_with(
                 "some_reason", "GPT: Request blocked; reason=some_reason."
             )
@@ -1686,6 +1688,32 @@ if bootstrap is not None:
                 begin_send.assert_called_once()
                 emit_complete.assert_called_once_with(request_id="req-suggest")
                 emit_fail.assert_not_called()
+
+        def test_gpt_suggest_prompt_recipes_sets_skip_history_flag(self):
+            with (
+                patch.object(gpt_module, "PromptSession") as session_cls,
+                patch.object(gpt_module, "create_model_source") as create_source,
+                patch.object(actions.user, "model_prompt_recipe_suggestions_gui_open"),
+            ):
+                source = MagicMock()
+                source.get_text.return_value = "content"
+                create_source.return_value = source
+                mock_session = session_cls.return_value
+                mock_session._destination = "paste"
+
+                handle = self.pipeline.complete_async.return_value
+                handle.wait = MagicMock(return_value=True)
+                handle.result = PromptResult.from_messages(
+                    [
+                        format_message(
+                            "Name: Skip history | Recipe: describe · gist · focus · plain · rog"
+                        )
+                    ]
+                )
+
+                gpt_module.UserActions.gpt_suggest_prompt_recipes("subject")
+
+                self.assertTrue(mock_session.skip_history)
 
         def test_gpt_suggest_prompt_recipes_fallback_avoids_response_canvas(self):
             controller = RequestUIController()

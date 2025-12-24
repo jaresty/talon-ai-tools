@@ -3112,6 +3112,7 @@ def _suggest_prompt_recipes_core_impl(source: ModelSource, subject: str) -> None
     destination = Silent()
     fallback_destination = Clipboard()
     session = PromptSession(destination)
+    session.skip_history = True
 
     global _suppress_inflight_notify_request_id
     manual_request_id: Optional[str] = None

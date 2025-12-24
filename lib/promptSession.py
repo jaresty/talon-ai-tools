@@ -23,6 +23,7 @@ class PromptSession:
     def __init__(self, destination: Union[str, object]):
         self._destination = destination
         self._prepared = False
+        self.skip_history = False
 
     @property
     def destination(self) -> Union[str, object]:
@@ -74,12 +75,12 @@ class PromptSession:
     def execute(self):
         """Send the request and return the assistant response."""
         self._ensure_prepared()
-        return send_request()
+        return send_request(skip_history=self.skip_history)
 
     def execute_async(self):
         """Send the request asynchronously and return a handle."""
         self._ensure_prepared()
-        return send_request_async()
+        return send_request_async(skip_history=self.skip_history)
 
     def begin(self, reuse_existing: bool = False) -> None:
         """Ensure the underlying request exists, optionally reusing the current one."""

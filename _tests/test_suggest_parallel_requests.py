@@ -43,7 +43,7 @@ class SuggestParallelRequestsTests(unittest.TestCase):
         first_blocked = threading.Event()
         release_first = threading.Event()
 
-        def fake_send_request():
+        def fake_send_request(*args, **kwargs):
             # Simulate a slow first request so the async handle remains in-flight.
             calls.append("call")
             if len(calls) == 1:

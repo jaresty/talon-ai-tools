@@ -1429,7 +1429,80 @@ def _send_request_streaming(request, request_id: str) -> str:
     return answer_text
 
 
-def send_request(max_attempts: int = 10):
+
+def _append_history_entry(
+    *,
+    session,
+    request_id: str,
+    answer_text: str,
+    meta_text: str,
+    last_recipe: str,
+    started_at_ms: int,
+    duration_ms: int,
+    axes: dict[str, list[str]],
+    provider,
+    skip_history: bool,
+) -> str:
+    if skip_history:
+        try:
+            print(
+                "[modelHelpers] history append skipped",
+                f"request_id={request_id} answer_len={len(answer_text)}",
+            )
+        except Exception:
+            pass
+        return ""
+
+    request_payload = getattr(GPTState, "request", None)
+    provider_id = getattr(provider, "id", "") if provider is not None else ""
+
+    prompt_text = ""
+    try:
+        if (
+            session is not None
+            and getattr(session, "request_id", None) == request_id
+            and hasattr(session, "record_log_entry")
+        ):
+            prompt_text = session.record_log_entry(
+                request_id=request_id,
+                request=request_payload,
+                answer_text=answer_text,
+                meta_text=meta_text,
+                recipe=last_recipe,
+                started_at_ms=started_at_ms,
+                duration_ms=duration_ms,
+                axes=axes,
+                provider_id=provider_id,
+            )
+        else:
+            prompt_text = append_entry_from_request(
+                request_id=request_id,
+                request=request_payload,
+                answer_text=answer_text,
+                meta_text=meta_text,
+                recipe=last_recipe,
+                started_at_ms=started_at_ms,
+                duration_ms=duration_ms,
+                axes=axes,
+                provider_id=provider_id,
+            )
+        try:
+            print(
+                "[modelHelpers] append_entry_from_request succeeded ",
+                f"prompt_len={len(prompt_text or '')} answer_len={len(answer_text)}",
+            )
+        except Exception:
+            pass
+    except Exception as e:  # noqa: BLE001
+        try:
+            print(f"[modelHelpers] append_entry_from_request failed: {e}")
+        except Exception:
+            pass
+        prompt_text = ""
+    return prompt_text
+
+
+def send_request(max_attempts: int = 10, *, skip_history: bool = False):
     """Generate run a GPT request and return the response, with a limit to prevent infinite loops"""
     context.total_tool_calls = 0
 
@@ -1737,65 +1810,33 @@ def send_request(max_attempts: int = 10):
 
     duration_ms = int(time.time() * 1000) - started_at_ms
 
-    try:
-        axes = getattr(GPTState, "last_axes", {}) or {}
-        session = getattr(GPTState, "last_streaming_session", None)
-        destination_kind = str(
-            getattr(GPTState, "current_destination_kind", "") or ""
-        ).lower()
-        skip_history = destination_kind == "suggest"
-        if skip_history:
-            prompt_text = ""
-            try:
-                print("[modelHelpers] skipping history append for suggest destination")
-            except Exception:
-                pass
-        elif getattr(session, "request_id", None) == request_id and hasattr(
-            session, "record_log_entry"
-        ):
-            prompt_text = session.record_log_entry(
-                request_id=request_id,
-                request=getattr(GPTState, "request", None),
-                answer_text=answer_text,
-                meta_text=meta_text,
-                recipe=last_recipe,
-                started_at_ms=started_at_ms,
-                duration_ms=duration_ms,
-                axes=axes,
-                provider_id=getattr(provider, "id", ""),
-            )
-        else:
-            prompt_text = append_entry_from_request(
-                request_id=request_id,
-                request=getattr(GPTState, "request", None),
-                answer_text=answer_text,
-                meta_text=meta_text,
-                recipe=last_recipe,
-                started_at_ms=started_at_ms,
-                duration_ms=duration_ms,
-                axes=axes,
-                provider_id=getattr(provider, "id", ""),
-            )
-        try:
-            print(
-                "[modelHelpers] append_entry_from_request succeeded "
-                f"prompt_len={len(prompt_text or '')} answer_len={len(answer_text)}"
-            )
-        except Exception:
-            pass
-    except Exception as e:
-        try:
-            print(f"[modelHelpers] append_entry_from_request failed: {e}")
-        except Exception:
-            pass
+    axes = getattr(GPTState, "last_axes", {}) or {}
+    session = getattr(GPTState, "last_streaming_session", None)
+    destination_kind = str(
+        getattr(GPTState, "current_destination_kind", "") or ""
+    ).lower()
+    skip_history_flag = skip_history or destination_kind == "suggest"
+
+    _append_history_entry(
+        session=session,
+        request_id=request_id,
+        answer_text=answer_text,
+        meta_text=meta_text,
+        last_recipe=last_recipe,
+        started_at_ms=started_at_ms,
+        duration_ms=duration_ms,
+        axes=axes,
+        provider=provider,
+        skip_history=skip_history_flag,
+    )
 
     _clear_notify_suppress()
     return response
 
 
-def send_request_async():
+def send_request_async(*, skip_history: bool = False):
     """Run send_request in a background thread and return a handle."""
-    return start_async(send_request)
+    return start_async(send_request, skip_history=skip_history)
 
 
 __all__ = [

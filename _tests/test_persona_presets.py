@@ -95,8 +95,14 @@ if bootstrap is not None:
                 "as programmer",
             )
             self.assertEqual(
-                personaConfig.canonical_persona_token("intent", "for planning"),
-                "plan",
+                personaConfig.canonical_persona_token("intent", "decide"),
+                "decide",
+            )
+
+        def test_canonical_persona_token_rejects_spoken_intent_aliases(self) -> None:
+            self.assertEqual(
+                personaConfig.canonical_persona_token("intent", "for deciding"),
+                "",
             )
 
         def test_canonical_persona_token_rejects_unknown_values(self) -> None:

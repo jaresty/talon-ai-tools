@@ -149,9 +149,6 @@ def normalize_intent_token(value: str) -> str:
     for key in INTENT_CANONICAL_TOKENS:
         if token_l == key.lower():
             return key
-    for spoken, canonical in INTENT_SPOKEN_TO_CANONICAL.items():
-        if token_l == spoken.lower():
-            return canonical
     return token
 
 

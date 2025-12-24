@@ -20,8 +20,11 @@ from .requestLog import (
     consume_last_drop_reason_record,
     last_drop_reason,
     set_drop_reason,
-    axis_snapshot_from_axes as requestlog_axis_snapshot_from_axes,
     AxisSnapshot,
+)
+from .historyLifecycle import (
+    axes_snapshot_from_axes as lifecycle_axes_snapshot_from_axes,
+    history_axes_for as lifecycle_history_axes_for,
 )
 from .requestBus import emit_history_saved
 from .axisCatalog import axis_catalog
@@ -37,20 +40,9 @@ _cursor_offset = 0
 
 
 def axis_snapshot_from_axes(axes: dict[str, list[str]] | None) -> AxisSnapshot:
-    """Build a Concordance-aligned axis snapshot for history.
+    """Return the shared history AxisSnapshot."""
 
-    Delegate to the request log snapshot builder so history and log surfaces use
-    a single normalisation contract while trimming legacy style axes.
-    """
-    payload = dict(axes or {})
-    payload.pop("style", None)
-    try:
-        return requestlog_axis_snapshot_from_axes(payload)
-    except ValueError as exc:
-        if "style axis is removed" not in str(exc):
-            raise
-        payload.pop("style", None)
-        return requestlog_axis_snapshot_from_axes(payload)
+    return lifecycle_axes_snapshot_from_axes(axes)
 
 
 def _request_is_in_flight() -> bool:
@@ -239,15 +231,7 @@ def history_axes_for(axes: dict[str, list[str]]) -> dict[str, list[str]]:
     contract.
     """
 
-    snapshot = axis_snapshot_from_axes(axes or {})
-    return {
-        "completeness": list(snapshot.get("completeness", []) or []),
-        "scope": list(snapshot.get("scope", []) or []),
-        "method": list(snapshot.get("method", []) or []),
-        "form": list(snapshot.get("form", []) or []),
-        "channel": list(snapshot.get("channel", []) or []),
-        "directional": list(snapshot.get("directional", []) or []),
-    }
+    return lifecycle_history_axes_for(axes)
 
 
 from collections.abc import Sequence

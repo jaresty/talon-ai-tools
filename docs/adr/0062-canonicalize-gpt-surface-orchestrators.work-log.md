@@ -67,3 +67,17 @@
   - Downstream history log/save helpers may still assume local drop-reason messaging. Mitigation: audit `_notify_with_drop_reason` flows alongside the planned history lifecycle orchestrator.
 - next_work:
   - Behaviour: Prepare history lifecycle façade — gather coverage around request log snapshots via python3 -m pytest _tests/test_request_history_actions.py::RequestHistoryActionTests::test_history_save_writes_axes_headers — future-shaping: consolidate axis snapshot assembly before introducing the lifecycle orchestrator.
+
+## 2025-12-24 – Loop 006 (kind: implementation)
+- helper_version: helper:v20251223.1
+- focus: ADR-0062 §Refactor Plan – History Lifecycle Orchestrator (introduce axis snapshot façade)
+- riskiest_assumption: History modules still filter axes ad hoc; `_tests/test_history_lifecycle.py` fails without a shared facade (probability medium, impact high on Concordance visibility/scope).
+- validation_targets:
+  - python3 -m pytest _tests/test_history_lifecycle.py _tests/test_request_history_actions.py _tests/test_request_history_drawer_gating.py
+- evidence: docs/adr/evidence/0062/loop-0006.md
+- rollback_plan: git stash push -- lib/historyLifecycle.py _tests/test_history_lifecycle.py lib/requestHistoryActions.py && python3 -m pytest _tests/test_history_lifecycle.py && git stash pop
+- delta_summary: helper:diff-snapshot=3 files changed, 107 insertions(+), 23 deletions(-); adds `lib/historyLifecycle.py`, lifecycle characterization tests, and re-routes history axis helpers through the facade.
+- residual_risks:
+  - History drawer/actions still duplicate drop-reason notifications and history saves lack lifecycle orchestration. Mitigation: Loop 007 will migrate history drawers/actions to the lifecycle façade.
+- next_work:
+  - Behaviour: Migrate history drawer/actions to `historyLifecycle` façade — python3 -m pytest _tests/test_request_history_drawer_gating.py _tests/test_request_history_actions.py — future-shaping: expose lifecycle entry point before unifying request log saves.

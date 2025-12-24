@@ -3775,7 +3775,21 @@ def _suggest_prompt_recipes_core_impl(source: ModelSource, subject: str) -> None
                     notify("GPT: Opening prompt recipe suggestions window")
                 except Exception:
                     pass
-                actions.user.model_prompt_recipe_suggestions_gui_open()
+                suppress_token = getattr(
+                    GPTState, "suppress_overlay_inflight_guard", False
+                )
+                setattr(GPTState, "suppress_overlay_inflight_guard", True)
+                try:
+                    actions.user.model_prompt_recipe_suggestions_gui_open()
+                finally:
+                    if not suppress_token and hasattr(
+                        GPTState, "suppress_overlay_inflight_guard"
+                    ):
+                        delattr(GPTState, "suppress_overlay_inflight_guard")
+                    else:
+                        setattr(
+                            GPTState, "suppress_overlay_inflight_guard", suppress_token
+                        )
                 try:
                     notify("GPT: Prompt recipe suggestions window opened")
                 except Exception:

@@ -344,6 +344,14 @@ def _request_is_in_flight() -> bool:
 def _reject_if_request_in_flight() -> bool:
     """Notify and return True when a GPT request is already running."""
 
+    try:
+        from .modelState import GPTState
+
+        if getattr(GPTState, "suppress_overlay_inflight_guard", False):
+            return False
+    except Exception:
+        pass
+
     allowed, reason = try_begin_request(source="modelSuggestionGUI")
     if allowed:
         try:
@@ -1881,7 +1889,7 @@ class UserActions:
             return
 
         # Close related menus to avoid overlapping overlays.
-        close_common_overlays(actions.user)
+        close_common_overlays(actions.user, passive=True)
 
         _open_suggestion_canvas()
         ctx.tags = ["user.model_suggestion_window_open"]

@@ -150,6 +150,31 @@ if bootstrap is not None:
             actions.app.notify.assert_called_once()
             actions.user.gpt_apply_prompt.assert_not_called()
 
+        def test_open_bypasses_inflight_guard_when_suppressed(self):
+            GPTState.last_suggested_recipes = [
+                {
+                    "name": "Suggest",
+                    "recipe": "describe · gist · focus · plain · fog",
+                }
+            ]
+
+            with (
+                patch.object(
+                    modelSuggestionGUI,
+                    "try_begin_request",
+                    return_value=(False, "in_flight"),
+                ),
+                patch.object(
+                    modelSuggestionGUI, "_open_suggestion_canvas"
+                ) as open_canvas,
+                patch.object(modelSuggestionGUI, "close_common_overlays") as close_stub,
+            ):
+                setattr(GPTState, "suppress_overlay_inflight_guard", True)
+                UserActions.model_prompt_recipe_suggestions_gui_open()
+
+            close_stub.assert_called_once()
+            open_canvas.assert_called_once()
+
         def test_scroll_clamps_to_max_via_overlay_helper(self):
             # Prepare a stub canvas and suggestions to drive a positive max_scroll.
             class RectStub:

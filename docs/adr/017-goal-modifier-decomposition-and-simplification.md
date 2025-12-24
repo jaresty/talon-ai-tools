@@ -8,6 +8,8 @@
   - 015 – Voice, Audience, Tone, Intent Axis Decomposition  
   - 016 – Directional Axis Decomposition and Simplification  
 
+> **2025-12-24 update (ADR 0061)**: intent tokens are now single-word canonical forms (for example, `plan`, `decide`, `teach`). Legacy phrases such as “for deciding” appear below to describe historical tokens.
+
 ## Context
 
 ADR 005 introduced `goalModifier` as part of the overall grammar:

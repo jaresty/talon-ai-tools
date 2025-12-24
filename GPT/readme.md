@@ -226,8 +226,8 @@ When you are deciding how much of the grammar to use, it helps to think in three
   - You can usually ignore persona until you explicitly want to tailor an explanation for a specific role.
 
 - **Intent – Why**  
-  - `intent` – interaction-level intent (for example, `for information`, `for deciding`, `for brainstorming`, `for teaching`, `for evaluating`).  
-  - Pick a intent when you care about “why we’re talking” (teach vs decide vs explore), not about output container or reasoning steps.
+  - `intent` – interaction-level intent (for example, `inform`, `decide`, `brainstorm`, `teach`, `evaluate`).  
+  - Pick an intent when you care about “why we’re talking” (teach vs decide vs explore), not about output container or reasoning steps.
 
 - **Contract – How**  
   - `completeness` – how much coverage (`skim`, `gist`, `full`, `max`, `minimal`, `deep`).  
@@ -248,7 +248,7 @@ A couple of common prompts decomposed into the three families:
 
 - “Explain simply to a junior engineer”  
   - **Persona (Who)**: `as teacher` + `to junior engineer` + `tone=kindly`.  
-  - **Intent (Why)**: `for teaching`.  
+  - **Intent (Why)**: `teach`.  
 - **Contract (How)**: `completeness=gist` or `minimal`, `scope=focus`, `method=scaffold`, plus an optional form/channel when the medium matters (for example, `form=bullets`, `channel=slack`).  
   - **Do not** try to encode this entirely as a new audience or intent token; treat it as a recipe across existing axes.
 
@@ -257,8 +257,8 @@ A couple of common prompts decomposed into the three families:
     - Exec brief → `as programmer` + `to CEO` + `tone=directly`/`formally`.  
     - Deep write-up → `as programmer` + `to programmer`/`to principal engineer`.  
   - **Intent (Why)**:  
-    - Exec brief → often `for deciding` or `for information`.  
-    - Deep write-up → usually `for information` or `for evaluating`.  
+    - Exec brief → often `decide` or `inform`.  
+    - Deep write-up → usually `inform` or `evaluate`.  
   - **Contract (How)**:  
     - Exec brief → `completeness=gist`, `scope=focus`, `method=structure` (headline-first delivery in the prose), optionally `form=bullets`.  
     - Deep write-up → `completeness=full` or `deep`, `scope=system`/`relations`, `method=structure`/`analysis`, `form=adr` or `form=table`, optionally `tone=directly` if you want a firmer stance.
@@ -407,7 +407,7 @@ If you were using some older, now-retired tokens, here are the closest replaceme
   - `for coding` → `goal=solve` + `form=code`.  
   - `for debugging` → `goal=solve` + `method=debugging`.  
   - `for slack` / `for table` / `for presenterm` / `for code tour` → `channel=slack` / `form=table` / `channel=presenterm` / `channel=codetour`.  
-  - `for diverging` / `for converging` → `for brainstorming` + `method=diverge`; `for deciding` + `method=converge`.  
+  - `for diverging` / `for converging` → `intent=brainstorm` + `method=diverge`; `intent=decide` + `method=converge`.  
   - `for mapping` → `method=mapping` + relations/system/dynamics scope (often with `diagram` channel, `table` form, or `visual` method).
 
 ## OpenAI API Pricing

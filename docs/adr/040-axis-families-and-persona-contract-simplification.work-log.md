@@ -1,5 +1,7 @@
 # 040 – Axis Families and Persona/Contract Simplification – Work Log
 
+> **2025-12-24 update (ADR 0061)**: intent tokens are now single-word canonical forms (`inform`, `decide`, `teach`, etc.). Historical notes below may reference legacy “for …” phrases.
+
 ## 2025-12-10 – Slice: Introduce Persona/Intent/Contract framing into GPT README
 
 - **ADR**: 040 – Axis Families and Persona/Contract Simplification

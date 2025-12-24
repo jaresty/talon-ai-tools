@@ -426,7 +426,8 @@ We will:
 
    - Flow:
      - `persona executive brief`
-     - `model write as programmer to team directly for deciding`
+     - `model write as programmer to team directly`
+     - `intent decide`
    - Expected:
      - Last command wins on overlapping axes.
      - Status shows the final, effective stance (not both).

@@ -1,5 +1,7 @@
 # 015 – Voice, Audience, Tone, Intent Axis Decomposition – Work-log
 
+> **2025-12-24 update (ADR 0061)**: intent tokens now use single-word canonical forms. Legacy “for …” phrases remain below to document prior behaviour.
+
 ## 2025-12-04 – Loop 1 – Wire core list and axis changes
 
 Focus:

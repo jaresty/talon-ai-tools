@@ -4,6 +4,8 @@
 - Date: 2025-12-04  
 - Context: `talon-ai-tools` GPT `model` commands (static prompts + completeness/scope/method/style + goal/directional modifiers + voice/audience/tone/intent)  
 - Related ADRs:  
+
+> **2025-12-24 update (ADR 0061)**: intent tokens are now single-word canonical forms (for example, `inform`, `decide`, `teach`). References to legacy phrases like “for deciding” describe historical usage and map to their canonical equivalents.
   - 005 – Orthogonal Prompt Modifiers and Defaults  
   - 007 – Static Prompt Consolidation for Axis-Based Grammar  
   - 012 – Style and Method Prompt Refactor  
@@ -313,13 +315,13 @@ We also retire `neutrally` from the shared list and treat it as the **default** 
 Current purposes include:
 
 - Classic communication intents:  
-  - `for information`, `for entertainment`, `for persuasion`,  
-  - `for brainstorming`, `for deciding`,  
-  - `for planning`, `for evaluating`, `for coaching`, `for appreciation`,  
-  - `for diverging`, `for converging`, `for comparison`, `for contrast`, `for mapping`,  
-  - `for triage`, `for discovery`, `for framing`, `for sensemaking`,  
-  - `for announcing`, `for walk through`, `for collaborating`, `for teaching`,  
-  - `for project management`.  
+  - `inform` (formerly `for information`), `entertain`, `persuade`,  
+  - `brainstorm`, `decide`,  
+  - `plan`, `evaluate`, `coach`, `appreciate`,  
+  - `diverge`, `converge`, `compare`, `contrast`, `mapping`,  
+  - `triage`, `discovery`, `framing`, `sensemaking`,  
+  - `announce`, `walk through`, `collaborate`, `teach`,  
+  - `project management`.  
 - Format/destination:  
   - `for slack`, `for table`, `for presenterm`, `for code tour`.  
 - Method/contract heavy:  
@@ -330,23 +332,24 @@ Current purposes include:
 These are appropriate high-level “why” values:
 
 - Inform / entertain / persuade:  
-  - `for information`, `for entertainment`, `for persuasion`.  
+  - `inform`, `entertain`, `persuade`.  
 - Explore vs converge (at the interaction level):  
-  - `for brainstorming`,  
-  - `for deciding`.  
+  - `brainstorm`,  
+  - `decide`.  
 - Compare/relate:  
-  - `for comparison`.  
+  - `compare`.  
 - Workflows and guidance:  
-  - `for planning`, `for coaching`, `for project management`,  
-  - `for triage`, `for evaluating`,  
-  - `for appreciation`,  
-  - `for announcing`, `for walk through`, `for collaborating`, `for teaching`.
+  - `plan`, `coach`, `project management`,  
+  - `triage`, `evaluate`,  
+  - `appreciate`,  
+  - `announce`, `walk through`, `collaborate`, `teach`.  
+
 
 As an aggressive simplification, we **retire** several intent tokens whose semantics are better expressed as methods or directional lenses:
 
-- Diverge / converge: treat `for diverging` and `for converging` as **methods** (see `diverge` / `converge` below), not purposes; keep `for brainstorming` / `for deciding` as the interaction-level “why”.  
-- Compare / contrast: represent both through `method=compare`; retire `for contrast` as a separate intent.  
-- Mapping / discovery / framing / sensemaking: retire `for discovery`, `for framing`, `for sensemaking`, and `for mapping` as purposes and instead use combinations of:  
+- Diverge / converge: treat `diverge` and `converge` as **methods** (see `diverge` / `converge` below), not purposes; keep `brainstorm` / `decide` as the interaction-level “why”.  
+- Compare / contrast: represent both through `method=compare`; retire `contrast` as a separate intent.  
+- Mapping / discovery / framing / sensemaking: retire `discovery`, `framing`, `sensemaking`, and `mapping` as purposes and instead use combinations of:  
   - Directional lenses (`fog`, `fig`, `ong`, `rog`, `bog`, etc.),  
   - Scope (`system`, `relations`, `dynamics`),  
   - Methods (`systemic`, `mapping`, `motifs`, `structure`, `flow`).

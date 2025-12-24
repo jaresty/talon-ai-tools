@@ -14,6 +14,8 @@
   - 032 – Constraint Hierarchy Meta-Spec for Completeness/Method/Scope/Style  
   - 033 – Axis Hierarchy Follow-Ups and Ambiguous Token Guardrails  
 
+> **2025-12-24 update (ADR 0061)**: intent vocabulary has been canonicalised to single-word tokens (for example, `inform`, `decide`, `teach`). Legacy “for …” phrases remain in this ADR for historical context.
+
 ---
 
 ## Summary (for users)

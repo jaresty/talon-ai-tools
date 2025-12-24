@@ -123,7 +123,29 @@ if bootstrap is not None:
             stats = requestLog.history_validation_stats()
             self.assertGreaterEqual(stats.get("intent_preset_missing_descriptor", 0), 1)
             self.assertGreaterEqual(stats.get("intent_invalid_tokens", 0), 1)
+            clear_history()
 
+        def test_script_fails_when_invalid_intent_tokens_present(self) -> None:
+            from talon_user.lib.requestLog import clear_history  # type: ignore
+
+            clear_history()
+            env = os.environ.copy()
+            env["HISTORY_AXIS_VALIDATE_SIMULATE_INTENT_ALIAS_KEY"] = "1"
+            result = subprocess.run(
+                [sys.executable, "scripts/tools/history-axis-validate.py", "--summary"],
+                check=False,
+                capture_output=True,
+                text=True,
+                env=env,
+            )
+            self.assertNotEqual(result.returncode, 0, msg=result.stdout)
+            self.assertIn("Intent invalid tokens", result.stdout)
+            clear_history()
+
+        def test_script_summary_path_writes_file(self) -> None:
+            from talon_user.lib.requestLog import clear_history  # type: ignore
+
+            clear_history()
             with tempfile.TemporaryDirectory() as tmpdir:
                 summary_path = os.path.join(tmpdir, "history-summary.json")
                 env = os.environ.copy()
@@ -144,8 +166,25 @@ if bootstrap is not None:
 
                 with open(summary_path, "r", encoding="utf-8") as fh:
                     stats = json.load(fh)
-                self.assertIn("total_entries", stats)
-                self.assertIn("entries_missing_directional", stats)
+            self.assertIn("total_entries", stats)
+            self.assertIn("entries_missing_directional", stats)
+            clear_history()
+
+        def test_script_fails_when_invalid_intent_tokens_present(self) -> None:
+            from talon_user.lib.requestLog import clear_history  # type: ignore
+
+            clear_history()
+            env = os.environ.copy()
+            env["HISTORY_AXIS_VALIDATE_SIMULATE_INTENT_ALIAS_KEY"] = "1"
+            result = subprocess.run(
+                [sys.executable, "scripts/tools/history-axis-validate.py", "--summary"],
+                check=False,
+                capture_output=True,
+                text=True,
+                env=env,
+            )
+            self.assertNotEqual(result.returncode, 0, msg=result.stdout)
+            self.assertIn("Intent invalid tokens", result.stdout)
             clear_history()
 
         def test_summary_path_includes_gating_last_drop_metadata(self) -> None:

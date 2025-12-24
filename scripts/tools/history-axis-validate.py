@@ -342,24 +342,7 @@ def main() -> int:
         )
         return 1
 
-    gating_sim_message = os.environ.get(
-        "HISTORY_AXIS_VALIDATE_SIMULATE_GATING_DROP", ""
-    ).strip()
-    use_default_gating_message = gating_sim_message == "__DEFAULT__"
-    if gating_sim_message:
-        try:
-            if use_default_gating_message:
-                requestLog.set_drop_reason("in_flight")
-            else:
-                requestLog.set_drop_reason("in_flight", gating_sim_message)
-        except Exception:
-            requestLog.set_drop_reason("in_flight")
-        try:
-            requestLog.record_gating_drop(
-                "in_flight", source="history-axis-validate:test"
-            )
-        except Exception:
-            pass
+    exit_code = 0
 
     if os.environ.get("HISTORY_AXIS_VALIDATE_SIMULATE_PERSONA_FAILURE"):
         try:
@@ -398,6 +381,44 @@ def main() -> int:
             )
             return 1
 
+    if os.environ.get("HISTORY_AXIS_VALIDATE_SIMULATE_INTENT_ALIAS_KEY"):
+        try:
+            requestLog.clear_history()
+            requestLog.append_entry(
+                "sim-intent-alias-key",
+                "prompt",
+                "response",
+                axes={"directional": ["fog"]},
+                persona={
+                    "persona_preset_spoken": "mentor",
+                    "intent_preset_key": "for deciding",
+                    "intent_display": "For deciding",
+                },
+            )
+        except Exception as exc:  # pragma: no cover - defensive
+            print(
+                f"Failed to set up simulated intent alias entry: {exc}",
+                file=sys.stderr,
+            )
+            return 1
+
+    simulate_gating_drop = os.environ.get("HISTORY_AXIS_VALIDATE_SIMULATE_GATING_DROP")
+    if simulate_gating_drop is not None:
+        try:
+            reason = "in_flight"
+            if simulate_gating_drop == "__DEFAULT__":
+                message = requestLog.drop_reason_message(reason)
+            else:
+                message = simulate_gating_drop
+            requestLog.record_gating_drop(reason, source="history-axis-validate")
+            requestLog.set_drop_reason(reason, message)
+        except Exception as exc:  # pragma: no cover - defensive
+            print(
+                f"Failed to set up simulated gating drop: {exc}",
+                file=sys.stderr,
+            )
+            return 1
+
     try:
         requestLog.validate_history_axes()
     except ValueError as exc:
@@ -419,6 +440,10 @@ def main() -> int:
         print("Request gating drop summary: total=0")
 
     stats = requestLog.history_validation_stats()
+    invalid_intent_tokens = int(stats.get("intent_invalid_tokens", 0) or 0)
+    if invalid_intent_tokens:
+        print(f"Intent invalid tokens detected: {invalid_intent_tokens}")
+        exit_code = 1
     normalized_streaming = _normalize_streaming_summary(
         stats.get("streaming_gating_summary")
     )
@@ -479,7 +504,7 @@ def main() -> int:
     if args.reset_gating:
         requestLog.consume_gating_drop_stats()
 
-    return 0
+    return exit_code
 
 
 if __name__ == "__main__":

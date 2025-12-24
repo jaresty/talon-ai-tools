@@ -54,3 +54,17 @@
   - Risk: Older snapshots lacking persona metadata still bypass validation; mitigation: run history-axis-validate periodically and remediate stale entries; trigger: history summaries missing `intent_preset` sections.
 - next_work: none queued; monitoring continues via `history-axis-validate --summary`.
 
+## 2025-12-24 – Loop 5 (kind: guardrail/tests)
+- helper_version: helper:v20251223.1
+- focus: ADR 0061 §Consequences — `history-axis-validate` exits non-zero (and reports counts) when legacy intent alias keys appear in history stats.
+- riskiest_assumption: Without a failing CLI status, invalid multi-word intents could slip through guardrails unnoticed (probability medium, impact medium for operational visibility).
+- validation_targets:
+  - python3 -m pytest _tests/test_history_axis_validate.py::HistoryAxisValidateTests::test_script_fails_when_invalid_intent_tokens_present
+- evidence: docs/adr/evidence/0061/loop-0004.md
+- rollback_plan: git restore --source=HEAD -- scripts/tools/history-axis-validate.py _tests/test_history_axis_validate.py && python3 -m pytest _tests/test_history_axis_validate.py::HistoryAxisValidateTests::test_script_fails_when_invalid_intent_tokens_present
+- delta_summary: helper:diff-snapshot=2 files changed, 85 insertions(+), 21 deletions(-); CLI now simulates invalid intent keys on demand, surfaces `Intent invalid tokens` in output, and exits with status 1 when present.
+- residual_risks:
+  - Risk: Legacy logs without persona snapshots still bypass invalid-intent detection; mitigation: keep running `history-axis-validate --summary` and triage histories missing `intent_preset` headers; trigger: summary reports `entries_with_persona_snapshot=0` for recent runs.
+- next_work:
+  - Behaviour: Assess completion horizon and document residual risks for ADR 0061 — review outstanding docs/tests and update summary.
+

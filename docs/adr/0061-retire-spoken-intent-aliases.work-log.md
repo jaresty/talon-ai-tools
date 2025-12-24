@@ -38,5 +38,19 @@
 - rollback_plan: git restore --source=HEAD -- GPT/readme.md docs/adr/0061-retire-spoken-intent-aliases.work-log.md docs/adr/015-voice-audience-tone-purpose-decomposition.md docs/adr/015-voice-audience-tone-purpose-decomposition.work-log.md docs/adr/017-goal-modifier-decomposition-and-simplification.md docs/adr/040-axis-families-and-persona-contract-simplification.md docs/adr/040-axis-families-and-persona-contract-simplification.work-log.md docs/adr/042-persona-intent-presets-voice-first-commands.md
 - delta_summary: helper:diff-snapshot=8 files changed, 65 insertions(+), 26 deletions(-); README + ADR notes now describe canonical intent tokens and flag legacy phrases as historical context.
 - residual_risks:
-  - Risk: Other legacy docs may still reference retired “for …” phrases; mitigation: continue updating ADR work logs as they are touched; trigger: future ADR loops encountering alias text.
+  - Risk: Other legacy docs may still reference alias tokens; mitigation: continue updating ADR work logs as they are touched; trigger: future ADR loops encountering alias text.
 - next_work: none queued beyond ongoing adoption.
+
+## 2025-12-24 – Loop 4 (kind: guardrail/tests)
+- helper_version: helper:v20251223.1
+- focus: ADR 0061 §Consequences — history validator strips legacy intent aliases and records invalid tokens so Concordance logs can expose stragglers.
+- riskiest_assumption: Historical request logs may still contain multi-word intent tokens, and without explicit signalling the validator will miss them (probability medium, impact medium for diagnostics accuracy).
+- validation_targets:
+  - python3 -m pytest _tests/test_history_axis_validate.py::HistoryAxisValidateTests::test_history_stats_flag_noncanonical_intent_key
+- evidence: docs/adr/evidence/0061/loop-0003.md
+- rollback_plan: git restore --source=HEAD -- lib/requestLog.py _tests/test_history_axis_validate.py && python3 -m pytest _tests/test_history_axis_validate.py::HistoryAxisValidateTests::test_history_stats_flag_noncanonical_intent_key
+- delta_summary: helper:diff-snapshot=2 files changed, 15 insertions(+), 1 deletion(-); request history normalisation now drops non-canonical intent keys, flags the invalid token count, and the history-axis validator surfaces the issue.
+- residual_risks:
+  - Risk: Older snapshots lacking persona metadata still bypass validation; mitigation: run history-axis-validate periodically and remediate stale entries; trigger: history summaries missing `intent_preset` sections.
+- next_work: none queued; monitoring continues via `history-axis-validate --summary`.
+

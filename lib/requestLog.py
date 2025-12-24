@@ -20,7 +20,7 @@ except Exception:  # pragma: no cover - defensive fallback for stubs
 
 from .axisMappings import axis_registry_tokens, axis_value_to_key_map_for
 from .axisCatalog import axis_catalog
-from .personaConfig import persona_intent_maps
+from .personaConfig import canonical_persona_token, persona_intent_maps
 from .requestHistory import RequestHistory, RequestLogEntry
 
 _history = RequestHistory()
@@ -364,6 +364,23 @@ def _normalise_persona_snapshot(
                         payload["intent_preset_key"] = intent_key
                         break
 
+        if intent_key:
+            canonical_candidate = canonical_persona_token("intent", intent_key)
+            if canonical_candidate:
+                if canonical_candidate != intent_key:
+                    intent_key = canonical_candidate
+                    payload["intent_preset_key"] = canonical_candidate
+            else:
+                payload["_invalid_intent_token"] = intent_key
+                payload.pop("intent_preset_key", None)
+                payload.pop("intent_preset_label", None)
+                payload.pop("intent_display", None)
+                payload.pop("intent_purpose", None)
+                intent_key = ""
+                intent_label = ""
+                intent_display = ""
+                intent_purpose = ""
+
         preset_intent = intent_presets.get(intent_key) if intent_key else None
         if preset_intent is not None:
             if not intent_label:
@@ -654,6 +671,7 @@ def _scan_history_entries(raise_on_failure: bool) -> dict[str, int]:
         "persona_preset_missing_descriptor": 0,
         "intent_preset_missing_say_hint": 0,
         "intent_preset_missing_descriptor": 0,
+        "intent_invalid_tokens": 0,
         "unexpected_persona_header": 0,
         "persona_alias_pairs": {},
         "intent_display_pairs": {},
@@ -664,6 +682,13 @@ def _scan_history_entries(raise_on_failure: bool) -> dict[str, int]:
 
     for entry in _history.all():
         stats["total_entries"] += 1
+
+        persona_snapshot = entry.persona or {}
+        invalid_intent = persona_snapshot.get("_invalid_intent_token")
+        if invalid_intent:
+            stats["intent_invalid_tokens"] += 1
+            stats["intent_preset_missing_descriptor"] += 1
+
         axes = entry.axes or {}
         if not isinstance(axes, dict):
             try:

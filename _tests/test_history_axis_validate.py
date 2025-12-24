@@ -103,16 +103,27 @@ if bootstrap is not None:
             self.assertEqual(intent_pairs["decide"].get("Decide"), 1)
             clear_history()
 
-        def test_script_summary_path_writes_file(self) -> None:
+        def test_history_stats_flag_noncanonical_intent_key(self) -> None:
+            from talon_user.lib import requestLog  # type: ignore
             from talon_user.lib.requestLog import clear_history, append_entry  # type: ignore
 
             clear_history()
             append_entry(
-                "rid-summary-path",
+                "rid-alias-intent",
                 "prompt",
                 "response",
                 axes={"directional": ["fog"]},
+                persona={
+                    "persona_preset_spoken": "mentor",
+                    "intent_preset_key": "for deciding",
+                    "intent_display": "For deciding",
+                },
             )
+
+            stats = requestLog.history_validation_stats()
+            self.assertGreaterEqual(stats.get("intent_preset_missing_descriptor", 0), 1)
+            self.assertGreaterEqual(stats.get("intent_invalid_tokens", 0), 1)
+
             with tempfile.TemporaryDirectory() as tmpdir:
                 summary_path = os.path.join(tmpdir, "history-summary.json")
                 env = os.environ.copy()

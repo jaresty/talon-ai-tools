@@ -39,3 +39,17 @@
   - Request history drawers still implement bespoke gating. Mitigation: fold them into the same facade in a follow-up loop and validate via `_tests/test_request_history_drawer_gating.py`.
 - next_work:
   - Behaviour: Extend surface guidance to request history drawers — python3 -m pytest _tests/test_request_history_drawer_gating.py — future-shaping: collapse remaining `_reject_if_request_in_flight` helpers into the new facade.
+
+## 2025-12-24 – Loop 004 (kind: implementation)
+- helper_version: helper:v20251223.1
+- focus: ADR-0062 §Refactor Plan – Guidance Surface Coordinator (request history drawer gating)
+- riskiest_assumption: History drawer continues to duplicate `_reject_if_request_in_flight`, leading to inconsistent Concordance messaging; `python3 -m pytest _tests/test_request_history_drawer_gating.py` fails under the updated guard expectations (probability medium, impact medium-high on history visibility).
+- validation_targets:
+  - python3 -m pytest _tests/test_request_history_drawer_gating.py
+- evidence: docs/adr/evidence/0062/loop-0004.md
+- rollback_plan: git restore --source=HEAD -- lib/requestHistoryDrawer.py && python3 -m pytest _tests/test_request_history_drawer_gating.py
+- delta_summary: helper:diff-snapshot=2 files changed, 67 insertions(+), 74 deletions(-); request history drawer now delegates gating to `guard_surface_request`, and tests assert the shared facade contract.
+- residual_risks:
+  - Request history actions/log modules still duplicate gating logic. Mitigation: migrate them to the shared facade in the next loop and validate via `_tests/test_request_history_actions.py`.
+- next_work:
+  - Behaviour: Adopt surface guidance in `requestHistoryActions` and related log helpers — python3 -m pytest _tests/test_request_history_actions.py — future-shaping: remove remaining bespoke gating before introducing the history lifecycle orchestrator.

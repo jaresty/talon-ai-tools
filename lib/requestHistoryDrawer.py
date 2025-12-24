@@ -13,11 +13,10 @@ from .requestLog import (
     last_drop_reason,
     set_drop_reason,
 )
-from .dropReasonUtils import render_drop_reason
 from .historyQuery import history_drawer_entries_from
 
-from .requestGating import request_is_in_flight, try_begin_request
-from .modelHelpers import notify
+from .requestGating import request_is_in_flight
+from .surfaceGuidance import guard_surface_request
 from .overlayHelpers import apply_canvas_blocking
 from .overlayLifecycle import close_overlays, close_common_overlays
 
@@ -47,31 +46,29 @@ def _request_is_in_flight() -> bool:
         return False
 
 
-def _reject_if_request_in_flight() -> bool:
-    """Notify and return True when a GPT request is already running."""
+def _on_guard_block(reason: str, message: str) -> None:
+    HistoryDrawerState.last_message = message or ""
 
-    allowed, reason = try_begin_request(source="requestHistoryDrawer")
-    if not allowed and reason:
-        message = render_drop_reason(reason)
-        try:
-            set_drop_reason(reason, message)
-        except Exception:
-            pass
-        if message:
-            HistoryDrawerState.last_message = message
-            try:
-                notify(message)
-            except Exception:
-                pass
+
+def _reject_if_request_in_flight() -> bool:
+    """Return True when the history drawer should abort due to gating."""
+
+    blocked = guard_surface_request(
+        surface="history_drawer",
+        source="requestHistoryDrawer",
+        on_block=_on_guard_block,
+    )
+    if blocked:
+        if not HistoryDrawerState.last_message:
+            HistoryDrawerState.last_message = ""
         return True
 
-    if allowed:
-        HistoryDrawerState.last_message = ""
-        try:
-            if not last_drop_reason():
-                set_drop_reason("")
-        except Exception:
-            pass
+    HistoryDrawerState.last_message = ""
+    try:
+        if not last_drop_reason():
+            set_drop_reason("")
+    except Exception:
+        pass
     return False
 
 

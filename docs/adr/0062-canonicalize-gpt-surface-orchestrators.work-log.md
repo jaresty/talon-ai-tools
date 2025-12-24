@@ -1,0 +1,13 @@
+## 2025-12-24 – Loop 001 (kind: implementation)
+- helper_version: helper:v20251223.1
+- focus: ADR-0062 §Refactor Plan – Prompt Persona Orchestrator (introduce shared facade + canonical tests)
+- riskiest_assumption: Without a canonical orchestrator, persona/intents will continue duplicating alias logic across GPT and canvas surfaces; `python3 -m pytest _tests/test_persona_orchestrator.py` will fail to detect catalogue drift (probability medium, impact high for Concordance coordination).
+- validation_targets:
+  - python3 -m pytest _tests/test_persona_orchestrator.py
+- evidence: docs/adr/evidence/0062/loop-0001.md
+- rollback_plan: git restore --source=HEAD -- lib/personaOrchestrator.py _tests/test_persona_orchestrator.py docs/adr/0062-canonicalize-gpt-surface-orchestrators.work-log.md docs/adr/evidence/0062/loop-0001.md && python3 -m pytest _tests/test_persona_orchestrator.py
+- delta_summary: helper:diff-snapshot=2 files added (`lib/personaOrchestrator.py`, `_tests/test_persona_orchestrator.py`) plus supporting evidence/work-log updates; establishes cached orchestrator facade fed by `persona_intent_catalog_snapshot()` and coverage for alias/display invariants.
+- residual_risks:
+  - Guidance surfaces still load `persona_intent_maps()` directly; mitigation: migrate GPT/help/suggestion helpers in Loop 2; monitor via the same pytest target once integrations land.
+- next_work:
+  - Behaviour: Migrate `GPT/gpt.py` persona helpers to `get_persona_intent_orchestrator` — python3 -m pytest _tests/test_gpt_actions.py — future-shaping: centralise canonicalisation through facade before touching canvases.

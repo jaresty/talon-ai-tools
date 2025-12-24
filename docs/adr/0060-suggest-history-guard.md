@@ -1,7 +1,7 @@
 # 0060 – Harden suggest flow history guards
 
 ## Status
-Proposed
+Accepted
 
 ## Context
 - `model run suggest` streams currently set `current_destination_kind = "suggest"` so the history append helper skips logging, but the skip logic is implicit. Telemetry still records `missing_directional` drops, causing confusion because the history contract is being reported even when the GUI intentionally drops entries lacking a directional axis (fog/fig/dig/ong/rog/bog/jog).
@@ -20,12 +20,12 @@ Proposed
 ## Implementation Plan
 1. Refactor `modelHelpers.append_entry_from_request` usage behind a new `_append_history_entry(..., skip_history=False)` helper shared by streaming/sync paths.
 2. Thread `skip_history=True` from `_process_suggest_result` through `_finish_suggest` into the history helper.
-3. Extend `_tests/test_gpt_actions.py` (or a new targeted test) to simulate a suggest response lacking a directional token and assert history append stays untouched.
+3. Extend `_tests/test_gpt_actions.py` to assert the suggest session toggles `skip_history`, and cover `_append_history_entry` directly to ensure the helper ignores history writes when the flag is set.
 4. Update ADR 0059 (Verification section) to call out the new regression test.
 
 ## Verification
-- `python3 -m pytest _tests/test_gpt_actions.py::GPTActionPromptSessionTests::test_gpt_suggest_prompt_recipes_skips_history_append`
-- `python3 -m pytest _tests/test_model_suggestion_gui.py`
+- `python3 -m pytest _tests/test_gpt_actions.py::GPTActionPromptSessionTests::test_gpt_suggest_prompt_recipes_sets_skip_history_flag`
+- `python3 -m pytest _tests/test_model_helpers_response_canvas.py::ResponseCanvasRefreshTests::test_append_history_entry_skips_when_flagged`
 - Review telemetry export after a suggest run to confirm only `missing_directional` drops remain when warranted and no history entries are recorded.
 
 ## Consequences

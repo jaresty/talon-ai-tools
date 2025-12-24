@@ -34,7 +34,7 @@ Accepted
 
 ## Verification
 - `python3 -m pytest _tests/test_overlay_lifecycle.py::OverlayLifecycleTests::test_common_overlay_closers_do_not_call_gating`
-- `python3 -m pytest _tests/test_model_helpers_response_canvas.py`
+- `python3 -m pytest _tests/test_model_helpers_response_canvas.py::ResponseCanvasRefreshTests::test_append_history_entry_skips_when_flagged`
 - `python3 -m pytest _tests/test_model_response_canvas.py`
 
 ## Consequences

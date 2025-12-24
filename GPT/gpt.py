@@ -29,6 +29,7 @@ try:
         static_prompt_description_overrides,
     )
 except ImportError:  # Talon may have a stale runtime without axisCatalog
+    AXIS_KEY_TO_VALUE: dict[str, dict[str, str]] = {}
 
     def get_static_prompt_profile(name: str):
         return STATIC_PROMPT_CONFIG.get(name)
@@ -148,8 +149,8 @@ from ..lib.personaConfig import (
     persona_docs_map,
     validate_intent_presets,
     validate_persona_presets,
-    persona_intent_maps,
 )
+from ..lib.personaOrchestrator import get_persona_intent_orchestrator
 from ..lib.stanceValidation import valid_stance_command as _valid_stance_command
 from ..lib.suggestionCoordinator import (
     record_suggestions,
@@ -196,6 +197,13 @@ def _normalise_persona_alias_token(raw: str) -> str:
     return token.strip()
 
 
+def _persona_orchestrator(*, force_refresh: bool = False):
+    try:
+        return get_persona_intent_orchestrator(force_refresh=force_refresh)
+    except Exception:
+        return None
+
+
 def _canonical_axis_value(axis: str, raw: str) -> str:
     """Return a canonical axis token for a raw value or empty if unknown.
 
@@ -221,15 +229,18 @@ def _canonical_axis_value(axis: str, raw: str) -> str:
 
 
 def _canonical_persona_value(axis: str, raw: str) -> str:
-    """Return a canonical persona/intent token for a raw value or empty if unknown.
+    """Return a canonical persona/intent token for a raw value or empty if unknown."""
 
-    Only accept known axis keys; do not attempt description reverse-lookups.
-    """
     if not raw:
         return ""
     raw_s = str(raw).strip()
     if not raw_s:
         return ""
+
+    axis_key = str(axis or "").strip().lower()
+    lower = raw_s.lower()
+    normalised = _normalise_persona_alias_token(raw_s)
+
     try:
         from ..lib.personaConfig import canonical_persona_token
     except Exception:
@@ -239,9 +250,21 @@ def _canonical_persona_value(axis: str, raw: str) -> str:
         if canonical:
             return canonical
 
-    lower = raw_s.lower()
-    normalised = _normalise_persona_alias_token(raw_s)
-    if axis == "intent":
+    orchestrator = _persona_orchestrator()
+    if orchestrator:
+        if axis_key == "intent":
+            canonical_intent = orchestrator.canonical_intent_key(raw_s)
+            if canonical_intent:
+                return canonical_intent
+        alias_map = orchestrator.axis_alias_map.get(axis_key, {})
+        for candidate in (lower, normalised):
+            if candidate and alias_map and candidate in alias_map:
+                return alias_map[candidate]
+        canonical_token = orchestrator.canonical_axis_token(axis_key, raw_s)
+        if canonical_token:
+            return canonical_token
+
+    if axis_key == "intent":
         try:
             from ..lib.personaConfig import normalize_intent_token
         except Exception:
@@ -250,30 +273,7 @@ def _canonical_persona_value(axis: str, raw: str) -> str:
             raw_s = normalize_intent_token(raw_s)
             lower = raw_s.lower()
             normalised = _normalise_persona_alias_token(raw_s)
-    axis_key = str(axis or "").strip().lower()
-    axis_map = {}
-    intent_synonyms_map = {}
-    intent_alias_map = {}
-    try:
-        maps = persona_intent_maps()
-    except Exception:
-        maps = None
-    if maps:
-        axis_map = maps.persona_axis_tokens.get(axis_key, {}) or {}
-        intent_synonyms_map = maps.intent_synonyms or {}
-        intent_alias_map = maps.intent_preset_aliases or {}
-    for candidate in (lower, normalised):
-        if candidate and axis_map and candidate in axis_map:
-            return axis_map[candidate]
-    if axis_key == "intent":
-        for candidate in (lower, normalised):
-            if not candidate:
-                continue
-            synonym = intent_synonyms_map.get(candidate) or intent_alias_map.get(
-                candidate
-            )
-            if synonym:
-                return synonym
+
     try:
         docs = persona_docs_map(axis)
     except Exception:
@@ -532,19 +532,11 @@ mod.tag(
 
 
 def _persona_presets():
-    """Return the latest persona presets (reload-safe).
+    """Return the latest persona presets (reload-safe)."""
 
-    Prefer the shared persona intent maps so GPT actions stay aligned with
-    other Concordance-facing UIs. Fall back to legacy catalog helpers when
-    maps are unavailable (for example, during bootstrap).
-    """
-
-    try:
-        maps = persona_intent_maps()
-        if maps and maps.persona_presets:
-            return tuple(maps.persona_presets.values())
-    except Exception:
-        maps = None
+    orchestrator = _persona_orchestrator()
+    if orchestrator and orchestrator.persona_presets:
+        return tuple(orchestrator.persona_presets.values())
     try:
         from ..lib import personaConfig
 
@@ -557,19 +549,11 @@ def _persona_presets():
 
 
 def _intent_presets():
-    """Return the latest intent presets (reload-safe).
+    """Return the latest intent presets (reload-safe)."""
 
-    Prefer the shared persona intent maps so GPT actions stay aligned with
-    other Concordance-facing UIs. Fall back to legacy catalog helpers when
-    maps are unavailable (for example, during bootstrap).
-    """
-
-    try:
-        maps = persona_intent_maps()
-        if maps and maps.intent_presets:
-            return tuple(maps.intent_presets.values())
-    except Exception:
-        maps = None
+    orchestrator = _persona_orchestrator()
+    if orchestrator and orchestrator.intent_presets:
+        return tuple(orchestrator.intent_presets.values())
     try:
         from ..lib import personaConfig
 
@@ -584,19 +568,12 @@ def _intent_presets():
 def _persona_preset_spoken_map() -> dict[str, str]:
     """Return spoken->key map for persona presets."""
 
+    orchestrator = _persona_orchestrator()
+    if orchestrator and orchestrator.persona_aliases:
+        return {
+            alias: key for alias, key in orchestrator.persona_aliases.items() if key
+        }
     mapping: dict[str, str] = {}
-    try:
-        maps = persona_intent_maps()
-    except Exception:
-        maps = None
-    if maps and maps.persona_preset_aliases:
-        for alias, canonical in maps.persona_preset_aliases.items():
-            alias_key = str(alias or "").strip()
-            canonical_key = str(canonical or "").strip()
-            if alias_key and canonical_key:
-                mapping[alias_key.lower()] = canonical_key
-        if mapping:
-            return mapping
     for preset in _persona_presets():
         spoken = (preset.spoken or preset.label or preset.key).strip()
         if not spoken:
@@ -608,19 +585,10 @@ def _persona_preset_spoken_map() -> dict[str, str]:
 def _intent_preset_spoken_map() -> dict[str, str]:
     """Return spoken->key map for intent presets."""
 
+    orchestrator = _persona_orchestrator()
+    if orchestrator and orchestrator.intent_aliases:
+        return {alias: key for alias, key in orchestrator.intent_aliases.items() if key}
     mapping: dict[str, str] = {}
-    try:
-        maps = persona_intent_maps()
-    except Exception:
-        maps = None
-    if maps and maps.intent_preset_aliases:
-        for alias, canonical in maps.intent_preset_aliases.items():
-            alias_key = str(alias or "").strip()
-            canonical_key = str(canonical or "").strip()
-            if alias_key and canonical_key:
-                mapping[alias_key.lower()] = canonical_key
-        if mapping:
-            return mapping
     for preset in _intent_presets():
         spoken = (preset.key or "").strip()
         if not spoken:
@@ -633,22 +601,12 @@ def _axis_tokens(axis: str) -> set[str]:
     """Return the latest persona/intent axis tokens."""
 
     axis_key = str(axis or "").strip().lower()
-    try:
-        maps = persona_intent_maps()
-    except Exception:
-        maps = None
-    if maps:
-        if axis_key == "intent" and maps.intent_axis_tokens:
-            tokens = maps.intent_axis_tokens.get("intent", []) or []
+    orchestrator = _persona_orchestrator()
+    if orchestrator:
+        tokens = orchestrator.axis_tokens.get(axis_key, ())
+        if tokens:
             return {
                 str(token or "").strip() for token in tokens if str(token or "").strip()
-            }
-        persona_axis_map = maps.persona_axis_tokens.get(axis_key)
-        if persona_axis_map:
-            return {
-                str(token or "").strip()
-                for token in persona_axis_map.values()
-                if str(token or "").strip()
             }
     try:
         return {
@@ -974,12 +932,11 @@ def _build_persona_intent_docs() -> str:
             if str(key or "").strip()
         }
     else:
-        maps = _persona_maps()
-        if maps is not None:
-            raw_map = getattr(maps, "intent_display_map", {}) or {}
+        orchestrator = _persona_orchestrator()
+        if orchestrator:
             intent_display_map = {
                 str(key or "").strip(): str(value or "").strip()
-                for key, value in dict(raw_map).items()
+                for key, value in orchestrator.intent_display_map.items()
                 if str(key or "").strip()
             }
 
@@ -1020,8 +977,10 @@ def _build_persona_intent_docs() -> str:
         for preset in intent_presets:
             display_alias = _intent_display_alias(preset)
             canonical_intent = (preset.intent or preset.key).strip()
+            say_hint = display_alias or canonical_intent
+            say_hint = say_hint.strip()
             lines.append(
-                f"- intent {preset.key} (say: intent {canonical_intent}): {display_alias or canonical_intent} ({canonical_intent or 'unknown intent'})"
+                f"- intent {preset.key} (say: intent {say_hint}): {display_alias or canonical_intent} ({canonical_intent or 'unknown intent'})"
             )
         lines.append("")
 
@@ -1315,9 +1274,13 @@ class UserActions:
         if _reject_if_request_in_flight():
             return
 
-        maps = persona_intent_maps()
-        persona_preset_lookup = maps.persona_presets
-        persona_preset_key_map = maps.persona_preset_aliases
+        orchestrator = _persona_orchestrator()
+        persona_preset_lookup = (
+            dict(orchestrator.persona_presets) if orchestrator else {}
+        )
+        persona_preset_key_map = (
+            dict(orchestrator.persona_aliases) if orchestrator else {}
+        )
 
         preset_key_clean = str(preset_key or "").strip()
         if not preset_key_clean:
@@ -1369,9 +1332,11 @@ class UserActions:
         if _reject_if_request_in_flight():
             return
 
-        maps = persona_intent_maps()
-        intent_preset_lookup = maps.intent_presets
-        intent_preset_key_map = maps.intent_preset_aliases
+        orchestrator = _persona_orchestrator()
+        intent_preset_lookup = dict(orchestrator.intent_presets) if orchestrator else {}
+        intent_preset_key_map = (
+            dict(orchestrator.intent_aliases) if orchestrator else {}
+        )
 
         preset_key_clean = str(preset_key or "").strip()
         if not preset_key_clean:
@@ -3004,18 +2969,19 @@ def _suggest_prompt_recipes_core_impl(source: ModelSource, subject: str) -> None
     if _reject_if_request_in_flight():
         return
 
-    try:
-        maps = persona_intent_maps()
-    except Exception:
-        maps = None
+    orchestrator = _persona_orchestrator()
 
-    persona_axis_token_map = maps.persona_axis_tokens if maps else {}
-    intent_synonyms_map = maps.intent_synonyms if maps else {}
-    persona_presets = maps.persona_presets if maps else {}
-    persona_preset_aliases = maps.persona_preset_aliases if maps else {}
-    intent_presets = maps.intent_presets if maps else {}
-    intent_preset_aliases = maps.intent_preset_aliases if maps else {}
-    intent_display_map = maps.intent_display_map if maps else {}
+    persona_axis_token_map = (
+        {axis: dict(mapping) for axis, mapping in orchestrator.axis_alias_map.items()}
+        if orchestrator
+        else {}
+    )
+    intent_synonyms_map = dict(orchestrator.intent_synonyms) if orchestrator else {}
+    persona_presets = dict(orchestrator.persona_presets) if orchestrator else {}
+    persona_preset_aliases = dict(orchestrator.persona_aliases) if orchestrator else {}
+    intent_presets = dict(orchestrator.intent_presets) if orchestrator else {}
+    intent_preset_aliases = dict(orchestrator.intent_aliases) if orchestrator else {}
+    intent_display_map = dict(orchestrator.intent_display_map) if orchestrator else {}
 
     subject = subject or ""
     try:

@@ -62,3 +62,19 @@ class PersonaOrchestratorTests(unittest.TestCase):
         self.assertIn("as programmer", voice_tokens)
         intent_tokens = axis_tokens["intent"]
         self.assertIn("teach", intent_tokens)
+
+    def test_canonical_axis_token_uses_alias_map(self) -> None:
+        self.assertEqual(
+            self.orchestrator.canonical_axis_token("voice", "As Programmer"),
+            "as programmer",
+        )
+        self.assertEqual(
+            self.orchestrator.canonical_axis_token("intent", "Teach"),
+            "teach",
+        )
+
+    def test_canonical_intent_key_handles_display_alias(self) -> None:
+        self.assertEqual(
+            self.orchestrator.canonical_intent_key("Teach / explain"),
+            "teach",
+        )

@@ -25,12 +25,31 @@ def _build_axis_tokens(
 ) -> Mapping[str, Tuple[str, ...]]:
     tokens: Dict[str, Tuple[str, ...]] = {}
     for axis, values in (snapshot.persona_axis_tokens or {}).items():
-        if axis:
-            tokens[axis] = tuple(sorted({v for v in values if v}))
+        axis_key = (axis or "").strip().lower()
+        if axis_key:
+            tokens[axis_key] = tuple(sorted({v for v in values if v}))
     for axis, values in (snapshot.intent_axis_tokens or {}).items():
-        if axis:
-            tokens[axis] = tuple(sorted({v for v in values if v}))
+        axis_key = (axis or "").strip().lower()
+        if axis_key:
+            tokens[axis_key] = tuple(sorted({v for v in values if v}))
     return MappingProxyType(tokens)
+
+
+def _build_axis_alias_map(maps: PersonaIntentMaps) -> Mapping[str, Mapping[str, str]]:
+    axis_alias_map: Dict[str, Mapping[str, str]] = {}
+    for axis, mapping in (maps.persona_axis_tokens or {}).items():
+        axis_key = (axis or "").strip().lower()
+        if not axis_key:
+            continue
+        entries: Dict[str, str] = {}
+        for alias, token in dict(mapping).items():
+            alias_key = (alias or "").strip().lower()
+            canonical = (token or "").strip()
+            if alias_key and canonical:
+                entries.setdefault(alias_key, canonical)
+        if entries:
+            axis_alias_map[axis_key] = MappingProxyType(entries)
+    return MappingProxyType(axis_alias_map)
 
 
 def _build_persona_aliases(maps: PersonaIntentMaps) -> Mapping[str, str]:
@@ -78,6 +97,22 @@ def _build_intent_aliases(
     return MappingProxyType(aliases)
 
 
+def _build_intent_synonyms(maps: PersonaIntentMaps) -> Mapping[str, str]:
+    entries: Dict[str, str] = {}
+    for alias, canonical in (maps.intent_synonyms or {}).items():
+        alias_key = (alias or "").strip().lower()
+        canonical_key = (canonical or "").strip()
+        if alias_key and canonical_key:
+            entries.setdefault(alias_key, canonical_key)
+    return MappingProxyType(entries)
+
+
+def _build_intent_display_map(
+    snapshot: PersonaIntentCatalogSnapshot,
+) -> Mapping[str, str]:
+    return MappingProxyType(dict(snapshot.intent_display_map or {}))
+
+
 @dataclass(frozen=True)
 class PersonaIntentOrchestrator:
     persona_presets: Mapping[str, PersonaPreset]
@@ -86,6 +121,8 @@ class PersonaIntentOrchestrator:
     intent_aliases: Mapping[str, str]
     intent_display_map: Mapping[str, str]
     axis_tokens: Mapping[str, Tuple[str, ...]]
+    axis_alias_map: Mapping[str, Mapping[str, str]]
+    intent_synonyms: Mapping[str, str]
 
     @classmethod
     def build(cls, *, force_refresh: bool = False) -> "PersonaIntentOrchestrator":
@@ -93,10 +130,12 @@ class PersonaIntentOrchestrator:
         maps = persona_intent_maps(force_refresh=force_refresh)
         persona_presets = MappingProxyType(dict(snapshot.persona_presets or {}))
         intent_presets = MappingProxyType(dict(snapshot.intent_presets or {}))
-        intent_display_map = MappingProxyType(dict(snapshot.intent_display_map or {}))
+        intent_display_map = _build_intent_display_map(snapshot)
         axis_tokens = _build_axis_tokens(snapshot)
+        axis_alias_map = _build_axis_alias_map(maps)
         persona_aliases = _build_persona_aliases(maps)
         intent_aliases = _build_intent_aliases(maps, snapshot)
+        intent_synonyms = _build_intent_synonyms(maps)
         return cls(
             persona_presets=persona_presets,
             intent_presets=intent_presets,
@@ -104,6 +143,8 @@ class PersonaIntentOrchestrator:
             intent_aliases=intent_aliases,
             intent_display_map=intent_display_map,
             axis_tokens=axis_tokens,
+            axis_alias_map=axis_alias_map,
+            intent_synonyms=intent_synonyms,
         )
 
     def canonical_persona_key(self, alias: str | None) -> str:
@@ -119,6 +160,26 @@ class PersonaIntentOrchestrator:
         canonical = self.intent_aliases.get(normalised, "")
         if canonical:
             return canonical
+        synonym = self.intent_synonyms.get(normalised)
+        if synonym:
+            return synonym
+        return ""
+
+    def canonical_axis_token(self, axis: str, alias: str | None) -> str:
+        axis_key = (axis or "").strip().lower()
+        candidate = (alias or "").strip()
+        if not axis_key or not candidate:
+            return ""
+        lowered = candidate.lower()
+        alias_map = self.axis_alias_map.get(axis_key, {})
+        if alias_map:
+            canonical = alias_map.get(lowered)
+            if canonical:
+                return canonical
+        tokens = self.axis_tokens.get(axis_key, ())
+        for token in tokens:
+            if token and token.lower() == lowered:
+                return token
         return ""
 
 

@@ -1,4 +1,5 @@
 import unittest
+from types import SimpleNamespace
 from unittest.mock import MagicMock, patch
 
 try:
@@ -105,6 +106,25 @@ if bootstrap is not None:
             self.assertFalse(modelHelpers._should_refresh_canvas_now())
             GPTState.current_destination_kind = "window"
             self.assertTrue(modelHelpers._should_refresh_canvas_now())
+
+        def test_append_history_entry_skips_when_flagged(self):
+            session = SimpleNamespace(record_log_entry=MagicMock())
+            GPTState.request = {}
+            with patch("talon_user.lib.modelHelpers.append_entry_from_request") as append_entry:
+                result = modelHelpers._append_history_entry(
+                    session=session,
+                    request_id="req-skip",
+                    answer_text="done",
+                    meta_text="",
+                    last_recipe="",
+                    started_at_ms=1,
+                    duration_ms=2,
+                    axes={},
+                    provider=None,
+                    skip_history=True,
+                )
+            append_entry.assert_not_called()
+            self.assertEqual(result, "")
 
 else:
 

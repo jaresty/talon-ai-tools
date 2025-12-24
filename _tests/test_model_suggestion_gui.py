@@ -26,6 +26,8 @@ if bootstrap is not None:
     class ModelSuggestionGUITests(unittest.TestCase):
         def setUp(self):
             GPTState.reset_all()
+            if hasattr(GPTState, "suppress_overlay_inflight_guard"):
+                delattr(GPTState, "suppress_overlay_inflight_guard")
             SuggestionGUIState.suggestions = []
             SuggestionCanvasState.showing = False
             SuggestionCanvasState.scroll_y = 0.0
@@ -40,6 +42,8 @@ if bootstrap is not None:
             # rely on the stubbed `actions.app.calls` behaviour continue to
             # work as expected.
             actions.app.notify = self._original_notify
+            if hasattr(GPTState, "suppress_overlay_inflight_guard"):
+                delattr(GPTState, "suppress_overlay_inflight_guard")
 
         def test_persona_presets_align_with_persona_catalog(self) -> None:
             from talon_user.lib.personaConfig import persona_catalog
@@ -150,7 +154,7 @@ if bootstrap is not None:
             actions.app.notify.assert_called_once()
             actions.user.gpt_apply_prompt.assert_not_called()
 
-        def test_open_bypasses_inflight_guard_when_suppressed(self):
+        def test_open_uses_passive_closer_when_suppressed(self):
             GPTState.last_suggested_recipes = [
                 {
                     "name": "Suggest",
@@ -172,7 +176,7 @@ if bootstrap is not None:
                 setattr(GPTState, "suppress_overlay_inflight_guard", True)
                 UserActions.model_prompt_recipe_suggestions_gui_open()
 
-            close_stub.assert_called_once()
+            close_stub.assert_called_once_with(actions.user, passive=True)
             open_canvas.assert_called_once()
 
         def test_scroll_clamps_to_max_via_overlay_helper(self):

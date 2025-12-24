@@ -132,7 +132,6 @@ from ..lib.modelHelpers import (
     notify,
     send_request,
     messages_to_string,
-    append_request_messages,
 )
 
 from ..lib.modelState import GPTState
@@ -142,7 +141,6 @@ from ..lib.promptSession import PromptSession
 from ..lib.recursiveOrchestrator import RecursiveOrchestrator
 from ..lib.modelPatternGUI import (
     DIRECTIONAL_MAP as _DIRECTIONAL_MAP,
-    _axis_value_from_token,
 )
 from ..lib.axisMappings import axis_key_to_value_map_for
 from ..lib.personaConfig import (
@@ -155,7 +153,6 @@ from ..lib.stanceValidation import valid_stance_command as _valid_stance_command
 from ..lib.suggestionCoordinator import (
     record_suggestions,
     last_recipe_snapshot,
-    recipe_header_lines_from_snapshot,
     set_last_recipe_from_selection,
     last_recap_snapshot,
     clear_recap_state,
@@ -470,7 +467,7 @@ def _suggest_prompt_text(
         "- why: 1–2 sentences explaining when this suggestion is useful.\n\n"
         "Recipe rules:\n"
         "- <staticPrompt> is exactly one static prompt token (do not include multiple static prompts or combine them).\n"
-        "- Directional is required: always include exactly one directional modifier from the directional list; many valid tokens contain spaces (for example, 'fly ong')—keep the full token intact.\n"
+        "- Directional is required: always include exactly one directional modifier from the directional list (fog, fig, dig, ong, rog, bog, jog, plus documented multi-word variants such as 'fly ong'). Keep the full token intact when it contains spaces; if you cannot choose a valid directional, omit the entire suggestion rather than invent one.\n"
         "- <completeness> is a single token; include it only when it meaningfully shapes the response.\n"
         "- <scopeTokens> and <methodTokens> are zero or more space-separated axis tokens for that axis (respecting small caps: scope ≤ 2 tokens, method ≤ 3 tokens); omit the segment entirely when it adds no value.\n"
         "- <formToken> and <channelToken> are single axis tokens (Form and Channel are singletons); omit them when no bias is needed.\n"

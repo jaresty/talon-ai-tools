@@ -50,7 +50,7 @@ The `<ARTEFACT_LOG>` must record headings matching the helper command names when
 - Observable delta and rollback plan documented so reverts clearly undo the slice.
 - Evidence block captures commands, outputs, touched files, and removal tests without excess narrative.
 - Residual risks, mitigations, and monitoring triggers listed at loop close.
-- Validation commands execute within the project workspace (no external directories required).
+- Validation commands execute within the project workspace (no external directories required), and all work stays within repository subdirectories to avoid elevated approvals.
 
 ---
 

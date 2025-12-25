@@ -23,8 +23,28 @@ else:
 
 from talon_user.lib.axisCatalog import axis_catalog  # noqa: E402
 from talon_user.lib.historyLifecycle import axes_snapshot_from_axes  # noqa: E402
+from talon_user.lib.helpDomain import (  # noqa: E402
+    help_index,
+    help_metadata_snapshot,
+    help_metadata_summary_lines,
+)
 
 axis_snapshot_from_axes = axes_snapshot_from_axes
+
+
+def _metadata_summary_lines(catalog: dict) -> list[str]:
+    try:
+        entries = help_index(
+            [],
+            patterns=[],
+            presets=[],
+            read_list_items=lambda _name: [],
+            catalog=catalog,
+        )
+        snapshot = help_metadata_snapshot(entries)
+    except Exception:
+        return []
+    return help_metadata_summary_lines(snapshot)
 
 
 def _canonical_axis_tokens(
@@ -73,6 +93,17 @@ def render_cheatsheet(catalog: dict) -> str:
         if not tokens:
             continue
         lines.append(f"- {heading}: " + ", ".join(f"`{t}`" for t in tokens))
+
+    metadata_lines = _metadata_summary_lines(catalog)
+    if metadata_lines:
+        lines.extend(
+            [
+                "",
+                "## Help metadata summary",
+                "",
+            ]
+        )
+        lines.extend(metadata_lines)
 
     lines.append("")
     return "\n".join(lines)

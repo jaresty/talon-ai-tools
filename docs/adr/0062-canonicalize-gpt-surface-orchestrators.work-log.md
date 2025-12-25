@@ -439,3 +439,19 @@
   - README guardrail tests still need a follow-up loop to ensure metadata regeneration stays automated.
 - next_work:
   - Behaviour: sweep remaining doc exporters (axis README, guardrail docs) for metadata helper usage — python3 -m pytest _tests/test_readme_guardrails_docs.py — future-shaping: keep documentation aligned with the canonical metadata summary.
+
+## 2025-12-25 – Loop 036 (kind: implementation)
+- helper_version: helper:v20251223.1
+- focus: ADR-0062 §Refactor Plan – Guidance Surface Coordinator (guard cheat sheet metadata in docs)
+- riskiest_assumption: Documentation guardrails would not fail when the README cheat sheet drops the metadata summary; the new guard test fails when the file is missing (probability medium, impact medium on documentation parity).
+- validation_targets:
+  - python3 -m pytest _tests/test_readme_guardrails_docs.py::ReadmeGuardrailsDocsTests::test_readme_axis_cheatsheet_includes_metadata_summary
+  - python3 scripts/tools/generate-axis-cheatsheet.py --out docs/readme-axis-cheatsheet.md
+  - python3 -m pytest _tests/test_generate_axis_cheatsheet.py
+- evidence: docs/adr/evidence/0062/loop-0036.md
+- rollback_plan: git restore --source=HEAD -- scripts/tools/generate-axis-cheatsheet.py _tests/test_generate_axis_cheatsheet.py _tests/test_readme_guardrails_docs.py docs/readme-axis-cheatsheet.md && python3 -m pytest _tests/test_readme_guardrails_docs.py::ReadmeGuardrailsDocsTests::test_readme_axis_cheatsheet_includes_metadata_summary
+- delta_summary: helper:diff-snapshot=4 files changed, 49 insertions(+), 4 deletions(-); cheat sheet generator now appends metadata summaries, guardrails enforce the metadata header in README, and docs regenerate via the shared helper.
+- residual_risks:
+  - None; cheat sheet regeneration is now protected by automated tests.
+- next_work:
+  - None; metadata summary loops complete.

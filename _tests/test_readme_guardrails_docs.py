@@ -113,6 +113,28 @@ if not TYPE_CHECKING:
                 "Expected README to mention catalog-only validation flag",
             )
 
+        def test_readme_axis_cheatsheet_includes_metadata_summary(self) -> None:
+            cheat_sheet_path = (
+                Path(__file__).resolve().parents[1]
+                / "docs"
+                / "readme-axis-cheatsheet.md"
+            )
+            self.assertTrue(
+                cheat_sheet_path.exists(),
+                "Axis cheat sheet README snapshot missing; regenerate via generate-axis-cheatsheet.py",
+            )
+            content = cheat_sheet_path.read_text(encoding="utf-8")
+            self.assertIn(
+                "## Help metadata summary",
+                content,
+                "Cheat sheet README snapshot missing metadata summary header",
+            )
+            self.assertIn(
+                "Metadata schema version:",
+                content,
+                "Cheat sheet README snapshot missing schema version line",
+            )
+
 else:
 
     class ReadmeGuardrailsDocsTests(unittest.TestCase):  # pragma: no cover

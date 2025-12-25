@@ -37,6 +37,9 @@ if not TYPE_CHECKING:
                 self.assertIn("Form (`formModifier`)", content)
                 self.assertIn("Channel (`channelModifier`)", content)
                 self.assertIn("Direction (`directionalModifier`)", content)
+                self.assertIn("## Help metadata summary", content)
+                self.assertIn("Metadata schema version:", content)
+                self.assertIn("Persona metadata:", content)
 
         def test_generate_axis_cheatsheet_tokens_match_catalog(self) -> None:
             """Guardrail: cheat sheet tokens mirror axis_catalog tokens."""

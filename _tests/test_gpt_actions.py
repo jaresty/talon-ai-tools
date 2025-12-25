@@ -947,7 +947,7 @@ if bootstrap is not None:
 
             snapshot = persona_intent_catalog_snapshot()
             with patch(
-                "talon_user.lib.personaConfig.persona_intent_catalog_snapshot",
+                "talon_user.lib.personaCatalog.get_persona_intent_catalog",
                 return_value=snapshot,
             ) as snapshot_mock:
                 doc = gpt_module._build_persona_intent_docs()
@@ -1004,7 +1004,7 @@ if bootstrap is not None:
 
             with (
                 patch(
-                    "talon_user.lib.personaConfig.persona_intent_catalog_snapshot",
+                    "talon_user.lib.personaCatalog.get_persona_intent_catalog",
                     return_value=custom_snapshot,
                 ) as snapshot_mock,
                 patch(

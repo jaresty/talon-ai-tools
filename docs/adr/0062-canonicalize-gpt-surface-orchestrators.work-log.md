@@ -511,3 +511,16 @@
   - Remaining consumers (history/log pipelines) still reference personaConfig directly; migrate in next loops.
 - next_work:
   - Behaviour: migrate GPT/help surfaces entirely onto the façade — Loop 045.
+
+## 2025-12-25 – Loop 045 (kind: implementation)
+- helper_version: helper:v20251223.1
+- focus: Prompt Persona Orchestrator – point GPT persona docs and orchestrator cache at the shared façade.
+- riskiest_assumption: GPT/help orchestrations previously imported personaConfig directly; redirecting to the façade must preserve behaviour for tests and orchestrator consumers.
+- validation_targets:
+  - python3 -m pytest _tests/test_gpt_actions.py
+  - python3 -m pytest _tests/test_persona_presets.py
+- evidence: docs/adr/evidence/0062/loop-0045.md
+- residual_risks:
+  - Remaining history/lifecycle components still need migration.
+- next_work:
+  - Behaviour: begin migrating history lifecycle consumers in later loops.

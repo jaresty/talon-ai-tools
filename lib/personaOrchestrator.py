@@ -4,12 +4,12 @@ from dataclasses import dataclass
 from types import MappingProxyType
 from typing import Dict, Mapping, Tuple
 
+from .personaCatalog import get_persona_intent_catalog
 from .personaConfig import (
     IntentPreset,
     PersonaIntentCatalogSnapshot,
     PersonaIntentMaps,
     PersonaPreset,
-    persona_intent_catalog_snapshot,
     persona_intent_maps,
 )
 
@@ -126,7 +126,7 @@ class PersonaIntentOrchestrator:
 
     @classmethod
     def build(cls, *, force_refresh: bool = False) -> "PersonaIntentOrchestrator":
-        snapshot = persona_intent_catalog_snapshot()
+        snapshot = get_persona_intent_catalog()
         maps = persona_intent_maps(force_refresh=force_refresh)
         persona_presets = MappingProxyType(dict(snapshot.persona_presets or {}))
         intent_presets = MappingProxyType(dict(snapshot.intent_presets or {}))

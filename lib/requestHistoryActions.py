@@ -1,6 +1,6 @@
 import datetime
 import os
-from dataclasses import dataclass, field, replace
+from dataclasses import replace
 from typing import Optional
 
 from talon import Module, actions, app, settings
@@ -21,10 +21,14 @@ from .requestLog import (
     AxisSnapshot,
 )
 from .historyLifecycle import (
+    HistoryAxisSnapshot,
+    HistorySnapshotEntry,
     axes_snapshot_from_axes as lifecycle_axes_snapshot_from_axes,
     clear_drop_reason,
+    coerce_history_snapshot_entry,
     consume_last_drop_reason_record,
     history_axes_for as lifecycle_history_axes_for,
+    history_snapshot_entry_from,
     last_drop_reason,
     set_drop_reason,
 )
@@ -41,63 +45,6 @@ clear_history_drop_reason = clear_drop_reason
 mod = Module()
 
 _cursor_offset = 0
-
-
-class HistoryAxisSnapshot:
-    def __init__(self, snapshot: AxisSnapshot):
-        self._snapshot = snapshot
-
-    @property
-    def snapshot(self) -> AxisSnapshot:
-        return self._snapshot
-
-    def as_dict(self) -> dict[str, list[str]]:
-        return self._snapshot.as_dict()
-
-    def to_dict(self) -> dict[str, list[str]]:
-        return self._snapshot.as_dict()
-
-    def known_axes(self) -> dict[str, list[str]]:
-        return self._snapshot.known_axes()
-
-    def get(self, key: str, default: Optional[list[str]] = None) -> Optional[list[str]]:
-        return self._snapshot.get(key, default)
-
-    def keys(self):
-        return self._snapshot.keys()
-
-    def items(self):
-        return self._snapshot.items()
-
-    def values(self):
-        return self._snapshot.values()
-
-    def __contains__(self, key: object) -> bool:
-        return key in self._snapshot
-
-    def __iter__(self):
-        return iter(self._snapshot)
-
-    def __len__(self) -> int:
-        return len(self._snapshot)
-
-
-@dataclass(frozen=True)
-class HistorySnapshotEntry:
-    label: str
-    prompt: str = ""
-    response: str = ""
-    meta: str = ""
-    recipe: str = ""
-    axes_snapshot: HistoryAxisSnapshot = field(
-        default_factory=lambda: HistoryAxisSnapshot(AxisSnapshot({}))
-    )
-    axes: dict[str, list[str]] = field(default_factory=dict)
-    provider_id: str = ""
-    persona: dict[str, str] = field(default_factory=dict)
-    request_id: str = ""
-    path: str = ""
-    created_at: datetime.datetime | None = None
 
 
 def axis_snapshot_from_axes(axes: dict[str, list[str]] | None) -> AxisSnapshot:
@@ -120,53 +67,18 @@ def atom_from_snapshot(
     path: str = "",
     timestamp: datetime.datetime | None = None,
 ) -> HistorySnapshotEntry:
-    snapshot = axis_snapshot_from_axes(axes or {})
-    canonical_axes = {
-        key: list(values) for key, values in snapshot.known_axes().items()
-    }
-    return HistorySnapshotEntry(
+    return history_snapshot_entry_from(
         label=label,
+        axes=axes,
+        persona=persona,
         prompt=prompt,
         response=response,
         meta=meta,
         recipe=recipe,
-        axes_snapshot=HistoryAxisSnapshot(snapshot),
-        axes=canonical_axes,
         provider_id=provider_id,
-        persona=dict(persona or {}),
         request_id=request_id,
         path=path,
-        created_at=timestamp,
-    )
-
-
-def _coerce_snapshot_entry(entry: object) -> HistorySnapshotEntry:
-    if isinstance(entry, HistorySnapshotEntry):
-        return entry
-    axes_payload = getattr(entry, "axes", {}) or {}
-    snapshot = axis_snapshot_from_axes(axes_payload)
-    canonical_axes = {
-        key: list(values) for key, values in snapshot.known_axes().items()
-    }
-    persona_map = dict(getattr(entry, "persona", {}) or {})
-    label = (
-        getattr(entry, "label", "")
-        or getattr(entry, "request_id", "")
-        or "history-entry"
-    )
-    return HistorySnapshotEntry(
-        label=label,
-        prompt=(getattr(entry, "prompt", "") or ""),
-        response=(getattr(entry, "response", "") or ""),
-        meta=(getattr(entry, "meta", "") or ""),
-        recipe=(getattr(entry, "recipe", "") or ""),
-        axes_snapshot=HistoryAxisSnapshot(snapshot),
-        axes=canonical_axes,
-        provider_id=(getattr(entry, "provider_id", "") or ""),
-        persona=persona_map,
-        request_id=(getattr(entry, "request_id", "") or ""),
-        path=(getattr(entry, "path", "") or ""),
-        created_at=getattr(entry, "created_at", None),
+        timestamp=timestamp,
     )
 
 
@@ -176,7 +88,7 @@ def save_history_snapshot_to_file(
     notify_user: bool = True,
     base_dir: str | None = None,
 ) -> str:
-    snapshot_entry = _coerce_snapshot_entry(entry)
+    snapshot_entry = coerce_history_snapshot_entry(entry)
     axes_map = snapshot_entry.axes_snapshot.as_dict()
     if not axes_map:
         axes_map = {
@@ -539,8 +451,8 @@ def _save_history_prompt_to_file(
     response = getattr(entry, "response", "") or ""
     meta = getattr(entry, "meta", "") or ""
 
-    snapshot = axis_snapshot_from_axes(getattr(entry, "axes", {}) or {})
-    axes_map = {key: list(values) for key, values in snapshot.known_axes().items()}
+    snapshot_entry = coerce_history_snapshot_entry(entry)
+    axes_map = snapshot_entry.axes_snapshot.as_dict()
     dir_tokens = list(axes_map.get("directional", []) or [])
     if not dir_tokens:
         fallback_tokens = _directional_tokens_for_entry(entry)
@@ -553,13 +465,13 @@ def _save_history_prompt_to_file(
     provider_id = (getattr(entry, "provider_id", "") or "").strip()
 
     snapshot_entry = replace(
-        _coerce_snapshot_entry(entry),
+        snapshot_entry,
         prompt=prompt,
         response=response,
         meta=meta,
         recipe=recipe,
         provider_id=provider_id,
-        axes_snapshot=HistoryAxisSnapshot(AxisSnapshot(axes_map)),
+        axes_snapshot=HistoryAxisSnapshot(lifecycle_axes_snapshot_from_axes(axes_map)),
         axes=axes_map,
     )
 

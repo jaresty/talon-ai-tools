@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import datetime
+from dataclasses import dataclass, field
 from collections.abc import Mapping, Sequence
 
 from .requestLog import (
@@ -27,6 +29,114 @@ _HISTORY_AXIS_KEYS: tuple[str, ...] = (
     "channel",
     "directional",
 )
+
+
+class HistoryAxisSnapshot:
+    def __init__(self, snapshot: AxisSnapshot):
+        self._snapshot = snapshot
+
+    def as_dict(self) -> dict[str, list[str]]:
+        return self._snapshot.as_dict()
+
+    def to_dict(self) -> dict[str, list[str]]:
+        return self._snapshot.as_dict()
+
+    def known_axes(self) -> dict[str, list[str]]:
+        return self._snapshot.known_axes()
+
+    def get(self, key: str, default: list[str] | None = None) -> list[str] | None:
+        return self._snapshot.get(key, default)
+
+    def __contains__(self, key: object) -> bool:
+        return key in self._snapshot
+
+    def __iter__(self):
+        return iter(self._snapshot)
+
+    def __len__(self) -> int:
+        return len(self._snapshot)
+
+
+@dataclass(frozen=True)
+class HistorySnapshotEntry:
+    label: str
+    prompt: str = ""
+    response: str = ""
+    meta: str = ""
+    recipe: str = ""
+    axes_snapshot: HistoryAxisSnapshot = field(
+        default_factory=lambda: HistoryAxisSnapshot(AxisSnapshot({}))
+    )
+    axes: dict[str, list[str]] = field(default_factory=dict)
+    provider_id: str = ""
+    persona: dict[str, str] = field(default_factory=dict)
+    request_id: str = ""
+    path: str = ""
+    created_at: datetime.datetime | None = None
+
+
+def history_snapshot_entry_from(
+    *,
+    label: str,
+    axes: Mapping[str, Sequence[str]] | None,
+    persona: Mapping[str, str] | None = None,
+    prompt: str = "",
+    response: str = "",
+    meta: str = "",
+    recipe: str = "",
+    provider_id: str = "",
+    request_id: str = "",
+    path: str = "",
+    timestamp: datetime.datetime | None = None,
+) -> HistorySnapshotEntry:
+    snapshot = axes_snapshot_from_axes(axes)
+    canonical_axes = {
+        key: list(values) for key, values in snapshot.known_axes().items()
+    }
+    return HistorySnapshotEntry(
+        label=label,
+        prompt=prompt,
+        response=response,
+        meta=meta,
+        recipe=recipe,
+        axes_snapshot=HistoryAxisSnapshot(snapshot),
+        axes=canonical_axes,
+        provider_id=provider_id,
+        persona=dict(persona or {}),
+        request_id=request_id,
+        path=path,
+        created_at=timestamp,
+    )
+
+
+def coerce_history_snapshot_entry(entry: object) -> HistorySnapshotEntry:
+    if isinstance(entry, HistorySnapshotEntry):
+        return entry
+    axes_payload = getattr(entry, "axes", {}) or {}
+    snapshot = axes_snapshot_from_axes(axes_payload)
+    canonical_axes = {
+        key: list(values) for key, values in snapshot.known_axes().items()
+    }
+    persona_map = dict(getattr(entry, "persona", {}) or {})
+    label = (
+        getattr(entry, "label", "")
+        or getattr(entry, "request_id", "")
+        or "history-entry"
+    )
+    return HistorySnapshotEntry(
+        label=label,
+        prompt=(getattr(entry, "prompt", "") or ""),
+        response=(getattr(entry, "response", "") or ""),
+        meta=(getattr(entry, "meta", "") or ""),
+        recipe=(getattr(entry, "recipe", "") or ""),
+        axes_snapshot=HistoryAxisSnapshot(snapshot),
+        axes=canonical_axes,
+        provider_id=(getattr(entry, "provider_id", "") or ""),
+        persona=persona_map,
+        request_id=(getattr(entry, "request_id", "") or ""),
+        path=(getattr(entry, "path", "") or ""),
+        created_at=getattr(entry, "created_at", None),
+    )
 
 
 def _coerce_axes_mapping(
@@ -139,8 +249,12 @@ def clear_drop_reason() -> None:
 
 
 __all__ = [
+    "HistoryAxisSnapshot",
+    "HistorySnapshotEntry",
     "axes_snapshot_from_axes",
     "history_axes_for",
+    "history_snapshot_entry_from",
+    "coerce_history_snapshot_entry",
     "record_gating_drop",
     "gating_drop_stats",
     "gating_drop_source_stats",

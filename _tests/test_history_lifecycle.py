@@ -12,19 +12,25 @@ else:
 class HistoryLifecycleTests(unittest.TestCase):
     def setUp(self) -> None:
         from talon_user.lib.historyLifecycle import (  # type: ignore
+            HistorySnapshotEntry,
             axes_snapshot_from_axes,
+            coerce_history_snapshot_entry,
             consume_gating_drop_stats,
             consume_last_drop_reason,
             consume_last_drop_reason_record,
             history_axes_for,
+            history_snapshot_entry_from,
             history_validation_stats,
             last_drop_reason,
             record_gating_drop,
             set_drop_reason,
         )
 
+        self._HistorySnapshotEntry = HistorySnapshotEntry
         self._axes_snapshot_from_axes = axes_snapshot_from_axes
         self._history_axes_for = history_axes_for
+        self._history_snapshot_entry_from = history_snapshot_entry_from
+        self._coerce_history_snapshot_entry = coerce_history_snapshot_entry
         self._consume_gating_drop_stats = consume_gating_drop_stats
         self._consume_last_drop_reason = consume_last_drop_reason
         self._consume_last_drop_reason_record = consume_last_drop_reason_record
@@ -92,6 +98,30 @@ class HistoryLifecycleTests(unittest.TestCase):
         self.assertEqual(summary.get("total"), 1)
         self.assertEqual(stats.get("gating_drop_total"), 1)
         self._consume_gating_drop_stats()
+
+    def test_history_snapshot_entry_factory(self) -> None:
+        entry = self._history_snapshot_entry_from(
+            label="demo snapshot",
+            axes={
+                "completeness": [" full "],
+                "scope": ["focus"],
+                "directional": ["fog"],
+            },
+            persona={"persona_preset": "peer_engineer_explanation"},
+            path="/tmp/demo.txt",
+        )
+        self.assertIsInstance(entry, self._HistorySnapshotEntry)
+        self.assertEqual(
+            entry.axes_snapshot.to_dict(),
+            {
+                "completeness": ["full"],
+                "scope": ["focus"],
+                "directional": ["fog"],
+            },
+        )
+        # Coercion should return the same dataclass instance.
+        coerced = self._coerce_history_snapshot_entry(entry)
+        self.assertEqual(coerced, entry)
 
     def test_drop_reason_helpers_expose_facade_contract(self) -> None:
         self._set_drop_reason("history_save_failed", "save message")

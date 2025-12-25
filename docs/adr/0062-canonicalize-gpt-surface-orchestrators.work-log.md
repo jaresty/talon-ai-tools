@@ -589,5 +589,20 @@
 - residual_risks:
   - Canvas refresh remains best-effort; evaluate overlay helper integration after lifecycle façade stabilises.
 - next_work:
-  - Behaviour: expose snapshot entry helpers via `historyLifecycle` façade — python3 -m pytest _tests/test_request_history_actions.py::RequestHistoryActionTests::test_copy_history_to_file_renders_axis_snapshot — future-shaping: centralise history snapshot factories for downstream consumers.
+  - Behaviour: expose snapshot entry helpers via `historyLifecycle` façade — python3 -m pytest _tests/test_history_lifecycle.py::HistoryLifecycleTests::test_history_snapshot_entry_factory — future-shaping: centralise history snapshot factories for downstream consumers.
+
+## 2025-12-25 – Loop 052 (kind: implementation)
+- helper_version: helper:v20251223.1
+- focus: ADR-0062 §Refactor Plan – History Lifecycle Orchestrator (share snapshot entry factory)
+- riskiest_assumption: Snapshot helpers stranded in `requestHistoryActions` would block lifecycle reuse across history consumers (probability medium, impact high on façade adoption).
+- validation_targets:
+  - python3 -m pytest _tests/test_history_lifecycle.py::HistoryLifecycleTests::test_history_snapshot_entry_factory
+- evidence:
+  - docs/adr/evidence/0062/loop-0052.md
+- rollback_plan: git restore --source=HEAD -- _tests/test_history_lifecycle.py lib/historyLifecycle.py lib/requestHistoryActions.py && python3 -m pytest _tests/test_history_lifecycle.py::HistoryLifecycleTests::test_history_snapshot_entry_factory
+- delta_summary: helper:diff-snapshot=3 files changed, 158 insertions(+), 102 deletions(-); moves history snapshot dataclasses into `historyLifecycle`, re-exposes them via the façade, and updates history actions to consume the shared helpers.
+- residual_risks:
+  - Persistence entrypoints still reside in history actions; consider façade wrappers for log exports next.
+- next_work:
+  - Behaviour: align request log persistence with shared snapshot entry — python3 -m pytest _tests/test_request_history_actions.py _tests/test_history_query.py — future-shaping: remove bespoke axis/persona plumbing from request log consumers.
 

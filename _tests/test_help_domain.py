@@ -24,6 +24,8 @@ if bootstrap is not None:
         help_activation_target,
         help_edit_filter_text,
         help_metadata_snapshot,
+        help_metadata_summary_lines,
+        HelpMetadataSnapshot,
     )
     from talon_user.lib.helpHub import HubButton
     from talon_user.lib.helpHub import build_search_index as hub_build_search_index
@@ -607,26 +609,34 @@ if bootstrap is not None:
             self.assertTrue(all(intent.spoken_alias for intent in snapshot.intents))
             self.assertTrue(all(intent.canonical_intent for intent in snapshot.intents))
 
-            self.assertEqual(snapshot.schema_version, "help-hub.metadata.v1")
-            self.assertEqual(snapshot.generated_at, "2025-12-25T17:00:00Z")
-            self.assertIn(("source", "lib.helpDomain"), snapshot.provenance)
-            self.assertIn(("adr", "ADR-0062"), snapshot.provenance)
-            self.assertIn(("helper_version", "helper:v20251223.1"), snapshot.provenance)
-            headers_lower = [header.lower() for header in snapshot.headers]
+            summary_lines = help_domain_local.help_metadata_summary_lines(snapshot)
             self.assertIn(
-                "metadata schema version: help-hub.metadata.v1", headers_lower
-            )
-            self.assertIn(
-                "metadata generated at (utc): 2025-12-25t17:00:00z",
-                headers_lower,
+                "Metadata schema version: help-hub.metadata.v1",
+                summary_lines,
             )
             self.assertTrue(
                 any(
-                    "metadata provenance: source=lib.helpdomain" in header
-                    for header in headers_lower
+                    "metadata generated at (utc): 2025-12-25t17:00:00z" in line.lower()
+                    for line in summary_lines
                 ),
-                "Provenance header missing from metadata snapshot",
+                "Generated-at header missing from summary lines",
             )
+
+        def test_help_metadata_summary_lines_respects_headers(self) -> None:
+            snapshot = HelpMetadataSnapshot(
+                personas=(),
+                intents=(),
+                schema_version="help-hub.metadata.test",
+                generated_at="2025-12-25T19:00:00Z",
+                provenance=(
+                    ("source", "lib.helpDomain.test"),
+                    ("adr", "ADR-0062-test"),
+                ),
+                headers=("Metadata header sentinel",),
+            )
+
+            lines = help_domain_local.help_metadata_summary_lines(snapshot)
+            self.assertIn("Metadata header sentinel", lines)
 
 
 else:

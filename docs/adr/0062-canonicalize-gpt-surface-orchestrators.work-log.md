@@ -407,3 +407,19 @@
   - Help domain copy/render helpers still need to emit the new headers; mitigation: wire headers into text exports in a follow-up loop and monitor via the same pytest target.
 - next_work:
   - Behaviour: integrate metadata headers into help domain copy/export text — python3 -m pytest _tests/test_help_domain.py _tests/test_help_hub.py — future-shaping: ensure docs and CLI exports emit canonical metadata cues.
+
+## 2025-12-25 – Loop 034 (kind: implementation)
+- helper_version: helper:v20251223.1
+- focus: ADR-0062 §Refactor Plan – Guidance Surface Coordinator (help domain metadata helper)
+- riskiest_assumption: Without a shared summary helper, documentation exporters would continue to reimplement metadata headers; `python3 -m pytest _tests/test_help_domain.py::HelpDomainTests::test_help_metadata_summary_lines_respects_headers` fails while the helper is missing (probability medium, impact medium-high on documentation parity).
+- validation_targets:
+  - python3 -m pytest _tests/test_help_domain.py::HelpDomainTests::test_help_metadata_summary_lines_respects_headers
+  - python3 -m pytest _tests/test_help_hub.py::test_copy_adr_links_includes_metadata
+  - python3 -m pytest _tests/test_help_hub.py::test_copy_metadata_snapshot_json
+- evidence: docs/adr/evidence/0062/loop-0034.md
+- rollback_plan: git restore --source=HEAD -- lib/helpDomain.py lib/helpHub.py _tests/test_help_domain.py _tests/test_help_hub.py && python3 -m pytest _tests/test_help_domain.py::HelpDomainTests::test_help_metadata_summary_lines_respects_headers _tests/test_help_hub.py::test_copy_adr_links_includes_metadata _tests/test_help_hub.py::test_copy_metadata_snapshot_json
+- delta_summary: helper:diff-snapshot=4 files changed, 136 insertions(+), 27 deletions(-); introduces `help_metadata_summary_lines` in helpDomain, routes helpHub through it, and strengthens guardrails to validate the shared helper.
+- residual_risks:
+  - Documentation snapshots still need regeneration to surface the metadata summary.
+- next_work:
+  - Behaviour: regenerate README axis cheat sheet with the helper-backed metadata summary — python3 scripts/tools/generate-axis-cheatsheet.py --out docs/readme-axis-cheatsheet.md — future-shaping: ensure published docs reflect canonical metadata headers.

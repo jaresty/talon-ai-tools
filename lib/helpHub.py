@@ -22,8 +22,11 @@ from .helpDomain import (
     help_activation_target,
     help_edit_filter_text,
     help_metadata_snapshot,
+    help_metadata_summary_lines,
     HelpIndexEntry,
+    HelpMetadataSnapshot,
 )
+
 from .requestGating import request_is_in_flight, try_begin_request
 from .historyLifecycle import last_drop_reason, set_drop_reason
 from .dropReasonUtils import render_drop_reason
@@ -926,7 +929,7 @@ def _on_key(evt) -> None:  # pragma: no cover - visual
 _hub_key_handler = _on_key
 
 
-def _metadata_snapshot_records() -> tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:
+def _build_metadata_snapshot() -> HelpMetadataSnapshot | None:
     metadata_entries: List[HelpIndexEntry] = []
     try:
         metadata_entries = help_index(
@@ -940,8 +943,16 @@ def _metadata_snapshot_records() -> tuple[List[Dict[str, Any]], List[Dict[str, A
         metadata_entries = []
 
     try:
-        snapshot = help_metadata_snapshot(metadata_entries)
+        return help_metadata_snapshot(metadata_entries)
     except Exception:
+        return None
+
+
+def _metadata_snapshot_records(
+    snapshot: HelpMetadataSnapshot | None = None,
+) -> tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:
+    snapshot = snapshot or _build_metadata_snapshot()
+    if snapshot is None:
         return [], []
 
     personas: List[Dict[str, Any]] = []
@@ -999,81 +1010,39 @@ def _metadata_snapshot_records() -> tuple[List[Dict[str, Any]], List[Dict[str, A
 
 
 def _metadata_snapshot_payload() -> Dict[str, Any]:
-    personas, intents = _metadata_snapshot_records()
+    snapshot = _build_metadata_snapshot()
+    personas, intents = _metadata_snapshot_records(snapshot)
+
+    schema_version = _HELP_METADATA_SCHEMA_VERSION
+    generated_at = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+    provenance = dict(_HELP_METADATA_PROVENANCE_BASE)
+
+    if snapshot is not None:
+        if getattr(snapshot, "schema_version", ""):
+            schema_version = snapshot.schema_version
+        if getattr(snapshot, "generated_at", ""):
+            generated_at = snapshot.generated_at
+        provenance_pairs = getattr(snapshot, "provenance", ()) or ()
+        if provenance_pairs:
+            provenance = {key: value for key, value in provenance_pairs}
+
     return {
         "schema": {
-            "version": _HELP_METADATA_SCHEMA_VERSION,
-            "generated_at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+            "version": schema_version,
+            "generated_at": generated_at,
         },
-        "provenance": dict(_HELP_METADATA_PROVENANCE_BASE),
+        "provenance": provenance,
         "personas": personas,
         "intents": intents,
     }
 
 
 def _metadata_snapshot_summary_lines() -> List[str]:
-    payload = _metadata_snapshot_payload()
-    schema: Dict[str, Any] = payload.get("schema", {}) or {}
-    provenance: Dict[str, Any] = payload.get("provenance", {}) or {}
-    personas: List[Dict[str, Any]] = list(payload.get("personas", []) or [])
-    intents: List[Dict[str, Any]] = list(payload.get("intents", []) or [])
+    snapshot = _build_metadata_snapshot()
+    if snapshot is None:
+        return []
 
-    lines: List[str] = []
-    header_lines: List[str] = []
-
-    version = str(schema.get("version", "")).strip()
-    if version:
-        header_lines.append(f"Metadata schema version: {version}")
-
-    generated_at = str(schema.get("generated_at", "")).strip()
-    if generated_at:
-        header_lines.append(f"Metadata generated at (UTC): {generated_at}")
-
-    provenance_parts: List[str] = []
-    source = str(provenance.get("source", "")).strip()
-    if source:
-        provenance_parts.append(f"source={source}")
-    adr = str(provenance.get("adr", "")).strip()
-    if adr:
-        provenance_parts.append(f"adr={adr}")
-    helper_version = str(provenance.get("helper_version", "")).strip()
-    if helper_version:
-        provenance_parts.append(f"helper={helper_version}")
-    if provenance_parts:
-        header_lines.append(f"Metadata provenance: {'; '.join(provenance_parts)}")
-
-    if header_lines:
-        lines.extend(header_lines)
-        if personas or intents:
-            lines.append("")
-
-    if personas:
-        lines.append("Persona metadata:")
-        for persona in personas:
-            lines.append(
-                "- persona {key} (say: persona {alias}): {label} ({summary})".format(
-                    key=persona["key"],
-                    alias=persona["spoken_alias"],
-                    label=persona["display_label"],
-                    summary=persona["axes_summary"],
-                )
-            )
-
-    if intents:
-        if personas:
-            lines.append("")
-        lines.append("Intent metadata:")
-        for intent in intents:
-            lines.append(
-                "- intent {key} (say: intent {alias}): {label} ({canonical})".format(
-                    key=intent["key"],
-                    alias=intent["spoken_alias"],
-                    label=intent["display_label"],
-                    canonical=intent["canonical_intent"],
-                )
-            )
-
-    return lines
+    return list(help_metadata_summary_lines(snapshot))
 
 
 def _metadata_snapshot_json() -> str:

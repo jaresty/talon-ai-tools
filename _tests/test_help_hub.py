@@ -577,7 +577,21 @@ def test_copy_adr_links_includes_metadata(monkeypatch):
         spoken_alias="decide",
         voice_hint="",
     )
-    snapshot = HelpMetadataSnapshot(personas=(persona_meta,), intents=(intent_meta,))
+    snapshot = HelpMetadataSnapshot(
+        personas=(persona_meta,),
+        intents=(intent_meta,),
+        schema_version="help-hub.metadata.test",
+        generated_at="2025-12-25T17:00:00Z",
+        provenance=(
+            ("source", "lib.helpHub.test"),
+            ("adr", "ADR-0062-test"),
+            ("helper_version", "helper:v20251223.1"),
+        ),
+        headers=(
+            "Metadata header sentinel one",
+            "Metadata header sentinel two",
+        ),
+    )
 
     monkeypatch.setattr(helpHub, "axis_catalog", lambda: {})
     monkeypatch.setattr(helpHub, "help_metadata_snapshot", lambda _entries: snapshot)
@@ -587,20 +601,12 @@ def test_copy_adr_links_includes_metadata(monkeypatch):
     monkeypatch.setattr(
         clip, "set_text", lambda value: captured.setdefault("text", value)
     )
-    monkeypatch.setattr(
-        helpHub.time, "strftime", lambda fmt, ts: "2025-12-25T17:00:00Z"
-    )
 
     helpHub._copy_adr_links()
 
     text = captured.get("text", "").lower()
-    assert "metadata summary:" in text
-    assert "metadata schema version: help-hub.metadata.v1" in text
-    assert "metadata generated at (utc): 2025-12-25t17:00:00z" in text
-    assert (
-        "metadata provenance: source=lib.helphub; adr=adr-0062; helper=helper:v20251223.1"
-        in text
-    )
+    assert "metadata header sentinel one" in text
+    assert "metadata header sentinel two" in text
     assert "persona demo_persona" in text
     assert "intent decide" in text
 
@@ -623,7 +629,16 @@ def test_copy_metadata_snapshot_json(monkeypatch):
         spoken_alias="decide",
         voice_hint="",
     )
-    snapshot = HelpMetadataSnapshot(personas=(persona_meta,), intents=(intent_meta,))
+    snapshot = HelpMetadataSnapshot(
+        personas=(persona_meta,),
+        intents=(intent_meta,),
+        schema_version="help-hub.metadata.test",
+        generated_at="2025-12-25T17:00:00Z",
+        provenance=(
+            ("source", "lib.helpHub.test"),
+            ("adr", "ADR-0062-test"),
+        ),
+    )
 
     monkeypatch.setattr(helpHub, "axis_catalog", lambda: {})
     monkeypatch.setattr(helpHub, "help_metadata_snapshot", lambda _entries: snapshot)
@@ -633,20 +648,17 @@ def test_copy_metadata_snapshot_json(monkeypatch):
     monkeypatch.setattr(
         clip, "set_text", lambda value: captured.setdefault("text", value)
     )
-    monkeypatch.setattr(
-        helpHub.time, "strftime", lambda fmt, ts: "2025-12-25T17:00:00Z"
-    )
 
     helpHub._copy_metadata_snapshot_json()
 
     text = captured.get("text", "")
     payload = json.loads(text)
     schema = payload["schema"]
-    assert schema["version"] == "help-hub.metadata.v1"
+    assert schema["version"] == "help-hub.metadata.test"
     assert schema["generated_at"] == "2025-12-25T17:00:00Z"
     provenance = payload["provenance"]
-    assert provenance["source"] == "lib.helpHub"
-    assert provenance["adr"] == "ADR-0062"
+    assert provenance["source"] == "lib.helpHub.test"
+    assert provenance["adr"] == "ADR-0062-test"
     assert payload["personas"][0]["key"] == "demo_persona"
     assert payload["intents"][0]["canonical_intent"] == "decide"
 

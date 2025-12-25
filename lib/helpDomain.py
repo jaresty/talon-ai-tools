@@ -586,6 +586,62 @@ def help_metadata_snapshot(entries: Sequence[HelpIndexEntry]) -> HelpMetadataSna
     )
 
 
+def help_metadata_summary_lines(snapshot: HelpMetadataSnapshot) -> List[str]:
+    """Return canonical metadata summary lines for documentation exports."""
+
+    lines: List[str] = []
+
+    headers = [str(header).strip() for header in getattr(snapshot, "headers", ()) or ()]
+    if headers:
+        lines.extend([header for header in headers if header])
+        if snapshot.personas or snapshot.intents:
+            lines.append("")
+
+    if snapshot.personas:
+        lines.append("Persona metadata:")
+        for persona in snapshot.personas:
+            key = (persona.key or "").strip()
+            if not key:
+                continue
+            display_label = (persona.display_label or key).strip() or key
+            spoken_alias = (
+                persona.spoken_alias or persona.spoken_display or key
+            ).strip()
+            axes_summary = (
+                persona.axes_summary or "No explicit axes"
+            ).strip() or "No explicit axes"
+            lines.append(
+                "- persona {key} (say: persona {alias}): {label} ({summary})".format(
+                    key=key,
+                    alias=spoken_alias,
+                    label=display_label,
+                    summary=axes_summary,
+                )
+            )
+
+    if snapshot.intents:
+        if snapshot.personas:
+            lines.append("")
+        lines.append("Intent metadata:")
+        for intent in snapshot.intents:
+            key = (intent.key or "").strip()
+            if not key:
+                continue
+            display_label = (intent.display_label or key).strip() or key
+            spoken_alias = (intent.spoken_alias or intent.spoken_display or key).strip()
+            canonical_intent = (intent.canonical_intent or key).strip() or key
+            lines.append(
+                "- intent {key} (say: intent {alias}): {label} ({canonical})".format(
+                    key=key,
+                    alias=spoken_alias,
+                    label=display_label,
+                    canonical=canonical_intent,
+                )
+            )
+
+    return lines
+
+
 def help_search(query: str, index: Sequence[Any]) -> List[Any]:
     """HelpDomain façade: derive search results from a query and index.
 

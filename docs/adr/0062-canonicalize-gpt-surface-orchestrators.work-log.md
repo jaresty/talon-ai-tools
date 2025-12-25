@@ -638,3 +638,19 @@
 - next_work:
   - Behaviour: audit telemetry/export flows for lifecycle façade adoption — python3 -m pytest _tests/test_history_lifecycle.py _tests/test_history_query.py — future-shaping: ensure all history surfaces share the same snapshot normalisation.
 
+## 2025-12-25 – Loop 055 (kind: implementation)
+- helper_version: helper:v20251223.1
+- focus: ADR-0062 §Refactor Plan – History Lifecycle Orchestrator (update telemetry validation to reuse lifecycle snapshot)
+- riskiest_assumption: Telemetry exports scanning raw request log entries would miss lifecycle normalisation, causing Concordance drift (probability medium, impact medium-high on guardrail accuracy).
+- validation_targets:
+  - python3 -m pytest _tests/test_history_lifecycle.py
+  - python3 -m pytest _tests/test_telemetry_export.py
+- evidence:
+  - docs/adr/evidence/0062/loop-0055.md
+- rollback_plan: git restore --source=HEAD -- lib/requestLog.py && python3 -m pytest _tests/test_telemetry_export.py
+- delta_summary: helper:diff-snapshot=1 file changed, 16 insertions(+), 21 deletions(-); request log validation now normalises entries via the lifecycle snapshot helper before producing telemetry outputs.
+- residual_risks:
+  - Downstream telemetry consumers may still expect legacy field shapes; coordinate documentation updates and follow-up testing in future loops.
+- next_work:
+  - Behaviour: tidy remaining persona validation helpers and document façade usage — python3 -m pytest _tests/test_history_query.py — future-shaping: ensure developer docs reflect lifecycle-only entry points.
+

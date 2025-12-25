@@ -659,6 +659,7 @@ def render_drop_reason(reason: RequestDropReason) -> str:
 
 
 def _scan_history_entries(raise_on_failure: bool) -> dict[str, int]:
+    from .historyLifecycle import coerce_history_snapshot_entry
     from .requestHistoryActions import _persona_header_lines, _parse_summary_line
 
     stats = {
@@ -696,24 +697,6 @@ def _scan_history_entries(raise_on_failure: bool) -> dict[str, int]:
             except Exception:
                 axes = {}
 
-        directional = axes.get("directional")
-        if isinstance(directional, list):
-            directional_tokens = [
-                str(token).strip() for token in directional if str(token).strip()
-            ]
-        elif directional:
-            directional_tokens = [str(directional).strip()]
-        else:
-            directional_tokens = []
-
-        if not directional_tokens:
-            stats["entries_missing_directional"] += 1
-            if raise_on_failure:
-                request_id = entry.request_id or "?"
-                raise ValueError(
-                    f"History entry {request_id!r} is missing a directional lens; Concordance requires one."
-                )
-
         unknown = sorted(key for key in axes.keys() if key not in KNOWN_AXIS_KEYS)
         if unknown:
             stats["entries_with_unsupported_axes"] += 1
@@ -724,11 +707,23 @@ def _scan_history_entries(raise_on_failure: bool) -> dict[str, int]:
                     f"History entry {request_id!r} includes unsupported axis keys: {keys}"
                 )
 
-        persona_snapshot = getattr(entry, "persona", {}) or {}
+        normalized_entry = coerce_history_snapshot_entry(entry)
+        axes = normalized_entry.axes or {}
+
+        directional_tokens = axes.get("directional", []) or []
+        if not directional_tokens:
+            stats["entries_missing_directional"] += 1
+            if raise_on_failure:
+                request_id = normalized_entry.request_id or entry.request_id or "?"
+                raise ValueError(
+                    f"History entry {request_id!r} is missing a directional lens; Concordance requires one."
+                )
+
+        persona_snapshot = normalized_entry.persona or {}
         if persona_snapshot:
             stats["entries_with_persona_snapshot"] += 1
-            persona_lines = _persona_header_lines(entry)
-            request_id = entry.request_id or "?"
+            persona_lines = _persona_header_lines(normalized_entry)
+            request_id = normalized_entry.request_id or entry.request_id or "?"
             if not persona_lines:
                 stats["entries_missing_persona_headers"] += 1
                 if raise_on_failure:

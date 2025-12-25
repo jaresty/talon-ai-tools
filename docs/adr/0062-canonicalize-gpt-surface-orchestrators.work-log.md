@@ -180,6 +180,20 @@
 - next_work:
   - Behaviour: migrate streaming coordinator drop messaging — python3 -m pytest _tests/test_streaming_coordinator.py — future-shaping: ensure telemetry consumers rely on lifecycle drop helpers.
 
+## 2025-12-25 – Loop 016 (kind: implementation)
+- helper_version: helper:v20251223.1
+- focus: ADR-0062 §Refactor Plan – History Lifecycle Orchestrator (axis generators)
+- riskiest_assumption: Axis cheat sheet/README generators still used `requestLog.axis_snapshot_from_axes`; `python3 -m pytest _tests/test_generate_axis_cheatsheet.py _tests/test_generate_readme_axis_lists.py` now fails until lifecycle helpers are adopted (probability medium, impact medium on Concordance scope/documentation).
+- validation_targets:
+  - python3 -m pytest _tests/test_generate_axis_cheatsheet.py _tests/test_generate_readme_axis_lists.py
+- evidence: docs/adr/evidence/0062/loop-0016.md
+- rollback_plan: git stash push -- scripts/tools/generate-axis-cheatsheet.py scripts/tools/generate_readme_axis_lists.py && python3 -m pytest _tests/test_generate_axis_cheatsheet.py::GenerateAxisCheatSheetTests::test_generate_axis_cheatsheet_uses_lifecycle_snapshot _tests/test_generate_readme_axis_lists.py::GenerateReadmeAxisListsTests::test_axis_lines_use_lifecycle_snapshot && git stash pop
+- delta_summary: helper:diff-snapshot=4 files changed, 43 insertions(+), 6 deletions(-); axis generators import lifecycle snapshots and guardrails enforce the façade.
+- residual_risks:
+  - Remaining docs/scripts may still reach into `requestLog` for axis normalization; next loop targets README generators in GPT docs.
+- next_work:
+  - Behaviour: update GPT README/token scripts — python3 -m pytest _tests/test_generate_readme_axis_lists.py tests/test_gpt_readme_axis_lists.py — future-shaping: ensure doc tooling consistently uses lifecycle axis helpers.
+
 ## 2025-12-25 – Loop 013 (kind: implementation)
 
 - helper_version: helper:v20251223.1

@@ -31,6 +31,16 @@ if bootstrap is not None:
                     f"Rendered tokens for {axis} did not match catalog",
                 )
 
+        def test_axis_lines_use_lifecycle_snapshot(self) -> None:
+            import talon_user.lib.historyLifecycle as history_lifecycle
+            from scripts.tools import generate_readme_axis_lists as module
+
+            self.assertIs(
+                getattr(module, "axis_snapshot_from_axes"),
+                history_lifecycle.axes_snapshot_from_axes,
+                "README axis list generator should reuse lifecycle axis snapshots",
+            )
+
         def test_lists_dir_merges_tokens(self) -> None:
             with tempfile.TemporaryDirectory() as tmpdir:
                 lists_dir = Path(tmpdir)

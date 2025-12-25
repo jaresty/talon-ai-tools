@@ -22,7 +22,9 @@ else:
     bootstrap()
 
 from talon_user.lib.axisCatalog import axis_catalog  # noqa: E402
-from talon_user.lib.requestLog import axis_snapshot_from_axes  # noqa: E402
+from talon_user.lib.historyLifecycle import axes_snapshot_from_axes  # noqa: E402
+
+axis_snapshot_from_axes = axes_snapshot_from_axes
 
 
 def _canonical_axis_tokens(
@@ -33,7 +35,7 @@ def _canonical_axis_tokens(
     token_candidates.extend((axis_tokens.get(axis) or {}).keys())
     seen: set[str] = set()
     for token in token_candidates:
-        snapshot = axis_snapshot_from_axes({axis: [token]})
+        snapshot = axes_snapshot_from_axes({axis: [token]})
         canonical = snapshot.get(axis, []) or []
         if canonical:
             for value in canonical:

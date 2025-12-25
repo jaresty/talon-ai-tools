@@ -48,7 +48,7 @@ if not TYPE_CHECKING:
                 / "generate-axis-cheatsheet.py"
             )
             from talon_user.lib.axisCatalog import axis_catalog
-            from talon_user.lib.requestLog import axis_snapshot_from_axes
+            from talon_user.lib.historyLifecycle import axes_snapshot_from_axes
 
             catalog = axis_catalog()
             axes = catalog.get("axes", {}) or {}
@@ -60,7 +60,7 @@ if not TYPE_CHECKING:
                 token_candidates.extend((axes.get(axis) or {}).keys())
                 seen: set[str] = set()
                 for token in token_candidates:
-                    snapshot = axis_snapshot_from_axes({axis: [token]})
+                    snapshot = axes_snapshot_from_axes({axis: [token]})
                     canonical = snapshot.get(axis, []) or []
                     if canonical:
                         for value in canonical:
@@ -111,3 +111,26 @@ if not TYPE_CHECKING:
                         expected_tokens(axis),
                         f"Cheat sheet tokens for {axis} differ from canonical snapshot",
                     )
+
+        def test_generate_axis_cheatsheet_uses_lifecycle_snapshot(self) -> None:
+            import importlib.util
+            from talon_user.lib.historyLifecycle import axes_snapshot_from_axes
+
+            script_path = (
+                Path(__file__).resolve().parents[1]
+                / "scripts"
+                / "tools"
+                / "generate-axis-cheatsheet.py"
+            )
+            spec = importlib.util.spec_from_file_location(
+                "generate_axis_cheatsheet", script_path
+            )
+            assert spec and spec.loader
+            module = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(module)  # type: ignore[arg-type]
+
+            self.assertIs(
+                getattr(module, "axis_snapshot_from_axes"),
+                axes_snapshot_from_axes,
+                "Cheat sheet generator should reuse lifecycle axis snapshots",
+            )

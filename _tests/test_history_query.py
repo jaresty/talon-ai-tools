@@ -42,18 +42,14 @@ if bootstrap is not None:
             snapshot = axis_snapshot_from_axes(axes)
             self.assertEqual(snapshot.known_axes(), direct)
 
-        def test_history_axes_for_delegates_to_actions_helper(self) -> None:
-            axes = {
-                "completeness": ["full", "Important: Hydrated completeness"],
-                "scope": ["bound", "Invalid scope"],
-                "method": ["rigor", "Unknown method"],
-                "form": ["plain", "Hydrated style"],
-                "channel": ["slack", "Hydrated channel"],
-            }
+        def test_history_axes_for_reuses_lifecycle_helper(self) -> None:
+            import talon_user.lib.historyLifecycle as history_lifecycle
+            import talon_user.lib.historyQuery as history_query_module
 
-            direct = actions_axes_for(axes)
-            via_facade = history_axes_for(axes)
-            self.assertEqual(via_facade, direct)
+            self.assertIs(
+                history_query_module._history_axes_for_impl,
+                history_lifecycle.history_axes_for,
+            )
 
         def test_history_summary_lines_delegates_to_actions_helper(self) -> None:
             class DummyEntry:

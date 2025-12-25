@@ -62,6 +62,15 @@ if bootstrap is not None:
 
             actions.user.model_response_canvas_open = _open_canvas  # type: ignore[attr-defined]
 
+        def test_history_axes_for_delegates_to_lifecycle(self) -> None:
+            with patch(
+                "talon_user.lib.requestHistoryActions.lifecycle_history_axes_for",
+                return_value={"directional": ["fog"]},
+            ) as lifecycle_history_axes_for:
+                result = history_axes_for({"directional": ["fog"]})
+            lifecycle_history_axes_for.assert_called_once_with({"directional": ["fog"]})
+            self.assertEqual(result, {"directional": ["fog"]})
+
         def _append_raw_entry(
             self,
             request_id: str,

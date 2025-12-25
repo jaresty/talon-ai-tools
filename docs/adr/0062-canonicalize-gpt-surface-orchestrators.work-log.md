@@ -81,3 +81,17 @@
   - History drawer/actions still duplicate drop-reason notifications and history saves lack lifecycle orchestration. Mitigation: Loop 007 will migrate history drawers/actions to the lifecycle façade.
 - next_work:
   - Behaviour: Migrate history drawer/actions to `historyLifecycle` façade — python3 -m pytest _tests/test_request_history_drawer_gating.py _tests/test_request_history_actions.py — future-shaping: expose lifecycle entry point before unifying request log saves.
+
+## 2025-12-25 – Loop 007 (kind: implementation)
+- helper_version: helper:v20251223.1
+- focus: ADR-0062 §Refactor Plan – History Lifecycle Orchestrator (migrate actions/drawer to façade)
+- riskiest_assumption: History actions/query still rely on local axis filters; `_tests/test_history_query.py` and `_tests/test_request_history_actions.py` fail when expecting lifecycle delegation (probability medium, impact medium-high on Concordance scope/visibility).
+- validation_targets:
+  - python3 -m pytest _tests/test_history_lifecycle.py _tests/test_history_query.py _tests/test_request_history_actions.py _tests/test_request_history_drawer_gating.py
+- evidence: docs/adr/evidence/0062/loop-0007.md
+- rollback_plan: git stash push -- lib/historyQuery.py lib/requestHistoryActions.py && python3 -m pytest _tests/test_history_query.py _tests/test_request_history_actions.py && git stash pop
+- delta_summary: helper:diff-snapshot=4 files changed, 82 insertions(+), 24 deletions(-); history actions/query now delegate to `historyLifecycle`, with dedicated lifecycle tests and updated guardrail coverage.
+- residual_risks:
+  - History log save helpers still handle persona/drop-reason flows inline; Loop 008 will instrument and document lifecycle responsibilities before refactoring saves.
+- next_work:
+  - Behaviour: instrument history log + docs — python3 -m pytest _tests/test_history_lifecycle.py _tests/test_history_query.py _tests/test_request_history_actions.py — future-shaping: document lifecycle responsibilities and wire telemetry for lifecycle stats before orchestrator integration.

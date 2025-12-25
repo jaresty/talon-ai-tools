@@ -545,3 +545,19 @@
 - summary: Highlighted pending history lifecycle façade work and characterization tests as next priorities.
 - next_work:
   - Behaviour: implement history lifecycle façade in future loops.
+
+## 2025-12-25 – Loop 049 (kind: implementation)
+- helper_version: helper:v20251223.1
+- focus: ADR-0062 §Refactor Plan – History Lifecycle Orchestrator (expose snapshot helpers for history saves)
+- riskiest_assumption: Without façade-friendly helpers, history saves cannot emit canonical axis snapshots; tests fail while history actions depend on bespoke requestLog helpers (probability medium, impact high on lifecycle façade adoption).
+- validation_targets:
+  - python3 -m pytest _tests/test_request_history_actions.py::RequestHistoryActionTests::test_copy_history_to_file_renders_axis_snapshot
+- evidence:
+  - docs/adr/evidence/0062/loop-0049.md
+- rollback_plan: git restore --source=HEAD -- lib/requestHistoryActions.py && python3 -m pytest _tests/test_request_history_actions.py::RequestHistoryActionTests::test_copy_history_to_file_renders_axis_snapshot
+- delta_summary: helper:diff-snapshot=1 file changed, 201 insertions(+), 13 deletions(-); adds `HistorySnapshotEntry`, `atom_from_snapshot`, and a persistence wrapper so `copy_history_to_file` exercises the lifecycle façade during history saves.
+- residual_risks:
+  - History drawers still rely on bespoke refresh helpers; integrate them with the façade next.
+- next_work:
+  - Behaviour: implement history drawer refresh façade — python3 -m pytest _tests/test_request_history_drawer_gating.py — future-shaping: reuse lifecycle refresh hooks instead of bespoke drawer logic.
+

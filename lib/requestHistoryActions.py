@@ -1,5 +1,6 @@
 import datetime
 import os
+from dataclasses import dataclass, field, replace
 from typing import Optional
 
 from talon import Module, actions, app, settings
@@ -7,7 +8,7 @@ from talon import Module, actions, app, settings
 from .modelDestination import (
     HistorySaveError,
     resolve_model_source_directory,
-    save_history_snapshot_to_file,
+    save_history_snapshot_to_file as _persist_history_snapshot_to_file,
     slugify_label,
 )
 from .modelConfirmationGUI import ConfirmationGUIState
@@ -42,10 +43,169 @@ mod = Module()
 _cursor_offset = 0
 
 
+class HistoryAxisSnapshot:
+    def __init__(self, snapshot: AxisSnapshot):
+        self._snapshot = snapshot
+
+    @property
+    def snapshot(self) -> AxisSnapshot:
+        return self._snapshot
+
+    def as_dict(self) -> dict[str, list[str]]:
+        return self._snapshot.as_dict()
+
+    def to_dict(self) -> dict[str, list[str]]:
+        return self._snapshot.as_dict()
+
+    def known_axes(self) -> dict[str, list[str]]:
+        return self._snapshot.known_axes()
+
+    def get(self, key: str, default: Optional[list[str]] = None) -> Optional[list[str]]:
+        return self._snapshot.get(key, default)
+
+    def keys(self):
+        return self._snapshot.keys()
+
+    def items(self):
+        return self._snapshot.items()
+
+    def values(self):
+        return self._snapshot.values()
+
+    def __contains__(self, key: object) -> bool:
+        return key in self._snapshot
+
+    def __iter__(self):
+        return iter(self._snapshot)
+
+    def __len__(self) -> int:
+        return len(self._snapshot)
+
+
+@dataclass(frozen=True)
+class HistorySnapshotEntry:
+    label: str
+    prompt: str = ""
+    response: str = ""
+    meta: str = ""
+    recipe: str = ""
+    axes_snapshot: HistoryAxisSnapshot = field(
+        default_factory=lambda: HistoryAxisSnapshot(AxisSnapshot({}))
+    )
+    axes: dict[str, list[str]] = field(default_factory=dict)
+    provider_id: str = ""
+    persona: dict[str, str] = field(default_factory=dict)
+    request_id: str = ""
+    path: str = ""
+    created_at: datetime.datetime | None = None
+
+
 def axis_snapshot_from_axes(axes: dict[str, list[str]] | None) -> AxisSnapshot:
     """Return the shared history AxisSnapshot."""
 
     return lifecycle_axes_snapshot_from_axes(axes)
+
+
+def atom_from_snapshot(
+    *,
+    label: str,
+    axes: dict[str, list[str]] | None,
+    persona: dict[str, str] | None = None,
+    prompt: str = "",
+    response: str = "",
+    meta: str = "",
+    recipe: str = "",
+    provider_id: str = "",
+    request_id: str = "",
+    path: str = "",
+    timestamp: datetime.datetime | None = None,
+) -> HistorySnapshotEntry:
+    snapshot = axis_snapshot_from_axes(axes or {})
+    canonical_axes = {
+        key: list(values) for key, values in snapshot.known_axes().items()
+    }
+    return HistorySnapshotEntry(
+        label=label,
+        prompt=prompt,
+        response=response,
+        meta=meta,
+        recipe=recipe,
+        axes_snapshot=HistoryAxisSnapshot(snapshot),
+        axes=canonical_axes,
+        provider_id=provider_id,
+        persona=dict(persona or {}),
+        request_id=request_id,
+        path=path,
+        created_at=timestamp,
+    )
+
+
+def _coerce_snapshot_entry(entry: object) -> HistorySnapshotEntry:
+    if isinstance(entry, HistorySnapshotEntry):
+        return entry
+    axes_payload = getattr(entry, "axes", {}) or {}
+    snapshot = axis_snapshot_from_axes(axes_payload)
+    canonical_axes = {
+        key: list(values) for key, values in snapshot.known_axes().items()
+    }
+    persona_map = dict(getattr(entry, "persona", {}) or {})
+    label = (
+        getattr(entry, "label", "")
+        or getattr(entry, "request_id", "")
+        or "history-entry"
+    )
+    return HistorySnapshotEntry(
+        label=label,
+        prompt=(getattr(entry, "prompt", "") or ""),
+        response=(getattr(entry, "response", "") or ""),
+        meta=(getattr(entry, "meta", "") or ""),
+        recipe=(getattr(entry, "recipe", "") or ""),
+        axes_snapshot=HistoryAxisSnapshot(snapshot),
+        axes=canonical_axes,
+        provider_id=(getattr(entry, "provider_id", "") or ""),
+        persona=persona_map,
+        request_id=(getattr(entry, "request_id", "") or ""),
+        path=(getattr(entry, "path", "") or ""),
+        created_at=getattr(entry, "created_at", None),
+    )
+
+
+def save_history_snapshot_to_file(
+    entry: HistorySnapshotEntry | object,
+    *,
+    notify_user: bool = True,
+    base_dir: str | None = None,
+) -> str:
+    snapshot_entry = _coerce_snapshot_entry(entry)
+    axes_map = snapshot_entry.axes_snapshot.as_dict()
+    if not axes_map:
+        axes_map = {
+            key: list(values)
+            for key, values in snapshot_entry.axes_snapshot.known_axes().items()
+        }
+    directional_tokens = snapshot_entry.axes_snapshot.get("directional", []) or (
+        _directional_tokens_for_entry(snapshot_entry)
+    )
+    persona_lines = _persona_header_lines(snapshot_entry)
+    path = _persist_history_snapshot_to_file(
+        request_id=snapshot_entry.request_id or snapshot_entry.label,
+        provider_id=snapshot_entry.provider_id,
+        recipe=snapshot_entry.recipe,
+        prompt=snapshot_entry.prompt,
+        response=snapshot_entry.response,
+        meta=snapshot_entry.meta,
+        axes_map=axes_map,
+        directional_tokens=directional_tokens,
+        persona_header_lines=persona_lines,
+        timestamp=snapshot_entry.created_at,
+        base_dir=base_dir,
+    )
+    if notify_user:
+        try:
+            actions.user.notify_hist_copy_saved(path)  # type: ignore[attr-defined]
+        except Exception:
+            notify(f"GPT: Saved history to {path}")
+    return path
 
 
 def _request_is_in_flight() -> bool:
@@ -330,7 +490,12 @@ def history_summary_lines(entries: Sequence[object]) -> list[str]:
     return lines
 
 
-def _save_history_prompt_to_file(entry) -> Optional[str]:
+def _save_history_prompt_to_file(
+    entry,
+    *,
+    notify_user: bool = True,
+    base_dir: str | None = None,
+) -> Optional[str]:
     """Save the given history entry's prompt/response to a markdown file and return the path."""
 
     _clear_notify_suppression()
@@ -384,21 +549,27 @@ def _save_history_prompt_to_file(entry) -> Optional[str]:
             axes_map["directional"] = canonical
             dir_tokens = list(canonical)
 
-    persona_lines = _persona_header_lines(entry)
     recipe = (getattr(entry, "recipe", "") or "").strip()
     provider_id = (getattr(entry, "provider_id", "") or "").strip()
 
+    snapshot_entry = replace(
+        _coerce_snapshot_entry(entry),
+        prompt=prompt,
+        response=response,
+        meta=meta,
+        recipe=recipe,
+        provider_id=provider_id,
+        axes_snapshot=HistoryAxisSnapshot(AxisSnapshot(axes_map)),
+        axes=axes_map,
+    )
+
+    kwargs = {"notify_user": False}
+    if base_dir is not None:
+        kwargs["base_dir"] = base_dir
     try:
         path = save_history_snapshot_to_file(
-            request_id=request_id,
-            provider_id=provider_id,
-            recipe=recipe,
-            prompt=prompt,
-            response=response,
-            meta=meta,
-            axes_map=axes_map,
-            directional_tokens=dir_tokens,
-            persona_header_lines=persona_lines,
+            snapshot_entry,
+            **kwargs,
         )
     except HistorySaveError as exc:
         message = exc.message
@@ -414,7 +585,8 @@ def _save_history_prompt_to_file(entry) -> Optional[str]:
         _record_history_save_event(success=False, error=message)
         return None
 
-    notify(f"GPT: Saved history to {path}")
+    if notify_user:
+        notify(f"GPT: Saved history to {path}")
     try:
         GPTState.last_history_save_path = path  # type: ignore[attr-defined]
     except Exception:
@@ -427,6 +599,22 @@ def _save_history_prompt_to_file(entry) -> Optional[str]:
     _record_history_save_event(success=True, path=path)
 
     return path
+
+
+def copy_history_to_file(
+    *, notify_user: bool = True, base_dir: str | None = None
+) -> Optional[str]:
+    """Persist the latest history entry to disk and return the saved path."""
+
+    _clear_notify_suppression()
+    if _reject_if_request_in_flight():
+        return None
+    entry = latest()
+    return _save_history_prompt_to_file(
+        entry,
+        notify_user=notify_user,
+        base_dir=base_dir,
+    )
 
 
 def _directional_tokens_for_entry(entry) -> list[str]:

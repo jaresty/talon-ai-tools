@@ -1,5 +1,8 @@
 import unittest
+from contextlib import ExitStack
+from types import SimpleNamespace
 from typing import TYPE_CHECKING
+from unittest.mock import patch
 
 try:
     from bootstrap import bootstrap
@@ -22,6 +25,72 @@ if bootstrap is not None:
     from talon_user.lib.helpHub import build_search_index as hub_build_search_index
 
     class HelpDomainTests(unittest.TestCase):
+        def test_help_index_uses_persona_orchestrator(self) -> None:
+            persona_preset = SimpleNamespace(
+                key="mentor",
+                label="Mentor",
+                spoken="mentor spoken",
+                voice="as teacher",
+                audience="to programmer",
+                tone="kindly",
+            )
+            intent_preset = SimpleNamespace(
+                key="understand",
+                label="Understand",
+                intent="understand",
+            )
+            orchestrator = SimpleNamespace(
+                persona_presets={"mentor": persona_preset},
+                intent_presets={"understand": intent_preset},
+                intent_display_map={"understand": "Understand display"},
+                persona_aliases={"mentor": "mentor"},
+                intent_aliases={"understand": "understand"},
+                intent_synonyms={"understand": "understand"},
+                canonical_persona_key=lambda alias: "mentor" if alias else "",
+                canonical_intent_key=lambda alias: "understand" if alias else "",
+                canonical_axis_token=lambda axis, alias: {
+                    "voice": "as teacher",
+                    "audience": "to programmer",
+                    "tone": "kindly",
+                }.get(axis, alias),
+            )
+
+            def read_list_items(_: str):
+                return []
+
+            with ExitStack() as stack:
+                stack.enter_context(
+                    patch(
+                        "talon_user.lib.helpDomain.get_persona_intent_orchestrator",
+                        return_value=orchestrator,
+                    )
+                )
+                stack.enter_context(
+                    patch(
+                        "lib.helpDomain.get_persona_intent_orchestrator",
+                        return_value=orchestrator,
+                    )
+                )
+                stack.enter_context(
+                    patch(
+                        "talon_user.lib.helpDomain.persona_intent_maps",
+                        side_effect=RuntimeError("maps unavailable"),
+                    )
+                )
+                stack.enter_context(
+                    patch(
+                        "lib.helpDomain.persona_intent_maps",
+                        side_effect=RuntimeError("maps unavailable"),
+                    )
+                )
+                entries = help_index([], [], [], read_list_items, catalog=None)
+
+            labels = {entry.label for entry in entries}
+            self.assertIn("Persona preset: Mentor (say: persona mentor spoken)", labels)
+            self.assertIn(
+                "Intent preset: Understand display (say: intent understand)", labels
+            )
+
         def test_help_focusable_items_matches_help_hub_semantics(self) -> None:
             buttons = [
                 HubButton(

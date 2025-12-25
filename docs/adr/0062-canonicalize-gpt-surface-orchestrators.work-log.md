@@ -295,3 +295,17 @@
   - Future work may expose lifecycle helpers for additional drop metadata (e.g., source summaries) to simplify streaming coordinator integrations.
 - next_work:
   - Behaviour: audit remaining direct `requestLog` imports for drop messaging — python3 -m pytest _tests/test_streaming_coordinator.py — future-shaping: ensure streaming coordinator also consumes lifecycle helpers before refactoring telemetry outputs.
+
+## 2025-12-25 – Loop 023 (kind: implementation)
+- helper_version: helper:v20251223.1
+- focus: ADR-0062 §Refactor Plan – Guidance Surface Coordinator (help domain persona/intent orchestration)
+- riskiest_assumption: Help domain would keep hydrating persona/intent entries from `persona_intent_maps`, so `_tests/test_help_domain.py::HelpDomainTests::test_help_index_uses_persona_orchestrator` fails to prove orchestrator reuse (probability medium, impact medium-high on Concordance visibility/search parity).
+- validation_targets:
+  - python3 -m pytest _tests/test_help_domain.py
+- evidence: docs/adr/evidence/0062/loop-0023.md
+- rollback_plan: git restore --source=HEAD -- lib/helpDomain.py && python3 -m pytest _tests/test_help_domain.py::HelpDomainTests::test_help_index_uses_persona_orchestrator
+- delta_summary: helper:diff-snapshot=2 files changed, 299 insertions(+), 65 deletions(-); `help_index` now pulls persona/intent presets through the orchestrator with map fallbacks, normalises axis tokens, and updates guardrails covering voice hints.
+- residual_risks:
+  - Help domain still derives spoken casing from catalog displays; loop 24 will tighten shared alias casing across help hub/search results, monitoring via `_tests/test_help_domain.py`.
+- next_work:
+  - Behaviour: extend fallback alias casing across help hub and docs — python3 -m pytest _tests/test_help_domain.py _tests/test_help_hub.py — future-shaping: centralise spoken alias formatting alongside the orchestrator so all surfaces share the same casing rules.

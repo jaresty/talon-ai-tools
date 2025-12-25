@@ -2,11 +2,13 @@ from __future__ import annotations
 
 from collections.abc import Sequence
 from dataclasses import dataclass
-from typing import Any, Callable, List, Optional, Tuple
+from typing import Any, Callable, Dict, List, Optional, Tuple
 
 from talon import actions
 
 from .historyLifecycle import axes_snapshot_from_axes as axis_snapshot_from_axes
+from .personaConfig import persona_intent_maps
+from .personaOrchestrator import get_persona_intent_orchestrator
 
 
 @dataclass(frozen=True)
@@ -165,81 +167,244 @@ def help_index(
         )
 
     # Surface persona and intent presets so Help Hub search can jump directly to
-    # the underlying stance commands. Prefer the unified snapshot so aliases and
-    # display names stay aligned with the GPT actions and GUIs.
+    # the underlying stance commands. Prefer the orchestrator to keep aliases in
+    # sync with GPT actions and canvases, with persona maps as a fallback.
     try:
-        from .personaConfig import persona_intent_maps
+        orchestrator = get_persona_intent_orchestrator()
+    except Exception:
+        orchestrator = None
 
+    try:
         maps = persona_intent_maps()
     except Exception:
         maps = None
 
-    if maps is not None:
-        for preset in maps.persona_presets.values():
-            key = (getattr(preset, "key", "") or "").strip()
-            if not key:
-                continue
-            label = (getattr(preset, "label", "") or key).strip()
-            spoken = (getattr(preset, "spoken", "") or "").strip()
-            if not spoken:
-                alias = next(
-                    (
-                        alias_key
-                        for alias_key, canonical in maps.persona_preset_aliases.items()
-                        if canonical == key and alias_key != key.lower()
-                    ),
-                    "",
-                )
-                if alias:
-                    spoken = alias.replace("_", " ")
-                else:
-                    spoken = label
-            voice_hint = f"Say: persona {spoken}"
-            axes_parts = [
-                part
-                for part in (
-                    getattr(preset, "voice", ""),
-                    getattr(preset, "audience", ""),
-                    getattr(preset, "tone", ""),
-                )
-                if part
-            ]
-            axes_desc = " · ".join(axes_parts) if axes_parts else "No explicit axes"
-            entry_label = f"Persona preset: {label} (say: persona {spoken})"
-            description = f"Apply persona stance ({axes_desc})"
-            _add(
-                entry_label,
-                description,
-                lambda preset_key=key: actions.user.persona_set_preset(preset_key),  # type: ignore[attr-defined]
-                voice_hint=voice_hint,
-            )
+    persona_alias_map: Dict[str, str] = {}
+    if orchestrator and getattr(orchestrator, "persona_aliases", None):
+        for alias, canonical in dict(orchestrator.persona_aliases or {}).items():
+            alias_key = str(alias or "").strip().lower()
+            canonical_key = str(canonical or "").strip()
+            if alias_key and canonical_key:
+                persona_alias_map[alias_key] = canonical_key
+    if maps is not None and getattr(maps, "persona_preset_aliases", None):
+        for alias, canonical in dict(maps.persona_preset_aliases or {}).items():
+            alias_key = str(alias or "").strip().lower()
+            canonical_key = str(canonical or "").strip()
+            if alias_key and canonical_key:
+                persona_alias_map.setdefault(alias_key, canonical_key)
 
-        for preset in maps.intent_presets.values():
-            key = (getattr(preset, "key", "") or "").strip()
-            if not key:
+    persona_axis_aliases: Dict[str, Dict[str, str]] = {}
+    if maps is not None and getattr(maps, "persona_axis_tokens", None):
+        for axis_key, alias_map in dict(maps.persona_axis_tokens or {}).items():
+            axis_norm = str(axis_key or "").strip().lower()
+            if not axis_norm:
                 continue
-            display = (
-                maps.intent_display_map.get(key) or getattr(preset, "label", "") or key
-            ).strip()
-            canonical_intent = (getattr(preset, "intent", "") or key).strip()
-            spoken_alias = next(
-                (
-                    alias
-                    for alias, canonical in maps.intent_preset_aliases.items()
-                    if canonical == key and alias != key.lower()
-                ),
-                "",
+            persona_axis_aliases[axis_norm] = {
+                str(alias or "").strip().lower(): str(token or "").strip()
+                for alias, token in dict(alias_map or {}).items()
+                if str(alias or "").strip() and str(token or "").strip()
+            }
+
+    persona_items: List[tuple[str, object]] = []
+    if orchestrator and getattr(orchestrator, "persona_presets", None):
+        for key, preset in (orchestrator.persona_presets or {}).items():
+            key_str = str(key or "").strip()
+            if key_str:
+                persona_items.append((key_str, preset))
+    elif maps is not None and getattr(maps, "persona_presets", None):
+        for key, preset in (maps.persona_presets or {}).items():
+            key_str = str(key or "").strip()
+            if key_str:
+                persona_items.append((key_str, preset))
+
+    def _persona_spoken(key: str, preset: object) -> str:
+        spoken = (getattr(preset, "spoken", "") or "").strip()
+        if spoken:
+            return spoken
+        for alias, canonical in persona_alias_map.items():
+            if canonical == key and alias != key.lower():
+                return alias.replace("_", " ")
+        label_candidate = (getattr(preset, "label", "") or "").strip()
+        if label_candidate:
+            return label_candidate
+        return key
+
+    def _canonical_persona_axis(axis: str, raw_value: str) -> str:
+        token = str(raw_value or "").strip()
+        if not token:
+            return ""
+        if orchestrator:
+            try:
+                canonical = orchestrator.canonical_axis_token(axis, token)
+            except Exception:
+                canonical = ""
+            if canonical:
+                return canonical
+        axis_key = (axis or "").strip().lower()
+        if axis_key and axis_key in persona_axis_aliases:
+            canonical = persona_axis_aliases[axis_key].get(token.lower())
+            if canonical:
+                return canonical
+        return token
+
+    for key, preset in persona_items:
+        label = (getattr(preset, "label", "") or key).strip()
+        spoken = _persona_spoken(key, preset)
+        voice_hint = f"Say: persona {spoken}".strip()
+        axes_parts = [
+            part
+            for part in (
+                _canonical_persona_axis("voice", getattr(preset, "voice", "")),
+                _canonical_persona_axis("audience", getattr(preset, "audience", "")),
+                _canonical_persona_axis("tone", getattr(preset, "tone", "")),
             )
-            spoken_alias = spoken_alias or display or key
-            voice_hint = f"Say: intent {spoken_alias}"
-            entry_label = f"Intent preset: {display} (say: intent {spoken_alias})"
-            description = f"Apply intent stance ({canonical_intent})"
-            _add(
-                entry_label,
-                description,
-                lambda preset_key=key: actions.user.intent_set_preset(preset_key),  # type: ignore[attr-defined]
-                voice_hint=voice_hint,
+            if part
+        ]
+        axes_desc = " · ".join(axes_parts) if axes_parts else "No explicit axes"
+        entry_label = f"Persona preset: {label} (say: persona {spoken})"
+        _add(
+            entry_label,
+            f"Apply persona stance ({axes_desc})",
+            lambda preset_key=key: actions.user.persona_set_preset(preset_key),  # type: ignore[attr-defined]
+            voice_hint=voice_hint,
+        )
+
+    intent_alias_map: Dict[str, str] = {}
+    if orchestrator and getattr(orchestrator, "intent_aliases", None):
+        for alias, canonical in dict(orchestrator.intent_aliases or {}).items():
+            alias_key = str(alias or "").strip().lower()
+            canonical_key = str(canonical or "").strip()
+            if alias_key and canonical_key:
+                intent_alias_map[alias_key] = canonical_key
+    if maps is not None and getattr(maps, "intent_preset_aliases", None):
+        for alias, canonical in dict(maps.intent_preset_aliases or {}).items():
+            alias_key = str(alias or "").strip().lower()
+            canonical_key = str(canonical or "").strip()
+            if alias_key and canonical_key:
+                intent_alias_map.setdefault(alias_key, canonical_key)
+
+    intent_alias_display: Dict[str, str] = {}
+    if maps is not None and getattr(maps, "intent_preset_aliases", None):
+        for alias, canonical in dict(maps.intent_preset_aliases or {}).items():
+            alias_original = str(alias or "").strip()
+            canonical_key = str(canonical or "").strip()
+            if alias_original and canonical_key:
+                if alias_original.lower() != canonical_key.lower():
+                    intent_alias_display.setdefault(canonical_key, alias_original)
+
+    intent_synonyms: Dict[str, str] = {}
+    if orchestrator and getattr(orchestrator, "intent_synonyms", None):
+        for alias, canonical in dict(orchestrator.intent_synonyms or {}).items():
+            alias_key = str(alias or "").strip().lower()
+            canonical_key = str(canonical or "").strip()
+            if alias_key and canonical_key:
+                intent_synonyms[alias_key] = canonical_key
+    if maps is not None and getattr(maps, "intent_synonyms", None):
+        for alias, canonical in dict(maps.intent_synonyms or {}).items():
+            alias_key = str(alias or "").strip().lower()
+            canonical_key = str(canonical or "").strip()
+            if alias_key and canonical_key:
+                intent_synonyms.setdefault(alias_key, canonical_key)
+
+    intent_display_lookup: Dict[str, str] = {}
+    if orchestrator and getattr(orchestrator, "intent_display_map", None):
+        for canonical, display in dict(orchestrator.intent_display_map or {}).items():
+            canonical_key = str(canonical or "").strip()
+            value = str(display or "").strip()
+            if canonical_key and value:
+                intent_display_lookup.setdefault(canonical_key, value)
+                intent_display_lookup.setdefault(canonical_key.lower(), value)
+    if maps is not None and getattr(maps, "intent_display_map", None):
+        for canonical, display in dict(maps.intent_display_map or {}).items():
+            canonical_key = str(canonical or "").strip()
+            value = str(display or "").strip()
+            if canonical_key and value:
+                intent_display_lookup.setdefault(canonical_key, value)
+                intent_display_lookup.setdefault(canonical_key.lower(), value)
+
+    intent_items: List[tuple[str, object]] = []
+    if orchestrator and getattr(orchestrator, "intent_presets", None):
+        for key, preset in (orchestrator.intent_presets or {}).items():
+            key_str = str(key or "").strip()
+            if key_str:
+                intent_items.append((key_str, preset))
+    elif maps is not None and getattr(maps, "intent_presets", None):
+        for key, preset in (maps.intent_presets or {}).items():
+            key_str = str(key or "").strip()
+            if key_str:
+                intent_items.append((key_str, preset))
+
+    def _canonical_intent_key(*aliases: str) -> str:
+        for alias in aliases:
+            candidate = str(alias or "").strip()
+            if not candidate:
+                continue
+            lower = candidate.lower()
+            canonical = intent_alias_map.get(lower)
+            if canonical:
+                return canonical
+            synonym = intent_synonyms.get(lower)
+            if synonym:
+                return synonym
+        return ""
+
+    def _intent_spoken(
+        key: str, preset: object, display: str, canonical_intent: str
+    ) -> str:
+        alias = next(
+            (
+                alias_key
+                for alias_key, canonical in intent_alias_map.items()
+                if canonical == key and alias_key != key.lower()
+            ),
+            "",
+        )
+        if alias:
+            display_value = intent_display_lookup.get(key) or intent_display_lookup.get(
+                key.lower()
             )
+            if display_value and alias == display_value.lower():
+                return display_value
+            spoken_alias = intent_alias_display.get(key, alias)
+            return spoken_alias.replace("_", " ")
+        candidates = [getattr(preset, "spoken", "")]
+        if maps is not None:
+            candidates.extend([display, canonical_intent])
+        else:
+            candidates.extend([canonical_intent, display])
+        candidates.append(key)
+        for candidate in candidates:
+            candidate_str = str(candidate or "").strip()
+            if candidate_str:
+                return candidate_str
+        return key
+
+    for key, preset in intent_items:
+        canonical_key = (key or "").strip()
+        display = (
+            intent_display_lookup.get(canonical_key)
+            or intent_display_lookup.get(canonical_key.lower())
+            or (getattr(preset, "label", "") or "").strip()
+            or canonical_key
+        )
+        canonical_intent = (
+            _canonical_intent_key(getattr(preset, "intent", ""), canonical_key, display)
+            or (getattr(preset, "intent", "") or canonical_key).strip()
+        )
+        spoken = _intent_spoken(canonical_key, preset, display, canonical_intent)
+        voice_hint = f"Say: intent {spoken}".strip()
+        description = (
+            f"Apply intent stance ({canonical_intent})"
+            if canonical_intent
+            else "Apply intent stance"
+        )
+        entry_label = f"Intent preset: {display} (say: intent {spoken})"
+        _add(
+            entry_label,
+            description,
+            lambda preset_key=key: actions.user.intent_set_preset(preset_key),  # type: ignore[attr-defined]
+            voice_hint=voice_hint,
+        )
 
     return entries
 

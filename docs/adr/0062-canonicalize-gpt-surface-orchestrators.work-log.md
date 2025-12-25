@@ -109,3 +109,17 @@
   - Drop-reason helpers still live in requestLog/requestHistoryActions; mitigation: migrate them into `historyLifecycle` next and validate via `_tests/test_request_history_actions.py`.
 - next_work:
   - Behaviour: consolidate drop-reason helpers through lifecycle façade — python3 -m pytest _tests/test_request_history_actions.py — future-shaping: align history saves and notifications with the shared lifecycle entrypoints.
+
+## 2025-12-25 – Loop 009 (kind: implementation)
+- helper_version: helper:v20251223.1
+- focus: ADR-0062 §Refactor Plan – History Lifecycle Orchestrator (centralise drop reasons)
+- riskiest_assumption: Request history surfaces would keep importing `requestLog` drop helpers unless the lifecycle façade exposed them; `python3 -m pytest _tests/test_history_lifecycle.py _tests/test_history_query.py _tests/test_request_history_actions.py` fails to observe the shared contract (probability medium, impact high on Concordance scope/visibility).
+- validation_targets:
+  - python3 -m pytest _tests/test_history_lifecycle.py _tests/test_history_query.py _tests/test_request_history_actions.py
+- evidence: docs/adr/evidence/0062/loop-0009.md
+- rollback_plan: git stash push -- lib/historyLifecycle.py lib/requestHistoryActions.py && python3 -m pytest _tests/test_history_lifecycle.py _tests/test_history_query.py _tests/test_request_history_actions.py && git stash pop
+- delta_summary: helper:diff-snapshot=3 files changed, 53 insertions(+), 3 deletions(-); lifecycle façade exports drop-reason setters/consumers, history actions import them, and lifecycle tests cover the contract.
+- residual_risks:
+  - Surface guidance and confirmation/pattern GUIs still import `requestLog` drop helpers; mitigation: reroute those surfaces through `historyLifecycle` in the next loop and validate via `_tests/test_surface_guidance.py` and related GUI suites.
+- next_work:
+  - Behaviour: migrate remaining UI surfaces to lifecycle drop helpers — python3 -m pytest _tests/test_surface_guidance.py _tests/test_model_help_canvas_guard.py — future-shaping: ensure all canvases use shared drop-reason orchestration before refactoring history saves.

@@ -4,12 +4,17 @@ from collections.abc import Mapping, Sequence
 
 from .requestLog import (
     AxisSnapshot,
+    DropReason,
     axis_snapshot_from_axes as requestlog_axis_snapshot_from_axes,
     consume_gating_drop_stats as requestlog_consume_gating_drop_stats,
+    consume_last_drop_reason as requestlog_consume_last_drop_reason,
+    consume_last_drop_reason_record as requestlog_consume_last_drop_reason_record,
     gating_drop_source_stats as requestlog_gating_drop_source_stats,
     gating_drop_stats as requestlog_gating_drop_stats,
     history_validation_stats as requestlog_history_validation_stats,
+    last_drop_reason as requestlog_last_drop_reason,
     record_gating_drop as requestlog_record_gating_drop,
+    set_drop_reason as requestlog_set_drop_reason,
 )
 from .requestState import RequestDropReason
 
@@ -96,6 +101,30 @@ def history_validation_stats() -> dict[str, object]:
     return requestlog_history_validation_stats()
 
 
+def set_drop_reason(reason: RequestDropReason, message: str | None = None) -> None:
+    """Set the last drop reason via the lifecycle façade."""
+
+    requestlog_set_drop_reason(reason, message)
+
+
+def last_drop_reason() -> str:
+    """Return the most recent drop reason message."""
+
+    return requestlog_last_drop_reason()
+
+
+def consume_last_drop_reason() -> str:
+    """Consume and clear the last drop reason message."""
+
+    return requestlog_consume_last_drop_reason()
+
+
+def consume_last_drop_reason_record() -> DropReason:
+    """Consume and clear the structured drop reason record."""
+
+    return requestlog_consume_last_drop_reason_record()
+
+
 __all__ = [
     "axes_snapshot_from_axes",
     "history_axes_for",
@@ -104,4 +133,8 @@ __all__ = [
     "gating_drop_source_stats",
     "consume_gating_drop_stats",
     "history_validation_stats",
+    "set_drop_reason",
+    "last_drop_reason",
+    "consume_last_drop_reason",
+    "consume_last_drop_reason_record",
 ]

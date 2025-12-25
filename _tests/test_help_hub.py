@@ -558,6 +558,43 @@ def test_cheat_sheet_prefers_metadata_snapshot(monkeypatch):
     assert "- intent decide (say: intent decide): decide (decide)" in text
 
 
+def test_copy_adr_links_includes_metadata(monkeypatch):
+    persona_meta = HelpPersonaMetadata(
+        key="demo_persona",
+        display_label="Demo Persona",
+        spoken_display="Demo Persona",
+        spoken_alias="demo persona",
+        axes_summary="demo axes",
+        axes_tokens=("voice",),
+        voice_hint="",
+    )
+    intent_meta = HelpIntentMetadata(
+        key="decide",
+        display_label="Decide",
+        canonical_intent="decide",
+        spoken_display="Decide",
+        spoken_alias="decide",
+        voice_hint="",
+    )
+    snapshot = HelpMetadataSnapshot(personas=(persona_meta,), intents=(intent_meta,))
+
+    monkeypatch.setattr(helpHub, "axis_catalog", lambda: {})
+    monkeypatch.setattr(helpHub, "help_metadata_snapshot", lambda _entries: snapshot)
+    monkeypatch.setattr(helpHub, "help_index", lambda *args, **kwargs: [])
+    captured: dict[str, str] = {}
+    monkeypatch.setattr(actions.app, "notify", lambda *_args, **_kwargs: None)
+    monkeypatch.setattr(
+        clip, "set_text", lambda value: captured.setdefault("text", value)
+    )
+
+    helpHub._copy_adr_links()
+
+    text = captured.get("text", "").lower()
+    assert "metadata summary:" in text
+    assert "persona demo_persona" in text
+    assert "intent decide" in text
+
+
 def test_help_hub_copy_cheat_sheet_includes_snapshot_aliases(monkeypatch):
     """Clipboard copy should reuse snapshot-backed persona/intent alias phrasing."""
     from lib.personaConfig import persona_intent_catalog_snapshot

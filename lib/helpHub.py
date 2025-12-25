@@ -917,6 +917,73 @@ def _on_key(evt) -> None:  # pragma: no cover - visual
 _hub_key_handler = _on_key
 
 
+def _metadata_snapshot_summary_lines() -> List[str]:
+    lines: List[str] = []
+
+    metadata_entries: List[HelpIndexEntry] = []
+    try:
+        metadata_entries = help_index(
+            [],
+            patterns=[],
+            presets=[],
+            read_list_items=_read_list_items,
+            catalog=axis_catalog(),
+        )
+    except Exception:
+        metadata_entries = []
+
+    try:
+        snapshot = help_metadata_snapshot(metadata_entries)
+    except Exception:
+        return lines
+
+    if getattr(snapshot, "personas", None):
+        persona_lines: List[str] = []
+        for persona in snapshot.personas:
+            key = (persona.key or "").strip()
+            if not key:
+                continue
+            display_label = (persona.display_label or key).strip() or key
+            spoken_alias = (
+                (persona.spoken_alias or persona.spoken_display or display_label)
+                .strip()
+                .lower()
+            )
+            axes_summary = (
+                persona.axes_summary or "No explicit axes"
+            ).strip() or "No explicit axes"
+            persona_lines.append(
+                f"- persona {key} (say: persona {spoken_alias}): {display_label} ({axes_summary})"
+            )
+        if persona_lines:
+            lines.append("Persona metadata:")
+            lines.extend(persona_lines)
+
+    if getattr(snapshot, "intents", None):
+        intent_lines: List[str] = []
+        for intent in snapshot.intents:
+            key = (intent.key or "").strip()
+            if not key:
+                continue
+            display_label = (intent.display_label or key).strip() or key
+            canonical_intent = (intent.canonical_intent or key).strip() or key
+            spoken_alias = (
+                (intent.spoken_alias or intent.spoken_display or display_label)
+                .strip()
+                .lower()
+            )
+            intent_lines.append(
+                f"- intent {key} (say: intent {spoken_alias}): {display_label} ({canonical_intent})"
+            )
+        if intent_lines:
+            if lines:
+                lines.append("")
+            lines.append("Intent metadata:")
+            lines.extend(intent_lines)
+
+    return lines
+
+
 def _cheat_sheet_text() -> str:
     def _axis_examples(axis: str, fallback: List[str], limit: int = 6) -> List[str]:
         try:
@@ -1285,22 +1352,28 @@ def _wrap_text(text: str, max_width_px: int, approx_char_px: int = 8) -> List[st
 
 
 def _adr_links_text() -> str:
-    return "\n".join(
-        [
-            "ADR links (paths):",
-            "docs/adr/005-orthogonal-prompt-modifiers-and-defaults.md",
-            "docs/adr/006-pattern-picker-and-recap.md",
-            "docs/adr/008-prompt-recipe-suggestion-assistant.md",
-            "docs/adr/012-style-and-method-prompt-refactor.md",
-            "docs/adr/013-static-prompt-axis-refinement-and-streamlining.md",
-            "docs/adr/019-meta-interpretation-channel-and-surfaces.md",
-            "docs/adr/020-richer-meta-interpretation-structure.md",
-            "docs/adr/022-canvas-quick-help-gui.md",
-            "docs/adr/027-request-state-machine-and-progress-surfaces.md",
-            "docs/adr/028-help-hub-and-discoverability.md",
-            "docs/adr/040-axis-families-and-persona-contract-simplification.md",
-        ]
-    )
+    lines = [
+        "ADR links (paths):",
+        "docs/adr/005-orthogonal-prompt-modifiers-and-defaults.md",
+        "docs/adr/006-pattern-picker-and-recap.md",
+        "docs/adr/008-prompt-recipe-suggestion-assistant.md",
+        "docs/adr/012-style-and-method-prompt-refactor.md",
+        "docs/adr/013-static-prompt-axis-refinement-and-streamlining.md",
+        "docs/adr/019-meta-interpretation-channel-and-surfaces.md",
+        "docs/adr/020-richer-meta-interpretation-structure.md",
+        "docs/adr/022-canvas-quick-help-gui.md",
+        "docs/adr/027-request-state-machine-and-progress-surfaces.md",
+        "docs/adr/028-help-hub-and-discoverability.md",
+        "docs/adr/040-axis-families-and-persona-contract-simplification.md",
+    ]
+
+    metadata_lines = _metadata_snapshot_summary_lines()
+    if metadata_lines:
+        lines.append("")
+        lines.append("Metadata summary:")
+        lines.extend(metadata_lines)
+
+    return "\n".join(lines)
 
 
 def _default_prompt_for_menu() -> Optional[str]:

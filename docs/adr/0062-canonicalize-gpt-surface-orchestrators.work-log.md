@@ -337,3 +337,17 @@
   - Help Hub ADR/clipboard exports still assemble metadata ad hoc; mitigation: migrate the remaining exports to `help_metadata_snapshot`; monitor via `_tests/test_help_hub.py` copy/export guardrails.
 - next_work:
   - Behaviour: migrate Help Hub ADR link/clipboard exports to metadata snapshot — python3 -m pytest _tests/test_help_hub.py _tests/test_help_domain.py — future-shaping: keep documentation/export paths aligned with canonical persona/intent metadata.
+
+## 2025-12-25 – Loop 026 (kind: implementation)
+- helper_version: helper:v20251223.1
+- focus: ADR-0062 §Refactor Plan – Guidance Surface Coordinator (reuse persona/intent metadata for Help Hub ADR exports)
+- riskiest_assumption: Help Hub ADR clipboard exports would continue omitting canonical persona/intent summaries unless we piped in the shared metadata snapshot; `python3 -m pytest _tests/test_help_hub.py::test_copy_adr_links_includes_metadata -q` remained red under the previous implementation (probability medium, impact medium on Concordance documentation parity).
+- validation_targets:
+  - python3 -m pytest _tests/test_help_hub.py _tests/test_help_domain.py _tests/test_help_hub_guard.py
+- evidence: docs/adr/evidence/0062/loop-0026.md
+- rollback_plan: git restore --source=HEAD -- lib/helpHub.py _tests/test_help_hub.py && python3 -m pytest _tests/test_help_hub.py _tests/test_help_domain.py _tests/test_help_hub_guard.py
+- delta_summary: helper:diff-snapshot=2 files changed, 91 insertions(+); adds `_metadata_snapshot_summary_lines()` so `_adr_links_text()` (and clipboard copy) reuse canonical persona/intent metadata, and extends Help Hub guardrails to cover the richer export content.
+- residual_risks:
+  - Metadata summary remains text-only; follow-up loop may expose structured JSON exports for automation consumers.
+- next_work:
+  - Behaviour: expose structured metadata export for automation (JSON) — python3 -m pytest _tests/test_help_hub.py — future-shaping: keep downstream tooling aligned with canonical metadata formats.

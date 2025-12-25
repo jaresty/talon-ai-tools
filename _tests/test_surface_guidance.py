@@ -82,3 +82,12 @@ class SurfaceGuidanceTests(unittest.TestCase):
             )  # type: ignore[misc]
         try_begin.assert_not_called()
         self.assertFalse(blocked)
+
+    def test_surface_guidance_uses_lifecycle_drop_helpers(self) -> None:
+        import talon_user.lib.historyLifecycle as history_lifecycle
+        import talon_user.lib.surfaceGuidance as surface_module
+
+        self.assertIs(surface_module.set_drop_reason, history_lifecycle.set_drop_reason)
+        self.assertIs(
+            surface_module.last_drop_reason, history_lifecycle.last_drop_reason
+        )

@@ -23,7 +23,7 @@ from .helpDomain import (
     HelpIndexEntry,
 )
 from .requestGating import request_is_in_flight, try_begin_request
-from .requestLog import last_drop_reason, set_drop_reason
+from .historyLifecycle import last_drop_reason, set_drop_reason
 from .dropReasonUtils import render_drop_reason
 from .modelHelpers import notify
 from .overlayHelpers import apply_canvas_blocking

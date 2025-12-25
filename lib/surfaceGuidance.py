@@ -6,7 +6,7 @@ from .dropReasonUtils import render_drop_reason
 from .modelHelpers import notify
 from .modelState import GPTState
 from .requestGating import try_begin_request
-from .requestLog import last_drop_reason, set_drop_reason
+from .historyLifecycle import last_drop_reason, set_drop_reason
 from .requestState import RequestDropReason, RequestState
 
 GuardBlockHandler = Callable[[str, str], None]

@@ -24,7 +24,7 @@ from .patternDebugCoordinator import (
 from .overlayHelpers import apply_canvas_blocking
 from .overlayLifecycle import close_overlays, close_common_overlays
 from .requestGating import request_is_in_flight, try_begin_request
-from .requestLog import last_drop_reason, set_drop_reason
+from .historyLifecycle import last_drop_reason, set_drop_reason
 from .dropReasonUtils import render_drop_reason
 from .modelHelpers import notify
 from .personaConfig import persona_intent_maps

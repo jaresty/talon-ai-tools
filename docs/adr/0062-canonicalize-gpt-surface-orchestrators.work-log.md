@@ -123,3 +123,17 @@
   - Surface guidance and confirmation/pattern GUIs still import `requestLog` drop helpers; mitigation: reroute those surfaces through `historyLifecycle` in the next loop and validate via `_tests/test_surface_guidance.py` and related GUI suites.
 - next_work:
   - Behaviour: migrate remaining UI surfaces to lifecycle drop helpers — python3 -m pytest _tests/test_surface_guidance.py _tests/test_model_help_canvas_guard.py — future-shaping: ensure all canvases use shared drop-reason orchestration before refactoring history saves.
+
+## 2025-12-25 – Loop 010 (kind: implementation)
+- helper_version: helper:v20251223.1
+- focus: ADR-0062 §Refactor Plan – History Lifecycle Orchestrator (reuse drop helpers in surface guidance + GUIs)
+- riskiest_assumption: UI surfaces would keep setting drop reasons via `requestLog`; `_tests/test_surface_guidance.py _tests/test_model_help_canvas_guard.py` fails until the façade owns the helpers (probability medium, impact medium-high on Concordance visibility).
+- validation_targets:
+  - python3 -m pytest _tests/test_surface_guidance.py _tests/test_model_help_canvas_guard.py
+- evidence: docs/adr/evidence/0062/loop-0010.md
+- rollback_plan: git stash push -- lib/surfaceGuidance.py lib/modelConfirmationGUI.py lib/modelPatternGUI.py lib/modelPromptPatternGUI.py lib/helpHub.py lib/providerCommands.py && python3 -m pytest _tests/test_surface_guidance.py _tests/test_model_help_canvas_guard.py && git stash pop
+- delta_summary: helper:diff-snapshot=7 files changed, 15 insertions(+), 6 deletions(-); surface guidance and related GUIs now import lifecycle drop helpers, and tests assert lifecycle equivalence.
+- residual_risks:
+  - History save/export helpers still call `set_drop_reason` directly; mitigation: migrate save/export flows to lifecycle façade next and validate via `_tests/test_request_history_actions.py`.
+- next_work:
+  - Behaviour: align history save/export drop handling with lifecycle — python3 -m pytest _tests/test_request_history_actions.py — future-shaping: ensure persistence paths reuse the shared drop-reason orchestration before refactoring history saves.

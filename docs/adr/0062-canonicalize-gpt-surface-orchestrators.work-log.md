@@ -622,3 +622,19 @@
 - next_work:
   - Behaviour: migrate request log/export consumers to `historyLifecycle` snapshot helpers — python3 -m pytest _tests/test_history_query.py _tests/test_request_history_actions.py — future-shaping: ensure history logs and exports share the façade.
 
+## 2025-12-25 – Loop 054 (kind: implementation)
+- helper_version: helper:v20251223.1
+- focus: ADR-0062 §Refactor Plan – History Lifecycle Orchestrator (migrate history query to lifecycle snapshot view)
+- riskiest_assumption: HistoryQuery bypassing the lifecycle façade would let formatting drift from persistence (probability medium, impact medium-high on surface consistency).
+- validation_targets:
+  - python3 -m pytest _tests/test_history_query.py
+  - python3 -m pytest _tests/test_request_history_drawer_gating.py::RequestHistoryDrawerGatingTests::test_action_refresh_delegates_to_helper
+- evidence:
+  - docs/adr/evidence/0062/loop-0054.md
+- rollback_plan: git restore --source=HEAD -- lib/historyQuery.py && python3 -m pytest _tests/test_history_query.py
+- delta_summary: helper:diff-snapshot=1 file changed, 26 insertions(+), 6 deletions(-); HistoryQuery now normalises entries through the lifecycle snapshot helper before emitting summaries or drawer payloads.
+- residual_risks:
+  - Telemetry/export flows still call requestLog helpers directly; evaluate façade adoption for those surfaces next.
+- next_work:
+  - Behaviour: audit telemetry/export flows for lifecycle façade adoption — python3 -m pytest _tests/test_history_lifecycle.py _tests/test_history_query.py — future-shaping: ensure all history surfaces share the same snapshot normalisation.
+

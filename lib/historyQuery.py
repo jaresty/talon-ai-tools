@@ -12,17 +12,36 @@ from collections.abc import Sequence
 from typing import List, Tuple
 
 from .requestLog import KNOWN_AXIS_KEYS
-from .historyLifecycle import history_axes_for as _history_axes_for_impl
-from .requestHistoryActions import history_summary_lines as _history_summary_lines_impl
-from .requestHistoryActions import (
-    axis_snapshot_from_axes as _axis_snapshot_from_axes_impl,
+from .historyLifecycle import (
+    HistorySnapshotEntry,
+    axes_snapshot_from_axes as _axis_snapshot_from_axes_impl,
+    coerce_history_snapshot_entry as _coerce_history_snapshot_entry,
+    history_axes_for as _history_axes_for_impl,
 )
+from .requestHistoryActions import history_summary_lines as _history_summary_lines_impl
 from .requestHistoryActions import _directional_tokens_for_entry
 from .requestHistoryActions import (
     _persona_summary_fragments as _persona_summary_fragments_impl,
 )
 
 _ALLOWED_HISTORY_AXIS_KEYS = frozenset(KNOWN_AXIS_KEYS)
+
+
+class _HistoryEntryView:
+    __slots__ = ("_entry", "axes", "persona")
+
+    def __init__(self, entry: object, snapshot: HistorySnapshotEntry) -> None:
+        self._entry = entry
+        self.axes = snapshot.axes
+        self.persona = snapshot.persona
+
+    def __getattr__(self, name: str):
+        return getattr(self._entry, name)
+
+
+def _normalise_entry(entry: object) -> _HistoryEntryView:
+    snapshot = _coerce_history_snapshot_entry(entry)
+    return _HistoryEntryView(entry, snapshot)
 
 
 def _ensure_known_axis_keys(entries: Sequence[object]) -> None:
@@ -58,7 +77,8 @@ def history_summary_lines(entries: Sequence[object]) -> list[str]:
     """
 
     _ensure_known_axis_keys(entries)
-    return _history_summary_lines_impl(entries)
+    normalised = [_normalise_entry(entry) for entry in entries]
+    return _history_summary_lines_impl(normalised)
 
 
 def history_drawer_entries_from(entries: Sequence[object]) -> List[Tuple[str, str]]:
@@ -72,7 +92,7 @@ def history_drawer_entries_from(entries: Sequence[object]) -> List[Tuple[str, st
     _ensure_known_axis_keys(entries)
 
     rendered: List[Tuple[str, str]] = []
-    for entry in entries:
+    for entry in (_normalise_entry(entry) for entry in entries):
         axes = getattr(entry, "axes", {}) or {}
         dir_tokens: list[str] = _directional_tokens_for_entry(entry)
         if not dir_tokens:

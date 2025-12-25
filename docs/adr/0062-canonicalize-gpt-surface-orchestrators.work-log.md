@@ -95,3 +95,17 @@
   - History log save helpers still handle persona/drop-reason flows inline; Loop 008 will instrument and document lifecycle responsibilities before refactoring saves.
 - next_work:
   - Behaviour: instrument history log + docs — python3 -m pytest _tests/test_history_lifecycle.py _tests/test_history_query.py _tests/test_request_history_actions.py — future-shaping: document lifecycle responsibilities and wire telemetry for lifecycle stats before orchestrator integration.
+
+## 2025-12-25 – Loop 008 (kind: implementation)
+- helper_version: helper:v20251223.1
+- focus: ADR-0062 §Refactor Plan – History Lifecycle Orchestrator (instrument telemetry + docs)
+- riskiest_assumption: Lifecycle telemetry remains fragmented unless the façade exports shared gating stats; `python3 -m pytest _tests/test_history_lifecycle.py _tests/test_history_query.py _tests/test_request_history_actions.py` currently fails to validate the shared instrumentation (probability medium, impact high on Concordance visibility).
+- validation_targets:
+  - python3 -m pytest _tests/test_history_lifecycle.py _tests/test_history_query.py _tests/test_request_history_actions.py
+- evidence: docs/adr/evidence/0062/loop-0008.md
+- rollback_plan: git stash push -- lib/historyLifecycle.py lib/historyQuery.py lib/requestLog.py && python3 -m pytest _tests/test_history_lifecycle.py _tests/test_history_query.py _tests/test_request_history_actions.py && git stash pop
+- delta_summary: helper:diff-snapshot=5 files changed, 73 insertions(+), 7 deletions(-); lifecycle façade exports gating telemetry wrappers, historyQuery reuses them, and ADR text highlights the shared instrumentation.
+- residual_risks:
+  - Drop-reason helpers still live in requestLog/requestHistoryActions; mitigation: migrate them into `historyLifecycle` next and validate via `_tests/test_request_history_actions.py`.
+- next_work:
+  - Behaviour: consolidate drop-reason helpers through lifecycle façade — python3 -m pytest _tests/test_request_history_actions.py — future-shaping: align history saves and notifications with the shared lifecycle entrypoints.

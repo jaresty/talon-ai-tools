@@ -968,6 +968,13 @@ def history_validation_stats() -> dict[str, object]:
             "count": normalized_sources.get(_last_gating_drop_source, 0),
         }
 
+    if not normalized_counts and gating_counts:
+        normalized_counts = dict(gating_counts)
+    if not counts_sorted_pairs and normalized_counts:
+        counts_sorted_pairs = sorted(
+            normalized_counts.items(), key=lambda item: (-item[1], item[0])
+        )
+
     if not status_value:
         status_value = "unknown"
 
@@ -976,11 +983,6 @@ def history_validation_stats() -> dict[str, object]:
         total_int = counts_total
     if not streaming_last:
         streaming_last = {}
-
-    if not counts_sorted_pairs:
-        counts_sorted_pairs = sorted(
-            normalized_counts.items(), key=lambda item: (-item[1], item[0])
-        )
 
     stats_obj["streaming_gating_summary"] = {
         "counts": normalized_counts,

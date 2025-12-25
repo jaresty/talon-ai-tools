@@ -13,8 +13,10 @@ from typing import List, Tuple
 
 from .requestLog import KNOWN_AXIS_KEYS
 from .historyLifecycle import history_axes_for as _history_axes_for_impl
-from .historyLifecycle import axes_snapshot_from_axes as _axis_snapshot_from_axes_impl
 from .requestHistoryActions import history_summary_lines as _history_summary_lines_impl
+from .requestHistoryActions import (
+    axis_snapshot_from_axes as _axis_snapshot_from_axes_impl,
+)
 from .requestHistoryActions import _directional_tokens_for_entry
 from .requestHistoryActions import (
     _persona_summary_fragments as _persona_summary_fragments_impl,

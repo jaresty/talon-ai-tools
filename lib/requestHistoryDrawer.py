@@ -273,6 +273,35 @@ def _refresh_entries() -> None:
             HistoryDrawerState.last_message = "GPT: No history entries include a directional lens; replay requires fog/fig/dig/ong/rog/bog/jog."
 
 
+def refresh_history_drawer() -> None:
+    """Refresh history drawer entries while respecting shared gating."""
+
+    blocked = guard_surface_request(
+        surface="history_drawer",
+        source="requestHistoryDrawer",
+    )
+    if blocked:
+        return
+    try:
+        if not last_drop_reason():
+            set_drop_reason("")
+    except Exception:
+        pass
+    _refresh_entries()
+    if not HistoryDrawerState.showing:
+        return
+    canvas_obj = _history_canvas
+    if canvas_obj is None:
+        return
+    for method_name in ("freeze", "resume", "show"):
+        refresh = getattr(canvas_obj, method_name, None)
+        if callable(refresh):
+            try:
+                refresh()
+            except Exception:
+                continue
+
+
 @mod.action_class
 class UserActions:
     def request_history_drawer_toggle():

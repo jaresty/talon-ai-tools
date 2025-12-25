@@ -561,3 +561,18 @@
 - next_work:
   - Behaviour: implement history drawer refresh façade — python3 -m pytest _tests/test_request_history_drawer_gating.py — future-shaping: reuse lifecycle refresh hooks instead of bespoke drawer logic.
 
+## 2025-12-25 – Loop 050 (kind: implementation)
+- helper_version: helper:v20251223.1
+- focus: ADR-0062 §Refactor Plan – History Lifecycle Orchestrator (drawer refresh façade)
+- riskiest_assumption: History drawers still skipped the lifecycle façade; without a shared refresh helper guardrails drift and tests remain red (probability medium, impact medium-high on lifecycle adoption).
+- validation_targets:
+  - python3 -m pytest _tests/test_request_history_drawer_gating.py::RequestHistoryDrawerGatingTests::test_guard_surface_delegate_is_used
+- evidence:
+  - docs/adr/evidence/0062/loop-0050.md
+- rollback_plan: git restore --source=HEAD -- lib/requestHistoryDrawer.py && python3 -m pytest _tests/test_request_history_drawer_gating.py::RequestHistoryDrawerGatingTests::test_guard_surface_delegate_is_used
+- delta_summary: helper:diff-snapshot=1 file changed, 29 insertions(+); introduces `refresh_history_drawer()` that delegates to `guard_surface_request`, refreshes lifecycle-backed entries, and nudges the canvas when visible.
+- residual_risks:
+  - Canvas redraw remains best-effort; consider dedicated overlay refresh hooks if user feedback shows stale frames.
+- next_work:
+  - Behaviour: migrate remaining history actions/log helpers to the lifecycle façade — python3 -m pytest _tests/test_request_history_actions.py _tests/test_history_lifecycle.py — future-shaping: ensure exports and logs share the new helper stack.
+

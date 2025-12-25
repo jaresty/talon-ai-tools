@@ -50,6 +50,7 @@ class HubButton:
     description: str
     handler: Callable[[], None]
     voice_hint: str = ""
+    metadata: dict[str, Any] | None = None
 
 
 class HelpHubState:
@@ -1462,6 +1463,7 @@ def build_search_index(
                 description=getattr(entry, "description", ""),
                 handler=getattr(entry, "handler", lambda: None),
                 voice_hint=getattr(entry, "voice_hint", ""),
+                metadata=getattr(entry, "metadata", None),
             )
         )
 

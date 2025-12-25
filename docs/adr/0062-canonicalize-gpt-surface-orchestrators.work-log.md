@@ -308,4 +308,18 @@
 - residual_risks:
   - Help domain still derives spoken casing from catalog displays; loop 24 will tighten shared alias casing across help hub/search results, monitoring via `_tests/test_help_domain.py`.
 - next_work:
-  - Behaviour: extend fallback alias casing across help hub and docs — python3 -m pytest _tests/test_help_domain.py _tests/test_help_hub.py — future-shaping: centralise spoken alias formatting alongside the orchestrator so all surfaces share the same casing rules.
+  - Behaviour: extend fallback alias casing across help hub and docs — python3 -m pytest _tests/test_help_hub.py _tests/test_help_domain.py — future-shaping: centralise spoken alias formatting alongside the orchestrator so all surfaces share the same casing rules.
+
+## 2025-12-25 – Loop 024 (kind: implementation)
+- helper_version: helper:v20251223.1
+- focus: ADR-0062 §Refactor Plan – Guidance Surface Coordinator (help hub/help domain metadata alias casing)
+- riskiest_assumption: Help Hub and help index would keep inferring persona/intent aliases without shared metadata, so `python3 -m pytest _tests/test_help_domain.py _tests/test_help_hub.py` keeps failing with missing metadata (probability medium, impact medium-high on Concordance visibility/search parity).
+- validation_targets:
+  - python3 -m pytest _tests/test_help_domain.py _tests/test_help_hub.py
+- evidence: docs/adr/evidence/0062/loop-0024.md
+- rollback_plan: git restore --source=HEAD -- lib/helpDomain.py lib/helpHub.py _tests/test_help_domain.py _tests/test_help_hub.py && python3 -m pytest _tests/test_help_domain.py _tests/test_help_hub.py
+- delta_summary: helper:diff-snapshot=4 files changed, 207 insertions(+), 13 deletions(-); help index now emits canonical persona/intent metadata, labels/voice hints keep orchestrator casing, and Help Hub propagates metadata through its search index.
+- residual_risks:
+  - Help Hub cheat sheet/clipboard flows still build alias strings manually; plan to reuse the new metadata snapshot for copy/export surfaces and guard via `_tests/test_help_hub.py`.
+- next_work:
+  - Behaviour: reuse persona/intent metadata for cheat sheet copy/export — python3 -m pytest _tests/test_help_hub.py _tests/test_help_domain.py _tests/test_help_hub_guardrails.py — future-shaping: ensure documentation/export paths consume the canonical metadata so Concordance guardrails stay aligned.

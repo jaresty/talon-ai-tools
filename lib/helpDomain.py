@@ -17,6 +17,7 @@ class HelpIndexEntry:
     description: str
     handler: Callable[[], None]
     voice_hint: str = ""
+    metadata: Dict[str, Any] | None = None
 
 
 def help_index(
@@ -43,6 +44,7 @@ def help_index(
         desc: str,
         handler: Callable[[], None],
         voice_hint: str = "",
+        metadata: Optional[Dict[str, Any]] = None,
     ) -> None:
         entries.append(
             HelpIndexEntry(
@@ -50,6 +52,7 @@ def help_index(
                 description=desc,
                 handler=handler,
                 voice_hint=voice_hint,
+                metadata=metadata,
             )
         )
 
@@ -250,23 +253,39 @@ def help_index(
     for key, preset in persona_items:
         label = (getattr(preset, "label", "") or key).strip()
         spoken = _persona_spoken(key, preset)
-        voice_hint = f"Say: persona {spoken}".strip()
-        axes_parts = [
-            part
-            for part in (
-                _canonical_persona_axis("voice", getattr(preset, "voice", "")),
-                _canonical_persona_axis("audience", getattr(preset, "audience", "")),
-                _canonical_persona_axis("tone", getattr(preset, "tone", "")),
-            )
-            if part
-        ]
+        spoken_display = (spoken or "").strip() or label or key
+        spoken_alias = spoken_display.strip().lower() or key.strip().lower()
+        voice_hint = f"Say: persona {spoken_display}".strip()
+        axis_tokens_map = {
+            "voice": _canonical_persona_axis("voice", getattr(preset, "voice", "")),
+            "audience": _canonical_persona_axis(
+                "audience", getattr(preset, "audience", "")
+            ),
+            "tone": _canonical_persona_axis("tone", getattr(preset, "tone", "")),
+        }
+        axes_parts = [value for value in axis_tokens_map.values() if value]
         axes_desc = " · ".join(axes_parts) if axes_parts else "No explicit axes"
-        entry_label = f"Persona preset: {label} (say: persona {spoken})"
+        entry_label = f"Persona preset: {label} (say: persona {spoken_display})"
+        metadata = {
+            "kind": "persona",
+            "persona_key": key,
+            "display_label": label,
+            "spoken_alias": spoken_alias,
+            "spoken_display": spoken_display,
+            "axes_tokens": axes_parts,
+            "axes_map": {
+                axis: value for axis, value in axis_tokens_map.items() if value
+            },
+            "axes_summary": axes_desc,
+            "voice_hint": voice_hint,
+        }
+
         _add(
             entry_label,
             f"Apply persona stance ({axes_desc})",
             lambda preset_key=key: actions.user.persona_set_preset(preset_key),  # type: ignore[attr-defined]
             voice_hint=voice_hint,
+            metadata=metadata,
         )
 
     intent_alias_map: Dict[str, str] = {}
@@ -392,18 +411,30 @@ def help_index(
             or (getattr(preset, "intent", "") or canonical_key).strip()
         )
         spoken = _intent_spoken(canonical_key, preset, display, canonical_intent)
-        voice_hint = f"Say: intent {spoken}".strip()
+        spoken_display = (spoken or "").strip() or display or canonical_intent
+        spoken_alias = spoken_display.strip().lower() or canonical_intent.lower()
+        voice_hint = f"Say: intent {spoken_display}".strip()
         description = (
             f"Apply intent stance ({canonical_intent})"
             if canonical_intent
             else "Apply intent stance"
         )
-        entry_label = f"Intent preset: {display} (say: intent {spoken})"
+        entry_label = f"Intent preset: {display} (say: intent {spoken_display})"
+        metadata = {
+            "kind": "intent",
+            "intent_key": canonical_key,
+            "canonical_intent": canonical_intent,
+            "display_label": display,
+            "spoken_alias": spoken_alias,
+            "spoken_display": spoken_display,
+            "voice_hint": voice_hint,
+        }
         _add(
             entry_label,
             description,
             lambda preset_key=key: actions.user.intent_set_preset(preset_key),  # type: ignore[attr-defined]
             voice_hint=voice_hint,
+            metadata=metadata,
         )
 
     return entries

@@ -5,6 +5,7 @@ from unittest.mock import MagicMock, patch
 from talon import actions, clip
 
 from lib import helpHub
+from lib.helpDomain import HelpIndexEntry
 
 
 class _DummyButton(helpHub.HubButton):
@@ -164,6 +165,42 @@ def test_help_hub_persona_search_labels_surface_alias_metadata():
         helpHub.help_hub_close()
 
 
+def test_help_hub_search_results_include_persona_metadata():
+    from lib.personaConfig import persona_intent_catalog_snapshot
+
+    snapshot = persona_intent_catalog_snapshot()
+    expected_key = "teach_junior_dev"
+    expected_spoken = (
+        (snapshot.persona_presets[expected_key].spoken or expected_key).strip().lower()
+    )
+
+    helpHub.help_hub_open()
+    try:
+        helpHub.help_hub_set_filter(expected_spoken)
+        persona_results = [
+            btn
+            for btn in getattr(helpHub, "_search_results", [])
+            if btn.label.startswith("Persona preset:")
+        ]
+        assert persona_results, "Expected persona preset search result"
+        persona_metadata = {
+            (getattr(btn, "metadata", {}) or {}).get("persona_key"): getattr(
+                btn, "metadata", {}
+            )
+            for btn in persona_results
+            if getattr(btn, "metadata", None)
+        }
+        assert persona_metadata, "Persona metadata missing from search results"
+        metadata = persona_metadata.get(expected_key)
+        assert metadata, f"Missing metadata for persona {expected_key}"
+        assert metadata.get("kind") == "persona"
+        assert metadata.get("persona_key") == expected_key
+        assert metadata.get("spoken_alias") == expected_spoken
+        assert metadata.get("axes_summary")
+    finally:
+        helpHub.help_hub_close()
+
+
 def test_help_hub_uses_persona_orchestrator_for_presets(monkeypatch):
     persona_preset = SimpleNamespace(
         key="mentor",
@@ -261,6 +298,46 @@ def test_help_hub_intent_search_labels_surface_alias_metadata():
         assert "(say: intent decide)" in label_lower
         assert "apply intent stance" in entry.description.lower()
         assert "say: intent decide" in entry.voice_hint.lower()
+    finally:
+        helpHub.help_hub_close()
+
+
+def test_help_hub_search_results_include_intent_metadata():
+    from lib.personaConfig import persona_intent_catalog_snapshot
+
+    snapshot = persona_intent_catalog_snapshot()
+    expected_key = "decide"
+    expected_display = (
+        snapshot.intent_display_map.get(expected_key)
+        or snapshot.intent_presets[expected_key].label
+        or expected_key
+    ).strip()
+    expected_alias = expected_display.lower()
+
+    helpHub.help_hub_open()
+    try:
+        helpHub.help_hub_set_filter(expected_alias)
+        intent_results = [
+            btn
+            for btn in getattr(helpHub, "_search_results", [])
+            if btn.label.startswith("Intent preset:")
+        ]
+        assert intent_results, "Expected intent preset search result"
+        intent_metadata = {
+            (getattr(btn, "metadata", {}) or {}).get("intent_key"): getattr(
+                btn, "metadata", {}
+            )
+            for btn in intent_results
+            if getattr(btn, "metadata", None)
+        }
+        assert intent_metadata, "Intent metadata missing from search results"
+        metadata = intent_metadata.get(expected_key)
+        assert metadata, f"Missing metadata for intent {expected_key}"
+        assert metadata.get("kind") == "intent"
+        assert metadata.get("intent_key") == expected_key
+        assert metadata.get("canonical_intent") == expected_key
+        assert metadata.get("display_label") == expected_display
+        assert metadata.get("spoken_alias") == expected_alias
     finally:
         helpHub.help_hub_close()
 

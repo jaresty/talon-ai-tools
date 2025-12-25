@@ -464,6 +464,90 @@ if bootstrap is not None:
                 if canonical_intent:
                     self.assertIn(canonical_intent, entry.description)
 
+        def test_help_index_persona_entries_include_metadata(self) -> None:
+            from lib.personaConfig import persona_intent_maps
+
+            maps = persona_intent_maps(force_refresh=True)
+            index = help_index(
+                [],
+                patterns=[],
+                presets=[],
+                read_list_items=lambda _name: [],
+                catalog={},
+            )
+
+            persona_entries = {
+                (entry.metadata or {}).get("persona_key"): entry
+                for entry in index
+                if entry.label.startswith("Persona preset: ")
+            }
+            self.assertTrue(persona_entries, "Persona metadata missing from help index")
+
+            for key in maps.persona_presets.keys():
+                entry = persona_entries.get(key)
+                self.assertIsNotNone(
+                    entry, f"Missing help index entry for persona {key}"
+                )
+                metadata = entry.metadata or {}
+                self.assertEqual(metadata.get("kind"), "persona")
+                self.assertEqual(metadata.get("persona_key"), key)
+                axes_summary = metadata.get("axes_summary", "")
+                self.assertTrue(axes_summary, f"Missing axes summary for persona {key}")
+                axes_tokens = metadata.get("axes_tokens", []) or []
+                self.assertTrue(
+                    all(str(token or "").strip() for token in axes_tokens),
+                    f"Axes tokens missing for persona {key}",
+                )
+                voice_hint = (entry.voice_hint or "").lower()
+                if "say: persona" in voice_hint:
+                    hinted_alias = voice_hint.split("say: persona", 1)[1].strip()
+                    self.assertEqual(
+                        metadata.get("spoken_alias"),
+                        hinted_alias,
+                        f"Persona metadata mismatch for {key}",
+                    )
+                self.assertTrue(
+                    metadata.get("spoken_alias"),
+                    f"Spoken alias missing for persona {key}",
+                )
+
+            intent_entries = {
+                (entry.metadata or {}).get("intent_key"): entry
+                for entry in index
+                if entry.label.startswith("Intent preset: ")
+            }
+            self.assertTrue(intent_entries, "Intent metadata missing from help index")
+
+            for key in maps.intent_presets.keys():
+                entry = intent_entries.get(key)
+                self.assertIsNotNone(
+                    entry, f"Missing help index entry for intent {key}"
+                )
+                metadata = entry.metadata or {}
+                self.assertEqual(metadata.get("kind"), "intent")
+                self.assertEqual(metadata.get("intent_key"), key)
+                canonical_intent = metadata.get("canonical_intent", "")
+                self.assertTrue(
+                    canonical_intent,
+                    f"Canonical intent missing for {key}",
+                )
+                display_value = metadata.get("display_label", "").strip()
+                self.assertTrue(
+                    display_value, f"Display label missing for intent {key}"
+                )
+                voice_hint = (entry.voice_hint or "").lower()
+                if "say: intent" in voice_hint:
+                    hinted_alias = voice_hint.split("say: intent", 1)[1].strip()
+                    self.assertEqual(
+                        metadata.get("spoken_alias"),
+                        hinted_alias,
+                        f"Intent metadata mismatch for {key}",
+                    )
+                self.assertTrue(
+                    metadata.get("spoken_alias"),
+                    f"Spoken alias missing for intent {key}",
+                )
+
 
 else:
     if not TYPE_CHECKING:

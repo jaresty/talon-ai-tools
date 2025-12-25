@@ -1,6 +1,6 @@
 # ADR-0062 – Canonicalize GPT Surface Orchestrators and History Gating
 
-Status: Proposed  
+Status: In Progress — metadata orchestration + export guardrails (Loops 0001-0036)  
 Date: 2025-12-24  
 Owners: Talon AI tools maintainers
 
@@ -124,3 +124,4 @@ These orchestrators must reuse existing facades (e.g. `axisCatalog`, `requestLif
 - Introduce shared surface guidance coordinator; delegate canvas mouse/key handlers and persona summaries.
 - Implement history lifecycle façade; update request history/log modules and canvases to use it.
 - Extend existing tests (history, persona, GUI suites) with necessary characterization coverage before behaviour changes.
+- Completed (Loops 0034–0036): centralize help metadata summary helper, regenerate cheat sheet snapshot, and guard README coverage via `_tests/test_readme_guardrails_docs.py`.

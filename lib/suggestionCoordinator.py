@@ -8,6 +8,7 @@ from .modelState import GPTState
 from .axisMappings import axis_registry_tokens
 from .modelHelpers import notify
 from .personaConfig import persona_intent_maps
+from .personaOrchestrator import get_persona_intent_orchestrator
 
 
 def _recipe_has_directional(recipe: str) -> bool:
@@ -17,11 +18,18 @@ def _recipe_has_directional(recipe: str) -> bool:
     return any(tok in directionals for tok in tokens)
 
 
+_get_persona_orchestrator = get_persona_intent_orchestrator
+
+
 def record_suggestions(
     suggestions: Iterable[dict[str, str]], source_key: str | None
 ) -> None:
     """Persist the latest suggestions and source key in GPTState."""
     debug_mode = bool(getattr(GPTState, "debug_enabled", False))
+    try:
+        _get_persona_orchestrator()
+    except Exception:
+        pass
     try:
         maps = persona_intent_maps()
     except Exception:

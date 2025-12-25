@@ -192,9 +192,24 @@
 - residual_risks:
   - History drawers still reach into `requestHistoryActions` for persona fragments; future loops should migrate those helpers as the persona orchestrator consolidates metadata.
 - next_work:
-  - Behaviour: extract persona intent catalog façade — python3 -m pytest _tests/test_model_suggestion_gui.py _tests/test_model_response_canvas.py — future-shaping: centralise persona lookup logic for canvases and GPT docs.
+  - Behaviour: extract persona intent catalog façade — python3 - m pytest _tests/test_model_suggestion_gui.py _tests/test_model_response_canvas.py — future-shaping: centralise persona lookup logic for canvases and GPT docs.
+
+## 2025-12-25 – Loop 019 (kind: implementation)
+- helper_version: helper:v20251223.1
+- focus: ADR-0062 §Refactor Plan – Guidance Surface Coordinator (persona orchestrator alias)
+- riskiest_assumption: Suggestion coordinator still reached into `personaConfig` directly; new guard `_tests/test_suggestion_coordinator.py::test_suggestion_coordinator_uses_persona_orchestrator` fails until the facade alias exists (probability medium, impact medium on Concordance surface guidance).
+- validation_targets:
+  - python3 -m pytest _tests/test_suggestion_coordinator.py
+- evidence: docs/adr/evidence/0062/loop-0019.md
+- rollback_plan: git stash push -- lib/suggestionCoordinator.py && python3 -m pytest _tests/test_suggestion_coordinator.py::SuggestionCoordinatorTests::test_suggestion_coordinator_uses_persona_orchestrator && git stash pop
+- delta_summary: helper:diff-snapshot=2 files changed, 18 insertions(+); suggestion coordinator now aliases the persona orchestrator, and guardrails confirm lifecycle alignment.
+- residual_risks:
+  - Canonicalization still lives in suggestion coordinator; follow-up should migrate the normalization logic to the orchestrator to remove duplication.
+- next_work:
+  - Behaviour: migrate suggestion canonicalization to orchestrator helpers — python3 -m pytest _tests/test_suggestion_coordinator.py _tests/test_model_suggestion_gui.py — future-shaping: ensure persona axis normalization is centralized.
 
 ## 2025-12-25 – Loop 017 (kind: implementation)
+
 
 - helper_version: helper:v20251223.1
 - focus: ADR-0062 §Refactor Plan – History Lifecycle Orchestrator (GPT axis snapshot usage)

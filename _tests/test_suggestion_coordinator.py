@@ -451,6 +451,16 @@ if bootstrap is not None:
 
             GPTState.last_suggest_context = {}
 
+        def test_suggestion_coordinator_uses_persona_orchestrator(self) -> None:
+            import talon_user.lib.personaOrchestrator as persona_orchestrator
+            import talon_user.lib.suggestionCoordinator as suggestion_module
+
+            self.assertIs(
+                getattr(suggestion_module, "_get_persona_orchestrator"),
+                persona_orchestrator.get_persona_intent_orchestrator,
+            )
+
+
 else:
     if not TYPE_CHECKING:
 

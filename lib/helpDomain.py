@@ -6,7 +6,7 @@ from typing import Any, Callable, List, Optional, Tuple
 
 from talon import actions
 
-from .requestLog import axis_snapshot_from_axes
+from .historyLifecycle import axes_snapshot_from_axes as axis_snapshot_from_axes
 
 
 @dataclass(frozen=True)

@@ -164,9 +164,24 @@
 - residual_risks:
   - History save/export callers still build drop-reason messages inline; consider lifecycle helpers to centralise messaging.
 - next_work:
-  - Behaviour: audit remaining drop-reason consumers (requestGating) — python3 -m pytest _tests/test_request_gating.py — future-shaping: fold request gating drop setters into the lifecycle façade where feasible.
+  - Behaviour: audit remaining drop-reason consumers (requestGating) — python3 -m pytest _tests/test_request_gating.py — future-shaping: ensure request gating drop setters into the lifecycle façade where feasible.
+
+## 2025-12-25 – Loop 015 (kind: implementation)
+- helper_version: helper:v20251223.1
+- focus: ADR-0062 §Refactor Plan – History Lifecycle Orchestrator (Help domain axis snapshots)
+- riskiest_assumption: HelpDomain continued importing `axis_snapshot_from_axes` from `requestLog`; `python3 -m pytest _tests/test_help_hub.py` fails once the guard asserts lifecycle usage (probability medium, impact medium on Concordance visibility).
+- validation_targets:
+  - python3 -m pytest _tests/test_help_hub.py
+- evidence: docs/adr/evidence/0062/loop-0015.md
+- rollback_plan: git stash push -- lib/helpDomain.py && python3 -m pytest _tests/test_help_hub.py::test_help_domain_uses_lifecycle_axis_snapshot && git stash pop
+- delta_summary: helper:diff-snapshot=2 files changed, 10 insertions(+), 1 deletion(-); helpDomain reuses lifecycle axis snapshots and guardrails enforce façade alignment.
+- residual_risks:
+  - Other modules may still import axis snapshot helpers directly; audit remaining direct imports (`historyQuery`, etc.) in later loops.
+- next_work:
+  - Behaviour: migrate streaming coordinator drop messaging — python3 -m pytest _tests/test_streaming_coordinator.py — future-shaping: ensure telemetry consumers rely on lifecycle drop helpers.
 
 ## 2025-12-25 – Loop 013 (kind: implementation)
+
 - helper_version: helper:v20251223.1
 - focus: ADR-0062 §Refactor Plan – History Lifecycle Orchestrator (request gating drop helpers)
 - riskiest_assumption: Request gating continued importing drop helpers from `requestLog`; `python3 -m pytest _tests/test_request_gating.py::RequestGatingTests::test_request_gating_uses_lifecycle_drop_helpers` fails to assert façade alignment (probability medium, impact medium-high on Concordance visibility).

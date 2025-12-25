@@ -69,6 +69,15 @@ def test_help_hub_cheat_sheet_includes_all_intent_tokens():
     assert "understand" in " ".join(buckets.get("task", [])).lower()
 
 
+def test_help_domain_uses_lifecycle_axis_snapshot():
+    import talon_user.lib.helpDomain as help_domain  # type: ignore
+    import talon_user.lib.historyLifecycle as history_lifecycle  # type: ignore
+
+    assert (
+        help_domain.axis_snapshot_from_axes is history_lifecycle.axes_snapshot_from_axes
+    )
+
+
 def test_help_hub_quick_help_closes_hub_before_open(monkeypatch):
     # Open the hub and patch quick help to assert close-before-open ordering.
     helpHub.help_hub_open()

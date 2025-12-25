@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+import json
 import os
 import time
 from typing import Callable, Dict, List, Optional, Any
@@ -917,9 +918,7 @@ def _on_key(evt) -> None:  # pragma: no cover - visual
 _hub_key_handler = _on_key
 
 
-def _metadata_snapshot_summary_lines() -> List[str]:
-    lines: List[str] = []
-
+def _metadata_snapshot_records() -> tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:
     metadata_entries: List[HelpIndexEntry] = []
     try:
         metadata_entries = help_index(
@@ -935,53 +934,108 @@ def _metadata_snapshot_summary_lines() -> List[str]:
     try:
         snapshot = help_metadata_snapshot(metadata_entries)
     except Exception:
-        return lines
+        return [], []
+
+    personas: List[Dict[str, Any]] = []
+    intents: List[Dict[str, Any]] = []
 
     if getattr(snapshot, "personas", None):
-        persona_lines: List[str] = []
         for persona in snapshot.personas:
             key = (persona.key or "").strip()
             if not key:
                 continue
             display_label = (persona.display_label or key).strip() or key
+            spoken_display = (persona.spoken_display or display_label).strip()
             spoken_alias = (
-                (persona.spoken_alias or persona.spoken_display or display_label)
+                (persona.spoken_alias or spoken_display or display_label)
                 .strip()
                 .lower()
             )
+            axes_tokens = [token for token in (persona.axes_tokens or ()) if token]
             axes_summary = (
                 persona.axes_summary or "No explicit axes"
             ).strip() or "No explicit axes"
-            persona_lines.append(
-                f"- persona {key} (say: persona {spoken_alias}): {display_label} ({axes_summary})"
+            personas.append(  # pylint: disable=list-comprehension
+                {
+                    "key": key,
+                    "display_label": display_label,
+                    "spoken_display": spoken_display,
+                    "spoken_alias": spoken_alias,
+                    "axes_summary": axes_summary,
+                    "axes_tokens": axes_tokens,
+                }
             )
-        if persona_lines:
-            lines.append("Persona metadata:")
-            lines.extend(persona_lines)
 
     if getattr(snapshot, "intents", None):
-        intent_lines: List[str] = []
         for intent in snapshot.intents:
             key = (intent.key or "").strip()
             if not key:
                 continue
             display_label = (intent.display_label or key).strip() or key
             canonical_intent = (intent.canonical_intent or key).strip() or key
+            spoken_display = (intent.spoken_display or display_label).strip()
             spoken_alias = (
-                (intent.spoken_alias or intent.spoken_display or display_label)
-                .strip()
-                .lower()
+                (intent.spoken_alias or spoken_display or display_label).strip().lower()
             )
-            intent_lines.append(
-                f"- intent {key} (say: intent {spoken_alias}): {display_label} ({canonical_intent})"
+            intents.append(
+                {
+                    "key": key,
+                    "display_label": display_label,
+                    "canonical_intent": canonical_intent,
+                    "spoken_display": spoken_display,
+                    "spoken_alias": spoken_alias,
+                }
             )
-        if intent_lines:
-            if lines:
-                lines.append("")
-            lines.append("Intent metadata:")
-            lines.extend(intent_lines)
+
+    return personas, intents
+
+
+def _metadata_snapshot_summary_lines() -> List[str]:
+    lines: List[str] = []
+
+    personas, intents = _metadata_snapshot_records()
+
+    if personas:
+        lines.append("Persona metadata:")
+        for persona in personas:
+            lines.append(
+                "- persona {key} (say: persona {alias}): {label} ({summary})".format(
+                    key=persona["key"],
+                    alias=persona["spoken_alias"],
+                    label=persona["display_label"],
+                    summary=persona["axes_summary"],
+                )
+            )
+
+    if intents:
+        if lines:
+            lines.append("")
+        lines.append("Intent metadata:")
+        for intent in intents:
+            lines.append(
+                "- intent {key} (say: intent {alias}): {label} ({canonical})".format(
+                    key=intent["key"],
+                    alias=intent["spoken_alias"],
+                    label=intent["display_label"],
+                    canonical=intent["canonical_intent"],
+                )
+            )
 
     return lines
+
+
+def _metadata_snapshot_json() -> str:
+    personas, intents = _metadata_snapshot_records()
+    payload = {"personas": personas, "intents": intents}
+    return json.dumps(payload, indent=2, sort_keys=True)
+
+
+def _copy_metadata_snapshot_json() -> None:
+    try:
+        clip.set_text(_metadata_snapshot_json())
+        actions.app.notify("Help Hub: Metadata JSON copied")
+    except Exception:
+        pass
 
 
 def _cheat_sheet_text() -> str:
@@ -1442,6 +1496,12 @@ def _build_buttons() -> List[HubButton]:
             voice_hint="Say: model help hub (then copy)",
         ),
         HubButton(
+            label="Copy metadata JSON",
+            description="Copy persona/intent metadata as JSON",
+            handler=_copy_metadata_snapshot_json,
+            voice_hint="Say: model help hub (then copy metadata)",
+        ),
+        HubButton(
             label="Close",
             description="Close the Help Hub",
             handler=lambda: help_hub_close(),
@@ -1860,6 +1920,12 @@ class UserActions:
         if _reject_if_request_in_flight():
             return
         _copy_cheat_sheet()
+
+    def help_hub_copy_metadata_json():
+        """Copy Help Hub persona/intent metadata as JSON"""
+        if _reject_if_request_in_flight():
+            return
+        _copy_metadata_snapshot_json()
 
     def help_hub_test_click(label: str):
         """Test helper: invoke a hub button by label (for unit tests)."""

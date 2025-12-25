@@ -351,3 +351,17 @@
   - Metadata summary remains text-only; follow-up loop may expose structured JSON exports for automation consumers.
 - next_work:
   - Behaviour: expose structured metadata export for automation (JSON) — python3 -m pytest _tests/test_help_hub.py — future-shaping: keep downstream tooling aligned with canonical metadata formats.
+
+## 2025-12-25 – Loop 027 (kind: implementation)
+- helper_version: helper:v20251223.1
+- focus: ADR-0062 §Refactor Plan – Guidance Surface Coordinator (structured JSON metadata export)
+- riskiest_assumption: Automation consumers would continue scraping text-only metadata summaries without a structured export; `python3 -m pytest _tests/test_help_hub.py::test_copy_metadata_snapshot_json -q` failed against the previous implementation (probability medium, impact medium on Concordance automation coverage).
+- validation_targets:
+  - python3 -m pytest _tests/test_help_hub.py _tests/test_help_domain.py _tests/test_help_hub_guard.py
+- evidence: docs/adr/evidence/0062/loop-0027.md
+- rollback_plan: git restore --source=HEAD -- lib/helpHub.py _tests/test_help_hub.py && python3 -m pytest _tests/test_help_hub.py _tests/test_help_domain.py _tests/test_help_hub_guard.py
+- delta_summary: helper:diff-snapshot=2 files changed, 126 insertions(+), 22 deletions(-); factors metadata extraction into `_metadata_snapshot_records()`, adds JSON export helpers plus a Help Hub button/action, and extends guardrails with JSON-focused tests.
+- residual_risks:
+  - JSON payload currently lacks schema versioning or provenance metadata; schedule a follow-up loop to embed schema fields for automation clients.
+- next_work:
+  - Behaviour: add schema version + provenance fields to metadata payload — python3 -m pytest _tests/test_help_hub.py — future-shaping: keep automation clients resilient to future changes.

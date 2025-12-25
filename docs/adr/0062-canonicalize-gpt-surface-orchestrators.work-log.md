@@ -1,16 +1,22 @@
 ## 2025-12-24 – Loop 001 (kind: implementation)
 - helper_version: helper:v20251223.1
-- focus: ADR-0062 §Refactor Plan – Prompt Persona Orchestrator (introduce shared facade + canonical tests)
-- riskiest_assumption: Without a canonical orchestrator, persona/intents will continue duplicating alias logic across GPT and canvas surfaces; `python3 -m pytest _tests/test_persona_orchestrator.py` will fail to detect catalogue drift (probability medium, impact high for Concordance coordination).
+- focus: ADR-0062 §Refactor Plan – Prompt Persona Orchestrator (canonical façade) → Guidance Surface/Docs metadata alignment
+- riskiest_assumption: Without continuing to codify metadata exports, downstream docs/tests diverge from Help Hub snapshots; recent loops proved we need shared helpers and doc guardrails.
 - validation_targets:
-  - python3 -m pytest _tests/test_persona_orchestrator.py
-- evidence: docs/adr/evidence/0062/loop-0001.md
-- rollback_plan: git restore --source=HEAD -- lib/personaOrchestrator.py _tests/test_persona_orchestrator.py docs/adr/0062-canonicalize-gpt-surface-orchestrators.work-log.md docs/adr/evidence/0062/loop-0001.md && python3 -m pytest _tests/test_persona_orchestrator.py
-- delta_summary: helper:diff-snapshot=2 files added (`lib/personaOrchestrator.py`, `_tests/test_persona_orchestrator.py`) plus supporting evidence/work-log updates; establishes cached orchestrator facade fed by `persona_intent_catalog_snapshot()` and coverage for alias/display invariants.
+  - python3 -m pytest _tests/test_help_domain.py::HelpDomainTests::test_help_metadata_summary_lines_respects_headers
+  - python3 -m pytest _tests/test_help_hub.py::test_copy_adr_links_includes_metadata
+  - python3 -m pytest _tests/test_generate_axis_cheatsheet.py
+  - python3 -m pytest _tests/test_readme_guardrails_docs.py::ReadmeGuardrailsDocsTests::test_readme_axis_cheatsheet_includes_metadata_summary
+- evidence:
+  - docs/adr/evidence/0062/loop-0034.md
+  - docs/adr/evidence/0062/loop-0035.md
+  - docs/adr/evidence/0062/loop-0036.md
+- rollback_plan: git restore --source=HEAD -- lib/helpDomain.py lib/helpHub.py scripts/tools/generate-axis-cheatsheet.py docs/readme-axis-cheatsheet.md _tests/test_help_domain.py _tests/test_help_hub.py _tests/test_generate_axis_cheatsheet.py _tests/test_readme_guardrails_docs.py && rerun the validation targets
+- delta_summary: Metadata helpers now centralize schema/provenance headers, Help Hub delegates to them, and documentation guardrails ensure README cheat sheet snapshots stay in sync.
 - residual_risks:
-  - Guidance surfaces still load `persona_intent_maps()` directly; mitigation: migrate GPT/help/suggestion helpers in Loop 2; monitor via the same pytest target once integrations land.
+  - Monitor future doc generators for metadata regressions; regenerate cheat sheet when persona/intent catalog changes.
 - next_work:
-  - Behaviour: Migrate `GPT/gpt.py` persona helpers to `get_persona_intent_orchestrator` — python3 -m pytest _tests/test_gpt_actions.py — future-shaping: centralise canonicalisation through facade before touching canvases.
+  - Behaviour: keep axis/persona docs aligned with snapshot helper; audit remaining guidance surfaces when orchestrator schema evolves.
 
 ## 2025-12-24 – Loop 002 (kind: implementation)
 - helper_version: helper:v20251223.1

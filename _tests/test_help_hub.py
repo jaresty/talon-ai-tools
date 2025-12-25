@@ -624,11 +624,20 @@ def test_copy_metadata_snapshot_json(monkeypatch):
     monkeypatch.setattr(
         clip, "set_text", lambda value: captured.setdefault("text", value)
     )
+    monkeypatch.setattr(
+        helpHub.time, "strftime", lambda fmt, ts: "2025-12-25T17:00:00Z"
+    )
 
     helpHub._copy_metadata_snapshot_json()
 
     text = captured.get("text", "")
     payload = json.loads(text)
+    schema = payload["schema"]
+    assert schema["version"] == "help-hub.metadata.v1"
+    assert schema["generated_at"] == "2025-12-25T17:00:00Z"
+    provenance = payload["provenance"]
+    assert provenance["source"] == "lib.helpHub"
+    assert provenance["adr"] == "ADR-0062"
     assert payload["personas"][0]["key"] == "demo_persona"
     assert payload["intents"][0]["canonical_intent"] == "decide"
 

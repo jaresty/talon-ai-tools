@@ -84,6 +84,14 @@ _tap_key_handler_registered = False
 _hub_key_handler = None  # set after canvas creation
 _handlers_registered = False
 
+_HELP_METADATA_SCHEMA_VERSION = "help-hub.metadata.v1"
+_HELP_METADATA_PROVENANCE_BASE = {
+    "adr": "ADR-0062",
+    "source": "lib.helpHub",
+    "helper_version": "helper:v20251223.1",
+    "generated_by": "help_metadata_snapshot",
+}
+
 
 def _request_is_in_flight() -> bool:
     """Return True when a GPT request is currently running."""
@@ -1026,7 +1034,15 @@ def _metadata_snapshot_summary_lines() -> List[str]:
 
 def _metadata_snapshot_json() -> str:
     personas, intents = _metadata_snapshot_records()
-    payload = {"personas": personas, "intents": intents}
+    payload = {
+        "schema": {
+            "version": _HELP_METADATA_SCHEMA_VERSION,
+            "generated_at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+        },
+        "provenance": dict(_HELP_METADATA_PROVENANCE_BASE),
+        "personas": personas,
+        "intents": intents,
+    }
     return json.dumps(payload, indent=2, sort_keys=True)
 
 

@@ -365,3 +365,17 @@
   - JSON payload currently lacks schema versioning or provenance metadata; schedule a follow-up loop to embed schema fields for automation clients.
 - next_work:
   - Behaviour: add schema version + provenance fields to metadata payload — python3 -m pytest _tests/test_help_hub.py — future-shaping: keep automation clients resilient to future changes.
+
+## 2025-12-25 – Loop 028 (kind: implementation)
+- helper_version: helper:v20251223.1
+- focus: ADR-0062 §Refactor Plan – Guidance Surface Coordinator (metadata schema provenance)
+- riskiest_assumption: Without explicit schema + provenance fields, automation clients cannot observe metadata evolution; `python3 -m pytest _tests/test_help_hub.py::test_copy_metadata_snapshot_json` remains red when the JSON payload omits version identifiers (probability medium, impact medium-high on Concordance automation resilience).
+- validation_targets:
+  - python3 -m pytest _tests/test_help_hub.py::test_copy_metadata_snapshot_json
+- evidence: docs/adr/evidence/0062/loop-0028.md
+- rollback_plan: git restore --source=HEAD -- lib/helpHub.py _tests/test_help_hub.py && python3 -m pytest _tests/test_help_hub.py::test_copy_metadata_snapshot_json
+- delta_summary: helper:diff-snapshot=2 files changed, 26 insertions(+), 1 deletion(-); `_metadata_snapshot_json()` now embeds schema version + provenance metadata and guardrails assert the canonical payload structure.
+- residual_risks:
+  - Text-based metadata exports still omit schema/provenance cues; mitigation: extend summary/ADR copy helpers in the next loop and monitor via the same pytest target.
+- next_work:
+  - Behaviour: propagate schema/provenance metadata into Help Hub summary copy — python3 -m pytest _tests/test_help_hub.py _tests/test_help_domain.py — future-shaping: keep textual exports aligned with the canonical JSON schema for automation consumers.

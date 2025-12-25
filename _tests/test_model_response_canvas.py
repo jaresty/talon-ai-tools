@@ -179,6 +179,79 @@ if bootstrap is not None:
                 modelResponseCanvas.last_drop_reason, history_lifecycle.last_drop_reason
             )
 
+        def test_response_canvas_uses_persona_orchestrator(self) -> None:
+            persona_preset = PersonaPreset(
+                key="mentor",
+                label="Mentor",
+                spoken="mentor spoken",
+                voice="as teacher",
+                audience="to programmer",
+                tone="kindly",
+            )
+            intent_preset = SimpleNamespace(
+                key="understand",
+                label="Understand",
+                intent="understand",
+            )
+            orchestrator = SimpleNamespace(
+                persona_presets={"mentor": persona_preset},
+                intent_presets={"understand": intent_preset},
+                intent_display_map={"understand": "Understand display"},
+                canonical_axis_token=lambda axis, alias: {
+                    "voice": "as teacher",
+                    "audience": "to programmer",
+                    "tone": "kindly",
+                }.get(axis, alias),
+                canonical_persona_key=lambda alias: "mentor" if alias else "",
+                canonical_intent_key=lambda alias: "understand" if alias else "",
+            )
+
+            with (
+                patch(
+                    "talon_user.lib.modelResponseCanvas._get_persona_orchestrator",
+                    return_value=orchestrator,
+                ) as get_orchestrator,
+                patch(
+                    "talon_user.lib.modelResponseCanvas.persona_intent_maps",
+                    side_effect=RuntimeError("maps unavailable"),
+                ),
+            ):
+                modelResponseCanvas.reset_persona_intent_maps_cache()
+                modelResponseCanvas._response_canvas = None  # type: ignore[attr-defined]
+                modelResponseCanvas._response_handlers_registered = False  # type: ignore[attr-defined]
+                GPTState.last_response = "answer"
+                GPTState.last_recipe = "describe · gist"
+                recipe_snapshot = {
+                    "recipe": "describe · gist",
+                    "static_prompt": "describe",
+                    "directional": "fog",
+                    "persona_preset_key": "",
+                    "persona_preset_label": "",
+                    "persona_preset_spoken": "",
+                    "persona_voice": "voice alias",
+                    "persona_audience": "audience alias",
+                    "persona_tone": "tone alias",
+                    "intent_preset_key": "",
+                    "intent_preset_label": "",
+                    "intent_purpose": "intent alias",
+                    "intent_display": "",
+                    "scope_tokens": ["focus"],
+                    "method_tokens": ["plan"],
+                    "form_tokens": ["plain"],
+                    "channel_tokens": ["slack"],
+                }
+                captured = self._render_recap_lines(
+                    recipe_snapshot,
+                    grammar_phrase="model run alias",
+                    recap_snapshot={"response": "answer", "meta": ""},
+                )
+
+            get_orchestrator.assert_called()
+
+            combined = "\n".join(captured)
+            self.assertIn("as teacher · to programmer · kindly", combined)
+            self.assertIn("Intent: Understand display (understand)", combined)
+
         def test_open_without_answer_is_safe(self) -> None:
             GPTState.last_response = ""
             _ensure_response_canvas()

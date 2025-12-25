@@ -220,9 +220,24 @@
 - residual_risks:
   - Orchestrator still computed locally per call; a future loop can memoize the canonical snapshot for reuse across surfaces.
 - next_work:
-  - Behaviour: expose orchestrator helpers to model canvases — python3 -m pytest _tests/test_model_response_canvas.py _tests/test_model_pattern_gui.py — future-shaping: ensure canvases leverage orchestrator metadata.
+  - Behaviour: expose orchestrator helpers to model canvases — python3 - m pytest _tests/test_model_response_canvas.py _tests/test_model_pattern_gui.py — future-shaping: ensure canvases leverage orchestrator metadata.
+
+## 2025-12-25 – Loop 021 (kind: implementation)
+- helper_version: helper:v20251223.1
+- focus: ADR-0062 §Refactor Plan – Guidance Surface Coordinator (canvas persona recaps)
+- riskiest_assumption: Response canvas still derived persona recaps from `persona_intent_maps`; `_tests/test_model_response_canvas.py::ModelResponseCanvasTests::test_response_canvas_uses_persona_orchestrator` demonstrates the gap (probability medium, impact medium-high on Concordance surface parity).
+- validation_targets:
+  - python3 -m pytest _tests/test_model_response_canvas.py _tests/test_model_pattern_gui.py
+- evidence: docs/adr/evidence/0062/loop-0021.md
+- rollback_plan: git stash push -- lib/modelResponseCanvas.py && python3 -m pytest _tests/test_model_response_canvas.py::ModelResponseCanvasTests::test_response_canvas_uses_persona_orchestrator && git stash pop
+- delta_summary: helper:diff-snapshot=2 files changed, 336 insertions(+), 67 deletions(-); response canvas recaps now reuse the persona orchestrator and doc tests cover the contract.
+- residual_risks:
+  - Model help/pattern canvases still hydrate persona labels independently; consider sharing the new orchestrator helpers across canvases next.
+- next_work:
+  - Behaviour: share orchestrator persona summaries with help hub — python3 -m pytest _tests/test_model_help_canvas.py _tests/test_help_hub.py — future-shaping: align help surfaces with the canonical persona orchestrator.
 
 ## 2025-12-25 – Loop 017 (kind: implementation)
+
 
 
 - helper_version: helper:v20251223.1

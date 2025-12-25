@@ -1,4 +1,4 @@
-from typing import Callable, Optional
+from typing import Callable, Optional, Any, Dict
 
 from talon import Context, Module, actions, canvas, clip, ui, skia, settings
 import traceback
@@ -18,6 +18,7 @@ from .historyLifecycle import (
 from .dropReasonUtils import render_drop_reason
 
 from .axisConfig import axis_docs_for
+from .axisMappings import axis_registry_tokens
 from .suggestionCoordinator import (
     last_recipe_snapshot,
     last_recap_snapshot,
@@ -28,6 +29,7 @@ from .modelHelpers import notify
 from .overlayHelpers import apply_canvas_blocking, clamp_scroll
 from .overlayLifecycle import close_overlays, close_common_overlays
 from .personaConfig import persona_intent_maps
+from .personaOrchestrator import get_persona_intent_orchestrator
 from . import personaConfig as _persona_config_module
 
 mod = Module()
@@ -293,6 +295,7 @@ _response_handlers_registered: bool = False
 _last_hide_handler: Optional[Callable] = None
 _last_recap_log: Optional[tuple[str, str, str, str, str, str]] = None
 _PERSONA_INTENT_MAPS_CACHE = None
+_get_persona_orchestrator = get_persona_intent_orchestrator
 
 
 def reset_persona_intent_maps_cache() -> None:
@@ -1127,24 +1130,166 @@ def _default_draw_response(c: canvas.Canvas) -> None:  # pragma: no cover - visu
         persona_maps = _persona_intent_maps_cached()
     except Exception:
         persona_maps = None
-    intent_display_lookup: dict[str, str] = {}
-    if persona_maps is not None:
-        raw_display_map = getattr(persona_maps, "intent_display_map", {}) or {}
-        intent_display_lookup = {}
-        for key, value in dict(raw_display_map).items():
-            key_str = str(key or "").strip().lower()
-            if not key_str:
-                continue
-            intent_display_lookup[key_str] = str(value or "").strip()
 
-    def _lookup_intent_display(*candidates: str) -> str:
-        for candidate in candidates:
-            key_str = str(candidate or "").strip().lower()
-            if not key_str:
+    try:
+        orchestrator = _get_persona_orchestrator()
+    except Exception:
+        orchestrator = None
+
+    persona_presets_lookup: dict[str, Any] = {}
+    if orchestrator and getattr(orchestrator, "persona_presets", None):
+        persona_presets_lookup.update(dict(orchestrator.persona_presets or {}))
+    if persona_maps and getattr(persona_maps, "persona_presets", None):
+        persona_presets_lookup.update(dict(persona_maps.persona_presets or {}))
+
+    persona_aliases_lookup: dict[str, str] = {}
+    if orchestrator and getattr(orchestrator, "persona_aliases", None):
+        for alias, canonical in dict(orchestrator.persona_aliases or {}).items():
+            alias_key = str(alias or "").strip().lower()
+            canonical_value = str(canonical or "").strip()
+            if alias_key and canonical_value:
+                persona_aliases_lookup.setdefault(alias_key, canonical_value)
+    if persona_maps and getattr(persona_maps, "persona_preset_aliases", None):
+        for alias, canonical in dict(persona_maps.persona_preset_aliases or {}).items():
+            alias_key = str(alias or "").strip().lower()
+            canonical_value = str(canonical or "").strip()
+            if alias_key and canonical_value:
+                persona_aliases_lookup.setdefault(alias_key, canonical_value)
+
+    axis_alias_lookup: dict[str, dict[str, str]] = {}
+    if orchestrator and getattr(orchestrator, "axis_alias_map", None):
+        for axis, mapping in dict(orchestrator.axis_alias_map or {}).items():
+            axis_key = str(axis or "").strip().lower()
+            if not axis_key:
                 continue
-            display_value = intent_display_lookup.get(key_str)
-            if display_value:
-                return display_value
+            aliases = axis_alias_lookup.setdefault(axis_key, {})
+            for alias, canonical in dict(mapping or {}).items():
+                alias_key = str(alias or "").strip().lower()
+                canonical_value = str(canonical or "").strip()
+                if alias_key and canonical_value:
+                    aliases.setdefault(alias_key, canonical_value)
+    if persona_maps and getattr(persona_maps, "persona_axis_tokens", None):
+        for axis, mapping in dict(persona_maps.persona_axis_tokens or {}).items():
+            axis_key = str(axis or "").strip().lower()
+            if not axis_key:
+                continue
+            aliases = axis_alias_lookup.setdefault(axis_key, {})
+            for alias, canonical in dict(mapping or {}).items():
+                alias_key = str(alias or "").strip().lower()
+                canonical_value = str(canonical or "").strip()
+                if alias_key and canonical_value:
+                    aliases.setdefault(alias_key, canonical_value)
+
+    intent_presets_lookup: dict[str, Any] = {}
+    if orchestrator and getattr(orchestrator, "intent_presets", None):
+        intent_presets_lookup.update(dict(orchestrator.intent_presets or {}))
+    if persona_maps and getattr(persona_maps, "intent_presets", None):
+        intent_presets_lookup.update(dict(persona_maps.intent_presets or {}))
+
+    intent_aliases_lookup: dict[str, str] = {}
+    if orchestrator and getattr(orchestrator, "intent_aliases", None):
+        for alias, canonical in dict(orchestrator.intent_aliases or {}).items():
+            alias_key = str(alias or "").strip().lower()
+            canonical_value = str(canonical or "").strip()
+            if alias_key and canonical_value:
+                intent_aliases_lookup.setdefault(alias_key, canonical_value)
+    if persona_maps and getattr(persona_maps, "intent_preset_aliases", None):
+        for alias, canonical in dict(persona_maps.intent_preset_aliases or {}).items():
+            alias_key = str(alias or "").strip().lower()
+            canonical_value = str(canonical or "").strip()
+            if alias_key and canonical_value:
+                intent_aliases_lookup.setdefault(alias_key, canonical_value)
+
+    intent_synonyms_lookup: dict[str, str] = {}
+    if orchestrator and getattr(orchestrator, "intent_synonyms", None):
+        for alias, canonical in dict(orchestrator.intent_synonyms or {}).items():
+            alias_key = str(alias or "").strip().lower()
+            canonical_value = str(canonical or "").strip()
+            if alias_key and canonical_value:
+                intent_synonyms_lookup.setdefault(alias_key, canonical_value)
+    if persona_maps and getattr(persona_maps, "intent_synonyms", None):
+        for alias, canonical in dict(persona_maps.intent_synonyms or {}).items():
+            alias_key = str(alias or "").strip().lower()
+            canonical_value = str(canonical or "").strip()
+            if alias_key and canonical_value:
+                intent_synonyms_lookup.setdefault(alias_key, canonical_value)
+
+    intent_display_lookup: dict[str, str] = {}
+    if orchestrator and getattr(orchestrator, "intent_display_map", None):
+        for key, value in dict(orchestrator.intent_display_map or {}).items():
+            canonical_key = str(key or "").strip()
+            display_value = str(value or "").strip()
+            if canonical_key and display_value:
+                intent_display_lookup.setdefault(canonical_key.lower(), display_value)
+    if persona_maps and getattr(persona_maps, "intent_display_map", None):
+        for key, value in dict(persona_maps.intent_display_map or {}).items():
+            canonical_key = str(key or "").strip()
+            display_value = str(value or "").strip()
+            if canonical_key and display_value:
+                intent_display_lookup.setdefault(canonical_key.lower(), display_value)
+
+    def _canonical_axis_token(axis: str, raw_value: str) -> str:
+        token = str(raw_value or "").strip()
+        if not token:
+            return ""
+        axis_key = str(axis or "").strip()
+        axis_lower = axis_key.lower()
+        if orchestrator:
+            try:
+                canonical = orchestrator.canonical_axis_token(axis_lower, token)
+            except Exception:
+                canonical = ""
+            if canonical:
+                return canonical
+        alias_map = axis_alias_lookup.get(axis_lower, {})
+        canonical = alias_map.get(token.lower())
+        if canonical:
+            return canonical
+        try:
+            registry = axis_registry_tokens(axis_key)
+        except Exception:
+            registry = []
+        for value in registry:
+            if value and value.lower() == token.lower():
+                return value
+        return token
+
+    def _canonical_persona_key_value(*aliases: str) -> str:
+        for alias in aliases:
+            candidate = str(alias or "").strip()
+            if not candidate:
+                continue
+            if orchestrator:
+                try:
+                    canonical = orchestrator.canonical_persona_key(candidate)
+                except Exception:
+                    canonical = ""
+                if canonical:
+                    return canonical
+            canonical = persona_aliases_lookup.get(candidate.lower())
+            if canonical:
+                return canonical
+        return ""
+
+    def _canonical_intent_key_value(*aliases: str) -> str:
+        for alias in aliases:
+            candidate = str(alias or "").strip()
+            if not candidate:
+                continue
+            if orchestrator:
+                try:
+                    canonical = orchestrator.canonical_intent_key(candidate)
+                except Exception:
+                    canonical = ""
+                if canonical:
+                    return canonical
+            lower = candidate.lower()
+            canonical = intent_aliases_lookup.get(lower)
+            if canonical:
+                return canonical
+            synonym = intent_synonyms_lookup.get(lower)
+            if synonym:
+                return synonym
         return ""
 
     axis_parts: list[str] = []
@@ -1173,42 +1318,62 @@ def _default_draw_response(c: canvas.Canvas) -> None:  # pragma: no cover - visu
         if value:
             axis_parts.append(value)
 
-    persona_key = str(recipe_snapshot.get("persona_preset_key") or "").strip()
-    persona_label = str(recipe_snapshot.get("persona_preset_label") or "").strip()
-    persona_spoken = str(recipe_snapshot.get("persona_preset_spoken") or "").strip()
-    persona_voice = str(recipe_snapshot.get("persona_voice") or "").strip()
-    persona_audience = str(recipe_snapshot.get("persona_audience") or "").strip()
-    persona_tone = str(recipe_snapshot.get("persona_tone") or "").strip()
+    persona_key_raw = str(recipe_snapshot.get("persona_preset_key") or "").strip()
+    persona_label_raw = str(recipe_snapshot.get("persona_preset_label") or "").strip()
+    persona_spoken_raw = str(recipe_snapshot.get("persona_preset_spoken") or "").strip()
+    persona_voice = _canonical_axis_token(
+        "voice", str(recipe_snapshot.get("persona_voice") or "")
+    )
+    persona_audience = _canonical_axis_token(
+        "audience", str(recipe_snapshot.get("persona_audience") or "")
+    )
+    persona_tone = _canonical_axis_token(
+        "tone", str(recipe_snapshot.get("persona_tone") or "")
+    )
     persona_axes_bits = [
         bit for bit in (persona_voice, persona_audience, persona_tone) if bit
     ]
     persona_axes_compact = " · ".join(persona_axes_bits)
-    persona_alias = (persona_spoken or persona_label or persona_key).strip()
-    canonical_persona = persona_key
-    preset_for_persona = None
-    if persona_maps is not None:
-        raw_alias_map = getattr(persona_maps, "persona_preset_aliases", {}) or {}
-        alias_map = {
-            str(k or "").strip().lower(): str(v or "").strip()
-            for k, v in dict(raw_alias_map).items()
-            if str(k or "").strip() and str(v or "").strip()
-        }
-        for candidate in (
-            persona_alias,
-            persona_spoken,
-            persona_label,
-            persona_key,
-        ):
-            candidate_key = str(candidate or "").strip()
-            if not candidate_key:
+    persona_alias = (persona_spoken_raw or persona_label_raw or persona_key_raw).strip()
+
+    canonical_persona = _canonical_persona_key_value(
+        persona_alias,
+        persona_spoken_raw,
+        persona_label_raw,
+        persona_key_raw,
+    )
+    if not canonical_persona:
+        canonical_persona = persona_key_raw
+    preset_for_persona = (
+        persona_presets_lookup.get(canonical_persona) if canonical_persona else None
+    )
+    if (
+        preset_for_persona is None
+        and persona_presets_lookup
+        and (persona_voice or persona_audience or persona_tone)
+    ):
+        voice_l = persona_voice.lower()
+        audience_l = persona_audience.lower()
+        tone_l = persona_tone.lower()
+        for candidate in persona_presets_lookup.values():
+            c_voice = (getattr(candidate, "voice", "") or "").lower()
+            c_audience = (getattr(candidate, "audience", "") or "").lower()
+            c_tone = (getattr(candidate, "tone", "") or "").lower()
+            if c_voice and c_voice != voice_l:
                 continue
-            canonical_lookup = alias_map.get(candidate_key.lower())
-            if canonical_lookup:
-                canonical_persona = canonical_lookup.strip() or canonical_persona
-                break
-        persona_presets_lookup = getattr(persona_maps, "persona_presets", {}) or {}
-        if canonical_persona:
-            preset_for_persona = persona_presets_lookup.get(canonical_persona)
+            if c_audience and c_audience != audience_l:
+                continue
+            if c_tone and c_tone != tone_l:
+                continue
+            if not (c_voice or c_audience or c_tone):
+                continue
+            preset_for_persona = candidate
+            canonical_persona = (
+                getattr(candidate, "key", canonical_persona) or canonical_persona
+            )
+            break
+
+    persona_display = persona_alias or canonical_persona
     if preset_for_persona is not None:
         fallback_display = (
             getattr(preset_for_persona, "spoken", None)
@@ -1216,17 +1381,16 @@ def _default_draw_response(c: canvas.Canvas) -> None:  # pragma: no cover - visu
             or canonical_persona
         )
         fallback_display = str(fallback_display or "").strip()
-        if fallback_display and (
-            not persona_alias or persona_alias.lower() == canonical_persona.lower()
-        ):
-            persona_alias = fallback_display
-    persona_display = persona_alias or canonical_persona
+        if fallback_display:
+            persona_display = fallback_display
+
     persona_summary_line = ""
     if persona_display:
         descriptor = persona_display
         if (
             canonical_persona
             and descriptor
+            and canonical_persona
             and descriptor.lower() != canonical_persona.lower()
         ):
             descriptor = f"{descriptor} ({canonical_persona})"
@@ -1236,27 +1400,59 @@ def _default_draw_response(c: canvas.Canvas) -> None:  # pragma: no cover - visu
     elif persona_axes_compact:
         persona_summary_line = persona_axes_compact
 
-    intent_key = str(recipe_snapshot.get("intent_preset_key") or "").strip()
-    intent_label = str(recipe_snapshot.get("intent_preset_label") or "").strip()
-    intent_purpose = str(recipe_snapshot.get("intent_purpose") or "").strip()
+    intent_key_raw = str(recipe_snapshot.get("intent_preset_key") or "").strip()
+    intent_label_raw = str(recipe_snapshot.get("intent_preset_label") or "").strip()
+    intent_purpose_raw = str(recipe_snapshot.get("intent_purpose") or "").strip()
     intent_display = str(recipe_snapshot.get("intent_display") or "").strip()
-    if not intent_display:
-        intent_display = _lookup_intent_display(
-            intent_key,
-            intent_purpose,
-            intent_label,
+
+    canonical_intent = _canonical_intent_key_value(
+        intent_key_raw,
+        intent_label_raw,
+        intent_display,
+        intent_purpose_raw,
+    )
+    if not canonical_intent and intent_purpose_raw:
+        canonical_intent = (
+            intent_synonyms_lookup.get(intent_purpose_raw.lower()) or intent_purpose_raw
         )
-    canonical_intent = intent_purpose or intent_key or intent_label
-    if not intent_display:
-        intent_display = canonical_intent
+
+    intent_preset = (
+        intent_presets_lookup.get(canonical_intent) if canonical_intent else None
+    )
+    if intent_preset is not None:
+        canonical_intent = intent_preset.key or canonical_intent
+        display_value = (
+            intent_display_lookup.get(canonical_intent.lower())
+            or intent_display_lookup.get((intent_preset.intent or "").lower())
+            or (getattr(intent_preset, "label", "") or canonical_intent)
+        )
+        intent_display = display_value or intent_display
+        if not intent_purpose_raw:
+            intent_purpose_raw = intent_preset.intent or intent_purpose_raw
+    else:
+        if not canonical_intent:
+            canonical_intent = intent_purpose_raw or intent_key_raw or intent_label_raw
+        if not intent_display:
+            intent_display = (
+                intent_display_lookup.get((intent_purpose_raw or "").lower())
+                or intent_display_lookup.get((intent_key_raw or "").lower())
+                or intent_display_lookup.get((intent_label_raw or "").lower())
+                or canonical_intent
+                or ""
+            )
+
     intent_summary_line = ""
     if intent_display:
-        if canonical_intent and intent_display.lower() != canonical_intent.lower():
-            intent_summary_line = f"{intent_display} ({canonical_intent})"
-        else:
-            intent_summary_line = intent_display
+        descriptor = intent_display
+        if (
+            canonical_intent
+            and descriptor
+            and descriptor.lower() != str(canonical_intent or "").lower()
+        ):
+            descriptor = f"{descriptor} ({canonical_intent})"
+        intent_summary_line = descriptor
     elif canonical_intent:
-        intent_summary_line = canonical_intent
+        intent_summary_line = str(canonical_intent)
 
     hydrated_parts: list[str] = []
     if persona_summary_line:

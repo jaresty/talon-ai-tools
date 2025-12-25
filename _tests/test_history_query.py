@@ -36,10 +36,10 @@ if bootstrap is not None:
                 "directional": ["fog", "rog"],
             }
 
-            from talon_user.lib.requestHistoryActions import axis_snapshot_from_axes
+            from talon_user.lib.historyLifecycle import axes_snapshot_from_axes
 
             direct = actions_axes_for(axes)
-            snapshot = axis_snapshot_from_axes(axes)
+            snapshot = axes_snapshot_from_axes(axes)
             self.assertEqual(snapshot.known_axes(), direct)
 
         def test_history_axes_for_reuses_lifecycle_helper(self) -> None:
@@ -49,6 +49,10 @@ if bootstrap is not None:
             self.assertIs(
                 history_query_module._history_axes_for_impl,
                 history_lifecycle.history_axes_for,
+            )
+            self.assertIs(
+                history_query_module._axis_snapshot_from_axes_impl,
+                history_lifecycle.axes_snapshot_from_axes,
             )
 
         def test_history_summary_lines_delegates_to_actions_helper(self) -> None:

@@ -18,7 +18,8 @@ from ..lib.talonSettings import (
 
 from ..lib.axisMappings import axis_docs_map
 from ..lib.staticPromptConfig import STATIC_PROMPT_CONFIG
-from ..lib.requestLog import KNOWN_AXIS_KEYS, axis_snapshot_from_axes
+from ..lib.requestLog import KNOWN_AXIS_KEYS
+from ..lib.historyLifecycle import axes_snapshot_from_axes as axis_snapshot_from_axes
 
 try:
     from ..lib.axisCatalog import (

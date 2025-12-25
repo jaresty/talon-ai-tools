@@ -194,6 +194,20 @@
 - next_work:
   - Behaviour: update GPT README/token scripts — python3 -m pytest _tests/test_generate_readme_axis_lists.py tests/test_gpt_readme_axis_lists.py — future-shaping: ensure doc tooling consistently uses lifecycle axis helpers.
 
+## 2025-12-25 – Loop 017 (kind: implementation)
+- helper_version: helper:v20251223.1
+- focus: ADR-0062 §Refactor Plan – History Lifecycle Orchestrator (GPT axis snapshot usage)
+- riskiest_assumption: `GPT.gpt` still reached into `requestLog` for axis snapshots; `_tests/test_gpt_readme_axis_lists.py::test_gpt_module_uses_lifecycle_axis_snapshot` fails until the module re-exports the lifecycle helper (probability medium, impact medium on Concordance docs and guidance).
+- validation_targets:
+  - python3 -m pytest _tests/test_gpt_readme_axis_lists.py
+- evidence: docs/adr/evidence/0062/loop-0017.md
+- rollback_plan: git stash push -- GPT/gpt.py && python3 -m pytest _tests/test_gpt_readme_axis_lists.py::GPTReadmeAxisListsTests::test_gpt_module_uses_lifecycle_axis_snapshot && git stash pop
+- delta_summary: helper:diff-snapshot=2 files changed, 55 insertions(+), 10 deletions(-); GPT module imports lifecycle axis snapshots and guardrails enforce the shared façade.
+- residual_risks:
+  - Other persona/prompt helpers in `GPT/gpt.py` still depend on inline catalog logic; future loops should extract them into the prompt persona orchestrator.
+- next_work:
+  - Behaviour: migrate GPT persona/intent docs to shared catalog — python3 -m pytest _tests/test_model_suggestion_gui.py _tests/test_model_response_canvas.py — future-shaping: centralise persona intent metadata for canvases and docs.
+
 ## 2025-12-25 – Loop 013 (kind: implementation)
 
 - helper_version: helper:v20251223.1

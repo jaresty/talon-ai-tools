@@ -36,6 +36,31 @@ if bootstrap is not None:
                 self.assertFalse(history_drawer._request_is_in_flight())
             helper.assert_called_once_with()
 
+        def test_refresh_history_drawer_uses_guard(self) -> None:
+            HistoryDrawerState.showing = False
+            with (
+                patch.object(history_drawer, "_refresh_entries") as refresh_entries,
+                patch.object(
+                    history_drawer,
+                    "guard_surface_request",
+                    return_value=False,
+                ) as guard,
+            ):
+                history_drawer.refresh_history_drawer()
+            guard.assert_called_once_with(
+                surface="history_drawer", source="requestHistoryDrawer"
+            )
+            refresh_entries.assert_called_once_with()
+
+        def test_action_refresh_delegates_to_helper(self) -> None:
+            HistoryDrawerState.showing = True
+            try:
+                with patch.object(history_drawer, "refresh_history_drawer") as helper:
+                    history_drawer.UserActions.request_history_drawer_refresh()
+            finally:
+                HistoryDrawerState.showing = False
+            helper.assert_called_once_with()
+
         def test_reject_if_request_in_flight_notifies_with_drop_message(
             self,
         ) -> None:

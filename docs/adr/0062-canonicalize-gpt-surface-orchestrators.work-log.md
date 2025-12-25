@@ -576,3 +576,18 @@
 - next_work:
   - Behaviour: migrate remaining history actions/log helpers to the lifecycle façade — python3 -m pytest _tests/test_request_history_actions.py _tests/test_history_lifecycle.py — future-shaping: ensure exports and logs share the new helper stack.
 
+## 2025-12-25 – Loop 051 (kind: implementation)
+- helper_version: helper:v20251223.1
+- focus: ADR-0062 §Refactor Plan – History Lifecycle Orchestrator (drawer refresh action delegates to façade)
+- riskiest_assumption: Drawer actions would keep bypassing the shared façade, letting gating drift (probability medium, impact medium-high on lifecycle alignment).
+- validation_targets:
+  - python3 -m pytest _tests/test_request_history_drawer_gating.py::RequestHistoryDrawerGatingTests::test_action_refresh_delegates_to_helper
+- evidence:
+  - docs/adr/evidence/0062/loop-0051.md
+- rollback_plan: git restore --source=HEAD -- _tests/test_request_history_drawer_gating.py lib/requestHistoryDrawer.py && python3 -m pytest _tests/test_request_history_drawer_gating.py::RequestHistoryDrawerGatingTests::test_action_refresh_delegates_to_helper
+- delta_summary: helper:diff-snapshot=2 files changed, 26 insertions(+), 8 deletions(-); adds façade-focused drawer tests and routes the action through `refresh_history_drawer()`.
+- residual_risks:
+  - Canvas refresh remains best-effort; evaluate overlay helper integration after lifecycle façade stabilises.
+- next_work:
+  - Behaviour: expose snapshot entry helpers via `historyLifecycle` façade — python3 -m pytest _tests/test_request_history_actions.py::RequestHistoryActionTests::test_copy_history_to_file_renders_axis_snapshot — future-shaping: centralise history snapshot factories for downstream consumers.
+

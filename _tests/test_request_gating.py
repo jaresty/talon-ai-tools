@@ -307,6 +307,13 @@ if bootstrap is not None:
             self.assertEqual(exit_code, 1)
             self.assertEqual(requestLog.gating_drop_stats().get("in_flight"), 1)
 
+        def test_request_gating_uses_lifecycle_drop_helpers(self) -> None:
+            import talon_user.lib.historyLifecycle as history_lifecycle
+
+            self.assertIs(
+                requestGating.set_drop_reason, history_lifecycle.set_drop_reason
+            )
+
 else:
     if not TYPE_CHECKING:
 

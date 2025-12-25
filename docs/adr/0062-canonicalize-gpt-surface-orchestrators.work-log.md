@@ -165,3 +165,17 @@
   - History save/export callers still build drop-reason messages inline; consider lifecycle helpers to centralise messaging.
 - next_work:
   - Behaviour: audit remaining drop-reason consumers (requestGating) — python3 -m pytest _tests/test_request_gating.py — future-shaping: fold request gating drop setters into the lifecycle façade where feasible.
+
+## 2025-12-25 – Loop 013 (kind: implementation)
+- helper_version: helper:v20251223.1
+- focus: ADR-0062 §Refactor Plan – History Lifecycle Orchestrator (request gating drop helpers)
+- riskiest_assumption: Request gating continued importing drop helpers from `requestLog`; `python3 -m pytest _tests/test_request_gating.py::RequestGatingTests::test_request_gating_uses_lifecycle_drop_helpers` fails to assert façade alignment (probability medium, impact medium-high on Concordance visibility).
+- validation_targets:
+  - python3 -m pytest _tests/test_request_gating.py
+- evidence: docs/adr/evidence/0062/loop-0013.md
+- rollback_plan: git stash push -- lib/requestGating.py && python3 -m pytest _tests/test_request_gating.py::RequestGatingTests::test_request_gating_uses_lifecycle_drop_helpers && git stash pop
+- delta_summary: helper:diff-snapshot=2 files changed, 9 insertions(+), 1 deletion(-); requestGating now imports lifecycle drop helper, and tests enforce the shared façade.
+- residual_risks:
+  - requestGating still calls `drop_reason_message` directly; planned lifecycle messaging helper will consolidate message formatting.
+- next_work:
+  - Behaviour: consolidate drop reason message formatting — python3 -m pytest _tests/test_request_gating.py _tests/test_request_history_actions.py — future-shaping: expose lifecycle helper for drop reason messages so modules no longer depend on `requestLog` formatting.

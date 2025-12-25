@@ -106,6 +106,20 @@ if bootstrap is not None:
             set_reason.assert_not_called()
             self.assertEqual(HistoryDrawerState.last_message, "")
 
+        def test_history_drawer_uses_lifecycle_drop_helpers(self) -> None:
+            import talon_user.lib.historyLifecycle as history_lifecycle
+
+            self.assertIs(
+                history_drawer.set_drop_reason, history_lifecycle.set_drop_reason
+            )
+            self.assertIs(
+                history_drawer.last_drop_reason, history_lifecycle.last_drop_reason
+            )
+            self.assertIs(
+                history_drawer.consume_last_drop_reason_record,
+                history_lifecycle.consume_last_drop_reason_record,
+            )
+
 else:
     if not TYPE_CHECKING:
 

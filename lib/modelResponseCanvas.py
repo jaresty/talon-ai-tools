@@ -11,7 +11,7 @@ from .modelDestination import _parse_meta
 from .requestState import RequestPhase, RequestState
 from .requestGating import request_is_in_flight, try_begin_request
 from .requestBus import current_state
-from .requestLog import (
+from .historyLifecycle import (
     last_drop_reason,
     set_drop_reason,
 )

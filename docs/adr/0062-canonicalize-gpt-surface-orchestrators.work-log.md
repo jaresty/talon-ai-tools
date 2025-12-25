@@ -137,3 +137,17 @@
   - History save/export helpers still call `set_drop_reason` directly; mitigation: migrate save/export flows to lifecycle façade next and validate via `_tests/test_request_history_actions.py`.
 - next_work:
   - Behaviour: align history save/export drop handling with lifecycle — python3 -m pytest _tests/test_request_history_actions.py — future-shaping: ensure persistence paths reuse the shared drop-reason orchestration before refactoring history saves.
+
+## 2025-12-25 – Loop 011 (kind: implementation)
+- helper_version: helper:v20251223.1
+- focus: ADR-0062 §Refactor Plan – History Lifecycle Orchestrator (history drawer + response canvas drop helpers)
+- riskiest_assumption: Drawer/response canvases would keep calling `requestLog` helpers; `python3 -m pytest _tests/test_request_history_drawer_gating.py _tests/test_model_response_canvas.py` fails until the lifecycle façade owns those imports (probability medium, impact high on Concordance visibility).
+- validation_targets:
+  - python3 -m pytest _tests/test_request_history_drawer_gating.py _tests/test_model_response_canvas.py
+- evidence: docs/adr/evidence/0062/loop-0011.md
+- rollback_plan: git stash push -- lib/requestHistoryDrawer.py lib/modelResponseCanvas.py && python3 -m pytest _tests/test_request_history_drawer_gating.py _tests/test_model_response_canvas.py && git stash pop
+- delta_summary: helper:diff-snapshot=4 files changed, 27 insertions(+), 3 deletions(-); request history drawer/response canvas now import lifecycle drop helpers, and tests assert façade equivalence.
+- residual_risks:
+  - History save/export flows still set drop reasons directly; next loop aligns those pathways with the façade.
+- next_work:
+  - Behaviour: migrate history save/export drop handling — python3 -m pytest _tests/test_request_history_actions.py — future-shaping: ensure persistence and exports delegate to lifecycle helpers before refactoring saves.

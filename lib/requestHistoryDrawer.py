@@ -7,8 +7,8 @@ from collections.abc import Sequence
 
 from talon import Module, actions, canvas, ui
 
-from .requestLog import (
-    all_entries,
+from .requestLog import all_entries
+from .historyLifecycle import (
     consume_last_drop_reason_record,
     last_drop_reason,
     set_drop_reason,

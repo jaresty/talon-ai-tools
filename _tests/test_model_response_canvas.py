@@ -169,6 +169,16 @@ if bootstrap is not None:
             self.assertGreater(dummy.show_calls, 0)
             self.assertEqual(ResponseCanvasState.scroll_y, 123.0)
 
+        def test_response_canvas_uses_lifecycle_drop_helpers(self) -> None:
+            import talon_user.lib.historyLifecycle as history_lifecycle
+
+            self.assertIs(
+                modelResponseCanvas.set_drop_reason, history_lifecycle.set_drop_reason
+            )
+            self.assertIs(
+                modelResponseCanvas.last_drop_reason, history_lifecycle.last_drop_reason
+            )
+
         def test_open_without_answer_is_safe(self) -> None:
             GPTState.last_response = ""
             _ensure_response_canvas()

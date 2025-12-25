@@ -604,5 +604,21 @@
 - residual_risks:
   - Persistence entrypoints still reside in history actions; consider façade wrappers for log exports next.
 - next_work:
-  - Behaviour: align request log persistence with shared snapshot entry — python3 -m pytest _tests/test_request_history_actions.py _tests/test_history_query.py — future-shaping: remove bespoke axis/persona plumbing from request log consumers.
+  - Behaviour: align request log persistence with shared snapshot entry — python3 -m pytest _tests/test_history_lifecycle.py::HistoryLifecycleTests::test_history_snapshot_entry_factory — future-shaping: centralise history snapshot factories for downstream consumers.
+
+## 2025-12-25 – Loop 053 (kind: implementation)
+- helper_version: helper:v20251223.1
+- focus: ADR-0062 §Refactor Plan – History Lifecycle Orchestrator (align request log persistence with snapshot façade)
+- riskiest_assumption: Snapshot helpers remaining inside `requestHistoryActions` would block other history modules from using the façade (probability medium, impact high on Concordance visibility).
+- validation_targets:
+  - python3 -m pytest _tests/test_history_lifecycle.py::HistoryLifecycleTests::test_history_snapshot_entry_factory
+  - python3 -m pytest _tests/test_request_history_actions.py::RequestHistoryActionTests::test_history_axes_for_delegates_to_lifecycle
+- evidence:
+  - docs/adr/evidence/0062/loop-0053.md
+- rollback_plan: git restore --source=HEAD -- _tests/test_history_lifecycle.py lib/historyLifecycle.py lib/requestHistoryActions.py && python3 -m pytest _tests/test_history_lifecycle.py::HistoryLifecycleTests::test_history_snapshot_entry_factory
+- delta_summary: helper:diff-snapshot=3 files changed, 158 insertions(+), 102 deletions(-); moves history snapshot entry helpers into `historyLifecycle` and reuses them from request history actions.
+- residual_risks:
+  - Request log exports still call bespoke helpers; follow-up loop will migrate telemetry/export paths to the façade.
+- next_work:
+  - Behaviour: migrate request log/export consumers to `historyLifecycle` snapshot helpers — python3 -m pytest _tests/test_history_query.py _tests/test_request_history_actions.py — future-shaping: ensure history logs and exports share the façade.
 

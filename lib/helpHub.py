@@ -20,6 +20,7 @@ from .helpDomain import (
     help_next_focus_label,
     help_activation_target,
     help_edit_filter_text,
+    help_metadata_snapshot,
     HelpIndexEntry,
 )
 from .requestGating import request_is_in_flight, try_begin_request
@@ -953,6 +954,22 @@ def _cheat_sheet_text() -> str:
     persona_lines: List[str] = []
     intent_lines: List[str] = []
     intent_bucket_lines: List[str] = []
+    persona_keys_covered: set[str] = set()
+    intent_keys_covered: set[str] = set()
+
+    metadata_entries: List[HelpIndexEntry] = []
+    try:
+        metadata_entries = help_index(
+            [],
+            patterns=[],
+            presets=[],
+            read_list_items=_read_list_items,
+            catalog=axis_catalog(),
+        )
+    except Exception:
+        metadata_entries = []
+
+    metadata_snapshot = help_metadata_snapshot(metadata_entries)
 
     orchestrator = None
     try:
@@ -960,40 +977,91 @@ def _cheat_sheet_text() -> str:
     except Exception:
         orchestrator = None
 
-    snapshot = None
+    catalog_snapshot = None
     try:
         from . import personaConfig as _persona_config_module
     except Exception:
         _persona_config_module = None
     else:
         try:
-            snapshot = _persona_config_module.persona_intent_catalog_snapshot()
+            catalog_snapshot = _persona_config_module.persona_intent_catalog_snapshot()
         except Exception:
-            snapshot = None
+            catalog_snapshot = None
 
     try:
         maps = persona_intent_maps()
     except Exception:
         maps = None
 
-    persona_items: List[tuple[str, object]] = []
+    if metadata_snapshot.personas:
+        for persona in metadata_snapshot.personas:
+            key = (persona.key or "").strip()
+            if not key or key in persona_keys_covered:
+                continue
+            display_label = (persona.display_label or key).strip()
+            spoken_display = (persona.spoken_display or display_label).strip()
+            axes_summary = (persona.axes_summary or "").strip()
+            override_preset = None
+            if orchestrator and getattr(orchestrator, "persona_presets", None):
+                override_preset = (orchestrator.persona_presets or {}).get(key)
+            if override_preset is not None:
+                override_label = (getattr(override_preset, "label", "") or "").strip()
+                if override_label:
+                    display_label = override_label
+                override_spoken = (getattr(override_preset, "spoken", "") or "").strip()
+                if override_spoken:
+                    spoken_display = override_spoken
+                stance_bits: List[str] = []
+                for attr in ("voice", "audience", "tone"):
+                    raw_value = str(getattr(override_preset, attr, "") or "").strip()
+                    canonical_value = raw_value
+                    if orchestrator:
+                        try:
+                            canonical_value = orchestrator.canonical_axis_token(
+                                attr, raw_value
+                            )
+                        except Exception:
+                            canonical_value = raw_value
+                        if not canonical_value:
+                            canonical_value = raw_value
+                    if canonical_value:
+                        stance_bits.append(canonical_value)
+                if stance_bits:
+                    axes_summary = " · ".join(stance_bits)
+            if not axes_summary:
+                axes_summary = (
+                    " · ".join(token for token in persona.axes_tokens if token)
+                    or "No explicit axes"
+                )
+            canonical_alias_source = (persona.spoken_alias or "").strip()
+            if not canonical_alias_source:
+                canonical_alias_source = spoken_display or display_label or key
+            spoken_alias = canonical_alias_source.strip().lower()
+            persona_lines.append(
+                f"- persona {key} (say: persona {spoken_alias}): {display_label} ({axes_summary})"
+            )
+            persona_keys_covered.add(key)
+
+    persona_candidates: Dict[str, object] = {}
     if orchestrator and getattr(orchestrator, "persona_presets", None):
         for key, preset in (orchestrator.persona_presets or {}).items():
             key_str = str(key or "").strip()
             if key_str:
-                persona_items.append((key_str, preset))
-    elif maps is not None:
+                persona_candidates.setdefault(key_str, preset)
+    if maps is not None and getattr(maps, "persona_presets", None):
         for key, preset in (maps.persona_presets or {}).items():
             key_str = str(key or "").strip()
             if key_str:
-                persona_items.append((key_str, preset))
-    elif snapshot and getattr(snapshot, "persona_presets", None):
-        for key, preset in (snapshot.persona_presets or {}).items():
+                persona_candidates.setdefault(key_str, preset)
+    if catalog_snapshot and getattr(catalog_snapshot, "persona_presets", None):
+        for key, preset in (catalog_snapshot.persona_presets or {}).items():
             key_str = str(key or "").strip()
             if key_str:
-                persona_items.append((key_str, preset))
+                persona_candidates.setdefault(key_str, preset)
 
-    for key, preset in persona_items:
+    for key, preset in persona_candidates.items():
+        if key in persona_keys_covered:
+            continue
         label = (getattr(preset, "label", "") or key).strip()
         spoken = (getattr(preset, "spoken", "") or label or key).strip()
         stance_bits: List[str] = []
@@ -1014,18 +1082,62 @@ def _cheat_sheet_text() -> str:
         persona_lines.append(
             f"- persona {key} (say: {say_hint}): {label} ({stance_summary})"
         )
+        persona_keys_covered.add(key)
 
-    intent_items: List[tuple[str, object]] = []
+    if metadata_snapshot.intents:
+        for intent in metadata_snapshot.intents:
+            key = (intent.key or "").strip()
+            if not key or key in intent_keys_covered:
+                continue
+            display_label = (intent.display_label or key).strip()
+            canonical_intent = (intent.canonical_intent or key).strip()
+            spoken_display = (
+                intent.spoken_display or display_label or canonical_intent
+            ).strip()
+            override_intent = None
+            if orchestrator and getattr(orchestrator, "intent_presets", None):
+                override_intent = (orchestrator.intent_presets or {}).get(key)
+            if override_intent is not None:
+                override_label = (getattr(override_intent, "label", "") or "").strip()
+                if override_label:
+                    display_label = override_label
+                override_spoken = (getattr(override_intent, "spoken", "") or "").strip()
+                if override_spoken:
+                    spoken_display = override_spoken
+                preset_canonical = (
+                    getattr(override_intent, "intent", "") or ""
+                ).strip()
+                if preset_canonical:
+                    canonical_intent = preset_canonical
+            if orchestrator and getattr(orchestrator, "intent_display_map", None):
+                display_override = (orchestrator.intent_display_map or {}).get(key)
+                if display_override:
+                    display_label = display_override.strip() or display_label
+                    if not spoken_display:
+                        spoken_display = display_label
+            if not spoken_display:
+                spoken_display = display_label or canonical_intent or key
+            canonical_alias_source = (intent.spoken_alias or "").strip()
+            if not canonical_alias_source:
+                canonical_alias_source = (
+                    spoken_display or display_label or canonical_intent or key
+                )
+            spoken_alias = canonical_alias_source.strip().lower()
+            intent_lines.append(
+                f"- intent {key} (say: intent {spoken_alias}): {display_label} ({canonical_intent})"
+            )
+            intent_keys_covered.add(key)
+    intent_candidates: Dict[str, object] = {}
     if orchestrator and getattr(orchestrator, "intent_presets", None):
         for key, preset in (orchestrator.intent_presets or {}).items():
             key_str = str(key or "").strip()
             if key_str:
-                intent_items.append((key_str, preset))
-    elif maps is not None:
+                intent_candidates.setdefault(key_str, preset)
+    if maps is not None and getattr(maps, "intent_presets", None):
         for key, preset in (maps.intent_presets or {}).items():
             key_str = str(key or "").strip()
             if key_str:
-                intent_items.append((key_str, preset))
+                intent_candidates.setdefault(key_str, preset)
 
     display_map: Dict[str, str] = {}
     if orchestrator and getattr(orchestrator, "intent_display_map", None):
@@ -1042,8 +1154,17 @@ def _cheat_sheet_text() -> str:
                 for k, v in dict(maps.intent_display_map or {}).items()
             }
         )
+    if catalog_snapshot and getattr(catalog_snapshot, "intent_display_map", None):
+        display_map.update(
+            {
+                str(k or "").strip().lower(): str(v or "").strip()
+                for k, v in dict(catalog_snapshot.intent_display_map or {}).items()
+            }
+        )
 
-    for key, preset in intent_items:
+    for key, preset in intent_candidates.items():
+        if key in intent_keys_covered:
+            continue
         display = (
             display_map.get(key.lower()) or getattr(preset, "label", "") or key
         ).strip()
@@ -1053,11 +1174,12 @@ def _cheat_sheet_text() -> str:
         intent_lines.append(
             f"- intent {key} (say: {say_hint}): {display or key} ({intent_token or key})"
         )
+        intent_keys_covered.add(key)
 
-    if snapshot and getattr(snapshot, "intent_buckets", None):
-        for bucket, keys in sorted(snapshot.intent_buckets.items()):
+    if catalog_snapshot and getattr(catalog_snapshot, "intent_buckets", None):
+        for bucket, keys in sorted(catalog_snapshot.intent_buckets.items()):
             display_tokens = [
-                (snapshot.intent_display_map.get(key, key) or "").strip()
+                (catalog_snapshot.intent_display_map.get(key, key) or "").strip()
                 for key in keys or []
             ]
             display_tokens = [token for token in display_tokens if token]

@@ -323,3 +323,17 @@
   - Help Hub cheat sheet/clipboard flows still build alias strings manually; plan to reuse the new metadata snapshot for copy/export surfaces and guard via `_tests/test_help_hub.py`.
 - next_work:
   - Behaviour: reuse persona/intent metadata for cheat sheet copy/export — python3 -m pytest _tests/test_help_hub.py _tests/test_help_domain.py _tests/test_help_hub_guardrails.py — future-shaping: ensure documentation/export paths consume the canonical metadata so Concordance guardrails stay aligned.
+
+## 2025-12-25 – Loop 025 (kind: implementation)
+- helper_version: helper:v20251223.1
+- focus: ADR-0062 §Refactor Plan – Guidance Surface Coordinator (reuse persona/intent metadata for Help Hub cheat sheet copy/export)
+- riskiest_assumption: Without redirecting Help Hub cheat sheet/export flows to the metadata snapshot, patched orchestrator casing would keep drifting; `python3 -m pytest _tests/test_help_hub.py` failed because the cheat sheet still emitted the legacy strings (probability medium, impact medium-high on Concordance visibility/export parity).
+- validation_targets:
+  - python3 -m pytest _tests/test_help_hub.py _tests/test_help_domain.py _tests/test_help_hub_guardrails.py
+- evidence: docs/adr/evidence/0062/loop-0025.md
+- rollback_plan: git restore --source=HEAD -- lib/helpDomain.py lib/helpHub.py _tests/test_help_domain.py _tests/test_help_hub.py && python3 -m pytest _tests/test_help_hub.py _tests/test_help_domain.py _tests/test_help_hub_guardrails.py
+- delta_summary: helper:diff-snapshot=4 files changed, 422 insertions(+), 20 deletions(-); introduces the metadata snapshot helper in `helpDomain`, refactors `helpHub` cheat sheet copy/export to consume it, and extends help hub/domain guardrails to assert canonical persona/intent metadata.
+- residual_risks:
+  - Help Hub ADR/clipboard exports still assemble metadata ad hoc; mitigation: migrate the remaining exports to `help_metadata_snapshot`; monitor via `_tests/test_help_hub.py` copy/export guardrails.
+- next_work:
+  - Behaviour: migrate Help Hub ADR link/clipboard exports to metadata snapshot — python3 -m pytest _tests/test_help_hub.py _tests/test_help_domain.py — future-shaping: keep documentation/export paths aligned with canonical persona/intent metadata.

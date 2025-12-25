@@ -5,7 +5,12 @@ from unittest.mock import MagicMock, patch
 from talon import actions, clip
 
 from lib import helpHub
-from lib.helpDomain import HelpIndexEntry
+from lib.helpDomain import (
+    HelpIndexEntry,
+    HelpMetadataSnapshot,
+    HelpPersonaMetadata,
+    HelpIntentMetadata,
+)
 
 
 class _DummyButton(helpHub.HubButton):
@@ -434,6 +439,123 @@ def test_cheat_sheet_persona_line_uses_persona_catalog():
 
     missing = {token for token in catalog_spoken if token and token not in alias_tokens}
     assert not missing, f"Missing persona presets in cheat sheet: {sorted(missing)}"
+
+
+def test_cheat_sheet_uses_help_index_metadata(monkeypatch):
+    persona_metadata = {
+        "kind": "persona",
+        "persona_key": "demo_persona",
+        "spoken_alias": "demo alias",
+        "spoken_display": "Demo Alias",
+        "axes_summary": "demo axis summary",
+    }
+    intent_metadata = {
+        "kind": "intent",
+        "intent_key": "decide",
+        "canonical_intent": "decide",
+        "spoken_alias": "decide alias",
+        "spoken_display": "Decide Alias",
+    }
+    entries = [
+        HelpIndexEntry(
+            label="Persona preset: Demo",
+            description="",
+            handler=lambda: None,
+            voice_hint="",
+            metadata=persona_metadata,
+        ),
+        HelpIndexEntry(
+            label="Intent preset: Decide",
+            description="",
+            handler=lambda: None,
+            voice_hint="",
+            metadata=intent_metadata,
+        ),
+    ]
+
+    monkeypatch.setattr(helpHub, "axis_catalog", lambda: {})
+    monkeypatch.setattr(
+        helpHub,
+        "persona_intent_maps",
+        lambda: (_ for _ in ()).throw(RuntimeError("maps disabled")),
+    )
+    monkeypatch.setattr(
+        helpHub,
+        "get_persona_intent_orchestrator",
+        lambda: (_ for _ in ()).throw(RuntimeError("orchestrator disabled")),
+    )
+    from lib import personaConfig as persona_config_module
+
+    monkeypatch.setattr(
+        persona_config_module,
+        "persona_intent_catalog_snapshot",
+        lambda: (_ for _ in ()).throw(RuntimeError("snapshot disabled")),
+    )
+    monkeypatch.setattr(
+        persona_config_module, "intent_bucket_spoken_tokens", lambda: {}
+    )
+    monkeypatch.setattr(helpHub, "_intent_spoken_buckets", lambda: {})
+    monkeypatch.setattr(helpHub, "help_index", lambda *args, **kwargs: entries)
+
+    text = helpHub._cheat_sheet_text().lower()
+
+    assert "demo alias" in text
+    assert "demo axis summary" in text
+    assert "decide alias" in text
+    assert "(say: intent decide alias)" in text
+
+
+def test_cheat_sheet_prefers_metadata_snapshot(monkeypatch):
+    persona_meta = HelpPersonaMetadata(
+        key="demo_persona",
+        display_label="Demo Persona",
+        spoken_display="Demo Persona",
+        spoken_alias="demo persona",
+        axes_summary="demo axis summary",
+        axes_tokens=("voice",),
+        voice_hint="Say: persona demo persona",
+    )
+    intent_meta = HelpIntentMetadata(
+        key="decide",
+        display_label="Decide",
+        canonical_intent="decide",
+        spoken_display="Decide",
+        spoken_alias="decide",
+        voice_hint="Say: intent decide",
+    )
+    snapshot = HelpMetadataSnapshot(personas=(persona_meta,), intents=(intent_meta,))
+
+    monkeypatch.setattr(helpHub, "axis_catalog", lambda: {})
+    monkeypatch.setattr(helpHub, "help_metadata_snapshot", lambda _entries: snapshot)
+    monkeypatch.setattr(
+        helpHub,
+        "persona_intent_maps",
+        lambda: (_ for _ in ()).throw(RuntimeError("maps disabled")),
+    )
+    monkeypatch.setattr(
+        helpHub,
+        "get_persona_intent_orchestrator",
+        lambda: (_ for _ in ()).throw(RuntimeError("orchestrator disabled")),
+    )
+    from lib import personaConfig as persona_config_module
+
+    monkeypatch.setattr(
+        persona_config_module,
+        "persona_intent_catalog_snapshot",
+        lambda: (_ for _ in ()).throw(RuntimeError("snapshot disabled")),
+    )
+    monkeypatch.setattr(
+        persona_config_module, "intent_bucket_spoken_tokens", lambda: {}
+    )
+    monkeypatch.setattr(helpHub, "_intent_spoken_buckets", lambda: {})
+
+    text = helpHub._cheat_sheet_text().lower()
+
+    assert (
+        "- persona demo_persona (say: persona demo persona): demo persona (demo axis summary)"
+        in text
+    )
+    assert "- intent decide (say: intent decide): decide (decide)" in text
 
 
 def test_help_hub_copy_cheat_sheet_includes_snapshot_aliases(monkeypatch):

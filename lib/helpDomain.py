@@ -20,6 +20,33 @@ class HelpIndexEntry:
     metadata: Dict[str, Any] | None = None
 
 
+@dataclass(frozen=True)
+class HelpPersonaMetadata:
+    key: str
+    display_label: str
+    spoken_display: str
+    spoken_alias: str
+    axes_summary: str
+    axes_tokens: tuple[str, ...]
+    voice_hint: str
+
+
+@dataclass(frozen=True)
+class HelpIntentMetadata:
+    key: str
+    display_label: str
+    canonical_intent: str
+    spoken_display: str
+    spoken_alias: str
+    voice_hint: str
+
+
+@dataclass(frozen=True)
+class HelpMetadataSnapshot:
+    personas: tuple[HelpPersonaMetadata, ...]
+    intents: tuple[HelpIntentMetadata, ...]
+
+
 def help_index(
     buttons: Sequence[Any],
     patterns: Sequence[Any],
@@ -438,6 +465,99 @@ def help_index(
         )
 
     return entries
+
+
+def help_metadata_snapshot(entries: Sequence[HelpIndexEntry]) -> HelpMetadataSnapshot:
+    persona_snapshots: list[HelpPersonaMetadata] = []
+    intent_snapshots: list[HelpIntentMetadata] = []
+    seen_persona_keys: set[str] = set()
+    seen_intent_keys: set[str] = set()
+
+    for entry in entries:
+        metadata = entry.metadata or {}
+        kind = str(metadata.get("kind") or "").strip().lower()
+        if kind == "persona":
+            key = str(metadata.get("persona_key") or "").strip()
+            display_label = str(metadata.get("display_label") or "").strip() or key
+            spoken_display = (
+                str(metadata.get("spoken_display") or "").strip() or display_label
+            )
+            spoken_alias = (
+                str(metadata.get("spoken_alias") or spoken_display).strip().lower()
+            )
+            axes_tokens = tuple(
+                str(token or "").strip()
+                for token in (metadata.get("axes_tokens") or [])
+                if str(token or "").strip()
+            )
+            axes_summary = str(metadata.get("axes_summary") or "").strip()
+            if not axes_summary and axes_tokens:
+                axes_summary = " · ".join(axes_tokens)
+            voice_hint = str(
+                metadata.get("voice_hint") or entry.voice_hint or ""
+            ).strip()
+            if not voice_hint and spoken_display:
+                voice_hint = f"Say: persona {spoken_display}".strip()
+            if not key:
+                key = spoken_alias or spoken_display.lower()
+            if not key or key in seen_persona_keys:
+                continue
+            persona_snapshots.append(
+                HelpPersonaMetadata(
+                    key=key,
+                    display_label=display_label or key,
+                    spoken_display=spoken_display or display_label or key,
+                    spoken_alias=spoken_alias
+                    or (spoken_display or display_label or key).lower(),
+                    axes_summary=axes_summary or "No explicit axes",
+                    axes_tokens=axes_tokens,
+                    voice_hint=voice_hint,
+                )
+            )
+            seen_persona_keys.add(key)
+        elif kind == "intent":
+            key = str(metadata.get("intent_key") or "").strip()
+            display_label = str(metadata.get("display_label") or "").strip() or key
+            canonical_intent = (
+                str(metadata.get("canonical_intent") or "").strip() or key
+            )
+            spoken_display = (
+                str(metadata.get("spoken_display") or "").strip() or display_label
+            )
+            spoken_alias = (
+                str(metadata.get("spoken_alias") or spoken_display).strip().lower()
+            )
+            voice_hint = str(
+                metadata.get("voice_hint") or entry.voice_hint or ""
+            ).strip()
+            if not voice_hint and spoken_display:
+                voice_hint = f"Say: intent {spoken_display}".strip()
+            if not key:
+                key = canonical_intent or spoken_alias
+            if not key or key in seen_intent_keys:
+                continue
+            intent_snapshots.append(
+                HelpIntentMetadata(
+                    key=key,
+                    display_label=display_label or key,
+                    canonical_intent=canonical_intent or key,
+                    spoken_display=spoken_display
+                    or display_label
+                    or canonical_intent
+                    or key,
+                    spoken_alias=spoken_alias
+                    or (
+                        spoken_display or display_label or canonical_intent or key
+                    ).lower(),
+                    voice_hint=voice_hint,
+                )
+            )
+            seen_intent_keys.add(key)
+
+    return HelpMetadataSnapshot(
+        personas=tuple(persona_snapshots),
+        intents=tuple(intent_snapshots),
+    )
 
 
 def help_search(query: str, index: Sequence[Any]) -> List[Any]:

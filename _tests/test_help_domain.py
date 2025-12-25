@@ -20,6 +20,7 @@ if bootstrap is not None:
         help_next_focus_label,
         help_activation_target,
         help_edit_filter_text,
+        help_metadata_snapshot,
     )
     from talon_user.lib.helpHub import HubButton
     from talon_user.lib.helpHub import build_search_index as hub_build_search_index
@@ -547,6 +548,43 @@ if bootstrap is not None:
                     metadata.get("spoken_alias"),
                     f"Spoken alias missing for intent {key}",
                 )
+
+        def test_help_metadata_snapshot_aggregates_index_metadata(self) -> None:
+            from lib.personaConfig import persona_intent_maps
+
+            maps = persona_intent_maps(force_refresh=True)
+            index = help_index(
+                [],
+                patterns=[],
+                presets=[],
+                read_list_items=lambda _name: [],
+                catalog={},
+            )
+            snapshot = help_metadata_snapshot(index)
+
+            persona_keys = {persona.key for persona in snapshot.personas}
+            intent_keys = {intent.key for intent in snapshot.intents}
+
+            expected_persona_keys = {
+                str(key or "").strip() for key in maps.persona_presets.keys()
+            }
+            expected_intent_keys = {
+                str(key or "").strip() for key in maps.intent_presets.keys()
+            }
+
+            self.assertTrue(
+                persona_keys.issuperset(expected_persona_keys),
+                "Metadata snapshot missing persona entries",
+            )
+            self.assertTrue(
+                intent_keys.issuperset(expected_intent_keys),
+                "Metadata snapshot missing intent entries",
+            )
+
+            self.assertTrue(all(persona.spoken_alias for persona in snapshot.personas))
+            self.assertTrue(all(persona.axes_summary for persona in snapshot.personas))
+            self.assertTrue(all(intent.spoken_alias for intent in snapshot.intents))
+            self.assertTrue(all(intent.canonical_intent for intent in snapshot.intents))
 
 
 else:

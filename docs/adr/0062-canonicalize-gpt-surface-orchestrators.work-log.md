@@ -423,3 +423,19 @@
   - Documentation snapshots still need regeneration to surface the metadata summary.
 - next_work:
   - Behaviour: regenerate README axis cheat sheet with the helper-backed metadata summary — python3 scripts/tools/generate-axis-cheatsheet.py --out docs/readme-axis-cheatsheet.md — future-shaping: ensure published docs reflect canonical metadata headers.
+
+## 2025-12-25 – Loop 035 (kind: implementation)
+- helper_version: helper:v20251223.1
+- focus: ADR-0062 §Refactor Plan – Guidance Surface Coordinator (regenerate axis cheat sheet metadata)
+- riskiest_assumption: README axis cheat sheet would still omit the shared metadata summary; the guard command that inspects the cheat sheet fails because the metadata section is absent (probability medium, impact medium on documentation parity).
+- validation_targets:
+  - python -c "import pathlib,sys; p=pathlib.Path('docs/readme-axis-cheatsheet.md');\nif not p.exists():\n    print('missing cheat sheet'); sys.exit(1)\ntext=p.read_text();\nif 'Help metadata summary' not in text:\n    print('metadata summary not found'); sys.exit(1)\nprint('metadata summary present')"
+  - python3 scripts/tools/generate-axis-cheatsheet.py --out docs/readme-axis-cheatsheet.md
+  - python3 -m pytest _tests/test_generate_axis_cheatsheet.py::GenerateAxisCheatSheetTests::test_generate_axis_cheatsheet_includes_catalog_tokens
+- evidence: docs/adr/evidence/0062/loop-0035.md
+- rollback_plan: git restore --source=HEAD -- docs/readme-axis-cheatsheet.md && python3 scripts/tools/generate-axis-cheatsheet.py --out docs/readme-axis-cheatsheet.md
+- delta_summary: helper:diff-snapshot=1 file changed, 44 insertions(+); regenerates the README axis cheat sheet to append the canonical help metadata summary emitted by the shared helper.
+- residual_risks:
+  - README guardrail tests still need a follow-up loop to ensure metadata regeneration stays automated.
+- next_work:
+  - Behaviour: sweep remaining doc exporters (axis README, guardrail docs) for metadata helper usage — python3 -m pytest _tests/test_readme_guardrails_docs.py — future-shaping: keep documentation aligned with the canonical metadata summary.

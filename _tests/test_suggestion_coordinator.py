@@ -460,6 +460,82 @@ if bootstrap is not None:
                 persona_orchestrator.get_persona_intent_orchestrator,
             )
 
+        def test_record_suggestions_uses_persona_orchestrator(self) -> None:
+            persona_preset = SimpleNamespace(
+                key="mentor",
+                label="Mentor",
+                spoken="mentor spoken",
+                voice="as teacher",
+                audience="to programmer",
+                tone="kindly",
+            )
+            intent_preset = SimpleNamespace(
+                key="understand",
+                label="Understand",
+                intent="understand",
+            )
+
+            orchestrator = SimpleNamespace(
+                persona_presets={"mentor": persona_preset},
+                intent_presets={"understand": intent_preset},
+                intent_display_map={"understand": "Understand display"},
+                canonical_axis_token=lambda axis, alias: {
+                    "voice": "as teacher",
+                    "audience": "to programmer",
+                    "tone": "kindly",
+                }.get(axis, "" if not alias else alias),
+                canonical_persona_key=lambda alias: "mentor" if alias else "",
+                canonical_intent_key=lambda alias: "understand" if alias else "",
+            )
+
+            def fake_axis_tokens(axis: str) -> list[str]:
+                mapping = {
+                    "directional": ["fog"],
+                    "voice": ["as teacher"],
+                    "audience": ["to programmer"],
+                    "tone": ["kindly"],
+                }
+                return mapping.get(axis, [])
+
+            with (
+                patch(
+                    "talon_user.lib.suggestionCoordinator._get_persona_orchestrator",
+                    return_value=orchestrator,
+                ) as get_orchestrator,
+                patch(
+                    "talon_user.lib.suggestionCoordinator.persona_intent_maps",
+                    side_effect=RuntimeError("maps unavailable"),
+                ),
+                patch(
+                    "talon_user.lib.suggestionCoordinator.axis_registry_tokens",
+                    side_effect=fake_axis_tokens,
+                ),
+            ):
+                record_suggestions(
+                    [
+                        {
+                            "name": "Needs canonicalisation",
+                            "recipe": "describe · gist · fog",
+                            "persona_voice": "voice alias",
+                            "persona_audience": "audience alias",
+                            "persona_tone": "tone alias",
+                            "intent_display": "intent alias",
+                        }
+                    ],
+                    "clipboard",
+                )
+
+            get_orchestrator.assert_called_once()
+            stored, _ = last_suggestions()
+            self.assertEqual(len(stored), 1)
+            entry = stored[0]
+            self.assertEqual(entry.get("persona_preset_key"), "mentor")
+            self.assertEqual(entry.get("persona_voice"), "as teacher")
+            self.assertEqual(entry.get("persona_audience"), "to programmer")
+            self.assertEqual(entry.get("persona_tone"), "kindly")
+            self.assertEqual(entry.get("intent_preset_key"), "understand")
+            self.assertEqual(entry.get("intent_display"), "Understand display")
+
 
 else:
     if not TYPE_CHECKING:

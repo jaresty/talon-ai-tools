@@ -25,53 +25,188 @@ def record_suggestions(
     suggestions: Iterable[dict[str, str]], source_key: str | None
 ) -> None:
     """Persist the latest suggestions and source key in GPTState."""
+
     debug_mode = bool(getattr(GPTState, "debug_enabled", False))
+
     try:
-        _get_persona_orchestrator()
+        orchestrator = _get_persona_orchestrator()
     except Exception:
-        pass
+        orchestrator = None
+
     try:
         maps = persona_intent_maps()
     except Exception:
         maps = None
 
-    suggestions_list: list[dict[str, str]] = []
-    skip_counts: dict[str, int] = {}
+    persona_presets_lookup: Dict[str, Any] = {}
+    if orchestrator and getattr(orchestrator, "persona_presets", None):
+        persona_presets_lookup.update(dict(orchestrator.persona_presets or {}))
+    if maps and getattr(maps, "persona_presets", None):
+        persona_presets_lookup.update(dict(maps.persona_presets or {}))
 
-    persona_axis_catalog = {
-        axis: {token.lower(): token for token in axis_registry_tokens(axis)}
-        for axis in ("voice", "audience", "tone")
-    }
-    persona_axis_aliases: dict[str, dict[str, str]] = {}
-    if maps is not None:
-        raw_aliases = getattr(maps, "persona_axis_tokens", {}) or {}
-        persona_axis_aliases = {
-            axis: {str(key).lower(): str(value) for key, value in aliases.items()}
-            for axis, aliases in raw_aliases.items()
-        }
+    persona_aliases_lookup: Dict[str, str] = {}
+    if orchestrator and getattr(orchestrator, "persona_aliases", None):
+        for alias, canonical in dict(orchestrator.persona_aliases or {}).items():
+            alias_key = str(alias or "").strip().lower()
+            canonical_value = str(canonical or "").strip()
+            if alias_key and canonical_value:
+                persona_aliases_lookup.setdefault(alias_key, canonical_value)
+    if maps and getattr(maps, "persona_preset_aliases", None):
+        for alias, canonical in dict(maps.persona_preset_aliases or {}).items():
+            alias_key = str(alias or "").strip().lower()
+            canonical_value = str(canonical or "").strip()
+            if alias_key and canonical_value:
+                persona_aliases_lookup.setdefault(alias_key, canonical_value)
 
-    def _canonical_persona_axis(axis: str, raw: str) -> tuple[str, bool]:
+    axis_alias_lookup: Dict[str, Dict[str, str]] = {}
+    if orchestrator and getattr(orchestrator, "axis_alias_map", None):
+        for axis, mapping in dict(orchestrator.axis_alias_map or {}).items():
+            axis_key = str(axis or "").strip().lower()
+            if not axis_key:
+                continue
+            aliases = axis_alias_lookup.setdefault(axis_key, {})
+            for alias, canonical in dict(mapping or {}).items():
+                alias_key = str(alias or "").strip().lower()
+                canonical_value = str(canonical or "").strip()
+                if alias_key and canonical_value:
+                    aliases.setdefault(alias_key, canonical_value)
+    if maps and getattr(maps, "persona_axis_tokens", None):
+        for axis, mapping in dict(maps.persona_axis_tokens or {}).items():
+            axis_key = str(axis or "").strip().lower()
+            if not axis_key:
+                continue
+            aliases = axis_alias_lookup.setdefault(axis_key, {})
+            for alias, canonical in dict(mapping or {}).items():
+                alias_key = str(alias or "").strip().lower()
+                canonical_value = str(canonical or "").strip()
+                if alias_key and canonical_value:
+                    aliases.setdefault(alias_key, canonical_value)
+
+    intent_presets_lookup: Dict[str, Any] = {}
+    if orchestrator and getattr(orchestrator, "intent_presets", None):
+        intent_presets_lookup.update(dict(orchestrator.intent_presets or {}))
+    if maps and getattr(maps, "intent_presets", None):
+        intent_presets_lookup.update(dict(maps.intent_presets or {}))
+
+    intent_aliases_lookup: Dict[str, str] = {}
+    if orchestrator and getattr(orchestrator, "intent_aliases", None):
+        for alias, canonical in dict(orchestrator.intent_aliases or {}).items():
+            alias_key = str(alias or "").strip().lower()
+            canonical_value = str(canonical or "").strip()
+            if alias_key and canonical_value:
+                intent_aliases_lookup.setdefault(alias_key, canonical_value)
+    if maps and getattr(maps, "intent_preset_aliases", None):
+        for alias, canonical in dict(maps.intent_preset_aliases or {}).items():
+            alias_key = str(alias or "").strip().lower()
+            canonical_value = str(canonical or "").strip()
+            if alias_key and canonical_value:
+                intent_aliases_lookup.setdefault(alias_key, canonical_value)
+
+    intent_synonyms_lookup: Dict[str, str] = {}
+    if orchestrator and getattr(orchestrator, "intent_synonyms", None):
+        for alias, canonical in dict(orchestrator.intent_synonyms or {}).items():
+            alias_key = str(alias or "").strip().lower()
+            canonical_value = str(canonical or "").strip()
+            if alias_key and canonical_value:
+                intent_synonyms_lookup.setdefault(alias_key, canonical_value)
+    if maps and getattr(maps, "intent_synonyms", None):
+        for alias, canonical in dict(maps.intent_synonyms or {}).items():
+            alias_key = str(alias or "").strip().lower()
+            canonical_value = str(canonical or "").strip()
+            if alias_key and canonical_value:
+                intent_synonyms_lookup.setdefault(alias_key, canonical_value)
+
+    intent_display_lookup: Dict[str, str] = {}
+    if orchestrator and getattr(orchestrator, "intent_display_map", None):
+        for key, value in dict(orchestrator.intent_display_map or {}).items():
+            canonical_key = str(key or "").strip()
+            display_value = str(value or "").strip()
+            if canonical_key and display_value:
+                intent_display_lookup.setdefault(canonical_key, display_value)
+    if maps and getattr(maps, "intent_display_map", None):
+        for key, value in dict(maps.intent_display_map or {}).items():
+            canonical_key = str(key or "").strip()
+            display_value = str(value or "").strip()
+            if canonical_key and display_value:
+                intent_display_lookup.setdefault(canonical_key, display_value)
+
+    def _canonical_axis(axis: str, raw: str) -> tuple[str, bool]:
         token = str(raw or "").strip()
         if not token:
             return "", True
-        lower = token.lower()
-        alias_map = persona_axis_aliases.get(axis, {})
-        canonical = alias_map.get(lower)
+        axis_key = str(axis or "").strip()
+        axis_lower = axis_key.lower()
+        if orchestrator:
+            try:
+                canonical = orchestrator.canonical_axis_token(axis_lower, token)
+            except Exception:
+                canonical = ""
+            if canonical:
+                return canonical, True
+        alias_map = axis_alias_lookup.get(axis_lower, {})
+        canonical = alias_map.get(token.lower())
         if canonical:
             return canonical, True
-        catalog_map = persona_axis_catalog.get(axis, {})
-        canonical = catalog_map.get(lower)
-        if canonical:
-            return canonical, True
+        try:
+            registry = axis_registry_tokens(axis_key)
+        except Exception:
+            registry = []
+        for value in registry:
+            if value and value.lower() == token.lower():
+                return value, True
         return token, False
+
+    def _canonical_persona_key(*aliases: str) -> str:
+        for alias in aliases:
+            candidate = str(alias or "").strip()
+            if not candidate:
+                continue
+            if orchestrator:
+                try:
+                    canonical = orchestrator.canonical_persona_key(candidate)
+                except Exception:
+                    canonical = ""
+                if canonical:
+                    return canonical
+            canonical = persona_aliases_lookup.get(candidate.lower())
+            if canonical:
+                return canonical
+        return ""
+
+    def _canonical_intent_key(*aliases: str) -> str:
+        for alias in aliases:
+            candidate = str(alias or "").strip()
+            if not candidate:
+                continue
+            if orchestrator:
+                try:
+                    canonical = orchestrator.canonical_intent_key(candidate)
+                except Exception:
+                    canonical = ""
+                if canonical:
+                    return canonical
+            lower = candidate.lower()
+            canonical = intent_aliases_lookup.get(lower)
+            if canonical:
+                return canonical
+            synonym = intent_synonyms_lookup.get(lower)
+            if synonym:
+                return synonym
+        return ""
+
+    suggestions_list: list[dict[str, str]] = []
+    skip_counts: dict[str, int] = {}
 
     for item in suggestions:
         recipe = str(item.get("recipe", "") or "").strip()
         if recipe and not _recipe_has_directional(recipe):
             if debug_mode:
-                print(
-                    f"record_suggestions skipped entry without directional: {recipe!r}"
-                )
+                try:
+                    print(
+                        f"record_suggestions skipped entry without directional: {recipe!r}"
+                    )
+                except Exception:
+                    pass
             notify(
                 "GPT: Suggestion skipped because it has no directional lens; expected fog/fig/dig/ong/rog/bog/jog."
             )
@@ -79,158 +214,149 @@ def record_suggestions(
                 skip_counts.get("missing_directional", 0) + 1
             )
             continue
+
         data = dict(item)
-        if maps is not None:
-            persona_key = str(data.get("persona_preset_key") or "").strip()
-            persona_label = str(data.get("persona_preset_label") or "").strip()
-            persona_spoken = str(data.get("persona_preset_spoken") or "").strip()
 
-            persona_voice_raw = str(data.get("persona_voice") or "").strip()
-            persona_voice, voice_valid = _canonical_persona_axis(
-                "voice", persona_voice_raw
-            )
-            persona_audience_raw = str(data.get("persona_audience") or "").strip()
-            persona_audience, audience_valid = _canonical_persona_axis(
-                "audience", persona_audience_raw
-            )
-            persona_tone_raw = str(data.get("persona_tone") or "").strip()
-            persona_tone, tone_valid = _canonical_persona_axis("tone", persona_tone_raw)
+        persona_key_raw = str(data.get("persona_preset_key") or "").strip()
+        persona_label_raw = str(data.get("persona_preset_label") or "").strip()
+        persona_spoken_raw = str(data.get("persona_preset_spoken") or "").strip()
 
-            preset = None
-            if persona_key:
-                preset = maps.persona_presets.get(persona_key)
-            else:
-                for alias in (persona_spoken, persona_label):
-                    alias_l = alias.lower()
-                    if alias_l:
-                        canonical = maps.persona_preset_aliases.get(alias_l)
-                        if canonical:
-                            preset = maps.persona_presets.get(canonical)
-                            if preset is not None:
-                                persona_key = canonical
-                                break
-            if preset is None and (persona_voice or persona_audience or persona_tone):
-                voice_l = persona_voice.lower()
-                audience_l = persona_audience.lower()
-                tone_l = persona_tone.lower()
-                for candidate in maps.persona_presets.values():
-                    c_voice = (candidate.voice or "").lower()
-                    c_audience = (candidate.audience or "").lower()
-                    c_tone = (candidate.tone or "").lower()
-                    if c_voice and c_voice != voice_l:
-                        continue
-                    if c_audience and c_audience != audience_l:
-                        continue
-                    if c_tone and c_tone != tone_l:
-                        continue
-                    if not (c_voice or c_audience or c_tone):
-                        continue
-                    preset = candidate
-                    persona_key = candidate.key
-                    break
+        persona_voice_raw = str(data.get("persona_voice") or "").strip()
+        persona_audience_raw = str(data.get("persona_audience") or "").strip()
+        persona_tone_raw = str(data.get("persona_tone") or "").strip()
 
-            persona_hints_present = any(
-                (
-                    persona_key,
-                    persona_label,
-                    persona_spoken,
-                    persona_voice,
-                    persona_audience,
-                    persona_tone,
-                )
-            )
-            preset_alias_hints_present = any(
-                (persona_key, persona_label, persona_spoken)
-            )
-            axis_hints_valid = voice_valid and audience_valid and tone_valid
-            if preset is None and persona_hints_present:
-                if preset_alias_hints_present or not axis_hints_valid:
-                    notify(
-                        "GPT: Suggestion skipped because its persona preset is unknown; regenerate persona lists and try again."
-                    )
-                    skip_counts["unknown_persona"] = (
-                        skip_counts.get("unknown_persona", 0) + 1
-                    )
+        persona_voice, voice_valid = _canonical_axis("voice", persona_voice_raw)
+        persona_audience, audience_valid = _canonical_axis(
+            "audience", persona_audience_raw
+        )
+        persona_tone, tone_valid = _canonical_axis("tone", persona_tone_raw)
+
+        persona_key = _canonical_persona_key(
+            persona_key_raw, persona_label_raw, persona_spoken_raw
+        )
+        preset = persona_presets_lookup.get(persona_key) if persona_key else None
+
+        if (
+            preset is None
+            and persona_presets_lookup
+            and (persona_voice or persona_audience or persona_tone)
+        ):
+            voice_l = persona_voice.lower()
+            audience_l = persona_audience.lower()
+            tone_l = persona_tone.lower()
+            for candidate in persona_presets_lookup.values():
+                c_voice = (getattr(candidate, "voice", "") or "").lower()
+                c_audience = (getattr(candidate, "audience", "") or "").lower()
+                c_tone = (getattr(candidate, "tone", "") or "").lower()
+                if c_voice and c_voice != voice_l:
                     continue
+                if c_audience and c_audience != audience_l:
+                    continue
+                if c_tone and c_tone != tone_l:
+                    continue
+                if not (c_voice or c_audience or c_tone):
+                    continue
+                preset = candidate
+                persona_key = getattr(candidate, "key", persona_key) or persona_key
+                break
 
-            if preset is not None:
-                if not persona_key:
-                    persona_key = preset.key
-                if not persona_label:
-                    persona_label = preset.label or preset.key
-                if not persona_spoken:
-                    persona_spoken = preset.spoken or persona_label or preset.key
-                if not persona_voice:
-                    persona_voice = preset.voice or ""
-                if not persona_audience:
-                    persona_audience = preset.audience or ""
-                if not persona_tone:
-                    persona_tone = preset.tone or ""
-                data["persona_preset_key"] = persona_key
-                data["persona_preset_label"] = persona_label
-                data["persona_preset_spoken"] = persona_spoken
-
-            if persona_voice:
-                data["persona_voice"] = persona_voice
-            if persona_audience:
-                data["persona_audience"] = persona_audience
-            if persona_tone:
-                data["persona_tone"] = persona_tone
-
-            intent_key = str(data.get("intent_preset_key") or "").strip()
-            intent_label = str(data.get("intent_preset_label") or "").strip()
-            intent_display = str(data.get("intent_display") or "").strip()
-            intent_purpose = str(data.get("intent_purpose") or "").strip()
-
-            canonical_intent = ""
-            if intent_key:
-                canonical_intent = intent_key
-            else:
-                for alias in (intent_display, intent_label, intent_purpose):
-                    alias_l = alias.lower()
-                    if alias_l:
-                        canonical_intent = (
-                            maps.intent_preset_aliases.get(alias_l)
-                            or maps.intent_synonyms.get(alias_l)
-                            or ""
-                        )
-                        if canonical_intent:
-                            break
-            if not canonical_intent and intent_purpose:
-                canonical_intent = (
-                    maps.intent_synonyms.get(intent_purpose.lower()) or intent_purpose
-                )
-
-            intent_preset = (
-                maps.intent_presets.get(canonical_intent) if canonical_intent else None
+        persona_hints_present = any(
+            (
+                persona_key or persona_key_raw,
+                persona_label_raw,
+                persona_spoken_raw,
+                persona_voice_raw,
+                persona_audience_raw,
+                persona_tone_raw,
             )
-            intent_hints_present = any(
-                (intent_key, intent_label, intent_display, intent_purpose)
-            )
-            if intent_preset is None and intent_hints_present:
+        )
+        preset_alias_hints_present = any(
+            (persona_key_raw, persona_label_raw, persona_spoken_raw)
+        )
+        axis_hints_valid = voice_valid and audience_valid and tone_valid
+
+        if persona_key:
+            data["persona_preset_key"] = persona_key
+
+        if preset is None and persona_hints_present:
+            if preset_alias_hints_present or not axis_hints_valid:
                 notify(
-                    "GPT: Suggestion skipped because its intent preset is unknown; regenerate intent lists and try again."
+                    "GPT: Suggestion skipped because its persona preset is unknown; regenerate persona lists and try again."
                 )
-                skip_counts["unknown_intent"] = skip_counts.get("unknown_intent", 0) + 1
+                skip_counts["unknown_persona"] = (
+                    skip_counts.get("unknown_persona", 0) + 1
+                )
                 continue
-            if intent_preset is not None:
-                if not intent_key:
-                    intent_key = intent_preset.key
-                    data["intent_preset_key"] = intent_key
-                if not intent_label:
-                    intent_label = intent_preset.label or intent_preset.key
-                    data["intent_preset_label"] = intent_label
-                if not intent_purpose:
-                    intent_purpose = intent_preset.intent
-                    data["intent_purpose"] = intent_purpose
-                display_value = maps.intent_display_map.get(
-                    intent_preset.key
-                ) or maps.intent_display_map.get(intent_preset.intent)
-                if display_value and not intent_display:
-                    intent_display = display_value
-                    data["intent_display"] = intent_display
+
+        if preset is not None:
+            label = getattr(preset, "label", "") or getattr(preset, "key", "")
+            spoken = (
+                getattr(preset, "spoken", "") or label or getattr(preset, "key", "")
+            )
+            if label:
+                data["persona_preset_label"] = label
+            if spoken:
+                data["persona_preset_spoken"] = spoken
+            if not persona_voice:
+                persona_voice = getattr(preset, "voice", "") or ""
+            if not persona_audience:
+                persona_audience = getattr(preset, "audience", "") or ""
+            if not persona_tone:
+                persona_tone = getattr(preset, "tone", "") or ""
+
+        if persona_voice:
+            data["persona_voice"] = persona_voice
+        if persona_audience:
+            data["persona_audience"] = persona_audience
+        if persona_tone:
+            data["persona_tone"] = persona_tone
+
+        intent_key_raw = str(data.get("intent_preset_key") or "").strip()
+        intent_label_raw = str(data.get("intent_preset_label") or "").strip()
+        intent_display_raw = str(data.get("intent_display") or "").strip()
+        intent_purpose_raw = str(data.get("intent_purpose") or "").strip()
+
+        canonical_intent = _canonical_intent_key(
+            intent_key_raw, intent_label_raw, intent_display_raw, intent_purpose_raw
+        )
+        if not canonical_intent and intent_purpose_raw:
+            canonical_intent = (
+                intent_synonyms_lookup.get(intent_purpose_raw.lower())
+                or intent_purpose_raw
+            )
+
+        intent_preset = (
+            intent_presets_lookup.get(canonical_intent) if canonical_intent else None
+        )
+
+        intent_hints_present = any(
+            (intent_key_raw, intent_label_raw, intent_display_raw, intent_purpose_raw)
+        )
+
+        if intent_preset is None and intent_hints_present:
+            notify(
+                "GPT: Suggestion skipped because its intent preset is unknown; regenerate intent lists and try again."
+            )
+            skip_counts["unknown_intent"] = skip_counts.get("unknown_intent", 0) + 1
+            continue
+
+        if intent_preset is not None:
+            canonical_intent = intent_preset.key or canonical_intent
+            data["intent_preset_key"] = canonical_intent
+            if not intent_label_raw:
+                data["intent_preset_label"] = intent_preset.label or canonical_intent
+            if not intent_purpose_raw:
+                data["intent_purpose"] = intent_preset.intent
+            display_value = intent_display_lookup.get(
+                canonical_intent
+            ) or intent_display_lookup.get(intent_preset.intent or "")
+            if display_value:
+                data["intent_display"] = display_value
+        elif canonical_intent:
+            data.setdefault("intent_preset_key", canonical_intent)
 
         suggestions_list.append(data)
+
     GPTState.last_suggested_recipes = suggestions_list
     GPTState.last_suggest_source = source_key or ""
     GPTState.last_suggest_skip_counts = dict(skip_counts)

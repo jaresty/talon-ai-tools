@@ -208,6 +208,20 @@
 - next_work:
   - Behaviour: migrate suggestion canonicalization to orchestrator helpers — python3 -m pytest _tests/test_suggestion_coordinator.py _tests/test_model_suggestion_gui.py — future-shaping: ensure persona axis normalization is centralized.
 
+## 2025-12-25 – Loop 020 (kind: implementation)
+- helper_version: helper:v20251223.1
+- focus: ADR-0062 §Refactor Plan – Guidance Surface Coordinator (orchestrator canonicalisation)
+- riskiest_assumption: Suggestion coordinator continued to normalise via `persona_intent_maps`; `_tests/test_suggestion_coordinator.py::SuggestionCoordinatorTests::test_record_suggestions_uses_persona_orchestrator` fails to prove orchestrator usage (probability medium-high, impact high on Concordance guidance reuse).
+- validation_targets:
+  - python3 -m pytest _tests/test_suggestion_coordinator.py _tests/test_model_suggestion_gui.py
+- evidence: docs/adr/evidence/0062/loop-0020.md
+- rollback_plan: git stash push -- lib/suggestionCoordinator.py && python3 -m pytest _tests/test_suggestion_coordinator.py::SuggestionCoordinatorTests::test_record_suggestions_uses_persona_orchestrator && git stash pop
+- delta_summary: helper:diff-snapshot=2 files changed, 371 insertions(+), 169 deletions(-); suggestion coordinator now canonicalises persona/intent fields via the shared orchestrator, and guardrails cover the contract.
+- residual_risks:
+  - Orchestrator still computed locally per call; a future loop can memoize the canonical snapshot for reuse across surfaces.
+- next_work:
+  - Behaviour: expose orchestrator helpers to model canvases — python3 -m pytest _tests/test_model_response_canvas.py _tests/test_model_pattern_gui.py — future-shaping: ensure canvases leverage orchestrator metadata.
+
 ## 2025-12-25 – Loop 017 (kind: implementation)
 
 

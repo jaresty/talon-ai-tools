@@ -18,6 +18,30 @@
 - next_work:
   - Behaviour: keep axis/persona docs aligned with snapshot helper; audit remaining guidance surfaces when orchestrator schema evolves.
 
+## 2025-12-25 – Loop 040 (kind: planning)
+- helper_version: helper:v20251223.1
+- focus: Scoping remaining orchestrator milestones after metadata guardrails.
+- riskiest_assumption: Without re-triaging the Refactor Plan, follow-up loops could drift; Re-check Salient Tasks against completed metadata work to prioritize remaining persona/surface/history refactors.
+- summary: Identified next actionable themes — persona catalog façade adoption, guidance surface delegation, history lifecycle consolidation.
+- next_work:
+  - Behaviour: audit missing characterization tests before persona/catalog migration — see Loop 041.
+
+## 2025-12-25 – Loop 041 (kind: planning)
+- helper_version: helper:v20251223.1
+- focus: Identify additional tests needed before persona catalog façade rollout.
+- riskiest_assumption: Persona/catalog refactor may lack coverage for snapshot consumers; review `_tests/test_help_hub.py`, `_tests/test_help_domain.py`, `_tests/test_generate_axis_cheatsheet.py`, and history suites to target gaps.
+- summary: Documented candidate characterization tests (persona orchestrator, guidance surfaces, history lifecycle) to author prior to behavioural refactors.
+- next_work:
+  - Behaviour: capture open follow-up actions and risks in ADR notes — Loop 042.
+
+## 2025-12-25 – Loop 042 (kind: planning)
+- helper_version: helper:v20251223.1
+- focus: Summarize follow-up actions post metadata guardrails.
+- riskiest_assumption: Without explicit reminders, persona/guidance/history refactors may stall.
+- summary: Noted outstanding tasks — persona catalog façade adoption, guidance coordinator extraction, history lifecycle façade implementation, plus targeted characterization tests.
+- next_work:
+  - Behaviour: proceed with persona catalog façade implementation in subsequent loops.
+
 ## 2025-12-24 – Loop 002 (kind: implementation)
 - helper_version: helper:v20251223.1
 - focus: ADR-0062 §Refactor Plan – Prompt Persona Orchestrator (hydrate GPT actions + docs from canonical facade)

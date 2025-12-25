@@ -13,6 +13,9 @@ else:
 
 
 if bootstrap is not None:
+    import talon_user.lib.helpDomain as help_domain_module
+    import lib.helpDomain as help_domain_local
+
     from talon_user.lib.helpDomain import (
         help_index,
         help_search,
@@ -560,7 +563,25 @@ if bootstrap is not None:
                 read_list_items=lambda _name: [],
                 catalog={},
             )
-            snapshot = help_metadata_snapshot(index)
+
+            with ExitStack() as stack:
+                if hasattr(help_domain_local, "time"):
+                    stack.enter_context(
+                        patch.object(
+                            help_domain_local.time,
+                            "strftime",
+                            lambda fmt, ts=None: "2025-12-25T17:00:00Z",
+                        )
+                    )
+                if hasattr(help_domain_module, "time"):
+                    stack.enter_context(
+                        patch.object(
+                            help_domain_module.time,
+                            "strftime",
+                            lambda fmt, ts=None: "2025-12-25T17:00:00Z",
+                        )
+                    )
+                snapshot = help_metadata_snapshot(index)
 
             persona_keys = {persona.key for persona in snapshot.personas}
             intent_keys = {intent.key for intent in snapshot.intents}
@@ -585,6 +606,27 @@ if bootstrap is not None:
             self.assertTrue(all(persona.axes_summary for persona in snapshot.personas))
             self.assertTrue(all(intent.spoken_alias for intent in snapshot.intents))
             self.assertTrue(all(intent.canonical_intent for intent in snapshot.intents))
+
+            self.assertEqual(snapshot.schema_version, "help-hub.metadata.v1")
+            self.assertEqual(snapshot.generated_at, "2025-12-25T17:00:00Z")
+            self.assertIn(("source", "lib.helpDomain"), snapshot.provenance)
+            self.assertIn(("adr", "ADR-0062"), snapshot.provenance)
+            self.assertIn(("helper_version", "helper:v20251223.1"), snapshot.provenance)
+            headers_lower = [header.lower() for header in snapshot.headers]
+            self.assertIn(
+                "metadata schema version: help-hub.metadata.v1", headers_lower
+            )
+            self.assertIn(
+                "metadata generated at (utc): 2025-12-25t17:00:00z",
+                headers_lower,
+            )
+            self.assertTrue(
+                any(
+                    "metadata provenance: source=lib.helpdomain" in header
+                    for header in headers_lower
+                ),
+                "Provenance header missing from metadata snapshot",
+            )
 
 
 else:

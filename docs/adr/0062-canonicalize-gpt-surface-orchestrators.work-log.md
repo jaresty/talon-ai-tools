@@ -393,3 +393,17 @@
   - Metadata consumers outside Help Hub still lack the headers; mitigation: extend help domain exports in the next loop and observe via `_tests/test_help_hub.py` and `_tests/test_help_domain.py` guardrails.
 - next_work:
   - Behaviour: expose schema/provenance headers to help domain exports — python3 -m pytest _tests/test_help_hub.py _tests/test_help_domain.py — future-shaping: keep downstream documentation aligned with canonical metadata cues.
+
+## 2025-12-25 – Loop 030 (kind: implementation)
+- helper_version: helper:v20251223.1
+- focus: ADR-0062 §Refactor Plan – Guidance Surface Coordinator (help domain metadata headers)
+- riskiest_assumption: HelpDomain exports still lacked schema/provenance headers, leaving documentation unable to track metadata evolution; `python3 -m pytest _tests/test_help_domain.py::HelpDomainTests::test_help_metadata_snapshot_aggregates_index_metadata` stays red when the snapshot omits these fields (probability medium, impact medium on Concordance documentation parity).
+- validation_targets:
+  - python3 -m pytest _tests/test_help_domain.py::HelpDomainTests::test_help_metadata_snapshot_aggregates_index_metadata
+- evidence: docs/adr/evidence/0062/loop-0030.md
+- rollback_plan: git restore --source=HEAD -- lib/helpDomain.py _tests/test_help_domain.py && python3 -m pytest _tests/test_help_domain.py::HelpDomainTests::test_help_metadata_snapshot_aggregates_index_metadata
+- delta_summary: helper:diff-snapshot=2 files changed, 69 insertions(+), 1 deletion(-); `help_metadata_snapshot` now emits schema version, timestamp, and provenance headers, and guardrails assert the augmented snapshot contract for documentation exports.
+- residual_risks:
+  - Help domain copy/render helpers still need to emit the new headers; mitigation: wire headers into text exports in a follow-up loop and monitor via the same pytest target.
+- next_work:
+  - Behaviour: integrate metadata headers into help domain copy/export text — python3 -m pytest _tests/test_help_domain.py _tests/test_help_hub.py — future-shaping: ensure docs and CLI exports emit canonical metadata cues.

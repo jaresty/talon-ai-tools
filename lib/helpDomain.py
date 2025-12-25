@@ -1,4 +1,5 @@
 from __future__ import annotations
+import time
 
 from collections.abc import Sequence
 from dataclasses import dataclass
@@ -9,6 +10,13 @@ from talon import actions
 from .historyLifecycle import axes_snapshot_from_axes as axis_snapshot_from_axes
 from .personaConfig import persona_intent_maps
 from .personaOrchestrator import get_persona_intent_orchestrator
+
+_HELP_METADATA_SCHEMA_VERSION = "help-hub.metadata.v1"
+_HELP_METADATA_PROVENANCE_BASE: tuple[tuple[str, str], ...] = (
+    ("source", "lib.helpDomain"),
+    ("adr", "ADR-0062"),
+    ("helper_version", "helper:v20251223.1"),
+)
 
 
 @dataclass(frozen=True)
@@ -45,6 +53,10 @@ class HelpIntentMetadata:
 class HelpMetadataSnapshot:
     personas: tuple[HelpPersonaMetadata, ...]
     intents: tuple[HelpIntentMetadata, ...]
+    schema_version: str = ""
+    generated_at: str = ""
+    provenance: tuple[tuple[str, str], ...] = ()
+    headers: tuple[str, ...] = ()
 
 
 def help_index(
@@ -554,9 +566,23 @@ def help_metadata_snapshot(entries: Sequence[HelpIndexEntry]) -> HelpMetadataSna
             )
             seen_intent_keys.add(key)
 
+    schema_version = _HELP_METADATA_SCHEMA_VERSION
+    generated_at = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+    provenance_pairs = tuple(_HELP_METADATA_PROVENANCE_BASE)
+    headers = (
+        f"Metadata schema version: {schema_version}",
+        f"Metadata generated at (UTC): {generated_at}",
+        "Metadata provenance: "
+        + "; ".join(f"{key}={value}" for key, value in provenance_pairs),
+    )
+
     return HelpMetadataSnapshot(
         personas=tuple(persona_snapshots),
         intents=tuple(intent_snapshots),
+        schema_version=schema_version,
+        generated_at=generated_at,
+        provenance=provenance_pairs,
+        headers=headers,
     )
 
 

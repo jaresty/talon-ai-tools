@@ -485,3 +485,15 @@
   - None; cheat sheet regeneration is now protected by automated tests.
 - next_work:
   - None; metadata summary loops complete.
+
+## 2025-12-25 – Loop 043 (kind: characterization)
+- helper_version: helper:v20251223.1
+- focus: Prompt Persona Orchestrator – capture persona catalog snapshot behaviour ahead of façade refactor.
+- riskiest_assumption: Snapshot consumers rely on implicit data; tests ensure spoken alias mapping, axis tokens, and intent display labels remain stable.
+- validation_targets:
+  - python3 -m pytest _tests/test_persona_catalog.py
+- evidence: docs/adr/evidence/0062/loop-0043.md
+- residual_risks:
+  - Additional coverage may be needed when new presets are introduced.
+- next_work:
+  - Behaviour: introduce persona catalog façade consumed by GPT/help surfaces — Loop 044.

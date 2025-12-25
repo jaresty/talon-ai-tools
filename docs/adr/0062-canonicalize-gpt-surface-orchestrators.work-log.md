@@ -524,3 +524,24 @@
   - Remaining history/lifecycle components still need migration.
 - next_work:
   - Behaviour: begin migrating history lifecycle consumers in later loops.
+
+## 2025-12-25 – Loop 046 (kind: planning)
+- helper_version: helper:v20251223.1
+- focus: Prepare history lifecycle façade by outlining coverage gaps.
+- summary: Prioritize extending `_tests/test_request_history_actions.py`, `_tests/test_request_history_drawer_gating.py`, `_tests/test_history_lifecycle.py` before refactoring.
+- next_work:
+  - Behaviour: audit history modules for façade adoption gaps — Loop 047.
+
+## 2025-12-25 – Loop 047 (kind: planning)
+- helper_version: helper:v20251223.1
+- focus: Audit history modules for façade migration scope.
+- summary: Noted remaining direct personaConfig/history snapshot usage in `lib/requestHistoryActions.py`, `lib/requestHistoryDrawer.py`, `lib/requestLog.py`, and canvases.
+- next_work:
+  - Behaviour: document residual risks and follow-up actions — Loop 048.
+
+## 2025-12-25 – Loop 048 (kind: planning)
+- helper_version: helper:v20251223.1
+- focus: Capture residual risks after persona catalog façade adoption.
+- summary: Highlighted pending history lifecycle façade work and characterization tests as next priorities.
+- next_work:
+  - Behaviour: implement history lifecycle façade in future loops.

@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 import os
 import time
-from typing import Callable, Dict, List, Optional
+from typing import Callable, Dict, List, Optional, Any
 from collections.abc import Sequence
 
 from talon import Context, Module, actions, app, canvas, clip, ui, tap
@@ -29,6 +29,7 @@ from .modelHelpers import notify
 from .overlayHelpers import apply_canvas_blocking
 from .overlayLifecycle import close_overlays, close_common_overlays
 from .personaConfig import persona_intent_maps
+from .personaOrchestrator import get_persona_intent_orchestrator
 
 
 try:
@@ -161,9 +162,15 @@ def _rect_contains(rect: skia.Rect, x: float, y: float) -> bool:
 def _persona_presets():
     """Return the latest persona presets (reload-safe).
 
-    Prefer the shared persona intent maps so callers consume the same
+    Prefer the shared persona orchestrator so callers consume the same
     catalogue-backed preset surface.
     """
+    try:
+        orchestrator = get_persona_intent_orchestrator()
+        if orchestrator and getattr(orchestrator, "persona_presets", None):
+            return tuple(orchestrator.persona_presets.values())
+    except Exception:
+        pass
     try:
         maps = persona_intent_maps()
     except Exception:
@@ -946,6 +953,12 @@ def _cheat_sheet_text() -> str:
     intent_lines: List[str] = []
     intent_bucket_lines: List[str] = []
 
+    orchestrator = None
+    try:
+        orchestrator = get_persona_intent_orchestrator()
+    except Exception:
+        orchestrator = None
+
     snapshot = None
     try:
         from . import personaConfig as _persona_config_module
@@ -962,36 +975,83 @@ def _cheat_sheet_text() -> str:
     except Exception:
         maps = None
 
-    if maps is not None:
-        persona_items = sorted((maps.persona_presets or {}).items())
-        for key, preset in persona_items:
-            label = (getattr(preset, "label", "") or key).strip()
-            spoken = (getattr(preset, "spoken", "") or label or key).strip()
-            stance_bits: List[str] = []
-            for attr in ("voice", "audience", "tone"):
-                raw_value = str(getattr(preset, attr, "") or "").strip()
-                if raw_value:
-                    stance_bits.append(raw_value)
-            stance_summary = (
-                " ".join(stance_bits) if stance_bits else "no explicit axes"
-            )
-            say_hint = f"persona {spoken}".strip()
-            persona_lines.append(
-                f"- persona {key} (say: {say_hint}): {label} ({stance_summary})"
-            )
+    persona_items: List[tuple[str, object]] = []
+    if orchestrator and getattr(orchestrator, "persona_presets", None):
+        for key, preset in (orchestrator.persona_presets or {}).items():
+            key_str = str(key or "").strip()
+            if key_str:
+                persona_items.append((key_str, preset))
+    elif maps is not None:
+        for key, preset in (maps.persona_presets or {}).items():
+            key_str = str(key or "").strip()
+            if key_str:
+                persona_items.append((key_str, preset))
+    elif snapshot and getattr(snapshot, "persona_presets", None):
+        for key, preset in (snapshot.persona_presets or {}).items():
+            key_str = str(key or "").strip()
+            if key_str:
+                persona_items.append((key_str, preset))
 
-        intent_items = sorted((maps.intent_presets or {}).items())
-        display_map = dict(maps.intent_display_map or {})
-        for key, preset in intent_items:
-            display = (
-                display_map.get(key) or getattr(preset, "label", "") or key
-            ).strip()
-            intent_token = str(getattr(preset, "intent", "") or key).strip()
-            spoken_alias = display or intent_token or key
-            say_hint = f"intent {spoken_alias}".strip()
-            intent_lines.append(
-                f"- intent {key} (say: {say_hint}): {display or key} ({intent_token or key})"
-            )
+    for key, preset in persona_items:
+        label = (getattr(preset, "label", "") or key).strip()
+        spoken = (getattr(preset, "spoken", "") or label or key).strip()
+        stance_bits: List[str] = []
+        for attr in ("voice", "audience", "tone"):
+            raw_value = str(getattr(preset, attr, "") or "").strip()
+            canonical_value = raw_value
+            if orchestrator:
+                try:
+                    canonical_value = orchestrator.canonical_axis_token(attr, raw_value)
+                except Exception:
+                    canonical_value = raw_value
+                if not canonical_value:
+                    canonical_value = raw_value
+            if canonical_value:
+                stance_bits.append(canonical_value)
+        stance_summary = " · ".join(stance_bits) if stance_bits else "no explicit axes"
+        say_hint = f"persona {spoken}".strip()
+        persona_lines.append(
+            f"- persona {key} (say: {say_hint}): {label} ({stance_summary})"
+        )
+
+    intent_items: List[tuple[str, object]] = []
+    if orchestrator and getattr(orchestrator, "intent_presets", None):
+        for key, preset in (orchestrator.intent_presets or {}).items():
+            key_str = str(key or "").strip()
+            if key_str:
+                intent_items.append((key_str, preset))
+    elif maps is not None:
+        for key, preset in (maps.intent_presets or {}).items():
+            key_str = str(key or "").strip()
+            if key_str:
+                intent_items.append((key_str, preset))
+
+    display_map: Dict[str, str] = {}
+    if orchestrator and getattr(orchestrator, "intent_display_map", None):
+        display_map.update(
+            {
+                str(k or "").strip().lower(): str(v or "").strip()
+                for k, v in dict(orchestrator.intent_display_map or {}).items()
+            }
+        )
+    if maps is not None:
+        display_map.update(
+            {
+                str(k or "").strip().lower(): str(v or "").strip()
+                for k, v in dict(maps.intent_display_map or {}).items()
+            }
+        )
+
+    for key, preset in intent_items:
+        display = (
+            display_map.get(key.lower()) or getattr(preset, "label", "") or key
+        ).strip()
+        intent_token = str(getattr(preset, "intent", "") or key).strip()
+        spoken_alias = display or intent_token or key
+        say_hint = f"intent {spoken_alias}".strip()
+        intent_lines.append(
+            f"- intent {key} (say: {say_hint}): {display or key} ({intent_token or key})"
+        )
 
     if snapshot and getattr(snapshot, "intent_buckets", None):
         for bucket, keys in sorted(snapshot.intent_buckets.items()):

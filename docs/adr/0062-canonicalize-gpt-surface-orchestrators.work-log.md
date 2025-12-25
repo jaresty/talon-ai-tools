@@ -236,6 +236,20 @@
 - next_work:
   - Behaviour: share orchestrator persona summaries with help hub — python3 -m pytest _tests/test_model_help_canvas.py _tests/test_help_hub.py — future-shaping: align help surfaces with the canonical persona orchestrator.
 
+## 2025-12-25 – Loop 022 (kind: implementation)
+- helper_version: helper:v20251223.1
+- focus: ADR-0062 §Refactor Plan – Guidance Surface Coordinator (help hub presets)
+- riskiest_assumption: Help Hub still hydrated persona/intent presets via `persona_intent_maps`; `_tests/test_help_hub.py::test_help_hub_uses_persona_orchestrator_for_presets` patches the orchestrator and fails without an alias (probability medium, impact medium on Concordance onboarding/search accuracy).
+- validation_targets:
+  - python3 -m pytest _tests/test_help_hub.py _tests/test_model_response_canvas.py
+- evidence: docs/adr/evidence/0062/loop-0022.md
+- rollback_plan: git stash push -- lib/helpHub.py && python3 -m pytest _tests/test_help_hub.py::test_help_hub_uses_persona_orchestrator_for_presets && git stash pop
+- delta_summary: helper:diff-snapshot=2 files changed, 174 insertions(+), 34 deletions(-); help hub now consumes the persona orchestrator for cheat sheet/search data and guardrails confirm reuse.
+- residual_risks:
+  - Help domain still uses personaConfig helpers directly; migrate those surfaces in a follow-up loop.
+- next_work:
+  - Behaviour: align help domain canonicalisation with the orchestrator — python3 -m pytest _tests/test_help_hub.py _tests/test_help_domain.py — future-shaping: ensure documentation/overlay flows rely on shared persona metadata.
+
 ## 2025-12-25 – Loop 017 (kind: implementation)
 
 

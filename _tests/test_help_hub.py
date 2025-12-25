@@ -1,3 +1,5 @@
+from contextlib import ExitStack
+from types import SimpleNamespace
 from unittest.mock import MagicMock, patch
 
 from talon import actions, clip
@@ -160,6 +162,69 @@ def test_help_hub_persona_search_labels_surface_alias_metadata():
         assert "say: persona mentor" in entry.voice_hint.lower()
     finally:
         helpHub.help_hub_close()
+
+
+def test_help_hub_uses_persona_orchestrator_for_presets(monkeypatch):
+    persona_preset = SimpleNamespace(
+        key="mentor",
+        label="Mentor",
+        spoken="mentor spoken",
+        voice="as teacher",
+        audience="to programmer",
+        tone="kindly",
+    )
+    intent_preset = SimpleNamespace(
+        key="understand",
+        label="Understand",
+        intent="understand",
+    )
+    orchestrator = SimpleNamespace(
+        persona_presets={"mentor": persona_preset},
+        intent_presets={"understand": intent_preset},
+        intent_display_map={"understand": "Understand display"},
+        canonical_persona_key=lambda alias: "mentor" if alias else "",
+        canonical_intent_key=lambda alias: "understand" if alias else "",
+        canonical_axis_token=lambda axis, alias: {
+            "voice": "as teacher",
+            "audience": "to programmer",
+            "tone": "kindly",
+        }.get(axis, alias),
+    )
+    with ExitStack() as stack:
+        get_orchestrator = stack.enter_context(
+            patch(
+                "lib.helpHub.get_persona_intent_orchestrator",
+                return_value=orchestrator,
+            )
+        )
+        stack.enter_context(
+            patch(
+                "talon_user.lib.helpHub.get_persona_intent_orchestrator",
+                return_value=orchestrator,
+            )
+        )
+        stack.enter_context(
+            patch(
+                "lib.helpHub.persona_intent_maps",
+                side_effect=RuntimeError("maps unavailable"),
+            )
+        )
+        stack.enter_context(
+            patch(
+                "talon_user.lib.helpHub.persona_intent_maps",
+                side_effect=RuntimeError("maps unavailable"),
+            )
+        )
+        helpHub.help_hub_open()
+        try:
+            cheat_text = helpHub._cheat_sheet_text()
+            assert "Mentor" in cheat_text
+            assert "Understand display" in cheat_text
+            presets = helpHub._persona_presets()
+            assert any(p.key == "mentor" for p in presets)
+        finally:
+            helpHub.help_hub_close()
+    get_orchestrator.assert_called()
 
 
 def test_help_hub_search_intent_preset_triggers(monkeypatch):
@@ -341,10 +406,25 @@ def test_persona_presets_use_catalog_snapshot():
     from lib.personaConfig import persona_intent_catalog_snapshot
 
     snapshot = persona_intent_catalog_snapshot()
-    with patch(
-        "lib.personaConfig.persona_intent_catalog_snapshot",
-        return_value=snapshot,
-    ) as snapshot_mock:
+    with ExitStack() as stack:
+        stack.enter_context(
+            patch(
+                "lib.helpHub.get_persona_intent_orchestrator",
+                side_effect=RuntimeError("no orchestrator"),
+            )
+        )
+        stack.enter_context(
+            patch(
+                "talon_user.lib.helpHub.get_persona_intent_orchestrator",
+                side_effect=RuntimeError("no orchestrator"),
+            )
+        )
+        snapshot_mock = stack.enter_context(
+            patch(
+                "lib.personaConfig.persona_intent_catalog_snapshot",
+                return_value=snapshot,
+            )
+        )
         presets = helpHub._persona_presets()
     snapshot_mock.assert_called_once()
     assert {preset.key for preset in presets} == set(snapshot.persona_presets.keys())

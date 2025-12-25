@@ -5,9 +5,9 @@ if not TYPE_CHECKING:
 
     class PersonaCatalogTests(unittest.TestCase):
         def test_persona_catalog_snapshot_contains_expected_presets(self) -> None:
-            from talon_user.lib.personaConfig import persona_intent_catalog_snapshot
+            from talon_user.lib.personaCatalog import get_persona_intent_catalog
 
-            snapshot = persona_intent_catalog_snapshot()
+            snapshot = get_persona_intent_catalog()
 
             peer = snapshot.persona_presets.get("peer_engineer_explanation")
             self.assertIsNotNone(peer, "Expected peer engineer persona preset")
@@ -25,9 +25,9 @@ if not TYPE_CHECKING:
         def test_persona_catalog_snapshot_exposes_axis_tokens_and_intent_display(
             self,
         ) -> None:
-            from talon_user.lib.personaConfig import persona_intent_catalog_snapshot
+            from talon_user.lib.personaCatalog import get_persona_intent_catalog
 
-            snapshot = persona_intent_catalog_snapshot()
+            snapshot = get_persona_intent_catalog()
 
             voice_tokens = snapshot.persona_axis_tokens.get("voice") or []
             self.assertIn("as teacher", voice_tokens)

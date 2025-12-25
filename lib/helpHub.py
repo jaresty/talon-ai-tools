@@ -33,6 +33,7 @@ from .dropReasonUtils import render_drop_reason
 from .modelHelpers import notify
 from .overlayHelpers import apply_canvas_blocking
 from .overlayLifecycle import close_overlays, close_common_overlays
+from . import personaCatalog
 from .personaConfig import persona_intent_maps
 from .personaOrchestrator import get_persona_intent_orchestrator
 
@@ -186,6 +187,12 @@ def _persona_presets():
     except Exception:
         pass
     try:
+        snapshot = personaCatalog.get_persona_intent_catalog()
+        if snapshot and getattr(snapshot, "persona_presets", None):
+            return tuple(snapshot.persona_presets.values())
+    except Exception:
+        pass
+    try:
         maps = persona_intent_maps()
     except Exception:
         return ()
@@ -204,9 +211,7 @@ def _canonical_persona_token(axis: str, value: str) -> str:
 def _intent_spoken_buckets():
     """Return the latest intent buckets keyed by spoken token."""
     try:
-        from . import personaConfig
-
-        snapshot = personaConfig.persona_intent_catalog_snapshot()
+        snapshot = personaCatalog.get_persona_intent_catalog()
         buckets: dict[str, list[str]] = {}
         for bucket, canonicals in snapshot.intent_buckets.items():
             spoken_tokens: list[str] = []
@@ -1073,23 +1078,20 @@ def _cheat_sheet_text() -> str:
     def _persona_presets() -> List[str]:
         names: List[str] = []
         try:
-            from . import personaConfig
+            snapshot = personaCatalog.get_persona_intent_catalog()
+            names = sorted(snapshot.persona_spoken_map.keys())
+        except Exception:
+            try:
+                from . import personaConfig
 
-            snapshot_fn = getattr(
-                personaConfig, "persona_intent_catalog_snapshot", None
-            )
-            if callable(snapshot_fn):
-                snapshot = snapshot_fn()
-                names = sorted(snapshot.persona_spoken_map.keys())
-            else:
                 presets = getattr(personaConfig, "PERSONA_PRESETS", ())
                 for preset in presets:
                     spoken = (preset.spoken or "").strip().lower()
                     if spoken:
                         names.append(spoken)
                 names.sort()
-        except Exception:
-            pass
+            except Exception:
+                pass
         return names
 
     persona_lines: List[str] = []
@@ -1120,14 +1122,9 @@ def _cheat_sheet_text() -> str:
 
     catalog_snapshot = None
     try:
-        from . import personaConfig as _persona_config_module
+        catalog_snapshot = personaCatalog.get_persona_intent_catalog()
     except Exception:
-        _persona_config_module = None
-    else:
-        try:
-            catalog_snapshot = _persona_config_module.persona_intent_catalog_snapshot()
-        except Exception:
-            catalog_snapshot = None
+        catalog_snapshot = None
 
     try:
         maps = persona_intent_maps()

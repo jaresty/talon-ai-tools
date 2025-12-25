@@ -891,9 +891,9 @@ def _build_persona_intent_docs() -> str:
 
     snapshot = None
     try:
-        from ..lib import personaConfig
+        from ..lib import personaCatalog
 
-        snapshot = personaConfig.persona_intent_catalog_snapshot()
+        snapshot = personaCatalog.get_persona_intent_catalog()
     except Exception:
         snapshot = None
 

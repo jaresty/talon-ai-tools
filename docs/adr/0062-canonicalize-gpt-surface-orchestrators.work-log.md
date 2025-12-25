@@ -497,3 +497,17 @@
   - Additional coverage may be needed when new presets are introduced.
 - next_work:
   - Behaviour: introduce persona catalog façade consumed by GPT/help surfaces — Loop 044.
+
+## 2025-12-25 – Loop 044 (kind: implementation)
+- helper_version: helper:v20251223.1
+- focus: Prompt Persona Orchestrator – expose shared persona catalog façade.
+- riskiest_assumption: Surfaces relied on direct personaConfig access; moving them to a façade risks behaviour drift.
+- validation_targets:
+  - python3 -m pytest _tests/test_persona_catalog.py
+  - python3 -m pytest _tests/test_help_hub.py
+  - python3 -m pytest _tests/test_model_suggestion_gui.py
+- evidence: docs/adr/evidence/0062/loop-0044.md
+- residual_risks:
+  - Remaining consumers (history/log pipelines) still reference personaConfig directly; migrate in next loops.
+- next_work:
+  - Behaviour: migrate GPT/help surfaces entirely onto the façade — Loop 045.

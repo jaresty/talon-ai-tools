@@ -485,8 +485,14 @@ def test_cheat_sheet_uses_help_index_metadata(monkeypatch):
         "get_persona_intent_orchestrator",
         lambda: (_ for _ in ()).throw(RuntimeError("orchestrator disabled")),
     )
+    from lib import personaCatalog as persona_catalog_module
     from lib import personaConfig as persona_config_module
 
+    monkeypatch.setattr(
+        persona_catalog_module,
+        "get_persona_intent_catalog",
+        lambda: (_ for _ in ()).throw(RuntimeError("snapshot disabled")),
+    )
     monkeypatch.setattr(
         persona_config_module,
         "persona_intent_catalog_snapshot",
@@ -538,8 +544,14 @@ def test_cheat_sheet_prefers_metadata_snapshot(monkeypatch):
         "get_persona_intent_orchestrator",
         lambda: (_ for _ in ()).throw(RuntimeError("orchestrator disabled")),
     )
+    from lib import personaCatalog as persona_catalog_module
     from lib import personaConfig as persona_config_module
 
+    monkeypatch.setattr(
+        persona_catalog_module,
+        "get_persona_intent_catalog",
+        lambda: (_ for _ in ()).throw(RuntimeError("snapshot disabled")),
+    )
     monkeypatch.setattr(
         persona_config_module,
         "persona_intent_catalog_snapshot",
@@ -725,7 +737,7 @@ def test_persona_presets_use_catalog_snapshot():
         )
         snapshot_mock = stack.enter_context(
             patch(
-                "lib.personaConfig.persona_intent_catalog_snapshot",
+                "lib.personaCatalog.get_persona_intent_catalog",
                 return_value=snapshot,
             )
         )
@@ -739,7 +751,7 @@ def test_intent_spoken_buckets_use_catalog_snapshot():
 
     snapshot = persona_intent_catalog_snapshot()
     with patch(
-        "lib.personaConfig.persona_intent_catalog_snapshot",
+        "lib.personaCatalog.get_persona_intent_catalog",
         return_value=snapshot,
     ) as snapshot_mock:
         buckets = helpHub._intent_spoken_buckets()

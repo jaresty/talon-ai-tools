@@ -53,9 +53,13 @@ if not TYPE_CHECKING:
 
             self.assertIn("ci-guardrails", output)
             self.assertIn("guardrails", output)
-            self.assertIn("run_guardrails_ci.sh [--help]", output)
             self.assertIn("GUARDRAILS_TARGET", output)
             self.assertIn("request-history-guardrails", output)
+            self.assertIn(
+                "runs locally only",
+                output,
+                "Expected make help to note request-history guardrails are manual",
+            )
             self.assertIn("optional: export history summaries", output)
             self.assertIn("request-history-guardrails-fast", output)
             self.assertIn("optional: quick history summaries", output)

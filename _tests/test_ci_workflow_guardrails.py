@@ -18,10 +18,10 @@ if not TYPE_CHECKING:
                 contents,
                 "CI should run the main test suite via python3 -m unittest",
             )
-            self.assertIn(
+            self.assertNotIn(
                 "history-validation-summary.telemetry.json",
                 contents,
-                "CI should upload the telemetry summary artifact",
+                "CI should avoid uploading telemetry artifacts in environments without access",
             )
 
         def test_workflow_printf_guard(self) -> None:

@@ -192,11 +192,15 @@ if bootstrap is not None:
                     history_actions, "guard_surface_request", return_value=False
                 ) as guard,
                 patch.object(history_actions, "last_drop_reason", return_value=""),
+                patch.object(
+                    history_actions, "clear_history_drop_reason"
+                ) as clear_reason,
                 patch.object(history_actions, "set_drop_reason") as set_reason,
             ):
                 self.assertFalse(history_actions._reject_if_request_in_flight())
             guard.assert_called_once()
-            set_reason.assert_called_once_with("")
+            clear_reason.assert_called_once_with()
+            set_reason.assert_not_called()
 
         def test_reject_if_request_in_flight_preserves_pending_reason(self):
             with (
@@ -210,6 +214,14 @@ if bootstrap is not None:
             ):
                 self.assertFalse(history_actions._reject_if_request_in_flight())
             set_reason.assert_not_called()
+
+        def test_history_actions_clear_drop_reason_helper(self) -> None:
+            import talon_user.lib.historyLifecycle as history_lifecycle
+
+            self.assertIs(
+                history_actions.clear_history_drop_reason,
+                history_lifecycle.clear_drop_reason,
+            )
 
         def test_history_show_latest_uses_drop_reason_when_no_directional(self):
             import talon_user.lib.requestLog as requestlog  # type: ignore

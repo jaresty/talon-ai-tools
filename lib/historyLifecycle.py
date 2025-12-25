@@ -125,6 +125,12 @@ def consume_last_drop_reason_record() -> DropReason:
     return requestlog_consume_last_drop_reason_record()
 
 
+def clear_drop_reason() -> None:
+    """Clear any cached drop reason (success path)."""
+
+    requestlog_set_drop_reason("")
+
+
 __all__ = [
     "axes_snapshot_from_axes",
     "history_axes_for",
@@ -137,4 +143,5 @@ __all__ = [
     "last_drop_reason",
     "consume_last_drop_reason",
     "consume_last_drop_reason_record",
+    "clear_drop_reason",
 ]

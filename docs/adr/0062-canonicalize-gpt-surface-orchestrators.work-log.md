@@ -151,3 +151,17 @@
   - History save/export flows still set drop reasons directly; next loop aligns those pathways with the façade.
 - next_work:
   - Behaviour: migrate history save/export drop handling — python3 -m pytest _tests/test_request_history_actions.py — future-shaping: ensure persistence and exports delegate to lifecycle helpers before refactoring saves.
+
+## 2025-12-25 – Loop 012 (kind: implementation)
+- helper_version: helper:v20251223.1
+- focus: ADR-0062 §Refactor Plan – History Lifecycle Orchestrator (history save/export drop resets)
+- riskiest_assumption: History save actions still cleared drop reasons directly; `python3 -m pytest _tests/test_request_history_actions.py::RequestHistoryActionTests::test_history_actions_clear_drop_reason_helper` fails until the lifecycle façade provides the shared helper (probability medium, impact medium-high on Concordance visibility).
+- validation_targets:
+  - python3 -m pytest _tests/test_request_history_actions.py
+- evidence: docs/adr/evidence/0062/loop-0012.md
+- rollback_plan: git stash push -- lib/historyLifecycle.py lib/requestHistoryActions.py && python3 -m pytest _tests/test_request_history_actions.py::RequestHistoryActionTests::test_history_actions_clear_drop_reason_helper && git stash pop
+- delta_summary: helper:diff-snapshot=3 files changed, 28 insertions(+), 6 deletions(-); lifecycle now exposes `clear_drop_reason`, history actions re-export/use it, and tests assert façade alignment for save/export flows.
+- residual_risks:
+  - History save/export callers still build drop-reason messages inline; consider lifecycle helpers to centralise messaging.
+- next_work:
+  - Behaviour: audit remaining drop-reason consumers (requestGating) — python3 -m pytest _tests/test_request_gating.py — future-shaping: fold request gating drop setters into the lifecycle façade where feasible.

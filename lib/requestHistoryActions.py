@@ -21,6 +21,7 @@ from .requestLog import (
 )
 from .historyLifecycle import (
     axes_snapshot_from_axes as lifecycle_axes_snapshot_from_axes,
+    clear_drop_reason,
     consume_last_drop_reason_record,
     history_axes_for as lifecycle_history_axes_for,
     last_drop_reason,
@@ -33,6 +34,8 @@ from .requestGating import request_is_in_flight
 from .surfaceGuidance import guard_surface_request
 from .suggestionCoordinator import recipe_header_lines_from_snapshot
 from .talonSettings import _canonicalise_axis_tokens
+
+clear_history_drop_reason = clear_drop_reason
 
 mod = Module()
 
@@ -66,7 +69,7 @@ def _reject_if_request_in_flight() -> bool:
 
     try:
         if not last_drop_reason():
-            set_drop_reason("")
+            clear_history_drop_reason()
     except Exception:
         pass
     return False
@@ -768,7 +771,7 @@ class UserActions:
         if not path:
             return None
         try:
-            set_drop_reason("")
+            clear_history_drop_reason()
         except Exception:
             pass
         return path
@@ -798,7 +801,7 @@ class UserActions:
                     pass
                 return None
         try:
-            set_drop_reason("")
+            clear_history_drop_reason()
         except Exception:
             pass
         notify(f"GPT: Copied history save path: {path}")
@@ -850,7 +853,7 @@ class UserActions:
                 pass
             return path
         try:
-            set_drop_reason("")
+            clear_history_drop_reason()
         except Exception:
             pass
         notify(f"GPT: Opened history save: {path}")
@@ -864,7 +867,7 @@ class UserActions:
         if not path:
             return None
         try:
-            set_drop_reason("")
+            clear_history_drop_reason()
         except Exception:
             pass
         notify(f"GPT: Last saved history path: {path}")

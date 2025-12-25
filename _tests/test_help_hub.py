@@ -587,11 +587,20 @@ def test_copy_adr_links_includes_metadata(monkeypatch):
     monkeypatch.setattr(
         clip, "set_text", lambda value: captured.setdefault("text", value)
     )
+    monkeypatch.setattr(
+        helpHub.time, "strftime", lambda fmt, ts: "2025-12-25T17:00:00Z"
+    )
 
     helpHub._copy_adr_links()
 
     text = captured.get("text", "").lower()
     assert "metadata summary:" in text
+    assert "metadata schema version: help-hub.metadata.v1" in text
+    assert "metadata generated at (utc): 2025-12-25t17:00:00z" in text
+    assert (
+        "metadata provenance: source=lib.helphub; adr=adr-0062; helper=helper:v20251223.1"
+        in text
+    )
     assert "persona demo_persona" in text
     assert "intent decide" in text
 

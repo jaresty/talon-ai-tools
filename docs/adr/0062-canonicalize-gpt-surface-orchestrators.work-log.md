@@ -379,3 +379,17 @@
   - Text-based metadata exports still omit schema/provenance cues; mitigation: extend summary/ADR copy helpers in the next loop and monitor via the same pytest target.
 - next_work:
   - Behaviour: propagate schema/provenance metadata into Help Hub summary copy — python3 -m pytest _tests/test_help_hub.py _tests/test_help_domain.py — future-shaping: keep textual exports aligned with the canonical JSON schema for automation consumers.
+
+## 2025-12-25 – Loop 029 (kind: implementation)
+- helper_version: helper:v20251223.1
+- focus: ADR-0062 §Refactor Plan – Guidance Surface Coordinator (metadata schema provenance in summaries)
+- riskiest_assumption: Help Hub ADR summaries still omit schema + provenance headers, so automation clients scraping text cannot detect schema evolution; `python3 -m pytest _tests/test_help_hub.py::test_copy_adr_links_includes_metadata` stays red when headers are missing (probability medium, impact medium-high on Concordance automation visibility).
+- validation_targets:
+  - python3 -m pytest _tests/test_help_hub.py::test_copy_adr_links_includes_metadata
+- evidence: docs/adr/evidence/0062/loop-0029.md
+- rollback_plan: git restore --source=HEAD -- lib/helpHub.py _tests/test_help_hub.py && python3 -m pytest _tests/test_help_hub.py::test_copy_adr_links_includes_metadata
+- delta_summary: helper:diff-snapshot=2 files changed, 57 insertions(+), 13 deletions(-); `_metadata_snapshot_summary_lines()` now emits schema version, timestamp, and provenance headers while JSON export reuses the shared payload helper.
+- residual_risks:
+  - Metadata consumers outside Help Hub still lack the headers; mitigation: extend help domain exports in the next loop and observe via `_tests/test_help_hub.py` and `_tests/test_help_domain.py` guardrails.
+- next_work:
+  - Behaviour: expose schema/provenance headers to help domain exports — python3 -m pytest _tests/test_help_hub.py _tests/test_help_domain.py — future-shaping: keep downstream documentation aligned with canonical metadata cues.

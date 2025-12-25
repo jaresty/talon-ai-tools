@@ -998,10 +998,54 @@ def _metadata_snapshot_records() -> tuple[List[Dict[str, Any]], List[Dict[str, A
     return personas, intents
 
 
-def _metadata_snapshot_summary_lines() -> List[str]:
-    lines: List[str] = []
-
+def _metadata_snapshot_payload() -> Dict[str, Any]:
     personas, intents = _metadata_snapshot_records()
+    return {
+        "schema": {
+            "version": _HELP_METADATA_SCHEMA_VERSION,
+            "generated_at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+        },
+        "provenance": dict(_HELP_METADATA_PROVENANCE_BASE),
+        "personas": personas,
+        "intents": intents,
+    }
+
+
+def _metadata_snapshot_summary_lines() -> List[str]:
+    payload = _metadata_snapshot_payload()
+    schema: Dict[str, Any] = payload.get("schema", {}) or {}
+    provenance: Dict[str, Any] = payload.get("provenance", {}) or {}
+    personas: List[Dict[str, Any]] = list(payload.get("personas", []) or [])
+    intents: List[Dict[str, Any]] = list(payload.get("intents", []) or [])
+
+    lines: List[str] = []
+    header_lines: List[str] = []
+
+    version = str(schema.get("version", "")).strip()
+    if version:
+        header_lines.append(f"Metadata schema version: {version}")
+
+    generated_at = str(schema.get("generated_at", "")).strip()
+    if generated_at:
+        header_lines.append(f"Metadata generated at (UTC): {generated_at}")
+
+    provenance_parts: List[str] = []
+    source = str(provenance.get("source", "")).strip()
+    if source:
+        provenance_parts.append(f"source={source}")
+    adr = str(provenance.get("adr", "")).strip()
+    if adr:
+        provenance_parts.append(f"adr={adr}")
+    helper_version = str(provenance.get("helper_version", "")).strip()
+    if helper_version:
+        provenance_parts.append(f"helper={helper_version}")
+    if provenance_parts:
+        header_lines.append(f"Metadata provenance: {'; '.join(provenance_parts)}")
+
+    if header_lines:
+        lines.extend(header_lines)
+        if personas or intents:
+            lines.append("")
 
     if personas:
         lines.append("Persona metadata:")
@@ -1016,7 +1060,7 @@ def _metadata_snapshot_summary_lines() -> List[str]:
             )
 
     if intents:
-        if lines:
+        if personas:
             lines.append("")
         lines.append("Intent metadata:")
         for intent in intents:
@@ -1033,16 +1077,7 @@ def _metadata_snapshot_summary_lines() -> List[str]:
 
 
 def _metadata_snapshot_json() -> str:
-    personas, intents = _metadata_snapshot_records()
-    payload = {
-        "schema": {
-            "version": _HELP_METADATA_SCHEMA_VERSION,
-            "generated_at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
-        },
-        "provenance": dict(_HELP_METADATA_PROVENANCE_BASE),
-        "personas": personas,
-        "intents": intents,
-    }
+    payload = _metadata_snapshot_payload()
     return json.dumps(payload, indent=2, sort_keys=True)
 
 

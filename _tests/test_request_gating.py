@@ -313,6 +313,10 @@ if bootstrap is not None:
             self.assertIs(
                 requestGating.set_drop_reason, history_lifecycle.set_drop_reason
             )
+            self.assertIs(
+                requestGating.drop_reason_message,
+                history_lifecycle.drop_reason_message,
+            )
 
 else:
     if not TYPE_CHECKING:

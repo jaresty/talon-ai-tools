@@ -179,3 +179,17 @@
   - requestGating still calls `drop_reason_message` directly; planned lifecycle messaging helper will consolidate message formatting.
 - next_work:
   - Behaviour: consolidate drop reason message formatting — python3 -m pytest _tests/test_request_gating.py _tests/test_request_history_actions.py — future-shaping: expose lifecycle helper for drop reason messages so modules no longer depend on `requestLog` formatting.
+
+## 2025-12-25 – Loop 014 (kind: implementation)
+- helper_version: helper:v20251223.1
+- focus: ADR-0062 §Refactor Plan – History Lifecycle Orchestrator (drop reason message façade)
+- riskiest_assumption: Modules still format drop messages via `requestLog`; `python3 -m pytest _tests/test_request_gating.py::RequestGatingTests::test_request_gating_uses_lifecycle_drop_helpers` fails after extending the guardrail to message helpers (probability medium, impact medium-high on Concordance visibility).
+- validation_targets:
+  - python3 -m pytest _tests/test_request_gating.py
+- evidence: docs/adr/evidence/0062/loop-0014.md
+- rollback_plan: git stash push -- lib/historyLifecycle.py lib/requestGating.py lib/dropReasonUtils.py && python3 -m pytest _tests/test_request_gating.py::RequestGatingTests::test_request_gating_uses_lifecycle_drop_helpers && git stash pop
+- delta_summary: helper:diff-snapshot=4 files changed, 16 insertions(+), 3 deletions(-); lifecycle now exposes `drop_reason_message`, requestGating and dropReasonUtils delegate to it, and tests enforce the shared façade.
+- residual_risks:
+  - Future work may expose lifecycle helpers for additional drop metadata (e.g., source summaries) to simplify streaming coordinator integrations.
+- next_work:
+  - Behaviour: audit remaining direct `requestLog` imports for drop messaging — python3 -m pytest _tests/test_streaming_coordinator.py — future-shaping: ensure streaming coordinator also consumes lifecycle helpers before refactoring telemetry outputs.

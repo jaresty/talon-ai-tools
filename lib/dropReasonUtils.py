@@ -2,7 +2,8 @@ from __future__ import annotations
 
 from typing import Union
 
-from .requestLog import RequestDropReason, drop_reason_message
+from .historyLifecycle import drop_reason_message
+from .requestLog import RequestDropReason
 
 
 def render_drop_reason(reason: Union[RequestDropReason, str]) -> str:

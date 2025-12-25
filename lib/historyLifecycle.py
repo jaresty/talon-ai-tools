@@ -9,6 +9,7 @@ from .requestLog import (
     consume_gating_drop_stats as requestlog_consume_gating_drop_stats,
     consume_last_drop_reason as requestlog_consume_last_drop_reason,
     consume_last_drop_reason_record as requestlog_consume_last_drop_reason_record,
+    drop_reason_message as requestlog_drop_reason_message,
     gating_drop_source_stats as requestlog_gating_drop_source_stats,
     gating_drop_stats as requestlog_gating_drop_stats,
     history_validation_stats as requestlog_history_validation_stats,
@@ -125,6 +126,12 @@ def consume_last_drop_reason_record() -> DropReason:
     return requestlog_consume_last_drop_reason_record()
 
 
+def drop_reason_message(reason: RequestDropReason) -> str:
+    """Return the rendered message for a drop reason."""
+
+    return requestlog_drop_reason_message(reason)
+
+
 def clear_drop_reason() -> None:
     """Clear any cached drop reason (success path)."""
 
@@ -143,5 +150,6 @@ __all__ = [
     "last_drop_reason",
     "consume_last_drop_reason",
     "consume_last_drop_reason_record",
+    "drop_reason_message",
     "clear_drop_reason",
 ]

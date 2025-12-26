@@ -432,6 +432,12 @@ def last_drop_reason() -> str:
     return requestlog_last_drop_reason()
 
 
+def last_drop_reason_code() -> RequestDropReason:
+    """Return the canonical drop reason code for the last drop."""
+
+    return requestlog_module.last_drop_reason_code()
+
+
 def consume_last_drop_reason() -> str:
     """Consume and clear the last drop reason message."""
 

@@ -1069,6 +1069,21 @@
 - next_work:
   - Behaviour: prepare migration plan for request history actions/drawer tests — python3 -m pytest _tests/test_request_history_actions.py — future-shaping: ensure façade coverage extends across history UI tests.
 
+## 2025-12-26 – Loop 082 (kind: implementation)
+- helper_version: helper:v20251223.1
+- focus: ADR-0062 §Refactor Plan – History Lifecycle Orchestrator (migrate request history actions tests to façade)
+- riskiest_assumption: Request history actions tests would keep importing `requestLog`, masking lifecycle regressions (probability medium-high, impact high on coverage).
+- validation_targets:
+  - python3 -m pytest _tests/test_request_history_actions.py
+- evidence:
+  - docs/adr/evidence/0062/loop-0082.md
+- rollback_plan: git restore --source=HEAD -- _tests/test_request_history_actions.py lib/historyLifecycle.py && python3 -m pytest _tests/test_request_history_actions.py
+- delta_summary: helper:diff-snapshot=2 files changed, 234 insertions(+), 140 deletions(-); tests now consume `historyLifecycle` helpers, including a new drop-reason code re-export for parity.
+- residual_risks:
+  - Request history drawer tests still patch `requestLog`; migrate them next.
+- next_work:
+  - Behaviour: migrate request history drawer tests to façade wrappers — python3 -m pytest _tests/test_request_history_drawer.py — future-shaping: retire direct `_history` mutations.
+
 
 
 

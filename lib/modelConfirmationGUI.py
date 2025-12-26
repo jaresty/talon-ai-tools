@@ -7,8 +7,8 @@ from talon import Context, Module, actions, clip, cron, imgui, settings
 from .axisJoin import axis_join
 from .modelHelpers import GPTState, extract_message, notify
 from .overlayLifecycle import close_common_overlays
-from .requestGating import request_is_in_flight, try_begin_request
-from .historyLifecycle import last_drop_reason, set_drop_reason
+from .requestGating import request_is_in_flight
+from .historyLifecycle import last_drop_reason, set_drop_reason, try_begin_request
 from .dropReasonUtils import render_drop_reason
 from .modelPresentation import ResponsePresentation
 from .metaPromptConfig import first_meta_preview_line, meta_preview_lines

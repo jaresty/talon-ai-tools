@@ -35,7 +35,12 @@ from .modelPatternGUI import (
     CHANNEL_MAP,
     DIRECTIONAL_MAP,
 )
-from .requestGating import request_is_in_flight, try_begin_request
+from .requestGating import request_is_in_flight
+from .historyLifecycle import (
+    try_begin_request,
+    last_drop_reason,
+    set_drop_reason,
+)
 from .modelHelpers import notify
 from .stanceDefaults import stance_defaults_lines
 from .overlayHelpers import apply_canvas_blocking, clamp_scroll
@@ -344,11 +349,19 @@ def _request_is_in_flight() -> bool:
 def _reject_if_request_in_flight() -> bool:
     """Return True when suggestion surfaces should abort due to gating."""
 
-    return guard_surface_request(
+    blocked = guard_surface_request(
         surface="suggestion",
         source="modelSuggestionGUI",
         suppress_attr="suppress_overlay_inflight_guard",
     )
+    if blocked:
+        return True
+    try:
+        if not last_drop_reason():
+            set_drop_reason("")
+    except Exception:
+        pass
+    return False
 
 
 def _load_source_spoken_map() -> dict[str, str]:

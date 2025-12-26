@@ -282,6 +282,12 @@ def append_entry_from_request(**kwargs):
     return requestlog_append_entry_from_request(**kwargs)
 
 
+def try_begin_request(state=None, *, source: str = "") -> tuple[bool, str]:
+    from .requestGating import try_begin_request as _try_begin_request
+
+    return _try_begin_request(state, source=source)
+
+
 def _coerce_axes_mapping(
     axes: Mapping[str, Sequence[str]] | None,
 ) -> dict[str, list[str]]:
@@ -405,6 +411,7 @@ __all__ = [
     "nth_from_latest",
     "all_entries",
     "append_entry_from_request",
+    "try_begin_request",
     "record_gating_drop",
     "gating_drop_stats",
     "gating_drop_source_stats",

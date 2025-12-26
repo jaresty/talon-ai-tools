@@ -14,7 +14,8 @@ from .stanceDefaults import stance_defaults_lines
 from .overlayLifecycle import close_overlays, close_common_overlays
 
 from .metaPromptConfig import first_meta_preview_line, meta_preview_lines
-from .requestGating import request_is_in_flight, try_begin_request
+from .requestGating import request_is_in_flight
+from .historyLifecycle import try_begin_request
 from .modelHelpers import notify
 from .overlayHelpers import apply_canvas_blocking
 from .personaConfig import persona_intent_maps

@@ -737,4 +737,25 @@
 - next_work:
   - Behaviour: continue migrating surface guidance/request gating helpers to the façade — python3 -m pytest _tests/test_surface_guidance.py — future-shaping: finish removing direct `requestLog` dependencies.
 
+## 2025-12-26 – Loop 061 (kind: implementation)
+- helper_version: helper:v20251223.1
+- focus: ADR-0062 §Refactor Plan – History Lifecycle Orchestrator (migrate surface gating to façade)
+- riskiest_assumption: Overlay/canvas modules still relied on `requestGating.try_begin_request`, risking divergence once lifecycle drop messaging changes (probability medium, impact medium on UX consistency).
+- validation_targets:
+  - python3 -m pytest _tests/test_surface_guidance.py
+  - python3 -m pytest _tests/test_prompt_pattern_gui.py _tests/test_prompt_pattern_gui_guard.py
+  - python3 -m pytest _tests/test_model_suggestion_gui.py _tests/test_model_suggestion_gui_guard.py
+  - python3 -m pytest _tests/test_help_hub.py
+  - python3 -m pytest _tests/test_model_confirmation_gui.py _tests/test_model_confirmation_gui_guard.py
+  - python3 -m pytest _tests/test_model_helpers_response_canvas.py
+  - python3 -m pytest _tests/test_provider_commands.py
+- evidence:
+  - docs/adr/evidence/0062/loop-0061.md
+- rollback_plan: git restore --source=HEAD -- lib/surfaceGuidance.py lib/modelConfirmationGUI.py lib/modelHelpCanvas.py lib/modelPatternGUI.py lib/modelPromptPatternGUI.py lib/modelResponseCanvas.py lib/modelSuggestionGUI.py lib/providerCommands.py lib/helpHub.py lib/historyLifecycle.py && python3 -m pytest _tests/test_surface_guidance.py
+- delta_summary: helper:diff-snapshot=10 files changed, 62 insertions(+), 21 deletions(-); lifecycle façade now exports `try_begin_request`, and overlay/canvas surfaces clear drop reasons via shared helpers while still using guard-based gating.
+- residual_risks:
+  - `requestHistoryDrawer` still uses a bespoke gating flow for message control; revisit once façade exposes equivalent hooks.
+- next_work:
+  - Behaviour: fold the history drawer gating shim into the façade — python3 -m pytest _tests/test_request_history_drawer.py — future-shaping: finish removing direct request gating dependencies.
+
 

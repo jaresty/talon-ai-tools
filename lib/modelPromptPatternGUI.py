@@ -10,8 +10,13 @@ from .modelDestination import create_model_destination
 from .modelSource import create_model_source
 from .modelState import GPTState
 from .axisMappings import axis_docs_map
-from .requestGating import request_is_in_flight, try_begin_request
-from .historyLifecycle import last_drop_reason, set_drop_reason
+from .requestGating import request_is_in_flight
+from .historyLifecycle import (
+    last_drop_reason,
+    set_drop_reason,
+    try_begin_request,
+    drop_reason_message,
+)
 from .dropReasonUtils import render_drop_reason
 from .modelHelpers import notify
 from .overlayHelpers import apply_canvas_blocking, apply_scroll_delta, clamp_scroll
@@ -95,18 +100,30 @@ def _reject_if_request_in_flight() -> bool:
     if not reason:
         return False
 
-    message = render_drop_reason(reason)
-
+    message = ""
     try:
-        set_drop_reason(reason, message)
+        message = drop_reason_message(reason)
     except Exception:
-        pass
+        message = ""
+    if not message:
+        try:
+            message = render_drop_reason(reason)
+        except Exception:
+            message = ""
 
     try:
         if message:
-            notify(message)
+            set_drop_reason(reason, message)
+        else:
+            set_drop_reason(reason)
     except Exception:
         pass
+
+    if message:
+        try:
+            notify(message)
+        except Exception:
+            pass
 
     return True
 

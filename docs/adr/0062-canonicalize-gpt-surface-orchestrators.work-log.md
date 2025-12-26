@@ -884,7 +884,25 @@
 - residual_risks:
   - `requestLog` still needs direct access to request-state dataclasses for DropReason serialization; re-evaluate once logging abstractions move behind the façade.
 - next_work:
-  - Behaviour: audit streaming coordinator for remaining direct state usage — python3 -m pytest _tests/test_streaming_session.py — future-shaping: finish lifecycle consolidation.
+  - Behaviour: audit streaming coordinator for remaining direct state usage — python3 -m pytest _tests/test_streaming_session.py — future-shaping: complete lifecycle consolidation.
+
+## 2025-12-26 – Loop 070 (kind: implementation)
+- helper_version: helper:v20251223.1
+- focus: ADR-0062 §Refactor Plan – History Lifecycle Orchestrator (centralise request lifecycle reducers)
+- riskiest_assumption: High-level modules continued pulling lifecycle reducers directly from `requestLifecycle`, diluting façade ownership (probability medium, impact medium on cohesion).
+- validation_targets:
+  - python3 -m pytest _tests/test_request_controller.py
+  - python3 -m pytest _tests/test_request_gating.py
+  - python3 -m pytest _tests/test_request_gating_macros.py
+- evidence:
+  - docs/adr/evidence/0062/loop-0070.md
+- rollback_plan: git restore --source=HEAD -- lib/historyLifecycle.py lib/requestController.py lib/modelHelpers.py lib/requestGating.py lib/requestBus.py docs/adr/0062-canonicalize-gpt-surface-orchestrators.work-log.md && python3 -m pytest _tests/test_request_controller.py
+- delta_summary: helper:diff-snapshot=3 files changed, 29 insertions(+), 6 deletions(-); lifecycle façade now re-exports lifecycle reducers/state helpers so higher-level modules rely solely on façade exports.
+- residual_risks:
+  - Logging internals still reference request lifecycle primitives; revisit once history logging migrates behind the façade.
+- next_work:
+  - Behaviour: audit streaming coordinator/session modules for remaining direct lifecycle imports — python3 -m pytest _tests/test_streaming_session.py — future-shaping: finish façade consolidation.
+
 
 
 

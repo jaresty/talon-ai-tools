@@ -36,7 +36,10 @@ from .requestState import (
     transition,
 )
 from .requestLifecycle import (
+    RequestLifecycleState,
+    RequestStatus,
     is_in_flight as lifecycle_is_in_flight,
+    reduce_request_state as lifecycle_reduce_request_state,
     try_start_request as lifecycle_try_start_request,
 )
 
@@ -424,14 +427,23 @@ def clear_drop_reason() -> None:
 
 
 def state_is_in_flight(state: RequestState) -> bool:
-    return lifecycle_is_in_flight(state)
+    lifecycle_state = lifecycle_status_for(state)
+    return lifecycle_is_in_flight(lifecycle_state)
 
 
 def state_try_start_request(
     state: RequestState,
 ) -> tuple[bool, RequestDropReason]:
-    allowed, reason = lifecycle_try_start_request(state)
+    lifecycle_state = lifecycle_status_for(state)
+    allowed, reason = lifecycle_try_start_request(lifecycle_state)
     return allowed, cast(RequestDropReason, reason)
+
+
+def reduce_request_state(
+    state: RequestLifecycleState,
+    event: str,
+) -> RequestLifecycleState:
+    return lifecycle_reduce_request_state(state, event)
 
 
 __all__ = [
@@ -457,11 +469,14 @@ __all__ = [
     "RequestEventKind",
     "RequestPhase",
     "RequestState",
+    "RequestLifecycleState",
+    "RequestStatus",
     "Surface",
     "lifecycle_status_for",
     "transition",
     "state_is_in_flight",
     "state_try_start_request",
+    "reduce_request_state",
     "record_gating_drop",
     "gating_drop_stats",
     "gating_drop_source_stats",

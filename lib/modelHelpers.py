@@ -35,9 +35,13 @@ from .requestBus import (
     current_state,
 )
 from .requestController import RequestUIController
-from .historyLifecycle import RequestState, append_entry_from_request
+from .historyLifecycle import (
+    RequestLifecycleState,
+    RequestState,
+    append_entry_from_request,
+    reduce_request_state,
+)
 from .uiDispatch import run_on_ui_thread
-from .requestLifecycle import RequestLifecycleState, reduce_request_state
 from .streamingCoordinator import (
     new_streaming_session,
     StreamingSession,

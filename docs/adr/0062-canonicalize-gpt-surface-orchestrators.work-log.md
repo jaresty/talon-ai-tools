@@ -1021,7 +1021,22 @@
 - residual_risks:
   - Other test suites may still reference `requestLog`; continue auditing remaining coverage.
 - next_work:
-  - Behaviour: review remaining `requestLog` test usage and migrate as needed.
+  - Behaviour: align axis snapshot tests with the façade — python3 -m pytest _tests/test_axis_snapshot_alignment.py — future-shaping: keep coverage focused on lifecycle exports.
+
+## 2025-12-26 – Loop 079 (kind: implementation)
+- helper_version: helper:v20251223.1
+- focus: ADR-0062 §Refactor Plan – History Lifecycle Orchestrator (align axis snapshot tests with façade)
+- riskiest_assumption: Axis snapshot characterization tests would continue importing `requestLog`, bypassing the lifecycle façade (probability medium, impact low-medium).
+- validation_targets:
+  - python3 -m pytest _tests/test_axis_snapshot_alignment.py
+- evidence:
+  - docs/adr/evidence/0062/loop-0079.md
+- rollback_plan: git restore --source=HEAD -- _tests/test_axis_snapshot_alignment.py && python3 -m pytest _tests/test_axis_snapshot_alignment.py
+- delta_summary: helper:diff-snapshot=1 file changed; axis snapshot alignment test now validates lifecycle exports.
+- residual_risks:
+  - Request history tests still import `requestLog`; migrate them next.
+- next_work:
+  - Behaviour: migrate request history tests to façade wrappers — python3 -m pytest _tests/test_request_history.py — future-shaping: continue eliminating direct `requestLog` usage in tests.
 
 
 

@@ -11,7 +11,7 @@ else:
 
 if bootstrap is not None:
     from talon_user.lib import requestHistoryActions
-    from talon_user.lib import requestLog
+    from talon_user.lib import historyLifecycle as history_lifecycle
 
     class AxisSnapshotAlignmentTests(unittest.TestCase):
         def test_request_history_actions_snapshot_matches_request_log_snapshot(
@@ -30,7 +30,7 @@ if bootstrap is not None:
 
             self.assertEqual(
                 requestHistoryActions.axis_snapshot_from_axes(axes),
-                requestLog.axis_snapshot_from_axes(axes),
+                history_lifecycle.axes_snapshot_from_axes(axes),
             )
 
 else:

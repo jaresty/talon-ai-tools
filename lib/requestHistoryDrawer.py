@@ -13,13 +13,17 @@ from .historyLifecycle import (
     drop_reason_message,
     last_drop_reason,
     set_drop_reason,
+    try_begin_request as lifecycle_try_begin_request,
 )
 from .historyQuery import history_drawer_entries_from
 
 from .modelHelpers import notify
-from .requestGating import request_is_in_flight, try_begin_request
+from .requestGating import request_is_in_flight
 from .overlayHelpers import apply_canvas_blocking
 from .overlayLifecycle import close_overlays, close_common_overlays
+
+# Backwards-compatible alias for tests expecting module-level try_begin_request.
+try_begin_request = lifecycle_try_begin_request
 
 mod = Module()
 
@@ -48,7 +52,13 @@ def _request_is_in_flight() -> bool:
 
 
 def _on_guard_block(reason: str, message: str) -> None:
-    HistoryDrawerState.last_message = message or ""
+    fallback = message
+    if not fallback:
+        try:
+            fallback = drop_reason_message(reason)
+        except Exception:
+            fallback = ""
+    HistoryDrawerState.last_message = fallback or ""
 
 
 def _reject_if_request_in_flight() -> bool:
@@ -72,14 +82,14 @@ def _reject_if_request_in_flight() -> bool:
         return False
 
     try:
-        rendered = drop_reason_message(reason)
+        drop_message = drop_reason_message(reason)
     except Exception:
-        rendered = ""
-    message = rendered or f"GPT: Request blocked; reason={reason}."
+        drop_message = ""
+    message = drop_message or f"GPT: Request blocked; reason={reason}."
     HistoryDrawerState.last_message = message
 
     try:
-        if rendered:
+        if drop_message:
             set_drop_reason(reason)
         else:
             set_drop_reason(reason, message)

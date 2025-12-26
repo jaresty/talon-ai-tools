@@ -756,6 +756,22 @@
 - residual_risks:
   - `requestHistoryDrawer` still uses a bespoke gating flow for message control; revisit once façade exposes equivalent hooks.
 - next_work:
-  - Behaviour: fold the history drawer gating shim into the façade — python3 -m pytest _tests/test_request_history_drawer.py — future-shaping: finish removing direct request gating dependencies.
+  - Behaviour: fold the history drawer gating shim into the façade — python3 -m pytest _tests/test_request_history_drawer.py — future-shaping: remove final direct request gating dependencies.
+
+## 2025-12-26 – Loop 062 (kind: implementation)
+- helper_version: helper:v20251223.1
+- focus: ADR-0062 §Refactor Plan – History Lifecycle Orchestrator (align history drawer gating with façade helpers)
+- riskiest_assumption: History drawer still bypassed the façade, duplicating drop messaging logic (probability medium, impact medium on UX consistency).
+- validation_targets:
+  - python3 -m pytest _tests/test_request_history_drawer.py
+- evidence:
+  - docs/adr/evidence/0062/loop-0062.md
+- rollback_plan: git restore --source=HEAD -- lib/requestHistoryDrawer.py && python3 -m pytest _tests/test_request_history_drawer.py
+- delta_summary: helper:diff-snapshot=1 file changed, 18 insertions(+), 20 deletions(-); history drawer now calls the lifecycle `try_begin_request` façade while preserving guard messaging expected by tests.
+- residual_risks:
+  - Drawer still owns bespoke UI messaging; consider a shared lifecycle helper for future alignment.
+- next_work:
+  - Behaviour: audit remaining history helpers for direct `requestLog` imports — python3 -m pytest _tests/test_request_history_actions.py — future-shaping: ensure all history surfaces delegate through lifecycle façade.
+
 
 

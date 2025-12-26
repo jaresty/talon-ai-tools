@@ -32,7 +32,7 @@ if bootstrap is not None:
     from talon_user.lib.requestState import RequestPhase
     from talon_user.lib.talonSettings import ApplyPromptConfiguration
     from talon_user.lib.requestHistoryActions import UserActions as HistoryActions
-    from talon_user.lib.requestLog import append_entry, clear_history
+    from talon_user.lib.historyLifecycle import append_entry, clear_history
 
     class GPTActionPromptSessionTests(unittest.TestCase):
         def setUp(self):

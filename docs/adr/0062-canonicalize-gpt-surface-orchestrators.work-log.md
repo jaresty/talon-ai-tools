@@ -1114,6 +1114,21 @@
 - next_work:
   - Behaviour: evaluate migrating GPT action tests off `requestLog` imports.
 
+## 2025-12-26 – Loop 085 (kind: implementation)
+- helper_version: helper:v20251223.1
+- focus: ADR-0062 §Refactor Plan – History Lifecycle Orchestrator (migrate GPT action tests to façade)
+- riskiest_assumption: GPT action tests would keep relying on `requestLog`, masking façade regressions (probability medium, impact high on orchestration coverage).
+- validation_targets:
+  - python3 -m pytest _tests/test_gpt_actions.py
+- evidence:
+  - docs/adr/evidence/0062/loop-0085.md
+- rollback_plan: git restore --source=HEAD -- _tests/test_gpt_actions.py && python3 -m pytest _tests/test_gpt_actions.py
+- delta_summary: helper:diff-snapshot=1 file changed, 2 insertions(+), 2 deletions(-); GPT action tests now delegate their history hooks to `historyLifecycle`.
+- residual_risks:
+  - `tests/test_request_log.py` remains a deliberate characterization suite for `requestLog` internals.
+- next_work:
+  - Behaviour: audit production modules for direct `requestLog` imports outside façade scope.
+
 
 
 

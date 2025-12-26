@@ -1096,7 +1096,13 @@ def _metadata_snapshot_payload() -> Dict[str, Any]:
         if provenance_pairs:
             provenance = {key: value for key, value in provenance_pairs}
 
-    return {
+    intent_buckets: Dict[str, List[str]] = {}
+    for bucket, tokens in sorted(_intent_spoken_buckets().items()):
+        cleaned = [str(token).strip() for token in tokens if str(token).strip()]
+        if cleaned:
+            intent_buckets[bucket] = cleaned
+
+    payload: Dict[str, Any] = {
         "schema": {
             "version": schema_version,
             "generated_at": generated_at,
@@ -1105,6 +1111,9 @@ def _metadata_snapshot_payload() -> Dict[str, Any]:
         "personas": personas,
         "intents": intents,
     }
+    if intent_buckets:
+        payload["intent_buckets"] = intent_buckets
+    return payload
 
 
 def _metadata_snapshot_summary_lines() -> List[str]:
@@ -1112,7 +1121,17 @@ def _metadata_snapshot_summary_lines() -> List[str]:
     if snapshot is None:
         return []
 
-    return list(help_metadata_summary_lines(snapshot))
+    lines = list(help_metadata_summary_lines(snapshot))
+    buckets = _intent_spoken_buckets()
+    if buckets:
+        if lines and lines[-1]:
+            lines.append("")
+        lines.append("Intent buckets (canonical groups):")
+        for bucket, tokens in sorted(buckets.items()):
+            cleaned = [str(token).strip() for token in tokens if str(token).strip()]
+            if cleaned:
+                lines.append(f"- {bucket}: {', '.join(cleaned)}")
+    return lines
 
 
 def _metadata_snapshot_json() -> str:

@@ -726,6 +726,7 @@ def test_copy_adr_links_includes_metadata(monkeypatch):
     monkeypatch.setattr(helpHub, "axis_catalog", lambda: {})
     monkeypatch.setattr(helpHub, "help_metadata_snapshot", lambda _entries: snapshot)
     monkeypatch.setattr(helpHub, "help_index", lambda *args, **kwargs: [])
+    monkeypatch.setattr(helpHub, "_intent_spoken_buckets", lambda: {"task": ["Decide"]})
     captured: dict[str, str] = {}
     monkeypatch.setattr(actions.app, "notify", lambda *_args, **_kwargs: None)
     monkeypatch.setattr(
@@ -739,6 +740,8 @@ def test_copy_adr_links_includes_metadata(monkeypatch):
     assert "metadata header sentinel two" in text
     assert "persona demo_persona" in text
     assert "intent decide" in text
+    assert "intent buckets (canonical groups):" in text
+    assert "- task: decide" in text
 
 
 def test_copy_metadata_snapshot_json(monkeypatch):
@@ -773,6 +776,7 @@ def test_copy_metadata_snapshot_json(monkeypatch):
     monkeypatch.setattr(helpHub, "axis_catalog", lambda: {})
     monkeypatch.setattr(helpHub, "help_metadata_snapshot", lambda _entries: snapshot)
     monkeypatch.setattr(helpHub, "help_index", lambda *args, **kwargs: [])
+    monkeypatch.setattr(helpHub, "_intent_spoken_buckets", lambda: {"task": ["Decide"]})
     captured: dict[str, str] = {}
     monkeypatch.setattr(actions.app, "notify", lambda *_args, **_kwargs: None)
     monkeypatch.setattr(
@@ -791,6 +795,83 @@ def test_copy_metadata_snapshot_json(monkeypatch):
     assert provenance["adr"] == "ADR-0062-test"
     assert payload["personas"][0]["key"] == "demo_persona"
     assert payload["intents"][0]["canonical_intent"] == "decide"
+    assert payload.get("intent_buckets", {}) == {"task": ["Decide"]}
+
+
+def test_metadata_snapshot_summary_uses_orchestrator_buckets(monkeypatch):
+    snapshot = SimpleNamespace(
+        personas=(),
+        intents=(),
+        headers=("Metadata header",),
+    )
+    orchestrator_intent = SimpleNamespace(
+        key="decide",
+        label="Decide (orchestrator)",
+        intent="decide",
+    )
+    orchestrator = SimpleNamespace(
+        intent_presets={"decide": orchestrator_intent},
+        intent_display_map={"decide": "Decide (orchestrator)"},
+        canonical_intent_key=lambda alias: "decide" if alias else "",
+    )
+    bucket_snapshot = SimpleNamespace(
+        intent_buckets={"task": ["decide"]},
+        intent_display_map={"decide": "Snapshot display"},
+    )
+    with ExitStack() as stack:
+        stack.enter_context(
+            patch(
+                "lib.helpHub.help_metadata_snapshot",
+                return_value=snapshot,
+            )
+        )
+        stack.enter_context(
+            patch(
+                "talon_user.lib.helpHub.help_metadata_snapshot",
+                return_value=snapshot,
+            )
+        )
+        stack.enter_context(
+            patch(
+                "lib.helpHub.get_persona_intent_orchestrator",
+                return_value=orchestrator,
+            )
+        )
+        stack.enter_context(
+            patch(
+                "talon_user.lib.helpHub.get_persona_intent_orchestrator",
+                return_value=orchestrator,
+            )
+        )
+        stack.enter_context(
+            patch(
+                "lib.helpHub.personaCatalog.get_persona_intent_catalog",
+                return_value=bucket_snapshot,
+            )
+        )
+        stack.enter_context(
+            patch(
+                "talon_user.lib.helpHub.personaCatalog.get_persona_intent_catalog",
+                return_value=bucket_snapshot,
+            )
+        )
+        stack.enter_context(
+            patch(
+                "lib.helpHub.persona_intent_maps",
+                side_effect=RuntimeError("maps unavailable"),
+            )
+        )
+        stack.enter_context(
+            patch(
+                "talon_user.lib.helpHub.persona_intent_maps",
+                side_effect=RuntimeError("maps unavailable"),
+            )
+        )
+        summary_lines = helpHub._metadata_snapshot_summary_lines()
+    assert "Intent buckets (canonical groups):" in summary_lines
+    assert any(
+        "Decide (orchestrator)" in line and "task" in line for line in summary_lines
+    )
 
 
 def test_help_hub_copy_cheat_sheet_includes_snapshot_aliases(monkeypatch):

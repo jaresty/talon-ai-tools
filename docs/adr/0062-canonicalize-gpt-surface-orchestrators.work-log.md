@@ -1214,3 +1214,21 @@
   - Canvas command hint builders still pull intent maps directly; follow-on loops can reuse the orchestrator snapshot there.
 - next_work:
   - Behaviour: audit help surface exports for remaining personaConfig dependencies — python3 -m pytest _tests/test_help_hub.py — future-shaping: unify metadata helpers across canvases and exports.
+
+## 2025-12-26 – Loop 091 (kind: implementation)
+- helper_version: helper:v20251223.1
+- focus: ADR-0062 §Refactor Plan – Guidance Surface Coordinator (Help Hub metadata exports)
+- riskiest_assumption: Help Hub metadata clipboard/ADR exports would continue sourcing intent buckets from legacy personaConfig helpers, drifting from the persona orchestrator snapshot (probability medium, impact medium-high on visibility).
+- validation_targets:
+  - python3 -m pytest _tests/test_help_hub.py::test_metadata_snapshot_summary_uses_orchestrator_buckets
+  - python3 -m pytest _tests/test_help_hub.py::test_copy_adr_links_includes_metadata
+  - python3 -m pytest _tests/test_help_hub.py::test_copy_metadata_snapshot_json
+- evidence:
+  - docs/adr/evidence/0062/loop-0091.md
+- rollback_plan: git stash push -- lib/helpHub.py && python3 -m pytest _tests/test_help_hub.py::test_metadata_snapshot_summary_uses_orchestrator_buckets && git stash pop
+- delta_summary: helper:diff-snapshot=2 files changed, 102 insertions(+); metadata summary/JSON now append orchestrator-backed intent bucket groups so Help Hub exports stay aligned with Concordance metadata.
+- residual_risks:
+  - Metadata exports still depend on help index coverage; follow-up loops may need to enrich metadata entries where orchestrator snapshots lack coverage.
+- next_work:
+  - Behaviour: migrate Help canvas command hint helpers to orchestrator metadata — python3 -m pytest _tests/test_model_help_canvas.py::ModelHelpCanvasTests::test_intent_spoken_buckets_use_persona_orchestrator — future-shaping: eliminate remaining personaConfig dependencies across guidance surfaces.
+

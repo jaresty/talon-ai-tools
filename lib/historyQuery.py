@@ -17,12 +17,10 @@ from .historyLifecycle import (
     axes_snapshot_from_axes as _axis_snapshot_from_axes_impl,
     coerce_history_snapshot_entry as _coerce_history_snapshot_entry,
     history_axes_for as _history_axes_for_impl,
+    persona_summary_fragments as _persona_summary_fragments_impl,
 )
 from .requestHistoryActions import history_summary_lines as _history_summary_lines_impl
 from .requestHistoryActions import _directional_tokens_for_entry
-from .requestHistoryActions import (
-    _persona_summary_fragments as _persona_summary_fragments_impl,
-)
 
 _ALLOWED_HISTORY_AXIS_KEYS = frozenset(KNOWN_AXIS_KEYS)
 

@@ -139,6 +139,123 @@ def coerce_history_snapshot_entry(entry: object) -> HistorySnapshotEntry:
     )
 
 
+def persona_header_lines(entry: object) -> list[str]:
+    from .suggestionCoordinator import recipe_header_lines_from_snapshot
+
+    snapshot = getattr(entry, "persona", {}) or {}
+    if not snapshot:
+        return []
+    try:
+        lines = recipe_header_lines_from_snapshot(snapshot)
+    except Exception:
+        return []
+    return [
+        line
+        for line in lines
+        if line.startswith("persona_preset: ") or line.startswith("intent_preset: ")
+    ]
+
+
+def parse_persona_summary_line(line: str, prefix: str) -> tuple[str, list[str]]:
+    body = line[len(prefix) :].strip()
+    if not body:
+        return "", []
+    if body.endswith(")") and "(" in body:
+        descriptor, detail = body.split("(", 1)
+        descriptor = descriptor.strip()
+        parts = [part.strip() for part in detail[:-1].split(";") if part.strip()]
+        return descriptor, parts
+    return body, []
+
+
+def _render_persona_summary(line: str) -> str:
+    descriptor, parts = parse_persona_summary_line(line, "persona_preset: ")
+    spoken = ""
+    label = ""
+    others: list[str] = []
+    for part in parts:
+        lower = part.lower()
+        if lower.startswith("say: persona "):
+            spoken = part[len("say: persona ") :].strip()
+            continue
+        if lower.startswith("label="):
+            label = part.split("=", 1)[1].strip()
+            continue
+        others.append(part)
+    display = spoken or label or descriptor or "persona"
+    details: list[str] = []
+    if descriptor and descriptor != display:
+        details.append(f"key={descriptor}")
+    if label and label != display:
+        details.append(f"label={label}")
+    if spoken:
+        details.append(f"say: persona {spoken}")
+    details.extend(others)
+    fragment = f"persona {display}"
+    if details:
+        fragment += f" ({'; '.join(details)})"
+    return fragment
+
+
+def _render_intent_summary(line: str) -> str:
+    descriptor, parts = parse_persona_summary_line(line, "intent_preset: ")
+    spoken = ""
+    label = ""
+    display = ""
+    purpose = ""
+    others: list[str] = []
+    for part in parts:
+        lower = part.lower()
+        if lower.startswith("say: intent "):
+            spoken = part[len("say: intent ") :].strip()
+            continue
+        if lower.startswith("label="):
+            label = part.split("=", 1)[1].strip()
+            continue
+        if lower.startswith("display="):
+            display = part.split("=", 1)[1].strip()
+            continue
+        if lower.startswith("purpose="):
+            purpose = part.split("=", 1)[1].strip()
+            continue
+        others.append(part)
+    primary = descriptor or display or label or "intent"
+    details: list[str] = []
+    if descriptor:
+        details.append(f"key={descriptor}")
+    if label and label not in (primary, display):
+        details.append(f"label={label}")
+    if display and display != primary:
+        details.append(f"display={display}")
+    say_value = spoken or descriptor or primary
+    if say_value:
+        details.append(f"say: intent {say_value}")
+    if purpose:
+        details.append(f"purpose={purpose}")
+    details.extend(others)
+    fragment = f"intent {primary}"
+    if details:
+        fragment += f" ({'; '.join(details)})"
+    return fragment
+
+
+def persona_summary_fragments(entry: object) -> list[str]:
+    header_lines = persona_header_lines(entry)
+    if not header_lines:
+        return []
+    fragments: list[str] = []
+    for line in header_lines:
+        if line.startswith("persona_preset: "):
+            fragment = _render_persona_summary(line)
+        elif line.startswith("intent_preset: "):
+            fragment = _render_intent_summary(line)
+        else:
+            fragment = ""
+        if fragment.strip():
+            fragments.append(fragment)
+    return fragments
+
+
 def _coerce_axes_mapping(
     axes: Mapping[str, Sequence[str]] | None,
 ) -> dict[str, list[str]]:
@@ -255,6 +372,9 @@ __all__ = [
     "history_axes_for",
     "history_snapshot_entry_from",
     "coerce_history_snapshot_entry",
+    "persona_header_lines",
+    "parse_persona_summary_line",
+    "persona_summary_fragments",
     "record_gating_drop",
     "gating_drop_stats",
     "gating_drop_source_stats",

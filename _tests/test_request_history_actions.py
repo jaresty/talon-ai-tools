@@ -1613,7 +1613,7 @@ if bootstrap is not None:
             requestlog._history._entries[-1] = mutated
             try:
                 with patch(
-                    "talon_user.lib.requestHistoryActions._persona_header_lines",
+                    "talon_user.lib.historyLifecycle.persona_header_lines",
                     return_value=[
                         "persona_preset: teach_junior_dev (label=Teach junior dev)"
                     ],
@@ -1643,7 +1643,7 @@ if bootstrap is not None:
             requestlog._history._entries[-1] = mutated
             try:
                 with patch(
-                    "talon_user.lib.requestHistoryActions._persona_header_lines",
+                    "talon_user.lib.historyLifecycle.persona_header_lines",
                     return_value=[
                         "intent_preset: decide (label=Decide)",
                         "persona_preset: teach_junior_dev (label=Teach junior dev; say: persona mentor)",

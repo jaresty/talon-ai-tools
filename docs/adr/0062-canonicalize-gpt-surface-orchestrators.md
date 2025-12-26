@@ -105,6 +105,7 @@ These orchestrators must reuse existing facades (e.g. `axisCatalog`, `requestLif
     - Mediates `try_begin_request`, drop-reason notifications, and history snapshot persistence for canvases and actions.
     - Exposes gating telemetry (`history_validation_stats`, drop counts, sources) so guardrails and docs pull from the same lifecycle instrumentation.
     - Provides drop-reason setters/consumers so canvases and history actions stop importing `requestLog` directly.
+    - Exposes persona snapshot helpers (header extraction and summary fragments) so history actions, query façades, and telemetry exports share identical normalization.
   - Migrate `requestHistoryActions`, `requestLog`, canvases, and `modelDestination.append_text` to this façade, removing bespoke `_reject_if_request_in_flight` logic.
   - Cover the façade with characterization tests that extend `tests/test_request_history_actions.py`, `tests/test_request_log.py`, and `_tests/test_history_axis_export_telemetry.py`.
 

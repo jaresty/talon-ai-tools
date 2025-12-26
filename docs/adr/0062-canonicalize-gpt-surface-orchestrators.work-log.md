@@ -654,3 +654,21 @@
 - next_work:
   - Behaviour: tidy remaining persona validation helpers and document façade usage — python3 -m pytest _tests/test_history_query.py — future-shaping: ensure developer docs reflect lifecycle-only entry points.
 
+## 2025-12-25 – Loop 056 (kind: implementation)
+- helper_version: helper:v20251223.1
+- focus: ADR-0062 §Refactor Plan – History Lifecycle Orchestrator (document façade usage and centralize persona helpers)
+- riskiest_assumption: Leaving persona header helpers in `requestHistoryActions` would let history query/telemetry drift from the lifecycle façade (probability medium, impact medium on Concordance accuracy).
+- validation_targets:
+  - python3 -m pytest _tests/test_history_query.py
+  - python3 -m pytest _tests/test_request_history_actions.py
+  - python3 -m pytest _tests/test_history_lifecycle.py
+  - python3 -m pytest _tests/test_telemetry_export.py
+- evidence:
+  - docs/adr/evidence/0062/loop-0056.md
+- rollback_plan: git restore --source=HEAD -- lib/historyLifecycle.py lib/requestHistoryActions.py lib/historyQuery.py lib/requestLog.py docs/adr/0062-canonicalize-gpt-surface-orchestrators.md && python3 -m pytest _tests/test_history_query.py
+- delta_summary: helper:diff-snapshot=7 files changed (code) plus 1 doc updated; persona header/summary helpers now live in `historyLifecycle`, consumers import the façade, and ADR-0062 documents the shared contract.
+- residual_risks:
+  - Downstream docs may still reference legacy helpers; follow-up loop will reconcile Concordance persona guidance and CLI docs.
+- next_work:
+  - Behaviour: audit developer docs and CLI guardrails for legacy persona helper references — python3 -m pytest _tests/test_history_query.py — future-shaping: ensure Concordance docs point at the lifecycle façade exclusively.
+

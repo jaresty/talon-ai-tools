@@ -659,8 +659,11 @@ def render_drop_reason(reason: RequestDropReason) -> str:
 
 
 def _scan_history_entries(raise_on_failure: bool) -> dict[str, int]:
-    from .historyLifecycle import coerce_history_snapshot_entry
-    from .requestHistoryActions import _persona_header_lines, _parse_summary_line
+    from .historyLifecycle import (
+        coerce_history_snapshot_entry,
+        parse_persona_summary_line,
+        persona_header_lines,
+    )
 
     stats = {
         "total_entries": 0,
@@ -722,7 +725,7 @@ def _scan_history_entries(raise_on_failure: bool) -> dict[str, int]:
         persona_snapshot = normalized_entry.persona or {}
         if persona_snapshot:
             stats["entries_with_persona_snapshot"] += 1
-            persona_lines = _persona_header_lines(normalized_entry)
+            persona_lines = persona_header_lines(normalized_entry)
             request_id = normalized_entry.request_id or entry.request_id or "?"
             if not persona_lines:
                 stats["entries_missing_persona_headers"] += 1
@@ -736,7 +739,9 @@ def _scan_history_entries(raise_on_failure: bool) -> dict[str, int]:
             for line in persona_lines:
                 lower = line.lower()
                 if line.startswith("persona_preset: "):
-                    descriptor, details = _parse_summary_line(line, "persona_preset: ")
+                    descriptor, details = parse_persona_summary_line(
+                        line, "persona_preset: "
+                    )
                     canonical = descriptor.strip()
                     if not canonical:
                         stats["persona_preset_missing_descriptor"] += 1
@@ -762,7 +767,9 @@ def _scan_history_entries(raise_on_failure: bool) -> dict[str, int]:
                         canon_map = persona_alias_pairs.setdefault(canonical, {})
                         canon_map[alias] = canon_map.get(alias, 0) + 1
                 elif line.startswith("intent_preset: "):
-                    descriptor, details = _parse_summary_line(line, "intent_preset: ")
+                    descriptor, details = parse_persona_summary_line(
+                        line, "intent_preset: "
+                    )
                     canonical_intent = descriptor.strip()
                     if not canonical_intent:
                         stats["intent_preset_missing_descriptor"] += 1

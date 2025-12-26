@@ -30,6 +30,8 @@ from .historyLifecycle import (
     history_axes_for as lifecycle_history_axes_for,
     history_snapshot_entry_from,
     last_drop_reason,
+    persona_header_lines,
+    persona_summary_fragments,
     set_drop_reason,
 )
 from .requestBus import emit_history_saved
@@ -37,7 +39,6 @@ from .axisCatalog import axis_catalog
 from .requestState import RequestPhase
 from .requestGating import request_is_in_flight
 from .surfaceGuidance import guard_surface_request
-from .suggestionCoordinator import recipe_header_lines_from_snapshot
 from .talonSettings import _canonicalise_axis_tokens
 
 clear_history_drop_reason = clear_drop_reason
@@ -98,7 +99,7 @@ def save_history_snapshot_to_file(
     directional_tokens = snapshot_entry.axes_snapshot.get("directional", []) or (
         _directional_tokens_for_entry(snapshot_entry)
     )
-    persona_lines = _persona_header_lines(snapshot_entry)
+    persona_lines = persona_header_lines(snapshot_entry)
     path = _persist_history_snapshot_to_file(
         request_id=snapshot_entry.request_id or snapshot_entry.label,
         provider_id=snapshot_entry.provider_id,
@@ -178,121 +179,6 @@ def _notify_with_drop_reason(fallback: str, *, use_drop_reason: bool) -> None:
             GPTState.suppress_inflight_notify_request_id = None  # type: ignore[attr-defined]
     except Exception:
         pass
-
-
-def _persona_header_lines(entry) -> list[str]:
-    snapshot = getattr(entry, "persona", {}) or {}
-    if not snapshot:
-        return []
-    try:
-        lines = recipe_header_lines_from_snapshot(snapshot)
-    except Exception:
-        return []
-    return [
-        line
-        for line in lines
-        if line.startswith("persona_preset: ") or line.startswith("intent_preset: ")
-    ]
-
-
-def _parse_summary_line(line: str, prefix: str) -> tuple[str, list[str]]:
-    body = line[len(prefix) :].strip()
-    if not body:
-        return "", []
-    if body.endswith(")") and "(" in body:
-        descriptor, detail = body.split("(", 1)
-        descriptor = descriptor.strip()
-        parts = [part.strip() for part in detail[:-1].split(";") if part.strip()]
-        return descriptor, parts
-    return body, []
-
-
-def _render_persona_summary(line: str) -> str:
-    descriptor, parts = _parse_summary_line(line, "persona_preset: ")
-    spoken = ""
-    label = ""
-    others: list[str] = []
-    for part in parts:
-        lower = part.lower()
-        if lower.startswith("say: persona "):
-            spoken = part[len("say: persona ") :].strip()
-            continue
-        if lower.startswith("label="):
-            label = part.split("=", 1)[1].strip()
-            continue
-        others.append(part)
-    display = spoken or label or descriptor or "persona"
-    details: list[str] = []
-    if descriptor and descriptor != display:
-        details.append(f"key={descriptor}")
-    if label and label != display:
-        details.append(f"label={label}")
-    if spoken:
-        details.append(f"say: persona {spoken}")
-    details.extend(others)
-    fragment = f"persona {display}"
-    if details:
-        fragment += f" ({'; '.join(details)})"
-    return fragment
-
-
-def _render_intent_summary(line: str) -> str:
-    descriptor, parts = _parse_summary_line(line, "intent_preset: ")
-    spoken = ""
-    label = ""
-    display = ""
-    purpose = ""
-    others: list[str] = []
-    for part in parts:
-        lower = part.lower()
-        if lower.startswith("say: intent "):
-            spoken = part[len("say: intent ") :].strip()
-            continue
-        if lower.startswith("label="):
-            label = part.split("=", 1)[1].strip()
-            continue
-        if lower.startswith("display="):
-            display = part.split("=", 1)[1].strip()
-            continue
-        if lower.startswith("purpose="):
-            purpose = part.split("=", 1)[1].strip()
-            continue
-        others.append(part)
-    primary = descriptor or display or label or "intent"
-    details: list[str] = []
-    if descriptor:
-        details.append(f"key={descriptor}")
-    if label and label not in (primary, display):
-        details.append(f"label={label}")
-    if display and display != primary:
-        details.append(f"display={display}")
-    say_value = spoken or descriptor or primary
-    if say_value:
-        details.append(f"say: intent {say_value}")
-    if purpose:
-        details.append(f"purpose={purpose}")
-    details.extend(others)
-    fragment = f"intent {primary}"
-    if details:
-        fragment += f" ({'; '.join(details)})"
-    return fragment
-
-
-def _persona_summary_fragments(entry) -> list[str]:
-    header_lines = _persona_header_lines(entry)
-    if not header_lines:
-        return []
-    fragments: list[str] = []
-    for line in header_lines:
-        if line.startswith("persona_preset: "):
-            fragment = _render_persona_summary(line)
-        elif line.startswith("intent_preset: "):
-            fragment = _render_intent_summary(line)
-        else:
-            fragment = ""
-        if fragment.strip():
-            fragments.append(fragment)
-    return fragments
 
 
 def history_axes_for(axes: dict[str, list[str]]) -> dict[str, list[str]]:
@@ -394,7 +280,7 @@ def history_summary_lines(entries: Sequence[object]) -> list[str]:
                 if payload
                 else f"provider={provider_id}"
             )
-        persona_fragments = _persona_summary_fragments(entry)
+        persona_fragments = persona_summary_fragments(entry)
         if persona_fragments:
             persona_summary = " · ".join(persona_fragments)
             payload = f"{payload} · {persona_summary}" if payload else persona_summary

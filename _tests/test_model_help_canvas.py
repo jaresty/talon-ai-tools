@@ -23,6 +23,7 @@ if bootstrap is not None:
         Rect,
         _group_directional_keys,
         _intent_presets,
+        _intent_preset_commands,
         _intent_spoken_buckets,
         _normalize_intent,
     )
@@ -362,6 +363,51 @@ if bootstrap is not None:
                     pass
                 result = _normalize_intent("Decide display")
             self.assertEqual(result, "decide")
+
+        def test_intent_preset_commands_use_orchestrator_display_map(self) -> None:
+            orchestrator_intent = SimpleNamespace(
+                key="decide",
+                label="Legacy label",
+                intent="decide",
+            )
+            orchestrator = SimpleNamespace(
+                intent_presets={"decide": orchestrator_intent},
+                intent_display_map={"decide": "Decide Display"},
+                canonical_intent_key=lambda alias: "decide" if alias else "",
+            )
+            with ExitStack() as stack:
+                stack.enter_context(
+                    patch(
+                        "talon_user.lib.modelHelpCanvas._get_persona_orchestrator",
+                        return_value=orchestrator,
+                    )
+                )
+                try:
+                    stack.enter_context(
+                        patch(
+                            "lib.modelHelpCanvas._get_persona_orchestrator",
+                            return_value=orchestrator,
+                        )
+                    )
+                except (ModuleNotFoundError, AttributeError):
+                    pass
+                stack.enter_context(
+                    patch(
+                        "talon_user.lib.modelHelpCanvas.persona_intent_maps",
+                        side_effect=RuntimeError("legacy maps unavailable"),
+                    )
+                )
+                try:
+                    stack.enter_context(
+                        patch(
+                            "lib.modelHelpCanvas.persona_intent_maps",
+                            side_effect=RuntimeError("legacy maps unavailable"),
+                        )
+                    )
+                except (ModuleNotFoundError, AttributeError):
+                    pass
+                commands = _intent_preset_commands()
+            self.assertIn("decide display", commands)
 
         def test_quick_help_intent_commands_use_catalog_spoken_aliases(self) -> None:
             from types import SimpleNamespace

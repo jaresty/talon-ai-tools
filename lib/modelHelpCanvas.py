@@ -287,12 +287,16 @@ def _intent_preset_commands() -> list[str]:
 
     commands: list[str] = []
     intent_display_map: dict[str, str] = {}
+
     try:
-        maps = persona_intent_maps()
+        orchestrator = _get_persona_orchestrator()
     except Exception:
-        maps = None
-    if maps is not None:
-        display_map = getattr(maps, "intent_display_map", {}) or {}
+        orchestrator = None
+    if orchestrator is not None:
+        try:
+            display_map = getattr(orchestrator, "intent_display_map", {}) or {}
+        except Exception:
+            display_map = {}
         if isinstance(display_map, dict):
             intent_display_map = {
                 str(k or "").strip(): str(v or "").strip()
@@ -308,6 +312,30 @@ def _intent_preset_commands() -> list[str]:
                 }
             except Exception:
                 intent_display_map = {}
+
+    if not intent_display_map:
+        try:
+            maps = persona_intent_maps()
+        except Exception:
+            maps = None
+        if maps is not None:
+            display_map = getattr(maps, "intent_display_map", {}) or {}
+            if isinstance(display_map, dict):
+                intent_display_map = {
+                    str(k or "").strip(): str(v or "").strip()
+                    for k, v in display_map.items()
+                    if str(k or "").strip()
+                }
+            else:
+                try:
+                    intent_display_map = {
+                        str(k or "").strip(): str(v or "").strip()
+                        for k, v in dict(display_map).items()
+                        if str(k or "").strip()
+                    }
+                except Exception:
+                    intent_display_map = {}
+
     seen: set[str] = set()
     for preset in _intent_presets():
         canonical = (preset.key or "").strip()

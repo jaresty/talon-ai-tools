@@ -1232,3 +1232,19 @@
 - next_work:
   - Behaviour: migrate Help canvas command hint helpers to orchestrator metadata — python3 -m pytest _tests/test_model_help_canvas.py::ModelHelpCanvasTests::test_intent_spoken_buckets_use_persona_orchestrator — future-shaping: eliminate remaining personaConfig dependencies across guidance surfaces.
 
+
+## 2025-12-26 – Loop 092 (kind: implementation)
+- helper_version: helper:v20251223.1
+- focus: ADR-0062 §Refactor Plan – Guidance Surface Coordinator (Help Canvas command hints)
+- riskiest_assumption: Help canvas command hint lists would keep sourcing spoken aliases from legacy personaConfig maps, drifting from the persona orchestrator display metadata (probability medium, impact medium on guidance accuracy).
+- validation_targets:
+  - python3 -m pytest _tests/test_model_help_canvas.py::ModelHelpCanvasTests::test_intent_preset_commands_use_orchestrator_display_map
+  - python3 -m pytest _tests/test_model_help_canvas.py::ModelHelpCanvasTests::test_quick_help_intent_commands_use_catalog_spoken_aliases
+- evidence:
+  - docs/adr/evidence/0062/loop-0092.md
+- rollback_plan: git stash push -- lib/modelHelpCanvas.py && python3 -m pytest _tests/test_model_help_canvas.py::ModelHelpCanvasTests::test_intent_preset_commands_use_orchestrator_display_map && git stash pop
+- delta_summary: helper:diff-snapshot=2 files changed, 82 insertions(+); `_intent_preset_commands` now prioritises the orchestrator display map before falling back to legacy helpers, keeping help canvas command hints aligned with Concordance metadata.
+- residual_risks:
+  - Help Hub search hint builders still consult personaConfig display maps; schedule a follow-up loop to reuse the orchestrator snapshot across surfaces.
+- next_work:
+  - Behaviour: audit remaining help surface command builders for personaConfig dependencies — python3 -m pytest _tests/test_help_hub.py — future-shaping: continue consolidating command hints around the orchestrator façade.

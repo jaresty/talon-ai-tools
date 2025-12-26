@@ -903,6 +903,21 @@
 - next_work:
   - Behaviour: audit streaming coordinator/session modules for remaining direct lifecycle imports — python3 -m pytest _tests/test_streaming_session.py — future-shaping: finish façade consolidation.
 
+## 2025-12-26 – Loop 071 (kind: documentation)
+- helper_version: helper:v20251223.1
+- focus: ADR-0062 §Refactor Plan – History Lifecycle Orchestrator (final audit of requestState imports)
+- riskiest_assumption: Additional modules might still reference `requestState` directly, undermining façade ownership (probability low, impact low).
+- validation_targets:
+  - *Audit only*
+- evidence:
+  - docs/adr/evidence/0062/loop-0071.md
+- rollback_plan: git restore --source=HEAD -- docs/adr/evidence/0062/loop-0071.md docs/adr/0062-canonicalize-gpt-surface-orchestrators.work-log.md
+- delta_summary: Recorded audit confirming remaining direct `requestState` imports are limited to logging internals slated for future work.
+- residual_risks:
+  - `requestLog` still depends on `RequestDropReason`; treat as acceptable until logging façade refactors proceed.
+- next_work:
+  - Behaviour: continue ADR-0062 follow-ups (persona + guidance orchestrators).
+
 
 
 

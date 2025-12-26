@@ -34,7 +34,7 @@ from .historyLifecycle import (
 )
 from .requestBus import emit_history_saved
 from .axisCatalog import axis_catalog
-from .requestState import RequestPhase
+from .historyLifecycle import RequestPhase
 from .requestGating import request_is_in_flight
 from .surfaceGuidance import guard_surface_request
 from .talonSettings import _canonicalise_axis_tokens

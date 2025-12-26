@@ -8,14 +8,15 @@ from .canvasFont import apply_canvas_typeface, draw_text_with_emoji_fallback
 
 from .modelState import GPTState
 from .modelDestination import _parse_meta
-from .requestState import RequestPhase, RequestState
 from .requestGating import request_is_in_flight
 from .requestBus import current_state
 from .historyLifecycle import (
+    RequestPhase,
+    RequestState,
     last_drop_reason,
     set_drop_reason,
-    try_begin_request,
 )
+
 from .dropReasonUtils import render_drop_reason
 
 from .axisConfig import axis_docs_for

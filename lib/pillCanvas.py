@@ -10,7 +10,7 @@ from typing import Callable, Optional
 
 from talon import Module, actions, app, canvas, ui, settings, cron
 
-from .requestState import RequestPhase
+from .historyLifecycle import RequestPhase
 from .uiDispatch import run_on_ui_thread
 from .overlayHelpers import apply_canvas_blocking
 

@@ -6,11 +6,12 @@ from .dropReasonUtils import render_drop_reason
 from .modelHelpers import notify
 from .modelState import GPTState
 from .historyLifecycle import (
+    RequestDropReason,
+    RequestState,
     last_drop_reason,
     set_drop_reason,
     try_begin_request,
 )
-from .requestState import RequestDropReason, RequestState
 
 GuardBlockHandler = Callable[[str, str], None]
 BeginRequestFn = Callable[..., tuple[bool, RequestDropReason]]

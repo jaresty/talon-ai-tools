@@ -14,7 +14,7 @@ from talon import actions, app
 
 from .requestBus import set_controller
 from .requestController import RequestUIController
-from .requestState import RequestPhase, RequestState
+from .historyLifecycle import RequestPhase, RequestState
 from .modelState import GPTState
 from .pillCanvas import show_pill, hide_pill
 from .uiDispatch import run_on_ui_thread

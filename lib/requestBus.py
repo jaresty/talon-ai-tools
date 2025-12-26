@@ -5,16 +5,16 @@ from __future__ import annotations
 from typing import Optional
 
 from .requestController import RequestUIController
-from .requestState import (
+from .historyLifecycle import (
     RequestDropReason,
     RequestEvent,
     RequestEventKind,
     RequestState,
     lifecycle_status_for,
     transition,
-    is_in_flight as state_is_in_flight,
-    try_start_request as state_try_start_request,
 )
+from .requestLifecycle import is_in_flight as state_is_in_flight
+from .requestLifecycle import try_start_request as state_try_start_request
 
 try:
     from .modelState import GPTState  # type: ignore

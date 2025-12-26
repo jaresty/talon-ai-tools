@@ -24,7 +24,16 @@ from .requestLog import (
     append_entry_from_request as requestlog_append_entry_from_request,
     KNOWN_AXIS_KEYS as requestlog_known_axis_keys,
 )
-from .requestState import RequestDropReason
+from .requestState import (
+    RequestDropReason,
+    RequestEvent,
+    RequestEventKind,
+    RequestPhase,
+    RequestState,
+    Surface,
+    lifecycle_status_for,
+    transition,
+)
 
 _HISTORY_AXIS_KEYS: tuple[str, ...] = (
     "completeness",
@@ -428,6 +437,13 @@ __all__ = [
     "current_streaming_gating_summary",
     "try_begin_request",
     "RequestDropReason",
+    "RequestEvent",
+    "RequestEventKind",
+    "RequestPhase",
+    "RequestState",
+    "Surface",
+    "lifecycle_status_for",
+    "transition",
     "record_gating_drop",
     "gating_drop_stats",
     "gating_drop_source_stats",

@@ -14,7 +14,7 @@ from .requestLifecycle import (
     is_in_flight as lifecycle_is_in_flight,
     try_start_request as lifecycle_try_start_request,
 )
-from .requestState import (
+from .historyLifecycle import (
     RequestDropReason,
     RequestEvent,
     RequestEventKind,

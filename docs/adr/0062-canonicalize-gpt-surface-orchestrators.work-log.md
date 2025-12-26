@@ -838,5 +838,20 @@
 - next_work:
   - Behaviour: ensure request controller and lifecycle reducers consume façade exports consistently — python3 -m pytest _tests/test_request_controller.py — future-shaping: finish consolidating request state orchestration.
 
+## 2025-12-26 – Loop 067 (kind: implementation)
+- helper_version: helper:v20251223.1
+- focus: ADR-0062 §Refactor Plan – History Lifecycle Orchestrator (align request controller with façade exports)
+- riskiest_assumption: `requestController` still imported request-state helpers directly, bypassing the lifecycle façade (probability medium, impact medium on cohesion).
+- validation_targets:
+  - python3 -m pytest _tests/test_request_controller.py
+- evidence:
+  - docs/adr/evidence/0062/loop-0067.md
+- rollback_plan: git restore --source=HEAD -- lib/historyLifecycle.py lib/requestController.py && python3 -m pytest _tests/test_request_controller.py
+- delta_summary: helper:diff-snapshot=2 files changed, 21 insertions(+), 2 deletions(-); lifecycle façade now re-exports request-state types/transitions, letting the controller rely solely on façade exports.
+- residual_risks:
+  - Other modules may still import `requestState` directly; continue auditing in future loops.
+- next_work:
+  - Behaviour: inspect remaining modules for direct request-state usage — python3 -m pytest _tests/test_streaming_session.py — future-shaping: ensure lifecycle orchestrator remains the single entry point.
+
 
 

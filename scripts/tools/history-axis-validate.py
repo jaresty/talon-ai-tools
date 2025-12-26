@@ -21,7 +21,7 @@ except ModuleNotFoundError:
 else:
     bootstrap()
 
-from talon_user.lib import requestLog  # type: ignore  # noqa: E402
+from talon_user.lib import historyLifecycle as history_lifecycle  # type: ignore  # noqa: E402
 
 
 def _coerce_int(value: object) -> Optional[int]:
@@ -346,7 +346,7 @@ def main() -> int:
 
     if os.environ.get("HISTORY_AXIS_VALIDATE_SIMULATE_PERSONA_FAILURE"):
         try:
-            requestLog.clear_history()
+            history_lifecycle.clear_history()
             from talon_user.lib.requestHistory import RequestLogEntry  # type: ignore
 
             entry = RequestLogEntry(
@@ -356,15 +356,15 @@ def main() -> int:
                 axes={"directional": ["fog"]},
                 persona={"unexpected": "value"},
             )
-            requestLog._history.append(entry)  # type: ignore[attr-defined]
+            history_lifecycle.append_history_entry(entry)
         except Exception as exc:  # pragma: no cover - defensive
             print(f"Failed to set up simulated persona failure: {exc}", file=sys.stderr)
             return 1
 
     if os.environ.get("HISTORY_AXIS_VALIDATE_SIMULATE_PERSONA_ALIAS"):
         try:
-            requestLog.clear_history()
-            requestLog.append_entry(
+            history_lifecycle.clear_history()
+            history_lifecycle.append_entry(
                 "sim-persona-alias",
                 "prompt",
                 "response",
@@ -383,8 +383,8 @@ def main() -> int:
 
     if os.environ.get("HISTORY_AXIS_VALIDATE_SIMULATE_INTENT_ALIAS_KEY"):
         try:
-            requestLog.clear_history()
-            requestLog.append_entry(
+            history_lifecycle.clear_history()
+            history_lifecycle.append_entry(
                 "sim-intent-alias-key",
                 "prompt",
                 "response",
@@ -407,11 +407,11 @@ def main() -> int:
         try:
             reason = "in_flight"
             if simulate_gating_drop == "__DEFAULT__":
-                message = requestLog.drop_reason_message(reason)
+                message = history_lifecycle.drop_reason_message(reason)
             else:
                 message = simulate_gating_drop
-            requestLog.record_gating_drop(reason, source="history-axis-validate")
-            requestLog.set_drop_reason(reason, message)
+            history_lifecycle.record_gating_drop(reason, source="history-axis-validate")
+            history_lifecycle.set_drop_reason(reason, message)
         except Exception as exc:  # pragma: no cover - defensive
             print(
                 f"Failed to set up simulated gating drop: {exc}",
@@ -420,7 +420,7 @@ def main() -> int:
             return 1
 
     try:
-        requestLog.validate_history_axes()
+        history_lifecycle.validate_history_axes()
     except ValueError as exc:
         print(f"History axis validation failed: {exc}", file=sys.stderr)
         return 1
@@ -429,7 +429,7 @@ def main() -> int:
         "History axis validation passed: all entries include directional lenses, use Concordance-recognised axes, surface persona metadata when snapshots exist, and docs/help now consume the shared AxisSnapshot façade."
     )
 
-    gating_counts = requestLog.gating_drop_stats()
+    gating_counts = history_lifecycle.gating_drop_stats()
     gating_total = sum(gating_counts.values())
     if gating_total:
         details = ", ".join(
@@ -439,7 +439,7 @@ def main() -> int:
     else:
         print("Request gating drop summary: total=0")
 
-    stats = requestLog.history_validation_stats()
+    stats = history_lifecycle.history_validation_stats()
     invalid_intent_tokens = int(stats.get("intent_invalid_tokens", 0) or 0)
     if invalid_intent_tokens:
         print(f"Intent invalid tokens detected: {invalid_intent_tokens}")
@@ -502,7 +502,7 @@ def main() -> int:
                 print(f"- {canonical} => {display} ({count})")
 
     if args.reset_gating:
-        requestLog.consume_gating_drop_stats()
+        history_lifecycle.consume_gating_drop_stats()
 
     return exit_code
 

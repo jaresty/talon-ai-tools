@@ -963,6 +963,21 @@
 - next_work:
   - Behaviour: resume persona/catalog orchestrator follow-ups outlined in salient tasks.
 
+## 2025-12-26 – Loop 075 (kind: implementation)
+- helper_version: helper:v20251223.1
+- focus: ADR-0062 §Refactor Plan – History Lifecycle Orchestrator (migrate history axis scripts to façade)
+- riskiest_assumption: CLI history remediation/validation tools would keep importing `requestLog` directly, risking façade drift (probability medium, impact medium on cohesion).
+- validation_targets:
+  - python3 -m pytest _tests/test_history_axis_validate.py _tests/test_history_lifecycle_scripts_guard.py
+- evidence:
+  - docs/adr/evidence/0062/loop-0075.md
+- rollback_plan: git restore --source=HEAD -- lib/historyLifecycle.py scripts/tools/history-axis-validate.py scripts/tools/history-axis-remediate.py _tests/test_history_lifecycle_scripts_guard.py && python3 -m pytest _tests/test_history_axis_validate.py _tests/test_history_lifecycle_scripts_guard.py
+- delta_summary: helper:diff-snapshot=4 files changed, 160 insertions(+), 24 deletions(-); history axis scripts now import `historyLifecycle`, façade re-exports script helpers, and a new guard enforces the indirection.
+- residual_risks:
+  - Other CLI utilities may still depend on `requestLog`; extend guard coverage in future loops.
+- next_work:
+  - Behaviour: audit remaining CLI utilities for direct `requestLog` usage — python3 -m pytest _tests/test_history_lifecycle_scripts_guard.py — future-shaping: broaden façade adoption across tooling scripts.
+
 
 
 

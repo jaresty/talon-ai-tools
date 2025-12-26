@@ -5,6 +5,7 @@ from dataclasses import dataclass, field
 from collections.abc import Mapping, Sequence
 from typing import cast
 
+from . import requestLog as requestlog_module
 from .requestLog import (
     AxisSnapshot,
     DropReason,
@@ -22,7 +23,11 @@ from .requestLog import (
     record_gating_drop as requestlog_record_gating_drop,
     set_drop_reason as requestlog_set_drop_reason,
     all_entries as requestlog_all_entries,
+    append_entry as requestlog_append_entry,
     append_entry_from_request as requestlog_append_entry_from_request,
+    clear_history as requestlog_clear_history,
+    validate_history_axes as requestlog_validate_history_axes,
+    remediate_history_axes as requestlog_remediate_history_axes,
     KNOWN_AXIS_KEYS as requestlog_known_axis_keys,
 )
 from .requestState import (
@@ -301,8 +306,33 @@ def all_entries():
         return []
 
 
+def append_entry(*args, **kwargs):
+    return requestlog_append_entry(*args, **kwargs)
+
+
+def append_history_entry(entry: object) -> None:
+    requestlog_module._history.append(entry)  # type: ignore[attr-defined]
+
+
 def append_entry_from_request(**kwargs):
     return requestlog_append_entry_from_request(**kwargs)
+
+
+def clear_history() -> None:
+    requestlog_clear_history()
+
+
+def validate_history_axes() -> None:
+    requestlog_validate_history_axes()
+
+
+def remediate_history_axes(
+    *, drop_if_missing_directional: bool = False, dry_run: bool = False
+) -> dict[str, int]:
+    return requestlog_remediate_history_axes(
+        drop_if_missing_directional=drop_if_missing_directional,
+        dry_run=dry_run,
+    )
 
 
 def current_streaming_gating_summary() -> dict[str, object]:
@@ -461,7 +491,12 @@ __all__ = [
     "latest",
     "nth_from_latest",
     "all_entries",
+    "append_entry",
+    "append_history_entry",
     "append_entry_from_request",
+    "clear_history",
+    "validate_history_axes",
+    "remediate_history_axes",
     "current_streaming_gating_summary",
     "try_begin_request",
     "RequestDropReason",

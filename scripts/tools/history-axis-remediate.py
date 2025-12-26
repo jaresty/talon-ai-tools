@@ -18,7 +18,7 @@ except ModuleNotFoundError:
 else:
     bootstrap()
 
-from talon_user.lib import requestLog  # type: ignore  # noqa: E402
+from talon_user.lib import historyLifecycle as history_lifecycle  # type: ignore  # noqa: E402
 
 
 def main() -> int:
@@ -35,7 +35,7 @@ def main() -> int:
     )
     args = parser.parse_args()
 
-    stats = requestLog.remediate_history_axes(
+    stats = history_lifecycle.remediate_history_axes(
         drop_if_missing_directional=args.drop_missing_directional,
         dry_run=args.dry_run,
     )

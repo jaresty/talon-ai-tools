@@ -918,6 +918,21 @@
 - next_work:
   - Behaviour: continue ADR-0062 follow-ups (persona + guidance orchestrators).
 
+## 2025-12-26 – Loop 072 (kind: implementation)
+- helper_version: helper:v20251223.1
+- focus: ADR-0062 §Refactor Plan – History Lifecycle Orchestrator (telemetry export delegates to façade)
+- riskiest_assumption: Telemetry snapshot helpers would keep importing `requestLog` directly, letting orchestration drift from the lifecycle façade (probability medium, impact medium-high on cohesion).
+- validation_targets:
+  - python3 -m pytest _tests/test_telemetry_export.py _tests/test_history_lifecycle_guard.py
+- evidence:
+  - docs/adr/evidence/0062/loop-0072.md
+- rollback_plan: git restore --source=HEAD -- _tests/test_history_lifecycle_guard.py _tests/test_telemetry_export.py lib/telemetryExport.py && python3 -m pytest _tests/test_telemetry_export.py _tests/test_history_lifecycle_guard.py
+- delta_summary: helper:diff-snapshot=3 files changed, 96 insertions(+), 3 deletions(-); telemetry export now routes through `historyLifecycle` and a new guard test blocks future direct `requestLog` imports.
+- residual_risks:
+  - CLI telemetry utilities still call `requestLog` directly; evaluate migrating them to the façade in subsequent loops.
+- next_work:
+  - Behaviour: migrate GPT drop-reason helpers to `historyLifecycle` and tighten the guard allowlist — python3 -m pytest _tests/test_gpt_actions.py _tests/test_history_lifecycle_guard.py — future-shaping: remove the GPT exemption from the guard.
+
 
 
 

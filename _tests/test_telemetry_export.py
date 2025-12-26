@@ -71,6 +71,36 @@ class TelemetryExportTests(unittest.TestCase):
 
             self.assertEqual(requestLog.gating_drop_stats(), {})
 
+    def test_snapshot_telemetry_delegates_to_history_lifecycle(self) -> None:
+        lifecycle_stats = {
+            "total_entries": 0,
+            "gating_drop_total": 0,
+            "gating_drop_last_message": "",
+            "gating_drop_last_code": "",
+            "streaming_gating_summary": {},
+        }
+
+        with (
+            patch.object(
+                telemetry_module, "historyLifecycle", create=True
+            ) as lifecycle,
+            patch.object(telemetry_module, "requestLog", create=True) as requestlog,
+        ):
+            lifecycle.history_validation_stats.return_value = dict(lifecycle_stats)
+            lifecycle.consume_gating_drop_stats.return_value = {}
+            requestlog.history_validation_stats.side_effect = AssertionError(
+                "telemetryExport should use historyLifecycle"
+            )
+            requestlog.consume_gating_drop_stats.side_effect = AssertionError(
+                "telemetryExport should use historyLifecycle"
+            )
+
+            with tempfile.TemporaryDirectory() as tmpdir:
+                snapshot_telemetry(output_dir=tmpdir, reset_gating=True)
+
+        lifecycle.history_validation_stats.assert_called_once_with()
+        lifecycle.consume_gating_drop_stats.assert_called_once_with()
+
 
 class TelemetryExportCommandTests(unittest.TestCase):
     def test_export_model_telemetry_notifies_success(self) -> None:

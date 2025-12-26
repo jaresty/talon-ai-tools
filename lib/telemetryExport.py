@@ -14,7 +14,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Tuple
 
-from . import requestLog
+from . import historyLifecycle
 
 try:
     from .modelState import GPTState
@@ -285,7 +285,7 @@ def snapshot_telemetry(
     base_dir = Path(output_dir) if output_dir is not None else DEFAULT_OUTPUT_DIR
     base_dir.mkdir(parents=True, exist_ok=True)
 
-    history_stats: Dict[str, Any] = requestLog.history_validation_stats()
+    history_stats: Dict[str, Any] = historyLifecycle.history_validation_stats()
     streaming_summary = _normalize_streaming_summary(
         history_stats.get("streaming_gating_summary")
     )
@@ -353,7 +353,7 @@ def snapshot_telemetry(
     telemetry_path.write_text(json.dumps(telemetry_payload, sort_keys=True, indent=2))
 
     if reset_gating:
-        requestLog.consume_gating_drop_stats()
+        historyLifecycle.consume_gating_drop_stats()
 
     return {
         "history": history_path,

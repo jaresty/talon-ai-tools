@@ -21,6 +21,7 @@ from .overlayHelpers import apply_canvas_blocking
 from .personaConfig import persona_intent_maps
 from .personaOrchestrator import get_persona_intent_orchestrator
 from .surfaceGuidance import guard_surface_request
+from . import personaCatalog, personaConfig
 
 
 _get_persona_orchestrator = get_persona_intent_orchestrator
@@ -171,6 +172,74 @@ def _intent_presets():
 def _intent_spoken_buckets():
     """Return the latest intent buckets keyed by spoken token."""
     try:
+        orchestrator = _get_persona_orchestrator()
+    except Exception:
+        orchestrator = None
+    if orchestrator is not None:
+        try:
+            snapshot = personaCatalog.get_persona_intent_catalog()
+        except Exception:
+            snapshot = None
+        if snapshot is not None and getattr(snapshot, "intent_buckets", None):
+            label_lookup: dict[str, str] = {}
+            try:
+                presets = dict(getattr(orchestrator, "intent_presets", {}) or {})
+            except Exception:
+                presets = {}
+            for preset in presets.values():
+                canonical = (
+                    getattr(preset, "intent", "") or getattr(preset, "key", "") or ""
+                ).strip()
+                label = (getattr(preset, "label", "") or canonical).strip()
+                if canonical:
+                    label_lookup.setdefault(canonical, label or canonical)
+            try:
+                display_map = dict(
+                    getattr(orchestrator, "intent_display_map", {}) or {}
+                )
+            except Exception:
+                display_map = {}
+            for canonical, label in display_map.items():
+                canonical_key = (canonical or "").strip()
+                label_value = (label or "").strip()
+                if canonical_key and label_value:
+                    label_lookup.setdefault(canonical_key, label_value)
+            buckets: dict[str, list[str]] = {}
+            for bucket, canonicals in (
+                getattr(snapshot, "intent_buckets", {}) or {}
+            ).items():
+                spoken_tokens: list[str] = []
+                for canonical in canonicals or []:
+                    canonical_key = (canonical or "").strip()
+                    if not canonical_key:
+                        continue
+                    spoken_tokens.append(label_lookup.get(canonical_key, canonical_key))
+                if spoken_tokens:
+                    buckets[str(bucket)] = spoken_tokens
+            if buckets:
+                return buckets
+    try:
+        snapshot = personaCatalog.get_persona_intent_catalog()
+        buckets: dict[str, list[str]] = {}
+        for bucket, canonicals in (
+            getattr(snapshot, "intent_buckets", {}) or {}
+        ).items():
+            spoken_tokens: list[str] = []
+            for canonical in canonicals or []:
+                canonical_key = (canonical or "").strip()
+                if not canonical_key:
+                    continue
+                display_value = (getattr(snapshot, "intent_display_map", {}) or {}).get(
+                    canonical_key, canonical_key
+                )
+                spoken_tokens.append(display_value)
+            if spoken_tokens:
+                buckets[str(bucket)] = spoken_tokens
+        if buckets:
+            return buckets
+    except Exception:
+        pass
+    try:
         from . import personaConfig
 
         return personaConfig.intent_bucket_spoken_tokens()
@@ -179,13 +248,25 @@ def _intent_spoken_buckets():
 
 
 def _normalize_intent(value: str) -> str:
-    """Normalise an intent token using the latest personaConfig helpers."""
+    """Normalise an intent token using the orchestrator before legacy helpers."""
+    alias = str(value or "")
+    try:
+        orchestrator = _get_persona_orchestrator()
+    except Exception:
+        orchestrator = None
+    if orchestrator is not None:
+        try:
+            canonical = orchestrator.canonical_intent_key(alias)
+        except Exception:
+            canonical = ""
+        if canonical:
+            return canonical
     try:
         from . import personaConfig
 
-        return personaConfig.normalize_intent_token(value)
+        return personaConfig.normalize_intent_token(alias)
     except Exception:
-        return str(value or "").strip()
+        return alias.strip()
 
 
 def _persona_preset_commands() -> list[str]:

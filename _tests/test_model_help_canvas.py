@@ -23,6 +23,8 @@ if bootstrap is not None:
         Rect,
         _group_directional_keys,
         _intent_presets,
+        _intent_spoken_buckets,
+        _normalize_intent,
     )
     from talon_user.lib.staticPromptConfig import static_prompt_settings_catalog
 
@@ -253,6 +255,113 @@ if bootstrap is not None:
                     pass
                 presets = _intent_presets()
             self.assertEqual(presets, (orchestrator_intent,))
+
+        def test_intent_spoken_buckets_use_persona_orchestrator(self) -> None:
+            orchestrator_intent = SimpleNamespace(
+                key="decide",
+                label="Decide (orchestrator)",
+                intent="decide",
+            )
+            orchestrator = SimpleNamespace(
+                intent_presets={"decide": orchestrator_intent},
+                intent_display_map={"decide": "Decide display"},
+            )
+            bucket_snapshot = SimpleNamespace(
+                intent_buckets={"task": ["decide"]},
+                intent_display_map={"decide": "Snapshot display"},
+            )
+            with ExitStack() as stack:
+                stack.enter_context(
+                    patch(
+                        "talon_user.lib.modelHelpCanvas._get_persona_orchestrator",
+                        return_value=orchestrator,
+                    )
+                )
+                try:
+                    stack.enter_context(
+                        patch(
+                            "lib.modelHelpCanvas._get_persona_orchestrator",
+                            return_value=orchestrator,
+                        )
+                    )
+                except (ModuleNotFoundError, AttributeError):
+                    pass
+                stack.enter_context(
+                    patch(
+                        "talon_user.lib.modelHelpCanvas.personaCatalog.get_persona_intent_catalog",
+                        return_value=bucket_snapshot,
+                    )
+                )
+                try:
+                    stack.enter_context(
+                        patch(
+                            "lib.modelHelpCanvas.personaCatalog.get_persona_intent_catalog",
+                            return_value=bucket_snapshot,
+                        )
+                    )
+                except (ModuleNotFoundError, AttributeError):
+                    pass
+                stack.enter_context(
+                    patch(
+                        "talon_user.lib.modelHelpCanvas.persona_intent_maps",
+                        side_effect=RuntimeError("legacy maps unavailable"),
+                    )
+                )
+                try:
+                    stack.enter_context(
+                        patch(
+                            "lib.modelHelpCanvas.persona_intent_maps",
+                            side_effect=RuntimeError("legacy maps unavailable"),
+                        )
+                    )
+                except (ModuleNotFoundError, AttributeError):
+                    pass
+                buckets = _intent_spoken_buckets()
+            self.assertEqual(buckets, {"task": ["Decide (orchestrator)"]})
+
+        def test_normalize_intent_uses_persona_orchestrator(self) -> None:
+            orchestrator = SimpleNamespace(
+                canonical_intent_key=lambda alias: "decide"
+                if (alias or "").strip()
+                else "",
+            )
+            with ExitStack() as stack:
+                stack.enter_context(
+                    patch(
+                        "talon_user.lib.modelHelpCanvas._get_persona_orchestrator",
+                        return_value=orchestrator,
+                    )
+                )
+                try:
+                    stack.enter_context(
+                        patch(
+                            "lib.modelHelpCanvas._get_persona_orchestrator",
+                            return_value=orchestrator,
+                        )
+                    )
+                except (ModuleNotFoundError, AttributeError):
+                    pass
+                stack.enter_context(
+                    patch(
+                        "talon_user.lib.modelHelpCanvas.personaConfig.normalize_intent_token",
+                        side_effect=RuntimeError(
+                            "legacy normalize should not be called"
+                        ),
+                    )
+                )
+                try:
+                    stack.enter_context(
+                        patch(
+                            "lib.modelHelpCanvas.personaConfig.normalize_intent_token",
+                            side_effect=RuntimeError(
+                                "legacy normalize should not be called"
+                            ),
+                        )
+                    )
+                except (ModuleNotFoundError, AttributeError):
+                    pass
+                result = _normalize_intent("Decide display")
+            self.assertEqual(result, "decide")
 
         def test_quick_help_intent_commands_use_catalog_spoken_aliases(self) -> None:
             from types import SimpleNamespace

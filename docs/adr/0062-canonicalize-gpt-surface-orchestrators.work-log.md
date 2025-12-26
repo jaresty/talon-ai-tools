@@ -1198,3 +1198,19 @@
   - Help Hub clipboard/export helpers still format intent bucket strings manually; plan a follow-up loop to reuse the orchestrator-backed helper there.
 - next_work:
   - Behaviour: migrate Help canvas intent normalisation helpers to orchestrator exports — python3 -m pytest _tests/test_model_help_canvas.py::ModelHelpCanvasTests::test_intent_presets_use_persona_orchestrator — future-shaping: converge remaining personaConfig usage across canvases.
+
+## 2025-12-26 – Loop 090 (kind: implementation)
+- helper_version: helper:v20251223.1
+- focus: ADR-0062 §Refactor Plan – Guidance Surface Coordinator (Help Canvas intent normalization)
+- riskiest_assumption: Model Help canvas would keep normalising intent buckets and aliases via personaConfig helpers, letting Concordance guidance drift from the orchestrator snapshot (probability medium, impact medium-high on visibility).
+- validation_targets:
+  - python3 -m pytest _tests/test_model_help_canvas.py::ModelHelpCanvasTests::test_intent_spoken_buckets_use_persona_orchestrator
+  - python3 -m pytest _tests/test_model_help_canvas.py::ModelHelpCanvasTests::test_normalize_intent_uses_persona_orchestrator
+- evidence:
+  - docs/adr/evidence/0062/loop-0090.md
+- rollback_plan: git stash push -- lib/modelHelpCanvas.py && python3 -m pytest _tests/test_model_help_canvas.py::ModelHelpCanvasTests::test_intent_spoken_buckets_use_persona_orchestrator _tests/test_model_help_canvas.py::ModelHelpCanvasTests::test_normalize_intent_uses_persona_orchestrator && git stash pop
+- delta_summary: helper:diff-snapshot=2 files changed, 131 insertions(+), 14 deletions(-); Help canvas now uses the persona orchestrator for intent buckets and normalization with personaCatalog/legacy fallbacks for resilience.
+- residual_risks:
+  - Canvas command hint builders still pull intent maps directly; follow-on loops can reuse the orchestrator snapshot there.
+- next_work:
+  - Behaviour: audit help surface exports for remaining personaConfig dependencies — python3 -m pytest _tests/test_help_hub.py — future-shaping: unify metadata helpers across canvases and exports.

@@ -993,6 +993,21 @@
 - next_work:
   - Behaviour: migrate request gating tests to the façade — python3 -m pytest _tests/test_request_gating.py — future-shaping: consolidate gating test helpers.
 
+## 2025-12-26 – Loop 077 (kind: implementation)
+- helper_version: helper:v20251223.1
+- focus: ADR-0062 §Refactor Plan – History Lifecycle Orchestrator (migrate request gating tests to façade)
+- riskiest_assumption: Request gating tests would keep importing `requestLog`, masking lifecycle regressions (probability medium, impact medium on cohesion).
+- validation_targets:
+  - python3 -m pytest _tests/test_request_gating.py
+- evidence:
+  - docs/adr/evidence/0062/loop-0077.md
+- rollback_plan: git restore --source=HEAD -- _tests/test_request_gating.py && python3 -m pytest _tests/test_request_gating.py
+- delta_summary: helper:diff-snapshot=1 file changed; gating tests now use `historyLifecycle` to inspect gating telemetry.
+- residual_risks:
+  - Telemetry export characterization tests still import `requestLog`; migrate them next.
+- next_work:
+  - Behaviour: migrate telemetry export tests to the façade — python3 -m pytest _tests/test_telemetry_export.py — future-shaping: complete façade coverage across tests.
+
 
 
 

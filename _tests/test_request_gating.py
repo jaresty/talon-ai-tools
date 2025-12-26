@@ -15,7 +15,7 @@ else:
 
 if bootstrap is not None:
     from talon_user.lib import requestGating
-    from talon_user.lib import requestLog
+    from talon_user.lib import historyLifecycle as history_lifecycle
     from talon_user.lib.requestState import RequestPhase, RequestState
     from talon_user.lib.modelState import GPTState
     from talon_user.lib.streamingCoordinator import new_streaming_session
@@ -55,23 +55,25 @@ if bootstrap is not None:
             self.assertEqual(reason, "")
 
         def test_try_begin_request_records_gating_drop_stats(self) -> None:
-            requestLog.clear_history()
-            requestLog.consume_gating_drop_stats()
+            history_lifecycle.clear_history()
+            history_lifecycle.consume_gating_drop_stats()
             streaming_state = RequestState(phase=RequestPhase.SENDING)
             allowed, reason = requestGating.try_begin_request(streaming_state)
             self.assertFalse(allowed)
             self.assertEqual(reason, "in_flight")
 
-            stats = requestLog.consume_gating_drop_stats()
+            stats = history_lifecycle.consume_gating_drop_stats()
             self.assertEqual(stats.get("in_flight"), 1)
 
             idle_state = RequestState(phase=RequestPhase.IDLE)
             requestGating.try_begin_request(idle_state)
-            self.assertEqual(requestLog.gating_drop_stats().get("in_flight", 0), 0)
+            self.assertEqual(
+                history_lifecycle.gating_drop_stats().get("in_flight", 0), 0
+            )
 
         def test_try_begin_request_records_streaming_event(self) -> None:
-            requestLog.clear_history()
-            requestLog.consume_gating_drop_stats()
+            history_lifecycle.clear_history()
+            history_lifecycle.consume_gating_drop_stats()
 
             session = new_streaming_session("rid-stream")
             GPTState.last_streaming_events = []
@@ -150,8 +152,8 @@ if bootstrap is not None:
             self.assertEqual(reason, "")
 
         def test_gating_snapshot_persists_across_session_updates(self) -> None:
-            requestLog.clear_history()
-            requestLog.consume_gating_drop_stats()
+            history_lifecycle.clear_history()
+            history_lifecycle.consume_gating_drop_stats()
 
             session = new_streaming_session("rid-session")
             GPTState.last_streaming_events = []
@@ -212,8 +214,8 @@ if bootstrap is not None:
             )
 
         def test_history_validation_stats_include_gating_counts(self) -> None:
-            requestLog.clear_history()
-            requestLog.consume_gating_drop_stats()
+            history_lifecycle.clear_history()
+            history_lifecycle.consume_gating_drop_stats()
 
             session = new_streaming_session("rid-stats")
             GPTState.last_streaming_events = []
@@ -223,7 +225,7 @@ if bootstrap is not None:
             )
             requestGating.try_begin_request(streaming_state, source="test_case")
 
-            stats = requestLog.history_validation_stats()
+            stats = history_lifecycle.history_validation_stats()
             self.assertEqual(stats.get("gating_drop_total"), 1)
             self.assertEqual(stats.get("gating_drop_counts", {}).get("in_flight"), 1)
             self.assertEqual(stats.get("gating_drop_sources", {}).get("test_case"), 1)
@@ -250,14 +252,14 @@ if bootstrap is not None:
             )
             self.assertEqual(
                 summary.get("last_message"),
-                requestLog.drop_reason_message("in_flight"),  # type: ignore[arg-type]
+                history_lifecycle.drop_reason_message("in_flight"),  # type: ignore[arg-type]
             )
             self.assertEqual(summary.get("last_code"), "in_flight")
 
         def test_history_validation_stats_reports_last_drop_message(self) -> None:
-            requestLog.clear_history()
-            requestLog.consume_gating_drop_stats()
-            requestLog.set_drop_reason("")
+            history_lifecycle.clear_history()
+            history_lifecycle.consume_gating_drop_stats()
+            history_lifecycle.set_drop_reason("")
 
             streaming_state = RequestState(phase=RequestPhase.SENDING)
             allowed, reason = requestGating.try_begin_request(
@@ -265,23 +267,23 @@ if bootstrap is not None:
             )
             self.assertFalse(allowed)
             self.assertEqual(reason, "in_flight")
-            expected_message = requestLog.drop_reason_message(reason)
+            expected_message = history_lifecycle.drop_reason_message(reason)
 
-            requestLog.set_drop_reason(reason, expected_message)
+            history_lifecycle.set_drop_reason(reason, expected_message)
 
-            stats = requestLog.history_validation_stats()
+            stats = history_lifecycle.history_validation_stats()
             self.assertEqual(
                 stats.get("gating_drop_last_message"),
                 expected_message,
             )
 
-            requestLog.set_drop_reason("")
-            stats_after_clear = requestLog.history_validation_stats()
+            history_lifecycle.set_drop_reason("")
+            stats_after_clear = history_lifecycle.history_validation_stats()
             self.assertEqual(stats_after_clear.get("gating_drop_last_message"), "")
 
         def test_history_axis_validate_reset_gating_flag(self) -> None:
-            requestLog.clear_history()
-            requestLog.consume_gating_drop_stats()
+            history_lifecycle.clear_history()
+            history_lifecycle.consume_gating_drop_stats()
 
             streaming_state = RequestState(phase=RequestPhase.SENDING)
             requestGating.try_begin_request(streaming_state)
@@ -293,11 +295,11 @@ if bootstrap is not None:
             ):
                 exit_code = history_axis_validate_main()
             self.assertEqual(exit_code, 0)
-            self.assertEqual(requestLog.gating_drop_stats(), {})
+            self.assertEqual(history_lifecycle.gating_drop_stats(), {})
 
         def test_history_axis_validate_requires_summary_for_reset(self) -> None:
-            requestLog.clear_history()
-            requestLog.consume_gating_drop_stats()
+            history_lifecycle.clear_history()
+            history_lifecycle.consume_gating_drop_stats()
 
             streaming_state = RequestState(phase=RequestPhase.SENDING)
             requestGating.try_begin_request(streaming_state)
@@ -305,7 +307,7 @@ if bootstrap is not None:
             with patch.object(sys, "argv", ["history-axis-validate", "--reset-gating"]):
                 exit_code = history_axis_validate_main()
             self.assertEqual(exit_code, 1)
-            self.assertEqual(requestLog.gating_drop_stats().get("in_flight"), 1)
+            self.assertEqual(history_lifecycle.gating_drop_stats().get("in_flight"), 1)
 
         def test_request_gating_uses_lifecycle_drop_helpers(self) -> None:
             import talon_user.lib.historyLifecycle as history_lifecycle

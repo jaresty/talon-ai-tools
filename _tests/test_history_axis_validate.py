@@ -39,7 +39,7 @@ if bootstrap is not None:
             )
 
         def test_script_summary_outputs_stats(self) -> None:
-            from talon_user.lib.requestLog import clear_history, append_entry  # type: ignore
+            from talon_user.lib.historyLifecycle import clear_history, append_entry  # type: ignore
 
             clear_history()
             append_entry(
@@ -104,8 +104,8 @@ if bootstrap is not None:
             clear_history()
 
         def test_history_stats_flag_noncanonical_intent_key(self) -> None:
-            from talon_user.lib import requestLog  # type: ignore
-            from talon_user.lib.requestLog import clear_history, append_entry  # type: ignore
+            from talon_user.lib import historyLifecycle as history_lifecycle  # type: ignore
+            from talon_user.lib.historyLifecycle import clear_history, append_entry  # type: ignore
 
             clear_history()
             append_entry(
@@ -120,13 +120,13 @@ if bootstrap is not None:
                 },
             )
 
-            stats = requestLog.history_validation_stats()
+            stats = history_lifecycle.history_validation_stats()
             self.assertGreaterEqual(stats.get("intent_preset_missing_descriptor", 0), 1)
             self.assertGreaterEqual(stats.get("intent_invalid_tokens", 0), 1)
             clear_history()
 
         def test_script_fails_when_invalid_intent_tokens_present(self) -> None:
-            from talon_user.lib.requestLog import clear_history  # type: ignore
+            from talon_user.lib.historyLifecycle import clear_history  # type: ignore
 
             clear_history()
             env = os.environ.copy()
@@ -143,7 +143,7 @@ if bootstrap is not None:
             clear_history()
 
         def test_script_summary_path_writes_file(self) -> None:
-            from talon_user.lib.requestLog import clear_history  # type: ignore
+            from talon_user.lib.historyLifecycle import clear_history  # type: ignore
 
             clear_history()
             with tempfile.TemporaryDirectory() as tmpdir:
@@ -171,7 +171,7 @@ if bootstrap is not None:
             clear_history()
 
         def test_script_fails_when_invalid_intent_tokens_present(self) -> None:
-            from talon_user.lib.requestLog import clear_history  # type: ignore
+            from talon_user.lib.historyLifecycle import clear_history  # type: ignore
 
             clear_history()
             env = os.environ.copy()
@@ -188,7 +188,7 @@ if bootstrap is not None:
             clear_history()
 
         def test_summary_path_includes_gating_last_drop_metadata(self) -> None:
-            from talon_user.lib.requestLog import clear_history  # type: ignore
+            from talon_user.lib.historyLifecycle import clear_history  # type: ignore
 
             clear_history()
             with tempfile.TemporaryDirectory() as tmpdir:
@@ -361,7 +361,7 @@ if bootstrap is not None:
                 self.assertIn("Download artifact", markdown_output)
 
         def test_script_fails_when_persona_metadata_missing(self) -> None:
-            from talon_user.lib.requestLog import clear_history  # type: ignore
+            from talon_user.lib.historyLifecycle import clear_history  # type: ignore
 
             clear_history()
 

@@ -976,7 +976,22 @@
 - residual_risks:
   - Other CLI utilities may still depend on `requestLog`; extend guard coverage in future loops.
 - next_work:
-  - Behaviour: audit remaining CLI utilities for direct `requestLog` usage — python3 -m pytest _tests/test_history_lifecycle_scripts_guard.py — future-shaping: broaden façade adoption across tooling scripts.
+  - Behaviour: migrate history axis tests to the façade — python3 -m pytest _tests/test_history_axis_validate.py — future-shaping: align characterization tests with lifecycle helpers.
+
+## 2025-12-26 – Loop 076 (kind: implementation)
+- helper_version: helper:v20251223.1
+- focus: ADR-0062 §Refactor Plan – History Lifecycle Orchestrator (migrate history axis tests to façade)
+- riskiest_assumption: History axis validation tests would continue importing `requestLog` directly, drifting from the lifecycle façade (probability medium, impact medium on cohesion).
+- validation_targets:
+  - python3 -m pytest _tests/test_history_axis_validate.py
+- evidence:
+  - docs/adr/evidence/0062/loop-0076.md
+- rollback_plan: git restore --source=HEAD -- _tests/test_history_axis_validate.py && python3 -m pytest _tests/test_history_axis_validate.py
+- delta_summary: helper:diff-snapshot=1 file changed; tests now rely on `historyLifecycle` wrappers.
+- residual_risks:
+  - Request gating unit tests still reference `requestLog`; migrate them next.
+- next_work:
+  - Behaviour: migrate request gating tests to the façade — python3 -m pytest _tests/test_request_gating.py — future-shaping: consolidate gating test helpers.
 
 
 

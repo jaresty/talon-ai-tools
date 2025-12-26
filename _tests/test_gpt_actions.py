@@ -708,6 +708,35 @@ if bootstrap is not None:
             gpt_module._last_inflight_warning_request_id = None
             gpt_module._suppress_inflight_notify_request_id = None
 
+        def test_history_lifecycle_wrappers_delegate(self) -> None:
+            if bootstrap is None:
+                self.skipTest("Talon runtime not available")
+
+            self.assertTrue(
+                hasattr(gpt_module, "historyLifecycle"),
+                "Expected historyLifecycle façade on GPT module",
+            )
+
+            with patch.object(
+                gpt_module.historyLifecycle, "set_drop_reason"
+            ) as set_reason:
+                gpt_module.set_drop_reason("storm", "message")
+            set_reason.assert_called_once_with("storm", "message")
+
+            with patch.object(
+                gpt_module.historyLifecycle, "drop_reason_message", return_value="msg"
+            ) as drop_message:
+                result = gpt_module.drop_reason_message("storm")
+            drop_message.assert_called_once_with("storm")
+            self.assertEqual(result, "msg")
+
+            with patch.object(
+                gpt_module.historyLifecycle, "last_drop_reason", return_value="clear"
+            ) as last_reason:
+                value = gpt_module.last_drop_reason()
+            last_reason.assert_called_once_with()
+            self.assertEqual(value, "clear")
+
         def test_source_and_prepare_helpers_respect_in_flight_guard(self):
             source = MagicMock()
             with (

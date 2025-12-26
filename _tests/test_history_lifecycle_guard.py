@@ -26,7 +26,6 @@ if bootstrap is not None:
     ALLOWED = {
         pathlib.Path("lib/historyLifecycle.py"),
         pathlib.Path("lib/requestLog.py"),
-        pathlib.Path("GPT/gpt.py"),
     }
     IMPORT_PATTERN = re.compile(r"^(from|import) .*requestLog")
 

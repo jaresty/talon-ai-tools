@@ -933,6 +933,21 @@
 - next_work:
   - Behaviour: migrate GPT drop-reason helpers to `historyLifecycle` and tighten the guard allowlist — python3 -m pytest _tests/test_gpt_actions.py _tests/test_history_lifecycle_guard.py — future-shaping: remove the GPT exemption from the guard.
 
+## 2025-12-26 – Loop 073 (kind: implementation)
+- helper_version: helper:v20251223.1
+- focus: ADR-0062 §Refactor Plan – History Lifecycle Orchestrator (migrate GPT gating to façade)
+- riskiest_assumption: GPT command surfaces would keep sourcing drop-reason helpers from `requestLog`, risking divergence from the lifecycle orchestrator (probability medium, impact medium-high on cohesion).
+- validation_targets:
+  - python3 -m pytest _tests/test_gpt_actions.py::GPTActionPromptSessionTests::test_history_lifecycle_wrappers_delegate _tests/test_history_lifecycle_guard.py
+- evidence:
+  - docs/adr/evidence/0062/loop-0073.md
+- rollback_plan: git restore --source=HEAD -- GPT/gpt.py _tests/test_gpt_actions.py _tests/test_history_lifecycle_guard.py && python3 -m pytest _tests/test_gpt_actions.py::GPTActionPromptSessionTests::test_history_lifecycle_wrappers_delegate _tests/test_history_lifecycle_guard.py
+- delta_summary: helper:diff-snapshot=3 files changed, 49 insertions(+), 4 deletions(-); GPT now wraps lifecycle helpers, and the guard enforces façade usage across GPT orchestration.
+- residual_risks:
+  - CLI telemetry utilities still import `requestLog`; plan follow-up audit to capture remaining direct imports.
+- next_work:
+  - Behaviour: perform repository-wide audit for residual `requestLog` imports — rg "requestLog" lib GPT — future-shaping: document compliance via loop 074 audit entry.
+
 
 
 

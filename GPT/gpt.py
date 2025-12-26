@@ -18,8 +18,7 @@ from ..lib.talonSettings import (
 
 from ..lib.axisMappings import axis_docs_map
 from ..lib.staticPromptConfig import STATIC_PROMPT_CONFIG
-from ..lib.requestLog import KNOWN_AXIS_KEYS
-from ..lib.historyLifecycle import axes_snapshot_from_axes as axis_snapshot_from_axes
+from ..lib import historyLifecycle
 
 try:
     from ..lib.axisCatalog import (
@@ -115,6 +114,25 @@ except ImportError:  # Talon may have a stale runtime without axisCatalog
         }
 
 
+KNOWN_AXIS_KEYS = historyLifecycle.KNOWN_AXIS_KEYS
+
+
+def axis_snapshot_from_axes(axes):
+    return historyLifecycle.axes_snapshot_from_axes(axes)
+
+
+def drop_reason_message(reason):
+    return historyLifecycle.drop_reason_message(reason)
+
+
+def last_drop_reason():
+    return historyLifecycle.last_drop_reason()
+
+
+def set_drop_reason(reason, message=None):
+    return historyLifecycle.set_drop_reason(reason, message)
+
+
 from ..lib.modelDestination import (
     Browser,
     Clipboard,
@@ -174,7 +192,6 @@ from ..lib.requestBus import (
     current_state,
     set_controller,
 )
-from ..lib.requestLog import drop_reason_message, last_drop_reason, set_drop_reason
 from ..lib.requestController import RequestUIController
 
 # Ensure a default request UI controller is registered so cancel events have a sink.

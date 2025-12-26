@@ -21,6 +21,7 @@ from .requestLog import (
     record_gating_drop as requestlog_record_gating_drop,
     set_drop_reason as requestlog_set_drop_reason,
     all_entries as requestlog_all_entries,
+    append_entry_from_request as requestlog_append_entry_from_request,
 )
 from .requestState import RequestDropReason
 
@@ -277,6 +278,10 @@ def all_entries():
         return []
 
 
+def append_entry_from_request(**kwargs):
+    return requestlog_append_entry_from_request(**kwargs)
+
+
 def _coerce_axes_mapping(
     axes: Mapping[str, Sequence[str]] | None,
 ) -> dict[str, list[str]]:
@@ -399,6 +404,7 @@ __all__ = [
     "latest",
     "nth_from_latest",
     "all_entries",
+    "append_entry_from_request",
     "record_gating_drop",
     "gating_drop_stats",
     "gating_drop_source_stats",

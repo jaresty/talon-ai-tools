@@ -12,7 +12,7 @@ from dataclasses import dataclass, field
 from typing import List, Optional, Dict, Any, Tuple, cast, Mapping
 
 from .axisCatalog import axis_catalog
-from .requestLog import append_entry_from_request
+from .historyLifecycle import append_entry_from_request
 from .dropReasonUtils import render_drop_reason
 
 GATING_SNAPSHOT_KEYS = (
@@ -345,27 +345,39 @@ class StreamingSession:
         if not last_code_value:
             last_code_value = self.gating_drop_last_code
 
-        self._record_event(
-            "gating_summary",
-            status=status_value,
-            total=total or 0,
-            counts=counts_payload,
-            counts_sorted=counts_sorted,
-            sources=sources_payload,
-            sources_sorted=sources_sorted,
-            last=last,
-            last_source=last_source,
-            last_message=last_message_value,
-            last_code=last_code_value,
-        )
-        record_streaming_snapshot(
-            self.run,
-            extra={
-                "gating_summary_status": status_value,
-                "gating_drop_last_message": last_message_value,
-                "gating_drop_last_code": last_code_value,
-            },
-        )
+        if any(
+            [
+                counts_payload,
+                sources_payload,
+                counts_sorted,
+                sources_sorted,
+                last,
+                last_source,
+                last_message_value,
+                last_code_value,
+            ]
+        ):
+            self._record_event(
+                "gating_summary",
+                status=status_value,
+                total=total or 0,
+                counts=counts_payload,
+                counts_sorted=counts_sorted,
+                sources=sources_payload,
+                sources_sorted=sources_sorted,
+                last=last,
+                last_source=last_source,
+                last_message=last_message_value,
+                last_code=last_code_value,
+            )
+            record_streaming_snapshot(
+                self.run,
+                extra={
+                    "gating_summary_status": status_value,
+                    "gating_drop_last_message": last_message_value,
+                    "gating_drop_last_code": last_code_value,
+                },
+            )
 
     def record_gating_drop(
         self,

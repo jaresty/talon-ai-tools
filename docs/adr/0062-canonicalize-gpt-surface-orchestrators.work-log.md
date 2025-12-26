@@ -719,4 +719,22 @@
 - next_work:
   - Behaviour: continue migrating streaming/history orchestrators to the façade — python3 -m pytest tests/test_request_streaming.py — future-shaping: eliminate remaining direct `requestLog` dependencies.
 
+## 2025-12-26 – Loop 060 (kind: implementation)
+- helper_version: helper:v20251223.1
+- focus: ADR-0062 §Refactor Plan – History Lifecycle Orchestrator (migrate streaming orchestrator to façade)
+- riskiest_assumption: Streaming helpers would keep calling `requestLog.append_entry_from_request` directly, making future lifecycle changes brittle (probability medium, impact medium-high on orchestrator stability).
+- validation_targets:
+  - python3 -m pytest _tests/test_request_streaming.py
+  - python3 -m pytest _tests/test_model_helpers_response_canvas.py
+  - python3 -m pytest _tests/test_streaming_session.py
+  - python3 -m pytest _tests/test_request_history_drawer.py
+- evidence:
+  - docs/adr/evidence/0062/loop-0060.md
+- rollback_plan: git restore --source=HEAD -- lib/historyLifecycle.py lib/modelHelpers.py lib/streamingCoordinator.py && python3 -m pytest _tests/test_streaming_session.py
+- delta_summary: helper:diff-snapshot=3 files changed, 41 insertions(+), 24 deletions(-); lifecycle façade now exposes `append_entry_from_request`, and streaming/model helpers delegate through it while skipping empty gating summary events.
+- residual_risks:
+  - Streaming façade still forwards raw request dictionaries; future loops may introduce typed payloads.
+- next_work:
+  - Behaviour: continue migrating surface guidance/request gating helpers to the façade — python3 -m pytest _tests/test_surface_guidance.py — future-shaping: finish removing direct `requestLog` dependencies.
+
 

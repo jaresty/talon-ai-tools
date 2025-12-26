@@ -36,7 +36,7 @@ from .requestBus import (
 )
 from .requestController import RequestUIController
 from .requestState import RequestState
-from .requestLog import append_entry_from_request
+from .historyLifecycle import append_entry_from_request
 from .uiDispatch import run_on_ui_thread
 from .requestLifecycle import RequestLifecycleState, reduce_request_state
 from .streamingCoordinator import (
@@ -1427,7 +1427,6 @@ def _send_request_streaming(request, request_id: str) -> str:
     GPTState.last_raw_response = {"choices": [{"message": {"content": answer_text}}]}
     _set_active_response(None)
     return answer_text
-
 
 
 def _append_history_entry(

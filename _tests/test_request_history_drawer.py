@@ -16,15 +16,19 @@ if bootstrap is not None:
         history_drawer_entries_from,
     )
     import talon_user.lib.requestHistoryDrawer as history_drawer  # type: ignore
-    from talon_user.lib.requestLog import (
+    from talon_user.lib import historyLifecycle as history_lifecycle
+    from talon_user.lib.historyLifecycle import (
         append_entry,
         clear_history,
         consume_last_drop_reason_record,
+        last_drop_reason,
         last_drop_reason_code,
     )
     from talon_user.lib.modelState import GPTState
     from talon_user.lib.personaConfig import persona_intent_maps_reset
     from talon import canvas
+
+    requestlog = history_lifecycle.requestlog_module  # type: ignore[attr-defined]
 
     class RequestHistoryDrawerTests(unittest.TestCase):
         def setUp(self):
@@ -180,10 +184,9 @@ if bootstrap is not None:
                 DrawerActions.request_history_drawer_close()
 
         def test_drawer_save_latest_source_refreshes_entries(self):
-            from talon_user.lib import requestLog as requestlog  # type: ignore
             from talon import actions
 
-            requestlog.clear_history()
+            clear_history()
             HistoryDrawerState.entries = []
             HistoryDrawerState.showing = False
             with patch.object(
@@ -210,10 +213,9 @@ if bootstrap is not None:
             self.assertIn("rid-new", label)
 
         def test_drawer_key_s_triggers_save_latest_source(self):
-            from talon_user.lib import requestLog as requestlog  # type: ignore
             from talon import actions
 
-            requestlog.clear_history()
+            clear_history()
             HistoryDrawerState.entries = []
             HistoryDrawerState.showing = False
             with (
@@ -235,10 +237,9 @@ if bootstrap is not None:
                 self.assertTrue(HistoryDrawerState.showing)
 
         def test_drawer_save_latest_respects_inflight_guard(self):
-            from talon_user.lib import requestLog as requestlog  # type: ignore
             from talon import actions
 
-            requestlog.clear_history()
+            clear_history()
             HistoryDrawerState.entries = []
             HistoryDrawerState.showing = False
             with (

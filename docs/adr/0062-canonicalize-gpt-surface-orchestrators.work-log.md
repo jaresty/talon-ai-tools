@@ -1084,6 +1084,21 @@
 - next_work:
   - Behaviour: migrate request history drawer tests to façade wrappers — python3 -m pytest _tests/test_request_history_drawer.py — future-shaping: retire direct `_history` mutations.
 
+## 2025-12-26 – Loop 083 (kind: implementation)
+- helper_version: helper:v20251223.1
+- focus: ADR-0062 §Refactor Plan – History Lifecycle Orchestrator (migrate request history drawer tests to façade)
+- riskiest_assumption: Drawer characterisation tests would keep importing `requestLog`, undermining façade guarantees (probability medium, impact medium-high on UI guardrails).
+- validation_targets:
+  - python3 -m pytest _tests/test_request_history_drawer.py
+- evidence:
+  - docs/adr/evidence/0062/loop-0083.md
+- rollback_plan: git restore --source=HEAD -- _tests/test_request_history_drawer.py && python3 -m pytest _tests/test_request_history_drawer.py
+- delta_summary: helper:diff-snapshot=1 file changed, 59 insertions(+), 51 deletions(-); drawer tests now lean on `historyLifecycle`, aliasing the underlying module only when patching `_history` or `notify`.
+- residual_risks:
+  - Request log axis filter tests still import `requestLog`; evaluate in a follow-up loop.
+- next_work:
+  - Behaviour: scope remaining façade migrations (request log axis filter, GPT actions).
+
 
 
 

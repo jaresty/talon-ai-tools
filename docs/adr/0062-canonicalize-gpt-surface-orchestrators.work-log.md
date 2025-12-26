@@ -869,5 +869,22 @@
 - next_work:
   - Behaviour: audit remaining modules (e.g., streaming coordinator) for direct state imports — python3 -m pytest _tests/test_streaming_session.py — future-shaping: complete the lifecycle centralisation.
 
+## 2025-12-26 – Loop 069 (kind: implementation)
+- helper_version: helper:v20251223.1
+- focus: ADR-0062 §Refactor Plan – History Lifecycle Orchestrator (finish removing direct requestState imports)
+- riskiest_assumption: Gating/request UI helpers still referenced `requestState` directly, bypassing the lifecycle façade (probability medium, impact medium on cohesion).
+- validation_targets:
+  - python3 -m pytest _tests/test_request_controller.py
+  - python3 -m pytest _tests/test_request_gating.py
+  - python3 -m pytest _tests/test_request_gating_macros.py
+- evidence:
+  - docs/adr/evidence/0062/loop-0069.md
+- rollback_plan: git restore --source=HEAD -- lib/modelHelpers.py lib/modelResponseCanvas.py lib/pillCanvas.py lib/requestBus.py lib/requestHistoryActions.py lib/requestUI.py lib/surfaceGuidance.py lib/requestGating.py lib/historyLifecycle.py && python3 -m pytest _tests/test_request_controller.py
+- delta_summary: helper:diff-snapshot=9 files changed, 63 insertions(+), 20 deletions(-); lifecycle façade now exports request-state types and convenience helpers so higher-level modules no longer import `requestState` directly.
+- residual_risks:
+  - `requestLog` still needs direct access to request-state dataclasses for DropReason serialization; re-evaluate once logging abstractions move behind the façade.
+- next_work:
+  - Behaviour: audit streaming coordinator for remaining direct state usage — python3 -m pytest _tests/test_streaming_session.py — future-shaping: finish lifecycle consolidation.
+
 
 

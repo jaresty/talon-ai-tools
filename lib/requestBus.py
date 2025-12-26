@@ -12,9 +12,9 @@ from .historyLifecycle import (
     RequestState,
     lifecycle_status_for,
     transition,
+    state_is_in_flight,
+    state_try_start_request,
 )
-from .requestLifecycle import is_in_flight as state_is_in_flight
-from .requestLifecycle import try_start_request as state_try_start_request
 
 try:
     from .modelState import GPTState  # type: ignore

@@ -3,6 +3,7 @@ from __future__ import annotations
 import datetime
 from dataclasses import dataclass, field
 from collections.abc import Mapping, Sequence
+from typing import cast
 
 from .requestLog import (
     AxisSnapshot,
@@ -33,6 +34,10 @@ from .requestState import (
     Surface,
     lifecycle_status_for,
     transition,
+)
+from .requestLifecycle import (
+    is_in_flight as lifecycle_is_in_flight,
+    try_start_request as lifecycle_try_start_request,
 )
 
 _HISTORY_AXIS_KEYS: tuple[str, ...] = (
@@ -418,6 +423,17 @@ def clear_drop_reason() -> None:
     requestlog_set_drop_reason("")
 
 
+def state_is_in_flight(state: RequestState) -> bool:
+    return lifecycle_is_in_flight(state)
+
+
+def state_try_start_request(
+    state: RequestState,
+) -> tuple[bool, RequestDropReason]:
+    allowed, reason = lifecycle_try_start_request(state)
+    return allowed, cast(RequestDropReason, reason)
+
+
 __all__ = [
     "AxisSnapshot",
     "KNOWN_AXIS_KEYS",
@@ -444,6 +460,8 @@ __all__ = [
     "Surface",
     "lifecycle_status_for",
     "transition",
+    "state_is_in_flight",
+    "state_try_start_request",
     "record_gating_drop",
     "gating_drop_stats",
     "gating_drop_source_stats",

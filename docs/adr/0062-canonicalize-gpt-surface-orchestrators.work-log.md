@@ -948,6 +948,21 @@
 - next_work:
   - Behaviour: perform repository-wide audit for residual `requestLog` imports — rg "requestLog" lib GPT — future-shaping: document compliance via loop 074 audit entry.
 
+## 2025-12-26 – Loop 074 (kind: documentation)
+- helper_version: helper:v20251223.1
+- focus: ADR-0062 §Refactor Plan – History Lifecycle Orchestrator (audit direct `requestLog` imports)
+- riskiest_assumption: Hidden modules might still import `requestLog` directly, weakening façade coverage (probability low, impact low).
+- validation_targets:
+  - rg --glob "*.py" "from .*requestLog" lib GPT
+- evidence:
+  - docs/adr/evidence/0062/loop-0074.md
+- rollback_plan: git restore --source=HEAD -- docs/adr/evidence/0062/loop-0074.md docs/adr/0062-canonicalize-gpt-surface-orchestrators.work-log.md
+- delta_summary: Recorded audit confirming no remaining direct `requestLog` imports in `lib/` or `GPT/` outside the lifecycle façade.
+- residual_risks:
+  - Scripts outside the audited directories still import `requestLog`; monitor future refactors as façade coverage expands.
+- next_work:
+  - Behaviour: resume persona/catalog orchestrator follow-ups outlined in salient tasks.
+
 
 
 

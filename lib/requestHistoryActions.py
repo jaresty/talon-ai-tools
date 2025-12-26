@@ -14,10 +14,8 @@ from .modelDestination import (
 from .modelConfirmationGUI import ConfirmationGUIState
 from .modelHelpers import notify
 from .modelState import GPTState
-from .requestLog import (
-    AxisSnapshot,
-)
 from .historyLifecycle import (
+    AxisSnapshot,
     HistoryAxisSnapshot,
     HistorySnapshotEntry,
     axes_snapshot_from_axes as lifecycle_axes_snapshot_from_axes,

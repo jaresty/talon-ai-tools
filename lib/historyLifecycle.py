@@ -22,6 +22,7 @@ from .requestLog import (
     set_drop_reason as requestlog_set_drop_reason,
     all_entries as requestlog_all_entries,
     append_entry_from_request as requestlog_append_entry_from_request,
+    KNOWN_AXIS_KEYS as requestlog_known_axis_keys,
 )
 from .requestState import RequestDropReason
 
@@ -33,6 +34,11 @@ _HISTORY_AXIS_KEYS: tuple[str, ...] = (
     "channel",
     "directional",
 )
+
+if isinstance(requestlog_known_axis_keys, tuple):
+    KNOWN_AXIS_KEYS = requestlog_known_axis_keys
+else:
+    KNOWN_AXIS_KEYS = tuple(requestlog_known_axis_keys)
 
 
 class HistoryAxisSnapshot:
@@ -398,6 +404,8 @@ def clear_drop_reason() -> None:
 
 
 __all__ = [
+    "AxisSnapshot",
+    "KNOWN_AXIS_KEYS",
     "HistoryAxisSnapshot",
     "HistorySnapshotEntry",
     "axes_snapshot_from_axes",

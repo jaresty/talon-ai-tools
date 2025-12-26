@@ -804,5 +804,22 @@
 - next_work:
   - Behaviour: inspect streaming coordinator/request controller for remaining direct enums — python3 -m pytest _tests/test_streaming_session.py — future-shaping: consolidate gating state behind lifecycle exports.
 
+## 2025-12-26 – Loop 065 (kind: implementation)
+- helper_version: helper:v20251223.1
+- focus: ADR-0062 §Refactor Plan – History Lifecycle Orchestrator (remove requestLog imports from history helpers)
+- riskiest_assumption: History helpers continued importing `AxisSnapshot`/`KNOWN_AXIS_KEYS` from `requestLog`, risking façade drift (probability medium, impact medium on cohesion).
+- validation_targets:
+  - python3 -m pytest _tests/test_history_query.py
+  - python3 -m pytest _tests/test_request_history_actions.py
+  - python3 -m pytest _tests/test_request_history_drawer.py
+- evidence:
+  - docs/adr/evidence/0062/loop-0065.md
+- rollback_plan: git restore --source=HEAD -- lib/historyLifecycle.py lib/requestHistoryActions.py lib/historyQuery.py && python3 -m pytest _tests/test_history_query.py
+- delta_summary: helper:diff-snapshot=3 files changed, 21 insertions(+), 9 deletions(-); lifecycle façade now re-exports `AxisSnapshot` and `KNOWN_AXIS_KEYS`, letting history helpers avoid direct `requestLog` imports.
+- residual_risks:
+  - Streaming coordinator still references request-state enums directly; consider façade coverage in future loops.
+- next_work:
+  - Behaviour: audit streaming coordinator/request controller for remaining direct state imports — python3 -m pytest _tests/test_streaming_session.py — future-shaping: centralise request state exposure via lifecycle.
+
 
 

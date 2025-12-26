@@ -11,8 +11,8 @@ behaviour.
 from collections.abc import Sequence
 from typing import List, Tuple
 
-from .requestLog import KNOWN_AXIS_KEYS
 from .historyLifecycle import (
+    KNOWN_AXIS_KEYS,
     HistorySnapshotEntry,
     axes_snapshot_from_axes as _axis_snapshot_from_axes_impl,
     coerce_history_snapshot_entry as _coerce_history_snapshot_entry,

@@ -18,13 +18,21 @@
 - next_work:
   - Behaviour: keep axis/persona docs aligned with snapshot helper; audit remaining guidance surfaces when orchestrator schema evolves.
 
-## 2025-12-25 – Loop 040 (kind: planning)
+## 2025-12-26 – Loop 088 (kind: implementation)
 - helper_version: helper:v20251223.1
-- focus: Scoping remaining orchestrator milestones after metadata guardrails.
-- riskiest_assumption: Without re-triaging the Refactor Plan, follow-up loops could drift; Re-check Salient Tasks against completed metadata work to prioritize remaining persona/surface/history refactors.
-- summary: Identified next actionable themes — persona catalog façade adoption, guidance surface delegation, history lifecycle consolidation.
+- focus: ADR-0062 §Refactor Plan – Guidance Surface Coordinator (Help Canvas intent presets)
+- riskiest_assumption: Model Help canvas would keep hydrating intent presets via personaConfig maps instead of the persona orchestrator, leaving quick help out of sync with Concordance metadata (probability medium, impact medium-high on guidance parity).
+- validation_targets:
+  - python3 -m pytest _tests/test_model_help_canvas.py::ModelHelpCanvasTests::test_intent_presets_use_persona_orchestrator
+- evidence:
+  - docs/adr/evidence/0062/loop-0088.md
+- rollback_plan: git stash push -- lib/modelHelpCanvas.py && python3 -m pytest _tests/test_model_help_canvas.py::ModelHelpCanvasTests::test_intent_presets_use_persona_orchestrator && git stash pop
+- delta_summary: helper:diff-snapshot=2 files changed, 83 insertions(+), 7 deletions(-); Help canvas intent/persona helpers now delegate to the persona orchestrator before falling back to legacy maps, keeping quick help aligned with Concordance snapshots.
+- residual_risks:
+  - `_intent_spoken_buckets` and `_normalize_intent` still depend on personaConfig; plan future loops to route them through the orchestrator to complete the migration.
 - next_work:
-  - Behaviour: audit missing characterization tests before persona/catalog migration — see Loop 041.
+  - Behaviour: migrate Help canvas intent normalisation helpers to orchestrator exports — python3 -m pytest _tests/test_model_help_canvas.py — future-shaping: retire remaining personaConfig dependencies from Help canvas surfaces.
+
 
 ## 2025-12-25 – Loop 041 (kind: planning)
 - helper_version: helper:v20251223.1
@@ -1160,4 +1168,18 @@
 - next_work:
   - Behaviour: extend orchestrator usage to remaining Help Hub metadata helpers — python3 -m pytest _tests/test_help_hub.py — future-shaping: converge Help Hub metadata on the orchestrator facade.
 
+## 2025-12-26 – Loop 088 (kind: implementation)
+- helper_version: helper:v20251223.1
+- focus: ADR-0062 §Refactor Plan – Guidance Surface Coordinator (Help Canvas intent presets)
+- riskiest_assumption: Model Help canvas would keep hydrating intent presets via personaConfig maps instead of the persona orchestrator, leaving quick help out of sync with Concordance metadata (probability medium, impact medium-high on guidance parity).
+- validation_targets:
+  - python3 -m pytest _tests/test_model_help_canvas.py::ModelHelpCanvasTests::test_intent_presets_use_persona_orchestrator
+- evidence:
+  - docs/adr/evidence/0062/loop-0088.md
+- rollback_plan: git stash push -- lib/modelHelpCanvas.py && python3 -m pytest _tests/test_model_help_canvas.py::ModelHelpCanvasTests::test_intent_presets_use_persona_orchestrator && git stash pop
+- delta_summary: helper:diff-snapshot=2 files changed, 83 insertions(+), 7 deletions(-); Help canvas intent/persona helpers now delegate to the persona orchestrator before falling back to legacy maps, keeping quick help aligned with Concordance snapshots.
+- residual_risks:
+  - `_intent_spoken_buckets` and `_normalize_intent` still depend on personaConfig; plan future loops to route them through the orchestrator to complete the migration.
+- next_work:
+  - Behaviour: migrate Help canvas intent normalisation helpers to orchestrator exports — python3 -m pytest _tests/test_model_help_canvas.py — future-shaping: retire remaining personaConfig dependencies from Help canvas surfaces.
 

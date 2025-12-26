@@ -19,7 +19,11 @@ from .historyLifecycle import try_begin_request
 from .modelHelpers import notify
 from .overlayHelpers import apply_canvas_blocking
 from .personaConfig import persona_intent_maps
+from .personaOrchestrator import get_persona_intent_orchestrator
 from .surfaceGuidance import guard_surface_request
+
+
+_get_persona_orchestrator = get_persona_intent_orchestrator
 
 
 try:
@@ -101,10 +105,21 @@ def _axis_keys(axis: str) -> list[str]:
 def _persona_presets():
     """Return the latest persona presets (reload-safe).
 
-    Prefer the shared persona intent maps so quick help stays aligned with
-    other Concordance-facing UIs. Fall back to the legacy catalog constants
-    when maps are unavailable (for example, during bootstrap).
+    Prefer the shared persona orchestrator so quick help stays aligned with
+    other Concordance-facing UIs. Fall back to the legacy catalog helpers
+    when orchestrator data is unavailable (for example, during bootstrap).
     """
+    try:
+        orchestrator = _get_persona_orchestrator()
+    except Exception:
+        orchestrator = None
+    if orchestrator is not None:
+        try:
+            presets = tuple((orchestrator.persona_presets or {}).values())
+        except Exception:
+            presets = ()
+        if presets:
+            return presets
     try:
         maps = persona_intent_maps()
         return tuple(maps.persona_presets.values())
@@ -123,10 +138,21 @@ def _persona_presets():
 def _intent_presets():
     """Return the latest intent presets (reload-safe).
 
-    Prefer the shared persona intent maps so quick help stays aligned with
-    other Concordance-facing UIs. Fall back to the legacy catalog constants
-    when maps are unavailable (for example, during bootstrap).
+    Prefer the shared persona orchestrator so quick help stays aligned with
+    other Concordance-facing UIs. Fall back to the legacy catalog helpers
+    when orchestrator data is unavailable (for example, during bootstrap).
     """
+    try:
+        orchestrator = _get_persona_orchestrator()
+    except Exception:
+        orchestrator = None
+    if orchestrator is not None:
+        try:
+            presets = tuple((orchestrator.intent_presets or {}).values())
+        except Exception:
+            presets = ()
+        if presets:
+            return presets
     try:
         maps = persona_intent_maps()
         return tuple(maps.intent_presets.values())

@@ -1,4 +1,6 @@
 import unittest
+from contextlib import ExitStack
+from types import SimpleNamespace
 from typing import TYPE_CHECKING
 from unittest.mock import patch
 
@@ -20,6 +22,7 @@ if bootstrap is not None:
         _default_draw_quick_help,
         Rect,
         _group_directional_keys,
+        _intent_presets,
     )
     from talon_user.lib.staticPromptConfig import static_prompt_settings_catalog
 
@@ -201,8 +204,55 @@ if bootstrap is not None:
             ]
             self.assertTrue(
                 hint,
-                "Expected quick help to include form/channel defaults and directional requirement hint",
+                "Expected quick help directional reminder",
             )
+
+        def test_intent_presets_use_persona_orchestrator(self) -> None:
+            orchestrator_intent = SimpleNamespace(
+                key="decide",
+                label="Decide (orchestrator)",
+                intent="decide",
+            )
+            orchestrator = SimpleNamespace(
+                intent_presets={"decide": orchestrator_intent}
+            )
+            legacy_intent = SimpleNamespace(
+                key="legacy", label="Legacy", intent="legacy"
+            )
+            with ExitStack() as stack:
+                stack.enter_context(
+                    patch(
+                        "talon_user.lib.modelHelpCanvas._get_persona_orchestrator",
+                        return_value=orchestrator,
+                    )
+                )
+                try:
+                    stack.enter_context(
+                        patch(
+                            "lib.modelHelpCanvas._get_persona_orchestrator",
+                            return_value=orchestrator,
+                        )
+                    )
+                except (ModuleNotFoundError, AttributeError):
+                    pass
+                legacy_maps = SimpleNamespace(intent_presets={"legacy": legacy_intent})
+                stack.enter_context(
+                    patch(
+                        "talon_user.lib.modelHelpCanvas.persona_intent_maps",
+                        return_value=legacy_maps,
+                    )
+                )
+                try:
+                    stack.enter_context(
+                        patch(
+                            "lib.modelHelpCanvas.persona_intent_maps",
+                            return_value=legacy_maps,
+                        )
+                    )
+                except (ModuleNotFoundError, AttributeError):
+                    pass
+                presets = _intent_presets()
+            self.assertEqual(presets, (orchestrator_intent,))
 
         def test_quick_help_intent_commands_use_catalog_spoken_aliases(self) -> None:
             from types import SimpleNamespace

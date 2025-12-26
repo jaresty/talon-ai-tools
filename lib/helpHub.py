@@ -222,15 +222,69 @@ def _canonical_persona_token(axis: str, value: str) -> str:
 def _intent_spoken_buckets():
     """Return the latest intent buckets keyed by spoken token."""
     try:
+        orchestrator = get_persona_intent_orchestrator()
+    except Exception:
+        orchestrator = None
+    if orchestrator is not None:
+        try:
+            snapshot = personaCatalog.get_persona_intent_catalog()
+        except Exception:
+            snapshot = None
+        if snapshot is not None and getattr(snapshot, "intent_buckets", None):
+            label_lookup: dict[str, str] = {}
+            try:
+                presets = dict(getattr(orchestrator, "intent_presets", {}) or {})
+            except Exception:
+                presets = {}
+            for preset in presets.values():
+                canonical = (
+                    getattr(preset, "intent", "") or getattr(preset, "key", "") or ""
+                ).strip()
+                label = (getattr(preset, "label", "") or canonical).strip()
+                if canonical:
+                    label_lookup.setdefault(canonical, label or canonical)
+            try:
+                display_map = dict(
+                    getattr(orchestrator, "intent_display_map", {}) or {}
+                )
+            except Exception:
+                display_map = {}
+            for canonical, label in display_map.items():
+                canonical_key = (canonical or "").strip()
+                label_value = (label or "").strip()
+                if canonical_key and label_value:
+                    label_lookup.setdefault(canonical_key, label_value)
+            buckets: dict[str, list[str]] = {}
+            for bucket, canonicals in (
+                getattr(snapshot, "intent_buckets", {}) or {}
+            ).items():
+                spoken_tokens: list[str] = []
+                for canonical in canonicals or []:
+                    canonical_key = (canonical or "").strip()
+                    if not canonical_key:
+                        continue
+                    spoken_tokens.append(label_lookup.get(canonical_key, canonical_key))
+                if spoken_tokens:
+                    buckets[str(bucket)] = spoken_tokens
+            if buckets:
+                return buckets
+    try:
         snapshot = personaCatalog.get_persona_intent_catalog()
-        buckets: dict[str, list[str]] = {}
-        for bucket, canonicals in snapshot.intent_buckets.items():
+        buckets = {}
+        for bucket, canonicals in (
+            getattr(snapshot, "intent_buckets", {}) or {}
+        ).items():
             spoken_tokens: list[str] = []
-            for canonical in canonicals:
-                spoken = snapshot.intent_display_map.get(canonical, canonical)
-                spoken_tokens.append(spoken)
+            for canonical in canonicals or []:
+                canonical_key = (canonical or "").strip()
+                if not canonical_key:
+                    continue
+                display_value = (getattr(snapshot, "intent_display_map", {}) or {}).get(
+                    canonical_key, canonical_key
+                )
+                spoken_tokens.append(display_value)
             if spoken_tokens:
-                buckets[bucket] = spoken_tokens
+                buckets[str(bucket)] = spoken_tokens
         if buckets:
             return buckets
     except Exception:

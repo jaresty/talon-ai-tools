@@ -271,39 +271,121 @@ def test_help_hub_uses_persona_orchestrator_for_presets(monkeypatch):
 
 
 def test_help_hub_canonical_persona_token_uses_orchestrator(monkeypatch):
-    sentinel = SimpleNamespace(
-        canonical_axis_token=MagicMock(return_value="canonical-axis-token"),
-        canonical_persona_key=lambda alias: "ignored",
-        canonical_intent_key=lambda alias: "ignored",
+    persona_preset = SimpleNamespace(
+        key="mentor",
+        label="Mentor",
+        spoken="mentor spoken",
+        voice="as teacher",
+        audience="to programmer",
+        tone="kindly",
+    )
+    intent_preset = SimpleNamespace(
+        key="understand",
+        label="Understand",
+        intent="understand",
+    )
+    orchestrator = SimpleNamespace(
+        persona_presets={"mentor": persona_preset},
+        intent_presets={"understand": intent_preset},
+        intent_display_map={"understand": "Understand display"},
+        canonical_persona_key=lambda alias: "mentor" if alias else "",
+        canonical_intent_key=lambda alias: "understand" if alias else "",
+        canonical_axis_token=lambda axis, alias: {
+            "voice": "as teacher",
+            "audience": "to programmer",
+            "tone": "kindly",
+        }.get(axis, alias),
     )
     with ExitStack() as stack:
-        stack.enter_context(
+        get_orchestrator = stack.enter_context(
             patch(
                 "lib.helpHub.get_persona_intent_orchestrator",
-                return_value=sentinel,
+                return_value=orchestrator,
             )
         )
         stack.enter_context(
             patch(
                 "talon_user.lib.helpHub.get_persona_intent_orchestrator",
-                return_value=sentinel,
+                return_value=orchestrator,
             )
         )
         stack.enter_context(
             patch(
-                "lib.personaConfig.canonical_persona_token",
-                side_effect=RuntimeError("legacy canonical token called"),
+                "lib.helpHub.persona_intent_maps",
+                side_effect=RuntimeError("maps unavailable"),
             )
         )
         stack.enter_context(
             patch(
-                "talon_user.lib.personaConfig.canonical_persona_token",
-                side_effect=RuntimeError("legacy canonical token called"),
+                "talon_user.lib.helpHub.persona_intent_maps",
+                side_effect=RuntimeError("maps unavailable"),
             )
         )
-        result = helpHub._canonical_persona_token("voice", "mentor voice")
-    assert result == "canonical-axis-token"
-    sentinel.canonical_axis_token.assert_called_once_with("voice", "mentor voice")
+        helpHub.help_hub_open()
+        try:
+            cheat_text = helpHub._cheat_sheet_text()
+            assert "Mentor" in cheat_text
+            assert "Understand display" in cheat_text
+            presets = helpHub._persona_presets()
+            assert any(p.key == "mentor" for p in presets)
+        finally:
+            helpHub.help_hub_close()
+    get_orchestrator.assert_called()
+
+
+def test_help_hub_intent_buckets_use_orchestrator(monkeypatch):
+    orchestrator_intent = SimpleNamespace(
+        key="decide",
+        label="Decide (orchestrator)",
+        intent="decide",
+    )
+    orchestrator = SimpleNamespace(
+        intent_presets={"decide": orchestrator_intent},
+        intent_display_map={"decide": "Decide display"},
+    )
+    bucket_snapshot = SimpleNamespace(
+        intent_buckets={"task": ["decide"]},
+        intent_display_map={"decide": "Snapshot display"},
+    )
+    with ExitStack() as stack:
+        stack.enter_context(
+            patch(
+                "lib.helpHub.get_persona_intent_orchestrator",
+                return_value=orchestrator,
+            )
+        )
+        stack.enter_context(
+            patch(
+                "talon_user.lib.helpHub.get_persona_intent_orchestrator",
+                return_value=orchestrator,
+            )
+        )
+        stack.enter_context(
+            patch(
+                "lib.helpHub.personaCatalog.get_persona_intent_catalog",
+                return_value=bucket_snapshot,
+            )
+        )
+        stack.enter_context(
+            patch(
+                "talon_user.lib.helpHub.personaCatalog.get_persona_intent_catalog",
+                return_value=bucket_snapshot,
+            )
+        )
+        stack.enter_context(
+            patch(
+                "lib.helpHub.persona_intent_maps",
+                side_effect=RuntimeError("maps unavailable"),
+            )
+        )
+        stack.enter_context(
+            patch(
+                "talon_user.lib.helpHub.persona_intent_maps",
+                side_effect=RuntimeError("maps unavailable"),
+            )
+        )
+        buckets = helpHub._intent_spoken_buckets()
+    assert buckets == {"task": ["Decide (orchestrator)"]}
 
 
 def test_help_hub_search_intent_preset_triggers(monkeypatch):

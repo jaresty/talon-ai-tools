@@ -1183,3 +1183,18 @@
 - next_work:
   - Behaviour: migrate Help canvas intent normalisation helpers to orchestrator exports — python3 -m pytest _tests/test_model_help_canvas.py — future-shaping: retire remaining personaConfig dependencies from Help canvas surfaces.
 
+
+## 2025-12-26 – Loop 089 (kind: implementation)
+- helper_version: helper:v20251223.1
+- focus: ADR-0062 §Refactor Plan – Guidance Surface Coordinator (Help Hub intent buckets)
+- riskiest_assumption: Help Hub would keep deriving intent bucket labels from personaConfig instead of the persona orchestrator, risking Concordance metadata drift across surfaces (probability medium, impact medium-high on visibility).
+- validation_targets:
+  - python3 -m pytest _tests/test_help_hub.py::test_help_hub_intent_buckets_use_orchestrator
+- evidence:
+  - docs/adr/evidence/0062/loop-0089.md
+- rollback_plan: git stash push -- lib/helpHub.py && python3 -m pytest _tests/test_help_hub.py::test_help_hub_intent_buckets_use_orchestrator && git stash pop
+- delta_summary: helper:diff-snapshot=2 files changed, 155 insertions(+), 19 deletions(-); Help Hub intent bucket helper now takes labels from the persona orchestrator before falling back to legacy maps, aligning quick-help metadata with the façade.
+- residual_risks:
+  - Help Hub clipboard/export helpers still format intent bucket strings manually; plan a follow-up loop to reuse the orchestrator-backed helper there.
+- next_work:
+  - Behaviour: migrate Help canvas intent normalisation helpers to orchestrator exports — python3 -m pytest _tests/test_model_help_canvas.py::ModelHelpCanvasTests::test_intent_presets_use_persona_orchestrator — future-shaping: converge remaining personaConfig usage across canvases.

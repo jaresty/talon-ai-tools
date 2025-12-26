@@ -28,6 +28,7 @@ from .requestLog import (
     clear_history as requestlog_clear_history,
     validate_history_axes as requestlog_validate_history_axes,
     remediate_history_axes as requestlog_remediate_history_axes,
+    _filter_axes_payload as requestlog_filter_axes_payload,
     KNOWN_AXIS_KEYS as requestlog_known_axis_keys,
 )
 from .requestState import (
@@ -375,6 +376,16 @@ def axes_snapshot_from_axes(axes: Mapping[str, Sequence[str]] | None) -> AxisSna
     return AxisSnapshot({key: tuple(values) for key, values in dedup_axes.items()})
 
 
+def filter_axes_payload(
+    axes: Mapping[str, Sequence[str]] | None,
+) -> dict[str, list[str]]:
+    payload = _coerce_axes_mapping(axes)
+    return requestlog_filter_axes_payload(payload)
+
+
+axis_snapshot_from_axes = axes_snapshot_from_axes
+
+
 def history_axes_for(axes: Mapping[str, Sequence[str]] | None) -> dict[str, list[str]]:
     snapshot = axes_snapshot_from_axes(axes)
     result: dict[str, list[str]] = {}
@@ -488,6 +499,7 @@ __all__ = [
     "HistoryAxisSnapshot",
     "HistorySnapshotEntry",
     "axes_snapshot_from_axes",
+    "filter_axes_payload",
     "history_axes_for",
     "history_snapshot_entry_from",
     "coerce_history_snapshot_entry",

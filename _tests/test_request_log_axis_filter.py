@@ -9,7 +9,10 @@ else:
     bootstrap()
 
 if bootstrap is not None:
-    from talon_user.lib.requestLog import _filter_axes_payload, axis_snapshot_from_axes
+    from talon_user.lib.historyLifecycle import (
+        filter_axes_payload,
+        axis_snapshot_from_axes,
+    )
 
     class RequestLogAxisFilterTests(unittest.TestCase):
         def test_keeps_only_known_axis_tokens_and_drops_hydrated(self) -> None:
@@ -18,7 +21,7 @@ if bootstrap is not None:
                 "method": ["steps", ""],
             }
 
-            filtered = _filter_axes_payload(axes)
+            filtered = filter_axes_payload(axes)
 
             self.assertEqual(filtered["scope"], ["bound"])
             self.assertEqual(filtered["method"], ["steps"])
@@ -26,7 +29,7 @@ if bootstrap is not None:
         def test_drops_unknown_axis_keys(self) -> None:
             axes = {"custom": ["value", ""]}
 
-            filtered = _filter_axes_payload(axes)
+            filtered = filter_axes_payload(axes)
 
             self.assertNotIn("custom", filtered)
 
@@ -40,7 +43,7 @@ if bootstrap is not None:
                 "custom": ["value", ""],
             }
 
-            filtered = _filter_axes_payload(axes)
+            filtered = filter_axes_payload(axes)
             snapshot = axis_snapshot_from_axes(axes)
 
             self.assertEqual(snapshot.as_dict(), filtered)
@@ -75,7 +78,7 @@ if bootstrap is not None:
             }
 
             with self.assertRaisesRegex(ValueError, "style axis is removed"):
-                _filter_axes_payload(axes)
+                filter_axes_payload(axes)
 
 else:
     if not TYPE_CHECKING:

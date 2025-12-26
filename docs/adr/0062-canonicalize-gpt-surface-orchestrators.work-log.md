@@ -1099,6 +1099,21 @@
 - next_work:
   - Behaviour: scope remaining façade migrations (request log axis filter, GPT actions).
 
+## 2025-12-26 – Loop 084 (kind: implementation)
+- helper_version: helper:v20251223.1
+- focus: ADR-0062 §Refactor Plan – History Lifecycle Orchestrator (migrate request log axis filter tests to façade)
+- riskiest_assumption: Axis filter tests would keep importing `requestLog`, leaving façade coverage incomplete (probability medium, impact medium).
+- validation_targets:
+  - python3 -m pytest _tests/test_request_log_axis_filter.py
+- evidence:
+  - docs/adr/evidence/0062/loop-0084.md
+- rollback_plan: git restore --source=HEAD -- _tests/test_request_log_axis_filter.py lib/historyLifecycle.py && python3 -m pytest _tests/test_request_log_axis_filter.py
+- delta_summary: helper:diff-snapshot=2 files changed, 36 insertions(+), 15 deletions(-); façade now re-exports `filter_axes_payload`, and the axis filter tests exercise it instead of `requestLog`.
+- residual_risks:
+  - `tests/test_request_log.py` continues to characterise the request log module directly (expected).
+- next_work:
+  - Behaviour: evaluate migrating GPT action tests off `requestLog` imports.
+
 
 
 

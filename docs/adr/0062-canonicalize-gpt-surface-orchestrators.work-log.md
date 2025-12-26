@@ -672,3 +672,18 @@
 - next_work:
   - Behaviour: audit developer docs and CLI guardrails for legacy persona helper references — python3 -m pytest _tests/test_history_query.py — future-shaping: ensure Concordance docs point at the lifecycle façade exclusively.
 
+## 2025-12-26 – Loop 057 (kind: implementation)
+- helper_version: helper:v20251223.1
+- focus: ADR-0062 §Refactor Plan – History Lifecycle Orchestrator (document lifecycle persona façade usage)
+- riskiest_assumption: Docs/guardrails would continue referencing `requestHistoryActions` persona helpers instead of the lifecycle façade (probability medium, impact low-medium on contributor clarity).
+- validation_targets:
+  - *Documentation change only*
+- evidence:
+  - docs/adr/evidence/0062/loop-0057.md
+- rollback_plan: git restore --source=HEAD -- docs/adr/0056-concordance-personas-axes-history-gating.md && python3 -m pytest _tests/test_history_query.py
+- delta_summary: Updated ADR-0056 salient tasks to note `historyLifecycle.persona_*` helpers as the shared contract for guardrails/docs.
+- residual_risks:
+  - CLI helper READMEs may still reference old helper names; evaluate in future doc hygiene loops.
+- next_work:
+  - Behaviour: sweep CLI README/guardrail tooling docs for outdated references — python3 -m pytest _tests/test_history_query.py — future-shaping: keep Concordance docs aligned with façade evolution.
+

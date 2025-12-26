@@ -351,11 +351,13 @@ Across all domains, we will continue to run `python3 -m pytest` from the repo ro
       - (Completed 2025-12-18) Help Hub quick help (`lib/helpDomain.py`) now sources axis tokens via `AxisSnapshot`, aligning in-Talon guidance with the shared façade.
       - (Completed 2025-12-18) History axis validator messaging now reports that docs/help share the AxisSnapshot façade, keeping guardrail output in sync with doc surfaces.
        - (Completed 2025-12-18) Axis docs generation (`GPT/gpt.py::_build_axis_docs`) now canonicalises tokens via `AxisSnapshot`, so long-form help mirrors README/help surfaces.
-       - (Completed 2025-12-18) ADR-005 quick reference now points at the AxisSnapshot façade/regeneration helpers so documentation stays aligned with the SSOT.
-       - (Completed 2025-12-18) ADR-006 command quick reference now instructs maintainers to regenerate AxisSnapshot-backed helpers before editing.
-       - (Completed 2025-12-18) GPT README quick reference now carries the same regeneration note so user-facing docs stay in sync with AxisSnapshot helpers.
+        - (Completed 2025-12-18) ADR-005 quick reference now points at the AxisSnapshot façade/regeneration helpers so documentation stays aligned with the SSOT.
+        - (Completed 2025-12-18) ADR-006 command quick reference now instructs maintainers to regenerate AxisSnapshot-backed helpers before editing.
+        - (Completed 2025-12-18) GPT README quick reference now carries the same regeneration note so user-facing docs stay in sync with AxisSnapshot helpers.
+       - (Completed 2025-12-26) History lifecycle façade exposes `persona_header_lines` / `persona_summary_fragments`; update guardrails and docs to consume these helpers instead of private `requestHistoryActions` functions.
  
-
+ 
+ 
 
 
     - (Completed 2025-12-17) Audit of this repo’s Talon overlays, CLI scripts, and automation confirmed no residual `require_directional=False` usage, and no external automation paths remain.

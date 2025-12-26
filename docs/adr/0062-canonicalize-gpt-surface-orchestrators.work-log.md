@@ -1145,6 +1145,19 @@
 - next_work:
   - Behaviour: rely on guard tests to catch new direct imports; proceed with future façade refactors as needed.
 
-
+## 2025-12-26 – Loop 087 (kind: implementation)
+- helper_version: helper:v20251223.1
+- focus: ADR-0062 §Refactor Plan – Guidance Surface Coordinator (Help Hub canonical axis tokens)
+- riskiest_assumption: Help Hub would keep normalising persona axis tokens via legacy personaConfig helpers, letting Concordance-facing surfaces drift from the persona orchestrator snapshot (probability medium, impact medium-high on visibility).
+- validation_targets:
+  - python3 -m pytest _tests/test_help_hub.py::test_help_hub_canonical_persona_token_uses_orchestrator
+- evidence:
+  - docs/adr/evidence/0062/loop-0087.md
+- rollback_plan: git stash push -- lib/helpHub.py && python3 -m pytest _tests/test_help_hub.py::test_help_hub_canonical_persona_token_uses_orchestrator && git stash pop
+- delta_summary: helper:diff-snapshot=2 files changed, 47 insertions(+); Help Hub `_canonical_persona_token` now delegates to the persona orchestrator before falling back to legacy helpers, tightening Concordance parity tests.
+- residual_risks:
+  - `_intent_spoken_buckets` and related helpers still consult personaConfig directly; future loops should route them through the orchestrator snapshot to keep metadata aligned.
+- next_work:
+  - Behaviour: extend orchestrator usage to remaining Help Hub metadata helpers — python3 -m pytest _tests/test_help_hub.py — future-shaping: converge Help Hub metadata on the orchestrator facade.
 
 

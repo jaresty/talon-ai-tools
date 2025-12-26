@@ -201,6 +201,17 @@ def _persona_presets():
 
 def _canonical_persona_token(axis: str, value: str) -> str:
     try:
+        orchestrator = get_persona_intent_orchestrator()
+    except Exception:
+        orchestrator = None
+    if orchestrator is not None:
+        try:
+            canonical = orchestrator.canonical_axis_token(axis, value)
+        except Exception:
+            canonical = ""
+        if canonical:
+            return canonical
+    try:
         from . import personaConfig
 
         return personaConfig.canonical_persona_token(axis, value)

@@ -270,6 +270,42 @@ def test_help_hub_uses_persona_orchestrator_for_presets(monkeypatch):
     get_orchestrator.assert_called()
 
 
+def test_help_hub_canonical_persona_token_uses_orchestrator(monkeypatch):
+    sentinel = SimpleNamespace(
+        canonical_axis_token=MagicMock(return_value="canonical-axis-token"),
+        canonical_persona_key=lambda alias: "ignored",
+        canonical_intent_key=lambda alias: "ignored",
+    )
+    with ExitStack() as stack:
+        stack.enter_context(
+            patch(
+                "lib.helpHub.get_persona_intent_orchestrator",
+                return_value=sentinel,
+            )
+        )
+        stack.enter_context(
+            patch(
+                "talon_user.lib.helpHub.get_persona_intent_orchestrator",
+                return_value=sentinel,
+            )
+        )
+        stack.enter_context(
+            patch(
+                "lib.personaConfig.canonical_persona_token",
+                side_effect=RuntimeError("legacy canonical token called"),
+            )
+        )
+        stack.enter_context(
+            patch(
+                "talon_user.lib.personaConfig.canonical_persona_token",
+                side_effect=RuntimeError("legacy canonical token called"),
+            )
+        )
+        result = helpHub._canonical_persona_token("voice", "mentor voice")
+    assert result == "canonical-axis-token"
+    sentinel.canonical_axis_token.assert_called_once_with("voice", "mentor voice")
+
+
 def test_help_hub_search_intent_preset_triggers(monkeypatch):
     intent_mock = MagicMock()
     monkeypatch.setattr(actions.user, "intent_set_preset", intent_mock)

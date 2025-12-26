@@ -1053,6 +1053,22 @@
 - next_work:
   - Behaviour: assess remaining test suites with direct `requestLog` usage — rg "requestLog" _tests — future-shaping: prioritise high-impact migrations.
 
+## 2025-12-26 – Loop 081 (kind: documentation)
+- helper_version: helper:v20251223.1
+- focus: ADR-0062 §Refactor Plan – History Lifecycle Orchestrator (audit remaining `requestLog` test usage)
+- riskiest_assumption: Residual tests still import `requestLog`, risking drift from the façade (probability medium, impact medium).
+- validation_targets:
+  - rg "from talon_user.lib import requestLog" _tests
+  - rg "talon_user.lib.requestLog" _tests
+- evidence:
+  - docs/adr/evidence/0062/loop-0081.md
+- rollback_plan: *(audit only; no code changes applied)*
+- delta_summary: Captured current hotspots (GPT actions, request history actions/drawer, request log axis filter) still tied to `requestLog` to guide upcoming façade migrations.
+- residual_risks:
+  - High-touch history drawer/actions suites continue to bypass the façade; next loops should adapt them.
+- next_work:
+  - Behaviour: prepare migration plan for request history actions/drawer tests — python3 -m pytest _tests/test_request_history_actions.py — future-shaping: ensure façade coverage extends across history UI tests.
+
 
 
 

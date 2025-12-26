@@ -7,8 +7,7 @@ from .requestBus import (
     is_in_flight as bus_is_in_flight,
     try_start_request as bus_try_start_request,
 )
-from .historyLifecycle import drop_reason_message, set_drop_reason
-from .requestLog import record_gating_drop
+from .historyLifecycle import drop_reason_message, set_drop_reason, record_gating_drop
 from .requestState import (
     RequestDropReason,
     RequestPhase,

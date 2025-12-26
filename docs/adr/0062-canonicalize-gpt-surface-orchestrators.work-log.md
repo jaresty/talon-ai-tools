@@ -789,5 +789,20 @@
 - next_work:
   - Behaviour: continue pruning direct `requestLog` imports (e.g., request gating) — python3 -m pytest _tests/test_request_gating.py — future-shaping: consolidate gating helpers fully under the façade.
 
+## 2025-12-26 – Loop 064 (kind: implementation)
+- helper_version: helper:v20251223.1
+- focus: ADR-0062 §Refactor Plan – History Lifecycle Orchestrator (prune requestLog dependency from request gating)
+- riskiest_assumption: `requestGating` still imported `record_gating_drop` from `requestLog`, risking divergence once lifecycle encapsulates gating utilities (probability medium, impact medium on façade cohesion).
+- validation_targets:
+  - python3 -m pytest _tests/test_request_gating.py
+- evidence:
+  - docs/adr/evidence/0062/loop-0064.md
+- rollback_plan: git restore --source=HEAD -- lib/requestGating.py && python3 -m pytest _tests/test_request_gating.py
+- delta_summary: helper:diff-snapshot=1 file changed, 2 insertions(+), 2 deletions(-); request gating now relies on the lifecycle façade for gating drop tracking.
+- residual_risks:
+  - Streaming coordinator still references request-state enums directly; evaluate in upcoming loops.
+- next_work:
+  - Behaviour: inspect streaming coordinator/request controller for remaining direct enums — python3 -m pytest _tests/test_streaming_session.py — future-shaping: consolidate gating state behind lifecycle exports.
+
 
 

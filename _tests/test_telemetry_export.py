@@ -5,7 +5,7 @@ from pathlib import Path
 from unittest.mock import patch
 
 import talon_user.lib.telemetryExport as telemetry_module
-from talon_user.lib import requestLog
+from talon_user.lib import historyLifecycle as history_lifecycle
 from talon_user.lib import telemetryExportScheduler as scheduler
 from talon_user.lib.modelState import GPTState
 from talon_user.lib.telemetryExport import snapshot_telemetry
@@ -13,25 +13,27 @@ from talon_user.lib.telemetryExport import snapshot_telemetry
 
 class TelemetryExportTests(unittest.TestCase):
     def setUp(self) -> None:
-        requestLog.clear_history()
-        requestLog.consume_gating_drop_stats()
+        history_lifecycle.clear_history()
+        history_lifecycle.consume_gating_drop_stats()
         GPTState.last_suggest_skip_counts = {}
         scheduler._reset_for_tests()
 
     def tearDown(self) -> None:
-        requestLog.clear_history()
-        requestLog.consume_gating_drop_stats()
+        history_lifecycle.clear_history()
+        history_lifecycle.consume_gating_drop_stats()
         GPTState.last_suggest_skip_counts = {}
         scheduler._reset_for_tests()
 
     def test_snapshot_telemetry_writes_expected_files(self) -> None:
-        requestLog.append_entry(
+        history_lifecycle.append_entry(
             "req-1",
             "prompt",
             "response",
             axes={"directional": ["fog"]},
         )
-        requestLog.record_gating_drop("in_flight", source="telemetry-export-test")
+        history_lifecycle.record_gating_drop(
+            "in_flight", source="telemetry-export-test"
+        )
         GPTState.last_suggest_skip_counts = {"unknown_persona": 2, "unknown_intent": 1}
 
         with tempfile.TemporaryDirectory() as tmpdir:
@@ -69,7 +71,7 @@ class TelemetryExportTests(unittest.TestCase):
             self.assertIsInstance(reasons, list)
             self.assertEqual(len(reasons), 2)
 
-            self.assertEqual(requestLog.gating_drop_stats(), {})
+            self.assertEqual(history_lifecycle.gating_drop_stats(), {})
 
     def test_snapshot_telemetry_delegates_to_history_lifecycle(self) -> None:
         lifecycle_stats = {

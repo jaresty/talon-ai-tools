@@ -1008,6 +1008,21 @@
 - next_work:
   - Behaviour: migrate telemetry export tests to the façade — python3 -m pytest _tests/test_telemetry_export.py — future-shaping: complete façade coverage across tests.
 
+## 2025-12-26 – Loop 078 (kind: implementation)
+- helper_version: helper:v20251223.1
+- focus: ADR-0062 §Refactor Plan – History Lifecycle Orchestrator (migrate telemetry export tests to façade)
+- riskiest_assumption: Telemetry export tests would continue importing `requestLog`, weakening guarantees that the façade remains authoritative (probability medium, impact medium).
+- validation_targets:
+  - python3 -m pytest _tests/test_telemetry_export.py
+- evidence:
+  - docs/adr/evidence/0062/loop-0078.md
+- rollback_plan: git restore --source=HEAD -- _tests/test_telemetry_export.py && python3 -m pytest _tests/test_telemetry_export.py
+- delta_summary: helper:diff-snapshot=1 file changed; telemetry export tests now rely on `historyLifecycle` helpers for history setup.
+- residual_risks:
+  - Other test suites may still reference `requestLog`; continue auditing remaining coverage.
+- next_work:
+  - Behaviour: review remaining `requestLog` test usage and migrate as needed.
+
 
 
 

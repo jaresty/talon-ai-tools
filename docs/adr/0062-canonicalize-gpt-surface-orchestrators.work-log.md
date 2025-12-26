@@ -687,3 +687,18 @@
 - next_work:
   - Behaviour: sweep CLI README/guardrail tooling docs for outdated references — python3 -m pytest _tests/test_history_query.py — future-shaping: keep Concordance docs aligned with façade evolution.
 
+## 2025-12-26 – Loop 058 (kind: implementation)
+- helper_version: helper:v20251223.1
+- focus: ADR-0062 §Refactor Plan – History Lifecycle Orchestrator (sweep CLI README for lifecycle persona references)
+- riskiest_assumption: Top-level README history guardrail guidance would keep pointing at legacy helpers, confusing contributors about the lifecycle façade (probability low-medium, impact low on implementation but medium on clarity).
+- validation_targets:
+  - *Documentation change only*
+- evidence:
+  - docs/adr/evidence/0062/loop-0058.md
+- rollback_plan: git restore --source=HEAD -- readme.md
+- delta_summary: README history guardrail section now states that outputs rely on `historyLifecycle.persona_*` helpers.
+- residual_risks:
+  - Additional CLI or guardrail docs may still need similar language; capture in future documentation sweeps.
+- next_work:
+  - Behaviour: continue lifecycle façade adoption for remaining surfaces (e.g., surface guidance coordinator) — python3 -m pytest _tests/test_history_query.py — future-shaping: finish ADR-0062 migration tasks.
+

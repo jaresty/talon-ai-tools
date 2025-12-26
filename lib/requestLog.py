@@ -860,16 +860,13 @@ def history_validation_stats() -> dict[str, object]:
 
     summary_data: Mapping[str, object] | None = None
     try:
-        from .streamingCoordinator import current_streaming_gating_summary
+        from .historyLifecycle import current_streaming_gating_summary
+
+        candidate = current_streaming_gating_summary()
     except Exception:
-        summary_data = None
-    else:
-        try:
-            candidate = current_streaming_gating_summary()
-        except Exception:
-            candidate = None
-        if isinstance(candidate, Mapping):
-            summary_data = candidate
+        candidate = None
+    if isinstance(candidate, Mapping):
+        summary_data = candidate
 
     if summary_data is not None:
         counts_obj = summary_data.get("counts")

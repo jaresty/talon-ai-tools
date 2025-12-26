@@ -288,6 +288,12 @@ def append_entry_from_request(**kwargs):
     return requestlog_append_entry_from_request(**kwargs)
 
 
+def current_streaming_gating_summary() -> dict[str, object]:
+    from .streamingCoordinator import current_streaming_gating_summary as _summary
+
+    return _summary()
+
+
 def try_begin_request(state=None, *, source: str = "") -> tuple[bool, str]:
     from .requestGating import try_begin_request as _try_begin_request
 
@@ -419,6 +425,7 @@ __all__ = [
     "nth_from_latest",
     "all_entries",
     "append_entry_from_request",
+    "current_streaming_gating_summary",
     "try_begin_request",
     "RequestDropReason",
     "record_gating_drop",

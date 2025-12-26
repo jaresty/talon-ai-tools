@@ -345,18 +345,17 @@ class StreamingSession:
         if not last_code_value:
             last_code_value = self.gating_drop_last_code
 
-        if any(
-            [
-                counts_payload,
-                sources_payload,
-                counts_sorted,
-                sources_sorted,
-                last,
-                last_source,
-                last_message_value,
-                last_code_value,
-            ]
-        ):
+        should_emit = bool(
+            counts_payload
+            or sources_payload
+            or counts_sorted
+            or sources_sorted
+            or last
+            or last_source
+            or last_message_value
+            or last_code_value
+        )
+        if should_emit or status_value == "errored":
             self._record_event(
                 "gating_summary",
                 status=status_value,

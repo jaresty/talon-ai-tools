@@ -821,5 +821,22 @@
 - next_work:
   - Behaviour: audit streaming coordinator/request controller for remaining direct state imports — python3 -m pytest _tests/test_streaming_session.py — future-shaping: centralise request state exposure via lifecycle.
 
+## 2025-12-26 – Loop 066 (kind: implementation)
+- helper_version: helper:v20251223.1
+- focus: ADR-0062 §Refactor Plan – History Lifecycle Orchestrator (re-export streaming gating summary via façade)
+- riskiest_assumption: `requestLog` still imported `current_streaming_gating_summary` from `streamingCoordinator`, introducing circular edges and bypassing the façade (probability medium, impact medium on maintainability).
+- validation_targets:
+  - python3 -m pytest _tests/test_request_log.py
+  - python3 -m pytest _tests/test_streaming_coordinator.py
+  - python3 -m pytest _tests/test_streaming_session.py
+- evidence:
+  - docs/adr/evidence/0062/loop-0066.md
+- rollback_plan: git restore --source=HEAD -- lib/historyLifecycle.py lib/requestLog.py lib/streamingCoordinator.py && python3 -m pytest _tests/test_request_log.py
+- delta_summary: helper:diff-snapshot=3 files changed, 32 insertions(+), 8 deletions(-); lifecycle façade now re-exports `current_streaming_gating_summary`, letting request log utilities avoid direct `streamingCoordinator` imports while retaining gating telemetry.
+- residual_risks:
+  - Streaming coordinator still forwards raw snapshot dicts; future loops may wrap them in typed façade objects.
+- next_work:
+  - Behaviour: ensure request controller and lifecycle reducers consume façade exports consistently — python3 -m pytest _tests/test_request_controller.py — future-shaping: finish consolidating request state orchestration.
+
 
 

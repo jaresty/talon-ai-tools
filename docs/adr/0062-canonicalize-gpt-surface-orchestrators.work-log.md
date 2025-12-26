@@ -1129,6 +1129,22 @@
 - next_work:
   - Behaviour: audit production modules for direct `requestLog` imports outside façade scope.
 
+## 2025-12-26 – Loop 086 (kind: documentation)
+- helper_version: helper:v20251223.1
+- focus: ADR-0062 §Refactor Plan – History Lifecycle Orchestrator (final production import audit)
+- riskiest_assumption: Residual production modules still import `requestLog` directly, weakening façade guarantees (probability low, impact medium).
+- validation_targets:
+  - rg --glob "*.py" "from .*requestLog" lib GPT scripts
+  - rg --glob "*.py" "talon_user\\.lib\\.requestLog"
+- evidence:
+  - docs/adr/evidence/0062/loop-0086.md
+- rollback_plan: *(audit only; no code changes applied)*
+- delta_summary: Recorded audit confirming only the façade (`lib/historyLifecycle.py`) and `tests/test_request_log.py` reference `requestLog` directly.
+- residual_risks:
+  - Characterisation tests still import `requestLog` by design; continue monitoring future modules for regressions.
+- next_work:
+  - Behaviour: rely on guard tests to catch new direct imports; proceed with future façade refactors as needed.
+
 
 
 

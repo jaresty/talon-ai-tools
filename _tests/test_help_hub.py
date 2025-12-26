@@ -466,6 +466,47 @@ def test_help_hub_search_results_include_intent_metadata():
         helpHub.help_hub_close()
 
 
+def test_help_hub_search_intent_voice_hint_uses_orchestrator(monkeypatch):
+    orchestrator_intent = SimpleNamespace(
+        key="decide",
+        label="Legacy label",
+        intent="decide",
+        spoken="",
+    )
+    orchestrator = SimpleNamespace(
+        intent_presets={"decide": orchestrator_intent},
+        intent_display_map={"decide": "Decide Display"},
+        intent_aliases={},
+        intent_synonyms={},
+    )
+    with ExitStack() as stack:
+        for target in (
+            "lib.helpHub.get_persona_intent_orchestrator",
+            "talon_user.lib.helpHub.get_persona_intent_orchestrator",
+            "lib.helpDomain.get_persona_intent_orchestrator",
+            "talon_user.lib.helpDomain.get_persona_intent_orchestrator",
+        ):
+            stack.enter_context(patch(target, return_value=orchestrator))
+        for target in (
+            "lib.helpHub.persona_intent_maps",
+            "talon_user.lib.helpHub.persona_intent_maps",
+            "lib.helpDomain.persona_intent_maps",
+            "talon_user.lib.helpDomain.persona_intent_maps",
+        ):
+            stack.enter_context(
+                patch(target, side_effect=RuntimeError("maps unavailable"))
+            )
+        index = helpHub.build_search_index([], [], [], lambda _name: [], catalog={})
+    intent_entries = [
+        entry for entry in index if entry.label.startswith("Intent preset:")
+    ]
+    assert intent_entries, "Expected intent preset entries"
+    labels = {entry.label for entry in intent_entries}
+    assert any("Decide Display" in label for label in labels)
+    hints = {entry.voice_hint for entry in intent_entries}
+    assert "Say: intent Decide Display" in hints
+
+
 def test_help_hub_onboarding_flag():
     helpHub.help_hub_onboarding()
     assert helpHub.HelpHubState.show_onboarding is True

@@ -425,11 +425,9 @@ def help_index(
                 return display_value
             spoken_alias = intent_alias_display.get(key, alias)
             return spoken_alias.replace("_", " ")
-        candidates = [getattr(preset, "spoken", "")]
+        candidates = [getattr(preset, "spoken", ""), display, canonical_intent]
         if maps is not None:
-            candidates.extend([display, canonical_intent])
-        else:
-            candidates.extend([canonical_intent, display])
+            candidates.append(display)
         candidates.append(key)
         for candidate in candidates:
             candidate_str = str(candidate or "").strip()

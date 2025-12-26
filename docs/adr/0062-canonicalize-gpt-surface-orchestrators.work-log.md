@@ -1248,3 +1248,20 @@
   - Help Hub search hint builders still consult personaConfig display maps; schedule a follow-up loop to reuse the orchestrator snapshot across surfaces.
 - next_work:
   - Behaviour: audit remaining help surface command builders for personaConfig dependencies — python3 -m pytest _tests/test_help_hub.py — future-shaping: continue consolidating command hints around the orchestrator façade.
+
+## 2025-12-26 – Loop 093 (kind: implementation)
+- helper_version: helper:v20251223.1
+- focus: ADR-0062 §Refactor Plan – Guidance Surface Coordinator (Help Hub search hints)
+- riskiest_assumption: Help Hub search voice hints would keep using legacy personaConfig display aliases, leaving orchestrator display names hidden (probability medium, impact medium on guidance accuracy).
+- validation_targets:
+  - python3 -m pytest _tests/test_help_hub.py::test_help_hub_search_intent_voice_hint_uses_orchestrator
+  - python3 -m pytest _tests/test_help_hub.py::test_copy_adr_links_includes_metadata
+  - python3 -m pytest _tests/test_help_hub.py::test_copy_metadata_snapshot_json
+- evidence:
+  - docs/adr/evidence/0062/loop-0093.md
+- rollback_plan: git stash push -- lib/helpDomain.py _tests/test_help_hub.py && python3 -m pytest _tests/test_help_hub.py::test_help_hub_search_intent_voice_hint_uses_orchestrator && git stash pop
+- delta_summary: helper:diff-snapshot=2 files changed, 41 insertions(+); Help Hub search hints now prefer the orchestrator display map while keeping personaConfig as the fallback.
+- residual_risks:
+  - Help Hub button voice hints still rely on legacy phrasing; future loops could align those with the orchestrator façade.
+- next_work:
+  - Behaviour: ensure Help canvas persona command hints surface orchestrator aliases — python3 -m pytest _tests/test_model_help_canvas.py::ModelHelpCanvasTests::test_persona_preset_commands_use_orchestrator_alias — future-shaping: finish consolidating persona command hints across canvases.

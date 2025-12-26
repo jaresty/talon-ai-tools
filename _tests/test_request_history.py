@@ -10,7 +10,7 @@ else:
 
 if bootstrap is not None:
     from talon_user.lib.requestHistory import RequestHistory, RequestLogEntry
-    from talon_user.lib import requestLog
+    from talon_user.lib import historyLifecycle as history_lifecycle
 
     class RequestHistoryTests(unittest.TestCase):
         def test_append_and_latest(self):
@@ -46,7 +46,7 @@ if bootstrap is not None:
             self.assertEqual(ids, ["r1", "r2", "r3"])
 
         def test_append_entry_from_request_captures_provider(self):
-            requestLog.clear_history()
+            history_lifecycle.clear_history()
             request = {
                 "messages": [
                     {
@@ -55,18 +55,19 @@ if bootstrap is not None:
                     }
                 ]
             }
-            requestLog.append_entry_from_request(
-                "req-1",
-                request,
-                "resp",
+            history_lifecycle.append_entry_from_request(
+                request_id="req-1",
+                request=request,
+                answer_text="resp",
                 provider_id="gemini",
                 axes={"directional": ["fog"]},
             )
-            latest = requestLog.latest()
+            latest = history_lifecycle.latest()
             assert latest is not None
             self.assertEqual(latest.provider_id, "gemini")
 else:
     if not TYPE_CHECKING:
+
         class RequestHistoryTests(unittest.TestCase):
             @unittest.skip("Test harness unavailable outside unittest runs")
             def test_placeholder(self):

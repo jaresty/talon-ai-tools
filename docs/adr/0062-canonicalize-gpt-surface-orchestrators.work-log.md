@@ -1038,6 +1038,21 @@
 - next_work:
   - Behaviour: migrate request history tests to façade wrappers — python3 -m pytest _tests/test_request_history.py — future-shaping: continue eliminating direct `requestLog` usage in tests.
 
+## 2025-12-26 – Loop 080 (kind: implementation)
+- helper_version: helper:v20251223.1
+- focus: ADR-0062 §Refactor Plan – History Lifecycle Orchestrator (migrate request history tests to façade)
+- riskiest_assumption: Request history unit tests would continue importing `requestLog`, diluting façade coverage (probability medium, impact medium).
+- validation_targets:
+  - python3 -m pytest _tests/test_request_history.py
+- evidence:
+  - docs/adr/evidence/0062/loop-0080.md
+- rollback_plan: git restore --source=HEAD -- _tests/test_request_history.py && python3 -m pytest _tests/test_request_history.py
+- delta_summary: helper:diff-snapshot=1 file changed; request history tests now exercise lifecycle helpers.
+- residual_risks:
+  - Request history drawer/actions suites still patch `requestLog`; evaluate in upcoming loops.
+- next_work:
+  - Behaviour: assess remaining test suites with direct `requestLog` usage — rg "requestLog" _tests — future-shaping: prioritise high-impact migrations.
+
 
 
 

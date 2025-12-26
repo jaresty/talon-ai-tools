@@ -1265,3 +1265,19 @@
   - Help Hub button voice hints still rely on legacy phrasing; future loops could align those with the orchestrator façade.
 - next_work:
   - Behaviour: ensure Help canvas persona command hints surface orchestrator aliases — python3 -m pytest _tests/test_model_help_canvas.py::ModelHelpCanvasTests::test_persona_preset_commands_use_orchestrator_alias — future-shaping: finish consolidating persona command hints across canvases.
+
+## 2025-12-26 – Loop 094 (kind: implementation)
+- helper_version: helper:v20251223.1
+- focus: ADR-0062 §Refactor Plan – Guidance Surface Coordinator (Help Canvas persona command hints)
+- riskiest_assumption: Help canvas persona command hints would continue to ignore orchestrator aliases when presets lack explicit spoken tokens, hiding Concordance-friendly shortcuts (probability medium, impact medium on discoverability).
+- validation_targets:
+  - python3 -m pytest _tests/test_model_help_canvas.py::ModelHelpCanvasTests::test_persona_preset_commands_use_orchestrator_alias
+  - python3 -m pytest _tests/test_model_help_canvas.py::ModelHelpCanvasTests::test_quick_help_intent_commands_use_catalog_spoken_aliases
+- evidence:
+  - docs/adr/evidence/0062/loop-0094.md
+- rollback_plan: git stash push -- lib/modelHelpCanvas.py _tests/test_model_help_canvas.py && python3 -m pytest _tests/test_model_help_canvas.py::ModelHelpCanvasTests::test_persona_preset_commands_use_orchestrator_alias && git stash pop
+- delta_summary: helper:diff-snapshot=2 files changed, 58 insertions(+); `_persona_preset_commands` now surfaces orchestrator aliases while retaining personaConfig as a fallback.
+- residual_risks:
+  - When multiple aliases exist for a persona, only the first is exposed; future loops may expose additional aliases for richer discovery.
+- next_work:
+  - Behaviour: audit Help Hub button voice hints for remaining personaConfig dependencies — python3 -m pytest _tests/test_help_hub.py — future-shaping: converge all help surfaces on the orchestrator façade.

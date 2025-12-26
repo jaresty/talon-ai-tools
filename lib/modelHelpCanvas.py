@@ -273,12 +273,40 @@ def _persona_preset_commands() -> list[str]:
     """Return speakable persona preset commands in list order."""
 
     commands: list[str] = []
+    seen: set[str] = set()
+    try:
+        orchestrator = _get_persona_orchestrator()
+    except Exception:
+        orchestrator = None
+    alias_lookup: dict[str, list[str]] = {}
+    if orchestrator is not None:
+        try:
+            for alias, canonical in dict(
+                getattr(orchestrator, "persona_aliases", {}) or {}
+            ).items():
+                canonical_key = str(canonical or "").strip()
+                alias_token = str(alias or "").strip().lower().replace("_", " ")
+                if canonical_key and alias_token:
+                    alias_lookup.setdefault(canonical_key, []).append(alias_token)
+        except Exception:
+            alias_lookup = {}
     for preset in _persona_presets():
-        # Only show explicit spoken forms; labels/keys are too verbose for quick help.
-        spoken = (preset.spoken or "").strip().lower()
-        if not spoken:
+        spoken = (getattr(preset, "spoken", "") or "").strip().lower()
+        if spoken and spoken not in seen:
+            seen.add(spoken)
+            commands.append(spoken)
             continue
-        commands.append(spoken)
+        key = (getattr(preset, "key", "") or "").strip()
+        if not key:
+            continue
+        aliases = alias_lookup.get(key)
+        if not aliases:
+            continue
+        for alias in aliases:
+            if alias and alias not in seen:
+                seen.add(alias)
+                commands.append(alias)
+                break
     return commands
 
 

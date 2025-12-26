@@ -7,16 +7,17 @@ from collections.abc import Sequence
 
 from talon import Module, actions, canvas, ui
 
-from .requestLog import all_entries
 from .historyLifecycle import (
+    all_entries,
     consume_last_drop_reason_record,
+    drop_reason_message,
     last_drop_reason,
     set_drop_reason,
 )
 from .historyQuery import history_drawer_entries_from
 
-from .requestGating import request_is_in_flight
-from .surfaceGuidance import guard_surface_request
+from .modelHelpers import notify
+from .requestGating import request_is_in_flight, try_begin_request
 from .overlayHelpers import apply_canvas_blocking
 from .overlayLifecycle import close_overlays, close_common_overlays
 
@@ -53,23 +54,44 @@ def _on_guard_block(reason: str, message: str) -> None:
 def _reject_if_request_in_flight() -> bool:
     """Return True when the history drawer should abort due to gating."""
 
-    blocked = guard_surface_request(
-        surface="history_drawer",
-        source="requestHistoryDrawer",
-        on_block=_on_guard_block,
-    )
-    if blocked:
-        if not HistoryDrawerState.last_message:
-            HistoryDrawerState.last_message = ""
-        return True
-
-    HistoryDrawerState.last_message = ""
     try:
-        if not last_drop_reason():
-            set_drop_reason("")
+        allowed, reason = try_begin_request(source="requestHistoryDrawer")
+    except Exception:
+        allowed, reason = True, ""
+
+    if allowed:
+        HistoryDrawerState.last_message = ""
+        try:
+            if not last_drop_reason():
+                set_drop_reason("")
+        except Exception:
+            pass
+        return False
+
+    if not reason:
+        return False
+
+    try:
+        rendered = drop_reason_message(reason)
+    except Exception:
+        rendered = ""
+    message = rendered or f"GPT: Request blocked; reason={reason}."
+    HistoryDrawerState.last_message = message
+
+    try:
+        if rendered:
+            set_drop_reason(reason)
+        else:
+            set_drop_reason(reason, message)
     except Exception:
         pass
-    return False
+
+    try:
+        notify(message)
+    except Exception:
+        pass
+
+    return True
 
 
 def _ensure_canvas() -> canvas.Canvas:
@@ -276,21 +298,12 @@ def _refresh_entries() -> None:
 def refresh_history_drawer() -> None:
     """Refresh history drawer entries while respecting shared gating."""
 
-    blocked = guard_surface_request(
-        surface="history_drawer",
-        source="requestHistoryDrawer",
-    )
-    if blocked:
+    if _reject_if_request_in_flight():
         return
-    try:
-        if not last_drop_reason():
-            set_drop_reason("")
-    except Exception:
-        pass
     _refresh_entries()
     if not HistoryDrawerState.showing:
         return
-    canvas_obj = _history_canvas
+    canvas_obj = _ensure_canvas()
     if canvas_obj is None:
         return
     for method_name in ("freeze", "resume", "show"):
@@ -406,5 +419,7 @@ class UserActions:
     def request_history_drawer_refresh():
         """Refresh entries when the drawer is showing (e.g., after a history save)."""
         if not HistoryDrawerState.showing:
+            return
+        if _reject_if_request_in_flight():
             return
         refresh_history_drawer()

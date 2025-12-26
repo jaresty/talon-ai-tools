@@ -16,8 +16,11 @@ from .requestLog import (
     gating_drop_stats as requestlog_gating_drop_stats,
     history_validation_stats as requestlog_history_validation_stats,
     last_drop_reason as requestlog_last_drop_reason,
+    latest as requestlog_latest,
+    nth_from_latest as requestlog_nth_from_latest,
     record_gating_drop as requestlog_record_gating_drop,
     set_drop_reason as requestlog_set_drop_reason,
+    all_entries as requestlog_all_entries,
 )
 from .requestState import RequestDropReason
 
@@ -256,6 +259,24 @@ def persona_summary_fragments(entry: object) -> list[str]:
     return fragments
 
 
+def latest():
+    return requestlog_latest()
+
+
+def nth_from_latest(offset: int):
+    return requestlog_nth_from_latest(offset)
+
+
+def all_entries():
+    entries = requestlog_all_entries()
+    if isinstance(entries, list):
+        return entries
+    try:
+        return list(entries)
+    except TypeError:
+        return []
+
+
 def _coerce_axes_mapping(
     axes: Mapping[str, Sequence[str]] | None,
 ) -> dict[str, list[str]]:
@@ -375,6 +396,9 @@ __all__ = [
     "persona_header_lines",
     "parse_persona_summary_line",
     "persona_summary_fragments",
+    "latest",
+    "nth_from_latest",
+    "all_entries",
     "record_gating_drop",
     "gating_drop_stats",
     "gating_drop_source_stats",

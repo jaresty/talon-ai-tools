@@ -15,9 +15,6 @@ from .modelConfirmationGUI import ConfirmationGUIState
 from .modelHelpers import notify
 from .modelState import GPTState
 from .requestLog import (
-    latest,
-    nth_from_latest,
-    all_entries as requestlog_all_entries,
     AxisSnapshot,
 )
 from .historyLifecycle import (
@@ -30,6 +27,9 @@ from .historyLifecycle import (
     history_axes_for as lifecycle_history_axes_for,
     history_snapshot_entry_from,
     last_drop_reason,
+    latest,
+    nth_from_latest,
+    all_entries as lifecycle_all_entries,
     persona_header_lines,
     persona_summary_fragments,
     set_drop_reason,
@@ -452,7 +452,7 @@ def _directional_tokens_for_entry(entry) -> list[str]:
 def _directional_history_entries() -> list[object]:
     """Return history entries that include directional axes."""
     try:
-        entries = requestlog_all_entries()
+        entries = lifecycle_all_entries()
     except Exception:
         return []
     directional: list[object] = []

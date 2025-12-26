@@ -696,9 +696,27 @@
 - evidence:
   - docs/adr/evidence/0062/loop-0058.md
 - rollback_plan: git restore --source=HEAD -- readme.md
-- delta_summary: README history guardrail section now states that outputs rely on `historyLifecycle.persona_*` helpers.
+- delta_summary: README history guardrail section now states that history guardrails rely on `historyLifecycle.persona_*` helpers.
 - residual_risks:
   - Additional CLI or guardrail docs may still need similar language; capture in future documentation sweeps.
 - next_work:
-  - Behaviour: continue lifecycle façade adoption for remaining surfaces (e.g., surface guidance coordinator) — python3 -m pytest _tests/test_history_query.py — future-shaping: finish ADR-0062 migration tasks.
+  - Behaviour: continue lifecycle façade adoption for remaining surfaces (e.g., surface guidance coordinator) — python3 - m pytest _tests/test_history_query.py — future-shaping: finish ADR-0062 migration tasks.
+
+## 2025-12-26 – Loop 059 (kind: implementation)
+- helper_version: helper:v20251223.1
+- focus: ADR-0062 §Refactor Plan – History Lifecycle Orchestrator (expose history entry façade wrappers)
+- riskiest_assumption: Drawer/actions kept reaching into `requestLog` for entries, making future lifecycle changes risky (probability medium, impact medium on migration safety).
+- validation_targets:
+  - python3 -m pytest _tests/test_request_history_actions.py
+  - python3 -m pytest _tests/test_request_history_drawer.py
+  - python3 -m pytest _tests/test_history_query.py
+- evidence:
+  - docs/adr/evidence/0062/loop-0059.md
+- rollback_plan: git restore --source=HEAD -- lib/historyLifecycle.py lib/requestHistoryActions.py lib/requestHistoryDrawer.py && python3 -m pytest _tests/test_request_history_drawer.py
+- delta_summary: helper:diff-snapshot=3 files changed, 204 insertions(+), 94 deletions(-); lifecycle façade now exports `latest`/`nth_from_latest`/`all_entries`, with drawer/actions delegating through the façade while preserving gating behaviour expected by tests.
+- residual_risks:
+  - `historyLifecycle.all_entries()` still returns raw request log entries; later loops may wrap them in typed dataclasses.
+- next_work:
+  - Behaviour: continue migrating streaming/history orchestrators to the façade — python3 -m pytest tests/test_request_streaming.py — future-shaping: eliminate remaining direct `requestLog` dependencies.
+
 

@@ -773,5 +773,21 @@
 - next_work:
   - Behaviour: audit remaining history helpers for direct `requestLog` imports — python3 -m pytest _tests/test_request_history_actions.py — future-shaping: ensure all history surfaces delegate through lifecycle façade.
 
+## 2025-12-26 – Loop 063 (kind: implementation)
+- helper_version: helper:v20251223.1
+- focus: ADR-0062 §Refactor Plan – History Lifecycle Orchestrator (audit remaining requestLog imports)
+- riskiest_assumption: Utility modules still imported `RequestDropReason` from `requestLog`, risking drift once lifecycle encapsulates gating enums (probability low-medium, impact low).
+- validation_targets:
+  - python3 -m pytest _tests/test_surface_guidance.py
+  - python3 -m pytest _tests/test_request_history_drawer.py
+- evidence:
+  - docs/adr/evidence/0062/loop-0063.md
+- rollback_plan: git restore --source=HEAD -- lib/historyLifecycle.py lib/dropReasonUtils.py && python3 -m pytest _tests/test_surface_guidance.py
+- delta_summary: helper:diff-snapshot=2 files changed, 2 insertions(+), 2 deletions(-); `RequestDropReason` is now re-exported by the lifecycle façade, letting drop-reason utilities avoid direct `requestLog` imports.
+- residual_risks:
+  - Streaming coordinator still references request-state enums directly; consider addressing in future loops.
+- next_work:
+  - Behaviour: continue pruning direct `requestLog` imports (e.g., request gating) — python3 -m pytest _tests/test_request_gating.py — future-shaping: consolidate gating helpers fully under the façade.
+
 
 

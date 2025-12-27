@@ -4,8 +4,8 @@
 
 - Implemented dynamic Persona/Intent preset lists in `GPT/gpt.py`:
   - Added a `Context` and `mod.list` registrations for `personaPreset` and `intentPreset`.
-  - Populated `ctx.lists["user.personaPreset"]` from `PERSONA_PRESETS` using lowercased labels as spoken forms (for example, `teach junior dev`, `executive brief`).
-  - Populated `ctx.lists["user.intentPreset"]` from `INTENT_PRESETS` using lowercased keys as spoken forms (for example, `teach`, `decide`, `brainstorm`).
+  - Populated `ctx.lists["user.personaPreset"]` via `get_persona_intent_orchestrator()` (backed by `PERSONA_PRESETS`) using lowercased labels as spoken forms (for example, `teach junior dev`, `executive brief`).
+  - Populated `ctx.lists["user.intentPreset"]` via `get_persona_intent_orchestrator()` (backed by `INTENT_PRESETS`) using lowercased keys as spoken forms (for example, `teach`, `decide`, `brainstorm`).
 - Added stance actions to `GPT/gpt.py` under `UserActions` (ADR 042):
   - `persona_set_preset(preset_key: str)` – updates `GPTState.system_prompt` voice/audience/tone fields from a shared Persona preset while preserving Contract axes.
   - `intent_set_preset(preset_key: str)` – updates the `intent` field from an Intent preset while preserving Persona and Contract axes.

@@ -1517,6 +1517,23 @@
 - next_work:
   - Behaviour: expand docs/UI alias coverage — python3 -m pytest _tests/test_model_suggestion_gui.py — future-shaping: ensure user-facing docs reflect orchestrator-driven metadata.
 
+## 2025-12-27 – Loop 124 (kind: documentation)
+- helper_version: helper:v20251223.1
+- focus: ADR-0062 §Refactor Plan – Prompt Persona Orchestrator (doc alias coverage)
+- riskiest_assumption: ADR work logs still pointed at `persona_intent_maps` as the Talon list SSOT, risking contributor drift now that the orchestrator owns persona/intent metadata.
+- validation_targets:
+  - python3 - <<'PY' … (ADR-042 work log orchestrator check)
+  - python3 - <<'PY' … (ADR-042 work log orchestrator check, lowercase)
+  - python3 -m pytest _tests/test_generate_talon_lists.py::GenerateTalonListsTests::test_generate_lists_prefers_orchestrator_metadata
+- evidence:
+  - docs/adr/evidence/0062/loop-0124.md
+- rollback_plan: git restore --source=HEAD -- docs/adr/042-persona-intent-presets-voice-first-commands.work-log.md docs/adr/0056-concordance-personas-axes-history-gating.work-log.md && python3 -m pytest _tests/test_generate_talon_lists.py::GenerateTalonListsTests::test_generate_lists_prefers_orchestrator_metadata
+- delta_summary: helper:diff-snapshot=2 files changed, 6 insertions(+); ADR work logs now reference `get_persona_intent_orchestrator()` as the shared persona/intent SSOT.
+- residual_risks:
+  - Additional historical ADRs may still reference legacy helpers; schedule further hygiene passes as orchestrator coverage expands.
+- next_work:
+  - None (documentation slice complete).
+
 ## 2025-12-27 – Loop 121 (kind: documentation)
 - helper_version: helper:v20251223.1
 - focus: ADR-0062 §Refactor Plan – Prompt Persona Orchestrator (documentation alignment)

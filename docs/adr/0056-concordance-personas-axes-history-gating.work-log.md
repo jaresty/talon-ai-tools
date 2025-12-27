@@ -837,7 +837,7 @@
 
 ## 2025-12-18 – Loop 175 (kind: guardrail/tests) – Guard Talon list regeneration against catalog drift
 - Focus: Persona & Intent Presets – Talon list generation/guardrails (`scripts/tools/generate_talon_lists.py`).
-- Change: generator now emits `personaPreset.talon-list` and `intentPreset.talon-list` with catalog-driven alias→canonical mappings sourced from `persona_intent_maps().intent_display_map`; guardrail tests assert the generated files contain the expected spoken/display aliases and that `--check` flags drift. Updated `_tests/test_generate_talon_lists.py` to cover the new lists and ensured list-drift fixtures in `_tests/test_axis_catalog_validate_lists_dir.py` remain green.
+- Change: generator now emits `personaPreset.talon-list` and `intentPreset.talon-list` with alias→canonical mappings sourced via `get_persona_intent_orchestrator()` (intent display map, synonyms, alias tables); guardrail tests assert the generated files contain the expected spoken/display aliases and that `--check` flags drift. Updated `_tests/test_generate_talon_lists.py` to cover the new lists and ensured list-drift fixtures in `_tests/test_axis_catalog_validate_lists_dir.py` remain green.
 - Checks: `python3 -m pytest _tests/test_generate_talon_lists.py` (4 passed in 0.28s); `python3 -m pytest _tests/test_axis_catalog_validate_lists_dir.py` (17 passed in 0.97s).
 - Removal test: Reverting would drop the persona/intent lists and alias coverage, causing the refreshed guardrail tests to fail and allowing Talon list drift to go undetected.
 - Adversarial “what remains” check:
@@ -847,7 +847,7 @@
 
 ## 2025-12-18 – Loop 162 (kind: behaviour)
 - Focus: Persona & Intent Presets – ensure alias-only suggestions stay catalog-aligned.
-- Change: Updated `GPT/gpt.py` to retain raw persona/intent alias metadata when model suggestions only provide spoken/display presets, allowing `lib/suggestionCoordinator.record_suggestions` to canonicalize via `persona_intent_maps`, and added `_tests/test_integration_suggestions.py::test_suggest_alias_only_metadata_round_trip` to cover the alias-only path end-to-end through the suggestion GUI helpers.
+- Change: Updated `GPT/gpt.py` to retain raw persona/intent alias metadata when model suggestions only provide spoken/display presets, allowing `lib/suggestionCoordinator.record_suggestions` to canonicalize via `get_persona_intent_orchestrator()` (falling back to `persona_intent_maps`), and added `_tests/test_integration_suggestions.py::test_suggest_alias_only_metadata_round_trip` to cover the alias-only path end-to-end through the suggestion GUI helpers.
 - Checks: `python3 -m pytest _tests/test_integration_suggestions.py` (pass; excerpt: `6 passed in 2.16s`).
 - Removal test: Reverting would drop the alias-preservation path so suggestions that only supply spoken/display presets would lose persona/intent metadata, making the new integration test fail and reopening the ADR-0056 Salient Task 2 gap.
 - Adversarial “what remains” check:
@@ -877,7 +877,7 @@
 
 ## 2025-12-18 – Loop 165 (kind: behaviour)
 - Focus: Persona & Intent Presets – align `_canonical_persona_value` with shared alias normalisation.
-- Change: Promoted `_normalise_persona_alias_token` to a module helper and reused it across `_canonical_persona_value` and `_suggest_prompt_recipes_core_impl`, while extending `_canonical_persona_value` to consult `persona_intent_maps` alias tables; added `_tests/test_gpt_suggest_validation.py::test_canonical_persona_value_normalises_aliases` to cover direct canonicalisation.
+- Change: Promoted `_normalise_persona_alias_token` to a module helper and reused it across `_canonical_persona_value` and `_suggest_prompt_recipes_core_impl`, while extending `_canonical_persona_value` to consult the persona orchestrator’s alias tables (falling back to `persona_intent_maps`); added `_tests/test_gpt_suggest_validation.py::test_canonical_persona_value_normalises_aliases` to cover direct canonicalisation.
 - Checks: `python3 -m pytest _tests/test_gpt_suggest_validation.py _tests/test_integration_suggestions.py` (pass; excerpt: `13 passed in 4.47s`).
 - Removal test: Reverting would cause `_canonical_persona_value("intent", "For-Deciding!")` to return an empty string, breaking the new test and allowing mixed-case / punctuated aliases to bypass canonicalisation in persona status surfaces.
 - Adversarial “what remains” check:

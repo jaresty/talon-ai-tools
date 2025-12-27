@@ -24,9 +24,11 @@ from .patternDebugCoordinator import (
 from .overlayHelpers import apply_canvas_blocking
 from .overlayLifecycle import close_overlays, close_common_overlays
 from .requestGating import request_is_in_flight
-from .historyLifecycle import last_drop_reason, set_drop_reason, try_begin_request
-from .dropReasonUtils import render_drop_reason
+from .historyLifecycle import last_drop_reason, set_drop_reason
+
 from .modelHelpers import notify
+from .surfaceGuidance import guard_surface_request
+
 from .personaConfig import persona_intent_maps
 
 mod = Module()
@@ -1313,41 +1315,39 @@ def _request_is_in_flight() -> bool:
 
 
 def _reject_if_request_in_flight(*, passive: bool = False) -> bool:
-    """Notify and return True when a GPT request is already running."""
+    """Return True when the pattern GUI should abort due to gating."""
 
     if passive:
         return False
 
-    allowed, reason = try_begin_request(source="modelPatternGUI")
-    if allowed:
+    def _on_block(reason: str, message: str) -> None:
+        fallback = message or f"GPT: Request blocked; reason={reason}."
         try:
-            if not last_drop_reason():
-                set_drop_reason("")
+            notify(fallback)
         except Exception:
             pass
-        return False
+        if not message:
+            try:
+                set_drop_reason(reason, fallback)
+            except Exception:
+                pass
 
-    if not reason:
-        return False
+    blocked = guard_surface_request(
+        surface="model_pattern_gui",
+        source="modelPatternGUI",
+        suppress_attr="suppress_overlay_inflight_guard",
+        on_block=_on_block,
+        notify_fn=lambda _message: None,
+    )
+    if blocked:
+        return True
 
-    message = ""
     try:
-        message = render_drop_reason(reason)
+        if not last_drop_reason():
+            set_drop_reason("")
     except Exception:
         pass
-
-    try:
-        set_drop_reason(reason, message)
-    except Exception:
-        pass
-
-    try:
-        if message:
-            notify(message)
-    except Exception:
-        pass
-
-    return True
+    return False
 
 
 @mod.action_class
@@ -1378,6 +1378,8 @@ class UserActions:
 
     def model_pattern_gui_close():
         """Close the model pattern picker GUI"""
+        if _reject_if_request_in_flight():
+            return
         _close_pattern_canvas()
         ctx.tags = []
 

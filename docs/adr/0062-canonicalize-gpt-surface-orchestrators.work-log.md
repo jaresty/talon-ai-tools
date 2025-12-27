@@ -1313,6 +1313,21 @@
 - next_work:
   - Behaviour: sort canvas command hints alphabetically — python3 -m pytest _tests/test_model_help_canvas.py::ModelHelpCanvasTests::test_persona_and_intent_commands_sorted — future-shaping: keep multi-alias parity across surfaces.
 
+## 2025-12-26 – Loop 098 (kind: implementation)
+- helper_version: helper:v20251223.1
+- focus: ADR-0062 §Refactor Plan – Guidance Surface Coordinator (Help Canvas command sorting)
+- riskiest_assumption: Help canvas persona/intent command lists would stay insertion-ordered, exposing aliases unpredictably (probability medium, impact low-medium on ergonomics).
+- validation_targets:
+  - python3 -m pytest _tests/test_model_help_canvas.py::ModelHelpCanvasTests::test_persona_and_intent_commands_sorted
+- evidence:
+  - docs/adr/evidence/0062/loop-0098.md
+- rollback_plan: git stash push -- lib/modelHelpCanvas.py _tests/test_model_help_canvas.py && python3 -m pytest _tests/test_model_help_canvas.py::ModelHelpCanvasTests::test_persona_and_intent_commands_sorted && git stash pop
+- delta_summary: helper:diff-snapshot=2 files changed, 63 insertions(+); Help canvas command helpers now return alphabetically sorted lists without duplicates.
+- residual_risks:
+  - Sorting normalises to lowercase; add title-casing in future loops if needed.
+- next_work:
+  - Behaviour: audit Help Hub button voice hints against orchestrator phrasing — python3 -m pytest _tests/test_help_hub.py::test_help_hub_search_intent_voice_hint_uses_orchestrator — future-shaping: carry consistency into clipboard exports.
+
 
 ## 2025-12-26 – Loop 096 (kind: implementation)
 - helper_version: helper:v20251223.1

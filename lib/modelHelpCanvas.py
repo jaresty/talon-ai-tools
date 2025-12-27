@@ -306,7 +306,7 @@ def _persona_preset_commands() -> list[str]:
             if alias and alias not in seen:
                 seen.add(alias)
                 commands.append(alias)
-    return commands
+    return sorted(commands)
 
 
 def _intent_preset_commands() -> list[str]:
@@ -374,7 +374,7 @@ def _intent_preset_commands() -> list[str]:
             continue
         seen.add(spoken)
         commands.append(spoken)
-    return commands
+    return sorted(commands)
 
 
 def _draw_wrapped_commands(

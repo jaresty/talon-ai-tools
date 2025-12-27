@@ -536,6 +536,65 @@ if bootstrap is not None:
 
             self.assertIn("decide", commands)
 
+        def test_persona_and_intent_commands_sorted(self) -> None:
+            orchestrator_persona = SimpleNamespace(
+                key="mentor",
+                label="Mentor",
+                spoken="",
+            )
+            orchestrator_intent = SimpleNamespace(
+                key="decide",
+                label="Decide",
+                intent="decide",
+            )
+            orchestrator = SimpleNamespace(
+                persona_presets={"mentor": orchestrator_persona},
+                persona_aliases={
+                    "mentor voice": "mentor",
+                    "mentor tone": "mentor",
+                },
+                intent_presets={"decide": orchestrator_intent},
+                intent_display_map={
+                    "decide": "Decide Display",
+                    "analyze": "Analyze Display",
+                },
+            )
+            with ExitStack() as stack:
+                stack.enter_context(
+                    patch(
+                        "talon_user.lib.modelHelpCanvas._get_persona_orchestrator",
+                        return_value=orchestrator,
+                    )
+                )
+                try:
+                    stack.enter_context(
+                        patch(
+                            "lib.modelHelpCanvas._get_persona_orchestrator",
+                            return_value=orchestrator,
+                        )
+                    )
+                except (ModuleNotFoundError, AttributeError):
+                    pass
+                stack.enter_context(
+                    patch(
+                        "talon_user.lib.modelHelpCanvas.persona_intent_maps",
+                        side_effect=RuntimeError("legacy maps unavailable"),
+                    )
+                )
+                try:
+                    stack.enter_context(
+                        patch(
+                            "lib.modelHelpCanvas.persona_intent_maps",
+                            side_effect=RuntimeError("legacy maps unavailable"),
+                        )
+                    )
+                except (ModuleNotFoundError, AttributeError):
+                    pass
+                persona_commands = _persona_preset_commands()
+                intent_commands = _intent_preset_commands()
+            self.assertEqual(persona_commands, sorted(persona_commands))
+            self.assertEqual(intent_commands, sorted(intent_commands))
+
 
 else:
     if not TYPE_CHECKING:

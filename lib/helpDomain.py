@@ -222,18 +222,31 @@ def help_index(
         maps = None
 
     persona_alias_map: Dict[str, str] = {}
+    persona_alias_tokens: Dict[str, List[str]] = {}
     if orchestrator and getattr(orchestrator, "persona_aliases", None):
         for alias, canonical in dict(orchestrator.persona_aliases or {}).items():
-            alias_key = str(alias or "").strip().lower()
+            alias_original = str(alias or "").strip()
+            alias_key = alias_original.lower()
             canonical_key = str(canonical or "").strip()
             if alias_key and canonical_key:
                 persona_alias_map[alias_key] = canonical_key
+                display_token = alias_original.replace("_", " ").lower()
+                if display_token:
+                    persona_alias_tokens.setdefault(canonical_key, []).append(
+                        display_token
+                    )
     if maps is not None and getattr(maps, "persona_preset_aliases", None):
         for alias, canonical in dict(maps.persona_preset_aliases or {}).items():
-            alias_key = str(alias or "").strip().lower()
+            alias_original = str(alias or "").strip()
+            alias_key = alias_original.lower()
             canonical_key = str(canonical or "").strip()
             if alias_key and canonical_key:
                 persona_alias_map.setdefault(alias_key, canonical_key)
+                display_token = alias_original.replace("_", " ").lower()
+                if display_token:
+                    tokens = persona_alias_tokens.setdefault(canonical_key, [])
+                    if display_token not in tokens:
+                        tokens.append(display_token)
 
     persona_axis_aliases: Dict[str, Dict[str, str]] = {}
     if maps is not None and getattr(maps, "persona_axis_tokens", None):
@@ -302,6 +315,12 @@ def help_index(
             ),
             "tone": _canonical_persona_axis("tone", getattr(preset, "tone", "")),
         }
+        aliases_for_persona = set(persona_alias_tokens.get(key, ()))
+        if spoken_display:
+            aliases_for_persona.add(spoken_display.strip().lower())
+        if spoken:
+            aliases_for_persona.add(spoken.strip().lower())
+        spoken_aliases = sorted(token for token in aliases_for_persona if token)
         axes_parts = [value for value in axis_tokens_map.values() if value]
         axes_desc = " · ".join(axes_parts) if axes_parts else "No explicit axes"
         entry_label = f"Persona preset: {label} (say: persona {spoken_display})"
@@ -318,6 +337,8 @@ def help_index(
             "axes_summary": axes_desc,
             "voice_hint": voice_hint,
         }
+        if spoken_aliases:
+            metadata["spoken_aliases"] = spoken_aliases
 
         _add(
             entry_label,

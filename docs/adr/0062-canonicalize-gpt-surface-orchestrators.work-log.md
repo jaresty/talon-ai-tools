@@ -1298,21 +1298,21 @@
 - next_work:
   - Behaviour: expand canvas persona presets to surface multiple orchestrator aliases — python3 -m pytest _tests/test_model_help_canvas.py::ModelHelpCanvasTests::test_persona_preset_commands_use_orchestrator_alias — future-shaping: improve multi-alias discoverability across canvases.
 
-## 2025-12-26 – Loop 096 (kind: implementation)
+## 2025-12-26 – Loop 097 (kind: implementation)
 - helper_version: helper:v20251223.1
-- focus: ADR-0062 §Refactor Plan – Guidance Surface Coordinator (Help Canvas persona command hints)
-- riskiest_assumption: Help canvas persona command hints would still list only one orchestrator alias, hiding additional shortcuts (probability medium, impact medium on discoverability).
+- focus: ADR-0062 §Refactor Plan – Guidance Surface Coordinator (Help Hub persona metadata aliases)
+- riskiest_assumption: Help Hub persona metadata would keep surfacing a single alias even when the orchestrator exports additional shortcuts (probability medium, impact medium on discoverability).
 - validation_targets:
-  - python3 -m pytest _tests/test_model_help_canvas.py::ModelHelpCanvasTests::test_persona_preset_commands_surface_all_orchestrator_aliases
-  - python3 -m pytest _tests/test_model_help_canvas.py::ModelHelpCanvasTests::test_persona_preset_commands_use_orchestrator_alias
+  - python3 -m pytest _tests/test_help_hub.py::test_help_hub_search_persona_metadata_includes_all_orchestrator_aliases
 - evidence:
-  - docs/adr/evidence/0062/loop-0096.md
-- rollback_plan: git stash push -- lib/modelHelpCanvas.py _tests/test_model_help_canvas.py && python3 -m pytest _tests/test_model_help_canvas.py::ModelHelpCanvasTests::test_persona_preset_commands_surface_all_orchestrator_aliases && git stash pop
-- delta_summary: helper:diff-snapshot=2 files changed, 58 insertions(+), 1 deletion(-); `_persona_preset_commands` now surfaces every orchestrator alias without duplicates so canvas command hints expose all shared shortcuts.
+  - docs/adr/evidence/0062/loop-0097.md
+- rollback_plan: git stash push -- lib/helpDomain.py _tests/test_help_hub.py && python3 -m pytest _tests/test_help_hub.py::test_help_hub_search_persona_metadata_includes_all_orchestrator_aliases && git stash pop
+- delta_summary: helper:diff-snapshot=2 files changed, 68 insertions(+); Help Hub persona metadata now lists every orchestrator-provided alias while retaining legacy fallbacks.
 - residual_risks:
-  - Command ordering follows orchestrator alias insertion order; future loops may sort aliases alphabetically if needed.
+  - Alias ordering is lowercase alphabetical; monitor future display casing requirements.
 - next_work:
-  - Behaviour: audit Help Hub button voice hints for remaining personaConfig dependencies — python3 -m pytest _tests/test_help_hub.py — future-shaping: continue consolidating orchestrator-driven hints across surfaces.
+  - Behaviour: sort canvas command hints alphabetically — python3 -m pytest _tests/test_model_help_canvas.py::ModelHelpCanvasTests::test_persona_and_intent_commands_sorted — future-shaping: keep multi-alias parity across surfaces.
+
 
 ## 2025-12-26 – Loop 096 (kind: implementation)
 - helper_version: helper:v20251223.1

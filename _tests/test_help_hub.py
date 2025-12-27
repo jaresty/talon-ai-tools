@@ -549,6 +549,49 @@ def test_help_hub_search_intent_metadata_uses_orchestrator_canonical(monkeypatch
     assert metadata.get("canonical_intent") == "decide"
 
 
+def test_help_hub_search_persona_metadata_includes_all_orchestrator_aliases(
+    monkeypatch,
+):
+    orchestrator_persona = SimpleNamespace(
+        key="mentor",
+        label="Mentor",
+        spoken="",
+    )
+    orchestrator = SimpleNamespace(
+        persona_presets={"mentor": orchestrator_persona},
+        persona_aliases={
+            "mentor voice": "mentor",
+            "mentor tone": "mentor",
+        },
+    )
+    with ExitStack() as stack:
+        for target in (
+            "lib.helpHub.get_persona_intent_orchestrator",
+            "talon_user.lib.helpHub.get_persona_intent_orchestrator",
+            "lib.helpDomain.get_persona_intent_orchestrator",
+            "talon_user.lib.helpDomain.get_persona_intent_orchestrator",
+        ):
+            stack.enter_context(patch(target, return_value=orchestrator))
+        for target in (
+            "lib.helpHub.persona_intent_maps",
+            "talon_user.lib.helpHub.persona_intent_maps",
+            "lib.helpDomain.persona_intent_maps",
+            "talon_user.lib.helpDomain.persona_intent_maps",
+        ):
+            stack.enter_context(
+                patch(target, side_effect=RuntimeError("maps unavailable"))
+            )
+        index = helpHub.build_search_index([], [], [], lambda _name: [], catalog={})
+    persona_entries = [
+        entry for entry in index if entry.label.startswith("Persona preset:")
+    ]
+    assert persona_entries, "Expected persona preset entries"
+    metadata = persona_entries[0].metadata or {}
+    assert metadata.get("persona_key") == "mentor"
+    assert metadata.get("spoken_alias") == "mentor voice"
+    assert metadata.get("spoken_aliases") == ["mentor tone", "mentor voice"]
+
+
 def test_help_hub_onboarding_flag():
     helpHub.help_hub_onboarding()
     assert helpHub.HelpHubState.show_onboarding is True

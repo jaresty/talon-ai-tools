@@ -1,5 +1,5 @@
 import unittest
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 
 try:
     from bootstrap import bootstrap
@@ -9,152 +9,55 @@ else:
     bootstrap()
 
 if bootstrap is not None:
-    from talon_user.lib import modelConfirmationGUI as confirm_module
-    from talon_user.lib.modelConfirmationGUI import (
-        ConfirmationGUIState,
-        UserActions as ConfirmActions,
-    )
-    from talon_user.lib.modelPresentation import ResponsePresentation
-    from talon_user.lib.modelState import GPTState
-    import talon_user.lib.dropReasonUtils as drop_reason_module
+    from talon_user.lib import modelConfirmationGUI as confirmation_module
+    from talon_user.lib.modelConfirmationGUI import UserActions as ConfirmationActions
 
 
-class ConfirmationGUIGuardTests(unittest.TestCase):
-    def setUp(self):
-        if bootstrap is None:
-            self.skipTest("Talon runtime not available")
-        GPTState.text_to_confirm = ""
-        ConfirmationGUIState.current_presentation = None
-        ConfirmationGUIState.display_thread = False
-        ConfirmationGUIState.last_item_text = ""
-        ConfirmationGUIState.show_advanced_actions = False
-
-    def test_confirmation_actions_respect_in_flight_guard(self):
-        with (
-            patch.object(
-                confirm_module, "_reject_if_request_in_flight", return_value=True
-            ),
-            patch.object(
-                confirm_module.actions.user, "model_response_canvas_open"
-            ) as canvas_open,
-        ):
-            ConfirmActions.confirmation_gui_append("text")
-            ConfirmActions.confirmation_gui_close()
-            ConfirmActions.confirmation_gui_pass_context()
-            ConfirmActions.confirmation_gui_pass_query()
-            ConfirmActions.confirmation_gui_pass_thread()
-            ConfirmActions.confirmation_gui_open_browser()
-            ConfirmActions.confirmation_gui_analyze_prompt()
-            ConfirmActions.confirmation_gui_save_to_file()
-            ConfirmActions.confirmation_gui_copy()
-            ConfirmActions.confirmation_gui_paste()
-            ConfirmActions.confirmation_gui_refresh_thread()
-            ConfirmActions.confirmation_gui_open_pattern_menu_for_prompt()
-        canvas_open.assert_not_called()
-        self.assertEqual(GPTState.text_to_confirm, "")
-        self.assertIsNone(ConfirmationGUIState.current_presentation)
-
-    def test_confirmation_append_respects_guard_with_presentation(self):
-        if bootstrap is None:
-            self.skipTest("Talon runtime not available")
-        presentation = ResponsePresentation(display_text="out", paste_text="out")
-        with (
-            patch.object(
-                confirm_module, "_reject_if_request_in_flight", return_value=True
-            ),
-            patch.object(
-                confirm_module.actions.user, "model_response_canvas_open"
-            ) as canvas_open,
-        ):
-            ConfirmActions.confirmation_gui_append(presentation)
-        canvas_open.assert_not_called()
-        self.assertIsNone(ConfirmationGUIState.current_presentation)
-        self.assertEqual(GPTState.text_to_confirm, "")
-
-    def test_reject_if_request_in_flight_records_drop_reason(self):
-        with (
-            patch.object(
-                confirm_module, "try_begin_request", return_value=(False, "in_flight")
-            ),
-            patch.object(
-                confirm_module,
-                "render_drop_reason",
-                return_value="Request running",
-                create=True,
-            ) as render_message,
-            patch.object(confirm_module, "set_drop_reason") as set_reason,
-            patch.object(confirm_module, "notify") as notify_mock,
-        ):
-            self.assertTrue(confirm_module._reject_if_request_in_flight())
-        render_message.assert_called_once_with("in_flight")
-        set_reason.assert_called_once_with("in_flight", "Request running")
-        notify_mock.assert_called_once_with("Request running")
-
-        with (
-            patch.object(
-                confirm_module,
-                "try_begin_request",
-                return_value=(False, "rate_limited"),
-            ),
-            patch.object(
-                drop_reason_module,
-                "drop_reason_message",
-                return_value="",
-            ),
-            patch.object(
-                confirm_module,
-                "render_drop_reason",
-                return_value="Rendered fallback",
-                create=True,
-            ) as render_message,
-            patch.object(confirm_module, "set_drop_reason") as set_reason,
-            patch.object(confirm_module, "notify") as notify_mock,
-        ):
-            self.assertTrue(confirm_module._reject_if_request_in_flight())
-        render_message.assert_called_once_with("rate_limited")
-        set_reason.assert_called_once_with("rate_limited", "Rendered fallback")
-        notify_mock.assert_called_once_with("Rendered fallback")
-
-        with (
-            patch.object(confirm_module, "try_begin_request", return_value=(True, "")),
-            patch.object(confirm_module, "set_drop_reason") as set_reason,
-            patch.object(confirm_module, "notify") as notify_mock,
-        ):
-            self.assertFalse(confirm_module._reject_if_request_in_flight())
-        set_reason.assert_called_once_with("")
-        notify_mock.assert_not_called()
-
-    def test_reject_if_request_in_flight_preserves_drop_reason_on_success(self):
+class ModelConfirmationGUIGuardTests(unittest.TestCase):
+    def test_reject_if_request_in_flight_delegates_to_surface_guard(self):
         if bootstrap is None:
             self.skipTest("Talon runtime not available")
 
-        with (
-            patch.object(confirm_module, "try_begin_request", return_value=(True, "")),
-            patch.object(
-                confirm_module,
-                "last_drop_reason",
-                return_value="",
-                create=True,
-            ),
-            patch.object(confirm_module, "set_drop_reason") as set_reason,
-            patch.object(confirm_module, "notify") as notify_mock,
+        captured_kwargs: dict[str, object] = {}
+
+        def fake_guard(**kwargs):
+            captured_kwargs.update(kwargs)
+            return True
+
+        with patch(
+            "talon_user.lib.modelConfirmationGUI.guard_surface_request",
+            side_effect=fake_guard,
         ):
-            self.assertFalse(confirm_module._reject_if_request_in_flight())
-        set_reason.assert_called_once_with("")
-        notify_mock.assert_not_called()
+            self.assertTrue(confirmation_module._reject_if_request_in_flight())
+
+        self.assertEqual(captured_kwargs["surface"], "confirmation_gui")
+        self.assertEqual(captured_kwargs["source"], "modelConfirmationGUI")
+        self.assertIn("on_block", captured_kwargs)
+        self.assertFalse(captured_kwargs.get("allow_inflight"))
+
+    def test_confirmation_gui_close_allows_inflight(self):
+        if bootstrap is None:
+            self.skipTest("Talon runtime not available")
+
+        gui_mock = MagicMock()
+        gui_mock.hide = MagicMock()
 
         with (
-            patch.object(confirm_module, "try_begin_request", return_value=(True, "")),
-            patch.object(
-                confirm_module,
-                "last_drop_reason",
-                return_value="drop_pending",
-                create=True,
-            ),
-            patch.object(confirm_module, "set_drop_reason") as set_reason,
+            patch.object(confirmation_module, "confirmation_gui", gui_mock),
+            patch(
+                "talon_user.lib.modelConfirmationGUI.guard_surface_request",
+                return_value=False,
+            ) as guard,
+            patch(
+                "talon_user.lib.modelConfirmationGUI.close_common_overlays"
+            ) as closer,
         ):
-            self.assertFalse(confirm_module._reject_if_request_in_flight())
-        set_reason.assert_not_called()
+            ConfirmationActions.confirmation_gui_close()
+
+        guard.assert_called_once()
+        self.assertTrue(guard.call_args.kwargs.get("allow_inflight"))
+        gui_mock.hide.assert_called_once()
+        closer.assert_called_once()
 
 
 if __name__ == "__main__":

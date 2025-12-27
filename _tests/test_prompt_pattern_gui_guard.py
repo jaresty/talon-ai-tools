@@ -135,9 +135,12 @@ class PromptPatternGUIGuardTests(unittest.TestCase):
         if bootstrap is None:
             self.skipTest("Talon runtime not available")
 
-        with patch.object(
-            prompt_pattern_module, "guard_surface_request", return_value=False
-        ) as guard:
+        with (
+            patch.object(
+                prompt_pattern_module, "guard_surface_request", return_value=False
+            ) as guard,
+            patch.object(prompt_pattern_module, "_close_prompt_pattern_canvas"),
+        ):
             PromptPatternActions.prompt_pattern_gui_close()
 
         guard.assert_called_once()

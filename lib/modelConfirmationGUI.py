@@ -8,8 +8,8 @@ from .axisJoin import axis_join
 from .modelHelpers import GPTState, extract_message, notify
 from .overlayLifecycle import close_common_overlays
 from .requestGating import request_is_in_flight
-from .historyLifecycle import last_drop_reason, set_drop_reason, try_begin_request
-from .dropReasonUtils import render_drop_reason
+from .historyLifecycle import set_drop_reason
+from .surfaceGuidance import guard_surface_request
 from .modelPresentation import ResponsePresentation
 from .metaPromptConfig import first_meta_preview_line, meta_preview_lines
 
@@ -48,42 +48,29 @@ def _request_is_in_flight() -> bool:
         return False
 
 
-def _reject_if_request_in_flight() -> bool:
-    """Notify and return True when a GPT request is already running."""
+def _reject_if_request_in_flight(*, allow_inflight: bool = False) -> bool:
+    """Return True when the confirmation GUI should abort due to gating."""
 
-    allowed, reason = try_begin_request(source="modelConfirmationGUI")
-    if allowed:
-        try:
-            pending_message = last_drop_reason()
-        except Exception:
-            pending_message = ""
-        if not pending_message:
+    def _on_block(reason: str, message: str) -> None:
+        fallback = message or f"GPT: Request blocked; reason={reason}."
+        if not message:
             try:
-                set_drop_reason("")
+                set_drop_reason(reason, fallback)
             except Exception:
                 pass
-        return False
-
-    if not reason:
-        return False
-
-    message = ""
-    try:
-        message = render_drop_reason(reason)
-    except Exception:
-        pass
-
-    try:
-        set_drop_reason(reason, message)
-    except Exception:
-        pass
-
-    if message:
         try:
-            notify(message)
+            notify(fallback)
         except Exception:
             pass
-    return True
+
+    return guard_surface_request(
+        surface="confirmation_gui",
+        source="modelConfirmationGUI",
+        suppress_attr="suppress_overlay_inflight_guard",
+        on_block=_on_block,
+        notify_fn=lambda _message: None,
+        allow_inflight=allow_inflight,
+    )
 
 
 @imgui.open()
@@ -337,6 +324,8 @@ class UserActions:
 
     def confirmation_gui_close():
         """Close the model output without pasting it"""
+        if _reject_if_request_in_flight(allow_inflight=True):
+            return
         GPTState.text_to_confirm = ""
         confirmation_gui.hide()
         ctx.tags = []

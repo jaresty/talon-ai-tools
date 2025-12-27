@@ -142,9 +142,12 @@ class ModelPatternGUIGuardTests(unittest.TestCase):
         if bootstrap is None:
             self.skipTest("Talon runtime not available")
 
-        with patch.object(
-            pattern_module, "guard_surface_request", return_value=False
-        ) as guard:
+        with (
+            patch.object(
+                pattern_module, "guard_surface_request", return_value=False
+            ) as guard,
+            patch.object(pattern_module, "_close_pattern_canvas"),
+        ):
             PatternActions.model_pattern_gui_close()
 
         guard.assert_called_once()

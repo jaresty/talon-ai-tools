@@ -117,9 +117,12 @@ class ModelSuggestionGUIGuardTests(unittest.TestCase):
         if bootstrap is None:
             self.skipTest("Talon runtime not available")
 
-        with patch.object(
-            suggestion_module, "guard_surface_request", return_value=False
-        ) as guard:
+        with (
+            patch.object(
+                suggestion_module, "guard_surface_request", return_value=False
+            ) as guard,
+            patch.object(suggestion_module, "_close_suggestion_canvas"),
+        ):
             SuggestionActions.model_prompt_recipe_suggestions_gui_close()
 
         guard.assert_called_once()

@@ -16,7 +16,8 @@ UserActions: Any = None
 if bootstrap is not None:
     from talon_user.lib import modelResponseCanvas as canvas_module
     from talon_user.lib.modelResponseCanvas import ResponseCanvasState, UserActions
-    import talon_user.lib.dropReasonUtils as drop_reason_module
+    from talon_user.lib.modelState import GPTState
+    from talon_user.lib.requestState import RequestPhase, RequestState
 
 
 class ModelResponseCanvasGuardTests(unittest.TestCase):
@@ -54,90 +55,56 @@ class ModelResponseCanvasGuardTests(unittest.TestCase):
             elif hasattr(canvas_module, "_last_meta_signature"):
                 delattr(canvas_module, "_last_meta_signature")
 
-    def test_reject_if_request_in_flight_records_drop_reason(self):
+    def test_reject_if_request_in_flight_delegates_to_surface_guard(self):
+        state = RequestState()
+        captured_kwargs: dict[str, Any] = {}
+
+        def fake_guard(**kwargs):
+            captured_kwargs.update(kwargs)
+            state_getter = kwargs.get("state_getter")
+            self.assertTrue(callable(state_getter))
+            self.assertIs(state_getter(), state)
+            return True
+
         with (
-            patch.object(
-                canvas_module, "try_begin_request", return_value=(False, "in_flight")
-            ),
-            patch.object(
-                canvas_module,
-                "render_drop_reason",
-                return_value="Request running",
-                create=True,
-            ) as render_message,
-            patch.object(canvas_module, "set_drop_reason") as set_reason,
-            patch.object(canvas_module, "notify") as notify_mock,
+            patch.object(canvas_module, "_current_request_state", return_value=state),
+            patch(
+                "talon_user.lib.modelResponseCanvas.guard_surface_request",
+                side_effect=fake_guard,
+            ) as guard,
         ):
             self.assertTrue(canvas_module._reject_if_request_in_flight())
-        render_message.assert_called_once_with("in_flight")
-        set_reason.assert_called_once_with("in_flight", "Request running")
-        notify_mock.assert_called_once_with("Request running")
 
-        with (
-            patch.object(
-                canvas_module,
-                "try_begin_request",
-                return_value=(False, "rate_limited"),
-            ),
-            patch.object(
-                drop_reason_module,
-                "drop_reason_message",
-                return_value="",
-            ),
-            patch.object(
-                canvas_module,
-                "render_drop_reason",
-                return_value="Rendered fallback",
-                create=True,
-            ) as render_message,
-            patch.object(canvas_module, "set_drop_reason") as set_reason,
-            patch.object(canvas_module, "notify") as notify_mock,
-        ):
-            self.assertTrue(canvas_module._reject_if_request_in_flight())
-        render_message.assert_called_once_with("rate_limited")
-        set_reason.assert_called_once_with("rate_limited", "Rendered fallback")
-        notify_mock.assert_called_once_with("Rendered fallback")
+        guard.assert_called_once()
+        self.assertEqual(captured_kwargs["surface"], "response_canvas")
+        self.assertEqual(captured_kwargs["source"], "modelResponseCanvas")
+        self.assertIn("on_block", captured_kwargs)
 
-        with (
-            patch.object(canvas_module, "try_begin_request", return_value=(True, "")),
-            patch.object(canvas_module, "set_drop_reason") as set_reason,
-            patch.object(canvas_module, "notify") as notify_mock,
-        ):
-            self.assertFalse(canvas_module._reject_if_request_in_flight())
-        set_reason.assert_called_once_with("")
-        notify_mock.assert_not_called()
-
-    def test_reject_if_request_in_flight_preserves_drop_reason_on_success(self):
+    def test_reject_if_request_in_flight_handles_inflight_block(self):
         if bootstrap is None or canvas_module is None:
             self.skipTest("Talon runtime not available")
 
-        with (
-            patch.object(canvas_module, "try_begin_request", return_value=(True, "")),
-            patch.object(
-                canvas_module,
-                "last_drop_reason",
-                return_value="",
-                create=True,
-            ),
-            patch.object(canvas_module, "set_drop_reason") as set_reason,
-            patch.object(canvas_module, "notify") as notify_mock,
-        ):
-            self.assertFalse(canvas_module._reject_if_request_in_flight())
-        set_reason.assert_called_once_with("")
-        notify_mock.assert_not_called()
+        state = RequestState(phase=RequestPhase.STREAMING)
+
+        def fake_guard(**kwargs):
+            on_block = kwargs["on_block"]
+            on_block("in_flight", "Model streaming…")
+            return True
 
         with (
-            patch.object(canvas_module, "try_begin_request", return_value=(True, "")),
-            patch.object(
-                canvas_module,
-                "last_drop_reason",
-                return_value="drop_pending",
-                create=True,
+            patch.object(canvas_module, "_current_request_state", return_value=state),
+            patch(
+                "talon_user.lib.modelResponseCanvas.guard_surface_request",
+                side_effect=fake_guard,
             ),
-            patch.object(canvas_module, "set_drop_reason") as set_reason,
+            patch("talon_user.lib.pillCanvas.show_pill") as show_pill,
         ):
-            self.assertFalse(canvas_module._reject_if_request_in_flight())
-        set_reason.assert_not_called()
+            GPTState.suppress_response_canvas_close = True
+            self.assertTrue(canvas_module._reject_if_request_in_flight())
+
+        self.assertFalse(getattr(GPTState, "suppress_response_canvas_close", True))
+        show_pill.assert_called_once()
+        GPTState.suppress_response_canvas_close = False
 
 
 if __name__ == "__main__":

@@ -13,11 +13,9 @@ from .requestBus import current_state
 from .historyLifecycle import (
     RequestPhase,
     RequestState,
-    last_drop_reason,
-    set_drop_reason,
 )
 
-from .dropReasonUtils import render_drop_reason
+from .surfaceGuidance import guard_surface_request
 
 from .axisConfig import axis_docs_for
 from .axisMappings import axis_registry_tokens
@@ -27,7 +25,6 @@ from .suggestionCoordinator import (
     suggestion_grammar_phrase,
 )
 from .stanceDefaults import stance_defaults_lines
-from .modelHelpers import notify
 from .overlayHelpers import apply_canvas_blocking, clamp_scroll
 from .overlayLifecycle import close_overlays, close_common_overlays
 from .personaConfig import persona_intent_maps
@@ -118,63 +115,40 @@ def _request_is_in_flight() -> bool:
 
 
 def _reject_if_request_in_flight() -> bool:
-    """Notify and return True when a GPT request is already running."""
+    """Return True when the response canvas should abort due to gating."""
 
-    state = _current_request_state()
-    allowed, reason = try_begin_request(state, source="modelResponseCanvas")
-    if allowed:
-        try:
-            pending_message = last_drop_reason()
-        except Exception:
-            pending_message = ""
-        if not pending_message:
-            try:
-                set_drop_reason("")
-            except Exception:
-                pass
-        return False
-
-    if not reason:
-        return False
-
-    message = ""
-    try:
-        message = render_drop_reason(reason)
-    except Exception:
-        pass
-
-    try:
-        set_drop_reason(reason, message)
-    except Exception:
-        pass
-
-    if reason == "in_flight":
+    def _handle_block(reason: str, message: str) -> None:
+        if reason != "in_flight":
+            return
         try:
             GPTState.suppress_response_canvas_close = False
         except Exception:
             pass
-        if getattr(state, "phase", None) in (
-            RequestPhase.SENDING,
-            RequestPhase.STREAMING,
-        ):
-            try:
-                from .pillCanvas import show_pill  # type: ignore circular
-
-                phase_label = (
-                    "Model: sending…"
-                    if state.phase is RequestPhase.SENDING
-                    else "Model: streaming…"
-                )
-                show_pill(phase_label, state.phase)
-            except Exception:
-                pass
-
-    if message:
         try:
-            notify(message)
+            state = _current_request_state()
+        except Exception:
+            state = None
+        phase = getattr(state, "phase", None)
+        if phase not in (RequestPhase.SENDING, RequestPhase.STREAMING):
+            return
+        try:
+            from .pillCanvas import show_pill  # type: ignore circular
+
+            phase_label = (
+                "Model: sending…"
+                if phase is RequestPhase.SENDING
+                else "Model: streaming…"
+            )
+            show_pill(phase_label, phase)
         except Exception:
             pass
-    return True
+
+    return guard_surface_request(
+        surface="response_canvas",
+        source="modelResponseCanvas",
+        state_getter=_current_request_state,
+        on_block=_handle_block,
+    )
 
 
 def _hydrate_axis(axis: str, token_str: str) -> str:

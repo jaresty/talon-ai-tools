@@ -349,10 +349,24 @@ def _request_is_in_flight() -> bool:
 def _reject_if_request_in_flight() -> bool:
     """Return True when suggestion surfaces should abort due to gating."""
 
+    def _on_block(reason: str, message: str) -> None:
+        fallback = message or f"GPT: Request blocked; reason={reason}."
+        try:
+            notify(fallback)
+        except Exception:
+            pass
+        if not message:
+            try:
+                set_drop_reason(reason, fallback)
+            except Exception:
+                pass
+
     blocked = guard_surface_request(
-        surface="suggestion",
+        surface="model_suggestion_gui",
         source="modelSuggestionGUI",
         suppress_attr="suppress_overlay_inflight_guard",
+        on_block=_on_block,
+        notify_fn=lambda _message: None,
     )
     if blocked:
         return True

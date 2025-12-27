@@ -1388,6 +1388,36 @@
 - next_work:
   - Behaviour: audit README guardrail coverage for orchestrator hints — python3 -m pytest _tests/test_readme_guardrails_docs.py — future-shaping: keep public docs synchronized with shared orchestrator terminology.
 
+## 2025-12-26 – Loop 103 (kind: implementation)
+- helper_version: helper:v20251223.1
+- focus: ADR-0062 §Refactor Plan – Guidance Surface Coordinator (README orchestration note)
+- riskiest_assumption: README would omit orchestrator voice hints despite button changes, leaving onboarding docs inconsistent (probability medium, impact medium on clarity).
+- validation_targets:
+  - python3 -m pytest _tests/test_help_hub.py::test_help_doc_mentions_orchestrator_voice_hints
+- evidence:
+  - docs/adr/evidence/0062/loop-0103.md
+- rollback_plan: git stash push -- README.md _tests/test_help_hub.py && python3 -m pytest _tests/test_help_hub.py::test_help_doc_mentions_orchestrator_voice_hints && git stash pop
+- delta_summary: helper:diff-snapshot=2 files changed, 9 insertions(+); README now highlights orchestrator stance commands alongside ADR references.
+- residual_risks:
+  - README examples use specific aliases; revise if orchestrator definitions change.
+- next_work:
+  - Behaviour: reinforce metadata summary note — python3 -m pytest _tests/test_help_hub.py::test_help_hub_metadata_summary_mentions_aliases — future-shaping: keep docs aligned with alias coverage.
+
+## 2025-12-26 – Loop 104 (kind: implementation)
+- helper_version: helper:v20251223.1
+- focus: ADR-0062 §Refactor Plan – Guidance Surface Coordinator (Metadata summary note follow-up)
+- riskiest_assumption: Metadata summary headers might lose the alias coverage note over time (probability low, impact low-medium on clarity).
+- validation_targets:
+  - python3 -m pytest _tests/test_help_hub.py::test_help_hub_metadata_summary_mentions_aliases
+- evidence:
+  - docs/adr/evidence/0062/loop-0101.md (shared guard evidence for alias note)
+- rollback_plan: git stash push -- lib/helpDomain.py _tests/test_help_hub.py && python3 -m pytest _tests/test_help_hub.py::test_help_hub_metadata_summary_mentions_aliases && git stash pop
+- delta_summary: helper:diff-snapshot=1 file changed, 15 insertions(+); metadata summary now prints a headline note covering orchestrator aliases.
+- residual_risks:
+  - Alias note currently always appears when personas exist; revisit messaging for smaller surfaces.
+- next_work:
+  - Behaviour: keep README/ADR references in sync with orchestrator stance updates — python3 -m pytest _tests/test_help_hub.py::test_help_doc_mentions_orchestrator_voice_hints — future-shaping: additional doc guardrails as orchestrator facets expand.
+
 
 ## 2025-12-26 – Loop 096 (kind: implementation)
 - helper_version: helper:v20251223.1

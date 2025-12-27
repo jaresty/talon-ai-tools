@@ -649,7 +649,9 @@ def test_help_hub_button_voice_hints_match_orchestrator(monkeypatch):
 
 def test_help_doc_mentions_orchestrator_voice_hints():
     doc = Path("docs/adr/0062-canonicalize-gpt-surface-orchestrators.md").read_text()
+    readme = Path("readme.md").read_text()
     assert "orchestrator voice hints" in doc
+    assert "orchestrator stance commands" in readme
 
 
 def test_help_hub_onboarding_flag():

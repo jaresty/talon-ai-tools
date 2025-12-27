@@ -50,7 +50,7 @@ os.environ["OPENAI_API_KEY"] = "YOUR-KEY-HERE"
 
 ### In-Talon help surfaces
 
-- `model help hub` – central hub linking quick help, patterns, suggestions, history, docs.
+- `model help hub` – central hub linking quick help, patterns, suggestions, history, docs. Button voice hints use the orchestrator stance commands (for example `persona mentor voice`, `intent decide display`) to stay aligned with Concordance.
 - `model quick help` – grammar/axes cheat sheet; `model quick help patterns/suggestions/history/docs` for nearby surfaces.
 - `model patterns` / `model pattern menu <prompt>` – curated recipes and per-prompt presets.
 - `model suggest` / `model suggestions` – prompt recipe suggestions picker.

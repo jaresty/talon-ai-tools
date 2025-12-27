@@ -636,12 +636,15 @@ def help_metadata_summary_lines(snapshot: HelpMetadataSnapshot) -> List[str]:
             axes_summary = (
                 persona.axes_summary or "No explicit axes"
             ).strip() or "No explicit axes"
+            alias_list = tuple(getattr(persona, "spoken_aliases", ()) or ())
+            alias_suffix = f" aliases: {', '.join(alias_list)}" if alias_list else ""
             lines.append(
-                "- persona {key} (say: persona {alias}): {label} ({summary})".format(
+                "- persona {key} (say: persona {alias}): {label} ({summary}){suffix}".format(
                     key=key,
                     alias=spoken_alias,
                     label=display_label,
                     summary=axes_summary,
+                    suffix=alias_suffix,
                 )
             )
 

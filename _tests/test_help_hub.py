@@ -592,6 +592,26 @@ def test_help_hub_search_persona_metadata_includes_all_orchestrator_aliases(
     assert metadata.get("spoken_aliases") == ["mentor tone", "mentor voice"]
 
 
+def test_help_hub_button_voice_hints_match_orchestrator(monkeypatch):
+    orchestrator = SimpleNamespace(
+        persona_presets={},
+        persona_aliases={},
+        intent_presets={},
+        intent_display_map={},
+    )
+    with ExitStack() as stack:
+        for target in (
+            "lib.helpHub.get_persona_intent_orchestrator",
+            "talon_user.lib.helpHub.get_persona_intent_orchestrator",
+            "lib.helpDomain.get_persona_intent_orchestrator",
+            "talon_user.lib.helpDomain.get_persona_intent_orchestrator",
+        ):
+            stack.enter_context(patch(target, return_value=orchestrator))
+        buttons = helpHub._build_buttons()
+    voice_hints = {btn.label: btn.voice_hint for btn in buttons}
+    assert voice_hints["Quick help"].startswith("Say: persona")
+
+
 def test_help_hub_onboarding_flag():
     helpHub.help_hub_onboarding()
     assert helpHub.HelpHubState.show_onboarding is True

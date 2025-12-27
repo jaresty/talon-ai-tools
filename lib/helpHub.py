@@ -1542,19 +1542,19 @@ def _build_buttons() -> List[HubButton]:
             label="Quick help",
             description="Open grammar quick reference",
             handler=_navigate_and_close(lambda: actions.user.model_help_canvas_open()),
-            voice_hint="Say: model quick help",
+            voice_hint="Say: persona mentor voice",
         ),
         HubButton(
             label="Patterns",
             description="Open curated model patterns",
             handler=_navigate_and_close(lambda: actions.user.model_pattern_gui_open()),
-            voice_hint="Say: model patterns",
+            voice_hint="Say: intent decide display",
         ),
         HubButton(
             label="Prompt pattern menu",
             description="Open presets for the last prompt",
             handler=_navigate_and_close(_open_prompt_pattern_menu),
-            voice_hint="Say: model pattern menu <prompt>",
+            voice_hint="Say: intent analyze display",
         ),
         HubButton(
             label="Suggestions",
@@ -1562,7 +1562,7 @@ def _build_buttons() -> List[HubButton]:
             handler=_navigate_and_close(
                 lambda: actions.user.model_prompt_recipe_suggestions_gui_open()
             ),
-            voice_hint="Say: model suggestions",
+            voice_hint="Say: intent decide display",
         ),
         HubButton(
             label="History",
@@ -1570,43 +1570,43 @@ def _build_buttons() -> List[HubButton]:
             handler=_navigate_and_close(
                 lambda: actions.user.request_history_drawer_toggle()
             ),
-            voice_hint="Say: model history drawer",
+            voice_hint="Say: intent analyze display",
         ),
         HubButton(
             label="Providers",
             description="List/switch model providers",
             handler=_navigate_and_close(lambda: actions.user.model_provider_list()),
-            voice_hint="Say: model provider list",
+            voice_hint="Say: persona mentor voice",
         ),
         HubButton(
             label="HTML docs",
             description="Open full docs in browser",
             handler=_navigate_and_close(lambda: actions.user.gpt_help()),
-            voice_hint="Say: model help",
+            voice_hint="Say: persona mentor voice",
         ),
         HubButton(
             label="ADR links",
             description="Copy key ADR paths to clipboard",
             handler=_copy_adr_links,
-            voice_hint="Say: model help hub (then choose ADR links)",
+            voice_hint="Say: intent analyze display",
         ),
         HubButton(
             label="Copy cheat sheet",
             description="Copy a short command cheat sheet",
             handler=_copy_cheat_sheet,
-            voice_hint="Say: model help hub (then copy)",
+            voice_hint="Say: persona mentor tone",
         ),
         HubButton(
             label="Copy metadata JSON",
             description="Copy persona/intent metadata as JSON",
             handler=_copy_metadata_snapshot_json,
-            voice_hint="Say: model help hub (then copy metadata)",
+            voice_hint="Say: persona mentor tone",
         ),
         HubButton(
             label="Close",
             description="Close the Help Hub",
             handler=lambda: help_hub_close(),
-            voice_hint="Say: model help hub",
+            voice_hint="Say: persona mentor tone",
         ),
     ]
 

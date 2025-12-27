@@ -1534,6 +1534,22 @@
 - next_work:
   - None (documentation slice complete).
 
+## 2025-12-27 – Loop 125 (kind: documentation)
+- helper_version: helper:v20251223.1
+- focus: ADR-0062 §Refactor Plan – Prompt Persona Orchestrator (historical ADR hygiene)
+- riskiest_assumption: ADR-040 work log still suggested surfaces import presets directly from `personaConfig`, hiding the orchestrator façade adopted in later loops.
+- validation_targets:
+  - python3 - <<'PY' … (ADR-040 work log orchestrator check)
+  - python3 - <<'PY' … (ADR-040 work log orchestrator check for helper name)
+- evidence:
+  - docs/adr/evidence/0062/loop-0125.md
+- rollback_plan: git restore --source=HEAD -- docs/adr/040-axis-families-and-persona-contract-simplification.work-log.md
+- delta_summary: helper:diff-snapshot=1 file changed, 5 insertions(-?), 5? We'll fill later.
+- residual_risks:
+  - Additional ADR 040 paragraphs referencing `personaConfig` may need further updates as orchestrator coverage expands.
+- next_work:
+  - Behaviour: audit remaining historical ADRs (for example ADR-041) for orchestrator messaging — python3 - <<'PY' … upcoming check — future-shaping: keep contributor docs aligned with the persona orchestrator façade.
+
 ## 2025-12-27 – Loop 121 (kind: documentation)
 - helper_version: helper:v20251223.1
 - focus: ADR-0062 §Refactor Plan – Prompt Persona Orchestrator (documentation alignment)

@@ -158,7 +158,7 @@
 
 ### Changes
 
-- Extended `lib/personaConfig.py` with dataclass-based presets:
+- Extended `lib/personaConfig.py` with dataclass-based presets and (later in ADR-0062) wrapped them with `get_persona_intent_orchestrator()` so downstream surfaces consume a single façade:
   - `PERSONA_PRESETS`: small set of named persona recipes (for example, `peer_engineer_explanation`, `teach_junior_dev`, `executive_brief`) that map to existing `voice`/`audience`/`tone` tokens.
   - `INTENT_PRESETS`: named intent presets (for example, `teach`, `decide`, `plan`, `evaluate`, `brainstorm`, `appreciate`) that map to existing `intent` tokens.
 - Added `_tests/test_persona_presets.py` to ensure:
@@ -174,7 +174,7 @@
 
 ### Follow-ups
 
-- Surface `PERSONA_PRESETS` and `INTENT_PRESETS` in one or more UX surfaces (for example, pattern picker, suggestions modal, quick help) as persona/intent pickers.
+- Surface `PERSONA_PRESETS` and `INTENT_PRESETS` (via `get_persona_intent_orchestrator()` so aliases stay canonical) in one or more UX surfaces (for example, pattern picker, suggestions modal, quick help) as persona/intent pickers.
 - Consider small docs/help snippets that reference these preset names so users see concrete Who/Why recipes, not just raw axes.
 
 ---
@@ -186,15 +186,15 @@
 
 ### Changes
 
-- Updated `lib/modelHelpCanvas.py` to import `PERSONA_PRESETS` and `INTENT_PRESETS` from `lib/personaConfig`.
+- Updated `lib/modelHelpCanvas.py` to consume presets via `get_persona_intent_orchestrator()` (falling back to `lib.personaConfig` when needed).
 - Extended the default canvas renderer (`_default_draw_quick_help`) to show a concise axis-family summary immediately after the grammar/caps lines:
   - "Who / Why / How (ADR 040):" header.
   - "Who – Persona: voice, audience, tone."
   - "Why – Intent: intent."
   - "How – Contract: completeness, scope, method, style."
 - Added lightweight persona/intent preset hints to the same section so users see concrete Who/Why recipes in quick help:
-  - "Persona presets: …" using the first few `PERSONA_PRESETS` labels.
-  - "Intent presets: …" using the first few `INTENT_PRESETS` labels.
+  - "Persona presets: …" using the first few orchestrator-backed persona preset labels.
+  - "Intent presets: …" using the first few orchestrator-backed intent preset labels.
   - Both blocks are guarded so quick help still renders if presets cannot be imported.
 - Ran `python3 -m pytest _tests/test_model_help_canvas.py _tests/test_help_hub.py` to confirm help-related tests remain green.
 
@@ -271,7 +271,7 @@
 
 ### Changes
 
-- Updated `lib/modelPatternGUI.py` to import `PERSONA_PRESETS` and `INTENT_PRESETS` from `lib/personaConfig` so the pattern picker can use the shared Persona/Intent SSOT.
+- Updated `lib/modelPatternGUI.py` (now orchestrator-backed per ADR-0062 Loop 119) so the pattern picker uses `get_persona_intent_orchestrator()` for Persona/Intent presets, falling back to `lib.personaConfig` when the façade is unavailable.
 - Extended the canvas renderer `_draw_pattern_canvas` so that, when a domain is selected, it shows a compact Who/Why section above the pattern list:
   - Heading: `Who / Why presets (ADR 040):`.
   - `Persona (Who):` followed by the first few persona presets, rendered as `label: voice · audience · tone` (omitting any empty axes).
@@ -298,7 +298,7 @@
 
 ### Changes
 
-- Updated `lib/modelSuggestionGUI.py` to import `PERSONA_PRESETS` and `INTENT_PRESETS` from `lib/personaConfig` so the suggestions canvas can reuse the shared Persona/Intent SSOT.
+- Updated `lib/modelSuggestionGUI.py` to hydrate suggestions via `get_persona_intent_orchestrator()` (with legacy `persona_intent_maps` as fallback) so the suggestions canvas reuses the shared Persona/Intent SSOT.
 - Extended `_draw_suggestions` so that, when there are suggestions to show, it renders a compact Who/Why section above the suggestion rows:
   - Heading: `Who / Why presets (ADR 040):`.
   - `Persona (Who):` followed by the first few persona presets, as `label: voice · audience · tone` (omitting empty axes).

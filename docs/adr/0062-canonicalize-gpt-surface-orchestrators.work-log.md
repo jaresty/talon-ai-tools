@@ -1450,3 +1450,19 @@
   - Intent display fields fall back to orchestrator display map; monitor future catalog updates to ensure casing stays aligned when orchestrator lacks entries.
 - next_work:
   - Behaviour: migrate model pattern GUI helpers to orchestrator exports — python3 -m pytest _tests/test_model_pattern_gui.py — future-shaping: extend façade coverage across remaining guidance surfaces.
+
+## 2025-12-27 – Loop 119 (kind: implementation)
+- helper_version: helper:v20251223.1
+- focus: ADR-0062 §Refactor Plan – Guidance Surface Coordinator (pattern GUI orchestrator display map)
+- riskiest_assumption: Pattern GUI would keep hydrating intent buttons from `personaConfig` maps, letting Concordance guidance drift when orchestrator-only display aliases change.
+- validation_targets:
+  - python3 -m pytest _tests/test_model_pattern_gui.py::ModelPatternGUITests::test_pattern_canvas_prefers_orchestrator_display_map
+  - python3 -m pytest _tests/test_model_pattern_gui.py
+- evidence:
+  - docs/adr/evidence/0062/loop-0119.md
+- rollback_plan: git restore --source=HEAD -- lib/modelPatternGUI.py _tests/test_model_pattern_gui.py && python3 -m pytest _tests/test_model_pattern_gui.py::ModelPatternGUITests::test_pattern_canvas_prefers_orchestrator_display_map
+- delta_summary: helper:diff-snapshot=2 files changed, 179 insertions(+), 52 deletions(-); pattern GUI now reads persona/intent metadata from the persona orchestrator with tests covering façade-backed display aliases.
+- residual_risks:
+  - Canvas say-lines still rely on legacy intent tokens; future loops may surface orchestrator aliases alongside canonical tokens in the voice hints.
+- next_work:
+  - Behaviour: migrate Talon list generators to orchestrator helpers — python3 -m pytest _tests/test_generate_talon_lists.py — future-shaping: align list exports with canonical persona/intent metadata.

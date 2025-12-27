@@ -30,6 +30,7 @@ from .modelHelpers import notify
 from .surfaceGuidance import guard_surface_request
 
 from .personaConfig import persona_intent_maps
+from .personaOrchestrator import get_persona_intent_orchestrator
 
 mod = Module()
 ctx = Context()
@@ -49,45 +50,79 @@ class PatternGUIState:
 def _persona_presets():
     """Return the latest persona presets (reload-safe).
 
-    Prefer the shared persona intent maps so pattern presets stay aligned with
+    Prefer the shared persona orchestrator so pattern presets stay aligned with
     other Concordance-facing UIs. Fall back to the legacy catalog constants
-    when maps are unavailable (for example, during bootstrap).
+    when orchestrator data is unavailable (for example, during bootstrap).
     """
     try:
-        maps = persona_intent_maps()
-        return tuple(maps.persona_presets.values())
+        orchestrator = get_persona_intent_orchestrator()
     except Exception:
-        try:
-            from . import personaConfig
+        orchestrator = None
 
-            catalog = getattr(personaConfig, "persona_catalog", None)
-            if callable(catalog):
-                return tuple(catalog().values())
-            return tuple(getattr(personaConfig, "PERSONA_PRESETS", ()))
+    if orchestrator is not None:
+        try:
+            presets_mapping = getattr(orchestrator, "persona_presets", {}) or {}
+            if presets_mapping:
+                return tuple(presets_mapping.values())
         except Exception:
-            return ()
+            pass
+
+    try:
+        maps = persona_intent_maps()
+        presets_mapping = getattr(maps, "persona_presets", {}) or {}
+        if presets_mapping:
+            return tuple(presets_mapping.values())
+    except Exception:
+        pass
+
+    try:
+        from . import personaConfig
+
+        catalog = getattr(personaConfig, "persona_catalog", None)
+        if callable(catalog):
+            return tuple(catalog().values())
+        return tuple(getattr(personaConfig, "PERSONA_PRESETS", ()))
+    except Exception:
+        return ()
 
 
 def _intent_presets():
     """Return the latest intent presets (reload-safe).
 
-    Prefer the shared persona intent maps so pattern presets stay aligned with
+    Prefer the shared persona orchestrator so pattern presets stay aligned with
     other Concordance-facing UIs. Fall back to the legacy catalog constants
-    when maps are unavailable (for example, during bootstrap).
+    when orchestrator data is unavailable (for example, during bootstrap).
     """
     try:
-        maps = persona_intent_maps()
-        return tuple(maps.intent_presets.values())
+        orchestrator = get_persona_intent_orchestrator()
     except Exception:
-        try:
-            from . import personaConfig
+        orchestrator = None
 
-            catalog = getattr(personaConfig, "intent_catalog", None)
-            if callable(catalog):
-                return tuple(catalog().values())
-            return tuple(getattr(personaConfig, "INTENT_PRESETS", ()))
+    if orchestrator is not None:
+        try:
+            presets_mapping = getattr(orchestrator, "intent_presets", {}) or {}
+            if presets_mapping:
+                return tuple(presets_mapping.values())
         except Exception:
-            return ()
+            pass
+
+    try:
+        maps = persona_intent_maps()
+        presets_mapping = getattr(maps, "intent_presets", {}) or {}
+        if presets_mapping:
+            return tuple(presets_mapping.values())
+    except Exception:
+        pass
+
+    try:
+        from . import personaConfig
+
+        catalog = getattr(personaConfig, "intent_catalog", None)
+        if callable(catalog):
+            return tuple(catalog().values())
+        return tuple(getattr(personaConfig, "INTENT_PRESETS", ()))
+    except Exception:
+        return ()
 
 
 @dataclass(frozen=True)
@@ -793,6 +828,35 @@ def _draw_pattern_canvas(c: canvas.Canvas) -> None:  # pragma: no cover - visual
     line_h = 18
     approx_char = 8
 
+    try:
+        orchestrator = get_persona_intent_orchestrator()
+    except Exception:
+        orchestrator = None
+
+    intent_display_map: dict[str, str] = {}
+    if orchestrator is not None:
+        try:
+            intent_display_map = {
+                str(key or "").strip(): str(value or "").strip()
+                for key, value in dict(
+                    getattr(orchestrator, "intent_display_map", {}) or {}
+                ).items()
+                if str(key or "").strip()
+            }
+        except Exception:
+            intent_display_map = {}
+    else:
+        try:
+            maps = persona_intent_maps()
+            raw_display_map = getattr(maps, "intent_display_map", {}) or {}
+            intent_display_map = {
+                str(key or "").strip(): str(value or "").strip()
+                for key, value in dict(raw_display_map).items()
+                if str(key or "").strip()
+            }
+        except Exception:
+            intent_display_map = {}
+
     draw_text("Model patterns", x, y)
     if rect is not None and hasattr(rect, "width"):
         close_label = "[X]"
@@ -906,29 +970,12 @@ def _draw_pattern_canvas(c: canvas.Canvas) -> None:  # pragma: no cover - visual
 
     try:
         intent_presets = _intent_presets()
-        maps = persona_intent_maps()
-        raw_display_map = getattr(maps, "intent_display_map", {}) if maps else {}
-        display_map: dict[str, str] = {}
-        try:
-            display_map = {
-                str(key or "").strip(): str(value or "").strip()
-                for key, value in dict(raw_display_map or {}).items()
-                if str(key or "").strip()
-            }
-        except Exception:
-            display_map = {}
         if intent_presets:
             draw_text("  Intent (Why):", x, y)
             y += line_h
             for preset in intent_presets[:4]:
                 intent_key = getattr(preset, "key", "") or ""
                 intent_token = getattr(preset, "intent", "") or intent_key
-                display_alias = (
-                    display_map.get(intent_key)
-                    or display_map.get(intent_token)
-                    or getattr(preset, "label", "")
-                    or intent_key
-                )
                 say_token = intent_token or intent_key
                 label_line = f"    {preset.label} (say: intent {say_token})"
                 draw_text(label_line, x, y)
@@ -980,17 +1027,6 @@ def _draw_pattern_canvas(c: canvas.Canvas) -> None:  # pragma: no cover - visual
 
     try:
         intent_presets = _intent_presets()
-        maps = persona_intent_maps()
-        raw_display_map = getattr(maps, "intent_display_map", {}) if maps else {}
-        display_map: dict[str, str] = {}
-        try:
-            display_map = {
-                str(key or "").strip(): str(value or "").strip()
-                for key, value in dict(raw_display_map or {}).items()
-                if str(key or "").strip()
-            }
-        except Exception:
-            display_map = {}
         if intent_presets:
             draw_text("  Intent (Why):", x, y)
             y += line_h
@@ -998,8 +1034,8 @@ def _draw_pattern_canvas(c: canvas.Canvas) -> None:  # pragma: no cover - visual
                 intent_key = getattr(preset, "key", "") or ""
                 intent_token = getattr(preset, "intent", "") or intent_key
                 display_alias = (
-                    display_map.get(intent_key)
-                    or display_map.get(intent_token)
+                    intent_display_map.get(intent_key)
+                    or intent_display_map.get(intent_token)
                     or getattr(preset, "label", "")
                     or intent_key
                 )

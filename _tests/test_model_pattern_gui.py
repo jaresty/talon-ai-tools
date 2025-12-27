@@ -87,6 +87,16 @@ if bootstrap is not None:
                     intent_presets={"decide": intent_preset},
                     intent_display_map={"decide": "Decide"},
                 )
+                orchestrator_stub = SimpleNamespace(
+                    persona_presets={},
+                    intent_presets={"decide": intent_preset},
+                    persona_aliases={},
+                    intent_aliases={},
+                    intent_synonyms={},
+                    intent_display_map={"decide": "Decide"},
+                    axis_tokens={},
+                    axis_alias_map={},
+                )
 
                 class StubCanvas:
                     def __init__(self) -> None:
@@ -105,6 +115,12 @@ if bootstrap is not None:
                 pattern_module.PatternCanvasState.scroll_y = 0.0
 
                 with (
+                    patch.object(
+                        pattern_module,
+                        "get_persona_intent_orchestrator",
+                        return_value=orchestrator_stub,
+                        create=True,
+                    ),
                     patch.object(
                         pattern_module, "persona_intent_maps", return_value=maps
                     ),
@@ -128,6 +144,81 @@ if bootstrap is not None:
                 self.assertTrue(
                     any("Decide" in line for line in summary_lines),
                     f"Expected intent label in summary lines, got {summary_lines}",
+                )
+
+            def test_pattern_canvas_prefers_orchestrator_display_map(self) -> None:
+                from talon_user.lib import modelPatternGUI as pattern_module
+                from talon_user.lib.personaConfig import IntentPreset
+
+                intent_preset = IntentPreset(
+                    key="decide",
+                    label="Decide",
+                    intent="decide",
+                )
+
+                class OrchestratorStub:
+                    def __init__(self) -> None:
+                        self.persona_presets = {}
+                        self.intent_presets = {"decide": intent_preset}
+                        self.persona_aliases = {}
+                        self.intent_aliases = {"guide choices": "decide"}
+                        self.intent_synonyms = {}
+                        self.intent_display_map = {"decide": "Guide choices"}
+                        self.axis_tokens = {}
+                        self.axis_alias_map = {}
+
+                    def canonical_persona_key(self, alias: str | None) -> str:
+                        return ""
+
+                    def canonical_intent_key(self, alias: str | None) -> str:
+                        alias_norm = (alias or "").strip().lower()
+                        return self.intent_aliases.get(alias_norm, "")
+
+                    def canonical_axis_token(self, axis: str, alias: str | None) -> str:
+                        return ""
+
+                class StubCanvas:
+                    def __init__(self) -> None:
+                        self.rect = pattern_module.Rect(0, 0, 800, 600)
+                        self.drawn: list[str] = []
+                        self.paint = None
+
+                    def draw_text(self, text, x, y) -> None:  # type: ignore[override]
+                        self.drawn.append(str(text))
+
+                    def draw_rect(self, rect) -> None:  # type: ignore[override]
+                        pass
+
+                canvas = StubCanvas()
+                pattern_module.PatternGUIState.domain = "coding"
+                pattern_module.PatternCanvasState.scroll_y = 0.0
+
+                orchestrator = OrchestratorStub()
+                empty_maps = SimpleNamespace(intent_display_map={}, intent_presets={})
+
+                with (
+                    patch.object(
+                        pattern_module, "persona_intent_maps", return_value=empty_maps
+                    ),
+                    patch.object(
+                        pattern_module,
+                        "get_persona_intent_orchestrator",
+                        return_value=orchestrator,
+                        create=True,
+                    ),
+                    patch.object(
+                        pattern_module, "_intent_presets", return_value=[intent_preset]
+                    ),
+                    patch.object(pattern_module, "_persona_presets", return_value=[]),
+                    patch.object(pattern_module, "PATTERNS", []),
+                ):
+                    pattern_module._draw_pattern_canvas(canvas)
+
+                pattern_module.PatternGUIState.domain = None
+
+                self.assertTrue(
+                    any("Guide choices" in line for line in canvas.drawn),
+                    f"Expected orchestrator display alias in drawn lines, got {canvas.drawn}",
                 )
 
             def test_axis_value_returns_description_when_present(self) -> None:

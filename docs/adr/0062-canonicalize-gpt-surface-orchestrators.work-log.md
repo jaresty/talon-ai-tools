@@ -1434,3 +1434,19 @@
   - Command ordering follows orchestrator alias insertion order; future loops may sort aliases alphabetically if needed.
 - next_work:
   - Behaviour: audit Help Hub button voice hints for remaining personaConfig dependencies — python3 -m pytest _tests/test_help_hub.py — future-shaping: continue consolidating orchestrator-driven hints across surfaces.
+
+## 2025-12-27 – Loop 118 (kind: implementation)
+- helper_version: helper:v20251223.1
+- focus: ADR-0062 §Refactor Plan – History Lifecycle Orchestrator (request log persona normalization)
+- riskiest_assumption: RequestLog would keep normalizing persona and intent snapshots via `personaConfig` helpers, letting Concordance history entries drift when catalog aliases change (probability medium, impact medium-high on history visibility).
+- validation_targets:
+  - python3 -m pytest _tests/test_request_log.py::RequestLogTests::test_normalise_persona_snapshot_uses_persona_orchestrator
+  - python3 -m pytest _tests/test_request_log.py
+- evidence:
+  - docs/adr/evidence/0062/loop-0118.md
+- rollback_plan: git restore --source=HEAD -- lib/requestLog.py _tests/test_request_log.py && python3 -m pytest _tests/test_request_log.py::RequestLogTests::test_normalise_persona_snapshot_uses_persona_orchestrator
+- delta_summary: helper:diff-snapshot=2 files changed, 196 insertions(+); requestLog delegates persona/intent normalization to the persona orchestrator and tests guard façade adoption.
+- residual_risks:
+  - Intent display fields fall back to orchestrator display map; monitor future catalog updates to ensure casing stays aligned when orchestrator lacks entries.
+- next_work:
+  - Behaviour: migrate model pattern GUI helpers to orchestrator exports — python3 -m pytest _tests/test_model_pattern_gui.py — future-shaping: extend façade coverage across remaining guidance surfaces.

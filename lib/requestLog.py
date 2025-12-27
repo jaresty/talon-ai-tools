@@ -21,6 +21,7 @@ except Exception:  # pragma: no cover - defensive fallback for stubs
 from .axisMappings import axis_registry_tokens, axis_value_to_key_map_for
 from .axisCatalog import axis_catalog
 from .personaConfig import canonical_persona_token, persona_intent_maps
+from .personaOrchestrator import get_persona_intent_orchestrator
 from .requestHistory import RequestHistory, RequestLogEntry
 
 _history = RequestHistory()
@@ -298,7 +299,109 @@ def _normalise_persona_snapshot(
             payload[key] = text
 
     try:
+        orchestrator = get_persona_intent_orchestrator()
+    except Exception:
+        orchestrator = None
+
+    if orchestrator is not None:
+        persona_key = payload.get("persona_preset_key", "")
+        persona_label = payload.get("persona_preset_label", "")
+        persona_spoken = payload.get("persona_preset_spoken", "")
+
+        if not persona_key:
+            persona_key = orchestrator.canonical_persona_key(persona_spoken)
+        if not persona_key:
+            persona_key = orchestrator.canonical_persona_key(persona_label)
+
+        if persona_key:
+            payload["persona_preset_key"] = persona_key
+            preset = orchestrator.persona_presets.get(persona_key)
+            if preset is not None:
+                if not persona_label:
+                    label_value = getattr(preset, "label", "") or getattr(
+                        preset, "key", ""
+                    )
+                    if label_value:
+                        payload["persona_preset_label"] = label_value
+                        persona_label = label_value
+                spoken_value = (
+                    getattr(preset, "spoken", "")
+                    or persona_label
+                    or getattr(preset, "key", "")
+                )
+                if spoken_value:
+                    payload["persona_preset_spoken"] = spoken_value
+                if getattr(preset, "voice", None) and not payload.get("persona_voice"):
+                    payload["persona_voice"] = preset.voice or ""
+                if getattr(preset, "audience", None) and not payload.get(
+                    "persona_audience"
+                ):
+                    payload["persona_audience"] = preset.audience or ""
+                if getattr(preset, "tone", None) and not payload.get("persona_tone"):
+                    payload["persona_tone"] = preset.tone or ""
+
+        intent_key = payload.get("intent_preset_key", "")
+        intent_label = payload.get("intent_preset_label", "")
+        intent_display = payload.get("intent_display", "")
+        intent_purpose = payload.get("intent_purpose", "")
+
+        if not intent_key:
+            for alias in (intent_display, intent_label, intent_purpose):
+                canonical = orchestrator.canonical_intent_key(alias)
+                if canonical:
+                    intent_key = canonical
+                    payload["intent_preset_key"] = canonical
+                    break
+
+        if intent_key:
+            canonical_candidate = canonical_persona_token("intent", intent_key)
+            if canonical_candidate:
+                if canonical_candidate != intent_key:
+                    intent_key = canonical_candidate
+                    payload["intent_preset_key"] = canonical_candidate
+            else:
+                payload["_invalid_intent_token"] = intent_key
+                payload.pop("intent_preset_key", None)
+                payload.pop("intent_preset_label", None)
+                payload.pop("intent_display", None)
+                payload.pop("intent_purpose", None)
+                intent_key = ""
+                intent_label = ""
+                intent_display = ""
+                intent_purpose = ""
+
+        if intent_key:
+            preset_intent = orchestrator.intent_presets.get(intent_key)
+            if preset_intent is not None:
+                if not intent_label:
+                    label_value = getattr(preset_intent, "label", "") or getattr(
+                        preset_intent, "key", ""
+                    )
+                    if label_value:
+                        payload["intent_preset_label"] = label_value
+                        intent_label = label_value
+                if not intent_purpose:
+                    purpose_value = getattr(preset_intent, "intent", "") or getattr(
+                        preset_intent, "key", ""
+                    )
+                    if purpose_value:
+                        payload["intent_purpose"] = purpose_value
+                        intent_purpose = purpose_value
+            display_value = orchestrator.intent_display_map.get(intent_key)
+            if not display_value and intent_key:
+                preset_intent = orchestrator.intent_presets.get(intent_key)
+                if preset_intent is not None:
+                    display_value = orchestrator.intent_display_map.get(
+                        getattr(preset_intent, "intent", "")
+                    )
+            if display_value and not intent_display:
+                payload["intent_display"] = display_value
+
+        return payload
+
+    try:
         maps = persona_intent_maps()
+
     except Exception:
         maps = None
 

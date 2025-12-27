@@ -1,4 +1,5 @@
 import unittest
+from types import SimpleNamespace
 from typing import TYPE_CHECKING, get_args
 from unittest.mock import patch
 
@@ -149,6 +150,98 @@ if bootstrap is not None:
                 "Important: expand scope a lot", entry.axes.get("scope", [])
             )
             self.assertNotIn("Important: do many things", entry.axes.get("method", []))
+
+        def test_normalise_persona_snapshot_uses_persona_orchestrator(self) -> None:
+            class OrchestratorStub:
+                def __init__(self) -> None:
+                    self.persona_aliases = {"friendly mentor": "mentor"}
+                    self.intent_aliases = {"guide display": "guide"}
+                    self.intent_synonyms = {}
+                    self.intent_display_map = {"guide": "Guide Display"}
+                    self.persona_presets = {
+                        "mentor": SimpleNamespace(
+                            key="mentor",
+                            label="Mentor Label",
+                            spoken="Mentor Spoken",
+                            voice="mentor-voice",
+                            audience="teams",
+                            tone="supportive",
+                        )
+                    }
+                    self.intent_presets = {
+                        "guide": SimpleNamespace(
+                            key="guide",
+                            label="Guide Label",
+                            intent="Guide Purpose",
+                        )
+                    }
+                    self.axis_tokens = {}
+                    self.axis_alias_map = {}
+
+                def canonical_persona_key(self, alias: str | None) -> str:
+                    alias_norm = (alias or "").strip().lower()
+                    return self.persona_aliases.get(alias_norm, "")
+
+                def canonical_intent_key(self, alias: str | None) -> str:
+                    alias_norm = (alias or "").strip().lower()
+                    return self.intent_aliases.get(
+                        alias_norm
+                    ) or self.intent_synonyms.get(
+                        alias_norm,
+                        "",
+                    )
+
+                def canonical_axis_token(self, axis: str, alias: str | None) -> str:
+                    return ""
+
+            orchestrator = OrchestratorStub()
+            persona_snapshot = {
+                "persona_preset_spoken": "Friendly Mentor",
+                "intent_display": "Guide Display",
+            }
+            empty_maps = SimpleNamespace(
+                persona_preset_aliases={},
+                persona_presets={},
+                intent_preset_aliases={},
+                intent_synonyms={},
+                intent_presets={},
+                intent_display_map={},
+            )
+
+            with (
+                patch.object(
+                    requestlog_module,
+                    "persona_intent_maps",
+                    return_value=empty_maps,
+                ),
+                patch(
+                    "talon_user.lib.personaOrchestrator.get_persona_intent_orchestrator",
+                    return_value=orchestrator,
+                ),
+                patch.object(
+                    requestlog_module,
+                    "get_persona_intent_orchestrator",
+                    return_value=orchestrator,
+                    create=True,
+                ),
+                patch.object(
+                    requestlog_module,
+                    "canonical_persona_token",
+                    side_effect=lambda domain, token: token,
+                ),
+            ):
+                result = requestlog_module._normalise_persona_snapshot(persona_snapshot)
+
+            self.assertEqual(result["persona_preset_key"], "mentor")
+            self.assertEqual(result["persona_preset_label"], "Mentor Label")
+            self.assertEqual(result["persona_preset_spoken"], "Mentor Spoken")
+            self.assertEqual(result["persona_voice"], "mentor-voice")
+            self.assertEqual(result["persona_audience"], "teams")
+            self.assertEqual(result["persona_tone"], "supportive")
+            self.assertEqual(result["intent_preset_key"], "guide")
+            self.assertEqual(result["intent_display"], "Guide Display")
+            self.assertEqual(result["intent_purpose"], "Guide Purpose")
+            self.assertEqual(result["intent_preset_label"], "Guide Label")
 
         def test_append_entry_preserves_pending_drop_reason(self) -> None:
             axes = {"directional": ["fog"]}

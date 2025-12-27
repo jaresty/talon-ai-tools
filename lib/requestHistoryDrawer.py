@@ -11,7 +11,6 @@ from .historyLifecycle import (
     all_entries,
     consume_last_drop_reason_record,
     drop_reason_message,
-    last_drop_reason,
     set_drop_reason,
     try_begin_request as lifecycle_try_begin_request,
 )
@@ -19,6 +18,7 @@ from .historyQuery import history_drawer_entries_from
 
 from .modelHelpers import notify
 from .requestGating import request_is_in_flight
+from .surfaceGuidance import guard_surface_request
 from .overlayHelpers import apply_canvas_blocking
 from .overlayLifecycle import close_overlays, close_common_overlays
 
@@ -58,50 +58,31 @@ def _on_guard_block(reason: str, message: str) -> None:
             fallback = drop_reason_message(reason)
         except Exception:
             fallback = ""
+        if not fallback:
+            fallback = f"GPT: Request blocked; reason={reason}."
+        try:
+            set_drop_reason(reason, fallback)
+        except Exception:
+            pass
+        try:
+            notify(fallback)
+        except Exception:
+            pass
     HistoryDrawerState.last_message = fallback or ""
 
 
 def _reject_if_request_in_flight() -> bool:
     """Return True when the history drawer should abort due to gating."""
 
-    try:
-        allowed, reason = try_begin_request(source="requestHistoryDrawer")
-    except Exception:
-        allowed, reason = True, ""
-
-    if allowed:
+    blocked = guard_surface_request(
+        surface="history_drawer",
+        source="requestHistoryDrawer",
+        suppress_attr="suppress_overlay_inflight_guard",
+        on_block=_on_guard_block,
+    )
+    if not blocked:
         HistoryDrawerState.last_message = ""
-        try:
-            if not last_drop_reason():
-                set_drop_reason("")
-        except Exception:
-            pass
-        return False
-
-    if not reason:
-        return False
-
-    try:
-        drop_message = drop_reason_message(reason)
-    except Exception:
-        drop_message = ""
-    message = drop_message or f"GPT: Request blocked; reason={reason}."
-    HistoryDrawerState.last_message = message
-
-    try:
-        if drop_message:
-            set_drop_reason(reason)
-        else:
-            set_drop_reason(reason, message)
-    except Exception:
-        pass
-
-    try:
-        notify(message)
-    except Exception:
-        pass
-
-    return True
+    return blocked
 
 
 def _ensure_canvas() -> canvas.Canvas:

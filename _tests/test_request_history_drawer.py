@@ -255,94 +255,109 @@ if bootstrap is not None:
             save_mock.assert_not_called()
             self.assertFalse(HistoryDrawerState.showing)
 
-        def test_reject_if_request_in_flight_surfaces_drop_reason(self):
-            message = (
-                "GPT: Cannot save history source; entry is missing a directional lens."
+        def test_reject_if_request_in_flight_delegates_to_surface_guard(self):
+            HistoryDrawerState.last_message = "stale message"
+            captured_kwargs: dict[str, object] = {}
+
+            def fake_guard(**kwargs):
+                captured_kwargs.update(kwargs)
+                return True
+
+            with patch(
+                "talon_user.lib.requestHistoryDrawer.guard_surface_request",
+                side_effect=fake_guard,
+            ) as guard:
+                self.assertTrue(history_drawer._reject_if_request_in_flight())
+
+            guard.assert_called_once()
+            self.assertEqual(captured_kwargs["surface"], "history_drawer")
+            self.assertEqual(captured_kwargs["source"], "requestHistoryDrawer")
+            self.assertEqual(
+                captured_kwargs["suppress_attr"], "suppress_overlay_inflight_guard"
             )
-            with (
-                patch.object(
-                    history_drawer,
-                    "try_begin_request",
-                    return_value=(False, "history_save_missing_directional"),
-                ) as try_begin,
-                patch.object(
-                    history_drawer, "drop_reason_message", return_value=message
-                ),
-                patch.object(history_drawer, "set_drop_reason") as set_reason,
-                patch.object(history_drawer, "notify") as notify_mock,
+            self.assertTrue(callable(captured_kwargs["on_block"]))
+
+        def test_reject_if_request_in_flight_surfaces_drop_reason(self):
+            HistoryDrawerState.last_message = ""
+
+            def fake_guard(**kwargs):
+                on_block = kwargs["on_block"]
+                on_block("history_save_missing_directional", "Blocked for axis")
+                return True
+
+            with patch(
+                "talon_user.lib.requestHistoryDrawer.guard_surface_request",
+                side_effect=fake_guard,
             ):
-                result = history_drawer._reject_if_request_in_flight()
-            try_begin.assert_called_once_with(source="requestHistoryDrawer")
-            set_reason.assert_called_once_with("history_save_missing_directional")
-            notify_mock.assert_called_once_with(message)
-            self.assertTrue(result)
+                self.assertTrue(history_drawer._reject_if_request_in_flight())
+
+            self.assertEqual(HistoryDrawerState.last_message, "Blocked for axis")
 
         def test_history_drawer_open_surfaces_drop_message(self):
-            message = (
-                "GPT: Cannot save history source; entry is missing a directional lens."
-            )
             HistoryDrawerState.showing = False
             HistoryDrawerState.entries = []
             HistoryDrawerState.last_message = ""
-            with (
-                patch.object(
-                    history_drawer,
-                    "try_begin_request",
-                    return_value=(False, "history_save_missing_directional"),
-                ),
-                patch.object(
-                    history_drawer, "drop_reason_message", return_value=message
-                ),
-                patch.object(history_drawer, "set_drop_reason") as set_reason,
-                patch.object(history_drawer, "notify") as notify_mock,
+
+            def fake_guard(**kwargs):
+                on_block = kwargs["on_block"]
+                on_block("history_save_missing_directional", "Blocked for axis")
+                return True
+
+            with patch(
+                "talon_user.lib.requestHistoryDrawer.guard_surface_request",
+                side_effect=fake_guard,
             ):
                 DrawerActions.request_history_drawer_open()
-            set_reason.assert_called_once_with("history_save_missing_directional")
-            notify_mock.assert_called_once_with(message)
+
             self.assertFalse(HistoryDrawerState.showing)
-            self.assertEqual(HistoryDrawerState.last_message, message)
+            self.assertEqual(HistoryDrawerState.last_message, "Blocked for axis")
 
         def test_history_drawer_message_clears_after_success(self):
             HistoryDrawerState.last_message = "stale warning"
-            HistoryDrawerState.showing = False
-            HistoryDrawerState.entries = []
 
-            class DummyCanvas:
-                def show(self):
-                    pass
-
-            with (
-                patch.object(
-                    history_drawer,
-                    "try_begin_request",
-                    return_value=(True, ""),
-                ),
-                patch.object(history_drawer, "_refresh_entries"),
-                patch.object(
-                    history_drawer, "_ensure_canvas", return_value=DummyCanvas()
-                ),
+            with patch(
+                "talon_user.lib.requestHistoryDrawer.guard_surface_request",
+                return_value=False,
             ):
-                DrawerActions.request_history_drawer_open()
+                self.assertFalse(history_drawer._reject_if_request_in_flight())
+
             self.assertEqual(HistoryDrawerState.last_message, "")
 
         def test_history_drawer_guard_records_fallback_message(self):
             HistoryDrawerState.last_message = ""
+            consume_last_drop_reason_record()
+            fallback = "GPT: Request blocked; reason=history_save_missing_directional."
+
+            def fake_guard(**kwargs):
+                on_block = kwargs["on_block"]
+                on_block("history_save_missing_directional", "")
+                return True
+
             with (
+                patch.object(history_drawer, "drop_reason_message", return_value=""),
                 patch.object(
                     history_drawer,
-                    "try_begin_request",
-                    return_value=(False, "history_save_missing_directional"),
+                    "set_drop_reason",
+                    wraps=history_drawer.set_drop_reason,
+                ) as set_reason,
+                patch.object(history_drawer, "notify") as notify_mock,
+                patch(
+                    "talon_user.lib.requestHistoryDrawer.guard_surface_request",
+                    side_effect=fake_guard,
                 ),
-                patch.object(history_drawer, "drop_reason_message", return_value=""),
-                patch.object(history_drawer, "notify"),
             ):
                 history_drawer._reject_if_request_in_flight()
-            record = consume_last_drop_reason_record()
-            self.assertEqual(
-                record.message,
-                "GPT: Request blocked; reason=history_save_missing_directional.",
+
+            set_reason.assert_called_once_with(
+                "history_save_missing_directional", fallback
             )
-            self.assertEqual(record.code, "history_save_missing_directional")
+            notify_mock.assert_called_once_with(fallback)
+            self.assertEqual(HistoryDrawerState.last_message, fallback)
+            record = consume_last_drop_reason_record()
+            self.assertIsNotNone(record)
+            if record is not None:
+                self.assertEqual(record.message, fallback)
+                self.assertEqual(record.code, "history_save_missing_directional")
 
         def test_drawer_refresh_noop_when_hidden(self):
             HistoryDrawerState.showing = False

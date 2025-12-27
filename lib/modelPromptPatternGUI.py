@@ -14,11 +14,9 @@ from .requestGating import request_is_in_flight
 from .historyLifecycle import (
     last_drop_reason,
     set_drop_reason,
-    try_begin_request,
-    drop_reason_message,
 )
-from .dropReasonUtils import render_drop_reason
 from .modelHelpers import notify
+from .surfaceGuidance import guard_surface_request
 from .overlayHelpers import apply_canvas_blocking, apply_scroll_delta, clamp_scroll
 from .overlayLifecycle import close_overlays, close_common_overlays
 
@@ -82,50 +80,36 @@ def _request_is_in_flight() -> bool:
 
 
 def _reject_if_request_in_flight() -> bool:
-    """Notify and return True when a GPT request is already running."""
+    """Return True when the prompt pattern GUI should abort due to gating."""
 
-    allowed, reason = try_begin_request(source="modelPromptPatternGUI")
-    if allowed:
+    def _on_block(reason: str, message: str) -> None:
+        fallback = message or f"GPT: Request blocked; reason={reason}."
         try:
-            pending_message = last_drop_reason()
-        except Exception:
-            pending_message = ""
-        if not pending_message:
-            try:
-                set_drop_reason("")
-            except Exception:
-                pass
-        return False
-
-    if not reason:
-        return False
-
-    message = ""
-    try:
-        message = drop_reason_message(reason)
-    except Exception:
-        message = ""
-    if not message:
-        try:
-            message = render_drop_reason(reason)
-        except Exception:
-            message = ""
-
-    try:
-        if message:
-            set_drop_reason(reason, message)
-        else:
-            set_drop_reason(reason)
-    except Exception:
-        pass
-
-    if message:
-        try:
-            notify(message)
+            notify(fallback)
         except Exception:
             pass
+        if not message:
+            try:
+                set_drop_reason(reason, fallback)
+            except Exception:
+                pass
 
-    return True
+    blocked = guard_surface_request(
+        surface="model_prompt_pattern_gui",
+        source="modelPromptPatternGUI",
+        suppress_attr="suppress_overlay_inflight_guard",
+        on_block=_on_block,
+        notify_fn=lambda _message: None,
+    )
+    if blocked:
+        return True
+
+    try:
+        if not last_drop_reason():
+            set_drop_reason("")
+    except Exception:
+        pass
+    return False
 
 
 @dataclass(frozen=True)

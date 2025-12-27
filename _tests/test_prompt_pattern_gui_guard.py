@@ -55,74 +55,76 @@ class PromptPatternGUIGuardTests(unittest.TestCase):
         if bootstrap is None:
             self.skipTest("Talon runtime not available")
 
+        captured_kwargs: dict[str, object] = {}
+
+        def guard_blocks(**kwargs):
+            captured_kwargs.update(kwargs)
+            on_block = kwargs.get("on_block")
+            self.assertTrue(callable(on_block))
+            on_block("in_flight", "Request running")
+            return True
+
         with (
             patch.object(
-                prompt_pattern_module,
-                "try_begin_request",
-                return_value=(False, "in_flight"),
-            ) as try_begin,
-            patch.object(
-                prompt_pattern_module,
-                "drop_reason_message",
-                return_value="Request running",
-            ) as drop_message,
-            patch.object(prompt_pattern_module, "set_drop_reason") as set_reason,
+                prompt_pattern_module, "guard_surface_request", side_effect=guard_blocks
+            ) as guard,
             patch.object(prompt_pattern_module, "notify") as notify_mock,
+            patch.object(prompt_pattern_module, "set_drop_reason") as set_reason,
         ):
             self.assertTrue(prompt_pattern_module._reject_if_request_in_flight())
-        try_begin.assert_called_once_with(source="modelPromptPatternGUI")
-        drop_message.assert_called_once_with("in_flight")
-        set_reason.assert_called_once_with("in_flight", "Request running")
+
+        guard.assert_called_once()
+        self.assertEqual(captured_kwargs.get("surface"), "model_prompt_pattern_gui")
+        self.assertEqual(captured_kwargs.get("source"), "modelPromptPatternGUI")
+        self.assertTrue(callable(captured_kwargs.get("notify_fn")))
         notify_mock.assert_called_once_with("Request running")
+        set_reason.assert_not_called()
+
+        def guard_fallback(**kwargs):
+            captured_kwargs.update(kwargs)
+            kwargs.get("on_block")("unknown_reason", "")
+            return True
 
         with (
             patch.object(
                 prompt_pattern_module,
-                "try_begin_request",
-                return_value=(False, "unknown_reason"),
+                "guard_surface_request",
+                side_effect=guard_fallback,
             ),
-            patch.object(prompt_pattern_module, "drop_reason_message", return_value=""),
-            patch.object(prompt_pattern_module, "set_drop_reason") as set_reason,
             patch.object(prompt_pattern_module, "notify") as notify_mock,
+            patch.object(prompt_pattern_module, "set_drop_reason") as set_reason,
         ):
             self.assertTrue(prompt_pattern_module._reject_if_request_in_flight())
-        set_reason.assert_called_once_with(
-            "unknown_reason", "GPT: Request blocked; reason=unknown_reason."
-        )
-        notify_mock.assert_called_once_with(
-            "GPT: Request blocked; reason=unknown_reason."
-        )
+
+        fallback = "GPT: Request blocked; reason=unknown_reason."
+        notify_mock.assert_called_once_with(fallback)
+        set_reason.assert_called_once_with("unknown_reason", fallback)
 
     def test_reject_if_request_in_flight_preserves_drop_reason_on_success(self):
         if bootstrap is None:
             self.skipTest("Talon runtime not available")
 
-        with (
-            patch.object(
-                prompt_pattern_module, "try_begin_request", return_value=(True, "")
-            ),
-            patch.object(
-                prompt_pattern_module,
-                "last_drop_reason",
-                return_value="",
-                create=True,
-            ),
-            patch.object(prompt_pattern_module, "set_drop_reason") as set_reason,
-            patch.object(prompt_pattern_module, "notify") as notify_mock,
-        ):
-            self.assertFalse(prompt_pattern_module._reject_if_request_in_flight())
-        set_reason.assert_called_once_with("")
-        notify_mock.assert_not_called()
+        def guard_allows(**kwargs):
+            return False
 
         with (
             patch.object(
-                prompt_pattern_module, "try_begin_request", return_value=(True, "")
+                prompt_pattern_module, "guard_surface_request", side_effect=guard_allows
+            ) as guard,
+            patch.object(prompt_pattern_module, "last_drop_reason", return_value=""),
+            patch.object(prompt_pattern_module, "set_drop_reason") as set_reason,
+        ):
+            self.assertFalse(prompt_pattern_module._reject_if_request_in_flight())
+
+        guard.assert_called_once()
+        set_reason.assert_called_once_with("")
+
+        with (
+            patch.object(
+                prompt_pattern_module, "guard_surface_request", side_effect=guard_allows
             ),
             patch.object(
-                prompt_pattern_module,
-                "last_drop_reason",
-                return_value="drop_pending",
-                create=True,
+                prompt_pattern_module, "last_drop_reason", return_value="drop_pending"
             ),
             patch.object(prompt_pattern_module, "set_drop_reason") as set_reason,
         ):

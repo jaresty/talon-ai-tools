@@ -2,7 +2,7 @@
 
 - Status: Accepted  
 - Date: 2025-12-11  
-- Context: `talon-ai-tools` GPT `model` commands, Persona/Intent presets in `lib/personaConfig.py` and GUI/help surfaces (ADR 015, 026, 040, 041).
+- Context: `talon-ai-tools` GPT `model` commands, Persona/Intent presets surfaced via `lib/personaOrchestrator.py` (backed by `lib/personaConfig.py`) and GUI/help surfaces (ADR 015, 026, 040, 041).
 
 ---
 
@@ -12,7 +12,7 @@ This ADR turns **Persona/Intent presets** from “documentation-only examples”
 
 Today:
 
-- Persona/Intent presets live in `lib/personaConfig.py` as `PERSONA_PRESETS` and `INTENT_PRESETS`.
+- Persona/Intent presets are published through `get_persona_intent_orchestrator()` (wrapping `lib/personaConfig.py`'s `PERSONA_PRESETS` and `INTENT_PRESETS`).
 - Quick help, pattern GUI, and suggestions GUI show these presets as **labels plus axis decompositions** (for example, “Teach junior dev: as teacher · to junior engineer · kindly”).
 - However:
   - There is **no voice command** to apply a preset directly.
@@ -44,8 +44,8 @@ From ADR 040 and current implementation:
 
 Implementation status (this repo, 2025-12-11):
 
-- `lib/personaConfig.py` defines:
-  - `PERSONA_KEY_TO_VALUE` (axis token → description).
+- `lib/personaOrchestrator.py` exposes `get_persona_intent_orchestrator()` which materialises:
+  - `PERSONA_KEY_TO_VALUE` (axis token → description) and preset metadata sourced from `lib.personaConfig`.
   - `PERSONA_PRESETS` – small, curated Persona recipes:
     - `"peer_engineer_explanation"` → `"Peer engineer explanation"` → `as programmer · to programmer`.
     - `"teach_junior_dev"` → `"Teach junior dev"` → `as teacher · to junior engineer · kindly`.
@@ -148,7 +148,7 @@ We will:
 
    These commands are defined over the existing SSOT:
 
-   - Preset token sets from `PERSONA_PRESETS` and `INTENT_PRESETS`.
+   - Preset token sets surfaced by `get_persona_intent_orchestrator()` (backed by `PERSONA_PRESETS` / `INTENT_PRESETS`).
    - They **do not** introduce new axis semantics; they are a more ergonomic front end to existing lists and `model write`.
 
 2. **Define clear semantics: stance vs per-invocation**
@@ -239,7 +239,7 @@ We will:
 - **Reuse of existing SSOTs**
 
   - No new axis semantics.
-  - Presets remain defined in `personaConfig.PERSONA_PRESETS` / `INTENT_PRESETS`.
+  - Presets remain defined in `personaConfig.PERSONA_PRESETS` / `INTENT_PRESETS` and surfaced via `get_persona_intent_orchestrator()`.
   - Speech and GUIs call into the same Python actions.
 
 ### Risks and mitigations
@@ -277,15 +277,16 @@ We will:
 ## Implementation Sketch
 
 1. **Preset name mapping**
+ 
+    - Ensure `PersonaIntentOrchestrator` exposes a **short spoken name** for each preset (derived from `label` when absent in `personaConfig.PersonaPreset` / `IntentPreset`).
+      - For example:
+        - `key="teach_junior_dev"`, `spoken="teach junior dev"`.
+        - `key="executive_brief"`, `spoken="executive brief"`.
+    - Add helper functions (or orchestrator methods):
+      - `persona_preset_by_spoken_name(spoken: str) -> PersonaPreset | None`
+      - `intent_preset_by_spoken_name(spoken: str) -> IntentPreset | None`
+    - Keep the SSOT in Python via the orchestrator; do not hard-code preset names in Talon lists beyond what is necessary for speech captures.
 
-   - Extend `personaConfig.PersonaPreset` / `IntentPreset` to expose a **short spoken name**, or derive one from `label`:
-     - For example:
-       - `key="teach_junior_dev"`, `spoken="teach junior dev"`.
-       - `key="executive_brief"`, `spoken="executive brief"`.
-   - Add helper functions:
-     - `persona_preset_by_spoken_name(spoken: str) -> PersonaPreset | None`
-     - `intent_preset_by_spoken_name(spoken: str) -> IntentPreset | None`
-   - Keep SSOT in Python; do not hard-code preset names in Talon lists beyond what is necessary for speech captures.
 
 2. **Talon module + actions**
 
@@ -315,9 +316,11 @@ We will:
        - `list: user.personaPreset`
        - `list: user.intentPreset`
 
-     - Populate them from Python (`mod.list`) using `PERSONA_PRESETS` / `INTENT_PRESETS` at load time, so there is one SSOT.
+      - Populate them from Python (`mod.list`) using `get_persona_intent_orchestrator()` at load time (which in turn reads `PERSONA_PRESETS` / `INTENT_PRESETS`), so there is one SSOT.
+      - Keep Talon list artifacts (`scripts/tools/generate_talon_lists.py`) reading from the same orchestrator to avoid drift between generated lists and runtime captures.
+ 
+      - Add rules:
 
-     - Add rules:
 
        - `persona {user.personaPreset}: user.persona_set_preset(personaPreset)`
        - `intent {user.intentPreset}: user.intent_set_preset(intentPreset)`

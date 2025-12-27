@@ -1482,3 +1482,20 @@
   - Alias rows are written verbatim; monitor for case-insensitive duplicates if catalog metadata introduces them.
 - next_work:
   - Behaviour: update CLI docs to reference orchestrator-backed lists — python3 -m pytest _tests/test_generate_talon_lists.py::GenerateTalonListsTests::test_generate_lists_writes_axis_and_static_prompt_tokens — future-shaping: keep documentation aligned with orchestrator-driven exports.
+
+## 2025-12-27 – Loop 121 (kind: documentation)
+- helper_version: helper:v20251223.1
+- focus: ADR-0062 §Refactor Plan – Prompt Persona Orchestrator (documentation alignment)
+- riskiest_assumption: ADR-042 still described Talon presets as depending directly on `personaConfig`, creating a mismatch with the new orchestrator-backed lists.
+- validation_targets:
+  - python3 - <<'PY'\nfrom pathlib import Path\ntext = Path('docs/adr/042-persona-intent-presets-voice-first-commands.md').read_text()\nif 'persona orchestrator' in text.lower() or 'personaOrchestrator' in text:\n    raise SystemExit(0)\nraise SystemExit(1)\nPY
+  - python3 - <<'PY'\nfrom pathlib import Path\ntext = Path('docs/adr/042-persona-intent-presets-voice-first-commands.md').read_text().lower()\nif 'persona orchestrator' in text:\n    raise SystemExit(0)\nraise SystemExit(1)\nPY
+  - python3 -m pytest _tests/test_generate_talon_lists.py::GenerateTalonListsTests::test_generate_lists_writes_axis_and_static_prompt_tokens
+- evidence:
+  - docs/adr/evidence/0062/loop-0121.md
+- rollback_plan: git restore --source=HEAD -- docs/adr/042-persona-intent-presets-voice-first-commands.md && python3 -m pytest _tests/test_generate_talon_lists.py::GenerateTalonListsTests::test_generate_lists_writes_axis_and_static_prompt_tokens
+- delta_summary: helper:diff-snapshot=1 file changed, 6 insertions(+); ADR-042 now references the persona orchestrator as the SSOT for presets and notes the Talon list generator alignment.
+- residual_risks:
+  - Other ADRs still mention raw `PERSONA_PRESETS`; plan follow-up doc hygiene.
+- next_work:
+  - Behaviour: audit downstream CLI docs for orchestrator messaging — python3 -m pytest _tests/test_generate_talon_lists.py::GenerateTalonListsTests::test_generate_lists_writes_axis_and_static_prompt_tokens — future-shaping: keep user-facing docs synchronized with orchestrator-backed exports.

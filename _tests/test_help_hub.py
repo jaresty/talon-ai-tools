@@ -592,6 +592,40 @@ def test_help_hub_search_persona_metadata_includes_all_orchestrator_aliases(
     assert metadata.get("spoken_aliases") == ["mentor tone", "mentor voice"]
 
 
+def test_help_hub_metadata_summary_mentions_aliases(monkeypatch):
+    orchestrator_persona = SimpleNamespace(
+        key="mentor",
+        label="Mentor",
+        spoken="",
+    )
+    orchestrator = SimpleNamespace(
+        persona_presets={"mentor": orchestrator_persona},
+        persona_aliases={
+            "mentor voice": "mentor",
+            "mentor tone": "mentor",
+        },
+    )
+    with ExitStack() as stack:
+        for target in (
+            "lib.helpHub.get_persona_intent_orchestrator",
+            "talon_user.lib.helpHub.get_persona_intent_orchestrator",
+            "lib.helpDomain.get_persona_intent_orchestrator",
+            "talon_user.lib.helpDomain.get_persona_intent_orchestrator",
+        ):
+            stack.enter_context(patch(target, return_value=orchestrator))
+        for target in (
+            "lib.helpHub.persona_intent_maps",
+            "talon_user.lib.helpHub.persona_intent_maps",
+            "lib.helpDomain.persona_intent_maps",
+            "talon_user.lib.helpDomain.persona_intent_maps",
+        ):
+            stack.enter_context(
+                patch(target, side_effect=RuntimeError("maps unavailable"))
+            )
+        summary = helpHub._metadata_snapshot_summary_lines()
+    assert any("aliases:" in line for line in summary)
+
+
 def test_help_hub_button_voice_hints_match_orchestrator(monkeypatch):
     orchestrator = SimpleNamespace(
         persona_presets={},

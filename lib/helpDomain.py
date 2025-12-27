@@ -620,6 +620,10 @@ def help_metadata_summary_lines(snapshot: HelpMetadataSnapshot) -> List[str]:
     headers = [str(header).strip() for header in getattr(snapshot, "headers", ()) or ()]
     if headers:
         lines.extend([header for header in headers if header])
+        if snapshot.personas:
+            lines.append(
+                "Metadata note: orchestrator aliases: captured in spoken_aliases when present"
+            )
         if snapshot.personas or snapshot.intents:
             lines.append("")
 

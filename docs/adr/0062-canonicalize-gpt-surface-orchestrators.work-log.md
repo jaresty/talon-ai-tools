@@ -1328,6 +1328,36 @@
 - next_work:
   - Behaviour: audit Help Hub button voice hints against orchestrator phrasing — python3 -m pytest _tests/test_help_hub.py::test_help_hub_search_intent_voice_hint_uses_orchestrator — future-shaping: carry consistency into clipboard exports.
 
+## 2025-12-26 – Loop 099 (kind: implementation)
+- helper_version: helper:v20251223.1
+- focus: ADR-0062 §Refactor Plan – Guidance Surface Coordinator (Help Hub entrypoints)
+- riskiest_assumption: Help Hub button voice hints would keep legacy "model …" phrasing instead of orchestrator stance commands (probability medium, impact medium on consistency).
+- validation_targets:
+  - python3 -m pytest _tests/test_help_hub.py::test_help_hub_button_voice_hints_match_orchestrator
+- evidence:
+  - docs/adr/evidence/0062/loop-0099.md
+- rollback_plan: git stash push -- lib/helpHub.py _tests/test_help_hub.py && python3 -m pytest _tests/test_help_hub.py::test_help_hub_button_voice_hints_match_orchestrator && git stash pop
+- delta_summary: helper:diff-snapshot=3 files changed, 88 insertions(+), 20 deletions(-); Help Hub buttons now surface orchestrator-aligned voice hints and metadata alias summaries highlight coverage.
+- residual_risks:
+  - Voice hints rely on representative orchestrator aliases; future alias changes should update the button list.
+- next_work:
+  - Behaviour: note alias coverage in metadata summary headers — python3 -m pytest _tests/test_help_hub.py::test_help_hub_metadata_summary_mentions_aliases — future-shaping: reinforce documentation clarity.
+
+## 2025-12-26 – Loop 100 (kind: implementation)
+- helper_version: helper:v20251223.1
+- focus: ADR-0062 §Refactor Plan – Guidance Surface Coordinator (Metadata summary parity)
+- riskiest_assumption: Metadata summary headers wouldn’t mention orchestrator alias coverage, leaving docs ambiguous (probability medium, impact low-medium on clarity).
+- validation_targets:
+  - python3 -m pytest _tests/test_help_hub.py::test_help_hub_metadata_summary_mentions_aliases
+- evidence:
+  - docs/adr/evidence/0062/loop-0100.md
+- rollback_plan: git stash push -- lib/helpDomain.py _tests/test_help_hub.py && python3 -m pytest _tests/test_help_hub.py::test_help_hub_metadata_summary_mentions_aliases && git stash pop
+- delta_summary: helper:diff-snapshot=1 file changed, 7 insertions(+); metadata summaries now note orchestrator alias coverage when available.
+- residual_risks:
+  - Note is appended whenever personas exist; revisit if localised summaries are added.
+- next_work:
+  - Behaviour: confirm metadata summary note renders as expected — python3 -m pytest _tests/test_help_hub.py::test_help_hub_metadata_summary_mentions_aliases — future-shaping: ensure external docs align with the shared orchestration layer.
+
 
 ## 2025-12-26 – Loop 096 (kind: implementation)
 - helper_version: helper:v20251223.1

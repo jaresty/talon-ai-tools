@@ -1500,6 +1500,23 @@
 - next_work:
   - Behaviour: audit remaining Concordance ADRs for orchestration references — python3 -m pytest _tests/test_generate_talon_lists.py — future-shaping: keep guidance aligned with the persona orchestrator.
 
+## 2025-12-27 – Loop 123 (kind: implementation)
+- helper_version: helper:v20251223.1
+- focus: ADR-0062 §Refactor Plan – Guidance Surface Coordinator (suggestion GUI orchestrator hydration)
+- riskiest_assumption: Suggestion GUI hydration would continue pulling persona/intent metadata solely from `persona_intent_maps`, leaving orchestrator-only aliases and display strings invisible in the UI.
+- validation_targets:
+  - python3 -m pytest _tests/test_model_suggestion_gui.py::ModelSuggestionGUITests::test_open_uses_persona_orchestrator_when_maps_empty
+  - python3 -m pytest _tests/test_model_suggestion_gui.py
+  - python3 -m pytest _tests/test_suggestion_coordinator.py
+- evidence:
+  - docs/adr/evidence/0062/loop-0123.md
+- rollback_plan: git restore --source=HEAD -- lib/modelSuggestionGUI.py _tests/test_model_suggestion_gui.py && python3 -m pytest _tests/test_model_suggestion_gui.py::ModelSuggestionGUITests::test_open_uses_persona_orchestrator_when_maps_empty
+- delta_summary: helper:diff-snapshot=2 files changed, 210 insertions(+), 23 deletions(-); suggestion GUI now hydrates persona/intent metadata via the persona orchestrator with new tests covering the fallback path when `persona_intent_maps` is empty.
+- residual_risks:
+  - Other UI overlays may still bypass the orchestrator when displaying stance metadata; continue auditing surfaces for orchestrator coverage.
+- next_work:
+  - Behaviour: expand docs/UI alias coverage — python3 -m pytest _tests/test_model_suggestion_gui.py — future-shaping: ensure user-facing docs reflect orchestrator-driven metadata.
+
 ## 2025-12-27 – Loop 121 (kind: documentation)
 - helper_version: helper:v20251223.1
 - focus: ADR-0062 §Refactor Plan – Prompt Persona Orchestrator (documentation alignment)

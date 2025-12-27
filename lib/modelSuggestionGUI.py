@@ -17,6 +17,7 @@ from .talonSettings import (
     _canonicalise_axis_tokens,
 )
 from .personaConfig import persona_intent_maps
+from .personaOrchestrator import get_persona_intent_orchestrator
 from .stanceValidation import valid_stance_command
 from .suggestionCoordinator import (
     suggestion_entries_with_metadata,
@@ -39,14 +40,19 @@ from .requestGating import request_is_in_flight
 from .historyLifecycle import (
     try_begin_request,
     last_drop_reason,
+    drop_reason_message,
     set_drop_reason,
 )
-from .modelHelpers import notify
+
+_get_persona_orchestrator = get_persona_intent_orchestrator
+
+from .modelHelpers import notify as helpers_notify
 from .stanceDefaults import stance_defaults_lines
 from .overlayHelpers import apply_canvas_blocking, clamp_scroll
 from .overlayLifecycle import close_overlays, close_common_overlays
 from .overlayLifecycle import close_overlays
 from .surfaceGuidance import guard_surface_request
+from . import surfaceGuidance
 
 
 mod = Module()
@@ -352,7 +358,7 @@ def _reject_if_request_in_flight(*, allow_inflight: bool = False) -> bool:
     def _on_block(reason: str, message: str) -> None:
         fallback = message or f"GPT: Request blocked; reason={reason}."
         try:
-            notify(fallback)
+            surfaceGuidance.notify(fallback)
         except Exception:
             pass
         if not message:
@@ -1569,31 +1575,89 @@ def _draw_suggestions(c: canvas.Canvas) -> None:  # pragma: no cover - visual on
 
 def _refresh_suggestions_from_state() -> None:
     try:
+        orchestrator = _get_persona_orchestrator()
+    except Exception:
+        orchestrator = None
+
+    try:
         maps = persona_intent_maps()
     except Exception:
-        _debug(
-            "persona_intent_maps unavailable; falling back to raw suggestion metadata"
-        )
+        _debug("persona_intent_maps unavailable; falling back to orchestrator metadata")
         maps = None
 
     hydrated: list[Suggestion] = []
-    persona_presets = (
-        getattr(maps, "persona_presets", {}) or {} if maps is not None else {}
-    )
-    persona_aliases = (
-        getattr(maps, "persona_preset_aliases", {}) or {} if maps is not None else {}
-    )
-    intent_presets = (
-        getattr(maps, "intent_presets", {}) or {} if maps is not None else {}
-    )
-    intent_aliases = (
-        getattr(maps, "intent_preset_aliases", {}) or {} if maps is not None else {}
-    )
-    intent_synonyms = (
-        getattr(maps, "intent_synonyms", {}) or {} if maps is not None else {}
-    )
-    intent_display_map = (
-        getattr(maps, "intent_display_map", {}) or {} if maps is not None else {}
+
+    persona_presets: Dict[str, object] = {}
+    if maps and getattr(maps, "persona_presets", None):
+        persona_presets.update(dict(maps.persona_presets or {}))
+    if orchestrator and getattr(orchestrator, "persona_presets", None):
+        persona_presets.update(dict(orchestrator.persona_presets or {}))
+
+    persona_aliases: Dict[str, str] = {}
+
+    def _merge_persona_aliases(source: object) -> None:
+        for alias, canonical in dict(source or {}).items():
+            alias_key = str(alias or "").strip().lower()
+            canonical_value = str(canonical or "").strip()
+            if alias_key and canonical_value:
+                persona_aliases.setdefault(alias_key, canonical_value)
+
+    if maps and getattr(maps, "persona_preset_aliases", None):
+        _merge_persona_aliases(maps.persona_preset_aliases)
+    if orchestrator and getattr(orchestrator, "persona_aliases", None):
+        _merge_persona_aliases(orchestrator.persona_aliases)
+
+    intent_presets: Dict[str, object] = {}
+    if maps and getattr(maps, "intent_presets", None):
+        intent_presets.update(dict(maps.intent_presets or {}))
+    if orchestrator and getattr(orchestrator, "intent_presets", None):
+        intent_presets.update(dict(orchestrator.intent_presets or {}))
+
+    intent_aliases: Dict[str, str] = {}
+
+    def _merge_intent_aliases(source: object) -> None:
+        for alias, canonical in dict(source or {}).items():
+            alias_key = str(alias or "").strip().lower()
+            canonical_value = str(canonical or "").strip()
+            if alias_key and canonical_value:
+                intent_aliases.setdefault(alias_key, canonical_value)
+
+    if maps and getattr(maps, "intent_preset_aliases", None):
+        _merge_intent_aliases(maps.intent_preset_aliases)
+    if orchestrator and getattr(orchestrator, "intent_aliases", None):
+        _merge_intent_aliases(orchestrator.intent_aliases)
+
+    intent_synonyms: Dict[str, str] = {}
+
+    def _merge_intent_synonyms(source: object) -> None:
+        for alias, canonical in dict(source or {}).items():
+            alias_key = str(alias or "").strip().lower()
+            canonical_value = str(canonical or "").strip()
+            if alias_key and canonical_value:
+                intent_synonyms.setdefault(alias_key, canonical_value)
+
+    if maps and getattr(maps, "intent_synonyms", None):
+        _merge_intent_synonyms(maps.intent_synonyms)
+    if orchestrator and getattr(orchestrator, "intent_synonyms", None):
+        _merge_intent_synonyms(orchestrator.intent_synonyms)
+
+    intent_display_map: Dict[str, str] = {}
+    if maps and getattr(maps, "intent_display_map", None):
+        for key, value in dict(maps.intent_display_map or {}).items():
+            key_str = str(key or "").strip()
+            value_str = str(value or "").strip()
+            if key_str and value_str:
+                intent_display_map[key_str] = value_str
+    if orchestrator and getattr(orchestrator, "intent_display_map", None):
+        for key, value in dict(orchestrator.intent_display_map or {}).items():
+            key_str = str(key or "").strip()
+            value_str = str(value or "").strip()
+            if key_str and value_str:
+                intent_display_map[key_str] = value_str
+
+    persona_data_available = bool(persona_presets or persona_aliases)
+    intent_data_available = bool(
+        intent_presets or intent_aliases or intent_synonyms or intent_display_map
     )
 
     raw_suggestions = tuple(suggestion_entries_with_metadata())
@@ -1608,7 +1672,7 @@ def _refresh_suggestions_from_state() -> None:
             continue
 
         data = dict(item)
-        if maps is not None:
+        if persona_data_available:
             persona_key = str(data.get("persona_preset_key") or "").strip()
             persona_label = str(data.get("persona_preset_label") or "").strip()
             persona_spoken = str(data.get("persona_preset_spoken") or "").strip()
@@ -1644,8 +1708,10 @@ def _refresh_suggestions_from_state() -> None:
                         break
             if preset is not None:
                 target_key = preset.key
-                target_label = preset.label or target_key
-                target_spoken = preset.spoken or target_label or target_key
+                target_label = getattr(preset, "label", "") or target_key
+                target_spoken = (
+                    getattr(preset, "spoken", "") or target_label or target_key
+                )
                 if persona_key != target_key:
                     data["persona_preset_key"] = target_key
                 if target_label and persona_label != target_label:
@@ -1653,12 +1719,13 @@ def _refresh_suggestions_from_state() -> None:
                 if target_spoken and persona_spoken != target_spoken:
                     data["persona_preset_spoken"] = target_spoken
                 if not str(data.get("persona_voice") or "").strip():
-                    data["persona_voice"] = preset.voice or ""
+                    data["persona_voice"] = getattr(preset, "voice", "") or ""
                 if not str(data.get("persona_audience") or "").strip():
-                    data["persona_audience"] = preset.audience or ""
+                    data["persona_audience"] = getattr(preset, "audience", "") or ""
                 if not str(data.get("persona_tone") or "").strip():
-                    data["persona_tone"] = preset.tone or ""
+                    data["persona_tone"] = getattr(preset, "tone", "") or ""
 
+        if intent_data_available:
             intent_key = str(data.get("intent_preset_key") or "").strip()
             intent_purpose = str(data.get("intent_purpose") or "").strip()
             intent_display = str(data.get("intent_display") or "").strip()
@@ -1738,7 +1805,7 @@ def _refresh_suggestions_from_state() -> None:
                         break
             if intent_preset is not None:
                 target_key = intent_preset.key
-                target_label = intent_preset.label or target_key
+                target_label = getattr(intent_preset, "label", "") or target_key
                 if intent_key != target_key:
                     data["intent_preset_key"] = target_key
                 current_label = str(data.get("intent_preset_label") or "").strip()
@@ -1790,7 +1857,7 @@ def _run_suggestion(suggestion: Suggestion) -> None:
         actions.app.notify("Suggestion has no static prompt; cannot run")
         return
     if not directional:
-        notify(
+        helpers_notify(
             "GPT: Suggestion has no directional lens; run a directional recipe (fog/fig/dig/ong/rog/bog/jog)."
         )
         return

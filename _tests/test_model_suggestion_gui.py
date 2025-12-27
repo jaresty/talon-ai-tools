@@ -604,55 +604,95 @@ if bootstrap is not None:
             )
             self.assertEqual(suggestion.intent_display.lower(), display_alias.lower())
 
-        def test_run_index_normalises_alias_only_metadata(self):
-            from talon_user.lib.personaConfig import persona_intent_maps
+        def test_open_uses_persona_orchestrator_when_maps_empty(self) -> None:
+            orchestrator = SimpleNamespace(
+                persona_presets={
+                    "mentor": SimpleNamespace(
+                        key="mentor",
+                        label="Mentor Guide",
+                        spoken="Friendly Mentor",
+                        voice="mentor-voice",
+                        audience="mentees",
+                        tone="supportive",
+                    )
+                },
+                persona_aliases={"friendly mentor": "mentor"},
+                intent_presets={
+                    "guide": SimpleNamespace(
+                        key="guide",
+                        label="Guide",
+                        intent="guide choice",
+                    )
+                },
+                intent_aliases={"guide choice": "guide"},
+                intent_synonyms={},
+                intent_display_map={"guide": "Guide choice"},
+                axis_alias_map={},
+            )
 
-            maps = persona_intent_maps(force_refresh=True)
-            persona_preset = next(iter(maps.persona_presets.values()))
-            intent_preset = next(iter(maps.intent_presets.values()))
-            display_alias = (
-                maps.intent_display_map.get(intent_preset.key)
-                or maps.intent_display_map.get(intent_preset.intent)
-                or intent_preset.label
-                or intent_preset.key
-                or intent_preset.intent
-                or ""
-            ).strip()
-            self.assertTrue(display_alias, "Expected intent preset display alias")
+            suggestion_entry = {
+                "name": "Mentor suggestion",
+                "recipe": "describe · gist · focus · plain · fog",
+                "persona_preset_key": "",
+                "persona_preset_label": "",
+                "persona_preset_spoken": "Friendly Mentor",
+                "persona_voice": "",
+                "persona_audience": "",
+                "persona_tone": "",
+                "intent_purpose": "",
+                "intent_preset_key": "",
+                "intent_preset_label": "",
+                "intent_display": "Guide choice",
+            }
 
-            GPTState.last_suggested_recipes = [
-                {
-                    "name": "Alias run",
-                    "recipe": "describe · gist · focus · plain · fog",
-                    "persona_preset_key": "",
-                    "persona_preset_label": f" {persona_preset.label.upper()} ",
-                    "persona_preset_spoken": "",
-                    "persona_voice": "",
-                    "persona_audience": "",
-                    "persona_tone": "",
-                    "intent_purpose": "",
-                    "intent_preset_key": "",
-                    "intent_preset_label": "",
-                    "intent_display": f" {display_alias}! ",
-                }
-            ]
+            with (
+                patch.object(
+                    modelSuggestionGUI,
+                    "suggestion_entries_with_metadata",
+                    return_value=[suggestion_entry],
+                ),
+                patch.object(
+                    modelSuggestionGUI,
+                    "persona_intent_maps",
+                    return_value=SimpleNamespace(
+                        persona_presets={},
+                        persona_preset_aliases={},
+                        intent_presets={},
+                        intent_preset_aliases={},
+                        intent_synonyms={},
+                        intent_display_map={},
+                    ),
+                ),
+                patch.object(
+                    modelSuggestionGUI,
+                    "_get_persona_orchestrator",
+                    return_value=orchestrator,
+                    create=True,
+                ),
+                patch.object(
+                    modelSuggestionGUI,
+                    "_reject_if_request_in_flight",
+                    return_value=False,
+                ),
+                patch.object(modelSuggestionGUI, "close_common_overlays"),
+                patch.object(
+                    modelSuggestionGUI, "_open_suggestion_canvas"
+                ) as open_canvas,
+            ):
+                UserActions.model_prompt_recipe_suggestions_gui_open()
 
-            UserActions.model_prompt_recipe_suggestions_run_index(1)
-
-            actions.user.gpt_apply_prompt.assert_called_once()
+            open_canvas.assert_called_once()
             self.assertTrue(SuggestionGUIState.suggestions)
             suggestion = SuggestionGUIState.suggestions[0]
-            expected_spoken = (
-                persona_preset.spoken or persona_preset.label or persona_preset.key
-            )
-            self.assertEqual(suggestion.persona_preset_key, persona_preset.key)
-            self.assertEqual(suggestion.persona_preset_label, persona_preset.label)
-            self.assertEqual(suggestion.persona_preset_spoken, expected_spoken)
-            self.assertEqual(suggestion.intent_preset_key, intent_preset.key)
-            self.assertEqual(
-                suggestion.intent_preset_label, intent_preset.label or intent_preset.key
-            )
-            self.assertEqual(suggestion.intent_display.lower(), display_alias.lower())
+            self.assertEqual(suggestion.persona_preset_key, "mentor")
+            self.assertEqual(suggestion.persona_preset_label, "Mentor Guide")
+            self.assertEqual(suggestion.persona_preset_spoken, "Friendly Mentor")
+            self.assertEqual(suggestion.persona_voice, "mentor-voice")
+            self.assertEqual(suggestion.persona_audience, "mentees")
+            self.assertEqual(suggestion.persona_tone, "supportive")
+            self.assertEqual(suggestion.intent_preset_key, "guide")
+            self.assertEqual(suggestion.intent_preset_label, "Guide")
+            self.assertEqual(suggestion.intent_display, "Guide choice")
 
         def test_run_index_surfaces_migration_hint_on_legacy_style(self):
             """Suggestion execution should hint and abort when legacy style is spoken."""

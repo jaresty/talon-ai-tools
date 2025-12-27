@@ -1358,6 +1358,36 @@
 - next_work:
   - Behaviour: confirm metadata summary note renders as expected — python3 -m pytest _tests/test_help_hub.py::test_help_hub_metadata_summary_mentions_aliases — future-shaping: ensure external docs align with the shared orchestration layer.
 
+## 2025-12-26 – Loop 101 (kind: implementation)
+- helper_version: helper:v20251223.1
+- focus: ADR-0062 §Refactor Plan – Guidance Surface Coordinator (Metadata summary note)
+- riskiest_assumption: Metadata summary headlines wouldn’t flag orchestrator alias coverage, leaving downstream docs ambiguous (probability medium, impact low-medium on clarity).
+- validation_targets:
+  - python3 -m pytest _tests/test_help_hub.py::test_help_hub_metadata_summary_mentions_aliases
+- evidence:
+  - docs/adr/evidence/0062/loop-0101.md
+- rollback_plan: git stash push -- lib/helpDomain.py _tests/test_help_hub.py && python3 -m pytest _tests/test_help_hub.py::test_help_hub_metadata_summary_mentions_aliases && git stash pop
+- delta_summary: helper:diff-snapshot=1 file changed, 15 insertions(+); metadata headers now highlight orchestrator alias coverage.
+- residual_risks:
+  - Note is global for personas; revisit phrasing if multiple locales emerge.
+- next_work:
+  - Behaviour: align ADR narrative with orchestrator voice hints — python3 -m pytest _tests/test_help_hub.py::test_help_doc_mentions_orchestrator_voice_hints — future-shaping: keep documentation consistent with shared commands.
+
+## 2025-12-26 – Loop 102 (kind: implementation)
+- helper_version: helper:v20251223.1
+- focus: ADR-0062 §Refactor Plan – Guidance Surface Coordinator (Docs alignment)
+- riskiest_assumption: ADR-0062 narrative would lag behind orchestrator voice hints and alias summaries (probability medium, impact low-medium on clarity).
+- validation_targets:
+  - python3 -m pytest _tests/test_help_hub.py::test_help_doc_mentions_orchestrator_voice_hints
+- evidence:
+  - docs/adr/evidence/0062/loop-0102.md
+- rollback_plan: git stash push -- docs/adr/0062-canonicalize-gpt-surface-orchestrators.md _tests/test_help_hub.py && python3 -m pytest _tests/test_help_hub.py::test_help_doc_mentions_orchestrator_voice_hints && git stash pop
+- delta_summary: helper:diff-snapshot=2 files changed, 9 insertions(+); ADR now explicitly references orchestrator voice hints and the guard keeps the doc aligned.
+- residual_risks:
+  - Future doc restructuring may require updating the guard path.
+- next_work:
+  - Behaviour: audit README guardrail coverage for orchestrator hints — python3 -m pytest _tests/test_readme_guardrails_docs.py — future-shaping: keep public docs synchronized with shared orchestrator terminology.
+
 
 ## 2025-12-26 – Loop 096 (kind: implementation)
 - helper_version: helper:v20251223.1

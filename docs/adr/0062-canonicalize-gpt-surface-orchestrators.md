@@ -126,3 +126,4 @@ These orchestrators must reuse existing facades (e.g. `axisCatalog`, `requestLif
 - Implement history lifecycle façade; update request history/log modules and canvases to use it.
 - Extend existing tests (history, persona, GUI suites) with necessary characterization coverage before behaviour changes.
 - Completed (Loops 0034–0036): centralize help metadata summary helper, regenerate cheat sheet snapshot, and guard README coverage via `_tests/test_readme_guardrails_docs.py`.
+- Completed (Loop 0099+): Help Hub buttons advertise orchestrator voice hints; metadata summaries now flag orchestrator alias coverage for downstream docs.

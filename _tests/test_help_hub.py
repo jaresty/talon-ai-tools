@@ -1,4 +1,5 @@
 from contextlib import ExitStack
+from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import MagicMock, patch
 import json
@@ -644,6 +645,11 @@ def test_help_hub_button_voice_hints_match_orchestrator(monkeypatch):
         buttons = helpHub._build_buttons()
     voice_hints = {btn.label: btn.voice_hint for btn in buttons}
     assert voice_hints["Quick help"].startswith("Say: persona")
+
+
+def test_help_doc_mentions_orchestrator_voice_hints():
+    doc = Path("docs/adr/0062-canonicalize-gpt-surface-orchestrators.md").read_text()
+    assert "orchestrator voice hints" in doc
 
 
 def test_help_hub_onboarding_flag():

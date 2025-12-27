@@ -1483,6 +1483,23 @@
 - next_work:
   - Behaviour: update CLI docs to reference orchestrator-backed lists — python3 -m pytest _tests/test_generate_talon_lists.py::GenerateTalonListsTests::test_generate_lists_writes_axis_and_static_prompt_tokens — future-shaping: keep documentation aligned with orchestrator-driven exports.
 
+## 2025-12-27 – Loop 122 (kind: documentation)
+- helper_version: helper:v20251223.1
+- focus: ADR-0062 §Refactor Plan – Prompt Persona Orchestrator (suggestion docs alignment)
+- riskiest_assumption: ADR-043 still directed contributors to raw `PERSONA_PRESETS` / `INTENT_PRESETS`, hiding the orchestrator SSOT for stance validation.
+- validation_targets:
+  - python3 - <<'PY'\nfrom pathlib import Path\ntext = Path('docs/adr/043-suggestion-command-validation-and-reasoning-debug.md').read_text()\nif 'persona orchestrator' in text.lower() or 'personaOrchestrator' in text:\n    raise SystemExit(0)\nraise SystemExit(1)\nPY
+  - python3 - <<'PY'\nfrom pathlib import Path\ntext = Path('docs/adr/043-suggestion-command-validation-and-reasoning-debug.md').read_text().lower()\nif 'persona orchestrator' in text:\n    raise SystemExit(0)\nraise SystemExit(1)\nPY
+  - python3 -m pytest _tests/test_generate_talon_lists.py::GenerateTalonListsTests::test_generate_lists_prefers_orchestrator_metadata
+- evidence:
+  - docs/adr/evidence/0062/loop-0122.md
+- rollback_plan: git restore --source=HEAD -- docs/adr/043-suggestion-command-validation-and-reasoning-debug.md && python3 -m pytest _tests/test_generate_talon_lists.py::GenerateTalonListsTests::test_generate_lists_prefers_orchestrator_metadata
+- delta_summary: helper:diff-snapshot=1 file changed, 6 insertions(+), 2 deletions(-); ADR-043 now references the persona orchestrator for preset validation and Talon captures.
+- residual_risks:
+  - Additional historical ADRs may still mention the old preset SSOT; continue doc hygiene as the orchestrator evolves.
+- next_work:
+  - Behaviour: audit remaining Concordance ADRs for orchestration references — python3 -m pytest _tests/test_generate_talon_lists.py — future-shaping: keep guidance aligned with the persona orchestrator.
+
 ## 2025-12-27 – Loop 121 (kind: documentation)
 - helper_version: helper:v20251223.1
 - focus: ADR-0062 §Refactor Plan – Prompt Persona Orchestrator (documentation alignment)

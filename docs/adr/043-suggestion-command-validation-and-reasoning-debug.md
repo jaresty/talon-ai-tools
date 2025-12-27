@@ -2,7 +2,7 @@
 
 - Status: Accepted  
 - Date: 2025-12-11  
-- Context: `talon-ai-tools` GPT `model suggest` flow, prompt recipe suggestions GUI, and ADRs 008/040/042.
+- Context: `talon-ai-tools` GPT `model suggest` flow, prompt recipe suggestions GUI, and ADRs 008/040/042 (Persona/Intent presets surfaced through `get_persona_intent_orchestrator()`).
 
 ---
 
@@ -90,8 +90,9 @@ We will:
 
      where:
 
-     - `<personaPreset>` is a key or spoken label from `PERSONA_PRESETS` in `lib/personaConfig.py` (for example, `persona teach junior dev`, `persona peer engineer explanation`).
-     - `<intentPreset>` is a key or spoken label from `INTENT_PRESETS` (for example, `intent teach`, `intent decide`).
+      - `<personaPreset>` is a key or spoken label surfaced by `get_persona_intent_orchestrator()` (backed by `PERSONA_PRESETS` in `lib/personaConfig.py`; for example, `persona teach junior dev`, `persona peer engineer explanation`).
+      - `<intentPreset>` is a key or spoken label surfaced by the same orchestrator (backed by `INTENT_PRESETS`; for example, `intent teach`, `intent decide`).
+
 
      Combined forms such as `persona teach junior dev · intent teach` are allowed when both halves validate.
 
@@ -221,51 +222,9 @@ We will:
    - Mitigation:
      - Build the validator token sets directly from the existing lists and presets:
        - `modelVoice.talon-list`, `modelAudience.talon-list`, `modelTone.talon-list`, `modelIntent.talon-list` for axis tokens.
-       - `PERSONA_PRESETS`, `INTENT_PRESETS` for preset names.
-     - Add tests that assert `_valid_stance_command` accepts known-good examples (from docs/ADRs) and rejects known-bad ones.
+       - Preset names come from `get_persona_intent_orchestrator()` (backed by `PERSONA_PRESETS` / `INTENT_PRESETS`).
+       - `PERSONA_PRESET_SPOKEN_SET`, `INTENT_PRESET_SPOKEN_SET` are derived from the orchestrator’s spoken maps and the forms used for `user.personaPreset` / `user.intentPreset`.
 
-3. **Risk: Logging reasoning leaks too much detail in normal use.**
-
-   - Mitigation:
-     - Only emit logs tied to `reasoning` when `GPTState.debug_enabled` is true.
-     - Keep user-facing notifications generic; use detailed reasoning only for debug logs.
-
----
-
-## Implementation Sketch
-
-1. **Prompt changes (`GPT/gpt.py`)**
-
-   - In `gpt_suggest_prompt_recipes_with_source`, extend the JSON contract in `user_text` to include `reasoning` and the refined `stance_command` rules above.
-
-   - Example shape in the prompt:
-
-     ```json
-     {
-       "suggestions": [
-         {
-           "name": string,
-           "recipe": string,
-           "persona_voice": string,
-           "persona_audience": string,
-           "persona_tone": string,
-           "intent_purpose": string,
-           "stance_command": string,
-           "why": string,
-           "reasoning": string
-         }
-       ]
-     }
-     ```
-
-2. **Validator helper (`GPT/gpt.py`)**
-
-   - Add `_valid_stance_command(cmd: str) -> bool` and supporting token sets:
-
-     - Build axis token sets once from `personaConfig` and the talon lists:
-
-       - `VOICE_TOKENS`, `AUDIENCE_TOKENS`, `TONE_TOKENS`, `PURPOSE_TOKENS` and `AXIS_TOKEN_SET = union(...)`.
-       - `PERSONA_PRESET_SPOKEN_SET`, `INTENT_PRESET_SPOKEN_SET` derived from `PERSONA_PRESETS` / `INTENT_PRESETS` and the spoken forms used for `user.personaPreset` / `user.intentPreset`.
 
      - Implement logic described in the Decision section.
 

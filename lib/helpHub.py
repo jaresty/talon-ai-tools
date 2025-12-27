@@ -28,9 +28,7 @@ from .helpDomain import (
 )
 
 from .requestGating import request_is_in_flight
-from .historyLifecycle import last_drop_reason, set_drop_reason, try_begin_request
-from .dropReasonUtils import render_drop_reason
-from .modelHelpers import notify
+from .surfaceGuidance import guard_surface_request
 from .overlayHelpers import apply_canvas_blocking
 from .overlayLifecycle import close_overlays, close_common_overlays
 from . import personaCatalog
@@ -107,38 +105,13 @@ def _request_is_in_flight() -> bool:
 
 
 def _reject_if_request_in_flight() -> bool:
-    """Notify and return True when a GPT request is already running."""
+    """Return True when Help Hub should abort due to gating."""
 
-    allowed, reason = try_begin_request(source="helpHub")
-    if allowed:
-        try:
-            pending_message = last_drop_reason()
-        except Exception:
-            pending_message = ""
-        if not pending_message:
-            try:
-                set_drop_reason("")
-            except Exception:
-                pass
-        return False
-
-    if not reason:
-        return False
-
-    message = render_drop_reason(reason)
-
-    try:
-        set_drop_reason(reason, message)
-    except Exception:
-        pass
-
-    try:
-        if message:
-            notify(message)
-    except Exception:
-        pass
-
-    return True
+    return guard_surface_request(
+        surface="help_hub",
+        source="helpHub",
+        suppress_attr="suppress_overlay_inflight_guard",
+    )
 
 
 # Basic layout constants for a compact panel.

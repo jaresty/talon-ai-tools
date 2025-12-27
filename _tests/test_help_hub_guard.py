@@ -11,7 +11,6 @@ else:
 if bootstrap is not None:
     from talon_user.lib import helpHub as help_module
     from talon_user.lib.helpHub import UserActions as HelpActions, HelpHubState
-    import talon_user.lib.dropReasonUtils as drop_reason_module
 
 
 class HelpHubGuardTests(unittest.TestCase):
@@ -52,75 +51,33 @@ class HelpHubGuardTests(unittest.TestCase):
             self.assertFalse(help_module._request_is_in_flight())
         helper.assert_called_once_with()
 
-    def test_reject_if_request_in_flight_notifies_with_drop_message(self):
-        with (
-            patch.object(
-                help_module,
-                "try_begin_request",
-                return_value=(False, "in_flight"),
-            ) as try_begin,
-            patch.object(
-                help_module,
-                "render_drop_reason",
-                return_value="Request running",
-                create=True,
-            ) as render_message,
-            patch.object(help_module, "set_drop_reason") as set_reason,
-            patch.object(help_module, "notify") as notify_mock,
-        ):
+    def test_reject_if_request_in_flight_delegates_to_surface_guard(self):
+        captured_kwargs: dict[str, object] = {}
+
+        def fake_guard(**kwargs):
+            captured_kwargs.update(kwargs)
+            return True
+
+        with patch(
+            "talon_user.lib.helpHub.guard_surface_request",
+            side_effect=fake_guard,
+        ) as guard:
             self.assertTrue(help_module._reject_if_request_in_flight())
-        try_begin.assert_called_once_with(source="helpHub")
-        render_message.assert_called_once_with("in_flight")
-        set_reason.assert_called_once_with("in_flight", "Request running")
-        notify_mock.assert_called_once_with("Request running")
 
-        with (
-            patch.object(
-                help_module,
-                "try_begin_request",
-                return_value=(False, "unknown_reason"),
-            ),
-            patch.object(
-                drop_reason_module,
-                "drop_reason_message",
-                return_value="",
-            ),
-            patch.object(
-                help_module,
-                "render_drop_reason",
-                return_value="Rendered fallback",
-                create=True,
-            ) as render_message,
-            patch.object(help_module, "set_drop_reason") as set_reason,
-            patch.object(help_module, "notify") as notify_mock,
-        ):
-            self.assertTrue(help_module._reject_if_request_in_flight())
-        render_message.assert_called_once_with("unknown_reason")
-        set_reason.assert_called_once_with("unknown_reason", "Rendered fallback")
-        notify_mock.assert_called_once_with("Rendered fallback")
+        guard.assert_called_once()
+        self.assertEqual(captured_kwargs["surface"], "help_hub")
+        self.assertEqual(captured_kwargs["source"], "helpHub")
+        self.assertEqual(
+            captured_kwargs["suppress_attr"], "suppress_overlay_inflight_guard"
+        )
 
-        with (
-            patch.object(help_module, "try_begin_request", return_value=(True, "")),
-            patch.object(help_module, "last_drop_reason", return_value="", create=True),
-            patch.object(help_module, "set_drop_reason") as set_reason,
-            patch.object(help_module, "notify") as notify_mock,
-        ):
+    def test_reject_if_request_in_flight_propagates_guard_result(self):
+        with patch(
+            "talon_user.lib.helpHub.guard_surface_request",
+            return_value=False,
+        ) as guard:
             self.assertFalse(help_module._reject_if_request_in_flight())
-        set_reason.assert_called_once_with("")
-        notify_mock.assert_not_called()
-
-        with (
-            patch.object(help_module, "try_begin_request", return_value=(True, "")),
-            patch.object(
-                help_module,
-                "last_drop_reason",
-                return_value="drop_pending",
-                create=True,
-            ),
-            patch.object(help_module, "set_drop_reason") as set_reason,
-        ):
-            self.assertFalse(help_module._reject_if_request_in_flight())
-        set_reason.assert_not_called()
+        guard.assert_called_once()
 
 
 if __name__ == "__main__":

@@ -1314,11 +1314,38 @@ def _request_is_in_flight() -> bool:
         return False
 
 
-def _reject_if_request_in_flight(*, passive: bool = False) -> bool:
-    """Return True when the pattern GUI should abort due to gating."""
+def _reject_if_request_in_flight(*, allow_inflight: bool = False) -> bool:
+    """Return True when a GPT request is already running."""
 
-    if passive:
-        return False
+    def _on_block(reason: str, message: str) -> None:
+        fallback = message or f"GPT: Request blocked; reason={reason}."
+        try:
+            notify(fallback)
+        except Exception:
+            pass
+        if not message:
+            try:
+                set_drop_reason(reason, fallback)
+            except Exception:
+                pass
+
+    blocked = guard_surface_request(
+        surface="model_pattern_gui",
+        source="modelPatternGUI",
+        suppress_attr="suppress_overlay_inflight_guard",
+        on_block=_on_block,
+        notify_fn=lambda _message: None,
+        allow_inflight=allow_inflight,
+    )
+    if blocked:
+        return True
+
+    try:
+        if not last_drop_reason():
+            set_drop_reason("")
+    except Exception:
+        pass
+    return False
 
     def _on_block(reason: str, message: str) -> None:
         fallback = message or f"GPT: Request blocked; reason={reason}."
@@ -1378,7 +1405,7 @@ class UserActions:
 
     def model_pattern_gui_close():
         """Close the model pattern picker GUI"""
-        if _reject_if_request_in_flight():
+        if _reject_if_request_in_flight(allow_inflight=True):
             return
         _close_pattern_canvas()
         ctx.tags = []

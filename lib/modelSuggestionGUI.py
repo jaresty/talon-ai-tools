@@ -346,7 +346,7 @@ def _request_is_in_flight() -> bool:
         return False
 
 
-def _reject_if_request_in_flight() -> bool:
+def _reject_if_request_in_flight(*, allow_inflight: bool = False) -> bool:
     """Return True when suggestion surfaces should abort due to gating."""
 
     def _on_block(reason: str, message: str) -> None:
@@ -367,6 +367,7 @@ def _reject_if_request_in_flight() -> bool:
         suppress_attr="suppress_overlay_inflight_guard",
         on_block=_on_block,
         notify_fn=lambda _message: None,
+        allow_inflight=allow_inflight,
     )
     if blocked:
         return True
@@ -1886,7 +1887,7 @@ class UserActions:
 
     def model_prompt_recipe_suggestions_gui_close():
         """Close the prompt recipe suggestion canvas."""
-        if _reject_if_request_in_flight():
+        if _reject_if_request_in_flight(allow_inflight=True):
             return
         _close_suggestion_canvas()
         ctx.tags = []

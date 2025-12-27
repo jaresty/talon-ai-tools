@@ -113,6 +113,18 @@ class ModelSuggestionGUIGuardTests(unittest.TestCase):
             self.assertFalse(suggestion_module._reject_if_request_in_flight())
         set_reason.assert_not_called()
 
+    def test_suggestion_gui_close_allows_inflight(self):
+        if bootstrap is None:
+            self.skipTest("Talon runtime not available")
+
+        with patch.object(
+            suggestion_module, "guard_surface_request", return_value=False
+        ) as guard:
+            SuggestionActions.model_prompt_recipe_suggestions_gui_close()
+
+        guard.assert_called_once()
+        self.assertTrue(guard.call_args.kwargs.get("allow_inflight"))
+
 
 if __name__ == "__main__":
     unittest.main()

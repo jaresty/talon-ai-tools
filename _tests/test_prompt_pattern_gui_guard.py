@@ -131,6 +131,18 @@ class PromptPatternGUIGuardTests(unittest.TestCase):
             self.assertFalse(prompt_pattern_module._reject_if_request_in_flight())
         set_reason.assert_not_called()
 
+    def test_prompt_pattern_close_allows_inflight(self):
+        if bootstrap is None:
+            self.skipTest("Talon runtime not available")
+
+        with patch.object(
+            prompt_pattern_module, "guard_surface_request", return_value=False
+        ) as guard:
+            PromptPatternActions.prompt_pattern_gui_close()
+
+        guard.assert_called_once()
+        self.assertTrue(guard.call_args.kwargs.get("allow_inflight"))
+
 
 if __name__ == "__main__":
     unittest.main()

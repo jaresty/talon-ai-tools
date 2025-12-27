@@ -138,6 +138,36 @@ class ModelHelpCanvasGuardTests(unittest.TestCase):
             self.assertFalse(help_canvas_module._reject_if_request_in_flight())
         set_reason.assert_not_called()
 
+    def test_help_canvas_close_allows_inflight(self):
+        with (
+            patch(
+                "talon_user.lib.modelHelpCanvas.guard_surface_request",
+                return_value=False,
+            ) as guard,
+            patch.object(help_canvas_module, "_reset_help_state"),
+            patch.object(help_canvas_module, "_close_canvas"),
+        ):
+            HelpActions.model_help_canvas_close()
+
+        guard.assert_called_once()
+        self.assertTrue(guard.call_args.kwargs.get("allow_inflight"))
+
+    def test_help_canvas_open_toggle_closing_allows_inflight(self):
+        HelpCanvasState.showing = True
+        with (
+            patch(
+                "talon_user.lib.modelHelpCanvas.guard_surface_request",
+                return_value=False,
+            ) as guard,
+            patch.object(help_canvas_module, "_reset_help_state"),
+            patch.object(help_canvas_module, "_close_canvas"),
+        ):
+            HelpActions.model_help_canvas_open()
+
+        guard.assert_called_once()
+        self.assertTrue(guard.call_args.kwargs.get("allow_inflight"))
+        HelpCanvasState.showing = False
+
 
 if __name__ == "__main__":
     unittest.main()

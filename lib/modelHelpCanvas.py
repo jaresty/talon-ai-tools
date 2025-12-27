@@ -78,13 +78,14 @@ def _request_is_in_flight() -> bool:
         return False
 
 
-def _reject_if_request_in_flight() -> bool:
+def _reject_if_request_in_flight(*, allow_inflight: bool = False) -> bool:
     """Return True when help surfaces should abort due to gating."""
 
     return guard_surface_request(
         surface="help",
         source="modelHelpCanvas",
         suppress_attr="suppress_overlay_inflight_guard",
+        allow_inflight=allow_inflight,
     )
 
 
@@ -1836,11 +1837,14 @@ register_draw_handler(_default_draw_quick_help)
 class UserActions:
     def model_help_canvas_open():
         """Toggle the canvas-based model grammar quick reference"""
-        if _reject_if_request_in_flight():
-            return
         if HelpCanvasState.showing:
+            if _reject_if_request_in_flight(allow_inflight=True):
+                return
             _reset_help_state("all", None)
             _close_canvas()
+            return
+
+        if _reject_if_request_in_flight():
             return
 
         # Close other related menus to avoid overlapping overlays.
@@ -1851,7 +1855,7 @@ class UserActions:
 
     def model_help_canvas_close():
         """Explicitly close the canvas-based quick help and reset state"""
-        if _reject_if_request_in_flight():
+        if _reject_if_request_in_flight(allow_inflight=True):
             return
         _reset_help_state("all", None)
         _close_canvas()
@@ -1951,7 +1955,7 @@ class UserActions:
 
     def model_help_canvas_compact_on():
         """Open quick help in compact (state-only) mode."""
-        if _reject_if_request_in_flight():
+        if _reject_if_request_in_flight(allow_inflight=True):
             return
         HelpCanvasState.compact = True
         _close_canvas()
@@ -1959,7 +1963,7 @@ class UserActions:
 
     def model_help_canvas_compact_off():
         """Open quick help in full mode."""
-        if _reject_if_request_in_flight():
+        if _reject_if_request_in_flight(allow_inflight=True):
             return
         HelpCanvasState.compact = False
         _close_canvas()
@@ -1967,7 +1971,7 @@ class UserActions:
 
     def model_help_canvas_compact_toggle():
         """Toggle compact/full quick help."""
-        if _reject_if_request_in_flight():
+        if _reject_if_request_in_flight(allow_inflight=True):
             return
         HelpCanvasState.compact = not getattr(HelpCanvasState, "compact", False)
         _close_canvas()

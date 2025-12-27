@@ -114,7 +114,7 @@ def _request_is_in_flight() -> bool:
         return False
 
 
-def _reject_if_request_in_flight() -> bool:
+def _reject_if_request_in_flight(*, allow_inflight: bool = False) -> bool:
     """Return True when the response canvas should abort due to gating."""
 
     def _handle_block(reason: str, message: str) -> None:
@@ -148,6 +148,7 @@ def _reject_if_request_in_flight() -> bool:
         source="modelResponseCanvas",
         state_getter=_current_request_state,
         on_block=_handle_block,
+        allow_inflight=allow_inflight,
     )
 
 
@@ -388,13 +389,10 @@ def _log_canvas_close(reason: str) -> None:
 def _guard_response_canvas(allow_inflight: bool = False) -> bool:
     """Return True when the action should abort due to an in-flight request.
 
-    Some callers allow the canvas to open during in-flight progress updates
-    (for example, streaming to the response window). Setting `allow_inflight`
-    skips the guard when a request is currently running.
+    When ``allow_inflight`` is True, the shared guard only bypasses
+    ``in_flight`` blocks while still enforcing other drop reasons.
     """
-    if allow_inflight:
-        return False
-    return _reject_if_request_in_flight()
+    return _reject_if_request_in_flight(allow_inflight=allow_inflight)
 
 
 def _ensure_response_canvas() -> canvas.Canvas:

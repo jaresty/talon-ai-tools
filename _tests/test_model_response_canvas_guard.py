@@ -76,9 +76,27 @@ class ModelResponseCanvasGuardTests(unittest.TestCase):
             self.assertTrue(canvas_module._reject_if_request_in_flight())
 
         guard.assert_called_once()
-        self.assertEqual(captured_kwargs["surface"], "response_canvas")
-        self.assertEqual(captured_kwargs["source"], "modelResponseCanvas")
-        self.assertIn("on_block", captured_kwargs)
+        self.assertFalse(captured_kwargs.get("allow_inflight"))
+
+    def test_guard_response_canvas_allows_inflight_flag(self):
+        if bootstrap is None or canvas_module is None:
+            self.skipTest("Talon runtime not available")
+
+        captured_kwargs: dict[str, Any] = {}
+
+        def fake_guard(**kwargs):
+            captured_kwargs.update(kwargs)
+            return False
+
+        with patch(
+            "talon_user.lib.modelResponseCanvas.guard_surface_request",
+            side_effect=fake_guard,
+        ):
+            result = canvas_module._guard_response_canvas(allow_inflight=True)
+
+        self.assertIn("allow_inflight", captured_kwargs)
+        self.assertTrue(captured_kwargs["allow_inflight"])
+        self.assertFalse(result)
 
     def test_reject_if_request_in_flight_handles_inflight_block(self):
         if bootstrap is None or canvas_module is None:
@@ -96,12 +114,14 @@ class ModelResponseCanvasGuardTests(unittest.TestCase):
             patch(
                 "talon_user.lib.modelResponseCanvas.guard_surface_request",
                 side_effect=fake_guard,
-            ),
+            ) as guard,
             patch("talon_user.lib.pillCanvas.show_pill") as show_pill,
         ):
             GPTState.suppress_response_canvas_close = True
             self.assertTrue(canvas_module._reject_if_request_in_flight())
 
+        guard.assert_called_once()
+        self.assertFalse(guard.call_args.kwargs.get("allow_inflight"))
         self.assertFalse(getattr(GPTState, "suppress_response_canvas_close", True))
         show_pill.assert_called_once()
         GPTState.suppress_response_canvas_close = False

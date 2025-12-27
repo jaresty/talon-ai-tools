@@ -20,6 +20,7 @@ if str(ROOT) not in sys.path:
 from lib.axisCatalog import axis_catalog  # type: ignore  # noqa: E402
 from lib.staticPromptConfig import static_prompt_catalog  # type: ignore  # noqa: E402
 from lib.personaConfig import persona_intent_maps  # type: ignore  # noqa: E402
+from lib.personaOrchestrator import get_persona_intent_orchestrator  # type: ignore  # noqa: E402
 
 
 LIST_NAMES = [
@@ -82,9 +83,66 @@ def generate(out_dir: Path) -> None:
     static_tokens = static_catalog.get("talon_list_tokens") or []
     _write_list(out_dir / "staticPrompt.talon-list", "staticPrompt", static_tokens)
 
-    maps = persona_intent_maps()
     persona_mapping: dict[str, str] = {}
     intent_mapping: dict[str, str] = {}
+
+    def _record_persona(alias: object, canonical: object) -> None:
+        alias_str = str(alias or "").strip()
+        canonical_str = str(canonical or "").strip()
+        if alias_str and canonical_str:
+            persona_mapping.setdefault(alias_str, canonical_str)
+
+    def _record_intent(alias: object, canonical: object) -> None:
+        alias_str = str(alias or "").strip()
+        canonical_str = str(canonical or "").strip()
+        if alias_str and canonical_str:
+            intent_mapping.setdefault(alias_str, canonical_str)
+
+    try:
+        orchestrator = get_persona_intent_orchestrator()
+    except Exception:
+        orchestrator = None
+
+    if orchestrator is not None:
+        persona_presets = getattr(orchestrator, "persona_presets", {}) or {}
+        for key, preset in persona_presets.items():
+            canonical = str(getattr(preset, "key", key) or "").strip()
+            if not canonical:
+                continue
+            _record_persona(canonical, canonical)
+            _record_persona(getattr(preset, "spoken", ""), canonical)
+            _record_persona(getattr(preset, "label", ""), canonical)
+        for alias, canonical in (
+            getattr(orchestrator, "persona_aliases", {}) or {}
+        ).items():
+            _record_persona(alias, canonical)
+
+        intent_presets = getattr(orchestrator, "intent_presets", {}) or {}
+        intent_display_map = dict(getattr(orchestrator, "intent_display_map", {}) or {})
+        for key, preset in intent_presets.items():
+            canonical = str(getattr(preset, "key", key) or "").strip()
+            if not canonical:
+                continue
+            _record_intent(canonical, canonical)
+            _record_intent(intent_display_map.get(canonical), canonical)
+            _record_intent(
+                intent_display_map.get(
+                    str(getattr(preset, "intent", "") or "").strip()
+                ),
+                canonical,
+            )
+            _record_intent(getattr(preset, "intent", ""), canonical)
+            _record_intent(getattr(preset, "label", ""), canonical)
+        for alias, canonical in (
+            getattr(orchestrator, "intent_aliases", {}) or {}
+        ).items():
+            _record_intent(alias, canonical)
+        for alias, canonical in (
+            getattr(orchestrator, "intent_synonyms", {}) or {}
+        ).items():
+            _record_intent(alias, canonical)
+
+    maps = persona_intent_maps()
     if maps is not None:
         persona_presets = getattr(maps, "persona_presets", {}) or {}
         persona_aliases = getattr(maps, "persona_preset_aliases", {}) or {}
@@ -92,27 +150,25 @@ def generate(out_dir: Path) -> None:
             canonical = str(getattr(preset, "key", key) or "").strip()
             if not canonical:
                 continue
-            persona_mapping.setdefault(canonical, canonical)
-            spoken = str(getattr(preset, "spoken", "") or "").strip()
-            label = str(getattr(preset, "label", "") or "").strip()
-            for alias in (spoken, label):
-                if alias:
-                    persona_mapping.setdefault(alias, canonical)
+            _record_persona(canonical, canonical)
+            _record_persona(getattr(preset, "spoken", ""), canonical)
+            _record_persona(getattr(preset, "label", ""), canonical)
         for alias, canonical in persona_aliases.items():
-            alias_str = str(alias or "").strip()
-            canonical_str = str(canonical or "").strip()
-            if alias_str and canonical_str:
-                persona_mapping.setdefault(alias_str, canonical_str)
+            _record_persona(alias, canonical)
 
         intent_presets = getattr(maps, "intent_presets", {}) or {}
         for key, preset in intent_presets.items():
             canonical = str(getattr(preset, "key", key) or "").strip()
             if not canonical:
                 continue
-            intent_mapping.setdefault(canonical, canonical)
-            intent_value = str(getattr(preset, "intent", "") or "").strip()
-            if intent_value and intent_value.lower() != canonical.lower():
-                intent_mapping.setdefault(intent_value, canonical)
+            _record_intent(canonical, canonical)
+            _record_intent(getattr(preset, "intent", ""), canonical)
+        intent_aliases = getattr(maps, "intent_preset_aliases", {}) or {}
+        intent_synonyms = getattr(maps, "intent_synonyms", {}) or {}
+        for alias, canonical in intent_aliases.items():
+            _record_intent(alias, canonical)
+        for alias, canonical in intent_synonyms.items():
+            _record_intent(alias, canonical)
 
     _write_mapping_list(
         out_dir / "personaPreset.talon-list", "personaPreset", persona_mapping

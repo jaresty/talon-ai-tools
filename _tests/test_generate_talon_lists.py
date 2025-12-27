@@ -1,9 +1,12 @@
+import importlib
 import subprocess
 import sys
 import tempfile
 import unittest
 from pathlib import Path
 from typing import TYPE_CHECKING
+from types import SimpleNamespace
+from unittest.mock import patch
 
 if not TYPE_CHECKING:
 
@@ -50,6 +53,77 @@ if not TYPE_CHECKING:
                 intent_text = intent_list.read_text(encoding="utf-8").lower()
                 self.assertIn("decide: decide", intent_text)
                 self.assertNotIn("for deciding:", intent_text)
+
+        def test_generate_lists_prefers_orchestrator_metadata(self) -> None:
+            script_module = importlib.import_module(
+                "scripts.tools.generate_talon_lists"
+            )
+            orchestrator = SimpleNamespace(
+                persona_presets={
+                    "teach_junior_dev": SimpleNamespace(
+                        key="teach_junior_dev",
+                        label="Teach Junior Dev",
+                        spoken="Teach junior dev",
+                    )
+                },
+                persona_aliases={"coach": "teach_junior_dev"},
+                intent_presets={
+                    "decide": SimpleNamespace(
+                        key="decide",
+                        label="Decide",
+                        intent="guide choice",
+                    )
+                },
+                intent_aliases={"guide choice": "decide"},
+                intent_synonyms={},
+                intent_display_map={"decide": "Guide choice"},
+                axis_tokens={},
+                axis_alias_map={},
+            )
+            empty_maps = SimpleNamespace(
+                persona_presets={},
+                persona_preset_aliases={},
+                intent_presets={},
+                intent_display_map={},
+            )
+            axis_catalog_data = {"axes": {}, "axis_list_tokens": {}}
+            static_catalog_data = {"talon_list_tokens": []}
+            with (
+                patch.object(
+                    script_module,
+                    "get_persona_intent_orchestrator",
+                    return_value=orchestrator,
+                    create=True,
+                ),
+                patch.object(
+                    script_module, "persona_intent_maps", return_value=empty_maps
+                ),
+                patch.object(
+                    script_module, "axis_catalog", return_value=axis_catalog_data
+                ),
+                patch.object(
+                    script_module,
+                    "static_prompt_catalog",
+                    return_value=static_catalog_data,
+                ),
+            ):
+                with tempfile.TemporaryDirectory() as tmpdir:
+                    out_dir = Path(tmpdir)
+                    script_module.generate(out_dir)
+                    persona_text = (
+                        (out_dir / "personaPreset.talon-list").read_text(
+                            encoding="utf-8"
+                        )
+                    ).lower()
+                    intent_text = (
+                        (out_dir / "intentPreset.talon-list").read_text(
+                            encoding="utf-8"
+                        )
+                    ).lower()
+                    self.assertIn("teach junior dev: teach_junior_dev", persona_text)
+                    self.assertIn("coach: teach_junior_dev", persona_text)
+                    self.assertIn("guide choice: decide", intent_text)
+                    self.assertIn("decide: decide", intent_text)
 
         def test_generated_lists_are_self_consistent_under_check(self) -> None:
             """Guardrail: generator --check should pass against its own output."""

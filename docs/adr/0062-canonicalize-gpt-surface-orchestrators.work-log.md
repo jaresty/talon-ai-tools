@@ -1466,3 +1466,19 @@
   - Canvas say-lines still rely on legacy intent tokens; future loops may surface orchestrator aliases alongside canonical tokens in the voice hints.
 - next_work:
   - Behaviour: migrate Talon list generators to orchestrator helpers — python3 -m pytest _tests/test_generate_talon_lists.py — future-shaping: align list exports with canonical persona/intent metadata.
+
+## 2025-12-27 – Loop 120 (kind: implementation)
+- helper_version: helper:v20251223.1
+- focus: ADR-0062 §Refactor Plan – Prompt Persona Orchestrator (Talon list generator)
+- riskiest_assumption: Talon list exports would continue deriving persona/intent aliases from `personaConfig`, letting Concordance automation miss orchestrator-only aliases.
+- validation_targets:
+  - python3 -m pytest _tests/test_generate_talon_lists.py::GenerateTalonListsTests::test_generate_lists_prefers_orchestrator_metadata
+  - python3 -m pytest _tests/test_generate_talon_lists.py
+- evidence:
+  - docs/adr/evidence/0062/loop-0120.md
+- rollback_plan: git restore --source=HEAD -- scripts/tools/generate_talon_lists.py _tests/test_generate_talon_lists.py && python3 -m pytest _tests/test_generate_talon_lists.py::GenerateTalonListsTests::test_generate_lists_prefers_orchestrator_metadata
+- delta_summary: helper:diff-snapshot=2 files changed, 148 insertions(+), 15 deletions(-); list generator now sources persona/intent aliases from the orchestrator while retaining maps-based fallback.
+- residual_risks:
+  - Alias rows are written verbatim; monitor for case-insensitive duplicates if catalog metadata introduces them.
+- next_work:
+  - Behaviour: update CLI docs to reference orchestrator-backed lists — python3 -m pytest _tests/test_generate_talon_lists.py::GenerateTalonListsTests::test_generate_lists_writes_axis_and_static_prompt_tokens — future-shaping: keep documentation aligned with orchestrator-driven exports.

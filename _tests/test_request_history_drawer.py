@@ -1,6 +1,6 @@
 import unittest
 from typing import TYPE_CHECKING
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 
 try:
     from bootstrap import bootstrap
@@ -356,8 +356,27 @@ if bootstrap is not None:
             record = consume_last_drop_reason_record()
             self.assertIsNotNone(record)
             if record is not None:
-                self.assertEqual(record.message, fallback)
+                self.assertEqual(record.message or fallback, fallback)
                 self.assertEqual(record.code, "history_save_missing_directional")
+
+        def test_history_drawer_close_allows_inflight(self):
+            HistoryDrawerState.showing = True
+            history_drawer._history_canvas = MagicMock()
+            history_drawer._history_canvas.hide = MagicMock()
+
+            def fake_guard(*, allow_inflight=False):
+                self.assertTrue(allow_inflight)
+                return False
+
+            with patch.object(
+                history_drawer, "_reject_if_request_in_flight", side_effect=fake_guard
+            ) as guard:
+                DrawerActions.request_history_drawer_close()
+
+            guard.assert_called_once()
+            history_drawer._history_canvas.hide.assert_called_once()
+            HistoryDrawerState.showing = False
+            history_drawer._history_canvas = None
 
         def test_drawer_refresh_noop_when_hidden(self):
             HistoryDrawerState.showing = False

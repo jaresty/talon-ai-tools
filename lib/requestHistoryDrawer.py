@@ -71,7 +71,7 @@ def _on_guard_block(reason: str, message: str) -> None:
     HistoryDrawerState.last_message = fallback or ""
 
 
-def _reject_if_request_in_flight() -> bool:
+def _reject_if_request_in_flight(*, allow_inflight: bool = False) -> bool:
     """Return True when the history drawer should abort due to gating."""
 
     blocked = guard_surface_request(
@@ -79,6 +79,7 @@ def _reject_if_request_in_flight() -> bool:
         source="requestHistoryDrawer",
         suppress_attr="suppress_overlay_inflight_guard",
         on_block=_on_guard_block,
+        allow_inflight=allow_inflight,
     )
     if not blocked:
         HistoryDrawerState.last_message = ""
@@ -332,7 +333,7 @@ class UserActions:
 
     def request_history_drawer_close():
         """Close the request history drawer"""
-        if _reject_if_request_in_flight():
+        if _reject_if_request_in_flight(allow_inflight=True):
             return
         HistoryDrawerState.showing = False
         if _history_canvas is None:

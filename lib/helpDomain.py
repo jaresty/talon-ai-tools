@@ -397,6 +397,13 @@ def help_index(
             candidate = str(alias or "").strip()
             if not candidate:
                 continue
+            if orchestrator is not None:
+                try:
+                    canonical = orchestrator.canonical_intent_key(candidate)
+                except Exception:
+                    canonical = ""
+                if canonical:
+                    return canonical
             lower = candidate.lower()
             canonical = intent_alias_map.get(lower)
             if canonical:

@@ -507,6 +507,48 @@ def test_help_hub_search_intent_voice_hint_uses_orchestrator(monkeypatch):
     assert "Say: intent Decide Display" in hints
 
 
+def test_help_hub_search_intent_metadata_uses_orchestrator_canonical(monkeypatch):
+    orchestrator_intent = SimpleNamespace(
+        key="choose",
+        label="Choose",
+        intent="",
+    )
+    orchestrator = SimpleNamespace(
+        intent_presets={"choose": orchestrator_intent},
+        intent_display_map={"choose": "Choose Display"},
+        intent_aliases={},
+        intent_synonyms={},
+        canonical_intent_key=lambda alias: "decide" if alias else "",
+    )
+    with ExitStack() as stack:
+        for target in (
+            "lib.helpHub.get_persona_intent_orchestrator",
+            "talon_user.lib.helpHub.get_persona_intent_orchestrator",
+            "lib.helpDomain.get_persona_intent_orchestrator",
+            "talon_user.lib.helpDomain.get_persona_intent_orchestrator",
+        ):
+            stack.enter_context(patch(target, return_value=orchestrator))
+        for target in (
+            "lib.helpHub.persona_intent_maps",
+            "talon_user.lib.helpHub.persona_intent_maps",
+            "lib.helpDomain.persona_intent_maps",
+            "talon_user.lib.helpDomain.persona_intent_maps",
+        ):
+            stack.enter_context(
+                patch(target, side_effect=RuntimeError("maps unavailable"))
+            )
+        index = helpHub.build_search_index([], [], [], lambda _name: [], catalog={})
+    intent_entries = [
+        entry for entry in index if entry.label.startswith("Intent preset:")
+    ]
+    assert intent_entries, "Expected intent preset entries"
+    entry = next(iter(intent_entries))
+    metadata = entry.metadata or {}
+    assert metadata.get("intent_key") == "choose"
+    assert metadata.get("display_label") == "Choose Display"
+    assert metadata.get("canonical_intent") == "decide"
+
+
 def test_help_hub_onboarding_flag():
     helpHub.help_hub_onboarding()
     assert helpHub.HelpHubState.show_onboarding is True

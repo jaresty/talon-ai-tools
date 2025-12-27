@@ -1281,3 +1281,35 @@
   - When multiple aliases exist for a persona, only the first is exposed; future loops may expose additional aliases for richer discovery.
 - next_work:
   - Behaviour: audit Help Hub button voice hints for remaining personaConfig dependencies — python3 -m pytest _tests/test_help_hub.py — future-shaping: converge all help surfaces on the orchestrator façade.
+
+## 2025-12-26 – Loop 095 (kind: implementation)
+- helper_version: helper:v20251223.1
+- focus: ADR-0062 §Refactor Plan – Guidance Surface Coordinator (Help Hub search metadata)
+- riskiest_assumption: Help Hub search metadata would keep resolving canonical intents via legacy maps, missing orchestrator-only aliases (probability medium, impact medium on command guidance).
+- validation_targets:
+  - python3 -m pytest _tests/test_help_hub.py::test_help_hub_search_intent_metadata_uses_orchestrator_canonical
+  - python3 -m pytest _tests/test_help_hub.py::test_help_hub_search_intent_voice_hint_uses_orchestrator
+- evidence:
+  - docs/adr/evidence/0062/loop-0095.md
+- rollback_plan: git stash push -- lib/helpDomain.py _tests/test_help_hub.py && python3 -m pytest _tests/test_help_hub.py::test_help_hub_search_intent_metadata_uses_orchestrator_canonical && git stash pop
+- delta_summary: helper:diff-snapshot=2 files changed, 74 insertions(+), 1 deletion(-); Help Hub search metadata now routes canonical intent resolution through the orchestrator before falling back to legacy aliases.
+- residual_risks:
+  - Help Hub still surfaces only one spoken alias per intent; future loops may list additional orchestrator synonyms in search hints.
+- next_work:
+  - Behaviour: expand canvas persona presets to surface multiple orchestrator aliases — python3 -m pytest _tests/test_model_help_canvas.py::ModelHelpCanvasTests::test_persona_preset_commands_use_orchestrator_alias — future-shaping: improve multi-alias discoverability across canvases.
+
+## 2025-12-26 – Loop 096 (kind: implementation)
+- helper_version: helper:v20251223.1
+- focus: ADR-0062 §Refactor Plan – Guidance Surface Coordinator (Help Canvas persona command hints)
+- riskiest_assumption: Help canvas persona command hints would still list only one orchestrator alias, hiding additional shortcuts (probability medium, impact medium on discoverability).
+- validation_targets:
+  - python3 -m pytest _tests/test_model_help_canvas.py::ModelHelpCanvasTests::test_persona_preset_commands_surface_all_orchestrator_aliases
+  - python3 -m pytest _tests/test_model_help_canvas.py::ModelHelpCanvasTests::test_persona_preset_commands_use_orchestrator_alias
+- evidence:
+  - docs/adr/evidence/0062/loop-0096.md
+- rollback_plan: git stash push -- lib/modelHelpCanvas.py _tests/test_model_help_canvas.py && python3 -m pytest _tests/test_model_help_canvas.py::ModelHelpCanvasTests::test_persona_preset_commands_surface_all_orchestrator_aliases && git stash pop
+- delta_summary: helper:diff-snapshot=2 files changed, 58 insertions(+), 1 deletion(-); `_persona_preset_commands` now surfaces every orchestrator alias without duplicates so canvas command hints expose all shared shortcuts.
+- residual_risks:
+  - Command ordering follows orchestrator alias insertion order; future loops may sort aliases alphabetically if needed.
+- next_work:
+  - Behaviour: audit Help Hub button voice hints for remaining personaConfig dependencies — python3 -m pytest _tests/test_help_hub.py — future-shaping: continue consolidating orchestrator-driven hints across surfaces.

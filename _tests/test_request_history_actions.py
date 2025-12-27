@@ -182,31 +182,53 @@ if bootstrap is not None:
             if bootstrap is None:
                 self.skipTest("Talon runtime not available")
 
-            with patch.object(
-                history_actions,
-                "guard_surface_request",
-                return_value=True,
-            ) as guard:
-                self.assertTrue(history_actions._reject_if_request_in_flight())
-            guard.assert_called_once()
-            kwargs = guard.call_args.kwargs
-            self.assertEqual(kwargs.get("surface"), "history_actions")
-            self.assertEqual(kwargs.get("source"), "requestHistoryActions")
+            captured_kwargs: dict[str, object] = {}
+
+            def fake_guard(**kwargs):
+                captured_kwargs.update(kwargs)
+                on_block = kwargs.get("on_block")
+                self.assertTrue(callable(on_block))
+                on_block("history_save_missing_directional", "Blocked for axis")
+                return True
 
             with (
                 patch.object(
-                    history_actions, "guard_surface_request", return_value=False
+                    history_actions, "guard_surface_request", side_effect=fake_guard
+                ) as guard,
+                patch.object(
+                    history_actions, "_notify_with_drop_reason"
+                ) as notify_drop,
+            ):
+                self.assertTrue(history_actions._reject_if_request_in_flight())
+
+            guard.assert_called_once()
+            self.assertEqual(captured_kwargs.get("surface"), "history_actions")
+            self.assertEqual(captured_kwargs.get("source"), "requestHistoryActions")
+            self.assertTrue(callable(captured_kwargs.get("notify_fn")))
+            notify_drop.assert_called_once_with(
+                "Blocked for axis", use_drop_reason=True
+            )
+
+            def allow_guard(**kwargs):
+                return False
+
+            with (
+                patch.object(
+                    history_actions, "guard_surface_request", side_effect=allow_guard
                 ) as guard,
                 patch.object(history_actions, "last_drop_reason", return_value=""),
                 patch.object(
                     history_actions, "clear_history_drop_reason"
                 ) as clear_reason,
-                patch.object(history_actions, "set_drop_reason") as set_reason,
+                patch.object(
+                    history_actions, "_notify_with_drop_reason"
+                ) as notify_drop,
             ):
                 self.assertFalse(history_actions._reject_if_request_in_flight())
+
             guard.assert_called_once()
             clear_reason.assert_called_once_with()
-            set_reason.assert_not_called()
+            notify_drop.assert_not_called()
 
         def test_reject_if_request_in_flight_preserves_pending_reason(self):
             with (
@@ -216,10 +238,35 @@ if bootstrap is not None:
                 patch.object(
                     history_actions, "last_drop_reason", return_value="pending"
                 ),
-                patch.object(history_actions, "set_drop_reason") as set_reason,
+                patch.object(
+                    history_actions, "clear_history_drop_reason"
+                ) as clear_reason,
             ):
                 self.assertFalse(history_actions._reject_if_request_in_flight())
-            set_reason.assert_not_called()
+            clear_reason.assert_not_called()
+
+        def test_reject_if_request_in_flight_uses_fallback_when_message_missing(self):
+            if bootstrap is None:
+                self.skipTest("Talon runtime not available")
+
+            def fake_guard(**kwargs):
+                kwargs["on_block"]("history_save_missing_directional", "")
+                return True
+
+            with (
+                patch.object(
+                    history_actions, "guard_surface_request", side_effect=fake_guard
+                ),
+                patch.object(
+                    history_actions, "_notify_with_drop_reason"
+                ) as notify_drop,
+            ):
+                self.assertTrue(history_actions._reject_if_request_in_flight())
+
+            notify_drop.assert_called_once_with(
+                "GPT: Request blocked; reason=history_save_missing_directional.",
+                use_drop_reason=True,
+            )
 
         def test_history_actions_clear_drop_reason_helper(self) -> None:
             import talon_user.lib.historyLifecycle as history_lifecycle

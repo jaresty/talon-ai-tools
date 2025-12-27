@@ -131,9 +131,16 @@ def _request_is_in_flight() -> bool:
 def _reject_if_request_in_flight() -> bool:
     """Return True when history actions should abort due to gating."""
 
+    def _on_block(reason: str, message: str) -> None:
+        fallback = message or f"GPT: Request blocked; reason={reason}."
+        _notify_with_drop_reason(fallback, use_drop_reason=True)
+
     blocked = guard_surface_request(
         surface="history_actions",
         source="requestHistoryActions",
+        suppress_attr="suppress_overlay_inflight_guard",
+        on_block=_on_block,
+        notify_fn=lambda _message: None,
     )
     if blocked:
         return True

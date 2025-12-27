@@ -454,6 +454,54 @@ if bootstrap is not None:
                 commands = _persona_preset_commands()
             self.assertIn("mentor voice", commands)
 
+        def test_persona_preset_commands_surface_all_orchestrator_aliases(self) -> None:
+            orchestrator_persona = SimpleNamespace(
+                key="mentor",
+                label="Mentor",
+                spoken="",
+            )
+            orchestrator = SimpleNamespace(
+                persona_presets={"mentor": orchestrator_persona},
+                persona_aliases={
+                    "mentor voice": "mentor",
+                    "mentor tone": "mentor",
+                },
+            )
+            with ExitStack() as stack:
+                stack.enter_context(
+                    patch(
+                        "talon_user.lib.modelHelpCanvas._get_persona_orchestrator",
+                        return_value=orchestrator,
+                    )
+                )
+                try:
+                    stack.enter_context(
+                        patch(
+                            "lib.modelHelpCanvas._get_persona_orchestrator",
+                            return_value=orchestrator,
+                        )
+                    )
+                except (ModuleNotFoundError, AttributeError):
+                    pass
+                stack.enter_context(
+                    patch(
+                        "talon_user.lib.modelHelpCanvas.persona_intent_maps",
+                        side_effect=RuntimeError("legacy maps unavailable"),
+                    )
+                )
+                try:
+                    stack.enter_context(
+                        patch(
+                            "lib.modelHelpCanvas.persona_intent_maps",
+                            side_effect=RuntimeError("legacy maps unavailable"),
+                        )
+                    )
+                except (ModuleNotFoundError, AttributeError):
+                    pass
+                commands = _persona_preset_commands()
+            self.assertIn("mentor voice", commands)
+            self.assertIn("mentor tone", commands)
+
         def test_quick_help_intent_commands_use_catalog_spoken_aliases(self) -> None:
             from types import SimpleNamespace
 

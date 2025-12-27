@@ -306,7 +306,6 @@ def _persona_preset_commands() -> list[str]:
             if alias and alias not in seen:
                 seen.add(alias)
                 commands.append(alias)
-                break
     return commands
 
 

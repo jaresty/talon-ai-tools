@@ -12,7 +12,6 @@ if bootstrap is not None:
     from talon_user.lib import providerCommands as provider_module
     from talon_user.lib.providerCommands import UserActions as ProviderActions
     from talon import actions
-    import talon_user.lib.dropReasonUtils as drop_reason_module
 
 
 class ProviderCommandGuardTests(unittest.TestCase):
@@ -66,74 +65,71 @@ class ProviderCommandGuardTests(unittest.TestCase):
         if bootstrap is None:
             self.skipTest("Talon runtime not available")
 
+        captured_kwargs: dict[str, object] = {}
+
+        def guard_blocks(**kwargs):
+            captured_kwargs.update(kwargs)
+            on_block = kwargs.get("on_block")
+            self.assertTrue(callable(on_block))
+            on_block("in_flight", "Request running")
+            return True
+
         with (
             patch.object(
-                provider_module,
-                "try_begin_request",
-                return_value=(False, "in_flight"),
-            ) as try_begin,
-            patch.object(
-                provider_module,
-                "render_drop_reason",
-                return_value="Request running",
-                create=True,
-            ) as render_message,
-            patch.object(provider_module, "set_drop_reason") as set_reason,
+                provider_module, "guard_surface_request", side_effect=guard_blocks
+            ) as guard,
             patch.object(provider_module, "notify") as notify_mock,
+            patch.object(provider_module, "set_drop_reason") as set_reason,
         ):
             self.assertTrue(provider_module._reject_if_request_in_flight())
-        try_begin.assert_called_once_with(source="providerCommands")
-        render_message.assert_called_once_with("in_flight")
-        set_reason.assert_called_once_with("in_flight", "Request running")
+
+        guard.assert_called_once()
+        self.assertEqual(captured_kwargs.get("surface"), "provider_commands")
+        self.assertEqual(captured_kwargs.get("source"), "providerCommands")
+        self.assertTrue(callable(captured_kwargs.get("notify_fn")))
         notify_mock.assert_called_once_with("Request running")
+        set_reason.assert_not_called()
+
+        def guard_fallback(**kwargs):
+            captured_kwargs.update(kwargs)
+            on_block = kwargs.get("on_block")
+            on_block("unknown_reason", "")
+            return True
 
         with (
             patch.object(
-                provider_module,
-                "try_begin_request",
-                return_value=(False, "unknown_reason"),
+                provider_module, "guard_surface_request", side_effect=guard_fallback
             ),
-            patch.object(
-                drop_reason_module,
-                "drop_reason_message",
-                return_value="",
-            ),
-            patch.object(
-                provider_module,
-                "render_drop_reason",
-                return_value="Rendered fallback",
-                create=True,
-            ) as render_message,
-            patch.object(provider_module, "set_drop_reason") as set_reason,
             patch.object(provider_module, "notify") as notify_mock,
+            patch.object(provider_module, "set_drop_reason") as set_reason,
         ):
             self.assertTrue(provider_module._reject_if_request_in_flight())
-        render_message.assert_called_once_with("unknown_reason")
-        set_reason.assert_called_once_with("unknown_reason", "Rendered fallback")
-        notify_mock.assert_called_once_with("Rendered fallback")
+
+        fallback = "GPT: Request blocked; reason=unknown_reason."
+        notify_mock.assert_called_once_with(fallback)
+        set_reason.assert_called_once_with("unknown_reason", fallback)
+
+        def guard_allows(**kwargs):
+            return False
 
         with (
             patch.object(
-                provider_module, "try_begin_request", return_value=(True, "")
-            ) as try_begin,
-            patch.object(
-                provider_module, "last_drop_reason", return_value="", create=True
-            ),
+                provider_module, "guard_surface_request", side_effect=guard_allows
+            ) as guard,
+            patch.object(provider_module, "last_drop_reason", return_value=""),
             patch.object(provider_module, "set_drop_reason") as set_reason,
-            patch.object(provider_module, "notify") as notify_mock,
         ):
             self.assertFalse(provider_module._reject_if_request_in_flight())
-        try_begin.assert_called_once_with(source="providerCommands")
+
+        guard.assert_called_once()
         set_reason.assert_called_once_with("")
-        notify_mock.assert_not_called()
 
         with (
-            patch.object(provider_module, "try_begin_request", return_value=(True, "")),
             patch.object(
-                provider_module,
-                "last_drop_reason",
-                return_value="drop_pending",
-                create=True,
+                provider_module, "guard_surface_request", side_effect=guard_allows
+            ),
+            patch.object(
+                provider_module, "last_drop_reason", return_value="drop_pending"
             ),
             patch.object(provider_module, "set_drop_reason") as set_reason,
         ):

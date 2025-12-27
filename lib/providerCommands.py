@@ -13,10 +13,10 @@ from .providerRegistry import (
     provider_registry,
 )
 from .requestGating import request_is_in_flight
-from .historyLifecycle import last_drop_reason, set_drop_reason, try_begin_request
-from .dropReasonUtils import render_drop_reason
+from .historyLifecycle import last_drop_reason, set_drop_reason
 
 from .modelHelpers import notify
+from .surfaceGuidance import guard_surface_request
 
 try:
     print(f"[debug] providerCommands loaded from {__file__}")
@@ -210,38 +210,36 @@ def _request_is_in_flight() -> bool:
 
 
 def _reject_if_request_in_flight() -> bool:
-    """Notify and return True when a GPT request is already running."""
+    """Notify and return True when a provider command should abort due to gating."""
 
-    allowed, reason = try_begin_request(source="providerCommands")
-    if allowed:
-        try:
-            pending_message = last_drop_reason()
-        except Exception:
-            pending_message = ""
-        if not pending_message:
+    def _on_block(reason: str, message: str) -> None:
+        fallback = message or f"GPT: Request blocked; reason={reason}."
+        if not message:
             try:
-                set_drop_reason("")
+                set_drop_reason(reason, fallback)
             except Exception:
                 pass
-        return False
+        try:
+            notify(fallback)
+        except Exception:
+            pass
 
-    if not reason:
-        return False
-
-    message = render_drop_reason(reason)
+    blocked = guard_surface_request(
+        surface="provider_commands",
+        source="providerCommands",
+        suppress_attr="suppress_overlay_inflight_guard",
+        on_block=_on_block,
+        notify_fn=lambda _message: None,
+    )
+    if blocked:
+        return True
 
     try:
-        set_drop_reason(reason, message)
+        if not last_drop_reason():
+            set_drop_reason("")
     except Exception:
         pass
-
-    try:
-        if message:
-            notify(message)
-    except Exception:
-        pass
-
-    return True
+    return False
 
 
 @mod.action_class

@@ -1566,6 +1566,21 @@
 - next_work:
   - Documentation: audit remaining historical ADRs (for example ADR-041 follow-ups or ADR-056) — python3 - <<'PY' … future check — future-shaping: keep contributor docs aligned with the orchestrator SSOT.
 
+## 2025-12-27 – Loop 127 (kind: documentation)
+- helper_version: helper:v20251223.1
+- focus: ADR-0062 §Refactor Plan – Prompt Persona Orchestrator (ADR-040 main ADR hygiene)
+- riskiest_assumption: ADR-040’s main document still pointed contributors directly to `lib.personaConfig` for the Persona/Intent SSOT, hiding the orchestrator façade introduced by later loops.
+- validation_targets:
+  - python3 - <<'PY' … (ADR-040 main doc orchestrator check)
+- evidence:
+  - docs/adr/evidence/0062/loop-0127.md
+- rollback_plan: git restore --source=HEAD -- docs/adr/040-axis-families-and-persona-contract-simplification.md docs/adr/0062-canonicalize-gpt-surface-orchestrators.work-log.md
+- delta_summary: helper:diff-snapshot=1 file changed, 7 insertions(+), 5 deletions(-); ADR-040 now references `get_persona_intent_orchestrator()` when describing the Persona/Intent SSOT and implementation guidance.
+- residual_risks:
+  - Other ADRs (for example ADR-050/053) may still mention raw `personaConfig`; schedule follow-up hygiene as the façade expands.
+- next_work:
+  - Documentation: audit ADR-050/053 for orchestrator messaging — python3 - <<'PY' … future check — future-shaping: keep contributor docs aligned with the orchestrator SSOT.
+
 ## 2025-12-27 – Loop 121 (kind: documentation)
 - helper_version: helper:v20251223.1
 - focus: ADR-0062 §Refactor Plan – Prompt Persona Orchestrator (documentation alignment)

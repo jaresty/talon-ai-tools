@@ -1550,6 +1550,22 @@
 - next_work:
   - Behaviour: audit remaining historical ADRs (for example ADR-041) for orchestrator messaging — python3 - <<'PY' … upcoming check — future-shaping: keep contributor docs aligned with the persona orchestrator façade.
 
+## 2025-12-27 – Loop 126 (kind: documentation)
+- helper_version: helper:v20251223.1
+- focus: ADR-0062 §Refactor Plan – Prompt Persona Orchestrator (ADR-041 hygiene)
+- riskiest_assumption: ADR-041 still pointed readers at `personaConfig` as the Persona/Intent SSOT, omitting the orchestrator façade adopted in recent loops.
+- validation_targets:
+  - python3 - <<'PY' … (ADR-041 orchestrator check)
+  - python3 - <<'PY' … (ADR-041 orchestrator check, lowercase)
+- evidence:
+  - docs/adr/evidence/0062/loop-0126.md
+- rollback_plan: git restore --source=HEAD -- docs/adr/041-stance-aware-prompt-suggestions-without-presets.md docs/adr/0062-canonicalize-gpt-surface-orchestrators.work-log.md
+- delta_summary: helper:diff-snapshot=1 file changed, 2 insertions(+), 2 deletions(-); ADR-041 now references `get_persona_intent_orchestrator()` as the Persona/Intent façade.
+- residual_risks:
+  - Additional ADRs may still mention raw `PERSONA_PRESETS`; continue hygiene passes as orchestrator coverage expands.
+- next_work:
+  - Documentation: audit remaining historical ADRs (for example ADR-041 follow-ups or ADR-056) — python3 - <<'PY' … future check — future-shaping: keep contributor docs aligned with the orchestrator SSOT.
+
 ## 2025-12-27 – Loop 121 (kind: documentation)
 - helper_version: helper:v20251223.1
 - focus: ADR-0062 §Refactor Plan – Prompt Persona Orchestrator (documentation alignment)

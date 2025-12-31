@@ -31,7 +31,7 @@ Related ADRs:
 From these ADRs we have:
 
 - A mature **Contract** surface: static prompts + completeness/scope/method/style + directional.
-- A Persona/Intent SSOT in `lib/personaConfig.py` and small Persona/Intent preset lists for teaching and patterns.
+- A Persona/Intent SSOT exposed via `get_persona_intent_orchestrator()` (backed by `lib.personaConfig`) and small Persona/Intent preset lists for teaching and patterns.
 - A suggestions GUI that already:
   - Displays `Name`, `Say: model run …`, and `Axes:` for each recipe.
   - Can render optional per-suggestion `stance_command` and `why` fields when present.
@@ -68,7 +68,7 @@ We adopt the following principles for prompt recipe suggestions:
      - Use vertical space for **LLM-generated** guidance rather than for preset catalogs.
 
 4. **Presets remain for patterns and docs, not suggestion rows**  
-   - Persona/Intent presets from `PERSONA_PRESETS` / `INTENT_PRESETS` remain useful for:
+   - Persona/Intent presets surfaced by `get_persona_intent_orchestrator()` (backed by `PERSONA_PRESETS` / `INTENT_PRESETS`) remain useful for:
      - Pattern GUIs and recipe definitions.  
      - Docs and examples that introduce common stances (for example, “Teach junior dev”, “Executive brief”).
    - They may be used as *examples* in the `model suggest` meta-prompt, but suggestions themselves should always be expressed in terms of **raw axis tokens**.

@@ -241,6 +241,7 @@ In day-to-day use you can:
 - Start with just a static prompt and directional lens (for example, `model describe fog`).
 - Add **How** (contract axes) when you want more control over depth, territory, reasoning, or output shape.
 - Only reach for **Who** (persona) and **Why** (intent) when you specifically want to change who you’re speaking as/to, or whether you’re teaching vs deciding vs brainstorming.
+- Persona/intent tokens and presets are sourced from `lib/personaOrchestrator.get_persona_intent_orchestrator()`. After updating `lib/personaConfig.py`, reset the façade (see ADR-0062 loops 118–134) so quick help, suggestions, and history surfaces stay in sync.
 
 #### Who / Why / How – examples
 

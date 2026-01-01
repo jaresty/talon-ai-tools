@@ -1609,6 +1609,36 @@
 - residual_risks:
   - Other feature docs may still omit the façade reference; continue hygiene loops as needed.
 - next_work:
+  - Documentation: audit additional feature docs/work logs for façade references — python3 - <<'PY' … future check — future-shaping: keep contributor docs aligned with the shared SSOT.
+
+## 2025-12-27 – Loop 136 (kind: documentation)
+- helper_version: helper:v20251223.1
+- focus: ADR-0062 §Refactor Plan – Prompt Persona Orchestrator (ADR-048 work log hygiene)
+- riskiest_assumption: ADR-048 work log referenced persona preset trims without noting the orchestrator façade, encouraging contributors to skip cache refreshes.
+- validation_targets:
+  - python3 - <<'PY' … (ADR-048 work log orchestrator check)
+- evidence:
+  - docs/adr/evidence/0062/loop-0136.md
+- rollback_plan: git restore --source=HEAD -- docs/adr/048-grammar-control-plane-simplification.work-log.md docs/adr/0062-canonicalize-gpt-surface-orchestrators.work-log.md
+- delta_summary: helper:diff-snapshot=1 file changed, 1 insertion(+); ADR-048 work log now references refreshing `get_persona_intent_orchestrator()` after persona/intent catalog edits.
+- residual_risks:
+  - Additional ADR-048 backlog notes may still cite raw helpers; continue auditing as façade adoption expands.
+- next_work:
+  - Documentation: audit remaining feature docs/work logs for façade references — python3 - <<'PY' … future check — future-shaping: keep contributor guidance aligned with the shared SSOT.
+
+## 2025-12-27 – Loop 134 (kind: documentation)
+- helper_version: helper:v20251223.1
+- focus: ADR-0062 §Refactor Plan – Prompt Persona Orchestrator (feature README hygiene)
+- riskiest_assumption: GPT README described persona/intent usage without mentioning the orchestrator façade, encouraging contributors to bypass it.
+- validation_targets:
+  - python3 - <<'PY' … (GPT README orchestrator check)
+- evidence:
+  - docs/adr/evidence/0062/loop-0135.md
+- rollback_plan: git restore --source=HEAD -- GPT/readme.md docs/adr/0062-canonicalize-gpt-surface-orchestrators.work-log.md
+- delta_summary: helper:diff-snapshot=1 file changed, 1 insertion(+); GPT README now references `get_persona_intent_orchestrator()` and ADR-0062 loops for façade context.
+- residual_risks:
+  - Other feature docs may still omit the façade reference; continue hygiene loops as needed.
+- next_work:
   - Documentation: audit other feature-specific READMEs for orchestrator messaging — python3 - <<'PY' … future check — future-shaping: keep contributor docs aligned with the façade.
 
 ## 2025-12-27 – Loop 134 (kind: documentation)

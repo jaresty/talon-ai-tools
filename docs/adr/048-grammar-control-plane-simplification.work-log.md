@@ -116,7 +116,7 @@
 **What changed**
 - Trimmed persona presets to a 7-item high-signal set; removed lower-signal platform/analyst variants.
 - Added relational intent presets (persuade/coach/collaborate/entertain) to complement existing task intents for a single `intent <preset>` grammar surface.
-- Updated preset guardrails to expect the new persona/intent keys.
+- Updated preset guardrails to expect the new persona/intent keys and refreshed `get_persona_intent_orchestrator()` consumers so cached presets stay aligned.
 
 **Evidence**
 - Files updated: `lib/personaConfig.py`, `_tests/test_persona_presets.py`.
@@ -127,7 +127,7 @@
 ## 2025-12-15 – Loop: help hub persona/intent surfacing (kind: behaviour)
 
 **What changed**
-- Help Hub cheat sheet now lists the trimmed persona presets and expanded intent presets (task + relational) to guide users toward the current stance surface.
+- Help Hub cheat sheet now lists the trimmed persona presets and expanded intent presets (task + relational) pulled from `get_persona_intent_orchestrator()` to guide users toward the current stance surface.
 
 **Evidence**
 - Files updated: `lib/helpHub.py`.

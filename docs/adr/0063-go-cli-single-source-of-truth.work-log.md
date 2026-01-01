@@ -171,4 +171,32 @@
 - residual_risks:
   - Other documentation may still mention the legacy CLI name; schedule broader doc audit in future loops.
 - next_work:
-  - Behaviour: capture adapter integration blocker per ADR-0063 Talon Adapter Layer — python3 - <<'PY' ...> — future-shaping: document absent adapter hooks pending CLI integration.
+  - Behaviour: capture adapter integration blocker per ADR-0063 Talon Adapter Layer — python3 - <<'PY'
+      from pathlib import Path
+      text = Path('lib/providerCommands.py').read_text()
+      if 'bar' not in text:
+          raise SystemExit('providerCommands lacks bar adapter wiring')
+      print('providerCommands references bar adapter wiring')
+    PY — future-shaping: document absent adapter hooks pending CLI integration.
+
+## 2026-01-01 – Loop 008 (kind: blocker)
+- helper_version: helper:v20251223.1
+- focus: ADR-0063 §Talon Adapter Layer – capture blocker for CLI delegation
+- riskiest_assumption: Talon adapters do not yet invoke the `bar` binary, so delegation remains unimplemented (probability high, impact high on parity rollout).
+- validation_targets:
+  - python3 - <<'PY'
+      from pathlib import Path
+      text = Path('lib/providerCommands.py').read_text()
+      if 'bar' not in text:
+          raise SystemExit('providerCommands lacks bar adapter wiring')
+      print('providerCommands references bar adapter wiring')
+    PY
+- evidence:
+  - docs/adr/evidence/0063/loop-0008.md
+- rollback_plan: N/A — blocker documentation only.
+- delta_summary: helper:diff-snapshot=0 files changed; recorded blocker preventing adapter integration for the `bar` CLI.
+- loops_remaining_forecast: 1 loop remaining (implement adapter shim); confidence medium-low.
+- residual_risks:
+  - No adapter shim exists; Talon cannot yet delegate to the CLI. Mitigation: schedule implementation loop to add feature-flagged adapter path.
+- next_work:
+  - Behaviour: implement adapter shim invoking `bar` under feature flag — python3 -m pytest _tests/test_gpt_actions.py — future-shaping: ensure Talon pathways exercise the CLI.

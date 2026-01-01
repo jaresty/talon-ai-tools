@@ -18,7 +18,6 @@ from .requestGating import request_is_in_flight
 from .historyLifecycle import try_begin_request
 from .modelHelpers import notify
 from .overlayHelpers import apply_canvas_blocking
-from .personaConfig import persona_intent_maps
 from .personaOrchestrator import get_persona_intent_orchestrator
 from .surfaceGuidance import guard_surface_request
 from . import personaCatalog, personaConfig
@@ -26,6 +25,8 @@ from . import personaCatalog, personaConfig
 
 _get_persona_orchestrator = get_persona_intent_orchestrator
 
+# Legacy stub preserved for tests that patch the old helper.
+persona_intent_maps = None
 
 try:
     from .staticPromptConfig import (
@@ -117,24 +118,25 @@ def _persona_presets():
         orchestrator = None
     if orchestrator is not None:
         try:
-            presets = tuple((orchestrator.persona_presets or {}).values())
+            mapping = dict(getattr(orchestrator, "persona_presets", {}) or {})
         except Exception:
-            presets = ()
-        if presets:
-            return presets
+            mapping = {}
+        if mapping:
+            return tuple(mapping.values())
     try:
-        maps = persona_intent_maps()
-        return tuple(maps.persona_presets.values())
+        snapshot = personaCatalog.get_persona_intent_catalog()
+        mapping = dict(getattr(snapshot, "persona_presets", {}) or {})
+        if mapping:
+            return tuple(mapping.values())
     except Exception:
-        try:
-            from . import personaConfig
-
-            catalog = getattr(personaConfig, "persona_catalog", None)
-            if callable(catalog):
-                return tuple(catalog().values())
-            return tuple(getattr(personaConfig, "PERSONA_PRESETS", ()))
-        except Exception:
-            return ()
+        pass
+    try:
+        catalog = getattr(personaConfig, "persona_catalog", None)
+        if callable(catalog):
+            return tuple(catalog().values())
+        return tuple(getattr(personaConfig, "PERSONA_PRESETS", ()))
+    except Exception:
+        return ()
 
 
 def _intent_presets():
@@ -150,24 +152,25 @@ def _intent_presets():
         orchestrator = None
     if orchestrator is not None:
         try:
-            presets = tuple((orchestrator.intent_presets or {}).values())
+            mapping = dict(getattr(orchestrator, "intent_presets", {}) or {})
         except Exception:
-            presets = ()
-        if presets:
-            return presets
+            mapping = {}
+        if mapping:
+            return tuple(mapping.values())
     try:
-        maps = persona_intent_maps()
-        return tuple(maps.intent_presets.values())
+        snapshot = personaCatalog.get_persona_intent_catalog()
+        mapping = dict(getattr(snapshot, "intent_presets", {}) or {})
+        if mapping:
+            return tuple(mapping.values())
     except Exception:
-        try:
-            from . import personaConfig
-
-            catalog = getattr(personaConfig, "intent_catalog", None)
-            if callable(catalog):
-                return tuple(catalog().values())
-            return tuple(getattr(personaConfig, "INTENT_PRESETS", ()))
-        except Exception:
-            return ()
+        pass
+    try:
+        catalog = getattr(personaConfig, "intent_catalog", None)
+        if callable(catalog):
+            return tuple(catalog().values())
+        return tuple(getattr(personaConfig, "INTENT_PRESETS", ()))
+    except Exception:
+        return ()
 
 
 def _intent_spoken_buckets():
@@ -343,26 +346,26 @@ def _intent_preset_commands() -> list[str]:
 
     if not intent_display_map:
         try:
-            maps = persona_intent_maps()
+            snapshot = personaCatalog.get_persona_intent_catalog()
+            display_map = dict(getattr(snapshot, "intent_display_map", {}) or {})
+            intent_display_map = {
+                str(k or "").strip(): str(v or "").strip()
+                for k, v in display_map.items()
+                if str(k or "").strip()
+            }
         except Exception:
-            maps = None
-        if maps is not None:
-            display_map = getattr(maps, "intent_display_map", {}) or {}
-            if isinstance(display_map, dict):
-                intent_display_map = {
-                    str(k or "").strip(): str(v or "").strip()
-                    for k, v in display_map.items()
-                    if str(k or "").strip()
-                }
-            else:
-                try:
-                    intent_display_map = {
-                        str(k or "").strip(): str(v or "").strip()
-                        for k, v in dict(display_map).items()
-                        if str(k or "").strip()
-                    }
-                except Exception:
-                    intent_display_map = {}
+            intent_display_map = {}
+
+    if not intent_display_map:
+        try:
+            legacy_map = dict(getattr(personaConfig, "intent_display_map", {}) or {})
+            intent_display_map = {
+                str(k or "").strip(): str(v or "").strip()
+                for k, v in legacy_map.items()
+                if str(k or "").strip()
+            }
+        except Exception:
+            intent_display_map = {}
 
     seen: set[str] = set()
     for preset in _intent_presets():

@@ -258,6 +258,68 @@ if bootstrap is not None:
                 presets = _intent_presets()
             self.assertEqual(presets, (orchestrator_intent,))
 
+        def test_intent_presets_catalog_fallback_without_persona_maps(self) -> None:
+            fallback_intent = SimpleNamespace(
+                key="decide",
+                label="Fallback Decide",
+                intent="decide",
+            )
+            snapshot = SimpleNamespace(intent_presets={"decide": fallback_intent})
+            with ExitStack() as stack:
+                stack.enter_context(
+                    patch(
+                        "talon_user.lib.modelHelpCanvas._get_persona_orchestrator",
+                        side_effect=RuntimeError("orchestrator unavailable"),
+                    )
+                )
+                try:
+                    stack.enter_context(
+                        patch(
+                            "lib.modelHelpCanvas._get_persona_orchestrator",
+                            side_effect=RuntimeError("orchestrator unavailable"),
+                        )
+                    )
+                except (ModuleNotFoundError, AttributeError):
+                    pass
+                stack.enter_context(
+                    patch(
+                        "talon_user.lib.modelHelpCanvas.personaCatalog.get_persona_intent_catalog",
+                        return_value=snapshot,
+                    )
+                )
+                try:
+                    stack.enter_context(
+                        patch(
+                            "lib.modelHelpCanvas.personaCatalog.get_persona_intent_catalog",
+                            return_value=snapshot,
+                        )
+                    )
+                except (ModuleNotFoundError, AttributeError):
+                    pass
+                stack.enter_context(
+                    patch(
+                        "talon_user.lib.modelHelpCanvas.persona_intent_maps",
+                        side_effect=AssertionError(
+                            "persona_intent_maps should not be used"
+                        ),
+                        create=True,
+                    )
+                )
+                try:
+                    stack.enter_context(
+                        patch(
+                            "lib.modelHelpCanvas.persona_intent_maps",
+                            side_effect=AssertionError(
+                                "persona_intent_maps should not be used"
+                            ),
+                            create=True,
+                        )
+                    )
+                except (ModuleNotFoundError, AttributeError):
+                    pass
+                presets = _intent_presets()
+            self.assertEqual(presets, (fallback_intent,))
+
         def test_intent_spoken_buckets_use_persona_orchestrator(self) -> None:
             orchestrator_intent = SimpleNamespace(
                 key="decide",
@@ -505,33 +567,88 @@ if bootstrap is not None:
         def test_quick_help_intent_commands_use_catalog_spoken_aliases(self) -> None:
             from types import SimpleNamespace
 
-            from talon_user.lib.personaConfig import IntentPreset
             from talon_user.lib import modelHelpCanvas as help_module
 
-            preset = IntentPreset(key="decide", label="Decide", intent="decide")
-            maps = SimpleNamespace(
-                intent_presets={"decide": preset},
+            fallback_preset = SimpleNamespace(
+                key="decide", label="Decide", intent="decide"
+            )
+            snapshot = SimpleNamespace(
+                intent_presets={"decide": fallback_preset},
                 intent_display_map={"decide": "Decide"},
             )
 
-            with patch(
-                "talon_user.lib.modelHelpCanvas.persona_intent_maps",
-                return_value=maps,
-            ):
+            with ExitStack() as stack:
+                stack.enter_context(
+                    patch(
+                        "talon_user.lib.modelHelpCanvas._get_persona_orchestrator",
+                        side_effect=RuntimeError("orchestrator unavailable"),
+                    )
+                )
+                try:
+                    stack.enter_context(
+                        patch(
+                            "lib.modelHelpCanvas._get_persona_orchestrator",
+                            side_effect=RuntimeError("orchestrator unavailable"),
+                        )
+                    )
+                except (ModuleNotFoundError, AttributeError):
+                    pass
+                stack.enter_context(
+                    patch(
+                        "talon_user.lib.modelHelpCanvas.personaCatalog.get_persona_intent_catalog",
+                        return_value=snapshot,
+                    )
+                )
+                try:
+                    stack.enter_context(
+                        patch(
+                            "lib.modelHelpCanvas.personaCatalog.get_persona_intent_catalog",
+                            return_value=snapshot,
+                        )
+                    )
+                except (ModuleNotFoundError, AttributeError):
+                    pass
                 commands = help_module._intent_preset_commands()
 
             self.assertIn("decide", commands)
             self.assertNotIn("for deciding", commands)
 
-            maps_no_display = SimpleNamespace(
-                intent_presets={"decide": preset},
+            snapshot_no_display = SimpleNamespace(
+                intent_presets={"decide": fallback_preset},
                 intent_display_map={},
             )
 
-            with patch(
-                "talon_user.lib.modelHelpCanvas.persona_intent_maps",
-                return_value=maps_no_display,
-            ):
+            with ExitStack() as stack:
+                stack.enter_context(
+                    patch(
+                        "talon_user.lib.modelHelpCanvas._get_persona_orchestrator",
+                        side_effect=RuntimeError("orchestrator unavailable"),
+                    )
+                )
+                try:
+                    stack.enter_context(
+                        patch(
+                            "lib.modelHelpCanvas._get_persona_orchestrator",
+                            side_effect=RuntimeError("orchestrator unavailable"),
+                        )
+                    )
+                except (ModuleNotFoundError, AttributeError):
+                    pass
+                stack.enter_context(
+                    patch(
+                        "talon_user.lib.modelHelpCanvas.personaCatalog.get_persona_intent_catalog",
+                        return_value=snapshot_no_display,
+                    )
+                )
+                try:
+                    stack.enter_context(
+                        patch(
+                            "lib.modelHelpCanvas.personaCatalog.get_persona_intent_catalog",
+                            return_value=snapshot_no_display,
+                        )
+                    )
+                except (ModuleNotFoundError, AttributeError):
+                    pass
                 commands = help_module._intent_preset_commands()
 
             self.assertIn("decide", commands)

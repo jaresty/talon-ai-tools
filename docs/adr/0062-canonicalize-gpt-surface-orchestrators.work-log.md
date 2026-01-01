@@ -1736,4 +1736,20 @@
 - residual_risks:
   - Help canvas and Help Hub still fall back to personaConfig maps when the orchestrator is unavailable; migrate their fallbacks to the catalog in upcoming loops.
 - next_work:
-  - Behaviour: align Help canvas intent fallbacks with the catalog snapshot — python3 - m pytest _tests/test_model_help_canvas.py — future-shaping: keep guidance surfaces in sync with orchestrator metadata even during outages.
+  - Behaviour: align Help canvas intent fallbacks with the catalog snapshot — python3 -m pytest _tests/test_model_help_canvas.py — future-shaping: keep guidance surfaces in sync with orchestrator metadata even during outages.
+
+## 2025-12-27 – Loop 138 (kind: implementation)
+- helper_version: helper:v20251223.1
+- focus: ADR-0062 §Refactor Plan – Guidance Surface Coordinator (Help canvas catalog fallback)
+- riskiest_assumption: Help canvas would keep pulling persona presets and command metadata from legacy personaConfig maps when the orchestrator is unavailable, drifting Concordance guidance from the canonical catalog snapshot (probability medium, impact medium-high on visibility).
+- validation_targets:
+  - python3 -m pytest _tests/test_model_help_canvas.py::ModelHelpCanvasTests::test_intent_presets_catalog_fallback_without_persona_maps
+  - python3 -m pytest _tests/test_model_help_canvas.py
+- evidence:
+  - docs/adr/evidence/0062/loop-0138.md
+- rollback_plan: git restore --source=HEAD -- _tests/test_model_help_canvas.py lib/modelHelpCanvas.py && python3 -m pytest _tests/test_model_help_canvas.py
+- delta_summary: helper:diff-snapshot=2 files changed, 184 insertions(+), 64 deletions(-); Help canvas persona/intent fallbacks call `personaCatalog.get_persona_intent_catalog()` before any legacy helpers, and tests cover the outage path.
+- residual_risks:
+  - Help Hub metadata fallbacks still rely on personaConfig maps when the orchestrator is unavailable; migrate them next.
+- next_work:
+  - Behaviour: align Help Hub metadata fallbacks with the catalog snapshot — python3 -m pytest _tests/test_help_hub.py — future-shaping: keep documentation surfaces aligned with the orchestrator facade during outages.

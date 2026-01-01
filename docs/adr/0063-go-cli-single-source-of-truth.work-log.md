@@ -134,3 +134,19 @@
   - CLI currently emits help/version only; behaviour wiring to shared schema assets is deferred to future loops.
 - next_work:
   - Behaviour: run parity guardrails now that `bar` builds — go build -o bin/bar ./cmd/bar && python3 -m pytest _tests/test_axis_catalog_serializer.py _tests/test_gpt_axis_catalog_fallback.py — future-shaping: execute guardrails against the compiled CLI.
+
+## 2026-01-01 – Loop 006 (kind: validation)
+- helper_version: helper:v20251223.1
+- focus: ADR-0063 §Shared Contracts & Parity Guidance – run parity guardrails with `bar`
+- riskiest_assumption: Even with a compiled `bar` binary, parity guardrails might still fail, leaving Talon and Go behaviour misaligned (probability medium, impact high on parity guarantees).
+- validation_targets:
+  - (cd cli && go build -o bin/bar ./cmd/bar) && python3 -m pytest _tests/test_axis_catalog_serializer.py _tests/test_gpt_axis_catalog_fallback.py
+- evidence:
+  - docs/adr/evidence/0063/loop-0006.md
+- rollback_plan: mv cli/go.mod cli/go.mod.tmp && (cd cli && go build -o bin/bar ./cmd/bar); mv cli/go.mod.tmp cli/go.mod
+- delta_summary: helper:diff-snapshot=2 files changed, 34 insertions(+); documented parity success and captured supporting evidence.
+- loops_remaining_forecast: 0 loops remaining; confidence medium-high pending future feature work.
+- residual_risks:
+  - Parity tests cover serializer fallback only; broader CLI integration tests remain TODO.
+- next_work:
+  - Behaviour: integrate `bar` invocation into Talon adapters — python3 -m pytest _tests/test_gpt_actions.py — future-shaping: ensure Talon delegates through the CLI path under feature flags.

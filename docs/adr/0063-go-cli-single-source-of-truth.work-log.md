@@ -96,3 +96,25 @@
   - Fixture generation scripts and CLI loaders remain TODO; follow-up loops must automate regeneration and consumption.
 - next_work:
   - Behaviour: run cross-runtime parity audit per ADR-0063 salient tasks — python3 -m pytest _tests/test_axis_catalog_serializer.py _tests/test_gpt_axis_catalog_fallback.py — future-shaping: ensure Talon guardrails exercise schema-generated fixtures alongside CLI bindings.
+
+## 2026-01-01 – Loop 004 (kind: blocker)
+- helper_version: helper:v20251223.1
+- focus: ADR-0063 §Shared Contracts & Parity Guidance – CLI↔Talon parity audit (blocker capture)
+- riskiest_assumption: Without a compiled CLI binary, parity guardrails cannot execute across Talon and Go, leaving shared schema assets unvalidated (probability high, impact high on parity guarantees).
+- validation_targets:
+  - python3 - <<'PY'
+      from pathlib import Path
+      binary = Path('cli/bin/talon')
+      if not binary.exists():
+          raise SystemExit('missing CLI binary at cli/bin/talon')
+      print('Found CLI binary for parity audit')
+    PY
+- evidence:
+  - docs/adr/evidence/0063/loop-0004.md
+- rollback_plan: N/A — parity audit blocked pending CLI binary build; rerun the validation target after compiling the CLI.
+- delta_summary: helper:diff-snapshot=2 files changed, 33 insertions(+); logged parity blocker evidence and work-log entry without altering behaviour.
+- loops_remaining_forecast: 1 loop remaining (build CLI + rerun parity); confidence medium-low until binary exists.
+- residual_risks:
+  - CLI build pipeline and adapters remain outstanding; parity guardrails stay red until binary compilation and invocation are wired.
+- next_work:
+  - Behaviour: build CLI binary and rerun parity guardrails — go build ./cli/... && python3 -m pytest _tests/test_axis_catalog_serializer.py _tests/test_gpt_axis_catalog_fallback.py — future-shaping: integrate CLI execution into Talon parity harness.

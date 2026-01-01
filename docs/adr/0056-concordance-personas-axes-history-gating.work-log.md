@@ -404,7 +404,7 @@
 
 ## 2025-12-17 – Loop 81 (kind: guardrail/tests)
 - Focus: Persona & Intent Presets – ensure persona docs fail fast on unsupported axis tokens.
-- Change: Added `validate_persona_presets`/`validate_intent_presets` guardrails in `lib/personaConfig.py`, invoked them inside `_build_persona_intent_docs`, and extended `_tests/test_persona_presets.py` to patch in a rogue tone token and assert the guardrail trips.
+- Change: Added `validate_persona_presets`/`validate_intent_presets` guardrails in `lib/personaConfig.py`, invoked them inside `_build_persona_intent_docs`, and extended `_tests/test_persona_presets.py` to patch in a rogue tone token and assert the guardrail trips; documented that the orchestrator façade must be refreshed when presets change.
 - Checks: `python3 -m pytest _tests/test_persona_presets.py _tests/test_gpt_actions.py _tests/test_model_suggestion_gui.py _tests/test_model_pattern_gui.py` (pass; excerpt: `161 passed in 0.62s`).
 - Removal test: reverting would allow persona docs to render successfully despite Concordance drift, leaving the new regression test failing and risking silent preset/token mismatch.
 - Adversarial “what remains” check:
@@ -594,7 +594,7 @@
 
 ## 2025-12-17 – Loop 102 (kind: guardrail/tests)
 - Focus: Persona & Intent Presets – centralise canonical token lookups.
-- Change: Added `canonical_persona_token`/`persona_axis_tokens` to `lib/personaConfig.py`, refactored `GPT/gpt.py::_canonical_persona_value` to call the shared helper, and expanded `_tests/test_persona_presets.py` plus `_tests/test_gpt_actions.py` to guard the new contract.
+- Change: Added `canonical_persona_token`/`persona_axis_tokens` to `lib/personaConfig.py`, refactored `GPT/gpt.py::_canonical_persona_value` to call the shared helper (now surfaced through `get_persona_intent_orchestrator()`), and expanded `_tests/test_persona_presets.py` plus `_tests/test_gpt_actions.py` to guard the new contract.
 - Checks: `python3 -m pytest _tests/test_persona_presets.py _tests/test_gpt_actions.py` (pass; excerpt: `115 passed in 0.29s`).
 - Removal test: reverting would split canonicalisation logic again, letting GPT accept tokens that the persona catalog rejects and causing the new regression tests to fail.
 - Adversarial “what remains” check:
@@ -612,7 +612,7 @@
 
 ## 2025-12-17 – Loop 104 (kind: guardrail/tests)
 - Focus: Persona & Intent Presets – centralise catalog consumption in Suggestion GUI helpers.
-- Change: Added `_persona_catalog`/`_intent_catalog` accessors in `lib/modelSuggestionGUI.py`, rewired `_persona_presets`, `_persona_preset_map`, `_persona_long_form`, `_match_persona_preset`, and `_preset_from_command` to pull from the shared catalog, and expanded `_tests/test_model_suggestion_gui.py` with coverage for synonym mapping and case-folded persona inputs. Updated `_tests/test_help_hub.py` with a regression test asserting `_canonical_persona_token` delegates to personaConfig.
+- Change: Added `_persona_catalog`/`_intent_catalog` accessors in `lib/modelSuggestionGUI.py`, rewired `_persona_presets`, `_persona_preset_map`, `_persona_long_form`, `_match_persona_preset`, and `_preset_from_command` to pull from the shared catalog, and expanded `_tests/test_model_suggestion_gui.py` with coverage for synonym mapping and case-folded persona inputs. Updated `_tests/test_help_hub.py` with a regression test asserting `_canonical_persona_token` delegates to `get_persona_intent_orchestrator()` instead of raw personaConfig helpers.
 - Checks: `python3 -m pytest _tests/test_help_hub.py _tests/test_model_suggestion_gui.py _tests/test_gpt_actions.py _tests/test_persona_presets.py` (pass; excerpt: `156 passed in 0.43s`).
 - Removal test: reverting would reintroduce divergent persona preset lookups across Suggestion GUI helpers, letting catalog updates drift silently and causing the new regression tests to fail.
 - Adversarial “what remains” check:
@@ -621,7 +621,7 @@
 
 ## 2025-12-17 – Loop 105 (kind: guardrail/tests)
 - Focus: Persona & Intent Presets – provide a shared catalog snapshot for GUIs and docs.
-- Change: Added `PersonaIntentCatalogSnapshot` and `persona_intent_catalog_snapshot()` in `lib/personaConfig.py`, exposing presets, spoken aliases, and axis tokens for personas/intents; updated `lib/helpHub.py` and `lib/modelSuggestionGUI.py` to consume the snapshot and drop bespoke catalog fetchers; expanded `_tests/test_help_hub.py`, `_tests/test_model_suggestion_gui.py`, and `_tests/test_persona_presets.py` with snapshot regression coverage.
+- Change: Added `PersonaIntentCatalogSnapshot` and `persona_intent_catalog_snapshot()` in `lib/personaConfig.py`, exposing presets, spoken aliases, and axis tokens for personas/intents; updated `lib/helpHub.py` and `lib/modelSuggestionGUI.py` to consume the snapshot via `get_persona_intent_orchestrator()` and drop bespoke catalog fetchers; expanded `_tests/test_help_hub.py`, `_tests/test_model_suggestion_gui.py`, and `_tests/test_persona_presets.py` with snapshot regression coverage.
 - Checks: `python3 -m pytest _tests/test_help_hub.py _tests/test_model_suggestion_gui.py _tests/test_gpt_actions.py _tests/test_persona_presets.py` (pass; excerpt: `158 passed in 0.23s` + `106 passed in 0.23s`).
 - Removal test: reverting would force GUIs back onto ad-hoc persona lookups, breaking the new snapshot tests and reintroducing drift between help surfaces and the catalog.
 - Adversarial “what remains” check:
@@ -687,7 +687,7 @@
 
 ## 2025-12-18 – Loop 112 (kind: behaviour)
 - Focus: Persona & Intent Presets – share snapshot maps across GPT, Help Hub, and suggestion GUIs.
-- Change: Introduced `persona_intent_maps()` in `lib/personaConfig.py` to expose axis tokens, preset lookups, and alias maps; refactored `GPT/gpt.py`, `lib/helpDomain.py`, `lib/helpHub.py`, and `lib/modelSuggestionGUI.py` to consume the shared helper instead of bespoke snapshot parsing.
+- Change: Introduced `persona_intent_maps()` in `lib/personaConfig.py` to expose axis tokens, preset lookups, and alias maps; refactored `GPT/gpt.py`, `lib/helpDomain.py`, `lib/helpHub.py`, and `lib/modelSuggestionGUI.py` to consume the shared helper (now wrapped by `get_persona_intent_orchestrator()`) instead of bespoke snapshot parsing.
 - Checks: `python3 -m pytest _tests/test_gpt_actions.py`, `_tests/test_help_hub.py`, `_tests/test_model_suggestion_gui.py`, `_tests/test_model_pattern_gui.py` (pass; excerpts: `110 passed in 0.39s`, `24 passed in 0.21s`, `22 passed in 0.12s`, `31 passed in 0.46s`).
 - Removal test: reverting would reintroduce divergent persona/intent alias handling, breaking the updated GPT action, Help Hub, and suggestion GUI regression suites.
 - Adversarial “what remains” check:

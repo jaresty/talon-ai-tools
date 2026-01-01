@@ -1609,9 +1609,25 @@
 - residual_risks:
   - Additional ADR sections may still reference raw `personaConfig`; continue hygiene passes as needed.
 - next_work:
-  - Documentation: audit remaining doc fragments (e.g., feature READMEs) for orchestrator messaging — python3 - <<'PY' … future check — future-shaping: keep contributor docs aligned with the façade.
+  - Documentation: update ADR-0056 work log to cite the façade — python3 - <<'PY' … upcoming check — future-shaping: keep historical notes aligned with the orchestrator entrypoint.
+
+## 2025-12-27 – Loop 133 (kind: documentation)
+- helper_version: helper:v20251223.1
+- focus: ADR-0062 §Refactor Plan – Prompt Persona Orchestrator (ADR-0056 work log hygiene)
+- riskiest_assumption: ADR-0056 work log still referenced raw `personaConfig` updates without mentioning the orchestrator façade.
+- validation_targets:
+  - python3 - <<'PY' … (ADR-0056 work log orchestrator check)
+- evidence:
+  - docs/adr/evidence/0062/loop-0133.md
+- rollback_plan: git restore --source=HEAD -- docs/adr/0056-concordance-personas-axes-history-gating.work-log.md docs/adr/0062-canonicalize-gpt-surface-orchestrators.work-log.md
+- delta_summary: helper:diff-snapshot=1 file changed, 5 insertions(+); ADR-0056 work log now cites `get_persona_intent_orchestrator()` alongside personaConfig references.
+- residual_risks:
+  - Other work logs may still reference raw helpers; continue hygiene loops as the façade expands.
+- next_work:
+  - Documentation: audit ADR-051 work log for orchestrator messaging — python3 - <<'PY' … upcoming check — future-shaping: keep historical notes aligned with the façade.
 
 ## 2025-12-27 – Loop 131 (kind: documentation)
+
 
 - helper_version: helper:v20251223.1
 - focus: ADR-0062 §Refactor Plan – Prompt Persona Orchestrator (top-level docs hygiene)

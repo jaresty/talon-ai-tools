@@ -1764,6 +1764,7 @@
   - docs/adr/evidence/0062/loop-0139.md
 - rollback_plan: git stash push -- lib/helpHub.py && python3 -m pytest _tests/test_help_hub.py::test_cheat_sheet_catalog_fallback_without_maps && git stash pop
 - delta_summary: helper:diff-snapshot=2 files changed, 102 insertions(+), 10 deletions(-); reorder Help Hub cheat sheet fallbacks to prefer persona catalog snapshots over legacy maps and guard outages with a dedicated pytest.
+- loops_remaining_forecast: 4 loops remaining (Help Domain search fallback, metadata snapshot, docs export alignment, final audit); confidence medium.
 - residual_risks:
   - Cheat sheet entry ordering still follows catalog insertion order; investigate deterministic sorting if downstream guardrails require it.
 - next_work:
@@ -1779,6 +1780,7 @@
   - docs/adr/evidence/0062/loop-0140.md
 - rollback_plan: git stash push -- lib/helpDomain.py && python3 -m pytest _tests/test_help_domain.py::HelpDomainTests::test_help_index_catalog_fallback_without_maps && git stash pop
 - delta_summary: helper:diff-snapshot=2 files changed, 224 insertions(+), 14 deletions(-); update Help Domain alias/metadata builders to prefer persona catalog snapshots and guard the outage scenario with a dedicated pytest.
+- loops_remaining_forecast: 3 loops remaining (metadata snapshot fallback, docs export alignment, final convergence audit); confidence medium.
 - residual_risks:
   - Help Domain metadata snapshot exports still need catalog fallbacks; follow-up loop will align documentation exports with the shared snapshot.
 - next_work:
@@ -1794,6 +1796,7 @@
   - docs/adr/evidence/0062/loop-0141.md
 - rollback_plan: git stash push -- lib/helpDomain.py && python3 -m pytest _tests/test_help_domain.py::HelpDomainTests::test_help_metadata_snapshot_catalog_fallback_without_maps && git stash pop
 - delta_summary: helper:diff-snapshot=2 files changed, 251 insertions(+); Help Domain metadata snapshot supplements entry-derived data with persona catalog fallbacks and a new pytest guards the outage scenario.
+- loops_remaining_forecast: 2 loops remaining (docs export ordering audit, final completion sweep); confidence medium.
 - residual_risks:
   - Snapshot ordering mirrors catalog insertion; evaluate sorting if downstream exports need deterministic presentation.
 - next_work:

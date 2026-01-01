@@ -420,3 +420,26 @@
   - CLI execution still relies on subprocess return text; integration parsing and telemetry remain TODO.
 - next_work:
   - Behaviour: extend CLI documentation and guardrail guidance — python3 - <<'PY' ...> — future-shaping: ensure contributors know how to use env overrides and telemetry.
+
+
+## 2026-01-01 – Loop 018 (kind: documentation)
+- helper_version: helper:v20251223.1
+- focus: ADR-0063 §Implementation Plan – Go CLI Core (document CLI path override and guardrails)
+- riskiest_assumption: Without documentation, contributors may not know how to supply custom CLI paths or monitor delegation telemetry (probability medium, impact medium on rollout coordination).
+- validation_targets:
+  - python3 - <<'PY'
+      from pathlib import Path
+      text = Path('cli/README.md').read_text()
+      if 'BAR_CLI_PATH' not in text:
+          raise SystemExit('README missing BAR_CLI_PATH mention')
+      print('README mentions BAR_CLI_PATH')
+    PY
+- evidence:
+  - docs/adr/evidence/0063/loop-0018.md
+- rollback_plan: git checkout HEAD -- cli/README.md docs/adr/0063-go-cli-single-source-of-truth.md
+- delta_summary: helper:diff-snapshot=2 files changed, 2 insertions(+); Feature Flag docs mention `BAR_CLI_PATH` and ADR outlines CLI path overrides.
+- loops_remaining_forecast: 0 loops remaining for documentation updates; confidence medium-high.
+- residual_risks:
+  - CLI telemetry guidance still pending until real delegation is implemented.
+- next_work:
+  - Behaviour: add telemetry parsing and guardrail coverage — python3 - <<'PY' ...> — future-shaping: ensure CLI outputs are monitored.

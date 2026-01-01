@@ -165,6 +165,7 @@ Talon code will gradually migrate to delegating through adapters rather than mai
 - Orchestrate destination side-effects (paste, browser open, history file write, canvas refresh) based on CLI output formats.
 - Maintain compatibility fallbacks: detect CLI absence/version mismatch, negotiate capabilities, fall back to legacy Python execution, and log telemetry for parity audits.
 - Provide feature flags (for example `user.bar_cli_enabled`) to opt individual commands or surfaces into the CLI path incrementally while `_tests` guardrails compare both behaviours.
+- Surface CLI path overrides (`BAR_CLI_PATH` env) so Talon and CI can point at custom binaries without patching code.
 - Manage temp directories, attachment storage, and session files with sandbox-aware paths and cleanup guarantees.
 
 ---

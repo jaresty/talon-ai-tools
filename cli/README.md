@@ -33,6 +33,7 @@ cli/
 - Toggle it via Talon settings (for example `settings.set("user.bar_cli_enabled", 1)`) or the `settings.talon` config file once the adapter path lands.
 - Feature-flagged rollout lets CI and contributors compare legacy vs. CLI behaviour before flipping defaults.
 - With the current stub (Loop 012), enabling the flag logs a debug message and gracefully falls back to the legacy path; upcoming loops will replace the stub with real CLI delegation.
+- Override the binary location with the `BAR_CLI_PATH` environment variable (useful in CI or virtualenvs); otherwise the helper resolves to `<repo>/cli/bin/bar`.
 
 ## Implementation Slices
 

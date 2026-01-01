@@ -1817,3 +1817,19 @@
   - Locale-aware collation still unhandled; monitor doc exports for non-English ordering requirements.
 - next_work:
   - Behaviour: final orchestrator audit & doc sweep — python3 -m pytest _tests/test_help_domain.py — future-shaping: confirm all catalog-backed surfaces stay aligned post migration.
+
+## 2026-01-01 – Loop 143 (kind: verification)
+- helper_version: helper:v20251223.1
+- focus: ADR-0062 §Refactor Plan – Guidance Surface Coordinator (Final Help Domain convergence audit)
+- riskiest_assumption: Full Help Domain surfaces might still drift from the canonical catalog after the fallback refactors.
+- validation_targets:
+  - python3 -m pytest _tests/test_help_domain.py
+- evidence:
+  - docs/adr/evidence/0062/loop-0143.md
+- rollback_plan: git checkout HEAD^ -- lib/helpDomain.py && python3 -m pytest _tests/test_help_domain.py && git checkout HEAD -- lib/helpDomain.py
+- delta_summary: helper:diff-snapshot=1 file changed, 9 insertions(+), 2 deletions(-); canonicalise orchestrator voice hints while preserving catalog display hints for mapped entries.
+- loops_remaining_forecast: 0 loops remaining; confidence high.
+- residual_risks:
+  - Locale-aware casing remains a potential follow-up; monitor doc exports and extend hint normalisation if non-English locales require it.
+- next_work:
+  - Behaviour: none — ADR behaviours converged; continue running python3 -m pytest _tests/test_help_domain.py during routine CI.

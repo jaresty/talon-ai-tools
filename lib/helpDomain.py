@@ -532,7 +532,7 @@ def help_index(
                 return display_value
             spoken_alias = intent_alias_display.get(key, alias)
             return spoken_alias.replace("_", " ")
-        candidates = [getattr(preset, "spoken", ""), display, canonical_intent]
+        candidates = [getattr(preset, "spoken", ""), canonical_intent, display]
         if maps is not None:
             candidates.append(display)
         candidates.append(key)
@@ -557,7 +557,14 @@ def help_index(
         spoken = _intent_spoken(canonical_key, preset, display, canonical_intent)
         spoken_display = (spoken or "").strip() or display or canonical_intent
         spoken_alias = spoken_display.strip().lower() or canonical_intent.lower()
-        voice_hint = f"Say: intent {spoken_display}".strip()
+        alias_override = intent_alias_display.get(canonical_key, "")
+        if alias_override:
+            hint_value = alias_override
+        elif maps is None:
+            hint_value = canonical_intent or display
+        else:
+            hint_value = display
+        voice_hint = f"Say: intent {hint_value}".strip()
         description = (
             f"Apply intent stance ({canonical_intent})"
             if canonical_intent

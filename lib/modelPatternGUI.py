@@ -29,7 +29,7 @@ from .historyLifecycle import last_drop_reason, set_drop_reason
 from .modelHelpers import notify
 from .surfaceGuidance import guard_surface_request
 
-from .personaConfig import persona_intent_maps
+from .personaCatalog import get_persona_intent_catalog
 from .personaOrchestrator import get_persona_intent_orchestrator
 
 mod = Module()
@@ -61,17 +61,17 @@ def _persona_presets():
 
     if orchestrator is not None:
         try:
-            presets_mapping = getattr(orchestrator, "persona_presets", {}) or {}
-            if presets_mapping:
-                return tuple(presets_mapping.values())
+            mapping = dict(getattr(orchestrator, "persona_presets", {}) or {})
+            if mapping:
+                return tuple(mapping.values())
         except Exception:
             pass
 
     try:
-        maps = persona_intent_maps()
-        presets_mapping = getattr(maps, "persona_presets", {}) or {}
-        if presets_mapping:
-            return tuple(presets_mapping.values())
+        snapshot = get_persona_intent_catalog()
+        mapping = dict(getattr(snapshot, "persona_presets", {}) or {})
+        if mapping:
+            return tuple(mapping.values())
     except Exception:
         pass
 
@@ -100,17 +100,17 @@ def _intent_presets():
 
     if orchestrator is not None:
         try:
-            presets_mapping = getattr(orchestrator, "intent_presets", {}) or {}
-            if presets_mapping:
-                return tuple(presets_mapping.values())
+            mapping = dict(getattr(orchestrator, "intent_presets", {}) or {})
+            if mapping:
+                return tuple(mapping.values())
         except Exception:
             pass
 
     try:
-        maps = persona_intent_maps()
-        presets_mapping = getattr(maps, "intent_presets", {}) or {}
-        if presets_mapping:
-            return tuple(presets_mapping.values())
+        snapshot = get_persona_intent_catalog()
+        mapping = dict(getattr(snapshot, "intent_presets", {}) or {})
+        if mapping:
+            return tuple(mapping.values())
     except Exception:
         pass
 
@@ -845,13 +845,27 @@ def _draw_pattern_canvas(c: canvas.Canvas) -> None:  # pragma: no cover - visual
             }
         except Exception:
             intent_display_map = {}
-    else:
+
+    if not intent_display_map:
         try:
-            maps = persona_intent_maps()
-            raw_display_map = getattr(maps, "intent_display_map", {}) or {}
+            snapshot = get_persona_intent_catalog()
+            raw_display_map = dict(getattr(snapshot, "intent_display_map", {}) or {})
             intent_display_map = {
                 str(key or "").strip(): str(value or "").strip()
-                for key, value in dict(raw_display_map).items()
+                for key, value in raw_display_map.items()
+                if str(key or "").strip()
+            }
+        except Exception:
+            intent_display_map = {}
+
+    if not intent_display_map:
+        try:
+            from . import personaConfig as _persona_config
+
+            legacy_map = dict(getattr(_persona_config, "intent_display_map", {}) or {})
+            intent_display_map = {
+                str(key or "").strip(): str(value or "").strip()
+                for key, value in legacy_map.items()
                 if str(key or "").strip()
             }
         except Exception:

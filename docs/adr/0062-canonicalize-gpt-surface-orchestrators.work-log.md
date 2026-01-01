@@ -1721,3 +1721,19 @@
   - Other ADRs still mention raw `PERSONA_PRESETS`; plan follow-up doc hygiene.
 - next_work:
   - Behaviour: audit downstream CLI docs for orchestrator messaging — python3 -m pytest _tests/test_generate_talon_lists.py::GenerateTalonListsTests::test_generate_lists_writes_axis_and_static_prompt_tokens — future-shaping: keep user-facing docs synchronized with orchestrator-backed exports.
+
+## 2025-12-27 – Loop 137 (kind: implementation)
+- helper_version: helper:v20251223.1
+- focus: ADR-0062 §Refactor Plan – Guidance Surface Coordinator (pattern GUI catalog fallback)
+- riskiest_assumption: Pattern canvas fallback would keep relying on legacy personaConfig maps when the orchestrator is unavailable, drifting Concordance guidance from the canonical catalog snapshot (probability medium, impact medium-high on visibility).
+- validation_targets:
+  - python3 -m pytest _tests/test_model_pattern_gui.py::ModelPatternGUITests::test_pattern_canvas_catalog_fallback_without_persona_maps
+  - python3 -m pytest _tests/test_model_pattern_gui.py
+- evidence:
+  - docs/adr/evidence/0062/loop-0137.md
+- rollback_plan: git restore --source=HEAD -- _tests/test_model_pattern_gui.py lib/modelPatternGUI.py && python3 -m pytest _tests/test_model_pattern_gui.py
+- delta_summary: helper:diff-snapshot=2 files changed, 106 insertions(+), 30 deletions(-); pattern canvas now consults `get_persona_intent_catalog()` before any legacy personaConfig fallbacks, and tests guard the orchestrator outage path.
+- residual_risks:
+  - Help canvas and Help Hub still fall back to personaConfig maps when the orchestrator is unavailable; migrate their fallbacks to the catalog in upcoming loops.
+- next_work:
+  - Behaviour: align Help canvas intent fallbacks with the catalog snapshot — python3 - m pytest _tests/test_model_help_canvas.py — future-shaping: keep guidance surfaces in sync with orchestrator metadata even during outages.

@@ -83,10 +83,6 @@ if bootstrap is not None:
                     label="Decide",
                     intent="decide",
                 )
-                maps = SimpleNamespace(
-                    intent_presets={"decide": intent_preset},
-                    intent_display_map={"decide": "Decide"},
-                )
                 orchestrator_stub = SimpleNamespace(
                     persona_presets={},
                     intent_presets={"decide": intent_preset},
@@ -120,9 +116,6 @@ if bootstrap is not None:
                         "get_persona_intent_orchestrator",
                         return_value=orchestrator_stub,
                         create=True,
-                    ),
-                    patch.object(
-                        pattern_module, "persona_intent_maps", return_value=maps
                     ),
                     patch.object(
                         pattern_module, "_intent_presets", return_value=[intent_preset]
@@ -194,12 +187,8 @@ if bootstrap is not None:
                 pattern_module.PatternCanvasState.scroll_y = 0.0
 
                 orchestrator = OrchestratorStub()
-                empty_maps = SimpleNamespace(intent_display_map={}, intent_presets={})
 
                 with (
-                    patch.object(
-                        pattern_module, "persona_intent_maps", return_value=empty_maps
-                    ),
                     patch.object(
                         pattern_module,
                         "get_persona_intent_orchestrator",
@@ -219,6 +208,79 @@ if bootstrap is not None:
                 self.assertTrue(
                     any("Guide choices" in line for line in canvas.drawn),
                     f"Expected orchestrator display alias in drawn lines, got {canvas.drawn}",
+                )
+
+            def test_pattern_canvas_catalog_fallback_without_persona_maps(self) -> None:
+                from talon_user.lib import modelPatternGUI as pattern_module
+                from talon_user.lib.personaConfig import IntentPreset
+
+                intent_preset = IntentPreset(
+                    key="decide",
+                    label="Legacy decide label",
+                    intent="decide",
+                )
+
+                class StubCanvas:
+                    def __init__(self) -> None:
+                        self.rect = pattern_module.Rect(0, 0, 800, 600)
+                        self.drawn: list[str] = []
+                        self.paint = None
+
+                    def draw_text(self, text, x, y) -> None:  # type: ignore[override]
+                        self.drawn.append(str(text))
+
+                    def draw_rect(self, rect) -> None:  # type: ignore[override]
+                        pass
+
+                canvas = StubCanvas()
+                pattern_module.PatternGUIState.domain = "coding"
+                pattern_module.PatternCanvasState.scroll_y = 0.0
+
+                fallback_snapshot = SimpleNamespace(
+                    persona_presets={},
+                    intent_presets={"decide": intent_preset},
+                    persona_aliases={},
+                    intent_aliases={},
+                    intent_synonyms={},
+                    intent_display_map={"decide": "Canonical decide display"},
+                    axis_tokens={},
+                    axis_alias_map={},
+                )
+
+                with (
+                    patch.object(
+                        pattern_module,
+                        "get_persona_intent_orchestrator",
+                        side_effect=RuntimeError("orchestrator unavailable"),
+                        create=True,
+                    ),
+                    patch.object(
+                        pattern_module,
+                        "get_persona_intent_catalog",
+                        return_value=fallback_snapshot,
+                        create=True,
+                    ),
+                    patch.object(
+                        pattern_module,
+                        "persona_intent_maps",
+                        side_effect=AssertionError(
+                            "persona_intent_maps should not be used"
+                        ),
+                        create=True,
+                    ),
+                    patch.object(
+                        pattern_module, "_intent_presets", return_value=[intent_preset]
+                    ),
+                    patch.object(pattern_module, "_persona_presets", return_value=[]),
+                    patch.object(pattern_module, "PATTERNS", []),
+                ):
+                    pattern_module._draw_pattern_canvas(canvas)
+
+                pattern_module.PatternGUIState.domain = None
+
+                self.assertTrue(
+                    any("Canonical decide display" in line for line in canvas.drawn),
+                    f"Expected catalog fallback to render display name, got {canvas.drawn}",
                 )
 
             def test_axis_value_returns_description_when_present(self) -> None:

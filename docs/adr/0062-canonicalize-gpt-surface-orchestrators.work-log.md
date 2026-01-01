@@ -1566,6 +1566,36 @@
 - next_work:
   - Documentation: audit remaining historical ADRs (for example ADR-041 follow-ups or ADR-056) — python3 - <<'PY' … future check — future-shaping: keep contributor docs aligned with the orchestrator SSOT.
 
+## 2025-12-27 – Loop 128 (kind: documentation)
+- helper_version: helper:v20251223.1
+- focus: ADR-0062 §Refactor Plan – Prompt Persona Orchestrator (ADR-050 hygiene)
+- riskiest_assumption: ADR-050 continued to direct migrations toward `personaConfig` without noting the orchestrator façade, encouraging future refactors to bypass the shared entrypoint.
+- validation_targets:
+  - python3 - <<'PY' … (ADR-050 orchestrator check)
+- evidence:
+  - docs/adr/evidence/0062/loop-0128.md
+- rollback_plan: git restore --source=HEAD -- docs/adr/050-migrate-persona-intent-like-static-prompts-to-stance-axes.md docs/adr/0062-canonicalize-gpt-surface-orchestrators.work-log.md
+- delta_summary: helper:diff-snapshot=1 file changed, 2 insertions(+), 1 deletion(-); ADR-050 now references `get_persona_intent_orchestrator()` when describing Persona/Intent migrations.
+- residual_risks:
+  - Other migration ADRs (e.g., ADR-053) still mention raw `personaConfig`; continue hygiene loops.
+- next_work:
+  - Documentation: update ADR-053 to reference the orchestrator façade — python3 - <<'PY' … upcoming check — future-shaping: keep migration ADRs aligned with the shared SSOT.
+
+## 2025-12-27 – Loop 129 (kind: documentation)
+- helper_version: helper:v20251223.1
+- focus: ADR-0062 §Refactor Plan – Prompt Persona Orchestrator (ADR-053 hygiene)
+- riskiest_assumption: ADR-053 continued to describe the purpose→intent rename solely in terms of `personaConfig`, hiding the orchestrator façade.
+- validation_targets:
+  - python3 - <<'PY' … (ADR-053 orchestrator check)
+- evidence:
+  - docs/adr/evidence/0062/loop-0129.md
+- rollback_plan: git restore --source=HEAD -- docs/adr/053-retire-purpose-axis-use-intent.md docs/adr/0062-canonicalize-gpt-surface-orchestrators.work-log.md
+- delta_summary: helper:diff-snapshot=1 file changed, 3 insertions(+), 2 deletions(-); ADR-053 now references `get_persona_intent_orchestrator()` in context and migration guidance.
+- residual_risks:
+  - Remaining ADRs and README sections may still mention raw `personaConfig`; continue hygiene passes.
+- next_work:
+  - Documentation: audit README/CONTRIBUTING for orchestrator messaging — python3 - <<'PY' … future check — future-shaping: ensure contributor docs keep referencing the façade.
+
 ## 2025-12-27 – Loop 127 (kind: documentation)
 - helper_version: helper:v20251223.1
 - focus: ADR-0062 §Refactor Plan – Prompt Persona Orchestrator (ADR-040 main ADR hygiene)

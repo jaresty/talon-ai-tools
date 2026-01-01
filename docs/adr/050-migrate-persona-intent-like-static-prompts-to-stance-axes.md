@@ -6,6 +6,7 @@ Proposed
 ## Context
 - The static prompt axis currently contains prompts whose semantics lean toward **persona/intent** stances (Who/Why) rather than content/task patterns (What/How).
 - Existing Persona/Intent axes (ADR 015/040/042): voice, audience, tone, intent, persona presets, intent presets. These represent **who is speaking** and **why they are acting**.
+- Persona/Intent presets and aliases are exposed through the shared `get_persona_intent_orchestrator()` façade (backed by `lib.personaConfig`), keeping guidance surfaces aligned.
 - Contract axes (ADR 012/018/032/048): static prompt, completeness, scope, method, form, channel, directional. These capture **what to do and how to do it**, not who or why.
 - Drift risk: keeping stance-oriented prompts inside the static prompt catalog blurs boundaries, increases validation complexity, and makes hydration/docs inconsistent.
 
@@ -44,7 +45,7 @@ Proposed
 ## Migration Plan
 1) **Add stance tokens/presets**  
    - Add new tokens to `GPT/lists/modelVoice|modelAudience|modelTone|modelIntent.talon-list` as needed.  
-   - If preset-worthy, add to `lib/personaConfig.py` persona/intent presets.
+   - If preset-worthy, add to `lib/personaConfig.py` persona/intent presets and ensure `get_persona_intent_orchestrator()` (and its call sites) surface the new entries.
 2) **Remove/migrate static prompts**  
    - Delete or deprecate the listed stance-like tokens from `lib/staticPromptConfig.py` and `GPT/lists/staticPrompt.talon-list`.  
    - For borderline items, reclassify:

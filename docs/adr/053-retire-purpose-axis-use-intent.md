@@ -5,6 +5,7 @@ Accepted
 
 ## Context
 - Persona/Intent stance is currently split between two labels for the same Why axis: `intent` presets in UX copy and `purpose` tokens/keys in the grammar and SSOT (`PERSONA_KEY_TO_VALUE["purpose"]`, the axis catalog entry, and the runtime Talon list historically surfaced as `modelPurpose`).
+- Persona/Intent metadata is now exposed via `get_persona_intent_orchestrator()` (backed by `lib.personaConfig`), so renaming the SSOT requires updating the façade rather than touching surfaces directly.
 - ADR 015/040/042/051 already frame this axis as **intent (Why)**, while purpose remains as a historical name kept for compatibility.
 - Maintaining both names forces duplicate docs (persona/intent vs purpose), duplicate status/reset commands, and validation/prompt code paths that normalize between the two even though the token sets are 1–1.
 - Users and contributors have to remember whether a given surface says “intent” or “purpose,” adding churn without semantic benefit.
@@ -20,14 +21,14 @@ Accepted
 - Simplifies validation and hydration (single axis name), reducing guardrail surface area and future rename churn.
 
 ## Migration Plan
-1) **SSOT/catalog rename (risky first):** Rename `purpose` keys/structures in `lib/personaConfig.py` and `axis_catalog` to `intent` (axis table, defaults, presets) while preserving token values; remove purpose aliasing/shims.
+1) **SSOT/catalog rename (risky first):** Rename `purpose` keys/structures in `lib/personaConfig.py` and `axis_catalog` to `intent` (axis table, defaults, presets) while preserving token values; remove purpose aliasing/shims, and refresh `get_persona_intent_orchestrator()` so downstream consumers pick up the new naming.
 2) **Grammar/runtime list rename:** Rename the runtime Talon list (per ADR 052’s catalog-driven population) from `modelPurpose` to `modelIntent` and update captures/contexts to reference `intent`; if the optional list generator/export exists, ensure it emits `modelIntent` naming. Remove purpose captures/contexts instead of aliasing.
 3) **Suggest pipeline:** Update suggest meta-prompt, parsing, and stance validation to accept only `intent` naming; adjust tests to reject any `purpose` strings.
 4) **Commands/UX surfaces:** Update voice commands, status/reset flows, help hub, pattern/suggestions GUIs, and quick-help copy to “intent” only; remove the separate purpose section. `model write …` sets voice/audience/tone; intent is set via `intent <token>` or presets.
 5) **Validation/guardrails:** Refresh axis/suggestion/help tests for intent-only naming and run `python3 -m pytest` (plus guardrail targets if configured).
 
 ## Execution checklist (repo touchpoints)
-- SSOT/catalog: `lib/personaConfig.py`, `lib/axis_catalog.py` intent axis tables/defaults/presets; remove purpose symbols entirely.
+- SSOT/catalog: `lib/personaConfig.py`, `lib/axis_catalog.py` intent axis tables/defaults/presets; remove purpose symbols entirely and ensure `get_persona_intent_orchestrator()` reflects the updated naming.
 - Grammar/runtime lists: Talon list wiring for the intent axis (runtime-populated list name swap to `modelIntent`); remove any purpose captures/contexts.
 - Suggest pipeline: meta-prompt strings and stance parsing/validation in `GPT/gpt.py` (or adjacent parser/validator modules) to accept only intent naming.
 - Commands/UX: voice commands/status/reset flows and help surfaces (help hub, pattern/suggestions GUI, quick help) to render and speak “intent” only.

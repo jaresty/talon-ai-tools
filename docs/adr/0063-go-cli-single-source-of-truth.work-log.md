@@ -322,3 +322,26 @@
   - Delegation still returns False; upcoming work must implement real CLI invocation.
 - next_work:
   - Behaviour: outline adapter follow-up guidance — python3 - <<'PY' ...> — future-shaping: ensure contributors know how to progress the stub into production.
+
+
+## 2026-01-01 – Loop 014 (kind: documentation)
+- helper_version: helper:v20251223.1
+- focus: ADR-0063 §Implementation Plan – Go CLI Core (document delegation stub fallback)
+- riskiest_assumption: Documentation omits the stub behaviour, leaving contributors unsure how the feature flag behaves (probability medium, impact medium on rollout clarity).
+- validation_targets:
+  - python3 - <<'PY'
+      from pathlib import Path
+      text = Path('cli/README.md').read_text().lower()
+      if 'logs a debug message' not in text or 'stub' not in text:
+          raise SystemExit('README does not mention delegation stub fallback')
+      print('README documents delegation stub fallback')
+    PY
+- evidence:
+  - docs/adr/evidence/0063/loop-0014.md
+- rollback_plan: git checkout HEAD -- cli/README.md
+- delta_summary: helper:diff-snapshot=1 file changed, 1 insertion(+); Feature Flag section now explains the current stub fallback behaviour.
+- loops_remaining_forecast: 0 loops remaining for documentation catch-up; confidence medium-high.
+- residual_risks:
+  - README references current stub only; update again once real delegation lands.
+- next_work:
+  - Behaviour: implement real bar CLI invocation under the feature flag — python3 -m pytest _tests/test_gpt_actions.py — future-shaping: ensure documentation stays aligned.

@@ -19,3 +19,46 @@
           raise SystemExit(1)
       print('CLI README mentions shared source of truth')
     PY — future-shaping: align CLI instructions with shared schema assets from Implementation Plan §1.
+
+## 2026-01-01 – Loop 002 (kind: implementation)
+- helper_version: helper:v20251223.1
+- focus: ADR-0063 §Implementation Plan – Go CLI Core (scaffold documentation)
+- riskiest_assumption: Without a CLI bootstrap README, the Go binary could evolve without mirroring Talon semantics or documenting how adapters share the single source of truth (probability medium, impact medium-high on parity).
+- validation_targets:
+  - python3 - <<'PY'
+      from pathlib import Path
+      path = Path('cli/README.md')
+      if not path.exists():
+          raise SystemExit('missing cli/README.md')
+      text = path.read_text()
+      if 'Go CLI single source of truth' not in text:
+          raise SystemExit('missing shared source of truth mention')
+      print('CLI README mentions shared source of truth')
+    PY
+- evidence:
+  - docs/adr/evidence/0063/loop-0002.md
+- rollback_plan: mv cli/README.md cli/README.md.tmp; python3 - <<'PY'
+    from pathlib import Path
+    path = Path('cli/README.md')
+    if not path.exists():
+        raise SystemExit('missing cli/README.md')
+    text = path.read_text()
+    if 'Go CLI single source of truth' not in text:
+        raise SystemExit('missing shared source of truth mention')
+    print('CLI README mentions shared source of truth')
+  PY; mv cli/README.md.tmp cli/README.md
+- delta_summary: helper:diff-snapshot=3 files changed, 165 insertions(+); added `cli/README.md` outlining ADR-0063 CLI responsibilities, directory layout, shared asset expectations, and validation checkpoints.
+- loops_remaining_forecast: 2 loops remaining (shared command schema docs, parity audit); confidence medium.
+- residual_risks:
+  - Go module scaffolding and Talon adapter stubs remain undefined; plan once shared schema assets land.
+- next_work:
+  - Behaviour: capture shared command schema assets per ADR-0063 Implementation Plan §1 — python3 - <<'PY'
+      from pathlib import Path
+      path = Path('shared/command-schema/README.md')
+      if not path.exists():
+          raise SystemExit('missing shared/command-schema/README.md')
+      text = path.read_text()
+      if 'language-neutral' not in text.lower():
+          raise SystemExit('missing language-neutral schema guidance')
+      print('Shared command schema README captures neutral asset guidance')
+    PY — future-shaping: align Talon list generators and Go builds on the same schema outputs.

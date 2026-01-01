@@ -1626,6 +1626,21 @@
 - next_work:
   - Documentation: audit ADR-051 work log for orchestrator messaging — python3 - <<'PY' … upcoming check — future-shaping: keep historical notes aligned with the façade.
 
+## 2025-12-27 – Loop 134 (kind: documentation)
+- helper_version: helper:v20251223.1
+- focus: ADR-0062 §Refactor Plan – Prompt Persona Orchestrator (ADR-051 work log hygiene)
+- riskiest_assumption: ADR-051 work log referenced raw `personaConfig` updates without noting the orchestrator façade.
+- validation_targets:
+  - python3 - <<'PY' … (ADR-051 work log orchestrator check)
+- evidence:
+  - docs/adr/evidence/0062/loop-0134.md
+- rollback_plan: git restore --source=HEAD -- docs/adr/051-intent-purpose-rehome-how-tokens.work-log.md docs/adr/0062-canonicalize-gpt-surface-orchestrators.work-log.md
+- delta_summary: helper:diff-snapshot=1 file changed, 1 insertion(+); ADR-051 work log now records refreshing `get_persona_intent_orchestrator()` after catalog edits.
+- residual_risks:
+  - Other backlog notes may still mention raw helpers; continue hygiene loops as the façade expands.
+- next_work:
+  - Documentation: audit feature-specific READMEs for orchestrator messaging — python3 - <<'PY' … future check — future-shaping: keep contributor docs aligned with the façade.
+
 ## 2025-12-27 – Loop 131 (kind: documentation)
 
 

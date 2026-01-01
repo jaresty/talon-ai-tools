@@ -579,6 +579,7 @@ def _populate_runtime_lists_from_catalog() -> None:
         static_tokens = list((STATIC_PROMPT_CONFIG or {}).keys())
     _set_ctx_list("staticPrompt", sorted(set(static_tokens)))
 
+
 _populate_runtime_lists_from_catalog()
 
 
@@ -657,7 +658,9 @@ def modelPrompt(m) -> str:
     for attr in ("styleModifier", "styleModifier_list"):
         value = getattr(m, attr, None)
         if isinstance(value, (list, tuple)):
-            legacy_style_tokens.extend([str(v).strip() for v in value if str(v).strip()])
+            legacy_style_tokens.extend(
+                [str(v).strip() for v in value if str(v).strip()]
+            )
         elif value:
             legacy_style_tokens.append(str(value).strip())
     if any(legacy_style_tokens):
@@ -758,7 +761,9 @@ def modelPrompt(m) -> str:
     raw_scope_tokens = _map_axis_tokens("scope", _tokens_list(effective_scope_raw))
     raw_method_tokens = _map_axis_tokens("method", _tokens_list(effective_method_raw))
     raw_form_tokens = _map_axis_tokens("form", _tokens_list(effective_form_raw))
-    raw_channel_tokens = _map_axis_tokens("channel", _tokens_list(effective_channel_raw))
+    raw_channel_tokens = _map_axis_tokens(
+        "channel", _tokens_list(effective_channel_raw)
+    )
 
     resolved_axes, canonical_axes = _apply_constraint_hierarchy(
         {
@@ -1005,7 +1010,9 @@ def pleasePromptConfiguration(matched_prompt) -> ApplyPromptConfiguration:
     for attr in ("styleModifier", "styleModifier_list"):
         value = getattr(matched_prompt, attr, None)
         if isinstance(value, (list, tuple)):
-            legacy_style_tokens.extend([str(v).strip() for v in value if str(v).strip()])
+            legacy_style_tokens.extend(
+                [str(v).strip() for v in value if str(v).strip()]
+            )
         elif value:
             legacy_style_tokens.append(str(value).strip())
     if legacy_style_tokens:
@@ -1044,7 +1051,9 @@ def applyPromptConfiguration(matched_prompt) -> ApplyPromptConfiguration:
     for attr in ("styleModifier", "styleModifier_list"):
         value = getattr(matched_prompt, attr, None)
         if isinstance(value, (list, tuple)):
-            legacy_style_tokens.extend([str(v).strip() for v in value if str(v).strip()])
+            legacy_style_tokens.extend(
+                [str(v).strip() for v in value if str(v).strip()]
+            )
         elif value:
             legacy_style_tokens.append(str(value).strip())
     if legacy_style_tokens:
@@ -1162,6 +1171,16 @@ mod.setting(
     type=int,
     default=0,
     desc="When set to 1, provider list/status will attempt a quick reachability probe of the provider endpoint.",
+)
+
+mod.setting(
+    "bar_cli_enabled",
+    type=int,
+    default=0,
+    desc=(
+        "When set to 1, Talon delegates GPT provider commands through the bar CLI "
+        "adapter. Leave at 0 to continue using the legacy in-process execution path."
+    ),
 )
 
 mod.setting(

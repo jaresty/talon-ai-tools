@@ -26,6 +26,13 @@ mod = Module()
 ctx = Context()
 
 
+def _bar_cli_enabled() -> bool:
+    try:
+        return bool(settings.get("user.bar_cli_enabled", 0))
+    except Exception:
+        return False
+
+
 def _render_provider_lines(
     entries: list[dict], message: Optional[str] = None
 ) -> list[str]:

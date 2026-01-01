@@ -200,3 +200,25 @@
   - No adapter shim exists; Talon cannot yet delegate to the CLI. Mitigation: schedule implementation loop to add feature-flagged adapter path.
 - next_work:
   - Behaviour: implement adapter shim invoking `bar` under feature flag — python3 -m pytest _tests/test_gpt_actions.py — future-shaping: ensure Talon pathways exercise the CLI.
+
+## 2026-01-01 – Loop 009 (kind: implementation)
+- helper_version: helper:v20251223.1
+- focus: ADR-0063 §Implementation Plan – Go CLI Core (bar CLI feature flag plumbing)
+- riskiest_assumption: Without a dedicated feature flag, we cannot gate delegation to the `bar` CLI for incremental rollout (probability high, impact high on parity safety).
+- validation_targets:
+  - python3 - <<'PY'
+      from pathlib import Path
+      text = Path('lib/talonSettings.py').read_text()
+      if 'bar_cli_enabled' not in text:
+          raise SystemExit('missing bar_cli_enabled setting')
+      print('bar_cli_enabled setting present')
+    PY
+- evidence:
+  - docs/adr/evidence/0063/loop-0009.md
+- rollback_plan: git checkout HEAD -- lib/talonSettings.py lib/providerCommands.py
+- delta_summary: helper:diff-snapshot=2 files changed, 30 insertions(+), 4 deletions(-); added the `bar_cli_enabled` setting and a helper for adapters to consult it.
+- loops_remaining_forecast: 1 loop remaining (document feature flag usage); confidence medium.
+- residual_risks:
+  - Flag currently unused; upcoming loop must document rollout guidance and wire adapters.
+- next_work:
+  - Behaviour: document feature flag usage — python3 - <<'PY' ...> — future-shaping: ensure onboarding materials highlight the new toggle.

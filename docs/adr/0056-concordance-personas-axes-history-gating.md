@@ -45,7 +45,7 @@ Owners: Talon AI tools maintainers
 High churn and coordination weight now concentrate in three overlapping Concordance domains that build on but are not fully resolved by ADR-0045/0046/0054/0055:
 
 1. **Axis tokens and history/log summaries** remain split across `axisConfig`, `axisCatalog`, `talonSettings`, `staticPromptConfig`, `requestLog`, and `requestHistoryActions`. Axis semantics feed Concordance scoring and health snapshots, but payload shapes and axis filters are duplicated and partially implicit, making it hard to reason about which axes are present where, and why.
-2. **Personas, intent presets, and Concordance-facing help/suggestion flows** share an implicit domain: persona definitions in `personaConfig`, GPT actions and docs, help hub preset UIs, and suggestion canvases. Contracts between persona presets, axis tokens, and on-screen guidance are under-specified, leading to frequent edits across config, GPT actions, help hub, and GUI logic.
+2. **Personas, intent presets, and Concordance-facing help/suggestion flows** share an implicit domain: persona definitions surfaced via `get_persona_intent_orchestrator()` (backed by `personaConfig`), GPT actions and docs, help hub preset UIs, and suggestion canvases. Contracts between persona presets, axis tokens, and on-screen guidance are under-specified, leading to frequent edits across config, GPT actions, help hub, and GUI logic.
 3. **Request-in-flight gating and streaming lifecycle** logic is repeated across GPT actions, canvases, confirmation/help/suggestion GUIs, and history drawers. Each module carries its own `_request_is_in_flight` / `_reject_if_request_in_flight` helpers, while `requestController`/`requestState`/`requestLifecycle` and `modelHelpers` already form a partial orchestrator. This duplication creates unclear ownership of concurrency policies and error handling.
 
 These domains exhibit:
@@ -183,16 +183,19 @@ For all three domains, the intended long-term effect is to **reduce sustained Co
 ### 2. Persona & Intent Preset Concordance Domain
 
 - **Original Draft Idea**
-  - Persona and intent presets are encoded across `personaConfig`, GPT helpers, help hub, suggestion GUIs, and Talon lists with high churn and coordination but no explicit domain boundary.
+   - Persona and intent presets are encoded across the orchestrator façade, GPT helpers, help hub, suggestion GUIs, and Talon lists with high churn and coordination but no explicit domain boundary.
+
 - **Similar Existing Behavior / Prior Art**
-  - `lib/personaConfig.py` defines personas/intents used by GPT flows.
+   - `lib/personaConfig.py` defines personas/intents used by GPT flows and feeds `lib/personaOrchestrator.get_persona_intent_orchestrator()` (the shared façade for presets and aliases).
+
   - `GPT/gpt.py` implements persona validation, canonicalization, and preset actions; ADR-0037 and ADR-0046 already encourage orchestrator-based designs for GPT actions.
   - `lib/helpHub.py::_persona_presets` and `lib/modelSuggestionGUI.py::{_match_persona_preset,_suggestion_stance_info}` surface presets and stance info to users.
   - Axis and static prompt domains (ADRs 0036/0044/0045/0046/0054) treat axes as first-class Concordance inputs but do not yet fully align persona/intents with those axes.
   - Tests under `tests/test_voice_audience_tone_purpose_lists.py`, `tests/test_model_types_system_prompt.py`, `tests/test_model_suggestion_gui.py`, `tests/test_integration_suggestions.py`, and `tests/test_gpt_actions.py` exercise persona/intent behaviours from different angles.
 - **Revised Recommendation**
-  - **Persona/intent catalog**
-    - Introduce or extend a `persona_catalog` / `intent_catalog` helper, backed by `personaConfig`, that:
+   - **Persona/intent catalog**
+     - Introduce or extend a `persona_catalog` / `intent_catalog` helper, backed by `personaConfig` and exposed via `get_persona_intent_orchestrator()`, that:
+
       - Exposes typed persona/intent presets, including associated axis tokens (voice, tone, purpose) and defaults.
       - Provides a single API used by GPT actions (`persona_set_preset`, `intent_set_preset`, `gpt_preset_save`), help hub (`_persona_presets`), suggestion GUIs, and docs.
   - **Canonicalization and validation alignment**

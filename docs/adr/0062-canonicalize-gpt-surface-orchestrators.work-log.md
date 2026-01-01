@@ -1594,9 +1594,25 @@
 - residual_risks:
   - README/CONTRIBUTING still mention raw `personaConfig`; address in the next loop.
 - next_work:
-  - Documentation: audit README/CONTRIBUTING for orchestrator messaging — python3 - <<'PY' … upcoming check — future-shaping: keep contributor docs aligned with the façade.
+  - Documentation: audit feature-specific READMEs for orchestrator messaging — python3 - <<'PY' … future check — future-shaping: keep contributor docs aligned with the façade.
+
+## 2025-12-27 – Loop 132 (kind: documentation)
+- helper_version: helper:v20251223.1
+- focus: ADR-0062 §Refactor Plan – Prompt Persona Orchestrator (ADR-0056 hygiene)
+- riskiest_assumption: ADR-0056 still framed the persona/intent domain around raw `personaConfig` references without mentioning the orchestrator façade.
+- validation_targets:
+  - python3 - <<'PY' … (ADR-0056 orchestrator check)
+- evidence:
+  - docs/adr/evidence/0062/loop-0132.md
+- rollback_plan: git restore --source=HEAD -- docs/adr/0056-concordance-personas-axes-history-gating.md docs/adr/0062-canonicalize-gpt-surface-orchestrators.work-log.md
+- delta_summary: helper:diff-snapshot=1 file changed, 4 insertions(+), 0 deletions(-); ADR-0056 now points to `get_persona_intent_orchestrator()` when describing the persona/intent domain.
+- residual_risks:
+  - Additional ADR sections may still reference raw `personaConfig`; continue hygiene passes as needed.
+- next_work:
+  - Documentation: audit remaining doc fragments (e.g., feature READMEs) for orchestrator messaging — python3 - <<'PY' … future check — future-shaping: keep contributor docs aligned with the façade.
 
 ## 2025-12-27 – Loop 131 (kind: documentation)
+
 - helper_version: helper:v20251223.1
 - focus: ADR-0062 §Refactor Plan – Prompt Persona Orchestrator (top-level docs hygiene)
 - riskiest_assumption: README and CONTRIBUTING still referenced `personaConfig` directly without calling out the orchestrator façade.

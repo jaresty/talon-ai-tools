@@ -1,4 +1,6 @@
 import unittest
+import os
+from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import MagicMock, patch
 
@@ -137,6 +139,22 @@ class ProviderCommandGuardTests(unittest.TestCase):
             self.assertFalse(provider_module._reject_if_request_in_flight())
         set_reason.assert_not_called()
 
+
+class BarCliCommandPathTests(unittest.TestCase):
+    def setUp(self):
+        if bootstrap is None:
+            self.skipTest("Talon runtime not available")
+
+    def test_bar_cli_command_env_override(self):
+        with patch.dict(provider_module.os.environ, {"BAR_CLI_PATH": "/custom/bar"}, clear=True):
+            self.assertEqual(provider_module._bar_cli_command(), Path("/custom/bar"))
+
+    def test_bar_cli_command_default_path(self):
+        with patch.dict(provider_module.os.environ, {}, clear=True):
+            path_result = provider_module._bar_cli_command()
+            self.assertTrue(str(path_result).endswith("cli/bin/bar"))
+
+
 class BarCliDelegationTests(unittest.TestCase):
     def setUp(self):
         if bootstrap is None:
@@ -145,6 +163,7 @@ class BarCliDelegationTests(unittest.TestCase):
     def test_delegate_returns_false_when_flag_disabled(self):
         with (
             patch.object(provider_module.settings, "get", return_value=0),
+            patch.object(provider_module, "_bar_cli_command", return_value=Path("/tmp/bar")),
             patch.object(provider_module.subprocess, "run") as run_mock,
         ):
             self.assertFalse(
@@ -155,6 +174,7 @@ class BarCliDelegationTests(unittest.TestCase):
     def test_delegate_handles_missing_binary(self):
         with (
             patch.object(provider_module.settings, "get", return_value=1),
+            patch.object(provider_module, "_bar_cli_command", return_value=Path("/tmp/bar")),
             patch.object(
                 provider_module.subprocess, "run", side_effect=FileNotFoundError
             ),

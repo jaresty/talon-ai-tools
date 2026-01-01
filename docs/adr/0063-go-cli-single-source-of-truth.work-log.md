@@ -391,3 +391,32 @@
   - Tests rely on mocks; integration coverage pending once real CLI invocation lands.
 - next_work:
   - Behaviour: integrate real CLI delegation path — python3 -m pytest _tests/test_gpt_actions.py — future-shaping: ensure end-to-end guardrails include the CLI execution.
+
+
+## 2026-01-01 – Loop 017 (kind: implementation)
+- helper_version: helper:v20251223.1
+- focus: ADR-0063 §Talon Adapter Layer (harden bar CLI delegation path resolution)
+- riskiest_assumption: Without an overridable CLI path helper, feature-flagged delegation cannot locate binaries in CI or external environments (probability high, impact high on rollout safety).
+- validation_targets:
+  - python3 - <<'PY'
+      import os, sys
+      from pathlib import Path
+      sys.path.insert(0, str(Path('.').resolve()))
+      from bootstrap import bootstrap
+      bootstrap()
+      os.environ['BAR_CLI_PATH'] = '/custom/bar'
+      from talon_user.lib import providerCommands
+      result = providerCommands._bar_cli_command()
+      if result != Path('/custom/bar'):
+          raise SystemExit(f'expected /custom/bar, got {result!r}')
+      print('env override works:', result)
+    PY
+- evidence:
+  - docs/adr/evidence/0063/loop-0017.md
+- rollback_plan: git checkout HEAD -- lib/providerCommands.py _tests/test_provider_commands.py
+- delta_summary: helper:diff-snapshot=2 files changed, 40 insertions(+), 2 deletions(-); added `_bar_cli_command`, wired `_delegate_to_bar_cli` through it, and updated tests for path/env overrides.
+- loops_remaining_forecast: 1 loop remaining (documentation & guardrail guidance); confidence medium.
+- residual_risks:
+  - CLI execution still relies on subprocess return text; integration parsing and telemetry remain TODO.
+- next_work:
+  - Behaviour: extend CLI documentation and guardrail guidance — python3 - <<'PY' ...> — future-shaping: ensure contributors know how to use env overrides and telemetry.

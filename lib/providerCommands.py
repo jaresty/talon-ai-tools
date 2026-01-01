@@ -1,5 +1,7 @@
+import os
 import subprocess
 from typing import Optional
+from pathlib import Path
 
 from talon import Context, Module, actions, settings
 
@@ -33,13 +35,27 @@ def _bar_cli_enabled() -> bool:
     except Exception:
         return False
 
+
+
+def _bar_cli_command() -> Path:
+    """Return the absolute path to the bar CLI binary."""
+
+    override = os.environ.get("BAR_CLI_PATH")
+    if override:
+        return Path(override)
+
+    root = Path(__file__).resolve().parents[2]
+    return root / "cli" / "bin" / "bar"
+
+
 def _delegate_to_bar_cli(action: str, *args, **kwargs) -> bool:
     """Temporary bar CLI delegation shim. Returns True once the CLI path handles the request."""
 
     if not _bar_cli_enabled():
         return False
 
-    cmd = ["cli/bin/bar", action]
+    command_path = _bar_cli_command()
+    cmd = [str(command_path), action]
     if args:
         cmd.extend(str(a) for a in args)
     if kwargs:
@@ -55,7 +71,9 @@ def _delegate_to_bar_cli(action: str, *args, **kwargs) -> bool:
         )
     except FileNotFoundError:
         try:
-            print("[debug] bar CLI binary not found; fallback to legacy path")
+            print(
+                f"[debug] bar CLI binary not found at {command_path}; fallback to legacy path"
+            )
         except Exception:
             pass
         return False

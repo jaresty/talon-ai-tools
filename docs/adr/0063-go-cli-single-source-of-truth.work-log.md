@@ -222,3 +222,25 @@
   - Flag currently unused; upcoming loop must document rollout guidance and wire adapters.
 - next_work:
   - Behaviour: document feature flag usage — python3 - <<'PY' ...> — future-shaping: ensure onboarding materials highlight the new toggle.
+
+## 2026-01-01 – Loop 010 (kind: documentation)
+- helper_version: helper:v20251223.1
+- focus: ADR-0063 §Implementation Plan – Go CLI Core (document bar CLI feature flag)
+- riskiest_assumption: Contributors lack guidance on the `bar_cli_enabled` toggle, risking unsafe rollouts (probability medium, impact medium-high on governance).
+- validation_targets:
+  - python3 - <<'PY'
+      from pathlib import Path
+      text = Path('cli/README.md').read_text()
+      if 'bar_cli_enabled' not in text:
+          raise SystemExit('cli README missing bar_cli_enabled documentation')
+      print('cli README documents bar_cli_enabled feature flag')
+    PY
+- evidence:
+  - docs/adr/evidence/0063/loop-0010.md
+- rollback_plan: git checkout HEAD -- cli/README.md
+- delta_summary: helper:diff-snapshot=1 file changed, 6 insertions(+); added a README section explaining how to toggle `user.bar_cli_enabled`.
+- loops_remaining_forecast: 0 loops remaining for ADR-0063 feature flag documentation; confidence medium-high.
+- residual_risks:
+  - Broader docs still need updates once adapters land; track during CLI integration work.
+- next_work:
+  - Behaviour: implement adapter shim invoking `bar` under feature flag — python3 -m pytest _tests/test_gpt_actions.py — future-shaping: ensure Talon pathways exercise the CLI.

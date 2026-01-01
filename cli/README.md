@@ -27,6 +27,12 @@ cli/
 - Integration guardrails must exercise `python3 -m pytest` suites that spawn the `bar` binary to keep Talon and Go behaviour aligned.
 - CLI unit tests (Go) should live alongside the Go packages; Python guardrails remain in `_tests/`.
 
+## Feature Flag
+
+- `user.bar_cli_enabled` controls delegation to the `bar` binary. The default value `0` keeps the legacy in-process provider path.
+- Toggle it via Talon settings (for example `settings.set("user.bar_cli_enabled", 1)`) or the `settings.talon` config file once the adapter path lands.
+- Feature-flagged rollout lets CI and contributors compare legacy vs. CLI behaviour before flipping defaults.
+
 ## Implementation Slices
 
 1. Establish shared command schema assets (Loop 003) with generation scripts that hydrate Talon lists and Go bindings.

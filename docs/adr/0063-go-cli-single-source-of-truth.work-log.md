@@ -267,3 +267,26 @@
   - Need adapter implementation to leverage the flag; schedule in upcoming loop.
 - next_work:
   - Behaviour: implement adapter shim invoking `bar` under feature flag — python3 -m pytest _tests/test_gpt_actions.py — future-shaping: ensure Talon pathways exercise the CLI.
+
+
+## 2026-01-01 – Loop 012 (kind: implementation)
+- helper_version: helper:v20251223.1
+- focus: ADR-0063 §Talon Adapter Layer (add bar CLI delegation stub)
+- riskiest_assumption: Without a callable stub, the feature flag cannot be exercised and future adapter work lacks an entry point (probability medium, impact medium-high on rollout planning).
+- validation_targets:
+  - python3 - <<'PY'
+      from pathlib import Path
+      text = Path('lib/providerCommands.py').read_text()
+      if '_delegate_to_bar_cli' not in text:
+          raise SystemExit('bar CLI delegation stub missing in providerCommands')
+      print('bar CLI delegation stub present after edit')
+    PY
+- evidence:
+  - docs/adr/evidence/0063/loop-0012.md
+- rollback_plan: git checkout HEAD -- lib/providerCommands.py
+- delta_summary: helper:diff-snapshot=1 file changed, 12 insertions(+); added `_delegate_to_bar_cli` stub guarded by `user.bar_cli_enabled` for future delegation.
+- loops_remaining_forecast: 0 loops remaining for initial adapter enablement; confidence medium.
+- residual_risks:
+  - Stub currently returns False; follow-up work must integrate actual CLI invocation.
+- next_work:
+  - Behaviour: integrate bar CLI adapter once delegation plan is ready — python3 -m pytest _tests/test_gpt_actions.py — future-shaping: exercise the CLI path end-to-end.

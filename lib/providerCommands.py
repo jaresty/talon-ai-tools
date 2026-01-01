@@ -33,6 +33,18 @@ def _bar_cli_enabled() -> bool:
         return False
 
 
+def _delegate_to_bar_cli(*_args, **_kwargs) -> bool:
+    """Placeholder for bar CLI delegation while adapters are under construction."""
+
+    if not _bar_cli_enabled():
+        return False
+    try:
+        print("[debug] bar CLI delegation stub invoked; falling back to legacy path")
+    except Exception:
+        pass
+    return False
+
+
 def _render_provider_lines(
     entries: list[dict], message: Optional[str] = None
 ) -> list[str]:

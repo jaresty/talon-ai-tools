@@ -2,6 +2,7 @@ from dataclasses import dataclass
 import json
 import os
 import time
+from types import SimpleNamespace
 from typing import Callable, Dict, List, Optional, Any
 from collections.abc import Sequence
 
@@ -1243,13 +1244,13 @@ def _cheat_sheet_text() -> str:
             key_str = str(key or "").strip()
             if key_str:
                 persona_candidates.setdefault(key_str, preset)
-    if maps is not None and getattr(maps, "persona_presets", None):
-        for key, preset in (maps.persona_presets or {}).items():
+    if catalog_snapshot and getattr(catalog_snapshot, "persona_presets", None):
+        for key, preset in (catalog_snapshot.persona_presets or {}).items():
             key_str = str(key or "").strip()
             if key_str:
                 persona_candidates.setdefault(key_str, preset)
-    if catalog_snapshot and getattr(catalog_snapshot, "persona_presets", None):
-        for key, preset in (catalog_snapshot.persona_presets or {}).items():
+    if maps is not None and getattr(maps, "persona_presets", None):
+        for key, preset in (maps.persona_presets or {}).items():
             key_str = str(key or "").strip()
             if key_str:
                 persona_candidates.setdefault(key_str, preset)
@@ -1328,6 +1329,11 @@ def _cheat_sheet_text() -> str:
             key_str = str(key or "").strip()
             if key_str:
                 intent_candidates.setdefault(key_str, preset)
+    if catalog_snapshot and getattr(catalog_snapshot, "intent_presets", None):
+        for key, preset in (catalog_snapshot.intent_presets or {}).items():
+            key_str = str(key or "").strip()
+            if key_str:
+                intent_candidates.setdefault(key_str, preset)
     if maps is not None and getattr(maps, "intent_presets", None):
         for key, preset in (maps.intent_presets or {}).items():
             key_str = str(key or "").strip()
@@ -1335,13 +1341,6 @@ def _cheat_sheet_text() -> str:
                 intent_candidates.setdefault(key_str, preset)
 
     display_map: Dict[str, str] = {}
-    if orchestrator and getattr(orchestrator, "intent_display_map", None):
-        display_map.update(
-            {
-                str(k or "").strip().lower(): str(v or "").strip()
-                for k, v in dict(orchestrator.intent_display_map or {}).items()
-            }
-        )
     if maps is not None:
         display_map.update(
             {
@@ -1354,6 +1353,13 @@ def _cheat_sheet_text() -> str:
             {
                 str(k or "").strip().lower(): str(v or "").strip()
                 for k, v in dict(catalog_snapshot.intent_display_map or {}).items()
+            }
+        )
+    if orchestrator and getattr(orchestrator, "intent_display_map", None):
+        display_map.update(
+            {
+                str(k or "").strip().lower(): str(v or "").strip()
+                for k, v in dict(orchestrator.intent_display_map or {}).items()
             }
         )
 

@@ -1753,3 +1753,18 @@
   - Help Hub metadata fallbacks still rely on personaConfig maps when the orchestrator is unavailable; migrate them next.
 - next_work:
   - Behaviour: align Help Hub metadata fallbacks with the catalog snapshot — python3 -m pytest _tests/test_help_hub.py — future-shaping: keep documentation surfaces aligned with the orchestrator facade during outages.
+
+## 2026-01-01 – Loop 139 (kind: implementation)
+- helper_version: helper:v20251223.1
+- focus: ADR-0062 §Refactor Plan – Guidance Surface Coordinator (Help Hub metadata fallback)
+- riskiest_assumption: Without catalog fallbacks, Help Hub cheat sheet keeps emitting legacy personaConfig metadata when the orchestrator is unavailable, hiding canonical personas/intent aliases (probability medium, impact medium-high on Concordance visibility).
+- validation_targets:
+  - python3 -m pytest _tests/test_help_hub.py::test_cheat_sheet_catalog_fallback_without_maps
+- evidence:
+  - docs/adr/evidence/0062/loop-0139.md
+- rollback_plan: git stash push -- lib/helpHub.py && python3 -m pytest _tests/test_help_hub.py::test_cheat_sheet_catalog_fallback_without_maps && git stash pop
+- delta_summary: helper:diff-snapshot=2 files changed, 102 insertions(+), 10 deletions(-); reorder Help Hub cheat sheet fallbacks to prefer persona catalog snapshots over legacy maps and guard outages with a dedicated pytest.
+- residual_risks:
+  - Cheat sheet entry ordering still follows catalog insertion order; investigate deterministic sorting if downstream guardrails require it.
+- next_work:
+  - Behaviour: align helpDomain metadata fallback with the persona catalog snapshot — python3 -m pytest _tests/test_help_domain.py — future-shaping: ensure documentation exports share outage-safe catalog fallbacks.

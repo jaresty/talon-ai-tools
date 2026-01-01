@@ -1062,6 +1062,92 @@ def test_metadata_snapshot_summary_uses_orchestrator_buckets(monkeypatch):
     )
 
 
+def test_cheat_sheet_catalog_fallback_without_maps(monkeypatch):
+    snapshot = HelpMetadataSnapshot(
+        personas=(),
+        intents=(),
+        headers=("Help metadata summary",),
+    )
+    catalog_persona = SimpleNamespace(
+        key="mentor",
+        label="Catalog Mentor",
+        spoken="catalog mentor",
+        voice="Catalog Voice",
+        audience="Catalog Audience",
+        tone="Catalog Tone",
+    )
+    catalog_intent = SimpleNamespace(
+        key="plan",
+        label="Catalog Plan",
+        intent="plan",
+        spoken="catalog plan alias",
+    )
+    catalog_snapshot = SimpleNamespace(
+        persona_presets={"mentor": catalog_persona},
+        intent_presets={"plan": catalog_intent},
+        intent_display_map={"plan": "Catalog Plan Display"},
+        intent_buckets={"assist": ["plan"]},
+    )
+    legacy_persona = SimpleNamespace(
+        key="mentor",
+        label="Legacy Mentor",
+        spoken="legacy mentor",
+        voice="Legacy Voice",
+        audience="Legacy Audience",
+        tone="Legacy Tone",
+    )
+    legacy_intent = SimpleNamespace(
+        key="plan",
+        label="Legacy Plan",
+        intent="legacy-plan",
+        spoken="legacy plan alias",
+    )
+    legacy_maps = SimpleNamespace(
+        persona_presets={"mentor": legacy_persona},
+        intent_presets={"plan": legacy_intent},
+        intent_display_map={"plan": "Legacy Plan Display"},
+    )
+
+    monkeypatch.setattr(helpHub, "axis_catalog", lambda: {})
+    monkeypatch.setattr(helpHub, "help_index", lambda *args, **kwargs: [])
+    monkeypatch.setattr(helpHub, "help_metadata_snapshot", lambda _entries: snapshot)
+    monkeypatch.setattr(helpHub, "get_persona_intent_orchestrator", lambda: None)
+    monkeypatch.setattr(
+        helpHub.personaCatalog,
+        "get_persona_intent_catalog",
+        lambda: catalog_snapshot,
+    )
+    monkeypatch.setattr(helpHub, "persona_intent_maps", lambda: legacy_maps)
+
+    assert helpHub.personaCatalog.get_persona_intent_catalog() is catalog_snapshot
+    assert helpHub.persona_intent_maps() is legacy_maps
+
+    text = helpHub._cheat_sheet_text()
+    lines = text.splitlines()
+
+    persona_line = next(
+        (line for line in lines if line.startswith("- persona mentor")),
+        None,
+    )
+    assert persona_line is not None, text
+    assert "Catalog Mentor" in persona_line
+    assert "Catalog Voice" in persona_line
+    assert "Legacy Voice" not in persona_line
+
+    intent_line = next(
+        (line for line in lines if line.startswith("- intent plan")),
+        None,
+    )
+    assert intent_line is not None, text
+    assert "Catalog Plan Display" in intent_line
+    assert "(plan)" in intent_line
+    assert "legacy-plan" not in intent_line
+
+    bucket_line = next((line for line in lines if line.startswith("- assist:")), None)
+    assert bucket_line is not None, text
+    assert "Catalog Plan Display" in bucket_line
+
+
 def test_help_hub_copy_cheat_sheet_includes_snapshot_aliases(monkeypatch):
     """Clipboard copy should reuse snapshot-backed persona/intent alias phrasing."""
     from lib.personaConfig import persona_intent_catalog_snapshot

@@ -1,6 +1,6 @@
 # ADR-0062 – Canonicalize GPT Surface Orchestrators and History Gating
 
-Status: In Progress — metadata orchestration + export guardrails (Loops 0001-0036)  
+Status: Accepted — canonical orchestration complete (Loops 0001-0143)  
 Date: 2025-12-24  
 Owners: Talon AI tools maintainers
 

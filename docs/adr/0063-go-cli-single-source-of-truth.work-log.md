@@ -244,3 +244,26 @@
   - Broader docs still need updates once adapters land; track during CLI integration work.
 - next_work:
   - Behaviour: implement adapter shim invoking `bar` under feature flag — python3 -m pytest _tests/test_gpt_actions.py — future-shaping: ensure Talon pathways exercise the CLI.
+
+
+## 2026-01-01 – Loop 011 (kind: documentation)
+- helper_version: helper:v20251223.1
+- focus: ADR-0063 §Implementation Plan – Talon Adapter Layer (document feature flag in ADR text)
+- riskiest_assumption: ADR prose omits the `user.bar_cli_enabled` toggle, leaving governance guidance incomplete (probability medium, impact medium on rollout clarity).
+- validation_targets:
+  - python3 - <<'PY'
+      from pathlib import Path
+      text = Path('docs/adr/0063-go-cli-single-source-of-truth.md').read_text()
+      if 'bar_cli_enabled' not in text:
+          raise SystemExit('bar_cli_enabled missing in ADR text')
+      print('ADR references bar_cli_enabled feature flag now')
+    PY
+- evidence:
+  - docs/adr/evidence/0063/loop-0011.md
+- rollback_plan: git checkout HEAD -- docs/adr/0063-go-cli-single-source-of-truth.md
+- delta_summary: helper:diff-snapshot=1 file changed, 1 insertion(+); ADR now references `user.bar_cli_enabled` as the rollout flag.
+- loops_remaining_forecast: 1 loop remaining (implement adapter stub); confidence medium.
+- residual_risks:
+  - Need adapter implementation to leverage the flag; schedule in upcoming loop.
+- next_work:
+  - Behaviour: implement adapter shim invoking `bar` under feature flag — python3 -m pytest _tests/test_gpt_actions.py — future-shaping: ensure Talon pathways exercise the CLI.

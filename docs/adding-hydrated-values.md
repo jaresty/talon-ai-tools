@@ -3,7 +3,7 @@
 This is a crib sheet for adding new values for persona/intent (voice, audience, tone, intent, stance), directional lenses, static prompts, and contract axes (completeness, scope, method, form, channel) while keeping Talon lists, hydration helpers, and tests aligned.
 
 ## 1) Add tokens to the Python SSOT
-- Persona/intent tokens live in `lib/personaConfig.py` (`PERSONA_KEY_TO_VALUE` and helpers). Talon lists are populated dynamically at runtime from this map.
+- Persona/intent tokens live in `lib/personaConfig.py` (`PERSONA_KEY_TO_VALUE` and helpers) and are exposed via `lib/personaOrchestrator.get_persona_intent_orchestrator()`. Talon lists and hydration helpers consume the orchestrator façade, so update the catalog then refresh the façade if you add tokens.
 - Contract axes live in `lib/axisConfig.py` (generated from the registry). Runtime Talon lists come from the catalog; no file edits needed.
 - Static prompts live in `lib/staticPromptConfig.py` / `static_prompt_catalog`. Talon lists are generated from the catalog (`make talon-lists`) but are not the source of truth.
 
@@ -18,6 +18,7 @@ This is a crib sheet for adding new values for persona/intent (voice, audience, 
 - Axis hydration/canonical tokens come from `lib/axisMappings.py` and the registry it wraps. Once `axisConfig.py` is regenerated, helpers like `axis_hydrate_tokens` and `axis_key_to_value_map_for` will expose the new values.
 - Static prompt hydration uses `lib/staticPromptConfig.py` + `lib/axisCatalog.py` (facade). Ensure your new static prompt has a profile (axes) so `_suggest_context_snapshot` and help views can show hydrated defaults.
 - Stance validation for suggest results uses `lib/stanceValidation.py`; add any new persona/intent tokens/presets there if validation rejects them.
+- If you add persona/intent tokens or presets, ensure `get_persona_intent_orchestrator()` surfaces them (the façade caches catalog data; call `reset_persona_intent_orchestrator_cache()` in tests or regenerate workflows as needed).
 
 ## 4) Keep Talon-facing catalogs in sync
 - `lib/axisCatalog.py` reads both `axisConfig.py` and the Talon list files to detect drift. When adding tokens, rerun `python scripts/tools/axis-catalog-validate.py` (or run the full test suite) to ensure the lists and generated config match.
@@ -29,7 +30,7 @@ This is a crib sheet for adding new values for persona/intent (voice, audience, 
 - Rerun/again canonicalisation: `_axis_value_from_token` (imported from `lib/modelPatternGUI.py`) and `modelPrompt` assembly rely on axis maps; regenerated `axisConfig.py` keeps them hydrated.
 
 ## 6) Update help and UI surfaces when adding user-facing values
-- Help/cheatsheets pull from the catalogs: `lib/helpHub.py`, `lib/modelHelpCanvas.py`, `lib/promptPatternGUI.py`, and `docs/adr` fragments. Most stay in sync via `axisCatalog`, but new static prompt descriptions may need brief copy updates.
+- Help/cheatsheets pull from the catalogs: `lib/helpHub.py`, `lib/modelHelpCanvas.py`, `lib/promptPatternGUI.py`, and `docs/adr` fragments. Most stay in sync via `axisCatalog` and the persona orchestrator façade, but new static prompt descriptions may need brief copy updates.
 - Pattern/suggestion canvases use hydration helpers; no extra wiring is usually needed beyond the maps.
 
 ## 7) Tests to update/run
@@ -41,7 +42,7 @@ This is a crib sheet for adding new values for persona/intent (voice, audience, 
 
 ## Quick checklist
 1. Edit the appropriate `GPT/lists/*.talon-list` files with the new tokens/descriptions.
-2. Add profiles/descriptions in `lib/staticPromptConfig.py` or `lib/personaConfig.py` as needed.
+2. Add profiles/descriptions in `lib/staticPromptConfig.py` or `lib/personaConfig.py` as needed, and ensure `get_persona_intent_orchestrator()` picks up new persona/intent entries (reset its cache when validating locally).
 3. Regenerate `lib/axisConfig.py` via `scripts/tools/generate_axis_config.py`.
 4. Verify drift/tests (`python3 -m pytest` or `scripts/tools/axis-catalog-validate.py`).
 5. Spot-check suggest/help surfaces that display the new hydrated values.

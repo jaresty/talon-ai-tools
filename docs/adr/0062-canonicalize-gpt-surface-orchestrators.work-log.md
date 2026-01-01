@@ -1581,6 +1581,37 @@
 - next_work:
   - Documentation: update ADR-053 to reference the orchestrator façade — python3 - <<'PY' … upcoming check — future-shaping: keep migration ADRs aligned with the shared SSOT.
 
+## 2025-12-27 – Loop 130 (kind: documentation)
+- helper_version: helper:v20251223.1
+- focus: ADR-0062 §Refactor Plan – Prompt Persona Orchestrator (hydrated values doc hygiene)
+- riskiest_assumption: `docs/adding-hydrated-values.md` still directed contributors to edit `personaConfig` directly, omitting the orchestrator façade.
+- validation_targets:
+  - python3 - <<'PY' … (hydrated values orchestrator check)
+- evidence:
+  - docs/adr/evidence/0062/loop-0130.md
+- rollback_plan: git restore --source=HEAD -- docs/adding-hydrated-values.md docs/adr/0062-canonicalize-gpt-surface-orchestrators.work-log.md
+- delta_summary: helper:diff-snapshot=1 file changed, 3 insertions(+), 1 deletion(-); crib sheet now references `get_persona_intent_orchestrator()` and cache reset guidance.
+- residual_risks:
+  - README/CONTRIBUTING still mention raw `personaConfig`; address in the next loop.
+- next_work:
+  - Documentation: audit README/CONTRIBUTING for orchestrator messaging — python3 - <<'PY' … upcoming check — future-shaping: keep contributor docs aligned with the façade.
+
+## 2025-12-27 – Loop 131 (kind: documentation)
+- helper_version: helper:v20251223.1
+- focus: ADR-0062 §Refactor Plan – Prompt Persona Orchestrator (top-level docs hygiene)
+- riskiest_assumption: README and CONTRIBUTING still referenced `personaConfig` directly without calling out the orchestrator façade.
+- validation_targets:
+  - python3 - <<'PY' … (README orchestrator check)
+  - python3 - <<'PY' … (CONTRIBUTING orchestrator check)
+- evidence:
+  - docs/adr/evidence/0062/loop-0131.md
+- rollback_plan: git restore --source=HEAD -- README.md CONTRIBUTING.md docs/adr/0062-canonicalize-gpt-surface-orchestrators.work-log.md
+- delta_summary: helper:diff-snapshot=2 files changed, 4 insertions(+), 1 deletion(-); README and CONTRIBUTING now note the orchestrator façade for Persona/Intent changes.
+- residual_risks:
+  - Additional sub-readmes may still reference raw `personaConfig`; continue hygiene as the façade expands.
+- next_work:
+  - Documentation: audit feature-specific READMEs for orchestrator messaging — python3 - <<'PY' … future check — future-shaping: keep contributor docs aligned with the façade.
+
 ## 2025-12-27 – Loop 129 (kind: documentation)
 - helper_version: helper:v20251223.1
 - focus: ADR-0062 §Refactor Plan – Prompt Persona Orchestrator (ADR-053 hygiene)

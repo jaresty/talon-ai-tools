@@ -290,3 +290,35 @@
   - Stub currently returns False; follow-up work must integrate actual CLI invocation.
 - next_work:
   - Behaviour: integrate bar CLI adapter once delegation plan is ready — python3 -m pytest _tests/test_gpt_actions.py — future-shaping: exercise the CLI path end-to-end.
+
+
+## 2026-01-01 – Loop 013 (kind: implementation)
+- helper_version: helper:v20251223.1
+- focus: ADR-0063 §Talon Adapter Layer (wire delegation stub through provider commands)
+- riskiest_assumption: Without calling `_delegate_to_bar_cli`, the feature flag cannot intercept actions when the CLI path is implemented (probability medium, impact medium-high on rollout safety).
+- validation_targets:
+  - python3 - <<'PY'
+      from pathlib import Path
+      text = Path('lib/providerCommands.py').read_text()
+      for action in [
+          "model_provider_list",
+          "model_provider_status",
+          "model_provider_use",
+          "model_provider_next",
+          "model_provider_previous",
+          "model_provider_close",
+      ]:
+          check_str = f"_delegate_to_bar_cli("{action}""
+          if check_str not in text:
+              raise SystemExit(f"Missing delegation call for {action}")
+      print("All delegation calls present")
+    PY
+- evidence:
+  - docs/adr/evidence/0063/loop-0013.md
+- rollback_plan: git checkout HEAD -- lib/providerCommands.py
+- delta_summary: helper:diff-snapshot=1 file changed, 19 insertions(+); hooked provider actions into `_delegate_to_bar_cli` so the feature flag can intercept future CLI delegation work.
+- loops_remaining_forecast: 1 loop remaining (document adapter follow-up); confidence medium.
+- residual_risks:
+  - Delegation still returns False; upcoming work must implement real CLI invocation.
+- next_work:
+  - Behaviour: outline adapter follow-up guidance — python3 - <<'PY' ...> — future-shaping: ensure contributors know how to progress the stub into production.

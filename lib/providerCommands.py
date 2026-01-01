@@ -33,13 +33,21 @@ def _bar_cli_enabled() -> bool:
         return False
 
 
-def _delegate_to_bar_cli(*_args, **_kwargs) -> bool:
+def _delegate_to_bar_cli(action: str, *args, **kwargs) -> bool:
     """Placeholder for bar CLI delegation while adapters are under construction."""
 
     if not _bar_cli_enabled():
         return False
     try:
-        print("[debug] bar CLI delegation stub invoked; falling back to legacy path")
+        details = []
+        if args:
+            details.append(f"args={args!r}")
+        if kwargs:
+            details.append(f"kwargs={kwargs!r}")
+        detail_text = " " + " ".join(details) if details else ""
+        print(
+            f"[debug] bar CLI delegation stub invoked for {action}{detail_text}; falling back to legacy path"
+        )
     except Exception:
         pass
     return False
@@ -269,6 +277,9 @@ class UserActions:
         if _reject_if_request_in_flight():
             return
 
+        if _delegate_to_bar_cli("model_provider_list"):
+            return
+
         registry = provider_registry()
         probe = bool(settings.get("user.model_provider_probe", False))
         entries = registry.status_entries(probe=probe)
@@ -279,6 +290,9 @@ class UserActions:
         """Show the current provider status."""
 
         if _reject_if_request_in_flight():
+            return
+
+        if _delegate_to_bar_cli("model_provider_status"):
             return
 
         registry = provider_registry()
@@ -302,6 +316,9 @@ class UserActions:
         """Switch to a provider by name or alias, optionally setting its model."""
 
         if _reject_if_request_in_flight():
+            return
+
+        if _delegate_to_bar_cli("model_provider_use", name=name, model=model):
             return
 
         registry = provider_registry()
@@ -340,6 +357,9 @@ class UserActions:
         if _reject_if_request_in_flight():
             return
 
+        if _delegate_to_bar_cli("model_provider_next"):
+            return
+
         registry = provider_registry()
         provider = registry.cycle(direction=1)
         lines = _render_provider_lines(
@@ -353,6 +373,9 @@ class UserActions:
         if _reject_if_request_in_flight():
             return
 
+        if _delegate_to_bar_cli("model_provider_previous"):
+            return
+
         registry = provider_registry()
         provider = registry.cycle(direction=-1)
         lines = _render_provider_lines(
@@ -364,6 +387,9 @@ class UserActions:
         """Hide the provider canvas."""
 
         if _reject_if_request_in_flight():
+            return
+
+        if _delegate_to_bar_cli("model_provider_close"):
             return
 
         hide_provider_canvas()

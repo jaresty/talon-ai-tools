@@ -118,3 +118,19 @@
   - CLI build pipeline and adapters remain outstanding; parity guardrails stay red until binary compilation and invocation are wired.
 - next_work:
   - Behaviour: build CLI binary and rerun parity guardrails — go build ./cli/... && python3 -m pytest _tests/test_axis_catalog_serializer.py _tests/test_gpt_axis_catalog_fallback.py — future-shaping: integrate CLI execution into Talon parity harness.
+
+## 2026-01-01 – Loop 005 (kind: implementation)
+- helper_version: helper:v20251223.1
+- focus: ADR-0063 §Implementation Plan – Go CLI Core (bootstrap `bar` binary)
+- riskiest_assumption: Without a compiled `bar` binary, Talon cannot delegate to the Go CLI and parity guardrails remain blocked (probability high, impact high on cross-runtime alignment).
+- validation_targets:
+  - go build -o bin/bar ./cmd/bar (run from `cli/`)
+- evidence:
+  - docs/adr/evidence/0063/loop-0005.md
+- rollback_plan: (cd cli && mv go.mod go.mod.tmp && go build -o bin/bar ./cmd/bar); (cd cli && mv go.mod.tmp go.mod)
+- delta_summary: helper:diff-snapshot=4 files changed, 48 insertions(+), 6 deletions(-); added Go module scaffolding and a minimal `bar` command to unblock parity testing.
+- loops_remaining_forecast: 1 loop remaining (run parity guardrails with compiled `bar`); confidence medium.
+- residual_risks:
+  - CLI currently emits help/version only; behaviour wiring to shared schema assets is deferred to future loops.
+- next_work:
+  - Behaviour: run parity guardrails now that `bar` builds — go build -o bin/bar ./cmd/bar && python3 -m pytest _tests/test_axis_catalog_serializer.py _tests/test_gpt_axis_catalog_fallback.py — future-shaping: execute guardrails against the compiled CLI.

@@ -1,10 +1,10 @@
-# Talon CLI Bootstrap (ADR-0063)
+# Bar CLI Bootstrap (ADR-0063)
 
-ADR-0063 commits the Go CLI single source of truth for the Talon command surface. This README captures the initial scaffold and checkpoints the CLI must satisfy before feature work lands.
+ADR-0063 commits the Go CLI single source of truth for the Talon command surface, delivered as the `bar` binary. This README captures the initial scaffold and checkpoints the CLI must satisfy before feature work lands.
 
 ## Behaviour Outcomes
 
-- **Mirror Talon semantics**: the Go CLI must emit the same personas, intents, axes, guardrails, and drop-reason messaging that Talon exposes today.
+- **Mirror Talon semantics**: the Bar CLI must emit the same personas, intents, axes, guardrails, and drop-reason messaging that Talon exposes today.
 - **Serve multiple entrypoints**: support non-interactive CLI flows, an interactive TUI, and adapters that Talon can shell out to.
 - **Delegate Talon-specific IO**: adapters inside Talon translate selection, canvases, and stack destinations into the CLI’s neutral inputs/outputs.
 
@@ -24,13 +24,13 @@ cli/
 ## Shared Assets & Validation
 
 - Generated fixtures (personas, intents, guardrails) are canonically produced under `shared/command-schema/` and checked into `cli/shared/` for Go builds.
-- Integration guardrails must exercise `python3 -m pytest` suites that spawn the CLI binary to keep Talon and Go behaviour aligned.
+- Integration guardrails must exercise `python3 -m pytest` suites that spawn the `bar` binary to keep Talon and Go behaviour aligned.
 - CLI unit tests (Go) should live alongside the Go packages; Python guardrails remain in `_tests/`.
 
 ## Implementation Slices
 
 1. Establish shared command schema assets (Loop 003) with generation scripts that hydrate Talon lists and Go bindings.
-2. Scaffold Go entrypoints (`cmd/talon`, `cmd/talon-daemon`) that load the shared schema and dispatch to adapters.
+2. Scaffold Go entrypoints (`cmd/bar`, future daemon entrypoints) that load the shared schema and dispatch to adapters.
 3. Implement adapters that translate CLI responses back into Talon canvases, selections, and history flows.
 4. Extend CI to build and sign CLI binaries alongside existing docs and guardrail artefacts.
 
@@ -43,4 +43,4 @@ cli/
 ## Next Steps
 
 - Capture shared schema asset requirements in Loop 003 and wire the generation script outputs into `cli/shared/`.
-- Draft Go module scaffolding (go.mod, cmd/main.go) once shared assets exist and tests can pin expected behaviour.
+- Draft Go module scaffolding (`go.mod`, `cmd/bar/main.go`) once shared assets exist and tests can pin expected behaviour.

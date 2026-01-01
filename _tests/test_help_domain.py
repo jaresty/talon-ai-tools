@@ -753,6 +753,120 @@ if bootstrap is not None:
                 "Generated-at header missing from summary lines",
             )
 
+        def test_help_metadata_snapshot_catalog_fallback_without_maps(self) -> None:
+            catalog_persona = SimpleNamespace(
+                key="mentor",
+                label="Catalog Mentor",
+                spoken="catalog mentor",
+                voice="Catalog Voice",
+                audience="Catalog Audience",
+                tone="Catalog Tone",
+            )
+            catalog_intent = SimpleNamespace(
+                key="plan",
+                label="Catalog Plan",
+                intent="plan",
+                spoken="catalog plan alias",
+            )
+            catalog_snapshot = SimpleNamespace(
+                persona_presets={"mentor": catalog_persona},
+                persona_spoken_map={"catalog mentor": "mentor"},
+                persona_axis_tokens={
+                    "voice": ["Catalog Voice"],
+                    "audience": ["Catalog Audience"],
+                    "tone": ["Catalog Tone"],
+                },
+                intent_presets={"plan": catalog_intent},
+                intent_spoken_map={"catalog plan alias": "plan"},
+                intent_axis_tokens={"intent": ["plan"]},
+                intent_buckets={"assist": ["plan"]},
+                intent_display_map={"plan": "Catalog Plan Display"},
+            )
+            legacy_persona = SimpleNamespace(
+                key="mentor",
+                label="Legacy Mentor",
+                spoken="legacy mentor",
+                voice="Legacy Voice",
+                audience="Legacy Audience",
+                tone="Legacy Tone",
+            )
+            legacy_intent = SimpleNamespace(
+                key="plan",
+                label="Legacy Plan",
+                intent="legacy-plan",
+                spoken="legacy plan alias",
+            )
+            legacy_maps = SimpleNamespace(
+                persona_presets={"mentor": legacy_persona},
+                persona_preset_aliases={"legacy mentor": "mentor"},
+                persona_axis_tokens={
+                    "voice": {"legacy voice": "Legacy Voice"},
+                    "audience": {"legacy audience": "Legacy Audience"},
+                    "tone": {"legacy tone": "Legacy Tone"},
+                },
+                intent_presets={"plan": legacy_intent},
+                intent_preset_aliases={"legacy plan alias": "plan"},
+                intent_synonyms={"legacy plan alias": "plan"},
+                intent_display_map={"plan": "Legacy Plan Display"},
+            )
+
+            with ExitStack() as stack:
+                stack.enter_context(
+                    patch(
+                        "talon_user.lib.helpDomain.get_persona_intent_orchestrator",
+                        side_effect=RuntimeError("orchestrator unavailable"),
+                    )
+                )
+                stack.enter_context(
+                    patch(
+                        "lib.helpDomain.get_persona_intent_orchestrator",
+                        side_effect=RuntimeError("orchestrator unavailable"),
+                    )
+                )
+                stack.enter_context(
+                    patch(
+                        "talon_user.lib.helpDomain.personaCatalog",
+                        SimpleNamespace(
+                            get_persona_intent_catalog=lambda: catalog_snapshot
+                        ),
+                        create=True,
+                    )
+                )
+                stack.enter_context(
+                    patch(
+                        "lib.helpDomain.personaCatalog",
+                        SimpleNamespace(
+                            get_persona_intent_catalog=lambda: catalog_snapshot
+                        ),
+                        create=True,
+                    )
+                )
+                stack.enter_context(
+                    patch(
+                        "talon_user.lib.helpDomain.persona_intent_maps",
+                        return_value=legacy_maps,
+                    )
+                )
+                stack.enter_context(
+                    patch(
+                        "lib.helpDomain.persona_intent_maps",
+                        return_value=legacy_maps,
+                    )
+                )
+                snapshot = help_metadata_snapshot([])
+
+            lines = help_metadata_summary_lines(snapshot)
+            persona_line = next(
+                line for line in lines if line.startswith("- persona mentor")
+            )
+            self.assertIn("Catalog Mentor", persona_line)
+            self.assertNotIn("Legacy Mentor", persona_line)
+            intent_line = next(
+                line for line in lines if line.startswith("- intent plan")
+            )
+            self.assertIn("Catalog Plan Display", intent_line)
+            self.assertNotIn("Legacy Plan Display", intent_line)
+
         def test_help_metadata_summary_lines_respects_headers(self) -> None:
             snapshot = HelpMetadataSnapshot(
                 personas=(),

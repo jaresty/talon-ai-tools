@@ -590,6 +590,16 @@ def help_metadata_snapshot(entries: Sequence[HelpIndexEntry]) -> HelpMetadataSna
     seen_persona_keys: set[str] = set()
     seen_intent_keys: set[str] = set()
 
+    try:
+        catalog_snapshot = personaCatalog.get_persona_intent_catalog()
+    except Exception:
+        catalog_snapshot = None
+
+    try:
+        maps = persona_intent_maps()
+    except Exception:
+        maps = None
+
     for entry in entries:
         metadata = entry.metadata or {}
         kind = str(metadata.get("kind") or "").strip().lower()
@@ -670,6 +680,133 @@ def help_metadata_snapshot(entries: Sequence[HelpIndexEntry]) -> HelpMetadataSna
                 )
             )
             seen_intent_keys.add(key)
+
+    persona_candidates: Dict[str, object] = {}
+    if catalog_snapshot and getattr(catalog_snapshot, "persona_presets", None):
+        for key, preset in (catalog_snapshot.persona_presets or {}).items():
+            key_str = str(key or "").strip()
+            if key_str:
+                persona_candidates.setdefault(key_str, preset)
+    if maps is not None and getattr(maps, "persona_presets", None):
+        for key, preset in (maps.persona_presets or {}).items():
+            key_str = str(key or "").strip()
+            if key_str:
+                persona_candidates.setdefault(key_str, preset)
+
+    for key, preset in persona_candidates.items():
+        key_str = str(key or "").strip()
+        if not key_str or key_str in seen_persona_keys:
+            continue
+        label = (getattr(preset, "label", "") or key_str).strip()
+        spoken_display = (getattr(preset, "spoken", "") or label or key_str).strip()
+        axes_tokens_list: List[str] = []
+        for axis in ("voice", "audience", "tone"):
+            raw_value = (getattr(preset, axis, "") or "").strip()
+            canonical_value = raw_value
+            if catalog_snapshot and getattr(
+                catalog_snapshot, "persona_axis_tokens", None
+            ):
+                catalog_tokens = (catalog_snapshot.persona_axis_tokens or {}).get(
+                    axis, []
+                )
+                if raw_value and raw_value in (catalog_tokens or []):
+                    canonical_value = raw_value
+            if maps is not None and getattr(maps, "persona_axis_tokens", None):
+                alias_map = (maps.persona_axis_tokens or {}).get(axis, {}) or {}
+                mapped_value = alias_map.get(raw_value.lower()) if raw_value else ""
+                if mapped_value:
+                    canonical_value = mapped_value
+            if canonical_value:
+                axes_tokens_list.append(canonical_value)
+        axes_summary = (
+            " · ".join(axes_tokens_list) if axes_tokens_list else "No explicit axes"
+        )
+        voice_hint = (
+            f"Say: persona {spoken_display}".strip()
+            if spoken_display
+            else f"Say: persona {label or key_str}".strip()
+        )
+        persona_snapshots.append(
+            HelpPersonaMetadata(
+                key=key_str,
+                display_label=label or key_str,
+                spoken_display=spoken_display or label or key_str,
+                spoken_alias=(spoken_display or label or key_str).strip().lower(),
+                axes_summary=axes_summary,
+                axes_tokens=tuple(axes_tokens_list),
+                voice_hint=voice_hint,
+            )
+        )
+        seen_persona_keys.add(key_str)
+
+    intent_candidates: Dict[str, object] = {}
+    if catalog_snapshot and getattr(catalog_snapshot, "intent_presets", None):
+        for key, preset in (catalog_snapshot.intent_presets or {}).items():
+            key_str = str(key or "").strip()
+            if key_str:
+                intent_candidates.setdefault(key_str, preset)
+    if maps is not None and getattr(maps, "intent_presets", None):
+        for key, preset in (maps.intent_presets or {}).items():
+            key_str = str(key or "").strip()
+            if key_str:
+                intent_candidates.setdefault(key_str, preset)
+
+    for key, preset in intent_candidates.items():
+        key_str = str(key or "").strip()
+        if not key_str or key_str in seen_intent_keys:
+            continue
+        canonical_key = key_str
+        intent_value = (getattr(preset, "intent", "") or "").strip()
+        if catalog_snapshot and getattr(catalog_snapshot, "intent_spoken_map", None):
+            canonical_from_spoken = (catalog_snapshot.intent_spoken_map or {}).get(
+                intent_value.lower()
+            )
+            if canonical_from_spoken:
+                canonical_key = canonical_from_spoken.strip() or canonical_key
+        elif maps is not None and getattr(maps, "intent_synonyms", None):
+            canonical_from_maps = (maps.intent_synonyms or {}).get(intent_value.lower())
+            if canonical_from_maps:
+                canonical_key = canonical_from_maps.strip() or canonical_key
+        display = ""
+        if catalog_snapshot and getattr(catalog_snapshot, "intent_display_map", None):
+            display = (catalog_snapshot.intent_display_map or {}).get(
+                canonical_key, ""
+            ) or ""
+        if (
+            not display
+            and maps is not None
+            and getattr(maps, "intent_display_map", None)
+        ):
+            display = (maps.intent_display_map or {}).get(canonical_key, "") or ""
+        if not display:
+            display = (getattr(preset, "label", "") or canonical_key).strip()
+        canonical_intent = canonical_key or key_str
+        spoken_display = (
+            getattr(preset, "spoken", "")
+            or display
+            or canonical_intent
+            or canonical_key
+        ).strip()
+        spoken_alias = (spoken_display or canonical_key).strip().lower()
+        voice_hint = (
+            f"Say: intent {spoken_display}".strip()
+            if spoken_display
+            else f"Say: intent {canonical_key}".strip()
+        )
+        intent_snapshots.append(
+            HelpIntentMetadata(
+                key=canonical_key,
+                display_label=display or canonical_key,
+                canonical_intent=canonical_intent or canonical_key,
+                spoken_display=spoken_display
+                or display
+                or canonical_intent
+                or canonical_key,
+                spoken_alias=spoken_alias,
+                voice_hint=voice_hint,
+            )
+        )
+        seen_intent_keys.add(canonical_key)
 
     schema_version = _HELP_METADATA_SCHEMA_VERSION
     generated_at = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())

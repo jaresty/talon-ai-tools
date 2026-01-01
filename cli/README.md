@@ -13,7 +13,7 @@ ADR-0063 commits the Go CLI single source of truth for the Talon command surface
 ```
 cli/
   README.md                # loop scaffolding and onboarding notes
-  cmd/                     # future Go entrypoints (e.g., talon, talon-daemon)
+  cmd/                     # future Go entrypoints (e.g., bar, bar-daemon)
   internal/                # shared Go packages for request orchestration, schema loading
   shared/                  # generated assets and neutral schemas vendored for Go builds
 ```

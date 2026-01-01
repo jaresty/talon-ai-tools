@@ -1,3 +1,4 @@
+import subprocess
 from typing import Optional
 
 from talon import Context, Module, actions, settings
@@ -32,25 +33,52 @@ def _bar_cli_enabled() -> bool:
     except Exception:
         return False
 
-
 def _delegate_to_bar_cli(action: str, *args, **kwargs) -> bool:
-    """Placeholder for bar CLI delegation while adapters are under construction."""
+    """Temporary bar CLI delegation shim. Returns True once the CLI path handles the request."""
 
     if not _bar_cli_enabled():
         return False
+
+    cmd = ["cli/bin/bar", action]
+    if args:
+        cmd.extend(str(a) for a in args)
+    if kwargs:
+        for key, value in kwargs.items():
+            cmd.append(f"--{key}={value}")
+
     try:
-        details = []
-        if args:
-            details.append(f"args={args!r}")
-        if kwargs:
-            details.append(f"kwargs={kwargs!r}")
-        detail_text = " " + " ".join(details) if details else ""
+        result = subprocess.run(
+            cmd,
+            check=False,
+            capture_output=True,
+            text=True,
+        )
+    except FileNotFoundError:
+        try:
+            print("[debug] bar CLI binary not found; fallback to legacy path")
+        except Exception:
+            pass
+        return False
+
+    if result.returncode != 0:
+        try:
+            print(
+                f"[debug] bar CLI returned non-zero exit code {result.returncode}; stdout={result.stdout!r} stderr={result.stderr!r}"
+            )
+        except Exception:
+            pass
+        return False
+
+    try:
         print(
-            f"[debug] bar CLI delegation stub invoked for {action}{detail_text}; falling back to legacy path"
+            f"[debug] bar CLI handled action {action}; stdout={result.stdout!r}"
         )
     except Exception:
         pass
-    return False
+    return True
+
+
+
 
 
 def _render_provider_lines(

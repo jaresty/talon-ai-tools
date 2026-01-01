@@ -345,3 +345,26 @@
   - README references current stub only; update again once real delegation lands.
 - next_work:
   - Behaviour: implement real bar CLI invocation under the feature flag — python3 -m pytest _tests/test_gpt_actions.py — future-shaping: ensure documentation stays aligned.
+
+
+## 2026-01-01 – Loop 015 (kind: implementation)
+- helper_version: helper:v20251223.1
+- focus: ADR-0063 §Talon Adapter Layer (introduce bar CLI subprocess skeleton)
+- riskiest_assumption: Without exercising `bar` via subprocess, the feature flag cannot progress beyond logging (probability high, impact high on delegation delivery).
+- validation_targets:
+  - python3 - <<'PY'
+      from pathlib import Path
+      text = Path('lib/providerCommands.py').read_text()
+      if 'subprocess.run' not in text:
+          raise SystemExit('subprocess.run not inserted')
+      print('subprocess invocation present after edit')
+    PY
+- evidence:
+  - docs/adr/evidence/0063/loop-0015.md
+- rollback_plan: git checkout HEAD -- lib/providerCommands.py
+- delta_summary: helper:diff-snapshot=1 file changed, 37 insertions(+); added subprocess-based shim to call `cli/bin/bar` when the feature flag is enabled.
+- loops_remaining_forecast: 1 loop remaining (documentation/tests for delegation); confidence medium.
+- residual_risks:
+  - CLI path lacks error handling for permissions/env; future work must harden invocation and integrate telemetry.
+- next_work:
+  - Behaviour: document CLI delegation expectations and extend guardrails — python3 -m pytest _tests/test_gpt_actions.py — future-shaping: ensure documentation stays aligned.

@@ -62,3 +62,37 @@
           raise SystemExit('missing language-neutral schema guidance')
       print('Shared command schema README captures neutral asset guidance')
     PY — future-shaping: align Talon list generators and Go builds on the same schema outputs.
+
+## 2026-01-01 – Loop 003 (kind: implementation)
+- helper_version: helper:v20251223.1
+- focus: ADR-0063 §Implementation Plan – Shared Command Grammar Assets (bootstrap documentation)
+- riskiest_assumption: Without a language-neutral schema README, contributors could regenerate personas/axes in Talon without exporting fixtures for the Go CLI, increasing parity drift risk (probability medium, impact high on cross-runtime alignment).
+- validation_targets:
+  - python3 - <<'PY'
+      from pathlib import Path
+      path = Path('shared/command-schema/README.md')
+      if not path.exists():
+          raise SystemExit('missing shared/command-schema/README.md')
+      text = path.read_text()
+      if 'language-neutral' not in text.lower():
+          raise SystemExit('missing language-neutral schema guidance')
+      print('Shared command schema README captures neutral asset guidance')
+    PY
+- evidence:
+  - docs/adr/evidence/0063/loop-0003.md
+- rollback_plan: mv shared/command-schema/README.md shared/command-schema/README.md.tmp; python3 - <<'PY'
+    from pathlib import Path
+    path = Path('shared/command-schema/README.md')
+    if not path.exists():
+        raise SystemExit('missing shared/command-schema/README.md')
+    text = path.read_text()
+    if 'language-neutral' not in text.lower():
+        raise SystemExit('missing language-neutral schema guidance')
+    print('Shared command schema README captures neutral asset guidance')
+  PY; mv shared/command-schema/README.md.tmp shared/command-schema/README.md
+- delta_summary: helper:diff-snapshot=3 files changed, 137 insertions(+); added `shared/command-schema/README.md` to spell out neutral asset responsibilities, directory layout, and generation workflow.
+- loops_remaining_forecast: 1 loop remaining (parity audit); confidence medium-high.
+- residual_risks:
+  - Fixture generation scripts and CLI loaders remain TODO; follow-up loops must automate regeneration and consumption.
+- next_work:
+  - Behaviour: run cross-runtime parity audit per ADR-0063 salient tasks — python3 -m pytest _tests/test_axis_catalog_serializer.py _tests/test_gpt_axis_catalog_fallback.py — future-shaping: ensure Talon guardrails exercise schema-generated fixtures alongside CLI bindings.

@@ -1,4 +1,5 @@
 import unittest
+from types import SimpleNamespace
 from unittest.mock import MagicMock, patch
 
 try:
@@ -135,6 +136,64 @@ class ProviderCommandGuardTests(unittest.TestCase):
         ):
             self.assertFalse(provider_module._reject_if_request_in_flight())
         set_reason.assert_not_called()
+
+class BarCliDelegationTests(unittest.TestCase):
+    def setUp(self):
+        if bootstrap is None:
+            self.skipTest("Talon runtime not available")
+
+    def test_delegate_returns_false_when_flag_disabled(self):
+        with (
+            patch.object(provider_module.settings, "get", return_value=0),
+            patch.object(provider_module.subprocess, "run") as run_mock,
+        ):
+            self.assertFalse(
+                provider_module._delegate_to_bar_cli("model_provider_list")
+            )
+        run_mock.assert_not_called()
+
+    def test_delegate_handles_missing_binary(self):
+        with (
+            patch.object(provider_module.settings, "get", return_value=1),
+            patch.object(
+                provider_module.subprocess, "run", side_effect=FileNotFoundError
+            ),
+        ):
+            self.assertFalse(
+                provider_module._delegate_to_bar_cli("model_provider_list")
+            )
+
+    def test_delegate_handles_non_zero_exit_code(self):
+        result = SimpleNamespace(returncode=2, stdout="", stderr="error")
+        with (
+            patch.object(provider_module.settings, "get", return_value=1),
+            patch.object(provider_module.subprocess, "run", return_value=result)
+            as run_mock,
+        ):
+            self.assertFalse(
+                provider_module._delegate_to_bar_cli("model_provider_list")
+            )
+        run_mock.assert_called_once()
+        cmd = run_mock.call_args[0][0]
+        self.assertIn("model_provider_list", cmd)
+
+    def test_delegate_returns_true_on_success(self):
+        result = SimpleNamespace(returncode=0, stdout="ok", stderr="")
+        with (
+            patch.object(provider_module.settings, "get", return_value=1),
+            patch.object(provider_module.subprocess, "run", return_value=result)
+            as run_mock,
+        ):
+            self.assertTrue(
+                provider_module._delegate_to_bar_cli("model_provider_use", name="openai", model="gpt-4")
+            )
+        cmd = run_mock.call_args[0][0]
+        self.assertIn("model_provider_use", cmd)
+        self.assertIn("--name=openai", cmd)
+        self.assertIn("--model=gpt-4", cmd)
+
+
+
 
 
 if __name__ == "__main__":

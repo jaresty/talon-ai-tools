@@ -368,3 +368,26 @@
   - CLI path lacks error handling for permissions/env; future work must harden invocation and integrate telemetry.
 - next_work:
   - Behaviour: document CLI delegation expectations and extend guardrails — python3 -m pytest _tests/test_gpt_actions.py — future-shaping: ensure documentation stays aligned.
+
+
+## 2026-01-01 – Loop 016 (kind: test)
+- helper_version: helper:v20251223.1
+- focus: ADR-0063 §Talon Adapter Layer (add tests covering CLI delegation stub)
+- riskiest_assumption: Without tests, the new subprocess shim could regress or execute unexpectedly under the feature flag (probability medium, impact medium-high on stability).
+- validation_targets:
+  - python3 - <<'PY'
+      from pathlib import Path
+      text = Path('_tests/test_provider_commands.py').read_text()
+      if 'BarCliDelegationTests' not in text:
+          raise SystemExit('delegation tests missing')
+      print('Delegation tests present')
+    PY
+- evidence:
+  - docs/adr/evidence/0063/loop-0016.md
+- rollback_plan: git checkout HEAD -- _tests/test_provider_commands.py
+- delta_summary: helper:diff-snapshot=1 file changed, 62 insertions(+); added `BarCliDelegationTests` covering success and failure scenarios.
+- loops_remaining_forecast: 0 loops remaining for delegation test coverage; confidence medium-high.
+- residual_risks:
+  - Tests rely on mocks; integration coverage pending once real CLI invocation lands.
+- next_work:
+  - Behaviour: integrate real CLI delegation path — python3 -m pytest _tests/test_gpt_actions.py — future-shaping: ensure end-to-end guardrails include the CLI execution.

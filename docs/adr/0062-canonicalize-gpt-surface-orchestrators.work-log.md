@@ -1801,3 +1801,19 @@
   - Snapshot ordering mirrors catalog insertion; evaluate sorting if downstream exports need deterministic presentation.
 - next_work:
   - Behaviour: audit downstream docs/CLI exports for snapshot ordering — python3 -m pytest _tests/test_help_domain.py::HelpDomainTests::test_help_metadata_summary_lines_respects_headers — future-shaping: ensure help docs and guardrails reflect the catalog-backed metadata.
+
+## 2026-01-01 – Loop 142 (kind: implementation)
+- helper_version: helper:v20251223.1
+- focus: ADR-0062 §Refactor Plan – Guidance Surface Coordinator (Help Domain metadata summary ordering)
+- riskiest_assumption: Metadata summaries would keep emitting personas/intents in insertion order, leading doc/CLI exports to drift between runs (severity medium).
+- validation_targets:
+  - python3 -m pytest _tests/test_help_domain.py::HelpDomainTests::test_help_metadata_summary_lines_sorts_entries
+- evidence:
+  - docs/adr/evidence/0062/loop-0142.md
+- rollback_plan: git stash push -- lib/helpDomain.py && python3 -m pytest _tests/test_help_domain.py::HelpDomainTests::test_help_metadata_summary_lines_sorts_entries && git stash pop
+- delta_summary: helper:diff-snapshot=2 files changed, 99 insertions(+), 3 deletions(-); summary lines now sort personas/intents (and alias suffixes) alphabetically to stabilise doc exports.
+- loops_remaining_forecast: 1 loop remaining (final convergence audit of orchestrator alignment); confidence medium-high.
+- residual_risks:
+  - Locale-aware collation still unhandled; monitor doc exports for non-English ordering requirements.
+- next_work:
+  - Behaviour: final orchestrator audit & doc sweep — python3 -m pytest _tests/test_help_domain.py — future-shaping: confirm all catalog-backed surfaces stay aligned post migration.

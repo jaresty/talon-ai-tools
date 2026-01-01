@@ -26,6 +26,8 @@ if bootstrap is not None:
         help_metadata_snapshot,
         help_metadata_summary_lines,
         HelpMetadataSnapshot,
+        HelpIntentMetadata,
+        HelpPersonaMetadata,
     )
     from talon_user.lib.helpHub import HubButton
     from talon_user.lib.helpHub import build_search_index as hub_build_search_index
@@ -882,6 +884,69 @@ if bootstrap is not None:
 
             lines = help_domain_local.help_metadata_summary_lines(snapshot)
             self.assertIn("Metadata header sentinel", lines)
+
+        def test_help_metadata_summary_lines_sorts_entries(self) -> None:
+            snapshot = HelpMetadataSnapshot(
+                personas=(
+                    HelpPersonaMetadata(
+                        key="mentor",
+                        display_label="Echo Mentor",
+                        spoken_display="Echo Mentor",
+                        spoken_alias="echo",
+                        axes_summary="Echo Axes",
+                        axes_tokens=("echo",),
+                        voice_hint="Say: persona echo",
+                    ),
+                    HelpPersonaMetadata(
+                        key="analyst",
+                        display_label="Alpha Analyst",
+                        spoken_display="Alpha Analyst",
+                        spoken_alias="alpha",
+                        axes_summary="Alpha Axes",
+                        axes_tokens=("alpha",),
+                        voice_hint="Say: persona alpha",
+                    ),
+                ),
+                intents=(
+                    HelpIntentMetadata(
+                        key="plan",
+                        display_label="Zeta Plan",
+                        canonical_intent="plan",
+                        spoken_display="Zeta Plan",
+                        spoken_alias="zeta plan",
+                        voice_hint="Say: intent zeta plan",
+                    ),
+                    HelpIntentMetadata(
+                        key="decide",
+                        display_label="Beta Decide",
+                        canonical_intent="decide",
+                        spoken_display="Beta Decide",
+                        spoken_alias="beta decide",
+                        voice_hint="Say: intent beta decide",
+                    ),
+                ),
+                headers=(),
+            )
+
+            lines = help_domain_local.help_metadata_summary_lines(snapshot)
+
+            persona_lines = [line for line in lines if line.startswith("- persona ")]
+            self.assertEqual(
+                [
+                    "- persona analyst (say: persona alpha): Alpha Analyst (Alpha Axes)",
+                    "- persona mentor (say: persona echo): Echo Mentor (Echo Axes)",
+                ],
+                persona_lines,
+            )
+
+            intent_lines = [line for line in lines if line.startswith("- intent ")]
+            self.assertEqual(
+                [
+                    "- intent decide (say: intent beta decide): Beta Decide (decide)",
+                    "- intent plan (say: intent zeta plan): Zeta Plan (plan)",
+                ],
+                intent_lines,
+            )
 
 
 else:

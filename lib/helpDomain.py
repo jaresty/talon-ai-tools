@@ -845,7 +845,20 @@ def help_metadata_summary_lines(snapshot: HelpMetadataSnapshot) -> List[str]:
 
     if snapshot.personas:
         lines.append("Persona metadata:")
-        for persona in snapshot.personas:
+        persona_items = sorted(
+            tuple(snapshot.personas),
+            key=lambda persona: (
+                (
+                    getattr(persona, "display_label", "")
+                    or getattr(persona, "key", "")
+                    or ""
+                )
+                .strip()
+                .lower(),
+                (getattr(persona, "key", "") or "").strip().lower(),
+            ),
+        )
+        for persona in persona_items:
             key = (persona.key or "").strip()
             if not key:
                 continue
@@ -856,7 +869,12 @@ def help_metadata_summary_lines(snapshot: HelpMetadataSnapshot) -> List[str]:
             axes_summary = (
                 persona.axes_summary or "No explicit axes"
             ).strip() or "No explicit axes"
-            alias_list = tuple(getattr(persona, "spoken_aliases", ()) or ())
+            alias_values = [
+                str(value or "").strip()
+                for value in getattr(persona, "spoken_aliases", ()) or ()
+                if str(value or "").strip()
+            ]
+            alias_list = tuple(sorted(alias_values, key=lambda value: value.lower()))
             alias_suffix = f" aliases: {', '.join(alias_list)}" if alias_list else ""
             lines.append(
                 "- persona {key} (say: persona {alias}): {label} ({summary}){suffix}".format(
@@ -872,7 +890,20 @@ def help_metadata_summary_lines(snapshot: HelpMetadataSnapshot) -> List[str]:
         if snapshot.personas:
             lines.append("")
         lines.append("Intent metadata:")
-        for intent in snapshot.intents:
+        intent_items = sorted(
+            tuple(snapshot.intents),
+            key=lambda intent: (
+                (
+                    getattr(intent, "display_label", "")
+                    or getattr(intent, "key", "")
+                    or ""
+                )
+                .strip()
+                .lower(),
+                (getattr(intent, "key", "") or "").strip().lower(),
+            ),
+        )
+        for intent in intent_items:
             key = (intent.key or "").strip()
             if not key:
                 continue

@@ -1768,3 +1768,18 @@
   - Cheat sheet entry ordering still follows catalog insertion order; investigate deterministic sorting if downstream guardrails require it.
 - next_work:
   - Behaviour: align helpDomain metadata fallback with the persona catalog snapshot — python3 -m pytest _tests/test_help_domain.py — future-shaping: ensure documentation exports share outage-safe catalog fallbacks.
+
+## 2026-01-01 – Loop 140 (kind: implementation)
+- helper_version: helper:v20251223.1
+- focus: ADR-0062 §Refactor Plan – Guidance Surface Coordinator (Help Domain metadata fallback)
+- riskiest_assumption: Without catalog fallbacks, Help Domain search entries would keep reflecting legacy personaConfig metadata during orchestrator outages, obscuring canonical personas/intent aliases (probability medium, impact medium-high on visibility).
+- validation_targets:
+  - python3 -m pytest _tests/test_help_domain.py::HelpDomainTests::test_help_index_catalog_fallback_without_maps
+- evidence:
+  - docs/adr/evidence/0062/loop-0140.md
+- rollback_plan: git stash push -- lib/helpDomain.py && python3 -m pytest _tests/test_help_domain.py::HelpDomainTests::test_help_index_catalog_fallback_without_maps && git stash pop
+- delta_summary: helper:diff-snapshot=2 files changed, 224 insertions(+), 14 deletions(-); update Help Domain alias/metadata builders to prefer persona catalog snapshots and guard the outage scenario with a dedicated pytest.
+- residual_risks:
+  - Help Domain metadata snapshot exports still need catalog fallbacks; follow-up loop will align documentation exports with the shared snapshot.
+- next_work:
+  - Behaviour: extend catalog fallbacks into Help Domain metadata snapshot exports — python3 -m pytest _tests/test_help_domain.py::HelpDomainTests::test_help_metadata_summary_lines_respects_headers — future-shaping: keep documentation exports aligned with the persona intent catalog during outages.

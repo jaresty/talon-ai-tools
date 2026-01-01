@@ -554,6 +554,137 @@ if bootstrap is not None:
                     f"Spoken alias missing for intent {key}",
                 )
 
+        def test_help_index_catalog_fallback_without_maps(self) -> None:
+            catalog_persona = SimpleNamespace(
+                key="mentor",
+                label="Catalog Mentor",
+                spoken="catalog mentor",
+                voice="Catalog Voice",
+                audience="Catalog Audience",
+                tone="Catalog Tone",
+            )
+            catalog_intent = SimpleNamespace(
+                key="plan",
+                label="Catalog Plan",
+                intent="plan",
+                spoken="catalog plan alias",
+            )
+            catalog_snapshot = SimpleNamespace(
+                persona_presets={"mentor": catalog_persona},
+                persona_spoken_map={"catalog mentor": "mentor"},
+                persona_axis_tokens={
+                    "voice": ["Catalog Voice"],
+                    "audience": ["Catalog Audience"],
+                    "tone": ["Catalog Tone"],
+                },
+                intent_presets={"plan": catalog_intent},
+                intent_spoken_map={"catalog plan alias": "plan"},
+                intent_axis_tokens={"intent": ["plan"]},
+                intent_buckets={"assist": ["plan"]},
+                intent_display_map={"plan": "Catalog Plan Display"},
+            )
+
+            legacy_persona = SimpleNamespace(
+                key="mentor",
+                label="Legacy Mentor",
+                spoken="legacy mentor",
+                voice="Legacy Voice",
+                audience="Legacy Audience",
+                tone="Legacy Tone",
+            )
+            legacy_intent = SimpleNamespace(
+                key="plan",
+                label="Legacy Plan",
+                intent="legacy-plan",
+                spoken="legacy plan alias",
+            )
+            legacy_maps = SimpleNamespace(
+                persona_presets={"mentor": legacy_persona},
+                persona_preset_aliases={"legacy mentor": "mentor"},
+                persona_axis_tokens={
+                    "voice": {"legacy voice": "Legacy Voice"},
+                    "audience": {"legacy audience": "Legacy Audience"},
+                    "tone": {"legacy tone": "Legacy Tone"},
+                },
+                intent_presets={"plan": legacy_intent},
+                intent_preset_aliases={"legacy plan alias": "plan"},
+                intent_synonyms={"legacy plan alias": "plan"},
+                intent_display_map={"plan": "Legacy Plan Display"},
+            )
+
+            def empty_read_list_items(_name: str) -> list[str]:
+                return []
+
+            with ExitStack() as stack:
+                stack.enter_context(
+                    patch(
+                        "talon_user.lib.helpDomain.get_persona_intent_orchestrator",
+                        side_effect=RuntimeError("orchestrator unavailable"),
+                    )
+                )
+                stack.enter_context(
+                    patch(
+                        "lib.helpDomain.get_persona_intent_orchestrator",
+                        side_effect=RuntimeError("orchestrator unavailable"),
+                    )
+                )
+                stack.enter_context(
+                    patch(
+                        "talon_user.lib.helpDomain.personaCatalog",
+                        SimpleNamespace(
+                            get_persona_intent_catalog=lambda: catalog_snapshot
+                        ),
+                        create=True,
+                    )
+                )
+                stack.enter_context(
+                    patch(
+                        "lib.helpDomain.personaCatalog",
+                        SimpleNamespace(
+                            get_persona_intent_catalog=lambda: catalog_snapshot
+                        ),
+                        create=True,
+                    )
+                )
+                stack.enter_context(
+                    patch(
+                        "talon_user.lib.helpDomain.persona_intent_maps",
+                        return_value=legacy_maps,
+                    )
+                )
+                stack.enter_context(
+                    patch(
+                        "lib.helpDomain.persona_intent_maps",
+                        return_value=legacy_maps,
+                    )
+                )
+                index = help_index(
+                    [],
+                    patterns=[],
+                    presets=[],
+                    read_list_items=empty_read_list_items,
+                    catalog={},
+                )
+
+            persona_entry = next(
+                entry for entry in index if entry.label.startswith("Persona preset: ")
+            )
+            self.assertIn("Catalog Mentor", persona_entry.label)
+            self.assertNotIn("Legacy Mentor", persona_entry.label)
+            persona_metadata = persona_entry.metadata or {}
+            axes_summary = persona_metadata.get("axes_summary", "")
+            self.assertIn("Catalog Voice", axes_summary)
+            self.assertNotIn("Legacy Voice", axes_summary)
+
+            intent_entry = next(
+                entry for entry in index if entry.label.startswith("Intent preset: ")
+            )
+            self.assertIn("Catalog Plan Display", intent_entry.label)
+            self.assertNotIn("Legacy Plan Display", intent_entry.label)
+            intent_metadata = intent_entry.metadata or {}
+            self.assertEqual(intent_metadata.get("canonical_intent"), "plan")
+            self.assertNotIn("legacy-plan", intent_entry.label.lower())
+
         def test_help_metadata_snapshot_aggregates_index_metadata(self) -> None:
             from lib.personaConfig import persona_intent_maps
 

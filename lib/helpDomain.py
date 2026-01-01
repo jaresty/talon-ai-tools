@@ -8,6 +8,7 @@ from typing import Any, Callable, Dict, List, Optional, Tuple
 from talon import actions
 
 from .historyLifecycle import axes_snapshot_from_axes as axis_snapshot_from_axes
+from . import personaCatalog
 from .personaConfig import persona_intent_maps
 from .personaOrchestrator import get_persona_intent_orchestrator
 
@@ -217,6 +218,11 @@ def help_index(
         orchestrator = None
 
     try:
+        catalog_snapshot = personaCatalog.get_persona_intent_catalog()
+    except Exception:
+        catalog_snapshot = None
+
+    try:
         maps = persona_intent_maps()
     except Exception:
         maps = None
@@ -235,6 +241,33 @@ def help_index(
                     persona_alias_tokens.setdefault(canonical_key, []).append(
                         display_token
                     )
+    if catalog_snapshot and getattr(catalog_snapshot, "persona_spoken_map", None):
+        for alias, canonical in dict(catalog_snapshot.persona_spoken_map or {}).items():
+            alias_original = str(alias or "").strip()
+            alias_key = alias_original.lower()
+            canonical_key = str(canonical or "").strip()
+            if alias_key and canonical_key:
+                persona_alias_map.setdefault(alias_key, canonical_key)
+                display_token = alias_original.replace("_", " ").lower()
+                if display_token:
+                    tokens = persona_alias_tokens.setdefault(canonical_key, [])
+                    if display_token not in tokens:
+                        tokens.append(display_token)
+    if catalog_snapshot and getattr(catalog_snapshot, "persona_presets", None):
+        for key, preset in (catalog_snapshot.persona_presets or {}).items():
+            key_str = str(key or "").strip()
+            if not key_str:
+                continue
+            spoken_value = (getattr(preset, "spoken", "") or "").strip().lower()
+            if spoken_value:
+                tokens = persona_alias_tokens.setdefault(key_str, [])
+                if spoken_value not in tokens:
+                    tokens.append(spoken_value)
+            label_value = (getattr(preset, "label", "") or "").strip().lower()
+            if label_value:
+                tokens = persona_alias_tokens.setdefault(key_str, [])
+                if label_value and label_value not in tokens:
+                    tokens.append(label_value)
     if maps is not None and getattr(maps, "persona_preset_aliases", None):
         for alias, canonical in dict(maps.persona_preset_aliases or {}).items():
             alias_original = str(alias or "").strip()
@@ -249,28 +282,46 @@ def help_index(
                         tokens.append(display_token)
 
     persona_axis_aliases: Dict[str, Dict[str, str]] = {}
+    if catalog_snapshot and getattr(catalog_snapshot, "persona_axis_tokens", None):
+        for axis_key, tokens in (catalog_snapshot.persona_axis_tokens or {}).items():
+            axis_norm = str(axis_key or "").strip().lower()
+            if not axis_norm:
+                continue
+            axis_map = persona_axis_aliases.setdefault(axis_norm, {})
+            for token in tokens or []:
+                token_str = (token or "").strip()
+                if token_str:
+                    axis_map.setdefault(token_str.lower(), token_str)
     if maps is not None and getattr(maps, "persona_axis_tokens", None):
         for axis_key, alias_map in dict(maps.persona_axis_tokens or {}).items():
             axis_norm = str(axis_key or "").strip().lower()
             if not axis_norm:
                 continue
-            persona_axis_aliases[axis_norm] = {
-                str(alias or "").strip().lower(): str(token or "").strip()
-                for alias, token in dict(alias_map or {}).items()
-                if str(alias or "").strip() and str(token or "").strip()
-            }
+            axis_map = persona_axis_aliases.setdefault(axis_norm, {})
+            for alias, token in dict(alias_map or {}).items():
+                alias_key = str(alias or "").strip().lower()
+                token_str = str(token or "").strip()
+                if alias_key and token_str:
+                    axis_map.setdefault(alias_key, token_str)
 
-    persona_items: List[tuple[str, object]] = []
+    persona_candidates: Dict[str, object] = {}
     if orchestrator and getattr(orchestrator, "persona_presets", None):
         for key, preset in (orchestrator.persona_presets or {}).items():
             key_str = str(key or "").strip()
             if key_str:
-                persona_items.append((key_str, preset))
-    elif maps is not None and getattr(maps, "persona_presets", None):
+                persona_candidates.setdefault(key_str, preset)
+    if catalog_snapshot and getattr(catalog_snapshot, "persona_presets", None):
+        for key, preset in (catalog_snapshot.persona_presets or {}).items():
+            key_str = str(key or "").strip()
+            if key_str:
+                persona_candidates.setdefault(key_str, preset)
+    if maps is not None and getattr(maps, "persona_presets", None):
         for key, preset in (maps.persona_presets or {}).items():
             key_str = str(key or "").strip()
             if key_str:
-                persona_items.append((key_str, preset))
+                persona_candidates.setdefault(key_str, preset)
+
+    persona_items: List[tuple[str, object]] = list(persona_candidates.items())
 
     def _persona_spoken(key: str, preset: object) -> str:
         spoken = (getattr(preset, "spoken", "") or "").strip()
@@ -355,6 +406,12 @@ def help_index(
             canonical_key = str(canonical or "").strip()
             if alias_key and canonical_key:
                 intent_alias_map[alias_key] = canonical_key
+    if catalog_snapshot and getattr(catalog_snapshot, "intent_spoken_map", None):
+        for alias, canonical in dict(catalog_snapshot.intent_spoken_map or {}).items():
+            alias_key = str(alias or "").strip().lower()
+            canonical_key = str(canonical or "").strip()
+            if alias_key and canonical_key:
+                intent_alias_map.setdefault(alias_key, canonical_key)
     if maps is not None and getattr(maps, "intent_preset_aliases", None):
         for alias, canonical in dict(maps.intent_preset_aliases or {}).items():
             alias_key = str(alias or "").strip().lower()
@@ -378,6 +435,12 @@ def help_index(
             canonical_key = str(canonical or "").strip()
             if alias_key and canonical_key:
                 intent_synonyms[alias_key] = canonical_key
+    if catalog_snapshot and getattr(catalog_snapshot, "intent_spoken_map", None):
+        for alias, canonical in dict(catalog_snapshot.intent_spoken_map or {}).items():
+            alias_key = str(alias or "").strip().lower()
+            canonical_key = str(canonical or "").strip()
+            if alias_key and canonical_key:
+                intent_synonyms.setdefault(alias_key, canonical_key)
     if maps is not None and getattr(maps, "intent_synonyms", None):
         for alias, canonical in dict(maps.intent_synonyms or {}).items():
             alias_key = str(alias or "").strip().lower()
@@ -393,6 +456,15 @@ def help_index(
             if canonical_key and value:
                 intent_display_lookup.setdefault(canonical_key, value)
                 intent_display_lookup.setdefault(canonical_key.lower(), value)
+    if catalog_snapshot and getattr(catalog_snapshot, "intent_display_map", None):
+        for canonical, display in dict(
+            catalog_snapshot.intent_display_map or {}
+        ).items():
+            canonical_key = str(canonical or "").strip()
+            value = str(display or "").strip()
+            if canonical_key and value:
+                intent_display_lookup.setdefault(canonical_key, value)
+                intent_display_lookup.setdefault(canonical_key.lower(), value)
     if maps is not None and getattr(maps, "intent_display_map", None):
         for canonical, display in dict(maps.intent_display_map or {}).items():
             canonical_key = str(canonical or "").strip()
@@ -401,17 +473,24 @@ def help_index(
                 intent_display_lookup.setdefault(canonical_key, value)
                 intent_display_lookup.setdefault(canonical_key.lower(), value)
 
-    intent_items: List[tuple[str, object]] = []
+    intent_candidates: Dict[str, object] = {}
     if orchestrator and getattr(orchestrator, "intent_presets", None):
         for key, preset in (orchestrator.intent_presets or {}).items():
             key_str = str(key or "").strip()
             if key_str:
-                intent_items.append((key_str, preset))
-    elif maps is not None and getattr(maps, "intent_presets", None):
+                intent_candidates.setdefault(key_str, preset)
+    if catalog_snapshot and getattr(catalog_snapshot, "intent_presets", None):
+        for key, preset in (catalog_snapshot.intent_presets or {}).items():
+            key_str = str(key or "").strip()
+            if key_str:
+                intent_candidates.setdefault(key_str, preset)
+    if maps is not None and getattr(maps, "intent_presets", None):
         for key, preset in (maps.intent_presets or {}).items():
             key_str = str(key or "").strip()
             if key_str:
-                intent_items.append((key_str, preset))
+                intent_candidates.setdefault(key_str, preset)
+
+    intent_items: List[tuple[str, object]] = list(intent_candidates.items())
 
     def _canonical_intent_key(*aliases: str) -> str:
         for alias in aliases:

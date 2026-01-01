@@ -47,6 +47,7 @@ The `<ARTEFACT_LOG>` must record headings matching the helper command names when
 - When multiple candidate slices exist, the executor selects the slice that interrogates the riskiest assumption without waiting for external direction; if choices appear indistinguishable, the executor picks any of them without blocking.
 
 - Loop summary demonstrates the ADR completion horizon changed (or remained unchanged with justification) since the prior entry, naming the domains or tasks still open.
+- After each loop, the report-out updates an estimated loops-remaining forecast, tying the number to salient tasks and confidence notes so stakeholders can track the horizon without treating the estimate as a commitment.
 - Observable delta and rollback plan documented so reverts clearly undo the slice.
 - Evidence block captures commands, outputs, touched files, and removal tests without excess narrative.
 - Residual risks, mitigations, and monitoring triggers listed at loop close.

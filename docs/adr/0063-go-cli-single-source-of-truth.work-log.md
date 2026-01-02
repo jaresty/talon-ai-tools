@@ -2439,3 +2439,32 @@
           raise SystemExit('Telemetry handshake loop already present (unexpected)')
       print('Ready to document telemetry handshake checks')
     PY — future-shaping: outline CLI↔telemetry handshake validation.
+
+
+## 2026-01-02 – Loop 096 (kind: documentation)
+- helper_version: helper:v20251223.1
+- focus: ADR-0063 telemetry handshake coverage map
+- riskiest_assumption: Without documented telemetry handshake checks, automation may ship without emitting required events (probability medium, impact medium on observability).
+- validation_targets:
+  - python3 - <<'PY'
+      from pathlib import Path
+      text = Path('docs/adr/0063-go-cli-single-source-of-truth.work-log.md').read_text()
+      if 'Loop 096 (kind:' not in text:
+          raise SystemExit('Telemetry handshake loop missing')
+      print('Telemetry handshake loop recorded')
+    PY
+- evidence:
+  - docs/adr/evidence/0063/loop-0096.md
+- rollback_plan: git checkout HEAD -- docs/adr/0063-go-cli-single-source-of-truth.work-log.md docs/adr/evidence/0063/loop-0096.md
+- delta_summary: helper:diff-snapshot=2 files changed, 89 insertions(+); documented telemetry handshake coverage map and recorded evidence.
+- loops_remaining_forecast: 7 loops remaining (environment parity checks, CLI build gating, fallback plan, metrics monitoring, support runbook, follow-up capture, closing summary); confidence medium.
+- residual_risks:
+  - Environment parity and CLI build gating remain unaddressed; upcoming loops cover those behaviours.
+- next_work:
+  - Behaviour: capture environment parity checks — python3 - <<'PY'
+      from pathlib import Path
+      text = Path('docs/adr/0063-go-cli-single-source-of-truth.work-log.md').read_text()
+      if 'Loop 097 (kind:' in text:
+          raise SystemExit('Environment parity loop already present (unexpected)')
+      print('Ready to document environment parity checks')
+    PY — future-shaping: define parity validation between Talon and CLI automation.

@@ -1,0 +1,15 @@
+{
+  "generated_at": "2026-01-02T05:14:00Z",
+  "total_entries": 2,
+  "gating_drop_total": 1,
+  "truncation_events": [
+    {
+      "field": "error",
+      "action": "model_provider_status",
+      "limit": 512,
+      "timestamp": "2026-01-02T05:13:00Z",
+      "original_length": 768,
+      "truncated_length": 512
+    }
+  ]
+}

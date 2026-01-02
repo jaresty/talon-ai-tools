@@ -2234,9 +2234,41 @@
   - Behaviour: validate telemetry snapshot includes truncation events — python3 - <<'PY'
       import json
       from pathlib import Path
-      data = json.loads(Path('docs/adr/evidence/0063/loop-0078-metrics.json').read_text())
-      print('Ready to validate telemetry snapshot references')
+      data = json.loads(Path('docs/adr/telemetry-snapshot-sample.json').read_text())
+      if "truncation_events" not in data:
+          raise SystemExit('Snapshot missing truncation events')
+      print('Telemetry snapshot includes truncation events')
     PY — future-shaping: ensure real snapshot artefacts surface truncation events.
+
+
+## 2026-01-02 – Loop 084 (kind: validation)
+- helper_version: helper:v20251223.1
+- focus: ADR-0063 telemetry snapshot validation
+- riskiest_assumption: Without validation, schemas may drift from artefacts (probability low, impact medium on monitoring).
+- validation_targets:
+  - python3 - <<'PY'
+      import json
+      from pathlib import Path
+      data = json.loads(Path('docs/adr/telemetry-snapshot-sample.json').read_text())
+      if "truncation_events" not in data:
+          raise SystemExit('Snapshot missing truncation events')
+      print('Telemetry snapshot includes truncation events')
+    PY
+- evidence:
+  - docs/adr/evidence/0063/loop-0084.md
+- rollback_plan: git checkout HEAD -- docs/adr/telemetry-snapshot-sample.json docs/adr/0063-go-cli-single-source-of-truth.work-log.md docs/adr/evidence/0063/loop-0084.md
+- delta_summary: helper:diff-snapshot=3 files changed, 0 insertions(+), 0 deletions(-); added telemetry snapshot validation and artefact sample.
+- loops_remaining_forecast: 5 loops remaining (release checklist updates, metrics refresh, residual risk review, final summary); confidence high.
+- residual_risks:
+  - Need to sync release checklist and metrics with telemetry artefacts.
+- next_work:
+  - Behaviour: update release checklist with telemetry tasks — python3 - <<'PY'
+      from pathlib import Path
+      text = Path('docs/adr/0063-go-cli-single-source-of-truth.md').read_text().lower()
+      if 'telemetry dashboards' not in text:
+          raise SystemExit('Release checklist missing telemetry tasks')
+      print('Ready to extend release checklist with telemetry work')
+    PY — future-shaping: ensure rollout notes include telemetry steps.
 
 
 

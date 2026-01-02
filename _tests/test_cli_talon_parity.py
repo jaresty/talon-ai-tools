@@ -1,5 +1,7 @@
 import unittest
 from pathlib import Path
+import json
+import subprocess
 
 try:
     from bootstrap import bootstrap
@@ -22,14 +24,30 @@ if bootstrap is None:
 else:
 
     class CLITalonParityTests(unittest.TestCase):
-        def test_cli_binary_missing_records_blocker(self) -> None:
-            if not CLI_BINARY.exists():
-                self.skipTest(
-                    "CLI binary absent; parity harness pending implementation"
-                )
+        def test_cli_health_probe_emits_json_status(self) -> None:
+            self.assertTrue(
+                CLI_BINARY.exists(),
+                "CLI binary missing; run loop-0005 to restore bar stub",
+            )
 
-        def test_schema_bundle_missing_records_blocker(self) -> None:
-            if not SCHEMA_BUNDLE.exists():
-                self.skipTest(
-                    "Shared command surface schema missing; parity harness pending implementation"
-                )
+            result = subprocess.run(
+                [str(CLI_BINARY), "--health"],
+                capture_output=True,
+                text=True,
+                check=False,
+            )
+
+            self.assertEqual(result.returncode, 0, result.stderr)
+            payload = json.loads(result.stdout)
+            self.assertEqual(payload["status"], "ok")
+            self.assertIn("version", payload)
+
+        def test_schema_bundle_contains_version_marker(self) -> None:
+            self.assertTrue(
+                SCHEMA_BUNDLE.exists(),
+                "Schema bundle missing; run loop-0006 to restore",
+            )
+
+            payload = json.loads(SCHEMA_BUNDLE.read_text(encoding="utf-8"))
+            self.assertIn("version", payload)
+            self.assertIn("commands", payload)

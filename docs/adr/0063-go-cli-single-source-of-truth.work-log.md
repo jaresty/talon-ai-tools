@@ -2000,7 +2000,36 @@
   - Behaviour: summarize loop closeout — python3 - <<'PY'
       from pathlib import Path
       text = Path('docs/adr/0063-go-cli-single-source-of-truth.work-log.md').read_text()
-      if 'Loop 075' in text:
+      if 'Loop 075 (kind:' in text:
           raise SystemExit('closeout summary already present (unexpected)')
       print('Ready to add closeout summary')
     PY — future-shaping: capture lessons learned and follow-up tasks.
+
+
+## 2026-01-02 – Loop 075 (kind: summary)
+- helper_version: helper:v20251223.1
+- focus: ADR-0063 closeout summary
+- riskiest_assumption: Without a closeout summary, follow-up tasks might be lost (probability medium, impact medium on adoption).
+- validation_targets:
+  - python3 - <<'PY'
+      from pathlib import Path
+      text = Path('docs/adr/0063-go-cli-single-source-of-truth.work-log.md').read_text()
+      if 'Loop 075 (kind:' not in text:
+          raise SystemExit('Closeout summary missing')
+      print('Closeout summary recorded')
+    PY
+- evidence:
+  - docs/adr/evidence/0063/loop-0075.md
+- rollback_plan: git checkout HEAD -- docs/adr/0063-go-cli-single-source-of-truth.work-log.md docs/adr/evidence/0063/loop-0075.md
+- delta_summary: helper:diff-snapshot=2 files changed, 0 insertions(+), 0 deletions(-); added closeout summary and evidence.
+- loops_remaining_forecast: loops 076–079 cover release checklist, follow-up capture, helper metrics, and series finalization; confidence high.
+- residual_risks:
+  - Track telemetry implementation, release checklist, and helper archive in forthcoming loops.
+- next_work:
+  - Behaviour: prepare release checklist items — python3 - <<'PY'
+      from pathlib import Path
+      text = Path('docs/adr/0063-go-cli-single-source-of-truth.md').read_text()
+      if 'release checklist' in text.lower():
+          raise SystemExit('Release checklist already documented')
+      print('Ready to document release checklist')
+    PY — future-shaping: capture operational follow-up tasks before closing the loop series.

@@ -2369,3 +2369,15 @@
       text = Path('docs/adr/evidence/0063/loop-0078-metrics.json').read_text()
       print('Ready to refresh metrics archive')
     PY — future-shaping: sync helper metrics with telemetry events.
+
+
+## 2026-01-02 – Loop 093 (kind: summary)
+- helper_version: helper:v20251223.1
+- focus: ADR-0063 final handoff
+- summary: telemetry emission, tests, export coverage, documentation, and residual risks complete; release checklist and metrics refreshed.
+- next_work:
+  - Behaviour: verify release checklist automation hooks — python3 - <<'PY'
+      from pathlib import Path
+      text = Path('docs/adr/0063-go-cli-single-source-of-truth.md').read_text()
+      print('Ready to verify release automation')
+    PY — future-shaping: ensure CI integrates telemetry steps.

@@ -1244,3 +1244,46 @@
   - Drop reason propagation from CLI payloads still pending (Loop 049).
 - next_work:
   - Behaviour: implement drop reason propagation — python3 -m pytest _tests/test_provider_commands.py — future-shaping: align CLI payload drop reasons with Talon guardrails.
+
+## 2026-01-02 – Loop 049 (kind: implementation)
+- helper_version: helper:v20251223.1
+- focus: ADR-0063 §Talon Adapter Layer (propagate CLI drop reasons to Talon guardrails)
+- riskiest_assumption: Without propagating CLI-provided drop reasons, Talon guardrails cannot mirror CLI failures (probability medium, impact high on Concordance parity).
+- validation_targets:
+  - python3 - <<'PY'
+      import sys
+      from pathlib import Path
+      from types import SimpleNamespace
+      from unittest.mock import patch
+
+      sys.path.insert(0, str(Path('.').resolve()))
+      from bootstrap import bootstrap
+      bootstrap()
+
+      from talon_user.lib import providerCommands
+
+      with (
+          patch('talon_user.lib.providerCommands._bar_cli_enabled', return_value=True),
+          patch('talon_user.lib.providerCommands._bar_cli_command', return_value=Path('/tmp/bar')),
+          patch.object(providerCommands.subprocess, 'run', return_value=SimpleNamespace(returncode=0, stdout='{"drop_reason":"history_save_failed","error":"history save failed"}', stderr='')),
+          patch('talon_user.lib.providerCommands.notify'),
+          patch('talon_user.lib.providerCommands.print'),
+          patch('talon_user.lib.providerCommands.set_drop_reason') as drop_mock,
+      ):
+          providerCommands._delegate_to_bar_cli('model_provider_status')
+          if not drop_mock.called:
+              raise SystemExit('drop_reason still not propagated')
+          call_args = drop_mock.call_args[0]
+          if not call_args or call_args[0] != 'history_save_failed':
+              raise SystemExit(f'unexpected drop_reason argument: {call_args}')
+      print('drop_reason propagated via adapter')
+    PY
+- evidence:
+  - docs/adr/evidence/0063/loop-0049.md
+- rollback_plan: git checkout HEAD -- lib/providerCommands.py docs/adr/0063-go-cli-single-source-of-truth.work-log.md docs/adr/evidence/0063/loop-0049.md
+- delta_summary: helper:diff-snapshot=3 files changed, 168 insertions(+); wired CLI drop reasons into Talon adapter and captured evidence.
+- loops_remaining_forecast: 8 loops remaining (drop reason tests, parser hardening, stderr logging); confidence medium.
+- residual_risks:
+  - Drop reason propagation lacks guardrail tests; add coverage next loop.
+- next_work:
+  - Behaviour: add tests for drop reason propagation — python3 -m pytest _tests/test_provider_commands.py — future-shaping: lock guardrails on the new behaviour.

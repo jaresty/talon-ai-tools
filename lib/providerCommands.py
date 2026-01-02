@@ -153,6 +153,25 @@ def _delegate_to_bar_cli(action: str, *args, **kwargs) -> bool:
     severity_lower = severity_label.lower() if severity_label else ""
 
     if payload_info.has_payload:
+        if payload_info.drop_reason:
+            drop_message_candidate = (
+                payload_info.error
+                or payload_info.notice
+                or payload_info.alert
+                or payload_info.debug
+                or ""
+            )
+            drop_message = drop_message_candidate.strip()
+            if drop_message and severity_label:
+                drop_message = f"{severity_prefix}{drop_message}"
+            try:
+                if drop_message:
+                    set_drop_reason(payload_info.drop_reason, drop_message)
+                else:
+                    set_drop_reason(payload_info.drop_reason)
+            except Exception:
+                pass
+
         if payload_info.error:
             message = payload_info.error
             if severity_label and severity_lower not in {"error", "critical"}:

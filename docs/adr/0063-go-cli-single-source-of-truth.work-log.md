@@ -2468,3 +2468,32 @@
           raise SystemExit('Environment parity loop already present (unexpected)')
       print('Ready to document environment parity checks')
     PY — future-shaping: define parity validation between Talon and CLI automation.
+
+
+## 2026-01-02 – Loop 097 (kind: planning)
+- helper_version: helper:v20251223.1
+- focus: ADR-0063 environment parity checks
+- riskiest_assumption: Without parity checks, Talon and CLI automation could drift across environments (probability medium, impact medium-high on rollout confidence).
+- validation_targets:
+  - python3 - <<'PY'
+      from pathlib import Path
+      text = Path('docs/adr/0063-go-cli-single-source-of-truth.work-log.md').read_text()
+      if 'Loop 097 (kind:' not in text:
+          raise SystemExit('Environment parity loop missing')
+      print('Environment parity loop recorded')
+    PY
+- evidence:
+  - docs/adr/evidence/0063/loop-0097.md
+- rollback_plan: git checkout HEAD -- docs/adr/0063-go-cli-single-source-of-truth.work-log.md docs/adr/evidence/0063/loop-0097.md
+- delta_summary: helper:diff-snapshot=2 files changed, 89 insertions(+); documented environment parity checks and recorded evidence.
+- loops_remaining_forecast: 6 loops remaining (CLI build gating, fallback plan, metrics monitoring, support runbook, follow-up capture, closing summary); confidence medium.
+- residual_risks:
+  - CLI build gating and fallback planning remain; upcoming loops address release resilience.
+- next_work:
+  - Behaviour: outline CLI build gating hooks — python3 - <<'PY'
+      from pathlib import Path
+      text = Path('docs/adr/0063-go-cli-single-source-of-truth.work-log.md').read_text()
+      if 'Loop 098 (kind:' in text:
+          raise SystemExit('CLI build gating loop already present (unexpected)')
+      print('Ready to document CLI build gating')
+    PY — future-shaping: define automation hooks that block releases when CLI binaries drift.

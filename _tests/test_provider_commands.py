@@ -497,6 +497,96 @@ class BarCliDelegationTests(unittest.TestCase):
         ]
         self.assertTrue(any("stderr warning" in entry for entry in logged))
 
+    def test_delegate_truncates_error_log_output(self):
+        long_error = "cli failed " + ("X" * 1500)
+        result = SimpleNamespace(
+            returncode=0,
+            stdout=f'{{"error":"{long_error}","drop_reason":"history_save_failed"}}',
+            stderr="",
+        )
+        with (
+            patch.object(provider_module.settings, "get", return_value=1),
+            patch.object(
+                provider_module, "_bar_cli_command", return_value=Path("/tmp/bar")
+            ),
+            patch.object(provider_module.subprocess, "run", return_value=result),
+            patch.object(provider_module, "notify"),
+            patch("talon_user.lib.providerCommands.set_drop_reason"),
+            patch("talon_user.lib.providerCommands.print") as print_mock,
+        ):
+            self.assertTrue(
+                provider_module._delegate_to_bar_cli("model_provider_status")
+            )
+        logged = [
+            " ".join(str(arg) for arg in call.args)
+            for call in print_mock.call_args_list
+        ]
+        error_logs = [entry for entry in logged if "bar CLI reported error" in entry]
+        self.assertTrue(error_logs)
+        for entry in error_logs:
+            self.assertIn("...(truncated)", entry)
+            self.assertNotIn(long_error, entry)
+
+    def test_delegate_truncates_breadcrumb_logs(self):
+        long_breadcrumb = "crumb" * 400
+        result = SimpleNamespace(
+            returncode=0,
+            stdout='{"breadcrumbs":["%s","step two"]}' % long_breadcrumb,
+            stderr="",
+        )
+        with (
+            patch.object(provider_module.settings, "get", return_value=1),
+            patch.object(
+                provider_module, "_bar_cli_command", return_value=Path("/tmp/bar")
+            ),
+            patch.object(provider_module.subprocess, "run", return_value=result),
+            patch.object(provider_module, "notify") as notify_mock,
+            patch("talon_user.lib.providerCommands.print") as print_mock,
+        ):
+            self.assertTrue(
+                provider_module._delegate_to_bar_cli("model_provider_status")
+            )
+        notify_mock.assert_not_called()
+        logged = [
+            " ".join(str(arg) for arg in call.args)
+            for call in print_mock.call_args_list
+        ]
+        breadcrumb_logs = [entry for entry in logged if "breadcrumbs=" in entry]
+        self.assertTrue(breadcrumb_logs)
+        for entry in breadcrumb_logs:
+            self.assertIn("...(truncated)", entry)
+            self.assertNotIn(long_breadcrumb, entry)
+
+    def test_delegate_truncates_payload_log_output(self):
+        long_payload = "Y" * 1600
+        result = SimpleNamespace(
+            returncode=0,
+            stdout='{"unknown":"%s"}' % long_payload,
+            stderr="",
+        )
+        with (
+            patch.object(provider_module.settings, "get", return_value=1),
+            patch.object(
+                provider_module, "_bar_cli_command", return_value=Path("/tmp/bar")
+            ),
+            patch.object(provider_module.subprocess, "run", return_value=result),
+            patch.object(provider_module, "notify") as notify_mock,
+            patch("talon_user.lib.providerCommands.print") as print_mock,
+        ):
+            self.assertTrue(
+                provider_module._delegate_to_bar_cli("model_provider_status")
+            )
+        notify_mock.assert_not_called()
+        logged = [
+            " ".join(str(arg) for arg in call.args)
+            for call in print_mock.call_args_list
+        ]
+        payload_logs = [entry for entry in logged if "payload=" in entry]
+        self.assertTrue(payload_logs)
+        for entry in payload_logs:
+            self.assertIn("...(truncated)", entry)
+            self.assertNotIn(long_payload, entry)
+
     def test_parse_bar_cli_payload_multiline_stdout(self):
         result = SimpleNamespace(stdout='info line\n{"notify":"ok"}\n')
         payload = provider_module._parse_bar_cli_payload(result)

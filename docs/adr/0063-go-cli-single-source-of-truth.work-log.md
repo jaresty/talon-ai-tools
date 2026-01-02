@@ -1690,3 +1690,26 @@
   - Truncation lacks automated tests and documentation; upcoming loops will add guardrails and operator guidance.
 - next_work:
   - Behaviour: add truncation guardrail tests — python3 -m pytest _tests/test_provider_commands.py -k truncation — future-shaping: ensure log caps stay enforced.
+
+
+## 2026-01-02 – Loop 064 (kind: test)
+- helper_version: helper:v20251223.1
+- focus: ADR-0063 §Operational Mitigations – CLI log truncation guardrails (tests)
+- riskiest_assumption: Without guardrail tests, the new truncation helpers could regress and restore unbounded CLI logs (probability medium, impact medium-high on observability).
+- validation_targets:
+  - python3 -m pytest _tests/test_provider_commands.py -k truncates
+- evidence:
+  - docs/adr/evidence/0063/loop-0064.md
+- rollback_plan: git checkout HEAD -- _tests/test_provider_commands.py docs/adr/0063-go-cli-single-source-of-truth.work-log.md docs/adr/evidence/0063/loop-0064.md
+- delta_summary: helper:diff-snapshot=3 files changed, 172 insertions(+), 0 deletions(-); added truncation regression tests and recorded evidence.
+- loops_remaining_forecast: 8 loops remaining (documentation, log indicator, env override, residual risk wrap-up); confidence medium.
+- residual_risks:
+  - Documentation and log indicator updates remain pending; upcoming loops cover operator guidance and log metadata.
+- next_work:
+  - Behaviour: document truncation guardrails — python3 - <<'PY'
+      from pathlib import Path
+      text = Path('cli/README.md').read_text().lower()
+      if 'truncation' not in text:
+          raise SystemExit('README missing truncation guidance')
+      print('README references truncation guidance')
+    PY — future-shaping: align operator docs with the new log caps.

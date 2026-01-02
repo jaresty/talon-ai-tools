@@ -211,22 +211,27 @@ def _on_state_change(state: RequestState) -> None:
         _LAST_APPEND_REQUEST_ID = None
         try:
             # Do not carry suppression flags across requests; fall back to defaults.
-            GPTState.suppress_response_canvas = False
+            GPTState.suppress_response_canvas = False  # type: ignore[attr-defined]
         except Exception:
             pass
     # Clear cached fallback text when a request reaches a terminal phase.
     try:
+        should_close_canvas = not getattr(
+            GPTState, "suppress_response_canvas_close", False
+        )
         if state.phase is RequestPhase.SENDING:
             clear_all_fallbacks()
         if state.phase in (RequestPhase.CANCELLED, RequestPhase.ERROR):
             clear_all_fallbacks()
-            run_on_ui_thread(lambda: actions.user.model_response_canvas_close())
+            if should_close_canvas:
+                run_on_ui_thread(lambda: actions.user.model_response_canvas_close())
         if state.is_terminal:
             clear_response_fallback(getattr(state, "request_id", None))
         elif state.phase is RequestPhase.IDLE:
             clear_all_fallbacks()
             # Ensure any open response canvas is closed on reset/idle.
-            run_on_ui_thread(lambda: actions.user.model_response_canvas_close())
+            if should_close_canvas:
+                run_on_ui_thread(lambda: actions.user.model_response_canvas_close())
     except Exception:
         pass
 
@@ -244,7 +249,7 @@ def register_default_request_ui() -> RequestUIController:
     _LAST_APPEND_REFRESH_MS = None
     _LAST_APPEND_REQUEST_ID = None
     try:
-        GPTState.suppress_response_canvas = False  # reset per registration
+        GPTState.suppress_response_canvas = False  # type: ignore[attr-defined]  # reset per registration
     except Exception:
         pass
     _controller = RequestUIController(

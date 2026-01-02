@@ -146,7 +146,9 @@ class BarCliCommandPathTests(unittest.TestCase):
             self.skipTest("Talon runtime not available")
 
     def test_bar_cli_command_env_override(self):
-        with patch.dict(provider_module.os.environ, {"BAR_CLI_PATH": "/custom/bar"}, clear=True):
+        with patch.dict(
+            provider_module.os.environ, {"BAR_CLI_PATH": "/custom/bar"}, clear=True
+        ):
             self.assertEqual(provider_module._bar_cli_command(), Path("/custom/bar"))
 
     def test_bar_cli_command_default_path(self):
@@ -163,7 +165,9 @@ class BarCliDelegationTests(unittest.TestCase):
     def test_delegate_returns_false_when_flag_disabled(self):
         with (
             patch.object(provider_module.settings, "get", return_value=0),
-            patch.object(provider_module, "_bar_cli_command", return_value=Path("/tmp/bar")),
+            patch.object(
+                provider_module, "_bar_cli_command", return_value=Path("/tmp/bar")
+            ),
             patch.object(provider_module.subprocess, "run") as run_mock,
         ):
             self.assertFalse(
@@ -174,7 +178,9 @@ class BarCliDelegationTests(unittest.TestCase):
     def test_delegate_handles_missing_binary(self):
         with (
             patch.object(provider_module.settings, "get", return_value=1),
-            patch.object(provider_module, "_bar_cli_command", return_value=Path("/tmp/bar")),
+            patch.object(
+                provider_module, "_bar_cli_command", return_value=Path("/tmp/bar")
+            ),
             patch.object(
                 provider_module.subprocess, "run", side_effect=FileNotFoundError
             ),
@@ -187,8 +193,9 @@ class BarCliDelegationTests(unittest.TestCase):
         result = SimpleNamespace(returncode=2, stdout="", stderr="error")
         with (
             patch.object(provider_module.settings, "get", return_value=1),
-            patch.object(provider_module.subprocess, "run", return_value=result)
-            as run_mock,
+            patch.object(
+                provider_module.subprocess, "run", return_value=result
+            ) as run_mock,
         ):
             self.assertFalse(
                 provider_module._delegate_to_bar_cli("model_provider_list")
@@ -201,19 +208,63 @@ class BarCliDelegationTests(unittest.TestCase):
         result = SimpleNamespace(returncode=0, stdout="ok", stderr="")
         with (
             patch.object(provider_module.settings, "get", return_value=1),
-            patch.object(provider_module.subprocess, "run", return_value=result)
-            as run_mock,
+            patch.object(
+                provider_module.subprocess, "run", return_value=result
+            ) as run_mock,
         ):
             self.assertTrue(
-                provider_module._delegate_to_bar_cli("model_provider_use", name="openai", model="gpt-4")
+                provider_module._delegate_to_bar_cli(
+                    "model_provider_use", name="openai", model="gpt-4"
+                )
             )
         cmd = run_mock.call_args[0][0]
         self.assertIn("model_provider_use", cmd)
         self.assertIn("--name=openai", cmd)
         self.assertIn("--model=gpt-4", cmd)
 
+    def test_delegate_parses_json_payload_and_notifies(self):
+        result = SimpleNamespace(
+            returncode=0,
+            stdout='{"notify":"bar ok","debug":"status info"}',
+            stderr="",
+        )
+        with (
+            patch.object(provider_module.settings, "get", return_value=1),
+            patch.object(
+                provider_module, "_bar_cli_command", return_value=Path("/tmp/bar")
+            ),
+            patch.object(provider_module.subprocess, "run", return_value=result),
+            patch.object(provider_module, "notify") as notify_mock,
+            patch("talon_user.lib.providerCommands.print") as print_mock,
+        ):
+            self.assertTrue(
+                provider_module._delegate_to_bar_cli(
+                    "model_provider_status", probe=True
+                )
+            )
+        notify_mock.assert_called_once_with("bar ok")
+        printed_args = " ".join(str(arg) for arg in print_mock.call_args[0])
+        self.assertIn("status info", printed_args)
 
-
+    def test_delegate_handles_invalid_json_stdout(self):
+        result = SimpleNamespace(returncode=0, stdout="not json", stderr="")
+        with (
+            patch.object(provider_module.settings, "get", return_value=1),
+            patch.object(
+                provider_module, "_bar_cli_command", return_value=Path("/tmp/bar")
+            ),
+            patch.object(provider_module.subprocess, "run", return_value=result),
+            patch("talon_user.lib.providerCommands.print") as print_mock,
+            patch.object(provider_module, "notify") as notify_mock,
+        ):
+            self.assertTrue(provider_module._delegate_to_bar_cli("model_provider_list"))
+        notify_mock.assert_not_called()
+        printed_calls = [
+            " ".join(str(arg) for arg in call.args)
+            for call in print_mock.call_args_list
+        ]
+        self.assertTrue(any("stdout=" in text for text in printed_calls))
+        self.assertTrue(any("not json" in text for text in printed_calls))
 
 
 if __name__ == "__main__":

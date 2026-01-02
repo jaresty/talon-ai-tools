@@ -480,3 +480,32 @@
   - JSON schema is provisional; integration with telemetry/drop reasons still TODO.
 - next_work:
   - Behaviour: extend CLI tests to cover JSON parsing — python3 -m pytest _tests/test_provider_commands.py — future-shaping: guard against regressions.
+
+
+## 2026-01-02 – Loop 020 (kind: test)
+- helper_version: helper:v20251223.1
+- focus: ADR-0063 §Talon Adapter Layer (parse CLI JSON payloads – add tests)
+- riskiest_assumption: Without targeted tests, the JSON delegation shim could regress silently, letting Talon miss CLI notifications (probability medium, impact medium-high on observability).
+- validation_targets:
+  - python3 - <<'PY'
+      from pathlib import Path
+      text = Path('_tests/test_provider_commands.py').read_text()
+      if 'test_delegate_parses_json_payload' not in text:
+          raise SystemExit('missing test_delegate_parses_json_payload')
+      print('json delegation test added')
+    PY
+- evidence:
+  - docs/adr/evidence/0063/loop-0020.md
+- rollback_plan: git checkout HEAD -- _tests/test_provider_commands.py docs/adr/0063-go-cli-single-source-of-truth.work-log.md
+- delta_summary: helper:diff-snapshot=1 file changed, 60 insertions(+), 9 deletions(-); extended `BarCliDelegationTests` to cover JSON notify/debug handling and invalid payload fallbacks.
+- loops_remaining_forecast: 2 loops remaining (documentation updates, telemetry mitigation); confidence medium.
+- residual_risks:
+  - Documentation still omits JSON delegation behaviour; telemetry parsing guidance pending until CLI emits structured payloads.
+- next_work:
+  - Behaviour: document JSON delegation semantics in CLI/Talon guides — python3 - <<'PY'
+      from pathlib import Path
+      text = Path('cli/README.md').read_text()
+      if 'JSON notify payload' not in text:
+          raise SystemExit('README missing JSON delegation notes')
+      print('README covers JSON delegation')
+    PY — future-shaping: align operator docs with the new tests and CLI outputs.

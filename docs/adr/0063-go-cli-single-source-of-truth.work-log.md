@@ -2186,6 +2186,37 @@
     PY — future-shaping: describe the telemetry event payload for operators.
 
 
+## 2026-01-02 – Loop 082 (kind: documentation)
+- helper_version: helper:v20251223.1
+- focus: ADR-0063 telemetry event schema
+- riskiest_assumption: Without schema documentation, operators might misinterpret truncation telemetry payloads (probability medium, impact medium on diagnostics).
+- validation_targets:
+  - python3 - <<'PY'
+      from pathlib import Path
+      text = Path('docs/adr/0063-go-cli-single-source-of-truth.md').read_text().lower()
+      if 'truncation_events' not in text or 'original_length' not in text:
+          raise SystemExit('Telemetry event schema missing fields')
+      print('Telemetry schema documented')
+    PY
+- evidence:
+  - docs/adr/evidence/0063/loop-0082.md
+- rollback_plan: git checkout HEAD -- cli/README.md docs/adr/0063-go-cli-single-source-of-truth.md docs/adr/0063-go-cli-single-source-of-truth.work-log.md docs/adr/evidence/0063/loop-0082.md
+- delta_summary: helper:diff-snapshot=4 files changed, 0 insertions(+), 0 deletions(-); documented truncation telemetry schema across ADR and README.
+- loops_remaining_forecast: 7 loops remaining (export wiring, snapshot validation, checklist updates, metrics refresh, final summary); confidence high.
+- residual_risks:
+  - Need to wire telemetry events into export pipeline snapshot tests and release checklist automation.
+- next_work:
+  - Behaviour: wire telemetry event into export pipeline — python3 - <<'PY'
+      from pathlib import Path
+      import json
+      text = Path('lib/telemetryExport.py').read_text()
+      if 'truncation_events' not in text:
+          raise SystemExit('Telemetry export missing truncation events')
+      payload = json.loads(Path('docs/adr/evidence/0063/loop-0078-metrics.json').read_text())
+      print('Telemetry export wiring ready')
+    PY — future-shaping: ensure telemetry snapshot surfaces truncation events.
+
+
 
 ## 2026-01-02 – Loop 079 (kind: summary)
 - helper_version: helper:v20251223.1

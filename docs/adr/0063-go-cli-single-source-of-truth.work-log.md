@@ -2357,3 +2357,15 @@
   - Follow-ups documented in Loop 077; release checklist and metrics archived; no additional risks tracked by this ADR.
 - next_work:
   - Behaviour: none — loop series concluded.
+
+
+## 2026-01-02 – Loop 088 (kind: summary)
+- helper_version: helper:v20251223.1
+- focus: ADR-0063 telemetry loop outcomes summary
+- summary: documented telemetry emission, tests, export wiring, and residual risk actions from loops 080–087.
+- next_work:
+  - Behaviour: clean up helper metrics with telemetry data — python3 - <<'PY'
+      from pathlib import Path
+      text = Path('docs/adr/evidence/0063/loop-0078-metrics.json').read_text()
+      print('Ready to refresh metrics archive')
+    PY — future-shaping: sync helper metrics with telemetry events.

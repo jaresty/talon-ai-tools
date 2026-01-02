@@ -17,10 +17,11 @@ const (
 )
 
 type healthPayload struct {
-	Status   string `json:"status"`
-	Version  string `json:"version"`
-	Runtime  string `json:"runtime"`
-	Executor string `json:"executor"`
+	Status     string `json:"status"`
+	Version    string `json:"version"`
+	Runtime    string `json:"runtime"`
+	Executor   string `json:"executor"`
+	BinaryPath string `json:"binary_path"`
 }
 
 func main() {
@@ -39,11 +40,13 @@ func run(args []string) int {
 			printUsage(os.Stdout)
 			return 0
 		case "--health":
+			root := repoRoot()
 			payload := healthPayload{
-				Status:   "ok",
-				Version:  schemaVersion(repoRoot()),
-				Runtime:  runtimeName,
-				Executor: executorName,
+				Status:     "ok",
+				Version:    schemaVersion(root),
+				Runtime:    runtimeName,
+				Executor:   executorName,
+				BinaryPath: runtimeBinaryPath(root),
 			}
 
 			if err := json.NewEncoder(os.Stdout).Encode(payload); err != nil {
@@ -86,6 +89,21 @@ func repoRoot() string {
 		}
 		current = parent
 	}
+}
+
+func runtimeBinaryPath(root string) string {
+	execPath, err := os.Executable()
+	if err != nil {
+		return "unknown"
+	}
+
+	if root != "" {
+		if rel, relErr := filepath.Rel(root, execPath); relErr == nil {
+			return filepath.ToSlash(rel)
+		}
+	}
+
+	return filepath.ToSlash(execPath)
 }
 
 func schemaVersion(root string) string {

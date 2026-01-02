@@ -51,6 +51,11 @@ else:
                 "compiled",
                 "CLI must run compiled binary rather than go run stub",
             )
+            self.assertEqual(
+                payload.get("binary_path"),
+                "bin/bar.bin",
+                "CLI must report compiled binary path relative to repo root",
+            )
 
         def test_schema_bundle_contains_version_marker(self) -> None:
             self.assertTrue(

@@ -2,6 +2,7 @@ from typing import Callable, Optional, Any, Dict
 
 from talon import Context, Module, actions, canvas, clip, ui, skia, settings
 import traceback
+import time
 
 from .axisJoin import axis_join
 from .canvasFont import apply_canvas_typeface, draw_text_with_emoji_fallback
@@ -13,6 +14,12 @@ from .requestBus import current_state
 from .historyLifecycle import (
     RequestPhase,
     RequestState,
+    last_drop_reason,
+    set_drop_reason,
+)
+from .responseCanvasFallback import (
+    clear_response_fallback,
+    fallback_for,
 )
 
 from .surfaceGuidance import guard_surface_request
@@ -33,6 +40,9 @@ from . import personaConfig as _persona_config_module
 
 mod = Module()
 ctx = Context()
+
+
+DEFAULT_TRACE_CANVAS_FLOW = 0
 
 
 class ResponseCanvasState:
@@ -328,7 +338,9 @@ def _debug(msg: str) -> None:
 
 def _trace_canvas_event(event: str, **data) -> None:
     try:
-        enabled = bool(settings.get("user.gpt_trace_canvas_flow", 1))
+        enabled = bool(
+            settings.get("user.gpt_trace_canvas_flow", DEFAULT_TRACE_CANVAS_FLOW)
+        )
     except Exception:
         enabled = False
     if not enabled:
@@ -1909,19 +1921,21 @@ def _default_draw_response(c: canvas.Canvas) -> None:  # pragma: no cover - visu
     approx_char_width = 8
     max_chars = max(int((rect.width - 80) // approx_char_width), 40) if rect else 80
 
-    # Cache wrapped lines so scroll and scrollbar updates stay responsive even
-    # for long answers. The cache key is the current answer text plus the
-    # approximate wrap width so resizes or very different layouts naturally
-    # invalidate it.
     cache_key = (answer, max_chars)
     lines_cache_key = getattr(ResponseCanvasState, "lines_cache_key", None)
     cached_lines = getattr(ResponseCanvasState, "lines_cache", None)
-    if lines_cache_key != cache_key or not cached_lines:
+    cache_miss = lines_cache_key != cache_key or not cached_lines
+    wrap_duration_ms = 0.0
+    wrap_started = time.perf_counter()
+    if cache_miss:
         lines = _format_answer_lines(answer, max_chars)
         ResponseCanvasState.lines_cache_key = cache_key
         ResponseCanvasState.lines_cache = list(lines)
+        wrap_duration_ms = (time.perf_counter() - wrap_started) * 1000.0
     else:
-        lines = cached_lines
+        lines = cached_lines or []
+    if not lines:
+        lines = [""]
 
     # Compute content height and clamp scroll offset so we cannot scroll past
     # the end of the content.
@@ -1932,11 +1946,14 @@ def _default_draw_response(c: canvas.Canvas) -> None:  # pragma: no cover - visu
     start_index = int(scroll_y // line_h)
     offset_y = body_top - (scroll_y % line_h)
 
+    draw_started = time.perf_counter()
+    drawn_lines = 0
     for idx in range(start_index, len(lines)):
         ly = offset_y + (idx - start_index) * line_h
         if ly > body_bottom:
             break
         line_text = lines[idx] or " "
+        drawn_lines += 1
         # Prefer an emoji-aware draw helper so runs containing emoji can use
         # a more compatible typeface when available, while keeping layout
         # consistent with the existing fixed-width assumptions.
@@ -1951,6 +1968,7 @@ def _default_draw_response(c: canvas.Canvas) -> None:  # pragma: no cover - visu
         except Exception:
             # Fallback to a simple draw if anything goes wrong.
             draw_text(line_text, x, ly)
+    draw_duration_ms = (time.perf_counter() - draw_started) * 1000.0
 
     # Draw a simple scrollbar when content exceeds the visible height.
     if content_height > visible_height and rect is not None and paint is not None:
@@ -1988,6 +2006,17 @@ def _default_draw_response(c: canvas.Canvas) -> None:  # pragma: no cover - visu
                 paint.color = old_color
         except Exception:
             pass
+
+    _trace_canvas_event(
+        "draw_stats",
+        lines_total=f"{len(lines)}",
+        lines_drawn=f"{drawn_lines}",
+        scroll_y=f"{round(float(scroll_y), 2)}",
+        max_scroll=f"{round(float(max_scroll), 2)}",
+        cache_miss=f"{cache_miss}",
+        wrap_ms=f"{round(wrap_duration_ms, 3)}",
+        draw_ms=f"{round(draw_duration_ms, 3)}",
+    )
 
     # Record max_scroll for event handlers that clamp scroll offsets.
     ResponseCanvasState.max_scroll = max_scroll

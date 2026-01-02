@@ -23,6 +23,9 @@ from ..lib.suggestionCoordinator import (
 )
 
 
+DEFAULT_TRACE_CANVAS_FLOW = 0
+
+
 def _set_destination_kind(kind: str) -> None:
     try:
         GPTState.current_destination_kind = (kind or "").lower()
@@ -45,7 +48,9 @@ def _response_canvas_showing() -> bool:
 
 def _trace_canvas_flow(event: str, **data) -> None:
     try:
-        enabled = bool(settings.get("user.gpt_trace_canvas_flow", 1))
+        enabled = bool(
+            settings.get("user.gpt_trace_canvas_flow", DEFAULT_TRACE_CANVAS_FLOW)
+        )
     except Exception:
         enabled = False
     if not enabled:

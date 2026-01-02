@@ -114,6 +114,8 @@ except ImportError:  # Talon may have a stale runtime without axisCatalog
         }
 
 
+DEFAULT_TRACE_CANVAS_FLOW = 0
+
 KNOWN_AXIS_KEYS = historyLifecycle.KNOWN_AXIS_KEYS
 
 
@@ -2936,7 +2938,9 @@ class UserActions:
         except Exception:
             canvas_showing = False
         try:
-            tracing_enabled = bool(settings.get("user.gpt_trace_canvas_flow", 1))
+            tracing_enabled = bool(
+                settings.get("user.gpt_trace_canvas_flow", DEFAULT_TRACE_CANVAS_FLOW)
+            )
         except Exception:
             tracing_enabled = False
         if canvas_showing and tracing_enabled:

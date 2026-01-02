@@ -1958,3 +1958,26 @@
           raise SystemExit('ADR missing telemetry note')
       print('ADR includes telemetry note')
     PY — future-shaping: capture instrumentation expectations before closing the loop series.
+
+
+## 2026-01-02 – Loop 073 (kind: documentation)
+- helper_version: helper:v20251223.1
+- focus: ADR-0063 §Operational Mitigations – telemetry note
+- riskiest_assumption: Without telemetry guidance truncation events may go untracked (probability medium, impact medium on diagnostics).
+- validation_targets:
+  - python3 - <<'PY'
+      from pathlib import Path
+      text = Path('docs/adr/0063-go-cli-single-source-of-truth.md').read_text().lower()
+      if 'telemetry event' not in text:
+          raise SystemExit('ADR missing telemetry event guidance')
+      print('ADR captures telemetry note')
+    PY
+- evidence:
+  - docs/adr/evidence/0063/loop-0073.md
+- rollback_plan: git checkout HEAD -- docs/adr/0063-go-cli-single-source-of-truth.md docs/adr/0063-go-cli-single-source-of-truth.work-log.md docs/adr/evidence/0063/loop-0073.md
+- delta_summary: helper:diff-snapshot=3 files changed, 0 insertions(+), 0 deletions(-); added telemetry guidance and evidence.
+- loops_remaining_forecast: loops 074–079 focus on validation sweep, closeout, and helper archive; confidence medium-high.
+- residual_risks:
+  - Telemetry expectations captured; remaining loops cover validation sweep and closeout documentation.
+- next_work:
+  - Behaviour: run final validation sweep — python3 -m pytest _tests/test_provider_commands.py -k "truncation or log_limit" — future-shaping: ensure all guardrails pass before closeout.

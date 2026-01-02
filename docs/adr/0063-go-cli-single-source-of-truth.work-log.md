@@ -1175,3 +1175,26 @@
   - Documentation still needs to cover breadcrumbs (Loop 047).
 - next_work:
   - Behaviour: test breadcrumbs parsing — python3 - m pytest _tests/test_provider_commands.py — future-shaping: ensure helper/ delegation breadcrumbs behaviour remains covered.
+
+
+## 2026-01-02 – Loop 046 (kind: test)
+- helper_version: helper:v20251223.1
+- focus: ADR-0063 §Talon Adapter Layer (test breadcrumbs parsing)
+- riskiest_assumption: Without targeted tests, breadcrumbs parsing could regress silently (probability medium, impact medium on usability).
+- validation_targets:
+  - python3 -m pytest _tests/test_provider_commands.py
+- evidence:
+  - docs/adr/evidence/0063/loop-0046.md
+- rollback_plan: git checkout HEAD -- _tests/test_provider_commands.py docs/adr/0063-go-cli-single-source-of-truth.work-log.md
+- delta_summary: helper:diff-snapshot=1 file changed, 6 insertions(+); added breadcrumb trimming test and ensured decode flag remains false when breadcrumbs parsed.
+- loops_remaining_forecast: 2 loops remaining (breadcrumbs documentation, final validation); confidence high.
+- residual_risks:
+  - Documentation must cover breadcrumbs logging (Loop 047).
+- next_work:
+  - Behaviour: document breadcrumbs handling — python3 - <<'PY'
+      from pathlib import Path
+      text = Path('cli/README.md').read_text().lower()
+      if 'breadcrumbs' not in text:
+          raise SystemExit('README missing breadcrumbs note')
+      print('README references breadcrumbs note')
+    PY — future-shaping: explain breadcrumb outputs in docs.

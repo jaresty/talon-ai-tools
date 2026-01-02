@@ -425,6 +425,12 @@ class BarCliPayloadHelperTests(unittest.TestCase):
         self.assertEqual(prefix_space, "[CRITICAL] ")
         self.assertEqual(label_space, "CRITICAL")
 
+    def test_parse_breadcrumbs_trims_and_ignores_empty(self):
+        result = SimpleNamespace(stdout='{"breadcrumbs": [" step 1 ", "", "step 3"]}')
+        payload = provider_module._parse_bar_cli_payload(result)
+        self.assertEqual(payload.breadcrumbs, ["step 1", "step 3"])
+        self.assertFalse(payload.decode_failed)
+
 
 if __name__ == "__main__":
     unittest.main()

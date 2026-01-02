@@ -11,18 +11,26 @@ import errors in the Talon runtime.
 
 from __future__ import annotations
 
+import sys
+
+
+def _warn(message: str) -> None:
+    sys.stderr.write(f"bootstrap: {message}\n")
+
 
 def _maybe_install_cli() -> None:
     """Attempt to install the packaged CLI binary before delegation."""
 
     try:
         from scripts.tools.install_bar_cli import install_cli  # type: ignore
-    except Exception:
+    except Exception as exc:  # pragma: no cover - import errors depend on env
+        _warn(f"unable to import installer; falling back to go build ({exc})")
         return
 
     try:
         install_cli(quiet=True)
-    except Exception:
+    except Exception as exc:  # pragma: no cover - depends on filesystem state
+        _warn(f"install failed; falling back to go build ({exc})")
         return
 
 

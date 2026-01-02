@@ -163,6 +163,7 @@ Talon code will gradually migrate to delegating through adapters rather than mai
 
 - Accept Talon grammar inputs (spoken phrases, selections, stack identifiers) and translate them into CLI command arguments, stdin payloads, or temporary files.
 - Capture CLI stdout/stderr/exit codes, mapping guardrail errors and drop reasons back into Talon notifications and Concordance telemetry, including parsing JSON payload fields (`notify`, `debug`, `status`, `error`). When a **CLI error payload** arrives, Talon suppresses legacy fallbacks, surfaces the error message via `notify()`, and logs any `drop_reason` hint.
+- Maintain the shared payload helper (`_parse_bar_cli_payload`) as the canonical decoder for CLI stdout; future telemetry fields must extend this helper so adapters and tests stay aligned.
 - Orchestrate destination side-effects (paste, browser open, history file write, canvas refresh) based on CLI output formats.
 - Maintain compatibility fallbacks: detect CLI absence/version mismatch, negotiate capabilities, fall back to legacy Python execution, and log telemetry for parity audits.
 - Provide feature flags (for example `user.bar_cli_enabled`) to opt individual commands or surfaces into the CLI path incrementally while `_tests` guardrails compare both behaviours.
@@ -178,6 +179,7 @@ Talon code will gradually migrate to delegating through adapters rather than mai
 - **Performance & latency**: provide daemon mode with keep-alive IPC, cache provider/grammar data, and benchmark cold vs. warm invocations before flipping defaults.
 - **Version compatibility**: embed semantic version + capability list in CLI handshake; adapters negotiate and refuse unsupported features with explicit fallbacks.
 - **Testing strategy**: add golden transcript tests for CLI stdout/stderr, attachment fixtures, and session persistence across restarts; run both CLI and legacy paths in CI during migration.
+- **Payload helper parity**: keep `_parse_bar_cli_payload` under unit tests covering success and failure cases; extend the helper before introducing new telemetry fields.
 - **Distribution & updates**: define signature verification, notarization (macOS), auto-update prompts inside Talon, and manual override instructions for offline setups.
 - **Deferred hardening** *(future ADRs)*: advanced threat assessments, privacy redaction policies, third-party plugin support.
 

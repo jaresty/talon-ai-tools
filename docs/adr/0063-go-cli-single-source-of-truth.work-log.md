@@ -708,3 +708,26 @@
           raise SystemExit('ADR missing payload helper doc note')
       print('ADR documents payload helper note')
     PY — future-shaping: record helper responsibilities and residual risks.
+
+
+## 2026-01-02 – Loop 028 (kind: documentation)
+- helper_version: helper:v20251223.1
+- focus: ADR-0063 §Operational Mitigations & Adapter Outline (record payload helper responsibilities)
+- riskiest_assumption: Without ADR coverage, future contributors might bypass the shared payload helper, reintroducing drift (probability medium, impact medium on maintainability).
+- validation_targets:
+  - python3 - <<'PY'
+      from pathlib import Path
+      text = Path('docs/adr/0063-go-cli-single-source-of-truth.md').read_text()
+      if 'payload helper' not in text:
+          raise SystemExit('ADR missing payload helper doc note')
+      print('ADR documents payload helper note')
+    PY
+- evidence:
+  - docs/adr/evidence/0063/loop-0028.md
+- rollback_plan: git checkout HEAD -- docs/adr/0063-go-cli-single-source-of-truth.md docs/adr/0063-go-cli-single-source-of-truth.work-log.md
+- delta_summary: helper:diff-snapshot=1 file changed, 2 insertions(+); ADR now names `_parse_bar_cli_payload` as the canonical decoder and ties tests to the helper.
+- loops_remaining_forecast: 0 loops remaining; confidence high.
+- residual_risks:
+  - Monitor telemetry schema changes to ensure the helper and tests stay aligned.
+- next_work:
+  - Behaviour: none — loop series complete pending review.

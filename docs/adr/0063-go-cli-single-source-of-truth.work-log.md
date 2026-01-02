@@ -2381,3 +2381,32 @@
       text = Path('docs/adr/0063-go-cli-single-source-of-truth.md').read_text()
       print('Ready to verify release automation')
     PY — future-shaping: ensure CI integrates telemetry steps.
+
+
+## 2026-01-02 – Loop 094 (kind: planning)
+- helper_version: helper:v20251223.1
+- focus: ADR-0063 release automation risk scan
+- riskiest_assumption: Without verifying release automation triggers, CLI release tasks may drift (probability medium, impact medium-high on release reliability).
+- validation_targets:
+  - python3 - <<'PY'
+      from pathlib import Path
+      text = Path('docs/adr/0063-go-cli-single-source-of-truth.work-log.md').read_text()
+      if 'Loop 094 (kind:' not in text:
+          raise SystemExit('Release automation loop missing')
+      print('Release automation loop recorded')
+    PY
+- evidence:
+  - docs/adr/evidence/0063/loop-0094.md
+- rollback_plan: git checkout HEAD -- docs/adr/0063-go-cli-single-source-of-truth.work-log.md docs/adr/evidence/0063/loop-0094.md
+- delta_summary: helper:diff-snapshot=2 files changed, 89 insertions(+); documented release automation risk scan and recorded evidence.
+- loops_remaining_forecast: 9 loops remaining (automation validation steps, telemetry handshake, environment parity checks, CLI build gating, fallback plan, metrics monitoring, support runbook, follow-up capture, closing summary); confidence medium.
+- residual_risks:
+  - Release automation flow unverified; upcoming loops document validation steps and mitigation triggers.
+- next_work:
+  - Behaviour: define automation validation steps — python3 - <<'PY'
+      from pathlib import Path
+      text = Path('docs/adr/0063-go-cli-single-source-of-truth.work-log.md').read_text()
+      if 'Loop 095 (kind:' in text:
+          raise SystemExit('Automation validation loop already present (unexpected)')
+      print('Ready to capture automation validation steps')
+    PY — future-shaping: detail validation targets for release automation.

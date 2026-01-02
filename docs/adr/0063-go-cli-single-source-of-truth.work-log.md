@@ -1713,3 +1713,38 @@
           raise SystemExit('README missing truncation guidance')
       print('README references truncation guidance')
     PY — future-shaping: align operator docs with the new log caps.
+
+
+## 2026-01-02 – Loop 065 (kind: documentation)
+- helper_version: helper:v20251223.1
+- focus: ADR-0063 §Operational Mitigations – document truncation guardrails
+- riskiest_assumption: Without documentation, operators may miss the 512-character log caps and misinterpret missing data (probability medium, impact medium on observability).
+- validation_targets:
+  - python3 - <<'PY'
+      from pathlib import Path
+
+      checks = [
+          (Path('cli/README.md'), '...(truncated)'),
+          (Path('docs/adr/0063-go-cli-single-source-of-truth.md'), 'Log truncation'),
+      ]
+      for path, needle in checks:
+          text = path.read_text()
+          if needle not in text:
+              raise SystemExit(f"missing '{needle}' in {path}")
+      print('documentation references truncation guards')
+    PY
+- evidence:
+  - docs/adr/evidence/0063/loop-0065.md
+- rollback_plan: git checkout HEAD -- cli/README.md docs/adr/0063-go-cli-single-source-of-truth.work-log.md docs/adr/evidence/0063/loop-0065.md
+- delta_summary: helper:diff-snapshot=4 files changed, 98 insertions(+), 0 deletions(-); added truncation documentation updates and evidence.
+- loops_remaining_forecast: 7 loops remaining (log indicator, env override, telemetry updates, residual risk wrap-up); confidence medium.
+- residual_risks:
+  - CLI logging still lacks explicit indicators for truncation length and residual telemetry integration; upcoming loops cover these behaviours.
+- next_work:
+  - Behaviour: add truncation length indicator logging — python3 - <<'PY'
+      from pathlib import Path
+      text = Path('lib/providerCommands.py').read_text()
+      if 'original length' not in text:
+          raise SystemExit('truncation indicator logging missing')
+      print('truncation indicator log present')
+    PY — future-shaping: make truncation visible in debug output and telemetry.

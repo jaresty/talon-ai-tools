@@ -151,6 +151,7 @@ Talon adapters must:
 
 - `python3 -m pytest _tests/test_cli_talon_parity.py` — exercises Talon↔CLI parity harness; currently skipped because the CLI binary and shared schema bundle are not yet published. The command remains red until its skips are removed by landing the CLI artefacts it depends on.
 - `./bin/bar --health` — Talon adapter health probe; currently exits with `ENOENT` because the CLI binary is absent. Evidence for this blocker lives in `docs/adr/evidence/0063/loop-0003.md`.
+- `scripts/tools/check_cli_assets.py` — verifies the presence of the CLI binary and shared command-surface schema; currently exits 1 with missing paths logged in `docs/adr/evidence/0063/loop-0004.md`.
 
 ---
 

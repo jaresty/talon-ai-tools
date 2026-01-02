@@ -932,3 +932,26 @@
   - Need guardrail tests confirming decode logging (Loop 036).
 - next_work:
   - Behaviour: ensure helper logs decode failures via tests — python3 -m pytest _tests/test_provider_commands.py — future-shaping: cover the new logging path.
+
+
+## 2026-01-02 – Loop 036 (kind: test)
+- helper_version: helper:v20251223.1
+- focus: ADR-0063 §Talon Adapter Layer (test decode failure logging)
+- riskiest_assumption: Without tests, the new decode logging could regress silently (probability medium, impact medium on observability).
+- validation_targets:
+  - python3 -m pytest _tests/test_provider_commands.py
+- evidence:
+  - docs/adr/evidence/0063/loop-0036.md
+- rollback_plan: git checkout HEAD -- _tests/test_provider_commands.py docs/adr/0063-go-cli-single-source-of-truth.work-log.md
+- delta_summary: helper:diff-snapshot=1 file changed, 22 insertions(+), 1 deletion(-); added tests covering `decode_failed` flag and logging behaviour.
+- loops_remaining_forecast: 1 loop remaining (residual risk update & closeout); confidence high.
+- residual_risks:
+  - Need to make residual risk log explicit and close out loops (Loop 037/038).
+- next_work:
+  - Behaviour: update work log and ADR residual risks — python3 - <<'PY'
+      from pathlib import Path
+      text = Path('docs/adr/0063-go-cli-single-source-of-truth.md').read_text()
+      if 'decode_failed' not in text:
+          raise SystemExit('ADR missing decode failure note')
+      print('ADR references decode failure logging')
+    PY — future-shaping: document monitoring plan before closure.

@@ -344,13 +344,34 @@ class BarCliPayloadHelperTests(unittest.TestCase):
         payload = provider_module._parse_bar_cli_payload(result)
         self.assertIsInstance(payload, provider_module.BarCliPayload)
         self.assertFalse(payload.has_payload)
+        self.assertTrue(payload.decode_failed)
         self.assertIsNone(payload.raw)
         self.assertIsNone(payload.notice)
-
         self.assertIsNone(payload.error)
         self.assertIsNone(payload.debug)
         self.assertIsNone(payload.drop_reason)
         self.assertIsNone(payload.alert)
+
+    def test_delegate_logs_decode_failure(self):
+        result = SimpleNamespace(returncode=0, stdout="not json", stderr="")
+        with (
+            patch.object(provider_module.settings, "get", return_value=1),
+            patch.object(
+                provider_module, "_bar_cli_command", return_value=Path("/tmp/bar")
+            ),
+            patch.object(provider_module.subprocess, "run", return_value=result),
+            patch.object(provider_module, "notify") as notify_mock,
+            patch("talon_user.lib.providerCommands.print") as print_mock,
+        ):
+            self.assertTrue(
+                provider_module._delegate_to_bar_cli("model_provider_status")
+            )
+        notify_mock.assert_not_called()
+        printed_calls = [
+            " ".join(str(arg) for arg in call.args)
+            for call in print_mock.call_args_list
+        ]
+        self.assertTrue(any("payload decode failed" in text for text in printed_calls))
 
 
 if __name__ == "__main__":

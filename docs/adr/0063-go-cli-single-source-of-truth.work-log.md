@@ -2752,3 +2752,32 @@
           raise SystemExit('Environment scripting loop already present (unexpected)')
       print('Ready to document environment parity scripts')
     PY — future-shaping: align environment matrix tasks with CLI/Talon adapters.
+
+
+## 2026-01-02 – Loop 107 (kind: planning)
+- helper_version: helper:v20251223.1
+- focus: ADR-0063 §Shared Contracts and Parity Guidance – Environment parity row | environment scripting backlog
+- riskiest_assumption: Canonical intent “CLI↔Talon parity matrix stays enforceable” fails if environment scripts/tasks remain undocumented (probability medium, impact medium-high on rollout confidence).
+- validation_targets:
+  - python3 - <<'PY'
+      from pathlib import Path
+      text = Path('docs/adr/0063-go-cli-single-source-of-truth.work-log.md').read_text()
+      if 'Loop 107 (kind:' not in text:
+          raise SystemExit('Environment scripting loop missing')
+      print('Environment scripting loop recorded')
+    PY
+- evidence:
+  - docs/adr/evidence/0063/loop-0107.md
+- rollback_plan: git checkout HEAD -- docs/adr/0063-go-cli-single-source-of-truth.work-log.md docs/adr/evidence/0063/loop-0107.md
+- delta_summary: helper:diff-snapshot=2 files changed, 90 insertions(+); enumerated environment parity scripting backlog and recorded evidence.
+- loops_remaining_forecast: 6 loops remaining (108 build gating, 109 fallback sequencing, 110 metrics monitoring, 111 support runbook, 112 follow-up tracker, 113 implementation readiness status); confidence medium while gating work is pending.
+- residual_risks:
+  - severity: medium — build gating + rollback still outstanding; mitigation: loops 108–109 detail gating + fallback; trigger: environment backlog lacking CI targets.
+- next_work:
+  - Behaviour: specify build gating hooks — python3 - <<'PY'
+      from pathlib import Path
+      text = Path('docs/adr/0063-go-cli-single-source-of-truth.work-log.md').read_text()
+      if 'Loop 108 (kind:' in text:
+          raise SystemExit('Build gating loop already present (unexpected)')
+      print('Ready to specify build gating hooks')
+    PY — future-shaping: define CI gating integration for CLI releases.

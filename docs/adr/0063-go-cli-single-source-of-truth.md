@@ -155,6 +155,14 @@ Talon adapters must:
 
 ---
 
+## Next Work
+
+- **Behaviour:** Emit telemetry artefact for latency SLOs — `scripts/tools/telemetry_slo_report.py` (currently red; see `docs/adr/evidence/0063/loop-0009.md`).
+- **Behaviour:** Replace stubbed CLI with real delegation adapter — `python3 -m pytest _tests/test_cli_talon_parity.py` once CLI binary ships.
+- **Behaviour:** Harden release pipeline with checksum manifest — `scripts/tools/check_cli_assets.py` to move from schema stub to signed bundles.
+
+---
+
 ## Validation Targets
 
 - `python3 -m pytest _tests/test_cli_talon_parity.py` — exercises Talon↔CLI parity harness; currently skipped because the CLI binary and shared schema bundle are not yet published. The command remains red until its skips are removed by landing the CLI artefacts it depends on.

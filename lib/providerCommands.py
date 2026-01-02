@@ -321,6 +321,12 @@ def _delegate_to_bar_cli(action: str, *args, **kwargs) -> bool:
                 )
             except Exception:
                 pass
+
+    if result.stderr:
+        try:
+            print(f"[debug] bar CLI stderr for {action}; stderr={result.stderr!r}")
+        except Exception:
+            pass
     return True
 
 

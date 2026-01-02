@@ -1378,3 +1378,52 @@
   - Need stderr logging and documentation for parser changes; scheduled next loops.
 - next_work:
   - Behaviour: log CLI stderr on success — python3 - <<'PY' ...> — future-shaping: ensure Talon records CLI stderr payloads.
+
+## 2026-01-02 – Loop 054 (kind: implementation)
+- helper_version: helper:v20251223.1
+- focus: ADR-0063 §Talon Adapter Layer (log CLI stderr when runs succeed)
+- riskiest_assumption: Successful CLI delegations could hide warnings emitted on stderr, degrading telemetry and debuggability (probability medium, impact medium-high on parity governance).
+- validation_targets:
+  - python3 - <<'PY'
+      import sys
+      from pathlib import Path
+      from types import SimpleNamespace
+      from unittest.mock import patch
+
+      sys.path.insert(0, str(Path('.').resolve()))
+      from bootstrap import bootstrap
+      bootstrap()
+
+      from talon_user.lib import providerCommands
+
+      result = SimpleNamespace(
+          returncode=0,
+          stdout='{"notify":"ok"}',
+          stderr='stderr warning',
+      )
+      with (
+          patch.object(providerCommands.settings, 'get', return_value=1),
+          patch.object(providerCommands, '_bar_cli_command', return_value=Path('/tmp/bar')),
+          patch.object(providerCommands.subprocess, 'run', return_value=result),
+          patch.object(providerCommands, 'notify'),
+          patch('talon_user.lib.providerCommands.print') as print_mock,
+      ):
+          providerCommands._delegate_to_bar_cli('model_provider_status')
+
+      logged = [
+          ' '.join(str(arg) for arg in call.args)
+          for call in print_mock.call_args_list
+      ]
+      if not any('stderr warning' in entry for entry in logged):
+          raise SystemExit('stderr still missing from logs')
+      print('stderr logging captured on successful runs')
+    PY
+- evidence:
+  - docs/adr/evidence/0063/loop-0054.md
+- rollback_plan: git checkout HEAD -- lib/providerCommands.py docs/adr/0063-go-cli-single-source-of-truth.work-log.md docs/adr/evidence/0063/loop-0054.md
+- delta_summary: helper:diff-snapshot=3 files changed, 178 insertions(+); adapter now logs CLI stderr even on success.
+- loops_remaining_forecast: 3 loops remaining (stderr tests, documentation, final validation); confidence medium-high.
+- residual_risks:
+  - Need guardrail tests and documentation for the new logging; scheduled next loops.
+- next_work:
+  - Behaviour: add tests for stderr logging — python3 -m pytest _tests/test_provider_commands.py -k stderr — future-shaping: ensure guardrails cover the new log path.

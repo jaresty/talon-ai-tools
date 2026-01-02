@@ -679,3 +679,32 @@
           raise SystemExit('payload helper tests missing')
       print('payload helper tests present')
     PY — future-shaping: ensure helper stays in sync with CLI fields.
+
+
+## 2026-01-02 – Loop 027 (kind: test)
+- helper_version: helper:v20251223.1
+- focus: ADR-0063 §Talon Adapter Layer (test CLI payload parsing helper)
+- riskiest_assumption: Without unit tests, the new helper could regress when future fields are added (probability medium, impact medium-high on telemetry parity).
+- validation_targets:
+  - python3 - <<'PY'
+      from pathlib import Path
+      text = Path('_tests/test_provider_commands.py').read_text()
+      if 'test_parse_bar_cli_payload_success' not in text:
+          raise SystemExit('payload helper tests missing')
+      print('payload helper tests present')
+    PY
+- evidence:
+  - docs/adr/evidence/0063/loop-0027.md
+- rollback_plan: git checkout HEAD -- _tests/test_provider_commands.py docs/adr/0063-go-cli-single-source-of-truth.work-log.md
+- delta_summary: helper:diff-snapshot=1 file changed, 30 insertions(+); added helper-focused tests covering success and invalid JSON cases.
+- loops_remaining_forecast: 2 loops remaining (documentation wrap-up, residual risk review); confidence medium-high.
+- residual_risks:
+  - Integration tests still pending for real CLI binaries producing payloads.
+- next_work:
+  - Behaviour: document helper refactor and residual risks — python3 - <<'PY'
+      from pathlib import Path
+      text = Path('docs/adr/0063-go-cli-single-source-of-truth.md').read_text()
+      if 'payload helper' not in text:
+          raise SystemExit('ADR missing payload helper doc note')
+      print('ADR documents payload helper note')
+    PY — future-shaping: record helper responsibilities and residual risks.

@@ -297,5 +297,35 @@ class BarCliDelegationTests(unittest.TestCase):
         )
 
 
+class BarCliPayloadHelperTests(unittest.TestCase):
+    def setUp(self):
+        if bootstrap is None:
+            self.skipTest("Talon runtime not available")
+
+    def test_parse_bar_cli_payload_success(self):
+        result = SimpleNamespace(
+            stdout='{"notify":"hello","error":"cli failed","debug":"status","drop_reason":"cli_error"}'
+        )
+        payload, notice, error_message, debug_hint, drop_reason = (
+            provider_module._parse_bar_cli_payload(result)
+        )
+        self.assertIsInstance(payload, dict)
+        self.assertEqual(notice, "hello")
+        self.assertEqual(error_message, "cli failed")
+        self.assertEqual(debug_hint, "status")
+        self.assertEqual(drop_reason, "cli_error")
+
+    def test_parse_bar_cli_payload_invalid_json(self):
+        result = SimpleNamespace(stdout="not json")
+        payload, notice, error_message, debug_hint, drop_reason = (
+            provider_module._parse_bar_cli_payload(result)
+        )
+        self.assertIsNone(payload)
+        self.assertIsNone(notice)
+        self.assertIsNone(error_message)
+        self.assertIsNone(debug_hint)
+        self.assertIsNone(drop_reason)
+
+
 if __name__ == "__main__":
     unittest.main()

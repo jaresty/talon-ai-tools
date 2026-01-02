@@ -35,6 +35,16 @@ cli/
 - With the current stub (Loop 012), enabling the flag logs a debug message and gracefully falls back to the legacy path; upcoming loops will replace the stub with real CLI delegation.
 - Override the binary location with the `BAR_CLI_PATH` environment variable (useful in CI or virtualenvs); otherwise the helper resolves to `<repo>/cli/bin/bar`.
 
+## CLI JSON Payloads
+
+When the adapters call `bar`, the binary responds with structured JSON on stdout. Current fields parsed by `_delegate_to_bar_cli` include:
+
+- `notify`: short message surfaced to Talon users (mirrors `notify()` calls); documentation refers to this as the **JSON notify payload**.
+- `debug`/`status`: additional diagnostics logged to the Talon debug console.
+- `error`: upcoming loops will map this to guardrail drop reasons once parity tests land.
+
+Emit plain JSON objects (single line) so Talon can parse responses deterministically; non-JSON stdout falls back to legacy logging only.
+
 ## Implementation Slices
 
 1. Establish shared command schema assets (Loop 003) with generation scripts that hydrate Talon lists and Go bindings.

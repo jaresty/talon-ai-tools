@@ -509,3 +509,39 @@
           raise SystemExit('README missing JSON delegation notes')
       print('README covers JSON delegation')
     PY — future-shaping: align operator docs with the new tests and CLI outputs.
+
+
+## 2026-01-02 – Loop 021 (kind: documentation)
+- helper_version: helper:v20251223.1
+- focus: ADR-0063 §Talon Adapter Layer & Shared Contracts (document CLI JSON payload semantics)
+- riskiest_assumption: Without documenting JSON payload fields, contributors could emit incompatible CLI responses, breaking Talon adapters (probability medium, impact medium-high on parity).
+- validation_targets:
+  - python3 - <<'PY'
+      from pathlib import Path
+      text = Path('cli/README.md').read_text()
+      if 'JSON notify payload' not in text:
+          raise SystemExit('README missing JSON delegation notes')
+      print('README covers JSON delegation')
+    PY
+  - python3 - <<'PY'
+      from pathlib import Path
+      text = Path('docs/adr/0063-go-cli-single-source-of-truth.md').read_text()
+      if 'CLI stdout JSON contract' not in text:
+          raise SystemExit('ADR missing CLI stdout JSON contract guidance')
+      print('ADR covers CLI stdout JSON contract guidance')
+    PY
+- evidence:
+  - docs/adr/evidence/0063/loop-0021.md
+- rollback_plan: git checkout HEAD -- cli/README.md docs/adr/0063-go-cli-single-source-of-truth.md docs/adr/0063-go-cli-single-source-of-truth.work-log.md
+- delta_summary: helper:diff-snapshot=2 files changed, 18 insertions(+); CLI README now spells out JSON notify payload semantics and ADR shared contracts cite the stdout JSON contract.
+- loops_remaining_forecast: 1 loop remaining (telemetry residual); confidence medium.
+- residual_risks:
+  - CLI telemetry mapping (drop reasons, structured logs) remains undocumented until telemetry plan converges.
+- next_work:
+  - Behaviour: capture telemetry roadmap residual risk per ADR §Operational Mitigations — python3 - <<'PY'
+      from pathlib import Path
+      text = Path('docs/adr/0063-go-cli-single-source-of-truth.work-log.md').read_text()
+      if 'telemetry roadmap' not in text:
+          raise SystemExit('work log missing telemetry roadmap note')
+      print('Work log captures telemetry roadmap note')
+    PY — future-shaping: ensure residual risks remain visible until telemetry integration lands.

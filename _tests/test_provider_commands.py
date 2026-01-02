@@ -629,6 +629,9 @@ class BarCliDelegationTests(unittest.TestCase):
             patch.object(provider_module.subprocess, "run", return_value=result),
             patch.object(provider_module, "notify"),
             patch("talon_user.lib.providerCommands.print") as print_mock,
+            patch(
+                "talon_user.lib.providerCommands.requestLog.record_truncation_event"
+            ) as telemetry_mock,
         ):
             self.assertTrue(
                 provider_module._delegate_to_bar_cli("model_provider_status")
@@ -643,6 +646,65 @@ class BarCliDelegationTests(unittest.TestCase):
             self.assertIn("...(truncated)", entry)
             self.assertIn("original length", entry)
             self.assertNotIn(long_stderr, entry)
+        events = [call.args[0] for call in telemetry_mock.call_args_list]
+        self.assertTrue(any(event.get("field") == "stderr" for event in events))
+
+    def test_delegate_emits_truncation_telemetry_for_error(self):
+        long_error = "E" * 800
+        result = SimpleNamespace(
+            returncode=0,
+            stdout='{"error":"%s","drop_reason":"cli_error"}' % long_error,
+            stderr="",
+        )
+        with (
+            patch.object(provider_module.settings, "get", return_value=1),
+            patch.object(
+                provider_module, "_bar_cli_command", return_value=Path("/tmp/bar")
+            ),
+            patch.object(provider_module.subprocess, "run", return_value=result),
+            patch.object(provider_module, "notify"),
+            patch("talon_user.lib.providerCommands.print"),
+            patch("talon_user.lib.providerCommands.set_drop_reason"),
+            patch(
+                "talon_user.lib.providerCommands.requestLog.record_truncation_event"
+            ) as telemetry_mock,
+        ):
+            self.assertTrue(
+                provider_module._delegate_to_bar_cli("model_provider_status")
+            )
+        self.assertTrue(telemetry_mock.call_args_list)
+        events = [call.args[0] for call in telemetry_mock.call_args_list]
+        self.assertTrue(any(event.get("field") == "error" for event in events))
+        event = next(event for event in events if event.get("field") == "error")
+        self.assertEqual(event.get("action"), "model_provider_status")
+        self.assertGreater(
+            event.get("original_length", 0), provider_module._DEBUG_LOG_MAX_LEN
+        )
+
+    def test_delegate_emits_truncation_telemetry_for_breadcrumbs(self):
+        long_breadcrumb = "crumb" * 400
+        result = SimpleNamespace(
+            returncode=0,
+            stdout='{"breadcrumbs":["%s","step two"]}' % long_breadcrumb,
+            stderr="",
+        )
+        with (
+            patch.object(provider_module.settings, "get", return_value=1),
+            patch.object(
+                provider_module, "_bar_cli_command", return_value=Path("/tmp/bar")
+            ),
+            patch.object(provider_module.subprocess, "run", return_value=result),
+            patch.object(provider_module, "notify"),
+            patch("talon_user.lib.providerCommands.print"),
+            patch(
+                "talon_user.lib.providerCommands.requestLog.record_truncation_event"
+            ) as telemetry_mock,
+        ):
+            self.assertTrue(
+                provider_module._delegate_to_bar_cli("model_provider_status")
+            )
+        events = [call.args[0] for call in telemetry_mock.call_args_list]
+        self.assertTrue(any(event.get("field") == "breadcrumbs" for event in events))
 
 
 class BarCliLogLimitTests(unittest.TestCase):

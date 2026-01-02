@@ -2163,6 +2163,29 @@
   - Behaviour: add telemetry emission tests — python3 -m pytest _tests/test_provider_commands.py -k telemetry — future-shaping: ensure truncation events surface in unit tests.
 
 
+## 2026-01-02 – Loop 081 (kind: test)
+- helper_version: helper:v20251223.1
+- focus: ADR-0063 §Operational Mitigations – telemetry emission tests
+- riskiest_assumption: Without automated tests, truncation telemetry could silently regress (probability medium, impact medium on observability).
+- validation_targets:
+  - python3 -m pytest _tests/test_provider_commands.py -k telemetry
+- evidence:
+  - docs/adr/evidence/0063/loop-0081.md
+- rollback_plan: git checkout HEAD -- _tests/test_provider_commands.py docs/adr/0063-go-cli-single-source-of-truth.work-log.md docs/adr/evidence/0063/loop-0081.md
+- delta_summary: helper:diff-snapshot=2 files changed, 0 insertions(+), 0 deletions(-); added telemetry emission tests and recorded evidence.
+- loops_remaining_forecast: 8 loops remaining (telemetry docs, export wiring, snapshot validation, release checklist updates, metrics refresh, summary); confidence high.
+- residual_risks:
+  - Telemetry schema documentation and export snapshot verification remain pending.
+- next_work:
+  - Behaviour: document telemetry event schema — python3 - <<'PY'
+      from pathlib import Path
+      text = Path('docs/adr/0063-go-cli-single-source-of-truth.md').read_text().lower()
+      if 'truncation_events' not in text:
+          raise SystemExit('ADR missing truncation_events schema')
+      print('ADR ready for telemetry schema documentation')
+    PY — future-shaping: describe the telemetry event payload for operators.
+
+
 
 ## 2026-01-02 – Loop 079 (kind: summary)
 - helper_version: helper:v20251223.1

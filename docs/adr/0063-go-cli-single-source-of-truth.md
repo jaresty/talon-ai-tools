@@ -79,6 +79,7 @@ These outcomes allow non-Talon environments to reuse the command surface without
 - **CLI foundation**: Develop the Go CLI within this repository so interactive (TUI) and noninteractive flows remain aligned with Talon behaviour. The CLI owns command parsing and execution while exposing clean APIs for adapters.
 - **Hermetic verification**: Parity tests and health probes rely on recorded fixtures and mocks; no automated test contacts live providers, LLMs, or ChatGPT endpoints.
 - **Health probe contract**: `bar --health` returns a JSON payload with `{"status": "ok", "version": <schema version>}` so Talon adapters and parity tests can verify CLI build drift without shell parsing.
+- **Telemetry enforcement**: `scripts/tools/telemetry_slo_report.py` checks recorded latency SLO metrics (`p50`, `p95`, `success_rate`) before Talon delegates to the CLI. The command remains red until the CLI emits the required telemetry artefact.
 - **Adapter commitments**: Talon adapters delegate through the CLI only when parity is demonstrated. They run a startup health probe (`cli --health`), enforce the latency and availability SLOs defined under **Parity Expectations**, and revert to the legacy executor after `FAILURE_THRESHOLD=3` consecutive probe or invocation failures while emitting operator-facing alerts.
 - **Shared contracts**: Provider metadata, request gating, session persistence, attachment handling, and telemetry formats stay canonical across runtime boundaries. Any change to these contracts ships once and must be consumable by both surfaces.
 - **Delivery posture**: Releases, artefacts, and telemetry rollups continue to originate from this repository. Each release publishes signed binaries plus a checksum manifest that Talon verifies on startup before delegation, eliminating additional tooling burden for Talon users.
@@ -136,6 +137,12 @@ Talon adapters must:
 
 ---
 
+## Residual Risks
+
+- **Telemetry SLO instrumentation** *(medium)*: `scripts/tools/telemetry_slo_report.py` exits red because `var/cli-telemetry/latency.json` is not yet emitted by the CLI. Delegation must remain disabled until the telemetry artefact records `p50`, `p95`, and `success_rate` metrics. Evidence: `docs/adr/evidence/0063/loop-0008.md`.
+
+---
+
 ## Salient Tasks
 
 - Stand up shared schema assets with generation scripts for Talon and CLI consumers, and document maintainer sign-off for contract changes.
@@ -153,6 +160,7 @@ Talon adapters must:
 - `python3 -m pytest _tests/test_cli_talon_parity.py` — exercises Talon↔CLI parity harness; currently skipped because the CLI binary and shared schema bundle are not yet published. The command remains red until its skips are removed by landing the CLI artefacts it depends on.
 - `./bin/bar --health` — Talon adapter health probe; now returns success via the stubbed CLI binary recorded in `docs/adr/evidence/0063/loop-0005.md`. Removal evidence remains in `docs/adr/evidence/0063/loop-0003.md` until the real implementation lands.
 - `scripts/tools/check_cli_assets.py` — verifies the presence of the CLI binary and shared command-surface schema; now returns success once both artefacts exist (see `docs/adr/evidence/0063/loop-0006.md` for the green run and `docs/adr/evidence/0063/loop-0004.md` for the historical blocker evidence).
+- `scripts/tools/telemetry_slo_report.py` — enforces latency/availability telemetry readiness; currently exits 1 while awaiting recorded metrics, with blocker evidence in `docs/adr/evidence/0063/loop-0008.md`.
 
 ---
 

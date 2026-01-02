@@ -136,7 +136,7 @@ Talon code will gradually migrate to delegating through adapters rather than mai
 - Request gating states, drop-reason identifiers/messages, and Concordance guardrails.
 - Suggestion JSON schema, prompt recap metadata, and history snapshot headers.
 - Telemetry/export formats consumed by docs, guardrail tests, and history tooling.
-- CLI stdout JSON contract (fields such as `notify`, `debug`, `status`, `error`, `severity`, `alert`) consumed by Talon adapters.
+- CLI stdout JSON contract (fields such as `notify`, `debug`, `status`, `error`, `severity`, `alert`, `breadcrumbs`) consumed by Talon adapters.
 - Session state schema (provider selection, persona/intent stance, recipe snapshots, last responses) with versioning and concurrency hints.
 - Attachment payload formats (text/image/audio/other binary descriptors) including size/streaming limits and capability requirements.
 - Error taxonomy, exit-code mapping, and structured stderr logs recognised by Talon guardrails.
@@ -163,7 +163,8 @@ Talon code will gradually migrate to delegating through adapters rather than mai
 
 - Accept Talon grammar inputs (spoken phrases, selections, stack identifiers) and translate them into CLI command arguments, stdin payloads, or temporary files.
 - Capture CLI stdout/stderr/exit codes, mapping guardrail errors and drop reasons back into Talon notifications and Concordance telemetry, including parsing JSON payload fields (`notify`, `debug`, `status`, `error`). When a **CLI error payload** arrives, Talon suppresses legacy fallbacks, surfaces the error message via `notify()`, and logs any `drop_reason` hint.
-- Maintain the shared payload helper (`_parse_bar_cli_payload`) and its `BarCliPayload` dataclass as the canonical decoder for CLI stdout; future telemetry fields must extend this helper so adapters and tests stay aligned. The helper raises the `decode_failed` flag when stdout cannot be parsed, allowing adapters to log a single decode warning, and surfaces `severity` so adapters can format notifications consistently.
+- Apply CLI `drop_reason` values directly to Talon via `set_drop_reason()` using the severity-prefixed message so Concordance guardrails, history exports, and streaming telemetry observe the same outcome.
+- Maintain the shared payload helper (`_parse_bar_cli_payload`) and its `BarCliPayload` dataclass as the canonical decoder for CLI stdout; future telemetry fields must extend this helper so adapters and tests stay aligned. The helper raises the `decode_failed` flag when stdout cannot be parsed, allowing adapters to log a single decode warning, surfaces `severity` so adapters can format notifications consistently, and exposes `breadcrumbs` for debug logging.
 - Orchestrate destination side-effects (paste, browser open, history file write, canvas refresh) based on CLI output formats.
 - Maintain compatibility fallbacks: detect CLI absence/version mismatch, negotiate capabilities, fall back to legacy Python execution, and log telemetry for parity audits.
 - Provide feature flags (for example `user.bar_cli_enabled`) to opt individual commands or surfaces into the CLI path incrementally while `_tests` guardrails compare both behaviours.

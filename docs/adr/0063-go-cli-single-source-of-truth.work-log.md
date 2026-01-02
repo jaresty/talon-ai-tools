@@ -1303,3 +1303,29 @@
   - Multi-line payload handling still untested; cover in Loop 052/053.
 - next_work:
   - Behaviour: support multi-line CLI JSON payloads — python3 -m pytest _tests/test_provider_commands.py -k payload_helper — future-shaping: harden parser before telemetry expansion.
+
+## 2026-01-02 – Loop 051 (kind: documentation)
+- helper_version: helper:v20251223.1
+- focus: ADR-0063 §Talon Adapter Layer & Docs (document drop reason propagation state)
+- riskiest_assumption: Without documenting the new `set_drop_reason()` propagation, operators could miss the Concordance implications of CLI drop reasons (probability medium, impact medium-high on guardrail governance).
+- validation_targets:
+  - python3 - <<'PY'
+      from pathlib import Path
+      for path, needle in [
+          ('cli/README.md', 'set_drop_reason()'),
+          ('docs/adr/0063-go-cli-single-source-of-truth.md', 'set_drop_reason()')
+      ]:
+          text = Path(path).read_text()
+          if needle not in text:
+              raise SystemExit(f'{path} missing drop reason documentation')
+      print('drop reason documentation present in CLI README and ADR')
+    PY
+- evidence:
+  - docs/adr/evidence/0063/loop-0051.md
+- rollback_plan: git checkout HEAD -- cli/README.md docs/adr/0063-go-cli-single-source-of-truth.md docs/adr/0063-go-cli-single-source-of-truth.work-log.md docs/adr/evidence/0063/loop-0051.md
+- delta_summary: helper:diff-snapshot=4 files changed, 92 insertions(+), 2 deletions(-); documented CLI drop reason propagation and Talon state updates.
+- loops_remaining_forecast: 6 loops remaining (parser hardening, multi-line payload parsing/tests, stderr logging, final validation); confidence medium.
+- residual_risks:
+  - Multi-line payload parsing still lacks documentation and implementation; scheduled for upcoming loops.
+- next_work:
+  - Behaviour: support multi-line CLI JSON payloads — python3 -m pytest _tests/test_provider_commands.py -k payload_helper — future-shaping: ensure parser tolerates multi-line stdout before telemetry expansion.

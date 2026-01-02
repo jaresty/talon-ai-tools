@@ -1287,3 +1287,19 @@
   - Drop reason propagation lacks guardrail tests; add coverage next loop.
 - next_work:
   - Behaviour: add tests for drop reason propagation — python3 -m pytest _tests/test_provider_commands.py — future-shaping: lock guardrails on the new behaviour.
+
+## 2026-01-02 – Loop 050 (kind: test)
+- helper_version: helper:v20251223.1
+- focus: ADR-0063 §Talon Adapter Layer (guardrail tests for CLI drop reasons)
+- riskiest_assumption: Without guardrail tests, CLI drop_reason propagation could regress unnoticed (probability medium, impact high on Concordance parity).
+- validation_targets:
+  - python3 -m pytest _tests/test_provider_commands.py -k drop_reason
+- evidence:
+  - docs/adr/evidence/0063/loop-0050.md
+- rollback_plan: git checkout HEAD -- _tests/test_provider_commands.py docs/adr/0063-go-cli-single-source-of-truth.work-log.md docs/adr/evidence/0063/loop-0050.md
+- delta_summary: helper:diff-snapshot=3 files changed, 95 insertions(+); added CLI drop reason guardrail tests and logged evidence.
+- loops_remaining_forecast: 7 loops remaining (parser hardening, stderr logging, docs, final validation); confidence medium.
+- residual_risks:
+  - Multi-line payload handling still untested; cover in Loop 052/053.
+- next_work:
+  - Behaviour: support multi-line CLI JSON payloads — python3 -m pytest _tests/test_provider_commands.py -k payload_helper — future-shaping: harden parser before telemetry expansion.

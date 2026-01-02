@@ -39,7 +39,17 @@ def _bar_cli_enabled() -> bool:
         return False
 
 
+_DEBUG_LOG_MAX_LEN = 512
 _KNOWN_DROP_REASONS = {cast(str, value) for value in RequestDropReason.__args__}
+
+
+def _truncate_debug_value(value: object, limit: int = _DEBUG_LOG_MAX_LEN) -> object:
+    if not isinstance(value, str):
+        return value
+    if len(value) <= limit:
+        return value
+    suffix = "...(truncated)"
+    return value[: max(0, limit - len(suffix))] + suffix
 
 
 def _normalise_cli_drop_reason(
@@ -214,11 +224,14 @@ def _delegate_to_bar_cli(action: str, *args, **kwargs) -> bool:
             drop_message = drop_message_candidate.strip()
             if drop_message and severity_label:
                 drop_message = f"{severity_prefix}{drop_message}"
+            log_message = drop_message or "none"
+            if log_message != "none":
+                log_message = _truncate_debug_value(log_message)
             if normalised_drop_reason is None:
                 try:
                     print(
                         f"[debug] bar CLI normalised unknown drop_reason for {action}; "
-                        f"drop_reason={raw_drop_reason!r} message={drop_message or 'none'}"
+                        f"drop_reason={raw_drop_reason!r} message={log_message!r}"
                     )
                 except Exception:
                     pass
@@ -342,22 +355,25 @@ def _delegate_to_bar_cli(action: str, *args, **kwargs) -> bool:
     else:
         if payload_info.decode_failed and result.stdout:
             try:
+                stdout_debug = _truncate_debug_value(result.stdout)
                 print(
-                    f"[debug] bar CLI payload decode failed for {action}; stdout={result.stdout!r}"
+                    f"[debug] bar CLI payload decode failed for {action}; stdout={stdout_debug!r}"
                 )
             except Exception:
                 pass
         else:
             try:
+                stdout_debug = _truncate_debug_value(result.stdout)
                 print(
-                    f"[debug] bar CLI handled action {action}; stdout={result.stdout!r}"
+                    f"[debug] bar CLI handled action {action}; stdout={stdout_debug!r}"
                 )
             except Exception:
                 pass
 
     if result.stderr:
         try:
-            print(f"[debug] bar CLI stderr for {action}; stderr={result.stderr!r}")
+            stderr_debug = _truncate_debug_value(result.stderr)
+            print(f"[debug] bar CLI stderr for {action}; stderr={stderr_debug!r}")
         except Exception:
             pass
     return True

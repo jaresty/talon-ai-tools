@@ -1551,3 +1551,26 @@
   - Documentation still references prior drop_reason behaviour; update in Loop 060.
 - next_work:
   - Behaviour: document drop_reason normalisation — python3 - <<'PY' ...> — future-shaping: keep operators aligned with the new Concordance expectations.
+
+
+## 2026-01-02 – Loop 060 (kind: documentation)
+- helper_version: helper:v20251223.1
+- focus: ADR-0063 §Talon Adapter Layer & Docs (document drop_reason normalisation)
+- riskiest_assumption: Without documenting the new drop_reason normalisation, operators might assume CLI-specific codes persist in telemetry, risking mismatched guardrail expectations (probability medium, impact medium on Concordance governance).
+- validation_targets:
+  - python3 - <<'PY'
+      from pathlib import Path
+      text = Path('cli/README.md').read_text().lower()
+      if 'drop_reason normalis' in text or 'unknown drop_reason' in text:
+          raise SystemExit('drop_reason normalisation already documented (unexpected)')
+      raise SystemExit('drop_reason normalisation docs missing (expected red)')
+    PY
+- evidence:
+  - docs/adr/evidence/0063/loop-0060.md
+- rollback_plan: git checkout HEAD -- cli/README.md docs/adr/0063-go-cli-single-source-of-truth.md docs/adr/evidence/0063/loop-0060.md
+- delta_summary: helper:diff-snapshot=2 files changed, 2 insertions(+), 2 deletions(-); added drop_reason normalisation guidance to CLI README and ADR.
+- loops_remaining_forecast: 7 loops remaining (logging, tests, truncation, residual risks); confidence medium.
+- residual_risks:
+  - Need to surface unknown drop_reason hints in logs (Loop 061).
+- next_work:
+  - Behaviour: log unknown drop_reason hints — python3 - <<'PY' ...> — future-shaping: ensure operators can trace unrecognised codes even after normalisation.

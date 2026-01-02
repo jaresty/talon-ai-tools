@@ -2839,3 +2839,32 @@
           raise SystemExit('Metrics backlog loop already present (unexpected)')
       print('Ready to capture metrics monitoring backlog')
     PY — future-shaping: lay out dashboard updates and alert thresholds.
+
+
+## 2026-01-02 – Loop 110 (kind: planning)
+- helper_version: helper:v20251223.1
+- focus: ADR-0063 §Operational Mitigations – Metrics & Telemetry note | metrics monitoring backlog
+- riskiest_assumption: Canonical intent “telemetry dashboards detect truncation/automation drift” (Operational Mitigations: Metrics monitoring) fails if backlog lacks explicit instrumentation tasks (probability medium, impact medium-high on observability).
+- validation_targets:
+  - python3 - <<'PY'
+      from pathlib import Path
+      text = Path('docs/adr/0063-go-cli-single-source-of-truth.work-log.md').read_text()
+      if 'Loop 110 (kind:' not in text:
+          raise SystemExit('Metrics backlog loop missing')
+      print('Metrics backlog loop recorded')
+    PY
+- evidence:
+  - docs/adr/evidence/0063/loop-0110.md
+- rollback_plan: git checkout HEAD -- docs/adr/0063-go-cli-single-source-of-truth.work-log.md docs/adr/evidence/0063/loop-0110.md
+- delta_summary: helper:diff-snapshot=2 files changed, 92 insertions(+); captured metrics monitoring backlog and recorded evidence.
+- loops_remaining_forecast: 3 loops remaining (111 support runbook, 112 follow-up tracker, 113 implementation readiness status); confidence medium-high pending support alignment.
+- residual_risks:
+  - severity: medium — support runbook + follow-up tracker still open; mitigation: loops 111–112 document support + tracker; trigger: metrics backlog lacking dashboards/alert IDs.
+- next_work:
+  - Behaviour: align support runbook backlog — python3 - <<'PY'
+      from pathlib import Path
+      text = Path('docs/adr/0063-go-cli-single-source-of-truth.work-log.md').read_text()
+      if 'Loop 111 (kind:' in text:
+          raise SystemExit('Support backlog loop already present (unexpected)')
+      print('Ready to align support runbook backlog')
+    PY — future-shaping: ensure support processes integrate automation metrics.

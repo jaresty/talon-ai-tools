@@ -2868,3 +2868,32 @@
           raise SystemExit('Support backlog loop already present (unexpected)')
       print('Ready to align support runbook backlog')
     PY — future-shaping: ensure support processes integrate automation metrics.
+
+
+## 2026-01-02 – Loop 111 (kind: planning)
+- helper_version: helper:v20251223.1
+- focus: ADR-0063 §Operational Mitigations – Support readiness | support runbook backlog
+- riskiest_assumption: Canonical intent “support runbook mirrors CLI automation” (Operational Mitigations: Support runbook) fails if backlog entries stay undefined (probability medium, impact medium-high on incident response).
+- validation_targets:
+  - python3 - <<'PY'
+      from pathlib import Path
+      text = Path('docs/adr/0063-go-cli-single-source-of-truth.work-log.md').read_text()
+      if 'Loop 111 (kind:' not in text:
+          raise SystemExit('Support backlog loop missing')
+      print('Support backlog loop recorded')
+    PY
+- evidence:
+  - docs/adr/evidence/0063/loop-0111.md
+- rollback_plan: git checkout HEAD -- docs/adr/0063-go-cli-single-source-of-truth.work-log.md docs/adr/evidence/0063/loop-0111.md
+- delta_summary: helper:diff-snapshot=2 files changed, 90 insertions(+); aligned support runbook backlog and recorded evidence.
+- loops_remaining_forecast: 2 loops remaining (112 follow-up tracker, 113 implementation readiness status); confidence medium-high pending tracker alignment.
+- residual_risks:
+  - severity: medium — follow-up tracker + readiness summary still open; mitigation: loop 112 documents tracker, loop 113 summarizes readiness; trigger: support backlog lacking escalation contacts.
+- next_work:
+  - Behaviour: build follow-up tracker backlog — python3 - <<'PY'
+      from pathlib import Path
+      text = Path('docs/adr/0063-go-cli-single-source-of-truth.work-log.md').read_text()
+      if 'Loop 112 (kind:' in text:
+          raise SystemExit('Follow-up tracker loop already present (unexpected)')
+      print('Ready to build follow-up tracker backlog')
+    PY — future-shaping: capture outstanding tasks and tracking metadata for implementation.

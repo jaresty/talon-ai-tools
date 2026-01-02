@@ -1,8 +1,8 @@
 # ADR-0063 Work Log — helper:v20251223.1
 
 ## Open Behaviours
-- Replace stubbed CLI delegation with real binary | `python3 -m pytest _tests/test_cli_talon_parity.py` | status: in_progress — loop-0016 packages CLI tarball + checksum manifest; next slice wires Talon startup to verify release bundle.
-- Release checksum manifest hardening | `scripts/tools/check_cli_assets.py` | status: pending — extend artefact generator beyond schema stub.
+- [Implementation Guardrails → Delivery posture] Replace stubbed CLI delegation with real binary | `python3 scripts/tools/install_bar_cli.py --quiet` | status: in_progress — loop-0017 added installer + bin wrapper fallback; next slice wires Talon startup to invoke installer before delegation.
+- [Implementation Guardrails → Delivery posture] Release checksum manifest hardening | `scripts/tools/check_cli_assets.py` | status: in_progress — loop-0016 added tarball + checksum verification; next slice adds signature enforcement and CI upload contract.
 
 ## Completed Loops
 - loop-0001 — tightened loop compliance statements and removed adhoc helper; evidence: `docs/adr/evidence/0063/loop-0001.md`.
@@ -20,4 +20,5 @@
 - loop-0013 — migrated bar health probe to Go runtime and enforced parity sentinel; evidence: `docs/adr/evidence/0063/loop-0013.md`.
 - loop-0014 — required compiled Go binary and executor sentinel for parity; evidence: `docs/adr/evidence/0063/loop-0014.md`.
 - loop-0015 — surfaced compiled binary path in health payload and asset guard; evidence: `docs/adr/evidence/0063/loop-0015.md`.
-- loop-0016 — packaged bar CLI tarball with checksum manifest; evidence: `docs/adr/evidence/0063/loop-0016.md`.
+- loop-0016 — updated [Implementation Guardrails → Delivery posture] Completed Loops; packaged bar CLI tarball with checksum manifest; validation: `python3 scripts/tools/check_cli_assets.py`; evidence: `docs/adr/evidence/0063/loop-0016.md`.
+- loop-0017 — installed packaged CLI binary before delegation and updated bin wrapper fallback; validation: `python3 scripts/tools/install_bar_cli.py --quiet`; evidence: `docs/adr/evidence/0063/loop-0017.md`.

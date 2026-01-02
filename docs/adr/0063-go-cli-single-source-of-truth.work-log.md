@@ -11,7 +11,7 @@ bootstrap.bootstrap()
 if bin_path.exists():
     sys.exit(0)
 raise SystemExit('bootstrap did not install CLI binary')
-PY` | status: in_progress — loop-0021 introduces parity guardrail for packaged CLI artefacts; next slice routes warning telemetry through Talon adapters and parity harness.
+PY` | status: in_progress — loop-0022 adds telemetry guardrails for bootstrap warnings; next slice routes stderr warnings through Talon adapters and parity harness.
 - [Implementation Guardrails → Delivery posture] Release checksum manifest hardening | `scripts/tools/check_cli_assets.py` | status: in_progress — loop-0016 added tarball + checksum verification; next slice adds signature enforcement and CI upload contract.
 
 ## Completed Loops
@@ -70,3 +70,5 @@ manifest.write_bytes(backup)
 output = buf.getvalue()
 print(output)
 PY`; evidence: `docs/adr/evidence/0063/loop-0020.md`.
+- loop-0021 — enforced parity guardrail for packaged CLI artefacts; validation: `python3 -m pytest _tests/test_cli_talon_parity.py`; evidence: `docs/adr/evidence/0063/loop-0021.md`.
+- loop-0022 — gated parity on bootstrap rebuilding instructions; validation: `python3 -m pytest _tests/test_cli_talon_parity.py::CLITalonParityTests::test_bootstrap_warning_mentions_rebuild_command`; evidence: `docs/adr/evidence/0063/loop-0022.md`.

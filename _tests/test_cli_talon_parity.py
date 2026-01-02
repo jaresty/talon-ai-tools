@@ -3,6 +3,7 @@ from pathlib import Path
 import json
 import platform
 import subprocess
+import sys
 
 try:
     from bootstrap import bootstrap
@@ -101,3 +102,43 @@ else:
                     "`python3 scripts/tools/package_bar_cli.py --print-paths` to rebuild. "
                     f"Missing: {', '.join(missing)}"
                 )
+
+        def test_bootstrap_warning_mentions_rebuild_command(self) -> None:
+            tarball = _packaged_cli_tarball()
+            manifest = _packaged_cli_manifest(tarball)
+
+            self.assertTrue(
+                tarball.exists(),
+                "Packaged CLI tarball missing; run `python3 scripts/tools/package_bar_cli.py --print-paths`.",
+            )
+            self.assertTrue(
+                manifest.exists(),
+                "Packaged CLI manifest missing; run `python3 scripts/tools/package_bar_cli.py --print-paths`.",
+            )
+
+            backup = manifest.read_bytes()
+            try:
+                manifest.unlink()
+                script = (
+                    "import io, sys, bootstrap\n"
+                    "from contextlib import redirect_stderr\n"
+                    "buf = io.StringIO()\n"
+                    "with redirect_stderr(buf):\n"
+                    "    bootstrap.bootstrap()\n"
+                    "sys.stdout.write(buf.getvalue())\n"
+                )
+                result = subprocess.run(
+                    [sys.executable, "-c", script],
+                    capture_output=True,
+                    text=True,
+                    check=False,
+                )
+            finally:
+                manifest.write_bytes(backup)
+
+            self.assertEqual(result.returncode, 0, result.stderr)
+            self.assertIn(
+                "`python3 scripts/tools/package_bar_cli.py --print-paths`",
+                result.stdout,
+                "Bootstrap warning must direct operators to rebuild packaged CLI",
+            )

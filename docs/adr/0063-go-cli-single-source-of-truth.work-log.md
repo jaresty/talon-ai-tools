@@ -1,7 +1,6 @@
 # ADR-0063 Work Log — helper:v20251223.1
 
 ## Open Behaviours
-- Telemetry SLO instrumentation | `scripts/tools/telemetry_slo_report.py` | status: red (awaiting `var/cli-telemetry/latency.json`) — see `docs/adr/evidence/0063/loop-0008.md` and `docs/adr/evidence/0063/loop-0009.md`.
 - Replace stubbed CLI delegation with real binary | `python3 -m pytest _tests/test_cli_talon_parity.py` | status: pending — next slice once Go CLI lands.
 - Release checksum manifest hardening | `scripts/tools/check_cli_assets.py` | status: pending — extend artefact generator beyond schema stub.
 
@@ -17,3 +16,4 @@
 - loop-0009 — queued next behaviours and linked validation targets; evidence: `docs/adr/evidence/0063/loop-0009.md`.
 - loop-0010 — added sibling work-log tracker and guardrail; evidence: `docs/adr/evidence/0063/loop-0010.md`.
 - loop-0011 — linked ADR body to work-log according to helper; evidence: `docs/adr/evidence/0063/loop-0011.md`.
+- loop-0012 — recorded telemetry metrics and turned SLO checker green; evidence: `docs/adr/evidence/0063/loop-0012.md`.

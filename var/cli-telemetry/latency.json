@@ -1,0 +1,7 @@
+{
+  "generated_at": "2026-01-02T19:15:10Z",
+  "p50_ms": 320,
+  "p95_ms": 840,
+  "success_rate": 0.996,
+  "window_minutes": 30
+}

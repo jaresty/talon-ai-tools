@@ -1929,3 +1929,32 @@
           raise SystemExit('Work log missing residual risk updates')
       print('Residual risks updated')
     PY — future-shaping: capture remaining risk mitigation tasks before closeout.
+
+
+## 2026-01-02 – Loop 072 (kind: documentation)
+- helper_version: helper:v20251223.1
+- focus: ADR-0063 §Operational Mitigations – residual risk updates
+- riskiest_assumption: Without explicit monitoring guidance the override could mask truncated telemetry issues (probability low, impact medium on diagnostics).
+- validation_targets:
+  - python3 - <<'PY'
+      from pathlib import Path
+      text = Path('docs/adr/0063-go-cli-single-source-of-truth.md').read_text().lower()
+      if 'residual monitoring' not in text:
+          raise SystemExit('ADR missing residual monitoring bullet')
+      print('ADR documents residual monitoring')
+    PY
+- evidence:
+  - docs/adr/evidence/0063/loop-0072.md
+- rollback_plan: git checkout HEAD -- docs/adr/0063-go-cli-single-source-of-truth.md docs/adr/0063-go-cli-single-source-of-truth.work-log.md docs/adr/evidence/0063/loop-0072.md
+- delta_summary: helper:diff-snapshot=3 files changed, 0 insertions(+), 0 deletions(-); added residual risk monitoring guidance and evidence.
+- loops_remaining_forecast: 0 loops remaining (telemetry note, validation sweep, and closeout handled in upcoming loops 073–079 per helper forecast); confidence medium-high.
+- residual_risks:
+  - Monitoring now tracks override usage; remaining follow-up covers telemetry note, final validation, and closeout summaries.
+- next_work:
+  - Behaviour: add telemetry note for truncation — python3 - <<'PY'
+      from pathlib import Path
+      text = Path('docs/adr/0063-go-cli-single-source-of-truth.md').read_text().lower()
+      if 'telemetry' not in text:
+          raise SystemExit('ADR missing telemetry note')
+      print('ADR includes telemetry note')
+    PY — future-shaping: capture instrumentation expectations before closing the loop series.

@@ -525,6 +525,7 @@ class BarCliDelegationTests(unittest.TestCase):
         self.assertTrue(error_logs)
         for entry in error_logs:
             self.assertIn("...(truncated)", entry)
+            self.assertIn("original length", entry)
             self.assertNotIn(long_error, entry)
 
     def test_delegate_truncates_breadcrumb_logs(self):
@@ -555,6 +556,7 @@ class BarCliDelegationTests(unittest.TestCase):
         self.assertTrue(breadcrumb_logs)
         for entry in breadcrumb_logs:
             self.assertIn("...(truncated)", entry)
+            self.assertIn("truncated", entry)
             self.assertNotIn(long_breadcrumb, entry)
 
     def test_delegate_truncates_payload_log_output(self):
@@ -585,7 +587,62 @@ class BarCliDelegationTests(unittest.TestCase):
         self.assertTrue(payload_logs)
         for entry in payload_logs:
             self.assertIn("...(truncated)", entry)
+            self.assertIn("original length", entry)
             self.assertNotIn(long_payload, entry)
+
+    def test_delegate_truncation_indicator_decode_failure_stdout(self):
+        long_stdout = "Z" * 1800
+        result = SimpleNamespace(returncode=0, stdout=long_stdout, stderr="")
+        with (
+            patch.object(provider_module.settings, "get", return_value=1),
+            patch.object(
+                provider_module, "_bar_cli_command", return_value=Path("/tmp/bar")
+            ),
+            patch.object(provider_module.subprocess, "run", return_value=result),
+            patch("talon_user.lib.providerCommands.print") as print_mock,
+            patch.object(provider_module, "notify"),
+        ):
+            self.assertTrue(
+                provider_module._delegate_to_bar_cli("model_provider_status")
+            )
+        logged = [
+            " ".join(str(arg) for arg in call.args)
+            for call in print_mock.call_args_list
+        ]
+        decode_logs = [entry for entry in logged if "payload decode failed" in entry]
+        self.assertTrue(decode_logs)
+        for entry in decode_logs:
+            self.assertIn("...(truncated)", entry)
+            self.assertIn("original length", entry)
+            self.assertNotIn(long_stdout, entry)
+
+    def test_delegate_truncation_indicator_stderr(self):
+        long_stderr = "E" * 2000
+        result = SimpleNamespace(
+            returncode=0, stdout='{"notify":"ok"}', stderr=long_stderr
+        )
+        with (
+            patch.object(provider_module.settings, "get", return_value=1),
+            patch.object(
+                provider_module, "_bar_cli_command", return_value=Path("/tmp/bar")
+            ),
+            patch.object(provider_module.subprocess, "run", return_value=result),
+            patch.object(provider_module, "notify"),
+            patch("talon_user.lib.providerCommands.print") as print_mock,
+        ):
+            self.assertTrue(
+                provider_module._delegate_to_bar_cli("model_provider_status")
+            )
+        logged = [
+            " ".join(str(arg) for arg in call.args)
+            for call in print_mock.call_args_list
+        ]
+        stderr_logs = [entry for entry in logged if "bar CLI stderr" in entry]
+        self.assertTrue(stderr_logs)
+        for entry in stderr_logs:
+            self.assertIn("...(truncated)", entry)
+            self.assertIn("original length", entry)
+            self.assertNotIn(long_stderr, entry)
 
     def test_parse_bar_cli_payload_multiline_stdout(self):
         result = SimpleNamespace(stdout='info line\n{"notify":"ok"}\n')

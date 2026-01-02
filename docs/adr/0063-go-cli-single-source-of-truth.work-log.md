@@ -1778,3 +1778,26 @@
   - Guardrail tests and documentation for the indicator remain pending; upcoming loops cover those updates and configuration controls.
 - next_work:
   - Behaviour: add truncation indicator tests — python3 -m pytest _tests/test_provider_commands.py -k truncation_indicator — future-shaping: guard the new logging metadata.
+
+
+## 2026-01-02 – Loop 067 (kind: test)
+- helper_version: helper:v20251223.1
+- focus: ADR-0063 §Operational Mitigations – truncation indicator tests
+- riskiest_assumption: Without guardrail tests, the new truncation indicators could regress and drop original-length telemetry (probability medium, impact medium on observability).
+- validation_targets:
+  - python3 -m pytest _tests/test_provider_commands.py -k truncation
+- evidence:
+  - docs/adr/evidence/0063/loop-0067.md
+- rollback_plan: git checkout HEAD -- _tests/test_provider_commands.py docs/adr/0063-go-cli-single-source-of-truth.work-log.md docs/adr/evidence/0063/loop-0067.md
+- delta_summary: helper:diff-snapshot=2 files changed, 57 insertions(+); extended guardrail tests to assert truncation indicators.
+- loops_remaining_forecast: 5 loops remaining (indicator docs, log limit override, residual risk wrap-up, telemetry note, validation sweep); confidence medium.
+- residual_risks:
+  - Documentation and configuration controls for truncation indicators remain outstanding; upcoming loops address operator guidance and log limit overrides.
+- next_work:
+  - Behaviour: document truncation indicators — python3 - <<'PY'
+      from pathlib import Path
+      text = Path('cli/README.md').read_text().lower()
+      if 'original length' not in text:
+          raise SystemExit('README missing indicator guidance')
+      print('README references indicator guidance')
+    PY — future-shaping: ensure operators understand how to interpret truncation metadata.

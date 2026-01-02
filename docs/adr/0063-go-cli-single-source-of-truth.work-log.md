@@ -880,3 +880,26 @@
   - Alert handling lacks guardrail tests; covered in Loop 034.
 - next_work:
   - Behaviour: add tests for alert handling — python3 -m pytest _tests/test_provider_commands.py — future-shaping: assert alert notifications are surfaced.
+
+
+## 2026-01-02 – Loop 034 (kind: test)
+- helper_version: helper:v20251223.1
+- focus: ADR-0063 §Talon Adapter Layer (test alert handling)
+- riskiest_assumption: Without guardrail tests, alert handling could regress silently (probability medium, impact medium on guardrail visibility).
+- validation_targets:
+  - python3 -m pytest _tests/test_provider_commands.py
+- evidence:
+  - docs/adr/evidence/0063/loop-0034.md
+- rollback_plan: git checkout HEAD -- _tests/test_provider_commands.py docs/adr/0063-go-cli-single-source-of-truth.work-log.md
+- delta_summary: helper:diff-snapshot=1 file changed, 26 insertions(+), 12 deletions(-); added alert-focused tests covering helper parsing and delegation behaviour.
+- loops_remaining_forecast: 1 loop remaining (parse failure logging); confidence high.
+- residual_risks:
+  - Decode failure logging still pending (Loop 035).
+- next_work:
+  - Behaviour: log payload parse failures once — python3 - <<'PY'
+      from pathlib import Path
+      text = Path('lib/providerCommands.py').read_text()
+      if 'payload decode failed' not in text:
+          raise SystemExit('parse failure logging missing')
+      print('parse failure logging present')
+    PY — future-shaping: ensure malformed payloads emit a single diagnostic.

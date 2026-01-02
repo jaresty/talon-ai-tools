@@ -2497,3 +2497,32 @@
           raise SystemExit('CLI build gating loop already present (unexpected)')
       print('Ready to document CLI build gating')
     PY — future-shaping: define automation hooks that block releases when CLI binaries drift.
+
+
+## 2026-01-02 – Loop 098 (kind: planning)
+- helper_version: helper:v20251223.1
+- focus: ADR-0063 CLI build gating hooks
+- riskiest_assumption: Without build gating, mismatched CLI binaries could ship despite failed checks (probability medium, impact high on release safety).
+- validation_targets:
+  - python3 - <<'PY'
+      from pathlib import Path
+      text = Path('docs/adr/0063-go-cli-single-source-of-truth.work-log.md').read_text()
+      if 'Loop 098 (kind:' not in text:
+          raise SystemExit('CLI build gating loop missing')
+      print('CLI build gating loop recorded')
+    PY
+- evidence:
+  - docs/adr/evidence/0063/loop-0098.md
+- rollback_plan: git checkout HEAD -- docs/adr/0063-go-cli-single-source-of-truth.work-log.md docs/adr/evidence/0063/loop-0098.md
+- delta_summary: helper:diff-snapshot=2 files changed, 89 insertions(+); documented CLI build gating hooks and recorded evidence.
+- loops_remaining_forecast: 5 loops remaining (fallback plan, metrics monitoring, support runbook, follow-up capture, closing summary); confidence medium.
+- residual_risks:
+  - Fallback plan and telemetry monitoring remain open; subsequent loops address resilience and observability.
+- next_work:
+  - Behaviour: document fallback plan sequencing — python3 - <<'PY'
+      from pathlib import Path
+      text = Path('docs/adr/0063-go-cli-single-source-of-truth.work-log.md').read_text()
+      if 'Loop 099 (kind:' in text:
+          raise SystemExit('Fallback plan loop already present (unexpected)')
+      print('Ready to capture fallback plan sequencing')
+    PY — future-shaping: capture rollback triggers and residual monitoring.

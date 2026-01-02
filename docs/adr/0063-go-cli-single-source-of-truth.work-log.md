@@ -1198,3 +1198,49 @@
           raise SystemExit('README missing breadcrumbs note')
       print('README references breadcrumbs note')
     PY — future-shaping: explain breadcrumb outputs in docs.
+
+
+## 2026-01-02 – Loop 047 (kind: documentation)
+- helper_version: helper:v20251223.1
+- focus: ADR-0063 §Implementation Plan & Adapter Outline (document breadcrumbs handling)
+- riskiest_assumption: Without documentation, breadcrumbs logging could be overlooked (probability medium, impact medium on debugging clarity).
+- validation_targets:
+  - python3 - <<'PY'
+      from pathlib import Path
+      text = Path('cli/README.md').read_text().lower()
+      if 'breadcrumbs' not in text:
+          raise SystemExit('README missing breadcrumbs note')
+      print('README references breadcrumbs note')
+    PY
+  - python3 - <<'PY'
+      from pathlib import Path
+      text = Path('docs/adr/0063-go-cli-single-source-of-truth.md').read_text()
+      if 'breadcrumbs' not in text.lower():
+          raise SystemExit('ADR missing breadcrumbs documentation')
+      print('ADR documents breadcrumbs handling')
+    PY
+- evidence:
+  - docs/adr/evidence/0063/loop-0047.md
+- rollback_plan: git checkout HEAD -- cli/README.md docs/adr/0063-go-cli-single-source-of-truth.md docs/adr/0063-go-cli-single-source-of-truth.work-log.md
+- delta_summary: helper:diff-snapshot=2 files changed, 3 insertions(+); README/ADR now outline breadcrumb logging expectations.
+- loops_remaining_forecast: 1 loop remaining (final validation); confidence high.
+- residual_risks:
+  - Final validation run still pending (Loop 048).
+- next_work:
+  - Behaviour: run final validation sweep — python3 -m pytest _tests/test_provider_commands.py — future-shaping: confirm end-state before closure.
+
+## 2026-01-02 – Loop 048 (kind: validation)
+- helper_version: helper:v20251223.1
+- focus: ADR-0063 §Implementation Plan – Go CLI Core (final validation sweep after breadcrumbs docs)
+- riskiest_assumption: Without rerunning provider guardrails after the breadcrumbs documentation update, CLI delegation regressions could slip by unnoticed (probability low, impact medium-high on governance evidence).
+- validation_targets:
+  - python3 -m pytest _tests/test_provider_commands.py
+- evidence:
+  - docs/adr/evidence/0063/loop-0048.md
+- rollback_plan: git checkout HEAD -- docs/adr/0063-go-cli-single-source-of-truth.work-log.md docs/adr/evidence/0063/loop-0048.md
+- delta_summary: helper:diff-snapshot=2 files changed, 80 insertions(+); recorded Loop 048 validation entry and captured evidence for the guardrail sweep.
+- loops_remaining_forecast: 9 loops remaining (drop reason integration, parser hardening); confidence medium.
+- residual_risks:
+  - Drop reason propagation from CLI payloads still pending (Loop 049).
+- next_work:
+  - Behaviour: implement drop reason propagation — python3 -m pytest _tests/test_provider_commands.py — future-shaping: align CLI payload drop reasons with Talon guardrails.

@@ -5,6 +5,8 @@ This helper keeps ADR loops observable and safe while letting a single agent adv
 **Current helper version:** `helper:v20251223.1` (update this string when the helper changes; work-log entries must reference it exactly).
 **Work-log separation:** ADR bodies remain directional references; each ADR tracks in-flight loops in its sibling `*.work-log.md` file while detailed evidence continues under `docs/adr/evidence/<adr-id>/loop-<n>.md`. Keep ADR edits focused on decisions, guardrails, and validation contracts; defer incremental progress updates to the work-log and evidence tree.
 
+**Work-log maintenance:** Derive the work-log filename from the ADR slug on first use (for example, `0123-sample-adr.md` → `0123-sample-adr.work-log.md`), create the file with a heading when it does not exist, and append a dated entry for every slice. Each loop records which heading was updated so later readers can replay the sequence without guessing.
+
 **Context cited per loop.** Entries state which ADR sections, work-log notes, and repository evidence informed the slice; conversational history is out of scope.
 
 ---
@@ -48,6 +50,7 @@ The `<ARTEFACT_LOG>` must record headings matching the helper command names when
 - Recording a validation target denotes that the command executed within the loop; entries without matching red or green evidence for that target are non-compliant.
 - Every `validation_targets` entry references the cited salient task artefact and runs end-to-end in the repository workspace.
 - `loops_remaining_forecast` enumerates the remaining behaviours with their validation command or blocker evidence and adds a confidence note.
+- Loop summary explains how the ADR completion horizon shifted (or why it stayed steady) since the prior entry, naming the domains or salient tasks still open.
 - Residual risks record updated severity and mitigation progress; unchanged text is treated as non-compliant.
 - Loops whose observable delta is documentation-only remain compliant only when the entry records the associated blocker evidence for the targeted behaviour. Removal evidence is optional for these loops as long as no executable artefacts change.
 - Observable delta, rollback plan, and evidence block remain concise and auditable.
@@ -81,6 +84,7 @@ A loop entry is compliant when all statements hold:
 **Focus declared**
 - Red evidence is recorded before edits land and green/removal evidence after, keeping guardrail commands limited to the validation channel for that behaviour.
 - The ADR section and salient task ID for the targeted behaviour are cited, and the entry states that this behaviour is the highest-severity open item while demoting lower-severity items to `residual_risks`.
+- The work-log entry updated in this slice is cited by heading or timestamp, so auditors can trace the precise note refreshed alongside the code change.
 - The riskiest assumption is expressed as a falsifiable statement with probability × impact rationale, explains why it outranks every other medium/high risk, and references the canonical intent and any equivalence evidence it reinforces.
 - When the behaviour cannot advance, the loop captures blocker evidence (command, failure excerpt, pointer) before closing; documentation-only entries include this blocker evidence.
 

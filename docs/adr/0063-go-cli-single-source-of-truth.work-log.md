@@ -614,3 +614,39 @@
           raise SystemExit('README missing CLI error payload guidance')
       print('README documents CLI error payload guidance')
     PY — future-shaping: align docs so contributors surface error handling semantics.
+
+
+## 2026-01-02 – Loop 025 (kind: documentation)
+- helper_version: helper:v20251223.1
+- focus: ADR-0063 §Talon Adapter Layer & Shared Contracts (document CLI error payload handling)
+- riskiest_assumption: Without documentation, contributors may omit error payload fields or expect legacy fallbacks, breaking guardrail parity (probability medium, impact high on UX/governance).
+- validation_targets:
+  - python3 - <<'PY'
+      from pathlib import Path
+      text = Path('cli/README.md').read_text()
+      if 'CLI error payload' not in text:
+          raise SystemExit('README missing CLI error payload guidance')
+      print('README documents CLI error payload guidance')
+    PY
+  - python3 - <<'PY'
+      from pathlib import Path
+      text = Path('docs/adr/0063-go-cli-single-source-of-truth.md').read_text()
+      if 'CLI error payload' not in text:
+          raise SystemExit('ADR missing CLI error payload guidance')
+      print('ADR documents CLI error payload guidance')
+    PY
+- evidence:
+  - docs/adr/evidence/0063/loop-0025.md
+- rollback_plan: git checkout HEAD -- cli/README.md docs/adr/0063-go-cli-single-source-of-truth.md docs/adr/0063-go-cli-single-source-of-truth.work-log.md
+- delta_summary: helper:diff-snapshot=2 files changed, 4 insertions(+); CLI README and ADR now explain how Talon handles CLI error payloads and suppresses legacy fallbacks.
+- loops_remaining_forecast: 4 loops remaining (payload helper refactor, helper tests, doc wrap-up); confidence medium.
+- residual_risks:
+  - Need structured drop-reason taxonomy before flipping defaults; tracked in telemetry roadmap risk.
+- next_work:
+  - Behaviour: refactor CLI payload parsing into helper for reuse — python3 - <<'PY'
+      from pathlib import Path
+      text = Path('lib/providerCommands.py').read_text()
+      if '_parse_bar_cli_payload' not in text:
+          raise SystemExit('payload parser helper missing')
+      print('payload parser helper present')
+    PY — future-shaping: centralise payload handling ahead of telemetry handshake.

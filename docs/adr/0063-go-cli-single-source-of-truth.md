@@ -162,7 +162,7 @@ Talon code will gradually migrate to delegating through adapters rather than mai
 ### Adapter Responsibility Outline
 
 - Accept Talon grammar inputs (spoken phrases, selections, stack identifiers) and translate them into CLI command arguments, stdin payloads, or temporary files.
-- Capture CLI stdout/stderr/exit codes, mapping guardrail errors and drop reasons back into Talon notifications and Concordance telemetry, including parsing JSON payload fields (`notify`, `debug`, `status`, `error`).
+- Capture CLI stdout/stderr/exit codes, mapping guardrail errors and drop reasons back into Talon notifications and Concordance telemetry, including parsing JSON payload fields (`notify`, `debug`, `status`, `error`). When a **CLI error payload** arrives, Talon suppresses legacy fallbacks, surfaces the error message via `notify()`, and logs any `drop_reason` hint.
 - Orchestrate destination side-effects (paste, browser open, history file write, canvas refresh) based on CLI output formats.
 - Maintain compatibility fallbacks: detect CLI absence/version mismatch, negotiate capabilities, fall back to legacy Python execution, and log telemetry for parity audits.
 - Provide feature flags (for example `user.bar_cli_enabled`) to opt individual commands or surfaces into the CLI path incrementally while `_tests` guardrails compare both behaviours.

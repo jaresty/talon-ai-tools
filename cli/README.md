@@ -41,9 +41,9 @@ When the adapters call `bar`, the binary responds with structured JSON on stdout
 
 - `notify`: short message surfaced to Talon users (mirrors `notify()` calls); documentation refers to this as the **JSON notify payload**.
 - `debug`/`status`: additional diagnostics logged to the Talon debug console.
-- `error`: upcoming loops will map this to guardrail drop reasons once parity tests land.
+- `error`: Talon now surfaces CLI error payloads via `notify()` and logs the `drop_reason` hint when provided; follow-up telemetry work will map errors to guardrail drop reasons.
 
-Emit plain JSON objects (single line) so Talon can parse responses deterministically; non-JSON stdout falls back to legacy logging only.
+Emit plain JSON objects (single line) so Talon can parse responses deterministically; non-JSON stdout falls back to legacy logging only. When returning a **CLI error payload**, include both `error` and optional `drop_reason` keys so Talon can mirror CLI diagnostics without re-running the legacy path.
 
 ## Implementation Slices
 

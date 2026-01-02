@@ -192,9 +192,9 @@ Talon code will gradually migrate to delegating through adapters rather than mai
 
 ## Consequences
 
-- **Positive**: eliminates duplicate command grammar definitions, enables automation-friendly CLI usage, and keeps Concordance guardrails aligned across Talon and non-Talon surfaces.
+- **Positive**: eliminates duplicate command grammar definitions, enables automation-friendly CLI usage, keeps Concordance guardrails aligned across Talon and non-Talon surfaces, and surfaces truncation telemetry for dashboards.
 - **Risks**: Talon dependency on an external binary introduces latency, error-handling, packaging, and IO surface complexity; mapping Talon-exclusive interactions (selection, canvases, provider canvases) to CLI outputs may degrade UX if underspecified; Go runtime requirements must be managed for contributors.
-- **Mitigations**: maintain a fallback adapter during rollout, add telemetry to detect CLI/Talon mismatches, flesh out the IO parity matrix before delegating commands, validate session/config migration and credential configuration up front, negotiate CLI version/capabilities at startup, and use CI to enforce schema/fixture synchronization across shared guardrails.
+- **Mitigations**: maintain a fallback adapter during rollout, add telemetry to detect CLI/Talon mismatches, flesh out the IO parity matrix before delegating commands, validate session/config migration and credential configuration up front, negotiate CLI version/capabilities at startup, and use CI to enforce schema/fixture synchronization across shared guardrails. Ensure telemetry snapshots include truncation metadata and dashboards alert when `user.bar_cli_debug_log_limit` deviates from defaults.
 
 ---
 

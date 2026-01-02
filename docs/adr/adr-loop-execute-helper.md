@@ -3,6 +3,7 @@
 This helper keeps ADR loops observable and safe while letting a single agent advance work in concise, auditable slices.
 
 **Current helper version:** `helper:v20251223.1` (update this string when the helper changes; work-log entries must reference it exactly).
+**Work-log separation:** ADR bodies remain directional references; each ADR tracks in-flight loops in its sibling `*.work-log.md` file while detailed evidence continues under `docs/adr/evidence/<adr-id>/loop-<n>.md`. Keep ADR edits focused on decisions, guardrails, and validation contracts; defer incremental progress updates to the work-log and evidence tree.
 
 **Context cited per loop.** Entries state which ADR sections, work-log notes, and repository evidence informed the slice; conversational history is out of scope.
 

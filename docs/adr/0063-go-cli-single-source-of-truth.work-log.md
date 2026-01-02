@@ -2058,7 +2058,36 @@
   - Behaviour: capture follow-up tasks — python3 - <<'PY'
       from pathlib import Path
       text = Path('docs/adr/0063-go-cli-single-source-of-truth.work-log.md').read_text()
-      if 'Loop 077' in text:
+      if 'Loop 077 (kind:' in text:
           raise SystemExit('Follow-up loop already present (unexpected)')
       print('Ready to capture follow-up tasks')
     PY — future-shaping: document outstanding follow-up actions.
+
+
+## 2026-01-02 – Loop 077 (kind: planning)
+- helper_version: helper:v20251223.1
+- focus: ADR-0063 follow-up tasks
+- riskiest_assumption: Without explicit follow-ups, telemetry and release work may stall (probability medium, impact medium on rollout quality).
+- validation_targets:
+  - python3 - <<'PY'
+      from pathlib import Path
+      text = Path('docs/adr/0063-go-cli-single-source-of-truth.work-log.md').read_text()
+      if 'Loop 077 (kind:' not in text:
+          raise SystemExit('Follow-up loop missing')
+      print('Follow-up tasks captured')
+    PY
+- evidence:
+  - docs/adr/evidence/0063/loop-0077.md
+- rollback_plan: git checkout HEAD -- docs/adr/0063-go-cli-single-source-of-truth.work-log.md docs/adr/evidence/0063/loop-0077.md
+- delta_summary: helper:diff-snapshot=2 files changed, 0 insertions(+), 0 deletions(-); recorded follow-up tasks and evidence.
+- loops_remaining_forecast: loops 078–079 archive helper metrics and finalize loop series; confidence high.
+- residual_risks:
+  - Follow-ups logged: implement telemetry event emission, integrate release checklist into CI, schedule post-rollout review.
+- next_work:
+  - Behaviour: archive helper metrics — python3 - <<'PY'
+      from pathlib import Path
+      text = Path('docs/adr/0063-go-cli-single-source-of-truth.work-log.md').read_text()
+      if 'Loop 078' in text:
+          raise SystemExit('Metrics loop already present (unexpected)')
+      print('Ready to archive helper metrics')
+    PY — future-shaping: capture helper metrics before final closeout.

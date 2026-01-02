@@ -30,7 +30,10 @@ def _maybe_install_cli() -> None:
     try:
         install_cli(quiet=True)
     except Exception as exc:  # pragma: no cover - depends on filesystem state
-        _warn(f"install failed; falling back to go build ({exc})")
+        _warn(
+            "install failed; run `python3 scripts/tools/package_bar_cli.py --print-paths` "
+            f"to rebuild packaged CLI (falling back to go build: {exc})"
+        )
         return
 
 

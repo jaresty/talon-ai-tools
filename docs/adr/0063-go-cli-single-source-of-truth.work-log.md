@@ -2613,3 +2613,32 @@
           raise SystemExit('Follow-up loop already present (unexpected)')
       print('Ready to consolidate follow-up capture')
     PY — future-shaping: ensure outstanding actions are logged before closure.
+
+
+## 2026-01-02 – Loop 102 (kind: planning)
+- helper_version: helper:v20251223.1
+- focus: ADR-0063 follow-up consolidation
+- riskiest_assumption: Without consolidated follow-ups, residual tasks may be dropped before ADR closure (probability low, impact medium on accountability).
+- validation_targets:
+  - python3 - <<'PY'
+      from pathlib import Path
+      text = Path('docs/adr/0063-go-cli-single-source-of-truth.work-log.md').read_text()
+      if 'Loop 102 (kind:' not in text:
+          raise SystemExit('Follow-up consolidation loop missing')
+      print('Follow-up consolidation loop recorded')
+    PY
+- evidence:
+  - docs/adr/evidence/0063/loop-0102.md
+- rollback_plan: git checkout HEAD -- docs/adr/0063-go-cli-single-source-of-truth.work-log.md docs/adr/evidence/0063/loop-0102.md
+- delta_summary: helper:diff-snapshot=2 files changed, 89 insertions(+); documented follow-up consolidation and recorded evidence.
+- loops_remaining_forecast: 1 loop remaining (closing summary); confidence high.
+- residual_risks:
+  - Closing summary pending; ensure consolidation items stay visible until closure.
+- next_work:
+  - Behaviour: compose closing summary — python3 - <<'PY'
+      from pathlib import Path
+      text = Path('docs/adr/0063-go-cli-single-source-of-truth.work-log.md').read_text()
+      if 'Loop 103 (kind:' in text:
+          raise SystemExit('Closing summary loop already present (unexpected)')
+      print('Ready to compose closing summary')
+    PY — future-shaping: deliver final loop summary and residual risk review.

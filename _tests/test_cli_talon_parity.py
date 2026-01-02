@@ -8,7 +8,7 @@ except ModuleNotFoundError:  # Talon runtime
 else:
     bootstrap()
 
-CLI_BINARY = Path("bin/talon-cli")
+CLI_BINARY = Path("bin/bar")
 SCHEMA_BUNDLE = Path("docs/schema/command-surface.json")
 
 

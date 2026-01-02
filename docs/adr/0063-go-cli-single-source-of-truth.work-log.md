@@ -978,3 +978,20 @@
   - Monitor future telemetry changes to ensure decode logging remains aligned.
 - next_work:
   - Behaviour: run final validation sweep — python3 -m pytest _tests/test_provider_commands.py — future-shaping: capture closing evidence before completing loops.
+
+
+## 2026-01-02 – Loop 038 (kind: validation)
+- helper_version: helper:v20251223.1
+- focus: ADR-0063 §Operational Mitigations (final validation sweep)
+- riskiest_assumption: Without a closing validation run, recent changes might leave regressions undetected (probability low, impact high on governance).
+- validation_targets:
+  - python3 -m pytest _tests/test_provider_commands.py
+- evidence:
+  - docs/adr/evidence/0063/loop-0038.md
+- rollback_plan: git checkout HEAD -- docs/adr/0063-go-cli-single-source-of-truth.work-log.md
+- delta_summary: helper:diff-snapshot=1 file changed, 17 insertions(+); recorded final validation sweep and closed residual tasks.
+- loops_remaining_forecast: 0 loops remaining; confidence high.
+- residual_risks:
+  - Continue monitoring telemetry schema updates via existing residual risk entry.
+- next_work:
+  - Behaviour: none — loop series complete.

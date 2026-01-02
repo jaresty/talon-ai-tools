@@ -3013,3 +3013,61 @@
           raise SystemExit('Implementation mapping loop already present (unexpected)')
       print('Ready to map implementation slices')
     PY — future-shaping: link backlog items to code changes and loop sequencing.
+
+
+## 2026-01-02 – Loop 116 (kind: planning)
+- helper_version: helper:v20251223.1
+- focus: ADR-0063 §Implementation Plan – 2. Go CLI Core & 5. Release & Distribution | implementation slice mapping
+- riskiest_assumption: Canonical intent “behaviour ships in observable slices” (Implementation Plan: slice strategy) fails if backlog lacks slice-to-code mapping (probability medium, impact high on execution clarity).
+- validation_targets:
+  - python3 - <<'PY'
+      from pathlib import Path
+      text = Path('docs/adr/0063-go-cli-single-source-of-truth.work-log.md').read_text()
+      if 'Loop 116 (kind:' not in text:
+          raise SystemExit('Implementation slice loop missing')
+      print('Implementation slice loop recorded')
+    PY
+- evidence:
+  - docs/adr/evidence/0063/loop-0116.md
+- rollback_plan: git checkout HEAD -- docs/adr/0063-go-cli-single-source-of-truth.work-log.md docs/adr/evidence/0063/loop-0116.md
+- delta_summary: helper:diff-snapshot=2 files changed, 94 insertions(+); mapped backlog items to implementation slices and recorded evidence.
+- loops_remaining_forecast: 5 loops remaining (telemetry gating sequencing, documentation backlog, risk register updates, rollout timeline, planning recap); confidence medium-high once telemetry sequencing lands.
+- residual_risks:
+  - severity: medium — telemetry sequencing + docs backlog pending; mitigation: loops 117–118 capture sequencing + docs; trigger: slice mapping missing dependencies/responsible slices.
+- next_work:
+  - Behaviour: outline telemetry gating sequencing — python3 - <<'PY'
+      from pathlib import Path
+      text = Path('docs/adr/0063-go-cli-single-source-of-truth.work-log.md').read_text()
+      if 'Loop 117 (kind:' in text:
+          raise SystemExit('Telemetry gating loop already present (unexpected)')
+      print('Ready to outline telemetry gating sequencing')
+    PY — future-shaping: stage gating tasks alongside slice order.
+
+## 2026-01-02 – Loop 117 (kind: planning)
+- helper_version: helper:v20251223.1
+- focus: ADR-0063 §Implementation Plan – 5. Release & Distribution | telemetry gating sequencing
+- riskiest_assumption: Without staged telemetry gating sequencing, automation may allow CLI releases without verifying event parity (probability medium, impact high on observability).
+- validation_targets:
+  - python3 - <<'PY'
+      from pathlib import Path
+      text = Path('docs/adr/0063-go-cli-single-source-of-truth.work-log.md').read_text()
+      if 'Loop 117 (kind:' not in text:
+          raise SystemExit('Telemetry gating sequencing loop missing')
+      print('Telemetry gating sequencing loop recorded')
+    PY
+- evidence:
+  - docs/adr/evidence/0063/loop-0117.md
+- rollback_plan: git checkout HEAD -- docs/adr/0063-go-cli-single-source-of-truth.work-log.md docs/adr/evidence/0063/loop-0117.md
+- delta_summary: helper:diff-snapshot=2 files changed, 113 insertions(+); recorded telemetry gating sequencing backlog and evidence.
+- loops_remaining_forecast: 9 loops remaining (documentation backlog, risk register updates, rollout timeline, stakeholder communications, instrumentation scheduling, support readiness, automation dry runs, success metrics, final summary); confidence medium-high after backlog capture.
+- residual_risks:
+  - Documentation backlog, risk register alignment, and rollout sequencing remain undefined; upcoming loops enumerate these artefacts and owners.
+- next_work:
+  - Behaviour: enumerate documentation backlog per ADR-0063 Implementation Plan §5 — python3 - <<'PY'
+      from pathlib import Path
+      text = Path('docs/adr/0063-go-cli-single-source-of-truth.work-log.md').read_text()
+      if 'Loop 118 (kind:' in text:
+          raise SystemExit('Documentation backlog loop already present (unexpected)')
+      print('Ready to enumerate documentation backlog')
+    PY — future-shaping: capture documentation tasks required for CLI release guardrails.
+

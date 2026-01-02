@@ -37,7 +37,6 @@ def _bar_cli_enabled() -> bool:
         return False
 
 
-
 def _bar_cli_command() -> Path:
     """Return the absolute path to the bar CLI binary."""
 
@@ -97,30 +96,52 @@ def _delegate_to_bar_cli(action: str, *args, **kwargs) -> bool:
 
     if isinstance(payload, dict):
         notice = payload.get("notify") or payload.get("message")
-        if notice:
+        error_message = payload.get("error") or payload.get("error_message")
+        debug_hint = payload.get("debug") or payload.get("status")
+        drop_reason = payload.get("drop_reason")
+
+        if error_message:
+            try:
+                notify(error_message)
+            except Exception:
+                pass
+            try:
+                if drop_reason:
+                    print(
+                        f"[debug] bar CLI reported error for {action}; "
+                        f"drop_reason={drop_reason!r} message={error_message!r}"
+                    )
+                else:
+                    print(
+                        f"[debug] bar CLI reported error for {action}; "
+                        f"message={error_message!r}"
+                    )
+            except Exception:
+                pass
+
+        if notice and (not error_message or notice != error_message):
             try:
                 notify(notice)
             except Exception:
                 pass
-        debug_hint = payload.get("debug") or payload.get("status")
+
         if debug_hint:
             try:
-                print(
-                    f"[debug] bar CLI handled action {action}; status={debug_hint!r}"
-                )
+                print(f"[debug] bar CLI handled action {action}; status={debug_hint!r}")
+            except Exception:
+                pass
+
+        if not any([notice, error_message, debug_hint]):
+            try:
+                print(f"[debug] bar CLI handled action {action}; payload={payload!r}")
             except Exception:
                 pass
     else:
         try:
-            print(
-                f"[debug] bar CLI handled action {action}; stdout={result.stdout!r}"
-            )
+            print(f"[debug] bar CLI handled action {action}; stdout={result.stdout!r}")
         except Exception:
             pass
     return True
-
-
-
 
 
 def _render_provider_lines(

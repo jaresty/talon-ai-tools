@@ -544,3 +544,44 @@
   - Telemetry roadmap risk captured — monitoring trigger: CLI emits telemetry payloads in staging; mitigation: block rollout until drop-reason parity tests pass.
 - next_work:
   - Behaviour: implement CLI error payload handling in `_delegate_to_bar_cli` — python3 -m pytest _tests/test_provider_commands.py — future-shaping: map error responses to Talon notifications and guardrail drop reasons.
+
+
+## 2026-01-02 – Loop 023 (kind: implementation)
+- helper_version: helper:v20251223.1
+- focus: ADR-0063 §Talon Adapter Layer (map CLI error payloads to Talon notifications)
+- riskiest_assumption: Without error payload handling, CLI failures would return silently, preventing Talon from surfacing guardrail messages (probability medium, impact high on UX).
+- validation_targets:
+  - python3 - <<'PY'
+      import sys
+      from pathlib import Path
+      from types import SimpleNamespace
+      from unittest.mock import patch
+      sys.path.insert(0, str(Path('.').resolve()))
+      from bootstrap import bootstrap
+      bootstrap()
+      from talon_user.lib import providerCommands
+      with (
+          patch.object(providerCommands.settings, 'get', return_value=1),
+          patch.object(providerCommands, '_bar_cli_command', return_value=Path('/tmp/bar')),
+          patch.object(providerCommands.subprocess, 'run', return_value=SimpleNamespace(returncode=0, stdout='{"error":"cli failed"}', stderr='')),
+          patch.object(providerCommands, 'notify') as notify_mock,
+          patch('talon_user.lib.providerCommands.print') as print_mock,
+      ):
+          result = providerCommands._delegate_to_bar_cli('model_provider_status')
+          if not result:
+              raise SystemExit('delegation returned False when error payload present')
+      notify_mock.assert_called_once_with('cli failed')
+      printed = ' '.join(str(arg) for arg in print_mock.call_args[0])
+      if 'cli failed' not in printed:
+          raise SystemExit('debug log missing cli failed message')
+      print('error payload handled')
+    PY
+- evidence:
+  - docs/adr/evidence/0063/loop-0023.md
+- rollback_plan: git checkout HEAD -- lib/providerCommands.py docs/adr/0063-go-cli-single-source-of-truth.work-log.md
+- delta_summary: helper:diff-snapshot=1 file changed, 33 insertions(+), 12 deletions(-); `_delegate_to_bar_cli` now notifies on CLI error payloads and logs drop_reason hints.
+- loops_remaining_forecast: 6 loops remaining (error tests, docs, payload refactor, helper tests, doc wrap-up); confidence medium.
+- residual_risks:
+  - Error payloads do not yet set structured drop reasons; integration deferred to telemetry handshake work.
+- next_work:
+  - Behaviour: add tests covering CLI error payload handling — python3 -m pytest _tests/test_provider_commands.py — future-shaping: assert notify/log expectations under the feature flag.

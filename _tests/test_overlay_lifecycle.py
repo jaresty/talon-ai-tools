@@ -280,24 +280,8 @@ if not TYPE_CHECKING:
                 return True, ""
 
             with (
-                patch.object(
-                    modelHelpCanvas,
-                    "try_begin_request",
-                    side_effect=fake_try_begin_request,
-                ),
-                patch.object(
-                    modelPatternGUI,
-                    "try_begin_request",
-                    side_effect=fake_try_begin_request,
-                ),
-                patch.object(
-                    modelPromptPatternGUI,
-                    "try_begin_request",
-                    side_effect=fake_try_begin_request,
-                ),
-                patch.object(
-                    modelSuggestionGUI,
-                    "try_begin_request",
+                patch(
+                    "talon_user.lib.surfaceGuidance.try_begin_request",
                     side_effect=fake_try_begin_request,
                 ),
                 patch.object(modelHelpCanvas, "_reset_help_state"),

@@ -49,13 +49,21 @@ def guard_surface_request(
 ) -> bool:
     """Return True when the caller should abort due to an in-flight request."""
 
-    if suppress_attr and getattr(GPTState, suppress_attr, False):
-        return False
-
     gate_fn = begin_request_fn or try_begin_request
     notifier = notify_fn or notify
 
     resolved_state = _resolve_state(state, state_getter)
+
+    if suppress_attr and getattr(GPTState, suppress_attr, False):
+        try:
+            if resolved_state is not None:
+                gate_fn(resolved_state, source=source)
+            else:
+                gate_fn(source=source)
+        except Exception:
+            pass
+        return False
+
     if resolved_state is not None:
         allowed, reason = gate_fn(resolved_state, source=source)
     else:

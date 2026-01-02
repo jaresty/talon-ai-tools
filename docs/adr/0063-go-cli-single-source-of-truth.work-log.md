@@ -2106,6 +2106,13 @@
           raise SystemExit('Metrics JSON missing implementation count')
       print('Helper metrics archived with counts', data['counts'])
     PY
+  - python3 - <<'PY'
+      from pathlib import Path
+      text = Path('docs/adr/evidence/0063/truncation-telemetry-sample.json').read_text()
+      if 'truncation_events' not in text:
+          raise SystemExit('Telemetry sample missing truncation events')
+      print('Telemetry sample archived')
+    PY
 - evidence:
   - docs/adr/evidence/0063/loop-0078.md
 - rollback_plan: git checkout HEAD -- docs/adr/evidence/0063/loop-0078-metrics.json docs/adr/0063-go-cli-single-source-of-truth.work-log.md docs/adr/evidence/0063/loop-0078.md

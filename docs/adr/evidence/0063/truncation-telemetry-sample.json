@@ -1,0 +1,12 @@
+{
+  "truncation_events": [
+    {
+      "field": "stderr",
+      "action": "model_provider_status",
+      "limit": 512,
+      "timestamp": "2026-01-02T05:14:23Z",
+      "original_length": 2048,
+      "truncated_length": 512
+    }
+  ]
+}

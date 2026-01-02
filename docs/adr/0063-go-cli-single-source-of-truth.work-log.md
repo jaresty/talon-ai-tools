@@ -2091,3 +2091,33 @@
           raise SystemExit('Metrics loop already present (unexpected)')
       print('Ready to archive helper metrics')
     PY — future-shaping: capture helper metrics before final closeout.
+
+
+## 2026-01-02 – Loop 078 (kind: documentation)
+- helper_version: helper:v20251223.1
+- focus: ADR-0063 helper metrics archive
+- riskiest_assumption: Without archiving helper metrics, future ADRs lack baseline comparisons (probability medium, impact low-medium on planning).
+- validation_targets:
+  - python3 - <<'PY'
+      import json
+      from pathlib import Path
+      data = json.loads(Path('docs/adr/evidence/0063/loop-0078-metrics.json').read_text())
+      if data.get('counts', {}).get('implementation') is None:
+          raise SystemExit('Metrics JSON missing implementation count')
+      print('Helper metrics archived with counts', data['counts'])
+    PY
+- evidence:
+  - docs/adr/evidence/0063/loop-0078.md
+- rollback_plan: git checkout HEAD -- docs/adr/evidence/0063/loop-0078-metrics.json docs/adr/0063-go-cli-single-source-of-truth.work-log.md docs/adr/evidence/0063/loop-0078.md
+- delta_summary: helper:diff-snapshot=3 files changed, 0 insertions(+), 0 deletions(-); archived helper metrics and recorded evidence.
+- loops_remaining_forecast: loop 079 finalizes the ADR series; confidence very high.
+- residual_risks:
+  - Metrics archived; only final loop summary remains.
+- next_work:
+  - Behaviour: finalize ADR loop series — python3 - <<'PY'
+      from pathlib import Path
+      text = Path('docs/adr/0063-go-cli-single-source-of-truth.work-log.md').read_text()
+      if 'Loop 079' in text:
+          raise SystemExit('Loop 079 already recorded (unexpected)')
+      print('Ready to finalize loop series')
+    PY — future-shaping: close out the ADR loop helper.

@@ -145,3 +145,9 @@ Talon adapters must:
 - Publish the offline update bundle (binary + schema + checksums) and document the operator workflow for installing it without network access.
 - Update onboarding material for Talon operators and CLI-first users to explain delegation, fallback signals, and manual recovery.
 
+---
+
+## Loop Tracking
+
+Implementation loops for ADR-0063 follow `helper:v20251223.1` and record evidence under `docs/adr/evidence/0063/loop-<id>.md`. A loop is recognised as complete only when its registered validation command yields recorded red and green evidence. Documentation-only updates are recognised only when the loop captures blocker evidence for the targeted behaviour, and salient tasks remain open until their validation command runs green inside this repository.
+

@@ -52,6 +52,32 @@ def _truncate_debug_value(value: object, limit: int = _DEBUG_LOG_MAX_LEN) -> obj
     return value[: max(0, limit - len(suffix))] + suffix
 
 
+def _truncate_debug_text(
+    value: str | None, limit: int = _DEBUG_LOG_MAX_LEN
+) -> str | None:
+    if value is None:
+        return None
+    truncated = _truncate_debug_value(value, limit)
+    if isinstance(truncated, str):
+        return truncated
+    return str(truncated)
+
+
+def _truncate_debug_list(
+    values: list[str] | None, limit: int = _DEBUG_LOG_MAX_LEN
+) -> list[str] | None:
+    if not values:
+        return None
+    truncated: list[str] = []
+    for item in values:
+        truncated_item = _truncate_debug_value(item, limit)
+        if isinstance(truncated_item, str):
+            truncated.append(truncated_item)
+        else:
+            truncated.append(str(truncated_item))
+    return truncated or None
+
+
 def _normalise_cli_drop_reason(
     raw_reason: str | None,
 ) -> tuple[RequestDropReason | None, str | None]:
@@ -242,9 +268,9 @@ def _delegate_to_bar_cli(action: str, *args, **kwargs) -> bool:
                     else:
                         set_drop_reason(normalised_drop_reason)
                 elif drop_message:
-                    set_drop_reason("", drop_message)
+                    set_drop_reason(cast(RequestDropReason, ""), drop_message)
                 else:
-                    set_drop_reason("")
+                    set_drop_reason(cast(RequestDropReason, ""))
             except Exception:
                 pass
 
@@ -257,15 +283,16 @@ def _delegate_to_bar_cli(action: str, *args, **kwargs) -> bool:
             except Exception:
                 pass
             try:
+                error_log = _truncate_debug_text(payload_info.error)
                 if raw_drop_reason:
                     print(
                         f"[debug] bar CLI reported error for {action}; "
-                        f"drop_reason={raw_drop_reason!r} severity={severity_label or 'none'} message={payload_info.error!r}"
+                        f"drop_reason={raw_drop_reason!r} severity={severity_label or 'none'} message={(error_log if error_log is not None else payload_info.error)!r}"
                     )
                 else:
                     print(
                         f"[debug] bar CLI reported error for {action}; "
-                        f"severity={severity_label or 'none'} message={payload_info.error!r}"
+                        f"severity={severity_label or 'none'} message={(error_log if error_log is not None else payload_info.error)!r}"
                     )
             except Exception:
                 pass
@@ -282,8 +309,9 @@ def _delegate_to_bar_cli(action: str, *args, **kwargs) -> bool:
                 pass
             if severity_label:
                 try:
+                    notice_log = _truncate_debug_text(payload_info.notice)
                     print(
-                        f"[debug] bar CLI notice severity={severity_label!r} message={payload_info.notice!r}"
+                        f"[debug] bar CLI notice severity={severity_label!r} message={(notice_log if notice_log is not None else payload_info.notice)!r}"
                     )
                 except Exception:
                     pass
@@ -300,16 +328,18 @@ def _delegate_to_bar_cli(action: str, *args, **kwargs) -> bool:
             except Exception:
                 pass
             try:
+                alert_log = _truncate_debug_text(payload_info.alert)
                 print(
-                    f"[debug] bar CLI raised alert for {action}; alert={payload_info.alert!r} severity={severity_label or 'none'}"
+                    f"[debug] bar CLI raised alert for {action}; alert={(alert_log if alert_log is not None else payload_info.alert)!r} severity={severity_label or 'none'}"
                 )
             except Exception:
                 pass
 
         if payload_info.debug:
             try:
+                debug_log = _truncate_debug_text(payload_info.debug)
                 print(
-                    f"[debug] bar CLI handled action {action}; status={payload_info.debug!r}"
+                    f"[debug] bar CLI handled action {action}; status={(debug_log if debug_log is not None else payload_info.debug)!r}"
                 )
             except Exception:
                 pass
@@ -323,8 +353,10 @@ def _delegate_to_bar_cli(action: str, *args, **kwargs) -> bool:
             ]
         ):
             try:
+                raw_dump = json.dumps(payload_info.raw, default=str)
+                payload_log = _truncate_debug_text(raw_dump)
                 print(
-                    f"[debug] bar CLI handled action {action}; payload={payload_info.raw!r}"
+                    f"[debug] bar CLI handled action {action}; payload={(payload_log if payload_log is not None else raw_dump)!r}"
                 )
             except Exception:
                 pass
@@ -338,8 +370,9 @@ def _delegate_to_bar_cli(action: str, *args, **kwargs) -> bool:
 
         if payload_info.breadcrumbs:
             try:
+                breadcrumbs_log = _truncate_debug_list(payload_info.breadcrumbs)
                 print(
-                    f"[debug] bar CLI breadcrumbs for {action}; breadcrumbs={payload_info.breadcrumbs!r}"
+                    f"[debug] bar CLI breadcrumbs for {action}; breadcrumbs={(breadcrumbs_log if breadcrumbs_log is not None else payload_info.breadcrumbs)!r}"
                 )
             except Exception:
                 pass
@@ -568,8 +601,9 @@ def _reject_if_request_in_flight() -> bool:
     def _on_block(reason: str, message: str) -> None:
         fallback = message or f"GPT: Request blocked; reason={reason}."
         if not message:
+            normalised_reason = reason if reason in _KNOWN_DROP_REASONS else ""
             try:
-                set_drop_reason(reason, fallback)
+                set_drop_reason(cast(RequestDropReason, normalised_reason), fallback)
             except Exception:
                 pass
         try:
@@ -589,7 +623,7 @@ def _reject_if_request_in_flight() -> bool:
 
     try:
         if not last_drop_reason():
-            set_drop_reason("")
+            set_drop_reason(cast(RequestDropReason, ""))
     except Exception:
         pass
     return False

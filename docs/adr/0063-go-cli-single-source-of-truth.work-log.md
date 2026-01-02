@@ -1642,3 +1642,51 @@
   - Logging now emits the hint, but truncation and documentation updates remain (Loops 063–065).
 - next_work:
   - Behaviour: truncate stdout/stderr debug logs — python3 - <<'PY' ...> — future-shaping: prevent unbounded debug output from the CLI path.
+
+
+## 2026-01-02 – Loop 063 (kind: implementation)
+- helper_version: helper:v20251223.1
+- focus: ADR-0063 §Operational Mitigations – CLI log truncation guardrails
+- riskiest_assumption: Without truncating CLI debug logs, large payloads can flood Talon consoles and make guardrail telemetry unreadable (probability medium, impact medium-high on observability).
+- validation_targets:
+  - python3 - <<'PY'
+      from pathlib import Path
+      import re
+
+      text = Path('lib/providerCommands.py').read_text()
+
+      def ensure_contains(snippet: str) -> None:
+          if snippet not in text:
+              raise SystemExit(f'missing snippet: {snippet!r}')
+
+      def ensure_absent(pattern: str) -> None:
+          if re.search(pattern, text):
+              raise SystemExit(f'unexpected pattern still present: {pattern}')
+
+      ensure_contains('def _truncate_debug_text(')
+      ensure_contains('def _truncate_debug_list(')
+      ensure_contains('error_log = _truncate_debug_text')
+      ensure_contains('notice_log = _truncate_debug_text')
+      ensure_contains('alert_log = _truncate_debug_text')
+      ensure_contains('debug_log = _truncate_debug_text')
+      ensure_contains('payload_log = _truncate_debug_text')
+      ensure_contains('breadcrumbs_log = _truncate_debug_list')
+      ensure_contains('set_drop_reason(cast(RequestDropReason, ""), drop_message)')
+      ensure_contains('set_drop_reason(cast(RequestDropReason, ""))')
+      ensure_contains('set_drop_reason(cast(RequestDropReason, normalised_reason), fallback)')
+
+      ensure_absent(r'message=\{payload_info\\.error!r\}')
+      ensure_absent(r'payload=\{payload_info\\.raw!r\}')
+      ensure_absent(r'breadcrumbs=\{payload_info\\.breadcrumbs!r\}')
+
+      print('providerCommands truncation helpers applied')
+    PY
+- evidence:
+  - docs/adr/evidence/0063/loop-0063.md
+- rollback_plan: git checkout HEAD -- lib/providerCommands.py docs/adr/0063-go-cli-single-source-of-truth.work-log.md docs/adr/evidence/0063/loop-0063.md
+- delta_summary: helper:diff-snapshot=3 files changed, 183 insertions(+), 123 deletions(-); introduced CLI log truncation helpers, refreshed evidence, and normalised drop_reason casts.
+- loops_remaining_forecast: 9 loops remaining (truncation tests, documentation, log indicator, env override, residual risk wrap-up); confidence medium.
+- residual_risks:
+  - Truncation lacks automated tests and documentation; upcoming loops will add guardrails and operator guidance.
+- next_work:
+  - Behaviour: add truncation guardrail tests — python3 -m pytest _tests/test_provider_commands.py -k truncation — future-shaping: ensure log caps stay enforced.

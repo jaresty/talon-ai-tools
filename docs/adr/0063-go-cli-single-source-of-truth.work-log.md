@@ -15,3 +15,5 @@
 - loop-0007 — enforced JSON health probe contract in tests and CLI; evidence: `docs/adr/evidence/0063/loop-0007.md`.
 - loop-0008 — recorded telemetry SLO blocker and helper; evidence: `docs/adr/evidence/0063/loop-0008.md`.
 - loop-0009 — queued next behaviours and linked validation targets; evidence: `docs/adr/evidence/0063/loop-0009.md`.
+- loop-0010 — added sibling work-log tracker and guardrail; evidence: `docs/adr/evidence/0063/loop-0010.md`.
+- loop-0011 — linked ADR body to work-log according to helper; evidence: `docs/adr/evidence/0063/loop-0011.md`.

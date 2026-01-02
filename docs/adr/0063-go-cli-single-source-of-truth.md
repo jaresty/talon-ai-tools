@@ -174,5 +174,5 @@ Talon adapters must:
 
 ## Loop Tracking
 
-Implementation loops for ADR-0063 follow `helper:v20251223.1` and record evidence under `docs/adr/evidence/0063/loop-<id>.md`. A loop is recognised as complete only when its registered validation command yields recorded red and green evidence. Documentation-only updates are recognised only when the loop captures blocker evidence for the targeted behaviour, and salient tasks remain open until their validation command runs green inside this repository.
+Implementation loops for ADR-0063 follow `helper:v20251223.1`, track status in `docs/adr/0063-go-cli-single-source-of-truth.work-log.md`, and record evidence under `docs/adr/evidence/0063/loop-<id>.md`. A loop is recognised as complete only when its registered validation command yields recorded red and green evidence. Documentation-only updates are recognised only when the loop captures blocker evidence for the targeted behaviour, and salient tasks remain open until their validation command runs green inside this repository.
 

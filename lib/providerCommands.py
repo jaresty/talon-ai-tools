@@ -54,6 +54,16 @@ class BarCliPayload:
         return self.raw is not None
 
 
+def _format_severity_prefix(raw_severity: str | None) -> tuple[str, str]:
+    """Return a tuple of (prefix, normalized severity) for logging/notifications."""
+
+    label = (raw_severity or "").strip()
+    if not label:
+        return "", ""
+    normalized = label.upper()
+    return f"[{normalized}] ", normalized
+
+
 def _bar_cli_command() -> Path:
     """Return the absolute path to the bar CLI binary."""
 
@@ -130,13 +140,13 @@ def _delegate_to_bar_cli(action: str, *args, **kwargs) -> bool:
 
     payload_info = _parse_bar_cli_payload(result)
 
-    severity_label = (payload_info.severity or "").strip()
-    severity_prefix = f"[{severity_label.upper()}] " if severity_label else ""
+    severity_prefix, severity_label = _format_severity_prefix(payload_info.severity)
+    severity_lower = severity_label.lower() if severity_label else ""
 
     if payload_info.has_payload:
         if payload_info.error:
             message = payload_info.error
-            if severity_label and severity_label.lower() not in {"error", "critical"}:
+            if severity_label and severity_lower not in {"error", "critical"}:
                 message = f"{severity_prefix}{message}"
             try:
                 notify(message)

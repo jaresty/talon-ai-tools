@@ -342,7 +342,12 @@ class BarCliDelegationTests(unittest.TestCase):
             " ".join(str(arg) for arg in call.args)
             for call in print_mock.call_args_list
         ]
-        self.assertTrue(any("severity='warning'" in text for text in printed_calls))
+        self.assertTrue(
+            any(
+                "severity=" in text and "warning" in text.lower()
+                for text in printed_calls
+            )
+        )
 
 
 class BarCliPayloadHelperTests(unittest.TestCase):

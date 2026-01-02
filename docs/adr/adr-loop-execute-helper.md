@@ -41,17 +41,13 @@ The `<ARTEFACT_LOG>` must record headings matching the helper command names when
 
 ## Compliance Signals
 
-- Red evidence is captured before behaviour changes, or an automation gap is documented with blocking evidence.
-- Slice scope describes a single cohesive behaviour or decision. Guardrail evidence is part of that behaviour’s contract, not a separate deliverable.
-- Each loop interrogates the highest-impact behaviour outcome still at risk. Document the severity rationale for the chosen behaviour, explain why it outranks any other medium/high risks, and name the canonical intent it reinforces. Once evidence reduces severity to low, move the remaining risk to `residual_risks` instead of opening a new loop. The `riskiest_assumption` states the falsifiable, higher-severity uncertainty; placeholder reminders or restated edits are non-compliant.
-- When multiple candidate slices exist, the executor selects the slice that interrogates the riskiest assumption without waiting for external direction; if choices appear indistinguishable, the executor picks any of them without blocking.
-
-- Loop summary demonstrates the ADR completion horizon changed (or remained unchanged with justification) since the prior entry, naming the domains or tasks still open.
-- Loop summary must state an updated loops-remaining forecast (numeric estimate plus confidence note) tied to the salient tasks so stakeholders can track the horizon without treating the estimate as a commitment, and record the same details in `loops_remaining_forecast`.
-- Observable delta and rollback plan documented so reverts clearly undo the slice.
-- Evidence block captures commands, outputs, touched files, and removal tests without excess narrative.
-- Residual risks, mitigations, and monitoring triggers listed at loop close.
-- Validation commands execute within the project workspace (no external directories required), and all work stays within repository subdirectories to avoid elevated approvals.
+- Each loop addresses the highest-severity open behaviour from the ADR’s salient task list, cites its task ID, and places lower-severity items in `residual_risks`.
+- Documentation-only loops appear only when blocker evidence proves the behaviour cannot advance in the current slice.
+- Validation commands exercise the canonical behaviour path (for example, compiled CLI, schema generator, parity guardrail); string or grep checks do not qualify.
+- Every `validation_targets` entry references the cited salient task artefact and runs end-to-end in the repository workspace.
+- `loops_remaining_forecast` enumerates the remaining behaviours with their validation command or blocker evidence and adds a confidence note.
+- Residual risks record updated severity and mitigation progress; unchanged text is treated as non-compliant.
+- Observable delta, rollback plan, and evidence block remain concise and auditable.
 
 ---
 
@@ -80,23 +76,20 @@ Each entry must populate the following fields; omit none. References column list
 A loop entry is compliant when all statements hold:
 
 **Focus declared**
-- Record red evidence for each behaviour outcome before edits land, then green/removal evidence after; guardrail commands exist only as the evidence channel for that behaviour.
-- Cite the exact ADR sections and work-log notes refreshed by this slice; omit generic references.
-- State the riskiest open assumption with probability × impact rationale, explain why it outranks any other medium/high risks, and reference the canonical intent (with equivalence evidence) that this slice reinforces. If the severity is low, demote it to `residual_risks`; do not treat low-severity items as the riskiest assumption. Defer higher-severity blockers by citing their blocker evidence.
-- Articulate the riskiest assumption as a falsifiable uncertainty about the behaviour outcome, and name the validation command or blocker evidence that will falsify it; restating the planned work or generic reminders is non-compliant.
-- When the riskiest assumption cannot advance, blocker evidence (command, failure excerpt, pointer) is present. Status-only or documentation-only entries must explicitly defer to the next riskiest assumption and cite the blocker evidence.
+- Red evidence is recorded before edits land and green/removal evidence after, keeping guardrail commands limited to the validation channel for that behaviour.
+- The ADR section and salient task ID for the targeted behaviour are cited, and the entry states that this behaviour is the highest-severity open item while demoting lower-severity items to `residual_risks`.
+- The riskiest assumption is expressed as a falsifiable statement with probability × impact rationale, explains why it outranks every other medium/high risk, and references the canonical intent and any equivalence evidence it reinforces.
+- When the behaviour cannot advance, the loop captures blocker evidence (command, failure excerpt, pointer) before closing; documentation-only entries include this blocker evidence.
 
 **Slice qualifies**
-- All edits address the same cohesive behaviour or decision defined in the ADR. Crossing multiple files or components is fine when the behaviour demands it, provided the loop keeps the change observable.
-- For every behaviour touched, the entry names the updated artefacts and attaches evidence from the validation command that exercises that behaviour.
-- When one `<VALIDATION_TARGET>` covers multiple behaviours, the mapping is explicit. When multiple commands are required, each additional command carries justification and a 1:1 red/green/removal trio per behaviour outcome.
-- Documentation-only loops require blocker evidence naming the behaviour, the governing ADR clause, and the reversible red failure captured before edits land.
+- Each loop edits only the cited behaviour or decision; cross-file work remains acceptable when it serves that behaviour and stays observable.
+- Every touched artefact maps to the validation command that exercises it; when one `<VALIDATION_TARGET>` covers multiple behaviours, the mapping is explicit, otherwise each behaviour carries its own command with a red/green/removal trio.
+- Documentation-only loops appear only after this slice records blocker evidence for the behaviour.
 
 **Validation registered**
-- Loop pre-plan identifies the `<VALIDATION_TARGET>` (or bounded list) and the evidence locations, mapping each targeted behaviour to its command before edits begin. Documentation-only loops may omit validation commands when no behaviour outcome changes, provided they cite the governing ADR clause and blocker evidence.
-- Red evidence exists before behaviour edits land: command fails with non-zero exit, UTC ISO-8601 timestamp, and failure excerpt demonstrating the targeted behaviour surface end-to-end. Partial coverage notes missing facets and lists the tightening work.
-- Green evidence reuses the same `<VALIDATION_TARGET>` command (or mapped target) and records exit 0 with matching timestamp format for that behaviour.
-- Removal evidence concatenates `<VCS_REVERT>` with the red command, shows baseline restoration (non-zero re-run), and records the UTC timestamp of restoration. If failure does not reappear, the entry states the tightening action required.
+- The loop pre-plan names the `<VALIDATION_TARGET>` that exercises the cited salient task artefact before editing begins; validation commands are omitted only for documentation-only loops that already logged blocker evidence.
+- Red evidence records the canonical command failing end-to-end with non-zero exit, UTC ISO-8601 timestamp, and failure excerpt for the targeted behaviour.
+- Green evidence reuses the same command (or mapped target) and records exit 0, and removal evidence runs `<VCS_REVERT>` followed by the red command to show the failure returning or documents the tightening required when it does not.
 
 **Evidence block complete**
 - Each red/green/removal record lists: command string, UTC ISO-8601 timestamp, exit status, diff/hash snapshot (`helper:diff-snapshot` output or checksum), and a pointer (`inline` or `<ARTEFACT_LOG>#heading`). Red evidence must include the failure excerpt proving the targeted behaviour.
@@ -105,10 +98,9 @@ A loop entry is compliant when all statements hold:
 - The adversarial “risk recap” paragraph names at least one residual risk, the mitigation, the monitoring trigger, and the reopen condition.
 
 **Next work queued**
-- `next_work` lists `Behaviour:` bullets, each citing the validation command or blocker evidence that advances the stated higher-severity assumption and notes the future-shaping action that will keep contributors aligned with the canonical intent (e.g., `Behaviour: history drawer drop messaging — python3 -m pytest … — future-shaping: consolidate helper in requestGating`). Low-severity residual risks stay parked in `residual_risks`.
-- New bullets only appear when they replace or consolidate existing scope interrogating the riskiest assumption; discoveries outside the ADR’s behaviours record the blocker and queue ADR-level triage instead of speculative tasks.
-- Status-only entries schedule the next behaviour slice (or evidence refresh for that behaviour) before closing the loop.
-- Helper upgrades (new version strings) note the change and queue any reconciliation loop required by the stricter rules.
+- `next_work` contains `Behaviour:` bullets tied to salient task IDs, each citing the validation command or blocker evidence that will advance the next highest-severity assumption and the future-shaping action that keeps the canonical intent aligned.
+- New bullets appear only when replacing or consolidating scope for the riskiest assumption; discoveries outside the ADR behaviours record blocker evidence and defer to ADR-level triage.
+- Status-only entries schedule the next behaviour slice (or evidence refresh) before closing, and helper upgrades note any reconciliation loop required.
 
 ---
 
@@ -139,7 +131,7 @@ Replace placeholders with real commands, timestamps, and pointers. When aggregat
 
 ## Completion Bar
 
-Completion is eligible once every loop satisfies this contract under a single helper version, outstanding tasks are closed or parked with evidence, a final adversarial entry restates motivations and residual gaps, and repository metadata reflects the updated ADR state.
+Completion is eligible once every loop satisfies this contract under a single helper version, outstanding tasks are closed or parked with evidence, a final adversarial entry restates motivations and residual gaps, and repository metadata reflects the updated ADR state. Completion requires the targeted behaviour to land (code, tests, docs, automation) with green evidence; planning-only loops must keep the series open until the behaviour ships or is explicitly deferred with blocker evidence.
 
 ---
 

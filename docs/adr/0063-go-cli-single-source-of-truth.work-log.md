@@ -2584,3 +2584,32 @@
           raise SystemExit('Support runbook loop already present (unexpected)')
       print('Ready to document support runbook handoff')
     PY — future-shaping: align support processes with automation telemetry.
+
+
+## 2026-01-02 – Loop 101 (kind: planning)
+- helper_version: helper:v20251223.1
+- focus: ADR-0063 support runbook handoff
+- riskiest_assumption: Without a coordinated support runbook, incident response may miss CLI automation nuances (probability low-medium, impact medium-high on recovery time).
+- validation_targets:
+  - python3 - <<'PY'
+      from pathlib import Path
+      text = Path('docs/adr/0063-go-cli-single-source-of-truth.work-log.md').read_text()
+      if 'Loop 101 (kind:' not in text:
+          raise SystemExit('Support runbook loop missing')
+      print('Support runbook loop recorded')
+    PY
+- evidence:
+  - docs/adr/evidence/0063/loop-0101.md
+- rollback_plan: git checkout HEAD -- docs/adr/0063-go-cli-single-source-of-truth.work-log.md docs/adr/evidence/0063/loop-0101.md
+- delta_summary: helper:diff-snapshot=2 files changed, 89 insertions(+); documented support runbook handoff and recorded evidence.
+- loops_remaining_forecast: 2 loops remaining (follow-up capture, closing summary); confidence high.
+- residual_risks:
+  - Follow-up capture and loop closeout remain; next loop consolidates outstanding follow-ups.
+- next_work:
+  - Behaviour: consolidate follow-up capture — python3 - <<'PY'
+      from pathlib import Path
+      text = Path('docs/adr/0063-go-cli-single-source-of-truth.work-log.md').read_text()
+      if 'Loop 102 (kind:' in text:
+          raise SystemExit('Follow-up loop already present (unexpected)')
+      print('Ready to consolidate follow-up capture')
+    PY — future-shaping: ensure outstanding actions are logged before closure.

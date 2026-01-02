@@ -995,3 +995,38 @@
   - Continue monitoring telemetry schema updates via existing residual risk entry.
 - next_work:
   - Behaviour: none — loop series complete.
+
+
+## 2026-01-02 – Loop 039 (kind: implementation)
+- helper_version: helper:v20251223.1
+- focus: ADR-0063 §Talon Adapter Layer (add severity to BarCliPayload)
+- riskiest_assumption: Without a severity field, CLI warning levels cannot be propagated (probability medium, impact medium on guardrail clarity).
+- validation_targets:
+  - python3 - <<'PY'
+      from types import SimpleNamespace
+      from pathlib import Path
+      import sys
+      sys.path.insert(0, str(Path('.').resolve()))
+      from bootstrap import bootstrap
+      bootstrap()
+      from talon_user.lib import providerCommands
+      payload = providerCommands._parse_bar_cli_payload(SimpleNamespace(stdout='{"severity":"warning"}'))
+      if payload.severity != 'warning':
+          raise SystemExit('severity not parsed correctly')
+      print('severity field parsed')
+    PY
+- evidence:
+  - docs/adr/evidence/0063/loop-0039.md
+- rollback_plan: git checkout HEAD -- lib/providerCommands.py docs/adr/0063-go-cli-single-source-of-truth.work-log.md
+- delta_summary: helper:diff-snapshot=1 file changed, 2 insertions(+); added a `severity` attribute to `BarCliPayload` and parse it from CLI payloads.
+- loops_remaining_forecast: 9 loops remaining (severity handling/tests/docs, additional payload fields, final validation); confidence medium.
+- residual_risks:
+  - Delegation logic still ignores severity; upcoming loops will apply it.
+- next_work:
+  - Behaviour: apply severity handling in delegation — python3 - <<'PY'
+      from pathlib import Path
+      text = Path('lib/providerCommands.py').read_text()
+      if 'payload_info.severity' not in text:
+          raise SystemExit('severity not consumed in delegation yet')
+      print('delegation references severity')
+    PY — future-shaping: surface severity levels in notifications/logs.

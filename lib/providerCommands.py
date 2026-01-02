@@ -46,6 +46,7 @@ class BarCliPayload:
     debug: str | None = None
     drop_reason: str | None = None
     alert: str | None = None
+    severity: str | None = None
     decode_failed: bool = False
 
     @property
@@ -83,6 +84,7 @@ def _parse_bar_cli_payload(result: object) -> BarCliPayload:
             debug=payload.get("debug") or payload.get("status"),
             drop_reason=payload.get("drop_reason"),
             alert=payload.get("alert") or payload.get("warning"),
+            severity=payload.get("severity"),
         )
     return BarCliPayload(raw=None, decode_failed=bool(stdout))
 

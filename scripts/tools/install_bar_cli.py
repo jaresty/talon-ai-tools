@@ -19,7 +19,6 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 BIN_DIR = REPO_ROOT / "bin"
 TARGET_PATH = BIN_DIR / "bar.bin"
 ARTIFACTS_DIR = REPO_ROOT / "artifacts" / "cli"
-SCHEMA_NAME = "command-surface.json"
 
 
 def _target_suffix() -> str:
@@ -78,6 +77,13 @@ def install_cli(force: bool = False, quiet: bool = False) -> Path:
         raise FileNotFoundError(f"missing CLI manifest: {manifest}")
 
     _verify_checksum(tarball, manifest)
+
+    if not force and TARGET_PATH.exists():
+        latest_artifact_mtime = max(tarball.stat().st_mtime, manifest.stat().st_mtime)
+        if TARGET_PATH.stat().st_mtime >= latest_artifact_mtime:
+            if not quiet:
+                print(f"CLI binary already installed at {TARGET_PATH}")
+            return TARGET_PATH
 
     with tempfile.TemporaryDirectory() as tmpdir:
         tmp_path = Path(tmpdir)

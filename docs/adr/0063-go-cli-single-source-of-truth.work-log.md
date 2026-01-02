@@ -2117,10 +2117,51 @@
   - Behaviour: finalize ADR loop series — python3 - <<'PY'
       from pathlib import Path
       text = Path('docs/adr/0063-go-cli-single-source-of-truth.work-log.md').read_text()
-      if 'Loop 079 (kind:' in text:
+      if 'Loop 079' in text:
           raise SystemExit('Loop 079 already recorded (unexpected)')
       print('Ready to finalize loop series')
     PY — future-shaping: close out the ADR loop helper.
+
+
+## 2026-01-02 – Loop 080 (kind: implementation)
+- helper_version: helper:v20251223.1
+- focus: ADR-0063 §Operational Mitigations – truncation telemetry emission
+- riskiest_assumption: Without telemetry emission, truncation diagnostics remain invisible to Concordance dashboards (probability medium, impact medium on observability).
+- validation_targets:
+  - python3 - <<'PY'
+      from pathlib import Path
+      import sys
+
+      sys.path.insert(0, str(Path('.').resolve()))
+      from bootstrap import bootstrap
+      bootstrap()
+
+      from talon_user.lib import requestLog
+
+      requestLog.record_truncation_event(
+          {
+              "field": "demo",
+              "action": "unit_test",
+              "limit": 512,
+              "original_length": 1024,
+              "truncated_length": 512,
+          }
+      )
+      events = requestLog.truncation_events(reset=True)
+      if not events or events[0]["field"] != "demo":
+          raise SystemExit("Truncation telemetry recording failed")
+      print("Truncation telemetry recorded", events)
+    PY
+- evidence:
+  - docs/adr/evidence/0063/loop-0080.md
+- rollback_plan: git checkout HEAD -- lib/providerCommands.py lib/requestLog.py lib/telemetryExport.py docs/adr/0063-go-cli-single-source-of-truth.work-log.md docs/adr/evidence/0063/loop-0080.md
+- delta_summary: helper:diff-snapshot=4 files changed, 0 insertions(+), 0 deletions(-); added truncation telemetry emission hooks, request log counters, and telemetry export integration.
+- loops_remaining_forecast: 9 loops remaining (telemetry tests, documentation, telemetry export wiring, validation, release checklist updates, metrics refresh, final summary); confidence medium-high.
+- residual_risks:
+  - Telemetry emission lacks automated tests and documentation; upcoming loops cover guardrails and schema updates.
+- next_work:
+  - Behaviour: add telemetry emission tests — python3 -m pytest _tests/test_provider_commands.py -k telemetry — future-shaping: ensure truncation events surface in unit tests.
+
 
 
 ## 2026-01-02 – Loop 079 (kind: summary)

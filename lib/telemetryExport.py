@@ -14,7 +14,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Tuple
 
-from . import historyLifecycle
+from . import historyLifecycle, requestLog
 
 try:
     from .modelState import GPTState
@@ -190,6 +190,7 @@ def _build_telemetry_payload(
     skip_total: int,
     skip_reasons: List[Dict[str, Any]],
     top_n: int,
+    truncation_events: Iterable[Mapping[str, Any]],
 ) -> Dict[str, Any]:
     ordered_counts = _sorted_counts(streaming_summary.get("counts", {}))
     top_reasons, other_total = _top_reasons(ordered_counts, limit=top_n)
@@ -257,6 +258,17 @@ def _build_telemetry_payload(
         "total": skip_total,
         "reasons": skip_reasons,
     }
+
+    events_payload: List[Dict[str, Any]] = []
+    for event in truncation_events:
+        if isinstance(event, Mapping):
+            try:
+                events_payload.append({str(key): value for key, value in event.items()})
+            except Exception:
+                continue
+    if events_payload:
+        payload["truncation_events"] = events_payload
+
     return payload
 
 
@@ -319,6 +331,8 @@ def snapshot_telemetry(
     skip_path = base_dir / "suggestion-skip-summary.json"
     skip_path.write_text(json.dumps(skip_summary, sort_keys=True, indent=2))
 
+    truncation_events = requestLog.consume_truncation_events()
+
     telemetry_payload = _build_telemetry_payload(
         history_stats,
         streaming_summary,
@@ -326,6 +340,7 @@ def snapshot_telemetry(
         skip_total=skip_total,
         skip_reasons=skip_reasons,
         top_n=top_n,
+        truncation_events=truncation_events,
     )
 
     scheduler_stats: Dict[str, Any] = {

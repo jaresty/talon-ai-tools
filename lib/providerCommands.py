@@ -20,6 +20,7 @@ from .providerRegistry import (
 from .requestGating import request_is_in_flight
 from .historyLifecycle import last_drop_reason, set_drop_reason
 from .requestState import RequestDropReason
+from . import requestLog
 
 from .modelHelpers import notify
 from .surfaceGuidance import guard_surface_request
@@ -110,6 +111,49 @@ def _truncation_indicator(value: object, limit: int = _DEBUG_LOG_MAX_LEN) -> str
         if lengths:
             return f" (truncated {len(lengths)} entries; max original length {max(lengths)} chars)"
     return ""
+
+
+def _capture_truncation_event(
+    field: str,
+    action: str,
+    original_value: object,
+    truncated_value: object,
+    limit: int = _DEBUG_LOG_MAX_LEN,
+) -> None:
+    event: dict[str, object] = {
+        "field": field,
+        "action": action,
+        "limit": limit,
+    }
+
+    if isinstance(original_value, str):
+        original_length = len(original_value)
+        if original_length <= limit:
+            return
+        truncated_length = (
+            len(truncated_value)
+            if isinstance(truncated_value, str)
+            else min(original_length, limit)
+        )
+        event["original_length"] = original_length
+        event["truncated_length"] = truncated_length
+    elif isinstance(original_value, list):
+        exceeded_lengths = [
+            len(item)
+            for item in original_value
+            if isinstance(item, str) and len(item) > limit
+        ]
+        if not exceeded_lengths:
+            return
+        event["truncated_items"] = len(exceeded_lengths)
+        event["max_original_length"] = max(exceeded_lengths)
+    else:
+        return
+
+    try:
+        requestLog.record_truncation_event(event)
+    except Exception:
+        pass
 
 
 def _normalise_cli_drop_reason(
@@ -289,6 +333,13 @@ def _delegate_to_bar_cli(action: str, *args, **kwargs) -> bool:
                 _truncate_debug_text(drop_message) if drop_message else display_message
             )
             drop_log = drop_log or display_message
+            if drop_message:
+                _capture_truncation_event(
+                    "drop_message",
+                    action,
+                    drop_message,
+                    drop_log,
+                )
             drop_indicator = _truncation_indicator(drop_message) if drop_message else ""
             if normalised_drop_reason is None:
                 try:
@@ -322,6 +373,13 @@ def _delegate_to_bar_cli(action: str, *args, **kwargs) -> bool:
             try:
                 error_log = _truncate_debug_text(payload_info.error)
                 error_indicator = _truncation_indicator(payload_info.error)
+                if payload_info.error is not None:
+                    _capture_truncation_event(
+                        "error",
+                        action,
+                        payload_info.error,
+                        error_log,
+                    )
                 if raw_drop_reason:
                     print(
                         f"[debug] bar CLI reported error for {action}; "
@@ -349,6 +407,13 @@ def _delegate_to_bar_cli(action: str, *args, **kwargs) -> bool:
                 try:
                     notice_log = _truncate_debug_text(payload_info.notice)
                     notice_indicator = _truncation_indicator(payload_info.notice)
+                    if payload_info.notice is not None:
+                        _capture_truncation_event(
+                            "notice",
+                            action,
+                            payload_info.notice,
+                            notice_log,
+                        )
                     print(
                         f"[debug] bar CLI notice severity={severity_label!r} message={(notice_log if notice_log is not None else payload_info.notice)!r}{notice_indicator}"
                     )
@@ -369,6 +434,13 @@ def _delegate_to_bar_cli(action: str, *args, **kwargs) -> bool:
             try:
                 alert_log = _truncate_debug_text(payload_info.alert)
                 alert_indicator = _truncation_indicator(payload_info.alert)
+                if payload_info.alert is not None:
+                    _capture_truncation_event(
+                        "alert",
+                        action,
+                        payload_info.alert,
+                        alert_log,
+                    )
                 print(
                     f"[debug] bar CLI raised alert for {action}; alert={(alert_log if alert_log is not None else payload_info.alert)!r}{alert_indicator} severity={severity_label or 'none'}"
                 )
@@ -379,6 +451,12 @@ def _delegate_to_bar_cli(action: str, *args, **kwargs) -> bool:
             try:
                 debug_log = _truncate_debug_text(payload_info.debug)
                 debug_indicator = _truncation_indicator(payload_info.debug)
+                _capture_truncation_event(
+                    "debug",
+                    action,
+                    payload_info.debug,
+                    debug_log,
+                )
                 print(
                     f"[debug] bar CLI handled action {action}; status={(debug_log if debug_log is not None else payload_info.debug)!r}{debug_indicator}"
                 )
@@ -397,6 +475,12 @@ def _delegate_to_bar_cli(action: str, *args, **kwargs) -> bool:
                 raw_dump = json.dumps(payload_info.raw, default=str)
                 payload_log = _truncate_debug_text(raw_dump)
                 payload_indicator = _truncation_indicator(raw_dump)
+                _capture_truncation_event(
+                    "payload",
+                    action,
+                    raw_dump,
+                    payload_log,
+                )
                 print(
                     f"[debug] bar CLI handled action {action}; payload={(payload_log if payload_log is not None else raw_dump)!r}{payload_indicator}"
                 )
@@ -414,6 +498,12 @@ def _delegate_to_bar_cli(action: str, *args, **kwargs) -> bool:
             try:
                 breadcrumbs_log = _truncate_debug_list(payload_info.breadcrumbs)
                 breadcrumbs_indicator = _truncation_indicator(payload_info.breadcrumbs)
+                _capture_truncation_event(
+                    "breadcrumbs",
+                    action,
+                    payload_info.breadcrumbs,
+                    breadcrumbs_log,
+                )
                 print(
                     f"[debug] bar CLI breadcrumbs for {action}; breadcrumbs={(breadcrumbs_log if breadcrumbs_log is not None else payload_info.breadcrumbs)!r}{breadcrumbs_indicator}"
                 )
@@ -433,6 +523,12 @@ def _delegate_to_bar_cli(action: str, *args, **kwargs) -> bool:
             try:
                 stdout_log = _truncate_debug_text(result.stdout)
                 stdout_indicator = _truncation_indicator(result.stdout)
+                _capture_truncation_event(
+                    "stdout_decode_failed",
+                    action,
+                    result.stdout,
+                    stdout_log,
+                )
                 print(
                     f"[debug] bar CLI payload decode failed for {action}; stdout={(stdout_log if stdout_log is not None else result.stdout)!r}{stdout_indicator}"
                 )
@@ -442,6 +538,12 @@ def _delegate_to_bar_cli(action: str, *args, **kwargs) -> bool:
             try:
                 stdout_log = _truncate_debug_text(result.stdout)
                 stdout_indicator = _truncation_indicator(result.stdout)
+                _capture_truncation_event(
+                    "stdout",
+                    action,
+                    result.stdout,
+                    stdout_log,
+                )
                 print(
                     f"[debug] bar CLI handled action {action}; stdout={(stdout_log if stdout_log is not None else result.stdout)!r}{stdout_indicator}"
                 )
@@ -452,6 +554,12 @@ def _delegate_to_bar_cli(action: str, *args, **kwargs) -> bool:
         try:
             stderr_log = _truncate_debug_text(result.stderr)
             stderr_indicator = _truncation_indicator(result.stderr)
+            _capture_truncation_event(
+                "stderr",
+                action,
+                result.stderr,
+                stderr_log,
+            )
             print(
                 f"[debug] bar CLI stderr for {action}; stderr={(stderr_log if stderr_log is not None else result.stderr)!r}{stderr_indicator}"
             )

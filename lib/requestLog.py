@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from collections import Counter, deque
 from dataclasses import dataclass, field
+from datetime import datetime, timezone
 from types import MappingProxyType
 from typing import Iterable, Mapping, Optional, Tuple, cast
 from copy import deepcopy
@@ -39,6 +40,9 @@ _gating_drop_sources: Counter[str] = Counter()
 _gating_drop_reason_sources: Counter[tuple[RequestDropReason, str]] = Counter()
 _last_gating_drop_source: str = ""
 
+_TRUNCATION_EVENT_MAX = 200
+_truncation_events: deque[dict[str, object]] = deque(maxlen=_TRUNCATION_EVENT_MAX)
+
 
 def _normalise_gating_source(source: object) -> str:
     text = str(source or "").strip()
@@ -68,6 +72,40 @@ def record_gating_drop(reason: RequestDropReason, *, source: object = "") -> Non
 
     global _last_gating_drop_source
     _last_gating_drop_source = source_key
+
+
+def record_truncation_event(event: Mapping[str, object]) -> None:
+    """Record a truncation telemetry event for CLI log handling."""
+
+    if not event:
+        return
+    try:
+        payload = dict(event)
+    except Exception:
+        return
+
+    timestamp = payload.get("timestamp")
+    if not isinstance(timestamp, str) or not timestamp.strip():
+        payload["timestamp"] = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+    try:
+        _truncation_events.append(deepcopy(payload))
+    except Exception:
+        pass
+
+
+def truncation_events(*, reset: bool = False) -> list[dict[str, object]]:
+    """Return recorded truncation telemetry events."""
+
+    events = [deepcopy(event) for event in _truncation_events]
+    if reset:
+        _truncation_events.clear()
+    return events
+
+
+def consume_truncation_events() -> list[dict[str, object]]:
+    """Return and clear truncation telemetry events."""
+
+    return truncation_events(reset=True)
 
 
 def gating_drop_stats(*, reset: bool = False) -> dict[str, int]:

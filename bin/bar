@@ -8,7 +8,23 @@ code to surface unsupported behaviour.
 
 from __future__ import annotations
 
+import json
 import sys
+from pathlib import Path
+
+SCHEMA_PATH = Path(__file__).resolve().parent.parent / "docs" / "schema" / "command-surface.json"
+
+
+def _schema_version() -> str:
+    try:
+        data = json.loads(SCHEMA_PATH.read_text(encoding="utf-8"))
+    except FileNotFoundError:
+        return "missing"
+    except json.JSONDecodeError:
+        return "invalid"
+
+    version = data.get("version")
+    return str(version) if version is not None else "unspecified"
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -18,7 +34,8 @@ def main(argv: list[str] | None = None) -> int:
         return 0
 
     if args == ["--health"]:
-        print("bar: healthy")
+        payload = {"status": "ok", "version": _schema_version()}
+        print(json.dumps(payload))
         return 0
 
     print(f"bar: unsupported command {' '.join(args)}", file=sys.stderr)

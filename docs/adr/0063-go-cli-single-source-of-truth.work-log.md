@@ -1443,3 +1443,30 @@
   - Docs still need to mention stderr logging behaviour; schedule in Loop 056.
 - next_work:
   - Behaviour: document parser/logging changes — python3 - <<'PY' ...> — future-shaping: align README/ADR with new stderr paths.
+
+## 2026-01-02 – Loop 056 (kind: documentation)
+- helper_version: helper:v20251223.1
+- focus: ADR-0063 §Implementation Plan & Adapter Outline (document multi-line parsing and stderr logging)
+- riskiest_assumption: Documentation could drift from behaviour, leaving operators unaware of multi-line payload support and stderr logging (probability medium, impact medium on onboarding and guardrails).
+- validation_targets:
+  - python3 - <<'PY'
+      from pathlib import Path
+      for path, needles in [
+          ('cli/README.md', ['final json object', 'stderr stream']),
+          ('docs/adr/0063-go-cli-single-source-of-truth.md', ['multi-line', 'stderr stream'])
+      ]:
+          text = Path(path).read_text().lower()
+          for needle in needles:
+              if needle not in text:
+                  raise SystemExit(f'{path} missing {needle}')
+      print('documentation updated for multi-line parsing and stderr logging')
+    PY
+- evidence:
+  - docs/adr/evidence/0063/loop-0056.md
+- rollback_plan: git checkout HEAD -- cli/README.md docs/adr/0063-go-cli-single-source-of-truth.md docs/adr/0063-go-cli-single-source-of-truth.work-log.md docs/adr/evidence/0063/loop-0056.md
+- delta_summary: helper:diff-snapshot=4 files changed, 98 insertions(+), 2 deletions(-); documented multi-line stdout handling and stderr logging expectations.
+- loops_remaining_forecast: 1 loop remaining (final validation/residual risk wrap-up); confidence high.
+- residual_risks:
+  - Final validation sweep pending to close loop series.
+- next_work:
+  - Behaviour: run final validation sweep — python3 -m pytest _tests/test_provider_commands.py — future-shaping: ensure latest guardrails stay green before closure.

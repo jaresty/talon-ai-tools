@@ -2121,13 +2121,13 @@
 - residual_risks:
   - Metrics archived; only final loop summary remains.
 - next_work:
-  - Behaviour: finalize ADR loop series — python3 - <<'PY'
+  - Behaviour: review residual risks post-telemetry — python3 - <<'PY'
       from pathlib import Path
       text = Path('docs/adr/0063-go-cli-single-source-of-truth.work-log.md').read_text()
-      if 'Loop 079' in text:
-          raise SystemExit('Loop 079 already recorded (unexpected)')
-      print('Ready to finalize loop series')
-    PY — future-shaping: close out the ADR loop helper.
+      if 'Loop 087 (kind:' in text:
+          raise SystemExit('Residual risk loop already present (unexpected)')
+      print('Ready to review residual risks')
+    PY — future-shaping: capture remaining risks after telemetry updates.
 
 
 ## 2026-01-02 – Loop 080 (kind: implementation)
@@ -2277,6 +2277,63 @@
       print('Ready to extend release checklist with telemetry work')
     PY — future-shaping: ensure rollout notes include telemetry steps.
 
+
+## 2026-01-02 – Loop 085 (kind: documentation)
+- helper_version: helper:v20251223.1
+- focus: ADR-0063 release checklist telemetry updates
+- riskiest_assumption: Without release checklist updates, telemetry verification could be skipped during rollout (probability medium, impact medium on quality).
+- validation_targets:
+  - python3 - <<'PY'
+      from pathlib import Path
+      text = Path('docs/adr/0063-go-cli-single-source-of-truth.md').read_text().lower()
+      if 'history-validation-summary.telemetry.json' not in text:
+          raise SystemExit('Release checklist missing telemetry snapshot step')
+      print('Release checklist documents telemetry tasks')
+    PY
+- evidence:
+  - docs/adr/evidence/0063/loop-0085.md
+- rollback_plan: git checkout HEAD -- docs/adr/0063-go-cli-single-source-of-truth.md docs/adr/evidence/0063/loop-0085.md
+- delta_summary: helper:diff-snapshot=2 files changed, 0 insertions(+), 0 deletions(-); added telemetry tasks to release checklist and recorded evidence.
+- loops_remaining_forecast: 4 loops remaining (metrics refresh, residual risk review, final summary); confidence high.
+- residual_risks:
+  - Residual risk review and metrics refresh remain pending.
+- next_work:
+  - Behaviour: archive telemetry sample artifacts — python3 - <<'PY'
+      from pathlib import Path
+      text = Path('docs/adr/evidence/0063/truncation-telemetry-sample.json').read_text()
+      if 'truncation_events' not in text:
+          raise SystemExit('Telemetry sample missing truncation events')
+      print('Telemetry sample archived')
+    PY — future-shaping: align helper metrics with telemetry data.
+
+
+## 2026-01-02 – Loop 086 (kind: documentation)
+- helper_version: helper:v20251223.1
+- focus: ADR-0063 telemetry artefact archive
+- riskiest_assumption: Without sample artefacts, future reviews lack reference payloads (probability low, impact low-medium on documentation).
+- validation_targets:
+  - python3 - <<'PY'
+      from pathlib import Path
+      text = Path('docs/adr/evidence/0063/truncation-telemetry-sample.json').read_text()
+      if 'truncation_events' not in text:
+          raise SystemExit('Telemetry sample missing truncation events')
+      print('Telemetry sample archived')
+    PY
+- evidence:
+  - docs/adr/evidence/0063/loop-0086.md
+- rollback_plan: git checkout HEAD -- docs/adr/evidence/0063/truncation-telemetry-sample.json docs/adr/0063-go-cli-single-source-of-truth.work-log.md docs/adr/evidence/0063/loop-0086.md
+- delta_summary: helper:diff-snapshot=3 files changed, 0 insertions(+), 0 deletions(-); archived telemetry sample artefact and recorded evidence.
+- loops_remaining_forecast: 3 loops remaining (residual risk review, metrics refresh, final summary); confidence high.
+- residual_risks:
+  - Telemetry capture relies on future dashboard wiring; release follow-up recorded in Loop 077.
+- next_work:
+  - Behaviour: review residual risks post-telemetry — python3 - <<'PY'
+      from pathlib import Path
+      text = Path('docs/adr/0063-go-cli-single-source-of-truth.work-log.md').read_text()
+      if 'Loop 087 (kind:' in text:
+          raise SystemExit('Residual risk loop already present (unexpected)')
+      print('Ready to review residual risks')
+    PY — future-shaping: capture remaining risks after telemetry updates.
 
 
 ## 2026-01-02 – Loop 079 (kind: summary)

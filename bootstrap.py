@@ -13,9 +13,38 @@ from __future__ import annotations
 
 import sys
 
+_BOOTSTRAP_WARNINGS: list[str] = []
+
+
+def get_bootstrap_warnings(*, clear: bool = False) -> list[str]:
+    warnings = list(_BOOTSTRAP_WARNINGS)
+    if clear:
+        _BOOTSTRAP_WARNINGS.clear()
+    return warnings
+
 
 def _warn(message: str) -> None:
+    _BOOTSTRAP_WARNINGS.append(message)
     sys.stderr.write(f"bootstrap: {message}\n")
+    try:
+        from talon import actions
+    except Exception:
+        actions = None
+    if actions is not None:
+        try:
+            actions.user.notify(message)
+            return
+        except Exception:
+            pass
+    try:
+        from talon import app
+    except Exception:
+        app = None
+    if app is not None:
+        try:
+            app.notify(message)
+        except Exception:
+            pass
 
 
 def _maybe_install_cli() -> None:

@@ -1,14 +1,21 @@
 import unittest
 from pathlib import Path
+import io
 import json
 import platform
 import subprocess
 import sys
+from contextlib import redirect_stderr
+
+from talon import actions
 
 try:
-    from bootstrap import bootstrap
+    from bootstrap import bootstrap, get_bootstrap_warnings
 except ModuleNotFoundError:  # Talon runtime
     bootstrap = None
+
+    def get_bootstrap_warnings(*, clear: bool = False):  # type: ignore[override]
+        return []
 else:
     bootstrap()
 
@@ -104,6 +111,9 @@ else:
                 )
 
         def test_bootstrap_warning_mentions_rebuild_command(self) -> None:
+            self.assertIsNotNone(bootstrap, "bootstrap helper unavailable")
+            assert bootstrap is not None
+
             tarball = _packaged_cli_tarball()
             manifest = _packaged_cli_manifest(tarball)
 
@@ -119,26 +129,44 @@ else:
             backup = manifest.read_bytes()
             try:
                 manifest.unlink()
-                script = (
-                    "import io, sys, bootstrap\n"
-                    "from contextlib import redirect_stderr\n"
-                    "buf = io.StringIO()\n"
-                    "with redirect_stderr(buf):\n"
-                    "    bootstrap.bootstrap()\n"
-                    "sys.stdout.write(buf.getvalue())\n"
-                )
-                result = subprocess.run(
-                    [sys.executable, "-c", script],
-                    capture_output=True,
-                    text=True,
-                    check=False,
-                )
+            except FileNotFoundError:
+                pass
+            get_bootstrap_warnings(clear=True)
+            calls_before = list(actions.user.calls)
+
+            try:
+                buf = io.StringIO()
+                with redirect_stderr(buf):
+                    bootstrap()
+                warning_output = buf.getvalue()
+                warnings = get_bootstrap_warnings(clear=True)
             finally:
                 manifest.write_bytes(backup)
+                bootstrap()
 
-            self.assertEqual(result.returncode, 0, result.stderr)
+            new_calls = actions.user.calls[len(calls_before) :]
+            # reset added calls to keep other tests isolated
+            del actions.user.calls[len(calls_before) :]
             self.assertIn(
                 "`python3 scripts/tools/package_bar_cli.py --print-paths`",
-                result.stdout,
+                warning_output,
                 "Bootstrap warning must direct operators to rebuild packaged CLI",
+            )
+            self.assertTrue(
+                any(
+                    "`python3 scripts/tools/package_bar_cli.py --print-paths`"
+                    in warning
+                    for warning in warnings
+                ),
+                "Bootstrap warnings list should include rebuild instructions",
+            )
+            self.assertTrue(
+                any(
+                    call[0] == "notify"
+                    and call[1]
+                    and "`python3 scripts/tools/package_bar_cli.py --print-paths`"
+                    in call[1][0]
+                    for call in new_calls
+                ),
+                "Bootstrap warning should notify adapters with rebuild instructions",
             )

@@ -47,6 +47,7 @@ class BarCliPayload:
     drop_reason: str | None = None
     alert: str | None = None
     severity: str | None = None
+    breadcrumbs: list[str] | None = None
     decode_failed: bool = False
 
     @property
@@ -87,6 +88,13 @@ def _parse_bar_cli_payload(result: object) -> BarCliPayload:
             payload = None
 
     if isinstance(payload, dict):
+        breadcrumbs_value = payload.get("breadcrumbs")
+        breadcrumbs: list[str] | None = None
+        if isinstance(breadcrumbs_value, list):
+            filtered = [
+                str(item).strip() for item in breadcrumbs_value if str(item).strip()
+            ]
+            breadcrumbs = filtered or None
         return BarCliPayload(
             raw=payload,
             notice=payload.get("notify") or payload.get("message"),
@@ -95,6 +103,7 @@ def _parse_bar_cli_payload(result: object) -> BarCliPayload:
             drop_reason=payload.get("drop_reason"),
             alert=payload.get("alert") or payload.get("warning"),
             severity=payload.get("severity"),
+            breadcrumbs=breadcrumbs,
         )
     return BarCliPayload(raw=None, decode_failed=bool(stdout))
 
@@ -224,6 +233,22 @@ def _delegate_to_bar_cli(action: str, *args, **kwargs) -> bool:
                 )
             except Exception:
                 pass
+        elif severity_label and not payload_info.error:
+            try:
+                print(
+                    f"[debug] bar CLI severity={severity_label!r} applied for {action}"
+                )
+            except Exception:
+                pass
+
+        if payload_info.breadcrumbs:
+            try:
+                print(
+                    f"[debug] bar CLI breadcrumbs for {action}; breadcrumbs={payload_info.breadcrumbs!r}"
+                )
+            except Exception:
+                pass
+
         elif severity_label and not payload_info.error:
             try:
                 print(

@@ -1158,3 +1158,20 @@
           raise SystemExit('breadcrumbs already handled')
       raise SystemExit('breadcrumbs handling missing')
     PY — future-shaping: surface CLI breadcrumb hints.
+
+
+## 2026-01-02 – Loop 045 (kind: implementation)
+- helper_version: helper:v20251223.1
+- focus: ADR-0063 §Talon Adapter Layer (parse breadcrumbs field)
+- riskiest_assumption: Without breadcrumbs support, CLI breadcrumb hints would be dropped (probability medium, impact medium on usability).
+- validation_targets:
+  - python3 - m pytest _tests/test_provider_commands.py
+- evidence:
+  - docs/adr/evidence/0063/loop-0045.md
+- rollback_plan: git checkout HEAD -- lib/providerCommands.py _tests/test_provider_commands.py docs/adr/0063-go-cli-single-source-of-truth.work-log.md
+- delta_summary: helper:diff-snapshot=2 files changed, 54 insertions(+), 1 deletion(-); payload parsing now captures breadcrumbs and delegation logs them.
+- loops_remaining_forecast: 3 loops remaining (breadcrumbs tests, documentation, final validation); confidence high.
+- residual_risks:
+  - Documentation still needs to cover breadcrumbs (Loop 047).
+- next_work:
+  - Behaviour: test breadcrumbs parsing — python3 - m pytest _tests/test_provider_commands.py — future-shaping: ensure helper/ delegation breadcrumbs behaviour remains covered.

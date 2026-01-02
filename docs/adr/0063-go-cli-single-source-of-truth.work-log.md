@@ -1,7 +1,7 @@
 # ADR-0063 Work Log — helper:v20251223.1
 
 ## Open Behaviours
-- [Implementation Guardrails → Delivery posture] Replace stubbed CLI delegation with real binary | `python3 scripts/tools/install_bar_cli.py --quiet` | status: in_progress — loop-0017 added installer + bin wrapper fallback; next slice wires Talon startup to invoke installer before delegation.
+- [Implementation Guardrails → Delivery posture] Replace stubbed CLI delegation with real binary | `python3 - <<'PY'\nimport pathlib, sys\nbin_path = pathlib.Path('bin/bar.bin')\nif bin_path.exists():\n    bin_path.unlink()\nimport bootstrap\nbootstrap.bootstrap()\nif bin_path.exists():\n    sys.exit(0)\nraise SystemExit('bootstrap did not install CLI binary')\nPY` | status: in_progress — loop-0018 wires bootstrap to install the packaged CLI; next slice integrates Talon adapters to surface installer failures.
 - [Implementation Guardrails → Delivery posture] Release checksum manifest hardening | `scripts/tools/check_cli_assets.py` | status: in_progress — loop-0016 added tarball + checksum verification; next slice adds signature enforcement and CI upload contract.
 
 ## Completed Loops
@@ -22,3 +22,4 @@
 - loop-0015 — surfaced compiled binary path in health payload and asset guard; evidence: `docs/adr/evidence/0063/loop-0015.md`.
 - loop-0016 — updated [Implementation Guardrails → Delivery posture] Completed Loops; packaged bar CLI tarball with checksum manifest; validation: `python3 scripts/tools/check_cli_assets.py`; evidence: `docs/adr/evidence/0063/loop-0016.md`.
 - loop-0017 — installed packaged CLI binary before delegation and updated bin wrapper fallback; validation: `python3 scripts/tools/install_bar_cli.py --quiet`; evidence: `docs/adr/evidence/0063/loop-0017.md`.
+- loop-0018 — wired bootstrap to install the packaged CLI binary before delegation; validation: `python3 - <<'PY'\nimport pathlib, sys\nbin_path = pathlib.Path('bin/bar.bin')\nif bin_path.exists():\n    bin_path.unlink()\nimport bootstrap\nbootstrap.bootstrap()\nif bin_path.exists():\n    sys.exit(0)\nraise SystemExit('bootstrap did not install CLI binary')\nPY`; evidence: `docs/adr/evidence/0063/loop-0018.md`.

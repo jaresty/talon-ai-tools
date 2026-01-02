@@ -769,3 +769,26 @@
           raise SystemExit('tests missing dataclass references')
       print('Tests reference dataclass fields')
     PY — future-shaping: align guardrail tests with the dataclass payload.
+
+
+## 2026-01-02 – Loop 030 (kind: test)
+- helper_version: helper:v20251223.1
+- focus: ADR-0063 §Talon Adapter Layer (update guardrail tests for BarCliPayload)
+- riskiest_assumption: Without aligning guardrail tests, the dataclass refactor could regress unnoticed (probability medium, impact medium-high on parity).
+- validation_targets:
+  - python3 -m pytest _tests/test_provider_commands.py
+- evidence:
+  - docs/adr/evidence/0063/loop-0030.md
+- rollback_plan: git checkout HEAD -- _tests/test_provider_commands.py docs/adr/0063-go-cli-single-source-of-truth.work-log.md
+- delta_summary: helper:diff-snapshot=1 file changed, 14 insertions(+), 16 deletions(-); updated helper tests to assert against `BarCliPayload` attributes.
+- loops_remaining_forecast: 2 loops remaining (documentation updates, alert handling); confidence medium-high.
+- residual_risks:
+  - Additional dataclass behaviours (e.g., alerts) still rely on forthcoming implementation.
+- next_work:
+  - Behaviour: document dataclass usage in README/ADR — python3 - <<'PY'
+      from pathlib import Path
+      text = Path('cli/README.md').read_text()
+      if 'payload dataclass' not in text.lower():
+          raise SystemExit('README missing dataclass note')
+      print('README references payload dataclass')
+    PY — future-shaping: ensure docs steer contributors toward the shared helper.

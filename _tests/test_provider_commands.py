@@ -443,6 +443,31 @@ class BarCliDelegationTests(unittest.TestCase):
         notify_mock.assert_called_once_with("ok")
         set_reason.assert_called_once_with("cli_error", "ok")
 
+    def test_delegate_logs_stderr_on_success(self):
+        result = SimpleNamespace(
+            returncode=0,
+            stdout='{"notify":"ok"}',
+            stderr="stderr warning",
+        )
+        with (
+            patch.object(provider_module.settings, "get", return_value=1),
+            patch.object(
+                provider_module, "_bar_cli_command", return_value=Path("/tmp/bar")
+            ),
+            patch.object(provider_module.subprocess, "run", return_value=result),
+            patch.object(provider_module, "notify") as notify_mock,
+            patch("talon_user.lib.providerCommands.print") as print_mock,
+        ):
+            self.assertTrue(
+                provider_module._delegate_to_bar_cli("model_provider_status")
+            )
+        notify_mock.assert_called_once_with("ok")
+        logged = [
+            " ".join(str(arg) for arg in call.args)
+            for call in print_mock.call_args_list
+        ]
+        self.assertTrue(any("stderr warning" in entry for entry in logged))
+
     def test_parse_bar_cli_payload_multiline_stdout(self):
         result = SimpleNamespace(stdout='info line\n{"notify":"ok"}\n')
         payload = provider_module._parse_bar_cli_payload(result)

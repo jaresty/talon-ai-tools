@@ -2665,3 +2665,32 @@
   - Follow-ups logged in Loop 102; release automation readiness relies on future implementation work but no further loop slices planned.
 - next_work:
   - Behaviour: none — loop series concluded.
+
+
+## 2026-01-02 – Loop 104 (kind: planning)
+- helper_version: helper:v20251223.1
+- focus: ADR-0063 §Implementation Plan – 5. Release & Distribution | implementation backlog audit
+- riskiest_assumption: Canonical intent “shared release automation guardrails” (Decision items 5–6) could fail if we lack a traceable backlog of code tasks (probability medium, impact medium-high on rollout reliability).
+- validation_targets:
+  - python3 - <<'PY'
+      from pathlib import Path
+      text = Path('docs/adr/0063-go-cli-single-source-of-truth.work-log.md').read_text()
+      if 'Loop 104 (kind:' not in text:
+          raise SystemExit('Implementation backlog loop missing')
+      print('Implementation backlog loop recorded')
+    PY
+- evidence:
+  - docs/adr/evidence/0063/loop-0104.md
+- rollback_plan: git checkout HEAD -- docs/adr/0063-go-cli-single-source-of-truth.work-log.md docs/adr/evidence/0063/loop-0104.md
+- delta_summary: helper:diff-snapshot=2 files changed, 88 insertions(+); catalogued release automation backlog and recorded evidence.
+- loops_remaining_forecast: 9 loops remaining (105 validation mapping, 106 telemetry scripting, 107 environment checks, 108 build gating, 109 fallback sequencing, 110 metrics monitoring, 111 support runbook, 112 follow-up tracker, 113 implementation readiness status); confidence medium until code owners sign off on backlog scope.
+- residual_risks:
+  - severity: medium — backlog entries not yet tied to owners; mitigation: loop 105 maps validations to code paths; trigger: backlog items missing assignees in future evidence.
+- next_work:
+  - Behaviour: map automation validation commands — python3 - <<'PY'
+      from pathlib import Path
+      text = Path('docs/adr/0063-go-cli-single-source-of-truth.work-log.md').read_text()
+      if 'Loop 105 (kind:' in text:
+          raise SystemExit('Validation mapping loop already present (unexpected)')
+      print('Ready to map validation commands')
+    PY — future-shaping: connect backlog items to concrete validation commands.

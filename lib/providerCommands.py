@@ -1,6 +1,7 @@
 import os
 import subprocess
 import json
+from dataclasses import dataclass
 from typing import Optional
 from pathlib import Path
 
@@ -37,6 +38,15 @@ def _bar_cli_enabled() -> bool:
         return False
 
 
+@dataclass
+class BarCliPayload:
+    raw: dict | None
+    notice: str | None = None
+    error: str | None = None
+    debug: str | None = None
+    drop_reason: str | None = None
+
+
 def _bar_cli_command() -> Path:
     """Return the absolute path to the bar CLI binary."""
 
@@ -48,14 +58,11 @@ def _bar_cli_command() -> Path:
     return root / "cli" / "bin" / "bar"
 
 
-def _parse_bar_cli_payload(
-    result: object,
-) -> tuple[dict | None, str | None, str | None, str | None, str | None]:
-    """Return decoded CLI payload plus notify/error/debug/drop_reason hints."""
+def _parse_bar_cli_payload(result: object) -> BarCliPayload:
+    """Decode CLI stdout into a structured payload helper."""
 
     payload = None
     stdout = getattr(result, "stdout", "")
-
     if stdout:
         try:
             payload = json.loads(stdout)
@@ -63,12 +70,14 @@ def _parse_bar_cli_payload(
             payload = None
 
     if isinstance(payload, dict):
-        notify_message = payload.get("notify") or payload.get("message")
-        error_message = payload.get("error") or payload.get("error_message")
-        debug_hint = payload.get("debug") or payload.get("status")
-        drop_reason = payload.get("drop_reason")
-        return payload, notify_message, error_message, debug_hint, drop_reason
-    return None, None, None, None, None
+        return BarCliPayload(
+            raw=payload,
+            notice=payload.get("notify") or payload.get("message"),
+            error=payload.get("error") or payload.get("error_message"),
+            debug=payload.get("debug") or payload.get("status"),
+            drop_reason=payload.get("drop_reason"),
+        )
+    return BarCliPayload(raw=None)
 
 
 def _delegate_to_bar_cli(action: str, *args, **kwargs) -> bool:
@@ -110,45 +119,49 @@ def _delegate_to_bar_cli(action: str, *args, **kwargs) -> bool:
             pass
         return False
 
-    payload, notice, error_message, debug_hint, drop_reason = _parse_bar_cli_payload(
-        result
-    )
+    payload_info = _parse_bar_cli_payload(result)
 
-    if payload is not None:
-        if error_message:
+    if payload_info.raw is not None:
+        if payload_info.error:
             try:
-                notify(error_message)
+                notify(payload_info.error)
             except Exception:
                 pass
             try:
-                if drop_reason:
+                if payload_info.drop_reason:
                     print(
                         f"[debug] bar CLI reported error for {action}; "
-                        f"drop_reason={drop_reason!r} message={error_message!r}"
+                        f"drop_reason={payload_info.drop_reason!r} message={payload_info.error!r}"
                     )
                 else:
                     print(
                         f"[debug] bar CLI reported error for {action}; "
-                        f"message={error_message!r}"
+                        f"message={payload_info.error!r}"
                     )
             except Exception:
                 pass
 
-        if notice and (not error_message or notice != error_message):
+        if payload_info.notice and (
+            not payload_info.error or payload_info.notice != payload_info.error
+        ):
             try:
-                notify(notice)
+                notify(payload_info.notice)
             except Exception:
                 pass
 
-        if debug_hint:
+        if payload_info.debug:
             try:
-                print(f"[debug] bar CLI handled action {action}; status={debug_hint!r}")
+                print(
+                    f"[debug] bar CLI handled action {action}; status={payload_info.debug!r}"
+                )
             except Exception:
                 pass
 
-        if not any([notice, error_message, debug_hint]):
+        if not any([payload_info.notice, payload_info.error, payload_info.debug]):
             try:
-                print(f"[debug] bar CLI handled action {action}; payload={payload!r}")
+                print(
+                    f"[debug] bar CLI handled action {action}; payload={payload_info.raw!r}"
+                )
             except Exception:
                 pass
     else:

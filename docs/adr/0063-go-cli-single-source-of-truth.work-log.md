@@ -731,3 +731,41 @@
   - Monitor telemetry schema changes to ensure the helper and tests stay aligned.
 - next_work:
   - Behaviour: none — loop series complete pending review.
+
+
+## 2026-01-02 – Loop 029 (kind: refactor)
+- helper_version: helper:v20251223.1
+- focus: ADR-0063 §Talon Adapter Layer (introduce BarCliPayload dataclass)
+- riskiest_assumption: Without a structured payload helper, CLI field growth will duplicate parsing logic and risk drift (probability medium, impact medium-high on maintainability).
+- validation_targets:
+  - python3 - <<'PY'
+      from pathlib import Path
+      text = Path('lib/providerCommands.py').read_text()
+      if 'BarCliPayload' not in text:
+          raise SystemExit('payload dataclass missing')
+      from types import SimpleNamespace
+      import sys
+      sys.path.insert(0, str(Path('.').resolve()))
+      from bootstrap import bootstrap
+      bootstrap()
+      from talon_user.lib import providerCommands
+      payload = providerCommands._parse_bar_cli_payload(SimpleNamespace(stdout='{"notify":"hi"}'))
+      if not hasattr(payload, 'raw') or payload.notice != 'hi':
+          raise SystemExit('BarCliPayload dataclass not returning expected values')
+      print('BarCliPayload dataclass active')
+    PY
+- evidence:
+  - docs/adr/evidence/0063/loop-0029.md
+- rollback_plan: git checkout HEAD -- lib/providerCommands.py docs/adr/0063-go-cli-single-source-of-truth.work-log.md
+- delta_summary: helper:diff-snapshot=1 file changed, 27 insertions(+), 12 deletions(-); `_parse_bar_cli_payload` now returns a `BarCliPayload` dataclass consumed by `_delegate_to_bar_cli`.
+- loops_remaining_forecast: 3 loops remaining (dataclass-aware tests, documentation updates, alert handling); confidence medium.
+- residual_risks:
+  - Existing tests unpack tuples and now fail; upcoming loops will align guardrails with the dataclass API.
+- next_work:
+  - Behaviour: refresh tests to target the dataclass payload — python3 - <<'PY'
+      from pathlib import Path
+      text = Path('_tests/test_provider_commands.py').read_text()
+      if 'BarCliPayload' not in text:
+          raise SystemExit('tests missing dataclass references')
+      print('Tests reference dataclass fields')
+    PY — future-shaping: align guardrail tests with the dataclass payload.

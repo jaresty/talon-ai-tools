@@ -51,7 +51,7 @@ Talon now records any stdout-derived JSON plus the raw CLI stderr stream in debu
 Severity values (for example `"severity": "warning"`) are prefixed to notices and alerts (`[WARNING] message`) and logged for debugging. Use lowercase severity strings; the adapter normalises them to uppercase when surfacing notifications.
 
 Breadcrumb arrays (for example `"breadcrumbs": ["step 1", "step 2"]`) are logged verbatim in Talon’s debug output so operators can trace CLI decisions. Provide human-readable strings; blank entries are ignored.
-- Talon caps CLI stdout/stderr and per-field log values at 512 characters before printing to the debug console, appending `...(truncated)` so operators know data was shortened; `_tests/test_provider_commands.py` covers error, breadcrumb, and raw payload log cases.
+- Talon caps CLI stdout/stderr and per-field log values at 512 characters before printing to the debug console, appending `...(truncated)` plus indicator metadata such as `(original length 1536 chars)` or `truncated 1 entries` so operators know how much data was removed; `_tests/test_provider_commands.py` covers error, breadcrumb, stdout, stderr, and raw payload cases.
 
 ## Implementation Slices
 

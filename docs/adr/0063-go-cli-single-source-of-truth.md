@@ -180,7 +180,7 @@ Talon code will gradually migrate to delegating through adapters rather than mai
 - **Performance & latency**: provide daemon mode with keep-alive IPC, cache provider/grammar data, and benchmark cold vs. warm invocations before flipping defaults.
 - **Version compatibility**: embed semantic version + capability list in CLI handshake; adapters negotiate and refuse unsupported features with explicit fallbacks.
 - **Testing strategy**: add golden transcript tests for CLI stdout/stderr, attachment fixtures, and session persistence across restarts; run both CLI and legacy paths in CI during migration.
-- **Log truncation**: cap CLI stdout/stderr and debug log values at 512 characters with an `...(truncated)` suffix; guardrail tests cover error, breadcrumb, and payload logging so runaway payloads cannot overwhelm Talon consoles.
+- **Log truncation**: cap CLI stdout/stderr and debug log values at 512 characters with an `...(truncated)` suffix and attach indicator metadata (for example, `(original length 2048 chars)`); guardrail tests cover error, breadcrumb, stdout, stderr, and payload logging so runaway payloads cannot overwhelm Talon consoles.
 - **Payload helper parity**: keep `_parse_bar_cli_payload` and the `BarCliPayload` dataclass under unit tests covering success and failure cases (including the `decode_failed` flag); extend the helper before introducing new telemetry fields.
 - **Distribution & updates**: define signature verification, notarization (macOS), auto-update prompts inside Talon, and manual override instructions for offline setups.
 - **Deferred hardening** *(future ADRs)*: advanced threat assessments, privacy redaction policies, third-party plugin support.

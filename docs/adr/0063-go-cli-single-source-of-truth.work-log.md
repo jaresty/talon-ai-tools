@@ -1801,3 +1801,40 @@
           raise SystemExit('README missing indicator guidance')
       print('README references indicator guidance')
     PY — future-shaping: ensure operators understand how to interpret truncation metadata.
+
+
+## 2026-01-02 – Loop 068 (kind: documentation)
+- helper_version: helper:v20251223.1
+- focus: ADR-0063 §Operational Mitigations – document truncation indicators
+- riskiest_assumption: Without documentation, operators might misread the new indicator strings or ignore truncation metadata (probability medium, impact medium on observability).
+- validation_targets:
+  - python3 - <<'PY'
+      from pathlib import Path
+
+      checks = [
+          (Path('cli/README.md'), 'original length'),
+          (Path('docs/adr/0063-go-cli-single-source-of-truth.md'), 'indicator metadata'),
+      ]
+      for path, needle in checks:
+          text = path.read_text().lower()
+          if needle not in text:
+              raise SystemExit(f"missing '{needle}' in {path}")
+      print('documentation references truncation indicators')
+    PY
+- evidence:
+  - docs/adr/evidence/0063/loop-0068.md
+- rollback_plan: git checkout HEAD -- cli/README.md docs/adr/0063-go-cli-single-source-of-truth.md docs/adr/0063-go-cli-single-source-of-truth.work-log.md docs/adr/evidence/0063/loop-0068.md
+- delta_summary: helper:diff-snapshot=3 files changed, 0 insertions(+), 0 deletions(-); updated CLI README and ADR with indicator guidance and captured evidence.
+- loops_remaining_forecast: 4 loops remaining (log limit override, residual risk updates, telemetry note, validation sweep, closeout); confidence medium.
+- residual_risks:
+  - Log limit override and telemetry note remain outstanding; upcoming loops will introduce configuration controls and finalize residual risks.
+- next_work:
+  - Behaviour: implement log limit override — python3 - <<'PY'
+      import os
+      os.environ['BAR_CLI_DEBUG_LOG_LIMIT'] = '256'
+      from pathlib import Path
+      text = Path('lib/providerCommands.py').read_text()
+      if 'BAR_CLI_DEBUG_LOG_LIMIT' not in text:
+          raise SystemExit('log limit override missing')
+      print('log limit override implemented')
+    PY — future-shaping: allow operators to tune truncation length for debugging.

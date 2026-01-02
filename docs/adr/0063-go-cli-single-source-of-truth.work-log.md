@@ -1894,3 +1894,38 @@
           raise SystemExit('README missing settings override')
       print('Documentation mentions settings override')
     PY — future-shaping: ensure operator guidance includes the new configuration setting.
+
+
+## 2026-01-02 – Loop 071 (kind: documentation)
+- helper_version: helper:v20251223.1
+- focus: ADR-0063 §Operational Mitigations – document settings override
+- riskiest_assumption: Without documentation, operators may not discover the new `user.bar_cli_debug_log_limit` setting (probability medium, impact medium on diagnostics).
+- validation_targets:
+  - python3 - <<'PY'
+      from pathlib import Path
+
+      checks = [
+          (Path('cli/README.md'), 'bar_cli_debug_log_limit'),
+          (Path('docs/adr/0063-go-cli-single-source-of-truth.md'), 'cannot read environment variables'),
+      ]
+      for path, needle in checks:
+          text = path.read_text().lower()
+          if needle not in text:
+              raise SystemExit(f"missing '{needle}' in {path}")
+      print('documentation references settings override')
+    PY
+- evidence:
+  - docs/adr/evidence/0063/loop-0071.md
+- rollback_plan: git checkout HEAD -- cli/README.md docs/adr/0063-go-cli-single-source-of-truth.md docs/adr/0063-go-cli-single-source-of-truth.work-log.md docs/adr/evidence/0063/loop-0071.md
+- delta_summary: helper:diff-snapshot=4 files changed, 0 insertions(+), 0 deletions(-); documented the settings override and recorded evidence.
+- loops_remaining_forecast: 1 loop remaining (residual risk update, telemetry note, final validation, closeout); confidence medium.
+- residual_risks:
+  - Residual risk updates and telemetry notes still pending; upcoming loop finalizes them.
+- next_work:
+  - Behaviour: update residual risks for override — python3 - <<'PY'
+      from pathlib import Path
+      text = Path('docs/adr/0063-go-cli-single-source-of-truth.work-log.md').read_text()
+      if 'residual_risks' not in text:
+          raise SystemExit('Work log missing residual risk updates')
+      print('Residual risks updated')
+    PY — future-shaping: capture remaining risk mitigation tasks before closeout.

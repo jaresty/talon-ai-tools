@@ -1534,3 +1534,20 @@
   - Guardrail tests still expect raw CLI drop_reason codes; address in Loop 059.
 - next_work:
   - Behaviour: update drop_reason tests — python3 -m pytest _tests/test_provider_commands.py -k drop_reason — future-shaping: align guardrails with the new normalisation.
+
+
+## 2026-01-02 – Loop 059 (kind: test)
+- helper_version: helper:v20251223.1
+- focus: ADR-0063 §Talon Adapter Layer (test drop_reason normalisation)
+- riskiest_assumption: Without guardrail tests, normalised drop_reason behaviour could regress unnoticed (probability medium, impact medium-high on telemetry parity).
+- validation_targets:
+  - python3 -m pytest _tests/test_provider_commands.py -k drop_reason
+- evidence:
+  - docs/adr/evidence/0063/loop-0059.md
+- rollback_plan: git checkout HEAD -- _tests/test_provider_commands.py docs/adr/0063-go-cli-single-source-of-truth.work-log.md docs/adr/evidence/0063/loop-0059.md
+- delta_summary: helper:diff-snapshot=1 file changed, 7 insertions(+), 7 deletions(-); updated tests to assert normalised drop_reason behaviour.
+- loops_remaining_forecast: 8 loops remaining (docs, logging, truncation); confidence medium.
+- residual_risks:
+  - Documentation still references prior drop_reason behaviour; update in Loop 060.
+- next_work:
+  - Behaviour: document drop_reason normalisation — python3 - <<'PY' ...> — future-shaping: keep operators aligned with the new Concordance expectations.

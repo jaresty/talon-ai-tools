@@ -315,12 +315,12 @@ class BarCliDelegationTests(unittest.TestCase):
             self.assertTrue(
                 provider_module._delegate_to_bar_cli("model_provider_status")
             )
-        self.assertEqual(set_reason.call_args[0][0], "cli_error")
+        self.assertEqual(set_reason.call_args[0][0], "")
         self.assertEqual(set_reason.call_args[0][1], "cli failed")
 
         severity_result = SimpleNamespace(
             returncode=0,
-            stdout='{"error":"cli failed","drop_reason":"cli_error","severity":"warning"}',
+            stdout='{"error":"cli failed","drop_reason":"history_save_failed","severity":"warning"}',
             stderr="",
         )
         with (
@@ -338,7 +338,7 @@ class BarCliDelegationTests(unittest.TestCase):
             self.assertTrue(
                 provider_module._delegate_to_bar_cli("model_provider_status")
             )
-        self.assertEqual(set_reason.call_args[0][0], "cli_error")
+        self.assertEqual(set_reason.call_args[0][0], "history_save_failed")
         self.assertEqual(set_reason.call_args[0][1], "[WARNING] cli failed")
 
     def test_delegate_handles_alert_payload(self):
@@ -441,7 +441,7 @@ class BarCliDelegationTests(unittest.TestCase):
                 provider_module._delegate_to_bar_cli("model_provider_status")
             )
         notify_mock.assert_called_once_with("ok")
-        set_reason.assert_called_once_with("cli_error", "ok")
+        set_reason.assert_called_once_with("", "ok")
 
     def test_delegate_logs_stderr_on_success(self):
         result = SimpleNamespace(

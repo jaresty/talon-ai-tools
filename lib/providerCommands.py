@@ -2,7 +2,7 @@ import os
 import subprocess
 import json
 from dataclasses import dataclass
-from typing import Optional
+from typing import Optional, cast
 from pathlib import Path
 
 from talon import Context, Module, actions, settings
@@ -19,6 +19,7 @@ from .providerRegistry import (
 )
 from .requestGating import request_is_in_flight
 from .historyLifecycle import last_drop_reason, set_drop_reason
+from .requestState import RequestDropReason
 
 from .modelHelpers import notify
 from .surfaceGuidance import guard_surface_request
@@ -36,6 +37,22 @@ def _bar_cli_enabled() -> bool:
         return bool(settings.get("user.bar_cli_enabled", 0))
     except Exception:
         return False
+
+
+_KNOWN_DROP_REASONS = {cast(str, value) for value in RequestDropReason.__args__}
+
+
+def _normalise_cli_drop_reason(
+    raw_reason: str | None,
+) -> tuple[RequestDropReason | None, str | None]:
+    if not raw_reason:
+        return None, None
+    candidate = str(raw_reason).strip()
+    if not candidate:
+        return None, None
+    if candidate in _KNOWN_DROP_REASONS:
+        return cast(RequestDropReason, candidate), candidate
+    return None, candidate
 
 
 @dataclass
@@ -183,7 +200,10 @@ def _delegate_to_bar_cli(action: str, *args, **kwargs) -> bool:
     severity_lower = severity_label.lower() if severity_label else ""
 
     if payload_info.has_payload:
-        if payload_info.drop_reason:
+        normalised_drop_reason, raw_drop_reason = _normalise_cli_drop_reason(
+            payload_info.drop_reason
+        )
+        if raw_drop_reason:
             drop_message_candidate = (
                 payload_info.error
                 or payload_info.notice
@@ -195,10 +215,15 @@ def _delegate_to_bar_cli(action: str, *args, **kwargs) -> bool:
             if drop_message and severity_label:
                 drop_message = f"{severity_prefix}{drop_message}"
             try:
-                if drop_message:
-                    set_drop_reason(payload_info.drop_reason, drop_message)
+                if normalised_drop_reason is not None:
+                    if drop_message:
+                        set_drop_reason(normalised_drop_reason, drop_message)
+                    else:
+                        set_drop_reason(normalised_drop_reason)
+                elif drop_message:
+                    set_drop_reason("", drop_message)
                 else:
-                    set_drop_reason(payload_info.drop_reason)
+                    set_drop_reason("")
             except Exception:
                 pass
 
@@ -211,10 +236,10 @@ def _delegate_to_bar_cli(action: str, *args, **kwargs) -> bool:
             except Exception:
                 pass
             try:
-                if payload_info.drop_reason:
+                if raw_drop_reason:
                     print(
                         f"[debug] bar CLI reported error for {action}; "
-                        f"drop_reason={payload_info.drop_reason!r} severity={severity_label or 'none'} message={payload_info.error!r}"
+                        f"drop_reason={raw_drop_reason!r} severity={severity_label or 'none'} message={payload_info.error!r}"
                     )
                 else:
                     print(

@@ -1981,3 +1981,26 @@
   - Telemetry expectations captured; remaining loops cover validation sweep and closeout documentation.
 - next_work:
   - Behaviour: run final validation sweep — python3 -m pytest _tests/test_provider_commands.py -k "truncation or log_limit" — future-shaping: ensure all guardrails pass before closeout.
+
+
+## 2026-01-02 – Loop 074 (kind: test)
+- helper_version: helper:v20251223.1
+- focus: ADR-0063 §Operational Mitigations – final validation sweep
+- riskiest_assumption: Without a final sweep, regressions could slip into closeout (probability low, impact medium on diagnostics).
+- validation_targets:
+  - python3 -m pytest _tests/test_provider_commands.py -k "truncation or log_limit"
+- evidence:
+  - docs/adr/evidence/0063/loop-0074.md
+- rollback_plan: git checkout HEAD -- docs/adr/0063-go-cli-single-source-of-truth.work-log.md docs/adr/evidence/0063/loop-0074.md
+- delta_summary: helper:diff-snapshot=2 files changed, 0 insertions(+), 0 deletions(-); recorded final validation sweep and evidence.
+- loops_remaining_forecast: loops 075–079 handle closeout summary, helper metrics, and follow-up tasks; confidence high.
+- residual_risks:
+  - No new risks identified; remaining loops focus on documentation closeout and follow-ups.
+- next_work:
+  - Behaviour: summarize loop closeout — python3 - <<'PY'
+      from pathlib import Path
+      text = Path('docs/adr/0063-go-cli-single-source-of-truth.work-log.md').read_text()
+      if 'Loop 075' in text:
+          raise SystemExit('closeout summary already present (unexpected)')
+      print('Ready to add closeout summary')
+    PY — future-shaping: capture lessons learned and follow-up tasks.

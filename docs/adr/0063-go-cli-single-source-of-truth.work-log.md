@@ -3091,11 +3091,39 @@
 - residual_risks:
   - Need written guide for the streamlined workflow and a clear ledger of deferred automation tasks.
 - next_work:
-  - Behaviour: document single-user workflow plan in ADR-0063 §Implementation Plan — python3 - <<'PY'
+  - Behaviour: capture deferred enterprise automation list — python3 - <<'PY'
+      from pathlib import Path
+      text = Path('docs/adr/0063-go-cli-single-source-of-truth.work-log.md').read_text()
+      if 'Loop 119 (kind:' in text:
+          raise SystemExit('Deferred automation loop already present (unexpected)')
+      print('Ready to document deferred automation items')
+    PY — future-shaping: separate optional enterprise tasks from the single-user path.
+
+## 2026-01-02 – Loop 119 (kind: documentation)
+- helper_version: helper:v20251223.1
+- focus: ADR-0063 §Implementation Plan – single-user workflow guidance
+- riskiest_assumption: Without explicit guidance, a solo Talon operator might miss the minimal steps required to adopt the Go CLI, delaying delegation (probability medium, impact medium-high on adoption).
+- validation_targets:
+  - python3 - <<'PY'
       from pathlib import Path
       text = Path('docs/adr/0063-go-cli-single-source-of-truth.md').read_text()
-      if 'Single-user workflow' not in text:
-          raise SystemExit('ADR lacks single-user workflow guidance')
-      print('ADR ready for single-user workflow update')
-    PY — future-shaping: make the trimmed plan explicit.
+      if 'Single-user workflow (minimal path)' not in text:
+          raise SystemExit('Single-user workflow guidance missing from ADR')
+      print('Single-user workflow guidance present')
+    PY
+- evidence:
+  - docs/adr/evidence/0063/loop-0119.md
+- rollback_plan: git checkout HEAD -- docs/adr/0063-go-cli-single-source-of-truth.md docs/adr/0063-go-cli-single-source-of-truth.work-log.md docs/adr/evidence/0063/loop-0119.md
+- delta_summary: helper:diff-snapshot=3 files changed, 105 insertions(+), 5 deletions(-); documented minimal single-user workflow and updated loop sequencing.
+- loops_remaining_forecast: 1 loop remaining (document deferred enterprise automation tasks); confidence high.
+- residual_risks:
+  - Need explicit list of optional enterprise automation tasks and their deferral rationale.
+- next_work:
+  - Behaviour: document deferred enterprise automation tasks — python3 - <<'PY'
+      from pathlib import Path
+      text = Path('docs/adr/0063-go-cli-single-source-of-truth.work-log.md').read_text()
+      if 'Loop 120 (kind:' in text:
+          raise SystemExit('Deferred automation documentation loop already present (unexpected)')
+      print('Ready to document deferred enterprise automation tasks')
+    PY — future-shaping: ensure optional items are separated from minimal single-user workflow.
 

@@ -124,6 +124,18 @@ Talon code will gradually migrate to delegating through adapters rather than mai
 - Include checksum/manifest files consumed by Talon installers and external tooling.
 - Document installation and Talon delegation flows in the repo README/docs, including version negotiation and auto-update guidance for Talon adapters.
 
+### Single-user workflow (minimal path)
+
+For an individual Talon operator delegating to the Go CLI, prioritise the following steps and treat remaining automation items as optional future work:
+
+1. **Build the CLI locally** — `cd cli && go build -o bin/bar ./cmd/bar`; confirm `cli/bin/bar --help` runs.
+2. **Point Talon at the binary** — either add `cli/bin` to PATH or set `BAR_CLI_PATH` so Talon adapters can invoke the binary; keep the legacy Python path as fallback.
+3. **Toggle delegation flag** — enable `user.bar_cli_enabled` (or the local equivalent) inside Talon to route commands through the CLI while retaining the ability to switch back quickly.
+4. **Smoke-test core flows** — issue a prompt via the CLI (`bar run --persona default --stdin`) and ensure Talon receives output, clipboard writes, and drop reasons as expected; defer wide telemetry checks.
+5. **Document personal defaults** — capture provider credentials, preferred personas/intents, and any local automation scripts in `docs/adr/evidence/0063/` so future tweaks stay auditable.
+6. **Plan simple rollback** — keep `python3 -m pytest _tests/test_axis_catalog_serializer.py` handy and record `git restore --source=HEAD^` instructions before experimenting with new slices.
+
+Remaining release automation (CI signing, multi-platform publishing, telemetry dashboards) can be deferred until a broader rollout is required.
 
 ---
 

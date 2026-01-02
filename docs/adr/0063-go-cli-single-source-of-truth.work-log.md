@@ -1329,3 +1329,36 @@
   - Multi-line payload parsing still lacks documentation and implementation; scheduled for upcoming loops.
 - next_work:
   - Behaviour: support multi-line CLI JSON payloads — python3 -m pytest _tests/test_provider_commands.py -k payload_helper — future-shaping: ensure parser tolerates multi-line stdout before telemetry expansion.
+
+## 2026-01-02 – Loop 052 (kind: implementation)
+- helper_version: helper:v20251223.1
+- focus: ADR-0063 §Talon Adapter Layer (support multi-line CLI JSON payloads)
+- riskiest_assumption: CLI stdout containing extra lines would still fail to parse, preventing Talon from honoring CLI payloads (probability medium, impact high on guardrail parity).
+- validation_targets:
+  - python3 - <<'PY'
+      import sys
+      from pathlib import Path
+      from types import SimpleNamespace
+
+      sys.path.insert(0, str(Path('.').resolve()))
+      from bootstrap import bootstrap
+      bootstrap()
+
+      from talon_user.lib import providerCommands
+
+      result = providerCommands._parse_bar_cli_payload(
+          SimpleNamespace(stdout='info line\n{"notify":"ok","drop_reason":"cli_error"}\n')
+      )
+      if not result.has_payload or result.notice != 'ok':
+          raise SystemExit('multi-line stdout still failing to parse')
+      print('multi-line stdout parsed successfully')
+    PY
+- evidence:
+  - docs/adr/evidence/0063/loop-0052.md
+- rollback_plan: git checkout HEAD -- lib/providerCommands.py docs/adr/0063-go-cli-single-source-of-truth.work-log.md docs/adr/evidence/0063/loop-0052.md
+- delta_summary: helper:diff-snapshot=3 files changed, 149 insertions(+), 7 deletions(-); parser now tolerates multi-line stdout and extracts the JSON payload.
+- loops_remaining_forecast: 5 loops remaining (multi-line payload tests, stderr logging, documentation, final validation); confidence medium.
+- residual_risks:
+  - Tests still expect single-line stdout; capture multi-line scenarios next loop.
+- next_work:
+  - Behaviour: add tests for multi-line payload parsing — python3 -m pytest _tests/test_provider_commands.py -k payload_helper — future-shaping: guard the new behaviour with unit tests.

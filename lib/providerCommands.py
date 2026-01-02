@@ -79,13 +79,43 @@ def _bar_cli_command() -> Path:
 def _parse_bar_cli_payload(result: object) -> BarCliPayload:
     """Decode CLI stdout into a structured payload helper."""
 
-    payload = None
-    stdout = getattr(result, "stdout", "")
+    stdout_raw = getattr(result, "stdout", "")
+    stdout = stdout_raw or ""
+    payload: dict | None = None
+    decode_failed = False
+
     if stdout:
-        try:
-            payload = json.loads(stdout)
-        except json.JSONDecodeError:
-            payload = None
+        candidates: list[str] = []
+        stripped = stdout.strip()
+        if stripped:
+            candidates.append(stripped)
+        if "\n" in stdout:
+            lines = [line.strip() for line in stdout.splitlines() if line.strip()]
+            if lines:
+                joined = "\n".join(lines)
+                candidates.append(joined)
+                for line in reversed(lines):
+                    if line not in candidates:
+                        candidates.append(line)
+        if stripped:
+            first_brace = stripped.find("{")
+            if first_brace > 0:
+                suffix = stripped[first_brace:]
+                candidates.append(suffix)
+        seen: set[str] = set()
+        for candidate in candidates:
+            if not candidate or candidate in seen:
+                continue
+            seen.add(candidate)
+            try:
+                parsed = json.loads(candidate)
+            except json.JSONDecodeError:
+                continue
+            if isinstance(parsed, dict):
+                payload = parsed
+                break
+        if payload is None:
+            decode_failed = True
 
     if isinstance(payload, dict):
         breadcrumbs_value = payload.get("breadcrumbs")
@@ -105,7 +135,7 @@ def _parse_bar_cli_payload(result: object) -> BarCliPayload:
             severity=payload.get("severity"),
             breadcrumbs=breadcrumbs,
         )
-    return BarCliPayload(raw=None, decode_failed=bool(stdout))
+    return BarCliPayload(raw=None, decode_failed=decode_failed and bool(stdout))
 
 
 def _delegate_to_bar_cli(action: str, *args, **kwargs) -> bool:

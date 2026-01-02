@@ -14,17 +14,30 @@
     "074",
     "075",
     "076",
-    "077"
+    "077",
+    "078",
+    "079",
+    "080",
+    "081",
+    "082",
+    "083",
+    "084",
+    "085",
+    "086",
+    "087",
+    "088"
   ],
   "counts": {
-    "implementation": 4,
-    "test": 4,
-    "documentation": 5,
-    "summary": 1,
-    "planning": 1
+    "implementation": 5,
+    "test": 6,
+    "documentation": 8,
+    "summary": 3,
+    "planning": 1,
+    "validation": 1
   },
   "validation_runs": {
-    "pytest_shards": 4,
-    "documentation_checks": 5
+    "pytest_shards": 6,
+    "documentation_checks": 7,
+    "snapshot_validations": 1
   }
 }

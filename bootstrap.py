@@ -20,11 +20,29 @@ def get_bootstrap_warnings(*, clear: bool = False) -> list[str]:
     warnings = list(_BOOTSTRAP_WARNINGS)
     if clear:
         _BOOTSTRAP_WARNINGS.clear()
+        try:
+            from lib.bootstrapTelemetry import clear_bootstrap_warning_events
+        except Exception:
+            pass
+        else:
+            try:
+                clear_bootstrap_warning_events()
+            except Exception:
+                pass
     return warnings
 
 
 def _warn(message: str) -> None:
     _BOOTSTRAP_WARNINGS.append(message)
+    try:
+        from lib.bootstrapTelemetry import record_bootstrap_warning
+    except Exception:
+        record_bootstrap_warning = None
+    if record_bootstrap_warning is not None:
+        try:
+            record_bootstrap_warning(message)
+        except Exception:
+            pass
     sys.stderr.write(f"bootstrap: {message}\n")
     try:
         from talon import actions

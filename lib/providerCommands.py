@@ -46,6 +46,10 @@ class BarCliPayload:
     debug: str | None = None
     drop_reason: str | None = None
 
+    @property
+    def has_payload(self) -> bool:
+        return self.raw is not None
+
 
 def _bar_cli_command() -> Path:
     """Return the absolute path to the bar CLI binary."""
@@ -121,7 +125,7 @@ def _delegate_to_bar_cli(action: str, *args, **kwargs) -> bool:
 
     payload_info = _parse_bar_cli_payload(result)
 
-    if payload_info.raw is not None:
+    if payload_info.has_payload:
         if payload_info.error:
             try:
                 notify(payload_info.error)

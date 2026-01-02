@@ -792,3 +792,26 @@
           raise SystemExit('README missing dataclass note')
       print('README references payload dataclass')
     PY — future-shaping: ensure docs steer contributors toward the shared helper.
+
+
+## 2026-01-02 – Loop 031 (kind: refactor)
+- helper_version: helper:v20251223.1
+- focus: ADR-0063 §Talon Adapter Layer (expose BarCliPayload conveniences)
+- riskiest_assumption: Without a canonical boolean helper, callers may duplicate raw checks and regress behaviour (probability medium, impact medium on maintainability).
+- validation_targets:
+  - python3 -m pytest _tests/test_provider_commands.py
+- evidence:
+  - docs/adr/evidence/0063/loop-0031.md
+- rollback_plan: git checkout HEAD -- lib/providerCommands.py _tests/test_provider_commands.py docs/adr/0063-go-cli-single-source-of-truth.work-log.md
+- delta_summary: helper:diff-snapshot=2 files changed, 19 insertions(+), 1 deletion(-); added `BarCliPayload.has_payload` and updated helpers/tests to rely on it.
+- loops_remaining_forecast: 2 loops remaining (documentation updates, alert handling); confidence high.
+- residual_risks:
+  - Additional payload fields still pending documentation; alert handling scheduled for Loop 033.
+- next_work:
+  - Behaviour: document dataclass usage in README/ADR — python3 - <<'PY'
+      from pathlib import Path
+      text = Path('cli/README.md').read_text()
+      if 'payload dataclass' not in text.lower():
+          raise SystemExit('README missing dataclass note')
+      print('README references payload dataclass')
+    PY — future-shaping: ensure docs steer contributors toward the shared helper.

@@ -3071,3 +3071,31 @@
       print('Ready to enumerate documentation backlog')
     PY — future-shaping: capture documentation tasks required for CLI release guardrails.
 
+## 2026-01-02 – Loop 118 (kind: planning)
+- helper_version: helper:v20251223.1
+- focus: ADR-0063 §Implementation Plan – single-user scope realignment
+- riskiest_assumption: If enterprise-scale automation remains on the backlog, a solo operator will stall before shipping the Go CLI delegation (probability medium, impact high on adoption).
+- validation_targets:
+  - python3 - <<'PY'
+      from pathlib import Path
+      text = Path('docs/adr/0063-go-cli-single-source-of-truth.work-log.md').read_text()
+      if 'Loop 118 (kind:' not in text:
+          raise SystemExit('Single-user scope loop missing')
+      print('Single-user scope loop recorded')
+    PY
+- evidence:
+  - docs/adr/evidence/0063/loop-0118.md
+- rollback_plan: git checkout HEAD -- docs/adr/0063-go-cli-single-source-of-truth.work-log.md docs/adr/evidence/0063/loop-0118.md
+- delta_summary: helper:diff-snapshot=2 files changed, 83 insertions(+); trimmed plan to single-user scope with reduced loop forecast.
+- loops_remaining_forecast: 2 loops remaining (document minimal single-user workflow, capture deferred enterprise tasks); confidence high.
+- residual_risks:
+  - Need written guide for the streamlined workflow and a clear ledger of deferred automation tasks.
+- next_work:
+  - Behaviour: document single-user workflow plan in ADR-0063 §Implementation Plan — python3 - <<'PY'
+      from pathlib import Path
+      text = Path('docs/adr/0063-go-cli-single-source-of-truth.md').read_text()
+      if 'Single-user workflow' not in text:
+          raise SystemExit('ADR lacks single-user workflow guidance')
+      print('ADR ready for single-user workflow update')
+    PY — future-shaping: make the trimmed plan explicit.
+

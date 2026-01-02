@@ -903,3 +903,32 @@
           raise SystemExit('parse failure logging missing')
       print('parse failure logging present')
     PY — future-shaping: ensure malformed payloads emit a single diagnostic.
+
+
+## 2026-01-02 – Loop 035 (kind: implementation)
+- helper_version: helper:v20251223.1
+- focus: ADR-0063 §Talon Adapter Layer (log JSON decode failures once)
+- riskiest_assumption: Without explicit logging, malformed payloads could hide CLI issues (probability medium, impact medium on observability).
+- validation_targets:
+  - python3 - <<'PY'
+      from types import SimpleNamespace
+      from pathlib import Path
+      import sys
+      sys.path.insert(0, str(Path('.').resolve()))
+      from bootstrap import bootstrap
+      bootstrap()
+      from talon_user.lib import providerCommands
+      payload = providerCommands._parse_bar_cli_payload(SimpleNamespace(stdout='not json'))
+      if not payload.decode_failed:
+          raise SystemExit('decode_failed flag not set')
+      print('decode failure flagged')
+    PY
+- evidence:
+  - docs/adr/evidence/0063/loop-0035.md
+- rollback_plan: git checkout HEAD -- lib/providerCommands.py docs/adr/0063-go-cli-single-source-of-truth.work-log.md
+- delta_summary: helper:diff-snapshot=1 file changed, 24 insertions(+), 6 deletions(-); BarCliPayload now tracks `decode_failed`, and `_delegate_to_bar_cli` logs a single decode warning.
+- loops_remaining_forecast: 1 loop remaining (decode logging tests); confidence high.
+- residual_risks:
+  - Need guardrail tests confirming decode logging (Loop 036).
+- next_work:
+  - Behaviour: ensure helper logs decode failures via tests — python3 -m pytest _tests/test_provider_commands.py — future-shaping: cover the new logging path.

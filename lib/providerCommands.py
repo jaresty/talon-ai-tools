@@ -46,6 +46,7 @@ class BarCliPayload:
     debug: str | None = None
     drop_reason: str | None = None
     alert: str | None = None
+    decode_failed: bool = False
 
     @property
     def has_payload(self) -> bool:
@@ -83,7 +84,7 @@ def _parse_bar_cli_payload(result: object) -> BarCliPayload:
             drop_reason=payload.get("drop_reason"),
             alert=payload.get("alert") or payload.get("warning"),
         )
-    return BarCliPayload(raw=None)
+    return BarCliPayload(raw=None, decode_failed=bool(stdout))
 
 
 def _delegate_to_bar_cli(action: str, *args, **kwargs) -> bool:
@@ -178,7 +179,14 @@ def _delegate_to_bar_cli(action: str, *args, **kwargs) -> bool:
             except Exception:
                 pass
 
-        if not any([payload_info.notice, payload_info.error, payload_info.debug]):
+        if not any(
+            [
+                payload_info.notice,
+                payload_info.error,
+                payload_info.debug,
+                payload_info.alert,
+            ]
+        ):
             try:
                 print(
                     f"[debug] bar CLI handled action {action}; payload={payload_info.raw!r}"
@@ -186,10 +194,20 @@ def _delegate_to_bar_cli(action: str, *args, **kwargs) -> bool:
             except Exception:
                 pass
     else:
-        try:
-            print(f"[debug] bar CLI handled action {action}; stdout={result.stdout!r}")
-        except Exception:
-            pass
+        if payload_info.decode_failed and result.stdout:
+            try:
+                print(
+                    f"[debug] bar CLI payload decode failed for {action}; stdout={result.stdout!r}"
+                )
+            except Exception:
+                pass
+        else:
+            try:
+                print(
+                    f"[debug] bar CLI handled action {action}; stdout={result.stdout!r}"
+                )
+            except Exception:
+                pass
     return True
 
 

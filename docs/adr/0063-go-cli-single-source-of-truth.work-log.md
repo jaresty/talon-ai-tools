@@ -1574,3 +1574,54 @@
   - Need to surface unknown drop_reason hints in logs (Loop 061).
 - next_work:
   - Behaviour: log unknown drop_reason hints — python3 - <<'PY' ...> — future-shaping: ensure operators can trace unrecognised codes even after normalisation.
+
+
+## 2026-01-02 – Loop 061 (kind: implementation)
+- helper_version: helper:v20251223.1
+- focus: ADR-0063 §Talon Adapter Layer (log unknown drop_reason hints)
+- riskiest_assumption: Without logging the original CLI drop_reason when normalisation collapses it, operators lose the breadcrumb needed to triage new CLI codes (probability medium, impact medium-high on telemetry debugging).
+- validation_targets:
+  - python3 - <<'PY'
+      import sys
+      from pathlib import Path
+      from types import SimpleNamespace
+      from unittest.mock import patch
+
+      sys.path.insert(0, str(Path('.').resolve()))
+      from bootstrap import bootstrap
+      bootstrap()
+
+      from talon_user.lib import providerCommands
+
+      result = SimpleNamespace(
+          returncode=0,
+          stdout='{"error":"cli failed","drop_reason":"cli_custom_unknown"}',
+          stderr='',
+      )
+      with (
+          patch.object(providerCommands.settings, 'get', return_value=1),
+          patch.object(providerCommands, '_bar_cli_command', return_value=Path('/tmp/bar')),
+          patch.object(providerCommands.subprocess, 'run', return_value=result),
+          patch.object(providerCommands, 'notify'),
+          patch('talon_user.lib.providerCommands.set_drop_reason'),
+          patch('talon_user.lib.providerCommands.print') as print_mock,
+      ):
+          providerCommands._delegate_to_bar_cli('model_provider_status')
+
+      messages = [
+          ' '.join(str(arg) for arg in call.args)
+          for call in print_mock.call_args_list
+      ]
+      if any('normalised unknown drop_reason' in message for message in messages):
+          raise SystemExit('unexpected unknown drop_reason log present before change')
+      raise SystemExit('unknown drop_reason log missing (expected red)')
+    PY
+- evidence:
+  - docs/adr/evidence/0063/loop-0061.md
+- rollback_plan: git checkout HEAD -- lib/providerCommands.py docs/adr/evidence/0063/loop-0061.md
+- delta_summary: helper:diff-snapshot=1 file changed, 8 insertions(+); added a debug log when CLI drop_reason codes fall outside the Concordance literal set.
+- loops_remaining_forecast: 6 loops remaining (tests, truncation, residual risks); confidence medium.
+- residual_risks:
+  - Need guardrail tests to assert the new logging behaviour (Loop 062).
+- next_work:
+  - Behaviour: add tests for unknown drop_reason logging — python3 -m pytest _tests/test_provider_commands.py -k drop_reason — future-shaping: keep guardrails aware of the new debug hint.

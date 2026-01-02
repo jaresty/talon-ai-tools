@@ -214,6 +214,14 @@ def _delegate_to_bar_cli(action: str, *args, **kwargs) -> bool:
             drop_message = drop_message_candidate.strip()
             if drop_message and severity_label:
                 drop_message = f"{severity_prefix}{drop_message}"
+            if normalised_drop_reason is None:
+                try:
+                    print(
+                        f"[debug] bar CLI normalised unknown drop_reason for {action}; "
+                        f"drop_reason={raw_drop_reason!r} message={drop_message or 'none'}"
+                    )
+                except Exception:
+                    pass
             try:
                 if normalised_drop_reason is not None:
                     if drop_message:

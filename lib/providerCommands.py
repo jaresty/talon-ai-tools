@@ -45,6 +45,7 @@ class BarCliPayload:
     error: str | None = None
     debug: str | None = None
     drop_reason: str | None = None
+    alert: str | None = None
 
     @property
     def has_payload(self) -> bool:
@@ -80,6 +81,7 @@ def _parse_bar_cli_payload(result: object) -> BarCliPayload:
             error=payload.get("error") or payload.get("error_message"),
             debug=payload.get("debug") or payload.get("status"),
             drop_reason=payload.get("drop_reason"),
+            alert=payload.get("alert") or payload.get("warning"),
         )
     return BarCliPayload(raw=None)
 
@@ -150,6 +152,21 @@ def _delegate_to_bar_cli(action: str, *args, **kwargs) -> bool:
         ):
             try:
                 notify(payload_info.notice)
+            except Exception:
+                pass
+
+        if payload_info.alert and (
+            payload_info.alert != payload_info.notice
+            and payload_info.alert != payload_info.error
+        ):
+            try:
+                notify(payload_info.alert)
+            except Exception:
+                pass
+            try:
+                print(
+                    f"[debug] bar CLI raised alert for {action}; alert={payload_info.alert!r}"
+                )
             except Exception:
                 pass
 

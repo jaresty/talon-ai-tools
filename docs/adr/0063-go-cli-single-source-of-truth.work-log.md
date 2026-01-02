@@ -851,3 +851,32 @@
           raise SystemExit('alert field handling missing')
       print('alert field handling present')
     PY — future-shaping: ensure CLI surface can raise alert notifications.
+
+
+## 2026-01-02 – Loop 033 (kind: implementation)
+- helper_version: helper:v20251223.1
+- focus: ADR-0063 §Talon Adapter Layer (handle alert field in CLI payloads)
+- riskiest_assumption: Without explicit alert handling, CLI warnings could be dropped silently (probability medium, impact medium on guardrail visibility).
+- validation_targets:
+  - python3 - <<'PY'
+      from types import SimpleNamespace
+      from pathlib import Path
+      import sys
+      sys.path.insert(0, str(Path('.').resolve()))
+      from bootstrap import bootstrap
+      bootstrap()
+      from talon_user.lib import providerCommands
+      payload = providerCommands._parse_bar_cli_payload(SimpleNamespace(stdout='{"alert":"check settings"}'))
+      if payload.alert != 'check settings' or not payload.has_payload:
+          raise SystemExit('alert handling not applied correctly')
+      print('alert field parsed')
+    PY
+- evidence:
+  - docs/adr/evidence/0063/loop-0033.md
+- rollback_plan: git checkout HEAD -- lib/providerCommands.py docs/adr/0063-go-cli-single-source-of-truth.work-log.md
+- delta_summary: helper:diff-snapshot=1 file changed, 17 insertions(+); dataclass captures `alert` values and `_delegate_to_bar_cli` now surfaces them via notify/debug logs.
+- loops_remaining_forecast: 1 loop remaining (alert tests); confidence high.
+- residual_risks:
+  - Alert handling lacks guardrail tests; covered in Loop 034.
+- next_work:
+  - Behaviour: add tests for alert handling — python3 -m pytest _tests/test_provider_commands.py — future-shaping: assert alert notifications are surfaced.

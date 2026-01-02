@@ -2117,7 +2117,30 @@
   - Behaviour: finalize ADR loop series — python3 - <<'PY'
       from pathlib import Path
       text = Path('docs/adr/0063-go-cli-single-source-of-truth.work-log.md').read_text()
-      if 'Loop 079' in text:
+      if 'Loop 079 (kind:' in text:
           raise SystemExit('Loop 079 already recorded (unexpected)')
       print('Ready to finalize loop series')
     PY — future-shaping: close out the ADR loop helper.
+
+
+## 2026-01-02 – Loop 079 (kind: summary)
+- helper_version: helper:v20251223.1
+- focus: ADR-0063 loop series closeout
+- riskiest_assumption: Without a final summary, loop outcomes may be unclear (probability low, impact low-medium on knowledge transfer).
+- validation_targets:
+  - python3 - <<'PY'
+      from pathlib import Path
+      text = Path('docs/adr/0063-go-cli-single-source-of-truth.work-log.md').read_text()
+      if 'Loop 079 (kind:' not in text:
+          raise SystemExit('Final loop summary missing')
+      print('Loop series finalized')
+    PY
+- evidence:
+  - docs/adr/evidence/0063/loop-0079.md
+- rollback_plan: git checkout HEAD -- docs/adr/0063-go-cli-single-source-of-truth.work-log.md docs/adr/evidence/0063/loop-0079.md
+- delta_summary: helper:diff-snapshot=2 files changed, 0 insertions(+), 0 deletions(-); captured final closeout summary.
+- loops_remaining_forecast: none; loop series complete.
+- residual_risks:
+  - Follow-ups documented in Loop 077; release checklist and metrics archived; no additional risks tracked by this ADR.
+- next_work:
+  - Behaviour: none — loop series concluded.

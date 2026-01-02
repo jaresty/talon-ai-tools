@@ -443,3 +443,40 @@
   - CLI telemetry guidance still pending until real delegation is implemented.
 - next_work:
   - Behaviour: add telemetry parsing and guardrail coverage — python3 - <<'PY' ...> — future-shaping: ensure CLI outputs are monitored.
+
+
+## 2026-01-02 – Loop 019 (kind: implementation)
+- helper_version: helper:v20251223.1
+- focus: ADR-0063 §Talon Adapter Layer (parse CLI JSON payloads on delegation)
+- riskiest_assumption: Without parsing CLI responses, Talon cannot surface notify/debug messages from the bar binary (probability medium, impact medium-high on observability).
+- validation_targets:
+  - python3 - <<'PY'
+      import os, sys
+      from pathlib import Path
+      from types import SimpleNamespace
+      from unittest.mock import patch
+      sys.path.insert(0, str(Path('.').resolve()))
+      from bootstrap import bootstrap
+      bootstrap()
+      from talon_user.lib import providerCommands
+      with (
+          patch.object(providerCommands.settings, 'get', return_value=1),
+          patch.object(providerCommands, '_bar_cli_command', return_value=Path('/tmp/bar')),
+          patch.object(providerCommands.subprocess, 'run', return_value=SimpleNamespace(returncode=0, stdout='{"notify":"bar ok"}', stderr='')),
+          patch.object(providerCommands, 'notify') as notify_mock,
+      ):
+          result = providerCommands._delegate_to_bar_cli('model_provider_use')
+          if not result:
+              raise SystemExit('delegation shim returned False despite JSON success')
+      notify_mock.assert_called_once_with('bar ok')
+      print('json payload parsed and notify invoked')
+    PY
+- evidence:
+  - docs/adr/evidence/0063/loop-0019.md
+- rollback_plan: git checkout HEAD -- lib/providerCommands.py docs/adr/0063-go-cli-single-source-of-truth.work-log.md
+- delta_summary: helper:diff-snapshot=1 file changed, 30 insertions(+), 6 deletions(-); `_delegate_to_bar_cli` now parses JSON output, forwarding CLI notifications to Talon.
+- loops_remaining_forecast: 2 loops remaining (tests & documentation); confidence medium.
+- residual_risks:
+  - JSON schema is provisional; integration with telemetry/drop reasons still TODO.
+- next_work:
+  - Behaviour: extend CLI tests to cover JSON parsing — python3 -m pytest _tests/test_provider_commands.py — future-shaping: guard against regressions.

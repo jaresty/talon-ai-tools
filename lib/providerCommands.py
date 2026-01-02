@@ -1,5 +1,6 @@
 import os
 import subprocess
+import json
 from typing import Optional
 from pathlib import Path
 
@@ -87,12 +88,35 @@ def _delegate_to_bar_cli(action: str, *args, **kwargs) -> bool:
             pass
         return False
 
-    try:
-        print(
-            f"[debug] bar CLI handled action {action}; stdout={result.stdout!r}"
-        )
-    except Exception:
-        pass
+    payload = None
+    if result.stdout:
+        try:
+            payload = json.loads(result.stdout)
+        except json.JSONDecodeError:
+            payload = None
+
+    if isinstance(payload, dict):
+        notice = payload.get("notify") or payload.get("message")
+        if notice:
+            try:
+                notify(notice)
+            except Exception:
+                pass
+        debug_hint = payload.get("debug") or payload.get("status")
+        if debug_hint:
+            try:
+                print(
+                    f"[debug] bar CLI handled action {action}; status={debug_hint!r}"
+                )
+            except Exception:
+                pass
+    else:
+        try:
+            print(
+                f"[debug] bar CLI handled action {action}; stdout={result.stdout!r}"
+            )
+        except Exception:
+            pass
     return True
 
 

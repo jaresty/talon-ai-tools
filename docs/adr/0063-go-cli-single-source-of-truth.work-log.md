@@ -2781,3 +2781,32 @@
           raise SystemExit('Build gating loop already present (unexpected)')
       print('Ready to specify build gating hooks')
     PY — future-shaping: define CI gating integration for CLI releases.
+
+
+## 2026-01-02 – Loop 108 (kind: planning)
+- helper_version: helper:v20251223.1
+- focus: ADR-0063 §Implementation Plan – 5. Release & Distribution | build gating hooks backlog
+- riskiest_assumption: Canonical intent “shared release automation guardrails” (Decision items 5–6) collapses if gating hooks stay undefined (probability medium, impact high on release safety).
+- validation_targets:
+  - python3 - <<'PY'
+      from pathlib import Path
+      text = Path('docs/adr/0063-go-cli-single-source-of-truth.work-log.md').read_text()
+      if 'Loop 108 (kind:' not in text:
+          raise SystemExit('Build gating loop missing')
+      print('Build gating loop recorded')
+    PY
+- evidence:
+  - docs/adr/evidence/0063/loop-0108.md
+- rollback_plan: git checkout HEAD -- docs/adr/0063-go-cli-single-source-of-truth.work-log.md docs/adr/evidence/0063/loop-0108.md
+- delta_summary: helper:diff-snapshot=2 files changed, 92 insertions(+); listed build gating hooks backlog and recorded evidence.
+- loops_remaining_forecast: 5 loops remaining (109 fallback sequencing, 110 metrics monitoring, 111 support runbook, 112 follow-up tracker, 113 implementation readiness status); confidence medium-high once fallback sequencing is captured.
+- residual_risks:
+  - severity: medium-high — rollback plan + metrics still open; mitigation: loops 109–110 document fallback + monitoring; trigger: gating backlog missing build automation owners.
+- next_work:
+  - Behaviour: document fallback sequencing tasks — python3 - <<'PY'
+      from pathlib import Path
+      text = Path('docs/adr/0063-go-cli-single-source-of-truth.work-log.md').read_text()
+      if 'Loop 109 (kind:' in text:
+          raise SystemExit('Fallback sequencing loop already present (unexpected)')
+      print('Ready to document fallback sequencing tasks')
+    PY — future-shaping: ensure rollback scenarios and triggers are captured.

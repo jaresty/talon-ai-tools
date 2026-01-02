@@ -1748,3 +1748,33 @@
           raise SystemExit('truncation indicator logging missing')
       print('truncation indicator log present')
     PY — future-shaping: make truncation visible in debug output and telemetry.
+
+
+## 2026-01-02 – Loop 066 (kind: implementation)
+- helper_version: helper:v20251223.1
+- focus: ADR-0063 §Operational Mitigations – truncation indicator logging
+- riskiest_assumption: Without explicit indicators, truncated logs could hide data length, hindering telemetry triage (probability medium, impact medium on observability).
+- validation_targets:
+  - python3 - <<'PY'
+      from pathlib import Path
+
+      text = Path('lib/providerCommands.py').read_text()
+      required = [
+          '_truncation_indicator',
+          'original length',
+          'truncated {len(lengths)} entries',
+      ]
+      for snippet in required:
+          if snippet not in text:
+              raise SystemExit(f'missing indicator snippet: {snippet}')
+      print('truncation indicator logging present')
+    PY
+- evidence:
+  - docs/adr/evidence/0063/loop-0066.md
+- rollback_plan: git checkout HEAD -- lib/providerCommands.py docs/adr/0063-go-cli-single-source-of-truth.work-log.md docs/adr/evidence/0063/loop-0066.md
+- delta_summary: helper:diff-snapshot=3 files changed, 154 insertions(+), 17 deletions(-); added truncation indicators and recorded evidence.
+- loops_remaining_forecast: 6 loops remaining (indicator tests, log indicator docs, log limit override, residual risk wrap-up); confidence medium.
+- residual_risks:
+  - Guardrail tests and documentation for the indicator remain pending; upcoming loops cover those updates and configuration controls.
+- next_work:
+  - Behaviour: add truncation indicator tests — python3 -m pytest _tests/test_provider_commands.py -k truncation_indicator — future-shaping: guard the new logging metadata.

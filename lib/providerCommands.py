@@ -78,6 +78,20 @@ def _truncate_debug_list(
     return truncated or None
 
 
+def _truncation_indicator(value: object, limit: int = _DEBUG_LOG_MAX_LEN) -> str:
+    if isinstance(value, str):
+        if len(value) > limit:
+            return f" (original length {len(value)} chars)"
+        return ""
+    if isinstance(value, list):
+        lengths = [
+            len(item) for item in value if isinstance(item, str) and len(item) > limit
+        ]
+        if lengths:
+            return f" (truncated {len(lengths)} entries; max original length {max(lengths)} chars)"
+    return ""
+
+
 def _normalise_cli_drop_reason(
     raw_reason: str | None,
 ) -> tuple[RequestDropReason | None, str | None]:
@@ -250,14 +264,17 @@ def _delegate_to_bar_cli(action: str, *args, **kwargs) -> bool:
             drop_message = drop_message_candidate.strip()
             if drop_message and severity_label:
                 drop_message = f"{severity_prefix}{drop_message}"
-            log_message = drop_message or "none"
-            if log_message != "none":
-                log_message = _truncate_debug_value(log_message)
+            display_message = drop_message or "none"
+            drop_log = (
+                _truncate_debug_text(drop_message) if drop_message else display_message
+            )
+            drop_log = drop_log or display_message
+            drop_indicator = _truncation_indicator(drop_message) if drop_message else ""
             if normalised_drop_reason is None:
                 try:
                     print(
                         f"[debug] bar CLI normalised unknown drop_reason for {action}; "
-                        f"drop_reason={raw_drop_reason!r} message={log_message!r}"
+                        f"drop_reason={raw_drop_reason!r} message={drop_log!r}{drop_indicator}"
                     )
                 except Exception:
                     pass
@@ -284,15 +301,16 @@ def _delegate_to_bar_cli(action: str, *args, **kwargs) -> bool:
                 pass
             try:
                 error_log = _truncate_debug_text(payload_info.error)
+                error_indicator = _truncation_indicator(payload_info.error)
                 if raw_drop_reason:
                     print(
                         f"[debug] bar CLI reported error for {action}; "
-                        f"drop_reason={raw_drop_reason!r} severity={severity_label or 'none'} message={(error_log if error_log is not None else payload_info.error)!r}"
+                        f"drop_reason={raw_drop_reason!r} severity={severity_label or 'none'} message={(error_log if error_log is not None else payload_info.error)!r}{error_indicator}"
                     )
                 else:
                     print(
                         f"[debug] bar CLI reported error for {action}; "
-                        f"severity={severity_label or 'none'} message={(error_log if error_log is not None else payload_info.error)!r}"
+                        f"severity={severity_label or 'none'} message={(error_log if error_log is not None else payload_info.error)!r}{error_indicator}"
                     )
             except Exception:
                 pass
@@ -310,8 +328,9 @@ def _delegate_to_bar_cli(action: str, *args, **kwargs) -> bool:
             if severity_label:
                 try:
                     notice_log = _truncate_debug_text(payload_info.notice)
+                    notice_indicator = _truncation_indicator(payload_info.notice)
                     print(
-                        f"[debug] bar CLI notice severity={severity_label!r} message={(notice_log if notice_log is not None else payload_info.notice)!r}"
+                        f"[debug] bar CLI notice severity={severity_label!r} message={(notice_log if notice_log is not None else payload_info.notice)!r}{notice_indicator}"
                     )
                 except Exception:
                     pass
@@ -329,8 +348,9 @@ def _delegate_to_bar_cli(action: str, *args, **kwargs) -> bool:
                 pass
             try:
                 alert_log = _truncate_debug_text(payload_info.alert)
+                alert_indicator = _truncation_indicator(payload_info.alert)
                 print(
-                    f"[debug] bar CLI raised alert for {action}; alert={(alert_log if alert_log is not None else payload_info.alert)!r} severity={severity_label or 'none'}"
+                    f"[debug] bar CLI raised alert for {action}; alert={(alert_log if alert_log is not None else payload_info.alert)!r}{alert_indicator} severity={severity_label or 'none'}"
                 )
             except Exception:
                 pass
@@ -338,8 +358,9 @@ def _delegate_to_bar_cli(action: str, *args, **kwargs) -> bool:
         if payload_info.debug:
             try:
                 debug_log = _truncate_debug_text(payload_info.debug)
+                debug_indicator = _truncation_indicator(payload_info.debug)
                 print(
-                    f"[debug] bar CLI handled action {action}; status={(debug_log if debug_log is not None else payload_info.debug)!r}"
+                    f"[debug] bar CLI handled action {action}; status={(debug_log if debug_log is not None else payload_info.debug)!r}{debug_indicator}"
                 )
             except Exception:
                 pass
@@ -355,8 +376,9 @@ def _delegate_to_bar_cli(action: str, *args, **kwargs) -> bool:
             try:
                 raw_dump = json.dumps(payload_info.raw, default=str)
                 payload_log = _truncate_debug_text(raw_dump)
+                payload_indicator = _truncation_indicator(raw_dump)
                 print(
-                    f"[debug] bar CLI handled action {action}; payload={(payload_log if payload_log is not None else raw_dump)!r}"
+                    f"[debug] bar CLI handled action {action}; payload={(payload_log if payload_log is not None else raw_dump)!r}{payload_indicator}"
                 )
             except Exception:
                 pass
@@ -371,8 +393,9 @@ def _delegate_to_bar_cli(action: str, *args, **kwargs) -> bool:
         if payload_info.breadcrumbs:
             try:
                 breadcrumbs_log = _truncate_debug_list(payload_info.breadcrumbs)
+                breadcrumbs_indicator = _truncation_indicator(payload_info.breadcrumbs)
                 print(
-                    f"[debug] bar CLI breadcrumbs for {action}; breadcrumbs={(breadcrumbs_log if breadcrumbs_log is not None else payload_info.breadcrumbs)!r}"
+                    f"[debug] bar CLI breadcrumbs for {action}; breadcrumbs={(breadcrumbs_log if breadcrumbs_log is not None else payload_info.breadcrumbs)!r}{breadcrumbs_indicator}"
                 )
             except Exception:
                 pass
@@ -388,25 +411,30 @@ def _delegate_to_bar_cli(action: str, *args, **kwargs) -> bool:
     else:
         if payload_info.decode_failed and result.stdout:
             try:
-                stdout_debug = _truncate_debug_value(result.stdout)
+                stdout_log = _truncate_debug_text(result.stdout)
+                stdout_indicator = _truncation_indicator(result.stdout)
                 print(
-                    f"[debug] bar CLI payload decode failed for {action}; stdout={stdout_debug!r}"
+                    f"[debug] bar CLI payload decode failed for {action}; stdout={(stdout_log if stdout_log is not None else result.stdout)!r}{stdout_indicator}"
                 )
             except Exception:
                 pass
         else:
             try:
-                stdout_debug = _truncate_debug_value(result.stdout)
+                stdout_log = _truncate_debug_text(result.stdout)
+                stdout_indicator = _truncation_indicator(result.stdout)
                 print(
-                    f"[debug] bar CLI handled action {action}; stdout={stdout_debug!r}"
+                    f"[debug] bar CLI handled action {action}; stdout={(stdout_log if stdout_log is not None else result.stdout)!r}{stdout_indicator}"
                 )
             except Exception:
                 pass
 
     if result.stderr:
         try:
-            stderr_debug = _truncate_debug_value(result.stderr)
-            print(f"[debug] bar CLI stderr for {action}; stderr={stderr_debug!r}")
+            stderr_log = _truncate_debug_text(result.stderr)
+            stderr_indicator = _truncation_indicator(result.stderr)
+            print(
+                f"[debug] bar CLI stderr for {action}; stderr={(stderr_log if stderr_log is not None else result.stderr)!r}{stderr_indicator}"
+            )
         except Exception:
             pass
     return True

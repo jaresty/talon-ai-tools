@@ -139,7 +139,7 @@ Talon adapters must:
 
 ## Residual Risks
 
-- **Telemetry SLO instrumentation** *(medium)*: `scripts/tools/telemetry_slo_report.py` exits red because `var/cli-telemetry/latency.json` is not yet emitted by the CLI. Delegation must remain disabled until the telemetry artefact records `p50`, `p95`, and `success_rate` metrics. Evidence: `docs/adr/evidence/0063/loop-0008.md`.
+- **Telemetry SLO instrumentation** *(low)*: CLI emits `var/cli-telemetry/latency.json` with SLO metrics; `scripts/tools/telemetry_slo_report.py` guards drift and remains green (see `docs/adr/evidence/0063/loop-0012.md`). Continue monitoring for stale data beyond the configured window.
 
 ---
 
@@ -157,7 +157,6 @@ Talon adapters must:
 
 ## Next Work
 
-- **Behaviour:** Emit telemetry artefact for latency SLOs — `scripts/tools/telemetry_slo_report.py` (currently red; see `docs/adr/evidence/0063/loop-0009.md`).
 - **Behaviour:** Replace stubbed CLI with real delegation adapter — `python3 -m pytest _tests/test_cli_talon_parity.py` once CLI binary ships.
 - **Behaviour:** Harden release pipeline with checksum manifest — `scripts/tools/check_cli_assets.py` to move from schema stub to signed bundles.
 
@@ -168,7 +167,7 @@ Talon adapters must:
 - `python3 -m pytest _tests/test_cli_talon_parity.py` — exercises Talon↔CLI parity harness; currently skipped because the CLI binary and shared schema bundle are not yet published. The command remains red until its skips are removed by landing the CLI artefacts it depends on.
 - `./bin/bar --health` — Talon adapter health probe; now returns success via the stubbed CLI binary recorded in `docs/adr/evidence/0063/loop-0005.md`. Removal evidence remains in `docs/adr/evidence/0063/loop-0003.md` until the real implementation lands.
 - `scripts/tools/check_cli_assets.py` — verifies the presence of the CLI binary and shared command-surface schema; now returns success once both artefacts exist (see `docs/adr/evidence/0063/loop-0006.md` for the green run and `docs/adr/evidence/0063/loop-0004.md` for the historical blocker evidence).
-- `scripts/tools/telemetry_slo_report.py` — enforces latency/availability telemetry readiness; currently exits 1 while awaiting recorded metrics, with blocker evidence in `docs/adr/evidence/0063/loop-0008.md`.
+- `scripts/tools/telemetry_slo_report.py` — enforces latency/availability telemetry readiness; now exits 0 with SLO metrics recorded (green evidence in `docs/adr/evidence/0063/loop-0012.md`, blocker history in `docs/adr/evidence/0063/loop-0008.md`).
 
 ---
 

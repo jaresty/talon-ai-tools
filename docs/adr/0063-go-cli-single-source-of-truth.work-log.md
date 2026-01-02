@@ -1076,3 +1076,39 @@
           raise SystemExit('README missing severity note')
       print('README references severity note')
     PY — future-shaping: align docs with severity behaviour.
+
+
+## 2026-01-02 – Loop 042 (kind: documentation)
+- helper_version: helper:v20251223.1
+- focus: ADR-0063 §Implementation Plan & Adapter Outline (document severity support)
+- riskiest_assumption: Without documentation, contributors may skip severity fields in CLI payloads (probability medium, impact medium on guardrail clarity).
+- validation_targets:
+  - python3 - <<'PY'
+      from pathlib import Path
+      text = Path('cli/README.md').read_text().lower()
+      if 'severity' not in text:
+          raise SystemExit('README missing severity note')
+      print('README references severity note')
+    PY
+  - python3 - <<'PY'
+      from pathlib import Path
+      text = Path('docs/adr/0063-go-cli-single-source-of-truth.md').read_text()
+      if 'severity' not in text:
+          raise SystemExit('ADR missing severity documentation')
+      print('ADR documents severity support')
+    PY
+- evidence:
+  - docs/adr/evidence/0063/loop-0042.md
+- rollback_plan: git checkout HEAD -- cli/README.md docs/adr/0063-go-cli-single-source-of-truth.md docs/adr/0063-go-cli-single-source-of-truth.work-log.md
+- delta_summary: helper:diff-snapshot=2 files changed, 3 insertions(+), 0 deletions(-); README/ADR now outline severity prefixes and monitoring.
+- loops_remaining_forecast: 6 loops remaining (helper refactor/tests, breadcrumbs support, final validation); confidence high.
+- residual_risks:
+  - Severity formatting helper still pending implementation (Loop 043).
+- next_work:
+  - Behaviour: add severity-to-prefix helper — python3 - <<'PY'
+      from pathlib import Path
+      text = Path('lib/providerCommands.py').read_text()
+      if '_format_severity_prefix' in text:
+          raise SystemExit('severity helper already exists')
+      raise SystemExit('severity helper missing (expected red)')
+    PY — future-shaping: centralise severity formatting logic.

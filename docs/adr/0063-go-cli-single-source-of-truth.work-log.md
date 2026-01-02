@@ -585,3 +585,32 @@
   - Error payloads do not yet set structured drop reasons; integration deferred to telemetry handshake work.
 - next_work:
   - Behaviour: add tests covering CLI error payload handling — python3 -m pytest _tests/test_provider_commands.py — future-shaping: assert notify/log expectations under the feature flag.
+
+
+## 2026-01-02 – Loop 024 (kind: test)
+- helper_version: helper:v20251223.1
+- focus: ADR-0063 §Talon Adapter Layer (test CLI error payload handling)
+- riskiest_assumption: Without guardrail tests, error payload handling could regress silently (probability medium, impact high on UX parity).
+- validation_targets:
+  - python3 - <<'PY'
+      from pathlib import Path
+      text = Path('_tests/test_provider_commands.py').read_text()
+      if 'test_delegate_handles_error_payload' not in text:
+          raise SystemExit('error payload test missing')
+      print('error payload test present')
+    PY
+- evidence:
+  - docs/adr/evidence/0063/loop-0024.md
+- rollback_plan: git checkout HEAD -- _tests/test_provider_commands.py docs/adr/0063-go-cli-single-source-of-truth.work-log.md
+- delta_summary: helper:diff-snapshot=1 file changed, 30 insertions(+); added `test_delegate_handles_error_payload` verifying notify/log behaviour for CLI error JSON.
+- loops_remaining_forecast: 5 loops remaining (error docs, payload helper refactor, helper tests, doc wrap-up); confidence medium.
+- residual_risks:
+  - Tests still mock stdout only; integration tests with real binary pending once CLI emits error payloads end-to-end.
+- next_work:
+  - Behaviour: document CLI error handling expectations — python3 - <<'PY'
+      from pathlib import Path
+      text = Path('cli/README.md').read_text()
+      if 'CLI error payload' not in text:
+          raise SystemExit('README missing CLI error payload guidance')
+      print('README documents CLI error payload guidance')
+    PY — future-shaping: align docs so contributors surface error handling semantics.

@@ -266,6 +266,36 @@ class BarCliDelegationTests(unittest.TestCase):
         self.assertTrue(any("stdout=" in text for text in printed_calls))
         self.assertTrue(any("not json" in text for text in printed_calls))
 
+    def test_delegate_handles_error_payload(self):
+        result = SimpleNamespace(
+            returncode=0,
+            stdout='{"error":"cli failed","drop_reason":"cli_error"}',
+            stderr="",
+        )
+        with (
+            patch.object(provider_module.settings, "get", return_value=1),
+            patch.object(
+                provider_module, "_bar_cli_command", return_value=Path("/tmp/bar")
+            ),
+            patch.object(provider_module.subprocess, "run", return_value=result),
+            patch.object(provider_module, "notify") as notify_mock,
+            patch("talon_user.lib.providerCommands.print") as print_mock,
+        ):
+            self.assertTrue(
+                provider_module._delegate_to_bar_cli("model_provider_status")
+            )
+        notify_mock.assert_called_once_with("cli failed")
+        printed_calls = [
+            " ".join(str(arg) for arg in call.args)
+            for call in print_mock.call_args_list
+        ]
+        self.assertTrue(
+            any(
+                "drop_reason='cli_error'" in text and "cli failed" in text
+                for text in printed_calls
+            )
+        )
+
 
 if __name__ == "__main__":
     unittest.main()

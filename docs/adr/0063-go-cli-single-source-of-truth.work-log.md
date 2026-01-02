@@ -1,7 +1,7 @@
 # ADR-0063 Work Log — helper:v20251223.1
 
 ## Open Behaviours
-- Replace stubbed CLI delegation with real binary | `python3 -m pytest _tests/test_cli_talon_parity.py` | status: in_progress — loop-0014 builds compiled binary on demand; next slice packages signed artifact for Talon delegation.
+- Replace stubbed CLI delegation with real binary | `python3 -m pytest _tests/test_cli_talon_parity.py` | status: in_progress — loop-0015 exposes compiled binary path + asset guard; next slice packages signed artifact for Talon delegation.
 - Release checksum manifest hardening | `scripts/tools/check_cli_assets.py` | status: pending — extend artefact generator beyond schema stub.
 
 ## Completed Loops
@@ -19,3 +19,4 @@
 - loop-0012 — recorded telemetry metrics and turned SLO checker green; evidence: `docs/adr/evidence/0063/loop-0012.md`.
 - loop-0013 — migrated bar health probe to Go runtime and enforced parity sentinel; evidence: `docs/adr/evidence/0063/loop-0013.md`.
 - loop-0014 — required compiled Go binary and executor sentinel for parity; evidence: `docs/adr/evidence/0063/loop-0014.md`.
+- loop-0015 — surfaced compiled binary path in health payload and asset guard; evidence: `docs/adr/evidence/0063/loop-0015.md`.

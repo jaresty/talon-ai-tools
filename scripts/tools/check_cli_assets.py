@@ -13,6 +13,7 @@ from pathlib import Path
 
 REQUIRED_PATHS = (
     Path("bin/bar"),
+    Path("bin/bar.bin"),
     Path("docs/schema/command-surface.json"),
 )
 

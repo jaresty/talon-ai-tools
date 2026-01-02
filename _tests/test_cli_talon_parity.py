@@ -41,6 +41,11 @@ else:
             payload = json.loads(result.stdout)
             self.assertEqual(payload["status"], "ok")
             self.assertIn("version", payload)
+            self.assertEqual(
+                payload.get("runtime"),
+                "go",
+                "CLI runtime must report Go binary; stubbed implementation detected",
+            )
 
         def test_schema_bundle_contains_version_marker(self) -> None:
             self.assertTrue(

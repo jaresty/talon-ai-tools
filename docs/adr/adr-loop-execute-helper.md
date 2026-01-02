@@ -139,7 +139,7 @@ Replace placeholders with real commands, timestamps, and pointers. When aggregat
 
 ## Completion Bar
 
-Completion is eligible once every loop satisfies this contract under a single helper version, outstanding tasks are closed or parked with evidence, a final adversarial entry restates motivations and residual gaps, and repository metadata reflects the updated ADR state.
+Completion is eligible once every loop satisfies this contract under a single helper version, outstanding tasks are closed or parked with evidence, a final adversarial entry restates motivations and residual gaps, and repository metadata reflects the updated ADR state. Completion requires the targeted behaviour to land (code, tests, docs, automation) with green evidence; planning-only loops must keep the series open until the behaviour ships or is explicitly deferred with blocker evidence.
 
 ---
 

@@ -2033,3 +2033,32 @@
           raise SystemExit('Release checklist already documented')
       print('Ready to document release checklist')
     PY — future-shaping: capture operational follow-up tasks before closing the loop series.
+
+
+## 2026-01-02 – Loop 076 (kind: documentation)
+- helper_version: helper:v20251223.1
+- focus: ADR-0063 release checklist
+- riskiest_assumption: Without a release checklist, operators might skip guardrails before publishing binaries (probability medium, impact high on rollout quality).
+- validation_targets:
+  - python3 - <<'PY'
+      from pathlib import Path
+      text = Path('docs/adr/0063-go-cli-single-source-of-truth.md').read_text().lower()
+      if 'release checklist' not in text:
+          raise SystemExit('ADR missing release checklist')
+      print('Release checklist documented')
+    PY
+- evidence:
+  - docs/adr/evidence/0063/loop-0076.md
+- rollback_plan: git checkout HEAD -- docs/adr/0063-go-cli-single-source-of-truth.md docs/adr/0063-go-cli-single-source-of-truth.work-log.md docs/adr/evidence/0063/loop-0076.md
+- delta_summary: helper:diff-snapshot=3 files changed, 0 insertions(+), 0 deletions(-); added release checklist guidance and evidence.
+- loops_remaining_forecast: loops 077–079 capture follow-up tasks, archive metrics, and finalize the loop series; confidence high.
+- residual_risks:
+  - Checklist captures remaining operational steps; follow-up and metrics archival remain.
+- next_work:
+  - Behaviour: capture follow-up tasks — python3 - <<'PY'
+      from pathlib import Path
+      text = Path('docs/adr/0063-go-cli-single-source-of-truth.work-log.md').read_text()
+      if 'Loop 077' in text:
+          raise SystemExit('Follow-up loop already present (unexpected)')
+      print('Ready to capture follow-up tasks')
+    PY — future-shaping: document outstanding follow-up actions.

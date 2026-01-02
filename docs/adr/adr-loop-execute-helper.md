@@ -44,9 +44,11 @@ The `<ARTEFACT_LOG>` must record headings matching the helper command names when
 - Each loop addresses the highest-severity open behaviour from the ADR’s salient task list, cites its task ID, and places lower-severity items in `residual_risks`.
 - Documentation-only loops appear only when blocker evidence proves the behaviour cannot advance in the current slice.
 - Validation commands exercise the canonical behaviour path (for example, compiled CLI, schema generator, parity guardrail); string or grep checks do not qualify.
+- Recording a validation target denotes that the command executed within the loop; entries without matching red or green evidence for that target are non-compliant.
 - Every `validation_targets` entry references the cited salient task artefact and runs end-to-end in the repository workspace.
 - `loops_remaining_forecast` enumerates the remaining behaviours with their validation command or blocker evidence and adds a confidence note.
 - Residual risks record updated severity and mitigation progress; unchanged text is treated as non-compliant.
+- Loops whose observable delta is documentation-only remain compliant only when the entry records the associated blocker evidence for the targeted behaviour.
 - Observable delta, rollback plan, and evidence block remain concise and auditable.
 
 ---
@@ -88,6 +90,7 @@ A loop entry is compliant when all statements hold:
 
 **Validation registered**
 - The loop pre-plan names the `<VALIDATION_TARGET>` that exercises the cited salient task artefact before editing begins; validation commands are omitted only for documentation-only loops that already logged blocker evidence.
+- A recorded `<VALIDATION_TARGET>` denotes that the command executed within the loop; missing red or green evidence for that target renders the entry non-compliant.
 - Red evidence records the canonical command failing end-to-end with non-zero exit, UTC ISO-8601 timestamp, and failure excerpt for the targeted behaviour.
 - Green evidence reuses the same command (or mapped target) and records exit 0, and removal evidence runs `<VCS_REVERT>` followed by the red command to show the failure returning or documents the tightening required when it does not.
 

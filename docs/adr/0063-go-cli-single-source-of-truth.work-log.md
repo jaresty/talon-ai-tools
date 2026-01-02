@@ -11,7 +11,7 @@ bootstrap.bootstrap()
 if bin_path.exists():
     sys.exit(0)
 raise SystemExit('bootstrap did not install CLI binary')
-PY` | status: in_progress — loop-0020 makes bootstrap warnings actionable; next slice routes warning telemetry through Talon adapters and parity harness.
+PY` | status: in_progress — loop-0021 introduces parity guardrail for packaged CLI artefacts; next slice routes warning telemetry through Talon adapters and parity harness.
 - [Implementation Guardrails → Delivery posture] Release checksum manifest hardening | `scripts/tools/check_cli_assets.py` | status: in_progress — loop-0016 added tarball + checksum verification; next slice adds signature enforcement and CI upload contract.
 
 ## Completed Loops

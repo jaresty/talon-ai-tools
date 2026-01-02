@@ -1030,3 +1030,26 @@
           raise SystemExit('severity not consumed in delegation yet')
       print('delegation references severity')
     PY — future-shaping: surface severity levels in notifications/logs.
+
+
+## 2026-01-02 – Loop 040 (kind: implementation)
+- helper_version: helper:v20251223.1
+- focus: ADR-0063 §Talon Adapter Layer (apply severity handling in delegation)
+- riskiest_assumption: Without using severity data, CLI warning levels would be ignored (probability medium, impact medium on guardrail clarity).
+- validation_targets:
+  - python3 -m pytest _tests/test_provider_commands.py
+- evidence:
+  - docs/adr/evidence/0063/loop-0040.md
+- rollback_plan: git checkout HEAD -- lib/providerCommands.py docs/adr/0063-go-cli-single-source-of-truth.work-log.md
+- delta_summary: helper:diff-snapshot=1 file changed, 33 insertions(+), 6 deletions(-); delegation now prefixes notices/alerts with severity and logs severity diagnostics.
+- loops_remaining_forecast: 8 loops remaining (severity tests/docs, breadcrumbs support, final validation); confidence medium-high.
+- residual_risks:
+  - Tests still expect old notice strings; upcoming loop updates guardrails.
+- next_work:
+  - Behaviour: update tests for severity — python3 - <<'PY'
+      from pathlib import Path
+      text = Path('_tests/test_provider_commands.py').read_text()
+      if 'severity' not in text:
+          raise SystemExit('tests missing severity assertions')
+      print('tests already reference severity placeholders')
+    PY — future-shaping: align guardrail expectations with severity prefixes.

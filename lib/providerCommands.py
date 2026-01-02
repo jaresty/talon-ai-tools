@@ -130,22 +130,28 @@ def _delegate_to_bar_cli(action: str, *args, **kwargs) -> bool:
 
     payload_info = _parse_bar_cli_payload(result)
 
+    severity_label = (payload_info.severity or "").strip()
+    severity_prefix = f"[{severity_label.upper()}] " if severity_label else ""
+
     if payload_info.has_payload:
         if payload_info.error:
+            message = payload_info.error
+            if severity_label and severity_label.lower() not in {"error", "critical"}:
+                message = f"{severity_prefix}{message}"
             try:
-                notify(payload_info.error)
+                notify(message)
             except Exception:
                 pass
             try:
                 if payload_info.drop_reason:
                     print(
                         f"[debug] bar CLI reported error for {action}; "
-                        f"drop_reason={payload_info.drop_reason!r} message={payload_info.error!r}"
+                        f"drop_reason={payload_info.drop_reason!r} severity={severity_label or 'none'} message={payload_info.error!r}"
                     )
                 else:
                     print(
                         f"[debug] bar CLI reported error for {action}; "
-                        f"message={payload_info.error!r}"
+                        f"severity={severity_label or 'none'} message={payload_info.error!r}"
                     )
             except Exception:
                 pass
@@ -153,22 +159,35 @@ def _delegate_to_bar_cli(action: str, *args, **kwargs) -> bool:
         if payload_info.notice and (
             not payload_info.error or payload_info.notice != payload_info.error
         ):
+            notice_message = payload_info.notice
+            if severity_label:
+                notice_message = f"{severity_prefix}{notice_message}"
             try:
-                notify(payload_info.notice)
+                notify(notice_message)
             except Exception:
                 pass
+            if severity_label:
+                try:
+                    print(
+                        f"[debug] bar CLI notice severity={severity_label!r} message={payload_info.notice!r}"
+                    )
+                except Exception:
+                    pass
 
         if payload_info.alert and (
             payload_info.alert != payload_info.notice
             and payload_info.alert != payload_info.error
         ):
+            alert_message = payload_info.alert
+            if severity_label:
+                alert_message = f"{severity_prefix}{alert_message}"
             try:
-                notify(payload_info.alert)
+                notify(alert_message)
             except Exception:
                 pass
             try:
                 print(
-                    f"[debug] bar CLI raised alert for {action}; alert={payload_info.alert!r}"
+                    f"[debug] bar CLI raised alert for {action}; alert={payload_info.alert!r} severity={severity_label or 'none'}"
                 )
             except Exception:
                 pass
@@ -195,6 +214,14 @@ def _delegate_to_bar_cli(action: str, *args, **kwargs) -> bool:
                 )
             except Exception:
                 pass
+        elif severity_label and not payload_info.error:
+            try:
+                print(
+                    f"[debug] bar CLI severity={severity_label!r} applied for {action}"
+                )
+            except Exception:
+                pass
+
     else:
         if payload_info.decode_failed and result.stdout:
             try:

@@ -1,7 +1,17 @@
 # ADR-0063 Work Log — helper:v20251223.1
 
 ## Open Behaviours
-- [Implementation Guardrails → Delivery posture] Replace stubbed CLI delegation with real binary | `python3 - <<'PY'\nimport pathlib, sys\nbin_path = pathlib.Path('bin/bar.bin')\nif bin_path.exists():\n    bin_path.unlink()\nimport bootstrap\nbootstrap.bootstrap()\nif bin_path.exists():\n    sys.exit(0)\nraise SystemExit('bootstrap did not install CLI binary')\nPY` | status: in_progress — loop-0019 surfaces bootstrap installer failures; next slice routes warning telemetry through Talon adapters and parity harness.
+- [Implementation Guardrails → Delivery posture] Replace stubbed CLI delegation with real binary | `python3 - <<'PY'
+import pathlib, sys
+bin_path = pathlib.Path('bin/bar.bin')
+if bin_path.exists():
+    bin_path.unlink()
+import bootstrap
+bootstrap.bootstrap()
+if bin_path.exists():
+    sys.exit(0)
+raise SystemExit('bootstrap did not install CLI binary')
+PY` | status: in_progress — loop-0020 makes bootstrap warnings actionable; next slice routes warning telemetry through Talon adapters and parity harness.
 - [Implementation Guardrails → Delivery posture] Release checksum manifest hardening | `scripts/tools/check_cli_assets.py` | status: in_progress — loop-0016 added tarball + checksum verification; next slice adds signature enforcement and CI upload contract.
 
 ## Completed Loops
@@ -22,5 +32,41 @@
 - loop-0015 — surfaced compiled binary path in health payload and asset guard; evidence: `docs/adr/evidence/0063/loop-0015.md`.
 - loop-0016 — updated [Implementation Guardrails → Delivery posture] Completed Loops; packaged bar CLI tarball with checksum manifest; validation: `python3 scripts/tools/check_cli_assets.py`; evidence: `docs/adr/evidence/0063/loop-0016.md`.
 - loop-0017 — installed packaged CLI binary before delegation and updated bin wrapper fallback; validation: `python3 scripts/tools/install_bar_cli.py --quiet`; evidence: `docs/adr/evidence/0063/loop-0017.md`.
-- loop-0018 — wired bootstrap to install the packaged CLI binary before delegation; validation: `python3 - <<'PY'\nimport pathlib, sys\nbin_path = pathlib.Path('bin/bar.bin')\nif bin_path.exists():\n    bin_path.unlink()\nimport bootstrap\nbootstrap.bootstrap()\nif bin_path.exists():\n    sys.exit(0)\nraise SystemExit('bootstrap did not install CLI binary')\nPY`; evidence: `docs/adr/evidence/0063/loop-0018.md`.
-- loop-0019 — surfaced bootstrap installer failures with explicit warnings; validation: `python3 - <<'PY'\nimport pathlib, sys, io\nfrom contextlib import redirect_stderr\nmanifest = pathlib.Path('artifacts/cli/bar-darwin-arm64.tar.gz.sha256')\nbackup = manifest.read_bytes()\nmanifest.unlink()\nimport bootstrap\nbuf = io.StringIO()\nwith redirect_stderr(buf):\n    bootstrap.bootstrap()\nmanifest.write_bytes(backup)\nprint(buf.getvalue())\nPY`; evidence: `docs/adr/evidence/0063/loop-0019.md`.
+- loop-0018 — wired bootstrap to install the packaged CLI binary before delegation; validation: `python3 - <<'PY'
+import pathlib, sys
+bin_path = pathlib.Path('bin/bar.bin')
+if bin_path.exists():
+    bin_path.unlink()
+import bootstrap
+bootstrap.bootstrap()
+if bin_path.exists():
+    sys.exit(0)
+raise SystemExit('bootstrap did not install CLI binary')
+PY`; evidence: `docs/adr/evidence/0063/loop-0018.md`.
+- loop-0019 — surfaced bootstrap installer failures with explicit warnings; validation: `python3 - <<'PY'
+import pathlib, sys, io
+from contextlib import redirect_stderr
+manifest = pathlib.Path('artifacts/cli/bar-darwin-arm64.tar.gz.sha256')
+backup = manifest.read_bytes()
+manifest.unlink()
+import bootstrap
+buf = io.StringIO()
+with redirect_stderr(buf):
+    bootstrap.bootstrap()
+manifest.write_bytes(backup)
+print(buf.getvalue())
+PY`; evidence: `docs/adr/evidence/0063/loop-0019.md`.
+- loop-0020 — made bootstrap warnings actionable with rebuild instructions; validation: `python3 - <<'PY'
+import pathlib, sys, io
+from contextlib import redirect_stderr
+manifest = pathlib.Path('artifacts/cli/bar-darwin-arm64.tar.gz.sha256')
+backup = manifest.read_bytes()
+manifest.unlink()
+import bootstrap
+buf = io.StringIO()
+with redirect_stderr(buf):
+    bootstrap.bootstrap()
+manifest.write_bytes(backup)
+output = buf.getvalue()
+print(output)
+PY`; evidence: `docs/adr/evidence/0063/loop-0020.md`.

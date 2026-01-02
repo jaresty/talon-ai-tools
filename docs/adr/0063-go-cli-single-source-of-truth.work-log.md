@@ -1,7 +1,7 @@
 # ADR-0063 Work Log — helper:v20251223.1
 
 ## Open Behaviours
-- Replace stubbed CLI delegation with real binary | `python3 -m pytest _tests/test_cli_talon_parity.py` | status: pending — next slice once Go CLI lands.
+- Replace stubbed CLI delegation with real binary | `python3 -m pytest _tests/test_cli_talon_parity.py` | status: in_progress — loop-0013 replaces Python stub with Go `go run` shim; next slice packages compiled binary.
 - Release checksum manifest hardening | `scripts/tools/check_cli_assets.py` | status: pending — extend artefact generator beyond schema stub.
 
 ## Completed Loops
@@ -17,3 +17,4 @@
 - loop-0010 — added sibling work-log tracker and guardrail; evidence: `docs/adr/evidence/0063/loop-0010.md`.
 - loop-0011 — linked ADR body to work-log according to helper; evidence: `docs/adr/evidence/0063/loop-0011.md`.
 - loop-0012 — recorded telemetry metrics and turned SLO checker green; evidence: `docs/adr/evidence/0063/loop-0012.md`.
+- loop-0013 — migrated bar health probe to Go runtime and enforced parity sentinel; evidence: `docs/adr/evidence/0063/loop-0013.md`.

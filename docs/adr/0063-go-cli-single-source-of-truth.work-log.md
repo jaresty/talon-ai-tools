@@ -2526,3 +2526,32 @@
           raise SystemExit('Fallback plan loop already present (unexpected)')
       print('Ready to capture fallback plan sequencing')
     PY — future-shaping: capture rollback triggers and residual monitoring.
+
+
+## 2026-01-02 – Loop 099 (kind: planning)
+- helper_version: helper:v20251223.1
+- focus: ADR-0063 fallback plan sequencing
+- riskiest_assumption: Without a documented fallback plan, failed automation may leave operators without rollback steps (probability low-medium, impact high on incident recovery).
+- validation_targets:
+  - python3 - <<'PY'
+      from pathlib import Path
+      text = Path('docs/adr/0063-go-cli-single-source-of-truth.work-log.md').read_text()
+      if 'Loop 099 (kind:' not in text:
+          raise SystemExit('Fallback plan loop missing')
+      print('Fallback plan loop recorded')
+    PY
+- evidence:
+  - docs/adr/evidence/0063/loop-0099.md
+- rollback_plan: git checkout HEAD -- docs/adr/0063-go-cli-single-source-of-truth.work-log.md docs/adr/evidence/0063/loop-0099.md
+- delta_summary: helper:diff-snapshot=2 files changed, 89 insertions(+); documented fallback plan sequencing and recorded evidence.
+- loops_remaining_forecast: 4 loops remaining (metrics monitoring, support runbook, follow-up capture, closing summary); confidence medium-high.
+- residual_risks:
+  - Metrics monitoring and support readiness remain untracked; next loops close the observability gap.
+- next_work:
+  - Behaviour: capture metrics monitoring triggers — python3 - <<'PY'
+      from pathlib import Path
+      text = Path('docs/adr/0063-go-cli-single-source-of-truth.work-log.md').read_text()
+      if 'Loop 100 (kind:' in text:
+          raise SystemExit('Metrics monitoring loop already present (unexpected)')
+      print('Ready to capture metrics monitoring triggers')
+    PY — future-shaping: define telemetry dashboards and alert thresholds.

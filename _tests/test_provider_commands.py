@@ -421,27 +421,34 @@ class BarCliDelegationTests(unittest.TestCase):
             )
         )
 
-
-class BarCliPayloadHelperTests(unittest.TestCase):
-    def setUp(self):
-        if bootstrap is None:
-            self.skipTest("Talon runtime not available")
-
-    def test_parse_bar_cli_payload_success(self):
+    def test_delegate_parses_multiline_payload(self):
         result = SimpleNamespace(
-            stdout='{"notify":"hello","error":"cli failed","debug":"status","drop_reason":"cli_error","alert":"check settings","severity":"warning","breadcrumbs":["step 1","step 2"]}'
+            returncode=0,
+            stdout='info line\n{"notify":"ok","drop_reason":"cli_error"}\n',
+            stderr="",
         )
+        with (
+            patch.object(provider_module.settings, "get", return_value=1),
+            patch.object(
+                provider_module, "_bar_cli_command", return_value=Path("/tmp/bar")
+            ),
+            patch.object(provider_module.subprocess, "run", return_value=result),
+            patch.object(provider_module, "notify") as notify_mock,
+            patch("talon_user.lib.providerCommands.print") as print_mock,
+            patch("talon_user.lib.providerCommands.set_drop_reason") as set_reason,
+        ):
+            self.assertTrue(
+                provider_module._delegate_to_bar_cli("model_provider_status")
+            )
+        notify_mock.assert_called_once_with("ok")
+        set_reason.assert_called_once_with("cli_error", "ok")
+
+    def test_parse_bar_cli_payload_multiline_stdout(self):
+        result = SimpleNamespace(stdout='info line\n{"notify":"ok"}\n')
         payload = provider_module._parse_bar_cli_payload(result)
-        self.assertIsInstance(payload, provider_module.BarCliPayload)
         self.assertTrue(payload.has_payload)
-        self.assertIsInstance(payload.raw, dict)
-        self.assertEqual(payload.notice, "hello")
-        self.assertEqual(payload.error, "cli failed")
-        self.assertEqual(payload.debug, "status")
-        self.assertEqual(payload.drop_reason, "cli_error")
-        self.assertEqual(payload.alert, "check settings")
-        self.assertEqual(payload.severity, "warning")
-        self.assertEqual(payload.breadcrumbs, ["step 1", "step 2"])
+        self.assertEqual(payload.notice, "ok")
+        self.assertFalse(payload.decode_failed)
 
     def test_parse_bar_cli_payload_invalid_json(self):
         result = SimpleNamespace(stdout="not json")

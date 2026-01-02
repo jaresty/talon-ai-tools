@@ -2410,3 +2410,32 @@
           raise SystemExit('Automation validation loop already present (unexpected)')
       print('Ready to capture automation validation steps')
     PY — future-shaping: detail validation targets for release automation.
+
+
+## 2026-01-02 – Loop 095 (kind: planning)
+- helper_version: helper:v20251223.1
+- focus: ADR-0063 release automation validation steps
+- riskiest_assumption: Without defined validation steps, automation checks might miss CLI regressions (probability medium, impact medium-high on release assurance).
+- validation_targets:
+  - python3 - <<'PY'
+      from pathlib import Path
+      text = Path('docs/adr/0063-go-cli-single-source-of-truth.work-log.md').read_text()
+      if 'Loop 095 (kind:' not in text:
+          raise SystemExit('Automation validation loop missing')
+      print('Automation validation loop recorded')
+    PY
+- evidence:
+  - docs/adr/evidence/0063/loop-0095.md
+- rollback_plan: git checkout HEAD -- docs/adr/0063-go-cli-single-source-of-truth.work-log.md docs/adr/evidence/0063/loop-0095.md
+- delta_summary: helper:diff-snapshot=2 files changed, 89 insertions(+); documented automation validation steps and recorded evidence.
+- loops_remaining_forecast: 8 loops remaining (telemetry handshake, environment parity checks, CLI build gating, fallback plan, metrics monitoring, support runbook, follow-up capture, closing summary); confidence medium.
+- residual_risks:
+  - Telemetry handshake and environment parity steps still undefined; upcoming loops address coverage.
+- next_work:
+  - Behaviour: map telemetry handshake checks — python3 - <<'PY'
+      from pathlib import Path
+      text = Path('docs/adr/0063-go-cli-single-source-of-truth.work-log.md').read_text()
+      if 'Loop 096 (kind:' in text:
+          raise SystemExit('Telemetry handshake loop already present (unexpected)')
+      print('Ready to document telemetry handshake checks')
+    PY — future-shaping: outline CLI↔telemetry handshake validation.

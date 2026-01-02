@@ -48,6 +48,29 @@ def _bar_cli_command() -> Path:
     return root / "cli" / "bin" / "bar"
 
 
+def _parse_bar_cli_payload(
+    result: object,
+) -> tuple[dict | None, str | None, str | None, str | None, str | None]:
+    """Return decoded CLI payload plus notify/error/debug/drop_reason hints."""
+
+    payload = None
+    stdout = getattr(result, "stdout", "")
+
+    if stdout:
+        try:
+            payload = json.loads(stdout)
+        except json.JSONDecodeError:
+            payload = None
+
+    if isinstance(payload, dict):
+        notify_message = payload.get("notify") or payload.get("message")
+        error_message = payload.get("error") or payload.get("error_message")
+        debug_hint = payload.get("debug") or payload.get("status")
+        drop_reason = payload.get("drop_reason")
+        return payload, notify_message, error_message, debug_hint, drop_reason
+    return None, None, None, None, None
+
+
 def _delegate_to_bar_cli(action: str, *args, **kwargs) -> bool:
     """Temporary bar CLI delegation shim. Returns True once the CLI path handles the request."""
 
@@ -87,19 +110,11 @@ def _delegate_to_bar_cli(action: str, *args, **kwargs) -> bool:
             pass
         return False
 
-    payload = None
-    if result.stdout:
-        try:
-            payload = json.loads(result.stdout)
-        except json.JSONDecodeError:
-            payload = None
+    payload, notice, error_message, debug_hint, drop_reason = _parse_bar_cli_payload(
+        result
+    )
 
-    if isinstance(payload, dict):
-        notice = payload.get("notify") or payload.get("message")
-        error_message = payload.get("error") or payload.get("error_message")
-        debug_hint = payload.get("debug") or payload.get("status")
-        drop_reason = payload.get("drop_reason")
-
+    if payload is not None:
         if error_message:
             try:
                 notify(error_message)

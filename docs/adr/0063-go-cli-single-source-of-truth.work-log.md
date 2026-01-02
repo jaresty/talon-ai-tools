@@ -650,3 +650,32 @@
           raise SystemExit('payload parser helper missing')
       print('payload parser helper present')
     PY — future-shaping: centralise payload handling ahead of telemetry handshake.
+
+
+## 2026-01-02 – Loop 026 (kind: refactor)
+- helper_version: helper:v20251223.1
+- focus: ADR-0063 §Talon Adapter Layer (centralise CLI payload parsing)
+- riskiest_assumption: Without a shared parser helper, future telemetry fields will duplicate logic and drift across call sites (probability medium, impact medium-high on maintainability).
+- validation_targets:
+  - python3 - <<'PY'
+      from pathlib import Path
+      text = Path('lib/providerCommands.py').read_text()
+      if '_parse_bar_cli_payload' not in text:
+          raise SystemExit('payload parser helper missing')
+      print('payload parser helper present')
+    PY
+- evidence:
+  - docs/adr/evidence/0063/loop-0026.md
+- rollback_plan: git checkout HEAD -- lib/providerCommands.py docs/adr/0063-go-cli-single-source-of-truth.work-log.md
+- delta_summary: helper:diff-snapshot=1 file changed, 27 insertions(+), 12 deletions(-); introduced `_parse_bar_cli_payload` and routed `_delegate_to_bar_cli` through it.
+- loops_remaining_forecast: 3 loops remaining (helper tests, documentation wrap-up); confidence medium.
+- residual_risks:
+  - Helper currently returns raw dict; future work must align types with telemetry schema.
+- next_work:
+  - Behaviour: extend tests to cover the new helper — python3 - <<'PY'
+      from pathlib import Path
+      text = Path('_tests/test_provider_commands.py').read_text()
+      if 'test_parse_bar_cli_payload' not in text:
+          raise SystemExit('payload helper tests missing')
+      print('payload helper tests present')
+    PY — future-shaping: ensure helper stays in sync with CLI fields.

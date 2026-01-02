@@ -2694,3 +2694,32 @@
           raise SystemExit('Validation mapping loop already present (unexpected)')
       print('Ready to map validation commands')
     PY — future-shaping: connect backlog items to concrete validation commands.
+
+
+## 2026-01-02 – Loop 105 (kind: planning)
+- helper_version: helper:v20251223.1
+- focus: ADR-0063 §Tests-First Principle & Implementation Plan – 5. Release & Distribution | validation command mapping
+- riskiest_assumption: Canonical intent “tests precede wiring” (Tests-First Principle) fails if backlog items lack explicit validation commands (probability medium, impact medium-high on regression detection).
+- validation_targets:
+  - python3 - <<'PY'
+      from pathlib import Path
+      text = Path('docs/adr/0063-go-cli-single-source-of-truth.work-log.md').read_text()
+      if 'Loop 105 (kind:' not in text:
+          raise SystemExit('Validation mapping loop missing')
+      print('Validation mapping loop recorded')
+    PY
+- evidence:
+  - docs/adr/evidence/0063/loop-0105.md
+- rollback_plan: git checkout HEAD -- docs/adr/0063-go-cli-single-source-of-truth.work-log.md docs/adr/evidence/0063/loop-0105.md
+- delta_summary: helper:diff-snapshot=2 files changed, 90 insertions(+); mapped backlog items to validation commands and recorded evidence.
+- loops_remaining_forecast: 8 loops remaining (106 telemetry scripting, 107 environment checks, 108 build gating, 109 fallback sequencing, 110 metrics monitoring, 111 support runbook, 112 follow-up tracker, 113 implementation readiness status); confidence medium while telemetry scripting is incomplete.
+- residual_risks:
+  - severity: medium — telemetry scripts + parity checks still unmapped; mitigation: loops 106–107 capture scripts + environment coverage; trigger: backlog entries lacking validation command references.
+- next_work:
+  - Behaviour: draft telemetry scripting backlog — python3 - <<'PY'
+      from pathlib import Path
+      text = Path('docs/adr/0063-go-cli-single-source-of-truth.work-log.md').read_text()
+      if 'Loop 106 (kind:' in text:
+          raise SystemExit('Telemetry scripting loop already present (unexpected)')
+      print('Ready to outline telemetry scripting backlog')
+    PY — future-shaping: enumerate scripts and harness updates for CLI↔Talon telemetry parity.

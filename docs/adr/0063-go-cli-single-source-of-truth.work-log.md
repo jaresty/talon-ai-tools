@@ -2217,6 +2217,28 @@
     PY — future-shaping: ensure telemetry snapshot surfaces truncation events.
 
 
+## 2026-01-02 – Loop 083 (kind: test)
+- helper_version: helper:v20251223.1
+- focus: ADR-0063 telemetry export wiring
+- riskiest_assumption: Without export coverage, truncation telemetry might never reach artefacts (probability medium, impact medium on observability).
+- validation_targets:
+  - python3 -m pytest _tests/test_telemetry_export.py -k truncation
+- evidence:
+  - docs/adr/evidence/0063/loop-0083.md
+- rollback_plan: git checkout HEAD -- _tests/test_telemetry_export.py docs/adr/0063-go-cli-single-source-of-truth.work-log.md docs/adr/evidence/0063/loop-0083.md
+- delta_summary: helper:diff-snapshot=2 files changed, 0 insertions(+), 0 deletions(-); added telemetry export tests and evidence.
+- loops_remaining_forecast: 6 loops remaining (snapshot validation, release checklist updates, metrics refresh, final summary); confidence high.
+- residual_risks:
+  - Need to validate export artefacts end-to-end and update release checklist with telemetry tasks.
+- next_work:
+  - Behaviour: validate telemetry snapshot includes truncation events — python3 - <<'PY'
+      import json
+      from pathlib import Path
+      data = json.loads(Path('docs/adr/evidence/0063/loop-0078-metrics.json').read_text())
+      print('Ready to validate telemetry snapshot references')
+    PY — future-shaping: ensure real snapshot artefacts surface truncation events.
+
+
 
 ## 2026-01-02 – Loop 079 (kind: summary)
 - helper_version: helper:v20251223.1

@@ -103,6 +103,46 @@ class TelemetryExportTests(unittest.TestCase):
         lifecycle.history_validation_stats.assert_called_once_with()
         lifecycle.consume_gating_drop_stats.assert_called_once_with()
 
+    def test_snapshot_telemetry_includes_truncation_events(self) -> None:
+        lifecycle_stats = {
+            "total_entries": 0,
+            "gating_drop_total": 0,
+            "gating_drop_last_message": "",
+            "gating_drop_last_code": "",
+            "streaming_gating_summary": {},
+        }
+        truncation_event = {
+            "field": "error",
+            "action": "model_provider_status",
+            "limit": 512,
+            "timestamp": "2026-01-02T05:06:00Z",
+            "original_length": 900,
+            "truncated_length": 512,
+        }
+
+        with (
+            patch.object(
+                telemetry_module, "historyLifecycle", create=True
+            ) as lifecycle,
+            patch.object(telemetry_module, "requestLog", create=True) as requestlog,
+        ):
+            lifecycle.history_validation_stats.return_value = dict(lifecycle_stats)
+            lifecycle.consume_gating_drop_stats.return_value = {}
+            requestlog.consume_truncation_events.return_value = [truncation_event]
+
+            with tempfile.TemporaryDirectory() as tmpdir:
+                snapshot_telemetry(output_dir=tmpdir, reset_gating=True)
+                telemetry_path = (
+                    Path(tmpdir) / "history-validation-summary.telemetry.json"
+                )
+                data = json.loads(telemetry_path.read_text())
+                events = data.get("truncation_events", [])
+                self.assertTrue(events)
+                self.assertEqual(events[0]["field"], "error")
+                self.assertEqual(events[0]["original_length"], 900)
+
+        requestlog.consume_truncation_events.assert_called_once_with()
+
 
 class TelemetryExportCommandTests(unittest.TestCase):
     def test_export_model_telemetry_notifies_success(self) -> None:

@@ -147,6 +147,13 @@ Talon adapters must:
 
 ---
 
+## Validation Targets
+
+- `python3 -m pytest _tests/test_cli_talon_parity.py` — exercises Talon↔CLI parity harness; currently skipped because the CLI binary and shared schema bundle are not yet published. The command remains red until its skips are removed by landing the CLI artefacts it depends on.
+- `./bin/bar --health` — Talon adapter health probe; currently exits with `ENOENT` because the CLI binary is absent. Evidence for this blocker lives in `docs/adr/evidence/0063/loop-0003.md`.
+
+---
+
 ## Loop Tracking
 
 Implementation loops for ADR-0063 follow `helper:v20251223.1` and record evidence under `docs/adr/evidence/0063/loop-<id>.md`. A loop is recognised as complete only when its registered validation command yields recorded red and green evidence. Documentation-only updates are recognised only when the loop captures blocker evidence for the targeted behaviour, and salient tasks remain open until their validation command runs green inside this repository.

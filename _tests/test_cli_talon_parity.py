@@ -9,6 +9,11 @@ from contextlib import redirect_stderr
 
 from talon import actions
 
+from lib.bootstrapTelemetry import (
+    clear_bootstrap_warning_events,
+    get_bootstrap_warning_messages,
+)
+
 try:
     from bootstrap import bootstrap, get_bootstrap_warnings
 except ModuleNotFoundError:  # Talon runtime
@@ -131,6 +136,7 @@ else:
                 manifest.unlink()
             except FileNotFoundError:
                 pass
+            clear_bootstrap_warning_events()
             get_bootstrap_warnings(clear=True)
             calls_before = list(actions.user.calls)
 
@@ -139,10 +145,13 @@ else:
                 with redirect_stderr(buf):
                     bootstrap()
                 warning_output = buf.getvalue()
+                telemetry_messages = get_bootstrap_warning_messages(clear=False)
+                adapter_messages = actions.user.cli_bootstrap_warning_messages()
                 warnings = get_bootstrap_warnings(clear=True)
             finally:
                 manifest.write_bytes(backup)
                 bootstrap()
+                clear_bootstrap_warning_events()
 
             new_calls = actions.user.calls[len(calls_before) :]
             # reset added calls to keep other tests isolated
@@ -159,6 +168,22 @@ else:
                     for warning in warnings
                 ),
                 "Bootstrap warnings list should include rebuild instructions",
+            )
+            self.assertTrue(
+                any(
+                    "`python3 scripts/tools/package_bar_cli.py --print-paths`"
+                    in message
+                    for message in telemetry_messages
+                ),
+                "Bootstrap telemetry should capture rebuild instructions for adapters",
+            )
+            self.assertTrue(
+                any(
+                    "`python3 scripts/tools/package_bar_cli.py --print-paths`"
+                    in message
+                    for message in adapter_messages
+                ),
+                "Talon adapters should read bootstrap telemetry via actions.user",
             )
             self.assertTrue(
                 any(

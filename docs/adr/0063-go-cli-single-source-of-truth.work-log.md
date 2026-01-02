@@ -2723,3 +2723,32 @@
           raise SystemExit('Telemetry scripting loop already present (unexpected)')
       print('Ready to outline telemetry scripting backlog')
     PY — future-shaping: enumerate scripts and harness updates for CLI↔Talon telemetry parity.
+
+
+## 2026-01-02 – Loop 106 (kind: planning)
+- helper_version: helper:v20251223.1
+- focus: ADR-0063 §Operational Mitigations – Telemetry note | telemetry scripting backlog
+- riskiest_assumption: Canonical intent “CLI + Talon share telemetry parity” (Shared Contracts table: Debug/telemetry row) fails if scripts aren’t enumerated for both runtimes (probability medium, impact medium-high on observability).
+- validation_targets:
+  - python3 - <<'PY'
+      from pathlib import Path
+      text = Path('docs/adr/0063-go-cli-single-source-of-truth.work-log.md').read_text()
+      if 'Loop 106 (kind:' not in text:
+          raise SystemExit('Telemetry scripting loop missing')
+      print('Telemetry scripting loop recorded')
+    PY
+- evidence:
+  - docs/adr/evidence/0063/loop-0106.md
+- rollback_plan: git checkout HEAD -- docs/adr/0063-go-cli-single-source-of-truth.work-log.md docs/adr/evidence/0063/loop-0106.md
+- delta_summary: helper:diff-snapshot=2 files changed, 92 insertions(+); outlined telemetry scripting backlog and recorded evidence.
+- loops_remaining_forecast: 7 loops remaining (107 environment checks, 108 build gating, 109 fallback sequencing, 110 metrics monitoring, 111 support runbook, 112 follow-up tracker, 113 implementation readiness status); confidence medium until environment validation is documented.
+- residual_risks:
+  - severity: medium — environment coverage + build gating still open; mitigation: loops 107–108 bring parity + gating detail; trigger: telemetry backlog lacking owner assignments in evidence.
+- next_work:
+  - Behaviour: document environment parity scripts — python3 - <<'PY'
+      from pathlib import Path
+      text = Path('docs/adr/0063-go-cli-single-source-of-truth.work-log.md').read_text()
+      if 'Loop 107 (kind:' in text:
+          raise SystemExit('Environment scripting loop already present (unexpected)')
+      print('Ready to document environment parity scripts')
+    PY — future-shaping: align environment matrix tasks with CLI/Talon adapters.

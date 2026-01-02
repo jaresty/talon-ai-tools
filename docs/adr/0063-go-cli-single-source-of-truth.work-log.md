@@ -2984,3 +2984,32 @@
           raise SystemExit('Validation schedule loop already present (unexpected)')
       print('Ready to draft validation schedule')
     PY — future-shaping: sequence validation commands against backlog milestones.
+
+
+## 2026-01-02 – Loop 115 (kind: planning)
+- helper_version: helper:v20251223.1
+- focus: ADR-0063 §Tests-First Principle | validation schedule backlog
+- riskiest_assumption: Canonical intent “tests precede wiring” fails if validation commands lack a timeline (probability medium, impact medium-high on regression prevention).
+- validation_targets:
+  - python3 - <<'PY'
+      from pathlib import Path
+      text = Path('docs/adr/0063-go-cli-single-source-of-truth.work-log.md').read_text()
+      if 'Loop 115 (kind:' not in text:
+          raise SystemExit('Validation schedule loop missing')
+      print('Validation schedule loop recorded')
+    PY
+- evidence:
+  - docs/adr/evidence/0063/loop-0115.md
+- rollback_plan: git checkout HEAD -- docs/adr/0063-go-cli-single-source-of-truth.work-log.md docs/adr/evidence/0063/loop-0115.md
+- delta_summary: helper:diff-snapshot=2 files changed, 92 insertions(+); defined validation schedule backlog and recorded evidence.
+- loops_remaining_forecast: 6 loops remaining (116 implementation slice mapping, 117 telemetry gating sequencing, 118 documentation backlog, 119 risk register updates, 120 rollout timeline, 121 planning recap); confidence medium-high once slice mapping lands.
+- residual_risks:
+  - severity: medium — slice mapping + telemetry sequencing outstanding; mitigation: loops 116–117 address mapping + sequencing; trigger: validation schedule lacking dependencies/owners.
+- next_work:
+  - Behaviour: map implementation slices — python3 - <<'PY'
+      from pathlib import Path
+      text = Path('docs/adr/0063-go-cli-single-source-of-truth.work-log.md').read_text()
+      if 'Loop 116 (kind:' in text:
+          raise SystemExit('Implementation mapping loop already present (unexpected)')
+      print('Ready to map implementation slices')
+    PY — future-shaping: link backlog items to code changes and loop sequencing.

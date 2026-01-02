@@ -39,7 +39,27 @@ def _bar_cli_enabled() -> bool:
         return False
 
 
-_DEBUG_LOG_MAX_LEN = 512
+_DEFAULT_DEBUG_LOG_MAX_LEN = 512
+
+
+def _resolve_debug_log_limit() -> int:
+    try:
+        value = settings.get("user.bar_cli_debug_log_limit", _DEFAULT_DEBUG_LOG_MAX_LEN)
+    except Exception:
+        value = _DEFAULT_DEBUG_LOG_MAX_LEN
+    try:
+        parsed = int(value)
+    except Exception:
+        return _DEFAULT_DEBUG_LOG_MAX_LEN
+    return max(64, min(parsed, 8192))
+
+
+try:
+    _DEBUG_LOG_MAX_LEN = _resolve_debug_log_limit()
+except Exception:
+    _DEBUG_LOG_MAX_LEN = _DEFAULT_DEBUG_LOG_MAX_LEN
+
+
 _KNOWN_DROP_REASONS = {cast(str, value) for value in RequestDropReason.__args__}
 
 

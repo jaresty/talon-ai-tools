@@ -955,3 +955,26 @@
           raise SystemExit('ADR missing decode failure note')
       print('ADR references decode failure logging')
     PY — future-shaping: document monitoring plan before closure.
+
+
+## 2026-01-02 – Loop 037 (kind: documentation)
+- helper_version: helper:v20251223.1
+- focus: ADR-0063 §Operational Mitigations (record decode failure monitoring)
+- riskiest_assumption: Without documenting the new decode logging, contributors might remove it unintentionally (probability medium, impact medium on observability).
+- validation_targets:
+  - python3 - <<'PY'
+      from pathlib import Path
+      text = Path('docs/adr/0063-go-cli-single-source-of-truth.md').read_text()
+      if 'decode_failed' not in text:
+          raise SystemExit('ADR still missing decode failure note')
+      print('ADR references decode failure logging')
+    PY
+- evidence:
+  - docs/adr/evidence/0063/loop-0037.md
+- rollback_plan: git checkout HEAD -- docs/adr/0063-go-cli-single-source-of-truth.md docs/adr/0063-go-cli-single-source-of-truth.work-log.md
+- delta_summary: helper:diff-snapshot=1 file changed, 2 insertions(+); ADR now cites the `decode_failed` flag and associated monitoring.
+- loops_remaining_forecast: 1 loop remaining (final validation & closure); confidence high.
+- residual_risks:
+  - Monitor future telemetry changes to ensure decode logging remains aligned.
+- next_work:
+  - Behaviour: run final validation sweep — python3 -m pytest _tests/test_provider_commands.py — future-shaping: capture closing evidence before completing loops.

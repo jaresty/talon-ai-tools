@@ -202,6 +202,7 @@ Talon code will gradually migrate to delegating through adapters rather than mai
 - [ ] Verify `user.bar_cli_debug_log_limit` defaults to 512 in Talon settings and document any overrides in release notes.
 - [ ] Ensure telemetry dashboards capture truncation events and override usage prior to rollout.
 - [ ] Run the truncation and log limit pytest shards before publishing binaries.
+- [ ] Export telemetry snapshots (`python3 -m talon_user.lib.telemetryExport`) and verify `truncation_events` populate `history-validation-summary.telemetry.json`.
 
 ## Salient Tasks
 

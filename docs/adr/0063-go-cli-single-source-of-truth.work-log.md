@@ -1053,3 +1053,26 @@
           raise SystemExit('tests missing severity assertions')
       print('tests already reference severity placeholders')
     PY — future-shaping: align guardrail expectations with severity prefixes.
+
+
+## 2026-01-02 – Loop 041 (kind: test)
+- helper_version: helper:v20251223.1
+- focus: ADR-0063 §Talon Adapter Layer (update tests for severity)
+- riskiest_assumption: Without updated tests, severity handling could regress silently (probability medium, impact medium on guardrail clarity).
+- validation_targets:
+  - python3 -m pytest _tests/test_provider_commands.py
+- evidence:
+  - docs/adr/evidence/0063/loop-0041.md
+- rollback_plan: git checkout HEAD -- _tests/test_provider_commands.py docs/adr/0063-go-cli-single-source-of-truth.work-log.md
+- delta_summary: helper:diff-snapshot=1 file changed, 28 insertions(+), 1 deletion(-); guardrail tests now assert severity parsing, notice prefixes, and alert logging.
+- loops_remaining_forecast: 7 loops remaining (documentation, helper refactor, breadcrumbs features, final validation); confidence high.
+- residual_risks:
+  - Documentation still needs to mention severity prefixes (Loop 042).
+- next_work:
+  - Behaviour: document severity support — python3 - <<'PY'
+      from pathlib import Path
+      text = Path('cli/README.md').read_text().lower()
+      if 'severity' not in text:
+          raise SystemExit('README missing severity note')
+      print('README references severity note')
+    PY — future-shaping: align docs with severity behaviour.

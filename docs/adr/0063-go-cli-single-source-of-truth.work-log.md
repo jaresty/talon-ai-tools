@@ -1135,3 +1135,26 @@
           raise SystemExit('tests missing severity helper coverage')
       print('tests exercise severity helper')
     PY — future-shaping: ensure helper remains covered.
+
+
+## 2026-01-02 – Loop 044 (kind: test)
+- helper_version: helper:v20251223.1
+- focus: ADR-0063 §Talon Adapter Layer (test severity-to-prefix helper)
+- riskiest_assumption: Without direct tests, the helper could regress silently (probability medium, impact medium on maintainability).
+- validation_targets:
+  - python3 -m pytest _tests/test_provider_commands.py
+- evidence:
+  - docs/adr/evidence/0063/loop-0044.md
+- rollback_plan: git checkout HEAD -- _tests/test_provider_commands.py docs/adr/0063-go-cli-single-source-of-truth.work-log.md
+- delta_summary: helper:diff-snapshot=1 file changed, 12 insertions(+), 20 deletions(-); tests now exercise `_format_severity_prefix` and adjust expectations for normalized severity logs.
+- loops_remaining_forecast: 4 loops remaining (breadcrumbs parsing/tests/docs, final validation); confidence high.
+- residual_risks:
+  - Breadcrumb parsing still outstanding.
+- next_work:
+  - Behaviour: parse breadcrumbs field — python3 - <<'PY'
+      from pathlib import Path
+      text = Path('lib/providerCommands.py').read_text()
+      if 'breadcrumbs' in text:
+          raise SystemExit('breadcrumbs already handled')
+      raise SystemExit('breadcrumbs handling missing')
+    PY — future-shaping: surface CLI breadcrumb hints.

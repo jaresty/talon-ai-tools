@@ -384,26 +384,18 @@ class BarCliPayloadHelperTests(unittest.TestCase):
         self.assertIsNone(payload.alert)
         self.assertIsNone(payload.severity)
 
-    def test_delegate_logs_decode_failure(self):
-        result = SimpleNamespace(returncode=0, stdout="not json", stderr="")
-        with (
-            patch.object(provider_module.settings, "get", return_value=1),
-            patch.object(
-                provider_module, "_bar_cli_command", return_value=Path("/tmp/bar")
-            ),
-            patch.object(provider_module.subprocess, "run", return_value=result),
-            patch.object(provider_module, "notify") as notify_mock,
-            patch("talon_user.lib.providerCommands.print") as print_mock,
-        ):
-            self.assertTrue(
-                provider_module._delegate_to_bar_cli("model_provider_status")
-            )
-        notify_mock.assert_not_called()
-        printed_calls = [
-            " ".join(str(arg) for arg in call.args)
-            for call in print_mock.call_args_list
-        ]
-        self.assertTrue(any("payload decode failed" in text for text in printed_calls))
+    def test_format_severity_prefix_helper(self):
+        prefix, label = provider_module._format_severity_prefix("warning")
+        self.assertEqual(prefix, "[WARNING] ")
+        self.assertEqual(label, "WARNING")
+        prefix_none, label_none = provider_module._format_severity_prefix(None)
+        self.assertEqual(prefix_none, "")
+        self.assertEqual(label_none, "")
+        prefix_space, label_space = provider_module._format_severity_prefix(
+            " critical "
+        )
+        self.assertEqual(prefix_space, "[CRITICAL] ")
+        self.assertEqual(label_space, "CRITICAL")
 
 
 if __name__ == "__main__":

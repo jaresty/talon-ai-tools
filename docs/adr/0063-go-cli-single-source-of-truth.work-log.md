@@ -1625,3 +1625,20 @@
   - Need guardrail tests to assert the new logging behaviour (Loop 062).
 - next_work:
   - Behaviour: add tests for unknown drop_reason logging — python3 -m pytest _tests/test_provider_commands.py -k drop_reason — future-shaping: keep guardrails aware of the new debug hint.
+
+
+## 2026-01-02 – Loop 062 (kind: test)
+- helper_version: helper:v20251223.1
+- focus: ADR-0063 §Talon Adapter Layer (tests for unknown drop_reason logging)
+- riskiest_assumption: Without guardrail tests, the new unknown drop_reason log could regress unnoticed (probability medium, impact medium on observability).
+- validation_targets:
+  - python3 -m pytest _tests/test_provider_commands.py -k drop_reason
+- evidence:
+  - docs/adr/evidence/0063/loop-0062.md
+- rollback_plan: git checkout HEAD -- _tests/test_provider_commands.py docs/adr/evidence/0063/loop-0062.md
+- delta_summary: helper:diff-snapshot=1 file changed, 29 insertions(+); added guardrail tests covering unknown drop_reason logging.
+- loops_remaining_forecast: 5 loops remaining (log truncation, docs, residual risks); confidence medium.
+- residual_risks:
+  - Logging now emits the hint, but truncation and documentation updates remain (Loops 063–065).
+- next_work:
+  - Behaviour: truncate stdout/stderr debug logs — python3 - <<'PY' ...> — future-shaping: prevent unbounded debug output from the CLI path.

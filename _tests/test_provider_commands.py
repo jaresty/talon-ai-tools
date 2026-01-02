@@ -443,6 +443,35 @@ class BarCliDelegationTests(unittest.TestCase):
         notify_mock.assert_called_once_with("ok")
         set_reason.assert_called_once_with("", "ok")
 
+    def test_delegate_logs_unknown_drop_reason(self):
+        result = SimpleNamespace(
+            returncode=0,
+            stdout='{"error":"cli failed","drop_reason":"cli_custom_unknown"}',
+            stderr="",
+        )
+        with (
+            patch.object(provider_module.settings, "get", return_value=1),
+            patch.object(
+                provider_module, "_bar_cli_command", return_value=Path("/tmp/bar")
+            ),
+            patch.object(provider_module.subprocess, "run", return_value=result),
+            patch.object(provider_module, "notify"),
+            patch("talon_user.lib.providerCommands.set_drop_reason") as set_reason,
+            patch("talon_user.lib.providerCommands.print") as print_mock,
+        ):
+            self.assertTrue(
+                provider_module._delegate_to_bar_cli("model_provider_status")
+            )
+        self.assertEqual(set_reason.call_args[0][0], "")
+        self.assertEqual(set_reason.call_args[0][1], "cli failed")
+        logged = [
+            " ".join(str(arg) for arg in call.args)
+            for call in print_mock.call_args_list
+        ]
+        self.assertTrue(
+            any("normalised unknown drop_reason" in message for message in logged)
+        )
+
     def test_delegate_logs_stderr_on_success(self):
         result = SimpleNamespace(
             returncode=0,

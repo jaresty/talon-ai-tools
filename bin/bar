@@ -5,15 +5,43 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
 GO_PACKAGE="${REPO_ROOT}/cmd/bar"
 BIN_PATH="${SCRIPT_DIR}/bar.bin"
+INSTALL_SCRIPT="${REPO_ROOT}/scripts/tools/install_bar_cli.py"
 
-if ! command -v go >/dev/null 2>&1; then
-  echo "bar: Go toolchain not available" >&2
-  exit 1
-fi
+uname_os="$(uname -s | tr '[:upper:]' '[:lower:]')"
+uname_arch="$(uname -m | tr '[:upper:]' '[:lower:]')"
+case "${uname_arch}" in
+  x86_64|amd64)
+    uname_arch="amd64"
+    ;;
+  arm64|aarch64)
+    uname_arch="arm64"
+    ;;
+esac
+TARBALL_PATH="${REPO_ROOT}/artifacts/cli/bar-${uname_os}-${uname_arch}.tar.gz"
+MANIFEST_PATH="${TARBALL_PATH}.sha256"
 
-if [[ ! -d "${GO_PACKAGE}" ]]; then
-  echo "bar: missing Go CLI source dir at ${GO_PACKAGE}" >&2
-  exit 1
+maybe_install_from_tarball() {
+  if [[ ! -f "${INSTALL_SCRIPT}" ]]; then
+    return 1
+  fi
+  if [[ ! -f "${TARBALL_PATH}" || ! -f "${MANIFEST_PATH}" ]]; then
+    return 1
+  fi
+  if ! command -v python3 >/dev/null 2>&1; then
+    echo "bar: python3 not available to install packaged CLI" >&2
+    return 1
+  fi
+  if python3 "${INSTALL_SCRIPT}" --quiet; then
+    return 0
+  fi
+  echo "bar: packaged CLI install failed; falling back to go build" >&2
+  return 1
+}
+
+if [[ ! -x "${BIN_PATH}" ]]; then
+  maybe_install_from_tarball || true
+elif [[ -f "${MANIFEST_PATH}" && "${MANIFEST_PATH}" -nt "${BIN_PATH}" ]]; then
+  maybe_install_from_tarball || true
 fi
 
 needs_build=0
@@ -29,6 +57,14 @@ else
 fi
 
 if [[ ${needs_build} -eq 1 ]]; then
+  if ! command -v go >/dev/null 2>&1; then
+    echo "bar: Go toolchain not available" >&2
+    exit 1
+  fi
+  if [[ ! -d "${GO_PACKAGE}" ]]; then
+    echo "bar: missing Go CLI source dir at ${GO_PACKAGE}" >&2
+    exit 1
+  fi
   GOFLAGS="${GOFLAGS:-}" go build -o "${BIN_PATH}" "${GO_PACKAGE}"
   chmod +x "${BIN_PATH}"
 fi

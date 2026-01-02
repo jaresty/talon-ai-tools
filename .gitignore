@@ -10,3 +10,4 @@ node_modules/
 tmp/
 artifacts/
 GPT/lists/*.talon-list
+bin/bar.bin

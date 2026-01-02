@@ -13,12 +13,14 @@ import (
 const (
 	schemaRelativePath = "docs/schema/command-surface.json"
 	runtimeName        = "go"
+	executorName       = "compiled"
 )
 
 type healthPayload struct {
-	Status  string `json:"status"`
-	Version string `json:"version"`
-	Runtime string `json:"runtime"`
+	Status   string `json:"status"`
+	Version  string `json:"version"`
+	Runtime  string `json:"runtime"`
+	Executor string `json:"executor"`
 }
 
 func main() {
@@ -38,9 +40,10 @@ func run(args []string) int {
 			return 0
 		case "--health":
 			payload := healthPayload{
-				Status:  "ok",
-				Version: schemaVersion(repoRoot()),
-				Runtime: runtimeName,
+				Status:   "ok",
+				Version:  schemaVersion(repoRoot()),
+				Runtime:  runtimeName,
+				Executor: executorName,
 			}
 
 			if err := json.NewEncoder(os.Stdout).Encode(payload); err != nil {

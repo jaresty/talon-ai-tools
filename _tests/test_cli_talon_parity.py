@@ -46,6 +46,11 @@ else:
                 "go",
                 "CLI runtime must report Go binary; stubbed implementation detected",
             )
+            self.assertEqual(
+                payload.get("executor"),
+                "compiled",
+                "CLI must run compiled binary rather than go run stub",
+            )
 
         def test_schema_bundle_contains_version_marker(self) -> None:
             self.assertTrue(

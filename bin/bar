@@ -2,12 +2,35 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-REPO_ROOT="${SCRIPT_DIR}/.."
-GO_MAIN="${REPO_ROOT}/cmd/bar/main.go"
+REPO_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
+GO_PACKAGE="${REPO_ROOT}/cmd/bar"
+BIN_PATH="${SCRIPT_DIR}/bar.bin"
 
-if [[ ! -f "${GO_MAIN}" ]]; then
-  echo "bar: missing Go CLI source at ${GO_MAIN}" >&2
+if ! command -v go >/dev/null 2>&1; then
+  echo "bar: Go toolchain not available" >&2
   exit 1
 fi
 
-exec go run "${GO_MAIN}" "$@"
+if [[ ! -d "${GO_PACKAGE}" ]]; then
+  echo "bar: missing Go CLI source dir at ${GO_PACKAGE}" >&2
+  exit 1
+fi
+
+needs_build=0
+if [[ ! -x "${BIN_PATH}" ]]; then
+  needs_build=1
+elif [[ "${REPO_ROOT}/go.mod" -nt "${BIN_PATH}" ]]; then
+  needs_build=1
+else
+  latest_source="$(find "${GO_PACKAGE}" -type f -name '*.go' -newer "${BIN_PATH}" -print -quit 2>/dev/null || true)"
+  if [[ -n "${latest_source}" ]]; then
+    needs_build=1
+  fi
+fi
+
+if [[ ${needs_build} -eq 1 ]]; then
+  GOFLAGS="${GOFLAGS:-}" go build -o "${BIN_PATH}" "${GO_PACKAGE}"
+  chmod +x "${BIN_PATH}"
+fi
+
+BAR_ROOT="${REPO_ROOT}" exec "${BIN_PATH}" "$@"

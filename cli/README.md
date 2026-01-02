@@ -43,7 +43,7 @@ When the adapters call `bar`, the binary responds with structured JSON on stdout
 - `debug`/`status`: additional diagnostics logged to the Talon debug console.
 - `error`: Talon now surfaces CLI error payloads via `notify()` and logs the `drop_reason` hint when provided; follow-up telemetry work will map errors to guardrail drop reasons.
 
-Emit plain JSON objects (single line) so Talon can parse responses deterministically; non-JSON stdout falls back to legacy logging only. When returning a **CLI error payload**, include both `error` and optional `drop_reason` keys so Talon can mirror CLI diagnostics without re-running the legacy path.
+Emit plain JSON objects (single line) so Talon can parse responses deterministically; non-JSON stdout falls back to legacy logging only. When returning a **CLI error payload**, include both `error` and optional `drop_reason` keys so Talon can mirror CLI diagnostics without re-running the legacy path. Talon wraps decoded responses in the `BarCliPayload` dataclass (see `lib/providerCommands.py`), which exposes convenience attributes (`notice`, `error`, `debug`, `drop_reason`) and the `has_payload` flag used across adapters and tests.
 
 ## Implementation Slices
 

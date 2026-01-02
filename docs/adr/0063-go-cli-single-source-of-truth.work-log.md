@@ -815,3 +815,39 @@
           raise SystemExit('README missing dataclass note')
       print('README references payload dataclass')
     PY — future-shaping: ensure docs steer contributors toward the shared helper.
+
+
+## 2026-01-02 – Loop 032 (kind: documentation)
+- helper_version: helper:v20251223.1
+- focus: ADR-0063 §Implementation Plan & Operational Mitigations (document BarCliPayload usage)
+- riskiest_assumption: Without doc updates, contributors may bypass the shared dataclass and reintroduce drift (probability medium, impact medium on maintainability).
+- validation_targets:
+  - python3 - <<'PY'
+      from pathlib import Path
+      text = Path('cli/README.md').read_text().lower()
+      if 'barclipayload' not in text:
+          raise SystemExit('README still missing payload dataclass note')
+      print('README references payload dataclass')
+    PY
+  - python3 - <<'PY'
+      from pathlib import Path
+      text = Path('docs/adr/0063-go-cli-single-source-of-truth.md').read_text()
+      if 'BarCliPayload' not in text:
+          raise SystemExit('ADR still missing BarCliPayload reference')
+      print('ADR documents BarCliPayload helper')
+    PY
+- evidence:
+  - docs/adr/evidence/0063/loop-0032.md
+- rollback_plan: git checkout HEAD -- cli/README.md docs/adr/0063-go-cli-single-source-of-truth.md docs/adr/0063-go-cli-single-source-of-truth.work-log.md
+- delta_summary: helper:diff-snapshot=2 files changed, 3 insertions(+), 3 deletions(-); README/ADR now reference the `BarCliPayload` dataclass and its `has_payload` helper.
+- loops_remaining_forecast: 1 loop remaining (alert handling); confidence high.
+- residual_risks:
+  - Alert field handling still pending implementation (see Loop 033).
+- next_work:
+  - Behaviour: add handling for alert field in payload — python3 - <<'PY'
+      from pathlib import Path
+      text = Path('lib/providerCommands.py').read_text()
+      if 'payload_info.alert' not in text:
+          raise SystemExit('alert field handling missing')
+      print('alert field handling present')
+    PY — future-shaping: ensure CLI surface can raise alert notifications.

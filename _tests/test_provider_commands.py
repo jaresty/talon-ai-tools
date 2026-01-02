@@ -644,6 +644,42 @@ class BarCliDelegationTests(unittest.TestCase):
             self.assertIn("original length", entry)
             self.assertNotIn(long_stderr, entry)
 
+
+class BarCliLogLimitTests(unittest.TestCase):
+    def setUp(self):
+        if bootstrap is None:
+            self.skipTest("Talon runtime not available")
+
+    def tearDown(self):
+        # Reload provider module with default log limit after each test.
+        self._reload_with_limit(provider_module._DEFAULT_DEBUG_LOG_MAX_LEN)
+
+    @staticmethod
+    def _reload_with_limit(value: int) -> None:
+        import importlib
+
+        with patch("talon_user.lib.providerCommands.settings.get", return_value=value):
+            importlib.reload(provider_module)
+
+    def test_log_limit_respects_settings_value(self):
+        self._reload_with_limit(256)
+        self.assertEqual(provider_module._DEBUG_LOG_MAX_LEN, 256)
+
+    def test_log_limit_clamps_large_values(self):
+        self._reload_with_limit(20000)
+        self.assertEqual(provider_module._DEBUG_LOG_MAX_LEN, 8192)
+
+    def test_log_limit_clamps_small_values(self):
+        self._reload_with_limit(32)
+        self.assertEqual(provider_module._DEBUG_LOG_MAX_LEN, 64)
+
+    def test_log_limit_handles_invalid_values(self):
+        self._reload_with_limit("not-a-number")
+        self.assertEqual(
+            provider_module._DEBUG_LOG_MAX_LEN,
+            provider_module._DEFAULT_DEBUG_LOG_MAX_LEN,
+        )
+
     def test_parse_bar_cli_payload_multiline_stdout(self):
         result = SimpleNamespace(stdout='info line\n{"notify":"ok"}\n')
         payload = provider_module._parse_bar_cli_payload(result)

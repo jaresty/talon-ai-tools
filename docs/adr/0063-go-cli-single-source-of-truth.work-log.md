@@ -1871,3 +1871,26 @@
   - Tests and documentation for the log limit override remain pending; upcoming loops will cover guardrails and operator guidance.
 - next_work:
   - Behaviour: test log limit override — python3 -m pytest _tests/test_provider_commands.py -k log_limit_override — future-shaping: ensure guardrails cover the configuration path.
+
+
+## 2026-01-02 – Loop 070 (kind: test)
+- helper_version: helper:v20251223.1
+- focus: ADR-0063 §Operational Mitigations – log limit override tests
+- riskiest_assumption: Without guardrail tests the settings override could regress (probability medium, impact medium on diagnostics).
+- validation_targets:
+  - python3 -m pytest _tests/test_provider_commands.py -k "log_limit"
+- evidence:
+  - docs/adr/evidence/0063/loop-0070.md
+- rollback_plan: git checkout HEAD -- _tests/test_provider_commands.py docs/adr/0063-go-cli-single-source-of-truth.work-log.md docs/adr/evidence/0063/loop-0070.md
+- delta_summary: helper:diff-snapshot=3 files changed, 0 insertions(+), 0 deletions(-); added log limit override tests and evidence.
+- loops_remaining_forecast: 2 loops remaining (override documentation, residual risks, telemetry note, validation sweep, closeout); confidence medium.
+- residual_risks:
+  - Documentation and residual risk updates still pending; upcoming loops address operator guidance and telemetry notes.
+- next_work:
+  - Behaviour: document settings override — python3 - <<'PY'
+      from pathlib import Path
+      text = Path('cli/README.md').read_text().lower()
+      if 'bar_cli_debug_log_limit' not in text:
+          raise SystemExit('README missing settings override')
+      print('Documentation mentions settings override')
+    PY — future-shaping: ensure operator guidance includes the new configuration setting.

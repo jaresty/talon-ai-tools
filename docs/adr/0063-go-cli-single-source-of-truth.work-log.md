@@ -12,7 +12,7 @@ if bin_path.exists():
     sys.exit(0)
 raise SystemExit('bootstrap did not install CLI binary')
 PY` | status: in_progress — loop-0037 sources release signing key from environment; next slice integrates CI publication and telemetry for key rotation.
-- [Implementation Guardrails → Delivery posture] Release checksum manifest hardening | `scripts/tools/check_cli_assets.py` | status: in_progress — loop-0037 verifies CI-provided signatures; next slice wires signing into CI uploads and telemetry.
+- [Implementation Guardrails → Delivery posture] Release checksum manifest hardening | `python3 -m pytest _tests/test_cli_talon_parity.py` | status: in_progress — loop-0038 aligns release metadata under bootstrap/guard rails; next slice publishes CI-generated signatures and metadata artefact.
 
 ## Completed Loops
 - loop-0001 — tightened loop compliance statements and removed adhoc helper; evidence: `docs/adr/evidence/0063/loop-0001.md`.
@@ -96,3 +96,4 @@ PY`; evidence: `docs/adr/evidence/0063/loop-0034.md`.
 - loop-0035 — enforced signature verification across bootstrap and release guardrails; validation: `python3 -m pytest _tests/test_check_cli_assets.py`; evidence: `docs/adr/evidence/0063/loop-0035.md`.
 - loop-0036 — required tarball manifest signatures before parity guardrails; validation: `python3 scripts/tools/check_cli_assets.py`; evidence: `docs/adr/evidence/0063/loop-0036.md`.
 - loop-0037 — sourced release signing key from environment and enforced CI overrides; validation: `python3 -m pytest _tests/test_check_cli_assets.py`; evidence: `docs/adr/evidence/0063/loop-0037.md`.
+- loop-0038 — kept release metadata consistent across bootstrap reinstall and guard rails; validation: `python3 -m pytest _tests/test_cli_talon_parity.py`; evidence: `docs/adr/evidence/0063/loop-0038.md`.

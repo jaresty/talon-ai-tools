@@ -28,8 +28,12 @@ BIN_DIR = REPO_ROOT / "bin"
 SCHEMA_PATH = REPO_ROOT / "docs" / "schema" / "command-surface.json"
 ARTIFACTS_DIR = REPO_ROOT / "artifacts" / "cli"
 DELEGATION_STATE_SNAPSHOT_PATH = ARTIFACTS_DIR / "delegation-state.json"
+DEFAULT_SIGNATURE_METADATA_PATH = ARTIFACTS_DIR / "signatures.json"
 DEFAULT_SIGNATURE_KEY = "adr-0063-cli-release-signature"
 SIGNATURE_KEY_ENV = "CLI_RELEASE_SIGNING_KEY"
+DEFAULT_SIGNING_KEY_ID = "local-dev"
+SIGNING_KEY_ID_ENV = "CLI_RELEASE_SIGNING_KEY_ID"
+SIGNATURE_METADATA_ENV = "CLI_SIGNATURE_METADATA"
 
 
 def _target_suffix() -> str:
@@ -77,22 +81,38 @@ def _signing_key() -> str:
     return os.environ.get(SIGNATURE_KEY_ENV, DEFAULT_SIGNATURE_KEY)
 
 
+def _signing_key_id() -> str:
+    return os.environ.get(SIGNING_KEY_ID_ENV, DEFAULT_SIGNING_KEY_ID)
+
+
+def _metadata_path() -> Path:
+    return Path(
+        os.environ.get(
+            SIGNATURE_METADATA_ENV,
+            str(DEFAULT_SIGNATURE_METADATA_PATH),
+        )
+    )
+
+
 def _signature_for(message: str) -> str:
     return hashlib.sha256((_signing_key() + "\n" + message).encode("utf-8")).hexdigest()
 
 
-def _write_signature(target: Path, message: str) -> Path:
-    target.write_text(f"{_signature_for(message)}\n", encoding="utf-8")
-    return target
+def _write_signature(target: Path, message: str) -> str:
+    signature = _signature_for(message)
+    target.write_text(f"{signature}\n", encoding="utf-8")
+    return signature
 
 
-def _write_manifest(tarball: Path) -> Path:
+def _write_manifest(tarball: Path) -> tuple[Path, str, str]:
     digest = hashlib.sha256(tarball.read_bytes()).hexdigest()
     manifest_path = tarball.with_name(f"{tarball.name}.sha256")
     recorded = f"{digest}  {tarball.name}"
     manifest_path.write_text(f"{recorded}\n", encoding="utf-8")
-    _write_signature(manifest_path.with_suffix(manifest_path.suffix + ".sig"), recorded)
-    return manifest_path
+    signature = _write_signature(
+        manifest_path.with_suffix(manifest_path.suffix + ".sig"), recorded
+    )
+    return manifest_path, recorded, signature
 
 
 def _canonical_state_digest(payload: dict) -> str:
@@ -103,7 +123,7 @@ def _canonical_state_digest(payload: dict) -> str:
     ).hexdigest()
 
 
-def _write_delegation_state_manifest(output_dir: Path) -> Path:
+def _write_delegation_state_manifest(output_dir: Path) -> tuple[Path, str, str]:
     if not DELEGATION_STATE_SNAPSHOT_PATH.exists():
         raise FileNotFoundError(
             f"delegation state snapshot missing: {DELEGATION_STATE_SNAPSHOT_PATH}"
@@ -119,8 +139,33 @@ def _write_delegation_state_manifest(output_dir: Path) -> Path:
     manifest_path = output_dir / "delegation-state.json.sha256"
     recorded = f"{digest}  {DELEGATION_STATE_SNAPSHOT_PATH.name}"
     manifest_path.write_text(f"{recorded}\n", encoding="utf-8")
-    _write_signature(manifest_path.with_suffix(manifest_path.suffix + ".sig"), recorded)
-    return manifest_path
+    signature = _write_signature(
+        manifest_path.with_suffix(manifest_path.suffix + ".sig"), recorded
+    )
+    return manifest_path, recorded, signature
+
+
+def _write_signature_metadata(
+    tarball_recorded: str,
+    tarball_signature: str,
+    snapshot_recorded: str,
+    snapshot_signature: str,
+) -> Path:
+    metadata = {
+        "signing_key_id": _signing_key_id(),
+        "tarball_manifest": {
+            "recorded": tarball_recorded,
+            "signature": tarball_signature,
+        },
+        "delegation_snapshot": {
+            "recorded": snapshot_recorded,
+            "signature": snapshot_signature,
+        },
+    }
+    metadata_path = _metadata_path()
+    metadata_path.parent.mkdir(parents=True, exist_ok=True)
+    metadata_path.write_text(json.dumps(metadata, indent=2) + "\n", encoding="utf-8")
+    return metadata_path
 
 
 def package_cli() -> tuple[Path, Path]:
@@ -129,9 +174,23 @@ def package_cli() -> tuple[Path, Path]:
         built = _build_binary(temp_dir)
         _copy_local_binary(built)
         tarball = _create_tarball(built, ARTIFACTS_DIR)
-        manifest = _write_manifest(tarball)
-        _write_delegation_state_manifest(ARTIFACTS_DIR)
-    return tarball, manifest
+        (
+            manifest_path,
+            manifest_recorded,
+            manifest_signature,
+        ) = _write_manifest(tarball)
+        (
+            _,
+            snapshot_recorded,
+            snapshot_signature,
+        ) = _write_delegation_state_manifest(ARTIFACTS_DIR)
+        _write_signature_metadata(
+            manifest_recorded,
+            manifest_signature,
+            snapshot_recorded,
+            snapshot_signature,
+        )
+    return tarball, manifest_path
 
 
 def main() -> int:

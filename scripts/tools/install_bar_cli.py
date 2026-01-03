@@ -27,6 +27,12 @@ SNAPSHOT_DIGEST_PATH = ARTIFACTS_DIR / "delegation-state.json.sha256"
 DELEGATION_STATE_SIGNATURE_ENV = "CLI_DELEGATION_STATE_SIGNATURE"
 DEFAULT_SIGNATURE_KEY = "adr-0063-cli-release-signature"
 SIGNATURE_KEY_ENV = "CLI_RELEASE_SIGNING_KEY"
+SIGNATURE_METADATA_ENV = "CLI_SIGNATURE_METADATA"
+SIGNATURE_METADATA_PATH = Path(
+    os.environ.get(SIGNATURE_METADATA_ENV, "artifacts/cli/signatures.json")
+)
+DEFAULT_SIGNING_KEY_ID = "local-dev"
+SIGNING_KEY_ID_ENV = "CLI_RELEASE_SIGNING_KEY_ID"
 RUNTIME_DIR = REPO_ROOT / "var" / "cli-telemetry"
 RUNTIME_STATE_PATH = RUNTIME_DIR / "delegation-state.json"
 
@@ -101,19 +107,28 @@ def _signing_key() -> str:
     return os.environ.get(SIGNATURE_KEY_ENV, DEFAULT_SIGNATURE_KEY)
 
 
+def _signing_key_id() -> str:
+    return os.environ.get(SIGNING_KEY_ID_ENV, DEFAULT_SIGNING_KEY_ID)
+
+
+def _metadata_path() -> Path:
+    return Path(os.environ.get(SIGNATURE_METADATA_ENV, str(SIGNATURE_METADATA_PATH)))
+
+
 def _signature_for(message: str) -> str:
     return hashlib.sha256((_signing_key() + "\n" + message).encode("utf-8")).hexdigest()
 
 
-def _verify_signature_file(path: Path, recorded: str, label: str) -> None:
+def _verify_signature_file(path: Path, recorded: str, label: str) -> str:
     if not path.exists():
         raise ReleaseSignatureError(f"missing {label} signature: {path}")
     signature = path.read_text(encoding="utf-8").strip()
-    expected = _signature_for(recorded)
-    if signature != expected:
+    expected_signature = _signature_for(recorded)
+    if signature != expected_signature:
         raise ReleaseSignatureError(
-            f"{label} signature mismatch: expected {expected}, got {signature}"
+            f"{label} signature mismatch: expected {expected_signature}, got {signature}"
         )
+    return signature
 
 
 def _canonical_state_digest(payload: dict) -> str:
@@ -142,7 +157,7 @@ def _snapshot_signature_path() -> Path:
     return SNAPSHOT_DIGEST_PATH.with_suffix(SNAPSHOT_DIGEST_PATH.suffix + ".sig")
 
 
-def _verify_snapshot(payload: dict) -> str:
+def _verify_snapshot(payload: dict) -> tuple[str, str, str]:
     if not SNAPSHOT_DIGEST_PATH.exists():
         raise ReleaseSignatureError(
             f"missing delegation snapshot manifest: {SNAPSHOT_DIGEST_PATH}"
@@ -161,9 +176,58 @@ def _verify_snapshot(payload: dict) -> str:
 
     recorded = f"{digest}  {expected_name}"
     signature_path = _snapshot_signature_path()
-    _verify_signature_file(signature_path, recorded, "delegation snapshot")
+    signature = _verify_signature_file(signature_path, recorded, "delegation snapshot")
 
-    return digest
+    return digest, recorded, signature
+
+
+def _load_signature_metadata() -> dict:
+    path = _metadata_path()
+    if not path.exists():
+        raise ReleaseSignatureError(f"missing signature metadata: {path}")
+    try:
+        metadata = json.loads(path.read_text(encoding="utf-8"))
+    except Exception as exc:  # pragma: no cover - defensive
+        raise ReleaseSignatureError(
+            f"invalid signature metadata: {path} ({exc})"
+        ) from exc
+    if not isinstance(metadata, dict):
+        raise ReleaseSignatureError(
+            f"invalid signature metadata: {path} (expected object)"
+        )
+    return metadata
+
+
+def _verify_signature_metadata(
+    tarball_recorded: str,
+    tarball_signature: str,
+    snapshot_recorded: str,
+    snapshot_signature: str,
+) -> None:
+    metadata = _load_signature_metadata()
+    key_id = metadata.get("signing_key_id")
+    expected_id = _signing_key_id()
+    if key_id != expected_id:
+        raise ReleaseSignatureError(
+            "signature metadata signing_key_id mismatch: "
+            f"expected {expected_id}, got {key_id}"
+        )
+
+    tarball_meta = metadata.get("tarball_manifest") or {}
+    if tarball_meta.get("recorded") != tarball_recorded:
+        raise ReleaseSignatureError("tarball metadata recorded digest mismatch")
+    if tarball_meta.get("signature") != tarball_signature:
+        raise ReleaseSignatureError("tarball metadata signature mismatch")
+    if tarball_meta.get("signature") != _signature_for(tarball_recorded):
+        raise ReleaseSignatureError("tarball metadata signature invalid for key")
+
+    snapshot_meta = metadata.get("delegation_snapshot") or {}
+    if snapshot_meta.get("recorded") != snapshot_recorded:
+        raise ReleaseSignatureError("snapshot metadata recorded digest mismatch")
+    if snapshot_meta.get("signature") != snapshot_signature:
+        raise ReleaseSignatureError("snapshot metadata signature mismatch")
+    if snapshot_meta.get("signature") != _signature_for(snapshot_recorded):
+        raise ReleaseSignatureError("snapshot metadata signature invalid for key")
 
 
 def _install_snapshot(payload: dict, digest: str) -> None:
@@ -203,14 +267,25 @@ def install_cli(force: bool = False, quiet: bool = False) -> Path:
         raise FileNotFoundError(f"missing CLI manifest: {manifest}")
 
     snapshot_payload = _load_snapshot_payload()
-    snapshot_digest = _verify_snapshot(snapshot_payload)
+    (
+        snapshot_digest,
+        snapshot_recorded,
+        snapshot_signature,
+    ) = _verify_snapshot(snapshot_payload)
 
     _verify_checksum(tarball, manifest)
     manifest_recorded = manifest.read_text(encoding="utf-8").strip()
-    _verify_signature_file(
+    manifest_signature = _verify_signature_file(
         manifest.with_suffix(manifest.suffix + ".sig"),
         manifest_recorded,
         "tarball manifest",
+    )
+
+    _verify_signature_metadata(
+        manifest_recorded,
+        manifest_signature,
+        snapshot_recorded,
+        snapshot_signature,
     )
 
     if not force and TARGET_PATH.exists():

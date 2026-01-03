@@ -8,6 +8,8 @@ script should return green and serve as evidence for shared command assets.
 
 from __future__ import annotations
 
+import json
+import os
 import sys
 from hashlib import sha256
 from pathlib import Path
@@ -17,6 +19,10 @@ BIN_PATH = Path("bin/bar")
 BIN_EXECUTABLE = Path("bin/bar.bin")
 SCHEMA_PATH = Path("docs/schema/command-surface.json")
 ARTIFACTS_DIR = Path("artifacts/cli")
+DELEGATION_STATE_ENV = "CLI_DELEGATION_STATE"
+DELEGATION_STATE_PATH = Path(
+    os.environ.get(DELEGATION_STATE_ENV, "var/cli-telemetry/delegation-state.json")
+)
 
 
 def _target_suffix() -> str:
@@ -83,6 +89,75 @@ def _check_manifest() -> bool:
     return ok
 
 
+def _check_delegation_state() -> bool:
+    path = DELEGATION_STATE_PATH
+    if not path.exists():
+        print(f"missing delegation state: {path}", file=sys.stderr)
+        return False
+
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except Exception as exc:  # pragma: no cover - defensive
+        print(f"invalid delegation state: {path} ({exc})", file=sys.stderr)
+        return False
+
+    if not isinstance(payload, dict):
+        print(f"invalid delegation state: {path} (expected object)", file=sys.stderr)
+        return False
+
+    enabled = payload.get("enabled")
+    failure_count = payload.get("failure_count")
+    failure_threshold = payload.get("failure_threshold")
+    reason = str(payload.get("reason") or "").strip()
+
+    if not isinstance(enabled, bool):
+        print(
+            f"invalid delegation state: {path} (enabled must be boolean)",
+            file=sys.stderr,
+        )
+        return False
+
+    if not isinstance(failure_count, int) or failure_count < 0:
+        print(
+            f"invalid delegation state: {path} (failure_count must be >= 0)",
+            file=sys.stderr,
+        )
+        return False
+
+    if not isinstance(failure_threshold, int) or failure_threshold <= 0:
+        print(
+            f"invalid delegation state: {path} (failure_threshold must be > 0)",
+            file=sys.stderr,
+        )
+        return False
+
+    if not enabled:
+        detail = reason or "delegation disabled"
+        print(
+            f"delegation disabled according to state {path}: {detail}",
+            file=sys.stderr,
+        )
+        return False
+
+    if failure_count:
+        print(
+            "delegation state reports outstanding failures "
+            f"({failure_count}/{failure_threshold}) in {path}",
+            file=sys.stderr,
+        )
+        return False
+
+    events = payload.get("events", [])
+    if not isinstance(events, list):
+        print(
+            f"invalid delegation state: {path} (events must be a list)",
+            file=sys.stderr,
+        )
+        return False
+
+    return True
+
+
 def main() -> int:
     required = (BIN_PATH, BIN_EXECUTABLE, SCHEMA_PATH)
     missing = [path for path in required if not path.exists()]
@@ -93,6 +168,9 @@ def main() -> int:
         ok = False
 
     if not _check_manifest():
+        ok = False
+
+    if not _check_delegation_state():
         ok = False
 
     if ok:

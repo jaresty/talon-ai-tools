@@ -750,6 +750,12 @@ def drop_reason_message(reason: RequestDropReason) -> str:
             "packaged CLI (`python3 scripts/tools/package_bar_cli.py --print-paths`) "
             "and rerun bootstrap before retrying."
         )
+    if reason == "cli_signature_mismatch":
+        return (
+            "GPT: CLI delegation disabled after signature telemetry mismatch; run "
+            "`python3 scripts/tools/check_cli_assets.py` to refresh release metadata "
+            "and rerun bootstrap before retrying."
+        )
     reason_text = str(reason).strip() or "unknown"
     return f"GPT: Request blocked; reason={reason_text}."
 

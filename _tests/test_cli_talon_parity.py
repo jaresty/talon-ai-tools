@@ -23,6 +23,7 @@ os.environ.setdefault(
 
 import lib.cliDelegation as cliDelegation
 import lib.cliHealth as cliHealth
+import lib.providerRegistry as providerRegistry
 import lib.surfaceGuidance as surfaceGuidance
 from lib import historyLifecycle, requestGating
 import scripts.tools.install_bar_cli as install_bar_cli
@@ -508,6 +509,27 @@ else:
                     "Bootstrap should disable delegation when signing telemetry mismatches",
                 )
 
+                allowed, reason = requestGating.try_begin_request(
+                    source="signature-telemetry-test"
+                )
+                self.assertFalse(allowed)
+                self.assertEqual(reason, "cli_signature_mismatch")
+                drop_message = historyLifecycle.last_drop_reason()
+                self.assertIn("signature telemetry mismatch", drop_message)
+
+                registry = providerRegistry.ProviderRegistry()
+                entries = registry.status_entries()
+                self.assertTrue(
+                    any(
+                        entry.get("delegation", {}).get("reason")
+                        == "cli_signature_mismatch"
+                        and "signature telemetry mismatch"
+                        in (entry.get("delegation", {}).get("message") or "")
+                        for entry in entries
+                    ),
+                    "Provider registry should surface signature telemetry mismatch",
+                )
+
                 warnings = get_bootstrap_warning_messages(clear=False)
                 self.assertTrue(
                     any(
@@ -528,6 +550,7 @@ else:
                 else:
                     telemetry_path.write_bytes(telemetry_backup)
                 cliDelegation.reset_state()
+                historyLifecycle.clear_drop_reason()
                 clear_bootstrap_warning_events()
                 get_bootstrap_warnings(clear=True)
                 get_bootstrap_warning_messages(clear=True)

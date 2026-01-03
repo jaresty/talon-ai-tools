@@ -12,6 +12,7 @@ from talon import actions
 
 import lib.cliDelegation as cliDelegation
 import lib.cliHealth as cliHealth
+from lib import historyLifecycle, requestGating
 from lib.bootstrapTelemetry import (
     clear_bootstrap_warning_events,
     get_bootstrap_warning_messages,
@@ -316,3 +317,33 @@ else:
 
             state_path.unlink(missing_ok=True)
             cliDelegation.reset_state()
+
+        def test_request_gating_blocks_when_cli_unhealthy(self) -> None:
+            state_path = Path("var/cli-telemetry/delegation-state.json")
+            state_path.unlink(missing_ok=True)
+            cliDelegation.reset_state()
+            historyLifecycle.set_drop_reason("")
+            actions.user.calls.clear()
+
+            for _ in range(3):
+                cliDelegation.record_health_failure(
+                    "probe failed", source="health_probe"
+                )
+
+            with mock.patch(
+                "lib.cliHealth.probe_cli_health", return_value=False
+            ) as probe:
+                allowed, reason = requestGating.try_begin_request(source="parity")
+
+            self.assertFalse(allowed)
+            self.assertEqual(reason, "cli_unhealthy")
+            probe.assert_called_once()
+
+            message = historyLifecycle.last_drop_reason()
+            self.assertIn("CLI delegation disabled", message)
+            self.assertIn("failed probes", message)
+
+            actions.user.calls.clear()
+            cliDelegation.reset_state()
+            historyLifecycle.set_drop_reason("")
+            state_path.unlink(missing_ok=True)

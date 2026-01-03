@@ -744,6 +744,12 @@ def drop_reason_message(reason: RequestDropReason) -> str:
             "GPT: Cannot save history source; entry is missing a directional lens "
             "(fog/fig/dig/ong/rog/bog/jog)."
         )
+    if reason == "cli_unhealthy":
+        return (
+            "GPT: CLI delegation disabled after failed health probes; rebuild the "
+            "packaged CLI (`python3 scripts/tools/package_bar_cli.py --print-paths`) "
+            "and rerun bootstrap before retrying."
+        )
     reason_text = str(reason).strip() or "unknown"
     return f"GPT: Request blocked; reason={reason_text}."
 

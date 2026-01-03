@@ -13,10 +13,13 @@ import json
 import os
 import platform
 import shutil
+import subprocess
 import sys
 import tarfile
 import tempfile
+from datetime import datetime, timezone
 from pathlib import Path
+
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 BIN_DIR = REPO_ROOT / "bin"
@@ -33,6 +36,13 @@ SIGNATURE_METADATA_PATH = Path(
 )
 DEFAULT_SIGNING_KEY_ID = "local-dev"
 SIGNING_KEY_ID_ENV = "CLI_RELEASE_SIGNING_KEY_ID"
+SIGNATURE_TELEMETRY_ENV = "CLI_SIGNATURE_TELEMETRY"
+SIGNATURE_TELEMETRY_PATH = Path(
+    os.environ.get(
+        SIGNATURE_TELEMETRY_ENV,
+        "var/cli-telemetry/signature-metadata.json",
+    )
+)
 RUNTIME_DIR = REPO_ROOT / "var" / "cli-telemetry"
 RUNTIME_STATE_PATH = RUNTIME_DIR / "delegation-state.json"
 
@@ -198,6 +208,47 @@ def _load_signature_metadata() -> dict:
     return metadata
 
 
+def _load_existing_signature_telemetry() -> dict | None:
+    if not SIGNATURE_TELEMETRY_PATH.exists():
+        return None
+    try:
+        payload = json.loads(SIGNATURE_TELEMETRY_PATH.read_text(encoding="utf-8"))
+    except Exception:
+        return None
+    if isinstance(payload, dict):
+        return payload
+    return None
+
+
+def _write_signature_telemetry(
+    tarball_recorded: str,
+    tarball_signature: str,
+    snapshot_recorded: str,
+    snapshot_signature: str,
+) -> None:
+    payload = {
+        "status": "green",
+        "generated_at": datetime.now(timezone.utc).isoformat(),
+        "signing_key_id": _signing_key_id(),
+        "tarball_manifest": {
+            "recorded": tarball_recorded,
+            "signature": tarball_signature,
+        },
+        "delegation_snapshot": {
+            "recorded": snapshot_recorded,
+            "signature": snapshot_signature,
+        },
+    }
+    previous = _load_existing_signature_telemetry()
+    if previous:
+        payload["previous"] = previous
+    SIGNATURE_TELEMETRY_PATH.parent.mkdir(parents=True, exist_ok=True)
+    SIGNATURE_TELEMETRY_PATH.write_text(
+        json.dumps(payload, indent=2) + "\n",
+        encoding="utf-8",
+    )
+
+
 def _verify_signature_metadata(
     tarball_recorded: str,
     tarball_signature: str,
@@ -297,6 +348,12 @@ def install_cli(force: bool = False, quiet: bool = False) -> Path:
         )
         if TARGET_PATH.stat().st_mtime >= latest_artifact_mtime:
             _install_snapshot(snapshot_payload, snapshot_digest)
+            _write_signature_telemetry(
+                manifest_recorded,
+                manifest_signature,
+                snapshot_recorded,
+                snapshot_signature,
+            )
             if not quiet:
                 print(f"CLI binary already installed at {TARGET_PATH}")
             return TARGET_PATH
@@ -323,6 +380,12 @@ def install_cli(force: bool = False, quiet: bool = False) -> Path:
         TARGET_PATH.chmod(0o755)
 
     _install_snapshot(snapshot_payload, snapshot_digest)
+    _write_signature_telemetry(
+        manifest_recorded,
+        manifest_signature,
+        snapshot_recorded,
+        snapshot_signature,
+    )
 
     if not quiet:
         print(f"installed CLI binary to {TARGET_PATH}")

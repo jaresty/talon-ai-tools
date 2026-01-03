@@ -18,6 +18,11 @@ try:
 except Exception:  # pragma: no cover - delegation helpers unavailable
     mark_cli_ready = None
 
+try:
+    from lib.bootstrapTelemetry import verify_signature_telemetry
+except Exception:  # pragma: no cover - telemetry helpers unavailable
+    verify_signature_telemetry = None
+
 _BOOTSTRAP_WARNINGS: list[str] = []
 
 
@@ -95,6 +100,16 @@ def _maybe_install_cli() -> None:
             "install failed; run `python3 scripts/tools/package_bar_cli.py --print-paths` "
             f"to rebuild packaged CLI (falling back to go build: {exc})"
         )
+        return
+
+    telemetry_ok = True
+    if verify_signature_telemetry is not None:
+        try:
+            telemetry_ok = verify_signature_telemetry()
+        except Exception as exc:  # pragma: no cover - defensive
+            _warn(f"signature telemetry verification failed ({exc})")
+            telemetry_ok = False
+    if not telemetry_ok:
         return
 
     cli_health_module = None

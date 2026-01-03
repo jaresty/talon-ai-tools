@@ -8,6 +8,7 @@ import platform
 import subprocess
 import sys
 from contextlib import redirect_stderr
+from datetime import datetime, timezone
 from unittest import mock
 
 from talon import actions
@@ -16,6 +17,9 @@ SIGNATURE_KEY = "adr-0063-cli-release-signature"
 os.environ.setdefault("CLI_RELEASE_SIGNING_KEY", SIGNATURE_KEY)
 os.environ.setdefault("CLI_RELEASE_SIGNING_KEY_ID", "local-dev")
 os.environ.setdefault("CLI_SIGNATURE_METADATA", "artifacts/cli/signatures.json")
+os.environ.setdefault(
+    "CLI_SIGNATURE_TELEMETRY", "var/cli-telemetry/signature-metadata.json"
+)
 
 import lib.cliDelegation as cliDelegation
 import lib.cliHealth as cliHealth
@@ -95,6 +99,52 @@ if bootstrap is None:
 else:
 
     class CLITalonParityTests(unittest.TestCase):
+        def _signature_metadata_path(self) -> Path:
+            return PACKAGED_CLI_DIR / "signatures.json"
+
+        def _signature_telemetry_path(self) -> Path:
+            return Path(
+                os.environ.get(
+                    "CLI_SIGNATURE_TELEMETRY",
+                    "var/cli-telemetry/signature-metadata.json",
+                )
+            )
+
+        def _load_signature_metadata(self) -> dict:
+            metadata_path = self._signature_metadata_path()
+            self.assertTrue(
+                metadata_path.exists(),
+                "Signature metadata missing; run loop-0039 to rebuild",
+            )
+            return json.loads(metadata_path.read_text(encoding="utf-8"))
+
+        def _write_signature_telemetry(
+            self,
+            *,
+            signing_key_id: str | None = None,
+            status: str = "green",
+            issues: list[str] | None = None,
+        ) -> dict:
+            metadata = self._load_signature_metadata()
+            payload = {
+                "status": status,
+                "generated_at": datetime.now(timezone.utc).isoformat(),
+                "signing_key_id": signing_key_id
+                or metadata.get("signing_key_id")
+                or os.environ.get("CLI_RELEASE_SIGNING_KEY_ID", "local-dev"),
+                "tarball_manifest": dict(metadata.get("tarball_manifest") or {}),
+                "delegation_snapshot": dict(metadata.get("delegation_snapshot") or {}),
+            }
+            if issues:
+                payload["issues"] = list(issues)
+            telemetry_path = self._signature_telemetry_path()
+            telemetry_path.parent.mkdir(parents=True, exist_ok=True)
+            telemetry_path.write_text(
+                json.dumps(payload, indent=2) + "\n",
+                encoding="utf-8",
+            )
+            return payload
+
         def test_cli_health_probe_emits_json_status(self) -> None:
             self.assertTrue(
                 CLI_BINARY.exists(),
@@ -376,6 +426,11 @@ else:
             metadata_path.write_text(
                 json.dumps(metadata, indent=2) + "\n", encoding="utf-8"
             )
+            telemetry_path = self._signature_telemetry_path()
+            telemetry_backup = (
+                telemetry_path.read_bytes() if telemetry_path.exists() else None
+            )
+            self._write_signature_telemetry()
 
             try:
                 bootstrap()
@@ -414,10 +469,69 @@ else:
                     metadata_path.unlink(missing_ok=True)
                 else:
                     metadata_path.write_bytes(metadata_backup)
+                if telemetry_backup is None:
+                    telemetry_path.unlink(missing_ok=True)
+                else:
+                    telemetry_path.write_bytes(telemetry_backup)
                 runtime_path.unlink(missing_ok=True)
                 cliDelegation.reset_state()
                 clear_bootstrap_warning_events()
                 get_bootstrap_warnings(clear=True)
+
+        def test_bootstrap_disables_delegation_on_signature_telemetry_mismatch(
+            self,
+        ) -> None:
+            self.assertIsNotNone(bootstrap, "bootstrap helper unavailable")
+            assert bootstrap is not None
+
+            telemetry_path = self._signature_telemetry_path()
+            telemetry_backup = (
+                telemetry_path.read_bytes() if telemetry_path.exists() else None
+            )
+
+            clear_bootstrap_warning_events()
+            get_bootstrap_warnings(clear=True)
+            get_bootstrap_warning_messages(clear=True)
+            cliDelegation.reset_state()
+            actions.user.calls.clear()
+
+            self._write_signature_telemetry(signing_key_id="unexpected-key")
+
+            try:
+                with mock.patch(
+                    "scripts.tools.install_bar_cli._write_signature_telemetry",
+                    return_value=None,
+                ):
+                    bootstrap()
+                self.assertFalse(
+                    cliDelegation.delegation_enabled(),
+                    "Bootstrap should disable delegation when signing telemetry mismatches",
+                )
+
+                warnings = get_bootstrap_warning_messages(clear=False)
+                self.assertTrue(
+                    any(
+                        "signature telemetry mismatch" in warning
+                        for warning in warnings
+                    ),
+                    "Bootstrap warnings should mention signature telemetry mismatch",
+                )
+                delegation_state_path = Path("var/cli-telemetry/delegation-state.json")
+                if delegation_state_path.exists():
+                    state_payload = json.loads(
+                        delegation_state_path.read_text(encoding="utf-8")
+                    )
+                    self.assertFalse(state_payload.get("enabled", True))
+            finally:
+                if telemetry_backup is None:
+                    telemetry_path.unlink(missing_ok=True)
+                else:
+                    telemetry_path.write_bytes(telemetry_backup)
+                cliDelegation.reset_state()
+                clear_bootstrap_warning_events()
+                get_bootstrap_warnings(clear=True)
+                get_bootstrap_warning_messages(clear=True)
+                actions.user.calls.clear()
 
         def test_bootstrap_fails_on_snapshot_digest_mismatch(self) -> None:
             self.assertIsNotNone(bootstrap, "bootstrap helper unavailable")

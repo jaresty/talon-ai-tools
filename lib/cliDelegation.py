@@ -13,10 +13,30 @@ _DELEGATION_ENABLED: bool = True
 _DISABLE_EVENTS: List[Dict[str, str]] = []
 _TELEMETRY_DIR = Path("var/cli-telemetry")
 _STATE_PATH = _TELEMETRY_DIR / "delegation-state.json"
+_FAILURE_THRESHOLD = 3
+_FAILURE_COUNT = 0
+_LAST_REASON: str | None = None
 
 
 def _timestamp() -> str:
     return datetime.now(timezone.utc).isoformat()
+
+
+def _load_state() -> None:
+    global _DELEGATION_ENABLED, _DISABLE_EVENTS, _FAILURE_COUNT, _LAST_REASON
+    if not _STATE_PATH.exists():
+        return
+    try:
+        payload = json.loads(_STATE_PATH.read_text(encoding="utf-8"))
+    except Exception:
+        return
+    _DELEGATION_ENABLED = bool(payload.get("enabled", True))
+    _DISABLE_EVENTS = list(payload.get("events", []))
+    _FAILURE_COUNT = int(payload.get("failure_count", 0))
+    _LAST_REASON = payload.get("reason")
+
+
+_load_state()
 
 
 def _persist_state(*, enabled: bool, reason: str | None, source: str | None) -> None:
@@ -28,6 +48,8 @@ def _persist_state(*, enabled: bool, reason: str | None, source: str | None) -> 
             "reason": reason,
             "source": source,
             "events": list(_DISABLE_EVENTS),
+            "failure_count": _FAILURE_COUNT,
+            "failure_threshold": _FAILURE_THRESHOLD,
         }
         _STATE_PATH.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
     except Exception:
@@ -50,8 +72,9 @@ def disable_delegation(
 ) -> None:
     """Disable CLI delegation and record the triggering reason."""
 
-    global _DELEGATION_ENABLED
+    global _DELEGATION_ENABLED, _LAST_REASON
     _DELEGATION_ENABLED = False
+    _LAST_REASON = reason
     _record_disable_event(reason, source)
     if notify:
         try:
@@ -70,8 +93,10 @@ def disable_delegation(
 def mark_cli_ready(*, source: str = "bootstrap") -> None:
     """Mark CLI delegation as healthy and ready after bootstrap succeeds."""
 
-    global _DELEGATION_ENABLED
+    global _DELEGATION_ENABLED, _FAILURE_COUNT, _LAST_REASON
     _DELEGATION_ENABLED = True
+    _FAILURE_COUNT = 0
+    _LAST_REASON = None
     try:
         handler = getattr(actions.user, "cli_delegation_ready", None)
         if handler is not None:
@@ -93,13 +118,46 @@ def disable_events() -> List[Dict[str, str]]:
     return list(_DISABLE_EVENTS)
 
 
+def failure_count() -> int:
+    """Return the current consecutive failure count."""
+
+    return _FAILURE_COUNT
+
+
 def reset_state() -> None:
     """Reset delegation state and forget recorded disable events."""
 
-    global _DELEGATION_ENABLED
+    global _DELEGATION_ENABLED, _FAILURE_COUNT, _LAST_REASON
     _DELEGATION_ENABLED = True
+    _FAILURE_COUNT = 0
+    _LAST_REASON = None
     _DISABLE_EVENTS.clear()
     _persist_state(enabled=True, reason=None, source="reset")
+
+
+def record_health_failure(reason: str, *, source: str = "health_probe") -> None:
+    """Record a failed health probe and disable delegation after threshold."""
+
+    global _FAILURE_COUNT, _LAST_REASON
+    _FAILURE_COUNT += 1
+    _LAST_REASON = reason
+    if _FAILURE_COUNT >= _FAILURE_THRESHOLD:
+        disable_delegation(
+            f"{reason}; reached failure threshold {_FAILURE_THRESHOLD}",
+            source=source,
+            notify=True,
+        )
+    else:
+        _persist_state(enabled=_DELEGATION_ENABLED, reason=reason, source=source)
+
+
+def record_health_success(*, source: str = "health_probe") -> None:
+    """Record a successful health probe and reset failure counters."""
+
+    global _FAILURE_COUNT, _LAST_REASON
+    _FAILURE_COUNT = 0
+    _LAST_REASON = None
+    mark_cli_ready(source=source)
 
 
 @mod.action_class
@@ -130,5 +188,8 @@ __all__ = [
     "mark_cli_ready",
     "delegation_enabled",
     "disable_events",
+    "failure_count",
     "reset_state",
+    "record_health_failure",
+    "record_health_success",
 ]

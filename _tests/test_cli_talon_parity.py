@@ -6,10 +6,12 @@ import platform
 import subprocess
 import sys
 from contextlib import redirect_stderr
+from unittest import mock
 
 from talon import actions
 
 import lib.cliDelegation as cliDelegation
+import lib.cliHealth as cliHealth
 from lib.bootstrapTelemetry import (
     clear_bootstrap_warning_events,
     get_bootstrap_warning_messages,
@@ -263,3 +265,54 @@ else:
                 ),
                 "Bootstrap warning should notify adapters with rebuild instructions",
             )
+
+            delegation_state_path.unlink(missing_ok=True)
+            cliDelegation.reset_state()
+
+        def test_cli_health_probe_trips_delegation_after_failures(self) -> None:
+            state_path = Path("var/cli-telemetry/delegation-state.json")
+            state_path.unlink(missing_ok=True)
+            cliDelegation.reset_state()
+
+            failure_result = subprocess.CompletedProcess(
+                args=[str(CLI_BINARY), "--health"],
+                returncode=1,
+                stdout="",
+                stderr="probe failed",
+            )
+            success_result = subprocess.CompletedProcess(
+                args=[str(CLI_BINARY), "--health"],
+                returncode=0,
+                stdout=json.dumps({"status": "ok", "version": "test"}),
+                stderr="",
+            )
+
+            with mock.patch(
+                "lib.cliHealth._run_health_command",
+                side_effect=[failure_result, failure_result, failure_result],
+            ):
+                for _ in range(3):
+                    cliHealth.probe_cli_health()
+
+            self.assertFalse(
+                cliDelegation.delegation_enabled(),
+                "Delegation should disable after repeated health failures",
+            )
+            self.assertTrue(state_path.exists(), "Delegation state file missing")
+            disabled_state = json.loads(state_path.read_text(encoding="utf-8"))
+            self.assertEqual(disabled_state.get("failure_count"), 3)
+            self.assertFalse(disabled_state.get("enabled", True))
+            self.assertIn("failure threshold", disabled_state.get("reason", ""))
+
+            cliDelegation.reset_state()
+            with mock.patch(
+                "lib.cliHealth._run_health_command", return_value=success_result
+            ):
+                cliHealth.probe_cli_health()
+
+            restored_state = json.loads(state_path.read_text(encoding="utf-8"))
+            self.assertTrue(restored_state.get("enabled", False))
+            self.assertEqual(restored_state.get("failure_count"), 0)
+
+            state_path.unlink(missing_ok=True)
+            cliDelegation.reset_state()

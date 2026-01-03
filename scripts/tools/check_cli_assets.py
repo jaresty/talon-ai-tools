@@ -411,6 +411,9 @@ def main() -> int:
 
     if ok:
         print("all CLI assets present")
+        print(f"cli_tarball={_tarball_path()}")
+        print(f"cli_manifest={_manifest_path()}")
+        print(f"cli_signatures={_metadata_path()}")
         return 0
 
     return 1

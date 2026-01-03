@@ -124,6 +124,12 @@ def failure_count() -> int:
     return _FAILURE_COUNT
 
 
+def failure_threshold() -> int:
+    """Return the failure threshold that disables delegation."""
+
+    return _FAILURE_THRESHOLD
+
+
 def last_disable_reason() -> str | None:
     """Return the last recorded disablement reason, if any."""
 
@@ -195,6 +201,7 @@ __all__ = [
     "delegation_enabled",
     "disable_events",
     "failure_count",
+    "failure_threshold",
     "last_disable_reason",
     "reset_state",
     "record_health_failure",

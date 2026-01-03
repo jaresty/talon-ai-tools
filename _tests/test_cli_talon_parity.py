@@ -15,6 +15,7 @@ import lib.cliDelegation as cliDelegation
 import lib.cliHealth as cliHealth
 import lib.surfaceGuidance as surfaceGuidance
 from lib import historyLifecycle, requestGating
+import scripts.tools.install_bar_cli as install_bar_cli
 from lib.bootstrapTelemetry import (
     clear_bootstrap_warning_events,
     get_bootstrap_warning_messages,
@@ -355,6 +356,55 @@ else:
                 cliDelegation.reset_state()
                 clear_bootstrap_warning_events()
                 get_bootstrap_warnings(clear=True)
+
+        def test_bootstrap_fails_on_snapshot_digest_mismatch(self) -> None:
+            self.assertIsNotNone(bootstrap, "bootstrap helper unavailable")
+            assert bootstrap is not None
+
+            snapshot_path = PACKAGED_CLI_DIR / "delegation-state.json"
+            digest_path = PACKAGED_CLI_DIR / "delegation-state.json.sha256"
+            runtime_path = Path("var/cli-telemetry/delegation-state.json")
+
+            self.assertTrue(
+                snapshot_path.exists(),
+                "Delegation snapshot missing; run loop-0032 to rebuild",
+            )
+            self.assertTrue(
+                digest_path.exists(),
+                "Delegation snapshot digest missing; run loop-0032 to rebuild",
+            )
+
+            snapshot_backup = snapshot_path.read_bytes()
+            digest_backup = digest_path.read_bytes()
+            runtime_path.unlink(missing_ok=True)
+            cliDelegation.reset_state()
+            clear_bootstrap_warning_events()
+            get_bootstrap_warnings(clear=True)
+
+            bad_digest = "0" * 64
+            digest_path.write_text(
+                f"{bad_digest}  {snapshot_path.name}\n", encoding="utf-8"
+            )
+
+            try:
+                with self.assertRaises(install_bar_cli.DelegationSnapshotError):
+                    bootstrap()
+                warnings = get_bootstrap_warnings(clear=True)
+                self.assertTrue(
+                    any(
+                        "delegation snapshot validation failed" in warning
+                        for warning in warnings
+                    ),
+                    "Bootstrap warning should surface snapshot validation failure",
+                )
+            finally:
+                snapshot_path.write_bytes(snapshot_backup)
+                digest_path.write_bytes(digest_backup)
+                runtime_path.unlink(missing_ok=True)
+                cliDelegation.reset_state()
+                clear_bootstrap_warning_events()
+                get_bootstrap_warnings(clear=True)
+                bootstrap()
 
         def test_cli_health_probe_trips_delegation_after_failures(self) -> None:
             state_path = Path("var/cli-telemetry/delegation-state.json")

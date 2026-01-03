@@ -1,5 +1,10 @@
 import unittest
 from unittest.mock import MagicMock, patch
+from typing import Any
+
+provider_module: Any = None
+ProviderActions: Any = None
+actions: Any = None
 
 try:
     from bootstrap import bootstrap
@@ -135,6 +140,40 @@ class ProviderCommandGuardTests(unittest.TestCase):
         ):
             self.assertFalse(provider_module._reject_if_request_in_flight())
         set_reason.assert_not_called()
+
+    def test_render_lines_include_delegation_snapshot(self):
+        if bootstrap is None:
+            self.skipTest("Talon runtime not available")
+
+        entry = {
+            "id": "openai",
+            "display_name": "OpenAI",
+            "aliases": [],
+            "endpoint": "https://api.openai.com",
+            "default_model": "gpt-test",
+            "api_key_env": "OPENAI_API_KEY",
+            "available": True,
+            "current": True,
+            "features": {"streaming": True},
+            "reachable": True,
+            "token_hint": "",
+            "token_source": "settings",
+            "delegation": {
+                "enabled": False,
+                "failure_count": 3,
+                "failure_threshold": 3,
+                "last_reason": "probe failed",
+                "message": "GPT: CLI delegation disabled after failed health probes; rebuild the packaged CLI (`python3 scripts/tools/package_bar_cli.py --print-paths`) and rerun bootstrap before retrying. (failed probes=3/3; probe failed)",
+            },
+        }
+
+        lines = provider_module._render_provider_lines([entry])
+        self.assertTrue(any("delegation: disabled" in line for line in lines))
+        self.assertTrue(
+            any("failed probes=3/3" in line for line in lines),
+            lines,
+        )
+        self.assertTrue(any("CLI delegation disabled" in line for line in lines), lines)
 
 
 if __name__ == "__main__":

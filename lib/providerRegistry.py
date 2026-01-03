@@ -35,7 +35,9 @@ def provider_tokens_setting() -> Dict[str, str]:
         pass
 
     try:
-        maybe_tokens = settings.get("user.model_provider_tokens", {})  # legacy dict if available
+        maybe_tokens = settings.get(
+            "user.model_provider_tokens", {}
+        )  # legacy dict if available
     except Exception:
         maybe_tokens = {}
     if isinstance(maybe_tokens, dict):
@@ -176,7 +178,9 @@ class ProviderRegistry:
         entries: List[dict] = []
         if isinstance(raw, dict):
             if "providers" in raw and isinstance(raw["providers"], list):
-                entries = [entry for entry in raw["providers"] if isinstance(entry, dict)]
+                entries = [
+                    entry for entry in raw["providers"] if isinstance(entry, dict)
+                ]
             else:
                 # Dict keyed by provider id.
                 for pid, cfg in raw.items():
@@ -195,15 +199,13 @@ class ProviderRegistry:
                 continue
             display = str(entry.get("display_name") or pid).strip() or pid
             aliases = _parse_aliases(entry.get("aliases"))
-            endpoint = (
-                str(entry.get("endpoint") or "").strip()
-                or _default_endpoint_for(pid)
-            )
+            endpoint = str(
+                entry.get("endpoint") or ""
+            ).strip() or _default_endpoint_for(pid)
             api_key_env = str(entry.get("api_key_env") or "OPENAI_API_KEY").strip()
-            default_model = (
-                str(entry.get("default_model") or "").strip()
-                or _default_model_for(pid)
-            )
+            default_model = str(
+                entry.get("default_model") or ""
+            ).strip() or _default_model_for(pid)
             features = entry.get("features")
             parsed.append(
                 ProviderConfig(
@@ -330,6 +332,37 @@ class ProviderRegistry:
         tokens = provider_tokens_setting()
         entries: List[dict] = []
         current = self.current_provider_id()
+
+        delegation_snapshot = None
+        try:
+            from . import cliDelegation as _cliDelegation
+            from .historyLifecycle import drop_reason_message as _drop_reason_message
+
+            enabled = bool(_cliDelegation.delegation_enabled())
+            failure_count = int(_cliDelegation.failure_count())
+            failure_threshold = int(_cliDelegation.failure_threshold())
+            last_reason = _cliDelegation.last_disable_reason() or ""
+            message = _drop_reason_message("cli_unhealthy")
+            details: List[str] = []
+            if failure_count:
+                if failure_threshold:
+                    details.append(f"failed probes={failure_count}/{failure_threshold}")
+                else:
+                    details.append(f"failed probes={failure_count}")
+            if last_reason:
+                details.append(last_reason)
+            if details:
+                message = f"{message} ({'; '.join(details)})"
+            delegation_snapshot = {
+                "enabled": enabled,
+                "failure_count": failure_count,
+                "failure_threshold": failure_threshold,
+                "last_reason": last_reason,
+                "message": message,
+            }
+        except Exception:
+            delegation_snapshot = None
+
         for cfg in self.providers():
             token_from_settings = tokens.get(cfg.id)
             token_from_env = os.environ.get(cfg.api_key_env)
@@ -359,6 +392,7 @@ class ProviderRegistry:
                     "reachability_error": reachability_error,
                     "token_hint": token_hint,
                     "token_source": token_source,
+                    "delegation": delegation_snapshot,
                 }
             )
         return entries

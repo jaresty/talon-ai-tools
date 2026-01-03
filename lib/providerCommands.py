@@ -76,6 +76,27 @@ def _render_provider_lines(
             lines.append(f"   reachability: unreachable{suffix}")
         else:
             lines.append("   reachability: not checked")
+
+        delegation = entry.get("delegation") or {}
+        if isinstance(delegation, dict) and delegation:
+            enabled = bool(delegation.get("enabled", True))
+            failure_count = delegation.get("failure_count", 0) or 0
+            failure_threshold = delegation.get("failure_threshold", 0) or 0
+            last_reason = str(delegation.get("last_reason") or "")
+            delegation_status = "enabled" if enabled else "disabled"
+            lines.append(f"   delegation: {delegation_status}")
+            if failure_count:
+                if failure_threshold:
+                    lines.append(
+                        f"   delegation failures: {failure_count}/{failure_threshold}"
+                    )
+                else:
+                    lines.append(f"   delegation failures: {failure_count}")
+            if not enabled and last_reason:
+                lines.append(f"   delegation reason: {last_reason}")
+            message = str(delegation.get("message") or "").strip()
+            if message:
+                lines.append(f"   {message}")
     return lines
 
 

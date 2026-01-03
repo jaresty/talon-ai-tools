@@ -122,6 +122,12 @@ def _check_cli_delegation_gate(
     except Exception:
         failure_count = 0
 
+    failure_threshold = 0
+    try:
+        failure_threshold = int(_cliDelegation.failure_threshold())
+    except Exception:
+        failure_threshold = 0
+
     last_reason = ""
     try:
         last_reason = _cliDelegation.last_disable_reason() or ""
@@ -131,7 +137,10 @@ def _check_cli_delegation_gate(
     message = drop_reason_message(reason_code)
     details = []
     if failure_count:
-        details.append(f"failed probes={failure_count}")
+        if failure_threshold:
+            details.append(f"failed probes={failure_count}/{failure_threshold}")
+        else:
+            details.append(f"failed probes={failure_count}")
     if last_reason:
         details.append(last_reason)
     if details:

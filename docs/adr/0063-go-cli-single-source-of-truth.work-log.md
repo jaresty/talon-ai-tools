@@ -11,7 +11,7 @@ bootstrap.bootstrap()
 if bin_path.exists():
     sys.exit(0)
 raise SystemExit('bootstrap did not install CLI binary')
-PY` | status: in_progress — loop-0024 routes bootstrap warnings through structured telemetry and Talon adapter actions; next slice wires CLI delegation fallback to consume telemetry automatically.
+PY` | status: in_progress — loop-0025 disables delegation when bootstrap telemetry reports missing artefacts; next slice promotes delegation gating into adapter lifecycle/health probes.
 - [Implementation Guardrails → Delivery posture] Release checksum manifest hardening | `scripts/tools/check_cli_assets.py` | status: in_progress — loop-0016 added tarball + checksum verification; next slice adds signature enforcement and CI upload contract.
 
 ## Completed Loops
@@ -73,3 +73,4 @@ PY`; evidence: `docs/adr/evidence/0063/loop-0020.md`.
 - loop-0021 — enforced parity guardrail for packaged CLI artefacts; validation: `python3 -m pytest _tests/test_cli_talon_parity.py`; evidence: `docs/adr/evidence/0063/loop-0021.md`.
 - loop-0022 — gated parity on bootstrap rebuilding instructions; validation: `python3 -m pytest _tests/test_cli_talon_parity.py::CLITalonParityTests::test_bootstrap_warning_mentions_rebuild_command`; evidence: `docs/adr/evidence/0063/loop-0022.md`.
 - loop-0024 — routed bootstrap warnings through telemetry actions and parity assertions; validation: `python3 -m pytest _tests/test_cli_talon_parity.py`; evidence: `docs/adr/evidence/0063/loop-0024.md`.
+- loop-0025 — disabled delegation on bootstrap telemetry warnings and re-enabled after successful install; validation: `python3 -m pytest _tests/test_cli_talon_parity.py`; evidence: `docs/adr/evidence/0063/loop-0025.md`.

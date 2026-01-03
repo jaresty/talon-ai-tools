@@ -13,6 +13,11 @@ from __future__ import annotations
 
 import sys
 
+try:
+    from lib.cliDelegation import mark_cli_ready
+except Exception:  # pragma: no cover - delegation helpers unavailable
+    mark_cli_ready = None
+
 _BOOTSTRAP_WARNINGS: list[str] = []
 
 
@@ -82,6 +87,12 @@ def _maybe_install_cli() -> None:
             f"to rebuild packaged CLI (falling back to go build: {exc})"
         )
         return
+
+    if mark_cli_ready is not None:
+        try:
+            mark_cli_ready(source="bootstrap")
+        except Exception:
+            pass
 
 
 def bootstrap() -> None:  # type: ignore[override]

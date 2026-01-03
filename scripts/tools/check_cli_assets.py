@@ -23,6 +23,20 @@ DELEGATION_STATE_ENV = "CLI_DELEGATION_STATE"
 DELEGATION_STATE_PATH = Path(
     os.environ.get(DELEGATION_STATE_ENV, "var/cli-telemetry/delegation-state.json")
 )
+DELEGATION_STATE_DIGEST_ENV = "CLI_DELEGATION_STATE_DIGEST"
+DELEGATION_STATE_DIGEST_PATH = Path(
+    os.environ.get(
+        DELEGATION_STATE_DIGEST_ENV,
+        "artifacts/cli/delegation-state.json.sha256",
+    )
+)
+DELEGATION_STATE_SNAPSHOT_ENV = "CLI_DELEGATION_STATE_SNAPSHOT"
+DELEGATION_STATE_SNAPSHOT_PATH = Path(
+    os.environ.get(
+        DELEGATION_STATE_SNAPSHOT_ENV,
+        "artifacts/cli/delegation-state.json",
+    )
+)
 
 
 def _target_suffix() -> str:
@@ -89,8 +103,18 @@ def _check_manifest() -> bool:
     return ok
 
 
+def _canonical_state_digest(payload: dict) -> str:
+    canonical = dict(payload)
+    canonical["updated_at"] = None
+    return sha256(
+        json.dumps(canonical, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    ).hexdigest()
+
+
 def _check_delegation_state() -> bool:
     path = DELEGATION_STATE_PATH
+    snapshot_path = DELEGATION_STATE_SNAPSHOT_PATH
+    digest_path = DELEGATION_STATE_DIGEST_PATH
     if not path.exists():
         print(f"missing delegation state: {path}", file=sys.stderr)
         return False
@@ -151,6 +175,80 @@ def _check_delegation_state() -> bool:
     if not isinstance(events, list):
         print(
             f"invalid delegation state: {path} (events must be a list)",
+            file=sys.stderr,
+        )
+        return False
+
+    runtime_digest = _canonical_state_digest(payload)
+
+    if not snapshot_path.exists():
+        print(
+            f"missing delegation state snapshot: {snapshot_path}",
+            file=sys.stderr,
+        )
+        return False
+
+    try:
+        snapshot_payload = json.loads(snapshot_path.read_text(encoding="utf-8"))
+    except Exception as exc:  # pragma: no cover - defensive
+        print(
+            f"invalid delegation state snapshot: {snapshot_path} ({exc})",
+            file=sys.stderr,
+        )
+        return False
+
+    if not isinstance(snapshot_payload, dict):
+        print(
+            f"invalid delegation state snapshot: {snapshot_path} (expected object)",
+            file=sys.stderr,
+        )
+        return False
+
+    snapshot_digest = _canonical_state_digest(snapshot_payload)
+
+    if not digest_path.exists():
+        print(
+            f"missing delegation state digest: {digest_path}",
+            file=sys.stderr,
+        )
+        return False
+
+    recorded = digest_path.read_text(encoding="utf-8").strip()
+    if not recorded:
+        print(
+            f"empty delegation state digest: {digest_path}",
+            file=sys.stderr,
+        )
+        return False
+
+    digest, _, filename = recorded.partition("  ")
+    if not digest or len(digest) != 64:
+        print(
+            f"invalid delegation state digest: {digest_path}",
+            file=sys.stderr,
+        )
+        return False
+
+    expected_name = snapshot_path.name
+    if filename and filename != expected_name:
+        print(
+            f"delegation state digest filename mismatch: expected {expected_name}, got {filename}",
+            file=sys.stderr,
+        )
+        return False
+
+    if digest != snapshot_digest:
+        print(
+            "delegation state snapshot digest mismatch: "
+            f"expected {digest}, got {snapshot_digest}",
+            file=sys.stderr,
+        )
+        return False
+
+    if digest != runtime_digest:
+        print(
+            "runtime delegation state digest mismatch: "
+            f"expected {digest}, got {runtime_digest}",
             file=sys.stderr,
         )
         return False

@@ -1,14 +1,19 @@
-"""Package the Go CLI binary and write checksum manifest.
+"""Package the Go CLI binary and write checksum manifests.
 
 This helper builds the Go CLI under `cmd/bar`, copies the binary to
 `bin/bar.bin`, and packages a tarball plus SHA-256 manifest in
 `artifacts/cli/`. The tarball includes the compiled binary and the shared
 command-surface schema so Talon can install both in a single step.
+
+The packaging step also records a SHA-256 digest for the delegation state
+snapshot used by release guardrails, ensuring signature enforcement can detect
+stale or tampered delegation telemetry.
 """
 
 from __future__ import annotations
 
 import argparse
+import json
 import hashlib
 import platform
 import shutil
@@ -21,6 +26,7 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 BIN_DIR = REPO_ROOT / "bin"
 SCHEMA_PATH = REPO_ROOT / "docs" / "schema" / "command-surface.json"
 ARTIFACTS_DIR = REPO_ROOT / "artifacts" / "cli"
+DELEGATION_STATE_SNAPSHOT_PATH = ARTIFACTS_DIR / "delegation-state.json"
 
 
 def _target_suffix() -> str:
@@ -71,6 +77,34 @@ def _write_manifest(tarball: Path) -> Path:
     return manifest_path
 
 
+def _canonical_state_digest(payload: dict) -> str:
+    canonical = dict(payload)
+    canonical["updated_at"] = None
+    return hashlib.sha256(
+        json.dumps(canonical, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    ).hexdigest()
+
+
+def _write_delegation_state_manifest(output_dir: Path) -> Path:
+    if not DELEGATION_STATE_SNAPSHOT_PATH.exists():
+        raise FileNotFoundError(
+            f"delegation state snapshot missing: {DELEGATION_STATE_SNAPSHOT_PATH}"
+        )
+    snapshot_payload = json.loads(
+        DELEGATION_STATE_SNAPSHOT_PATH.read_text(encoding="utf-8")
+    )
+    if not isinstance(snapshot_payload, dict):
+        raise ValueError(
+            f"delegation state snapshot must be an object: {DELEGATION_STATE_SNAPSHOT_PATH}"
+        )
+    digest = _canonical_state_digest(snapshot_payload)
+    manifest_path = output_dir / "delegation-state.json.sha256"
+    manifest_path.write_text(
+        f"{digest}  {DELEGATION_STATE_SNAPSHOT_PATH.name}\n", encoding="utf-8"
+    )
+    return manifest_path
+
+
 def package_cli() -> tuple[Path, Path]:
     with tempfile.TemporaryDirectory() as temp_dir_str:
         temp_dir = Path(temp_dir_str)
@@ -78,6 +112,7 @@ def package_cli() -> tuple[Path, Path]:
         _copy_local_binary(built)
         tarball = _create_tarball(built, ARTIFACTS_DIR)
         manifest = _write_manifest(tarball)
+        _write_delegation_state_manifest(ARTIFACTS_DIR)
     return tarball, manifest
 
 

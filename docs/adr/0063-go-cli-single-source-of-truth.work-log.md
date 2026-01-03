@@ -11,8 +11,8 @@ bootstrap.bootstrap()
 if bin_path.exists():
     sys.exit(0)
 raise SystemExit('bootstrap did not install CLI binary')
-PY` | status: in_progress — loop-0032 captured delegation snapshot digest manifests; next slice pushes the hashed artefacts through Talon bootstrap before running release guards.
-- [Implementation Guardrails → Delivery posture] Release checksum manifest hardening | `scripts/tools/check_cli_assets.py` | status: in_progress — loop-0032 fed snapshot hashes into the guard; next slice extends signature enforcement across CI uploads and release signing.
+PY` | status: in_progress — loop-0033 hydrates delegation snapshots during bootstrap install; next slice wires bootstrap to surface hashed artefact failures before parity runs.
+- [Implementation Guardrails → Delivery posture] Release checksum manifest hardening | `scripts/tools/check_cli_assets.py` | status: in_progress — loop-0033 keeps guardrails green with hydrated runtime state; next slice extends signature enforcement across CI uploads and release signing.
 
 ## Completed Loops
 - loop-0001 — tightened loop compliance statements and removed adhoc helper; evidence: `docs/adr/evidence/0063/loop-0001.md`.
@@ -81,3 +81,4 @@ PY`; evidence: `docs/adr/evidence/0063/loop-0020.md`.
 - loop-0030 — piped delegation disable telemetry into provider registry/status canvases and parity gating; validation: `python3 -m pytest _tests/test_provider_commands.py`; evidence: `docs/adr/evidence/0063/loop-0030.md`.
 - loop-0031 — enforced release guardrails by requiring delegation state snapshots in `check_cli_assets`; validation: `python3 -m pytest _tests/test_check_cli_assets.py`; evidence: `docs/adr/evidence/0063/loop-0031.md`.
 - loop-0032 — wired delegation snapshot digests into release guard rails; validation: `python3 -m pytest _tests/test_check_cli_assets.py`; evidence: `docs/adr/evidence/0063/loop-0032.md`.
+- loop-0033 — hydrated release snapshot metadata through bootstrap install path; validation: `python3 -m pytest _tests/test_cli_talon_parity.py`; evidence: `docs/adr/evidence/0063/loop-0033.md`.

@@ -2,6 +2,7 @@ import unittest
 from pathlib import Path
 import io
 import json
+import hashlib
 import platform
 import subprocess
 import sys
@@ -63,6 +64,14 @@ def _packaged_cli_tarball() -> Path:
 
 def _packaged_cli_manifest(tarball: Path) -> Path:
     return tarball.with_name(f"{tarball.name}.sha256")
+
+
+def _canonical_snapshot_digest(payload: dict) -> str:
+    canonical = dict(payload)
+    canonical["updated_at"] = None
+    return hashlib.sha256(
+        json.dumps(canonical, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    ).hexdigest()
 
 
 if bootstrap is None:
@@ -270,6 +279,82 @@ else:
 
             delegation_state_path.unlink(missing_ok=True)
             cliDelegation.reset_state()
+
+        def test_bootstrap_hydrates_release_snapshot_metadata(self) -> None:
+            self.assertIsNotNone(bootstrap, "bootstrap helper unavailable")
+            assert bootstrap is not None
+
+            snapshot_path = PACKAGED_CLI_DIR / "delegation-state.json"
+            digest_path = PACKAGED_CLI_DIR / "delegation-state.json.sha256"
+            runtime_path = Path("var/cli-telemetry/delegation-state.json")
+
+            self.assertTrue(
+                snapshot_path.exists(),
+                "Delegation snapshot missing; run loop-0032 to rebuild",
+            )
+            self.assertTrue(
+                digest_path.exists(),
+                "Delegation snapshot digest missing; run loop-0032 to rebuild",
+            )
+
+            snapshot_backup = snapshot_path.read_bytes()
+            digest_backup = digest_path.read_bytes()
+            runtime_path.unlink(missing_ok=True)
+            cliDelegation.reset_state()
+            clear_bootstrap_warning_events()
+            get_bootstrap_warnings(clear=True)
+
+            snapshot_payload = {
+                "enabled": True,
+                "updated_at": "2026-01-03T00:00:00Z",
+                "reason": None,
+                "source": "bootstrap",
+                "events": [],
+                "failure_count": 0,
+                "failure_threshold": 3,
+                "snapshot_version": "loop-0033-test",
+            }
+            digest = _canonical_snapshot_digest(snapshot_payload)
+            snapshot_path.write_text(
+                json.dumps(snapshot_payload, indent=2), encoding="utf-8"
+            )
+            digest_path.write_text(
+                f"{digest}  {snapshot_path.name}\n", encoding="utf-8"
+            )
+
+            try:
+                bootstrap()
+                self.assertTrue(
+                    runtime_path.exists(),
+                    "Bootstrap should hydrate runtime delegation snapshot",
+                )
+                hydrated = json.loads(runtime_path.read_text(encoding="utf-8"))
+                self.assertEqual(
+                    hydrated.get("snapshot_version"),
+                    snapshot_payload["snapshot_version"],
+                    "Hydrated state should preserve release snapshot metadata",
+                )
+                self.assertEqual(
+                    hydrated.get("source"),
+                    snapshot_payload["source"],
+                    "Hydrated state should preserve snapshot source",
+                )
+                self.assertTrue(
+                    hydrated.get("enabled", False),
+                    "Hydrated state should mark delegation enabled",
+                )
+                self.assertEqual(
+                    digest,
+                    _canonical_snapshot_digest(hydrated),
+                    "Hydrated state digest must match release snapshot digest",
+                )
+            finally:
+                snapshot_path.write_bytes(snapshot_backup)
+                digest_path.write_bytes(digest_backup)
+                runtime_path.unlink(missing_ok=True)
+                cliDelegation.reset_state()
+                clear_bootstrap_warning_events()
+                get_bootstrap_warnings(clear=True)
 
         def test_cli_health_probe_trips_delegation_after_failures(self) -> None:
             state_path = Path("var/cli-telemetry/delegation-state.json")

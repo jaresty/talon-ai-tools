@@ -11,8 +11,8 @@ bootstrap.bootstrap()
 if bin_path.exists():
     sys.exit(0)
 raise SystemExit('bootstrap did not install CLI binary')
-PY` | status: in_progress — loop-0031 wired release guardrails to fail on missing delegation snapshots; next slice feeds snapshot hashes into signature enforcement.
-- [Implementation Guardrails → Delivery posture] Release checksum manifest hardening | `scripts/tools/check_cli_assets.py` | status: in_progress — loop-0016 added tarball + checksum verification; next slice adds signature enforcement and CI upload contract.
+PY` | status: in_progress — loop-0032 captured delegation snapshot digest manifests; next slice pushes the hashed artefacts through Talon bootstrap before running release guards.
+- [Implementation Guardrails → Delivery posture] Release checksum manifest hardening | `scripts/tools/check_cli_assets.py` | status: in_progress — loop-0032 fed snapshot hashes into the guard; next slice extends signature enforcement across CI uploads and release signing.
 
 ## Completed Loops
 - loop-0001 — tightened loop compliance statements and removed adhoc helper; evidence: `docs/adr/evidence/0063/loop-0001.md`.
@@ -80,3 +80,4 @@ PY`; evidence: `docs/adr/evidence/0063/loop-0020.md`.
 - loop-0029 — surfaced CLI disable telemetry in guard/backoff notifications and extended parity tests; validation: `python3 -m pytest _tests/test_cli_talon_parity.py`; evidence: `docs/adr/evidence/0063/loop-0029.md`.
 - loop-0030 — piped delegation disable telemetry into provider registry/status canvases and parity gating; validation: `python3 -m pytest _tests/test_provider_commands.py`; evidence: `docs/adr/evidence/0063/loop-0030.md`.
 - loop-0031 — enforced release guardrails by requiring delegation state snapshots in `check_cli_assets`; validation: `python3 -m pytest _tests/test_check_cli_assets.py`; evidence: `docs/adr/evidence/0063/loop-0031.md`.
+- loop-0032 — wired delegation snapshot digests into release guard rails; validation: `python3 -m pytest _tests/test_check_cli_assets.py`; evidence: `docs/adr/evidence/0063/loop-0032.md`.

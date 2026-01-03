@@ -1,3 +1,4 @@
+import hashlib
 import json
 import os
 import subprocess
@@ -27,9 +28,18 @@ else:
         def setUp(self) -> None:
             self._tmp = tempfile.TemporaryDirectory()
             self.addCleanup(self._tmp.cleanup)
-            self.state_path = Path(self._tmp.name) / "delegation-state.json"
+            base = Path(self._tmp.name)
+            self.runtime_dir = base / "runtime"
+            self.runtime_dir.mkdir()
+            self.release_dir = base / "release"
+            self.release_dir.mkdir()
+            self.state_path = self.runtime_dir / "delegation-state.json"
+            self.snapshot_path = self.release_dir / "delegation-state.json"
+            self.digest_path = self.release_dir / "delegation-state.json.sha256"
             self.env = os.environ.copy()
             self.env["CLI_DELEGATION_STATE"] = str(self.state_path)
+            self.env["CLI_DELEGATION_STATE_SNAPSHOT"] = str(self.snapshot_path)
+            self.env["CLI_DELEGATION_STATE_DIGEST"] = str(self.digest_path)
             self.command = [sys.executable, "scripts/tools/check_cli_assets.py"]
 
         def _run(self) -> subprocess.CompletedProcess[str]:
@@ -41,10 +51,70 @@ else:
                 check=False,
             )
 
+        def _canonical_digest(self, payload: dict) -> str:
+            canonical = dict(payload)
+            canonical["updated_at"] = None
+            return hashlib.sha256(
+                json.dumps(canonical, sort_keys=True, separators=(",", ":")).encode(
+                    "utf-8"
+                )
+            ).hexdigest()
+
+        def _write_state(self, payload: dict) -> None:
+            self.state_path.write_text(json.dumps(payload, indent=2), encoding="utf-8")
+
+        def _write_snapshot(self, payload: dict) -> None:
+            self.snapshot_path.write_text(
+                json.dumps(payload, indent=2), encoding="utf-8"
+            )
+
+        def _write_matching_manifest(self, payload: dict) -> None:
+            digest = self._canonical_digest(payload)
+            self.digest_path.write_text(
+                f"{digest}  {self.snapshot_path.name}\n", encoding="utf-8"
+            )
+
         def test_requires_delegation_state_file(self) -> None:
             result = self._run()
             self.assertNotEqual(result.returncode, 0, result.stderr)
             self.assertIn("delegation state", result.stderr)
+
+        def test_requires_delegation_state_snapshot(self) -> None:
+            payload = {
+                "enabled": True,
+                "updated_at": "2026-01-03T00:00:00Z",
+                "reason": None,
+                "source": "bootstrap",
+                "events": [],
+                "failure_count": 0,
+                "failure_threshold": 3,
+            }
+            self._write_state(payload)
+            self.digest_path.write_text(
+                f"{self._canonical_digest(payload)}  {self.snapshot_path.name}\n",
+                encoding="utf-8",
+            )
+
+            result = self._run()
+            self.assertNotEqual(result.returncode, 0, result.stderr)
+            self.assertIn("delegation state snapshot", result.stderr)
+
+        def test_requires_delegation_state_digest(self) -> None:
+            payload = {
+                "enabled": True,
+                "updated_at": "2026-01-03T00:00:00Z",
+                "reason": None,
+                "source": "bootstrap",
+                "events": [],
+                "failure_count": 0,
+                "failure_threshold": 3,
+            }
+            self._write_state(payload)
+            self._write_snapshot(payload)
+
+            result = self._run()
+            self.assertNotEqual(result.returncode, 0, result.stderr)
+            self.assertIn("delegation state digest", result.stderr)
 
         def test_requires_enabled_state(self) -> None:
             payload = {
@@ -62,13 +132,15 @@ else:
                 "failure_count": 3,
                 "failure_threshold": 3,
             }
-            self.state_path.write_text(json.dumps(payload, indent=2), encoding="utf-8")
+            self._write_state(payload)
+            self._write_snapshot(payload)
+            self._write_matching_manifest(payload)
 
             result = self._run()
             self.assertNotEqual(result.returncode, 0, result.stderr)
             self.assertIn("delegation disabled", result.stderr)
 
-        def test_passes_with_healthy_state(self) -> None:
+        def test_snapshot_digest_mismatch(self) -> None:
             payload = {
                 "enabled": True,
                 "updated_at": "2026-01-03T00:00:00Z",
@@ -78,7 +150,64 @@ else:
                 "failure_count": 0,
                 "failure_threshold": 3,
             }
-            self.state_path.write_text(json.dumps(payload, indent=2), encoding="utf-8")
+            self._write_state(payload)
+            self._write_snapshot(payload)
+            self.digest_path.write_text(
+                f"{'0' * 64}  {self.snapshot_path.name}\n", encoding="utf-8"
+            )
+
+            result = self._run()
+            self.assertNotEqual(result.returncode, 0, result.stderr)
+            self.assertIn("snapshot digest mismatch", result.stderr)
+
+        def test_fails_on_runtime_digest_mismatch(self) -> None:
+            snapshot_payload = {
+                "enabled": True,
+                "updated_at": "2026-01-03T00:00:00Z",
+                "reason": None,
+                "source": "bootstrap",
+                "events": [],
+                "failure_count": 0,
+                "failure_threshold": 3,
+            }
+            runtime_payload = {
+                "enabled": True,
+                "updated_at": "2026-01-03T04:10:00Z",
+                "reason": "manual override",
+                "source": "health_probe",
+                "events": [
+                    {
+                        "reason": "manual override",
+                        "source": "operator",
+                        "timestamp": "2026-01-03T04:10:00Z",
+                    }
+                ],
+                "failure_count": 0,
+                "failure_threshold": 3,
+            }
+            self._write_snapshot(snapshot_payload)
+            self._write_matching_manifest(snapshot_payload)
+            self._write_state(runtime_payload)
+
+            result = self._run()
+            self.assertNotEqual(result.returncode, 0, result.stderr)
+            self.assertIn("runtime delegation state digest mismatch", result.stderr)
+
+        def test_passes_with_healthy_state(self) -> None:
+            snapshot_payload = {
+                "enabled": True,
+                "updated_at": "2026-01-03T00:00:00Z",
+                "reason": None,
+                "source": "bootstrap",
+                "events": [],
+                "failure_count": 0,
+                "failure_threshold": 3,
+            }
+            runtime_payload = dict(snapshot_payload)
+            runtime_payload["updated_at"] = "2026-01-03T04:00:00Z"
+            self._write_snapshot(snapshot_payload)
+            self._write_matching_manifest(snapshot_payload)
+            self._write_state(runtime_payload)
 
             result = self._run()
             self.assertEqual(result.returncode, 0, result.stderr)

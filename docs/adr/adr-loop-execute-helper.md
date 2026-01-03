@@ -69,7 +69,7 @@ Each entry must populate the following fields; omit none. References column list
 | `validation_targets` | Validation commands for the behaviours under change; one command per outcome being validated | **Loop Contract → Validation registered** |
 | `evidence` | Triplets of `red/green/removal` records (command, UTC timestamp, exit status, pointer) | **Evidence Specification** |
 | `rollback_plan` | `<VCS_REVERT>` command plus reminder to replay red failure | **Loop Contract → Focus declared** |
-| `delta_summary` | `helper:diff-snapshot` hash or stat plus change rationale | **Evidence Specification** |
+| `delta_summary` | `helper:diff-snapshot` hash or stat plus change rationale and the current depth-first rung or recorded pivot | **Evidence Specification** |
 | `loops_remaining_forecast` | Numeric estimate of loops left, task anchors, and confidence note | **Loop Contract → Focus declared** |
 | `residual_risks` | At least one risk with mitigation and monitoring trigger; reminder-style notes live here, not in `riskiest_assumption` | **Loop Contract → Slice qualifies** |
 | `next_work` | Behaviours still open plus their validation commands or blocker pointers | **Loop Contract → Next work queued** |
@@ -84,8 +84,10 @@ A loop entry is compliant when all statements hold:
 **Focus declared**
 - Red evidence is recorded before edits land and green/removal evidence after, keeping guardrail commands limited to the validation channel for that behaviour.
 - The ADR section and salient task ID for the targeted behaviour are cited, and the entry states that this behaviour is the highest-severity open item while demoting lower-severity items to `residual_risks`.
+- A depth-first path enumerates the mitigation ladder for the cited behaviour: salient task → nested sub-decisions → concrete artefacts. Loops stay on this path until the targeted rung lands green or blocker evidence is recorded.
 - The work-log entry updated in this slice is cited by heading or timestamp so auditors can trace the refreshed note alongside the code change.
 - Prioritization favours depth-first slices that de-risk the cited behaviour before opening lateral scope; each entry notes how the slice advances that depth-first path.
+- When severity reassessment elevates another behaviour, the loop documents the pivot, parks the interrupted rung in `residual_risks` with its blocker or mitigation plan, and restates the new depth-first path before editing.
 - The riskiest assumption is expressed as a falsifiable statement with probability × impact rationale, explains why it outranks every other medium/high risk, and references the canonical intent and any equivalence evidence it reinforces.
 - When the behaviour cannot advance, the loop captures blocker evidence (command, failure excerpt, pointer) before closing; documentation-only entries include this blocker evidence.
 

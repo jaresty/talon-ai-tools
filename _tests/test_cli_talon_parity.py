@@ -383,6 +383,7 @@ else:
 
             snapshot_path = PACKAGED_CLI_DIR / "delegation-state.json"
             digest_path = PACKAGED_CLI_DIR / "delegation-state.json.sha256"
+            signature_path = PACKAGED_CLI_DIR / "delegation-state.json.sha256.sig"
             runtime_path = Path("var/cli-telemetry/delegation-state.json")
 
             self.assertTrue(
@@ -407,15 +408,15 @@ else:
             )
 
             try:
-                with self.assertRaises(install_bar_cli.DelegationSnapshotError):
+                with self.assertRaises(install_bar_cli.ReleaseSignatureError):
                     bootstrap()
                 warnings = get_bootstrap_warnings(clear=True)
                 self.assertTrue(
                     any(
-                        "delegation snapshot validation failed" in warning
+                        "release signature validation failed" in warning
                         for warning in warnings
                     ),
-                    "Bootstrap warning should surface snapshot validation failure",
+                    "Bootstrap warning should surface signature validation failure",
                 )
             finally:
                 snapshot_path.write_bytes(snapshot_backup)

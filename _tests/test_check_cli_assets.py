@@ -1,6 +1,7 @@
 import hashlib
 import json
 import os
+import platform
 import subprocess
 import sys
 import tempfile
@@ -45,6 +46,7 @@ else:
             self.env["CLI_DELEGATION_STATE_DIGEST"] = str(self.digest_path)
             self.env["CLI_DELEGATION_STATE_SIGNATURE"] = str(self.signature_path)
             self.command = [sys.executable, "scripts/tools/check_cli_assets.py"]
+            self._write_tarball_signature()
 
         def _run(self) -> subprocess.CompletedProcess[str]:
             return subprocess.run(
@@ -87,6 +89,31 @@ else:
             recorded = f"{digest}  {self.snapshot_path.name}"
             self.digest_path.write_text(f"{recorded}\n", encoding="utf-8")
             self._write_signature(recorded)
+
+        def _tarball_manifest(self) -> Path:
+            system = platform.system().lower()
+            machine = platform.machine().lower()
+            arch_map = {
+                "x86_64": "amd64",
+                "amd64": "amd64",
+                "arm64": "arm64",
+                "aarch64": "arm64",
+            }
+            arch = arch_map.get(machine, machine)
+            return Path(f"artifacts/cli/bar-{system}-{arch}.tar.gz.sha256")
+
+        def _tarball_signature(self) -> Path:
+            return self._tarball_manifest().with_suffix(".sha256.sig")
+
+        def _tarball_recorded(self) -> str:
+            manifest = self._tarball_manifest()
+            return manifest.read_text(encoding="utf-8").strip()
+
+        def _write_tarball_signature(self) -> None:
+            recorded = self._tarball_recorded()
+            self._tarball_signature().write_text(
+                f"{self._signature_for(recorded)}\n", encoding="utf-8"
+            )
 
         def test_requires_delegation_state_file(self) -> None:
             result = self._run()
@@ -206,6 +233,43 @@ else:
             result = self._run()
             self.assertNotEqual(result.returncode, 0, result.stderr)
             self.assertIn("runtime delegation state digest mismatch", result.stderr)
+
+        def test_requires_tarball_signature(self) -> None:
+            manifest = self._tarball_manifest()
+            signature = self._tarball_signature()
+            recorded = self._tarball_recorded()
+            original_signature = signature.read_bytes() if signature.exists() else None
+            try:
+                if signature.exists():
+                    signature.unlink()
+                result = self._run()
+                self.assertNotEqual(result.returncode, 0, result.stderr)
+                self.assertIn("tarball manifest signature", result.stderr)
+            finally:
+                if original_signature is not None:
+                    signature.write_bytes(original_signature)
+                else:
+                    signature.write_text(
+                        f"{self._signature_for(recorded)}\n", encoding="utf-8"
+                    )
+
+        def test_tarball_signature_mismatch(self) -> None:
+            manifest = self._tarball_manifest()
+            signature = self._tarball_signature()
+            recorded = self._tarball_recorded()
+            original_signature = signature.read_bytes() if signature.exists() else None
+            try:
+                signature.write_text("0" * 64 + "\n", encoding="utf-8")
+                result = self._run()
+                self.assertNotEqual(result.returncode, 0, result.stderr)
+                self.assertIn("tarball manifest signature mismatch", result.stderr)
+            finally:
+                if original_signature is not None:
+                    signature.write_bytes(original_signature)
+                else:
+                    signature.write_text(
+                        f"{self._signature_for(recorded)}\n", encoding="utf-8"
+                    )
 
         def test_requires_delegation_state_signature(self) -> None:
             payload = {

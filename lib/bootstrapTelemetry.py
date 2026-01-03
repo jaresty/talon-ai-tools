@@ -8,6 +8,8 @@ parsing stderr output.
 from datetime import datetime, timezone
 from typing import Dict, List
 
+from .cliDelegation import disable_delegation
+
 _TELEMETRY_EVENTS: List[Dict[str, str]] = []
 
 
@@ -27,6 +29,10 @@ def record_bootstrap_warning(message: str, *, source: str = "bootstrap") -> None
     """Record a bootstrap warning with optional source metadata."""
 
     _append_event(message, source=source)
+    try:
+        disable_delegation(message, source=source)
+    except Exception:
+        pass
 
 
 def get_bootstrap_warning_events(*, clear: bool = False) -> List[Dict[str, str]]:

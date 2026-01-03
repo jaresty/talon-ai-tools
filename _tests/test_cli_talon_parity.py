@@ -9,10 +9,12 @@ from contextlib import redirect_stderr
 
 from talon import actions
 
+import lib.cliDelegation as cliDelegation
 from lib.bootstrapTelemetry import (
     clear_bootstrap_warning_events,
     get_bootstrap_warning_messages,
 )
+
 
 try:
     from bootstrap import bootstrap, get_bootstrap_warnings
@@ -136,10 +138,14 @@ else:
                 manifest.unlink()
             except FileNotFoundError:
                 pass
+            cliDelegation.reset_state()
             clear_bootstrap_warning_events()
             get_bootstrap_warnings(clear=True)
             calls_before = list(actions.user.calls)
 
+            delegation_enabled_after_warning = True
+            disable_events = []
+            restored_enabled = None
             try:
                 buf = io.StringIO()
                 with redirect_stderr(buf):
@@ -148,10 +154,14 @@ else:
                 telemetry_messages = get_bootstrap_warning_messages(clear=False)
                 adapter_messages = actions.user.cli_bootstrap_warning_messages()
                 warnings = get_bootstrap_warnings(clear=True)
+                disable_events = cliDelegation.disable_events()
+                delegation_enabled_after_warning = cliDelegation.delegation_enabled()
             finally:
                 manifest.write_bytes(backup)
                 bootstrap()
+                restored_enabled = cliDelegation.delegation_enabled()
                 clear_bootstrap_warning_events()
+                cliDelegation.reset_state()
 
             new_calls = actions.user.calls[len(calls_before) :]
             # reset added calls to keep other tests isolated
@@ -184,6 +194,21 @@ else:
                     for message in adapter_messages
                 ),
                 "Talon adapters should read bootstrap telemetry via actions.user",
+            )
+            self.assertFalse(
+                delegation_enabled_after_warning,
+                "Bootstrap warnings should disable CLI delegation",
+            )
+            self.assertTrue(
+                any(
+                    "package_bar_cli.py" in event.get("reason", "")
+                    for event in disable_events
+                ),
+                "CLI delegation disable events should include rebuild instruction reason",
+            )
+            self.assertTrue(
+                restored_enabled,
+                "Successful bootstrap should re-enable CLI delegation",
             )
             self.assertTrue(
                 any(

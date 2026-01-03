@@ -168,7 +168,7 @@ def _write_signature_metadata(
     return metadata_path
 
 
-def package_cli() -> tuple[Path, Path]:
+def package_cli() -> tuple[Path, Path, Path]:
     with tempfile.TemporaryDirectory() as temp_dir_str:
         temp_dir = Path(temp_dir_str)
         built = _build_binary(temp_dir)
@@ -184,13 +184,13 @@ def package_cli() -> tuple[Path, Path]:
             snapshot_recorded,
             snapshot_signature,
         ) = _write_delegation_state_manifest(ARTIFACTS_DIR)
-        _write_signature_metadata(
+        metadata_path = _write_signature_metadata(
             manifest_recorded,
             manifest_signature,
             snapshot_recorded,
             snapshot_signature,
         )
-    return tarball, manifest_path
+    return tarball, manifest_path, metadata_path
 
 
 def main() -> int:
@@ -198,15 +198,16 @@ def main() -> int:
     parser.add_argument(
         "--print-paths",
         action="store_true",
-        help="Print the packaged tarball and manifest paths",
+        help="Print the packaged tarball, manifest, and signature metadata paths",
     )
     args = parser.parse_args()
 
-    tarball, manifest = package_cli()
+    tarball, manifest, metadata = package_cli()
 
     if args.print_paths:
         print(tarball)
         print(manifest)
+        print(metadata)
 
     return 0
 

@@ -372,7 +372,13 @@ else:
 
             result = self._run()
             self.assertEqual(result.returncode, 0, result.stderr)
-            self.assertIn("all CLI assets present", result.stdout)
+            stdout = result.stdout
+            self.assertIn("all CLI assets present", stdout)
+            self.assertIn(
+                f"cli_tarball={self._tarball_manifest_path.with_suffix('')}", stdout
+            )
+            self.assertIn(f"cli_manifest={self._tarball_manifest_path}", stdout)
+            self.assertIn(f"cli_signatures={self.metadata_path}", stdout)
 
         def test_requires_signature_metadata(self) -> None:
             snapshot_payload = {

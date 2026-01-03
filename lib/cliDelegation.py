@@ -16,6 +16,37 @@ _STATE_PATH = _TELEMETRY_DIR / "delegation-state.json"
 _FAILURE_THRESHOLD = 3
 _FAILURE_COUNT = 0
 _LAST_REASON: str | None = None
+_LAST_RECOVERY_CODE: str | None = None
+_LAST_RECOVERY_DETAILS: str | None = None
+
+
+def _recovery_code_for(reason: str | None) -> str | None:
+    text = (reason or "").strip().lower()
+    if not text:
+        return None
+    if "signature telemetry mismatch" in text:
+        return "cli_signature_recovered"
+    return "cli_recovered"
+
+
+def recovery_prompt() -> str:
+    code = _LAST_RECOVERY_CODE or "cli_ready"
+    message = ""
+    try:
+        from .requestLog import drop_reason_message as _drop_reason_message
+    except Exception:
+        _drop_reason_message = None
+    if _drop_reason_message is not None:
+        try:
+            message = _drop_reason_message(code)  # type: ignore[arg-type]
+        except Exception:
+            message = ""
+    if not isinstance(message, str) or not message.strip():
+        message = "CLI delegation ready."
+    details = (_LAST_RECOVERY_DETAILS or "").strip()
+    if details and code in {"cli_recovered", "cli_signature_recovered"}:
+        message = f"{message} (previous: {details})"
+    return message
 
 
 def _timestamp() -> str:
@@ -23,7 +54,13 @@ def _timestamp() -> str:
 
 
 def _load_state() -> None:
-    global _DELEGATION_ENABLED, _DISABLE_EVENTS, _FAILURE_COUNT, _LAST_REASON
+    global \
+        _DELEGATION_ENABLED, \
+        _DISABLE_EVENTS, \
+        _FAILURE_COUNT, \
+        _LAST_REASON, \
+        _LAST_RECOVERY_CODE, \
+        _LAST_RECOVERY_DETAILS
     if not _STATE_PATH.exists():
         return
     try:
@@ -33,7 +70,22 @@ def _load_state() -> None:
     _DELEGATION_ENABLED = bool(payload.get("enabled", True))
     _DISABLE_EVENTS = list(payload.get("events", []))
     _FAILURE_COUNT = int(payload.get("failure_count", 0))
-    _LAST_REASON = payload.get("reason")
+    reason = payload.get("reason")
+    _LAST_REASON = (
+        reason.strip() if isinstance(reason, str) and reason.strip() else None
+    )
+    recovery_code = payload.get("recovery_code")
+    _LAST_RECOVERY_CODE = (
+        recovery_code.strip()
+        if isinstance(recovery_code, str) and recovery_code.strip()
+        else None
+    )
+    recovery_details = payload.get("recovery_details")
+    _LAST_RECOVERY_DETAILS = (
+        recovery_details.strip()
+        if isinstance(recovery_details, str) and recovery_details.strip()
+        else None
+    )
 
 
 _load_state()
@@ -67,6 +119,14 @@ def _persist_state(
                 "failure_threshold": _FAILURE_THRESHOLD,
             }
         )
+        if _LAST_RECOVERY_CODE is not None:
+            payload["recovery_code"] = _LAST_RECOVERY_CODE
+        else:
+            payload.pop("recovery_code", None)
+        if _LAST_RECOVERY_DETAILS is not None:
+            payload["recovery_details"] = _LAST_RECOVERY_DETAILS
+        else:
+            payload.pop("recovery_details", None)
         if extra:
             for key, value in extra.items():
                 if key in {
@@ -77,6 +137,8 @@ def _persist_state(
                     "events",
                     "failure_count",
                     "failure_threshold",
+                    "recovery_code",
+                    "recovery_details",
                 }:
                     continue
                 payload[key] = value
@@ -94,7 +156,9 @@ def apply_release_snapshot(snapshot: Dict[str, Any]) -> None:
         _DISABLE_EVENTS, \
         _FAILURE_COUNT, \
         _FAILURE_THRESHOLD, \
-        _LAST_REASON
+        _LAST_REASON, \
+        _LAST_RECOVERY_CODE, \
+        _LAST_RECOVERY_DETAILS
 
     enabled = bool(snapshot.get("enabled", True))
     failure_count_raw = snapshot.get("failure_count", 0)
@@ -132,7 +196,19 @@ def apply_release_snapshot(snapshot: Dict[str, Any]) -> None:
     _FAILURE_COUNT = failure_count
     _FAILURE_THRESHOLD = failure_threshold
     _DISABLE_EVENTS = events
-    _LAST_REASON = reason if isinstance(reason, str) else None
+    _LAST_REASON = reason if isinstance(reason, str) and str(reason).strip() else None
+    recovery_code = snapshot.get("recovery_code")
+    _LAST_RECOVERY_CODE = (
+        recovery_code.strip()
+        if isinstance(recovery_code, str) and recovery_code.strip()
+        else None
+    )
+    recovery_details = snapshot.get("recovery_details")
+    _LAST_RECOVERY_DETAILS = (
+        recovery_details.strip()
+        if isinstance(recovery_details, str) and recovery_details.strip()
+        else None
+    )
 
     extra_fields: Dict[str, Any] = dict(snapshot)
     for key in (
@@ -143,6 +219,8 @@ def apply_release_snapshot(snapshot: Dict[str, Any]) -> None:
         "events",
         "failure_count",
         "failure_threshold",
+        "recovery_code",
+        "recovery_details",
     ):
         extra_fields.pop(key, None)
 
@@ -169,9 +247,15 @@ def disable_delegation(
 ) -> None:
     """Disable CLI delegation and record the triggering reason."""
 
-    global _DELEGATION_ENABLED, _LAST_REASON
+    global \
+        _DELEGATION_ENABLED, \
+        _LAST_REASON, \
+        _LAST_RECOVERY_CODE, \
+        _LAST_RECOVERY_DETAILS
     _DELEGATION_ENABLED = False
     _LAST_REASON = reason
+    _LAST_RECOVERY_CODE = None
+    _LAST_RECOVERY_DETAILS = None
     _record_disable_event(reason, source)
     if notify:
         try:
@@ -190,16 +274,62 @@ def disable_delegation(
 def mark_cli_ready(*, source: str = "bootstrap") -> None:
     """Mark CLI delegation as healthy and ready after bootstrap succeeds."""
 
-    global _DELEGATION_ENABLED, _FAILURE_COUNT, _LAST_REASON
+    global \
+        _DELEGATION_ENABLED, \
+        _FAILURE_COUNT, \
+        _LAST_REASON, \
+        _LAST_RECOVERY_CODE, \
+        _LAST_RECOVERY_DETAILS
+    previous_reason = _LAST_REASON if isinstance(_LAST_REASON, str) else ""
     _DELEGATION_ENABLED = True
     _FAILURE_COUNT = 0
-    _LAST_REASON = None
+    _LAST_RECOVERY_CODE = _recovery_code_for(previous_reason)
+    _LAST_RECOVERY_DETAILS = previous_reason.strip() or None
+
+    prompt = recovery_prompt()
+
+    handler_called = False
+    handler_name = ""
     try:
         handler = getattr(actions.user, "cli_delegation_ready", None)
-        if handler is not None:
+        handler_name = getattr(handler, "__name__", "") if callable(handler) else ""
+    except Exception:
+        handler = None
+    if handler is not None:
+        try:
             handler(source)
+            handler_called = True
+        except Exception:
+            handler_called = False
+    if handler_called and handler_name == "_noop":
+        handler_called = False
+    if not handler_called:
+        try:
+            actions.user.notify(prompt)
+        except Exception:
+            pass
+
+    try:
+        from . import providerCommands as _providerCommands  # type: ignore
+
+        _providerCommands.show_provider_status_message(
+            "Delegation ready", prompt=prompt
+        )
     except Exception:
         pass
+
+    _LAST_REASON = None
+
+    try:
+        from .historyLifecycle import clear_drop_reason as _clear_drop_reason  # type: ignore
+    except Exception:
+        _clear_drop_reason = None
+    if _clear_drop_reason is not None:
+        try:
+            _clear_drop_reason()
+        except Exception:
+            pass
+
     _persist_state(enabled=True, reason=None, source=source)
 
 
@@ -233,13 +363,32 @@ def last_disable_reason() -> str | None:
     return _LAST_REASON
 
 
+def last_recovery_code() -> str | None:
+    """Return the last recorded recovery code, if any."""
+
+    return _LAST_RECOVERY_CODE
+
+
+def last_recovery_details() -> str | None:
+    """Return details associated with the last recovery, if any."""
+
+    return _LAST_RECOVERY_DETAILS
+
+
 def reset_state() -> None:
     """Reset delegation state and forget recorded disable events."""
 
-    global _DELEGATION_ENABLED, _FAILURE_COUNT, _LAST_REASON
+    global \
+        _DELEGATION_ENABLED, \
+        _FAILURE_COUNT, \
+        _LAST_REASON, \
+        _LAST_RECOVERY_CODE, \
+        _LAST_RECOVERY_DETAILS
     _DELEGATION_ENABLED = True
     _FAILURE_COUNT = 0
     _LAST_REASON = None
+    _LAST_RECOVERY_CODE = None
+    _LAST_RECOVERY_DETAILS = None
     _DISABLE_EVENTS.clear()
     _persist_state(enabled=True, reason=None, source="reset")
 
@@ -263,9 +412,8 @@ def record_health_failure(reason: str, *, source: str = "health_probe") -> None:
 def record_health_success(*, source: str = "health_probe") -> None:
     """Record a successful health probe and reset failure counters."""
 
-    global _FAILURE_COUNT, _LAST_REASON
+    global _FAILURE_COUNT
     _FAILURE_COUNT = 0
-    _LAST_REASON = None
     mark_cli_ready(source=source)
 
 
@@ -300,6 +448,9 @@ __all__ = [
     "failure_count",
     "failure_threshold",
     "last_disable_reason",
+    "last_recovery_code",
+    "last_recovery_details",
+    "recovery_prompt",
     "reset_state",
     "record_health_failure",
     "record_health_success",

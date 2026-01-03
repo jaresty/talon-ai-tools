@@ -744,6 +744,15 @@ def drop_reason_message(reason: RequestDropReason) -> str:
             "GPT: Cannot save history source; entry is missing a directional lens "
             "(fog/fig/dig/ong/rog/bog/jog)."
         )
+    if reason == "cli_ready":
+        return "GPT: CLI delegation ready; telemetry and health probes are green."
+    if reason == "cli_signature_recovered":
+        return (
+            "GPT: CLI delegation restored after signature telemetry mismatch; keep `python3 "
+            "scripts/tools/check_cli_assets.py` green and rerun bootstrap if warnings return."
+        )
+    if reason == "cli_recovered":
+        return "GPT: CLI delegation restored after temporary disablement; requests may resume."
     if reason == "cli_unhealthy":
         return (
             "GPT: CLI delegation disabled after failed health probes; rebuild the "

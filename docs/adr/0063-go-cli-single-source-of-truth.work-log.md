@@ -11,7 +11,7 @@ bootstrap.bootstrap()
 if bin_path.exists():
     sys.exit(0)
 raise SystemExit('bootstrap did not install CLI binary')
-PY` | status: in_progress — loop-0042 propagates signature telemetry mismatch into adapter UX; next slice wires provider canvases and recovery prompts to telemetry restores.
+PY` | status: in_progress — loop-0043 surfaces telemetry recovery prompts through provider canvases and parity gating; next slice threads those recovery signals into history telemetry dashboards and manual recovery scripting.
 - [Implementation Guardrails → Delivery posture] Release checksum manifest hardening | `python3 scripts/tools/check_cli_assets.py` | status: in_progress — loop-0040 emits signing key telemetry and guards stale metadata; next slice aggregates key drift into parity fallback signals.
 
 ## Completed Loops
@@ -101,3 +101,4 @@ PY`; evidence: `docs/adr/evidence/0063/loop-0034.md`.
 - loop-0040 — emitted signing key telemetry and guarded stale metadata; validation: `python3 scripts/tools/check_cli_assets.py`; evidence: `docs/adr/evidence/0063/loop-0040.md`.
 - loop-0041 — enforced signature telemetry fallback in bootstrap and parity harness; validation: `python3 -m pytest _tests/test_cli_talon_parity.py`; evidence: `docs/adr/evidence/0063/loop-0041.md`.
 - loop-0042 — propagated signature telemetry mismatch into adapter UX and gating; validation: `python3 -m pytest _tests/test_cli_talon_parity.py`; evidence: `docs/adr/evidence/0063/loop-0042.md`.
+- loop-0043 — surfaced telemetry recovery prompts via CLI delegation readiness and provider canvases; validation: `python3 -m pytest _tests/test_cli_talon_parity.py`; evidence: `docs/adr/evidence/0063/loop-0043.md`.

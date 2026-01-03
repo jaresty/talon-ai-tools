@@ -23,6 +23,7 @@ os.environ.setdefault(
 
 import lib.cliDelegation as cliDelegation
 import lib.cliHealth as cliHealth
+import lib.providerCommands as providerCommands
 import lib.providerRegistry as providerRegistry
 import lib.surfaceGuidance as surfaceGuidance
 from lib import historyLifecycle, requestGating
@@ -555,6 +556,84 @@ else:
                 get_bootstrap_warnings(clear=True)
                 get_bootstrap_warning_messages(clear=True)
                 actions.user.calls.clear()
+
+        def test_cli_delegation_ready_surfaces_recovery_prompt(self) -> None:
+            state_path = Path("var/cli-telemetry/delegation-state.json")
+            state_path.unlink(missing_ok=True)
+            cliDelegation.reset_state()
+            actions.user.calls.clear()
+            historyLifecycle.set_drop_reason(
+                "cli_signature_mismatch",
+                historyLifecycle.drop_reason_message("cli_signature_mismatch"),
+            )
+
+            cliDelegation.disable_delegation(
+                "signature telemetry mismatch detected during bootstrap",
+                source="bootstrap",
+                notify=False,
+            )
+
+            registry = providerRegistry.ProviderRegistry()
+            entries = registry.status_entries()
+            self.assertTrue(
+                any(
+                    entry.get("delegation", {}).get("reason")
+                    == "cli_signature_mismatch"
+                    for entry in entries
+                ),
+                "Provider registry should surface signature mismatch before recovery",
+            )
+
+            with mock.patch("lib.providerCommands.show_provider_canvas") as show_canvas:
+                cliDelegation.mark_cli_ready(source="parity")
+                show_canvas.assert_called_once()
+                canvas_args = show_canvas.call_args[0]
+                self.assertGreaterEqual(len(canvas_args), 2)
+                self.assertIn("Delegation ready", canvas_args[1])
+
+            self.assertTrue(cliDelegation.delegation_enabled())
+            self.assertEqual(
+                historyLifecycle.last_drop_reason(),
+                "",
+                "Recovered delegation should clear drop reason",
+            )
+
+            ready_calls = [
+                c for c in actions.user.calls if c[0] == "cli_delegation_ready"
+            ]
+            self.assertTrue(
+                ready_calls,
+                "Expected cli_delegation_ready action to be recorded on recovery",
+            )
+            self.assertEqual(ready_calls[-1][1], ("parity",))
+
+            entries = providerRegistry.ProviderRegistry().status_entries()
+            self.assertTrue(
+                any(
+                    entry.get("delegation", {}).get("reason")
+                    == "cli_signature_recovered"
+                    for entry in entries
+                ),
+                "Provider registry should surface signature telemetry recovery",
+            )
+            recovered_messages = [
+                entry.get("delegation", {}).get("message", "")
+                for entry in entries
+                if entry.get("delegation", {}).get("reason")
+                == "cli_signature_recovered"
+            ]
+            self.assertTrue(
+                any(
+                    "CLI delegation restored" in message
+                    for message in recovered_messages
+                ),
+                "Recovery message should mention restored delegation",
+            )
+
+            actions.user.calls.clear()
+            historyLifecycle.set_drop_reason("")
+            cliDelegation.reset_state()
+            state_path.unlink(missing_ok=True)
 
         def test_bootstrap_fails_on_snapshot_digest_mismatch(self) -> None:
             self.assertIsNotNone(bootstrap, "bootstrap helper unavailable")

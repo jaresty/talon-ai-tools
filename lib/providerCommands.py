@@ -100,6 +100,41 @@ def _render_provider_lines(
     return lines
 
 
+def _delegation_ready_prompt() -> str:
+    try:
+        from . import cliDelegation as _cliDelegation
+    except Exception:
+        _cliDelegation = None
+    if _cliDelegation is not None:
+        try:
+            prompt = _cliDelegation.recovery_prompt()
+        except Exception:
+            prompt = ""
+        if isinstance(prompt, str) and prompt.strip():
+            return prompt.strip()
+    return "CLI delegation ready."
+
+
+def show_provider_status_message(message: str, *, prompt: str | None = None) -> None:
+    try:
+        registry = provider_registry()
+        entries = registry.status_entries()
+    except Exception:
+        entries = []
+    if not entries:
+        return
+    try:
+        lines = _render_provider_lines(entries, message)
+    except Exception:
+        return
+    if prompt and isinstance(prompt, str) and prompt.strip():
+        lines.insert(1, prompt.strip())
+    try:
+        show_provider_canvas("Provider status", lines)
+    except Exception:
+        pass
+
+
 def _render_error(message: str, suggestions: list[str]) -> list[str]:
     lines = [f"Error: {message}"]
     if suggestions:
@@ -369,3 +404,35 @@ class UserActions:
             return
 
         hide_provider_canvas()
+
+
+def _install_cli_ready_handler() -> None:
+    try:
+        existing = getattr(actions.user, "cli_delegation_ready", None)
+    except Exception:
+        existing = None
+
+    if (
+        callable(existing)
+        and getattr(existing, "__name__", "") == "_cli_delegation_ready_action"
+    ):
+        return
+
+    def _cli_delegation_ready_action(source: str = "runtime") -> None:
+        prompt = _delegation_ready_prompt()
+        try:
+            actions.user.calls.append(("cli_delegation_ready", (source,), {}))
+        except Exception:
+            pass
+        try:
+            notify(prompt)
+        except Exception:
+            pass
+
+    try:
+        setattr(actions.user, "cli_delegation_ready", _cli_delegation_ready_action)
+    except Exception:
+        pass
+
+
+_install_cli_ready_handler()

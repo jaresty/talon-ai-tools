@@ -342,19 +342,46 @@ class ProviderRegistry:
             failure_count = int(_cliDelegation.failure_count())
             failure_threshold = int(_cliDelegation.failure_threshold())
             last_reason = _cliDelegation.last_disable_reason() or ""
+            recovery_code = ""
+            recovery_details = ""
+            if hasattr(_cliDelegation, "last_recovery_code"):
+                try:
+                    recovery_code = _cliDelegation.last_recovery_code() or ""
+                except Exception:
+                    recovery_code = ""
+            if hasattr(_cliDelegation, "last_recovery_details"):
+                try:
+                    recovery_details = _cliDelegation.last_recovery_details() or ""
+                except Exception:
+                    recovery_details = ""
+
             signature_mismatch = "signature telemetry mismatch" in last_reason.lower()
-            reason_code = (
-                "cli_signature_mismatch" if signature_mismatch else "cli_unhealthy"
-            )
-            message = _drop_reason_message(reason_code)
             details: List[str] = []
-            if not signature_mismatch and failure_count:
-                if failure_threshold:
-                    details.append(f"failed probes={failure_count}/{failure_threshold}")
-                else:
-                    details.append(f"failed probes={failure_count}")
-            if last_reason:
-                details.append(last_reason)
+            if enabled:
+                reason_code = recovery_code or (
+                    "cli_signature_recovered" if signature_mismatch else "cli_ready"
+                )
+                message = _drop_reason_message(reason_code)  # type: ignore[arg-type]
+                detail_text = recovery_details.strip()
+                if detail_text and reason_code in {
+                    "cli_recovered",
+                    "cli_signature_recovered",
+                }:
+                    details.append(detail_text)
+            else:
+                reason_code = (
+                    "cli_signature_mismatch" if signature_mismatch else "cli_unhealthy"
+                )
+                message = _drop_reason_message(reason_code)  # type: ignore[arg-type]
+                if not signature_mismatch and failure_count:
+                    if failure_threshold:
+                        details.append(
+                            f"failed probes={failure_count}/{failure_threshold}"
+                        )
+                    else:
+                        details.append(f"failed probes={failure_count}")
+                if last_reason:
+                    details.append(last_reason)
             if details:
                 message = f"{message} ({'; '.join(details)})"
             delegation_snapshot = {
@@ -363,6 +390,8 @@ class ProviderRegistry:
                 "failure_count": failure_count,
                 "failure_threshold": failure_threshold,
                 "last_reason": last_reason,
+                "recovery_code": recovery_code,
+                "recovery_details": recovery_details,
                 "message": message,
             }
         except Exception:

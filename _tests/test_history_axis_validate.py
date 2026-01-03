@@ -7,6 +7,7 @@ import tempfile
 import unittest
 from pathlib import Path
 from typing import TYPE_CHECKING
+from unittest import mock
 
 try:
     from bootstrap import bootstrap
@@ -125,7 +126,75 @@ if bootstrap is not None:
             self.assertGreaterEqual(stats.get("intent_invalid_tokens", 0), 1)
             clear_history()
 
+        def test_history_stats_include_cli_recovery_snapshot(self) -> None:
+            from talon_user.lib.historyLifecycle import (  # type: ignore
+                clear_history,
+                history_validation_stats,
+            )
+            from talon_user.lib import cliDelegation as cli_delegation  # type: ignore
+
+            clear_history()
+            try:
+                with (
+                    mock.patch.object(
+                        cli_delegation, "delegation_enabled", return_value=True
+                    ),
+                    mock.patch.object(
+                        cli_delegation,
+                        "last_recovery_code",
+                        return_value="cli_recovered",
+                    ),
+                    mock.patch.object(
+                        cli_delegation,
+                        "last_recovery_details",
+                        return_value="signature telemetry mismatch",
+                    ),
+                    mock.patch.object(
+                        cli_delegation,
+                        "recovery_prompt",
+                        return_value="CLI delegation restored after failure.",
+                    ),
+                ):
+                    stats = history_validation_stats()
+            finally:
+                clear_history()
+
+            self.assertEqual(stats.get("cli_recovery_code"), "cli_recovered")
+            self.assertEqual(
+                stats.get("cli_recovery_details"), "signature telemetry mismatch"
+            )
+            self.assertEqual(
+                stats.get("cli_recovery_prompt"),
+                "CLI delegation restored after failure.",
+            )
+            self.assertTrue(stats.get("cli_delegation_enabled"))
+            snapshot = stats.get("cli_recovery_snapshot", {})
+            self.assertIsInstance(snapshot, dict)
+            self.assertEqual(snapshot.get("code"), "cli_recovered")
+            self.assertEqual(snapshot.get("details"), "signature telemetry mismatch")
+            self.assertEqual(
+                snapshot.get("prompt"), "CLI delegation restored after failure."
+            )
+            self.assertTrue(snapshot.get("enabled"))
+
         def test_script_fails_when_invalid_intent_tokens_present(self) -> None:
+            from talon_user.lib.historyLifecycle import clear_history  # type: ignore
+
+            clear_history()
+            env = os.environ.copy()
+            env["HISTORY_AXIS_VALIDATE_SIMULATE_INTENT_ALIAS_KEY"] = "1"
+            result = subprocess.run(
+                [sys.executable, "scripts/tools/history-axis-validate.py", "--summary"],
+                check=False,
+                capture_output=True,
+                text=True,
+                env=env,
+            )
+            self.assertNotEqual(result.returncode, 0, msg=result.stdout)
+            self.assertIn("Intent invalid tokens", result.stdout)
+            clear_history()
+
+        def test_script_fails_when_invalid_intent_tokens_present_summary(self) -> None:
             from talon_user.lib.historyLifecycle import clear_history  # type: ignore
 
             clear_history()
@@ -170,7 +239,9 @@ if bootstrap is not None:
             self.assertIn("entries_missing_directional", stats)
             clear_history()
 
-        def test_script_fails_when_invalid_intent_tokens_present(self) -> None:
+        def test_script_fails_when_invalid_intent_tokens_present_summary_path(
+            self,
+        ) -> None:
             from talon_user.lib.historyLifecycle import clear_history  # type: ignore
 
             clear_history()
@@ -260,6 +331,9 @@ if bootstrap is not None:
             stats = json.loads(summary_line or "{}")
             self.assertEqual(stats.get("gating_drop_last_message"), expected_message)
             self.assertEqual(stats.get("gating_drop_last_code"), "in_flight")
+            self.assertIn("cli_recovery_code", stats)
+            self.assertIn("cli_recovery_prompt", stats)
+            self.assertIn("cli_delegation_enabled", stats)
 
         def test_summarize_json_outputs_summary(self) -> None:
             with tempfile.TemporaryDirectory() as tmpdir:
@@ -288,12 +362,17 @@ if bootstrap is not None:
                     text=True,
                 )
                 self.assertEqual(result.returncode, 0, msg=result.stderr)
-                output = result.stdout.strip()
                 expected = (
                     "Streaming gating summary: status=unknown; total=2; "
                     "counts=in_flight=2; sources=none; last=in_flight (count=2); "
                     "last_source=n/a; last_message=none"
                 )
+                output_lines = [
+                    line.strip()
+                    for line in result.stdout.splitlines()
+                    if line.strip() and not line.startswith("[debug]")
+                ]
+                output = output_lines[0] if output_lines else ""
                 self.assertEqual(output, expected)
                 self.assertNotIn("### History Guardrail Summary", result.stdout)
 
@@ -313,7 +392,12 @@ if bootstrap is not None:
                     text=True,
                 )
                 self.assertEqual(result_json.returncode, 0, msg=result_json.stderr)
-                json_output = json.loads(result_json.stdout.strip())
+                json_lines = [
+                    line
+                    for line in result_json.stdout.splitlines()
+                    if line.strip() and not line.startswith("[debug]")
+                ]
+                json_output = json.loads(json_lines[0] if json_lines else "{}")
                 streaming_summary = json_output.get("streaming_gating_summary")
                 self.assertEqual(
                     streaming_summary,

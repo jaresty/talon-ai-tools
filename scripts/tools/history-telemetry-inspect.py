@@ -23,6 +23,10 @@ DEFAULT_FIELDS: tuple[str, ...] = (
     "last_drop_code",
     "streaming_last_drop_message",
     "streaming_last_drop_code",
+    "cli_delegation_enabled",
+    "cli_recovery_code",
+    "cli_recovery_details",
+    "cli_recovery_prompt",
 )
 
 SUMMARY_FIELDS: tuple[str, ...] = (
@@ -36,6 +40,9 @@ SUMMARY_FIELDS: tuple[str, ...] = (
     "last_drop_code",
     "streaming_last_drop_message",
     "streaming_last_drop_code",
+    "cli_delegation_enabled",
+    "cli_recovery_code",
+    "cli_recovery_prompt",
 )
 
 

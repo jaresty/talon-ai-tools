@@ -39,6 +39,12 @@ _gating_drop_sources: Counter[str] = Counter()
 _gating_drop_reason_sources: Counter[tuple[RequestDropReason, str]] = Counter()
 _last_gating_drop_source: str = ""
 
+_CLI_RECOVERY_CODES: tuple[str, ...] = (
+    "cli_ready",
+    "cli_recovered",
+    "cli_signature_recovered",
+)
+
 
 def _normalise_gating_source(source: object) -> str:
     text = str(source or "").strip()
@@ -955,6 +961,64 @@ def history_validation_stats() -> dict[str, object]:
     stats_obj["gating_drop_total"] = sum(gating_counts.values())
     stats_obj["gating_drop_counts"] = dict(gating_counts)
     stats_obj["gating_drop_sources"] = dict(gating_sources)
+
+    recovery_enabled: bool | None = None
+    recovery_code = ""
+    recovery_details = ""
+    recovery_prompt = ""
+
+    try:
+        from . import cliDelegation as _cliDelegation  # type: ignore
+    except Exception:
+        _cliDelegation = None
+
+    if _cliDelegation is not None:
+        if hasattr(_cliDelegation, "delegation_enabled"):
+            try:
+                recovery_enabled = bool(_cliDelegation.delegation_enabled())
+            except Exception:
+                recovery_enabled = None
+        if hasattr(_cliDelegation, "last_recovery_code"):
+            try:
+                recovery_code = str(_cliDelegation.last_recovery_code() or "").strip()
+            except Exception:
+                recovery_code = ""
+        if hasattr(_cliDelegation, "last_recovery_details"):
+            try:
+                recovery_details = str(
+                    _cliDelegation.last_recovery_details() or ""
+                ).strip()
+            except Exception:
+                recovery_details = ""
+        if hasattr(_cliDelegation, "recovery_prompt"):
+            try:
+                recovery_prompt = str(_cliDelegation.recovery_prompt() or "").strip()
+            except Exception:
+                recovery_prompt = ""
+
+    fallback_code = str(_last_drop_reason.code or "").strip()
+    if not recovery_code and fallback_code in _CLI_RECOVERY_CODES:
+        recovery_code = fallback_code
+    disable_codes = {"cli_unhealthy", "cli_signature_mismatch"}
+    if recovery_enabled is None:
+        if fallback_code in _CLI_RECOVERY_CODES:
+            recovery_enabled = True
+        elif fallback_code in disable_codes:
+            recovery_enabled = False
+    fallback_prompt = str(_last_drop_reason.message or "").strip()
+    if not recovery_prompt and fallback_prompt:
+        recovery_prompt = fallback_prompt
+
+    stats_obj["cli_delegation_enabled"] = recovery_enabled
+    stats_obj["cli_recovery_code"] = recovery_code
+    stats_obj["cli_recovery_details"] = recovery_details
+    stats_obj["cli_recovery_prompt"] = recovery_prompt
+    stats_obj["cli_recovery_snapshot"] = {
+        "enabled": recovery_enabled,
+        "code": recovery_code,
+        "details": recovery_details,
+        "prompt": recovery_prompt,
+    }
 
     def _convert_to_int(candidate: object) -> Optional[int]:
         if isinstance(candidate, bool):

@@ -235,6 +235,30 @@ def _format_history_summary_from_data(
     lines.append(streaming_drop_line)
     lines.append(f"- {streaming_line}")
 
+    recovery_prompt = str(data.get("cli_recovery_prompt") or "").strip()
+    recovery_code = str(data.get("cli_recovery_code") or "").strip()
+    recovery_details = str(data.get("cli_recovery_details") or "").strip()
+    recovery_enabled = data.get("cli_delegation_enabled")
+    if (
+        recovery_prompt
+        or recovery_code
+        or recovery_details
+        or isinstance(recovery_enabled, bool)
+    ):
+        summary_line = f"- CLI recovery: {recovery_prompt or 'none'}"
+        fragments: list[str] = []
+        if recovery_code:
+            fragments.append(f"code={recovery_code}")
+        if isinstance(recovery_enabled, bool):
+            fragments.append(
+                "delegation=enabled" if recovery_enabled else "delegation=disabled"
+            )
+        if recovery_details:
+            fragments.append(recovery_details)
+        if fragments:
+            summary_line = f"{summary_line} ({'; '.join(fragments)})"
+        lines.append(summary_line)
+
     sources_summary = summary.get("sources", {})
     if isinstance(sources_summary, dict) and sources_summary:
         ordered_sources = sorted(

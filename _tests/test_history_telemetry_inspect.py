@@ -97,6 +97,47 @@ if bootstrap is not None and not TYPE_CHECKING:
                 self.assertIn("total_entries=9", result.stdout)
                 self.assertIn("streaming_status=ok", result.stdout)
 
+        def test_reports_cli_recovery_fields(self) -> None:
+            telemetry = {
+                "guardrail_target": "request-history-guardrails-fast",
+                "summary_path": "artifacts/telemetry/history-validation-summary.json",
+                "total_entries": 4,
+                "cli_delegation_enabled": True,
+                "cli_recovery_code": "cli_recovered",
+                "cli_recovery_details": "health probes restored",
+                "cli_recovery_prompt": "CLI delegation restored after failure.",
+            }
+
+            with tempfile.TemporaryDirectory() as tmpdir:
+                tmp_path = Path(tmpdir)
+                telemetry_path = tmp_path / "history-validation-summary.telemetry.json"
+                telemetry_path.write_text(json.dumps(telemetry), encoding="utf-8")
+
+                result = subprocess.run(
+                    [
+                        sys.executable,
+                        "scripts/tools/history-telemetry-inspect.py",
+                        str(telemetry_path),
+                    ],
+                    check=False,
+                    capture_output=True,
+                    text=True,
+                )
+
+                self.assertEqual(
+                    result.returncode,
+                    0,
+                    msg=f"history-telemetry-inspect failed: {result.stdout}\n{result.stderr}",
+                )
+                stdout = result.stdout
+                self.assertIn("cli_delegation_enabled: True", stdout)
+                self.assertIn("cli_recovery_code: cli_recovered", stdout)
+                self.assertIn("cli_recovery_details: health probes restored", stdout)
+                self.assertIn(
+                    "cli_recovery_prompt: CLI delegation restored after failure.",
+                    stdout,
+                )
+
         def test_json_format_returns_machine_readable_payload(self) -> None:
             telemetry = {
                 "guardrail_target": "request-history-guardrails-fast",

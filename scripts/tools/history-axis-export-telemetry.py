@@ -339,6 +339,26 @@ def build_payload(
 
     payload["scheduler"] = _load_scheduler_stats(summary_path, data)
 
+    cli_enabled = data.get("cli_delegation_enabled")
+    if isinstance(cli_enabled, bool):
+        payload["cli_delegation_enabled"] = cli_enabled
+
+    recovery_code = str(data.get("cli_recovery_code") or "").strip()
+    if recovery_code:
+        payload["cli_recovery_code"] = recovery_code
+
+    recovery_details = str(data.get("cli_recovery_details") or "").strip()
+    if recovery_details:
+        payload["cli_recovery_details"] = recovery_details
+
+    recovery_prompt = str(data.get("cli_recovery_prompt") or "").strip()
+    if recovery_prompt:
+        payload["cli_recovery_prompt"] = recovery_prompt
+
+    recovery_snapshot = data.get("cli_recovery_snapshot")
+    if isinstance(recovery_snapshot, Mapping):
+        payload["cli_recovery_snapshot"] = dict(recovery_snapshot)
+
     return payload
 
 

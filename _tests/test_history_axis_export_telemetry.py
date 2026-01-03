@@ -286,6 +286,51 @@ if bootstrap is not None and not TYPE_CHECKING:
                 payload = json.loads(output_path.read_text(encoding="utf-8"))
                 self.assertEqual(payload.get("guardrail_target"), guardrail_target)
 
+        def test_includes_cli_recovery_fields(self) -> None:
+            summary = {
+                "total_entries": 3,
+                "gating_drop_total": 1,
+                "cli_delegation_enabled": True,
+                "cli_recovery_code": "cli_recovered",
+                "cli_recovery_details": "health probes passed",
+                "cli_recovery_prompt": "CLI delegation restored after failure.",
+            }
+
+            with tempfile.TemporaryDirectory() as tmpdir:
+                tmp_path = Path(tmpdir)
+                summary_path = tmp_path / "history-validation-summary.json"
+                output_path = tmp_path / "telemetry.json"
+                summary_path.write_text(json.dumps(summary), encoding="utf-8")
+
+                result = subprocess.run(
+                    [
+                        sys.executable,
+                        "scripts/tools/history-axis-export-telemetry.py",
+                        str(summary_path),
+                        "--output",
+                        str(output_path),
+                    ],
+                    check=False,
+                    capture_output=True,
+                    text=True,
+                )
+
+                self.assertEqual(
+                    result.returncode,
+                    0,
+                    msg=f"telemetry exporter failed: {result.stdout}\n{result.stderr}",
+                )
+                payload = json.loads(output_path.read_text(encoding="utf-8"))
+                self.assertTrue(payload.get("cli_delegation_enabled"))
+                self.assertEqual(payload.get("cli_recovery_code"), "cli_recovered")
+                self.assertEqual(
+                    payload.get("cli_recovery_details"), "health probes passed"
+                )
+                self.assertEqual(
+                    payload.get("cli_recovery_prompt"),
+                    "CLI delegation restored after failure.",
+                )
+
 else:
 
     class HistoryAxisExportTelemetryTests(unittest.TestCase):  # pragma: no cover

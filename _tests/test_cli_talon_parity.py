@@ -592,10 +592,16 @@ else:
                 self.assertIn("Delegation ready", canvas_args[1])
 
             self.assertTrue(cliDelegation.delegation_enabled())
-            self.assertEqual(
-                historyLifecycle.last_drop_reason(),
-                "",
-                "Recovered delegation should clear drop reason",
+            drop_message = historyLifecycle.last_drop_reason()
+            self.assertIn(
+                "CLI delegation",
+                drop_message,
+                "Recovered delegation should announce readiness",
+            )
+            self.assertIn(
+                historyLifecycle.last_drop_reason_code(),
+                {"cli_ready", "cli_signature_recovered"},
+                "Recovered delegation should tag drop reason as cli_ready",
             )
 
             ready_calls = [

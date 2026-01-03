@@ -353,9 +353,19 @@ def _coerce_axes_mapping(
 ) -> dict[str, list[str]]:
     if not axes:
         return {}
-    return {
-        key: [str(value).strip() for value in values] for key, values in axes.items()
-    }
+    coerced: dict[str, list[str]] = {}
+    for raw_key, raw_values in axes.items():
+        key = str(raw_key)
+        if isinstance(raw_values, str):
+            values_iter = [raw_values]
+        elif isinstance(raw_values, Sequence):
+            values_iter = list(raw_values)
+        else:
+            values_iter = [raw_values]
+        values = [str(value).strip() for value in values_iter if str(value).strip()]
+        if values:
+            coerced[key] = values
+    return coerced
 
 
 def axes_snapshot_from_axes(axes: Mapping[str, Sequence[str]] | None) -> AxisSnapshot:

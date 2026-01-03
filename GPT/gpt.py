@@ -119,8 +119,7 @@ DEFAULT_TRACE_CANVAS_FLOW = 0
 KNOWN_AXIS_KEYS = historyLifecycle.KNOWN_AXIS_KEYS
 
 
-def axis_snapshot_from_axes(axes):
-    return historyLifecycle.axes_snapshot_from_axes(axes)
+axis_snapshot_from_axes = historyLifecycle.axes_snapshot_from_axes
 
 
 def drop_reason_message(reason):

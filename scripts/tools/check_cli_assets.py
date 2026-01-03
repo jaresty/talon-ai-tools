@@ -689,6 +689,8 @@ def main() -> int:
         ok,
     )
 
+    print(f"cli_signature_telemetry={SIGNATURE_TELEMETRY_PATH}")
+
     return 0 if ok else 1
 
 

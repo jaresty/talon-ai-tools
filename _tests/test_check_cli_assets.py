@@ -428,6 +428,7 @@ else:
             )
             self.assertIn(f"cli_manifest={self._tarball_manifest_path}", stdout)
             self.assertIn(f"cli_signatures={self.metadata_path}", stdout)
+            self.assertIn(f"cli_signature_telemetry={self.telemetry_path}", stdout)
 
             telemetry: dict = self._read_telemetry()
             self.assertEqual("green", telemetry["status"])
@@ -562,6 +563,9 @@ else:
             self.assertNotEqual(result.returncode, 0, result.stderr)
             self.assertIn("recovery snapshot", result.stderr)
             self.assertIn("package_bar_cli.py --print-paths", result.stderr)
+            self.assertIn(
+                f"cli_signature_telemetry={self.telemetry_path}", result.stdout
+            )
 
             telemetry: dict = self._read_telemetry()
             self.assertEqual("red", telemetry.get("status"))

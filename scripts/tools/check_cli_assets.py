@@ -8,8 +8,11 @@ script should return green and serve as evidence for shared command assets.
 
 from __future__ import annotations
 
+import argparse
 import json
 import os
+import shlex
+import subprocess
 import sys
 from datetime import datetime, timezone
 from hashlib import sha256
@@ -45,6 +48,7 @@ SIGNATURE_TELEMETRY_PATH = Path(
         "var/cli-telemetry/signature-metadata.json",
     )
 )
+REPACKAGE_COMMAND_ENV = "CLI_REPACKAGE_COMMAND"
 DEFAULT_SIGNING_KEY_ID = "local-dev"
 SIGNING_KEY_ID_ENV = "CLI_RELEASE_SIGNING_KEY_ID"
 DELEGATION_STATE_SNAPSHOT_ENV = "CLI_DELEGATION_STATE_SNAPSHOT"
@@ -111,6 +115,16 @@ def _signing_key_id() -> str:
 
 def _metadata_path() -> Path:
     return Path(os.environ.get(SIGNATURE_METADATA_ENV, str(SIGNATURE_METADATA_PATH)))
+
+
+def _parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument(
+        "--repackage-on-recovery-drift",
+        action="store_true",
+        help="Automatically rerun packaging when signature telemetry recovery snapshot drifts",
+    )
+    return parser.parse_args()
 
 
 def _verify_signature(
@@ -505,6 +519,41 @@ def _read_signature_telemetry() -> tuple[bool, dict | None, list[str]]:
     return True, payload, issues
 
 
+def _run_repackage_cli() -> tuple[bool, list[str]]:
+    command_env = os.environ.get(REPACKAGE_COMMAND_ENV)
+    if command_env:
+        command = shlex.split(command_env)
+    else:
+        command = [sys.executable, "scripts/tools/package_bar_cli.py", "--print-paths"]
+
+    try:
+        result = subprocess.run(  # noqa: S603,S607 - intentional subprocess call
+            command,
+            capture_output=True,
+            text=True,
+            check=True,
+        )
+    except subprocess.CalledProcessError as exc:  # pragma: no cover - defensive
+        message = (
+            "automatic packaging command failed "
+            f"({' '.join(command)}): exit {exc.returncode}"
+        )
+        print(message, file=sys.stderr)
+        if exc.stdout:
+            print(exc.stdout.rstrip(), file=sys.stderr)
+        if exc.stderr:
+            print(exc.stderr.rstrip(), file=sys.stderr)
+        return False, command
+
+    print(f"auto_repackage_command={' '.join(command)}")
+    if result.stdout:
+        for line in result.stdout.strip().splitlines():
+            print(line)
+    if result.stderr:
+        print(result.stderr.strip(), file=sys.stderr)
+    return True, command
+
+
 def _check_signature_telemetry(
     metadata: dict,
     tarball_recorded: str,
@@ -614,6 +663,7 @@ def _write_signature_telemetry(
 
 
 def main() -> int:
+    args = _parse_args()
     required = (BIN_PATH, BIN_EXECUTABLE, SCHEMA_PATH)
     missing = [path for path in required if not path.exists()]
     issues: list[str] = []
@@ -661,6 +711,7 @@ def main() -> int:
     telemetry_ok = True
     expected_payload: dict | None = None
     previous_payload: dict | None = None
+    telemetry_issues: list[str] = []
     if metadata_ok and metadata is not None:
         telemetry_ok, expected_payload, previous_payload, telemetry_issues = (
             _check_signature_telemetry(
@@ -672,6 +723,34 @@ def main() -> int:
                 snapshot_payload,
             )
         )
+        recovery_issue_detected = any(
+            "recovery snapshot" in issue for issue in telemetry_issues
+        )
+        if (
+            not telemetry_ok
+            and args.repackage_on_recovery_drift
+            and recovery_issue_detected
+        ):
+            success, _ = _run_repackage_cli()
+            if success:
+                telemetry_ok, expected_payload, previous_payload, telemetry_issues = (
+                    _check_signature_telemetry(
+                        metadata,
+                        manifest_recorded,
+                        manifest_signature,
+                        snapshot_recorded,
+                        snapshot_signature,
+                        snapshot_payload,
+                    )
+                )
+                if telemetry_ok:
+                    issues.append(
+                        "automatic packaging refresh succeeded for recovery snapshot drift"
+                    )
+            else:
+                telemetry_issues.append(
+                    "automatic packaging retry failed for recovery snapshot drift"
+                )
         issues.extend(telemetry_issues)
         if not telemetry_ok:
             ok = False

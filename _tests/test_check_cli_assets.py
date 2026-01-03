@@ -588,6 +588,95 @@ else:
             assert isinstance(previous, dict)
             self.assertNotIn("cli_recovery_snapshot", previous)
 
+        def test_repackage_on_recovery_snapshot_mismatch_refreshes_telemetry(
+            self,
+        ) -> None:
+            snapshot_payload = {
+                "enabled": True,
+                "updated_at": "2026-01-03T00:00:00Z",
+                "reason": None,
+                "source": "bootstrap",
+                "events": [],
+                "failure_count": 0,
+                "failure_threshold": 3,
+                "recovery_code": "cli_signature_recovered",
+                "recovery_details": "signature telemetry mismatch detected during bootstrap",
+            }
+            self._write_snapshot(snapshot_payload)
+            recorded, signature = self._write_matching_manifest(snapshot_payload)
+            self._write_state(dict(snapshot_payload))
+            self._write_metadata(recorded, signature)
+
+            tarball_recorded = self._tarball_recorded()
+            tarball_signature = self._tarball_signature_path.read_text(
+                encoding="utf-8"
+            ).strip()
+            missing_snapshot_payload = {
+                "status": "green",
+                "generated_at": "2026-01-04T00:00:00Z",
+                "signing_key_id": self.env["CLI_RELEASE_SIGNING_KEY_ID"],
+                "tarball_manifest": {
+                    "recorded": tarball_recorded,
+                    "signature": tarball_signature,
+                },
+                "delegation_snapshot": {
+                    "recorded": recorded,
+                    "signature": signature,
+                },
+            }
+            self.telemetry_path.write_text(
+                json.dumps(missing_snapshot_payload, indent=2) + "\n",
+                encoding="utf-8",
+            )
+
+            script_path = Path(self._tmp.name) / "repackage.py"
+            script_content = "\n".join(
+                [
+                    "import json",
+                    "import os",
+                    "from pathlib import Path",
+                    "",
+                    "telemetry_path = Path(os.environ['CLI_SIGNATURE_TELEMETRY'])",
+                    "metadata_path = Path(os.environ['CLI_SIGNATURE_METADATA'])",
+                    "",
+                    "telemetry = json.loads(telemetry_path.read_text(encoding='utf-8'))",
+                    "metadata = json.loads(metadata_path.read_text(encoding='utf-8'))",
+                    "",
+                    "snapshot = metadata.get('cli_recovery_snapshot', {})",
+                    "telemetry['cli_recovery_snapshot'] = snapshot",
+                    "",
+                    "telemetry_path.write_text(",
+                    '    json.dumps(telemetry, indent=2, sort_keys=True) + "\\n",',
+                    "    encoding='utf-8',",
+                    ")",
+                ]
+            )
+            script_path.write_text(script_content + "\n", encoding="utf-8")
+            self.addCleanup(lambda: script_path.unlink(missing_ok=True))
+
+            env = self.env.copy()
+            env["CLI_REPACKAGE_COMMAND"] = f"{sys.executable} {script_path}"
+
+            result = subprocess.run(
+                self.command + ["--repackage-on-recovery-drift"],
+                capture_output=True,
+                text=True,
+                env=env,
+                check=False,
+            )
+
+            self.assertEqual(result.returncode, 0, result.stderr)
+            self.assertIn("auto_repackage_command=", result.stdout)
+            self.assertIn(
+                f"cli_signature_telemetry={self.telemetry_path}", result.stdout
+            )
+
+            telemetry: dict = self._read_telemetry()
+            self.assertEqual(
+                telemetry.get("cli_recovery_snapshot"),
+                self._recovery_snapshot(snapshot_payload),
+            )
+
         def test_requires_signature_metadata(self) -> None:
             snapshot_payload = {
                 "enabled": True,

@@ -11,7 +11,7 @@ bootstrap.bootstrap()
 if bin_path.exists():
     sys.exit(0)
 raise SystemExit('bootstrap did not install CLI binary')
-PY` | status: in_progress — loop-0037 sources release signing key from environment; next slice integrates CI publication and telemetry for key rotation.
+PY` | status: in_progress — loop-0041 enforces signature telemetry fallback; next slice wires adapters to react to telemetry restores and parity drift alerts.
 - [Implementation Guardrails → Delivery posture] Release checksum manifest hardening | `python3 scripts/tools/check_cli_assets.py` | status: in_progress — loop-0040 emits signing key telemetry and guards stale metadata; next slice aggregates key drift into parity fallback signals.
 
 ## Completed Loops
@@ -99,3 +99,4 @@ PY`; evidence: `docs/adr/evidence/0063/loop-0034.md`.
 - loop-0038 — kept release metadata consistent across bootstrap reinstall and guard rails; validation: `python3 -m pytest _tests/test_cli_talon_parity.py`; evidence: `docs/adr/evidence/0063/loop-0038.md`.
 - loop-0039 — published signature metadata artefact paths for release guardrails; validation: `python3 scripts/tools/check_cli_assets.py`; evidence: `docs/adr/evidence/0063/loop-0039.md`.
 - loop-0040 — emitted signing key telemetry and guarded stale metadata; validation: `python3 scripts/tools/check_cli_assets.py`; evidence: `docs/adr/evidence/0063/loop-0040.md`.
+- loop-0041 — enforced signature telemetry fallback in bootstrap and parity harness; validation: `python3 -m pytest _tests/test_cli_talon_parity.py`; evidence: `docs/adr/evidence/0063/loop-0041.md`.

@@ -84,6 +84,7 @@ A loop entry is compliant when all statements hold:
 **Focus declared**
 - Red evidence is recorded before edits land and green/removal evidence after, keeping guardrail commands limited to the validation channel for that behaviour.
 - The ADR section and salient task ID for the targeted behaviour are cited, and the entry states that this behaviour is the highest-severity open item while demoting lower-severity items to `residual_risks`.
+- The work-log entry updated in this slice is cited by heading or timestamp so auditors can trace the refreshed note alongside the code change.
 - Prioritization favours depth-first slices that de-risk the cited behaviour before opening lateral scope; each entry notes how the slice advances that depth-first path.
 - The riskiest assumption is expressed as a falsifiable statement with probability × impact rationale, explains why it outranks every other medium/high risk, and references the canonical intent and any equivalence evidence it reinforces.
 - When the behaviour cannot advance, the loop captures blocker evidence (command, failure excerpt, pointer) before closing; documentation-only entries include this blocker evidence.

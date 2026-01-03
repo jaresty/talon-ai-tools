@@ -12,6 +12,11 @@ from unittest import mock
 
 from talon import actions
 
+SIGNATURE_KEY = "adr-0063-cli-release-signature"
+os.environ.setdefault("CLI_RELEASE_SIGNING_KEY", SIGNATURE_KEY)
+os.environ.setdefault("CLI_RELEASE_SIGNING_KEY_ID", "local-dev")
+os.environ.setdefault("CLI_SIGNATURE_METADATA", "artifacts/cli/signatures.json")
+
 import lib.cliDelegation as cliDelegation
 import lib.cliHealth as cliHealth
 import lib.surfaceGuidance as surfaceGuidance
@@ -45,8 +50,6 @@ else:
 CLI_BINARY = Path("bin/bar")
 SCHEMA_BUNDLE = Path("docs/schema/command-surface.json")
 PACKAGED_CLI_DIR = Path("artifacts/cli")
-SIGNATURE_KEY = "adr-0063-cli-release-signature"
-os.environ.setdefault("CLI_RELEASE_SIGNING_KEY", SIGNATURE_KEY)
 
 
 def _target_suffix() -> str:
@@ -295,6 +298,7 @@ else:
             snapshot_path = PACKAGED_CLI_DIR / "delegation-state.json"
             digest_path = PACKAGED_CLI_DIR / "delegation-state.json.sha256"
             signature_path = PACKAGED_CLI_DIR / "delegation-state.json.sha256.sig"
+            metadata_path = PACKAGED_CLI_DIR / "signatures.json"
             runtime_path = Path("var/cli-telemetry/delegation-state.json")
 
             self.assertTrue(
@@ -316,6 +320,10 @@ else:
                     f"{_signature_for(recorded_existing)}\n", encoding="utf-8"
                 )
                 signature_backup = None
+            if metadata_path.exists():
+                metadata_backup = metadata_path.read_bytes()
+            else:
+                metadata_backup = None
             runtime_path.unlink(missing_ok=True)
             cliDelegation.reset_state()
             clear_bootstrap_warning_events()
@@ -339,7 +347,35 @@ else:
                 f"{digest}  {snapshot_path.name}\n", encoding="utf-8"
             )
             recorded = f"{digest}  {snapshot_path.name}"
-            signature_path.write_text(f"{_signature_for(recorded)}\n", encoding="utf-8")
+            signature = _signature_for(recorded)
+            signature_path.write_text(f"{signature}\n", encoding="utf-8")
+
+            tarball = _packaged_cli_tarball()
+            manifest_path = _packaged_cli_manifest(tarball)
+            manifest_recorded = manifest_path.read_text(encoding="utf-8").strip()
+            manifest_signature_path = manifest_path.with_suffix(
+                manifest_path.suffix + ".sig"
+            )
+            manifest_signature = manifest_signature_path.read_text(
+                encoding="utf-8"
+            ).strip()
+            metadata = {
+                "signing_key_id": os.environ.get(
+                    "CLI_RELEASE_SIGNING_KEY_ID",
+                    "local-dev",
+                ),
+                "tarball_manifest": {
+                    "recorded": manifest_recorded,
+                    "signature": manifest_signature,
+                },
+                "delegation_snapshot": {
+                    "recorded": recorded,
+                    "signature": signature,
+                },
+            }
+            metadata_path.write_text(
+                json.dumps(metadata, indent=2) + "\n", encoding="utf-8"
+            )
 
             try:
                 bootstrap()
@@ -374,6 +410,10 @@ else:
                     signature_path.unlink(missing_ok=True)
                 else:
                     signature_path.write_bytes(signature_backup)
+                if metadata_backup is None:
+                    metadata_path.unlink(missing_ok=True)
+                else:
+                    metadata_path.write_bytes(metadata_backup)
                 runtime_path.unlink(missing_ok=True)
                 cliDelegation.reset_state()
                 clear_bootstrap_warning_events()

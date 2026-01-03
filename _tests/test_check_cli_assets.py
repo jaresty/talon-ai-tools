@@ -40,13 +40,26 @@ else:
             self.snapshot_path = self.release_dir / "delegation-state.json"
             self.digest_path = self.release_dir / "delegation-state.json.sha256"
             self.signature_path = self.release_dir / "delegation-state.json.sha256.sig"
+            self.metadata_path = self.release_dir / "signatures.json"
             self.env = os.environ.copy()
             self.env["CLI_DELEGATION_STATE"] = str(self.state_path)
             self.env["CLI_DELEGATION_STATE_SNAPSHOT"] = str(self.snapshot_path)
             self.env["CLI_DELEGATION_STATE_DIGEST"] = str(self.digest_path)
             self.env["CLI_DELEGATION_STATE_SIGNATURE"] = str(self.signature_path)
+            self.env["CLI_SIGNATURE_METADATA"] = str(self.metadata_path)
             self.env["CLI_RELEASE_SIGNING_KEY"] = SIGNATURE_KEY
+            self.env["CLI_RELEASE_SIGNING_KEY_ID"] = "test-key"
             self.command = [sys.executable, "scripts/tools/check_cli_assets.py"]
+            self._tarball_manifest_path = self._tarball_manifest()
+            self._tarball_signature_path = self._tarball_signature()
+            if self._tarball_signature_path.exists():
+                original_signature = self._tarball_signature_path.read_bytes()
+
+                def _restore_tarball_signature() -> None:
+                    self._tarball_signature_path.write_bytes(original_signature)
+
+                self.addCleanup(_restore_tarball_signature)
+            self.addCleanup(lambda: self.metadata_path.unlink(missing_ok=True))
             self._write_tarball_signature()
 
         def _run(self) -> subprocess.CompletedProcess[str]:
@@ -72,10 +85,10 @@ else:
                 (SIGNATURE_KEY + "\n" + message).encode("utf-8")
             ).hexdigest()
 
-        def _write_signature(self, recorded: str) -> None:
-            self.signature_path.write_text(
-                f"{self._signature_for(recorded)}\n", encoding="utf-8"
-            )
+        def _write_signature(self, recorded: str) -> str:
+            signature = self._signature_for(recorded)
+            self.signature_path.write_text(f"{signature}\n", encoding="utf-8")
+            return signature
 
         def _write_state(self, payload: dict) -> None:
             self.state_path.write_text(json.dumps(payload, indent=2), encoding="utf-8")
@@ -85,11 +98,12 @@ else:
                 json.dumps(payload, indent=2), encoding="utf-8"
             )
 
-        def _write_matching_manifest(self, payload: dict) -> None:
+        def _write_matching_manifest(self, payload: dict) -> tuple[str, str]:
             digest = self._canonical_digest(payload)
             recorded = f"{digest}  {self.snapshot_path.name}"
             self.digest_path.write_text(f"{recorded}\n", encoding="utf-8")
-            self._write_signature(recorded)
+            signature = self._write_signature(recorded)
+            return recorded, signature
 
         def _tarball_manifest(self) -> Path:
             system = platform.system().lower()
@@ -110,11 +124,35 @@ else:
             manifest = self._tarball_manifest()
             return manifest.read_text(encoding="utf-8").strip()
 
-        def _write_tarball_signature(self) -> None:
-            recorded = self._tarball_recorded()
-            self._tarball_signature().write_text(
-                f"{self._signature_for(recorded)}\n", encoding="utf-8"
+        def _write_metadata(
+            self, snapshot_recorded: str, snapshot_signature: str
+        ) -> None:
+            tarball_recorded = self._tarball_recorded()
+            tarball_signature = (
+                self._tarball_signature_path.read_text(encoding="utf-8").strip()
+                if self._tarball_signature_path.exists()
+                else ""
             )
+            metadata = {
+                "signing_key_id": self.env["CLI_RELEASE_SIGNING_KEY_ID"],
+                "tarball_manifest": {
+                    "recorded": tarball_recorded,
+                    "signature": tarball_signature,
+                },
+                "delegation_snapshot": {
+                    "recorded": snapshot_recorded,
+                    "signature": snapshot_signature,
+                },
+            }
+            self.metadata_path.write_text(
+                json.dumps(metadata, indent=2) + "\n", encoding="utf-8"
+            )
+
+        def _write_tarball_signature(self) -> str:
+            recorded = self._tarball_recorded()
+            signature = self._signature_for(recorded)
+            self._tarball_signature_path.write_text(f"{signature}\n", encoding="utf-8")
+            return signature
 
         def test_requires_delegation_state_file(self) -> None:
             result = self._run()
@@ -176,7 +214,8 @@ else:
             }
             self._write_state(payload)
             self._write_snapshot(payload)
-            self._write_matching_manifest(payload)
+            recorded, signature = self._write_matching_manifest(payload)
+            self._write_metadata(recorded, signature)
 
             result = self._run()
             self.assertNotEqual(result.returncode, 0, result.stderr)
@@ -196,7 +235,8 @@ else:
             self._write_snapshot(payload)
             recorded = f"{'0' * 64}  {self.snapshot_path.name}"
             self.digest_path.write_text(f"{recorded}\n", encoding="utf-8")
-            self._write_signature(recorded)
+            signature = self._write_signature(recorded)
+            self._write_metadata(recorded, signature)
 
             result = self._run()
             self.assertNotEqual(result.returncode, 0, result.stderr)
@@ -228,8 +268,9 @@ else:
                 "failure_threshold": 3,
             }
             self._write_snapshot(snapshot_payload)
-            self._write_matching_manifest(snapshot_payload)
+            recorded, signature = self._write_matching_manifest(snapshot_payload)
             self._write_state(runtime_payload)
+            self._write_metadata(recorded, signature)
 
             result = self._run()
             self.assertNotEqual(result.returncode, 0, result.stderr)
@@ -284,7 +325,8 @@ else:
             }
             self._write_state(payload)
             self._write_snapshot(payload)
-            self._write_matching_manifest(payload)
+            recorded, signature = self._write_matching_manifest(payload)
+            self._write_metadata(recorded, signature)
             self.signature_path.unlink()
 
             result = self._run()
@@ -303,7 +345,8 @@ else:
             }
             self._write_state(payload)
             self._write_snapshot(payload)
-            self._write_matching_manifest(payload)
+            recorded, signature = self._write_matching_manifest(payload)
+            self._write_metadata(recorded, signature)
             self.signature_path.write_text("0" * 64 + "\n", encoding="utf-8")
 
             result = self._run()
@@ -323,9 +366,80 @@ else:
             runtime_payload = dict(snapshot_payload)
             runtime_payload["updated_at"] = "2026-01-03T04:00:00Z"
             self._write_snapshot(snapshot_payload)
-            self._write_matching_manifest(snapshot_payload)
+            recorded, signature = self._write_matching_manifest(snapshot_payload)
             self._write_state(runtime_payload)
+            self._write_metadata(recorded, signature)
 
             result = self._run()
             self.assertEqual(result.returncode, 0, result.stderr)
             self.assertIn("all CLI assets present", result.stdout)
+
+        def test_requires_signature_metadata(self) -> None:
+            snapshot_payload = {
+                "enabled": True,
+                "updated_at": "2026-01-03T00:00:00Z",
+                "reason": None,
+                "source": "bootstrap",
+                "events": [],
+                "failure_count": 0,
+                "failure_threshold": 3,
+            }
+            self._write_state(dict(snapshot_payload))
+            self._write_snapshot(snapshot_payload)
+            recorded, signature = self._write_matching_manifest(snapshot_payload)
+            self.metadata_path.unlink(missing_ok=True)
+
+            result = self._run()
+            self.assertNotEqual(result.returncode, 0, result.stderr)
+            self.assertIn("signature metadata", result.stderr)
+
+        def test_signature_metadata_mismatch(self) -> None:
+            snapshot_payload = {
+                "enabled": True,
+                "updated_at": "2026-01-03T00:00:00Z",
+                "reason": None,
+                "source": "bootstrap",
+                "events": [],
+                "failure_count": 0,
+                "failure_threshold": 3,
+            }
+            self._write_state(dict(snapshot_payload))
+            self._write_snapshot(snapshot_payload)
+            recorded, signature = self._write_matching_manifest(snapshot_payload)
+            self._write_metadata(recorded, signature)
+            # Corrupt metadata signature
+            metadata = json.loads(self.metadata_path.read_text(encoding="utf-8"))
+            metadata["tarball_manifest"]["signature"] = "0" * 64
+            self.metadata_path.write_text(
+                json.dumps(metadata, indent=2) + "\n", encoding="utf-8"
+            )
+
+            result = self._run()
+            self.assertNotEqual(result.returncode, 0, result.stderr)
+            self.assertIn(
+                "signature metadata tarball signature mismatch", result.stderr
+            )
+
+        def test_signature_metadata_key_id_mismatch(self) -> None:
+            snapshot_payload = {
+                "enabled": True,
+                "updated_at": "2026-01-03T00:00:00Z",
+                "reason": None,
+                "source": "bootstrap",
+                "events": [],
+                "failure_count": 0,
+                "failure_threshold": 3,
+            }
+            self._write_state(dict(snapshot_payload))
+            self._write_snapshot(snapshot_payload)
+            recorded, signature = self._write_matching_manifest(snapshot_payload)
+            self._write_metadata(recorded, signature)
+            metadata = json.loads(self.metadata_path.read_text(encoding="utf-8"))
+            metadata["signing_key_id"] = "unexpected-key"
+            self.metadata_path.write_text(
+                json.dumps(metadata, indent=2) + "\n", encoding="utf-8"
+            )
+
+            result = self._run()
+            self.assertNotEqual(result.returncode, 0, result.stderr)
+            self.assertIn("signing_key_id mismatch", result.stderr)

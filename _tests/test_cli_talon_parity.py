@@ -17,14 +17,23 @@ from lib.bootstrapTelemetry import (
 
 
 try:
-    from bootstrap import bootstrap, get_bootstrap_warnings
+    import bootstrap as bootstrap_module
 except ModuleNotFoundError:  # Talon runtime
     bootstrap = None
 
     def get_bootstrap_warnings(*, clear: bool = False):  # type: ignore[override]
         return []
 else:
-    bootstrap()
+    bootstrap = getattr(bootstrap_module, "bootstrap", None)
+    get_bootstrap_warnings = getattr(
+        bootstrap_module,
+        "get_bootstrap_warnings",
+        lambda *, clear=False: [],
+    )
+    if callable(bootstrap):
+        bootstrap()
+    else:
+        bootstrap = None
 
 CLI_BINARY = Path("bin/bar")
 SCHEMA_BUNDLE = Path("docs/schema/command-surface.json")
@@ -134,6 +143,9 @@ else:
             )
 
             backup = manifest.read_bytes()
+            delegation_state_path = Path("var/cli-telemetry/delegation-state.json")
+            disabled_state = None
+            restored_state = None
             try:
                 manifest.unlink()
             except FileNotFoundError:
@@ -156,10 +168,18 @@ else:
                 warnings = get_bootstrap_warnings(clear=True)
                 disable_events = cliDelegation.disable_events()
                 delegation_enabled_after_warning = cliDelegation.delegation_enabled()
+                if delegation_state_path.exists():
+                    disabled_state = json.loads(
+                        delegation_state_path.read_text(encoding="utf-8")
+                    )
             finally:
                 manifest.write_bytes(backup)
                 bootstrap()
                 restored_enabled = cliDelegation.delegation_enabled()
+                if delegation_state_path.exists():
+                    restored_state = json.loads(
+                        delegation_state_path.read_text(encoding="utf-8")
+                    )
                 clear_bootstrap_warning_events()
                 cliDelegation.reset_state()
 
@@ -195,6 +215,20 @@ else:
                 ),
                 "Talon adapters should read bootstrap telemetry via actions.user",
             )
+            self.assertIsNotNone(
+                disabled_state,
+                "Delegation state file should exist when bootstrap disables CLI",
+            )
+            if disabled_state is not None:
+                self.assertFalse(
+                    disabled_state.get("enabled", True),
+                    "Delegation state should mark CLI as disabled",
+                )
+                self.assertIn(
+                    "package_bar_cli.py",
+                    disabled_state.get("reason", ""),
+                    "Delegation state should record rebuild instruction reason",
+                )
             self.assertFalse(
                 delegation_enabled_after_warning,
                 "Bootstrap warnings should disable CLI delegation",
@@ -206,6 +240,15 @@ else:
                 ),
                 "CLI delegation disable events should include rebuild instruction reason",
             )
+            self.assertIsNotNone(
+                restored_state,
+                "Delegation state file should exist after bootstrap reinstalls CLI",
+            )
+            if restored_state is not None:
+                self.assertTrue(
+                    restored_state.get("enabled", False),
+                    "Delegation state should mark CLI as enabled after reinstall",
+                )
             self.assertTrue(
                 restored_enabled,
                 "Successful bootstrap should re-enable CLI delegation",

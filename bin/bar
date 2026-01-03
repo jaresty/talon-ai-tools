@@ -19,6 +19,27 @@ case "${uname_arch}" in
 esac
 TARBALL_PATH="${REPO_ROOT}/artifacts/cli/bar-${uname_os}-${uname_arch}.tar.gz"
 MANIFEST_PATH="${TARBALL_PATH}.sha256"
+DELEGATION_STATE="${REPO_ROOT}/var/cli-telemetry/delegation-state.json"
+
+if [[ -f "${DELEGATION_STATE}" ]] && command -v python3 >/dev/null 2>&1; then
+  if disable_reason="$(python3 - "${DELEGATION_STATE}" <<'PY'
+import json, sys
+from pathlib import Path
+path = Path(sys.argv[1])
+try:
+    payload = json.loads(path.read_text(encoding="utf-8"))
+except Exception:
+    sys.exit(1)
+if payload.get("enabled", True):
+    sys.exit(1)
+print(payload.get("reason") or "CLI delegation disabled by Talon bootstrap")
+sys.exit(0)
+PY
+  )"; then
+    echo "bar: ${disable_reason}" >&2
+    exit 65
+  fi
+fi
 
 maybe_install_from_tarball() {
   if [[ ! -f "${INSTALL_SCRIPT}" ]]; then

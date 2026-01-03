@@ -12,6 +12,7 @@ from talon import actions
 
 import lib.cliDelegation as cliDelegation
 import lib.cliHealth as cliHealth
+import lib.surfaceGuidance as surfaceGuidance
 from lib import historyLifecycle, requestGating
 from lib.bootstrapTelemetry import (
     clear_bootstrap_warning_events,
@@ -346,4 +347,42 @@ else:
             actions.user.calls.clear()
             cliDelegation.reset_state()
             historyLifecycle.set_drop_reason("")
+            state_path.unlink(missing_ok=True)
+
+        def test_surface_guard_notifies_cli_failure_details(self) -> None:
+            state_path = Path("var/cli-telemetry/delegation-state.json")
+            state_path.unlink(missing_ok=True)
+            cliDelegation.reset_state()
+            historyLifecycle.set_drop_reason("")
+            actions.user.calls.clear()
+
+            failure_threshold = cliDelegation.failure_threshold()
+            for _ in range(failure_threshold):
+                cliDelegation.record_health_failure(
+                    "probe failed", source="health_probe"
+                )
+
+            failure_count = cliDelegation.failure_count()
+            expected_probe_fragment = (
+                f"failed probes={failure_count}/{failure_threshold}"
+                if failure_threshold
+                else f"failed probes={failure_count}"
+            )
+
+            with mock.patch("lib.cliHealth.probe_cli_health", return_value=False):
+                with mock.patch("lib.surfaceGuidance.notify") as notify:
+                    blocked = surfaceGuidance.guard_surface_request(
+                        surface="provider_commands",
+                        source="parity-cli-failure",
+                    )
+
+            self.assertTrue(blocked)
+            notify.assert_called()
+            message = notify.call_args[0][0]
+            self.assertIn("CLI delegation disabled", message)
+            self.assertIn(expected_probe_fragment, message)
+            self.assertIn("probe failed", message)
+
+            historyLifecycle.set_drop_reason("")
+            cliDelegation.reset_state()
             state_path.unlink(missing_ok=True)

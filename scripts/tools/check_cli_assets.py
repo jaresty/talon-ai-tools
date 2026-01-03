@@ -567,9 +567,19 @@ def _check_signature_telemetry(
         issues.append(message)
         ok = False
 
+    expected_recovery = expected.get("cli_recovery_snapshot")
     previous_recovery = previous.get("cli_recovery_snapshot") if previous else None
-    if previous_recovery != expected.get("cli_recovery_snapshot"):
-        message = "signature telemetry recovery snapshot mismatch"
+    if previous_recovery != expected_recovery:
+        if previous_recovery is None:
+            message = (
+                "signature telemetry recovery snapshot missing; rerun "
+                "`python3 scripts/tools/package_bar_cli.py --print-paths` to refresh packaging artefacts"
+            )
+        else:
+            message = (
+                "signature telemetry recovery snapshot mismatch; rerun "
+                "`python3 scripts/tools/package_bar_cli.py --print-paths` to refresh packaging artefacts"
+            )
         print(message, file=sys.stderr)
         issues.append(message)
         ok = False

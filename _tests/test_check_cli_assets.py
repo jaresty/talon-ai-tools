@@ -517,6 +517,73 @@ else:
             assert isinstance(previous, dict)
             self.assertEqual(previous["signing_key_id"], "stale-key")
 
+        def test_signature_telemetry_missing_recovery_snapshot_blocks_guard(
+            self,
+        ) -> None:
+            snapshot_payload = {
+                "enabled": True,
+                "updated_at": "2026-01-03T00:00:00Z",
+                "reason": None,
+                "source": "bootstrap",
+                "events": [],
+                "failure_count": 0,
+                "failure_threshold": 3,
+                "recovery_code": "cli_signature_recovered",
+                "recovery_details": "signature telemetry mismatch detected during bootstrap",
+            }
+            self._write_snapshot(snapshot_payload)
+            recorded, signature = self._write_matching_manifest(snapshot_payload)
+            self._write_state(dict(snapshot_payload))
+            self._write_metadata(recorded, signature)
+
+            tarball_recorded = self._tarball_recorded()
+            tarball_signature = self._tarball_signature_path.read_text(
+                encoding="utf-8"
+            ).strip()
+            missing_snapshot_payload = {
+                "status": "green",
+                "generated_at": "2026-01-04T00:00:00Z",
+                "signing_key_id": self.env["CLI_RELEASE_SIGNING_KEY_ID"],
+                "tarball_manifest": {
+                    "recorded": tarball_recorded,
+                    "signature": tarball_signature,
+                },
+                "delegation_snapshot": {
+                    "recorded": recorded,
+                    "signature": signature,
+                },
+            }
+            self.telemetry_path.write_text(
+                json.dumps(missing_snapshot_payload, indent=2) + "\n",
+                encoding="utf-8",
+            )
+
+            result = self._run()
+            self.assertNotEqual(result.returncode, 0, result.stderr)
+            self.assertIn("recovery snapshot", result.stderr)
+            self.assertIn("package_bar_cli.py --print-paths", result.stderr)
+
+            telemetry: dict = self._read_telemetry()
+            self.assertEqual("red", telemetry.get("status"))
+            issues = telemetry.get("issues") or []
+            self.assertTrue(
+                any("recovery snapshot" in issue for issue in issues), issues
+            )
+            self.assertTrue(
+                any("package_bar_cli.py --print-paths" in issue for issue in issues),
+                issues,
+            )
+            recovery_snapshot = telemetry.get("cli_recovery_snapshot")
+            self.assertIsInstance(recovery_snapshot, dict)
+            assert isinstance(recovery_snapshot, dict)
+            self.assertEqual(recovery_snapshot.get("code"), "cli_signature_recovered")
+            self.assertTrue(recovery_snapshot.get("enabled"))
+
+            previous = telemetry.get("previous")
+            self.assertIsInstance(previous, dict)
+            assert isinstance(previous, dict)
+            self.assertNotIn("cli_recovery_snapshot", previous)
+
         def test_requires_signature_metadata(self) -> None:
             snapshot_payload = {
                 "enabled": True,

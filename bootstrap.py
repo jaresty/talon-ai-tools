@@ -88,11 +88,25 @@ def _maybe_install_cli() -> None:
         )
         return
 
-    if mark_cli_ready is not None:
-        try:
-            mark_cli_ready(source="bootstrap")
-        except Exception:
-            pass
+    cli_health_module = None
+    try:
+        from lib import cliHealth as cli_health_module  # type: ignore
+    except Exception as exc:
+        _warn(f"unable to import cli health probe ({exc})")
+        return
+
+    try:
+        cli_health_module.cliDelegation.reset_state()
+    except Exception:
+        pass
+
+    try:
+        if not cli_health_module.probe_cli_health(source="bootstrap"):
+            _warn(
+                "CLI health probe failed after install; delegation disabled until probe succeeds"
+            )
+    except Exception as exc:
+        _warn(f"CLI health probe raised exception: {exc}")
 
 
 def bootstrap() -> None:  # type: ignore[override]

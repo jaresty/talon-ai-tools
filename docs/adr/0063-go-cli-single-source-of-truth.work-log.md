@@ -11,7 +11,7 @@ bootstrap.bootstrap()
 if bin_path.exists():
     sys.exit(0)
 raise SystemExit('bootstrap did not install CLI binary')
-PY` | status: in_progress — loop-0026 persists delegation disable state and CLI wrapper gating; next slice wires adapter health counters to delegation backoffs.
+PY` | status: in_progress — loop-0027 adds CLI health probe gating with persisted failure counters; next slice feeds counters into adapter UI/backoff telemetry.
 - [Implementation Guardrails → Delivery posture] Release checksum manifest hardening | `scripts/tools/check_cli_assets.py` | status: in_progress — loop-0016 added tarball + checksum verification; next slice adds signature enforcement and CI upload contract.
 
 ## Completed Loops
@@ -75,3 +75,4 @@ PY`; evidence: `docs/adr/evidence/0063/loop-0020.md`.
 - loop-0024 — routed bootstrap warnings through telemetry actions and parity assertions; validation: `python3 -m pytest _tests/test_cli_talon_parity.py`; evidence: `docs/adr/evidence/0063/loop-0024.md`.
 - loop-0025 — disabled delegation on bootstrap telemetry warnings and re-enabled after successful install; validation: `python3 -m pytest _tests/test_cli_talon_parity.py`; evidence: `docs/adr/evidence/0063/loop-0025.md`.
 - loop-0026 — persisted delegation disable telemetry and added CLI wrapper guard; validation: `python3 -m pytest _tests/test_cli_talon_parity.py`; evidence: `docs/adr/evidence/0063/loop-0026.md`.
+- loop-0027 — enforced CLI health probe gating with failure threshold persistence and parity assertions; validation: `python3 -m pytest _tests/test_cli_talon_parity.py`; evidence: `docs/adr/evidence/0063/loop-0027.md`.

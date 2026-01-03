@@ -11,6 +11,7 @@ from __future__ import annotations
 import json
 import os
 import sys
+from datetime import datetime, timezone
 from hashlib import sha256
 from pathlib import Path
 import platform
@@ -36,6 +37,13 @@ SIGNATURE_KEY_ENV = "CLI_RELEASE_SIGNING_KEY"
 SIGNATURE_METADATA_ENV = "CLI_SIGNATURE_METADATA"
 SIGNATURE_METADATA_PATH = Path(
     os.environ.get(SIGNATURE_METADATA_ENV, "artifacts/cli/signatures.json")
+)
+SIGNATURE_TELEMETRY_ENV = "CLI_SIGNATURE_TELEMETRY"
+SIGNATURE_TELEMETRY_PATH = Path(
+    os.environ.get(
+        SIGNATURE_TELEMETRY_ENV,
+        "var/cli-telemetry/signature-metadata.json",
+    )
 )
 DEFAULT_SIGNING_KEY_ID = "local-dev"
 SIGNING_KEY_ID_ENV = "CLI_RELEASE_SIGNING_KEY_ID"
@@ -98,67 +106,79 @@ def _metadata_path() -> Path:
 
 def _verify_signature(
     signature_path: Path, recorded: str, label: str
-) -> tuple[bool, str]:
+) -> tuple[bool, str, list[str]]:
+    issues: list[str] = []
     if not signature_path.exists():
-        print(f"missing {label} signature: {signature_path}", file=sys.stderr)
-        return False, ""
+        message = f"missing {label} signature: {signature_path}"
+        print(message, file=sys.stderr)
+        issues.append(message)
+        return False, "", issues
     signature = signature_path.read_text(encoding="utf-8").strip()
     expected = _signature_for(recorded)
     if signature != expected:
-        print(
-            f"{label} signature mismatch: expected {expected}, got {signature}",
-            file=sys.stderr,
-        )
-        return False, signature
-    return True, signature
+        message = f"{label} signature mismatch: expected {expected}, got {signature}"
+        print(message, file=sys.stderr)
+        issues.append(message)
+        return False, signature, issues
+    return True, signature, issues
 
 
-def _check_manifest() -> tuple[bool, str, str]:
+def _check_manifest() -> tuple[bool, str, str, list[str]]:
     tarball = _tarball_path()
     manifest = _manifest_path()
     ok = True
+    issues: list[str] = []
 
     if not tarball.exists():
-        print(f"missing: {tarball}", file=sys.stderr)
+        message = f"missing: {tarball}"
+        print(message, file=sys.stderr)
+        issues.append(message)
         ok = False
     if not manifest.exists():
-        print(f"missing: {manifest}", file=sys.stderr)
-        return False, "", ""
+        message = f"missing: {manifest}"
+        print(message, file=sys.stderr)
+        issues.append(message)
+        return False, "", "", issues
 
     if not ok:
-        return False, "", ""
+        return False, "", "", issues
 
     recorded = manifest.read_text(encoding="utf-8").strip()
     if not recorded:
-        print(f"empty manifest: {manifest}", file=sys.stderr)
-        return False, "", ""
+        message = f"empty manifest: {manifest}"
+        print(message, file=sys.stderr)
+        issues.append(message)
+        return False, "", "", issues
 
     digest, _, filename = recorded.partition("  ")
     if not digest or len(digest) != 64:
-        print(f"invalid manifest contents: {manifest}", file=sys.stderr)
-        return False, recorded, ""
+        message = f"invalid manifest contents: {manifest}"
+        print(message, file=sys.stderr)
+        issues.append(message)
+        return False, recorded, "", issues
 
     if filename and filename != tarball.name:
-        print(
-            f"manifest filename mismatch: expected {tarball.name}, got {filename}",
-            file=sys.stderr,
-        )
+        message = f"manifest filename mismatch: expected {tarball.name}, got {filename}"
+        print(message, file=sys.stderr)
+        issues.append(message)
         ok = False
 
     computed = sha256(tarball.read_bytes()).hexdigest()
     if digest != computed:
-        print(
-            f"checksum mismatch for {tarball}: expected {digest}, got {computed}",
-            file=sys.stderr,
-        )
+        message = f"checksum mismatch for {tarball}: expected {digest}, got {computed}"
+        print(message, file=sys.stderr)
+        issues.append(message)
         ok = False
 
     signature_path = manifest.with_suffix(manifest.suffix + ".sig")
-    sig_ok, signature = _verify_signature(signature_path, recorded, "tarball manifest")
+    sig_ok, signature, sig_issues = _verify_signature(
+        signature_path, recorded, "tarball manifest"
+    )
+    issues.extend(sig_issues)
     if not sig_ok:
         ok = False
 
-    return ok, recorded, signature
+    return ok, recorded, signature, issues
 
 
 def _canonical_state_digest(payload: dict) -> str:
@@ -169,24 +189,32 @@ def _canonical_state_digest(payload: dict) -> str:
     ).hexdigest()
 
 
-def _check_delegation_state() -> tuple[bool, str, str]:
+def _check_delegation_state() -> tuple[bool, str, str, list[str]]:
     path = DELEGATION_STATE_PATH
     snapshot_path = DELEGATION_STATE_SNAPSHOT_PATH
     digest_path = DELEGATION_STATE_DIGEST_PATH
     signature_path = DELEGATION_STATE_SIGNATURE_PATH
+    issues: list[str] = []
+
     if not path.exists():
-        print(f"missing delegation state: {path}", file=sys.stderr)
-        return False, "", ""
+        message = f"missing delegation state: {path}"
+        print(message, file=sys.stderr)
+        issues.append(message)
+        return False, "", "", issues
 
     try:
         payload = json.loads(path.read_text(encoding="utf-8"))
     except Exception as exc:  # pragma: no cover - defensive
-        print(f"invalid delegation state: {path} ({exc})", file=sys.stderr)
-        return False, "", ""
+        message = f"invalid delegation state: {path} ({exc})"
+        print(message, file=sys.stderr)
+        issues.append(message)
+        return False, "", "", issues
 
     if not isinstance(payload, dict):
-        print(f"invalid delegation state: {path} (expected object)", file=sys.stderr)
-        return False, "", ""
+        message = f"invalid delegation state: {path} (expected object)"
+        print(message, file=sys.stderr)
+        issues.append(message)
+        return False, "", "", issues
 
     enabled = payload.get("enabled")
     failure_count = payload.get("failure_count")
@@ -194,133 +222,130 @@ def _check_delegation_state() -> tuple[bool, str, str]:
     reason = str(payload.get("reason") or "").strip()
 
     if not isinstance(enabled, bool):
-        print(
-            f"invalid delegation state: {path} (enabled must be boolean)",
-            file=sys.stderr,
-        )
-        return False, "", ""
+        message = f"invalid delegation state: {path} (enabled must be boolean)"
+        print(message, file=sys.stderr)
+        issues.append(message)
+        return False, "", "", issues
 
     if not isinstance(failure_count, int) or failure_count < 0:
-        print(
-            f"invalid delegation state: {path} (failure_count must be >= 0)",
-            file=sys.stderr,
-        )
-        return False, "", ""
+        message = f"invalid delegation state: {path} (failure_count must be >= 0)"
+        print(message, file=sys.stderr)
+        issues.append(message)
+        return False, "", "", issues
 
     if not isinstance(failure_threshold, int) or failure_threshold <= 0:
-        print(
-            f"invalid delegation state: {path} (failure_threshold must be > 0)",
-            file=sys.stderr,
-        )
-        return False, "", ""
+        message = f"invalid delegation state: {path} (failure_threshold must be > 0)"
+        print(message, file=sys.stderr)
+        issues.append(message)
+        return False, "", "", issues
 
     if not enabled:
         detail = reason or "delegation disabled"
-        print(
-            f"delegation disabled according to state {path}: {detail}",
-            file=sys.stderr,
-        )
-        return False, "", ""
+        message = f"delegation disabled according to state {path}: {detail}"
+        print(message, file=sys.stderr)
+        issues.append(message)
+        return False, "", "", issues
 
     if failure_count:
-        print(
+        message = (
             "delegation state reports outstanding failures "
-            f"({failure_count}/{failure_threshold}) in {path}",
-            file=sys.stderr,
+            f"({failure_count}/{failure_threshold}) in {path}"
         )
-        return False, "", ""
+        print(message, file=sys.stderr)
+        issues.append(message)
+        return False, "", "", issues
 
     events = payload.get("events", [])
     if not isinstance(events, list):
-        print(
-            f"invalid delegation state: {path} (events must be a list)",
-            file=sys.stderr,
-        )
-        return False, "", ""
+        message = f"invalid delegation state: {path} (events must be a list)"
+        print(message, file=sys.stderr)
+        issues.append(message)
+        return False, "", "", issues
 
     runtime_digest = _canonical_state_digest(payload)
 
     if not snapshot_path.exists():
-        print(
-            f"missing delegation state snapshot: {snapshot_path}",
-            file=sys.stderr,
-        )
-        return False, "", ""
+        message = f"missing delegation state snapshot: {snapshot_path}"
+        print(message, file=sys.stderr)
+        issues.append(message)
+        return False, "", "", issues
 
     try:
         snapshot_payload = json.loads(snapshot_path.read_text(encoding="utf-8"))
     except Exception as exc:  # pragma: no cover - defensive
-        print(
-            f"invalid delegation state snapshot: {snapshot_path} ({exc})",
-            file=sys.stderr,
-        )
-        return False, "", ""
+        message = f"invalid delegation state snapshot: {snapshot_path} ({exc})"
+        print(message, file=sys.stderr)
+        issues.append(message)
+        return False, "", "", issues
 
     if not isinstance(snapshot_payload, dict):
-        print(
-            f"invalid delegation state snapshot: {snapshot_path} (expected object)",
-            file=sys.stderr,
+        message = (
+            f"invalid delegation state snapshot: {snapshot_path} (expected object)"
         )
-        return False, "", ""
+        print(message, file=sys.stderr)
+        issues.append(message)
+        return False, "", "", issues
 
     snapshot_digest = _canonical_state_digest(snapshot_payload)
 
     if not digest_path.exists():
-        print(
-            f"missing delegation state digest: {digest_path}",
-            file=sys.stderr,
-        )
-        return False, "", ""
+        message = f"missing delegation state digest: {digest_path}"
+        print(message, file=sys.stderr)
+        issues.append(message)
+        return False, "", "", issues
 
     recorded = digest_path.read_text(encoding="utf-8").strip()
     if not recorded:
-        print(
-            f"empty delegation state digest: {digest_path}",
-            file=sys.stderr,
-        )
-        return False, "", ""
+        message = f"empty delegation state digest: {digest_path}"
+        print(message, file=sys.stderr)
+        issues.append(message)
+        return False, "", "", issues
 
     digest, _, filename = recorded.partition("  ")
     if not digest or len(digest) != 64:
-        print(
-            f"invalid delegation state digest: {digest_path}",
-            file=sys.stderr,
-        )
-        return False, recorded, ""
+        message = f"invalid delegation state digest: {digest_path}"
+        print(message, file=sys.stderr)
+        issues.append(message)
+        return False, recorded, "", issues
 
     expected_name = snapshot_path.name
     if filename and filename != expected_name:
-        print(
-            f"delegation state digest filename mismatch: expected {expected_name}, got {filename}",
-            file=sys.stderr,
+        message = (
+            "delegation state digest filename mismatch: "
+            f"expected {expected_name}, got {filename}"
         )
-        return False, recorded, ""
+        print(message, file=sys.stderr)
+        issues.append(message)
+        return False, recorded, "", issues
 
     if digest != snapshot_digest:
-        print(
+        message = (
             "delegation state snapshot digest mismatch: "
-            f"expected {digest}, got {snapshot_digest}",
-            file=sys.stderr,
+            f"expected {digest}, got {snapshot_digest}"
         )
-        return False, recorded, ""
+        print(message, file=sys.stderr)
+        issues.append(message)
+        return False, recorded, "", issues
 
     if digest != runtime_digest:
-        print(
+        message = (
             "runtime delegation state digest mismatch: "
-            f"expected {digest}, got {runtime_digest}",
-            file=sys.stderr,
+            f"expected {digest}, got {runtime_digest}"
         )
-        return False, recorded, ""
+        print(message, file=sys.stderr)
+        issues.append(message)
+        return False, recorded, "", issues
 
-    sig_ok, signature = _verify_signature(
+    sig_ok, signature, sig_issues = _verify_signature(
         signature_path,
         recorded,
         "delegation state",
     )
+    issues.extend(sig_issues)
     if not sig_ok:
-        return False, recorded, signature
+        return False, recorded, signature, issues
 
-    return True, recorded, signature
+    return True, recorded, signature, issues
 
 
 def _check_metadata(
@@ -328,85 +353,242 @@ def _check_metadata(
     tarball_signature: str,
     snapshot_recorded: str,
     snapshot_signature: str,
-) -> bool:
+) -> tuple[bool, dict | None, list[str]]:
     path = _metadata_path()
+    issues: list[str] = []
     if not path.exists():
-        print(f"missing signature metadata: {path}", file=sys.stderr)
-        return False
+        message = f"missing signature metadata: {path}"
+        print(message, file=sys.stderr)
+        issues.append(message)
+        return False, None, issues
     try:
         metadata = json.loads(path.read_text(encoding="utf-8"))
     except Exception as exc:  # pragma: no cover - defensive
-        print(
-            f"invalid signature metadata: {path} ({exc})",
-            file=sys.stderr,
-        )
-        return False
+        message = f"invalid signature metadata: {path} ({exc})"
+        print(message, file=sys.stderr)
+        issues.append(message)
+        return False, None, issues
     if not isinstance(metadata, dict):
-        print(
-            f"invalid signature metadata: {path} (expected object)",
-            file=sys.stderr,
-        )
-        return False
+        message = f"invalid signature metadata: {path} (expected object)"
+        print(message, file=sys.stderr)
+        issues.append(message)
+        return False, None, issues
 
     expected_id = _signing_key_id()
     actual_id = metadata.get("signing_key_id")
     if actual_id != expected_id:
-        print(
+        message = (
             "signature metadata signing_key_id mismatch: "
-            f"expected {expected_id}, got {actual_id}",
-            file=sys.stderr,
+            f"expected {expected_id}, got {actual_id}"
         )
-        return False
+        print(message, file=sys.stderr)
+        issues.append(message)
+        return False, metadata, issues
 
     tarball_meta = metadata.get("tarball_manifest") or {}
     if tarball_meta.get("recorded") != tarball_recorded:
-        print("signature metadata tarball recorded mismatch", file=sys.stderr)
-        return False
+        message = "signature metadata tarball recorded mismatch"
+        print(message, file=sys.stderr)
+        issues.append(message)
+        return False, metadata, issues
     if tarball_meta.get("signature") != tarball_signature:
-        print("signature metadata tarball signature mismatch", file=sys.stderr)
-        return False
+        message = "signature metadata tarball signature mismatch"
+        print(message, file=sys.stderr)
+        issues.append(message)
+        return False, metadata, issues
     if tarball_meta.get("signature") != _signature_for(tarball_recorded):
-        print("signature metadata tarball signature invalid", file=sys.stderr)
-        return False
+        message = "signature metadata tarball signature invalid"
+        print(message, file=sys.stderr)
+        issues.append(message)
+        return False, metadata, issues
 
     snapshot_meta = metadata.get("delegation_snapshot") or {}
     if snapshot_meta.get("recorded") != snapshot_recorded:
-        print("signature metadata snapshot recorded mismatch", file=sys.stderr)
-        return False
+        message = "signature metadata snapshot recorded mismatch"
+        print(message, file=sys.stderr)
+        issues.append(message)
+        return False, metadata, issues
     if snapshot_meta.get("signature") != snapshot_signature:
-        print("signature metadata snapshot signature mismatch", file=sys.stderr)
-        return False
+        message = "signature metadata snapshot signature mismatch"
+        print(message, file=sys.stderr)
+        issues.append(message)
+        return False, metadata, issues
     if snapshot_meta.get("signature") != _signature_for(snapshot_recorded):
-        print("signature metadata snapshot signature invalid", file=sys.stderr)
-        return False
+        message = "signature metadata snapshot signature invalid"
+        print(message, file=sys.stderr)
+        issues.append(message)
+        return False, metadata, issues
 
-    return True
+    return True, metadata, issues
+
+
+def _timestamp() -> str:
+    return datetime.now(timezone.utc).isoformat()
+
+
+def _read_signature_telemetry() -> tuple[bool, dict | None, list[str]]:
+    path = SIGNATURE_TELEMETRY_PATH
+    issues: list[str] = []
+    if not path.exists():
+        return True, None, issues
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except Exception as exc:
+        message = f"signature telemetry invalid JSON: {path} ({exc})"
+        print(message, file=sys.stderr)
+        issues.append(message)
+        return False, None, issues
+    if not isinstance(payload, dict):
+        message = f"signature telemetry invalid payload: {path}"
+        print(message, file=sys.stderr)
+        issues.append(message)
+        return False, None, issues
+    return True, payload, issues
+
+
+def _check_signature_telemetry(
+    metadata: dict,
+    tarball_recorded: str,
+    tarball_signature: str,
+    snapshot_recorded: str,
+    snapshot_signature: str,
+) -> tuple[bool, dict, dict | None, list[str]]:
+    issues: list[str] = []
+    expected = {
+        "signing_key_id": metadata.get("signing_key_id"),
+        "tarball_manifest": {
+            "recorded": tarball_recorded,
+            "signature": tarball_signature,
+        },
+        "delegation_snapshot": {
+            "recorded": snapshot_recorded,
+            "signature": snapshot_signature,
+        },
+    }
+
+    read_ok, previous, read_issues = _read_signature_telemetry()
+    issues.extend(read_issues)
+    if not read_ok:
+        return False, expected, previous, issues
+
+    if previous is None:
+        return True, expected, None, issues
+
+    ok = True
+
+    if previous.get("signing_key_id") != expected["signing_key_id"]:
+        message = "signature telemetry signing_key_id mismatch"
+        print(message, file=sys.stderr)
+        issues.append(message)
+        ok = False
+
+    prev_tarball = previous.get("tarball_manifest") or {}
+    if prev_tarball.get("recorded") != expected["tarball_manifest"]["recorded"]:
+        message = "signature telemetry tarball recorded mismatch"
+        print(message, file=sys.stderr)
+        issues.append(message)
+        ok = False
+    if prev_tarball.get("signature") != expected["tarball_manifest"]["signature"]:
+        message = "signature telemetry tarball signature mismatch"
+        print(message, file=sys.stderr)
+        issues.append(message)
+        ok = False
+
+    prev_snapshot = previous.get("delegation_snapshot") or {}
+    if prev_snapshot.get("recorded") != expected["delegation_snapshot"]["recorded"]:
+        message = "signature telemetry snapshot recorded mismatch"
+        print(message, file=sys.stderr)
+        issues.append(message)
+        ok = False
+    if prev_snapshot.get("signature") != expected["delegation_snapshot"]["signature"]:
+        message = "signature telemetry snapshot signature mismatch"
+        print(message, file=sys.stderr)
+        issues.append(message)
+        ok = False
+
+    return ok, expected, previous, issues
+
+
+def _write_signature_telemetry(
+    expected: dict | None,
+    previous: dict | None,
+    issues: list[str],
+    ok: bool,
+) -> None:
+    payload: dict = {
+        "status": "green" if ok else "red",
+        "generated_at": _timestamp(),
+    }
+    if expected is not None:
+        payload.update(expected)
+    if previous is not None:
+        payload["previous"] = previous
+    if issues:
+        payload["issues"] = list(issues)
+
+    try:
+        SIGNATURE_TELEMETRY_PATH.parent.mkdir(parents=True, exist_ok=True)
+        SIGNATURE_TELEMETRY_PATH.write_text(
+            json.dumps(payload, indent=2) + "\n", encoding="utf-8"
+        )
+    except Exception:
+        pass
 
 
 def main() -> int:
     required = (BIN_PATH, BIN_EXECUTABLE, SCHEMA_PATH)
     missing = [path for path in required if not path.exists()]
+    issues: list[str] = []
     ok = True
     if missing:
         for path in missing:
-            print(f"missing: {path}", file=sys.stderr)
+            message = f"missing: {path}"
+            print(message, file=sys.stderr)
+            issues.append(message)
         ok = False
 
-    manifest_ok, manifest_recorded, manifest_signature = _check_manifest()
+    manifest_ok, manifest_recorded, manifest_signature, manifest_issues = (
+        _check_manifest()
+    )
+    issues.extend(manifest_issues)
     if not manifest_ok:
         ok = False
 
-    snapshot_ok, snapshot_recorded, snapshot_signature = _check_delegation_state()
+    snapshot_ok, snapshot_recorded, snapshot_signature, snapshot_issues = (
+        _check_delegation_state()
+    )
+    issues.extend(snapshot_issues)
     if not snapshot_ok:
         ok = False
 
+    metadata_ok = False
+    metadata: dict | None = None
     if manifest_ok and snapshot_ok:
-        if not _check_metadata(
+        metadata_ok, metadata, metadata_issues = _check_metadata(
             manifest_recorded,
             manifest_signature,
             snapshot_recorded,
             snapshot_signature,
-        ):
+        )
+        issues.extend(metadata_issues)
+        if not metadata_ok:
+            ok = False
+
+    telemetry_ok = True
+    expected_payload: dict | None = None
+    previous_payload: dict | None = None
+    if metadata_ok and metadata is not None:
+        telemetry_ok, expected_payload, previous_payload, telemetry_issues = (
+            _check_signature_telemetry(
+                metadata,
+                manifest_recorded,
+                manifest_signature,
+                snapshot_recorded,
+                snapshot_signature,
+            )
+        )
+        issues.extend(telemetry_issues)
+        if not telemetry_ok:
             ok = False
 
     if ok:
@@ -414,9 +596,15 @@ def main() -> int:
         print(f"cli_tarball={_tarball_path()}")
         print(f"cli_manifest={_manifest_path()}")
         print(f"cli_signatures={_metadata_path()}")
-        return 0
 
-    return 1
+    _write_signature_telemetry(
+        expected_payload,
+        previous_payload,
+        issues if not ok else [],
+        ok,
+    )
+
+    return 0 if ok else 1
 
 
 if __name__ == "__main__":

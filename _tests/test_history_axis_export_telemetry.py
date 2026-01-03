@@ -294,6 +294,12 @@ if bootstrap is not None and not TYPE_CHECKING:
                 "cli_recovery_code": "cli_recovered",
                 "cli_recovery_details": "health probes passed",
                 "cli_recovery_prompt": "CLI delegation restored after failure.",
+                "cli_recovery_snapshot": {
+                    "enabled": True,
+                    "code": "cli_recovered",
+                    "details": "health probes passed",
+                    "prompt": "CLI delegation restored after failure.",
+                },
             }
 
             with tempfile.TemporaryDirectory() as tmpdir:
@@ -329,6 +335,75 @@ if bootstrap is not None and not TYPE_CHECKING:
                 self.assertEqual(
                     payload.get("cli_recovery_prompt"),
                     "CLI delegation restored after failure.",
+                )
+                self.assertEqual(
+                    payload.get("cli_recovery_snapshot"),
+                    {
+                        "enabled": True,
+                        "code": "cli_recovered",
+                        "details": "health probes passed",
+                        "prompt": "CLI delegation restored after failure.",
+                    },
+                )
+
+        def test_includes_skip_summary_recovery_snapshot(self) -> None:
+            summary = {
+                "total_entries": 2,
+                "streaming_gating_summary": {"total": 0},
+                "cli_recovery_snapshot": {
+                    "enabled": False,
+                    "code": "cli_ready",
+                    "details": "",
+                    "prompt": "Delegation ready.",
+                },
+            }
+            skip_summary = {
+                "total_skipped": 4,
+                "reason_counts": [
+                    {"reason": "missing_directional", "count": 4},
+                ],
+                "cli_recovery_snapshot": {
+                    "enabled": False,
+                    "code": "cli_ready",
+                    "prompt": "Delegation ready.",
+                },
+            }
+
+            with tempfile.TemporaryDirectory() as tmpdir:
+                tmp_path = Path(tmpdir)
+                summary_path = tmp_path / "history-validation-summary.json"
+                skip_path = tmp_path / "suggestion-skip-summary.json"
+                summary_path.write_text(json.dumps(summary), encoding="utf-8")
+                skip_path.write_text(json.dumps(skip_summary), encoding="utf-8")
+
+                result = subprocess.run(
+                    [
+                        sys.executable,
+                        "scripts/tools/history-axis-export-telemetry.py",
+                        str(summary_path),
+                        "--skip-summary",
+                        str(skip_path),
+                    ],
+                    check=False,
+                    capture_output=True,
+                    text=True,
+                )
+
+                self.assertEqual(
+                    result.returncode,
+                    0,
+                    msg=f"telemetry exporter failed: {result.stdout}\n{result.stderr}",
+                )
+                payload = json.loads(result.stdout)
+                suggestion_skip = payload.get("suggestion_skip", {})
+                self.assertEqual(suggestion_skip.get("total"), 4)
+                self.assertEqual(
+                    suggestion_skip.get("cli_recovery_snapshot"),
+                    {
+                        "enabled": False,
+                        "code": "cli_ready",
+                        "prompt": "Delegation ready.",
+                    },
                 )
 
 else:

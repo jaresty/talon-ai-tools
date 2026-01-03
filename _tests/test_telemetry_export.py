@@ -59,17 +59,25 @@ class TelemetryExportTests(unittest.TestCase):
             telemetry_data = json.loads(telemetry_path.read_text())
             self.assertEqual(telemetry_data.get("total_entries"), 1)
             self.assertIn("suggestion_skip", telemetry_data)
-            self.assertEqual(telemetry_data.get("suggestion_skip", {}).get("total"), 3)
+            suggestion_skip = telemetry_data.get("suggestion_skip", {})
+            self.assertEqual(suggestion_skip.get("total"), 3)
+            self.assertIn("cli_recovery_snapshot", suggestion_skip)
             self.assertIn("scheduler", telemetry_data)
             scheduler_payload = telemetry_data["scheduler"]
             self.assertIsInstance(scheduler_payload, dict)
             self.assertIn("reschedule_count", scheduler_payload)
+            recovery_snapshot = telemetry_data.get("cli_recovery_snapshot")
+            self.assertIsInstance(recovery_snapshot, dict)
+            self.assertIn("prompt", recovery_snapshot)
 
             skip_data = json.loads(skip_path.read_text())
             self.assertEqual(skip_data.get("total_skipped"), 3)
             reasons = skip_data.get("reason_counts")
             self.assertIsInstance(reasons, list)
             self.assertEqual(len(reasons), 2)
+            skip_recovery = skip_data.get("cli_recovery_snapshot")
+            self.assertIsInstance(skip_recovery, dict)
+            self.assertIn("prompt", skip_recovery)
 
             self.assertEqual(history_lifecycle.gating_drop_stats(), {})
 

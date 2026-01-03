@@ -1,4 +1,5 @@
 import json
+import os
 import subprocess
 import sys
 import tempfile
@@ -28,6 +29,19 @@ if bootstrap is not None and not TYPE_CHECKING:
                 output_path = tempfile.NamedTemporaryFile(dir=tmpdir, delete=False)
                 output_path.close()
 
+                metadata_path = Path(tmpdir) / "signatures.json"
+                metadata_payload = {
+                    "cli_recovery_snapshot": {
+                        "enabled": True,
+                        "code": "cli_ready",
+                        "details": "release metadata verified",
+                        "prompt": "Ready to delegate.",
+                    }
+                }
+                metadata_path.write_text(json.dumps(metadata_payload), encoding="utf-8")
+                env = os.environ.copy()
+                env["CLI_SIGNATURE_METADATA"] = str(metadata_path)
+
                 result = subprocess.run(
                     [
                         sys.executable,
@@ -40,6 +54,7 @@ if bootstrap is not None and not TYPE_CHECKING:
                     check=False,
                     capture_output=True,
                     text=True,
+                    env=env,
                 )
 
                 self.assertEqual(
@@ -64,25 +79,57 @@ if bootstrap is not None and not TYPE_CHECKING:
                         "unknown_intent": 0,
                     },
                 )
+                self.assertEqual(
+                    payload.get("cli_recovery_snapshot"),
+                    {
+                        "enabled": True,
+                        "code": "cli_ready",
+                        "details": "release metadata verified",
+                        "prompt": "Ready to delegate.",
+                    },
+                )
 
         def test_stdout_mode_returns_json_payload(self) -> None:
-            result = subprocess.run(
-                [
-                    sys.executable,
-                    "scripts/tools/suggestion-skip-export.py",
-                    "--counts",
-                    json.dumps({}),
-                ],
-                check=False,
-                capture_output=True,
-                text=True,
-            )
+            with tempfile.TemporaryDirectory() as tmpdir:
+                metadata_path = Path(tmpdir) / "signatures.json"
+                metadata_payload = {
+                    "cli_recovery_snapshot": {
+                        "enabled": False,
+                        "code": "cli_ready",
+                        "details": "",
+                        "prompt": "Recovery prompt from metadata.",
+                    }
+                }
+                metadata_path.write_text(json.dumps(metadata_payload), encoding="utf-8")
+                env = os.environ.copy()
+                env["CLI_SIGNATURE_METADATA"] = str(metadata_path)
+
+                result = subprocess.run(
+                    [
+                        sys.executable,
+                        "scripts/tools/suggestion-skip-export.py",
+                        "--counts",
+                        json.dumps({}),
+                    ],
+                    check=False,
+                    capture_output=True,
+                    text=True,
+                    env=env,
+                )
 
             self.assertEqual(result.returncode, 0, msg=result.stderr)
             payload = json.loads(result.stdout)
             self.assertEqual(payload.get("total_skipped"), 0)
             self.assertEqual(payload.get("reason_counts"), [])
             self.assertEqual(payload.get("counts"), {})
+            self.assertEqual(
+                payload.get("cli_recovery_snapshot"),
+                {
+                    "enabled": False,
+                    "code": "cli_ready",
+                    "prompt": "Recovery prompt from metadata.",
+                },
+            )
 
 else:
     if not TYPE_CHECKING:

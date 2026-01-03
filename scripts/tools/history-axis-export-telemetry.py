@@ -207,15 +207,17 @@ def _top_sources(
     return sources, remaining
 
 
-def _load_skip_summary(path: Path | None) -> tuple[int, List[Dict[str, Any]]]:
+def _load_skip_summary(
+    path: Path | None,
+) -> tuple[int, List[Dict[str, Any]], Dict[str, Any]]:
     if path is None:
-        return 0, []
+        return 0, [], {}
     try:
         data = json.loads(path.read_text(encoding="utf-8"))
     except FileNotFoundError:
-        return 0, []
+        return 0, [], {}
     except json.JSONDecodeError:
-        return 0, []
+        return 0, [], {}
 
     total = _coerce_int(data.get("total_skipped")) or 0
     reasons_raw = data.get("reason_counts", [])
@@ -229,7 +231,23 @@ def _load_skip_summary(path: Path | None) -> tuple[int, List[Dict[str, Any]]]:
             if not isinstance(reason, str) or not reason or count_value <= 0:
                 continue
             reasons.append({"reason": reason, "count": count_value})
-    return total, reasons
+
+    snapshot_raw = data.get("cli_recovery_snapshot")
+    snapshot: Dict[str, Any] = {}
+    if isinstance(snapshot_raw, dict):
+        if "enabled" in snapshot_raw:
+            snapshot["enabled"] = snapshot_raw.get("enabled")
+        code = str(snapshot_raw.get("code") or "").strip()
+        if code:
+            snapshot["code"] = code
+        details = str(snapshot_raw.get("details") or "").strip()
+        if details:
+            snapshot["details"] = details
+        prompt = str(snapshot_raw.get("prompt") or "").strip()
+        if prompt:
+            snapshot["prompt"] = prompt
+
+    return total, reasons, snapshot
 
 
 def build_payload(
@@ -331,11 +349,14 @@ def build_payload(
     if total_entries > 0:
         payload["gating_drop_rate"] = round(streaming_total / total_entries, 4)
 
-    skip_total, skip_reasons = _load_skip_summary(skip_summary_path)
-    payload["suggestion_skip"] = {
+    skip_total, skip_reasons, skip_snapshot = _load_skip_summary(skip_summary_path)
+    suggestion_payload: Dict[str, Any] = {
         "total": skip_total,
         "reasons": skip_reasons,
     }
+    if skip_snapshot:
+        suggestion_payload["cli_recovery_snapshot"] = skip_snapshot
+    payload["suggestion_skip"] = suggestion_payload
 
     payload["scheduler"] = _load_scheduler_stats(summary_path, data)
 

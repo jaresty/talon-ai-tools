@@ -253,10 +253,27 @@ def _build_telemetry_payload(
     if isinstance(last_drop_code, str) and last_drop_code.strip():
         payload["last_drop_code"] = last_drop_code.strip()
 
-    payload["suggestion_skip"] = {
+    suggestion_payload: Dict[str, Any] = {
         "total": skip_total,
         "reasons": skip_reasons,
     }
+    recovery_snapshot = stats.get("cli_recovery_snapshot")
+    if isinstance(recovery_snapshot, Mapping):
+        suggestion_payload["cli_recovery_snapshot"] = dict(recovery_snapshot)
+    payload["suggestion_skip"] = suggestion_payload
+
+    for key in (
+        "cli_delegation_enabled",
+        "cli_recovery_code",
+        "cli_recovery_details",
+        "cli_recovery_prompt",
+    ):
+        value = stats.get(key)
+        if value is not None and value != "":
+            payload[key] = value
+    if isinstance(recovery_snapshot, Mapping):
+        payload["cli_recovery_snapshot"] = dict(recovery_snapshot)
+
     return payload
 
 
@@ -316,6 +333,9 @@ def snapshot_telemetry(
         "counts": skip_counts,
         "reason_counts": skip_reasons,
     }
+    recovery_snapshot = history_stats.get("cli_recovery_snapshot")
+    if isinstance(recovery_snapshot, Mapping):
+        skip_summary["cli_recovery_snapshot"] = dict(recovery_snapshot)
     skip_path = base_dir / "suggestion-skip-summary.json"
     skip_path.write_text(json.dumps(skip_summary, sort_keys=True, indent=2))
 

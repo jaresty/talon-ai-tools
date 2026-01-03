@@ -11,7 +11,7 @@ bootstrap.bootstrap()
 if bin_path.exists():
     sys.exit(0)
 raise SystemExit('bootstrap did not install CLI binary')
-PY` | status: in_progress — loop-0045 carried the recovery snapshot into release telemetry guardrails and parity checks; next slice feeds the snapshot into release skip dashboards and checksum manifest drift monitors.
+PY` | status: in_progress — loop-0046 threaded the recovery snapshot into skip dashboards and telemetry exports; next slice hardens checksum manifest drift monitors and CI parity signals.
 - [Implementation Guardrails → Delivery posture] Release checksum manifest hardening | `python3 scripts/tools/check_cli_assets.py` | status: in_progress — loop-0040 emits signing key telemetry and guards stale metadata; next slice aggregates key drift into parity fallback signals.
 
 ## Completed Loops
@@ -104,3 +104,4 @@ PY`; evidence: `docs/adr/evidence/0063/loop-0034.md`.
 - loop-0043 — surfaced telemetry recovery prompts via CLI delegation readiness and provider canvases; validation: `python3 -m pytest _tests/test_cli_talon_parity.py`; evidence: `docs/adr/evidence/0063/loop-0043.md`.
 - loop-0044 — threaded CLI recovery metadata through history telemetry exports, inspection tooling, and parity regression guards; validation: `python3 -m pytest _tests/test_history_axis_validate.py _tests/test_history_axis_export_telemetry.py _tests/test_history_telemetry_inspect.py` and `python3 -m pytest _tests/test_cli_talon_parity.py`; evidence: `docs/adr/evidence/0063/loop-0044.md`.
 - loop-0045 — integrated CLI recovery snapshot into release telemetry guardrails and packaging metadata; validation: `python3 -m pytest _tests/test_check_cli_assets.py` and `python3 -m pytest _tests/test_cli_talon_parity.py`; evidence: `docs/adr/evidence/0063/loop-0045.md`.
+- loop-0046 — propagated CLI recovery snapshot into skip dashboards and telemetry exports; validation: `python3 -m pytest _tests/test_suggestion_skip_export.py _tests/test_history_axis_export_telemetry.py _tests/test_telemetry_export.py`; evidence: `docs/adr/evidence/0063/loop-0046.md`.

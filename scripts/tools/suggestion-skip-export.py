@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import sys
 from pathlib import Path
 from typing import Dict
@@ -46,6 +47,50 @@ def _load_counts(args: argparse.Namespace) -> tuple[Dict[str, int], str | None]:
     return _coerce_counts(counts), None
 
 
+SIGNATURE_METADATA_ENV = "CLI_SIGNATURE_METADATA"
+DEFAULT_SIGNATURE_METADATA = Path("artifacts/cli/signatures.json")
+
+
+def _metadata_path() -> Path:
+    return Path(os.environ.get(SIGNATURE_METADATA_ENV, str(DEFAULT_SIGNATURE_METADATA)))
+
+
+def _load_recovery_snapshot() -> Dict[str, object]:
+    path = _metadata_path()
+    if not path.exists():
+        raise SystemExit(f"signature metadata not found: {path}")
+    try:
+        metadata = json.loads(path.read_text(encoding="utf-8"))
+    except Exception as exc:
+        raise SystemExit(f"signature metadata invalid JSON: {path} ({exc})") from exc
+    if not isinstance(metadata, dict):
+        raise SystemExit(
+            f"signature metadata invalid payload: {path} (expected object)"
+        )
+    snapshot = metadata.get("cli_recovery_snapshot")
+    if not isinstance(snapshot, dict):
+        raise SystemExit(f"signature metadata missing cli_recovery_snapshot: {path}")
+
+    normalized: Dict[str, object] = {}
+    if "enabled" in snapshot:
+        enabled_value = snapshot.get("enabled")
+        if isinstance(enabled_value, bool):
+            normalized["enabled"] = enabled_value
+        elif enabled_value is not None:
+            normalized["enabled"] = bool(enabled_value)
+    code = str(snapshot.get("code") or "").strip()
+    if code:
+        normalized["code"] = code
+    details = str(snapshot.get("details") or "").strip()
+    if details:
+        normalized["details"] = details
+    prompt = str(snapshot.get("prompt") or "").strip()
+    if not prompt:
+        prompt = "CLI delegation ready."
+    normalized["prompt"] = prompt
+    return normalized
+
+
 def _build_payload(counts: Dict[str, int], source: str | None) -> Dict[str, object]:
     payload: Dict[str, object] = {}
     payload["counts"] = dict(counts)
@@ -60,6 +105,8 @@ def _build_payload(counts: Dict[str, int], source: str | None) -> Dict[str, obje
 
     if source:
         payload["counts_source"] = source
+
+    payload["cli_recovery_snapshot"] = _load_recovery_snapshot()
 
     return payload
 

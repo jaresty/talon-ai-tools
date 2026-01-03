@@ -124,6 +124,12 @@ def failure_count() -> int:
     return _FAILURE_COUNT
 
 
+def last_disable_reason() -> str | None:
+    """Return the last recorded disablement reason, if any."""
+
+    return _LAST_REASON
+
+
 def reset_state() -> None:
     """Reset delegation state and forget recorded disable events."""
 
@@ -189,6 +195,7 @@ __all__ = [
     "delegation_enabled",
     "disable_events",
     "failure_count",
+    "last_disable_reason",
     "reset_state",
     "record_health_failure",
     "record_health_success",

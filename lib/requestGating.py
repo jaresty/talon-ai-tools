@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Optional, Tuple
+from typing import Optional, Tuple, cast
 
 from .requestBus import (
     current_state,
@@ -97,6 +97,70 @@ def _record_streaming_gating_event(
         pass
 
 
+def _check_cli_delegation_gate(
+    state: Optional[RequestState],
+    source: str,
+) -> Tuple[bool, RequestDropReason]:
+    try:
+        from . import cliDelegation as _cliDelegation
+    except Exception:
+        return True, cast(RequestDropReason, "")
+
+    try:
+        enabled = _cliDelegation.delegation_enabled()
+    except Exception:
+        enabled = True
+
+    if enabled:
+        return True, cast(RequestDropReason, "")
+
+    reason_code = cast(RequestDropReason, "cli_unhealthy")
+
+    failure_count = 0
+    try:
+        failure_count = int(_cliDelegation.failure_count())
+    except Exception:
+        failure_count = 0
+
+    last_reason = ""
+    try:
+        last_reason = _cliDelegation.last_disable_reason() or ""
+    except Exception:
+        last_reason = ""
+
+    message = drop_reason_message(reason_code)
+    details = []
+    if failure_count:
+        details.append(f"failed probes={failure_count}")
+    if last_reason:
+        details.append(last_reason)
+    if details:
+        message = f"{message} ({'; '.join(details)})"
+
+    try:
+        record_gating_drop(reason_code, source=source)
+    except Exception:
+        pass
+    try:
+        set_drop_reason(reason_code, message)
+    except Exception:
+        pass
+
+    _record_streaming_gating_event(state, reason_code, source=source, message=message)
+
+    try:
+        from . import cliHealth as _cliHealth
+    except Exception:
+        pass
+    else:
+        try:
+            _cliHealth.probe_cli_health(source="request_gate")
+        except Exception:
+            pass
+
+    return False, reason_code
+
+
 def request_is_in_flight(state: Optional[RequestState] = None) -> bool:
     """Return True when a request is currently running."""
 
@@ -131,7 +195,7 @@ def try_begin_request(
     except Exception:
         pass
 
-    candidate: Optional[RequestState]
+    candidate: Optional[RequestState] = None
     if state is None:
         try:
             allowed, reason = bus_try_start_request()
@@ -153,6 +217,10 @@ def try_begin_request(
             allowed, reason = state_try_start_request(candidate)
         except Exception:
             return True, ""
+
+    cli_allowed, cli_reason = _check_cli_delegation_gate(candidate, source)
+    if not cli_allowed:
+        return False, cli_reason
 
     if not allowed and reason:
         message_value = ""

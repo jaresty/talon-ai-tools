@@ -219,6 +219,7 @@ RequestDropReason = Literal[
     "history_save_dir_create_failed",
     "history_save_write_failed",
     "history_save_missing_directional",
+    "cli_unhealthy",
 ]
 
 

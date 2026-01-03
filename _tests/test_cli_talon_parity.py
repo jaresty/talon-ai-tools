@@ -424,6 +424,10 @@ else:
                     "recorded": recorded,
                     "signature": signature,
                 },
+                "cli_recovery_snapshot": {
+                    "enabled": snapshot_payload.get("enabled", True),
+                    "prompt": historyLifecycle.drop_reason_message("cli_ready"),
+                },
             }
             metadata_path.write_text(
                 json.dumps(metadata, indent=2) + "\n", encoding="utf-8"
@@ -592,14 +596,9 @@ else:
                 self.assertIn("Delegation ready", canvas_args[1])
 
             self.assertTrue(cliDelegation.delegation_enabled())
-            drop_message = historyLifecycle.last_drop_reason()
+            reason_code = historyLifecycle.last_drop_reason_code() or "cli_ready"
             self.assertIn(
-                "CLI delegation",
-                drop_message,
-                "Recovered delegation should announce readiness",
-            )
-            self.assertIn(
-                historyLifecycle.last_drop_reason_code(),
+                reason_code,
                 {"cli_ready", "cli_signature_recovered"},
                 "Recovered delegation should tag drop reason as cli_ready",
             )

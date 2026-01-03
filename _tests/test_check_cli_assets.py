@@ -11,6 +11,11 @@ from pathlib import Path
 SIGNATURE_KEY = "adr-0063-cli-release-signature"
 
 try:
+    from talon_user.lib.requestLog import drop_reason_message
+except Exception:  # pragma: no cover - Talon runtime fallback
+    drop_reason_message = None
+
+try:
     from bootstrap import bootstrap
 except ModuleNotFoundError:  # Talon runtime
     bootstrap = None
@@ -108,6 +113,29 @@ else:
             signature = self._write_signature(recorded)
             return recorded, signature
 
+        def _recovery_snapshot(self, payload: dict) -> dict:
+            snapshot: dict[str, object] = {"enabled": bool(payload.get("enabled"))}
+            code = str(payload.get("recovery_code") or "").strip()
+            details = str(payload.get("recovery_details") or "").strip()
+            if code:
+                snapshot["code"] = code
+            if details:
+                snapshot["details"] = details
+            effective_code = code or "cli_ready"
+            prompt = "CLI delegation ready."
+            if drop_reason_message is not None:
+                try:
+                    prompt = drop_reason_message(effective_code)  # type: ignore[arg-type]
+                except Exception:
+                    prompt = "CLI delegation ready."
+            if details and effective_code in {
+                "cli_recovered",
+                "cli_signature_recovered",
+            }:
+                prompt = f"{prompt} (previous: {details})"
+            snapshot["prompt"] = prompt
+            return snapshot
+
         def _tarball_manifest(self) -> Path:
             system = platform.system().lower()
             machine = platform.machine().lower()
@@ -136,6 +164,16 @@ else:
                 if self._tarball_signature_path.exists()
                 else ""
             )
+            recovery_snapshot = None
+            if self.snapshot_path.exists():
+                try:
+                    snapshot_payload = json.loads(
+                        self.snapshot_path.read_text(encoding="utf-8")
+                    )
+                except Exception:
+                    snapshot_payload = None
+                if isinstance(snapshot_payload, dict):
+                    recovery_snapshot = self._recovery_snapshot(snapshot_payload)
             metadata = {
                 "signing_key_id": self.env["CLI_RELEASE_SIGNING_KEY_ID"],
                 "tarball_manifest": {
@@ -147,6 +185,8 @@ else:
                     "signature": snapshot_signature,
                 },
             }
+            if recovery_snapshot is not None:
+                metadata["cli_recovery_snapshot"] = recovery_snapshot
             self.metadata_path.write_text(
                 json.dumps(metadata, indent=2) + "\n", encoding="utf-8"
             )
@@ -369,6 +409,8 @@ else:
                 "events": [],
                 "failure_count": 0,
                 "failure_threshold": 3,
+                "recovery_code": "cli_signature_recovered",
+                "recovery_details": "signature telemetry mismatch detected during bootstrap",
             }
             runtime_payload = dict(snapshot_payload)
             runtime_payload["updated_at"] = "2026-01-03T04:00:00Z"
@@ -400,6 +442,24 @@ else:
                 telemetry["tarball_manifest"]["signature"],
                 self._tarball_signature_path.read_text(encoding="utf-8").strip(),
             )
+            self.assertEqual(
+                telemetry["delegation_snapshot"]["recorded"],
+                recorded,
+            )
+            self.assertEqual(
+                telemetry["delegation_snapshot"]["signature"],
+                signature,
+            )
+            recovery = telemetry.get("cli_recovery_snapshot")
+            self.assertIsInstance(recovery, dict)
+            recovery = dict(recovery or {})
+            self.assertEqual(recovery.get("code"), "cli_signature_recovered")
+            self.assertTrue(recovery.get("enabled"))
+            self.assertIn(
+                "signature telemetry mismatch detected during bootstrap",
+                recovery.get("prompt", ""),
+            )
+
             self.assertEqual(telemetry["delegation_snapshot"]["recorded"], recorded)
             self.assertEqual(telemetry["delegation_snapshot"]["signature"], signature)
             self.assertNotIn("previous", telemetry)

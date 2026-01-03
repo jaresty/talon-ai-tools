@@ -54,6 +54,15 @@ DELEGATION_STATE_SNAPSHOT_PATH = Path(
         "artifacts/cli/delegation-state.json",
     )
 )
+REPO_ROOT = Path(__file__).resolve().parents[2]
+
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
+
+try:
+    from lib.requestLog import drop_reason_message as _drop_reason_message
+except Exception:  # pragma: no cover - defensive import for guard script
+    _drop_reason_message = None
 DELEGATION_STATE_SIGNATURE_PATH = Path(
     os.environ.get(
         DELEGATION_STATE_SIGNATURE_ENV,
@@ -189,7 +198,35 @@ def _canonical_state_digest(payload: dict) -> str:
     ).hexdigest()
 
 
-def _check_delegation_state() -> tuple[bool, str, str, list[str]]:
+def _render_recovery_prompt(code: str, details: str) -> str:
+    message = ""
+    if code and _drop_reason_message is not None:
+        try:
+            message = _drop_reason_message(code)  # type: ignore[arg-type]
+        except Exception:
+            message = ""
+    if not isinstance(message, str) or not message.strip():
+        message = "CLI delegation ready."
+    details_text = details.strip()
+    if details_text and code in {"cli_recovered", "cli_signature_recovered"}:
+        message = f"{message} (previous: {details_text})"
+    return message
+
+
+def _recovery_snapshot_from_payload(payload: dict) -> dict:
+    snapshot: dict[str, object] = {"enabled": bool(payload.get("enabled"))}
+    code = str(payload.get("recovery_code") or "").strip()
+    details = str(payload.get("recovery_details") or "").strip()
+    if code:
+        snapshot["code"] = code
+    if details:
+        snapshot["details"] = details
+    effective_code = code or "cli_ready"
+    snapshot["prompt"] = _render_recovery_prompt(effective_code, details)
+    return snapshot
+
+
+def _check_delegation_state() -> tuple[bool, str, str, list[str], dict, dict]:
     path = DELEGATION_STATE_PATH
     snapshot_path = DELEGATION_STATE_SNAPSHOT_PATH
     digest_path = DELEGATION_STATE_DIGEST_PATH
@@ -200,7 +237,7 @@ def _check_delegation_state() -> tuple[bool, str, str, list[str]]:
         message = f"missing delegation state: {path}"
         print(message, file=sys.stderr)
         issues.append(message)
-        return False, "", "", issues
+        return False, "", "", issues, {}, {}
 
     try:
         payload = json.loads(path.read_text(encoding="utf-8"))
@@ -208,13 +245,13 @@ def _check_delegation_state() -> tuple[bool, str, str, list[str]]:
         message = f"invalid delegation state: {path} ({exc})"
         print(message, file=sys.stderr)
         issues.append(message)
-        return False, "", "", issues
+        return False, "", "", issues, {}, {}
 
     if not isinstance(payload, dict):
         message = f"invalid delegation state: {path} (expected object)"
         print(message, file=sys.stderr)
         issues.append(message)
-        return False, "", "", issues
+        return False, "", "", issues, {}, {}
 
     enabled = payload.get("enabled")
     failure_count = payload.get("failure_count")
@@ -225,42 +262,42 @@ def _check_delegation_state() -> tuple[bool, str, str, list[str]]:
         message = f"invalid delegation state: {path} (enabled must be boolean)"
         print(message, file=sys.stderr)
         issues.append(message)
-        return False, "", "", issues
+        return False, "", "", issues, {}, {}
 
     if not isinstance(failure_count, int) or failure_count < 0:
         message = f"invalid delegation state: {path} (failure_count must be >= 0)"
         print(message, file=sys.stderr)
         issues.append(message)
-        return False, "", "", issues
+        return False, "", "", issues, {}, {}
 
     if not isinstance(failure_threshold, int) or failure_threshold <= 0:
         message = f"invalid delegation state: {path} (failure_threshold must be > 0)"
         print(message, file=sys.stderr)
         issues.append(message)
-        return False, "", "", issues
+        return False, "", "", issues, {}, {}
 
     if not enabled:
         detail = reason or "delegation disabled"
         message = f"delegation disabled according to state {path}: {detail}"
         print(message, file=sys.stderr)
         issues.append(message)
-        return False, "", "", issues
+        return False, "", "", issues, {}, {}
 
-    if failure_count:
+    if isinstance(failure_count, int) and failure_count:
         message = (
             "delegation state reports outstanding failures "
             f"({failure_count}/{failure_threshold}) in {path}"
         )
         print(message, file=sys.stderr)
         issues.append(message)
-        return False, "", "", issues
+        return False, "", "", issues, {}, {}
 
     events = payload.get("events", [])
     if not isinstance(events, list):
         message = f"invalid delegation state: {path} (events must be a list)"
         print(message, file=sys.stderr)
         issues.append(message)
-        return False, "", "", issues
+        return False, "", "", issues, {}, {}
 
     runtime_digest = _canonical_state_digest(payload)
 
@@ -268,7 +305,7 @@ def _check_delegation_state() -> tuple[bool, str, str, list[str]]:
         message = f"missing delegation state snapshot: {snapshot_path}"
         print(message, file=sys.stderr)
         issues.append(message)
-        return False, "", "", issues
+        return False, "", "", issues, {}, {}
 
     try:
         snapshot_payload = json.loads(snapshot_path.read_text(encoding="utf-8"))
@@ -276,7 +313,7 @@ def _check_delegation_state() -> tuple[bool, str, str, list[str]]:
         message = f"invalid delegation state snapshot: {snapshot_path} ({exc})"
         print(message, file=sys.stderr)
         issues.append(message)
-        return False, "", "", issues
+        return False, "", "", issues, {}, {}
 
     if not isinstance(snapshot_payload, dict):
         message = (
@@ -284,7 +321,7 @@ def _check_delegation_state() -> tuple[bool, str, str, list[str]]:
         )
         print(message, file=sys.stderr)
         issues.append(message)
-        return False, "", "", issues
+        return False, "", "", issues, {}, {}
 
     snapshot_digest = _canonical_state_digest(snapshot_payload)
 
@@ -292,21 +329,21 @@ def _check_delegation_state() -> tuple[bool, str, str, list[str]]:
         message = f"missing delegation state digest: {digest_path}"
         print(message, file=sys.stderr)
         issues.append(message)
-        return False, "", "", issues
+        return False, "", "", issues, {}, {}
 
     recorded = digest_path.read_text(encoding="utf-8").strip()
     if not recorded:
         message = f"empty delegation state digest: {digest_path}"
         print(message, file=sys.stderr)
         issues.append(message)
-        return False, "", "", issues
+        return False, "", "", issues, {}, {}
 
     digest, _, filename = recorded.partition("  ")
     if not digest or len(digest) != 64:
         message = f"invalid delegation state digest: {digest_path}"
         print(message, file=sys.stderr)
         issues.append(message)
-        return False, recorded, "", issues
+        return False, recorded, "", issues, {}, {}
 
     expected_name = snapshot_path.name
     if filename and filename != expected_name:
@@ -316,7 +353,7 @@ def _check_delegation_state() -> tuple[bool, str, str, list[str]]:
         )
         print(message, file=sys.stderr)
         issues.append(message)
-        return False, recorded, "", issues
+        return False, recorded, "", issues, {}, {}
 
     if digest != snapshot_digest:
         message = (
@@ -325,7 +362,7 @@ def _check_delegation_state() -> tuple[bool, str, str, list[str]]:
         )
         print(message, file=sys.stderr)
         issues.append(message)
-        return False, recorded, "", issues
+        return False, recorded, "", issues, {}, {}
 
     if digest != runtime_digest:
         message = (
@@ -334,7 +371,15 @@ def _check_delegation_state() -> tuple[bool, str, str, list[str]]:
         )
         print(message, file=sys.stderr)
         issues.append(message)
-        return False, recorded, "", issues
+        return False, recorded, "", issues, {}, {}
+
+    runtime_recovery = _recovery_snapshot_from_payload(payload)
+    snapshot_recovery = _recovery_snapshot_from_payload(snapshot_payload)
+    if runtime_recovery != snapshot_recovery:
+        message = "delegation recovery snapshot mismatch between runtime and release"
+        print(message, file=sys.stderr)
+        issues.append(message)
+        return False, recorded, "", issues, snapshot_payload, payload
 
     sig_ok, signature, sig_issues = _verify_signature(
         signature_path,
@@ -343,9 +388,9 @@ def _check_delegation_state() -> tuple[bool, str, str, list[str]]:
     )
     issues.extend(sig_issues)
     if not sig_ok:
-        return False, recorded, signature, issues
+        return False, recorded, signature, issues, snapshot_payload, payload
 
-    return True, recorded, signature, issues
+    return True, recorded, signature, issues, snapshot_payload, payload
 
 
 def _check_metadata(
@@ -353,6 +398,7 @@ def _check_metadata(
     tarball_signature: str,
     snapshot_recorded: str,
     snapshot_signature: str,
+    snapshot_payload: dict,
 ) -> tuple[bool, dict | None, list[str]]:
     path = _metadata_path()
     issues: list[str] = []
@@ -419,6 +465,19 @@ def _check_metadata(
         issues.append(message)
         return False, metadata, issues
 
+    expected_recovery = _recovery_snapshot_from_payload(snapshot_payload)
+    recovery_meta = metadata.get("cli_recovery_snapshot")
+    if not isinstance(recovery_meta, dict):
+        message = "signature metadata recovery snapshot missing"
+        print(message, file=sys.stderr)
+        issues.append(message)
+        return False, metadata, issues
+    if recovery_meta != expected_recovery:
+        message = "signature metadata recovery snapshot mismatch"
+        print(message, file=sys.stderr)
+        issues.append(message)
+        return False, metadata, issues
+
     return True, metadata, issues
 
 
@@ -452,6 +511,7 @@ def _check_signature_telemetry(
     tarball_signature: str,
     snapshot_recorded: str,
     snapshot_signature: str,
+    snapshot_payload: dict,
 ) -> tuple[bool, dict, dict | None, list[str]]:
     issues: list[str] = []
     expected = {
@@ -464,6 +524,7 @@ def _check_signature_telemetry(
             "recorded": snapshot_recorded,
             "signature": snapshot_signature,
         },
+        "cli_recovery_snapshot": _recovery_snapshot_from_payload(snapshot_payload),
     }
 
     read_ok, previous, read_issues = _read_signature_telemetry()
@@ -502,6 +563,13 @@ def _check_signature_telemetry(
         ok = False
     if prev_snapshot.get("signature") != expected["delegation_snapshot"]["signature"]:
         message = "signature telemetry snapshot signature mismatch"
+        print(message, file=sys.stderr)
+        issues.append(message)
+        ok = False
+
+    previous_recovery = previous.get("cli_recovery_snapshot") if previous else None
+    if previous_recovery != expected.get("cli_recovery_snapshot"):
+        message = "signature telemetry recovery snapshot mismatch"
         print(message, file=sys.stderr)
         issues.append(message)
         ok = False
@@ -554,9 +622,14 @@ def main() -> int:
     if not manifest_ok:
         ok = False
 
-    snapshot_ok, snapshot_recorded, snapshot_signature, snapshot_issues = (
-        _check_delegation_state()
-    )
+    (
+        snapshot_ok,
+        snapshot_recorded,
+        snapshot_signature,
+        snapshot_issues,
+        snapshot_payload,
+        runtime_payload,
+    ) = _check_delegation_state()
     issues.extend(snapshot_issues)
     if not snapshot_ok:
         ok = False
@@ -569,6 +642,7 @@ def main() -> int:
             manifest_signature,
             snapshot_recorded,
             snapshot_signature,
+            snapshot_payload,
         )
         issues.extend(metadata_issues)
         if not metadata_ok:
@@ -585,6 +659,7 @@ def main() -> int:
                 manifest_signature,
                 snapshot_recorded,
                 snapshot_signature,
+                snapshot_payload,
             )
         )
         issues.extend(telemetry_issues)

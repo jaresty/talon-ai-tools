@@ -19,6 +19,7 @@ import os
 import platform
 import shutil
 import subprocess
+import sys
 import tarfile
 import tempfile
 from pathlib import Path
@@ -34,6 +35,14 @@ SIGNATURE_KEY_ENV = "CLI_RELEASE_SIGNING_KEY"
 DEFAULT_SIGNING_KEY_ID = "local-dev"
 SIGNING_KEY_ID_ENV = "CLI_RELEASE_SIGNING_KEY_ID"
 SIGNATURE_METADATA_ENV = "CLI_SIGNATURE_METADATA"
+
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
+
+try:
+    from lib.requestLog import drop_reason_message as _drop_reason_message
+except Exception:  # pragma: no cover - defensive import for packaging env
+    _drop_reason_message = None
 
 
 def _target_suffix() -> str:
@@ -123,7 +132,35 @@ def _canonical_state_digest(payload: dict) -> str:
     ).hexdigest()
 
 
-def _write_delegation_state_manifest(output_dir: Path) -> tuple[Path, str, str]:
+def _render_recovery_prompt(code: str, details: str) -> str:
+    message = ""
+    if code and _drop_reason_message is not None:
+        try:
+            message = _drop_reason_message(code)  # type: ignore[arg-type]
+        except Exception:
+            message = ""
+    if not isinstance(message, str) or not message.strip():
+        message = "CLI delegation ready."
+    details_text = details.strip()
+    if details_text and code in {"cli_recovered", "cli_signature_recovered"}:
+        message = f"{message} (previous: {details_text})"
+    return message
+
+
+def _recovery_snapshot_from_payload(payload: dict) -> dict:
+    snapshot: dict[str, object] = {"enabled": bool(payload.get("enabled"))}
+    code = str(payload.get("recovery_code") or "").strip()
+    details = str(payload.get("recovery_details") or "").strip()
+    if code:
+        snapshot["code"] = code
+    if details:
+        snapshot["details"] = details
+    effective_code = code or "cli_ready"
+    snapshot["prompt"] = _render_recovery_prompt(effective_code, details)
+    return snapshot
+
+
+def _write_delegation_state_manifest(output_dir: Path) -> tuple[Path, str, str, dict]:
     if not DELEGATION_STATE_SNAPSHOT_PATH.exists():
         raise FileNotFoundError(
             f"delegation state snapshot missing: {DELEGATION_STATE_SNAPSHOT_PATH}"
@@ -142,7 +179,7 @@ def _write_delegation_state_manifest(output_dir: Path) -> tuple[Path, str, str]:
     signature = _write_signature(
         manifest_path.with_suffix(manifest_path.suffix + ".sig"), recorded
     )
-    return manifest_path, recorded, signature
+    return manifest_path, recorded, signature, snapshot_payload
 
 
 def _write_signature_metadata(
@@ -150,6 +187,7 @@ def _write_signature_metadata(
     tarball_signature: str,
     snapshot_recorded: str,
     snapshot_signature: str,
+    snapshot_payload: dict,
 ) -> Path:
     metadata = {
         "signing_key_id": _signing_key_id(),
@@ -161,6 +199,7 @@ def _write_signature_metadata(
             "recorded": snapshot_recorded,
             "signature": snapshot_signature,
         },
+        "cli_recovery_snapshot": _recovery_snapshot_from_payload(snapshot_payload),
     }
     metadata_path = _metadata_path()
     metadata_path.parent.mkdir(parents=True, exist_ok=True)
@@ -183,12 +222,14 @@ def package_cli() -> tuple[Path, Path, Path]:
             _,
             snapshot_recorded,
             snapshot_signature,
+            snapshot_payload,
         ) = _write_delegation_state_manifest(ARTIFACTS_DIR)
         metadata_path = _write_signature_metadata(
             manifest_recorded,
             manifest_signature,
             snapshot_recorded,
             snapshot_signature,
+            snapshot_payload,
         )
     return tarball, manifest_path, metadata_path
 

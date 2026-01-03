@@ -160,6 +160,12 @@ def verify_signature_telemetry(*, source: str = "bootstrap") -> bool:
                 issues.append(f"signature telemetry {field} recorded mismatch")
             if metadata_field.get("signature") != telemetry_field.get("signature"):
                 issues.append(f"signature telemetry {field} signature mismatch")
+        recovery_meta = metadata.get("cli_recovery_snapshot")
+        recovery_telemetry = telemetry.get("cli_recovery_snapshot")
+        if not isinstance(recovery_meta, dict):
+            issues.append("signature metadata recovery snapshot invalid")
+        elif recovery_telemetry != recovery_meta:
+            issues.append("signature telemetry recovery snapshot mismatch")
 
     if issues:
         unique_issues: List[str] = []

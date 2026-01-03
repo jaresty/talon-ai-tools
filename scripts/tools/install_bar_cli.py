@@ -66,6 +66,11 @@ else:  # pragma: no cover - bootstrap only mutates sys.path
     except Exception:
         pass
 
+try:
+    from lib.requestLog import drop_reason_message as _drop_reason_message
+except Exception:  # pragma: no cover - defensive import for installer environment
+    _drop_reason_message = None
+
 
 def _target_suffix() -> str:
     system = platform.system().lower()
@@ -149,6 +154,34 @@ def _canonical_state_digest(payload: dict) -> str:
     ).hexdigest()
 
 
+def _render_recovery_prompt(code: str, details: str) -> str:
+    message = ""
+    if code and _drop_reason_message is not None:
+        try:
+            message = _drop_reason_message(code)  # type: ignore[arg-type]
+        except Exception:
+            message = ""
+    if not isinstance(message, str) or not message.strip():
+        message = "CLI delegation ready."
+    details_text = details.strip()
+    if details_text and code in {"cli_recovered", "cli_signature_recovered"}:
+        message = f"{message} (previous: {details_text})"
+    return message
+
+
+def _recovery_snapshot_from_payload(payload: dict) -> dict:
+    snapshot: dict[str, object] = {"enabled": bool(payload.get("enabled"))}
+    code = str(payload.get("recovery_code") or "").strip()
+    details = str(payload.get("recovery_details") or "").strip()
+    if code:
+        snapshot["code"] = code
+    if details:
+        snapshot["details"] = details
+    effective_code = code or "cli_ready"
+    snapshot["prompt"] = _render_recovery_prompt(effective_code, details)
+    return snapshot
+
+
 def _load_snapshot_payload() -> dict:
     if not SNAPSHOT_PATH.exists():
         raise ReleaseSignatureError(f"missing delegation snapshot: {SNAPSHOT_PATH}")
@@ -225,6 +258,7 @@ def _write_signature_telemetry(
     tarball_signature: str,
     snapshot_recorded: str,
     snapshot_signature: str,
+    snapshot_payload: dict,
 ) -> None:
     payload = {
         "status": "green",
@@ -238,6 +272,7 @@ def _write_signature_telemetry(
             "recorded": snapshot_recorded,
             "signature": snapshot_signature,
         },
+        "cli_recovery_snapshot": _recovery_snapshot_from_payload(snapshot_payload),
     }
     previous = _load_existing_signature_telemetry()
     if previous:
@@ -254,6 +289,7 @@ def _verify_signature_metadata(
     tarball_signature: str,
     snapshot_recorded: str,
     snapshot_signature: str,
+    snapshot_payload: dict,
 ) -> None:
     metadata = _load_signature_metadata()
     key_id = metadata.get("signing_key_id")
@@ -279,6 +315,13 @@ def _verify_signature_metadata(
         raise ReleaseSignatureError("snapshot metadata signature mismatch")
     if snapshot_meta.get("signature") != _signature_for(snapshot_recorded):
         raise ReleaseSignatureError("snapshot metadata signature invalid for key")
+
+    expected_recovery = _recovery_snapshot_from_payload(snapshot_payload)
+    recovery_meta = metadata.get("cli_recovery_snapshot")
+    if not isinstance(recovery_meta, dict):
+        raise ReleaseSignatureError("snapshot metadata recovery snapshot missing")
+    if recovery_meta != expected_recovery:
+        raise ReleaseSignatureError("snapshot metadata recovery snapshot mismatch")
 
 
 def _install_snapshot(payload: dict, digest: str) -> None:
@@ -337,6 +380,7 @@ def install_cli(force: bool = False, quiet: bool = False) -> Path:
         manifest_signature,
         snapshot_recorded,
         snapshot_signature,
+        snapshot_payload,
     )
 
     if not force and TARGET_PATH.exists():
@@ -353,6 +397,7 @@ def install_cli(force: bool = False, quiet: bool = False) -> Path:
                 manifest_signature,
                 snapshot_recorded,
                 snapshot_signature,
+                snapshot_payload,
             )
             if not quiet:
                 print(f"CLI binary already installed at {TARGET_PATH}")
@@ -385,6 +430,7 @@ def install_cli(force: bool = False, quiet: bool = False) -> Path:
         manifest_signature,
         snapshot_recorded,
         snapshot_signature,
+        snapshot_payload,
     )
 
     if not quiet:

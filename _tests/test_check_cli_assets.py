@@ -41,12 +41,14 @@ else:
             self.digest_path = self.release_dir / "delegation-state.json.sha256"
             self.signature_path = self.release_dir / "delegation-state.json.sha256.sig"
             self.metadata_path = self.release_dir / "signatures.json"
+            self.telemetry_path = self.release_dir / "signature-telemetry.json"
             self.env = os.environ.copy()
             self.env["CLI_DELEGATION_STATE"] = str(self.state_path)
             self.env["CLI_DELEGATION_STATE_SNAPSHOT"] = str(self.snapshot_path)
             self.env["CLI_DELEGATION_STATE_DIGEST"] = str(self.digest_path)
             self.env["CLI_DELEGATION_STATE_SIGNATURE"] = str(self.signature_path)
             self.env["CLI_SIGNATURE_METADATA"] = str(self.metadata_path)
+            self.env["CLI_SIGNATURE_TELEMETRY"] = str(self.telemetry_path)
             self.env["CLI_RELEASE_SIGNING_KEY"] = SIGNATURE_KEY
             self.env["CLI_RELEASE_SIGNING_KEY_ID"] = "test-key"
             self.command = [sys.executable, "scripts/tools/check_cli_assets.py"]
@@ -60,6 +62,7 @@ else:
 
                 self.addCleanup(_restore_tarball_signature)
             self.addCleanup(lambda: self.metadata_path.unlink(missing_ok=True))
+            self.addCleanup(lambda: self.telemetry_path.unlink(missing_ok=True))
             self._write_tarball_signature()
 
         def _run(self) -> subprocess.CompletedProcess[str]:
@@ -147,6 +150,10 @@ else:
             self.metadata_path.write_text(
                 json.dumps(metadata, indent=2) + "\n", encoding="utf-8"
             )
+
+        def _read_telemetry(self) -> dict:
+            self.assertTrue(self.telemetry_path.exists(), "Telemetry file missing")
+            return json.loads(self.telemetry_path.read_text(encoding="utf-8"))
 
         def _write_tarball_signature(self) -> str:
             recorded = self._tarball_recorded()
@@ -379,6 +386,76 @@ else:
             )
             self.assertIn(f"cli_manifest={self._tarball_manifest_path}", stdout)
             self.assertIn(f"cli_signatures={self.metadata_path}", stdout)
+
+            telemetry: dict = self._read_telemetry()
+            self.assertEqual("green", telemetry["status"])
+            self.assertEqual(
+                self.env["CLI_RELEASE_SIGNING_KEY_ID"], telemetry["signing_key_id"]
+            )
+            self.assertEqual(
+                telemetry["tarball_manifest"]["recorded"],
+                self._tarball_recorded(),
+            )
+            self.assertEqual(
+                telemetry["tarball_manifest"]["signature"],
+                self._tarball_signature_path.read_text(encoding="utf-8").strip(),
+            )
+            self.assertEqual(telemetry["delegation_snapshot"]["recorded"], recorded)
+            self.assertEqual(telemetry["delegation_snapshot"]["signature"], signature)
+            self.assertNotIn("previous", telemetry)
+            self.assertFalse(telemetry.get("issues"))
+
+        def test_signature_telemetry_mismatch_blocks_guard(self) -> None:
+            snapshot_payload = {
+                "enabled": True,
+                "updated_at": "2026-01-03T00:00:00Z",
+                "reason": None,
+                "source": "bootstrap",
+                "events": [],
+                "failure_count": 0,
+                "failure_threshold": 3,
+            }
+            self._write_snapshot(snapshot_payload)
+            recorded, signature = self._write_matching_manifest(snapshot_payload)
+            self._write_state(dict(snapshot_payload))
+            self._write_metadata(recorded, signature)
+
+            tarball_recorded = self._tarball_recorded()
+            tarball_signature = self._tarball_signature_path.read_text(
+                encoding="utf-8"
+            ).strip()
+            stale_payload = {
+                "status": "green",
+                "generated_at": "2026-01-03T00:00:00Z",
+                "signing_key_id": "stale-key",
+                "tarball_manifest": {
+                    "recorded": tarball_recorded,
+                    "signature": tarball_signature,
+                },
+                "delegation_snapshot": {
+                    "recorded": recorded,
+                    "signature": signature,
+                },
+            }
+            self.telemetry_path.write_text(
+                json.dumps(stale_payload, indent=2) + "\n", encoding="utf-8"
+            )
+
+            result = self._run()
+            self.assertNotEqual(result.returncode, 0, result.stderr)
+            self.assertIn("signature telemetry signing_key_id mismatch", result.stderr)
+
+            telemetry: dict = self._read_telemetry()
+            self.assertEqual("red", telemetry["status"])
+            self.assertEqual(
+                self.env["CLI_RELEASE_SIGNING_KEY_ID"], telemetry["signing_key_id"]
+            )
+            issues = telemetry.get("issues") or []
+            self.assertIn("signature telemetry signing_key_id mismatch", issues)
+            previous = telemetry.get("previous")
+            self.assertIsInstance(previous, dict)
+            assert isinstance(previous, dict)
+            self.assertEqual(previous["signing_key_id"], "stale-key")
 
         def test_requires_signature_metadata(self) -> None:
             snapshot_payload = {

@@ -45,6 +45,7 @@ else:
             self.env["CLI_DELEGATION_STATE_SNAPSHOT"] = str(self.snapshot_path)
             self.env["CLI_DELEGATION_STATE_DIGEST"] = str(self.digest_path)
             self.env["CLI_DELEGATION_STATE_SIGNATURE"] = str(self.signature_path)
+            self.env["CLI_RELEASE_SIGNING_KEY"] = SIGNATURE_KEY
             self.command = [sys.executable, "scripts/tools/check_cli_assets.py"]
             self._write_tarball_signature()
 

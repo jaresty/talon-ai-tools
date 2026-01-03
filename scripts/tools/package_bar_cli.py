@@ -15,6 +15,7 @@ from __future__ import annotations
 import argparse
 import json
 import hashlib
+import os
 import platform
 import shutil
 import subprocess
@@ -27,7 +28,8 @@ BIN_DIR = REPO_ROOT / "bin"
 SCHEMA_PATH = REPO_ROOT / "docs" / "schema" / "command-surface.json"
 ARTIFACTS_DIR = REPO_ROOT / "artifacts" / "cli"
 DELEGATION_STATE_SNAPSHOT_PATH = ARTIFACTS_DIR / "delegation-state.json"
-SIGNATURE_KEY = "adr-0063-cli-release-signature"
+DEFAULT_SIGNATURE_KEY = "adr-0063-cli-release-signature"
+SIGNATURE_KEY_ENV = "CLI_RELEASE_SIGNING_KEY"
 
 
 def _target_suffix() -> str:
@@ -71,8 +73,12 @@ def _create_tarball(built_binary: Path, output_dir: Path) -> Path:
     return tarball_path
 
 
+def _signing_key() -> str:
+    return os.environ.get(SIGNATURE_KEY_ENV, DEFAULT_SIGNATURE_KEY)
+
+
 def _signature_for(message: str) -> str:
-    return hashlib.sha256((SIGNATURE_KEY + "\n" + message).encode("utf-8")).hexdigest()
+    return hashlib.sha256((_signing_key() + "\n" + message).encode("utf-8")).hexdigest()
 
 
 def _write_signature(target: Path, message: str) -> Path:

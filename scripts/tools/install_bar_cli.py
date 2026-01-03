@@ -25,7 +25,8 @@ ARTIFACTS_DIR = REPO_ROOT / "artifacts" / "cli"
 SNAPSHOT_PATH = ARTIFACTS_DIR / "delegation-state.json"
 SNAPSHOT_DIGEST_PATH = ARTIFACTS_DIR / "delegation-state.json.sha256"
 DELEGATION_STATE_SIGNATURE_ENV = "CLI_DELEGATION_STATE_SIGNATURE"
-SIGNATURE_KEY = "adr-0063-cli-release-signature"
+DEFAULT_SIGNATURE_KEY = "adr-0063-cli-release-signature"
+SIGNATURE_KEY_ENV = "CLI_RELEASE_SIGNING_KEY"
 RUNTIME_DIR = REPO_ROOT / "var" / "cli-telemetry"
 RUNTIME_STATE_PATH = RUNTIME_DIR / "delegation-state.json"
 
@@ -96,8 +97,12 @@ def _verify_checksum(tarball: Path, manifest: Path) -> None:
         )
 
 
+def _signing_key() -> str:
+    return os.environ.get(SIGNATURE_KEY_ENV, DEFAULT_SIGNATURE_KEY)
+
+
 def _signature_for(message: str) -> str:
-    return hashlib.sha256((SIGNATURE_KEY + "\n" + message).encode("utf-8")).hexdigest()
+    return hashlib.sha256((_signing_key() + "\n" + message).encode("utf-8")).hexdigest()
 
 
 def _verify_signature_file(path: Path, recorded: str, label: str) -> None:

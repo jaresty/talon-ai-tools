@@ -11,8 +11,8 @@ bootstrap.bootstrap()
 if bin_path.exists():
     sys.exit(0)
 raise SystemExit('bootstrap did not install CLI binary')
-PY` | status: in_progress — loop-0033 hydrates delegation snapshots during bootstrap install; next slice wires bootstrap to surface hashed artefact failures before parity runs.
-- [Implementation Guardrails → Delivery posture] Release checksum manifest hardening | `scripts/tools/check_cli_assets.py` | status: in_progress — loop-0033 keeps guardrails green with hydrated runtime state; next slice extends signature enforcement across CI uploads and release signing.
+PY` | status: in_progress — loop-0034 surfaces bootstrap errors for snapshot drift; next slice enforces signature validation before parity runs.
+- [Implementation Guardrails → Delivery posture] Release checksum manifest hardening | `scripts/tools/check_cli_assets.py` | status: in_progress — loop-0034 keeps guardrails observability intact; next slice extends signature enforcement across CI uploads and release signing.
 
 ## Completed Loops
 - loop-0001 — tightened loop compliance statements and removed adhoc helper; evidence: `docs/adr/evidence/0063/loop-0001.md`.
@@ -82,3 +82,14 @@ PY`; evidence: `docs/adr/evidence/0063/loop-0020.md`.
 - loop-0031 — enforced release guardrails by requiring delegation state snapshots in `check_cli_assets`; validation: `python3 -m pytest _tests/test_check_cli_assets.py`; evidence: `docs/adr/evidence/0063/loop-0031.md`.
 - loop-0032 — wired delegation snapshot digests into release guard rails; validation: `python3 -m pytest _tests/test_check_cli_assets.py`; evidence: `docs/adr/evidence/0063/loop-0032.md`.
 - loop-0033 — hydrated release snapshot metadata through bootstrap install path; validation: `python3 -m pytest _tests/test_cli_talon_parity.py`; evidence: `docs/adr/evidence/0063/loop-0033.md`.
+- loop-0034 — blocked bootstrap fallback when snapshot digest drifts; validation: `python3 - <<'PY'
+import pathlib, sys
+bin_path = pathlib.Path('bin/bar.bin')
+if bin_path.exists():
+    bin_path.unlink()
+import bootstrap
+bootstrap.bootstrap()
+if bin_path.exists():
+    sys.exit(0)
+raise SystemExit('bootstrap did not install CLI binary')
+PY`; evidence: `docs/adr/evidence/0063/loop-0034.md`.

@@ -74,13 +74,22 @@ def _maybe_install_cli() -> None:
     """Attempt to install the packaged CLI binary before delegation."""
 
     try:
-        from scripts.tools.install_bar_cli import install_cli  # type: ignore
+        from scripts.tools.install_bar_cli import (  # type: ignore
+            DelegationSnapshotError,
+            install_cli,
+        )
     except Exception as exc:  # pragma: no cover - import errors depend on env
         _warn(f"unable to import installer; falling back to go build ({exc})")
         return
 
     try:
         install_cli(quiet=True)
+    except DelegationSnapshotError as exc:
+        _warn(
+            "delegation snapshot validation failed; run `python3 scripts/tools/package_bar_cli.py --print-paths` "
+            f"to rebuild packaged CLI: {exc}"
+        )
+        raise
     except Exception as exc:  # pragma: no cover - depends on filesystem state
         _warn(
             "install failed; run `python3 scripts/tools/package_bar_cli.py --print-paths` "

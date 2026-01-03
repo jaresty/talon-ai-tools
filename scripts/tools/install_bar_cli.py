@@ -26,6 +26,13 @@ SNAPSHOT_DIGEST_PATH = ARTIFACTS_DIR / "delegation-state.json.sha256"
 RUNTIME_DIR = REPO_ROOT / "var" / "cli-telemetry"
 RUNTIME_STATE_PATH = RUNTIME_DIR / "delegation-state.json"
 
+
+class DelegationSnapshotError(RuntimeError):
+    """Raised when delegation snapshot validation fails."""
+
+
+__all__ = ["install_cli", "DelegationSnapshotError"]
+
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
@@ -96,10 +103,10 @@ def _canonical_state_digest(payload: dict) -> str:
 
 def _load_snapshot_payload() -> dict:
     if not SNAPSHOT_PATH.exists():
-        raise FileNotFoundError(f"missing delegation snapshot: {SNAPSHOT_PATH}")
+        raise DelegationSnapshotError(f"missing delegation snapshot: {SNAPSHOT_PATH}")
     payload = json.loads(SNAPSHOT_PATH.read_text(encoding="utf-8"))
     if not isinstance(payload, dict):
-        raise RuntimeError(
+        raise DelegationSnapshotError(
             f"delegation snapshot invalid (expected object): {SNAPSHOT_PATH}"
         )
     return payload
@@ -107,18 +114,18 @@ def _load_snapshot_payload() -> dict:
 
 def _verify_snapshot(payload: dict) -> str:
     if not SNAPSHOT_DIGEST_PATH.exists():
-        raise FileNotFoundError(
+        raise DelegationSnapshotError(
             f"missing delegation snapshot manifest: {SNAPSHOT_DIGEST_PATH}"
         )
     digest, filename = _read_manifest(SNAPSHOT_DIGEST_PATH)
     expected_name = SNAPSHOT_PATH.name
     if filename and filename != expected_name:
-        raise RuntimeError(
+        raise DelegationSnapshotError(
             f"snapshot manifest filename mismatch: expected {expected_name}, got {filename}"
         )
     canonical = _canonical_state_digest(payload)
     if digest != canonical:
-        raise RuntimeError(
+        raise DelegationSnapshotError(
             f"delegation snapshot digest mismatch: expected {digest}, got {canonical}"
         )
     return digest
@@ -128,22 +135,24 @@ def _install_snapshot(payload: dict, digest: str) -> None:
     try:
         from lib import cliDelegation
     except Exception as exc:  # pragma: no cover - import depends on runtime
-        raise RuntimeError(
+        raise DelegationSnapshotError(
             f"failed to import cliDelegation for snapshot hydration ({exc})"
         )
 
     cliDelegation.apply_release_snapshot(payload)
 
     if not RUNTIME_STATE_PATH.exists():
-        raise RuntimeError(
+        raise DelegationSnapshotError(
             f"hydrated delegation state missing after install: {RUNTIME_STATE_PATH}"
         )
     hydrated = json.loads(RUNTIME_STATE_PATH.read_text(encoding="utf-8"))
     if not isinstance(hydrated, dict):
-        raise RuntimeError("hydrated delegation state invalid (expected object)")
+        raise DelegationSnapshotError(
+            "hydrated delegation state invalid (expected object)"
+        )
     canonical = _canonical_state_digest(hydrated)
     if canonical != digest:
-        raise RuntimeError(
+        raise DelegationSnapshotError(
             "hydrated delegation state digest mismatch: "
             f"expected {digest}, got {canonical}"
         )

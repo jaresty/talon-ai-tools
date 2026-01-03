@@ -342,9 +342,13 @@ class ProviderRegistry:
             failure_count = int(_cliDelegation.failure_count())
             failure_threshold = int(_cliDelegation.failure_threshold())
             last_reason = _cliDelegation.last_disable_reason() or ""
-            message = _drop_reason_message("cli_unhealthy")
+            signature_mismatch = "signature telemetry mismatch" in last_reason.lower()
+            reason_code = (
+                "cli_signature_mismatch" if signature_mismatch else "cli_unhealthy"
+            )
+            message = _drop_reason_message(reason_code)
             details: List[str] = []
-            if failure_count:
+            if not signature_mismatch and failure_count:
                 if failure_threshold:
                     details.append(f"failed probes={failure_count}/{failure_threshold}")
                 else:
@@ -355,6 +359,7 @@ class ProviderRegistry:
                 message = f"{message} ({'; '.join(details)})"
             delegation_snapshot = {
                 "enabled": enabled,
+                "reason": reason_code,
                 "failure_count": failure_count,
                 "failure_threshold": failure_threshold,
                 "last_reason": last_reason,

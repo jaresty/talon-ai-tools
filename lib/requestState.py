@@ -220,6 +220,7 @@ RequestDropReason = Literal[
     "history_save_write_failed",
     "history_save_missing_directional",
     "cli_unhealthy",
+    "cli_signature_mismatch",
 ]
 
 

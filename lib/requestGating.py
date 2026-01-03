@@ -114,8 +114,6 @@ def _check_cli_delegation_gate(
     if enabled:
         return True, cast(RequestDropReason, "")
 
-    reason_code = cast(RequestDropReason, "cli_unhealthy")
-
     failure_count = 0
     try:
         failure_count = int(_cliDelegation.failure_count())
@@ -134,9 +132,17 @@ def _check_cli_delegation_gate(
     except Exception:
         last_reason = ""
 
+    last_reason_lower = last_reason.lower()
+    signature_mismatch = "signature telemetry mismatch" in last_reason_lower
+
+    reason_code = cast(
+        RequestDropReason,
+        "cli_signature_mismatch" if signature_mismatch else "cli_unhealthy",
+    )
+
     message = drop_reason_message(reason_code)
     details = []
-    if failure_count:
+    if not signature_mismatch and failure_count:
         if failure_threshold:
             details.append(f"failed probes={failure_count}/{failure_threshold}")
         else:

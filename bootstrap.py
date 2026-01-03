@@ -75,7 +75,7 @@ def _maybe_install_cli() -> None:
 
     try:
         from scripts.tools.install_bar_cli import (  # type: ignore
-            DelegationSnapshotError,
+            ReleaseSignatureError,
             install_cli,
         )
     except Exception as exc:  # pragma: no cover - import errors depend on env
@@ -84,9 +84,9 @@ def _maybe_install_cli() -> None:
 
     try:
         install_cli(quiet=True)
-    except DelegationSnapshotError as exc:
+    except ReleaseSignatureError as exc:
         _warn(
-            "delegation snapshot validation failed; run `python3 scripts/tools/package_bar_cli.py --print-paths` "
+            "release signature validation failed; run `python3 scripts/tools/package_bar_cli.py --print-paths` "
             f"to rebuild packaged CLI: {exc}"
         )
         raise

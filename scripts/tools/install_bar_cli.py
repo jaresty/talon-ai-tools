@@ -30,11 +30,11 @@ RUNTIME_DIR = REPO_ROOT / "var" / "cli-telemetry"
 RUNTIME_STATE_PATH = RUNTIME_DIR / "delegation-state.json"
 
 
-class DelegationSnapshotError(RuntimeError):
-    """Raised when delegation snapshot validation fails."""
+class ReleaseSignatureError(RuntimeError):
+    """Raised when release artefact signature validation fails."""
 
 
-__all__ = ["install_cli", "DelegationSnapshotError"]
+__all__ = ["install_cli", "ReleaseSignatureError"]
 
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
@@ -100,6 +100,17 @@ def _signature_for(message: str) -> str:
     return hashlib.sha256((SIGNATURE_KEY + "\n" + message).encode("utf-8")).hexdigest()
 
 
+def _verify_signature_file(path: Path, recorded: str, label: str) -> None:
+    if not path.exists():
+        raise ReleaseSignatureError(f"missing {label} signature: {path}")
+    signature = path.read_text(encoding="utf-8").strip()
+    expected = _signature_for(recorded)
+    if signature != expected:
+        raise ReleaseSignatureError(
+            f"{label} signature mismatch: expected {expected}, got {signature}"
+        )
+
+
 def _canonical_state_digest(payload: dict) -> str:
     canonical = dict(payload)
     canonical["updated_at"] = None
@@ -110,10 +121,10 @@ def _canonical_state_digest(payload: dict) -> str:
 
 def _load_snapshot_payload() -> dict:
     if not SNAPSHOT_PATH.exists():
-        raise DelegationSnapshotError(f"missing delegation snapshot: {SNAPSHOT_PATH}")
+        raise ReleaseSignatureError(f"missing delegation snapshot: {SNAPSHOT_PATH}")
     payload = json.loads(SNAPSHOT_PATH.read_text(encoding="utf-8"))
     if not isinstance(payload, dict):
-        raise DelegationSnapshotError(
+        raise ReleaseSignatureError(
             f"delegation snapshot invalid (expected object): {SNAPSHOT_PATH}"
         )
     return payload
@@ -128,34 +139,24 @@ def _snapshot_signature_path() -> Path:
 
 def _verify_snapshot(payload: dict) -> str:
     if not SNAPSHOT_DIGEST_PATH.exists():
-        raise DelegationSnapshotError(
+        raise ReleaseSignatureError(
             f"missing delegation snapshot manifest: {SNAPSHOT_DIGEST_PATH}"
         )
     digest, filename = _read_manifest(SNAPSHOT_DIGEST_PATH)
     expected_name = SNAPSHOT_PATH.name
     if filename and filename != expected_name:
-        raise DelegationSnapshotError(
+        raise ReleaseSignatureError(
             f"snapshot manifest filename mismatch: expected {expected_name}, got {filename}"
         )
     canonical = _canonical_state_digest(payload)
     if digest != canonical:
-        raise DelegationSnapshotError(
+        raise ReleaseSignatureError(
             f"delegation snapshot digest mismatch: expected {digest}, got {canonical}"
         )
 
     recorded = f"{digest}  {expected_name}"
     signature_path = _snapshot_signature_path()
-    if not signature_path.exists():
-        raise DelegationSnapshotError(
-            f"missing delegation snapshot signature: {signature_path}"
-        )
-    signature_value = signature_path.read_text(encoding="utf-8").strip()
-    expected_signature = _signature_for(recorded)
-    if signature_value != expected_signature:
-        raise DelegationSnapshotError(
-            "delegation snapshot signature mismatch: expected "
-            f"{expected_signature}, got {signature_value}"
-        )
+    _verify_signature_file(signature_path, recorded, "delegation snapshot")
 
     return digest
 
@@ -164,24 +165,24 @@ def _install_snapshot(payload: dict, digest: str) -> None:
     try:
         from lib import cliDelegation
     except Exception as exc:  # pragma: no cover - import depends on runtime
-        raise DelegationSnapshotError(
+        raise ReleaseSignatureError(
             f"failed to import cliDelegation for snapshot hydration ({exc})"
         )
 
     cliDelegation.apply_release_snapshot(payload)
 
     if not RUNTIME_STATE_PATH.exists():
-        raise DelegationSnapshotError(
+        raise ReleaseSignatureError(
             f"hydrated delegation state missing after install: {RUNTIME_STATE_PATH}"
         )
     hydrated = json.loads(RUNTIME_STATE_PATH.read_text(encoding="utf-8"))
     if not isinstance(hydrated, dict):
-        raise DelegationSnapshotError(
+        raise ReleaseSignatureError(
             "hydrated delegation state invalid (expected object)"
         )
     canonical = _canonical_state_digest(hydrated)
     if canonical != digest:
-        raise DelegationSnapshotError(
+        raise ReleaseSignatureError(
             "hydrated delegation state digest mismatch: "
             f"expected {digest}, got {canonical}"
         )
@@ -200,6 +201,12 @@ def install_cli(force: bool = False, quiet: bool = False) -> Path:
     snapshot_digest = _verify_snapshot(snapshot_payload)
 
     _verify_checksum(tarball, manifest)
+    manifest_recorded = manifest.read_text(encoding="utf-8").strip()
+    _verify_signature_file(
+        manifest.with_suffix(manifest.suffix + ".sig"),
+        manifest_recorded,
+        "tarball manifest",
+    )
 
     if not force and TARGET_PATH.exists():
         latest_artifact_mtime = max(

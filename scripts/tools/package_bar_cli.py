@@ -27,6 +27,7 @@ BIN_DIR = REPO_ROOT / "bin"
 SCHEMA_PATH = REPO_ROOT / "docs" / "schema" / "command-surface.json"
 ARTIFACTS_DIR = REPO_ROOT / "artifacts" / "cli"
 DELEGATION_STATE_SNAPSHOT_PATH = ARTIFACTS_DIR / "delegation-state.json"
+SIGNATURE_KEY = "adr-0063-cli-release-signature"
 
 
 def _target_suffix() -> str:
@@ -70,10 +71,21 @@ def _create_tarball(built_binary: Path, output_dir: Path) -> Path:
     return tarball_path
 
 
+def _signature_for(message: str) -> str:
+    return hashlib.sha256((SIGNATURE_KEY + "\n" + message).encode("utf-8")).hexdigest()
+
+
+def _write_signature(target: Path, message: str) -> Path:
+    target.write_text(f"{_signature_for(message)}\n", encoding="utf-8")
+    return target
+
+
 def _write_manifest(tarball: Path) -> Path:
     digest = hashlib.sha256(tarball.read_bytes()).hexdigest()
     manifest_path = tarball.with_name(f"{tarball.name}.sha256")
-    manifest_path.write_text(f"{digest}  {tarball.name}\n", encoding="utf-8")
+    recorded = f"{digest}  {tarball.name}"
+    manifest_path.write_text(f"{recorded}\n", encoding="utf-8")
+    _write_signature(manifest_path.with_suffix(manifest_path.suffix + ".sig"), recorded)
     return manifest_path
 
 
@@ -99,9 +111,9 @@ def _write_delegation_state_manifest(output_dir: Path) -> Path:
         )
     digest = _canonical_state_digest(snapshot_payload)
     manifest_path = output_dir / "delegation-state.json.sha256"
-    manifest_path.write_text(
-        f"{digest}  {DELEGATION_STATE_SNAPSHOT_PATH.name}\n", encoding="utf-8"
-    )
+    recorded = f"{digest}  {DELEGATION_STATE_SNAPSHOT_PATH.name}"
+    manifest_path.write_text(f"{recorded}\n", encoding="utf-8")
+    _write_signature(manifest_path.with_suffix(manifest_path.suffix + ".sig"), recorded)
     return manifest_path
 
 

@@ -30,11 +30,23 @@ DELEGATION_STATE_DIGEST_PATH = Path(
         "artifacts/cli/delegation-state.json.sha256",
     )
 )
+DELEGATION_STATE_SIGNATURE_ENV = "CLI_DELEGATION_STATE_SIGNATURE"
+SIGNATURE_KEY = "adr-0063-cli-release-signature"
 DELEGATION_STATE_SNAPSHOT_ENV = "CLI_DELEGATION_STATE_SNAPSHOT"
 DELEGATION_STATE_SNAPSHOT_PATH = Path(
     os.environ.get(
         DELEGATION_STATE_SNAPSHOT_ENV,
         "artifacts/cli/delegation-state.json",
+    )
+)
+DELEGATION_STATE_SIGNATURE_PATH = Path(
+    os.environ.get(
+        DELEGATION_STATE_SIGNATURE_ENV,
+        str(
+            DELEGATION_STATE_DIGEST_PATH.with_suffix(
+                DELEGATION_STATE_DIGEST_PATH.suffix + ".sig"
+            )
+        ),
     )
 )
 
@@ -59,6 +71,25 @@ def _tarball_path() -> Path:
 def _manifest_path() -> Path:
     tarball = _tarball_path()
     return tarball.with_name(f"{tarball.name}.sha256")
+
+
+def _signature_for(message: str) -> str:
+    return sha256((SIGNATURE_KEY + "\n" + message).encode("utf-8")).hexdigest()
+
+
+def _verify_signature(signature_path: Path, recorded: str, label: str) -> bool:
+    if not signature_path.exists():
+        print(f"missing {label} signature: {signature_path}", file=sys.stderr)
+        return False
+    signature = signature_path.read_text(encoding="utf-8").strip()
+    expected = _signature_for(recorded)
+    if signature != expected:
+        print(
+            f"{label} signature mismatch: expected {expected}, got {signature}",
+            file=sys.stderr,
+        )
+        return False
+    return True
 
 
 def _check_manifest() -> bool:
@@ -100,6 +131,11 @@ def _check_manifest() -> bool:
             file=sys.stderr,
         )
         ok = False
+
+    signature_path = manifest.with_suffix(manifest.suffix + ".sig")
+    if not _verify_signature(signature_path, recorded, "tarball manifest"):
+        ok = False
+
     return ok
 
 
@@ -251,6 +287,11 @@ def _check_delegation_state() -> bool:
             f"expected {digest}, got {runtime_digest}",
             file=sys.stderr,
         )
+        return False
+
+    if not _verify_signature(
+        DELEGATION_STATE_SIGNATURE_PATH, recorded, "delegation state"
+    ):
         return False
 
     return True

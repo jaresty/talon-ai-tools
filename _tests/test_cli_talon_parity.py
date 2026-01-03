@@ -3,6 +3,7 @@ from pathlib import Path
 import io
 import json
 import hashlib
+import os
 import platform
 import subprocess
 import sys
@@ -45,6 +46,7 @@ CLI_BINARY = Path("bin/bar")
 SCHEMA_BUNDLE = Path("docs/schema/command-surface.json")
 PACKAGED_CLI_DIR = Path("artifacts/cli")
 SIGNATURE_KEY = "adr-0063-cli-release-signature"
+os.environ.setdefault("CLI_RELEASE_SIGNING_KEY", SIGNATURE_KEY)
 
 
 def _target_suffix() -> str:

@@ -7,6 +7,8 @@ import tempfile
 import unittest
 from pathlib import Path
 
+SIGNATURE_KEY = "adr-0063-cli-release-signature"
+
 try:
     from bootstrap import bootstrap
 except ModuleNotFoundError:  # Talon runtime
@@ -36,10 +38,12 @@ else:
             self.state_path = self.runtime_dir / "delegation-state.json"
             self.snapshot_path = self.release_dir / "delegation-state.json"
             self.digest_path = self.release_dir / "delegation-state.json.sha256"
+            self.signature_path = self.release_dir / "delegation-state.json.sha256.sig"
             self.env = os.environ.copy()
             self.env["CLI_DELEGATION_STATE"] = str(self.state_path)
             self.env["CLI_DELEGATION_STATE_SNAPSHOT"] = str(self.snapshot_path)
             self.env["CLI_DELEGATION_STATE_DIGEST"] = str(self.digest_path)
+            self.env["CLI_DELEGATION_STATE_SIGNATURE"] = str(self.signature_path)
             self.command = [sys.executable, "scripts/tools/check_cli_assets.py"]
 
         def _run(self) -> subprocess.CompletedProcess[str]:
@@ -60,6 +64,16 @@ else:
                 )
             ).hexdigest()
 
+        def _signature_for(self, message: str) -> str:
+            return hashlib.sha256(
+                (SIGNATURE_KEY + "\n" + message).encode("utf-8")
+            ).hexdigest()
+
+        def _write_signature(self, recorded: str) -> None:
+            self.signature_path.write_text(
+                f"{self._signature_for(recorded)}\n", encoding="utf-8"
+            )
+
         def _write_state(self, payload: dict) -> None:
             self.state_path.write_text(json.dumps(payload, indent=2), encoding="utf-8")
 
@@ -70,9 +84,9 @@ else:
 
         def _write_matching_manifest(self, payload: dict) -> None:
             digest = self._canonical_digest(payload)
-            self.digest_path.write_text(
-                f"{digest}  {self.snapshot_path.name}\n", encoding="utf-8"
-            )
+            recorded = f"{digest}  {self.snapshot_path.name}"
+            self.digest_path.write_text(f"{recorded}\n", encoding="utf-8")
+            self._write_signature(recorded)
 
         def test_requires_delegation_state_file(self) -> None:
             result = self._run()
@@ -152,9 +166,9 @@ else:
             }
             self._write_state(payload)
             self._write_snapshot(payload)
-            self.digest_path.write_text(
-                f"{'0' * 64}  {self.snapshot_path.name}\n", encoding="utf-8"
-            )
+            recorded = f"{'0' * 64}  {self.snapshot_path.name}"
+            self.digest_path.write_text(f"{recorded}\n", encoding="utf-8")
+            self._write_signature(recorded)
 
             result = self._run()
             self.assertNotEqual(result.returncode, 0, result.stderr)
@@ -192,6 +206,44 @@ else:
             result = self._run()
             self.assertNotEqual(result.returncode, 0, result.stderr)
             self.assertIn("runtime delegation state digest mismatch", result.stderr)
+
+        def test_requires_delegation_state_signature(self) -> None:
+            payload = {
+                "enabled": True,
+                "updated_at": "2026-01-03T00:00:00Z",
+                "reason": None,
+                "source": "bootstrap",
+                "events": [],
+                "failure_count": 0,
+                "failure_threshold": 3,
+            }
+            self._write_state(payload)
+            self._write_snapshot(payload)
+            self._write_matching_manifest(payload)
+            self.signature_path.unlink()
+
+            result = self._run()
+            self.assertNotEqual(result.returncode, 0, result.stderr)
+            self.assertIn("signature", result.stderr)
+
+        def test_snapshot_signature_mismatch(self) -> None:
+            payload = {
+                "enabled": True,
+                "updated_at": "2026-01-03T00:00:00Z",
+                "reason": None,
+                "source": "bootstrap",
+                "events": [],
+                "failure_count": 0,
+                "failure_threshold": 3,
+            }
+            self._write_state(payload)
+            self._write_snapshot(payload)
+            self._write_matching_manifest(payload)
+            self.signature_path.write_text("0" * 64 + "\n", encoding="utf-8")
+
+            result = self._run()
+            self.assertNotEqual(result.returncode, 0, result.stderr)
+            self.assertIn("signature mismatch", result.stderr)
 
         def test_passes_with_healthy_state(self) -> None:
             snapshot_payload = {

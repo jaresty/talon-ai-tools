@@ -10,6 +10,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import os
 import platform
 import shutil
 import sys
@@ -23,6 +24,8 @@ TARGET_PATH = BIN_DIR / "bar.bin"
 ARTIFACTS_DIR = REPO_ROOT / "artifacts" / "cli"
 SNAPSHOT_PATH = ARTIFACTS_DIR / "delegation-state.json"
 SNAPSHOT_DIGEST_PATH = ARTIFACTS_DIR / "delegation-state.json.sha256"
+DELEGATION_STATE_SIGNATURE_ENV = "CLI_DELEGATION_STATE_SIGNATURE"
+SIGNATURE_KEY = "adr-0063-cli-release-signature"
 RUNTIME_DIR = REPO_ROOT / "var" / "cli-telemetry"
 RUNTIME_STATE_PATH = RUNTIME_DIR / "delegation-state.json"
 
@@ -93,6 +96,10 @@ def _verify_checksum(tarball: Path, manifest: Path) -> None:
         )
 
 
+def _signature_for(message: str) -> str:
+    return hashlib.sha256((SIGNATURE_KEY + "\n" + message).encode("utf-8")).hexdigest()
+
+
 def _canonical_state_digest(payload: dict) -> str:
     canonical = dict(payload)
     canonical["updated_at"] = None
@@ -112,6 +119,13 @@ def _load_snapshot_payload() -> dict:
     return payload
 
 
+def _snapshot_signature_path() -> Path:
+    env_override = os.environ.get(DELEGATION_STATE_SIGNATURE_ENV)
+    if env_override:
+        return Path(env_override)
+    return SNAPSHOT_DIGEST_PATH.with_suffix(SNAPSHOT_DIGEST_PATH.suffix + ".sig")
+
+
 def _verify_snapshot(payload: dict) -> str:
     if not SNAPSHOT_DIGEST_PATH.exists():
         raise DelegationSnapshotError(
@@ -128,6 +142,21 @@ def _verify_snapshot(payload: dict) -> str:
         raise DelegationSnapshotError(
             f"delegation snapshot digest mismatch: expected {digest}, got {canonical}"
         )
+
+    recorded = f"{digest}  {expected_name}"
+    signature_path = _snapshot_signature_path()
+    if not signature_path.exists():
+        raise DelegationSnapshotError(
+            f"missing delegation snapshot signature: {signature_path}"
+        )
+    signature_value = signature_path.read_text(encoding="utf-8").strip()
+    expected_signature = _signature_for(recorded)
+    if signature_value != expected_signature:
+        raise DelegationSnapshotError(
+            "delegation snapshot signature mismatch: expected "
+            f"{expected_signature}, got {signature_value}"
+        )
+
     return digest
 
 

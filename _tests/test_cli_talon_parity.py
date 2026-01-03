@@ -44,6 +44,7 @@ else:
 CLI_BINARY = Path("bin/bar")
 SCHEMA_BUNDLE = Path("docs/schema/command-surface.json")
 PACKAGED_CLI_DIR = Path("artifacts/cli")
+SIGNATURE_KEY = "adr-0063-cli-release-signature"
 
 
 def _target_suffix() -> str:
@@ -73,6 +74,10 @@ def _canonical_snapshot_digest(payload: dict) -> str:
     return hashlib.sha256(
         json.dumps(canonical, sort_keys=True, separators=(",", ":")).encode("utf-8")
     ).hexdigest()
+
+
+def _signature_for(message: str) -> str:
+    return hashlib.sha256((SIGNATURE_KEY + "\n" + message).encode("utf-8")).hexdigest()
 
 
 if bootstrap is None:
@@ -287,6 +292,7 @@ else:
 
             snapshot_path = PACKAGED_CLI_DIR / "delegation-state.json"
             digest_path = PACKAGED_CLI_DIR / "delegation-state.json.sha256"
+            signature_path = PACKAGED_CLI_DIR / "delegation-state.json.sha256.sig"
             runtime_path = Path("var/cli-telemetry/delegation-state.json")
 
             self.assertTrue(
@@ -300,6 +306,14 @@ else:
 
             snapshot_backup = snapshot_path.read_bytes()
             digest_backup = digest_path.read_bytes()
+            if signature_path.exists():
+                signature_backup = signature_path.read_bytes()
+            else:
+                recorded_existing = digest_path.read_text(encoding="utf-8").strip()
+                signature_path.write_text(
+                    f"{_signature_for(recorded_existing)}\n", encoding="utf-8"
+                )
+                signature_backup = None
             runtime_path.unlink(missing_ok=True)
             cliDelegation.reset_state()
             clear_bootstrap_warning_events()
@@ -322,6 +336,8 @@ else:
             digest_path.write_text(
                 f"{digest}  {snapshot_path.name}\n", encoding="utf-8"
             )
+            recorded = f"{digest}  {snapshot_path.name}"
+            signature_path.write_text(f"{_signature_for(recorded)}\n", encoding="utf-8")
 
             try:
                 bootstrap()
@@ -352,6 +368,10 @@ else:
             finally:
                 snapshot_path.write_bytes(snapshot_backup)
                 digest_path.write_bytes(digest_backup)
+                if signature_backup is None:
+                    signature_path.unlink(missing_ok=True)
+                else:
+                    signature_path.write_bytes(signature_backup)
                 runtime_path.unlink(missing_ok=True)
                 cliDelegation.reset_state()
                 clear_bootstrap_warning_events()

@@ -11,8 +11,8 @@ bootstrap.bootstrap()
 if bin_path.exists():
     sys.exit(0)
 raise SystemExit('bootstrap did not install CLI binary')
-PY` | status: in_progress — loop-0034 surfaces bootstrap errors for snapshot drift; next slice enforces signature validation before parity runs.
-- [Implementation Guardrails → Delivery posture] Release checksum manifest hardening | `scripts/tools/check_cli_assets.py` | status: in_progress — loop-0034 keeps guardrails observability intact; next slice extends signature enforcement across CI uploads and release signing.
+PY` | status: in_progress — loop-0035 enforces signature validation before parity; next slice integrates signed artefact publication into CI release uploads.
+- [Implementation Guardrails → Delivery posture] Release checksum manifest hardening | `scripts/tools/check_cli_assets.py` | status: in_progress — loop-0035 verifies snapshot signatures; next slice extends signature enforcement across CI uploads and release signing.
 
 ## Completed Loops
 - loop-0001 — tightened loop compliance statements and removed adhoc helper; evidence: `docs/adr/evidence/0063/loop-0001.md`.
@@ -93,3 +93,4 @@ if bin_path.exists():
     sys.exit(0)
 raise SystemExit('bootstrap did not install CLI binary')
 PY`; evidence: `docs/adr/evidence/0063/loop-0034.md`.
+- loop-0035 — enforced signature verification across bootstrap and release guardrails; validation: `python3 -m pytest _tests/test_check_cli_assets.py`; evidence: `docs/adr/evidence/0063/loop-0035.md`.

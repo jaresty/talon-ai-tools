@@ -11,7 +11,7 @@ bootstrap.bootstrap()
 if bin_path.exists():
     sys.exit(0)
 raise SystemExit('bootstrap did not install CLI binary')
-PY` | status: in_progress — loop-0056 hydrates runtime delegation state before guard rails; next slice documents CI artefact upload when available.
+PY` | status: in_progress — loop-0057 extends guardrail coverage for delegation hydration; next slice documents CI artefact upload when available.
 - [Implementation Guardrails → Delivery posture] Release checksum manifest hardening | `python3 scripts/tools/check_cli_assets.py` | status: in_progress — loop-0040 emits signing key telemetry and guards stale metadata; next slice aggregates key drift into parity fallback signals.
 
 ## Completed Loops
@@ -115,3 +115,4 @@ PY`; evidence: `docs/adr/evidence/0063/loop-0034.md`.
 - loop-0054 — recorded telemetry export output from `python3 scripts/tools/check_cli_assets.py --repackage-on-recovery-drift`; validation: `python3 scripts/tools/check_cli_assets.py --repackage-on-recovery-drift`; evidence: `docs/adr/evidence/0063/loop-0054.md`.
 - loop-0055 — ensured CI workflow runs `check_cli_assets.py --repackage-on-recovery-drift` before uploading telemetry bundle; validation: _workflow-only_; evidence: `docs/adr/evidence/0063/loop-0055.md`.
 - loop-0056 — hydrated runtime delegation state from packaged snapshot before guard checks; validation: `python3 scripts/tools/check_cli_assets.py --repackage-on-recovery-drift`; evidence: `docs/adr/evidence/0063/loop-0056.md`.
+- loop-0057 — added guardrail test coverage for delegation state hydration; validation: `python3 -m pytest _tests/test_check_cli_assets.py`; evidence: `docs/adr/evidence/0063/loop-0057.md`.

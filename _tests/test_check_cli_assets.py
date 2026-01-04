@@ -473,6 +473,34 @@ else:
             export_payload = json.loads(self.export_path.read_text(encoding="utf-8"))
             self.assertEqual(export_payload, telemetry)
 
+        def test_hydrates_missing_delegation_state(self) -> None:
+            snapshot_payload = {
+                "enabled": True,
+                "updated_at": "2026-01-03T00:00:00Z",
+                "reason": None,
+                "source": "bootstrap",
+                "events": [],
+                "failure_count": 0,
+                "failure_threshold": 3,
+                "recovery_code": "cli_signature_recovered",
+                "recovery_details": "signature telemetry mismatch detected during bootstrap",
+            }
+            self._write_snapshot(snapshot_payload)
+            recorded, signature = self._write_matching_manifest(snapshot_payload)
+            self._write_metadata(recorded, signature)
+            self.state_path.unlink(missing_ok=True)
+
+            result = self._run()
+            self.assertEqual(result.returncode, 0, result.stderr)
+            stdout = result.stdout
+            self.assertIn("hydrated_delegation_state=", stdout)
+            self.assertIn("all CLI assets present", stdout)
+            self.assertTrue(self.state_path.exists())
+            self.assertEqual(
+                json.loads(self.state_path.read_text(encoding="utf-8")),
+                json.loads(self.snapshot_path.read_text(encoding="utf-8")),
+            )
+
         def test_signature_telemetry_mismatch_blocks_guard(self) -> None:
             snapshot_payload = {
                 "enabled": True,

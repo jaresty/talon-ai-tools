@@ -547,18 +547,14 @@ def _hydrate_runtime_delegation_state() -> bool:
     runtime_path = DELEGATION_STATE_PATH
     if not snapshot_path.exists():
         return False
+    if runtime_path.exists():
+        return False
     try:
         data = snapshot_path.read_bytes()
     except Exception:
         return False
     try:
         runtime_path.parent.mkdir(parents=True, exist_ok=True)
-        if runtime_path.exists():
-            try:
-                if runtime_path.read_bytes() == data:
-                    return True
-            except Exception:
-                pass
         runtime_path.write_bytes(data)
         print(f"hydrated_delegation_state={runtime_path}")
         return True

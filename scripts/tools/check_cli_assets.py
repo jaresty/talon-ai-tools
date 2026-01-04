@@ -173,14 +173,24 @@ def _check_manifest() -> tuple[bool, str, str, list[str]]:
     if not ok:
         return False, "", "", issues
 
-    recorded = manifest.read_text(encoding="utf-8").strip()
+    contents = manifest.read_text(encoding="utf-8")
+    recorded = contents.strip()
     if not recorded:
         message = f"empty manifest: {manifest}"
         print(message, file=sys.stderr)
         issues.append(message)
         return False, "", "", issues
 
-    digest, _, filename_part = recorded.partition("  ")
+    lines = [line.strip() for line in recorded.splitlines() if line.strip()]
+    if len(lines) > 1:
+        message = f"manifest contains multiple entries: {manifest}"
+        print(message, file=sys.stderr)
+        issues.append(message)
+        return False, "", "", issues
+
+    recorded_line = lines[0]
+
+    digest, _, filename_part = recorded_line.partition("  ")
     filename = filename_part.strip()
     if not digest or len(digest) != 64:
         message = f"invalid manifest contents: {manifest}"

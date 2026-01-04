@@ -394,6 +394,32 @@ else:
             self.assertNotEqual(result.returncode, 0, result.stderr)
             self.assertIn("manifest missing filename", result.stderr)
 
+        def test_manifest_rejects_multiple_entries(self) -> None:
+            payload = {
+                "enabled": True,
+                "updated_at": "2026-01-03T00:00:00Z",
+                "reason": None,
+                "source": "bootstrap",
+                "events": [],
+                "failure_count": 0,
+                "failure_threshold": 3,
+            }
+            self._write_state(dict(payload))
+            self._write_snapshot(payload)
+            snapshot_recorded, snapshot_signature = self._write_matching_manifest(
+                payload
+            )
+            self._write_metadata(snapshot_recorded, snapshot_signature)
+            canonical_line = self._tarball_recorded()
+            extra_line = "0" * 64 + "  other.tar.gz"
+            self._tarball_manifest_path.write_text(
+                f"{canonical_line}\n{extra_line}\n", encoding="utf-8"
+            )
+
+            result = self._run()
+            self.assertNotEqual(result.returncode, 0, result.stderr)
+            self.assertIn("manifest contains multiple entries", result.stderr)
+
         def test_requires_delegation_state_signature(self) -> None:
             payload = {
                 "enabled": True,

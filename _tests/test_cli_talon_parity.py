@@ -211,9 +211,7 @@ else:
                     "text": "hello world",
                 },
             }
-            success, response, error_message = cliDelegation.invoke_cli_delegate(
-                payload
-            )
+            success, response, error_message = cliDelegation.delegate_request(payload)
             self.assertTrue(success, error_message)
             self.assertEqual(response.get("status"), "not_implemented")
             self.assertEqual(response.get("request_id"), "req-123")

@@ -13,7 +13,7 @@ RequestStatus = Literal[
     "cancelled",
 ]
 
-RequestLifecycleDropReason = Literal["", "in_flight"]
+RequestLifecycleDropReason = Literal["", "in_flight", "delegation_failed"]
 
 
 @dataclass(frozen=True)

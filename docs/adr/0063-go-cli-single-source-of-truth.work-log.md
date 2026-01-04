@@ -110,3 +110,4 @@ PY`; evidence: `docs/adr/evidence/0063/loop-0034.md`.
 - loop-0059 — rejected multi-entry tarball manifest files and added regression tests; validation: `python3 -m pytest _tests/test_check_cli_assets.py`; evidence: `docs/adr/evidence/0063/loop-0059.md`.
 - loop-0060 — exposed CLI schema export command and parity test coverage; validation: `python3 -m pytest _tests/test_cli_talon_parity.py`; evidence: `docs/adr/evidence/0063/loop-0060.md`.
 - loop-0061 — introduced CLI delegate stub and parity invocation helper; validation: `python3 -m pytest _tests/test_cli_talon_parity.py`; evidence: `docs/adr/evidence/0063/loop-0061.md`.
+- loop-0062 — wrapped CLI delegate with lifecycle helper and parity coverage; validation: `python3 -m pytest _tests/test_cli_talon_parity.py`; evidence: `docs/adr/evidence/0063/loop-0062.md`.

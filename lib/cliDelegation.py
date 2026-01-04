@@ -4,7 +4,7 @@ import json
 import subprocess
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Tuple
 
 from talon import Module, actions
 
@@ -448,6 +448,20 @@ def invoke_cli_delegate(payload: Dict[str, Any]) -> tuple[bool, Dict[str, Any], 
     return True, response, ""
 
 
+def delegate_request(payload: Dict[str, Any]) -> Tuple[bool, Dict[str, Any], str]:
+    """Dispatch a request through the CLI, returning success flag, response, error."""
+
+    success, response, error_message = invoke_cli_delegate(payload)
+    if not success:
+        disable_delegation(
+            f"CLI delegate failure: {error_message}", source="cli_delegate", notify=True
+        )
+        return False, response, error_message
+
+    mark_cli_ready(source="cli_delegate")
+    return True, response, ""
+
+
 @mod.action_class
 class CliDelegationActions:
     def cli_delegation_disable(reason: str, source: str = "runtime") -> None:
@@ -487,4 +501,5 @@ __all__ = [
     "record_health_success",
     "apply_release_snapshot",
     "invoke_cli_delegate",
+    "delegate_request",
 ]

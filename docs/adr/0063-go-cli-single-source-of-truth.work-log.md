@@ -11,7 +11,7 @@ bootstrap.bootstrap()
 if bin_path.exists():
     sys.exit(0)
 raise SystemExit('bootstrap did not install CLI binary')
-PY` | status: in_progress — loop-0053 wired CI artifact uploads for signature telemetry; next slice monitors release runs for telemetry drift evidence.
+PY` | status: in_progress — loop-0054 recorded telemetry bundle export evidence; next slice waits for CI run attachment before closing behaviour.
 - [Implementation Guardrails → Delivery posture] Release checksum manifest hardening | `python3 scripts/tools/check_cli_assets.py` | status: in_progress — loop-0040 emits signing key telemetry and guards stale metadata; next slice aggregates key drift into parity fallback signals.
 
 ## Completed Loops
@@ -112,3 +112,4 @@ PY`; evidence: `docs/adr/evidence/0063/loop-0034.md`.
 - loop-0051 — integrated recovery snapshot drift remediation into Talon parity UX; validation: `python3 -m pytest _tests/test_cli_talon_parity.py`; evidence: `docs/adr/evidence/0063/loop-0051.md`.
 - loop-0052 — documented signature telemetry export workflow for release operators; validation: _documentation-only_; evidence: `docs/adr/evidence/0063/loop-0052.md`.
 - loop-0053 — wired CI artifact uploads for signature telemetry bundle; validation: _workflow-only_; evidence: `docs/adr/evidence/0063/loop-0053.md`.
+- loop-0054 — recorded telemetry export output from `python3 scripts/tools/check_cli_assets.py --repackage-on-recovery-drift`; validation: `python3 scripts/tools/check_cli_assets.py --repackage-on-recovery-drift`; evidence: `docs/adr/evidence/0063/loop-0054.md`.

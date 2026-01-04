@@ -180,14 +180,21 @@ def _check_manifest() -> tuple[bool, str, str, list[str]]:
         issues.append(message)
         return False, "", "", issues
 
-    digest, _, filename = recorded.partition("  ")
+    digest, _, filename_part = recorded.partition("  ")
+    filename = filename_part.strip()
     if not digest or len(digest) != 64:
         message = f"invalid manifest contents: {manifest}"
         print(message, file=sys.stderr)
         issues.append(message)
+        return False, "", "", issues
+
+    if not filename:
+        message = f"manifest missing filename: {manifest}"
+        print(message, file=sys.stderr)
+        issues.append(message)
         return False, recorded, "", issues
 
-    if filename and filename != tarball.name:
+    if filename != tarball.name:
         message = f"manifest filename mismatch: expected {tarball.name}, got {filename}"
         print(message, file=sys.stderr)
         issues.append(message)

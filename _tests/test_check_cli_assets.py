@@ -61,6 +61,13 @@ else:
             self.env["CLI_RELEASE_SIGNING_KEY_ID"] = "test-key"
             self.command = [sys.executable, "scripts/tools/check_cli_assets.py"]
             self._tarball_manifest_path = self._tarball_manifest()
+            if self._tarball_manifest_path.exists():
+                original_manifest = self._tarball_manifest_path.read_bytes()
+
+                def _restore_tarball_manifest() -> None:
+                    self._tarball_manifest_path.write_bytes(original_manifest)
+
+                self.addCleanup(_restore_tarball_manifest)
             self._tarball_signature_path = self._tarball_signature()
             if self._tarball_signature_path.exists():
                 original_signature = self._tarball_signature_path.read_bytes()
@@ -362,6 +369,30 @@ else:
                     signature.write_text(
                         f"{self._signature_for(recorded)}\n", encoding="utf-8"
                     )
+
+        def test_manifest_requires_filename(self) -> None:
+            payload = {
+                "enabled": True,
+                "updated_at": "2026-01-03T00:00:00Z",
+                "reason": None,
+                "source": "bootstrap",
+                "events": [],
+                "failure_count": 0,
+                "failure_threshold": 3,
+            }
+            self._write_state(dict(payload))
+            self._write_snapshot(payload)
+            digest_only = self._canonical_digest(payload)
+            self._tarball_manifest_path.write_text(f"{digest_only}\n", encoding="utf-8")
+            self._write_tarball_signature()
+            snapshot_recorded, snapshot_signature = self._write_matching_manifest(
+                payload
+            )
+            self._write_metadata(snapshot_recorded, snapshot_signature)
+
+            result = self._run()
+            self.assertNotEqual(result.returncode, 0, result.stderr)
+            self.assertIn("manifest missing filename", result.stderr)
 
         def test_requires_delegation_state_signature(self) -> None:
             payload = {

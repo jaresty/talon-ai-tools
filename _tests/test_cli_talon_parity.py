@@ -204,6 +204,21 @@ else:
             expected = SCHEMA_BUNDLE.read_text(encoding="utf-8").strip()
             self.assertEqual(result.stdout.strip(), expected)
 
+        def test_cli_delegate_stub_response(self) -> None:
+            payload = {
+                "request_id": "req-123",
+                "prompt": {
+                    "text": "hello world",
+                },
+            }
+            success, response, error_message = cliDelegation.invoke_cli_delegate(
+                payload
+            )
+            self.assertTrue(success, error_message)
+            self.assertEqual(response.get("status"), "not_implemented")
+            self.assertEqual(response.get("request_id"), "req-123")
+            self.assertIn("stub", (response.get("message") or "").lower())
+
         def test_packaged_cli_assets_present(self) -> None:
             tarball = _packaged_cli_tarball()
             manifest = _packaged_cli_manifest(tarball)

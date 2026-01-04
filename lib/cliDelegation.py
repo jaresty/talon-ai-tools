@@ -1,6 +1,7 @@
 """Manage CLI delegation state for Talon adapters."""
 
 import json
+import subprocess
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, List
@@ -9,6 +10,7 @@ from talon import Module, actions
 
 mod = Module()
 
+_CLI_BINARY = Path("bin/bar")
 _DELEGATION_ENABLED: bool = True
 _DISABLE_EVENTS: List[Dict[str, str]] = []
 _TELEMETRY_DIR = Path("var/cli-telemetry")
@@ -417,6 +419,35 @@ def record_health_success(*, source: str = "health_probe") -> None:
     mark_cli_ready(source=source)
 
 
+def invoke_cli_delegate(payload: Dict[str, Any]) -> tuple[bool, Dict[str, Any], str]:
+    """Execute the CLI delegate command with the provided payload."""
+
+    command = [str(_CLI_BINARY), "delegate"]
+    try:
+        result = subprocess.run(  # noqa: S603,S607 - intentional CLI invocation
+            command,
+            input=json.dumps(payload),
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+    except Exception as exc:  # pragma: no cover - defensive guard
+        return False, {}, f"failed to execute CLI delegate: {exc}"
+
+    if result.returncode != 0:
+        message = result.stderr.strip() or (
+            f"CLI delegate exited with status {result.returncode}"
+        )
+        return False, {}, message
+
+    try:
+        response = json.loads(result.stdout or "{}")
+    except json.JSONDecodeError as exc:
+        return False, {}, f"invalid CLI response JSON ({exc})"
+
+    return True, response, ""
+
+
 @mod.action_class
 class CliDelegationActions:
     def cli_delegation_disable(reason: str, source: str = "runtime") -> None:
@@ -455,4 +486,5 @@ __all__ = [
     "record_health_failure",
     "record_health_success",
     "apply_release_snapshot",
+    "invoke_cli_delegate",
 ]

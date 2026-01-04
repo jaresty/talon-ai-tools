@@ -1,7 +1,7 @@
 # ADR-0063 Work Log — helper:v20251223.1
 
 ## Open Behaviours
-- [Implementation Guardrails → Delivery posture] Replace stubbed CLI delegation with real binary | `python3 -m pytest _tests/test_cli_talon_parity.py` | status: in_progress — loop-0060 exposes schema export via CLI; next slice focuses on delegation command wiring beyond health/schema.
+- [Implementation Guardrails → Delivery posture] Replace stubbed CLI delegation with real binary | `python3 -m pytest _tests/test_cli_talon_parity.py` | status: in_progress — loop-0061 adds delegate stub command; next slice wires real request execution through the CLI.
 - [Implementation Guardrails → Delivery posture] Release checksum manifest hardening | `python3 scripts/tools/check_cli_assets.py` | status: in_progress — loop-0059 enforces single-entry manifests; CI artefact evidence deferred until merge readiness.
 
 ## Completed Loops
@@ -109,3 +109,4 @@ PY`; evidence: `docs/adr/evidence/0063/loop-0034.md`.
 - loop-0058 — required tarball manifests to record the packaged filename and added guard coverage; validation: `python3 -m pytest _tests/test_check_cli_assets.py`; evidence: `docs/adr/evidence/0063/loop-0058.md`.
 - loop-0059 — rejected multi-entry tarball manifest files and added regression tests; validation: `python3 -m pytest _tests/test_check_cli_assets.py`; evidence: `docs/adr/evidence/0063/loop-0059.md`.
 - loop-0060 — exposed CLI schema export command and parity test coverage; validation: `python3 -m pytest _tests/test_cli_talon_parity.py`; evidence: `docs/adr/evidence/0063/loop-0060.md`.
+- loop-0061 — introduced CLI delegate stub and parity invocation helper; validation: `python3 -m pytest _tests/test_cli_talon_parity.py`; evidence: `docs/adr/evidence/0063/loop-0061.md`.

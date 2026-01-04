@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"io/fs"
 	"os"
 	"path/filepath"
@@ -42,6 +43,8 @@ func run(args []string) int {
 		return runHealth()
 	case "schema":
 		return runSchema(args[1:])
+	case "delegate":
+		return runDelegate(args[1:])
 	default:
 		fmt.Fprintf(os.Stderr, "bar: unsupported command %s\n", strings.Join(args, " "))
 		return 2
@@ -96,12 +99,58 @@ func runSchema(args []string) int {
 	return 0
 }
 
+func runDelegate(args []string) int {
+	if len(args) == 1 && (args[0] == "--help" || args[0] == "-h") {
+		printDelegateUsage(os.Stdout)
+		return 0
+	}
+	if len(args) > 0 {
+		printDelegateUsage(os.Stderr)
+		return 2
+	}
+
+	data, err := io.ReadAll(os.Stdin)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "bar: failed to read request: %v\n", err)
+		return 1
+	}
+	if len(strings.TrimSpace(string(data))) == 0 {
+		fmt.Fprintln(os.Stderr, "bar: delegate requires JSON request on stdin")
+		return 2
+	}
+
+	var request map[string]any
+	if err := json.Unmarshal(data, &request); err != nil {
+		fmt.Fprintf(os.Stderr, "bar: invalid request JSON: %v\n", err)
+		return 1
+	}
+
+	response := map[string]any{
+		"status":  "not_implemented",
+		"message": "CLI delegation stub pending Go implementation",
+	}
+	if requestID, ok := request["request_id"].(string); ok && strings.TrimSpace(requestID) != "" {
+		response["request_id"] = requestID
+	}
+
+	if err := json.NewEncoder(os.Stdout).Encode(response); err != nil {
+		fmt.Fprintf(os.Stderr, "bar: failed to encode delegate response: %v\n", err)
+		return 1
+	}
+
+	return 0
+}
+
 func printUsage(out *os.File) {
-	fmt.Fprintln(out, "usage: bar [--health] [schema]")
+	fmt.Fprintln(out, "usage: bar [--health] [schema] [delegate]")
 }
 
 func printSchemaUsage(out *os.File) {
 	fmt.Fprintln(out, "usage: bar schema")
+}
+
+func printDelegateUsage(out *os.File) {
+	fmt.Fprintln(out, "usage: bar delegate < request.json")
 }
 
 func repoRoot() string {

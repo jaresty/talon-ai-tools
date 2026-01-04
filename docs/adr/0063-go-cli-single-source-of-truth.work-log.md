@@ -11,7 +11,7 @@ bootstrap.bootstrap()
 if bin_path.exists():
     sys.exit(0)
 raise SystemExit('bootstrap did not install CLI binary')
-PY` | status: in_progress — loop-0049 automated packaging retries on recovery snapshot drift; next slice wires CI uploads to publish refreshed telemetry bundles automatically.
+PY` | status: in_progress — loop-0050 exported refreshed telemetry bundles for CI uploads; next slice integrates Talon parity UX remediation for recovery snapshot drift.
 - [Implementation Guardrails → Delivery posture] Release checksum manifest hardening | `python3 scripts/tools/check_cli_assets.py` | status: in_progress — loop-0040 emits signing key telemetry and guards stale metadata; next slice aggregates key drift into parity fallback signals.
 
 ## Completed Loops
@@ -108,3 +108,4 @@ PY`; evidence: `docs/adr/evidence/0063/loop-0034.md`.
 - loop-0047 — enforced recovery snapshot parity in checksum telemetry drift guard; validation: `python3 -m pytest _tests/test_check_cli_assets.py`; evidence: `docs/adr/evidence/0063/loop-0047.md`.
 - loop-0048 — exposed signature telemetry artefact path for CI consumption; validation: `python3 -m pytest _tests/test_check_cli_assets.py`; evidence: `docs/adr/evidence/0063/loop-0048.md`.
 - loop-0049 — retried packaging automatically when recovery snapshot drift is detected; validation: `python3 -m pytest _tests/test_check_cli_assets.py`; evidence: `docs/adr/evidence/0063/loop-0049.md`.
+- loop-0050 — exported refreshed signature telemetry bundles for CI uploads; validation: `python3 -m pytest _tests/test_check_cli_assets.py`; evidence: `docs/adr/evidence/0063/loop-0050.md`.

@@ -54,7 +54,10 @@ else:
             self.env["CLI_DELEGATION_STATE_SIGNATURE"] = str(self.signature_path)
             self.env["CLI_SIGNATURE_METADATA"] = str(self.metadata_path)
             self.env["CLI_SIGNATURE_TELEMETRY"] = str(self.telemetry_path)
+            self.export_path = self.release_dir / "signature-telemetry-export.json"
+            self.env["CLI_SIGNATURE_TELEMETRY_EXPORT"] = str(self.export_path)
             self.env["CLI_RELEASE_SIGNING_KEY"] = SIGNATURE_KEY
+            self.addCleanup(lambda: self.export_path.unlink(missing_ok=True))
             self.env["CLI_RELEASE_SIGNING_KEY_ID"] = "test-key"
             self.command = [sys.executable, "scripts/tools/check_cli_assets.py"]
             self._tarball_manifest_path = self._tarball_manifest()
@@ -429,6 +432,7 @@ else:
             self.assertIn(f"cli_manifest={self._tarball_manifest_path}", stdout)
             self.assertIn(f"cli_signatures={self.metadata_path}", stdout)
             self.assertIn(f"cli_signature_telemetry={self.telemetry_path}", stdout)
+            self.assertTrue(self.export_path.exists())
 
             telemetry: dict = self._read_telemetry()
             self.assertEqual("green", telemetry["status"])
@@ -465,6 +469,9 @@ else:
             self.assertEqual(telemetry["delegation_snapshot"]["signature"], signature)
             self.assertNotIn("previous", telemetry)
             self.assertFalse(telemetry.get("issues"))
+
+            export_payload = json.loads(self.export_path.read_text(encoding="utf-8"))
+            self.assertEqual(export_payload, telemetry)
 
         def test_signature_telemetry_mismatch_blocks_guard(self) -> None:
             snapshot_payload = {
@@ -670,12 +677,16 @@ else:
             self.assertIn(
                 f"cli_signature_telemetry={self.telemetry_path}", result.stdout
             )
+            self.assertTrue(self.export_path.exists())
 
             telemetry: dict = self._read_telemetry()
             self.assertEqual(
                 telemetry.get("cli_recovery_snapshot"),
                 self._recovery_snapshot(snapshot_payload),
             )
+
+            export_payload = json.loads(self.export_path.read_text(encoding="utf-8"))
+            self.assertEqual(export_payload, telemetry)
 
         def test_requires_signature_metadata(self) -> None:
             snapshot_payload = {

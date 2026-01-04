@@ -48,6 +48,13 @@ SIGNATURE_TELEMETRY_PATH = Path(
         "var/cli-telemetry/signature-metadata.json",
     )
 )
+SIGNATURE_TELEMETRY_EXPORT_ENV = "CLI_SIGNATURE_TELEMETRY_EXPORT"
+SIGNATURE_TELEMETRY_EXPORT_PATH = Path(
+    os.environ.get(
+        SIGNATURE_TELEMETRY_EXPORT_ENV,
+        "artifacts/cli/signature-telemetry.json",
+    )
+)
 REPACKAGE_COMMAND_ENV = "CLI_REPACKAGE_COMMAND"
 DEFAULT_SIGNING_KEY_ID = "local-dev"
 SIGNING_KEY_ID_ENV = "CLI_RELEASE_SIGNING_KEY_ID"
@@ -519,6 +526,22 @@ def _read_signature_telemetry() -> tuple[bool, dict | None, list[str]]:
     return True, payload, issues
 
 
+def _export_signature_telemetry() -> None:
+    try:
+        SIGNATURE_TELEMETRY_EXPORT_PATH.parent.mkdir(parents=True, exist_ok=True)
+        SIGNATURE_TELEMETRY_EXPORT_PATH.write_text(
+            SIGNATURE_TELEMETRY_PATH.read_text(encoding="utf-8"),
+            encoding="utf-8",
+        )
+        print(f"ci_signature_telemetry_export={SIGNATURE_TELEMETRY_EXPORT_PATH}")
+    except Exception as exc:  # pragma: no cover - defensive
+        message = (
+            "failed to export signature telemetry to "
+            f"{SIGNATURE_TELEMETRY_EXPORT_PATH}: {exc}"
+        )
+        print(message, file=sys.stderr)
+
+
 def _run_repackage_cli() -> tuple[bool, list[str]]:
     command_env = os.environ.get(REPACKAGE_COMMAND_ENV)
     if command_env:
@@ -769,6 +792,7 @@ def main() -> int:
     )
 
     print(f"cli_signature_telemetry={SIGNATURE_TELEMETRY_PATH}")
+    _export_signature_telemetry()
 
     return 0 if ok else 1
 

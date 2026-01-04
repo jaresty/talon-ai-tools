@@ -11,7 +11,7 @@ bootstrap.bootstrap()
 if bin_path.exists():
     sys.exit(0)
 raise SystemExit('bootstrap did not install CLI binary')
-PY` | status: in_progress — loop-0054 recorded telemetry bundle export evidence; next slice waits for CI run attachment before closing behaviour.
+PY` | status: in_progress — loop-0055 runs `check_cli_assets.py --repackage-on-recovery-drift` in CI; next slice captures uploaded artifact evidence once a run completes.
 - [Implementation Guardrails → Delivery posture] Release checksum manifest hardening | `python3 scripts/tools/check_cli_assets.py` | status: in_progress — loop-0040 emits signing key telemetry and guards stale metadata; next slice aggregates key drift into parity fallback signals.
 
 ## Completed Loops
@@ -113,3 +113,4 @@ PY`; evidence: `docs/adr/evidence/0063/loop-0034.md`.
 - loop-0052 — documented signature telemetry export workflow for release operators; validation: _documentation-only_; evidence: `docs/adr/evidence/0063/loop-0052.md`.
 - loop-0053 — wired CI artifact uploads for signature telemetry bundle; validation: _workflow-only_; evidence: `docs/adr/evidence/0063/loop-0053.md`.
 - loop-0054 — recorded telemetry export output from `python3 scripts/tools/check_cli_assets.py --repackage-on-recovery-drift`; validation: `python3 scripts/tools/check_cli_assets.py --repackage-on-recovery-drift`; evidence: `docs/adr/evidence/0063/loop-0054.md`.
+- loop-0055 — ensured CI workflow runs `check_cli_assets.py --repackage-on-recovery-drift` before uploading telemetry bundle; validation: _workflow-only_; evidence: `docs/adr/evidence/0063/loop-0055.md`.

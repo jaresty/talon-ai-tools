@@ -33,6 +33,9 @@ jobs:
       - name: Run guardrails
         run: make ci-guardrails
 
+      - name: Run CLI asset guard
+        run: python3 scripts/tools/check_cli_assets.py --repackage-on-recovery-drift
+
       - name: Run tests
         run: python3 -m unittest discover -s tests -v
 

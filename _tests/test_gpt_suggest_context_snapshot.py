@@ -15,6 +15,7 @@ if bootstrap is not None:
     )
     from talon_user.lib.modelTypes import GPTSystemPrompt
     from talon_user.lib.modelState import GPTState
+    from talon_user.lib.modelSource import ModelSource
 else:  # Fallback for direct import paths
     from talon import settings  # type: ignore
     from lib.axisMappings import axis_hydrate_tokens  # type: ignore
@@ -25,8 +26,10 @@ else:  # Fallback for direct import paths
     )
     from lib.modelTypes import GPTSystemPrompt  # type: ignore
     from lib.modelState import GPTState  # type: ignore
+    from lib.modelSource import ModelSource  # type: ignore
 
 import sys
+from typing import cast
 from unittest.mock import patch
 
 
@@ -80,10 +83,10 @@ def test_suggest_context_snapshot_drops_hydrated_strings():
 
 
 def test_suggest_uses_hydrated_system_prompt_for_llm():
-    class DummySource:
+    class DummySource(ModelSource):
         modelSimpleSource = "clipboard"
 
-        def get_text(self):
+        def get_text(self):  # type: ignore[override]
             return "dummy source text"
 
     sys_prompt = GPTSystemPrompt(
@@ -111,10 +114,17 @@ def test_suggest_uses_hydrated_system_prompt_for_llm():
 
     mod = sys.modules[_suggest_context_snapshot.__module__]
 
-    with patch.object(mod._prompt_pipeline, "complete_async", return_value=DummyHandle(dummy_json)), patch.object(
-        mod._prompt_pipeline, "complete", return_value=DummyHandle(dummy_json).result
-    ), patch.object(mod.actions.user, "model_prompt_recipe_suggestions_gui_open"), patch.object(
-        mod.actions.user, "gpt_insert_response"
+    with (
+        patch.object(
+            mod._prompt_pipeline, "complete_async", return_value=DummyHandle(dummy_json)
+        ),
+        patch.object(
+            mod._prompt_pipeline,
+            "complete",
+            return_value=DummyHandle(dummy_json).result,
+        ),
+        patch.object(mod.actions.user, "model_prompt_recipe_suggestions_gui_open"),
+        patch.object(mod.actions.user, "gpt_insert_response"),
     ):
         _suggest_prompt_recipes_core_impl(DummySource(), "")
 
@@ -138,49 +148,59 @@ def test_suggest_uses_hydrated_system_prompt_for_llm():
     # Voice
     assert _contains_any(["Voice: Act as a programmer"]), content
     # Audience
-    assert _contains_any(["Audience: The audience for this is the stakeholders"]), content
+    assert _contains_any(["Audience: The audience for this is the stakeholders"]), (
+        content
+    )
     # Tone
     assert _contains_any(
-        ["Tone: Use a direct, straightforward tone while remaining respectful."]
+        [
+            "Tone: The response speaks directly and straightforwardly while remaining respectful."
+        ]
     ), content
     # Intent intent
-    assert _contains_any(["Intent: The goal is to express appreciation or thanks."]), content
+    assert _contains_any(["Intent: The response expresses appreciation or thanks."]), (
+        content
+    )
     # Contract axes
-    assert _contains_any(["Completeness: Important: Provide a thorough answer"]), content
     assert _contains_any(
         [
-            "Scope: Important: Within the selected target, focus only on concrete actions",
+            "Completeness: The response provides a thorough answer for normal use, covering all major aspects without needing every micro-detail.",
         ]
     ), content
     assert _contains_any(
         [
-            "Method: Important: Give a short plan first, then carry it out",
+            "Scope: The response stays within the selected target and focuses only on concrete actions or tasks a user or team could take, leaving out background analysis or explanation.",
         ]
     ), content
     assert _contains_any(
         [
-            "Form: Important: Format the main answer as concise bullet points only",
+            "Method: The response offers a short plan first and then carries it out, clearly separating the plan from the execution.",
         ]
     ), content
     assert _contains_any(
         [
-            "Channel: Important: Format the answer for Slack",
+            "Form: The response presents the main answer as concise bullet points only, avoiding long paragraphs.",
+        ]
+    ), content
+    assert _contains_any(
+        [
+            "Channel: The response formats the answer for Slack using appropriate Markdown, mentions, and code blocks while avoiding channel-irrelevant decoration.",
         ]
     ), content
 
 
 def test_suggest_hydrates_system_prompt_defaults_from_settings():
-    class DummySource:
+    class DummySource(ModelSource):
         modelSimpleSource = "clipboard"
 
-        def get_text(self):
+        def get_text(self):  # type: ignore[override]
             return "defaults source text"
 
     defaults = {
         "user.model_default_voice": ["as programmer"],
         "user.model_default_audience": ["to stakeholders"],
         "user.model_default_tone": ["directly"],
-            "user.model_default_intent": ["appreciate"],
+        "user.model_default_intent": ["appreciate"],
         "user.model_default_completeness": "full",
         "user.model_default_scope": "actions",
         "user.model_default_method": "plan",
@@ -205,10 +225,19 @@ def test_suggest_hydrates_system_prompt_defaults_from_settings():
 
         mod = sys.modules[_suggest_context_snapshot.__module__]
 
-        with patch.object(mod._prompt_pipeline, "complete_async", return_value=DummyHandle(dummy_json)), patch.object(
-            mod._prompt_pipeline, "complete", return_value=DummyHandle(dummy_json).result
-        ), patch.object(mod.actions.user, "model_prompt_recipe_suggestions_gui_open"), patch.object(
-            mod.actions.user, "gpt_insert_response"
+        with (
+            patch.object(
+                mod._prompt_pipeline,
+                "complete_async",
+                return_value=DummyHandle(dummy_json),
+            ),
+            patch.object(
+                mod._prompt_pipeline,
+                "complete",
+                return_value=DummyHandle(dummy_json).result,
+            ),
+            patch.object(mod.actions.user, "model_prompt_recipe_suggestions_gui_open"),
+            patch.object(mod.actions.user, "gpt_insert_response"),
         ):
             _suggest_prompt_recipes_core_impl(DummySource(), "")
 
@@ -221,7 +250,9 @@ def test_suggest_hydrates_system_prompt_defaults_from_settings():
         for msg in system_messages:
             content_raw = msg.get("content", "")
             if isinstance(content_raw, list):
-                parts.append(" ".join(str(item.get("text", "")) for item in content_raw))
+                parts.append(
+                    " ".join(str(item.get("text", "")) for item in content_raw)
+                )
             else:
                 parts.append(str(content_raw))
         content = " ".join(parts)
@@ -229,8 +260,8 @@ def test_suggest_hydrates_system_prompt_defaults_from_settings():
         persona_expected = {
             "Voice: Act as a programmer",
             "Audience: The audience for this is the stakeholders",
-            "Tone: Use a direct, straightforward tone while remaining respectful.",
-            "Intent: The goal is to express appreciation or thanks.",
+            "Tone: The response speaks directly and straightforwardly while remaining respectful.",
+            "Intent: The response expresses appreciation or thanks.",
         }
         for needle in persona_expected:
             assert needle in content
@@ -247,4 +278,7 @@ def test_suggest_hydrates_system_prompt_defaults_from_settings():
     finally:
         for key, value in prior.items():
             settings.set(key, value)
-        GPTState.system_prompt = prior_prompt
+        if isinstance(prior_prompt, GPTSystemPrompt):
+            GPTState.system_prompt = cast(GPTSystemPrompt, prior_prompt)
+        else:
+            GPTState.system_prompt = GPTSystemPrompt()

@@ -46,11 +46,16 @@ if bootstrap is not None:
 
             request = GPTState.request
             self.assertEqual(request["model"], settings.get("user.openai_model"))
-            self.assertTrue(any(msg.get("role") == "system" for msg in request["messages"]))
+            self.assertTrue(
+                any(msg.get("role") == "system" for msg in request["messages"])
+            )
             user_messages = [m for m in request["messages"] if m.get("role") == "user"]
             self.assertEqual(len(user_messages), 1)
             self.assertTrue(
-                any(item.get("text") == "primary" for item in user_messages[0]["content"])
+                any(
+                    item.get("text") == "primary"
+                    for item in user_messages[0]["content"]
+                )
             )
 
         @patch.object(prompt_session_module, "send_request")
@@ -66,7 +71,9 @@ if bootstrap is not None:
             mock_send_request.assert_called_once()
 
         @patch.object(prompt_session_module, "send_request_async")
-        def test_execute_async_returns_send_request_async_handle(self, mock_send_request_async):
+        def test_execute_async_returns_send_request_async_handle(
+            self, mock_send_request_async
+        ):
             class DummyHandle:
                 pass
 
@@ -150,22 +157,47 @@ if bootstrap is not None:
             session.add_system_prompt()
 
             system_messages = [
-                msg for msg in GPTState.request.get("messages", []) if msg.get("role") == "system"
+                msg
+                for msg in GPTState.request.get("messages", [])
+                if msg.get("role") == "system"
             ]
             self.assertGreaterEqual(len(system_messages), 1)
             content_raw = system_messages[-1].get("content", [])
             hydrated = " ".join([item.get("text", "") for item in content_raw])
             self.assertIn("Voice: Act as a programmer", hydrated)
-            self.assertIn("Audience: The audience for this is the stakeholders", hydrated)
-            self.assertIn("Tone: Use a direct, straightforward tone while remaining respectful.", hydrated)
-            self.assertIn("Intent: The goal is to express appreciation or thanks.", hydrated)
-            self.assertIn("Completeness: Important: Provide a thorough answer", hydrated)
-            self.assertIn("Scope: Important: Within the selected target, focus only on concrete actions", hydrated)
-            self.assertIn("Method: Important: Give a short plan first, then carry it out", hydrated)
-            self.assertIn("Form: Important: Format the main answer as concise bullet points only", hydrated)
-            self.assertIn("Channel: Important: Format the answer for Slack", hydrated)
+            self.assertIn(
+                "Audience: The audience for this is the stakeholders", hydrated
+            )
+            self.assertIn(
+                "Tone: The response speaks directly and straightforwardly while remaining respectful.",
+                hydrated,
+            )
+            self.assertIn(
+                "Intent: The response expresses appreciation or thanks.", hydrated
+            )
+            self.assertIn(
+                "Completeness: The response provides a thorough answer for normal use, covering all major aspects without needing every micro-detail.",
+                hydrated,
+            )
+            self.assertIn(
+                "Scope: The response stays within the selected target and focuses only on concrete actions or tasks a user or team could take, leaving out background analysis or explanation.",
+                hydrated,
+            )
+            self.assertIn(
+                "Method: The response offers a short plan first and then carries it out, clearly separating the plan from the execution.",
+                hydrated,
+            )
+            self.assertIn(
+                "Form: The response presents the main answer as concise bullet points only, avoiding long paragraphs.",
+                hydrated,
+            )
+            self.assertIn(
+                "Channel: The response formats the answer for Slack using appropriate Markdown, mentions, and code blocks while avoiding channel-irrelevant decoration.",
+                hydrated,
+            )
 else:
     if not TYPE_CHECKING:
+
         class PromptSessionTests(unittest.TestCase):
             @unittest.skip("Test harness unavailable outside unittest runs")
             def test_placeholder(self):

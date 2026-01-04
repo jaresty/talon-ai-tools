@@ -23,7 +23,7 @@ settings():
     # Enable reachability probes in provider list/status canvases
     # user.model_provider_probe = 1
 
-    # user.model_system_prompt = "You are an assistant helping an office worker to be more productive."
+    # user.model_system_prompt = "The assistant provides productivity guidance tailored to an office worker's needs."
 
     # Maximum time in seconds to wait for a single model HTTP request before timing out.
     # user.model_request_timeout_seconds = 120

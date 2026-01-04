@@ -284,10 +284,10 @@ if bootstrap is not None:
                 )
 
             def test_axis_value_returns_description_when_present(self) -> None:
-                mapping = {"gist": "Important: Provide a short but complete answer."}
+                mapping = {"gist": "The response offers a short but complete answer."}
                 self.assertEqual(
                     _axis_value("gist", mapping),
-                    "Important: Provide a short but complete answer.",
+                    "The response offers a short but complete answer.",
                 )
                 # Unknown tokens fall back to the raw token.
                 self.assertEqual(_axis_value("unknown", mapping), "unknown")

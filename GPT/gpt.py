@@ -422,8 +422,8 @@ def _suggest_prompt_text(
     )
 
     return (
-        "You are a prompt recipe assistant for the Talon `model` command.\n"
-        "Based on the subject and content below, suggest 3 to 5 concrete prompt recipes.\n\n"
+        "This assistant functions as the prompt recipe assistant for the Talon `model` command.\n"
+        "It generates 3 to 5 concrete prompt recipes based on the subject and content below.\n\n"
         "You MUST output ONLY JSON with this exact top-level shape (no markdown, backticks, or extra text):\n\n"
         "{\n"
         '  "suggestions": [\n'

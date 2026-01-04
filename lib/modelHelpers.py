@@ -779,11 +779,15 @@ def _build_request_context(destination: object) -> list[str]:
     destination_str = destination if isinstance(destination, str) else ""
     language = actions.code.language()
     language_context = (
-        f"The user is currently in a code editor for the programming language: {language}. You are an expert in this language and will return syntactically appropriate responses for insertion directly into this language. All commentary should be commented out so that you do not cause any syntax errors."
+        f"The user is currently in a code editor for the programming language: {language}. All responses remain syntactically appropriate for direct insertion into this language. Any commentary appears as comments so the code stays valid."
         if language != ""
         else None
     )
-    application_context = f"The following describes the currently focused application:\n\n{actions.user.talon_get_active_context()}\n\nYou are an expert user of this application."
+    application_context = (
+        "The following text describes the currently focused application:\n\n"
+        f"{actions.user.talon_get_active_context()}\n\n"
+        "Responses reflect the fluency of an expert user of this application."
+    )
     snippet_context = _build_snippet_context(destination_str)
     timeout_context = _build_timeout_context()
     system_messages = [
@@ -947,10 +951,10 @@ def call_tool(
                 )
 
             system_msg = (
-                "You are a recursive assistant call at depth 1 of 1.\n"
-                "Provide a concise and factual answer.\n"
-                "Do NOT suggest or attempt to call yourself again.\n"
-                "Only respond to the user prompt with useful information."
+                "This call operates as the recursive assistant at depth 1 of 1.\n"
+                "It delivers a concise and factual answer.\n"
+                "It does not suggest or attempt to call itself again.\n"
+                "It responds to the user prompt only with useful information."
             )
             user_message = [format_messages("user", [format_message(prompt)])]
             nested_request = build_chatgpt_request(user_message, [system_msg])

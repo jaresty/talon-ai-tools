@@ -542,6 +542,30 @@ def _export_signature_telemetry() -> None:
         print(message, file=sys.stderr)
 
 
+def _hydrate_runtime_delegation_state() -> bool:
+    snapshot_path = DELEGATION_STATE_SNAPSHOT_PATH
+    runtime_path = DELEGATION_STATE_PATH
+    if not snapshot_path.exists():
+        return False
+    try:
+        data = snapshot_path.read_bytes()
+    except Exception:
+        return False
+    try:
+        runtime_path.parent.mkdir(parents=True, exist_ok=True)
+        if runtime_path.exists():
+            try:
+                if runtime_path.read_bytes() == data:
+                    return True
+            except Exception:
+                pass
+        runtime_path.write_bytes(data)
+        print(f"hydrated_delegation_state={runtime_path}")
+        return True
+    except Exception:
+        return False
+
+
 def _run_repackage_cli() -> tuple[bool, list[str]]:
     command_env = os.environ.get(REPACKAGE_COMMAND_ENV)
     if command_env:
@@ -705,6 +729,8 @@ def main() -> int:
     if not manifest_ok:
         ok = False
 
+    _hydrate_runtime_delegation_state()
+
     (
         snapshot_ok,
         snapshot_recorded,
@@ -756,6 +782,7 @@ def main() -> int:
         ):
             success, _ = _run_repackage_cli()
             if success:
+                _hydrate_runtime_delegation_state()
                 telemetry_ok, expected_payload, previous_payload, telemetry_issues = (
                     _check_signature_telemetry(
                         metadata,

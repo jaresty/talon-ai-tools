@@ -34,36 +34,74 @@ func run(args []string) int {
 		return 0
 	}
 
-	if len(args) == 1 {
-		switch args[0] {
-		case "--help", "-h":
-			printUsage(os.Stdout)
-			return 0
-		case "--health":
-			root := repoRoot()
-			payload := healthPayload{
-				Status:     "ok",
-				Version:    schemaVersion(root),
-				Runtime:    runtimeName,
-				Executor:   executorName,
-				BinaryPath: runtimeBinaryPath(root),
-			}
+	switch args[0] {
+	case "--help", "-h":
+		printUsage(os.Stdout)
+		return 0
+	case "--health":
+		return runHealth()
+	case "schema":
+		return runSchema(args[1:])
+	default:
+		fmt.Fprintf(os.Stderr, "bar: unsupported command %s\n", strings.Join(args, " "))
+		return 2
+	}
+}
 
-			if err := json.NewEncoder(os.Stdout).Encode(payload); err != nil {
-				fmt.Fprintf(os.Stderr, "bar: failed to encode health payload: %v\n", err)
-				return 1
-			}
-
-			return 0
-		}
+func runHealth() int {
+	root := repoRoot()
+	payload := healthPayload{
+		Status:     "ok",
+		Version:    schemaVersion(root),
+		Runtime:    runtimeName,
+		Executor:   executorName,
+		BinaryPath: runtimeBinaryPath(root),
 	}
 
-	fmt.Fprintf(os.Stderr, "bar: unsupported command %s\n", strings.Join(args, " "))
-	return 2
+	if err := json.NewEncoder(os.Stdout).Encode(payload); err != nil {
+		fmt.Fprintf(os.Stderr, "bar: failed to encode health payload: %v\n", err)
+		return 1
+	}
+
+	return 0
+}
+
+func runSchema(args []string) int {
+	if len(args) == 1 && (args[0] == "--help" || args[0] == "-h") {
+		printSchemaUsage(os.Stdout)
+		return 0
+	}
+	if len(args) > 0 {
+		printSchemaUsage(os.Stderr)
+		return 2
+	}
+
+	root := repoRoot()
+	path := filepath.Join(root, schemaRelativePath)
+	data, err := os.ReadFile(path)
+	if errors.Is(err, fs.ErrNotExist) {
+		fmt.Fprintf(os.Stderr, "bar: schema bundle missing at %s\n", path)
+		return 1
+	}
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "bar: failed to read schema bundle: %v\n", err)
+		return 1
+	}
+
+	if _, err := fmt.Fprint(os.Stdout, string(data)); err != nil {
+		fmt.Fprintf(os.Stderr, "bar: failed to write schema bundle: %v\n", err)
+		return 1
+	}
+
+	return 0
 }
 
 func printUsage(out *os.File) {
-	fmt.Fprintln(out, "usage: bar [--health]")
+	fmt.Fprintln(out, "usage: bar [--health] [schema]")
+}
+
+func printSchemaUsage(out *os.File) {
+	fmt.Fprintln(out, "usage: bar schema")
 }
 
 func repoRoot() string {

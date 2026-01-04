@@ -193,6 +193,17 @@ else:
             self.assertIn("version", payload)
             self.assertIn("commands", payload)
 
+        def test_cli_schema_command_outputs_bundle(self) -> None:
+            result = subprocess.run(
+                [str(CLI_BINARY), "schema"],
+                capture_output=True,
+                text=True,
+                check=False,
+            )
+            self.assertEqual(result.returncode, 0, result.stderr)
+            expected = SCHEMA_BUNDLE.read_text(encoding="utf-8").strip()
+            self.assertEqual(result.stdout.strip(), expected)
+
         def test_packaged_cli_assets_present(self) -> None:
             tarball = _packaged_cli_tarball()
             manifest = _packaged_cli_manifest(tarball)

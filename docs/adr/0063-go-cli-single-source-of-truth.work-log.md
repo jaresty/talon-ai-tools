@@ -1,18 +1,8 @@
 # ADR-0063 Work Log — helper:v20251223.1
 
 ## Open Behaviours
-- [Implementation Guardrails → Delivery posture] Replace stubbed CLI delegation with real binary | `python3 - <<'PY'
-import pathlib, sys
-bin_path = pathlib.Path('bin/bar.bin')
-if bin_path.exists():
-    bin_path.unlink()
-import bootstrap
-bootstrap.bootstrap()
-if bin_path.exists():
-    sys.exit(0)
-raise SystemExit('bootstrap did not install CLI binary')
-PY` | status: in_progress — loop-0057 extends guardrail coverage for delegation hydration; next slice documents CI artefact upload when available.
-- [Implementation Guardrails → Delivery posture] Release checksum manifest hardening | `python3 scripts/tools/check_cli_assets.py` | status: in_progress — loop-0059 enforces single-entry manifests; next slice captures CI artefact evidence once uploads land.
+- [Implementation Guardrails → Delivery posture] Replace stubbed CLI delegation with real binary | `python3 -m pytest _tests/test_cli_talon_parity.py` | status: in_progress — loop-0060 exposes schema export via CLI; next slice focuses on delegation command wiring beyond health/schema.
+- [Implementation Guardrails → Delivery posture] Release checksum manifest hardening | `python3 scripts/tools/check_cli_assets.py` | status: in_progress — loop-0059 enforces single-entry manifests; CI artefact evidence deferred until merge readiness.
 
 ## Completed Loops
 - loop-0001 — tightened loop compliance statements and removed adhoc helper; evidence: `docs/adr/evidence/0063/loop-0001.md`.
@@ -118,3 +108,4 @@ PY`; evidence: `docs/adr/evidence/0063/loop-0034.md`.
 - loop-0057 — added guardrail test coverage for delegation state hydration; validation: `python3 -m pytest _tests/test_check_cli_assets.py`; evidence: `docs/adr/evidence/0063/loop-0057.md`.
 - loop-0058 — required tarball manifests to record the packaged filename and added guard coverage; validation: `python3 -m pytest _tests/test_check_cli_assets.py`; evidence: `docs/adr/evidence/0063/loop-0058.md`.
 - loop-0059 — rejected multi-entry tarball manifest files and added regression tests; validation: `python3 -m pytest _tests/test_check_cli_assets.py`; evidence: `docs/adr/evidence/0063/loop-0059.md`.
+- loop-0060 — exposed CLI schema export command and parity test coverage; validation: `python3 -m pytest _tests/test_cli_talon_parity.py`; evidence: `docs/adr/evidence/0063/loop-0060.md`.

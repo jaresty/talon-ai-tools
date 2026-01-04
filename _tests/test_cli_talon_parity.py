@@ -204,7 +204,7 @@ else:
             expected = SCHEMA_BUNDLE.read_text(encoding="utf-8").strip()
             self.assertEqual(result.stdout.strip(), expected)
 
-        def test_cli_delegate_stub_response(self) -> None:
+        def test_cli_delegate_executes_request(self) -> None:
             payload = {
                 "request_id": "req-123",
                 "prompt": {
@@ -213,9 +213,23 @@ else:
             }
             success, response, error_message = cliDelegation.delegate_request(payload)
             self.assertTrue(success, error_message)
-            self.assertEqual(response.get("status"), "not_implemented")
+            self.assertEqual(response.get("status"), "ok")
             self.assertEqual(response.get("request_id"), "req-123")
-            self.assertIn("stub", (response.get("message") or "").lower())
+            self.assertIn("processed", (response.get("message") or "").lower())
+            result = response.get("result") or {}
+            self.assertEqual(result.get("echo"), "hello world")
+            self.assertEqual(result.get("echo_upper"), "HELLO WORLD")
+            self.assertEqual(error_message, "")
+
+        def test_cli_delegate_failure_disables_delegation(self) -> None:
+            cliDelegation.reset_state()
+            payload = {"request_id": "req-error"}
+            success, response, error_message = cliDelegation.delegate_request(payload)
+            self.assertFalse(success)
+            self.assertEqual(response, {})
+            self.assertIn("prompt.text", error_message)
+            self.assertFalse(cliDelegation.delegation_enabled())
+            cliDelegation.reset_state()
 
         def test_packaged_cli_assets_present(self) -> None:
             tarball = _packaged_cli_tarball()

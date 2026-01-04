@@ -125,9 +125,26 @@ func runDelegate(args []string) int {
 		return 1
 	}
 
+	promptPayload, ok := request["prompt"].(map[string]any)
+	if !ok {
+		fmt.Fprintln(os.Stderr, "bar: delegate requires prompt.text string")
+		return 1
+	}
+	promptText, ok := promptPayload["text"].(string)
+	if !ok || strings.TrimSpace(promptText) == "" {
+		fmt.Fprintln(os.Stderr, "bar: delegate requires prompt.text string")
+		return 1
+	}
+
+	result := map[string]any{
+		"echo":       promptText,
+		"echo_upper": strings.ToUpper(promptText),
+	}
+
 	response := map[string]any{
-		"status":  "not_implemented",
-		"message": "CLI delegation stub pending Go implementation",
+		"status":  "ok",
+		"message": "CLI delegate processed request",
+		"result":  result,
 	}
 	if requestID, ok := request["request_id"].(string); ok && strings.TrimSpace(requestID) != "" {
 		response["request_id"] = requestID

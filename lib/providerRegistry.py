@@ -382,6 +382,12 @@ class ProviderRegistry:
                         details.append(f"failed probes={failure_count}")
                 if last_reason:
                     details.append(last_reason)
+                export_path = os.environ.get(
+                    "CLI_SIGNATURE_TELEMETRY_EXPORT",
+                    "artifacts/cli/signature-telemetry.json",
+                )
+                if signature_mismatch and export_path:
+                    details.append(f"telemetry bundle: {export_path}")
             if details:
                 message = f"{message} ({'; '.join(details)})"
             delegation_snapshot = {

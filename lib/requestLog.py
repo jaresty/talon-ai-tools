@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import os
 from collections import Counter, deque
 from dataclasses import dataclass, field
 from types import MappingProxyType
@@ -766,10 +767,17 @@ def drop_reason_message(reason: RequestDropReason) -> str:
             "and rerun bootstrap before retrying."
         )
     if reason == "cli_signature_mismatch":
+        export_path = os.environ.get(
+            "CLI_SIGNATURE_TELEMETRY_EXPORT", "artifacts/cli/signature-telemetry.json"
+        )
+        export_note = (
+            f" Upload updated telemetry bundle: {export_path}." if export_path else ""
+        )
         return (
             "GPT: CLI delegation disabled after signature telemetry mismatch; run "
-            "`python3 scripts/tools/check_cli_assets.py` to refresh release metadata "
-            "and rerun bootstrap before retrying."
+            "`python3 scripts/tools/check_cli_assets.py` to refresh release metadata, "
+            "upload the refreshed telemetry bundle, and rerun bootstrap before retrying."
+            f"{export_note}"
         )
     reason_text = str(reason).strip() or "unknown"
     return f"GPT: Request blocked; reason={reason_text}."

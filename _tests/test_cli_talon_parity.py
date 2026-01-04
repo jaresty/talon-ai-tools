@@ -20,6 +20,9 @@ os.environ.setdefault("CLI_SIGNATURE_METADATA", "artifacts/cli/signatures.json")
 os.environ.setdefault(
     "CLI_SIGNATURE_TELEMETRY", "var/cli-telemetry/signature-metadata.json"
 )
+os.environ.setdefault(
+    "CLI_SIGNATURE_TELEMETRY_EXPORT", "artifacts/cli/signature-telemetry.json"
+)
 
 import lib.cliDelegation as cliDelegation
 import lib.cliHealth as cliHealth
@@ -521,6 +524,12 @@ else:
                 self.assertEqual(reason, "cli_signature_mismatch")
                 drop_message = historyLifecycle.last_drop_reason()
                 self.assertIn("signature telemetry mismatch", drop_message)
+                export_path = os.environ.get(
+                    "CLI_SIGNATURE_TELEMETRY_EXPORT",
+                    "artifacts/cli/signature-telemetry.json",
+                )
+                if export_path:
+                    self.assertIn(export_path, drop_message)
 
                 registry = providerRegistry.ProviderRegistry()
                 entries = registry.status_entries()
@@ -534,6 +543,15 @@ else:
                     ),
                     "Provider registry should surface signature telemetry mismatch",
                 )
+                if export_path:
+                    self.assertTrue(
+                        any(
+                            export_path
+                            in (entry.get("delegation", {}).get("message") or "")
+                            for entry in entries
+                        ),
+                        "Provider registry message should mention telemetry export path",
+                    )
 
                 warnings = get_bootstrap_warning_messages(clear=False)
                 self.assertTrue(
@@ -543,6 +561,11 @@ else:
                     ),
                     "Bootstrap warnings should mention signature telemetry mismatch",
                 )
+                if export_path:
+                    self.assertTrue(
+                        any(export_path in warning for warning in warnings),
+                        "Bootstrap warnings should mention telemetry export path",
+                    )
                 delegation_state_path = Path("var/cli-telemetry/delegation-state.json")
                 if delegation_state_path.exists():
                     state_payload = json.loads(

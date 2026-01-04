@@ -11,7 +11,7 @@ bootstrap.bootstrap()
 if bin_path.exists():
     sys.exit(0)
 raise SystemExit('bootstrap did not install CLI binary')
-PY` | status: in_progress — loop-0050 exported refreshed telemetry bundles for CI uploads; next slice integrates Talon parity UX remediation for recovery snapshot drift.
+PY` | status: in_progress — loop-0051 integrated recovery snapshot remediation into Talon parity UX; next slice documents operator guidance for telemetry exports.
 - [Implementation Guardrails → Delivery posture] Release checksum manifest hardening | `python3 scripts/tools/check_cli_assets.py` | status: in_progress — loop-0040 emits signing key telemetry and guards stale metadata; next slice aggregates key drift into parity fallback signals.
 
 ## Completed Loops
@@ -109,3 +109,4 @@ PY`; evidence: `docs/adr/evidence/0063/loop-0034.md`.
 - loop-0048 — exposed signature telemetry artefact path for CI consumption; validation: `python3 -m pytest _tests/test_check_cli_assets.py`; evidence: `docs/adr/evidence/0063/loop-0048.md`.
 - loop-0049 — retried packaging automatically when recovery snapshot drift is detected; validation: `python3 -m pytest _tests/test_check_cli_assets.py`; evidence: `docs/adr/evidence/0063/loop-0049.md`.
 - loop-0050 — exported refreshed signature telemetry bundles for CI uploads; validation: `python3 -m pytest _tests/test_check_cli_assets.py`; evidence: `docs/adr/evidence/0063/loop-0050.md`.
+- loop-0051 — integrated recovery snapshot drift remediation into Talon parity UX; validation: `python3 -m pytest _tests/test_cli_talon_parity.py`; evidence: `docs/adr/evidence/0063/loop-0051.md`.

@@ -17,6 +17,8 @@ DEFAULT_SIGNATURE_METADATA_PATH = Path("artifacts/cli/signatures.json")
 SIGNATURE_METADATA_ENV = "CLI_SIGNATURE_METADATA"
 DEFAULT_SIGNATURE_TELEMETRY_PATH = Path("var/cli-telemetry/signature-metadata.json")
 SIGNATURE_TELEMETRY_ENV = "CLI_SIGNATURE_TELEMETRY"
+DEFAULT_SIGNATURE_TELEMETRY_EXPORT_PATH = Path("artifacts/cli/signature-telemetry.json")
+SIGNATURE_TELEMETRY_EXPORT_ENV = "CLI_SIGNATURE_TELEMETRY_EXPORT"
 DEFAULT_SIGNING_KEY_ID = "local-dev"
 SIGNING_KEY_ID_ENV = "CLI_RELEASE_SIGNING_KEY_ID"
 
@@ -172,12 +174,19 @@ def verify_signature_telemetry(*, source: str = "bootstrap") -> bool:
         for item in issues:
             if item not in unique_issues:
                 unique_issues.append(item)
+        export_path = os.environ.get(
+            SIGNATURE_TELEMETRY_EXPORT_ENV,
+            str(DEFAULT_SIGNATURE_TELEMETRY_EXPORT_PATH),
+        )
+        export_note = f" Upload telemetry bundle: {export_path}." if export_path else ""
         message = (
             "signature telemetry mismatch; run `python3 scripts/tools/check_cli_assets.py` "
             "to refresh release metadata"
         )
         if unique_issues:
             message = f"{message} ({'; '.join(unique_issues)})"
+        if export_note:
+            message = f"{message}{export_note}"
         record_bootstrap_warning(message, source=source)
         return False
 

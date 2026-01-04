@@ -32,7 +32,10 @@ DEFAULT_SIGNATURE_KEY = "adr-0063-cli-release-signature"
 SIGNATURE_KEY_ENV = "CLI_RELEASE_SIGNING_KEY"
 SIGNATURE_METADATA_ENV = "CLI_SIGNATURE_METADATA"
 SIGNATURE_METADATA_PATH = Path(
-    os.environ.get(SIGNATURE_METADATA_ENV, "artifacts/cli/signatures.json")
+    os.environ.get(
+        SIGNATURE_METADATA_ENV,
+        str(REPO_ROOT / "artifacts" / "cli" / "signatures.json"),
+    )
 )
 DEFAULT_SIGNING_KEY_ID = "local-dev"
 SIGNING_KEY_ID_ENV = "CLI_RELEASE_SIGNING_KEY_ID"
@@ -40,7 +43,7 @@ SIGNATURE_TELEMETRY_ENV = "CLI_SIGNATURE_TELEMETRY"
 SIGNATURE_TELEMETRY_PATH = Path(
     os.environ.get(
         SIGNATURE_TELEMETRY_ENV,
-        "var/cli-telemetry/signature-metadata.json",
+        str(REPO_ROOT / "var" / "cli-telemetry" / "signature-metadata.json"),
     )
 )
 RUNTIME_DIR = REPO_ROOT / "var" / "cli-telemetry"
@@ -128,6 +131,33 @@ def _signing_key_id() -> str:
 
 def _metadata_path() -> Path:
     return Path(os.environ.get(SIGNATURE_METADATA_ENV, str(SIGNATURE_METADATA_PATH)))
+
+
+def _invoke_package_cli() -> None:
+    from scripts.tools import package_bar_cli  # type: ignore
+
+    package_bar_cli.package_cli()
+
+
+def _auto_package(reason: str, *, quiet: bool) -> None:
+    if not quiet:
+        sys.stderr.write(f"install_bar_cli: auto-packaging CLI because {reason}\n")
+    try:
+        _invoke_package_cli()
+    except Exception as exc:  # pragma: no cover - propagation handled by caller
+        hint = ""
+        if isinstance(exc, FileNotFoundError) and str(exc).strip() in {
+            "go",
+            "[Errno 2] No such file or directory: 'go'",
+        }:
+            hint = " Set CLI_GO_COMMAND to a Go binary accessible to auto-packaging."
+        elif isinstance(exc, FileNotFoundError) and exc.filename:
+            if str(exc.filename).endswith("go"):
+                hint = (
+                    " Set CLI_GO_COMMAND to a Go binary accessible to auto-packaging."
+                )
+        message = f"{reason}; auto-packaging failed ({exc}){hint}"
+        raise ReleaseSignatureError(message) from exc
 
 
 def _signature_for(message: str) -> str:
@@ -284,6 +314,121 @@ def _write_signature_telemetry(
     )
 
 
+def _prepare_release_artifacts(*, allow_repackage: bool, quiet: bool):
+    tarball = _tarball_path()
+    manifest = _manifest_path(tarball)
+    manifest_signature_path = manifest.with_suffix(manifest.suffix + ".sig")
+    metadata_path = _metadata_path()
+    snapshot_signature_path = SNAPSHOT_DIGEST_PATH.with_suffix(
+        SNAPSHOT_DIGEST_PATH.suffix + ".sig"
+    )
+    required_paths = [
+        tarball,
+        manifest,
+        manifest_signature_path,
+        SNAPSHOT_PATH,
+        SNAPSHOT_DIGEST_PATH,
+        snapshot_signature_path,
+        metadata_path,
+    ]
+    missing = [str(path) for path in required_paths if not path.exists()]
+    if missing:
+        if allow_repackage:
+            _auto_package(
+                f"CLI release artefacts missing: {', '.join(missing)}",
+                quiet=quiet,
+            )
+            return _prepare_release_artifacts(allow_repackage=False, quiet=quiet)
+        raise ReleaseSignatureError(
+            f"CLI release artefacts missing after auto-packaging: {', '.join(missing)}"
+        )
+
+    snapshot_payload = _load_snapshot_payload()
+    (
+        snapshot_digest,
+        snapshot_recorded,
+        snapshot_signature,
+    ) = _verify_snapshot(snapshot_payload)
+
+    _verify_checksum(tarball, manifest)
+
+    manifest_recorded = manifest.read_text(encoding="utf-8").strip()
+    manifest_signature = _verify_signature_file(
+        manifest_signature_path,
+        manifest_recorded,
+        "tarball manifest",
+    )
+
+    try:
+        _verify_signature_metadata(
+            manifest_recorded,
+            manifest_signature,
+            snapshot_recorded,
+            snapshot_signature,
+            snapshot_payload,
+        )
+    except ReleaseSignatureError as exc:
+        if allow_repackage:
+            _auto_package(
+                f"signature metadata validation failed ({exc})",
+                quiet=quiet,
+            )
+            return _prepare_release_artifacts(allow_repackage=False, quiet=quiet)
+        raise
+
+    try:
+        _verify_checksum(tarball, manifest)
+    except RuntimeError as exc:
+        if allow_repackage:
+            _auto_package(f"tarball checksum mismatch ({exc})", quiet=quiet)
+            return _prepare_release_artifacts(allow_repackage=False, quiet=quiet)
+        raise
+
+    manifest_recorded = manifest.read_text(encoding="utf-8").strip()
+    try:
+        manifest_signature = _verify_signature_file(
+            manifest_signature_path,
+            manifest_recorded,
+            "tarball manifest",
+        )
+    except ReleaseSignatureError as exc:
+        if allow_repackage:
+            _auto_package(
+                f"tarball manifest signature validation failed ({exc})",
+                quiet=quiet,
+            )
+            return _prepare_release_artifacts(allow_repackage=False, quiet=quiet)
+        raise
+
+    try:
+        _verify_signature_metadata(
+            manifest_recorded,
+            manifest_signature,
+            snapshot_recorded,
+            snapshot_signature,
+            snapshot_payload,
+        )
+    except ReleaseSignatureError as exc:
+        if allow_repackage:
+            _auto_package(
+                f"signature metadata validation failed ({exc})",
+                quiet=quiet,
+            )
+            return _prepare_release_artifacts(allow_repackage=False, quiet=quiet)
+        raise
+
+    return (
+        tarball,
+        manifest,
+        manifest_recorded,
+        manifest_signature,
+        snapshot_payload,
+        snapshot_digest,
+        snapshot_recorded,
+        snapshot_signature,
+    )
+
+
 def _verify_signature_metadata(
     tarball_recorded: str,
     tarball_signature: str,
@@ -332,7 +477,20 @@ def _install_snapshot(payload: dict, digest: str) -> None:
             f"failed to import cliDelegation for snapshot hydration ({exc})"
         )
 
+    RUNTIME_DIR.mkdir(parents=True, exist_ok=True)
+
     cliDelegation.apply_release_snapshot(payload)
+
+    if not RUNTIME_STATE_PATH.exists():
+        try:
+            RUNTIME_STATE_PATH.write_text(
+                json.dumps(payload, indent=2) + "\n",
+                encoding="utf-8",
+            )
+        except Exception as exc:
+            raise ReleaseSignatureError(
+                f"unable to persist delegation state fallback ({exc})"
+            ) from exc
 
     if not RUNTIME_STATE_PATH.exists():
         raise ReleaseSignatureError(
@@ -352,36 +510,16 @@ def _install_snapshot(payload: dict, digest: str) -> None:
 
 
 def install_cli(force: bool = False, quiet: bool = False) -> Path:
-    tarball = _tarball_path()
-    manifest = _manifest_path(tarball)
-
-    if not tarball.exists():
-        raise FileNotFoundError(f"missing CLI tarball: {tarball}")
-    if not manifest.exists():
-        raise FileNotFoundError(f"missing CLI manifest: {manifest}")
-
-    snapshot_payload = _load_snapshot_payload()
     (
+        tarball,
+        manifest,
+        manifest_recorded,
+        manifest_signature,
+        snapshot_payload,
         snapshot_digest,
         snapshot_recorded,
         snapshot_signature,
-    ) = _verify_snapshot(snapshot_payload)
-
-    _verify_checksum(tarball, manifest)
-    manifest_recorded = manifest.read_text(encoding="utf-8").strip()
-    manifest_signature = _verify_signature_file(
-        manifest.with_suffix(manifest.suffix + ".sig"),
-        manifest_recorded,
-        "tarball manifest",
-    )
-
-    _verify_signature_metadata(
-        manifest_recorded,
-        manifest_signature,
-        snapshot_recorded,
-        snapshot_signature,
-        snapshot_payload,
-    )
+    ) = _prepare_release_artifacts(allow_repackage=True, quiet=quiet)
 
     if not force and TARGET_PATH.exists():
         latest_artifact_mtime = max(
@@ -432,9 +570,8 @@ def install_cli(force: bool = False, quiet: bool = False) -> Path:
         snapshot_signature,
         snapshot_payload,
     )
-
     if not quiet:
-        print(f"installed CLI binary to {TARGET_PATH}")
+        print(f"CLI binary installed at {TARGET_PATH}")
     return TARGET_PATH
 
 

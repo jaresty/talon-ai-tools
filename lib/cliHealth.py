@@ -8,7 +8,8 @@ from pathlib import Path
 
 from . import cliDelegation
 
-_CLI_BINARY = Path("bin/bar")
+_REPO_ROOT = Path(__file__).resolve().parents[1]
+_CLI_BINARY = _REPO_ROOT / "bin" / "bar"
 
 
 def _run_health_command() -> subprocess.CompletedProcess[str]:

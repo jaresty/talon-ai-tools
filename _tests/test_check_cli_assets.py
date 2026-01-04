@@ -483,12 +483,22 @@ else:
             self.assertEqual(result.returncode, 0, result.stderr)
             stdout = result.stdout
             self.assertIn("all CLI assets present", stdout)
-            self.assertIn(
-                f"cli_tarball={self._tarball_manifest_path.with_suffix('')}", stdout
+            summary = dict(
+                line.split("=", 1) for line in stdout.splitlines() if "=" in line
             )
-            self.assertIn(f"cli_manifest={self._tarball_manifest_path}", stdout)
-            self.assertIn(f"cli_signatures={self.metadata_path}", stdout)
-            self.assertIn(f"cli_signature_telemetry={self.telemetry_path}", stdout)
+            cli_tarball = Path(summary["cli_tarball"]).resolve()
+            cli_manifest = Path(summary["cli_manifest"]).resolve()
+            cli_signatures = Path(summary["cli_signatures"]).resolve()
+            cli_signature_telemetry = Path(summary["cli_signature_telemetry"]).resolve()
+            self.assertEqual(
+                cli_tarball, self._tarball_manifest_path.with_suffix("").resolve()
+            )
+            self.assertEqual(cli_manifest, self._tarball_manifest_path.resolve())
+            self.assertEqual(cli_signatures, self.metadata_path.resolve())
+            self.assertEqual(
+                cli_signature_telemetry,
+                self.telemetry_path.resolve(),
+            )
             self.assertTrue(self.export_path.exists())
 
             telemetry: dict = self._read_telemetry()

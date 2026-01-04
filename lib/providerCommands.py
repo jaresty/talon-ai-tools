@@ -2,11 +2,7 @@ from typing import Optional
 
 from talon import Context, Module, actions, settings
 
-from .providerCanvas import (
-    ProviderCanvasState,
-    hide_provider_canvas,
-    show_provider_canvas,
-)
+from .providerStatusLog import log_provider_status, clear_provider_status
 from .providerRegistry import (
     AmbiguousProviderError,
     ProviderLookupError,
@@ -130,7 +126,7 @@ def show_provider_status_message(message: str, *, prompt: str | None = None) -> 
     if prompt and isinstance(prompt, str) and prompt.strip():
         lines.insert(1, prompt.strip())
     try:
-        show_provider_canvas("Provider status", lines)
+        log_provider_status("Provider status", lines)
     except Exception:
         pass
 
@@ -310,7 +306,7 @@ class UserActions:
         probe = bool(settings.get("user.model_provider_probe", False))
         entries = registry.status_entries(probe=probe)
         lines = _render_provider_lines(entries, "Providers")
-        show_provider_canvas("Providers", lines)
+        log_provider_status("Providers", lines)
 
     def model_provider_status():
         """Show the current provider status."""
@@ -333,7 +329,7 @@ class UserActions:
             lines = _render_error("No providers configured", [])
         else:
             lines = _render_provider_lines(entries, "Current provider")
-        show_provider_canvas("Provider status", lines)
+        log_provider_status("Provider status", lines)
 
     def model_provider_use(name: str, model: str = ""):
         """Switch to a provider by name or alias, optionally setting its model."""
@@ -350,17 +346,17 @@ class UserActions:
             lines = _render_provider_lines(
                 registry.status_entries(), f"Switched to {provider.display_name}"
             )
-            show_provider_canvas("Provider switched", lines)
+            log_provider_status("Provider switched", lines)
         except AmbiguousProviderError as exc:
             lines = _render_error(
                 f"Ambiguous provider '{name}'", [f"{match}" for match in exc.matches]
             )
-            show_provider_canvas("Provider error", lines)
+            log_provider_status("Provider error", lines)
         except ProviderLookupError:
             entries = registry.status_entries()
             suggestions = [entry["id"] for entry in entries]
             lines = _render_error(f"Unknown provider '{name}'", suggestions)
-            show_provider_canvas("Provider error", lines)
+            log_provider_status("Provider error", lines)
             raise
 
     def model_provider_switch(name: str, model: str = ""):
@@ -382,7 +378,7 @@ class UserActions:
         lines = _render_provider_lines(
             registry.status_entries(), f"Switched to {provider.display_name}"
         )
-        show_provider_canvas("Provider switched", lines)
+        log_provider_status("Provider switched", lines)
 
     def model_provider_previous():
         """Cycle to the previous provider."""
@@ -395,7 +391,7 @@ class UserActions:
         lines = _render_provider_lines(
             registry.status_entries(), f"Switched to {provider.display_name}"
         )
-        show_provider_canvas("Provider switched", lines)
+        log_provider_status("Provider switched", lines)
 
     def model_provider_close():
         """Hide the provider canvas."""
@@ -403,7 +399,7 @@ class UserActions:
         if _reject_if_request_in_flight():
             return
 
-        hide_provider_canvas()
+        clear_provider_status()
 
 
 def _install_cli_ready_handler() -> None:

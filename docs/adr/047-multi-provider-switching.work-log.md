@@ -7,7 +7,7 @@
 - Slice (kind: behaviour): establish provider registry + canvas-backed commands for OpenAI/Gemini and thread provider selection into request plumbing.
 - Changes:
   - Added `lib/providerRegistry.py` (defaults: openai/gemini with spoken aliases including "gemeni"), settings overrides, and cycling/status helpers.
-  - Added `lib/providerCanvas.py` and `lib/providerCommands.py` to render provider list/status/switch errors via canvas (no notifications) and new Talon grammar in `GPT/gpt.talon`.
+  - Added `lib/providerStatusLog.py` (formerly `providerCanvas.py`) and `lib/providerCommands.py` to render provider list/status/switch errors via log output and new Talon grammar in `GPT/gpt.talon`.
   - Wired provider-aware defaults through settings (`model_provider_current/default/extra`), request building (`lib/modelHelpers.py` now reads provider model/token/endpoint), and state (`GPTState.current_provider_id`).
   - Updated settings example for provider overrides.
 - Validation: `python3 -m pytest _tests/test_provider_registry.py _tests/test_provider_commands.py` (7 passed).

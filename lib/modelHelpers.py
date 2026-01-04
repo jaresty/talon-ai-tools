@@ -54,8 +54,9 @@ from .providerRegistry import (
     provider_token_hint,
     provider_tokens_setting,
 )
-from .providerCanvas import show_provider_canvas
+from .providerStatusLog import log_provider_status
 from .axisCatalog import axis_catalog
+
 import threading
 
 # Ensure a default request UI controller is registered so lifecycle events
@@ -632,7 +633,7 @@ def _show_provider_error(
             f"Check {provider_token_hint(provider_id, api_key_env)} or provider capabilities."
         )
     try:
-        show_provider_canvas("Provider error", lines)
+        log_provider_status("Provider error", lines)
     except Exception:
         try:
             notify(message)
@@ -648,7 +649,7 @@ def _warn_streaming_disabled(provider: ProviderConfig) -> None:
         "Running request without streaming.",
     ]
     try:
-        show_provider_canvas("Provider warning", lines)
+        log_provider_status("Provider warning", lines)
     except Exception:
         try:
             notify("Streaming disabled for this provider")

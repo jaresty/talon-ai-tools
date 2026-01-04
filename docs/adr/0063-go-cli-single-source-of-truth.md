@@ -140,6 +140,7 @@ Talon adapters must:
 ## Residual Risks
 
 - **Telemetry SLO instrumentation** *(low)*: CLI emits `var/cli-telemetry/latency.json` with SLO metrics; `scripts/tools/telemetry_slo_report.py` guards drift and remains green (see `docs/adr/evidence/0063/loop-0012.md`). Continue monitoring for stale data beyond the configured window.
+- **Provider status logging** *(low UX impact)*: provider status messages now stream to the terminal log instead of a full-screen overlay (loop-0066), reducing disruption while keeping status visible.
 
 ---
 

@@ -9,5 +9,6 @@ __pycache__/
 node_modules/
 tmp/
 artifacts/
+var/cli-telemetry/*.json
 GPT/lists/*.talon-list
 bin/bar.bin

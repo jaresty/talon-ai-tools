@@ -47,6 +47,10 @@ settings():
     # Talon user directory.
     # user.model_source_save_directory = "/path/to/talon-ai-model-sources"
 
+    # Optional: absolute path to the Go binary used for CLI auto-packaging.
+    # Set this when Talon’s PATH omits Go (common on macOS sandboxed processes).
+    # Example: user.cli_go_command = "/opt/homebrew/bin/go"
+
 # Only uncomment the line below if you want experimental behavior to parse Talon files
 # tag(): user.gpt_beta
 

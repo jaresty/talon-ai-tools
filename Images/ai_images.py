@@ -9,7 +9,7 @@ from ..lib.modelHelpers import (
     get_token,
     notify,
 )
-from ..lib.providerCanvas import show_provider_canvas
+from ..lib.providerStatusLog import log_provider_status
 
 mod = Module()
 
@@ -21,7 +21,7 @@ class Actions:
 
         provider = active_provider()
         if not provider.features.get("images", False):
-            show_provider_canvas(
+            log_provider_status(
                 "Provider error",
                 [f"Provider '{provider.id}' does not support image generation."],
             )

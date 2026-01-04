@@ -17,6 +17,7 @@ import json
 import hashlib
 import os
 import platform
+import shlex
 import shutil
 import subprocess
 import sys
@@ -40,9 +41,34 @@ if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
 try:
+    from talon import settings as talon_settings  # type: ignore[attr-defined]
+except Exception:  # pragma: no cover - Talon settings unavailable outside runtime
+    talon_settings = None
+
+try:
     from lib.requestLog import drop_reason_message as _drop_reason_message
 except Exception:  # pragma: no cover - defensive import for packaging env
     _drop_reason_message = None
+
+PREFERRED_GO_PATHS = [
+    Path("/opt/homebrew/bin/go"),
+    Path("/usr/local/bin/go"),
+    Path("/usr/local/go/bin/go"),
+    Path("/usr/bin/go"),
+]
+
+
+def _settings_value(name: str) -> str | None:
+    if talon_settings is None:
+        return None
+    try:
+        value = talon_settings.get(name)
+    except Exception:
+        return None
+    if isinstance(value, str):
+        text = value.strip()
+        return text or None
+    return None
 
 
 def _target_suffix() -> str:
@@ -60,8 +86,9 @@ def _target_suffix() -> str:
 
 def _build_binary(temp_dir: Path) -> Path:
     output_path = temp_dir / "bar"
+    go_command = _go_command()
     subprocess.run(
-        ["go", "build", "-o", str(output_path), "./cmd/bar"],
+        go_command + ["build", "-o", str(output_path), "./cmd/bar"],
         cwd=REPO_ROOT,
         check=True,
     )
@@ -101,6 +128,23 @@ def _metadata_path() -> Path:
             str(DEFAULT_SIGNATURE_METADATA_PATH),
         )
     )
+
+
+def _go_command() -> list[str]:
+    override = os.environ.get("CLI_GO_COMMAND")
+    if not override:
+        setting_override = _settings_value("user.cli_go_command")
+        if setting_override:
+            override = setting_override
+    if override:
+        return shlex.split(str(override))
+    discovered = shutil.which("go")
+    if discovered:
+        return [discovered]
+    for candidate in PREFERRED_GO_PATHS:
+        if candidate.exists():
+            return [str(candidate)]
+    raise FileNotFoundError("go")
 
 
 def _signature_for(message: str) -> str:

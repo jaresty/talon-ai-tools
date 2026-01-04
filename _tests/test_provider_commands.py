@@ -28,7 +28,7 @@ class ProviderCommandGuardTests(unittest.TestCase):
                 provider_module, "_reject_if_request_in_flight", return_value=True
             ),
             patch.object(provider_module, "provider_registry") as registry,
-            patch.object(provider_module, "show_provider_canvas") as show_canvas,
+            patch.object(provider_module, "log_provider_status") as show_canvas,
         ):
             ProviderActions.model_provider_list()
             ProviderActions.model_provider_status()

@@ -1,7 +1,10 @@
 """Manage CLI delegation state for Talon adapters."""
 
 import json
+import os
+import shutil
 import subprocess
+import sys
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, List, Tuple
@@ -13,20 +16,70 @@ from . import responseCanvasFallback
 
 mod = Module()
 
-_CLI_BINARY = Path("bin/bar")
+_REPO_ROOT = Path(__file__).resolve().parents[1]
+if str(_REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(_REPO_ROOT))
+
+_CLI_BINARY = _REPO_ROOT / "bin" / "bar"
 _DELEGATION_ENABLED: bool = True
 _DISABLE_EVENTS: List[Dict[str, str]] = []
-_TELEMETRY_DIR = Path("var/cli-telemetry")
+_TELEMETRY_DIR = _REPO_ROOT / "var" / "cli-telemetry"
 _STATE_PATH = _TELEMETRY_DIR / "delegation-state.json"
+_CHECK_CLI_ASSETS = _REPO_ROOT / "scripts" / "tools" / "check_cli_assets.py"
+_AUTO_REPACKAGE_ATTEMPTED = False
+_AUTO_INSTALL_ATTEMPTED = False
 _FAILURE_THRESHOLD = 3
 _FAILURE_COUNT = 0
 _LAST_REASON: str | None = None
+
 _LAST_RECOVERY_CODE: str | None = None
 _LAST_RECOVERY_DETAILS: str | None = None
 
 _DEFAULT_DIRECTIONAL_TOKEN = "jog"
 _DEFAULT_PROVIDER_ID = "cli"
 _RESPONSE_RECIPE = "cli_delegate"
+
+
+def _auto_refresh_signature_telemetry() -> None:
+    global _AUTO_REPACKAGE_ATTEMPTED
+    if _AUTO_REPACKAGE_ATTEMPTED:
+        return
+    if not _CHECK_CLI_ASSETS.exists():
+        return
+    env = os.environ.copy()
+    if "CLI_GO_COMMAND" not in env:
+        go_path = shutil.which("go")
+        if go_path:
+            env["CLI_GO_COMMAND"] = go_path
+    try:
+        subprocess.run(
+            [
+                sys.executable or "python3",
+                str(_CHECK_CLI_ASSETS),
+                "--repackage-on-recovery-drift",
+            ],
+            check=True,
+            cwd=_REPO_ROOT,
+            env=env,
+        )
+    except Exception:
+        return
+    _AUTO_REPACKAGE_ATTEMPTED = True
+
+
+def _auto_install_cli() -> None:
+    global _AUTO_INSTALL_ATTEMPTED
+    if _AUTO_INSTALL_ATTEMPTED:
+        return
+    try:
+        from scripts.tools import install_bar_cli as _install_bar_cli  # type: ignore
+    except Exception:
+        return
+    try:
+        _install_bar_cli.install_cli(quiet=True)
+    except Exception:
+        return
+    _AUTO_INSTALL_ATTEMPTED = True
 
 
 def _recovery_code_for(reason: str | None) -> str | None:
@@ -396,13 +449,20 @@ def apply_release_snapshot(snapshot: Dict[str, Any]) -> None:
 
 
 def _record_disable_event(reason: str, source: str) -> None:
-    _DISABLE_EVENTS.append(
-        {
+    if _DISABLE_EVENTS and _DISABLE_EVENTS[-1].get("reason") == reason:
+        _DISABLE_EVENTS[-1] = {
             "reason": reason,
             "source": source,
             "timestamp": _timestamp(),
         }
-    )
+    else:
+        _DISABLE_EVENTS.append(
+            {
+                "reason": reason,
+                "source": source,
+                "timestamp": _timestamp(),
+            }
+        )
 
 
 def disable_delegation(
@@ -442,8 +502,12 @@ def mark_cli_ready(*, source: str = "bootstrap") -> None:
         _FAILURE_COUNT, \
         _LAST_REASON, \
         _LAST_RECOVERY_CODE, \
-        _LAST_RECOVERY_DETAILS
+        _LAST_RECOVERY_DETAILS, \
+        _AUTO_REPACKAGE_ATTEMPTED, \
+        _AUTO_INSTALL_ATTEMPTED
     previous_reason = _LAST_REASON if isinstance(_LAST_REASON, str) else ""
+    _AUTO_REPACKAGE_ATTEMPTED = False
+    _AUTO_INSTALL_ATTEMPTED = False
     _DELEGATION_ENABLED = True
     _FAILURE_COUNT = 0
     _LAST_RECOVERY_CODE = _recovery_code_for(previous_reason)
@@ -546,12 +610,16 @@ def reset_state() -> None:
         _FAILURE_COUNT, \
         _LAST_REASON, \
         _LAST_RECOVERY_CODE, \
-        _LAST_RECOVERY_DETAILS
+        _LAST_RECOVERY_DETAILS, \
+        _AUTO_REPACKAGE_ATTEMPTED, \
+        _AUTO_INSTALL_ATTEMPTED
     _DELEGATION_ENABLED = True
     _FAILURE_COUNT = 0
     _LAST_REASON = None
     _LAST_RECOVERY_CODE = None
     _LAST_RECOVERY_DETAILS = None
+    _AUTO_REPACKAGE_ATTEMPTED = False
+    _AUTO_INSTALL_ATTEMPTED = False
     _DISABLE_EVENTS.clear()
     _persist_state(enabled=True, reason=None, source="reset")
 
@@ -560,13 +628,48 @@ def record_health_failure(reason: str, *, source: str = "health_probe") -> None:
     """Record a failed health probe and disable delegation after threshold."""
 
     global _FAILURE_COUNT, _LAST_REASON
-    _FAILURE_COUNT += 1
+
+    reason_lower = reason.lower()
+    probe_failure = "health probe failed" in reason_lower
+    missing_cli = "missing cli" in reason_lower or "missing cli tarball" in reason_lower
+    missing_binary = "no such file or directory" in reason_lower and (
+        "bin/bar" in reason_lower or "bar.bin" in reason_lower
+    )
+    telemetry_issue = "signature telemetry" in reason_lower
+
+    needs_repackage = False
+    needs_install = False
+
+    if probe_failure:
+        needs_repackage = True
+        needs_install = True
+    else:
+        if telemetry_issue:
+            needs_repackage = True
+        if missing_cli or missing_binary:
+            needs_install = True
+            needs_repackage = True
+
+    if needs_repackage:
+        _auto_refresh_signature_telemetry()
+    if needs_install:
+        _auto_install_cli()
+
+    if _FAILURE_COUNT < _FAILURE_THRESHOLD:
+        _FAILURE_COUNT += 1
+    if _FAILURE_COUNT >= _FAILURE_THRESHOLD:
+        _FAILURE_COUNT = _FAILURE_THRESHOLD
     _LAST_REASON = reason
     if _FAILURE_COUNT >= _FAILURE_THRESHOLD:
+        same_reason = bool(
+            _DISABLE_EVENTS and _DISABLE_EVENTS[-1].get("reason") == reason
+        )
+        already_disabled = not _DELEGATION_ENABLED
+        notify = not (already_disabled and same_reason)
         disable_delegation(
             f"{reason}; reached failure threshold {_FAILURE_THRESHOLD}",
             source=source,
-            notify=True,
+            notify=notify,
         )
     else:
         _persist_state(enabled=_DELEGATION_ENABLED, reason=reason, source=source)

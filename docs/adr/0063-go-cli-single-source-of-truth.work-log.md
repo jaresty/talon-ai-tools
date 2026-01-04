@@ -1,7 +1,7 @@
 # ADR-0063 Work Log — helper:v20251223.1
 
 ## Open Behaviours
-- [Implementation Guardrails → Delivery posture] Replace stubbed CLI delegation with real binary | `python3 -m pytest _tests/test_cli_talon_parity.py` | status: in_progress — loop-0064 surfaces CLI delegate output in Talon history and canvases; next slice wires adapters to consume real CLI transcripts end-to-end.
+- [Implementation Guardrails → Delivery posture] Replace stubbed CLI delegation with real binary | `python3 -m pytest _tests/test_cli_talon_parity.py` | status: in_progress — loop-0066 automates CLI_GO_COMMAND guidance, regenerates delegation state/metadata during bootstrap, replaces the provider overlay with log output, and keeps auto-packaging green; next slice wires adapters to consume real CLI transcripts end-to-end.
 - [Implementation Guardrails → Delivery posture] Release checksum manifest hardening | `python3 scripts/tools/check_cli_assets.py` | status: in_progress — loop-0059 enforces single-entry manifests; CI artefact evidence deferred until merge readiness.
 
 ## Completed Loops
@@ -113,3 +113,5 @@ PY`; evidence: `docs/adr/evidence/0063/loop-0034.md`.
 - loop-0062 — wrapped CLI delegate with lifecycle helper and parity coverage; validation: `python3 -m pytest _tests/test_cli_talon_parity.py`; evidence: `docs/adr/evidence/0063/loop-0062.md`.
 - loop-0063 — implemented CLI delegate execution path with echo response and parity failure guard; validation: `python3 -m pytest _tests/test_cli_talon_parity.py`; evidence: `docs/adr/evidence/0063/loop-0063.md`.
 - loop-0064 — surfaced CLI delegate responses through history entries and response canvas refresh; validation: `python3 -m pytest _tests/test_cli_talon_parity.py`; evidence: `docs/adr/evidence/0063/loop-0064.md`.
+- loop-0065 — auto-generated CLI signature metadata during bootstrap, added parity coverage, and kept Talon imports green; validation: `python3 -m pytest _tests/test_cli_talon_parity.py`; evidence: `docs/adr/evidence/0063/loop-0065.md`.
+- loop-0066 — provided CLI_GO_COMMAND fallback guidance, auto-packaged Go artefacts when available, and extended parity coverage for missing Go binaries; validation: `python3 -m pytest _tests/test_cli_talon_parity.py`; evidence: `docs/adr/evidence/0063/loop-0066.md`.

@@ -19,19 +19,23 @@ from hashlib import sha256
 from pathlib import Path
 import platform
 
-BIN_PATH = Path("bin/bar")
-BIN_EXECUTABLE = Path("bin/bar.bin")
-SCHEMA_PATH = Path("docs/schema/command-surface.json")
-ARTIFACTS_DIR = Path("artifacts/cli")
+REPO_ROOT = Path(__file__).resolve().parents[2]
+BIN_PATH = REPO_ROOT / "bin" / "bar"
+BIN_EXECUTABLE = REPO_ROOT / "bin" / "bar.bin"
+SCHEMA_PATH = REPO_ROOT / "docs" / "schema" / "command-surface.json"
+ARTIFACTS_DIR = REPO_ROOT / "artifacts" / "cli"
 DELEGATION_STATE_ENV = "CLI_DELEGATION_STATE"
 DELEGATION_STATE_PATH = Path(
-    os.environ.get(DELEGATION_STATE_ENV, "var/cli-telemetry/delegation-state.json")
+    os.environ.get(
+        DELEGATION_STATE_ENV,
+        str(REPO_ROOT / "var" / "cli-telemetry" / "delegation-state.json"),
+    )
 )
 DELEGATION_STATE_DIGEST_ENV = "CLI_DELEGATION_STATE_DIGEST"
 DELEGATION_STATE_DIGEST_PATH = Path(
     os.environ.get(
         DELEGATION_STATE_DIGEST_ENV,
-        "artifacts/cli/delegation-state.json.sha256",
+        str(REPO_ROOT / "artifacts" / "cli" / "delegation-state.json.sha256"),
     )
 )
 DELEGATION_STATE_SIGNATURE_ENV = "CLI_DELEGATION_STATE_SIGNATURE"
@@ -39,20 +43,23 @@ DEFAULT_SIGNATURE_KEY = "adr-0063-cli-release-signature"
 SIGNATURE_KEY_ENV = "CLI_RELEASE_SIGNING_KEY"
 SIGNATURE_METADATA_ENV = "CLI_SIGNATURE_METADATA"
 SIGNATURE_METADATA_PATH = Path(
-    os.environ.get(SIGNATURE_METADATA_ENV, "artifacts/cli/signatures.json")
+    os.environ.get(
+        SIGNATURE_METADATA_ENV,
+        str(REPO_ROOT / "artifacts" / "cli" / "signatures.json"),
+    )
 )
 SIGNATURE_TELEMETRY_ENV = "CLI_SIGNATURE_TELEMETRY"
 SIGNATURE_TELEMETRY_PATH = Path(
     os.environ.get(
         SIGNATURE_TELEMETRY_ENV,
-        "var/cli-telemetry/signature-metadata.json",
+        str(REPO_ROOT / "var" / "cli-telemetry" / "signature-metadata.json"),
     )
 )
 SIGNATURE_TELEMETRY_EXPORT_ENV = "CLI_SIGNATURE_TELEMETRY_EXPORT"
 SIGNATURE_TELEMETRY_EXPORT_PATH = Path(
     os.environ.get(
         SIGNATURE_TELEMETRY_EXPORT_ENV,
-        "artifacts/cli/signature-telemetry.json",
+        str(REPO_ROOT / "artifacts" / "cli" / "signature-telemetry.json"),
     )
 )
 REPACKAGE_COMMAND_ENV = "CLI_REPACKAGE_COMMAND"
@@ -65,8 +72,6 @@ DELEGATION_STATE_SNAPSHOT_PATH = Path(
         "artifacts/cli/delegation-state.json",
     )
 )
-REPO_ROOT = Path(__file__).resolve().parents[2]
-
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 

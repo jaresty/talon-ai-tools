@@ -5,6 +5,7 @@ import json
 import hashlib
 import os
 import platform
+import shutil
 import subprocess
 import sys
 from contextlib import redirect_stderr
@@ -13,16 +14,25 @@ from unittest import mock
 
 from talon import actions
 
+REPO_ROOT = Path(__file__).resolve().parents[1]
+
 SIGNATURE_KEY = "adr-0063-cli-release-signature"
 os.environ.setdefault("CLI_RELEASE_SIGNING_KEY", SIGNATURE_KEY)
 os.environ.setdefault("CLI_RELEASE_SIGNING_KEY_ID", "local-dev")
-os.environ.setdefault("CLI_SIGNATURE_METADATA", "artifacts/cli/signatures.json")
 os.environ.setdefault(
-    "CLI_SIGNATURE_TELEMETRY", "var/cli-telemetry/signature-metadata.json"
+    "CLI_SIGNATURE_METADATA", str(REPO_ROOT / "artifacts" / "cli" / "signatures.json")
 )
 os.environ.setdefault(
-    "CLI_SIGNATURE_TELEMETRY_EXPORT", "artifacts/cli/signature-telemetry.json"
+    "CLI_SIGNATURE_TELEMETRY",
+    str(REPO_ROOT / "var" / "cli-telemetry" / "signature-metadata.json"),
 )
+os.environ.setdefault(
+    "CLI_SIGNATURE_TELEMETRY_EXPORT",
+    str(REPO_ROOT / "artifacts" / "cli" / "signature-telemetry.json"),
+)
+go_path = shutil.which("go")
+if go_path:
+    os.environ.setdefault("CLI_GO_COMMAND", go_path)
 
 import lib.cliDelegation as cliDelegation
 import lib.cliHealth as cliHealth
@@ -31,6 +41,7 @@ import lib.providerRegistry as providerRegistry
 import lib.surfaceGuidance as surfaceGuidance
 from lib import historyLifecycle, requestGating, responseCanvasFallback
 import scripts.tools.install_bar_cli as install_bar_cli
+import scripts.tools.package_bar_cli as package_bar_cli
 from lib.bootstrapTelemetry import (
     clear_bootstrap_warning_events,
     get_bootstrap_warning_messages,
@@ -56,9 +67,9 @@ else:
     else:
         bootstrap = None
 
-CLI_BINARY = Path("bin/bar")
-SCHEMA_BUNDLE = Path("docs/schema/command-surface.json")
-PACKAGED_CLI_DIR = Path("artifacts/cli")
+CLI_BINARY = REPO_ROOT / "bin" / "bar"
+SCHEMA_BUNDLE = REPO_ROOT / "docs" / "schema" / "command-surface.json"
+PACKAGED_CLI_DIR = REPO_ROOT / "artifacts" / "cli"
 
 
 def _target_suffix() -> str:
@@ -264,6 +275,195 @@ else:
                 actions.user.calls.clear()
                 cliDelegation.reset_state()
 
+        def test_install_cli_rebuilds_missing_signature_metadata(self) -> None:
+            metadata_path = self._signature_metadata_path()
+            manifest = _packaged_cli_manifest(_packaged_cli_tarball())
+            manifest_sig_path = manifest.with_suffix(manifest.suffix + ".sig")
+            snapshot_manifest_path = PACKAGED_CLI_DIR / "delegation-state.json.sha256"
+            snapshot_sig_path = snapshot_manifest_path.with_suffix(
+                snapshot_manifest_path.suffix + ".sig"
+            )
+            snapshot_path = PACKAGED_CLI_DIR / "delegation-state.json"
+            telemetry_path = self._signature_telemetry_path()
+
+            metadata_backup = (
+                metadata_path.read_bytes() if metadata_path.exists() else None
+            )
+            telemetry_backup = (
+                telemetry_path.read_bytes() if telemetry_path.exists() else None
+            )
+
+            metadata_path.unlink(missing_ok=True)
+            telemetry_path.unlink(missing_ok=True)
+            cliDelegation.reset_state()
+            historyLifecycle.clear_drop_reason()
+            actions.user.calls.clear()
+
+            def _write_metadata_stub() -> None:
+                from scripts.tools import package_bar_cli as pkg
+
+                manifest_recorded = manifest.read_text(encoding="utf-8").strip()
+                manifest_signature = manifest_sig_path.read_text(
+                    encoding="utf-8"
+                ).strip()
+                snapshot_recorded = snapshot_manifest_path.read_text(
+                    encoding="utf-8"
+                ).strip()
+                snapshot_signature = snapshot_sig_path.read_text(
+                    encoding="utf-8"
+                ).strip()
+                snapshot_payload = json.loads(snapshot_path.read_text(encoding="utf-8"))
+                pkg._write_signature_metadata(
+                    manifest_recorded,
+                    manifest_signature,
+                    snapshot_recorded,
+                    snapshot_signature,
+                    snapshot_payload,
+                )
+
+            try:
+                with mock.patch(
+                    "scripts.tools.install_bar_cli._invoke_package_cli",
+                    side_effect=_write_metadata_stub,
+                ) as package_mock:
+                    install_bar_cli.install_cli(quiet=True)
+                    package_mock.assert_called()
+                self.assertTrue(
+                    metadata_path.exists(),
+                    "Auto-packaging should recreate signature metadata",
+                )
+            finally:
+                if metadata_backup is None:
+                    metadata_path.unlink(missing_ok=True)
+                else:
+                    metadata_path.write_bytes(metadata_backup)
+                if telemetry_backup is None:
+                    telemetry_path.unlink(missing_ok=True)
+                else:
+                    telemetry_path.write_bytes(telemetry_backup)
+                cliDelegation.reset_state()
+                historyLifecycle.clear_drop_reason()
+                clear_bootstrap_warning_events()
+                get_bootstrap_warnings(clear=True)
+                get_bootstrap_warning_messages(clear=True)
+                actions.user.calls.clear()
+
+        def test_install_cli_missing_go_emits_hint(self) -> None:
+            metadata_path = self._signature_metadata_path()
+            metadata_backup = (
+                metadata_path.read_bytes() if metadata_path.exists() else None
+            )
+            metadata_path.unlink(missing_ok=True)
+            cliDelegation.reset_state()
+            historyLifecycle.clear_drop_reason()
+            with mock.patch(
+                "scripts.tools.install_bar_cli._invoke_package_cli",
+                side_effect=FileNotFoundError("go"),
+            ):
+                with self.assertRaises(install_bar_cli.ReleaseSignatureError) as ctx:
+                    install_bar_cli.install_cli(quiet=True)
+            self.assertIn("CLI_GO_COMMAND", str(ctx.exception))
+            if metadata_backup is None:
+                metadata_path.unlink(missing_ok=True)
+            else:
+                metadata_path.write_bytes(metadata_backup)
+            cliDelegation.reset_state()
+            historyLifecycle.clear_drop_reason()
+            clear_bootstrap_warning_events()
+            get_bootstrap_warnings(clear=True)
+            get_bootstrap_warning_messages(clear=True)
+
+        def test_install_cli_creates_runtime_state_when_missing(self) -> None:
+            state_path = Path("var/cli-telemetry/delegation-state.json")
+            state_backup = state_path.read_bytes() if state_path.exists() else None
+            try:
+                state_path.unlink(missing_ok=True)
+                cliDelegation.reset_state()
+                historyLifecycle.clear_drop_reason()
+                install_bar_cli.install_cli(quiet=True)
+                self.assertTrue(
+                    state_path.exists(),
+                    "Install should recreate delegation state snapshot when missing",
+                )
+            finally:
+                if state_backup is None:
+                    state_path.unlink(missing_ok=True)
+                else:
+                    state_path.write_bytes(state_backup)
+                cliDelegation.reset_state()
+                historyLifecycle.clear_drop_reason()
+                clear_bootstrap_warning_events()
+                get_bootstrap_warnings(clear=True)
+                get_bootstrap_warning_messages(clear=True)
+
+        def test_health_failure_auto_repackages_signature_telemetry(self) -> None:
+            cliDelegation.reset_state()
+            cliDelegation._AUTO_REPACKAGE_ATTEMPTED = False
+            with mock.patch("lib.cliDelegation.subprocess.run") as run_mock:
+                run_mock.return_value = subprocess.CompletedProcess([], 0)
+                cliDelegation.record_health_failure(
+                    "signature telemetry mismatch detected during bootstrap"
+                )
+                run_mock.assert_called_once()
+                args, _ = run_mock.call_args
+                self.assertIn("check_cli_assets.py", args[0][1])
+            cliDelegation._AUTO_REPACKAGE_ATTEMPTED = False
+            cliDelegation.reset_state()
+
+        def test_health_failure_auto_installs_missing_cli_binary(self) -> None:
+            cliDelegation.reset_state()
+            cliDelegation._AUTO_INSTALL_ATTEMPTED = False
+            with mock.patch(
+                "scripts.tools.install_bar_cli.install_cli"
+            ) as install_mock:
+                cliDelegation.record_health_failure(
+                    "[Errno 2] No such file or directory: 'bin/bar'"
+                )
+                install_mock.assert_called_once()
+            cliDelegation._AUTO_INSTALL_ATTEMPTED = False
+            cliDelegation.reset_state()
+
+        def test_package_go_command_prefers_setting(self) -> None:
+            with mock.patch.dict(os.environ, {"CLI_GO_COMMAND": ""}, clear=False):
+                with mock.patch.object(
+                    package_bar_cli, "talon_settings"
+                ) as settings_mock:
+                    settings_mock.get.return_value = "/custom/go"
+                    with mock.patch("shutil.which", return_value=None):
+                        with mock.patch.object(
+                            package_bar_cli,
+                            "PREFERRED_GO_PATHS",
+                            [Path("/unlikely/path/go")],
+                        ):
+                            command = package_bar_cli._go_command()
+            self.assertEqual(command, ["/custom/go"])
+
+        def test_package_go_command_prefers_fallback_paths(self) -> None:
+            temp_path = Path("var/cli-go-fallback/bin/go")
+            temp_path.parent.mkdir(parents=True, exist_ok=True)
+            try:
+                temp_path.write_text("#!/bin/sh\nexit 0\n", encoding="utf-8")
+                temp_path.chmod(0o755)
+                with mock.patch.dict(os.environ, {"CLI_GO_COMMAND": ""}, clear=False):
+                    with mock.patch.object(package_bar_cli, "talon_settings", None):
+                        with mock.patch("shutil.which", return_value=None):
+                            with mock.patch.object(
+                                package_bar_cli,
+                                "PREFERRED_GO_PATHS",
+                                [temp_path],
+                            ):
+                                command = package_bar_cli._go_command()
+                self.assertEqual(command, [str(temp_path)])
+            finally:
+                try:
+                    temp_path.unlink()
+                except FileNotFoundError:
+                    pass
+                try:
+                    temp_path.parent.rmdir()
+                except OSError:
+                    pass
+
         def test_packaged_cli_assets_present(self) -> None:
             tarball = _packaged_cli_tarball()
             manifest = _packaged_cli_manifest(tarball)
@@ -310,8 +510,13 @@ else:
             restored_enabled = None
             try:
                 buf = io.StringIO()
-                with redirect_stderr(buf):
-                    bootstrap()
+                with mock.patch(
+                    "scripts.tools.install_bar_cli._invoke_package_cli",
+                    side_effect=RuntimeError("auto-packaging unavailable"),
+                ):
+                    with self.assertRaises(install_bar_cli.ReleaseSignatureError):
+                        with redirect_stderr(buf):
+                            bootstrap()
                 warning_output = buf.getvalue()
                 telemetry_messages = get_bootstrap_warning_messages(clear=False)
                 adapter_messages = actions.user.cli_bootstrap_warning_messages()
@@ -682,7 +887,7 @@ else:
                 "Provider registry should surface signature mismatch before recovery",
             )
 
-            with mock.patch("lib.providerCommands.show_provider_canvas") as show_canvas:
+            with mock.patch("lib.providerCommands.log_provider_status") as show_canvas:
                 cliDelegation.mark_cli_ready(source="parity")
                 show_canvas.assert_called_once()
                 canvas_args = show_canvas.call_args[0]

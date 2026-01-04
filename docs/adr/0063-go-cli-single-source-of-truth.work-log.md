@@ -1,7 +1,7 @@
 # ADR-0063 Work Log — helper:v20251223.1
 
 ## Open Behaviours
-- [Implementation Guardrails → Delivery posture] Replace stubbed CLI delegation with real binary | `python3 -m pytest _tests/test_cli_talon_parity.py` | status: in_progress — loop-0063 returns CLI-executed responses; next slice threads outputs into Talon UI surfacing and adapters.
+- [Implementation Guardrails → Delivery posture] Replace stubbed CLI delegation with real binary | `python3 -m pytest _tests/test_cli_talon_parity.py` | status: in_progress — loop-0064 surfaces CLI delegate output in Talon history and canvases; next slice wires adapters to consume real CLI transcripts end-to-end.
 - [Implementation Guardrails → Delivery posture] Release checksum manifest hardening | `python3 scripts/tools/check_cli_assets.py` | status: in_progress — loop-0059 enforces single-entry manifests; CI artefact evidence deferred until merge readiness.
 
 ## Completed Loops
@@ -112,3 +112,4 @@ PY`; evidence: `docs/adr/evidence/0063/loop-0034.md`.
 - loop-0061 — introduced CLI delegate stub and parity invocation helper; validation: `python3 -m pytest _tests/test_cli_talon_parity.py`; evidence: `docs/adr/evidence/0063/loop-0061.md`.
 - loop-0062 — wrapped CLI delegate with lifecycle helper and parity coverage; validation: `python3 -m pytest _tests/test_cli_talon_parity.py`; evidence: `docs/adr/evidence/0063/loop-0062.md`.
 - loop-0063 — implemented CLI delegate execution path with echo response and parity failure guard; validation: `python3 -m pytest _tests/test_cli_talon_parity.py`; evidence: `docs/adr/evidence/0063/loop-0063.md`.
+- loop-0064 — surfaced CLI delegate responses through history entries and response canvas refresh; validation: `python3 -m pytest _tests/test_cli_talon_parity.py`; evidence: `docs/adr/evidence/0063/loop-0064.md`.

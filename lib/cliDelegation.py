@@ -8,6 +8,9 @@ from typing import Any, Dict, List, Tuple
 
 from talon import Module, actions
 
+from . import historyLifecycle
+from . import responseCanvasFallback
+
 mod = Module()
 
 _CLI_BINARY = Path("bin/bar")
@@ -20,6 +23,10 @@ _FAILURE_COUNT = 0
 _LAST_REASON: str | None = None
 _LAST_RECOVERY_CODE: str | None = None
 _LAST_RECOVERY_DETAILS: str | None = None
+
+_DEFAULT_DIRECTIONAL_TOKEN = "jog"
+_DEFAULT_PROVIDER_ID = "cli"
+_RESPONSE_RECIPE = "cli_delegate"
 
 
 def _recovery_code_for(reason: str | None) -> str | None:
@@ -147,6 +154,160 @@ def _persist_state(
         _STATE_PATH.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
     except Exception:
         # Persisting state is best-effort; telemetry continues in memory when this fails.
+        pass
+
+
+def _coerce_axes_payload(raw_axes: Any) -> Dict[str, List[str]]:
+    axes: Dict[str, List[str]] = {}
+    if not isinstance(raw_axes, dict):
+        return axes
+    for raw_key, raw_value in raw_axes.items():
+        key = str(raw_key).strip()
+        if not key:
+            continue
+        values: list[str] = []
+        if isinstance(raw_value, (list, tuple, set)):
+            for item in raw_value:
+                text = str(item).strip()
+                if text:
+                    values.append(text)
+        elif raw_value is not None:
+            text = str(raw_value).strip()
+            if text:
+                values.append(text)
+        if values:
+            axes[key] = values
+    return axes
+
+
+def _fallback_request_id() -> str:
+    stamp = int(datetime.now(timezone.utc).timestamp() * 1000)
+    return f"cli-{stamp}"
+
+
+def _response_text(response: Dict[str, Any]) -> str:
+    message = ""
+    raw_message = response.get("message")
+    if isinstance(raw_message, str):
+        message = raw_message.strip()
+    result_text = ""
+    result = response.get("result")
+    if isinstance(result, dict):
+        parts: list[str] = []
+        for key, value in result.items():
+            text = ""
+            if isinstance(value, str):
+                text = value.strip()
+            elif value is not None:
+                try:
+                    text = json.dumps(value, ensure_ascii=False, sort_keys=True)
+                except Exception:
+                    text = str(value)
+            if text:
+                parts.append(f"{key}: {text}")
+        result_text = "\n".join(parts).strip()
+    if message and result_text:
+        return f"{message}\n\n{result_text}"
+    return message or result_text or ""
+
+
+def _prompt_text(payload: Dict[str, Any]) -> str:
+    prompt_payload = payload.get("prompt")
+    if isinstance(prompt_payload, dict):
+        text = prompt_payload.get("text")
+        if isinstance(text, str):
+            return text.strip()
+        segments = prompt_payload.get("segments")
+        if isinstance(segments, (list, tuple)):
+            parts = [str(part).strip() for part in segments if str(part).strip()]
+            if parts:
+                return "\n".join(parts)
+    return ""
+
+
+def _normalise_directional_axis(
+    axes: Dict[str, List[str]], payload: Dict[str, Any]
+) -> Dict[str, List[str]]:
+    directional = [
+        token.strip()
+        for token in axes.get("directional", [])
+        if isinstance(token, str) and token.strip()
+    ]
+    if directional:
+        axes["directional"] = directional
+        return axes
+    raw_directional = payload.get("directional")
+    candidate = ""
+    if isinstance(raw_directional, str):
+        candidate = raw_directional.strip()
+    elif isinstance(raw_directional, (list, tuple)):
+        for item in raw_directional:
+            if isinstance(item, str) and item.strip():
+                candidate = item.strip()
+                break
+    if candidate:
+        axes["directional"] = [candidate]
+    else:
+        axes["directional"] = [_DEFAULT_DIRECTIONAL_TOKEN]
+    return axes
+
+
+def _record_successful_delegation(
+    payload: Dict[str, Any], response: Dict[str, Any]
+) -> None:
+    try:
+        request_id_raw = response.get("request_id") or payload.get("request_id")
+        request_id = str(request_id_raw or "").strip()
+        if not request_id:
+            request_id = _fallback_request_id()
+        prompt_text = _prompt_text(payload)
+        response_text = _response_text(response)
+        axes = _normalise_directional_axis(
+            _coerce_axes_payload(payload.get("axes")),
+            payload,
+        )
+        provider_raw = payload.get("provider_id")
+        provider_id = (
+            str(provider_raw or _DEFAULT_PROVIDER_ID).strip() or _DEFAULT_PROVIDER_ID
+        )
+        recipe_raw = payload.get("recipe")
+        recipe = str(recipe_raw or _RESPONSE_RECIPE).strip() or _RESPONSE_RECIPE
+
+        started_at_ms_val = payload.get("started_at_ms")
+        duration_ms_val = payload.get("duration_ms")
+        started_at_ms = (
+            int(started_at_ms_val)
+            if isinstance(started_at_ms_val, (int, float))
+            else None
+        )
+        duration_ms = (
+            int(duration_ms_val) if isinstance(duration_ms_val, (int, float)) else None
+        )
+
+        historyLifecycle.append_entry(
+            request_id,
+            prompt_text,
+            response_text,
+            "",
+            recipe=recipe,
+            started_at_ms=started_at_ms,
+            duration_ms=duration_ms,
+            axes=axes,
+            provider_id=provider_id,
+        )
+        if response_text:
+            responseCanvasFallback.set_response_fallback(request_id, response_text)
+        else:
+            responseCanvasFallback.clear_response_fallback(request_id)
+        try:
+            actions.user.model_response_canvas_open()
+        except Exception:
+            pass
+        try:
+            actions.user.model_response_canvas_refresh()
+        except Exception:
+            pass
+    except Exception:
         pass
 
 
@@ -459,6 +620,7 @@ def delegate_request(payload: Dict[str, Any]) -> Tuple[bool, Dict[str, Any], str
         return False, response, error_message
 
     mark_cli_ready(source="cli_delegate")
+    _record_successful_delegation(payload, response)
     return True, response, ""
 
 

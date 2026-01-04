@@ -29,7 +29,7 @@ import lib.cliHealth as cliHealth
 import lib.providerCommands as providerCommands
 import lib.providerRegistry as providerRegistry
 import lib.surfaceGuidance as surfaceGuidance
-from lib import historyLifecycle, requestGating
+from lib import historyLifecycle, requestGating, responseCanvasFallback
 import scripts.tools.install_bar_cli as install_bar_cli
 from lib.bootstrapTelemetry import (
     clear_bootstrap_warning_events,
@@ -230,6 +230,39 @@ else:
             self.assertIn("prompt.text", error_message)
             self.assertFalse(cliDelegation.delegation_enabled())
             cliDelegation.reset_state()
+
+        def test_cli_delegate_surfaces_history_and_canvas(self) -> None:
+            actions.user.calls.clear()
+            historyLifecycle.clear_history()
+            responseCanvasFallback.clear_all_fallbacks()
+            cliDelegation.reset_state()
+            payload = {
+                "request_id": "req-cli-ui",
+                "prompt": {"text": "hello world"},
+                "axes": {"scope": ["bound"]},
+                "provider_id": "cli",
+            }
+            try:
+                success, response, error_message = cliDelegation.delegate_request(
+                    payload
+                )
+                self.assertTrue(success, error_message)
+                entry = historyLifecycle.latest()
+                self.assertIsNotNone(entry)
+                assert entry is not None
+                self.assertEqual(entry.request_id, "req-cli-ui")
+                self.assertIn("bound", entry.axes.get("scope", []))
+                self.assertIn("jog", entry.axes.get("directional", []))
+                fallback_text = responseCanvasFallback.fallback_for("req-cli-ui")
+                self.assertIn("hello world", fallback_text.lower())
+                action_names = [call[0] for call in actions.user.calls]
+                self.assertIn("model_response_canvas_open", action_names)
+                self.assertIn("model_response_canvas_refresh", action_names)
+            finally:
+                responseCanvasFallback.clear_all_fallbacks()
+                historyLifecycle.clear_history()
+                actions.user.calls.clear()
+                cliDelegation.reset_state()
 
         def test_packaged_cli_assets_present(self) -> None:
             tarball = _packaged_cli_tarball()

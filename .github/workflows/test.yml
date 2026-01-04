@@ -35,3 +35,11 @@ jobs:
 
       - name: Run tests
         run: python3 -m unittest discover -s tests -v
+
+      - name: Upload CLI signature telemetry bundle
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cli-signature-telemetry
+          path: artifacts/cli/signature-telemetry.json
+          if-no-files-found: warn

@@ -1,0 +1,53 @@
+{
+  "parity/hello-world": {
+    "status": "ok",
+    "message": "This is a streamed answer.\nIt spans two sentences.",
+    "meta": "## Model interpretation\nFixture-provided insight.",
+    "result": {
+      "answer": "This is a streamed answer.\nIt spans two sentences.",
+      "meta": "## Model interpretation\nFixture-provided insight.",
+      "chunks": [
+        "This is a streamed answer.",
+        "It spans two sentences."
+      ]
+    },
+    "events": [
+      {"kind": "append", "text": "This is a streamed answer."},
+      {"kind": "append", "text": "It spans two sentences."}
+    ]
+  },
+  "prompt:hello world": {
+    "status": "ok",
+    "message": "This is a streamed answer.\nIt spans two sentences.",
+    "meta": "## Model interpretation\nFixture-provided insight.",
+    "result": {
+      "answer": "This is a streamed answer.\nIt spans two sentences.",
+      "meta": "## Model interpretation\nFixture-provided insight.",
+      "chunks": [
+        "This is a streamed answer.",
+        "It spans two sentences."
+      ]
+    },
+    "events": [
+      {"kind": "append", "text": "This is a streamed answer."},
+      {"kind": "append", "text": "It spans two sentences."}
+    ]
+  },
+  "parity/ui": {
+    "status": "ok",
+    "message": "Stream channel response.\nCanvas refreshed chunk.",
+    "meta": "## Model interpretation\nUI verification.",
+    "result": {
+      "answer": "Stream channel response.\nCanvas refreshed chunk.",
+      "meta": "## Model interpretation\nUI verification.",
+      "chunks": [
+        "Stream channel response.",
+        "Canvas refreshed chunk."
+      ]
+    },
+    "events": [
+      {"kind": "append", "text": "Stream channel response."},
+      {"kind": "append", "text": "Canvas refreshed chunk."}
+    ]
+  }
+}

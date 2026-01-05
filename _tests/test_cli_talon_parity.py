@@ -8,7 +8,6 @@ import platform
 import shutil
 import subprocess
 import sys
-import tempfile
 from contextlib import redirect_stderr
 from datetime import datetime, timezone
 from unittest import mock
@@ -167,20 +166,6 @@ else:
             )
             return payload
 
-        def _write_delegate_fixture(self, payload: dict[str, Any]) -> Path:
-            handle = tempfile.NamedTemporaryFile(
-                mode="w", delete=False, encoding="utf-8"
-            )
-            try:
-                json.dump(payload, handle)
-                handle.write("\n")
-            finally:
-                handle.flush()
-                handle.close()
-            path = Path(handle.name)
-            self.addCleanup(path.unlink, missing_ok=True)
-            return path
-
         def test_cli_health_probe_emits_json_status(self) -> None:
             self.assertTrue(
                 CLI_BINARY.exists(),
@@ -244,31 +229,15 @@ else:
                 "prompt": {
                     "text": "hello world",
                 },
+                "delegate_fixture_key": "parity/hello-world",
             }
             chunks = ["This is a streamed answer.", "It spans two sentences."]
             answer = "\n".join(chunks)
             meta_text = "## Model interpretation\nFixture-provided insight."
-            fixture_path = self._write_delegate_fixture(
-                {
-                    "status": "ok",
-                    "message": answer,
-                    "result": {
-                        "answer": answer,
-                        "meta": meta_text,
-                        "chunks": chunks,
-                    },
-                    "events": [{"kind": "append", "text": chunk} for chunk in chunks],
-                }
-            )
             try:
-                with mock.patch.dict(
-                    os.environ,
-                    {"BAR_DELEGATE_FIXTURE": str(fixture_path)},
-                    clear=False,
-                ):
-                    success, response, error_message = cliDelegation.delegate_request(
-                        payload
-                    )
+                success, response, error_message = cliDelegation.delegate_request(
+                    payload
+                )
                 self.assertTrue(success, error_message)
                 self.assertEqual(response.get("status"), "ok")
                 self.assertEqual(response.get("request_id"), "req-123")
@@ -325,30 +294,14 @@ else:
                 "prompt": {"text": "hello world"},
                 "axes": {"scope": ["bound"]},
                 "provider_id": "cli",
+                "delegate_fixture_key": "parity/ui",
             }
             chunks = ["Stream channel response.", "Canvas refreshed chunk."]
             answer = "\n".join(chunks)
-            fixture_path = self._write_delegate_fixture(
-                {
-                    "status": "ok",
-                    "message": answer,
-                    "result": {
-                        "answer": answer,
-                        "chunks": chunks,
-                        "meta": "## Model interpretation\nUI verification.",
-                    },
-                    "events": [{"kind": "append", "text": chunk} for chunk in chunks],
-                }
-            )
             try:
-                with mock.patch.dict(
-                    os.environ,
-                    {"BAR_DELEGATE_FIXTURE": str(fixture_path)},
-                    clear=False,
-                ):
-                    success, response, error_message = cliDelegation.delegate_request(
-                        payload
-                    )
+                success, response, error_message = cliDelegation.delegate_request(
+                    payload
+                )
                 self.assertTrue(success, error_message)
                 entry = historyLifecycle.latest()
                 self.assertIsNotNone(entry)

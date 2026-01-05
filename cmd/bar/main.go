@@ -138,7 +138,7 @@ func runDelegate(args []string) int {
 		return 1
 	}
 
-	fixture, err := loadDelegateFixture()
+	fixture, err := loadDelegateFixture(request, promptText)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "bar: failed to load delegate fixture: %v\n", err)
 		return 1
@@ -300,23 +300,38 @@ func extractResultChunks(result map[string]any) []string {
 	}
 }
 
-func loadDelegateFixture() (map[string]any, error) {
+func loadDelegateFixture(request map[string]any, promptText string) (map[string]any, error) {
 	path := strings.TrimSpace(os.Getenv("BAR_DELEGATE_FIXTURE"))
-	if path == "" {
-		return nil, nil
+	if path != "" {
+		data, err := os.ReadFile(path)
+		if err != nil {
+			return nil, err
+		}
+		var fixture map[string]any
+		if err := json.Unmarshal(data, &fixture); err != nil {
+			return nil, err
+		}
+		return fixture, nil
 	}
-	data, err := os.ReadFile(path)
-	if err != nil {
-		return nil, err
+
+	if rawKey, ok := request["delegate_fixture_key"].(string); ok {
+		if fixture := embeddedDelegateFixture(rawKey); fixture != nil {
+			return fixture, nil
+		}
 	}
-	var fixture map[string]any
-	if err := json.Unmarshal(data, &fixture); err != nil {
-		return nil, err
+
+	normalisedPrompt := strings.ToLower(strings.TrimSpace(promptText))
+	if normalisedPrompt != "" {
+		if fixture := embeddedDelegateFixture("prompt:" + normalisedPrompt); fixture != nil {
+			return fixture, nil
+		}
 	}
-	return fixture, nil
+
+	return nil, nil
 }
 
 func coerceFixtureEvents(raw any) []map[string]any {
+
 	var events []map[string]any
 	switch typed := raw.(type) {
 	case []map[string]any:

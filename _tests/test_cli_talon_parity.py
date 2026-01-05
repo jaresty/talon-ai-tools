@@ -251,10 +251,27 @@ else:
                 self.assertEqual(response.get("meta"), meta_text)
                 result = response.get("result") or {}
                 self.assertEqual(result.get("chunk_count"), 3)
+                self.assertEqual(result.get("summary"), "Summary: hello world")
                 self.assertEqual(
-                    result.get("summary"), f"{len(expected_chunks)} chunk(s) replayed"
+                    result.get("replay_summary"),
+                    f"{len(expected_chunks)} chunk(s) replayed",
                 )
                 self.assertEqual(result.get("highlights"), ["#hello", "#world"])
+                usage = result.get("usage") or {}
+                prompt_tokens = usage.get("prompt_tokens")
+                completion_tokens = usage.get("completion_tokens")
+                self.assertIsInstance(prompt_tokens, int)
+                self.assertIsInstance(completion_tokens, int)
+                prompt_tokens_int = cast(int, prompt_tokens)
+                completion_tokens_int = cast(int, completion_tokens)
+                self.assertEqual(prompt_tokens_int, 2)
+                expected_completion_tokens = len(" ".join(expected_chunks).split())
+                self.assertEqual(completion_tokens_int, expected_completion_tokens)
+                self.assertEqual(
+                    usage.get("total_tokens"),
+                    prompt_tokens_int + completion_tokens_int,
+                )
+
                 chunks = result.get("chunks") or []
                 self.assertEqual(chunks, expected_chunks)
                 analysis = result.get("response_analysis") or {}
@@ -265,12 +282,20 @@ else:
                 kinds = [event.get("kind") for event in event_dicts]
                 self.assertIn("begin_stream", kinds)
                 self.assertIn("complete", kinds)
-                append_texts = [
-                    event.get("text")
-                    for event in event_dicts
-                    if event.get("kind") == "append"
-                ]
+                self.assertIn("usage", kinds)
+                append_texts = []
+                for event in event_dicts:
+                    if event.get("kind") != "append":
+                        continue
+                    delta = event.get("delta")
+                    if isinstance(delta, dict):
+                        append_texts.append(delta.get("text"))
                 self.assertEqual(append_texts, expected_chunks)
+                usage_events = [
+                    event for event in event_dicts if event.get("kind") == "usage"
+                ]
+                self.assertEqual(len(usage_events), 1)
+                self.assertEqual(usage_events[0].get("usage"), usage)
                 final_state = requestBus.current_state()
                 self.assertEqual(final_state.phase, RequestPhase.DONE)
                 entry = historyLifecycle.latest()

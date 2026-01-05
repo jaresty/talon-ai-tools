@@ -195,10 +195,16 @@ func runDelegate(args []string) int {
 			"words":      len(strings.Fields(promptText)),
 		}
 	}
-	if len(chunks) > 0 {
-		result["summary"] = fmt.Sprintf("%d chunk(s) replayed", len(chunks))
-	} else {
-		result["summary"] = "no chunks generated"
+	replaySummary := fmt.Sprintf("%d chunk(s) replayed", len(chunks))
+	if _, ok := result["summary"]; !ok {
+		if len(chunks) > 0 {
+			result["summary"] = replaySummary
+		} else {
+			result["summary"] = "no chunks generated"
+		}
+	}
+	if _, ok := result["replay_summary"]; !ok {
+		result["replay_summary"] = replaySummary
 	}
 
 	if responseMeta != "" {
@@ -364,13 +370,23 @@ func synthesizeDelegateFixture(request map[string]any, promptText string) map[st
 		"lines":      len(chunks),
 	}
 
+	replaySummary := fmt.Sprintf("%d chunk(s) replayed", len(chunks))
+	completionTokens := len(strings.Fields(answer))
+	usage := map[string]any{
+		"prompt_tokens":     wordCount,
+		"completion_tokens": completionTokens,
+		"total_tokens":      wordCount + completionTokens,
+	}
+
 	result := map[string]any{
 		"answer":            answer,
 		"chunks":            chunks,
 		"chunk_count":       len(chunks),
 		"summary":           summaryLine,
+		"replay_summary":    replaySummary,
 		"highlights":        highlights,
 		"response_analysis": responseAnalysis,
+		"usage":             usage,
 		"echo":              trimmed,
 	}
 
@@ -378,13 +394,22 @@ func synthesizeDelegateFixture(request map[string]any, promptText string) map[st
 		result["axes"] = axes
 	}
 
-	events := make([]map[string]any, 0, len(chunks))
-	for _, chunk := range chunks {
+	events := make([]map[string]any, 0, len(chunks)+2)
+	for index, chunk := range chunks {
 		events = append(events, map[string]any{
 			"kind": "append",
-			"text": chunk,
+			"delta": map[string]any{
+				"role":  "assistant",
+				"type":  "text",
+				"index": index,
+				"text":  chunk,
+			},
 		})
 	}
+	events = append(events, map[string]any{
+		"kind":  "usage",
+		"usage": usage,
+	})
 
 	return map[string]any{
 		"status":  "ok",

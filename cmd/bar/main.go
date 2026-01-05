@@ -7,10 +7,12 @@ import (
 	"fmt"
 	"io"
 	"io/fs"
+	"math"
 	"net/http"
 	"os"
 	"os/exec"
 	"path/filepath"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -18,9 +20,11 @@ import (
 )
 
 const (
-	schemaRelativePath = "docs/schema/command-surface.json"
-	runtimeName        = "go"
-	executorName       = "compiled"
+	schemaRelativePath            = "docs/schema/command-surface.json"
+	runtimeName                   = "go"
+	executorName                  = "compiled"
+	defaultTelemetryWindowMinutes = 30
+	maxTelemetrySamples           = 200
 )
 
 type fixturesOnlyMissingTranscriptError struct {
@@ -37,6 +41,23 @@ type healthPayload struct {
 	Runtime    string `json:"runtime"`
 	Executor   string `json:"executor"`
 	BinaryPath string `json:"binary_path"`
+}
+
+type latencyTelemetrySample struct {
+	Timestamp  string  `json:"timestamp"`
+	LatencyMs  float64 `json:"latency_ms"`
+	HTTPStatus int     `json:"http_status"`
+	Success    bool    `json:"success"`
+}
+
+type latencyTelemetryPayload struct {
+	GeneratedAt   string                   `json:"generated_at"`
+	WindowMinutes int                      `json:"window_minutes"`
+	Samples       []latencyTelemetrySample `json:"samples"`
+	SampleCount   int                      `json:"sample_count"`
+	P50Ms         float64                  `json:"p50_ms"`
+	P95Ms         float64                  `json:"p95_ms"`
+	SuccessRate   float64                  `json:"success_rate"`
 }
 
 func main() {
@@ -448,6 +469,157 @@ func applyHTTPFallbackMeta(fixture map[string]any, reason string) {
 	}
 }
 
+func parseHTTPHeadersEnv() (map[string]string, error) {
+	raw := strings.TrimSpace(os.Getenv("BAR_PROVIDER_HTTP_HEADERS"))
+	if raw == "" {
+		return nil, nil
+	}
+	var headers map[string]string
+	if err := json.Unmarshal([]byte(raw), &headers); err != nil {
+		return nil, fmt.Errorf("invalid BAR_PROVIDER_HTTP_HEADERS: %w", err)
+	}
+	return headers, nil
+}
+
+func telemetryLatencyPath(root string) string {
+	override := strings.TrimSpace(os.Getenv("BAR_TELEMETRY_LATENCY_PATH"))
+	if override != "" {
+		return override
+	}
+	if root == "" {
+		return ""
+	}
+	return filepath.Join(root, "var", "cli-telemetry", "latency.json")
+}
+
+func percentile(sortedValues []float64, quantile float64) float64 {
+	switch {
+	case len(sortedValues) == 0:
+		return 0
+	case quantile <= 0:
+		return sortedValues[0]
+	case quantile >= 1:
+		return sortedValues[len(sortedValues)-1]
+	}
+
+	position := quantile * float64(len(sortedValues)-1)
+	lower := int(math.Floor(position))
+	upper := int(math.Ceil(position))
+	if lower == upper {
+		return sortedValues[lower]
+	}
+	weight := position - float64(lower)
+	return sortedValues[lower]*(1-weight) + sortedValues[upper]*weight
+}
+
+func clampSampleWindow(samples []latencyTelemetrySample, cutoff time.Time) []latencyTelemetrySample {
+	if len(samples) == 0 {
+		return samples
+	}
+	clamped := make([]latencyTelemetrySample, 0, len(samples))
+	for _, sample := range samples {
+		if sample.Timestamp == "" {
+			continue
+		}
+		timestamp, err := time.Parse(time.RFC3339, sample.Timestamp)
+		if err != nil {
+			continue
+		}
+		if timestamp.Before(cutoff) {
+			continue
+		}
+		clamped = append(clamped, sample)
+	}
+	if len(clamped) > maxTelemetrySamples {
+		clamped = clamped[len(clamped)-maxTelemetrySamples:]
+	}
+	return clamped
+}
+
+func sanitizeLatencyValue(value float64) float64 {
+	if math.IsNaN(value) || math.IsInf(value, 0) {
+		return 0
+	}
+	if value < 0 {
+		return 0
+	}
+	return value
+}
+
+func recordLatencyTelemetry(root string, status int, latency time.Duration, success bool) {
+	if root == "" {
+		root = repoRoot()
+	}
+	path := telemetryLatencyPath(root)
+	if path == "" {
+		return
+	}
+
+	payload := latencyTelemetryPayload{}
+	if data, err := os.ReadFile(path); err == nil {
+		if err := json.Unmarshal(data, &payload); err != nil {
+			payload = latencyTelemetryPayload{}
+		}
+	}
+
+	now := time.Now().UTC()
+	if payload.WindowMinutes <= 0 {
+		payload.WindowMinutes = defaultTelemetryWindowMinutes
+	}
+
+	sample := latencyTelemetrySample{
+		Timestamp:  now.Format(time.RFC3339),
+		LatencyMs:  sanitizeLatencyValue(float64(latency) / float64(time.Millisecond)),
+		HTTPStatus: status,
+		Success:    success,
+	}
+	if latency <= 0 {
+		sample.LatencyMs = 0
+	}
+
+	payload.Samples = append(payload.Samples, sample)
+	cutoff := now.Add(-time.Duration(payload.WindowMinutes) * time.Minute)
+	payload.Samples = clampSampleWindow(payload.Samples, cutoff)
+	payload.SampleCount = len(payload.Samples)
+	payload.GeneratedAt = now.Format(time.RFC3339)
+
+	latencies := make([]float64, 0, len(payload.Samples))
+	successCount := 0
+	for _, entry := range payload.Samples {
+		lat := sanitizeLatencyValue(entry.LatencyMs)
+		latencies = append(latencies, lat)
+		if entry.Success {
+			successCount++
+		}
+	}
+
+	if len(latencies) > 0 {
+		sort.Float64s(latencies)
+		payload.P50Ms = sanitizeLatencyValue(percentile(latencies, 0.50))
+		payload.P95Ms = sanitizeLatencyValue(percentile(latencies, 0.95))
+		payload.SuccessRate = float64(successCount) / float64(len(latencies))
+	} else {
+		payload.P50Ms = 0
+		payload.P95Ms = 0
+		if success {
+			payload.SuccessRate = 1
+		} else {
+			payload.SuccessRate = 0
+		}
+	}
+
+	output, err := json.MarshalIndent(payload, "", "  ")
+	if err != nil {
+		return
+	}
+
+	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
+		return
+	}
+
+	_ = os.WriteFile(path, append(output, '\n'), 0o644)
+}
+
 func fetchHTTPProviderFixture(endpoint string, request map[string]any, promptText string) (map[string]any, error) {
 	if endpoint == "" {
 		if transcript := recordedTranscriptForRequest(request, promptText); transcript != nil {
@@ -467,6 +639,11 @@ func fetchHTTPProviderFixture(endpoint string, request map[string]any, promptTex
 	}
 
 	bearer := strings.TrimSpace(os.Getenv("BAR_PROVIDER_HTTP_BEARER"))
+	headers, headersErr := parseHTTPHeadersEnv()
+	if headersErr != nil {
+		return nil, headersErr
+	}
+
 	timeout := 5 * time.Second
 	if raw := strings.TrimSpace(os.Getenv("BAR_PROVIDER_HTTP_TIMEOUT_MS")); raw != "" {
 		if parsed, err := strconv.Atoi(raw); err == nil && parsed > 0 {
@@ -479,7 +656,7 @@ func fetchHTTPProviderFixture(endpoint string, request map[string]any, promptTex
 		return nil, err
 	}
 
-	fixture, err := invokeHTTPProviderWithRetries(endpoint, payload, bearer, timeout, retries)
+	fixture, err := invokeHTTPProviderWithRetries(endpoint, payload, bearer, headers, timeout, retries)
 	if err != nil {
 		if transcript := recordedTranscriptForRequest(request, promptText); transcript != nil {
 			reason := err.Error()
@@ -494,14 +671,14 @@ func fetchHTTPProviderFixture(endpoint string, request map[string]any, promptTex
 	return fixture, nil
 }
 
-func invokeHTTPProviderWithRetries(endpoint string, payload []byte, bearer string, timeout time.Duration, retries int) (map[string]any, error) {
+func invokeHTTPProviderWithRetries(endpoint string, payload []byte, bearer string, headers map[string]string, timeout time.Duration, retries int) (map[string]any, error) {
 	if retries < 1 {
 		retries = 1
 	}
 
 	var lastErr error
 	for attempt := 1; attempt <= retries; attempt++ {
-		fixture, err := invokeHTTPProvider(endpoint, payload, bearer, timeout)
+		fixture, err := invokeHTTPProvider(endpoint, payload, bearer, headers, timeout)
 		if err == nil {
 			return fixture, nil
 		}
@@ -518,7 +695,8 @@ func invokeHTTPProviderWithRetries(endpoint string, payload []byte, bearer strin
 	return nil, lastErr
 }
 
-func invokeHTTPProvider(endpoint string, payload []byte, bearer string, timeout time.Duration) (map[string]any, error) {
+func invokeHTTPProvider(endpoint string, payload []byte, bearer string, headers map[string]string, timeout time.Duration) (map[string]any, error) {
+	root := repoRoot()
 	client := &http.Client{Timeout: timeout}
 	req, err := http.NewRequest(http.MethodPost, endpoint, bytes.NewReader(payload))
 	if err != nil {
@@ -528,22 +706,31 @@ func invokeHTTPProvider(endpoint string, payload []byte, bearer string, timeout 
 	if bearer != "" {
 		req.Header.Set("Authorization", "Bearer "+bearer)
 	}
+	for key, value := range headers {
+		if strings.EqualFold(key, "Content-Length") {
+			continue
+		}
+		req.Header.Set(key, value)
+	}
 
 	start := time.Now()
 	resp, err := client.Do(req)
 	latency := time.Since(start)
 	if err != nil {
+		recordLatencyTelemetry(root, 0, latency, false)
 		return nil, err
 	}
 	defer resp.Body.Close()
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
+		recordLatencyTelemetry(root, resp.StatusCode, latency, false)
 		return nil, err
 	}
 
 	if resp.StatusCode != http.StatusOK {
 		snippet := strings.TrimSpace(string(body))
+		recordLatencyTelemetry(root, resp.StatusCode, latency, false)
 		if snippet != "" {
 			return nil, fmt.Errorf("http provider returned status %d: %s", resp.StatusCode, snippet)
 		}
@@ -552,6 +739,7 @@ func invokeHTTPProvider(endpoint string, payload []byte, bearer string, timeout 
 
 	var fixture map[string]any
 	if err := json.Unmarshal(body, &fixture); err != nil {
+		recordLatencyTelemetry(root, resp.StatusCode, latency, false)
 		return nil, fmt.Errorf("http provider produced invalid JSON: %w", err)
 	}
 
@@ -569,6 +757,8 @@ func invokeHTTPProvider(endpoint string, payload []byte, bearer string, timeout 
 			result["http_latency_ms"] = latencyMs
 		}
 	}
+
+	recordLatencyTelemetry(root, resp.StatusCode, latency, true)
 
 	return cloneMap(fixture), nil
 }

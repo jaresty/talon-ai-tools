@@ -570,6 +570,7 @@ json.dump(response, sys.stdout)
                 "axes": {"scope": ["bound"]},
                 "provider_id": "cli",
             }
+
             with tempfile.TemporaryDirectory() as tmpdir:
                 sentinel_path = Path(tmpdir) / "http-called.txt"
                 expected_chunks = [
@@ -635,40 +636,47 @@ json.dump(response, sys.stdout)
                     f"http://{server.server_address[0]}:{server.server_address[1]}"
                 )
                 try:
-                    with mock.patch.dict(
-                        os.environ,
-                        {
-                            "BAR_PROVIDER_HTTP_ENDPOINT": endpoint,
-                            "BAR_PROVIDER_COMMAND_MODE": "http",
-                        },
-                    ):
-                        try:
-                            success, response, error_message = (
-                                cliDelegation.delegate_request(payload)
-                            )
-                            self.assertTrue(success, error_message)
-                            self.assertTrue(
-                                sentinel_path.exists(),
-                                "HTTP provider endpoint should be called",
-                            )
-                            self.assertEqual(response.get("status"), "ok")
-                            self.assertEqual(response.get("message"), expected_message)
-                            self.assertEqual(response.get("meta"), expected_meta)
-                            result = response.get("result") or {}
-                            self.assertEqual(result.get("chunks"), expected_chunks)
-                            self.assertEqual(result.get("summary"), expected_chunks[0])
-                            self.assertEqual(
-                                result.get("highlights"), ["#http", "#provider"]
-                            )
-                            usage = result.get("usage") or {}
-                            self.assertEqual(usage.get("prompt_tokens"), 3)
-                            self.assertEqual(usage.get("completion_tokens"), 9)
-                            self.assertEqual(usage.get("total_tokens"), 12)
-                        finally:
-                            cliDelegation.reset_state()
-                            responseCanvasFallback.clear_all_fallbacks()
-                            historyLifecycle.clear_history()
-                            actions.user.calls.clear()
+                    with tempfile.TemporaryDirectory() as telemetry_dir:
+                        telemetry_path = Path(telemetry_dir) / "latency.json"
+                        with mock.patch.dict(
+                            os.environ,
+                            {
+                                "BAR_PROVIDER_HTTP_ENDPOINT": endpoint,
+                                "BAR_PROVIDER_COMMAND_MODE": "http",
+                                "BAR_TELEMETRY_LATENCY_PATH": str(telemetry_path),
+                            },
+                        ):
+                            try:
+                                success, response, error_message = (
+                                    cliDelegation.delegate_request(payload)
+                                )
+                                self.assertTrue(success, error_message)
+                                self.assertTrue(
+                                    sentinel_path.exists(),
+                                    "HTTP provider endpoint should be called",
+                                )
+                                self.assertEqual(response.get("status"), "ok")
+                                self.assertEqual(
+                                    response.get("message"), expected_message
+                                )
+                                self.assertEqual(response.get("meta"), expected_meta)
+                                result = response.get("result") or {}
+                                self.assertEqual(result.get("chunks"), expected_chunks)
+                                self.assertEqual(
+                                    result.get("summary"), expected_chunks[0]
+                                )
+                                self.assertEqual(
+                                    result.get("highlights"), ["#http", "#provider"]
+                                )
+                                usage = result.get("usage") or {}
+                                self.assertEqual(usage.get("prompt_tokens"), 3)
+                                self.assertEqual(usage.get("completion_tokens"), 9)
+                                self.assertEqual(usage.get("total_tokens"), 12)
+                            finally:
+                                cliDelegation.reset_state()
+                                responseCanvasFallback.clear_all_fallbacks()
+                                historyLifecycle.clear_history()
+                                actions.user.calls.clear()
                 finally:
                     server.shutdown()
                     thread.join()
@@ -717,28 +725,31 @@ json.dump(response, sys.stdout)
             thread.start()
             endpoint = f"http://{server.server_address[0]}:{server.server_address[1]}"
             try:
-                with mock.patch.dict(
-                    os.environ,
-                    {
-                        "BAR_PROVIDER_HTTP_ENDPOINT": endpoint,
-                        "BAR_PROVIDER_COMMAND_MODE": "http",
-                        "BAR_PROVIDER_HTTP_BEARER": "token-123",
-                    },
-                ):
-                    try:
-                        success, response, error_message = (
-                            cliDelegation.delegate_request(payload)
-                        )
-                        self.assertTrue(success, error_message)
-                        self.assertEqual(
-                            _AuthHandler.received_headers,
-                            ["Bearer token-123"],
-                        )
-                    finally:
-                        cliDelegation.reset_state()
-                        responseCanvasFallback.clear_all_fallbacks()
-                        historyLifecycle.clear_history()
-                        actions.user.calls.clear()
+                with tempfile.TemporaryDirectory() as tmpdir:
+                    telemetry_path = Path(tmpdir) / "latency.json"
+                    with mock.patch.dict(
+                        os.environ,
+                        {
+                            "BAR_PROVIDER_HTTP_ENDPOINT": endpoint,
+                            "BAR_PROVIDER_COMMAND_MODE": "http",
+                            "BAR_PROVIDER_HTTP_BEARER": "token-123",
+                            "BAR_TELEMETRY_LATENCY_PATH": str(telemetry_path),
+                        },
+                    ):
+                        try:
+                            success, response, error_message = (
+                                cliDelegation.delegate_request(payload)
+                            )
+                            self.assertTrue(success, error_message)
+                            self.assertEqual(
+                                _AuthHandler.received_headers,
+                                ["Bearer token-123"],
+                            )
+                        finally:
+                            cliDelegation.reset_state()
+                            responseCanvasFallback.clear_all_fallbacks()
+                            historyLifecycle.clear_history()
+                            actions.user.calls.clear()
             finally:
                 server.shutdown()
                 thread.join()
@@ -814,6 +825,77 @@ json.dump(response, sys.stdout)
                 server.shutdown()
                 thread.join()
 
+        def test_cli_delegate_http_custom_headers(self) -> None:
+            actions.user.calls.clear()
+            historyLifecycle.clear_history()
+            responseCanvasFallback.clear_all_fallbacks()
+            cliDelegation.reset_state()
+            payload = {
+                "request_id": "req-provider-http-headers",
+                "prompt": {"text": "http provider"},
+                "axes": {"scope": ["bound"]},
+                "provider_id": "cli",
+            }
+
+            class _HeaderHandler(http.server.BaseHTTPRequestHandler):
+                received_headers: List[str] = []
+
+                def do_POST(self) -> None:
+                    header_val = self.headers.get("X-Custom-Header") or ""
+                    _HeaderHandler.received_headers.append(header_val)
+                    body = json.dumps(
+                        {
+                            "status": "ok",
+                            "message": RECORDED_HELLO_MESSAGE,
+                        }
+                    ).encode("utf-8")
+                    self.send_response(200)
+                    self.send_header("Content-Type", "application/json")
+                    self.send_header("Content-Length", str(len(body)))
+                    self.end_headers()
+                    self.wfile.write(body)
+
+                def log_message(self, format: str, *args: Any) -> None:  # noqa: A003
+                    return
+
+            _HeaderHandler.received_headers = []
+            server = http.server.HTTPServer(("127.0.0.1", 0), _HeaderHandler)
+            thread = threading.Thread(
+                target=server.serve_forever,
+                name="http-provider-header-server",
+                daemon=True,
+            )
+            thread.start()
+            endpoint = f"http://{server.server_address[0]}:{server.server_address[1]}"
+            try:
+                with mock.patch.dict(
+                    os.environ,
+                    {
+                        "BAR_PROVIDER_HTTP_ENDPOINT": endpoint,
+                        "BAR_PROVIDER_COMMAND_MODE": "http",
+                        "BAR_PROVIDER_HTTP_HEADERS": json.dumps(
+                            {"X-Custom-Header": "expected-value"}
+                        ),
+                    },
+                ):
+                    try:
+                        success, response, error_message = (
+                            cliDelegation.delegate_request(payload)
+                        )
+                        self.assertTrue(success, error_message)
+                        self.assertEqual(
+                            _HeaderHandler.received_headers,
+                            ["expected-value"],
+                        )
+                    finally:
+                        cliDelegation.reset_state()
+                        responseCanvasFallback.clear_all_fallbacks()
+                        historyLifecycle.clear_history()
+                        actions.user.calls.clear()
+            finally:
+                server.shutdown()
+                thread.join()
+
         def test_cli_delegate_http_records_latency_and_status(self) -> None:
             actions.user.calls.clear()
             historyLifecycle.clear_history()
@@ -874,6 +956,95 @@ json.dump(response, sys.stdout)
                         responseCanvasFallback.clear_all_fallbacks()
                         historyLifecycle.clear_history()
                         actions.user.calls.clear()
+            finally:
+                server.shutdown()
+                thread.join()
+
+        def test_cli_delegate_http_persists_latency_telemetry(self) -> None:
+            actions.user.calls.clear()
+            historyLifecycle.clear_history()
+            responseCanvasFallback.clear_all_fallbacks()
+            cliDelegation.reset_state()
+            payload = {
+                "request_id": "req-provider-http-telemetry-file",
+                "prompt": {"text": "http provider"},
+                "axes": {"scope": ["bound"]},
+                "provider_id": "cli",
+            }
+
+            class _TelemetryRecordHandler(http.server.BaseHTTPRequestHandler):
+                def do_POST(self) -> None:
+                    body = json.dumps(
+                        {
+                            "status": "ok",
+                            "message": RECORDED_HELLO_MESSAGE,
+                        }
+                    ).encode("utf-8")
+                    self.send_response(200)
+                    self.send_header("Content-Type", "application/json")
+                    self.send_header("Content-Length", str(len(body)))
+                    self.end_headers()
+                    self.wfile.write(body)
+
+                def log_message(self, format: str, *args: Any) -> None:  # noqa: A003
+                    return
+
+            server = http.server.HTTPServer(("127.0.0.1", 0), _TelemetryRecordHandler)
+            thread = threading.Thread(
+                target=server.serve_forever,
+                name="http-provider-telemetry-record-server",
+                daemon=True,
+            )
+            thread.start()
+            endpoint = f"http://{server.server_address[0]}:{server.server_address[1]}"
+            try:
+                with tempfile.TemporaryDirectory() as tmpdir:
+                    telemetry_path = Path(tmpdir) / "latency.json"
+                    if telemetry_path.exists():
+                        telemetry_path.unlink()
+                    with mock.patch.dict(
+                        os.environ,
+                        {
+                            "BAR_PROVIDER_HTTP_ENDPOINT": endpoint,
+                            "BAR_PROVIDER_COMMAND_MODE": "http",
+                            "BAR_TELEMETRY_LATENCY_PATH": str(telemetry_path),
+                        },
+                    ):
+                        try:
+                            success, response, error_message = (
+                                cliDelegation.delegate_request(payload)
+                            )
+                            self.assertTrue(success, error_message)
+                            self.assertTrue(
+                                telemetry_path.exists(),
+                                "Telemetry latency artefact missing",
+                            )
+                            payload_json = json.loads(
+                                telemetry_path.read_text(encoding="utf-8")
+                            )
+                            samples = payload_json.get("samples") or []
+                            self.assertGreaterEqual(len(samples), 1)
+                            latest = samples[-1]
+                            self.assertEqual(latest.get("http_status"), 200)
+                            self.assertTrue(latest.get("success"))
+                            latency_value = latest.get("latency_ms")
+                            self.assertIsNotNone(latency_value)
+                            if isinstance(latency_value, (int, float)):
+                                self.assertGreaterEqual(float(latency_value), 0.0)
+                            self.assertGreaterEqual(
+                                payload_json.get("sample_count", 0),
+                                1,
+                            )
+                            self.assertIn("p50_ms", payload_json)
+                            self.assertIn("p95_ms", payload_json)
+                            success_rate = payload_json.get("success_rate")
+                            self.assertIsInstance(success_rate, (int, float))
+                            self.assertGreaterEqual(float(success_rate), 0.99)
+                        finally:
+                            cliDelegation.reset_state()
+                            responseCanvasFallback.clear_all_fallbacks()
+                            historyLifecycle.clear_history()
+                            actions.user.calls.clear()
             finally:
                 server.shutdown()
                 thread.join()

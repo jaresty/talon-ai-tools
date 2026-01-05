@@ -446,13 +446,14 @@ func applyHTTPFallbackMeta(fixture map[string]any, reason string) {
 	} else if !strings.Contains(trimmed, fallback) {
 		fixture["meta"] = trimmed + "\n\n" + fallback
 	}
-	fixture["http_fallback_reason"] = reason
 }
 
 func fetchHTTPProviderFixture(endpoint string, request map[string]any, promptText string) (map[string]any, error) {
 	if endpoint == "" {
 		if transcript := recordedTranscriptForRequest(request, promptText); transcript != nil {
-			applyHTTPFallbackMeta(transcript, "missing HTTP endpoint configuration")
+			reason := "missing HTTP endpoint configuration"
+			applyHTTPFallbackMeta(transcript, reason)
+			transcript["http_fallback_reason"] = reason
 			return transcript, nil
 		}
 		return nil, fmt.Errorf("http mode requires BAR_PROVIDER_HTTP_ENDPOINT")
@@ -481,7 +482,9 @@ func fetchHTTPProviderFixture(endpoint string, request map[string]any, promptTex
 	fixture, err := invokeHTTPProviderWithRetries(endpoint, payload, bearer, timeout, retries)
 	if err != nil {
 		if transcript := recordedTranscriptForRequest(request, promptText); transcript != nil {
-			applyHTTPFallbackMeta(transcript, fmt.Sprintf("%s after %d attempt(s)", err.Error(), retries))
+			reason := err.Error()
+			applyHTTPFallbackMeta(transcript, fmt.Sprintf("%s after %d attempt(s)", reason, retries))
+			transcript["http_fallback_reason"] = reason
 			transcript["http_fallback_attempts"] = retries
 			return transcript, nil
 		}
@@ -512,7 +515,7 @@ func invokeHTTPProviderWithRetries(endpoint string, payload []byte, bearer strin
 		lastErr = fmt.Errorf("unknown HTTP provider error")
 	}
 
-	return nil, fmt.Errorf("%w", lastErr)
+	return nil, lastErr
 }
 
 func invokeHTTPProvider(endpoint string, payload []byte, bearer string, timeout time.Duration) (map[string]any, error) {
@@ -526,7 +529,9 @@ func invokeHTTPProvider(endpoint string, payload []byte, bearer string, timeout 
 		req.Header.Set("Authorization", "Bearer "+bearer)
 	}
 
+	start := time.Now()
 	resp, err := client.Do(req)
+	latency := time.Since(start)
 	if err != nil {
 		return nil, err
 	}
@@ -548,6 +553,21 @@ func invokeHTTPProvider(endpoint string, payload []byte, bearer string, timeout 
 	var fixture map[string]any
 	if err := json.Unmarshal(body, &fixture); err != nil {
 		return nil, fmt.Errorf("http provider produced invalid JSON: %w", err)
+	}
+
+	latencyMs := float64(latency) / float64(time.Millisecond)
+	if latencyMs < 0 {
+		latencyMs = 0
+	}
+	fixture["http_status"] = resp.StatusCode
+	fixture["http_latency_ms"] = latencyMs
+	if result, ok := fixture["result"].(map[string]any); ok {
+		if _, exists := result["http_status"]; !exists {
+			result["http_status"] = resp.StatusCode
+		}
+		if _, exists := result["http_latency_ms"]; !exists {
+			result["http_latency_ms"] = latencyMs
+		}
 	}
 
 	return cloneMap(fixture), nil

@@ -9,6 +9,7 @@ import shutil
 import subprocess
 import sys
 import tempfile
+import time
 import http.server
 import threading
 from contextlib import redirect_stderr, redirect_stdout
@@ -796,6 +797,78 @@ json.dump(response, sys.stdout)
                         meta_text = response.get("meta") or ""
                         self.assertIn("HTTP fallback", meta_text)
                         self.assertIn("after", meta_text)
+                        result = response.get("result") or {}
+                        fallback_reason = response.get("http_fallback_reason") or ""
+                        self.assertIn(
+                            "http provider returned status 500", fallback_reason
+                        )
+                        self.assertGreaterEqual(
+                            response.get("http_fallback_attempts", 0), 3
+                        )
+                    finally:
+                        cliDelegation.reset_state()
+                        responseCanvasFallback.clear_all_fallbacks()
+                        historyLifecycle.clear_history()
+                        actions.user.calls.clear()
+            finally:
+                server.shutdown()
+                thread.join()
+
+        def test_cli_delegate_http_records_latency_and_status(self) -> None:
+            actions.user.calls.clear()
+            historyLifecycle.clear_history()
+            responseCanvasFallback.clear_all_fallbacks()
+            cliDelegation.reset_state()
+            payload = {
+                "request_id": "req-provider-http-telemetry",
+                "prompt": {"text": "http provider"},
+                "axes": {"scope": ["bound"]},
+                "provider_id": "cli",
+            }
+
+            class _TelemetryHandler(http.server.BaseHTTPRequestHandler):
+                def do_POST(self) -> None:
+                    time.sleep(0.05)
+                    body = json.dumps(
+                        {
+                            "status": "ok",
+                            "message": RECORDED_HELLO_MESSAGE,
+                        }
+                    ).encode("utf-8")
+                    self.send_response(200)
+                    self.send_header("Content-Type", "application/json")
+                    self.send_header("Content-Length", str(len(body)))
+                    self.end_headers()
+                    self.wfile.write(body)
+
+                def log_message(self, format: str, *args: Any) -> None:  # noqa: A003
+                    return
+
+            server = http.server.HTTPServer(("127.0.0.1", 0), _TelemetryHandler)
+            thread = threading.Thread(
+                target=server.serve_forever,
+                name="http-provider-telemetry-server",
+                daemon=True,
+            )
+            thread.start()
+            endpoint = f"http://{server.server_address[0]}:{server.server_address[1]}"
+            try:
+                with mock.patch.dict(
+                    os.environ,
+                    {
+                        "BAR_PROVIDER_HTTP_ENDPOINT": endpoint,
+                        "BAR_PROVIDER_COMMAND_MODE": "http",
+                        "BAR_PROVIDER_HTTP_TIMEOUT_MS": "5000",
+                    },
+                ):
+                    try:
+                        success, response, error_message = (
+                            cliDelegation.delegate_request(payload)
+                        )
+                        self.assertTrue(success, error_message)
+                        result = response.get("result") or {}
+                        self.assertIn("chunks", result)
+
                     finally:
                         cliDelegation.reset_state()
                         responseCanvasFallback.clear_all_fallbacks()
@@ -836,6 +909,12 @@ json.dump(response, sys.stdout)
                     self.assertFalse(
                         sentinel_path.exists(),
                         "HTTP endpoint should not be called when missing",
+                    )
+                    result = response.get("result") or {}
+                    self.assertIn("HTTP fallback", (response.get("meta") or ""))
+                    self.assertEqual(
+                        response.get("http_fallback_reason"),
+                        "missing HTTP endpoint configuration",
                     )
                 finally:
                     cliDelegation.reset_state()

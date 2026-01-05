@@ -8,6 +8,7 @@ import platform
 import shutil
 import subprocess
 import sys
+import tempfile
 from contextlib import redirect_stderr
 from datetime import datetime, timezone
 from unittest import mock
@@ -166,6 +167,20 @@ else:
             )
             return payload
 
+        def _write_delegate_fixture(self, payload: dict[str, Any]) -> Path:
+            handle = tempfile.NamedTemporaryFile(
+                mode="w", delete=False, encoding="utf-8"
+            )
+            try:
+                json.dump(payload, handle)
+                handle.write("\n")
+            finally:
+                handle.flush()
+                handle.close()
+            path = Path(handle.name)
+            self.addCleanup(path.unlink, missing_ok=True)
+            return path
+
         def test_cli_health_probe_emits_json_status(self) -> None:
             self.assertTrue(
                 CLI_BINARY.exists(),
@@ -221,6 +236,8 @@ else:
             self.assertEqual(result.stdout.strip(), expected)
 
         def test_cli_delegate_executes_request(self) -> None:
+            historyLifecycle.clear_history()
+            responseCanvasFallback.clear_all_fallbacks()
             requestBus.emit_reset()
             payload = {
                 "request_id": "req-123",
@@ -228,25 +245,65 @@ else:
                     "text": "hello world",
                 },
             }
-            success, response, error_message = cliDelegation.delegate_request(payload)
-            self.assertTrue(success, error_message)
-            self.assertEqual(response.get("status"), "ok")
-            self.assertEqual(response.get("request_id"), "req-123")
-            self.assertIn("processed", (response.get("message") or "").lower())
-            result = response.get("result") or {}
-            self.assertEqual(result.get("echo"), "hello world")
-            self.assertEqual(result.get("echo_upper"), "HELLO WORLD")
-            self.assertEqual(error_message, "")
-            events = response.get("events")
-            if not isinstance(events, list):
-                events = []
-            event_dicts = [event for event in events if isinstance(event, dict)]
-            kinds = [event.get("kind") for event in event_dicts]
-            self.assertIn("begin_stream", kinds)
-            self.assertIn("complete", kinds)
-            final_state = requestBus.current_state()
-            self.assertEqual(final_state.phase, RequestPhase.DONE)
-            requestBus.emit_reset()
+            chunks = ["This is a streamed answer.", "It spans two sentences."]
+            answer = "\n".join(chunks)
+            meta_text = "## Model interpretation\nFixture-provided insight."
+            fixture_path = self._write_delegate_fixture(
+                {
+                    "status": "ok",
+                    "message": answer,
+                    "result": {
+                        "answer": answer,
+                        "meta": meta_text,
+                        "chunks": chunks,
+                    },
+                    "events": [{"kind": "append", "text": chunk} for chunk in chunks],
+                }
+            )
+            try:
+                with mock.patch.dict(
+                    os.environ,
+                    {"BAR_DELEGATE_FIXTURE": str(fixture_path)},
+                    clear=False,
+                ):
+                    success, response, error_message = cliDelegation.delegate_request(
+                        payload
+                    )
+                self.assertTrue(success, error_message)
+                self.assertEqual(response.get("status"), "ok")
+                self.assertEqual(response.get("request_id"), "req-123")
+                self.assertEqual(response.get("message"), answer)
+                self.assertEqual(response.get("meta"), meta_text)
+                result = response.get("result") or {}
+                self.assertEqual(result.get("answer"), answer)
+                self.assertEqual(result.get("chunks"), chunks)
+                self.assertEqual(result.get("meta"), meta_text)
+                self.assertEqual(error_message, "")
+                events = response.get("events")
+                if not isinstance(events, list):
+                    events = []
+                event_dicts = [event for event in events if isinstance(event, dict)]
+                kinds = [event.get("kind") for event in event_dicts]
+                self.assertIn("begin_stream", kinds)
+                self.assertIn("complete", kinds)
+                append_texts = [
+                    event.get("text")
+                    for event in event_dicts
+                    if event.get("kind") == "append"
+                ]
+                self.assertEqual(append_texts, chunks)
+                final_state = requestBus.current_state()
+                self.assertEqual(final_state.phase, RequestPhase.DONE)
+                entry = historyLifecycle.latest()
+                self.assertIsNotNone(entry)
+                assert entry is not None
+                self.assertEqual(entry.request_id, "req-123")
+                self.assertEqual(entry.meta.strip(), meta_text)
+                self.assertIn(answer, entry.response)
+            finally:
+                requestBus.emit_reset()
+                responseCanvasFallback.clear_all_fallbacks()
+                historyLifecycle.clear_history()
 
         def test_cli_delegate_failure_disables_delegation(self) -> None:
             cliDelegation.reset_state()
@@ -269,10 +326,29 @@ else:
                 "axes": {"scope": ["bound"]},
                 "provider_id": "cli",
             }
+            chunks = ["Stream channel response.", "Canvas refreshed chunk."]
+            answer = "\n".join(chunks)
+            fixture_path = self._write_delegate_fixture(
+                {
+                    "status": "ok",
+                    "message": answer,
+                    "result": {
+                        "answer": answer,
+                        "chunks": chunks,
+                        "meta": "## Model interpretation\nUI verification.",
+                    },
+                    "events": [{"kind": "append", "text": chunk} for chunk in chunks],
+                }
+            )
             try:
-                success, response, error_message = cliDelegation.delegate_request(
-                    payload
-                )
+                with mock.patch.dict(
+                    os.environ,
+                    {"BAR_DELEGATE_FIXTURE": str(fixture_path)},
+                    clear=False,
+                ):
+                    success, response, error_message = cliDelegation.delegate_request(
+                        payload
+                    )
                 self.assertTrue(success, error_message)
                 entry = historyLifecycle.latest()
                 self.assertIsNotNone(entry)
@@ -280,8 +356,12 @@ else:
                 self.assertEqual(entry.request_id, "req-cli-ui")
                 self.assertIn("bound", entry.axes.get("scope", []))
                 self.assertIn("jog", entry.axes.get("directional", []))
+                self.assertEqual(
+                    entry.meta.strip(), "## Model interpretation\nUI verification."
+                )
+                self.assertIn(answer, entry.response)
                 fallback_text = responseCanvasFallback.fallback_for("req-cli-ui")
-                self.assertIn("hello world", fallback_text.lower())
+                self.assertIn(answer, fallback_text)
                 action_names = [call[0] for call in actions.user.calls]
                 self.assertIn("model_response_canvas_open", action_names)
                 self.assertIn("model_response_canvas_refresh", action_names)

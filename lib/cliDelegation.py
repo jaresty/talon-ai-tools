@@ -281,6 +281,22 @@ def _response_text(response: Dict[str, Any]) -> str:
     return message or result_text or ""
 
 
+def _response_meta(response: Dict[str, Any]) -> str:
+    meta = response.get("meta")
+    if isinstance(meta, str):
+        text = meta.strip()
+        if text:
+            return text
+    result = response.get("result")
+    if isinstance(result, dict):
+        meta_value = result.get("meta")
+        if isinstance(meta_value, str):
+            text = meta_value.strip()
+            if text:
+                return text
+    return ""
+
+
 def _prompt_text(payload: Dict[str, Any]) -> str:
     prompt_payload = payload.get("prompt")
     if isinstance(prompt_payload, dict):
@@ -358,7 +374,7 @@ def _record_successful_delegation(
             request_id,
             prompt_text,
             response_text,
-            "",
+            _response_meta(response),
             recipe=recipe,
             started_at_ms=started_at_ms,
             duration_ms=duration_ms,

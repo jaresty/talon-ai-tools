@@ -1222,6 +1222,185 @@ json.dump(response, sys.stdout)
                 server.shutdown()
                 thread.join()
 
+        def test_cli_delegate_http_record_redacts_patterns(self) -> None:
+            actions.user.calls.clear()
+            historyLifecycle.clear_history()
+            responseCanvasFallback.clear_all_fallbacks()
+            cliDelegation.reset_state()
+            payload = {
+                "request_id": "req-provider-http-redact",
+                "prompt": {"text": "redact this"},
+                "axes": {"scope": ["bound"]},
+                "provider_id": "cli",
+            }
+
+            class _RedactHandler(http.server.BaseHTTPRequestHandler):
+                def do_POST(self) -> None:
+                    body = json.dumps(
+                        {
+                            "status": "ok",
+                            "message": "response contains secret-token",
+                            "result": {
+                                "summary": "summary with secret-token",
+                                "chunks": [
+                                    "chunk with secret-token",
+                                ],
+                            },
+                        }
+                    ).encode("utf-8")
+                    self.send_response(200)
+                    self.send_header("Content-Type", "application/json")
+                    self.send_header("Content-Length", str(len(body)))
+                    self.end_headers()
+                    self.wfile.write(body)
+
+                def log_message(self, format: str, *args: Any) -> None:  # noqa: A003
+                    return
+
+            server = http.server.HTTPServer(("127.0.0.1", 0), _RedactHandler)
+            thread = threading.Thread(
+                target=server.serve_forever,
+                name="http-provider-redact-server",
+                daemon=True,
+            )
+            thread.start()
+            endpoint = f"http://{server.server_address[0]}:{server.server_address[1]}"
+            try:
+                with tempfile.TemporaryDirectory() as tmpdir:
+                    record_path = Path(tmpdir) / "http-recordings.json"
+                    telemetry_path = Path(tmpdir) / "latency.json"
+                    with mock.patch.dict(
+                        os.environ,
+                        {
+                            "BAR_PROVIDER_HTTP_ENDPOINT": endpoint,
+                            "BAR_PROVIDER_COMMAND_MODE": "http",
+                            "BAR_PROVIDER_HTTP_RECORD_PATH": str(record_path),
+                            "BAR_PROVIDER_HTTP_RECORD_LIMIT": "5",
+                            "BAR_PROVIDER_HTTP_RECORD_REDACT_PATTERNS": json.dumps(
+                                ["secret-token"]
+                            ),
+                            "BAR_TELEMETRY_LATENCY_PATH": str(telemetry_path),
+                        },
+                    ):
+                        try:
+                            success, response, error_message = (
+                                cliDelegation.delegate_request(payload)
+                            )
+                            self.assertTrue(success, error_message)
+                        finally:
+                            cliDelegation.reset_state()
+                            responseCanvasFallback.clear_all_fallbacks()
+                            historyLifecycle.clear_history()
+                            actions.user.calls.clear()
+                    recordings_text = record_path.read_text(encoding="utf-8")
+                    self.assertNotIn("secret-token", recordings_text)
+                    self.assertIn("[REDACTED]", recordings_text)
+                    recordings_json = json.loads(recordings_text)
+                    records = recordings_json.get("records") or []
+                    self.assertEqual(len(records), 1)
+                    record = records[0]
+                    response_snapshot = record.get("response") or {}
+                    self.assertIn(
+                        "[REDACTED]",
+                        json.dumps(response_snapshot),
+                    )
+            finally:
+                server.shutdown()
+                thread.join()
+
+        def test_cli_recordings_export_generates_bundle(self) -> None:
+            actions.user.calls.clear()
+            historyLifecycle.clear_history()
+            responseCanvasFallback.clear_all_fallbacks()
+            cliDelegation.reset_state()
+            payload = {
+                "request_id": "req-provider-http-export",
+                "prompt": {"text": "export this transcript"},
+                "axes": {"scope": ["bound"]},
+                "provider_id": "cli",
+            }
+
+            class _ExportHandler(http.server.BaseHTTPRequestHandler):
+                def do_POST(self) -> None:
+                    body = json.dumps(
+                        {
+                            "status": "ok",
+                            "message": "provider body with redact-me",
+                            "result": {
+                                "summary": "summary redact-me",
+                                "chunks": [
+                                    "chunk redact-me",
+                                ],
+                            },
+                        }
+                    ).encode("utf-8")
+                    self.send_response(200)
+                    self.send_header("Content-Type", "application/json")
+                    self.send_header("Content-Length", str(len(body)))
+                    self.end_headers()
+                    self.wfile.write(body)
+
+                def log_message(self, format: str, *args: Any) -> None:  # noqa: A003
+                    return
+
+            server = http.server.HTTPServer(("127.0.0.1", 0), _ExportHandler)
+            thread = threading.Thread(
+                target=server.serve_forever,
+                name="http-provider-export-server",
+                daemon=True,
+            )
+            thread.start()
+            endpoint = f"http://{server.server_address[0]}:{server.server_address[1]}"
+            try:
+                with tempfile.TemporaryDirectory() as tmpdir:
+                    record_path = Path(tmpdir) / "http-recordings.json"
+                    telemetry_path = Path(tmpdir) / "latency.json"
+                    export_path = Path(tmpdir) / "provider-transcripts.json"
+                    redaction = json.dumps(["redact-me"])
+                    with mock.patch.dict(
+                        os.environ,
+                        {
+                            "BAR_PROVIDER_HTTP_ENDPOINT": endpoint,
+                            "BAR_PROVIDER_COMMAND_MODE": "http",
+                            "BAR_PROVIDER_HTTP_RECORD_PATH": str(record_path),
+                            "BAR_PROVIDER_HTTP_RECORD_LIMIT": "5",
+                            "BAR_PROVIDER_HTTP_RECORD_REDACT_PATTERNS": redaction,
+                            "BAR_TELEMETRY_LATENCY_PATH": str(telemetry_path),
+                        },
+                    ):
+                        try:
+                            success, response, error_message = (
+                                cliDelegation.delegate_request(payload)
+                            )
+                            self.assertTrue(success, error_message)
+                        finally:
+                            cliDelegation.reset_state()
+                            responseCanvasFallback.clear_all_fallbacks()
+                            historyLifecycle.clear_history()
+                            actions.user.calls.clear()
+
+                    export_env = os.environ.copy()
+                    export_env["BAR_PROVIDER_HTTP_RECORD_PATH"] = str(record_path)
+                    export_env["BAR_PROVIDER_HTTP_RECORD_REDACT_PATTERNS"] = redaction
+                    result = subprocess.run(
+                        [str(CLI_BINARY), "recordings", "export", str(export_path)],
+                        capture_output=True,
+                        text=True,
+                        check=False,
+                        env=export_env,
+                    )
+                    self.assertEqual(result.returncode, 0, result.stderr)
+                    self.assertTrue(export_path.exists())
+                    bundle = json.loads(export_path.read_text(encoding="utf-8"))
+                    self.assertGreaterEqual(len(bundle), 1)
+                    first_entry = next(iter(bundle.values()))
+                    self.assertIn("processed_at", first_entry)
+                    self.assertIn("prompt_hash", first_entry)
+                    self.assertNotIn("redact-me", json.dumps(first_entry))
+            finally:
+                server.shutdown()
+                thread.join()
+
         def test_cli_delegate_http_falls_back_when_endpoint_missing(self) -> None:
             actions.user.calls.clear()
             historyLifecycle.clear_history()

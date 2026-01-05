@@ -31,6 +31,7 @@ const (
 	defaultHTTPRecordLimit        = 50
 	maxHTTPRecordLimit            = 500
 	promptPreviewLimit            = 200
+	redactedPlaceholder           = "[REDACTED]"
 )
 
 type fixturesOnlyMissingTranscriptError struct {
@@ -107,6 +108,8 @@ func run(args []string) int {
 		return runSchema(args[1:])
 	case "delegate":
 		return runDelegate(args[1:])
+	case "recordings":
+		return runRecordings(args[1:])
 	default:
 		fmt.Fprintf(os.Stderr, "bar: unsupported command %s\n", strings.Join(args, " "))
 		return 2
@@ -159,6 +162,98 @@ func runSchema(args []string) int {
 	}
 
 	return 0
+}
+
+func runRecordings(args []string) int {
+	if len(args) == 0 {
+		printRecordingsUsage(os.Stderr)
+		return 2
+	}
+
+	switch args[0] {
+	case "--help", "-h":
+		printRecordingsUsage(os.Stdout)
+		return 0
+	case "export":
+		return runRecordingsExport(args[1:])
+	default:
+		printRecordingsUsage(os.Stderr)
+		return 2
+	}
+}
+
+func runRecordingsExport(args []string) int {
+	if len(args) == 1 && (args[0] == "--help" || args[0] == "-h") {
+		printRecordingsExportUsage(os.Stdout)
+		return 0
+	}
+	if len(args) != 1 {
+		printRecordingsExportUsage(os.Stderr)
+		return 2
+	}
+
+	root := repoRoot()
+	if err := exportHTTPRecordings(root, args[0]); err != nil {
+		fmt.Fprintf(os.Stderr, "bar: failed to export recordings: %v\n", err)
+		return 1
+	}
+
+	return 0
+}
+
+func exportHTTPRecordings(root string, outputPath string) error {
+	patterns := loadRedactionPatterns()
+	inputPath := httpRecordingsPath(root)
+	if inputPath == "" {
+		return errors.New("http recordings path not configured")
+	}
+	data, err := os.ReadFile(inputPath)
+	if err != nil {
+		return fmt.Errorf("read http recordings: %w", err)
+	}
+	payload := httpRecordingPayload{}
+	if err := json.Unmarshal(data, &payload); err != nil {
+		return fmt.Errorf("parse http recordings: %w", err)
+	}
+	if len(payload.Records) == 0 {
+		return errors.New("no http recordings available")
+	}
+
+	bundle := make(map[string]map[string]any, len(payload.Records))
+	for _, record := range payload.Records {
+		response := cloneMap(record.Response)
+		if len(patterns) > 0 {
+			response = redactMap(response, patterns)
+		}
+		key := record.PromptHash
+		if key != "" {
+			key = "prompt:" + key
+		} else {
+			key = fmt.Sprintf("request:%s", record.RequestID)
+		}
+
+		sanitized := make(map[string]any, len(response)+5)
+		for field, value := range response {
+			sanitized[field] = value
+		}
+		sanitized["processed_at"] = record.Timestamp
+		sanitized["http_status"] = record.HTTPStatus
+		sanitized["latency_ms"] = record.LatencyMs
+		sanitized["request_id"] = record.RequestID
+		sanitized["prompt_preview"] = redactStringValue(record.PromptPreview, patterns)
+		sanitized["prompt_hash"] = record.PromptHash
+
+		bundle[key] = sanitized
+	}
+
+	output, err := json.MarshalIndent(bundle, "", "  ")
+	if err != nil {
+		return fmt.Errorf("encode recordings bundle: %w", err)
+	}
+	if err := os.MkdirAll(filepath.Dir(outputPath), 0o755); err != nil {
+		return fmt.Errorf("create export directory: %w", err)
+	}
+	return os.WriteFile(outputPath, append(output, '\n'), 0o644)
 }
 
 func runDelegate(args []string) int {
@@ -647,6 +742,71 @@ func recordLatencyTelemetry(root string, status int, latency time.Duration, succ
 	_ = os.WriteFile(path, append(output, '\n'), 0o644)
 }
 
+func loadRedactionPatterns() []string {
+	raw := strings.TrimSpace(os.Getenv("BAR_PROVIDER_HTTP_RECORD_REDACT_PATTERNS"))
+	if raw == "" {
+		return nil
+	}
+	var patterns []string
+	if err := json.Unmarshal([]byte(raw), &patterns); err != nil {
+		return nil
+	}
+	normalised := make([]string, 0, len(patterns))
+	for _, entry := range patterns {
+		trimmed := strings.TrimSpace(entry)
+		if trimmed == "" {
+			continue
+		}
+		normalised = append(normalised, trimmed)
+	}
+	return normalised
+}
+
+func redactStringValue(value string, patterns []string) string {
+	if value == "" || len(patterns) == 0 {
+		return value
+	}
+	result := value
+	for _, pattern := range patterns {
+		result = strings.ReplaceAll(result, pattern, redactedPlaceholder)
+	}
+	return result
+}
+
+func redactValue(value any, patterns []string) any {
+	switch typed := value.(type) {
+	case string:
+		return redactStringValue(typed, patterns)
+	case map[string]any:
+		return redactMap(typed, patterns)
+	case []map[string]any:
+		redacted := make([]map[string]any, len(typed))
+		for index, entry := range typed {
+			redacted[index] = redactMap(entry, patterns)
+		}
+		return redacted
+	case []any:
+		redacted := make([]any, len(typed))
+		for index, entry := range typed {
+			redacted[index] = redactValue(entry, patterns)
+		}
+		return redacted
+	default:
+		return typed
+	}
+}
+
+func redactMap(source map[string]any, patterns []string) map[string]any {
+	if source == nil {
+		return nil
+	}
+	cloned := make(map[string]any, len(source))
+	for key, value := range source {
+		cloned[key] = redactValue(value, patterns)
+	}
+	return cloned
+}
+
 func httpRecordingsPath(root string) string {
 	override := strings.TrimSpace(os.Getenv("BAR_PROVIDER_HTTP_RECORD_PATH"))
 	if override != "" {
@@ -725,6 +885,12 @@ func recordHTTPInteraction(root, endpoint string, request map[string]any, prompt
 		Response:      cloneMap(response),
 	}
 
+	patterns := loadRedactionPatterns()
+	if len(patterns) > 0 {
+		record.PromptPreview = redactStringValue(record.PromptPreview, patterns)
+		record.Response = redactMap(record.Response, patterns)
+	}
+
 	if record.Endpoint == "" {
 		record.Endpoint = endpoint
 	}
@@ -765,7 +931,6 @@ func fetchHTTPProviderFixture(endpoint string, request map[string]any, promptTex
 			transcript["http_fallback_reason"] = reason
 			transcript["http_fallback_attempts"] = 0
 			return transcript, nil
-
 		}
 		return nil, fmt.Errorf("http mode requires BAR_PROVIDER_HTTP_ENDPOINT")
 	}
@@ -1301,7 +1466,7 @@ func buildDelegateResult(promptText string, chunks []string) map[string]any {
 }
 
 func printUsage(out *os.File) {
-	fmt.Fprintln(out, "usage: bar [--health] [schema] [delegate]")
+	fmt.Fprintln(out, "usage: bar [--health] [schema] [delegate] [recordings]")
 }
 
 func printSchemaUsage(out *os.File) {
@@ -1310,6 +1475,17 @@ func printSchemaUsage(out *os.File) {
 
 func printDelegateUsage(out *os.File) {
 	fmt.Fprintln(out, "usage: bar delegate < request.json")
+}
+
+func printRecordingsUsage(out *os.File) {
+	fmt.Fprintln(out, "usage: bar recordings <command>")
+	fmt.Fprintln(out)
+	fmt.Fprintln(out, "available commands:")
+	fmt.Fprintln(out, "  export <output>   export sanitized HTTP recordings bundle")
+}
+
+func printRecordingsExportUsage(out *os.File) {
+	fmt.Fprintln(out, "usage: bar recordings export <output>")
 }
 
 func repoRoot() string {

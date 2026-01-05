@@ -1,136 +1,70 @@
 {
-  "generated_at": "2026-01-05T14:17:13Z",
+  "generated_at": "2026-01-05T15:31:31Z",
   "window_minutes": 30,
   "samples": [
     {
-      "timestamp": "2026-01-05T13:56:37Z",
-      "latency_ms": 1.606875,
+      "timestamp": "2026-01-05T15:21:51Z",
+      "latency_ms": 1.590625,
       "http_status": 200,
       "success": true
     },
     {
-      "timestamp": "2026-01-05T13:56:38Z",
-      "latency_ms": 54.291792,
+      "timestamp": "2026-01-05T15:21:55Z",
+      "latency_ms": 53.455333,
       "http_status": 200,
       "success": true
     },
     {
-      "timestamp": "2026-01-05T13:56:38Z",
-      "latency_ms": 1.256167,
+      "timestamp": "2026-01-05T15:21:55Z",
+      "latency_ms": 2.088291,
       "http_status": 500,
       "success": false
     },
     {
-      "timestamp": "2026-01-05T13:56:39Z",
-      "latency_ms": 1.141917,
+      "timestamp": "2026-01-05T15:21:55Z",
+      "latency_ms": 1.031917,
       "http_status": 500,
       "success": false
     },
     {
-      "timestamp": "2026-01-05T13:56:39Z",
-      "latency_ms": 1.158875,
+      "timestamp": "2026-01-05T15:21:56Z",
+      "latency_ms": 0.983666,
       "http_status": 500,
       "success": false
     },
     {
-      "timestamp": "2026-01-05T13:58:41Z",
-      "latency_ms": 1.416334,
+      "timestamp": "2026-01-05T15:31:27Z",
+      "latency_ms": 1.571833,
       "http_status": 200,
       "success": true
     },
     {
-      "timestamp": "2026-01-05T13:58:43Z",
-      "latency_ms": 51.885333,
+      "timestamp": "2026-01-05T15:31:31Z",
+      "latency_ms": 54.704333,
       "http_status": 200,
       "success": true
     },
     {
-      "timestamp": "2026-01-05T13:58:43Z",
-      "latency_ms": 1.134083,
+      "timestamp": "2026-01-05T15:31:31Z",
+      "latency_ms": 1.641625,
       "http_status": 500,
       "success": false
     },
     {
-      "timestamp": "2026-01-05T13:58:43Z",
-      "latency_ms": 0.988041,
+      "timestamp": "2026-01-05T15:31:31Z",
+      "latency_ms": 1.48975,
       "http_status": 500,
       "success": false
     },
     {
-      "timestamp": "2026-01-05T13:58:44Z",
-      "latency_ms": 1.07575,
-      "http_status": 500,
-      "success": false
-    },
-    {
-      "timestamp": "2026-01-05T13:59:52Z",
-      "latency_ms": 1.371625,
-      "http_status": 200,
-      "success": true
-    },
-    {
-      "timestamp": "2026-01-05T14:15:43Z",
-      "latency_ms": 1.528666,
-      "http_status": 200,
-      "success": true
-    },
-    {
-      "timestamp": "2026-01-05T14:15:46Z",
-      "latency_ms": 51.525333,
-      "http_status": 200,
-      "success": true
-    },
-    {
-      "timestamp": "2026-01-05T14:15:47Z",
-      "latency_ms": 1.226875,
-      "http_status": 500,
-      "success": false
-    },
-    {
-      "timestamp": "2026-01-05T14:15:47Z",
-      "latency_ms": 0.840125,
-      "http_status": 500,
-      "success": false
-    },
-    {
-      "timestamp": "2026-01-05T14:15:47Z",
-      "latency_ms": 0.966375,
-      "http_status": 500,
-      "success": false
-    },
-    {
-      "timestamp": "2026-01-05T14:17:10Z",
-      "latency_ms": 1.554333,
-      "http_status": 200,
-      "success": true
-    },
-    {
-      "timestamp": "2026-01-05T14:17:12Z",
-      "latency_ms": 61.039333,
-      "http_status": 200,
-      "success": true
-    },
-    {
-      "timestamp": "2026-01-05T14:17:13Z",
-      "latency_ms": 1.138333,
-      "http_status": 500,
-      "success": false
-    },
-    {
-      "timestamp": "2026-01-05T14:17:13Z",
-      "latency_ms": 0.891125,
-      "http_status": 500,
-      "success": false
-    },
-    {
-      "timestamp": "2026-01-05T14:17:13Z",
-      "latency_ms": 0.850458,
+      "timestamp": "2026-01-05T15:31:31Z",
+      "latency_ms": 1.518292,
       "http_status": 500,
       "success": false
     }
   ],
-  "sample_count": 21,
-  "p50_ms": 1.226875,
-  "p95_ms": 54.291792,
-  "success_rate": 0.42857142857142855
+  "sample_count": 10,
+  "p50_ms": 1.581229,
+  "p95_ms": 54.142283,
+  "success_rate": 0.4
 }

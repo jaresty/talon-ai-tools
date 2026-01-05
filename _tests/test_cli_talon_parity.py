@@ -9,10 +9,12 @@ import shutil
 import subprocess
 import sys
 import tempfile
+import http.server
+import threading
 from contextlib import redirect_stderr, redirect_stdout
 from datetime import datetime, timezone
 from unittest import mock
-from typing import Any, cast
+from typing import Any, Dict, cast
 
 from talon import actions
 
@@ -530,6 +532,145 @@ json.dump(response, sys.stdout)
                         responseCanvasFallback.clear_all_fallbacks()
                         historyLifecycle.clear_history()
                         actions.user.calls.clear()
+
+        @staticmethod
+        def _http_handler_factory(
+            response_payload: Dict[str, Any], sentinel_path: Path
+        ):
+            class _Handler(http.server.BaseHTTPRequestHandler):
+                def do_POST(self) -> None:
+                    try:
+                        content_length = int(self.headers.get("Content-Length", "0"))
+                    except ValueError:
+                        content_length = 0
+                    if content_length > 0:
+                        self.rfile.read(content_length)
+                    sentinel_path.write_text("provider-called", encoding="utf-8")
+                    body = json.dumps(response_payload).encode("utf-8")
+                    self.send_response(200)
+                    self.send_header("Content-Type", "application/json")
+                    self.send_header("Content-Length", str(len(body)))
+                    self.end_headers()
+                    self.wfile.write(body)
+
+                def log_message(self, format: str, *args: Any) -> None:  # noqa: A003
+                    return
+
+            return _Handler
+
+        def test_cli_delegate_uses_http_provider_endpoint(self) -> None:
+            actions.user.calls.clear()
+            historyLifecycle.clear_history()
+            responseCanvasFallback.clear_all_fallbacks()
+            cliDelegation.reset_state()
+            payload = {
+                "request_id": "req-provider-http",
+                "prompt": {"text": "http provider"},
+                "axes": {"scope": ["bound"]},
+                "provider_id": "cli",
+            }
+            with tempfile.TemporaryDirectory() as tmpdir:
+                sentinel_path = Path(tmpdir) / "http-called.txt"
+                expected_chunks = [
+                    "HTTP provider chunk: http provider",
+                    "HTTP provider completion chunk.",
+                ]
+                expected_message = "\n".join(expected_chunks)
+                expected_meta = "## Provider replay\nHTTP provider command."
+                http_response = {
+                    "status": "ok",
+                    "message": expected_message,
+                    "meta": expected_meta,
+                    "result": {
+                        "answer": expected_message,
+                        "summary": expected_chunks[0],
+                        "replay_summary": f"{len(expected_chunks)} chunk(s) replayed",
+                        "chunks": expected_chunks,
+                        "chunk_count": len(expected_chunks),
+                        "highlights": ["#http", "#provider"],
+                        "response_analysis": {
+                            "characters": len(expected_message),
+                            "lines": len(expected_chunks),
+                        },
+                        "usage": {
+                            "prompt_tokens": 3,
+                            "completion_tokens": 9,
+                            "total_tokens": 12,
+                        },
+                        "meta": expected_meta,
+                    },
+                    "events": [
+                        {
+                            "kind": "append",
+                            "delta": {
+                                "role": "assistant",
+                                "type": "text",
+                                "index": index,
+                                "text": chunk,
+                            },
+                        }
+                        for index, chunk in enumerate(expected_chunks)
+                    ]
+                    + [
+                        {
+                            "kind": "usage",
+                            "usage": {
+                                "prompt_tokens": 3,
+                                "completion_tokens": 9,
+                                "total_tokens": 12,
+                            },
+                        }
+                    ],
+                }
+                handler = self._http_handler_factory(http_response, sentinel_path)
+                server = http.server.HTTPServer(("127.0.0.1", 0), handler)
+                thread = threading.Thread(
+                    target=server.serve_forever,
+                    name="http-provider-server",
+                    daemon=True,
+                )
+                thread.start()
+                endpoint = (
+                    f"http://{server.server_address[0]}:{server.server_address[1]}"
+                )
+                try:
+                    with mock.patch.dict(
+                        os.environ,
+                        {
+                            "BAR_PROVIDER_HTTP_ENDPOINT": endpoint,
+                            "BAR_PROVIDER_COMMAND_MODE": "http",
+                        },
+                    ):
+                        try:
+                            success, response, error_message = (
+                                cliDelegation.delegate_request(payload)
+                            )
+                            self.assertTrue(success, error_message)
+                            self.assertTrue(
+                                sentinel_path.exists(),
+                                "HTTP provider endpoint should be called",
+                            )
+                            self.assertEqual(response.get("status"), "ok")
+                            self.assertEqual(response.get("message"), expected_message)
+                            self.assertEqual(response.get("meta"), expected_meta)
+                            result = response.get("result") or {}
+                            self.assertEqual(result.get("chunks"), expected_chunks)
+                            self.assertEqual(result.get("summary"), expected_chunks[0])
+                            self.assertEqual(
+                                result.get("highlights"), ["#http", "#provider"]
+                            )
+                            usage = result.get("usage") or {}
+                            self.assertEqual(usage.get("prompt_tokens"), 3)
+                            self.assertEqual(usage.get("completion_tokens"), 9)
+                            self.assertEqual(usage.get("total_tokens"), 12)
+                        finally:
+                            cliDelegation.reset_state()
+                            responseCanvasFallback.clear_all_fallbacks()
+                            historyLifecycle.clear_history()
+                            actions.user.calls.clear()
+                finally:
+                    server.shutdown()
+                    thread.join()
 
         def test_cli_delegate_skips_provider_command_when_disabled(self) -> None:
             actions.user.calls.clear()

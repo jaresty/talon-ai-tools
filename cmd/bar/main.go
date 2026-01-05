@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"io/fs"
+	"net/http"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -368,6 +369,7 @@ func loadDelegateFixture(request map[string]any, promptText string) (map[string]
 
 func fetchProviderFixture(request map[string]any) (map[string]any, error) {
 	mode := strings.ToLower(strings.TrimSpace(os.Getenv("BAR_PROVIDER_COMMAND_MODE")))
+	endpoint := strings.TrimSpace(os.Getenv("BAR_PROVIDER_HTTP_ENDPOINT"))
 	switch mode {
 	case "disabled", "off", "recorded-only":
 		return nil, nil
@@ -381,6 +383,15 @@ func fetchProviderFixture(request map[string]any) (map[string]any, error) {
 			errorMessage = fmt.Sprintf("fixtures-only mode requires recorded transcript for '%s'", promptText)
 		}
 		return nil, fixturesOnlyMissingTranscriptError{message: errorMessage}
+	case "http":
+		if endpoint == "" {
+			return nil, fmt.Errorf("http mode requires BAR_PROVIDER_HTTP_ENDPOINT")
+		}
+		return invokeHTTPProvider(endpoint, request)
+	}
+
+	if endpoint != "" {
+		return invokeHTTPProvider(endpoint, request)
 	}
 
 	command := strings.TrimSpace(os.Getenv("BAR_PROVIDER_COMMAND"))
@@ -427,6 +438,46 @@ func fetchProviderFixture(request map[string]any) (map[string]any, error) {
 	return cloneMap(fixture), nil
 }
 
+func invokeHTTPProvider(endpoint string, request map[string]any) (map[string]any, error) {
+	payload, err := json.Marshal(request)
+	if err != nil {
+		return nil, err
+	}
+
+	client := &http.Client{Timeout: 5 * time.Second}
+	req, err := http.NewRequest(http.MethodPost, endpoint, bytes.NewReader(payload))
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Set("Content-Type", "application/json")
+
+	resp, err := client.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		snippet := strings.TrimSpace(string(body))
+		if snippet != "" {
+			return nil, fmt.Errorf("http provider returned status %d: %s", resp.StatusCode, snippet)
+		}
+		return nil, fmt.Errorf("http provider returned status %d", resp.StatusCode)
+	}
+
+	var fixture map[string]any
+	if err := json.Unmarshal(body, &fixture); err != nil {
+		return nil, fmt.Errorf("http provider produced invalid JSON: %w", err)
+	}
+
+	return cloneMap(fixture), nil
+}
+
 func parseCommandLine(command string) []string {
 	fields := strings.Fields(command)
 	return fields
@@ -436,15 +487,19 @@ func promptTextFromRequestMap(request map[string]any) string {
 	if request == nil {
 		return ""
 	}
-	if prompt, ok := request["prompt"].(map[string]any); ok {
-		if text, err := promptTextFromPayload(prompt); err == nil {
-			return text
-		}
+	promptPayload, ok := request["prompt"].(map[string]any)
+	if !ok {
+		return ""
 	}
-	return ""
+	text, err := promptTextFromPayload(promptPayload)
+	if err != nil {
+		return ""
+	}
+	return text
 }
 
 func recordedTranscriptForRequest(request map[string]any, promptText string) map[string]any {
+
 	if request == nil && strings.TrimSpace(promptText) == "" {
 		return nil
 	}

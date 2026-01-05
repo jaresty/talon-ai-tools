@@ -347,8 +347,10 @@ func loadDelegateFixture(request map[string]any, promptText string) (map[string]
 func fetchProviderFixture(request map[string]any) (map[string]any, error) {
 	mode := strings.ToLower(strings.TrimSpace(os.Getenv("BAR_PROVIDER_COMMAND_MODE")))
 	switch mode {
-	case "disabled", "off", "fixtures-only", "recorded-only":
+	case "disabled", "off", "recorded-only":
 		return nil, nil
+	case "fixtures-only", "fixtures", "fixture":
+		return recordedTranscriptForRequest(request, ""), nil
 	}
 
 	command := strings.TrimSpace(os.Getenv("BAR_PROVIDER_COMMAND"))

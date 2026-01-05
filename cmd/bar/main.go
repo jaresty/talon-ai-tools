@@ -11,6 +11,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"time"
 	"unicode/utf8"
@@ -385,34 +386,11 @@ func fetchProviderFixture(request map[string]any) (map[string]any, error) {
 		}
 		return nil, fixturesOnlyMissingTranscriptError{message: errorMessage}
 	case "http":
-		if endpoint == "" {
-			if transcript := recordedTranscriptForRequest(request, promptText); transcript != nil {
-				applyHTTPFallbackMeta(transcript, "missing HTTP endpoint configuration")
-				return transcript, nil
-			}
-			return nil, fmt.Errorf("http mode requires BAR_PROVIDER_HTTP_ENDPOINT")
-		}
-		fixture, err := invokeHTTPProvider(endpoint, request)
-		if err != nil {
-			if transcript := recordedTranscriptForRequest(request, promptText); transcript != nil {
-				applyHTTPFallbackMeta(transcript, err.Error())
-				return transcript, nil
-			}
-			return nil, err
-		}
-		return fixture, nil
+		return fetchHTTPProviderFixture(endpoint, request, promptText)
 	}
 
 	if endpoint != "" {
-		fixture, err := invokeHTTPProvider(endpoint, request)
-		if err != nil {
-			if transcript := recordedTranscriptForRequest(request, promptText); transcript != nil {
-				applyHTTPFallbackMeta(transcript, err.Error())
-				return transcript, nil
-			}
-			return nil, err
-		}
-		return fixture, nil
+		return fetchHTTPProviderFixture(endpoint, request, promptText)
 	}
 
 	command := strings.TrimSpace(os.Getenv("BAR_PROVIDER_COMMAND"))
@@ -471,18 +449,82 @@ func applyHTTPFallbackMeta(fixture map[string]any, reason string) {
 	fixture["http_fallback_reason"] = reason
 }
 
-func invokeHTTPProvider(endpoint string, request map[string]any) (map[string]any, error) {
+func fetchHTTPProviderFixture(endpoint string, request map[string]any, promptText string) (map[string]any, error) {
+	if endpoint == "" {
+		if transcript := recordedTranscriptForRequest(request, promptText); transcript != nil {
+			applyHTTPFallbackMeta(transcript, "missing HTTP endpoint configuration")
+			return transcript, nil
+		}
+		return nil, fmt.Errorf("http mode requires BAR_PROVIDER_HTTP_ENDPOINT")
+	}
+
+	retries := 3
+	if raw := strings.TrimSpace(os.Getenv("BAR_PROVIDER_HTTP_RETRIES")); raw != "" {
+		if parsed, err := strconv.Atoi(raw); err == nil && parsed > 0 {
+			retries = parsed
+		}
+	}
+
+	bearer := strings.TrimSpace(os.Getenv("BAR_PROVIDER_HTTP_BEARER"))
+	timeout := 5 * time.Second
+	if raw := strings.TrimSpace(os.Getenv("BAR_PROVIDER_HTTP_TIMEOUT_MS")); raw != "" {
+		if parsed, err := strconv.Atoi(raw); err == nil && parsed > 0 {
+			timeout = time.Duration(parsed) * time.Millisecond
+		}
+	}
+
 	payload, err := json.Marshal(request)
 	if err != nil {
 		return nil, err
 	}
 
-	client := &http.Client{Timeout: 5 * time.Second}
+	fixture, err := invokeHTTPProviderWithRetries(endpoint, payload, bearer, timeout, retries)
+	if err != nil {
+		if transcript := recordedTranscriptForRequest(request, promptText); transcript != nil {
+			applyHTTPFallbackMeta(transcript, fmt.Sprintf("%s after %d attempt(s)", err.Error(), retries))
+			transcript["http_fallback_attempts"] = retries
+			return transcript, nil
+		}
+		return nil, err
+	}
+
+	return fixture, nil
+}
+
+func invokeHTTPProviderWithRetries(endpoint string, payload []byte, bearer string, timeout time.Duration, retries int) (map[string]any, error) {
+	if retries < 1 {
+		retries = 1
+	}
+
+	var lastErr error
+	for attempt := 1; attempt <= retries; attempt++ {
+		fixture, err := invokeHTTPProvider(endpoint, payload, bearer, timeout)
+		if err == nil {
+			return fixture, nil
+		}
+		lastErr = err
+		if attempt < retries {
+			time.Sleep(time.Duration(attempt) * 100 * time.Millisecond)
+		}
+	}
+
+	if lastErr == nil {
+		lastErr = fmt.Errorf("unknown HTTP provider error")
+	}
+
+	return nil, fmt.Errorf("%w", lastErr)
+}
+
+func invokeHTTPProvider(endpoint string, payload []byte, bearer string, timeout time.Duration) (map[string]any, error) {
+	client := &http.Client{Timeout: timeout}
 	req, err := http.NewRequest(http.MethodPost, endpoint, bytes.NewReader(payload))
 	if err != nil {
 		return nil, err
 	}
 	req.Header.Set("Content-Type", "application/json")
+	if bearer != "" {
+		req.Header.Set("Authorization", "Bearer "+bearer)
+	}
 
 	resp, err := client.Do(req)
 	if err != nil {

@@ -14,7 +14,7 @@ import threading
 from contextlib import redirect_stderr, redirect_stdout
 from datetime import datetime, timezone
 from unittest import mock
-from typing import Any, Dict, cast
+from typing import Any, Dict, List, cast
 
 from talon import actions
 
@@ -671,6 +671,139 @@ json.dump(response, sys.stdout)
                 finally:
                     server.shutdown()
                     thread.join()
+
+        def test_cli_delegate_uses_http_bearer_token(self) -> None:
+            actions.user.calls.clear()
+            historyLifecycle.clear_history()
+            responseCanvasFallback.clear_all_fallbacks()
+            cliDelegation.reset_state()
+            payload = {
+                "request_id": "req-provider-http-auth",
+                "prompt": {"text": "http provider"},
+                "axes": {"scope": ["bound"]},
+                "provider_id": "cli",
+            }
+
+            class _AuthHandler(http.server.BaseHTTPRequestHandler):
+                received_headers: List[str] = []
+
+                def do_POST(self) -> None:
+                    _AuthHandler.received_headers.append(
+                        self.headers.get("Authorization") or ""
+                    )
+                    body = json.dumps(
+                        {
+                            "status": "ok",
+                            "message": RECORDED_HELLO_MESSAGE,
+                        }
+                    ).encode("utf-8")
+                    self.send_response(200)
+                    self.send_header("Content-Type", "application/json")
+                    self.send_header("Content-Length", str(len(body)))
+                    self.end_headers()
+                    self.wfile.write(body)
+
+                def log_message(self, format: str, *args: Any) -> None:  # noqa: A003
+                    return
+
+            _AuthHandler.received_headers = []
+            server = http.server.HTTPServer(("127.0.0.1", 0), _AuthHandler)
+            thread = threading.Thread(
+                target=server.serve_forever,
+                name="http-provider-auth-server",
+                daemon=True,
+            )
+            thread.start()
+            endpoint = f"http://{server.server_address[0]}:{server.server_address[1]}"
+            try:
+                with mock.patch.dict(
+                    os.environ,
+                    {
+                        "BAR_PROVIDER_HTTP_ENDPOINT": endpoint,
+                        "BAR_PROVIDER_COMMAND_MODE": "http",
+                        "BAR_PROVIDER_HTTP_BEARER": "token-123",
+                    },
+                ):
+                    try:
+                        success, response, error_message = (
+                            cliDelegation.delegate_request(payload)
+                        )
+                        self.assertTrue(success, error_message)
+                        self.assertEqual(
+                            _AuthHandler.received_headers,
+                            ["Bearer token-123"],
+                        )
+                    finally:
+                        cliDelegation.reset_state()
+                        responseCanvasFallback.clear_all_fallbacks()
+                        historyLifecycle.clear_history()
+                        actions.user.calls.clear()
+            finally:
+                server.shutdown()
+                thread.join()
+
+        def test_cli_delegate_http_retries_then_falls_back(self) -> None:
+            actions.user.calls.clear()
+            historyLifecycle.clear_history()
+            responseCanvasFallback.clear_all_fallbacks()
+            cliDelegation.reset_state()
+            payload = {
+                "request_id": "req-provider-http-retry",
+                "prompt": {"text": "hello world"},
+                "axes": {"scope": ["bound"]},
+                "provider_id": "cli",
+            }
+
+            class _RetryHandler(http.server.BaseHTTPRequestHandler):
+                attempts = 0
+
+                def do_POST(self) -> None:
+                    _RetryHandler.attempts += 1
+                    body = b"server error"
+                    self.send_response(500)
+                    self.send_header("Content-Type", "text/plain")
+                    self.send_header("Content-Length", str(len(body)))
+                    self.end_headers()
+                    self.wfile.write(body)
+
+                def log_message(self, format: str, *args: Any) -> None:  # noqa: A003
+                    return
+
+            _RetryHandler.attempts = 0
+            server = http.server.HTTPServer(("127.0.0.1", 0), _RetryHandler)
+            thread = threading.Thread(
+                target=server.serve_forever,
+                name="http-provider-retry-server",
+                daemon=True,
+            )
+            thread.start()
+            endpoint = f"http://{server.server_address[0]}:{server.server_address[1]}"
+            try:
+                with mock.patch.dict(
+                    os.environ,
+                    {
+                        "BAR_PROVIDER_HTTP_ENDPOINT": endpoint,
+                        "BAR_PROVIDER_COMMAND_MODE": "http",
+                        "BAR_PROVIDER_HTTP_RETRIES": "3",
+                    },
+                ):
+                    try:
+                        success, response, error_message = (
+                            cliDelegation.delegate_request(payload)
+                        )
+                        self.assertTrue(success, error_message)
+                        self.assertGreaterEqual(_RetryHandler.attempts, 3)
+                        meta_text = response.get("meta") or ""
+                        self.assertIn("HTTP fallback", meta_text)
+                        self.assertIn("after", meta_text)
+                    finally:
+                        cliDelegation.reset_state()
+                        responseCanvasFallback.clear_all_fallbacks()
+                        historyLifecycle.clear_history()
+                        actions.user.calls.clear()
+            finally:
+                server.shutdown()
+                thread.join()
 
         def test_cli_delegate_http_falls_back_when_endpoint_missing(self) -> None:
             actions.user.calls.clear()

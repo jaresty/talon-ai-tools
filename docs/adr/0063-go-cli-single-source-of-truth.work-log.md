@@ -129,3 +129,4 @@ PY`; evidence: `docs/adr/evidence/0063/loop-0034.md`.
 - loop-0078 — enforced fixtures-only missing transcript errors with parity coverage and CLI exit codes; validation: `python3 -m pytest _tests/test_cli_talon_parity.py`; evidence: `docs/adr/evidence/0063/loop-0078.md`.
 - loop-0079 — added HTTP provider transport with environment-gated endpoint and parity coverage verifying success/failure paths; validation: `python3 -m pytest _tests/test_cli_talon_parity.py`; evidence: `docs/adr/evidence/0063/loop-0079.md`.
 - loop-0080 — recorded HTTP fallback metadata when endpoint is missing or unreachable and added parity coverage; validation: `python3 -m pytest _tests/test_cli_talon_parity.py`; evidence: `docs/adr/evidence/0063/loop-0080.md`.
+- loop-0081 — added HTTP bearer auth support, retry budgets, and fallback telemetry meta with parity coverage; validation: `python3 -m pytest _tests/test_cli_talon_parity.py`; evidence: `docs/adr/evidence/0063/loop-0081.md`.

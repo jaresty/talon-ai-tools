@@ -24,12 +24,14 @@ except Exception:  # pragma: no cover - telemetry helpers unavailable
     verify_signature_telemetry = None
 
 _BOOTSTRAP_WARNINGS: list[str] = []
+_WARNED_MESSAGES: set[str] = set()
 
 
 def get_bootstrap_warnings(*, clear: bool = False) -> list[str]:
     warnings = list(_BOOTSTRAP_WARNINGS)
     if clear:
         _BOOTSTRAP_WARNINGS.clear()
+        _WARNED_MESSAGES.clear()
         try:
             from lib.bootstrapTelemetry import clear_bootstrap_warning_events
         except Exception:
@@ -75,6 +77,13 @@ def _warn(message: str) -> None:
             pass
 
 
+def _warn_once(message: str) -> None:
+    if message in _WARNED_MESSAGES:
+        return
+    _WARNED_MESSAGES.add(message)
+    _warn(message)
+
+
 def _maybe_install_cli() -> None:
     """Attempt to install the packaged CLI binary before delegation."""
 
@@ -90,13 +99,13 @@ def _maybe_install_cli() -> None:
     try:
         install_cli(quiet=True)
     except ReleaseSignatureError as exc:
-        _warn(
+        _warn_once(
             "release signature validation failed; run `python3 scripts/tools/package_bar_cli.py --print-paths` "
             f"to rebuild packaged CLI: {exc}"
         )
         raise
     except Exception as exc:  # pragma: no cover - depends on filesystem state
-        _warn(
+        _warn_once(
             "install failed; run `python3 scripts/tools/package_bar_cli.py --print-paths` "
             f"to rebuild packaged CLI (falling back to go build: {exc})"
         )
@@ -107,7 +116,7 @@ def _maybe_install_cli() -> None:
         try:
             telemetry_ok = verify_signature_telemetry()
         except Exception as exc:  # pragma: no cover - defensive
-            _warn(f"signature telemetry verification failed ({exc})")
+            _warn_once(f"signature telemetry verification failed ({exc})")
             telemetry_ok = False
     if not telemetry_ok:
         return
@@ -116,7 +125,7 @@ def _maybe_install_cli() -> None:
     try:
         from lib import cliHealth as cli_health_module  # type: ignore
     except Exception as exc:
-        _warn(f"unable to import cli health probe ({exc})")
+        _warn_once(f"unable to import cli health probe ({exc})")
         return
 
     try:
@@ -126,11 +135,23 @@ def _maybe_install_cli() -> None:
 
     try:
         if not cli_health_module.probe_cli_health(source="bootstrap"):
-            _warn(
+            _warn_once(
                 "CLI health probe failed after install; delegation disabled until probe succeeds"
             )
+            return
     except Exception as exc:
-        _warn(f"CLI health probe raised exception: {exc}")
+        _warn_once(f"CLI health probe raised exception: {exc}")
+        return
+
+    if mark_cli_ready is not None:
+        try:
+            mark_cli_ready(source="bootstrap")
+        except Exception:
+            pass
+
+    _WARNED_MESSAGES.discard(
+        "CLI health probe failed after install; delegation disabled until probe succeeds"
+    )
 
 
 def bootstrap() -> None:  # type: ignore[override]

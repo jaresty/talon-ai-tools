@@ -238,6 +238,23 @@ def _fallback_request_id() -> str:
     return f"cli-{stamp}"
 
 
+def _response_request_id(
+    payload: Dict[str, Any], response: Dict[str, Any]
+) -> str | None:
+    if isinstance(response, dict):
+        response_id = response.get("request_id")
+        if isinstance(response_id, str):
+            text = response_id.strip()
+            if text:
+                return text
+    request_id = payload.get("request_id")
+    if isinstance(request_id, str):
+        text = request_id.strip()
+        if text:
+            return text
+    return None
+
+
 def _response_text(response: Dict[str, Any]) -> str:
     message = ""
     raw_message = response.get("message")
@@ -362,6 +379,71 @@ def _record_successful_delegation(
             pass
     except Exception:
         pass
+
+
+def _replay_cli_events(events: Any, request_id: str | None) -> None:
+    if not events:
+        return
+    try:
+        from . import requestBus as _requestBus  # type: ignore
+    except Exception:
+        return
+
+    if not isinstance(events, (list, tuple)):
+        return
+
+    current_id: str | None = None
+    if isinstance(request_id, str) and request_id.strip():
+        current_id = request_id.strip()
+
+    for raw_event in events:
+        if not isinstance(raw_event, dict):
+            continue
+        kind = str(raw_event.get("kind") or "").strip().lower()
+        if not kind:
+            continue
+        event_request_id = raw_event.get("request_id")
+        if isinstance(event_request_id, str) and event_request_id.strip():
+            current_id = event_request_id.strip()
+        try:
+            if kind == "reset":
+                _requestBus.emit_reset()
+                continue
+            if kind == "begin_send":
+                current_id = _requestBus.emit_begin_send(request_id=current_id)
+                continue
+            if kind == "begin_stream":
+                current_id = _requestBus.emit_begin_stream(request_id=current_id)
+                continue
+            if kind == "append":
+                text = raw_event.get("text")
+                if not isinstance(text, str):
+                    delta = raw_event.get("delta")
+                    if isinstance(delta, str):
+                        text = delta
+                    elif isinstance(delta, dict):
+                        maybe_text = delta.get("text")
+                        if isinstance(maybe_text, str):
+                            text = maybe_text
+                if isinstance(text, str):
+                    _requestBus.emit_append(text, request_id=current_id)
+                continue
+            if kind == "complete":
+                _requestBus.emit_complete(request_id=current_id)
+                continue
+            if kind == "fail":
+                error_text = raw_event.get("error") or raw_event.get("message") or ""
+                if not isinstance(error_text, str):
+                    error_text = str(error_text)
+                _requestBus.emit_fail(error_text, request_id=current_id)
+                continue
+            if kind == "history_saved":
+                path = raw_event.get("path")
+                if isinstance(path, str) and path.strip():
+                    _requestBus.emit_history_saved(path, request_id=current_id)
+                continue
+        except Exception:
+            continue
 
 
 def apply_release_snapshot(snapshot: Dict[str, Any]) -> None:
@@ -721,6 +803,14 @@ def delegate_request(payload: Dict[str, Any]) -> Tuple[bool, Dict[str, Any], str
             f"CLI delegate failure: {error_message}", source="cli_delegate", notify=True
         )
         return False, response, error_message
+
+    request_id = _response_request_id(payload, response)
+    if isinstance(response, dict) and request_id and not response.get("request_id"):
+        response["request_id"] = request_id
+
+    _replay_cli_events(
+        response.get("events") if isinstance(response, dict) else None, request_id
+    )
 
     mark_cli_ready(source="cli_delegate")
     _record_successful_delegation(payload, response)

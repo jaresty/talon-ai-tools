@@ -11,8 +11,10 @@ import sys
 from contextlib import redirect_stderr
 from datetime import datetime, timezone
 from unittest import mock
+from typing import Any, cast
 
 from talon import actions
+
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 
@@ -39,7 +41,8 @@ import lib.cliHealth as cliHealth
 import lib.providerCommands as providerCommands
 import lib.providerRegistry as providerRegistry
 import lib.surfaceGuidance as surfaceGuidance
-from lib import historyLifecycle, requestGating, responseCanvasFallback
+from lib import historyLifecycle, requestBus, requestGating, responseCanvasFallback
+from lib.requestState import RequestPhase
 import scripts.tools.install_bar_cli as install_bar_cli
 import scripts.tools.package_bar_cli as package_bar_cli
 from lib.bootstrapTelemetry import (
@@ -47,6 +50,8 @@ from lib.bootstrapTelemetry import (
     get_bootstrap_warning_messages,
 )
 
+
+bootstrap_module: Any | None = None
 
 try:
     import bootstrap as bootstrap_module
@@ -216,6 +221,7 @@ else:
             self.assertEqual(result.stdout.strip(), expected)
 
         def test_cli_delegate_executes_request(self) -> None:
+            requestBus.emit_reset()
             payload = {
                 "request_id": "req-123",
                 "prompt": {
@@ -231,6 +237,16 @@ else:
             self.assertEqual(result.get("echo"), "hello world")
             self.assertEqual(result.get("echo_upper"), "HELLO WORLD")
             self.assertEqual(error_message, "")
+            events = response.get("events")
+            if not isinstance(events, list):
+                events = []
+            event_dicts = [event for event in events if isinstance(event, dict)]
+            kinds = [event.get("kind") for event in event_dicts]
+            self.assertIn("begin_stream", kinds)
+            self.assertIn("complete", kinds)
+            final_state = requestBus.current_state()
+            self.assertEqual(final_state.phase, RequestPhase.DONE)
+            requestBus.emit_reset()
 
         def test_cli_delegate_failure_disables_delegation(self) -> None:
             cliDelegation.reset_state()
@@ -622,6 +638,34 @@ else:
             delegation_state_path.unlink(missing_ok=True)
             cliDelegation.reset_state()
 
+        def test_bootstrap_logs_ready_summary(self) -> None:
+            if bootstrap is None or bootstrap_module is None:
+                self.skipTest("bootstrap helper unavailable")
+            assert bootstrap_module is not None
+            module = cast(Any, bootstrap_module)
+
+            if getattr(module, "log_provider_status", None) is None:
+                self.skipTest("provider status log unavailable")
+
+            module._WARNED_MESSAGES.clear()
+            module._BOOTSTRAP_WARNINGS.clear()
+            clear_bootstrap_warning_events()
+            get_bootstrap_warnings(clear=True)
+
+            with (
+                mock.patch("scripts.tools.install_bar_cli.install_cli") as install_mock,
+                mock.patch("lib.cliHealth.probe_cli_health", return_value=False),
+                mock.patch.object(module, "log_provider_status") as log_mock,
+            ):
+                install_mock.return_value = None
+                module.bootstrap()
+
+            log_mock.assert_not_called()
+            module._WARNED_MESSAGES.clear()
+            module._BOOTSTRAP_WARNINGS.clear()
+            clear_bootstrap_warning_events()
+            get_bootstrap_warnings(clear=True)
+
         def test_bootstrap_hydrates_release_snapshot_metadata(self) -> None:
             self.assertIsNotNone(bootstrap, "bootstrap helper unavailable")
             assert bootstrap is not None
@@ -705,7 +749,7 @@ else:
                 },
                 "cli_recovery_snapshot": {
                     "enabled": snapshot_payload.get("enabled", True),
-                    "prompt": historyLifecycle.drop_reason_message("cli_ready"),
+                    "prompt": historyLifecycle.drop_reason_message("cli_ready"),  # type: ignore[arg-type]
                 },
             }
             metadata_path.write_text(
@@ -867,7 +911,7 @@ else:
             actions.user.calls.clear()
             historyLifecycle.set_drop_reason(
                 "cli_signature_mismatch",
-                historyLifecycle.drop_reason_message("cli_signature_mismatch"),
+                historyLifecycle.drop_reason_message("cli_signature_mismatch"),  # type: ignore[arg-type]
             )
 
             cliDelegation.disable_delegation(

@@ -1,7 +1,7 @@
 # ADR-0063 Work Log — helper:v20251223.1
 
 ## Open Behaviours
-- [Implementation Guardrails → Delivery posture] Replace stubbed CLI delegation with real binary | `python3 -m pytest _tests/test_cli_talon_parity.py` | status: in_progress — loop-0066 automates CLI_GO_COMMAND guidance, regenerates delegation state/metadata during bootstrap, replaces the provider overlay with log output, and keeps auto-packaging green; next slice wires adapters to consume real CLI transcripts end-to-end.
+- [Implementation Guardrails → Delivery posture] Replace stubbed CLI delegation with real binary | `python3 -m pytest _tests/test_cli_talon_parity.py` | status: in_progress — loop-0066 automates CLI_GO_COMMAND guidance, regenerates delegation state/metadata during bootstrap, replaces the provider overlay with log output, and keeps auto-packaging green. loop-0069 replays CLI delegate streaming events through the Talon request bus so canvases/history stay in sync; the next slice wires adapters to consume real CLI transcripts end-to-end.
 - [Implementation Guardrails → Delivery posture] Release checksum manifest hardening | `python3 scripts/tools/check_cli_assets.py` | status: in_progress — loop-0059 enforces single-entry manifests; CI artefact evidence deferred until merge readiness.
 
 ## Completed Loops
@@ -117,3 +117,4 @@ PY`; evidence: `docs/adr/evidence/0063/loop-0034.md`.
 - loop-0066 — provided CLI_GO_COMMAND fallback guidance, auto-packaged Go artefacts when available, and extended parity coverage for missing Go binaries; validation: `python3 -m pytest _tests/test_cli_talon_parity.py`; evidence: `docs/adr/evidence/0063/loop-0066.md`.
 - loop-0067 — replaced provider overlay canvases with log-based status output, updated guard tests, and documented the UX mitigation; validation: `python3 -m pytest _tests/test_provider_commands.py`, `python3 -m pytest _tests/test_cli_talon_parity.py`; evidence: `docs/adr/evidence/0063/loop-0067.md`.
 - loop-0068 — throttled bootstrap warnings and marked delegation ready after auto-recovery; validation: `python3 -m pytest _tests/test_provider_commands.py`, `python3 -m pytest _tests/test_cli_talon_parity.py`; evidence: `docs/adr/evidence/0063/loop-0068.md`.
+- loop-0069 — replayed CLI delegate events into the Talon request bus, enriched CLI responses with chunk metadata, and extended parity coverage; validation: `python3 -m pytest _tests/test_cli_talon_parity.py`; evidence: `docs/adr/evidence/0063/loop-0069.md`.

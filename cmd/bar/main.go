@@ -9,6 +9,8 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
+	"unicode/utf8"
 )
 
 const (
@@ -130,24 +132,31 @@ func runDelegate(args []string) int {
 		fmt.Fprintln(os.Stderr, "bar: delegate requires prompt.text string")
 		return 1
 	}
-	promptText, ok := promptPayload["text"].(string)
-	if !ok || strings.TrimSpace(promptText) == "" {
-		fmt.Fprintln(os.Stderr, "bar: delegate requires prompt.text string")
+	promptText, err := promptTextFromPayload(promptPayload)
+	if err != nil {
+		fmt.Fprintln(os.Stderr, err.Error())
 		return 1
 	}
 
-	result := map[string]any{
-		"echo":       promptText,
-		"echo_upper": strings.ToUpper(promptText),
-	}
+	requestID := ensureRequestID(request)
+	chunks := chunkPrompt(promptText)
+	events := buildDelegateEvents(requestID, chunks)
+	result := buildDelegateResult(promptText, chunks)
 
 	response := map[string]any{
-		"status":  "ok",
-		"message": "CLI delegate processed request",
-		"result":  result,
+		"status":       "ok",
+		"message":      "CLI delegate processed request",
+		"result":       result,
+		"events":       events,
+		"request_id":   requestID,
+		"processed_at": time.Now().UTC().Format(time.RFC3339),
 	}
-	if requestID, ok := request["request_id"].(string); ok && strings.TrimSpace(requestID) != "" {
-		response["request_id"] = requestID
+
+	if axes, ok := request["axes"]; ok {
+		response["axes"] = axes
+	}
+	if meta, ok := request["meta"]; ok {
+		response["meta"] = meta
 	}
 
 	if err := json.NewEncoder(os.Stdout).Encode(response); err != nil {
@@ -156,6 +165,142 @@ func runDelegate(args []string) int {
 	}
 
 	return 0
+}
+
+func ensureRequestID(request map[string]any) string {
+	if raw, ok := request["request_id"]; ok {
+		if id, ok := raw.(string); ok {
+			trimmed := strings.TrimSpace(id)
+			if trimmed != "" {
+				return trimmed
+			}
+		}
+	}
+	return fmt.Sprintf("cli-%d", time.Now().UnixNano())
+}
+
+func promptTextFromPayload(payload map[string]any) (string, error) {
+	if raw, ok := payload["text"]; ok {
+		if text, ok := raw.(string); ok {
+			trimmed := strings.TrimSpace(text)
+			if trimmed != "" {
+				return trimmed, nil
+			}
+		}
+	}
+
+	if rawSegments, ok := payload["segments"]; ok {
+		switch segs := rawSegments.(type) {
+		case []any:
+			parts := make([]string, 0, len(segs))
+			for _, entry := range segs {
+				if str, ok := entry.(string); ok {
+					trimmed := strings.TrimSpace(str)
+					if trimmed != "" {
+						parts = append(parts, trimmed)
+					}
+				}
+			}
+			if len(parts) > 0 {
+				return strings.Join(parts, "\n"), nil
+			}
+		case []string:
+			parts := make([]string, 0, len(segs))
+			for _, entry := range segs {
+				trimmed := strings.TrimSpace(entry)
+				if trimmed != "" {
+					parts = append(parts, trimmed)
+				}
+			}
+			if len(parts) > 0 {
+				return strings.Join(parts, "\n"), nil
+			}
+		}
+	}
+
+	return "", errors.New("bar: delegate requires prompt.text string")
+}
+
+func chunkPrompt(text string) []string {
+	cleaned := strings.TrimSpace(text)
+	if cleaned == "" {
+		return nil
+	}
+
+	if strings.Contains(cleaned, "\n") {
+		lines := strings.Split(cleaned, "\n")
+		chunks := make([]string, 0, len(lines))
+		for _, line := range lines {
+			trimmed := strings.TrimSpace(line)
+			if trimmed != "" {
+				chunks = append(chunks, trimmed)
+			}
+		}
+		if len(chunks) > 0 {
+			return chunks
+		}
+	}
+
+	words := strings.Fields(cleaned)
+	if len(words) <= 24 {
+		return []string{cleaned}
+	}
+
+	const chunkSize = 24
+	chunks := make([]string, 0, (len(words)/chunkSize)+1)
+	for start := 0; start < len(words); start += chunkSize {
+		end := start + chunkSize
+		if end > len(words) {
+			end = len(words)
+		}
+		chunks = append(chunks, strings.Join(words[start:end], " "))
+	}
+	return chunks
+}
+
+func buildDelegateEvents(requestID string, chunks []string) []map[string]any {
+	events := []map[string]any{
+		{"kind": "reset", "request_id": requestID},
+		{"kind": "begin_send", "request_id": requestID},
+		{"kind": "begin_stream", "request_id": requestID},
+	}
+
+	for _, chunk := range chunks {
+		events = append(events, map[string]any{
+			"kind":       "append",
+			"request_id": requestID,
+			"text":       chunk,
+		})
+	}
+
+	events = append(events, map[string]any{
+		"kind":       "complete",
+		"request_id": requestID,
+	})
+
+	return events
+}
+
+func buildDelegateResult(promptText string, chunks []string) map[string]any {
+	fields := strings.Fields(promptText)
+	result := map[string]any{
+		"echo":        promptText,
+		"echo_upper":  strings.ToUpper(promptText),
+		"chunk_count": len(chunks),
+		"analysis": map[string]any{
+			"characters": utf8.RuneCountInString(promptText),
+			"words":      len(fields),
+		},
+	}
+
+	if len(chunks) > 0 {
+		result["chunks"] = chunks
+		result["summary"] = fmt.Sprintf("%d chunk(s) replayed", len(chunks))
+	} else {
+		result["summary"] = "no chunks generated"
+	}
+
+	return result
 }
 
 func printUsage(out *os.File) {

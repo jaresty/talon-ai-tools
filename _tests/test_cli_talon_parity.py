@@ -8,7 +8,7 @@ import platform
 import shutil
 import subprocess
 import sys
-from contextlib import redirect_stderr
+from contextlib import redirect_stderr, redirect_stdout
 from datetime import datetime, timezone
 from unittest import mock
 from typing import Any, cast
@@ -40,6 +40,7 @@ import lib.cliDelegation as cliDelegation
 import lib.cliHealth as cliHealth
 import lib.providerCommands as providerCommands
 import lib.providerRegistry as providerRegistry
+import lib.providerStatusLog as providerStatusLog
 import lib.surfaceGuidance as surfaceGuidance
 from lib import historyLifecycle, requestBus, requestGating, responseCanvasFallback
 from lib.requestState import RequestPhase
@@ -229,11 +230,13 @@ else:
                 "prompt": {
                     "text": "hello world",
                 },
-                "delegate_fixture_key": "parity/hello-world",
             }
-            chunks = ["This is a streamed answer.", "It spans two sentences."]
-            answer = "\n".join(chunks)
-            meta_text = "## Model interpretation\nFixture-provided insight."
+            meta_text = "## Model interpretation\nEchoed 2 word(s) over 3 chunk(s)."
+            expected_chunks = [
+                "Summary: hello world",
+                "Echo: hello world",
+                "Highlights: #hello, #world",
+            ]
             try:
                 success, response, error_message = cliDelegation.delegate_request(
                     payload
@@ -241,16 +244,23 @@ else:
                 self.assertTrue(success, error_message)
                 self.assertEqual(response.get("status"), "ok")
                 self.assertEqual(response.get("request_id"), "req-123")
-                self.assertEqual(response.get("message"), answer)
+                message = response.get("message") or ""
+                self.assertTrue(message.startswith("Summary: "))
+                self.assertIn("Echo: hello world", message)
+                self.assertIn("Highlights: #hello, #world", message)
                 self.assertEqual(response.get("meta"), meta_text)
                 result = response.get("result") or {}
-                self.assertEqual(result.get("answer"), answer)
-                self.assertEqual(result.get("chunks"), chunks)
-                self.assertEqual(result.get("meta"), meta_text)
+                self.assertEqual(result.get("chunk_count"), 3)
+                self.assertEqual(
+                    result.get("summary"), f"{len(expected_chunks)} chunk(s) replayed"
+                )
+                self.assertEqual(result.get("highlights"), ["#hello", "#world"])
+                chunks = result.get("chunks") or []
+                self.assertEqual(chunks, expected_chunks)
+                analysis = result.get("response_analysis") or {}
+                self.assertEqual(analysis.get("lines"), 3)
                 self.assertEqual(error_message, "")
-                events = response.get("events")
-                if not isinstance(events, list):
-                    events = []
+                events = response.get("events") or []
                 event_dicts = [event for event in events if isinstance(event, dict)]
                 kinds = [event.get("kind") for event in event_dicts]
                 self.assertIn("begin_stream", kinds)
@@ -260,7 +270,7 @@ else:
                     for event in event_dicts
                     if event.get("kind") == "append"
                 ]
-                self.assertEqual(append_texts, chunks)
+                self.assertEqual(append_texts, expected_chunks)
                 final_state = requestBus.current_state()
                 self.assertEqual(final_state.phase, RequestPhase.DONE)
                 entry = historyLifecycle.latest()
@@ -268,7 +278,7 @@ else:
                 assert entry is not None
                 self.assertEqual(entry.request_id, "req-123")
                 self.assertEqual(entry.meta.strip(), meta_text)
-                self.assertIn(answer, entry.response)
+                self.assertIn("Summary: hello world", entry.response)
             finally:
                 requestBus.emit_reset()
                 responseCanvasFallback.clear_all_fallbacks()
@@ -291,13 +301,11 @@ else:
             cliDelegation.reset_state()
             payload = {
                 "request_id": "req-cli-ui",
-                "prompt": {"text": "hello world"},
+                "prompt": {"text": "delegate streaming for talon"},
                 "axes": {"scope": ["bound"]},
                 "provider_id": "cli",
-                "delegate_fixture_key": "parity/ui",
             }
-            chunks = ["Stream channel response.", "Canvas refreshed chunk."]
-            answer = "\n".join(chunks)
+            meta_text = "## Model interpretation\nEchoed 4 word(s) over 3 chunk(s)."
             try:
                 success, response, error_message = cliDelegation.delegate_request(
                     payload
@@ -309,12 +317,10 @@ else:
                 self.assertEqual(entry.request_id, "req-cli-ui")
                 self.assertIn("bound", entry.axes.get("scope", []))
                 self.assertIn("jog", entry.axes.get("directional", []))
-                self.assertEqual(
-                    entry.meta.strip(), "## Model interpretation\nUI verification."
-                )
-                self.assertIn(answer, entry.response)
+                self.assertEqual(entry.meta.strip(), meta_text)
+                self.assertIn("Summary: delegate streaming for talon", entry.response)
                 fallback_text = responseCanvasFallback.fallback_for("req-cli-ui")
-                self.assertIn(answer, fallback_text)
+                self.assertIn("Summary: delegate streaming for talon", fallback_text)
                 action_names = [call[0] for call in actions.user.calls]
                 self.assertIn("model_response_canvas_open", action_names)
                 self.assertIn("model_response_canvas_refresh", action_names)
@@ -671,33 +677,48 @@ else:
             delegation_state_path.unlink(missing_ok=True)
             cliDelegation.reset_state()
 
-        def test_bootstrap_logs_ready_summary(self) -> None:
-            if bootstrap is None or bootstrap_module is None:
-                self.skipTest("bootstrap helper unavailable")
-            assert bootstrap_module is not None
-            module = cast(Any, bootstrap_module)
+        def test_provider_status_log_records_history(self) -> None:
+            providerStatusLog.ProviderStatusLog.showing = False
+            providerStatusLog.ProviderStatusLog.title = ""
+            providerStatusLog.ProviderStatusLog.lines = []
+            providerStatusLog.ProviderStatusLog.last_message = ""
+            providerStatusLog.ProviderStatusLog.history = []
 
-            if getattr(module, "log_provider_status", None) is None:
-                self.skipTest("provider status log unavailable")
+            buffer = io.StringIO()
+            with redirect_stdout(buffer):
+                providerStatusLog.log_provider_status(
+                    "Providers",
+                    [
+                        "GPT: CLI delegation ready; telemetry and health probes are green.",
+                        "OpenAI — ready via env",
+                    ],
+                )
 
-            module._WARNED_MESSAGES.clear()
-            module._BOOTSTRAP_WARNINGS.clear()
-            clear_bootstrap_warning_events()
-            get_bootstrap_warnings(clear=True)
+            output = buffer.getvalue().strip()
+            self.assertIn("[Providers]", output)
+            self.assertIn(
+                "• GPT: CLI delegation ready; telemetry and health probes are green.",
+                output,
+            )
+            self.assertEqual(providerStatusLog.ProviderStatusLog.title, "Providers")
+            self.assertEqual(
+                providerStatusLog.ProviderStatusLog.lines,
+                [
+                    "GPT: CLI delegation ready; telemetry and health probes are green.",
+                    "OpenAI — ready via env",
+                ],
+            )
+            self.assertTrue(providerStatusLog.ProviderStatusLog.showing)
+            self.assertEqual(
+                providerStatusLog.ProviderStatusLog.last_message.strip(), output
+            )
+            self.assertIn(output, providerStatusLog.ProviderStatusLog.history)
 
-            with (
-                mock.patch("scripts.tools.install_bar_cli.install_cli") as install_mock,
-                mock.patch("lib.cliHealth.probe_cli_health", return_value=False),
-                mock.patch.object(module, "log_provider_status") as log_mock,
-            ):
-                install_mock.return_value = None
-                module.bootstrap()
-
-            log_mock.assert_not_called()
-            module._WARNED_MESSAGES.clear()
-            module._BOOTSTRAP_WARNINGS.clear()
-            clear_bootstrap_warning_events()
-            get_bootstrap_warnings(clear=True)
+            providerStatusLog.clear_provider_status()
+            self.assertFalse(providerStatusLog.ProviderStatusLog.showing)
+            self.assertEqual(providerStatusLog.ProviderStatusLog.title, "")
+            self.assertEqual(providerStatusLog.ProviderStatusLog.lines, [])
+            self.assertEqual(providerStatusLog.ProviderStatusLog.last_message, "")
 
         def test_bootstrap_hydrates_release_snapshot_metadata(self) -> None:
             self.assertIsNotNone(bootstrap, "bootstrap helper unavailable")

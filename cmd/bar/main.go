@@ -143,6 +143,9 @@ func runDelegate(args []string) int {
 		fmt.Fprintf(os.Stderr, "bar: failed to load delegate fixture: %v\n", err)
 		return 1
 	}
+	if fixture == nil {
+		fixture = synthesizeDelegateFixture(request, promptText)
+	}
 
 	requestID := ensureRequestID(request)
 	promptChunks := chunkPrompt(promptText)
@@ -320,14 +323,109 @@ func loadDelegateFixture(request map[string]any, promptText string) (map[string]
 		}
 	}
 
-	normalisedPrompt := strings.ToLower(strings.TrimSpace(promptText))
-	if normalisedPrompt != "" {
-		if fixture := embeddedDelegateFixture("prompt:" + normalisedPrompt); fixture != nil {
-			return fixture, nil
-		}
+	return nil, nil
+}
+
+func synthesizeDelegateFixture(request map[string]any, promptText string) map[string]any {
+	trimmed := strings.TrimSpace(promptText)
+	if trimmed == "" {
+		trimmed = "(empty prompt)"
+	}
+	words := strings.Fields(trimmed)
+	wordCount := len(words)
+	if wordCount == 0 {
+		words = []string{"(empty)"}
+		wordCount = 1
 	}
 
-	return nil, nil
+	summaryLine := fmt.Sprintf("Summary: %s", summariseWords(words, 16))
+	echoLine := fmt.Sprintf("Echo: %s", trimmed)
+	highlights := extractHighlights(words, 3)
+	highlightText := "(none)"
+	if len(highlights) > 0 {
+		highlightText = strings.Join(highlights, ", ")
+	}
+	insightLine := fmt.Sprintf("Highlights: %s", highlightText)
+
+	answer := strings.Join([]string{summaryLine, echoLine, insightLine}, "\n\n")
+	chunks := chunkPrompt(answer)
+	if len(chunks) == 0 {
+		chunks = []string{answer}
+	}
+
+	meta := fmt.Sprintf(
+		"## Model interpretation\nEchoed %d word(s) over %d chunk(s).",
+		wordCount,
+		len(chunks),
+	)
+
+	responseAnalysis := map[string]any{
+		"characters": utf8.RuneCountInString(answer),
+		"lines":      len(chunks),
+	}
+
+	result := map[string]any{
+		"answer":            answer,
+		"chunks":            chunks,
+		"chunk_count":       len(chunks),
+		"summary":           summaryLine,
+		"highlights":        highlights,
+		"response_analysis": responseAnalysis,
+		"echo":              trimmed,
+	}
+
+	if axes, ok := request["axes"].(map[string]any); ok {
+		result["axes"] = axes
+	}
+
+	events := make([]map[string]any, 0, len(chunks))
+	for _, chunk := range chunks {
+		events = append(events, map[string]any{
+			"kind": "append",
+			"text": chunk,
+		})
+	}
+
+	return map[string]any{
+		"status":  "ok",
+		"message": answer,
+		"meta":    meta,
+		"result":  result,
+		"events":  events,
+	}
+}
+
+func summariseWords(words []string, limit int) string {
+	if len(words) <= limit {
+		return strings.Join(words, " ")
+	}
+	summary := strings.Join(words[:limit], " ")
+	return summary + "…"
+}
+
+func extractHighlights(words []string, limit int) []string {
+	highlights := make([]string, 0, limit)
+	seen := make(map[string]struct{})
+	for _, word := range words {
+		clean := sanitizeHighlightWord(word)
+		if clean == "" {
+			continue
+		}
+		clean = strings.ToLower(clean)
+		if _, ok := seen[clean]; ok {
+			continue
+		}
+		seen[clean] = struct{}{}
+		highlights = append(highlights, "#"+clean)
+		if len(highlights) >= limit {
+			break
+		}
+	}
+	return highlights
+}
+
+func sanitizeHighlightWord(word string) string {
+	return strings.Trim(word, `.,;:!?"'()[]{}<>`)
 }
 
 func coerceFixtureEvents(raw any) []map[string]any {

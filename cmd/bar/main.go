@@ -144,10 +144,14 @@ func runDelegate(args []string) int {
 		return 1
 	}
 	if fixture == nil {
+		fixture = recordedTranscriptForRequest(request, promptText)
+	}
+	if fixture == nil {
 		fixture = synthesizeDelegateFixture(request, promptText)
 	}
 
 	requestID := ensureRequestID(request)
+
 	promptChunks := chunkPrompt(promptText)
 
 	status := "ok"
@@ -330,6 +334,43 @@ func loadDelegateFixture(request map[string]any, promptText string) (map[string]
 	}
 
 	return nil, nil
+}
+
+func recordedTranscriptForRequest(request map[string]any, promptText string) map[string]any {
+	if request == nil && strings.TrimSpace(promptText) == "" {
+		return nil
+	}
+
+	if rawKey, ok := request["recorded_transcript_key"].(string); ok {
+		if fixture := providerTranscriptByKey(rawKey); fixture != nil {
+			return fixture
+		}
+	}
+
+	if rawKey, ok := request["delegate_fixture_key"].(string); ok {
+		if fixture := providerTranscriptByKey(rawKey); fixture != nil {
+			return fixture
+		}
+	}
+
+	trimmedPrompt := strings.ToLower(strings.TrimSpace(promptText))
+	if trimmedPrompt != "" {
+		if fixture := providerTranscriptByKey("prompt:" + trimmedPrompt); fixture != nil {
+			return fixture
+		}
+	}
+
+	if providerRaw, ok := request["provider_id"].(string); ok {
+		providerKey := strings.ToLower(strings.TrimSpace(providerRaw))
+		if providerKey != "" && trimmedPrompt != "" {
+			combined := fmt.Sprintf("provider:%s|prompt:%s", providerKey, trimmedPrompt)
+			if fixture := providerTranscriptByKey(combined); fixture != nil {
+				return fixture
+			}
+		}
+	}
+
+	return nil
 }
 
 func synthesizeDelegateFixture(request map[string]any, promptText string) map[string]any {

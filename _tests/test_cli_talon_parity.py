@@ -77,6 +77,36 @@ CLI_BINARY = REPO_ROOT / "bin" / "bar"
 SCHEMA_BUNDLE = REPO_ROOT / "docs" / "schema" / "command-surface.json"
 PACKAGED_CLI_DIR = REPO_ROOT / "artifacts" / "cli"
 
+RECORDED_HELLO_META = "## Provider replay\nRecorded on 2025-12-18."
+RECORDED_HELLO_CHUNKS = [
+    "Recorded provider: hello world summary.",
+    "This transcript was captured offline.",
+    "Tokens align with provider usage.",
+]
+RECORDED_HELLO_MESSAGE = "\n".join(RECORDED_HELLO_CHUNKS)
+RECORDED_HELLO_SUMMARY = RECORDED_HELLO_CHUNKS[0]
+RECORDED_HELLO_HIGHLIGHTS = ["#recorded", "#provider"]
+RECORDED_HELLO_USAGE = {
+    "prompt_tokens": 2,
+    "completion_tokens": 15,
+    "total_tokens": 17,
+}
+
+RECORDED_UI_META = "## Provider replay\nTalon delegate recorded stream."
+RECORDED_UI_CHUNKS = [
+    "Recorded CLI: streaming answer for Talon adapters.",
+    "History synced from provider transcript.",
+    "Canvas refresh triggered from recorded stream.",
+]
+RECORDED_UI_MESSAGE = "\n".join(RECORDED_UI_CHUNKS)
+RECORDED_UI_SUMMARY = RECORDED_UI_CHUNKS[0]
+RECORDED_UI_HIGHLIGHTS = ["#delegate", "#talon"]
+RECORDED_UI_USAGE = {
+    "prompt_tokens": 4,
+    "completion_tokens": 18,
+    "total_tokens": 22,
+}
+
 
 def _target_suffix() -> str:
     system = platform.system().lower()
@@ -231,12 +261,8 @@ else:
                     "text": "hello world",
                 },
             }
-            meta_text = "## Model interpretation\nEchoed 2 word(s) over 3 chunk(s)."
-            expected_chunks = [
-                "Summary: hello world",
-                "Echo: hello world",
-                "Highlights: #hello, #world",
-            ]
+            meta_text = RECORDED_HELLO_META
+            expected_chunks = RECORDED_HELLO_CHUNKS
             try:
                 success, response, error_message = cliDelegation.delegate_request(
                     payload
@@ -245,28 +271,31 @@ else:
                 self.assertEqual(response.get("status"), "ok")
                 self.assertEqual(response.get("request_id"), "req-123")
                 message = response.get("message") or ""
-                self.assertTrue(message.startswith("Summary: "))
-                self.assertIn("Echo: hello world", message)
-                self.assertIn("Highlights: #hello, #world", message)
+                self.assertEqual(message, RECORDED_HELLO_MESSAGE)
                 self.assertEqual(response.get("meta"), meta_text)
                 result = response.get("result") or {}
-                self.assertEqual(result.get("chunk_count"), 3)
-                self.assertEqual(result.get("summary"), "Summary: hello world")
+                self.assertEqual(result.get("chunk_count"), len(expected_chunks))
+                self.assertEqual(result.get("summary"), RECORDED_HELLO_SUMMARY)
                 self.assertEqual(
                     result.get("replay_summary"),
                     f"{len(expected_chunks)} chunk(s) replayed",
                 )
-                self.assertEqual(result.get("highlights"), ["#hello", "#world"])
+                self.assertEqual(result.get("highlights"), RECORDED_HELLO_HIGHLIGHTS)
                 usage = result.get("usage") or {}
+                self.assertEqual(usage, RECORDED_HELLO_USAGE)
                 prompt_tokens = usage.get("prompt_tokens")
                 completion_tokens = usage.get("completion_tokens")
                 self.assertIsInstance(prompt_tokens, int)
                 self.assertIsInstance(completion_tokens, int)
                 prompt_tokens_int = cast(int, prompt_tokens)
                 completion_tokens_int = cast(int, completion_tokens)
-                self.assertEqual(prompt_tokens_int, 2)
-                expected_completion_tokens = len(" ".join(expected_chunks).split())
-                self.assertEqual(completion_tokens_int, expected_completion_tokens)
+                self.assertEqual(
+                    prompt_tokens_int, RECORDED_HELLO_USAGE["prompt_tokens"]
+                )
+                self.assertEqual(
+                    completion_tokens_int,
+                    RECORDED_HELLO_USAGE["completion_tokens"],
+                )
                 self.assertEqual(
                     usage.get("total_tokens"),
                     prompt_tokens_int + completion_tokens_int,
@@ -275,7 +304,7 @@ else:
                 chunks = result.get("chunks") or []
                 self.assertEqual(chunks, expected_chunks)
                 analysis = result.get("response_analysis") or {}
-                self.assertEqual(analysis.get("lines"), 3)
+                self.assertEqual(analysis.get("lines"), len(expected_chunks))
                 self.assertEqual(error_message, "")
                 events = response.get("events") or []
                 event_dicts = [event for event in events if isinstance(event, dict)]
@@ -303,7 +332,7 @@ else:
                 assert entry is not None
                 self.assertEqual(entry.request_id, "req-123")
                 self.assertEqual(entry.meta.strip(), meta_text)
-                self.assertIn("Summary: hello world", entry.response)
+                self.assertIn(RECORDED_HELLO_SUMMARY, entry.response)
             finally:
                 requestBus.emit_reset()
                 responseCanvasFallback.clear_all_fallbacks()
@@ -330,12 +359,17 @@ else:
                 "axes": {"scope": ["bound"]},
                 "provider_id": "cli",
             }
-            meta_text = "## Model interpretation\nEchoed 4 word(s) over 3 chunk(s)."
+            meta_text = RECORDED_UI_META
             try:
                 success, response, error_message = cliDelegation.delegate_request(
                     payload
                 )
                 self.assertTrue(success, error_message)
+                self.assertEqual(response.get("message"), RECORDED_UI_MESSAGE)
+                result = response.get("result") or {}
+                self.assertEqual(result.get("chunks"), RECORDED_UI_CHUNKS)
+                self.assertEqual(result.get("highlights"), RECORDED_UI_HIGHLIGHTS)
+                self.assertEqual(result.get("usage"), RECORDED_UI_USAGE)
                 entry = historyLifecycle.latest()
                 self.assertIsNotNone(entry)
                 assert entry is not None
@@ -343,9 +377,9 @@ else:
                 self.assertIn("bound", entry.axes.get("scope", []))
                 self.assertIn("jog", entry.axes.get("directional", []))
                 self.assertEqual(entry.meta.strip(), meta_text)
-                self.assertIn("Summary: delegate streaming for talon", entry.response)
+                self.assertIn(RECORDED_UI_SUMMARY, entry.response)
                 fallback_text = responseCanvasFallback.fallback_for("req-cli-ui")
-                self.assertIn("Summary: delegate streaming for talon", fallback_text)
+                self.assertIn(RECORDED_UI_SUMMARY, fallback_text)
                 action_names = [call[0] for call in actions.user.calls]
                 self.assertIn("model_response_canvas_open", action_names)
                 self.assertIn("model_response_canvas_refresh", action_names)

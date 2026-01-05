@@ -1,0 +1,132 @@
+{
+  "prompt:hello world": {
+    "status": "ok",
+    "message": "Recorded provider: hello world summary.\nThis transcript was captured offline.\nTokens align with provider usage.",
+    "meta": "## Provider replay\nRecorded on 2025-12-18.",
+    "processed_at": "2025-12-18T12:00:00Z",
+    "result": {
+      "answer": "Recorded provider: hello world summary.\nThis transcript was captured offline.\nTokens align with provider usage.",
+      "summary": "Recorded provider: hello world summary.",
+      "replay_summary": "3 chunk(s) replayed",
+      "chunks": [
+        "Recorded provider: hello world summary.",
+        "This transcript was captured offline.",
+        "Tokens align with provider usage."
+      ],
+      "chunk_count": 3,
+      "highlights": ["#recorded", "#provider"],
+      "response_analysis": {
+        "characters": 111,
+        "lines": 3
+      },
+      "usage": {
+        "prompt_tokens": 2,
+        "completion_tokens": 15,
+        "total_tokens": 17
+      },
+      "meta": "## Provider replay\nRecorded on 2025-12-18."
+    },
+    "events": [
+      {
+        "kind": "append",
+        "delta": {
+          "role": "assistant",
+          "type": "text",
+          "index": 0,
+          "text": "Recorded provider: hello world summary."
+        }
+      },
+      {
+        "kind": "append",
+        "delta": {
+          "role": "assistant",
+          "type": "text",
+          "index": 1,
+          "text": "This transcript was captured offline."
+        }
+      },
+      {
+        "kind": "append",
+        "delta": {
+          "role": "assistant",
+          "type": "text",
+          "index": 2,
+          "text": "Tokens align with provider usage."
+        }
+      },
+      {
+        "kind": "usage",
+        "usage": {
+          "prompt_tokens": 2,
+          "completion_tokens": 15,
+          "total_tokens": 17
+        }
+      }
+    ]
+  },
+  "prompt:delegate streaming for talon": {
+    "status": "ok",
+    "message": "Recorded CLI: streaming answer for Talon adapters.\nHistory synced from provider transcript.\nCanvas refresh triggered from recorded stream.",
+    "meta": "## Provider replay\nTalon delegate recorded stream.",
+    "processed_at": "2025-12-18T12:05:00Z",
+    "result": {
+      "answer": "Recorded CLI: streaming answer for Talon adapters.\nHistory synced from provider transcript.\nCanvas refresh triggered from recorded stream.",
+      "summary": "Recorded CLI: streaming answer for Talon adapters.",
+      "replay_summary": "3 chunk(s) replayed",
+      "chunks": [
+        "Recorded CLI: streaming answer for Talon adapters.",
+        "History synced from provider transcript.",
+        "Canvas refresh triggered from recorded stream."
+      ],
+      "chunk_count": 3,
+      "highlights": ["#delegate", "#talon"],
+      "response_analysis": {
+        "characters": 138,
+        "lines": 3
+      },
+      "usage": {
+        "prompt_tokens": 4,
+        "completion_tokens": 18,
+        "total_tokens": 22
+      },
+      "meta": "## Provider replay\nTalon delegate recorded stream."
+    },
+    "events": [
+      {
+        "kind": "append",
+        "delta": {
+          "role": "assistant",
+          "type": "text",
+          "index": 0,
+          "text": "Recorded CLI: streaming answer for Talon adapters."
+        }
+      },
+      {
+        "kind": "append",
+        "delta": {
+          "role": "assistant",
+          "type": "text",
+          "index": 1,
+          "text": "History synced from provider transcript."
+        }
+      },
+      {
+        "kind": "append",
+        "delta": {
+          "role": "assistant",
+          "type": "text",
+          "index": 2,
+          "text": "Canvas refresh triggered from recorded stream."
+        }
+      },
+      {
+        "kind": "usage",
+        "usage": {
+          "prompt_tokens": 4,
+          "completion_tokens": 18,
+          "total_tokens": 22
+        }
+      }
+    ]
+  }
+}

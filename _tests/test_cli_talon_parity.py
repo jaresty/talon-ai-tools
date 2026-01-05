@@ -1049,6 +1049,179 @@ json.dump(response, sys.stdout)
                 server.shutdown()
                 thread.join()
 
+        def test_cli_delegate_http_records_fixture_artifact(self) -> None:
+            actions.user.calls.clear()
+            historyLifecycle.clear_history()
+            responseCanvasFallback.clear_all_fallbacks()
+            cliDelegation.reset_state()
+            payload = {
+                "request_id": "req-provider-http-record",
+                "prompt": {"text": "record this provider response"},
+                "axes": {"scope": ["bound"]},
+                "provider_id": "cli",
+            }
+
+            class _RecordHandler(http.server.BaseHTTPRequestHandler):
+                def do_POST(self) -> None:
+                    body = json.dumps(
+                        {
+                            "status": "ok",
+                            "message": RECORDED_HELLO_MESSAGE,
+                            "result": {"chunks": [RECORDED_HELLO_MESSAGE]},
+                        }
+                    ).encode("utf-8")
+                    self.send_response(200)
+                    self.send_header("Content-Type", "application/json")
+                    self.send_header("Content-Length", str(len(body)))
+                    self.end_headers()
+                    self.wfile.write(body)
+
+                def log_message(self, format: str, *args: Any) -> None:  # noqa: A003
+                    return
+
+            server = http.server.HTTPServer(("127.0.0.1", 0), _RecordHandler)
+            thread = threading.Thread(
+                target=server.serve_forever,
+                name="http-provider-record-server",
+                daemon=True,
+            )
+            thread.start()
+            endpoint = f"http://{server.server_address[0]}:{server.server_address[1]}"
+            try:
+                with tempfile.TemporaryDirectory() as tmpdir:
+                    record_path = Path(tmpdir) / "http-recordings.json"
+                    telemetry_path = Path(tmpdir) / "latency.json"
+                    with mock.patch.dict(
+                        os.environ,
+                        {
+                            "BAR_PROVIDER_HTTP_ENDPOINT": endpoint,
+                            "BAR_PROVIDER_COMMAND_MODE": "http",
+                            "BAR_PROVIDER_HTTP_BEARER": "token-123",
+                            "BAR_PROVIDER_HTTP_RECORD_PATH": str(record_path),
+                            "BAR_PROVIDER_HTTP_RECORD_LIMIT": "5",
+                            "BAR_TELEMETRY_LATENCY_PATH": str(telemetry_path),
+                        },
+                    ):
+                        try:
+                            success, response, error_message = (
+                                cliDelegation.delegate_request(payload)
+                            )
+                            self.assertTrue(success, error_message)
+                            self.assertTrue(record_path.exists())
+                            payload_json = json.loads(
+                                record_path.read_text(encoding="utf-8")
+                            )
+                            records = payload_json.get("records") or []
+                            self.assertEqual(len(records), 1)
+                            record = records[0]
+                            self.assertEqual(record.get("endpoint"), endpoint)
+                            self.assertEqual(record.get("http_status"), 200)
+                            self.assertEqual(
+                                record.get("request_id"), payload["request_id"]
+                            )
+                            preview = record.get("prompt_preview") or ""
+                            self.assertNotIn("token-123", json.dumps(record))
+                            self.assertLessEqual(len(preview), 200)
+                            self.assertTrue(record.get("prompt_hash"))
+                            response_snapshot = record.get("response") or {}
+                            self.assertEqual(
+                                response_snapshot.get("message"), RECORDED_HELLO_MESSAGE
+                            )
+                        finally:
+                            cliDelegation.reset_state()
+                            responseCanvasFallback.clear_all_fallbacks()
+                            historyLifecycle.clear_history()
+                            actions.user.calls.clear()
+            finally:
+                server.shutdown()
+                thread.join()
+
+        def test_cli_delegate_http_record_rotation_limit(self) -> None:
+            actions.user.calls.clear()
+            historyLifecycle.clear_history()
+            responseCanvasFallback.clear_all_fallbacks()
+            cliDelegation.reset_state()
+            base_payload = {
+                "prompt": {"text": "rotation base"},
+                "axes": {"scope": ["bound"]},
+                "provider_id": "cli",
+            }
+
+            class _RotationHandler(http.server.BaseHTTPRequestHandler):
+                def do_POST(self) -> None:
+                    body = json.dumps(
+                        {
+                            "status": "ok",
+                            "message": RECORDED_HELLO_MESSAGE,
+                        }
+                    ).encode("utf-8")
+                    self.send_response(200)
+                    self.send_header("Content-Type", "application/json")
+                    self.send_header("Content-Length", str(len(body)))
+                    self.end_headers()
+                    self.wfile.write(body)
+
+                def log_message(self, format: str, *args: Any) -> None:  # noqa: A003
+                    return
+
+            server = http.server.HTTPServer(("127.0.0.1", 0), _RotationHandler)
+            thread = threading.Thread(
+                target=server.serve_forever,
+                name="http-provider-rotation-server",
+                daemon=True,
+            )
+            thread.start()
+            endpoint = f"http://{server.server_address[0]}:{server.server_address[1]}"
+            try:
+                with tempfile.TemporaryDirectory() as tmpdir:
+                    record_path = Path(tmpdir) / "http-recordings.json"
+                    telemetry_path = Path(tmpdir) / "latency.json"
+                    prompts = [
+                        ("req-rotation-1", "first rotation prompt"),
+                        ("req-rotation-2", "second rotation prompt"),
+                        ("req-rotation-3", "third rotation prompt"),
+                    ]
+                    for request_id, prompt_text in prompts:
+                        payload = {
+                            **base_payload,
+                            "request_id": request_id,
+                            "prompt": {"text": prompt_text},
+                        }
+                        with mock.patch.dict(
+                            os.environ,
+                            {
+                                "BAR_PROVIDER_HTTP_ENDPOINT": endpoint,
+                                "BAR_PROVIDER_COMMAND_MODE": "http",
+                                "BAR_PROVIDER_HTTP_RECORD_PATH": str(record_path),
+                                "BAR_PROVIDER_HTTP_RECORD_LIMIT": "2",
+                                "BAR_TELEMETRY_LATENCY_PATH": str(telemetry_path),
+                            },
+                        ):
+                            try:
+                                success, response, error_message = (
+                                    cliDelegation.delegate_request(payload)
+                                )
+                                self.assertTrue(success, error_message)
+                            finally:
+                                cliDelegation.reset_state()
+                                responseCanvasFallback.clear_all_fallbacks()
+                                historyLifecycle.clear_history()
+                                actions.user.calls.clear()
+                    payload_json = json.loads(record_path.read_text(encoding="utf-8"))
+                    records = payload_json.get("records") or []
+                    self.assertEqual(len(records), 2)
+                    recorded_ids = [entry.get("request_id") for entry in records]
+                    self.assertListEqual(
+                        recorded_ids,
+                        [
+                            prompts[1][0],
+                            prompts[2][0],
+                        ],
+                    )
+            finally:
+                server.shutdown()
+                thread.join()
+
         def test_cli_delegate_http_falls_back_when_endpoint_missing(self) -> None:
             actions.user.calls.clear()
             historyLifecycle.clear_history()

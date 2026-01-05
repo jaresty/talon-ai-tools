@@ -2,6 +2,8 @@ package main
 
 import (
 	"bytes"
+	"crypto/sha256"
+	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -15,6 +17,7 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 	"unicode/utf8"
 )
@@ -25,6 +28,9 @@ const (
 	executorName                  = "compiled"
 	defaultTelemetryWindowMinutes = 30
 	maxTelemetrySamples           = 200
+	defaultHTTPRecordLimit        = 50
+	maxHTTPRecordLimit            = 500
+	promptPreviewLimit            = 200
 )
 
 type fixturesOnlyMissingTranscriptError struct {
@@ -59,6 +65,27 @@ type latencyTelemetryPayload struct {
 	P95Ms         float64                  `json:"p95_ms"`
 	SuccessRate   float64                  `json:"success_rate"`
 }
+
+type httpRecording struct {
+	Timestamp     string         `json:"timestamp"`
+	Endpoint      string         `json:"endpoint"`
+	HTTPStatus    int            `json:"http_status"`
+	LatencyMs     float64        `json:"latency_ms"`
+	Success       bool           `json:"success"`
+	RequestID     string         `json:"request_id"`
+	PromptPreview string         `json:"prompt_preview"`
+	PromptHash    string         `json:"prompt_hash"`
+	Response      map[string]any `json:"response"`
+}
+
+type httpRecordingPayload struct {
+	GeneratedAt string          `json:"generated_at"`
+	Limit       int             `json:"limit"`
+	RecordCount int             `json:"record_count"`
+	Records     []httpRecording `json:"records"`
+}
+
+var httpRecordingsMu sync.Mutex
 
 func main() {
 	os.Exit(run(os.Args[1:]))
@@ -620,13 +647,125 @@ func recordLatencyTelemetry(root string, status int, latency time.Duration, succ
 	_ = os.WriteFile(path, append(output, '\n'), 0o644)
 }
 
+func httpRecordingsPath(root string) string {
+	override := strings.TrimSpace(os.Getenv("BAR_PROVIDER_HTTP_RECORD_PATH"))
+	if override != "" {
+		return override
+	}
+	if root == "" {
+		return ""
+	}
+	return filepath.Join(root, "var", "cli-telemetry", "http-recordings.json")
+}
+
+func httpRecordingLimit() int {
+	raw := strings.TrimSpace(os.Getenv("BAR_PROVIDER_HTTP_RECORD_LIMIT"))
+	if raw == "" {
+		return defaultHTTPRecordLimit
+	}
+	parsed, err := strconv.Atoi(raw)
+	if err != nil || parsed <= 0 {
+		return 0
+	}
+	if parsed > maxHTTPRecordLimit {
+		return maxHTTPRecordLimit
+	}
+	return parsed
+}
+
+func promptFingerprint(prompt string) (string, string) {
+	trimmed := strings.TrimSpace(prompt)
+	if trimmed == "" {
+		return "", ""
+	}
+	normalized := strings.Join(strings.Fields(strings.ReplaceAll(trimmed, "\n", " ")), " ")
+	hashBytes := sha256.Sum256([]byte(strings.ToLower(normalized)))
+	hash := hex.EncodeToString(hashBytes[:])
+	runes := []rune(normalized)
+	if len(runes) > promptPreviewLimit {
+		return hash, string(runes[:promptPreviewLimit]) + "…"
+	}
+	return hash, normalized
+}
+
+func recordHTTPInteraction(root, endpoint string, request map[string]any, promptText string, response map[string]any, status int, latency time.Duration) {
+	path := httpRecordingsPath(root)
+	if path == "" {
+		return
+	}
+	limit := httpRecordingLimit()
+	if limit <= 0 {
+		return
+	}
+
+	if promptText == "" {
+		promptText = promptTextFromRequestMap(request)
+	}
+	hash, preview := promptFingerprint(promptText)
+
+	now := time.Now().UTC()
+
+	requestID := ""
+	if raw, ok := request["request_id"].(string); ok {
+		requestID = strings.TrimSpace(raw)
+	}
+	if requestID == "" {
+		requestID = ensureRequestID(request)
+	}
+
+	record := httpRecording{
+		Timestamp:     now.Format(time.RFC3339),
+		Endpoint:      strings.TrimSpace(endpoint),
+		HTTPStatus:    status,
+		LatencyMs:     sanitizeLatencyValue(float64(latency) / float64(time.Millisecond)),
+		Success:       status >= 200 && status < 400,
+		RequestID:     requestID,
+		PromptPreview: preview,
+		PromptHash:    hash,
+		Response:      cloneMap(response),
+	}
+
+	if record.Endpoint == "" {
+		record.Endpoint = endpoint
+	}
+
+	httpRecordingsMu.Lock()
+	defer httpRecordingsMu.Unlock()
+
+	payload := httpRecordingPayload{}
+	if data, err := os.ReadFile(path); err == nil {
+		if err := json.Unmarshal(data, &payload); err != nil {
+			payload = httpRecordingPayload{}
+		}
+	}
+
+	payload.Records = append(payload.Records, record)
+	if len(payload.Records) > limit {
+		payload.Records = payload.Records[len(payload.Records)-limit:]
+	}
+	payload.RecordCount = len(payload.Records)
+	payload.GeneratedAt = now.Format(time.RFC3339)
+	payload.Limit = limit
+
+	output, err := json.MarshalIndent(payload, "", "  ")
+	if err != nil {
+		return
+	}
+	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
+		return
+	}
+	_ = os.WriteFile(path, append(output, '\n'), 0o644)
+}
+
 func fetchHTTPProviderFixture(endpoint string, request map[string]any, promptText string) (map[string]any, error) {
 	if endpoint == "" {
 		if transcript := recordedTranscriptForRequest(request, promptText); transcript != nil {
 			reason := "missing HTTP endpoint configuration"
 			applyHTTPFallbackMeta(transcript, reason)
 			transcript["http_fallback_reason"] = reason
+			transcript["http_fallback_attempts"] = 0
 			return transcript, nil
+
 		}
 		return nil, fmt.Errorf("http mode requires BAR_PROVIDER_HTTP_ENDPOINT")
 	}
@@ -656,7 +795,7 @@ func fetchHTTPProviderFixture(endpoint string, request map[string]any, promptTex
 		return nil, err
 	}
 
-	fixture, err := invokeHTTPProviderWithRetries(endpoint, payload, bearer, headers, timeout, retries)
+	fixture, err := invokeHTTPProviderWithRetries(endpoint, payload, bearer, headers, timeout, retries, request, promptText)
 	if err != nil {
 		if transcript := recordedTranscriptForRequest(request, promptText); transcript != nil {
 			reason := err.Error()
@@ -671,14 +810,14 @@ func fetchHTTPProviderFixture(endpoint string, request map[string]any, promptTex
 	return fixture, nil
 }
 
-func invokeHTTPProviderWithRetries(endpoint string, payload []byte, bearer string, headers map[string]string, timeout time.Duration, retries int) (map[string]any, error) {
+func invokeHTTPProviderWithRetries(endpoint string, payload []byte, bearer string, headers map[string]string, timeout time.Duration, retries int, request map[string]any, promptText string) (map[string]any, error) {
 	if retries < 1 {
 		retries = 1
 	}
 
 	var lastErr error
 	for attempt := 1; attempt <= retries; attempt++ {
-		fixture, err := invokeHTTPProvider(endpoint, payload, bearer, headers, timeout)
+		fixture, err := invokeHTTPProvider(endpoint, payload, bearer, headers, timeout, request, promptText)
 		if err == nil {
 			return fixture, nil
 		}
@@ -695,7 +834,7 @@ func invokeHTTPProviderWithRetries(endpoint string, payload []byte, bearer strin
 	return nil, lastErr
 }
 
-func invokeHTTPProvider(endpoint string, payload []byte, bearer string, headers map[string]string, timeout time.Duration) (map[string]any, error) {
+func invokeHTTPProvider(endpoint string, payload []byte, bearer string, headers map[string]string, timeout time.Duration, request map[string]any, promptText string) (map[string]any, error) {
 	root := repoRoot()
 	client := &http.Client{Timeout: timeout}
 	req, err := http.NewRequest(http.MethodPost, endpoint, bytes.NewReader(payload))
@@ -759,6 +898,7 @@ func invokeHTTPProvider(endpoint string, payload []byte, bearer string, headers 
 	}
 
 	recordLatencyTelemetry(root, resp.StatusCode, latency, true)
+	recordHTTPInteraction(root, endpoint, request, promptText, fixture, resp.StatusCode, latency)
 
 	return cloneMap(fixture), nil
 }

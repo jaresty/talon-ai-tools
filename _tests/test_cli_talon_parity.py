@@ -588,7 +588,7 @@ json.dump({{"status": "ok", "message": "provider command"}}, sys.stdout)
             cliDelegation.reset_state()
             payload = {
                 "request_id": "req-provider-fixture",
-                "prompt": {"text": "fixture only"},
+                "prompt": {"text": "hello world"},
                 "axes": {"scope": ["bound"]},
                 "provider_id": "cli",
             }
@@ -620,7 +620,56 @@ json.dump({{"status": "ok", "message": "provider command"}}, sys.stdout)
                         )
                         self.assertTrue(success, error_message)
                         message = response.get("message") or ""
-                        self.assertIn("Summary: fixture only", message)
+                        self.assertEqual(message, RECORDED_HELLO_MESSAGE)
+                        self.assertFalse(
+                            sentinel_path.exists(),
+                            "provider command should not execute when fixtures-only",
+                        )
+                    finally:
+                        cliDelegation.reset_state()
+                        responseCanvasFallback.clear_all_fallbacks()
+                        historyLifecycle.clear_history()
+                        actions.user.calls.clear()
+
+        def test_cli_fixture_only_mode_errors_without_transcript(self) -> None:
+            actions.user.calls.clear()
+            historyLifecycle.clear_history()
+            responseCanvasFallback.clear_all_fallbacks()
+            cliDelegation.reset_state()
+            payload = {
+                "request_id": "req-provider-missing-fixture",
+                "prompt": {"text": "missing fixture"},
+                "axes": {"scope": ["bound"]},
+                "provider_id": "cli",
+            }
+            with tempfile.TemporaryDirectory() as tmpdir:
+                script_path = Path(tmpdir) / "provider_stub.py"
+                sentinel_path = Path(tmpdir) / "command-ran.txt"
+                script_content = f"""#!/usr/bin/env python3
+import json
+import sys
+from pathlib import Path
+
+Path(r"{sentinel_path}").write_text("command executed", encoding="utf-8")
+request = json.load(sys.stdin)
+json.dump({{"status": "ok", "message": "provider command"}}, sys.stdout)
+"""
+                script_path.write_text(script_content, encoding="utf-8")
+                script_path.chmod(0o755)
+
+                with mock.patch.dict(
+                    os.environ,
+                    {
+                        "BAR_PROVIDER_COMMAND": f"{sys.executable} {script_path}",
+                        "BAR_PROVIDER_COMMAND_MODE": "fixtures-only",
+                    },
+                ):
+                    try:
+                        success, response, error_message = (
+                            cliDelegation.delegate_request(payload)
+                        )
+                        self.assertFalse(success)
+                        self.assertIn("fixtures-only", error_message)
                         self.assertFalse(
                             sentinel_path.exists(),
                             "provider command should not execute when fixtures-only",

@@ -370,11 +370,12 @@ func loadDelegateFixture(request map[string]any, promptText string) (map[string]
 func fetchProviderFixture(request map[string]any) (map[string]any, error) {
 	mode := strings.ToLower(strings.TrimSpace(os.Getenv("BAR_PROVIDER_COMMAND_MODE")))
 	endpoint := strings.TrimSpace(os.Getenv("BAR_PROVIDER_HTTP_ENDPOINT"))
+	promptText := promptTextFromRequestMap(request)
+
 	switch mode {
 	case "disabled", "off", "recorded-only":
 		return nil, nil
 	case "fixtures-only", "fixtures", "fixture":
-		promptText := promptTextFromRequestMap(request)
 		if transcript := recordedTranscriptForRequest(request, promptText); transcript != nil {
 			return transcript, nil
 		}
@@ -385,13 +386,33 @@ func fetchProviderFixture(request map[string]any) (map[string]any, error) {
 		return nil, fixturesOnlyMissingTranscriptError{message: errorMessage}
 	case "http":
 		if endpoint == "" {
+			if transcript := recordedTranscriptForRequest(request, promptText); transcript != nil {
+				applyHTTPFallbackMeta(transcript, "missing HTTP endpoint configuration")
+				return transcript, nil
+			}
 			return nil, fmt.Errorf("http mode requires BAR_PROVIDER_HTTP_ENDPOINT")
 		}
-		return invokeHTTPProvider(endpoint, request)
+		fixture, err := invokeHTTPProvider(endpoint, request)
+		if err != nil {
+			if transcript := recordedTranscriptForRequest(request, promptText); transcript != nil {
+				applyHTTPFallbackMeta(transcript, err.Error())
+				return transcript, nil
+			}
+			return nil, err
+		}
+		return fixture, nil
 	}
 
 	if endpoint != "" {
-		return invokeHTTPProvider(endpoint, request)
+		fixture, err := invokeHTTPProvider(endpoint, request)
+		if err != nil {
+			if transcript := recordedTranscriptForRequest(request, promptText); transcript != nil {
+				applyHTTPFallbackMeta(transcript, err.Error())
+				return transcript, nil
+			}
+			return nil, err
+		}
+		return fixture, nil
 	}
 
 	command := strings.TrimSpace(os.Getenv("BAR_PROVIDER_COMMAND"))
@@ -436,6 +457,18 @@ func fetchProviderFixture(request map[string]any) (map[string]any, error) {
 	}
 
 	return cloneMap(fixture), nil
+}
+
+func applyHTTPFallbackMeta(fixture map[string]any, reason string) {
+	fallback := fmt.Sprintf("HTTP fallback: %s", reason)
+	existing := stringValue(fixture["meta"])
+	trimmed := strings.TrimSpace(existing)
+	if trimmed == "" {
+		fixture["meta"] = fallback
+	} else if !strings.Contains(trimmed, fallback) {
+		fixture["meta"] = trimmed + "\n\n" + fallback
+	}
+	fixture["http_fallback_reason"] = reason
 }
 
 func invokeHTTPProvider(endpoint string, request map[string]any) (map[string]any, error) {

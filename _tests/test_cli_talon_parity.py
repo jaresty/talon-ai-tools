@@ -672,6 +672,44 @@ json.dump(response, sys.stdout)
                     server.shutdown()
                     thread.join()
 
+        def test_cli_delegate_http_falls_back_when_endpoint_missing(self) -> None:
+            actions.user.calls.clear()
+            historyLifecycle.clear_history()
+            responseCanvasFallback.clear_all_fallbacks()
+            cliDelegation.reset_state()
+            payload = {
+                "request_id": "req-provider-http-fallback",
+                "prompt": {"text": "hello world"},
+                "axes": {"scope": ["bound"]},
+                "provider_id": "cli",
+            }
+            sentinel_path = Path(tempfile.mkdtemp()) / "http-called.txt"
+            with mock.patch.dict(
+                os.environ,
+                {
+                    "BAR_PROVIDER_HTTP_ENDPOINT": "",
+                    "BAR_PROVIDER_COMMAND_MODE": "http",
+                },
+            ):
+                try:
+                    success, response, error_message = cliDelegation.delegate_request(
+                        payload
+                    )
+                    self.assertTrue(success, error_message)
+                    message = response.get("message") or ""
+                    self.assertEqual(message, RECORDED_HELLO_MESSAGE)
+                    meta_text = response.get("meta") or ""
+                    self.assertIn("HTTP fallback", meta_text)
+                    self.assertFalse(
+                        sentinel_path.exists(),
+                        "HTTP endpoint should not be called when missing",
+                    )
+                finally:
+                    cliDelegation.reset_state()
+                    responseCanvasFallback.clear_all_fallbacks()
+                    historyLifecycle.clear_history()
+                    actions.user.calls.clear()
+
         def test_cli_delegate_skips_provider_command_when_disabled(self) -> None:
             actions.user.calls.clear()
             historyLifecycle.clear_history()

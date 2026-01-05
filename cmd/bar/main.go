@@ -1,12 +1,14 @@
 package main
 
 import (
+	"bytes"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
 	"io/fs"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strings"
 	"time"
@@ -138,10 +140,16 @@ func runDelegate(args []string) int {
 		return 1
 	}
 
-	fixture, err := loadDelegateFixture(request, promptText)
+	fixture, err := fetchProviderFixture(request)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "bar: failed to load delegate fixture: %v\n", err)
-		return 1
+		fmt.Fprintf(os.Stderr, "bar: provider command failed: %v\n", err)
+	}
+	if fixture == nil {
+		fixture, err = loadDelegateFixture(request, promptText)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "bar: failed to load delegate fixture: %v\n", err)
+			return 1
+		}
 	}
 	if fixture == nil {
 		fixture = recordedTranscriptForRequest(request, promptText)
@@ -334,6 +342,56 @@ func loadDelegateFixture(request map[string]any, promptText string) (map[string]
 	}
 
 	return nil, nil
+}
+
+func fetchProviderFixture(request map[string]any) (map[string]any, error) {
+	command := strings.TrimSpace(os.Getenv("BAR_PROVIDER_COMMAND"))
+	if command == "" {
+		return nil, nil
+	}
+
+	args := parseCommandLine(command)
+	if len(args) == 0 {
+		return nil, nil
+	}
+
+	payload, err := json.Marshal(request)
+	if err != nil {
+		return nil, err
+	}
+
+	cmd := exec.Command(args[0], args[1:]...)
+	cmd.Stdin = bytes.NewReader(payload)
+
+	var stdout bytes.Buffer
+	var stderr bytes.Buffer
+	cmd.Stdout = &stdout
+	cmd.Stderr = &stderr
+
+	if err := cmd.Run(); err != nil {
+		trimmed := strings.TrimSpace(stderr.String())
+		if trimmed != "" {
+			return nil, fmt.Errorf("provider command failed: %w (%s)", err, trimmed)
+		}
+		return nil, fmt.Errorf("provider command failed: %w", err)
+	}
+
+	data := bytes.TrimSpace(stdout.Bytes())
+	if len(data) == 0 {
+		return nil, errors.New("provider command returned empty response")
+	}
+
+	var fixture map[string]any
+	if err := json.Unmarshal(data, &fixture); err != nil {
+		return nil, fmt.Errorf("provider command produced invalid JSON: %w", err)
+	}
+
+	return cloneMap(fixture), nil
+}
+
+func parseCommandLine(command string) []string {
+	fields := strings.Fields(command)
+	return fields
 }
 
 func recordedTranscriptForRequest(request map[string]any, promptText string) map[string]any {

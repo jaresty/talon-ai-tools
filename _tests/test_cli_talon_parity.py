@@ -8,6 +8,7 @@ import platform
 import shutil
 import subprocess
 import sys
+import tempfile
 from contextlib import redirect_stderr, redirect_stdout
 from datetime import datetime, timezone
 from unittest import mock
@@ -388,6 +389,147 @@ else:
                 historyLifecycle.clear_history()
                 actions.user.calls.clear()
                 cliDelegation.reset_state()
+
+        def test_cli_delegate_uses_external_provider_command(self) -> None:
+            actions.user.calls.clear()
+            historyLifecycle.clear_history()
+            responseCanvasFallback.clear_all_fallbacks()
+            cliDelegation.reset_state()
+            payload = {
+                "request_id": "req-provider-cmd",
+                "prompt": {"text": "live provider"},
+                "axes": {"scope": ["bound"]},
+                "provider_id": "cli",
+            }
+            with tempfile.TemporaryDirectory() as tmpdir:
+                script_path = Path(tmpdir) / "provider_stub.py"
+                script_content = """#!/usr/bin/env python3
+import json
+import sys
+
+request = json.load(sys.stdin)
+prompt = request.get("prompt", {}).get("text", "")
+chunks = [
+    f"Live provider chunk: {prompt}",
+    "Live provider completion chunk.",
+]
+message = "\\n".join(chunks)
+prompt_tokens = len(prompt.split())
+completion_tokens = sum(len(chunk.split()) for chunk in chunks)
+usage = {
+    "prompt_tokens": prompt_tokens,
+    "completion_tokens": completion_tokens,
+    "total_tokens": prompt_tokens + completion_tokens,
+}
+response = {
+    "status": "ok",
+    "message": message,
+    "meta": "## Provider replay\\nLive provider command.",
+    "result": {
+        "answer": message,
+        "summary": chunks[0],
+        "replay_summary": f"{len(chunks)} chunk(s) replayed",
+        "chunks": chunks,
+        "chunk_count": len(chunks),
+        "highlights": ["#live", "#provider"],
+        "response_analysis": {
+            "characters": len(message),
+            "lines": len(chunks),
+        },
+        "usage": usage,
+        "meta": "## Provider replay\\nLive provider command.",
+    },
+    "events": [
+        {
+            "kind": "append",
+            "delta": {
+                "role": "assistant",
+                "type": "text",
+                "index": index,
+                "text": chunk,
+            },
+        }
+        for index, chunk in enumerate(chunks)
+    ]
+}
+response["events"].append({"kind": "usage", "usage": usage})
+json.dump(response, sys.stdout)
+"""
+
+                script_path.write_text(script_content, encoding="utf-8")
+                script_path.chmod(0o755)
+
+                expected_chunks = [
+                    "Live provider chunk: live provider",
+                    "Live provider completion chunk.",
+                ]
+                expected_message = "\n".join(expected_chunks)
+                expected_meta = "## Provider replay\nLive provider command."
+                expected_usage = {
+                    "prompt_tokens": 2,
+                    "completion_tokens": 9,
+                    "total_tokens": 11,
+                }
+
+                with mock.patch.dict(
+                    os.environ,
+                    {
+                        "BAR_PROVIDER_COMMAND": f"{sys.executable} {script_path}",
+                    },
+                ):
+                    try:
+                        success, response, error_message = (
+                            cliDelegation.delegate_request(payload)
+                        )
+                        self.assertTrue(success, error_message)
+                        self.assertEqual(response.get("status"), "ok")
+                        self.assertEqual(response.get("request_id"), "req-provider-cmd")
+                        self.assertEqual(response.get("message"), expected_message)
+                        self.assertEqual(response.get("meta"), expected_meta)
+
+                        result = response.get("result") or {}
+                        self.assertEqual(result.get("chunks"), expected_chunks)
+                        self.assertEqual(result.get("summary"), expected_chunks[0])
+                        self.assertEqual(
+                            result.get("highlights"), ["#live", "#provider"]
+                        )
+                        self.assertEqual(result.get("usage"), expected_usage)
+                        self.assertEqual(
+                            result.get("replay_summary"),
+                            f"{len(expected_chunks)} chunk(s) replayed",
+                        )
+                        analysis = result.get("response_analysis") or {}
+                        self.assertEqual(analysis.get("lines"), len(expected_chunks))
+
+                        events = response.get("events") or []
+                        event_kinds = [
+                            event.get("kind")
+                            for event in events
+                            if isinstance(event, dict)
+                        ]
+                        self.assertIn("usage", event_kinds)
+                        append_texts = []
+                        for event in events:
+                            if not isinstance(event, dict):
+                                continue
+                            if event.get("kind") != "append":
+                                continue
+                            delta = event.get("delta")
+                            if isinstance(delta, dict):
+                                append_texts.append(delta.get("text"))
+                        self.assertEqual(append_texts, expected_chunks)
+
+                        entry = historyLifecycle.latest()
+                        self.assertIsNotNone(entry)
+                        assert entry is not None
+                        self.assertEqual(entry.request_id, "req-provider-cmd")
+                        self.assertEqual(entry.meta.strip(), expected_meta)
+                        self.assertIn(expected_chunks[0], entry.response)
+                    finally:
+                        cliDelegation.reset_state()
+                        responseCanvasFallback.clear_all_fallbacks()
+                        historyLifecycle.clear_history()
+                        actions.user.calls.clear()
 
         def test_install_cli_rebuilds_missing_signature_metadata(self) -> None:
             metadata_path = self._signature_metadata_path()

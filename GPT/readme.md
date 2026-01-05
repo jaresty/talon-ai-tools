@@ -25,7 +25,7 @@ Query language models with voice commands. Helpful to automatically generate tex
 
 Note: Some behaviours (for example, diagrams, Presenterm decks, ADRs, shell scripts, debugging, Slack/Jira formatting, taxonomy-style outputs) now live only as form/channel/method axis values rather than static prompts; see ADR 012/013 and the README cheat sheet for axis-based recipes.
 
-- infer: I'm not telling you what to do. Infer the task.
+- infer: The response infers the task without being told what to do.
 - describe: Just describe this objectively.
 - undefined: List undefined terms only.
 - who: Explain who.

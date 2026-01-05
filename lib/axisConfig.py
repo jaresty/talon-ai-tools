@@ -7,167 +7,307 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Dict, FrozenSet
 
-AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
-    "channel": {
-        "codetour": "The response is a valid VS Code CodeTour `.tour` JSON document "
-        "(schema-compatible) that uses steps and fields appropriate to the task "
-        "and omits extra prose or surrounding explanation.",
-        "diagram": "The response converts the input into Mermaid diagram code only: it infers "
-        "the best diagram type for the task and respects Mermaid safety "
-        "constraints (Mermaid diagrams do not allow parentheses in the syntax or raw '|' characters inside node labels; the text uses numeric encodings such as \"#124;\" for '|' instead of raw problematic characters).",
-        "html": "The response consists solely of semantic HTML for the answer, with no "
-        "surrounding prose.",
-        "jira": "The response formats the content using Jira markup (headings, lists, panels) "
-        "where relevant and avoids extra explanation beyond the main material.",
-        "presenterm": "The response is a valid multi-slide presenterm deck expressed as raw "
-        'Markdown (no code fences). The front matter always matches: "--- '
-        "newline title: <descriptive title based on the input with colons encoded "
-        "as &#58; and angle brackets encoded as &lt; and &gt;> newline author: "
-        "Generated (or authors: [...]) newline date: YYYY-MM-DD newline --- "
-        'newline" with no other keys. The deck contains up to 12 slides. Each '
-        "slide starts with a Setext header (title line followed by a line of ---), "
-        "includes content and references, and ends with an HTML comment named "
-        "end_slide on its own line followed by a blank line; the final slide may "
-        "omit the closing end_slide. A blank line always precedes the References "
-        'section so that a line with "References" or "- References" is separated '
-        "by one empty line. Directives appear only as standalone HTML comments "
-        'with exact syntax: "<!-- end_slide -->", "<!-- pause -->", "<!-- '
-        'column_layout: [7, 3] -->", "<!-- column: 0 -->", "<!-- reset_layout '
-        '-->", and "<!-- jump_to_middle -->". Code fence safety is enforced: '
-        "whenever a fenced code block opens (for example ```mermaid +render, "
-        "```bash +exec, ```latex +render, ```d2 +render), the response includes a "
-        "matching closing fence of exactly three backticks on its own line before "
-        "any non-code content, directive, or end_slide; if a fence remains open at "
-        "slide end, the response emits the closing fence first. Mermaid diagrams "
-        "use code blocks tagged mermaid +render; LaTeX uses latex +render; D2 uses "
-        "d2 +render; executable snippets use fenced code blocks whose info string "
-        "starts with a language then +exec (optionally +id:<name>) or "
-        '+exec_replace or +image. The response emits "<!-- snippet_output: name '
-        '-->" only when a snippet with +id:name exists. Lines hidden with # or /// '
-        "prefixes follow language conventions; other code blocks appear only when "
-        "relevant and include the language name; images appear only when valid "
-        "paths or URLs exist. Within the slide body (outside fenced or inline code "
-        "and outside HTML directives), the deck never includes raw HTML: every "
-        "literal '<' becomes &lt; and every literal '>' becomes &gt;, preventing raw "
-        "angle brackets in body text. Markdown safety prevents accidental styling: standalone or path-embedded '~' becomes "
-        '"&#126;" (so "~/foo" becomes "&#126;/foo") while intentional "~~text~~" '
-        "remains unchanged. Mermaid safety keeps grammar and delimiters intact "
-        "([], (), [[]], (()), [/ /]); node and edge labels appear inside ASCII "
-        "double quotes and use Mermaid-compatible numeric codes with no leading "
-        'ampersand, such as "#91;" for "[", "#93;" for "]", "#40;" for "(", '
-        '"#41;" for ")", "#123;" for "{{", "#125;" for "}}", "#60;" for '
-        '"<", "#62;" for ">", "#35;" for "#", "#58;" for ":", and "#124;" '
-        'for "|". Internal double quotes escape as "". Ampersands "&" and '
-        "slashes '/' remain as-is, with no additional entity encodings, and labels are never double-encoded. The deck avoids # headers in slide bodies.",
-        "remote": "The response is optimised for remote delivery, ensuring instructions work in "
-        "distributed or online contexts and surfacing tooling or interaction hints "
-        "suitable for video, voice, or screen sharing.",
-        "slack": "The response formats the answer for Slack using appropriate Markdown, "
-        "mentions, and code blocks while avoiding channel-irrelevant decoration.",
-        "svg": "The response consists solely of SVG markup for the answer, with no surrounding "
-        "prose, and remains minimal and valid for copy/paste into an `.svg` file.",
-        "sync": "The response takes the shape of a synchronous or live session plan (agenda, "
-        "steps, cues) rather than static reference text.",
-    },
-    "completeness": {
-        "full": "The response provides a thorough answer for normal use, covering all major aspects without needing every micro-detail.",
-        "gist": "The response offers a short but complete answer or summary that touches the main points once without exploring every detail.",
-        "max": "The response is as exhaustive as reasonable, covering essentially everything relevant and treating omissions as errors.",
-        "minimal": "The response makes the smallest change or provides the smallest answer that satisfies the request, avoiding work outside the core need.",
-        "skim": "The response performs only a very light pass, addressing the most obvious or critical issues without aiming for completeness.",
-    },
-    "directional": {
-        "bog": "The response frames the preceding prompt through one unified perspective that blends acting, extending, reflection, and structure, treating them as a single fused stance.",
-        "dig": "The response applies a concretizing-grounding perspective as a single synthesized lens on the preceding prompt.",
-        "dip bog": "The response frames the preceding prompt through one unified perspective that blends concreteness, grounding, acting, extending, reflection, and structure, treating them as a single fused stance.",
-        "dip ong": "The response frames the preceding prompt through one unified perspective that blends concreteness, grounding, acting, and extending, treating them as a single fused stance.",
-        "dip rog": "The response frames the preceding prompt through one unified perspective that blends concreteness, grounding, reflection, and structure, treating them as a single fused stance.",
-        "fig": "The response applies an abstracting-generalizing-concretizing-grounding perspective as a single synthesized lens on the preceding prompt.",
-        "fip bog": "The response frames the preceding prompt through one unified perspective that blends abstraction, generalization, concreteness, grounding, acting, extending, reflection, and structure, treating them as a single fused stance.",
-        "fip ong": "The response frames the preceding prompt through one unified perspective that blends abstraction, generalization, concreteness, grounding, acting, and extending, treating them as a single fused stance.",
-        "fip rog": "The response frames the preceding prompt through one unified perspective that blends abstraction, generalization, concreteness, grounding, reflection, and structure, treating them as a single fused stance.",
-        "fly bog": "The response frames the preceding prompt through one unified perspective that blends abstraction, generalization, acting, extending, reflection, and structure, treating them as a single fused stance.",
-        "fly ong": "The response frames the preceding prompt through one unified perspective that blends abstraction, generalization, acting, and extending, treating them as a single fused stance.",
-        "fly rog": "The response frames the preceding prompt through one unified perspective that blends abstraction, generalization, reflection, and structure, treating them as a single fused stance.",
-        "fog": "The response applies an abstracting-generalizing perspective as a single synthesized lens on the preceding prompt.",
-        "jog": "The response interprets the intent and carries it out directly without asking follow-up questions.",
-        "ong": "The response applies an acting-extending perspective as a single synthesized lens on the preceding prompt.",
-        "rog": "The response applies a reflective-structural perspective as a single synthesized lens on the preceding prompt.",
-    },
-    "form": {
-        "adr": "The response takes the shape of an Architecture Decision Record (ADR) with sections for context, decision, and consequences, written in a concise document style.",
-        "bug": "The response appears as a structured bug report with sections for Steps to Reproduce, Expected Behavior, Actual Behavior, and Environment or Context, emphasising concise, testable details.",
-        "bullets": "The response presents the main answer as concise bullet points only, avoiding long paragraphs.",
-        "cards": "The response presents the main answer as discrete cards or items, each with a clear heading and short body, avoiding long continuous prose.",
-        "checklist": "The response appears as an actionable checklist whose items are clear imperative tasks rather than descriptive prose.",
-        "code": "The response consists only of code or markup for the main answer, with no surrounding natural-language explanation.",
-        "commit": "The response is formatted as a conventional commit message with a short type or scope line and an optional concise body.",
-        "faq": "The response adopts an FAQ layout: clearly separated question headings with concise answers beneath each one, keeping content easy to skim and free of long uninterrupted prose.",
-        "gherkin": "The response outputs only Gherkin, using Jira markup where appropriate and omitting surrounding explanation.",
-        "log": "The response reads like a concise work or research log entry with date or time markers as needed, short bullet-style updates, and enough context for future reference without unrelated narrative.",
-        "plain": "The response uses plain prose with natural paragraphs and sentences, imposing no additional structure such as bullets, tables, or code blocks.",
-        "recipe": "The response expresses the answer as a recipe that includes a custom, clearly explained mini-language and a short key for understanding it.",
-        "shellscript": "The response is delivered as a shell script, focusing on correct, executable shell code rather than prose.",
-        "spike": "The response formats the backlog item as a research spike: it starts with a brief problem or decision statement, lists the key questions the spike should answer, and stays focused on questions and learning rather than implementation tasks.",
-        "story": 'The response formats the backlog item as a user story using "As a <persona>, I want <capability>, so that <value>." It may include a short description and high-level acceptance criteria in plain prose but avoids Gherkin or test-case syntax.',
-        "table": "The response presents the main answer as a Markdown table when feasible, keeping columns and rows compact.",
-        "tight": "The response uses concise, dense prose, remaining freeform without bullets, tables, or code and avoiding filler.",
-        "visual": "The response conveys the answer as an abstract visual or metaphorical layout accompanied by a short legend, emphasising big-picture structure over dense prose.",
-    },
-    "method": {
-        "adversarial": "The response runs a constructive stress-test, systematically searching for weaknesses, edge cases, counterexamples, failure modes, and unstated assumptions while prioritising critique and stress-testing aimed at improving the work.",
-        "analysis": "The response describes, analyses, and structures the situation without proposing specific actions, fixes, or recommendations.",
-        "case": "The response builds the case before the conclusion by laying out background, evidence, trade-offs, and alternatives before converging on a clear recommendation that addresses objections and constraints.",
-        "cluster": "The response groups similar items into labelled categories and describes each cluster, emphasising recurring patterns over isolated singletons.",
-        "cocreate": "The response works collaboratively with the user, proposing small moves, checking alignment, and iterating together instead of delivering a one-shot answer.",
-        "compare": "The response compares two or more items by listing similarities and differences, highlighting subtle distinctions and trade-offs that matter to the audience.",
-        "contextualise": "The response adds or reshapes context to support another operation—such as supplying background for an LLM or reframing content—without rewriting the main text itself.",
-        "converge": "The response narrows the field and makes a call, weighing trade-offs, eliminating weaker options, and arriving at a small set of recommendations or a single decision.",
-        "debugging": "The response follows a debugging-style scientific method: it summarises stable facts, lists unresolved questions, proposes plausible hypotheses, designs minimal experiments or checks, narrows likely root causes, and outlines fixes.",
-        "deep": "The response goes into substantial depth within the chosen scope, unpacking reasoning layers and fine details without necessarily enumerating every edge case.",
-        "diagnose": "The response seeks likely causes of problems first, narrowing hypotheses before proposing fixes or changes.",
-        "direct": "The response leads with the main point or recommendation, followed only by the most relevant supporting context, evidence, and next steps.",
-        "diverge": "The response opens up the option space by generating multiple, diverse possibilities or angles without prematurely judging or collapsing to a single answer.",
-        "experimental": "The response reasons in an experimental or scientific style by proposing concrete experiments, outlining how each would run, describing expected outcomes, and explaining how those outcomes would update the hypotheses.",
-        "facilitate": "The response facilitates the session by framing the goal, proposing structure, managing turns, and keeping participation balanced rather than doing the work solo.",
-        "filter": "The response extracts only items that match a clearly stated criterion—such as pain points, risks, or open questions—and omits the rest.",
-        "flow": "The response focuses on flow over time or sequence, explaining how control, data, or narrative progresses step by step through the material.",
-        "indirect": "The response begins with brief background, reasoning, and trade-offs and finishes with a clear bottom-line point or recommendation that ties them together.",
-        "ladder": "The response uses abstraction laddering by placing the focal problem, stepping up to higher-level causes, and stepping down to consequences ordered by importance to the audience.",
-        "liberating": "The response facilitates using Liberating Structures, emphasising distributed participation, short structured interactions, concrete invitations, and visual, stepwise processes while naming or evoking specific LS patterns when helpful.",
-        "mapping": "The response emphasises mapping over exposition by surfacing elements, relationships, and structure, organising them into a coherent map (textual, tabular, or visual) rather than a linear narrative.",
-        "motifs": "The response scans for recurring motifs and patterns, identifying repeated elements, themes, clusters, and notable outliers, and briefly explaining why they matter.",
-        "plan": "The response offers a short plan first and then carries it out, clearly separating the plan from the execution.",
-        "prioritize": "The response assesses and orders items by importance or impact to the stated audience, making the ranking and rationale explicit.",
-        "probe": "The response leads with short probing questions that surface gaps and needs, holding off on conclusions until enough signal is gathered.",
-        "rewrite": "The response rewrites or refactors while preserving the original intent, treating the work as a mechanical transform rather than a reinterpretation.",
-        "rigor": "The response relies on disciplined, well-justified reasoning and makes its logic explicit, avoiding hand-waving.",
-        "samples": "The response generates several diverse, self-contained options and, when appropriate, attaches short descriptions and explicit numeric probabilities that approximately sum to 1 while avoiding near-duplicate options.",
-        "scaffold": "The response explains with scaffolding: it starts from first principles, introduces ideas gradually, uses concrete examples and analogies, and revisits key points so a beginner can follow and retain the concepts.",
-        "socratic": "The response employs a Socratic, question-led method by asking short, targeted questions that surface assumptions, definitions, and gaps in understanding, withholding full conclusions until enough answers exist or the user explicitly requests a summary.",
-        "steps": "The response solves the problem step by step, briefly labelling and explaining each step before presenting the final answer.",
-        "structure": "The response focuses on structural aspects by outlining parts, hierarchy, containment, and organisation rather than detailing behaviour.",
-        "systemic": "The response analyses the subject using systems thinking, focusing on boundaries, components, flows, feedback loops, emergence, and leverage points.",
-        "taxonomy": "The response builds or refines a taxonomy by defining categories, subtypes, and relationships to clarify structure, preferring compact representations over prose.",
-        "visual": "The response expresses the big picture using an abstract visual or metaphorical layout as a reasoning aid—such as regions and contrasts—with a short legend and concise, format-ready hints when helpful.",
-        "walkthrough": "The response guides the audience step by step by outlining stages and walking through them in order so understanding builds gradually.",
-        "wasinawa": "The response applies a What–So What–Now What reflection: it describes what happened, interprets why it matters, and proposes concrete next steps.",
-        "xp": "The response follows an Extreme Programming-style approach, favouring very small incremental changes, relying on working software and tests as primary feedback, and iterating with tight, collaborative feedback loops rather than big-bang plans.",
-    },
-    "scope": {
-        "actions": "The response stays within the selected target and focuses only on concrete actions or tasks a user or team could take, leaving out background analysis or explanation.",
-        "activities": "The response lists concrete session activities or segments—what to do, by whom, and in what order—rather than abstract description.",
-        "bound": "The response remains within the explicit conceptual limits stated or inferred in the prompt and avoids introducing outside material.",
-        "dynamics": "The response concentrates on how the system's behaviour and state evolve over time, covering scenarios, state changes, feedback loops, and transitions.",
-        "edges": "The response emphasises edge cases, errors, and unusual conditions around the subject.",
-        "focus": "The response stays tightly on a central theme within the selected target, avoiding tangents and side quests.",
-        "interfaces": "The response concentrates on external interfaces, contracts, and boundaries between components or systems rather than internal implementations.",
-        "narrow": "The response restricts the discussion to a very small slice of the topic, avoiding broad context.",
-        "relations": "The response examines relationships, interactions, and dependencies between elements within the selected target rather than internal details.",
-        "system": "The response looks at the overall system as a whole—components, boundaries, stakeholders, and internal structure—rather than individual lines or snippets.",
-    },
-}
-
+AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {'channel': {'codetour': 'The response is a valid VS Code CodeTour `.tour` JSON document '
+                         '(schema-compatible) that uses steps and fields appropriate to the task '
+                         'and omits extra prose or surrounding explanation.',
+             'diagram': 'The response converts the input into Mermaid diagram code only: it infers '
+                        'the best diagram type for the task and respects Mermaid safety '
+                        'constraints (Mermaid diagrams do not allow parentheses in the syntax or '
+                        "raw '|' characters inside node labels; the text uses numeric encodings "
+                        'such as "#124;" for \'|\' instead of raw problematic characters).',
+             'html': 'The response consists solely of semantic HTML for the answer, with no '
+                     'surrounding prose.',
+             'jira': 'The response formats the content using Jira markup (headings, lists, panels) '
+                     'where relevant and avoids extra explanation beyond the main material.',
+             'presenterm': 'The response is a valid multi-slide presenterm deck expressed as raw '
+                           'Markdown (no code fences). The front matter always matches: "--- '
+                           'newline title: <descriptive title based on the input with colons '
+                           'encoded as &#58; and angle brackets encoded as &lt; and &gt;> newline '
+                           'author: Generated (or authors: [...]) newline date: YYYY-MM-DD newline '
+                           '--- newline" with no other keys. The deck contains up to 12 slides. '
+                           'Each slide starts with a Setext header (title line followed by a line '
+                           'of ---), includes content and references, and ends with an HTML '
+                           'comment named end_slide on its own line followed by a blank line; the '
+                           'final slide may omit the closing end_slide. A blank line always '
+                           'precedes the References section so that a line with "References" or "- '
+                           'References" is separated by one empty line. Directives appear only as '
+                           'standalone HTML comments with exact syntax: "<!-- end_slide -->", '
+                           '"<!-- pause -->", "<!-- column_layout: [7, 3] -->", "<!-- column: 0 '
+                           '-->", "<!-- reset_layout -->", and "<!-- jump_to_middle -->". Code '
+                           'fence safety is enforced: whenever a fenced code block opens (for '
+                           'example ```mermaid +render, ```bash +exec, ```latex +render, ```d2 '
+                           '+render), the response includes a matching closing fence of exactly '
+                           'three backticks on its own line before any non-code content, '
+                           'directive, or end_slide; if a fence remains open at slide end, the '
+                           'response emits the closing fence first. Mermaid diagrams use code '
+                           'blocks tagged mermaid +render; LaTeX uses latex +render; D2 uses d2 '
+                           '+render; executable snippets use fenced code blocks whose info string '
+                           'starts with a language then +exec (optionally +id:<name>) or '
+                           '+exec_replace or +image. The response emits "<!-- snippet_output: name '
+                           '-->" only when a snippet with +id:name exists. Lines hidden with # or '
+                           '/// prefixes follow language conventions; other code blocks appear '
+                           'only when relevant and include the language name; images appear only '
+                           'when valid paths or URLs exist. Within the slide body (outside fenced '
+                           'or inline code and outside HTML directives), the deck never includes '
+                           "raw HTML: every literal '<' becomes &lt; and every literal '>' becomes "
+                           '&gt;, preventing raw angle brackets in body text. Markdown safety '
+                           "prevents accidental styling: standalone or path-embedded '~' becomes "
+                           '"&#126;" (so "~/foo" becomes "&#126;/foo") while intentional '
+                           '"~~text~~" remains unchanged. Mermaid safety keeps grammar and '
+                           'delimiters intact ([], (), [[]], (()), [/ /]); node and edge labels '
+                           'appear inside ASCII double quotes and use Mermaid-compatible numeric '
+                           'codes with no leading ampersand, such as "#91;" for "[", "#93;" for '
+                           '"]", "#40;" for "(", "#41;" for ")", "#123;" for "{{", "#125;" for '
+                           '"}}", "#60;" for "<", "#62;" for ">", "#35;" for "#", "#58;" for ":", '
+                           'and "#124;" for "|". Internal double quotes escape as "". Ampersands '
+                           '"&" and slashes \'/\' remain as-is, with no additional entity '
+                           'encodings, and labels are never double-encoded. The deck avoids # '
+                           'headers in slide bodies.',
+             'remote': 'The response is optimised for remote delivery, ensuring instructions work '
+                       'in distributed or online contexts and surfacing tooling or interaction '
+                       'hints suitable for video, voice, or screen sharing.',
+             'slack': 'The response formats the answer for Slack using appropriate Markdown, '
+                      'mentions, and code blocks while avoiding channel-irrelevant decoration.',
+             'svg': 'The response consists solely of SVG markup for the answer, with no '
+                    'surrounding prose, and remains minimal and valid for copy/paste into an '
+                    '`.svg` file.',
+             'sync': 'The response takes the shape of a synchronous or live session plan (agenda, '
+                     'steps, cues) rather than static reference text.'},
+ 'completeness': {'full': 'The response provides a thorough answer for normal use, covering all '
+                          'major aspects without needing every micro-detail.',
+                  'gist': 'The response offers a short but complete answer or summary that touches '
+                          'the main points once without exploring every detail.',
+                  'max': 'The response is as exhaustive as reasonable, covering essentially '
+                         'everything relevant and treating omissions as errors.',
+                  'minimal': 'The response makes the smallest change or provides the smallest '
+                             'answer that satisfies the request, avoiding work outside the core '
+                             'need.',
+                  'skim': 'The response performs only a very light pass, addressing the most '
+                          'obvious or critical issues without aiming for completeness.'},
+ 'directional': {'bog': 'The response frames the preceding prompt through one unified perspective '
+                        'that blends acting, extending, reflection, and structure, treating them '
+                        'as a single fused stance.',
+                 'dig': 'The response applies a concretizing-grounding perspective as a single '
+                        'synthesized lens on the preceding prompt.',
+                 'dip bog': 'The response frames the preceding prompt through one unified '
+                            'perspective that blends concreteness, grounding, acting, extending, '
+                            'reflection, and structure, treating them as a single fused stance.',
+                 'dip ong': 'The response frames the preceding prompt through one unified '
+                            'perspective that blends concreteness, grounding, acting, and '
+                            'extending, treating them as a single fused stance.',
+                 'dip rog': 'The response frames the preceding prompt through one unified '
+                            'perspective that blends concreteness, grounding, reflection, and '
+                            'structure, treating them as a single fused stance.',
+                 'fig': 'The response applies an abstracting-generalizing-concretizing-grounding '
+                        'perspective as a single synthesized lens on the preceding prompt.',
+                 'fip bog': 'The response frames the preceding prompt through one unified '
+                            'perspective that blends abstraction, generalization, concreteness, '
+                            'grounding, acting, extending, reflection, and structure, treating '
+                            'them as a single fused stance.',
+                 'fip ong': 'The response frames the preceding prompt through one unified '
+                            'perspective that blends abstraction, generalization, concreteness, '
+                            'grounding, acting, and extending, treating them as a single fused '
+                            'stance.',
+                 'fip rog': 'The response frames the preceding prompt through one unified '
+                            'perspective that blends abstraction, generalization, concreteness, '
+                            'grounding, reflection, and structure, treating them as a single fused '
+                            'stance.',
+                 'fly bog': 'The response frames the preceding prompt through one unified '
+                            'perspective that blends abstraction, generalization, acting, '
+                            'extending, reflection, and structure, treating them as a single fused '
+                            'stance.',
+                 'fly ong': 'The response frames the preceding prompt through one unified '
+                            'perspective that blends abstraction, generalization, acting, and '
+                            'extending, treating them as a single fused stance.',
+                 'fly rog': 'The response frames the preceding prompt through one unified '
+                            'perspective that blends abstraction, generalization, reflection, and '
+                            'structure, treating them as a single fused stance.',
+                 'fog': 'The response applies an abstracting-generalizing perspective as a single '
+                        'synthesized lens on the preceding prompt.',
+                 'jog': 'The response interprets the intent and carries it out directly without '
+                        'asking follow-up questions.',
+                 'ong': 'The response applies an acting-extending perspective as a single '
+                        'synthesized lens on the preceding prompt.',
+                 'rog': 'The response applies a reflective-structural perspective as a single '
+                        'synthesized lens on the preceding prompt.'},
+ 'form': {'adr': 'The response takes the shape of an Architecture Decision Record (ADR) with '
+                 'sections for context, decision, and consequences, written in a concise document '
+                 'style.',
+          'bug': 'The response appears as a structured bug report with sections for Steps to '
+                 'Reproduce, Expected Behavior, Actual Behavior, and Environment or Context, '
+                 'emphasising concise, testable details.',
+          'bullets': 'The response presents the main answer as concise bullet points only, '
+                     'avoiding long paragraphs.',
+          'cards': 'The response presents the main answer as discrete cards or items, each with a '
+                   'clear heading and short body, avoiding long continuous prose.',
+          'checklist': 'The response appears as an actionable checklist whose items are clear '
+                       'imperative tasks rather than descriptive prose.',
+          'code': 'The response consists only of code or markup for the main answer, with no '
+                  'surrounding natural-language explanation.',
+          'commit': 'The response is formatted as a conventional commit message with a short type '
+                    'or scope line and an optional concise body.',
+          'faq': 'The response adopts an FAQ layout: clearly separated question headings with '
+                 'concise answers beneath each one, keeping content easy to skim and free of long '
+                 'uninterrupted prose.',
+          'gherkin': 'The response outputs only Gherkin, using Jira markup where appropriate and '
+                     'omitting surrounding explanation.',
+          'log': 'The response reads like a concise work or research log entry with date or time '
+                 'markers as needed, short bullet-style updates, and enough context for future '
+                 'reference without unrelated narrative.',
+          'plain': 'The response uses plain prose with natural paragraphs and sentences, imposing '
+                   'no additional structure such as bullets, tables, or code blocks.',
+          'recipe': 'The response expresses the answer as a recipe that includes a custom, clearly '
+                    'explained mini-language and a short key for understanding it.',
+          'shellscript': 'The response is delivered as a shell script, focusing on correct, '
+                         'executable shell code rather than prose.',
+          'spike': 'The response formats the backlog item as a research spike: it starts with a '
+                   'brief problem or decision statement, lists the key questions the spike should '
+                   'answer, and stays focused on questions and learning rather than implementation '
+                   'tasks.',
+          'story': 'The response formats the backlog item as a user story using "As a <persona>, I '
+                   'want <capability>, so that <value>." It may include a short description and '
+                   'high-level acceptance criteria in plain prose but avoids Gherkin or test-case '
+                   'syntax.',
+          'table': 'The response presents the main answer as a Markdown table when feasible, '
+                   'keeping columns and rows compact.',
+          'tight': 'The response uses concise, dense prose, remaining freeform without bullets, '
+                   'tables, or code and avoiding filler.',
+          'visual': 'The response conveys the answer as an abstract visual or metaphorical layout '
+                    'accompanied by a short legend, emphasising big-picture structure over dense '
+                    'prose.'},
+ 'method': {'adversarial': 'The response runs a constructive stress-test, systematically searching '
+                           'for weaknesses, edge cases, counterexamples, failure modes, and '
+                           'unstated assumptions while prioritising critique and stress-testing '
+                           'aimed at improving the work.',
+            'analysis': 'The response describes, analyses, and structures the situation without '
+                        'proposing specific actions, fixes, or recommendations.',
+            'case': 'The response builds the case before the conclusion by laying out background, '
+                    'evidence, trade-offs, and alternatives before converging on a clear '
+                    'recommendation that addresses objections and constraints.',
+            'cluster': 'The response groups similar items into labelled categories and describes '
+                       'each cluster, emphasising recurring patterns over isolated singletons.',
+            'cocreate': 'The response works collaboratively with the user, proposing small moves, '
+                        'checking alignment, and iterating together instead of delivering a '
+                        'one-shot answer.',
+            'compare': 'The response compares two or more items by listing similarities and '
+                       'differences, highlighting subtle distinctions and trade-offs that matter '
+                       'to the audience.',
+            'contextualise': 'The response adds or reshapes context to support another '
+                             'operation—such as supplying background for an LLM or reframing '
+                             'content—without rewriting the main text itself.',
+            'converge': 'The response narrows the field and makes a call, weighing trade-offs, '
+                        'eliminating weaker options, and arriving at a small set of '
+                        'recommendations or a single decision.',
+            'debugging': 'The response follows a debugging-style scientific method: it summarises '
+                         'stable facts, lists unresolved questions, proposes plausible hypotheses, '
+                         'designs minimal experiments or checks, narrows likely root causes, and '
+                         'outlines fixes.',
+            'deep': 'The response goes into substantial depth within the chosen scope, unpacking '
+                    'reasoning layers and fine details without necessarily enumerating every edge '
+                    'case.',
+            'diagnose': 'The response seeks likely causes of problems first, narrowing hypotheses '
+                        'before proposing fixes or changes.',
+            'direct': 'The response leads with the main point or recommendation, followed only by '
+                      'the most relevant supporting context, evidence, and next steps.',
+            'diverge': 'The response opens up the option space by generating multiple, diverse '
+                       'possibilities or angles without prematurely judging or collapsing to a '
+                       'single answer.',
+            'experimental': 'The response reasons in an experimental or scientific style by '
+                            'proposing concrete experiments, outlining how each would run, '
+                            'describing expected outcomes, and explaining how those outcomes would '
+                            'update the hypotheses.',
+            'facilitate': 'The response facilitates the session by framing the goal, proposing '
+                          'structure, managing turns, and keeping participation balanced rather '
+                          'than doing the work solo.',
+            'filter': 'The response extracts only items that match a clearly stated criterion—such '
+                      'as pain points, risks, or open questions—and omits the rest.',
+            'flow': 'The response focuses on flow over time or sequence, explaining how control, '
+                    'data, or narrative progresses step by step through the material.',
+            'indirect': 'The response begins with brief background, reasoning, and trade-offs and '
+                        'finishes with a clear bottom-line point or recommendation that ties them '
+                        'together.',
+            'ladder': 'The response uses abstraction laddering by placing the focal problem, '
+                      'stepping up to higher-level causes, and stepping down to consequences '
+                      'ordered by importance to the audience.',
+            'liberating': 'The response facilitates using Liberating Structures, emphasising '
+                          'distributed participation, short structured interactions, concrete '
+                          'invitations, and visual, stepwise processes while naming or evoking '
+                          'specific LS patterns when helpful.',
+            'mapping': 'The response emphasises mapping over exposition by surfacing elements, '
+                       'relationships, and structure, organising them into a coherent map '
+                       '(textual, tabular, or visual) rather than a linear narrative.',
+            'motifs': 'The response scans for recurring motifs and patterns, identifying repeated '
+                      'elements, themes, clusters, and notable outliers, and briefly explaining '
+                      'why they matter.',
+            'plan': 'The response offers a short plan first and then carries it out, clearly '
+                    'separating the plan from the execution.',
+            'prioritize': 'The response assesses and orders items by importance or impact to the '
+                          'stated audience, making the ranking and rationale explicit.',
+            'probe': 'The response leads with short probing questions that surface gaps and needs, '
+                     'holding off on conclusions until enough signal is gathered.',
+            'rewrite': 'The response rewrites or refactors while preserving the original intent, '
+                       'treating the work as a mechanical transform rather than a '
+                       'reinterpretation.',
+            'rigor': 'The response relies on disciplined, well-justified reasoning and makes its '
+                     'logic explicit, avoiding hand-waving.',
+            'samples': 'The response generates several diverse, self-contained options and, when '
+                       'appropriate, attaches short descriptions and explicit numeric '
+                       'probabilities that approximately sum to 1 while avoiding near-duplicate '
+                       'options.',
+            'scaffold': 'The response explains with scaffolding: it starts from first principles, '
+                        'introduces ideas gradually, uses concrete examples and analogies, and '
+                        'revisits key points so a beginner can follow and retain the concepts.',
+            'socratic': 'The response employs a Socratic, question-led method by asking short, '
+                        'targeted questions that surface assumptions, definitions, and gaps in '
+                        'understanding, withholding full conclusions until enough answers exist or '
+                        'the user explicitly requests a summary.',
+            'steps': 'The response solves the problem step by step, briefly labelling and '
+                     'explaining each step before presenting the final answer.',
+            'structure': 'The response focuses on structural aspects by outlining parts, '
+                         'hierarchy, containment, and organisation rather than detailing '
+                         'behaviour.',
+            'systemic': 'The response analyses the subject using systems thinking, focusing on '
+                        'boundaries, components, flows, feedback loops, emergence, and leverage '
+                        'points.',
+            'taxonomy': 'The response builds or refines a taxonomy by defining categories, '
+                        'subtypes, and relationships to clarify structure, preferring compact '
+                        'representations over prose.',
+            'visual': 'The response expresses the big picture using an abstract visual or '
+                      'metaphorical layout as a reasoning aid—such as regions and contrasts—with a '
+                      'short legend and concise, format-ready hints when helpful.',
+            'walkthrough': 'The response guides the audience step by step by outlining stages and '
+                           'walking through them in order so understanding builds gradually.',
+            'wasinawa': 'The response applies a What–So What–Now What reflection: it describes '
+                        'what happened, interprets why it matters, and proposes concrete next '
+                        'steps.',
+            'xp': 'The response follows an Extreme Programming-style approach, favouring very '
+                  'small incremental changes, relying on working software and tests as primary '
+                  'feedback, and iterating with tight, collaborative feedback loops rather than '
+                  'big-bang plans.'},
+ 'scope': {'actions': 'The response stays within the selected target and focuses only on concrete '
+                      'actions or tasks a user or team could take, leaving out background analysis '
+                      'or explanation.',
+           'activities': 'The response lists concrete session activities or segments—what to do, '
+                         'by whom, and in what order—rather than abstract description.',
+           'bound': 'The response remains within the explicit conceptual limits stated or inferred '
+                    'in the prompt and avoids introducing outside material.',
+           'dynamics': "The response concentrates on how the system's behaviour and state evolve "
+                       'over time, covering scenarios, state changes, feedback loops, and '
+                       'transitions.',
+           'edges': 'The response emphasises edge cases, errors, and unusual conditions around the '
+                    'subject.',
+           'focus': 'The response stays tightly on a central theme within the selected target, '
+                    'avoiding tangents and side quests.',
+           'interfaces': 'The response concentrates on external interfaces, contracts, and '
+                         'boundaries between components or systems rather than internal '
+                         'implementations.',
+           'narrow': 'The response restricts the discussion to a very small slice of the topic, '
+                     'avoiding broad context.',
+           'relations': 'The response examines relationships, interactions, and dependencies '
+                        'between elements within the selected target rather than internal details.',
+           'system': 'The response looks at the overall system as a whole—components, boundaries, '
+                     'stakeholders, and internal structure—rather than individual lines or '
+                     'snippets.'}}
 
 @dataclass(frozen=True)
 class AxisDoc:

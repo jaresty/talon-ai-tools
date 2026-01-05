@@ -31,10 +31,16 @@ if not TYPE_CHECKING:
                     f"exit: {result.returncode}\nstdout:\n{result.stdout}\nstderr:\n{result.stderr}"
                 )
             snapshot = repo_root / "tmp" / "static-prompt-readme.md"
-            self.assertTrue(snapshot.exists(), "Expected tmp/static-prompt-readme.md to be generated")
+            self.assertTrue(
+                snapshot.exists(),
+                "Expected tmp/static-prompt-readme.md to be generated",
+            )
             text = snapshot.read_text(encoding="utf-8")
             self.assertIn("Other static prompts", text)
-            self.assertIn("- infer: I'm not telling you what to do. Infer the task.", text)
+            self.assertIn(
+                "- infer: The response infers the task without being told what to do.",
+                text,
+            )
             self.assertIn("(defaults: completeness=gist", text)
             expected = _build_static_prompt_docs()
             self.assertIn(
@@ -71,9 +77,13 @@ if not TYPE_CHECKING:
             self.assertIn("## Static prompt catalog snapshots", text)
             self.assertIn("## Static prompt catalog details", text)
             try:
-                start_idx = next(i for i, line in enumerate(lines) if line.strip() == "## Help")
+                start_idx = next(
+                    i for i, line in enumerate(lines) if line.strip() == "## Help"
+                )
                 end_idx = next(
-                    i for i, line in enumerate(lines[start_idx:], start=start_idx) if line.strip().startswith("### Meta interpretation channel")
+                    i
+                    for i, line in enumerate(lines[start_idx:], start=start_idx)
+                    if line.strip().startswith("### Meta interpretation channel")
                 )
             except StopIteration:
                 self.fail("Could not locate static prompt block in snapshot")
@@ -86,6 +96,7 @@ if not TYPE_CHECKING:
             )
 else:
     if not TYPE_CHECKING:
+
         class MakeStaticPromptRefreshTests(unittest.TestCase):
             @unittest.skip("Test harness unavailable outside unittest runs")
             def test_placeholder(self) -> None:

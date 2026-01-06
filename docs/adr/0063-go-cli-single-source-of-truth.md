@@ -1,10 +1,20 @@
 # ADR-0063 – Consolidate Go CLI with Talon Command Surface
 
-Status: Proposed — Go CLI and Talon command sets share a single repo
+Status: Superseded — Single-user workflow keeps Talon as the sole command surface
 Date: 2025-12-31
 Owners: Talon AI tools maintainers
 
 ---
+
+## Superseding Decision (2026-01-06)
+
+As the sole operator of this repository, I am deferring the Go CLI migration and keeping Talon as the primary executor. This simplifies maintenance and reduces operational overhead while preserving existing workflows.
+
+- Keep Talon as the canonical command surface; defer building and packaging a separate Go binary.
+- When CLI-style scripting is needed, expose a lightweight Python entry point that reuses the Talon modules instead of introducing a new stack.
+- Rely on occasional manual smoke checks rather than parity SLO automation; document a simple manual fallback to the existing Talon handler.
+
+These adjustments reflect the absence of multi-operator churn, the limited value of latency SLOs for a solo workflow, and the high cost of maintaining binary distribution mechanics. The original proposal remains below for historical context.
 
 ## Context
 
@@ -54,7 +64,7 @@ Maintaining two independent implementations of personas, prompt grammar, and gua
 
 ---
 
-## Decision
+## Decision (Original Proposal)
 
 We establish the Go CLI as the canonical command surface while keeping Talon-first workflows equally privileged. This decision is anchored to four non-negotiable outcomes:
 

@@ -79,3 +79,20 @@
 - loops_remaining_forecast: 0 loops — ADR behaviours complete pending review
 - residual_constraints: None (all guard behaviours green)
 - next_work: None
+
+## 2026-01-07 — loop 005
+- helper_version: helper:v20251223.1
+- focus: Clarify ADR decision scope — document shared helper + passive guard requirements
+- active_constraint: ADR 0064 text omitted explicit commitments for the shared hydration helper and passive guard semantics, leading to divergence between documented plan and actual changes (see docs/adr/evidence/0064/loop-005.md#analysis)
+- validation_targets: [] (documentation-only loop; no executable artefacts changed)
+- evidence:
+  - docs/adr/evidence/0064/loop-005.md#analysis
+- rollback_plan: `git restore --source=HEAD -- docs/adr/0064-canonical-intent-hydration-and-guard-cleanup.md`
+- delta_summary: helper:diff-snapshot=1 file changed, 5 insertions(+), 1 deletion(-) — expand ADR decision/plan to require shared hydrator and passive guard behaviour fixes
+- loops_remaining_forecast: 2 loops (shared hydrator implementation, guard semantics fix) — high confidence pending code work
+- residual_constraints:
+  - Shared intent hydrator missing (severity: high; mitigation: implement helper per Plan Step 1; monitor `_tests/test_gpt_suggest_context_snapshot.py`)
+  - Passive guard semantics still pending (severity: high; mitigation: update guard helpers to skip gating and clear drop reasons; monitor `_tests/test_overlay_lifecycle.py`)
+- next_work:
+  - Behaviour: Implement shared `hydrate_intent_token` helper and reuse across surfaces (validation: python3 -m pytest targeted suites + regression)
+  - Behaviour: Refine passive guard behaviour to match ADR requirements (validation: python3 -m pytest _tests/test_overlay_lifecycle.py::_tests/test_surface_guidance.py)

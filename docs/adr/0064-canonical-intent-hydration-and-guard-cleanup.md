@@ -12,8 +12,10 @@ Proposed
 
 ## Decision
 - **Hydrate canonical intents for human-facing prompts without reviving aliases.** Extend the system prompt builder and Help Hub hint generation to look up descriptions via the orchestrator/persona docs map when an intent token is canonical. Storage remains strictly single-token (`decide`, `appreciate`, etc.); no alias fallback or multi-word normalization is reintroduced, and UI hydration is the only layer that surfaces descriptive text.
+- **Deliver a shared hydration helper.** Ship a single helper (e.g., `hydrate_intent_token`) that all surfaces call before rendering labels so quick-help, prompt session, Help Hub, and suggestion UIs stay consistent.
 - **Document and adapt the guard API.** Keep the new keyword-only signature, but re-export `last_drop_reason`/`set_drop_reason` where tests expect them, and update unit tests to account for `passive`, `suppress_attr`, and `on_block` parameters. Provide helper shims to avoid brittle patch targets.
-- **Stabilise quick-help persona rendering.** Emit an explicit "Persona presets:" header row that includes the spoken shortcut (e.g., `peer`). Update the assertion to look for the canonical spoken token rather than the previous concatenated string.
+- **Stabilise quick-help persona rendering.** Emit an explicit "Persona presets:" header row that includes the spoken shortcut (e.g., `peer`). Hydrate alias tokens via the shared helper so canonical spoken presets remain first-class.
+- **Honor passive guard semantics.** Ensure `close_common_overlays(..., passive=True)` never calls `try_begin_request`, and that suppression flags clear drop reasons just as the non-passive path does.
 
 ## Consequences
 - Multiple modules (`gpt.py`, `promptSession.py`, `helpHub.py`, `modelHelpCanvas.py`, `surfaceGuidance.py`, overlay guard helpers) will require coordinated updates to restore descriptive text while keeping canonical tokens internally.
@@ -21,7 +23,7 @@ Proposed
 - UX surfaces retain canonical storage but regain human-readable descriptions, avoiding regressions in spoken hints or quick-help docs.
 
 ## Implementation Plan
-1. Add a shared helper to hydrate intent tokens via orchestrator/cached docs and apply it in the suggest pipeline, prompt session, and Help Hub search index, ensuring the helper only reads canonical tokens and never mutates stored values via alias tables.
-2. Update guard utilities to expose backwards-compatible attributes (or provide documented replacements) and adjust affected tests to tolerate the new kwargs.
-3. Tweak quick-help drawing to include the spoken `peer` token explicitly and align the test with the new layout.
+1. Add the shared `hydrate_intent_token` helper and wire it into the suggest pipeline, prompt session, Help Hub, and quick-help rendering so every surface hydrates canonical tokens the same way.
+2. Update guard utilities to expose backwards-compatible attributes (or provide documented replacements), keep `close_common_overlays(..., passive=True)` side-effect free, and adjust tests to tolerate the new kwargs while still verifying suppression cleanup.
+3. Tweak quick-help drawing to rely on the helper for alias presentation and keep canonical spoken shortcuts first in the rendered list.
 4. Re-run the failing test modules, then the full suite, to confirm coverage remains green.

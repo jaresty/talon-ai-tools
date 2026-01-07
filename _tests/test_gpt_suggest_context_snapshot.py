@@ -93,7 +93,7 @@ def test_suggest_uses_hydrated_system_prompt_for_llm():
         voice="as programmer",
         audience="to stakeholders",
         tone="directly",
-        intent="for appreciation",
+        intent="appreciate",
         completeness="full",
         scope="actions",
         method="plan",

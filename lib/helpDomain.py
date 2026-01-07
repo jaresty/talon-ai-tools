@@ -558,12 +558,11 @@ def help_index(
         spoken_display = (spoken or "").strip() or display or canonical_intent
         spoken_alias = spoken_display.strip().lower() or canonical_intent.lower()
         alias_override = intent_alias_display.get(canonical_key, "")
+        hint_value = display or canonical_intent
         if alias_override:
             hint_value = alias_override
-        elif maps is None:
+        elif not hint_value:
             hint_value = canonical_intent or display
-        else:
-            hint_value = display
         voice_hint = f"Say: intent {hint_value}".strip()
         description = (
             f"Apply intent stance ({canonical_intent})"

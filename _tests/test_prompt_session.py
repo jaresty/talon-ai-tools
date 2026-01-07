@@ -144,7 +144,7 @@ if bootstrap is not None:
                 voice="as programmer",
                 audience="to stakeholders",
                 tone="directly",
-                intent="for appreciation",
+                intent="appreciate",
                 completeness="full",
                 scope="actions",
                 method="plan",

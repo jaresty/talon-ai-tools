@@ -55,6 +55,8 @@ from .surfaceGuidance import guard_surface_request
 from . import surfaceGuidance
 
 
+notify = helpers_notify
+
 mod = Module()
 ctx = Context()
 mod.tag(

@@ -33,8 +33,29 @@ from .suggestionCoordinator import (
 )
 from .stanceDefaults import stance_defaults_lines
 from .overlayHelpers import apply_canvas_blocking, clamp_scroll
-from .overlayLifecycle import close_overlays, close_common_overlays
+from .overlayLifecycle import (
+    close_overlays,
+    close_common_overlays as _close_common_overlays_backend,
+)
 from .personaConfig import persona_intent_maps
+
+
+def close_common_overlays(
+    actions_obj, exclude=None, extra=None, passive=False, **kwargs
+):
+    """Backwards-compatible shim for overlayLifecycle.close_common_overlays."""
+
+    exclude_set = set(exclude or ())
+    extra_tuple = tuple(extra or ())
+    return _close_common_overlays_backend(
+        actions_obj,
+        exclude=exclude_set,
+        extra=extra_tuple,
+        passive=passive,
+        **kwargs,
+    )
+
+
 from .personaOrchestrator import get_persona_intent_orchestrator
 from . import personaConfig as _persona_config_module
 

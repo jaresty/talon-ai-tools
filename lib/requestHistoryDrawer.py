@@ -11,6 +11,7 @@ from .historyLifecycle import (
     all_entries,
     consume_last_drop_reason_record,
     drop_reason_message,
+    last_drop_reason as lifecycle_last_drop_reason,
     set_drop_reason,
     try_begin_request as lifecycle_try_begin_request,
 )
@@ -24,6 +25,7 @@ from .overlayLifecycle import close_overlays, close_common_overlays
 
 # Backwards-compatible alias for tests expecting module-level try_begin_request.
 try_begin_request = lifecycle_try_begin_request
+last_drop_reason = lifecycle_last_drop_reason
 
 mod = Module()
 
@@ -82,6 +84,22 @@ def _reject_if_request_in_flight(*, allow_inflight: bool = False) -> bool:
         allow_inflight=allow_inflight,
     )
     if not blocked:
+        try:
+            previous_reason = last_drop_reason()
+        except Exception:
+            previous_reason = ""
+        previous_normalized = previous_reason or ""
+        current_message = HistoryDrawerState.last_message or ""
+        if previous_normalized != current_message:
+            try:
+                set_drop_reason(previous_normalized)  # type: ignore[arg-type]
+            except TypeError:
+                try:
+                    set_drop_reason(previous_normalized, None)  # type: ignore[arg-type]
+                except Exception:
+                    pass
+            except Exception:
+                pass
         HistoryDrawerState.last_message = ""
     return blocked
 

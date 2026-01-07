@@ -8,8 +8,15 @@ def test_response_toggle_calls_common_closers(monkeypatch):
 
     calls = []
 
-    def fake_close_common(actions_obj, exclude=None, extra=None):
-        calls.append({"actions": actions_obj, "exclude": set(exclude or ()), "extra": tuple(extra or ())})
+    def fake_close_common(actions_obj, exclude=None, extra=None, **kwargs):
+        calls.append(
+            {
+                "actions": actions_obj,
+                "exclude": set(exclude or ()),
+                "extra": tuple(extra or ()),
+                "passive": kwargs.get("passive", None),
+            }
+        )
 
     # Patch close_common_overlays to observe calls.
     monkeypatch.setattr(mod, "close_common_overlays", fake_close_common)
@@ -36,7 +43,9 @@ def test_response_toggle_calls_common_closers(monkeypatch):
     monkeypatch.setattr(mod, "_ensure_response_canvas", lambda: mod._response_canvas)
 
     # Patch guards/state
-    monkeypatch.setattr(mod, "_guard_response_canvas", lambda allow_inflight=False: False)
+    monkeypatch.setattr(
+        mod, "_guard_response_canvas", lambda allow_inflight=False: False
+    )
     monkeypatch.setattr(
         mod,
         "ResponseCanvasState",
@@ -47,6 +56,7 @@ def test_response_toggle_calls_common_closers(monkeypatch):
         "GPTState",
         types.SimpleNamespace(last_response="resp", text_to_confirm="", thread=[]),
     )
+
     # State to simulate idle request.
     class DummyState:
         phase = getattr(mod.RequestPhase, "IDLE", None)
@@ -60,6 +70,7 @@ def test_response_toggle_calls_common_closers(monkeypatch):
     close_calls = [c for c in calls if isinstance(c, dict)]
     assert close_calls, "expected close_common_overlays call"
     assert close_calls[0]["exclude"] == {"model_response_canvas_close"}
+    assert close_calls[0]["passive"] is True
     assert "show" in calls
     # Toggle again to close.
     mod.UserActions.model_response_canvas_toggle()

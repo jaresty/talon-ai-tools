@@ -41,3 +41,26 @@
 - next_work:
   - Behaviour: Restore guard helper compatibility (`python3 -m pytest _tests/test_model_response_overlay_lifecycle.py` and `_tests/test_model_suggestion_gui_guard.py`)
   - Behaviour: Reconfirm regression suite once guard path is green (`python3 -m pytest`)
+
+## 2026-01-07 — loop 003
+- helper_version: helper:v20251223.1
+- focus: Step 2 guard utilities — restore module-level shims and tolerate new gating kwargs
+- active_constraint: Overlay/test harness cannot patch guard helpers because module-level shims went missing (`python3 -m pytest _tests/test_model_response_overlay_lifecycle.py` fails red due to `passive` kwarg; `_tests/test_model_suggestion_gui_guard.py` and `_tests/test_request_history_drawer_gating.py` fail on missing exports)
+- validation_targets:
+  - python3 -m pytest _tests/test_model_response_overlay_lifecycle.py
+  - python3 -m pytest _tests/test_model_suggestion_gui_guard.py::ModelSuggestionGUIGuardTests::test_reject_if_request_in_flight_preserves_drop_reason_on_success
+  - python3 -m pytest _tests/test_request_history_drawer_gating.py
+- evidence:
+  - red: docs/adr/evidence/0064/loop-003.md#loop-003-red--helper-rerun-python3---m-pytest-_tests-test_model_response_overlay_lifecyclepy
+  - red: docs/adr/evidence/0064/loop-003.md#loop-003-red--helper-rerun-python3---m-pytest-_tests-test_model_suggestion_gui_guardpy_modelsuggestionguiguardtests-test_reject_if_request_in_flight_preserves_drop_reason_on_success
+  - red: docs/adr/evidence/0064/loop-003.md#loop-003-red--helper-rerun-python3---m-pytest-_tests-test_request_history_drawer_gatingpy
+  - green: docs/adr/evidence/0064/loop-003.md#loop-003-green--helper-rerun-python3---m-pytest-_tests-test_model_response_overlay_lifecyclepy
+  - green: docs/adr/evidence/0064/loop-003.md#loop-003-green--helper-rerun-python3---m-pytest-_tests-test_model_suggestion_gui_guardpy_modelsuggestionguiguardtests-test_reject_if_request_in_flight_preserves_drop_reason_on_success
+  - green: docs/adr/evidence/0064/loop-003.md#loop-003-green--helper-rerun-python3---m-pytest-_tests-test_request_history_drawer_gatingpy
+- rollback_plan: `git restore --source=HEAD -- lib/modelResponseCanvas.py lib/modelSuggestionGUI.py lib/requestHistoryDrawer.py _tests/test_model_response_overlay_lifecycle.py _tests/test_model_suggestion_gui_guard.py _tests/test_request_history_drawer_gating.py`
+- delta_summary: helper:diff-snapshot=6 files changed, 92 insertions(+), 24 deletions(-) — add compatibility shims for guard helpers, re-export drop helpers, and update tests for new kwargs
+- loops_remaining_forecast: 1 loop (full-suite regression sweep) — medium confidence pending end-to-end run after guard updates
+- residual_constraints:
+  - Full regression sweep outstanding (severity: medium; mitigation: run `python3 -m pytest`; owning ADR 0064 Step 4)
+- next_work:
+  - Behaviour: Execute full regression suite and record results (`python3 -m pytest`)

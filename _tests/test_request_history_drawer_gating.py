@@ -47,9 +47,15 @@ if bootstrap is not None:
                 ) as guard,
             ):
                 history_drawer.refresh_history_drawer()
-            guard.assert_called_once_with(
-                surface="history_drawer", source="requestHistoryDrawer"
+            guard.assert_called_once()
+            kwargs = guard.call_args.kwargs
+            self.assertEqual(kwargs.get("surface"), "history_drawer")
+            self.assertEqual(kwargs.get("source"), "requestHistoryDrawer")
+            self.assertEqual(
+                kwargs.get("suppress_attr"), "suppress_overlay_inflight_guard"
             )
+            self.assertEqual(kwargs.get("allow_inflight"), False)
+            self.assertIsNotNone(kwargs.get("on_block"))
             refresh_entries.assert_called_once_with()
 
         def test_action_refresh_delegates_to_helper(self) -> None:

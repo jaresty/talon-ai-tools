@@ -1128,6 +1128,102 @@ def gpt_query():
     return response
 
 
+def _hydrate_preset_state(
+    preset: dict[str, object],
+) -> tuple[
+    str,
+    str,
+    list[str],
+    list[str],
+    list[str],
+    list[str],
+    str,
+    str,
+]:
+    """Hydrate GPTState with preset stance/axis data and return structured fields."""
+
+    def _tokens(value) -> list[str]:
+        if isinstance(value, (list, tuple, set)):
+            return [str(v).strip() for v in value if str(v).strip()]
+        if isinstance(value, str):
+            return [tok.strip() for tok in value.split() if tok.strip()]
+        return []
+
+    static_prompt = str(preset.get("static_prompt", "") or "").strip()
+    completeness = str(preset.get("completeness", "") or "").strip()
+    scope_tokens = _tokens(preset.get("scope", []))
+    method_tokens = _tokens(preset.get("method", []))
+    form_tokens = _tokens(preset.get("form", []))
+    channel_tokens = _tokens(preset.get("channel", []))
+    directional_tokens = _tokens(preset.get("directional", []))
+    directional = directional_tokens[-1] if directional_tokens else ""
+    voice = str(preset.get("voice", "") or "").strip()
+    audience = str(preset.get("audience", "") or "").strip()
+    tone = str(preset.get("tone", "") or "").strip()
+    intent = str(preset.get("intent", "") or "").strip()
+    destination_kind = str(preset.get("destination_kind", "") or "").strip()
+
+    try:
+        GPTState.system_prompt.voice = voice
+        GPTState.system_prompt.audience = audience
+        GPTState.system_prompt.tone = tone
+        GPTState.system_prompt.intent = intent
+    except Exception:
+        pass
+
+    try:
+        GPTState.last_static_prompt = static_prompt
+        GPTState.last_completeness = completeness
+        GPTState.last_scope = " ".join(scope_tokens)
+        GPTState.last_method = " ".join(method_tokens)
+        GPTState.last_form = " ".join(form_tokens)
+        GPTState.last_channel = " ".join(channel_tokens)
+        GPTState.last_directional = directional
+    except Exception:
+        pass
+
+    axes_map = {
+        "completeness": [completeness] if completeness else [],
+        "scope": scope_tokens,
+        "method": method_tokens,
+        "form": form_tokens,
+        "channel": channel_tokens,
+        "directional": directional_tokens,
+    }
+    try:
+        GPTState.last_axes = axes_map
+    except Exception:
+        pass
+
+    recipe_parts = [
+        part
+        for part in (
+            static_prompt,
+            completeness,
+            " ".join(scope_tokens),
+            " ".join(method_tokens),
+            " ".join(form_tokens),
+            " ".join(channel_tokens),
+        )
+        if part
+    ]
+    try:
+        GPTState.last_recipe = " · ".join(recipe_parts)
+    except Exception:
+        pass
+
+    return (
+        static_prompt,
+        completeness,
+        scope_tokens,
+        method_tokens,
+        form_tokens,
+        channel_tokens,
+        directional,
+        destination_kind,
+    )
+
+
 @mod.action_class
 class UserActions:
     def gpt_start_debug():
@@ -2094,78 +2190,81 @@ class UserActions:
         }
         notify(f"GPT: Preset '{preset_name}' saved")
 
-    def gpt_preset_run(name: str) -> None:
-        """Run a saved preset using the stored contract and last/default sources/destination."""
-        preset_name = name.strip().lower()
-        preset = _PRESETS.get(preset_name)
-        if not preset:
-            notify(f"GPT: Unknown preset '{preset_name}'")
+    def gpt_run_preset_with_source(
+        source: Union[ModelSource, str, None],
+        destination: Union[ModelDestination, str, None],
+        name: str,
+    ) -> None:
+        """Run a saved preset using optional explicit source/destination overrides."""
+        if _reject_if_request_in_flight():
             return
-        static_prompt = str(preset.get("static_prompt", "") or "")
-        completeness = str(preset.get("completeness", "") or "")
-        scope = [str(t) for t in preset.get("scope", []) if str(t)]
-        method = [str(t) for t in preset.get("method", []) if str(t)]
-        form_tokens = [str(t) for t in preset.get("form", []) if str(t)]
-        channel_tokens = [str(t) for t in preset.get("channel", []) if str(t)]
-        directional_tokens = [str(t) for t in preset.get("directional", []) if str(t)]
-        directional = directional_tokens[-1] if directional_tokens else ""
-        voice = str(preset.get("voice", "") or "")
-        audience = str(preset.get("audience", "") or "")
-        tone = str(preset.get("tone", "") or "")
-        intent = str(preset.get("intent", "") or "")
-        destination_kind = str(preset.get("destination_kind", "") or "")
-        # Seed state so rerun uses the preset axes.
-        GPTState.last_static_prompt = static_prompt
-        GPTState.last_completeness = completeness
-        GPTState.last_scope = " ".join(scope)
-        GPTState.last_method = " ".join(method)
-        GPTState.last_form = " ".join(form_tokens)
-        GPTState.last_channel = " ".join(channel_tokens)
-        GPTState.last_directional = directional
-        # Seed stance and destination.
-        try:
-            GPTState.system_prompt.voice = voice
-            GPTState.system_prompt.audience = audience
-            GPTState.system_prompt.tone = tone
-            GPTState.system_prompt.intent = intent
-        except Exception:
-            pass
-        try:
-            GPTState.current_destination_kind = destination_kind
-        except Exception:
-            pass
-        GPTState.last_axes = {
-            "completeness": [completeness] if completeness else [],
-            "scope": scope,
-            "method": method,
-            "form": form_tokens,
-            "channel": channel_tokens,
-            "directional": directional_tokens,
-        }
-        # Compose a concise recipe for recap surfaces.
-        recipe_parts = [
-            p
-            for p in (
-                static_prompt,
-                completeness,
-                " ".join(scope),
-                " ".join(method),
-                " ".join(form_tokens),
-                " ".join(channel_tokens),
-            )
-            if p
-        ]
-        GPTState.last_recipe = " · ".join(recipe_parts)
-        UserActions.gpt_rerun_last_recipe(
+        preset_key = str(name or "").strip().lower()
+        if not preset_key:
+            notify("GPT: Preset name required")
+            return
+        preset = _PRESETS.get(preset_key)
+        if not preset:
+            notify(f"GPT: Unknown preset '{preset_key}'")
+            return
+
+        (
             static_prompt,
             completeness,
-            scope,
-            method,
+            scope_tokens,
+            method_tokens,
+            form_tokens,
+            channel_tokens,
+            directional,
+            preset_destination_kind,
+        ) = _hydrate_preset_state(preset)
+
+        resolved_source = source
+        if isinstance(resolved_source, str):
+            resolved_source = resolved_source.strip()
+            if resolved_source:
+                resolved_source = create_model_source(resolved_source)
+            else:
+                resolved_source = None
+        if not hasattr(resolved_source, "format_messages"):
+            default_source_key = settings.get("user.model_default_source")
+            resolved_source = create_model_source(str(default_source_key or ""))
+        if not hasattr(resolved_source, "format_messages"):
+            notify("GPT: Unable to resolve preset source")
+            return
+
+        dest_override = ""
+        if destination:
+            if hasattr(destination, "kind"):
+                dest_override = str(getattr(destination, "kind", "") or "").strip()
+            elif isinstance(destination, str):
+                dest_override = destination.strip()
+        effective_destination = dest_override or preset_destination_kind
+
+        try:
+            GPTState.last_source_messages = []
+        except Exception:
+            pass
+        if effective_destination:
+            try:
+                GPTState.current_destination_kind = effective_destination
+            except Exception:
+                pass
+
+        UserActions.gpt_rerun_last_recipe_with_source(
+            resolved_source,
+            static_prompt,
+            completeness,
+            scope_tokens,
+            method_tokens,
             directional,
             " ".join(form_tokens),
             " ".join(channel_tokens),
-            destination_kind,
+            effective_destination,
         )
+
+    def gpt_preset_run(name: str) -> None:
+        """Run a saved preset using the stored contract with default source/destination."""
+        UserActions.gpt_run_preset_with_source(None, None, name)
 
     def gpt_preset_list() -> None:
         """List saved preset names."""

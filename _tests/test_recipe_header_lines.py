@@ -16,6 +16,8 @@ def test_recipe_header_lines_include_recipe_and_axes() -> None:
         "form_tokens": ["bullets"],
         "channel_tokens": ["slack"],
         "directional": "fog",
+        "source_kind": "clipboard",
+        "destination_kind": "browser",
     }
 
     lines = recipe_header_lines_from_snapshot(snapshot)
@@ -27,6 +29,8 @@ def test_recipe_header_lines_include_recipe_and_axes() -> None:
     assert "form_tokens: bullets" in lines
     assert "channel_tokens: slack" in lines
     assert "directional: fog" in lines
+    assert "source: clipboard" in lines
+    assert "destination: browser" in lines
 
 
 def test_recipe_header_lines_include_persona_and_intent_metadata() -> None:
@@ -88,6 +92,8 @@ def test_recipe_header_lines_skip_empty_axes() -> None:
     assert all("form_tokens:" not in line for line in lines)
     assert all("channel_tokens:" not in line for line in lines)
     assert all("directional:" not in line for line in lines)
+    assert all("source:" not in line for line in lines)
+    assert all("destination:" not in line for line in lines)
 
 
 def test_last_recipe_snapshot_prefers_last_axes_tokens_over_legacy_fields() -> None:

@@ -74,12 +74,14 @@
 # Disable debug logging
 {user.model} stop debug: user.gpt_stop_debug()
 
+{user.model} run [<user.modelSimpleSource>] [<user.modelDestination>] preset <user.text>$:
+    user.gpt_run_preset_with_source(modelSimpleSource or "", modelDestination or "", text)
+
 # Persona / Intent preset stance commands (ADR 042)
 persona {user.personaPreset}: user.persona_set_preset(personaPreset)
 intent {user.intentPreset}: user.intent_set_preset(intentPreset)
 
 {user.model} preset save <user.text>$: user.gpt_preset_save(text)
-{user.model} preset run <user.text>$: user.gpt_preset_run(text)
 {user.model} preset list$: user.gpt_preset_list()
 
 persona status: user.persona_status()

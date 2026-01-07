@@ -41,7 +41,7 @@
    - Convert existing style tokens to this split now: `slack`, `jira`, `presenterm`, `announce`, `remote`, `sync`, `html` become Channel values (announce also sets Form=headline by default). Remove legacy style tokens rather than keeping alias coverage; update lists/grammar/help/tests to reflect the new Form/Channel vocab.
 
 5) **Presets as first-class control (optional/extend)**
-   - `model preset save <name>` from last run; `preset run <name>`; `preset list`.  
+   - `model preset save <name>` from last run; `model run [source] [destination] preset <name>`; `model preset list`.  
    - A preset = prompt + persona + intent/relation + contract axes + directional + destination (extends current persona/intent presets).  
    - Encourage JTBD (summaries, critiques, plans, explanations) to rely on presets instead of long ad-hoc utterances.
 

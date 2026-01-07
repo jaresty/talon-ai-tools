@@ -504,6 +504,19 @@ def last_recipe_snapshot() -> dict[str, object]:
         if key in context_hydrated:
             snapshot[key] = context_hydrated[key]
 
+    try:
+        snapshot["source_kind"] = str(
+            getattr(GPTState, "last_source_key", "") or ""
+        ).strip()
+    except Exception:
+        snapshot["source_kind"] = ""
+    try:
+        snapshot["destination_kind"] = str(
+            getattr(GPTState, "current_destination_kind", "") or ""
+        ).strip()
+    except Exception:
+        snapshot["destination_kind"] = ""
+
     return snapshot
 
 
@@ -543,6 +556,14 @@ def recipe_header_lines_from_snapshot(snapshot: dict[str, object]) -> list[str]:
     directional = snapshot.get("directional", "") or ""
     if directional:
         header_lines.append(f"directional: {directional}")
+
+    source_kind = _text(snapshot.get("source_kind"))
+    if source_kind:
+        header_lines.append(f"source: {source_kind}")
+
+    destination_kind = _text(snapshot.get("destination_kind"))
+    if destination_kind:
+        header_lines.append(f"destination: {destination_kind}")
 
     persona_key = _text(snapshot.get("persona_preset_key"))
     persona_label = _text(snapshot.get("persona_preset_label"))

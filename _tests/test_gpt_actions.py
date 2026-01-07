@@ -318,6 +318,87 @@ if bootstrap is not None:
             config = apply_prompt.call_args.args[0]
             self.assertIs(config.model_destination, destination)
 
+        def test_preset_run_clears_cached_source_messages(self) -> None:
+            """Preset run should drop cached source content before rerunning."""
+            GPTState.last_recipe = "describe · gist · focus · plain"
+            GPTState.last_static_prompt = "describe"
+            GPTState.last_completeness = "gist"
+            GPTState.last_scope = "focus"
+            GPTState.last_method = ""
+            GPTState.last_form = "plain"
+            GPTState.last_channel = ""
+            GPTState.last_directional = "fog"
+            GPTState.last_axes = {
+                "completeness": ["gist"],
+                "scope": ["focus"],
+                "method": [],
+                "form": ["plain"],
+                "channel": [],
+                "directional": ["fog"],
+            }
+            gpt_module.UserActions.gpt_preset_save("quick")
+            GPTState.last_source_messages = ["cached"]
+
+            with patch.object(
+                gpt_module.UserActions, "gpt_rerun_last_recipe_with_source"
+            ) as rerun:
+                rerun.return_value = None
+                gpt_module.UserActions.gpt_preset_run("quick")
+
+            rerun.assert_called_once()
+            resolved_source = rerun.call_args.args[0]
+            self.assertTrue(hasattr(resolved_source, "modelSimpleSource"))
+            self.assertEqual(GPTState.last_source_messages, [])
+
+        def test_run_preset_with_explicit_source_and_destination(self) -> None:
+            """Explicit overrides should flow through to the rerun helper."""
+            GPTState.last_recipe = "describe · gist · focus · plain"
+            GPTState.last_static_prompt = "describe"
+            GPTState.last_completeness = "gist"
+            GPTState.last_scope = "focus"
+            GPTState.last_method = ""
+            GPTState.last_form = "plain"
+            GPTState.last_channel = ""
+            GPTState.last_directional = "fog"
+            GPTState.last_axes = {
+                "completeness": ["gist"],
+                "scope": ["focus"],
+                "method": [],
+                "form": ["plain"],
+                "channel": [],
+                "directional": ["fog"],
+            }
+            gpt_module.UserActions.gpt_preset_save("quick")
+            GPTState.last_source_messages = ["stale"]
+
+            class DummySource:
+                def __init__(self, key: str):
+                    self.modelSimpleSource = key
+
+                def format_messages(self):
+                    return []
+
+            source = DummySource("clipboard")
+            destination = SimpleNamespace(kind="browser")
+
+            with patch.object(
+                gpt_module.UserActions, "gpt_rerun_last_recipe_with_source"
+            ) as rerun:
+                gpt_module.UserActions.gpt_run_preset_with_source(
+                    source,
+                    destination,
+                    "quick",
+                )
+
+            rerun.assert_called_once()
+            args = rerun.call_args.args
+            self.assertIs(args[0], source)
+            self.assertEqual(args[8], "browser")
+            self.assertEqual(GPTState.last_source_messages, [])
+            self.assertEqual(
+                getattr(GPTState, "current_destination_kind", ""), "browser"
+            )
+
         def test_gpt_apply_prompt_skips_empty_prompt(self):
             """Empty prompts should be rejected with a notification."""
             actions.user.calls.clear()

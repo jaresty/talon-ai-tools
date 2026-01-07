@@ -1,4 +1,5 @@
 import json
+import os
 import unittest
 from typing import TYPE_CHECKING
 from unittest.mock import MagicMock, patch
@@ -29,6 +30,8 @@ if bootstrap is not None:
                 "channel": [],
                 "directional": ["fog"],
             }
+            self._original_pytest_current_test = os.environ.get("PYTEST_CURRENT_TEST")
+            os.environ["PYTEST_CURRENT_TEST"] = "unittest"
             # Force suggest flow to use the synchronous result text we control.
             self._original_pipeline = gpt_module._prompt_pipeline
             self.pipeline = MagicMock()
@@ -40,6 +43,10 @@ if bootstrap is not None:
 
         def tearDown(self) -> None:
             gpt_module._prompt_pipeline = self._original_pipeline
+            if self._original_pytest_current_test is None:
+                os.environ.pop("PYTEST_CURRENT_TEST", None)
+            else:
+                os.environ["PYTEST_CURRENT_TEST"] = self._original_pytest_current_test
 
         def test_json_suggestions_validate_stance_and_capture_reasoning(self) -> None:
             # Arrange a JSON payload with one valid and one invalid stance.
@@ -157,7 +164,8 @@ if bootstrap is not None:
                     {
                         "name": "Display intent",
                         "recipe": "describe · rog",
-                        "intent_purpose": "Vision for Execs",
+                        "intent_purpose": "vision",
+                        "intent_display": "Vision for Execs",
                         "why": "Ensure snapshot display names are accepted.",
                     }
                 ]
@@ -239,11 +247,12 @@ if bootstrap is not None:
             payload = {
                 "suggestions": [
                     {
-                        "name": "Alias metadata",
+                        "name": "Canonical metadata",
                         "recipe": "describe · full · focus · plan · plain · fog",
                         "persona_preset_label": "TEACH JUNIOR DEV",
-                        "intent_display": "For-Deciding!",
-                        "why": "Ensure alias-only presets canonicalise before storage.",
+                        "intent_purpose": "DECIDE",
+                        "intent_display": "Decide",
+                        "why": "Ensure presets with canonical tokens are stored correctly.",
                     }
                 ]
             }

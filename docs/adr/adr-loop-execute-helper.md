@@ -15,6 +15,7 @@ This helper keeps ADR loops observable and safe while letting a single agent adv
 
 - **Behaviour outcome** – the ADR-defined behaviour or decision this loop changes or observes.
 - **Validation command** – the smallest executable that exercises a behaviour outcome and records red/green/removal evidence.
+- **Going green** – shorthand for that validation command completing successfully (exit 0) and proving the behaviour works end-to-end, whether the command is a test, CLI, docs generator, or other canonical path.
 - **Blocker evidence** – the command, excerpt, and pointer proving a behaviour cannot advance in this slice (logged as `red` evidence).
 - **Residual constraint** – a known constraint or upstream dependency that is either outside the repository’s direct control or not currently limiting progress, recorded with mitigation, a monitoring trigger, and (for external items) a pointer to the ADR or process that owns the work in `residual_constraints`.
 - **Active constraint** – the repository-controlled, falsifiable bottleneck that currently limits the targeted behaviour; the loop states it as a validation-backed statement. Limiting factors that sit outside this repository (for example, Launch configuration, vendor approval, infrastructure access) or no longer outrank other medium/high constraints appear in `residual_constraints` with mitigation notes.

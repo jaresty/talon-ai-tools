@@ -137,6 +137,23 @@ A loop entry is compliant when all statements hold:
 
 ## Evidence Specification
 
+### Good Red Evidence
+
+The structure is meant to do three things:
+
+- Anchor the loop on a reproducible constraint so anyone can watch it fail red and later turn green.
+- Show why the failure matters by tying it to the behaviour or invariant named in the ADR.
+- Leave the next investigator enough context to rerun the command without guesswork.
+
+Cues applied when recording red evidence:
+
+- The canonical `<VALIDATION_TARGET>` (or the smallest reproducible command introduced in the loop) runs unchanged so the constraint is observed exactly as it stands today. CI-ready paths remain preferred when available; exploratory loops document the manual seed that recreates the failure.
+- The impact is stated succinctly—naming the behaviour, invariant, or customer promise that is broken—and accompanied by the failure excerpt that proves it (stack trace, expectation delta, guardrail output, telemetry snippet, etc.).
+- The scenario is summarised in a short hypothesis (Given/When/Then, bullet narrative, or equivalent) making it obvious what should flip to green once the constraint is relieved.
+- Reproducibility requirements (fixture seed, environment flag, data snapshot) remain scriptable or clearly documented; hidden local state is treated as a signal to shore up the evidence.
+
+When the loop cannot meet this intent, the behaviour is treated as documentation-only or the red is strengthened before moving on.
+
 Every compliant loop includes a structured block similar to:
 ```
 - red | 2025-12-19T17:42:00Z | exit 1 | <VALIDATION_TARGET>

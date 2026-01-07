@@ -32,6 +32,8 @@ This helper keeps ADR loops observable and safe while letting a single agent adv
         | Time Sensitivity | High  | Deadline before next release train |
         | Uncertainty note | N/A   | Collapses assumption about CLI parity coverage |
         ```
+- **Reflection points** – the moments when a loop either prepares to pivot, closes a salient-task rung, or records fresh medium/high residual-constraint evidence; these are the junctures where the next slice is selected.
+- **Constraint palate cleansers** – the probabilistic reviews triggered at reflection points; each reflection point runs this palate cleanser with 10% probability, re-evaluates the active constraint against all recorded medium/high candidates via the helper’s expected-value rubric, and records the outcome in the work-log while updating `active_constraint`/`residual_constraints` accordingly.
 - **Constraint stabilization** – work that prevents the active constraint from worsening (e.g., halting regression, keeping capacity available); treated as acting on the constraint.
 - **Diminishing return** – additional effort that only reduces low-severity residual constraints; such work is optional unless governance explicitly requires it.
 - **Canonical intent** – the minimal, shared representation of a behaviour outcome that loops converge on (e.g., a single helper, type, or invariant).

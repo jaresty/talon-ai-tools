@@ -64,3 +64,18 @@
   - Full regression sweep outstanding (severity: medium; mitigation: run `python3 -m pytest`; owning ADR 0064 Step 4)
 - next_work:
   - Behaviour: Execute full regression suite and record results (`python3 -m pytest`)
+
+## 2026-01-07 — loop 004
+- helper_version: helper:v20251223.1
+- focus: Step 4 regression sweep — ensure full suite passes under hydration + guard adjustments
+- active_constraint: Guardrail make targets fail with new passive handling (`python3 -m pytest` exits red across overlay guard tests)
+- validation_targets:
+  - python3 -m pytest
+- evidence:
+  - red: docs/adr/evidence/0064/loop-004.md#loop-004-red--helper-rerun-python3---m-pytest
+  - green: docs/adr/evidence/0064/loop-004.md#loop-004-green--helper-rerun-python3---m-pytest
+- rollback_plan: `git restore --source=HEAD -- lib/modelHelpCanvas.py lib/modelSuggestionGUI.py lib/overlayLifecycle.py lib/surfaceGuidance.py`
+- delta_summary: helper:diff-snapshot=4 files changed, 48 insertions(+), 14 deletions(-) — sort persona commands while preserving primary spoken token display, add passive-compatible overlays shim, and skip gating when suppression flags are active
+- loops_remaining_forecast: 0 loops — ADR behaviours complete pending review
+- residual_constraints: None (all guard behaviours green)
+- next_work: None

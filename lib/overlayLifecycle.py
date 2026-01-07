@@ -65,6 +65,12 @@ def close_common_overlays(
             setattr(GPTState, "suppress_overlay_inflight_guard", True)
         except Exception:
             suppress_token = None
+        try:
+            from .surfaceGuidance import try_begin_request as _try_begin_request
+
+            _try_begin_request(source="overlayLifecycle.close_common_overlays")
+        except Exception:
+            pass
 
     try:
         exclude_set: Set[str] = set(exclude or ())

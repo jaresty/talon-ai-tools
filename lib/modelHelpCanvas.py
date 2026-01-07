@@ -306,10 +306,11 @@ def _persona_preset_commands() -> list[str]:
         if not aliases:
             continue
         for alias in aliases:
-            if alias and alias not in seen:
-                seen.add(alias)
-                commands.append(alias)
-    return commands
+            alias_token = (alias or "").strip().lower()
+            if alias_token and alias_token not in seen:
+                seen.add(alias_token)
+                commands.append(alias_token)
+    return sorted(commands)
 
 
 def _intent_preset_commands() -> list[str]:
@@ -1269,9 +1270,25 @@ def _default_draw_quick_help(
     try:
         persona_commands = _persona_preset_commands()
         if persona_commands:
+            display_persona_commands: list[str] = []
+            seen_persona: set[str] = set()
+            primary_tokens = [
+                (getattr(preset, "spoken", "") or "").strip().lower()
+                for preset in _persona_presets()
+                if (getattr(preset, "spoken", "") or "").strip()
+            ]
+            for token in primary_tokens:
+                token_l = token.lower()
+                if token_l in persona_commands and token_l not in seen_persona:
+                    display_persona_commands.append(token_l)
+                    seen_persona.add(token_l)
+            for token in persona_commands:
+                if token not in seen_persona:
+                    display_persona_commands.append(token)
+                    seen_persona.add(token)
             y = _draw_wrapped_commands(
                 "  Persona: ",
-                persona_commands,
+                display_persona_commands,
                 draw_text,
                 x,
                 y,

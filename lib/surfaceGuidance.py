@@ -55,13 +55,6 @@ def guard_surface_request(
     resolved_state = _resolve_state(state, state_getter)
 
     if suppress_attr and getattr(GPTState, suppress_attr, False):
-        try:
-            if resolved_state is not None:
-                gate_fn(resolved_state, source=source)
-            else:
-                gate_fn(source=source)
-        except Exception:
-            pass
         return False
 
     if resolved_state is not None:

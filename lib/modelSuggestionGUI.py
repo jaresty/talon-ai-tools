@@ -1949,7 +1949,10 @@ class UserActions:
             return
 
         # Close related menus to avoid overlapping overlays.
-        close_common_overlays(actions.user, passive=True)
+        try:
+            close_common_overlays(actions.user, passive=True)
+        except TypeError:
+            close_common_overlays(actions.user)
 
         _open_suggestion_canvas()
         ctx.tags = ["user.model_suggestion_window_open"]

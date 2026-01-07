@@ -9,7 +9,7 @@ from talon import actions
 
 from .historyLifecycle import axes_snapshot_from_axes as axis_snapshot_from_axes
 from . import personaCatalog
-from .personaConfig import persona_intent_maps
+from .personaConfig import hydrate_intent_token, persona_intent_maps
 from .personaOrchestrator import get_persona_intent_orchestrator
 
 _HELP_METADATA_SCHEMA_VERSION = "help-hub.metadata.v1"
@@ -525,8 +525,17 @@ def help_index(
             "",
         )
         if alias:
-            display_value = intent_display_lookup.get(key) or intent_display_lookup.get(
-                key.lower()
+            hydrated_display = hydrate_intent_token(
+                canonical_intent or key,
+                orchestrator=orchestrator,
+                catalog_snapshot=catalog_snapshot,
+                maps=maps,
+                default="",
+            ).strip()
+            display_value = (
+                hydrated_display
+                or intent_display_lookup.get(key)
+                or (intent_display_lookup.get(key.lower()))
             )
             if display_value and alias == display_value.lower():
                 return display_value
@@ -544,12 +553,20 @@ def help_index(
 
     for key, preset in intent_items:
         canonical_key = (key or "").strip()
-        display = (
-            intent_display_lookup.get(canonical_key)
-            or intent_display_lookup.get(canonical_key.lower())
-            or (getattr(preset, "label", "") or "").strip()
-            or canonical_key
-        )
+        display = hydrate_intent_token(
+            canonical_key,
+            orchestrator=orchestrator,
+            catalog_snapshot=catalog_snapshot,
+            maps=maps,
+            default=(getattr(preset, "label", "") or "").strip() or canonical_key,
+        ).strip()
+        if not display:
+            display = (
+                intent_display_lookup.get(canonical_key)
+                or intent_display_lookup.get(canonical_key.lower())
+                or (getattr(preset, "label", "") or "").strip()
+                or canonical_key
+            )
         canonical_intent = (
             _canonical_intent_key(getattr(preset, "intent", ""), canonical_key, display)
             or (getattr(preset, "intent", "") or canonical_key).strip()

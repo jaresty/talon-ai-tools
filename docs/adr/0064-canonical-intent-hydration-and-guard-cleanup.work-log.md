@@ -97,19 +97,22 @@
   - Behaviour: Implement shared `hydrate_intent_token` helper and reuse across surfaces (validation: python3 -m pytest targeted suites + regression)
   - Behaviour: Refine passive guard behaviour to match ADR requirements (validation: python3 -m pytest _tests/test_overlay_lifecycle.py::_tests/test_surface_guidance.py)
 
-## 2026-01-07 — loop 006
+## 2026-01-07 — loop 007
 - helper_version: helper:v20251223.1
-- focus: Align ADR context with audit findings — capture missing helper + passive semantics in the problem statement
-- active_constraint: ADR body omitted explicit mention of the outstanding shared hydrator and passive guard semantics despite being called out in loop 005 evidence
-- validation_targets: [] (documentation-only clarification)
+- focus: Deliver shared intent hydrator — wire help domain onto helper
+- active_constraint: Help metadata still assembled ad hoc; no reusable helper provided canonical display labels (`python3 -m pytest _tests/test_help_domain.py` failed to prefer catalog labels)
+- validation_targets:
+  - python3 -m pytest _tests/test_help_domain.py
+  - python3 -m pytest _tests/test_help_hub.py
 - evidence:
-  - docs/adr/evidence/0064/loop-006.md#analysis
-- rollback_plan: `git restore --source=HEAD -- docs/adr/0064-canonical-intent-hydration-and-guard-cleanup.md`
-- delta_summary: helper:diff-snapshot=1 file changed, 1 insertion(+) — add audit note to ADR context linking outstanding work to updated plan
-- loops_remaining_forecast: 2 loops (shared hydrator implementation, guard semantics fix) — high confidence; scope unchanged
+  - red: docs/adr/evidence/0064/loop-007.md#loop-007-red--helper-rerun-python3---m-pytest-_tests-test_help_domainpy
+  - green: docs/adr/evidence/0064/loop-007.md#loop-007-green--helper-rerun-python3---m-pytest-_tests-test_help_domainpy
+  - green: docs/adr/evidence/0064/loop-007.md#loop-007-green--helper-rerun-python3---m-pytest-_tests-test_help_hubby
+- rollback_plan: `git restore --source=HEAD -- lib/personaConfig.py lib/helpDomain.py`
+- delta_summary: helper:diff-snapshot=3 files changed, 99 insertions(+), 19 deletions(-) — add `hydrate_intent_token` helper and reuse it when deriving Help Domain intent displays
+- loops_remaining_forecast: 1 loop (passive guard semantics fix) — medium confidence pending guard refactor
 - residual_constraints:
-  - Shared intent hydrator missing (severity: high; mitigation: implement helper per Plan Step 1; monitor `_tests/test_gpt_suggest_context_snapshot.py`)
   - Passive guard semantics still pending (severity: high; mitigation: update guard helpers to skip gating and clear drop reasons; monitor `_tests/test_overlay_lifecycle.py`)
 - next_work:
-  - Behaviour: Implement shared `hydrate_intent_token` helper and reuse across surfaces (validation: python3 -m pytest targeted suites + regression)
   - Behaviour: Refine passive guard behaviour to match ADR requirements (validation: python3 -m pytest _tests/test_overlay_lifecycle.py::_tests/test_surface_guidance.py)
+

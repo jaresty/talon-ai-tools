@@ -119,6 +119,66 @@ def canonical_persona_token(axis: str, raw: str) -> str:
     return lowered.get(token.lower(), "")
 
 
+def hydrate_intent_token(
+    value: str,
+    *,
+    default: str | None = None,
+    orchestrator: object | None = None,
+    catalog_snapshot: object | None = None,
+    maps: PersonaIntentMaps | None = None,
+) -> str:
+    """Return the human-readable label for an intent token.
+
+    Falls back to the canonical token when no display label is available.
+    """
+
+    token = normalize_intent_token(value)
+    if not token:
+        return default or ""
+
+    def _lookup_display(source: object | None) -> str:
+        if source is None:
+            return ""
+        try:
+            mapping = getattr(source, "intent_display_map", None)
+        except Exception:
+            mapping = None
+        if not mapping:
+            return ""
+        try:
+            mapping_dict = dict(mapping)
+        except Exception:
+            return ""
+        candidate = mapping_dict.get(token) or mapping_dict.get(token.lower())
+        return (candidate or "").strip()
+
+    if orchestrator is not None:
+        display = _lookup_display(orchestrator)
+        if display:
+            return display
+
+    if catalog_snapshot is not None:
+        display = _lookup_display(catalog_snapshot)
+        if display:
+            return display
+
+    if maps is None:
+        try:
+            maps = persona_intent_maps()
+        except Exception:
+            maps = None
+
+    if maps is not None:
+        display = _lookup_display(maps)
+        if display:
+            return display
+
+    if default is not None:
+        return default
+
+    return token
+
+
 def normalize_intent_token(value: str) -> str:
     """Normalize spoken or canonical intent tokens to the canonical single-word form."""
     token = str(value or "").strip()

@@ -23,3 +23,21 @@
 - next_work:
   - Behaviour: Implement quick-help persona spoken token rendering (`python3 -m pytest _tests/test_model_help_canvas_persona_commands.py::ModelHelpPersonaCommandTests::test_persona_block_shows_command_forms`)
   - Behaviour: Restore guard helper compatibility (`python3 -m pytest _tests/test_model_response_overlay_lifecycle.py` and `_tests/test_model_suggestion_gui_guard.py`)
+
+## 2026-01-07 — loop 002
+- helper_version: helper:v20251223.1
+- focus: Step 3 quick-help rendering — ensure spoken persona shortcuts remain discoverable
+- active_constraint: Quick-help persona section omits canonical spoken shortcuts (`python3 -m pytest _tests/test_model_help_canvas_persona_commands.py::ModelHelpPersonaCommandTests::test_persona_block_shows_command_forms` fails red because "Persona: peer" is missing)
+- validation_targets:
+  - python3 -m pytest _tests/test_model_help_canvas_persona_commands.py::ModelHelpPersonaCommandTests::test_persona_block_shows_command_forms
+- evidence:
+  - red: docs/adr/evidence/0064/loop-002.md#loop-002-red--helper-rerun-python3---m-pytest-_tests-test_model_help_canvas_persona_commandspy_modelhelpcanvaspersonacommandstests-test_persona_block_shows_command_forms
+  - green: docs/adr/evidence/0064/loop-002.md#loop-002-green--helper-rerun-python3---m-pytest-_tests-test_model_help_canvas_persona_commandspy_modelhelpcanvaspersonacommandstests-test_persona_block_shows_command_forms
+- rollback_plan: `git restore --source=HEAD -- lib/modelHelpCanvas.py`
+- delta_summary: helper:diff-snapshot=1 file changed, 1 insertion(+), 2 deletions(-) — preserve persona preset order so canonical spoken shortcut appears with header prefix
+- loops_remaining_forecast: 2 loops (guard API shims, full-suite regression) — medium confidence with guard work outstanding
+- residual_constraints:
+  - Overlay guard API adjustments outstanding (severity: medium; mitigation: add exported shims + test updates; monitor `_tests/test_model_response_overlay_lifecycle.py`; owning ADR 0064 Step 2)
+- next_work:
+  - Behaviour: Restore guard helper compatibility (`python3 -m pytest _tests/test_model_response_overlay_lifecycle.py` and `_tests/test_model_suggestion_gui_guard.py`)
+  - Behaviour: Reconfirm regression suite once guard path is green (`python3 -m pytest`)

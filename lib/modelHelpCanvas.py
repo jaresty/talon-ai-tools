@@ -299,7 +299,6 @@ def _persona_preset_commands() -> list[str]:
         if spoken and spoken not in seen:
             seen.add(spoken)
             commands.append(spoken)
-            continue
         key = (getattr(preset, "key", "") or "").strip()
         if not key:
             continue
@@ -310,7 +309,7 @@ def _persona_preset_commands() -> list[str]:
             if alias and alias not in seen:
                 seen.add(alias)
                 commands.append(alias)
-    return sorted(commands)
+    return commands
 
 
 def _intent_preset_commands() -> list[str]:

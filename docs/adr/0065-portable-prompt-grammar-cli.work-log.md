@@ -413,3 +413,28 @@
   - If alternative Go locations emerge, consider parameterising target (severity: low)
 - next_work:
   - Behaviour: Monitor guard output for other common failures and extend preflight checks as needed (validation via `make bar-completion-guard`)
+
+## 2026-01-08 — loop 020
+- helper_version: helper:v20251223.1
+- focus: Decision — document Go toolchain prerequisite for completion guard workflows
+- expected_value:
+  | Factor | Value | Rationale |
+  | --- | --- | --- |
+  | Impact | Medium | Prevents confusing guardrail failures on contributor machines |
+  | Probability | High | Docs explicitly call out Go 1.21+ requirement |
+  | Time Sensitivity | Low | Documentation improvement |
+  | Uncertainty note | Low | Behaviour deterministic |
+- active_constraint: README/CONTRIBUTING lacked Go prerequisite guidance (`rg --stats "Go 1.21" readme.md CONTRIBUTING.md` returned no matches), leaving contributors unaware that the guard relies on Go.
+- validation_targets:
+  - rg --stats "Go 1.21" readme.md CONTRIBUTING.md
+  - rg -n "Go 1.21" readme.md CONTRIBUTING.md
+- evidence:
+  - red: docs/adr/evidence/0065-portable-prompt-grammar-cli/loop-020.md#loop-020-red--helper-rerun-rg---stats-go-121-readmemd-contributingmd
+  - green: docs/adr/evidence/0065-portable-prompt-grammar-cli/loop-020.md#loop-020-green--helper-rerun-rg--n-go-121-readmemd-contributingmd
+- rollback_plan: `git restore --source=HEAD -- readme.md CONTRIBUTING.md docs/adr/0065-portable-prompt-grammar-cli.work-log.md docs/adr/evidence/0065-portable-prompt-grammar-cli/loop-020.md`
+- delta_summary: helper:diff-snapshot=4 files changed, 27 insertions(+) — add Go requirement messaging and record documentation evidence
+- loops_remaining_forecast: 0 loops — guard prerequisites now documented across README/CONTRIBUTING
+- residual_constraints:
+  - None additional; monitor for other dependency questions from contributors
+- next_work:
+  - Behaviour: Update docs again if guard starts requiring additional tooling (validation via docs search)

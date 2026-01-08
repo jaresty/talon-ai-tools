@@ -44,9 +44,10 @@ var generalHelpText = strings.TrimSpace(`USAGE
   After the first key=value override, *all* remaining tokens must be key=value.
   Enter tokens the way they appear in "bar help tokens": single words stay the
   same (for example "todo", "focus"), while multi-word entries use dashed slugs
-  such as "as-teacher" or "fly-rog". Key=value overrides accept the same values
-  (for example "scope=focus", "directional=fly-rog"). Use shell quotes when
-  when needed; completions list every value for convenience.
+  such as "as-teacher" or "fly-rog". Label-form tokens (for example "as teacher")
+  fail with an error that points to the slug. Key=value overrides accept canonical
+  values like "scope=focus" as well as slug equivalents such as "directional=fly-rog".
+  Use shell quotes when needed; completions list every value for convenience.
 
 COMMANDS
 

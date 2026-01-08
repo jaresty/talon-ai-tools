@@ -281,3 +281,19 @@
   - None — canonical override support is fully documented.
 - next_work:
   - None.
+
+## 2026-01-08 — loop 017
+- helper_version: helper:v20251223.1
+- focus: Decision § documentation — align CLI help/README with canonical override support
+- active_constraint: CLI help text and README note still implied slug-only inputs, ignoring that canonical key=value overrides remain valid, which could mislead operators and script authors.
+- validation_targets:
+  - go test ./internal/barcli
+- evidence:
+  - green: docs/adr/evidence/0068-grammar-token-normalization-for-cli/loop-017.md#loop-017-green--helper-rerun-go-test-.-internal-barcli
+- rollback_plan: `git restore --source=HEAD -- internal/barcli/app.go readme.md docs/adr/0068-grammar-token-normalization-for-cli.work-log.md docs/adr/evidence/0068-grammar-token-normalization-for-cli/loop-017.md`
+- delta_summary: helper:diff-snapshot=2 files changed, 5 insertions(+), 4 deletions(-) — refreshed CLI help text and README guidance to mention canonical overrides while reiterating slug requirements for shorthand tokens.
+- loops_remaining_forecast: 0 loops — user-facing guidance now reflects current behaviour.
+- residual_constraints:
+  - None — documentation and help output align with slug-only shorthand plus canonical override support.
+- next_work:
+  - None.

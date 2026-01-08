@@ -124,4 +124,20 @@
 - residual_constraints:
   - None — validation mapping recorded.
 - next_work:
-  - None.
+  - Track label fallback removal plan (owner + release target).
+
+## 2026-01-08 — loop 008
+- helper_version: helper:v20251223.1
+- focus: Decision § follow-up — document label fallback deprecation path
+- active_constraint: ADR 0068 lacked a recorded plan for removing the label-input fallback; without it, the team could miss the window to drop the warning pathway.
+- validation_targets:
+  - python3 -m pytest _tests/test_generate_axis_cheatsheet.py
+- evidence:
+  - green: docs/adr/evidence/0068-grammar-token-normalization-for-cli/loop-008.md#loop-008-green--helper-rerun-python3--m-pytest-_tests-test_generate_axis_cheatsheet.py
+- rollback_plan: `git restore --source=HEAD -- docs/adr/0068-grammar-token-normalization-for-cli.md docs/adr/0068-grammar-token-normalization-for-cli.work-log.md docs/adr/evidence/0068-grammar-token-normalization-for-cli/loop-008.md`
+- delta_summary: helper:diff-snapshot=1 file changed, 4 insertions(+) — added a follow-up note in the ADR to track label fallback removal.
+- loops_remaining_forecast: 1 loop — schedule deprecation execution once owner/release target are confirmed.
+- residual_constraints:
+  - Label fallback removal unscheduled (severity: medium; mitigation: assign owner and release milestone; monitoring command: python3 -m pytest _tests/test_generate_axis_cheatsheet.py).
+- next_work:
+  - Behaviour: Assign fallback removal owner + release milestone and update work-log (validation via python3 -m pytest _tests/test_generate_axis_cheatsheet.py).

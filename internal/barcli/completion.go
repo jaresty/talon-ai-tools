@@ -762,8 +762,8 @@ func runCompletionEngine(opts *cliOptions, stdout, stderr io.Writer) int {
 		if suggestion.TrimmedValue == "" {
 			continue
 		}
-		value := sanitizeCompletionField(suggestion.TrimmedValue)
-		if value == "" {
+		value := sanitizeCompletionField(suggestion.Value)
+		if strings.TrimSpace(value) == "" {
 			continue
 		}
 		category := sanitizeCompletionField(suggestion.Category)

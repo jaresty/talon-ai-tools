@@ -64,18 +64,25 @@ if bootstrap is not None:
             )
             suggestions = []
             raw_suggestions = []
+            raw_values = []
             for line in result.stdout.splitlines():
                 stripped = line.strip()
                 if not stripped:
                     continue
                 raw_suggestions.append(stripped)
                 value = stripped.split("\t", 1)[0]
-                suggestions.append(value)
+                raw_values.append(value)
+                suggestions.append(value.strip())
 
             self.assertIn(
                 "build",
                 suggestions,
                 "__complete helper should list available commands",
+            )
+
+            self.assertTrue(
+                all(v.endswith(" ") for v in raw_values),
+                "completion values should include trailing space for shells",
             )
 
             self.assertTrue(

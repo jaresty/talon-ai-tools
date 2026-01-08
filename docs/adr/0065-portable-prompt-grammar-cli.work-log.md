@@ -364,3 +364,28 @@
   - None newly identified; guard messaging now present across README and CONTRIBUTING
 - next_work:
   - Behaviour: Revisit README/CONTRIBUTING when guard automation evolves (validation via `rg -n "bar-completion-guard" readme.md CONTRIBUTING.md`)
+
+## 2026-01-08 — loop 018
+- helper_version: helper:v20251223.1
+- focus: Decision — ensure CI installs Go so the completion guard runs in automation
+- expected_value:
+  | Factor | Value | Rationale |
+  | --- | --- | --- |
+  | Impact | High | Without Go, `make ci-guardrails` fails to exercise ADR 0065 behaviours |
+  | Probability | High | Adding `actions/setup-go` deterministically installs a working toolchain |
+  | Time Sensitivity | Medium | CI would miss regressions until manual guardrails run locally |
+  | Uncertainty note | Low | Guard already validated locally |
+- active_constraint: GitHub Actions workflow lacked a Go toolchain, so `make ci-guardrails` could not run the completion guard (`git show HEAD:.github/workflows/test.yml | rg --stats "setup-go"` produced zero matches).
+- validation_targets:
+  - git show HEAD:.github/workflows/test.yml | rg --stats "setup-go"
+  - rg -n "setup-go" .github/workflows/test.yml
+- evidence:
+  - red: docs/adr/evidence/0065-portable-prompt-grammar-cli/loop-018.md#loop-018-red--helper-rerun-git-show-headgithubworkflowstestyml--rg---stats-setup-go
+  - green: docs/adr/evidence/0065-portable-prompt-grammar-cli/loop-018.md#loop-018-green--helper-rerun-rg--n-setup-go-githubworkflowstestyml
+- rollback_plan: `git restore --source=HEAD -- .github/workflows/test.yml docs/adr/0065-portable-prompt-grammar-cli.work-log.md docs/adr/evidence/0065-portable-prompt-grammar-cli/loop-018.md`
+- delta_summary: helper:diff-snapshot=3 files changed, 18 insertions(+) — add Go setup to CI workflow, log loop evidence
+- loops_remaining_forecast: 0 loops — CI now provisions Go before running guardrails; reopen if workflow fails on other runners
+- residual_constraints:
+  - Monitor CI runtimes; if Go setup slows guardrails significantly, evaluate caching or prebuilt binaries
+- next_work:
+  - Behaviour: Revisit workflows if Go version requirements change (validation via review of `.github/workflows/test.yml`)

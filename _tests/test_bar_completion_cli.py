@@ -230,6 +230,23 @@ if bootstrap is not None:
                     f"{expected!r} should appear after static prompts",
                 )
 
+            ordered = [
+                "full",
+                "analysis",
+                "focus",
+                "checklist",
+                "slack",
+                "fly-rog",
+                "as-teacher",
+            ]
+            for earlier, later in zip(ordered, ordered[1:]):
+                if earlier in values and later in values:
+                    self.assertLess(
+                        values.index(earlier),
+                        values.index(later),
+                        f"{earlier!r} should appear before {later!r}",
+                    )
+
 
 else:
     if not TYPE_CHECKING:

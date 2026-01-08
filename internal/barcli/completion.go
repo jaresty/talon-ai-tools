@@ -573,27 +573,95 @@ func completeBuild(grammar *Grammar, catalog completionCatalog, words []string, 
 		staticSuggestions = appendUniqueSuggestions(staticSuggestions, seen, buildStaticSuggestions(grammar, catalog))
 	}
 
-	if !state.completeness {
-		optionalSuggestions = appendUniqueSuggestions(optionalSuggestions, seen, buildAxisSuggestions(grammar, "completeness", catalog.completeness))
+	axisIncluded := make(map[string]bool)
+
+	for _, axis := range grammar.axisPriority {
+		axisIncluded[axis] = true
+		switch axis {
+		case "completeness":
+			if state.completeness {
+				continue
+			}
+			optionalSuggestions = appendUniqueSuggestions(optionalSuggestions, seen, buildAxisSuggestions(grammar, "completeness", catalog.completeness))
+		case "scope":
+			if suggestions := buildScopeSuggestions(grammar, catalog, state); len(suggestions) > 0 {
+				optionalSuggestions = appendUniqueSuggestions(optionalSuggestions, seen, suggestions)
+			}
+		case "method":
+			if suggestions := buildMethodSuggestions(grammar, catalog, state); len(suggestions) > 0 {
+				optionalSuggestions = appendUniqueSuggestions(optionalSuggestions, seen, suggestions)
+			}
+		case "form":
+			if state.form {
+				continue
+			}
+			optionalSuggestions = appendUniqueSuggestions(optionalSuggestions, seen, buildAxisSuggestions(grammar, "form", catalog.form))
+		case "channel":
+			if state.channel {
+				continue
+			}
+			optionalSuggestions = appendUniqueSuggestions(optionalSuggestions, seen, buildAxisSuggestions(grammar, "channel", catalog.channel))
+		case "directional":
+			if state.directional {
+				continue
+			}
+			optionalSuggestions = appendUniqueSuggestions(optionalSuggestions, seen, buildAxisSuggestions(grammar, "directional", catalog.directional))
+		default:
+			tokens := sortedAxisTokens(grammar, axis)
+			if len(tokens) == 0 {
+				continue
+			}
+			optionalSuggestions = appendUniqueSuggestions(optionalSuggestions, seen, buildAxisSuggestions(grammar, axis, tokens))
+		}
 	}
 
-	if suggestions := buildScopeSuggestions(grammar, catalog, state); len(suggestions) > 0 {
-		optionalSuggestions = appendUniqueSuggestions(optionalSuggestions, seen, suggestions)
+	extraAxes := make([]string, 0)
+	for axis := range grammar.axisTokens {
+		if axisIncluded[axis] {
+			continue
+		}
+		extraAxes = append(extraAxes, axis)
 	}
-	if suggestions := buildMethodSuggestions(grammar, catalog, state); len(suggestions) > 0 {
-		optionalSuggestions = appendUniqueSuggestions(optionalSuggestions, seen, suggestions)
-	}
+	sort.Strings(extraAxes)
 
-	if !state.form {
-		optionalSuggestions = appendUniqueSuggestions(optionalSuggestions, seen, buildAxisSuggestions(grammar, "form", catalog.form))
-	}
-
-	if !state.channel {
-		optionalSuggestions = appendUniqueSuggestions(optionalSuggestions, seen, buildAxisSuggestions(grammar, "channel", catalog.channel))
-	}
-
-	if !state.directional {
-		optionalSuggestions = appendUniqueSuggestions(optionalSuggestions, seen, buildAxisSuggestions(grammar, "directional", catalog.directional))
+	for _, axis := range extraAxes {
+		axisIncluded[axis] = true
+		switch axis {
+		case "completeness":
+			if state.completeness {
+				continue
+			}
+			optionalSuggestions = appendUniqueSuggestions(optionalSuggestions, seen, buildAxisSuggestions(grammar, "completeness", catalog.completeness))
+		case "scope":
+			if suggestions := buildScopeSuggestions(grammar, catalog, state); len(suggestions) > 0 {
+				optionalSuggestions = appendUniqueSuggestions(optionalSuggestions, seen, suggestions)
+			}
+		case "method":
+			if suggestions := buildMethodSuggestions(grammar, catalog, state); len(suggestions) > 0 {
+				optionalSuggestions = appendUniqueSuggestions(optionalSuggestions, seen, suggestions)
+			}
+		case "form":
+			if state.form {
+				continue
+			}
+			optionalSuggestions = appendUniqueSuggestions(optionalSuggestions, seen, buildAxisSuggestions(grammar, "form", catalog.form))
+		case "channel":
+			if state.channel {
+				continue
+			}
+			optionalSuggestions = appendUniqueSuggestions(optionalSuggestions, seen, buildAxisSuggestions(grammar, "channel", catalog.channel))
+		case "directional":
+			if state.directional {
+				continue
+			}
+			optionalSuggestions = appendUniqueSuggestions(optionalSuggestions, seen, buildAxisSuggestions(grammar, "directional", catalog.directional))
+		default:
+			tokens := sortedAxisTokens(grammar, axis)
+			if len(tokens) == 0 {
+				continue
+			}
+			optionalSuggestions = appendUniqueSuggestions(optionalSuggestions, seen, buildAxisSuggestions(grammar, axis, tokens))
+		}
 	}
 
 	if persona := buildPersonaSuggestions(grammar, catalog, state); len(persona) > 0 {

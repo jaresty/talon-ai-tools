@@ -306,7 +306,7 @@ func TestCompleteOptionalAxesWithoutStatic(t *testing.T) {
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
-	for _, value := range []string{"full", "focus", "steps", "checklist", "as-teacher"} {
+	for _, value := range []string{"full", "focus", "steps", "checklist", "slack", "fly-rog", "as-teacher"} {
 		if !containsSuggestionValue(suggestions, value) {
 			t.Fatalf("expected optional suggestion %q, got %v", value, suggestions)
 		}
@@ -323,6 +323,32 @@ func TestCompleteOptionalAxesWithoutStatic(t *testing.T) {
 		}
 		if idx < todoIdx {
 			t.Fatalf("expected %q to appear after static suggestion 'todo'", value)
+		}
+	}
+}
+
+func TestCompleteOptionalOrderingFollowsAxisPriority(t *testing.T) {
+	grammar := loadCompletionGrammar(t)
+
+	words := []string{"bar", "build", "todo", ""}
+	suggestions, err := Complete(grammar, "bash", words, len(words)-1)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	order := []string{"full", "analysis", "focus", "checklist", "slack", "fly-rog", "as-teacher"}
+	for _, value := range order {
+		if !containsSuggestionValue(suggestions, value) {
+			t.Fatalf("expected suggestion %q, got %v", value, suggestions)
+		}
+	}
+	for i := 0; i < len(order)-1; i++ {
+		first := indexOfSuggestion(suggestions, order[i])
+		second := indexOfSuggestion(suggestions, order[i+1])
+		if first == -1 || second == -1 {
+			t.Fatalf("expected indexes for %q and %q", order[i], order[i+1])
+		}
+		if first > second {
+			t.Fatalf("expected %q to appear before %q", order[i], order[i+1])
 		}
 	}
 }

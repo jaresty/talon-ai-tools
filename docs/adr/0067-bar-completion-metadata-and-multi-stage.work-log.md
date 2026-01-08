@@ -80,3 +80,19 @@
 - loops_remaining_forecast: 0 loops — guardrails back to green; continue routine monitoring
 - residual_constraints: *(none — guardrail aligned with metadata output)*
 - next_work: None
+
+## 2026-01-08 — loop 007
+- helper_version: helper:v20251223.1
+- focus: Decision § release verification — confirm installer binary includes metadata completions
+- active_constraint: `~/.local/bin/bar __complete` from release tag `bar-v0.1.1` outputs plain tokens with no metadata, so downstream shells cannot display categories/descriptions until a new release ships.
+- validation_targets:
+  - ~/.local/bin/bar __complete fish 4 bar build todo full ""
+- evidence:
+  - red: docs/adr/evidence/0067-bar-completion-metadata-and-multi-stage/loop-007.md#loop-007-red--helper-rerun-~/.local/bin/bar-__complete-fish-4-bar-build-todo-full
+- rollback_plan: `git restore --source=HEAD -- docs/adr/0067-bar-completion-metadata-and-multi-stage.work-log.md docs/adr/evidence/0067-bar-completion-metadata-and-multi-stage/loop-007.md`
+- delta_summary: helper:diff-snapshot=2 files changed, 11 insertions(+), 0 deletions(-) — captured release regression evidence and reopened follow-up work
+- loops_remaining_forecast: 1 loop (publish new release artifact with metadata completions) — high confidence once release pipeline runs
+- residual_constraints:
+  - Release artifact missing metadata completions (severity: high; mitigation: cut new tag post-fix and rerun installer; owning ADR 0067 Consequences)
+- next_work:
+  - Behaviour: Publish updated CLI release (validation via install script re-run on new tag)

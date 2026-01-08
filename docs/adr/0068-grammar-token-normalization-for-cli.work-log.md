@@ -434,3 +434,23 @@
 - next_work:
   - Monitor operator feedback on axis ranking and revisit if non-alphabetical ordering becomes necessary.
 
+## 2026-01-08 — loop 026
+- helper_version: helper:v20251223.1
+- focus: Decision § validation — ensure completion ordering derives solely from embedded grammar data
+- active_constraint: Optional-axis tests depended on hard-coded token lists, risking divergence from the embedded grammar and masking regressions when grammar content changes.
+- validation_targets:
+  - go test ./internal/barcli
+  - python3 -m pytest _tests/test_bar_completion_cli.py
+  - python3 -m pytest _tests/test_generate_axis_cheatsheet.py
+- evidence:
+  - green: docs/adr/evidence/0068-grammar-token-normalization-for-cli/loop-026.md#loop-026-green--helper-rerun-go-test-.-internal-barcli
+  - green: docs/adr/evidence/0068-grammar-token-normalization-for-cli/loop-026.md#loop-026-green--helper-rerun-python3--m-pytest-_tests-test_bar_completion_cli.py
+  - green: docs/adr/evidence/0068-grammar-token-normalization-for-cli/loop-026.md#loop-026-green--helper-rerun-python3--m-pytest-_tests-test_generate_axis_cheatsheet.py
+- rollback_plan: `git restore --source=HEAD -- internal/barcli/completion_test.go _tests/test_bar_completion_cli.py docs/adr/0068-grammar-token-normalization-for-cli.work-log.md docs/adr/evidence/0068-grammar-token-normalization-for-cli/loop-026.md`
+- delta_summary: helper:diff-snapshot=1 file changed, 82 insertions(+), 3 deletions(-) — refactored Go completion tests to derive expected order from the grammar catalog, slugifying tokens to avoid hard-coded completions.
+- loops_remaining_forecast: 0 loops — completion ordering assertions now stay aligned with the embedded grammar.
+- residual_constraints:
+  - Optional axes within each group still use alphabetical ordering; monitor demand for relevance-based weighting (severity: low; mitigation: monitor CLI telemetry; trigger: python3 -m pytest _tests/test_bar_completion_cli.py).
+- next_work:
+  - Continue monitoring operator feedback for axis weighting or slicing improvements.
+

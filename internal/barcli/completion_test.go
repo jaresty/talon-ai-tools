@@ -300,13 +300,50 @@ func TestCompleteDirectionalSuggestionsWithoutForm(t *testing.T) {
 
 func TestCompleteOptionalAxesWithoutStatic(t *testing.T) {
 	grammar := loadCompletionGrammar(t)
+	catalog := newCompletionCatalog(grammar)
 
 	words := []string{"bar", "build", ""}
 	suggestions, err := Complete(grammar, "bash", words, len(words)-1)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
-	for _, value := range []string{"full", "focus", "steps", "checklist", "slack", "fly-rog", "as-teacher"} {
+
+	expected := make([]string, 0)
+	addToken := func(token string) {
+		if token == "" {
+			return
+		}
+		slug := grammar.slugForToken(token)
+		if slug != "" {
+			expected = append(expected, slug)
+			return
+		}
+		expected = append(expected, token)
+	}
+
+	if len(catalog.completeness) > 0 {
+		addToken(catalog.completeness[0])
+	}
+	if len(catalog.scope) > 0 {
+		addToken(catalog.scope[0])
+	}
+	if len(catalog.method) > 0 {
+		addToken(catalog.method[0])
+	}
+	if len(catalog.form) > 0 {
+		addToken(catalog.form[0])
+	}
+	if len(catalog.channel) > 0 {
+		addToken(catalog.channel[0])
+	}
+	if len(catalog.directional) > 0 {
+		addToken(catalog.directional[0])
+	}
+	if len(catalog.personaVoice) > 0 {
+		addToken(catalog.personaVoice[0])
+	}
+
+	for _, value := range expected {
 		if !containsSuggestionValue(suggestions, value) {
 			t.Fatalf("expected optional suggestion %q, got %v", value, suggestions)
 		}
@@ -316,7 +353,7 @@ func TestCompleteOptionalAxesWithoutStatic(t *testing.T) {
 	if todoIdx == -1 {
 		t.Fatalf("expected static suggestion 'todo', got %v", suggestions)
 	}
-	for _, value := range []string{"full", "focus", "steps", "checklist", "slack", "fly-rog", "as-teacher"} {
+	for _, value := range expected {
 		idx := indexOfSuggestion(suggestions, value)
 		if idx == -1 {
 			t.Fatalf("expected suggestion %q to have index", value)
@@ -329,13 +366,55 @@ func TestCompleteOptionalAxesWithoutStatic(t *testing.T) {
 
 func TestCompleteOptionalOrderingFollowsAxisPriority(t *testing.T) {
 	grammar := loadCompletionGrammar(t)
+	catalog := newCompletionCatalog(grammar)
 
 	words := []string{"bar", "build", "todo", ""}
 	suggestions, err := Complete(grammar, "bash", words, len(words)-1)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
-	order := []string{"full", "analysis", "focus", "checklist", "slack", "fly-rog", "as-teacher"}
+
+	order := make([]string, 0)
+	addToken := func(token string) {
+		if token == "" {
+			return
+		}
+		slug := grammar.slugForToken(token)
+		if slug != "" {
+			order = append(order, slug)
+			return
+		}
+		order = append(order, token)
+	}
+
+	for _, axis := range grammar.axisPriority {
+		var tokens []string
+		switch axis {
+		case "completeness":
+			tokens = catalog.completeness
+		case "scope":
+			tokens = catalog.scope
+		case "method":
+			tokens = catalog.method
+		case "form":
+			tokens = catalog.form
+		case "channel":
+			tokens = catalog.channel
+		case "directional":
+			tokens = catalog.directional
+		default:
+			tokens = sortedAxisTokens(grammar, axis)
+		}
+		if len(tokens) == 0 {
+			continue
+		}
+		addToken(tokens[0])
+	}
+
+	if len(catalog.personaVoice) > 0 {
+		addToken(catalog.personaVoice[0])
+	}
+
 	for _, value := range order {
 		if !containsSuggestionValue(suggestions, value) {
 			t.Fatalf("expected suggestion %q, got %v", value, suggestions)

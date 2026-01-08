@@ -494,3 +494,23 @@
 - next_work:
   - Evaluate whether contract axis listings should also show slug aliases to ease copy/paste ergonomics.
 
+## 2026-01-08 — loop 029
+- helper_version: helper:v20251223.1
+- focus: Decision § validation — add slug hints for contract axes in help output
+- active_constraint: `bar help tokens` still listed contract axis tokens with spaces (e.g., “fly rog”), forcing operators to rely on memory or completions to find the slugged form.
+- validation_targets:
+  - go test ./internal/barcli
+  - python3 -m pytest _tests/test_bar_completion_cli.py
+  - python3 -m pytest _tests/test_generate_axis_cheatsheet.py
+- evidence:
+  - green: docs/adr/evidence/0068-grammar-token-normalization-for-cli/loop-029.md#loop-029-green--helper-rerun-go-test-.-internal-barcli
+  - green: docs/adr/evidence/0068-grammar-token-normalization-for-cli/loop-029.md#loop-029-green--helper-rerun-python3--m-pytest-_tests-test_bar_completion_cli.py
+  - green: docs/adr/evidence/0068-grammar-token-normalization-for-cli/loop-029.md#loop-029-green--helper-rerun-python3--m-pytest-_tests-test_generate_axis_cheatsheet.py
+- rollback_plan: `git restore --source=HEAD -- internal/barcli/app.go internal/barcli/app_test.go docs/adr/0068-grammar-token-normalization-for-cli.work-log.md docs/adr/evidence/0068-grammar-token-normalization-for-cli/loop-029.md`
+- delta_summary: helper:diff-snapshot=2 files changed, 19 insertions(+), 2 deletions(-) — render contract axis entries with slug + canonical hints and added Go coverage locking the new output.
+- loops_remaining_forecast: 0 loops — help output now exposes slug equivalents for contract axes; guardrails cover regressions.
+- residual_constraints:
+  - Static prompt listings still use canonical names only; monitor whether slug hints are required there as well (severity: low; mitigation: monitor CLI telemetry; trigger: python3 -m pytest _tests/test_bar_completion_cli.py).
+- next_work:
+  - Evaluate demand for slug hints in static prompt listings or additional formatting improvements.
+

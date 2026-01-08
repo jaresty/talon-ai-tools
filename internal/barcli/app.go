@@ -320,11 +320,16 @@ func renderTokensHelp(w io.Writer, grammar *Grammar) {
 			sort.Strings(tokens)
 			fmt.Fprintf(w, "  %s:\n", axis)
 			for _, token := range tokens {
+				slug := grammar.slugForToken(token)
+				display := token
+				if slug != "" && slug != token {
+					display = fmt.Sprintf("%s (canonical: %s)", slug, token)
+				}
 				desc := strings.TrimSpace(grammar.AxisDescription(axis, token))
 				if desc == "" {
-					fmt.Fprintf(w, "    • %s\n", token)
+					fmt.Fprintf(w, "    • %s\n", display)
 				} else {
-					fmt.Fprintf(w, "    • %s: %s\n", token, desc)
+					fmt.Fprintf(w, "    • %s: %s\n", display, desc)
 				}
 			}
 		}

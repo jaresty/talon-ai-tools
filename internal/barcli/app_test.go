@@ -63,3 +63,15 @@ func TestRenderTokensHelpShowsPersonaSlugs(t *testing.T) {
 		t.Skip("no persona intent tokens required slug transformation in test grammar")
 	}
 }
+
+func TestRenderTokensHelpShowsContractSlugHints(t *testing.T) {
+	grammar := loadCompletionGrammar(t)
+	var buf bytes.Buffer
+	renderTokensHelp(&buf, grammar)
+	output := buf.String()
+
+	expected := "• fly-rog (canonical: fly rog)"
+	if !strings.Contains(output, expected) {
+		t.Fatalf("expected contract axis slug hint %q in help output, got:\n%s", expected, output)
+	}
+}

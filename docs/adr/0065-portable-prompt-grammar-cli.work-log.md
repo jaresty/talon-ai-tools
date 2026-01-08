@@ -438,3 +438,28 @@
   - None additional; monitor for other dependency questions from contributors
 - next_work:
   - Behaviour: Update docs again if guard starts requiring additional tooling (validation via docs search)
+
+## 2026-01-08 — loop 021
+- helper_version: helper:v20251223.1
+- focus: Decision — document Go prerequisite directly in ADR 0065
+- expected_value:
+  | Factor | Value | Rationale |
+  | --- | --- | --- |
+  | Impact | Medium | Keeps ADR as single source of truth for guardrail requirements |
+  | Probability | High | Simple doc edit ensures future loops reference the requirement |
+  | Time Sensitivity | Low | Alignment/documentation improvement |
+  | Uncertainty note | Low | No ambiguity |
+- active_constraint: ADR 0065 did not mention the Go toolchain requirement, risking drift between decision and guardrail (`rg --stats "Go 1.21" docs/adr/0065-portable-prompt-grammar-cli.md` returned 0).
+- validation_targets:
+  - rg --stats "Go 1.21" docs/adr/0065-portable-prompt-grammar-cli.md
+  - rg -n "Go 1.21" docs/adr/0065-portable-prompt-grammar-cli.md
+- evidence:
+  - red: docs/adr/evidence/0065-portable-prompt-grammar-cli/loop-021.md#loop-021-red--helper-rerun-rg---stats-go-121-docsadr0065-portable-prompt-grammar-climd
+  - green: docs/adr/evidence/0065-portable-prompt-grammar-cli/loop-021.md#loop-021-green--helper-rerun-rg--n-go-121-docsadr0065-portable-prompt-grammar-climd
+- rollback_plan: `git restore --source=HEAD -- docs/adr/0065-portable-prompt-grammar-cli.md docs/adr/0065-portable-prompt-grammar-cli.work-log.md docs/adr/evidence/0065-portable-prompt-grammar-cli/loop-021.md`
+- delta_summary: helper:diff-snapshot=3 files changed, 16 insertions(+) — add Go prerequisite note to ADR and record evidence
+- loops_remaining_forecast: 0 loops — ADR decision/docs now consistent
+- residual_constraints:
+  - None additional identified
+- next_work:
+  - Behaviour: Revisit ADR if guard command surface changes (validation via docs search)

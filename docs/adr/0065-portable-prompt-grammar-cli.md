@@ -81,7 +81,7 @@ Each example yields a Task/Constraints block. Examples without body input includ
 - Contributors regenerate the JSON artifact whenever grammar rules change, adding a modest but explicit development step.
 - Persona usage stays deliberate and per-invocation; users who want persistent stances must layer their own scripts.
 - Structured errors and JSON output make the CLI predictable in automation, while deferring helper flags keeps the scope manageable for the first release.
-- Regression guard `_tests/test_bar_completion_cli.py` exercises `bar completion` and the hidden `bar __complete` surface so shell installers stay aligned with the exported grammar.
+- Regression guard `_tests/test_bar_completion_cli.py` exercises `bar completion` and the hidden `bar __complete` surface so shell installers stay aligned with the exported grammar. Running the guard (locally or via `make bar-completion-guard`) requires Go 1.21+ in addition to Python 3.11+.
 - Future enhancements (e.g., listing tokens, validation-only checks, recipe helpers) require new ADRs to maintain clarity around scope.
 
 ## Alternatives Considered

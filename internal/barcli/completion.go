@@ -79,11 +79,10 @@ function __fish_bar_completions
         else if test -n "$description"
             set display "$description"
         end
-        set -l escaped_value (string escape --no-quoted -- "$value")
         if test -n "$display"
-            printf "%s\t%s\n" "$escaped_value" "$display"
+            printf "%s\t%s\n" "$value" "$display"
         else
-            printf "%s\n" "$escaped_value"
+            printf "%s\n" "$value"
         end
     end
 end

@@ -22,6 +22,27 @@ func TestRenderTokensHelpShowsPersonaSlugs(t *testing.T) {
 		t.Fatalf("expected persona preset slug with spoken alias in help output, got:\n%s", output)
 	}
 
+	staticVerified := false
+	for name := range grammar.Static.Profiles {
+		slug := grammar.slugForToken(name)
+		if slug == "" || slug == name {
+			continue
+		}
+		expected := fmt.Sprintf("- %s (canonical: %s):", slug, name)
+		if !strings.Contains(output, expected) {
+			t.Fatalf("expected static prompt slug hint %q in help output, got:\n%s", expected, output)
+		}
+		staticVerified = true
+		break
+	}
+	if !staticVerified {
+		t.Skip("no static prompts require slug hints in test grammar")
+	}
+
+	expectedAxis := "• fly-rog (canonical: fly rog)"
+	if !strings.Contains(output, expectedAxis) {
+		t.Fatalf("expected contract axis slug hint %q in help output, got:\n%s", expectedAxis, output)
+	}
 	axisVerified := false
 	for _, tokens := range grammar.Persona.Axes {
 		for _, token := range tokens {
@@ -61,17 +82,5 @@ func TestRenderTokensHelpShowsPersonaSlugs(t *testing.T) {
 	}
 	if !intentVerified {
 		t.Skip("no persona intent tokens required slug transformation in test grammar")
-	}
-}
-
-func TestRenderTokensHelpShowsContractSlugHints(t *testing.T) {
-	grammar := loadCompletionGrammar(t)
-	var buf bytes.Buffer
-	renderTokensHelp(&buf, grammar)
-	output := buf.String()
-
-	expected := "• fly-rog (canonical: fly rog)"
-	if !strings.Contains(output, expected) {
-		t.Fatalf("expected contract axis slug hint %q in help output, got:\n%s", expected, output)
 	}
 }

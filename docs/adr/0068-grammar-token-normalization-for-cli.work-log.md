@@ -514,3 +514,23 @@
 - next_work:
   - Evaluate demand for slug hints in static prompt listings or additional formatting improvements.
 
+## 2026-01-08 — loop 030
+- helper_version: helper:v20251223.1
+- focus: Decision § validation — add slug hints for static prompts in help output
+- active_constraint: Static prompt listings still showed canonical names only (e.g., “com b”), leaving operators to guess the slug form when copying from `bar help tokens`.
+- validation_targets:
+  - go test ./internal/barcli
+  - python3 -m pytest _tests/test_bar_completion_cli.py
+  - python3 -m pytest _tests/test_generate_axis_cheatsheet.py
+- evidence:
+  - green: docs/adr/evidence/0068-grammar-token-normalization-for-cli/loop-030.md#loop-030-green--helper-rerun-go-test-.-internal-barcli
+  - green: docs/adr/evidence/0068-grammar-token-normalization-for-cli/loop-030.md#loop-030-green--helper-rerun-python3--m-pytest-_tests-test_bar_completion_cli.py
+  - green: docs/adr/evidence/0068-grammar-token-normalization-for-cli/loop-030.md#loop-030-green--helper-rerun-python3--m-pytest-_tests-test_generate_axis_cheatsheet.py
+- rollback_plan: `git restore --source=HEAD -- internal/barcli/app.go internal/barcli/app_test.go docs/adr/0068-grammar-token-normalization-for-cli.work-log.md docs/adr/evidence/0068-grammar-token-normalization-for-cli/loop-030.md`
+- delta_summary: helper:diff-snapshot=2 files changed, 26 insertions(+), 13 deletions(-) — updated static prompt listings to include slug hints and expanded Go coverage to ensure help output shows the slug when it differs from the canonical name.
+- loops_remaining_forecast: 0 loops — help output now provides slug hints for static prompts alongside persona and contract axes.
+- residual_constraints:
+  - None — help listings now consistently expose slug equivalents where available; continue routine monitoring via guardrails.
+- next_work:
+  - Monitor operator feedback for any additional help formatting tweaks or ordering improvements.
+

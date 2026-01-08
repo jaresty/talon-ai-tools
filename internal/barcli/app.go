@@ -290,7 +290,11 @@ func renderTokensHelp(w io.Writer, grammar *Grammar) {
 			if desc == "" {
 				desc = "(no description)"
 			}
-			fmt.Fprintf(w, "  - %s: %s\n", name, desc)
+			display := name
+			if slug := grammar.slugForToken(name); slug != "" && slug != name {
+				display = fmt.Sprintf("%s (canonical: %s)", slug, name)
+			}
+			fmt.Fprintf(w, "  - %s: %s\n", display, desc)
 		}
 	}
 

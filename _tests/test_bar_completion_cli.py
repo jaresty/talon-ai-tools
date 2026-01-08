@@ -62,13 +62,25 @@ if bootstrap is not None:
                     "bar",
                 ]
             )
-            suggestions = [
-                line.strip() for line in result.stdout.splitlines() if line.strip()
-            ]
+            suggestions = []
+            raw_suggestions = []
+            for line in result.stdout.splitlines():
+                stripped = line.strip()
+                if not stripped:
+                    continue
+                raw_suggestions.append(stripped)
+                value = stripped.split("\t", 1)[0]
+                suggestions.append(value)
+
             self.assertIn(
                 "build",
                 suggestions,
                 "__complete helper should list available commands",
+            )
+
+            self.assertTrue(
+                all("\t" in item for item in raw_suggestions),
+                "metadata columns should be present in completion output",
             )
 
 else:

@@ -66,3 +66,17 @@
 - loops_remaining_forecast: 0 loops — ADR closed; continue passive monitoring during release validation
 - residual_constraints: *(none — documentation complete)*
 - next_work: None (monitor release notes as part of normal process)
+
+## 2026-01-08 — loop 006
+- helper_version: helper:v20251223.1
+- focus: Decision § guardrail maintenance — align completion guard tests with metadata-format output
+- active_constraint: `make bar-completion-guard` failed because tests expected plain tokens; metadata columns caused assertions to fail.
+- validation_targets:
+  - make bar-completion-guard
+- evidence:
+  - green: docs/adr/evidence/0067-bar-completion-metadata-and-multi-stage/loop-006.md#loop-006-green--helper-rerun-make-bar-completion-guard
+- rollback_plan: `git restore --source=HEAD -- _tests/test_bar_completion_cli.py docs/adr/evidence/0067-bar-completion-metadata-and-multi-stage/loop-006.md docs/adr/0067-bar-completion-metadata-and-multi-stage.work-log.md`
+- delta_summary: helper:diff-snapshot=2 files changed, 21 insertions(+), 4 deletions(-) — updated guardrail test to parse metadata values and recorded passing run
+- loops_remaining_forecast: 0 loops — guardrails back to green; continue routine monitoring
+- residual_constraints: *(none — guardrail aligned with metadata output)*
+- next_work: None

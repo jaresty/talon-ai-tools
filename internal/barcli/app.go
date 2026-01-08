@@ -5,10 +5,56 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"sort"
 	"strings"
 )
 
+const (
+	buildUsage = "usage: bar build [tokens...] [options]"
+	topUsage   = "usage: bar [build|help]"
+)
+
+var generalHelpText = strings.TrimSpace(`USAGE
+  bar build <tokens>... [--prompt TEXT|--input FILE] [--output FILE] [--json]
+  cat prompt.txt | bar build todo steps fog
+
+  bar help
+  bar help tokens [--grammar PATH]
+
+TOKEN ORDER (SHORTHAND)
+  1. Static prompt          (0..1 tokens, default infer)
+  2. Completeness           (0..1)
+  3. Scope                  (0..2)
+  4. Method                 (0..3)
+  5. Form                   (0..1)
+  6. Channel                (0..1)
+  7. Directional            (0..1)
+  8. Persona hints / preset (voice, audience, tone, intent, persona=<preset>)
+
+  After the first key=value override, *all* remaining tokens must be key=value.
+  Multi-word shorthand (for example "fly rog" or "to team") may be supplied as
+  separate words; the CLI will combine them automatically. Use quotes when your
+  shell would otherwise split or glob the text.
+
+COMMANDS
+  build        Construct a prompt recipe from shorthand tokens or key=value overrides.
+               Accepts input via --prompt, --input, or STDIN (piped).
+  help         Show this message.
+  help tokens  List available static prompts, contract axes, persona presets, and multi-word tokens
+               using the exported prompt grammar.
+
+TOPICS & EXAMPLES
+  List available tokens:           bar help tokens
+  Emit JSON for automation:        bar build --json todo focus steps fog
+  Supply prompt content:           bar build todo focus --prompt "Fix onboarding"
+  Mix shorthand with overrides:    bar build todo focus method=steps directional=fog
+  Inspect another grammar file:    bar help tokens --grammar build/prompt-grammar.json
+
+Flags such as --grammar override the grammar JSON path when necessary.
+`) + "\n\n"
+
 // Run executes the bar CLI with the provided arguments and streams.
+
 func Run(args []string, stdin io.Reader, stdout, stderr io.Writer) int {
 	options, err := parseArgs(args)
 	if err != nil {
@@ -16,8 +62,12 @@ func Run(args []string, stdin io.Reader, stdout, stderr io.Writer) int {
 		return 1
 	}
 
+	if options.Command == "help" {
+		return runHelp(options, stdout, stderr)
+	}
+
 	if options.Command != "build" {
-		writeError(stderr, "usage: bar build [tokens...] [options]")
+		writeError(stderr, topUsage)
 		return 1
 	}
 
@@ -133,7 +183,7 @@ func parseArgs(args []string) (*cliOptions, error) {
 	}
 
 	if opts.Command == "" {
-		return nil, fmt.Errorf("usage: bar build [tokens...] [options]")
+		return nil, fmt.Errorf(topUsage)
 	}
 	if opts.Prompt != "" && opts.InputPath != "" {
 		return nil, fmt.Errorf("--prompt and --input cannot be used together")
@@ -141,6 +191,144 @@ func parseArgs(args []string) (*cliOptions, error) {
 
 	opts.Tokens = tokens
 	return opts, nil
+}
+
+func runHelp(opts *cliOptions, stdout, stderr io.Writer) int {
+	if len(opts.Tokens) == 0 {
+		fmt.Fprint(stdout, generalHelpText)
+		return 0
+	}
+
+	topic := opts.Tokens[0]
+	switch topic {
+	case "tokens":
+		grammar, err := LoadGrammar(opts.GrammarPath)
+		if err != nil {
+			writeError(stderr, err.Error())
+			return 1
+		}
+		renderTokensHelp(stdout, grammar)
+		return 0
+	default:
+		writeError(stderr, fmt.Sprintf("unknown help topic %q", topic))
+		fmt.Fprint(stdout, generalHelpText)
+		return 1
+	}
+}
+
+func renderTokensHelp(w io.Writer, grammar *Grammar) {
+	fmt.Fprintln(w, "STATIC PROMPTS")
+	staticNames := make([]string, 0, len(grammar.Static.Profiles))
+	for name := range grammar.Static.Profiles {
+		staticNames = append(staticNames, name)
+	}
+	sort.Strings(staticNames)
+	if len(staticNames) == 0 {
+		fmt.Fprintln(w, "  (none)")
+	} else {
+		for _, name := range staticNames {
+			desc := strings.TrimSpace(grammar.StaticPromptDescription(name))
+			if desc == "" {
+				desc = "(no description)"
+			}
+			fmt.Fprintf(w, "  - %s: %s\n", name, desc)
+		}
+	}
+
+	fmt.Fprintln(w, "\nCONTRACT AXES")
+	axisNames := make([]string, 0, len(grammar.Axes.Definitions))
+	for axis := range grammar.Axes.Definitions {
+		axisNames = append(axisNames, axis)
+	}
+	sort.Strings(axisNames)
+	if len(axisNames) == 0 {
+		fmt.Fprintln(w, "  (none)")
+	} else {
+		for _, axis := range axisNames {
+			tokenSet := make(map[string]struct{})
+			for token := range grammar.Axes.Definitions[axis] {
+				tokenSet[token] = struct{}{}
+			}
+			if list := grammar.Axes.ListTokens[axis]; len(list) > 0 {
+				for _, token := range list {
+					tokenSet[token] = struct{}{}
+				}
+			}
+			tokens := make([]string, 0, len(tokenSet))
+			for token := range tokenSet {
+				tokens = append(tokens, token)
+			}
+			sort.Strings(tokens)
+			fmt.Fprintf(w, "  %s:\n", axis)
+			for _, token := range tokens {
+				desc := strings.TrimSpace(grammar.AxisDescription(axis, token))
+				if desc == "" {
+					fmt.Fprintf(w, "    • %s\n", token)
+				} else {
+					fmt.Fprintf(w, "    • %s: %s\n", token, desc)
+				}
+			}
+		}
+	}
+
+	fmt.Fprintln(w, "\nPERSONA PRESETS")
+	presetNames := make([]string, 0, len(grammar.Persona.Presets))
+	for name := range grammar.Persona.Presets {
+		presetNames = append(presetNames, name)
+	}
+	sort.Strings(presetNames)
+	if len(presetNames) == 0 {
+		fmt.Fprintln(w, "  (none)")
+	} else {
+		for _, name := range presetNames {
+			preset := grammar.Persona.Presets[name]
+			label := strings.TrimSpace(preset.Label)
+			if label == "" {
+				label = name
+			}
+			fmt.Fprintf(w, "  - %s: %s\n", name, label)
+		}
+	}
+
+	fmt.Fprintln(w, "\nPERSONA AXES")
+	personaAxes := make([]string, 0, len(grammar.Persona.Axes))
+	for axis := range grammar.Persona.Axes {
+		personaAxes = append(personaAxes, axis)
+	}
+	sort.Strings(personaAxes)
+	if len(personaAxes) == 0 {
+		fmt.Fprintln(w, "  (none)")
+	} else {
+		for _, axis := range personaAxes {
+			tokens := append([]string(nil), grammar.Persona.Axes[axis]...)
+			sort.Strings(tokens)
+			fmt.Fprintf(w, "  %s:\n", axis)
+			for _, token := range tokens {
+				desc := strings.TrimSpace(grammar.PersonaDescription(axis, token))
+				if desc == "" {
+					fmt.Fprintf(w, "    • %s\n", token)
+				} else {
+					fmt.Fprintf(w, "    • %s: %s\n", token, desc)
+				}
+			}
+		}
+	}
+
+	if intents, ok := grammar.Persona.Intent.AxisTokens["intent"]; ok && len(intents) > 0 {
+		tokens := append([]string(nil), intents...)
+		sort.Strings(tokens)
+		fmt.Fprintln(w, "\nPERSONA INTENTS")
+		for _, token := range tokens {
+			desc := strings.TrimSpace(grammar.PersonaDescription("intent", token))
+			if desc == "" {
+				fmt.Fprintf(w, "  • %s\n", token)
+			} else {
+				fmt.Fprintf(w, "  • %s: %s\n", token, desc)
+			}
+		}
+	}
+
+	fmt.Fprintln(w, "\nMulti-word tokens (e.g., \"fly rog\") should be supplied exactly as listed above.")
 }
 
 func readPrompt(opts *cliOptions, stdin io.Reader) (string, error) {

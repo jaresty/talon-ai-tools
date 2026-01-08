@@ -67,3 +67,25 @@
 - next_work:
   - Behaviour: Align Go CLI error schema with ADR contract and add failure fixtures (`go test ./internal/barcli` exercising `unknown_token`, `conflict`, `format` paths)
   - Behaviour: Automate prompt grammar regeneration in CI and guardrail cleanliness (`python3 -m prompts.export --output build/prompt-grammar.json` in pipeline, followed by `git diff --exit-code build/prompt-grammar.json`)
+
+## 2026-01-08 — loop 004
+- helper_version: helper:v20251223.1
+- focus: Decision — expose token ordering rules and shorthand guidance via the CLI help entry point
+- active_constraint: `bar help` only echoed the build usage string, leaving ADR consumers without in-tool documentation of shorthand token ordering or override rules (`go run ./cmd/bar help` exited with `usage: bar build ...`)
+- validation_targets:
+  - go run ./cmd/bar help (pre-change)
+  - go run ./cmd/bar help (post-change)
+  - go test ./...
+- evidence:
+  - red: docs/adr/evidence/0065-portable-prompt-grammar-cli/loop-004.md#loop-004-red--helper-rerun-go-run-.-cmd-bar-help
+  - green: docs/adr/evidence/0065-portable-prompt-grammar-cli/loop-004.md#loop-004-green--helper-rerun-go-run-.-cmd-bar-help
+  - green: docs/adr/evidence/0065-portable-prompt-grammar-cli/loop-004.md#loop-004-green--helper-rerun-go-test-.
+- rollback_plan: `git restore --source=HEAD -- internal/barcli/app.go internal/barcli/app_test.go internal/barcli/render_test.go docs/adr/evidence/0065-portable-prompt-grammar-cli/loop-004.md`
+- delta_summary: helper:diff-snapshot=3 files changed, 196 insertions(+), 8 deletions(-) — add CLI help topics/text, token ordering guidance, and adjust regression tests
+- loops_remaining_forecast: 2 loops (error schema fixtures, CI regeneration hook) — medium confidence pending automation work from prior residual constraints
+- residual_constraints:
+  - Structured error fixtures pending (severity: medium; mitigation: add regression tests covering `conflict`/`format` JSON output once CLI exists; monitor future `_tests` Go harness; owning ADR 0065 Decision)
+  - CI automation does not regenerate or verify `build/prompt-grammar.json` (severity: medium; mitigation: add export step to CI and guard with `git diff --exit-code build/prompt-grammar.json`; owning ADR 0065 Consequences)
+- next_work:
+  - Behaviour: Align Go CLI error schema with ADR contract and add failure fixtures (`go test ./internal/barcli` exercising `unknown_token`, `conflict`, `format` paths)
+  - Behaviour: Automate prompt grammar regeneration in CI and guardrail cleanliness (`python3 -m prompts.export --output build/prompt-grammar.json` in pipeline, followed by `git diff --exit-code build/prompt-grammar.json`)

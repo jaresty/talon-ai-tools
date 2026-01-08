@@ -28,12 +28,12 @@ func TestRenderPlainTextSections(t *testing.T) {
 	output := RenderPlainText(result)
 
 	required := []string{
-		"=== SUBJECT ===",
-		"=== TASK ===",
-		"=== CONSTRAINTS ===",
-		"=== PERSONA ===",
+		"=== TASK (DO THIS) ===",
+		"=== CONSTRAINTS (GUARDRAILS) ===",
+		"=== PERSONA (STANCE) ===",
+		"=== SUBJECT (CONTEXT) ===",
 		"1. Completeness (full):",
-		"Promptlets:",
+		"- Promptlets:",
 		"• Voice (as teacher):",
 	}
 

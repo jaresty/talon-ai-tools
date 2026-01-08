@@ -81,7 +81,7 @@ func TestRunPlainTextFormatting(t *testing.T) {
 	}
 
 	out := stdout.String()
-	markers := []string{"=== SUBJECT ===", "=== TASK ===", "=== CONSTRAINTS ===", "=== PERSONA ==="}
+	markers := []string{"=== TASK (DO THIS) ===", "=== CONSTRAINTS (GUARDRAILS) ===", "=== PERSONA (STANCE) ===", "=== SUBJECT (CONTEXT) ==="}
 	for _, marker := range markers {
 		if !strings.Contains(out, marker) {
 			t.Fatalf("expected CLI output to contain %q, got:\n%s", marker, out)

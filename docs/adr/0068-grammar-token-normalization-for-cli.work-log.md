@@ -555,3 +555,24 @@
 - next_work:
   - Behaviour: Monitor operator feedback on filtered help output and expand sections or ordering as needed (validation via go test ./internal/barcli)
 
+## 2026-01-08 — loop 032
+- helper_version: helper:v20251223.1
+- focus: Decision § validation — accept direct persona section filters in `bar help tokens`
+- active_constraint: `go test ./internal/barcli` failed because `parseTokenHelpFilters` rejected intuitive filters like `persona-presets`, preventing the CLI from emitting persona-only help output when operators requested those sections explicitly.
+- validation_targets:
+  - go test ./internal/barcli
+  - python3 -m pytest _tests/test_bar_completion_cli.py
+  - python3 -m pytest _tests/test_generate_axis_cheatsheet.py
+- evidence:
+  - red: docs/adr/evidence/0068-grammar-token-normalization-for-cli/loop-032.md#loop-032-red--helper-rerun-go-test-.-internal-barcli
+  - green: docs/adr/evidence/0068-grammar-token-normalization-for-cli/loop-032.md#loop-032-green--helper-rerun-go-test-.-internal-barcli
+  - green: docs/adr/evidence/0068-grammar-token-normalization-for-cli/loop-032.md#loop-032-green--helper-rerun-python3--m-pytest-_tests-test_bar_completion_cli.py
+  - green: docs/adr/evidence/0068-grammar-token-normalization-for-cli/loop-032.md#loop-032-green--helper-rerun-python3--m-pytest-_tests-test_generate_axis_cheatsheet.py
+- rollback_plan: `git restore --source=HEAD -- internal/barcli/app.go internal/barcli/app_test.go docs/adr/0068-grammar-token-normalization-for-cli.work-log.md docs/adr/evidence/0068-grammar-token-normalization-for-cli/loop-032.md`
+- delta_summary: helper:diff-snapshot=2 files changed, 37 insertions(+) — expanded filter parsing to accept direct persona section names, updated CLI help text, and added Go tests covering both parsing and CLI output for the new filters.
+- loops_remaining_forecast: 0 loops — high confidence now that help filters accept both grouped and direct persona sections with regression coverage.
+- residual_constraints:
+  - Optional axis ordering remains alphabetical (severity: low; mitigation: monitor operator feedback before ranking; monitoring: python3 -m pytest _tests/test_bar_completion_cli.py)
+- next_work:
+  - Behaviour: Continue monitoring help output usability and revisit ordering or additional filters if operator feedback surfaces gaps (validation via go test ./internal/barcli)
+

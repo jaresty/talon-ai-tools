@@ -124,6 +124,20 @@ func TestRenderTokensHelpPersonaFilterIncludesPresetsAndAxes(t *testing.T) {
 	}
 }
 
+func TestParseTokenHelpFiltersDirectPersonaSections(t *testing.T) {
+	filters, err := parseTokenHelpFilters([]string{"persona-presets", "persona-axes"})
+	if err != nil {
+		t.Fatalf("unexpected error parsing direct persona sections: %v", err)
+	}
+
+	if !filters["persona-presets"] {
+		t.Fatalf("expected persona-presets to be enabled, got %#v", filters)
+	}
+	if !filters["persona-axes"] {
+		t.Fatalf("expected persona-axes to be enabled, got %#v", filters)
+	}
+}
+
 func TestRunHelpTokensFiltersSections(t *testing.T) {
 	stdout := &bytes.Buffer{}
 	stderr := &bytes.Buffer{}
@@ -155,5 +169,22 @@ func TestRunHelpTokensUnknownSection(t *testing.T) {
 	}
 	if stdout.Len() == 0 {
 		t.Fatalf("expected general help text to be printed for unknown section")
+	}
+}
+
+func TestRunHelpTokensPersonaPresetsFilter(t *testing.T) {
+	stdout := &bytes.Buffer{}
+	stderr := &bytes.Buffer{}
+	exitCode := Run([]string{"help", "tokens", "persona-presets"}, strings.NewReader(""), stdout, stderr)
+	if exitCode != 0 {
+		t.Fatalf("expected exit 0, got %d with stderr: %s", exitCode, stderr.String())
+	}
+
+	output := stdout.String()
+	if !strings.Contains(output, "PERSONA PRESETS") {
+		t.Fatalf("expected persona presets heading in filtered output, got:\n%s", output)
+	}
+	if strings.Contains(output, "PERSONA AXES") {
+		t.Fatalf("expected persona presets filter to omit persona axes, got:\n%s", output)
 	}
 }

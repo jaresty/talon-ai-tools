@@ -53,6 +53,8 @@ var generalHelpText = strings.TrimSpace(`USAGE
     static            Show only static prompts (slug + canonical hints)
     axes              Show contract axes (slug + canonical hints)
     persona           Show persona presets and persona axes
+    persona-presets   Show only persona presets
+    persona-axes      Show only persona axes
     persona-intents   Show persona intents (slug + spoken hints)
 
  COMMANDS
@@ -309,6 +311,10 @@ func parseTokenHelpFilters(sections []string) (map[string]bool, error) {
 			filters["axes"] = true
 		case "persona":
 			filters["persona-presets"] = true
+			filters["persona-axes"] = true
+		case "persona-presets":
+			filters["persona-presets"] = true
+		case "persona-axes":
 			filters["persona-axes"] = true
 		case "persona-intents":
 			filters["persona-intents"] = true

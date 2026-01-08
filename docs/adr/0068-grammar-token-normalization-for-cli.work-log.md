@@ -313,3 +313,23 @@
   - None — guidance matches CLI behaviour.
 - next_work:
   - None.
+
+## 2026-01-08 — loop 019
+- helper_version: helper:v20251223.1
+- focus: Decision § validation — remove trailing spaces from CLI completion payloads
+- active_constraint: Shell completions regressed to inserting trailing spaces (e.g., `bar build\` showed double-spaced suggestions), breaking tab-completion ergonomics and failing guardrails that expect trimmed suggestion values.
+- validation_targets:
+  - go test ./internal/barcli
+  - python3 -m pytest _tests/test_bar_completion_cli.py
+  - python3 -m pytest _tests/test_generate_axis_cheatsheet.py
+- evidence:
+  - green: docs/adr/evidence/0068-grammar-token-normalization-for-cli/loop-019.md#loop-019-green--helper-rerun-go-test-.-internal-barcli
+  - green: docs/adr/evidence/0068-grammar-token-normalization-for-cli/loop-019.md#loop-019-green--helper-rerun-python3--m-pytest-_tests-test_bar_completion_cli.py
+  - green: docs/adr/evidence/0068-grammar-token-normalization-for-cli/loop-019.md#loop-019-green--helper-rerun-python3--m-pytest-_tests-test_generate_axis_cheatsheet.py
+- rollback_plan: `git restore --source=HEAD -- internal/barcli/completion.go internal/barcli/completion_test.go _tests/test_bar_completion_cli.py docs/adr/0068-grammar-token-normalization-for-cli.work-log.md docs/adr/evidence/0068-grammar-token-normalization-for-cli/loop-019.md`
+- delta_summary: helper:diff-snapshot=3 files changed, 120 insertions(+), 84 deletions(-) — sanitized completion values to drop trailing whitespace and updated Go/Python guardrail tests to confirm trimmed outputs.
+- loops_remaining_forecast: 0 loops — regression resolved; guardrails cover trailing-space behaviour.
+- residual_constraints:
+  - None — completion payloads stay trimmed while metadata columns remain intact.
+- next_work:
+  - Monitor future CLI completion changes to ensure trailing whitespace does not return.

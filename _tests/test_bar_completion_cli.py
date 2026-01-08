@@ -81,8 +81,8 @@ if bootstrap is not None:
             )
 
             self.assertTrue(
-                all(v.endswith(" ") for v in raw_values),
-                "completion values should include trailing space for shells",
+                all(v == v.strip() for v in raw_values),
+                "completion values should not include trailing spaces",
             )
 
             self.assertTrue(
@@ -127,9 +127,9 @@ if bootstrap is not None:
                 values.append(value)
 
             self.assertIn(
-                "as-teacher ",
+                "as-teacher",
                 values,
-                "persona voice suggestions should emit slug values with trailing space",
+                "persona voice suggestions should emit slug values without trailing space",
             )
 
 

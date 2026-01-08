@@ -87,3 +87,21 @@
   - None — release note added; monitor future releases for consistency.
 - next_work:
   - None.
+
+## 2026-01-08 — loop 006
+- helper_version: helper:v20251223.1
+- focus: Decision § completion — confirm slug-first contract is live and mark ADR 0068 accepted
+- active_constraint: ADR 0068 remained in `Proposed` despite all behaviour landing; without re-running guardrails after flipping status to Accepted we lacked fresh proof that slug completions/warnings still hold.
+- validation_targets:
+  - go test ./internal/barcli
+  - python3 -m pytest _tests/test_bar_completion_cli.py
+- evidence:
+  - green: docs/adr/evidence/0068-grammar-token-normalization-for-cli/loop-006.md#loop-006-green--helper-rerun-go-test-.-internal-barcli
+  - green: docs/adr/evidence/0068-grammar-token-normalization-for-cli/loop-006.md#loop-006-green--helper-rerun-python3--m-pytest-_tests-test_bar_completion_cli.py
+- rollback_plan: `git restore --source=HEAD -- docs/adr/0068-grammar-token-normalization-for-cli.md docs/adr/0068-grammar-token-normalization-for-cli.work-log.md docs/adr/evidence/0068-grammar-token-normalization-for-cli/loop-006.md`
+- delta_summary: helper:diff-snapshot=1 file changed, 1 insertion(+) — set ADR status to Accepted after verifying CLI guardrails remain green.
+- loops_remaining_forecast: 0 loops — behaviour, warnings, docs, and release comms complete; monitoring continues via existing guardrails.
+- residual_constraints:
+  - None — slug contract validated and communicated; future adjustments will trigger new ADRs if needed.
+- next_work:
+  - None.

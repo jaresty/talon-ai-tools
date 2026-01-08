@@ -1,5 +1,5 @@
 ## Status
-Proposed
+Accepted — portable CLI now ships slug metadata, warnings, docs, and release communication (2026-01-08)
 
 ## Context
 - Prompt grammar tokens intentionally preserve human-friendly spacing so the same vocabulary can be reused in Talon phrases, UI surfaces, and docs.

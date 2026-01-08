@@ -157,3 +157,19 @@
   - Label fallback removal remains unscheduled (severity: medium; mitigation: capture owner + release milestone in future loop; monitoring: python3 -m pytest _tests/test_generate_axis_cheatsheet.py).
 - next_work:
   - Behaviour: Assign fallback removal owner + release milestone and update work-log (validation via python3 -m pytest _tests/test_generate_axis_cheatsheet.py).
+
+## 2026-01-08 — loop 010
+- helper_version: helper:v20251223.1
+- focus: Decision § follow-up — capture fallback removal tracking issue
+- active_constraint: Follow-up guidance referenced work but lacked a concrete tracking artifact, leaving ownership ambiguous.
+- validation_targets:
+  - python3 -m pytest _tests/test_generate_axis_cheatsheet.py
+- evidence:
+  - green: docs/adr/evidence/0068-grammar-token-normalization-for-cli/loop-010.md#loop-010-green--helper-rerun-python3--m-pytest-_tests-test_generate_axis_cheatsheet.py
+- rollback_plan: `git restore --source=HEAD -- docs/adr/0068-grammar-token-normalization-for-cli.md docs/adr/0068-grammar-token-normalization-for-cli.work-log.md docs/adr/evidence/0068-grammar-token-normalization-for-cli/loop-010.md`
+- delta_summary: helper:diff-snapshot=1 file changed, 1 insertion(+) — linked the maintainer-owned fallback removal to issue `BAR-142` in the ADR follow-up.
+- loops_remaining_forecast: 1 loop — schedule fallback removal execution once release target is finalized.
+- residual_constraints:
+  - Label fallback removal awaits milestone scheduling (severity: medium; mitigation: use BAR-142 to capture release target; monitoring: python3 -m pytest _tests/test_generate_axis_cheatsheet.py).
+- next_work:
+  - Behaviour: Update work-log with milestone decision once BAR-142 is resolved (validation via python3 -m pytest _tests/test_generate_axis_cheatsheet.py).

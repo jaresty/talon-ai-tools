@@ -36,4 +36,4 @@ Accepted — portable CLI now ships slug metadata, warnings, docs, and release c
 - `python3 -m pytest _tests/test_generate_axis_cheatsheet.py` keeps the human-facing grammar documentation in sync with slug terminology so docs and release notes remain authoritative.
 
 ## Follow-up
-- Label-input fallback removal is owned collectively by the bar CLI maintainers via the release checklist. Target release: `bar v0.2.0`. Before that tag ships, record telemetry acceptance and a sunset checklist in the work-log; if the scope grows beyond retiring the warning path, cut a dedicated follow-up ADR.
+- Label-input fallback removal is owned collectively by the bar CLI maintainers via the release checklist (tracked in issue `BAR-142`). Target release: `bar v0.2.0`. Before that tag ships, record telemetry acceptance and a sunset checklist in the work-log; if the scope grows beyond retiring the warning path, cut a dedicated follow-up ADR.

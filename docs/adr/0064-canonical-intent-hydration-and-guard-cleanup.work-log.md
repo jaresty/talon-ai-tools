@@ -152,3 +152,16 @@
 - residual_constraints: None
 - next_work: None (follow-up work proceeds in new ADRs if required)
 
+## 2026-01-07 — loop 010
+- helper_version: helper:v20251223.1
+- focus: Publish acceptance note — update ADR context/plan with loop references
+- active_constraint: None (doc polish only)
+- validation_targets: []
+- evidence:
+  - docs/adr/evidence/0064/loop-010.md#analysis
+- rollback_plan: `git restore --source=HEAD -- docs/adr/0064-canonical-intent-hydration-and-guard-cleanup.md`
+- delta_summary: helper:diff-snapshot=1 file changed, 6 insertions(+) — annotate ADR context/plan with loop references post-acceptance
+- loops_remaining_forecast: 0
+- residual_constraints: None
+- next_work: None
+

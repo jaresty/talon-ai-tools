@@ -61,6 +61,10 @@ os.environ["OPENAI_API_KEY"] = "YOUR-KEY-HERE"
 
 [![Talon-AI-Tools Quickstart](./.docs/video_thumbnail.jpg)](https://www.youtube.com/watch?v=FctiTs6D2tM "Talon-AI-Tools Quickstart")
 
+## Release Notes
+
+- **2026-01-08** – Portable CLI completions now insert slug tokens (for example, `as-teacher`). Using the earlier human-readable labels still works for now, but the CLI prints a warning with the canonical slug so scripts and shell history can migrate before the fallback is removed.
+
 ## Development
 
 - Tests run with the lightweight Talon stub harness under `tests/`; the helper `bootstrap.py` wires the stubs, so simply run `python3 -m unittest discover -s tests` or `make test`.

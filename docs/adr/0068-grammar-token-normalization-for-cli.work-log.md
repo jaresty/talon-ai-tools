@@ -71,3 +71,19 @@
   - The historical docs pytest command (`_tests/test_generate_axis_docs.py`) referenced by earlier loops no longer exists (severity: low; mitigation: continue using `_tests/test_generate_axis_cheatsheet.py` for documentation guardrails until the helper list is refreshed).
 - next_work:
   - None — documentation loop complete; monitor future release notes for slug adoption references as part of normal ADR follow-up.
+
+## 2026-01-08 — loop 005
+- helper_version: helper:v20251223.1
+- focus: Decision § communication — add release notes entry announcing slug-first CLI completions
+- active_constraint: Release notes lacked guidance about slug tokens, so downstream users could miss the CLI warning behaviour even after docs were updated (no automated guard enforced this communication gap).
+- validation_targets:
+  - python3 -m pytest _tests/test_generate_axis_cheatsheet.py
+- evidence:
+  - green: docs/adr/evidence/0068-grammar-token-normalization-for-cli/loop-005.md#loop-005-green--helper-rerun-python3--m-pytest-_tests-test_generate_axis_cheatsheet.py
+- rollback_plan: `git restore --source=HEAD -- readme.md docs/adr/0068-grammar-token-normalization-for-cli.work-log.md docs/adr/evidence/0068-grammar-token-normalization-for-cli/loop-005.md`
+- delta_summary: helper:diff-snapshot=1 file changed, 4 insertions(+) — added a release notes entry summarizing slug-first CLI behaviour and pointing to the warning migration path.
+- loops_remaining_forecast: 0 loops — high confidence; documentation and release communications now highlight slug adoption.
+- residual_constraints:
+  - None — release note added; monitor future releases for consistency.
+- next_work:
+  - None.

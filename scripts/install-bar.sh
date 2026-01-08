@@ -83,11 +83,17 @@ fetch_latest_version() {
     echo "$latest"
 }
 
-sha256_tool() {
+verify_checksum() {
     if command_exists sha256sum; then
-        echo sha256sum
+        if ! echo "$1" | sha256sum --check --status --ignore-missing; then
+            printf 'error: checksum verification failed\n' >&2
+            exit 1
+        fi
     elif command_exists shasum; then
-        echo "shasum -a 256"
+        if ! echo "$1" | shasum -a 256 --check >/dev/null 2>&1; then
+            printf 'error: checksum verification failed\n' >&2
+            exit 1
+        fi
     else
         printf 'error: unable to find sha256sum or shasum\n' >&2
         exit 1
@@ -185,9 +191,7 @@ main() {
         exit 1
     fi
 
-    local sha_tool
-    sha_tool=$(sha256_tool)
-    echo "$checksum_line" | $sha_tool --check --status --ignore-missing
+    verify_checksum "$checksum_line"
     printf 'info: checksum verified for %s\n' "$archive_name"
 
     tar -xzf "$archive" -C "$WORKDIR"

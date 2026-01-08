@@ -30,6 +30,12 @@ jobs:
       - name: Install Python dependencies
         run: python3 -m pip install -r ./.github/requirements-test.txt
 
+      - name: Regenerate prompt grammar artifacts
+        run: python3 -m prompts.export --output build/prompt-grammar.json
+
+      - name: Verify prompt grammar artifact cleanliness
+        run: git diff --exit-code build/prompt-grammar.json
+
       - name: Run guardrails
         run: make ci-guardrails
 

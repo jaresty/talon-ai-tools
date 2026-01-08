@@ -126,3 +126,20 @@
   - CI automation does not regenerate or verify `build/prompt-grammar.json` (severity: medium; mitigation: add export step to CI and guard with `git diff --exit-code build/prompt-grammar.json`; owning ADR 0065 Consequences)
 - next_work:
   - Behaviour: Automate prompt grammar regeneration in CI and guardrail cleanliness (`python3 -m prompts.export --output build/prompt-grammar.json` in pipeline, followed by `git diff --exit-code build/prompt-grammar.json`)
+
+## 2026-01-08 — loop 007
+- helper_version: helper:v20251223.1
+- focus: Decision — enforce prompt grammar regeneration in CI to keep the portable CLI artifact canonical
+- active_constraint: `.github/workflows/test.yml` lacked any step that reran `python3 -m prompts.export --output build/prompt-grammar.json`, so CI could not surface drift between the tracked grammar JSON and the exporter; the missing guardrail let stale prompt contracts ship unnoticed
+- validation_targets:
+  - rg "prompt-grammar" .github/workflows/test.yml
+- evidence:
+  - red: docs/adr/evidence/0065-portable-prompt-grammar-cli/loop-007.md#loop-007-red--helper-rerun-git-show-headdgithubworkflowstestyml--rg-prompt-grammar
+  - green: docs/adr/evidence/0065-portable-prompt-grammar-cli/loop-007.md#loop-007-green--helper-rerun-rg-prompt-grammar-githubworkflowstestyml
+- rollback_plan: `git restore --source=HEAD -- .github/workflows/test.yml docs/adr/evidence/0065-portable-prompt-grammar-cli/loop-007.md docs/adr/0065-portable-prompt-grammar-cli.work-log.md`
+- delta_summary: helper:diff-snapshot=1 file changed, 6 insertions(+) — add CI steps that regenerate the prompt grammar and fail the job if the tracked JSON drifts
+- loops_remaining_forecast: 0 loops — high confidence after CI guardrail lands; future slices only if exporter contract shifts
+- residual_constraints:
+  - Grammar exporter still depends on contributors re-running `python3 -m prompts.export --output build/prompt-grammar.json` locally after schema changes (severity: low; mitigation: rely on CI failure plus README guidance; monitor first CI run containing new guardrail)
+- next_work:
+  - Behaviour: Monitor the next `ci` GitHub Actions run to confirm the new regeneration step stays green (`GitHub Actions: ci` job showing “Regenerate prompt grammar artifacts” success)

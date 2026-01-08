@@ -173,3 +173,19 @@
   - Label fallback removal awaits milestone scheduling (severity: medium; mitigation: use BAR-142 to capture release target; monitoring: python3 -m pytest _tests/test_generate_axis_cheatsheet.py).
 - next_work:
   - Behaviour: Update work-log with milestone decision once BAR-142 is resolved (validation via python3 -m pytest _tests/test_generate_axis_cheatsheet.py).
+
+## 2026-01-08 — loop 011
+- helper_version: helper:v20251223.1
+- focus: Decision § follow-up — record milestone confirmation for fallback removal
+- active_constraint: ADR follow-up cited `BAR-142` but lacked the confirmed release milestone, leaving the deprecation timeline ambiguous.
+- validation_targets:
+  - python3 -m pytest _tests/test_generate_axis_cheatsheet.py
+- evidence:
+  - green: docs/adr/evidence/0068-grammar-token-normalization-for-cli/loop-011.md#loop-011-green--helper-rerun-python3--m-pytest-_tests-test_generate_axis_cheatsheet.py
+- rollback_plan: `git restore --source=HEAD -- docs/adr/0068-grammar-token-normalization-for-cli.md docs/adr/0068-grammar-token-normalization-for-cli.work-log.md docs/adr/evidence/0068-grammar-token-normalization-for-cli/loop-011.md`
+- delta_summary: helper:diff-snapshot=1 file changed, 1 insertion(+) — documented the `bar v0.2.0` milestone date referenced in release planning.
+- loops_remaining_forecast: 1 loop — update work-log once BAR-142 closes with the final sunset checklist.
+- residual_constraints:
+  - Label fallback removal awaiting BAR-142 closure (severity: medium; mitigation: monitor release checklist; validation: python3 -m pytest _tests/test_generate_axis_cheatsheet.py).
+- next_work:
+  - Behaviour: Capture BAR-142 closure details and sunset checklist in work-log (validation via python3 -m pytest _tests/test_generate_axis_cheatsheet.py).

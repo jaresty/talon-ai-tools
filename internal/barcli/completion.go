@@ -39,24 +39,28 @@ complete -F __bar_%s_completion bar
 const fishCompletionScript = `# Fish completion for bar generated from the portable grammar CLI.
 function __fish_bar_completions
     set -l tokens (commandline -opc)
+    set -l partial (commandline -p)
+    set -l current (commandline -ct)
+
     if test (count $tokens) -eq 0
-        return
+        set tokens ""
     end
 
-    set -l partial (commandline -p)
     if string match -q '* ' -- $partial
         set tokens $tokens ""
+    else if test -n "$current"
+        set tokens $tokens $current
     end
 
     set -l index (math (count $tokens) - 1)
-    set -l results (command bar __complete fish $index $tokens)
-    for item in $results
+    for item in (command bar __complete fish $index $tokens 2>/dev/null)
         if test -n "$item"
             printf '%s\n' $item
         end
     end
 end
 
+complete -c bar -e
 complete -c bar -f -a '(__fish_bar_completions)'
 `
 

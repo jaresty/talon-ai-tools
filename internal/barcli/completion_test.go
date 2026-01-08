@@ -35,6 +35,19 @@ func TestGenerateCompletionScriptBash(t *testing.T) {
 	}
 }
 
+func TestGenerateCompletionScriptFish(t *testing.T) {
+	script, err := GenerateCompletionScript("fish", nil)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if !strings.Contains(script, "commandline -ct") {
+		t.Fatalf("expected fish script to capture current token, got: %s", script)
+	}
+	if !strings.Contains(script, "complete -c bar -e") {
+		t.Fatalf("expected fish script to clear existing definitions, got: %s", script)
+	}
+}
+
 func TestCompleteSuggestsCommands(t *testing.T) {
 	grammar := loadCompletionGrammar(t)
 

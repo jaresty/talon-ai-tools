@@ -762,7 +762,10 @@ func runCompletionEngine(opts *cliOptions, stdout, stderr io.Writer) int {
 		if suggestion.TrimmedValue == "" {
 			continue
 		}
-		value := sanitizeCompletionField(suggestion.Value)
+		value := sanitizeCompletionField(suggestion.TrimmedValue)
+		if value == "" {
+			continue
+		}
 		category := sanitizeCompletionField(suggestion.Category)
 		description := sanitizeCompletionField(suggestion.Description)
 		fmt.Fprintf(stdout, "%s\t%s\t%s\n", value, category, description)

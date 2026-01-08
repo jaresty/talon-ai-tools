@@ -233,7 +233,10 @@ func TestCompletePersonaStage(t *testing.T) {
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
-	presetSlug := "persona-coach_junior"
+	presetSlug := grammar.slugForToken("persona=coach_junior")
+	if presetSlug == "" {
+		presetSlug = "persona=coach_junior"
+	}
 	preset, ok := findSuggestion(suggestions, presetSlug)
 	if !ok {
 		t.Fatalf("expected persona preset slug %q, got %v", presetSlug, suggestions)
@@ -339,8 +342,20 @@ func TestCompleteOptionalAxesWithoutStatic(t *testing.T) {
 	if len(catalog.directional) > 0 {
 		addToken(catalog.directional[0])
 	}
+	if len(catalog.personaPreset) > 0 {
+		addToken(catalog.personaPreset[0])
+	}
 	if len(catalog.personaVoice) > 0 {
 		addToken(catalog.personaVoice[0])
+	}
+	if len(catalog.personaAudience) > 0 {
+		addToken(catalog.personaAudience[0])
+	}
+	if len(catalog.personaTone) > 0 {
+		addToken(catalog.personaTone[0])
+	}
+	if len(catalog.personaIntent) > 0 {
+		addToken(catalog.personaIntent[0])
 	}
 
 	for _, value := range expected {
@@ -411,8 +426,20 @@ func TestCompleteOptionalOrderingFollowsAxisPriority(t *testing.T) {
 		addToken(tokens[0])
 	}
 
+	if len(catalog.personaPreset) > 0 {
+		addToken(catalog.personaPreset[0])
+	}
 	if len(catalog.personaVoice) > 0 {
 		addToken(catalog.personaVoice[0])
+	}
+	if len(catalog.personaAudience) > 0 {
+		addToken(catalog.personaAudience[0])
+	}
+	if len(catalog.personaTone) > 0 {
+		addToken(catalog.personaTone[0])
+	}
+	if len(catalog.personaIntent) > 0 {
+		addToken(catalog.personaIntent[0])
 	}
 
 	for _, value := range order {

@@ -473,6 +473,34 @@ func (g *Grammar) initialiseSlugs(raw rawSlugSection) {
 	for preset := range g.Persona.Presets {
 		ensure(fmt.Sprintf("persona=%s", preset))
 	}
+
+	for key, preset := range g.Persona.Presets {
+		canonical := fmt.Sprintf("persona=%s", strings.TrimSpace(key))
+		if preset.Spoken == nil {
+			continue
+		}
+		spoken := strings.TrimSpace(*preset.Spoken)
+		if spoken == "" {
+			continue
+		}
+		candidate := slugifyToken(spoken)
+		if candidate == "" {
+			continue
+		}
+		slug := candidate
+		lower := strings.ToLower(slug)
+		if existing, ok := g.slugToCanonical[lower]; ok && existing != canonical {
+			slug = fmt.Sprintf("persona-%s", candidate)
+			lower = strings.ToLower(slug)
+			if existing, ok := g.slugToCanonical[lower]; ok && existing != canonical {
+				slug = slugifyToken(canonical)
+				lower = strings.ToLower(slug)
+			}
+		}
+		g.canonicalToSlug[canonical] = slug
+		g.slugToCanonical[lower] = canonical
+	}
+
 	if intentTokens, ok := g.Persona.Intent.AxisTokens["intent"]; ok {
 		for _, token := range intentTokens {
 			ensure(token)

@@ -201,7 +201,11 @@ if bootstrap is not None:
                 "adr",
                 "slack",
                 "fly-rog",
+                "persona-coach_junior",
                 "as-teacher",
+                "to-team",
+                "kindly",
+                "coach",
             ]:
                 self.assertIn(
                     expected,
@@ -222,7 +226,11 @@ if bootstrap is not None:
                 "adr",
                 "slack",
                 "fly-rog",
+                "persona-coach_junior",
                 "as-teacher",
+                "to-team",
+                "kindly",
+                "coach",
             ]:
                 self.assertGreater(
                     values.index(expected),
@@ -237,7 +245,11 @@ if bootstrap is not None:
                 "checklist",
                 "slack",
                 "fly-rog",
+                "persona-coach_junior",
                 "as-teacher",
+                "to-team",
+                "kindly",
+                "coach",
             ]
             for earlier, later in zip(ordered, ordered[1:]):
                 if earlier in values and later in values:

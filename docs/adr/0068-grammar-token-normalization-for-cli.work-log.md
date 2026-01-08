@@ -454,3 +454,23 @@
 - next_work:
   - Continue monitoring operator feedback for axis weighting or slicing improvements.
 
+## 2026-01-08 — loop 027
+- helper_version: helper:v20251223.1
+- focus: Decision § validation — expose spoken persona slugs in CLI completions
+- active_constraint: Persona preset completions surfaced canonical keys (e.g., `persona=coach_junior`) instead of the spoken aliases Talon users rely on, making CLI tokens awkward and inconsistent with the grammar’s spoken map.
+- validation_targets:
+  - go test ./internal/barcli
+  - python3 -m pytest _tests/test_bar_completion_cli.py
+  - python3 -m pytest _tests/test_generate_axis_cheatsheet.py
+- evidence:
+  - green: docs/adr/evidence/0068-grammar-token-normalization-for-cli/loop-027.md#loop-027-green--helper-rerun-go-test-.-internal-barcli
+  - green: docs/adr/evidence/0068-grammar-token-normalization-for-cli/loop-027.md#loop-027-green--helper-rerun-python3--m-pytest-_tests-test_bar_completion_cli.py
+  - green: docs/adr/evidence/0068-grammar-token-normalization-for-cli/loop-027.md#loop-027-green--helper-rerun-python3--m-pytest-_tests-test_generate_axis_cheatsheet.py
+- rollback_plan: `git restore --source=HEAD -- internal/barcli/grammar.go internal/barcli/completion_test.go _tests/test_bar_completion_cli.py docs/adr/0068-grammar-token-normalization-for-cli.work-log.md docs/adr/evidence/0068-grammar-token-normalization-for-cli/loop-027.md`
+- delta_summary: helper:diff-snapshot=3 files changed, 68 insertions(+), 1 deletion(-) — updated slug generation to prefer spoken persona aliases, expanded Go/CLI tests to cover all persona axes using grammar data, and confirmed no regressions via guardrails.
+- loops_remaining_forecast: 0 loops — CLI persona tokens now match the grammar’s spoken forms; guardrails cover future drift.
+- residual_constraints:
+  - Optional axes still rely on alphabetical ordering; continue monitoring for relevance-based sorting needs (severity: low; mitigation: monitor CLI telemetry; trigger: python3 -m pytest _tests/test_bar_completion_cli.py).
+- next_work:
+  - Monitor feedback on persona slug readability and add grammar metadata if further abbreviation is required.
+

@@ -373,3 +373,23 @@
   - Persona hints remain gated on selecting a static prompt first (severity: low; mitigation: monitor operator feedback for demand before loosening; monitoring trigger: python3 -m pytest _tests/test_bar_completion_cli.py).
 - next_work:
   - Monitor future completion changes to ensure optional axes stay accessible without requiring specific shorthand prefixes.
+
+## 2026-01-08 — loop 022
+- helper_version: helper:v20251223.1
+- focus: Decision § validation — ensure all optional axes surface even when earlier tokens are skipped
+- active_constraint: Completeness, scope, method, form, and persona suggestions were still hidden when no shorthand tokens were provided, limiting operators to static choices and breaking the optional ordering contract.
+- validation_targets:
+  - go test ./internal/barcli
+  - python3 -m pytest _tests/test_bar_completion_cli.py
+  - python3 -m pytest _tests/test_generate_axis_cheatsheet.py
+- evidence:
+  - green: docs/adr/evidence/0068-grammar-token-normalization-for-cli/loop-022.md#loop-022-green--helper-rerun-go-test-.-internal-barcli
+  - green: docs/adr/evidence/0068-grammar-token-normalization-for-cli/loop-022.md#loop-022-green--helper-rerun-python3--m-pytest-_tests-test_bar_completion_cli.py
+  - green: docs/adr/evidence/0068-grammar-token-normalization-for-cli/loop-022.md#loop-022-green--helper-rerun-python3--m-pytest-_tests-test_generate_axis_cheatsheet.py
+- rollback_plan: `git restore --source=HEAD -- internal/barcli/completion.go internal/barcli/completion_test.go _tests/test_bar_completion_cli.py docs/adr/0068-grammar-token-normalization-for-cli.work-log.md docs/adr/evidence/0068-grammar-token-normalization-for-cli/loop-022.md`
+- delta_summary: helper:diff-snapshot=3 files changed, 28 insertions(+), 12 deletions(-) — removed persona gating tied to static prompts, added Go coverage for completeness/scope/method/form/persona availability without shorthand tokens, and expanded CLI guardrails to assert optional axes appear when only the command is provided.
+- loops_remaining_forecast: 0 loops — optional completions now surface consistently; future regressions will trip the guardrails.
+- residual_constraints:
+  - Optional axes list is long and unsorted; consider prioritised ordering in a future loop if operator feedback warrants it (severity: low; mitigation: monitor CLI UX reports; monitoring trigger: python3 -m pytest _tests/test_bar_completion_cli.py).
+- next_work:
+  - Monitor user feedback for optional axis ordering to decide whether ranked suggestions are needed beyond the current inclusive set.

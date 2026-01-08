@@ -288,3 +288,18 @@ func TestCompleteDirectionalSuggestionsWithoutForm(t *testing.T) {
 		t.Fatalf("expected directional suggestion 'fly-rog', got %v", suggestions)
 	}
 }
+
+func TestCompleteOptionalAxesWithoutStatic(t *testing.T) {
+	grammar := loadCompletionGrammar(t)
+
+	words := []string{"bar", "build", ""}
+	suggestions, err := Complete(grammar, "bash", words, len(words)-1)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	for _, value := range []string{"full", "focus", "steps", "checklist", "as-teacher"} {
+		if !containsSuggestionValue(suggestions, value) {
+			t.Fatalf("expected optional suggestion %q, got %v", value, suggestions)
+		}
+	}
+}

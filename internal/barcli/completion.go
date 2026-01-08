@@ -346,9 +346,6 @@ func personaPresetDescription(grammar *Grammar, preset string) string {
 }
 
 func buildPersonaSuggestions(grammar *Grammar, catalog completionCatalog, state completionState) []completionSuggestion {
-	if !state.static {
-		return nil
-	}
 	seen := make(map[string]struct{})
 	results := make([]completionSuggestion, 0)
 	if !state.personaPreset {

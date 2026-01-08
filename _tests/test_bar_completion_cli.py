@@ -171,7 +171,7 @@ if bootstrap is not None:
                 "directional suggestions should remain available alongside channel options",
             )
 
-        def test_bar_internal_complete_channel_directional_without_static(self) -> None:
+        def test_bar_internal_complete_optional_axes_without_static(self) -> None:
             result = self._run(
                 [
                     "go",
@@ -194,16 +194,20 @@ if bootstrap is not None:
                 value = stripped.split("\t", 1)[0]
                 values.append(value)
 
-            self.assertIn(
+            for expected in [
+                "full",
+                "focus",
+                "steps",
+                "adr",
                 "slack",
-                values,
-                "channel suggestions should appear even when no shorthand tokens are selected",
-            )
-            self.assertIn(
                 "fly-rog",
-                values,
-                "directional suggestions should be available without preceding optional tokens",
-            )
+                "as-teacher",
+            ]:
+                self.assertIn(
+                    expected,
+                    values,
+                    f"optional suggestion {expected!r} should be present",
+                )
 
 
 else:

@@ -143,3 +143,20 @@
   - Grammar exporter still depends on contributors re-running `python3 -m prompts.export --output build/prompt-grammar.json` locally after schema changes (severity: low; mitigation: rely on CI failure plus README guidance; monitor first CI run containing new guardrail)
 - next_work:
   - Behaviour: Monitor the next `ci` GitHub Actions run to confirm the new regeneration step stays green (`GitHub Actions: ci` job showing “Regenerate prompt grammar artifacts” success)
+
+## 2026-01-08 — loop 008
+- helper_version: helper:v20251223.1
+- focus: Decision — document prompt grammar exporter expectations for contributors
+- active_constraint: Contributor docs omitted the requirement to rerun `python3 -m prompts.export --output build/prompt-grammar.json` after grammar changes, so developers could open PRs with stale artifacts despite the new CI guardrail; without guidance, local workflows stayed brittle and delayed loop closure
+- validation_targets:
+  - rg "prompt-grammar" CONTRIBUTING.md
+- evidence:
+  - red: docs/adr/evidence/0065-portable-prompt-grammar-cli/loop-008.md#loop-008-red--helper-rerun-git-show-headcontributingmd--rg-prompt-grammar
+  - green: docs/adr/evidence/0065-portable-prompt-grammar-cli/loop-008.md#loop-008-green--helper-rerun-rg-prompt-grammar-contributingmd
+- rollback_plan: `git restore --source=HEAD -- CONTRIBUTING.md docs/adr/evidence/0065-portable-prompt-grammar-cli/loop-008.md docs/adr/0065-portable-prompt-grammar-cli.work-log.md`
+- delta_summary: helper:diff-snapshot=1 file changed, 1 insertion(+) — add CONTRIBUTING guidance so prompt grammar edits regenerate the artifact before PRs
+- loops_remaining_forecast: 0 loops — high confidence with CI and contributor docs aligned; only reopen if exporter semantics change
+- residual_constraints:
+  - Monitor the first CI run containing a prompt grammar change to ensure contributor guidance plus guardrail catch drifts early (severity: low; mitigation: watch `ci` workflow for prompt grammar steps)
+- next_work:
+  - Behaviour: Observe upcoming prompt grammar-affecting PRs to confirm contributors follow the documented exporter workflow (validation via PR checklist review)

@@ -52,3 +52,4 @@ Thank you for your interest in contributing to `talon-ai-tools`. We are happy to
 - One-command guardrails: `make guardrails` runs the CI guardrails and key parity tests; `make ci-guardrails` is the CI-friendly alias without the extra parity; use these before PRs to catch catalog/list drift.
 - CI entrypoint: call the appropriate `make` target directly (for example, `make ci-guardrails` or `make axis-guardrails-ci`) and upload any artifacts you need explicitly.
 - If you force list checks with `--no-skip-list-files`, you must also pass `--lists-dir` to point at the Talon lists you want to validate.
+- Prompt grammar artifact: whenever you change prompts, axes, persona vocabularies, or the exporter itself, run `python3 -m prompts.export --output build/prompt-grammar.json` and commit the refreshed JSON. CI now re-runs this command and fails if the tracked file drifts, so keep the artifact clean before sending a PR.

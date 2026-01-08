@@ -239,3 +239,28 @@
   - Completion scripts depend on the exported grammar staying fresh (severity: low; mitigation: continue running `go test ./internal/barcli` after each `python3 -m prompts.export` regen; monitor CI prompt grammar step; owning ADR 0065 Decision)
 - next_work:
   - Behaviour: When the grammar schema changes, refresh completion fixtures and rerun `go test ./internal/barcli` to confirm shell suggestions stay aligned (validation via `go test ./internal/barcli`)
+
+## 2026-01-08 — loop 013
+- helper_version: helper:v20251223.1
+- focus: Decision — guard CLI completions with pytest coverage so ADR 0065 behaviour stays observable
+- expected_value:
+  | Factor | Value | Rationale |
+  | --- | --- | --- |
+  | Impact | High | Prevents silent regression of `bar completion` behaviour mandated by ADR 0065 |
+  | Probability | High | Focused pytest invoking the CLI will fail if completions drift |
+  | Time Sensitivity | Medium | Without a guardrail regressions could linger until manual discovery |
+  | Uncertainty note | Low | Behaviour already specified by ADR 0065 Decision |
+- active_constraint: No automated test exercised `bar completion`/`bar __complete`, so CLI completions could regress unnoticed (`rg --stats "bar completion" _tests` returned zero matches).
+- validation_targets:
+  - python3 -m pytest _tests/test_bar_completion_cli.py
+  - .venv/bin/python -m pytest _tests/test_bar_completion_cli.py
+- evidence:
+  - red: docs/adr/evidence/0065-portable-prompt-grammar-cli/loop-013.md#loop-013-red--helper-rerun-python3--m-pytest-_tests-test_bar_completion_clipy
+  - green: docs/adr/evidence/0065-portable-prompt-grammar-cli/loop-013.md#loop-013-green--helper-rerun-venvbinpython--m-pytest-_tests-test_bar_completion_clipy
+- rollback_plan: `git restore --source=HEAD -- _tests/test_bar_completion_cli.py docs/adr/0065-portable-prompt-grammar-cli.md docs/adr/0065-portable-prompt-grammar-cli.work-log.md docs/adr/evidence/0065-portable-prompt-grammar-cli/loop-013.md`
+- delta_summary: helper:diff-snapshot=4 files changed, 99 insertions(+) — add pytest guard, update ADR guidance, capture loop evidence
+- loops_remaining_forecast: 0 loops — high confidence with automated guard in place (monitor future schema changes)
+- residual_constraints:
+  - Virtualenv usage is manual; contributors must run `.venv/bin/python -m pytest _tests/test_bar_completion_cli.py` when validating completions (severity: low; mitigation: document command in README if adoption grows; owning ADR 0065 Consequences)
+- next_work:
+  - Behaviour: Monitor future grammar updates to ensure completion guard stays green and adjust test fixtures when tokens change (validation via `.venv/bin/python -m pytest _tests/test_bar_completion_cli.py`)

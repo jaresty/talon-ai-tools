@@ -29,3 +29,8 @@ Accepted — portable CLI now ships slug metadata, warnings, docs, and release c
 - Completion fixtures and CLI tests require updates to assert slug output as well as backward-compatible label matching.
 - Documentation and release notes must call out the change so users know that slugs become the default CLI form.
 - During the migration window we should emit deprecation warnings when labels are entered directly, eventually removing the fallback once scripts have been updated.
+
+## Validation
+- `go test ./internal/barcli` exercises the Go completion backend and shorthand normalization, ensuring slug tokens remain canonical while label fallbacks continue to be accepted with warnings.
+- `python3 -m pytest _tests/test_bar_completion_cli.py` covers the portable CLI wrappers and metadata-emitting completions, guarding the command-line interfaces and shell installers against regressions in slug output.
+- `python3 -m pytest _tests/test_generate_axis_cheatsheet.py` keeps the human-facing grammar documentation in sync with slug terminology so docs and release notes remain authoritative.

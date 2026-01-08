@@ -105,3 +105,23 @@
   - None — slug contract validated and communicated; future adjustments will trigger new ADRs if needed.
 - next_work:
   - None.
+
+## 2026-01-08 — loop 007
+- helper_version: helper:v20251223.1
+- focus: Decision § completion — capture validation contract inside ADR 0068
+- active_constraint: ADR 0068 lacked an explicit validation summary, making it harder for future reviewers to see which guardrails prove the slug contract after acceptance.
+- validation_targets:
+  - go test ./internal/barcli
+  - python3 -m pytest _tests/test_bar_completion_cli.py
+  - python3 -m pytest _tests/test_generate_axis_cheatsheet.py
+- evidence:
+  - green: docs/adr/evidence/0068-grammar-token-normalization-for-cli/loop-007.md#loop-007-green--helper-rerun-go-test-.-internal-barcli
+  - green: docs/adr/evidence/0068-grammar-token-normalization-for-cli/loop-007.md#loop-007-green--helper-rerun-python3--m-pytest-_tests-test_bar_completion_cli.py
+  - green: docs/adr/evidence/0068-grammar-token-normalization-for-cli/loop-007.md#loop-007-green--helper-rerun-python3--m-pytest-_tests-test_generate_axis_cheatsheet.py
+- rollback_plan: `git restore --source=HEAD -- docs/adr/0068-grammar-token-normalization-for-cli.md docs/adr/0068-grammar-token-normalization-for-cli.work-log.md docs/adr/evidence/0068-grammar-token-normalization-for-cli/loop-007.md`
+- delta_summary: helper:diff-snapshot=1 file changed, 7 insertions(+) — documented the guardrail suite directly in the ADR for future audits.
+- loops_remaining_forecast: 0 loops — slug normalization remains complete with explicit validation references.
+- residual_constraints:
+  - None — validation mapping recorded.
+- next_work:
+  - None.

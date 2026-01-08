@@ -81,6 +81,9 @@ The `bar` CLI consumes the exported prompt grammar so you can assemble recipes o
    python3 -m prompts.export --output build/prompt-grammar.json
    ```
 2. Install the CLI with Go (`go install github.com/talonvoice/talon-ai-tools/cmd/bar@latest`) or use the `scripts/install-bar.sh` helper to fetch a release binary.
+   ```bash
+   curl -fsSL https://raw.githubusercontent.com/talonvoice/talon-ai-tools/main/scripts/install-bar.sh | bash
+   ```
 3. Explore the grammar and build recipes:
    ```bash
    bar help tokens                      # list prompts, axes, persona presets

@@ -464,8 +464,34 @@
 - next_work:
   - Behaviour: None
 
-## 2026-01-08 — loop 022
+## 2026-01-08 — loop 024
 - helper_version: helper:v20251223.1
+- focus: Docs — clarify remote installer command for non-clone setups
+- expected_value:
+  | Factor | Value | Rationale |
+  | --- | --- | --- |
+  | Impact | Medium | Helps users without a local checkout install the CLI |
+  | Probability | High | README snippet provides direct copy-paste command |
+  | Time Sensitivity | Low | Documentation improvement |
+  | Uncertainty note | Low | Script already in repo |
+- active_constraint: README mentioned `scripts/install-bar.sh` but didn’t show how to fetch it remotely (`rg --stats "install-bar.sh" readme.md` only referenced the helper path).
+- validation_targets:
+  - rg --stats "install-bar.sh" readme.md
+  - rg -n "curl -fsSL" readme.md
+- evidence:
+  - red: docs/adr/evidence/0065-portable-prompt-grammar-cli/loop-024.md#loop-024-red--helper-rerun-rg---stats-install-barsh-readmemd
+  - green: docs/adr/evidence/0065-portable-prompt-grammar-cli/loop-024.md#loop-024-green--helper-rerun-rg--n-curl--fssl-readmemd
+- rollback_plan: `git restore --source=HEAD -- readme.md docs/adr/0065-portable-prompt-grammar-cli.work-log.md docs/adr/evidence/0065-portable-prompt-grammar-cli/loop-024.md`
+- delta_summary: helper:diff-snapshot=3 files changed, 18 insertions(+) — add curl command to README and log evidence
+- loops_remaining_forecast: 0 loops — docs now provide clone-free install path
+- residual_constraints:
+  - Keep installer command updated if release hosting changes
+- next_work:
+  - Behaviour: None
+
+## 2026-01-08 — loop 023
+- helper_version: helper:v20251223.1
+
 - focus: Completion summary — ADR 0065 guardrails and documentation alignment
 - expected_value:
   | Factor | Value | Rationale |

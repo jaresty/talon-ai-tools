@@ -139,3 +139,16 @@
 - residual_constraints: None (guard + hydration work landed)
 - next_work: None
 
+## 2026-01-07 — loop 009
+- helper_version: helper:v20251223.1
+- focus: Mark ADR 0064 complete — record acceptance
+- active_constraint: None; all behaviours landed in loops 001-008
+- validation_targets: [] (documentation-only closure)
+- evidence:
+  - docs/adr/evidence/0064/loop-009.md#analysis
+- rollback_plan: `git restore --source=HEAD -- docs/adr/0064-canonical-intent-hydration-and-guard-cleanup.md`
+- delta_summary: helper:diff-snapshot=1 file changed, 2 insertions(+) — mark ADR status Accepted and note completion
+- loops_remaining_forecast: 0 loops — ADR closed
+- residual_constraints: None
+- next_work: None (follow-up work proceeds in new ADRs if required)
+

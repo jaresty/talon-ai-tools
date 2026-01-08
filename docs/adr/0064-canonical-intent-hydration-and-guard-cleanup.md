@@ -2,7 +2,7 @@
 # 0064 — Canonical intent hydration and guard cleanup
 
 ## Status
-Proposed
+Accepted — 2026-01-07
 
 ## Context
 - Canonical persona intent tokens now flow through the suggestion pipeline unchanged. System prompt hydration (`_tests/test_gpt_suggest_context_snapshot.py::test_suggest_uses_hydrated_system_prompt_for_llm`, `_tests/test_prompt_session.py::PromptSessionTests::test_add_system_prompt_attaches_hydrated_persona_and_axes`) still expects the human-readable descriptions that previously came from the docs map, so both tests fail with raw tokens like `for appreciation`.
@@ -16,7 +16,7 @@ Proposed
 - **Deliver a shared hydration helper.** Ship a single helper (e.g., `hydrate_intent_token`) that all surfaces call before rendering labels so quick-help, prompt session, Help Hub, and suggestion UIs stay consistent.
 - **Document and adapt the guard API.** Keep the new keyword-only signature, but re-export `last_drop_reason`/`set_drop_reason` where tests expect them, and update unit tests to account for `passive`, `suppress_attr`, and `on_block` parameters. Provide helper shims to avoid brittle patch targets.
 - **Stabilise quick-help persona rendering.** Emit an explicit "Persona presets:" header row that includes the spoken shortcut (e.g., `peer`). Hydrate alias tokens via the shared helper so canonical spoken presets remain first-class.
-- **Honor passive guard semantics.** Ensure `close_common_overlays(..., passive=True)` never calls `try_begin_request`, and that suppression flags clear drop reasons just as the non-passive path does.
+- **Honor passive guard semantics.** Ensure `close_common_overlays(..., passive=True)` never calls `try_begin_request`, and that suppression flags clear drop reasons just as the non-passive path does. (Implemented in Loop 008.)
 
 ## Consequences
 - Multiple modules (`gpt.py`, `promptSession.py`, `helpHub.py`, `modelHelpCanvas.py`, `surfaceGuidance.py`, overlay guard helpers) will require coordinated updates to restore descriptive text while keeping canonical tokens internally.

@@ -1,7 +1,7 @@
 # 0066 — Embed prompt grammar in `bar`
 
 ## Status
-Proposed
+Accepted
 
 ## Context
 - The `bar` CLI currently loads the prompt grammar from an external JSON file (`build/prompt-grammar.json`) at runtime. Completions and help flows depend on that file being present.
@@ -23,6 +23,7 @@ Proposed
 
 ## Consequences
 - `go build ./cmd/bar` must run after `python3 -m prompts.export` (as today) so the embedded payload reflects the latest grammar; release CI will enforce this ordering.
+- The exporter mirrors the artifact into `internal/barcli/embed/prompt-grammar.json` so the `go:embed` payload stays in sync with the tracked `build/prompt-grammar.json` source.
 - Binary size will increase by the size of the grammar JSON (currently <1 MB), which is acceptable for the portability benefits gained.
 - Any future schema migrations require bumping the embedded asset and accompanying code in a single change, keeping the CLI and grammar synchronized.
 - Tests that previously relied on filesystem fixtures may be updated to use the embedded payload unless they explicitly validate override behavior.

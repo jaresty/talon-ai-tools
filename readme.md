@@ -78,7 +78,7 @@ The `bar` CLI consumes the exported prompt grammar so you can assemble recipes o
 
 1. Regenerate the grammar when prompts, axes, or personas change:
    ```bash
-   python3 -m prompts.export --output build/prompt-grammar.json
+   python3 -m prompts.export --output build/prompt-grammar.json --embed-path internal/barcli/embed/prompt-grammar.json
    ```
 2. Install the CLI with Go (`go install github.com/talonvoice/talon-ai-tools/cmd/bar@latest`) or use the `scripts/install-bar.sh` helper to fetch a release binary.
    ```bash

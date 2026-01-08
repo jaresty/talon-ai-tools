@@ -8,6 +8,7 @@ from types import ModuleType
 from typing import Any, Sequence
 
 DEFAULT_OUTPUT = Path("build/prompt-grammar.json")
+DEFAULT_EMBED_OUTPUT = Path("internal/barcli/embed/prompt-grammar.json")
 _PROMPT_GRAMMAR_MODULE: ModuleType | None = None
 
 
@@ -54,11 +55,12 @@ def _prompt_grammar_module() -> ModuleType:
 
 
 def export_prompt_grammar(
-    output_path: Path, *, indent: int | None = 2
+    output_path: Path,
+    *,
+    indent: int | None = 2,
+    mirrors: Sequence[Path] | None = None,
 ) -> dict[str, Any]:
     payload = _prompt_grammar_module().prompt_grammar_payload()
-
-    output_path.parent.mkdir(parents=True, exist_ok=True)
 
     json_kwargs: dict[str, Any] = {"ensure_ascii": False}
     if indent is None:
@@ -69,7 +71,17 @@ def export_prompt_grammar(
     data = json.dumps(payload, **json_kwargs)
     if not data.endswith("\n"):
         data += "\n"
-    output_path.write_text(data, encoding="utf-8")
+
+    targets: list[Path] = [output_path]
+    if mirrors:
+        for path in mirrors:
+            if path not in targets:
+                targets.append(path)
+
+    for target in targets:
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_text(data, encoding="utf-8")
+
     return payload
 
 
@@ -85,6 +97,19 @@ def _build_parser() -> argparse.ArgumentParser:
         type=Path,
         default=DEFAULT_OUTPUT,
         help="Destination path for the exported JSON (default: build/prompt-grammar.json).",
+    )
+    parser.add_argument(
+        "--embed-path",
+        dest="embed_path",
+        type=Path,
+        default=DEFAULT_EMBED_OUTPUT,
+        help="Mirror the payload for Go embedding (default: internal/barcli/embed/prompt-grammar.json).",
+    )
+    parser.add_argument(
+        "--skip-embed",
+        dest="skip_embed",
+        action="store_true",
+        help="Skip writing the embedded grammar mirror file.",
     )
     parser.add_argument(
         "--indent",
@@ -107,13 +132,21 @@ def main(argv: Sequence[str] | None = None) -> int:
     args = parser.parse_args(argv)
 
     indent: int | None = None if args.compact else args.indent
+    mirrors: list[Path] = []
+    if not args.skip_embed:
+        mirrors.append(args.embed_path)
+
     try:
-        export_prompt_grammar(args.output, indent=indent)
+        export_prompt_grammar(args.output, indent=indent, mirrors=mirrors)
     except Exception as exc:  # pragma: no cover - defensive guardrail
         print(f"error: {exc}", file=sys.stderr)
         return 1
 
-    print(f"Wrote prompt grammar to {args.output}")
+    message = f"Wrote prompt grammar to {args.output}"
+    if mirrors:
+        mirror_str = ", ".join(str(path) for path in mirrors)
+        message += f" (mirrored to {mirror_str})"
+    print(message)
     return 0
 
 

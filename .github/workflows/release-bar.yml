@@ -20,6 +20,9 @@ jobs:
         with:
           go-version: "1.21"
 
+      - name: Regenerate prompt grammar
+        run: python3 -m prompts.export --output build/prompt-grammar.json --embed-path internal/barcli/embed/prompt-grammar.json
+
       - name: Build release archives
         id: build
         run: |

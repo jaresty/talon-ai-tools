@@ -8,8 +8,7 @@ import (
 )
 
 const (
-	envGrammarPath     = "BAR_GRAMMAR_PATH"
-	defaultGrammarPath = "build/prompt-grammar.json"
+	envGrammarPath = "BAR_GRAMMAR_PATH"
 )
 
 // Grammar represents the portable prompt grammar payload exported from Python.
@@ -128,23 +127,15 @@ type rawHierarchy struct {
 	} `json:"defaults"`
 }
 
-// LoadGrammar loads the grammar JSON from disk and normalises it into a helper structure.
+// LoadGrammar loads the prompt grammar, preferring the embedded payload unless an override is provided.
 func LoadGrammar(path string) (*Grammar, error) {
-	if path == "" {
-		if env := os.Getenv(envGrammarPath); env != "" {
-			path = env
-		} else {
-			path = defaultGrammarPath
-		}
-	}
-
-	file, err := os.ReadFile(path)
+	data, err := loadGrammarBytes(path)
 	if err != nil {
-		return nil, fmt.Errorf("open grammar: %w", err)
+		return nil, err
 	}
 
 	var raw rawGrammar
-	if err := json.Unmarshal(file, &raw); err != nil {
+	if err := json.Unmarshal(data, &raw); err != nil {
 		return nil, fmt.Errorf("parse grammar JSON: %w", err)
 	}
 
@@ -199,6 +190,28 @@ func LoadGrammar(path string) (*Grammar, error) {
 	grammar.initialise()
 
 	return grammar, nil
+}
+
+func loadGrammarBytes(requestedPath string) ([]byte, error) {
+	path := strings.TrimSpace(requestedPath)
+	if path != "" {
+		return readGrammarFile(path)
+	}
+
+	envPath := strings.TrimSpace(os.Getenv(envGrammarPath))
+	if envPath != "" {
+		return readGrammarFile(envPath)
+	}
+
+	return embeddedGrammarBytes()
+}
+
+func readGrammarFile(path string) ([]byte, error) {
+	data, err := os.ReadFile(path)
+	if err != nil {
+		return nil, fmt.Errorf("open grammar: %w", err)
+	}
+	return data, nil
 }
 
 func (g *Grammar) initialise() {

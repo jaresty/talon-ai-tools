@@ -21,10 +21,14 @@ var generalHelpText = strings.TrimSpace(`USAGE
   bar help
   bar help tokens [--grammar PATH]
 
-  bar completion <shell> [--grammar PATH] [--output FILE]
-    (shell = bash | zsh | fish)
+   bar completion <shell> [--grammar PATH] [--output FILE]
+     (shell = bash | zsh | fish)
+ 
+   The CLI ships with an embedded prompt grammar. Use --grammar or
+   BAR_GRAMMAR_PATH to point at alternate payloads for testing.
+ 
+ TOKEN ORDER (SHORTHAND)
 
-TOKEN ORDER (SHORTHAND)
   1. Static prompt          (0..1 tokens, default infer)
   2. Completeness           (0..1)
   3. Scope                  (0..2)
@@ -51,9 +55,10 @@ TOPICS & EXAMPLES
   List available tokens:           bar help tokens
   Emit JSON for automation:        bar build --json todo focus steps fog
   Supply prompt content:           bar build todo focus --prompt "Fix onboarding"
-  Mix shorthand with overrides:    bar build todo focus method=steps directional=fog
-  Inspect another grammar file:    bar help tokens --grammar build/prompt-grammar.json
-  Generate fish completions:       bar completion fish > ~/.config/fish/completions/bar.fish
+   Mix shorthand with overrides:    bar build todo focus method=steps directional=fog
+   Inspect another grammar file:    bar help tokens --grammar /path/to/grammar.json
+   Generate fish completions:       bar completion fish > ~/.config/fish/completions/bar.fish
+
 
 
 Flags such as --grammar override the grammar JSON path when necessary.

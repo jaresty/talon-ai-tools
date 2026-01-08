@@ -28,8 +28,30 @@
   - green: docs/adr/evidence/0066-embed-portable-grammar-cli/loop-002.md#loop-002-green--helper-rerun-go-run-.-cmd-bar-build-todo-gist---json
 - rollback_plan: `git restore --source=HEAD -- .github/workflows/release-bar.yml CONTRIBUTING.md docs/adr/0066-embed-portable-grammar-cli.md docs/adr/0066-embed-portable-grammar-cli.work-log.md docs/adr/evidence/0066-embed-portable-grammar-cli/loop-002.md internal/barcli/app.go internal/barcli/grammar.go internal/barcli/grammar_embed.go internal/barcli/grammar_loader_test.go internal/barcli/embed/prompt-grammar.json prompts/export.py readme.md`
 - delta_summary: helper:diff-snapshot=7 files changed, 84 insertions(+), 29 deletions(-) plus new `internal/barcli/embed/prompt-grammar.json` mirror — embed the grammar, add loader tests, refresh docs/automation, and wire the exporter + release workflow to maintain the mirrored asset
-- loops_remaining_forecast: 0 loops (ADR ready for closure; monitor first release run with new embed step) — high confidence after embedding and automation landed
+- loops_remaining_forecast: 1 loop (ensure release workflow guards fail on grammar drift; observe post-landing CI) — medium confidence pending guardrail verification
 - residual_constraints:
-  - Monitor the next `release-bar` workflow run to ensure the exporter + mirror step succeeds (severity: low; mitigation: watch GitHub Actions logs; trigger: release job failure; owning ADR 0066 Decision)
+  - Release workflow lacks a diff guard on regenerated grammar; add explicit check so CI fails on drift (severity: medium; mitigation: update release workflow; owning ADR 0066 Consequences)
 - next_work:
-  - Behaviour: Observe the next `release-bar` job to confirm the embedded grammar regeneration stays green (validation via GitHub Actions `release-bar` workflow execution)
+  - Behaviour: Add diff/identity guardrail to release pipeline (validation via exporter + diff checks)
+
+## 2026-01-08 — loop 003
+- helper_version: helper:v20251223.1
+- focus: Decision § automation — enforce grammar regeneration guardrail in release pipeline
+- active_constraint: The `release-bar` workflow regenerates the grammar but succeeds even if tracked artifacts drift because no diff guard fails the job; without a guardrail, stale grammars can ship.
+- validation_targets:
+  - python3 -m prompts.export --output build/prompt-grammar.json --embed-path internal/barcli/embed/prompt-grammar.json
+  - git diff --exit-code -- build/prompt-grammar.json internal/barcli/embed/prompt-grammar.json
+  - cmp --silent build/prompt-grammar.json internal/barcli/embed/prompt-grammar.json
+  - go test ./internal/barcli
+- evidence:
+  - green: docs/adr/evidence/0066-embed-portable-grammar-cli/loop-003.md#loop-003-green--helper-rerun-python3--m-prompts-export----output-build-prompt-grammarjson---embed-path-internal-barcli-embed-prompt-grammarjson
+  - green: docs/adr/evidence/0066-embed-portable-grammar-cli/loop-003.md#loop-003-green--helper-rerun-git-diff---exit-code----build-prompt-grammarjson-internal-barcli-embed-prompt-grammarjson
+  - green: docs/adr/evidence/0066-embed-portable-grammar-cli/loop-003.md#loop-003-green--helper-rerun-cmp---silent-build-prompt-grammarjson-internal-barcli-embed-prompt-grammarjson
+  - green: docs/adr/evidence/0066-embed-portable-grammar-cli/loop-003.md#loop-003-green--helper-rerun-go-test-.-internal-barcli
+- rollback_plan: `git restore --source=HEAD -- .github/workflows/release-bar.yml docs/adr/0066-embed-portable-grammar-cli.work-log.md docs/adr/evidence/0066-embed-portable-grammar-cli/loop-003.md`
+- delta_summary: helper:diff-snapshot=1 file changed, 5 insertions(+), 1 deletion(-) — add guarded exporter step to fail CI on grammar drift and verify commands locally
+- loops_remaining_forecast: 0 loops (ADR ready for closure; watch next release run for first green with guard) — high confidence after automation guardrail lands
+- residual_constraints:
+  - Observe the next `release-bar` workflow to confirm guarded exporter step passes in CI (severity: low; mitigation: monitor Actions logs; trigger: release failure; owning ADR 0066 Consequences)
+- next_work:
+  - Behaviour: Monitor upcoming `release-bar` execution to ensure new guardrail runs green (validation via GitHub Actions run)

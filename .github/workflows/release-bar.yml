@@ -21,7 +21,11 @@ jobs:
           go-version: "1.21"
 
       - name: Regenerate prompt grammar
-        run: python3 -m prompts.export --output build/prompt-grammar.json --embed-path internal/barcli/embed/prompt-grammar.json
+        run: |
+          set -euo pipefail
+          python3 -m prompts.export --output build/prompt-grammar.json --embed-path internal/barcli/embed/prompt-grammar.json
+          git diff --exit-code -- build/prompt-grammar.json internal/barcli/embed/prompt-grammar.json
+          cmp --silent build/prompt-grammar.json internal/barcli/embed/prompt-grammar.json
 
       - name: Build release archives
         id: build

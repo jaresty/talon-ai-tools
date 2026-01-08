@@ -491,7 +491,31 @@
 - next_work:
   - Behaviour: Trigger release on next version tag (validation via GitHub release page)
 
-## 2026-01-08 — loop 024
+## 2026-01-08 — loop 026
+- helper_version: helper:v20251223.1
+- focus: Installer ergonomics — auto-detect macOS install directory
+- expected_value:
+  | Factor | Value | Rationale |
+  | --- | --- | --- |
+  | Impact | Medium | Ensures Apple silicon users get `bar` on PATH without manual tweaks |
+  | Probability | High | Script now prefers /opt/homebrew/bin when available |
+  | Time Sensitivity | Low | Quality-of-life improvement |
+  | Uncertainty note | Low | Detection is deterministic |
+- active_constraint: `scripts/install-bar.sh` defaulted to `/usr/local/bin`, which is not on PATH for Homebrew-on-Apple-silicon installs; README guidance relied on the script.
+- validation_targets:
+  - rg -n "INSTALL_DIR" scripts/install-bar.sh
+- evidence:
+  - red: docs/adr/evidence/0065-portable-prompt-grammar-cli/loop-026.md#loop-026-red--helper-rerun-rg--n-install_dir-scriptsinstall-barsh
+  - green: docs/adr/evidence/0065-portable-prompt-grammar-cli/loop-026.md#loop-026-green--helper-rerun-rg--n-install_dir-scriptsinstall-barsh
+- rollback_plan: `git restore --source=HEAD -- scripts/install-bar.sh docs/adr/0065-portable-prompt-grammar-cli.work-log.md docs/adr/evidence/0065-portable-prompt-grammar-cli/loop-026.md`
+- delta_summary: helper:diff-snapshot=2 files changed, 18 insertions(+) — auto-detect install target and log evidence
+- loops_remaining_forecast: 0 loops — installer now selects sensible default on macOS
+- residual_constraints:
+  - None
+- next_work:
+  - Behaviour: None
+
+## 2026-01-08 — loop 025
 - helper_version: helper:v20251223.1
 - focus: Docs — clarify remote installer command for non-clone setups
 - expected_value:

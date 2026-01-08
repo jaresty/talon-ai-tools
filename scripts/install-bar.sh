@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-REPO="talonvoice/talon-ai-tools"
+REPO="jaresty/talon-ai-tools"
 BINARY_NAME="bar"
-INSTALL_DIR="${INSTALL_DIR:-/usr/local/bin}"
+INSTALL_DIR="${INSTALL_DIR:-}"
 KEEP_TEMP="${KEEP_TEMP:-0}"
 WORKDIR=""
 CREATED_WORKDIR=0
@@ -14,7 +14,8 @@ Usage: install-bar.sh [--version vX.Y.Z] [--install-dir DIR]
 
 Flags:
   --version       Release tag to install (defaults to latest).
-  --install-dir   Destination directory (defaults to /usr/local/bin or $INSTALL_DIR).
+  --install-dir   Destination directory (defaults to /opt/homebrew/bin when present,
+                   otherwise /usr/local/bin, or uses $INSTALL_DIR).
   --keep-temp     Leave downloaded artifacts in place for debugging.
 
 Environment:
@@ -109,6 +110,13 @@ main() {
 
     local version=""
     local install_dir="$INSTALL_DIR"
+    if [[ -z "$install_dir" ]]; then
+        if [[ -d /opt/homebrew/bin ]]; then
+            install_dir="/opt/homebrew/bin"
+        else
+            install_dir="/usr/local/bin"
+        fi
+    fi
     local keep_temp=0
 
     while [[ $# -gt 0 ]]; do

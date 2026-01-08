@@ -30,6 +30,15 @@ func containsSuggestionValue(list []completionSuggestion, needle string) bool {
 	return ok
 }
 
+func indexOfSuggestion(list []completionSuggestion, needle string) int {
+	for idx, item := range list {
+		if item.TrimmedValue == needle {
+			return idx
+		}
+	}
+	return -1
+}
+
 func TestGenerateCompletionScriptBash(t *testing.T) {
 	script, err := GenerateCompletionScript("bash", nil)
 	if err != nil {
@@ -300,6 +309,20 @@ func TestCompleteOptionalAxesWithoutStatic(t *testing.T) {
 	for _, value := range []string{"full", "focus", "steps", "checklist", "as-teacher"} {
 		if !containsSuggestionValue(suggestions, value) {
 			t.Fatalf("expected optional suggestion %q, got %v", value, suggestions)
+		}
+	}
+
+	todoIdx := indexOfSuggestion(suggestions, "todo")
+	if todoIdx == -1 {
+		t.Fatalf("expected static suggestion 'todo', got %v", suggestions)
+	}
+	for _, value := range []string{"full", "focus", "steps", "checklist", "slack", "fly-rog", "as-teacher"} {
+		idx := indexOfSuggestion(suggestions, value)
+		if idx == -1 {
+			t.Fatalf("expected suggestion %q to have index", value)
+		}
+		if idx > todoIdx {
+			t.Fatalf("expected %q to appear before static suggestion 'todo'", value)
 		}
 	}
 }

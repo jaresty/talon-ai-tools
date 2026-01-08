@@ -393,3 +393,23 @@
   - Optional axes list is long and unsorted; consider prioritised ordering in a future loop if operator feedback warrants it (severity: low; mitigation: monitor CLI UX reports; monitoring trigger: python3 -m pytest _tests/test_bar_completion_cli.py).
 - next_work:
   - Monitor user feedback for optional axis ordering to decide whether ranked suggestions are needed beyond the current inclusive set.
+
+## 2026-01-08 — loop 023
+- helper_version: helper:v20251223.1
+- focus: Decision § validation — prioritise optional axes ahead of static prompts when no shorthand token is supplied
+- active_constraint: Even after exposing optional axes without shorthand tokens, the CLI listed them below hundreds of static prompts, hiding values like `slack`/`fly-rog` off-screen and undermining the "prompt optional" contract.
+- validation_targets:
+  - go test ./internal/barcli
+  - python3 -m pytest _tests/test_bar_completion_cli.py
+  - python3 -m pytest _tests/test_generate_axis_cheatsheet.py
+- evidence:
+  - green: docs/adr/evidence/0068-grammar-token-normalization-for-cli/loop-023.md#loop-023-green--helper-rerun-go-test-.-internal-barcli
+  - green: docs/adr/evidence/0068-grammar-token-normalization-for-cli/loop-023.md#loop-023-green--helper-rerun-python3--m-pytest-_tests-test_bar_completion_cli.py
+  - green: docs/adr/evidence/0068-grammar-token-normalization-for-cli/loop-023.md#loop-023-green--helper-rerun-python3--m-pytest-_tests-test_generate_axis_cheatsheet.py
+- rollback_plan: `git restore --source=HEAD -- internal/barcli/completion.go internal/barcli/completion_test.go _tests/test_bar_completion_cli.py docs/adr/0068-grammar-token-normalization-for-cli.work-log.md docs/adr/evidence/0068-grammar-token-normalization-for-cli/loop-023.md`
+- delta_summary: helper:diff-snapshot=3 files changed, 63 insertions(+), 14 deletions(-) — reordered completion generation to prioritise optional axes, added Go/Python guardrails for ordering guarantees, and logged evidence for the prioritisation fix.
+- loops_remaining_forecast: 0 loops — optional axes now surface at the top of the list with regression coverage enforcing ordering.
+- residual_constraints:
+  - Optional axes within each group still use alphabetical ordering; future UX feedback may warrant ranking by frequency (severity: low; mitigation: monitor CLI telemetry; monitoring trigger: python3 -m pytest _tests/test_bar_completion_cli.py).
+- next_work:
+  - Monitor list length and consider relevance-based ordering if operators report difficulty scanning long optional groups.

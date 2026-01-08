@@ -209,6 +209,27 @@ if bootstrap is not None:
                     f"optional suggestion {expected!r} should be present",
                 )
 
+            self.assertIn(
+                "todo",
+                values,
+                "static suggestions should remain available",
+            )
+            static_index = values.index("todo")
+            for expected in [
+                "full",
+                "focus",
+                "steps",
+                "adr",
+                "slack",
+                "fly-rog",
+                "as-teacher",
+            ]:
+                self.assertLess(
+                    values.index(expected),
+                    static_index,
+                    f"{expected!r} should appear before static prompts",
+                )
+
 
 else:
     if not TYPE_CHECKING:

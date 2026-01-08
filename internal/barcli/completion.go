@@ -561,41 +561,46 @@ func completeBuild(grammar *Grammar, catalog completionCatalog, words []string, 
 	}
 
 	seen := make(map[string]struct{})
-	results := make([]completionSuggestion, 0)
+	priority := make([]completionSuggestion, 0)
+	tail := make([]completionSuggestion, 0)
 
 	if state.override {
-		results = appendUniqueSuggestions(results, seen, buildOverrideSuggestions(grammar, catalog))
-		return filterSuggestionsByPrefix(grammar, results, prefix), nil
-	}
-
-	if !state.static {
-		results = appendUniqueSuggestions(results, seen, buildStaticSuggestions(grammar, catalog))
+		priority = appendUniqueSuggestions(priority, seen, buildOverrideSuggestions(grammar, catalog))
+		return filterSuggestionsByPrefix(grammar, priority, prefix), nil
 	}
 
 	if !state.completeness {
-		results = appendUniqueSuggestions(results, seen, buildAxisSuggestions(grammar, "completeness", catalog.completeness))
+		priority = appendUniqueSuggestions(priority, seen, buildAxisSuggestions(grammar, "completeness", catalog.completeness))
 	}
 
 	if suggestions := buildScopeSuggestions(grammar, catalog, state); len(suggestions) > 0 {
-		results = appendUniqueSuggestions(results, seen, suggestions)
+		priority = appendUniqueSuggestions(priority, seen, suggestions)
 	}
 	if suggestions := buildMethodSuggestions(grammar, catalog, state); len(suggestions) > 0 {
-		results = appendUniqueSuggestions(results, seen, suggestions)
+		priority = appendUniqueSuggestions(priority, seen, suggestions)
 	}
 
 	if !state.form {
-		results = appendUniqueSuggestions(results, seen, buildAxisSuggestions(grammar, "form", catalog.form))
+		priority = appendUniqueSuggestions(priority, seen, buildAxisSuggestions(grammar, "form", catalog.form))
 	}
 
 	if !state.channel {
-		results = appendUniqueSuggestions(results, seen, buildAxisSuggestions(grammar, "channel", catalog.channel))
+		priority = appendUniqueSuggestions(priority, seen, buildAxisSuggestions(grammar, "channel", catalog.channel))
 	}
 
 	if !state.directional {
-		results = appendUniqueSuggestions(results, seen, buildAxisSuggestions(grammar, "directional", catalog.directional))
+		priority = appendUniqueSuggestions(priority, seen, buildAxisSuggestions(grammar, "directional", catalog.directional))
 	}
 
-	results = appendUniqueSuggestions(results, seen, buildPersonaSuggestions(grammar, catalog, state))
+	if persona := buildPersonaSuggestions(grammar, catalog, state); len(persona) > 0 {
+		priority = appendUniqueSuggestions(priority, seen, persona)
+	}
+
+	if !state.static {
+		tail = appendUniqueSuggestions(tail, seen, buildStaticSuggestions(grammar, catalog))
+	}
+
+	results := append(priority, tail...)
 
 	return filterSuggestionsByPrefix(grammar, results, prefix), nil
 }

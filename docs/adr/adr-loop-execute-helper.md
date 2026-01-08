@@ -54,6 +54,7 @@ Use the following named helpers unless the ADR header overrides them. When a loc
 - `helper:diff-snapshot` → `git diff --stat`
 - `helper:rerun <command>` → re-executes the recorded `<VALIDATION_TARGET>` using the same working directory and environment.
 - `helper:timestamp` → UTC ISO-8601 stamp (e.g., `2025-12-21T17:42:00Z`).
+- `helper:wip-preserve` → `git diff --patch > docs/adr/evidence/<adr-id>/loop-<n>-wip.patch` (or ADR-defined equivalent) and records the resulting file and hash in the work-log entry.
 
 The `<ARTEFACT_LOG>` must record headings matching the helper command names when transcripts are aggregated (e.g., `## loop-217 green | helper:diff-snapshot`).
 
@@ -109,6 +110,7 @@ A loop entry is compliant when all statements hold:
 - Expected value for candidate actions is recorded as Impact × Probability × Time Sensitivity (using the helper’s H/M/L scale or numeric equivalents); the chosen action carries the highest expected value among options acting on the constraint.
 - Actions that deliver decisive learning or unlock multiple downstream decisions explicitly record the uncertainty reduced and are treated as higher expected value when that learning accelerates constraint relief.
 - Activity that does not relieve or stabilize the active constraint is parked in `residual_constraints` with mitigation notes instead of being executed in the loop.
+- Compliance requires the `helper:wip-preserve` safeguard: each agent session begins with an initial `helper:diff-snapshot`; when it reports non-zero while the latest work-log entry lacks green evidence, the loop is classified as interrupted and remains compliant only when the diff is archived under `<EVIDENCE_ROOT>`, cited in the work-log, and the audited baseline is restored through `<VCS_REVERT>` before edits proceed.
 - Each loop entry states the active constraint, the expected-value rationale (Impact/Probability/Time Sensitivity entries plus uncertainty note using the helper scale), and the validation target that demonstrates the constraint has been reduced or stabilized.
 - When a new factor becomes the active constraint, the loop documents the pivot, parks the interrupted rung in `residual_constraints` with its mitigation plan, and restates the refreshed path before editing.
 - The active constraint is expressed as a falsifiable statement with probability × impact rationale when uncertainty is involved (otherwise as a concrete blocker), explains why it outranks every other medium/high constraint, and references the canonical intent and any equivalence evidence it reinforces.

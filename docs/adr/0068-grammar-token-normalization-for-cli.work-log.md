@@ -141,3 +141,19 @@
   - Label fallback removal unscheduled (severity: medium; mitigation: assign owner and release milestone; monitoring command: python3 -m pytest _tests/test_generate_axis_cheatsheet.py).
 - next_work:
   - Behaviour: Assign fallback removal owner + release milestone and update work-log (validation via python3 -m pytest _tests/test_generate_axis_cheatsheet.py).
+
+## 2026-01-08 — loop 009
+- helper_version: helper:v20251223.1
+- focus: Decision § follow-up — remove personal attribution from follow-up guidance
+- active_constraint: ADR follow-up referenced an individual maintainer, conflicting with documentation policy against naming people directly.
+- validation_targets:
+  - python3 -m pytest _tests/test_generate_axis_cheatsheet.py
+- evidence:
+  - green: docs/adr/evidence/0068-grammar-token-normalization-for-cli/loop-009.md#loop-009-green--helper-rerun-python3--m-pytest-_tests-test_generate_axis_cheatsheet.py
+- rollback_plan: `git restore --source=HEAD -- docs/adr/0068-grammar-token-normalization-for-cli.md docs/adr/0068-grammar-token-normalization-for-cli.work-log.md docs/adr/evidence/0068-grammar-token-normalization-for-cli/loop-009.md`
+- delta_summary: helper:diff-snapshot=1 file changed, 3 insertions(+) — rewrote follow-up guidance to assign ownership to the maintainer group instead of a named individual.
+- loops_remaining_forecast: 1 loop — schedule fallback removal execution once owner/release target are confirmed.
+- residual_constraints:
+  - Label fallback removal remains unscheduled (severity: medium; mitigation: capture owner + release milestone in future loop; monitoring: python3 -m pytest _tests/test_generate_axis_cheatsheet.py).
+- next_work:
+  - Behaviour: Assign fallback removal owner + release milestone and update work-log (validation via python3 -m pytest _tests/test_generate_axis_cheatsheet.py).

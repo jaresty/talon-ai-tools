@@ -561,46 +561,46 @@ func completeBuild(grammar *Grammar, catalog completionCatalog, words []string, 
 	}
 
 	seen := make(map[string]struct{})
-	priority := make([]completionSuggestion, 0)
-	tail := make([]completionSuggestion, 0)
+	staticSuggestions := make([]completionSuggestion, 0)
+	optionalSuggestions := make([]completionSuggestion, 0)
 
 	if state.override {
-		priority = appendUniqueSuggestions(priority, seen, buildOverrideSuggestions(grammar, catalog))
-		return filterSuggestionsByPrefix(grammar, priority, prefix), nil
-	}
-
-	if !state.completeness {
-		priority = appendUniqueSuggestions(priority, seen, buildAxisSuggestions(grammar, "completeness", catalog.completeness))
-	}
-
-	if suggestions := buildScopeSuggestions(grammar, catalog, state); len(suggestions) > 0 {
-		priority = appendUniqueSuggestions(priority, seen, suggestions)
-	}
-	if suggestions := buildMethodSuggestions(grammar, catalog, state); len(suggestions) > 0 {
-		priority = appendUniqueSuggestions(priority, seen, suggestions)
-	}
-
-	if !state.form {
-		priority = appendUniqueSuggestions(priority, seen, buildAxisSuggestions(grammar, "form", catalog.form))
-	}
-
-	if !state.channel {
-		priority = appendUniqueSuggestions(priority, seen, buildAxisSuggestions(grammar, "channel", catalog.channel))
-	}
-
-	if !state.directional {
-		priority = appendUniqueSuggestions(priority, seen, buildAxisSuggestions(grammar, "directional", catalog.directional))
-	}
-
-	if persona := buildPersonaSuggestions(grammar, catalog, state); len(persona) > 0 {
-		priority = appendUniqueSuggestions(priority, seen, persona)
+		staticSuggestions = appendUniqueSuggestions(staticSuggestions, seen, buildOverrideSuggestions(grammar, catalog))
+		return filterSuggestionsByPrefix(grammar, staticSuggestions, prefix), nil
 	}
 
 	if !state.static {
-		tail = appendUniqueSuggestions(tail, seen, buildStaticSuggestions(grammar, catalog))
+		staticSuggestions = appendUniqueSuggestions(staticSuggestions, seen, buildStaticSuggestions(grammar, catalog))
 	}
 
-	results := append(priority, tail...)
+	if !state.completeness {
+		optionalSuggestions = appendUniqueSuggestions(optionalSuggestions, seen, buildAxisSuggestions(grammar, "completeness", catalog.completeness))
+	}
+
+	if suggestions := buildScopeSuggestions(grammar, catalog, state); len(suggestions) > 0 {
+		optionalSuggestions = appendUniqueSuggestions(optionalSuggestions, seen, suggestions)
+	}
+	if suggestions := buildMethodSuggestions(grammar, catalog, state); len(suggestions) > 0 {
+		optionalSuggestions = appendUniqueSuggestions(optionalSuggestions, seen, suggestions)
+	}
+
+	if !state.form {
+		optionalSuggestions = appendUniqueSuggestions(optionalSuggestions, seen, buildAxisSuggestions(grammar, "form", catalog.form))
+	}
+
+	if !state.channel {
+		optionalSuggestions = appendUniqueSuggestions(optionalSuggestions, seen, buildAxisSuggestions(grammar, "channel", catalog.channel))
+	}
+
+	if !state.directional {
+		optionalSuggestions = appendUniqueSuggestions(optionalSuggestions, seen, buildAxisSuggestions(grammar, "directional", catalog.directional))
+	}
+
+	if persona := buildPersonaSuggestions(grammar, catalog, state); len(persona) > 0 {
+		optionalSuggestions = appendUniqueSuggestions(optionalSuggestions, seen, persona)
+	}
+
+	results := append(staticSuggestions, optionalSuggestions...)
 
 	return filterSuggestionsByPrefix(grammar, results, prefix), nil
 }

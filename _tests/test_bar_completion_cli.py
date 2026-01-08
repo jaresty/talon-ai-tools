@@ -224,10 +224,10 @@ if bootstrap is not None:
                 "fly-rog",
                 "as-teacher",
             ]:
-                self.assertLess(
+                self.assertGreater(
                     values.index(expected),
                     static_index,
-                    f"{expected!r} should appear before static prompts",
+                    f"{expected!r} should appear after static prompts",
                 )
 
 

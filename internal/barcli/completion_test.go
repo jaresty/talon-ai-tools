@@ -321,8 +321,8 @@ func TestCompleteOptionalAxesWithoutStatic(t *testing.T) {
 		if idx == -1 {
 			t.Fatalf("expected suggestion %q to have index", value)
 		}
-		if idx > todoIdx {
-			t.Fatalf("expected %q to appear before static suggestion 'todo'", value)
+		if idx < todoIdx {
+			t.Fatalf("expected %q to appear after static suggestion 'todo'", value)
 		}
 	}
 }

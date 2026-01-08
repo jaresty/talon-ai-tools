@@ -413,3 +413,23 @@
   - Optional axes within each group still use alphabetical ordering; future UX feedback may warrant ranking by frequency (severity: low; mitigation: monitor CLI telemetry; monitoring trigger: python3 -m pytest _tests/test_bar_completion_cli.py).
 - next_work:
   - Monitor list length and consider relevance-based ordering if operators report difficulty scanning long optional groups.
+
+## 2026-01-08 — loop 024
+- helper_version: helper:v20251223.1
+- focus: Decision § validation — restore static prompts to the top of completion suggestions while keeping optional axes accessible
+- active_constraint: Reordering optional axes ahead of statics hid prompt templates that operators expect first, violating ADR guidance that statics remain canonical default entries.
+- validation_targets:
+  - go test ./internal/barcli
+  - python3 -m pytest _tests/test_bar_completion_cli.py
+  - python3 -m pytest _tests/test_generate_axis_cheatsheet.py
+- evidence:
+  - green: docs/adr/evidence/0068-grammar-token-normalization-for-cli/loop-024.md#loop-024-green--helper-rerun-go-test-.-internal-barcli
+  - green: docs/adr/evidence/0068-grammar-token-normalization-for-cli/loop-024.md#loop-024-green--helper-rerun-python3--m-pytest-_tests-test_bar_completion_cli.py
+  - green: docs/adr/evidence/0068-grammar-token-normalization-for-cli/loop-024.md#loop-024-green--helper-rerun-python3--m-pytest-_tests-test_generate_axis_cheatsheet.py
+- rollback_plan: `git restore --source=HEAD -- internal/barcli/completion.go internal/barcli/completion_test.go _tests/test_bar_completion_cli.py docs/adr/0068-grammar-token-normalization-for-cli.work-log.md docs/adr/evidence/0068-grammar-token-normalization-for-cli/loop-024.md`
+- delta_summary: helper:diff-snapshot=3 files changed, 20 insertions(+), 20 deletions(-) — reordered completion assembly to keep statics first, kept optional axes appended after statics, and updated Go/Python guardrails to assert ordering.
+- loops_remaining_forecast: 0 loops — static-first ordering restored with regression coverage; optional axes remain accessible immediately after the prompt list.
+- residual_constraints:
+  - Optional axes still appear as unsorted blocks; revisit prioritisation if operators request tailored ordering (severity: low; mitigation: monitor CLI telemetry; monitoring trigger: python3 -m pytest _tests/test_bar_completion_cli.py).
+- next_work:
+  - Gather operator feedback on optional axis ordering to decide if relevance-based ranking is needed.

@@ -150,7 +150,7 @@ _PANEL_HEIGHT = 880
 
 def _persona_maps():
     try:
-        return persona_intent_maps()
+        return persona_intent_maps(force_refresh=True)
     except Exception:
         return None
 

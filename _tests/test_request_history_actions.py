@@ -3,6 +3,7 @@ import shutil
 import tempfile
 import unittest
 from dataclasses import replace
+from pathlib import Path
 from typing import TYPE_CHECKING, Optional
 from unittest.mock import patch
 
@@ -1454,7 +1455,7 @@ if bootstrap is not None:
             self.assertEqual(len(files), 1, files)
             filename = files[0]
             self.assertIn("fog", filename)
-            content = open(os.path.join(tmpdir, filename), "r", encoding="utf-8").read()
+            content = Path(tmpdir, filename).read_text(encoding="utf-8")
             self.assertIn("directional_tokens: fog", content)
 
         def test_history_save_normalizes_recipe_directional_tokens(self):
@@ -1479,7 +1480,7 @@ if bootstrap is not None:
             filename = files[0]
             self.assertIn("fog", filename)
             self.assertNotIn("FOG", filename)
-            content = open(os.path.join(tmpdir, filename), "r", encoding="utf-8").read()
+            content = Path(tmpdir, filename).read_text(encoding="utf-8")
             self.assertIn("directional_tokens: fog", content)
             self.assertNotIn("directional_tokens: FOG", content)
 
@@ -1504,7 +1505,7 @@ if bootstrap is not None:
             self.assertEqual(len(files), 1, files)
             filename = files[0]
             self.assertNotIn("custom", filename)
-            content = open(os.path.join(tmpdir, filename), "r", encoding="utf-8").read()
+            content = Path(tmpdir, filename).read_text(encoding="utf-8")
             self.assertIn("directional_tokens: fog", content)
             self.assertNotIn("custom_tokens:", content)
 
@@ -1814,7 +1815,7 @@ if bootstrap is not None:
 
             files = list(os.listdir(tmpdir))
             self.assertEqual(len(files), 1, files)
-            content = open(os.path.join(tmpdir, files[0]), "r", encoding="utf-8").read()
+            content = Path(tmpdir, files[0]).read_text(encoding="utf-8")
             self.assertIn("provider_id: gemini", content)
 
         def test_history_save_uses_utc_timestamp(self):
@@ -1835,7 +1836,10 @@ if bootstrap is not None:
 
             files = list(os.listdir(tmpdir))
             self.assertEqual(len(files), 1, files)
-            content = open(os.path.join(tmpdir, files[0]), "r", encoding="utf-8").read()
+            with open(
+                os.path.join(tmpdir, files[0]), "r", encoding="utf-8"
+            ) as saved_file:
+                content = saved_file.read()
             self.assertRegex(content, r"^saved_at: .*Z", "saved_at should be UTC (Z)")
 
         def test_history_save_blocks_when_request_in_flight(self):
@@ -2052,7 +2056,10 @@ if bootstrap is not None:
 
             files = os.listdir(tmpdir)
             self.assertEqual(len(files), 1, files)
-            content = open(os.path.join(tmpdir, files[0]), "r", encoding="utf-8").read()
+            with open(
+                os.path.join(tmpdir, files[0]), "r", encoding="utf-8"
+            ) as saved_file:
+                content = saved_file.read()
             self.assertIn("completeness_tokens: full", content)
             self.assertIn("scope_tokens: focus", content)
             self.assertIn("method_tokens: steps", content)

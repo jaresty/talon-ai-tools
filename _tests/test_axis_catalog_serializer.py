@@ -1,7 +1,7 @@
-import sys
 import tempfile
 import unittest
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 try:
     from bootstrap import bootstrap
@@ -10,7 +10,7 @@ except ModuleNotFoundError:
 else:
     bootstrap()
 
-if bootstrap is not None and "pytest" in sys.modules:
+if bootstrap is not None:
     from talon_user.lib.axisCatalog import axis_catalog, serialize_axis_config
     from scripts.tools.generate_axis_config import render_axis_catalog_json
 
@@ -28,7 +28,9 @@ if bootstrap is not None and "pytest" in sys.modules:
                 lists_dir = Path(tmpdir)
                 lists_dir.mkdir(parents=True, exist_ok=True)
                 completeness_list = lists_dir / "completenessModifier.talon-list"
-                completeness_list.write_text("list: user.completenessModifier\nfocus: focus\n", encoding="utf-8")
+                completeness_list.write_text(
+                    "list: user.completenessModifier\nfocus: focus\n", encoding="utf-8"
+                )
                 axis_map = axis_catalog()["axes"]
                 payload = serialize_axis_config(lists_dir=lists_dir)
                 axis_lists = payload.get("axis_list_tokens", {})
@@ -43,13 +45,17 @@ if bootstrap is not None and "pytest" in sys.modules:
                 lists_dir = Path(tmpdir)
                 lists_dir.mkdir(parents=True, exist_ok=True)
                 scope_list = lists_dir / "scopeModifier.talon-list"
-                scope_list.write_text("list: user.scopeModifier\nfocus: focus\n", encoding="utf-8")
+                scope_list.write_text(
+                    "list: user.scopeModifier\nfocus: focus\n", encoding="utf-8"
+                )
                 text = render_axis_catalog_json(lists_dir=lists_dir)
-                self.assertIn("\"axes\":", text)
+                self.assertIn('"axes":', text)
                 self.assertIn("axis_list_tokens", text)
                 self.assertIn("focus", text)
 else:
-    class AxisCatalogSerializerTests(unittest.TestCase):
-        @unittest.skip("Test harness unavailable outside unittest runs")
-        def test_placeholder(self):
-            pass
+    if not TYPE_CHECKING:
+
+        class AxisCatalogSerializerTests(unittest.TestCase):
+            @unittest.skip("Test harness unavailable outside unittest runs")
+            def test_placeholder(self):
+                pass

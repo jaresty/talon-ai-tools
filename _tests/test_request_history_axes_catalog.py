@@ -1,6 +1,7 @@
 import os
 import tempfile
 import unittest
+from pathlib import Path
 from typing import TYPE_CHECKING
 
 try:
@@ -108,11 +109,12 @@ if bootstrap is not None:
 
                 saved_files = list(os.scandir(tmpdir))
                 self.assertTrue(saved_files, "Expected a saved history file")
-                content = open(saved_files[0].path, "r", encoding="utf-8").read()
+                content = Path(saved_files[0].path).read_text(encoding="utf-8")
                 self.assertIn("directional_tokens: fog", content)
                 self.assertIn("form_tokens: bullets", content)
                 self.assertIn("channel_tokens: slack", content)
                 self.assertIn("fog", saved_files[0].name)
+
 
 else:
     if not TYPE_CHECKING:

@@ -7,5 +7,16 @@ class Response:
         return self._json_data
 
 
+class Timeout(Exception):
+    """Stub Timeout exception for requests."""
+
+
+class _Exceptions:
+    Timeout = Timeout
+
+
+exceptions = _Exceptions()
+
+
 def post(*_args, **_kwargs):
     raise NotImplementedError("requests.post is not stubbed for tests")

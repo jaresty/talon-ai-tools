@@ -573,7 +573,6 @@ func completeBuild(grammar *Grammar, catalog completionCatalog, words []string, 
 
 	if !state.static {
 		results = appendUniqueSuggestions(results, seen, buildStaticSuggestions(grammar, catalog))
-		return filterSuggestionsByPrefix(grammar, results, prefix), nil
 	}
 
 	if !state.completeness {

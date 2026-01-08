@@ -200,6 +200,22 @@ func TestCompleteOverrideSuggestions(t *testing.T) {
 	}
 }
 
+func TestCompleteDirectionalSuggestionsWithoutStatic(t *testing.T) {
+	grammar := loadCompletionGrammar(t)
+
+	words := []string{"bar", "build", ""}
+	suggestions, err := Complete(grammar, "bash", words, len(words)-1)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if !containsSuggestionValue(suggestions, "slack") {
+		t.Fatalf("expected channel suggestion 'slack', got %v", suggestions)
+	}
+	if !containsSuggestionValue(suggestions, "fly-rog") {
+		t.Fatalf("expected directional suggestion 'fly-rog', got %v", suggestions)
+	}
+}
+
 func TestCompletePersonaStage(t *testing.T) {
 	grammar := loadCompletionGrammar(t)
 

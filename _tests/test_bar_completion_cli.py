@@ -171,6 +171,40 @@ if bootstrap is not None:
                 "directional suggestions should remain available alongside channel options",
             )
 
+        def test_bar_internal_complete_channel_directional_without_static(self) -> None:
+            result = self._run(
+                [
+                    "go",
+                    "run",
+                    "./cmd/bar",
+                    "__complete",
+                    "bash",
+                    "2",
+                    "bar",
+                    "build",
+                    "",
+                ]
+            )
+
+            values = []
+            for line in result.stdout.splitlines():
+                stripped = line.strip()
+                if not stripped:
+                    continue
+                value = stripped.split("\t", 1)[0]
+                values.append(value)
+
+            self.assertIn(
+                "slack",
+                values,
+                "channel suggestions should appear even when no shorthand tokens are selected",
+            )
+            self.assertIn(
+                "fly-rog",
+                values,
+                "directional suggestions should be available without preceding optional tokens",
+            )
+
 
 else:
     if not TYPE_CHECKING:

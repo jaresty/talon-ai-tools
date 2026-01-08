@@ -350,6 +350,26 @@
 - delta_summary: helper:diff-snapshot=3 files changed, 77 insertions(+), 2 deletions(-) — removed gating that suppressed channel/directional suggestions, added Go coverage for both channel and directional presence, and extended CLI guardrails to assert `slack`/`fly-rog` availability without prior optional tokens.
 - loops_remaining_forecast: 0 loops — completion ordering now matches ADR guidance and operator expectations.
 - residual_constraints:
-  - None — channel and directional suggestions surface alongside other optional axes.
+  - Persona hints remain gated on selecting a static prompt first (severity: low; mitigation: monitor operator feedback for demand before loosening; monitoring trigger: python3 -m pytest _tests/test_bar_completion_cli.py).
 - next_work:
   - Monitor future completion changes to keep optional axes visible out of order.
+
+## 2026-01-08 — loop 021
+- helper_version: helper:v20251223.1
+- focus: Decision § validation — expose channel and directional completions when no shorthand tokens are present
+- active_constraint: The completion backend returned immediately after listing static prompts, preventing channel and directional suggestions (e.g., `fly-rog`) from appearing when operators skipped optional shorthand tokens.
+- validation_targets:
+  - go test ./internal/barcli
+  - python3 -m pytest _tests/test_bar_completion_cli.py
+  - python3 -m pytest _tests/test_generate_axis_cheatsheet.py
+- evidence:
+  - green: docs/adr/evidence/0068-grammar-token-normalization-for-cli/loop-021.md#loop-021-green--helper-rerun-go-test-.-internal-barcli
+  - green: docs/adr/evidence/0068-grammar-token-normalization-for-cli/loop-021.md#loop-021-green--helper-rerun-python3--m-pytest-_tests-test_bar_completion_cli.py
+  - green: docs/adr/evidence/0068-grammar-token-normalization-for-cli/loop-021.md#loop-021-green--helper-rerun-python3--m-pytest-_tests-test_generate_axis_cheatsheet.py
+- rollback_plan: `git restore --source=HEAD -- internal/barcli/completion.go internal/barcli/completion_test.go _tests/test_bar_completion_cli.py docs/adr/0068-grammar-token-normalization-for-cli.work-log.md docs/adr/evidence/0068-grammar-token-normalization-for-cli/loop-021.md`
+- delta_summary: helper:diff-snapshot=3 files changed, 50 insertions(+), 1 deletion(-) — removed the early return that suppressed later-axis suggestions, added Go/Python guardrails for directional availability without prior tokens, and documented the behaviour in the evidence log.
+- loops_remaining_forecast: 0 loops — optional directional/channel completions now appear even when earlier shorthand tokens are omitted.
+- residual_constraints:
+  - Persona hints remain gated on selecting a static prompt first (severity: low; mitigation: monitor operator feedback for demand before loosening; monitoring trigger: python3 -m pytest _tests/test_bar_completion_cli.py).
+- next_work:
+  - Monitor future completion changes to ensure optional axes stay accessible without requiring specific shorthand prefixes.

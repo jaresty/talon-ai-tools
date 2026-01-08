@@ -589,9 +589,13 @@ func completeBuild(grammar *Grammar, catalog completionCatalog, words []string, 
 
 	if !state.form {
 		results = appendUniqueSuggestions(results, seen, buildAxisSuggestions(grammar, "form", catalog.form))
-	} else if !state.channel {
+	}
+
+	if !state.channel {
 		results = appendUniqueSuggestions(results, seen, buildAxisSuggestions(grammar, "channel", catalog.channel))
-	} else if !state.directional {
+	}
+
+	if !state.directional {
 		results = appendUniqueSuggestions(results, seen, buildAxisSuggestions(grammar, "directional", catalog.directional))
 	}
 

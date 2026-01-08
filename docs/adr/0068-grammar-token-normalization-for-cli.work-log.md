@@ -333,3 +333,23 @@
   - None — completion payloads stay trimmed while metadata columns remain intact.
 - next_work:
   - Monitor future CLI completion changes to ensure trailing whitespace does not return.
+
+## 2026-01-08 — loop 020
+- helper_version: helper:v20251223.1
+- focus: Decision § validation — surface channel and directional completions regardless of optional ordering
+- active_constraint: After trimming completion payloads, the CLI still hid channel/directional suggestions unless all preceding optional tokens were present, blocking quick access to values like `fly-rog` and failing operator expectations for flexible ordering.
+- validation_targets:
+  - go test ./internal/barcli
+  - python3 -m pytest _tests/test_bar_completion_cli.py
+  - python3 -m pytest _tests/test_generate_axis_cheatsheet.py
+- evidence:
+  - green: docs/adr/evidence/0068-grammar-token-normalization-for-cli/loop-020.md#loop-020-green--helper-rerun-go-test-.-internal-barcli
+  - green: docs/adr/evidence/0068-grammar-token-normalization-for-cli/loop-020.md#loop-020-green--helper-rerun-python3--m-pytest-_tests-test_bar_completion_cli.py
+  - green: docs/adr/evidence/0068-grammar-token-normalization-for-cli/loop-020.md#loop-020-green--helper-rerun-python3--m-pytest-_tests-test_generate_axis_cheatsheet.py
+- rollback_plan: `git restore --source=HEAD -- internal/barcli/completion.go internal/barcli/completion_test.go _tests/test_bar_completion_cli.py docs/adr/0068-grammar-token-normalization-for-cli.work-log.md docs/adr/evidence/0068-grammar-token-normalization-for-cli/loop-020.md`
+- delta_summary: helper:diff-snapshot=3 files changed, 77 insertions(+), 2 deletions(-) — removed gating that suppressed channel/directional suggestions, added Go coverage for both channel and directional presence, and extended CLI guardrails to assert `slack`/`fly-rog` availability without prior optional tokens.
+- loops_remaining_forecast: 0 loops — completion ordering now matches ADR guidance and operator expectations.
+- residual_constraints:
+  - None — channel and directional suggestions surface alongside other optional axes.
+- next_work:
+  - Monitor future completion changes to keep optional axes visible out of order.

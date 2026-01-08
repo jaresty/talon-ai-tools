@@ -240,3 +240,35 @@ func TestCompletePersonaStage(t *testing.T) {
 		t.Fatalf("expected persona voice description to be populated")
 	}
 }
+
+func TestCompleteDirectionalSuggestionsWithoutChannel(t *testing.T) {
+	grammar := loadCompletionGrammar(t)
+
+	words := []string{"bar", "build", "todo", "focus", "announce", "adr", ""}
+	suggestions, err := Complete(grammar, "bash", words, len(words)-1)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if !containsSuggestionValue(suggestions, "slack") {
+		t.Fatalf("expected channel suggestion 'slack', got %v", suggestions)
+	}
+	if !containsSuggestionValue(suggestions, "fly-rog") {
+		t.Fatalf("expected directional suggestion 'fly-rog', got %v", suggestions)
+	}
+}
+
+func TestCompleteDirectionalSuggestionsWithoutForm(t *testing.T) {
+	grammar := loadCompletionGrammar(t)
+
+	words := []string{"bar", "build", "todo", "focus", "announce", ""}
+	suggestions, err := Complete(grammar, "bash", words, len(words)-1)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if !containsSuggestionValue(suggestions, "slack") {
+		t.Fatalf("expected channel suggestion 'slack', got %v", suggestions)
+	}
+	if !containsSuggestionValue(suggestions, "fly-rog") {
+		t.Fatalf("expected directional suggestion 'fly-rog', got %v", suggestions)
+	}
+}

@@ -132,6 +132,45 @@ if bootstrap is not None:
                 "persona voice suggestions should emit slug values without trailing space",
             )
 
+        def test_bar_internal_complete_emits_channel_and_directional(self) -> None:
+            tokens = [
+                "bar",
+                "build",
+                "todo",
+                "focus",
+                "announce",
+            ]
+            result = self._run(
+                [
+                    "go",
+                    "run",
+                    "./cmd/bar",
+                    "__complete",
+                    "bash",
+                    "5",
+                    *tokens,
+                ]
+            )
+
+            values = []
+            for line in result.stdout.splitlines():
+                stripped = line.strip()
+                if not stripped:
+                    continue
+                value = stripped.split("\t", 1)[0]
+                values.append(value)
+
+            self.assertIn(
+                "slack",
+                values,
+                "channel suggestions should appear even before selecting a channel",
+            )
+            self.assertIn(
+                "fly-rog",
+                values,
+                "directional suggestions should remain available alongside channel options",
+            )
+
 
 else:
     if not TYPE_CHECKING:

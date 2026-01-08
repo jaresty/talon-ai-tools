@@ -510,10 +510,10 @@
   | Uncertainty note | Low | Deterministic change |
 - active_constraint: `install-bar.sh` piped checksum data into `sha256sum` options (`--status --ignore-missing`) that don’t exist on `shasum`, causing failures on macOS.
 - validation_targets:
-  - rg -n "verify_checksum" scripts/install-bar.sh
+  - rg -n "compute_checksum" scripts/install-bar.sh
 - evidence:
-  - red: docs/adr/evidence/0065-portable-prompt-grammar-cli/loop-027.md#loop-027-red--helper-rerun-rg--n-verify_checksum-scriptsinstall-barsh
-  - green: docs/adr/evidence/0065-portable-prompt-grammar-cli/loop-027.md#loop-027-green--helper-rerun-rg--n-verify_checksum-scriptsinstall-barsh
+  - red: docs/adr/evidence/0065-portable-prompt-grammar-cli/loop-027.md#loop-027-red--helper-rerun-rg--n-compute_checksum-scriptsinstall-barsh
+  - green: docs/adr/evidence/0065-portable-prompt-grammar-cli/loop-027.md#loop-027-green--helper-rerun-rg--n-compute_checksum-scriptsinstall-barsh
 - rollback_plan: `git restore --source=HEAD -- scripts/install-bar.sh docs/adr/0065-portable-prompt-grammar-cli.work-log.md docs/adr/evidence/0065-portable-prompt-grammar-cli/loop-027.md`
 - delta_summary: helper:diff-snapshot=2 files changed, 22 insertions(+), 4 deletions(-) — add shasum-compatible verification and log evidence
 - loops_remaining_forecast: 0 loops — install script now supports both checksum tools

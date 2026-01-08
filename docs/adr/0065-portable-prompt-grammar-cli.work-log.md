@@ -439,6 +439,31 @@
 - next_work:
   - Behaviour: Update docs again if guard starts requiring additional tooling (validation via docs search)
 
+## 2026-01-08 — loop 023
+- helper_version: helper:v20251223.1
+- focus: Status transition — mark ADR 0065 as Accepted
+- expected_value:
+  | Factor | Value | Rationale |
+  | --- | --- | --- |
+  | Impact | Medium | Signals completion to readers and automation |
+  | Probability | High | Status flip straightforward |
+  | Time Sensitivity | Low | Administrative wrap-up |
+  | Uncertainty note | Low | All behaviours already closed |
+- active_constraint: ADR status remained `Proposed` despite guardrails and documentation being complete (`rg -n "^Proposed$" docs/adr/0065-portable-prompt-grammar-cli.md` located the stale status line).
+- validation_targets:
+  - rg -n "^Proposed$" docs/adr/0065-portable-prompt-grammar-cli.md
+  - rg -n "^Accepted$" docs/adr/0065-portable-prompt-grammar-cli.md
+- evidence:
+  - red: docs/adr/evidence/0065-portable-prompt-grammar-cli/loop-023.md#loop-023-red--helper-rerun-rg--n-proposed-docsadr0065-portable-prompt-grammar-climd
+  - green: docs/adr/evidence/0065-portable-prompt-grammar-cli/loop-023.md#loop-023-green--helper-rerun-rg--n-accepted-docsadr0065-portable-prompt-grammar-climd
+- rollback_plan: `git restore --source=HEAD -- docs/adr/0065-portable-prompt-grammar-cli.md docs/adr/0065-portable-prompt-grammar-cli.work-log.md docs/adr/evidence/0065-portable-prompt-grammar-cli/loop-023.md`
+- delta_summary: helper:diff-snapshot=3 files changed, 14 insertions(+), 1 deletion(-) — set status to Accepted and log evidence
+- loops_remaining_forecast: 0 loops — ADR officially complete
+- residual_constraints:
+  - None
+- next_work:
+  - Behaviour: None
+
 ## 2026-01-08 — loop 022
 - helper_version: helper:v20251223.1
 - focus: Completion summary — ADR 0065 guardrails and documentation alignment

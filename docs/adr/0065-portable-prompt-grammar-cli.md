@@ -2,7 +2,7 @@
 # 0065 — Portable prompt grammar CLI
 
 ## Status
-Proposed
+Accepted
 
 ## Context
 - Python modules such as `lib/talonSettings.py` compose prompts by combining a static prompt key, contract axes (completeness, scope, method, form, channel, directional), and optional persona hints (voice, tone, audience, intent).

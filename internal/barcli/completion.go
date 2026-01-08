@@ -56,7 +56,7 @@ function __fish_bar_completions
 
     set -l index (math (count $tokens) - 1)
     for item in (command bar __complete fish $index $tokens 2>/dev/null)
-        set -l parts (string split '\t' -- $item)
+        set -l parts (string split '\t' -- "$item")
         set -l value $parts[1]
         if test -z "$value"
             continue
@@ -64,25 +64,26 @@ function __fish_bar_completions
         set -l parts_count (count $parts)
         set -l category ""
         if test $parts_count -ge 2
-            set category (string trim $parts[2])
+            set category (string trim -- $parts[2])
         end
         set -l description ""
         if test $parts_count -ge 3
             set -l extras $parts[3..-1]
-            set description (string trim (string join ' ' $extras))
+            set description (string trim -- (string join ' ' $extras))
         end
         set -l display ""
         if test -n "$category" -a -n "$description"
             set display "$category — $description"
         else if test -n "$category"
-            set display $category
+            set display "$category"
         else if test -n "$description"
-            set display $description
+            set display "$description"
         end
+        set -l escaped_value (string escape --no-quoted -- "$value")
         if test -n "$display"
-            printf '%s\t%s\n' $value $display
+            printf "%s\t%s\n" "$escaped_value" "$display"
         else
-            printf '%s\n' $value
+            printf "%s\n" "$escaped_value"
         end
     end
 end

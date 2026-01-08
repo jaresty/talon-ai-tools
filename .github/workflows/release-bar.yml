@@ -1,0 +1,54 @@
+name: release-bar
+
+on:
+  push:
+    tags:
+      - "bar-v*"
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.21"
+
+      - name: Build release archives
+        id: build
+        run: |
+          set -euo pipefail
+          VERSION="${GITHUB_REF_NAME#v}"
+          mkdir -p dist
+          for GOOS in linux darwin; do
+            for GOARCH in amd64 arm64; do
+              echo "Building bar for ${GOOS}/${GOARCH}"
+              OUTPUT_DIR="dist/${GOOS}_${GOARCH}"
+              mkdir -p "${OUTPUT_DIR}"
+              GOOS="${GOOS}" GOARCH="${GOARCH}" go build -trimpath -ldflags="-s -w" -o "${OUTPUT_DIR}/bar" ./cmd/bar
+              ARCHIVE="dist/bar_${VERSION}_${GOOS}_${GOARCH}.tar.gz"
+              tar -czf "${ARCHIVE}" -C "${OUTPUT_DIR}" bar
+              rm -rf "${OUTPUT_DIR}"
+            done
+          done
+          (cd dist && sha256sum bar_${VERSION}_*.tar.gz > checksums.txt)
+          echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
+
+      - name: Create GitHub release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            dist/bar_${{ steps.build.outputs.version }}_linux_amd64.tar.gz
+            dist/bar_${{ steps.build.outputs.version }}_linux_arm64.tar.gz
+            dist/bar_${{ steps.build.outputs.version }}_darwin_amd64.tar.gz
+            dist/bar_${{ steps.build.outputs.version }}_darwin_arm64.tar.gz
+            dist/checksums.txt
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

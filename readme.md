@@ -82,7 +82,7 @@ The `bar` CLI consumes the exported prompt grammar so you can assemble recipes o
    ```
 2. Install the CLI with Go (`go install github.com/talonvoice/talon-ai-tools/cmd/bar@latest`) or use the `scripts/install-bar.sh` helper to fetch a release binary.
    ```bash
-   curl -fsSL https://raw.githubusercontent.com/talonvoice/talon-ai-tools/main/scripts/install-bar.sh | bash
+   curl -fsSL https://raw.githubusercontent.com/jaresty/talon-ai-tools/main/scripts/install-bar.sh | bash
    ```
 3. Explore the grammar and build recipes:
    ```bash

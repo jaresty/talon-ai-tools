@@ -464,6 +464,33 @@
 - next_work:
   - Behaviour: None
 
+## 2026-01-08 — loop 025
+- helper_version: helper:v20251223.1
+- focus: Release automation — publish bar binaries for install script
+- expected_value:
+  | Factor | Value | Rationale |
+  | --- | --- | --- |
+  | Impact | High | Enables install-bar.sh to succeed by providing release assets |
+  | Probability | High | CI workflow builds binaries for supported targets |
+  | Time Sensitivity | Medium | Without releases the installer fails |
+  | Uncertainty note | Low | Build steps deterministic |
+- active_constraint: Repository had no workflow producing release tarballs for the bar CLI and the README remote install snippet pointed at a nonexistent URL (`ls .github/workflows` contained only test/pyright pipelines and `rg -n "raw.githubusercontent.com/talonvoice" readme.md` located the stale path).
+- validation_targets:
+  - ls .github/workflows
+  - cat .github/workflows/release-bar.yml
+  - rg -n "raw.githubusercontent.com/jaresty/talon-ai-tools/main/scripts/install-bar.sh" readme.md
+- evidence:
+  - red: docs/adr/evidence/0065-portable-prompt-grammar-cli/loop-025.md#loop-025-red--helper-rerun-ls-githubworkflows
+  - green: docs/adr/evidence/0065-portable-prompt-grammar-cli/loop-025.md#loop-025-green--helper-rerun-cat-githubworkflowsrelease-baryml
+  - green: docs/adr/evidence/0065-portable-prompt-grammar-cli/loop-025.md#loop-025-green--helper-rerun-rg--n-rawgithubusercontentjaresty-talon-ai-toolsmain-scriptsinstall-barsh-readmemd
+- rollback_plan: `git restore --source=HEAD -- .github/workflows/release-bar.yml docs/adr/0065-portable-prompt-grammar-cli.work-log.md docs/adr/evidence/0065-portable-prompt-grammar-cli/loop-025.md`
+- delta_summary: helper:diff-snapshot=2 files changed, 47 insertions(+) — add release workflow and log evidence
+- loops_remaining_forecast: 0 loops — releases now automated when tags pushed
+- residual_constraints:
+  - Ensure tags follow `bar-v*` pattern and publish release notes as needed
+- next_work:
+  - Behaviour: Trigger release on next version tag (validation via GitHub release page)
+
 ## 2026-01-08 — loop 024
 - helper_version: helper:v20251223.1
 - focus: Docs — clarify remote installer command for non-clone setups

@@ -7,7 +7,7 @@ type CLIError struct {
 	Type         string              `json:"type"`
 	Message      string              `json:"message"`
 	Unrecognized []string            `json:"unrecognized,omitempty"`
-	Recognized   map[string][]string `json:"recognized,omitempty"`
+	Recognized   map[string][]string `json:"recognized"`
 }
 
 func (e *CLIError) Error() string {

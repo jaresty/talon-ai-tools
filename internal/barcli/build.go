@@ -119,8 +119,9 @@ func Build(g *Grammar, tokens []string) (*BuildResult, *CLIError) {
 			if strings.HasPrefix(token, "persona=") {
 				preset := strings.TrimSpace(strings.TrimPrefix(token, "persona="))
 				if preset == "" {
-					return nil, errorf(errorFormat, "persona preset requires a value")
+					return nil, state.errorf(errorFormat, "persona preset requires a value")
 				}
+
 				if err := state.applyPersonaPreset(preset, false); err != nil {
 					return nil, err
 				}
@@ -151,7 +152,7 @@ func Build(g *Grammar, tokens []string) (*BuildResult, *CLIError) {
 func (s *buildState) applyShorthandToken(token string) *CLIError {
 	if s.isStaticPrompt(token) {
 		if s.staticExplicit {
-			return errorf(errorConflict, "multiple static prompt tokens provided")
+			return s.errorf(errorConflict, "multiple static prompt tokens provided")
 		}
 		s.static = token
 		s.staticExplicit = true
@@ -168,28 +169,28 @@ func (s *buildState) applyShorthandToken(token string) *CLIError {
 	}
 
 	s.unrecognized = append(s.unrecognized, token)
-	return &CLIError{
+	return s.fail(&CLIError{
 		Type:         errorUnknownToken,
 		Message:      "unrecognized token",
 		Unrecognized: append([]string{}, s.unrecognized...),
 		Recognized:   s.cloneRecognized(),
-	}
+	})
 }
 
 func (s *buildState) applyOverrideToken(token string) *CLIError {
 	idx := strings.Index(token, "=")
 	if idx <= 0 || idx == len(token)-1 {
-		return errorf(errorFormat, "key=value override expected")
+		return s.errorf(errorFormat, "key=value override expected")
 	}
 	key := strings.TrimSpace(token[:idx])
 	value := strings.TrimSpace(token[idx+1:])
 	if value == "" {
-		return errorf(errorFormat, "override for %s missing value", key)
+		return s.errorf(errorFormat, "override for %s missing value", key)
 	}
 
 	switch key {
 	case "persona":
-		return errorf(errorPresetConflict, "persona presets must appear before overrides")
+		return s.errorf(errorPresetConflict, "persona presets must appear before overrides")
 	case "static":
 		if !s.isStaticPrompt(value) {
 			return s.unknownValue(key, value)
@@ -209,7 +210,7 @@ func (s *buildState) applyOverrideToken(token string) *CLIError {
 	case "scope":
 		tokens := s.splitValueList(value)
 		if len(tokens) == 0 {
-			return errorf(errorFormat, "scope override requires at least one token")
+			return s.errorf(errorFormat, "scope override requires at least one token")
 		}
 		list := make([]string, 0, len(tokens))
 		for _, item := range tokens {
@@ -222,7 +223,7 @@ func (s *buildState) applyOverrideToken(token string) *CLIError {
 		}
 		cap := s.axisCap("scope")
 		if cap > 0 && len(list) > cap {
-			return errorf(errorConflict, "scope supports at most %d tokens", cap)
+			return s.errorf(errorConflict, "scope supports at most %d tokens", cap)
 		}
 		s.scope = list
 		s.addRecognized("scope", list...)
@@ -230,7 +231,7 @@ func (s *buildState) applyOverrideToken(token string) *CLIError {
 	case "method":
 		tokens := s.splitValueList(value)
 		if len(tokens) == 0 {
-			return errorf(errorFormat, "method override requires at least one token")
+			return s.errorf(errorFormat, "method override requires at least one token")
 		}
 		list := make([]string, 0, len(tokens))
 		for _, item := range tokens {
@@ -243,7 +244,7 @@ func (s *buildState) applyOverrideToken(token string) *CLIError {
 		}
 		cap := s.axisCap("method")
 		if cap > 0 && len(list) > cap {
-			return errorf(errorConflict, "method supports at most %d tokens", cap)
+			return s.errorf(errorConflict, "method supports at most %d tokens", cap)
 		}
 		s.method = list
 		s.addRecognized("method", list...)
@@ -251,10 +252,10 @@ func (s *buildState) applyOverrideToken(token string) *CLIError {
 	case "form":
 		tokens := s.splitValueList(value)
 		if len(tokens) == 0 {
-			return errorf(errorFormat, "form override requires a value")
+			return s.errorf(errorFormat, "form override requires a value")
 		}
 		if len(tokens) > 1 {
-			return errorf(errorConflict, "form accepts a single token")
+			return s.errorf(errorConflict, "form accepts a single token")
 		}
 		if !s.isAxisToken("form", tokens[0]) {
 			return s.unknownValue(key, tokens[0])
@@ -265,10 +266,10 @@ func (s *buildState) applyOverrideToken(token string) *CLIError {
 	case "channel":
 		tokens := s.splitValueList(value)
 		if len(tokens) == 0 {
-			return errorf(errorFormat, "channel override requires a value")
+			return s.errorf(errorFormat, "channel override requires a value")
 		}
 		if len(tokens) > 1 {
-			return errorf(errorConflict, "channel accepts a single token")
+			return s.errorf(errorConflict, "channel accepts a single token")
 		}
 		if !s.isAxisToken("channel", tokens[0]) {
 			return s.unknownValue(key, tokens[0])
@@ -286,7 +287,8 @@ func (s *buildState) applyOverrideToken(token string) *CLIError {
 	case "voice", "audience", "tone", "intent":
 		return s.applyPersonaAxis(key, value, true)
 	default:
-		return errorf(errorUnknownToken, "unknown override key %s", key)
+		s.unrecognized = append(s.unrecognized, token)
+		return s.errorf(errorUnknownToken, "unknown override key %s", key)
 	}
 }
 
@@ -294,7 +296,7 @@ func (s *buildState) applyShorthandAxis(axis, token string) *CLIError {
 	switch axis {
 	case "completeness":
 		if s.completenessExplicit {
-			return errorf(errorConflict, "multiple completeness tokens provided")
+			return s.errorf(errorConflict, "multiple completeness tokens provided")
 		}
 		s.completeness = token
 		s.completenessExplicit = true
@@ -304,7 +306,7 @@ func (s *buildState) applyShorthandAxis(axis, token string) *CLIError {
 		}
 		cap := s.axisCap(axis)
 		if cap > 0 && len(s.scope) >= cap {
-			return errorf(errorConflict, "scope supports at most %d tokens", cap)
+			return s.errorf(errorConflict, "scope supports at most %d tokens", cap)
 		}
 		s.scope = append(s.scope, token)
 	case "method":
@@ -313,22 +315,22 @@ func (s *buildState) applyShorthandAxis(axis, token string) *CLIError {
 		}
 		cap := s.axisCap(axis)
 		if cap > 0 && len(s.method) >= cap {
-			return errorf(errorConflict, "method supports at most %d tokens", cap)
+			return s.errorf(errorConflict, "method supports at most %d tokens", cap)
 		}
 		s.method = append(s.method, token)
 	case "form":
 		if len(s.form) > 0 {
-			return errorf(errorConflict, "form accepts a single token")
+			return s.errorf(errorConflict, "form accepts a single token")
 		}
 		s.form = append(s.form, token)
 	case "channel":
 		if len(s.channel) > 0 {
-			return errorf(errorConflict, "channel accepts a single token")
+			return s.errorf(errorConflict, "channel accepts a single token")
 		}
 		s.channel = append(s.channel, token)
 	case "directional":
 		if s.directional != "" {
-			return errorf(errorConflict, "directional accepts a single token")
+			return s.errorf(errorConflict, "directional accepts a single token")
 		}
 		s.directional = token
 	default:
@@ -341,10 +343,10 @@ func (s *buildState) applyShorthandAxis(axis, token string) *CLIError {
 
 func (s *buildState) applyPersonaPreset(value string, override bool) *CLIError {
 	if override {
-		return errorf(errorPresetConflict, "persona presets must appear before overrides")
+		return s.errorf(errorPresetConflict, "persona presets must appear before overrides")
 	}
 	if s.personaPreset != "" {
-		return errorf(errorPresetConflict, "multiple persona presets supplied")
+		return s.errorf(errorPresetConflict, "multiple persona presets supplied")
 	}
 	key, preset, ok := s.grammar.ResolvePersonaPreset(value)
 	if !ok {
@@ -388,22 +390,22 @@ func (s *buildState) applyPersonaAxis(axis, token string, override bool) *CLIErr
 	switch axis {
 	case "voice":
 		if s.personaVoice != "" && !override {
-			return errorf(errorConflict, "voice provided multiple times in shorthand")
+			return s.errorf(errorConflict, "voice provided multiple times in shorthand")
 		}
 		s.personaVoice = token
 	case "audience":
 		if s.personaAudience != "" && !override {
-			return errorf(errorConflict, "audience provided multiple times in shorthand")
+			return s.errorf(errorConflict, "audience provided multiple times in shorthand")
 		}
 		s.personaAudience = token
 	case "tone":
 		if s.personaTone != "" && !override {
-			return errorf(errorConflict, "tone provided multiple times in shorthand")
+			return s.errorf(errorConflict, "tone provided multiple times in shorthand")
 		}
 		s.personaTone = token
 	case "intent":
 		if s.personaIntent != "" && !override {
-			return errorf(errorConflict, "intent provided multiple times in shorthand")
+			return s.errorf(errorConflict, "intent provided multiple times in shorthand")
 		}
 		s.personaIntent = token
 	default:
@@ -510,12 +512,29 @@ func (s *buildState) unknownValue(key, value string) *CLIError {
 		msg = "unrecognized token for " + key
 	}
 	s.unrecognized = append(s.unrecognized, value)
-	return &CLIError{
+	return s.fail(&CLIError{
 		Type:         errorUnknownToken,
 		Message:      msg,
 		Unrecognized: append([]string{}, s.unrecognized...),
 		Recognized:   s.cloneRecognized(),
+	})
+}
+
+func (s *buildState) fail(err *CLIError) *CLIError {
+	if err == nil {
+		return nil
 	}
+	if err.Recognized == nil {
+		err.Recognized = s.cloneRecognized()
+	}
+	if len(err.Unrecognized) == 0 && len(s.unrecognized) > 0 {
+		err.Unrecognized = append([]string{}, s.unrecognized...)
+	}
+	return err
+}
+
+func (s *buildState) errorf(errType, format string, args ...any) *CLIError {
+	return s.fail(errorf(errType, format, args...))
 }
 
 func (s *buildState) addRecognized(bucket string, tokens ...string) {
@@ -546,7 +565,7 @@ func (s *buildState) cloneRecognized() map[string][]string {
 
 func (s *buildState) finalise() *CLIError {
 	if s.static == "" {
-		return errorf(errorMissingStatic, "static prompt missing")
+		return s.errorf(errorMissingStatic, "static prompt missing")
 	}
 	// Sort scope and method for deterministic output while preserving initial order for text.
 	s.scope = dedupeInOrder(s.scope)

@@ -66,6 +66,15 @@ func TestRunErrorJSON(t *testing.T) {
 	if payload.Error.Type != errorPresetConflict {
 		t.Fatalf("expected error type %s, got %s", errorPresetConflict, payload.Error.Type)
 	}
+	if payload.Error.Recognized == nil {
+		t.Fatal("expected recognized tokens to be recorded")
+	}
+	if vals := payload.Error.Recognized["persona_preset"]; len(vals) == 0 || vals[0] != "coach_junior" {
+		t.Fatalf("expected persona preset recognized, got %+v", payload.Error.Recognized)
+	}
+	if len(payload.Error.Unrecognized) != 0 {
+		t.Fatalf("expected no unrecognized tokens, got %+v", payload.Error.Unrecognized)
+	}
 }
 
 func TestRunPlainTextFormatting(t *testing.T) {
@@ -86,5 +95,94 @@ func TestRunPlainTextFormatting(t *testing.T) {
 		if !strings.Contains(out, marker) {
 			t.Fatalf("expected CLI output to contain %q, got:\n%s", marker, out)
 		}
+	}
+}
+
+func TestRunConflictErrorSchema(t *testing.T) {
+	grammarPath := filepath.Join("..", "..", "cmd", "bar", "testdata", "grammar.json")
+	args := []string{"--grammar", grammarPath, "--json", "build", "todo", "todo"}
+
+	stdout := &bytes.Buffer{}
+	stderr := &bytes.Buffer{}
+
+	exitCode := Run(args, strings.NewReader(""), stdout, stderr)
+	if exitCode == 0 {
+		t.Fatal("expected conflict error exit code")
+	}
+
+	var payload struct {
+		Error CLIError `json:"error"`
+	}
+	if err := json.Unmarshal(stdout.Bytes(), &payload); err != nil {
+		t.Fatalf("failed to parse error JSON: %v", err)
+	}
+	if payload.Error.Type != errorConflict {
+		t.Fatalf("expected conflict error, got %s", payload.Error.Type)
+	}
+	staticVals, ok := payload.Error.Recognized["static"]
+	if !ok || len(staticVals) == 0 || staticVals[0] != "todo" {
+		t.Fatalf("expected static token recognized, got %+v", payload.Error.Recognized)
+	}
+	if len(payload.Error.Unrecognized) != 0 {
+		t.Fatalf("expected no unrecognized tokens, got %+v", payload.Error.Unrecognized)
+	}
+}
+
+func TestRunFormatErrorSchema(t *testing.T) {
+	grammarPath := filepath.Join("..", "..", "cmd", "bar", "testdata", "grammar.json")
+	args := []string{"--grammar", grammarPath, "--json", "build", "scope="}
+
+	stdout := &bytes.Buffer{}
+	stderr := &bytes.Buffer{}
+
+	exitCode := Run(args, strings.NewReader(""), stdout, stderr)
+	if exitCode == 0 {
+		t.Fatal("expected format error exit code")
+	}
+
+	var payload struct {
+		Error CLIError `json:"error"`
+	}
+	if err := json.Unmarshal(stdout.Bytes(), &payload); err != nil {
+		t.Fatalf("failed to parse error JSON: %v", err)
+	}
+	if payload.Error.Type != errorFormat {
+		t.Fatalf("expected format error, got %s", payload.Error.Type)
+	}
+	if payload.Error.Recognized == nil {
+		t.Fatal("expected recognized map to be present even when empty")
+	}
+	if len(payload.Error.Recognized) != 0 {
+		t.Fatalf("expected empty recognized map, got %+v", payload.Error.Recognized)
+	}
+}
+
+func TestRunUnknownOverrideRecordsUnrecognized(t *testing.T) {
+	grammarPath := filepath.Join("..", "..", "cmd", "bar", "testdata", "grammar.json")
+	args := []string{"--grammar", grammarPath, "--json", "build", "todo", "foo=bar"}
+
+	stdout := &bytes.Buffer{}
+	stderr := &bytes.Buffer{}
+
+	exitCode := Run(args, strings.NewReader(""), stdout, stderr)
+	if exitCode == 0 {
+		t.Fatal("expected unknown token exit code")
+	}
+
+	var payload struct {
+		Error CLIError `json:"error"`
+	}
+	if err := json.Unmarshal(stdout.Bytes(), &payload); err != nil {
+		t.Fatalf("failed to parse error JSON: %v", err)
+	}
+	if payload.Error.Type != errorUnknownToken {
+		t.Fatalf("expected unknown token error, got %s", payload.Error.Type)
+	}
+	if len(payload.Error.Unrecognized) != 1 || payload.Error.Unrecognized[0] != "foo=bar" {
+		t.Fatalf("expected unrecognized token to be recorded, got %+v", payload.Error.Unrecognized)
+	}
+	staticVals, ok := payload.Error.Recognized["static"]
+	if !ok || len(staticVals) == 0 || staticVals[0] != "todo" {
+		t.Fatalf("expected static token recognized, got %+v", payload.Error.Recognized)
 	}
 }

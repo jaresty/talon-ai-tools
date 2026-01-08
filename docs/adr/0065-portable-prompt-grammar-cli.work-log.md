@@ -109,3 +109,20 @@
 - next_work:
   - Behaviour: Align Go CLI error schema with ADR contract and add failure fixtures (`go test ./internal/barcli` exercising `unknown_token`, `conflict`, `format` paths)
   - Behaviour: Automate prompt grammar regeneration in CI and guardrail cleanliness (`python3 -m prompts.export --output build/prompt-grammar.json` in pipeline, followed by `git diff --exit-code build/prompt-grammar.json`)
+
+## 2026-01-08 — loop 006
+- helper_version: helper:v20251223.1
+- focus: Decision — align Go CLI error schema with ADR contract by surfacing recognized/unrecognized metadata
+- active_constraint: `go test ./internal/barcli` lacked regression coverage for structured error payloads, so conflict/format/unknown token paths emitted JSON without recognized context, breaking ADR 0065 Decision expectations for portable error parity
+- validation_targets:
+  - go test ./internal/barcli
+- evidence:
+  - red: docs/adr/evidence/0065-portable-prompt-grammar-cli/loop-006.md#loop-006-red--helper-rerun-go-test-internalbarcli
+  - green: docs/adr/evidence/0065-portable-prompt-grammar-cli/loop-006.md#loop-006-green--helper-rerun-go-test-internalbarcli
+- rollback_plan: `git restore --source=HEAD -- internal/barcli/build.go internal/barcli/app_test.go internal/barcli/errors.go docs/adr/evidence/0065-portable-prompt-grammar-cli/loop-006.md docs/adr/0065-portable-prompt-grammar-cli.work-log.md`
+- delta_summary: helper:diff-snapshot=3 files changed, 148 insertions(+), 31 deletions(-) — annotate CLI errors with recognized snapshots, expose recognized in JSON, and add regression tests covering conflict, format, and unknown token scenarios
+- loops_remaining_forecast: 1 loop (CI regeneration hook to enforce prompt export cleanliness) — medium confidence pending pipeline alignment
+- residual_constraints:
+  - CI automation does not regenerate or verify `build/prompt-grammar.json` (severity: medium; mitigation: add export step to CI and guard with `git diff --exit-code build/prompt-grammar.json`; owning ADR 0065 Consequences)
+- next_work:
+  - Behaviour: Automate prompt grammar regeneration in CI and guardrail cleanliness (`python3 -m prompts.export --output build/prompt-grammar.json` in pipeline, followed by `git diff --exit-code build/prompt-grammar.json`)

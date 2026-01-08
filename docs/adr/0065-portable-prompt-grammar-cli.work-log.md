@@ -177,3 +177,20 @@
   - Monitor future CLI feature loops to ensure README snippets stay synced with `bar help` examples (severity: low; mitigation: re-run README search when CLI surface changes)
 - next_work:
   - Behaviour: During the next CLI enhancement, confirm README examples still reflect exported grammar commands (validation via `rg "bar build" readme.md`)
+
+## 2026-01-08 — loop 010
+- helper_version: helper:v20251223.1
+- focus: Decision — add an automated guardrail keeping README portable CLI docs in sync
+- active_constraint: No test enforced the presence of the README portable CLI section, so contributors could remove or drift the quickstart snippet without detection (verified by `git show HEAD^:_tests/test_readme_portable_cli.py` failing prior to this slice)
+- validation_targets:
+  - python3 -m unittest _tests.test_readme_portable_cli
+- evidence:
+  - red: docs/adr/evidence/0065-portable-prompt-grammar-cli/loop-010.md#loop-010-red--helper-rerun-git-show-head_tests-test-readme-portable-clipy
+  - green: docs/adr/evidence/0065-portable-prompt-grammar-cli/loop-010.md#loop-010-green--helper-rerun-python3--m-unittest-_tests-test-readme-portable-cli
+- rollback_plan: `git restore --source=HEAD -- _tests/test_readme_portable_cli.py docs/adr/evidence/0065-portable-prompt-grammar-cli/loop-010.md docs/adr/0065-portable-prompt-grammar-cli.work-log.md`
+- delta_summary: helper:diff-snapshot=1 file changed, 1 insertion(+) & 1 new test file — add README guardrail test ensuring key CLI commands stay documented
+- loops_remaining_forecast: 0 loops — high confidence; CI + docs + guardrails now cover exporter, contributor guidance, and README visibility
+- residual_constraints:
+  - Watch for future README reorganisations that might move the CLI section; update the guardrail test accordingly (severity: low; mitigation: adjust expected snippets when layout changes)
+- next_work:
+  - Behaviour: When README structure changes, update `_tests.test_readme_portable_cli` expectations so the guardrail continues to reflect live documentation

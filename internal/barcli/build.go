@@ -25,6 +25,7 @@ type BuildResult struct {
 	Axes                AxesResult          `json:"axes"`
 	Persona             PersonaResult       `json:"persona,omitempty"`
 	HydratedPersona     []HydratedPromptlet `json:"hydrated_persona,omitempty"`
+	Warnings            []string            `json:"warnings,omitempty"`
 	PlainText           string              `json:"-"`
 }
 
@@ -81,6 +82,8 @@ type buildState struct {
 	unrecognized        []string
 	hydratedConstraints []HydratedPromptlet
 	hydratedPersona     []HydratedPromptlet
+	warnings            []string
+	warningSet          map[string]struct{}
 }
 
 func newBuildState(g *Grammar) *buildState {
@@ -98,22 +101,68 @@ func newBuildState(g *Grammar) *buildState {
 		form:         []string{},
 		channel:      []string{},
 		recognized:   make(map[string][]string),
+		warningSet:   make(map[string]struct{}),
 	}
+}
+
+func (s *buildState) warnSlugPreference(canonical, source string) {
+	if s == nil || s.grammar == nil || len(s.grammar.canonicalToSlug) == 0 {
+		return
+	}
+	canonical = strings.TrimSpace(canonical)
+	source = strings.TrimSpace(source)
+	if canonical == "" || source == "" {
+		return
+	}
+	slug, ok := s.grammar.canonicalToSlug[canonical]
+	if !ok {
+		return
+	}
+	slugNormalized := strings.ToLower(strings.TrimSpace(slug))
+	sourceNormalized := strings.ToLower(source)
+	if slugNormalized == sourceNormalized {
+		return
+	}
+	canonicalNormalized := strings.ToLower(canonical)
+	if slugNormalized == canonicalNormalized {
+		return
+	}
+	message := fmt.Sprintf("token %q is deprecated; use slug %q", source, slug)
+	if _, exists := s.warningSet[message]; exists {
+		return
+	}
+	s.warningSet[message] = struct{}{}
+	s.warnings = append(s.warnings, message)
 }
 
 // Build assembles the canonical prompt recipe from the supplied tokens.
 func Build(g *Grammar, tokens []string) (*BuildResult, *CLIError) {
-	normalizedTokens := tokens
+	var normalizedTokens []NormalizedToken
 	if os.Getenv("BAR_DISABLE_MULTIWORD") != "1" {
-		normalizedTokens = g.NormalizeTokens(tokens)
+		normalizedTokens = g.NormalizeTokensWithSource(tokens)
+	} else {
+		normalizedTokens = make([]NormalizedToken, 0, len(tokens))
+		for _, raw := range tokens {
+			trimmed := strings.TrimSpace(raw)
+			if trimmed == "" {
+				continue
+			}
+			normalizedTokens = append(normalizedTokens, NormalizedToken{
+				Canonical: trimmed,
+				Source:    trimmed,
+			})
+		}
 	}
 	state := newBuildState(g)
 
-	for _, raw := range normalizedTokens {
-		token := strings.TrimSpace(raw)
+	for _, entry := range normalizedTokens {
+		token := strings.TrimSpace(entry.Canonical)
+		source := strings.TrimSpace(entry.Source)
 		if token == "" {
 			continue
 		}
+
+		state.warnSlugPreference(token, source)
 
 		if !state.overrideMode {
 			if strings.HasPrefix(token, "persona=") {
@@ -720,6 +769,9 @@ func (s *buildState) toResult() *BuildResult {
 	}
 	if len(s.hydratedPersona) > 0 {
 		result.HydratedPersona = append([]HydratedPromptlet(nil), s.hydratedPersona...)
+	}
+	if len(s.warnings) > 0 {
+		result.Warnings = append([]string(nil), s.warnings...)
 	}
 
 	return result

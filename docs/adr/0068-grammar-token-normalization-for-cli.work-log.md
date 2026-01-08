@@ -34,3 +34,22 @@
   - Docs/release notes have not announced slug adoption (severity: medium; mitigation: update docs/adr/0068-... summary and public docs; monitoring: `python3 -m pytest _tests/test_generate_axis_docs.py`)
 - next_work:
   - Behaviour: Surface label-entry warning and update docs/release notes for slug adoption (validation via go test ./internal/barcli and python3 -m pytest _tests/test_bar_completion_cli.py)
+
+## 2026-01-08 — loop 003
+- helper_version: helper:v20251223.1
+- focus: Decision § implementation — warn when canonical labels are supplied so slug adoption becomes observable
+- active_constraint: `go test ./internal/barcli` failed because the new warning guardrails expected user-visible slug guidance, but the CLI still accepted label tokens in silence, blocking the migration signal.
+- validation_targets:
+  - go test ./internal/barcli
+  - python3 -m pytest _tests/test_bar_completion_cli.py
+- evidence:
+  - red: docs/adr/evidence/0068-grammar-token-normalization-for-cli/loop-003.md#loop-003-red--helper-rerun-go-test-.-internal-barcli
+  - green: docs/adr/evidence/0068-grammar-token-normalization-for-cli/loop-003.md#loop-003-green--helper-rerun-go-test-.-internal-barcli
+  - green: docs/adr/evidence/0068-grammar-token-normalization-for-cli/loop-003.md#loop-003-green--helper-rerun-python3--m-pytest-_tests-test_bar_completion_cli.py
+- rollback_plan: `git restore --source=HEAD -- internal/barcli/app.go internal/barcli/app_test.go internal/barcli/build.go internal/barcli/grammar.go docs/adr/0068-grammar-token-normalization-for-cli.work-log.md docs/adr/evidence/0068-grammar-token-normalization-for-cli/loop-003.md`
+- delta_summary: helper:diff-snapshot=4 files changed, 155 insertions(+), 10 deletions(-) — added CLI warning tests, tracked label provenance during normalization, emitted slug deprecation warnings, and surfaced them in both stdout JSON and stderr messaging.
+- loops_remaining_forecast: 1 loop (document slug defaults and release-note the migration path) — medium confidence pending docs review bandwidth.
+- residual_constraints:
+  - Documentation and release notes still need to call out slug-first CLI behaviour (severity: medium; mitigation: draft docs update and link to ADR; monitoring: `python3 -m pytest _tests/test_generate_axis_docs.py`)
+- next_work:
+  - Behaviour: Update docs and release notes to explain slug-first CLI tokens (validation via python3 -m pytest _tests/test_generate_axis_docs.py)

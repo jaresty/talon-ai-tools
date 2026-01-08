@@ -63,6 +63,11 @@ type multiWordToken struct {
 	canonical  string
 }
 
+type NormalizedToken struct {
+	Canonical string
+	Source    string
+}
+
 type PersonaPreset struct {
 	Key      string  `json:"key"`
 	Label    string  `json:"label"`
@@ -563,27 +568,56 @@ func (g *Grammar) combineMultiWordToken(initial string, rest []string) (string, 
 
 // NormalizeTokens collapses multi-word tokens so the parser can consume them reliably.
 func (g *Grammar) NormalizeTokens(tokens []string) []string {
-	if len(tokens) == 0 {
-		return tokens
+	detailed := g.NormalizeTokensWithSource(tokens)
+	if len(detailed) == 0 {
+		return []string{}
 	}
-	normalized := make([]string, 0, len(tokens))
+	normalized := make([]string, 0, len(detailed))
+	for _, entry := range detailed {
+		normalized = append(normalized, entry.Canonical)
+	}
+	return normalized
+}
+
+// NormalizeTokensWithSource returns canonical tokens and the raw user input that produced them.
+func (g *Grammar) NormalizeTokensWithSource(tokens []string) []NormalizedToken {
+	if len(tokens) == 0 {
+		return []NormalizedToken{}
+	}
+	normalized := make([]NormalizedToken, 0, len(tokens))
 	for i := 0; i < len(tokens); i++ {
-		token := strings.TrimSpace(tokens[i])
-		if token == "" {
+		raw := strings.TrimSpace(tokens[i])
+		if raw == "" {
 			continue
 		}
+		sourceParts := []string{raw}
+		token := raw
 		if canonical, ok := g.canonicalForInput(token); ok {
 			token = canonical
 		}
 		if strings.Contains(token, "=") {
-			normalized = append(normalized, token)
+			normalized = append(normalized, NormalizedToken{
+				Canonical: token,
+				Source:    strings.Join(sourceParts, " "),
+			})
 			continue
 		}
 		combined, consumed := g.combineMultiWordToken(token, tokens[i+1:])
+		if consumed > 0 {
+			for j := 0; j < consumed; j++ {
+				part := strings.TrimSpace(tokens[i+1+j])
+				if part != "" {
+					sourceParts = append(sourceParts, part)
+				}
+			}
+		}
 		if canonical, ok := g.canonicalForInput(combined); ok {
 			combined = canonical
 		}
-		normalized = append(normalized, combined)
+		normalized = append(normalized, NormalizedToken{
+			Canonical: combined,
+			Source:    strings.Join(sourceParts, " "),
+		})
 		i += consumed
 	}
 	return normalized

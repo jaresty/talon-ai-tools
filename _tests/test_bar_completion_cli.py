@@ -90,6 +90,49 @@ if bootstrap is not None:
                 "metadata columns should be present in completion output",
             )
 
+        def test_bar_internal_complete_uses_slug_values(self) -> None:
+            tokens = [
+                "bar",
+                "build",
+                "todo",
+                "full",
+                "focus",
+                "system",
+                "steps",
+                "analysis",
+                "checklist",
+                "slack",
+                "fog",
+                "",
+            ]
+            index = str(len(tokens) - 1)
+            result = self._run(
+                [
+                    "go",
+                    "run",
+                    "./cmd/bar",
+                    "__complete",
+                    "bash",
+                    index,
+                    *tokens,
+                ]
+            )
+
+            values = []
+            for line in result.stdout.splitlines():
+                stripped = line.strip()
+                if not stripped:
+                    continue
+                value = stripped.split("\t", 1)[0]
+                values.append(value)
+
+            self.assertIn(
+                "as-teacher ",
+                values,
+                "persona voice suggestions should emit slug values with trailing space",
+            )
+
+
 else:
     if not TYPE_CHECKING:
 

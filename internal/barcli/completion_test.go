@@ -166,12 +166,16 @@ func TestCompleteOverrideSuggestions(t *testing.T) {
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
-	suggestion, ok := findSuggestion(suggestions, "scope=focus")
+	slug := "scope-focus"
+	suggestion, ok := findSuggestion(suggestions, slug)
 	if !ok {
-		t.Fatalf("expected override suggestion 'scope=focus', got %v", suggestions)
+		t.Fatalf("expected override suggestion %q, got %v", slug, suggestions)
 	}
 	if suggestion.Category != "override.scope" {
 		t.Fatalf("expected override category 'override.scope', got %q", suggestion.Category)
+	}
+	if trimmed := strings.TrimSpace(suggestion.Value); trimmed != slug {
+		t.Fatalf("expected override value %q, got %q", slug, trimmed)
 	}
 	if !strings.HasSuffix(suggestion.Value, " ") {
 		t.Fatalf("expected override suggestion to include trailing space, got %q", suggestion.Value)
@@ -189,22 +193,30 @@ func TestCompletePersonaStage(t *testing.T) {
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
-	preset, ok := findSuggestion(suggestions, "persona=coach_junior")
+	presetSlug := "persona-coach_junior"
+	preset, ok := findSuggestion(suggestions, presetSlug)
 	if !ok {
-		t.Fatalf("expected persona preset suggestion, got %v", suggestions)
+		t.Fatalf("expected persona preset slug %q, got %v", presetSlug, suggestions)
 	}
 	if preset.Category != "persona.preset" {
 		t.Fatalf("expected persona preset category, got %q", preset.Category)
 	}
+	if trimmed := strings.TrimSpace(preset.Value); trimmed != presetSlug {
+		t.Fatalf("expected persona preset value %q, got %q", presetSlug, trimmed)
+	}
 	if !strings.HasSuffix(preset.Value, " ") {
 		t.Fatalf("expected persona preset suggestion to include trailing space, got %q", preset.Value)
 	}
-	voice, ok := findSuggestion(suggestions, "as teacher")
+	voiceSlug := "as-teacher"
+	voice, ok := findSuggestion(suggestions, voiceSlug)
 	if !ok {
-		t.Fatalf("expected persona voice suggestion, got %v", suggestions)
+		t.Fatalf("expected persona voice slug %q, got %v", voiceSlug, suggestions)
 	}
 	if voice.Category != "persona.voice" {
 		t.Fatalf("expected persona voice category, got %q", voice.Category)
+	}
+	if trimmed := strings.TrimSpace(voice.Value); trimmed != voiceSlug {
+		t.Fatalf("expected persona voice value %q, got %q", voiceSlug, trimmed)
 	}
 	if !strings.HasSuffix(voice.Value, " ") {
 		t.Fatalf("expected persona voice suggestion to include trailing space, got %q", voice.Value)

@@ -1,0 +1,36 @@
+## 2026-01-08 — loop 001
+- helper_version: helper:v20251223.1
+- focus: Decision § implementation — capture slug normalisation gap in CLI completions
+- active_constraint: `go test ./internal/barcli` fails because the completion backend still emits human-readable tokens such as `as teacher`, so persona slugs like `as-teacher` cannot be consumed or suggested reliably.
+- validation_targets:
+  - go test ./internal/barcli
+  - .venv/bin/python -m pytest _tests/test_bar_completion_cli.py
+- evidence:
+  - red: docs/adr/evidence/0068-grammar-token-normalization-for-cli/loop-001.md#loop-001-red--helper-rerun-go-test-.-internal-barcli
+  - red: docs/adr/evidence/0068-grammar-token-normalization-for-cli/loop-001.md#loop-001-red--helper-rerun-.venvbinpython--m-pytest-_tests-test_bar_completion_cli.py
+- rollback_plan: `git restore --source=HEAD -- internal/barcli/completion_test.go _tests/test_bar_completion_cli.py docs/adr/0068-grammar-token-normalization-for-cli.work-log.md docs/adr/evidence/0068-grammar-token-normalization-for-cli/loop-001.md`
+- delta_summary: helper:diff-snapshot=2 files changed, 49 insertions(+), 2 deletions(-) — tightened guardrail tests to expect slug outputs and recorded failing runs
+- loops_remaining_forecast: 3 loops (implement slug maps in grammar export, update CLI to consume slugs, refresh docs/tests) — medium confidence pending data model changes
+- residual_constraints:
+  - Grammar export lacks slug metadata for axis/persona tokens (severity: high; mitigation: generate slug catalog in Python exporter; monitoring: go test ./internal/barcli)
+- next_work:
+  - Behaviour: Implement slug generation in exporter and update CLI completion handling (validation via go test ./internal/barcli and .venv/bin/python -m pytest _tests/test_bar_completion_cli.py)
+
+## 2026-01-08 — loop 002
+- helper_version: helper:v20251223.1
+- focus: Decision § implementation — deliver slug metadata to grammar export and CLI completions (updated heading ## 2026-01-08 — loop 002)
+- active_constraint: Without canonical slug metadata, `go test ./internal/barcli` and pytest guardrails stayed red because completions substituted human-readable labels instead of slugs, blocking predictable CLI insertion.
+- validation_targets:
+  - go test ./internal/barcli
+  - python3 -m pytest _tests/test_bar_completion_cli.py
+- evidence:
+  - green: docs/adr/evidence/0068-grammar-token-normalization-for-cli/loop-002.md#loop-002-green--helper-rerun-go-test-.-internal-barcli
+  - green: docs/adr/evidence/0068-grammar-token-normalization-for-cli/loop-002.md#loop-002-green--helper-rerun-python3--m-pytest-_tests-test_bar_completion_cli.py
+- rollback_plan: `git restore --source=HEAD -- internal/barcli/completion.go internal/barcli/completion_test.go internal/barcli/grammar.go lib/promptGrammar.py build/prompt-grammar.json internal/barcli/embed/prompt-grammar.json _tests/test_bar_completion_cli.py docs/adr/0068-grammar-token-normalization-for-cli.work-log.md docs/adr/evidence/0068-grammar-token-normalization-for-cli/loop-002.md`
+- delta_summary: helper:diff-snapshot=7 files changed, 2380 insertions(+), 73 deletions(-) — exported canonical-to-slug maps, taught the CLI to surface slug values, and refreshed guardrail tests/fixtures.
+- loops_remaining_forecast: 2 loops (emit label-input deprecation warnings and document slug defaults in user guides) — medium confidence pending UX copy sign-off.
+- residual_constraints:
+  - CLI still accepts human-label input silently (severity: medium; mitigation: add explicit deprecation warning before removal; monitoring: go test ./internal/barcli)
+  - Docs/release notes have not announced slug adoption (severity: medium; mitigation: update docs/adr/0068-... summary and public docs; monitoring: `python3 -m pytest _tests/test_generate_axis_docs.py`)
+- next_work:
+  - Behaviour: Surface label-entry warning and update docs/release notes for slug adoption (validation via go test ./internal/barcli and python3 -m pytest _tests/test_bar_completion_cli.py)

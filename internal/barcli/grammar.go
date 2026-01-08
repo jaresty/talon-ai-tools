@@ -4,11 +4,17 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"regexp"
 	"strings"
 )
 
 const (
 	envGrammarPath = "BAR_GRAMMAR_PATH"
+)
+
+var (
+	slugInvalidChars   = regexp.MustCompile(`[^a-z0-9_-]+`)
+	slugHyphenCollapse = regexp.MustCompile(`-{2,}`)
 )
 
 // Grammar represents the portable prompt grammar payload exported from Python.
@@ -19,12 +25,14 @@ type Grammar struct {
 	Persona       PersonaSection
 	Hierarchy     HierarchySection
 
-	axisTokens     map[string]map[string]struct{}
-	axisDocs       map[string]map[string]string
-	axisPriority   []string
-	personaTokens  map[string]map[string]struct{}
-	personaDocs    map[string]map[string]string
-	multiWordFirst map[string][]multiWordToken
+	axisTokens      map[string]map[string]struct{}
+	axisDocs        map[string]map[string]string
+	axisPriority    []string
+	personaTokens   map[string]map[string]struct{}
+	personaDocs     map[string]map[string]string
+	multiWordFirst  map[string][]multiWordToken
+	canonicalToSlug map[string]string
+	slugToCanonical map[string]string
 }
 
 type AxisSection struct {
@@ -87,6 +95,7 @@ type rawGrammar struct {
 	Static        rawStatic      `json:"static_prompts"`
 	Persona       rawPersona     `json:"persona"`
 	Hierarchy     rawHierarchy   `json:"hierarchy"`
+	Slugs         rawSlugSection `json:"slugs"`
 }
 
 type rawAxisSection struct {
@@ -115,6 +124,20 @@ type rawPersona struct {
 		AxisTokens map[string][]string `json:"axis_tokens"`
 		Docs       map[string]string   `json:"docs"`
 	} `json:"intent"`
+}
+
+type rawSlugSection struct {
+	Axes            map[string]map[string]string `json:"axes"`
+	Static          map[string]string            `json:"static"`
+	Persona         rawSlugPersonaSection        `json:"persona"`
+	Commands        map[string]string            `json:"commands"`
+	Overrides       map[string]map[string]string `json:"overrides"`
+	CanonicalToSlug map[string]string            `json:"canonical_to_slug"`
+}
+
+type rawSlugPersonaSection struct {
+	Axes    map[string]map[string]string `json:"axes"`
+	Presets map[string]string            `json:"presets"`
 }
 
 type rawHierarchy struct {
@@ -188,6 +211,7 @@ func LoadGrammar(path string) (*Grammar, error) {
 	}
 
 	grammar.initialise()
+	grammar.initialiseSlugs(raw.Slugs)
 
 	return grammar, nil
 }
@@ -371,6 +395,119 @@ func storeDoc(docMap map[string]string, token, desc string) {
 	docMap[lowerKey] = desc
 }
 
+func slugifyToken(value string) string {
+	normalized := strings.ToLower(strings.TrimSpace(value))
+	if normalized == "" {
+		return ""
+	}
+	normalized = strings.ReplaceAll(normalized, " ", "-")
+	normalized = slugInvalidChars.ReplaceAllString(normalized, "-")
+	normalized = slugHyphenCollapse.ReplaceAllString(normalized, "-")
+	normalized = strings.Trim(normalized, "-")
+	if normalized == "" {
+		normalized = "token"
+	}
+	return normalized
+}
+
+func (g *Grammar) initialiseSlugs(raw rawSlugSection) {
+	g.canonicalToSlug = make(map[string]string)
+	g.slugToCanonical = make(map[string]string)
+	for canonical, slug := range raw.CanonicalToSlug {
+		trimmedCanonical := strings.TrimSpace(canonical)
+		trimmedSlug := strings.TrimSpace(slug)
+		if trimmedCanonical == "" || trimmedSlug == "" {
+			continue
+		}
+		g.canonicalToSlug[trimmedCanonical] = trimmedSlug
+		g.slugToCanonical[strings.ToLower(trimmedSlug)] = trimmedCanonical
+	}
+
+	ensure := func(token string) {
+		trimmed := strings.TrimSpace(token)
+		if trimmed == "" {
+			return
+		}
+		slug, ok := g.canonicalToSlug[trimmed]
+		if !ok {
+			slug = slugifyToken(trimmed)
+			g.canonicalToSlug[trimmed] = slug
+		}
+		lower := strings.ToLower(slug)
+		if _, exists := g.slugToCanonical[lower]; !exists {
+			g.slugToCanonical[lower] = trimmed
+		}
+	}
+
+	for name := range g.Static.Profiles {
+		ensure(name)
+		ensure(fmt.Sprintf("static=%s", name))
+	}
+	for name := range g.Static.Descriptions {
+		ensure(name)
+		ensure(fmt.Sprintf("static=%s", name))
+	}
+	for axis, tokens := range g.Axes.Definitions {
+		for token := range tokens {
+			ensure(token)
+			ensure(fmt.Sprintf("%s=%s", axis, token))
+		}
+	}
+	for axis, tokens := range g.Axes.ListTokens {
+		for _, token := range tokens {
+			ensure(token)
+			ensure(fmt.Sprintf("%s=%s", axis, token))
+		}
+	}
+	for axis, tokens := range g.Persona.Axes {
+		for _, token := range tokens {
+			ensure(token)
+			ensure(fmt.Sprintf("%s=%s", axis, token))
+		}
+	}
+	for preset := range g.Persona.Presets {
+		ensure(fmt.Sprintf("persona=%s", preset))
+	}
+	if intentTokens, ok := g.Persona.Intent.AxisTokens["intent"]; ok {
+		for _, token := range intentTokens {
+			ensure(token)
+			ensure(fmt.Sprintf("intent=%s", token))
+		}
+	}
+	for _, command := range []string{"build", "completion", "help"} {
+		ensure(command)
+	}
+}
+
+func (g *Grammar) canonicalForInput(token string) (string, bool) {
+	trimmed := strings.TrimSpace(token)
+	if trimmed == "" {
+		return "", false
+	}
+	lower := strings.ToLower(trimmed)
+	if canonical, ok := g.slugToCanonical[lower]; ok {
+		return canonical, true
+	}
+	return trimmed, false
+}
+
+func (g *Grammar) slugForToken(token string) string {
+	canonical := strings.TrimSpace(token)
+	if canonical == "" {
+		return ""
+	}
+	if slug, ok := g.canonicalToSlug[canonical]; ok {
+		return slug
+	}
+	slug := slugifyToken(canonical)
+	g.canonicalToSlug[canonical] = slug
+	lower := strings.ToLower(slug)
+	if _, exists := g.slugToCanonical[lower]; !exists {
+		g.slugToCanonical[lower] = canonical
+	}
+	return slug
+}
+
 func (g *Grammar) registerMultiWord(token string) {
 	canonical := normalizeToken(token)
 	if canonical == "" {
@@ -435,11 +572,17 @@ func (g *Grammar) NormalizeTokens(tokens []string) []string {
 		if token == "" {
 			continue
 		}
+		if canonical, ok := g.canonicalForInput(token); ok {
+			token = canonical
+		}
 		if strings.Contains(token, "=") {
 			normalized = append(normalized, token)
 			continue
 		}
 		combined, consumed := g.combineMultiWordToken(token, tokens[i+1:])
+		if canonical, ok := g.canonicalForInput(combined); ok {
+			combined = canonical
+		}
 		normalized = append(normalized, combined)
 		i += consumed
 	}

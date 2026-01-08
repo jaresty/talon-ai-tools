@@ -62,7 +62,7 @@
   - green (docs): readme.md:79
   - green (ADR): docs/adr/0067-bar-completion-metadata-and-multi-stage.md:3
 - rollback_plan: `git restore --source=HEAD -- internal/barcli/app.go readme.md docs/adr/0067-bar-completion-metadata-and-multi-stage.md docs/adr/0067-bar-completion-metadata-and-multi-stage.work-log.md`
-- delta_summary: helper:diff-snapshot=4 files changed, 24 insertions(+), 2 deletions(-) — documented metadata completions, updated help text, and marked ADR completed
+- delta_summary: helper:diff-snapshot=4 files changed, 23 insertions(+), 4 deletions(-) — documented metadata completions, updated help text, and marked ADR completed
 - loops_remaining_forecast: 0 loops — ADR closed; continue passive monitoring during release validation
 - residual_constraints: *(none — documentation complete)*
 - next_work: None (monitor release notes as part of normal process)

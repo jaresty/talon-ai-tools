@@ -93,7 +93,7 @@ The `bar` CLI consumes the exported prompt grammar so you can assemble recipes o
    make bar-completion-guard
    ```
    (equivalent manual steps: `python3 -m venv .venv && .venv/bin/python -m pip install pytest && .venv/bin/python -m pytest _tests/test_bar_completion_cli.py`)
-   This pytest slice exercises `bar completion` and the hidden `bar __complete` helper so shell installers stay grammar-aligned.
+   This pytest slice exercises `bar completion` and the hidden `bar __complete` helper so shell installers stay grammar-aligned. The target also runs automatically via `make guardrails`/`make ci-guardrails`.
 6. Developer sanity check:
    ```bash
    python3 -m unittest _tests.test_readme_portable_cli

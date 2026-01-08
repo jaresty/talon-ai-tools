@@ -314,3 +314,28 @@
   - `.venv` may accumulate packages; periodically recreate if dependencies change (severity: low; mitigation: rerun `make bar-completion-guard` to refresh)
 - next_work:
   - Behaviour: Consider CI integration for the completion guard if future loops require automated enforcement (validation via GitHub Actions update)
+
+## 2026-01-08 — loop 016
+- helper_version: helper:v20251223.1
+- focus: Decision — integrate the completion guard with `make ci-guardrails` / `make guardrails`
+- expected_value:
+  | Factor | Value | Rationale |
+  | --- | --- | --- |
+  | Impact | Medium | Ensures ADR 0065 completion behaviour runs in the standard guardrail suites |
+  | Probability | High | Wiring the make target guarantees execution in local/CI guardrails |
+  | Time Sensitivity | Medium | Without integration, guardrails would omit the completion slice until run manually |
+  | Uncertainty note | Low | Guard command already validated in loops 013–015 |
+- active_constraint: `bar-completion-guard` was not part of `make ci-guardrails`, so automated guardrails skipped the portable CLI completion pytest (`git show HEAD:Makefile | rg -n "ci-guardrails"` showed no dependency on the target).
+- validation_targets:
+  - git show HEAD:Makefile | rg -n "ci-guardrails"
+  - make -n ci-guardrails
+- evidence:
+  - red: docs/adr/evidence/0065-portable-prompt-grammar-cli/loop-016.md#loop-016-red--helper-rerun-git-show-headmakefile--rg--n-ci-guardrails
+  - green: docs/adr/evidence/0065-portable-prompt-grammar-cli/loop-016.md#loop-016-green--helper-rerun-make--n-ci-guardrails
+- rollback_plan: `git restore --source=HEAD -- Makefile readme.md docs/adr/0065-portable-prompt-grammar-cli.work-log.md docs/adr/evidence/0065-portable-prompt-grammar-cli/loop-016.md`
+- delta_summary: helper:diff-snapshot=4 files changed, 26 insertions(+), 0 deletions — add guardrails dependency, update help/README, record loop evidence
+- loops_remaining_forecast: 0 loops — completion guard now part of guardrails; reopen only if CI wiring changes
+- residual_constraints:
+  - Ensure CI environments have Go available for `go run ./cmd/bar`; monitor for failures and update guard if build tags change (severity: low; mitigation: revalidate guard execution in CI)
+- next_work:
+  - Behaviour: If guard becomes too heavy for regular guardrails, consider adding a focused target for smoke tests (validation via `make bar-completion-guard`)

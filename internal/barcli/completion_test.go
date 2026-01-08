@@ -18,7 +18,7 @@ func loadCompletionGrammar(t *testing.T) *Grammar {
 
 func findSuggestion(list []completionSuggestion, needle string) (completionSuggestion, bool) {
 	for _, item := range list {
-		if item.Value == needle {
+		if item.TrimmedValue == needle {
 			return item, true
 		}
 	}
@@ -70,6 +70,9 @@ func TestCompleteSuggestsCommands(t *testing.T) {
 	if buildSuggestion.Category != "command" {
 		t.Fatalf("expected build category 'command', got %q", buildSuggestion.Category)
 	}
+	if !strings.HasSuffix(buildSuggestion.Value, " ") {
+		t.Fatalf("expected build suggestion to include trailing space, got %q", buildSuggestion.Value)
+	}
 	helpsuggestion, ok := findSuggestion(suggestions, "help")
 	if !ok {
 		t.Fatalf("expected help command in suggestions, got %v", suggestions)
@@ -94,6 +97,9 @@ func TestCompleteStaticStage(t *testing.T) {
 	if todo.Category != "static" {
 		t.Fatalf("expected category 'static' for todo, got %q", todo.Category)
 	}
+	if !strings.HasSuffix(todo.Value, " ") {
+		t.Fatalf("expected static suggestion to include trailing space, got %q", todo.Value)
+	}
 	if strings.TrimSpace(todo.Description) == "" {
 		t.Fatalf("expected todo description to be populated")
 	}
@@ -113,6 +119,9 @@ func TestCompleteMovesToCompleteness(t *testing.T) {
 	}
 	if full.Category != "completeness" {
 		t.Fatalf("expected category 'completeness' for full, got %q", full.Category)
+	}
+	if !strings.HasSuffix(full.Value, " ") {
+		t.Fatalf("expected completeness suggestion to include trailing space, got %q", full.Value)
 	}
 	if strings.TrimSpace(full.Description) == "" {
 		t.Fatalf("expected completeness description to be populated")
@@ -134,12 +143,18 @@ func TestCompleteScopeAndMethodConcurrent(t *testing.T) {
 	if scopeSuggestion.Category != "scope" {
 		t.Fatalf("expected scope category for focus, got %q", scopeSuggestion.Category)
 	}
+	if !strings.HasSuffix(scopeSuggestion.Value, " ") {
+		t.Fatalf("expected scope suggestion to include trailing space, got %q", scopeSuggestion.Value)
+	}
 	methodSuggestion, ok := findSuggestion(suggestions, "steps")
 	if !ok {
 		t.Fatalf("expected method token 'steps', got %v", suggestions)
 	}
 	if methodSuggestion.Category != "method" {
 		t.Fatalf("expected method category for steps, got %q", methodSuggestion.Category)
+	}
+	if !strings.HasSuffix(methodSuggestion.Value, " ") {
+		t.Fatalf("expected method suggestion to include trailing space, got %q", methodSuggestion.Value)
 	}
 }
 
@@ -157,6 +172,9 @@ func TestCompleteOverrideSuggestions(t *testing.T) {
 	}
 	if suggestion.Category != "override.scope" {
 		t.Fatalf("expected override category 'override.scope', got %q", suggestion.Category)
+	}
+	if !strings.HasSuffix(suggestion.Value, " ") {
+		t.Fatalf("expected override suggestion to include trailing space, got %q", suggestion.Value)
 	}
 	if strings.TrimSpace(suggestion.Description) == "" {
 		t.Fatalf("expected override description to be populated")
@@ -178,12 +196,18 @@ func TestCompletePersonaStage(t *testing.T) {
 	if preset.Category != "persona.preset" {
 		t.Fatalf("expected persona preset category, got %q", preset.Category)
 	}
+	if !strings.HasSuffix(preset.Value, " ") {
+		t.Fatalf("expected persona preset suggestion to include trailing space, got %q", preset.Value)
+	}
 	voice, ok := findSuggestion(suggestions, "as teacher")
 	if !ok {
 		t.Fatalf("expected persona voice suggestion, got %v", suggestions)
 	}
 	if voice.Category != "persona.voice" {
 		t.Fatalf("expected persona voice category, got %q", voice.Category)
+	}
+	if !strings.HasSuffix(voice.Value, " ") {
+		t.Fatalf("expected persona voice suggestion to include trailing space, got %q", voice.Value)
 	}
 	if strings.TrimSpace(voice.Description) == "" {
 		t.Fatalf("expected persona voice description to be populated")

@@ -127,16 +127,28 @@ type completionState struct {
 }
 
 type completionSuggestion struct {
-	Value       string
-	Category    string
-	Description string
+	Value        string
+	TrimmedValue string
+	Category     string
+	Description  string
 }
 
-func newSuggestion(value, category, description string) completionSuggestion {
+func newSuggestion(value, category, description string, appendSpace bool) completionSuggestion {
+	sanitizedValue := sanitizeCompletionField(value)
+	trimmedValue := strings.TrimSpace(sanitizedValue)
+	finalValue := trimmedValue
+	if appendSpace && trimmedValue != "" {
+		finalValue = trimmedValue + " "
+	}
+
+	sanitizedCategory := strings.TrimSpace(sanitizeCompletionField(category))
+	sanitizedDescription := strings.TrimSpace(sanitizeCompletionField(description))
+
 	return completionSuggestion{
-		Value:       value,
-		Category:    category,
-		Description: strings.TrimSpace(description),
+		Value:        finalValue,
+		TrimmedValue: trimmedValue,
+		Category:     sanitizedCategory,
+		Description:  sanitizedDescription,
 	}
 }
 
@@ -144,22 +156,26 @@ func sanitizeCompletionField(value string) string {
 	return strings.ReplaceAll(value, "\t", " ")
 }
 
-func suggestionsWithDescriptions(tokens []string, category string, descriptionFn func(string) string) []completionSuggestion {
+func suggestionsWithDescriptions(tokens []string, category string, descriptionFn func(string) string, appendSpace bool) []completionSuggestion {
 	suggestions := make([]completionSuggestion, 0, len(tokens))
 	for _, token := range tokens {
 		desc := ""
 		if descriptionFn != nil {
 			desc = descriptionFn(token)
 		}
-		suggestions = append(suggestions, newSuggestion(token, category, desc))
+		suggestion := newSuggestion(token, category, desc, appendSpace)
+		if suggestion.TrimmedValue == "" {
+			continue
+		}
+		suggestions = append(suggestions, suggestion)
 	}
 	return suggestions
 }
 
-func suggestionsFromTokens(tokens []string, category, description string) []completionSuggestion {
+func suggestionsFromTokens(tokens []string, category, description string, appendSpace bool) []completionSuggestion {
 	return suggestionsWithDescriptions(tokens, category, func(string) string {
 		return description
-	})
+	}, appendSpace)
 }
 
 func filterSuggestionsByPrefix(items []completionSuggestion, prefix string) []completionSuggestion {
@@ -169,7 +185,10 @@ func filterSuggestionsByPrefix(items []completionSuggestion, prefix string) []co
 	}
 	filtered := make([]completionSuggestion, 0, len(items))
 	for _, item := range items {
-		if strings.HasPrefix(item.Value, prefix) {
+		if item.TrimmedValue == "" {
+			continue
+		}
+		if strings.HasPrefix(item.TrimmedValue, prefix) {
 			filtered = append(filtered, item)
 		}
 	}
@@ -177,10 +196,11 @@ func filterSuggestionsByPrefix(items []completionSuggestion, prefix string) []co
 }
 
 func appendUniqueSuggestion(dest []completionSuggestion, seen map[string]struct{}, suggestion completionSuggestion) []completionSuggestion {
-	if suggestion.Value == "" {
+	trimmed := suggestion.TrimmedValue
+	if trimmed == "" {
 		return dest
 	}
-	key := suggestion.Value + "::" + suggestion.Category
+	key := trimmed + "::" + suggestion.Category
 	if _, ok := seen[key]; ok {
 		return dest
 	}
@@ -202,7 +222,7 @@ func buildStaticSuggestions(grammar *Grammar, catalog completionCatalog) []compl
 			return token
 		}
 		return desc
-	})
+	}, true)
 }
 
 func buildAxisSuggestions(grammar *Grammar, axis string, tokens []string) []completionSuggestion {
@@ -212,7 +232,7 @@ func buildAxisSuggestions(grammar *Grammar, axis string, tokens []string) []comp
 			return token
 		}
 		return desc
-	})
+	}, true)
 }
 
 func buildScopeSuggestions(grammar *Grammar, catalog completionCatalog, state completionState) []completionSuggestion {
@@ -229,7 +249,7 @@ func buildScopeSuggestions(grammar *Grammar, catalog completionCatalog, state co
 	}
 	return suggestionsWithDescriptions(suggestions, "scope", func(token string) string {
 		return strings.TrimSpace(grammar.AxisDescription("scope", token))
-	})
+	}, true)
 }
 
 func buildMethodSuggestions(grammar *Grammar, catalog completionCatalog, state completionState) []completionSuggestion {
@@ -246,7 +266,7 @@ func buildMethodSuggestions(grammar *Grammar, catalog completionCatalog, state c
 	}
 	return suggestionsWithDescriptions(suggestions, "method", func(token string) string {
 		return strings.TrimSpace(grammar.AxisDescription("method", token))
-	})
+	}, true)
 }
 
 func personaPresetDescription(grammar *Grammar, preset string) string {
@@ -265,9 +285,11 @@ func buildPersonaSuggestions(grammar *Grammar, catalog completionCatalog, state 
 	}
 	seen := make(map[string]struct{})
 	results := make([]completionSuggestion, 0)
-	results = appendUniqueSuggestions(results, seen, suggestionsWithDescriptions(catalog.personaPreset, "persona.preset", func(token string) string {
-		return personaPresetDescription(grammar, token)
-	}))
+	if !state.personaPreset {
+		results = appendUniqueSuggestions(results, seen, suggestionsWithDescriptions(catalog.personaPreset, "persona.preset", func(token string) string {
+			return personaPresetDescription(grammar, token)
+		}, true))
+	}
 	if !state.personaVoice {
 		results = appendUniqueSuggestions(results, seen, suggestionsWithDescriptions(catalog.personaVoice, "persona.voice", func(token string) string {
 			desc := strings.TrimSpace(grammar.PersonaDescription("voice", token))
@@ -275,7 +297,7 @@ func buildPersonaSuggestions(grammar *Grammar, catalog completionCatalog, state 
 				return token
 			}
 			return desc
-		}))
+		}, true))
 	}
 	if !state.personaAudience {
 		results = appendUniqueSuggestions(results, seen, suggestionsWithDescriptions(catalog.personaAudience, "persona.audience", func(token string) string {
@@ -284,7 +306,7 @@ func buildPersonaSuggestions(grammar *Grammar, catalog completionCatalog, state 
 				return token
 			}
 			return desc
-		}))
+		}, true))
 	}
 	if !state.personaTone {
 		results = appendUniqueSuggestions(results, seen, suggestionsWithDescriptions(catalog.personaTone, "persona.tone", func(token string) string {
@@ -293,7 +315,7 @@ func buildPersonaSuggestions(grammar *Grammar, catalog completionCatalog, state 
 				return token
 			}
 			return desc
-		}))
+		}, true))
 	}
 	if !state.personaIntent {
 		results = appendUniqueSuggestions(results, seen, suggestionsWithDescriptions(catalog.personaIntent, "persona.intent", func(token string) string {
@@ -302,7 +324,7 @@ func buildPersonaSuggestions(grammar *Grammar, catalog completionCatalog, state 
 				return token
 			}
 			return desc
-		}))
+		}, true))
 	}
 
 	return results
@@ -321,7 +343,7 @@ func buildOverrideSuggestions(grammar *Grammar, catalog completionCatalog) []com
 			if strings.TrimSpace(desc) == "" {
 				desc = token
 			}
-			suggestion := newSuggestion(value, category, desc)
+			suggestion := newSuggestion(value, category, desc, true)
 			results = appendUniqueSuggestion(results, seen, suggestion)
 		}
 	}
@@ -415,26 +437,26 @@ func Complete(grammar *Grammar, shell string, words []string, index int) ([]comp
 	prefix := strings.TrimSpace(current)
 
 	if index <= 1 {
-		return filterSuggestionsByPrefix(suggestionsFromTokens(completionCommands, "command", ""), prefix), nil
+		return filterSuggestionsByPrefix(suggestionsFromTokens(completionCommands, "command", "", true), prefix), nil
 	}
 
 	command := words[1]
 	switch command {
 	case "help":
 		if index == 2 {
-			return filterSuggestionsByPrefix(suggestionsFromTokens(helpTopics, "help", ""), prefix), nil
+			return filterSuggestionsByPrefix(suggestionsFromTokens(helpTopics, "help", "", true), prefix), nil
 		}
 		return nil, nil
 	case "completion":
 		if index == 2 {
-			return filterSuggestionsByPrefix(suggestionsFromTokens(completionShells, "completion.shell", ""), prefix), nil
+			return filterSuggestionsByPrefix(suggestionsFromTokens(completionShells, "completion.shell", "", true), prefix), nil
 		}
 		return nil, nil
 	case "build":
 		return completeBuild(grammar, catalog, words, index, current)
 	default:
 		if index == 2 {
-			return filterSuggestionsByPrefix(suggestionsFromTokens(completionCommands, "command", ""), prefix), nil
+			return filterSuggestionsByPrefix(suggestionsFromTokens(completionCommands, "command", "", true), prefix), nil
 		}
 		return nil, nil
 	}
@@ -451,7 +473,7 @@ func completeBuild(grammar *Grammar, catalog completionCatalog, words []string, 
 	prefix := strings.TrimSpace(current)
 
 	if strings.HasPrefix(current, "-") {
-		return filterSuggestionsByPrefix(suggestionsFromTokens(buildFlags, "flag", ""), prefix), nil
+		return filterSuggestionsByPrefix(suggestionsFromTokens(buildFlags, "flag", "", false), prefix), nil
 	}
 
 	prior := []string{}
@@ -737,12 +759,12 @@ func runCompletionEngine(opts *cliOptions, stdout, stderr io.Writer) int {
 	}
 
 	for _, suggestion := range suggestions {
-		value := strings.TrimSpace(suggestion.Value)
-		if value == "" {
+		if suggestion.TrimmedValue == "" {
 			continue
 		}
-		category := sanitizeCompletionField(strings.TrimSpace(suggestion.Category))
-		description := sanitizeCompletionField(strings.TrimSpace(suggestion.Description))
+		value := sanitizeCompletionField(suggestion.Value)
+		category := sanitizeCompletionField(suggestion.Category)
+		description := sanitizeCompletionField(suggestion.Description)
 		fmt.Fprintf(stdout, "%s\t%s\t%s\n", value, category, description)
 	}
 	return 0

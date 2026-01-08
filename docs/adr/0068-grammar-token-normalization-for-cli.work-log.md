@@ -297,3 +297,19 @@
   - None — documentation and help output align with slug-only shorthand plus canonical override support.
 - next_work:
   - None.
+
+## 2026-01-08 — loop 018
+- helper_version: helper:v20251223.1
+- focus: Decision § documentation — clarify multi-word override examples in ADR consequences
+- active_constraint: Consequences section still referenced multi-word overrides generically, which could be misread as allowing space-delimited values; we need to explicitly reference the slugged form.
+- validation_targets:
+  - (doc-only) referenced loop-015 behaviour evidence.
+- evidence:
+  - doc-only: docs/adr/evidence/0068-grammar-token-normalization-for-cli/loop-018.md
+- rollback_plan: `git restore --source=HEAD -- docs/adr/0068-grammar-token-normalization-for-cli.md docs/adr/0068-grammar-token-normalization-for-cli.work-log.md docs/adr/evidence/0068-grammar-token-normalization-for-cli/loop-018.md`
+- delta_summary: helper:diff-snapshot=1 file changed, 1 insertion(+), 1 deletion(-) — clarified that multi-word override values continue to use dashed slugs such as `directional=fly-rog`.
+- loops_remaining_forecast: 0 loops — documentation now makes slug requirements for overrides explicit.
+- residual_constraints:
+  - None — guidance matches CLI behaviour.
+- next_work:
+  - None.

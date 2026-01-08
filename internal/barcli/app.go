@@ -345,7 +345,19 @@ func renderTokensHelp(w io.Writer, grammar *Grammar) {
 			if label == "" {
 				label = name
 			}
-			fmt.Fprintf(w, "  - %s: %s\n", name, label)
+			slug := grammar.slugForToken(fmt.Sprintf("persona=%s", name))
+			if slug == "" {
+				slug = fmt.Sprintf("persona=%s", name)
+			}
+			spoken := ""
+			if preset.Spoken != nil {
+				spoken = strings.TrimSpace(*preset.Spoken)
+			}
+			fmt.Fprintf(w, "  - %s (preset: %s", slug, name)
+			if spoken != "" {
+				fmt.Fprintf(w, ", spoken: %s", spoken)
+			}
+			fmt.Fprintf(w, "): %s\n", label)
 		}
 	}
 
@@ -363,11 +375,16 @@ func renderTokensHelp(w io.Writer, grammar *Grammar) {
 			sort.Strings(tokens)
 			fmt.Fprintf(w, "  %s:\n", axis)
 			for _, token := range tokens {
+				slug := grammar.slugForToken(token)
+				display := token
+				if slug != "" && slug != token {
+					display = fmt.Sprintf("%s (spoken: %s)", slug, token)
+				}
 				desc := strings.TrimSpace(grammar.PersonaDescription(axis, token))
 				if desc == "" {
-					fmt.Fprintf(w, "    • %s\n", token)
+					fmt.Fprintf(w, "    • %s\n", display)
 				} else {
-					fmt.Fprintf(w, "    • %s: %s\n", token, desc)
+					fmt.Fprintf(w, "    • %s: %s\n", display, desc)
 				}
 			}
 		}
@@ -378,11 +395,16 @@ func renderTokensHelp(w io.Writer, grammar *Grammar) {
 		sort.Strings(tokens)
 		fmt.Fprintln(w, "\nPERSONA INTENTS")
 		for _, token := range tokens {
+			slug := grammar.slugForToken(token)
+			display := token
+			if slug != "" && slug != token {
+				display = fmt.Sprintf("%s (spoken: %s)", slug, token)
+			}
 			desc := strings.TrimSpace(grammar.PersonaDescription("intent", token))
 			if desc == "" {
-				fmt.Fprintf(w, "  • %s\n", token)
+				fmt.Fprintf(w, "  • %s\n", display)
 			} else {
-				fmt.Fprintf(w, "  • %s: %s\n", token, desc)
+				fmt.Fprintf(w, "  • %s: %s\n", display, desc)
 			}
 		}
 	}

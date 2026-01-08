@@ -474,3 +474,23 @@
 - next_work:
   - Monitor feedback on persona slug readability and add grammar metadata if further abbreviation is required.
 
+## 2026-01-08 — loop 028
+- helper_version: helper:v20251223.1
+- focus: Decision § validation — surface spoken persona slugs and axis hints in help output
+- active_constraint: `bar help tokens` still listed canonical persona names (e.g., `coach_junior`, `as Kent Beck`) even after the CLI switched to spoken-aware slugs, creating friction when operators copy values from the help output into commands.
+- validation_targets:
+  - go test ./internal/barcli
+  - python3 -m pytest _tests/test_bar_completion_cli.py
+  - python3 -m pytest _tests/test_generate_axis_cheatsheet.py
+- evidence:
+  - green: docs/adr/evidence/0068-grammar-token-normalization-for-cli/loop-028.md#loop-028-green--helper-rerun-go-test-.-internal-barcli
+  - green: docs/adr/evidence/0068-grammar-token-normalization-for-cli/loop-028.md#loop-028-green--helper-rerun-python3--m-pytest-_tests-test_bar_completion_cli.py
+  - green: docs/adr/evidence/0068-grammar-token-normalization-for-cli/loop-028.md#loop-028-green--helper-rerun-python3--m-pytest-_tests-test_generate_axis_cheatsheet.py
+- rollback_plan: `git restore --source=HEAD -- internal/barcli/app.go internal/barcli/app_test.go _tests/test_bar_completion_cli.py docs/adr/0068-grammar-token-normalization-for-cli.work-log.md docs/adr/evidence/0068-grammar-token-normalization-for-cli/loop-028.md`
+- delta_summary: helper:diff-snapshot=3 files changed, 82 insertions(+), 225 deletions(-) — updated `bar help tokens` to display spoken-aware persona slugs alongside canonical metadata, added Go tests to lock the new output, and refreshed CLI guardrails to expect the shorter persona preset slug.
+- loops_remaining_forecast: 0 loops — help output now mirrors the CLI slugs; guardrails protect against future drift.
+- residual_constraints:
+  - Contract axis listings still prioritise canonical names; monitor for demand to show slug aliases there as well (severity: low; mitigation: monitor CLI telemetry; trigger: python3 -m pytest _tests/test_bar_completion_cli.py).
+- next_work:
+  - Evaluate whether contract axis listings should also show slug aliases to ease copy/paste ergonomics.
+

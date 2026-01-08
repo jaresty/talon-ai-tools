@@ -9,6 +9,7 @@ PYTHON ?= python3.11
 	.venv/bin/python -m pip install pytest
 
 bar-completion-guard: .venv/bin/pytest
+	@command -v go >/dev/null 2>&1 || { echo "Go toolchain not found; install Go 1.21+ to run bar completion guard" >&2; exit 1; }
 	.venv/bin/python -m pytest _tests/test_bar_completion_cli.py
 
 .PHONY: output_tags test churn-scan adr010-check adr010-status axis-regenerate axis-regenerate-apply axis-regenerate-all axis-catalog-validate axis-cheatsheet axis-guardrails axis-guardrails-ci axis-guardrails-test talon-lists talon-lists-check adr0046-guardrails ci-guardrails guardrails help overlay-guardrails overlay-lifecycle-guardrails request-history-guardrails request-history-guardrails-fast readme-axis-lines readme-axis-refresh static-prompt-docs static-prompt-refresh doc-snapshots bar-completion-guard

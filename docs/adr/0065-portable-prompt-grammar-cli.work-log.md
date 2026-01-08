@@ -389,3 +389,27 @@
   - Monitor CI runtimes; if Go setup slows guardrails significantly, evaluate caching or prebuilt binaries
 - next_work:
   - Behaviour: Revisit workflows if Go version requirements change (validation via review of `.github/workflows/test.yml`)
+
+## 2026-01-08 — loop 019
+- helper_version: helper:v20251223.1
+- focus: Decision — fail fast when Go is missing before running the completion guard
+- expected_value:
+  | Factor | Value | Rationale |
+  | --- | --- | --- |
+  | Impact | Medium | Provides actionable feedback instead of opaque pytest/go errors |
+  | Probability | High | `command -v go` guard ensures clear messaging |
+  | Time Sensitivity | Low | Improves DX but does not block automation |
+  | Uncertainty note | Low | Behaviour deterministic |
+- active_constraint: `make bar-completion-guard` surfaced opaque failures when Go was absent (no preflight check; `rg "command -v go" Makefile` yielded no matches).
+- validation_targets:
+  - rg "command -v go" Makefile
+- evidence:
+  - red: docs/adr/evidence/0065-portable-prompt-grammar-cli/loop-019.md#loop-019-red--helper-rerun-rg-command--v-go-makefile
+  - green: docs/adr/evidence/0065-portable-prompt-grammar-cli/loop-019.md#loop-019-green--helper-rerun-rg--n-command--v-go-makefile
+- rollback_plan: `git restore --source=HEAD -- Makefile docs/adr/0065-portable-prompt-grammar-cli.work-log.md docs/adr/evidence/0065-portable-prompt-grammar-cli/loop-019.md`
+- delta_summary: helper:diff-snapshot=3 files changed, 17 insertions(+) — add Go preflight check and record evidence
+- loops_remaining_forecast: 0 loops — guard now reports missing Go clearly
+- residual_constraints:
+  - If alternative Go locations emerge, consider parameterising target (severity: low)
+- next_work:
+  - Behaviour: Monitor guard output for other common failures and extend preflight checks as needed (validation via `make bar-completion-guard`)

@@ -43,3 +43,27 @@
 - next_work:
   - Behaviour: Align Go CLI error schema with ADR contract and add failure fixtures (`go test ./internal/barcli` exercising `unknown_token`, `conflict`, `format` paths)
   - Behaviour: Automate prompt grammar regeneration in CI and guardrail cleanliness (`python3 -m prompts.export --output build/prompt-grammar.json` in pipeline, followed by `git diff --exit-code build/prompt-grammar.json`)
+
+## 2026-01-08 — loop 003
+- helper_version: helper:v20251223.1
+- focus: Decision — document CLI help surfaces and distribution path so collaborators discover the prompt grammar without repo spelunking
+- active_constraint: ADR 0065 lacked guidance on invoking `bar --help` / `bar help tokens` and offered no installation path, leaving downstream consumers without a documented way to access the grammar outside the repo (`git show HEAD:docs/adr/0065-portable-prompt-grammar-cli.md | rg "bar --help"` exited 1)
+- validation_targets:
+  - git show HEAD:docs/adr/0065-portable-prompt-grammar-cli.md \| rg "bar --help"
+  - git show HEAD:docs/adr/0065-portable-prompt-grammar-cli.md \| rg "install-bar"
+  - rg "bar --help" docs/adr/0065-portable-prompt-grammar-cli.md
+  - rg "install-bar" docs/adr/0065-portable-prompt-grammar-cli.md
+- evidence:
+  - red: docs/adr/evidence/0065-portable-prompt-grammar-cli/loop-003.md#loop-003-red--helper-rerun-git-show-headdocsadr0065-portable-prompt-grammar-climd--rg-bar----help
+  - red: docs/adr/evidence/0065-portable-prompt-grammar-cli/loop-003.md#loop-003-red--helper-rerun-git-show-headdocsadr0065-portable-prompt-grammar-climd--rg-install-bar
+  - green: docs/adr/evidence/0065-portable-prompt-grammar-cli/loop-003.md#loop-003-green--helper-rerun-rg-bar----help-docsadr0065-portable-prompt-grammar-climd
+  - green: docs/adr/evidence/0065-portable-prompt-grammar-cli/loop-003.md#loop-003-green--helper-rerun-rg-install-bar-docsadr0065-portable-prompt-grammar-climd
+- rollback_plan: `git restore --source=HEAD -- docs/adr/0065-portable-prompt-grammar-cli.md docs/adr/evidence/0065-portable-prompt-grammar-cli/loop-003.md`
+- delta_summary: helper:diff-snapshot=2 files changed, 12 insertions(+) — add CLI help + installer guidance to ADR and record loop evidence
+- loops_remaining_forecast: 2 loops (error schema fixtures, CI regeneration hook) — medium confidence pending automation work from prior residual constraints
+- residual_constraints:
+  - Structured error fixtures pending (severity: medium; mitigation: add regression tests covering `conflict`/`format` JSON output once CLI exists; monitor future `_tests` Go harness; owning ADR 0065 Decision)
+  - CI automation does not regenerate or verify `build/prompt-grammar.json` (severity: medium; mitigation: add export step to CI and guard with `git diff --exit-code build/prompt-grammar.json`; owning ADR 0065 Consequences)
+- next_work:
+  - Behaviour: Align Go CLI error schema with ADR contract and add failure fixtures (`go test ./internal/barcli` exercising `unknown_token`, `conflict`, `format` paths)
+  - Behaviour: Automate prompt grammar regeneration in CI and guardrail cleanliness (`python3 -m prompts.export --output build/prompt-grammar.json` in pipeline, followed by `git diff --exit-code build/prompt-grammar.json`)

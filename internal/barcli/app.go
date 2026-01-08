@@ -11,7 +11,7 @@ import (
 
 const (
 	buildUsage = "usage: bar build [tokens...] [options]"
-	topUsage   = "usage: bar [build|help]"
+	topUsage   = "usage: bar [build|help|completion]"
 )
 
 var generalHelpText = strings.TrimSpace(`USAGE
@@ -20,6 +20,9 @@ var generalHelpText = strings.TrimSpace(`USAGE
 
   bar help
   bar help tokens [--grammar PATH]
+
+  bar completion <shell> [--grammar PATH] [--output FILE]
+    (shell = bash | zsh | fish)
 
 TOKEN ORDER (SHORTHAND)
   1. Static prompt          (0..1 tokens, default infer)
@@ -38,10 +41,11 @@ TOKEN ORDER (SHORTHAND)
 
 COMMANDS
   build        Construct a prompt recipe from shorthand tokens or key=value overrides.
-               Accepts input via --prompt, --input, or STDIN (piped).
+                Accepts input via --prompt, --input, or STDIN (piped).
   help         Show this message.
   help tokens  List available static prompts, contract axes, persona presets, and multi-word tokens
-               using the exported prompt grammar.
+                using the exported prompt grammar.
+  completion   Emit shell completion scripts (bash, zsh, fish) informed by the exported grammar.
 
 TOPICS & EXAMPLES
   List available tokens:           bar help tokens
@@ -49,6 +53,8 @@ TOPICS & EXAMPLES
   Supply prompt content:           bar build todo focus --prompt "Fix onboarding"
   Mix shorthand with overrides:    bar build todo focus method=steps directional=fog
   Inspect another grammar file:    bar help tokens --grammar build/prompt-grammar.json
+  Generate fish completions:       bar completion fish > ~/.config/fish/completions/bar.fish
+
 
 Flags such as --grammar override the grammar JSON path when necessary.
 `) + "\n\n"
@@ -64,6 +70,14 @@ func Run(args []string, stdin io.Reader, stdout, stderr io.Writer) int {
 
 	if options.Command == "help" {
 		return runHelp(options, stdout, stderr)
+	}
+
+	if options.Command == "completion" {
+		return runCompletion(options, stdout, stderr)
+	}
+
+	if options.Command == "__complete" {
+		return runCompletionEngine(options, stdout, stderr)
 	}
 
 	if options.Command != "build" {
@@ -214,6 +228,39 @@ func runHelp(opts *cliOptions, stdout, stderr io.Writer) int {
 		fmt.Fprint(stdout, generalHelpText)
 		return 1
 	}
+}
+
+func runCompletion(opts *cliOptions, stdout, stderr io.Writer) int {
+	if len(opts.Tokens) == 0 {
+		writeError(stderr, "completion requires a shell (bash, zsh, or fish)")
+		return 1
+	}
+	if len(opts.Tokens) > 1 {
+		writeError(stderr, "completion accepts exactly one shell argument (bash, zsh, or fish)")
+		return 1
+	}
+
+	shell := strings.ToLower(strings.TrimSpace(opts.Tokens[0]))
+	grammar, err := LoadGrammar(opts.GrammarPath)
+	if err != nil {
+		writeError(stderr, err.Error())
+		return 1
+	}
+
+	script, err := GenerateCompletionScript(shell, grammar)
+	if err != nil {
+		writeError(stderr, err.Error())
+		return 1
+	}
+
+	if !strings.HasSuffix(script, "\n") {
+		script += "\n"
+	}
+	if err := writeOutput(opts.OutputPath, []byte(script), stdout); err != nil {
+		writeError(stderr, err.Error())
+		return 1
+	}
+	return 0
 }
 
 func renderTokensHelp(w io.Writer, grammar *Grammar) {

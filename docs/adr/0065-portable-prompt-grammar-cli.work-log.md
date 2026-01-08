@@ -211,3 +211,31 @@
   - Keep README instructions synced with guardrail test updates (severity: low; mitigation: adjust both when CLI commands change)
 - next_work:
   - Behaviour: When CLI snippets change, update both the README and `_tests.test_readme_portable_cli` so the quickstart and guardrail stay aligned (validation via `rg "bar help tokens" readme.md` and rerunning the guardrail test)
+
+## 2026-01-08 — loop 012
+- helper_version: helper:v20251223.1
+- focus: Decision — ship grammar-driven completion scripts for the portable CLI
+- expected_value:
+  | Factor | Value | Rationale |
+  | --- | --- | --- |
+  | Impact | High | Restores ADR 0065 completion behaviour so shells stay grammar-aligned |
+  | Probability | High | Implementing the documented CLI surfaces deterministically resolves the undefined references |
+  | Time Sensitivity | Medium | Deferral would keep contributors without completions until the next release |
+  | Uncertainty note | Low | Grammar contract already specified in ADR 0065 |
+- active_constraint: `go run ./cmd/bar completion fish` failed with undefined references (`runCompletionEngine`, `GenerateCompletionScript`), leaving ADR 0065’s completion requirement unmet because the CLI exposed no grammar-driven completion generator.
+- validation_targets:
+  - go run ./cmd/bar completion fish
+  - go run ./cmd/bar __complete bash 1 bar
+  - go test ./internal/barcli
+- evidence:
+  - red: docs/adr/evidence/0065-portable-prompt-grammar-cli/loop-012.md#loop-012-red--helper-rerun-go-run-cmdbar-completion-fish
+  - green: docs/adr/evidence/0065-portable-prompt-grammar-cli/loop-012.md#loop-012-green--helper-rerun-go-run-cmdbar-completion-fish
+  - green: docs/adr/evidence/0065-portable-prompt-grammar-cli/loop-012.md#loop-012-green--helper-rerun-go-run-cmdbar-__complete-bash-1-bar
+  - green: docs/adr/evidence/0065-portable-prompt-grammar-cli/loop-012.md#loop-012-green--helper-rerun-go-test-internalbarcli
+- rollback_plan: `git restore --source=HEAD -- internal/barcli/app.go internal/barcli/completion.go internal/barcli/completion_test.go docs/adr/0065-portable-prompt-grammar-cli.md docs/adr/0065-portable-prompt-grammar-cli.work-log.md docs/adr/evidence/0065-portable-prompt-grammar-cli/loop-012.md`
+- delta_summary: helper:diff-snapshot=6 files changed, 818 insertions(+), 3 deletions(-) — add grammar-driven completion engine, shell installers, regression tests, and update ADR/work-log evidence
+- loops_remaining_forecast: 0 loops — high confidence with completion scripts shipping and coverage in place
+- residual_constraints:
+  - Completion scripts depend on the exported grammar staying fresh (severity: low; mitigation: continue running `go test ./internal/barcli` after each `python3 -m prompts.export` regen; monitor CI prompt grammar step; owning ADR 0065 Decision)
+- next_work:
+  - Behaviour: When the grammar schema changes, refresh completion fixtures and rerun `go test ./internal/barcli` to confirm shell suggestions stay aligned (validation via `go test ./internal/barcli`)

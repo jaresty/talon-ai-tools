@@ -22,6 +22,7 @@ Proposed
 - Discovery and linting helpers are deferred to future ADRs to keep v1 focused on prompt construction.
 - The Go CLI surfaces its own documentation. `bar --help` introduces shorthand vs. override usage along with piping/JSON examples, while `bar help tokens` renders the exported grammar (static prompts, contract axes, persona presets, and multi-word tokens) so contributors can explore the vocabulary without opening the repository.
 - Interactive shell completions ship alongside the binary: `bar completion` (and installation helpers) provide Bash/Zsh/Fish tab completion informed by the exported grammar so shorthand tokens, `key=value` overrides, and persona hints appear in the correct order. Fish support is mandatory, and completions must refresh when `build/prompt-grammar.json` changes.
+- Completion scripts call an internal helper `bar __complete <shell> <index> <tokens…>` so shells can request grammar-aware suggestions on demand; the hidden surface must stay stable for installers while remaining out of the public command list.
 - Distribution includes a lightweight installer: a `scripts/install-bar.sh` helper (and README snippet) that fetches the latest release tarball, verifies the checksum, and drops the `bar` binary on the user’s `$PATH`. Contributors can alternatively run `go install github.com/talonvoice/talon-ai-tools/cmd/bar@latest` when the Go toolchain is available.
 - CI regenerates the artifact, verifies cleanliness, and exercises shared fixtures covering at least: (1) a static-only recipe using defaults, (2) one recipe per contract axis (completeness-only, scope-only, method-only, form/channel-only, directional-only), (3) a mixed shorthand + `key=value` recipe, (4) a persona preset recipe, and (5) an error case verifying structured error output.
 
@@ -69,6 +70,8 @@ Fields such as `axes.channel` and `persona.intent` are omitted when unset. The `
 - `bar build todo persona=facilitator persona=coach` *(raises preset_conflict)*
 - `bar build todo gist fog tone=kindly scope=focus intent=coach` *(raises format because shorthand appears after overrides)*
 - `bar build todo gist --json`
+- `bar completion fish > ~/.config/fish/completions/bar.fish`
+- `bar __complete bash 1 bar` *(internal surface for completion scripts)*
 
 Each example yields a Task/Constraints block. Examples without body input include the placeholder `Subject:
   (none provided)` in the plain-text form while the JSON `subject` field returns `""`.

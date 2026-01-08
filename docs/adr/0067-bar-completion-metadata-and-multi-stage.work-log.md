@@ -32,3 +32,21 @@
   - Completion engine still returns plain strings; implementation loop must produce tab-delimited metadata and update scripts (severity: high; mitigation: extend `Complete` API; owning ADR 0067 Decision)
 - next_work:
   - Behaviour: Implement completion engine changes and shell formatters per schema (validation via go tests + shell script snapshots)
+
+## 2026-01-08 — loop 003
+- helper_version: helper:v20251223.1
+- focus: Decision § implementation — enrich completion engine outputs with metadata and multi-stage suggestion sets
+- active_constraint: The completion backend emitted plain strings for a single stage, so shells could neither show concurrent scope/method tokens nor surface category metadata.
+- validation_targets:
+  - go test ./internal/barcli
+  - go run ./cmd/bar __complete fish 4 bar build todo full ""
+- evidence:
+  - green: docs/adr/evidence/0067-bar-completion-metadata-and-multi-stage/loop-003.md#loop-003-green--helper-rerun-go-test-.-internal-barcli
+  - green: docs/adr/evidence/0067-bar-completion-metadata-and-multi-stage/loop-003.md#loop-003-green--helper-rerun-go-run-.-cmd-bar-__complete-fish-4-bar-build-todo-full-
+- rollback_plan: `git restore --source=HEAD -- internal/barcli/completion.go internal/barcli/completion_test.go docs/adr/0067-bar-completion-metadata-and-multi-stage.md docs/adr/0067-bar-completion-metadata-and-multi-stage.work-log.md docs/adr/evidence/0067-bar-completion-metadata-and-multi-stage/loop-003.md`
+- delta_summary: helper:diff-snapshot=4 files changed, 548 insertions(+), 116 deletions(-) — add metadata-aware completion backend, update tests, and enhance shell scripts
+- loops_remaining_forecast: 0 loops (ADR ready to integrate with docs/installer updates as needed) — medium confidence pending user validation
+- residual_constraints:
+  - Update CLI documentation/installer guidance to mention metadata-rich completions (severity: low; mitigation: follow-up docs sweep; owning ADR 0067 Consequences)
+- next_work:
+  - Behaviour: Refresh docs/help text to reference metadata completions (validation via doc build or review)

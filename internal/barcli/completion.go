@@ -18,11 +18,13 @@ __bar_%s_completion() {
     fi
 
     local suggestions=()
-    local IFS=$'\n'
-    while IFS=$'\n' read -r line; do
-        if [[ -n "$line" ]]; then
-            suggestions+=("$line")
+    local line value
+    while IFS= read -r line; do
+        if [[ -z "$line" ]]; then
+            continue
         fi
+        value="${line%%$'\t'*}"
+        suggestions+=("$value")
     done < <(command bar __complete %s "$cword" "${words[@]}" 2>/dev/null)
 
     COMPREPLY=("${suggestions[@]}")
@@ -54,8 +56,33 @@ function __fish_bar_completions
 
     set -l index (math (count $tokens) - 1)
     for item in (command bar __complete fish $index $tokens 2>/dev/null)
-        if test -n "$item"
-            printf '%s\n' $item
+        set -l parts (string split '\t' -- $item)
+        set -l value $parts[1]
+        if test -z "$value"
+            continue
+        end
+        set -l parts_count (count $parts)
+        set -l category ""
+        if test $parts_count -ge 2
+            set category (string trim $parts[2])
+        end
+        set -l description ""
+        if test $parts_count -ge 3
+            set -l extras $parts[3..-1]
+            set description (string trim (string join ' ' $extras))
+        end
+        set -l display ""
+        if test -n "$category" -a -n "$description"
+            set display "$category — $description"
+        else if test -n "$category"
+            set display $category
+        else if test -n "$description"
+            set display $description
+        end
+        if test -n "$display"
+            printf '%s\t%s\n' $value $display
+        else
+            printf '%s\n' $value
         end
     end
 end
@@ -99,6 +126,242 @@ type completionState struct {
 	methodCap       int
 }
 
+type completionSuggestion struct {
+	Value       string
+	Category    string
+	Description string
+}
+
+func newSuggestion(value, category, description string) completionSuggestion {
+	return completionSuggestion{
+		Value:       value,
+		Category:    category,
+		Description: strings.TrimSpace(description),
+	}
+}
+
+func sanitizeCompletionField(value string) string {
+	return strings.ReplaceAll(value, "\t", " ")
+}
+
+func suggestionsWithDescriptions(tokens []string, category string, descriptionFn func(string) string) []completionSuggestion {
+	suggestions := make([]completionSuggestion, 0, len(tokens))
+	for _, token := range tokens {
+		desc := ""
+		if descriptionFn != nil {
+			desc = descriptionFn(token)
+		}
+		suggestions = append(suggestions, newSuggestion(token, category, desc))
+	}
+	return suggestions
+}
+
+func suggestionsFromTokens(tokens []string, category, description string) []completionSuggestion {
+	return suggestionsWithDescriptions(tokens, category, func(string) string {
+		return description
+	})
+}
+
+func filterSuggestionsByPrefix(items []completionSuggestion, prefix string) []completionSuggestion {
+	prefix = strings.TrimSpace(prefix)
+	if prefix == "" {
+		return items
+	}
+	filtered := make([]completionSuggestion, 0, len(items))
+	for _, item := range items {
+		if strings.HasPrefix(item.Value, prefix) {
+			filtered = append(filtered, item)
+		}
+	}
+	return filtered
+}
+
+func appendUniqueSuggestion(dest []completionSuggestion, seen map[string]struct{}, suggestion completionSuggestion) []completionSuggestion {
+	if suggestion.Value == "" {
+		return dest
+	}
+	key := suggestion.Value + "::" + suggestion.Category
+	if _, ok := seen[key]; ok {
+		return dest
+	}
+	seen[key] = struct{}{}
+	return append(dest, suggestion)
+}
+
+func appendUniqueSuggestions(dest []completionSuggestion, seen map[string]struct{}, suggestions []completionSuggestion) []completionSuggestion {
+	for _, suggestion := range suggestions {
+		dest = appendUniqueSuggestion(dest, seen, suggestion)
+	}
+	return dest
+}
+
+func buildStaticSuggestions(grammar *Grammar, catalog completionCatalog) []completionSuggestion {
+	return suggestionsWithDescriptions(catalog.static, "static", func(token string) string {
+		desc := strings.TrimSpace(grammar.StaticPromptDescription(token))
+		if desc == "" {
+			return token
+		}
+		return desc
+	})
+}
+
+func buildAxisSuggestions(grammar *Grammar, axis string, tokens []string) []completionSuggestion {
+	return suggestionsWithDescriptions(tokens, axis, func(token string) string {
+		desc := strings.TrimSpace(grammar.AxisDescription(axis, token))
+		if desc == "" {
+			return token
+		}
+		return desc
+	})
+}
+
+func buildScopeSuggestions(grammar *Grammar, catalog completionCatalog, state completionState) []completionSuggestion {
+	maxScope := len(catalog.scope)
+	if state.scopeCap > 0 && state.scopeCap < maxScope {
+		maxScope = state.scopeCap
+	}
+	if maxScope > 0 && len(state.scope) >= maxScope {
+		return nil
+	}
+	suggestions := excludeUsedTokens(catalog.scope, state.scope)
+	if len(suggestions) == 0 {
+		return nil
+	}
+	return suggestionsWithDescriptions(suggestions, "scope", func(token string) string {
+		return strings.TrimSpace(grammar.AxisDescription("scope", token))
+	})
+}
+
+func buildMethodSuggestions(grammar *Grammar, catalog completionCatalog, state completionState) []completionSuggestion {
+	maxMethod := len(catalog.method)
+	if state.methodCap > 0 && state.methodCap < maxMethod {
+		maxMethod = state.methodCap
+	}
+	if maxMethod > 0 && len(state.method) >= maxMethod {
+		return nil
+	}
+	suggestions := excludeUsedTokens(catalog.method, state.method)
+	if len(suggestions) == 0 {
+		return nil
+	}
+	return suggestionsWithDescriptions(suggestions, "method", func(token string) string {
+		return strings.TrimSpace(grammar.AxisDescription("method", token))
+	})
+}
+
+func personaPresetDescription(grammar *Grammar, preset string) string {
+	if presetDef, ok := grammar.Persona.Presets[preset]; ok {
+		label := strings.TrimSpace(presetDef.Label)
+		if label != "" {
+			return label
+		}
+	}
+	return preset
+}
+
+func buildPersonaSuggestions(grammar *Grammar, catalog completionCatalog, state completionState) []completionSuggestion {
+	if !state.static {
+		return nil
+	}
+	seen := make(map[string]struct{})
+	results := make([]completionSuggestion, 0)
+	results = appendUniqueSuggestions(results, seen, suggestionsWithDescriptions(catalog.personaPreset, "persona.preset", func(token string) string {
+		return personaPresetDescription(grammar, token)
+	}))
+	if !state.personaVoice {
+		results = appendUniqueSuggestions(results, seen, suggestionsWithDescriptions(catalog.personaVoice, "persona.voice", func(token string) string {
+			desc := strings.TrimSpace(grammar.PersonaDescription("voice", token))
+			if desc == "" {
+				return token
+			}
+			return desc
+		}))
+	}
+	if !state.personaAudience {
+		results = appendUniqueSuggestions(results, seen, suggestionsWithDescriptions(catalog.personaAudience, "persona.audience", func(token string) string {
+			desc := strings.TrimSpace(grammar.PersonaDescription("audience", token))
+			if desc == "" {
+				return token
+			}
+			return desc
+		}))
+	}
+	if !state.personaTone {
+		results = appendUniqueSuggestions(results, seen, suggestionsWithDescriptions(catalog.personaTone, "persona.tone", func(token string) string {
+			desc := strings.TrimSpace(grammar.PersonaDescription("tone", token))
+			if desc == "" {
+				return token
+			}
+			return desc
+		}))
+	}
+	if !state.personaIntent {
+		results = appendUniqueSuggestions(results, seen, suggestionsWithDescriptions(catalog.personaIntent, "persona.intent", func(token string) string {
+			desc := strings.TrimSpace(grammar.PersonaDescription("intent", token))
+			if desc == "" {
+				return token
+			}
+			return desc
+		}))
+	}
+
+	return results
+}
+
+func buildOverrideSuggestions(grammar *Grammar, catalog completionCatalog) []completionSuggestion {
+	seen := make(map[string]struct{})
+	results := make([]completionSuggestion, 0)
+	add := func(prefix, category string, tokens []string, descFn func(string) string) {
+		for _, token := range tokens {
+			value := prefix + token
+			desc := ""
+			if descFn != nil {
+				desc = descFn(token)
+			}
+			if strings.TrimSpace(desc) == "" {
+				desc = token
+			}
+			suggestion := newSuggestion(value, category, desc)
+			results = appendUniqueSuggestion(results, seen, suggestion)
+		}
+	}
+
+	add("static=", "override.static", catalog.static, func(token string) string {
+		return strings.TrimSpace(grammar.StaticPromptDescription(token))
+	})
+	add("completeness=", "override.completeness", catalog.completeness, func(token string) string {
+		return strings.TrimSpace(grammar.AxisDescription("completeness", token))
+	})
+	add("scope=", "override.scope", catalog.scope, func(token string) string {
+		return strings.TrimSpace(grammar.AxisDescription("scope", token))
+	})
+	add("method=", "override.method", catalog.method, func(token string) string {
+		return strings.TrimSpace(grammar.AxisDescription("method", token))
+	})
+	add("form=", "override.form", catalog.form, func(token string) string {
+		return strings.TrimSpace(grammar.AxisDescription("form", token))
+	})
+	add("channel=", "override.channel", catalog.channel, func(token string) string {
+		return strings.TrimSpace(grammar.AxisDescription("channel", token))
+	})
+	add("directional=", "override.directional", catalog.directional, func(token string) string {
+		return strings.TrimSpace(grammar.AxisDescription("directional", token))
+	})
+	add("voice=", "override.voice", catalog.personaVoice, func(token string) string {
+		return strings.TrimSpace(grammar.PersonaDescription("voice", token))
+	})
+	add("audience=", "override.audience", catalog.personaAudience, func(token string) string {
+		return strings.TrimSpace(grammar.PersonaDescription("audience", token))
+	})
+	add("tone=", "override.tone", catalog.personaTone, func(token string) string {
+		return strings.TrimSpace(grammar.PersonaDescription("tone", token))
+	})
+	add("intent=", "override.intent", catalog.personaIntent, func(token string) string {
+		return strings.TrimSpace(grammar.PersonaDescription("intent", token))
+	})
+	return results
+}
+
 var (
 	completionCommands = []string{"build", "help", "completion"}
 	helpTopics         = []string{"tokens"}
@@ -129,7 +392,7 @@ func GenerateCompletionScript(shell string, _ *Grammar) (string, error) {
 }
 
 // Complete returns token suggestions for the given command line context.
-func Complete(grammar *Grammar, shell string, words []string, index int) ([]string, error) {
+func Complete(grammar *Grammar, shell string, words []string, index int) ([]completionSuggestion, error) {
 	if grammar == nil {
 		return nil, fmt.Errorf("grammar not loaded")
 	}
@@ -149,44 +412,46 @@ func Complete(grammar *Grammar, shell string, words []string, index int) ([]stri
 	}
 
 	catalog := newCompletionCatalog(grammar)
-	normalizedCurrent := strings.TrimSpace(current)
+	prefix := strings.TrimSpace(current)
 
 	if index <= 1 {
-		return filterByPrefix(completionCommands, normalizedCurrent), nil
+		return filterSuggestionsByPrefix(suggestionsFromTokens(completionCommands, "command", ""), prefix), nil
 	}
 
 	command := words[1]
 	switch command {
 	case "help":
 		if index == 2 {
-			return filterByPrefix(helpTopics, normalizedCurrent), nil
+			return filterSuggestionsByPrefix(suggestionsFromTokens(helpTopics, "help", ""), prefix), nil
 		}
-		return []string{}, nil
+		return nil, nil
 	case "completion":
 		if index == 2 {
-			return filterByPrefix(completionShells, normalizedCurrent), nil
+			return filterSuggestionsByPrefix(suggestionsFromTokens(completionShells, "completion.shell", ""), prefix), nil
 		}
-		return []string{}, nil
+		return nil, nil
 	case "build":
-		return completeBuild(grammar, catalog, words, index, normalizedCurrent)
+		return completeBuild(grammar, catalog, words, index, current)
 	default:
 		if index == 2 {
-			return filterByPrefix(completionCommands, normalizedCurrent), nil
+			return filterSuggestionsByPrefix(suggestionsFromTokens(completionCommands, "command", ""), prefix), nil
 		}
-		return []string{}, nil
+		return nil, nil
 	}
 }
 
-func completeBuild(grammar *Grammar, catalog completionCatalog, words []string, index int, current string) ([]string, error) {
+func completeBuild(grammar *Grammar, catalog completionCatalog, words []string, index int, current string) ([]completionSuggestion, error) {
 	if index > 2 {
 		prev := words[index-1]
 		if _, expect := flagExpectingValue[prev]; expect {
-			return []string{}, nil
+			return nil, nil
 		}
 	}
 
+	prefix := strings.TrimSpace(current)
+
 	if strings.HasPrefix(current, "-") {
-		return filterByPrefix(buildFlags, current), nil
+		return filterSuggestionsByPrefix(suggestionsFromTokens(buildFlags, "flag", ""), prefix), nil
 	}
 
 	prior := []string{}
@@ -199,35 +464,41 @@ func completeBuild(grammar *Grammar, catalog completionCatalog, words []string, 
 		state.override = true
 	}
 
+	seen := make(map[string]struct{})
+	results := make([]completionSuggestion, 0)
+
 	if state.override {
-		override := buildOverrideSuggestions(catalog)
-		return filterByPrefix(override, current), nil
+		results = appendUniqueSuggestions(results, seen, buildOverrideSuggestions(grammar, catalog))
+		return filterSuggestionsByPrefix(results, prefix), nil
 	}
 
-	stage := state.nextStage(catalog)
-	switch stage {
-	case "static":
-		return filterByPrefix(catalog.static, current), nil
-	case "completeness":
-		return filterByPrefix(catalog.completeness, current), nil
-	case "scope":
-		suggestions := excludeUsedTokens(catalog.scope, state.scope)
-		return filterByPrefix(suggestions, current), nil
-	case "method":
-		suggestions := excludeUsedTokens(catalog.method, state.method)
-		return filterByPrefix(suggestions, current), nil
-	case "form":
-		return filterByPrefix(catalog.form, current), nil
-	case "channel":
-		return filterByPrefix(catalog.channel, current), nil
-	case "directional":
-		return filterByPrefix(catalog.directional, current), nil
-	case "persona":
-		persona := buildPersonaSuggestions(catalog, state)
-		return filterByPrefix(persona, current), nil
-	default:
-		return []string{}, nil
+	if !state.static {
+		results = appendUniqueSuggestions(results, seen, buildStaticSuggestions(grammar, catalog))
+		return filterSuggestionsByPrefix(results, prefix), nil
 	}
+
+	if !state.completeness {
+		results = appendUniqueSuggestions(results, seen, buildAxisSuggestions(grammar, "completeness", catalog.completeness))
+	}
+
+	if suggestions := buildScopeSuggestions(grammar, catalog, state); len(suggestions) > 0 {
+		results = appendUniqueSuggestions(results, seen, suggestions)
+	}
+	if suggestions := buildMethodSuggestions(grammar, catalog, state); len(suggestions) > 0 {
+		results = appendUniqueSuggestions(results, seen, suggestions)
+	}
+
+	if !state.form {
+		results = appendUniqueSuggestions(results, seen, buildAxisSuggestions(grammar, "form", catalog.form))
+	} else if !state.channel {
+		results = appendUniqueSuggestions(results, seen, buildAxisSuggestions(grammar, "channel", catalog.channel))
+	} else if !state.directional {
+		results = appendUniqueSuggestions(results, seen, buildAxisSuggestions(grammar, "directional", catalog.directional))
+	}
+
+	results = appendUniqueSuggestions(results, seen, buildPersonaSuggestions(grammar, catalog, state))
+
+	return filterSuggestionsByPrefix(results, prefix), nil
 }
 
 func newCompletionCatalog(grammar *Grammar) completionCatalog {
@@ -375,95 +646,6 @@ func collectShorthandState(grammar *Grammar, tokens []string) completionState {
 	return state
 }
 
-func (s completionState) nextStage(catalog completionCatalog) string {
-	if s.override {
-		return "override"
-	}
-	if !s.static && len(catalog.static) > 0 {
-		return "static"
-	}
-	if !s.completeness && len(catalog.completeness) > 0 {
-		return "completeness"
-	}
-	if len(catalog.scope) > 0 {
-		maxScope := len(catalog.scope)
-		if s.scopeCap > 0 && s.scopeCap < maxScope {
-			maxScope = s.scopeCap
-		}
-		if maxScope > 0 && len(s.scope) < maxScope {
-			return "scope"
-		}
-	}
-	if len(catalog.method) > 0 {
-		maxMethod := len(catalog.method)
-		if s.methodCap > 0 && s.methodCap < maxMethod {
-			maxMethod = s.methodCap
-		}
-		if maxMethod > 0 && len(s.method) < maxMethod {
-			return "method"
-		}
-	}
-
-	if !s.form && len(catalog.form) > 0 {
-		return "form"
-	}
-	if !s.channel && len(catalog.channel) > 0 {
-		return "channel"
-	}
-	if !s.directional && len(catalog.directional) > 0 {
-		return "directional"
-	}
-	return "persona"
-}
-
-func buildOverrideSuggestions(catalog completionCatalog) []string {
-	suggestions := make([]string, 0, len(catalog.static)+len(catalog.completeness)+len(catalog.scope)+len(catalog.method)+len(catalog.form)+len(catalog.channel)+len(catalog.directional)+len(catalog.personaVoice)+len(catalog.personaAudience)+len(catalog.personaTone)+len(catalog.personaIntent))
-	appendWithPrefix := func(prefix string, tokens []string) {
-		for _, token := range tokens {
-			suggestions = append(suggestions, prefix+token)
-		}
-	}
-
-	appendWithPrefix("static=", catalog.static)
-	appendWithPrefix("completeness=", catalog.completeness)
-	appendWithPrefix("scope=", catalog.scope)
-	appendWithPrefix("method=", catalog.method)
-	appendWithPrefix("form=", catalog.form)
-	appendWithPrefix("channel=", catalog.channel)
-	appendWithPrefix("directional=", catalog.directional)
-	appendWithPrefix("voice=", catalog.personaVoice)
-	appendWithPrefix("audience=", catalog.personaAudience)
-	appendWithPrefix("tone=", catalog.personaTone)
-	appendWithPrefix("intent=", catalog.personaIntent)
-
-	sort.Strings(suggestions)
-	return suggestions
-}
-
-func buildPersonaSuggestions(catalog completionCatalog, state completionState) []string {
-	suggestions := make([]string, 0)
-	if !state.personaPreset {
-		suggestions = append(suggestions, catalog.personaPreset...)
-	} else {
-		suggestions = append(suggestions, catalog.personaPreset...)
-	}
-	if !state.personaVoice {
-		suggestions = append(suggestions, catalog.personaVoice...)
-	}
-	if !state.personaAudience {
-		suggestions = append(suggestions, catalog.personaAudience...)
-	}
-	if !state.personaTone {
-		suggestions = append(suggestions, catalog.personaTone...)
-	}
-	if !state.personaIntent {
-		suggestions = append(suggestions, catalog.personaIntent...)
-	}
-	suggestions = uniqueStrings(suggestions)
-	sort.Strings(suggestions)
-	return suggestions
-}
-
 func excludeUsedTokens(tokens []string, used map[string]struct{}) []string {
 	if len(tokens) == 0 {
 		return []string{}
@@ -474,40 +656,6 @@ func excludeUsedTokens(tokens []string, used map[string]struct{}) []string {
 			continue
 		}
 		filtered = append(filtered, token)
-	}
-	return filtered
-}
-
-func uniqueStrings(values []string) []string {
-	if len(values) == 0 {
-		return []string{}
-	}
-	seen := make(map[string]struct{}, len(values))
-	out := make([]string, 0, len(values))
-	for _, value := range values {
-		if value == "" {
-			continue
-		}
-		if _, ok := seen[value]; ok {
-			continue
-		}
-		seen[value] = struct{}{}
-		out = append(out, value)
-	}
-	return out
-}
-
-func filterByPrefix(values []string, prefix string) []string {
-	if prefix == "" {
-		result := make([]string, len(values))
-		copy(result, values)
-		return result
-	}
-	filtered := make([]string, 0, len(values))
-	for _, value := range values {
-		if strings.HasPrefix(value, prefix) {
-			filtered = append(filtered, value)
-		}
 	}
 	return filtered
 }
@@ -589,10 +737,13 @@ func runCompletionEngine(opts *cliOptions, stdout, stderr io.Writer) int {
 	}
 
 	for _, suggestion := range suggestions {
-		if suggestion == "" {
+		value := strings.TrimSpace(suggestion.Value)
+		if value == "" {
 			continue
 		}
-		fmt.Fprintln(stdout, suggestion)
+		category := sanitizeCompletionField(strings.TrimSpace(suggestion.Category))
+		description := sanitizeCompletionField(strings.TrimSpace(suggestion.Description))
+		fmt.Fprintf(stdout, "%s\t%s\t%s\n", value, category, description)
 	}
 	return 0
 }

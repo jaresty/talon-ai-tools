@@ -265,3 +265,19 @@
   - None — CLI override ergonomics now match documentation and completions.
 - next_work:
   - None.
+
+## 2026-01-08 — loop 016
+- helper_version: helper:v20251223.1
+- focus: Decision § documentation — clarify ADR consequences around canonical overrides
+- active_constraint: ADR-0068 still implied that all inputs must use slug forms, overlooking the newly restored canonical override support and risking confusion for operators.
+- validation_targets:
+  - (doc-only) referenced loop-015 green evidence for behaviour enforcement.
+- evidence:
+  - doc-only: docs/adr/evidence/0068-grammar-token-normalization-for-cli/loop-016.md
+- rollback_plan: `git restore --source=HEAD -- docs/adr/0068-grammar-token-normalization-for-cli.md docs/adr/0068-grammar-token-normalization-for-cli.work-log.md docs/adr/evidence/0068-grammar-token-normalization-for-cli/loop-016.md`
+- delta_summary: helper:diff-snapshot=1 file changed, 2 insertions(+), 2 deletions(-) — updated ADR decision/consequence sections to note canonical overrides remain valid while shorthand multi-word tokens use slugs.
+- loops_remaining_forecast: 0 loops — documentation now matches the enforced CLI behaviour.
+- residual_constraints:
+  - None — canonical override support is fully documented.
+- next_work:
+  - None.

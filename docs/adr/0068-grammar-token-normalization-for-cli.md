@@ -16,7 +16,7 @@ Accepted — portable CLI ships slug metadata, enforces slug-only inputs, update
 - Preserve the existing human-friendly token as the canonical label that renders in documentation and GUI surfaces.
 - Extend the grammar export to ship both representations (`label` and `slug`) so portable consumers can choose the appropriate form without guessing.
 - Update the CLI parser and completion backend to operate on slugs for command-line insertion while still showing the human label (and description) in metadata columns.
-- Teach shorthand normalization to accept either input (slug or label) and translate to the canonical token before hydration so existing scripts continue working during the transition, then remove the label-input fallback once migration completes.
+- Teach shorthand normalization to accept either input (slug or label) and translate to the canonical token before hydration so existing scripts continue working during the transition, then remove the label-input fallback once migration completes. Provide canonical/slug parity for key=value overrides so scripts can continue using readable forms such as `scope=focus`.
 
 ## Rationale
 - Slugs sidestep shell quoting oddities while creating an explicit contract for future tooling (e.g., integration tests, other CLIs) that rely on grammar tokens.
@@ -28,7 +28,7 @@ Accepted — portable CLI ships slug metadata, enforces slug-only inputs, update
 - Every consumer of the grammar bundle (CLI, docs, Talon overlays) must be reviewed to ensure they pick the correct representation.
 - Completion fixtures and CLI tests require updates to assert slug output as well as backward-compatible label matching.
 - Documentation and release notes must call out the change so users know that slugs are the only accepted CLI form.
-- Removal of the label-input fallback means CLI invocations that send legacy labels now fail; scripts must be updated to use the published slugs.
+- Removal of the label-input fallback means CLI invocations that send legacy labels now fail; scripts must use published slugs for shorthand tokens. Canonical key=value overrides remain valid (for example `scope=focus`), while multi-word overrides continue to use dashed slugs.
 
 ## Validation
 - `go test ./internal/barcli` exercises the Go completion backend and shorthand normalization, ensuring slug tokens remain canonical and label inputs raise canonical errors.

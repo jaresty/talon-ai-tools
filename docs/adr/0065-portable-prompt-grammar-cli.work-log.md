@@ -439,6 +439,31 @@
 - next_work:
   - Behaviour: Update docs again if guard starts requiring additional tooling (validation via docs search)
 
+## 2026-01-08 — loop 022
+- helper_version: helper:v20251223.1
+- focus: Completion summary — ADR 0065 guardrails and documentation alignment
+- expected_value:
+  | Factor | Value | Rationale |
+  | --- | --- | --- |
+  | Impact | Medium | Confirms ADR closure and provides auditors a wrap-up pointer |
+  | Probability | High | Work-log entry finalises the loop history |
+  | Time Sensitivity | Low | Administrative wrap-up |
+  | Uncertainty note | Low | All behaviours already green |
+- active_constraint: Work-log lacked an explicit completion summary tying guardrails, docs, and CI integration together (`rg --stats "Completion summary" docs/adr/0065-portable-prompt-grammar-cli.work-log.md` returned no matches).
+- validation_targets:
+  - rg --stats "Completion summary" docs/adr/0065-portable-prompt-grammar-cli.work-log.md
+  - rg -n "Completion summary" docs/adr/0065-portable-prompt-grammar-cli.work-log.md
+- evidence:
+  - red: docs/adr/evidence/0065-portable-prompt-grammar-cli/loop-022.md#loop-022-red--helper-rerun-rg---stats-completion-summary-docsadr0065-portable-prompt-grammar-cliworldogmd
+  - green: docs/adr/evidence/0065-portable-prompt-grammar-cli/loop-022.md#loop-022-green--helper-rerun-rg--n-completion-summary-docsadr0065-portable-prompt-grammar-cliworldogmd
+- rollback_plan: `git restore --source=HEAD -- docs/adr/0065-portable-prompt-grammar-cli.work-log.md docs/adr/evidence/0065-portable-prompt-grammar-cli/loop-022.md`
+- delta_summary: helper:diff-snapshot=2 files changed, 14 insertions(+) — add completion summary entry and evidence pointer
+- loops_remaining_forecast: 0 loops — ADR 0065 guardrails, docs, CI, and installers now aligned
+- residual_constraints:
+  - None — monitor future ADRs for new behaviours
+- next_work:
+  - Behaviour: None — ADR considered complete pending new decisions
+
 ## 2026-01-08 — loop 021
 - helper_version: helper:v20251223.1
 - focus: Decision — document Go prerequisite directly in ADR 0065

@@ -97,6 +97,24 @@ func TestBuildPresetConflict(t *testing.T) {
 	}
 }
 
+func TestBuildAcceptsCanonicalOverrideValues(t *testing.T) {
+	grammar := loadTestGrammar(t)
+
+	tokens := []string{"todo", "scope=focus", "method=steps"}
+
+	result, cliErr := Build(grammar, tokens)
+	if cliErr != nil {
+		t.Fatalf("unexpected error: %v", cliErr)
+	}
+
+	if len(result.Axes.Scope) != 1 || result.Axes.Scope[0] != "focus" {
+		t.Fatalf("expected scope override to hydrate focus, got %+v", result.Axes.Scope)
+	}
+	if len(result.Axes.Method) != 1 || result.Axes.Method[0] != "steps" {
+		t.Fatalf("expected method override to hydrate steps, got %+v", result.Axes.Method)
+	}
+}
+
 func TestBuildHandlesMultiwordTokens(t *testing.T) {
 	grammar := loadTestGrammar(t)
 

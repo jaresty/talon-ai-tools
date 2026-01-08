@@ -247,3 +247,21 @@
   - None — completions and help messaging remain consistent.
 - next_work:
   - None.
+
+## 2026-01-08 — loop 015
+- helper_version: helper:v20251223.1
+- focus: Decision § implementation — accept canonical key=value overrides alongside slug inputs
+- active_constraint: CLI overrides required slugified forms (`scope-focus`), confusing operators accustomed to `scope=focus` and causing unnecessary build failures.
+- validation_targets:
+  - go test ./internal/barcli
+  - python3 -m pytest _tests/test_bar_completion_cli.py
+- evidence:
+  - green: docs/adr/evidence/0068-grammar-token-normalization-for-cli/loop-015.md#loop-015-green--helper-rerun-go-test-.-internal-barcli
+  - green: docs/adr/evidence/0068-grammar-token-normalization-for-cli/loop-015.md#loop-015-green--helper-rerun-python3--m-pytest-_tests-test_bar_completion_cli.py
+- rollback_plan: `git restore --source=HEAD -- internal/barcli/build.go internal/barcli/build_test.go internal/barcli/completion.go internal/barcli/completion_test.go docs/adr/0068-grammar-token-normalization-for-cli.work-log.md docs/adr/evidence/0068-grammar-token-normalization-for-cli/loop-015.md`
+- delta_summary: helper:diff-snapshot=4 files changed, 53 insertions(+), 9 deletions(-) — relaxed slug enforcement for canonical overrides, adjusted completion suggestions, and added regression coverage for both build and completion flows.
+- loops_remaining_forecast: 0 loops — slug-only behaviour and canonical override support are aligned and covered by tests.
+- residual_constraints:
+  - None — CLI override ergonomics now match documentation and completions.
+- next_work:
+  - None.

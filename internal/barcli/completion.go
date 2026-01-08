@@ -365,7 +365,13 @@ func buildOverrideSuggestions(grammar *Grammar, catalog completionCatalog) []com
 	results := make([]completionSuggestion, 0)
 	add := func(prefix, category string, tokens []string, descFn func(string) string) {
 		for _, token := range tokens {
-			value := prefix + token
+			slug := token
+			if grammar != nil {
+				if candidate := strings.TrimSpace(grammar.slugForToken(token)); candidate != "" {
+					slug = candidate
+				}
+			}
+			value := prefix + slug
 			desc := ""
 			if descFn != nil {
 				desc = descFn(token)
@@ -373,7 +379,7 @@ func buildOverrideSuggestions(grammar *Grammar, catalog completionCatalog) []com
 			if strings.TrimSpace(desc) == "" {
 				desc = token
 			}
-			suggestion := newSuggestion(grammar, value, category, desc, true, true)
+			suggestion := newSuggestion(grammar, value, category, desc, true, false)
 			results = appendUniqueSuggestion(results, seen, suggestion)
 		}
 

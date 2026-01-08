@@ -117,23 +117,31 @@ func (s *buildState) requireSlugInput(canonical, source string) *CLIError {
 		}
 	}
 	slug := s.grammar.slugForToken(canonical)
-	if slug == "" {
-		return nil
-	}
 	normalizedSlug := strings.ToLower(strings.TrimSpace(slug))
 	normalizedSource := strings.ToLower(source)
 	canonicalNormalized := strings.ToLower(canonical)
-	if normalizedSource == normalizedSlug {
+
+	if strings.Contains(canonical, "=") {
+		if normalizedSource == canonicalNormalized {
+			return nil
+		}
+	}
+
+	if normalizedSource == normalizedSlug && normalizedSlug != "" {
 		return nil
 	}
-	if canonicalNormalized == normalizedSlug {
+	if canonicalNormalized == normalizedSlug && normalizedSlug != "" {
 		return nil
 	}
 	if normalizedSource == canonicalNormalized {
 		s.unrecognized = append(s.unrecognized, source)
+		reason := slug
+		if reason == "" {
+			reason = canonical
+		}
 		return s.fail(&CLIError{
 			Type:         errorUnknownToken,
-			Message:      fmt.Sprintf("token %q must use slug %q", source, slug),
+			Message:      fmt.Sprintf("token %q must use slug %q", source, reason),
 			Unrecognized: append([]string{}, s.unrecognized...),
 			Recognized:   s.cloneRecognized(),
 		})

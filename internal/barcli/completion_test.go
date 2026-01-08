@@ -149,6 +149,15 @@ func TestCompleteScopeAndMethodConcurrent(t *testing.T) {
 	if containsSuggestionValue(suggestions, "scope-focus") {
 		t.Fatalf("expected scope override slug to be absent from shorthand suggestions, got %v", suggestions)
 	}
+
+	overrideSuggestions, err := Complete(grammar, "bash", []string{"bar", "build", "todo", "full", "scope="}, 4)
+	if err != nil {
+		t.Fatalf("unexpected error fetching overrides: %v", err)
+	}
+	if !containsSuggestionValue(overrideSuggestions, "scope=focus") {
+		t.Fatalf("expected override suggestion scope=focus, got %v", overrideSuggestions)
+	}
+
 	methodSuggestion, ok := findSuggestion(suggestions, "steps")
 	if !ok {
 		t.Fatalf("expected method token 'steps', got %v", suggestions)
@@ -169,7 +178,7 @@ func TestCompleteOverrideSuggestions(t *testing.T) {
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
-	slug := "scope-focus"
+	slug := "scope=focus"
 	suggestion, ok := findSuggestion(suggestions, slug)
 	if !ok {
 		t.Fatalf("expected override suggestion %q, got %v", slug, suggestions)
@@ -179,6 +188,9 @@ func TestCompleteOverrideSuggestions(t *testing.T) {
 	}
 	if trimmed := strings.TrimSpace(suggestion.Value); trimmed != slug {
 		t.Fatalf("expected override value %q, got %q", slug, trimmed)
+	}
+	if containsSuggestionValue(suggestions, "scope-focus") {
+		t.Fatalf("did not expect slug-only override suggestion, got %v", suggestions)
 	}
 	if !strings.HasSuffix(suggestion.Value, " ") {
 		t.Fatalf("expected override suggestion to include trailing space, got %q", suggestion.Value)

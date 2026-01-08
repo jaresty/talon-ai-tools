@@ -339,3 +339,28 @@
   - Ensure CI environments have Go available for `go run ./cmd/bar`; monitor for failures and update guard if build tags change (severity: low; mitigation: revalidate guard execution in CI)
 - next_work:
   - Behaviour: If guard becomes too heavy for regular guardrails, consider adding a focused target for smoke tests (validation via `make bar-completion-guard`)
+
+## 2026-01-08 — loop 017
+- helper_version: helper:v20251223.1
+- focus: Decision — document the completion guard in CONTRIBUTING so contributors run it proactively
+- expected_value:
+  | Factor | Value | Rationale |
+  | --- | --- | --- |
+  | Impact | Medium | Keeps ADR 0065 guard observable for new contributors |
+  | Probability | High | Updating CONTRIBUTING ensures docs mention the guardrail workflow |
+  | Time Sensitivity | Medium | Without docs, contributors may miss the guard until review |
+  | Uncertainty note | Low | Guard already integrated with make targets |
+- active_constraint: CONTRIBUTING’s guardrail section omitted the new `bar-completion-guard`, so contributor docs lacked instructions (`rg --stats "bar-completion-guard" CONTRIBUTING.md` returned 0 matches).
+- validation_targets:
+  - rg --stats "bar-completion-guard" CONTRIBUTING.md
+  - rg -n "bar-completion-guard" CONTRIBUTING.md
+- evidence:
+  - red: docs/adr/evidence/0065-portable-prompt-grammar-cli/loop-017.md#loop-017-red--helper-rerun-rg---stats-bar-completion-guard-contributingmd
+  - green: docs/adr/evidence/0065-portable-prompt-grammar-cli/loop-017.md#loop-017-green--helper-rerun-rg--n-bar-completion-guard-contributingmd
+- rollback_plan: `git restore --source=HEAD -- CONTRIBUTING.md docs/adr/0065-portable-prompt-grammar-cli.work-log.md docs/adr/evidence/0065-portable-prompt-grammar-cli/loop-017.md`
+- delta_summary: helper:diff-snapshot=3 files changed, 20 insertions(+) — document guard in CONTRIBUTING, update work-log, capture evidence
+- loops_remaining_forecast: 0 loops — documentation parity achieved; reopen if further guardrail workflows change
+- residual_constraints:
+  - None newly identified; guard messaging now present across README and CONTRIBUTING
+- next_work:
+  - Behaviour: Revisit README/CONTRIBUTING when guard automation evolves (validation via `rg -n "bar-completion-guard" readme.md CONTRIBUTING.md`)

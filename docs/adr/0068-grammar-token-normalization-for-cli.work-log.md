@@ -209,3 +209,23 @@
   - None — label-form input paths are removed and scripts must use slugs.
 - next_work:
   - None.
+
+## 2026-01-08 — loop 013
+- helper_version: helper:v20251223.1
+- focus: Decision § documentation — clarify CLI help text for slug-only tokens
+- active_constraint: CLI help still referenced generic slug usage without explaining that single-word tokens remain unchanged, risking confusion for operators verifying override inputs.
+- validation_targets:
+  - go test ./internal/barcli
+  - python3 -m pytest _tests/test_bar_completion_cli.py
+  - python3 -m pytest _tests/test_generate_axis_cheatsheet.py
+- evidence:
+  - green: docs/adr/evidence/0068-grammar-token-normalization-for-cli/loop-013.md#loop-013-green--helper-rerun-go-test-.-internal-barcli
+  - green: docs/adr/evidence/0068-grammar-token-normalization-for-cli/loop-013.md#loop-013-green--helper-rerun-python3--m-pytest-_tests-test_bar_completion_cli.py
+  - green: docs/adr/evidence/0068-grammar-token-normalization-for-cli/loop-013.md#loop-013-green--helper-rerun-python3--m-pytest-_tests-test_generate_axis_cheatsheet.py
+- rollback_plan: `git restore --source=HEAD -- internal/barcli/app.go docs/adr/0068-grammar-token-normalization-for-cli.work-log.md docs/adr/evidence/0068-grammar-token-normalization-for-cli/loop-013.md`
+- delta_summary: helper:diff-snapshot=2 files changed, 11 insertions(+), 8 deletions(-) — clarified help text to distinguish single-word tokens from multi-word slugs.
+- loops_remaining_forecast: 0 loops — slug-only behaviour and documentation are aligned.
+- residual_constraints:
+  - None — CLI messaging reflects slug-only expectations.
+- next_work:
+  - None.

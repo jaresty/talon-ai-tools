@@ -42,11 +42,14 @@ var generalHelpText = strings.TrimSpace(`USAGE
   8. Persona hints / preset (voice, audience, tone, intent, persona=<preset>)
 
   After the first key=value override, *all* remaining tokens must be key=value.
-  Multi-word shorthand (for example "fly rog" or "to team") may be supplied as
-  separate words; the CLI will combine them automatically. Use quotes when your
-  shell would otherwise split or glob the text.
+  Enter tokens the way they appear in "bar help tokens": single words stay the
+  same (for example "todo", "focus"), while multi-word entries use dashed slugs
+  such as "as-teacher" or "fly-rog". Key=value overrides accept the same values
+  (for example "scope=focus", "directional=fly-rog"). Use shell quotes when
+  when needed; completions list every value for convenience.
 
 COMMANDS
+
   build        Construct a prompt recipe from shorthand tokens or key=value overrides.
                 Accepts input via --prompt, --input, or STDIN (piped).
   help         Show this message.

@@ -15,3 +15,20 @@
   - Shell scripts and backend still return string-only suggestions; future loops must design metadata schema (severity: high; mitigation: draft completion response structure; owning ADR 0067 Decision)
 - next_work:
   - Behaviour: Design completion metadata schema and multi-stage response format (validation via new completion unit tests)
+
+## 2026-01-08 — loop 002
+- helper_version: helper:v20251223.1
+- focus: Decision § schema design — formalise multi-stage availability order and metadata contract for completion suggestions
+- active_constraint: Without a documented schema, we cannot evolve the completion engine; the ADR needed explicit staging and payload definitions before implementation can proceed.
+- validation_targets:
+  - *(design-only loop; no executable validation)*
+- evidence:
+  - green (design): docs/adr/0067-bar-completion-metadata-and-multi-stage.md#multi-stage-availability-model
+  - green (design): docs/adr/0067-bar-completion-metadata-and-multi-stage.md#metadata-contract
+- rollback_plan: `git restore --source=HEAD -- docs/adr/0067-bar-completion-metadata-and-multi-stage.md docs/adr/0067-bar-completion-metadata-and-multi-stage.work-log.md`
+- delta_summary: helper:diff-snapshot=1 file changed, 34 insertions(+), 0 deletions(-) — captured staging order, payload format, and metadata fields in ADR body
+- loops_remaining_forecast: 1 loop (implement backend + shell updates per design) — medium confidence pending coding effort
+- residual_constraints:
+  - Completion engine still returns plain strings; implementation loop must produce tab-delimited metadata and update scripts (severity: high; mitigation: extend `Complete` API; owning ADR 0067 Decision)
+- next_work:
+  - Behaviour: Implement completion engine changes and shell formatters per schema (validation via go tests + shell script snapshots)

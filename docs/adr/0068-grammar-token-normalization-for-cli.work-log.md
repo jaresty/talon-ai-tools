@@ -53,3 +53,21 @@
   - Documentation and release notes still need to call out slug-first CLI behaviour (severity: medium; mitigation: draft docs update and link to ADR; monitoring: `python3 -m pytest _tests/test_generate_axis_docs.py`)
 - next_work:
   - Behaviour: Update docs and release notes to explain slug-first CLI tokens (validation via python3 -m pytest _tests/test_generate_axis_docs.py)
+
+## 2026-01-08 — loop 004
+- helper_version: helper:v20251223.1
+- focus: Decision § documentation — announce slug-first CLI behaviour in user-facing docs and release notes
+- active_constraint: Documentation omitted slug-only guidance, so contributors reading README/ADR 0065 could continue scripting with label tokens without seeing the new warnings (`python3 -m pytest _tests/test_generate_axis_docs.py` was expected to cover docs but the file no longer exists, leaving the gap unguarded).
+- validation_targets:
+  - python3 -m pytest _tests/test_generate_axis_docs.py
+  - python3 -m pytest _tests/test_generate_axis_cheatsheet.py
+- evidence:
+  - red: docs/adr/evidence/0068-grammar-token-normalization-for-cli/loop-004.md#loop-004-red--helper-rerun-python3--m-pytest-_tests-test_generate_axis_docs.py
+  - green: docs/adr/evidence/0068-grammar-token-normalization-for-cli/loop-004.md#loop-004-green--helper-rerun-python3--m-pytest-_tests-test_generate_axis_cheatsheet.py
+- rollback_plan: `git restore --source=HEAD -- README.md docs/adr/0065-portable-prompt-grammar-cli.md docs/adr/0068-grammar-token-normalization-for-cli.work-log.md docs/adr/evidence/0068-grammar-token-normalization-for-cli/loop-004.md`
+- delta_summary: helper:diff-snapshot=2 files changed, 5 insertions(+) — documented slug-first CLI tokens in README and ADR 0065, highlighting the new warnings and migration guidance.
+- loops_remaining_forecast: 0 loops — high confidence now that docs and release notes flag slug-first behaviour and CLI emits warnings for labels.
+- residual_constraints:
+  - The historical docs pytest command (`_tests/test_generate_axis_docs.py`) referenced by earlier loops no longer exists (severity: low; mitigation: continue using `_tests/test_generate_axis_cheatsheet.py` for documentation guardrails until the helper list is refreshed).
+- next_work:
+  - None — documentation loop complete; monitor future release notes for slug adoption references as part of normal ADR follow-up.

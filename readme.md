@@ -91,6 +91,10 @@ The `bar` CLI consumes the exported prompt grammar so you can assemble recipes o
    echo "Fix onboarding" | bar build todo focus steps fog persona=facilitator intent=coach
    ```
 4. If you add completions or installer changes, keep `bar help` and `bar completion` outputs aligned with `build/prompt-grammar.json`. The metadata-aware completion backend now emits tab-delimited suggestions (`value\tcategory\tdescription`) so shells can show axis information; older scripts simply ignore the extra columns.
+
+   > [!NOTE]
+   > CLI suggestions now insert slug tokens such as `as-teacher`. Supplying the older human-readable labels (`"as teacher"`) still works, but the CLI emits a deprecation warning with the matching slug so you can update scripts and shell history.
+
 5. Completion guardrail (requires Go 1.21+ and Python 3.11+):
    ```bash
    make bar-completion-guard

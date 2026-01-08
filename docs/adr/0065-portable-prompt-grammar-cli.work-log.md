@@ -264,3 +264,28 @@
   - Virtualenv usage is manual; contributors must run `.venv/bin/python -m pytest _tests/test_bar_completion_cli.py` when validating completions (severity: low; mitigation: document command in README if adoption grows; owning ADR 0065 Consequences)
 - next_work:
   - Behaviour: Monitor future grammar updates to ensure completion guard stays green and adjust test fixtures when tokens change (validation via `.venv/bin/python -m pytest _tests/test_bar_completion_cli.py`)
+
+## 2026-01-08 — loop 014
+- helper_version: helper:v20251223.1
+- focus: Decision — document completion guard command so contributors can run the new pytest slice
+- expected_value:
+  | Factor | Value | Rationale |
+  | --- | --- | --- |
+  | Impact | Medium | Documentation keeps the new completion guard usable across releases |
+  | Probability | High | Adding README instructions directly addresses the missing guidance |
+  | Time Sensitivity | Medium | Without docs, contributors may skip the guard until reminded in reviews |
+  | Uncertainty note | Low | Behaviour already validated by loop 013 |
+- active_constraint: README lacked instructions for running `.venv/bin/python -m pytest _tests/test_bar_completion_cli.py`, so the completion guard added in loop 013 was undiscoverable (`rg --stats "\.venv/bin/python -m pytest _tests/test_bar_completion_cli.py" readme.md` returned no matches).
+- validation_targets:
+  - rg --stats "\.venv/bin/python -m pytest _tests/test_bar_completion_cli.py" readme.md
+  - rg -n "\.venv/bin/python -m pytest _tests/test_bar_completion_cli.py" readme.md
+- evidence:
+  - red: docs/adr/evidence/0065-portable-prompt-grammar-cli/loop-014.md#loop-014-red--helper-rerun-rg---stats-venvbinpython--m-pytest-_tests-test_bar_completion_clipy-readmemd
+  - green: docs/adr/evidence/0065-portable-prompt-grammar-cli/loop-014.md#loop-014-green--helper-rerun-rg--n-venvbinpython--m-pytest-_tests-test_bar_completion_clipy-readmemd
+- rollback_plan: `git restore --source=HEAD -- readme.md docs/adr/0065-portable-prompt-grammar-cli.work-log.md docs/adr/evidence/0065-portable-prompt-grammar-cli/loop-014.md`
+- delta_summary: helper:diff-snapshot=3 files changed, 18 insertions(+) — document completion guard command and record loop evidence
+- loops_remaining_forecast: 0 loops — documentation, guard, and evidence now align; reopen if guard workflow changes
+- residual_constraints:
+  - Virtualenv instructions remain lightweight; monitor for requests to standardise dependency installation (severity: low; mitigation: add CONTRIBUTING note if repeated questions arise; owning ADR 0065 Consequences)
+- next_work:
+  - Behaviour: When tooling guidance changes (e.g., new guard or dependency), refresh README and guardrail docs accordingly (validation via `rg -n "bar completion" readme.md`)

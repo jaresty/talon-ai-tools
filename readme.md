@@ -88,7 +88,14 @@ The `bar` CLI consumes the exported prompt grammar so you can assemble recipes o
    echo "Fix onboarding" | bar build todo focus steps fog persona=facilitator intent=coach
    ```
 4. If you add completions or installer changes, keep `bar help` and `bar completion` outputs aligned with `build/prompt-grammar.json`.
-5. Developer sanity check:
+5. Completion guardrail:
+   ```bash
+   python3 -m venv .venv
+   .venv/bin/python -m pip install pytest
+   .venv/bin/python -m pytest _tests/test_bar_completion_cli.py
+   ```
+   This pytest slice exercises `bar completion` and the hidden `bar __complete` helper so shell installers stay grammar-aligned.
+6. Developer sanity check:
    ```bash
    python3 -m unittest _tests.test_readme_portable_cli
    ```

@@ -194,3 +194,20 @@
   - Watch for future README reorganisations that might move the CLI section; update the guardrail test accordingly (severity: low; mitigation: adjust expected snippets when layout changes)
 - next_work:
   - Behaviour: When README structure changes, update `_tests.test_readme_portable_cli` expectations so the guardrail continues to reflect live documentation
+
+## 2026-01-08 — loop 011
+- helper_version: helper:v20251223.1
+- focus: Decision — document the README guardrail command for developers
+- active_constraint: README did not mention the `_tests.test_readme_portable_cli` guardrail, leaving contributors unaware of the fast path to verify CLI docs (`git show HEAD:readme.md | rg "python3 -m unittest _tests.test_readme_portable_cli"` returned nothing)
+- validation_targets:
+  - rg "python3 -m unittest _tests.test_readme_portable_cli" readme.md
+- evidence:
+  - red: docs/adr/evidence/0065-portable-prompt-grammar-cli/loop-011.md#loop-011-red--helper-rerun-git-show-headreadmemd--rg-python3--m-unittest-_tests-test-readme-portable-cli
+  - green: docs/adr/evidence/0065-portable-prompt-grammar-cli/loop-011.md#loop-011-green--helper-rerun-rg-python3--m-unittest-_tests-test-readme-portable-cli-readmemd
+- rollback_plan: `git restore --source=HEAD -- readme.md docs/adr/evidence/0065-portable-prompt-grammar-cli/loop-011.md docs/adr/0065-portable-prompt-grammar-cli.work-log.md`
+- delta_summary: helper:diff-snapshot=1 file changed, 5 insertions(+) — add README step mapping the guardrail test to the quickstart instructions
+- loops_remaining_forecast: 0 loops — documentation, guardrails, and automation now cover CLI quickstart expectations end-to-end
+- residual_constraints:
+  - Keep README instructions synced with guardrail test updates (severity: low; mitigation: adjust both when CLI commands change)
+- next_work:
+  - Behaviour: When CLI snippets change, update both the README and `_tests.test_readme_portable_cli` so the quickstart and guardrail stay aligned (validation via `rg "bar help tokens" readme.md` and rerunning the guardrail test)

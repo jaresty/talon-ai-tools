@@ -88,6 +88,11 @@ The `bar` CLI consumes the exported prompt grammar so you can assemble recipes o
    echo "Fix onboarding" | bar build todo focus steps fog persona=facilitator intent=coach
    ```
 4. If you add completions or installer changes, keep `bar help` and `bar completion` outputs aligned with `build/prompt-grammar.json`.
+5. Developer sanity check:
+   ```bash
+   python3 -m unittest _tests.test_readme_portable_cli
+   ```
+   This guardrail ensures the README quickstart stays in sync with the exported grammar commands.
 
 ### CI example
 

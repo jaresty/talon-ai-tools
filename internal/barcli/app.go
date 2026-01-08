@@ -24,10 +24,13 @@ var generalHelpText = strings.TrimSpace(`USAGE
    bar completion <shell> [--grammar PATH] [--output FILE]
      (shell = bash | zsh | fish)
  
-   The CLI ships with an embedded prompt grammar. Use --grammar or
-   BAR_GRAMMAR_PATH to point at alternate payloads for testing.
+    The CLI ships with an embedded prompt grammar. Use --grammar or
+    BAR_GRAMMAR_PATH to point at alternate payloads for testing.
+    Completion suggestions include the token category and a short description
+    so shells can display richer context.
  
  TOKEN ORDER (SHORTHAND)
+
 
   1. Static prompt          (0..1 tokens, default infer)
   2. Completeness           (0..1)

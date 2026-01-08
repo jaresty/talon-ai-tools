@@ -1,7 +1,7 @@
 # 0067 — Enrich `bar` CLI completions with multi-stage context
 
 ## Status
-Proposed
+Completed
 
 ## Context
 - The embedded grammar now powers the `bar` CLI completions across Bash, Zsh, and Fish.

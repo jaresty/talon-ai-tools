@@ -50,3 +50,19 @@
   - Update CLI documentation/installer guidance to mention metadata-rich completions (severity: low; mitigation: follow-up docs sweep; owning ADR 0067 Consequences)
 - next_work:
   - Behaviour: Refresh docs/help text to reference metadata completions (validation via doc build or review)
+
+## 2026-01-08 — loop 004
+- helper_version: helper:v20251223.1
+- focus: Decision § documentation — update CLI help and README to describe metadata-rich completions and close ADR 0067
+- active_constraint: Without documentation, users would not discover that completions now return category/description metadata; ADR status remained Proposed.
+- validation_targets:
+  - *(documentation-only loop; no executable validation)*
+- evidence:
+  - green (docs): internal/barcli/app.go:17
+  - green (docs): readme.md:79
+  - green (ADR): docs/adr/0067-bar-completion-metadata-and-multi-stage.md:3
+- rollback_plan: `git restore --source=HEAD -- internal/barcli/app.go readme.md docs/adr/0067-bar-completion-metadata-and-multi-stage.md docs/adr/0067-bar-completion-metadata-and-multi-stage.work-log.md`
+- delta_summary: helper:diff-snapshot=4 files changed, 24 insertions(+), 2 deletions(-) — documented metadata completions, updated help text, and marked ADR completed
+- loops_remaining_forecast: 0 loops — ADR closed; continue passive monitoring during release validation
+- residual_constraints: *(none — documentation complete)*
+- next_work: None (monitor release notes as part of normal process)

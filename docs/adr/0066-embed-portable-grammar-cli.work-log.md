@@ -79,3 +79,25 @@
   - Observe the next `release-bar` workflow to confirm guarded exporter step passes in CI (severity: low; mitigation: monitor Actions logs; trigger: release failure; owning ADR 0066 Consequences)
 - next_work:
   - Behaviour: Monitor upcoming `release-bar` execution to ensure guardrail runs green (validation via GitHub Actions run)
+
+## 2026-01-08 — loop 005
+- helper_version: helper:v20251223.1
+- focus: Decision § automation — verify guardrail steady state and release build flow with embedded grammar
+- active_constraint: After inducing drift, we must confirm the guardrail succeeds once artifacts align so release builds do not fail spuriously; `go build ./cmd/bar` represents the release step.
+- validation_targets:
+  - python3 -m prompts.export --output build/prompt-grammar.json --embed-path internal/barcli/embed/prompt-grammar.json
+  - git diff --exit-code -- build/prompt-grammar.json internal/barcli/embed/prompt-grammar.json
+  - cmp --silent build/prompt-grammar.json internal/barcli/embed/prompt-grammar.json
+  - go build ./cmd/bar
+- evidence:
+  - green: docs/adr/evidence/0066-embed-portable-grammar-cli/loop-005.md#loop-005-green--helper-rerun-python3--m-prompts-export----output-build-prompt-grammarjson---embed-path-internal-barcli-embed-prompt-grammarjson
+  - green: docs/adr/evidence/0066-embed-portable-grammar-cli/loop-005.md#loop-005-green--helper-rerun-git-diff---exit-code----build-prompt-grammarjson-internal-barcli-embed-prompt-grammarjson
+  - green: docs/adr/evidence/0066-embed-portable-grammar-cli/loop-005.md#loop-005-green--helper-rerun-cmp---silent-build-prompt-grammarjson-internal-barcli-embed-prompt-grammarjson
+  - green: docs/adr/evidence/0066-embed-portable-grammar-cli/loop-005.md#loop-005-green--helper-rerun-go-build-.-cmd-bar
+- rollback_plan: `git restore --source=HEAD -- docs/adr/0066-embed-portable-grammar-cli.work-log.md docs/adr/evidence/0066-embed-portable-grammar-cli/loop-005.md`
+- delta_summary: helper:diff-snapshot=2 files changed, 56 insertions(+), 0 deletions(-) — capture steady-state guardrail evidence and document final parity check
+- loops_remaining_forecast: 0 loops (ADR ready for closure; only external release observation outstanding) — high confidence in guardrail coverage
+- residual_constraints:
+  - Observe the next `release-bar` workflow to confirm guarded exporter step passes in CI (severity: low; mitigation: monitor Actions logs; trigger: release failure; owning ADR 0066 Consequences)
+- next_work:
+  - Behaviour: Monitor upcoming `release-bar` execution to ensure guardrail runs green (validation via GitHub Actions run)

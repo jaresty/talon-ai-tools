@@ -116,12 +116,6 @@ func Run(args []string, stdin io.Reader, stdout, stderr io.Writer) int {
 	result.Subject = promptBody
 	result.PlainText = RenderPlainText(result)
 
-	if len(result.Warnings) > 0 {
-		for _, warning := range result.Warnings {
-			fmt.Fprintf(stderr, "warning: %s\n", warning)
-		}
-	}
-
 	if options.JSON {
 		payload, err := json.MarshalIndent(result, "", "  ")
 		if err != nil {

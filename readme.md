@@ -63,7 +63,7 @@ os.environ["OPENAI_API_KEY"] = "YOUR-KEY-HERE"
 
 ## Release Notes
 
-- **2026-01-08** – Portable CLI completions now insert slug tokens (for example, `as-teacher`). Using the earlier human-readable labels still works for now, but the CLI prints a warning with the canonical slug so scripts and shell history can migrate before the fallback is removed.
+- **2026-01-08** – Portable CLI completions now insert slug tokens (for example, `as-teacher`). The CLI no longer accepts the legacy human-readable labels; supply slugs directly to keep recipes predictable.
 
 ## Development
 
@@ -97,7 +97,7 @@ The `bar` CLI consumes the exported prompt grammar so you can assemble recipes o
 4. If you add completions or installer changes, keep `bar help` and `bar completion` outputs aligned with `build/prompt-grammar.json`. The metadata-aware completion backend now emits tab-delimited suggestions (`value\tcategory\tdescription`) so shells can show axis information; older scripts simply ignore the extra columns.
 
    > [!NOTE]
-   > CLI suggestions now insert slug tokens such as `as-teacher`. Supplying the older human-readable labels (`"as teacher"`) still works, but the CLI emits a deprecation warning with the matching slug so you can update scripts and shell history.
+   > CLI suggestions now insert slug tokens such as `as-teacher`. Legacy human-readable labels are rejected, so update any scripts or shell history to use the slug form.
 
 5. Completion guardrail (requires Go 1.21+ and Python 3.11+):
    ```bash

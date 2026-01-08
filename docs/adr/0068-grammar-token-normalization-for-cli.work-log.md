@@ -189,3 +189,23 @@
   - Label fallback removal awaiting BAR-142 closure (severity: medium; mitigation: monitor release checklist; validation: python3 -m pytest _tests/test_generate_axis_cheatsheet.py).
 - next_work:
   - Behaviour: Capture BAR-142 closure details and sunset checklist in work-log (validation via python3 -m pytest _tests/test_generate_axis_cheatsheet.py).
+
+## 2026-01-08 — loop 012
+- helper_version: helper:v20251223.1
+- focus: Decision § implementation — remove label-input fallback and make slug usage mandatory
+- active_constraint: Despite slug exports and warnings, the CLI still accepted label-form tokens, keeping scripts ambiguous and blocking full migration to slug-only behaviour.
+- validation_targets:
+  - go test ./internal/barcli
+  - python3 -m pytest _tests/test_bar_completion_cli.py
+  - python3 -m pytest _tests/test_generate_axis_cheatsheet.py
+- evidence:
+  - green: docs/adr/evidence/0068-grammar-token-normalization-for-cli/loop-012.md#loop-012-green--helper-rerun-go-test-.-internal-barcli
+  - green: docs/adr/evidence/0068-grammar-token-normalization-for-cli/loop-012.md#loop-012-green--helper-rerun-python3--m-pytest-_tests-test_bar_completion_cli.py
+  - green: docs/adr/evidence/0068-grammar-token-normalization-for-cli/loop-012.md#loop-012-green--helper-rerun-python3--m-pytest-_tests-test_generate_axis_cheatsheet.py
+- rollback_plan: `git restore --source=HEAD -- internal/barcli/build.go internal/barcli/app.go internal/barcli/app_test.go internal/barcli/build_test.go readme.md docs/adr/0065-portable-prompt-grammar-cli.md docs/adr/0068-grammar-token-normalization-for-cli.md docs/adr/0068-grammar-token-normalization-for-cli.work-log.md docs/adr/evidence/0068-grammar-token-normalization-for-cli/loop-012.md`
+- delta_summary: helper:diff-snapshot=8 files changed, 89 insertions(+), 76 deletions(-) — enforced slug-only parsing in the CLI, updated guardrail tests, and refreshed README/ADR guidance to reflect immediate rejection of label inputs.
+- loops_remaining_forecast: 0 loops — slug normalization contract is complete; monitoring continues via existing guardrails.
+- residual_constraints:
+  - None — label-form input paths are removed and scripts must use slugs.
+- next_work:
+  - None.

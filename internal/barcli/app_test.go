@@ -10,7 +10,7 @@ import (
 
 func TestRunJSONOutput(t *testing.T) {
 	grammarPath := filepath.Join("..", "..", "cmd", "bar", "testdata", "grammar.json")
-	args := []string{"--grammar", grammarPath, "--json", "build", "todo", "focus", "fog", "persona=coach_junior", "intent=coach"}
+	args := []string{"--grammar", grammarPath, "--json", "build", "todo", "focus", "fog", "persona-coach_junior", "intent-coach"}
 
 	stdout := &bytes.Buffer{}
 	stderr := &bytes.Buffer{}
@@ -47,7 +47,7 @@ func TestRunJSONOutput(t *testing.T) {
 
 func TestRunErrorJSON(t *testing.T) {
 	grammarPath := filepath.Join("..", "..", "cmd", "bar", "testdata", "grammar.json")
-	args := []string{"--grammar", grammarPath, "--json", "build", "persona=coach_junior", "persona=coach_junior"}
+	args := []string{"--grammar", grammarPath, "--json", "build", "persona-coach_junior", "persona-coach_junior"}
 
 	stdout := &bytes.Buffer{}
 	stderr := &bytes.Buffer{}
@@ -79,7 +79,7 @@ func TestRunErrorJSON(t *testing.T) {
 
 func TestRunPlainTextFormatting(t *testing.T) {
 	grammarPath := filepath.Join("..", "..", "cmd", "bar", "testdata", "grammar.json")
-	args := []string{"--grammar", grammarPath, "build", "todo", "steps", "fly", "rog", "persona=coach_junior"}
+	args := []string{"--grammar", grammarPath, "build", "todo", "steps", "fly-rog", "persona-coach_junior"}
 
 	stdout := &bytes.Buffer{}
 	stderr := &bytes.Buffer{}
@@ -187,7 +187,7 @@ func TestRunUnknownOverrideRecordsUnrecognized(t *testing.T) {
 	}
 }
 
-func TestRunWarnsOnLabelInputPlain(t *testing.T) {
+func TestRunRejectsLabelInputPlain(t *testing.T) {
 	grammarPath := filepath.Join("..", "..", "cmd", "bar", "testdata", "grammar.json")
 	args := []string{"--grammar", grammarPath, "build", "todo", "as", "teacher"}
 
@@ -195,20 +195,15 @@ func TestRunWarnsOnLabelInputPlain(t *testing.T) {
 	stderr := &bytes.Buffer{}
 
 	exitCode := Run(args, strings.NewReader(""), stdout, stderr)
-	if exitCode != 0 {
-		t.Fatalf("expected exit code 0, got %d (%s)", exitCode, stderr.String())
+	if exitCode == 0 {
+		t.Fatalf("expected failure for label input, got exit code 0 (stderr=%s)", stderr.String())
 	}
-
-	warningOutput := stderr.String()
-	if !strings.Contains(strings.ToLower(warningOutput), "warning") {
-		t.Fatalf("expected warning output, got %q", warningOutput)
-	}
-	if !strings.Contains(warningOutput, "as-teacher") {
-		t.Fatalf("expected warning to reference slug as-teacher, got %q", warningOutput)
+	if !strings.Contains(stderr.String(), "use slug") {
+		t.Fatalf("expected slug error message, got %q", stderr.String())
 	}
 }
 
-func TestRunWarnsOnLabelInputJSON(t *testing.T) {
+func TestRunRejectsLabelInputJSON(t *testing.T) {
 	grammarPath := filepath.Join("..", "..", "cmd", "bar", "testdata", "grammar.json")
 	args := []string{"--grammar", grammarPath, "--json", "build", "todo", "as", "teacher"}
 
@@ -216,26 +211,20 @@ func TestRunWarnsOnLabelInputJSON(t *testing.T) {
 	stderr := &bytes.Buffer{}
 
 	exitCode := Run(args, strings.NewReader(""), stdout, stderr)
-	if exitCode != 0 {
-		t.Fatalf("expected exit code 0, got %d (%s)", exitCode, stderr.String())
+	if exitCode == 0 {
+		t.Fatalf("expected failure for label input, got exit code 0 (stderr=%s)", stderr.String())
 	}
 
-	var payload BuildResult
+	var payload struct {
+		Error CLIError `json:"error"`
+	}
 	if err := json.Unmarshal(stdout.Bytes(), &payload); err != nil {
-		t.Fatalf("failed to parse JSON output: %v", err)
+		t.Fatalf("failed to parse JSON error output: %v", err)
 	}
-	if len(payload.Warnings) == 0 {
-		t.Fatalf("expected warnings to be recorded, got %+v", payload.Warnings)
+	if payload.Error.Type != errorUnknownToken {
+		t.Fatalf("expected unknown token error, got %s", payload.Error.Type)
 	}
-	joined := strings.Join(payload.Warnings, " ")
-	if !strings.Contains(joined, "as-teacher") {
-		t.Fatalf("expected warnings to mention slug as-teacher, got %q", joined)
-	}
-	if !strings.Contains(strings.ToLower(joined), "use slug") {
-		t.Fatalf("expected warnings to suggest slug usage, got %q", joined)
-	}
-
-	if !strings.Contains(strings.ToLower(stderr.String()), "warning") {
-		t.Fatalf("expected stderr warnings, got %q", stderr.String())
+	if !strings.Contains(payload.Error.Message, "use slug") {
+		t.Fatalf("expected slug error message, got %q", payload.Error.Message)
 	}
 }

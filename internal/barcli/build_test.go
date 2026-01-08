@@ -22,11 +22,11 @@ func TestBuildWithShorthandAndOverrides(t *testing.T) {
 	tokens := []string{
 		"todo",
 		"focus",
+		"system",
 		"steps",
 		"fog",
-		"persona=coach_junior",
-		"intent=inform",
-		"scope=focus system",
+		"persona-coach_junior",
+		"intent-inform",
 	}
 
 	result, cliErr := Build(grammar, tokens)
@@ -86,7 +86,7 @@ func TestBuildWithShorthandAndOverrides(t *testing.T) {
 func TestBuildPresetConflict(t *testing.T) {
 	grammar := loadTestGrammar(t)
 
-	tokens := []string{"persona=coach_junior", "scope=focus", "persona=coach_junior"}
+	tokens := []string{"persona-coach_junior", "scope-focus", "persona-coach_junior"}
 
 	_, cliErr := Build(grammar, tokens)
 	if cliErr == nil {
@@ -100,7 +100,7 @@ func TestBuildPresetConflict(t *testing.T) {
 func TestBuildHandlesMultiwordTokens(t *testing.T) {
 	grammar := loadTestGrammar(t)
 
-	tokens := []string{"todo", "focus", "steps", "fly", "rog", "as", "teacher", "to", "team", "kindly", "coach"}
+	tokens := []string{"todo", "focus", "steps", "fly-rog", "as-teacher", "to-team", "kindly", "coach"}
 
 	result, cliErr := Build(grammar, tokens)
 	if cliErr != nil {

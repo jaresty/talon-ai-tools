@@ -229,3 +229,21 @@
   - None — CLI messaging reflects slug-only expectations.
 - next_work:
   - None.
+
+## 2026-01-08 — loop 014
+- helper_version: helper:v20251223.1
+- focus: Decision § validation — ensure completions keep single-word shorthand tokens unslugged
+- active_constraint: Without explicit coverage, shortcut suggestions could regress to slugged values, making the CLI help text inconsistent with completions.
+- validation_targets:
+  - go test ./internal/barcli
+  - python3 -m pytest _tests/test_bar_completion_cli.py
+- evidence:
+  - green: docs/adr/evidence/0068-grammar-token-normalization-for-cli/loop-014.md#loop-014-green--helper-rerun-go-test-.-internal-barcli
+  - green: docs/adr/evidence/0068-grammar-token-normalization-for-cli/loop-014.md#loop-014-green--helper-rerun-python3--m-pytest-_tests-test_bar_completion_cli.py
+- rollback_plan: `git restore --source=HEAD -- internal/barcli/completion_test.go docs/adr/0068-grammar-token-normalization-for-cli.work-log.md docs/adr/evidence/0068-grammar-token-normalization-for-cli/loop-014.md`
+- delta_summary: helper:diff-snapshot=1 file changed, 8 insertions(+), 1 deletion(-) — added regression coverage preventing slugged override values from leaking into shorthand completion suggestions.
+- loops_remaining_forecast: 0 loops — slug-only behaviour is fully guarded by tests and documentation.
+- residual_constraints:
+  - None — completions and help messaging remain consistent.
+- next_work:
+  - None.

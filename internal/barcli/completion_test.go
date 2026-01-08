@@ -146,6 +146,9 @@ func TestCompleteScopeAndMethodConcurrent(t *testing.T) {
 	if !strings.HasSuffix(scopeSuggestion.Value, " ") {
 		t.Fatalf("expected scope suggestion to include trailing space, got %q", scopeSuggestion.Value)
 	}
+	if containsSuggestionValue(suggestions, "scope-focus") {
+		t.Fatalf("expected scope override slug to be absent from shorthand suggestions, got %v", suggestions)
+	}
 	methodSuggestion, ok := findSuggestion(suggestions, "steps")
 	if !ok {
 		t.Fatalf("expected method token 'steps', got %v", suggestions)

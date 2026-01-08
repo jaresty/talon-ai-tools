@@ -1,0 +1,91 @@
+{
+  "schema_version": "1.0",
+  "axes": {
+    "definitions": {
+      "completeness": {
+        "full": "The response provides a thorough answer that covers all essential details for normal use.",
+        "gist": "The response delivers a concise summary that touches each major point once."
+      },
+      "scope": {
+        "focus": "The response concentrates on a single focal topic without drifting into tangents.",
+        "system": "The response examines the connected system and highlights relationships between parts."
+      },
+      "method": {
+        "steps": "The response is organised as a sequence of concrete steps to follow.",
+        "analysis": "The response analyses the situation, explaining structure and reasoning without prescribing actions."
+      },
+      "form": {
+        "checklist": "The response is formatted as an actionable checklist of imperative items."
+      },
+      "channel": {
+        "slack": "The response is written for Slack, using Slack-flavoured Markdown and tone."
+      },
+      "directional": {
+        "fog": "The response applies an abstracting-generalizing perspective to the subject.",
+        "fly rog": "The response blends abstraction, generalisation, reflection, and structure into a single unified lens."
+      }
+
+    },
+    "list_tokens": {}
+  },
+  "static_prompts": {
+    "profiles": {
+      "infer": {
+        "description": "Infer the task",
+        "axes": {}
+      },
+      "todo": {
+        "description": "Return a todo list",
+        "axes": {}
+      }
+    },
+    "descriptions": {}
+  },
+  "persona": {
+    "axes": {
+      "voice": ["as teacher"],
+      "audience": ["to team"],
+      "tone": ["kindly"],
+      "intent": ["coach", "inform"]
+    },
+    "presets": {
+      "coach_junior": {
+        "key": "coach_junior",
+        "label": "Coach junior",
+        "spoken": "coach",
+        "voice": "as teacher",
+        "audience": "to team",
+        "tone": "kindly"
+      }
+    },
+    "spoken_map": {
+      "coach": "coach_junior"
+    },
+    "intent": {
+      "axis_tokens": {
+        "intent": ["coach", "inform"]
+      }
+    }
+  },
+  "hierarchy": {
+    "axis_priority": ["completeness", "method", "scope", "form", "channel", "directional"],
+    "axis_soft_caps": {
+      "scope": 2,
+      "method": 3,
+      "form": 1,
+      "channel": 1,
+      "directional": 1
+    },
+    "axis_incompatibilities": {
+      "scope": {},
+      "method": {},
+      "form": {},
+      "channel": {},
+      "directional": {}
+    },
+    "defaults": {
+      "static_prompt": "infer",
+      "completeness": "full"
+    }
+  }
+}

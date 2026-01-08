@@ -166,6 +166,30 @@ _AXIS_INCOMPATIBILITIES: dict[str, dict[str, set[str]]] = {
 }
 
 
+def axis_soft_caps() -> dict[str, int]:
+    """Return the per-axis soft cap map used by prompt parsing."""
+
+    return dict(_AXIS_SOFT_CAPS)
+
+
+def axis_incompatibilities() -> dict[str, dict[str, list[str]]]:
+    """Return axis incompatibilities as a mapping of token -> conflicts."""
+
+    incompatibilities: dict[str, dict[str, list[str]]] = {}
+    for axis, token_map in _AXIS_INCOMPATIBILITIES.items():
+        conflicts: dict[str, list[str]] = {}
+        for token, tokens in token_map.items():
+            conflicts[token] = sorted(tokens)
+        incompatibilities[axis] = conflicts
+    return incompatibilities
+
+
+def axis_priority() -> tuple[str, ...]:
+    """Return the axis precedence order applied during shorthand parsing."""
+
+    return tuple(_AXIS_PRIORITY)
+
+
 def _canonicalise_axis_tokens(axis: str, tokens: list[str]) -> list[str]:
     """Normalise a sequence of axis tokens into a canonical set.
 

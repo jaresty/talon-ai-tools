@@ -72,6 +72,23 @@ os.environ["OPENAI_API_KEY"] = "YOUR-KEY-HERE"
 - GPT orchestration code should flow through `lib/promptSession.PromptSession` rather than manually mutating `GPTState`. The typical pattern is to create a session, call `prepare_prompt(...)`, optionally `begin(reuse_existing=True)` when reusing an in-flight request, then `execute()`.
 - When adding new actions, keep the `UserActions` methods thin, prefer unit tests similar to `tests/test_gpt_actions.py`, and verify they assert the prompt session interactions you expect.
 
+### Portable prompt grammar CLI
+
+The `bar` CLI consumes the exported prompt grammar so you can assemble recipes outside Talon.
+
+1. Regenerate the grammar when prompts, axes, or personas change:
+   ```bash
+   python3 -m prompts.export --output build/prompt-grammar.json
+   ```
+2. Install the CLI with Go (`go install github.com/talonvoice/talon-ai-tools/cmd/bar@latest`) or use the `scripts/install-bar.sh` helper to fetch a release binary.
+3. Explore the grammar and build recipes:
+   ```bash
+   bar help tokens                      # list prompts, axes, persona presets
+   bar build todo focus steps fog --json
+   echo "Fix onboarding" | bar build todo focus steps fog persona=facilitator intent=coach
+   ```
+4. If you add completions or installer changes, keep `bar help` and `bar completion` outputs aligned with `build/prompt-grammar.json`.
+
 ### CI example
 
 ```yaml

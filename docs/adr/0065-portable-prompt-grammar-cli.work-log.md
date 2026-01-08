@@ -160,3 +160,20 @@
   - Monitor the first CI run containing a prompt grammar change to ensure contributor guidance plus guardrail catch drifts early (severity: low; mitigation: watch `ci` workflow for prompt grammar steps)
 - next_work:
   - Behaviour: Observe upcoming prompt grammar-affecting PRs to confirm contributors follow the documented exporter workflow (validation via PR checklist review)
+
+## 2026-01-08 — loop 009
+- helper_version: helper:v20251223.1
+- focus: Decision — surface portable CLI usage in the README so collaborators can discover the grammar tooling without spelunking
+- active_constraint: The root `readme.md` lacked any mention of `bar build`/`bar help`, leaving ADR consumers without a quickstart for the portable CLI (validated by `git show HEAD:readme.md | rg "bar help tokens"` returning no matches)
+- validation_targets:
+  - rg "bar help tokens" readme.md
+- evidence:
+  - red: docs/adr/evidence/0065-portable-prompt-grammar-cli/loop-009.md#loop-009-red--helper-rerun-git-show-headreadmemd--rg-bar-help-tokens
+  - green: docs/adr/evidence/0065-portable-prompt-grammar-cli/loop-009.md#loop-009-green--helper-rerun-rg-bar-help-tokens-readmemd
+- rollback_plan: `git restore --source=HEAD -- readme.md docs/adr/evidence/0065-portable-prompt-grammar-cli/loop-009.md docs/adr/0065-portable-prompt-grammar-cli.work-log.md`
+- delta_summary: helper:diff-snapshot=1 file changed, 17 insertions(+) — add README quickstart covering grammar regeneration, CLI install, and common `bar` commands
+- loops_remaining_forecast: 0 loops — high confidence; README/CONTRIBUTING now align with ADR documentation contract
+- residual_constraints:
+  - Monitor future CLI feature loops to ensure README snippets stay synced with `bar help` examples (severity: low; mitigation: re-run README search when CLI surface changes)
+- next_work:
+  - Behaviour: During the next CLI enhancement, confirm README examples still reflect exported grammar commands (validation via `rg "bar build" readme.md`)

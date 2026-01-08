@@ -10,7 +10,7 @@ import (
 func TestRenderTokensHelpShowsPersonaSlugs(t *testing.T) {
 	grammar := loadCompletionGrammar(t)
 	var buf bytes.Buffer
-	renderTokensHelp(&buf, grammar)
+	renderTokensHelp(&buf, grammar, nil)
 	output := buf.String()
 
 	presetSlug := grammar.slugForToken("persona=coach_junior")
@@ -82,5 +82,78 @@ func TestRenderTokensHelpShowsPersonaSlugs(t *testing.T) {
 	}
 	if !intentVerified {
 		t.Skip("no persona intent tokens required slug transformation in test grammar")
+	}
+}
+
+func TestRenderTokensHelpFiltersStaticSection(t *testing.T) {
+	grammar := loadCompletionGrammar(t)
+	filters := map[string]bool{"static": true}
+	var buf bytes.Buffer
+	renderTokensHelp(&buf, grammar, filters)
+
+	output := buf.String()
+	if !strings.Contains(output, "STATIC PROMPTS") {
+		t.Fatalf("expected static prompts heading in filtered output, got:\n%s", output)
+	}
+	forbidden := []string{"CONTRACT AXES", "PERSONA PRESETS", "PERSONA AXES", "PERSONA INTENTS"}
+	for _, heading := range forbidden {
+		if strings.Contains(output, heading) {
+			t.Fatalf("expected filtered output to exclude %q, got:\n%s", heading, output)
+		}
+	}
+}
+
+func TestRenderTokensHelpPersonaFilterIncludesPresetsAndAxes(t *testing.T) {
+	filters, err := parseTokenHelpFilters([]string{"persona"})
+	if err != nil {
+		t.Fatalf("unexpected error parsing persona filter: %v", err)
+	}
+	grammar := loadCompletionGrammar(t)
+	var buf bytes.Buffer
+	renderTokensHelp(&buf, grammar, filters)
+
+	output := buf.String()
+	if !strings.Contains(output, "PERSONA PRESETS") {
+		t.Fatalf("expected persona presets heading in persona filter output, got:\n%s", output)
+	}
+	if !strings.Contains(output, "PERSONA AXES") {
+		t.Fatalf("expected persona axes heading in persona filter output, got:\n%s", output)
+	}
+	if strings.Contains(output, "CONTRACT AXES") {
+		t.Fatalf("expected persona filter to skip contract axes, got:\n%s", output)
+	}
+}
+
+func TestRunHelpTokensFiltersSections(t *testing.T) {
+	stdout := &bytes.Buffer{}
+	stderr := &bytes.Buffer{}
+	exitCode := Run([]string{"help", "tokens", "static"}, strings.NewReader(""), stdout, stderr)
+	if exitCode != 0 {
+		t.Fatalf("expected exit 0, got %d with stderr: %s", exitCode, stderr.String())
+	}
+
+	output := stdout.String()
+	if !strings.Contains(output, "STATIC PROMPTS") {
+		t.Fatalf("expected static prompts heading in CLI output, got:\n%s", output)
+	}
+	if strings.Contains(output, "CONTRACT AXES") {
+		t.Fatalf("expected CLI filtered output to skip contract axes, got:\n%s", output)
+	}
+}
+
+func TestRunHelpTokensUnknownSection(t *testing.T) {
+	stdout := &bytes.Buffer{}
+	stderr := &bytes.Buffer{}
+	exitCode := Run([]string{"help", "tokens", "static", "bogus"}, strings.NewReader(""), stdout, stderr)
+	if exitCode == 0 {
+		t.Fatalf("expected non-zero exit when unknown section provided")
+	}
+
+	errOutput := stderr.String()
+	if !strings.Contains(errOutput, "unknown tokens help section \"bogus\"") {
+		t.Fatalf("expected unknown section error, got: %s", errOutput)
+	}
+	if stdout.Len() == 0 {
+		t.Fatalf("expected general help text to be printed for unknown section")
 	}
 }

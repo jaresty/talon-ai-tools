@@ -16,10 +16,10 @@ const (
 
 var generalHelpText = strings.TrimSpace(`USAGE
   bar build <tokens>... [--prompt TEXT|--input FILE] [--output FILE] [--json]
-  cat prompt.txt | bar build todo steps fog
+  cat prompt.txt | bar build todo focus steps fog
 
   bar help
-  bar help tokens [--grammar PATH]
+  bar help tokens [section...] [--grammar PATH]
 
    bar completion <shell> [--grammar PATH] [--output FILE]
      (shell = bash | zsh | fish)
@@ -49,7 +49,13 @@ var generalHelpText = strings.TrimSpace(`USAGE
   values like "scope=focus" as well as slug equivalents such as "directional=fly-rog".
   Use shell quotes when needed; completions list every value for convenience.
 
-COMMANDS
+  Sections accepted by "bar help tokens":
+    static            Show only static prompts (slug + canonical hints)
+    axes              Show contract axes (slug + canonical hints)
+    persona           Show persona presets and persona axes
+    persona-intents   Show persona intents (slug + spoken hints)
+
+ COMMANDS
 
   build        Construct a prompt recipe from shorthand tokens or key=value overrides.
                 Accepts input via --prompt, --input, or STDIN (piped).
@@ -58,17 +64,19 @@ COMMANDS
                 using the exported prompt grammar.
   completion   Emit shell completion scripts (bash, zsh, fish) informed by the exported grammar.
 
-TOPICS & EXAMPLES
+ TOPICS & EXAMPLES
   List available tokens:           bar help tokens
+  List only static prompts:        bar help tokens static
+  List persona sections:           bar help tokens persona persona-intents
   Emit JSON for automation:        bar build --json todo focus steps fog
   Supply prompt content:           bar build todo focus --prompt "Fix onboarding"
    Mix shorthand with overrides:    bar build todo focus method=steps directional=fog
    Inspect another grammar file:    bar help tokens --grammar /path/to/grammar.json
-   Generate fish completions:       bar completion fish > ~/.config/fish/completions/bar.fish
+    Generate fish completions:       bar completion fish > ~/.config/fish/completions/bar.fish
 
 
 
-Flags such as --grammar override the grammar JSON path when necessary.
+ Flags such as --grammar override the grammar JSON path when necessary.
 `) + "\n\n"
 
 // Run executes the bar CLI with the provided arguments and streams.
@@ -228,12 +236,19 @@ func runHelp(opts *cliOptions, stdout, stderr io.Writer) int {
 	topic := opts.Tokens[0]
 	switch topic {
 	case "tokens":
+		filters, filterErr := parseTokenHelpFilters(opts.Tokens[1:])
+		if filterErr != nil {
+			writeError(stderr, filterErr.Error())
+			fmt.Fprint(stdout, generalHelpText)
+			return 1
+		}
+
 		grammar, err := LoadGrammar(opts.GrammarPath)
 		if err != nil {
 			writeError(stderr, err.Error())
 			return 1
 		}
-		renderTokensHelp(stdout, grammar)
+		renderTokensHelp(stdout, grammar, filters)
 		return 0
 	default:
 		writeError(stderr, fmt.Sprintf("unknown help topic %q", topic))
@@ -275,150 +290,219 @@ func runCompletion(opts *cliOptions, stdout, stderr io.Writer) int {
 	return 0
 }
 
-func renderTokensHelp(w io.Writer, grammar *Grammar) {
-	fmt.Fprintln(w, "STATIC PROMPTS")
-	staticNames := make([]string, 0, len(grammar.Static.Profiles))
-	for name := range grammar.Static.Profiles {
-		staticNames = append(staticNames, name)
+func parseTokenHelpFilters(sections []string) (map[string]bool, error) {
+	if len(sections) == 0 {
+		return nil, nil
 	}
-	sort.Strings(staticNames)
-	if len(staticNames) == 0 {
-		fmt.Fprintln(w, "  (none)")
-	} else {
-		for _, name := range staticNames {
-			desc := strings.TrimSpace(grammar.StaticPromptDescription(name))
-			if desc == "" {
-				desc = "(no description)"
-			}
-			display := name
-			if slug := grammar.slugForToken(name); slug != "" && slug != name {
-				display = fmt.Sprintf("%s (canonical: %s)", slug, name)
-			}
-			fmt.Fprintf(w, "  - %s: %s\n", display, desc)
+
+	filters := make(map[string]bool)
+	for _, raw := range sections {
+		section := strings.ToLower(strings.TrimSpace(raw))
+		if section == "" {
+			continue
+		}
+
+		switch section {
+		case "static":
+			filters["static"] = true
+		case "axes":
+			filters["axes"] = true
+		case "persona":
+			filters["persona-presets"] = true
+			filters["persona-axes"] = true
+		case "persona-intents":
+			filters["persona-intents"] = true
+		default:
+			return nil, fmt.Errorf("unknown tokens help section %q", raw)
 		}
 	}
 
-	fmt.Fprintln(w, "\nCONTRACT AXES")
-	axisNames := make([]string, 0, len(grammar.Axes.Definitions))
-	for axis := range grammar.Axes.Definitions {
-		axisNames = append(axisNames, axis)
+	if len(filters) == 0 {
+		return nil, nil
 	}
-	sort.Strings(axisNames)
-	if len(axisNames) == 0 {
-		fmt.Fprintln(w, "  (none)")
-	} else {
-		for _, axis := range axisNames {
-			tokenSet := make(map[string]struct{})
-			for token := range grammar.Axes.Definitions[axis] {
-				tokenSet[token] = struct{}{}
+
+	return filters, nil
+}
+
+func renderTokensHelp(w io.Writer, grammar *Grammar, filters map[string]bool) {
+	shouldShow := func(key string) bool {
+		if len(filters) == 0 {
+			return true
+		}
+		return filters[key]
+	}
+
+	printed := false
+	writeHeader := func(header string) {
+		if printed {
+			fmt.Fprintln(w)
+		}
+		fmt.Fprintln(w, header)
+		printed = true
+	}
+
+	if shouldShow("static") {
+		writeHeader("STATIC PROMPTS")
+		staticNames := make([]string, 0, len(grammar.Static.Profiles))
+		for name := range grammar.Static.Profiles {
+			staticNames = append(staticNames, name)
+		}
+		sort.Strings(staticNames)
+		if len(staticNames) == 0 {
+			fmt.Fprintln(w, "  (none)")
+		} else {
+			for _, name := range staticNames {
+				desc := strings.TrimSpace(grammar.StaticPromptDescription(name))
+				if desc == "" {
+					desc = "(no description)"
+				}
+				display := name
+				if slug := grammar.slugForToken(name); slug != "" && slug != name {
+					display = fmt.Sprintf("%s (canonical: %s)", slug, name)
+				}
+				fmt.Fprintf(w, "  - %s: %s\n", display, desc)
 			}
-			if list := grammar.Axes.ListTokens[axis]; len(list) > 0 {
-				for _, token := range list {
+		}
+	}
+
+	if shouldShow("axes") {
+		writeHeader("CONTRACT AXES")
+		axisNames := make([]string, 0, len(grammar.Axes.Definitions))
+		for axis := range grammar.Axes.Definitions {
+			axisNames = append(axisNames, axis)
+		}
+		sort.Strings(axisNames)
+		if len(axisNames) == 0 {
+			fmt.Fprintln(w, "  (none)")
+		} else {
+			for _, axis := range axisNames {
+				tokenSet := make(map[string]struct{})
+				for token := range grammar.Axes.Definitions[axis] {
 					tokenSet[token] = struct{}{}
 				}
-			}
-			tokens := make([]string, 0, len(tokenSet))
-			for token := range tokenSet {
-				tokens = append(tokens, token)
-			}
-			sort.Strings(tokens)
-			fmt.Fprintf(w, "  %s:\n", axis)
-			for _, token := range tokens {
-				slug := grammar.slugForToken(token)
-				display := token
-				if slug != "" && slug != token {
-					display = fmt.Sprintf("%s (canonical: %s)", slug, token)
+				if list := grammar.Axes.ListTokens[axis]; len(list) > 0 {
+					for _, token := range list {
+						tokenSet[token] = struct{}{}
+					}
 				}
-				desc := strings.TrimSpace(grammar.AxisDescription(axis, token))
-				if desc == "" {
-					fmt.Fprintf(w, "    • %s\n", display)
-				} else {
-					fmt.Fprintf(w, "    • %s: %s\n", display, desc)
+				tokens := make([]string, 0, len(tokenSet))
+				for token := range tokenSet {
+					tokens = append(tokens, token)
+				}
+				sort.Strings(tokens)
+				fmt.Fprintf(w, "  %s:\n", axis)
+				for _, token := range tokens {
+					slug := grammar.slugForToken(token)
+					display := token
+					if slug != "" && slug != token {
+						display = fmt.Sprintf("%s (canonical: %s)", slug, token)
+					}
+					desc := strings.TrimSpace(grammar.AxisDescription(axis, token))
+					if desc == "" {
+						fmt.Fprintf(w, "    • %s\n", display)
+					} else {
+						fmt.Fprintf(w, "    • %s: %s\n", display, desc)
+					}
 				}
 			}
 		}
 	}
 
-	fmt.Fprintln(w, "\nPERSONA PRESETS")
-	presetNames := make([]string, 0, len(grammar.Persona.Presets))
-	for name := range grammar.Persona.Presets {
-		presetNames = append(presetNames, name)
-	}
-	sort.Strings(presetNames)
-	if len(presetNames) == 0 {
-		fmt.Fprintln(w, "  (none)")
-	} else {
-		for _, name := range presetNames {
-			preset := grammar.Persona.Presets[name]
-			label := strings.TrimSpace(preset.Label)
-			if label == "" {
-				label = name
+	if shouldShow("persona-presets") {
+		writeHeader("PERSONA PRESETS")
+		presetNames := make([]string, 0, len(grammar.Persona.Presets))
+		for name := range grammar.Persona.Presets {
+			presetNames = append(presetNames, name)
+		}
+		sort.Strings(presetNames)
+		if len(presetNames) == 0 {
+			fmt.Fprintln(w, "  (none)")
+		} else {
+			for _, name := range presetNames {
+				preset := grammar.Persona.Presets[name]
+				label := strings.TrimSpace(preset.Label)
+				if label == "" {
+					label = name
+				}
+				slug := grammar.slugForToken(fmt.Sprintf("persona=%s", name))
+				if slug == "" {
+					slug = fmt.Sprintf("persona=%s", name)
+				}
+				spoken := ""
+				if preset.Spoken != nil {
+					spoken = strings.TrimSpace(*preset.Spoken)
+				}
+				fmt.Fprintf(w, "  - %s (preset: %s", slug, name)
+				if spoken != "" {
+					fmt.Fprintf(w, ", spoken: %s", spoken)
+				}
+				fmt.Fprintf(w, "): %s\n", label)
 			}
-			slug := grammar.slugForToken(fmt.Sprintf("persona=%s", name))
-			if slug == "" {
-				slug = fmt.Sprintf("persona=%s", name)
-			}
-			spoken := ""
-			if preset.Spoken != nil {
-				spoken = strings.TrimSpace(*preset.Spoken)
-			}
-			fmt.Fprintf(w, "  - %s (preset: %s", slug, name)
-			if spoken != "" {
-				fmt.Fprintf(w, ", spoken: %s", spoken)
-			}
-			fmt.Fprintf(w, "): %s\n", label)
 		}
 	}
 
-	fmt.Fprintln(w, "\nPERSONA AXES")
-	personaAxes := make([]string, 0, len(grammar.Persona.Axes))
-	for axis := range grammar.Persona.Axes {
-		personaAxes = append(personaAxes, axis)
+	if shouldShow("persona-axes") {
+		writeHeader("PERSONA AXES")
+		personaAxes := make([]string, 0, len(grammar.Persona.Axes))
+		for axis := range grammar.Persona.Axes {
+			personaAxes = append(personaAxes, axis)
+		}
+		sort.Strings(personaAxes)
+		if len(personaAxes) == 0 {
+			fmt.Fprintln(w, "  (none)")
+		} else {
+			for _, axis := range personaAxes {
+				tokens := append([]string(nil), grammar.Persona.Axes[axis]...)
+				sort.Strings(tokens)
+				fmt.Fprintf(w, "  %s:\n", axis)
+				for _, token := range tokens {
+					slug := grammar.slugForToken(token)
+					display := token
+					if slug != "" && slug != token {
+						display = fmt.Sprintf("%s (spoken: %s)", slug, token)
+					}
+					desc := strings.TrimSpace(grammar.PersonaDescription(axis, token))
+					if desc == "" {
+						fmt.Fprintf(w, "    • %s\n", display)
+					} else {
+						fmt.Fprintf(w, "    • %s: %s\n", display, desc)
+					}
+				}
+			}
+		}
 	}
-	sort.Strings(personaAxes)
-	if len(personaAxes) == 0 {
-		fmt.Fprintln(w, "  (none)")
-	} else {
-		for _, axis := range personaAxes {
-			tokens := append([]string(nil), grammar.Persona.Axes[axis]...)
-			sort.Strings(tokens)
-			fmt.Fprintf(w, "  %s:\n", axis)
-			for _, token := range tokens {
+
+	if shouldShow("persona-intents") {
+		intents, ok := grammar.Persona.Intent.AxisTokens["intent"]
+		if !ok {
+			intents = nil
+		}
+		intentTokens := append([]string(nil), intents...)
+		sort.Strings(intentTokens)
+		writeHeader("PERSONA INTENTS")
+		if len(intentTokens) == 0 {
+			fmt.Fprintln(w, "  (none)")
+		} else {
+			for _, token := range intentTokens {
 				slug := grammar.slugForToken(token)
 				display := token
 				if slug != "" && slug != token {
 					display = fmt.Sprintf("%s (spoken: %s)", slug, token)
 				}
-				desc := strings.TrimSpace(grammar.PersonaDescription(axis, token))
+				desc := strings.TrimSpace(grammar.PersonaDescription("intent", token))
 				if desc == "" {
-					fmt.Fprintf(w, "    • %s\n", display)
+					fmt.Fprintf(w, "  • %s\n", display)
 				} else {
-					fmt.Fprintf(w, "    • %s: %s\n", display, desc)
+					fmt.Fprintf(w, "  • %s: %s\n", display, desc)
 				}
 			}
 		}
 	}
 
-	if intents, ok := grammar.Persona.Intent.AxisTokens["intent"]; ok && len(intents) > 0 {
-		tokens := append([]string(nil), intents...)
-		sort.Strings(tokens)
-		fmt.Fprintln(w, "\nPERSONA INTENTS")
-		for _, token := range tokens {
-			slug := grammar.slugForToken(token)
-			display := token
-			if slug != "" && slug != token {
-				display = fmt.Sprintf("%s (spoken: %s)", slug, token)
-			}
-			desc := strings.TrimSpace(grammar.PersonaDescription("intent", token))
-			if desc == "" {
-				fmt.Fprintf(w, "  • %s\n", display)
-			} else {
-				fmt.Fprintf(w, "  • %s: %s\n", display, desc)
-			}
-		}
+	if printed {
+		fmt.Fprintln(w)
 	}
-
-	fmt.Fprintln(w, "\nMulti-word tokens (e.g., \"fly rog\") should be supplied exactly as listed above.")
+	fmt.Fprintln(w, "Multi-word tokens (e.g., \"fly rog\") should be supplied exactly as listed above.")
 }
 
 func readPrompt(opts *cliOptions, stdin io.Reader) (string, error) {

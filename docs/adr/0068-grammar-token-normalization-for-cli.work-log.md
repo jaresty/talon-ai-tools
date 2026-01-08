@@ -534,3 +534,24 @@
 - next_work:
   - Monitor operator feedback for any additional help formatting tweaks or ordering improvements.
 
+## 2026-01-08 — loop 031
+- helper_version: helper:v20251223.1
+- focus: Decision § validation — add section filters for bar help tokens output
+- active_constraint: `go test ./internal/barcli` failed because `renderTokensHelp` lacked section filtering and left the function in a broken state, preventing `bar help tokens static` from compiling and emitting targeted output.
+- validation_targets:
+  - go test ./internal/barcli
+  - python3 -m pytest _tests/test_bar_completion_cli.py
+  - python3 -m pytest _tests/test_generate_axis_cheatsheet.py
+- evidence:
+  - red: docs/adr/evidence/0068-grammar-token-normalization-for-cli/loop-031.md#loop-031-red--helper-rerun-go-test-.-internal-barcli
+  - green: docs/adr/evidence/0068-grammar-token-normalization-for-cli/loop-031.md#loop-031-green--helper-rerun-go-test-.-internal-barcli
+  - green: docs/adr/evidence/0068-grammar-token-normalization-for-cli/loop-031.md#loop-031-green--helper-rerun-python3--m-pytest-_tests-test_bar_completion_cli.py
+  - green: docs/adr/evidence/0068-grammar-token-normalization-for-cli/loop-031.md#loop-031-green--helper-rerun-python3--m-pytest-_tests-test_generate_axis_cheatsheet.py
+- rollback_plan: `git restore --source=HEAD -- internal/barcli/app.go internal/barcli/app_test.go docs/adr/0068-grammar-token-normalization-for-cli.work-log.md docs/adr/evidence/0068-grammar-token-normalization-for-cli/loop-031.md`
+- delta_summary: helper:diff-snapshot=2 files changed, 278 insertions(+), 121 deletions(-) — completed section-filter implementation for `bar help tokens`, refactored help rendering, and added CLI/Go tests covering filtering and error handling.
+- loops_remaining_forecast: 0 loops — high confidence now that help filters are covered by guardrails and CLI integration tests.
+- residual_constraints:
+  - Optional axis ordering remains alphabetical (severity: low; mitigation: monitor operator feedback before ranking; monitoring: python3 -m pytest _tests/test_bar_completion_cli.py)
+- next_work:
+  - Behaviour: Monitor operator feedback on filtered help output and expand sections or ordering as needed (validation via go test ./internal/barcli)
+

@@ -117,3 +117,25 @@
   - Observe the next `release-bar` workflow to confirm guarded exporter step passes in CI (severity: low; mitigation: monitor Actions logs; trigger: release failure; owning ADR 0066 Consequences)
 - next_work:
   - Behaviour: Monitor upcoming `release-bar` execution to ensure guardrail runs green (validation via GitHub Actions run)
+
+## 2026-01-08 — loop 007
+- helper_version: helper:v20251223.1
+- focus: Decision § closure — certify embedded grammar workflow and mark ADR completed
+- active_constraint: Before closing ADR 0066 we must prove the exporter and CLI tests pass in steady state so the embedded grammar remains canonical (`python3 -m prompts.export` and `go test ./internal/barcli`).
+- validation_targets:
+  - python3 -m prompts.export --output build/prompt-grammar.json --embed-path internal/barcli/embed/prompt-grammar.json
+  - git diff --exit-code -- build/prompt-grammar.json internal/barcli/embed/prompt-grammar.json
+  - cmp --silent build/prompt-grammar.json internal/barcli/embed/prompt-grammar.json
+  - go test ./internal/barcli
+- evidence:
+  - green: docs/adr/evidence/0066-embed-portable-grammar-cli/loop-007.md#loop-007-green--helper-rerun-python3--m-prompts-export----output-build-prompt-grammarjson---embed-path-internal-barcli-embed-prompt-grammarjson
+  - green: docs/adr/evidence/0066-embed-portable-grammar-cli/loop-007.md#loop-007-green--helper-rerun-git-diff---exit-code----build-prompt-grammarjson-internal-barcli-embed-prompt-grammarjson
+  - green: docs/adr/evidence/0066-embed-portable-grammar-cli/loop-007.md#loop-007-green--helper-rerun-cmp---silent-build-prompt-grammarjson-internal-barcli-embed-prompt-grammarjson
+  - green: docs/adr/evidence/0066-embed-portable-grammar-cli/loop-007.md#loop-007-green--helper-rerun-go-test-.-internal-barcli
+- rollback_plan: `git restore --source=HEAD -- docs/adr/0066-embed-portable-grammar-cli.md docs/adr/0066-embed-portable-grammar-cli.work-log.md docs/adr/evidence/0066-embed-portable-grammar-cli/loop-007.md`
+- delta_summary: helper:diff-snapshot=3 files changed, 60 insertions(+), 1 deletion(-) — reran exporter/tests, flipped ADR status to completed, and documented closure
+- loops_remaining_forecast: 0 loops (ADR closed; external release monitoring remains informational) — high confidence after closure
+- residual_constraints:
+  - Monitor upcoming `release-bar` execution to ensure guardrail runs green (severity: low; mitigation: watch Actions logs; trigger: release failure; owning ADR 0066 Consequences)
+- next_work:
+  - Behaviour: Passive monitoring of `release-bar` workflow (no further repo work required)

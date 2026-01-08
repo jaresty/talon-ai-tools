@@ -1,7 +1,7 @@
 # 0066 — Embed prompt grammar in `bar`
 
 ## Status
-Accepted
+Completed
 
 ## Context
 - The `bar` CLI currently loads the prompt grammar from an external JSON file (`build/prompt-grammar.json`) at runtime. Completions and help flows depend on that file being present.

@@ -90,10 +90,9 @@ The `bar` CLI consumes the exported prompt grammar so you can assemble recipes o
 4. If you add completions or installer changes, keep `bar help` and `bar completion` outputs aligned with `build/prompt-grammar.json`.
 5. Completion guardrail:
    ```bash
-   python3 -m venv .venv
-   .venv/bin/python -m pip install pytest
-   .venv/bin/python -m pytest _tests/test_bar_completion_cli.py
+   make bar-completion-guard
    ```
+   (equivalent manual steps: `python3 -m venv .venv && .venv/bin/python -m pip install pytest && .venv/bin/python -m pytest _tests/test_bar_completion_cli.py`)
    This pytest slice exercises `bar completion` and the hidden `bar __complete` helper so shell installers stay grammar-aligned.
 6. Developer sanity check:
    ```bash

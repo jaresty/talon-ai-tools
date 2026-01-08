@@ -9,4 +9,5 @@ __pycache__/
 node_modules/
 tmp/
 artifacts/
+.venv/
 GPT/lists/*.talon-list

@@ -3,7 +3,15 @@ output_tags:
 
 PYTHON ?= python3.11
 
-.PHONY: output_tags test churn-scan adr010-check adr010-status axis-regenerate axis-regenerate-apply axis-regenerate-all axis-catalog-validate axis-cheatsheet axis-guardrails axis-guardrails-ci axis-guardrails-test talon-lists talon-lists-check adr0046-guardrails ci-guardrails guardrails help overlay-guardrails overlay-lifecycle-guardrails request-history-guardrails request-history-guardrails-fast readme-axis-lines readme-axis-refresh static-prompt-docs static-prompt-refresh doc-snapshots
+.venv/bin/pytest:
+	$(PYTHON) -m venv .venv
+	.venv/bin/python -m pip install --upgrade pip
+	.venv/bin/python -m pip install pytest
+
+bar-completion-guard: .venv/bin/pytest
+	.venv/bin/python -m pytest _tests/test_bar_completion_cli.py
+
+.PHONY: output_tags test churn-scan adr010-check adr010-status axis-regenerate axis-regenerate-apply axis-regenerate-all axis-catalog-validate axis-cheatsheet axis-guardrails axis-guardrails-ci axis-guardrails-test talon-lists talon-lists-check adr0046-guardrails ci-guardrails guardrails help overlay-guardrails overlay-lifecycle-guardrails request-history-guardrails request-history-guardrails-fast readme-axis-lines readme-axis-refresh static-prompt-docs static-prompt-refresh doc-snapshots bar-completion-guard
 
 test:
 	$(PYTHON) -m unittest discover -s tests

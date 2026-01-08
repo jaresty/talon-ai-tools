@@ -289,3 +289,28 @@
   - Virtualenv instructions remain lightweight; monitor for requests to standardise dependency installation (severity: low; mitigation: add CONTRIBUTING note if repeated questions arise; owning ADR 0065 Consequences)
 - next_work:
   - Behaviour: When tooling guidance changes (e.g., new guard or dependency), refresh README and guardrail docs accordingly (validation via `rg -n "bar completion" readme.md`)
+
+## 2026-01-08 — loop 015
+- helper_version: helper:v20251223.1
+- focus: Decision — add a `make bar-completion-guard` helper so the completion pytest runs consistently
+- expected_value:
+  | Factor | Value | Rationale |
+  | --- | --- | --- |
+  | Impact | Medium | Streamlines running the ADR-mandated completion guard for every contributor |
+  | Probability | High | Make target automates venv setup and pytest invocation |
+  | Time Sensitivity | Medium | Without automation, guardrail adoption depends on manual steps |
+  | Uncertainty note | Low | Guard behaviour already validated in loops 013–014 |
+- active_constraint: Running the completion guard required manual venv creation and pip install, increasing friction (`make bar-completion-guard` failed with “No rule to make target”).
+- validation_targets:
+  - make bar-completion-guard
+  - make bar-completion-guard
+- evidence:
+  - red: docs/adr/evidence/0065-portable-prompt-grammar-cli/loop-015.md#loop-015-red--helper-rerun-make-bar-completion-guard
+  - green: docs/adr/evidence/0065-portable-prompt-grammar-cli/loop-015.md#loop-015-green--helper-rerun-make-bar-completion-guard
+- rollback_plan: `git restore --source=HEAD -- Makefile .gitignore readme.md docs/adr/0065-portable-prompt-grammar-cli.work-log.md docs/adr/evidence/0065-portable-prompt-grammar-cli/loop-015.md`
+- delta_summary: helper:diff-snapshot=5 files changed, 43 insertions(+) — add make target, ignore venv, update README guidance, record evidence
+- loops_remaining_forecast: 0 loops — automation in place; reopen if guard target needs CI integration
+- residual_constraints:
+  - `.venv` may accumulate packages; periodically recreate if dependencies change (severity: low; mitigation: rerun `make bar-completion-guard` to refresh)
+- next_work:
+  - Behaviour: Consider CI integration for the completion guard if future loops require automated enforcement (validation via GitHub Actions update)

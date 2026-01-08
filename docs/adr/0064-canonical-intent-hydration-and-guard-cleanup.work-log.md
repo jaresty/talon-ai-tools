@@ -116,3 +116,26 @@
 - next_work:
   - Behaviour: Refine passive guard behaviour to match ADR requirements (validation: python3 -m pytest _tests/test_overlay_lifecycle.py::_tests/test_surface_guidance.py)
 
+## 2026-01-07 — loop 008
+- helper_version: helper:v20251223.1
+- focus: Honor passive guard semantics — suppress gating while keeping drop reason cleanup
+- active_constraint: `close_common_overlays(..., passive=True)` still invoked `try_begin_request`, causing new overlay lifecycle test to fail red
+- validation_targets:
+  - python3 -m pytest _tests/test_overlay_lifecycle.py::OverlayLifecycleTests::test_common_overlay_closers_do_not_call_gating
+  - python3 -m pytest _tests/test_surface_guidance.py
+  - python3 -m pytest _tests/test_model_response_overlay_lifecycle.py
+  - python3 -m pytest _tests/test_model_suggestion_gui_guard.py::ModelSuggestionGUIGuardTests::test_reject_if_request_in_flight_preserves_drop_reason_on_success
+  - python3 -m pytest _tests/test_request_history_drawer_gating.py
+- evidence:
+  - red: docs/adr/evidence/0064/loop-008.md#loop-008-red--helper-rerun-python3---m-pytest-_tests-test_overlay_lifecyclepy_overlaylifecycletests-test_common_overlay_closers_do_not_call_gating
+  - green: docs/adr/evidence/0064/loop-008.md#loop-008-green--helper-rerun-python3---m-pytest-_tests-test_overlay_lifecyclepy_overlaylifecycletests-test_common_overlay_closers_do_not_call_gating
+  - green: docs/adr/evidence/0064/loop-008.md#loop-008-green--helper-rerun-python3---m-pytest-_tests-test_surface_guidancepy
+  - green: docs/adr/evidence/0064/loop-008.md#loop-008-green--helper-rerun-python3---m-pytest-_tests-test_model_response_overlay_lifecyclepy
+  - green: docs/adr/evidence/0064/loop-008.md#loop-008-green--helper-rerun-python3---m-pytest-_tests-test_model_suggestion_gui_guardpy_modelsuggestionguiguardtests-test_reject_if_request_in_flight_preserves_drop_reason_on_success
+  - green: docs/adr/evidence/0064/loop-008.md#loop-008-green--helper-rerun-python3---m-pytest-_tests-test_request_history_drawer_gatingpy
+- rollback_plan: `git restore --source=HEAD -- lib/overlayLifecycle.py lib/surfaceGuidance.py _tests/test_overlay_lifecycle.py`
+- delta_summary: helper:diff-snapshot=3 files changed, 46 insertions(+), 26 deletions(-) — remove passive gating call, ensure suppression clears drop reasons, and update overlay lifecycle test expectations
+- loops_remaining_forecast: 0 loops — ADR 0064 behaviours complete pending final review
+- residual_constraints: None (guard + hydration work landed)
+- next_work: None
+

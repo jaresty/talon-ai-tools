@@ -269,28 +269,49 @@ if not TYPE_CHECKING:
 
             calls = []
 
-            def fake_try_begin_request(state=None, *, source=""):
-                from talon_user.lib.modelState import GPTState
-
-                self.assertTrue(
-                    getattr(GPTState, "suppress_overlay_inflight_guard", False),
-                    "passive close should set suppress flag",
-                )
-                calls.append(source)
-                return True, ""
-
             with (
-                patch(
-                    "talon_user.lib.surfaceGuidance.try_begin_request",
-                    side_effect=fake_try_begin_request,
+                patch("talon_user.lib.surfaceGuidance.try_begin_request") as try_begin,
+                patch.object(
+                    modelHelpCanvas,
+                    "_close_canvas",
+                    side_effect=lambda: self.assertTrue(
+                        getattr(
+                            modelHelpCanvas.GPTState,
+                            "suppress_overlay_inflight_guard",
+                            False,
+                        )
+                    ),
                 ),
                 patch.object(modelHelpCanvas, "_reset_help_state"),
-                patch.object(modelHelpCanvas, "_close_canvas"),
-                patch.object(modelPatternGUI, "_close_pattern_canvas"),
+                patch.object(
+                    modelPatternGUI,
+                    "_close_pattern_canvas",
+                    side_effect=lambda: self.assertTrue(
+                        getattr(
+                            modelPatternGUI.GPTState,
+                            "suppress_overlay_inflight_guard",
+                            False,
+                        )
+                    ),
+                ),
                 patch.object(modelPatternGUI, "ctx", SimpleNamespace(tags=[])),
-                patch.object(modelPromptPatternGUI, "_close_prompt_pattern_canvas"),
+                patch.object(
+                    modelPromptPatternGUI,
+                    "_close_prompt_pattern_canvas",
+                    side_effect=lambda: self.assertTrue(
+                        getattr(
+                            modelPromptPatternGUI.GPTState,
+                            "suppress_overlay_inflight_guard",
+                            False,
+                        )
+                    ),
+                ),
                 patch.object(modelPromptPatternGUI, "ctx", SimpleNamespace(tags=[])),
-                patch.object(modelSuggestionGUI, "_close_suggestion_canvas"),
+                patch.object(
+                    modelSuggestionGUI,
+                    "_close_suggestion_canvas",
+                    side_effect=lambda: calls.append("suggestion_close"),
+                ),
                 patch.object(modelSuggestionGUI, "ctx", SimpleNamespace(tags=[])),
             ):
                 actions_stub = SimpleNamespace(
@@ -298,9 +319,10 @@ if not TYPE_CHECKING:
                     prompt_pattern_gui_close=modelPromptPatternGUI.UserActions.prompt_pattern_gui_close,
                     model_prompt_recipe_suggestions_gui_close=modelSuggestionGUI.UserActions.model_prompt_recipe_suggestions_gui_close,
                     model_help_canvas_close=modelHelpCanvas.UserActions.model_help_canvas_close,
-                    model_response_canvas_close=lambda: None,
-                    confirmation_gui_close=lambda: None,
+                    model_response_canvas_close=lambda: calls.append("response_close"),
+                    confirmation_gui_close=lambda: calls.append("confirmation_close"),
                 )
                 close_common_overlays(actions_stub, passive=True)
 
-            self.assertTrue(calls)
+            try_begin.assert_not_called()
+            self.assertIn("suggestion_close", calls)

@@ -500,6 +500,22 @@
 - next_work:
   - Behaviour: Observe pilot telemetry/usability feedback and revisit ADR if new UX constraints emerge (validation via documentation updates when needed).
 
+## 2026-01-09 — loop 040
+- helper_version: helper:v20251223.1
+- focus: ADR Decision — enumerate concrete UX guardrail tactics for the Bubble Tea TUI
+- active_constraint: The Decision mentioned discoverability broadly but lacked enforceable tactics (help overlay, focus cues, result signaling, undo messaging), leaving future loops free to regress usability without contradicting the ADR. Documentation-only validation for this slice.
+- validation_targets:
+  - documentation-only (no executable commands)
+- evidence:
+  - green: docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-040.md#loop-040-green--helper-diff-snapshot-git-diff--stat-head
+- rollback_plan: `git restore --source=HEAD -- docs/adr/0070-bubble-tea-prompt-editor-tui.md docs/adr/0070-bubble-tea-prompt-editor-tui.work-log.md docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-040.md`
+- delta_summary: helper:diff-snapshot=git diff --stat HEAD | expanded the Decision bullet into concrete UX requirements (help overlay, focus highlights, result-pane differentiation, undo messaging) and clarified the maintenance expectation in Consequences.
+- loops_remaining_forecast: 0 loops — UX guardrails now spelled out explicitly; future adjustments depend on pilot telemetry.
+- residual_constraints:
+  - None.
+- next_work:
+  - Behaviour: Continue monitoring pilot telemetry/usability feedback; update ADR only if new high-severity UX constraints surface (validation via updated documentation).
+
 
  - validation_targets:
   - documentation-only (no executable commands)

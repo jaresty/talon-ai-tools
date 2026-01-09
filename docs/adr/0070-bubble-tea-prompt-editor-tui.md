@@ -16,9 +16,11 @@ Proposed — Bubble Tea TUI improves prompt editing ergonomics for the Go CLI (2
 - Provide subject import/export affordances: operators can type subject text directly, pull it from the clipboard or a shell command, edit it in place, and push the rendered prompt to another command or the clipboard with the response surfaced in a dedicated TUI pane (and optionally reinserted into the subject field). The single-command flow must:
   - label the command input as optional and highlight when it is empty so pilots know the editor works without piping;
   - show a running-state indicator (spinner or countdown) while the command executes and allow cancellation (Esc) before timeout;
-  - differentiate success and failure in the result pane with explicit cues (✔/✖, headings, truncated output controls) and include the command/exit code metadata;
-  - retain follow-up instructions (for example “Press Ctrl+Y to insert stdout”) until the operator acts or dismisses them;
-  - prompt before replacing the subject (clipboard load or stdout reinsertion), summarise what will change, and offer a one-step undo if the change is not desired;
+   - differentiate success and failure in the result pane with explicit cues (✔/✖, headings, truncated output controls) and include the command/exit code metadata;
+   - retain follow-up instructions (for example “Press Ctrl+Y to insert stdout”) until the operator acts or dismisses them;
+   - expose a shortcut to copy the current configuration’s equivalent `bar build` command to the clipboard (and surface a palette entry) so operators can drop back to scripts without re-entering tokens or subjects; confirm when the command has been copied before returning focus;
+   - prompt before replacing the subject (clipboard load or stdout reinsertion), summarise what will change, and offer a one-step undo if the change is not desired;
+
   - provide an explicit opt-in affordance for passing environment variables to the command (for example `--env CHATGPT_API_KEY --env ORG_ID`), defaulting to no pass-through, echoing the variable names prior to execution, and warning when secrets are requested.
 - Surface interactive token editing controls inline with the subject so operators can adjust voice, audience, tone, purpose, static/completeness, scope, method, form, channel, directional, and other grammar axes without leaving the session, while offering an optional `Ctrl+P` command palette accelerator that docks beside the summary strip instead of covering it. The TUI must:
   - keep the current token selections visible at all times, grouped by category with both slug and human label, including while the palette is open;

@@ -63,6 +63,7 @@ os.environ["OPENAI_API_KEY"] = "YOUR-KEY-HERE"
 
 ## Release Notes
 
+- **2026-01-09** – CLI completion surfaces include `//next` skip sentinels with docs, help text, and examples (`bar help`, README, and docs quickstart) so you can jump persona/static stages without hunting for options.
 - **2026-01-08** – Portable CLI completions now insert slug tokens (for example, `as-teacher`). The CLI no longer accepts the legacy human-readable labels; supply slugs directly to keep recipes predictable.
 
 ## Development

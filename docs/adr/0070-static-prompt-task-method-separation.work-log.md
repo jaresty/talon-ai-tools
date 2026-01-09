@@ -157,7 +157,7 @@
 - delta_summary: helper:diff-snapshot=2 files changed, 23 insertions(+), 1 deletion(-) — added CLI skip sentinel documentation to README and the docs quickstart guide.
 - loops_remaining_forecast: 0 loops — CLI docs now cover skip sentinels end-to-end (confidence: high).
 - residual_constraints:
-  - severity: low — Monitor CLI docs for future completion changes; mitigation: keep skip guidance in release checklist; monitoring: review CLI quickstart each release; owner: ADR 0070 maintainers.
+  - severity: low — Monitor CLI docs for future completion changes; mitigation: keep skip guidance in release notes + release checklist; monitoring: review CLI quickstart each release; owner: ADR 0070 maintainers.
 - next_work:
   - Behaviour: None scheduled; reopen if future completion features change sentinel behaviour.
 
@@ -202,6 +202,28 @@
 - loops_remaining_forecast: 0 loops — In-tool help now mirrors docs for skip usage (confidence: high).
 - residual_constraints:
   - severity: low — Monitor `bar help` when completion ordering changes; mitigation: re-run help tests after grammar updates; monitoring: include `bar help` snapshot in CLI release checklist; owner: ADR 0070 maintainers.
+- next_work:
+  - Behaviour: None scheduled.
+
+## 2026-01-09 — loop 014
+- helper_version: helper:v20251223.1
+- focus: Decision § surfacing — note skip sentinel availability in release notes
+- active_constraint: Release notes did not mention the newly documented skip sentinel flow, so downstream consumers scanning the changelog could miss the navigation improvement despite updated docs/help.
+- expected_value:
+  | Factor           | Value | Rationale                                                          |
+  | Impact           | Low   | Keeps release communication aligned with ADR 0070 outcomes         |
+  | Probability      | High  | Updating README release notes fully closes the communication gap   |
+  | Time Sensitivity | Low   | Helpful but not urgent; recording before next release avoids drift |
+- validation_targets:
+  - go test ./...
+- evidence:
+  - green: docs/adr/evidence/0070-static-prompt-task-method-separation/loop-014.md#loop-014-green--helper-diff-snapshot-git-diff----stat-200
+  - green: docs/adr/evidence/0070-static-prompt-task-method-separation/loop-014.md#loop-014-green--helper-rerun-go-test
+- rollback_plan: `git restore --source=HEAD -- readme.md docs/adr/evidence/0070-static-prompt-task-method-separation/loop-014.md docs/adr/0070-static-prompt-task-method-separation.work-log.md`
+- delta_summary: helper:diff-snapshot=1 file changed, 1 insertion(+) — added skip sentinel note to README release notes.
+- loops_remaining_forecast: 0 loops — Release communications now reference skip sentinel support (confidence: high).
+- residual_constraints:
+  - severity: low — Continue monitoring release notes/checklists for skip guidance; mitigation: review README release notes during each release prep; monitoring: include release notes verification in CLI release checklist; owner: ADR 0070 maintainers.
 - next_work:
   - Behaviour: None scheduled.
 

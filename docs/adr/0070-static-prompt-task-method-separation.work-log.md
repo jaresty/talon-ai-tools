@@ -32,6 +32,23 @@
 - next_work:
   - Behaviour: None scheduled; reopen if new guardrail heuristics are required.
 
+## 2026-01-09 — loop 005
+- helper_version: helper:v20251223.1
+- focus: Decision § closure — mark ADR 0070 complete now that task/method separation guardrails are in place
+- active_constraint: ADR 0070 remained in `Proposed` status despite implementation landing, leaving contributors without a clear signal that the separation contract is live.
+- validation_targets:
+  - python3 -m pytest _tests/test_axis_description_language.py _tests/test_static_prompt_config.py
+- evidence:
+  - green: docs/adr/evidence/0070-static-prompt-task-method-separation/loop-005.md#loop-005-green--helper-diff-snapshot-git-diff----stat
+  - green: docs/adr/evidence/0070-static-prompt-task-method-separation/loop-005.md#loop-005-green--helper-rerun-python3--m-pytest-_tests-test_axis_description_language.py-_tests-test_static_prompt_config.py
+- rollback_plan: `git restore --source=HEAD -- docs/adr/0070-static-prompt-task-method-separation.md docs/adr/0070-static-prompt-task-method-separation.work-log.md docs/adr/evidence/0070-static-prompt-task-method-separation/loop-005.md`
+- delta_summary: helper:diff-snapshot=1 file changed, 1 insertion(+), 1 deletion(-) — set ADR 0070 status to Accepted now that guardrails backstop the separation.
+- loops_remaining_forecast: 0 loops — ADR closed.
+- residual_constraints:
+  - None; both static prompt and axis guardrails run in CI via pytest.
+- next_work:
+  - Behaviour: None; reopen only if future guardrail coverage is needed.
+
 ## 2026-01-09 — loop 004
 - helper_version: helper:v20251223.1
 - focus: Decision § guardrails — ensure every axis description remains declarative as part of ADR 0070’s separation contract

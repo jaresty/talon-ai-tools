@@ -1,7 +1,7 @@
 # 0070 – Static prompt task/method separation
 
 ## Status
-Proposed
+Accepted
 
 ## Context
 - Static prompts are meant to express the **task/outcome** portion of a recipe, while the contract axes (especially `form` and `method`) carry presentation and procedural instructions (ADR 040, ADR 050).

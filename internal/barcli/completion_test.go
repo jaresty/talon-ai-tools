@@ -82,6 +82,9 @@ func TestGenerateCompletionScriptFish(t *testing.T) {
 	if !strings.Contains(script, "complete -c bar -e") {
 		t.Fatalf("expected fish script to clear existing definitions, got: %s", script)
 	}
+	if !strings.Contains(script, "complete -k -c bar -f -a") {
+		t.Fatalf("expected fish script to keep completion order, got: %s", script)
+	}
 }
 
 func TestCompleteSuggestsCommands(t *testing.T) {

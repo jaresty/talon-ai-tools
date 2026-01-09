@@ -140,7 +140,7 @@ function __fish_bar_completions
 end
 
 complete -c bar -e
-complete -c bar -f -a '(__fish_bar_completions)'
+complete -k -c bar -f -a '(__fish_bar_completions)'
 `
 
 type completionCatalog struct {

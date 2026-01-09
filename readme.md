@@ -63,6 +63,7 @@ os.environ["OPENAI_API_KEY"] = "YOUR-KEY-HERE"
 
 ## Release Notes
 
+- **2026-01-09** – `bar tui` now supports a fixture-driven snapshot harness (`--fixture`, `--no-alt-screen`) with README instructions and a committed smoke transcript so pilots and CI runs capture deterministic previews.
 - **2026-01-09** – CLI completion surfaces include `//next` skip sentinels with docs, help text, and examples (`bar help`, README, and docs quickstart) so you can jump persona/static stages without hunting for options.
 - **2026-01-08** – Portable CLI completions now insert slug tokens (for example, `as-teacher`). The CLI no longer accepts the legacy human-readable labels; supply slugs directly to keep recipes predictable.
 
@@ -111,6 +112,32 @@ The `bar` CLI consumes the exported prompt grammar so you can assemble recipes o
    > [!NOTE]
    > CLI suggestions now insert slug tokens such as `as-teacher`. Shorthand must use slugs, but canonical key=value overrides remain valid (for example `scope=focus`). Update any scripts or shell history accordingly.
  
+#### Bubble Tea prompt editor (`bar tui`)
+
+Launch the interactive TUI to preview recipes while editing subjects:
+
+```bash
+bar tui todo focus steps                 # starts the TUI with shorthand tokens
+```
+
+- By default the program enables the terminal alt screen so your original prompt buffer is restored when you exit. Pass `--no-alt-screen` to stay in the primary screen (useful when capturing transcripts inside CI or when your terminal does not support alt screen mode).
+- Supply a grammar file with `--grammar PATH` if you need to exercise alternate prompt bundles (defaults to the embedded grammar).
+
+The TUI supports a deterministic snapshot harness for CI and manual smoke checks. Use the bundled fixture to verify the preview, layout, and output formatting without entering the interactive loop:
+
+```bash
+bar tui --fixture cmd/bar/testdata/tui_smoke.json --no-alt-screen
+```
+
+The fixture loader accepts the following fields:
+
+- `tokens` – shorthand tokens (replaces CLI tokens when present)
+- `subject` – subject text to inject in the snapshot
+- `expected_preview` / `expected_view` – exact strings to match (set either field to an empty string to skip the assertion)
+- `expect_view_contains` – optional list of substrings that must appear in the rendered view
+
+Snapshot runs write the rendered view to STDOUT, perform all assertions, and exit without switching the terminal buffer. They pair nicely with `go test ./cmd/bar/...` which now includes `TestTUIFixtureEmitsSnapshot` to guard the fixture.
+
 #### Completion skip sentinel
 
 Use the skip sentinel `//next` whenever tab completion offers a stage you want to bypass:

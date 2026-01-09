@@ -58,6 +58,25 @@ Completions expose a skip sentinel whenever you want to jump ahead in the flow:
 
 Combine the sentinel with normal completions to reach the sections you need faster—for example, accept `//next`, choose `todo`, then continue with axis tokens without manually clearing persona suggestions.
 
+### Bubble Tea prompt editor (`bar tui`)
+
+Launch the interactive prompt editor to preview recipes while editing subjects:
+
+```bash
+bar tui todo focus steps
+```
+
+- The editor enables the terminal alt screen by default so your original buffer is restored when you exit. Pass `--no-alt-screen` if you need to capture output in the primary screen (for example, inside CI logs).
+- Point at an alternate grammar with `--grammar PATH` to exercise custom prompt bundles.
+
+For deterministic smoke tests, use the fixture harness to render a snapshot without entering the interactive loop:
+
+```bash
+bar tui --fixture cmd/bar/testdata/tui_smoke.json --no-alt-screen
+```
+
+The fixture supports the same fields described in the repository README (`tokens`, `subject`, `expected_preview`, `expected_view`, and `expect_view_contains`). Snapshot runs stream the rendered view to STDOUT, perform all assertions, and exit immediately, pairing well with the guardrail in `go test ./cmd/bar/...`.
+
 ### Quickstart Video
 
 [![Talon-AI-Tools Quickstart](../../../../video_thumbnail.jpg)](https://www.youtube.com/watch?v=FctiTs6D2tM "Talon-AI-Tools Quickstart")

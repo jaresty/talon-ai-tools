@@ -292,4 +292,20 @@
 - next_work:
   - Behaviour: Monitor pilot feedback during harness rollout; no immediate repository updates scheduled.
 
+## 2026-01-09 — loop 020
+- helper_version: helper:v20251223.1
+- focus: Documentation — align hosted quickstart with Bubble Tea fixture harness guidance
+- active_constraint: The documentation site’s quickstart lacked instructions for launching `bar tui` and using the new fixture harness, creating a mismatch between README guidance and published docs (validation via python3 -m pytest _tests/test_bar_completion_cli.py to ensure CLI guardrails remain green after doc updates).
+- validation_targets:
+  - python3 -m pytest _tests/test_bar_completion_cli.py
+- evidence:
+  - green: docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-020.md#loop-020-green--python3--m-pytest-_tests-test_bar_completion_cli.py
+- rollback_plan: `git restore --source=HEAD -- readme.md .docs/src/content/docs/guides/quickstart.mdx docs/adr/0070-bubble-tea-prompt-editor-tui.work-log.md docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-020.md`
+- delta_summary: helper:diff-snapshot=git diff --stat | readme.md (release notes + TUI snapshot section) and .docs quickstart (Bubble Tea harness instructions).
+- loops_remaining_forecast: 0 loops — documentation parity achieved across README and hosted quickstart; any future updates depend on pilot feedback.
+- residual_constraints:
+  - None (site documentation gap closed; no outstanding medium/high constraints discovered).
+- next_work:
+  - Behaviour: Monitor pilot feedback for additional documentation tweaks; no further repository actions queued.
+
 

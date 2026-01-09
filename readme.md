@@ -126,7 +126,7 @@ bar tui todo focus steps                 # starts the TUI with shorthand tokens
 The TUI supports a deterministic snapshot harness for CI and manual smoke checks. Use the bundled fixture to verify the preview, layout, and output formatting without entering the interactive loop:
 
 ```bash
-bar tui --fixture cmd/bar/testdata/tui_smoke.json --no-alt-screen
+bar tui --fixture "$(dirname $(command -v bar))/bar-tui_smoke.json" --no-alt-screen
 ```
 
 The fixture loader accepts the following fields:
@@ -137,6 +137,14 @@ The fixture loader accepts the following fields:
 - `expect_view_contains` – optional list of substrings that must appear in the rendered view
 
 Snapshot runs write the rendered view to STDOUT, perform all assertions, and exit without switching the terminal buffer. They pair nicely with `go test ./cmd/bar/...` which now includes `TestTUIFixtureEmitsSnapshot` to guard the fixture.
+
+When running the interactive editor, keep these shortcuts close by:
+
+- `Tab` switches focus between the subject and the command field.
+- `Ctrl+L` loads subject text from the clipboard.
+- `Ctrl+O` copies the rendered preview to the clipboard.
+- `Ctrl+P` pipes the current preview into the configured shell command.
+- `Ctrl+Y` replaces the subject with the most recent command stdout.
 
 For a complete pilot walkthrough (interactive usage, fixture expectations, transcript capture tips) see `docs/bubble-tea-pilot-playbook.md`.
 

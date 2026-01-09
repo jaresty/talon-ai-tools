@@ -72,10 +72,12 @@ bar tui todo focus steps
 For deterministic smoke tests, use the fixture harness to render a snapshot without entering the interactive loop:
 
 ```bash
-bar tui --fixture cmd/bar/testdata/tui_smoke.json --no-alt-screen
+bar tui --fixture "$(dirname $(command -v bar))/bar-tui_smoke.json" --no-alt-screen
 ```
 
 The fixture supports the same fields described in the repository README (`tokens`, `subject`, `expected_preview`, `expected_view`, and `expect_view_contains`). Snapshot runs stream the rendered view to STDOUT, perform all assertions, and exit immediately, pairing well with the guardrail in `go test ./cmd/bar/...`.
+
+Interactive pilots can rely on the same keyboard shortcuts mentioned in the README: `Tab` swaps panes, `Ctrl+L`/`Ctrl+O` handle clipboard import/export, `Ctrl+P` pipes the preview into your configured command, and `Ctrl+Y` reinserts command output back into the subject buffer.
 
 Need a deeper dive? Consult the repository playbook at `docs/bubble-tea-pilot-playbook.md` for transcript capture tips and troubleshooting guidance.
 

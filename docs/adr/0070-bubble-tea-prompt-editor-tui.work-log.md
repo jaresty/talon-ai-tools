@@ -467,6 +467,23 @@
 - next_work:
   - Behaviour: Refresh README/docs quickstart with subject import/export shortcuts, packaged fixture location, and security guidance (validation via manual doc review and `python3 -m pytest _tests/test_bar_completion_cli.py`).
 
+## 2026-01-09 — loop 038
+- helper_version: helper:v20251223.1
+- focus: Decision/Docs — align README and quickstart with packaged fixture path and TUI shortcuts
+- active_constraint: README and hosted quickstart still referenced the repository fixture path and omitted the new subject import/export shortcuts, leaving release users without the correct command or keyboard guidance (validation via python3 -m pytest _tests/test_bar_completion_cli.py after doc updates).
+- validation_targets:
+  - python3 -m pytest _tests/test_bar_completion_cli.py
+- evidence:
+  - green: docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-038.md#loop-038-green--helper-diff-snapshot-git-diff--stat-head
+  - green: docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-038.md#loop-038-green--python3--m-pytest-_tests-test_bar_completion_cli.py
+- rollback_plan: `git restore --source=HEAD -- readme.md .docs/src/content/docs/guides/quickstart.mdx docs/adr/0070-bubble-tea-prompt-editor-tui.work-log.md docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-038.md`
+- delta_summary: helper:diff-snapshot=git diff --stat HEAD | updated README and hosted quickstart to point at the installed fixture and document the new clipboard/command shortcuts surfaced in loop 036.
+- loops_remaining_forecast: 0 loops — packaging and documentation now reflect the subject import/export workflow; monitor pilot feedback for further adjustments.
+- residual_constraints:
+  - None (packaged fixture path and shortcut guidance now documented).
+- next_work:
+  - Behaviour: Monitor pilot feedback and update docs if new ergonomic gaps emerge (validation via manual review when future changes land).
+
 
  - validation_targets:
   - documentation-only (no executable commands)

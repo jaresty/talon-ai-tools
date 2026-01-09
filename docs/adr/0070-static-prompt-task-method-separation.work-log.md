@@ -227,6 +227,28 @@
 - next_work:
   - Behaviour: None scheduled.
 
+## 2026-01-09 — loop 015
+- helper_version: helper:v20251223.1
+- focus: Decision § surfacing — add skip sentinel step to release checklist notes
+- active_constraint: Release process guidance still lacked an explicit skip sentinel verification step, risking drift between CLI surfaces and the change log when publishing new versions.
+- expected_value:
+  | Factor           | Value | Rationale                                                                    |
+  | Impact           | Low   | Keeps release process aligned with ADR 0070 surfacing work                    |
+  | Probability      | High  | Updating the CONTRIBUTING release checklist ensures future releases check it |
+  | Time Sensitivity | Low   | Process improvement but important to close while work is fresh                |
+- validation_targets:
+  - go test ./...
+- evidence:
+  - green: docs/adr/evidence/0070-static-prompt-task-method-separation/loop-015.md#loop-015-green--helper-diff-snapshot-git-diff----stat-200
+  - green: docs/adr/evidence/0070-static-prompt-task-method-separation/loop-015.md#loop-015-green--helper-rerun-go-test
+- rollback_plan: `git restore --source=HEAD -- CONTRIBUTING.md docs/adr/evidence/0070-static-prompt-task-method-separation/loop-015.md docs/adr/0070-static-prompt-task-method-separation.work-log.md`
+- delta_summary: helper:diff-snapshot=1 file changed, 6 insertions(+) — documented skip sentinel verification in the release checklist.
+- loops_remaining_forecast: 0 loops — All skip sentinel follow-ups complete (confidence: high).
+- residual_constraints:
+  - None; release guidance and help/docs now cover skip sentinel usage end-to-end.
+- next_work:
+  - Behaviour: None scheduled.
+
 
 ## 2026-01-09 — loop 004
 - helper_version: helper:v20251223.1

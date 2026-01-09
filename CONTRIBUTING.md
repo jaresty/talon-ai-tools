@@ -28,6 +28,12 @@ Thank you for your interest in contributing to `talon-ai-tools`. We are happy to
   - This makes it easier to customize list items by overriding the `.talon-list` and not needing to fork the Python.
 - Avoid any configuration pattern that requires a user to fork this repository
 
+## Release checklist
+
+- Review README release notes for the current cycle and ensure skip sentinel guidance (`//next` usage) remains listed.
+- Verify CLI help (`bar help`) and the docs quickstart still show the skip sentinel instructions.
+- Confirm `go test ./...` passes, including completion help tests that assert skip sentinel text.
+
 ## GPT prompts, axes, and ADRs
 
 - Before adding or changing **static prompts** or axis lists, read:

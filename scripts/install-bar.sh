@@ -209,6 +209,14 @@ main() {
     printf 'info: installed %s to %s\n' "$BINARY_NAME" "$install_dir/$BINARY_NAME"
     printf 'info: run `%s help` to get started.\n' "$BINARY_NAME"
 
+    local fixture_path
+    fixture_path=$(find "$WORKDIR" -maxdepth 3 -type f -name "tui_smoke.json" | head -n1 || true)
+    if [[ -n "$fixture_path" ]]; then
+        local fixture_dest="$install_dir/bar-tui_smoke.json"
+        install -m 0644 "$fixture_path" "$fixture_dest"
+        printf 'info: installed Bubble Tea fixture to %s (use `bar tui --fixture %s --no-alt-screen`)\n' "$fixture_dest" "$fixture_dest"
+    fi
+
     if ((keep_temp)); then
         printf 'info: temporary artifacts retained in %s
 ' "$WORKDIR"

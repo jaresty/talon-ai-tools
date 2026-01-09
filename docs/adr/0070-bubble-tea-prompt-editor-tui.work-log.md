@@ -448,9 +448,29 @@
   - Behaviour: Update packaging/installer manifests so `bar tui` binaries ship with the new TUI resources (validation via `make guardrails`).
   - Behaviour: Refresh README/docs quickstart with subject import/export shortcuts and security guidance (validation via manual doc review and `python3 -m pytest _tests/test_bar_completion_cli.py`).
 
-
+## 2026-01-09 — loop 037
+- helper_version: helper:v20251223.1
+- focus: Salient Tasks — package fixture assets with the `bar` release archives and installer
+- active_constraint: Documentation and quickstart guides still reference the in-repo fixture path (`cmd/bar/testdata/tui_smoke.json`), so users of release installs lack guidance on the new packaged location (validation via manual doc review once documentation is updated).
 - validation_targets:
+  - python3 -m pytest _tests/test_bar_completion_cli.py
+  - make guardrails
+- evidence:
+  - green: docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-037.md#loop-037-green--helper-diff-snapshot-git-diff--stat-head
+  - green: docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-037.md#loop-037-green--python3--m-pytest-_tests-test_bar_completion_cli.py
+  - green: docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-037.md#loop-037-green--make-guardrails
+- rollback_plan: `git restore --source=HEAD -- .github/workflows/release-bar.yml scripts/install-bar.sh docs/adr/0070-bubble-tea-prompt-editor-tui.work-log.md docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-037.md`
+- delta_summary: helper:diff-snapshot=git diff --stat HEAD | expanded release archives to include the Bubble Tea snapshot fixture and taught the installer to copy it alongside the binary for pilot runs.
+- loops_remaining_forecast: 1 loop (refresh documentation for the packaged fixture path and shortcut descriptions) — medium confidence now that packaging flows green.
+- residual_constraints:
+  - Documentation still mentions the repository fixture path instead of the installed asset (severity: medium; mitigation: update README/docs quickstart to point at the installed `bar-tui_smoke.json`; monitoring: doc review in next loop).
+- next_work:
+  - Behaviour: Refresh README/docs quickstart with subject import/export shortcuts, packaged fixture location, and security guidance (validation via manual doc review and `python3 -m pytest _tests/test_bar_completion_cli.py`).
+
+
+ - validation_targets:
   - documentation-only (no executable commands)
+
 - evidence:
   - green: docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-030.md#loop-030-green--helper-diff-snapshot-git-diff--stat
 - rollback_plan: `git restore --source=HEAD -- docs/adr/0070-bubble-tea-Prompt-editor-tui.md docs/adr/0070-bubble-tea-prompt-editor-tui.work-log.md docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-030.md`

@@ -564,10 +564,17 @@ func TestTokenPaletteResetToPreset(t *testing.T) {
 	if len(m.tokenPaletteOptions) == 0 || m.tokenPaletteOptions[0] != tokenPaletteResetOption {
 		t.Fatalf("expected reset option to appear when preset diverges")
 	}
+	if m.tokenPaletteOptionIndex < 0 || m.tokenPaletteOptionIndex >= len(m.tokenPaletteOptions) {
+		t.Fatalf("palette option index out of range: %d", m.tokenPaletteOptionIndex)
+	}
+	entryBefore := m.tokenPaletteOptions[m.tokenPaletteOptionIndex]
+	if entryBefore != tokenPaletteResetOption {
+		t.Fatalf("expected palette focus to land on reset option, got entry %d (index %d)", entryBefore, m.tokenPaletteOptionIndex)
+	}
 
 	m, _ = updateModel(t, m, tea.KeyMsg{Type: tea.KeyEnter})
 	if !reflect.DeepEqual(m.tokenStates[1].selected, []string{"focus"}) {
-		t.Fatalf("expected reset to preset to restore focus, got %v", m.tokenStates[1].selected)
+		t.Fatalf("expected reset to preset to restore focus, got %v (status: %q)", m.tokenStates[1].selected, m.statusMessage)
 	}
 	if !reflect.DeepEqual(m.tokens, []string{"todo", "focus"}) {
 		t.Fatalf("expected tokens to match preset after reset, got %v", m.tokens)
@@ -611,6 +618,42 @@ func TestTokenPaletteResetRenderingHasNoSideEffects(t *testing.T) {
 	}
 	if !reflect.DeepEqual(m.tokens, beforeTokens) {
 		t.Fatalf("expected rendering not to change tokens, got %v", m.tokens)
+	}
+}
+
+func TestTokenPaletteKeepsIndexAfterOptionUpdate(t *testing.T) {
+	opts := Options{
+		Tokens:          []string{"todo", "focus"},
+		TokenCategories: defaultTokenCategories(),
+		Preview:         func(subject string, tokens []string) (string, error) { return "preview:" + subject, nil },
+		ClipboardRead:   func() (string, error) { return "", nil },
+		ClipboardWrite:  func(string) error { return nil },
+		RunCommand: func(context.Context, string, string, map[string]string) (string, string, error) {
+			return "", "", nil
+		},
+		CommandTimeout: time.Second,
+	}
+	m := newModel(opts)
+
+	m, _ = updateModel(t, m, tea.KeyMsg{Type: tea.KeyTab})
+	m, _ = updateModel(t, m, tea.KeyMsg{Type: tea.KeyCtrlP})
+	m, _ = updateModel(t, m, tea.KeyMsg{Type: tea.KeyTab})  // filter -> categories
+	m, _ = updateModel(t, m, tea.KeyMsg{Type: tea.KeyTab})  // categories -> options
+	m, _ = updateModel(t, m, tea.KeyMsg{Type: tea.KeyDown}) // highlight scope option
+
+	if len(m.tokenPaletteOptions) == 0 {
+		t.Fatalf("expected palette options to be present")
+	}
+	beforeEntry := m.tokenPaletteOptions[m.tokenPaletteOptionIndex]
+
+	m, _ = updateModel(t, m, tea.KeyMsg{Type: tea.KeyEnter}) // toggle selection
+
+	if len(m.tokenPaletteOptions) == 0 {
+		t.Fatalf("expected palette options to remain after toggle")
+	}
+	afterEntry := m.tokenPaletteOptions[m.tokenPaletteOptionIndex]
+	if beforeEntry != afterEntry {
+		t.Fatalf("expected palette to keep focus on same entry, got %d then %d", beforeEntry, afterEntry)
 	}
 }
 

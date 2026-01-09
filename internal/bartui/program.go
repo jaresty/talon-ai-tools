@@ -266,20 +266,21 @@ func (s *tokenCategoryState) setSelected(values []string, max int) {
 }
 
 type model struct {
-	tokens                  []string
-	tokenCategories         []TokenCategory
-	tokenStates             []tokenCategoryState
-	tokenOptionLookup       map[string]tokenOptionReference
-	tokenCategoryIndex      int
-	tokenOptionIndex        int
-	tokenPaletteVisible     bool
-	tokenPaletteFocus       tokenPaletteFocus
-	tokenPaletteOptions     []int
-	tokenPaletteOptionIndex int
-	tokenPaletteFilter      textinput.Model
-	focusBeforePalette      focusArea
-	unassignedTokens        []string
-	lastTokenSnapshot       []string
+	tokens                   []string
+	tokenCategories          []TokenCategory
+	tokenStates              []tokenCategoryState
+	tokenOptionLookup        map[string]tokenOptionReference
+	tokenCategoryIndex       int
+	tokenOptionIndex         int
+	tokenPaletteVisible      bool
+	tokenPaletteFocus        tokenPaletteFocus
+	tokenPaletteOptions      []int
+	tokenPaletteOptionIndex  int
+	lastPaletteCategoryIndex int
+	tokenPaletteFilter       textinput.Model
+	focusBeforePalette       focusArea
+	unassignedTokens         []string
+	lastTokenSnapshot        []string
 
 	subject                textinput.Model
 	command                textinput.Model
@@ -425,6 +426,7 @@ func newModel(opts Options) model {
 }
 
 func (m *model) initializeTokenCategories() {
+	m.lastPaletteCategoryIndex = -1
 	if len(m.tokenCategories) == 0 {
 		m.tokenStates = nil
 		m.tokenOptionLookup = nil
@@ -529,6 +531,14 @@ func (m *model) updatePaletteOptions() {
 		m.tokenPaletteOptionIndex = -1
 		return
 	}
+
+	prevEntry := 0
+	hadPrev := false
+	if len(m.tokenPaletteOptions) > 0 && m.tokenPaletteOptionIndex >= 0 && m.tokenPaletteOptionIndex < len(m.tokenPaletteOptions) && m.lastPaletteCategoryIndex == m.tokenCategoryIndex {
+		prevEntry = m.tokenPaletteOptions[m.tokenPaletteOptionIndex]
+		hadPrev = true
+	}
+
 	state := m.tokenStates[m.tokenCategoryIndex]
 	filter := strings.ToLower(strings.TrimSpace(m.tokenPaletteFilter.Value()))
 	options := make([]int, 0, len(state.category.Options)+1)
@@ -543,9 +553,22 @@ func (m *model) updatePaletteOptions() {
 	if len(options) == 0 {
 		m.tokenPaletteOptions = nil
 		m.tokenPaletteOptionIndex = -1
+		m.lastPaletteCategoryIndex = -1
 		return
 	}
+
 	m.tokenPaletteOptions = options
+	m.lastPaletteCategoryIndex = m.tokenCategoryIndex
+
+	if hadPrev {
+		for i, entry := range options {
+			if entry == prevEntry {
+				m.tokenPaletteOptionIndex = i
+				return
+			}
+		}
+	}
+
 	if m.tokenPaletteOptionIndex < 0 || m.tokenPaletteOptionIndex >= len(options) {
 		m.tokenPaletteOptionIndex = 0
 	}

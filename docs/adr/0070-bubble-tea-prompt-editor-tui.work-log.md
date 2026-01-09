@@ -473,9 +473,28 @@
 - residual_constraints:
   - Subject import/export and command output UI remain unimplemented (severity: high; mitigation: build feature in upcoming implementation loop; monitoring: go test ./cmd/bar/... once feature lands).
 - next_work:
-  - Behaviour: Implement subject import/export plumbing with clipboard capture, command piping, result display pane, and optional reinsertion (validation via go test ./cmd/bar/... once the feature is built).
+  - Behaviour: Implement subject import/export plumbing with clipboard capture, command piping, dedicated result pane display, and optional reinsertion (validation via go test ./cmd/bar/... once the feature is built).
   - Behaviour: Execute packaging updates when implementation loop starts (validation via `make guardrails`).
   - Behaviour: Run the CLI completion guardrail (`python3 -m pytest _tests/test_bar_completion_cli.py`) alongside packaging to verify `bar tui` shells stay aligned.
+
+## 2026-01-09 — loop 034
+- helper_version: helper:v20251223.1
+- focus: ADR Next Work — reinforce dedicated result pane in subject import/export task
+- active_constraint: Next-work bullet for subject import/export plumbing referenced result display but not the dedicated pane requirement from Decision.
+- validation_targets:
+  - documentation-only (no executable commands)
+- evidence:
+  - green: docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-034.md#loop-034-green--helper-diff-snapshot-git-diff--stat
+- rollback_plan: `git restore --source=HEAD -- docs/adr/0070-bubble-tea-prompt-editor-tui.work-log.md docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-034.md`
+- delta_summary: helper:diff-snapshot=git diff --stat | docs/adr/0070-bubble-tea-prompt-editor-tui.work-log.md (next work now references dedicated result pane explicitly).
+- loops_remaining_forecast: 1 loop — implement subject import/export plumbing and result pane UI.
+- residual_constraints:
+  - Subject import/export plumbing with dedicated pane remains unimplemented (severity: high; mitigation: build feature in upcoming implementation loop; monitoring: go test ./cmd/bar/... once feature lands).
+- next_work:
+  - Behaviour: Implement subject import/export plumbing with clipboard capture, command piping, dedicated result pane display, and optional reinsertion (validation via go test ./cmd/bar/... once the feature is built).
+  - Behaviour: Execute packaging updates when implementation loop starts (validation via `make guardrails`).
+  - Behaviour: Run the CLI completion guardrail (`python3 -m pytest _tests/test_bar_completion_cli.py`) alongside packaging to verify `bar tui` shells stay aligned.
+
 
 - validation_targets:
   - documentation-only (no executable commands)

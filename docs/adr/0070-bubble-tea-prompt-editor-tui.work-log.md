@@ -33,3 +33,22 @@
   - Bubble Tea entrypoint remains unimplemented; `bar tui` subcommand still needs scaffolding (severity: high; mitigation: implement CLI wiring and program bootstrap; monitoring: go test ./cmd/bar/... once code lands).
 - next_work:
   - Behaviour: Scaffold `bar tui` entrypoint that loads grammar metadata and boots a Bubble Tea program (validation via go test ./cmd/bar/... after implementation).
+
+## 2026-01-09 — loop 003
+- helper_version: helper:v20251223.1
+- focus: Decision § validation — register canonical commands for Bubble Tea TUI guardrails
+- active_constraint: ADR 0070 listed qualitative validation guidance only, leaving maintainers without canonical commands to prove the Bubble Tea TUI wiring, state parity, or interactive smoke tests.
+- validation_targets:
+  - git diff --stat docs/adr/0070-bubble-tea-prompt-editor-tui.md
+  - git diff docs/adr/0070-bubble-tea-prompt-editor-tui.md
+- evidence:
+  - green: docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-003.md#loop-003-green--helper-diff-snapshot-git-diff--stat-docs-adr-0070-bubble-tea-prompt-editor-tui.md
+  - green: docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-003.md#loop-003-green--helper-diff-snapshot-git-diff-docs-adr-0070-bubble-tea-prompt-editor-tui.md
+- rollback_plan: `git restore --source=HEAD -- docs/adr/0070-bubble-tea-prompt-editor-tui.md docs/adr/0070-bubble-tea-prompt-editor-tui.work-log.md docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-003.md`
+- delta_summary: helper:diff-snapshot=docs/adr/0070-bubble-tea-prompt-editor-tui.md | 8 ++++---- — enumerated explicit `go test` and `go run` validation commands so future loops can register evidence against the TUI behaviour.
+- loops_remaining_forecast: 5 loops (CLI entrypoint scaffolding, state model integration, async command pipeline, layout polish, documentation/tests execution) — medium confidence with validation targets now anchored.
+- residual_constraints:
+  - Bubble Tea entrypoint remains unimplemented; `bar tui` subcommand still needs scaffolding (severity: high; mitigation: implement CLI wiring and program bootstrap; monitoring: go test ./cmd/bar/... once code lands).
+  - Interactive smoke test harness for Bubble Tea panes does not yet exist (severity: medium; mitigation: script `go run ./cmd/bar tui --fixture …` with transcript capture; monitoring: manual transcript diff until harness automated).
+- next_work:
+  - Behaviour: Scaffold `bar tui` entrypoint that loads grammar metadata and boots a Bubble Tea program (validation via go test ./cmd/bar/... after implementation).

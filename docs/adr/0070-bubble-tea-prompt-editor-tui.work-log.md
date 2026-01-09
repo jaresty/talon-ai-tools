@@ -852,4 +852,26 @@
 - next_work:
   - Behaviour: Monitor pilot telemetry for token editing UX; rerun go test ./internal/bartui, go test ./cmd/bar, and python3 -m pytest _tests/test_bar_completion_cli.py if adjustments are requested.
 
+## 2026-01-09 — loop 051
+- helper_version: helper:v20251223.1
+- focus: Decision § token editing — refine palette UX so filters without presets do not expose unusable reset entries
+- active_constraint: The token palette displayed a `Reset to preset` option even when no preset was active, leaving operators with a dead entry and stale `(no options)` messaging that confused the UX and caused snapshot regressions.
+- validation_targets:
+  - go test -count=1 ./internal/bartui
+  - go test -count=1 ./cmd/bar
+  - go test -count=1 ./...
+  - python3 -m pytest _tests/test_bar_completion_cli.py
+- evidence:
+  - green: docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-051.md (go test -count=1 ./internal/bartui)
+  - green: docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-051.md (go test -count=1 ./cmd/bar)
+  - green: docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-051.md (go test -count=1 ./...)
+  - green: docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-051.md (python3 -m pytest _tests/test_bar_completion_cli.py)
+- rollback_plan: `git restore --source=HEAD -- internal/bartui/program.go internal/bartui/program_test.go docs/adr/0070-bubble-tea-prompt-editor-tui.work-log.md docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-051.md`
+- delta_summary: helper:diff-snapshot=git diff --stat | updated palette option filtering to omit reset entries when no preset is active, added contextual empty-state messaging, surfaced status feedback, and introduced regression tests covering filter-only scenarios.
+- loops_remaining_forecast: 0 loops — palette UX now meets ADR expectations; awaiting pilot feedback for further adjustments.
+- residual_constraints:
+  - Pilot feedback on the new token controls remains pending (severity: medium; mitigation: gather pilot notes after rollout; monitoring: collect usability reports and rerun guardrails if adjustments are needed).
+- next_work:
+  - Behaviour: Monitor pilot telemetry for token editing UX; rerun go test ./internal/bartui, go test ./cmd/bar, and python3 -m pytest _tests/test_bar_completion_cli.py if adjustments are requested.
+
 

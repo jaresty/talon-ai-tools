@@ -614,6 +614,40 @@ func TestTokenPaletteResetRenderingHasNoSideEffects(t *testing.T) {
 	}
 }
 
+func TestTokenPaletteFilterNoMatchesWithoutPreset(t *testing.T) {
+	opts := Options{
+		Tokens:          []string{"todo"},
+		TokenCategories: defaultTokenCategories(),
+		Preview:         func(subject string, tokens []string) (string, error) { return "preview:" + subject, nil },
+		ClipboardRead:   func() (string, error) { return "", nil },
+		ClipboardWrite:  func(string) error { return nil },
+		RunCommand: func(context.Context, string, string, map[string]string) (string, string, error) {
+			return "", "", nil
+		},
+		CommandTimeout: time.Second,
+	}
+	m := newModel(opts)
+
+	m, _ = updateModel(t, m, tea.KeyMsg{Type: tea.KeyTab})
+	m, _ = updateModel(t, m, tea.KeyMsg{Type: tea.KeyCtrlP})
+
+	m, _ = updateModel(t, m, tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{'x'}})
+	m, _ = updateModel(t, m, tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{'z'}})
+	m, _ = updateModel(t, m, tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{'z'}})
+
+	if m.tokenPaletteOptionIndex != -1 {
+		t.Fatalf("expected palette option index to be -1, got %d", m.tokenPaletteOptionIndex)
+	}
+
+	view := m.View()
+	if strings.Contains(view, "[reset] Reset to preset") {
+		t.Fatalf("expected no reset option when no preset is active, got:\n%s", view)
+	}
+	if !strings.Contains(view, "(no options match filter)") {
+		t.Fatalf("expected view to mention missing options, got:\n%s", view)
+	}
+}
+
 func TestTokenSummaryNoHighlightWhenSubjectFocused(t *testing.T) {
 	opts := Options{
 		Tokens:          []string{"todo", "focus"},

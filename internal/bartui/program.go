@@ -541,7 +541,9 @@ func (m *model) updatePaletteOptions() {
 		}
 	}
 	if len(options) == 0 {
-		options = append(options, tokenPaletteResetOption)
+		m.tokenPaletteOptions = nil
+		m.tokenPaletteOptionIndex = -1
+		return
 	}
 	m.tokenPaletteOptions = options
 	if m.tokenPaletteOptionIndex < 0 || m.tokenPaletteOptionIndex >= len(options) {
@@ -818,7 +820,8 @@ func (m *model) closeTokenPalette() tea.Cmd {
 }
 
 func (m *model) applyPaletteSelection() {
-	if len(m.tokenPaletteOptions) == 0 {
+	if len(m.tokenPaletteOptions) == 0 || m.tokenPaletteOptionIndex < 0 || m.tokenPaletteOptionIndex >= len(m.tokenPaletteOptions) {
+		m.statusMessage = "No token options available for the current filter."
 		return
 	}
 	index := m.tokenPaletteOptions[m.tokenPaletteOptionIndex]
@@ -1069,10 +1072,17 @@ func (m *model) renderTokenPalette(b *strings.Builder) {
 	}
 
 	b.WriteString("  Options:\n")
+	filterActive := strings.TrimSpace(m.tokenPaletteFilter.Value()) != ""
+
 	if len(m.tokenPaletteOptions) == 0 {
-		b.WriteString("      (no options)\n")
+		if filterActive {
+			b.WriteString("      (no options match filter)\n")
+		} else {
+			b.WriteString("      (no options available)\n")
+		}
 		return
 	}
+
 	state := m.tokenStates[m.tokenCategoryIndex]
 
 	for i, entry := range m.tokenPaletteOptions {

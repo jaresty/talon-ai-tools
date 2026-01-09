@@ -48,6 +48,7 @@ Proposed — Bubble Tea TUI improves prompt editing ergonomics for the Go CLI (2
 - Integrate asynchronous `tea.Cmd` pipelines to call `barcli.LoadGrammar`, `barcli.Build`, clipboard/command dispatch, and background IO without blocking the TUI.
 - Implement keyboard shortcuts and pane focus management using Bubbles components (`textarea`, `list`, `tabs`, `viewport`) styled with Lip Gloss for readability.
 - Add Go unit tests covering model update transitions and command sequencing, plus integration smoke tests that confirm TUI output matches CLI `bar build` results.
+- Refresh CLI completion tables, release notes, and automation packaging scripts to surface `bar tui` alongside existing subcommands.
 - Extend user docs/quickstart with TUI setup, keyboard cheatsheet, preset reuse guidance, and opt-in telemetry/configuration notes.
 
 ## Anti-goals

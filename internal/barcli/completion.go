@@ -161,22 +161,23 @@ type completionCatalog struct {
 }
 
 type completionState struct {
-	override        bool
-	static          bool
-	staticClosed    bool
-	completeness    bool
-	scope           map[string]struct{}
-	method          map[string]struct{}
-	form            bool
-	channel         bool
-	directional     bool
-	personaPreset   bool
-	personaVoice    bool
-	personaAudience bool
-	personaTone     bool
-	personaIntent   bool
-	scopeCap        int
-	methodCap       int
+	override         bool
+	static           bool
+	staticClosed     bool
+	highestAxisIndex int
+	completeness     bool
+	scope            map[string]struct{}
+	method           map[string]struct{}
+	form             bool
+	channel          bool
+	directional      bool
+	personaPreset    bool
+	personaVoice     bool
+	personaAudience  bool
+	personaTone      bool
+	personaIntent    bool
+	scopeCap         int
+	methodCap        int
 }
 
 type completionSuggestion struct {
@@ -625,10 +626,18 @@ func completeBuild(grammar *Grammar, catalog completionCatalog, words []string, 
 		staticSuggestions = appendUniqueSuggestions(staticSuggestions, seen, buildStaticSuggestions(grammar, catalog))
 	}
 
+	axisOrder := make(map[string]int, len(grammar.axisPriority))
+	for idx, axis := range grammar.axisPriority {
+		axisOrder[axis] = idx
+	}
+
 	axisIncluded := make(map[string]bool)
 
-	for _, axis := range grammar.axisPriority {
+	for idx, axis := range grammar.axisPriority {
 		axisIncluded[axis] = true
+		if idx < state.highestAxisIndex {
+			continue
+		}
 		switch axis {
 		case "completeness":
 			if state.completeness {
@@ -797,11 +806,17 @@ func setToSortedSlice(set map[string]struct{}) []string {
 }
 
 func collectShorthandState(grammar *Grammar, tokens []string) completionState {
+	axisOrder := make(map[string]int, len(grammar.axisPriority))
+	for idx, axis := range grammar.axisPriority {
+		axisOrder[axis] = idx
+	}
+
 	state := completionState{
-		scope:     make(map[string]struct{}),
-		method:    make(map[string]struct{}),
-		scopeCap:  grammar.Hierarchy.AxisSoftCaps["scope"],
-		methodCap: grammar.Hierarchy.AxisSoftCaps["method"],
+		scope:            make(map[string]struct{}),
+		method:           make(map[string]struct{}),
+		scopeCap:         grammar.Hierarchy.AxisSoftCaps["scope"],
+		methodCap:        grammar.Hierarchy.AxisSoftCaps["method"],
+		highestAxisIndex: -1,
 	}
 
 	normalized := grammar.NormalizeTokens(tokens)
@@ -837,6 +852,15 @@ func collectShorthandState(grammar *Grammar, tokens []string) completionState {
 			continue
 		}
 		axis := detectAxis(grammar, token)
+		if idx, ok := axisOrder[axis]; ok {
+			if idx > state.highestAxisIndex {
+				state.highestAxisIndex = idx
+			}
+		} else if axis != "" {
+			if state.highestAxisIndex < len(grammar.axisPriority) {
+				state.highestAxisIndex = len(grammar.axisPriority)
+			}
+		}
 		if axis != "" && !state.static && !state.staticClosed {
 			state.staticClosed = true
 		}
@@ -862,8 +886,10 @@ func collectShorthandState(grammar *Grammar, tokens []string) completionState {
 			continue
 		}
 		personaAxis := detectPersonaAxis(grammar, token)
-		if personaAxis != "" && !state.static && !state.staticClosed {
-			state.staticClosed = true
+		if personaAxis != "" {
+			if !state.static && !state.staticClosed {
+				state.staticClosed = true
+			}
 		}
 		switch personaAxis {
 		case "voice":

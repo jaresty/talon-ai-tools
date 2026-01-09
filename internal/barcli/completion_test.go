@@ -218,6 +218,28 @@ func TestCompleteStopsSuggestingScopeAfterCap(t *testing.T) {
 	if containsSuggestionValue(suggestions, "relations") {
 		t.Fatalf("expected existing scope tokens to be filtered from suggestions, got %v", suggestions)
 	}
+	if containsSuggestionValue(suggestions, "todo") {
+		t.Fatalf("expected static tokens to remain hidden after axis progression, got %v", suggestions)
+	}
+}
+
+func TestCompleteSkipsEarlierAxesAfterAdvancing(t *testing.T) {
+	grammar := loadCompletionGrammar(t)
+
+	words := []string{"bar", "build", "todo", "full", "analysis", "checklist", ""}
+	suggestions, err := Complete(grammar, "bash", words, len(words)-1)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if containsSuggestionValue(suggestions, "focus") {
+		t.Fatalf("expected scope tokens to be hidden after selecting later axis, got %v", suggestions)
+	}
+	if containsSuggestionValue(suggestions, "analysis") {
+		t.Fatalf("expected method tokens to be hidden after advancing past method axis, got %v", suggestions)
+	}
+	if !containsSuggestionValue(suggestions, "slack") {
+		t.Fatalf("expected channel suggestions to remain available, got %v", suggestions)
+	}
 }
 
 func TestCompleteOverrideSuggestions(t *testing.T) {

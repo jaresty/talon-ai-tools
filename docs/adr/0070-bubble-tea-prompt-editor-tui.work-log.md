@@ -308,4 +308,20 @@
 - next_work:
   - Behaviour: Monitor pilot feedback for additional documentation tweaks; no further repository actions queued.
 
+## 2026-01-09 — loop 021
+- helper_version: helper:v20251223.1
+- focus: Documentation — create Bubble Tea pilot playbook and reference it from README + docs site
+- active_constraint: Pilot operators still lacked a consolidated playbook covering interactive usage, fixture expectations, and transcript capture even after README/site quickstart updates (validation via python3 -m pytest _tests/test_bar_completion_cli.py to ensure CLI guardrails remain green).
+- validation_targets:
+  - python3 -m pytest _tests/test_bar_completion_cli.py
+- evidence:
+  - green: docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-021.md#loop-021-green--python3--m-pytest-_tests-test_bar_completion_cli.py
+- rollback_plan: `git restore --source=HEAD -- readme.md .docs/src/content/docs/guides/quickstart.mdx docs/bubble-tea-pilot-playbook.md docs/adr/0070-bubble-tea-prompt-editor-tui.work-log.md docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-021.md`
+- delta_summary: helper:diff-snapshot=git diff --stat | added docs/bubble-tea-pilot-playbook.md and linked it from README + quickstart.
+- loops_remaining_forecast: 0 loops — documentation now covers pilot workflow end-to-end; next updates depend on feedback.
+- residual_constraints:
+  - None (pilot playbook produced; documentation gaps closed).
+- next_work:
+  - Behaviour: Gather pilot feedback and iterate if new gaps emerge; no immediate repository actions queued.
+
 

@@ -138,6 +138,8 @@ The fixture loader accepts the following fields:
 
 Snapshot runs write the rendered view to STDOUT, perform all assertions, and exit without switching the terminal buffer. They pair nicely with `go test ./cmd/bar/...` which now includes `TestTUIFixtureEmitsSnapshot` to guard the fixture.
 
+For a complete pilot walkthrough (interactive usage, fixture expectations, transcript capture tips) see `docs/bubble-tea-pilot-playbook.md`.
+
 #### Completion skip sentinel
 
 Use the skip sentinel `//next` whenever tab completion offers a stage you want to bypass:

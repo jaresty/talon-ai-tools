@@ -96,9 +96,11 @@ var generalHelpText = strings.TrimSpace(`USAGE
   Emit JSON for automation:        bar build --json todo focus steps fog
   Supply prompt content:           bar build todo focus --prompt "Fix onboarding"
   Reuse a saved preset:            bar preset use daily-plan --prompt "Daily sync status"
+  Skip persona stage quickly:      bar build //next todo full focus
    Mix shorthand with overrides:    bar build todo focus method=steps directional=fog
-   Inspect another grammar file:    bar help tokens --grammar /path/to/grammar.json
-    Generate fish completions:       bar completion fish > ~/.config/fish/completions/bar.fish
+    Inspect another grammar file:    bar help tokens --grammar /path/to/grammar.json
+     Generate fish completions:       bar completion fish > ~/.config/fish/completions/bar.fish
+
 
 
 

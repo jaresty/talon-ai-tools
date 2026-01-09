@@ -183,6 +183,28 @@
 - next_work:
   - Behaviour: None scheduled; reopen if future sentinel behaviour changes or new surfaces appear.
 
+## 2026-01-09 — loop 013
+- helper_version: helper:v20251223.1
+- focus: Decision § surfacing — provide skip sentinel recipe under `TOPICS & EXAMPLES`
+- active_constraint: `bar help` lacked a concrete command example showing `//next`, leaving CLI-only users without a template for skipping persona/static stages.
+- expected_value:
+  | Factor           | Value  | Rationale                                                            |
+  | Impact           | Low    | Small usability gain; reinforces earlier documentation               |
+  | Probability      | High   | Updating help string and tests guarantees the example stays present  |
+  | Time Sensitivity | Low    | Still worthwhile to align in-tool guidance with docs before release |
+- validation_targets:
+  - go test ./...
+- evidence:
+  - green: docs/adr/evidence/0070-static-prompt-task-method-separation/loop-013.md#loop-013-green--helper-diff-snapshot-git-diff----stat-200
+  - green: docs/adr/evidence/0070-static-prompt-task-method-separation/loop-013.md#loop-013-green--helper-rerun-go-test
+- rollback_plan: `git restore --source=HEAD -- internal/barcli/app.go internal/barcli/app_test.go docs/adr/evidence/0070-static-prompt-task-method-separation/loop-013.md docs/adr/0070-static-prompt-task-method-separation.work-log.md`
+- delta_summary: helper:diff-snapshot=2 files changed, 7 insertions(+), 2 deletions(-) — added a skip sentinel example to general help and tightened tests to pin it.
+- loops_remaining_forecast: 0 loops — In-tool help now mirrors docs for skip usage (confidence: high).
+- residual_constraints:
+  - severity: low — Monitor `bar help` when completion ordering changes; mitigation: re-run help tests after grammar updates; monitoring: include `bar help` snapshot in CLI release checklist; owner: ADR 0070 maintainers.
+- next_work:
+  - Behaviour: None scheduled.
+
 
 ## 2026-01-09 — loop 004
 - helper_version: helper:v20251223.1

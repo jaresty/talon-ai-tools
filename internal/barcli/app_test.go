@@ -208,6 +208,9 @@ func TestGeneralHelpMentionsSkipSentinel(t *testing.T) {
 	if !strings.Contains(output, "Skip tokens do not appear") {
 		t.Fatalf("expected general help to note skip tokens are ignored during build, got:\n%s", output)
 	}
+	if !strings.Contains(output, "bar build //next") {
+		t.Fatalf("expected general help to include skip sentinel example, got:\n%s", output)
+	}
 }
 
 func TestRunPresetUseBuildsRecipe(t *testing.T) {

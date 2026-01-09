@@ -122,6 +122,7 @@ bar tui todo focus steps                 # starts the TUI with shorthand tokens
 
 - By default the program enables the terminal alt screen so your original prompt buffer is restored when you exit. Pass `--no-alt-screen` to stay in the primary screen (useful when capturing transcripts inside CI or when your terminal does not support alt screen mode).
 - Supply a grammar file with `--grammar PATH` if you need to exercise alternate prompt bundles (defaults to the embedded grammar).
+- Repeat `--env NAME` to pass specific environment variables (for example API keys) to the subprocess allowlist; the UI always starts with an empty list and echoes the names you opt in.
 
 The TUI supports a deterministic snapshot harness for CI and manual smoke checks. Use the bundled fixture to verify the preview, layout, and output formatting without entering the interactive loop:
 

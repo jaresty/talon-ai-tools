@@ -32,9 +32,16 @@ func TestTUICommandLaunchesProgram(t *testing.T) {
 		if opts.CommandTimeout != 15*time.Second {
 			t.Fatalf("expected default command timeout, got %s", opts.CommandTimeout)
 		}
-		if _, _, err := opts.RunCommand(context.Background(), "", ""); err == nil {
+		if len(opts.AllowedEnv) != 0 {
+			t.Fatalf("expected no env allowlist by default, got %v", opts.AllowedEnv)
+		}
+		if len(opts.MissingEnv) != 0 {
+			t.Fatalf("expected no missing env entries, got %v", opts.MissingEnv)
+		}
+		if _, _, err := opts.RunCommand(context.Background(), "", "", nil); err == nil {
 			t.Fatalf("expected empty command to fail")
 		}
+
 		preview, err := opts.Preview("Example subject")
 		if err != nil {
 			t.Fatalf("preview returned error: %v", err)

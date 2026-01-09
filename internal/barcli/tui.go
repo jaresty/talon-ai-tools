@@ -9,6 +9,7 @@ import (
 	"os"
 	"os/exec"
 	"runtime"
+	"sort"
 	"strings"
 	"time"
 
@@ -113,6 +114,23 @@ func runTUI(opts *cliOptions, stdin io.Reader, stdout, stderr io.Writer) int {
 		return 0
 	}
 
+	envValues := make(map[string]string)
+	missingEnv := make([]string, 0, len(opts.EnvAllowlist))
+	for _, raw := range opts.EnvAllowlist {
+		name := strings.TrimSpace(raw)
+		if name == "" {
+			continue
+		}
+		if _, exists := envValues[name]; exists {
+			continue
+		}
+		if value, ok := os.LookupEnv(name); ok {
+			envValues[name] = value
+		} else {
+			missingEnv = append(missingEnv, name)
+		}
+	}
+
 	err = startTUI(bartui.Options{
 		Tokens:         tokens,
 		Input:          stdin,
@@ -121,8 +139,12 @@ func runTUI(opts *cliOptions, stdin io.Reader, stdout, stderr io.Writer) int {
 		UseAltScreen:   !opts.NoAltScreen,
 		ClipboardRead:  clipboard.ReadAll,
 		ClipboardWrite: clipboard.WriteAll,
-		RunCommand:     runShellCommand,
+		RunCommand: func(ctx context.Context, command string, stdin string, env map[string]string) (string, string, error) {
+			return runShellCommand(ctx, command, stdin, env)
+		},
 		CommandTimeout: 15 * time.Second,
+		AllowedEnv:     envValues,
+		MissingEnv:     missingEnv,
 	})
 	if err != nil {
 		writeError(stderr, fmt.Sprintf("launch tui: %v", err))
@@ -166,7 +188,7 @@ func loadTUIFixture(path string) (*tuiFixture, error) {
 	return &fixture, nil
 }
 
-func runShellCommand(ctx context.Context, command string, stdin string) (string, string, error) {
+func runShellCommand(ctx context.Context, command string, stdin string, env map[string]string) (string, string, error) {
 	trimmed := strings.TrimSpace(command)
 	if trimmed == "" {
 		return "", "", fmt.Errorf("no command provided")
@@ -176,6 +198,8 @@ func runShellCommand(ctx context.Context, command string, stdin string) (string,
 	if stdin != "" {
 		cmd.Stdin = strings.NewReader(stdin)
 	}
+
+	cmd.Env = buildCommandEnvironment(env)
 
 	var stdoutBuf, stderrBuf bytes.Buffer
 	cmd.Stdout = &stdoutBuf
@@ -190,4 +214,53 @@ func buildShellCommand(ctx context.Context, command string) *exec.Cmd {
 		return exec.CommandContext(ctx, "cmd", "/C", command)
 	}
 	return exec.CommandContext(ctx, "sh", "-c", command)
+}
+
+var defaultCommandEnvVars = []string{
+	"HOME",
+	"LANG",
+	"LC_ALL",
+	"LC_CTYPE",
+	"PATH",
+	"PWD",
+	"SHELL",
+	"TERM",
+	"TMPDIR",
+	"USER",
+}
+
+func buildCommandEnvironment(extra map[string]string) []string {
+	base := make(map[string]string)
+	for _, kv := range os.Environ() {
+		parts := strings.SplitN(kv, "=", 2)
+		if len(parts) != 2 {
+			continue
+		}
+		base[parts[0]] = parts[1]
+	}
+
+	result := make(map[string]string)
+	for _, key := range defaultCommandEnvVars {
+		if value, ok := base[key]; ok {
+			result[key] = value
+		}
+	}
+
+	if extra != nil {
+		for name, value := range extra {
+			result[name] = value
+		}
+	}
+
+	keys := make([]string, 0, len(result))
+	for name := range result {
+		keys = append(keys, name)
+	}
+	sort.Strings(keys)
+
+	envList := make([]string, 0, len(keys))
+	for _, name := range keys {
+		envList = append(envList, name+"="+result[name])
+	}
+	return envList
 }

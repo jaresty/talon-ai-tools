@@ -119,7 +119,7 @@ if bootstrap is not None:
                 value = stripped.split("\t", 1)[0]
                 values.append(value)
 
-            for expected in ["--grammar", "--fixture", "--no-alt-screen"]:
+            for expected in ["--grammar", "--fixture", "--no-alt-screen", "--env"]:
                 self.assertIn(
                     expected,
                     values,

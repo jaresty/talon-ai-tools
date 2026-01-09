@@ -35,9 +35,10 @@ func TestLoadSubjectFromClipboard(t *testing.T) {
 		Preview:        func(subject string) (string, error) { return "preview:" + subject, nil },
 		ClipboardRead:  func() (string, error) { return "from clipboard", nil },
 		ClipboardWrite: func(string) error { return nil },
-		RunCommand: func(context.Context, string, string) (string, string, error) {
+		RunCommand: func(context.Context, string, string, map[string]string) (string, string, error) {
 			return "", "", nil
 		},
+
 		CommandTimeout: time.Second,
 	}
 	m := newModel(opts)
@@ -57,13 +58,17 @@ func TestExecuteSubjectCommand(t *testing.T) {
 		Preview:        func(subject string) (string, error) { return "preview:" + subject, nil },
 		ClipboardRead:  func() (string, error) { return "", nil },
 		ClipboardWrite: func(string) error { return nil },
-		RunCommand: func(_ context.Context, command string, stdin string) (string, string, error) {
+		RunCommand: func(_ context.Context, command string, stdin string, env map[string]string) (string, string, error) {
 			if command != "echo-subject" {
 				t.Fatalf("unexpected command %q", command)
+			}
+			if len(env) != 0 {
+				t.Fatalf("expected no env variables, got %v", env)
 			}
 			receivedStdin = stdin
 			return "new subject\n", "stderr output", nil
 		},
+
 		CommandTimeout: time.Second,
 	}
 	m := newModel(opts)
@@ -111,13 +116,17 @@ func TestExecutePreviewCommandAndReinsert(t *testing.T) {
 		Preview:        func(subject string) (string, error) { return "preview:" + subject, nil },
 		ClipboardRead:  func() (string, error) { return "", nil },
 		ClipboardWrite: func(string) error { return nil },
-		RunCommand: func(_ context.Context, command string, stdin string) (string, string, error) {
+		RunCommand: func(_ context.Context, command string, stdin string, env map[string]string) (string, string, error) {
 			if command != "cat" {
 				t.Fatalf("unexpected command %q", command)
+			}
+			if len(env) != 0 {
+				t.Fatalf("expected no env variables, got %v", env)
 			}
 			receivedStdin = stdin
 			return "command stdout\n", "stderr", nil
 		},
+
 		CommandTimeout: time.Second,
 	}
 	m := newModel(opts)
@@ -159,11 +168,15 @@ func TestCancelCommandWithEsc(t *testing.T) {
 		Preview:        func(subject string) (string, error) { return "preview:" + subject, nil },
 		ClipboardRead:  func() (string, error) { return "", nil },
 		ClipboardWrite: func(string) error { return nil },
-		RunCommand: func(ctx context.Context, command string, stdin string) (string, string, error) {
+		RunCommand: func(ctx context.Context, command string, stdin string, env map[string]string) (string, string, error) {
+			if len(env) != 0 {
+				t.Fatalf("expected no env variables, got %v", env)
+			}
 			close(started)
 			<-ctx.Done()
 			return "", "", ctx.Err()
 		},
+
 		CommandTimeout: time.Second,
 	}
 	m := newModel(opts)
@@ -199,5 +212,68 @@ func TestCancelCommandWithEsc(t *testing.T) {
 	}
 	if !strings.Contains(strings.ToLower(m.statusMessage), "cancel") {
 		t.Fatalf("expected status message to mention cancellation, got %q", m.statusMessage)
+	}
+}
+
+func TestEnvironmentAllowlistVisible(t *testing.T) {
+	allowed := map[string]string{
+		"CHATGPT_API_KEY": "secret",
+		"ORG_ID":          "org",
+	}
+	opts := Options{
+		Tokens:         []string{"todo"},
+		Preview:        func(subject string) (string, error) { return "preview:" + subject, nil },
+		ClipboardRead:  func() (string, error) { return "", nil },
+		ClipboardWrite: func(string) error { return nil },
+		RunCommand: func(_ context.Context, command string, stdin string, env map[string]string) (string, string, error) {
+			if command != "echo" {
+				t.Fatalf("unexpected command %q", command)
+			}
+			if len(env) != len(allowed) {
+				t.Fatalf("expected %d env variables, got %v", len(allowed), env)
+			}
+			for name, value := range allowed {
+				if env[name] != value {
+					t.Fatalf("expected env %s to equal %q, got %q", name, value, env[name])
+				}
+			}
+			return "ok", "", nil
+		},
+		CommandTimeout: time.Second,
+		AllowedEnv:     allowed,
+		MissingEnv:     []string{"NOT_SET"},
+	}
+
+	m := newModel(opts)
+	if !strings.Contains(m.statusMessage, "Environment allowlist: CHATGPT_API_KEY, ORG_ID") {
+		t.Fatalf("expected status message to mention allowlist, got %q", m.statusMessage)
+	}
+	if !strings.Contains(m.statusMessage, "Missing environment variables: NOT_SET") {
+		t.Fatalf("expected status message to mention missing vars, got %q", m.statusMessage)
+	}
+
+	view := m.View()
+	if !strings.Contains(view, "Environment allowlist: CHATGPT_API_KEY, ORG_ID") {
+		t.Fatalf("expected view to include allowlist, got:\n%s", view)
+	}
+	if !strings.Contains(view, "Missing environment variables: NOT_SET") {
+		t.Fatalf("expected view to include missing env, got:\n%s", view)
+	}
+
+	m.command.SetValue("echo")
+	cmd := (&m).executeSubjectCommand()
+	if cmd == nil {
+		t.Fatalf("expected executeSubjectCommand to return a tea.Cmd")
+	}
+	msg := cmd()
+	m, next := updateModel(t, m, msg)
+	if next != nil {
+		t.Fatalf("unexpected follow-up command: %T", next)
+	}
+	if !strings.EqualFold(m.lastResult.Stdout, "ok") {
+		t.Fatalf("expected stdout to be ok, got %q", m.lastResult.Stdout)
+	}
+	if len(m.lastResult.EnvVars) != len(allowed) {
+		t.Fatalf("expected last result to record env vars, got %v", m.lastResult.EnvVars)
 	}
 }

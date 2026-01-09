@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"sort"
 	"strings"
 	"time"
 
@@ -24,7 +25,7 @@ type ClipboardWriteFunc func(string) error
 // RunCommandFunc executes the provided shell command. The stdin parameter contains
 // the input to provide on the command's standard input. The returned stdout and
 // stderr values are rendered in the result pane regardless of the exit status.
-type RunCommandFunc func(ctx context.Context, command string, stdin string) (stdout string, stderr string, err error)
+type RunCommandFunc func(ctx context.Context, command string, stdin string, env map[string]string) (stdout string, stderr string, err error)
 
 // Options configure the Bubble Tea prompt editor program.
 type Options struct {
@@ -37,6 +38,8 @@ type Options struct {
 	ClipboardWrite ClipboardWriteFunc
 	RunCommand     RunCommandFunc
 	CommandTimeout time.Duration
+	AllowedEnv     map[string]string
+	MissingEnv     []string
 }
 
 const (
@@ -58,9 +61,12 @@ func applyDefaults(opts Options) Options {
 		}
 	}
 	if opts.RunCommand == nil {
-		opts.RunCommand = func(context.Context, string, string) (string, string, error) {
+		opts.RunCommand = func(context.Context, string, string, map[string]string) (string, string, error) {
 			return "", "", fmt.Errorf("shell command execution unavailable")
 		}
+	}
+	if opts.AllowedEnv == nil {
+		opts.AllowedEnv = make(map[string]string)
 	}
 	return opts
 }
@@ -102,6 +108,7 @@ type commandResult struct {
 	Stderr      string
 	Err         error
 	UsedPreview bool
+	EnvVars     []string
 }
 
 type commandMode int
@@ -138,6 +145,9 @@ type model struct {
 	cancelCommand  context.CancelFunc
 	runningCommand string
 	runningMode    commandMode
+	allowedEnv     []string
+	missingEnv     []string
+	envValues      map[string]string
 }
 
 func newModel(opts Options) model {
@@ -153,6 +163,29 @@ func newModel(opts Options) model {
 	command.CharLimit = 0
 	command.Blur()
 
+	envValues := make(map[string]string, len(opts.AllowedEnv))
+	allowedEnv := make([]string, 0, len(opts.AllowedEnv))
+	for name, value := range opts.AllowedEnv {
+		envValues[name] = value
+		allowedEnv = append(allowedEnv, name)
+	}
+	sort.Strings(allowedEnv)
+
+	missingEnv := append([]string(nil), opts.MissingEnv...)
+	if len(missingEnv) > 0 {
+		sort.Strings(missingEnv)
+	}
+
+	status := "Ready. Tab to the command field to configure shell actions. Leave command empty to opt out."
+	if len(allowedEnv) > 0 {
+		status += " Environment allowlist: " + strings.Join(allowedEnv, ", ") + "."
+	} else {
+		status += " Environment allowlist: (none)."
+	}
+	if len(missingEnv) > 0 {
+		status += " Missing environment variables: " + strings.Join(missingEnv, ", ") + " (not set)."
+	}
+
 	m := model{
 		tokens:         append([]string(nil), opts.Tokens...),
 		subject:        subject,
@@ -163,7 +196,10 @@ func newModel(opts Options) model {
 		clipboardWrite: opts.ClipboardWrite,
 		runCommand:     opts.RunCommand,
 		commandTimeout: opts.CommandTimeout,
-		statusMessage:  "Ready. Tab to the command field to configure shell actions. Leave command empty to opt out.",
+		statusMessage:  status,
+		allowedEnv:     allowedEnv,
+		missingEnv:     missingEnv,
+		envValues:      envValues,
 	}
 	m.refreshPreview()
 	return m
@@ -272,9 +308,26 @@ func (m model) View() string {
 	} else {
 		b.WriteString(strings.Join(m.tokens, " "))
 	}
-	b.WriteString("\n\n")
+	b.WriteString("\n")
+
+	b.WriteString("Environment allowlist: ")
+	if len(m.allowedEnv) == 0 {
+		b.WriteString("(none)")
+	} else {
+		b.WriteString(strings.Join(m.allowedEnv, ", "))
+	}
+	b.WriteString("\n")
+	if len(m.missingEnv) > 0 {
+		b.WriteString("Missing environment variables: ")
+		b.WriteString(strings.Join(m.missingEnv, ", "))
+		b.WriteString(" (not set)\n")
+	} else {
+		b.WriteString("Missing environment variables: (none)\n")
+	}
+	b.WriteString("\n")
 
 	b.WriteString("Subject (Tab toggles focus):\n")
+
 	b.WriteString(m.subject.View())
 	if m.focus == focusSubject {
 		b.WriteString("  ← editing")
@@ -322,7 +375,15 @@ func (m model) View() string {
 		} else {
 			b.WriteString("Status: completed successfully\n")
 		}
+		b.WriteString("Environment: ")
+		if len(m.lastResult.EnvVars) == 0 {
+			b.WriteString("(none)\n")
+		} else {
+			b.WriteString(strings.Join(m.lastResult.EnvVars, ", "))
+			b.WriteString("\n")
+		}
 		b.WriteString("Stdout:\n")
+
 		if strings.TrimSpace(m.lastResult.Stdout) == "" {
 			b.WriteString("(empty)\n")
 		} else {
@@ -437,16 +498,31 @@ func (m *model) startCommand(mode commandMode) tea.Cmd {
 	m.commandRunning = true
 	m.runningCommand = command
 	m.runningMode = mode
+
+	envSummary := "(none)"
+	if len(m.allowedEnv) > 0 {
+		envSummary = strings.Join(m.allowedEnv, ", ")
+	}
+
 	if mode == commandModePreview {
-		m.statusMessage = fmt.Sprintf("Running %q with preview input… Press Esc to cancel.", command)
+		if len(m.allowedEnv) > 0 {
+			m.statusMessage = fmt.Sprintf("Running %q with preview input and env %s… Press Esc to cancel.", command, envSummary)
+		} else {
+			m.statusMessage = fmt.Sprintf("Running %q with preview input… Press Esc to cancel.", command)
+		}
 	} else {
-		m.statusMessage = fmt.Sprintf("Running %q… Press Esc to cancel.", command)
+		if len(m.allowedEnv) > 0 {
+			m.statusMessage = fmt.Sprintf("Running %q with env %s… Press Esc to cancel.", command, envSummary)
+		} else {
+			m.statusMessage = fmt.Sprintf("Running %q… Press Esc to cancel.", command)
+		}
 	}
 
 	runCommand := m.runCommand
+	envValues := m.envValues
 	return func() tea.Msg {
 		defer cancel()
-		stdout, stderr, err := runCommand(ctx, command, input)
+		stdout, stderr, err := runCommand(ctx, command, input, envValues)
 		if err == nil && ctx.Err() != nil {
 			err = ctx.Err()
 		}
@@ -457,6 +533,7 @@ func (m *model) startCommand(mode commandMode) tea.Cmd {
 				Stderr:      stderr,
 				Err:         err,
 				UsedPreview: mode == commandModePreview,
+				EnvVars:     append([]string(nil), m.allowedEnv...),
 			},
 			mode: mode,
 		}

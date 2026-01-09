@@ -21,7 +21,7 @@ var generalHelpText = strings.TrimSpace(`USAGE
 
   bar help
   bar help tokens [section...] [--grammar PATH]
-  bar tui [tokens...] [--grammar PATH] [--fixture PATH] [--no-alt-screen]
+  bar tui [tokens...] [--grammar PATH] [--fixture PATH] [--no-alt-screen] [--env NAME]...
  
    bar completion <shell> [--grammar PATH] [--output FILE]
       (shell = bash | zsh | fish)
@@ -85,6 +85,7 @@ var generalHelpText = strings.TrimSpace(`USAGE
     tui          Launch the Bubble Tea prompt editor to capture subject text and preview recipes.
                  Use --fixture PATH to emit a deterministic transcript for smoke testing and
                  --no-alt-screen to keep the TUI in the primary terminal buffer.
+                  --env NAME (repeatable) to pass specific environment variables to subprocesses.
     completion   Emit shell completion scripts (bash, zsh, fish) informed by the exported grammar.
     preset       Manage cached build presets (save/list/show/use/delete) derived from the last
 
@@ -202,16 +203,17 @@ func Run(args []string, stdin io.Reader, stdout, stderr io.Writer) int {
 }
 
 type cliOptions struct {
-	Command     string
-	Tokens      []string
-	Prompt      string
-	InputPath   string
-	OutputPath  string
-	JSON        bool
-	GrammarPath string
-	Force       bool
-	FixturePath string
-	NoAltScreen bool
+	Command      string
+	Tokens       []string
+	Prompt       string
+	InputPath    string
+	OutputPath   string
+	JSON         bool
+	GrammarPath  string
+	Force        bool
+	FixturePath  string
+	NoAltScreen  bool
+	EnvAllowlist []string
 }
 
 func parseArgs(args []string) (*cliOptions, error) {
@@ -266,8 +268,25 @@ func parseArgs(args []string) (*cliOptions, error) {
 			opts.FixturePath = strings.TrimPrefix(arg, "--fixture=")
 		case arg == "--no-alt-screen":
 			opts.NoAltScreen = true
+		case arg == "--env":
+			i++
+			if i >= len(args) {
+				return nil, fmt.Errorf("--env requires a variable name")
+			}
+			name := strings.TrimSpace(args[i])
+			if name == "" {
+				return nil, fmt.Errorf("--env requires a non-empty variable name")
+			}
+			opts.EnvAllowlist = appendEnvOnce(opts.EnvAllowlist, name)
+		case strings.HasPrefix(arg, "--env="):
+			name := strings.TrimSpace(strings.TrimPrefix(arg, "--env="))
+			if name == "" {
+				return nil, fmt.Errorf("--env requires a non-empty variable name")
+			}
+			opts.EnvAllowlist = appendEnvOnce(opts.EnvAllowlist, name)
 		case arg == "--force":
 			opts.Force = true
+
 		case strings.HasPrefix(arg, "--"):
 			return nil, fmt.Errorf("unknown flag %s", arg)
 
@@ -292,7 +311,17 @@ func parseArgs(args []string) (*cliOptions, error) {
 	return opts, nil
 }
 
+func appendEnvOnce(list []string, name string) []string {
+	for _, existing := range list {
+		if existing == name {
+			return list
+		}
+	}
+	return append(list, name)
+}
+
 func runHelp(opts *cliOptions, stdout, stderr io.Writer) int {
+
 	if len(opts.Tokens) == 0 {
 		fmt.Fprint(stdout, generalHelpText)
 		return 0

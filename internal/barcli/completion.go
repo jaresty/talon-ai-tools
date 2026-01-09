@@ -601,13 +601,14 @@ var (
 	helpTopics         = []string{"tokens"}
 	completionShells   = []string{"bash", "zsh", "fish"}
 	buildFlags         = []string{"--prompt", "--input", "--output", "--json", "--grammar"}
-	tuiFlags           = []string{"--grammar", "--fixture", "--no-alt-screen"}
+	tuiFlags           = []string{"--grammar", "--fixture", "--no-alt-screen", "--env"}
 	flagExpectingValue = map[string]struct{}{
 		"--prompt":  {},
 		"--input":   {},
 		"--output":  {},
 		"--grammar": {},
 		"--fixture": {},
+		"--env":     {},
 	}
 
 	presetSubcommands = []string{"save", "list", "show", "use", "delete"}

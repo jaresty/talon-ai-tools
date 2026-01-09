@@ -721,3 +721,27 @@
 - next_work:
   - Behaviour: Implement environment variable pass-through allowlist in the Bubble Tea TUI (validation via go test ./internal/bartui and go test ./cmd/bar/... once code lands).
 
+
+## 2026-01-09 — loop 045
+- helper_version: helper:v20251223.1
+- focus: Salient Tasks — implement environment variable allowlist for subject import/export commands
+- active_constraint: Bubble Tea TUI still passed every shell environment variable to subprocesses with no opt-in control, violating the ADR guardrail for subject piping and preventing pilots from safely sharing credentials.
+- validation_targets:
+  - go test ./internal/bartui
+  - go test ./internal/barcli
+  - go test ./cmd/bar/...
+  - python3 -m pytest _tests/test_bar_completion_cli.py
+- evidence:
+  - red: docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-045.md#loop-045-red--go-test-cmd-bar
+  - green: docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-045.md#loop-045-green--go-test-internal-bartui
+  - green: docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-045.md#loop-045-green--go-test-internal-barcli
+  - green: docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-045.md#loop-045-green--go-test-cmd-bar
+  - green: docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-045.md#loop-045-green--python3--m-pytest-_tests-test_bar_completion_cli.py
+- rollback_plan: `git restore --source=HEAD -- internal/bartui/program.go internal/bartui/program_test.go internal/barcli/tui.go internal/barcli/app.go internal/barcli/completion.go internal/barcli/completion_test.go cmd/bar/main_test.go cmd/bar/testdata/tui_smoke.json _tests/test_bar_completion_cli.py readme.md docs/bubble-tea-pilot-playbook.md docs/adr/0070-bubble-tea-prompt-editor-tui.work-log.md docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-045.md`
+- delta_summary: helper:diff-snapshot=git diff --stat HEAD | introduced env allowlist plumbing for bar tui, updated completion/pytest guardrails, refreshed smoke fixture, and documented the new `--env` flag.
+- loops_remaining_forecast: 1 loop — expose in-TUI affordances to toggle env variables at runtime and add end-to-end validation once UX stabilizes.
+- residual_constraints:
+  - Interactive UI still cannot edit the env allowlist in-session (severity: medium; mitigation: add keyboard-driven affordance for env toggles; monitoring: manual pilot feedback plus future snapshot updates).
+- next_work:
+  - Behaviour: Add Bubble Tea affordances to toggle env variables from inside the TUI, preserving the allowlist contract (validation via go test ./internal/bartui, go test ./cmd/bar/..., and python3 -m pytest _tests/test_bar_completion_cli.py).
+

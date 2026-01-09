@@ -68,3 +68,22 @@
   - Help hub copy may still reference legacy preset behaviour (severity: low; mitigation: include in upcoming documentation sweep; monitoring: manual `model help hub` check).
 - next_work:
   - Behaviour: Review help hub and quickstart docs for preset references and update as necessary (validation via curated manual help hub capture).
+
+## 2026-01-09 — loop 005
+- helper_version: helper:v20251223.1
+- focus: Decision § documentation — align CLI README and docs quickstart guidance with token-only preset reuse
+- active_constraint: Public-facing CLI documentation (README and docs quickstart page) still implied piping presets back into `bar build`, leaving CLI users without guidance that `bar preset use` now rebuilds recipes directly when supplied fresh subject text.
+- validation_targets:
+  - go test ./internal/barcli
+  - python3 -m unittest _tests.test_readme_portable_cli
+- evidence:
+  - green: docs/adr/evidence/0069-cli-preset-state-management/loop-005.md#loop-005-green--helper-diff-snapshot-git-diff----stat
+  - green: docs/adr/evidence/0069-cli-preset-state-management/loop-005.md#loop-005-green--helper-rerun-go-test-.-internal-barcli
+  - green: docs/adr/evidence/0069-cli-preset-state-management/loop-005.md#loop-005-green--helper-rerun-python3--m-unittest-_tests-test_readme_portable_cli
+- rollback_plan: `git restore --source=HEAD -- internal/barcli/app.go readme.md .docs/src/content/docs/guides/quickstart.mdx docs/adr/0069-cli-preset-state-management.work-log.md docs/adr/evidence/0069-cli-preset-state-management/loop-005.md`
+- delta_summary: helper:diff-snapshot=3 files changed, 21 insertions(+), 3 deletions(-) — refreshed CLI help text, README, and docs quickstart page to state that presets rebuild recipes when provided new prompts via --prompt/--input/STDIN.
+- loops_remaining_forecast: 0 loops — CLI help text and documentation now reflect token-only preset reuse.
+- residual_constraints:
+  - None; Talon runtime surfaces remain unchanged in this slice.
+- next_work:
+  - Behaviour: None scheduled; reopen if Talon help hub copy needs a parallel update.

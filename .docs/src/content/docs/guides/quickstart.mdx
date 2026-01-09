@@ -36,6 +36,18 @@ import { Steps } from "@astrojs/starlight/components";
 
 </Steps>
 
+### Portable CLI presets
+
+Rebuild CLI recipes without retyping tokens by capturing the canonical output of `bar build`:
+
+```bash
+bar build todo focus steps fog --prompt "Draft weekly update"
+bar preset save weekly-update
+bar preset use weekly-update --prompt "Draft release retrospective"
+```
+
+Presets only store canonical tokens and metadata. Provide new subject text each time using `--prompt`, `--input`, or piped STDIN to avoid reusing stale context.
+
 ### Quickstart Video
 
 [![Talon-AI-Tools Quickstart](../../../../video_thumbnail.jpg)](https://www.youtube.com/watch?v=FctiTs6D2tM "Talon-AI-Tools Quickstart")

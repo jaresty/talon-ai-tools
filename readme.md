@@ -99,7 +99,8 @@ The `bar` CLI consumes the exported prompt grammar so you can assemble recipes o
    bar build todo focus steps fog persona=coach intent=teach
    bar preset save daily-standup               # writes ~/.config/bar/presets/daily-standup.json
    bar preset list                             # shows saved recipes and persona axes
-   bar preset use daily-standup                # rebuilds using saved tokens; supply prompt via --prompt/STDIN
+    bar preset use daily-standup                # rebuilds using saved tokens; supply prompt via --prompt/--input/STDIN
+
    bar preset show daily-standup --json        # inspect metadata as JSON
    bar preset delete daily-standup --force     # remove a preset
    ```

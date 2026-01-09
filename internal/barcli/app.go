@@ -74,15 +74,20 @@ var generalHelpText = strings.TrimSpace(`USAGE
                 using the exported prompt grammar.
    completion   Emit shell completion scripts (bash, zsh, fish) informed by the exported grammar.
    preset       Manage cached build presets (save/list/show/use/delete) derived from the last
-                successful "bar build" invocation.
+                 successful "bar build" invocation.
+                 Use "bar preset use <name>" with --prompt/--input or piped text to rebuild
+                 the recipe against fresh subject content.
+ 
+ 
+  TOPICS & EXAMPLES
 
 
- TOPICS & EXAMPLES
   List available tokens:           bar help tokens
   List only static prompts:        bar help tokens static
   List persona sections:           bar help tokens persona persona-intents
   Emit JSON for automation:        bar build --json todo focus steps fog
   Supply prompt content:           bar build todo focus --prompt "Fix onboarding"
+  Reuse a saved preset:            bar preset use daily-plan --prompt "Daily sync status"
    Mix shorthand with overrides:    bar build todo focus method=steps directional=fog
    Inspect another grammar file:    bar help tokens --grammar /path/to/grammar.json
     Generate fish completions:       bar completion fish > ~/.config/fish/completions/bar.fish

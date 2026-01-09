@@ -45,3 +45,6 @@ Proposed — CLI preset capture reuses last build state to persist shorthand con
 - Implement the preset commands, state persistence helpers, and help text/completions per this ADR.
 - Document the caching behaviour and opt-out env var in the README.
 - Consider future enhancements (e.g. `preset run <name>` to directly invoke `bar build`) once the baseline feature proves useful.
+
+## Anti-goals
+- Do not modify Talon-side overlays (Help Hub, quick help canvases, pattern pickers); this ADR is scoped strictly to the standalone `bar` CLI tooling and documentation.

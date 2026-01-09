@@ -170,22 +170,23 @@ func Build(g *Grammar, tokens []string) (*BuildResult, *CLIError) {
 	}
 	state := newBuildState(g)
 
+	filtered := make([]NormalizedToken, 0, len(normalizedTokens))
+	for _, entry := range normalizedTokens {
+		if _, ok := parseSkipStage(entry.Canonical); ok {
+			continue
+		}
+		filtered = append(filtered, entry)
+	}
+	normalizedTokens = filtered
+
 	for _, entry := range normalizedTokens {
 		token := strings.TrimSpace(entry.Canonical)
-		source := strings.TrimSpace(entry.Source)
 		if token == "" {
 			continue
 		}
 
-		if token == skipSectionToken {
-			continue
-		}
-
-		if err := state.requireSlugInput(token, source); err != nil {
-			return nil, err
-		}
-
 		if !state.overrideMode {
+
 			if strings.HasPrefix(token, "persona=") {
 				preset := strings.TrimSpace(strings.TrimPrefix(token, "persona="))
 				if preset == "" {

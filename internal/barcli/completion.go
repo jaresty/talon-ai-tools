@@ -143,7 +143,7 @@ complete -c bar -e
 complete -k -c bar -f -a '(__fish_bar_completions)'
 `
 
-const skipSectionToken = "//next"
+const skipSectionPrefix = "//next"
 
 type completionCatalog struct {
 	static          []string
@@ -181,6 +181,7 @@ type completionState struct {
 	personaIntent    bool
 	scopeCap         int
 	methodCap        int
+	skippedAxes      map[string]bool
 }
 
 type completionSuggestion struct {
@@ -218,8 +219,69 @@ func newSuggestion(grammar *Grammar, value, category, description string, append
 	}
 }
 
-func skipSectionSuggestion() completionSuggestion {
-	return newSuggestion(nil, skipSectionToken, "Skip", "Skip to next completion section", true, false)
+func skipSectionSuggestion(stage, label string) completionSuggestion {
+	value := fmt.Sprintf("%s:%s", skipSectionPrefix, strings.TrimSpace(stage))
+	description := fmt.Sprintf("Skip remaining %s options", label)
+	category := fmt.Sprintf("Skip (%s)", label)
+	return newSuggestion(nil, value, category, description, true, false)
+}
+
+func parseSkipStage(token string) (string, bool) {
+	trimmed := strings.TrimSpace(token)
+	if trimmed == "" {
+		return "", false
+	}
+	if !strings.HasPrefix(trimmed, skipSectionPrefix) {
+		return "", false
+	}
+	stage := strings.TrimSpace(strings.TrimPrefix(trimmed, skipSectionPrefix))
+	if strings.HasPrefix(stage, ":") {
+		stage = strings.TrimSpace(stage[1:])
+	}
+	return strings.ToLower(stage), true
+}
+
+func (state *completionState) markStageSkipped(stage string, axisOrder map[string]int, axisPriorityLen int) {
+	if state == nil {
+		return
+	}
+	switch stage {
+	case "", "persona":
+		state.personaPreset = true
+		state.personaVoice = true
+		state.personaAudience = true
+		state.personaTone = true
+		state.personaIntent = true
+		return
+	case "static":
+		state.static = true
+		state.staticClosed = true
+		return
+	}
+
+	state.skippedAxes[stage] = true
+	if idx, ok := axisOrder[stage]; ok {
+		if idx > state.highestAxisIndex {
+			state.highestAxisIndex = idx
+		}
+	} else if stage != "" && state.highestAxisIndex < axisPriorityLen {
+		state.highestAxisIndex = axisPriorityLen
+	}
+
+	switch stage {
+	case "completeness":
+		state.completeness = true
+	case "scope":
+		state.scopeClosed = true
+	case "method":
+		// No additional state adjustments required.
+	case "form":
+		state.form = true
+	case "channel":
+		state.channel = true
+	case "directional":
+		state.directional = true
+	}
 }
 
 func suggestionsWithDescriptions(grammar *Grammar, tokens []string, category string, descriptionFn func(string) string, appendSpace bool, useSlug bool) []completionSuggestion {
@@ -369,6 +431,9 @@ func buildScopeSuggestions(grammar *Grammar, catalog completionCatalog, state co
 	if state.scopeClosed {
 		return nil
 	}
+	if state.skippedAxes["scope"] {
+		return nil
+	}
 
 	maxScope := len(catalog.scope)
 	if state.scopeCap > 0 && state.scopeCap < maxScope {
@@ -387,6 +452,10 @@ func buildScopeSuggestions(grammar *Grammar, catalog completionCatalog, state co
 }
 
 func buildMethodSuggestions(grammar *Grammar, catalog completionCatalog, state completionState) []completionSuggestion {
+	if state.skippedAxes["method"] {
+		return nil
+	}
+
 	maxMethod := len(catalog.method)
 	if state.methodCap > 0 && state.methodCap < maxMethod {
 		maxMethod = state.methodCap
@@ -638,22 +707,27 @@ func completeBuild(grammar *Grammar, catalog completionCatalog, words []string, 
 
 	seen := make(map[string]struct{})
 	results := make([]completionSuggestion, 0)
-	optionalSuggestions := make([]completionSuggestion, 0)
+
+	appendSection := func(stage, label string, items []completionSuggestion) {
+		if len(items) == 0 {
+			return
+		}
+		skip := skipSectionSuggestion(stage, label)
+		results = appendUniqueSuggestion(results, seen, skip)
+		results = appendUniqueSuggestions(results, seen, items)
+	}
 
 	if state.override {
 		results = appendUniqueSuggestions(results, seen, buildOverrideSuggestions(grammar, catalog))
 		return filterSuggestionsByPrefix(grammar, results, prefix), nil
 	}
 
-	personaSuggestions := buildPersonaSuggestions(grammar, catalog, state)
-	if len(personaSuggestions) > 0 {
-		skip := skipSectionSuggestion()
-		results = appendUniqueSuggestions(results, seen, []completionSuggestion{skip})
-		results = appendUniqueSuggestions(results, seen, personaSuggestions)
+	if personaSuggestions := buildPersonaSuggestions(grammar, catalog, state); len(personaSuggestions) > 0 {
+		appendSection("persona", "persona (Why/Who)", personaSuggestions)
 	}
 
 	if !state.static && !state.staticClosed {
-		results = appendUniqueSuggestions(results, seen, buildStaticSuggestions(grammar, catalog))
+		appendSection("static", "What prompts", buildStaticSuggestions(grammar, catalog))
 	}
 
 	axisOrder := make(map[string]int, len(grammar.axisPriority))
@@ -668,41 +742,39 @@ func completeBuild(grammar *Grammar, catalog completionCatalog, words []string, 
 		if idx < state.highestAxisIndex {
 			continue
 		}
+		if state.skippedAxes[axis] {
+			continue
+		}
+
+		label := fmt.Sprintf("How – %s", axis)
 		switch axis {
 		case "completeness":
 			if state.completeness {
 				continue
 			}
-			optionalSuggestions = appendUniqueSuggestions(optionalSuggestions, seen, buildAxisSuggestions(grammar, "completeness", catalog.completeness))
+			appendSection(axis, label, buildAxisSuggestions(grammar, axis, catalog.completeness))
 		case "scope":
-			if suggestions := buildScopeSuggestions(grammar, catalog, state); len(suggestions) > 0 {
-				optionalSuggestions = appendUniqueSuggestions(optionalSuggestions, seen, suggestions)
-			}
+			appendSection(axis, label, buildScopeSuggestions(grammar, catalog, state))
 		case "method":
-			if suggestions := buildMethodSuggestions(grammar, catalog, state); len(suggestions) > 0 {
-				optionalSuggestions = appendUniqueSuggestions(optionalSuggestions, seen, suggestions)
-			}
+			appendSection(axis, label, buildMethodSuggestions(grammar, catalog, state))
 		case "form":
 			if state.form {
 				continue
 			}
-			optionalSuggestions = appendUniqueSuggestions(optionalSuggestions, seen, buildAxisSuggestions(grammar, "form", catalog.form))
+			appendSection(axis, label, buildAxisSuggestions(grammar, axis, catalog.form))
 		case "channel":
 			if state.channel {
 				continue
 			}
-			optionalSuggestions = appendUniqueSuggestions(optionalSuggestions, seen, buildAxisSuggestions(grammar, "channel", catalog.channel))
+			appendSection(axis, label, buildAxisSuggestions(grammar, axis, catalog.channel))
 		case "directional":
 			if state.directional {
 				continue
 			}
-			optionalSuggestions = appendUniqueSuggestions(optionalSuggestions, seen, buildAxisSuggestions(grammar, "directional", catalog.directional))
+			appendSection(axis, label, buildAxisSuggestions(grammar, axis, catalog.directional))
 		default:
 			tokens := sortedAxisTokens(grammar, axis)
-			if len(tokens) == 0 {
-				continue
-			}
-			optionalSuggestions = appendUniqueSuggestions(optionalSuggestions, seen, buildAxisSuggestions(grammar, axis, tokens))
+			appendSection(axis, label, buildAxisSuggestions(grammar, axis, tokens))
 		}
 	}
 
@@ -716,46 +788,42 @@ func completeBuild(grammar *Grammar, catalog completionCatalog, words []string, 
 	sort.Strings(extraAxes)
 
 	for _, axis := range extraAxes {
+		if state.skippedAxes[axis] {
+			continue
+		}
 		axisIncluded[axis] = true
+
+		label := fmt.Sprintf("How – %s", axis)
 		switch axis {
 		case "completeness":
 			if state.completeness {
 				continue
 			}
-			optionalSuggestions = appendUniqueSuggestions(optionalSuggestions, seen, buildAxisSuggestions(grammar, "completeness", catalog.completeness))
+			appendSection(axis, label, buildAxisSuggestions(grammar, axis, catalog.completeness))
 		case "scope":
-			if suggestions := buildScopeSuggestions(grammar, catalog, state); len(suggestions) > 0 {
-				optionalSuggestions = appendUniqueSuggestions(optionalSuggestions, seen, suggestions)
-			}
+			appendSection(axis, label, buildScopeSuggestions(grammar, catalog, state))
 		case "method":
-			if suggestions := buildMethodSuggestions(grammar, catalog, state); len(suggestions) > 0 {
-				optionalSuggestions = appendUniqueSuggestions(optionalSuggestions, seen, suggestions)
-			}
+			appendSection(axis, label, buildMethodSuggestions(grammar, catalog, state))
 		case "form":
 			if state.form {
 				continue
 			}
-			optionalSuggestions = appendUniqueSuggestions(optionalSuggestions, seen, buildAxisSuggestions(grammar, "form", catalog.form))
+			appendSection(axis, label, buildAxisSuggestions(grammar, axis, catalog.form))
 		case "channel":
 			if state.channel {
 				continue
 			}
-			optionalSuggestions = appendUniqueSuggestions(optionalSuggestions, seen, buildAxisSuggestions(grammar, "channel", catalog.channel))
+			appendSection(axis, label, buildAxisSuggestions(grammar, axis, catalog.channel))
 		case "directional":
 			if state.directional {
 				continue
 			}
-			optionalSuggestions = appendUniqueSuggestions(optionalSuggestions, seen, buildAxisSuggestions(grammar, "directional", catalog.directional))
+			appendSection(axis, label, buildAxisSuggestions(grammar, axis, catalog.directional))
 		default:
 			tokens := sortedAxisTokens(grammar, axis)
-			if len(tokens) == 0 {
-				continue
-			}
-			optionalSuggestions = appendUniqueSuggestions(optionalSuggestions, seen, buildAxisSuggestions(grammar, axis, tokens))
+			appendSection(axis, label, buildAxisSuggestions(grammar, axis, tokens))
 		}
 	}
-
-	results = append(results, optionalSuggestions...)
 
 	return filterSuggestionsByPrefix(grammar, results, prefix), nil
 }
@@ -925,6 +993,7 @@ func collectShorthandState(grammar *Grammar, tokens []string) completionState {
 		scopeCap:         grammar.Hierarchy.AxisSoftCaps["scope"],
 		methodCap:        grammar.Hierarchy.AxisSoftCaps["method"],
 		highestAxisIndex: -1,
+		skippedAxes:      make(map[string]bool),
 	}
 
 	normalized := grammar.NormalizeTokens(tokens)
@@ -933,15 +1002,12 @@ func collectShorthandState(grammar *Grammar, tokens []string) completionState {
 		if token == "" {
 			continue
 		}
-		if token == skipSectionToken {
-			state.personaPreset = true
-			state.personaVoice = true
-			state.personaAudience = true
-			state.personaTone = true
-			state.personaIntent = true
+		if stage, ok := parseSkipStage(token); ok {
+			state.markStageSkipped(stage, axisOrder, len(grammar.axisPriority))
 			continue
 		}
 		lower := strings.ToLower(token)
+
 		if _, ok := flagExpectingValue[token]; ok {
 			i++
 			continue

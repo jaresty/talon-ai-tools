@@ -100,6 +100,45 @@
 - next_work:
   - Behaviour: None scheduled.
 
+## 2026-01-09 — loop 009
+- helper_version: helper:v20251223.1
+- focus: Decision § surfacing — finish integrating //next skip handling across completion and build flows
+- active_constraint: Skip sentinel logic still duplicated persona/static sections and build execution surfaced `//next` tokens, leaving navigation partially wired and untested.
+- validation_targets:
+  - go test ./...
+- evidence:
+  - green: docs/adr/evidence/0070-static-prompt-task-method-separation/loop-009.md#loop-009-green--helper-diff-snapshot-git-diff----stat
+  - green: docs/adr/evidence/0070-static-prompt-task-method-separation/loop-009.md#loop-009-green--helper-rerun-go-test
+- rollback_plan: `git restore --source=HEAD -- internal/barcli/build.go internal/barcli/build_test.go internal/barcli/completion.go internal/barcli/completion_test.go docs/adr/0070-static-prompt-task-method-separation.work-log.md docs/adr/evidence/0070-static-prompt-task-method-separation/loop-009.md`
+- delta_summary: helper:diff-snapshot=4 files changed, 317 insertions(+), 60 deletions(-) — centralized skip parsing, stripped tokens before build, and added Go coverage for persona, static, and axis skips.
+- loops_remaining_forecast: 0 loops — skip navigation now behaves end-to-end.
+- residual_constraints:
+  - None; CLI completions and build ignore `//next:<stage>` tokens with dedicated tests.
+- next_work:
+  - Behaviour: None scheduled.
+
+## 2026-01-09 — loop 010
+- helper_version: helper:v20251223.1
+- focus: Decision § surfacing — verify bare //next sentinel maps to persona skip and stays hidden from build
+- active_constraint: Bare `//next` sentinel lacked automated coverage proving persona suggestions remain skipped, so regressions could reach operators without failing `go test ./...`.
+- expected_value:
+  | Factor           | Value  | Rationale                                                    |
+  | Impact           | Medium | Protects persona-first navigation from regressions           |
+  | Probability      | High   | Added Go tests exercise both completion and build paths      |
+  | Time Sensitivity | Medium | Guard needs to land before publishing skip guidance updates |
+- validation_targets:
+  - go test ./...
+- evidence:
+  - green: docs/adr/evidence/0070-static-prompt-task-method-separation/loop-010.md#loop-010-green--helper-diff-snapshot-git-diff--stat-200
+  - green: docs/adr/evidence/0070-static-prompt-task-method-separation/loop-010.md#loop-010-green--helper-rerun-go-test
+- rollback_plan: `git restore --source=HEAD -- internal/barcli/completion_test.go internal/barcli/build_test.go docs/adr/evidence/0070-static-prompt-task-method-separation/loop-010.md docs/adr/0070-static-prompt-task-method-separation.work-log.md`
+- delta_summary: helper:diff-snapshot=5 files changed, 410 insertions(+), 60 deletions(-) — added bare skip tests for completions/build and captured loop-010 evidence.
+- loops_remaining_forecast: 0 loops — skip sentinel guardrails now cover persona/default stages (confidence: high).
+- residual_constraints:
+  - severity: medium — CLI docs still need skip sentinel guidance; mitigation: update help surfaces/README; monitoring: review operator feedback weekly; owner: ADR 0070.
+- next_work:
+  - Behaviour: Document skip sentinel usage in CLI help (validation: go test ./...) — queued for documentation loop.
+
 
 ## 2026-01-09 — loop 004
 - helper_version: helper:v20251223.1

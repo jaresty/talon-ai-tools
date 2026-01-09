@@ -83,6 +83,76 @@ func TestBuildWithShorthandAndOverrides(t *testing.T) {
 	}
 }
 
+func TestBuildIgnoresSkipTokens(t *testing.T) {
+	grammar := loadTestGrammar(t)
+
+	tokens := []string{
+		skipValue("persona"),
+		"todo",
+		"full",
+		skipValue("method"),
+		skipValue("scope"),
+		"checklist",
+		"slack",
+	}
+
+	result, cliErr := Build(grammar, tokens)
+	if cliErr != nil {
+		t.Fatalf("unexpected error: %v", cliErr)
+	}
+
+	if result.Axes.Static != "todo" {
+		t.Fatalf("expected static todo, got %q", result.Axes.Static)
+	}
+	if result.Axes.Completeness != "full" {
+		t.Fatalf("expected completeness full, got %q", result.Axes.Completeness)
+	}
+	if len(result.Axes.Method) != 0 {
+		t.Fatalf("expected method axis to remain empty after skip, got %+v", result.Axes.Method)
+	}
+	if len(result.Axes.Scope) != 0 {
+		t.Fatalf("expected scope axis to remain empty after skip, got %+v", result.Axes.Scope)
+	}
+	if len(result.Axes.Form) != 1 || result.Axes.Form[0] != "checklist" {
+		t.Fatalf("expected form checklist, got %+v", result.Axes.Form)
+	}
+	if len(result.Axes.Channel) != 1 || result.Axes.Channel[0] != "slack" {
+		t.Fatalf("expected channel slack, got %+v", result.Axes.Channel)
+	}
+	if result.Persona != (PersonaResult{}) {
+		t.Fatalf("expected persona to remain empty after skip tokens, got %+v", result.Persona)
+	}
+}
+
+func TestBuildBareSkipDefaultsToPersonaStage(t *testing.T) {
+	grammar := loadTestGrammar(t)
+
+	tokens := []string{
+		skipSectionPrefix,
+		"todo",
+		"focus",
+		"steps",
+	}
+
+	result, cliErr := Build(grammar, tokens)
+	if cliErr != nil {
+		t.Fatalf("unexpected error: %v", cliErr)
+	}
+
+	if result.Persona != (PersonaResult{}) {
+		t.Fatalf("expected persona to remain empty after bare skip, got %+v", result.Persona)
+	}
+	if result.Axes.Static != "todo" {
+		t.Fatalf("expected static todo, got %q", result.Axes.Static)
+	}
+	if len(result.Axes.Scope) != 1 || result.Axes.Scope[0] != "focus" {
+		t.Fatalf("expected scope focus, got %+v", result.Axes.Scope)
+	}
+	if len(result.Axes.Method) != 1 || result.Axes.Method[0] != "steps" {
+		t.Fatalf("expected method steps, got %+v", result.Axes.Method)
+	}
+}
+
 func TestBuildPresetConflict(t *testing.T) {
 	grammar := loadTestGrammar(t)
 

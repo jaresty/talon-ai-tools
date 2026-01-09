@@ -1,6 +1,7 @@
 package barcli
 
 import (
+	"fmt"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -46,6 +47,41 @@ func indexOfSuggestion(list []completionSuggestion, needle string) int {
 		}
 	}
 	return -1
+}
+
+func skipValue(stage string) string {
+	return fmt.Sprintf("%s:%s", skipSectionPrefix, stage)
+}
+
+func TestCompleteBareSkipDefaultsToPersonaStage(t *testing.T) {
+	grammar := loadCompletionGrammar(t)
+
+	words := []string{"bar", "build", skipSectionPrefix, ""}
+	suggestions, err := Complete(grammar, "bash", words, len(words)-1)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	personaCategories := []string{
+		"Why (intent)",
+		"Who (persona preset)",
+		"Who (voice)",
+		"Who (audience)",
+		"How (tone)",
+	}
+	for _, category := range personaCategories {
+		if containsSuggestionCategory(suggestions, category) {
+			t.Fatalf("did not expect persona category %q after bare skip, got %v", category, suggestions)
+		}
+	}
+
+	staticSlug := grammar.slugForToken("todo")
+	if staticSlug == "" {
+		staticSlug = "todo"
+	}
+	if !containsSuggestionValue(suggestions, staticSlug) {
+		t.Fatalf("expected static suggestion %q after bare skip, got %v", staticSlug, suggestions)
+	}
 }
 
 func TestGenerateCompletionScriptBash(t *testing.T) {
@@ -134,15 +170,28 @@ func TestCompleteStaticStage(t *testing.T) {
 	if !ok {
 		t.Fatalf("expected static token 'todo', got %v", suggestions)
 	}
-	skip, ok := findSuggestion(suggestions, skipSectionToken)
+	skipPersonaValue := skipValue("persona")
+	skipPersona, ok := findSuggestion(suggestions, skipPersonaValue)
 	if !ok {
-		t.Fatalf("expected skip suggestion %q, got %v", skipSectionToken, suggestions)
+		t.Fatalf("expected persona skip suggestion %q, got %v", skipPersonaValue, suggestions)
 	}
-	if skip.Category != "Skip" {
-		t.Fatalf("expected skip category 'Skip', got %q", skip.Category)
+	if !strings.HasPrefix(skipPersona.Category, "Skip") {
+		t.Fatalf("expected skip category for persona, got %q", skipPersona.Category)
 	}
-	if strings.TrimSpace(skip.Value) != skipSectionToken {
-		t.Fatalf("expected skip suggestion to return %q, got %q", skipSectionToken, skip.Value)
+	if trimmed := strings.TrimSpace(skipPersona.Value); trimmed != skipPersonaValue {
+		t.Fatalf("expected persona skip suggestion value %q, got %q", skipPersonaValue, trimmed)
+	}
+
+	skipStaticValue := skipValue("static")
+	skipStatic, ok := findSuggestion(suggestions, skipStaticValue)
+	if !ok {
+		t.Fatalf("expected static skip suggestion %q, got %v", skipStaticValue, suggestions)
+	}
+	if !strings.HasPrefix(skipStatic.Category, "Skip") {
+		t.Fatalf("expected skip category for static, got %q", skipStatic.Category)
+	}
+	if trimmed := strings.TrimSpace(skipStatic.Value); trimmed != skipStaticValue {
+		t.Fatalf("expected static skip suggestion value %q, got %q", skipStaticValue, trimmed)
 	}
 
 	if todo.Category != "What (static prompt)" {
@@ -153,6 +202,125 @@ func TestCompleteStaticStage(t *testing.T) {
 	}
 	if strings.TrimSpace(todo.Description) == "" {
 		t.Fatalf("expected todo description to be populated")
+	}
+}
+
+func TestCompleteSkipsPersonaAfterSkipToken(t *testing.T) {
+	grammar := loadCompletionGrammar(t)
+
+	words := []string{"bar", "build", skipValue("persona"), ""}
+	suggestions, err := Complete(grammar, "bash", words, len(words)-1)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	personaCategories := []string{
+		"Why (intent)",
+		"Who (persona preset)",
+		"Who (voice)",
+		"Who (audience)",
+		"How (tone)",
+	}
+	for _, category := range personaCategories {
+		if containsSuggestionCategory(suggestions, category) {
+			t.Fatalf("did not expect persona category %q after skip, got %v", category, suggestions)
+		}
+	}
+
+	if containsSuggestionValue(suggestions, skipValue("persona")) {
+		t.Fatalf("did not expect persona skip suggestion after consuming it, got %v", suggestions)
+	}
+
+	if !containsSuggestionValue(suggestions, skipValue("static")) {
+		t.Fatalf("expected static skip suggestion after persona skip, got %v", suggestions)
+	}
+
+	staticSlug := grammar.slugForToken("todo")
+	if staticSlug == "" {
+		staticSlug = "todo"
+	}
+	staticIndex := indexOfSuggestion(suggestions, staticSlug)
+	if staticIndex == -1 {
+		t.Fatalf("expected static suggestion %q after skipping persona, got %v", staticSlug, suggestions)
+	}
+
+	firstAxisIndex := len(suggestions)
+	for idx, suggestion := range suggestions {
+		if strings.HasPrefix(suggestion.Category, "How ") {
+			firstAxisIndex = idx
+			break
+		}
+	}
+	if firstAxisIndex <= staticIndex {
+		t.Fatalf("expected What suggestions to appear before How suggestions, got indexes %d and %d", staticIndex, firstAxisIndex)
+	}
+}
+
+func TestCompleteSkipsStaticAfterSkipToken(t *testing.T) {
+	grammar := loadCompletionGrammar(t)
+
+	words := []string{"bar", "build", skipValue("persona"), skipValue("static"), ""}
+	suggestions, err := Complete(grammar, "bash", words, len(words)-1)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	staticSlug := grammar.slugForToken("todo")
+	if staticSlug == "" {
+		staticSlug = "todo"
+	}
+	if containsSuggestionValue(suggestions, staticSlug) {
+		t.Fatalf("did not expect static suggestion %q after skip, got %v", staticSlug, suggestions)
+	}
+
+	if containsSuggestionValue(suggestions, skipValue("static")) {
+		t.Fatalf("did not expect static skip suggestion after consuming it, got %v", suggestions)
+	}
+
+	completenessSlug := grammar.slugForToken("full")
+	if completenessSlug == "" {
+		completenessSlug = "full"
+	}
+	if !containsSuggestionValue(suggestions, completenessSlug) {
+		t.Fatalf("expected completeness suggestion %q after skipping static, got %v", completenessSlug, suggestions)
+	}
+}
+
+func TestCompleteSkipsMethodAfterSkipToken(t *testing.T) {
+	grammar := loadCompletionGrammar(t)
+
+	words := []string{"bar", "build", "todo", "full", skipValue("method"), ""}
+	suggestions, err := Complete(grammar, "bash", words, len(words)-1)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	stepsSlug := grammar.slugForToken("steps")
+	if stepsSlug == "" {
+		stepsSlug = "steps"
+	}
+	if containsSuggestionValue(suggestions, stepsSlug) {
+		t.Fatalf("did not expect method suggestion %q after skip, got %v", stepsSlug, suggestions)
+	}
+
+	analysisSlug := grammar.slugForToken("analysis")
+	if analysisSlug == "" {
+		analysisSlug = "analysis"
+	}
+	if containsSuggestionValue(suggestions, analysisSlug) {
+		t.Fatalf("did not expect method suggestion %q after skip, got %v", analysisSlug, suggestions)
+	}
+
+	if containsSuggestionValue(suggestions, skipValue("method")) {
+		t.Fatalf("did not expect method skip suggestion after consuming it, got %v", suggestions)
+	}
+
+	scopeSlug := grammar.slugForToken("focus")
+	if scopeSlug == "" {
+		scopeSlug = "focus"
+	}
+	if !containsSuggestionValue(suggestions, scopeSlug) {
+		t.Fatalf("expected scope suggestion %q after skipping method, got %v", scopeSlug, suggestions)
 	}
 }
 
@@ -464,6 +632,34 @@ func TestCompleteOptionalAxesWithoutStatic(t *testing.T) {
 	for _, value := range expected {
 		if !containsSuggestionValue(suggestions, value) {
 			t.Fatalf("expected optional suggestion %q, got %v", value, suggestions)
+		}
+	}
+
+	if len(catalog.personaIntent) > 0 || len(catalog.personaPreset) > 0 {
+		if !containsSuggestionValue(suggestions, skipValue("persona")) {
+			t.Fatalf("expected skip token for persona stage, got %v", suggestions)
+		}
+	}
+	if len(catalog.static) > 0 {
+		if !containsSuggestionValue(suggestions, skipValue("static")) {
+			t.Fatalf("expected skip token for static stage, got %v", suggestions)
+		}
+	}
+
+	skipAxes := map[string][]string{
+		"completeness": catalog.completeness,
+		"scope":        catalog.scope,
+		"method":       catalog.method,
+		"form":         catalog.form,
+		"channel":      catalog.channel,
+		"directional":  catalog.directional,
+	}
+	for axis, tokens := range skipAxes {
+		if len(tokens) == 0 {
+			continue
+		}
+		if !containsSuggestionValue(suggestions, skipValue(axis)) {
+			t.Fatalf("expected skip token for axis %q, got %v", axis, suggestions)
 		}
 	}
 

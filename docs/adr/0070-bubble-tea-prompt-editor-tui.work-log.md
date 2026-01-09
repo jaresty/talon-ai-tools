@@ -130,27 +130,26 @@
 - residual_constraints:
   - Bubble Tea entrypoint remains unimplemented; `bar tui` subcommand still needs scaffolding (severity: high; mitigation: implement minimal entrypoint with preview; monitoring: go test ./cmd/bar/... once code lands).
 - next_work:
-  - Behaviour: Implement MVP `bar tui` entrypoint with shared packages, add smoke run, and document pilot instructions (validation via go test ./cmd/bar/... and go run ./cmd/bar tui --fixture cmd/bar/testdata/grammar.json --no-alt-screen).
+  - Behaviour: Implement MVP `bar tui` entrypoint with shared packages, add smoke run, and document results (validation via go test ./cmd/bar/... and verifying the entrypoint manually as needed).
 
-## 2026-01-09 — loop 011
+## 2026-01-09 — loop 015
 - helper_version: helper:v20251223.1
-- focus: Decision § follow-up — remove external pilot planning steps from ADR
-- active_constraint: ADR 0070 follow-up still referenced extra pilot artefacts outside the repo, creating expectations that no longer match the actual single-user rollout.
+- focus: Implementation prep — begin scaffolding MVP `bar tui` entrypoint
+- active_constraint: `bar tui` entrypoint does not exist, so the CLI cannot launch a Bubble Tea TUI and no validation command exercises it yet.
 - validation_targets:
-  - git diff --stat docs/adr/0070-bubble-tea-prompt-editor-tui.md
-  - git diff docs/adr/0070-bubble-tea-prompt-editor-tui.md
+  - git diff --stat docs/adr/0070-bubble-tea-prompt-editor-tui.work-log.md
 - evidence:
-  - green: docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-011.md#loop-011-green--helper-diff-snapshot-git-diff--stat-docs-adr-0070-bubble-tea-prompt-editor-tui.md
-  - green: docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-011.md#loop-011-green--helper-diff-snapshot-git-diff-docs-adr-0070-bubble-tea-prompt-editor-tui.md
-- rollback_plan: `git restore --source=HEAD -- docs/adr/0070-bubble-tea-prompt-editor-tui.md docs/adr/0070-bubble-tea-prompt-editor-tui.work-log.md docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-011.md`
-- delta_summary: helper:diff-snapshot=docs/adr/0070-bubble-tea-prompt-editor-tui.md | 3 --- — removed external quickstart/personal-note instructions so the ADR stays focused on in-repo work.
-- loops_remaining_forecast: 2 loops (ship MVP entrypoint, review personal feedback) — medium confidence with implementation still pending.
+  - green: docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-015.md#loop-015-green--helper-diff-snapshot-git-diff--stat-docs-adr-0070-bubble-tea-prompt-editor-tui-work-log.md
+- rollback_plan: `git restore --source=HEAD -- docs/adr/0070-bubble-tea-prompt-editor-tui.work-log.md docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-015.md`
+- delta_summary: helper:diff-snapshot=docs/adr/0070-bubble-tea-prompt-editor-tui.work-log.md | 9 ++++++++- — recorded implementation kickoff so the next loop can focus on code changes.
+- loops_remaining_forecast: 1 loop (ship MVP entrypoint) — medium confidence with build work queued.
 - residual_constraints:
-  - Bubble Tea entrypoint remains unimplemented; `bar tui` subcommand still needs scaffolding (severity: high; mitigation: implement minimal entrypoint with preview; monitoring: go test ./cmd/bar/... once code lands).
+  - Bubble Tea entrypoint remains unimplemented; the upcoming code loop must add `bar tui` (severity: high; mitigation: implement entrypoint; monitoring: go test ./cmd/bar/... once code lands).
 - next_work:
-  - Behaviour: Implement MVP `bar tui` entrypoint with shared packages, add smoke run, and note outcomes in this work-log (validation via go test ./cmd/bar/... and go run ./cmd/bar tui --fixture cmd/bar/testdata/grammar.json --no-alt-screen).
+  - Behaviour: Implement MVP `bar tui` entrypoint with shared packages, add smoke run, and update documentation as needed (validation via go test ./cmd/bar/... after implementation).
 
 ## 2026-01-09 — loop 013
+
 - helper_version: helper:v20251223.1
 - focus: Decision § follow-up — remove redundant follow-up section from ADR
 - active_constraint: ADR 0070 still carried a follow-up block that restated MVP implementation tasks already tracked in salient tasks, creating duplicate documentation with no new guardrails.

@@ -13,9 +13,20 @@ Proposed — Bubble Tea TUI improves prompt editing ergonomics for the Go CLI (2
 - Leverage `tea.Cmd` pipelines to invoke `barcli.LoadGrammar`, `barcli.Build`, downstream clipboard/subprocess actions, and any background IO without blocking the UI thread.
 - Ship the TUI as an optional `bar tui` subcommand within the existing CLI binary so it coexists with the current surface while reusing shared configuration/preset directories.
 - Let operators adjust prompt tokens, destinations, and preset selections from within the TUI itself so launching with CLI shorthand remains optional.
-- Provide subject import/export affordances: operators can type subject text directly, pull it from the clipboard or a shell command, edit it in place, and push the rendered prompt to another command or the clipboard with the response surfaced in a dedicated TUI pane (and optionally reinserted into the subject field).
+- Provide subject import/export affordances: operators can type subject text directly, pull it from the clipboard or a shell command, edit it in place, and push the rendered prompt to another command or the clipboard with the response surfaced in a dedicated TUI pane (and optionally reinserted into the subject field). The single-command flow must:
+  - label the command input as optional and highlight when it is empty so pilots know the editor works without piping;
+  - show a running-state indicator (spinner or countdown) while the command executes and allow cancellation (Esc) before timeout;
+  - differentiate success and failure in the result pane with explicit cues (✔/✖, headings, truncated output controls) and include the command/exit code metadata;
+  - retain follow-up instructions (for example “Press Ctrl+Y to insert stdout”) until the operator acts or dismisses them;
+  - prompt before replacing the subject (clipboard load or stdout reinsertion), summarise what will change, and offer a one-step undo if the change is not desired.
+- Surface interactive token editing controls inline with the subject so operators can adjust voice, audience, tone, purpose, static/completeness, scope, method, form, channel, directional, and other grammar axes without leaving the session. The TUI must:
+  - keep the current token selections visible at all times, grouped by category with both slug and human label;
+  - allow full keyboard navigation (arrow keys/Enter/Space) and offer optional mouse support without relying on hover-only affordances;
+  - refresh the preview immediately after each change while showing a transient confirmation (for example “Scope → focus applied”);
+  - provide an undo/revert affordance for the last token change and indicate when the active tokens diverge from a loaded preset;
+  - surface errors inline when a token cannot be applied and restore the previous value automatically.
 - Bake discoverability and recovery affordances into the TUI itself by:
-  - exposing an in-app shortcut reference (for example press `?` to open help) wherever the subject/command modes shift;
+  - exposing an in-app shortcut reference (for example press `?` to open help) wherever the subject/command or token modes shift;
   - keeping focus changes obvious with visual highlights, not just arrow glyphs;
   - separating success and failure states in the result pane (iconography, headings, truncation with “view more” affordances) so operators can scan outcomes quickly;
   - warning before destructive subject replacements and offering an undo path for clipboard/command reinsertion;
@@ -35,7 +46,7 @@ Proposed — Bubble Tea TUI improves prompt editing ergonomics for the Go CLI (2
 - We take on UI accessibility and terminal compatibility considerations (alt screen, mouse modes, bracketed paste) that the pure CLI previously avoided.
 - The TUI will need runtime coordination with preset/state files; we must guard against concurrent writes or stale caches when both surfaces run.
 - Introducing clipboard and subprocess integrations expands attack surface (shell execution, sensitive text retention) and demands clear opt-outs/logging guidance; the TUI must surface command results safely and handle failures without dropping subject state.
-- UX guardrails carry ongoing cost: we need to keep shortcut hints, status messaging, focus highlights, and result-pane signaling consistent so stressed operators do not misinterpret state or lose subject text unintentionally. Every loop that touches the TUI should re-validate the help overlay, focus colors, result-pane differentiation, truncation behaviour, and subject-replacement confirmations to prevent regressions.
+- UX guardrails carry ongoing cost: we need to keep shortcut hints, status messaging, focus highlights, result-pane signaling, and token-pane ergonomics consistent so stressed operators do not misinterpret state or lose subject text unintentionally. Every loop that touches the TUI should re-validate the help overlay, focus colors, result-pane differentiation, truncation behaviour, subject-replacement confirmations, command-running indicators, and token keyboard navigation to prevent regressions.
 
 ## Validation
 - `go test ./cmd/bar/...` covers the minimal `bar tui` wiring by compiling and exercising the CLI entrypoint with existing shared helpers.

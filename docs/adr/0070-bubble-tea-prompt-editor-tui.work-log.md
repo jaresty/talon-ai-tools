@@ -532,6 +532,22 @@
 - next_work:
   - Behaviour: Continue monitoring pilot telemetry/usability feedback; update ADR if new token-pane constraints appear (validation via documentation refresh).
 
+## 2026-01-09 — loop 042
+- helper_version: helper:v20251223.1
+- focus: ADR Decision — harden single-command piping UX guardrails
+- active_constraint: The ADR allowed single command piping but did not guarantee optionality cues, running-state indicators, success/failure differentiation, or undo prompts, risking operator confusion during implementation.
+- validation_targets:
+  - documentation-only (no executable commands)
+- evidence:
+  - green: docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-042.md#loop-042-green--helper-diff-snapshot-git-diff--stat-head
+- rollback_plan: `git restore --source=HEAD -- docs/adr/0070-bubble-tea-prompt-editor-tui.md docs/adr/0070-bubble-tea-prompt-editor-tui.work-log.md docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-042.md`
+- delta_summary: helper:diff-snapshot=git diff --stat HEAD | added explicit requirements for optional command cues, progress indicators, result differentiation, follow-up persistence, and undo-friendly subject replacement.
+- loops_remaining_forecast: 0 loops — single-command UX guardrails captured; future loops should revisit only if telemetry uncovers new gaps.
+- residual_constraints:
+  - None.
+- next_work:
+  - Behaviour: Continue monitoring pilot telemetry/usability feedback; refresh ADR if fresh guardrail gaps emerge (validation via documentation update).
+
 
  - validation_targets:
   - documentation-only (no executable commands)

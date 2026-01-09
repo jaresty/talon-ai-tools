@@ -15,19 +15,20 @@
 - next_work:
   - Behaviour: Implement the guardrail test/lint to flag procedural/static prompt drift (validation via `python3 -m pytest _tests/test_static_prompt_config.py`).
 
-## 2026-01-09 — loop 002
+## 2026-01-09 — loop 003
 - helper_version: helper:v20251223.1
-- focus: Decision § implementation — ensure method axis retains every decomposed static prompt token
-- active_constraint: Method axis lacked `meld` and `order`, so the decomposed static prompt vocabulary was no longer addressable via contract axes.
+- focus: Decision § guardrails — enforce declarative static prompt contract via automated test coverage
+- active_constraint: No automated test prevented static prompt descriptions from reintroducing procedural “how” language, so ADR 0070’s separation could silently regress.
 - validation_targets:
   - python3 -m pytest
 - evidence:
-  - green: docs/adr/evidence/0070-static-prompt-task-method-separation/loop-002.md#loop-002-green--helper-diff-snapshot-git-diff----stat
-  - green: docs/adr/evidence/0070-static-prompt-task-method-separation/loop-002.md#loop-002-green--helper-rerun-python3--m-pytest
-- rollback_plan: `git restore --source=HEAD -- GPT/readme.md lib/axisConfig.py internal/barcli/embed/prompt-grammar.json docs/adr/0070-static-prompt-task-method-separation.work-log.md docs/adr/evidence/0070-static-prompt-task-method-separation/loop-002.md`
-- delta_summary: helper:diff-snapshot=3 files changed, 19 insertions(+), 3 deletions(-) — added `meld`/`order` method tokens, refreshed grammar embeds, and aligned README axis list with the regenerated snapshot.
-- loops_remaining_forecast: 1 loop (introduce guardrail test/lint) — medium confidence; scope unchanged from loop 001.
+  - green: docs/adr/evidence/0070-static-prompt-task-method-separation/loop-003.md#loop-003-green--helper-diff-snapshot-git-diff----stat
+  - green: docs/adr/evidence/0070-static-prompt-task-method-separation/loop-003.md#loop-003-green--helper-rerun-python3--m-pytest
+- rollback_plan: `git restore --source=HEAD -- lib/staticPromptConfig.py _tests/test_static_prompt_config.py GPT/readme.md internal/barcli/embed/prompt-grammar.json docs/adr/0070-static-prompt-task-method-separation.work-log.md docs/adr/evidence/0070-static-prompt-task-method-separation/loop-003.md`
+- delta_summary: helper:diff-snapshot=4 files changed, 71 insertions(+), 36 deletions(-) — tightened declarative copy for legacy prompts, added guardrail tests for procedural phrasing and axis overlap, and refreshed docs/embeds.
+- loops_remaining_forecast: 0 loops — guardrail in place, catalog fully separated.
 - residual_constraints:
-  - No automated lint prevents future procedural descriptions from landing in staticPromptConfig (severity: medium; mitigation: introduce a targeted test that enforces “The response …” declarative copy and fails on method language; monitoring: `python3 -m pytest _tests/test_static_prompt_config.py`).
+  - None; the declarative-language guardrail now runs with every `python3 -m pytest` invocation.
 - next_work:
-  - Behaviour: Implement the guardrail test/lint to flag procedural/static prompt drift (validation via `python3 -m pytest _tests/test_static_prompt_config.py`).
+  - Behaviour: None scheduled; reopen if new guardrail heuristics are required.
+

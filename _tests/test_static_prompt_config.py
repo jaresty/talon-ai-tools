@@ -9,6 +9,7 @@ else:
     bootstrap()
 
 if bootstrap is not None:
+    from talon_user.lib.axisConfig import AXIS_KEY_TO_VALUE
     from talon_user.lib.staticPromptConfig import (
         STATIC_PROMPT_CONFIG,
         get_static_prompt_axes,
@@ -83,6 +84,44 @@ if bootstrap is not None:
                     profile.get("description", "").strip(),
                 )
                 self.assertEqual(entry["axes"], get_static_prompt_axes(name))
+
+        def test_static_prompt_descriptions_remain_declarative(self) -> None:
+            banned_patterns = (
+                " apply",
+                " applies",
+                " applying",
+                " outline",
+                " outlines",
+                " plan ",
+                " plan.",
+                " plans",
+                " process",
+                " sequence",
+                " step",
+                " steps",
+                " recommend",
+            )
+            for name, profile in STATIC_PROMPT_CONFIG.items():
+                description = profile.get("description", "")
+                self.assertTrue(
+                    description.startswith("The response "),
+                    f"Static prompt {name!r} must start descriptions with 'The response'.",
+                )
+                lower = description.lower()
+                for pattern in banned_patterns:
+                    self.assertNotIn(
+                        pattern,
+                        lower,
+                        f"Static prompt {name!r} description should avoid procedural phrasing containing {pattern.strip()}.",
+                    )
+
+        def test_static_prompt_names_do_not_overlap_methods(self) -> None:
+            method_tokens = set(AXIS_KEY_TO_VALUE["method"].keys())
+            overlap = method_tokens & set(STATIC_PROMPT_CONFIG.keys())
+            self.assertFalse(
+                overlap,
+                f"Static prompt tokens must not overlap method axis tokens (found {sorted(overlap)})",
+            )
 
 
 else:

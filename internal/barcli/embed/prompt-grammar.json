@@ -329,17 +329,17 @@
         },
         {
           "axes": {},
-          "description": "The response cites relevant academic or industry fields of knowledge, explaining why each applies and what perspective it offers.",
+          "description": "The response cites relevant academic or industry fields of knowledge, explaining the relevance of each and what perspective it offers.",
           "name": "knowledge"
         },
         {
           "axes": {},
-          "description": "The response evaluates the subject's taste by analysing harmony, proportion, restraint, authenticity, and cultural or historical appropriateness, explaining strengths, weaknesses, and contextual fit.",
+          "description": "The response evaluates the subject's taste by covering harmony, proportion, restraint, authenticity, and cultural or historical appropriateness, explaining strengths, weaknesses, and contextual fit.",
           "name": "taste"
         },
         {
           "axes": {},
-          "description": "The response classifies the subject through Taoist philosophy by relating it to Dao, De, Yin/Yang, Wu Wei, Ziran, Pu, Qi, and Li, noting which apply and why.",
+          "description": "The response classifies the subject through Taoist philosophy by relating it to Dao, De, Yin/Yang, Wu Wei, Ziran, Pu, Qi, and Li, noting where each principle shows up and why it matters.",
           "name": "tao"
         },
         {
@@ -384,7 +384,7 @@
               "focus"
             ]
           },
-          "description": "The response identifies an Operations Research or management science concept that appropriately applies.",
+          "description": "The response identifies an Operations Research or management science concept that best frames the situation.",
           "name": "operations"
         },
         {
@@ -655,12 +655,12 @@
         },
         {
           "axes": {},
-          "description": "The response analyses the subject for connascence (Strength, Degree, Locality), identifies its type, computes Severity = Strength × Degree ÷ Locality, and proposes remedies to reduce harmful connascence.",
+          "description": "The response reports the subject's connascence (Strength, Degree, Locality), names the connascence type, computes Severity = Strength × Degree ÷ Locality, and states remedies to reduce harmful connascence.",
           "name": "jim"
         },
         {
           "axes": {},
-          "description": "The response performs a connascence-driven discovery of business domains by grouping elements where multiple forms of connascence converge, describing obligations and change scenarios, and recommending boundary-strengthening remedies.",
+          "description": "The response performs a connascence-driven discovery of business domains by grouping elements where multiple forms of connascence converge, describing obligations and change scenarios, and listing boundary-strengthening remedies.",
           "name": "domain"
         },
         {
@@ -779,7 +779,7 @@
         "description": "The response lists document or writing formats, explains why each fits, and states what perspective each reveals."
       },
       "domain": {
-        "description": "The response performs a connascence-driven discovery of business domains by grouping elements where multiple forms of connascence converge, describing obligations and change scenarios, and recommending boundary-strengthening remedies."
+        "description": "The response performs a connascence-driven discovery of business domains by grouping elements where multiple forms of connascence converge, describing obligations and change scenarios, and listing boundary-strengthening remedies."
       },
       "done": {
         "completeness": "full",
@@ -808,7 +808,7 @@
         "scope": "relations"
       },
       "jim": {
-        "description": "The response analyses the subject for connascence (Strength, Degree, Locality), identifies its type, computes Severity = Strength × Degree ÷ Locality, and proposes remedies to reduce harmful connascence."
+        "description": "The response reports the subject's connascence (Strength, Degree, Locality), names the connascence type, computes Severity = Strength × Degree ÷ Locality, and states remedies to reduce harmful connascence."
       },
       "jobs": {
         "completeness": "gist",
@@ -821,7 +821,7 @@
         "description": "The response merges the content into a single coherent piece and removes redundancy."
       },
       "knowledge": {
-        "description": "The response cites relevant academic or industry fields of knowledge, explaining why each applies and what perspective it offers."
+        "description": "The response cites relevant academic or industry fields of knowledge, explaining the relevance of each and what perspective it offers."
       },
       "match": {
         "description": "The response rewrites the content to match the provided style and returns only the modified text."
@@ -845,7 +845,7 @@
       },
       "operations": {
         "completeness": "gist",
-        "description": "The response identifies an Operations Research or management science concept that appropriately applies.",
+        "description": "The response identifies an Operations Research or management science concept that best frames the situation.",
         "method": "rigor",
         "scope": "focus"
       },
@@ -888,10 +888,10 @@
         "description": "The response separates topics into clear sections and returns only reformatted text."
       },
       "tao": {
-        "description": "The response classifies the subject through Taoist philosophy by relating it to Dao, De, Yin/Yang, Wu Wei, Ziran, Pu, Qi, and Li, noting which apply and why."
+        "description": "The response classifies the subject through Taoist philosophy by relating it to Dao, De, Yin/Yang, Wu Wei, Ziran, Pu, Qi, and Li, noting where each principle shows up and why it matters."
       },
       "taste": {
-        "description": "The response evaluates the subject's taste by analysing harmony, proportion, restraint, authenticity, and cultural or historical appropriateness, explaining strengths, weaknesses, and contextual fit."
+        "description": "The response evaluates the subject's taste by covering harmony, proportion, restraint, authenticity, and cultural or historical appropriateness, explaining strengths, weaknesses, and contextual fit."
       },
       "team": {
         "completeness": "gist",
@@ -957,22 +957,22 @@
       "dependent": "The response explains how the elements depend on one another.",
       "describe": "The response describes the subject objectively.",
       "document": "The response lists document or writing formats, explains why each fits, and states what perspective each reveals.",
-      "domain": "The response performs a connascence-driven discovery of business domains by grouping elements where multiple forms of connascence converge, describing obligations and change scenarios, and recommending boundary-strengthening remedies.",
+      "domain": "The response performs a connascence-driven discovery of business domains by grouping elements where multiple forms of connascence converge, describing obligations and change scenarios, and listing boundary-strengthening remedies.",
       "done": "The response provides a clear Definition of Done or acceptance criteria as a checklist.",
       "easier": "The response proposes an approach that accomplishes the goal on a smaller timescale.",
       "fix": "The response corrects grammar, spelling, and minor style issues while preserving meaning and tone, returning only the modified text.",
       "independent": "The response explains how the elements remain independent.",
       "infer": "The response infers the task without being told what to do.",
       "interact": "The response explains how the elements interact.",
-      "jim": "The response analyses the subject for connascence (Strength, Degree, Locality), identifies its type, computes Severity = Strength × Degree ÷ Locality, and proposes remedies to reduce harmful connascence.",
+      "jim": "The response reports the subject's connascence (Strength, Degree, Locality), names the connascence type, computes Severity = Strength × Degree ÷ Locality, and states remedies to reduce harmful connascence.",
       "jobs": "The response highlights the key Jobs To Be Done, desired outcomes, and forces shaping them.",
       "join": "The response merges the content into a single coherent piece and removes redundancy.",
-      "knowledge": "The response cites relevant academic or industry fields of knowledge, explaining why each applies and what perspective it offers.",
+      "knowledge": "The response cites relevant academic or industry fields of knowledge, explaining the relevance of each and what perspective it offers.",
       "match": "The response rewrites the content to match the provided style and returns only the modified text.",
       "metrics": "The response lists metrics that drive the outcomes and includes concrete examples.",
       "misunderstood": "The response surfaces what is misunderstood in this situation.",
       "objectivity": "The response assesses objectivity and includes relevant examples.",
-      "operations": "The response identifies an Operations Research or management science concept that appropriately applies.",
+      "operations": "The response identifies an Operations Research or management science concept that best frames the situation.",
       "pain": "The response lists pain points and obstacles, noting brief prioritisation or severity.",
       "parallel": "The response describes problems that could arise if the items are parallelized.",
       "product": "The response frames the subject through a product lens.",
@@ -980,8 +980,8 @@
       "retro": "The response guides introspection or reflection on the subject.",
       "risky": "The response highlights the risks and explains why they matter.",
       "split": "The response separates topics into clear sections and returns only reformatted text.",
-      "tao": "The response classifies the subject through Taoist philosophy by relating it to Dao, De, Yin/Yang, Wu Wei, Ziran, Pu, Qi, and Li, noting which apply and why.",
-      "taste": "The response evaluates the subject's taste by analysing harmony, proportion, restraint, authenticity, and cultural or historical appropriateness, explaining strengths, weaknesses, and contextual fit.",
+      "tao": "The response classifies the subject through Taoist philosophy by relating it to Dao, De, Yin/Yang, Wu Wei, Ziran, Pu, Qi, and Li, noting where each principle shows up and why it matters.",
+      "taste": "The response evaluates the subject's taste by covering harmony, proportion, restraint, authenticity, and cultural or historical appropriateness, explaining strengths, weaknesses, and contextual fit.",
       "team": "The response maps team roles, responsibilities, and handoffs needed for the work.",
       "todo": "The response formats the content as a todo list.",
       "true": "The response evaluates whether the statement is true using the available information.",
@@ -2336,7 +2336,7 @@
   },
   "checksums": {
     "axes": "8ed8d5f043517b7bc2290751ce1cd2197025075c835243baefbd483d8eac7d66",
-    "static_prompts": "3e7e12ba67fd2f252255ba7034df2f0f4dce67eb74d2e772f6f6db3070e602dc",
+    "static_prompts": "ce96407da230668e6eae5b9e315bb98f8823979c067692d3d278d803299f3274",
     "persona": "2923ebb09cf58ca7a65dcad87e187e2cd5d7d515837942ea7907cf8ec7ba6cef",
     "hierarchy": "dcb9d8fbf23ea7dde8c5bfb1e2da66d3413001b2e058a7f0fcaf93fdfe5d6f80",
     "slugs": "8ccaa5594293d0b3390eb0d48469fc2fab380e19d501efe4a4fdb22d4ef2cb07"

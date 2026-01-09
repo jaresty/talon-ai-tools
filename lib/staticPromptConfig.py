@@ -65,17 +65,13 @@ STATIC_PROMPT_CONFIG: dict[str, StaticPromptProfile] = {
         "description": "The response assesses objectivity and includes relevant examples.",
     },
     "knowledge": {
-        "description": "The response cites relevant academic or industry fields of knowledge, explaining why each applies and what perspective it offers.",
+        "description": "The response cites relevant academic or industry fields of knowledge, explaining the relevance of each and what perspective it offers.",
     },
     "taste": {
-        "description": (
-            "The response evaluates the subject's taste by analysing harmony, proportion, restraint, authenticity, and cultural or historical appropriateness, explaining strengths, weaknesses, and contextual fit."
-        ),
+        "description": "The response evaluates the subject's taste by covering harmony, proportion, restraint, authenticity, and cultural or historical appropriateness, explaining strengths, weaknesses, and contextual fit.",
     },
     "tao": {
-        "description": (
-            "The response classifies the subject through Taoist philosophy by relating it to Dao, De, Yin/Yang, Wu Wei, Ziran, Pu, Qi, and Li, noting which apply and why."
-        ),
+        "description": "The response classifies the subject through Taoist philosophy by relating it to Dao, De, Yin/Yang, Wu Wei, Ziran, Pu, Qi, and Li, noting where each principle shows up and why it matters.",
     },
     # Planning, product, and execution prompts (description-only profiles).
     "product": {
@@ -93,10 +89,10 @@ STATIC_PROMPT_CONFIG: dict[str, StaticPromptProfile] = {
         "scope": "focus",
     },
     "operations": {
-        "description": "The response identifies an Operations Research or management science concept that appropriately applies.",
+        "description": "The response identifies an Operations Research or management science concept that best frames the situation.",
         "completeness": "gist",
-        "method": "rigor",
         "scope": "focus",
+        "method": "rigor",
     },
     "jobs": {
         "description": "The response highlights the key Jobs To Be Done, desired outcomes, and forces shaping them.",
@@ -234,12 +230,12 @@ STATIC_PROMPT_CONFIG: dict[str, StaticPromptProfile] = {
     },
     "jim": {
         "description": (
-            "The response analyses the subject for connascence (Strength, Degree, Locality), identifies its type, computes Severity = Strength × Degree ÷ Locality, and proposes remedies to reduce harmful connascence."
+            "The response reports the subject's connascence (Strength, Degree, Locality), names the connascence type, computes Severity = Strength × Degree ÷ Locality, and states remedies to reduce harmful connascence."
         ),
     },
     "domain": {
         "description": (
-            "The response performs a connascence-driven discovery of business domains by grouping elements where multiple forms of connascence converge, describing obligations and change scenarios, and recommending boundary-strengthening remedies."
+            "The response performs a connascence-driven discovery of business domains by grouping elements where multiple forms of connascence converge, describing obligations and change scenarios, and listing boundary-strengthening remedies."
         ),
     },
     "fix": {

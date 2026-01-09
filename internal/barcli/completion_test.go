@@ -304,8 +304,8 @@ func TestCompletePersonaStage(t *testing.T) {
 	if !ok {
 		t.Fatalf("expected persona preset slug %q, got %v", presetSlug, suggestions)
 	}
-	if preset.Category != "persona.preset" {
-		t.Fatalf("expected persona preset category, got %q", preset.Category)
+	if preset.Category != "Who (persona preset)" {
+		t.Fatalf("expected persona preset category 'Who (persona preset)', got %q", preset.Category)
 	}
 	if trimmed := strings.TrimSpace(preset.Value); trimmed != presetSlug {
 		t.Fatalf("expected persona preset value %q, got %q", presetSlug, trimmed)
@@ -318,8 +318,8 @@ func TestCompletePersonaStage(t *testing.T) {
 	if !ok {
 		t.Fatalf("expected persona voice slug %q, got %v", voiceSlug, suggestions)
 	}
-	if voice.Category != "persona.voice" {
-		t.Fatalf("expected persona voice category, got %q", voice.Category)
+	if voice.Category != "Who (voice)" {
+		t.Fatalf("expected persona voice category 'Who (voice)', got %q", voice.Category)
 	}
 	if trimmed := strings.TrimSpace(voice.Value); trimmed != voiceSlug {
 		t.Fatalf("expected persona voice value %q, got %q", voiceSlug, trimmed)

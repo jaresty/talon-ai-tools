@@ -66,6 +66,23 @@
 - next_work:
   - Behaviour: None scheduled.
 
+## 2026-01-09 — loop 007
+- helper_version: helper:v20251223.1
+- focus: Decision § surfacing — extend Who/How/Why framing to persona completions without leaking CLI syntax into Talon canvases
+- active_constraint: Persona suggestions still used raw category names (`persona.voice`, etc.), leaving the What/How/Why mental model incomplete and making it harder to understand shorthand versus persona controls.
+- validation_targets:
+  - go test ./...
+- evidence:
+  - green: docs/adr/evidence/0070-static-prompt-task-method-separation/loop-007.md#loop-007-green--helper-diff-snapshot-git-diff----stat
+  - green: docs/adr/evidence/0070-static-prompt-task-method-separation/loop-007.md#loop-007-green--helper-rerun-go-test
+- rollback_plan: `git restore --source=HEAD -- internal/barcli/completion.go internal/barcli/completion_test.go docs/adr/0070-static-prompt-task-method-separation.work-log.md docs/adr/evidence/0070-static-prompt-task-method-separation/loop-007.md`
+- delta_summary: helper:diff-snapshot=2 files changed, 8 insertions(+), 8 deletions(-) — relabeled persona categories to “Who / How (tone)” and updated the CLI tests accordingly.
+- loops_remaining_forecast: 0 loops — surfacing now consistently conveys What/How/Who/Why distinction.
+- residual_constraints:
+  - None; CLI completions and tests encode the full framing.
+- next_work:
+  - Behaviour: None scheduled.
+
 ## 2026-01-09 — loop 004
 - helper_version: helper:v20251223.1
 - focus: Decision § guardrails — ensure every axis description remains declarative as part of ADR 0070’s separation contract

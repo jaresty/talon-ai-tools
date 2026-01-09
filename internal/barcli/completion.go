@@ -411,12 +411,12 @@ func buildPersonaSuggestions(grammar *Grammar, catalog completionCatalog, state 
 	seen := make(map[string]struct{})
 	results := make([]completionSuggestion, 0)
 	if !state.personaPreset {
-		results = appendUniqueSuggestions(results, seen, suggestionsWithDescriptions(grammar, catalog.personaPreset, "persona.preset", func(token string) string {
+		results = appendUniqueSuggestions(results, seen, suggestionsWithDescriptions(grammar, catalog.personaPreset, "Who (persona preset)", func(token string) string {
 			return personaPresetDescription(grammar, token)
 		}, false, true))
 	}
 	if !state.personaVoice {
-		results = appendUniqueSuggestions(results, seen, suggestionsWithDescriptions(grammar, catalog.personaVoice, "persona.voice", func(token string) string {
+		results = appendUniqueSuggestions(results, seen, suggestionsWithDescriptions(grammar, catalog.personaVoice, "Who (voice)", func(token string) string {
 			desc := strings.TrimSpace(grammar.PersonaDescription("voice", token))
 			if desc == "" {
 				return token
@@ -425,7 +425,7 @@ func buildPersonaSuggestions(grammar *Grammar, catalog completionCatalog, state 
 		}, false, true))
 	}
 	if !state.personaAudience {
-		results = appendUniqueSuggestions(results, seen, suggestionsWithDescriptions(grammar, catalog.personaAudience, "persona.audience", func(token string) string {
+		results = appendUniqueSuggestions(results, seen, suggestionsWithDescriptions(grammar, catalog.personaAudience, "Who (audience)", func(token string) string {
 			desc := strings.TrimSpace(grammar.PersonaDescription("audience", token))
 			if desc == "" {
 				return token
@@ -434,7 +434,7 @@ func buildPersonaSuggestions(grammar *Grammar, catalog completionCatalog, state 
 		}, false, true))
 	}
 	if !state.personaTone {
-		results = appendUniqueSuggestions(results, seen, suggestionsWithDescriptions(grammar, catalog.personaTone, "persona.tone", func(token string) string {
+		results = appendUniqueSuggestions(results, seen, suggestionsWithDescriptions(grammar, catalog.personaTone, "How (tone)", func(token string) string {
 			desc := strings.TrimSpace(grammar.PersonaDescription("tone", token))
 			if desc == "" {
 				return token

@@ -35,15 +35,12 @@ Proposed — Bubble Tea TUI improves prompt editing ergonomics for the Go CLI (2
 
 ## Follow-up
 - Deliver an MVP `bar tui` subcommand that reuses existing `cmd/bar` and `internal/barcli` packages, loads the grammar, accepts subject input, and renders the preview (validation via `go test ./cmd/bar/...` and a smoke run of `go run ./cmd/bar tui --fixture cmd/bar/testdata/grammar.json --no-alt-screen`).
-- Publish a lightweight quickstart note (key bindings, known limitations, quit path) so you can reference the workflow quickly during trials.
-- Capture your feedback after each session and triage follow-on work (completions refresh, telemetry, advanced layout) into the backlog when the MVP holds up.
 
 ---
 
 ## Salient Tasks
 - Scaffold the minimal `bar tui` entrypoint that loads grammar metadata, captures subject text, and streams preview output without blocking the CLI.
 - Keep CLI parity by reusing `barcli` state helpers, covering the happy path with `go test ./cmd/bar/...`, and adding a smoke script that runs `go run ./cmd/bar tui --fixture cmd/bar/testdata/grammar.json --no-alt-screen`.
-- Prepare personal enablement: document the MVP workflow, outline known gaps (completions, telemetry, advanced panes), and set up a simple feedback loop for yourself.
 
 ## Anti-goals
 - Do not replace or deprecate the existing non-interactive CLI; scripted workflows must remain supported and unchanged by default.

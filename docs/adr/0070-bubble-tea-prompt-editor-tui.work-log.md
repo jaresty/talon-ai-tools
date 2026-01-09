@@ -129,9 +129,29 @@
 - loops_remaining_forecast: 3 loops (implement MVP entrypoint, capture pilot feedback, decide next backlog) — medium confidence now that MVP is scoped.
 - residual_constraints:
   - Bubble Tea entrypoint remains unimplemented; `bar tui` subcommand still needs scaffolding (severity: high; mitigation: implement minimal entrypoint with preview; monitoring: go test ./cmd/bar/... once code lands).
-  - Pilot guide and feedback loop not yet produced (severity: medium; mitigation: create short README/wiki entry and feedback channel alongside MVP build; monitoring: doc check before pilot).
+  - Pilot feedback notes have not yet been captured (severity: medium; mitigation: record observations directly in this work-log after each trial; monitoring: review notes before expanding scope).
 - next_work:
   - Behaviour: Implement MVP `bar tui` entrypoint with shared packages, add smoke run, and document pilot instructions (validation via go test ./cmd/bar/... and go run ./cmd/bar tui --fixture cmd/bar/testdata/grammar.json --no-alt-screen).
+
+## 2026-01-09 — loop 011
+- helper_version: helper:v20251223.1
+- focus: Decision § follow-up — remove external pilot planning steps from ADR
+- active_constraint: ADR 0070 follow-up still referenced extra pilot artefacts outside the repo, creating expectations that no longer match the actual single-user rollout.
+- validation_targets:
+  - git diff --stat docs/adr/0070-bubble-tea-prompt-editor-tui.md
+  - git diff docs/adr/0070-bubble-tea-prompt-editor-tui.md
+- evidence:
+  - green: docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-011.md#loop-011-green--helper-diff-snapshot-git-diff--stat-docs-adr-0070-bubble-tea-prompt-editor-tui.md
+  - green: docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-011.md#loop-011-green--helper-diff-snapshot-git-diff-docs-adr-0070-bubble-tea-prompt-editor-tui.md
+- rollback_plan: `git restore --source=HEAD -- docs/adr/0070-bubble-tea-prompt-editor-tui.md docs/adr/0070-bubble-tea-prompt-editor-tui.work-log.md docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-011.md`
+- delta_summary: helper:diff-snapshot=docs/adr/0070-bubble-tea-prompt-editor-tui.md | 3 --- — removed external quickstart/personal-note instructions so the ADR stays focused on in-repo work.
+- loops_remaining_forecast: 2 loops (ship MVP entrypoint, review personal feedback) — medium confidence with implementation still pending.
+- residual_constraints:
+  - Bubble Tea entrypoint remains unimplemented; `bar tui` subcommand still needs scaffolding (severity: high; mitigation: implement minimal entrypoint with preview; monitoring: go test ./cmd/bar/... once code lands).
+  - Pilot feedback notes have not yet been captured (severity: medium; mitigation: record observations directly in this work-log after each trial; monitoring: review notes before expanding scope).
+- next_work:
+  - Behaviour: Implement MVP `bar tui` entrypoint with shared packages, add smoke run, and note outcomes in this work-log (validation via go test ./cmd/bar/... and go run ./cmd/bar tui --fixture cmd/bar/testdata/grammar.json --no-alt-screen).
+
 
 ## 2026-01-09 — loop 008
 - helper_version: helper:v20251223.1
@@ -148,7 +168,7 @@
 - loops_remaining_forecast: 2 loops (ship MVP entrypoint, review pilot feedback) — medium confidence with validation shrink-wrapped.
 - residual_constraints:
   - Bubble Tea entrypoint remains unimplemented; `bar tui` subcommand still needs scaffolding (severity: high; mitigation: implement minimal entrypoint with preview; monitoring: go test ./cmd/bar/... once code lands).
-  - Pilot guide and feedback loop not yet produced (severity: medium; mitigation: create short README/wiki entry and feedback channel alongside MVP build; monitoring: doc check before pilot).
+  - Pilot feedback notes have not yet been captured (severity: medium; mitigation: record observations directly in this work-log after each trial; monitoring: review notes before expanding scope).
 - next_work:
   - Behaviour: Implement MVP `bar tui` entrypoint with shared packages, add smoke run, and document pilot instructions (validation via go test ./cmd/bar/... and go run ./cmd/bar tui --fixture cmd/bar/testdata/grammar.json --no-alt-screen).
 
@@ -167,6 +187,7 @@
 - loops_remaining_forecast: 2 loops (ship MVP entrypoint, review personal feedback) — medium confidence with implementation still pending.
 - residual_constraints:
   - Bubble Tea entrypoint remains unimplemented; `bar tui` subcommand still needs scaffolding (severity: high; mitigation: implement minimal entrypoint with preview; monitoring: go test ./cmd/bar/... once code lands).
-  - Quickstart note and feedback loop not yet produced (severity: medium; mitigation: write personal quickstart and capture notes after sessions; monitoring: ensure doc exists before first run).
+  - Pilot feedback notes have not yet been captured (severity: medium; mitigation: record observations directly in this work-log after each trial; monitoring: review notes before expanding scope).
 - next_work:
   - Behaviour: Implement MVP `bar tui` entrypoint with shared packages, add smoke run, and document pilot instructions (validation via go test ./cmd/bar/... and go run ./cmd/bar tui --fixture cmd/bar/testdata/grammar.json --no-alt-screen).
+

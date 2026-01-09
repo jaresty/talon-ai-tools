@@ -2,6 +2,7 @@ package barcli
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -11,7 +12,7 @@ import (
 
 const (
 	buildUsage = "usage: bar build [tokens...] [options]"
-	topUsage   = "usage: bar [build|help|completion]"
+	topUsage   = "usage: bar [build|help|completion|preset]"
 )
 
 var generalHelpText = strings.TrimSpace(`USAGE
@@ -20,16 +21,23 @@ var generalHelpText = strings.TrimSpace(`USAGE
 
   bar help
   bar help tokens [section...] [--grammar PATH]
-
+ 
    bar completion <shell> [--grammar PATH] [--output FILE]
      (shell = bash | zsh | fish)
  
-    The CLI ships with an embedded prompt grammar. Use --grammar or
-    BAR_GRAMMAR_PATH to point at alternate payloads for testing.
-    Completion suggestions include the token category and a short description
-    so shells can display richer context.
+   bar preset save <name> [--force]
+   bar preset list
+   bar preset show <name> [--json]
+   bar preset use <name> [--json]
+   bar preset delete <name> --force
  
- TOKEN ORDER (SHORTHAND)
+    The CLI ships with an embedded prompt grammar. Use --grammar or
+     BAR_GRAMMAR_PATH to point at alternate payloads for testing.
+     Completion suggestions include the token category and a short description
+     so shells can display richer context.
+ 
+  TOKEN ORDER (SHORTHAND)
+
 
 
   1. Static prompt          (0..1 tokens, default infer)
@@ -61,10 +69,13 @@ var generalHelpText = strings.TrimSpace(`USAGE
 
   build        Construct a prompt recipe from shorthand tokens or key=value overrides.
                 Accepts input via --prompt, --input, or STDIN (piped).
-  help         Show this message.
-  help tokens  List available static prompts, contract axes, persona presets, and multi-word tokens
+   help         Show this message.
+   help tokens  List available static prompts, contract axes, persona presets, and multi-word tokens
                 using the exported prompt grammar.
-  completion   Emit shell completion scripts (bash, zsh, fish) informed by the exported grammar.
+   completion   Emit shell completion scripts (bash, zsh, fish) informed by the exported grammar.
+   preset       Manage cached build presets (save/list/show/use/delete) derived from the last
+                successful "bar build" invocation.
+
 
  TOPICS & EXAMPLES
   List available tokens:           bar help tokens
@@ -102,12 +113,17 @@ func Run(args []string, stdin io.Reader, stdout, stderr io.Writer) int {
 		return runCompletionEngine(options, stdout, stderr)
 	}
 
+	if options.Command == "preset" {
+		return runPreset(options, stdout, stderr)
+	}
+
 	if options.Command != "build" {
 		writeError(stderr, topUsage)
 		return 1
 	}
 
 	grammar, loadErr := LoadGrammar(options.GrammarPath)
+
 	if loadErr != nil {
 		cliErr := &CLIError{Type: "io", Message: loadErr.Error()}
 		emitError(cliErr, options.JSON, stdout, stderr)
@@ -128,9 +144,15 @@ func Run(args []string, stdin io.Reader, stdout, stderr io.Writer) int {
 	}
 
 	result.Subject = promptBody
+	result.Tokens = append([]string(nil), options.Tokens...)
 	result.PlainText = RenderPlainText(result)
 
+	if err := saveLastBuild(result, options.Tokens); err != nil && !errors.Is(err, errStateDisabled) {
+		fmt.Fprintf(stderr, "warning: failed to cache last build: %v\n", err)
+	}
+
 	if options.JSON {
+
 		payload, err := json.MarshalIndent(result, "", "  ")
 		if err != nil {
 			cliErr := &CLIError{Type: "io", Message: err.Error()}
@@ -162,6 +184,7 @@ type cliOptions struct {
 	OutputPath  string
 	JSON        bool
 	GrammarPath string
+	Force       bool
 }
 
 func parseArgs(args []string) (*cliOptions, error) {
@@ -206,8 +229,11 @@ func parseArgs(args []string) (*cliOptions, error) {
 			opts.GrammarPath = args[i]
 		case strings.HasPrefix(arg, "--grammar="):
 			opts.GrammarPath = strings.TrimPrefix(arg, "--grammar=")
+		case arg == "--force":
+			opts.Force = true
 		case strings.HasPrefix(arg, "--"):
 			return nil, fmt.Errorf("unknown flag %s", arg)
+
 		default:
 			if opts.Command == "" {
 				opts.Command = arg
@@ -292,7 +318,127 @@ func runCompletion(opts *cliOptions, stdout, stderr io.Writer) int {
 	return 0
 }
 
+func runPreset(opts *cliOptions, stdout, stderr io.Writer) int {
+	if len(opts.Tokens) == 0 {
+		writeError(stderr, "preset requires a subcommand (save, list, show, use, delete)")
+		fmt.Fprint(stdout, generalHelpText)
+		return 1
+	}
+
+	sub := opts.Tokens[0]
+	args := opts.Tokens[1:]
+
+	switch sub {
+	case "save":
+		if len(args) == 0 {
+			writeError(stderr, "preset save requires a name")
+			return 1
+		}
+		build, err := loadLastBuild()
+		if err != nil {
+			writeError(stderr, err.Error())
+			return 1
+		}
+		slug, err := savePreset(args[0], build, opts.Force)
+		if err != nil {
+			writeError(stderr, err.Error())
+			return 1
+		}
+		fmt.Fprintf(stdout, "Saved preset %q (%s)\n", args[0], slug)
+		return 0
+	case "list":
+		summaries, err := listPresets()
+		if err != nil {
+			writeError(stderr, err.Error())
+			return 1
+		}
+		if len(summaries) == 0 {
+			fmt.Fprintln(stdout, "No presets saved.")
+			return 0
+		}
+		writePresetTable(stdout, summaries)
+		return 0
+	case "show":
+		if len(args) == 0 {
+			writeError(stderr, "preset show requires a name")
+			return 1
+		}
+		preset, _, err := loadPreset(args[0])
+		if err != nil {
+			writeError(stderr, err.Error())
+			return 1
+		}
+		if opts.JSON {
+			payload, err := json.MarshalIndent(preset, "", "  ")
+			if err != nil {
+				writeError(stderr, err.Error())
+				return 1
+			}
+			payload = append(payload, '\n')
+			if _, err := stdout.Write(payload); err != nil {
+				writeError(stderr, err.Error())
+				return 1
+			}
+			return 0
+		}
+		renderPresetDetails(stdout, preset)
+		return 0
+	case "use":
+		if len(args) == 0 {
+			writeError(stderr, "preset use requires a name")
+			return 1
+		}
+		preset, _, err := loadPreset(args[0])
+		if err != nil {
+			writeError(stderr, err.Error())
+			return 1
+		}
+		if opts.JSON {
+			payload, err := json.MarshalIndent(map[string]any{
+				"name":           preset.Name,
+				"tokens":         preset.Tokens,
+				"constraints":    preset.Result.Constraints,
+				"persona":        preset.Result.Persona,
+				"subject_stored": false,
+			}, "", "  ")
+			if err != nil {
+				writeError(stderr, err.Error())
+				return 1
+			}
+			payload = append(payload, '\n')
+			if _, err := stdout.Write(payload); err != nil {
+				writeError(stderr, err.Error())
+				return 1
+			}
+			return 0
+		}
+		renderPresetUse(stdout, preset)
+		return 0
+	case "delete":
+		if len(args) == 0 {
+			writeError(stderr, "preset delete requires a name")
+			return 1
+		}
+		if !opts.Force {
+			writeError(stderr, "preset delete requires --force confirmation")
+			return 1
+		}
+		_, err := deletePreset(args[0], opts.Force)
+		if err != nil {
+			writeError(stderr, err.Error())
+			return 1
+		}
+		fmt.Fprintf(stdout, "Deleted preset %q\n", args[0])
+		return 0
+	default:
+		writeError(stderr, fmt.Sprintf("unknown preset subcommand %q", sub))
+		fmt.Fprint(stdout, generalHelpText)
+		return 1
+	}
+}
+
 func parseTokenHelpFilters(sections []string) (map[string]bool, error) {
+
 	if len(sections) == 0 {
 		return nil, nil
 	}

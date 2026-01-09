@@ -1,0 +1,34 @@
+## 2026-01-09 — loop 001
+- helper_version: helper:v20251223.1
+- focus: Decision § update — clarify preset subject redaction requirement before implementation
+- active_constraint: ADR 0069 omitted guidance that presets must strip prior subjects, leaving contributors free to persist sensitive text and blocking the subject-redaction mitigation planned for CLI presets.
+- validation_targets:
+  - git diff --no-index --stat /dev/null docs/adr/0069-cli-preset-state-management.md
+  - git diff --no-index /dev/null docs/adr/0069-cli-preset-state-management.md
+- evidence:
+  - green: docs/adr/evidence/0069-cli-preset-state-management/loop-001.md#loop-001-green--helper-diff-snapshot-git-diff----no-index----stat--devnull-docs-adr-0069-cli-preset-state-management.md
+  - green: docs/adr/evidence/0069-cli-preset-state-management/loop-001.md#loop-001-green--helper-diff-snapshot-git-diff----no-index--devnull-docs-adr-0069-cli-preset-state-management.md
+- rollback_plan: `git restore --source=HEAD -- docs/adr/0069-cli-preset-state-management.md docs/adr/0069-cli-preset-state-management.work-log.md docs/adr/evidence/0069-cli-preset-state-management/loop-001.md`
+- delta_summary: helper:diff-snapshot=docs/adr/0069-cli-preset-state-management.md | 46 insertions(+) — recorded subject redaction in preset save/use flow so downstream code work inherits the guardrail.
+- loops_remaining_forecast: 4 loops (implement persistence changes, extend CLI output, add guardrail tests, document operational safeguards) — medium confidence pending state helper analysis.
+- residual_constraints:
+  - Persistence helpers still include subjects in `storedBuild`/`presetFile`, so saving presets would leak stale context if shipped today (severity: high; mitigation: refactor state serialization to drop subject fields; monitoring: go test ./internal/barcli).
+- next_work:
+  - Behaviour: Refactor `saveLastBuild`/`savePreset` to redact subjects and adjust CLI outputs (validation via go test ./internal/barcli).
+
+## 2026-01-09 — loop 002
+- helper_version: helper:v20251223.1
+- focus: Decision § implementation — persist token-only preset state and surface subject omissions in CLI outputs
+- active_constraint: State persistence still embedded subject/plain-text content into `last_build.json`, violating ADR 0069 and risking leaked prompts; guardrails lacked tests ensuring cached results drop subject text.
+- validation_targets:
+  - go test ./internal/barcli
+- evidence:
+  - green: docs/adr/evidence/0069-cli-preset-state-management/loop-002.md#loop-002-green--helper-diff-snapshot-git-diff----stat
+  - green: docs/adr/evidence/0069-cli-preset-state-management/loop-002.md#loop-002-green--helper-rerun-go-test-.-internal-barcli
+- rollback_plan: `git restore --source=HEAD -- internal/barcli/app.go internal/barcli/build.go internal/barcli/completion.go internal/barcli/state.go internal/barcli/state_test.go internal/barcli/preset_render.go docs/adr/0069-cli-preset-state-management.md docs/adr/0069-cli-preset-state-management.work-log.md docs/adr/evidence/0069-cli-preset-state-management/loop-002.md`
+- delta_summary: helper:diff-snapshot=token-only preset caching diff landed — removed subject/plain-text persistence, refreshed CLI messaging, added tests/completion helpers.
+- loops_remaining_forecast: 2 loops (update public docs + integration flow, regenerate preset fixtures) — medium confidence pending doc review bandwidth.
+- residual_constraints:
+  - README and user guide still describe presets as caching subjects (severity: medium; mitigation: update docs & release notes to highlight token-only caches; monitoring: `python3 -m pytest _tests/test_generate_readme_axis_lists.py`).
+- next_work:
+  - Behaviour: Document token-only preset behaviour across README/help surfaces and refresh CLI integration snapshots (validation via `python3 -m pytest _tests/test_generate_readme_axis_lists.py`).

@@ -25,6 +25,7 @@ type BuildResult struct {
 	Axes                AxesResult          `json:"axes"`
 	Persona             PersonaResult       `json:"persona,omitempty"`
 	HydratedPersona     []HydratedPromptlet `json:"hydrated_persona,omitempty"`
+	Tokens              []string            `json:"tokens,omitempty"`
 	PlainText           string              `json:"-"`
 }
 

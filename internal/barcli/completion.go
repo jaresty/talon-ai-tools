@@ -513,17 +513,18 @@ func buildOverrideSuggestions(grammar *Grammar, catalog completionCatalog) []com
 }
 
 var (
-	completionCommands = []string{"build", "help", "completion"}
+	completionCommands = []string{"build", "help", "completion", "preset"}
 	helpTopics         = []string{"tokens"}
 	completionShells   = []string{"bash", "zsh", "fish"}
-	buildFlags         = []string{"--prompt", "--input", "--output", "-o", "--json", "--grammar"}
+	buildFlags         = []string{"--prompt", "--input", "--output", "--json", "--grammar"}
 	flagExpectingValue = map[string]struct{}{
 		"--prompt":  {},
 		"--input":   {},
 		"--output":  {},
-		"-o":        {},
 		"--grammar": {},
 	}
+
+	presetSubcommands = []string{"save", "list", "show", "use", "delete"}
 )
 
 // GenerateCompletionScript emits the shell-specific completion installer script.
@@ -582,6 +583,8 @@ func Complete(grammar *Grammar, shell string, words []string, index int) ([]comp
 		return nil, nil
 	case "build":
 		return completeBuild(grammar, catalog, words, index, current)
+	case "preset":
+		return completePreset(grammar, words, index, current)
 	default:
 		if index == 2 {
 			return filterSuggestionsByPrefix(grammar, suggestionsFromTokens(grammar, completionCommands, "command", "", false, true), prefix), nil
@@ -739,6 +742,66 @@ func completeBuild(grammar *Grammar, catalog completionCatalog, words []string, 
 	return filterSuggestionsByPrefix(grammar, results, prefix), nil
 }
 
+func completePreset(grammar *Grammar, words []string, index int, current string) ([]completionSuggestion, error) {
+	prefix := strings.TrimSpace(current)
+	flagSeen := make(map[string]bool)
+	for _, word := range words {
+		if strings.HasPrefix(word, "--") {
+			flag := word
+			if idx := strings.Index(flag, "="); idx >= 0 {
+				flag = flag[:idx]
+			}
+			flagSeen[flag] = true
+		}
+	}
+
+	if index == 2 {
+		suggestions := suggestionsFromTokens(grammar, presetSubcommands, "preset.subcommand", "", false, false)
+		return filterSuggestionsByPrefix(grammar, suggestions, prefix), nil
+	}
+
+	if len(words) < 3 {
+		return nil, nil
+	}
+
+	subcommand := strings.TrimSpace(words[2])
+	seen := make(map[string]struct{})
+	suggestions := make([]completionSuggestion, 0)
+
+	appendPresetNames := func() {
+		nameSuggestions := presetNameSuggestions(grammar)
+		suggestions = appendUniqueSuggestions(suggestions, seen, nameSuggestions)
+	}
+
+	appendFlag := func(flag string) {
+		if flagSeen[flag] {
+			return
+		}
+		flagSuggestions := suggestionsFromTokens(grammar, []string{flag}, "flag", "", false, false)
+		suggestions = appendUniqueSuggestions(suggestions, seen, flagSuggestions)
+	}
+
+	switch subcommand {
+	case "save":
+		appendFlag("--force")
+	case "delete":
+		appendPresetNames()
+		appendFlag("--force")
+	case "show":
+		appendPresetNames()
+		appendFlag("--json")
+	case "use":
+		appendPresetNames()
+		appendFlag("--json")
+	}
+
+	if len(suggestions) == 0 {
+		return nil, nil
+	}
+
+	return filterSuggestionsByPrefix(grammar, suggestions, prefix), nil
+}
+
 func newCompletionCatalog(grammar *Grammar) completionCatalog {
 	catalog := completionCatalog{
 		static:          sortedStaticTokens(grammar),
@@ -792,6 +855,28 @@ func sortedPersonaPresets(grammar *Grammar) []string {
 	}
 	sort.Strings(presets)
 	return presets
+}
+
+func presetNameSuggestions(grammar *Grammar) []completionSuggestion {
+	summaries, err := listPresets()
+	if err != nil {
+		return nil
+	}
+	if len(summaries) == 0 {
+		return nil
+	}
+	names := make([]string, 0, len(summaries))
+	for _, summary := range summaries {
+		trimmed := strings.TrimSpace(summary.Name)
+		if trimmed == "" {
+			continue
+		}
+		names = append(names, trimmed)
+	}
+	if len(names) == 0 {
+		return nil
+	}
+	return suggestionsFromTokens(grammar, names, "preset.name", "", false, false)
 }
 
 func setToSortedSlice(set map[string]struct{}) []string {

@@ -514,6 +514,36 @@
 - residual_constraints:
   - None.
 - next_work:
+  - Behaviour: Continue monitoring pilot telemetry/usability feedback; update ADR only if new high-severity UX constraints surface (validation via documentation updates).
+
+## 2026-01-09 — loop 041
+- helper_version: helper:v20251223.1
+- focus: ADR Decision — codify token editing ergonomics for `bar tui`
+- active_constraint: The ADR let tokens be modified live but did not prescribe visibility, keyboard interaction, or error recovery, risking poor UX once the pane is implemented (documentation-only validation for this slice).
+- validation_targets:
+  - documentation-only (no executable commands)
+- evidence:
+  - green: docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-041.md#loop-041-green--helper-diff-snapshot-git-diff--stat-head
+- rollback_plan: `git restore --source=HEAD -- docs/adr/0070-bubble-tea-prompt-editor-tui.md docs/adr/0070-bubble-tea-prompt-editor-tui.work-log.md docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-041.md`
+- delta_summary: helper:diff-snapshot=git diff --stat HEAD | expanded the Decision with explicit token UX requirements (always-visible pane, keyboard navigation, inline errors, undo/revert prompts) and updated the Consequences maintenance note.
+- loops_remaining_forecast: 0 loops — token editing expectations now captured; future adjustments hinge on pilot telemetry.
+- residual_constraints:
+  - None.
+- next_work:
+  - Behaviour: Continue monitoring pilot telemetry/usability feedback; update ADR if new token-pane constraints appear (validation via documentation refresh).
+
+
+ - validation_targets:
+  - documentation-only (no executable commands)
+
+- evidence:
+  - green: docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-040.md#loop-040-green--helper-diff-snapshot-git-diff--stat-head
+- rollback_plan: `git restore --source=HEAD -- docs/adr/0070-bubble-tea-prompt-editor-tui.md docs/adr/0070-bubble-tea-prompt-editor-tui.work-log.md docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-040.md`
+- delta_summary: helper:diff-snapshot=git diff --stat HEAD | expanded the Decision bullet into concrete UX requirements (help overlay, focus highlights, result-pane differentiation, undo messaging) and clarified the maintenance expectation in Consequences.
+- loops_remaining_forecast: 0 loops — UX guardrails now spelled out explicitly; future adjustments depend on pilot telemetry.
+- residual_constraints:
+  - None.
+- next_work:
   - Behaviour: Continue monitoring pilot telemetry/usability feedback; update ADR only if new high-severity UX constraints surface (validation via updated documentation).
 
 

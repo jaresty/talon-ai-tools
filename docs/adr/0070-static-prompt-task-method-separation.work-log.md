@@ -32,3 +32,20 @@
 - next_work:
   - Behaviour: None scheduled; reopen if new guardrail heuristics are required.
 
+## 2026-01-09 — loop 004
+- helper_version: helper:v20251223.1
+- focus: Decision § guardrails — ensure every axis description remains declarative as part of ADR 0070’s separation contract
+- active_constraint: Axis descriptions lacked automated enforcement for the “The response …” declarative requirement, risking reintroduction of imperative language that blurs task vs. method semantics.
+- validation_targets:
+  - python3 -m pytest
+- evidence:
+  - green: docs/adr/evidence/0070-static-prompt-task-method-separation/loop-004.md#loop-004-green--helper-diff-snapshot-git-diff----stat
+  - green: docs/adr/evidence/0070-static-prompt-task-method-separation/loop-004.md#loop-004-green--helper-rerun-python3--m-pytest
+- rollback_plan: `git restore --source=HEAD -- _tests/test_axis_description_language.py docs/adr/0070-static-prompt-task-method-separation.work-log.md docs/adr/evidence/0070-static-prompt-task-method-separation/loop-004.md`
+- delta_summary: helper:diff-snapshot=1 file changed, 31 insertions(+) — added `_tests/test_axis_description_language.py` to guard every axis description’s declarative phrasing.
+- loops_remaining_forecast: 0 loops — declarative guardrails now cover both static prompts and axes.
+- residual_constraints:
+  - None; declarative checks run as part of `python3 -m pytest`.
+- next_work:
+  - Behaviour: None scheduled; reopen if ADR scope expands beyond axes/prompts.
+

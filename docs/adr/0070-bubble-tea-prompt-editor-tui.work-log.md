@@ -168,6 +168,24 @@
 - next_work:
   - Behaviour: Implement MVP `bar tui` entrypoint with shared packages, add smoke run, and document results (validation via go test ./cmd/bar/... and go run ./cmd/bar tui --fixture cmd/bar/testdata/grammar.json --no-alt-screen).
 
+## 2026-01-09 — loop 014
+- helper_version: helper:v20251223.1
+- focus: Validation — align ADR with repository build commands only
+- active_constraint: ADR 0070 still referenced a `go run` smoke command that the MVP loop will cover in code, but the documentation should focus on `go test ./cmd/bar/...` as the enforced validation step.
+- validation_targets:
+  - git diff --stat docs/adr/0070-bubble-tea-prompt-editor-tui.md
+  - git diff docs/adr/0070-bubble-tea-prompt-editor-tui.work-log.md
+- evidence:
+  - green: docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-014.md#loop-014-green--helper-diff-snapshot-git-diff--stat-docs-adr-0070-bubble-tea-prompt-editor-tui.md
+  - green: docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-014.md#loop-014-green--helper-diff-snapshot-git-diff-docs-adr-0070-bubble-tea-prompt-editor-tui-work-log.md
+- rollback_plan: `git restore --source=HEAD -- docs/adr/0070-bubble-tea-prompt-editor-tui.md docs/adr/0070-bubble-tea-prompt-editor-tui.work-log.md docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-014.md`
+- delta_summary: helper:diff-snapshot=docs/adr/0070-bubble-tea-prompt-editor-tui.md | 2 --- — removed the `go run` smoke command from documentation so tests remain the canonical validation signal.
+- loops_remaining_forecast: 1 loop (ship MVP entrypoint) — medium confidence with implementation still pending.
+- residual_constraints:
+  - Bubble Tea entrypoint remains unimplemented; `bar tui` subcommand still needs scaffolding (severity: high; mitigation: implement minimal entrypoint with preview; monitoring: go test ./cmd/bar/... once code lands).
+- next_work:
+  - Behaviour: Implement MVP `bar tui` entrypoint with shared packages, add smoke run, and document results (validation via go test ./cmd/bar/... and verifying the entrypoint manually as needed).
+
 ## 2026-01-09 — loop 008
 
 - helper_version: helper:v20251223.1

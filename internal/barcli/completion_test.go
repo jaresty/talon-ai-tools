@@ -180,6 +180,9 @@ func TestCompleteScopeAndMethodConcurrent(t *testing.T) {
 	if containsSuggestionValue(suggestions, "scope-focus") {
 		t.Fatalf("expected scope override slug to be absent from shorthand suggestions, got %v", suggestions)
 	}
+	if containsSuggestionValue(suggestions, "todo") {
+		t.Fatalf("expected static tokens to be absent after axis selection, got %v", suggestions)
+	}
 
 	overrideSuggestions, err := Complete(grammar, "bash", []string{"bar", "build", "todo", "full", "scope="}, 4)
 	if err != nil {
@@ -198,6 +201,22 @@ func TestCompleteScopeAndMethodConcurrent(t *testing.T) {
 	}
 	if strings.HasSuffix(methodSuggestion.Value, " ") {
 		t.Fatalf("expected method suggestion without trailing space, got %q", methodSuggestion.Value)
+	}
+}
+
+func TestCompleteStopsSuggestingScopeAfterCap(t *testing.T) {
+	grammar := loadCompletionGrammar(t)
+
+	words := []string{"bar", "build", "todo", "full", "focus", "relations", ""}
+	suggestions, err := Complete(grammar, "bash", words, len(words)-1)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if containsSuggestionValue(suggestions, "focus") {
+		t.Fatalf("expected scope tokens to be exhausted after reaching cap, got %v", suggestions)
+	}
+	if containsSuggestionValue(suggestions, "relations") {
+		t.Fatalf("expected existing scope tokens to be filtered from suggestions, got %v", suggestions)
 	}
 }
 

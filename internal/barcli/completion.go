@@ -163,6 +163,7 @@ type completionCatalog struct {
 type completionState struct {
 	override        bool
 	static          bool
+	staticClosed    bool
 	completeness    bool
 	scope           map[string]struct{}
 	method          map[string]struct{}
@@ -620,7 +621,7 @@ func completeBuild(grammar *Grammar, catalog completionCatalog, words []string, 
 		return filterSuggestionsByPrefix(grammar, staticSuggestions, prefix), nil
 	}
 
-	if !state.static {
+	if !state.static && !state.staticClosed {
 		staticSuggestions = appendUniqueSuggestions(staticSuggestions, seen, buildStaticSuggestions(grammar, catalog))
 	}
 
@@ -821,6 +822,9 @@ func collectShorthandState(grammar *Grammar, tokens []string) completionState {
 			continue
 		}
 		if strings.HasPrefix(token, "persona=") && !state.override {
+			if !state.static && !state.staticClosed {
+				state.staticClosed = true
+			}
 			state.personaPreset = true
 			continue
 		}
@@ -833,7 +837,11 @@ func collectShorthandState(grammar *Grammar, tokens []string) completionState {
 			continue
 		}
 		axis := detectAxis(grammar, token)
+		if axis != "" && !state.static && !state.staticClosed {
+			state.staticClosed = true
+		}
 		switch axis {
+
 		case "completeness":
 			state.completeness = true
 			continue
@@ -854,6 +862,9 @@ func collectShorthandState(grammar *Grammar, tokens []string) completionState {
 			continue
 		}
 		personaAxis := detectPersonaAxis(grammar, token)
+		if personaAxis != "" && !state.static && !state.staticClosed {
+			state.staticClosed = true
+		}
 		switch personaAxis {
 		case "voice":
 			state.personaVoice = true

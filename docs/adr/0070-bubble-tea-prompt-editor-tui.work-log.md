@@ -449,9 +449,49 @@
 - residual_constraints:
   - Interactive token editing remains unimplemented (severity: high; mitigation: build controls and state wiring; monitoring: go test ./cmd/bar/... once implementation lands).
 - next_work:
-  - Behaviour: Implement interactive token editing controls inside `bar tui` so operators can adjust prompt parts without restarting the CLI (validation via go test ./cmd/bar/... once the feature is built).
+  - Behaviour: Implement subject import/export plumbing with clipboard capture, command piping, result display, and optional reinsertion (validation via go test ./cmd/bar/... once the feature is built).
+  - Behaviour: Design and implement prompt piping output UI (render command stdout/stderr, offer send-to-subject shortcut) with validation via integration tests or scripted harness TBD.
   - Behaviour: Execute packaging updates when implementation loop starts (validation via `make guardrails`).
   - Behaviour: Run the CLI completion guardrail (`python3 -m pytest _tests/test_bar_completion_cli.py`) alongside packaging to verify `bar tui` shells stay aligned.
+
+## 2026-01-09 — loop 032
+- helper_version: helper:v20251223.1
+- focus: ADR Next Work — capture command piping UI requirement
+- active_constraint: Next work listed import/export implementation but did not mention the UI/UX requirement to display subprocess results and offer send-to-subject actions.
+
+## 2026-01-09 — loop 033
+- helper_version: helper:v20251223.1
+- focus: ADR Decision — specify command output appears in dedicated TUI pane
+- active_constraint: Decision text referenced surfacing responses but not the dedicated UI requirement to display command output in a TUI pane.
+- validation_targets:
+  - documentation-only (no executable commands)
+- evidence:
+  - green: docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-033.md#loop-033-green--helper-diff-snapshot-git-diff--stat
+- rollback_plan: `git restore --source=HEAD -- docs/adr/0070-bubble-tea-prompt-editor-tui.md docs/adr/0070-bubble-tea-prompt-editor-tui.work-log.md docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-033.md`
+- delta_summary: helper:diff-snapshot=git diff --stat | docs/adr/0070-bubble-tea-prompt-editor-tui.md (Decision now calls for dedicated TUI pane for command output).
+- loops_remaining_forecast: 1 loop — implement subject import/export plumbing with command output pane.
+- residual_constraints:
+  - Subject import/export and command output UI remain unimplemented (severity: high; mitigation: build feature in upcoming implementation loop; monitoring: go test ./cmd/bar/... once feature lands).
+- next_work:
+  - Behaviour: Implement subject import/export plumbing with clipboard capture, command piping, result display pane, and optional reinsertion (validation via go test ./cmd/bar/... once the feature is built).
+  - Behaviour: Execute packaging updates when implementation loop starts (validation via `make guardrails`).
+  - Behaviour: Run the CLI completion guardrail (`python3 -m pytest _tests/test_bar_completion_cli.py`) alongside packaging to verify `bar tui` shells stay aligned.
+
+- validation_targets:
+  - documentation-only (no executable commands)
+- evidence:
+  - green: docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-032.md#loop-032-green--helper-diff-snapshot-git-diff--stat
+- rollback_plan: `git restore --source=HEAD -- docs/adr/0070-bubble-tea-prompt-editor-tui.work-log.md docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-032.md`
+- delta_summary: helper:diff-snapshot=git diff --stat | docs/adr/0070-bubble-tea-prompt-editor-tui.work-log.md (next work expanded for command piping UI).
+- loops_remaining_forecast: 1 loop — implement subject import/export and command piping UI together.
+- residual_constraints:
+  - Subject import/export and command piping UI remain unimplemented (severity: high; mitigation: build feature in upcoming implementation loop; monitoring: go test ./cmd/bar/... once completed).
+- next_work:
+  - Behaviour: Implement subject import/export plumbing with clipboard capture, command piping, result display, and optional reinsertion (validation via go test ./cmd/bar/... once the feature is built).
+  - Behaviour: Design and implement prompt piping output UI (render command stdout/stderr, offer send-to-subject shortcut) with validation via integration tests or scripted harness TBD.
+  - Behaviour: Execute packaging updates when implementation loop starts (validation via `make guardrails`).
+  - Behaviour: Run the CLI completion guardrail (`python3 -m pytest _tests/test_bar_completion_cli.py`) alongside packaging to verify `bar tui` shells stay aligned.
+
 
 - validation_targets:
   - documentation-only (no executable commands)

@@ -28,8 +28,14 @@ Proposed — Bubble Tea TUI improves prompt editing ergonomics for the Go CLI (2
   - surface errors inline when a token cannot be applied and restore the previous value automatically;
   - let the palette support Tab-cycling between token categories and filtered options, chaining multiple edits before closing with `Esc`, and returning focus to the prior view predictably;
   - expose quick removal paths (focused chip `Del`/`Backspace` plus a “reset to preset” entry in the palette) so operators never depend solely on the modal interaction to clear selections.
+- Provide preset management inside the TUI so operators can load, save, and remove prompt configurations without leaving the session. The workflow must:
+  - keep the active preset name and divergence indicator visible in the summary strip at all times, opening a docked preset pane (via `Enter` on the summary or `Ctrl+S`) without obscuring token selections;
+  - list presets with slug, label, and last-updated metadata, applying the focused entry with `Enter` while flashing the standard confirmation message and enabling `Ctrl+Z` to restore the previous state;
+  - let operators save the current diverged state through an inline form (name and optional description) that confirms success without shifting focus away from the preset pane, while `Esc` cancels cleanly;
+  - support deletion via `Del` on the focused preset, presenting a lightweight confirmation overlay that keeps the summary visible and leaves undo available until another change occurs;
+  - return focus predictably to the prior view when the pane closes (via `Esc`) and support Tab/arrow navigation so keyboard-only pilots can chain edits quickly.
 - Bake discoverability and recovery affordances into the TUI itself by:
-  - exposing an in-app shortcut reference (for example press `?` to open help) wherever the subject/command or token modes shift, including palette gestures and removal/reset hotkeys;
+  - exposing an in-app shortcut reference (for example press `?` to open help) wherever the subject/command or token modes shift, including palette gestures, preset save/load/delete shortcuts, and removal/reset hotkeys;
   - keeping focus changes obvious with visual highlights, not just arrow glyphs;
   - separating success and failure states in the result pane (iconography, headings, truncation with “view more” affordances) so operators can scan outcomes quickly;
   - warning before destructive subject replacements and offering an undo path for clipboard/command reinsertion;
@@ -48,6 +54,7 @@ Proposed — Bubble Tea TUI improves prompt editing ergonomics for the Go CLI (2
 - Additional keyboard/mouse handling, focus management, and layout logic introduces new complexity that will require regression coverage.
 - We take on UI accessibility and terminal compatibility considerations (alt screen, mouse modes, bracketed paste) that the pure CLI previously avoided.
 - The TUI will need runtime coordination with preset/state files; we must guard against concurrent writes or stale caches when both surfaces run.
+- Preset creation, updates, and deletion introduce additional persistence and history management that require deterministic tests to assert focus behavior, confirmation messaging, and undo paths across both inline chips and the docked pane.
 - Introducing clipboard and subprocess integrations expands attack surface (shell execution, sensitive text retention) and demands clear opt-outs/logging guidance; the TUI must surface command results safely and handle failures without dropping subject state.
 - Environment variable pass-through must remain an explicit opt-in with visible allowlists so operators cannot leak credentials accidentally; logs and UI messaging should confirm which variables were shared each run.
 - UX guardrails carry ongoing cost: we need to keep shortcut hints, status messaging, focus highlights, result-pane signaling, and token-pane ergonomics consistent so stressed operators do not misinterpret state or lose subject text unintentionally. Every loop that touches the TUI should re-validate the help overlay, focus colors, result-pane differentiation, truncation behaviour, subject-replacement confirmations, command-running indicators, and token keyboard navigation to prevent regressions.
@@ -56,6 +63,7 @@ Proposed — Bubble Tea TUI improves prompt editing ergonomics for the Go CLI (2
 ## Validation
 - `go test ./cmd/bar/...` covers the minimal `bar tui` wiring by compiling and exercising the CLI entrypoint with existing shared helpers.
 - `bar tui --fixture cmd/bar/testdata/tui_smoke.json --no-alt-screen` exercises the deterministic snapshot harness and validates preview/layout output without entering the interactive loop.
+- `go test ./internal/bartui/...` verifies preset load/save/delete flows, ensuring the docked pane keeps the summary visible and undo/confirmation signalling stays consistent.
 - `python3 -m pytest _tests/test_bar_completion_cli.py` keeps CLI completions and installers aligned with the prompt grammar, ensuring the `bar tui` command surfaces in shell hints.
 
 ---
@@ -65,6 +73,7 @@ Proposed — Bubble Tea TUI improves prompt editing ergonomics for the Go CLI (2
 - Keep CLI parity by reusing `barcli` state helpers, covering the happy path with `go test ./cmd/bar/...`.
 - Update release packaging and installer scripts so `bar tui` ships alongside existing binaries, with guardrails such as `make guardrails` verifying the distribution manifests.
 - Implement interactive token editing controls inside `bar tui`, covering both inline chips and the optional `Ctrl+P` command palette accelerator so operators can modify prompt parts without restarting the CLI.
+- Build preset management inside the TUI, including the docked pane, save/load/delete flows, divergence indicators, and undo/confirmation cues that keep the summary strip visible throughout.
 - Add subject import/export plumbing: clipboard capture, shell command piping (prompt → command, command → subject), in-TUI result display, and optional re-insertion of subprocess output into the subject field.
 - Add environment variable pass-through guardrails so commands can access opt-in credentials: surface an allowlist UI, confirm the names before execution, and cover the behaviour with `go test ./internal/bartui`.
 

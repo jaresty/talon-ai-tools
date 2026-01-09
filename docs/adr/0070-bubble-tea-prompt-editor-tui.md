@@ -35,7 +35,7 @@ Proposed — Bubble Tea TUI improves prompt editing ergonomics for the Go CLI (2
 - Collect operator feedback via internal dogfooding to confirm the UI addresses identified JTBD pain points and to monitor clipboard/subprocess integrations before wide release.
 
 ## Follow-up
-- Define command-line wiring for the `bar tui` subcommand inside the existing CLI and update packaging scripts/release notes accordingly.
+- Define command-line wiring for the `bar tui` subcommand inside the existing CLI, reusing shared `cmd/bar` and `internal/barcli` packages, refresh CLI completion metadata, and update packaging scripts/release notes accordingly (validation via `go test ./cmd/bar/...` and `python3 -m pytest _tests/test_bar_completion_cli.py`).
 - Draft user documentation: quickstart, key bindings, pane descriptions, troubleshooting for terminal quirks.
 - Establish telemetry or logging (opt-in) to monitor usage and detect failure hotspots without leaking prompt content.
 - Plan backlog items for advanced features (template libraries, diffing, multi-buffer support) once baseline TUI stabilizes.

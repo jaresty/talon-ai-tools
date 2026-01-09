@@ -19,7 +19,11 @@ if bootstrap is not None:
         static_prompt_settings_catalog,
     )
     import talon_user.lib.talonSettings as talon_settings
-    from talon_user.lib.talonSettings import applyPromptConfiguration, modelPrompt, pleasePromptConfiguration
+    from talon_user.lib.talonSettings import (
+        applyPromptConfiguration,
+        modelPrompt,
+        pleasePromptConfiguration,
+    )
     from talon_user.lib.modelState import GPTState
 
     class ModelPromptModifiersTests(unittest.TestCase):
@@ -46,7 +50,7 @@ if bootstrap is not None:
             self.assertIn("Task:", result)
             self.assertIn("Constraints:", result)
             self.assertIn(
-                "Fix grammar, spelling, and minor style issues while keeping meaning and tone; return only the modified text.",
+                "The response corrects grammar, spelling, and minor style issues while preserving meaning and tone, returning only the modified text.",
                 result,
             )
             # Profile for "fix" biases completeness/scope conceptually.

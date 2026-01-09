@@ -181,6 +181,12 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {'channel': {'codetour': 'The res
                            'aimed at improving the work.',
             'analysis': 'The response describes, analyses, and structures the situation without '
                         'proposing specific actions, fixes, or recommendations.',
+            'boom': 'The response applies limit or continuity style reasoning in a non-numerical '
+                    'way to explore behaviour toward extremes.',
+            'bridge': 'The response charts a path from the current state to the desired situation '
+                      'before proposing specific recommendations.',
+            'bud': 'The response applies addition or subtraction style reasoning in a '
+                   'non-numerical way to emphasise contrasts or balances.',
             'case': 'The response builds the case before the conclusion by laying out background, '
                     'evidence, trade-offs, and alternatives before converging on a clear '
                     'recommendation that addresses objections and constraints.',
@@ -189,9 +195,14 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {'channel': {'codetour': 'The res
             'cocreate': 'The response works collaboratively with the user, proposing small moves, '
                         'checking alignment, and iterating together instead of delivering a '
                         'one-shot answer.',
+            'com b': 'The response uses the COM-B model to analyse capability, opportunity, and '
+                     'motivation, mapping findings to behaviour-change techniques and outlining an '
+                     'implementation plan.',
             'compare': 'The response compares two or more items by listing similarities and '
                        'differences, highlighting subtle distinctions and trade-offs that matter '
                        'to the audience.',
+            'constraints': 'The response identifies the system’s primary constraint, analyses '
+                           'behaviours it enforces, and frames ways to balance or relieve it.',
             'contextualise': 'The response adds or reshapes context to support another '
                              'operation—such as supplying background for an LLM or reframing '
                              'content—without rewriting the main text itself.',
@@ -207,11 +218,19 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {'channel': {'codetour': 'The res
                     'case.',
             'diagnose': 'The response seeks likely causes of problems first, narrowing hypotheses '
                         'before proposing fixes or changes.',
+            'dimension': 'The response expands metaphorical dimensions of the subject and examines '
+                         'each axis to expose structure.',
             'direct': 'The response leads with the main point or recommendation, followed only by '
                       'the most relevant supporting context, evidence, and next steps.',
             'diverge': 'The response opens up the option space by generating multiple, diverse '
                        'possibilities or angles without prematurely judging or collapsing to a '
                        'single answer.',
+            'drum': 'The response applies multiplication or division style reasoning in a '
+                    'non-numerical way to expose proportional relationships.',
+            'dub': 'The response applies power or root style reasoning in a non-numerical way to '
+                   'reframe scale and intensity.',
+            'effects': 'The response traces second- and third-order effects before summarising the '
+                       'downstream consequences.',
             'experimental': 'The response reasons in an experimental or scientific style by '
                             'proposing concrete experiments, outlining how each would run, '
                             'describing expected outcomes, and explaining how those outcomes would '
@@ -223,9 +242,17 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {'channel': {'codetour': 'The res
                       'as pain points, risks, or open questions—and omits the rest.',
             'flow': 'The response focuses on flow over time or sequence, explaining how control, '
                     'data, or narrative progresses step by step through the material.',
+            'graph': 'The response uses graph or tree reasoning by mapping nodes, edges, '
+                     'direction, weight, and centrality to explain structural flow.',
+            'grove': 'The response applies integral or derivative style reasoning in a '
+                     'non-numerical way to explore accumulation and rate-of-change.',
+            'how': 'The response concentrates on mechanical explanation of how the subject works '
+                   'before other narration.',
             'indirect': 'The response begins with brief background, reasoning, and trade-offs and '
                         'finishes with a clear bottom-line point or recommendation that ties them '
                         'together.',
+            'invert': 'The response inverts the concept to expose its negative space and '
+                      'complementary behaviours.',
             'ladder': 'The response uses abstraction laddering by placing the focal problem, '
                       'stepping up to higher-level causes, and stepping down to consequences '
                       'ordered by importance to the audience.',
@@ -233,23 +260,43 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {'channel': {'codetour': 'The res
                           'distributed participation, short structured interactions, concrete '
                           'invitations, and visual, stepwise processes while naming or evoking '
                           'specific LS patterns when helpful.',
+            'logic': 'The response applies propositional or predicate logic reasoning in a '
+                     'non-numerical way.',
+            'map': 'The response emphasises schema mapping by detailing source and target '
+                   'structures, transformation rules, and information flow.',
             'mapping': 'The response emphasises mapping over exposition by surfacing elements, '
                        'relationships, and structure, organising them into a coherent map '
                        '(textual, tabular, or visual) rather than a linear narrative.',
+            'math': 'The response surveys applicable mathematical fields and clarifies their '
+                    'relevance to the subject.',
+            'melody': 'The response analyses coordination clusters (visibility, scope, volatility) '
+                      'and recommends adjustments to tune the system.',
+            'mod': 'The response treats the second idea as a modulus for the first to explore '
+                   'periodicity and constraint analogies.',
             'motifs': 'The response scans for recurring motifs and patterns, identifying repeated '
                       'elements, themes, clusters, and notable outliers, and briefly explaining '
                       'why they matter.',
+            'orthogonal': 'The response isolates orthogonal factors and articulates how their '
+                          'independence shapes the problem.',
             'plan': 'The response offers a short plan first and then carries it out, clearly '
                     'separating the plan from the execution.',
             'prioritize': 'The response assesses and orders items by importance or impact to the '
                           'stated audience, making the ranking and rationale explicit.',
+            'probability': 'The response applies probability or statistical reasoning to '
+                           'characterise uncertainty and likely outcomes.',
             'probe': 'The response leads with short probing questions that surface gaps and needs, '
                      'holding off on conclusions until enough signal is gathered.',
+            'recurrence': 'The response derives recurrence relationships and interprets their '
+                          'implications in plain language.',
+            'reflection': 'The response reflects the concept to reveal mirrored structure and '
+                          'complementary perspectives.',
             'rewrite': 'The response rewrites or refactors while preserving the original intent, '
                        'treating the work as a mechanical transform rather than a '
                        'reinterpretation.',
             'rigor': 'The response relies on disciplined, well-justified reasoning and makes its '
                      'logic explicit, avoiding hand-waving.',
+            'rotation': 'The response presents a metaphorical 90-degree rotation of the concept to '
+                        'surface contrasting viewpoints.',
             'samples': 'The response generates several diverse, self-contained options and, when '
                        'appropriate, attaches short descriptions and explicit numeric '
                        'probabilities that approximately sum to 1 while avoiding near-duplicate '
@@ -272,6 +319,8 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {'channel': {'codetour': 'The res
             'taxonomy': 'The response builds or refines a taxonomy by defining categories, '
                         'subtypes, and relationships to clarify structure, preferring compact '
                         'representations over prose.',
+            'tune': 'The response evaluates visibility, scope, and volatility alignment using the '
+                    'Concordance Frame and recommends tuning actions.',
             'visual': 'The response expresses the big picture using an abstract visual or '
                       'metaphorical layout as a reasoning aid—such as regions and contrasts—with a '
                       'short legend and concise, format-ready hints when helpful.',

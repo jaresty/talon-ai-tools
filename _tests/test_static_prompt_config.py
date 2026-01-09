@@ -22,7 +22,10 @@ if bootstrap is not None:
             self.assertIsNotNone(profile)
             # Sanity-check a couple of known fields so this stays aligned with
             # the configuration but does not over-specify it.
-            self.assertEqual(profile["description"], "Format this as a todo list.")
+            self.assertEqual(
+                profile["description"],
+                "The response formats the content as a todo list.",
+            )
             self.assertEqual(profile["completeness"], "gist")
 
         def test_get_static_prompt_profile_returns_none_for_unknown_prompt(
@@ -53,11 +56,13 @@ if bootstrap is not None:
 
         def test_static_prompt_axes_include_clustered_tokens(self) -> None:
             # Spot-check a few prompts that use clustered axis tokens introduced by ADR 014.
-            bridge_axes = get_static_prompt_axes("bridge")
-            self.assertEqual(bridge_axes.get("completeness"), "path")
+            done_axes = get_static_prompt_axes("done")
+            self.assertEqual(done_axes.get("form"), ["checklist"])
+            self.assertEqual(done_axes.get("scope"), ["actions"])
 
-            effects_axes = get_static_prompt_axes("effects")
-            self.assertEqual(effects_axes.get("scope"), ["dynamics"])
+            wardley_axes = get_static_prompt_axes("wardley")
+            self.assertEqual(wardley_axes.get("form"), ["table"])
+            self.assertEqual(wardley_axes.get("method"), ["steps"])
 
             context_axes = get_static_prompt_axes("context")
             self.assertEqual(context_axes.get("method"), ["contextualise"])

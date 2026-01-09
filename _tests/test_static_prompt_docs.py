@@ -32,7 +32,10 @@ if bootstrap is not None:
                 None,
             )
             self.assertIsNotNone(todo_entry, "Expected todo in catalog")
-            self.assertIn("Format this as a todo list.", todo_entry["description"])
+            self.assertIn(
+                "The response formats the content as a todo list.",
+                todo_entry["description"],
+            )
             self.assertIn("checklist", todo_entry["axes"].get("form", []))
 
             # Talon list tokens should be present for drift checks.
@@ -46,7 +49,10 @@ if bootstrap is not None:
             # A profiled prompt like "todo" should appear with its description
             # and axis defaults, since it lives in STATIC_PROMPT_CONFIG.
             self.assertIn("todo", docs)
-            self.assertIn("Format this as a todo list.", docs)
+            self.assertIn(
+                "The response formats the content as a todo list.",
+                docs,
+            )
             self.assertIn("defaults:", docs)
 
             # The fallback line listing other prompts (tokens only) should

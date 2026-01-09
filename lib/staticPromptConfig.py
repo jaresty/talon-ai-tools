@@ -58,9 +58,6 @@ STATIC_PROMPT_CONFIG: dict[str, StaticPromptProfile] = {
     "why": {
         "description": "The response explains why it matters.",
     },
-    "how": {
-        "description": "The response explains how it works.",
-    },
     "assumption": {
         "description": "The response identifies and explains the assumptions behind the subject.",
     },
@@ -195,77 +192,8 @@ STATIC_PROMPT_CONFIG: dict[str, StaticPromptProfile] = {
         "scope": "focus",
     },
     # Mathematical and abstract lenses (description-only profiles).
-    "math": {
-        "description": "The response considers mathematical fields that apply to the subject and specifies which ones are used.",
-    },
-    "orthogonal": {
-        "description": "The response identifies what is orthogonal in this situation.",
-    },
-    "bud": {
-        "description": "The response applies addition or subtraction style reasoning in a non-numerical way.",
-    },
-    "boom": {
-        "description": "The response applies limit or continuity style reasoning in a non-numerical way.",
-    },
-    "meld": {
-        "description": "The response applies set theory reasoning in a non-numerical way.",
-    },
-    "order": {
-        "description": "The response applies order or lattice theory reasoning in a non-numerical way.",
-    },
-    "logic": {
-        "description": "The response applies propositional or predicate logic reasoning in a non-numerical way.",
-    },
-    "probability": {
-        "description": "The response applies probability or statistics reasoning in a non-numerical way.",
-    },
-    "recurrence": {
-        "description": "The response derives the recurrence relation of the idea and explains its consequences in plain language.",
-    },
-    "map": {
-        "description": (
-            "The response uses data mapping and transformation concepts: it identifies source and target schemas, specifies transformation rules, and describes information flow, including loss, duplication, or enrichment."
-        ),
-    },
-    "mod": {
-        "description": "The response treats the second idea as a modulus for the first in a non-numerical analogy.",
-    },
-    "dimension": {
-        "description": "The response expands the metaphorical dimensions of the subject and describes each axis.",
-    },
-    "rotation": {
-        "description": "The response presents the 90-degree metaphorical rotation of the concept.",
-    },
-    "reflection": {
-        "description": "The response presents the metaphorical reflection of the concept.",
-    },
-    "invert": {
-        "description": "The response inverts the concept to reveal its negative space.",
-    },
-    "graph": {
-        "description": (
-            "The response applies graph or tree theory reasoning non-numerically by identifying nodes and edges, describing direction, weight, and centrality, and explaining how structure shapes flow or dependency."
-        ),
-    },
-    "grove": {
-        "description": "The response applies integral or derivative concepts in a non-numerical way.",
-    },
-    "dub": {
-        "description": "The response applies power or root concepts in a non-numerical way.",
-    },
-    "drum": {
-        "description": "The response applies multiplication or division concepts in a non-numerical way.",
-    },
     "document": {
         "description": "The response lists document or writing formats, explains why each fits, and states what perspective each reveals.",
-    },
-    "com b": {
-        "description": (
-            "The response analyses the subject using the COM-B model (Capability, Opportunity, Motivation, Behavior), identifies key enablers and barriers across those dimensions, maps them to Behavior Change Wheel intervention functions and behaviour change techniques, and outlines a minimal, testable implementation and evaluation plan."
-        ),
-        "completeness": "full",
-        "method": "rigor",
-        "scope": "focus",
     },
     # Strategy, mapping, and dependency prompts (description-only profiles).
     "wardley": {
@@ -314,32 +242,6 @@ STATIC_PROMPT_CONFIG: dict[str, StaticPromptProfile] = {
             "The response performs a connascence-driven discovery of business domains by grouping elements where multiple forms of connascence converge, describing obligations and change scenarios, and recommending boundary-strengthening remedies."
         ),
     },
-    "tune": {
-        "description": "The response evaluates the design through the Concordance Frame, focusing on visibility, scope, and dependency volatility that must stay aligned.",
-        "completeness": "full",
-        "method": "rigor",
-        "scope": "focus",
-    },
-    "melody": {
-        "description": (
-            "The response analyses the system for clusters that share coordination patterns in visibility, scope, and volatility, infers the shared intent or 'tune', and recommends ways to clarify or strengthen domains by reducing coordination cost."
-        ),
-        "completeness": "full",
-        "method": "rigor",
-        "scope": "focus",
-    },
-    "constraints": {
-        "description": "The response identifies the system's key constraint, describes behaviours it promotes and discourages, and discusses how to balance it for long-term health.",
-        "completeness": "full",
-        "method": "rigor",
-        "scope": "focus",
-    },
-    "effects": {
-        "description": "The response describes the second- and third-order effects of the situation or change.",
-        "completeness": "full",
-        "method": "steps",
-        "scope": "dynamics",
-    },
     "fix": {
         "description": "The response corrects grammar, spelling, and minor style issues while preserving meaning and tone, returning only the modified text.",
         "completeness": "full",
@@ -351,125 +253,6 @@ STATIC_PROMPT_CONFIG: dict[str, StaticPromptProfile] = {
         "method": "steps",
         "form": "checklist",
         "scope": "actions",
-    },
-    "bridge": {
-        "description": "The response outlines a path from the current state to the desired situation described in the additional source.",
-        "completeness": "path",
-        "method": "steps",
-        "scope": "focus",
-    },
-    "dependency": {
-        "description": "The response lists dependencies and the items they rely on.",
-        "scope": "relations",
-    },
-    "cochange": {
-        "description": "The response shows how each subject directly cochanges with the others.",
-        "scope": "relations",
-    },
-    "interact": {
-        "description": "The response explains how the elements interact.",
-        "scope": "relations",
-    },
-    "dependent": {
-        "description": "The response explains how the elements depend on one another.",
-        "scope": "relations",
-    },
-    "independent": {
-        "description": "The response explains how the elements remain independent.",
-        "scope": "relations",
-    },
-    "parallel": {
-        "description": "The response describes problems that could arise if the items are parallelized.",
-        "scope": "relations",
-    },
-    "unknown": {
-        "description": "The response imagines critical unknown unknowns and explains how they might impact the outcome.",
-    },
-    "jim": {
-        "description": (
-            "The response analyses the subject for connascence (Strength, Degree, Locality), identifies its type, computes Severity = Strength × Degree ÷ Locality, and proposes remedies to reduce harmful connascence."
-        ),
-    },
-    "domain": {
-        "description": (
-            "The response performs a connascence-driven discovery of business domains by grouping elements where multiple forms of connascence converge, describing obligations and change scenarios, and recommending boundary-strengthening remedies."
-        ),
-    },
-    "tune": {
-        "description": "The response evaluates the design through the Concordance Frame, focusing on visibility, scope, and dependency volatility that must stay aligned.",
-        "completeness": "full",
-        "method": "rigor",
-        "scope": "focus",
-    },
-    "melody": {
-        "description": (
-            "The response analyses the system for clusters that share coordination patterns in visibility, scope, and volatility, infers the shared intent or 'tune', and recommends ways to clarify or strengthen domains by reducing coordination cost."
-        ),
-        "completeness": "full",
-        "method": "rigor",
-        "scope": "focus",
-    },
-    "constraints": {
-        "description": "The response identifies the system's key constraint, describes behaviours it promotes and discourages, and discusses how to balance it for long-term health.",
-        "completeness": "full",
-        "method": "rigor",
-        "scope": "focus",
-    },
-    "effects": {
-        "description": "The response describes the second- and third-order effects of the situation or change.",
-        "completeness": "full",
-        "method": "steps",
-        "scope": "dynamics",
-    },
-    "fix": {
-        "description": "The response corrects grammar, spelling, and minor style issues while keeping meaning and tone, returning only the modified text.",
-        "completeness": "full",
-        "scope": "narrow",
-    },
-    "todo": {
-        "description": "The response formats the material as a todo list.",
-        "completeness": "gist",
-        "method": "steps",
-        "form": "checklist",
-        "scope": "actions",
-    },
-    "bridge": {
-        "description": "The response guides the reader from the current state to the desired situation described in the additional source.",
-        "completeness": "path",
-        "method": "steps",
-        "scope": "focus",
-    },
-    "constraints": {
-        "description": "Identify the key constraint in this system, describe behaviours it promotes and discourages, and discuss how to balance it for long-term health.",
-        "completeness": "full",
-        "method": "rigor",
-        "scope": "focus",
-    },
-    "effects": {
-        "description": "Describe the second- and third-order effects of this situation or change.",
-        "completeness": "full",
-        "method": "steps",
-        "scope": "dynamics",
-    },
-    # Fix-style prompts tend to want solid, local, code-level edits.
-    "fix": {
-        "description": "Fix grammar, spelling, and minor style issues while keeping meaning and tone; return only the modified text.",
-        "completeness": "full",
-        "scope": "narrow",
-    },
-    # TODO and planning prompts are usually concise, stepwise, and bullet-oriented.
-    "todo": {
-        "description": "Format this as a todo list.",
-        "completeness": "gist",
-        "method": "steps",
-        "form": "checklist",
-        "scope": "actions",
-    },
-    "bridge": {
-        "description": "Guide me from the current state to the desired situation described in the additional source.",
-        "completeness": "path",
-        "method": "steps",
-        "scope": "focus",
     },
     # Document-shaped and summary-style outputs.
 }

@@ -177,6 +177,10 @@ func Build(g *Grammar, tokens []string) (*BuildResult, *CLIError) {
 			continue
 		}
 
+		if token == skipSectionToken {
+			continue
+		}
+
 		if err := state.requireSlugInput(token, source); err != nil {
 			return nil, err
 		}

@@ -68,8 +68,8 @@
 
 ## 2026-01-09 — loop 007
 - helper_version: helper:v20251223.1
-- focus: Decision § surfacing — extend Who/How/Why framing to persona completions without leaking CLI syntax into Talon canvases
-- active_constraint: Persona suggestions still used raw category names (`persona.voice`, etc.), leaving the What/How/Why mental model incomplete and making it harder to understand shorthand versus persona controls.
+- focus: Decision § surfacing — align CLI completions with the What/How/Why contract while keeping Talon canvases free of shorthand syntax
+- active_constraint: Build-stage completions still presented raw axis names (“static”, “completeness”, etc.) without clarifying What vs. How, making it harder to apply ADR 0070’s mental model and risking shorthand leakage into Talon help copy.
 - validation_targets:
   - go test ./...
 - evidence:
@@ -82,6 +82,24 @@
   - None; CLI completions and tests encode the full framing.
 - next_work:
   - Behaviour: None scheduled.
+
+## 2026-01-09 — loop 008
+- helper_version: helper:v20251223.1
+- focus: Decision § surfacing — add skip navigation and reorder completion groups so Why/Who lead, What follows, and How last
+- active_constraint: CLI completions still interleaved persona/axis tokens and offered voice/audience/tone even after selecting a persona preset, making it tedious to jump sections and easy to misapply ADR 0070’s What/How boundary.
+- validation_targets:
+  - go test ./...
+- evidence:
+  - green: docs/adr/evidence/0070-static-prompt-task-method-separation/loop-008.md#loop-008-green--helper-diff-snapshot-git-diff----stat
+  - green: docs/adr/evidence/0070-static-prompt-task-method-separation/loop-008.md#loop-008-green--helper-rerun-go-test
+- rollback_plan: `git restore --source=HEAD -- internal/barcli/build.go internal/barcli/completion.go internal/barcli/completion_test.go docs/adr/0070-static-prompt-task-method-separation.work-log.md docs/adr/evidence/0070-static-prompt-task-method-separation/loop-008.md`
+- delta_summary: helper:diff-snapshot=3 files changed, 154 insertions(+), 41 deletions(-) — introduced a `//next` skip sentinel, reordered completions to Why → Who → What → How, suppressed voice/audience/tone suggestions once a preset is chosen, and expanded tests accordingly.
+- loops_remaining_forecast: 0 loops — CLI navigation now mirrors the mental model and provides an explicit skip affordance.
+- residual_constraints:
+  - None; skip token is stripped before build execution and covered by go tests.
+- next_work:
+  - Behaviour: None scheduled.
+
 
 ## 2026-01-09 — loop 004
 - helper_version: helper:v20251223.1

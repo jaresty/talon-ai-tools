@@ -143,6 +143,8 @@ complete -c bar -e
 complete -k -c bar -f -a '(__fish_bar_completions)'
 `
 
+const skipSectionToken = "//next"
+
 type completionCatalog struct {
 	static          []string
 	completeness    []string
@@ -208,12 +210,16 @@ func newSuggestion(grammar *Grammar, value, category, description string, append
 	}
 
 	return completionSuggestion{
-		Value:        trimmedValue,
+		Value:        sanitizedValue,
 		TrimmedValue: trimmedValue,
 		Category:     sanitizedCategory,
 		Description:  sanitizedDescription,
-		AppendSpace:  appendSpace && trimmedValue != "",
+		AppendSpace:  appendSpace,
 	}
+}
+
+func skipSectionSuggestion() completionSuggestion {
+	return newSuggestion(nil, skipSectionToken, "Skip", "Skip to next completion section", true, false)
 }
 
 func suggestionsWithDescriptions(grammar *Grammar, tokens []string, category string, descriptionFn func(string) string, appendSpace bool, useSlug bool) []completionSuggestion {
@@ -410,12 +416,24 @@ func personaPresetDescription(grammar *Grammar, preset string) string {
 func buildPersonaSuggestions(grammar *Grammar, catalog completionCatalog, state completionState) []completionSuggestion {
 	seen := make(map[string]struct{})
 	results := make([]completionSuggestion, 0)
+
+	if !state.personaIntent {
+		results = appendUniqueSuggestions(results, seen, suggestionsWithDescriptions(grammar, catalog.personaIntent, "Why (intent)", func(token string) string {
+			desc := strings.TrimSpace(grammar.PersonaDescription("intent", token))
+			if desc == "" {
+				return token
+			}
+			return desc
+		}, false, true))
+	}
+
 	if !state.personaPreset {
 		results = appendUniqueSuggestions(results, seen, suggestionsWithDescriptions(grammar, catalog.personaPreset, "Who (persona preset)", func(token string) string {
 			return personaPresetDescription(grammar, token)
 		}, false, true))
 	}
-	if !state.personaVoice {
+
+	if !state.personaPreset && !state.personaVoice {
 		results = appendUniqueSuggestions(results, seen, suggestionsWithDescriptions(grammar, catalog.personaVoice, "Who (voice)", func(token string) string {
 			desc := strings.TrimSpace(grammar.PersonaDescription("voice", token))
 			if desc == "" {
@@ -424,7 +442,8 @@ func buildPersonaSuggestions(grammar *Grammar, catalog completionCatalog, state 
 			return desc
 		}, false, true))
 	}
-	if !state.personaAudience {
+
+	if !state.personaPreset && !state.personaAudience {
 		results = appendUniqueSuggestions(results, seen, suggestionsWithDescriptions(grammar, catalog.personaAudience, "Who (audience)", func(token string) string {
 			desc := strings.TrimSpace(grammar.PersonaDescription("audience", token))
 			if desc == "" {
@@ -433,18 +452,10 @@ func buildPersonaSuggestions(grammar *Grammar, catalog completionCatalog, state 
 			return desc
 		}, false, true))
 	}
-	if !state.personaTone {
+
+	if !state.personaPreset && !state.personaTone {
 		results = appendUniqueSuggestions(results, seen, suggestionsWithDescriptions(grammar, catalog.personaTone, "How (tone)", func(token string) string {
 			desc := strings.TrimSpace(grammar.PersonaDescription("tone", token))
-			if desc == "" {
-				return token
-			}
-			return desc
-		}, false, true))
-	}
-	if !state.personaIntent {
-		results = appendUniqueSuggestions(results, seen, suggestionsWithDescriptions(grammar, catalog.personaIntent, "Why (intent)", func(token string) string {
-			desc := strings.TrimSpace(grammar.PersonaDescription("intent", token))
 			if desc == "" {
 				return token
 			}
@@ -626,16 +637,23 @@ func completeBuild(grammar *Grammar, catalog completionCatalog, words []string, 
 	}
 
 	seen := make(map[string]struct{})
-	staticSuggestions := make([]completionSuggestion, 0)
+	results := make([]completionSuggestion, 0)
 	optionalSuggestions := make([]completionSuggestion, 0)
 
 	if state.override {
-		staticSuggestions = appendUniqueSuggestions(staticSuggestions, seen, buildOverrideSuggestions(grammar, catalog))
-		return filterSuggestionsByPrefix(grammar, staticSuggestions, prefix), nil
+		results = appendUniqueSuggestions(results, seen, buildOverrideSuggestions(grammar, catalog))
+		return filterSuggestionsByPrefix(grammar, results, prefix), nil
+	}
+
+	personaSuggestions := buildPersonaSuggestions(grammar, catalog, state)
+	if len(personaSuggestions) > 0 {
+		skip := skipSectionSuggestion()
+		results = appendUniqueSuggestions(results, seen, []completionSuggestion{skip})
+		results = appendUniqueSuggestions(results, seen, personaSuggestions)
 	}
 
 	if !state.static && !state.staticClosed {
-		staticSuggestions = appendUniqueSuggestions(staticSuggestions, seen, buildStaticSuggestions(grammar, catalog))
+		results = appendUniqueSuggestions(results, seen, buildStaticSuggestions(grammar, catalog))
 	}
 
 	axisOrder := make(map[string]int, len(grammar.axisPriority))
@@ -737,11 +755,7 @@ func completeBuild(grammar *Grammar, catalog completionCatalog, words []string, 
 		}
 	}
 
-	if persona := buildPersonaSuggestions(grammar, catalog, state); len(persona) > 0 {
-		optionalSuggestions = appendUniqueSuggestions(optionalSuggestions, seen, persona)
-	}
-
-	results := append(staticSuggestions, optionalSuggestions...)
+	results = append(results, optionalSuggestions...)
 
 	return filterSuggestionsByPrefix(grammar, results, prefix), nil
 }
@@ -917,6 +931,14 @@ func collectShorthandState(grammar *Grammar, tokens []string) completionState {
 	for i := 0; i < len(normalized); i++ {
 		token := strings.TrimSpace(normalized[i])
 		if token == "" {
+			continue
+		}
+		if token == skipSectionToken {
+			state.personaPreset = true
+			state.personaVoice = true
+			state.personaAudience = true
+			state.personaTone = true
+			state.personaIntent = true
 			continue
 		}
 		lower := strings.ToLower(token)

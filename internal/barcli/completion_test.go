@@ -30,6 +30,15 @@ func containsSuggestionValue(list []completionSuggestion, needle string) bool {
 	return ok
 }
 
+func containsSuggestionCategory(list []completionSuggestion, category string) bool {
+	for _, item := range list {
+		if item.Category == category {
+			return true
+		}
+	}
+	return false
+}
+
 func indexOfSuggestion(list []completionSuggestion, needle string) int {
 	for idx, item := range list {
 		if item.TrimmedValue == needle {
@@ -125,6 +134,17 @@ func TestCompleteStaticStage(t *testing.T) {
 	if !ok {
 		t.Fatalf("expected static token 'todo', got %v", suggestions)
 	}
+	skip, ok := findSuggestion(suggestions, skipSectionToken)
+	if !ok {
+		t.Fatalf("expected skip suggestion %q, got %v", skipSectionToken, suggestions)
+	}
+	if skip.Category != "Skip" {
+		t.Fatalf("expected skip category 'Skip', got %q", skip.Category)
+	}
+	if strings.TrimSpace(skip.Value) != skipSectionToken {
+		t.Fatalf("expected skip suggestion to return %q, got %q", skipSectionToken, skip.Value)
+	}
+
 	if todo.Category != "What (static prompt)" {
 		t.Fatalf("expected category 'What (static prompt)' for todo, got %q", todo.Category)
 	}
@@ -332,6 +352,26 @@ func TestCompletePersonaStage(t *testing.T) {
 	}
 }
 
+func TestPersonaPresetSkipsPersonaDetailSuggestions(t *testing.T) {
+	grammar := loadCompletionGrammar(t)
+
+	words := []string{"bar", "build", "persona=coach_junior", ""}
+	suggestions, err := Complete(grammar, "bash", words, len(words)-1)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	if containsSuggestionCategory(suggestions, "Who (voice)") {
+		t.Fatalf("did not expect persona voice suggestions after preset, got %v", suggestions)
+	}
+	if containsSuggestionCategory(suggestions, "Who (audience)") {
+		t.Fatalf("did not expect persona audience suggestions after preset, got %v", suggestions)
+	}
+	if containsSuggestionCategory(suggestions, "How (tone)") {
+		t.Fatalf("did not expect persona tone suggestions after preset, got %v", suggestions)
+	}
+}
+
 func TestCompleteDirectionalSuggestionsWithoutChannel(t *testing.T) {
 	grammar := loadCompletionGrammar(t)
 
@@ -431,13 +471,25 @@ func TestCompleteOptionalAxesWithoutStatic(t *testing.T) {
 	if todoIdx == -1 {
 		t.Fatalf("expected static suggestion 'todo', got %v", suggestions)
 	}
+
 	for _, value := range expected {
+		suggestion, ok := findSuggestion(suggestions, value)
+		if !ok {
+			t.Fatalf("expected suggestion %q", value)
+		}
 		idx := indexOfSuggestion(suggestions, value)
 		if idx == -1 {
 			t.Fatalf("expected suggestion %q to have index", value)
 		}
+		category := suggestion.Category
+		if category == "Why (intent)" || strings.HasPrefix(category, "Who ") || category == "How (tone)" {
+			if idx > todoIdx {
+				t.Fatalf("expected persona suggestion %q (%s) to appear before static 'todo'", value, category)
+			}
+			continue
+		}
 		if idx < todoIdx {
-			t.Fatalf("expected %q to appear after static suggestion 'todo'", value)
+			t.Fatalf("expected %q (%s) to appear after static suggestion 'todo'", value, category)
 		}
 	}
 }
@@ -452,17 +504,29 @@ func TestCompleteOptionalOrderingFollowsAxisPriority(t *testing.T) {
 		t.Fatalf("unexpected error: %v", err)
 	}
 
-	order := make([]string, 0)
-	addToken := func(token string) {
+	axisOrder := make([]string, 0)
+	personaOrder := make([]string, 0)
+	addAxisToken := func(token string) {
 		if token == "" {
 			return
 		}
 		slug := grammar.slugForToken(token)
 		if slug != "" {
-			order = append(order, slug)
+			axisOrder = append(axisOrder, slug)
 			return
 		}
-		order = append(order, token)
+		axisOrder = append(axisOrder, token)
+	}
+	addPersonaToken := func(token string) {
+		if token == "" {
+			return
+		}
+		slug := grammar.slugForToken(token)
+		if slug != "" {
+			personaOrder = append(personaOrder, slug)
+			return
+		}
+		personaOrder = append(personaOrder, token)
 	}
 
 	for _, axis := range grammar.axisPriority {
@@ -486,38 +550,61 @@ func TestCompleteOptionalOrderingFollowsAxisPriority(t *testing.T) {
 		if len(tokens) == 0 {
 			continue
 		}
-		addToken(tokens[0])
+		addAxisToken(tokens[0])
 	}
 
 	if len(catalog.personaPreset) > 0 {
-		addToken(catalog.personaPreset[0])
+		addPersonaToken(catalog.personaPreset[0])
 	}
 	if len(catalog.personaVoice) > 0 {
-		addToken(catalog.personaVoice[0])
+		addPersonaToken(catalog.personaVoice[0])
 	}
 	if len(catalog.personaAudience) > 0 {
-		addToken(catalog.personaAudience[0])
+		addPersonaToken(catalog.personaAudience[0])
 	}
 	if len(catalog.personaTone) > 0 {
-		addToken(catalog.personaTone[0])
+		addPersonaToken(catalog.personaTone[0])
 	}
 	if len(catalog.personaIntent) > 0 {
-		addToken(catalog.personaIntent[0])
+		addPersonaToken(catalog.personaIntent[0])
 	}
 
-	for _, value := range order {
-		if !containsSuggestionValue(suggestions, value) {
-			t.Fatalf("expected suggestion %q, got %v", value, suggestions)
+	minAxisIdx := len(suggestions)
+	for _, value := range axisOrder {
+		idx := indexOfSuggestion(suggestions, value)
+		if idx == -1 {
+			t.Fatalf("expected axis suggestion %q", value)
+		}
+		if idx < minAxisIdx {
+			minAxisIdx = idx
 		}
 	}
-	for i := 0; i < len(order)-1; i++ {
-		first := indexOfSuggestion(suggestions, order[i])
-		second := indexOfSuggestion(suggestions, order[i+1])
+	for _, value := range personaOrder {
+		if !containsSuggestionValue(suggestions, value) {
+			t.Fatalf("expected persona suggestion %q, got %v", value, suggestions)
+		}
+	}
+
+	if len(axisOrder) > 0 {
+		for _, value := range personaOrder {
+			idx := indexOfSuggestion(suggestions, value)
+			if idx == -1 {
+				t.Fatalf("expected persona suggestion %q", value)
+			}
+			if idx > minAxisIdx {
+				t.Fatalf("expected persona suggestion %q to appear before axis suggestions", value)
+			}
+		}
+	}
+
+	for i := 0; i < len(axisOrder)-1; i++ {
+		first := indexOfSuggestion(suggestions, axisOrder[i])
+		second := indexOfSuggestion(suggestions, axisOrder[i+1])
 		if first == -1 || second == -1 {
-			t.Fatalf("expected indexes for %q and %q", order[i], order[i+1])
+			t.Fatalf("expected indexes for %q and %q", axisOrder[i], axisOrder[i+1])
 		}
 		if first > second {
-			t.Fatalf("expected %q to appear before %q", order[i], order[i+1])
+			t.Fatalf("expected %q to appear before %q", axisOrder[i], axisOrder[i+1])
 		}
 	}
 }

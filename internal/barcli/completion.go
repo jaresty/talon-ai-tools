@@ -340,18 +340,22 @@ func filterSuggestionsByPrefix(grammar *Grammar, suggestions []completionSuggest
 }
 
 func buildStaticSuggestions(grammar *Grammar, catalog completionCatalog) []completionSuggestion {
-	return suggestionsWithDescriptions(grammar, catalog.static, "static", func(token string) string {
+	return suggestionsWithDescriptions(grammar, catalog.static, "What (static prompt)", func(token string) string {
 		return strings.TrimSpace(grammar.StaticPromptDescription(token))
 	}, false, true)
 }
 
+func axisDescriptionWithKeyword(grammar *Grammar, axis, token string) string {
+	desc := strings.TrimSpace(grammar.AxisDescription(axis, token))
+	if desc == "" {
+		desc = token
+	}
+	return fmt.Sprintf("%s — use %s=%s", desc, axis, token)
+}
+
 func buildAxisSuggestions(grammar *Grammar, axis string, tokens []string) []completionSuggestion {
-	return suggestionsWithDescriptions(grammar, tokens, axis, func(token string) string {
-		desc := strings.TrimSpace(grammar.AxisDescription(axis, token))
-		if desc == "" {
-			return token
-		}
-		return desc
+	return suggestionsWithDescriptions(grammar, tokens, fmt.Sprintf("How (%s axis)", axis), func(token string) string {
+		return axisDescriptionWithKeyword(grammar, axis, token)
 	}, false, true)
 }
 
@@ -371,8 +375,8 @@ func buildScopeSuggestions(grammar *Grammar, catalog completionCatalog, state co
 	if len(suggestions) == 0 {
 		return nil
 	}
-	return suggestionsWithDescriptions(grammar, suggestions, "scope", func(token string) string {
-		return strings.TrimSpace(grammar.AxisDescription("scope", token))
+	return suggestionsWithDescriptions(grammar, suggestions, "How (scope axis)", func(token string) string {
+		return axisDescriptionWithKeyword(grammar, "scope", token)
 	}, false, true)
 }
 
@@ -388,8 +392,8 @@ func buildMethodSuggestions(grammar *Grammar, catalog completionCatalog, state c
 	if len(suggestions) == 0 {
 		return nil
 	}
-	return suggestionsWithDescriptions(grammar, suggestions, "method", func(token string) string {
-		return strings.TrimSpace(grammar.AxisDescription("method", token))
+	return suggestionsWithDescriptions(grammar, suggestions, "How (method axis)", func(token string) string {
+		return axisDescriptionWithKeyword(grammar, "method", token)
 	}, false, true)
 }
 
@@ -439,7 +443,7 @@ func buildPersonaSuggestions(grammar *Grammar, catalog completionCatalog, state 
 		}, false, true))
 	}
 	if !state.personaIntent {
-		results = appendUniqueSuggestions(results, seen, suggestionsWithDescriptions(grammar, catalog.personaIntent, "persona.intent", func(token string) string {
+		results = appendUniqueSuggestions(results, seen, suggestionsWithDescriptions(grammar, catalog.personaIntent, "Why (intent)", func(token string) string {
 			desc := strings.TrimSpace(grammar.PersonaDescription("intent", token))
 			if desc == "" {
 				return token

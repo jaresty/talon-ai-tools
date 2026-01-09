@@ -3,6 +3,10 @@
 - Run tests with `python3 -m pytest` from the repo root.
 - Avoid using the bare `pytest` command; it may not be available in all environments.
 
+### Surface-specific usage hints
+
+- Keep CLI completion/help wording distinct from Talon canvases. Showing CLI syntax (for example, `method=steps`) inside Talon UI overlays confuses operators; prefer higher-level phrasing there and reserve shorthand tutorials for CLI outputs/docs.
+
 ### Tests and the Talon runtime
 
 - Do **not** rely on tests running inside the Talon process; tests should be executed via `python3 -m pytest` from this repo, not by Talon’s module loader.

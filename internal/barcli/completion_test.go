@@ -125,8 +125,8 @@ func TestCompleteStaticStage(t *testing.T) {
 	if !ok {
 		t.Fatalf("expected static token 'todo', got %v", suggestions)
 	}
-	if todo.Category != "static" {
-		t.Fatalf("expected category 'static' for todo, got %q", todo.Category)
+	if todo.Category != "What (static prompt)" {
+		t.Fatalf("expected category 'What (static prompt)' for todo, got %q", todo.Category)
 	}
 	if strings.HasSuffix(todo.Value, " ") {
 		t.Fatalf("expected static suggestion without trailing space, got %q", todo.Value)
@@ -148,8 +148,8 @@ func TestCompleteMovesToCompleteness(t *testing.T) {
 	if !ok {
 		t.Fatalf("expected completeness token 'full', got %v", suggestions)
 	}
-	if full.Category != "completeness" {
-		t.Fatalf("expected category 'completeness' for full, got %q", full.Category)
+	if full.Category != "How (completeness axis)" {
+		t.Fatalf("expected category 'How (completeness axis)' for full, got %q", full.Category)
 	}
 	if strings.HasSuffix(full.Value, " ") {
 		t.Fatalf("expected completeness suggestion without trailing space, got %q", full.Value)
@@ -171,8 +171,8 @@ func TestCompleteScopeAndMethodConcurrent(t *testing.T) {
 	if !ok {
 		t.Fatalf("expected scope token 'focus', got %v", suggestions)
 	}
-	if scopeSuggestion.Category != "scope" {
-		t.Fatalf("expected scope category for focus, got %q", scopeSuggestion.Category)
+	if scopeSuggestion.Category != "How (scope axis)" {
+		t.Fatalf("expected scope category 'How (scope axis)' for focus, got %q", scopeSuggestion.Category)
 	}
 	if strings.HasSuffix(scopeSuggestion.Value, " ") {
 		t.Fatalf("expected scope suggestion without trailing space, got %q", scopeSuggestion.Value)
@@ -196,8 +196,8 @@ func TestCompleteScopeAndMethodConcurrent(t *testing.T) {
 	if !ok {
 		t.Fatalf("expected method token 'steps', got %v", suggestions)
 	}
-	if methodSuggestion.Category != "method" {
-		t.Fatalf("expected method category for steps, got %q", methodSuggestion.Category)
+	if methodSuggestion.Category != "How (method axis)" {
+		t.Fatalf("expected method category 'How (method axis)' for steps, got %q", methodSuggestion.Category)
 	}
 	if strings.HasSuffix(methodSuggestion.Value, " ") {
 		t.Fatalf("expected method suggestion without trailing space, got %q", methodSuggestion.Value)

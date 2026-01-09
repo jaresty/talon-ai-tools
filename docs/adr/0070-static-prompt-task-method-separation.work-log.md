@@ -49,6 +49,23 @@
 - next_work:
   - Behaviour: None; reopen only if future guardrail coverage is needed.
 
+## 2026-01-09 — loop 006
+- helper_version: helper:v20251223.1
+- focus: Decision § surfacing — align CLI completions with the What/How/Why contract while keeping Talon canvases free of shorthand syntax
+- active_constraint: Build-stage completions still presented raw axis names (“static”, “completeness”, etc.) without clarifying What vs. How, making it harder to apply ADR 0070’s mental model and risking shorthand leakage into Talon help copy.
+- validation_targets:
+  - go test ./...
+- evidence:
+  - green: docs/adr/evidence/0070-static-prompt-task-method-separation/loop-006.md#loop-006-green--helper-diff-snapshot-git-diff----stat
+  - green: docs/adr/evidence/0070-static-prompt-task-method-separation/loop-006.md#loop-006-green--helper-rerun-go-test
+- rollback_plan: `git restore --source=HEAD -- AGENTS.md internal/barcli/completion.go internal/barcli/completion_test.go docs/adr/0070-static-prompt-task-method-separation.work-log.md docs/adr/evidence/0070-static-prompt-task-method-separation/loop-006.md`
+- delta_summary: helper:diff-snapshot=3 files changed, 28 insertions(+), 20 deletions(-) — retitled CLI completion categories to “What / How / Why”, appended axis keyword hints, adjusted tests, and added an AGENTS note reaffirming the CLI-vs-canvas separation.
+- loops_remaining_forecast: 0 loops — surfacing now reinforces the separation without confusing Talon users.
+- residual_constraints:
+  - None; CLI/tests now cover the presentation contract.
+- next_work:
+  - Behaviour: None scheduled.
+
 ## 2026-01-09 — loop 004
 - helper_version: helper:v20251223.1
 - focus: Decision § guardrails — ensure every axis description remains declarative as part of ADR 0070’s separation contract

@@ -31,6 +31,7 @@ Proposed — Bubble Tea TUI improves prompt editing ergonomics for the Go CLI (2
 ## Validation
 - `go test ./cmd/bar/...` covers the minimal `bar tui` wiring by compiling and exercising the CLI entrypoint with existing shared helpers.
 - `bar tui --fixture cmd/bar/testdata/tui_smoke.json --no-alt-screen` exercises the deterministic snapshot harness and validates preview/layout output without entering the interactive loop.
+- `python3 -m pytest _tests/test_bar_completion_cli.py` keeps CLI completions and installers aligned with the prompt grammar, ensuring the `bar tui` command surfaces in shell hints.
 
 ---
 

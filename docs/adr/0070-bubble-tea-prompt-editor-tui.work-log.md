@@ -388,4 +388,20 @@
 - next_work:
   - Behaviour: Execute packaging updates when implementation loop starts.
 
+## 2026-01-09 — loop 026
+- helper_version: helper:v20251223.1
+- focus: ADR Validation — add CLI completion pytest to the canonical guardrails
+- active_constraint: Validation list still omitted the `_tests/test_bar_completion_cli.py` guardrail even though the Decision and Salient Tasks rely on completion parity for `bar tui`.
+- validation_targets:
+  - documentation-only (no executable commands)
+- evidence:
+  - green: docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-026.md#loop-026-green--helper-diff-snapshot-git-diff--stat
+- rollback_plan: `git restore --source=HEAD -- docs/adr/0070-bubble-tea-prompt-editor-tui.md docs/adr/0070-bubble-tea-prompt-editor-tui.work-log.md docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-026.md`
+- delta_summary: helper:diff-snapshot=git diff --stat | docs/adr/0070-bubble-tea-prompt-editor-tui.md (added completion pytest to Validation section).
+- loops_remaining_forecast: 0 loops — all canonical guardrails now documented; future loops will execute the tasks.
+- residual_constraints:
+  - None (completion guardrail now referenced explicitly).
+- next_work:
+  - Behaviour: Execute packaging and completion guardrail loops when implementation tasks proceed.
+
 

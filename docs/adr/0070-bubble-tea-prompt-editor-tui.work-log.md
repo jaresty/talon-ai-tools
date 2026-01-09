@@ -222,3 +222,21 @@
 - next_work:
   - Behaviour: Implement MVP `bar tui` entrypoint with shared packages, add smoke run, and document pilot instructions (validation via go test ./cmd/bar/... and go run ./cmd/bar tui --fixture cmd/bar/testdata/grammar.json --no-alt-screen).
 
+## 2026-01-09 — loop 016
+- helper_version: helper:v20251223.1
+- focus: Salient Tasks — implement MVP `bar tui` entrypoint that boots the Bubble Tea program via existing CLI wiring
+- active_constraint: CLI completion metadata still omits the new `bar tui` command, leaving operators without shell discoverability until completions and fixtures are refreshed (validation via python3 -m pytest _tests/test_bar_completion_cli.py once updated).
+- validation_targets:
+  - go test -count=1 ./cmd/bar/...
+- evidence:
+  - green: docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-016.md#loop-016-green--go-test--count1-cmd-bar
+- rollback_plan: `git restore --source=HEAD -- cmd/bar/main_test.go go.mod go.sum internal/barcli/app.go internal/barcli/tui.go internal/bartui/program.go docs/adr/0070-bubble-tea-prompt-editor-tui.work-log.md docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-016.md`
+- delta_summary: helper:diff-snapshot=git diff --stat | go.mod (+Bubble Tea deps), internal/barcli/app.go (+`bar tui` routing); added internal/bartui/program.go Bubble Tea scaffold, internal/barcli/tui.go bridge, cmd/bar/main_test.go CLI tests, and go.sum module graph.
+- loops_remaining_forecast: 3 loops (refresh CLI completions, extend TUI state interactions, document pilot flow) — medium confidence with MVP entrypoint green but shell discoverability pending.
+- residual_constraints:
+  - CLI completion metadata has not been regenerated to surface `bar tui` (severity: high; mitigation: extend completion command tables and fixtures; monitoring: python3 -m pytest _tests/test_bar_completion_cli.py).
+  - Interactive smoke test harness for Bubble Tea panes remains absent (severity: medium; mitigation: capture `go run ./cmd/bar tui` transcript and template automation; monitoring: manual transcript diff until tooling lands).
+- next_work:
+  - Behaviour: Refresh CLI completion scripts and fixtures to include `bar tui`, ensuring shell hints cover the new command (validation via python3 -m pytest _tests/test_bar_completion_cli.py and go test ./cmd/bar/... once completions land).
+
+

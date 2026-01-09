@@ -12,7 +12,7 @@ import (
 
 const (
 	buildUsage = "usage: bar build [tokens...] [options]"
-	topUsage   = "usage: bar [build|help|completion|preset]"
+	topUsage   = "usage: bar [build|help|completion|preset|tui]"
 )
 
 var generalHelpText = strings.TrimSpace(`USAGE
@@ -21,6 +21,7 @@ var generalHelpText = strings.TrimSpace(`USAGE
 
   bar help
   bar help tokens [section...] [--grammar PATH]
+  bar tui [tokens...] [--grammar PATH]
  
    bar completion <shell> [--grammar PATH] [--output FILE]
      (shell = bash | zsh | fish)
@@ -76,12 +77,14 @@ var generalHelpText = strings.TrimSpace(`USAGE
  COMMANDS
 
   build        Construct a prompt recipe from shorthand tokens or key=value overrides.
-                Accepts input via --prompt, --input, or STDIN (piped).
-   help         Show this message.
-   help tokens  List available static prompts, contract axes, persona presets, and multi-word tokens
-                using the exported prompt grammar.
-   completion   Emit shell completion scripts (bash, zsh, fish) informed by the exported grammar.
-   preset       Manage cached build presets (save/list/show/use/delete) derived from the last
+                 Accepts input via --prompt, --input, or STDIN (piped).
+    help         Show this message.
+    help tokens  List available static prompts, contract axes, persona presets, and multi-word tokens
+                 using the exported prompt grammar.
+    tui          Launch the Bubble Tea prompt editor to capture subject text and preview recipes.
+    completion   Emit shell completion scripts (bash, zsh, fish) informed by the exported grammar.
+    preset       Manage cached build presets (save/list/show/use/delete) derived from the last
+
                  successful "bar build" invocation.
                  Use "bar preset use <name>" with --prompt/--input or piped text to rebuild
                  the recipe against fresh subject content.
@@ -130,6 +133,10 @@ func Run(args []string, stdin io.Reader, stdout, stderr io.Writer) int {
 
 	if options.Command == "preset" {
 		return runPreset(options, stdin, stdout, stderr)
+	}
+
+	if options.Command == "tui" {
+		return runTUI(options, stdin, stdout, stderr)
 	}
 
 	if options.Command != "build" {

@@ -683,3 +683,41 @@
   - Behaviour: Execute packaging and completion guardrail loops when implementation tasks proceed.
 
 
+## 2026-01-09 — loop 043
+- helper_version: helper:v20251223.1
+- focus: Decision § subject import/export — add running indicator and cancellable command flow for Bubble Tea subject piping
+- active_constraint: Bubble Tea TUI still executed preview/subject commands synchronously with no running-state indicator, and pressing Esc quit the program instead of cancelling; this violated the Decision’s subject import/export guardrail and left pilots without a way to stop long-running commands proven by `go test ./internal/bartui`.
+- validation_targets:
+  - go test ./internal/bartui
+  - go test ./cmd/bar/...
+  - python3 -m pytest _tests/test_bar_completion_cli.py
+- evidence:
+  - red: docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-043.md#loop-043-red--go-test-internal-bartui
+  - green: docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-043.md#loop-043-green--go-test-internal-bartui
+  - green: docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-043.md#loop-043-green--go-test-cmd-bar
+  - green: docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-043.md#loop-043-green--python3--m-pytest-_tests-test_bar_completion_cli.py
+- rollback_plan: `git restore --source=HEAD -- internal/bartui/program.go internal/bartui/program_test.go docs/adr/0070-bubble-tea-prompt-editor-tui.work-log.md docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-043.md`
+- delta_summary: helper:diff-snapshot=git diff --stat HEAD | internal/bartui/program.go (asynchronous command runner + cancellation); internal/bartui/program_test.go (cancellation coverage) — implemented cancellable command execution, running indicator messaging, and ESC guardrail tests.
+- loops_remaining_forecast: 0 loops — command cancellation and running indicator now satisfy the Decision; any follow-ups depend on pilot telemetry.
+- residual_constraints:
+  - None (no additional medium/high constraints surfaced during this loop).
+- next_work:
+  - Behaviour: Monitor pilot telemetry for Bubble Tea command ergonomics and schedule follow-up loops if new high-severity UX gaps emerge (validation via go test ./cmd/bar/... and python3 -m pytest _tests/test_bar_completion_cli.py when changes occur).
+
+
+## 2026-01-09 — loop 044
+- helper_version: helper:v20251223.1
+- focus: Decision § subject import/export — document environment variable pass-through guardrail
+- active_constraint: ADR 0070 did not specify how Bubble Tea's subject piping should handle environment variables needed by downstream CLIs, leaving pilots without explicit opt-in guidance and increasing accidental credential leakage risk.
+- validation_targets:
+  - documentation-only (no executable commands)
+- evidence:
+  - green: docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-044.md#loop-044-green--helper-diff-snapshot-git-diff--stat-head-docs-adr-0070-bubble-tea-prompt-editor-tui.md-docs-adr-0070-bubble-tea-prompt-editor-tui-work-log.md
+- rollback_plan: `git restore --source=HEAD -- docs/adr/0070-bubble-tea-prompt-editor-tui.md docs/adr/0070-bubble-tea-prompt-editor-tui.work-log.md docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-044.md`
+- delta_summary: helper:diff-snapshot=git diff --stat HEAD docs/adr/0070-bubble-tea-prompt-editor-tui.md docs/adr/0070-bubble-tea-prompt-editor-tui.work-log.md — recorded the env allowlist requirement and captured the loop in the work-log.
+- loops_remaining_forecast: 1 loop — implement env allowlist plumbing and validation once guardrails are designed.
+- residual_constraints:
+  - Environment variable pass-through affordance remains unbuilt; implementation must add explicit allowlists and logging (severity: medium; mitigation: implement feature with go test ./internal/bartui; monitoring: manual TUI run until automated coverage lands).
+- next_work:
+  - Behaviour: Implement environment variable pass-through allowlist in the Bubble Tea TUI (validation via go test ./internal/bartui and go test ./cmd/bar/... once code lands).
+

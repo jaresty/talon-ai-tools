@@ -2,6 +2,7 @@ package bartui
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"io"
 	"strings"
@@ -103,6 +104,18 @@ type commandResult struct {
 	UsedPreview bool
 }
 
+type commandMode int
+
+const (
+	commandModeSubject commandMode = iota
+	commandModePreview
+)
+
+type commandFinishedMsg struct {
+	result commandResult
+	mode   commandMode
+}
+
 func (r commandResult) empty() bool {
 	return r.Command == "" && r.Stdout == "" && r.Stderr == "" && r.Err == nil
 }
@@ -121,6 +134,10 @@ type model struct {
 	runCommand     RunCommandFunc
 	commandTimeout time.Duration
 	lastResult     commandResult
+	commandRunning bool
+	cancelCommand  context.CancelFunc
+	runningCommand string
+	runningMode    commandMode
 }
 
 func newModel(opts Options) model {
@@ -157,17 +174,56 @@ func (m model) Init() tea.Cmd {
 }
 
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+	switch typed := msg.(type) {
+	case commandFinishedMsg:
+		m.commandRunning = false
+		m.runningCommand = ""
+		m.runningMode = commandModeSubject
+		m.cancelCommand = nil
+		m.lastResult = typed.result
+
+		if errors.Is(typed.result.Err, context.Canceled) {
+			m.statusMessage = "Command cancelled."
+			return m, nil
+		}
+		if typed.result.Err != nil {
+			m.statusMessage = fmt.Sprintf("Command failed: %v", typed.result.Err)
+			return m, nil
+		}
+
+		if typed.mode == commandModeSubject {
+			trimmed := strings.TrimRight(typed.result.Stdout, "\n")
+			m.subject.SetValue(trimmed)
+			m.refreshPreview()
+			m.statusMessage = "Subject replaced with command stdout."
+		} else {
+			m.statusMessage = "Command completed; inspect result pane. Use Ctrl+Y to insert stdout into the subject."
+		}
+		return m, nil
+	}
+
 	if keyMsg, ok := msg.(tea.KeyMsg); ok {
 		switch keyMsg.Type {
 		case tea.KeyCtrlC, tea.KeyEsc:
+			if m.commandRunning {
+				if m.cancelCommand != nil {
+					m.cancelCommand()
+					m.cancelCommand = nil
+				}
+				if m.runningCommand != "" {
+					m.statusMessage = fmt.Sprintf("Cancelling %q…", m.runningCommand)
+				} else {
+					m.statusMessage = "Cancelling command…"
+				}
+				return m, nil
+			}
 			return m, tea.Quit
 		case tea.KeyTab:
 			m.toggleFocus()
 			return m, nil
 		case tea.KeyEnter:
 			if m.focus == focusCommand {
-				m.executeSubjectCommand()
-				return m, nil
+				return m, (&m).executeSubjectCommand()
 			}
 		}
 
@@ -179,8 +235,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.copyPreviewToClipboard()
 			return m, nil
 		case "ctrl+p":
-			m.executePreviewCommand()
-			return m, nil
+			return m, (&m).executePreviewCommand()
 		case "ctrl+y":
 			m.reinsertLastResult()
 			return m, nil
@@ -240,6 +295,12 @@ func (m model) View() string {
 		b.WriteString("Status: ")
 		b.WriteString(m.statusMessage)
 		b.WriteString("\n\n")
+	}
+
+	if m.commandRunning {
+		b.WriteString("Command running: ")
+		b.WriteString(m.runningCommand)
+		b.WriteString(" (press Esc to cancel)\n\n")
 	}
 
 	b.WriteString("Result pane (stdout/stderr):\n")
@@ -354,61 +415,60 @@ func (m *model) copyPreviewToClipboard() {
 	m.statusMessage = "Copied preview to clipboard."
 }
 
-func (m *model) executeSubjectCommand() {
+func (m *model) startCommand(mode commandMode) tea.Cmd {
+	if m.commandRunning {
+		m.statusMessage = fmt.Sprintf("Command %q is already running; press Esc to cancel before starting another.", m.runningCommand)
+		return nil
+	}
+
 	command := strings.TrimSpace(m.command.Value())
 	if command == "" {
 		m.statusMessage = "No command configured; leave blank to opt out."
-		return
+		return nil
+	}
+
+	input := ""
+	if mode == commandModePreview {
+		input = m.preview
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), m.commandTimeout)
-	defer cancel()
-
-	stdout, stderr, err := m.runCommand(ctx, command, "")
-	m.lastResult = commandResult{
-		Command:     command,
-		Stdout:      stdout,
-		Stderr:      stderr,
-		Err:         err,
-		UsedPreview: false,
+	m.cancelCommand = cancel
+	m.commandRunning = true
+	m.runningCommand = command
+	m.runningMode = mode
+	if mode == commandModePreview {
+		m.statusMessage = fmt.Sprintf("Running %q with preview input… Press Esc to cancel.", command)
+	} else {
+		m.statusMessage = fmt.Sprintf("Running %q… Press Esc to cancel.", command)
 	}
 
-	if err != nil {
-		m.statusMessage = fmt.Sprintf("Command failed: %v", err)
-		return
+	runCommand := m.runCommand
+	return func() tea.Msg {
+		defer cancel()
+		stdout, stderr, err := runCommand(ctx, command, input)
+		if err == nil && ctx.Err() != nil {
+			err = ctx.Err()
+		}
+		return commandFinishedMsg{
+			result: commandResult{
+				Command:     command,
+				Stdout:      stdout,
+				Stderr:      stderr,
+				Err:         err,
+				UsedPreview: mode == commandModePreview,
+			},
+			mode: mode,
+		}
 	}
-
-	trimmed := strings.TrimRight(stdout, "\n")
-	m.subject.SetValue(trimmed)
-	m.refreshPreview()
-	m.statusMessage = "Subject replaced with command stdout."
 }
 
-func (m *model) executePreviewCommand() {
-	command := strings.TrimSpace(m.command.Value())
-	if command == "" {
-		m.statusMessage = "No command configured; leave blank to opt out."
-		return
-	}
+func (m *model) executeSubjectCommand() tea.Cmd {
+	return m.startCommand(commandModeSubject)
+}
 
-	ctx, cancel := context.WithTimeout(context.Background(), m.commandTimeout)
-	defer cancel()
-
-	stdout, stderr, err := m.runCommand(ctx, command, m.preview)
-	m.lastResult = commandResult{
-		Command:     command,
-		Stdout:      stdout,
-		Stderr:      stderr,
-		Err:         err,
-		UsedPreview: true,
-	}
-
-	if err != nil {
-		m.statusMessage = fmt.Sprintf("Command failed: %v", err)
-		return
-	}
-
-	m.statusMessage = "Command completed; inspect result pane. Use Ctrl+Y to insert stdout into the subject."
+func (m *model) executePreviewCommand() tea.Cmd {
+	return m.startCommand(commandModePreview)
 }
 
 func (m *model) reinsertLastResult() {

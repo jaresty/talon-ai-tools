@@ -276,4 +276,20 @@
 - next_work:
   - Behaviour: Document the Bubble Tea harness workflow and update usage examples (validation via manual doc review and python3 -m pytest _tests/test_bar_completion_cli.py to ensure CLI hints remain consistent).
 
+## 2026-01-09 — loop 019
+- helper_version: helper:v20251223.1
+- focus: Documentation — capture Bubble Tea fixture harness usage in README release notes and CLI quickstart
+- active_constraint: README lacked instructions for running `bar tui` under the new fixture harness, forcing pilots to cross-reference code comments (validation via python3 -m pytest _tests/test_bar_completion_cli.py to ensure CLI guardrails still pass after doc edits).
+- validation_targets:
+  - python3 -m pytest _tests/test_bar_completion_cli.py
+- evidence:
+  - green: docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-019.md#loop-019-green--python3--m-pytest-_tests-test_bar_completion_cli.py
+- rollback_plan: `git restore --source=HEAD -- README.md docs/adr/0070-bubble-tea-prompt-editor-tui.work-log.md docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-019.md`
+- delta_summary: helper:diff-snapshot=git diff --stat | README.md (+fixture harness docs, alt-screen guidance, release note entry).
+- loops_remaining_forecast: 0 loops — README now documents the harness; future work will monitor pilot feedback.
+- residual_constraints:
+  - None (pilot documentation gap closed by README instructions; no outstanding medium/high items discovered this loop).
+- next_work:
+  - Behaviour: Monitor pilot feedback during harness rollout; no immediate repository updates scheduled.
+
 

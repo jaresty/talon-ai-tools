@@ -132,3 +132,22 @@
   - Pilot guide and feedback loop not yet produced (severity: medium; mitigation: create short README/wiki entry and feedback channel alongside MVP build; monitoring: doc check before pilot).
 - next_work:
   - Behaviour: Implement MVP `bar tui` entrypoint with shared packages, add smoke run, and document pilot instructions (validation via go test ./cmd/bar/... and go run ./cmd/bar tui --fixture cmd/bar/testdata/grammar.json --no-alt-screen).
+
+## 2026-01-09 — loop 008
+- helper_version: helper:v20251223.1
+- focus: Validation — streamline MVP guardrail commands for pilot launch
+- active_constraint: ADR 0070 validation still expected broader test coverage than the MVP requires, slowing down the small-cohort rollout and adding unnecessary process.
+- validation_targets:
+  - git diff --stat docs/adr/0070-bubble-tea-prompt-editor-tui.md
+  - git diff docs/adr/0070-bubble-tea-prompt-editor-tui.md
+- evidence:
+  - green: docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-008.md#loop-008-green--helper-diff-snapshot-git-diff--stat-docs-adr-0070-bubble-tea-prompt-editor-tui.md
+  - green: docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-008.md#loop-008-green--helper-diff-snapshot-git-diff-docs-adr-0070-bubble-tea-prompt-editor-tui.md
+- rollback_plan: `git restore --source=HEAD -- docs/adr/0070-bubble-tea-prompt-editor-tui.md docs/adr/0070-bubble-tea-prompt-editor-tui.work-log.md docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-008.md`
+- delta_summary: helper:diff-snapshot=docs/adr/0070-bubble-tea-prompt-editor-tui.md | 7 +++---- — pared validation to `go test ./cmd/bar/...`, a `go run` smoke check, and structured pilot feedback capture so the cohort can iterate quickly.
+- loops_remaining_forecast: 2 loops (ship MVP entrypoint, review pilot feedback) — medium confidence with validation shrink-wrapped.
+- residual_constraints:
+  - Bubble Tea entrypoint remains unimplemented; `bar tui` subcommand still needs scaffolding (severity: high; mitigation: implement minimal entrypoint with preview; monitoring: go test ./cmd/bar/... once code lands).
+  - Pilot guide and feedback loop not yet produced (severity: medium; mitigation: create short README/wiki entry and feedback channel alongside MVP build; monitoring: doc check before pilot).
+- next_work:
+  - Behaviour: Implement MVP `bar tui` entrypoint with shared packages, add smoke run, and document pilot instructions (validation via go test ./cmd/bar/... and go run ./cmd/bar tui --fixture cmd/bar/testdata/grammar.json --no-alt-screen).

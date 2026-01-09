@@ -431,30 +431,32 @@
 - delta_summary: helper:diff-snapshot=git diff --stat | docs/adr/0070-bubble-tea-prompt-editor-tui.md (decision + salient tasks updated for subject import/export requirements).
 - loops_remaining_forecast: 1 loop — implement subject import/export plumbing inside `bar tui` when the feature loop starts.
 - residual_constraints:
-  - Subject import/export controls remain unimplemented (severity: high; mitigation: build clipboard + subprocess plumbing inside TUI; monitoring: go test ./cmd/bar/... once implementation lands).
+  - Subject import/export plumbing with dedicated pane remains unimplemented (severity: high; mitigation: build feature in upcoming implementation loop; monitoring: go test ./cmd/bar/... once feature lands).
 - next_work:
-  - Behaviour: Implement subject import/export plumbing with clipboard capture, command piping, result display, and optional reinsertion (validation via go test ./cmd/bar/... once the feature is built).
+  - Behaviour: Implement subject import/export plumbing with clipboard capture, command piping, dedicated result pane display, and optional reinsertion (validation via go test ./cmd/bar/... once the feature is built).
   - Behaviour: Execute packaging updates when implementation loop starts (validation via `make guardrails`).
   - Behaviour: Run the CLI completion guardrail (`python3 -m pytest _tests/test_bar_completion_cli.py`) alongside packaging to verify `bar tui` shells stay aligned.
 
-- focus: ADR Decision/Tasks — capture in-TUI token editing requirement
-- active_constraint: Decision text and salient tasks still implied tokens were supplied via CLI launch parameters, omitting the requirement to edit prompt parts directly inside the TUI.
+## 2026-01-09 — loop 035
+- helper_version: helper:v20251223.1
+- focus: ADR Next Work — call out subprocess failure handling and security guidance
+- active_constraint: Next work tracked piping UI but omitted the decision’s requirement to handle error cases and provide opt-outs/logging guidance for subprocesses.
 - validation_targets:
   - documentation-only (no executable commands)
 - evidence:
-  - green: docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-029.md#loop-029-green--helper-diff-snapshot-git-diff--stat
-- rollback_plan: `git restore --source=HEAD -- docs/adr/0070-bubble-tea-prompt-editor-tui.md docs/adr/0070-bubble-tea-prompt-editor-tui.work-log.md docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-029.md`
-- delta_summary: helper:diff-snapshot=git diff --stat | docs/adr/0070-bubble-tea-prompt-editor-tui.md (decision + salient tasks updated for in-TUI editing).
-- loops_remaining_forecast: 1 loop — implement the interactive editing controls once TUI scaffolding work starts.
+  - green: docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-035.md#loop-035-green--helper-diff-snapshot-git-diff--stat
+- rollback_plan: `git restore --source=HEAD -- docs/adr/0070-bubble-tea-prompt-editor-tui.work-log.md docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-035.md`
+- delta_summary: helper:diff-snapshot=git diff --stat | docs/adr/0070-bubble-tea-prompt-editor-tui.work-log.md (next work now captures subprocess failure handling).
+- loops_remaining_forecast: 1 loop — implement subject import/export plumbing with dedicated pane and failure-handling hooks.
 - residual_constraints:
-  - Interactive token editing remains unimplemented (severity: high; mitigation: build controls and state wiring; monitoring: go test ./cmd/bar/... once implementation lands).
+  - Subject import/export plumbing with dedicated pane and subprocess failure handling remains unimplemented (severity: high; mitigation: build feature in upcoming implementation loop; monitoring: go test ./cmd/bar/... once feature lands).
 - next_work:
-  - Behaviour: Implement subject import/export plumbing with clipboard capture, command piping, result display, and optional reinsertion (validation via go test ./cmd/bar/... once the feature is built).
-  - Behaviour: Design and implement prompt piping output UI (render command stdout/stderr, offer send-to-subject shortcut) with validation via integration tests or scripted harness TBD.
+  - Behaviour: Implement subject import/export plumbing with clipboard capture, command piping, dedicated result pane display, optional reinsertion, and failure handling/opt-outs (validation via go test ./cmd/bar/... once the feature is built).
   - Behaviour: Execute packaging updates when implementation loop starts (validation via `make guardrails`).
   - Behaviour: Run the CLI completion guardrail (`python3 -m pytest _tests/test_bar_completion_cli.py`) alongside packaging to verify `bar tui` shells stay aligned.
 
 ## 2026-01-09 — loop 032
+
 - helper_version: helper:v20251223.1
 - focus: ADR Next Work — capture command piping UI requirement
 - active_constraint: Next work listed import/export implementation but did not mention the UI/UX requirement to display subprocess results and offer send-to-subject actions.

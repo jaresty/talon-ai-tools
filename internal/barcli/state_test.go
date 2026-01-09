@@ -138,14 +138,9 @@ func TestSavePresetExcludesSubject(t *testing.T) {
 
 	var details bytes.Buffer
 	renderPresetDetails(&details, preset)
-	if !strings.Contains(details.String(), "Subject: (not stored; supply when rebuilding)") {
-		t.Fatalf("expected preset details output to explain subject omission, got:\n%s", details.String())
-	}
-
-	var useOutput bytes.Buffer
-	renderPresetUse(&useOutput, preset)
-	if !strings.Contains(useOutput.String(), "Subject not stored") {
-		t.Fatalf("expected preset use output to remind about missing subject, got:\n%s", useOutput.String())
+	expectedHint := "Plain text: (re-run 'bar preset use Daily Plan' with a new prompt to render)"
+	if !strings.Contains(details.String(), expectedHint) {
+		t.Fatalf("expected preset details output to include plain text hint, got:\n%s", details.String())
 	}
 }
 

@@ -114,7 +114,7 @@ func Run(args []string, stdin io.Reader, stdout, stderr io.Writer) int {
 	}
 
 	if options.Command == "preset" {
-		return runPreset(options, stdout, stderr)
+		return runPreset(options, stdin, stdout, stderr)
 	}
 
 	if options.Command != "build" {
@@ -318,7 +318,7 @@ func runCompletion(opts *cliOptions, stdout, stderr io.Writer) int {
 	return 0
 }
 
-func runPreset(opts *cliOptions, stdout, stderr io.Writer) int {
+func runPreset(opts *cliOptions, stdin io.Reader, stdout, stderr io.Writer) int {
 	if len(opts.Tokens) == 0 {
 		writeError(stderr, "preset requires a subcommand (save, list, show, use, delete)")
 		fmt.Fprint(stdout, generalHelpText)
@@ -393,26 +393,52 @@ func runPreset(opts *cliOptions, stdout, stderr io.Writer) int {
 			writeError(stderr, err.Error())
 			return 1
 		}
+
+		grammar, loadErr := LoadGrammar(opts.GrammarPath)
+		if loadErr != nil {
+			writeError(stderr, loadErr.Error())
+			return 1
+		}
+
+		promptBody, promptErr := readPrompt(opts, stdin)
+		if promptErr != nil {
+			writeError(stderr, promptErr.Error())
+			return 1
+		}
+
+		result, buildErr := Build(grammar, preset.Tokens)
+
+		if buildErr != nil {
+			emitError(buildErr, opts.JSON, stdout, stderr)
+			return 1
+		}
+
+		result.Subject = promptBody
+		result.Tokens = append([]string(nil), preset.Tokens...)
+		result.PlainText = RenderPlainText(result)
+
+		if err := saveLastBuild(result, preset.Tokens); err != nil && !errors.Is(err, errStateDisabled) {
+			fmt.Fprintf(stderr, "warning: failed to cache last build: %v\n", err)
+		}
+
 		if opts.JSON {
-			payload, err := json.MarshalIndent(map[string]any{
-				"name":           preset.Name,
-				"tokens":         preset.Tokens,
-				"constraints":    preset.Result.Constraints,
-				"persona":        preset.Result.Persona,
-				"subject_stored": false,
-			}, "", "  ")
+			payload, err := json.MarshalIndent(result, "", "  ")
 			if err != nil {
 				writeError(stderr, err.Error())
 				return 1
 			}
 			payload = append(payload, '\n')
-			if _, err := stdout.Write(payload); err != nil {
+			if err := writeOutput(opts.OutputPath, payload, stdout); err != nil {
 				writeError(stderr, err.Error())
 				return 1
 			}
 			return 0
 		}
-		renderPresetUse(stdout, preset)
+
+		if err := writeOutput(opts.OutputPath, []byte(result.PlainText), stdout); err != nil {
+			writeError(stderr, err.Error())
+			return 1
+		}
 		return 0
 	case "delete":
 		if len(args) == 0 {

@@ -36,14 +36,7 @@ func renderPresetDetails(w io.Writer, preset *presetFile) {
 	fmt.Fprintf(w, "Persona tone: %s\n", safePlaceholder(preset.Result.Persona.Tone))
 	fmt.Fprintf(w, "Intent: %s\n", safePlaceholder(preset.Result.Persona.Intent))
 	fmt.Fprintf(w, "Subject: (not stored; supply when rebuilding)\n")
-	fmt.Fprintf(w, "Plain text: (re-run 'bar build' to render)\n")
-}
-
-func renderPresetUse(w io.Writer, preset *presetFile) {
-	fmt.Fprintf(w, "# Preset: %s\n", preset.Name)
-	fmt.Fprintf(w, "# Saved: %s\n", formatTime(preset.SavedAt))
-	fmt.Fprintf(w, "bar build %s\n", strings.Join(preset.Tokens, " "))
-	fmt.Fprintf(w, "\n# Subject not stored; provide text via --prompt or STDIN before rebuilding.\n")
+	fmt.Fprintf(w, "Plain text: (re-run 'bar preset use %s' with a new prompt to render)\n", preset.Name)
 }
 
 func formatTime(t time.Time) string {

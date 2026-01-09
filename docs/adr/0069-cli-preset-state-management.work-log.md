@@ -32,3 +32,39 @@
   - README and user guide still describe presets as caching subjects (severity: medium; mitigation: update docs & release notes to highlight token-only caches; monitoring: `python3 -m pytest _tests/test_generate_readme_axis_lists.py`).
 - next_work:
   - Behaviour: Document token-only preset behaviour across README/help surfaces and refresh CLI integration snapshots (validation via `python3 -m pytest _tests/test_generate_readme_axis_lists.py`).
+
+## 2026-01-09 — loop 003
+- helper_version: helper:v20251223.1
+- focus: Decision § documentation — update README to reflect token-only CLI preset caching and state controls
+- active_constraint: Public docs still implied presets reused prior subject text, contradicting ADR 0069 and risking leakage for CLI-only users following README guidance.
+- validation_targets:
+  - python3 -m unittest _tests.test_readme_portable_cli
+- evidence:
+  - green: docs/adr/evidence/0069-cli-preset-state-management/loop-003.md#loop-003-green--helper-diff-snapshot-git-diff----stat
+  - green: docs/adr/evidence/0069-cli-preset-state-management/loop-003.md#loop-003-green--helper-rerun-python3--m-unittest-_tests-test_readme_portable_cli
+- rollback_plan: `git restore --source=HEAD -- README.md docs/adr/0069-cli-preset-state-management.work-log.md docs/adr/evidence/0069-cli-preset-state-management/loop-003.md`
+- delta_summary: helper:diff-snapshot=readme.md | 16 +++++++++++++--- — added CLI preset commands, warned that subjects are never stored, and documented config toggles.
+- loops_remaining_forecast: 1 loop (refresh integration examples or CLI snapshots if needed) — medium confidence pending review of help hub surfaces.
+- residual_constraints:
+  - Help hub quickstart still references legacy preset behaviour (severity: low; mitigation: audit help hub copy during next documentation sweep; monitoring: manual check of `model help hub`).
+- next_work:
+  - Behaviour: Review help hub and quickstart docs for preset references and update as necessary (validation via curated manual help hub capture).
+
+## 2026-01-09 — loop 004
+- helper_version: helper:v20251223.1
+- focus: Decision § implementation — have `bar preset use` rebuild recipes with saved tokens and fresh subject input
+- active_constraint: CLI preset reuse still required manual piping into `bar build`, breaking parity with `bar build` command and discouraging quick reuse of recipes on new subjects.
+- validation_targets:
+  - go test ./internal/barcli
+  - python3 -m unittest _tests.test_readme_portable_cli
+- evidence:
+  - green: docs/adr/evidence/0069-cli-preset-state-management/loop-004.md#loop-004-green--helper-diff-snapshot-git-diff----stat
+  - green: docs/adr/evidence/0069-cli-preset-state-management/loop-004.md#loop-004-green--helper-rerun-go-test-.-internal-barcli
+  - green: docs/adr/evidence/0069-cli-preset-state-management/loop-004.md#loop-004-green--helper-rerun-python3--m-unittest-_tests-test_readme_portable_cli
+- rollback_plan: `git restore --source=HEAD -- internal/barcli/app.go internal/barcli/app_test.go internal/barcli/preset_render.go internal/barcli/state_test.go README.md docs/adr/0069-cli-preset-state-management.md docs/adr/0069-cli-preset-state-management.work-log.md docs/adr/evidence/0069-cli-preset-state-management/loop-004.md`
+- delta_summary: helper:diff-snapshot=6 files changed, 134 insertions(+), 32 deletions(-) — taught `bar preset use` to call `Build` with saved tokens, accept `--prompt`/STDIN like `bar build`, refreshed tests/docs, and clarified preset guidance.
+- loops_remaining_forecast: 1 loop (audit help hub quickstart references) — medium confidence pending manual doc sweep.
+- residual_constraints:
+  - Help hub copy may still reference legacy preset behaviour (severity: low; mitigation: include in upcoming documentation sweep; monitoring: manual `model help hub` check).
+- next_work:
+  - Behaviour: Review help hub and quickstart docs for preset references and update as necessary (validation via curated manual help hub capture).

@@ -94,18 +94,28 @@ The `bar` CLI consumes the exported prompt grammar so you can assemble recipes o
    bar build todo focus steps fog --json
    echo "Fix onboarding" | bar build todo focus steps fog persona=facilitator intent=coach
    ```
-4. If you add completions or installer changes, keep `bar help` and `bar completion` outputs aligned with `build/prompt-grammar.json`. The metadata-aware completion backend now emits tab-delimited suggestions (`value\tcategory\tdescription`) so shells can show axis information; older scripts simply ignore the extra columns.
+4. Capture reusable builds with presets (subjects are **not** stored, so always supply fresh text when reusing):
+   ```bash
+   bar build todo focus steps fog persona=coach intent=teach
+   bar preset save daily-standup               # writes ~/.config/bar/presets/daily-standup.json
+   bar preset list                             # shows saved recipes and persona axes
+   bar preset use daily-standup                # rebuilds using saved tokens; supply prompt via --prompt/STDIN
+   bar preset show daily-standup --json        # inspect metadata as JSON
+   bar preset delete daily-standup --force     # remove a preset
+   ```
+   Cached state lives in `~/.config/bar/state/last_build.json` (override with `BAR_CONFIG_DIR`). Set `BAR_DISABLE_STATE=1` to skip persistence entirely.
+5. If you add completions or installer changes, keep `bar help` and `bar completion` outputs aligned with `build/prompt-grammar.json`. The metadata-aware completion backend now emits tab-delimited suggestions (`value\tcategory\tdescription`) so shells can show axis information; older scripts simply ignore the extra columns.
 
    > [!NOTE]
    > CLI suggestions now insert slug tokens such as `as-teacher`. Shorthand must use slugs, but canonical key=value overrides remain valid (for example `scope=focus`). Update any scripts or shell history accordingly.
 
-5. Completion guardrail (requires Go 1.21+ and Python 3.11+):
+6. Completion guardrail (requires Go 1.21+ and Python 3.11+):
    ```bash
    make bar-completion-guard
    ```
    (equivalent manual steps: `python3 -m venv .venv && .venv/bin/python -m pip install pytest && .venv/bin/python -m pytest _tests/test_bar_completion_cli.py`)
    This pytest slice exercises `bar completion` and the hidden `bar __complete` helper so shell installers stay grammar-aligned. The target also runs automatically via `make guardrails`/`make ci-guardrails`; install Go from https://go.dev/doc/install if it is not already available.
-6. Developer sanity check:
+7. Developer sanity check:
    ```bash
    python3 -m unittest _tests.test_readme_portable_cli
    ```

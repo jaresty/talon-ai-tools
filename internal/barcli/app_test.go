@@ -2,6 +2,7 @@ package barcli
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"strings"
 	"testing"
@@ -186,5 +187,82 @@ func TestRunHelpTokensPersonaPresetsFilter(t *testing.T) {
 	}
 	if strings.Contains(output, "PERSONA AXES") {
 		t.Fatalf("expected persona presets filter to omit persona axes, got:\n%s", output)
+	}
+}
+
+func TestRunPresetUseBuildsRecipe(t *testing.T) {
+	configDir := t.TempDir()
+	t.Setenv(configDirEnv, configDir)
+
+	if exit := Run([]string{"build", "todo", "focus", "--prompt", "Initial subject"}, strings.NewReader(""), &bytes.Buffer{}, &bytes.Buffer{}); exit != 0 {
+		t.Fatalf("expected build exit 0, got %d", exit)
+	}
+
+	saveStdout := &bytes.Buffer{}
+	saveStderr := &bytes.Buffer{}
+	if exit := Run([]string{"preset", "save", "daily-plan"}, strings.NewReader(""), saveStdout, saveStderr); exit != 0 {
+		t.Fatalf("expected preset save exit 0, got %d with stderr: %s", exit, saveStderr.String())
+	}
+	if !strings.Contains(saveStdout.String(), "Saved preset") {
+		t.Fatalf("expected save output to confirm preset creation, got:\n%s", saveStdout.String())
+	}
+
+	useStdout := &bytes.Buffer{}
+	useStderr := &bytes.Buffer{}
+	if exit := Run([]string{"preset", "use", "daily-plan", "--prompt", "Fresh subject"}, strings.NewReader(""), useStdout, useStderr); exit != 0 {
+		t.Fatalf("expected preset use exit 0, got %d with stderr: %s", exit, useStderr.String())
+	}
+
+	output := useStdout.String()
+	if !strings.Contains(output, "Fresh subject") {
+		t.Fatalf("expected preset use output to include new subject, got:\n%s", output)
+	}
+	if !strings.Contains(output, "=== TASK (DO THIS) ===") {
+		t.Fatalf("expected preset use output to include task section, got:\n%s", output)
+	}
+
+	stored, err := loadLastBuild()
+	if err != nil {
+		t.Fatalf("loadLastBuild returned error: %v", err)
+	}
+	if stored.Result.Subject != "" {
+		t.Fatalf("expected cached subject to remain empty, got %q", stored.Result.Subject)
+	}
+	if len(stored.Tokens) == 0 {
+		t.Fatalf("expected cached tokens to persist, got %#v", stored.Tokens)
+	}
+}
+
+func TestRunPresetUseJSON(t *testing.T) {
+	configDir := t.TempDir()
+	t.Setenv(configDirEnv, configDir)
+
+	if exit := Run([]string{"build", "todo", "focus"}, strings.NewReader("Initial subject"), &bytes.Buffer{}, &bytes.Buffer{}); exit != 0 {
+		t.Fatalf("expected build exit 0")
+	}
+	if exit := Run([]string{"preset", "save", "daily-plan"}, strings.NewReader(""), &bytes.Buffer{}, &bytes.Buffer{}); exit != 0 {
+		t.Fatalf("expected preset save exit 0")
+	}
+
+	jsonStdout := &bytes.Buffer{}
+	jsonStderr := &bytes.Buffer{}
+	args := []string{"preset", "use", "daily-plan", "--json", "--prompt", "JSON subject"}
+	if exit := Run(args, strings.NewReader(""), jsonStdout, jsonStderr); exit != 0 {
+		t.Fatalf("expected preset use --json exit 0, got %d with stderr: %s", exit, jsonStderr.String())
+	}
+
+	var payload struct {
+		Name    string   `json:"name"`
+		Tokens  []string `json:"tokens"`
+		Subject string   `json:"subject"`
+	}
+	if err := json.Unmarshal(jsonStdout.Bytes(), &payload); err != nil {
+		t.Fatalf("failed to parse JSON output: %v\n%s", err, jsonStdout.String())
+	}
+	if payload.Subject != "JSON subject" {
+		t.Fatalf("expected subject to match prompt, got %q", payload.Subject)
+	}
+	if len(payload.Tokens) == 0 {
+		t.Fatalf("expected tokens in JSON output, got %#v", payload.Tokens)
 	}
 }

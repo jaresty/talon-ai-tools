@@ -340,4 +340,20 @@
 - next_work:
   - Behaviour: Monitor pilot results; update ADR if additional canonical commands surface.
 
+## 2026-01-09 — loop 023
+- helper_version: helper:v20251223.1
+- focus: ADR Decision — reflect pilot playbook requirement in documentation guidance
+- active_constraint: The Decision section still referenced only README/usage docs, omitting the newly published pilot playbook relied upon by operators for transcript capture and troubleshooting.
+- validation_targets:
+  - documentation-only (no executable commands)
+- evidence:
+  - green: docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-023.md#loop-023-green--helper-diff-snapshot-git-diff--stat
+- rollback_plan: `git restore --source=HEAD -- docs/adr/0070-bubble-tea-prompt-editor-tui.md docs/adr/0070-bubble-tea-prompt-editor-tui.work-log.md docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-023.md`
+- delta_summary: helper:diff-snapshot=git diff --stat | docs/adr/0070-bubble-tea-prompt-editor-tui.md (documented pilot playbook alongside existing README/usage docs guidance).
+- loops_remaining_forecast: 0 loops — Decision now mirrors the documentation suite; further updates pending pilot feedback.
+- residual_constraints:
+  - None (documentation reference gap closed).
+- next_work:
+  - Behaviour: Monitor pilot reports; update ADR if additional documentation artefacts are introduced.
+
 

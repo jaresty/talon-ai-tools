@@ -661,6 +661,24 @@ func (g *Grammar) AxisTokenSet(axis string) map[string]struct{} {
 	return set
 }
 
+// AxisSoftCap returns the configured selection cap for an axis (0 for unlimited/single-token axes).
+func (g *Grammar) AxisSoftCap(axis string) int {
+	if g == nil {
+		return 0
+	}
+	axisKey := normalizeAxis(axis)
+	if axisKey == "" {
+		return 0
+	}
+	if cap, ok := g.Hierarchy.AxisSoftCaps[axisKey]; ok {
+		return cap
+	}
+	if cap, ok := g.Hierarchy.AxisSoftCaps[axis]; ok {
+		return cap
+	}
+	return 0
+}
+
 // AxisDescription returns the canonical description for the given axis token.
 func (g *Grammar) AxisDescription(axis, token string) string {
 	axisKey := normalizeAxis(axis)

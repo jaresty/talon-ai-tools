@@ -19,9 +19,13 @@ bar tui todo focus steps
 - The editor focuses the subject input immediately. Type the subject and watch the live preview refresh automatically.
 - `Ctrl+C` or `Esc` exits the program.
 - Press `?` to toggle the in-app shortcut overlay without leaving the session.
+- Press `Ctrl+R` to pipe the current preview into the configured shell command.
+- Press `Ctrl+S` to open the preset pane; inside the pane, `Ctrl+N` saves the current tokens, `Delete` removes the selected preset, and `Ctrl+Z` undoes the most recent deletion.
+- Press `Tab` again to focus the token controls. Use Left/Right to change categories, Up/Down to browse options, `Enter`/`Space` to toggle the highlighted token, `Delete` to remove it, and `Ctrl+Z` to undo the most recent change.
+- Press `Ctrl+P` to open the token palette for faster browsing and preset resets.
 - Alt screen is enabled by default so the original shell buffer is restored. If your terminal does not support alt screen or you want to capture transcripts, launch with `--no-alt-screen`.
 - Point at an alternate grammar bundle with `--grammar /path/to/grammar.json` when testing staged prompt changes.
-- Repeat `--env NAME` to opt specific environment variables into the subprocess allowlist. Once inside the TUI, press Tab a second time to focus the allowlist, use Up/Down to highlight entries, `Ctrl+E` to toggle the selection, `Ctrl+A` to re-enable all allowlisted variables, and `Ctrl+X` to clear the list if you want to run without any secrets.
+- Repeat `--env NAME` to opt specific environment variables into the subprocess allowlist. Once inside the TUI, press `Tab` until the allowlist is focused (subject → tokens → command → allowlist), use Up/Down to highlight entries, `Ctrl+E` to toggle the selection, `Ctrl+A` to re-enable all allowlisted variables, and `Ctrl+X` to clear the list if you want to run without any secrets.
 
 ## Deterministic smoke harness
 

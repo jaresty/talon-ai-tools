@@ -42,7 +42,7 @@ func TestTUICommandLaunchesProgram(t *testing.T) {
 			t.Fatalf("expected empty command to fail")
 		}
 
-		preview, err := opts.Preview("Example subject")
+		preview, err := opts.Preview("Example subject", opts.Tokens)
 		if err != nil {
 			t.Fatalf("preview returned error: %v", err)
 		}
@@ -117,8 +117,8 @@ func TestTUIFixtureEmitsSnapshot(t *testing.T) {
 		t.Fatalf("failed to load grammar: %v", err)
 	}
 
-	preview := func(subj string) (string, error) {
-		result, buildErr := barcli.Build(grammar, tokens)
+	preview := func(subj string, tokenSet []string) (string, error) {
+		result, buildErr := barcli.Build(grammar, tokenSet)
 		if buildErr != nil {
 			return "", buildErr
 		}
@@ -128,8 +128,9 @@ func TestTUIFixtureEmitsSnapshot(t *testing.T) {
 	}
 
 	view, previewText, err := bartui.Snapshot(bartui.Options{
-		Tokens:  tokens,
-		Preview: preview,
+		Tokens:          tokens,
+		TokenCategories: barcli.BuildTokenCategories(grammar),
+		Preview:         preview,
 	}, subject)
 	if err != nil {
 		t.Fatalf("snapshot failed: %v", err)

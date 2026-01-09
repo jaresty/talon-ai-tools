@@ -787,3 +787,47 @@
 - next_work:
   - Behaviour: Monitor pilot feedback on help overlay discoverability; rerun go test ./internal/bartui, go test ./cmd/bar/..., and python3 -m pytest _tests/test_bar_completion_cli.py if adjustments are required.
 
+## 2026-01-09 — loop 048
+- helper_version: helper:v20251223.1
+- focus: Decision § preset management — add docked preset pane with save/load/delete workflow
+- active_constraint: Bubble Tea TUI lacked the required preset pane, so `go test ./cmd/bar/...` failed with the snapshot mismatch once the new tests expected preset metadata in the view.
+- validation_targets:
+  - go test ./internal/bartui
+  - go test ./cmd/bar/...
+  - python3 -m pytest _tests/test_bar_completion_cli.py
+- evidence:
+  - red: docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-048.md#loop-048-red--go-test-cmd-bar
+  - green: docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-048.md#loop-048-green--go-test-internal-bartui
+  - green: docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-048.md#loop-048-green--go-test-cmd-bar
+  - green: docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-048.md#loop-048-green--python3--m-pytest-_tests-test_bar_completion_cli.py
+- rollback_plan: `git restore --source=HEAD -- internal/bartui/program.go internal/bartui/program_test.go internal/barcli/tui.go cmd/bar/testdata/tui_smoke.json docs/bubble-tea-pilot-playbook.md readme.md docs/adr/0070-bubble-tea-prompt-editor-tui.work-log.md docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-048.md`
+- delta_summary: helper:diff-snapshot=git diff --stat | internal/bartui/program.go/program_test.go (preset pane UI + tests); internal/barcli/tui.go (preset services); cmd/bar/testdata/tui_smoke.json (snapshot updates); readme.md & docs/bubble-tea-pilot-playbook.md (document preset shortcuts).
+- loops_remaining_forecast: 0 loops — preset pane now ships with guardrails green; future adjustments depend on pilot feedback.
+- residual_constraints:
+  - None (no additional medium/high constraints discovered during this loop).
+- next_work:
+  - Behaviour: Monitor preset usage feedback; rerun go test ./internal/bartui, go test ./cmd/bar/..., and python3 -m pytest _tests/test_bar_completion_cli.py if further refinements are required.
+
+## 2026-01-09 — loop 049
+- helper_version: helper:v20251223.1
+- focus: Decision § token editing — implement inline token controls and `Ctrl+P` palette so Bubble Tea TUI satisfies ADR ergonomics
+- active_constraint: Bubble Tea TUI still lacked keyboard-driven token editing and the docked palette, causing maintainers to miss ADR guardrails and breaking go test ./cmd/bar/... snapshot coverage.
+- validation_targets:
+  - go test ./internal/bartui
+  - go test ./cmd/bar
+  - go test ./...
+  - python3 -m pytest _tests/test_bar_completion_cli.py
+- evidence:
+  - green: docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-049.md (go test ./internal/bartui)
+  - green: docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-049.md (go test ./cmd/bar)
+  - green: docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-049.md (go test ./...)
+  - green: docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-049.md (python3 -m pytest _tests/test_bar_completion_cli.py)
+- rollback_plan: `git restore --source=HEAD -- internal/bartui/program.go internal/bartui/program_test.go internal/bartui/tokens.go internal/barcli/tui.go internal/barcli/tui_tokens.go internal/barcli/grammar.go cmd/bar/main_test.go cmd/bar/testdata/tui_smoke.json docs/bubble-tea-pilot-playbook.md readme.md docs/adr/0070-bubble-tea-prompt-editor-tui.work-log.md docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-049.md`
+- delta_summary: helper:diff-snapshot=git diff --stat | added token category types + palette handling in internal/bartui, exported token metadata builder in internal/barcli, refreshed cmd/bar/testdata/tui_smoke.json, updated CLI/docs to teach `Ctrl+R` piping and `Ctrl+P` palette usage, and aligned tests with the new snapshot shape.
+- loops_remaining_forecast: 0 loops — token editing and palette guardrails now land green; future loops depend on pilot ergonomics feedback.
+- residual_constraints:
+  - Pilot feedback on the new token controls remains pending (severity: medium; mitigation: gather pilot notes after rollout; monitoring: check ADR work-log for new usability reports and rerun go test ./cmd/bar with fixture updates if tweaks are required).
+- next_work:
+  - Behaviour: Monitor pilot telemetry for token editing UX; rerun go test ./internal/bartui, go test ./cmd/bar, and python3 -m pytest _tests/test_bar_completion_cli.py if adjustments are requested.
+
+

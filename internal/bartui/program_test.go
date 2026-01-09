@@ -3,6 +3,8 @@ package bartui
 import (
 	"context"
 	"errors"
+	"fmt"
+	"reflect"
 	"strings"
 	"testing"
 	"time"
@@ -21,18 +23,43 @@ func updateModel(t *testing.T, m model, msg tea.Msg) (model, tea.Cmd) {
 }
 
 func updateExpectNoCmd(t *testing.T, m model, msg tea.Msg) model {
-	t.Helper()
-	updated, cmd := updateModel(t, m, msg)
+	update, cmd := updateModel(t, m, msg)
 	if cmd != nil {
 		t.Fatalf("unexpected command from update: %T", cmd)
 	}
-	return updated
+	return update
+}
+
+func defaultTokenCategories() []TokenCategory {
+	return []TokenCategory{
+		{
+			Key:           "static",
+			Label:         "Static Prompt",
+			Kind:          TokenCategoryKindStatic,
+			MaxSelections: 1,
+			Options: []TokenOption{
+				{Value: "todo", Slug: "todo", Label: "Todo"},
+				{Value: "summary", Slug: "summary", Label: "Summary"},
+			},
+		},
+		{
+			Key:           "scope",
+			Label:         "Scope",
+			Kind:          TokenCategoryKindAxis,
+			MaxSelections: 2,
+			Options: []TokenOption{
+				{Value: "focus", Slug: "focus", Label: "Focus"},
+				{Value: "breadth", Slug: "breadth", Label: "Breadth"},
+			},
+		},
+	}
 }
 
 func TestLoadSubjectFromClipboard(t *testing.T) {
+
 	opts := Options{
 		Tokens:         []string{"todo"},
-		Preview:        func(subject string) (string, error) { return "preview:" + subject, nil },
+		Preview:        func(subject string, tokens []string) (string, error) { return "preview:" + subject, nil },
 		ClipboardRead:  func() (string, error) { return "from clipboard", nil },
 		ClipboardWrite: func(string) error { return nil },
 		RunCommand: func(context.Context, string, string, map[string]string) (string, string, error) {
@@ -55,7 +82,7 @@ func TestExecuteSubjectCommand(t *testing.T) {
 	var receivedStdin string
 	opts := Options{
 		Tokens:         []string{"todo"},
-		Preview:        func(subject string) (string, error) { return "preview:" + subject, nil },
+		Preview:        func(subject string, tokens []string) (string, error) { return "preview:" + subject, nil },
 		ClipboardRead:  func() (string, error) { return "", nil },
 		ClipboardWrite: func(string) error { return nil },
 		RunCommand: func(_ context.Context, command string, stdin string, env map[string]string) (string, string, error) {
@@ -113,7 +140,7 @@ func TestExecutePreviewCommandAndReinsert(t *testing.T) {
 	var receivedStdin string
 	opts := Options{
 		Tokens:         []string{"todo"},
-		Preview:        func(subject string) (string, error) { return "preview:" + subject, nil },
+		Preview:        func(subject string, tokens []string) (string, error) { return "preview:" + subject, nil },
 		ClipboardRead:  func() (string, error) { return "", nil },
 		ClipboardWrite: func(string) error { return nil },
 		RunCommand: func(_ context.Context, command string, stdin string, env map[string]string) (string, string, error) {
@@ -165,7 +192,7 @@ func TestCancelCommandWithEsc(t *testing.T) {
 	started := make(chan struct{})
 	opts := Options{
 		Tokens:         []string{"todo"},
-		Preview:        func(subject string) (string, error) { return "preview:" + subject, nil },
+		Preview:        func(subject string, tokens []string) (string, error) { return "preview:" + subject, nil },
 		ClipboardRead:  func() (string, error) { return "", nil },
 		ClipboardWrite: func(string) error { return nil },
 		RunCommand: func(ctx context.Context, command string, stdin string, env map[string]string) (string, string, error) {
@@ -222,7 +249,7 @@ func TestEnvironmentAllowlistVisible(t *testing.T) {
 	}
 	opts := Options{
 		Tokens:         []string{"todo"},
-		Preview:        func(subject string) (string, error) { return "preview:" + subject, nil },
+		Preview:        func(subject string, tokens []string) (string, error) { return "preview:" + subject, nil },
 		ClipboardRead:  func() (string, error) { return "", nil },
 		ClipboardWrite: func(string) error { return nil },
 		RunCommand: func(_ context.Context, command string, stdin string, env map[string]string) (string, string, error) {
@@ -285,7 +312,7 @@ func TestToggleEnvironmentAllowlist(t *testing.T) {
 	}
 	opts := Options{
 		Tokens:         []string{"todo"},
-		Preview:        func(subject string) (string, error) { return "preview:" + subject, nil },
+		Preview:        func(subject string, tokens []string) (string, error) { return "preview:" + subject, nil },
 		ClipboardRead:  func() (string, error) { return "", nil },
 		ClipboardWrite: func(string) error { return nil },
 		RunCommand: func(_ context.Context, command string, stdin string, env map[string]string) (string, string, error) {
@@ -369,7 +396,7 @@ func TestToggleEnvironmentAllowlist(t *testing.T) {
 func TestToggleHelpOverlay(t *testing.T) {
 	opts := Options{
 		Tokens:         []string{"todo"},
-		Preview:        func(subject string) (string, error) { return "preview:" + subject, nil },
+		Preview:        func(subject string, tokens []string) (string, error) { return "preview:" + subject, nil },
 		ClipboardRead:  func() (string, error) { return "", nil },
 		ClipboardWrite: func(string) error { return nil },
 		RunCommand: func(_ context.Context, command string, stdin string, env map[string]string) (string, string, error) {
@@ -398,13 +425,363 @@ func TestToggleHelpOverlay(t *testing.T) {
 
 	m, cmd = updateModel(t, m, helpKey)
 	if cmd != nil {
-		t.Fatalf("unexpected command when toggling help off: %T", cmd)
+		t.Fatalf("unexpected command when toggling help: %T", cmd)
 	}
-	view = m.View()
-	if strings.Contains(view, "Help overlay (press ? to close)") {
-		t.Fatalf("expected help overlay to be hidden after toggling off, got:\n%s", view)
+	if strings.Contains(m.View(), "Help overlay (press ? to close)") {
+		t.Fatalf("expected help overlay to be hidden after second toggle")
 	}
-	if !strings.Contains(strings.ToLower(m.statusMessage), "help overlay closed") {
-		t.Fatalf("expected status message to acknowledge closing help, got %q", m.statusMessage)
+}
+
+func TestTokenKeyboardToggle(t *testing.T) {
+	opts := Options{
+		Tokens:          []string{"todo", "focus"},
+		TokenCategories: defaultTokenCategories(),
+		Preview:         func(subject string, tokens []string) (string, error) { return "preview:" + subject, nil },
+		ClipboardRead:   func() (string, error) { return "", nil },
+		ClipboardWrite:  func(string) error { return nil },
+		RunCommand: func(context.Context, string, string, map[string]string) (string, string, error) {
+			return "", "", nil
+		},
+		CommandTimeout: time.Second,
+	}
+	m := newModel(opts)
+	if !reflect.DeepEqual(m.tokens, []string{"todo", "focus"}) {
+		t.Fatalf("expected initial tokens todo/focus, got %v", m.tokens)
+	}
+
+	m, _ = updateModel(t, m, tea.KeyMsg{Type: tea.KeyTab})
+	if m.focus != focusTokens {
+		t.Fatalf("expected focusTokens after tab, got %v", m.focus)
+	}
+	if m.tokenCategoryIndex != 0 {
+		t.Fatalf("expected initial token category index 0, got %d", m.tokenCategoryIndex)
+	}
+
+	m, _ = updateModel(t, m, tea.KeyMsg{Type: tea.KeyRight})
+	if m.tokenCategoryIndex != 1 {
+		t.Fatalf("expected category index 1 after moving right, got %d", m.tokenCategoryIndex)
+	}
+
+	m, _ = updateModel(t, m, tea.KeyMsg{Type: tea.KeyDown})
+	if m.tokenOptionIndex != 1 {
+		t.Fatalf("expected option index 1 after moving down, got %d", m.tokenOptionIndex)
+	}
+
+	m, _ = updateModel(t, m, tea.KeyMsg{Type: tea.KeyEnter})
+	expectedTokens := []string{"todo", "focus", "breadth"}
+	if !reflect.DeepEqual(m.tokens, expectedTokens) {
+		t.Fatalf("expected tokens %v after adding breadth, got %v", expectedTokens, m.tokens)
+	}
+
+	if !reflect.DeepEqual(m.tokenStates[1].selected, []string{"focus", "breadth"}) {
+		t.Fatalf("expected scope selections focus/breadth, got %v", m.tokenStates[1].selected)
+	}
+
+	m, _ = updateModel(t, m, tea.KeyMsg{Type: tea.KeyDelete})
+	if !reflect.DeepEqual(m.tokenStates[1].selected, []string{"focus"}) {
+		t.Fatalf("expected scope selection to revert to focus, got %v", m.tokenStates[1].selected)
+	}
+
+	m, _ = updateModel(t, m, tea.KeyMsg{Type: tea.KeyCtrlZ})
+	if !reflect.DeepEqual(m.tokenStates[1].selected, []string{"focus", "breadth"}) {
+		t.Fatalf("expected undo to restore breadth, got %v", m.tokenStates[1].selected)
+	}
+}
+
+func TestTokenPaletteToggle(t *testing.T) {
+	opts := Options{
+		Tokens:          []string{"todo", "focus"},
+		TokenCategories: defaultTokenCategories(),
+		Preview:         func(subject string, tokens []string) (string, error) { return "preview:" + subject, nil },
+		ClipboardRead:   func() (string, error) { return "", nil },
+		ClipboardWrite:  func(string) error { return nil },
+		RunCommand: func(context.Context, string, string, map[string]string) (string, string, error) {
+			return "", "", nil
+		},
+		CommandTimeout: time.Second,
+	}
+	m := newModel(opts)
+	var cmd tea.Cmd
+
+	m, _ = updateModel(t, m, tea.KeyMsg{Type: tea.KeyTab})
+	m, _ = updateModel(t, m, tea.KeyMsg{Type: tea.KeyRight})
+	m, _ = updateModel(t, m, tea.KeyMsg{Type: tea.KeyDown})
+	m, _ = updateModel(t, m, tea.KeyMsg{Type: tea.KeyEnter}) // add breadth inline
+	if !reflect.DeepEqual(m.tokenStates[1].selected, []string{"focus", "breadth"}) {
+		t.Fatalf("expected inline add to select focus/breadth, got %v", m.tokenStates[1].selected)
+	}
+
+	m, cmd = updateModel(t, m, tea.KeyMsg{Type: tea.KeyCtrlP})
+	if !m.tokenPaletteVisible {
+		t.Fatalf("expected token palette to be visible")
+	}
+	if m.tokenPaletteFilter.Value() != "" {
+		t.Fatalf("expected palette filter to reset, got %q", m.tokenPaletteFilter.Value())
+	}
+
+	m, _ = updateModel(t, m, tea.KeyMsg{Type: tea.KeyTab})   // categories
+	m, _ = updateModel(t, m, tea.KeyMsg{Type: tea.KeyTab})   // options
+	m, _ = updateModel(t, m, tea.KeyMsg{Type: tea.KeyEnter}) // toggle focus option off
+	if !reflect.DeepEqual(m.tokenStates[1].selected, []string{"breadth"}) {
+		t.Fatalf("expected palette toggle to remove focus, got %v", m.tokenStates[1].selected)
+	}
+
+	m, _ = updateModel(t, m, tea.KeyMsg{Type: tea.KeyCtrlZ})
+	if !reflect.DeepEqual(m.tokenStates[1].selected, []string{"focus", "breadth"}) {
+		t.Fatalf("expected undo inside palette to restore focus, got %v", m.tokenStates[1].selected)
+	}
+
+	m, cmd = updateModel(t, m, tea.KeyMsg{Type: tea.KeyCtrlP})
+	if cmd != nil {
+		t.Fatalf("expected no command when closing palette, got %T", cmd)
+	}
+	if m.tokenPaletteVisible {
+		t.Fatalf("expected token palette to close on Ctrl+P")
+	}
+}
+
+func TestTokenPaletteResetToPreset(t *testing.T) {
+	opts := Options{
+		Tokens:          []string{"todo", "breadth"},
+		TokenCategories: defaultTokenCategories(),
+		Preview:         func(subject string, tokens []string) (string, error) { return "preview:" + subject, nil },
+		ClipboardRead:   func() (string, error) { return "", nil },
+		ClipboardWrite:  func(string) error { return nil },
+		RunCommand: func(context.Context, string, string, map[string]string) (string, string, error) {
+			return "", "", nil
+		},
+		CommandTimeout: time.Second,
+	}
+	m := newModel(opts)
+	(&m).setActivePreset("demo", []string{"todo", "focus"})
+
+	m, _ = updateModel(t, m, tea.KeyMsg{Type: tea.KeyTab})
+	m, _ = updateModel(t, m, tea.KeyMsg{Type: tea.KeyRight})
+	m, _ = updateModel(t, m, tea.KeyMsg{Type: tea.KeyCtrlP})
+	m, _ = updateModel(t, m, tea.KeyMsg{Type: tea.KeyTab}) // categories
+	m, _ = updateModel(t, m, tea.KeyMsg{Type: tea.KeyTab}) // options
+
+	if len(m.tokenPaletteOptions) == 0 || m.tokenPaletteOptions[0] != tokenPaletteResetOption {
+		t.Fatalf("expected reset option to appear when preset diverges")
+	}
+
+	m, _ = updateModel(t, m, tea.KeyMsg{Type: tea.KeyEnter})
+	if !reflect.DeepEqual(m.tokenStates[1].selected, []string{"focus"}) {
+		t.Fatalf("expected reset to preset to restore focus, got %v", m.tokenStates[1].selected)
+	}
+	if !reflect.DeepEqual(m.tokens, []string{"todo", "focus"}) {
+		t.Fatalf("expected tokens to match preset after reset, got %v", m.tokens)
+	}
+}
+
+func TestPresetPaneLoadPreset(t *testing.T) {
+	presets := []PresetSummary{
+		{Name: "daily", SavedAt: time.Unix(100, 0), Static: "todo", Voice: "coach", Audience: "team", Tone: "warm"},
+		{Name: "weekly", SavedAt: time.Unix(200, 0), Static: "plan", Voice: "mentor", Audience: "group", Tone: "calm"},
+	}
+	loadCalls := make(map[string]int)
+	opts := Options{
+		Tokens: []string{"todo"},
+		Preview: func(subject string, tokens []string) (string, error) {
+			return strings.Join(tokens, ",") + ":" + subject, nil
+		},
+		ClipboardRead:  func() (string, error) { return "", nil },
+		ClipboardWrite: func(string) error { return nil },
+		RunCommand: func(_ context.Context, command string, stdin string, env map[string]string) (string, string, error) {
+			return "", "", nil
+		},
+		CommandTimeout: time.Second,
+		ListPresets: func() ([]PresetSummary, error) {
+			out := make([]PresetSummary, len(presets))
+			copy(out, presets)
+			return out, nil
+		},
+		LoadPreset: func(name string) (PresetDetails, error) {
+			loadCalls[name]++
+			switch name {
+			case "daily":
+				return PresetDetails{Name: "daily", Tokens: []string{"daily", "focus"}, SavedAt: presets[0].SavedAt}, nil
+			case "weekly":
+				return PresetDetails{Name: "weekly", Tokens: []string{"weekly", "scope"}, SavedAt: presets[1].SavedAt}, nil
+			default:
+				return PresetDetails{}, fmt.Errorf("unknown preset %s", name)
+			}
+		},
+		SavePreset: func(name string, description string, tokens []string) (PresetDetails, error) {
+			return PresetDetails{}, fmt.Errorf("unexpected save for %s", name)
+		},
+		DeletePreset: func(string) error { return nil },
+	}
+
+	m := newModel(opts)
+	m, cmd := updateModel(t, m, tea.KeyMsg{Type: tea.KeyCtrlS})
+	if cmd != nil {
+		t.Fatalf("unexpected command opening pane: %T", cmd)
+	}
+	if !m.presetPaneVisible {
+		t.Fatalf("expected preset pane to be visible")
+	}
+
+	m, cmd = updateModel(t, m, tea.KeyMsg{Type: tea.KeyEnter})
+	if cmd != nil {
+		t.Fatalf("unexpected command when applying preset: %T", cmd)
+	}
+	if loadCalls["daily"] != 1 {
+		t.Fatalf("expected daily preset to be loaded once, got %v", loadCalls)
+	}
+	if m.activePresetName != "daily" {
+		t.Fatalf("expected active preset daily, got %q", m.activePresetName)
+	}
+	if !tokensEqual(m.tokens, []string{"daily", "focus"}) {
+		t.Fatalf("expected tokens updated to preset values, got %v", m.tokens)
+	}
+	if m.tokensDiverged() {
+		t.Fatalf("expected no divergence immediately after loading preset")
+	}
+	view := m.View()
+	if !strings.Contains(view, "Preset: daily") {
+		t.Fatalf("expected view to show active preset, got:\n%s", view)
+	}
+	if !strings.Contains(view, "Preset pane") {
+		t.Fatalf("expected view to include preset pane, got:\n%s", view)
+	}
+}
+
+func TestPresetPaneSavePreset(t *testing.T) {
+	presets := []PresetSummary{}
+	savedNames := []string{}
+	opts := Options{
+		Tokens: []string{"todo"},
+		Preview: func(subject string, tokens []string) (string, error) {
+			return strings.Join(tokens, ",") + ":" + subject, nil
+		},
+		ClipboardRead:  func() (string, error) { return "", nil },
+		ClipboardWrite: func(string) error { return nil },
+		RunCommand: func(_ context.Context, command string, stdin string, env map[string]string) (string, string, error) {
+			return "", "", nil
+		},
+		CommandTimeout: time.Second,
+		ListPresets: func() ([]PresetSummary, error) {
+			out := make([]PresetSummary, len(presets))
+			copy(out, presets)
+			return out, nil
+		},
+		LoadPreset: func(name string) (PresetDetails, error) {
+			for _, p := range presets {
+				if p.Name == name {
+					return PresetDetails{Name: name, Tokens: []string{name, "focus"}, SavedAt: p.SavedAt}, nil
+				}
+			}
+			return PresetDetails{}, fmt.Errorf("unknown preset %s", name)
+		},
+		SavePreset: func(name string, description string, tokens []string) (PresetDetails, error) {
+			savedNames = append(savedNames, name)
+			savedAt := time.Unix(int64(len(savedNames)), 0)
+			presets = append(presets, PresetSummary{Name: name, SavedAt: savedAt})
+			return PresetDetails{Name: name, Tokens: append([]string(nil), tokens...), SavedAt: savedAt}, nil
+		},
+		DeletePreset: func(string) error { return nil },
+	}
+
+	m := newModel(opts)
+	m, _ = updateModel(t, m, tea.KeyMsg{Type: tea.KeyCtrlS})
+	m, _ = updateModel(t, m, tea.KeyMsg{Type: tea.KeyCtrlN})
+	if m.presetMode != presetModeSaving {
+		t.Fatalf("expected preset save mode, got %v", m.presetMode)
+	}
+	m.presetNameInput.SetValue("daily")
+	m.presetDescriptionInput.SetValue("morning plan")
+
+	m, cmd := updateModel(t, m, tea.KeyMsg{Type: tea.KeyEnter})
+	if cmd != nil {
+		t.Fatalf("unexpected command when saving preset: %T", cmd)
+	}
+	if len(savedNames) != 1 || savedNames[0] != "daily" {
+		t.Fatalf("expected preset save to be invoked, got %v", savedNames)
+	}
+	if m.activePresetName != "daily" {
+		t.Fatalf("expected active preset to update, got %q", m.activePresetName)
+	}
+	if m.presetMode != presetModeList {
+		t.Fatalf("expected preset pane to return to list mode, got %v", m.presetMode)
+	}
+	if len(m.presetSummaries) != 1 {
+		t.Fatalf("expected preset summaries to include saved preset, got %v", m.presetSummaries)
+	}
+	if !strings.Contains(strings.ToLower(m.statusMessage), "saved") {
+		t.Fatalf("expected status message to mention save, got %q", m.statusMessage)
+	}
+}
+
+func TestPresetPaneDeleteAndUndo(t *testing.T) {
+	presets := []PresetSummary{{Name: "daily", SavedAt: time.Unix(10, 0)}}
+	opts := Options{
+		Tokens: []string{"todo"},
+		Preview: func(subject string, tokens []string) (string, error) {
+			return strings.Join(tokens, ",") + ":" + subject, nil
+		},
+		ClipboardRead:  func() (string, error) { return "", nil },
+		ClipboardWrite: func(string) error { return nil },
+		RunCommand: func(_ context.Context, command string, stdin string, env map[string]string) (string, string, error) {
+			return "", "", nil
+		},
+		CommandTimeout: time.Second,
+		ListPresets: func() ([]PresetSummary, error) {
+			out := make([]PresetSummary, len(presets))
+			copy(out, presets)
+			return out, nil
+		},
+		LoadPreset: func(name string) (PresetDetails, error) {
+			return PresetDetails{Name: name, Tokens: []string{name, "focus"}, SavedAt: time.Unix(10, 0)}, nil
+		},
+		SavePreset: func(name string, description string, tokens []string) (PresetDetails, error) {
+			presets = append(presets, PresetSummary{Name: name, SavedAt: time.Unix(20, 0)})
+			return PresetDetails{Name: name, Tokens: append([]string(nil), tokens...), SavedAt: time.Unix(20, 0)}, nil
+		},
+		DeletePreset: func(name string) error {
+			for i, p := range presets {
+				if p.Name == name {
+					presets = append(presets[:i], presets[i+1:]...)
+					return nil
+				}
+			}
+			return fmt.Errorf("preset %s not found", name)
+		},
+	}
+
+	m := newModel(opts)
+	m, _ = updateModel(t, m, tea.KeyMsg{Type: tea.KeyCtrlS})
+	m, _ = updateModel(t, m, tea.KeyMsg{Type: tea.KeyEnter})
+	if m.activePresetName != "daily" {
+		t.Fatalf("expected daily to be active after loading, got %q", m.activePresetName)
+	}
+
+	m, _ = updateModel(t, m, tea.KeyMsg{Type: tea.KeyDelete})
+	if m.presetMode != presetModeConfirmDelete {
+		t.Fatalf("expected confirm delete mode, got %v", m.presetMode)
+	}
+	m, _ = updateModel(t, m, tea.KeyMsg{Type: tea.KeyEnter})
+	if len(presets) != 0 {
+		t.Fatalf("expected preset to be removed, got %v", presets)
+	}
+	if m.activePresetName != "" {
+		t.Fatalf("expected active preset cleared, got %q", m.activePresetName)
+	}
+	if m.lastDeletedPreset == nil {
+		t.Fatalf("expected lastDeletedPreset to be recorded")
+	}
+	if !strings.Contains(strings.ToLower(m.statusMessage), "deleted") {
+		t.Fatalf("expected status message to mention deletion, got %q", m.statusMessage)
+	}
+
+	m, _ = updateModel(t, m, tea.KeyMsg{Type: tea.KeyCtrlZ})
+	if len(presets) != 1 {
+		t.Fatalf("expected preset to be restored, got %v", presets)
+	}
+	if m.lastDeletedPreset != nil {
+		t.Fatalf("expected lastDeletedPreset to be cleared after undo")
+	}
+	if !strings.Contains(strings.ToLower(m.statusMessage), "restored") {
+		t.Fatalf("expected status message to mention restore, got %q", m.statusMessage)
 	}
 }

@@ -61,13 +61,15 @@ func runTUI(opts *cliOptions, stdin io.Reader, stdout, stderr io.Writer) int {
 		return 1
 	}
 
+	tokenCategories := BuildTokenCategories(grammar)
+
 	tokens := append([]string(nil), opts.Tokens...)
 	if fixture != nil && len(fixture.Tokens) > 0 {
 		tokens = append([]string(nil), fixture.Tokens...)
 	}
 
-	preview := func(subject string) (string, error) {
-		result, buildErr := Build(grammar, tokens)
+	preview := func(subject string, tokenSet []string) (string, error) {
+		result, buildErr := Build(grammar, tokenSet)
 		if buildErr != nil {
 			return "", fmt.Errorf("build prompt: %s", buildErr.Message)
 		}
@@ -77,10 +79,12 @@ func runTUI(opts *cliOptions, stdin io.Reader, stdout, stderr io.Writer) int {
 	}
 
 	if fixture != nil {
+
 		subject := fixture.Subject
 		view, previewText, snapErr := bartui.Snapshot(bartui.Options{
-			Tokens:  tokens,
-			Preview: preview,
+			Tokens:          tokens,
+			TokenCategories: tokenCategories,
+			Preview:         preview,
 		}, subject)
 		if snapErr != nil {
 			writeError(stderr, fmt.Sprintf("render snapshot: %v", snapErr))
@@ -131,20 +135,84 @@ func runTUI(opts *cliOptions, stdin io.Reader, stdout, stderr io.Writer) int {
 		}
 	}
 
+	listPresetsFn := func() ([]bartui.PresetSummary, error) {
+		summaries, err := listPresets()
+		if err != nil {
+			return nil, err
+		}
+		converted := make([]bartui.PresetSummary, 0, len(summaries))
+		for _, summary := range summaries {
+			converted = append(converted, bartui.PresetSummary{
+				Name:     summary.Name,
+				SavedAt:  summary.SavedAt,
+				Static:   summary.Static,
+				Voice:    summary.Voice,
+				Audience: summary.Audience,
+				Tone:     summary.Tone,
+			})
+		}
+		return converted, nil
+	}
+
+	loadPresetFn := func(name string) (bartui.PresetDetails, error) {
+		preset, _, err := loadPreset(name)
+		if err != nil {
+			return bartui.PresetDetails{}, err
+		}
+		return bartui.PresetDetails{
+			Name:    preset.Name,
+			Tokens:  append([]string(nil), preset.Tokens...),
+			SavedAt: preset.SavedAt,
+		}, nil
+	}
+
+	savePresetFn := func(name string, description string, tokenSet []string) (bartui.PresetDetails, error) {
+		result, buildErr := Build(grammar, tokenSet)
+		if buildErr != nil {
+			return bartui.PresetDetails{}, buildErr
+		}
+		stored := storedBuild{
+			Version: stateSchemaVersion,
+			SavedAt: time.Now().UTC(),
+			Result:  cloneBuildResult(result),
+			Tokens:  append([]string(nil), tokenSet...),
+		}
+		stored.Result.Subject = ""
+		stored.Result.PlainText = ""
+		if _, err := savePreset(name, &stored, false); err != nil {
+			return bartui.PresetDetails{}, err
+		}
+		return bartui.PresetDetails{
+			Name:    name,
+			Tokens:  append([]string(nil), tokenSet...),
+			SavedAt: stored.SavedAt,
+		}, nil
+	}
+
+	deletePresetFn := func(name string) error {
+		_, err := deletePreset(name, true)
+		return err
+	}
+
 	err = startTUI(bartui.Options{
-		Tokens:         tokens,
-		Input:          stdin,
-		Output:         stdout,
-		Preview:        preview,
-		UseAltScreen:   !opts.NoAltScreen,
-		ClipboardRead:  clipboard.ReadAll,
-		ClipboardWrite: clipboard.WriteAll,
+		Tokens:          tokens,
+		TokenCategories: tokenCategories,
+		Input:           stdin,
+		Output:          stdout,
+		Preview:         preview,
+		UseAltScreen:    !opts.NoAltScreen,
+		ClipboardRead:   clipboard.ReadAll,
+		ClipboardWrite:  clipboard.WriteAll,
 		RunCommand: func(ctx context.Context, command string, stdin string, env map[string]string) (string, string, error) {
 			return runShellCommand(ctx, command, stdin, env)
 		},
 		CommandTimeout: 15 * time.Second,
 		AllowedEnv:     envValues,
 		MissingEnv:     missingEnv,
+		ListPresets:    listPresetsFn,
+		LoadPreset:     loadPresetFn,
+		SavePreset:     savePresetFn,
+		DeletePreset:   deletePresetFn,
 	})
 	if err != nil {
 		writeError(stderr, fmt.Sprintf("launch tui: %v", err))

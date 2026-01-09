@@ -190,6 +190,26 @@ func TestRunHelpTokensPersonaPresetsFilter(t *testing.T) {
 	}
 }
 
+func TestGeneralHelpMentionsSkipSentinel(t *testing.T) {
+	stdout := &bytes.Buffer{}
+	stderr := &bytes.Buffer{}
+	exitCode := Run([]string{"help"}, strings.NewReader(""), stdout, stderr)
+	if exitCode != 0 {
+		t.Fatalf("expected exit 0, got %d with stderr: %s", exitCode, stderr.String())
+	}
+
+	output := stdout.String()
+	if !strings.Contains(output, "Skip remaining persona hints") {
+		t.Fatalf("expected general help to describe //next persona skip, got:\n%s", output)
+	}
+	if !strings.Contains(output, "//next:<stage>") {
+		t.Fatalf("expected general help to describe //next:<stage> syntax, got:\n%s", output)
+	}
+	if !strings.Contains(output, "Skip tokens do not appear") {
+		t.Fatalf("expected general help to note skip tokens are ignored during build, got:\n%s", output)
+	}
+}
+
 func TestRunPresetUseBuildsRecipe(t *testing.T) {
 	configDir := t.TempDir()
 	t.Setenv(configDirEnv, configDir)

@@ -161,6 +161,28 @@
 - next_work:
   - Behaviour: None scheduled; reopen if future completion features change sentinel behaviour.
 
+## 2026-01-09 — loop 012
+- helper_version: helper:v20251223.1
+- focus: Decision § surfacing — teach skip sentinel usage inside `bar help`
+- active_constraint: General CLI help text omitted the `//next` skip sentinel instructions, so operators relying on in-tool help could not discover persona/static stage shortcuts.
+- expected_value:
+  | Factor           | Value  | Rationale                                                         |
+  | Impact           | Medium | Keeps CLI-only users aligned with ADR 0070 What/How navigation    |
+  | Probability      | High   | Updating help string and tests guarantees the message is present  |
+  | Time Sensitivity | Medium | Needs to ship alongside docs so new users see consistent guidance |
+- validation_targets:
+  - go test ./...
+- evidence:
+  - green: docs/adr/evidence/0070-static-prompt-task-method-separation/loop-012.md#loop-012-green--helper-diff-snapshot-git-diff----stat-200
+  - green: docs/adr/evidence/0070-static-prompt-task-method-separation/loop-012.md#loop-012-green--helper-rerun-go-test
+- rollback_plan: `git restore --source=HEAD -- internal/barcli/app.go internal/barcli/app_test.go docs/adr/evidence/0070-static-prompt-task-method-separation/loop-012.md docs/adr/0070-static-prompt-task-method-separation.work-log.md`
+- delta_summary: helper:diff-snapshot=2 files changed, 29 insertions(+), 1 deletion(-) — added skip sentinel guidance to general help and enforced it via Go tests.
+- loops_remaining_forecast: 0 loops — All CLI help surfaces now describe skip sentinels (confidence: high).
+- residual_constraints:
+  - severity: low — Continue monitoring completion output for format changes; mitigation: revisit docs/help if categories shift; monitoring: review `bar help` whenever completion categories change; owner: ADR 0070 maintainers.
+- next_work:
+  - Behaviour: None scheduled; reopen if future sentinel behaviour changes or new surfaces appear.
+
 
 ## 2026-01-09 — loop 004
 - helper_version: helper:v20251223.1

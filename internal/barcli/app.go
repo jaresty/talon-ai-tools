@@ -56,8 +56,16 @@ var generalHelpText = strings.TrimSpace(`USAGE
   fail with an error that points to the slug. Key=value overrides accept canonical
   values like "scope=focus" as well as slug equivalents such as "directional=fly-rog".
   Use shell quotes when needed; completions list every value for convenience.
-
+ 
+  QUICK NAVIGATION
+ 
+    Use the skip sentinel "//next" to fast-forward persona/static stages:
+      //next            Skip remaining persona hints and show static prompts.
+      //next:<stage>    Skip the named stage (static, scope, method, etc.).
+    Skip tokens do not appear in "bar build" output—they only influence completion ordering.
+ 
   Sections accepted by "bar help tokens":
+
     static            Show only static prompts (slug + canonical hints)
     axes              Show contract axes (slug + canonical hints)
     persona           Show persona presets and persona axes

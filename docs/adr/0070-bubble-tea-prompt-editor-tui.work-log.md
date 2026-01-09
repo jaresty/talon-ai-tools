@@ -150,26 +150,26 @@
 - next_work:
   - Behaviour: Implement MVP `bar tui` entrypoint with shared packages, add smoke run, and note outcomes in this work-log (validation via go test ./cmd/bar/... and go run ./cmd/bar tui --fixture cmd/bar/testdata/grammar.json --no-alt-screen).
 
-## 2026-01-09 — loop 012
+## 2026-01-09 — loop 013
 - helper_version: helper:v20251223.1
-- focus: Decision § follow-up — keep validation scoped to repository artefacts
-- active_constraint: ADR 0070 still called for personal note-taking as part of validation, exceeding the in-repo responsibilities of this loop.
+- focus: Decision § follow-up — remove redundant follow-up section from ADR
+- active_constraint: ADR 0070 still carried a follow-up block that restated MVP implementation tasks already tracked in salient tasks, creating duplicate documentation with no new guardrails.
 - validation_targets:
   - git diff --stat docs/adr/0070-bubble-tea-prompt-editor-tui.md
-  - git diff docs/adr/0070-bubble-tea-prompt-editor-tui.md
+  - git diff docs/adr/0070-bubble-tea-prompt-editor-tui.work-log.md
 - evidence:
-  - green: docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-012.md#loop-012-green--helper-diff-snapshot-git-diff--stat-docs-adr-0070-bubble-tea-prompt-editor-tui.md
-  - green: docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-012.md#loop-012-green--helper-diff-snapshot-git-diff-docs-adr-0070-bubble-tea-prompt-editor-tui.md
-- rollback_plan: `git restore --source=HEAD -- docs/adr/0070-bubble-tea-prompt-editor-tui.md docs/adr/0070-bubble-tea-prompt-editor-tui.work-log.md docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-012.md`
-- delta_summary: helper:diff-snapshot=docs/adr/0070-bubble-tea-prompt-editor-tui.md | 3 --- — dropped personal note-taking references from validation and residual constraints so only in-repo actions remain.
-- loops_remaining_forecast: 2 loops (ship MVP entrypoint, review implementation feedback) — medium confidence with build work still pending.
+  - green: docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-013.md#loop-013-green--helper-diff-snapshot-git-diff--stat-docs-adr-0070-bubble-tea-prompt-editor-tui.md
+  - green: docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-013.md#loop-013-green--helper-diff-snapshot-git-diff-docs-adr-0070-bubble-tea-prompt-editor-tui-work-log.md
+- rollback_plan: `git restore --source=HEAD -- docs/adr/0070-bubble-tea-prompt-editor-tui.md docs/adr/0070-bubble-tea-prompt-editor-tui.work-log.md docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-013.md`
+- delta_summary: helper:diff-snapshot=docs/adr/0070-bubble-tea-prompt-editor-tui.md | 2 --- — removed the redundant follow-up section so the ADR now points solely to salient tasks for upcoming work.
+- loops_remaining_forecast: 1 loop (ship MVP entrypoint) — medium confidence with implementation still pending.
 - residual_constraints:
   - Bubble Tea entrypoint remains unimplemented; `bar tui` subcommand still needs scaffolding (severity: high; mitigation: implement minimal entrypoint with preview; monitoring: go test ./cmd/bar/... once code lands).
 - next_work:
-  - Behaviour: Implement MVP `bar tui` entrypoint with shared packages, add smoke run, and document pilot instructions (validation via go test ./cmd/bar/... and go run ./cmd/bar tui --fixture cmd/bar/testdata/grammar.json --no-alt-screen).
-
+  - Behaviour: Implement MVP `bar tui` entrypoint with shared packages, add smoke run, and document results (validation via go test ./cmd/bar/... and go run ./cmd/bar tui --fixture cmd/bar/testdata/grammar.json --no-alt-screen).
 
 ## 2026-01-09 — loop 008
+
 - helper_version: helper:v20251223.1
 - focus: Validation — streamline MVP guardrail commands for pilot launch
 - active_constraint: ADR 0070 validation still expected broader test coverage than the MVP requires, slowing down the small-cohort rollout and adding unnecessary process.

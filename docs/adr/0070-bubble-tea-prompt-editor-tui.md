@@ -32,9 +32,6 @@ Proposed — Bubble Tea TUI improves prompt editing ergonomics for the Go CLI (2
 - `go test ./cmd/bar/...` covers the minimal `bar tui` wiring by compiling and exercising the CLI entrypoint with existing shared helpers.
 - `go run ./cmd/bar tui --fixture cmd/bar/testdata/grammar.json --no-alt-screen` provides a smoke run you can execute to confirm preview/render behaviour before each session.
 
-## Follow-up
-- Deliver an MVP `bar tui` subcommand that reuses existing `cmd/bar` and `internal/barcli` packages, loads the grammar, accepts subject input, and renders the preview (validation via `go test ./cmd/bar/...` and a smoke run of `go run ./cmd/bar tui --fixture cmd/bar/testdata/grammar.json --no-alt-screen`).
-
 ---
 
 ## Salient Tasks

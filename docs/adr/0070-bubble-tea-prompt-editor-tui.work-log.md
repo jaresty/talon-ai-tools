@@ -387,6 +387,7 @@
   - None (packaging validation now documented).
 - next_work:
   - Behaviour: Execute packaging updates when implementation loop starts.
+  - Behaviour: Run the CLI completion guardrail (`python3 -m pytest _tests/test_bar_completion_cli.py`) alongside packaging to verify `bar tui` shells stay aligned.
 
 ## 2026-01-09 — loop 026
 - helper_version: helper:v20251223.1

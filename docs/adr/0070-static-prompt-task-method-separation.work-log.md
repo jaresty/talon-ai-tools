@@ -249,6 +249,28 @@
 - next_work:
   - Behaviour: None scheduled.
 
+## 2026-01-09 — loop 016
+- helper_version: helper:v20251223.1
+- focus: Decision § closure — confirm skip sentinel surfacing work complete
+- active_constraint: Without a final loop recording that skip sentinel surfacing tasks are complete, ADR 0070 lacks an explicit closure signal for maintainers reviewing residual constraints.
+- expected_value:
+  | Factor           | Value | Rationale                                                         |
+  | Impact           | Low   | Documents closure so future loops do not reopen settled work      |
+  | Probability      | High  | Updating the work-log/evidence satisfies the documentation gap    |
+  | Time Sensitivity | Low   | Simple bookkeeping but best captured while context is fresh       |
+- validation_targets:
+  - go test ./...
+- evidence:
+  - green: docs/adr/evidence/0070-static-prompt-task-method-separation/loop-016.md#loop-016-green--helper-diff-snapshot-git-diff----stat-200
+  - green: docs/adr/evidence/0070-static-prompt-task-method-separation/loop-016.md#loop-016-green--helper-rerun-go-test
+- rollback_plan: `git restore --source=HEAD -- docs/adr/0070-static-prompt-task-method-separation.work-log.md docs/adr/evidence/0070-static-prompt-task-method-separation/loop-016.md`
+- delta_summary: helper:diff-snapshot=1 file changed, 6 insertions(+) — recorded closure loop referencing skip sentinel surfacing completion.
+- loops_remaining_forecast: 0 loops — ADR 0070 surfacing tasks closed (confidence: high).
+- residual_constraints:
+  - None; skip sentinel work is fully documented and guarded.
+- next_work:
+  - Behaviour: None scheduled.
+
 
 ## 2026-01-09 — loop 004
 - helper_version: helper:v20251223.1

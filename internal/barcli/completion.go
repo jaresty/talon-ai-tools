@@ -9,7 +9,7 @@ import (
 	"unicode"
 )
 
-const bashCompletionTemplate = `# Bash/Zsh completion for bar generated from the portable grammar CLI.
+const bashCompletionTemplate = `# Bash completion for bar generated from the portable grammar CLI.
 __bar_%s_completion() {
     local words=("${COMP_WORDS[@]}")
     local cword=$COMP_CWORD
@@ -32,11 +32,62 @@ __bar_%s_completion() {
     return 0
 }
 
-if [[ -n ${ZSH_VERSION-} ]]; then
-    autoload -U +X bashcompinit && bashcompinit
-fi
-
 complete -F __bar_%s_completion bar
+`
+
+const zshCompletionScript = `#compdef bar
+
+function _bar_cli_completion {
+    emulate -L zsh -o no_aliases
+    setopt local_options pipefail
+
+    local -a words_array
+    words_array=("${words[@]}")
+
+    local cword=$(( CURRENT - 1 ))
+    if (( cword < 0 )); then
+        cword=0
+    fi
+
+    if (( cword >= ${#words_array[@]} )); then
+        words_array+=("")
+    fi
+
+    local -a candidates
+    local value category description display
+
+    while IFS=$'\t' read -r value category description; do
+        if [[ -z "$value" ]]; then
+            continue
+        fi
+
+        display=""
+        if [[ -n "$category" ]]; then
+            display="$category"
+        fi
+        if [[ -n "$description" ]]; then
+            if [[ -n "$display" ]]; then
+                display="$display — $description"
+            else
+                display="$description"
+            fi
+        fi
+        if [[ -z "$display" ]]; then
+            display="$value"
+        fi
+
+        display=${display//:/\\:}
+        candidates+=("$value:$display")
+    done < <(command bar __complete zsh "$cword" "${words_array[@]}" 2>/dev/null)
+
+    if (( ${#candidates[@]} == 0 )); then
+        return 1
+    fi
+
+    _describe 'bar completions' candidates
+}
+
+compdef _bar_cli_completion bar
 `
 
 const fishCompletionScript = `# Fish completion for bar generated from the portable grammar CLI.
@@ -475,7 +526,7 @@ func GenerateCompletionScript(shell string, _ *Grammar) (string, error) {
 	case "bash":
 		return fmt.Sprintf(bashCompletionTemplate, "bash", "bash", "bash"), nil
 	case "zsh":
-		return fmt.Sprintf(bashCompletionTemplate, "zsh", "zsh", "zsh"), nil
+		return zshCompletionScript, nil
 	case "fish":
 		return fishCompletionScript, nil
 	default:

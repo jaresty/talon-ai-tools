@@ -47,6 +47,25 @@ func TestGenerateCompletionScriptBash(t *testing.T) {
 	if !strings.Contains(script, "__complete bash") {
 		t.Fatalf("expected script to invoke bash completion backend, got: %s", script)
 	}
+	if strings.Contains(script, "bashcompinit") {
+		t.Fatalf("expected bash script to avoid zsh initialisation, got: %s", script)
+	}
+}
+
+func TestGenerateCompletionScriptZsh(t *testing.T) {
+	script, err := GenerateCompletionScript("zsh", nil)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if !strings.Contains(script, "#compdef bar") {
+		t.Fatalf("expected zsh script to declare compdef, got: %s", script)
+	}
+	if !strings.Contains(script, "_describe 'bar completions'") {
+		t.Fatalf("expected zsh script to use _describe for metadata, got: %s", script)
+	}
+	if !strings.Contains(script, "__complete zsh") {
+		t.Fatalf("expected zsh script to invoke zsh completion backend, got: %s", script)
+	}
 }
 
 func TestGenerateCompletionScriptFish(t *testing.T) {

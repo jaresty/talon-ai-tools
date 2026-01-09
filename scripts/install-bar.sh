@@ -207,7 +207,7 @@ main() {
 
     install -m 0755 "$binary_path" "$install_dir/$BINARY_NAME"
     printf 'info: installed %s to %s\n' "$BINARY_NAME" "$install_dir/$BINARY_NAME"
-    printf 'info: run `%s --help` to get started.\n' "$BINARY_NAME"
+    printf 'info: run `%s help` to get started.\n' "$BINARY_NAME"
 
     if ((keep_temp)); then
         printf 'info: temporary artifacts retained in %s

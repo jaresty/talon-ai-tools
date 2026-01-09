@@ -37,7 +37,7 @@ import { Steps } from "@astrojs/starlight/components";
 </Steps>
 
 ### Portable CLI presets
-
+ 
 Rebuild CLI recipes without retyping tokens by capturing the canonical output of `bar build`:
 
 ```bash
@@ -48,6 +48,17 @@ bar preset use weekly-update --prompt "Draft release retrospective"
 
 Presets only store canonical tokens and metadata. Provide new subject text each time using `--prompt`, `--input`, or piped STDIN to avoid reusing stale context.
 
+### Skip persona and axis stages quickly
+
+Completions expose a skip sentinel whenever you want to jump ahead in the flow:
+
+- `//next` hides the remaining persona hints and jumps straight to static prompt (“What”) suggestions.
+- `//next:<stage>` skips a named stage such as `static`, `scope`, or `method`. Stage names appear in the completion menu so you can tab-complete them.
+- Skip tokens are ignored by `bar build`, so the resulting recipe only contains the tokens you accept after the sentinel.
+
+Combine the sentinel with normal completions to reach the sections you need faster—for example, accept `//next`, choose `todo`, then continue with axis tokens without manually clearing persona suggestions.
+
 ### Quickstart Video
 
 [![Talon-AI-Tools Quickstart](../../../../video_thumbnail.jpg)](https://www.youtube.com/watch?v=FctiTs6D2tM "Talon-AI-Tools Quickstart")
+

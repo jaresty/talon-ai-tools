@@ -109,10 +109,21 @@ The `bar` CLI consumes the exported prompt grammar so you can assemble recipes o
 
    > [!NOTE]
    > CLI suggestions now insert slug tokens such as `as-teacher`. Shorthand must use slugs, but canonical key=value overrides remain valid (for example `scope=focus`). Update any scripts or shell history accordingly.
+ 
+#### Completion skip sentinel
+
+Use the skip sentinel `//next` whenever tab completion offers a stage you want to bypass:
+
+- `//next` by itself skips the remaining persona hints and moves directly to “What” suggestions.
+- `//next:<stage>` skips the named stage (for example `//next:static` hides all static prompts, `//next:scope` hides further scope tokens). The CLI suggests valid stage names inline.
+- Insert the sentinel anywhere in the shorthand sequence; the build command ignores the token, so the final recipe only contains the tokens you kept.
+
+Pair the sentinel with normal completions to fast-forward through stages. For instance, accepting `//next` followed by `todo` and `full` yields the same build as selecting persona suggestions manually, but keeps the persona stage out of the workflow.
 
 6. Completion guardrail (requires Go 1.21+ and Python 3.11+):
    ```bash
    make bar-completion-guard
+
    ```
    (equivalent manual steps: `python3 -m venv .venv && .venv/bin/python -m pip install pytest && .venv/bin/python -m pytest _tests/test_bar_completion_cli.py`)
    This pytest slice exercises `bar completion` and the hidden `bar __complete` helper so shell installers stay grammar-aligned. The target also runs automatically via `make guardrails`/`make ci-guardrails`; install Go from https://go.dev/doc/install if it is not already available.

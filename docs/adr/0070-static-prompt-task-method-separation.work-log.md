@@ -139,6 +139,28 @@
 - next_work:
   - Behaviour: Document skip sentinel usage in CLI help (validation: go test ./...) — queued for documentation loop.
 
+## 2026-01-09 — loop 011
+- helper_version: helper:v20251223.1
+- focus: Decision § surfacing — publish //next skip sentinel guidance in CLI docs
+- active_constraint: CLI quickstart and README lacked skip sentinel instructions, leaving operators unaware that `//next` can bypass persona/static stages when using completions.
+- expected_value:
+  | Factor           | Value  | Rationale                                                     |
+  | Impact           | Medium | Ensures CLI users discover persona skips without trial/error  |
+  | Probability      | High   | Updating README and docs quickstart fully resolves the gap    |
+  | Time Sensitivity | Medium | Docs should ship with sentinel features before wider rollout |
+- validation_targets:
+  - go test ./...
+- evidence:
+  - green: docs/adr/evidence/0070-static-prompt-task-method-separation/loop-011.md#loop-011-green--helper-diff-snapshot-git-diff----stat-200
+  - green: docs/adr/evidence/0070-static-prompt-task-method-separation/loop-011.md#loop-011-green--helper-rerun-go-test
+- rollback_plan: `git restore --source=HEAD -- readme.md .docs/src/content/docs/guides/quickstart.mdx docs/adr/evidence/0070-static-prompt-task-method-separation/loop-011.md docs/adr/0070-static-prompt-task-method-separation.work-log.md`
+- delta_summary: helper:diff-snapshot=2 files changed, 23 insertions(+), 1 deletion(-) — added CLI skip sentinel documentation to README and the docs quickstart guide.
+- loops_remaining_forecast: 0 loops — CLI docs now cover skip sentinels end-to-end (confidence: high).
+- residual_constraints:
+  - severity: low — Monitor CLI docs for future completion changes; mitigation: keep skip guidance in release checklist; monitoring: review CLI quickstart each release; owner: ADR 0070 maintainers.
+- next_work:
+  - Behaviour: None scheduled; reopen if future completion features change sentinel behaviour.
+
 
 ## 2026-01-09 — loop 004
 - helper_version: helper:v20251223.1

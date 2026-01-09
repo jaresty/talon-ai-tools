@@ -35,21 +35,16 @@ Proposed — Bubble Tea TUI improves prompt editing ergonomics for the Go CLI (2
 - Collect operator feedback via internal dogfooding to confirm the UI addresses identified JTBD pain points and to monitor clipboard/subprocess integrations before wide release.
 
 ## Follow-up
-- Define command-line wiring for the `bar tui` subcommand inside the existing CLI, reusing shared `cmd/bar` and `internal/barcli` packages, refresh CLI completion metadata, and update packaging scripts/release notes accordingly (validation via `go test ./cmd/bar/...` and `python3 -m pytest _tests/test_bar_completion_cli.py`).
-- Draft user documentation: quickstart, key bindings, pane descriptions, troubleshooting for terminal quirks.
-- Establish telemetry or logging (opt-in) to monitor usage and detect failure hotspots without leaking prompt content.
-- Plan backlog items for advanced features (template libraries, diffing, multi-buffer support) once baseline TUI stabilizes.
+- Deliver an MVP `bar tui` subcommand that reuses existing `cmd/bar` and `internal/barcli` packages, loads the grammar, accepts subject input, and renders the preview (validation via `go test ./cmd/bar/...` and a smoke run of `go run ./cmd/bar tui --fixture cmd/bar/testdata/grammar.json --no-alt-screen`).
+- Publish a lightweight pilot guide (key bindings, known limitations, quit path) so a small user group can try the TUI and share feedback.
+- Capture pilot feedback and triage follow-on work (completions refresh, telemetry, advanced layout) into the backlog after validation.
 
 ---
 
 ## Salient Tasks
-- Bootstrap a Bubble Tea program that shells around `barcli` grammar loading and exposes an initial layout with subject, token list, preview, and destination panes.
-- Model state atop existing `barcli` types so token selections, subject buffer, presets/history, and validation errors stay synchronized with CLI behaviour.
-- Integrate asynchronous `tea.Cmd` pipelines to call `barcli.LoadGrammar`, `barcli.Build`, clipboard/command dispatch, and background IO without blocking the TUI.
-- Implement keyboard shortcuts and pane focus management using Bubbles components (`textarea`, `list`, `tabs`, `viewport`) styled with Lip Gloss for readability.
-- Add Go unit tests covering model update transitions and command sequencing, plus integration smoke tests that confirm TUI output matches CLI `bar build` results.
-- Refresh CLI completion tables, release notes, and automation packaging scripts to surface `bar tui` alongside existing subcommands.
-- Extend user docs/quickstart with TUI setup, keyboard cheatsheet, preset reuse guidance, and opt-in telemetry/configuration notes.
+- Scaffold the minimal `bar tui` entrypoint that loads grammar metadata, captures subject text, and streams preview output without blocking the CLI.
+- Keep CLI parity by reusing `barcli` state helpers, covering the happy path with `go test ./cmd/bar/...`, and adding a smoke script that runs `go run ./cmd/bar tui --fixture cmd/bar/testdata/grammar.json --no-alt-screen`.
+- Prepare pilot enablement: document the MVP workflow, outline known gaps (completions, telemetry, advanced panes), and set up a feedback channel for the initial user cohort.
 
 ## Anti-goals
 - Do not replace or deprecate the existing non-interactive CLI; scripted workflows must remain supported and unchanged by default.

@@ -324,4 +324,20 @@
 - next_work:
   - Behaviour: Gather pilot feedback and iterate if new gaps emerge; no immediate repository actions queued.
 
+## 2026-01-09 — loop 022
+- helper_version: helper:v20251223.1
+- focus: ADR Validation — register the fixture harness as a canonical command alongside go test
+- active_constraint: ADR 0070 still listed only `go test ./cmd/bar/...` under Validation, omitting the deterministic `bar tui --fixture` harness that pilots now rely on for regression coverage.
+- validation_targets:
+  - documentation-only (no executable changes in this slice)
+- evidence:
+  - green: docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-022.md#loop-022-green--helper-diff-snapshot-git-diff--stat
+- rollback_plan: `git restore --source=HEAD -- docs/adr/0070-bubble-tea-prompt-editor-tui.md docs/adr/0070-bubble-tea-prompt-editor-tui.work-log.md docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-022.md`
+- delta_summary: helper:diff-snapshot=git diff --stat | docs/adr/0070-bubble-tea-prompt-editor-tui.md (+fixture harness command).
+- loops_remaining_forecast: 0 loops — Validation section now references both go test and fixture harness commands; no further ADR edits planned until new behaviours arise.
+- residual_constraints:
+  - None (validation coverage gap resolved by documenting the fixture harness).
+- next_work:
+  - Behaviour: Monitor pilot results; update ADR if additional canonical commands surface.
+
 

@@ -574,6 +574,66 @@ func TestTokenPaletteResetToPreset(t *testing.T) {
 	}
 }
 
+func TestTokenPaletteResetRenderingHasNoSideEffects(t *testing.T) {
+	opts := Options{
+		Tokens:          []string{"todo", "breadth"},
+		TokenCategories: defaultTokenCategories(),
+		Preview:         func(subject string, tokens []string) (string, error) { return "preview:" + subject, nil },
+		ClipboardRead:   func() (string, error) { return "", nil },
+		ClipboardWrite:  func(string) error { return nil },
+		RunCommand: func(context.Context, string, string, map[string]string) (string, string, error) {
+			return "", "", nil
+		},
+		CommandTimeout: time.Second,
+	}
+	m := newModel(opts)
+	(&m).setActivePreset("demo", []string{"todo", "focus"})
+
+	m, _ = updateModel(t, m, tea.KeyMsg{Type: tea.KeyTab})
+	m, _ = updateModel(t, m, tea.KeyMsg{Type: tea.KeyRight})
+	m, _ = updateModel(t, m, tea.KeyMsg{Type: tea.KeyCtrlP})
+	m, _ = updateModel(t, m, tea.KeyMsg{Type: tea.KeyTab})
+	m, _ = updateModel(t, m, tea.KeyMsg{Type: tea.KeyTab})
+
+	if len(m.tokenPaletteOptions) == 0 || m.tokenPaletteOptions[0] != tokenPaletteResetOption {
+		t.Fatalf("expected reset option to appear when preset diverges")
+	}
+
+	beforeSelection := append([]string(nil), m.tokenStates[1].selected...)
+	beforeTokens := append([]string(nil), m.tokens...)
+
+	view := m.View()
+	if !strings.Contains(view, "[reset] Reset to preset") {
+		t.Fatalf("expected view to mention reset option, got:\n%s", view)
+	}
+	if !reflect.DeepEqual(m.tokenStates[1].selected, beforeSelection) {
+		t.Fatalf("expected rendering not to change selection, got %v", m.tokenStates[1].selected)
+	}
+	if !reflect.DeepEqual(m.tokens, beforeTokens) {
+		t.Fatalf("expected rendering not to change tokens, got %v", m.tokens)
+	}
+}
+
+func TestTokenSummaryNoHighlightWhenSubjectFocused(t *testing.T) {
+	opts := Options{
+		Tokens:          []string{"todo", "focus"},
+		TokenCategories: defaultTokenCategories(),
+		Preview:         func(subject string, tokens []string) (string, error) { return "preview:" + subject, nil },
+		ClipboardRead:   func() (string, error) { return "", nil },
+		ClipboardWrite:  func(string) error { return nil },
+		RunCommand: func(context.Context, string, string, map[string]string) (string, string, error) {
+			return "", "", nil
+		},
+		CommandTimeout: time.Second,
+	}
+	m := newModel(opts)
+
+	view := m.View()
+	if strings.Contains(view, "» [ ") {
+		t.Fatalf("expected no highlighted token when subject is focused, got:\n%s", view)
+	}
+}
+
 func TestPresetPaneLoadPreset(t *testing.T) {
 	presets := []PresetSummary{
 		{Name: "daily", SavedAt: time.Unix(100, 0), Static: "todo", Voice: "coach", Audience: "team", Tone: "warm"},

@@ -1015,7 +1015,7 @@ func (m *model) renderTokenSummary(b *strings.Builder) {
 		}
 		b.WriteString(fmt.Sprintf("  %s%s%s\n", indicator, state.category.Label, maxInfo))
 
-		highlight := idx == m.tokenCategoryIndex && !m.tokenPaletteVisible && m.tokenOptionIndex >= 0 && m.tokenOptionIndex < len(state.category.Options)
+		highlight := m.focus == focusTokens && idx == m.tokenCategoryIndex && !m.tokenPaletteVisible && m.tokenOptionIndex >= 0 && m.tokenOptionIndex < len(state.category.Options)
 		if highlight {
 			option := state.category.Options[m.tokenOptionIndex]
 			b.WriteString(formatTokenOptionLine(option, state.has(option.Value), true))
@@ -1073,14 +1073,18 @@ func (m *model) renderTokenPalette(b *strings.Builder) {
 		b.WriteString("      (no options)\n")
 		return
 	}
+	state := m.tokenStates[m.tokenCategoryIndex]
+
 	for i, entry := range m.tokenPaletteOptions {
 		highlight := m.tokenPaletteFocus == tokenPaletteFocusOptions && i == m.tokenPaletteOptionIndex
 		if entry == tokenPaletteResetOption {
-			m.applyPaletteReset()
-			m.updatePaletteOptions()
-			return
+			prefix := "      "
+			if highlight {
+				prefix = "    » "
+			}
+			b.WriteString(fmt.Sprintf("%s[reset] Reset to preset\n", prefix))
+			continue
 		}
-		state := m.tokenStates[m.tokenCategoryIndex]
 
 		if entry < 0 || entry >= len(state.category.Options) {
 			continue

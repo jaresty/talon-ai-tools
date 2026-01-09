@@ -830,4 +830,26 @@
 - next_work:
   - Behaviour: Monitor pilot telemetry for token editing UX; rerun go test ./internal/bartui, go test ./cmd/bar, and python3 -m pytest _tests/test_bar_completion_cli.py if adjustments are requested.
 
+## 2026-01-09 — loop 050
+- helper_version: helper:v20251223.1
+- focus: Decision § token editing — prevent palette rendering from mutating token state and remove unintended highlights when tokens are unfocused
+- active_constraint: Rendering the token palette triggered `Reset to preset` side effects during view generation, causing the TUI to reset selections without operator input and breaking go test ./cmd/bar snapshot assertions.
+- validation_targets:
+  - go test -count=1 ./internal/bartui
+  - go test -count=1 ./cmd/bar
+  - go test -count=1 ./...
+  - python3 -m pytest _tests/test_bar_completion_cli.py
+- evidence:
+  - green: docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-050.md (go test -count=1 ./internal/bartui)
+  - green: docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-050.md (go test -count=1 ./cmd/bar)
+  - green: docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-050.md (go test -count=1 ./...)
+  - green: docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-050.md (python3 -m pytest _tests/test_bar_completion_cli.py)
+- rollback_plan: `git restore --source=HEAD -- internal/bartui/program.go internal/bartui/program_test.go internal/bartui/tokens.go internal/barcli/tui.go internal/barcli/tui_tokens.go cmd/bar/testdata/tui_smoke.json docs/adr/0070-bubble-tea-prompt-editor-tui.work-log.md docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-050.md`
+- delta_summary: helper:diff-snapshot=git diff --stat | fixed `renderTokenPalette` to render reset row without mutating state, tightened token summary highlight checks, expanded tests to cover palette rendering side effects, and refreshed the CLI snapshot fixture.
+- loops_remaining_forecast: 0 loops — token palette rendering now stays side-effect free; future iterations wait on pilot feedback.
+- residual_constraints:
+  - Pilot feedback on the new token controls remains pending (severity: medium; mitigation: gather pilot notes after rollout; monitoring: collect usability reports and rerun guardrails if adjustments are needed).
+- next_work:
+  - Behaviour: Monitor pilot telemetry for token editing UX; rerun go test ./internal/bartui, go test ./cmd/bar, and python3 -m pytest _tests/test_bar_completion_cli.py if adjustments are requested.
+
 

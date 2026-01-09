@@ -167,6 +167,7 @@ type completionState struct {
 	highestAxisIndex int
 	completeness     bool
 	scope            map[string]struct{}
+	scopeClosed      bool
 	method           map[string]struct{}
 	form             bool
 	channel          bool
@@ -355,6 +356,10 @@ func buildAxisSuggestions(grammar *Grammar, axis string, tokens []string) []comp
 }
 
 func buildScopeSuggestions(grammar *Grammar, catalog completionCatalog, state completionState) []completionSuggestion {
+	if state.scopeClosed {
+		return nil
+	}
+
 	maxScope := len(catalog.scope)
 	if state.scopeCap > 0 && state.scopeCap < maxScope {
 		maxScope = state.scopeCap
@@ -874,6 +879,7 @@ func collectShorthandState(grammar *Grammar, tokens []string) completionState {
 			continue
 		case "method":
 			state.method[token] = struct{}{}
+			state.scopeClosed = true
 			continue
 		case "form":
 			state.form = true

@@ -2,6 +2,7 @@ package barcli
 
 import (
 	"fmt"
+	"sort"
 	"strings"
 )
 
@@ -36,57 +37,7 @@ func RenderPlainText(result *BuildResult) string {
 		b.WriteString("\n")
 	}
 
-	personasSectionWritten := false
-	persona := result.Persona
-	if persona != (PersonaResult{}) {
-		writePersonaLine := func(format string, values ...any) {
-			if !personasSectionWritten {
-				b.WriteString(sectionPersona)
-				b.WriteString("\n")
-				personasSectionWritten = true
-			}
-			fmt.Fprintf(&b, format+"\n", values...)
-		}
-
-		if persona.Preset != "" {
-			label := persona.Preset
-			if persona.PresetLabel != "" && persona.PresetLabel != persona.Preset {
-				label = fmt.Sprintf("%s — %s", persona.Preset, persona.PresetLabel)
-			}
-			writePersonaLine("- Preset: %s", label)
-		}
-		if persona.Voice != "" {
-			writePersonaLine("- Voice: %s", persona.Voice)
-		}
-		if persona.Audience != "" {
-			writePersonaLine("- Audience: %s", persona.Audience)
-		}
-		if persona.Tone != "" {
-			writePersonaLine("- Tone: %s", persona.Tone)
-		}
-		if persona.Intent != "" {
-			writePersonaLine("- Intent: %s", persona.Intent)
-		}
-	}
-
-	promptletsWritten := false
-	for _, entry := range result.HydratedPersona {
-		if entry.Axis == "persona_preset" {
-			continue
-		}
-		if !personasSectionWritten {
-			b.WriteString(sectionPersona)
-			b.WriteString("\n")
-			personasSectionWritten = true
-		}
-		if !promptletsWritten {
-			fmt.Fprintf(&b, "- %s:\n", sectionPromptlets)
-			promptletsWritten = true
-		}
-		fmt.Fprintf(&b, "  • %s\n", formatPromptlet(entry))
-	}
-
-	if personasSectionWritten {
+	if writePersonaSection(&b, result.Persona, result.HydratedPersona) {
 		b.WriteString("\n")
 	} else {
 		writeSection(&b, sectionPersona, "(none)")
@@ -110,4 +61,110 @@ func writeSection(b *strings.Builder, heading string, body string) {
 	}
 	b.WriteString(body)
 	b.WriteString("\n\n")
+}
+
+func writePersonaSection(b *strings.Builder, persona PersonaResult, promptlets []HydratedPromptlet) bool {
+	axisEntries := make(map[string][]HydratedPromptlet)
+	hasPromptletData := false
+	for _, entry := range promptlets {
+		axisKey := strings.ToLower(strings.TrimSpace(entry.Axis))
+		if axisKey == "" || axisKey == "persona_preset" {
+			continue
+		}
+		axisEntries[axisKey] = append(axisEntries[axisKey], entry)
+		if strings.TrimSpace(entry.Token) != "" || strings.TrimSpace(entry.Description) != "" {
+			hasPromptletData = true
+		}
+	}
+
+	hasPersona := persona != (PersonaResult{})
+	if !hasPersona && !hasPromptletData {
+		return false
+	}
+
+	b.WriteString(sectionPersona)
+	b.WriteString("\n")
+
+	if persona.Preset != "" {
+		label := persona.Preset
+		if persona.PresetLabel != "" && persona.PresetLabel != persona.Preset {
+			label = fmt.Sprintf("%s — %s", persona.Preset, persona.PresetLabel)
+		}
+		fmt.Fprintf(b, "- Preset: %s\n", label)
+	}
+
+	type axisDisplay struct {
+		key   string
+		label string
+		value string
+	}
+
+	axisOrder := []axisDisplay{
+		{key: "voice", label: "Voice", value: persona.Voice},
+		{key: "audience", label: "Audience", value: persona.Audience},
+		{key: "tone", label: "Tone", value: persona.Tone},
+		{key: "intent", label: "Intent", value: persona.Intent},
+	}
+
+	for _, axis := range axisOrder {
+		token := strings.TrimSpace(axis.value)
+		desc := ""
+		entries := axisEntries[axis.key]
+		tokens := make([]string, 0, len(entries))
+		for _, entry := range entries {
+			if t := strings.TrimSpace(entry.Token); t != "" {
+				tokens = append(tokens, t)
+			}
+			if desc == "" && strings.TrimSpace(entry.Description) != "" {
+				desc = strings.TrimSpace(entry.Description)
+			}
+		}
+		if token == "" && len(tokens) > 0 {
+			deduped := dedupeInOrder(tokens)
+			token = strings.Join(deduped, ", ")
+		}
+
+		if token == "" && desc == "" {
+			delete(axisEntries, axis.key)
+			continue
+		}
+
+		if token == "" {
+			fmt.Fprintf(b, "- %s — %s\n", axis.label, desc)
+		} else if desc == "" {
+			fmt.Fprintf(b, "- %s: %s\n", axis.label, token)
+		} else {
+			fmt.Fprintf(b, "- %s: %s — %s\n", axis.label, token, desc)
+		}
+
+		delete(axisEntries, axis.key)
+	}
+
+	noteLines := make([]string, 0)
+	if len(axisEntries) > 0 {
+		keys := make([]string, 0, len(axisEntries))
+		for key := range axisEntries {
+			keys = append(keys, key)
+		}
+		sort.Strings(keys)
+		for _, key := range keys {
+			entries := axisEntries[key]
+			for _, entry := range entries {
+				formatted := strings.TrimSpace(formatPromptlet(entry))
+				if formatted == "" {
+					continue
+				}
+				noteLines = append(noteLines, formatted)
+			}
+		}
+	}
+
+	if len(noteLines) > 0 {
+		fmt.Fprintf(b, "- Additional stance notes:\n")
+		for _, line := range noteLines {
+			fmt.Fprintf(b, "  • %s\n", line)
+		}
+	}
+
+	return true
 }

@@ -17,9 +17,9 @@ func TestRenderTokensHelpShowsPersonaSlugs(t *testing.T) {
 	if presetSlug == "" {
 		presetSlug = "persona=coach_junior"
 	}
-	expectedPreset := fmt.Sprintf("%s (preset: coach_junior", presetSlug)
+	expectedPreset := fmt.Sprintf("persona coach_junior | slug: %s", presetSlug)
 	if !strings.Contains(output, expectedPreset) {
-		t.Fatalf("expected persona preset slug with spoken alias in help output, got:\n%s", output)
+		t.Fatalf("expected persona preset slug with command hint in help output, got:\n%s", output)
 	}
 
 	staticVerified := false
@@ -50,9 +50,9 @@ func TestRenderTokensHelpShowsPersonaSlugs(t *testing.T) {
 			if slug == "" || slug == token {
 				continue
 			}
-			expected := fmt.Sprintf("• %s (spoken: %s)", slug, token)
+			expected := fmt.Sprintf("• %s | slug: %s", token, slug)
 			if !strings.Contains(output, expected) {
-				t.Fatalf("expected persona axis slug '%s' with spoken alias in help output, got:\n%s", expected, output)
+				t.Fatalf("expected persona axis slug hint %q in help output, got:\n%s", expected, output)
 			}
 			axisVerified = true
 			break
@@ -72,9 +72,9 @@ func TestRenderTokensHelpShowsPersonaSlugs(t *testing.T) {
 			if slug == "" || slug == token {
 				continue
 			}
-			expected := fmt.Sprintf("• %s (spoken: %s)", slug, token)
+			expected := fmt.Sprintf("• %s | slug: %s", token, slug)
 			if !strings.Contains(output, expected) {
-				t.Fatalf("expected persona intent slug '%s' with spoken alias in help output, got:\n%s", expected, output)
+				t.Fatalf("expected persona intent slug hint %q in help output, got:\n%s", expected, output)
 			}
 			intentVerified = true
 			break

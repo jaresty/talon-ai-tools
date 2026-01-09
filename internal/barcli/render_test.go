@@ -33,13 +33,17 @@ func TestRenderPlainTextSections(t *testing.T) {
 		"=== PERSONA (STANCE) ===",
 		"=== SUBJECT (CONTEXT) ===",
 		"1. Completeness (full):",
-		"- Promptlets:",
-		"• Voice (as teacher):",
+		"- Preset: coach_junior — Coach junior",
+		"- Voice: as teacher — Teaches kindly.",
 	}
 
 	for _, marker := range required {
 		if !strings.Contains(output, marker) {
 			t.Fatalf("expected plain text output to contain %q, got:\n%s", marker, output)
 		}
+	}
+
+	if strings.Contains(output, "- "+sectionPromptlets) {
+		t.Fatalf("expected plain text output to omit legacy promptlets block, got:\n%s", output)
 	}
 }

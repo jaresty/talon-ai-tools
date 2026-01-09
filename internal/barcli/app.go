@@ -424,34 +424,58 @@ func renderTokensHelp(w io.Writer, grammar *Grammar, filters map[string]bool) {
 		if len(presetNames) == 0 {
 			fmt.Fprintln(w, "  (none)")
 		} else {
+			readField := func(value *string) string {
+				if value == nil {
+					return ""
+				}
+				return strings.TrimSpace(*value)
+			}
 			for _, name := range presetNames {
 				preset := grammar.Persona.Presets[name]
 				label := strings.TrimSpace(preset.Label)
 				if label == "" {
 					label = name
 				}
-				slug := grammar.slugForToken(fmt.Sprintf("persona=%s", name))
-				if slug == "" {
-					slug = fmt.Sprintf("persona=%s", name)
+				slug := strings.TrimSpace(grammar.slugForToken(fmt.Sprintf("persona=%s", name)))
+				spoken := readField(preset.Spoken)
+
+				displayParts := []string{fmt.Sprintf("persona %s", name)}
+				if slug != "" {
+					displayParts = append(displayParts, fmt.Sprintf("slug: %s", slug))
 				}
-				spoken := ""
-				if preset.Spoken != nil {
-					spoken = strings.TrimSpace(*preset.Spoken)
-				}
-				fmt.Fprintf(w, "  - %s (preset: %s", slug, name)
 				if spoken != "" {
-					fmt.Fprintf(w, ", spoken: %s", spoken)
+					displayParts = append(displayParts, fmt.Sprintf("say: persona %s", spoken))
 				}
-				fmt.Fprintf(w, "): %s\n", label)
+
+				fmt.Fprintf(w, "  - %s — %s\n", strings.Join(displayParts, " | "), label)
+
+				stanceBits := make([]string, 0, 3)
+				if voice := readField(preset.Voice); voice != "" {
+					stanceBits = append(stanceBits, fmt.Sprintf("voice: %s", voice))
+				}
+				if audience := readField(preset.Audience); audience != "" {
+					stanceBits = append(stanceBits, fmt.Sprintf("audience: %s", audience))
+				}
+				if tone := readField(preset.Tone); tone != "" {
+					stanceBits = append(stanceBits, fmt.Sprintf("tone: %s", tone))
+				}
+				if len(stanceBits) > 0 {
+					fmt.Fprintf(w, "    • %s\n", strings.Join(stanceBits, " · "))
+				}
 			}
 		}
 	}
 
 	if shouldShow("persona-axes") {
-		writeHeader("PERSONA AXES")
+		writeHeader("PERSONA AXES (voice, audience, tone)")
+		allowedPersonaAxes := map[string]bool{"voice": true, "audience": true, "tone": true}
 		personaAxes := make([]string, 0, len(grammar.Persona.Axes))
 		for axis := range grammar.Persona.Axes {
-			personaAxes = append(personaAxes, axis)
+			axisKey := strings.ToLower(strings.TrimSpace(axis))
+			if !allowedPersonaAxes[axisKey] {
+				continue
+			}
+			personaAxes = append(personaAxes, axisKey)
 		}
 		sort.Strings(personaAxes)
 		if len(personaAxes) == 0 {
@@ -462,16 +486,18 @@ func renderTokensHelp(w io.Writer, grammar *Grammar, filters map[string]bool) {
 				sort.Strings(tokens)
 				fmt.Fprintf(w, "  %s:\n", axis)
 				for _, token := range tokens {
-					slug := grammar.slugForToken(token)
-					display := token
-					if slug != "" && slug != token {
-						display = fmt.Sprintf("%s (spoken: %s)", slug, token)
+					display := strings.TrimSpace(token)
+					slug := strings.TrimSpace(grammar.slugForToken(token))
+					displayParts := []string{display}
+					if slug != "" && !strings.EqualFold(slug, display) {
+						displayParts = append(displayParts, fmt.Sprintf("slug: %s", slug))
 					}
 					desc := strings.TrimSpace(grammar.PersonaDescription(axis, token))
+					joined := strings.Join(displayParts, " | ")
 					if desc == "" {
-						fmt.Fprintf(w, "    • %s\n", display)
+						fmt.Fprintf(w, "    • %s\n", joined)
 					} else {
-						fmt.Fprintf(w, "    • %s: %s\n", display, desc)
+						fmt.Fprintf(w, "    • %s: %s\n", joined, desc)
 					}
 				}
 			}
@@ -485,21 +511,23 @@ func renderTokensHelp(w io.Writer, grammar *Grammar, filters map[string]bool) {
 		}
 		intentTokens := append([]string(nil), intents...)
 		sort.Strings(intentTokens)
-		writeHeader("PERSONA INTENTS")
+		writeHeader("PERSONA INTENTS (why)")
 		if len(intentTokens) == 0 {
 			fmt.Fprintln(w, "  (none)")
 		} else {
 			for _, token := range intentTokens {
-				slug := grammar.slugForToken(token)
-				display := token
-				if slug != "" && slug != token {
-					display = fmt.Sprintf("%s (spoken: %s)", slug, token)
+				display := strings.TrimSpace(token)
+				slug := strings.TrimSpace(grammar.slugForToken(token))
+				displayParts := []string{display}
+				if slug != "" && !strings.EqualFold(slug, display) {
+					displayParts = append(displayParts, fmt.Sprintf("slug: %s", slug))
 				}
 				desc := strings.TrimSpace(grammar.PersonaDescription("intent", token))
+				joined := strings.Join(displayParts, " | ")
 				if desc == "" {
-					fmt.Fprintf(w, "  • %s\n", display)
+					fmt.Fprintf(w, "  • %s\n", joined)
 				} else {
-					fmt.Fprintf(w, "  • %s: %s\n", display, desc)
+					fmt.Fprintf(w, "  • %s: %s\n", joined, desc)
 				}
 			}
 		}

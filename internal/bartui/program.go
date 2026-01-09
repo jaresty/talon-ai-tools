@@ -152,6 +152,7 @@ type model struct {
 	envValues      map[string]string
 	envInitial     map[string]string
 	envSelection   int
+	helpVisible    bool
 }
 
 func newModel(opts Options) model {
@@ -255,6 +256,11 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	if keyMsg, ok := msg.(tea.KeyMsg); ok {
 		switch keyMsg.Type {
 		case tea.KeyCtrlC, tea.KeyEsc:
+			if m.helpVisible {
+				m.helpVisible = false
+				m.statusMessage = "Help overlay closed."
+				return m, nil
+			}
 			if m.commandRunning {
 				if m.cancelCommand != nil {
 					m.cancelCommand()
@@ -268,6 +274,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				return m, nil
 			}
 			return m, tea.Quit
+
 		case tea.KeyTab:
 			m.toggleFocus()
 			return m, nil
@@ -293,7 +300,17 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		switch keyMsg.String() {
 
+		case "?":
+			m.helpVisible = !m.helpVisible
+			if m.helpVisible {
+				m.statusMessage = "Help overlay open. Press ? to close."
+			} else {
+				m.statusMessage = "Help overlay closed."
+			}
+			return m, nil
+
 		case "ctrl+l":
+
 			m.loadSubjectFromClipboard()
 			return m, nil
 		case "ctrl+o":
@@ -360,6 +377,15 @@ func (m model) View() string {
 		b.WriteString(strings.Join(m.tokens, " "))
 	}
 	b.WriteString("\n")
+
+	if m.helpVisible {
+		b.WriteString("\nHelp overlay (press ? to close):\n")
+		b.WriteString("  Subject focus: type directly, Ctrl+L loads clipboard, Ctrl+O copies preview.\n")
+		b.WriteString("  Command focus: Enter runs command, Ctrl+P pipes preview, Ctrl+Y inserts stdout, leave blank to skip.\n")
+		b.WriteString("  Environment: Tab again to focus list, Up/Down move, Ctrl+E toggle, Ctrl+A enable all, Ctrl+X clear allowlist.\n")
+		b.WriteString("  Cancellation: Esc or Ctrl+C closes help first, then cancels running commands, then exits.\n")
+		b.WriteString("  Help: Press ? anytime to toggle this reference.\n\n")
+	}
 
 	b.WriteString("Environment allowlist: ")
 	if len(m.allowedEnv) == 0 {

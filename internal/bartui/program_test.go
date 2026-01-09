@@ -365,3 +365,46 @@ func TestToggleEnvironmentAllowlist(t *testing.T) {
 		t.Fatalf("expected only CHATGPT_API_KEY to remain, got %v", m.allowedEnv)
 	}
 }
+
+func TestToggleHelpOverlay(t *testing.T) {
+	opts := Options{
+		Tokens:         []string{"todo"},
+		Preview:        func(subject string) (string, error) { return "preview:" + subject, nil },
+		ClipboardRead:  func() (string, error) { return "", nil },
+		ClipboardWrite: func(string) error { return nil },
+		RunCommand: func(_ context.Context, command string, stdin string, env map[string]string) (string, string, error) {
+			return "", "", nil
+		},
+		CommandTimeout: time.Second,
+	}
+
+	m := newModel(opts)
+	if strings.Contains(m.View(), "Help overlay") {
+		t.Fatalf("expected help overlay to be hidden by default")
+	}
+
+	helpKey := tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{'?'}}
+	m, cmd := updateModel(t, m, helpKey)
+	if cmd != nil {
+		t.Fatalf("unexpected command when toggling help: %T", cmd)
+	}
+	view := m.View()
+	if !strings.Contains(view, "Help overlay (press ? to close)") {
+		t.Fatalf("expected view to include help overlay contents, got:\n%s", view)
+	}
+	if !strings.Contains(strings.ToLower(m.statusMessage), "help overlay") {
+		t.Fatalf("expected status message to reference help overlay, got %q", m.statusMessage)
+	}
+
+	m, cmd = updateModel(t, m, helpKey)
+	if cmd != nil {
+		t.Fatalf("unexpected command when toggling help off: %T", cmd)
+	}
+	view = m.View()
+	if strings.Contains(view, "Help overlay (press ? to close)") {
+		t.Fatalf("expected help overlay to be hidden after toggling off, got:\n%s", view)
+	}
+	if !strings.Contains(strings.ToLower(m.statusMessage), "help overlay closed") {
+		t.Fatalf("expected status message to acknowledge closing help, got %q", m.statusMessage)
+	}
+}

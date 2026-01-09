@@ -146,6 +146,7 @@ When running the interactive editor, keep these shortcuts close by:
 - `Ctrl+O` copies the rendered preview to the clipboard.
 - `Ctrl+P` pipes the current preview into the configured shell command.
 - `Ctrl+Y` replaces the subject with the most recent command stdout.
+- `?` toggles the in-app shortcut overlay so you can review controls without leaving the session.
 - When the environment allowlist is focused, use Up/Down to move between entries, `Ctrl+E` to toggle the selection, `Ctrl+A` to re-enable all entries, and `Ctrl+X` to clear the allowlist.
 
 For a complete pilot walkthrough (interactive usage, fixture expectations, transcript capture tips) see `docs/bubble-tea-pilot-playbook.md`.

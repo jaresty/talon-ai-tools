@@ -766,3 +766,24 @@
 - next_work:
   - Behaviour: Monitor pilot feedback for env toggle ergonomics; schedule follow-up if new constraints emerge (validated via go test ./internal/bartui, go test ./cmd/bar/..., and python3 -m pytest _tests/test_bar_completion_cli.py when changes land).
 
+## 2026-01-09 — loop 047
+- helper_version: helper:v20251223.1
+- focus: Decision § discoverability — provide in-session shortcut overlay via `?`
+- active_constraint: Bubble Tea TUI did not expose the required `?` shortcut overlay, so pilots lacked an in-app reference and `go test ./internal/bartui` (TestToggleHelpOverlay) failed when the overlay was missing.
+- validation_targets:
+  - go test ./internal/bartui
+  - go test ./cmd/bar/...
+  - python3 -m pytest _tests/test_bar_completion_cli.py
+- evidence:
+  - red: docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-047.md#loop-047-red--go-test--count1--internal-bartui
+  - green: docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-047.md#loop-047-green--go-test--count1--internal-bartui
+  - green: docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-047.md#loop-047-green--go-test--count1--cmd-bar
+  - green: docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-047.md#loop-047-green--python3--m-pytest-_tests-test_bar_completion_cli.py
+- rollback_plan: `git restore --source=HEAD -- internal/bartui/program.go internal/bartui/program_test.go docs/bubble-tea-pilot-playbook.md readme.md docs/adr/0070-bubble-tea-prompt-editor-tui.work-log.md docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-047.md`
+- delta_summary: helper:diff-snapshot=git diff --stat | internal/bartui/program.go (help overlay toggle + status); internal/bartui/program_test.go (TestToggleHelpOverlay); docs/bubble-tea-pilot-playbook.md & readme.md (document `?` shortcut).
+- loops_remaining_forecast: 0 loops — help overlay shipped with guardrails green; future loops will follow pilot feedback if needed.
+- residual_constraints:
+  - None (no additional medium/high constraints surfaced after adding the shortcut overlay).
+- next_work:
+  - Behaviour: Monitor pilot feedback on help overlay discoverability; rerun go test ./internal/bartui, go test ./cmd/bar/..., and python3 -m pytest _tests/test_bar_completion_cli.py if adjustments are required.
+

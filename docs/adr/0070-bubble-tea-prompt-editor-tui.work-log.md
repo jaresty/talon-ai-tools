@@ -399,6 +399,25 @@
 
 ## 2026-01-09 — loop 029
 - helper_version: helper:v20251223.1
+
+## 2026-01-09 — loop 030
+- helper_version: helper:v20251223.1
+- focus: ADR Decision/Tasks — capture subject import/export workflow requirements
+- active_constraint: Decision and salient tasks referenced token editing and packaging but not the explicit subject import/export flows (clipboard, command piping, result reinsertion) now required by the pilot.
+- validation_targets:
+  - documentation-only (no executable commands)
+- evidence:
+  - green: docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-030.md#loop-030-green--helper-diff-snapshot-git-diff--stat
+- rollback_plan: `git restore --source=HEAD -- docs/adr/0070-bubble-tea-Prompt-editor-tui.md docs/adr/0070-bubble-tea-prompt-editor-tui.work-log.md docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-030.md`
+- delta_summary: helper:diff-snapshot=git diff --stat | docs/adr/0070-bubble-tea-prompt-editor-tui.md (decision + salient tasks updated for subject import/export requirements).
+- loops_remaining_forecast: 1 loop — implement subject import/export plumbing inside `bar tui` when the feature loop starts.
+- residual_constraints:
+  - Subject import/export controls remain unimplemented (severity: high; mitigation: build clipboard + subprocess plumbing inside TUI; monitoring: go test ./cmd/bar/... once implementation lands).
+- next_work:
+  - Behaviour: Implement subject import/export plumbing with clipboard capture, command piping, result display, and optional reinsertion (validation via go test ./cmd/bar/... once the feature is built).
+  - Behaviour: Execute packaging updates when implementation loop starts (validation via `make guardrails`).
+  - Behaviour: Run the CLI completion guardrail (`python3 -m pytest _tests/test_bar_completion_cli.py`) alongside packaging to verify `bar tui` shells stay aligned.
+
 - focus: ADR Decision/Tasks — capture in-TUI token editing requirement
 - active_constraint: Decision text and salient tasks still implied tokens were supplied via CLI launch parameters, omitting the requirement to edit prompt parts directly inside the TUI.
 - validation_targets:

@@ -404,6 +404,25 @@
 - helper_version: helper:v20251223.1
 - focus: ADR Decision/Tasks — capture subject import/export workflow requirements
 - active_constraint: Decision and salient tasks referenced token editing and packaging but not the explicit subject import/export flows (clipboard, command piping, result reinsertion) now required by the pilot.
+
+## 2026-01-09 — loop 031
+- helper_version: helper:v20251223.1
+- focus: ADR Decision — clarify subject input methods include direct typing
+- active_constraint: Decision text implied import/export sources but did not explicitly state that typing in the TUI remains a supported subject input path alongside clipboard/command flows.
+- validation_targets:
+  - documentation-only (no executable commands)
+- evidence:
+  - green: docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-031.md#loop-031-green--helper-diff-snapshot-git-diff--stat
+- rollback_plan: `git restore --source=HEAD -- docs/adr/0070-bubble-tea-prompt-editor-tui.md docs/adr/0070-bubble-tea-prompt-editor-tui.work-log.md docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-031.md`
+- delta_summary: helper:diff-snapshot=git diff --stat | docs/adr/0070-bubble-tea-prompt-editor-tui.md (decision bullet now calls out typing as an equal subject input path).
+- loops_remaining_forecast: 1 loop — implement subject import/export plumbing (typing already supported).
+- residual_constraints:
+  - Subject import/export plumbing (clipboard, command piping, result reinsertion) remains unimplemented (severity: high; mitigation: implement feature; monitoring: go test ./cmd/bar/... once feature lands).
+- next_work:
+  - Behaviour: Implement subject import/export plumbing with clipboard capture, command piping, result display, and optional reinsertion (validation via go test ./cmd/bar/... once the feature is built).
+  - Behaviour: Execute packaging updates when implementation loop starts (validation via `make guardrails`).
+  - Behaviour: Run the CLI completion guardrail (`python3 -m pytest _tests/test_bar_completion_cli.py`) alongside packaging to verify `bar tui` shells stay aligned.
+
 - validation_targets:
   - documentation-only (no executable commands)
 - evidence:

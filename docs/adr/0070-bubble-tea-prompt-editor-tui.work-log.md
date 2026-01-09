@@ -372,4 +372,20 @@
 - next_work:
   - Behaviour: Execute packaging work in future loop when implementation begins.
 
+## 2026-01-09 — loop 025
+- helper_version: helper:v20251223.1
+- focus: ADR Salient Tasks — add guardrail pointer for release packaging/installer updates
+- active_constraint: Salient tasks referenced packaging updates but did not cite the guardrail command (`make guardrails`) the Consequences section calls for, leaving packaging validation implicit.
+- validation_targets:
+  - documentation-only (no executable commands)
+- evidence:
+  - green: docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-025.md#loop-025-green--helper-diff-snapshot-git-diff--stat
+- rollback_plan: `git restore --source=HEAD -- docs/adr/0070-bubble-tea-prompt-editor-tui.work-log.md docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-025.md`
+- delta_summary: helper:diff-snapshot=git diff --stat | docs/adr/0070-bubble-tea-prompt-editor-tui.work-log.md (logged loop 025 documenting packaging guardrail).
+- loops_remaining_forecast: 0 loops — packaging task now references guardrail explicitly; future loops will execute the task when implementation begins.
+- residual_constraints:
+  - None (packaging validation now documented).
+- next_work:
+  - Behaviour: Execute packaging updates when implementation loop starts.
+
 

@@ -30,20 +30,20 @@ Proposed — Bubble Tea TUI improves prompt editing ergonomics for the Go CLI (2
 
 ## Validation
 - `go test ./cmd/bar/...` covers the minimal `bar tui` wiring by compiling and exercising the CLI entrypoint with existing shared helpers.
-- `go run ./cmd/bar tui --fixture cmd/bar/testdata/grammar.json --no-alt-screen` provides a smoke run that the pilot group can execute to confirm preview/render behaviour before each session.
-- Capture pilot cohort notes in a shared doc after each run, treating the aggregated feedback as the go/no-go signal for expanding beyond the initial users.
+- `go run ./cmd/bar tui --fixture cmd/bar/testdata/grammar.json --no-alt-screen` provides a smoke run you can execute to confirm preview/render behaviour before each session.
+- Capture personal notes after each run and use them to decide when to expand beyond the MVP.
 
 ## Follow-up
 - Deliver an MVP `bar tui` subcommand that reuses existing `cmd/bar` and `internal/barcli` packages, loads the grammar, accepts subject input, and renders the preview (validation via `go test ./cmd/bar/...` and a smoke run of `go run ./cmd/bar tui --fixture cmd/bar/testdata/grammar.json --no-alt-screen`).
-- Publish a lightweight pilot guide (key bindings, known limitations, quit path) so a small user group can try the TUI and share feedback.
-- Capture pilot feedback and triage follow-on work (completions refresh, telemetry, advanced layout) into the backlog after validation.
+- Publish a lightweight quickstart note (key bindings, known limitations, quit path) so you can reference the workflow quickly during trials.
+- Capture your feedback after each session and triage follow-on work (completions refresh, telemetry, advanced layout) into the backlog when the MVP holds up.
 
 ---
 
 ## Salient Tasks
 - Scaffold the minimal `bar tui` entrypoint that loads grammar metadata, captures subject text, and streams preview output without blocking the CLI.
 - Keep CLI parity by reusing `barcli` state helpers, covering the happy path with `go test ./cmd/bar/...`, and adding a smoke script that runs `go run ./cmd/bar tui --fixture cmd/bar/testdata/grammar.json --no-alt-screen`.
-- Prepare pilot enablement: document the MVP workflow, outline known gaps (completions, telemetry, advanced panes), and set up a feedback channel for the initial user cohort.
+- Prepare personal enablement: document the MVP workflow, outline known gaps (completions, telemetry, advanced panes), and set up a simple feedback loop for yourself.
 
 ## Anti-goals
 - Do not replace or deprecate the existing non-interactive CLI; scripted workflows must remain supported and unchanged by default.

@@ -1,0 +1,35 @@
+## 2026-01-09 — loop 001
+- helper_version: helper:v20251223.1
+- focus: Decision § follow-up — enumerate salient tasks so Bubble Tea TUI delivery stays loop-addressable
+- active_constraint: ADR 0070 lacked enumerated salient tasks linking Bubble Tea TUI behaviours to validation targets, leaving contributors without a falsifiable backlog to sequence initial implementation work.
+- validation_targets:
+  - git diff --no-index --stat /dev/null docs/adr/0070-bubble-tea-prompt-editor-tui.md
+  - git diff --no-index /dev/null docs/adr/0070-bubble-tea-prompt-editor-tui.md
+- evidence:
+  - green: docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-001.md#loop-001-green--helper-diff-snapshot-git-diff----no-index----stat--devnull-docs-adr-0070-bubble-tea-prompt-editor-tui.md
+  - green: docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-001.md#loop-001-green--helper-diff-snapshot-git-diff----no-index--devnull-docs-adr-0070-bubble-tea-prompt-editor-tui.md
+- rollback_plan: `git restore --source=HEAD -- docs/adr/0070-bubble-tea-prompt-editor-tui.md docs/adr/0070-bubble-tea-prompt-editor-tui.work-log.md docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-001.md`
+- delta_summary: helper:diff-snapshot=docs/adr/0070-bubble-tea-prompt-editor-tui.md | 56 insertions(+) — recorded a salient-task backlog capturing state modeling, Bubble Tea wiring, validation coverage, and documentation so future loops can sequence the build.
+- loops_remaining_forecast: 6 loops (CLI entrypoint scaffolding, state model integration, async command pipeline, layout polish, automated tests, documentation updates) — medium confidence given new UI footprint.
+- residual_constraints:
+  - Bubble Tea entrypoint remains unimplemented, so `bar` cannot yet launch a TUI (severity: high; mitigation: scaffold `bar tui` command backed by a Bubble Tea `tea.Program`; monitoring: go test ./cmd/bar/... once entrypoint lands).
+- next_work:
+  - Behaviour: Scaffold `bar tui` entrypoint that loads grammar metadata and boots a Bubble Tea program (validation via go test ./cmd/bar/... after implementation).
+
+## 2026-01-09 — loop 002
+- helper_version: helper:v20251223.1
+- focus: Decision § follow-up — lock Bubble Tea entrypoint to `bar tui` subcommand inside existing CLI
+- active_constraint: ADR 0070 still presented ambiguous packaging guidance (“subcommand or separate binary”), preventing CLI maintainers from sequencing wiring work and release integration for the Bubble Tea TUI.
+- validation_targets:
+  - git diff --no-index --stat /dev/null docs/adr/0070-bubble-tea-prompt-editor-tui.md
+  - git diff --no-index /dev/null docs/adr/0070-bubble-tea-prompt-editor-tui.md
+- evidence:
+  - green: docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-002.md#loop-002-green--helper-diff-snapshot-git-diff----no-index----stat--devnull-docs-adr-0070-bubble-tea-prompt-editor-tui.md
+  - green: docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-002.md#loop-002-green--helper-diff-snapshot-git-diff----no-index--devnull-docs-adr-0070-bubble-tea-prompt-editor-tui.md
+- rollback_plan: `git restore --source=HEAD -- docs/adr/0070-bubble-tea-prompt-editor-tui.md docs/adr/0070-bubble-tea-prompt-editor-tui.work-log.md docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-002.md`
+- delta_summary: helper:diff-snapshot=docs/adr/0070-bubble-tea-prompt-editor-tui.md | 56 insertions(+) — clarified Decision and Follow-up to mandate a `bar tui` subcommand so wiring, packaging, and release work can proceed without debating a separate binary.
+- loops_remaining_forecast: 6 loops (CLI entrypoint scaffolding, state model integration, async command pipeline, layout polish, automated tests, documentation updates) — medium confidence with clarified entrypoint path.
+- residual_constraints:
+  - Bubble Tea entrypoint remains unimplemented; `bar tui` subcommand still needs scaffolding (severity: high; mitigation: implement CLI wiring and program bootstrap; monitoring: go test ./cmd/bar/... once code lands).
+- next_work:
+  - Behaviour: Scaffold `bar tui` entrypoint that loads grammar metadata and boots a Bubble Tea program (validation via go test ./cmd/bar/... after implementation).

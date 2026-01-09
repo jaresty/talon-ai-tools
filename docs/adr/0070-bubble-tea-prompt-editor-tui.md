@@ -14,6 +14,7 @@ Proposed — Bubble Tea TUI improves prompt editing ergonomics for the Go CLI (2
 - Ship the TUI as an optional `bar tui` subcommand within the existing CLI binary so it coexists with the current surface while reusing shared configuration/preset directories.
 - Let operators adjust prompt tokens, destinations, and preset selections from within the TUI itself so launching with CLI shorthand remains optional.
 - Provide subject import/export affordances: operators can type subject text directly, pull it from the clipboard or a shell command, edit it in place, and push the rendered prompt to another command or the clipboard with the response surfaced in a dedicated TUI pane (and optionally reinserted into the subject field).
+- Bake discoverability and recovery affordances into the TUI itself: contextual shortcut hints (for example `?` help, persistent status cues), clear focus states, success/failure signaling in the result pane, and undo/confirmation paths before subject text is replaced by clipboard or command output.
 - Document the workflow in README/usage docs and offer quickstart examples highlighting keyboard shortcuts, pane toggles, preset reuse, export options, and a dedicated pilot playbook for transcript capture.
 
 ## Rationale
@@ -29,6 +30,7 @@ Proposed — Bubble Tea TUI improves prompt editing ergonomics for the Go CLI (2
 - We take on UI accessibility and terminal compatibility considerations (alt screen, mouse modes, bracketed paste) that the pure CLI previously avoided.
 - The TUI will need runtime coordination with preset/state files; we must guard against concurrent writes or stale caches when both surfaces run.
 - Introducing clipboard and subprocess integrations expands attack surface (shell execution, sensitive text retention) and demands clear opt-outs/logging guidance; the TUI must surface command results safely and handle failures without dropping subject state.
+- UX guardrails carry ongoing cost: we need to keep shortcut hints, status messaging, focus highlights, and result-pane signaling consistent so stressed operators do not misinterpret state or lose subject text unintentionally.
 
 ## Validation
 - `go test ./cmd/bar/...` covers the minimal `bar tui` wiring by compiling and exercising the CLI entrypoint with existing shared helpers.

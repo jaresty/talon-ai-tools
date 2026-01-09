@@ -484,6 +484,22 @@
 - next_work:
   - Behaviour: Monitor pilot feedback and update docs if new ergonomic gaps emerge (validation via manual review when future changes land).
 
+## 2026-01-09 — loop 039
+- helper_version: helper:v20251223.1
+- focus: ADR Decision/Consequences — codify UX guardrail expectations inside the TUI
+- active_constraint: The Decision and Consequences sections lacked explicit UX guardrail guidance; without it, future loops could regress shortcut discoverability, focus signaling, or undo affordances that pilots now depend on (validation is documentation-only for this slice).
+- validation_targets:
+  - documentation-only (no executable commands)
+- evidence:
+  - green: docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-039.md#loop-039-green--helper-diff-snapshot-git-diff--stat-head
+- rollback_plan: `git restore --source=HEAD -- docs/adr/0070-bubble-tea-prompt-editor-tui.md docs/adr/0070-bubble-tea-prompt-editor-tui.work-log.md docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-039.md`
+- delta_summary: helper:diff-snapshot=git diff --stat HEAD | updated the ADR Decision and Consequences to require in-product shortcut hints, focus cues, and persistent result signaling.
+- loops_remaining_forecast: 0 loops — UX expectations captured alongside implementation notes; future adjustments depend on pilot telemetry.
+- residual_constraints:
+  - None.
+- next_work:
+  - Behaviour: Observe pilot telemetry/usability feedback and revisit ADR if new UX constraints emerge (validation via documentation updates when needed).
+
 
  - validation_targets:
   - documentation-only (no executable commands)

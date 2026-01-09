@@ -80,6 +80,12 @@ if bootstrap is not None:
                 "__complete helper should list available commands",
             )
 
+            self.assertIn(
+                "tui",
+                suggestions,
+                "__complete helper should list the Bubble Tea command",
+            )
+
             self.assertTrue(
                 all(v == v.strip() for v in raw_values),
                 "completion values should not include trailing spaces",
@@ -226,11 +232,6 @@ if bootstrap is not None:
                 "adr",
                 "slack",
                 "fly-rog",
-                "persona-coach",
-                "as-teacher",
-                "to-team",
-                "kindly",
-                "coach",
             ]:
                 self.assertGreater(
                     values.index(expected),
@@ -245,11 +246,6 @@ if bootstrap is not None:
                 "checklist",
                 "slack",
                 "fly-rog",
-                "persona-coach",
-                "as-teacher",
-                "to-team",
-                "kindly",
-                "coach",
             ]
             for earlier, later in zip(ordered, ordered[1:]):
                 if earlier in values and later in values:

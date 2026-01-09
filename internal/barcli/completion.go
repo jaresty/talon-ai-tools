@@ -597,10 +597,11 @@ func buildOverrideSuggestions(grammar *Grammar, catalog completionCatalog) []com
 }
 
 var (
-	completionCommands = []string{"build", "help", "completion", "preset"}
+	completionCommands = []string{"build", "tui", "help", "completion", "preset"}
 	helpTopics         = []string{"tokens"}
 	completionShells   = []string{"bash", "zsh", "fish"}
 	buildFlags         = []string{"--prompt", "--input", "--output", "--json", "--grammar"}
+	tuiFlags           = []string{"--grammar"}
 	flagExpectingValue = map[string]struct{}{
 		"--prompt":  {},
 		"--input":   {},
@@ -666,7 +667,9 @@ func Complete(grammar *Grammar, shell string, words []string, index int) ([]comp
 		}
 		return nil, nil
 	case "build":
-		return completeBuild(grammar, catalog, words, index, current)
+		return completeRecipe(grammar, catalog, words, index, current, buildFlags)
+	case "tui":
+		return completeRecipe(grammar, catalog, words, index, current, tuiFlags)
 	case "preset":
 		return completePreset(grammar, words, index, current)
 	default:
@@ -677,7 +680,7 @@ func Complete(grammar *Grammar, shell string, words []string, index int) ([]comp
 	}
 }
 
-func completeBuild(grammar *Grammar, catalog completionCatalog, words []string, index int, current string) ([]completionSuggestion, error) {
+func completeRecipe(grammar *Grammar, catalog completionCatalog, words []string, index int, current string, allowedFlags []string) ([]completionSuggestion, error) {
 	if index > 2 {
 		prev := words[index-1]
 		if _, expect := flagExpectingValue[prev]; expect {
@@ -690,7 +693,7 @@ func completeBuild(grammar *Grammar, catalog completionCatalog, words []string, 
 	canonicalCurrent, canonicalOK := grammar.canonicalForInput(current)
 
 	if strings.HasPrefix(current, "-") {
-		return filterSuggestionsByPrefix(grammar, suggestionsFromTokens(grammar, buildFlags, "flag", "", false, false), prefix), nil
+		return filterSuggestionsByPrefix(grammar, suggestionsFromTokens(grammar, allowedFlags, "flag", "", false, false), prefix), nil
 	}
 
 	prior := []string{}

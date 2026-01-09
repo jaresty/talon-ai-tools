@@ -156,6 +156,49 @@ func TestCompleteSuggestsCommands(t *testing.T) {
 	if helpsuggestion.Category != "command" {
 		t.Fatalf("expected help category 'command', got %q", helpsuggestion.Category)
 	}
+	tuiSuggestion, ok := findSuggestion(suggestions, "tui")
+	if !ok {
+		t.Fatalf("expected tui command in suggestions, got %v", suggestions)
+	}
+	if tuiSuggestion.Category != "command" {
+		t.Fatalf("expected tui category 'command', got %q", tuiSuggestion.Category)
+	}
+	if strings.HasSuffix(tuiSuggestion.Value, " ") {
+		t.Fatalf("expected tui suggestion without trailing space, got %q", tuiSuggestion.Value)
+	}
+}
+
+func TestCompleteTUIFlagsAndTokens(t *testing.T) {
+	grammar := loadCompletionGrammar(t)
+
+	tokenSuggestions, err := Complete(grammar, "bash", []string{"bar", "tui", ""}, 2)
+	if err != nil {
+		t.Fatalf("unexpected error collecting token suggestions: %v", err)
+	}
+	if _, ok := findSuggestion(tokenSuggestions, "todo"); !ok {
+		t.Fatalf("expected static token suggestions for bar tui, got %v", tokenSuggestions)
+	}
+
+	flagSuggestions, err := Complete(grammar, "bash", []string{"bar", "tui", "-"}, 2)
+	if err != nil {
+		t.Fatalf("unexpected error collecting flag suggestions: %v", err)
+	}
+
+	flagValues := make([]string, 0, len(flagSuggestions))
+	for _, suggestion := range flagSuggestions {
+		flagValues = append(flagValues, suggestion.TrimmedValue)
+	}
+
+	if !containsSuggestionValue(flagSuggestions, "--grammar") {
+		t.Fatalf("expected --grammar flag suggestion for bar tui, got %v", flagValues)
+	}
+
+	forbiddenFlags := []string{"--prompt", "--input", "--output", "--json"}
+	for _, forbidden := range forbiddenFlags {
+		if containsSuggestionValue(flagSuggestions, forbidden) {
+			t.Fatalf("did not expect %q flag suggestion for bar tui, got %v", forbidden, flagValues)
+		}
+	}
 }
 
 func TestCompleteStaticStage(t *testing.T) {

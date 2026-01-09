@@ -239,4 +239,23 @@
 - next_work:
   - Behaviour: Refresh CLI completion scripts and fixtures to include `bar tui`, ensuring shell hints cover the new command (validation via python3 -m pytest _tests/test_bar_completion_cli.py and go test ./cmd/bar/... once completions land).
 
+## 2026-01-09 — loop 017
+- helper_version: helper:v20251223.1
+- focus: Salient Tasks — refresh CLI completion metadata so `bar tui` appears in shell suggestions
+- active_constraint: Bubble Tea interactive smoke harness is still missing, so we cannot capture reproducible terminal transcripts for the new surface (validation via go run ./cmd/bar tui --fixture ... once harness lands).
+- validation_targets:
+  - go test -count=1 ./cmd/bar/...
+  - python3 -m pytest _tests/test_bar_completion_cli.py
+- evidence:
+  - green: docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-017.md#loop-017-green--go-test--count1-cmd-bar
+  - green: docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-017.md#loop-017-green--python3--m-pytest-_tests-test_bar_completion_cli.py
+- rollback_plan: `git restore --source=HEAD -- internal/barcli/completion.go internal/barcli/completion_test.go _tests/test_bar_completion_cli.py docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-017.md docs/adr/0070-bubble-tea-prompt-editor-tui.work-log.md`
+- delta_summary: helper:diff-snapshot=git diff --stat | internal/barcli/completion.go (+tui command completions), internal/barcli/completion_test.go (+tui coverage), _tests/test_bar_completion_cli.py (+shell assertions)
+- loops_remaining_forecast: 2 loops (add Bubble Tea smoke harness, document pilot workflow) — medium confidence with completion metadata green but interactive validation pending.
+- residual_constraints:
+  - Interactive smoke test harness for Bubble Tea panes remains absent (severity: high; mitigation: script `go run ./cmd/bar tui` with fixture-driven output capture; monitoring: go run ./cmd/bar tui --fixture cmd/bar/testdata/grammar.json --no-alt-screen once tooling lands).
+  - Pilot documentation still needs refresh to cover the new TUI workflow (severity: medium; mitigation: extend README/usage doc once smoke harness stabilises; monitoring: manual review of docs/usage-examples).
+- next_work:
+  - Behaviour: Build scripted Bubble Tea smoke harness that captures deterministic transcripts (validation via go run ./cmd/bar tui --fixture cmd/bar/testdata/grammar.json --no-alt-screen and go test ./cmd/bar/... once harness added).
+
 

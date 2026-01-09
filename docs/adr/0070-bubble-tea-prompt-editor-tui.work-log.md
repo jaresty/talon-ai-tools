@@ -745,3 +745,24 @@
 - next_work:
   - Behaviour: Add Bubble Tea affordances to toggle env variables from inside the TUI, preserving the allowlist contract (validation via go test ./internal/bartui, go test ./cmd/bar/..., and python3 -m pytest _tests/test_bar_completion_cli.py).
 
+## 2026-01-09 — loop 046
+- helper_version: helper:v20251223.1
+- focus: Salient Tasks — ship in-TUI environment allowlist toggles for `bar tui`
+- active_constraint: Bubble Tea TUI lacked in-session environment allowlist controls, forcing pilots to relaunch the CLI to adjust credentials; go test ./internal/bartui exercises the new toggle workflow and would fail without this feature.
+- validation_targets:
+  - go test ./internal/bartui
+  - go test ./cmd/bar/...
+  - python3 -m pytest _tests/test_bar_completion_cli.py
+- evidence:
+  - red: docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-046.md#loop-046-red--go-test-cmd-bar
+  - green: docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-046.md#loop-046-green--go-test-internal-bartui
+  - green: docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-046.md#loop-046-green--go-test-cmd-bar
+  - green: docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-046.md#loop-046-green--python3--m-pytest-_tests-test_bar_completion_cli.py
+- rollback_plan: `git restore --source=HEAD -- internal/bartui/program.go internal/bartui/program_test.go cmd/bar/testdata/tui_smoke.json docs/bubble-tea-pilot-playbook.md readme.md docs/adr/0070-bubble-tea-prompt-editor-tui.work-log.md docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-046.md`
+- delta_summary: helper:diff-snapshot=git diff --stat | cmd/bar/testdata/tui_smoke.json (fixture gains env controls); docs/bubble-tea-pilot-playbook.md, readme.md (document keyboard toggles); internal/bartui/program.go/.program_test.go (keyboard-driven env toggles + tests).
+- loops_remaining_forecast: 0 loops — env allowlist toggles now ship in-session; future iterations depend on pilot telemetry.
+- residual_constraints:
+  - None (no additional medium/high constraints discovered while shipping env toggle controls).
+- next_work:
+  - Behaviour: Monitor pilot feedback for env toggle ergonomics; schedule follow-up if new constraints emerge (validated via go test ./internal/bartui, go test ./cmd/bar/..., and python3 -m pytest _tests/test_bar_completion_cli.py when changes land).
+

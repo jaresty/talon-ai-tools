@@ -20,7 +20,7 @@ bar tui todo focus steps
 - `Ctrl+C` or `Esc` exits the program.
 - Alt screen is enabled by default so the original shell buffer is restored. If your terminal does not support alt screen or you want to capture transcripts, launch with `--no-alt-screen`.
 - Point at an alternate grammar bundle with `--grammar /path/to/grammar.json` when testing staged prompt changes.
-- Repeat `--env NAME` to opt specific environment variables into the subprocess allowlist; the status bar echoes the names so you can confirm sensitive keys are intentionally shared.
+- Repeat `--env NAME` to opt specific environment variables into the subprocess allowlist. Once inside the TUI, press Tab a second time to focus the allowlist, use Up/Down to highlight entries, `Ctrl+E` to toggle the selection, `Ctrl+A` to re-enable all allowlisted variables, and `Ctrl+X` to clear the list if you want to run without any secrets.
 
 ## Deterministic smoke harness
 

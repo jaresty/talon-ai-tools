@@ -100,6 +100,7 @@ type focusArea int
 const (
 	focusSubject focusArea = iota
 	focusCommand
+	focusEnvironment
 )
 
 type commandResult struct {
@@ -146,8 +147,11 @@ type model struct {
 	runningCommand string
 	runningMode    commandMode
 	allowedEnv     []string
+	envNames       []string
 	missingEnv     []string
 	envValues      map[string]string
+	envInitial     map[string]string
+	envSelection   int
 }
 
 func newModel(opts Options) model {
@@ -163,13 +167,17 @@ func newModel(opts Options) model {
 	command.CharLimit = 0
 	command.Blur()
 
+	envInitial := make(map[string]string, len(opts.AllowedEnv))
 	envValues := make(map[string]string, len(opts.AllowedEnv))
-	allowedEnv := make([]string, 0, len(opts.AllowedEnv))
+	envNames := make([]string, 0, len(opts.AllowedEnv))
 	for name, value := range opts.AllowedEnv {
+		envInitial[name] = value
 		envValues[name] = value
-		allowedEnv = append(allowedEnv, name)
+		envNames = append(envNames, name)
 	}
-	sort.Strings(allowedEnv)
+	sort.Strings(envNames)
+
+	allowedEnv := append([]string(nil), envNames...)
 
 	missingEnv := append([]string(nil), opts.MissingEnv...)
 	if len(missingEnv) > 0 {
@@ -177,8 +185,8 @@ func newModel(opts Options) model {
 	}
 
 	status := "Ready. Tab to the command field to configure shell actions. Leave command empty to opt out."
-	if len(allowedEnv) > 0 {
-		status += " Environment allowlist: " + strings.Join(allowedEnv, ", ") + "."
+	if len(envNames) > 0 {
+		status += " Environment allowlist: " + strings.Join(allowedEnv, ", ") + ". Tab again to focus the allowlist and press Ctrl+E to toggle entries."
 	} else {
 		status += " Environment allowlist: (none)."
 	}
@@ -198,8 +206,14 @@ func newModel(opts Options) model {
 		commandTimeout: opts.CommandTimeout,
 		statusMessage:  status,
 		allowedEnv:     allowedEnv,
+		envNames:       envNames,
 		missingEnv:     missingEnv,
 		envValues:      envValues,
+		envInitial:     envInitial,
+		envSelection:   0,
+	}
+	if len(envNames) == 0 {
+		m.envSelection = -1
 	}
 	m.refreshPreview()
 	return m
@@ -261,9 +275,24 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if m.focus == focusCommand {
 				return m, (&m).executeSubjectCommand()
 			}
+			if m.focus == focusEnvironment {
+				m.toggleSelectedEnv()
+				return m, nil
+			}
+		case tea.KeyUp:
+			if m.focus == focusEnvironment {
+				m.moveEnvSelection(-1)
+				return m, nil
+			}
+		case tea.KeyDown:
+			if m.focus == focusEnvironment {
+				m.moveEnvSelection(1)
+				return m, nil
+			}
 		}
 
 		switch keyMsg.String() {
+
 		case "ctrl+l":
 			m.loadSubjectFromClipboard()
 			return m, nil
@@ -272,6 +301,28 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, nil
 		case "ctrl+p":
 			return m, (&m).executePreviewCommand()
+		case "ctrl+e":
+			if m.focus == focusEnvironment {
+				m.toggleSelectedEnv()
+			} else if len(m.envNames) > 0 {
+				m.focus = focusEnvironment
+				m.ensureEnvSelection()
+				m.statusMessage = "Environment allowlist focused. Use Up/Down to choose a variable and Ctrl+E to toggle it."
+			} else {
+				m.statusMessage = "No environment variables configured to toggle."
+			}
+			return m, nil
+		case "ctrl+a":
+			if m.focus == focusEnvironment {
+				m.setAllEnv(true)
+				return m, nil
+			}
+		case "ctrl+x":
+			if m.focus == focusEnvironment {
+				m.setAllEnv(false)
+				return m, nil
+			}
+
 		case "ctrl+y":
 			m.reinsertLastResult()
 			return m, nil
@@ -317,6 +368,28 @@ func (m model) View() string {
 		b.WriteString(strings.Join(m.allowedEnv, ", "))
 	}
 	b.WriteString("\n")
+	if len(m.envNames) == 0 {
+		b.WriteString("Allowlist manager: (no environment variables configured)\n")
+	} else {
+		b.WriteString("Allowlist manager (Tab focuses · Up/Down move · Ctrl+E toggle · Ctrl+A enable all · Ctrl+X clear):\n")
+		for i, name := range m.envNames {
+			cursor := " "
+			if m.focus == focusEnvironment && i == m.envSelection {
+				cursor = ">"
+			}
+			indicator := "[ ]"
+			if _, ok := m.envValues[name]; ok {
+				indicator = "[x]"
+			}
+			b.WriteString("  ")
+			b.WriteString(cursor)
+			b.WriteString(" ")
+			b.WriteString(indicator)
+			b.WriteString(" ")
+			b.WriteString(name)
+			b.WriteString("\n")
+		}
+	}
 	if len(m.missingEnv) > 0 {
 		b.WriteString("Missing environment variables: ")
 		b.WriteString(strings.Join(m.missingEnv, ", "))
@@ -342,6 +415,7 @@ func (m model) View() string {
 	b.WriteString("\n\n")
 
 	b.WriteString("Shortcuts: Tab switch input · Ctrl+L load subject from clipboard · Ctrl+O copy preview to clipboard · Ctrl+P pipe preview to command · Ctrl+Y replace subject with last command stdout · Ctrl+C/Esc exit.\n")
+	b.WriteString("Env allowlist controls (when configured): Tab focus env list · Up/Down move selection · Ctrl+E toggle entry · Ctrl+A enable all · Ctrl+X clear allowlist.\n")
 	b.WriteString("Leave command blank to opt out. Commands execute in the local shell; inspect output below and copy transcripts if you need logging.\n\n")
 
 	if m.statusMessage != "" {
@@ -432,11 +506,124 @@ func (m *model) toggleFocus() {
 		m.focus = focusCommand
 		m.statusMessage = "Command input focused. Enter runs without preview. Use Ctrl+P to pipe preview text."
 	case focusCommand:
+		if len(m.envNames) == 0 {
+			m.command.Blur()
+			m.subject.Focus()
+			m.focus = focusSubject
+			m.statusMessage = "Subject input focused. Type directly or use Ctrl+L to load from clipboard."
+			return
+		}
 		m.command.Blur()
-		m.subject.Focus()
+		m.focus = focusEnvironment
+		m.ensureEnvSelection()
+		m.statusMessage = "Environment allowlist focused. Use Up/Down to choose a variable and Ctrl+E to toggle it."
+	case focusEnvironment:
 		m.focus = focusSubject
+		m.subject.Focus()
 		m.statusMessage = "Subject input focused. Type directly or use Ctrl+L to load from clipboard."
 	}
+}
+
+func (m *model) ensureEnvSelection() {
+	if len(m.envNames) == 0 {
+		m.envSelection = -1
+		return
+	}
+	if m.envSelection < 0 {
+		m.envSelection = 0
+	}
+	if m.envSelection >= len(m.envNames) {
+		m.envSelection = len(m.envNames) - 1
+	}
+}
+
+func (m *model) moveEnvSelection(delta int) {
+	if len(m.envNames) == 0 {
+		m.statusMessage = "No environment variables configured."
+		return
+	}
+	m.ensureEnvSelection()
+	if len(m.envNames) == 0 {
+		return
+	}
+	m.envSelection = (m.envSelection + delta) % len(m.envNames)
+	if m.envSelection < 0 {
+		m.envSelection += len(m.envNames)
+	}
+	current := m.envNames[m.envSelection]
+	if _, ok := m.envValues[current]; ok {
+		m.statusMessage = fmt.Sprintf("%s selected (allowed). Press Ctrl+E to remove it or Ctrl+X to clear all.", current)
+	} else {
+		m.statusMessage = fmt.Sprintf("%s selected (not allowed). Press Ctrl+E to include it.", current)
+	}
+}
+
+func (m *model) toggleSelectedEnv() {
+	if len(m.envNames) == 0 {
+		m.statusMessage = "No environment variables configured."
+		return
+	}
+	m.ensureEnvSelection()
+	if m.envSelection < 0 || m.envSelection >= len(m.envNames) {
+		return
+	}
+	name := m.envNames[m.envSelection]
+	var message string
+	if _, ok := m.envValues[name]; ok {
+		delete(m.envValues, name)
+		message = fmt.Sprintf("Removed %s from environment allowlist.", name)
+	} else {
+		value, ok := m.envInitial[name]
+		if !ok {
+			m.statusMessage = fmt.Sprintf("Cannot add %s; variable missing from initial allowlist.", name)
+			return
+		}
+		m.envValues[name] = value
+		message = fmt.Sprintf("Added %s to environment allowlist.", name)
+	}
+	m.updateEnvSummaries()
+	if len(m.allowedEnv) > 0 {
+		m.statusMessage = fmt.Sprintf("%s Current allowlist: %s.", message, strings.Join(m.allowedEnv, ", "))
+	} else {
+		m.statusMessage = message + " Current allowlist: (none)."
+	}
+}
+
+func (m *model) setAllEnv(enabled bool) {
+	if len(m.envNames) == 0 {
+		m.statusMessage = "No environment variables configured."
+		return
+	}
+	if enabled {
+		for _, name := range m.envNames {
+			if value, ok := m.envInitial[name]; ok {
+				m.envValues[name] = value
+			}
+		}
+	} else {
+		for _, name := range m.envNames {
+			delete(m.envValues, name)
+		}
+	}
+	m.updateEnvSummaries()
+	if enabled {
+		if len(m.allowedEnv) > 0 {
+			m.statusMessage = fmt.Sprintf("Enabled all environment variables in the allowlist. Current allowlist: %s.", strings.Join(m.allowedEnv, ", "))
+		} else {
+			m.statusMessage = "Enabled all environment variables in the allowlist. Current allowlist: (none)."
+		}
+	} else {
+		m.statusMessage = "Cleared the environment allowlist. Current allowlist: (none)."
+	}
+}
+
+func (m *model) updateEnvSummaries() {
+	names := make([]string, 0, len(m.envValues))
+	for name := range m.envValues {
+		names = append(names, name)
+	}
+	sort.Strings(names)
+	m.allowedEnv = names
 }
 
 func (m *model) refreshPreview() {
@@ -519,7 +706,11 @@ func (m *model) startCommand(mode commandMode) tea.Cmd {
 	}
 
 	runCommand := m.runCommand
-	envValues := m.envValues
+	envValues := make(map[string]string, len(m.envValues))
+	for name, value := range m.envValues {
+		envValues[name] = value
+	}
+	allowedEnv := append([]string(nil), m.allowedEnv...)
 	return func() tea.Msg {
 		defer cancel()
 		stdout, stderr, err := runCommand(ctx, command, input, envValues)
@@ -533,7 +724,7 @@ func (m *model) startCommand(mode commandMode) tea.Cmd {
 				Stderr:      stderr,
 				Err:         err,
 				UsedPreview: mode == commandModePreview,
-				EnvVars:     append([]string(nil), m.allowedEnv...),
+				EnvVars:     allowedEnv,
 			},
 			mode: mode,
 		}

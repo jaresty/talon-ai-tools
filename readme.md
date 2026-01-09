@@ -122,7 +122,7 @@ bar tui todo focus steps                 # starts the TUI with shorthand tokens
 
 - By default the program enables the terminal alt screen so your original prompt buffer is restored when you exit. Pass `--no-alt-screen` to stay in the primary screen (useful when capturing transcripts inside CI or when your terminal does not support alt screen mode).
 - Supply a grammar file with `--grammar PATH` if you need to exercise alternate prompt bundles (defaults to the embedded grammar).
-- Repeat `--env NAME` to pass specific environment variables (for example API keys) to the subprocess allowlist; the UI always starts with an empty list and echoes the names you opt in.
+- Repeat `--env NAME` to pass specific environment variables (for example API keys) to the subprocess allowlist. Inside the TUI, press Tab again to focus the allowlist, use Up/Down to choose a variable, `Ctrl+E` to toggle it, `Ctrl+A` to re-enable all entries, and `Ctrl+X` to clear the allowlist entirely.
 
 The TUI supports a deterministic snapshot harness for CI and manual smoke checks. Use the bundled fixture to verify the preview, layout, and output formatting without entering the interactive loop:
 
@@ -146,6 +146,7 @@ When running the interactive editor, keep these shortcuts close by:
 - `Ctrl+O` copies the rendered preview to the clipboard.
 - `Ctrl+P` pipes the current preview into the configured shell command.
 - `Ctrl+Y` replaces the subject with the most recent command stdout.
+- When the environment allowlist is focused, use Up/Down to move between entries, `Ctrl+E` to toggle the selection, `Ctrl+A` to re-enable all entries, and `Ctrl+X` to clear the allowlist.
 
 For a complete pilot walkthrough (interactive usage, fixture expectations, transcript capture tips) see `docs/bubble-tea-pilot-playbook.md`.
 

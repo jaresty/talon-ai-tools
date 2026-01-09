@@ -277,3 +277,91 @@ func TestEnvironmentAllowlistVisible(t *testing.T) {
 		t.Fatalf("expected last result to record env vars, got %v", m.lastResult.EnvVars)
 	}
 }
+
+func TestToggleEnvironmentAllowlist(t *testing.T) {
+	allowed := map[string]string{
+		"CHATGPT_API_KEY": "secret",
+		"ORG_ID":          "org",
+	}
+	opts := Options{
+		Tokens:         []string{"todo"},
+		Preview:        func(subject string) (string, error) { return "preview:" + subject, nil },
+		ClipboardRead:  func() (string, error) { return "", nil },
+		ClipboardWrite: func(string) error { return nil },
+		RunCommand: func(_ context.Context, command string, stdin string, env map[string]string) (string, string, error) {
+			return "", "", nil
+		},
+		CommandTimeout: time.Second,
+		AllowedEnv:     allowed,
+	}
+
+	m := newModel(opts)
+	if got := len(m.allowedEnv); got != 2 {
+		t.Fatalf("expected 2 allowed env entries, got %d", got)
+	}
+
+	tab := tea.KeyMsg{Type: tea.KeyTab}
+	m, cmd := updateModel(t, m, tab)
+	if cmd != nil {
+		t.Fatalf("unexpected command during first tab: %T", cmd)
+	}
+	m, cmd = updateModel(t, m, tab)
+	if cmd != nil {
+		t.Fatalf("unexpected command during second tab: %T", cmd)
+	}
+	if m.focus != focusEnvironment {
+		t.Fatalf("expected focusEnvironment after two tabs, got %v", m.focus)
+	}
+
+	toggle := tea.KeyMsg{Type: tea.KeyCtrlE}
+	m, cmd = updateModel(t, m, toggle)
+	if cmd != nil {
+		t.Fatalf("unexpected command when toggling: %T", cmd)
+	}
+	if len(m.allowedEnv) != 1 || m.allowedEnv[0] != "ORG_ID" {
+		t.Fatalf("expected only ORG_ID to remain, got %v", m.allowedEnv)
+	}
+
+	selectAll := tea.KeyMsg{Type: tea.KeyCtrlA}
+	m, cmd = updateModel(t, m, selectAll)
+	if cmd != nil {
+		t.Fatalf("unexpected command when selecting all: %T", cmd)
+	}
+	if len(m.allowedEnv) != 2 {
+		t.Fatalf("expected allowlist to repopulate, got %v", m.allowedEnv)
+	}
+
+	clear := tea.KeyMsg{Type: tea.KeyCtrlX}
+	m, cmd = updateModel(t, m, clear)
+	if cmd != nil {
+		t.Fatalf("unexpected command when clearing: %T", cmd)
+	}
+	if len(m.allowedEnv) != 0 {
+		t.Fatalf("expected allowlist to clear, got %v", m.allowedEnv)
+	}
+
+	m, cmd = updateModel(t, m, selectAll)
+	if cmd != nil {
+		t.Fatalf("unexpected command when restoring after clear: %T", cmd)
+	}
+	if len(m.allowedEnv) != 2 {
+		t.Fatalf("expected allowlist to repopulate after clear, got %v", m.allowedEnv)
+	}
+
+	down := tea.KeyMsg{Type: tea.KeyDown}
+	m, cmd = updateModel(t, m, down)
+	if cmd != nil {
+		t.Fatalf("unexpected command when moving selection: %T", cmd)
+	}
+	if m.envSelection != 1 {
+		t.Fatalf("expected envSelection to move to index 1, got %d", m.envSelection)
+	}
+
+	m, cmd = updateModel(t, m, toggle)
+	if cmd != nil {
+		t.Fatalf("unexpected command when toggling second entry: %T", cmd)
+	}
+	if len(m.allowedEnv) != 1 || m.allowedEnv[0] != "CHATGPT_API_KEY" {
+		t.Fatalf("expected only CHATGPT_API_KEY to remain, got %v", m.allowedEnv)
+	}
+}

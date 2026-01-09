@@ -419,9 +419,35 @@
 - residual_constraints:
   - Subject import/export plumbing (clipboard, command piping, result reinsertion) remains unimplemented (severity: high; mitigation: implement feature; monitoring: go test ./cmd/bar/... once feature lands).
 - next_work:
-  - Behaviour: Implement subject import/export plumbing with clipboard capture, command piping, result display, and optional reinsertion (validation via go test ./cmd/bar/... once the feature is built).
-  - Behaviour: Execute packaging updates when implementation loop starts (validation via `make guardrails`).
-  - Behaviour: Run the CLI completion guardrail (`python3 -m pytest _tests/test_bar_completion_cli.py`) alongside packaging to verify `bar tui` shells stay aligned.
+   - Behaviour: Implement subject import/export plumbing with clipboard capture, command piping, dedicated result pane display, and optional reinsertion (validation via go test ./cmd/bar/... once the feature is built).
+   - Behaviour: Execute packaging updates when implementation loop starts (validation via `make guardrails`).
+   - Behaviour: Run the CLI completion guardrail (`python3 -m pytest _tests/test_bar_completion_cli.py`) alongside packaging to verify `bar tui` shells stay aligned.
+
+## 2026-01-09 — loop 036
+- helper_version: helper:v20251223.1
+- focus: Salient Tasks — ship subject import/export workflow with command result pane and reinsertion controls
+- active_constraint: Release packaging and installer manifests still need to incorporate the new `bar tui` assets; without those updates the TUI cannot ship through binaries even though the interactive flow now works (validation via make guardrails when packaging changes land).
+- validation_targets:
+  - go test ./cmd/bar/...
+  - go test ./internal/bartui
+  - python3 -m pytest _tests/test_bar_completion_cli.py
+  - make guardrails
+- evidence:
+  - green: docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-036.md#loop-036-green--helper-diff-snapshot-git-diff--stat-head
+  - green: docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-036.md#loop-036-green--go-test-cmd-bar
+  - green: docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-036.md#loop-036-green--go-test-internal-bartui
+  - green: docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-036.md#loop-036-green--python3--m-pytest-_tests-test_bar_completion_cli.py
+  - green: docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-036.md#loop-036-green--make-guardrails
+- rollback_plan: `git restore --source=HEAD -- internal/bartui/program.go internal/bartui/program_test.go internal/barcli/tui.go cmd/bar/main_test.go cmd/bar/testdata/tui_smoke.json docs/adr/0070-bubble-tea-prompt-editor-tui.work-log.md docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-036.md`
+- delta_summary: helper:diff-snapshot=git diff --stat HEAD | implemented clipboard import/export shortcuts, shell command execution with result pane, stdout reinsertion, and updated fixtures/tests for deterministic snapshots.
+- loops_remaining_forecast: 2 loops (package `bar tui` into release manifests, refresh documentation for the new panes) — medium confidence with distribution work pending.
+- residual_constraints:
+  - Packaging scripts and installers still need to ship the `bar tui` assets (severity: high; mitigation: update release manifests and rerun `make guardrails`; monitoring: diff outputs for packaging directories).
+  - Documentation needs refreshed screenshots/instructions for the new subject import/export UI (severity: medium; mitigation: update README + docs site once packaging stabilizes; monitoring: manual review of docs/adr guidance).
+- next_work:
+  - Behaviour: Update packaging/installer manifests so `bar tui` binaries ship with the new TUI resources (validation via `make guardrails`).
+  - Behaviour: Refresh README/docs quickstart with subject import/export shortcuts and security guidance (validation via manual doc review and `python3 -m pytest _tests/test_bar_completion_cli.py`).
+
 
 - validation_targets:
   - documentation-only (no executable commands)

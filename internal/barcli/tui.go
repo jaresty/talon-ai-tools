@@ -1,12 +1,18 @@
 package barcli
 
 import (
+	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
 	"os"
+	"os/exec"
+	"runtime"
 	"strings"
+	"time"
 
+	"github.com/atotto/clipboard"
 	"github.com/talonvoice/talon-ai-tools/internal/bartui"
 )
 
@@ -108,11 +114,15 @@ func runTUI(opts *cliOptions, stdin io.Reader, stdout, stderr io.Writer) int {
 	}
 
 	err = startTUI(bartui.Options{
-		Tokens:       tokens,
-		Input:        stdin,
-		Output:       stdout,
-		Preview:      preview,
-		UseAltScreen: !opts.NoAltScreen,
+		Tokens:         tokens,
+		Input:          stdin,
+		Output:         stdout,
+		Preview:        preview,
+		UseAltScreen:   !opts.NoAltScreen,
+		ClipboardRead:  clipboard.ReadAll,
+		ClipboardWrite: clipboard.WriteAll,
+		RunCommand:     runShellCommand,
+		CommandTimeout: 15 * time.Second,
 	})
 	if err != nil {
 		writeError(stderr, fmt.Sprintf("launch tui: %v", err))
@@ -154,4 +164,30 @@ func loadTUIFixture(path string) (*tuiFixture, error) {
 		return nil, fmt.Errorf("parse fixture: %w", err)
 	}
 	return &fixture, nil
+}
+
+func runShellCommand(ctx context.Context, command string, stdin string) (string, string, error) {
+	trimmed := strings.TrimSpace(command)
+	if trimmed == "" {
+		return "", "", fmt.Errorf("no command provided")
+	}
+
+	cmd := buildShellCommand(ctx, trimmed)
+	if stdin != "" {
+		cmd.Stdin = strings.NewReader(stdin)
+	}
+
+	var stdoutBuf, stderrBuf bytes.Buffer
+	cmd.Stdout = &stdoutBuf
+	cmd.Stderr = &stderrBuf
+
+	err := cmd.Run()
+	return stdoutBuf.String(), stderrBuf.String(), err
+}
+
+func buildShellCommand(ctx context.Context, command string) *exec.Cmd {
+	if runtime.GOOS == "windows" {
+		return exec.CommandContext(ctx, "cmd", "/C", command)
+	}
+	return exec.CommandContext(ctx, "sh", "-c", command)
 }

@@ -2,12 +2,14 @@ package main
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"errors"
 	"os"
 	"path/filepath"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/talonvoice/talon-ai-tools/internal/barcli"
 	"github.com/talonvoice/talon-ai-tools/internal/bartui"
@@ -20,6 +22,18 @@ func TestTUICommandLaunchesProgram(t *testing.T) {
 		}
 		if opts.Preview == nil {
 			t.Fatalf("expected preview function")
+		}
+		if opts.RunCommand == nil {
+			t.Fatalf("expected run command function")
+		}
+		if opts.ClipboardRead == nil || opts.ClipboardWrite == nil {
+			t.Fatalf("expected clipboard integration to be wired")
+		}
+		if opts.CommandTimeout != 15*time.Second {
+			t.Fatalf("expected default command timeout, got %s", opts.CommandTimeout)
+		}
+		if _, _, err := opts.RunCommand(context.Background(), "", ""); err == nil {
+			t.Fatalf("expected empty command to fail")
 		}
 		preview, err := opts.Preview("Example subject")
 		if err != nil {

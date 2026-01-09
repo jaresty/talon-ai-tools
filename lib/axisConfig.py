@@ -269,6 +269,8 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {'channel': {'codetour': 'The res
                        '(textual, tabular, or visual) rather than a linear narrative.',
             'math': 'The response surveys applicable mathematical fields and clarifies their '
                     'relevance to the subject.',
+            'meld': 'The response applies set theory reasoning in a non-numerical way to reason '
+                    'about combinations, unions, and overlaps.',
             'melody': 'The response analyses coordination clusters (visibility, scope, volatility) '
                       'and recommends adjustments to tune the system.',
             'mod': 'The response treats the second idea as a modulus for the first to explore '
@@ -276,6 +278,8 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {'channel': {'codetour': 'The res
             'motifs': 'The response scans for recurring motifs and patterns, identifying repeated '
                       'elements, themes, clusters, and notable outliers, and briefly explaining '
                       'why they matter.',
+            'order': 'The response applies order or lattice theory reasoning in a non-numerical '
+                     'way to reveal hierarchy, dominance, and comparative structure.',
             'orthogonal': 'The response isolates orthogonal factors and articulates how their '
                           'independence shapes the problem.',
             'plan': 'The response offers a short plan first and then carries it out, clearly '

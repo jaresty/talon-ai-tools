@@ -14,3 +14,20 @@
   - No automated lint prevents future procedural descriptions from landing in staticPromptConfig (severity: medium; mitigation: introduce a targeted test that enforces “The response …” declarative copy and fails on method language; monitoring: `python3 -m pytest _tests/test_static_prompt_config.py`).
 - next_work:
   - Behaviour: Implement the guardrail test/lint to flag procedural/static prompt drift (validation via `python3 -m pytest _tests/test_static_prompt_config.py`).
+
+## 2026-01-09 — loop 002
+- helper_version: helper:v20251223.1
+- focus: Decision § implementation — ensure method axis retains every decomposed static prompt token
+- active_constraint: Method axis lacked `meld` and `order`, so the decomposed static prompt vocabulary was no longer addressable via contract axes.
+- validation_targets:
+  - python3 -m pytest
+- evidence:
+  - green: docs/adr/evidence/0070-static-prompt-task-method-separation/loop-002.md#loop-002-green--helper-diff-snapshot-git-diff----stat
+  - green: docs/adr/evidence/0070-static-prompt-task-method-separation/loop-002.md#loop-002-green--helper-rerun-python3--m-pytest
+- rollback_plan: `git restore --source=HEAD -- GPT/readme.md lib/axisConfig.py internal/barcli/embed/prompt-grammar.json docs/adr/0070-static-prompt-task-method-separation.work-log.md docs/adr/evidence/0070-static-prompt-task-method-separation/loop-002.md`
+- delta_summary: helper:diff-snapshot=3 files changed, 19 insertions(+), 3 deletions(-) — added `meld`/`order` method tokens, refreshed grammar embeds, and aligned README axis list with the regenerated snapshot.
+- loops_remaining_forecast: 1 loop (introduce guardrail test/lint) — medium confidence; scope unchanged from loop 001.
+- residual_constraints:
+  - No automated lint prevents future procedural descriptions from landing in staticPromptConfig (severity: medium; mitigation: introduce a targeted test that enforces “The response …” declarative copy and fails on method language; monitoring: `python3 -m pytest _tests/test_static_prompt_config.py`).
+- next_work:
+  - Behaviour: Implement the guardrail test/lint to flag procedural/static prompt drift (validation via `python3 -m pytest _tests/test_static_prompt_config.py`).

@@ -258,4 +258,22 @@
 - next_work:
   - Behaviour: Build scripted Bubble Tea smoke harness that captures deterministic transcripts (validation via go run ./cmd/bar tui --fixture cmd/bar/testdata/grammar.json --no-alt-screen and go test ./cmd/bar/... once harness added).
 
+## 2026-01-09 — loop 018
+- helper_version: helper:v20251223.1
+- focus: Salient Tasks — ship CLI smoke harness for `bar tui` via fixture + alt-screen controls
+- active_constraint: TUI pilot documentation still lacks instructions for the new fixture-based smoke harness, leaving operators without a reproducible launch guide (validation via manual doc review once updates land).
+- validation_targets:
+  - go test -count=1 ./cmd/bar/...
+  - python3 -m pytest _tests/test_bar_completion_cli.py
+- evidence:
+  - green: docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-018.md#loop-018-green--go-test--count1-cmd-bar
+  - green: docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-018.md#loop-018-green--python3--m-pytest-_tests-test_bar_completion_cli.py
+- rollback_plan: `git restore --source=HEAD -- internal/barcli/app.go internal/barcli/completion.go internal/barcli/completion_test.go internal/barcli/tui.go internal/bartui/program.go cmd/bar/main_test.go _tests/test_bar_completion_cli.py cmd/bar/testdata/tui_smoke.json docs/adr/0070-bubble-tea-prompt-editor-tui.work-log.md docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-018.md`
+- delta_summary: helper:diff-snapshot=git diff --stat | added fixture harness flags, snapshot rendering helpers, CLI/pytest coverage adjustments, and introduced cmd/bar/testdata/tui_smoke.json for the smoke transcript fixture.
+- loops_remaining_forecast: 1 loop (refresh pilot documentation and README snippets) — medium confidence with smoke harness landed but rollout comms pending.
+- residual_constraints:
+  - Pilot documentation still needs to explain the fixture harness and alt-screen flag (severity: medium; mitigation: update README/usage docs; monitoring: manual doc review for `tui` section).
+- next_work:
+  - Behaviour: Document the Bubble Tea harness workflow and update usage examples (validation via manual doc review and python3 -m pytest _tests/test_bar_completion_cli.py to ensure CLI hints remain consistent).
+
 

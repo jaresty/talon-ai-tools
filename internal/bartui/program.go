@@ -14,10 +14,11 @@ type PreviewFunc func(subject string) (string, error)
 
 // Options configure the Bubble Tea prompt editor program.
 type Options struct {
-	Tokens  []string
-	Input   io.Reader
-	Output  io.Writer
-	Preview PreviewFunc
+	Tokens       []string
+	Input        io.Reader
+	Output       io.Writer
+	Preview      PreviewFunc
+	UseAltScreen bool
 }
 
 // NewProgram constructs a Bubble Tea program ready to start.
@@ -34,6 +35,9 @@ func NewProgram(opts Options) (*tea.Program, error) {
 	}
 	if opts.Output != nil {
 		programOptions = append(programOptions, tea.WithOutput(opts.Output))
+	}
+	if opts.UseAltScreen {
+		programOptions = append(programOptions, tea.WithAltScreen())
 	}
 
 	program := tea.NewProgram(model, programOptions...)
@@ -141,4 +145,16 @@ func (m *model) refreshPreview() {
 
 	m.preview = preview
 	m.err = nil
+}
+
+// Snapshot renders the current view and preview without starting an interactive program.
+func Snapshot(opts Options, subject string) (view string, preview string, err error) {
+	if opts.Preview == nil {
+		return "", "", fmt.Errorf("preview function is required")
+	}
+
+	model := newModel(opts)
+	model.input.SetValue(subject)
+	model.refreshPreview()
+	return model.View(), model.preview, nil
 }

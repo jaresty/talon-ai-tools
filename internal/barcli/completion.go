@@ -601,12 +601,13 @@ var (
 	helpTopics         = []string{"tokens"}
 	completionShells   = []string{"bash", "zsh", "fish"}
 	buildFlags         = []string{"--prompt", "--input", "--output", "--json", "--grammar"}
-	tuiFlags           = []string{"--grammar"}
+	tuiFlags           = []string{"--grammar", "--fixture", "--no-alt-screen"}
 	flagExpectingValue = map[string]struct{}{
 		"--prompt":  {},
 		"--input":   {},
 		"--output":  {},
 		"--grammar": {},
+		"--fixture": {},
 	}
 
 	presetSubcommands = []string{"save", "list", "show", "use", "delete"}
@@ -1015,7 +1016,7 @@ func collectShorthandState(grammar *Grammar, tokens []string) completionState {
 			i++
 			continue
 		}
-		if strings.HasPrefix(lower, "--prompt=") || strings.HasPrefix(lower, "--input=") || strings.HasPrefix(lower, "--output=") || strings.HasPrefix(lower, "--grammar=") {
+		if strings.HasPrefix(lower, "--prompt=") || strings.HasPrefix(lower, "--input=") || strings.HasPrefix(lower, "--output=") || strings.HasPrefix(lower, "--grammar=") || strings.HasPrefix(lower, "--fixture=") {
 			continue
 		}
 		if strings.HasPrefix(token, "-") {

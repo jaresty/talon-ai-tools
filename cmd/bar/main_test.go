@@ -2,7 +2,10 @@ package main
 
 import (
 	"bytes"
+	"encoding/json"
 	"errors"
+	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 
@@ -12,6 +15,9 @@ import (
 
 func TestTUICommandLaunchesProgram(t *testing.T) {
 	restore := barcli.SetTUIStarter(func(opts bartui.Options) error {
+		if !opts.UseAltScreen {
+			t.Fatalf("expected alt screen to be enabled by default")
+		}
 		if opts.Preview == nil {
 			t.Fatalf("expected preview function")
 		}
@@ -31,6 +37,23 @@ func TestTUICommandLaunchesProgram(t *testing.T) {
 	exit := barcli.Run([]string{"tui", "todo", "focus"}, strings.NewReader(""), stdout, stderr)
 	if exit != 0 {
 		t.Fatalf("expected tui exit 0, got %d with stderr: %s", exit, stderr.String())
+	}
+}
+
+func TestTUICommandRespectsNoAltScreen(t *testing.T) {
+	restore := barcli.SetTUIStarter(func(opts bartui.Options) error {
+		if opts.UseAltScreen {
+			t.Fatalf("expected alt screen to be disabled when --no-alt-screen is used")
+		}
+		return nil
+	})
+	defer restore()
+
+	stdout := &bytes.Buffer{}
+	stderr := &bytes.Buffer{}
+	exit := barcli.Run([]string{"tui", "--no-alt-screen"}, strings.NewReader(""), stdout, stderr)
+	if exit != 0 {
+		t.Fatalf("expected tui exit 0 with --no-alt-screen, got %d with stderr: %s", exit, stderr.String())
 	}
 }
 
@@ -60,5 +83,83 @@ func TestTUICommandSurfacesProgramErrors(t *testing.T) {
 	}
 	if !strings.Contains(stderr.String(), "launch tui") {
 		t.Fatalf("expected launch error message, got: %s", stderr.String())
+	}
+}
+
+func TestTUIFixtureEmitsSnapshot(t *testing.T) {
+	subject := "Smoke subject"
+	tokens := []string{"todo", "focus"}
+	grammarPath := filepath.Join("testdata", "grammar.json")
+
+	grammar, err := barcli.LoadGrammar(grammarPath)
+	if err != nil {
+		t.Fatalf("failed to load grammar: %v", err)
+	}
+
+	preview := func(subj string) (string, error) {
+		result, buildErr := barcli.Build(grammar, tokens)
+		if buildErr != nil {
+			return "", buildErr
+		}
+		result.Subject = subj
+		result.PlainText = barcli.RenderPlainText(result)
+		return result.PlainText, nil
+	}
+
+	view, previewText, err := bartui.Snapshot(bartui.Options{
+		Tokens:  tokens,
+		Preview: preview,
+	}, subject)
+	if err != nil {
+		t.Fatalf("snapshot failed: %v", err)
+	}
+
+	fixture := struct {
+		Tokens          []string `json:"tokens"`
+		Subject         string   `json:"subject"`
+		ExpectedPreview string   `json:"expected_preview"`
+		ExpectedView    string   `json:"expected_view"`
+	}{
+		Tokens:          tokens,
+		Subject:         subject,
+		ExpectedPreview: previewText,
+		ExpectedView:    view,
+	}
+
+	data, err := json.MarshalIndent(fixture, "", "  ")
+	if err != nil {
+		t.Fatalf("failed to marshal fixture: %v", err)
+	}
+
+	dir := t.TempDir()
+	fixturePath := filepath.Join(dir, "fixture.json")
+	if err := os.WriteFile(fixturePath, data, 0o600); err != nil {
+		t.Fatalf("failed to write fixture: %v", err)
+	}
+
+	stdout := &bytes.Buffer{}
+	stderr := &bytes.Buffer{}
+	exit := barcli.Run([]string{"tui", "--grammar", grammarPath, "--fixture", fixturePath}, strings.NewReader(""), stdout, stderr)
+	if exit != 0 {
+		t.Fatalf("expected fixture run exit 0, got %d with stderr: %s", exit, stderr.String())
+	}
+
+	if stderr.Len() != 0 {
+		t.Fatalf("expected no stderr output, got: %s", stderr.String())
+	}
+
+	if stdout.String() != view {
+		t.Fatalf("expected fixture view output to match snapshot\n--- expected ---\n%s\n--- actual ---\n%s", view, stdout.String())
+	}
+
+	stdout.Reset()
+	stderr.Reset()
+	repoFixture := filepath.Join("testdata", "tui_smoke.json")
+	exit = barcli.Run([]string{"tui", "--grammar", grammarPath, "--fixture", repoFixture}, strings.NewReader(""), stdout, stderr)
+	if exit != 0 {
+		t.Fatalf("expected repository fixture run exit 0, got %d with stderr: %s", exit, stderr.String())
+	}
+	if stdout.String() != view {
+		t.Fatalf("expected repository fixture output to match snapshot\n--- expected ---\n%s\n--- actual ---\n%s", view, stdout.String())
 	}
 }

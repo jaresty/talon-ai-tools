@@ -21,12 +21,13 @@ var generalHelpText = strings.TrimSpace(`USAGE
 
   bar help
   bar help tokens [section...] [--grammar PATH]
-  bar tui [tokens...] [--grammar PATH]
+  bar tui [tokens...] [--grammar PATH] [--fixture PATH] [--no-alt-screen]
  
    bar completion <shell> [--grammar PATH] [--output FILE]
-     (shell = bash | zsh | fish)
+      (shell = bash | zsh | fish)
  
-   bar preset save <name> [--force]
+    bar preset save <name> [--force]
+
    bar preset list
    bar preset show <name> [--json]
    bar preset use <name> [--json]
@@ -82,6 +83,8 @@ var generalHelpText = strings.TrimSpace(`USAGE
     help tokens  List available static prompts, contract axes, persona presets, and multi-word tokens
                  using the exported prompt grammar.
     tui          Launch the Bubble Tea prompt editor to capture subject text and preview recipes.
+                 Use --fixture PATH to emit a deterministic transcript for smoke testing and
+                 --no-alt-screen to keep the TUI in the primary terminal buffer.
     completion   Emit shell completion scripts (bash, zsh, fish) informed by the exported grammar.
     preset       Manage cached build presets (save/list/show/use/delete) derived from the last
 
@@ -207,6 +210,8 @@ type cliOptions struct {
 	JSON        bool
 	GrammarPath string
 	Force       bool
+	FixturePath string
+	NoAltScreen bool
 }
 
 func parseArgs(args []string) (*cliOptions, error) {
@@ -251,6 +256,16 @@ func parseArgs(args []string) (*cliOptions, error) {
 			opts.GrammarPath = args[i]
 		case strings.HasPrefix(arg, "--grammar="):
 			opts.GrammarPath = strings.TrimPrefix(arg, "--grammar=")
+		case arg == "--fixture":
+			i++
+			if i >= len(args) {
+				return nil, fmt.Errorf("--fixture requires a path")
+			}
+			opts.FixturePath = args[i]
+		case strings.HasPrefix(arg, "--fixture="):
+			opts.FixturePath = strings.TrimPrefix(arg, "--fixture=")
+		case arg == "--no-alt-screen":
+			opts.NoAltScreen = true
 		case arg == "--force":
 			opts.Force = true
 		case strings.HasPrefix(arg, "--"):

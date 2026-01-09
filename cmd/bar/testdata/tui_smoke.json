@@ -1,0 +1,9 @@
+{
+  "tokens": [
+    "todo",
+    "focus"
+  ],
+  "subject": "Smoke subject",
+  "expected_preview": "=== TASK (DO THIS) ===\nReturn a todo list\n\n=== CONSTRAINTS (GUARDRAILS) ===\n1. Completeness (full): The response provides a thorough answer that covers all essential details for normal use.\n2. Scope (focus): The response concentrates on a single focal topic without drifting into tangents.\n\n=== PERSONA (STANCE) ===\n(none)\n\n=== SUBJECT (CONTEXT) ===\nSmoke subject\n",
+  "expected_view": "bar prompt editor (Bubble Tea prototype)\n\nTokens: todo focus\n\nSubject:\nSmoke subject \n\nPreview:\n=== TASK (DO THIS) ===\nReturn a todo list\n\n=== CONSTRAINTS (GUARDRAILS) ===\n1. Completeness (full): The response provides a thorough answer that covers all essential details for normal use.\n2. Scope (focus): The response concentrates on a single focal topic without drifting into tangents.\n\n=== PERSONA (STANCE) ===\n(none)\n\n=== SUBJECT (CONTEXT) ===\nSmoke subject\n\nPress Ctrl+C or Esc to exit.\n"
+}

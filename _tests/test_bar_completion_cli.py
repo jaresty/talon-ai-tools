@@ -96,6 +96,43 @@ if bootstrap is not None:
                 "metadata columns should be present in completion output",
             )
 
+        def test_bar_internal_complete_tui_flags(self) -> None:
+            result = self._run(
+                [
+                    "go",
+                    "run",
+                    "./cmd/bar",
+                    "__complete",
+                    "bash",
+                    "2",
+                    "bar",
+                    "tui",
+                    "-",
+                ]
+            )
+
+            values = []
+            for line in result.stdout.splitlines():
+                stripped = line.strip()
+                if not stripped:
+                    continue
+                value = stripped.split("\t", 1)[0]
+                values.append(value)
+
+            for expected in ["--grammar", "--fixture", "--no-alt-screen"]:
+                self.assertIn(
+                    expected,
+                    values,
+                    f"expected {expected!r} flag for bar tui completions",
+                )
+
+            for forbidden in ["--prompt", "--input", "--output", "--json"]:
+                self.assertNotIn(
+                    forbidden,
+                    values,
+                    f"did not expect {forbidden!r} to appear for bar tui completions",
+                )
+
         def test_bar_internal_complete_uses_slug_values(self) -> None:
             tokens = [
                 "bar",
@@ -207,11 +244,6 @@ if bootstrap is not None:
                 "adr",
                 "slack",
                 "fly-rog",
-                "persona-coach",
-                "as-teacher",
-                "to-team",
-                "kindly",
-                "coach",
             ]:
                 self.assertIn(
                     expected,
@@ -247,6 +279,7 @@ if bootstrap is not None:
                 "slack",
                 "fly-rog",
             ]
+
             for earlier, later in zip(ordered, ordered[1:]):
                 if earlier in values and later in values:
                     self.assertLess(

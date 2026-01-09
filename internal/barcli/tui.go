@@ -1,8 +1,11 @@
 package barcli
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
+	"os"
+	"strings"
 
 	"github.com/talonvoice/talon-ai-tools/internal/bartui"
 )
@@ -35,6 +38,16 @@ func runTUI(opts *cliOptions, stdin io.Reader, stdout, stderr io.Writer) int {
 		return 1
 	}
 
+	var fixture *tuiFixture
+	if opts.FixturePath != "" {
+		loaded, err := loadTUIFixture(opts.FixturePath)
+		if err != nil {
+			writeError(stderr, fmt.Sprintf("load fixture: %v", err))
+			return 1
+		}
+		fixture = loaded
+	}
+
 	grammar, err := LoadGrammar(opts.GrammarPath)
 	if err != nil {
 		writeError(stderr, err.Error())
@@ -42,6 +55,10 @@ func runTUI(opts *cliOptions, stdin io.Reader, stdout, stderr io.Writer) int {
 	}
 
 	tokens := append([]string(nil), opts.Tokens...)
+	if fixture != nil && len(fixture.Tokens) > 0 {
+		tokens = append([]string(nil), fixture.Tokens...)
+	}
+
 	preview := func(subject string) (string, error) {
 		result, buildErr := Build(grammar, tokens)
 		if buildErr != nil {
@@ -52,11 +69,50 @@ func runTUI(opts *cliOptions, stdin io.Reader, stdout, stderr io.Writer) int {
 		return result.PlainText, nil
 	}
 
+	if fixture != nil {
+		subject := fixture.Subject
+		view, previewText, snapErr := bartui.Snapshot(bartui.Options{
+			Tokens:  tokens,
+			Preview: preview,
+		}, subject)
+		if snapErr != nil {
+			writeError(stderr, fmt.Sprintf("render snapshot: %v", snapErr))
+			return 1
+		}
+
+		if fixture.ExpectedPreview != "" && previewText != fixture.ExpectedPreview {
+			writeError(stderr, fmt.Sprintf("snapshot preview mismatch (expected %q, got %q)", fixture.ExpectedPreview, previewText))
+			return 1
+		}
+
+		if fixture.ExpectedView != "" && view != fixture.ExpectedView {
+			writeError(stderr, "snapshot view mismatch")
+			return 1
+		}
+
+		for _, expected := range fixture.ExpectViewContains {
+			if !strings.Contains(view, expected) {
+				writeError(stderr, fmt.Sprintf("snapshot missing expected content %q", expected))
+				return 1
+			}
+		}
+
+		if !strings.HasSuffix(view, "\n") {
+			view += "\n"
+		}
+		if _, err := io.WriteString(stdout, view); err != nil {
+			writeError(stderr, fmt.Sprintf("write snapshot: %v", err))
+			return 1
+		}
+		return 0
+	}
+
 	err = startTUI(bartui.Options{
-		Tokens:  tokens,
-		Input:   stdin,
-		Output:  stdout,
-		Preview: preview,
+		Tokens:       tokens,
+		Input:        stdin,
+		Output:       stdout,
+		Preview:      preview,
+		UseAltScreen: !opts.NoAltScreen,
 	})
 	if err != nil {
 		writeError(stderr, fmt.Sprintf("launch tui: %v", err))
@@ -78,4 +134,24 @@ func SetTUIStarter(starter func(bartui.Options) error) func() {
 	return func() {
 		startTUI = previous
 	}
+}
+
+type tuiFixture struct {
+	Tokens             []string `json:"tokens"`
+	Subject            string   `json:"subject"`
+	ExpectedPreview    string   `json:"expected_preview"`
+	ExpectedView       string   `json:"expected_view"`
+	ExpectViewContains []string `json:"expect_view_contains"`
+}
+
+func loadTUIFixture(path string) (*tuiFixture, error) {
+	data, err := os.ReadFile(path)
+	if err != nil {
+		return nil, fmt.Errorf("read fixture: %w", err)
+	}
+	var fixture tuiFixture
+	if err := json.Unmarshal(data, &fixture); err != nil {
+		return nil, fmt.Errorf("parse fixture: %w", err)
+	}
+	return &fixture, nil
 }

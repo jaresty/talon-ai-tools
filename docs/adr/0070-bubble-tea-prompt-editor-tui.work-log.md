@@ -356,4 +356,20 @@
 - next_work:
   - Behaviour: Monitor pilot reports; update ADR if additional documentation artefacts are introduced.
 
+## 2026-01-09 — loop 024
+- helper_version: helper:v20251223.1
+- focus: ADR Salient Tasks — capture release packaging and installer updates for `bar tui`
+- active_constraint: ADR 0070’s salient tasks only tracked entrypoint, parity, and validation work, omitting the release packaging/installer updates cited in the Consequences section.
+- validation_targets:
+  - documentation-only (no executable commands)
+- evidence:
+  - green: docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-024.md#loop-024-green--helper-diff-snapshot-git-diff--stat
+- rollback_plan: `git restore --source=HEAD -- docs/adr/0070-bubble-tea-prompt-editor-tui.md docs/adr/0070-bubble-tea-prompt-editor-tui.work-log.md docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-024.md`
+- delta_summary: helper:diff-snapshot=git diff --stat | docs/adr/0070-bubble-tea-prompt-editor-tui.md (added release packaging salient task).
+- loops_remaining_forecast: 0 loops — Salient tasks now cover entrypoint, parity, and packaging; new items will be added if fresh constraints appear.
+- residual_constraints:
+  - None (packaging task now tracked explicitly).
+- next_work:
+  - Behaviour: Execute packaging work in future loop when implementation begins.
+
 

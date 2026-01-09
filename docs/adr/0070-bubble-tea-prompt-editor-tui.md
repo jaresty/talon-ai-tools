@@ -37,6 +37,7 @@ Proposed — Bubble Tea TUI improves prompt editing ergonomics for the Go CLI (2
 ## Salient Tasks
 - Scaffold the minimal `bar tui` entrypoint that loads grammar metadata, captures subject text, and streams preview output without blocking the CLI.
 - Keep CLI parity by reusing `barcli` state helpers, covering the happy path with `go test ./cmd/bar/...`.
+- Update release packaging and installer scripts so `bar tui` ships alongside existing binaries, with guardrails such as `make guardrails` verifying the distribution manifests.
 
 ## Anti-goals
 - Do not replace or deprecate the existing non-interactive CLI; scripted workflows must remain supported and unchanged by default.

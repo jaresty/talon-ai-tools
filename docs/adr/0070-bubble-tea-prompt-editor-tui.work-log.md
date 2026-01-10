@@ -851,8 +851,29 @@
 - next_work:
   - Behaviour: Monitor pilot telemetry for token editing and CLI affordances; rerun go test ./internal/bartui, go test ./cmd/bar, and python3 -m pytest _tests/test_bar_completion_cli.py if adjustments are requested.
 
+## 2026-01-10 — loop 054
+- helper_version: helper:v20251223.1
+- focus: Decision § subject import/export — add copy-to-clipboard palette action for `bar build`
+- active_constraint: Token palette lacked a copy command action, so Decision § subject import/export still failed to provide the promised palette entry; `go test ./internal/bartui -run TestTokenPaletteCopyCommandAction` reproduces the missing behaviour.
+- validation_targets:
+  - go test ./internal/bartui -run TestTokenPaletteCopyCommandAction
+  - go test ./cmd/bar/... ./internal/bartui/...
+  - python3 -m pytest _tests/test_bar_completion_cli.py
+- evidence:
+  - red: docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-054.md#loop-054-red--go-test--internal-bartui--run-testtokenpalettecopycommandaction
+  - green: docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-054.md#loop-054-green--go-test--internal-bartui--run-testtokenpalettecopycommandaction
+  - green: docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-054.md#loop-054-green--go-test--cmd-bar---internal-bartui
+  - green: docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-054.md#loop-054-green--python3--m-pytest-_tests-test_bar_completion_cli.py
+- rollback_plan: `git restore --source=HEAD -- internal/bartui/program.go internal/bartui/program_test.go README.md readme.md docs/bubble-tea-pilot-playbook.md docs/adr/0070-bubble-tea-prompt-editor-tui.work-log.md docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-054.md`
+- delta_summary: helper:diff-snapshot=git diff --stat | internal/bartui/program.go (+palette copy action sentinel & rendering), internal/bartui/program_test.go (+copy action coverage + reset expectations), README/readme/docs (token palette guidance).
+- loops_remaining_forecast: 0 loops — palette and shortcut guardrails now align; continue monitoring pilot feedback for new constraints.
+- residual_constraints:
+  - Pilot feedback on the new token controls remains pending (severity: medium; mitigation: gather pilot notes after rollout; monitoring: collect usability reports and rerun guardrails if adjustments are needed).
+- next_work:
+  - Behaviour: Monitor pilot telemetry for token editing and CLI affordances; rerun go test ./internal/bartui, go test ./cmd/bar, and python3 -m pytest _tests/test_bar_completion_cli.py if adjustments are requested.
 
 ## 2026-01-09 — loop 050
+
 - helper_version: helper:v20251223.1
 - focus: Decision § token editing — prevent palette rendering from mutating token state and remove unintended highlights when tokens are unfocused
 - active_constraint: Rendering the token palette triggered `Reset to preset` side effects during view generation, causing the TUI to reset selections without operator input and breaking go test ./cmd/bar snapshot assertions.

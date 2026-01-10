@@ -158,7 +158,10 @@ const (
 	tokenPaletteFocusOptions
 )
 
-const tokenPaletteResetOption = -1
+const (
+	tokenPaletteResetOption       = -1
+	tokenPaletteCopyCommandOption = -2
+)
 
 type presetPaneMode int
 
@@ -542,7 +545,10 @@ func (m *model) updatePaletteOptions() {
 
 	state := m.tokenStates[m.tokenCategoryIndex]
 	filter := strings.ToLower(strings.TrimSpace(m.tokenPaletteFilter.Value()))
-	options := make([]int, 0, len(state.category.Options)+1)
+	options := make([]int, 0, len(state.category.Options)+2)
+	if m.shouldShowCopyCommandAction(filter) {
+		options = append(options, tokenPaletteCopyCommandOption)
+	}
 	if m.shouldShowPresetReset(m.tokenCategoryIndex) {
 		options = append(options, tokenPaletteResetOption)
 	}
@@ -601,6 +607,19 @@ func (m *model) clearPaletteFilter() bool {
 	m.updatePaletteOptions()
 	m.statusMessage = "Token filter cleared."
 	return true
+}
+
+func (m *model) shouldShowCopyCommandAction(filter string) bool {
+	if filter == "" {
+		return true
+	}
+	keywords := []string{"copy", "command", "clipboard", "bar", "build"}
+	for _, keyword := range keywords {
+		if strings.Contains(filter, keyword) {
+			return true
+		}
+	}
+	return false
 }
 
 func (m *model) shouldShowPresetReset(categoryIndex int) bool {
@@ -861,6 +880,10 @@ func (m *model) applyPaletteSelection() {
 		return
 	}
 	index := m.tokenPaletteOptions[m.tokenPaletteOptionIndex]
+	if index == tokenPaletteCopyCommandOption {
+		m.copyBuildCommandToClipboard()
+		return
+	}
 	if index == tokenPaletteResetOption {
 		m.applyPaletteReset()
 		return
@@ -1126,6 +1149,14 @@ func (m *model) renderTokenPalette(b *strings.Builder) {
 
 	for i, entry := range m.tokenPaletteOptions {
 		highlight := m.tokenPaletteFocus == tokenPaletteFocusOptions && i == m.tokenPaletteOptionIndex
+		if entry == tokenPaletteCopyCommandOption {
+			prefix := "      "
+			if highlight {
+				prefix = "    » "
+			}
+			b.WriteString(fmt.Sprintf("%s[action] Copy bar build command\n", prefix))
+			continue
+		}
 		if entry == tokenPaletteResetOption {
 			prefix := "      "
 			if highlight {

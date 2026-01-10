@@ -561,6 +561,7 @@ func TestTokenPaletteToggle(t *testing.T) {
 
 	m, _ = updateModel(t, m, tea.KeyMsg{Type: tea.KeyTab})   // categories
 	m, _ = updateModel(t, m, tea.KeyMsg{Type: tea.KeyTab})   // options
+	m, _ = updateModel(t, m, tea.KeyMsg{Type: tea.KeyDown})  // skip copy action entry
 	m, _ = updateModel(t, m, tea.KeyMsg{Type: tea.KeyEnter}) // toggle focus option off
 	if !reflect.DeepEqual(m.tokenStates[1].selected, []string{"breadth"}) {
 		t.Fatalf("expected palette toggle to remove focus, got %v", m.tokenStates[1].selected)
@@ -601,15 +602,26 @@ func TestTokenPaletteResetToPreset(t *testing.T) {
 	m, _ = updateModel(t, m, tea.KeyMsg{Type: tea.KeyTab}) // categories
 	m, _ = updateModel(t, m, tea.KeyMsg{Type: tea.KeyTab}) // options
 
-	if len(m.tokenPaletteOptions) == 0 || m.tokenPaletteOptions[0] != tokenPaletteResetOption {
+	if len(m.tokenPaletteOptions) < 2 {
+		t.Fatalf("expected palette to include action and reset entries, got %v", m.tokenPaletteOptions)
+	}
+	if m.tokenPaletteOptions[0] != tokenPaletteCopyCommandOption {
+		t.Fatalf("expected first palette entry to be copy command action, got %d", m.tokenPaletteOptions[0])
+	}
+	if m.tokenPaletteOptions[1] != tokenPaletteResetOption {
 		t.Fatalf("expected reset option to appear when preset diverges")
 	}
 	if m.tokenPaletteOptionIndex < 0 || m.tokenPaletteOptionIndex >= len(m.tokenPaletteOptions) {
 		t.Fatalf("palette option index out of range: %d", m.tokenPaletteOptionIndex)
 	}
 	entryBefore := m.tokenPaletteOptions[m.tokenPaletteOptionIndex]
-	if entryBefore != tokenPaletteResetOption {
-		t.Fatalf("expected palette focus to land on reset option, got entry %d (index %d)", entryBefore, m.tokenPaletteOptionIndex)
+	if entryBefore != tokenPaletteCopyCommandOption {
+		t.Fatalf("expected palette focus to begin on copy action, got entry %d (index %d)", entryBefore, m.tokenPaletteOptionIndex)
+	}
+
+	m, _ = updateModel(t, m, tea.KeyMsg{Type: tea.KeyDown})
+	if m.tokenPaletteOptions[m.tokenPaletteOptionIndex] != tokenPaletteResetOption {
+		t.Fatalf("expected palette focus to land on reset option after moving down, got entry %d", m.tokenPaletteOptions[m.tokenPaletteOptionIndex])
 	}
 
 	m, _ = updateModel(t, m, tea.KeyMsg{Type: tea.KeyEnter})
@@ -642,7 +654,7 @@ func TestTokenPaletteResetRenderingHasNoSideEffects(t *testing.T) {
 	m, _ = updateModel(t, m, tea.KeyMsg{Type: tea.KeyTab})
 	m, _ = updateModel(t, m, tea.KeyMsg{Type: tea.KeyTab})
 
-	if len(m.tokenPaletteOptions) == 0 || m.tokenPaletteOptions[0] != tokenPaletteResetOption {
+	if len(m.tokenPaletteOptions) < 2 || m.tokenPaletteOptions[1] != tokenPaletteResetOption {
 		t.Fatalf("expected reset option to appear when preset diverges")
 	}
 
@@ -745,6 +757,75 @@ func TestTokenPaletteFilterNoMatchesWithoutPreset(t *testing.T) {
 	view = m.View()
 	if strings.Contains(view, "(no options match filter)") {
 		t.Fatalf("expected options to repopulate after clearing filter, got:\n%s", view)
+	}
+}
+
+func TestTokenPaletteCopyCommandAction(t *testing.T) {
+	var copied string
+	subject := "Palette subject"
+	opts := Options{
+		Tokens:          []string{"todo", "focus"},
+		TokenCategories: defaultTokenCategories(),
+		Preview: func(s string, tokens []string) (string, error) {
+			return "preview:" + s + strings.Join(tokens, ","), nil
+		},
+		ClipboardRead: func() (string, error) { return "", nil },
+		ClipboardWrite: func(text string) error {
+			copied = text
+			return nil
+		},
+		RunCommand: func(context.Context, string, string, map[string]string) (string, string, error) {
+			return "", "", nil
+		},
+		CommandTimeout: time.Second,
+	}
+
+	m := newModel(opts)
+	m.subject.SetValue(subject)
+	(&m).refreshPreview()
+
+	m, cmd := updateModel(t, m, tea.KeyMsg{Type: tea.KeyCtrlP})
+	if cmd == nil {
+		t.Fatalf("expected palette open command")
+	}
+	if !m.tokenPaletteVisible {
+		t.Fatalf("expected token palette to be visible")
+	}
+
+	m, cmd = updateModel(t, m, tea.KeyMsg{Type: tea.KeyTab})
+	if cmd != nil {
+		t.Fatalf("unexpected command when tabbing to categories: %T", cmd)
+	}
+	m, cmd = updateModel(t, m, tea.KeyMsg{Type: tea.KeyTab})
+	if cmd != nil {
+		t.Fatalf("unexpected command when tabbing to options: %T", cmd)
+	}
+	if m.tokenPaletteFocus != tokenPaletteFocusOptions {
+		t.Fatalf("expected palette focus options, got %v", m.tokenPaletteFocus)
+	}
+
+	view := m.View()
+	if !strings.Contains(view, "[action] Copy bar build command") {
+		t.Fatalf("expected palette to include copy command action, got view:\n%s", view)
+	}
+
+	if copied != "" {
+		t.Fatalf("expected clipboard to be empty before selecting action, got %q", copied)
+	}
+
+	m, cmd = updateModel(t, m, tea.KeyMsg{Type: tea.KeyEnter})
+	if cmd != nil {
+		t.Fatalf("unexpected command when selecting palette action: %T", cmd)
+	}
+	if copied == "" {
+		t.Fatalf("expected copy action to write to clipboard")
+	}
+	expected := "bar build todo focus --prompt 'Palette subject'"
+	if copied != expected {
+		t.Fatalf("expected copied command %q, got %q", expected, copied)
+	}
+	if !strings.Contains(m.statusMessage, "Copied bar build command") {
+		t.Fatalf("expected status message to confirm copy, got %q", m.statusMessage)
 	}
 }
 

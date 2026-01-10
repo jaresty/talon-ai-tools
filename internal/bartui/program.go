@@ -900,9 +900,25 @@ func (m *model) refreshPaletteStatus() {
 
 	switch m.tokenPaletteFocus {
 	case tokenPaletteFocusFilter:
-		m.statusMessage = "Token palette open. Type to filter (try \"copy command\"), Tab cycles focus, Enter applies or copies, Ctrl+W clears the filter, Esc closes."
+		filter := strings.TrimSpace(m.tokenPaletteFilter.Value())
+		if filter == "" {
+			m.statusMessage = "Token palette open. Type to filter (try \"copy command\"), Tab cycles focus, Enter applies or copies, Ctrl+W clears the filter, Esc closes."
+		} else {
+			m.statusMessage = fmt.Sprintf("Token palette open (filter=\"%s\"). Tab cycles focus, Enter applies or copies, Ctrl+W clears the filter, Esc closes.", filter)
+		}
 	case tokenPaletteFocusCategories:
-		m.statusMessage = "Palette categories focused. Up/Down move categories, Tab cycles focus, Ctrl+W clears the filter, Esc closes."
+		label := ""
+		if m.tokenCategoryIndex >= 0 && m.tokenCategoryIndex < len(m.tokenStates) {
+			label = m.tokenStates[m.tokenCategoryIndex].category.Label
+			if label == "" {
+				label = m.tokenStates[m.tokenCategoryIndex].category.Key
+			}
+		}
+		if label == "" {
+			m.statusMessage = "Palette categories focused. Up/Down move categories, Tab cycles focus, Ctrl+W clears the filter, Esc closes."
+		} else {
+			m.statusMessage = fmt.Sprintf("%s category focused. Up/Down move categories, Tab cycles focus, Ctrl+W clears the filter, Esc closes.", label)
+		}
 	case tokenPaletteFocusOptions:
 		if len(m.tokenPaletteOptions) == 0 {
 			m.statusMessage = "No palette entries match the filter. Type to search or press Ctrl+W to clear, Esc closes."

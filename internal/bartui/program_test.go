@@ -847,6 +847,59 @@ func TestPaletteCopyActionStatusHint(t *testing.T) {
 	}
 }
 
+func TestPaletteCategoryStatusIncludesLabel(t *testing.T) {
+	opts := Options{
+		Tokens:          []string{"todo"},
+		TokenCategories: defaultTokenCategories(),
+		Preview:         func(subject string, tokens []string) (string, error) { return "preview:" + subject, nil },
+		ClipboardRead:   func() (string, error) { return "", nil },
+		ClipboardWrite:  func(string) error { return nil },
+		RunCommand: func(context.Context, string, string, map[string]string) (string, string, error) {
+			return "", "", nil
+		},
+		CommandTimeout: time.Second,
+	}
+	m := newModel(opts)
+
+	m, _ = updateModel(t, m, tea.KeyMsg{Type: tea.KeyCtrlP})
+	m, _ = updateModel(t, m, tea.KeyMsg{Type: tea.KeyTab})
+
+	status := m.statusMessage
+	if !strings.Contains(status, "Static Prompt") {
+		t.Fatalf("expected status to include current category label, got %q", status)
+	}
+	if !strings.Contains(status, "Up/Down") {
+		t.Fatalf("expected status to mention category navigation, got %q", status)
+	}
+}
+
+func TestPaletteFilterStatusIncludesValue(t *testing.T) {
+	opts := Options{
+		Tokens:          []string{"todo"},
+		TokenCategories: defaultTokenCategories(),
+		Preview:         func(subject string, tokens []string) (string, error) { return "preview:" + subject, nil },
+		ClipboardRead:   func() (string, error) { return "", nil },
+		ClipboardWrite:  func(string) error { return nil },
+		RunCommand: func(context.Context, string, string, map[string]string) (string, string, error) {
+			return "", "", nil
+		},
+		CommandTimeout: time.Second,
+	}
+	m := newModel(opts)
+
+	m, _ = updateModel(t, m, tea.KeyMsg{Type: tea.KeyCtrlP})
+	_, _ = updateModel(t, m, tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{'s'}})
+	_, _ = updateModel(t, m, tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{'c'}})
+
+	status := m.statusMessage
+	if !strings.Contains(status, "sc") {
+		t.Fatalf("expected status to include current filter text, got %q", status)
+	}
+	if !strings.Contains(status, "Ctrl+W") {
+		t.Fatalf("expected status to remind about Ctrl+W, got %q", status)
+	}
+}
+
 func TestPaletteOptionStatusNamesToken(t *testing.T) {
 	opts := Options{
 		Tokens:          []string{"todo"},

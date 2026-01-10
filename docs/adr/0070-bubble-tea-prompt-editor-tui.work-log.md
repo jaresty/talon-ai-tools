@@ -998,6 +998,27 @@
 - next_work:
   - Behaviour: Monitor pilot telemetry for token editing and CLI affordances; rerun go test ./internal/bartui, go test ./cmd/bar, and python3 -m pytest _tests/test_bar_completion_cli.py if adjustments are requested.
 
+## 2026-01-10 — loop 061
+- helper_version: helper:v20251223.1
+- focus: Decision § subject import/export — ensure palette status reflects focused category, filter text, and token slug
+- active_constraint: Palette status messaging failed to echo the current category or filter text, leaving pilots guessing which palette row was active; `go test ./internal/bartui -run TestPalette` reproduced the gap because the status returned generic copy guidance without naming the category.
+- validation_targets:
+  - go test ./internal/bartui -run TestPalette
+  - go test ./cmd/bar/... ./internal/bartui/...
+  - python3 -m pytest _tests/test_bar_completion_cli.py
+- evidence:
+  - red: docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-061.md#loop-061-red--go-test--internal-bartui--run-testpalette
+  - green: docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-061.md#loop-061-green--go-test--internal-bartui--run-testpalette
+  - green: docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-061.md#loop-061-green--go-test--cmd-bar---internal-bartui
+  - green: docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-061.md#loop-061-green--python3--m-pytest-_tests-test_bar_completion_cli.py
+- rollback_plan: `git restore --source=HEAD -- internal/bartui/program.go internal/bartui/program_test.go README.md readme.md docs/adr/0070-bubble-tea-prompt-editor-tui.work-log.md docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-061.md`
+- delta_summary: helper:diff-snapshot=git diff --stat | internal/bartui/program.go (+category/filter-aware status strings), internal/bartui/program_test.go (+status assertions for category & filter).
+- loops_remaining_forecast: 0 loops — palette status now surfaces filter text, category, and token slugs; continue monitoring pilot feedback for new constraints.
+- residual_constraints:
+  - Pilot feedback on the new token controls remains pending (severity: medium; mitigation: gather pilot notes after rollout; monitoring: collect usability reports and rerun guardrails if adjustments are needed).
+- next_work:
+  - Behaviour: Monitor pilot telemetry for token editing and CLI affordances; rerun go test ./internal/bartui, go test ./cmd/bar, and python3 -m pytest _tests/test_bar_completion_cli.py if adjustments are requested.
+
 ## 2026-01-09 — loop 050
 
 

@@ -598,14 +598,18 @@ func optionMatchesFilter(option TokenOption, filter string) bool {
 }
 
 func (m *model) clearPaletteFilter() bool {
-	if strings.TrimSpace(m.tokenPaletteFilter.Value()) == "" {
-		m.statusMessage = "Token filter already empty."
+	trimmed := strings.TrimSpace(m.tokenPaletteFilter.Value())
+	if trimmed == "" {
+		m.refreshPaletteStatus()
+		m.statusMessage = "Token filter already empty. " + m.statusMessage
 		return false
 	}
+
 	m.tokenPaletteFilter.SetValue("")
 	m.tokenPaletteFilter.CursorStart()
 	m.updatePaletteOptions()
-	m.statusMessage = "Token filter cleared."
+	m.refreshPaletteStatus()
+	m.statusMessage = "Token filter cleared. " + m.statusMessage
 	return true
 }
 

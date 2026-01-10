@@ -750,8 +750,11 @@ func TestTokenPaletteFilterNoMatchesWithoutPreset(t *testing.T) {
 		t.Fatalf("expected palette option index to reset, got %d", m.tokenPaletteOptionIndex)
 	}
 	t.Logf("status after clear: %q", m.statusMessage)
-	if !strings.Contains(m.statusMessage, "cleared") {
+	if !strings.Contains(m.statusMessage, "Token filter cleared.") {
 		t.Fatalf("expected status to mention cleared filter, got %q", m.statusMessage)
+	}
+	if !strings.Contains(m.statusMessage, "copy command") {
+		t.Fatalf("expected cleared-status to retain copy command hint, got %q", m.statusMessage)
 	}
 
 	view = m.View()
@@ -815,6 +818,41 @@ func TestPaletteOpenStatusMentionsCopyCommand(t *testing.T) {
 	}
 	if !strings.Contains(m.statusMessage, "Ctrl+W") {
 		t.Fatalf("expected palette status to mention Ctrl+W clear hint, got %q", m.statusMessage)
+	}
+}
+
+func TestPaletteClearWhenEmptyRetainsCopyHint(t *testing.T) {
+	opts := Options{
+		Tokens:          []string{"todo"},
+		TokenCategories: defaultTokenCategories(),
+		Preview:         func(subject string, tokens []string) (string, error) { return "preview:" + subject, nil },
+		ClipboardRead:   func() (string, error) { return "", nil },
+		ClipboardWrite:  func(string) error { return nil },
+		RunCommand: func(context.Context, string, string, map[string]string) (string, string, error) {
+			return "", "", nil
+		},
+		CommandTimeout: time.Second,
+	}
+	m := newModel(opts)
+
+	applyKey := func(msg tea.KeyMsg) {
+		var cmd tea.Cmd
+		m, cmd = updateModel(t, m, msg)
+		if cmd != nil {
+			if follow := cmd(); follow != nil {
+				m, _ = updateModel(t, m, follow)
+			}
+		}
+	}
+
+	applyKey(tea.KeyMsg{Type: tea.KeyCtrlP})
+	applyKey(tea.KeyMsg{Type: tea.KeyCtrlW})
+
+	if !strings.Contains(m.statusMessage, "already empty") {
+		t.Fatalf("expected status to mention already empty filter, got %q", m.statusMessage)
+	}
+	if !strings.Contains(m.statusMessage, "copy command") {
+		t.Fatalf("expected empty-filter status to retain copy command hint, got %q", m.statusMessage)
 	}
 }
 

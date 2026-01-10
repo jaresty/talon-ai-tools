@@ -1346,10 +1346,11 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			trimmed := strings.TrimRight(typed.result.Stdout, "\n")
 			m.subject.SetValue(trimmed)
 			m.refreshPreview()
-			m.statusMessage = "Subject replaced with command stdout."
+			m.statusMessage = ensureCopyHint("Subject replaced with command stdout.")
 		} else {
-			m.statusMessage = "Command completed; inspect result pane. Use Ctrl+Y to insert stdout into the subject."
+			m.statusMessage = ensureCopyHint("Command completed; inspect result pane. Use Ctrl+Y to insert stdout into the subject.")
 		}
+
 		return m, nil
 	}
 
@@ -2049,15 +2050,15 @@ func (m *model) startCommand(mode commandMode) tea.Cmd {
 
 	if mode == commandModePreview {
 		if len(m.allowedEnv) > 0 {
-			m.statusMessage = fmt.Sprintf("Running %q with preview input and env %s… Press Esc to cancel.", command, envSummary)
+			m.statusMessage = ensureCopyHint(fmt.Sprintf("Running %q with preview input and env %s… Press Esc to cancel.", command, envSummary))
 		} else {
-			m.statusMessage = fmt.Sprintf("Running %q with preview input… Press Esc to cancel.", command)
+			m.statusMessage = ensureCopyHint(fmt.Sprintf("Running %q with preview input… Press Esc to cancel.", command))
 		}
 	} else {
 		if len(m.allowedEnv) > 0 {
-			m.statusMessage = fmt.Sprintf("Running %q with env %s… Press Esc to cancel.", command, envSummary)
+			m.statusMessage = ensureCopyHint(fmt.Sprintf("Running %q with env %s… Press Esc to cancel.", command, envSummary))
 		} else {
-			m.statusMessage = fmt.Sprintf("Running %q… Press Esc to cancel.", command)
+			m.statusMessage = ensureCopyHint(fmt.Sprintf("Running %q… Press Esc to cancel.", command))
 		}
 	}
 

@@ -1068,6 +1068,89 @@ func TestHelpOverlayCloseRestoresPaletteCopyHint(t *testing.T) {
 	}
 }
 
+func TestRunningCommandStatusIncludesCopyHint(t *testing.T) {
+	opts := Options{
+		Tokens:          []string{"todo"},
+		TokenCategories: defaultTokenCategories(),
+		Preview:         func(subject string, tokens []string) (string, error) { return "preview:" + subject, nil },
+		ClipboardRead:   func() (string, error) { return "", nil },
+		ClipboardWrite:  func(string) error { return nil },
+		RunCommand: func(ctx context.Context, command string, stdin string, env map[string]string) (string, string, error) {
+			select {
+			case <-ctx.Done():
+				return "", "", ctx.Err()
+			case <-time.After(10 * time.Millisecond):
+				return "stdout", "stderr", nil
+			}
+		},
+		CommandTimeout: time.Second,
+	}
+	m := newModel(opts)
+	m.command.SetValue("echo test")
+
+	cmd := (&m).executeSubjectCommand()
+	if cmd == nil {
+		t.Fatalf("expected executeSubjectCommand to return a tea.Cmd")
+	}
+	if !strings.Contains(m.statusMessage, "copy command") {
+		t.Fatalf("expected running-status to include copy hint, got %q", m.statusMessage)
+	}
+
+	msg := cmd()
+	m, next := updateModel(t, m, msg)
+	if next != nil {
+		t.Fatalf("unexpected follow-up command: %T", next)
+	}
+	if !strings.Contains(m.statusMessage, "copy command") {
+		t.Fatalf("expected completion status to include copy hint, got %q", m.statusMessage)
+	}
+	if !strings.Contains(m.statusMessage, "Subject replaced") {
+		t.Fatalf("expected subject replacement message, got %q", m.statusMessage)
+	}
+}
+
+func TestRunningPreviewCommandStatusIncludesCopyHint(t *testing.T) {
+	opts := Options{
+		Tokens:          []string{"todo"},
+		TokenCategories: defaultTokenCategories(),
+		Preview:         func(subject string, tokens []string) (string, error) { return "preview:" + subject, nil },
+		ClipboardRead:   func() (string, error) { return "", nil },
+		ClipboardWrite:  func(string) error { return nil },
+		RunCommand: func(ctx context.Context, command string, stdin string, env map[string]string) (string, string, error) {
+			select {
+			case <-ctx.Done():
+				return "", "", ctx.Err()
+			case <-time.After(10 * time.Millisecond):
+				return "stdout", "stderr", nil
+			}
+		},
+		CommandTimeout: time.Second,
+	}
+	m := newModel(opts)
+	m.command.SetValue("echo preview")
+	m.preview = "preview text"
+
+	cmd := (&m).executePreviewCommand()
+	if cmd == nil {
+		t.Fatalf("expected executePreviewCommand to return a tea.Cmd")
+	}
+	if !strings.Contains(m.statusMessage, "copy command") {
+		t.Fatalf("expected running-status to include copy hint, got %q", m.statusMessage)
+	}
+
+	msg := cmd()
+	m, next := updateModel(t, m, msg)
+	if next != nil {
+		t.Fatalf("unexpected follow-up command: %T", next)
+	}
+	if !strings.Contains(m.statusMessage, "copy command") {
+		t.Fatalf("expected completion status to include copy hint, got %q", m.statusMessage)
+	}
+	if !strings.Contains(m.statusMessage, "Command completed") {
+		t.Fatalf("expected completion message, got %q", m.statusMessage)
+	}
+}
+
 func TestPaletteCopyActionStatusHint(t *testing.T) {
 	opts := Options{
 		Tokens:          []string{"todo"},

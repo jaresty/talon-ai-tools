@@ -760,6 +760,37 @@ func TestTokenPaletteFilterNoMatchesWithoutPreset(t *testing.T) {
 	}
 }
 
+func TestHelpOverlayMentionsCopyCommandPaletteHint(t *testing.T) {
+	opts := Options{
+		Tokens:          []string{"todo"},
+		TokenCategories: defaultTokenCategories(),
+		Preview:         func(subject string, tokens []string) (string, error) { return "preview:" + subject, nil },
+		ClipboardRead:   func() (string, error) { return "", nil },
+		ClipboardWrite:  func(string) error { return nil },
+		RunCommand: func(context.Context, string, string, map[string]string) (string, string, error) {
+			return "", "", nil
+		},
+		CommandTimeout: time.Second,
+	}
+	m := newModel(opts)
+
+	// Toggle help overlay
+	view := m.View()
+	if strings.Contains(view, "copy command") {
+		t.Fatalf("expected help overlay to be hidden in initial view")
+	}
+
+	m, _ = updateModel(t, m, tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{'?'}})
+	view = m.View()
+
+	if !strings.Contains(view, "Type \"copy command\"") {
+		t.Fatalf("expected help overlay to instruct palette copy command, got:\n%s", view)
+	}
+	if !strings.Contains(view, "press Enter to copy the CLI") {
+		t.Fatalf("expected help overlay to mention Enter closes palette, got:\n%s", view)
+	}
+}
+
 func TestTokenPaletteCopyCommandAction(t *testing.T) {
 	var copied string
 	subject := "Palette subject"

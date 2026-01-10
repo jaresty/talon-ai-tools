@@ -1460,6 +1460,7 @@ func (m model) View() string {
 		b.WriteString("  Subject focus: type directly, Ctrl+L loads clipboard, Ctrl+O copies preview, Ctrl+B copies the bar build command.\n")
 		b.WriteString("  Command focus: Enter runs command, Ctrl+R pipes preview, Ctrl+Y inserts stdout, leave blank to skip.\n")
 		b.WriteString("  Tokens: Tab focuses tokens, Left/Right switch categories, Up/Down browse options, Enter/Space toggle, Delete removes, Ctrl+P opens palette, Ctrl+Z undoes last change.\n")
+		b.WriteString("  Palette: Type \"copy command\", press Enter to copy the CLI and close the palette; Ctrl+W clears the current filter.\n")
 		b.WriteString("  Environment: Tab again to focus list, Up/Down move, Ctrl+E toggle, Ctrl+A enable all, Ctrl+X clear allowlist.\n")
 		b.WriteString("  Presets: Ctrl+S opens pane, Ctrl+N starts save, Delete removes, Ctrl+Z undoes deletion.\n")
 		b.WriteString("  Cancellation: Esc or Ctrl+C closes help first, then cancels running commands, then exits.\n")

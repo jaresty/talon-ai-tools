@@ -149,7 +149,7 @@ When running the interactive editor, keep these shortcuts close by:
 - `Ctrl+P` opens the token palette so you can browse or reset selections without leaving the session; search for “copy command”, press `Enter` to copy the CLI and close the palette, and press `Ctrl+W` while the palette is open to clear the current filter instantly.
 - Within the token controls, use Left/Right to change categories, Up/Down to browse options, `Enter`/`Space` to toggle, `Delete` to remove the highlighted token, `Ctrl+W` to clear any active palette filter, and `Ctrl+Z` to undo the most recent change.
 - `Ctrl+Y` replaces the subject with the most recent command stdout.
-- `?` toggles the in-app shortcut overlay so you can review controls without leaving the session.
+- `?` toggles the in-app shortcut overlay so you can review controls without leaving the session; the overlay now reminds you to type “copy command” and press `Enter` when the palette is open.
 - `Ctrl+S` toggles the preset pane; inside it, use `Ctrl+N` to save the current tokens, `Delete` to remove the focused preset, and `Ctrl+Z` to undo the most recent deletion.
 - When the environment allowlist is focused, use Up/Down to move between entries, `Ctrl+E` to toggle the selection, `Ctrl+A` to re-enable all entries, and `Ctrl+X` to clear the allowlist.
 

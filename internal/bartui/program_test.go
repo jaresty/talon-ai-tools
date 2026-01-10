@@ -887,12 +887,23 @@ func TestPaletteFilterStatusIncludesValue(t *testing.T) {
 	}
 	m := newModel(opts)
 
-	m, _ = updateModel(t, m, tea.KeyMsg{Type: tea.KeyCtrlP})
-	_, _ = updateModel(t, m, tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{'s'}})
-	_, _ = updateModel(t, m, tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{'c'}})
+	applyKey := func(msg tea.KeyMsg) {
+		var cmd tea.Cmd
+		m, cmd = updateModel(t, m, msg)
+		if cmd != nil {
+			if follow := cmd(); follow != nil {
+				m, _ = updateModel(t, m, follow)
+			}
+		}
+	}
+
+	applyKey(tea.KeyMsg{Type: tea.KeyCtrlP})
+	applyKey(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{'s'}})
+	applyKey(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{'c'}})
 
 	status := m.statusMessage
-	if !strings.Contains(status, "sc") {
+
+	if !strings.Contains(status, "filter=\"sc\"") {
 		t.Fatalf("expected status to include current filter text, got %q", status)
 	}
 	if !strings.Contains(status, "Ctrl+W") {
@@ -900,6 +911,9 @@ func TestPaletteFilterStatusIncludesValue(t *testing.T) {
 	}
 	if !strings.Contains(status, "copy command") {
 		t.Fatalf("expected status to remind about copy command shortcut, got %q", status)
+	}
+	if !strings.Contains(status, "type \"copy command\"") {
+		t.Fatalf("expected status to mention typing \"copy command\" for the copy action, got %q", status)
 	}
 }
 

@@ -904,7 +904,7 @@ func (m *model) refreshPaletteStatus() {
 		if filter == "" {
 			m.statusMessage = "Token palette open. Type to filter (try \"copy command\"), Tab cycles focus, Enter applies or copies, Ctrl+W clears the filter, Esc closes."
 		} else {
-			m.statusMessage = fmt.Sprintf("Token palette open (filter=\"%s\"). Tab cycles focus, Enter applies or copies, Ctrl+W clears the filter, Esc closes.", filter)
+			m.statusMessage = fmt.Sprintf("Token palette open (filter=\"%s\"). Enter applies or copies; type \"copy command\" to focus the copy action. Tab cycles focus, Ctrl+W clears the filter, Esc closes.", filter)
 		}
 	case tokenPaletteFocusCategories:
 		label := ""
@@ -1076,7 +1076,9 @@ func (m *model) handleTokenPaletteKey(key tea.KeyMsg) (bool, tea.Cmd) {
 		updatedFilter, cmd := m.tokenPaletteFilter.Update(key)
 		m.tokenPaletteFilter = updatedFilter
 		m.updatePaletteOptions()
+		m.refreshPaletteStatus()
 		return true, cmd
+
 	}
 
 	return true, nil

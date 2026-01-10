@@ -1247,3 +1247,23 @@
 - next_work:
   - Behaviour: Monitor pilot telemetry for token editing and palette hints; rerun go test ./internal/bartui, go test ./cmd/bar/..., and python3 -m pytest _tests/test_bar_completion_cli.py if follow-up changes are needed.
 
+## 2026-01-10 — loop 070
+- helper_version: helper:v20251223.1
+- focus: Decision § subject import/export — label token groups with who/what/how/why guidance
+- active_constraint: Token chips and palette entries did not surface the canonical prompt question (who/what/how/why), leaving pilots without the ADR’s completeness-style cues for persona, static, intent, and axis filters.
+- validation_targets:
+  - go test ./internal/bartui
+  - go test ./cmd/bar/...
+  - python3 -m pytest _tests/test_bar_completion_cli.py
+- evidence:
+  - green: docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-070.md#loop-070-green--go-test-internal-bartui
+  - green: docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-070.md#loop-070-green--go-test-cmd-bar
+  - green: docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-070.md#loop-070-green--python3--m-pytest-_tests/test_bar_completion_cli.py
+- rollback_plan: `git restore --source=HEAD -- docs/adr/0070-bubble-tea-prompt-editor-tui.md docs/adr/0070-bubble-tea-prompt-editor-tui.work-log.md docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-070.md`
+- delta_summary: helper:diff-snapshot=git diff --stat | docs/adr/0070-bubble-tea-prompt-editor-tui.md (+token question labeling guidance)
+- loops_remaining_forecast: 0 loops — question cues now persist across token surfaces; continue monitoring pilot feedback for additional labeling needs.
+- residual_constraints:
+  - Pilot feedback on the new token controls remains pending (severity: medium; mitigation: gather pilot notes after rollout; monitoring: rerun go test ./internal/bartui and python3 -m pytest _tests/test_bar_completion_cli.py if adjustments are required).
+- next_work:
+  - Behaviour: Monitor pilot telemetry for token editing and palette hints; rerun go test ./internal/bartui, go test ./cmd/bar/..., and python3 -m pytest _tests/test_bar_completion_cli.py if follow-up changes are needed.
+

@@ -897,6 +897,13 @@ func (m *model) closeTokenPaletteWithStatus(status string) tea.Cmd {
 	return nil
 }
 
+func ensureCopyHint(status string) string {
+	if strings.Contains(status, "copy command") {
+		return status
+	}
+	return status + " Type \"copy command\" to focus the copy action."
+}
+
 func (m *model) refreshPaletteStatus() {
 	if !m.tokenPaletteVisible {
 		return
@@ -925,11 +932,11 @@ func (m *model) refreshPaletteStatus() {
 		}
 	case tokenPaletteFocusOptions:
 		if len(m.tokenPaletteOptions) == 0 {
-			m.statusMessage = "No palette entries match the filter. Type to search or press Ctrl+W to clear, Esc closes."
+			m.statusMessage = ensureCopyHint("No palette entries match the filter. Type to search or press Ctrl+W to clear, Esc closes.")
 			return
 		}
 		if m.tokenPaletteOptionIndex < 0 || m.tokenPaletteOptionIndex >= len(m.tokenPaletteOptions) {
-			m.statusMessage = "Palette options focused. Use Up/Down to choose an entry, Ctrl+W clears the filter, Esc closes."
+			m.statusMessage = ensureCopyHint("Palette options focused. Use Up/Down to choose an entry, Ctrl+W clears the filter, Esc closes.")
 			return
 		}
 		entry := m.tokenPaletteOptions[m.tokenPaletteOptionIndex]
@@ -937,19 +944,19 @@ func (m *model) refreshPaletteStatus() {
 		case tokenPaletteCopyCommandOption:
 			m.statusMessage = "Copy command action focused. Press Enter to copy the current bar build CLI, Ctrl+W clears the filter, Esc closes."
 		case tokenPaletteResetOption:
-			m.statusMessage = "Reset-to-preset action focused. Press Enter to restore preset tokens, Ctrl+W clears the filter, Esc closes."
+			m.statusMessage = ensureCopyHint("Reset-to-preset action focused. Press Enter to restore preset tokens, Ctrl+W clears the filter, Esc closes.")
 		default:
 			if entry < 0 {
-				m.statusMessage = "Palette option focused. Press Enter to toggle selection, Ctrl+W clears the filter, Esc closes."
+				m.statusMessage = ensureCopyHint("Palette option focused. Press Enter to toggle selection, Ctrl+W clears the filter, Esc closes.")
 				return
 			}
 			if m.tokenCategoryIndex < 0 || m.tokenCategoryIndex >= len(m.tokenStates) {
-				m.statusMessage = "Palette option focused. Press Enter to toggle selection, Ctrl+W clears the filter, Esc closes."
+				m.statusMessage = ensureCopyHint("Palette option focused. Press Enter to toggle selection, Ctrl+W clears the filter, Esc closes.")
 				return
 			}
 			state := m.tokenStates[m.tokenCategoryIndex]
 			if entry >= len(state.category.Options) {
-				m.statusMessage = "Palette option focused. Press Enter to toggle selection, Ctrl+W clears the filter, Esc closes."
+				m.statusMessage = ensureCopyHint("Palette option focused. Press Enter to toggle selection, Ctrl+W clears the filter, Esc closes.")
 				return
 			}
 			option := state.category.Options[entry]
@@ -963,9 +970,9 @@ func (m *model) refreshPaletteStatus() {
 			}
 			label := option.Label
 			if label != "" && !strings.EqualFold(label, slug) {
-				m.statusMessage = fmt.Sprintf("%s → %s (%s). Press Enter to toggle, Ctrl+W clears the filter, Esc closes.", categoryLabel, slug, label)
+				m.statusMessage = ensureCopyHint(fmt.Sprintf("%s → %s (%s). Press Enter to toggle, Ctrl+W clears the filter, Esc closes.", categoryLabel, slug, label))
 			} else {
-				m.statusMessage = fmt.Sprintf("%s → %s. Press Enter to toggle, Ctrl+W clears the filter, Esc closes.", categoryLabel, slug)
+				m.statusMessage = ensureCopyHint(fmt.Sprintf("%s → %s. Press Enter to toggle, Ctrl+W clears the filter, Esc closes.", categoryLabel, slug))
 			}
 		}
 	}

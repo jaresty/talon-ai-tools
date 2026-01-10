@@ -1147,3 +1147,23 @@
 - next_work:
   - Behaviour: Monitor pilot telemetry for token editing and palette hints; rerun go test ./internal/bartui, go test ./cmd/bar/..., and python3 -m pytest _tests/test_bar_completion_cli.py if follow-up changes are needed.
 
+## 2026-01-10 — loop 065
+- helper_version: helper:v20251223.1
+- focus: Decision § subject import/export — ensure palette no-match status retains copy command hint
+- active_constraint: When the palette filter produced no matching options and focus moved to the options pane, the status message omitted the copy-command hint mandated by the ADR, leaving pilots without visible guidance on the CLI fallback; go test ./internal/bartui lacked a regression test for this scenario.
+- validation_targets:
+  - go test ./internal/bartui
+  - go test ./cmd/bar/...
+  - python3 -m pytest _tests/test_bar_completion_cli.py
+- evidence:
+  - green: docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-065.md#loop-065-green--go-test-internal-bartui
+  - green: docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-065.md#loop-065-green--go-test-cmd-bar
+  - green: docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-065.md#loop-065-green--python3--m-pytest-_tests-test_bar_completion_cli.py
+- rollback_plan: `git restore --source=HEAD -- internal/bartui/program.go internal/bartui/program_test.go docs/adr/0070-bubble-tea-prompt-editor-tui.work-log.md docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-065.md`
+- delta_summary: helper:diff-snapshot=git diff --stat | internal/bartui/program.go (+copy-hint helper ensuring options status retains guidance), internal/bartui/program_test.go (+no-match options test covering copy hint)
+- loops_remaining_forecast: 0 loops — palette copy hint now persists even when no options match; continue monitoring for new pilot feedback.
+- residual_constraints:
+  - Pilot feedback on the new token controls remains pending (severity: medium; mitigation: gather pilot notes after rollout; monitoring: rerun go test ./internal/bartui and python3 -m pytest _tests/test_bar_completion_cli.py if adjustments are required).
+- next_work:
+  - Behaviour: Monitor pilot telemetry for token editing and palette hints; rerun go test ./internal/bartui, go test ./cmd/bar/..., and python3 -m pytest _tests/test_bar_completion_cli.py if follow-up changes are needed.
+

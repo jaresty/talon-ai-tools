@@ -856,6 +856,53 @@ func TestPaletteClearWhenEmptyRetainsCopyHint(t *testing.T) {
 	}
 }
 
+func TestPaletteOptionsNoMatchesStillHintsCopyCommand(t *testing.T) {
+	opts := Options{
+		Tokens:          []string{"todo"},
+		TokenCategories: defaultTokenCategories(),
+		Preview:         func(subject string, tokens []string) (string, error) { return "preview:" + subject, nil },
+		ClipboardRead:   func() (string, error) { return "", nil },
+		ClipboardWrite:  func(string) error { return nil },
+		RunCommand: func(context.Context, string, string, map[string]string) (string, string, error) {
+			return "", "", nil
+		},
+		CommandTimeout: time.Second,
+	}
+	m := newModel(opts)
+
+	applyKey := func(msg tea.KeyMsg) {
+		var cmd tea.Cmd
+		m, cmd = updateModel(t, m, msg)
+		if cmd != nil {
+			if follow := cmd(); follow != nil {
+				m, _ = updateModel(t, m, follow)
+			}
+		}
+	}
+
+	applyKey(tea.KeyMsg{Type: tea.KeyCtrlP})
+	applyKey(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{'x'}})
+	applyKey(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{'z'}})
+	applyKey(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{'z'}})
+	applyKey(tea.KeyMsg{Type: tea.KeyTab}) // categories focus
+	applyKey(tea.KeyMsg{Type: tea.KeyTab}) // options focus
+
+	if m.tokenPaletteFocus != tokenPaletteFocusOptions {
+		t.Fatalf("expected options focus, got %v", m.tokenPaletteFocus)
+	}
+	if len(m.tokenPaletteOptions) != 0 {
+		t.Fatalf("expected no palette options, got %v", m.tokenPaletteOptions)
+	}
+
+	status := m.statusMessage
+	if !strings.Contains(status, "No palette entries match the filter") {
+		t.Fatalf("expected status to mention no matching entries, got %q", status)
+	}
+	if !strings.Contains(status, "copy command") {
+		t.Fatalf("expected no-match status to hint copy command, got %q", status)
+	}
+}
+
 func TestPaletteCopyActionStatusHint(t *testing.T) {
 	opts := Options{
 		Tokens:          []string{"todo"},

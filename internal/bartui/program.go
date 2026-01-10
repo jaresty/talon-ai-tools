@@ -715,8 +715,7 @@ func (m *model) moveTokenCategory(delta int) {
 	}
 	m.clampTokenOptionIndex()
 	m.updatePaletteOptions()
-	state := m.tokenStates[m.tokenCategoryIndex]
-	m.statusMessage = fmt.Sprintf("%s focused. Use Up/Down to browse options.", state.category.Label)
+	m.refreshPaletteStatus()
 }
 
 func (m *model) moveTokenOption(delta int) {
@@ -757,6 +756,7 @@ func (m *model) movePaletteOption(delta int) {
 	if m.tokenPaletteOptionIndex < 0 {
 		m.tokenPaletteOptionIndex += count
 	}
+	m.refreshPaletteStatus()
 }
 
 func (m *model) currentTokenOption() (TokenOption, bool) {
@@ -853,7 +853,7 @@ func (m *model) openTokenPalette() tea.Cmd {
 	m.tokenPaletteFilter.SetValue("")
 	cmd := m.tokenPaletteFilter.Focus()
 	m.updatePaletteOptions()
-	m.statusMessage = "Token palette open. Type to filter (try \"copy command\"), Tab cycles focus, Enter applies or copies, Ctrl+W clears the filter, Esc closes."
+	m.refreshPaletteStatus()
 	return cmd
 }
 
@@ -891,6 +891,37 @@ func (m *model) closeTokenPaletteWithStatus(status string) tea.Cmd {
 		m.statusMessage = status
 	}
 	return nil
+}
+
+func (m *model) refreshPaletteStatus() {
+	if !m.tokenPaletteVisible {
+		return
+	}
+
+	switch m.tokenPaletteFocus {
+	case tokenPaletteFocusFilter:
+		m.statusMessage = "Token palette open. Type to filter (try \"copy command\"), Tab cycles focus, Enter applies or copies, Ctrl+W clears the filter, Esc closes."
+	case tokenPaletteFocusCategories:
+		m.statusMessage = "Palette categories focused. Up/Down move categories, Tab cycles focus, Ctrl+W clears the filter, Esc closes."
+	case tokenPaletteFocusOptions:
+		if len(m.tokenPaletteOptions) == 0 {
+			m.statusMessage = "No palette entries match the filter. Type to search or press Ctrl+W to clear, Esc closes."
+			return
+		}
+		if m.tokenPaletteOptionIndex < 0 || m.tokenPaletteOptionIndex >= len(m.tokenPaletteOptions) {
+			m.statusMessage = "Palette options focused. Use Up/Down to choose an entry, Ctrl+W clears the filter, Esc closes."
+			return
+		}
+		entry := m.tokenPaletteOptions[m.tokenPaletteOptionIndex]
+		switch entry {
+		case tokenPaletteCopyCommandOption:
+			m.statusMessage = "Copy command action focused. Press Enter to copy the current bar build CLI, Ctrl+W clears the filter, Esc closes."
+		case tokenPaletteResetOption:
+			m.statusMessage = "Reset-to-preset action focused. Press Enter to restore preset tokens, Ctrl+W clears the filter, Esc closes."
+		default:
+			m.statusMessage = "Palette option focused. Press Enter to toggle selection, Ctrl+W clears the filter, Esc closes."
+		}
+	}
 }
 
 func (m *model) applyPaletteSelection() {
@@ -1023,6 +1054,7 @@ func (m *model) handlePaletteNavigation(delta int, key tea.KeyMsg) (bool, tea.Cm
 		updatedFilter, cmd := m.tokenPaletteFilter.Update(key)
 		m.tokenPaletteFilter = updatedFilter
 		m.updatePaletteOptions()
+		m.refreshPaletteStatus()
 		return true, cmd
 	}
 	return true, nil
@@ -1036,15 +1068,19 @@ func (m *model) advancePaletteFocus(delta int) tea.Cmd {
 		focusValue += total
 	}
 	m.tokenPaletteFocus = tokenPaletteFocus(focusValue)
+
+	var cmd tea.Cmd
 	switch m.tokenPaletteFocus {
 	case tokenPaletteFocusFilter:
-		return m.tokenPaletteFilter.Focus()
+		cmd = m.tokenPaletteFilter.Focus()
 	case tokenPaletteFocusCategories:
 		m.tokenPaletteFilter.Blur()
 	case tokenPaletteFocusOptions:
 		m.tokenPaletteFilter.Blur()
 	}
-	return nil
+
+	m.refreshPaletteStatus()
+	return cmd
 }
 
 func formatTokenOptionLine(option TokenOption, selected bool, highlight bool) string {

@@ -818,6 +818,35 @@ func TestPaletteOpenStatusMentionsCopyCommand(t *testing.T) {
 	}
 }
 
+func TestPaletteCopyActionStatusHint(t *testing.T) {
+	opts := Options{
+		Tokens:          []string{"todo"},
+		TokenCategories: defaultTokenCategories(),
+		Preview:         func(subject string, tokens []string) (string, error) { return "preview:" + subject, nil },
+		ClipboardRead:   func() (string, error) { return "", nil },
+		ClipboardWrite:  func(string) error { return nil },
+		RunCommand: func(context.Context, string, string, map[string]string) (string, string, error) {
+			return "", "", nil
+		},
+		CommandTimeout: time.Second,
+	}
+	m := newModel(opts)
+
+	m, _ = updateModel(t, m, tea.KeyMsg{Type: tea.KeyCtrlP})
+	m, _ = updateModel(t, m, tea.KeyMsg{Type: tea.KeyTab})
+	m, _ = updateModel(t, m, tea.KeyMsg{Type: tea.KeyTab})
+
+	if !strings.Contains(m.statusMessage, "Enter to copy") && !strings.Contains(m.statusMessage, "Enter copies") {
+		t.Fatalf("expected palette status to mention Enter copy action, got %q", m.statusMessage)
+	}
+	if !strings.Contains(m.statusMessage, "Ctrl+W") {
+		t.Fatalf("expected palette status to remind about Ctrl+W, got %q", m.statusMessage)
+	}
+	if !strings.Contains(m.statusMessage, "Esc closes") {
+		t.Fatalf("expected palette status to mention Esc closure, got %q", m.statusMessage)
+	}
+}
+
 func TestTokenPaletteCopyCommandAction(t *testing.T) {
 	var copied string
 	subject := "Palette subject"

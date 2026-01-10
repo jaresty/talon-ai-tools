@@ -8,6 +8,7 @@ import (
 	"sort"
 	"strings"
 	"time"
+	"unicode"
 
 	textinput "github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
@@ -369,7 +370,7 @@ func newModel(opts Options) model {
 	tokenPaletteFilter.CharLimit = 64
 	tokenPaletteFilter.Blur()
 
-	status := "Ready. Tab to the command field to configure shell actions. Leave command empty to opt out."
+	status := "Ready. Tab to the command field to configure shell actions. Leave command empty to opt out. Press Ctrl+B to copy the current bar build command to the clipboard."
 	if len(envNames) > 0 {
 		status += " Environment allowlist: " + strings.Join(allowedEnv, ", ") + ". Tab again to focus the allowlist and press Ctrl+E to toggle entries."
 	} else {
@@ -588,6 +589,18 @@ func optionMatchesFilter(option TokenOption, filter string) bool {
 		}
 	}
 	return false
+}
+
+func (m *model) clearPaletteFilter() bool {
+	if strings.TrimSpace(m.tokenPaletteFilter.Value()) == "" {
+		m.statusMessage = "Token filter already empty."
+		return false
+	}
+	m.tokenPaletteFilter.SetValue("")
+	m.tokenPaletteFilter.CursorStart()
+	m.updatePaletteOptions()
+	m.statusMessage = "Token filter cleared."
+	return true
 }
 
 func (m *model) shouldShowPresetReset(categoryIndex int) bool {
@@ -937,6 +950,9 @@ func (m *model) handleTokenPaletteKey(key tea.KeyMsg) (bool, tea.Cmd) {
 	case "ctrl+p":
 		cmd := m.closeTokenPalette()
 		return true, cmd
+	case "ctrl+w":
+		m.clearPaletteFilter()
+		return true, nil
 	}
 
 	if m.tokenPaletteFocus == tokenPaletteFocusFilter {
@@ -1283,6 +1299,9 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "ctrl+o":
 			m.copyPreviewToClipboard()
 			return m, nil
+		case "ctrl+b":
+			m.copyBuildCommandToClipboard()
+			return m, nil
 		case "ctrl+r":
 			return m, (&m).executePreviewCommand()
 		case "ctrl+p":
@@ -1375,9 +1394,19 @@ func (m model) View() string {
 	}
 	b.WriteString("\n")
 
+	commandForClipboard := joinShellArgs(m.buildCommandArgs())
+	displayCommand := sanitizeShellCommand(commandForClipboard)
+	b.WriteString("Equivalent CLI: ")
+	if displayCommand == "" {
+		b.WriteString("bar build")
+	} else {
+		b.WriteString(displayCommand)
+	}
+	b.WriteString(" [Ctrl+B copies]\n")
+
 	if m.helpVisible {
 		b.WriteString("\nHelp overlay (press ? to close):\n")
-		b.WriteString("  Subject focus: type directly, Ctrl+L loads clipboard, Ctrl+O copies preview.\n")
+		b.WriteString("  Subject focus: type directly, Ctrl+L loads clipboard, Ctrl+O copies preview, Ctrl+B copies the bar build command.\n")
 		b.WriteString("  Command focus: Enter runs command, Ctrl+R pipes preview, Ctrl+Y inserts stdout, leave blank to skip.\n")
 		b.WriteString("  Tokens: Tab focuses tokens, Left/Right switch categories, Up/Down browse options, Enter/Space toggle, Delete removes, Ctrl+P opens palette, Ctrl+Z undoes last change.\n")
 		b.WriteString("  Environment: Tab again to focus list, Up/Down move, Ctrl+E toggle, Ctrl+A enable all, Ctrl+X clear allowlist.\n")
@@ -1443,7 +1472,7 @@ func (m model) View() string {
 	}
 	b.WriteString("\n\n")
 
-	b.WriteString("Shortcuts: Tab switch input · Ctrl+L load subject from clipboard · Ctrl+O copy preview to clipboard · Ctrl+R pipe preview to command · Ctrl+Y replace subject with last command stdout · Ctrl+C/Esc exit.\n")
+	b.WriteString("Shortcuts: Tab switch input · Ctrl+L load subject from clipboard · Ctrl+O copy preview to clipboard · Ctrl+B copy bar build command · Ctrl+R pipe preview to command · Ctrl+Y replace subject with last command stdout · Ctrl+C/Esc exit.\n")
 	b.WriteString("Token controls: Tab focus tokens · Left/Right change category · Up/Down browse options · Enter/Space toggle selection · Delete removes highlighted token · Ctrl+P open palette · Ctrl+Z undo token change.\n")
 	b.WriteString("Env allowlist controls (when configured): Tab focus env list · Up/Down move selection · Ctrl+E toggle entry · Ctrl+A enable all · Ctrl+X clear allowlist.\n")
 	b.WriteString("Preset controls: Ctrl+S toggle pane · Ctrl+N save current tokens · Delete remove preset · Ctrl+Z undo delete.\n")
@@ -1740,6 +1769,76 @@ func (m *model) copyPreviewToClipboard() {
 		return
 	}
 	m.statusMessage = "Copied preview to clipboard."
+}
+
+func (m *model) copyBuildCommandToClipboard() {
+	command := joinShellArgs(m.buildCommandArgs())
+	if err := m.clipboardWrite(command); err != nil {
+		m.statusMessage = fmt.Sprintf("Clipboard write failed: %v", err)
+		return
+	}
+	m.statusMessage = "Copied bar build command to clipboard."
+}
+
+func (m *model) buildCommandArgs() []string {
+	args := []string{"bar", "build"}
+	for _, token := range m.tokens {
+		trimmed := strings.TrimSpace(token)
+		if trimmed == "" {
+			continue
+		}
+		args = append(args, trimmed)
+	}
+	subject := m.subject.Value()
+	if subject != "" {
+		args = append(args, "--prompt", subject)
+	}
+	return args
+}
+
+func joinShellArgs(args []string) string {
+	if len(args) == 0 {
+		return ""
+	}
+	quoted := make([]string, len(args))
+	for i, arg := range args {
+		quoted[i] = shellQuote(arg)
+	}
+	return strings.Join(quoted, " ")
+}
+
+func shellQuote(arg string) string {
+	if arg == "" {
+		return "''"
+	}
+	if !shellNeedsQuoting(arg) {
+		return arg
+	}
+	replaced := strings.ReplaceAll(arg, "'", "'\"'\"'")
+	return "'" + replaced + "'"
+}
+
+func shellNeedsQuoting(arg string) bool {
+	for _, r := range arg {
+		if unicode.IsLetter(r) || unicode.IsDigit(r) {
+			continue
+		}
+		switch r {
+		case '-', '_', '.', '/', '=', ':', '@':
+			continue
+		}
+		return true
+	}
+	return false
+}
+
+func sanitizeShellCommand(command string) string {
+	if command == "" {
+		return command
+	}
+	replaced := strings.ReplaceAll(command, "\n", "\\n")
+	replaced = strings.ReplaceAll(replaced, "\r", "\\r")
+	return replaced
 }
 
 func (m *model) startCommand(mode commandMode) tea.Cmd {

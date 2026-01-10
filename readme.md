@@ -144,9 +144,10 @@ When running the interactive editor, keep these shortcuts close by:
 - `Tab` cycles focus between the subject input, token controls, command input, and the environment allowlist.
 - `Ctrl+L` loads subject text from the clipboard.
 - `Ctrl+O` copies the rendered preview to the clipboard.
+- `Ctrl+B` copies the current `bar build` command (subject + tokens) to the clipboard so you can drop straight back into scripts.
 - `Ctrl+R` pipes the current preview into the configured shell command.
-- `Ctrl+P` opens the token palette so you can browse or reset selections without leaving the session.
-- Within the token controls, use Left/Right to change categories, Up/Down to browse options, `Enter`/`Space` to toggle, `Delete` to remove the highlighted token, and `Ctrl+Z` to undo the most recent change.
+- `Ctrl+P` opens the token palette so you can browse or reset selections without leaving the session; press `Ctrl+W` while the palette is open to clear the current filter instantly.
+- Within the token controls, use Left/Right to change categories, Up/Down to browse options, `Enter`/`Space` to toggle, `Delete` to remove the highlighted token, `Ctrl+W` to clear any active palette filter, and `Ctrl+Z` to undo the most recent change.
 - `Ctrl+Y` replaces the subject with the most recent command stdout.
 - `?` toggles the in-app shortcut overlay so you can review controls without leaving the session.
 - `Ctrl+S` toggles the preset pane; inside it, use `Ctrl+N` to save the current tokens, `Delete` to remove the focused preset, and `Ctrl+Z` to undo the most recent deletion.

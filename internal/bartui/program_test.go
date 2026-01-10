@@ -78,6 +78,46 @@ func TestLoadSubjectFromClipboard(t *testing.T) {
 	}
 }
 
+func TestCopyBuildCommandToClipboard(t *testing.T) {
+	var copied string
+	subject := "Need to review \"ADR 70\""
+	opts := Options{
+		Tokens: []string{"todo", "focus", "method=steps"},
+		Preview: func(subject string, tokens []string) (string, error) {
+			return "preview:" + subject + strings.Join(tokens, ","), nil
+		},
+		ClipboardRead: func() (string, error) { return "", nil },
+		ClipboardWrite: func(text string) error {
+			copied = text
+			return nil
+		},
+		RunCommand: func(context.Context, string, string, map[string]string) (string, string, error) {
+			return "", "", nil
+		},
+		CommandTimeout: time.Second,
+	}
+	m := newModel(opts)
+	m.subject.SetValue(subject)
+	(&m).refreshPreview()
+
+	msg := tea.KeyMsg{Type: tea.KeyCtrlB}
+	m, cmd := updateModel(t, m, msg)
+	if cmd != nil {
+		t.Fatalf("expected no command after copying build command, got %T", cmd)
+	}
+	if copied == "" {
+		t.Fatalf("expected clipboard write with build command, got empty string")
+	}
+
+	expected := "bar build todo focus method=steps --prompt 'Need to review \"ADR 70\"'"
+	if copied != expected {
+		t.Fatalf("expected copied command %q, got %q", expected, copied)
+	}
+	if !strings.Contains(m.statusMessage, "Copied bar build command") {
+		t.Fatalf("expected status message to confirm copy, got %q", m.statusMessage)
+	}
+}
+
 func TestExecuteSubjectCommand(t *testing.T) {
 	var receivedStdin string
 	opts := Options{
@@ -688,6 +728,23 @@ func TestTokenPaletteFilterNoMatchesWithoutPreset(t *testing.T) {
 	}
 	if !strings.Contains(view, "(no options match filter)") {
 		t.Fatalf("expected view to mention missing options, got:\n%s", view)
+	}
+
+	m, _ = updateModel(t, m, tea.KeyMsg{Type: tea.KeyCtrlW})
+	if strings.TrimSpace(m.tokenPaletteFilter.Value()) != "" {
+		t.Fatalf("expected filter to clear, got %q", m.tokenPaletteFilter.Value())
+	}
+	if m.tokenPaletteOptionIndex < 0 {
+		t.Fatalf("expected palette option index to reset, got %d", m.tokenPaletteOptionIndex)
+	}
+	t.Logf("status after clear: %q", m.statusMessage)
+	if !strings.Contains(m.statusMessage, "cleared") {
+		t.Fatalf("expected status to mention cleared filter, got %q", m.statusMessage)
+	}
+
+	view = m.View()
+	if strings.Contains(view, "(no options match filter)") {
+		t.Fatalf("expected options to repopulate after clearing filter, got:\n%s", view)
 	}
 }
 

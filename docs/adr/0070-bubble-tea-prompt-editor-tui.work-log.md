@@ -826,9 +826,31 @@
 - delta_summary: helper:diff-snapshot=git diff --stat | added token category types + palette handling in internal/bartui, exported token metadata builder in internal/barcli, refreshed cmd/bar/testdata/tui_smoke.json, updated CLI/docs to teach `Ctrl+R` piping and `Ctrl+P` palette usage, and aligned tests with the new snapshot shape.
 - loops_remaining_forecast: 0 loops — token editing and palette guardrails now land green; future loops depend on pilot ergonomics feedback.
 - residual_constraints:
-  - Pilot feedback on the new token controls remains pending (severity: medium; mitigation: gather pilot notes after rollout; monitoring: check ADR work-log for new usability reports and rerun go test ./cmd/bar with fixture updates if tweaks are required).
+  - Pilot feedback on the new token controls remains pending (severity: medium; mitigation: gather pilot notes after rollout; monitoring: collect usability reports and rerun guardrails if adjustments are needed).
 - next_work:
   - Behaviour: Monitor pilot telemetry for token editing UX; rerun go test ./internal/bartui, go test ./cmd/bar, and python3 -m pytest _tests/test_bar_completion_cli.py if adjustments are requested.
+
+## 2026-01-10 — loop 053
+- helper_version: helper:v20251223.1
+- focus: Decision § subject import/export — expose a copy-to-clipboard CLI shortcut inside `bar tui`
+- active_constraint: Bubble Tea TUI still lacked the ADR-mandated shortcut to copy the current `bar build` command, forcing pilots to reconstruct CLI invocations manually and breaking parity with Decision § subject import/export (validation via go test ./internal/bartui -run TestCopyBuildCommandToClipboard).
+- validation_targets:
+  - go test ./internal/bartui -run TestCopyBuildCommandToClipboard
+  - go test ./cmd/bar/... ./internal/bartui/...
+  - python3 -m pytest _tests/test_bar_completion_cli.py
+- evidence:
+  - red: docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-053.md (go test ./internal/bartui -run TestCopyBuildCommandToClipboard)
+  - green: docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-053.md (go test ./internal/bartui -run TestCopyBuildCommandToClipboard)
+  - green: docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-053.md (go test ./cmd/bar/... ./internal/bartui/...)
+  - green: docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-053.md (python3 -m pytest _tests/test_bar_completion_cli.py)
+- rollback_plan: `git restore --source=HEAD -- internal/bartui/program.go internal/bartui/program_test.go cmd/bar/testdata/tui_smoke.json readme.md docs/bubble-tea-pilot-playbook.md docs/adr/0070-bubble-tea-prompt-editor-tui.work-log.md docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-053.md`
+- delta_summary: helper:diff-snapshot=git diff --stat | internal/bartui/program.go (+copy command builder, CLI summary, palette reset handling), internal/bartui/program_test.go (+Ctrl+B coverage), cmd/bar/testdata/tui_smoke.json (+Equivalent CLI line + shortcuts), readme.md/docs (+Ctrl+B guidance).
+- loops_remaining_forecast: 0 loops — copy-to-clipboard CLI affordance now matches ADR guardrail; continue monitoring pilot feedback for further adjustments.
+- residual_constraints:
+  - Pilot feedback on the new token controls remains pending (severity: medium; mitigation: gather pilot notes after rollout; monitoring: collect usability reports and rerun guardrails if adjustments are needed).
+- next_work:
+  - Behaviour: Monitor pilot telemetry for token editing and CLI affordances; rerun go test ./internal/bartui, go test ./cmd/bar, and python3 -m pytest _tests/test_bar_completion_cli.py if adjustments are requested.
+
 
 ## 2026-01-09 — loop 050
 - helper_version: helper:v20251223.1

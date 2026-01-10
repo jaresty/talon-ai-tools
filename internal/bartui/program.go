@@ -926,9 +926,9 @@ func (m *model) refreshPaletteStatus() {
 			}
 		}
 		if label == "" {
-			m.statusMessage = "Palette categories focused. Up/Down move categories, Tab cycles focus, Ctrl+W clears the filter, Esc closes."
+			m.statusMessage = ensureCopyHint("Palette categories focused. Up/Down move categories, Tab cycles focus, Ctrl+W clears the filter, Esc closes.")
 		} else {
-			m.statusMessage = fmt.Sprintf("%s category focused. Up/Down move categories, Tab cycles focus, Ctrl+W clears the filter, Esc closes.", label)
+			m.statusMessage = ensureCopyHint(fmt.Sprintf("%s category focused. Up/Down move categories, Tab cycles focus, Ctrl+W clears the filter, Esc closes.", label))
 		}
 	case tokenPaletteFocusOptions:
 		if len(m.tokenPaletteOptions) == 0 {

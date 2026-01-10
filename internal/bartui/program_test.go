@@ -956,6 +956,9 @@ func TestPaletteCategoryStatusIncludesLabel(t *testing.T) {
 	if !strings.Contains(status, "Up/Down") {
 		t.Fatalf("expected status to mention category navigation, got %q", status)
 	}
+	if !strings.Contains(status, "copy command") {
+		t.Fatalf("expected category status to retain copy hint, got %q", status)
+	}
 }
 
 func TestPaletteFilterStatusIncludesValue(t *testing.T) {

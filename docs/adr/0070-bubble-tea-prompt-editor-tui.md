@@ -78,8 +78,10 @@ Proposed — Bubble Tea TUI improves prompt editing ergonomics for the Go CLI (2
 - Build preset management inside the TUI, including the docked pane, save/load/delete flows, divergence indicators, and undo/confirmation cues that keep the summary strip visible throughout.
 - Add subject import/export plumbing: clipboard capture, shell command piping (prompt → command, command → subject), in-TUI result display, and optional re-insertion of subprocess output into the subject field.
 - Add environment variable pass-through guardrails so commands can access opt-in credentials: surface an allowlist UI, confirm the names before execution, and cover the behaviour with `go test ./internal/bartui`.
+- Publish follow-on ADR 0071 (layout ergonomics) to capture the upcoming compact layout refinements described in this critique cycle.
+ 
+ ## Anti-goals
 
-## Anti-goals
 - Do not replace or deprecate the existing non-interactive CLI; scripted workflows must remain supported and unchanged by default.
 - Do not introduce Talon-specific overlays or GUI dependencies—the TUI must remain terminal-native and portable.
 - Avoid embedding LLM calls or new prompt-mutation logic; the TUI should orchestrate existing `barcli` capabilities rather than redefine recipe semantics.

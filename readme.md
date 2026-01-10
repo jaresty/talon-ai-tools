@@ -146,7 +146,7 @@ When running the interactive editor, keep these shortcuts close by:
 - `Ctrl+O` copies the rendered preview to the clipboard.
 - `Ctrl+B` copies the current `bar build` command (subject + tokens) to the clipboard so you can drop straight back into scripts.
 - `Ctrl+R` pipes the current preview into the configured shell command.
-- `Ctrl+P` opens the token palette so you can browse or reset selections without leaving the session; search for “copy command”, press `Enter` to copy the CLI and close the palette, and press `Ctrl+W` while the palette is open to clear the current filter instantly.
+- `Ctrl+P` opens the token palette so you can browse or reset selections without leaving the session; the status bar now suggests typing “copy command”, press `Enter` to copy the CLI and close the palette, and press `Ctrl+W` while the palette is open to clear the current filter instantly.
 - Within the token controls, use Left/Right to change categories, Up/Down to browse options, `Enter`/`Space` to toggle, `Delete` to remove the highlighted token, `Ctrl+W` to clear any active palette filter, and `Ctrl+Z` to undo the most recent change.
 - `Ctrl+Y` replaces the subject with the most recent command stdout.
 - `?` toggles the in-app shortcut overlay so you can review controls without leaving the session; the overlay now reminds you to type “copy command” and press `Enter` when the palette is open.

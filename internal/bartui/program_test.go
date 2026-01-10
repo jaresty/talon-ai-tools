@@ -791,6 +791,30 @@ func TestHelpOverlayMentionsCopyCommandPaletteHint(t *testing.T) {
 	}
 }
 
+func TestPaletteOpenStatusMentionsCopyCommand(t *testing.T) {
+	opts := Options{
+		Tokens:          []string{"todo"},
+		TokenCategories: defaultTokenCategories(),
+		Preview:         func(subject string, tokens []string) (string, error) { return "preview:" + subject, nil },
+		ClipboardRead:   func() (string, error) { return "", nil },
+		ClipboardWrite:  func(string) error { return nil },
+		RunCommand: func(context.Context, string, string, map[string]string) (string, string, error) {
+			return "", "", nil
+		},
+		CommandTimeout: time.Second,
+	}
+	m := newModel(opts)
+
+	m, _ = updateModel(t, m, tea.KeyMsg{Type: tea.KeyCtrlP})
+
+	if !strings.Contains(m.statusMessage, "copy command") {
+		t.Fatalf("expected palette status to mention copy command hint, got %q", m.statusMessage)
+	}
+	if !strings.Contains(m.statusMessage, "Enter") {
+		t.Fatalf("expected palette status to mention Enter key, got %q", m.statusMessage)
+	}
+}
+
 func TestTokenPaletteCopyCommandAction(t *testing.T) {
 	var copied string
 	subject := "Palette subject"

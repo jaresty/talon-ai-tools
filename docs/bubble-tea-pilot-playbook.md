@@ -23,7 +23,7 @@ bar tui todo focus steps
 - Press `Ctrl+B` to copy the current `bar build` command (subject + tokens) to the clipboard so you can reuse it in shell scripts or docs without re-entering tokens.
 - Press `Ctrl+S` to open the preset pane; inside the pane, `Ctrl+N` saves the current tokens, `Delete` removes the selected preset, and `Ctrl+Z` undoes the most recent deletion.
 - Press `Tab` again to focus the token controls. Use Left/Right to change categories, Up/Down to browse options, `Enter`/`Space` to toggle the highlighted token, `Delete` to remove it, and `Ctrl+Z` to undo the most recent change.
-- Press `Ctrl+P` to open the token palette for faster browsing and preset resets; type “copy command”, press `Enter` to copy the CLI and close the palette, and press `Ctrl+W` at any time to clear the palette filter.
+- Press `Ctrl+P` to open the token palette for faster browsing and preset resets; the status bar now prompts “copy command”, press `Enter` to copy the CLI and close the palette, and press `Ctrl+W` at any time to clear the palette filter.
 - Press `?` to open the shortcut overlay; it now reminds you about the palette copy command flow so pilots can rediscover it mid-session.
 - Alt screen is enabled by default so the original shell buffer is restored. If your terminal does not support alt screen or you want to capture transcripts, launch with `--no-alt-screen`.
 - Point at an alternate grammar bundle with `--grammar /path/to/grammar.json` when testing staged prompt changes.

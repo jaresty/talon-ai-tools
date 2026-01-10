@@ -11,7 +11,10 @@ Proposed — Bubble Tea TUI improves prompt editing ergonomics for the Go CLI (2
 - Model state around our `barcli` types: grammar metadata, token selections, subject buffer, preset/history entries, validation state, and target destination (clipboard, subprocess, file, etc.).
 - Use Bubbles components (`textarea`, `textinput`, `list`, `tabs`, `viewport`) for editing panes, template browsing, and previews; style them with Lip Gloss to keep layout readable.
 - Leverage `tea.Cmd` pipelines to invoke `barcli.LoadGrammar`, `barcli.Build`, downstream clipboard/subprocess actions, and any background IO without blocking the UI thread.
+  - Preview recomputation **must** dispatch via non-blocking `tea.Cmd`s that can be_cancelled when new edits arrive; never run grammar builds synchronously in `Update`.
+  - Show a deterministic loading indicator while preview work is in flight and collapse duplicate requests within a debounce window so keystrokes remain responsive.
 - Ship the TUI as an optional `bar tui` subcommand within the existing CLI binary so it coexists with the current surface while reusing shared configuration/preset directories.
+- Handle terminal resizing consistently: listen for `tea.WindowSizeMsg`, recompute layout breakpoints, and rely on Bubbles primitives (`textarea`, `viewport`, `list`) so multi-pane output scrolls without truncation.
 - Let operators adjust prompt tokens, destinations, and preset selections from within the TUI itself so launching with CLI shorthand remains optional.
 - Provide subject import/export affordances: operators can type subject text directly, pull it from the clipboard or a shell command, edit it in place, and push the rendered prompt to another command or the clipboard with the response surfaced in a dedicated TUI pane (and optionally reinserted into the subject field). The single-command flow must:
   - label the command input as optional and highlight when it is empty so pilots know the editor works without piping;
@@ -55,8 +58,10 @@ Proposed — Bubble Tea TUI improves prompt editing ergonomics for the Go CLI (2
 ## Consequences
 - We must maintain a Bubble Tea program alongside the CLI, including shared release packaging and binary distribution.
 - Additional keyboard/mouse handling, focus management, and layout logic introduces new complexity that will require regression coverage.
+- Streaming preview updates now rely on cooperative cancellation and backpressure; we must guard against goroutine leaks and race conditions in tests.
 - We take on UI accessibility and terminal compatibility considerations (alt screen, mouse modes, bracketed paste) that the pure CLI previously avoided.
 - The TUI will need runtime coordination with preset/state files; we must guard against concurrent writes or stale caches when both surfaces run.
+- Resizing support introduces viewport state to synchronise; we must snapshot window metrics in smoke tests to catch layout regressions across terminals.
 - Preset creation, updates, and deletion introduce additional persistence and history management that require deterministic tests to assert focus behavior, confirmation messaging, and undo paths across both inline chips and the docked pane.
 - Introducing clipboard and subprocess integrations expands attack surface (shell execution, sensitive text retention) and demands clear opt-outs/logging guidance; the TUI must surface command results safely and handle failures without dropping subject state.
 - Environment variable pass-through must remain an explicit opt-in with visible allowlists so operators cannot leak credentials accidentally; logs and UI messaging should confirm which variables were shared each run.
@@ -67,6 +72,8 @@ Proposed — Bubble Tea TUI improves prompt editing ergonomics for the Go CLI (2
 - `go test ./cmd/bar/...` covers the minimal `bar tui` wiring by compiling and exercising the CLI entrypoint with existing shared helpers.
 - `bar tui --fixture cmd/bar/testdata/tui_smoke.json --no-alt-screen` exercises the deterministic snapshot harness and validates preview/layout output without entering the interactive loop.
 - `go test ./internal/bartui/...` verifies preset load/save/delete flows, ensuring the docked pane keeps the summary visible and undo/confirmation signalling stays consistent.
+- Add Bubble Tea regression tests that drive rapid subject edits and assert preview commands settle asynchronously without blocking keystrokes.
+- Exercise window resize snapshots (`bar tui --fixture … --width …`) to confirm viewport breakpoints and scroll affordances remain intact.
 - `python3 -m pytest _tests/test_bar_completion_cli.py` keeps CLI completions and installers aligned with the prompt grammar, ensuring the `bar tui` command surfaces in shell hints.
 
 ---
@@ -78,6 +85,8 @@ Proposed — Bubble Tea TUI improves prompt editing ergonomics for the Go CLI (2
 - Implement interactive token editing controls inside `bar tui`, covering both inline chips and the optional `Ctrl+P` command palette accelerator so operators can modify prompt parts without restarting the CLI.
 - Build preset management inside the TUI, including the docked pane, save/load/delete flows, divergence indicators, and undo/confirmation cues that keep the summary strip visible throughout.
 - Add subject import/export plumbing: clipboard capture, shell command piping (prompt → command, command → subject), in-TUI result display, and optional re-insertion of subprocess output into the subject field.
+- Convert preview recomputation to cancellable `tea.Cmd` streams with visible loading affordances and backpressure guards.
+- Teach the Bubble Tea program to handle `tea.WindowSizeMsg`, updating viewport sizes and layout breakpoints in a single source of truth.
 - Add environment variable pass-through guardrails so commands can access opt-in credentials: surface an allowlist UI, confirm the names before execution, and cover the behaviour with `go test ./internal/bartui`.
 - Publish follow-on ADR 0071 (layout ergonomics) to capture the upcoming compact layout refinements described in this critique cycle.
  

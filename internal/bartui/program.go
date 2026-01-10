@@ -862,7 +862,7 @@ func (m *model) openTokenPalette() tea.Cmd {
 }
 
 func (m *model) closeTokenPalette() tea.Cmd {
-	return m.closeTokenPaletteWithStatus("Token palette closed.")
+	return m.closeTokenPaletteWithStatus("Token palette closed. Press Ctrl+P to reopen and type \"copy command\" to focus the copy action.")
 }
 
 func (m *model) closeTokenPaletteWithStatus(status string) tea.Cmd {
@@ -1710,7 +1710,7 @@ func (m *model) toggleFocus() {
 		if len(m.tokenStates) > 0 {
 			m.focus = focusTokens
 			m.clampTokenOptionIndex()
-			m.statusMessage = "Token controls focused. Use arrow keys to adjust; Ctrl+P opens the palette."
+			m.statusMessage = "Token controls focused. Use arrow keys to adjust; Ctrl+P opens the palette (type \"copy command\" to focus the copy action)."
 			return
 		}
 		m.command.Focus()

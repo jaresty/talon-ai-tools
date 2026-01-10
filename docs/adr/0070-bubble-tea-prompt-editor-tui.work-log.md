@@ -1178,10 +1178,30 @@
 - evidence:
   - green: docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-066.md#loop-066-green--go-test-internal-bartui
   - green: docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-066.md#loop-066-green--go-test-cmd-bar
-  - green: docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-066.md#loop-066-green--python3--m-pytest-_tests-test_bar_completion_cli.py
+  - green: docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-066.md#loop-066-green--python3--m-pytest-_tests/test_bar_completion_cli.py
 - rollback_plan: `git restore --source=HEAD -- internal/bartui/program.go internal/bartui/program_test.go docs/adr/0070-bubble-tea-prompt-editor-tui.work-log.md docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-066.md`
 - delta_summary: helper:diff-snapshot=git diff --stat | internal/bartui/program.go (+copy-hint helper applied to category status messaging), internal/bartui/program_test.go (+assertion covering category copy hint)
 - loops_remaining_forecast: 0 loops — palette copy guidance now persists across filter, category, and option focus states; continue monitoring pilot feedback for further UX adjustments.
+- residual_constraints:
+  - Pilot feedback on the new token controls remains pending (severity: medium; mitigation: gather pilot notes after rollout; monitoring: rerun go test ./internal/bartui and python3 -m pytest _tests/test_bar_completion_cli.py if adjustments are required).
+- next_work:
+  - Behaviour: Monitor pilot telemetry for token editing and palette hints; rerun go test ./internal/bartui, go test ./cmd/bar/..., and python3 -m pytest _tests/test_bar_completion_cli.py if follow-up changes are needed.
+
+## 2026-01-10 — loop 067
+- helper_version: helper:v20251223.1
+- focus: Decision § subject import/export — keep copy command hint visible when returning to token controls or closing the palette
+- active_constraint: After closing the palette or tabbing back to token controls, the status message dropped the copy-command hint, hiding the CLI fallback that ADR 0070 requires; go test ./internal/bartui lacked regression coverage for these focus transitions.
+- validation_targets:
+  - go test ./internal/bartui
+  - go test ./cmd/bar/...
+  - python3 -m pytest _tests/test_bar_completion_cli.py
+- evidence:
+  - green: docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-067.md#loop-067-green--go-test-internal-bartui
+  - green: docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-067.md#loop-067-green--go-test-cmd-bar
+  - green: docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-067.md#loop-067-green--python3--m-pytest-_tests/test_bar_completion_cli.py
+- rollback_plan: `git restore --source=HEAD -- internal/bartui/program.go internal/bartui/program_test.go docs/adr/0070-bubble-tea-prompt-editor-tui.work-log.md docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-067.md`
+- delta_summary: helper:diff-snapshot=git diff --stat | internal/bartui/program.go (+copy-hint messaging for palette closure and token controls focus), internal/bartui/program_test.go (+tests for copy hint after focus/closure)
+- loops_remaining_forecast: 0 loops — copy guidance now persists when exiting the palette and when tokens regain focus; continue monitoring pilot feedback for additional UX adjustments.
 - residual_constraints:
   - Pilot feedback on the new token controls remains pending (severity: medium; mitigation: gather pilot notes after rollout; monitoring: rerun go test ./internal/bartui and python3 -m pytest _tests/test_bar_completion_cli.py if adjustments are required).
 - next_work:

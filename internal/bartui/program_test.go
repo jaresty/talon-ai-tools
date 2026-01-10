@@ -903,6 +903,78 @@ func TestPaletteOptionsNoMatchesStillHintsCopyCommand(t *testing.T) {
 	}
 }
 
+func TestTokenControlsFocusMentionsCopyHint(t *testing.T) {
+	opts := Options{
+		Tokens:          []string{"todo", "focus"},
+		TokenCategories: defaultTokenCategories(),
+		Preview:         func(subject string, tokens []string) (string, error) { return "preview:" + subject, nil },
+		ClipboardRead:   func() (string, error) { return "", nil },
+		ClipboardWrite:  func(string) error { return nil },
+		RunCommand: func(context.Context, string, string, map[string]string) (string, string, error) {
+			return "", "", nil
+		},
+		CommandTimeout: time.Second,
+	}
+	m := newModel(opts)
+
+	applyKey := func(msg tea.KeyMsg) {
+		var cmd tea.Cmd
+		m, cmd = updateModel(t, m, msg)
+		if cmd != nil {
+			if follow := cmd(); follow != nil {
+				m, _ = updateModel(t, m, follow)
+			}
+		}
+	}
+
+	applyKey(tea.KeyMsg{Type: tea.KeyTab})
+
+	if m.focus != focusTokens {
+		t.Fatalf("expected focusTokens after tab, got %v", m.focus)
+	}
+	if !strings.Contains(m.statusMessage, "copy command") {
+		t.Fatalf("expected token controls status to mention copy hint, got %q", m.statusMessage)
+	}
+}
+
+func TestPaletteCloseStatusMentionsCopyHint(t *testing.T) {
+	opts := Options{
+		Tokens:          []string{"todo"},
+		TokenCategories: defaultTokenCategories(),
+		Preview:         func(subject string, tokens []string) (string, error) { return "preview:" + subject, nil },
+		ClipboardRead:   func() (string, error) { return "", nil },
+		ClipboardWrite:  func(string) error { return nil },
+		RunCommand: func(context.Context, string, string, map[string]string) (string, string, error) {
+			return "", "", nil
+		},
+		CommandTimeout: time.Second,
+	}
+	m := newModel(opts)
+
+	applyKey := func(msg tea.KeyMsg) {
+		var cmd tea.Cmd
+		m, cmd = updateModel(t, m, msg)
+		if cmd != nil {
+			if follow := cmd(); follow != nil {
+				m, _ = updateModel(t, m, follow)
+			}
+		}
+	}
+
+	applyKey(tea.KeyMsg{Type: tea.KeyCtrlP})
+	if !m.tokenPaletteVisible {
+		t.Fatalf("expected palette to be visible after Ctrl+P")
+	}
+
+	applyKey(tea.KeyMsg{Type: tea.KeyCtrlP})
+	if m.tokenPaletteVisible {
+		t.Fatalf("expected palette to close after second Ctrl+P")
+	}
+	if !strings.Contains(m.statusMessage, "copy command") {
+		t.Fatalf("expected palette close status to mention copy hint, got %q", m.statusMessage)
+	}
+}
+
 func TestPaletteCopyActionStatusHint(t *testing.T) {
 	opts := Options{
 		Tokens:          []string{"todo"},

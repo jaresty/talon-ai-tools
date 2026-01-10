@@ -827,6 +827,15 @@ func TestTokenPaletteCopyCommandAction(t *testing.T) {
 	if !strings.Contains(m.statusMessage, "Copied bar build command") {
 		t.Fatalf("expected status message to confirm copy, got %q", m.statusMessage)
 	}
+	if m.tokenPaletteVisible {
+		t.Fatalf("expected palette to close after copy action")
+	}
+	if m.focus != focusSubject {
+		t.Fatalf("expected focus to return to subject, got %v", m.focus)
+	}
+	if !m.subject.Focused() {
+		t.Fatalf("expected subject input to be focused after copy action")
+	}
 }
 
 func TestTokenSummaryNoHighlightWhenSubjectFocused(t *testing.T) {

@@ -872,6 +872,27 @@
 - next_work:
   - Behaviour: Monitor pilot telemetry for token editing and CLI affordances; rerun go test ./internal/bartui, go test ./cmd/bar, and python3 -m pytest _tests/test_bar_completion_cli.py if adjustments are requested.
 
+## 2026-01-10 — loop 055
+- helper_version: helper:v20251223.1
+- focus: Decision § subject import/export — close palette after copy action and restore subject focus
+- active_constraint: After selecting the palette copy command, the palette stayed open and focus remained in the options list, conflicting with the Decision requirement to confirm the copy and return focus (validation via go test ./internal/bartui -run TestTokenPaletteCopyCommandAction).
+- validation_targets:
+  - go test ./internal/bartui -run TestTokenPaletteCopyCommandAction
+  - go test ./cmd/bar/... ./internal/bartui/...
+  - python3 -m pytest _tests/test_bar_completion_cli.py
+- evidence:
+  - red: docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-055.md#loop-055-red--go-test--internal-bartui--run-testtokenpalettecopycommandaction
+  - green: docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-055.md#loop-055-green--go-test--internal-bartui--run-testtokenpalettecopycommandaction
+  - green: docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-055.md#loop-055-green--go-test--cmd-bar---internal-bartui
+  - green: docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-055.md#loop-055-green--python3--m-pytest-_tests-test_bar_completion_cli.py
+- rollback_plan: `git restore --source=HEAD -- internal/bartui/program.go internal/bartui/program_test.go README.md readme.md docs/bubble-tea-pilot-playbook.md docs/adr/0070-bubble-tea-prompt-editor-tui.work-log.md docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-055.md`
+- delta_summary: helper:diff-snapshot=git diff --stat | internal/bartui/program.go (+palette close helper and focus restoration), internal/bartui/program_test.go (+focus assertions for copy action), README/readme/docs (+palette copy instructions), docs/bubble-tea-pilot-playbook.md (+palette instructions).
+- loops_remaining_forecast: 0 loops — palette copy flow now returns operators to the subject field with confirmation; continue monitoring pilot feedback for new constraints.
+- residual_constraints:
+  - Pilot feedback on the new token controls remains pending (severity: medium; mitigation: gather pilot notes after rollout; monitoring: collect usability reports and rerun guardrails if adjustments are needed).
+- next_work:
+  - Behaviour: Monitor pilot telemetry for token editing and CLI affordances; rerun go test ./internal/bartui, go test ./cmd/bar, and python3 -m pytest _tests/test_bar_completion_cli.py if adjustments are requested.
+
 ## 2026-01-09 — loop 050
 
 - helper_version: helper:v20251223.1

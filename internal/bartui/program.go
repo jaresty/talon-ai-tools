@@ -858,6 +858,10 @@ func (m *model) openTokenPalette() tea.Cmd {
 }
 
 func (m *model) closeTokenPalette() tea.Cmd {
+	return m.closeTokenPaletteWithStatus("Token palette closed.")
+}
+
+func (m *model) closeTokenPaletteWithStatus(status string) tea.Cmd {
 	if !m.tokenPaletteVisible {
 		return nil
 	}
@@ -865,12 +869,27 @@ func (m *model) closeTokenPalette() tea.Cmd {
 	m.tokenPaletteFilter.Blur()
 	m.tokenPaletteOptionIndex = 0
 	m.tokenPaletteFocus = tokenPaletteFocusFilter
-	if m.focusBeforePalette == focusTokens {
+
+	switch m.focusBeforePalette {
+	case focusSubject:
+		m.subject.Focus()
+		m.command.Blur()
+		m.focus = focusSubject
+	case focusCommand:
+		m.command.Focus()
+		m.subject.Blur()
+		m.focus = focusCommand
+	case focusEnvironment:
+		m.focus = focusEnvironment
+	case focusTokens:
 		m.focus = focusTokens
-	} else {
+	default:
 		m.focus = m.focusBeforePalette
 	}
-	m.statusMessage = "Token palette closed."
+
+	if status != "" {
+		m.statusMessage = status
+	}
 	return nil
 }
 
@@ -882,6 +901,7 @@ func (m *model) applyPaletteSelection() {
 	index := m.tokenPaletteOptions[m.tokenPaletteOptionIndex]
 	if index == tokenPaletteCopyCommandOption {
 		m.copyBuildCommandToClipboard()
+		m.closeTokenPaletteWithStatus("")
 		return
 	}
 	if index == tokenPaletteResetOption {

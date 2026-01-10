@@ -853,7 +853,7 @@ func (m *model) openTokenPalette() tea.Cmd {
 	m.tokenPaletteFilter.SetValue("")
 	cmd := m.tokenPaletteFilter.Focus()
 	m.updatePaletteOptions()
-	m.statusMessage = "Token palette open. Type to filter (try \"copy command\"), Tab cycles focus, Enter applies or copies, Esc closes."
+	m.statusMessage = "Token palette open. Type to filter (try \"copy command\"), Tab cycles focus, Enter applies or copies, Ctrl+W clears the filter, Esc closes."
 	return cmd
 }
 

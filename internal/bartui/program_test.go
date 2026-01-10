@@ -813,6 +813,9 @@ func TestPaletteOpenStatusMentionsCopyCommand(t *testing.T) {
 	if !strings.Contains(m.statusMessage, "Enter") {
 		t.Fatalf("expected palette status to mention Enter key, got %q", m.statusMessage)
 	}
+	if !strings.Contains(m.statusMessage, "Ctrl+W") {
+		t.Fatalf("expected palette status to mention Ctrl+W clear hint, got %q", m.statusMessage)
+	}
 }
 
 func TestTokenPaletteCopyCommandAction(t *testing.T) {

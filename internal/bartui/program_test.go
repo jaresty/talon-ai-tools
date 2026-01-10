@@ -898,6 +898,9 @@ func TestPaletteFilterStatusIncludesValue(t *testing.T) {
 	if !strings.Contains(status, "Ctrl+W") {
 		t.Fatalf("expected status to remind about Ctrl+W, got %q", status)
 	}
+	if !strings.Contains(status, "copy command") {
+		t.Fatalf("expected status to remind about copy command shortcut, got %q", status)
+	}
 }
 
 func TestPaletteOptionStatusNamesToken(t *testing.T) {

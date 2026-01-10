@@ -292,6 +292,7 @@ type model struct {
 	preview                string
 	previewErr             error
 	statusMessage          string
+	statusBeforeHelp       string
 	previewFunc            PreviewFunc
 	clipboardRead          ClipboardReadFunc
 	clipboardWrite         ClipboardWriteFunc
@@ -904,6 +905,36 @@ func ensureCopyHint(status string) string {
 	return status + " Type \"copy command\" to focus the copy action."
 }
 
+func (m *model) restoreStatusAfterHelp() {
+	if m.tokenPaletteVisible {
+		m.statusBeforeHelp = ""
+		m.refreshPaletteStatus()
+		return
+	}
+	if m.statusBeforeHelp != "" {
+		m.statusMessage = m.statusBeforeHelp
+		m.statusBeforeHelp = ""
+		return
+	}
+	switch m.focus {
+	case focusTokens:
+		m.statusMessage = "Token controls focused. Use arrow keys to adjust; Ctrl+P opens the palette (type \"copy command\" to focus the copy action)."
+	case focusSubject:
+		m.statusMessage = "Subject input focused. Type directly or use Ctrl+L to load from clipboard."
+	case focusCommand:
+		m.statusMessage = "Command input focused. Enter runs without preview. Use Ctrl+R to pipe preview text."
+	case focusEnvironment:
+		if len(m.envNames) == 0 {
+			m.statusMessage = "No environment variables configured."
+		} else {
+			m.statusMessage = "Environment allowlist focused. Use Up/Down to choose a variable and Ctrl+E to toggle it."
+		}
+	default:
+		m.statusMessage = "Help overlay closed."
+	}
+	m.statusBeforeHelp = ""
+}
+
 func (m *model) refreshPaletteStatus() {
 	if !m.tokenPaletteVisible {
 		return
@@ -1428,11 +1459,13 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		switch keyMsg.String() {
 
 		case "?":
-			m.helpVisible = !m.helpVisible
 			if m.helpVisible {
-				m.statusMessage = "Help overlay open. Press ? to close."
+				m.helpVisible = false
+				m.restoreStatusAfterHelp()
 			} else {
-				m.statusMessage = "Help overlay closed."
+				m.statusBeforeHelp = m.statusMessage
+				m.helpVisible = true
+				m.statusMessage = "Help overlay open. Press ? to close."
 			}
 			return m, nil
 

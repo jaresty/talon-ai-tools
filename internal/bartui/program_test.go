@@ -975,6 +975,99 @@ func TestPaletteCloseStatusMentionsCopyHint(t *testing.T) {
 	}
 }
 
+func TestHelpOverlayCloseRestoresTokenCopyHint(t *testing.T) {
+	opts := Options{
+		Tokens:          []string{"todo", "focus"},
+		TokenCategories: defaultTokenCategories(),
+		Preview:         func(subject string, tokens []string) (string, error) { return "preview:" + subject, nil },
+		ClipboardRead:   func() (string, error) { return "", nil },
+		ClipboardWrite:  func(string) error { return nil },
+		RunCommand: func(context.Context, string, string, map[string]string) (string, string, error) {
+			return "", "", nil
+		},
+		CommandTimeout: time.Second,
+	}
+	m := newModel(opts)
+
+	applyKey := func(msg tea.KeyMsg) {
+		var cmd tea.Cmd
+		m, cmd = updateModel(t, m, msg)
+		if cmd != nil {
+			if follow := cmd(); follow != nil {
+				m, _ = updateModel(t, m, follow)
+			}
+		}
+	}
+
+	applyKey(tea.KeyMsg{Type: tea.KeyTab})
+	if !strings.Contains(m.statusMessage, "copy command") {
+		t.Fatalf("expected token controls status to mention copy hint, got %q", m.statusMessage)
+	}
+	statusBefore := m.statusMessage
+
+	applyKey(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{'?'}})
+	if strings.Contains(m.statusMessage, "copy command") {
+		t.Fatalf("expected help overlay to replace copy hint, got %q", m.statusMessage)
+	}
+
+	applyKey(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{'?'}})
+	if !strings.Contains(m.statusMessage, "copy command") {
+		t.Fatalf("expected help overlay close to restore copy hint, got %q", m.statusMessage)
+	}
+	if m.statusMessage != statusBefore {
+		t.Fatalf("expected status to restore previous message, got %q vs %q", m.statusMessage, statusBefore)
+	}
+}
+
+func TestHelpOverlayCloseRestoresPaletteCopyHint(t *testing.T) {
+	opts := Options{
+		Tokens:          []string{"todo"},
+		TokenCategories: defaultTokenCategories(),
+		Preview:         func(subject string, tokens []string) (string, error) { return "preview:" + subject, nil },
+		ClipboardRead:   func() (string, error) { return "", nil },
+		ClipboardWrite:  func(string) error { return nil },
+		RunCommand: func(context.Context, string, string, map[string]string) (string, string, error) {
+			return "", "", nil
+		},
+		CommandTimeout: time.Second,
+	}
+	m := newModel(opts)
+
+	applyKey := func(msg tea.KeyMsg) {
+		var cmd tea.Cmd
+		m, cmd = updateModel(t, m, msg)
+		if cmd != nil {
+			if follow := cmd(); follow != nil {
+				m, _ = updateModel(t, m, follow)
+			}
+		}
+	}
+
+	applyKey(tea.KeyMsg{Type: tea.KeyCtrlP})
+	if !m.tokenPaletteVisible {
+		t.Fatalf("expected palette to be visible after Ctrl+P")
+	}
+
+	applyKey(tea.KeyMsg{Type: tea.KeyCtrlP})
+	if m.tokenPaletteVisible {
+		t.Fatalf("expected palette to close after second Ctrl+P")
+	}
+	statusBefore := m.statusMessage
+
+	applyKey(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{'?'}})
+	if strings.Contains(m.statusMessage, "copy command") {
+		t.Fatalf("expected help overlay to replace copy hint, got %q", m.statusMessage)
+	}
+
+	applyKey(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{'?'}})
+	if !strings.Contains(m.statusMessage, "copy command") {
+		t.Fatalf("expected closing help overlay to restore copy hint, got %q", m.statusMessage)
+	}
+	if m.statusMessage != statusBefore {
+		t.Fatalf("expected palette status to restore previous message, got %q vs %q", m.statusMessage, statusBefore)
+	}
+}
+
 func TestPaletteCopyActionStatusHint(t *testing.T) {
 	opts := Options{
 		Tokens:          []string{"todo"},

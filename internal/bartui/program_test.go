@@ -847,6 +847,39 @@ func TestPaletteCopyActionStatusHint(t *testing.T) {
 	}
 }
 
+func TestPaletteOptionStatusNamesToken(t *testing.T) {
+	opts := Options{
+		Tokens:          []string{"todo"},
+		TokenCategories: defaultTokenCategories(),
+		Preview:         func(subject string, tokens []string) (string, error) { return "preview:" + subject, nil },
+		ClipboardRead:   func() (string, error) { return "", nil },
+		ClipboardWrite:  func(string) error { return nil },
+		RunCommand: func(context.Context, string, string, map[string]string) (string, string, error) {
+			return "", "", nil
+		},
+		CommandTimeout: time.Second,
+	}
+	m := newModel(opts)
+
+	m, _ = updateModel(t, m, tea.KeyMsg{Type: tea.KeyCtrlP})
+	m, _ = updateModel(t, m, tea.KeyMsg{Type: tea.KeyTab})  // focus categories
+	m, _ = updateModel(t, m, tea.KeyMsg{Type: tea.KeyDown}) // move to Scope category
+	m, _ = updateModel(t, m, tea.KeyMsg{Type: tea.KeyTab})  // focus options
+	m, _ = updateModel(t, m, tea.KeyMsg{Type: tea.KeyDown}) // skip copy action to first token option
+
+	status := m.statusMessage
+
+	if !strings.Contains(status, "Scope") {
+		t.Fatalf("expected status to cite category, got %q", status)
+	}
+	if !strings.Contains(status, "focus") {
+		t.Fatalf("expected status to include token slug, got %q", status)
+	}
+	if !strings.Contains(status, "toggle") {
+		t.Fatalf("expected status to mention toggling, got %q", status)
+	}
+}
+
 func TestTokenPaletteCopyCommandAction(t *testing.T) {
 	var copied string
 	subject := "Palette subject"

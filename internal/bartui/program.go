@@ -919,7 +919,34 @@ func (m *model) refreshPaletteStatus() {
 		case tokenPaletteResetOption:
 			m.statusMessage = "Reset-to-preset action focused. Press Enter to restore preset tokens, Ctrl+W clears the filter, Esc closes."
 		default:
-			m.statusMessage = "Palette option focused. Press Enter to toggle selection, Ctrl+W clears the filter, Esc closes."
+			if entry < 0 {
+				m.statusMessage = "Palette option focused. Press Enter to toggle selection, Ctrl+W clears the filter, Esc closes."
+				return
+			}
+			if m.tokenCategoryIndex < 0 || m.tokenCategoryIndex >= len(m.tokenStates) {
+				m.statusMessage = "Palette option focused. Press Enter to toggle selection, Ctrl+W clears the filter, Esc closes."
+				return
+			}
+			state := m.tokenStates[m.tokenCategoryIndex]
+			if entry >= len(state.category.Options) {
+				m.statusMessage = "Palette option focused. Press Enter to toggle selection, Ctrl+W clears the filter, Esc closes."
+				return
+			}
+			option := state.category.Options[entry]
+			categoryLabel := state.category.Label
+			if categoryLabel == "" {
+				categoryLabel = state.category.Key
+			}
+			slug := option.Slug
+			if slug == "" {
+				slug = option.Value
+			}
+			label := option.Label
+			if label != "" && !strings.EqualFold(label, slug) {
+				m.statusMessage = fmt.Sprintf("%s → %s (%s). Press Enter to toggle, Ctrl+W clears the filter, Esc closes.", categoryLabel, slug, label)
+			} else {
+				m.statusMessage = fmt.Sprintf("%s → %s. Press Enter to toggle, Ctrl+W clears the filter, Esc closes.", categoryLabel, slug)
+			}
 		}
 	}
 }
@@ -1043,6 +1070,7 @@ func (m *model) handlePaletteNavigation(delta int, key tea.KeyMsg) (bool, tea.Cm
 	switch m.tokenPaletteFocus {
 	case tokenPaletteFocusCategories:
 		m.moveTokenCategory(delta)
+		m.refreshPaletteStatus()
 		return true, nil
 	case tokenPaletteFocusOptions:
 		if len(m.tokenPaletteOptions) == 0 {

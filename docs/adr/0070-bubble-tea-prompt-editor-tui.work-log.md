@@ -1400,4 +1400,26 @@
 - next_work:
   - Behaviour: Monitor pilot telemetry for viewport interactions and condensed preview adoption; rerun go test ./internal/bartui, go test ./cmd/bar/..., and python3 -m pytest _tests/test_bar_completion_cli.py if changes are required.
 
+## 2026-01-11 — loop 078
+- helper_version: helper:v20251223.1
+- focus: Validation § snapshot harness — add fixture height override so resize snapshots cover vertical breakpoints
+- active_constraint: Validation’s `bar tui --fixture … --width …` scenario still could not assert vertical layout breakpoints because fixture snapshots lacked a way to set initial height; tall-only snapshots masked regressions in subject/result viewport sizing.
+- validation_targets:
+  - go test -count=1 ./internal/bartui
+  - go test -count=1 ./cmd/bar/...
+  - python3 -m pytest _tests/test_bar_completion_cli.py
+- evidence:
+  - green: docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-078.md#loop-078-green--go-test--count1--internal-bartui
+  - green: docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-078.md#loop-078-green--go-test--count1--cmd-bar
+  - green: docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-078.md#loop-078-green--python3--m-pytest-_tests-test_bar_completion_cli.py
+- rollback_plan: `git restore --source=HEAD -- internal/barcli/app.go internal/barcli/tui.go internal/bartui/program.go cmd/bar/main_test.go docs/adr/0070-bubble-tea-prompt-editor-tui.work-log.md docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-078.md`
+- delta_summary: helper:diff-snapshot=git diff --stat HEAD | cmd/bar/main_test.go | 66 ++++++++++++++++++++++++++++++++++++++++++++++++++; internal/barcli/app.go | 44 +++++++++++++++++++++++----------; internal/barcli/tui.go | 1 + — wired `--fixture-height` through cliOptions, taught `bartui.Snapshot` to respect `InitialHeight`, and extended fixture tests so height overrides fail fast without the flag and succeed when provided.
+- loops_remaining_forecast: 0 loops — snapshot harness now covers vertical and horizontal resize guardrails; continue monitoring pilot feedback for viewport ergonomics (medium confidence).
+- residual_constraints:
+  - Pilot feedback on viewport ergonomics (scroll affordances, condensed preview messaging) remains pending (severity: medium; mitigation: gather pilot notes, rerun go test ./internal/bartui and python3 -m pytest _tests/test_bar_completion_cli.py if adjustments are requested).
+- next_work:
+  - Behaviour: Monitor pilot telemetry for viewport interactions and condensed preview adoption; rerun go test ./internal/bartui, go test ./cmd/bar/..., and python3 -m pytest _tests/test_bar_completion_cli.py if changes are required.
+
+
+
 

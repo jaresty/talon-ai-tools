@@ -237,6 +237,20 @@ func TestTUIFixtureWidthFlagAdjustsSnapshot(t *testing.T) {
 		t.Fatalf("expected narrow snapshot to differ from default width view")
 	}
 
+	const height = 12
+	shortView, shortPreview, err := bartui.Snapshot(bartui.Options{
+		Tokens:          tokens,
+		TokenCategories: barcli.BuildTokenCategories(grammar),
+		Preview:         preview,
+		InitialHeight:   height,
+	}, subject)
+	if err != nil {
+		t.Fatalf("short snapshot failed: %v", err)
+	}
+	if shortView == defaultView {
+		t.Fatalf("expected height-adjusted snapshot to differ from default view")
+	}
+
 	fixture := struct {
 		Tokens          []string `json:"tokens"`
 		Subject         string   `json:"subject"`
@@ -288,5 +302,57 @@ func TestTUIFixtureWidthFlagAdjustsSnapshot(t *testing.T) {
 	}
 	if stdout.String() != narrowView {
 		t.Fatalf("expected width-adjusted fixture output to match narrow snapshot\n--- expected ---\n%s\n--- actual ---\n%s", narrowView, stdout.String())
+	}
+
+	heightFixture := struct {
+		Tokens          []string `json:"tokens"`
+		Subject         string   `json:"subject"`
+		ExpectedPreview string   `json:"expected_preview"`
+		ExpectedView    string   `json:"expected_view"`
+	}{
+		Tokens:          tokens,
+		Subject:         subject,
+		ExpectedPreview: shortPreview,
+		ExpectedView:    shortView,
+	}
+
+	heightData, err := json.MarshalIndent(heightFixture, "", "  ")
+	if err != nil {
+		t.Fatalf("failed to marshal height fixture: %v", err)
+	}
+
+	heightFixturePath := filepath.Join(dir, "fixture_height.json")
+	if err := os.WriteFile(heightFixturePath, heightData, 0o600); err != nil {
+		t.Fatalf("failed to write height fixture: %v", err)
+	}
+
+	stdout.Reset()
+	stderr.Reset()
+	exit = barcli.Run([]string{"tui", "--grammar", grammarPath, "--fixture", heightFixturePath}, strings.NewReader(""), stdout, stderr)
+	if exit == 0 {
+		t.Fatalf("expected height mismatch to fail without --fixture-height")
+	}
+	if !strings.Contains(stderr.String(), "snapshot view mismatch") {
+		t.Fatalf("expected snapshot mismatch for height fixture, got: %s", stderr.String())
+	}
+
+	stdout.Reset()
+	stderr.Reset()
+	exit = barcli.Run([]string{"tui", "--grammar", grammarPath, "--fixture", heightFixturePath, "--fixture-height", "0"}, strings.NewReader(""), stdout, stderr)
+	if exit == 0 {
+		t.Fatalf("expected zero height to fail validation")
+	}
+	if !strings.Contains(stderr.String(), "--fixture-height requires a positive integer") {
+		t.Fatalf("expected zero height error, got: %s", stderr.String())
+	}
+
+	stdout.Reset()
+	stderr.Reset()
+	exit = barcli.Run([]string{"tui", "--grammar", grammarPath, "--fixture", heightFixturePath, "--fixture-height", strconv.Itoa(height)}, strings.NewReader(""), stdout, stderr)
+	if exit != 0 {
+		t.Fatalf("expected height-adjusted fixture run exit 0, got %d with stderr: %s", exit, stderr.String())
+	}
+	if stdout.String() != shortView {
+		t.Fatalf("expected height-adjusted fixture output to match short snapshot\n--- expected ---\n%s\n--- actual ---\n%s", shortView, stdout.String())
 	}
 }

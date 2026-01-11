@@ -22,7 +22,7 @@ var generalHelpText = strings.TrimSpace(`USAGE
 
   bar help
   bar help tokens [section...] [--grammar PATH]
-  bar tui [tokens...] [--grammar PATH] [--fixture PATH] [--fixture-width N] [--no-alt-screen] [--env NAME]...
+  bar tui [tokens...] [--grammar PATH] [--fixture PATH] [--fixture-width N] [--fixture-height N] [--no-alt-screen] [--env NAME]...
  
    bar completion <shell> [--grammar PATH] [--output FILE]
       (shell = bash | zsh | fish)
@@ -204,18 +204,19 @@ func Run(args []string, stdin io.Reader, stdout, stderr io.Writer) int {
 }
 
 type cliOptions struct {
-	Command      string
-	Tokens       []string
-	Prompt       string
-	InputPath    string
-	OutputPath   string
-	JSON         bool
-	GrammarPath  string
-	Force        bool
-	FixturePath  string
-	FixtureWidth int
-	NoAltScreen  bool
-	EnvAllowlist []string
+	Command       string
+	Tokens        []string
+	Prompt        string
+	InputPath     string
+	OutputPath    string
+	JSON          bool
+	GrammarPath   string
+	Force         bool
+	FixturePath   string
+	FixtureWidth  int
+	FixtureHeight int
+	NoAltScreen   bool
+	EnvAllowlist  []string
 }
 
 func parseArgs(args []string) (*cliOptions, error) {
@@ -285,6 +286,23 @@ func parseArgs(args []string) (*cliOptions, error) {
 				return nil, fmt.Errorf("--fixture-width requires a positive integer")
 			}
 			opts.FixtureWidth = width
+		case arg == "--fixture-height":
+			i++
+			if i >= len(args) {
+				return nil, fmt.Errorf("--fixture-height requires a value")
+			}
+			height, err := strconv.Atoi(args[i])
+			if err != nil || height <= 0 {
+				return nil, fmt.Errorf("--fixture-height requires a positive integer")
+			}
+			opts.FixtureHeight = height
+		case strings.HasPrefix(arg, "--fixture-height="):
+			value := strings.TrimPrefix(arg, "--fixture-height=")
+			height, err := strconv.Atoi(value)
+			if err != nil || height <= 0 {
+				return nil, fmt.Errorf("--fixture-height requires a positive integer")
+			}
+			opts.FixtureHeight = height
 		case arg == "--no-alt-screen":
 			opts.NoAltScreen = true
 

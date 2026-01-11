@@ -86,6 +86,7 @@ func runTUI(opts *cliOptions, stdin io.Reader, stdout, stderr io.Writer) int {
 			TokenCategories: tokenCategories,
 			Preview:         preview,
 			InitialWidth:    opts.FixtureWidth,
+			InitialHeight:   opts.FixtureHeight,
 		}, subject)
 		if snapErr != nil {
 			writeError(stderr, fmt.Sprintf("render snapshot: %v", snapErr))

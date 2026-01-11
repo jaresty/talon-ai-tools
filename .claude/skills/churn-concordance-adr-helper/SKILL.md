@@ -25,7 +25,7 @@ description: Declarative workflow for running churn × complexity Concordance an
 ## Concordance Glossary
 - **Visibility**: How explicit the coordination contracts are; higher visibility means clearer orchestrators, interfaces, and behavioural declarations.
 - **Scope**: The breadth of modules/features a change touches; narrower scope confines churn to well-bounded domains.
-- **Volatility**: The coordination pressure that arises when high-strength connascence (timing, execution order, algorithmic coupling) keeps breaking; damp it by making those contracts explicit, isolating temporal sensitivities, and stabilising tests so churn no longer cascades.
+- **Volatility**: The coordination pressure that arises when high-strength connascence (timing, execution order, algorithmic coupling) keeps breaking, making behaviour sensitive to when and how work executes and forcing tightly coupled change sets.
 - **Canonicalization**: Collapsing overlapping intent into a single named contract so future work gravitates toward the same implementation path.
 
 ## Execution Checklist

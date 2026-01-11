@@ -22,7 +22,7 @@ var generalHelpText = strings.TrimSpace(`USAGE
 
   bar help
   bar help tokens [section...] [--grammar PATH]
-  bar tui [tokens...] [--grammar PATH] [--fixture PATH] [--fixture-width N] [--fixture-height N] [--no-alt-screen] [--env NAME]...
+  bar tui [tokens...] [--grammar PATH] [--fixture PATH] [--fixture-width N|--width N] [--fixture-height N|--height N] [--no-alt-screen] [--env NAME]...
  
    bar completion <shell> [--grammar PATH] [--output FILE]
       (shell = bash | zsh | fish)
@@ -286,6 +286,24 @@ func parseArgs(args []string) (*cliOptions, error) {
 				return nil, fmt.Errorf("--fixture-width requires a positive integer")
 			}
 			opts.FixtureWidth = width
+		case arg == "--width":
+			i++
+			if i >= len(args) {
+				return nil, fmt.Errorf("--width requires a value")
+			}
+			width, err := strconv.Atoi(args[i])
+			if err != nil || width <= 0 {
+				return nil, fmt.Errorf("--width requires a positive integer")
+			}
+			opts.FixtureWidth = width
+		case strings.HasPrefix(arg, "--width="):
+			value := strings.TrimPrefix(arg, "--width=")
+			width, err := strconv.Atoi(value)
+			if err != nil || width <= 0 {
+				return nil, fmt.Errorf("--width requires a positive integer")
+			}
+			opts.FixtureWidth = width
+
 		case arg == "--fixture-height":
 			i++
 			if i >= len(args) {
@@ -303,6 +321,24 @@ func parseArgs(args []string) (*cliOptions, error) {
 				return nil, fmt.Errorf("--fixture-height requires a positive integer")
 			}
 			opts.FixtureHeight = height
+		case arg == "--height":
+			i++
+			if i >= len(args) {
+				return nil, fmt.Errorf("--height requires a value")
+			}
+			height, err := strconv.Atoi(args[i])
+			if err != nil || height <= 0 {
+				return nil, fmt.Errorf("--height requires a positive integer")
+			}
+			opts.FixtureHeight = height
+		case strings.HasPrefix(arg, "--height="):
+			value := strings.TrimPrefix(arg, "--height=")
+			height, err := strconv.Atoi(value)
+			if err != nil || height <= 0 {
+				return nil, fmt.Errorf("--height requires a positive integer")
+			}
+			opts.FixtureHeight = height
+
 		case arg == "--no-alt-screen":
 			opts.NoAltScreen = true
 

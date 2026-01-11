@@ -290,8 +290,18 @@ func TestTUIFixtureWidthFlagAdjustsSnapshot(t *testing.T) {
 	if exit == 0 {
 		t.Fatalf("expected zero width to fail validation")
 	}
-	if !strings.Contains(stderr.String(), "--fixture-width requires a positive integer") {
+	if !strings.Contains(stderr.String(), "positive integer") {
 		t.Fatalf("expected zero width error, got: %s", stderr.String())
+	}
+
+	stdout.Reset()
+	stderr.Reset()
+	exit = barcli.Run([]string{"tui", "--grammar", grammarPath, "--fixture", fixturePath, "--width", "0"}, strings.NewReader(""), stdout, stderr)
+	if exit == 0 {
+		t.Fatalf("expected zero width via alias to fail validation")
+	}
+	if !strings.Contains(stderr.String(), "positive integer") {
+		t.Fatalf("expected zero width alias error, got: %s", stderr.String())
 	}
 
 	stdout.Reset()
@@ -302,6 +312,16 @@ func TestTUIFixtureWidthFlagAdjustsSnapshot(t *testing.T) {
 	}
 	if stdout.String() != narrowView {
 		t.Fatalf("expected width-adjusted fixture output to match narrow snapshot\n--- expected ---\n%s\n--- actual ---\n%s", narrowView, stdout.String())
+	}
+
+	stdout.Reset()
+	stderr.Reset()
+	exit = barcli.Run([]string{"tui", "--grammar", grammarPath, "--fixture", fixturePath, "--width", strconv.Itoa(width)}, strings.NewReader(""), stdout, stderr)
+	if exit != 0 {
+		t.Fatalf("expected width alias to succeed, got %d with stderr: %s", exit, stderr.String())
+	}
+	if stdout.String() != narrowView {
+		t.Fatalf("expected width alias output to match narrow snapshot\n--- expected ---\n%s\n--- actual ---\n%s", narrowView, stdout.String())
 	}
 
 	heightFixture := struct {
@@ -342,8 +362,18 @@ func TestTUIFixtureWidthFlagAdjustsSnapshot(t *testing.T) {
 	if exit == 0 {
 		t.Fatalf("expected zero height to fail validation")
 	}
-	if !strings.Contains(stderr.String(), "--fixture-height requires a positive integer") {
+	if !strings.Contains(stderr.String(), "positive integer") {
 		t.Fatalf("expected zero height error, got: %s", stderr.String())
+	}
+
+	stdout.Reset()
+	stderr.Reset()
+	exit = barcli.Run([]string{"tui", "--grammar", grammarPath, "--fixture", heightFixturePath, "--height", "0"}, strings.NewReader(""), stdout, stderr)
+	if exit == 0 {
+		t.Fatalf("expected zero height alias to fail validation")
+	}
+	if !strings.Contains(stderr.String(), "positive integer") {
+		t.Fatalf("expected zero height alias error, got: %s", stderr.String())
 	}
 
 	stdout.Reset()
@@ -354,5 +384,15 @@ func TestTUIFixtureWidthFlagAdjustsSnapshot(t *testing.T) {
 	}
 	if stdout.String() != shortView {
 		t.Fatalf("expected height-adjusted fixture output to match short snapshot\n--- expected ---\n%s\n--- actual ---\n%s", shortView, stdout.String())
+	}
+
+	stdout.Reset()
+	stderr.Reset()
+	exit = barcli.Run([]string{"tui", "--grammar", grammarPath, "--fixture", heightFixturePath, "--height", strconv.Itoa(height)}, strings.NewReader(""), stdout, stderr)
+	if exit != 0 {
+		t.Fatalf("expected height alias run exit 0, got %d with stderr: %s", exit, stderr.String())
+	}
+	if stdout.String() != shortView {
+		t.Fatalf("expected height alias output to match short snapshot\n--- expected ---\n%s\n--- actual ---\n%s", shortView, stdout.String())
 	}
 }

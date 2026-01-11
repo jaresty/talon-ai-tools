@@ -49,7 +49,10 @@ BAR_TUI_CMD=${BAR_TUI_CMD:-$BAR_TUI_CMD_DEFAULT}
 
 EXTRA_ARGS=()
 if [[ -f $ARGS_FILE ]]; then
-    mapfile -t EXTRA_ARGS <"$ARGS_FILE"
+    while IFS= read -r line || [[ -n $line ]]; do
+        [[ -z $line ]] && continue
+        EXTRA_ARGS+=("$line")
+    done <"$ARGS_FILE"
 fi
 
 if [[ -f $ENV_FILE ]]; then

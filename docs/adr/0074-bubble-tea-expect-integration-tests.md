@@ -1,4 +1,4 @@
-Proposed — Expect-based integration suite for Bubble Tea TUI (2026-01-11)
+Accepted — Expect-based integration suite for Bubble Tea TUI (2026-01-11)
 
 ## Context
 - The Bubble Tea TUI (`bar tui`) now ships a compact layout (ADR 0071) but its behaviour is only partially covered by Go unit tests and deterministic snapshot fixtures.
@@ -20,7 +20,7 @@ Proposed — Expect-based integration suite for Bubble Tea TUI (2026-01-11)
   8. **Clipboard flows** — load subject from clipboard, copy preview and CLI command, reinsert stdout, ensure status hints persist.
   9. **Help overlay** — toggle `?`, assert grouped headings align with ADR 0071 copy.
    10. **Window resize** — send `WindowSizeMsg` via expect to confirm token and result viewports stay within 20-row terminals.
-- Seed the suite with initial `launch-status` and `focus-cycle` cases to exercise the harness while we backfill the remaining inventory.
+- Seed the suite with initial `launch-status`, `focus-cycle`, `token-palette-workflow`, and `environment-allowlist` cases to exercise the harness while we backfill the remaining inventory.
 - Store deterministic transcripts (`*.log`) and palette debug outputs in `tests/integration/tui/fixtures/`, referencing them via helper assertions rather than ad-hoc `grep` in scripts.
 
 - Integrate the suite into CI via a `make expect-integration` target executed after Go tests; failures emit pointer to transcript diff and associated debug log.
@@ -40,6 +40,8 @@ Proposed — Expect-based integration suite for Bubble Tea TUI (2026-01-11)
 
 ## Validation
 - `scripts/tools/run-tui-expect.sh focus-cycle` — confirms focus ring cycles Subject → Tokens → Command → Result viewports with the expected status copy.
+- `scripts/tools/run-tui-expect.sh token-palette-workflow` — exercises filter → option hand-off, token apply/undo semantics, and palette status hints.
+- `scripts/tools/run-tui-expect.sh environment-allowlist` — covers toggling, enabling, and clearing allowlist entries with summary updates.
 - `scripts/tools/run-tui-expect.sh launch-status` — confirms compact status strip, result summary, and smoke snapshot parity.
 - `go test ./internal/bartui` — unit guardrails remain green after expect suite integration.
 - `go test ./cmd/bar/...` — snapshot harness still matches CLI output with the expect suite enabled.

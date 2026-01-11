@@ -1,0 +1,59 @@
+#!/usr/bin/expect -f
+set timeout 30
+set env(NO_COLOR) 1
+set transcript $env(TUI_EXPECT_TRANSCRIPT)
+log_file -a $transcript
+set cmd [split $env(TUI_EXPECT_CMD)]
+eval spawn $cmd
+
+expect {
+    -re {bar prompt editor \(Bubble Tea prototype\)} {}
+    timeout { send_error "failed to render header"; exit 1 }
+}
+
+send "\u0010" ;# Ctrl+P opens palette
+expect {
+    -re {Token palette open\. Type to filter \(try "copy command"\), Tab cycles focus, Enter applies or copies, Ctrl\+W clears the filter, Esc closes\.} {}
+    timeout { send_error "expected palette open status"; exit 1 }
+}
+
+send "todo"
+expect {
+    -re {Token palette open \(filter="todo"\)\. Enter applies or copies; type "copy command" to focus the copy action\. Tab cycles focus, Ctrl\+W clears the filter, Esc closes\.} {}
+    timeout { send_error "expected filtered status"; exit 1 }
+}
+
+send "\r"
+expect {
+    -re {Static Prompt → todo \(Return a todo list\)\. Press Enter to toggle, Ctrl\+W clears the filter, Esc closes\. Type "copy command" to focus the copy action\.} {}
+    timeout { send_error "expected palette option focus status"; exit 1 }
+}
+
+send "\r"
+expect {
+    -re {Static Prompt → todo applied\.} {}
+    timeout { send_error "expected token applied status"; exit 1 }
+}
+
+send "\u001a" ;# Ctrl+Z undo token change
+expect {
+    -re {Token selection restored\.} {}
+    timeout { send_error "expected token undo status"; exit 1 }
+}
+
+send "\u0017" ;# Ctrl+W clear filter
+expect {
+    -re {Token filter cleared\..*Ctrl\+W clears the filter, Esc closes\.} {}
+    timeout { send_error "expected filter cleared status"; exit 1 }
+}
+
+send "\u001b" ;# Esc closes palette
+expect {
+    -re {Token palette closed\. Press Ctrl\+P to reopen and type "copy command" to focus the copy action\.} {}
+    timeout { send_error "expected palette closed status"; exit 1 }
+}
+
+send "\003"
+after 200
+send "\003"
+expect eof

@@ -1099,7 +1099,9 @@ func containsToken(list []string, value string) bool {
 }
 
 func (m *model) recordTokenUndo() {
-	m.lastTokenSnapshot = append([]string(nil), m.tokens...)
+	snapshot := make([]string, len(m.tokens))
+	copy(snapshot, m.tokens)
+	m.lastTokenSnapshot = snapshot
 }
 
 func (m *model) rebuildTokensFromStates() {
@@ -1243,7 +1245,7 @@ func (m *model) removeCurrentTokenOption() {
 }
 
 func (m *model) undoTokenChange() {
-	if len(m.lastTokenSnapshot) == 0 {
+	if m.lastTokenSnapshot == nil {
 		m.statusMessage = "No token change to undo."
 		return
 	}
@@ -1548,7 +1550,7 @@ func (m *model) applyPaletteSelection() {
 		m.applyPaletteReset()
 		return
 	}
-	state := m.tokenStates[m.tokenCategoryIndex]
+	state := &m.tokenStates[m.tokenCategoryIndex]
 	if index < 0 || index >= len(state.category.Options) {
 		return
 	}

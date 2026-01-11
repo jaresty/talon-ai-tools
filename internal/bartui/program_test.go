@@ -708,6 +708,55 @@ func TestTokenPaletteToggle(t *testing.T) {
 	}
 }
 
+func TestTokenPaletteApplyUndoFromEmptyTokens(t *testing.T) {
+	opts := Options{
+		Tokens:          nil,
+		TokenCategories: defaultTokenCategories(),
+		Preview:         func(subject string, tokens []string) (string, error) { return "preview:" + subject, nil },
+		ClipboardRead:   func() (string, error) { return "", nil },
+		ClipboardWrite:  func(string) error { return nil },
+		RunCommand: func(context.Context, string, string, map[string]string) (string, string, error) {
+			return "", "", nil
+		},
+		CommandTimeout: time.Second,
+	}
+	m := newModel(opts)
+
+	m, _ = updateModel(t, m, tea.KeyMsg{Type: tea.KeyTab})
+	m, _ = updateModel(t, m, tea.KeyMsg{Type: tea.KeyCtrlP})
+	if !m.tokenPaletteVisible {
+		t.Fatalf("expected token palette to be visible")
+	}
+
+	for _, r := range []rune{'t', 'o', 'd', 'o'} {
+		m, _ = updateModel(t, m, tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{r}})
+	}
+
+	m, _ = updateModel(t, m, tea.KeyMsg{Type: tea.KeyEnter}) // move focus to options
+	if m.tokenPaletteFocus != tokenPaletteFocusOptions {
+		t.Fatalf("expected palette focus to move to options, got %v", m.tokenPaletteFocus)
+	}
+	if len(m.tokenPaletteOptions) == 0 {
+		t.Fatalf("expected palette options to be populated")
+	}
+
+	for m.tokenPaletteOptionIndex < len(m.tokenPaletteOptions) && m.tokenPaletteOptions[m.tokenPaletteOptionIndex] < 0 {
+		m, _ = updateModel(t, m, tea.KeyMsg{Type: tea.KeyDown})
+	}
+
+	m, _ = updateModel(t, m, tea.KeyMsg{Type: tea.KeyEnter}) // apply selection
+
+	if len(m.tokens) != 1 || m.tokens[0] != "todo" {
+		t.Fatalf("expected todo token to be applied, got tokens=%v state=%v options=%v index=%d", m.tokens, m.tokenStates[0].selected, m.tokenPaletteOptions, m.tokenPaletteOptionIndex)
+	}
+
+	m, _ = updateModel(t, m, tea.KeyMsg{Type: tea.KeyCtrlZ})
+
+	if len(m.tokens) != 0 {
+		t.Fatalf("expected undo to restore empty token selection, got %v", m.tokens)
+	}
+}
+
 func TestTokenPaletteSummaryCondensedWhenVisible(t *testing.T) {
 	opts := Options{
 		Tokens:          []string{"todo", "focus"},

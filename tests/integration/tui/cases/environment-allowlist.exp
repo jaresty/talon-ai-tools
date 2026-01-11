@@ -1,0 +1,75 @@
+#!/usr/bin/expect -f
+set timeout 30
+set env(NO_COLOR) 1
+set transcript $env(TUI_EXPECT_TRANSCRIPT)
+log_file -a $transcript
+set cmd [split $env(TUI_EXPECT_CMD)]
+eval spawn $cmd
+
+expect {
+    -re {bar prompt editor \(Bubble Tea prototype\)} {}
+    timeout { send_error "failed to render header"; exit 1 }
+}
+expect {
+    -re {Environment allowlist: CHATGPT_API_KEY, ORG_ID\. Tab again to focus the allowlist and press Ctrl\+E to toggle entries\.} {}
+    timeout { send_error "missing initial allowlist status"; exit 1 }
+}
+
+send "\t"
+expect {
+    -re {Status: Token controls focused\. Use arrow keys to adjust; Ctrl\+P opens the palette \(type "copy command" to focus the copy action\)\.} {}
+    timeout { send_error "expected token controls status"; exit 1 }
+}
+
+send "\t"
+expect {
+    -re {Status: Command input focused\. Enter runs without preview\. Use Ctrl\+R to pipe preview text\.} {}
+    timeout { send_error "expected command status"; exit 1 }
+}
+
+send "\t"
+expect {
+    -re {Status: Result viewport focused\. Use PgUp/PgDn to scroll, Home/End to jump, Ctrl\+T toggles preview\.} {}
+    timeout { send_error "expected result viewport status"; exit 1 }
+}
+
+send "\t"
+expect {
+    -re {Status: Environment allowlist focused\. Use Up/Down to choose a variable and Ctrl\+E to toggle it\.} {}
+    timeout { send_error "expected environment focus status"; exit 1 }
+}
+
+send "\u0005" ;# Ctrl+E toggle removes first entry
+expect {
+    -re {Removed CHATGPT_API_KEY from environment allowlist\. Current allowlist: ORG_ID\.} {}
+    timeout { send_error "expected removed status"; exit 1 }
+}
+
+send "\u0005" ;# Ctrl+E toggle re-adds entry
+expect {
+    -re {Added CHATGPT_API_KEY to environment allowlist\. Current allowlist: CHATGPT_API_KEY, ORG_ID\.} {}
+    timeout { send_error "expected added status"; exit 1 }
+}
+
+send "\u0001" ;# Ctrl+A enable all
+expect {
+    -re {Enabled all environment variables in the allowlist\. Current allowlist: CHATGPT_API_KEY, ORG_ID\.} {}
+    timeout { send_error "expected enable-all status"; exit 1 }
+}
+
+send "\u0018" ;# Ctrl+X clear
+expect {
+    -re {Cleared the environment allowlist\. Current allowlist: \(none\)\.} {}
+    timeout { send_error "expected clear status"; exit 1 }
+}
+
+send "\u0001" ;# Ctrl+A repopulate after clear
+expect {
+    -re {Enabled all environment variables in the allowlist\. Current allowlist: CHATGPT_API_KEY, ORG_ID\.} {}
+    timeout { send_error "expected repopulate status"; exit 1 }
+}
+
+send "\003"
+after 200
+send "\003"
+expect eof

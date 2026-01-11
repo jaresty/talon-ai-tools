@@ -6,8 +6,9 @@ This is a lightweight Python replacement for the original Node-based
 `line-churn-heatmap.mjs` used in other projects. It focuses on:
 
 - Per-line churn from `git log -p`.
-- A simple per-line complexity heuristic.
+- A simple per-line complexity heuristic tailored to Python and Go sources.
 - A coordination weight based on how many files change together in a commit.
+- Language-aware node grouping for Python (`def`/`class`) and Go (`func`).
 
 It writes a JSON report at `LINE_CHURN_OUTPUT` (default:
 `tmp/churn-scan/line-hotspots.json`) that matches the schema expected by
@@ -94,10 +95,16 @@ def _run_git_log_patch(since: str, scopes: Iterable[str]) -> Iterable[str]:
         raise SystemExit(f"git log -p failed with code {proc.returncode}:\n{stderr}")
 
 
-def _complexity_for_line(line: str) -> float:
+def _complexity_for_line(line: str, suffix: str) -> float:
     """Very small heuristic: count control-flow-ish keywords."""
-    lowered = line.strip().lower()
-    if not lowered or lowered.startswith("#"):
+    stripped = line.strip()
+    if not stripped:
+        return 0.5
+
+    lowered = stripped.lower()
+    if stripped.startswith(("'''", '"""')):
+        return 0.5
+    if lowered.startswith("#") or lowered.startswith("//") or lowered.startswith("/*"):
         return 0.5
 
     keywords = [
@@ -114,10 +121,26 @@ def _complexity_for_line(line: str) -> float:
         " and ",
         " or ",
     ]
+    if suffix == ".go":
+        keywords.extend(
+            [
+                "switch ",
+                "select ",
+                "defer ",
+                "go ",
+                "range ",
+                " default:",
+                " && ",
+                " || ",
+            ]
+        )
+
     score = 1.0
     for kw in keywords:
         if kw in lowered:
             score += 1.0
+    if suffix == ".go" and lowered.endswith("{"):
+        score += 0.5
     return score
 
 
@@ -172,8 +195,12 @@ def _build_line_stats(
 
         m_diff = diff_header_re.match(raw_line)
         if m_diff:
-            current_file = m_diff.group(2)
-            files_in_commit.add(current_file)
+            matched_file = m_diff.group(2)
+            if matched_file is None:
+                current_file = None
+                continue
+            current_file = matched_file
+            files_in_commit.add(matched_file)
             new_line_no = 0
             continue
 
@@ -212,8 +239,9 @@ def _build_line_stats(
         except OSError:
             continue
         per_line: Dict[int, float] = {}
+        suffix = path.suffix.lower()
         for idx, line in enumerate(text.splitlines(), start=1):
-            per_line[idx] = _complexity_for_line(line)
+            per_line[idx] = _complexity_for_line(line, suffix)
         file_line_complexity[file] = per_line
 
     return line_stats, file_line_complexity
@@ -224,15 +252,18 @@ def _build_nodes(
     file_line_complexity: Dict[str, Dict[int, float]],
 ) -> List[NodeStat]:
     # Map each (file, line) to a simple "node" representing the nearest
-    # Python function or class, or a file-level node as fallback.
+    # language construct (Python def/class or Go func), or a file-level fallback.
     nodes: Dict[Tuple[str, int], NodeStat] = {}
+
+    go_func_re = re.compile(
+        r"^func\s*(?:\((?P<receiver>[^)]+)\)\s*)?(?P<name>[A-Za-z0-9_]+)"
+    )
 
     file_nodes_boundaries: Dict[str, List[Tuple[int, str, str]]] = {}
     for file in {f for (f, _l) in line_stats.keys()}:
         path = Path(file)
-        kind = "File"
-        symbol = path.name
-        boundaries: List[Tuple[int, str, str]] = [(1, kind, symbol)]
+        boundaries: List[Tuple[int, str, str]] = [(1, "File", path.name)]
+        suffix = path.suffix.lower()
         try:
             text = path.read_text(encoding="utf-8", errors="ignore")
         except OSError:
@@ -243,25 +274,36 @@ def _build_nodes(
             if stripped.startswith("def ") or stripped.startswith("class "):
                 # Approximate symbol name.
                 name = stripped.split()[1].split("(")[0].split(":")[0]
-                kind = "Function" if stripped.startswith("def ") else "Class"
-                boundaries.append((idx, kind, name))
+                node_kind = "Function" if stripped.startswith("def ") else "Class"
+                boundaries.append((idx, node_kind, name))
+            elif suffix == ".go" and stripped.startswith("func"):
+                match = go_func_re.match(stripped)
+                if not match:
+                    continue
+                name = match.group("name")
+                if not name:
+                    continue
+                receiver = match.group("receiver")
+                node_kind = "Method" if receiver else "Function"
+                boundaries.append((idx, node_kind, name))
         file_nodes_boundaries[file] = sorted(boundaries, key=lambda t: t[0])
 
     for (file, line_no), stat in line_stats.items():
         per_line_complexity = file_line_complexity.get(file, {})
         complexity = per_line_complexity.get(line_no, 1.0)
 
-        boundaries = file_nodes_boundaries.get(file)
-        if not boundaries:
-            node_start, node_kind, symbol_name = 1, "File", Path(file).name
+        existing_boundaries = file_nodes_boundaries.get(file)
+        if existing_boundaries:
+            boundaries: List[Tuple[int, str, str]] = existing_boundaries
         else:
-            # Nearest boundary whose start <= line_no.
-            node_start, node_kind, symbol_name = boundaries[0]
-            for start, kind, name in boundaries:
-                if start <= line_no:
-                    node_start, node_kind, symbol_name = start, kind, name
-                else:
-                    break
+            boundaries = [(1, "File", Path(file).name)]
+        # Nearest boundary whose start <= line_no.
+        node_start, node_kind, symbol_name = boundaries[0]
+        for start, boundary_kind, name in boundaries:
+            if start <= line_no:
+                node_start, node_kind, symbol_name = start, boundary_kind, name
+            else:
+                break
 
         key = (file, node_start)
         node = nodes.get(key)
@@ -375,4 +417,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-

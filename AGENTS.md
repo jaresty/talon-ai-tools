@@ -18,11 +18,11 @@
 
 ### Churn × Complexity Concordance ADR helper
 
-- Use `python3 scripts/tools/churn-git-log-stat.py` (`CHURN_LOG_COMMAND`) to capture the `git log --stat` fixture. It reads:
+- Use `python3 .claude/skills/churn-concordance-adr-helper/scripts/churn-git-log-stat.py` (`CHURN_LOG_COMMAND`) to capture the `git log --stat` fixture. It reads:
   - `LINE_CHURN_SINCE` (default `"90 days ago"`).
   - `LINE_CHURN_SCOPE` (comma-separated prefixes; default `"lib/,GPT/,copilot/,tests/"`).
   - `LINE_CHURN_OUTPUT` (default `tmp/churn-scan/git-log-stat.txt`).
-- Use `python3 scripts/tools/line-churn-heatmap.py` (`HEATMAP_COMMAND`) to produce the statement-level heatmap JSON. It shares the same `LINE_CHURN_SINCE`, `LINE_CHURN_SCOPE`, and `LINE_CHURN_OUTPUT` env vars and also reads:
+- Use `python3 .claude/skills/churn-concordance-adr-helper/scripts/line-churn-heatmap.py` (`HEATMAP_COMMAND`) to produce the statement-level heatmap JSON. It shares the same `LINE_CHURN_SINCE`, `LINE_CHURN_SCOPE`, and `LINE_CHURN_OUTPUT` env vars and also reads:
   - `LINE_CHURN_LIMIT` (default `200`).
 - `make churn-scan` runs both helpers sequentially with the defaults, writing artifacts to `tmp/churn-scan/git-log-stat.txt` and `tmp/churn-scan/line-hotspots.json`.
 - Override the environment variables as needed to change the commit window, scoped paths, limits, or artifact locations so ADR runs stay reproducible.

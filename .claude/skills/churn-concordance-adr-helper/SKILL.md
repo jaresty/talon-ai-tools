@@ -13,6 +13,7 @@ description: Declarative workflow for running churn × complexity Concordance an
 - `CHURN_LOG_COMMAND=python3 .claude/skills/churn-concordance-adr-helper/scripts/churn-git-log-stat.py`
 - `HEATMAP_COMMAND=python3 .claude/skills/churn-concordance-adr-helper/scripts/line-churn-heatmap.py`
 - `make churn-scan` runs both helpers sequentially with default environment values (`LINE_CHURN_OUTPUT` paths under `tmp/churn-scan/`).
+- The heatmap helper recognizes Python (`.py`) and Go (`.go`) files when deriving node boundaries and complexity heuristics.
 
 ## Default Environment
 - `LINE_CHURN_SINCE="90 days ago"`

@@ -18,8 +18,8 @@ test:
 	$(PYTHON) -m unittest discover -s tests
 
 churn-scan:
-	$(PYTHON) scripts/tools/churn-git-log-stat.py
-	$(PYTHON) scripts/tools/line-churn-heatmap.py
+	$(PYTHON) .claude/skills/churn-concordance-adr-helper/scripts/churn-git-log-stat.py
+	$(PYTHON) .claude/skills/churn-concordance-adr-helper/scripts/line-churn-heatmap.py
 
 adr010-check:
 	$(PYTHON) -m unittest \

@@ -71,15 +71,10 @@ Proposed — Bubble Tea TUI improves prompt editing ergonomics for the Go CLI (2
 - UX guardrails carry ongoing cost: we need to keep shortcut hints, status messaging, focus highlights, result-pane signaling, truncation behaviour, subject-replacement confirmations, command-running indicators, and token-pane ergonomics consistent so stressed operators do not misinterpret state or lose subject text unintentionally. Every loop that touches the TUI should re-validate the help overlay, focus colors, result-pane differentiation, truncation behaviour, subject-replacement confirmations, command-running indicators, and token keyboard navigation to prevent regressions.
 - The optional command palette introduces extra focus states, shortcut surfaces, and inline confirmation cues that must be covered by tests to ensure the summary strip remains visible and undo feedback stays consistent.
 
-### Upcoming palette viewport fix
+### Related ADRs
 
-To keep the palette usable on shorter terminals and ensure scrolling works predictably, the next implementation slice will:
-
-1. Introduce a dedicated `tokenViewport` alongside the existing subject/result viewports so the token summary and palette render inside a bounded, scrollable region.
-2. Rework layout sizing to split the available height across the three viewports on every `WindowSizeMsg`, respecting minimum heights and preventing the palette from overflowing the terminal buffer.
-3. Route palette/key handling to scroll the token viewport (PgUp/PgDn/Home/End) when tokens or palette are focused, while preserving existing focus cycling shortcuts.
-4. Refactor palette rendering helpers to write into the new viewport content instead of the global view string, eliminating reliance on terminal scrollback.
-5. Update the expect harness and unit tests to exercise the token viewport scroll paths and record evidence that the palette remains visible in sub-32-row windows.
+- ADR 0071 — Bubble Tea TUI layout ergonomics refinement documents the compact status strip, condensed token summaries, and improved information hierarchy that follow this baseline.
+- ADR 0072 — Bubble Tea TUI palette and inline editing refinements captures the docked omnibox palette, inline token workflow, and confirmation patterns that extend this design.
 
 ## Validation
 
@@ -103,7 +98,7 @@ To keep the palette usable on shorter terminals and ensure scrolling works predi
 - Convert preview recomputation to cancellable `tea.Cmd` streams with visible loading affordances and backpressure guards.
 - Teach the Bubble Tea program to handle `tea.WindowSizeMsg`, updating viewport sizes and layout breakpoints in a single source of truth while piping the subject and command panes through shared viewport helpers.
 - Add environment variable pass-through guardrails so commands can access opt-in credentials: surface an allowlist UI, confirm the names before execution, and cover the behaviour with `go test ./internal/bartui`.
-- Publish follow-on ADR 0071 (layout ergonomics) to capture the upcoming compact layout refinements described in this critique cycle.
+- Implement the layout ergonomics adjustments described in ADR 0071 and the palette refinements outlined in ADR 0072 to deliver the follow-on ergonomics improvements.
  
  ## Anti-goals
 

@@ -10,7 +10,7 @@ Proposed — Bubble Tea TUI palette and inline editing refinements (2026-01-11)
 - Treat the primary workspace as a single-page form: subject textarea, inline token rows, destination controls, preview, and command/status panes stacked with minimal context switching.
 - Collapse empty token categories into single-line “+ Add …” affordances while keeping active categories expanded as chip rows that can be edited in place.
 - Surface preset divergence and destination status in a sticky summary strip that also shows the current `bar build` equivalent command and confirms clipboard copies.
-- Replace the modal palette category picker with a docked omnibox that accepts `category:query` input, tab-cycles suggestion columns, and mirrors CLI completion shortcuts (Tab for forward, Shift+Tab for reverse).
+- Replace the modal palette category picker with a docked omnibox that accepts `category=value` input (matching `bar build` syntax), tab-cycles suggestion columns, and mirrors CLI completion shortcuts (Tab for forward, Shift+Tab for reverse).
 - Keep the palette docked in a right-side viewport that stays visible while editing, allowing staged multiple token changes before hitting `Enter` to apply.
 - Add focus breadcrumbs, transient confirmation toasts, and `Ctrl+Z` undo for the most recent token change so pilots can experiment quickly without losing context.
 - Expose a palette history toggle (`Ctrl+H`) for recent token adjustments and command invocations, echoing shell history search patterns and aiding recall while learning the grammar.
@@ -24,7 +24,7 @@ Proposed — Bubble Tea TUI palette and inline editing refinements (2026-01-11)
 
 ## Consequences
 - View/render helpers must reorganize layout grids to keep the inline token pane scrollable while preserving the subject and preview above the fold.
-- Palette logic must accept freeform `category:query` parsing, Tab cycling, staged application, and history storage without blocking the Bubble Tea event loop.
+- Palette logic must accept freeform `category=value` parsing, Tab cycling, staged application, and history storage without blocking the Bubble Tea event loop.
 - Snapshot fixtures and UI tests need updates to capture the sticky status strip, docked palette viewport, confirmation toasts, and breadcrumb indicators.
 - Shortcut documentation and in-app help overlays must reflect the new omnibox commands, staged application flow, undo, and history toggle.
 - Styling must ensure the docked palette and summary strip remain legible across terminal themes, including focus highlights for breadcrumbs and chips.

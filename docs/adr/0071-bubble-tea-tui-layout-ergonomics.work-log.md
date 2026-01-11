@@ -94,3 +94,54 @@ next_work:
 assets:
 - helper:wip-preserve patch archived at `docs/adr/evidence/0071-bubble-tea-tui-layout-ergonomics/loop-002-wip.patch`
 - Final diff replay patch stored at `docs/adr/evidence/0071-bubble-tea-tui-layout-ergonomics/loop-002-final.patch`
+
+## loop-003 | helper:v20251223.1 | 2026-01-11
+
+focus: ADR 0071 Decision bullet 4 → keep the result pane visible with a compact summary strip and ensure the docked token palette Enter workflow advances into the options column (salient task: result heading/status plus palette focus ergonomics).
+
+active_constraint: The Bubble Tea view still rendered the result summary below multiple instructional blocks and kept Enter focus trapped on the palette filter (`handleTokenPaletteKey` returned early), so pilots could neither see command status nor advance to token options; `BARTUI_DEBUG_PALETTE=/tmp/palette_enter_red.log /usr/bin/expect /tmp/tui_palette_enter.exp` demonstrates the failure.
+
+expected_value:
+| Factor | Value | Rationale |
+| --- | --- | --- |
+| Impact | High | Restores ADR-mandated above-the-fold status cues and keyboard-only palette editing |
+| Probability | High | Editing `View()`/palette handlers and refreshing the snapshot directly target the failing code paths |
+| Time Sensitivity | Medium | Needed before documenting the new layout and before further token ergonomics land |
+| Uncertainty note | Low | Expect harness and go tests exercise the same Bubble Tea flows as end users |
+
+validation_targets:
+- `BARTUI_DEBUG_PALETTE=/tmp/palette_enter_red.log /usr/bin/expect /tmp/tui_palette_enter.exp`
+- `BARTUI_DEBUG_PALETTE=/tmp/palette_enter_green.log /usr/bin/expect /tmp/tui_palette_enter.exp`
+- `go test ./internal/bartui`
+- `go test ./cmd/bar/...`
+
+evidence:
+- red | 2026-01-11T09:22:04Z | exit 1 | `BARTUI_DEBUG_PALETTE=/tmp/palette_enter_red.log /usr/bin/expect /tmp/tui_palette_enter.exp`
+    helper:diff-snapshot=0 files changed
+    Palette header still reports “Enter toggles” and the debug log never records `paletteFocus=2`, so Enter leaves the filter column focused | docs/adr/evidence/0071-bubble-tea-tui-layout-ergonomics/loop-003.md
+- green | 2026-01-11T09:23:23Z | exit 0 | `BARTUI_DEBUG_PALETTE=/tmp/palette_enter_green.log /usr/bin/expect /tmp/tui_palette_enter.exp`
+    helper:diff-snapshot=3 files changed, 275 insertions(+), 22 deletions(-)
+    Updated header reads “Enter applies option” and the debug log shows `paletteFocus=2`, proving Enter reaches the options column | docs/adr/evidence/0071-bubble-tea-tui-layout-ergonomics/loop-003.md
+- green | 2026-01-11T17:24:22Z | exit 0 | `go test ./internal/bartui`
+    helper:diff-snapshot=3 files changed, 275 insertions(+), 22 deletions(-)
+    Unit coverage asserts the new result summary copy and palette focus behaviour
+- green | 2026-01-11T17:24:22Z | exit 0 | `go test ./cmd/bar/...`
+    helper:diff-snapshot=3 files changed, 275 insertions(+), 22 deletions(-)
+    Snapshot harness stays stable with the condensed summary and palette copy
+
+rollback_plan: `<VCS_REVERT>` = `git restore --source=HEAD -- internal/bartui/program.go internal/bartui/program_test.go cmd/bar/testdata/tui_smoke.json`; rerun `BARTUI_DEBUG_PALETTE=/tmp/palette_enter_red.log /usr/bin/expect /tmp/tui_palette_enter.exp` to see the palette focus regression return.
+
+delta_summary: helper:diff-snapshot=3 files changed, 275 insertions(+), 22 deletions(-) — added result summary rendering helpers, moved palette status text to “Enter applies option”, taught Enter-from-filter to hop into options, tightened unit tests, refreshed the smoke fixture, and captured expect-based regression coverage.
+
+loops_remaining_forecast: 0 loops (Decision bullets 1–4 now green). Confidence: high — go/expect guardrails cover the compact layout and palette workflows.
+
+residual_constraints:
+- Low — Continue to monitor pilot feedback for additional palette affordances; mitigation: rerun `BARTUI_DEBUG_PALETTE=/tmp/palette_enter_green.log /usr/bin/expect /tmp/tui_palette_enter.exp` plus go guardrails if issues surface; trigger: bug reports mentioning Enter getting stuck or summary drifting.
+
+next_work:
+- Behaviour: Monitor operator feedback post-launch and rerun the expect harness if palette focus regressions reappear (validation: `BARTUI_DEBUG_PALETTE=/tmp/palette_enter_green.log /usr/bin/expect /tmp/tui_palette_enter.exp`).
+
+assets:
+- helper:wip-preserve patch at `docs/adr/evidence/0071-bubble-tea-tui-layout-ergonomics/loop-003-wip.patch`
+- Final diff replay patch at `docs/adr/evidence/0071-bubble-tea-tui-layout-ergonomics/loop-003-final.patch`
+- Expect transcript and debug excerpts recorded in `docs/adr/evidence/0071-bubble-tea-tui-layout-ergonomics/loop-003.md`

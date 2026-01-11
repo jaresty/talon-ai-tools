@@ -729,15 +729,49 @@ func TestTokenPaletteSummaryCondensedWhenVisible(t *testing.T) {
 	}
 
 	view := m.View()
-	if !strings.Contains(view, "Token palette (Esc closes · Tab cycles focus · Enter toggles):") {
+	if !strings.Contains(view, "Token palette (Esc closes · Tab cycles focus · Enter applies option)") {
 		t.Fatalf("expected palette section to be rendered, got view:\n%s", view)
+	}
+	if !strings.Contains(view, "Active:") {
+		t.Fatalf("expected palette summary to list active tokens, got view:\n%s", view)
 	}
 	if strings.Contains(view, "Tokens (Tab focuses tokens · Ctrl+P opens palette):") {
 		t.Fatalf("expected condensed summary to replace default token header, got view:\n%s", view)
 	}
 }
 
+func TestTokenPaletteEnterMovesFocusToOptions(t *testing.T) {
+	opts := Options{
+		Tokens:          []string{"todo", "focus"},
+		TokenCategories: defaultTokenCategories(),
+		Preview:         func(subject string, tokens []string) (string, error) { return "preview:" + subject, nil },
+		ClipboardRead:   func() (string, error) { return "", nil },
+		ClipboardWrite:  func(string) error { return nil },
+		RunCommand: func(context.Context, string, string, map[string]string) (string, string, error) {
+			return "", "", nil
+		},
+		CommandTimeout: time.Second,
+	}
+	m := newModel(opts)
+	m, _ = updateModel(t, m, tea.KeyMsg{Type: tea.KeyTab})
+	m, _ = updateModel(t, m, tea.KeyMsg{Type: tea.KeyCtrlP})
+	if m.tokenPaletteFocus != tokenPaletteFocusFilter {
+		t.Fatalf("expected palette focus to start on filter, got %v", m.tokenPaletteFocus)
+	}
+	m, _ = updateModel(t, m, tea.KeyMsg{Type: tea.KeyEnter})
+	if m.tokenPaletteFocus != tokenPaletteFocusOptions {
+		t.Fatalf("expected Enter to move focus to options, got %v", m.tokenPaletteFocus)
+	}
+	if len(m.tokenPaletteOptions) == 0 {
+		t.Fatalf("expected palette options to be populated")
+	}
+	if m.tokenPaletteOptionIndex < 0 || m.tokenPaletteOptionIndex >= len(m.tokenPaletteOptions) {
+		t.Fatalf("expected palette option index to be within range, got %d", m.tokenPaletteOptionIndex)
+	}
+}
+
 func TestCtrlRuneOpensPalette(t *testing.T) {
+
 	opts := Options{
 		Tokens:          []string{"todo", "focus"},
 		TokenCategories: defaultTokenCategories(),
@@ -816,6 +850,9 @@ func TestPaletteRemainsVisibleWithinWindowHeight(t *testing.T) {
 	windowSlice := strings.Join(lines[len(lines)-visible:], "\n")
 	if !strings.Contains(windowSlice, "Token palette (Esc closes") {
 		t.Fatalf("expected token palette block within the terminal height window, got:\n%s", windowSlice)
+	}
+	if !strings.Contains(windowSlice, "Active:") {
+		t.Fatalf("expected token palette summary to include active tokens within the window, got:\n%s", windowSlice)
 	}
 }
 
@@ -1033,6 +1070,123 @@ func TestHelpOverlayMentionsCopyCommandPaletteHint(t *testing.T) {
 	}
 	if !strings.Contains(view, "Ctrl+W clears filter") {
 		t.Fatalf("expected help overlay to mention Ctrl+W filter clear, got:\n%s", view)
+	}
+}
+
+func TestResultSummaryNoCommand(t *testing.T) {
+	opts := Options{
+		Tokens:          []string{"todo"},
+		TokenCategories: defaultTokenCategories(),
+		Preview:         func(subject string, tokens []string) (string, error) { return "preview:" + subject, nil },
+		ClipboardRead:   func() (string, error) { return "", nil },
+		ClipboardWrite:  func(string) error { return nil },
+		RunCommand: func(context.Context, string, string, map[string]string) (string, string, error) {
+			return "", "", nil
+		},
+		CommandTimeout: time.Second,
+	}
+	m := newModel(opts)
+	view := m.View()
+	if !strings.Contains(view, "Result summary:") {
+		t.Fatalf("expected result summary heading in view, got:\n%s", view)
+	}
+	if !strings.Contains(view, "∅ No command executed yet") {
+		t.Fatalf("expected default result summary, got:\n%s", view)
+	}
+}
+
+func TestResultSummaryRunning(t *testing.T) {
+	opts := Options{
+		Tokens:          []string{"todo"},
+		TokenCategories: defaultTokenCategories(),
+		Preview:         func(subject string, tokens []string) (string, error) { return "preview:" + subject, nil },
+		ClipboardRead:   func() (string, error) { return "", nil },
+		ClipboardWrite:  func(string) error { return nil },
+		RunCommand: func(context.Context, string, string, map[string]string) (string, string, error) {
+			return "", "", nil
+		},
+		CommandTimeout: time.Second,
+	}
+	m := newModel(opts)
+	m.commandRunning = true
+	m.runningCommand = "echo hello"
+	m.runningMode = commandModePreview
+	m.allowedEnv = []string{"FOO"}
+	view := m.View()
+	if !strings.Contains(view, "Running \"echo hello\"") {
+		t.Fatalf("expected running summary with command, got:\n%s", view)
+	}
+	if !strings.Contains(view, "input preview") {
+		t.Fatalf("expected running summary to note preview input, got:\n%s", view)
+	}
+	if !strings.Contains(view, "env FOO") {
+		t.Fatalf("expected running summary to list environment, got:\n%s", view)
+	}
+}
+
+func TestResultSummaryLastResultSuccess(t *testing.T) {
+	opts := Options{
+		Tokens:          []string{"todo"},
+		TokenCategories: defaultTokenCategories(),
+		Preview:         func(subject string, tokens []string) (string, error) { return "preview:" + subject, nil },
+		ClipboardRead:   func() (string, error) { return "", nil },
+		ClipboardWrite:  func(string) error { return nil },
+		RunCommand: func(context.Context, string, string, map[string]string) (string, string, error) {
+			return "", "", nil
+		},
+		CommandTimeout: time.Second,
+	}
+	m := newModel(opts)
+	m.lastResult = commandResult{
+		Command:     "echo hello",
+		Stdout:      "hello\n",
+		UsedPreview: false,
+		EnvVars:     []string{},
+		ExitCode:    0,
+		HasExitCode: true,
+	}
+	view := m.View()
+	if !strings.Contains(view, "✔ Command \"echo hello\" completed") {
+		t.Fatalf("expected success summary, got:\n%s", view)
+	}
+	if !strings.Contains(view, "exit 0") {
+		t.Fatalf("expected success summary to include exit code, got:\n%s", view)
+	}
+}
+
+func TestResultSummaryLastResultFailure(t *testing.T) {
+	opts := Options{
+		Tokens:          []string{"todo"},
+		TokenCategories: defaultTokenCategories(),
+		Preview:         func(subject string, tokens []string) (string, error) { return "preview:" + subject, nil },
+		ClipboardRead:   func() (string, error) { return "", nil },
+		ClipboardWrite:  func(string) error { return nil },
+		RunCommand: func(context.Context, string, string, map[string]string) (string, string, error) {
+			return "", "", nil
+		},
+		CommandTimeout: time.Second,
+	}
+	m := newModel(opts)
+	m.lastResult = commandResult{
+		Command:     "echo boom",
+		UsedPreview: true,
+		EnvVars:     []string{"FOO"},
+		Err:         errors.New("boom"),
+		ExitCode:    1,
+		HasExitCode: true,
+	}
+	view := m.View()
+	if !strings.Contains(view, "✖ Command \"echo boom\" failed") {
+		t.Fatalf("expected failure summary, got:\n%s", view)
+	}
+	if !strings.Contains(view, "exit 1") {
+		t.Fatalf("expected failure summary to include exit code, got:\n%s", view)
+	}
+	if !strings.Contains(view, "input preview") {
+		t.Fatalf("expected failure summary to reference preview input, got:\n%s", view)
+	}
+	if !strings.Contains(view, "env FOO") {
+		t.Fatalf("expected failure summary to list env vars, got:\n%s", view)
 	}
 }
 

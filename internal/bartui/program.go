@@ -273,6 +273,8 @@ type commandResult struct {
 	Err         error
 	UsedPreview bool
 	EnvVars     []string
+	ExitCode    int
+	HasExitCode bool
 }
 
 type commandMode int
@@ -285,6 +287,18 @@ const (
 type commandFinishedMsg struct {
 	result commandResult
 	mode   commandMode
+}
+
+func exitCodeFromError(err error) (int, bool) {
+	if err == nil {
+		return 0, true
+	}
+	type exitCoder interface{ ExitCode() int }
+	var coder exitCoder
+	if errors.As(err, &coder) {
+		return coder.ExitCode(), true
+	}
+	return 0, false
 }
 
 type subjectReplacementPrompt struct {
@@ -684,21 +698,25 @@ func (m *model) renderResultViewportContent() string {
 		} else {
 			builder.WriteString("Input: (none)\n")
 		}
+		if m.lastResult.HasExitCode {
+			builder.WriteString(fmt.Sprintf("Exit code: %d\n", m.lastResult.ExitCode))
+		} else {
+			builder.WriteString("Exit code: (unknown)\n")
+		}
 		if m.lastResult.Err != nil {
-			builder.WriteString("Status: failed — ")
+			builder.WriteString("Status: failed\n")
+			builder.WriteString("Error: ")
 			builder.WriteString(m.lastResult.Err.Error())
 			builder.WriteString("\n")
 		} else {
 			builder.WriteString("Status: completed successfully\n")
 		}
 		builder.WriteString("Environment: ")
-		if len(m.lastResult.EnvVars) == 0 {
-			builder.WriteString("(none)\n")
-		} else {
-			builder.WriteString(strings.Join(m.lastResult.EnvVars, ", "))
-			builder.WriteString("\n")
-		}
+		builder.WriteString(strings.TrimPrefix(summarizeEnvList(m.lastResult.EnvVars), "env "))
+		builder.WriteString("\n")
+		builder.WriteString("\n")
 		builder.WriteString("Stdout:\n")
+
 		stdout := strings.TrimSpace(m.lastResult.Stdout)
 		if stdout == "" {
 			builder.WriteString("(empty)\n")
@@ -1602,7 +1620,16 @@ func (m *model) handleTokenPaletteKey(key tea.KeyMsg) (bool, tea.Cmd) {
 		return m.handlePaletteNavigation(1, key)
 	case tea.KeyEnter, tea.KeySpace:
 		if m.tokenPaletteFocus == tokenPaletteFocusFilter {
-			return false, nil
+			if len(m.tokenPaletteOptions) == 0 {
+				return true, nil
+			}
+			m.tokenPaletteFilter.Blur()
+			m.tokenPaletteFocus = tokenPaletteFocusOptions
+			if m.tokenPaletteOptionIndex < 0 || m.tokenPaletteOptionIndex >= len(m.tokenPaletteOptions) {
+				m.tokenPaletteOptionIndex = 0
+			}
+			m.refreshPaletteStatus()
+			return true, nil
 		}
 		m.applyPaletteSelection()
 		return true, nil
@@ -1708,6 +1735,31 @@ func shortenString(input string, limit int) string {
 	return string(runes[:limit-1]) + "…"
 }
 
+func summarizeEnvList(names []string) string {
+	if len(names) == 0 {
+		return "env (none)"
+	}
+	if len(names) <= 3 {
+		return "env " + strings.Join(names, ", ")
+	}
+	return fmt.Sprintf("env %d vars", len(names))
+}
+
+func unsetCategoryLabels(states []tokenCategoryState) []string {
+	var unset []string
+	for _, state := range states {
+		if len(state.selected) > 0 {
+			continue
+		}
+		label := state.category.Label
+		if label == "" {
+			label = state.category.Key
+		}
+		unset = append(unset, label)
+	}
+	return unset
+}
+
 func (m *model) tokensSummaryList() string {
 	if len(m.tokens) == 0 {
 		return "none"
@@ -1752,6 +1804,46 @@ func (m *model) renderStatusStrip() string {
 	parts = append(parts, fmt.Sprintf("Env: %s", env))
 
 	return strings.Join(parts, " | ")
+}
+
+func (m *model) renderResultSummaryLine() string {
+	if m.commandRunning {
+		label := "input none"
+		if m.runningMode == commandModePreview {
+			label = "input preview"
+		}
+		env := summarizeEnvList(m.allowedEnv)
+		cmd := shortenString(m.runningCommand, 48)
+		if cmd == "" {
+			cmd = "(blank command)"
+		}
+		return fmt.Sprintf("… Running %q · %s · %s · Press Esc to cancel.", cmd, label, env)
+	}
+
+	if m.lastResult.empty() {
+		env := summarizeEnvList(m.allowedEnv)
+		return fmt.Sprintf("∅ No command executed yet · input optional · %s", env)
+	}
+
+	cmd := shortenString(m.lastResult.Command, 48)
+	if cmd == "" {
+		cmd = "(blank command)"
+	}
+	cmdQuoted := fmt.Sprintf("%q", cmd)
+	exitPart := "exit ?"
+	if m.lastResult.HasExitCode {
+		exitPart = fmt.Sprintf("exit %d", m.lastResult.ExitCode)
+	}
+	inputPart := "input none"
+	if m.lastResult.UsedPreview {
+		inputPart = "input preview"
+	}
+	env := summarizeEnvList(m.lastResult.EnvVars)
+	if m.lastResult.Err != nil {
+		reason := shortenString(m.lastResult.Err.Error(), 64)
+		return fmt.Sprintf("✖ Command %s failed: %s · %s · %s · %s", cmdQuoted, reason, exitPart, inputPart, env)
+	}
+	return fmt.Sprintf("✔ Command %s completed · %s · %s · %s", cmdQuoted, exitPart, inputPart, env)
 }
 
 func (m *model) renderTokenSummary(b *strings.Builder) {
@@ -1801,17 +1893,7 @@ func (m *model) renderTokenSummary(b *strings.Builder) {
 		b.WriteString("Tokens: " + strings.Join(selections, " · ") + "\n")
 	}
 
-	var unset []string
-	for _, state := range m.tokenStates {
-		if len(state.selected) > 0 {
-			continue
-		}
-		label := state.category.Label
-		if label == "" {
-			label = state.category.Key
-		}
-		unset = append(unset, label)
-	}
+	unset := unsetCategoryLabels(m.tokenStates)
 	if len(unset) > 0 {
 		b.WriteString("Unset: " + strings.Join(unset, ", ") + "\n")
 	}
@@ -1825,7 +1907,16 @@ func (m *model) renderTokenPalette(b *strings.Builder) {
 	if !m.tokenPaletteVisible {
 		return
 	}
-	b.WriteString("Token palette (Esc closes · Tab cycles focus · Enter toggles):\n")
+	summaryLine := "Token palette (Esc closes · Tab cycles focus · Enter applies option)"
+	active := m.tokensSummaryList()
+	if active != "" {
+		summaryLine += " · Active: " + shortenString(active, 40)
+	}
+	unset := unsetCategoryLabels(m.tokenStates)
+	if len(unset) > 0 {
+		summaryLine += " · Unset: " + shortenString(strings.Join(unset, ", "), 24)
+	}
+	b.WriteString(summaryLine + "\n")
 	filterPrefix := "    "
 	if m.tokenPaletteFocus == tokenPaletteFocusFilter {
 		filterPrefix = "  » "
@@ -1833,6 +1924,7 @@ func (m *model) renderTokenPalette(b *strings.Builder) {
 	b.WriteString(fmt.Sprintf("%sFilter: %s\n", filterPrefix, m.tokenPaletteFilter.View()))
 
 	b.WriteString("  Categories:\n")
+
 	for i, state := range m.tokenStates {
 		prefix := "      "
 		if m.tokenPaletteFocus == tokenPaletteFocusCategories && i == m.tokenCategoryIndex {
@@ -2267,6 +2359,10 @@ func (m model) View() string {
 
 	b.WriteString("Hint: press ? for shortcut help · Ctrl+P toggles the palette · Leave command blank to opt out.\n\n")
 
+	b.WriteString("Result summary:\n")
+	b.WriteString(m.renderResultSummaryLine())
+	b.WriteString("\n\n")
+
 	b.WriteString("Result & preview (PgUp/PgDn scroll · Home/End jump · Ctrl+T toggle condensed preview):\n")
 	b.WriteString(m.resultViewport.View())
 	b.WriteString("\n")
@@ -2631,6 +2727,7 @@ func (m *model) startCommand(mode commandMode) tea.Cmd {
 		if err == nil && ctx.Err() != nil {
 			err = ctx.Err()
 		}
+		exitCode, hasExitCode := exitCodeFromError(err)
 		return commandFinishedMsg{
 			result: commandResult{
 				Command:     command,
@@ -2639,6 +2736,8 @@ func (m *model) startCommand(mode commandMode) tea.Cmd {
 				Err:         err,
 				UsedPreview: mode == commandModePreview,
 				EnvVars:     allowedEnv,
+				ExitCode:    exitCode,
+				HasExitCode: hasExitCode,
 			},
 			mode: mode,
 		}

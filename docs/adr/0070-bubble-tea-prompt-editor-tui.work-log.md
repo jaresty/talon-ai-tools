@@ -1440,6 +1440,46 @@
 - next_work:
   - Behaviour: Monitor pilot telemetry for viewport interactions and condensed preview adoption; rerun go test ./internal/bartui, go test ./cmd/bar/..., and python3 -m pytest _tests/test_bar_completion_cli.py if changes are required.
 
+## 2026-01-11 — loop 079
+- helper_version: helper:v20251223.1
+- focus: Validation § snapshot harness — align fixture width/height flags with ADR shorthand
+- active_constraint: Validation called for `bar tui --fixture … --width …` / `--height …` shorthand but the CLI only accepted `--fixture-width/--fixture-height`, breaking parity with the documented command palette guidance.
+- validation_targets:
+  - go test -count=1 ./internal/bartui
+  - go test -count=1 ./cmd/bar/...
+  - python3 -m pytest _tests/test_bar_completion_cli.py
+- evidence:
+  - green: docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-079.md#loop-079-green--go-test--count1--internal-bartui
+  - green: docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-079.md#loop-079-green--go-test--count1--cmd-bar
+  - green: docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-079.md#loop-079-green--python3--m-pytest-_tests-test_bar_completion_cli.py
+- rollback_plan: `git restore --source=HEAD -- internal/barcli/app.go cmd/bar/main_test.go docs/adr/0070-bubble-tea-prompt-editor-tui.work-log.md docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-079.md`
+- delta_summary: helper:diff-snapshot=git diff --stat HEAD | cmd/bar/main_test.go | 44 ++++++++++++++++++++++++++++++++++++++++++--; internal/barcli/app.go | 38 +++++++++++++++++++++++++++++++++++++- — added `--width`/`--height` aliases and expanded fixture tests to cover positive cases and validation failures for the shorthand.
+- loops_remaining_forecast: 0 loops — snapshot harness now matches ADR command aliases; continue monitoring pilot feedback for viewport ergonomics (medium confidence).
+- residual_constraints:
+  - Pilot feedback on viewport ergonomics (scroll affordances, condensed preview messaging) remains pending (severity: medium; mitigation: gather pilot notes, rerun go test ./internal/bartui and python3 -m pytest _tests/test_bar_completion_cli.py if adjustments are requested).
+- next_work:
+  - Behaviour: Monitor pilot telemetry for viewport interactions and condensed preview adoption; rerun go test ./internal/bartui, go test ./cmd/bar/..., and python3 -m pytest _tests/test_bar_completion_cli.py if changes are required.
+
+## 2026-01-11 — loop 080
+- helper_version: helper:v20251223.1
+- focus: Decision § token palette — keep palette visible above viewport content
+- active_constraint: Opening the palette pushed it below the expanded token summary, so terminals without scrollback hid the palette entirely and operators could not adjust token selections inline.
+- validation_targets:
+  - go test -count=1 ./internal/bartui
+  - go test -count=1 ./cmd/bar/...
+  - python3 -m pytest _tests/test_bar_completion_cli.py
+- evidence:
+  - green: docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-080.md#loop-080-green--go-test--count1--internal-bartui
+  - green: docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-080.md#loop-080-green--go-test--count1--cmd-bar
+  - green: docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-080.md#loop-080-green--python3--m-pytest-_tests-test_bar_completion_cli.py
+- rollback_plan: `git restore --source=HEAD -- internal/bartui/program.go internal/bartui/program_test.go docs/adr/0070-bubble-tea-prompt-editor-tui.work-log.md docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-080.md`
+- delta_summary: helper:diff-snapshot=git diff --stat HEAD | internal/bartui/program.go | 43 ++++++++++++++++++++++++++++++++++++++---; internal/bartui/program_test.go | 29 +++++++++++++++++++++++++++ — condensed the token summary whenever the palette is open and added regression coverage ensuring the palette header replaces the default block.
+- loops_remaining_forecast: 0 loops — palette now stays visible, viewport ergonomics still monitored (medium confidence).
+- residual_constraints:
+  - Pilot feedback on viewport ergonomics (scroll affordances, condensed preview messaging) remains pending (severity: medium; mitigation: gather pilot notes, rerun go test ./internal/bartui and python3 -m pytest _tests/test_bar_completion_cli.py if adjustments are requested).
+- next_work:
+  - Behaviour: Monitor pilot telemetry for viewport interactions and condensed preview adoption; rerun go test ./internal/bartui, go test ./cmd/bar/..., and python3 -m pytest _tests/test_bar_completion_cli.py if changes are required.
+
 
 
 

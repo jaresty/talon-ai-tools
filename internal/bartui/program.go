@@ -1487,7 +1487,43 @@ func (m *model) renderTokenSummary(b *strings.Builder) {
 		return
 	}
 
-	if m.focus == focusTokens && !m.tokenPaletteVisible {
+	if m.tokenPaletteVisible {
+		b.WriteString("Tokens (palette open — use palette controls below to edit):\n")
+		for idx, state := range m.tokenStates {
+			b.WriteString("  " + state.category.Label + ": ")
+			if len(state.selected) == 0 {
+				b.WriteString("(none)\n")
+				continue
+			}
+			var selections []string
+			for _, value := range state.selected {
+				if ref, ok := m.tokenOptionLookup[value]; ok {
+					if ref.categoryIndex == idx && ref.optionIndex >= 0 && ref.optionIndex < len(state.category.Options) {
+						option := state.category.Options[ref.optionIndex]
+						slug := option.Slug
+						if slug == "" {
+							slug = option.Value
+						}
+						if option.Label != "" && !strings.EqualFold(option.Label, slug) {
+							selections = append(selections, fmt.Sprintf("%s — %s", slug, option.Label))
+						} else {
+							selections = append(selections, slug)
+						}
+						continue
+					}
+				}
+				selections = append(selections, value)
+			}
+			b.WriteString(strings.Join(selections, ", "))
+			b.WriteString("\n")
+		}
+		if len(m.unassignedTokens) > 0 {
+			b.WriteString("  Other tokens: " + strings.Join(m.unassignedTokens, ", ") + "\n")
+		}
+		return
+	}
+
+	if m.focus == focusTokens {
 		b.WriteString("Tokens (arrow keys move · Enter toggles · Delete removes · Ctrl+P opens palette):\n")
 	} else {
 		b.WriteString("Tokens (Tab focuses tokens · Ctrl+P opens palette):\n")
@@ -1495,7 +1531,7 @@ func (m *model) renderTokenSummary(b *strings.Builder) {
 
 	for idx, state := range m.tokenStates {
 		indicator := " "
-		if m.focus == focusTokens && !m.tokenPaletteVisible && idx == m.tokenCategoryIndex {
+		if m.focus == focusTokens && idx == m.tokenCategoryIndex {
 			indicator = ">"
 		}
 		maxInfo := ""
@@ -1508,7 +1544,7 @@ func (m *model) renderTokenSummary(b *strings.Builder) {
 		}
 		b.WriteString(fmt.Sprintf("  %s%s%s\n", indicator, state.category.Label, maxInfo))
 
-		highlight := m.focus == focusTokens && idx == m.tokenCategoryIndex && !m.tokenPaletteVisible && m.tokenOptionIndex >= 0 && m.tokenOptionIndex < len(state.category.Options)
+		highlight := m.focus == focusTokens && idx == m.tokenCategoryIndex && m.tokenOptionIndex >= 0 && m.tokenOptionIndex < len(state.category.Options)
 		if highlight {
 			option := state.category.Options[m.tokenOptionIndex]
 			b.WriteString(formatTokenOptionLine(option, state.has(option.Value), true))
@@ -1542,6 +1578,7 @@ func (m *model) renderTokenSummary(b *strings.Builder) {
 }
 
 func (m *model) renderTokenPalette(b *strings.Builder) {
+
 	if !m.tokenPaletteVisible {
 		return
 	}

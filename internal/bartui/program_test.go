@@ -705,6 +705,35 @@ func TestTokenPaletteToggle(t *testing.T) {
 	}
 }
 
+func TestTokenPaletteSummaryCondensedWhenVisible(t *testing.T) {
+	opts := Options{
+		Tokens:          []string{"todo", "focus"},
+		TokenCategories: defaultTokenCategories(),
+		Preview:         func(subject string, tokens []string) (string, error) { return "preview:" + subject, nil },
+		ClipboardRead:   func() (string, error) { return "", nil },
+		ClipboardWrite:  func(string) error { return nil },
+		RunCommand: func(context.Context, string, string, map[string]string) (string, string, error) {
+			return "", "", nil
+		},
+		CommandTimeout: time.Second,
+	}
+	m := newModel(opts)
+	// Focus tokens and open palette
+	m, _ = updateModel(t, m, tea.KeyMsg{Type: tea.KeyTab})
+	m, _ = updateModel(t, m, tea.KeyMsg{Type: tea.KeyCtrlP})
+	if !m.tokenPaletteVisible {
+		t.Fatalf("expected palette to be visible")
+	}
+
+	view := m.View()
+	if !strings.Contains(view, "Tokens (palette open — use palette controls below to edit):") {
+		t.Fatalf("expected palette summary line to be condensed, got view:\n%s", view)
+	}
+	if strings.Contains(view, "Tokens (Tab focuses tokens · Ctrl+P opens palette):") {
+		t.Fatalf("expected condensed summary to replace default token header, got view:\n%s", view)
+	}
+}
+
 func TestTokenPaletteResetToPreset(t *testing.T) {
 	opts := Options{
 		Tokens:          []string{"todo", "breadth"},

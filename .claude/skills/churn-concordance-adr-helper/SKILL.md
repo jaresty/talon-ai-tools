@@ -23,9 +23,11 @@ description: Declarative workflow for running churn × complexity Concordance an
 - Override variables as needed, but keep scope/window aligned across both commands.
 
 ## Concordance Glossary
-- **Visibility**: Coordination has high visibility when its contract is explicit and discoverable—named orchestrators, typed interfaces, documented invariants; low visibility hides behaviour in scattered helpers or implicit state.
-- **Scope**: Scope pressure reflects the radius of impact; wide scope means a change propagates across many domains or layers, while narrow scope confines churn to a single bounded context.
-- **Volatility**: Tight dependencies—whether temporal (timing, execution order) or structural (shared algorithms, schemas, positional arguments)—make behaviour sensitive to when and how work executes, forcing tightly coupled change sets across the participating code paths.
+- **Visibility** (Concordance pressure): Coordination has high visibility when its contract is explicit and discoverable—named orchestrators, typed interfaces, documented invariants; low visibility hides behaviour in scattered helpers or implicit state.
+- **Scope** (Concordance pressure): Scope pressure reflects the radius of impact; wide scope means a change propagates across many domains or layers, while narrow scope confines churn to a single bounded context.
+- **Volatility** (Concordance pressure): Tight dependencies—whether temporal (timing, execution order) or structural (shared algorithms, schemas, positional arguments)—make behaviour sensitive to when and how work executes, forcing tightly coupled change sets across the participating code paths.
+
+### Supporting Concepts
 - **Canonicalization**: Collapsing overlapping intent into a single named contract so future work gravitates toward the same implementation path.
 
 ## Execution Checklist

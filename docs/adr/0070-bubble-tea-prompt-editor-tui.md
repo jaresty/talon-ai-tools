@@ -68,10 +68,21 @@ Proposed — Bubble Tea TUI improves prompt editing ergonomics for the Go CLI (2
 - Preset creation, updates, and deletion introduce additional persistence and history management that require deterministic tests to assert focus behavior, confirmation messaging, and undo paths across both inline chips and the docked pane.
 - Introducing clipboard and subprocess integrations expands attack surface (shell execution, sensitive text retention) and demands clear opt-outs/logging guidance; the TUI must surface command results safely and handle failures without dropping subject state.
 - Environment variable pass-through must remain an explicit opt-in with visible allowlists so operators cannot leak credentials accidentally; logs and UI messaging should confirm which variables were shared each run.
-- UX guardrails carry ongoing cost: we need to keep shortcut hints, status messaging, focus highlights, result-pane signaling, and token-pane ergonomics consistent so stressed operators do not misinterpret state or lose subject text unintentionally. Every loop that touches the TUI should re-validate the help overlay, focus colors, result-pane differentiation, truncation behaviour, subject-replacement confirmations, command-running indicators, and token keyboard navigation to prevent regressions.
+- UX guardrails carry ongoing cost: we need to keep shortcut hints, status messaging, focus highlights, result-pane signaling, truncation behaviour, subject-replacement confirmations, command-running indicators, and token-pane ergonomics consistent so stressed operators do not misinterpret state or lose subject text unintentionally. Every loop that touches the TUI should re-validate the help overlay, focus colors, result-pane differentiation, truncation behaviour, subject-replacement confirmations, command-running indicators, and token keyboard navigation to prevent regressions.
 - The optional command palette introduces extra focus states, shortcut surfaces, and inline confirmation cues that must be covered by tests to ensure the summary strip remains visible and undo feedback stays consistent.
 
+### Upcoming palette viewport fix
+
+To keep the palette usable on shorter terminals and ensure scrolling works predictably, the next implementation slice will:
+
+1. Introduce a dedicated `tokenViewport` alongside the existing subject/result viewports so the token summary and palette render inside a bounded, scrollable region.
+2. Rework layout sizing to split the available height across the three viewports on every `WindowSizeMsg`, respecting minimum heights and preventing the palette from overflowing the terminal buffer.
+3. Route palette/key handling to scroll the token viewport (PgUp/PgDn/Home/End) when tokens or palette are focused, while preserving existing focus cycling shortcuts.
+4. Refactor palette rendering helpers to write into the new viewport content instead of the global view string, eliminating reliance on terminal scrollback.
+5. Update the expect harness and unit tests to exercise the token viewport scroll paths and record evidence that the palette remains visible in sub-32-row windows.
+
 ## Validation
+
 - `go test ./cmd/bar/...` covers the minimal `bar tui` wiring by compiling and exercising the CLI entrypoint with existing shared helpers.
 - `bar tui --fixture cmd/bar/testdata/tui_smoke.json --no-alt-screen` exercises the deterministic snapshot harness and validates preview/layout output without entering the interactive loop.
 - `go test ./internal/bartui/...` verifies preset load/save/delete flows, ensuring the docked pane keeps the summary visible and undo/confirmation signalling stays consistent.

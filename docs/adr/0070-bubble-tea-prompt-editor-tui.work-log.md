@@ -1499,6 +1499,55 @@
   - Behaviour: Enhance the expect harness to pause after `Ctrl+P` and capture sequential frames so we can diff view output (`helper:rerun BARTUI_DEBUG_PALETTE=/tmp/palette_state.log /usr/bin/expect /tmp/tui_palette.exp`).
   - Behaviour: After fixing the palette visibility, rerun go test ./internal/bartui, go test ./cmd/bar/..., and python3 -m pytest _tests/test_bar_completion_cli.py to confirm regressions are covered.
 
+## 2026-01-11 — loop 082
+- helper_version: helper:v20251223.1
+- focus: Decision § token editing — keep Ctrl+P palette docked while intercepting escaped control runes
+- active_constraint: Combined Tab + Ctrl+P inputs delivered as a single `tea.KeyRunes` message set `tokenPaletteVisible=false`, so the docked palette never rendered (validation via `BARTUI_DEBUG_PALETTE=/tmp/palette_state_red.log /usr/bin/expect /tmp/tui_palette.exp`).
+- validation_targets:
+  - BARTUI_DEBUG_PALETTE=/tmp/palette_state_red.log /usr/bin/expect /tmp/tui_palette.exp
+  - BARTUI_DEBUG_PALETTE=/tmp/palette_state_green.log /usr/bin/expect /tmp/tui_palette.exp
+  - go test -count=1 ./internal/bartui -run TestCtrlRuneOpensPalette
+  - go test -count=1 ./internal/bartui
+  - go test -count=1 ./cmd/bar/...
+  - python3 -m pytest _tests/test_bar_completion_cli.py
+- evidence:
+  - red: docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-082.md#loop-082-red--bartui_debug_palette-tmp-palette_state_red.log--usrbinexpect-tmp-tui_palette.exp
+  - red: docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-082.md#loop-082-red--go-test--count1-internal-bartui--run-testctrlruneopenspalette
+  - green: docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-082.md#loop-082-green--bartui_debug_palette-tmp-palette_state_green.log--usrbinexpect-tmp-tui_palette.exp
+  - green: docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-082.md#loop-082-green--go-test--count1-internal-bartui--run-testctrlruneopenspalette
+  - green: docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-082.md#loop-082-green--go-test--count1-internal-bartui
+  - green: docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-082.md#loop-082-green--go-test--count1--cmd-bar
+  - green: docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-082.md#loop-082-green--python3--m-pytest-_tests-test_bar_completion_cli.py
+- rollback_plan: `git restore --source=HEAD -- internal/bartui/program.go internal/bartui/program_test.go docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-082.md docs/adr/0070-bubble-tea-prompt-editor-tui.work-log.md`
+- delta_summary: helper:diff-snapshot=git diff --stat | internal/bartui/program.go (decodeKeyRunes helper + control rune handling) · internal/bartui/program_test.go (+escaped ctrl rune palette regression test) — decode escaped rune sequences before dispatching palette shortcuts so Ctrl+P stays docked and tests cover the regression path.
+- loops_remaining_forecast: 1 loop (monitor expect harness against pilot transcripts) — medium confidence; will schedule follow-up only if pilots report new palette focus issues.
+- residual_constraints:
+  - Pilot telemetry on palette ergonomics still pending (severity: medium; mitigation: watch pilot feedback channel; monitoring trigger: any report of palette focus loss → rerun expect harness and go/pytest guardrails).
+- next_work:
+  - Behaviour: Monitor pilot feedback for palette focus regressions and rerun `BARTUI_DEBUG_PALETTE=/tmp/palette_state_green.log /usr/bin/expect /tmp/tui_palette.exp` plus go/pytest guardrails if new issues appear.
 
-
+## 2026-01-11 — loop 083
+- helper_version: helper:v20251223.1
+- focus: Decision § upcoming palette viewport fix — keep palette content visible on short terminals.
+- active_constraint: The palette viewport overflowed the terminal on ≤20-row windows, so the docked palette disappeared from the visible frame (`go test ./internal/bartui -run TestPaletteRemainsVisibleWithinWindowHeight -count=1`).
+- validation_targets:
+  - go test -count=1 ./internal/bartui -run TestPaletteRemainsVisibleWithinWindowHeight
+  - go test -count=1 ./internal/bartui
+  - go test -count=1 ./cmd/bar/...
+  - python3 -m pytest _tests/test_bar_completion_cli.py
+  - BARTUI_DEBUG_PALETTE=/tmp/palette_state_green.log /usr/bin/expect /tmp/tui_palette.exp
+- evidence:
+  - red: docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-083.md#loop-083-red--go-test-internal-bartui--run-testpaletteremainsvisiblewithinwindowheight--count1
+  - green: docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-083.md#loop-083-green--go-test-internal-bartui--run-testpaletteremainsvisiblewithinwindowheight--count1
+  - green: docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-083.md#loop-083-green--go-test--cmd-bar
+  - green: docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-083.md#loop-083-green--python3--m-pytest-_tests-test_bar_completion_cli.py
+  - green: docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-083.md#loop-083-green--bartui_debug_palette-tmp-palette_state_green.log--usrbinexpect-tmp-tui_palette.exp
+- rollback_plan: `git restore --source=HEAD -- internal/bartui/program.go internal/bartui/program_test.go cmd/bar/testdata/tui_smoke.json docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-083.md docs/adr/0070-bubble-tea-prompt-editor-tui.work-log.md`
+- delta_summary: helper:diff-snapshot=git diff --stat | internal/bartui/program.go (token viewport + layout resize + condensed instructions) · internal/bartui/program_test.go (height regression and visibility tests) · cmd/bar/testdata/tui_smoke.json (snapshot refresh) — add a dedicated token viewport, shrink static chrome, and relocate palette/meta output so the palette stays inside the rendered frame on small terminals.
+- loops_remaining_forecast: 2 loops (refine condensed status messaging + evaluate multi-column layout) — medium confidence because further trimming may be required once pilots exercise 24-row and width-constrained terminals.
+- residual_constraints:
+  - Status line still exceeds comfortable length when commands/palette emit long guidance (severity: medium; mitigation: explore contextual status truncation in a follow-up loop; monitoring trigger: pilot feedback that status messages wrap or obscure viewport content).
+  - Help overlay remains the sole location for full shortcut documentation (severity: low; mitigation: leave as-is but monitor onboarding feedback).
+- next_work:
+  - Behaviour: Prototype shorter status messages and evaluate dynamic wrapping before closing out the palette viewport ADR rung; rerun `go test ./internal/bartui -run TestPaletteRemainsVisibleWithinWindowHeight`, `go test ./cmd/bar/...`, and `python3 -m pytest _tests/test_bar_completion_cli.py` after adjustments.
 

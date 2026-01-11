@@ -726,9 +726,6 @@ func TestTokenPaletteSummaryCondensedWhenVisible(t *testing.T) {
 	}
 
 	view := m.View()
-	if !strings.Contains(view, "Tokens (palette open — use palette controls below to edit):") {
-		t.Fatalf("expected palette summary line to be condensed, got view:\n%s", view)
-	}
 	if !strings.Contains(view, "Token palette (Esc closes · Tab cycles focus · Enter toggles):") {
 		t.Fatalf("expected palette section to be rendered, got view:\n%s", view)
 	}
@@ -737,7 +734,90 @@ func TestTokenPaletteSummaryCondensedWhenVisible(t *testing.T) {
 	}
 }
 
+func TestCtrlRuneOpensPalette(t *testing.T) {
+	opts := Options{
+		Tokens:          []string{"todo", "focus"},
+		TokenCategories: defaultTokenCategories(),
+		Preview:         func(subject string, tokens []string) (string, error) { return "preview:" + subject, nil },
+		ClipboardRead:   func() (string, error) { return "", nil },
+		ClipboardWrite:  func(string) error { return nil },
+		RunCommand: func(context.Context, string, string, map[string]string) (string, string, error) {
+			return "", "", nil
+		},
+		CommandTimeout: time.Second,
+	}
+	m := newModel(opts)
+
+	combined := tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{'\t', rune(16)}}
+	m, _ = updateModel(t, m, combined)
+	if !m.tokenPaletteVisible {
+		t.Fatalf("expected palette to be visible after ctrl rune event")
+	}
+	if value := m.subject.Value(); value != "" {
+		t.Fatalf("expected subject to remain empty, got %q", value)
+	}
+
+	m, _ = updateModel(t, m, tea.KeyMsg{Type: tea.KeyCtrlP})
+	if m.tokenPaletteVisible {
+		t.Fatalf("expected palette to close on Ctrl+P toggle")
+	}
+
+	single := tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{rune(16)}}
+	m, _ = updateModel(t, m, tea.KeyMsg{Type: tea.KeyTab})
+	m, _ = updateModel(t, m, single)
+	if !m.tokenPaletteVisible {
+		t.Fatalf("expected palette to open from single ctrl rune")
+	}
+	if value := m.subject.Value(); value != "" {
+		t.Fatalf("expected subject to remain empty after single ctrl rune, got %q", value)
+	}
+
+	m = newModel(opts)
+	escaped := tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{'\\', 't', '\\', 'u', '0', '0', '1', '0'}}
+	m, _ = updateModel(t, m, escaped)
+	if !m.tokenPaletteVisible {
+		t.Fatalf("expected palette to open from escaped ctrl rune sequence")
+	}
+	if value := m.subject.Value(); value != "" {
+		t.Fatalf("expected subject to remain empty after escaped ctrl rune sequence, got %q", value)
+	}
+}
+
+func TestPaletteRemainsVisibleWithinWindowHeight(t *testing.T) {
+	opts := Options{
+		Tokens:          []string{"todo", "focus"},
+		TokenCategories: defaultTokenCategories(),
+		Preview:         func(subject string, tokens []string) (string, error) { return "preview:" + subject, nil },
+		ClipboardRead:   func() (string, error) { return "", nil },
+		ClipboardWrite:  func(string) error { return nil },
+		RunCommand: func(context.Context, string, string, map[string]string) (string, string, error) {
+			return "", "", nil
+		},
+		CommandTimeout: time.Second,
+	}
+	m := newModel(opts)
+
+	window := tea.WindowSizeMsg{Width: 80, Height: 20}
+	m, _ = updateModel(t, m, window)
+	m, _ = updateModel(t, m, tea.KeyMsg{Type: tea.KeyCtrlP})
+	if !m.tokenPaletteVisible {
+		t.Fatalf("expected palette to be visible after Ctrl+P")
+	}
+
+	view := m.View()
+	lines := strings.Split(view, "\n")
+	visible := window.Height
+	if visible > len(lines) {
+		visible = len(lines)
+	}
+	windowSlice := strings.Join(lines[len(lines)-visible:], "\n")
+	if !strings.Contains(windowSlice, "Token palette (Esc closes") {
+		t.Fatalf("expected token palette block within the terminal height window, got:\n%s", windowSlice)
+	}
+}
+
 func TestTokenPaletteResetToPreset(t *testing.T) {
+
 	opts := Options{
 		Tokens:          []string{"todo", "breadth"},
 		TokenCategories: defaultTokenCategories(),

@@ -7,6 +7,7 @@ import (
 	"io"
 	"os"
 	"sort"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -67,6 +68,42 @@ func paletteDebugLog(m *model, action string, detail string) {
 	paletteDebugMu.Lock()
 	defer paletteDebugMu.Unlock()
 	fmt.Fprintf(paletteDebugWriter, "%s visible=%t focus=%d detail=%s\n", action, m.tokenPaletteVisible, m.focus, detail)
+}
+
+func paletteDebugViewSummary(m *model, view string) {
+	if paletteDebugWriter == nil {
+		return
+	}
+	tokensHeader := strings.Contains(view, "Tokens (")
+	paletteHeader := strings.Contains(view, "Token palette (")
+	envBlock := strings.Contains(view, "Environment allowlist:")
+	presetBlock := strings.Contains(view, "Preset pane (")
+	detail := fmt.Sprintf(
+		"paletteFocus=%d paletteOptions=%d paletteIndex=%d filterLen=%d filter=%q help=%t presetPane=%t width=%d height=%d subjectViewport=%dx%d resultViewport=%dx%d subjectLen=%d commandLen=%d previewLen=%d statusLen=%d viewLen=%d tokensHeader=%t paletteBlock=%t envBlock=%t presetBlock=%t",
+		m.tokenPaletteFocus,
+		len(m.tokenPaletteOptions),
+		m.tokenPaletteOptionIndex,
+		len(m.tokenPaletteFilter.Value()),
+		m.tokenPaletteFilter.Value(),
+		m.helpVisible,
+		m.presetPaneVisible,
+		m.width,
+		m.height,
+		m.subjectViewport.Width,
+		m.subjectViewport.Height,
+		m.resultViewport.Width,
+		m.resultViewport.Height,
+		len(m.subject.Value()),
+		len(m.command.Value()),
+		len(m.preview),
+		len(m.statusMessage),
+		len(view),
+		tokensHeader,
+		paletteHeader,
+		envBlock,
+		presetBlock,
+	)
+	paletteDebugLog(m, "ViewSummary", detail)
 }
 
 type ListPresetsFunc func() ([]PresetSummary, error)
@@ -182,6 +219,8 @@ const (
 const (
 	defaultViewportWidth  = 80
 	defaultViewportHeight = 32
+	frameOverheadLines    = 8
+	minTokenViewport      = 6
 	minSubjectViewport    = 4
 	minResultViewport     = 8
 )
@@ -391,6 +430,7 @@ type model struct {
 	tokenPaletteOptionIndex  int
 	lastPaletteCategoryIndex int
 	tokenPaletteFilter       textinput.Model
+	tokenViewport            viewport.Model
 	focusBeforePalette       focusArea
 	unassignedTokens         []string
 	lastTokenSnapshot        []string
@@ -505,6 +545,7 @@ func newModel(opts Options) model {
 	}
 
 	subjectViewport := viewport.New(defaultViewportWidth, minSubjectViewport)
+	tokenViewport := viewport.New(defaultViewportWidth, minTokenViewport)
 	resultViewport := viewport.New(defaultViewportWidth, minResultViewport)
 
 	initialWidth := opts.InitialWidth
@@ -540,6 +581,7 @@ func newModel(opts Options) model {
 		width:                  initialWidth,
 		height:                 initialHeight,
 		subjectViewport:        subjectViewport,
+		tokenViewport:          tokenViewport,
 		resultViewport:         resultViewport,
 		listPresets:            opts.ListPresets,
 		loadPreset:             opts.LoadPreset,
@@ -564,6 +606,7 @@ func newModel(opts Options) model {
 	}
 	m.refreshPreview()
 	m.layoutViewports()
+	m.updateTokenViewportContent()
 	m.updateSubjectViewportContent()
 	m.updateResultViewportContent()
 	return m
@@ -579,9 +622,38 @@ func (m *model) layoutViewports() {
 		height = defaultViewportHeight
 	}
 
-	subjectHeight := clampInt(height/4, minSubjectViewport, height-minResultViewport)
-	resultHeight := maxInt(minResultViewport, height-subjectHeight)
+	available := height - frameOverheadLines
+	if available < 3 {
+		available = 3
+	}
 
+	tokenHeight := minTokenViewport
+	subjectHeight := minSubjectViewport
+	resultHeight := minResultViewport
+
+	totalMin := tokenHeight + subjectHeight + resultHeight
+	if totalMin > available {
+		scale := float64(available) / float64(totalMin)
+		tokenHeight = maxInt(1, int(float64(tokenHeight)*scale))
+		subjectHeight = maxInt(1, int(float64(subjectHeight)*scale))
+		resultHeight = maxInt(1, available-tokenHeight-subjectHeight)
+	} else {
+		remaining := available - totalMin
+		if remaining > 0 {
+			extraToken := remaining / 3
+			tokenHeight += extraToken
+			remaining -= extraToken
+
+			extraSubject := remaining / 2
+			subjectHeight += extraSubject
+			remaining -= extraSubject
+
+			resultHeight += remaining
+		}
+	}
+
+	m.tokenViewport.Width = maxInt(1, width)
+	m.tokenViewport.Height = maxInt(1, tokenHeight)
 	m.subjectViewport.Width = maxInt(1, width)
 	m.subjectViewport.Height = maxInt(minSubjectViewport, subjectHeight)
 	m.resultViewport.Width = maxInt(1, width)
@@ -682,6 +754,7 @@ func (m *model) handleWindowSize(msg tea.WindowSizeMsg) {
 	m.width = msg.Width
 	m.height = msg.Height
 	m.layoutViewports()
+	m.updateTokenViewportContent()
 	m.updateSubjectViewportContent()
 	m.updateResultViewportContent()
 }
@@ -736,6 +809,13 @@ func (m *model) handleResultViewportKey(key tea.KeyMsg) bool {
 		return true
 	}
 	return false
+}
+
+func (m *model) handleTokenViewportKey(key tea.KeyMsg) bool {
+	if m.focus != focusTokens && !m.tokenPaletteVisible {
+		return false
+	}
+	return m.handleViewportScroll(&m.tokenViewport, key, false)
 }
 
 func (m *model) initializeTokenCategories() {
@@ -1208,7 +1288,123 @@ func (m *model) closeTokenPaletteWithStatus(status string) tea.Cmd {
 	return nil
 }
 
+func controlRuneKey(r rune) (string, bool) {
+	if r < 1 || r > 26 {
+		return "", false
+	}
+	return fmt.Sprintf("ctrl+%c", 'a'+r-1), true
+}
+
+func decodeKeyRunes(raw []rune) []rune {
+	if len(raw) == 0 {
+		return raw
+	}
+	decoded := string(raw)
+	if !strings.ContainsRune(decoded, '\\') {
+		return raw
+	}
+	unquoted, err := strconv.Unquote("\"" + decoded + "\"")
+	if err != nil {
+		return raw
+	}
+	return []rune(unquoted)
+}
+
+func (m *model) handleCancelKey() (tea.Cmd, bool) {
+	if m.helpVisible {
+		m.helpVisible = false
+		m.restoreStatusAfterHelp()
+		return nil, true
+	}
+	if m.commandRunning {
+		if m.cancelCommand != nil {
+			m.cancelCommand()
+			m.cancelCommand = nil
+		}
+		if m.runningCommand != "" {
+			m.statusMessage = fmt.Sprintf("Cancelling %q…", m.runningCommand)
+		} else {
+			m.statusMessage = "Cancelling command…"
+		}
+		return nil, true
+	}
+	return tea.Quit, true
+}
+
+func (m *model) handleKeyString(key string) (bool, tea.Cmd) {
+	switch key {
+	case "tab":
+		m.toggleFocus()
+		return true, nil
+	case "?":
+		if m.helpVisible {
+			m.helpVisible = false
+			m.restoreStatusAfterHelp()
+		} else {
+			m.statusBeforeHelp = m.statusMessage
+			m.helpVisible = true
+			m.statusMessage = "Help overlay open. Press ? to close."
+		}
+		return true, nil
+	case "ctrl+l":
+		m.loadSubjectFromClipboard()
+		return true, nil
+	case "ctrl+o":
+		m.copyPreviewToClipboard()
+		return true, nil
+	case "ctrl+b":
+		m.copyBuildCommandToClipboard()
+		return true, nil
+	case "ctrl+r":
+		return true, m.executePreviewCommand()
+	case "ctrl+p":
+		if m.tokenPaletteVisible {
+			return true, m.closeTokenPalette()
+		}
+		return true, m.openTokenPalette()
+	case "ctrl+e":
+		if m.focus == focusEnvironment {
+			m.toggleSelectedEnv()
+		} else if len(m.envNames) > 0 {
+			m.focus = focusEnvironment
+			m.ensureEnvSelection()
+			m.statusMessage = "Environment allowlist focused. Use Up/Down to choose a variable and Ctrl+E to toggle it."
+		} else {
+			m.statusMessage = "No environment variables configured to toggle."
+		}
+		return true, nil
+	case "ctrl+a":
+		if m.focus == focusEnvironment {
+			m.setAllEnv(true)
+			return true, nil
+		}
+		return false, nil
+	case "ctrl+x":
+		if m.focus == focusEnvironment {
+			m.setAllEnv(false)
+			return true, nil
+		}
+		return false, nil
+	case "ctrl+y":
+		m.reinsertLastResult()
+		return true, nil
+	case "ctrl+c":
+		if cmd, handled := m.handleCancelKey(); handled {
+			return true, cmd
+		}
+		return false, nil
+	case "esc":
+		if cmd, handled := m.handleCancelKey(); handled {
+			return true, cmd
+		}
+		return false, nil
+	default:
+		return false, nil
+	}
+}
+
 func ensureCopyHint(status string) string {
+
 	if strings.Contains(status, "copy command") {
 		return status
 	}
@@ -1667,11 +1863,40 @@ func (m *model) renderTokenPalette(b *strings.Builder) {
 	}
 }
 
+func (m *model) renderTokenViewportContent() string {
+	var builder strings.Builder
+
+	if m.tokenPaletteVisible {
+		var paletteBuilder strings.Builder
+		m.renderTokenPalette(&paletteBuilder)
+		paletteContent := paletteBuilder.String()
+		paletteContent = strings.TrimPrefix(paletteContent, "\n")
+		builder.WriteString(paletteContent)
+		if !strings.HasSuffix(paletteContent, "\n") {
+			builder.WriteString("\n")
+		}
+		m.renderTokenSummary(&builder)
+	} else {
+		m.renderTokenSummary(&builder)
+		m.renderTokenPalette(&builder)
+	}
+
+	return builder.String()
+}
+
+func (m *model) updateTokenViewportContent() {
+	m.tokenViewport.SetContent(m.renderTokenViewportContent())
+}
+
 func (m model) Init() tea.Cmd {
 	return nil
 }
 
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+	defer func() {
+		(&m).updateTokenViewportContent()
+	}()
+
 	switch typed := msg.(type) {
 	case commandFinishedMsg:
 		m.commandRunning = false
@@ -1707,7 +1932,8 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	}
 
 	if keyMsg, ok := msg.(tea.KeyMsg); ok {
-		paletteDebugLog(&m, "UpdateKey", fmt.Sprintf("key=%q type=%v palette=%t focus=%d", keyMsg.String(), keyMsg.Type, m.tokenPaletteVisible, m.focus))
+		decodedRunes := decodeKeyRunes(keyMsg.Runes)
+		paletteDebugLog(&m, "UpdateKey", fmt.Sprintf("key=%q type=%v len=%d runes=%v decoded=%q palette=%t focus=%d", keyMsg.String(), keyMsg.Type, len(keyMsg.Runes), keyMsg.Runes, string(decodedRunes), m.tokenPaletteVisible, m.focus))
 		if handled, cmd := (&m).handleSubjectReplacementKey(keyMsg); handled {
 			if cmd != nil {
 				return m, cmd
@@ -1718,6 +1944,9 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, nil
 		}
 		if (&m).handleResultViewportKey(keyMsg) {
+			return m, nil
+		}
+		if (&m).handleTokenViewportKey(keyMsg) {
 			return m, nil
 		}
 		if handled, cmd := m.handlePresetPaneKey(keyMsg); handled {
@@ -1732,30 +1961,50 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 			return m, nil
 		}
+		if keyMsg.Type == tea.KeyRunes && len(decodedRunes) > 0 {
+			handledRunes := false
+			var seqCmds []tea.Cmd
+			for _, r := range decodedRunes {
+				if r == '\t' {
+					if handled, cmd := m.handleKeyString("tab"); handled {
+						handledRunes = true
+						if cmd != nil {
+							seqCmds = append(seqCmds, cmd)
+						}
+					}
+					continue
+				}
+				if ctrlKey, ok := controlRuneKey(r); ok {
+					if handled, cmd := m.handleKeyString(ctrlKey); handled {
+						handledRunes = true
+						if cmd != nil {
+							seqCmds = append(seqCmds, cmd)
+						}
+					}
+				}
+			}
+			if handledRunes {
+				if len(seqCmds) > 0 {
+					return m, tea.Batch(seqCmds...)
+				}
+				return m, nil
+			}
+		}
 		switch keyMsg.Type {
 		case tea.KeyCtrlC, tea.KeyEsc:
-			if m.helpVisible {
-				m.helpVisible = false
-				m.statusMessage = "Help overlay closed."
-				return m, nil
-			}
-			if m.commandRunning {
-				if m.cancelCommand != nil {
-					m.cancelCommand()
-					m.cancelCommand = nil
-				}
-				if m.runningCommand != "" {
-					m.statusMessage = fmt.Sprintf("Cancelling %q…", m.runningCommand)
-				} else {
-					m.statusMessage = "Cancelling command…"
+			if cmd, handled := m.handleCancelKey(); handled {
+				if cmd != nil {
+					return m, cmd
 				}
 				return m, nil
 			}
-			return m, tea.Quit
-
 		case tea.KeyTab:
-			m.toggleFocus()
-			return m, nil
+			if handled, cmd := m.handleKeyString("tab"); handled {
+				if cmd != nil {
+					return m, cmd
+				}
+				return m, nil
+			}
 		case tea.KeyEnter:
 			if m.focus == focusCommand {
 				return m, (&m).executeSubjectCommand()
@@ -1827,62 +2076,10 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		}
 
-		switch keyMsg.String() {
-
-		case "?":
-			if m.helpVisible {
-				m.helpVisible = false
-				m.restoreStatusAfterHelp()
-			} else {
-				m.statusBeforeHelp = m.statusMessage
-				m.helpVisible = true
-				m.statusMessage = "Help overlay open. Press ? to close."
-			}
-			return m, nil
-
-		case "ctrl+l":
-
-			m.loadSubjectFromClipboard()
-			return m, nil
-		case "ctrl+o":
-			m.copyPreviewToClipboard()
-			return m, nil
-		case "ctrl+b":
-			m.copyBuildCommandToClipboard()
-			return m, nil
-		case "ctrl+r":
-			return m, (&m).executePreviewCommand()
-		case "ctrl+p":
-			if m.tokenPaletteVisible {
-				cmd := (&m).closeTokenPalette()
+		if handled, cmd := m.handleKeyString(keyMsg.String()); handled {
+			if cmd != nil {
 				return m, cmd
 			}
-			cmd := (&m).openTokenPalette()
-			return m, cmd
-		case "ctrl+e":
-			if m.focus == focusEnvironment {
-				m.toggleSelectedEnv()
-			} else if len(m.envNames) > 0 {
-				m.focus = focusEnvironment
-				m.ensureEnvSelection()
-				m.statusMessage = "Environment allowlist focused. Use Up/Down to choose a variable and Ctrl+E to toggle it."
-			} else {
-				m.statusMessage = "No environment variables configured to toggle."
-			}
-			return m, nil
-		case "ctrl+a":
-			if m.focus == focusEnvironment {
-				m.setAllEnv(true)
-				return m, nil
-			}
-		case "ctrl+x":
-			if m.focus == focusEnvironment {
-				m.setAllEnv(false)
-				return m, nil
-			}
-
-		case "ctrl+y":
-			m.reinsertLastResult()
 			return m, nil
 		}
 	}
@@ -2007,8 +2204,60 @@ func (m model) View() string {
 	paletteDebugLog(&m, "View", "")
 	var b strings.Builder
 	b.WriteString("bar prompt editor (Bubble Tea prototype)\n\n")
-	m.renderTokenSummary(&b)
-	m.renderTokenPalette(&b)
+
+	if m.pendingSubject != nil {
+		prompt := m.pendingSubject
+		b.WriteString(fmt.Sprintf("Pending subject replacement from %s: %q (new %d chars, was %d). Enter confirms, Esc cancels.\n", prompt.source, prompt.snippet, prompt.newLength, prompt.previousLength))
+	}
+
+	if m.helpVisible {
+		b.WriteString("\nHelp overlay (press ? to close):\n")
+		b.WriteString("  Subject focus: type directly, Ctrl+L loads clipboard, Ctrl+O copies preview, Ctrl+B copies the bar build command, Ctrl+Z undoes the last replacement.\n")
+		b.WriteString("  Subject viewport: PgUp/PgDn scroll, Home/End jump to edges.\n")
+		b.WriteString("  Command focus: Enter runs command, Ctrl+R pipes preview, Ctrl+Y inserts stdout, leave blank to skip.\n")
+		b.WriteString("  Result viewport: PgUp/PgDn scroll, Home/End jump, Ctrl+T toggles condensed preview.\n")
+		b.WriteString("  Tokens: Tab focuses tokens, Left/Right switch categories, Up/Down browse options, Enter/Space toggle, Delete removes, Ctrl+P opens palette, Ctrl+Z undoes last change.\n")
+		b.WriteString("  Palette: Type \"copy command\", press Enter to copy the CLI and close the palette; Ctrl+W clears the current filter.\n")
+		b.WriteString("  Environment: Tab again to focus list, Up/Down move, Ctrl+E toggle, Ctrl+A enable all, Ctrl+X clear allowlist.\n")
+		b.WriteString("  Presets: Ctrl+S opens pane, Ctrl+N starts save, Delete removes, Ctrl+Z undoes deletion.\n")
+		b.WriteString("  Cancellation: Esc or Ctrl+C closes help first, then cancels running commands, then exits.\n")
+		b.WriteString("  Help: Press ? anytime to toggle this reference.\n\n")
+	}
+
+	b.WriteString("Subject (PgUp/PgDn scroll · Home/End jump):\n")
+	b.WriteString(m.subjectViewport.View())
+	b.WriteString("\n\n")
+
+	b.WriteString("Command (Enter runs without preview):\n")
+	b.WriteString(m.command.View())
+	b.WriteString("\n\n")
+
+	b.WriteString("Hint: press ? for shortcut help · Ctrl+P toggles the palette · Leave command blank to opt out.\n\n")
+
+	if m.statusMessage != "" {
+
+		b.WriteString("Status: ")
+		b.WriteString(m.statusMessage)
+		b.WriteString("\n\n")
+	}
+
+	if m.commandRunning {
+		b.WriteString("Command running: ")
+		b.WriteString(m.runningCommand)
+		b.WriteString(" (press Esc to cancel)\n\n")
+	}
+
+	b.WriteString("Result & preview (PgUp/PgDn scroll · Home/End jump · Ctrl+T toggle condensed preview):\n")
+	b.WriteString(m.resultViewport.View())
+	b.WriteString("\n")
+
+	localTokenViewport := m.tokenViewport
+	localTokenViewport.SetContent(m.renderTokenViewportContent())
+	tokenSection := localTokenViewport.View()
+	b.WriteString(tokenSection)
+	if !strings.HasSuffix(tokenSection, "\n") {
+		b.WriteString("\n")
+	}
 
 	b.WriteString("Preset: ")
 	if m.activePresetName == "" {
@@ -2036,29 +2285,6 @@ func (m model) View() string {
 	}
 	b.WriteString(" [Ctrl+B copies]\n")
 
-	if m.pendingSubject != nil {
-		prompt := m.pendingSubject
-		b.WriteString(fmt.Sprintf("Pending subject replacement from %s: %q (new %d chars, was %d). Enter confirms, Esc cancels.\n", prompt.source, prompt.snippet, prompt.newLength, prompt.previousLength))
-	}
-
-	if m.helpVisible {
-		b.WriteString("\nHelp overlay (press ? to close):\n")
-		b.WriteString("  Subject focus: type directly, Ctrl+L loads clipboard, Ctrl+O copies preview, Ctrl+B copies the bar build command, Ctrl+Z undoes the last replacement.\n")
-		b.WriteString("  Subject viewport: PgUp/PgDn scroll, Home/End jump to edges.\n")
-		b.WriteString("  Command focus: Enter runs command, Ctrl+R pipes preview, Ctrl+Y inserts stdout, leave blank to skip.\n")
-		b.WriteString("  Result viewport: PgUp/PgDn scroll, Home/End jump, Ctrl+T toggles condensed preview.\n")
-		b.WriteString("  Tokens: Tab focuses tokens, Left/Right switch categories, Up/Down browse options, Enter/Space toggle, Delete removes, Ctrl+P opens palette, Ctrl+Z undoes last change.\n")
-		b.WriteString("  Palette: Type \"copy command\", press Enter to copy the CLI and close the palette; Ctrl+W clears the current filter.\n")
-		b.WriteString("  Environment: Tab again to focus list, Up/Down move, Ctrl+E toggle, Ctrl+A enable all, Ctrl+X clear allowlist.\n")
-		b.WriteString("  Presets: Ctrl+S opens pane, Ctrl+N starts save, Delete removes, Ctrl+Z undoes deletion.\n")
-		b.WriteString("  Cancellation: Esc or Ctrl+C closes help first, then cancels running commands, then exits.\n")
-		b.WriteString("  Help: Press ? anytime to toggle this reference.\n\n")
-	}
-
-	if m.presetPaneVisible {
-		m.renderPresetPane(&b)
-	}
-
 	if len(m.allowedEnv) == 0 {
 		b.WriteString("Environment allowlist: (none)\n")
 	} else {
@@ -2066,72 +2292,23 @@ func (m model) View() string {
 		b.WriteString(strings.Join(m.allowedEnv, ", "))
 		b.WriteString("\n")
 	}
-	if len(m.envNames) == 0 {
-		b.WriteString("Allowlist manager: (no environment variables configured)\n")
-	} else {
-		b.WriteString("Allowlist manager (Tab focuses · Up/Down move · Ctrl+E toggle · Ctrl+A enable all · Ctrl+X clear):\n")
-		for i, name := range m.envNames {
-			cursor := " "
-			if m.focus == focusEnvironment && i == m.envSelection {
-				cursor = ">"
-			}
-			indicator := "[ ]"
-			if _, ok := m.envValues[name]; ok {
-				indicator = "[x]"
-			}
-			b.WriteString("  ")
-			b.WriteString(cursor)
-			b.WriteString(" ")
-			b.WriteString(indicator)
-			b.WriteString(" ")
-			b.WriteString(name)
-			b.WriteString("\n")
-		}
+	if len(m.envNames) > 0 {
+		b.WriteString("Env manager: Tab focuses list · Ctrl+E toggle · Ctrl+A enable all · Ctrl+X clear.\n")
 	}
 	if len(m.missingEnv) > 0 {
-		b.WriteString("Missing environment variables: ")
+		b.WriteString("Missing env: ")
 		b.WriteString(strings.Join(m.missingEnv, ", "))
 		b.WriteString(" (not set)\n")
-	} else {
-		b.WriteString("Missing environment variables: (none)\n")
-	}
-	b.WriteString("\n")
-
-	b.WriteString("Subject (PgUp/PgDn scroll · Home/End jump):\n")
-	b.WriteString(m.subjectViewport.View())
-	b.WriteString("\n\n")
-
-	b.WriteString("Command (Enter runs without preview):\n")
-	b.WriteString(m.command.View())
-	if m.focus == focusCommand {
-		b.WriteString("  ← editing")
-	}
-	b.WriteString("\n\n")
-
-	b.WriteString("Shortcuts: Tab switch input · Ctrl+L load subject from clipboard · Ctrl+O copy preview to clipboard · Ctrl+B copy bar build command · Ctrl+R pipe preview to command · Ctrl+Y queue last command stdout for subject · Ctrl+T toggle condensed preview · Ctrl+Z undo subject replacement · PgUp/PgDn scroll viewports · Home/End jump · Ctrl+C/Esc exit.\n")
-	b.WriteString("Token controls: Tab focus tokens · Left/Right change category · Up/Down browse options · Enter/Space toggle selection · Delete removes highlighted token · Ctrl+P open palette · Ctrl+Z undo token change.\n")
-	b.WriteString("Env allowlist controls (when configured): Tab focus env list · Up/Down move selection · Ctrl+E toggle entry · Ctrl+A enable all · Ctrl+X clear allowlist.\n")
-	b.WriteString("Preset controls: Ctrl+S toggle pane · Ctrl+N save current tokens · Delete remove preset · Ctrl+Z undo delete.\n")
-	b.WriteString("Leave command blank to opt out. Commands execute in the local shell; inspect output below and copy transcripts if you need logging.\n\n")
-
-	if m.statusMessage != "" {
-		b.WriteString("Status: ")
-		b.WriteString(m.statusMessage)
-		b.WriteString("\n\n")
 	}
 
-	if m.commandRunning {
-		b.WriteString("Command running: ")
-		b.WriteString(m.runningCommand)
-		b.WriteString(" (press Esc to cancel)\n\n")
+	if m.presetPaneVisible {
+		m.renderPresetPane(&b)
 	}
-
-	b.WriteString("Result & preview (PgUp/PgDn scroll · Home/End jump · Ctrl+T toggle condensed preview):\n")
-	b.WriteString(m.resultViewport.View())
-	b.WriteString("\n")
 
 	b.WriteString("Press Ctrl+C or Esc to exit.\n")
-	return b.String()
+	output := b.String()
+	paletteDebugViewSummary(&m, output)
+	return output
 }
 
 func (m *model) toggleFocus() {

@@ -12,6 +12,7 @@ import (
 	"unicode/utf8"
 
 	textinput "github.com/charmbracelet/bubbles/textinput"
+	"github.com/charmbracelet/bubbles/viewport"
 	tea "github.com/charmbracelet/bubbletea"
 )
 
@@ -148,8 +149,36 @@ const (
 	focusSubject focusArea = iota
 	focusTokens
 	focusCommand
+	focusResult
 	focusEnvironment
 )
+
+const (
+	defaultViewportWidth  = 80
+	defaultViewportHeight = 32
+	minSubjectViewport    = 4
+	minResultViewport     = 8
+)
+
+func maxInt(a, b int) int {
+	if a > b {
+		return a
+	}
+	return b
+}
+
+func clampInt(value, minValue, maxValue int) int {
+	if maxValue < minValue {
+		maxValue = minValue
+	}
+	if value < minValue {
+		return minValue
+	}
+	if value > maxValue {
+		return maxValue
+	}
+	return value
+}
 
 type tokenPaletteFocus int
 
@@ -345,6 +374,12 @@ type model struct {
 	subjectUndoSource    string
 	subjectUndoAvailable bool
 
+	width            int
+	height           int
+	subjectViewport  viewport.Model
+	resultViewport   viewport.Model
+	condensedPreview bool
+
 	subject                textinput.Model
 	command                textinput.Model
 	focus                  focusArea
@@ -443,6 +478,9 @@ func newModel(opts Options) model {
 		status += " Missing environment variables: " + strings.Join(missingEnv, ", ") + " (not set)."
 	}
 
+	subjectViewport := viewport.New(defaultViewportWidth, minSubjectViewport)
+	resultViewport := viewport.New(defaultViewportWidth, minResultViewport)
+
 	m := model{
 		tokens:                 append([]string(nil), opts.Tokens...),
 		tokenCategories:        cloneTokenCategories(opts.TokenCategories),
@@ -464,6 +502,10 @@ func newModel(opts Options) model {
 		envInitial:             envInitial,
 		envSelection:           0,
 		helpVisible:            false,
+		width:                  defaultViewportWidth,
+		height:                 defaultViewportHeight,
+		subjectViewport:        subjectViewport,
+		resultViewport:         resultViewport,
 		listPresets:            opts.ListPresets,
 		loadPreset:             opts.LoadPreset,
 		savePreset:             opts.SavePreset,
@@ -486,7 +528,179 @@ func newModel(opts Options) model {
 		m.envSelection = -1
 	}
 	m.refreshPreview()
+	m.layoutViewports()
+	m.updateSubjectViewportContent()
+	m.updateResultViewportContent()
 	return m
+}
+
+func (m *model) layoutViewports() {
+	width := m.width
+	if width <= 0 {
+		width = defaultViewportWidth
+	}
+	height := m.height
+	if height <= 0 {
+		height = defaultViewportHeight
+	}
+
+	subjectHeight := clampInt(height/4, minSubjectViewport, height-minResultViewport)
+	resultHeight := maxInt(minResultViewport, height-subjectHeight)
+
+	m.subjectViewport.Width = maxInt(1, width)
+	m.subjectViewport.Height = maxInt(minSubjectViewport, subjectHeight)
+	m.resultViewport.Width = maxInt(1, width)
+	m.resultViewport.Height = maxInt(minResultViewport, resultHeight)
+}
+
+func (m *model) updateSubjectViewportContent() {
+	var builder strings.Builder
+	builder.WriteString(m.subject.View())
+	if m.focus == focusSubject {
+		builder.WriteString("  ← editing")
+	}
+	m.subjectViewport.SetContent(builder.String())
+}
+
+func (m *model) renderResultViewportContent() string {
+	var builder strings.Builder
+
+	builder.WriteString("Result pane (stdout/stderr):\n")
+	if m.lastResult.empty() {
+		builder.WriteString("(no command has been executed)\n\n")
+	} else {
+		builder.WriteString("Command: ")
+		builder.WriteString(m.lastResult.Command)
+		builder.WriteString("\n")
+		if m.lastResult.UsedPreview {
+			builder.WriteString("Input: piped preview text\n")
+		} else {
+			builder.WriteString("Input: (none)\n")
+		}
+		if m.lastResult.Err != nil {
+			builder.WriteString("Status: failed — ")
+			builder.WriteString(m.lastResult.Err.Error())
+			builder.WriteString("\n")
+		} else {
+			builder.WriteString("Status: completed successfully\n")
+		}
+		builder.WriteString("Environment: ")
+		if len(m.lastResult.EnvVars) == 0 {
+			builder.WriteString("(none)\n")
+		} else {
+			builder.WriteString(strings.Join(m.lastResult.EnvVars, ", "))
+			builder.WriteString("\n")
+		}
+		builder.WriteString("Stdout:\n")
+		stdout := strings.TrimSpace(m.lastResult.Stdout)
+		if stdout == "" {
+			builder.WriteString("(empty)\n")
+		} else {
+			builder.WriteString(m.lastResult.Stdout)
+			if !strings.HasSuffix(m.lastResult.Stdout, "\n") {
+				builder.WriteString("\n")
+			}
+		}
+		builder.WriteString("Stderr:\n")
+		stderr := strings.TrimSpace(m.lastResult.Stderr)
+		if stderr == "" {
+			builder.WriteString("(empty)\n")
+		} else {
+			builder.WriteString(m.lastResult.Stderr)
+			if !strings.HasSuffix(m.lastResult.Stderr, "\n") {
+				builder.WriteString("\n")
+			}
+		}
+		builder.WriteString("\n")
+	}
+
+	if m.previewErr != nil {
+		builder.WriteString("Preview error: ")
+		builder.WriteString(m.previewErr.Error())
+		builder.WriteString("\n")
+		return builder.String()
+	}
+
+	builder.WriteString("Preview:\n")
+	if strings.TrimSpace(m.preview) == "" {
+		builder.WriteString("(enter or import a subject to render the preview)\n")
+	} else if m.condensedPreview {
+		builder.WriteString("(condensed) Preview hidden; press Ctrl+T to expand.\n")
+	} else {
+		builder.WriteString(m.preview)
+		if !strings.HasSuffix(m.preview, "\n") {
+			builder.WriteString("\n")
+		}
+	}
+
+	return builder.String()
+}
+
+func (m *model) updateResultViewportContent() {
+	m.resultViewport.SetContent(m.renderResultViewportContent())
+}
+
+func (m *model) handleWindowSize(msg tea.WindowSizeMsg) {
+	if msg.Width <= 0 {
+		return
+	}
+	m.width = msg.Width
+	m.height = msg.Height
+	m.layoutViewports()
+	m.updateSubjectViewportContent()
+	m.updateResultViewportContent()
+}
+
+func (m *model) handleViewportScroll(v *viewport.Model, key tea.KeyMsg, allowHalf bool) bool {
+	switch key.Type {
+	case tea.KeyPgUp:
+		v.ViewUp()
+		return true
+	case tea.KeyPgDown:
+		v.ViewDown()
+		return true
+	case tea.KeyHome:
+		v.GotoTop()
+		return true
+	case tea.KeyEnd:
+		v.GotoBottom()
+		return true
+	}
+	if !allowHalf {
+		return false
+	}
+	switch key.String() {
+	case "ctrl+u":
+		v.HalfViewUp()
+		return true
+	case "ctrl+d":
+		v.HalfViewDown()
+		return true
+	}
+	return false
+}
+
+func (m *model) handleSubjectViewportKey(key tea.KeyMsg) bool {
+	if m.focus != focusSubject {
+		return false
+	}
+	return m.handleViewportScroll(&m.subjectViewport, key, false)
+}
+
+func (m *model) handleResultViewportKey(key tea.KeyMsg) bool {
+	if m.focus != focusResult {
+		return false
+	}
+	if m.handleViewportScroll(&m.resultViewport, key, true) {
+		return true
+	}
+	switch key.String() {
+	case "ctrl+t":
+		m.condensedPreview = !m.condensedPreview
+		m.updateResultViewportContent()
+		return true
+	}
+	return false
 }
 
 func (m *model) initializeTokenCategories() {
@@ -1394,10 +1608,12 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		if errors.Is(typed.result.Err, context.Canceled) {
 			m.statusMessage = "Command cancelled."
+			m.updateResultViewportContent()
 			return m, nil
 		}
 		if typed.result.Err != nil {
 			m.statusMessage = fmt.Sprintf("Command failed: %v", typed.result.Err)
+			m.updateResultViewportContent()
 			return m, nil
 		}
 
@@ -1407,7 +1623,11 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		} else {
 			m.statusMessage = ensureCopyHint("Command completed; inspect result pane. Use Ctrl+Y to insert stdout into the subject.")
 		}
+		m.updateResultViewportContent()
 
+		return m, nil
+	case tea.WindowSizeMsg:
+		(&m).handleWindowSize(typed)
 		return m, nil
 	}
 
@@ -1416,6 +1636,12 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if cmd != nil {
 				return m, cmd
 			}
+			return m, nil
+		}
+		if (&m).handleSubjectViewportKey(keyMsg) {
+			return m, nil
+		}
+		if (&m).handleResultViewportKey(keyMsg) {
 			return m, nil
 		}
 		if handled, cmd := m.handlePresetPaneKey(keyMsg); handled {
@@ -1597,6 +1823,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.subjectUndoAvailable = false
 		m.refreshPreview()
 	}
+	m.updateSubjectViewportContent()
 
 	newCommand, commandCmd := m.command.Update(msg)
 	if commandCmd != nil {
@@ -1667,6 +1894,7 @@ func (m *model) applyPendingSubjectReplacement() {
 	m.subjectUndoSource = prompt.source
 	m.subjectUndoAvailable = true
 	m.subject.SetValue(prompt.newValue)
+	m.updateSubjectViewportContent()
 	m.refreshPreview()
 	m.statusMessage = ensureCopyHint(fmt.Sprintf("Subject replaced with %s. Press Ctrl+Z to undo.", prompt.source))
 }
@@ -1688,9 +1916,11 @@ func (m *model) undoSubjectReplacement() {
 	}
 
 	m.subject.SetValue(m.subjectUndoValue)
+	m.updateSubjectViewportContent()
 	m.refreshPreview()
 	m.subjectUndoAvailable = false
 	source := m.subjectUndoSource
+
 	if source == "" {
 		source = "recent"
 	}
@@ -1737,7 +1967,9 @@ func (m model) View() string {
 	if m.helpVisible {
 		b.WriteString("\nHelp overlay (press ? to close):\n")
 		b.WriteString("  Subject focus: type directly, Ctrl+L loads clipboard, Ctrl+O copies preview, Ctrl+B copies the bar build command, Ctrl+Z undoes the last replacement.\n")
+		b.WriteString("  Subject viewport: PgUp/PgDn scroll, Home/End jump to edges.\n")
 		b.WriteString("  Command focus: Enter runs command, Ctrl+R pipes preview, Ctrl+Y inserts stdout, leave blank to skip.\n")
+		b.WriteString("  Result viewport: PgUp/PgDn scroll, Home/End jump, Ctrl+T toggles condensed preview.\n")
 		b.WriteString("  Tokens: Tab focuses tokens, Left/Right switch categories, Up/Down browse options, Enter/Space toggle, Delete removes, Ctrl+P opens palette, Ctrl+Z undoes last change.\n")
 		b.WriteString("  Palette: Type \"copy command\", press Enter to copy the CLI and close the palette; Ctrl+W clears the current filter.\n")
 		b.WriteString("  Environment: Tab again to focus list, Up/Down move, Ctrl+E toggle, Ctrl+A enable all, Ctrl+X clear allowlist.\n")
@@ -1750,13 +1982,13 @@ func (m model) View() string {
 		m.renderPresetPane(&b)
 	}
 
-	b.WriteString("Environment allowlist: ")
 	if len(m.allowedEnv) == 0 {
-		b.WriteString("(none)")
+		b.WriteString("Environment allowlist: (none)\n")
 	} else {
+		b.WriteString("Environment allowlist: ")
 		b.WriteString(strings.Join(m.allowedEnv, ", "))
+		b.WriteString("\n")
 	}
-	b.WriteString("\n")
 	if len(m.envNames) == 0 {
 		b.WriteString("Allowlist manager: (no environment variables configured)\n")
 	} else {
@@ -1788,12 +2020,8 @@ func (m model) View() string {
 	}
 	b.WriteString("\n")
 
-	b.WriteString("Subject (Tab toggles focus):\n")
-
-	b.WriteString(m.subject.View())
-	if m.focus == focusSubject {
-		b.WriteString("  ← editing")
-	}
+	b.WriteString("Subject (PgUp/PgDn scroll · Home/End jump):\n")
+	b.WriteString(m.subjectViewport.View())
 	b.WriteString("\n\n")
 
 	b.WriteString("Command (Enter runs without preview):\n")
@@ -1803,7 +2031,7 @@ func (m model) View() string {
 	}
 	b.WriteString("\n\n")
 
-	b.WriteString("Shortcuts: Tab switch input · Ctrl+L load subject from clipboard · Ctrl+O copy preview to clipboard · Ctrl+B copy bar build command · Ctrl+R pipe preview to command · Ctrl+Y queue last command stdout for subject · Ctrl+Z undo subject replacement · Ctrl+C/Esc exit.\n")
+	b.WriteString("Shortcuts: Tab switch input · Ctrl+L load subject from clipboard · Ctrl+O copy preview to clipboard · Ctrl+B copy bar build command · Ctrl+R pipe preview to command · Ctrl+Y queue last command stdout for subject · Ctrl+T toggle condensed preview · Ctrl+Z undo subject replacement · PgUp/PgDn scroll viewports · Home/End jump · Ctrl+C/Esc exit.\n")
 	b.WriteString("Token controls: Tab focus tokens · Left/Right change category · Up/Down browse options · Enter/Space toggle selection · Delete removes highlighted token · Ctrl+P open palette · Ctrl+Z undo token change.\n")
 	b.WriteString("Env allowlist controls (when configured): Tab focus env list · Up/Down move selection · Ctrl+E toggle entry · Ctrl+A enable all · Ctrl+X clear allowlist.\n")
 	b.WriteString("Preset controls: Ctrl+S toggle pane · Ctrl+N save current tokens · Delete remove preset · Ctrl+Z undo delete.\n")
@@ -1821,71 +2049,11 @@ func (m model) View() string {
 		b.WriteString(" (press Esc to cancel)\n\n")
 	}
 
-	b.WriteString("Result pane (stdout/stderr):\n")
-	if m.lastResult.empty() {
-		b.WriteString("(no command has been executed)\n\n")
-	} else {
-		b.WriteString("Command: ")
-		b.WriteString(m.lastResult.Command)
-		b.WriteString("\n")
-		if m.lastResult.UsedPreview {
-			b.WriteString("Input: piped preview text\n")
-		} else {
-			b.WriteString("Input: (none)\n")
-		}
-		if m.lastResult.Err != nil {
-			b.WriteString("Status: failed — ")
-			b.WriteString(m.lastResult.Err.Error())
-			b.WriteString("\n")
-		} else {
-			b.WriteString("Status: completed successfully\n")
-		}
-		b.WriteString("Environment: ")
-		if len(m.lastResult.EnvVars) == 0 {
-			b.WriteString("(none)\n")
-		} else {
-			b.WriteString(strings.Join(m.lastResult.EnvVars, ", "))
-			b.WriteString("\n")
-		}
-		b.WriteString("Stdout:\n")
+	b.WriteString("Result & preview (PgUp/PgDn scroll · Home/End jump · Ctrl+T toggle condensed preview):\n")
+	b.WriteString(m.resultViewport.View())
+	b.WriteString("\n")
 
-		if strings.TrimSpace(m.lastResult.Stdout) == "" {
-			b.WriteString("(empty)\n")
-		} else {
-			b.WriteString(m.lastResult.Stdout)
-			if !strings.HasSuffix(m.lastResult.Stdout, "\n") {
-				b.WriteString("\n")
-			}
-		}
-		b.WriteString("Stderr:\n")
-		if strings.TrimSpace(m.lastResult.Stderr) == "" {
-			b.WriteString("(empty)\n")
-		} else {
-			b.WriteString(m.lastResult.Stderr)
-			if !strings.HasSuffix(m.lastResult.Stderr, "\n") {
-				b.WriteString("\n")
-			}
-		}
-		b.WriteString("\n")
-	}
-
-	if m.previewErr != nil {
-		b.WriteString("Preview error: ")
-		b.WriteString(m.previewErr.Error())
-		b.WriteString("\n\n")
-	}
-
-	b.WriteString("Preview:\n")
-	if strings.TrimSpace(m.preview) == "" {
-		b.WriteString("(enter or import a subject to render the preview)\n")
-	} else {
-		b.WriteString(m.preview)
-		if !strings.HasSuffix(m.preview, "\n") {
-			b.WriteString("\n")
-		}
-	}
-
-	b.WriteString("\nPress Ctrl+C or Esc to exit.\n")
+	b.WriteString("Press Ctrl+C or Esc to exit.\n")
 	return b.String()
 }
 
@@ -1907,17 +2075,19 @@ func (m *model) toggleFocus() {
 		m.command.Focus()
 		m.statusMessage = "Command input focused. Enter runs without preview. Use Ctrl+R to pipe preview text."
 	case focusCommand:
-		if len(m.envNames) == 0 {
-			m.command.Blur()
-			m.subject.Focus()
-			m.focus = focusSubject
-			m.statusMessage = "Subject input focused. Type directly or use Ctrl+L to load from clipboard."
+		m.command.Blur()
+		m.focus = focusResult
+		m.statusMessage = "Result viewport focused. Use PgUp/PgDn to scroll, Home/End to jump, Ctrl+T toggles preview."
+	case focusResult:
+		if len(m.envNames) > 0 {
+			m.focus = focusEnvironment
+			m.ensureEnvSelection()
+			m.statusMessage = "Environment allowlist focused. Use Up/Down to choose a variable and Ctrl+E to toggle it."
 			return
 		}
-		m.command.Blur()
-		m.focus = focusEnvironment
-		m.ensureEnvSelection()
-		m.statusMessage = "Environment allowlist focused. Use Up/Down to choose a variable and Ctrl+E to toggle it."
+		m.subject.Focus()
+		m.focus = focusSubject
+		m.statusMessage = "Subject input focused. Type directly or use Ctrl+L to load from clipboard."
 	case focusEnvironment:
 		m.focus = focusSubject
 		m.subject.Focus()
@@ -2066,6 +2236,8 @@ func (m *model) setTokens(tokens []string) {
 }
 
 func (m *model) refreshPreview() {
+	defer m.updateResultViewportContent()
+
 	if m.previewFunc == nil {
 		m.preview = ""
 		m.previewErr = fmt.Errorf("preview unavailable")

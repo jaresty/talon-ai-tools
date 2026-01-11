@@ -1304,6 +1304,26 @@
   - Behaviour: Monitor pilot telemetry for subject replacement ergonomics and copy guidance; rerun go test ./internal/bartui, go test ./cmd/bar/..., and python3 -m pytest _tests/test_bar_completion_cli.py if changes are requested.
 
 
+## 2026-01-11 — loop 073
+- helper_version: helper:v20251223.1
+- focus: Salient Tasks — teach Bubble Tea program to handle `tea.WindowSizeMsg` viewports
+- active_constraint: Bubble Tea TUI still rendered subject and result panes as static strings, ignoring window size changes and lacking keyboard scroll or condensed-preview affordances, so long transcripts overflowed and the CLI smoke snapshot drifted; `go test -count=1 ./internal/bartui` and fixture-driven `go test -count=1 ./cmd/bar/...` reproduced the mismatch.
+- validation_targets:
+  - go test -count=1 ./internal/bartui
+  - go test -count=1 ./cmd/bar/...
+  - python3 -m pytest _tests/test_bar_completion_cli.py
+- evidence:
+  - green: docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-073.md#loop-073-green--go-test--count1--internal-bartui
+  - green: docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-073.md#loop-073-green--go-test--count1--cmd-bar
+  - green: docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-073.md#loop-073-green--python3--m-pytest-_tests-test_bar_completion_cli.py
+- rollback_plan: `git restore --source=HEAD -- internal/bartui/program.go internal/bartui/program_test.go cmd/bar/testdata/tui_smoke.json docs/adr/0070-bubble-tea-prompt-editor-tui.md docs/adr/0070-bubble-tea-prompt-editor-tui.work-log.md docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-073.md`
+- delta_summary: helper:diff-snapshot=git diff --stat HEAD | internal/bartui/program.go (viewport layout + focus cycle + condensed preview toggle); internal/bartui/program_test.go (+viewport focus/status coverage); cmd/bar/testdata/tui_smoke.json (+result viewport snapshot); docs/adr/0070-bubble-tea-prompt-editor-tui.md (viewport shortcut guardrail); docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-073.md (recorded green runs).
+- loops_remaining_forecast: 0 loops — viewport resizing and keyboard navigation now satisfy the salient task; future tweaks depend on pilot telemetry (medium confidence).
+- residual_constraints:
+  - Pilot feedback on viewport ergonomics and condensed-preview messaging remains pending (severity: medium; mitigation: gather pilot notes, rerun go test ./internal/bartui and python3 -m pytest _tests/test_bar_completion_cli.py if adjustments are requested).
+- next_work:
+  - Behaviour: Monitor pilot telemetry for viewport interactions and condensed preview adoption; rerun go test ./internal/bartui, go test ./cmd/bar/..., and python3 -m pytest _tests/test_bar_completion_cli.py if changes are required.
+
 ## 2026-01-11 — loop 074
 - helper_version: helper:v20251223.1
 - focus: Documentation — document viewport navigation and condensed preview shortcuts for pilots

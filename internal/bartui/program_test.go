@@ -484,12 +484,24 @@ func TestToggleEnvironmentAllowlist(t *testing.T) {
 	if cmd != nil {
 		t.Fatalf("unexpected command during first tab: %T", cmd)
 	}
+	if m.focus != focusCommand {
+		t.Fatalf("expected focusCommand after first tab, got %v", m.focus)
+	}
+
 	m, cmd = updateModel(t, m, tab)
 	if cmd != nil {
 		t.Fatalf("unexpected command during second tab: %T", cmd)
 	}
+	if m.focus != focusResult {
+		t.Fatalf("expected focusResult after second tab, got %v", m.focus)
+	}
+
+	m, cmd = updateModel(t, m, tab)
+	if cmd != nil {
+		t.Fatalf("unexpected command during third tab: %T", cmd)
+	}
 	if m.focus != focusEnvironment {
-		t.Fatalf("expected focusEnvironment after two tabs, got %v", m.focus)
+		t.Fatalf("expected focusEnvironment after third tab, got %v", m.focus)
 	}
 
 	toggle := tea.KeyMsg{Type: tea.KeyCtrlE}

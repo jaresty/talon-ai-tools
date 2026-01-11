@@ -16,7 +16,8 @@ Proposed — Bubble Tea TUI improves prompt editing ergonomics for the Go CLI (2
 - Ship the TUI as an optional `bar tui` subcommand within the existing CLI binary so it coexists with the current surface while reusing shared configuration/preset directories.
 - Handle terminal resizing consistently: listen for `tea.WindowSizeMsg`, recompute layout breakpoints, and rely on Bubbles primitives (`textarea`, `viewport`, `list`) so multi-pane output scrolls without truncation.
   - Bind both the subject editor and command/result panes to dedicated `viewport.Model`s sized from the latest window metrics so large payloads remain navigable without displacing other panes.
-  - Surface shortcut affordances for viewport navigation (top/bottom jumps, page scroll, condensed preview toggle) and keep them visible in the help overlay so pilots can traverse long transcripts quickly.
+  - Surface shortcut affordances for viewport navigation (`PgUp`/`PgDn` for paging, `Home`/`End` for jumps, `Ctrl+T` for condensed preview) and keep them visible in the help overlay and status messaging so pilots can traverse long transcripts quickly.
+  - Keep the keyboard focus cycle ordered as subject → tokens → command → result viewport → environment allowlist so pilots can reach scroll affordances without leaving the keyboard.
 - Let operators adjust prompt tokens, destinations, and preset selections from within the TUI itself so launching with CLI shorthand remains optional.
 - Provide subject import/export affordances: operators can type subject text directly, pull it from the clipboard or a shell command, edit it in place, and push the rendered prompt to another command or the clipboard with the response surfaced in a dedicated TUI pane (and optionally reinserted into the subject field). The single-command flow must:
   - label the command input as optional and highlight when it is empty so pilots know the editor works without piping;

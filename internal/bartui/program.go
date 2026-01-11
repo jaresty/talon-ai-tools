@@ -48,6 +48,8 @@ type PresetDetails struct {
 	SavedAt time.Time
 }
 
+const paletteHistoryLimit = 20
+
 var (
 	paletteDebugMu     sync.Mutex
 	paletteDebugWriter io.Writer
@@ -442,6 +444,8 @@ type model struct {
 	tokenPaletteFocus        tokenPaletteFocus
 	tokenPaletteOptions      []int
 	tokenPaletteOptionIndex  int
+	paletteHistory           []string
+	paletteHistoryVisible    bool
 	lastPaletteCategoryIndex int
 	tokenPaletteFilter       textinput.Model
 	tokenViewport            viewport.Model
@@ -1104,6 +1108,30 @@ func (m *model) recordTokenUndo() {
 	m.lastTokenSnapshot = snapshot
 }
 
+func (m *model) recordPaletteHistory(entry string) {
+	trimmed := strings.TrimSpace(entry)
+	if trimmed == "" {
+		return
+	}
+	m.paletteHistory = append([]string{trimmed}, m.paletteHistory...)
+	if len(m.paletteHistory) > paletteHistoryLimit {
+		m.paletteHistory = m.paletteHistory[:paletteHistoryLimit]
+	}
+}
+
+func (m *model) togglePaletteHistory() {
+	if !m.paletteHistoryVisible && len(m.paletteHistory) == 0 {
+		m.statusMessage = "No palette history yet. Make a palette change before toggling history."
+		return
+	}
+	m.paletteHistoryVisible = !m.paletteHistoryVisible
+	if m.paletteHistoryVisible {
+		m.statusMessage = "Palette history visible. Press Ctrl+H to hide."
+	} else {
+		m.statusMessage = "Palette history hidden."
+	}
+}
+
 func (m *model) rebuildTokensFromStates() {
 	total := len(m.unassignedTokens)
 	for _, state := range m.tokenStates {
@@ -1262,6 +1290,7 @@ func (m *model) openTokenPalette() tea.Cmd {
 	}
 	m.focusBeforePalette = m.focus
 	m.tokenPaletteVisible = true
+	m.paletteHistoryVisible = false
 	m.tokenPaletteFocus = tokenPaletteFocusFilter
 	m.tokenPaletteFilter.SetValue("")
 	cmd := m.tokenPaletteFilter.Focus()
@@ -1280,6 +1309,7 @@ func (m *model) closeTokenPaletteWithStatus(status string) tea.Cmd {
 		return nil
 	}
 	m.tokenPaletteVisible = false
+	m.paletteHistoryVisible = false
 	m.tokenPaletteFilter.Blur()
 	m.tokenPaletteOptionIndex = 0
 	m.tokenPaletteFocus = tokenPaletteFocusFilter
@@ -1382,6 +1412,9 @@ func (m *model) handleKeyString(key string) (bool, tea.Cmd) {
 			return true, m.closeTokenPalette()
 		}
 		return true, m.openTokenPalette()
+	case "ctrl+h":
+		m.togglePaletteHistory()
+		return true, nil
 	case "ctrl+e":
 		if m.focus == focusEnvironment {
 			m.toggleSelectedEnv()
@@ -1559,10 +1592,16 @@ func (m *model) applyPaletteSelection() {
 	if slug == "" {
 		slug = option.Value
 	}
+	categoryLabel := state.category.Label
+	if categoryLabel == "" {
+		categoryLabel = state.category.Key
+	}
 	if state.has(option.Value) {
 		m.recordTokenUndo()
 		state.remove(option.Value)
 		m.rebuildTokensFromStates()
+		historyEntry := fmt.Sprintf("%s → %s removed", categoryLabel, slug)
+		m.recordPaletteHistory(historyEntry)
 		m.statusMessage = fmt.Sprintf("%s → %s removed.", state.category.Label, slug)
 	} else {
 		max := state.category.MaxSelections
@@ -1577,6 +1616,8 @@ func (m *model) applyPaletteSelection() {
 		m.recordTokenUndo()
 		state.add(option.Value, max)
 		m.rebuildTokensFromStates()
+		historyEntry := fmt.Sprintf("%s → %s applied", categoryLabel, slug)
+		m.recordPaletteHistory(historyEntry)
 		m.statusMessage = fmt.Sprintf("%s → %s applied.", state.category.Label, slug)
 	}
 	m.updatePaletteOptions()
@@ -1596,6 +1637,11 @@ func (m *model) applyPaletteReset() {
 	m.recordTokenUndo()
 	state.setSelected(presetValues, state.category.MaxSelections)
 	m.rebuildTokensFromStates()
+	categoryLabel := state.category.Label
+	if categoryLabel == "" {
+		categoryLabel = state.category.Key
+	}
+	m.recordPaletteHistory(fmt.Sprintf("%s reset to preset", categoryLabel))
 	m.statusMessage = fmt.Sprintf("%s reset to preset.", state.category.Label)
 }
 
@@ -1644,6 +1690,9 @@ func (m *model) handleTokenPaletteKey(key tea.KeyMsg) (bool, tea.Cmd) {
 	case "ctrl+p":
 		cmd := m.closeTokenPalette()
 		return true, cmd
+	case "ctrl+h":
+		m.togglePaletteHistory()
+		return true, nil
 	case "ctrl+w":
 		m.clearPaletteFilter()
 		return true, nil
@@ -2378,6 +2427,18 @@ func (m model) View() string {
 	}
 	if tokenSection != "" {
 		b.WriteString("\n")
+	}
+
+	if m.paletteHistoryVisible {
+		b.WriteString("Palette history (Ctrl+H toggles):\n")
+		if len(m.paletteHistory) == 0 {
+			b.WriteString("  (empty)\n\n")
+		} else {
+			for _, entry := range m.paletteHistory {
+				b.WriteString(fmt.Sprintf("  • %s\n", entry))
+			}
+			b.WriteString("\n")
+		}
 	}
 
 	if m.presetPaneVisible {

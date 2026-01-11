@@ -757,6 +757,59 @@ func TestTokenPaletteApplyUndoFromEmptyTokens(t *testing.T) {
 	}
 }
 
+func TestTokenPaletteHistoryToggle(t *testing.T) {
+	opts := Options{
+		Tokens:          nil,
+		TokenCategories: defaultTokenCategories(),
+		Preview:         func(subject string, tokens []string) (string, error) { return "preview:" + subject, nil },
+		ClipboardRead:   func() (string, error) { return "", nil },
+		ClipboardWrite:  func(string) error { return nil },
+		RunCommand: func(context.Context, string, string, map[string]string) (string, string, error) {
+			return "", "", nil
+		},
+		CommandTimeout: time.Second,
+	}
+	m := newModel(opts)
+
+	m, _ = updateModel(t, m, tea.KeyMsg{Type: tea.KeyTab})
+	m, _ = updateModel(t, m, tea.KeyMsg{Type: tea.KeyCtrlP})
+	if !m.tokenPaletteVisible {
+		t.Fatalf("expected palette to open")
+	}
+
+	for _, r := range []rune{'t', 'o', 'd', 'o'} {
+		m, _ = updateModel(t, m, tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{r}})
+	}
+
+	m, _ = updateModel(t, m, tea.KeyMsg{Type: tea.KeyEnter})
+	if m.tokenPaletteFocus != tokenPaletteFocusOptions {
+		t.Fatalf("expected palette focus to move to options, got %v", m.tokenPaletteFocus)
+	}
+
+	m, _ = updateModel(t, m, tea.KeyMsg{Type: tea.KeyEnter})
+	if len(m.paletteHistory) == 0 {
+		t.Fatalf("expected palette history to record an entry")
+	}
+
+	m, _ = updateModel(t, m, tea.KeyMsg{Type: tea.KeyCtrlH})
+	if !m.paletteHistoryVisible {
+		t.Fatalf("expected palette history to be visible after Ctrl+H")
+	}
+
+	view := m.View()
+	if !strings.Contains(view, "Palette history (Ctrl+H toggles):") {
+		t.Fatalf("expected view to include palette history header, got view:\n%s", view)
+	}
+	if !strings.Contains(view, "Static Prompt → todo applied") {
+		t.Fatalf("expected view to include recorded history entry, got view:\n%s", view)
+	}
+
+	m, _ = updateModel(t, m, tea.KeyMsg{Type: tea.KeyCtrlH})
+	if m.paletteHistoryVisible {
+		t.Fatalf("expected palette history to hide after second Ctrl+H")
+	}
+}
+
 func TestTokenPaletteSummaryCondensedWhenVisible(t *testing.T) {
 	opts := Options{
 		Tokens:          []string{"todo", "focus"},

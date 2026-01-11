@@ -1,0 +1,183 @@
+spawn go run ./cmd/bar tui --grammar cmd/bar/testdata/grammar.json --no-alt-screen
+]10;?\[6n]11;?\[6n[?25lbar prompt editor (Bubble Tea prototype)
+
+Status: Subject input focused. Use Ctrl+L to load from clipboard. Tab cycles focus · Ctrl+P palette · Ctrl+B copy CLI. Environment allowlist: (none). | Tokens: none | Preset: (none) | CLI: bar build | Env: none
+
+Focus: [SUBJECT] ▸ Tokens ▸ Command ▸ Result
+
+Subject (PgUp/PgDn scroll · Home/End jump):
+Describe the subject to update the preview  ← editing
+                                                     
+                                                     
+                                                     
+                                                     
+                                                     
+
+Command (Enter runs without preview):
+Enter shell command (leave blank to opt out)
+
+Hint: press ? for shortcut help · Ctrl+P toggles the palette · Leave command blank to opt out.
+
+Result summary:
+∅ No command executed yet · input optional · env (none)
+
+Result & preview (PgUp/PgDn scroll · Home/End jump · Ctrl+T toggle condensed preview):
+Result pane (stdout/stderr):                                                    
+(no command has been executed)                                                  
+                                                                                
+Preview:                                                                        
+=== TASK (DO THIS) ===                                                          
+Infer the task                                                                  
+                                                                                
+=== CONSTRAINTS (GUARDRAILS) ===                                                
+1. Completeness (full): The response provides a thorough answer that covers all 
+                                                                                
+Tokens: (none selected)                                                         
+Unset: Static Prompt, Completeness, Scope, Method, Form, Channel, Directional, V
+                                                                                
+                                                                                
+                                                                                
+                                                                                
+                                                                                
+                                                                                
+
+Press Ctrl+C or Esc to exit.
+[0D[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[2K[1A[1A[2K[1A[1A[0D[2Kbar prompt editor (Bubble Tea prototype)
+[1BStatus: Token controls focused. Use arrow keys to adjust; Ctrl+P opens the palette (type "copy command" to focus the copy action). | Tokens: none | Preset: (none) | CLI: bar build | Env: none
+[1BFocus: Subject ▸ [TOKENS] ▸ Command ▸ Result
+[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[0D[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[2K[1A[1A[2K[1A[1A[0D[2Kbar prompt editor (Bubble Tea prototype)
+[1BStatus: Command input focused. Enter runs without preview. Use Ctrl+R to pipe preview text. | Tokens: none | Preset: (none) | CLI: bar build | Env: none
+[1BFocus: Subject ▸ Tokens ▸ [COMMAND] ▸ Result
+[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[0D[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[0D[2Kbar prompt editor (Bubble Tea prototype)
+
+Pending subject replacement from command stdout: "hi" (new 2 chars, was 0). Enter confirms, Esc cancels.
+Status: Replace subject with command stdout: "hi" (new 2 chars, was 0). Press Enter to confirm, Esc to cancel. Type "copy command" to focus the copy action. | Tokens: none | Preset: (none) | CLI: bar build | Env: none
+
+Focus: Subject ▸ Tokens ▸ [COMMAND] ▸ Result
+
+Subject (PgUp/PgDn scroll · Home/End jump):
+Describe the subject to update the preview
+                                          
+                                          
+                                          
+                                          
+                                          
+
+Command (Enter runs without preview):
+printf hi 
+
+Hint: press ? for shortcut help · Ctrl+P toggles the palette · Leave command blank to opt out.
+
+Result summary:
+✔ Command "printf hi" completed · exit 0 · input none · env (none)
+
+Result & preview (PgUp/PgDn scroll · Home/End jump · Ctrl+T toggle condensed preview):
+Result pane (stdout/stderr):  
+Command: printf hi            
+Input: (none)                 
+Exit code: 0                  
+Status: completed successfully
+Environment: (none)           
+                              
+Stdout:                       
+hi                            
+Stderr:                       
+Tokens: (none selected)                                                         
+Unset: Static Prompt, Completeness, Scope, Method, Form, Channel, Directional, V
+                                                                                
+                                                                                
+                                                                                
+                                                                                
+                                                                                
+                                                                                
+
+Press Ctrl+C or Esc to exit.
+[0D[2K[1A[2K[1A[2K[1A[2K[1A[1A[1A[1A[1A[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[1A[1A[1A[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[1A[0D[2Kbar prompt editor (Bubble Tea prototype)
+[1BStatus: command stdout replacement cancelled. Type "copy command" to focus the copy action. | Tokens: none | Preset: (none) | CLI: bar build | Env: none
+
+Focus: Subject ▸ Tokens ▸ [COMMAND] ▸ Result
+
+Subject (PgUp/PgDn scroll · Home/End jump):
+Describe the subject to update the preview
+                                          
+[1B[1B[1B[1B
+Command (Enter runs without preview):
+printf hi 
+
+Hint: press ? for shortcut help · Ctrl+P toggles the palette · Leave command blank to opt out.
+
+Result summary:
+✔ Command "printf hi" completed · exit 0 · input none · env (none)
+
+Result & preview (PgUp/PgDn scroll · Home/End jump · Ctrl+T toggle condensed preview):
+Result pane (stdout/stderr):  
+Command: printf hi            
+Input: (none)                 
+Exit code: 0                  
+Status: completed successfully
+Environment: (none)           
+                              
+Stdout:                       
+hi                            
+Stderr:                       
+Tokens: (none selected)                                                         
+Unset: Static Prompt, Completeness, Scope, Method, Form, Channel, Directional, V
+                                                                                
+[1B[1B[1B[1B[1B
+Press Ctrl+C or Esc to exit.
+[0D[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[2K[1A[1A[2K[1A[1A[0D[2Kbar prompt editor (Bubble Tea prototype)
+[1BStatus: Result viewport focused. Use PgUp/PgDn to scroll, Home/End to jump, Ctrl+T toggles preview. | Tokens: none | Preset: (none) | CLI: bar build | Env: none
+[1BFocus: Subject ▸ Tokens ▸ Command ▸ [RESULT]
+[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[0D[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[2K[1A[1A[2K[1A[1A[0D[2Kbar prompt editor (Bubble Tea prototype)
+[1BStatus: Subject input focused. Type directly or use Ctrl+L to load from clipboard. | Tokens: none | Preset: (none) | CLI: bar build | Env: none
+[1BFocus: [SUBJECT] ▸ Tokens ▸ Command ▸ Result
+[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[0D[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[2K[1A[1A[2K[1A[1A[0D[2Kbar prompt editor (Bubble Tea prototype)
+[1BStatus: Token controls focused. Use arrow keys to adjust; Ctrl+P opens the palette (type "copy command" to focus the copy action). | Tokens: none | Preset: (none) | CLI: bar build | Env: none
+[1BFocus: Subject ▸ [TOKENS] ▸ Command ▸ Result
+[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[0D[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[0D[2Kbar prompt editor (Bubble Tea prototype)
+
+Status: Palette history visible. Press Ctrl+H to hide. | Tokens: none | Preset: (none) | CLI: bar build | Env: none
+
+Focus: Subject ▸ [TOKENS] ▸ Command ▸ Result
+
+Subject (PgUp/PgDn scroll · Home/End jump):
+Describe the subject to update the preview
+                                          
+                                          
+                                          
+                                          
+                                          
+
+Command (Enter runs without preview):
+printf hi 
+
+Hint: press ? for shortcut help · Ctrl+P toggles the palette · Leave command blank to opt out.
+
+Result summary:
+✔ Command "printf hi" completed · exit 0 · input none · env (none)
+
+Result & preview (PgUp/PgDn scroll · Home/End jump · Ctrl+T toggle condensed preview):
+Result pane (stdout/stderr):  
+Command: printf hi            
+Input: (none)                 
+Exit code: 0                  
+Status: completed successfully
+Environment: (none)           
+                              
+Stdout:                       
+hi                            
+Stderr:                       
+Tokens: (none selected)                                                         
+Unset: Static Prompt, Completeness, Scope, Method, Form, Channel, Directional, V
+                                                                                
+                                                                                
+                                                                                
+                                                                                
+                                                                                
+                                                                                
+
+Palette history (Ctrl+H toggles):
+  • Command (subject) → "printf hi" exit 0
+
+Press Ctrl+C or Esc to exit.
+[0D^C

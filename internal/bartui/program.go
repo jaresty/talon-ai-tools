@@ -49,6 +49,7 @@ type PresetDetails struct {
 }
 
 const paletteHistoryLimit = 20
+const commandHistoryErrorLimit = 80
 
 var (
 	paletteDebugMu     sync.Mutex
@@ -552,7 +553,7 @@ func newModel(opts Options) model {
 	tokenPaletteFilter.CharLimit = 64
 	tokenPaletteFilter.Blur()
 
-	status := "Ready. Tab cycles focus · Ctrl+P palette · Ctrl+B copy CLI."
+	status := "Subject input focused. Use Ctrl+L to load from clipboard. Tab cycles focus · Ctrl+P palette · Ctrl+B copy CLI."
 	if len(envNames) > 0 {
 		status += " Environment allowlist: " + strings.Join(allowedEnv, ", ") + ". Tab again to focus the allowlist and press Ctrl+E to toggle entries."
 	} else {
@@ -1117,6 +1118,51 @@ func (m *model) recordPaletteHistory(entry string) {
 	if len(m.paletteHistory) > paletteHistoryLimit {
 		m.paletteHistory = m.paletteHistory[:paletteHistoryLimit]
 	}
+}
+
+func (m *model) recordCommandHistory(result commandResult, mode commandMode) {
+	entry := formatCommandHistoryEntry(result, mode)
+	if entry == "" {
+		return
+	}
+	m.recordPaletteHistory(entry)
+}
+
+func formatCommandHistoryEntry(result commandResult, mode commandMode) string {
+	command := strings.TrimSpace(result.Command)
+	if command == "" {
+		command = "(blank)"
+	} else {
+		command = sanitizeShellCommand(command)
+	}
+
+	scope := "subject"
+	if mode == commandModePreview || result.UsedPreview {
+		scope = "preview"
+	}
+
+	status := "completed"
+	switch {
+	case errors.Is(result.Err, context.Canceled):
+		status = "cancelled"
+	case result.Err != nil:
+		msg := strings.TrimSpace(result.Err.Error())
+		if msg == "" {
+			msg = "error"
+		} else if idx := strings.IndexRune(msg, '\n'); idx >= 0 {
+			msg = msg[:idx]
+		}
+		runes := []rune(msg)
+		if len(runes) > commandHistoryErrorLimit {
+			runes = append(runes[:commandHistoryErrorLimit-1], '…')
+			msg = string(runes)
+		}
+		status = fmt.Sprintf("error: %s", msg)
+	case result.HasExitCode:
+		status = fmt.Sprintf("exit %d", result.ExitCode)
+	}
+
+	return fmt.Sprintf("Command (%s) → \"%s\" %s", scope, command, status)
 }
 
 func (m *model) togglePaletteHistory() {
@@ -1818,6 +1864,45 @@ func (m *model) tokensSummaryList() string {
 	return strings.Join(m.tokens, ", ")
 }
 
+func (m *model) renderFocusBreadcrumbs() string {
+	labels := []struct {
+		focus focusArea
+		label string
+	}{
+		{focusSubject, "Subject"},
+		{focusTokens, "Tokens"},
+		{focusCommand, "Command"},
+		{focusResult, "Result"},
+	}
+
+	if len(m.envNames) > 0 {
+		labels = append(labels, struct {
+			focus focusArea
+			label string
+		}{focusEnvironment, "Env"})
+	}
+
+	highlight := m.focus
+	if m.tokenPaletteVisible {
+		highlight = focusTokens
+	}
+
+	parts := make([]string, 0, len(labels))
+	for _, item := range labels {
+		display := item.label
+		if item.focus == highlight {
+			display = fmt.Sprintf("[%s]", strings.ToUpper(display))
+		}
+		parts = append(parts, display)
+	}
+
+	if len(parts) == 0 {
+		return ""
+	}
+
+	return "Focus: " + strings.Join(parts, " ▸ ")
+}
+
 func (m *model) renderStatusStrip() string {
 	status := strings.TrimSpace(m.statusMessage)
 	if status == "" {
@@ -2067,6 +2152,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.runningMode = commandModeSubject
 		m.cancelCommand = nil
 		m.lastResult = typed.result
+		m.recordCommandHistory(typed.result, typed.mode)
 
 		if errors.Is(typed.result.Err, context.Canceled) {
 			m.statusMessage = "Command cancelled."
@@ -2376,6 +2462,12 @@ func (m model) View() string {
 	statusStrip := m.renderStatusStrip()
 	if statusStrip != "" {
 		b.WriteString(statusStrip)
+		b.WriteString("\n\n")
+	}
+
+	breadcrumbs := m.renderFocusBreadcrumbs()
+	if breadcrumbs != "" {
+		b.WriteString(breadcrumbs)
 		b.WriteString("\n\n")
 	}
 

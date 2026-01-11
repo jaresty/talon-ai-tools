@@ -40,3 +40,44 @@ assets:
 - Expect case: `tests/integration/tui/cases/token-palette-history.exp`
 - Evidence bundle: `docs/adr/evidence/0072-bubble-tea-palette-flow/loop-001.md`
 - Transcripts: `loop-001-token-palette-history-red.log`, `loop-001-token-palette-history-green.log`
+
+## loop-002 | helper:v20251223.1 | 2026-01-11
+
+focus: ADR 0072 Decision bullets 5 and 6 → surface focus breadcrumbs/status at launch and capture command executions in palette history (salient task: command lifecycle visibility + focus breadcrumbs).
+
+active_constraint: `scripts/tools/run-tui-expect.sh token-command-history` failed with `missing palette history header` and operators reported “invisible controls” on launch (no focus cues), so command history and focus breadcrumbs were absent.
+
+expected_value:
+| Factor | Value | Rationale |
+| --- | --- | --- |
+| Impact | High | Palette history needs to show command activity and focus breadcrumbs unblock operators from guessing the active pane |
+| Probability | High | Updating `internal/bartui` rendering + tests directly addresses the failing areas |
+| Time Sensitivity | Medium | Needed before layering more omnibox changes; user feedback flagged confusion |
+| Uncertainty note | Low | Expect harness and unit tests reproduce the gap deterministically |
+
+validation_targets:
+- `scripts/tools/run-tui-expect.sh token-command-history`
+- `go test ./internal/bartui`
+- `go test ./cmd/bar/...`
+- `python3 -m pytest _tests/test_bar_completion_cli.py`
+
+evidence: See `docs/adr/evidence/0072-bubble-tea-palette-flow/loop-002.md` for red/green transcripts and test runs.
+
+rollback_plan: `<VCS_REVERT>` = `git restore --source=HEAD -- internal/bartui/program.go internal/bartui/program_test.go cmd/bar/testdata/tui_smoke.json tests/integration/tui/cases/token-command-history.exp`; rerun `scripts/tools/run-tui-expect.sh token-command-history` to watch the failure return before reapplying the loop diff.
+
+delta_summary: helper:diff-snapshot=8 files changed, 716 insertions(+), 2 deletions(-) — adds focus breadcrumbs/status, command history logging/tests, updated smoke snapshot, new expect harness, and evidence transcripts.
+
+loops_remaining_forecast: 3 loops (dock omnibox column layout parity, sticky status strip/preset divergence, expand palette history for clipboard/undo events). Confidence: medium — remaining work mixes layout refactors and history enrichment.
+
+residual_constraints:
+- Medium — Palette history still omits clipboard paste/undo events; mitigation: extend history logging to clipboard loaders and undo flows with expect coverage.
+- Medium — Sticky summary strip is still absent (Decision bullet 12); mitigation unchanged: restructure view to keep divergence + CLI command visible and snapshot it.
+
+next_work:
+- Behaviour: Implement the sticky summary strip showing preset divergence and CLI command (validation: updated snapshot + `go test ./cmd/bar/...`).
+- Behaviour: Extend palette history logging to clipboard insertions/undo and preview reinserts (validation: new expect cases + `go test ./internal/bartui`).
+
+assets:
+- Expect case: `tests/integration/tui/cases/token-command-history.exp`
+- Evidence bundle: `docs/adr/evidence/0072-bubble-tea-palette-flow/loop-002.md`
+- Transcripts: `loop-002-token-command-history-red.log`, `loop-002-token-command-history-green.log`

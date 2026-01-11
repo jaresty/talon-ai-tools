@@ -757,6 +757,27 @@ func TestTokenPaletteApplyUndoFromEmptyTokens(t *testing.T) {
 	}
 }
 
+func TestInitialFocusBreadcrumbs(t *testing.T) {
+	opts := Options{
+		Preview:        func(subject string, tokens []string) (string, error) { return subject, nil },
+		ClipboardRead:  func() (string, error) { return "", nil },
+		ClipboardWrite: func(string) error { return nil },
+		RunCommand: func(context.Context, string, string, map[string]string) (string, string, error) {
+			return "", "", nil
+		},
+		CommandTimeout: time.Second,
+	}
+	m := newModel(opts)
+
+	view := m.View()
+	if !strings.Contains(view, "[SUBJECT]") {
+		t.Fatalf("expected breadcrumbs to highlight subject, got view:\n%s", view)
+	}
+	if !strings.Contains(m.statusMessage, "Subject input focused") {
+		t.Fatalf("expected status message to indicate subject focus, got %q", m.statusMessage)
+	}
+}
+
 func TestTokenPaletteHistoryToggle(t *testing.T) {
 	opts := Options{
 		Tokens:          nil,
@@ -797,6 +818,9 @@ func TestTokenPaletteHistoryToggle(t *testing.T) {
 	}
 
 	view := m.View()
+	if !strings.Contains(view, "[TOKENS]") {
+		t.Fatalf("expected focus breadcrumbs to highlight tokens, got view:\n%s", view)
+	}
 	if !strings.Contains(view, "Palette history (Ctrl+H toggles):") {
 		t.Fatalf("expected view to include palette history header, got view:\n%s", view)
 	}
@@ -807,6 +831,81 @@ func TestTokenPaletteHistoryToggle(t *testing.T) {
 	m, _ = updateModel(t, m, tea.KeyMsg{Type: tea.KeyCtrlH})
 	if m.paletteHistoryVisible {
 		t.Fatalf("expected palette history to hide after second Ctrl+H")
+	}
+}
+
+func TestCommandHistoryRecordsSuccess(t *testing.T) {
+	opts := Options{
+		Preview:        func(subject string, tokens []string) (string, error) { return subject, nil },
+		ClipboardRead:  func() (string, error) { return "", nil },
+		ClipboardWrite: func(string) error { return nil },
+		RunCommand: func(context.Context, string, string, map[string]string) (string, string, error) {
+			return "", "", nil
+		},
+		CommandTimeout: time.Second,
+	}
+	m := newModel(opts)
+
+	result := commandResult{Command: "printf hi", ExitCode: 0, HasExitCode: true}
+	m, _ = updateModel(t, m, commandFinishedMsg{result: result, mode: commandModeSubject})
+
+	if len(m.paletteHistory) == 0 {
+		t.Fatalf("expected command history entry to be recorded")
+	}
+
+	expected := "Command (subject) → \"printf hi\" exit 0"
+	if m.paletteHistory[0] != expected {
+		t.Fatalf("expected history entry %q, got %q", expected, m.paletteHistory[0])
+	}
+}
+
+func TestCommandHistoryRecordsError(t *testing.T) {
+	opts := Options{
+		Preview:        func(subject string, tokens []string) (string, error) { return subject, nil },
+		ClipboardRead:  func() (string, error) { return "", nil },
+		ClipboardWrite: func(string) error { return nil },
+		RunCommand: func(context.Context, string, string, map[string]string) (string, string, error) {
+			return "", "", nil
+		},
+		CommandTimeout: time.Second,
+	}
+	m := newModel(opts)
+
+	err := errors.New("boom failure")
+	result := commandResult{Command: "printf hi", Err: err}
+	m, _ = updateModel(t, m, commandFinishedMsg{result: result, mode: commandModeSubject})
+
+	if len(m.paletteHistory) == 0 {
+		t.Fatalf("expected command history entry to be recorded")
+	}
+
+	if !strings.Contains(m.paletteHistory[0], "error: boom failure") {
+		t.Fatalf("expected error status in history entry, got %q", m.paletteHistory[0])
+	}
+}
+
+func TestCommandHistoryPreviewScope(t *testing.T) {
+	opts := Options{
+		Preview:        func(subject string, tokens []string) (string, error) { return subject, nil },
+		ClipboardRead:  func() (string, error) { return "", nil },
+		ClipboardWrite: func(string) error { return nil },
+		RunCommand: func(context.Context, string, string, map[string]string) (string, string, error) {
+			return "", "", nil
+		},
+		CommandTimeout: time.Second,
+	}
+	m := newModel(opts)
+
+	result := commandResult{Command: "printf hi", ExitCode: 0, HasExitCode: true, UsedPreview: true}
+	m, _ = updateModel(t, m, commandFinishedMsg{result: result, mode: commandModePreview})
+
+	if len(m.paletteHistory) == 0 {
+		t.Fatalf("expected command history entry to be recorded")
+	}
+
+	expected := "Command (preview) → \"printf hi\" exit 0"
+	if m.paletteHistory[0] != expected {
+		t.Fatalf("expected preview history entry %q, got %q", expected, m.paletteHistory[0])
 	}
 }
 
@@ -831,6 +930,9 @@ func TestTokenPaletteSummaryCondensedWhenVisible(t *testing.T) {
 	}
 
 	view := m.View()
+	if !strings.Contains(view, "[TOKENS]") {
+		t.Fatalf("expected focus breadcrumbs to highlight tokens, got view:\n%s", view)
+	}
 	if !strings.Contains(view, "Token palette (Esc closes · Tab cycles focus · Enter applies option)") {
 		t.Fatalf("expected palette section to be rendered, got view:\n%s", view)
 	}

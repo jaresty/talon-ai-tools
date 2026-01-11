@@ -1,0 +1,85 @@
+#!/usr/bin/expect -f
+set timeout 30
+set env(NO_COLOR) 1
+set transcript $env(TUI_EXPECT_TRANSCRIPT)
+log_file -a $transcript
+set cmd [split $env(TUI_EXPECT_CMD)]
+eval spawn $cmd
+
+expect {
+    -re {bar prompt editor \(Bubble Tea prototype\)} {}
+    timeout { send_error "failed to render header"; exit 1 }
+}
+
+expect {
+    -re {Focus: \[SUBJECT\]} {}
+    timeout { send_error "missing initial focus breadcrumbs"; exit 1 }
+}
+
+# Tab from subject input to token controls, then to command input
+send "\t"
+expect {
+    -re {Status: Token controls focused\. Use arrow keys to adjust; Ctrl\+P opens the palette} {}
+    timeout { send_error "expected token controls status"; exit 1 }
+}
+
+send "\t"
+expect {
+    -re {Status: Command input focused\. Enter runs without preview\. Use Ctrl\+R to pipe preview text\.} {}
+    timeout { send_error "expected command status"; exit 1 }
+}
+
+# Type a short command and run it
+send "printf hi"
+send "\r"
+
+# Wait for the command to finish and prompt for subject replacement
+expect {
+    -re {Pending subject replacement from command stdout} {}
+    timeout { send_error "missing subject replacement prompt"; exit 1 }
+}
+
+# Dismiss the pending replacement so focus changes are predictable
+send "\033"
+expect {
+    -re {replacement cancelled\.} {}
+    timeout { send_error "expected replacement cancel confirmation"; exit 1 }
+}
+
+# Move focus away from the command input so Ctrl+H isn't swallowed by the text input
+send "\t"
+expect {
+    -re {Status: Result viewport focused\. Use PgUp/PgDn to scroll, Home/End to jump, Ctrl\+T toggles preview\.} {}
+    timeout { send_error "expected result viewport focus"; exit 1 }
+}
+
+send "\t"
+expect {
+    -re {Status: Subject input focused\. Type directly or use Ctrl\+L to load from clipboard\.} {}
+    timeout { send_error "expected subject focus"; exit 1 }
+}
+
+send "\t"
+expect {
+    -re {Status: Token controls focused\. Use arrow keys to adjust; Ctrl\+P opens the palette} {}
+    timeout { send_error "expected token focus"; exit 1 }
+}
+
+# Toggle palette history to inspect the most recent command entry
+send "\u0008"
+expect {
+    -re {Palette history \(Ctrl\+H toggles\):} {}
+    timeout { send_error "missing palette history header"; exit 1 }
+}
+
+expect {
+    -re {Command \(subject\) → "printf hi" exit 0} {}
+    timeout { send_error "missing command history entry"; exit 1 }
+}
+
+# Exit
+send "\003"
+after 200
+send "\003"
+expect eof
+exit 0

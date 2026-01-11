@@ -1267,3 +1267,20 @@
 - next_work:
   - Behaviour: Monitor pilot telemetry for token editing and palette hints; rerun go test ./internal/bartui, go test ./cmd/bar/..., and python3 -m pytest _tests/test_bar_completion_cli.py if follow-up changes are needed.
 
+## 2026-01-11 — loop 071
+- helper_version: helper:v20251223.1
+- focus: Validation — register packaging guardrail command for release artefacts
+- active_constraint: ADR 0070 Validation omitted the `make guardrails` packaging command, leaving release automation without a canonical verification path to prove Bubble Tea assets ship with the CLI.
+- validation_targets:
+  - documentation-only (no executable commands)
+- evidence:
+  - green: docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-071.md#loop-071-green--helper-diff-snapshot-git-diff--stat-head
+- rollback_plan: `git restore --source=HEAD -- docs/adr/0070-bubble-tea-prompt-editor-tui.md docs/adr/0070-bubble-tea-prompt-editor-tui.work-log.md docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-071.md`
+- delta_summary: helper:diff-snapshot=git diff --stat HEAD | docs/adr/0070-bubble-tea-prompt-editor-tui.md (+1) — documented `make guardrails` as the packaging validation command so release loops cite the canonical check.
+- loops_remaining_forecast: 0 loops — Validation now names the guardrail commands covering implementation and packaging; future updates depend on new behaviours emerging.
+- residual_constraints:
+  - None.
+- next_work:
+  - Behaviour: Monitor release/pilot feedback; update ADR if packaging constraints evolve (validation via documentation refresh when needed).
+
+

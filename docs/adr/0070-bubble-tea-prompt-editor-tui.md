@@ -72,6 +72,7 @@ Proposed — Bubble Tea TUI improves prompt editing ergonomics for the Go CLI (2
 - `go test ./cmd/bar/...` covers the minimal `bar tui` wiring by compiling and exercising the CLI entrypoint with existing shared helpers.
 - `bar tui --fixture cmd/bar/testdata/tui_smoke.json --no-alt-screen` exercises the deterministic snapshot harness and validates preview/layout output without entering the interactive loop.
 - `go test ./internal/bartui/...` verifies preset load/save/delete flows, ensuring the docked pane keeps the summary visible and undo/confirmation signalling stays consistent.
+- `make guardrails` verifies release packaging and installer manifests ship the Bubble Tea assets (binary and snapshot fixture) without drifting from the repository.
 - Add Bubble Tea regression tests that drive rapid subject edits and assert preview commands settle asynchronously without blocking keystrokes.
 - Exercise window resize snapshots (`bar tui --fixture … --width …`) to confirm viewport breakpoints and scroll affordances remain intact.
 - `python3 -m pytest _tests/test_bar_completion_cli.py` keeps CLI completions and installers aligned with the prompt grammar, ensuring the `bar tui` command surfaces in shell hints.

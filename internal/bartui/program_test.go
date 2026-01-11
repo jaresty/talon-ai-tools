@@ -583,6 +583,9 @@ func TestToggleHelpOverlay(t *testing.T) {
 	if !strings.Contains(view, "Help overlay (press ? to close)") {
 		t.Fatalf("expected view to include help overlay contents, got:\n%s", view)
 	}
+	if !strings.Contains(view, "Inputs:") {
+		t.Fatalf("expected help overlay to group shortcuts under Inputs, got:\n%s", view)
+	}
 	if !strings.Contains(strings.ToLower(m.statusMessage), "help overlay") {
 		t.Fatalf("expected status message to reference help overlay, got %q", m.statusMessage)
 	}
@@ -1022,11 +1025,14 @@ func TestHelpOverlayMentionsCopyCommandPaletteHint(t *testing.T) {
 	m, _ = updateModel(t, m, tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{'?'}})
 	view = m.View()
 
-	if !strings.Contains(view, "Type \"copy command\"") {
-		t.Fatalf("expected help overlay to instruct palette copy command, got:\n%s", view)
+	if !strings.Contains(view, "Type category=value") {
+		t.Fatalf("expected help overlay to instruct category=value palette input, got:\n%s", view)
 	}
-	if !strings.Contains(view, "press Enter to copy the CLI") {
-		t.Fatalf("expected help overlay to mention Enter closes palette, got:\n%s", view)
+	if !strings.Contains(view, "Enter applies staged edits") {
+		t.Fatalf("expected help overlay to mention Enter applies edits, got:\n%s", view)
+	}
+	if !strings.Contains(view, "Ctrl+W clears filter") {
+		t.Fatalf("expected help overlay to mention Ctrl+W filter clear, got:\n%s", view)
 	}
 }
 

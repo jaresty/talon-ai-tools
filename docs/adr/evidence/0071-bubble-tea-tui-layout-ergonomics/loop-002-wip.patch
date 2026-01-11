@@ -1,0 +1,71 @@
+diff --git a/internal/bartui/program.go b/internal/bartui/program.go
+index 6c2c7673..09602fe1 100644
+--- a/internal/bartui/program.go
++++ b/internal/bartui/program.go
+@@ -2238,16 +2238,23 @@ func (m model) View() string {
+ 
+ 	if m.helpVisible {
+ 		b.WriteString("Help overlay (press ? to close):\n")
+-		b.WriteString("  Subject focus: type directly, Ctrl+L loads clipboard, Ctrl+O copies preview, Ctrl+B copies the bar build command, Ctrl+Z undoes the last replacement.\n")
+-		b.WriteString("  Subject viewport: PgUp/PgDn scroll, Home/End jump to edges.\n")
+-		b.WriteString("  Command focus: Enter runs command, Ctrl+R pipes preview, Ctrl+Y inserts stdout, leave blank to skip.\n")
+-		b.WriteString("  Result viewport: PgUp/PgDn scroll, Home/End jump, Ctrl+T toggles condensed preview.\n")
+-		b.WriteString("  Tokens: Tab focuses tokens, Left/Right switch categories, Up/Down browse options, Enter/Space toggle, Delete removes, Ctrl+P opens palette, Ctrl+Z undoes last change.\n")
+-		b.WriteString("  Palette: Type \"copy command\", press Enter to copy the CLI and close the palette; Ctrl+W clears the current filter.\n")
+-		b.WriteString("  Environment: Tab again to focus list, Up/Down move, Ctrl+E toggle, Ctrl+A enable all, Ctrl+X clear allowlist.\n")
+-		b.WriteString("  Presets: Ctrl+S opens pane, Ctrl+N starts save, Delete removes, Ctrl+Z undoes deletion.\n")
+-		b.WriteString("  Cancellation: Esc or Ctrl+C closes help first, then cancels running commands, then exits.\n")
+-		b.WriteString("  Help: Press ? anytime to toggle this reference.\n\n")
++		b.WriteString("  Inputs:\n")
++		b.WriteString("    • Subject focus — Type directly; Ctrl+L loads clipboard; Ctrl+O copies preview; Ctrl+B copies CLI; Ctrl+Z undoes subject replacement.\n")
++		b.WriteString("    • Subject viewport — PgUp/PgDn scroll; Home/End jump.\n")
++		b.WriteString("    • Command focus — Enter runs command; Ctrl+R pipes preview; Ctrl+Y inserts stdout; blank command skips execution.\n")
++		b.WriteString("    • Result viewport — PgUp/PgDn scroll; Home/End jump; Ctrl+T toggles condensed preview.\n")
++		b.WriteString("  Tokens:\n")
++		b.WriteString("    • Tab focuses tokens; Left/Right change categories; Up/Down browse options; Enter/Space toggles; Delete removes; Ctrl+P opens palette; Ctrl+Z undoes last change.\n")
++		b.WriteString("  Palette:\n")
++		b.WriteString("    • Type category=value to filter/apply; Tab cycles columns; Shift+Tab reverses; Enter applies staged edits; Ctrl+W clears filter.\n")
++		b.WriteString("  Presets:\n")
++		b.WriteString("    • Ctrl+S toggles pane; Ctrl+N starts save; Delete removes; Ctrl+Z undoes last preset change.\n")
++		b.WriteString("  Environment:\n")
++		b.WriteString("    • Tab focuses list; Up/Down move; Ctrl+E toggles; Ctrl+A enables all; Ctrl+X clears allowlist.\n")
++		b.WriteString("  Command lifecycle:\n")
++		b.WriteString("    • Enter executes; Ctrl+C cancels running commands; follow on-screen prompts for stdout reinsertion.\n")
++		b.WriteString("  Exit & help:\n")
++		b.WriteString("    • Esc closes overlays (help → palette → prompts) then exits; press ? anytime to toggle this reference.\n\n")
+ 	}
+ 
+ 	b.WriteString("Subject (PgUp/PgDn scroll · Home/End jump):\n")
+diff --git a/internal/bartui/program_test.go b/internal/bartui/program_test.go
+index 1a33333a..46f671dd 100644
+--- a/internal/bartui/program_test.go
++++ b/internal/bartui/program_test.go
+@@ -583,6 +583,9 @@ func TestToggleHelpOverlay(t *testing.T) {
+ 	if !strings.Contains(view, "Help overlay (press ? to close)") {
+ 		t.Fatalf("expected view to include help overlay contents, got:\n%s", view)
+ 	}
++	if !strings.Contains(view, "Inputs:") {
++		t.Fatalf("expected help overlay to group shortcuts under Inputs, got:\n%s", view)
++	}
+ 	if !strings.Contains(strings.ToLower(m.statusMessage), "help overlay") {
+ 		t.Fatalf("expected status message to reference help overlay, got %q", m.statusMessage)
+ 	}
+@@ -1022,11 +1025,14 @@ func TestHelpOverlayMentionsCopyCommandPaletteHint(t *testing.T) {
+ 	m, _ = updateModel(t, m, tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{'?'}})
+ 	view = m.View()
+ 
+-	if !strings.Contains(view, "Type \"copy command\"") {
+-		t.Fatalf("expected help overlay to instruct palette copy command, got:\n%s", view)
++	if !strings.Contains(view, "Type category=value") {
++		t.Fatalf("expected help overlay to instruct category=value palette input, got:\n%s", view)
++	}
++	if !strings.Contains(view, "Enter applies staged edits") {
++		t.Fatalf("expected help overlay to mention Enter applies edits, got:\n%s", view)
+ 	}
+-	if !strings.Contains(view, "press Enter to copy the CLI") {
+-		t.Fatalf("expected help overlay to mention Enter closes palette, got:\n%s", view)
++	if !strings.Contains(view, "Ctrl+W clears filter") {
++		t.Fatalf("expected help overlay to mention Ctrl+W filter clear, got:\n%s", view)
+ 	}
+ }
+ 

@@ -1,4 +1,4 @@
-Proposed — Bubble Tea TUI improves prompt editing ergonomics for the Go CLI (2026-01-09)
+Accepted — Bubble Tea TUI improves prompt editing ergonomics for the Go CLI (2026-01-09)
 
 ## Context
 - The existing `bar` Go CLI offers scripted prompt assembly but leaves subject capture, preview, and downstream dispatch to ad-hoc shell workflows.

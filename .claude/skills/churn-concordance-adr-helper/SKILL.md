@@ -25,7 +25,7 @@ description: Declarative workflow for running churn × complexity Concordance an
 ## Concordance Glossary
 - **Visibility**: How explicit the coordination contracts are; higher visibility means clearer orchestrators, interfaces, and behavioural declarations.
 - **Scope**: The breadth of modules/features a change touches; narrower scope confines churn to well-bounded domains.
-- **Volatility**: A hotspot exhibits volatility when strong connascence (timing, execution order, shared algorithms) makes behaviour sensitive to when and how work executes, forcing tightly coupled change sets across teams.
+- **Volatility**: A hotspot exhibits volatility when strong connascence (timing, execution order, shared algorithms) makes behaviour sensitive to when and how work executes, forcing tightly coupled change sets across modules.
 - **Canonicalization**: Collapsing overlapping intent into a single named contract so future work gravitates toward the same implementation path.
 
 ## Execution Checklist

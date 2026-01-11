@@ -15,6 +15,8 @@ Proposed — Bubble Tea TUI improves prompt editing ergonomics for the Go CLI (2
   - Show a deterministic loading indicator while preview work is in flight and collapse duplicate requests within a debounce window so keystrokes remain responsive.
 - Ship the TUI as an optional `bar tui` subcommand within the existing CLI binary so it coexists with the current surface while reusing shared configuration/preset directories.
 - Handle terminal resizing consistently: listen for `tea.WindowSizeMsg`, recompute layout breakpoints, and rely on Bubbles primitives (`textarea`, `viewport`, `list`) so multi-pane output scrolls without truncation.
+  - Bind both the subject editor and command/result panes to dedicated `viewport.Model`s sized from the latest window metrics so large payloads remain navigable without displacing other panes.
+  - Surface shortcut affordances for viewport navigation (top/bottom jumps, page scroll, condensed preview toggle) and keep them visible in the help overlay so pilots can traverse long transcripts quickly.
 - Let operators adjust prompt tokens, destinations, and preset selections from within the TUI itself so launching with CLI shorthand remains optional.
 - Provide subject import/export affordances: operators can type subject text directly, pull it from the clipboard or a shell command, edit it in place, and push the rendered prompt to another command or the clipboard with the response surfaced in a dedicated TUI pane (and optionally reinserted into the subject field). The single-command flow must:
   - label the command input as optional and highlight when it is empty so pilots know the editor works without piping;
@@ -74,7 +76,7 @@ Proposed — Bubble Tea TUI improves prompt editing ergonomics for the Go CLI (2
 - `go test ./internal/bartui/...` verifies preset load/save/delete flows, ensuring the docked pane keeps the summary visible and undo/confirmation signalling stays consistent.
 - `make guardrails` verifies release packaging and installer manifests ship the Bubble Tea assets (binary and snapshot fixture) without drifting from the repository.
 - Add Bubble Tea regression tests that drive rapid subject edits and assert preview commands settle asynchronously without blocking keystrokes.
-- Exercise window resize snapshots (`bar tui --fixture … --width …`) to confirm viewport breakpoints and scroll affordances remain intact.
+- Exercise window resize snapshots (`bar tui --fixture … --width …`) to confirm viewport breakpoints, viewport-scrolling shortcuts, and condensed preview toggles remain intact.
 - `python3 -m pytest _tests/test_bar_completion_cli.py` keeps CLI completions and installers aligned with the prompt grammar, ensuring the `bar tui` command surfaces in shell hints.
 
 ---
@@ -87,7 +89,7 @@ Proposed — Bubble Tea TUI improves prompt editing ergonomics for the Go CLI (2
 - Build preset management inside the TUI, including the docked pane, save/load/delete flows, divergence indicators, and undo/confirmation cues that keep the summary strip visible throughout.
 - Add subject import/export plumbing: clipboard capture, shell command piping (prompt → command, command → subject), in-TUI result display, and optional re-insertion of subprocess output into the subject field.
 - Convert preview recomputation to cancellable `tea.Cmd` streams with visible loading affordances and backpressure guards.
-- Teach the Bubble Tea program to handle `tea.WindowSizeMsg`, updating viewport sizes and layout breakpoints in a single source of truth.
+- Teach the Bubble Tea program to handle `tea.WindowSizeMsg`, updating viewport sizes and layout breakpoints in a single source of truth while piping the subject and command panes through shared viewport helpers.
 - Add environment variable pass-through guardrails so commands can access opt-in credentials: surface an allowlist UI, confirm the names before execution, and cover the behaviour with `go test ./internal/bartui`.
 - Publish follow-on ADR 0071 (layout ergonomics) to capture the upcoming compact layout refinements described in this critique cycle.
  

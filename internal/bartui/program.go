@@ -454,6 +454,8 @@ type model struct {
 	unassignedTokens         []string
 	lastTokenSnapshot        []string
 
+	destinationSummary string
+
 	pendingSubject       *subjectReplacementPrompt
 	subjectUndoValue     string
 	subjectUndoSource    string
@@ -619,6 +621,7 @@ func newModel(opts Options) model {
 		lastDeletedPreset:      nil,
 		lastDeletedDescription: "",
 	}
+	m.destinationSummary = "clipboard — Ctrl+B copies CLI"
 	m.initializeTokenCategories()
 	if len(envNames) == 0 {
 		m.envSelection = -1
@@ -1942,6 +1945,49 @@ func (m *model) renderStatusStrip() string {
 	return strings.Join(parts, " | ")
 }
 
+func (m *model) renderSummaryStrip() string {
+	preset := "(none)"
+	if m.activePresetName != "" {
+		preset = m.activePresetName
+		if m.tokensDiverged() {
+			preset += " (diverged)"
+		}
+	}
+
+	tokenSummary := "none"
+	if len(m.tokens) > 0 {
+		tokenSummary = shortenString(strings.Join(m.tokens, ", "), 40)
+	}
+
+	commandForClipboard := joinShellArgs(m.buildCommandArgs())
+	displayCommand := sanitizeShellCommand(commandForClipboard)
+	if displayCommand == "" {
+		displayCommand = "bar build"
+	}
+	displayCommand = shortenString(displayCommand, 56)
+
+	destination := m.destinationSummary
+	if strings.TrimSpace(destination) == "" {
+		destination = "clipboard — Ctrl+B copies CLI"
+	}
+
+	envSummary := summarizeEnvList(m.allowedEnv)
+	envSummary = strings.TrimPrefix(envSummary, "env ")
+	if envSummary == "" {
+		envSummary = "(none)"
+	}
+
+	parts := []string{
+		fmt.Sprintf("Preset: %s", preset),
+		fmt.Sprintf("Tokens: %s", tokenSummary),
+		fmt.Sprintf("CLI: %s", displayCommand),
+		fmt.Sprintf("Destination: %s", destination),
+		fmt.Sprintf("Env: %s", envSummary),
+	}
+
+	return "Summary strip: " + strings.Join(parts, " | ")
+}
+
 func (m *model) renderResultSummaryLine() string {
 	if m.commandRunning {
 		label := "input none"
@@ -2471,6 +2517,12 @@ func (m model) View() string {
 		b.WriteString("\n\n")
 	}
 
+	summaryStrip := m.renderSummaryStrip()
+	if summaryStrip != "" {
+		b.WriteString(summaryStrip)
+		b.WriteString("\n\n")
+	}
+
 	if m.helpVisible {
 		b.WriteString("Help overlay (press ? to close):\n")
 		b.WriteString("  Inputs:\n")
@@ -2755,6 +2807,7 @@ func (m *model) copyPreviewToClipboard() {
 		m.statusMessage = fmt.Sprintf("Clipboard write failed: %v", err)
 		return
 	}
+	m.destinationSummary = "clipboard — Preview copied"
 	m.statusMessage = "Copied preview to clipboard."
 }
 
@@ -2764,6 +2817,7 @@ func (m *model) copyBuildCommandToClipboard() {
 		m.statusMessage = fmt.Sprintf("Clipboard write failed: %v", err)
 		return
 	}
+	m.destinationSummary = "clipboard — CLI command copied"
 	m.statusMessage = "Copied bar build command to clipboard."
 }
 

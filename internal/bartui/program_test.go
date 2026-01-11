@@ -773,8 +773,58 @@ func TestInitialFocusBreadcrumbs(t *testing.T) {
 	if !strings.Contains(view, "[SUBJECT]") {
 		t.Fatalf("expected breadcrumbs to highlight subject, got view:\n%s", view)
 	}
+	if !strings.Contains(view, "Summary strip:") {
+		t.Fatalf("expected summary strip to render, got view:\n%s", view)
+	}
+	if !strings.Contains(view, "Destination: clipboard — Ctrl+B copies CLI") {
+		t.Fatalf("expected default destination summary, got view:\n%s", view)
+	}
 	if !strings.Contains(m.statusMessage, "Subject input focused") {
 		t.Fatalf("expected status message to indicate subject focus, got %q", m.statusMessage)
+	}
+}
+
+func TestSummaryStripUpdatesAfterCopy(t *testing.T) {
+	var copied string
+	opts := Options{
+		Tokens:          []string{"todo"},
+		TokenCategories: defaultTokenCategories(),
+		Preview:         func(subject string, tokens []string) (string, error) { return "preview:" + subject, nil },
+		ClipboardRead:   func() (string, error) { return "", nil },
+		ClipboardWrite:  func(s string) error { copied = s; return nil },
+		RunCommand: func(context.Context, string, string, map[string]string) (string, string, error) {
+			return "", "", nil
+		},
+		CommandTimeout: time.Second,
+	}
+	m := newModel(opts)
+	m.activePresetName = "starter"
+	m.activePresetTokens = []string{"todo"}
+
+	view := m.View()
+	if !strings.Contains(view, "Preset: starter") {
+		t.Fatalf("expected summary to include preset, got view:\n%s", view)
+	}
+	if !strings.Contains(view, "Tokens: todo") {
+		t.Fatalf("expected summary to include token list, got view:\n%s", view)
+	}
+	if !strings.Contains(view, "Destination: clipboard — Ctrl+B copies CLI") {
+		t.Fatalf("expected default destination summary, got view:\n%s", view)
+	}
+
+	m.copyBuildCommandToClipboard()
+	if copied == "" {
+		t.Fatalf("expected CLI command to be copied")
+	}
+	view = m.View()
+	if !strings.Contains(view, "Destination: clipboard — CLI command copied") {
+		t.Fatalf("expected summary to note CLI copy, got view:\n%s", view)
+	}
+
+	m.copyPreviewToClipboard()
+	view = m.View()
+	if !strings.Contains(view, "Destination: clipboard — Preview copied") {
+		t.Fatalf("expected summary to note preview copy, got view:\n%s", view)
 	}
 }
 

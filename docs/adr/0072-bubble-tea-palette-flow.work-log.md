@@ -81,3 +81,45 @@ assets:
 - Expect case: `tests/integration/tui/cases/token-command-history.exp`
 - Evidence bundle: `docs/adr/evidence/0072-bubble-tea-palette-flow/loop-002.md`
 - Transcripts: `loop-002-token-command-history-red.log`, `loop-002-token-command-history-green.log`
+
+## loop-003 | helper:v20251223.1 | 2026-01-11
+
+focus: ADR 0072 Decision bullet 12 → add a sticky summary strip that surfaces preset/divergence, staged tokens, CLI command, destination, and environment state (salient task: summary strip + CLI/destination visibility).
+
+active_constraint: `scripts/tools/run-tui-expect.sh sticky-summary` failed with `missing sticky summary strip`, and operators could not see presets/CLI/destination after launch, leaving the summary strip unimplemented.
+
+expected_value:
+| Factor | Value | Rationale |
+| --- | --- | --- |
+| Impact | High | Summary strip keeps preset/divergence and CLI parity visible, anchoring the single-page flow |
+| Probability | High | Updating `renderStatusStrip`/View and wiring expect coverage directly addresses the missing strip |
+| Time Sensitivity | Medium | Needed before broader omnibox/palette refactors so transcripts remain audit-ready |
+| Uncertainty note | Low | Failure and success reproduced deterministically via expect harness |
+
+validation_targets:
+- `scripts/tools/run-tui-expect.sh sticky-summary`
+- `scripts/tools/run-tui-expect.sh --all`
+- `go test ./internal/bartui`
+- `go test ./cmd/bar/...`
+- `python3 -m pytest _tests/test_bar_completion_cli.py`
+
+evidence: See `docs/adr/evidence/0072-bubble-tea-palette-flow/loop-003.md` for red/green transcripts and test runs.
+
+rollback_plan: `<VCS_REVERT>` = `git restore --source=HEAD -- internal/bartui/program.go internal/bartui/program_test.go cmd/bar/testdata/tui_smoke.json scripts/tools/run-tui-expect.sh tests/integration/tui/cases/sticky-summary.exp`; rerun `scripts/tools/run-tui-expect.sh sticky-summary` to confirm the missing strip returns.
+
+delta_summary: helper:diff-snapshot=4 files changed, 195 insertions(+), 52 deletions(-) — added sticky summary strip rendering/state, destination tracking, expect helper for batch runs, new expect case, updated smoke snapshot, and unit coverage for summary content.
+
+loops_remaining_forecast: 2 loops (dock omnibox layout/parity with Bubbles components; extend palette history/destination telemetry including ntcharts sparkline). Confidence: medium — remaining scope spans layout refactors and telemetry enrichment.
+
+residual_constraints:
+- Medium — Palette history still omits clipboard/undo events; mitigation: extend command/destination logging for clipboard inserts and undo flows with expect coverage.
+- Medium — Docked omnibox layout refactor (Decision bullet 10/13) still pending; mitigation: rework viewports using Lip Gloss/Bubbles components, validated with updated snapshots.
+
+next_work:
+- Behaviour: Rework the docked omnibox layout and integrate Bubbles list/input components for staged edits (validation: updated snapshot + `go test ./cmd/bar/...`).
+- Behaviour: Extend palette history/destination summaries to capture clipboard insertions, undo events, and command destinations (validation: augmented expect cases + `go test ./internal/bartui`).
+
+assets:
+- Expect case: `tests/integration/tui/cases/sticky-summary.exp`
+- Evidence bundle: `docs/adr/evidence/0072-bubble-tea-palette-flow/loop-003.md`
+- Transcripts: `loop-003-sticky-summary-red.log`, `loop-003-sticky-summary-green.log`

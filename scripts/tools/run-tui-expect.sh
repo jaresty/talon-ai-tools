@@ -3,12 +3,15 @@ set -euo pipefail
 
 usage() {
     cat <<'EOF'
-Usage: scripts/tools/run-tui-expect.sh <case> [-- list]
-Run a Bubble Tea TUI expect integration case.
+Usage: scripts/tools/run-tui-expect.sh <case>
+       scripts/tools/run-tui-expect.sh --list
+       scripts/tools/run-tui-expect.sh --all
+Run Bubble Tea TUI expect integration cases.
 
 Examples:
   scripts/tools/run-tui-expect.sh launch-status
   scripts/tools/run-tui-expect.sh --list
+  scripts/tools/run-tui-expect.sh --all
 EOF
 }
 
@@ -22,10 +25,96 @@ CASES_DIR="$REPO_ROOT/tests/integration/tui/cases"
 TMP_DIR="$REPO_ROOT/tests/integration/tui/tmp"
 mkdir -p "$TMP_DIR"
 
-if [[ ${1:-} == "--list" ]]; then
+list_cases() {
     if [[ -d $CASES_DIR ]]; then
-        find "$CASES_DIR" -name '*.exp' -maxdepth 1 -exec basename {} .exp \; | sort
+        find "$CASES_DIR" -maxdepth 1 -name '*.exp' -exec basename {} .exp \; | sort
     fi
+}
+
+run_case() {
+    local case_name="$1"
+    local case_file="$CASES_DIR/$case_name.exp"
+    if [[ ! -f $case_file ]]; then
+        echo "error: expect case '$case_name' not found at $case_file" >&2
+        return 1
+    fi
+
+    local args_file="$CASES_DIR/$case_name.args"
+    local env_file="$CASES_DIR/$case_name.env"
+
+    local -a extra_args=()
+    if [[ -f $args_file ]]; then
+        while IFS= read -r line || [[ -n $line ]]; do
+            [[ -z $line ]] && continue
+            extra_args+=("$line")
+        done <"$args_file"
+    fi
+
+    local exported_keys=""
+    if [[ -f $env_file ]]; then
+        while IFS='=' read -r key value; do
+            [[ -z $key ]] && continue
+            export "$key"="$value"
+            exported_keys+=" $key"
+        done <"$env_file"
+    fi
+
+    local -a cmd_list=($BAR_TUI_CMD)
+    if [[ ${#extra_args[@]} -gt 0 ]]; then
+        cmd_list+=("${extra_args[@]}")
+    fi
+
+    local log_dir="$TMP_DIR/$case_name"
+    mkdir -p "$log_dir"
+    local transcript="$log_dir/transcript.log"
+    local debug_log="$log_dir/palette.log"
+
+    export TUI_EXPECT_CMD="${cmd_list[*]}"
+    export TUI_EXPECT_TRANSCRIPT="$transcript"
+    export TUI_EXPECT_DEBUG_LOG="$debug_log"
+    export TUI_EXPECT_FIXTURES="$REPO_ROOT/tests/integration/tui/fixtures"
+
+    /usr/bin/expect "$case_file"
+    local status=$?
+
+    if [[ -n $exported_keys ]]; then
+        for key in $exported_keys; do
+            unset "$key"
+        done
+    fi
+
+    if [[ $status -ne 0 ]]; then
+        echo "Case '$case_name' FAILED (exit $status). Transcript: $transcript" >&2
+        return $status
+    fi
+
+    echo "Case '$case_name' passed. Transcript: $transcript"
+}
+
+if [[ ${1:-} == "--list" ]]; then
+    list_cases
+    exit 0
+fi
+
+BAR_TUI_CMD_DEFAULT="go run ./cmd/bar tui --grammar cmd/bar/testdata/grammar.json --no-alt-screen"
+BAR_TUI_CMD=${BAR_TUI_CMD:-$BAR_TUI_CMD_DEFAULT}
+
+if [[ ${1:-} == "--all" ]]; then
+    shift
+    cases=()
+    while IFS= read -r case_name; do
+        [[ -z $case_name ]] && continue
+        cases+=("$case_name")
+    done < <(list_cases)
+    if [[ ${#cases[@]} -eq 0 ]]; then
+        echo "No expect cases found under $CASES_DIR" >&2
+        exit 1
+    fi
+    for case_name in "${cases[@]}"; do
+        if ! run_case "$case_name"; then
+            exit 1
+        fi
+    done
     exit 0
 fi
 
@@ -34,54 +123,4 @@ if [[ $# -lt 1 ]]; then
     exit 1
 fi
 
-CASE="$1"
-CASE_FILE="$CASES_DIR/$CASE.exp"
-if [[ ! -f $CASE_FILE ]]; then
-    echo "error: expect case '$CASE' not found at $CASE_FILE" >&2
-    exit 1
-fi
-
-ARGS_FILE="$CASES_DIR/$CASE.args"
-ENV_FILE="$CASES_DIR/$CASE.env"
-
-BAR_TUI_CMD_DEFAULT="go run ./cmd/bar tui --grammar cmd/bar/testdata/grammar.json --no-alt-screen"
-BAR_TUI_CMD=${BAR_TUI_CMD:-$BAR_TUI_CMD_DEFAULT}
-
-EXTRA_ARGS=()
-if [[ -f $ARGS_FILE ]]; then
-    while IFS= read -r line || [[ -n $line ]]; do
-        [[ -z $line ]] && continue
-        EXTRA_ARGS+=("$line")
-    done <"$ARGS_FILE"
-fi
-
-if [[ -f $ENV_FILE ]]; then
-    while IFS='=' read -r key value; do
-        [[ -z $key ]] && continue
-        export "$key"="$value"
-    done <"$ENV_FILE"
-fi
-
-CMD_LIST=($BAR_TUI_CMD)
-if [[ ${#EXTRA_ARGS[@]} -gt 0 ]]; then
-    CMD_LIST+=("${EXTRA_ARGS[@]}")
-fi
-
-LOG_DIR="$TMP_DIR/$CASE"
-mkdir -p "$LOG_DIR"
-TRANSCRIPT="$LOG_DIR/transcript.log"
-DEBUG_LOG="$LOG_DIR/palette.log"
-
-export TUI_EXPECT_CMD="${CMD_LIST[*]}"
-export TUI_EXPECT_TRANSCRIPT="$TRANSCRIPT"
-export TUI_EXPECT_DEBUG_LOG="$DEBUG_LOG"
-export TUI_EXPECT_FIXTURES="$REPO_ROOT/tests/integration/tui/fixtures"
-
-/usr/bin/expect "$CASE_FILE"
-STATUS=$?
-if [[ $STATUS -ne 0 ]]; then
-    echo "Case '$CASE' FAILED (exit $STATUS). Transcript: $TRANSCRIPT" >&2
-    exit $STATUS
-fi
-
-echo "Case '$CASE' passed. Transcript: $TRANSCRIPT"
+run_case "$1"

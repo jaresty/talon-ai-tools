@@ -1,0 +1,24 @@
+#!/usr/bin/expect -f
+set timeout 30
+set env(NO_COLOR) 1
+set transcript $env(TUI_EXPECT_TRANSCRIPT)
+log_file -a $transcript
+set cmd [split $env(TUI_EXPECT_CMD)]
+eval spawn $cmd
+
+expect {
+    -re {bar prompt editor \(Bubble Tea prototype\)} {}
+    timeout { send_error "failed to render header"; exit 1 }
+}
+
+# verify sticky summary strip renders directly after status
+expect {
+    -re {Summary strip: Preset: .* Destination: .*} {}
+    timeout { send_error "missing sticky summary strip"; exit 1 }
+}
+
+send "\003"
+after 200
+send "\003"
+expect eof
+exit 0

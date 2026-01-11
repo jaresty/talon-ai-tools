@@ -1024,9 +1024,6 @@ func collectShorthandState(grammar *Grammar, tokens []string) completionState {
 			continue
 		}
 		if strings.HasPrefix(token, "persona=") && !state.override {
-			if !state.static && !state.staticClosed {
-				state.staticClosed = true
-			}
 			state.personaPreset = true
 			continue
 		}
@@ -1074,11 +1071,6 @@ func collectShorthandState(grammar *Grammar, tokens []string) completionState {
 			continue
 		}
 		personaAxis := detectPersonaAxis(grammar, token)
-		if personaAxis != "" {
-			if !state.static && !state.staticClosed {
-				state.staticClosed = true
-			}
-		}
 		switch personaAxis {
 		case "voice":
 			state.personaVoice = true

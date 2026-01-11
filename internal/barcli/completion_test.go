@@ -587,6 +587,62 @@ func TestPersonaPresetSkipsPersonaDetailSuggestions(t *testing.T) {
 	}
 }
 
+func TestCompleteStaticAfterPersonaPresetAndIntent(t *testing.T) {
+	grammar := loadCompletionGrammar(t)
+	catalog := newCompletionCatalog(grammar)
+
+	if len(catalog.personaPreset) == 0 {
+		t.Fatalf("expected persona preset tokens in catalog")
+	}
+	if len(catalog.personaIntent) == 0 {
+		t.Fatalf("expected persona intent tokens in catalog")
+	}
+	if len(catalog.static) == 0 {
+		t.Fatalf("expected static tokens in catalog")
+	}
+
+	presetToken := catalog.personaPreset[0]
+	intentToken := catalog.personaIntent[0]
+	staticToken := catalog.static[0]
+
+	staticSlug := grammar.slugForToken(staticToken)
+	if strings.TrimSpace(staticSlug) == "" {
+		staticSlug = staticToken
+	}
+
+	words := []string{"bar", "build", presetToken, intentToken, ""}
+	suggestions, err := Complete(grammar, "bash", words, len(words)-1)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	if !containsSuggestionValue(suggestions, staticSlug) {
+		t.Fatalf("expected static suggestion %q after persona selection, got %v", staticSlug, suggestions)
+	}
+	if !containsSuggestionValue(suggestions, skipValue("static")) {
+		t.Fatalf("expected static skip token after persona selection, got %v", suggestions)
+	}
+
+	staticIdx := indexOfSuggestion(suggestions, staticSlug)
+	if staticIdx == -1 {
+		t.Fatalf("expected static suggestion index for %q", staticSlug)
+	}
+
+	firstAxisIdx := len(suggestions)
+	for idx, suggestion := range suggestions {
+		if strings.HasPrefix(suggestion.Category, "How ") {
+			firstAxisIdx = idx
+			break
+		}
+	}
+	if firstAxisIdx == len(suggestions) {
+		t.Fatalf("expected axis suggestions after persona selection, got %v", suggestions)
+	}
+	if staticIdx > firstAxisIdx {
+		t.Fatalf("expected static suggestions before axis suggestions, got static index %d and axis index %d", staticIdx, firstAxisIdx)
+	}
+}
+
 func TestCompleteDirectionalSuggestionsWithoutChannel(t *testing.T) {
 	grammar := loadCompletionGrammar(t)
 

@@ -88,7 +88,7 @@
 - validation_targets:
   - ~/.local/bin/bar __complete fish 4 bar build todo full ""
 - evidence:
-  - red: docs/adr/evidence/0067-bar-completion-metadata-and-multi-stage/loop-007.md#loop-007-red--helper-rerun-~/.local/bin/bar-__complete-fish-4-bar-build-todo-full
+  - red: docs/adr/evidence/0067-bar-completion-metadata-and-multi-stage/loop-007.md#loop-007-red--helper-rerun-~/.local/bin-bar-__complete-fish-4-bar-build-todo-full
 - rollback_plan: `git restore --source=HEAD -- docs/adr/0067-bar-completion-metadata-and-multi-stage.work-log.md docs/adr/evidence/0067-bar-completion-metadata-and-multi-stage/loop-007.md`
 - delta_summary: helper:diff-snapshot=2 files changed, 11 insertions(+), 0 deletions(-) — captured release regression evidence and reopened follow-up work
 - loops_remaining_forecast: 1 loop (publish new release artifact with metadata completions) — high confidence once release pipeline runs
@@ -96,3 +96,20 @@
   - Release artifact missing metadata completions (severity: high; mitigation: cut new tag post-fix and rerun installer; owning ADR 0067 Consequences)
 - next_work:
   - Behaviour: Publish updated CLI release (validation via install script re-run on new tag)
+
+## 2026-01-10 — loop 008
+- helper_version: helper:v20251223.1
+- focus: Decision § regression fix — restore static “What” prompts after persona intent/preset selection
+- active_constraint: Completing persona preset + intent tokens suppressed static suggestions, forcing operators to tab straight into How-stage axes.
+- validation_targets:
+  - go test ./internal/barcli
+- evidence:
+  - green: internal/barcli/completion_test.go:590
+  - green: go test ./internal/barcli
+- rollback_plan: `git restore --source=HEAD -- internal/barcli/completion.go internal/barcli/completion_test.go docs/adr/0067-bar-completion-metadata-and-multi-stage.work-log.md`
+- delta_summary: helper:diff-snapshot=3 files changed, 23 insertions(+), 5 deletions(-) — keep static stage open after persona tokens and add regression coverage
+- loops_remaining_forecast: 0 loops — persona flow regression cleared; release verification pending loop 007 follow-up
+- residual_constraints:
+  - Publish refreshed release artifact once metadata build catches this regression fix (severity: medium; mitigation: fold into loop 007 follow-up)
+- next_work:
+  - Behaviour: Update release artifact per loop 007 plan once distribution window opens

@@ -92,12 +92,14 @@ func runTUI(opts *cliOptions, stdin io.Reader, stdout, stderr io.Writer) int {
 		}
 
 		if fixture.ExpectedPreview != "" && previewText != fixture.ExpectedPreview {
-			writeError(stderr, fmt.Sprintf("snapshot preview mismatch (expected %q, got %q)", fixture.ExpectedPreview, previewText))
+			diff := formatSnapshotDiff(fixture.ExpectedPreview, previewText)
+			writeError(stderr, fmt.Sprintf("snapshot preview mismatch\n%s", diff))
 			return 1
 		}
 
 		if fixture.ExpectedView != "" && view != fixture.ExpectedView {
-			writeError(stderr, "snapshot view mismatch")
+			diff := formatSnapshotDiff(fixture.ExpectedView, view)
+			writeError(stderr, fmt.Sprintf("snapshot view mismatch\n%s", diff))
 			return 1
 		}
 
@@ -275,6 +277,35 @@ func runShellCommand(ctx context.Context, command string, stdin string, env map[
 
 	err := cmd.Run()
 	return stdoutBuf.String(), stderrBuf.String(), err
+}
+
+func formatSnapshotDiff(expected, actual string) string {
+	if expected == actual {
+		return "snapshots match"
+	}
+
+	expLines := strings.Split(expected, "\n")
+	actLines := strings.Split(actual, "\n")
+	max := len(expLines)
+	if len(actLines) > max {
+		max = len(actLines)
+	}
+	for i := 0; i < max; i++ {
+		var expLine, actLine string
+		if i < len(expLines) {
+			expLine = expLines[i]
+		}
+		if i < len(actLines) {
+			actLine = actLines[i]
+		}
+		if expLine != actLine {
+			return fmt.Sprintf("line %d:\n  expected: %q\n  actual:   %q", i+1, expLine, actLine)
+		}
+	}
+	if len(expLines) != len(actLines) {
+		return fmt.Sprintf("line count mismatch: expected %d lines, actual %d lines", len(expLines), len(actLines))
+	}
+	return "snapshot outputs differ"
 }
 
 func buildShellCommand(ctx context.Context, command string) *exec.Cmd {

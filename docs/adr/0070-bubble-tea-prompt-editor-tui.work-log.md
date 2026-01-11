@@ -1360,4 +1360,24 @@
 - next_work:
   - Behaviour: Monitor pilot telemetry for viewport interactions and condensed preview adoption; rerun go test ./internal/bartui, go test ./cmd/bar/..., and python3 -m pytest _tests/test_bar_completion_cli.py if changes are required.
 
+## 2026-01-11 — loop 076
+- helper_version: helper:v20251223.1
+- focus: Consequences § guardrails — improve fixture mismatch diagnostics for bar tui snapshot harness
+- active_constraint: When `bar tui --fixture` snapshot output drifted, the CLI only reported "snapshot view mismatch" without pointing at the differing line, slowing remediation of viewport regressions expected by Decision § subject import/export.
+- validation_targets:
+  - go test -count=1 ./internal/bartui
+  - go test -count=1 ./cmd/bar/...
+  - python3 -m pytest _tests/test_bar_completion_cli.py
+- evidence:
+  - green: docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-076.md#loop-076-green--go-test--count1--internal-bartui
+  - green: docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-076.md#loop-076-green--go-test--count1--cmd-bar
+  - green: docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-076.md#loop-076-green--python3--m-pytest-_tests-test_bar_completion_cli.py
+- rollback_plan: `git restore --source=HEAD -- internal/barcli/tui.go internal/barcli/tui_test.go cmd/bar/tui_snapshot_diff_test.go docs/adr/0070-bubble-tea-prompt-editor-tui.work-log.md docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-076.md`
+- delta_summary: helper:diff-snapshot=git diff --stat HEAD | internal/barcli/tui.go | 35 ++++++++++++++++++++++++++++++++--- — added line-level diff output when snapshot preview/view mismatches occur so fixture failures identify the first divergent line.
+- loops_remaining_forecast: 0 loops — CLI now surfaces actionable diffs; continue monitoring pilot feedback for viewport ergonomics (medium confidence).
+- residual_constraints:
+  - Pilot feedback on viewport ergonomics (scroll affordances, condensed preview messaging) remains pending (severity: medium; mitigation: gather pilot notes, rerun go test ./internal/bartui and python3 -m pytest _tests/test_bar_completion_cli.py if adjustments are requested).
+- next_work:
+  - Behaviour: Monitor pilot telemetry for viewport interactions and condensed preview adoption; rerun go test ./internal/bartui, go test ./cmd/bar/..., and python3 -m pytest _tests/test_bar_completion_cli.py if changes are required.
+
 

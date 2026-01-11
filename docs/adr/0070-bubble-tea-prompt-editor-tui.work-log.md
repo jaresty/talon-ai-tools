@@ -1380,4 +1380,24 @@
 - next_work:
   - Behaviour: Monitor pilot telemetry for viewport interactions and condensed preview adoption; rerun go test ./internal/bartui, go test ./cmd/bar/..., and python3 -m pytest _tests/test_bar_completion_cli.py if changes are required.
 
+## 2026-01-11 — loop 077
+- helper_version: helper:v20251223.1
+- focus: Validation § snapshot harness — add fixture width override to exercise window resize command
+- active_constraint: `bar tui --fixture … --width …` from Validation could not run because the CLI ignored width overrides, blocking snapshot coverage for resize guardrails.
+- validation_targets:
+  - go test -count=1 ./internal/bartui
+  - go test -count=1 ./cmd/bar/...
+  - python3 -m pytest _tests/test_bar_completion_cli.py
+- evidence:
+  - green: docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-077.md#loop-077-green--go-test--count1--internal-bartui
+  - green: docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-077.md#loop-077-green--go-test--count1--cmd-bar
+  - green: docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-077.md#loop-077-green--python3--m-pytest-_tests-test_bar_completion_cli.py
+- rollback_plan: `git restore --source=HEAD -- internal/barcli/app.go internal/barcli/tui.go internal/barcli/tui_test.go internal/bartui/program.go cmd/bar/main_test.go docs/adr/0070-bubble-tea-prompt-editor-tui.work-log.md docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-077.md`
+- delta_summary: helper:diff-snapshot=git diff --stat HEAD | cmd/bar/main_test.go | 98 ++++++++++++++++++++++++++++++++++++++++++++++; internal/barcli/app.go | 22 ++++++++++-; internal/barcli/tui.go | 11 +++---; internal/bartui/program.go | 15 ++++++- — added `--fixture-width` parsing, taught `bartui.Snapshot` to honor initial width, and expanded fixture tests so resize snapshots stay green.
+- loops_remaining_forecast: 0 loops — width override now supports resize validation; continue monitoring pilot feedback for viewport ergonomics (medium confidence).
+- residual_constraints:
+  - Pilot feedback on viewport ergonomics (scroll affordances, condensed preview messaging) remains pending (severity: medium; mitigation: gather pilot notes, rerun go test ./internal/bartui and python3 -m pytest _tests/test_bar_completion_cli.py if adjustments are requested).
+- next_work:
+  - Behaviour: Monitor pilot telemetry for viewport interactions and condensed preview adoption; rerun go test ./internal/bartui, go test ./cmd/bar/..., and python3 -m pytest _tests/test_bar_completion_cli.py if changes are required.
+
 

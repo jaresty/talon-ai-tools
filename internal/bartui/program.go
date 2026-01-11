@@ -68,6 +68,8 @@ type Options struct {
 	LoadPreset      LoadPresetFunc
 	SavePreset      SavePresetFunc
 	DeletePreset    DeletePresetFunc
+	InitialWidth    int
+	InitialHeight   int
 }
 
 const (
@@ -481,6 +483,15 @@ func newModel(opts Options) model {
 	subjectViewport := viewport.New(defaultViewportWidth, minSubjectViewport)
 	resultViewport := viewport.New(defaultViewportWidth, minResultViewport)
 
+	initialWidth := opts.InitialWidth
+	if initialWidth <= 0 {
+		initialWidth = defaultViewportWidth
+	}
+	initialHeight := opts.InitialHeight
+	if initialHeight <= 0 {
+		initialHeight = defaultViewportHeight
+	}
+
 	m := model{
 		tokens:                 append([]string(nil), opts.Tokens...),
 		tokenCategories:        cloneTokenCategories(opts.TokenCategories),
@@ -502,8 +513,8 @@ func newModel(opts Options) model {
 		envInitial:             envInitial,
 		envSelection:           0,
 		helpVisible:            false,
-		width:                  defaultViewportWidth,
-		height:                 defaultViewportHeight,
+		width:                  initialWidth,
+		height:                 initialHeight,
 		subjectViewport:        subjectViewport,
 		resultViewport:         resultViewport,
 		listPresets:            opts.ListPresets,

@@ -7,6 +7,7 @@ import (
 	"io"
 	"os"
 	"sort"
+	"strconv"
 	"strings"
 )
 
@@ -21,7 +22,7 @@ var generalHelpText = strings.TrimSpace(`USAGE
 
   bar help
   bar help tokens [section...] [--grammar PATH]
-  bar tui [tokens...] [--grammar PATH] [--fixture PATH] [--no-alt-screen] [--env NAME]...
+  bar tui [tokens...] [--grammar PATH] [--fixture PATH] [--fixture-width N] [--no-alt-screen] [--env NAME]...
  
    bar completion <shell> [--grammar PATH] [--output FILE]
       (shell = bash | zsh | fish)
@@ -212,6 +213,7 @@ type cliOptions struct {
 	GrammarPath  string
 	Force        bool
 	FixturePath  string
+	FixtureWidth int
 	NoAltScreen  bool
 	EnvAllowlist []string
 }
@@ -266,8 +268,26 @@ func parseArgs(args []string) (*cliOptions, error) {
 			opts.FixturePath = args[i]
 		case strings.HasPrefix(arg, "--fixture="):
 			opts.FixturePath = strings.TrimPrefix(arg, "--fixture=")
+		case arg == "--fixture-width":
+			i++
+			if i >= len(args) {
+				return nil, fmt.Errorf("--fixture-width requires a value")
+			}
+			width, err := strconv.Atoi(args[i])
+			if err != nil || width <= 0 {
+				return nil, fmt.Errorf("--fixture-width requires a positive integer")
+			}
+			opts.FixtureWidth = width
+		case strings.HasPrefix(arg, "--fixture-width="):
+			value := strings.TrimPrefix(arg, "--fixture-width=")
+			width, err := strconv.Atoi(value)
+			if err != nil || width <= 0 {
+				return nil, fmt.Errorf("--fixture-width requires a positive integer")
+			}
+			opts.FixtureWidth = width
 		case arg == "--no-alt-screen":
 			opts.NoAltScreen = true
+
 		case arg == "--env":
 			i++
 			if i >= len(args) {

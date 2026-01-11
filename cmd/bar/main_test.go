@@ -7,6 +7,7 @@ import (
 	"errors"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"testing"
 	"time"
@@ -190,5 +191,102 @@ func TestTUIFixtureEmitsSnapshot(t *testing.T) {
 	}
 	if stdout.String() != view {
 		t.Fatalf("expected repository fixture output to match snapshot\n--- expected ---\n%s\n--- actual ---\n%s", view, stdout.String())
+	}
+}
+
+func TestTUIFixtureWidthFlagAdjustsSnapshot(t *testing.T) {
+	subject := "Smoke subject"
+	tokens := []string{"todo", "focus"}
+	grammarPath := filepath.Join("testdata", "grammar.json")
+
+	grammar, err := barcli.LoadGrammar(grammarPath)
+	if err != nil {
+		t.Fatalf("failed to load grammar: %v", err)
+	}
+
+	preview := func(subj string, tokenSet []string) (string, error) {
+		result, buildErr := barcli.Build(grammar, tokenSet)
+		if buildErr != nil {
+			return "", buildErr
+		}
+		result.Subject = subj
+		result.PlainText = barcli.RenderPlainText(result)
+		return result.PlainText, nil
+	}
+
+	defaultView, _, err := bartui.Snapshot(bartui.Options{
+		Tokens:          tokens,
+		TokenCategories: barcli.BuildTokenCategories(grammar),
+		Preview:         preview,
+	}, subject)
+	if err != nil {
+		t.Fatalf("default snapshot failed: %v", err)
+	}
+
+	const width = 40
+	narrowView, narrowPreview, err := bartui.Snapshot(bartui.Options{
+		Tokens:          tokens,
+		TokenCategories: barcli.BuildTokenCategories(grammar),
+		Preview:         preview,
+		InitialWidth:    width,
+	}, subject)
+	if err != nil {
+		t.Fatalf("narrow snapshot failed: %v", err)
+	}
+	if narrowView == defaultView {
+		t.Fatalf("expected narrow snapshot to differ from default width view")
+	}
+
+	fixture := struct {
+		Tokens          []string `json:"tokens"`
+		Subject         string   `json:"subject"`
+		ExpectedPreview string   `json:"expected_preview"`
+		ExpectedView    string   `json:"expected_view"`
+	}{
+		Tokens:          tokens,
+		Subject:         subject,
+		ExpectedPreview: narrowPreview,
+		ExpectedView:    narrowView,
+	}
+
+	data, err := json.MarshalIndent(fixture, "", "  ")
+	if err != nil {
+		t.Fatalf("failed to marshal narrow fixture: %v", err)
+	}
+
+	dir := t.TempDir()
+	fixturePath := filepath.Join(dir, "fixture.json")
+	if err := os.WriteFile(fixturePath, data, 0o600); err != nil {
+		t.Fatalf("failed to write narrow fixture: %v", err)
+	}
+
+	stdout := &bytes.Buffer{}
+	stderr := &bytes.Buffer{}
+	exit := barcli.Run([]string{"tui", "--grammar", grammarPath, "--fixture", fixturePath}, strings.NewReader(""), stdout, stderr)
+	if exit == 0 {
+		t.Fatalf("expected width mismatch to fail without --fixture-width")
+	}
+	if !strings.Contains(stderr.String(), "snapshot view mismatch") {
+		t.Fatalf("expected snapshot mismatch error without width flag, got: %s", stderr.String())
+	}
+
+	stdout.Reset()
+	stderr.Reset()
+	exit = barcli.Run([]string{"tui", "--grammar", grammarPath, "--fixture", fixturePath, "--fixture-width", "0"}, strings.NewReader(""), stdout, stderr)
+	if exit == 0 {
+		t.Fatalf("expected zero width to fail validation")
+	}
+	if !strings.Contains(stderr.String(), "--fixture-width requires a positive integer") {
+		t.Fatalf("expected zero width error, got: %s", stderr.String())
+	}
+
+	stdout.Reset()
+	stderr.Reset()
+	exit = barcli.Run([]string{"tui", "--grammar", grammarPath, "--fixture", fixturePath, "--fixture-width", strconv.Itoa(width)}, strings.NewReader(""), stdout, stderr)
+	if exit != 0 {
+		t.Fatalf("expected width-adjusted fixture run exit 0, got %d with stderr: %s", exit, stderr.String())
+	}
+	if stdout.String() != narrowView {
+		t.Fatalf("expected width-adjusted fixture output to match narrow snapshot\n--- expected ---\n%s\n--- actual ---\n%s", narrowView, stdout.String())
 	}
 }

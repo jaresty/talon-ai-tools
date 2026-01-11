@@ -85,6 +85,7 @@ func runTUI(opts *cliOptions, stdin io.Reader, stdout, stderr io.Writer) int {
 			Tokens:          tokens,
 			TokenCategories: tokenCategories,
 			Preview:         preview,
+			InitialWidth:    opts.FixtureWidth,
 		}, subject)
 		if snapErr != nil {
 			writeError(stderr, fmt.Sprintf("render snapshot: %v", snapErr))
@@ -291,13 +292,11 @@ func formatSnapshotDiff(expected, actual string) string {
 		max = len(actLines)
 	}
 	for i := 0; i < max; i++ {
-		var expLine, actLine string
-		if i < len(expLines) {
-			expLine = expLines[i]
+		if i >= len(expLines) || i >= len(actLines) {
+			return fmt.Sprintf("line count mismatch: expected %d lines, actual %d lines", len(expLines), len(actLines))
 		}
-		if i < len(actLines) {
-			actLine = actLines[i]
-		}
+		expLine := expLines[i]
+		actLine := actLines[i]
 		if expLine != actLine {
 			return fmt.Sprintf("line %d:\n  expected: %q\n  actual:   %q", i+1, expLine, actLine)
 		}

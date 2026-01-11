@@ -10,8 +10,8 @@ description: Declarative workflow for running churn × complexity Concordance an
 - The skill preps the following commands and artefact expectations so each run is reproducible.
 
 ## Bundled Commands
-- `CHURN_LOG_COMMAND=python3 scripts/tools/churn-git-log-stat.py`
-- `HEATMAP_COMMAND=python3 scripts/tools/line-churn-heatmap.py`
+- `CHURN_LOG_COMMAND=python3 .claude/skills/churn-concordance-adr-helper/scripts/churn-git-log-stat.py`
+- `HEATMAP_COMMAND=python3 .claude/skills/churn-concordance-adr-helper/scripts/line-churn-heatmap.py`
 - `make churn-scan` runs both helpers sequentially with default environment values (`LINE_CHURN_OUTPUT` paths under `tmp/churn-scan/`).
 
 ## Default Environment
@@ -21,6 +21,12 @@ description: Declarative workflow for running churn × complexity Concordance an
 - `CHURN_LOG_PATH=${LINE_CHURN_OUTPUT:-tmp/churn-scan/git-log-stat.txt}`
 - `HOTSPOTS_JSON=${LINE_CHURN_OUTPUT:-tmp/churn-scan/line-hotspots.json}`
 - Override variables as needed, but keep scope/window aligned across both commands.
+
+## Concordance Glossary
+- **Visibility**: How explicit the coordination contracts are; higher visibility means clearer orchestrators, interfaces, and behavioural declarations.
+- **Scope**: The breadth of modules/features a change touches; narrower scope confines churn to well-bounded domains.
+- **Volatility**: The frequency and magnitude of changes within a hotspot; lower volatility indicates stable behaviour guarded by tests and clear ownership.
+- **Canonicalization**: Collapsing overlapping intent into a single named contract so future work gravitates toward the same implementation path.
 
 ## Execution Checklist
 1. **Scope & ADR setup**

@@ -145,3 +145,57 @@ assets:
 - helper:wip-preserve patch at `docs/adr/evidence/0071-bubble-tea-tui-layout-ergonomics/loop-003-wip.patch`
 - Final diff replay patch at `docs/adr/evidence/0071-bubble-tea-tui-layout-ergonomics/loop-003-final.patch`
 - Expect transcript and debug excerpts recorded in `docs/adr/evidence/0071-bubble-tea-tui-layout-ergonomics/loop-003.md`
+
+## loop-004 | helper:v20251223.1 | 2026-01-11
+
+focus: ADR 0071 Decision bullet 4 → ensure the palette undo workflow preserves keyboard ergonomics by restoring the previous token selection after Enter applies an option (salient task: palette undo snapshots + status messaging).
+
+active_constraint: `scripts/tools/run-tui-expect.sh token-palette-workflow` fails with `Status: No token change to undo.` after applying a token from the palette, showing the undo snapshot is not recorded and the keyboard workflow specified by ADR 0071 breaks.
+
+expected_value:
+| Factor | Value | Rationale |
+| --- | --- | --- |
+| Impact | High | Undo snapshots are required for palette keyboard workflows; without them pilots cannot recover from mistakes |
+| Probability | High | Restoring inline token state and rerunning the expect harness directly target the failing behaviour |
+| Time Sensitivity | Medium | Needs to land while the expect suite is being integrated so future loops inherit the guardrail |
+| Uncertainty note | Low | Failure reproduces deterministically through the expect script |
+
+validation_targets:
+- `scripts/tools/run-tui-expect.sh token-palette-workflow`
+- `go test ./internal/bartui`
+- `go test ./cmd/bar/...`
+
+evidence:
+- red | 2026-01-11T12:26:15Z | exit 1 | `scripts/tools/run-tui-expect.sh token-palette-workflow`
+    helper:diff-snapshot=0 files changed (reverted `internal/bartui` files to pre-fix state)
+    Expect halted with `Status: No token change to undo.` proving the undo snapshot was missing | docs/adr/evidence/0071-bubble-tea-tui-layout-ergonomics/loop-004-token-palette-red.log
+- green | 2026-01-11T12:26:55Z | exit 0 | `scripts/tools/run-tui-expect.sh token-palette-workflow`
+    helper:diff-snapshot=8 files changed, 200 insertions(+), 6 deletions(-)
+    Transcript shows `Status: Token selection restored.` confirming undo snapshots work | docs/adr/evidence/0071-bubble-tea-tui-layout-ergonomics/loop-004-token-palette-green.log
+- removal | 2026-01-11T12:26:15Z | exit 1 | `git restore --source=HEAD^ -- internal/bartui/program.go internal/bartui/program_test.go && scripts/tools/run-tui-expect.sh token-palette-workflow`
+    helper:diff-snapshot=0 files changed after revert
+    Replays the failure and demonstrates the guardrail | docs/adr/evidence/0071-bubble-tea-tui-layout-ergonomics/loop-004-token-palette-red.log
+- green | 2026-01-11T20:29:03Z | exit 0 | `go test ./internal/bartui`
+    helper:diff-snapshot=8 files changed, 200 insertions(+), 6 deletions(-)
+    Unit tests now exercise the palette undo snapshot from an empty state
+- green | 2026-01-11T20:29:36Z | exit 0 | `go test ./cmd/bar/...`
+    helper:diff-snapshot=8 files changed, 200 insertions(+), 6 deletions(-)
+    Smoke fixture remains aligned with the compact summary and palette copy
+
+rollback_plan: `<VCS_REVERT>` = `git restore --source=HEAD^ -- internal/bartui/program.go internal/bartui/program_test.go tests/integration/tui/cases/token-palette-workflow.exp`; rerun `scripts/tools/run-tui-expect.sh token-palette-workflow` to reproduce the `No token change to undo.` failure, then reapply commit 0b6480b6 if the revert was exploratory.
+
+delta_summary: helper:diff-snapshot=8 files changed, 200 insertions(+), 6 deletions(-) — recorded palette undo snapshots in `recordTokenUndo`, allowed palette selection to mutate state in place, added a unit test for the empty-token case, updated the expect harness, and archived red/green transcripts.
+
+loops_remaining_forecast: 0 loops (Decision bullet 4 fully green; remaining work is monitoring). Confidence: high — expect + go guardrails cover the undo workflow.
+
+residual_constraints:
+- Low — Continue monitoring operator feedback for palette affordances; mitigation: rerun `scripts/tools/run-tui-expect.sh token-palette-workflow` plus go guardrails if reports surface; trigger: bug reports mentioning undo getting stuck or palette focus drift.
+
+next_work:
+- Behaviour: Monitor post-launch feedback and rerun the expect harness if palette undo regressions surface (validation: `scripts/tools/run-tui-expect.sh token-palette-workflow`).
+
+assets:
+- Red transcript stored at `docs/adr/evidence/0071-bubble-tea-tui-layout-ergonomics/loop-004-token-palette-red.log`
+- Green transcript stored at `docs/adr/evidence/0071-bubble-tea-tui-layout-ergonomics/loop-004-token-palette-green.log`
+- Evidence summary stored at `docs/adr/evidence/0071-bubble-tea-tui-layout-ergonomics/loop-004.md`
+

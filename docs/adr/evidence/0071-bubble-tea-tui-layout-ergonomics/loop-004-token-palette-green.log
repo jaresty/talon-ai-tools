@@ -1,0 +1,346 @@
+spawn go run ./cmd/bar tui --grammar cmd/bar/testdata/grammar.json --no-alt-screen
+]10;?\[6n]11;?\[6n[?25lbar prompt editor (Bubble Tea prototype)
+
+Status: Ready. Tab cycles focus · Ctrl+P palette · Ctrl+B copy CLI. Environment allowlist: (none). | Tokens: none | Preset: (none) | CLI: bar build | Env: none
+
+Subject (PgUp/PgDn scroll · Home/End jump):
+Describe the subject to update the preview  ← editing
+                                                     
+                                                     
+                                                     
+                                                     
+                                                     
+
+Command (Enter runs without preview):
+Enter shell command (leave blank to opt out)
+
+Hint: press ? for shortcut help · Ctrl+P toggles the palette · Leave command blank to opt out.
+
+Result summary:
+∅ No command executed yet · input optional · env (none)
+
+Result & preview (PgUp/PgDn scroll · Home/End jump · Ctrl+T toggle condensed preview):
+Result pane (stdout/stderr):                                                    
+(no command has been executed)                                                  
+                                                                                
+Preview:                                                                        
+=== TASK (DO THIS) ===                                                          
+Infer the task                                                                  
+                                                                                
+=== CONSTRAINTS (GUARDRAILS) ===                                                
+1. Completeness (full): The response provides a thorough answer that covers all 
+                                                                                
+Tokens: (none selected)                                                         
+Unset: Static Prompt, Completeness, Scope, Method, Form, Channel, Directional, V
+                                                                                
+                                                                                
+                                                                                
+                                                                                
+                                                                                
+                                                                                
+
+Press Ctrl+C or Esc to exit.
+[0D[1A[1A[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[2K[1A[1A[0D[2Kbar prompt editor (Bubble Tea prototype)
+[1BStatus: Token palette open. Type to filter (try "copy command"), Tab cycles focus, Enter applies or copies, Ctrl+W clears the filter, Esc closes. | Tokens: none | Preset: (none) | CLI: bar build | Env: none
+[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1BToken palette (Esc closes · Tab cycles focus · Enter applies option) · Active: n
+  » Filter: Filter tokens                                                       
+  Categories:                                                                   
+      Static Prompt                                                             
+      Completeness                                                              
+      Scope                                                                     
+      Method                                                                    
+      Form                                                                      
+[1B[1B[0D[1A[1A[1A[1A[1A[1A[1A[1A[1A[2K[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[2K[1A[1A[0D[2Kbar prompt editor (Bubble Tea prototype)
+[1BStatus: Token palette open (filter="todo"). Enter applies or copies; type "copy command" to focus the copy action. Tab cycles focus, Ctrl+W clears the filter, Esc closes. | Tokens: none | Preset: (none) | CLI: bar build | Env: none
+[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B  » Filter: todo                                                                
+[1B[1B[1B[1B[1B[1B[1B[1B[0D[1A[1A[1A[1A[1A[1A[1A[1A[1A[2K[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[2K[1A[1A[0D[2Kbar prompt editor (Bubble Tea prototype)
+[1BStatus: Static Prompt → todo (Return a todo list). Press Enter to toggle, Ctrl+W clears the filter, Esc closes. Type "copy command" to focus the copy action. | Tokens: none | Preset: (none) | CLI: bar build | Env: none
+[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B    Filter: todo                                                                
+[1B[1B[1B[1B[1B[1B[1B[1B[0D[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[2K[1A[1A[0D[2Kbar prompt editor (Bubble Tea prototype)
+[1BStatus: Static Prompt → todo applied. | Tokens: none | Preset: (none) | CLI: bar build | Env: none
+[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[0D[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[2K[1A[1A[0D[2Kbar prompt editor (Bubble Tea prototype)
+[1BStatus: No token change to undo. | Tokens: none | Preset: (none) | CLI: bar build | Env: none
+[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[0Dexpected token undo statusspawn go run ./cmd/bar tui --grammar cmd/bar/testdata/grammar.json --no-alt-screen
+]10;?\[6n]11;?\[6n[?25lbar prompt editor (Bubble Tea prototype)
+
+Status: Ready. Tab cycles focus · Ctrl+P palette · Ctrl+B copy CLI. Environment allowlist: (none). | Tokens: none | Preset: (none) | CLI: bar build | Env: none
+
+Subject (PgUp/PgDn scroll · Home/End jump):
+Describe the subject to update the preview  ← editing
+                                                     
+                                                     
+                                                     
+                                                     
+                                                     
+
+Command (Enter runs without preview):
+Enter shell command (leave blank to opt out)
+
+Hint: press ? for shortcut help · Ctrl+P toggles the palette · Leave command blank to opt out.
+
+Result summary:
+∅ No command executed yet · input optional · env (none)
+
+Result & preview (PgUp/PgDn scroll · Home/End jump · Ctrl+T toggle condensed preview):
+Result pane (stdout/stderr):                                                    
+(no command has been executed)                                                  
+                                                                                
+Preview:                                                                        
+=== TASK (DO THIS) ===                                                          
+Infer the task                                                                  
+                                                                                
+=== CONSTRAINTS (GUARDRAILS) ===                                                
+1. Completeness (full): The response provides a thorough answer that covers all 
+                                                                                
+Tokens: (none selected)                                                         
+Unset: Static Prompt, Completeness, Scope, Method, Form, Channel, Directional, V
+                                                                                
+                                                                                
+                                                                                
+                                                                                
+                                                                                
+                                                                                
+
+Press Ctrl+C or Esc to exit.
+[0D[1A[1A[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[2K[1A[1A[0D[2Kbar prompt editor (Bubble Tea prototype)
+[1BStatus: Token palette open. Type to filter (try "copy command"), Tab cycles focus, Enter applies or copies, Ctrl+W clears the filter, Esc closes. | Tokens: none | Preset: (none) | CLI: bar build | Env: none
+[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1BToken palette (Esc closes · Tab cycles focus · Enter applies option) · Active: n
+  » Filter: Filter tokens                                                       
+  Categories:                                                                   
+      Static Prompt                                                             
+      Completeness                                                              
+      Scope                                                                     
+      Method                                                                    
+      Form                                                                      
+[1B[1B[0D[1A[1A[1A[1A[1A[1A[1A[1A[1A[2K[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[2K[1A[1A[0D[2Kbar prompt editor (Bubble Tea prototype)
+[1BStatus: Token palette open (filter="todo"). Enter applies or copies; type "copy command" to focus the copy action. Tab cycles focus, Ctrl+W clears the filter, Esc closes. | Tokens: none | Preset: (none) | CLI: bar build | Env: none
+[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B  » Filter: todo                                                                
+[1B[1B[1B[1B[1B[1B[1B[1B[0D[1A[1A[1A[1A[1A[1A[1A[1A[1A[2K[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[2K[1A[1A[0D[2Kbar prompt editor (Bubble Tea prototype)
+[1BStatus: Static Prompt → todo (Return a todo list). Press Enter to toggle, Ctrl+W clears the filter, Esc closes. Type "copy command" to focus the copy action. | Tokens: none | Preset: (none) | CLI: bar build | Env: none
+[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B    Filter: todo                                                                
+[1B[1B[1B[1B[1B[1B[1B[1B[0D[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[2K[1A[1A[1A[1A[1A[2K[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[2K[1A[1A[0D[2Kbar prompt editor (Bubble Tea prototype)
+[1BStatus: Static Prompt → todo applied. | Tokens: todo | Preset: (none) | CLI: bar build todo | Env: none
+[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1BReturn a todo list                                                              
+[1B[1B[1B[1BToken palette (Esc closes · Tab cycles focus · Enter applies option) · Active: t
+[1B[1B[1B[1B[1B[1B[1B[1B[1B[0D[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[2K[1A[1A[1A[1A[1A[2K[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[2K[1A[1A[0D[2Kbar prompt editor (Bubble Tea prototype)
+[1BStatus: Token selection restored. | Tokens: none | Preset: (none) | CLI: bar build | Env: none
+[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1BInfer the task                                                                  
+[1B[1B[1B[1BToken palette (Esc closes · Tab cycles focus · Enter applies option) · Active: n
+[1B[1B[1B[1B[1B[1B[1B[1B[1B[0D[1A[1A[1A[1A[1A[1A[1A[1A[1A[2K[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[2K[1A[1A[0D[2Kbar prompt editor (Bubble Tea prototype)
+[1BStatus: Token filter cleared. Static Prompt → todo (Return a todo list). Press Enter to toggle, Ctrl+W clears the filter, Esc closes. Type "copy command" to focus the copy action. | Tokens: none | Preset: (none) | CLI: bar build | Env: none
+[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B    Filter: Filter tokens                                                       
+[1B[1B[1B[1B[1B[1B[1B[1B[0Dexpected filter cleared statusspawn go run ./cmd/bar tui --grammar cmd/bar/testdata/grammar.json --no-alt-screen
+]10;?\[6n]11;?\[6n[?25lbar prompt editor (Bubble Tea prototype)
+
+Status: Ready. Tab cycles focus · Ctrl+P palette · Ctrl+B copy CLI. Environment allowlist: (none). | Tokens: none | Preset: (none) | CLI: bar build | Env: none
+
+Subject (PgUp/PgDn scroll · Home/End jump):
+Describe the subject to update the preview  ← editing
+                                                     
+                                                     
+                                                     
+                                                     
+                                                     
+
+Command (Enter runs without preview):
+Enter shell command (leave blank to opt out)
+
+Hint: press ? for shortcut help · Ctrl+P toggles the palette · Leave command blank to opt out.
+
+Result summary:
+∅ No command executed yet · input optional · env (none)
+
+Result & preview (PgUp/PgDn scroll · Home/End jump · Ctrl+T toggle condensed preview):
+Result pane (stdout/stderr):                                                    
+(no command has been executed)                                                  
+                                                                                
+Preview:                                                                        
+=== TASK (DO THIS) ===                                                          
+Infer the task                                                                  
+                                                                                
+=== CONSTRAINTS (GUARDRAILS) ===                                                
+1. Completeness (full): The response provides a thorough answer that covers all 
+                                                                                
+Tokens: (none selected)                                                         
+Unset: Static Prompt, Completeness, Scope, Method, Form, Channel, Directional, V
+                                                                                
+                                                                                
+                                                                                
+                                                                                
+                                                                                
+                                                                                
+
+Press Ctrl+C or Esc to exit.
+[0D[1A[1A[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[2K[1A[1A[0D[2Kbar prompt editor (Bubble Tea prototype)
+[1BStatus: Token palette open. Type to filter (try "copy command"), Tab cycles focus, Enter applies or copies, Ctrl+W clears the filter, Esc closes. | Tokens: none | Preset: (none) | CLI: bar build | Env: none
+[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1BToken palette (Esc closes · Tab cycles focus · Enter applies option) · Active: n
+  » Filter: Filter tokens                                                       
+  Categories:                                                                   
+      Static Prompt                                                             
+      Completeness                                                              
+      Scope                                                                     
+      Method                                                                    
+      Form                                                                      
+[1B[1B[0D[1A[1A[1A[1A[1A[1A[1A[1A[1A[2K[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[2K[1A[1A[0D[2Kbar prompt editor (Bubble Tea prototype)
+[1BStatus: Token palette open (filter="todo"). Enter applies or copies; type "copy command" to focus the copy action. Tab cycles focus, Ctrl+W clears the filter, Esc closes. | Tokens: none | Preset: (none) | CLI: bar build | Env: none
+[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B  » Filter: todo                                                                
+[1B[1B[1B[1B[1B[1B[1B[1B[0D[1A[1A[1A[1A[1A[1A[1A[1A[1A[2K[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[2K[1A[1A[0D[2Kbar prompt editor (Bubble Tea prototype)
+[1BStatus: Static Prompt → todo (Return a todo list). Press Enter to toggle, Ctrl+W clears the filter, Esc closes. Type "copy command" to focus the copy action. | Tokens: none | Preset: (none) | CLI: bar build | Env: none
+[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B    Filter: todo                                                                
+[1B[1B[1B[1B[1B[1B[1B[1B[0D[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[2K[1A[1A[1A[1A[1A[2K[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[2K[1A[1A[0D[2Kbar prompt editor (Bubble Tea prototype)
+[1BStatus: Static Prompt → todo applied. | Tokens: todo | Preset: (none) | CLI: bar build todo | Env: none
+[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1BReturn a todo list                                                              
+[1B[1B[1B[1BToken palette (Esc closes · Tab cycles focus · Enter applies option) · Active: t
+[1B[1B[1B[1B[1B[1B[1B[1B[1B[0D[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[2K[1A[1A[1A[1A[1A[2K[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[2K[1A[1A[0D[2Kbar prompt editor (Bubble Tea prototype)
+[1BStatus: Token selection restored. | Tokens: none | Preset: (none) | CLI: bar build | Env: none
+[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1BInfer the task                                                                  
+[1B[1B[1B[1BToken palette (Esc closes · Tab cycles focus · Enter applies option) · Active: n
+[1B[1B[1B[1B[1B[1B[1B[1B[1B[0D[1A[1A[1A[1A[1A[1A[1A[1A[1A[2K[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[2K[1A[1A[0D[2Kbar prompt editor (Bubble Tea prototype)
+[1BStatus: Token filter cleared. Static Prompt → todo (Return a todo list). Press Enter to toggle, Ctrl+W clears the filter, Esc closes. Type "copy command" to focus the copy action. | Tokens: none | Preset: (none) | CLI: bar build | Env: none
+[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B    Filter: Filter tokens                                                       
+[1B[1B[1B[1B[1B[1B[1B[1B[0D[1A[1A[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[2K[1A[1A[0D[2Kbar prompt editor (Bubble Tea prototype)
+[1BStatus: Token palette closed. Press Ctrl+P to reopen and type "copy command" to focus the copy action. | Tokens: none | Preset: (none) | CLI: bar build | Env: none
+[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1BTokens: (none selected)                                                         
+Unset: Static Prompt, Completeness, Scope, Method, Form, Channel, Directional, V
+                                                                                
+                                                                                
+                                                                                
+                                                                            ^Cspawn go run ./cmd/bar tui --grammar cmd/bar/testdata/grammar.json --no-alt-screen
+]10;?\[6n]11;?\[6n[?25lbar prompt editor (Bubble Tea prototype)
+
+Status: Ready. Tab cycles focus · Ctrl+P palette · Ctrl+B copy CLI. Environment allowlist: (none). | Tokens: none | Preset: (none) | CLI: bar build | Env: none
+
+Subject (PgUp/PgDn scroll · Home/End jump):
+Describe the subject to update the preview  ← editing
+                                                     
+                                                     
+                                                     
+                                                     
+                                                     
+
+Command (Enter runs without preview):
+Enter shell command (leave blank to opt out)
+
+Hint: press ? for shortcut help · Ctrl+P toggles the palette · Leave command blank to opt out.
+
+Result summary:
+∅ No command executed yet · input optional · env (none)
+
+Result & preview (PgUp/PgDn scroll · Home/End jump · Ctrl+T toggle condensed preview):
+Result pane (stdout/stderr):                                                    
+(no command has been executed)                                                  
+                                                                                
+Preview:                                                                        
+=== TASK (DO THIS) ===                                                          
+Infer the task                                                                  
+                                                                                
+=== CONSTRAINTS (GUARDRAILS) ===                                                
+1. Completeness (full): The response provides a thorough answer that covers all 
+                                                                                
+Tokens: (none selected)                                                         
+Unset: Static Prompt, Completeness, Scope, Method, Form, Channel, Directional, V
+                                                                                
+                                                                                
+                                                                                
+                                                                                
+                                                                                
+                                                                                
+
+Press Ctrl+C or Esc to exit.
+[0D[1A[1A[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[2K[1A[1A[0D[2Kbar prompt editor (Bubble Tea prototype)
+[1BStatus: Token palette open. Type to filter (try "copy command"), Tab cycles focus, Enter applies or copies, Ctrl+W clears the filter, Esc closes. | Tokens: none | Preset: (none) | CLI: bar build | Env: none
+[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1BToken palette (Esc closes · Tab cycles focus · Enter applies option) · Active: n
+  » Filter: Filter tokens                                                       
+  Categories:                                                                   
+      Static Prompt                                                             
+      Completeness                                                              
+      Scope                                                                     
+      Method                                                                    
+      Form                                                                      
+[1B[1B[0D[1A[1A[1A[1A[1A[1A[1A[1A[1A[2K[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[2K[1A[1A[0D[2Kbar prompt editor (Bubble Tea prototype)
+[1BStatus: Token palette open (filter="todo"). Enter applies or copies; type "copy command" to focus the copy action. Tab cycles focus, Ctrl+W clears the filter, Esc closes. | Tokens: none | Preset: (none) | CLI: bar build | Env: none
+[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B  » Filter: todo                                                                
+[1B[1B[1B[1B[1B[1B[1B[1B[0D[1A[1A[1A[1A[1A[1A[1A[1A[1A[2K[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[2K[1A[1A[0D[2Kbar prompt editor (Bubble Tea prototype)
+[1BStatus: Static Prompt → todo (Return a todo list). Press Enter to toggle, Ctrl+W clears the filter, Esc closes. Type "copy command" to focus the copy action. | Tokens: none | Preset: (none) | CLI: bar build | Env: none
+[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B    Filter: todo                                                                
+[1B[1B[1B[1B[1B[1B[1B[1B[0D[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[2K[1A[1A[0D[2Kbar prompt editor (Bubble Tea prototype)
+[1BStatus: Static Prompt → todo applied. | Tokens: none | Preset: (none) | CLI: bar build | Env: none
+[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[0D[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[2K[1A[1A[0D[2Kbar prompt editor (Bubble Tea prototype)
+[1BStatus: No token change to undo. | Tokens: none | Preset: (none) | CLI: bar build | Env: none
+[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[0Dexpected token undo statusspawn go run ./cmd/bar tui --grammar cmd/bar/testdata/grammar.json --no-alt-screen
+]10;?\[6n]11;?\[6n[?25lbar prompt editor (Bubble Tea prototype)
+
+Status: Ready. Tab cycles focus · Ctrl+P palette · Ctrl+B copy CLI. Environment allowlist: (none). | Tokens: none | Preset: (none) | CLI: bar build | Env: none
+
+Subject (PgUp/PgDn scroll · Home/End jump):
+Describe the subject to update the preview  ← editing
+                                                     
+                                                     
+                                                     
+                                                     
+                                                     
+
+Command (Enter runs without preview):
+Enter shell command (leave blank to opt out)
+
+Hint: press ? for shortcut help · Ctrl+P toggles the palette · Leave command blank to opt out.
+
+Result summary:
+∅ No command executed yet · input optional · env (none)
+
+Result & preview (PgUp/PgDn scroll · Home/End jump · Ctrl+T toggle condensed preview):
+Result pane (stdout/stderr):                                                    
+(no command has been executed)                                                  
+                                                                                
+Preview:                                                                        
+=== TASK (DO THIS) ===                                                          
+Infer the task                                                                  
+                                                                                
+=== CONSTRAINTS (GUARDRAILS) ===                                                
+1. Completeness (full): The response provides a thorough answer that covers all 
+                                                                                
+Tokens: (none selected)                                                         
+Unset: Static Prompt, Completeness, Scope, Method, Form, Channel, Directional, V
+                                                                                
+                                                                                
+                                                                                
+                                                                                
+                                                                                
+                                                                                
+
+Press Ctrl+C or Esc to exit.
+[0D[1A[1A[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[2K[1A[1A[0D[2Kbar prompt editor (Bubble Tea prototype)
+[1BStatus: Token palette open. Type to filter (try "copy command"), Tab cycles focus, Enter applies or copies, Ctrl+W clears the filter, Esc closes. | Tokens: none | Preset: (none) | CLI: bar build | Env: none
+[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1BToken palette (Esc closes · Tab cycles focus · Enter applies option) · Active: n
+  » Filter: Filter tokens                                                       
+  Categories:                                                                   
+      Static Prompt                                                             
+      Completeness                                                              
+      Scope                                                                     
+      Method                                                                    
+      Form                                                                      
+[1B[1B[0D[1A[1A[1A[1A[1A[1A[1A[1A[1A[2K[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[2K[1A[1A[0D[2Kbar prompt editor (Bubble Tea prototype)
+[1BStatus: Token palette open (filter="todo"). Enter applies or copies; type "copy command" to focus the copy action. Tab cycles focus, Ctrl+W clears the filter, Esc closes. | Tokens: none | Preset: (none) | CLI: bar build | Env: none
+[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B  » Filter: todo                                                                
+[1B[1B[1B[1B[1B[1B[1B[1B[0D[1A[1A[1A[1A[1A[1A[1A[1A[1A[2K[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[2K[1A[1A[0D[2Kbar prompt editor (Bubble Tea prototype)
+[1BStatus: Static Prompt → todo (Return a todo list). Press Enter to toggle, Ctrl+W clears the filter, Esc closes. Type "copy command" to focus the copy action. | Tokens: none | Preset: (none) | CLI: bar build | Env: none
+[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B    Filter: todo                                                                
+[1B[1B[1B[1B[1B[1B[1B[1B[0D[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[2K[1A[1A[1A[1A[1A[2K[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[2K[1A[1A[0D[2Kbar prompt editor (Bubble Tea prototype)
+[1BStatus: Static Prompt → todo applied. | Tokens: todo | Preset: (none) | CLI: bar build todo | Env: none
+[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1BReturn a todo list                                                              
+[1B[1B[1B[1BToken palette (Esc closes · Tab cycles focus · Enter applies option) · Active: t
+[1B[1B[1B[1B[1B[1B[1B[1B[1B[0D[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[2K[1A[1A[1A[1A[1A[2K[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[2K[1A[1A[0D[2Kbar prompt editor (Bubble Tea prototype)
+[1BStatus: Token selection restored. | Tokens: none | Preset: (none) | CLI: bar build | Env: none
+[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1BInfer the task                                                                  
+[1B[1B[1B[1BToken palette (Esc closes · Tab cycles focus · Enter applies option) · Active: n
+[1B[1B[1B[1B[1B[1B[1B[1B[1B[0D[1A[1A[1A[1A[1A[1A[1A[1A[1A[2K[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[2K[1A[1A[0D[2Kbar prompt editor (Bubble Tea prototype)
+[1BStatus: Token filter cleared. Static Prompt → todo (Return a todo list). Press Enter to toggle, Ctrl+W clears the filter, Esc closes. Type "copy command" to focus the copy action. | Tokens: none | Preset: (none) | CLI: bar build | Env: none
+[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B    Filter: Filter tokens                                                       
+[1B[1B[1B[1B[1B[1B[1B[1B[0D[1A[1A[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[1A[2K[1A[1A[0D[2Kbar prompt editor (Bubble Tea prototype)
+[1BStatus: Token palette closed. Press Ctrl+P to reopen and type "copy command" to focus the copy action. | Tokens: none | Preset: (none) | CLI: bar build | Env: none
+[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1B[1BTokens: (none selected)                                                         
+Unset: Static Prompt, Completeness, Scope, Method, Form, Channel, Directional, V
+                                                                                
+                                                                                
+                                                                                
+                                                                            ^C

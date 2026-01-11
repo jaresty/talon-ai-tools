@@ -1304,3 +1304,20 @@
   - Behaviour: Monitor pilot telemetry for subject replacement ergonomics and copy guidance; rerun go test ./internal/bartui, go test ./cmd/bar/..., and python3 -m pytest _tests/test_bar_completion_cli.py if changes are requested.
 
 
+## 2026-01-11 — loop 074
+- helper_version: helper:v20251223.1
+- focus: Documentation — document viewport navigation and condensed preview shortcuts for pilots
+- active_constraint: Pilot-facing docs (README, quickstart, playbook) omitted viewport navigation and condensed-preview instructions required by Decision § follow-up, leaving operators without guidance to use the new result viewport features.
+- validation_targets:
+  - python3 -m pytest _tests/test_bar_completion_cli.py
+- evidence:
+  - green: docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-074.md#loop-074-green--python3--m-pytest-_tests-test_bar_completion_cli.py
+- rollback_plan: `git restore --source=HEAD -- README.md readme.md docs/bubble-tea-pilot-playbook.md .docs/src/content/docs/guides/quickstart.mdx docs/adr/0070-bubble-tea-prompt-editor-tui.work-log.md docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-074.md`
+- delta_summary: helper:diff-snapshot=git diff --stat HEAD | .docs/src/content/docs/guides/quickstart.mdx |  2 +-; docs/adr/0070-bubble-tea-prompt-editor-tui.work-log.md | 17 +++++++++++++++++; docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-074.md | 16 ++++++++++++++++; docs/bubble-tea-pilot-playbook.md | 6 +++---; readme.md | 3 ++- (5 files changed, 39 insertions(+), 5 deletions(-)) — documented the result viewport focus cycle, scroll shortcuts, and condensed preview toggle across README/readme, the pilot playbook, and the hosted quickstart.
+- loops_remaining_forecast: 0 loops — documentation now matches the viewport guardrail; continue monitoring pilot feedback for ergonomic gaps (medium confidence).
+- residual_constraints:
+  - Pilot feedback on viewport ergonomics (scroll affordances, condensed preview messaging) remains pending (severity: medium; mitigation: gather pilot notes now that docs include guidance; monitoring: rerun go test ./internal/bartui and python3 -m pytest _tests/test_bar_completion_cli.py if adjustments are requested).
+- next_work:
+  - Behaviour: Monitor pilot telemetry for viewport interactions and condensed preview adoption; rerun go test ./internal/bartui, go test ./cmd/bar/..., and python3 -m pytest _tests/test_bar_completion_cli.py if changes are required.
+
+

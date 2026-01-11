@@ -141,11 +141,12 @@ Snapshot runs write the rendered view to STDOUT, perform all assertions, and exi
 
 When running the interactive editor, keep these shortcuts close by:
 
-- `Tab` cycles focus between the subject input, token controls, command input, and the environment allowlist.
+- `Tab` cycles focus between the subject input, token controls, command input, the result viewport, and the environment allowlist.
 - `Ctrl+L` loads subject text from the clipboard.
 - `Ctrl+O` copies the rendered preview to the clipboard.
 - `Ctrl+B` copies the current `bar build` command (subject + tokens) to the clipboard so you can drop straight back into scripts.
 - `Ctrl+R` pipes the current preview into the configured shell command.
+- `PgUp`/`PgDn` scroll the focused viewport (subject or result) and `Home`/`End` jump to the beginning or end. When the result viewport is focused (Tab after the command input), `Ctrl+U`/`Ctrl+D` half-page scroll and `Ctrl+T` toggles a condensed preview to collapse long outputs while keeping metadata visible.
 - `Ctrl+P` opens the token palette so you can browse or reset selections without leaving the session; the status bar now suggests typing “copy command”, press `Enter` to copy the CLI and close the palette, and reminds you that `Ctrl+W` clears the current filter instantly.
 - Within the token controls, use Left/Right to change categories, Up/Down to browse options, `Enter`/`Space` to toggle, `Delete` to remove the highlighted token, `Ctrl+W` to clear any active palette filter, and `Ctrl+Z` to undo the most recent change.
 - `Ctrl+Y` replaces the subject with the most recent command stdout.

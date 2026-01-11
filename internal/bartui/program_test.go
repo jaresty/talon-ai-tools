@@ -729,6 +729,9 @@ func TestTokenPaletteSummaryCondensedWhenVisible(t *testing.T) {
 	if !strings.Contains(view, "Tokens (palette open — use palette controls below to edit):") {
 		t.Fatalf("expected palette summary line to be condensed, got view:\n%s", view)
 	}
+	if !strings.Contains(view, "Token palette (Esc closes · Tab cycles focus · Enter toggles):") {
+		t.Fatalf("expected palette section to be rendered, got view:\n%s", view)
+	}
 	if strings.Contains(view, "Tokens (Tab focuses tokens · Ctrl+P opens palette):") {
 		t.Fatalf("expected condensed summary to replace default token header, got view:\n%s", view)
 	}

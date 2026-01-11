@@ -1480,6 +1480,25 @@
 - next_work:
   - Behaviour: Monitor pilot telemetry for viewport interactions and condensed preview adoption; rerun go test ./internal/bartui, go test ./cmd/bar/..., and python3 -m pytest _tests/test_bar_completion_cli.py if changes are required.
 
+## 2026-01-11 — loop 081
+- helper_version: helper:v20251223.1
+- focus: Decision § token editing · Salient Task — command palette docked beside summary strip
+- active_constraint: Live Bubble Tea sessions keep `tokenPaletteVisible=false` immediately after pressing `Ctrl+P`, so operators never see the Token group header or palette options that ADR 0070 requires (Impact: High, Probability: High, Time Sensitivity: Medium pending pilot feedback).
+- validation_targets:
+  - BARTUI_DEBUG_PALETTE=/tmp/palette_state.log /usr/bin/expect /tmp/tui_palette.exp
+- evidence:
+  - red: docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-081.md#loop-081-red--bartui_debug_palette-tmp-palette_state.log--usrbinexpect-tmp-tui_palette.exp
+- rollback_plan: `git restore --source=HEAD -- internal/bartui/program.go docs/adr/0070-bubble-tea-prompt-editor-tui.work-log.md docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-081.md`
+- delta_summary: helper:diff-snapshot=internal/bartui/program.go | 29 +++++++++++++++++++++++++++++ — added optional debug logging gated by `BARTUI_DEBUG_PALETTE` so palette visibility and focus transitions can be traced during expect-driven runs.
+- loops_remaining_forecast: 2 loops (trace duplicate key handling in `Update`, patch palette visibility regression, extend expect harness for multi-frame capture) — medium confidence because root cause is still isolated to runtime inputs.
+- residual_constraints:
+  - Pilot feedback on viewport ergonomics (scroll affordances, condensed preview messaging) remains pending (severity: medium; mitigation: gather pilot notes, rerun go test ./internal/bartui and python3 -m pytest _tests/test_bar_completion_cli.py if adjustments are requested).
+  - Deterministic TUI harness still lacks multi-frame capture to prove the palette remains open (severity: medium; mitigation: extend `/tmp/tui_palette.exp` with timed pauses and frame snapshots; monitoring: rerun expect script once enhanced).
+- next_work:
+  - Behaviour: Instrument `Update` focus transitions to catch which message path flips `tokenPaletteVisible` to false; rerun BARTUI_DEBUG_PALETTE=/tmp/palette_state.log /usr/bin/expect /tmp/tui_palette.exp until palette remains open.
+  - Behaviour: Enhance the expect harness to pause after `Ctrl+P` and capture sequential frames so we can diff view output (`helper:rerun BARTUI_DEBUG_PALETTE=/tmp/palette_state.log /usr/bin/expect /tmp/tui_palette.exp`).
+  - Behaviour: After fixing the palette visibility, rerun go test ./internal/bartui, go test ./cmd/bar/..., and python3 -m pytest _tests/test_bar_completion_cli.py to confirm regressions are covered.
+
 
 
 

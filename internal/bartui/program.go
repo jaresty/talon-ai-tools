@@ -5,8 +5,10 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"os"
 	"sort"
 	"strings"
+	"sync"
 	"time"
 	"unicode"
 	"unicode/utf8"
@@ -43,6 +45,28 @@ type PresetDetails struct {
 	Name    string
 	Tokens  []string
 	SavedAt time.Time
+}
+
+var (
+	paletteDebugMu     sync.Mutex
+	paletteDebugWriter io.Writer
+)
+
+func init() {
+	if path := os.Getenv("BARTUI_DEBUG_PALETTE"); path != "" {
+		if f, err := os.OpenFile(path, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0o644); err == nil {
+			paletteDebugWriter = f
+		}
+	}
+}
+
+func paletteDebugLog(m *model, action string, detail string) {
+	if paletteDebugWriter == nil {
+		return
+	}
+	paletteDebugMu.Lock()
+	defer paletteDebugMu.Unlock()
+	fmt.Fprintf(paletteDebugWriter, "%s visible=%t focus=%d detail=%s\n", action, m.tokenPaletteVisible, m.focus, detail)
 }
 
 type ListPresetsFunc func() ([]PresetSummary, error)
@@ -1143,6 +1167,7 @@ func (m *model) openTokenPalette() tea.Cmd {
 	cmd := m.tokenPaletteFilter.Focus()
 	m.updatePaletteOptions()
 	m.refreshPaletteStatus()
+	paletteDebugLog(m, "openTokenPalette", fmt.Sprintf("focusBefore=%d", m.focusBeforePalette))
 	return cmd
 }
 
@@ -1179,6 +1204,7 @@ func (m *model) closeTokenPaletteWithStatus(status string) tea.Cmd {
 	if status != "" {
 		m.statusMessage = status
 	}
+	paletteDebugLog(m, "closeTokenPalette", fmt.Sprintf("focusBefore=%d", m.focusBeforePalette))
 	return nil
 }
 
@@ -1675,11 +1701,13 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		return m, nil
 	case tea.WindowSizeMsg:
+		paletteDebugLog(&m, "WindowSize", fmt.Sprintf("width=%d height=%d", typed.Width, typed.Height))
 		(&m).handleWindowSize(typed)
 		return m, nil
 	}
 
 	if keyMsg, ok := msg.(tea.KeyMsg); ok {
+		paletteDebugLog(&m, "UpdateKey", fmt.Sprintf("key=%q type=%v palette=%t focus=%d", keyMsg.String(), keyMsg.Type, m.tokenPaletteVisible, m.focus))
 		if handled, cmd := (&m).handleSubjectReplacementKey(keyMsg); handled {
 			if cmd != nil {
 				return m, cmd
@@ -1976,6 +2004,7 @@ func (m *model) undoSubjectReplacement() {
 }
 
 func (m model) View() string {
+	paletteDebugLog(&m, "View", "")
 	var b strings.Builder
 	b.WriteString("bar prompt editor (Bubble Tea prototype)\n\n")
 	m.renderTokenSummary(&b)

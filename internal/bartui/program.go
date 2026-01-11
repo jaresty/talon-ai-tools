@@ -534,7 +534,7 @@ func newModel(opts Options) model {
 	tokenPaletteFilter.CharLimit = 64
 	tokenPaletteFilter.Blur()
 
-	status := "Ready. Tab to the command field to configure shell actions. Leave command empty to opt out. Press Ctrl+B to copy the current bar build command to the clipboard."
+	status := "Ready. Tab cycles focus · Ctrl+P palette · Ctrl+B copy CLI."
 	if len(envNames) > 0 {
 		status += " Environment allowlist: " + strings.Join(allowedEnv, ", ") + ". Tab again to focus the allowlist and press Ctrl+E to toggle entries."
 	} else {
@@ -1697,114 +1697,135 @@ func formatTokenOptionLine(option TokenOption, selected bool, highlight bool) st
 	return fmt.Sprintf("%s%s %s\n", prefix, marker, slug)
 }
 
+func shortenString(input string, limit int) string {
+	runes := []rune(input)
+	if len(runes) <= limit {
+		return input
+	}
+	if limit <= 1 {
+		return string(runes[:limit])
+	}
+	return string(runes[:limit-1]) + "…"
+}
+
+func (m *model) tokensSummaryList() string {
+	if len(m.tokens) == 0 {
+		return "none"
+	}
+	return strings.Join(m.tokens, ", ")
+}
+
+func (m *model) renderStatusStrip() string {
+	status := strings.TrimSpace(m.statusMessage)
+	if status == "" {
+		status = "Ready"
+	}
+
+	parts := []string{fmt.Sprintf("Status: %s", status)}
+
+	tokenSummary := m.tokensSummaryList()
+	parts = append(parts, fmt.Sprintf("Tokens: %s", tokenSummary))
+
+	preset := "(none)"
+	if m.activePresetName != "" {
+		preset = m.activePresetName
+		if m.tokensDiverged() {
+			preset += " (diverged)"
+		}
+	}
+	parts = append(parts, fmt.Sprintf("Preset: %s", preset))
+
+	commandForClipboard := joinShellArgs(m.buildCommandArgs())
+	displayCommand := sanitizeShellCommand(commandForClipboard)
+	if displayCommand == "" {
+		displayCommand = "bar build"
+	}
+	parts = append(parts, fmt.Sprintf("CLI: %s", shortenString(displayCommand, 48)))
+
+	env := "none"
+	if len(m.allowedEnv) > 0 {
+		env = strings.Join(m.allowedEnv, ", ")
+		if len(env) > 32 {
+			env = fmt.Sprintf("%d set", len(m.allowedEnv))
+		}
+	}
+	parts = append(parts, fmt.Sprintf("Env: %s", env))
+
+	return strings.Join(parts, " | ")
+}
+
 func (m *model) renderTokenSummary(b *strings.Builder) {
 	if len(m.tokenStates) == 0 {
-		b.WriteString("Tokens: ")
 		if len(m.tokens) == 0 {
-			b.WriteString("<none>")
-		} else {
-			b.WriteString(strings.Join(m.tokens, " "))
+			b.WriteString("Tokens: (none selected)\n")
+			return
 		}
-		b.WriteString("\n")
+		b.WriteString("Tokens: " + strings.Join(m.tokens, ", ") + "\n")
 		return
 	}
 
-	if m.tokenPaletteVisible {
-		b.WriteString("Tokens (palette open — use palette controls below to edit):\n")
-		for idx, state := range m.tokenStates {
-			b.WriteString("  " + state.category.Label + ": ")
-			if len(state.selected) == 0 {
-				b.WriteString("(none)\n")
-				continue
-			}
-			var selections []string
-			for _, value := range state.selected {
-				if ref, ok := m.tokenOptionLookup[value]; ok {
-					if ref.categoryIndex == idx && ref.optionIndex >= 0 && ref.optionIndex < len(state.category.Options) {
-						option := state.category.Options[ref.optionIndex]
-						slug := option.Slug
-						if slug == "" {
-							slug = option.Value
-						}
-						if option.Label != "" && !strings.EqualFold(option.Label, slug) {
-							selections = append(selections, fmt.Sprintf("%s — %s", slug, option.Label))
-						} else {
-							selections = append(selections, slug)
-						}
-						continue
-					}
-				}
-				selections = append(selections, value)
-			}
-			b.WriteString(strings.Join(selections, ", "))
-			b.WriteString("\n")
-		}
-		if len(m.unassignedTokens) > 0 {
-			b.WriteString("  Other tokens: " + strings.Join(m.unassignedTokens, ", ") + "\n")
-		}
-		return
-	}
-
-	if m.focus == focusTokens {
-		b.WriteString("Tokens (arrow keys move · Enter toggles · Delete removes · Ctrl+P opens palette):\n")
-	} else {
-		b.WriteString("Tokens (Tab focuses tokens · Ctrl+P opens palette):\n")
-	}
-
+	var selections []string
 	for idx, state := range m.tokenStates {
-		indicator := " "
-		if m.focus == focusTokens && idx == m.tokenCategoryIndex {
-			indicator = ">"
-		}
-		maxInfo := ""
-		if state.category.MaxSelections > 0 {
-			if state.category.MaxSelections == 1 {
-				maxInfo = " (1 max)"
-			} else {
-				maxInfo = fmt.Sprintf(" (%d max)", state.category.MaxSelections)
-			}
-		}
-		b.WriteString(fmt.Sprintf("  %s%s%s\n", indicator, state.category.Label, maxInfo))
-
-		highlight := m.focus == focusTokens && idx == m.tokenCategoryIndex && m.tokenOptionIndex >= 0 && m.tokenOptionIndex < len(state.category.Options)
-		if highlight {
-			option := state.category.Options[m.tokenOptionIndex]
-			b.WriteString(formatTokenOptionLine(option, state.has(option.Value), true))
-		}
-
 		if len(state.selected) == 0 {
-			b.WriteString("      (none selected)\n")
-		} else {
-			for _, value := range state.selected {
-				if highlight {
-					highlightOption := state.category.Options[m.tokenOptionIndex]
-					if highlightOption.Value == value {
-						continue
-					}
-				}
-				if ref, ok := m.tokenOptionLookup[value]; ok {
-					if ref.categoryIndex == idx && ref.optionIndex >= 0 && ref.optionIndex < len(state.category.Options) {
-						option := state.category.Options[ref.optionIndex]
-						b.WriteString(formatTokenOptionLine(option, true, false))
-						continue
-					}
-				}
-				b.WriteString(fmt.Sprintf("      [x] %s\n", value))
-			}
+			continue
 		}
+		label := state.category.Label
+		if label == "" {
+			label = state.category.Key
+		}
+		var values []string
+		for _, value := range state.selected {
+			if ref, ok := m.tokenOptionLookup[value]; ok {
+				if ref.categoryIndex == idx && ref.optionIndex >= 0 && ref.optionIndex < len(state.category.Options) {
+					option := state.category.Options[ref.optionIndex]
+					slug := option.Slug
+					if slug == "" {
+						slug = option.Value
+					}
+					if option.Label != "" && !strings.EqualFold(option.Label, slug) {
+						values = append(values, fmt.Sprintf("%s — %s", slug, option.Label))
+					} else {
+						values = append(values, slug)
+					}
+					continue
+				}
+			}
+			values = append(values, value)
+		}
+		selections = append(selections, fmt.Sprintf("%s: %s", label, strings.Join(values, ", ")))
+	}
+
+	if len(selections) == 0 {
+		b.WriteString("Tokens: (none selected)\n")
+	} else {
+		b.WriteString("Tokens: " + strings.Join(selections, " · ") + "\n")
+	}
+
+	var unset []string
+	for _, state := range m.tokenStates {
+		if len(state.selected) > 0 {
+			continue
+		}
+		label := state.category.Label
+		if label == "" {
+			label = state.category.Key
+		}
+		unset = append(unset, label)
+	}
+	if len(unset) > 0 {
+		b.WriteString("Unset: " + strings.Join(unset, ", ") + "\n")
 	}
 
 	if len(m.unassignedTokens) > 0 {
-		b.WriteString("  Other tokens: " + strings.Join(m.unassignedTokens, ", ") + "\n")
+		b.WriteString("Other tokens: " + strings.Join(m.unassignedTokens, ", ") + "\n")
 	}
 }
 
 func (m *model) renderTokenPalette(b *strings.Builder) {
-
 	if !m.tokenPaletteVisible {
 		return
 	}
-	b.WriteString("\nToken palette (Esc closes · Tab cycles focus · Enter toggles):\n")
+	b.WriteString("Token palette (Esc closes · Tab cycles focus · Enter toggles):\n")
 	filterPrefix := "    "
 	if m.tokenPaletteFocus == tokenPaletteFocusFilter {
 		filterPrefix = "  » "
@@ -1870,7 +1891,6 @@ func (m *model) renderTokenViewportContent() string {
 		var paletteBuilder strings.Builder
 		m.renderTokenPalette(&paletteBuilder)
 		paletteContent := paletteBuilder.String()
-		paletteContent = strings.TrimPrefix(paletteContent, "\n")
 		builder.WriteString(paletteContent)
 		if !strings.HasSuffix(paletteContent, "\n") {
 			builder.WriteString("\n")
@@ -1881,7 +1901,7 @@ func (m *model) renderTokenViewportContent() string {
 		m.renderTokenPalette(&builder)
 	}
 
-	return builder.String()
+	return strings.TrimRight(builder.String(), "\n")
 }
 
 func (m *model) updateTokenViewportContent() {
@@ -2210,8 +2230,14 @@ func (m model) View() string {
 		b.WriteString(fmt.Sprintf("Pending subject replacement from %s: %q (new %d chars, was %d). Enter confirms, Esc cancels.\n", prompt.source, prompt.snippet, prompt.newLength, prompt.previousLength))
 	}
 
+	statusStrip := m.renderStatusStrip()
+	if statusStrip != "" {
+		b.WriteString(statusStrip)
+		b.WriteString("\n\n")
+	}
+
 	if m.helpVisible {
-		b.WriteString("\nHelp overlay (press ? to close):\n")
+		b.WriteString("Help overlay (press ? to close):\n")
 		b.WriteString("  Subject focus: type directly, Ctrl+L loads clipboard, Ctrl+O copies preview, Ctrl+B copies the bar build command, Ctrl+Z undoes the last replacement.\n")
 		b.WriteString("  Subject viewport: PgUp/PgDn scroll, Home/End jump to edges.\n")
 		b.WriteString("  Command focus: Enter runs command, Ctrl+R pipes preview, Ctrl+Y inserts stdout, leave blank to skip.\n")
@@ -2234,19 +2260,6 @@ func (m model) View() string {
 
 	b.WriteString("Hint: press ? for shortcut help · Ctrl+P toggles the palette · Leave command blank to opt out.\n\n")
 
-	if m.statusMessage != "" {
-
-		b.WriteString("Status: ")
-		b.WriteString(m.statusMessage)
-		b.WriteString("\n\n")
-	}
-
-	if m.commandRunning {
-		b.WriteString("Command running: ")
-		b.WriteString(m.runningCommand)
-		b.WriteString(" (press Esc to cancel)\n\n")
-	}
-
 	b.WriteString("Result & preview (PgUp/PgDn scroll · Home/End jump · Ctrl+T toggle condensed preview):\n")
 	b.WriteString(m.resultViewport.View())
 	b.WriteString("\n")
@@ -2255,50 +2268,11 @@ func (m model) View() string {
 	localTokenViewport.SetContent(m.renderTokenViewportContent())
 	tokenSection := localTokenViewport.View()
 	b.WriteString(tokenSection)
-	if !strings.HasSuffix(tokenSection, "\n") {
+	if tokenSection != "" && !strings.HasSuffix(tokenSection, "\n") {
 		b.WriteString("\n")
 	}
-
-	b.WriteString("Preset: ")
-	if m.activePresetName == "" {
-		b.WriteString("(none)")
-	} else {
-		b.WriteString(m.activePresetName)
-		if m.tokensDiverged() {
-			b.WriteString(" (diverged)")
-		}
-	}
-	if m.presetPaneVisible {
-		b.WriteString(" [Ctrl+S closes pane]")
-	} else {
-		b.WriteString(" [Ctrl+S opens pane]")
-	}
-	b.WriteString("\n")
-
-	commandForClipboard := joinShellArgs(m.buildCommandArgs())
-	displayCommand := sanitizeShellCommand(commandForClipboard)
-	b.WriteString("Equivalent CLI: ")
-	if displayCommand == "" {
-		b.WriteString("bar build")
-	} else {
-		b.WriteString(displayCommand)
-	}
-	b.WriteString(" [Ctrl+B copies]\n")
-
-	if len(m.allowedEnv) == 0 {
-		b.WriteString("Environment allowlist: (none)\n")
-	} else {
-		b.WriteString("Environment allowlist: ")
-		b.WriteString(strings.Join(m.allowedEnv, ", "))
+	if tokenSection != "" {
 		b.WriteString("\n")
-	}
-	if len(m.envNames) > 0 {
-		b.WriteString("Env manager: Tab focuses list · Ctrl+E toggle · Ctrl+A enable all · Ctrl+X clear.\n")
-	}
-	if len(m.missingEnv) > 0 {
-		b.WriteString("Missing env: ")
-		b.WriteString(strings.Join(m.missingEnv, ", "))
-		b.WriteString(" (not set)\n")
 	}
 
 	if m.presetPaneVisible {

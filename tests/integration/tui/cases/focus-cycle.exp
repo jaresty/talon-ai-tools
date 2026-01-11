@@ -1,0 +1,41 @@
+#!/usr/bin/expect -f
+set timeout 30
+set env(NO_COLOR) 1
+set transcript $env(TUI_EXPECT_TRANSCRIPT)
+log_file -a $transcript
+set cmd [split $env(TUI_EXPECT_CMD)]
+eval spawn $cmd
+expect {
+    -re {bar prompt editor \(Bubble Tea prototype\)} {}
+    timeout { send_error "failed to render header"; exit 1 }
+}
+# Subject is focused by default, cycle focus across primary panes
+send "\t"
+expect {
+    -re {Status: Token controls focused\. Use arrow keys to adjust; Ctrl\+P opens the palette} {}
+    timeout { send_error "expected token controls status"; exit 1 }
+}
+
+send "\t"
+expect {
+    -re {Status: Command input focused\. Enter runs without preview\. Use Ctrl\+R to pipe preview text\.} {}
+    timeout { send_error "expected command status"; exit 1 }
+}
+
+send "\t"
+expect {
+    -re {Status: Result viewport focused\. Use PgUp/PgDn to scroll, Home/End to jump, Ctrl\+T toggles preview\.} {}
+    timeout { send_error "expected result viewport status"; exit 1 }
+}
+
+send "\t"
+expect {
+    -re {Status: Subject input focused\. Type directly or use Ctrl\+L to load from clipboard\.} {}
+    timeout { send_error "expected subject status"; exit 1 }
+}
+
+send "\003"
+after 200
+send "\003"
+expect eof
+exit 0

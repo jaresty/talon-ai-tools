@@ -19,8 +19,10 @@ Proposed — Expect-based integration suite for Bubble Tea TUI (2026-01-11)
   7. **Environment allowlist** — toggle entries (`Ctrl+E`, `Ctrl+A`), verify summaries and command input gating.
   8. **Clipboard flows** — load subject from clipboard, copy preview and CLI command, reinsert stdout, ensure status hints persist.
   9. **Help overlay** — toggle `?`, assert grouped headings align with ADR 0071 copy.
-  10. **Window resize** — send `WindowSizeMsg` via expect to confirm token and result viewports stay within 20-row terminals.
+   10. **Window resize** — send `WindowSizeMsg` via expect to confirm token and result viewports stay within 20-row terminals.
+- Seed the suite with initial `launch-status` and `focus-cycle` cases to exercise the harness while we backfill the remaining inventory.
 - Store deterministic transcripts (`*.log`) and palette debug outputs in `tests/integration/tui/fixtures/`, referencing them via helper assertions rather than ad-hoc `grep` in scripts.
+
 - Integrate the suite into CI via a `make expect-integration` target executed after Go tests; failures emit pointer to transcript diff and associated debug log.
 - Require new interactive features to land with an expect case plus Go/Snapshot coverage, documented in ADR work logs using `helper:rerun scripts/tools/run-tui-expect.sh <case>`.
 
@@ -37,13 +39,13 @@ Proposed — Expect-based integration suite for Bubble Tea TUI (2026-01-11)
 - The harness introduces shell scripting to orchestrate expect runs; these scripts must follow repository security guidelines (no untrusted eval, consistent path usage).
 
 ## Validation
-- `scripts/tools/run-tui-expect.sh palette-enter-from-filter` — verifies Enter moves focus from the palette filter to options and logs `paletteFocus=2`.
+- `scripts/tools/run-tui-expect.sh focus-cycle` — confirms focus ring cycles Subject → Tokens → Command → Result viewports with the expected status copy.
 - `scripts/tools/run-tui-expect.sh launch-status` — confirms compact status strip, result summary, and smoke snapshot parity.
 - `go test ./internal/bartui` — unit guardrails remain green after expect suite integration.
 - `go test ./cmd/bar/...` — snapshot harness still matches CLI output with the expect suite enabled.
 
 ## Follow-up
-- Implement the shared harness script and migrate existing ADR expect snippets (`loop-081`–`loop-083`, `loop-003`) into reusable test cases.
+- Expand the expect suite by migrating existing ADR expect snippets (`loop-081`–`loop-083`, `loop-003`) into reusable cases for palette workflows, presets, clipboard flows, and window resize coverage.
 - Add CI wiring (`make expect-integration`) and document developer workflow in `docs/testing.md`.
 - Expand inventory with negative-case coverage (e.g., failed command exit code, missing env var warnings) once the happy-path suite is stable.
 - Monitor runtime and flake rate; adjust harness timeouts or fixture size as needed to keep the suite reliable.

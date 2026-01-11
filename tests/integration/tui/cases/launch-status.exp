@@ -1,0 +1,33 @@
+#!/usr/bin/expect -f
+set timeout 20
+set env(NO_COLOR) 1
+set transcript $env(TUI_EXPECT_TRANSCRIPT)
+log_file -a $transcript
+set cmd [split $env(TUI_EXPECT_CMD)]
+eval spawn $cmd
+expect {
+    -re {bar prompt editor \(Bubble Tea prototype\)} {}
+    timeout { send_error "failed to render header"; exit 1 }
+}
+expect {
+    -re {Status: .*Tab cycles focus · Ctrl\+P palette · Ctrl\+B copy CLI\.} {}
+    timeout { send_error "missing status strip"; exit 1 }
+}
+expect {
+    "Result summary:" {}
+    timeout { send_error "missing result summary heading"; exit 1 }
+}
+expect {
+    -re {∅ No command executed yet} {}
+    timeout { send_error "missing default result summary"; exit 1 }
+}
+expect {
+    "Press Ctrl+C or Esc to exit." {}
+    timeout { send_error "missing exit hint"; exit 1 }
+}
+after 200
+send "\003"
+after 200
+send "\003"
+expect eof
+exit 0

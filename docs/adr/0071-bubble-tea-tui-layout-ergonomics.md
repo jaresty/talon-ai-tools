@@ -1,4 +1,4 @@
-Proposed — Bubble Tea TUI layout ergonomics refinement (2026-01-09)
+Accepted — Bubble Tea TUI layout ergonomics refinement (2026-01-09)
 
 ## Context
 - ADR 0070 established the Bubble Tea prompt editor baseline, but early review highlighted readability issues when viewed on 24–30 row terminals.

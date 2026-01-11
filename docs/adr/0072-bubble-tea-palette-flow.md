@@ -14,6 +14,7 @@ Proposed — Bubble Tea TUI palette and inline editing refinements (2026-01-11)
 - Keep the palette docked in a right-side viewport that stays visible while editing, allowing staged multiple token changes before hitting `Enter` to apply.
 - Add focus breadcrumbs, transient confirmation toasts, and `Ctrl+Z` undo for the most recent token change so pilots can experiment quickly without losing context.
 - Expose a palette history toggle (`Ctrl+H`) for recent token adjustments and command invocations, echoing shell history search patterns and aiding recall while learning the grammar.
+- Lean on Charm ecosystem libraries: [Bubbles](https://github.com/charmbracelet/bubbles) for omnibox, history lists, and help; [Lip Gloss](https://github.com/charmbracelet/lipgloss) for layout/styling; [BubbleZone](https://github.com/lrstanley/bubblezone) for mouse targeting; [Harmonica](https://github.com/charmbracelet/harmonica) for spring animated transitions; and [ntcharts](https://github.com/NimbleMarkets/ntcharts) for inline telemetry as the palette grows richer.
 
 ## Rationale
 - Inline tokens and a single-page flow keep subject, tokens, and preview aligned, reducing scroll churn and maintaining context during edits.

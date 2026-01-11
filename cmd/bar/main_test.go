@@ -135,6 +135,13 @@ func TestTUIFixtureEmitsSnapshot(t *testing.T) {
 	if err != nil {
 		t.Fatalf("snapshot failed: %v", err)
 	}
+	if !strings.Contains(view, subject) {
+		t.Fatalf("expected snapshot view to include subject %q, got view:\n%s", subject, view)
+	}
+	if testing.Verbose() {
+		t.Logf("snapshot view:\n%s", view)
+		t.Logf("snapshot view literal: %q", view)
+	}
 
 	fixture := struct {
 		Tokens          []string `json:"tokens"`

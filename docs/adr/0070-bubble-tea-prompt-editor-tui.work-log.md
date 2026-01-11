@@ -1340,4 +1340,24 @@
 - next_work:
   - Behaviour: Monitor pilot telemetry for viewport interactions and condensed preview adoption; rerun go test ./internal/bartui, go test ./cmd/bar/..., and python3 -m pytest _tests/test_bar_completion_cli.py if changes are required.
 
+## 2026-01-11 — loop 075
+- helper_version: helper:v20251223.1
+- focus: Decision § subject import/export — restore Snapshot subject viewport hydration
+- active_constraint: The `bartui.Snapshot` path seeded the subject but never refreshed the subject viewport, so fixture runs of `bar tui --fixture` lost the subject text and `go test ./cmd/bar -run TestTUIFixtureEmitsSnapshot` failed to keep the ADR guardrail green.
+- validation_targets:
+  - go test -count=1 ./internal/bartui
+  - go test -count=1 ./cmd/bar/...
+  - python3 -m pytest _tests/test_bar_completion_cli.py
+- evidence:
+  - green: docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-075.md#loop-075-green--go-test--count1--internal-bartui
+  - green: docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-075.md#loop-075-green--go-test--count1--cmd-bar
+  - green: docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-075.md#loop-075-green--python3--m-pytest-_tests-test_bar_completion_cli.py
+- rollback_plan: `git restore --source=HEAD -- internal/bartui/program.go cmd/bar/main_test.go cmd/bar/testdata/tui_smoke.json docs/adr/0070-bubble-tea-prompt-editor-tui.work-log.md docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-075.md`
+- delta_summary: helper:diff-snapshot=git diff --stat HEAD | cmd/bar/main_test.go | 7 +++++++; cmd/bar/testdata/tui_smoke.json | 2 +-; internal/bartui/program.go | 1 + — refreshed Snapshot to update the subject viewport and aligned the fixture/test harness so the subject text stays visible in smoke runs.
+- loops_remaining_forecast: 0 loops — snapshot fixture parity restored; continue monitoring pilot feedback for viewport ergonomics (medium confidence).
+- residual_constraints:
+  - Pilot feedback on viewport ergonomics (scroll affordances, condensed preview messaging) remains pending (severity: medium; mitigation: gather pilot notes, rerun go test ./internal/bartui and python3 -m pytest _tests/test_bar_completion_cli.py if adjustments are requested).
+- next_work:
+  - Behaviour: Monitor pilot telemetry for viewport interactions and condensed preview adoption; rerun go test ./internal/bartui, go test ./cmd/bar/..., and python3 -m pytest _tests/test_bar_completion_cli.py if changes are required.
+
 

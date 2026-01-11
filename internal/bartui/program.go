@@ -2825,6 +2825,7 @@ func Snapshot(opts Options, subject string) (view string, preview string, err er
 
 	model := newModel(opts)
 	model.subject.SetValue(subject)
+	model.updateSubjectViewportContent()
 	model.refreshPreview()
 	return model.View(), model.preview, nil
 }

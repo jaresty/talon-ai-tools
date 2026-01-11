@@ -56,7 +56,6 @@ func defaultTokenCategories() []TokenCategory {
 }
 
 func TestLoadSubjectFromClipboard(t *testing.T) {
-
 	opts := Options{
 		Tokens:         []string{"todo"},
 		Preview:        func(subject string, tokens []string) (string, error) { return "preview:" + subject, nil },
@@ -65,16 +64,110 @@ func TestLoadSubjectFromClipboard(t *testing.T) {
 		RunCommand: func(context.Context, string, string, map[string]string) (string, string, error) {
 			return "", "", nil
 		},
-
 		CommandTimeout: time.Second,
 	}
 	m := newModel(opts)
+	m.subject.SetValue("existing subject")
+	m.refreshPreview()
+
 	(&m).loadSubjectFromClipboard()
+	if got := m.subject.Value(); got != "existing subject" {
+		t.Fatalf("expected subject to remain unchanged until confirmation, got %q", got)
+	}
+	if m.pendingSubject == nil {
+		t.Fatalf("expected pending subject replacement after clipboard load")
+	}
+	if m.pendingSubject.source != "clipboard text" {
+		t.Fatalf("expected clipboard source label, got %q", m.pendingSubject.source)
+	}
+
+	m, _ = updateModel(t, m, tea.KeyMsg{Type: tea.KeyEnter})
 	if got := m.subject.Value(); got != "from clipboard" {
-		t.Fatalf("expected subject to load from clipboard, got %q", got)
+		t.Fatalf("expected subject to update after confirmation, got %q", got)
 	}
 	if m.preview != "preview:from clipboard" {
 		t.Fatalf("expected preview to refresh, got %q", m.preview)
+	}
+	if !m.subjectUndoAvailable {
+		t.Fatalf("expected undo to be available after replacement")
+	}
+
+	m, _ = updateModel(t, m, tea.KeyMsg{Type: tea.KeyCtrlZ})
+	if got := m.subject.Value(); got != "existing subject" {
+		t.Fatalf("expected undo to restore previous subject, got %q", got)
+	}
+	if m.subjectUndoAvailable {
+		t.Fatalf("expected undo to be cleared after use")
+	}
+}
+
+func TestCancelSubjectReplacement(t *testing.T) {
+	opts := Options{
+		Tokens:         []string{"todo"},
+		Preview:        func(subject string, tokens []string) (string, error) { return "preview:" + subject, nil },
+		ClipboardRead:  func() (string, error) { return "alternate", nil },
+		ClipboardWrite: func(string) error { return nil },
+		RunCommand: func(context.Context, string, string, map[string]string) (string, string, error) {
+			return "", "", nil
+		},
+		CommandTimeout: time.Second,
+	}
+	m := newModel(opts)
+	m.subject.SetValue("keep me")
+	m.refreshPreview()
+
+	(&m).loadSubjectFromClipboard()
+	if m.pendingSubject == nil {
+		t.Fatalf("expected pending subject after clipboard load")
+	}
+
+	m, _ = updateModel(t, m, tea.KeyMsg{Type: tea.KeyEsc})
+	if m.pendingSubject != nil {
+		t.Fatalf("expected pending subject to clear after cancellation")
+	}
+	if got := m.subject.Value(); got != "keep me" {
+		t.Fatalf("expected subject to remain unchanged, got %q", got)
+	}
+}
+
+func TestReinsertLastResultRequiresConfirmation(t *testing.T) {
+	opts := Options{
+		Tokens:         []string{"todo"},
+		Preview:        func(subject string, tokens []string) (string, error) { return "preview:" + subject, nil },
+		ClipboardRead:  func() (string, error) { return "", nil },
+		ClipboardWrite: func(string) error { return nil },
+		RunCommand: func(context.Context, string, string, map[string]string) (string, string, error) {
+			return "", "", nil
+		},
+		CommandTimeout: time.Second,
+	}
+	m := newModel(opts)
+	m.subject.SetValue("original")
+	m.refreshPreview()
+	m.lastResult = commandResult{Stdout: "updated via command"}
+
+	(&m).reinsertLastResult()
+	if m.pendingSubject == nil {
+		t.Fatalf("expected pending subject after reinsert request")
+	}
+	if m.subject.Value() != "original" {
+		t.Fatalf("expected subject to remain unchanged until confirmation")
+	}
+
+	m, _ = updateModel(t, m, tea.KeyMsg{Type: tea.KeyEnter})
+	if got := m.subject.Value(); got != "updated via command" {
+		t.Fatalf("expected subject to update after confirmation, got %q", got)
+	}
+	if !m.subjectUndoAvailable {
+		t.Fatalf("expected undo to be available after subject replacement")
+	}
+
+	m, _ = updateModel(t, m, tea.KeyMsg{Type: tea.KeyCtrlZ})
+	if got := m.subject.Value(); got != "original" {
+		t.Fatalf("expected undo to restore original subject, got %q", got)
+	}
+	if m.subjectUndoAvailable {
+		t.Fatalf("expected undo to clear after restoring original subject")
 	}
 }
 
@@ -162,8 +255,11 @@ func TestExecuteSubjectCommand(t *testing.T) {
 	if m.commandRunning {
 		t.Fatalf("expected commandRunning to be false after completion")
 	}
-	if got := m.subject.Value(); got != "new subject" {
-		t.Fatalf("expected subject to update, got %q", got)
+	if m.pendingSubject == nil {
+		t.Fatalf("expected pending subject replacement after command completion")
+	}
+	if got := m.subject.Value(); got != "" {
+		t.Fatalf("expected subject to remain unchanged until confirmation, got %q", got)
 	}
 	if m.lastResult.Stdout != "new subject\n" {
 		t.Fatalf("expected stdout recorded, got %q", m.lastResult.Stdout)
@@ -173,6 +269,14 @@ func TestExecuteSubjectCommand(t *testing.T) {
 	}
 	if m.lastResult.UsedPreview {
 		t.Fatalf("expected UsedPreview to be false")
+	}
+
+	m, _ = updateModel(t, m, tea.KeyMsg{Type: tea.KeyEnter})
+	if got := m.subject.Value(); got != "new subject" {
+		t.Fatalf("expected subject to update after confirmation, got %q", got)
+	}
+	if !m.subjectUndoAvailable {
+		t.Fatalf("expected undo available after subject replacement")
 	}
 }
 
@@ -223,8 +327,16 @@ func TestExecutePreviewCommandAndReinsert(t *testing.T) {
 	}
 
 	(&m).reinsertLastResult()
+	if m.pendingSubject == nil {
+		t.Fatalf("expected pending subject replacement after reinsert request")
+	}
+	if got := m.subject.Value(); got != "" {
+		t.Fatalf("expected subject to remain unchanged until confirmation, got %q", got)
+	}
+
+	m, _ = updateModel(t, m, tea.KeyMsg{Type: tea.KeyEnter})
 	if got := m.subject.Value(); got != "command stdout" {
-		t.Fatalf("expected subject replaced with stdout, got %q", got)
+		t.Fatalf("expected subject replaced after confirmation, got %q", got)
 	}
 }
 
@@ -1104,8 +1216,14 @@ func TestRunningCommandStatusIncludesCopyHint(t *testing.T) {
 	if !strings.Contains(m.statusMessage, "copy command") {
 		t.Fatalf("expected completion status to include copy hint, got %q", m.statusMessage)
 	}
-	if !strings.Contains(m.statusMessage, "Subject replaced") {
-		t.Fatalf("expected subject replacement message, got %q", m.statusMessage)
+	if !strings.Contains(strings.ToLower(m.statusMessage), "replace subject with command stdout") {
+		t.Fatalf("expected subject replacement prompt, got %q", m.statusMessage)
+	}
+	if m.pendingSubject == nil {
+		t.Fatalf("expected pending subject replacement after command completion")
+	}
+	if got := m.subject.Value(); got != "" {
+		t.Fatalf("expected subject to remain unchanged until confirmation, got %q", got)
 	}
 }
 

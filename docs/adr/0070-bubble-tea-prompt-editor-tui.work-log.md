@@ -1283,4 +1283,24 @@
 - next_work:
   - Behaviour: Monitor release/pilot feedback; update ADR if packaging constraints evolve (validation via documentation refresh when needed).
 
+## 2026-01-11 — loop 072
+- helper_version: helper:v20251223.1
+- focus: Decision § subject import/export — require confirmation and undo before subject replacement
+- active_constraint: Bubble Tea TUI replaced the subject immediately when loading from the clipboard or reinserting command stdout, violating Decision guardrails that require a confirmation prompt with undo support; `go test ./internal/bartui` lacked coverage for the missing prompt/undo behaviour.
+- validation_targets:
+  - go test -count=1 ./internal/bartui
+  - go test -count=1 ./cmd/bar/...
+  - python3 -m pytest _tests/test_bar_completion_cli.py
+- evidence:
+  - green: docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-072.md#loop-072-green--go-test--count1--internal-bartui
+  - green: docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-072.md#loop-072-green--go-test--count1--cmd-bar
+  - green: docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-072.md#loop-072-green--python3--m-pytest-_tests-test_bar_completion_cli.py
+- rollback_plan: `git restore --source=HEAD -- internal/bartui/program.go internal/bartui/program_test.go cmd/bar/testdata/tui_smoke.json docs/adr/0070-bubble-tea-prompt-editor-tui.work-log.md docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-072.md`
+- delta_summary: helper:diff-snapshot=git diff --stat HEAD | cmd/bar/testdata/tui_smoke.json |   2 +-; internal/bartui/program.go (subject replacement prompt + undo, help text updates); internal/bartui/program_test.go (confirmation/undo coverage). Implemented pending-subject prompt/undo flow, refreshed CLI snapshot, and extended tests to enforce the guardrail.
+- loops_remaining_forecast: 0 loops — subject replacement now prompts/undoes per ADR; continue monitoring pilot UX feedback (medium confidence).
+- residual_constraints:
+  - Pilot feedback on token and command-copy hints remains pending (severity: medium; mitigation: gather pilot notes after rollout; monitoring: rerun go test ./internal/bartui and python3 -m pytest _tests/test_bar_completion_cli.py if adjustments are required).
+- next_work:
+  - Behaviour: Monitor pilot telemetry for subject replacement ergonomics and copy guidance; rerun go test ./internal/bartui, go test ./cmd/bar/..., and python3 -m pytest _tests/test_bar_completion_cli.py if changes are requested.
+
 

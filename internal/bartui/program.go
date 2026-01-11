@@ -9,6 +9,7 @@ import (
 	"strings"
 	"time"
 	"unicode"
+	"unicode/utf8"
 
 	textinput "github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
@@ -192,6 +193,59 @@ type commandFinishedMsg struct {
 	mode   commandMode
 }
 
+type subjectReplacementPrompt struct {
+	source         string
+	newValue       string
+	previousValue  string
+	snippet        string
+	newLength      int
+	previousLength int
+	message        string
+}
+
+func newSubjectReplacementPrompt(source, previous, newValue string) *subjectReplacementPrompt {
+	snippet := subjectSnippet(newValue)
+	prevLen := subjectContentLength(previous)
+	newLen := subjectContentLength(newValue)
+	message := fmt.Sprintf("Replace subject with %s: %q (new %d chars, was %d). Press Enter to confirm, Esc to cancel.", source, snippet, newLen, prevLen)
+	return &subjectReplacementPrompt{
+		source:         source,
+		newValue:       newValue,
+		previousValue:  previous,
+		snippet:        snippet,
+		newLength:      newLen,
+		previousLength: prevLen,
+		message:        message,
+	}
+}
+
+func subjectContentLength(text string) int {
+	trimmed := strings.TrimRight(text, "\r\n")
+	if trimmed == "" {
+		trimmed = strings.TrimSpace(text)
+	}
+	return utf8.RuneCountInString(trimmed)
+}
+
+func subjectSnippet(text string) string {
+	trimmed := strings.TrimSpace(text)
+	if trimmed == "" {
+		return "(empty)"
+	}
+	firstLine := trimmed
+	if idx := strings.IndexRune(trimmed, '\n'); idx >= 0 {
+		firstLine = trimmed[:idx]
+	}
+	runes := []rune(firstLine)
+	if len(runes) > 60 {
+		firstLine = string(runes[:57]) + "\u2026"
+	}
+	if strings.Count(trimmed, "\n") > 0 {
+		firstLine += " \u2026"
+	}
+	return firstLine
+}
+
 func (r commandResult) empty() bool {
 	return r.Command == "" && r.Stdout == "" && r.Stderr == "" && r.Err == nil
 }
@@ -285,6 +339,11 @@ type model struct {
 	focusBeforePalette       focusArea
 	unassignedTokens         []string
 	lastTokenSnapshot        []string
+
+	pendingSubject       *subjectReplacementPrompt
+	subjectUndoValue     string
+	subjectUndoSource    string
+	subjectUndoAvailable bool
 
 	subject                textinput.Model
 	command                textinput.Model
@@ -1344,9 +1403,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		if typed.mode == commandModeSubject {
 			trimmed := strings.TrimRight(typed.result.Stdout, "\n")
-			m.subject.SetValue(trimmed)
-			m.refreshPreview()
-			m.statusMessage = ensureCopyHint("Subject replaced with command stdout.")
+			(&m).requestSubjectReplacement("command stdout", trimmed)
 		} else {
 			m.statusMessage = ensureCopyHint("Command completed; inspect result pane. Use Ctrl+Y to insert stdout into the subject.")
 		}
@@ -1355,6 +1412,12 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	}
 
 	if keyMsg, ok := msg.(tea.KeyMsg); ok {
+		if handled, cmd := (&m).handleSubjectReplacementKey(keyMsg); handled {
+			if cmd != nil {
+				return m, cmd
+			}
+			return m, nil
+		}
 		if handled, cmd := m.handlePresetPaneKey(keyMsg); handled {
 			if cmd != nil {
 				return m, cmd
@@ -1450,11 +1513,16 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.undoTokenChange()
 				return m, nil
 			}
+			if m.focus == focusSubject {
+				(&m).undoSubjectReplacement()
+				return m, nil
+			}
 
 			if m.focus == focusEnvironment {
 				m.moveEnvSelection(1)
 				return m, nil
 			}
+
 		}
 
 		switch keyMsg.String() {
@@ -1526,6 +1594,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	}
 	m.subject = newSubject
 	if newSubject.Value() != previousValue {
+		m.subjectUndoAvailable = false
 		m.refreshPreview()
 	}
 
@@ -1548,6 +1617,84 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	}
 
 	return m, tea.Batch(cmds...)
+}
+
+func (m *model) handleSubjectReplacementKey(key tea.KeyMsg) (bool, tea.Cmd) {
+	if m.pendingSubject == nil {
+		return false, nil
+	}
+
+	switch key.Type {
+	case tea.KeyEnter:
+		m.applyPendingSubjectReplacement()
+		return true, nil
+	case tea.KeyEsc, tea.KeyCtrlC:
+		m.cancelPendingSubjectReplacement()
+		return true, nil
+	case tea.KeyCtrlZ:
+		m.cancelPendingSubjectReplacement()
+		return true, nil
+	}
+
+	if key.String() == "?" {
+		return false, nil
+	}
+
+	m.statusMessage = ensureCopyHint(m.pendingSubject.message)
+	return true, nil
+}
+
+func (m *model) requestSubjectReplacement(source, newValue string) {
+	previous := m.subject.Value()
+	if strings.TrimRight(newValue, "\r\n") == strings.TrimRight(previous, "\r\n") {
+		m.pendingSubject = nil
+		m.statusMessage = ensureCopyHint(fmt.Sprintf("Subject already matches %s.", source))
+		return
+	}
+
+	m.pendingSubject = newSubjectReplacementPrompt(source, previous, newValue)
+	m.statusMessage = ensureCopyHint(m.pendingSubject.message)
+}
+
+func (m *model) applyPendingSubjectReplacement() {
+	if m.pendingSubject == nil {
+		return
+	}
+
+	prompt := m.pendingSubject
+	m.pendingSubject = nil
+	m.subjectUndoValue = prompt.previousValue
+	m.subjectUndoSource = prompt.source
+	m.subjectUndoAvailable = true
+	m.subject.SetValue(prompt.newValue)
+	m.refreshPreview()
+	m.statusMessage = ensureCopyHint(fmt.Sprintf("Subject replaced with %s. Press Ctrl+Z to undo.", prompt.source))
+}
+
+func (m *model) cancelPendingSubjectReplacement() {
+	if m.pendingSubject == nil {
+		return
+	}
+
+	source := m.pendingSubject.source
+	m.pendingSubject = nil
+	m.statusMessage = ensureCopyHint(fmt.Sprintf("%s replacement cancelled.", source))
+}
+
+func (m *model) undoSubjectReplacement() {
+	if !m.subjectUndoAvailable {
+		m.statusMessage = ensureCopyHint("No subject replacement to undo.")
+		return
+	}
+
+	m.subject.SetValue(m.subjectUndoValue)
+	m.refreshPreview()
+	m.subjectUndoAvailable = false
+	source := m.subjectUndoSource
+	if source == "" {
+		source = "recent"
+	}
+	m.statusMessage = ensureCopyHint(fmt.Sprintf("Subject restored after %s replacement.", source))
 }
 
 func (m model) View() string {
@@ -1582,9 +1729,14 @@ func (m model) View() string {
 	}
 	b.WriteString(" [Ctrl+B copies]\n")
 
+	if m.pendingSubject != nil {
+		prompt := m.pendingSubject
+		b.WriteString(fmt.Sprintf("Pending subject replacement from %s: %q (new %d chars, was %d). Enter confirms, Esc cancels.\n", prompt.source, prompt.snippet, prompt.newLength, prompt.previousLength))
+	}
+
 	if m.helpVisible {
 		b.WriteString("\nHelp overlay (press ? to close):\n")
-		b.WriteString("  Subject focus: type directly, Ctrl+L loads clipboard, Ctrl+O copies preview, Ctrl+B copies the bar build command.\n")
+		b.WriteString("  Subject focus: type directly, Ctrl+L loads clipboard, Ctrl+O copies preview, Ctrl+B copies the bar build command, Ctrl+Z undoes the last replacement.\n")
 		b.WriteString("  Command focus: Enter runs command, Ctrl+R pipes preview, Ctrl+Y inserts stdout, leave blank to skip.\n")
 		b.WriteString("  Tokens: Tab focuses tokens, Left/Right switch categories, Up/Down browse options, Enter/Space toggle, Delete removes, Ctrl+P opens palette, Ctrl+Z undoes last change.\n")
 		b.WriteString("  Palette: Type \"copy command\", press Enter to copy the CLI and close the palette; Ctrl+W clears the current filter.\n")
@@ -1651,7 +1803,7 @@ func (m model) View() string {
 	}
 	b.WriteString("\n\n")
 
-	b.WriteString("Shortcuts: Tab switch input · Ctrl+L load subject from clipboard · Ctrl+O copy preview to clipboard · Ctrl+B copy bar build command · Ctrl+R pipe preview to command · Ctrl+Y replace subject with last command stdout · Ctrl+C/Esc exit.\n")
+	b.WriteString("Shortcuts: Tab switch input · Ctrl+L load subject from clipboard · Ctrl+O copy preview to clipboard · Ctrl+B copy bar build command · Ctrl+R pipe preview to command · Ctrl+Y queue last command stdout for subject · Ctrl+Z undo subject replacement · Ctrl+C/Esc exit.\n")
 	b.WriteString("Token controls: Tab focus tokens · Left/Right change category · Up/Down browse options · Enter/Space toggle selection · Delete removes highlighted token · Ctrl+P open palette · Ctrl+Z undo token change.\n")
 	b.WriteString("Env allowlist controls (when configured): Tab focus env list · Up/Down move selection · Ctrl+E toggle entry · Ctrl+A enable all · Ctrl+X clear allowlist.\n")
 	b.WriteString("Preset controls: Ctrl+S toggle pane · Ctrl+N save current tokens · Delete remove preset · Ctrl+Z undo delete.\n")
@@ -1937,9 +2089,7 @@ func (m *model) loadSubjectFromClipboard() {
 		m.statusMessage = fmt.Sprintf("Clipboard read failed: %v", err)
 		return
 	}
-	m.subject.SetValue(text)
-	m.refreshPreview()
-	m.statusMessage = "Loaded subject from clipboard."
+	m.requestSubjectReplacement("clipboard text", text)
 }
 
 func (m *model) copyPreviewToClipboard() {
@@ -2106,9 +2256,7 @@ func (m *model) reinsertLastResult() {
 		return
 	}
 	trimmed := strings.TrimRight(m.lastResult.Stdout, "\n")
-	m.subject.SetValue(trimmed)
-	m.refreshPreview()
-	m.statusMessage = "Subject replaced with last command stdout."
+	m.requestSubjectReplacement("command stdout", trimmed)
 }
 
 func (m *model) refreshPresetSummaries() error {

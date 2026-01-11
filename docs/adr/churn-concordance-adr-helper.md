@@ -2,6 +2,8 @@
 
 This helper defines a repeatable workflow for producing a **churn × complexity (statement-level) + Concordance** analysis and drafting the resulting ADR directly on disk. It is **not** an ADR itself.
 
+> Operational note: load the `churn-concordance-adr-helper` skill (see `.claude/skills/churn-concordance-adr-helper/SKILL.md`) when running this helper; the skill encapsulates the scripted commands and step-by-step workflow below.
+
 ---
 
 ## Outcome & Deliverable

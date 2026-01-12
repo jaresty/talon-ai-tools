@@ -31,11 +31,198 @@ Owners: Bubble Tea UX working group
 6. **Documentation alignment** – Update operator docs and the Bubble Tea help surfaces to reference the grammar overlay gesture, reinforcing parity between CLI and TUI learning routes.
 
 ## Reference Patterns from Crush
-- **Root model orchestration**: mirror `crush/internal/tui/tui.go:59-188`, where an `appModel` owns a `pages` map and dispatches Bubble Tea messages across focusable sub-models. Adopting the same aggregator lets the grammar scaffold, overlay, and dialogs remain isolated `util.Model`s while sharing sizing, keyboard enhancement, and pub/sub handling.
-- **Completion popovers**: reuse the `completions` component shown in `crush/internal/tui/components/completions/completions.go:60-204` to render slot suggestions near the cursor. Its `RepositionCompletionsMsg` and adaptive width logic are ready-made for grammar slot pickers.
-- **Status/help strip**: the adaptive help bar at `crush/internal/tui/components/core/status/status.go:20-114` already wraps `help.Model` with message TTLs. Porting it verbatim enables stage-aware feedforward hints without reinventing the status surface.
-- **Rich history items**: `crush/internal/tui/components/chat/messages/messages.go:51-200` demonstrates Lip Gloss borders, focus styles, and copy bindings for message cards. Use the same approach for grammar-history events (timestamps, icons, keyboard shortcuts).
-- **Responsive layouts**: `crush/internal/tui/page/chat/chat.go:70-188` shows how to switch between compact/full modes, manage sidebars, and batch `Init` commands. Apply the pattern so Compose/History/Presets sections collapse gracefully on narrow terminals.
+The snippets below are lifted from the temporary Crush checkout so the patterns remain available after removing that repository.
+
+- **Root model orchestration** (source: https://github.com/charmbracelet/crush/blob/main/internal/tui/tui.go)
+```go
+type appModel struct {
+    wWidth, wHeight int
+    currentPage     page.PageID
+    pages           map[page.PageID]util.Model
+    loadedPages     map[page.PageID]bool
+    status          status.StatusCmp
+}
+
+func (a appModel) Init() tea.Cmd {
+    var cmds []tea.Cmd
+    if pageModel, ok := a.pages[a.currentPage]; ok {
+        cmds = append(cmds, pageModel.Init())
+        a.loadedPages[a.currentPage] = true
+    }
+    cmds = append(cmds, a.status.Init())
+    return tea.Batch(cmds...)
+}
+
+func (a *appModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+    var cmds []tea.Cmd
+    switch msg := msg.(type) {
+    case tea.KeyboardEnhancementsMsg:
+        for id, child := range a.pages {
+            updated, cmd := child.Update(msg)
+            a.pages[id] = updated
+            if cmd != nil {
+                cmds = append(cmds, cmd)
+            }
+        }
+        return a, tea.Batch(cmds...)
+    case tea.WindowSizeMsg:
+        a.wWidth, a.wHeight = msg.Width, msg.Height
+        return a, a.handleWindowResize(msg.Width, msg.Height)
+    }
+    ...
+    return a, tea.Batch(cmds...)
+}
+```
+
+- **Completion popovers** (source: https://github.com/charmbracelet/crush/blob/main/internal/tui/components/completions/completions.go)
+```go
+type OpenCompletionsMsg struct {
+    Completions []Completion
+    X, Y        int
+    MaxResults  int
+}
+
+type completionsCmp struct {
+    wWidth, wHeight int
+    width, height   int
+    x, y            int
+    open            bool
+    list            listModel
+}
+
+func (c *completionsCmp) Update(msg tea.Msg) (util.Model, tea.Cmd) {
+    switch msg := msg.(type) {
+    case RepositionCompletionsMsg:
+        c.x, c.y = msg.X, msg.Y
+        c.adjustPosition()
+    case OpenCompletionsMsg:
+        c.open = true
+        c.x, c.y = msg.X, msg.Y
+        items := buildItems(msg.Completions)
+        c.width = listWidth(items)
+        c.height = max(min(maxCompletionsHeight, len(items)), 1)
+        return c, tea.Batch(
+            c.list.SetItems(items),
+            c.list.SetSize(c.width, c.height),
+        )
+    }
+    ...
+    return c, nil
+}
+```
+
+- **Status/help strip** (source: https://github.com/charmbracelet/crush/blob/main/internal/tui/components/core/status/status.go)
+```go
+type statusCmp struct {
+    info       util.InfoMsg
+    width      int
+    messageTTL time.Duration
+    help       help.Model
+    keyMap     help.KeyMap
+}
+
+func (m *statusCmp) Update(msg tea.Msg) (util.Model, tea.Cmd) {
+    switch msg := msg.(type) {
+    case tea.WindowSizeMsg:
+        m.width = msg.Width
+        m.help.SetWidth(msg.Width - 2)
+    case util.InfoMsg:
+        m.info = msg
+        ttl := msg.TTL
+        if ttl == 0 {
+            ttl = m.messageTTL
+        }
+        return m, m.clearMessageCmd(ttl)
+    case util.ClearStatusMsg:
+        m.info = util.InfoMsg{}
+    }
+    return m, nil
+}
+```
+
+- **Rich history items** (source: https://github.com/charmbracelet/crush/blob/main/internal/tui/components/chat/messages/messages.go)
+```go
+type messageCmp struct {
+    width   int
+    focused bool
+    message message.Message
+    anim    *anim.Anim
+}
+
+func (m *messageCmp) View() string {
+    if m.spinning && m.message.ReasoningContent().Thinking == "" {
+        m.anim.SetLabel("Thinking")
+        return m.style().PaddingLeft(1).Render(m.anim.View())
+    }
+    switch m.message.Role {
+    case message.User:
+        return m.renderUserMessage()
+    default:
+        return m.renderAssistantMessage()
+    }
+}
+
+func (msg *messageCmp) style() lipgloss.Style {
+    t := styles.CurrentTheme()
+    border := lipgloss.NormalBorder()
+    if msg.focused {
+        border = lipgloss.Border{Left: "▌"}
+    }
+    style := t.S().Text
+    if msg.message.Role == message.User {
+        style = style.PaddingLeft(1).
+            BorderLeft(true).
+            BorderStyle(border).
+            BorderForeground(t.Primary)
+    } else if msg.focused {
+        style = style.PaddingLeft(1).
+            BorderLeft(true).
+            BorderStyle(border).
+            BorderForeground(t.GreenDark)
+    } else {
+        style = style.PaddingLeft(2)
+    }
+    return style
+}
+```
+
+- **Responsive layouts** (source: https://github.com/charmbracelet/crush/blob/main/internal/tui/page/chat/chat.go)
+```go
+const (
+    CompactModeWidthBreakpoint  = 120
+    SideBarWidth                = 31
+)
+
+type chatPage struct {
+    width, height int
+    compact       bool
+    forceCompact  bool
+    sidebar       sidebar.Sidebar
+    editor        editor.Editor
+}
+
+func (p *chatPage) Init() tea.Cmd {
+    cfg := config.Get()
+    p.compact = cfg.Options.TUI.CompactMode
+    p.forceCompact = p.compact
+    p.sidebar.SetCompactMode(p.compact)
+    return tea.Batch(
+        p.sidebar.Init(),
+        p.editor.Init(),
+    )
+}
+
+func (p *chatPage) Update(msg tea.Msg) (util.Model, tea.Cmd) {
+    switch msg := msg.(type) {
+    case tea.WindowSizeMsg:
+        p.width, p.height = msg.Width, msg.Height
+        p.compact = p.forceCompact || msg.Width < CompactModeWidthBreakpoint
+        p.sidebar.SetCompactMode(p.compact)
+    }
+    ...
+    return p, nil
+}
+```
 
 ## Validation Targets
 - `go test ./internal/bartui/...`

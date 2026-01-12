@@ -1,6 +1,7 @@
 package barcli
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/talonvoice/talon-ai-tools/internal/barcli/cli"
@@ -55,12 +56,46 @@ func TestParseArgsErrors(t *testing.T) {
 	if _, err := cli.Parse([]string{"build", "--prompt"}); err == nil {
 		t.Fatalf("expected error for missing --prompt value")
 	}
+	if _, err := cli.Parse([]string{"build", "--prompt", "body", "--input", "path"}); err == nil || !strings.Contains(err.Error(), "cannot") {
+		t.Fatalf("expected conflict error for prompt/input, got: %v", err)
+	}
 	if _, err := cli.Parse([]string{"build", "--unknown"}); err == nil {
 		t.Fatalf("expected error for unknown flag")
 	}
 }
 
+func TestParseArgsFixtureDimensionErrors(t *testing.T) {
+	cases := [][]string{
+		{"tui", "--fixture-width", "0"},
+		{"tui", "--fixture-width=0"},
+		{"tui", "--width", "-5"},
+		{"tui", "--fixture-height", "0"},
+		{"tui", "--height", "0"},
+	}
+	for _, args := range cases {
+		if _, err := cli.Parse(args); err == nil {
+			t.Fatalf("expected fixture dimension error for args %v", args)
+		}
+	}
+}
+
+func TestParseArgsEnvValidation(t *testing.T) {
+	if _, err := cli.Parse([]string{"tui", "--env", "CHATGPT_API_KEY", "--env=", "--env", "  ORG_ID  "}); err == nil {
+		t.Fatalf("expected error for blank --env entry")
+	}
+
+	opts, err := cli.Parse([]string{"tui", "--env", " CHATGPT_API_KEY ", "--env", "ORG_ID", "--env", "CHATGPT_API_KEY"})
+	if err != nil {
+		t.Fatalf("unexpected parse error: %v", err)
+	}
+	expected := []string{"CHATGPT_API_KEY", "ORG_ID"}
+	if got := opts.EnvAllowlist; len(got) != len(expected) || got[0] != expected[0] || got[1] != expected[1] {
+		t.Fatalf("expected deduped env allowlist %v, got %v", expected, got)
+	}
+}
+
 func TestParseArgsNoClipboard(t *testing.T) {
+
 	opts, err := cli.Parse([]string{"tui", "--no-clipboard"})
 	if err != nil {
 		t.Fatalf("cli.Parse returned error: %v", err)

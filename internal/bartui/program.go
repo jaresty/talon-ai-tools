@@ -2855,6 +2855,15 @@ func (m *model) renderShortcutReferenceOverlay() string {
 		}
 	}
 
+	headerRule := func(title string) string {
+		title = strings.TrimSpace(title)
+		if title == "" {
+			return ""
+		}
+		rule := strings.Repeat("-", utf8.RuneCountInString(title))
+		return fmt.Sprintf("  %s\n  %s\n", title, rule)
+	}
+
 	var builder strings.Builder
 	builder.WriteString("Shortcut reference (press Ctrl+? to close):\n\n")
 
@@ -2862,11 +2871,9 @@ func (m *model) renderShortcutReferenceOverlay() string {
 		if len(section.Entries) == 0 {
 			continue
 		}
-		title := strings.TrimSpace(section.Title)
-		if title != "" {
-			builder.WriteString("  ")
-			builder.WriteString(title)
-			builder.WriteString("\n")
+		titleBlock := headerRule(section.Title)
+		if titleBlock != "" {
+			builder.WriteString(titleBlock)
 		}
 		for _, entry := range section.Entries {
 			keys := strings.TrimSpace(entry.Keys)

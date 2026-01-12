@@ -170,3 +170,37 @@ residual_constraints:
 
 next_work:
 - Behaviour: Run visual audit of shortcut typography across supported themes (validation: `scripts/tools/run-tui-expect.sh --all` with theme overrides).
+
+## loop-006 | helper:v20251223.1 | 2026-01-12
+
+focus: ADR 0077 Decision bullet 5 → reinforce shortcut overlay typography with theme-agnostic dividers so grouped commands stay scannable on both light and dark terminals.
+
+active_constraint: Shortcut reference sections relied solely on bolded prose without any structural separators, reducing readability on high-contrast themes and leaving ADR 0077’s typography cue partially unmet (validation: `scripts/tools/run-tui-expect.sh --all`).
+
+expected_value:
+| Factor | Value | Rationale |
+| --- | --- | --- |
+| Impact | Medium | ASCII dividers create clear visual hierarchy regardless of terminal color support, improving scan speed. |
+| Probability | High | Updating the overlay renderer directly adds the missing typography cue. |
+| Time Sensitivity | Medium | Addressing the residual now prevents future loops from inheriting a readability gap. |
+| Uncertainty note | Low | Behaviour exercised via unit tests, CLI suites, and the expect harness. |
+
+validation_targets:
+- `go test ./internal/bartui`
+- `go test ./cmd/bar/...`
+- `scripts/tools/run-tui-expect.sh --all`
+- `python3 -m pytest _tests/test_bar_completion_cli.py`
+
+evidence: `docs/adr/evidence/0077-bubble-tea-tui-ux-simplification/loop-006.md`
+
+rollback_plan: `<VCS_REVERT>` = `git restore --source=HEAD -- internal/bartui/program.go`; rerun `go test ./internal/bartui` and `scripts/tools/run-tui-expect.sh --all` to confirm the prior typography returns before reapplying the loop diff.
+
+delta_summary: helper:diff-snapshot=1 file changed, 12 insertions(+), 5 deletions(-) — adds ASCII dividers to shortcut section headers while preserving existing key descriptions.
+
+loops_remaining_forecast: 0 loops. Confidence: high — typography audit complete; continue monitoring during future feature additions.
+
+residual_constraints:
+- Low — Continue monitoring future sidebar or overlay additions for typography regressions. Mitigation: rerun `scripts/tools/run-tui-expect.sh --all` when new sections land and verify dividers remain consistent; monitor operator feedback channels for readability reports.
+
+next_work:
+- Behaviour: When new shortcut sections are introduced, rerun the typography audit (validation: `scripts/tools/run-tui-expect.sh --all`).

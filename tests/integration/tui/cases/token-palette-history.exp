@@ -34,6 +34,10 @@ expect {
     -re {Static Prompt → todo applied\.} {}
     timeout { send_error "expected token applied status"; exit 1 }
 }
+expect {
+    -re {Toast: static=todo applied · CLI: bar build todo · Ctrl\+Z undo} {}
+    timeout { send_error "expected toast confirming token apply"; exit 1 }
+}
 
 send "\u0008" ;# Ctrl+H toggles history (backspace code point)
 expect {

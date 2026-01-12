@@ -33,7 +33,7 @@ Owners: Bubble Tea UX working group
 ## Reference Patterns from Crush
 The snippets below are lifted from the temporary Crush checkout so the patterns remain available after removing that repository.
 
-- **Root model orchestration** (source: https://github.com/charmbracelet/crush/blob/main/internal/tui/tui.go)
+- **Root model orchestration** – keep a single Bubble Tea `model` that routes events to page components while sharing sizing, keyboard-enhancement, and pub/sub plumbing (source: https://github.com/charmbracelet/crush/blob/main/internal/tui/tui.go)
 ```go
 type appModel struct {
     wWidth, wHeight int
@@ -74,7 +74,7 @@ func (a *appModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 ```
 
-- **Completion popovers** (source: https://github.com/charmbracelet/crush/blob/main/internal/tui/components/completions/completions.go)
+- **Completion popovers** – surface slot suggestions with a reusable popup that repositions near the cursor and adapts to window bounds (source: https://github.com/charmbracelet/crush/blob/main/internal/tui/components/completions/completions.go)
 ```go
 type OpenCompletionsMsg struct {
     Completions []Completion
@@ -111,7 +111,7 @@ func (c *completionsCmp) Update(msg tea.Msg) (util.Model, tea.Cmd) {
 }
 ```
 
-- **Status/help strip** (source: https://github.com/charmbracelet/crush/blob/main/internal/tui/components/core/status/status.go)
+- **Status/help strip** – drive progressive feedforward hints by wrapping `help.Model` with TTL-based status messaging (source: https://github.com/charmbracelet/crush/blob/main/internal/tui/components/core/status/status.go)
 ```go
 type statusCmp struct {
     info       util.InfoMsg
@@ -140,7 +140,7 @@ func (m *statusCmp) Update(msg tea.Msg) (util.Model, tea.Cmd) {
 }
 ```
 
-- **Rich history items** (source: https://github.com/charmbracelet/crush/blob/main/internal/tui/components/chat/messages/messages.go)
+- **Rich history items** – style grammar events like chat transcripts with Lip Gloss borders, focus states, and copy shortcuts (source: https://github.com/charmbracelet/crush/blob/main/internal/tui/components/chat/messages/messages.go)
 ```go
 type messageCmp struct {
     width   int
@@ -186,7 +186,7 @@ func (msg *messageCmp) style() lipgloss.Style {
 }
 ```
 
-- **Responsive layouts** (source: https://github.com/charmbracelet/crush/blob/main/internal/tui/page/chat/chat.go)
+- **Responsive layouts** – switch between compact/full scaffolds based on width breakpoints so grammar panes collapse gracefully (source: https://github.com/charmbracelet/crush/blob/main/internal/tui/page/chat/chat.go)
 ```go
 const (
     CompactModeWidthBreakpoint  = 120

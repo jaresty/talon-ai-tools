@@ -2998,12 +2998,20 @@ func (m *model) renderSidebarContent() string {
 		m.renderPresetsSection(),
 	}
 
+	width := m.sidebarColumnWidth
+	if width <= 0 {
+		width = 36
+	}
+	style := lipgloss.NewStyle().Width(width)
+
 	var filtered []string
 	for _, section := range sections {
+		section = strings.TrimRight(section, "\n")
 		if strings.TrimSpace(section) == "" {
 			continue
 		}
-		filtered = append(filtered, section)
+		rendered := style.Render(section)
+		filtered = append(filtered, strings.TrimRight(rendered, "\n"))
 	}
 
 	if len(filtered) == 0 {

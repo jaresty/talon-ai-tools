@@ -204,3 +204,37 @@ residual_constraints:
 
 next_work:
 - Behaviour: When new shortcut sections are introduced, rerun the typography audit (validation: `scripts/tools/run-tui-expect.sh --all`).
+
+## loop-007 | helper:v20251223.1 | 2026-01-12
+
+focus: ADR 0077 Decision bullet 2 → keep sidebar sections readable in constrained terminals by wrapping Compose/History/Presets content instead of overflowing off-screen.
+
+active_constraint: Sidebar text assumed a wide viewport; on smaller laptops, Compose summaries and history messaging overflowed, hiding content (validation: `scripts/tools/run-tui-expect.sh --all`).
+
+expected_value:
+| Factor | Value | Rationale |
+| --- | --- | --- |
+| Impact | Medium | Wrapped text restores readability without requiring operators to resize terminals. |
+| Probability | High | Updating sidebar rendering logic directly addresses the overflow. |
+| Time Sensitivity | Medium | Needed before additional sidebar content lands so future loops inherit a responsive layout. |
+| Uncertainty note | Low | Behaviour validated via unit tests, CLI suites, and expect harness. |
+
+validation_targets:
+- `go test ./internal/bartui`
+- `go test ./cmd/bar/...`
+- `scripts/tools/run-tui-expect.sh --all`
+- `python3 -m pytest _tests/test_bar_completion_cli.py`
+
+evidence: `docs/adr/evidence/0077-bubble-tea-tui-ux-simplification/loop-007.md`
+
+rollback_plan: `<VCS_REVERT>` = `git restore --source=HEAD -- internal/bartui/program.go`; rerun `go test ./internal/bartui` and `scripts/tools/run-tui-expect.sh --all` to confirm the sidebar returns to the overflowing layout before reapplying the loop diff.
+
+delta_summary: helper:diff-snapshot=1 file changed, 193 insertions(+), 1 deletion(-) — adds manual word-wrap helpers and applies them to Compose/History/Presets sections based on the computed sidebar width.
+
+loops_remaining_forecast: 0 loops. Confidence: high — sidebar now adapts to narrow widths; continue observing as new content is added.
+
+residual_constraints:
+- Low — Future sidebar entries must use the wrap helpers to remain responsive. Mitigation: document the helper functions and rerun `scripts/tools/run-tui-expect.sh --all` when new sections ship; monitor operator feedback for narrow-terminal regressions.
+
+next_work:
+- Behaviour: When sidebar content expands, reuse `wrapSidebarSection` to keep lines within column width (validation: `scripts/tools/run-tui-expect.sh --all`).

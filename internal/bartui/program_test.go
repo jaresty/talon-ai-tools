@@ -1157,6 +1157,66 @@ func TestRenderToastOverlayUsesAdaptivePalette(t *testing.T) {
 	}
 }
 
+func TestSidebarSectionThemeUsesCharmtonePalette(t *testing.T) {
+	originalBG := lipgloss.HasDarkBackground()
+	originalProfile := lipgloss.ColorProfile()
+	t.Cleanup(func() {
+		lipgloss.SetHasDarkBackground(originalBG)
+		lipgloss.SetColorProfile(originalProfile)
+	})
+
+	lipgloss.SetColorProfile(termenv.TrueColor)
+
+	lipgloss.SetHasDarkBackground(true)
+	darkHeader := renderSidebarSectionHeader("History")
+	assertTrueColorSequence(t, darkHeader, composerTheme.sectionHeaderForeground.Dark, "dark header color")
+	darkHint := renderSidebarSectionHint("(Ctrl+H toggles)")
+	assertTrueColorSequence(t, darkHint, composerTheme.sectionHintForeground.Dark, "dark hint color")
+
+	lipgloss.SetHasDarkBackground(false)
+	lightHeader := renderSidebarSectionHeader("History")
+	assertTrueColorSequence(t, lightHeader, composerTheme.sectionHeaderForeground.Light, "light header color")
+	lightHint := renderSidebarSectionHint("(Ctrl+H toggles)")
+	assertTrueColorSequence(t, lightHint, composerTheme.sectionHintForeground.Light, "light hint color")
+
+	if !strings.Contains(lightHeader, "HISTORY") {
+		t.Fatalf("expected header text to remain uppercase, got %q", lightHeader)
+	}
+}
+
+func TestSummaryStripRespectsThemePalette(t *testing.T) {
+	originalBG := lipgloss.HasDarkBackground()
+	originalProfile := lipgloss.ColorProfile()
+	t.Cleanup(func() {
+		lipgloss.SetHasDarkBackground(originalBG)
+		lipgloss.SetColorProfile(originalProfile)
+	})
+
+	opts := Options{
+		Preview:        func(subject string, tokens []string) (string, error) { return subject, nil },
+		ClipboardRead:  func() (string, error) { return "", nil },
+		ClipboardWrite: func(string) error { return nil },
+		RunCommand: func(context.Context, string, string, map[string]string) (string, string, error) {
+			return "", "", nil
+		},
+		CommandTimeout: time.Second,
+	}
+	m := newModel(opts)
+
+	lipgloss.SetColorProfile(termenv.TrueColor)
+	lipgloss.SetHasDarkBackground(true)
+	darkSummary := m.renderSummaryStrip()
+	assertTrueColorSequence(t, darkSummary, composerTheme.summaryStripForeground.Dark, "dark summary color")
+
+	lipgloss.SetHasDarkBackground(false)
+	lightSummary := m.renderSummaryStrip()
+	assertTrueColorSequence(t, lightSummary, composerTheme.summaryStripForeground.Light, "light summary color")
+
+	if !strings.Contains(lightSummary, "Summary strip:") {
+		t.Fatalf("expected summary strip text to remain readable, got %q", lightSummary)
+	}
+}
+
 func TestDisplayCommandOmitsPromptFromSummaries(t *testing.T) {
 	opts := Options{
 		Tokens:          []string{"todo"},

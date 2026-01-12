@@ -354,12 +354,19 @@ const tokenSparklineWindow = 12
 const toastLifetime = 1500 * time.Millisecond
 
 // composerTheme centralizes the Lip Gloss palette for ADR 0072 so toast overlays
-// reinforce the CLI grammar cues across dark and light terminals.
+// and sidebar typography reinforce the CLI grammar cues across dark and light
+// terminals.
 var composerTheme = newGrammarComposerTheme()
 
 type grammarComposerTheme struct {
-	toastForeground lipgloss.AdaptiveColor
-	toastStyle      lipgloss.Style
+	toastForeground         lipgloss.AdaptiveColor
+	toastStyle              lipgloss.Style
+	sectionHeaderForeground lipgloss.AdaptiveColor
+	sectionHeaderStyle      lipgloss.Style
+	sectionHintForeground   lipgloss.AdaptiveColor
+	sectionHintStyle        lipgloss.Style
+	summaryStripForeground  lipgloss.AdaptiveColor
+	summaryStripStyle       lipgloss.Style
 }
 
 func newGrammarComposerTheme() grammarComposerTheme {
@@ -367,10 +374,35 @@ func newGrammarComposerTheme() grammarComposerTheme {
 		Light: "#3C1053", // Charmtone plum on light backgrounds
 		Dark:  "#F3D57C", // Charmtone amber on dark backgrounds
 	}
+	sectionHeaderForeground := lipgloss.AdaptiveColor{
+		Light: "#5B2A86", // Charmtone violet for headings on light backgrounds
+		Dark:  "#EAD8FF", // Charmtone lilac for headings on dark backgrounds
+	}
+	sectionHintForeground := lipgloss.AdaptiveColor{
+		Light: "#6F6B8A", // Charmtone slate for meta text on light backgrounds
+		Dark:  "#B7B2D6", // Charmtone mist for meta text on dark backgrounds
+	}
+	summaryStripForeground := lipgloss.AdaptiveColor{
+		Light: "#1E1633", // Charmtone ink for summary emphasis on light backgrounds
+		Dark:  "#F5F1FF", // Charmtone pearl for summary emphasis on dark backgrounds
+	}
+
 	return grammarComposerTheme{
 		toastForeground: toastForeground,
 		toastStyle: lipgloss.NewStyle().
 			Foreground(toastForeground).
+			Bold(true),
+		sectionHeaderForeground: sectionHeaderForeground,
+		sectionHeaderStyle: lipgloss.NewStyle().
+			Foreground(sectionHeaderForeground).
+			Bold(true),
+		sectionHintForeground: sectionHintForeground,
+		sectionHintStyle: lipgloss.NewStyle().
+			Foreground(sectionHintForeground).
+			Faint(true),
+		summaryStripForeground: summaryStripForeground,
+		summaryStripStyle: lipgloss.NewStyle().
+			Foreground(summaryStripForeground).
 			Bold(true),
 	}
 }
@@ -2523,15 +2555,24 @@ func (m *model) renderSummaryStrip() string {
 		fmt.Sprintf("Env: %s", envSummary),
 	}
 
-	return "Summary strip: " + strings.Join(parts, " | ")
+	content := "Summary strip: " + strings.Join(parts, " | ")
+	return composerTheme.summaryStripStyle.Render(content)
 }
 
 func renderSidebarSectionHeader(title string) string {
-	return strings.ToUpper(title)
+	title = strings.TrimSpace(title)
+	if title == "" {
+		return ""
+	}
+	return composerTheme.sectionHeaderStyle.Render(strings.ToUpper(title))
 }
 
 func renderSidebarSectionHint(hint string) string {
-	return hint
+	hint = strings.TrimSpace(hint)
+	if hint == "" {
+		return ""
+	}
+	return composerTheme.sectionHintStyle.Render(hint)
 }
 
 func (m *model) renderResultSummaryLine() string {

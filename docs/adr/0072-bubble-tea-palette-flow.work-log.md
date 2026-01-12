@@ -1,5 +1,30 @@
 # ADR 0072 – Bubble Tea palette flow work log
 
+## 2026-01-12 – Loop 019 (helper:v20251223.1)
+- focus: Decision §“Typography & information architecture recommendations” → style the history headers, hints, and summary strip with the Charmtone palette defined in `composerTheme`.
+- active_constraint: Sidebar headers and the summary strip still rendered as plain text strings, so `go test ./internal/bartui` could not guarantee Charmtone-aligned typography even though toast overlays already used the theme.
+- expected_value table:
+  | Factor           | Value | Rationale |
+  |------------------|-------|-----------|
+  | Impact           | High  | Sidebar typography is a primary CLI reinforcement surface; inconsistent styling breaks ADR 0072’s learning goal. |
+  | Probability      | High  | Centralizing the colors in `composerTheme` and adding unit tests deterministically applies the palette. |
+  | Time Sensitivity | Medium| Needs to land before the pilot build freeze so transcripts and expect fixtures stay aligned. |
+  | Uncertainty note | Low   | TrueColor tests and expect runs cover the behaviour under both dark/light backgrounds. |
+- validation_targets:
+  - `go test ./internal/bartui`
+  - `go test ./cmd/bar/...`
+  - `python3 -m pytest _tests/test_bar_completion_cli.py`
+  - `scripts/tools/run-tui-expect.sh --all`
+- evidence:
+  - docs/adr/evidence/0072-bubble-tea-palette-flow/loop-019.md
+- rollback_plan: `git restore --source=HEAD~1 internal/bartui/program.go internal/bartui/program_test.go docs/adr/evidence/0072-bubble-tea-palette-flow/loop-019.md docs/adr/0072-bubble-tea-palette-flow.work-log.md` then rerun `go test ./internal/bartui` to observe the headers revert to unstyled text.
+- delta_summary: helper:diff-snapshot=2 files changed, 107 insertions(+), 6 deletions(-); added Charmtone theme hooks for history headers, hints, and the summary strip plus TrueColor regression tests and evidence.
+- loops_remaining_forecast: 0 loops; confidence medium — further polish will track under residual constraints if additional Charmtone surfaces emerge.
+- residual_constraints:
+  - CLI docs/screenshots still show the pre-themed sidebar text (severity: low impact × medium probability). Mitigation: refresh pilot playbook captures alongside the next CLI doc sweep; monitor via `scripts/tools/run-tui-expect.sh --all` before publishing updated transcripts.
+- next_work:
+  - Behaviour: Monitor doc screenshots and CLI transcripts for palette drift; validation target `scripts/tools/run-tui-expect.sh --all` when assets refresh.
+
 ## 2026-01-12 – Loop 018 (helper:v20251223.1)
 - focus: Decision §“Typography & information architecture recommendations” → apply the lipgloss-theme-foundations palette to toast overlays so CLI cues stay legible across dark and light terminals.
 - active_constraint: Toast overlays still used literal ANSI-256 IDs (57/212), so the CLI reinforcement palette diverged from Charmtone guidance and `go test ./internal/bartui` could not guarantee adaptive colour parity when theme tokens changed.

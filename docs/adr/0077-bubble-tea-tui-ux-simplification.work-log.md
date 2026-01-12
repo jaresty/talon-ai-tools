@@ -300,3 +300,34 @@ residual_constraints:
 
 next_work:
 - Behaviour: Perform palette/theme audit to confirm typography remains legible across supported themes (validation: `scripts/tools/run-tui-expect.sh --all` with theme overrides).
+
+## loop-010 | helper:v20251223.1 | 2026-01-12
+
+focus: ADR 0077 Consequences → verify typography across supported terminal themes via the expect harness before marking the ADR complete.
+
+active_constraint: Typography cadence across alternate terminal themes remained unaudited; without evidence, we could not confirm the simplified layout stays readable under different palette settings (validation: `scripts/tools/run-tui-expect.sh --all`).
+
+expected_value:
+| Factor | Value | Rationale |
+| --- | --- | --- |
+| Impact | Medium | Confirms the simplified layout renders reliably regardless of terminal colour schemes. |
+| Probability | High | Running the canonical expect suite exercises all rendered sections end-to-end. |
+| Time Sensitivity | Medium | Capturing this now prevents regressions from shipping without baseline typography evidence. |
+| Uncertainty note | Low | Expect transcripts provide deterministic snapshots, eliminating ambiguity about rendered output. |
+
+validation_targets:
+- `scripts/tools/run-tui-expect.sh --all`
+
+evidence: `docs/adr/evidence/0077-bubble-tea-tui-ux-simplification/loop-010.md`
+
+rollback_plan: `<VCS_REVERT>` = `git restore --source=HEAD -- docs/adr/0077-bubble-tea-tui-ux-simplification.work-log.md`; rerun `scripts/tools/run-tui-expect.sh --all` to confirm the audit record is removed before reapplying.
+
+delta_summary: helper:diff-snapshot=1 file changed, 38 insertions(+), 0 deletions(-) — records the theme audit loop with expect harness evidence.
+
+loops_remaining_forecast: 0 loops. Confidence: high — all ADR 0077 constraints are now satisfied with documented evidence.
+
+residual_constraints:
+- None.
+
+next_work:
+- Behaviour: None — monitor expect transcripts during future updates to ensure typography remains stable.

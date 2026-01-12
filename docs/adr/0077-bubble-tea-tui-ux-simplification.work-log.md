@@ -102,3 +102,37 @@ residual_constraints:
 
 next_work:
 - Behaviour: Add in-app shortcut reference overlay with typography adjustments (validation: `go test ./internal/bartui`, `scripts/tools/run-tui-expect.sh --all`, `python3 -m pytest _tests/test_bar_completion_cli.py`).
+
+## loop-004 | helper:v20251223.1 | 2026-01-12
+
+focus: ADR 0077 Decision bullet 5 → ship the in-app shortcut reference overlay with grouped sections and typography cues so operators discover key bindings without leaving the TUI.
+
+active_constraint: Shortcut reference overlay remains absent, so pressing Ctrl+? renders nothing and `scripts/tools/run-tui-expect.sh --all` cannot verify grouped shortcut cues (validation: `go test ./internal/bartui`).
+
+expected_value:
+| Factor | Value | Rationale |
+| --- | --- | --- |
+| Impact | High | Embedded shortcuts unblock ADR 0077 guidance promises and reduce reliance on external docs. |
+| Probability | High | Updating bartui views, tests, and fixtures directly introduces the overlay and hints. |
+| Time Sensitivity | Medium | Needed before handoff so future loops inherit accurate status copy and shortcut discoverability. |
+| Uncertainty note | Low | Behaviour covered by unit tests, CLI snapshot, and expect harness. |
+
+validation_targets:
+- `go test ./internal/bartui`
+- `go test ./cmd/bar/...`
+- `scripts/tools/run-tui-expect.sh --all`
+- `python3 -m pytest _tests/test_bar_completion_cli.py`
+
+evidence: `docs/adr/evidence/0077-bubble-tea-tui-ux-simplification/loop-004.md`
+
+rollback_plan: `<VCS_REVERT>` = `git restore --source=HEAD -- internal/bartui/program.go internal/bartui/program_test.go cmd/bar/testdata/tui_smoke.json tests/integration/tui/cases/launch-status.exp`; rerun `go test ./internal/bartui` and `scripts/tools/run-tui-expect.sh --all` to confirm the shortcut reference disappears and fixtures revert before reapplying the loop diff.
+
+delta_summary: helper:diff-snapshot=4 files changed, 200 insertions(+), 52 deletions(-) — adds grouped shortcut reference overlay, refreshes status and hints, updates the CLI snapshot, and aligns expect scripts.
+
+loops_remaining_forecast: 0 loops. Confidence: medium — monitor typography across palettes but active constraint resolved.
+
+residual_constraints:
+- Low — Typography cadence across alternative terminal themes still needs verification. Mitigation: audit Lip Gloss styles against dark and light palettes using `scripts/tools/run-tui-expect.sh --all` with theme overrides; monitor pilot readability feedback. Owner: ADR 0077 follow-up.
+
+next_work:
+- Behaviour: Run visual audit of shortcut typography across supported themes (validation: `scripts/tools/run-tui-expect.sh --all` with theme overrides).

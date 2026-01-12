@@ -60,6 +60,16 @@ type historyEvent struct {
 	Timestamp time.Time
 }
 
+type shortcutEntry struct {
+	Keys        string
+	Description string
+}
+
+type shortcutSection struct {
+	Title   string
+	Entries []shortcutEntry
+}
+
 type sidebarPreference int
 
 const (
@@ -587,7 +597,7 @@ func newModel(opts Options) model {
 	tokenPaletteFilter.CharLimit = 64
 	tokenPaletteFilter.Blur()
 
-	status := "Subject input focused. Use Ctrl+L to load from clipboard. Tab cycles focus · Ctrl+P palette · Ctrl+B copy CLI · Ctrl+G toggle sidebar."
+	status := "Subject input focused. Use Ctrl+L to load from clipboard. Tab cycles focus · Ctrl+P palette · Ctrl+B copy CLI · Ctrl+G toggle sidebar · Ctrl+? shortcuts."
 	if len(envNames) > 0 {
 		status += " Environment allowlist: " + strings.Join(allowedEnv, ", ") + ". Tab again to focus the allowlist and press Ctrl+E to toggle entries."
 	} else {
@@ -1543,7 +1553,7 @@ func decodeKeyRunes(raw []rune) []rune {
 func (m *model) handleCancelKey() (tea.Cmd, bool) {
 	if m.helpVisible {
 		m.helpVisible = false
-		m.restoreStatusAfterHelp()
+		m.restoreStatusAfterShortcutReference()
 		return nil, true
 	}
 	if m.commandRunning {
@@ -1561,20 +1571,31 @@ func (m *model) handleCancelKey() (tea.Cmd, bool) {
 	return tea.Quit, true
 }
 
+func (m *model) toggleShortcutReference() {
+	if m.helpVisible {
+		m.helpVisible = false
+		m.restoreStatusAfterShortcutReference()
+		return
+	}
+
+	m.statusBeforeHelp = m.statusMessage
+	m.helpVisible = true
+	m.statusMessage = "Shortcut reference open. Press Ctrl+? to close."
+}
+
 func (m *model) handleKeyString(key string) (bool, tea.Cmd) {
 	switch key {
 	case "tab":
 		m.toggleFocus()
 		return true, nil
 	case "?":
-		if m.helpVisible {
-			m.helpVisible = false
-			m.restoreStatusAfterHelp()
-		} else {
-			m.statusBeforeHelp = m.statusMessage
-			m.helpVisible = true
-			m.statusMessage = "Help overlay open. Press ? to close."
-		}
+		m.toggleShortcutReference()
+		return true, nil
+	case "ctrl+/":
+		m.toggleShortcutReference()
+		return true, nil
+	case "ctrl+?":
+		m.toggleShortcutReference()
 		return true, nil
 	case "ctrl+l":
 		m.loadSubjectFromClipboard()
@@ -1647,7 +1668,7 @@ func ensureCopyHint(status string) string {
 	return status + " Type \"copy command\" to focus the copy action."
 }
 
-func (m *model) restoreStatusAfterHelp() {
+func (m *model) restoreStatusAfterShortcutReference() {
 	if m.tokenPaletteVisible {
 		m.statusBeforeHelp = ""
 		m.refreshPaletteStatus()
@@ -1672,7 +1693,7 @@ func (m *model) restoreStatusAfterHelp() {
 			m.statusMessage = "Environment allowlist focused. Use Up/Down to choose a variable and Ctrl+E to toggle it."
 		}
 	default:
-		m.statusMessage = "Help overlay closed."
+		m.statusMessage = "Shortcut reference closed."
 	}
 	m.statusBeforeHelp = ""
 }
@@ -2650,7 +2671,7 @@ func (m *model) renderMainColumnContent() string {
 	builder.WriteString(m.command.View())
 	builder.WriteString("\n\n")
 
-	builder.WriteString("Hint: press ? for shortcut help · Ctrl+P toggles the palette · Leave command blank to opt out.\n\n")
+	builder.WriteString("Hint: press Ctrl+? for shortcuts · Ctrl+P toggles the palette · Leave command blank to opt out.\n\n")
 
 	builder.WriteString("Result summary:\n")
 	builder.WriteString(m.renderResultSummaryLine())
@@ -2776,6 +2797,148 @@ func (m *model) renderPresetsSection() string {
 	return strings.TrimRight(builder.String(), "\n")
 }
 
+func (m *model) renderShortcutReferenceOverlay() string {
+	sections := m.shortcutReferenceSections()
+	if len(sections) == 0 {
+		return ""
+	}
+
+	maxKeyLength := 0
+	for _, section := range sections {
+		for _, entry := range section.Entries {
+			length := utf8.RuneCountInString(strings.TrimSpace(entry.Keys))
+			if length > maxKeyLength {
+				maxKeyLength = length
+			}
+		}
+	}
+
+	var builder strings.Builder
+	builder.WriteString("Shortcut reference (press Ctrl+? to close):\n\n")
+
+	for i, section := range sections {
+		if len(section.Entries) == 0 {
+			continue
+		}
+		title := strings.TrimSpace(section.Title)
+		if title != "" {
+			builder.WriteString("  ")
+			builder.WriteString(title)
+			builder.WriteString("\n")
+		}
+		for _, entry := range section.Entries {
+			keys := strings.TrimSpace(entry.Keys)
+			if keys == "" {
+				continue
+			}
+			description := strings.TrimSpace(entry.Description)
+			keyWidth := utf8.RuneCountInString(keys)
+			padding := maxKeyLength - keyWidth
+			if padding < 0 {
+				padding = 0
+			}
+			builder.WriteString("    • ")
+			builder.WriteString(keys)
+			if padding > 0 {
+				builder.WriteString(strings.Repeat(" ", padding))
+			}
+			if description != "" {
+				builder.WriteString(" — ")
+				builder.WriteString(description)
+			}
+			builder.WriteString("\n")
+		}
+		if i < len(sections)-1 {
+			builder.WriteString("\n")
+		}
+	}
+
+	return strings.TrimRight(builder.String(), "\n")
+}
+
+func (m *model) shortcutReferenceSections() []shortcutSection {
+	return []shortcutSection{
+		{
+			Title: "Focus & Layout",
+			Entries: []shortcutEntry{
+				{Keys: "Tab", Description: "Cycle focus between subject, command, tokens, and environment"},
+				{Keys: "Shift+Tab", Description: "Reverse the focus cycle"},
+				{Keys: "Ctrl+G", Description: "Toggle sidebar visibility"},
+				{Keys: "Ctrl+?", Description: "Toggle this shortcut reference (aliases: ? / Ctrl+/)"},
+				{Keys: "Esc", Description: "Close overlays (reference → palette) then exit"},
+			},
+		},
+		{
+			Title: "Subject & Clipboard",
+			Entries: []shortcutEntry{
+				{Keys: "Ctrl+L", Description: "Load subject from clipboard"},
+				{Keys: "Ctrl+O", Description: "Copy preview text to clipboard"},
+				{Keys: "Ctrl+B", Description: "Copy bar CLI command to clipboard"},
+				{Keys: "Ctrl+Z", Description: "Undo last subject replacement"},
+				{Keys: "PgUp/PgDn", Description: "Scroll subject viewport (Home/End jump)"},
+			},
+		},
+		{
+			Title: "Command Execution",
+			Entries: []shortcutEntry{
+				{Keys: "Enter", Description: "Run command when command input is focused"},
+				{Keys: "Ctrl+R", Description: "Pipe preview text into command input"},
+				{Keys: "Ctrl+Y", Description: "Insert last command stdout into subject"},
+				{Keys: "Ctrl+C", Description: "Cancel running command"},
+			},
+		},
+		{
+			Title: "Result View",
+			Entries: []shortcutEntry{
+				{Keys: "PgUp/PgDn", Description: "Scroll result viewport (Home/End jump)"},
+				{Keys: "Ctrl+T", Description: "Toggle condensed result preview"},
+			},
+		},
+		{
+			Title: "Tokens",
+			Entries: []shortcutEntry{
+				{Keys: "Tab", Description: "Focus tokens from main inputs"},
+				{Keys: "Left/Right", Description: "Change token category"},
+				{Keys: "Up/Down", Description: "Browse token options"},
+				{Keys: "Enter/Space", Description: "Toggle highlighted token"},
+				{Keys: "Delete", Description: "Remove highlighted token"},
+				{Keys: "Ctrl+P", Description: "Toggle token palette"},
+				{Keys: "Ctrl+Z", Description: "Undo last token change"},
+			},
+		},
+		{
+			Title: "Palette",
+			Entries: []shortcutEntry{
+				{Keys: "Type category=value", Description: "Filter or apply palette entries by slug"},
+				{Keys: "Tab", Description: "Advance palette focus (filter → categories → options)"},
+				{Keys: "Shift+Tab", Description: "Reverse palette focus order"},
+				{Keys: "Enter", Description: "Apply staged edits or move focus into options"},
+				{Keys: "Ctrl+W", Description: "Clear palette filter"},
+			},
+		},
+		{
+			Title: "History & Presets",
+			Entries: []shortcutEntry{
+				{Keys: "Ctrl+H", Description: "Toggle history section"},
+				{Keys: "Ctrl+S", Description: "Toggle preset pane"},
+				{Keys: "Ctrl+N", Description: "Start preset save"},
+				{Keys: "Delete", Description: "Delete selected preset"},
+				{Keys: "Ctrl+Z", Description: "Undo last preset deletion"},
+			},
+		},
+		{
+			Title: "Environment",
+			Entries: []shortcutEntry{
+				{Keys: "Tab", Description: "Focus environment allowlist"},
+				{Keys: "Up/Down", Description: "Move allowlist selection"},
+				{Keys: "Ctrl+E", Description: "Toggle highlighted environment variable"},
+				{Keys: "Ctrl+A", Description: "Enable all environment variables"},
+				{Keys: "Ctrl+X", Description: "Clear environment allowlist"},
+			},
+		},
+	}
+}
+
 func (m *model) renderSidebarContent() string {
 	if m.sidebarPreference == sidebarPreferenceHidden {
 		return ""
@@ -2830,26 +2993,11 @@ func (m model) View() string {
 	}
 
 	if m.helpVisible {
-		b.WriteString("Help overlay (press ? to close):\n")
-		b.WriteString("  Inputs:\n")
-		b.WriteString("    • Subject focus — Type directly; Ctrl+L loads clipboard; Ctrl+O copies preview; Ctrl+B copies CLI; Ctrl+Z undoes subject replacement.\n")
-		b.WriteString("    • Subject viewport — PgUp/PgDn scroll; Home/End jump.\n")
-		b.WriteString("    • Command focus — Enter runs command; Ctrl+R pipes preview; Ctrl+Y inserts stdout; blank command skips execution.\n")
-		b.WriteString("    • Result viewport — PgUp/PgDn scroll; Home/End jump; Ctrl+T toggles condensed preview.\n")
-		b.WriteString("  Tokens:\n")
-		b.WriteString("    • Tab focuses tokens; Left/Right change categories; Up/Down browse options; Enter/Space toggles; Delete removes; Ctrl+P opens palette; Ctrl+Z undoes last change.\n")
-		b.WriteString("  Palette:\n")
-		b.WriteString("    • Type category=value to filter/apply; Tab cycles columns; Shift+Tab reverses; Enter applies staged edits; Ctrl+W clears filter.\n")
-		b.WriteString("  Presets:\n")
-		b.WriteString("    • Ctrl+S toggles pane; Ctrl+N starts save; Delete removes; Ctrl+Z undoes last preset change.\n")
-		b.WriteString("  Layout:\n")
-		b.WriteString("    • Ctrl+G toggles sidebar visibility.\n")
-		b.WriteString("  Environment:\n")
-		b.WriteString("    • Tab focuses list; Up/Down move; Ctrl+E toggles; Ctrl+A enables all; Ctrl+X clears allowlist.\n")
-		b.WriteString("  Command lifecycle:\n")
-		b.WriteString("    • Enter executes; Ctrl+C cancels running commands; follow on-screen prompts for stdout reinsertion.\n")
-		b.WriteString("  Exit & help:\n")
-		b.WriteString("    • Esc closes overlays (help → palette → prompts) then exits; press ? anytime to toggle this reference.\n\n")
+		overlay := m.renderShortcutReferenceOverlay()
+		if overlay != "" {
+			b.WriteString(overlay)
+			b.WriteString("\n\n")
+		}
 	}
 
 	mainContent := m.renderMainColumnContent()

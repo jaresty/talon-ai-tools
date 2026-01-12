@@ -606,7 +606,7 @@ func TestToggleEnvironmentAllowlist(t *testing.T) {
 	}
 }
 
-func TestToggleHelpOverlay(t *testing.T) {
+func TestToggleShortcutReference(t *testing.T) {
 	opts := Options{
 		Tokens:         []string{"todo"},
 		Preview:        func(subject string, tokens []string) (string, error) { return "preview:" + subject, nil },
@@ -619,32 +619,32 @@ func TestToggleHelpOverlay(t *testing.T) {
 	}
 
 	m := newModel(opts)
-	if strings.Contains(m.View(), "Help overlay") {
-		t.Fatalf("expected help overlay to be hidden by default")
+	if strings.Contains(m.View(), "Shortcut reference") {
+		t.Fatalf("expected shortcut reference to be hidden by default")
 	}
 
 	helpKey := tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{'?'}}
 	m, cmd := updateModel(t, m, helpKey)
 	if cmd != nil {
-		t.Fatalf("unexpected command when toggling help: %T", cmd)
+		t.Fatalf("unexpected command when toggling shortcut reference: %T", cmd)
 	}
 	view := m.View()
-	if !strings.Contains(view, "Help overlay (press ? to close)") {
-		t.Fatalf("expected view to include help overlay contents, got:\n%s", view)
+	if !strings.Contains(view, "Shortcut reference (press Ctrl+? to close)") {
+		t.Fatalf("expected view to include shortcut reference contents, got:\n%s", view)
 	}
-	if !strings.Contains(view, "Inputs:") {
-		t.Fatalf("expected help overlay to group shortcuts under Inputs, got:\n%s", view)
+	if !strings.Contains(view, "Focus & Layout") {
+		t.Fatalf("expected shortcut reference to group shortcuts under Focus & Layout, got:\n%s", view)
 	}
-	if !strings.Contains(strings.ToLower(m.statusMessage), "help overlay") {
-		t.Fatalf("expected status message to reference help overlay, got %q", m.statusMessage)
+	if !strings.Contains(strings.ToLower(m.statusMessage), "shortcut reference") {
+		t.Fatalf("expected status message to reference shortcut reference, got %q", m.statusMessage)
 	}
 
 	m, cmd = updateModel(t, m, helpKey)
 	if cmd != nil {
-		t.Fatalf("unexpected command when toggling help: %T", cmd)
+		t.Fatalf("unexpected command when toggling shortcut reference: %T", cmd)
 	}
-	if strings.Contains(m.View(), "Help overlay (press ? to close)") {
-		t.Fatalf("expected help overlay to be hidden after second toggle")
+	if strings.Contains(m.View(), "Shortcut reference (press Ctrl+? to close)") {
+		t.Fatalf("expected shortcut reference to be hidden after second toggle")
 	}
 }
 
@@ -1487,11 +1487,11 @@ func TestHelpOverlayMentionsCopyCommandPaletteHint(t *testing.T) {
 	if !strings.Contains(view, "Type category=value") {
 		t.Fatalf("expected help overlay to instruct category=value palette input, got:\n%s", view)
 	}
-	if !strings.Contains(view, "Enter applies staged edits") {
-		t.Fatalf("expected help overlay to mention Enter applies edits, got:\n%s", view)
+	if !strings.Contains(view, "Apply staged edits") {
+		t.Fatalf("expected shortcut reference to mention applying staged edits, got:\n%s", view)
 	}
-	if !strings.Contains(view, "Ctrl+W clears filter") {
-		t.Fatalf("expected help overlay to mention Ctrl+W filter clear, got:\n%s", view)
+	if !strings.Contains(view, "Clear palette filter") {
+		t.Fatalf("expected shortcut reference to mention clearing the palette filter, got:\n%s", view)
 	}
 }
 

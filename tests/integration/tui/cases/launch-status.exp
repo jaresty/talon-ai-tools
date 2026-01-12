@@ -10,7 +10,7 @@ expect {
     timeout { send_error "failed to render header"; exit 1 }
 }
 expect {
-    -re {Status: .*Tab cycles focus · Ctrl\+P palette · Ctrl\+B copy CLI · Ctrl\+G toggle sidebar\.} {}
+    -re {Status: .*Tab cycles focus · Ctrl\+P palette · Ctrl\+B copy CLI · Ctrl\+G toggle sidebar · Ctrl\+\? shortcuts\.} {}
     timeout { send_error "missing status strip"; exit 1 }
 }
 expect {

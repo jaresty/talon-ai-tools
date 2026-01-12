@@ -1,7 +1,7 @@
 # 050 – Migrate persona/intent-like static prompts to stance axes
 
 ## Status
-Proposed
+Accepted
 
 ## Context
 - The static prompt axis currently contains prompts whose semantics lean toward **persona/intent** stances (Who/Why) rather than content/task patterns (What/How).

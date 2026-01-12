@@ -1,4 +1,4 @@
-Proposed — CLI preset capture reuses last build state to persist shorthand contexts (2026-01-08)
+Accepted — CLI preset capture reuses last build state to persist shorthand contexts (2026-01-08)
 
 ## Context
 - The `bar` CLI currently supports `build` to assemble prompt recipes from shorthand tokens but offers no persistent storage for frequently reused stances or token sequences.

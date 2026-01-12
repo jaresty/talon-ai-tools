@@ -1,7 +1,7 @@
 # 051 – Keep intent/intent purely “Why” and re-home “How/What” tokens
 
 ## Status
-Proposed
+Accepted
 
 ## Context
 - ADR 040/048 define persona/intent as **Who/Why** (voice, audience, tone, intent, presets). Contract axes (static prompt, completeness, scope, method, form, channel, directional) carry **What/How/Where**.

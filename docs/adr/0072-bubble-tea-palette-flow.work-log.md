@@ -236,3 +236,45 @@ assets:
 - Unit tests: `internal/bartui/program_test.go`
 - Follow-up guidance: `docs/adr/0072-bubble-tea-palette-flow.md`
 - Evidence: `docs/adr/evidence/0072-bubble-tea-palette-flow/loop-006.md`
+
+## loop-007 | helper:v20251223.1 | 2026-01-12
+
+focus: ADR 0072 residual constraint → add deterministic clipboard coverage for palette history by introducing a `--no-clipboard` TUI flag and validating clipboard/undo events via expect harness.
+
+active_constraint: `scripts/tools/run-tui-expect.sh --all` lacked headless coverage for clipboard history entries because Bubble Tea relied on the host clipboard, causing failures on CI/macOS sandboxed runners.
+
+expected_value:
+| Factor | Value | Rationale |
+| --- | --- | --- |
+| Impact | Medium | Ensures palette history auditability extends to clipboard/undo flows as mandated by ADR 0072 |
+| Probability | High | Stubbing clipboard access behind a CLI flag and recording history entries deterministically resolves the failure |
+| Time Sensitivity | Medium | Needed before closing ADR 0072 so future layout work inherits reliable harness coverage |
+| Uncertainty note | Low | Behaviour verified through go tests and expect transcripts |
+
+validation_targets:
+- `go test ./...`
+- `scripts/tools/run-tui-expect.sh --all`
+
+evidence: `docs/adr/evidence/0072-bubble-tea-palette-flow/loop-007.md`
+
+rollback_plan: `<VCS_REVERT>` = `git restore --source=HEAD -- docs/adr/0072-bubble-tea-palette-flow.md docs/adr/0072-bubble-tea-palette-flow.work-log.md internal/barcli/app.go internal/barcli/app_parse_test.go internal/barcli/cli/config.go internal/barcli/completion.go internal/barcli/completion_test.go internal/barcli/tui.go tests/integration/tui/cases/clipboard-history.args tests/integration/tui/cases/clipboard-history.exp docs/adr/evidence/0072-bubble-tea-palette-flow/loop-007.md`; rerun `scripts/tools/run-tui-expect.sh --all` to confirm the clipboard history regression returns.
+
+delta_summary: helper:diff-snapshot=internal/barcli/app.go | internal/barcli/cli/config.go | internal/barcli/tui.go | tests/integration/tui/cases/clipboard-history.exp — added `--no-clipboard` parsing/help, stubbed clipboard readers in the TUI, and recorded expect coverage for clipboard/undo history entries.
+
+loops_remaining_forecast: 1 loop (dock omnibox layout parity and remaining Lip Gloss alignment polish). Confidence: medium.
+
+residual_constraints:
+- Medium — Docked omnibox layout refactor still pending; mitigation: land Lip Gloss/Bubbles layout update with refreshed snapshots (`go test ./cmd/bar/...`); monitoring: rerun `scripts/tools/run-tui-expect.sh --all` after layout patches or when palette focus regressions are reported (owner: ADR 0072 Decision bullets 10/13).
+
+next_work:
+- Behaviour: Complete docked omnibox layout refactor and refresh fixtures (validation: `go test ./cmd/bar/...`, `scripts/tools/run-tui-expect.sh --all`).
+
+assets:
+- `internal/barcli/cli/config.go`
+- `internal/barcli/app.go`
+- `internal/barcli/tui.go`
+- `internal/barcli/completion.go`
+- `internal/barcli/app_parse_test.go`
+- `internal/barcli/completion_test.go`
+- `tests/integration/tui/cases/clipboard-history.exp`
+- Evidence: `docs/adr/evidence/0072-bubble-tea-palette-flow/loop-007.md`

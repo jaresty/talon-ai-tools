@@ -603,7 +603,7 @@ var (
 	helpTopics         = []string{"tokens"}
 	completionShells   = []string{"bash", "zsh", "fish"}
 	buildFlags         = []string{"--prompt", "--input", "--output", "--json", "--grammar"}
-	tuiFlags           = []string{"--grammar", "--fixture", "--no-alt-screen", "--env"}
+	tuiFlags           = []string{"--grammar", "--fixture", "--no-alt-screen", "--no-clipboard", "--env"}
 	flagExpectingValue = map[string]struct{}{
 		"--prompt":  {},
 		"--input":   {},

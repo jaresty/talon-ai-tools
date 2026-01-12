@@ -59,3 +59,13 @@ func TestParseArgsErrors(t *testing.T) {
 		t.Fatalf("expected error for unknown flag")
 	}
 }
+
+func TestParseArgsNoClipboard(t *testing.T) {
+	opts, err := cli.Parse([]string{"tui", "--no-clipboard"})
+	if err != nil {
+		t.Fatalf("cli.Parse returned error: %v", err)
+	}
+	if !opts.NoClipboard {
+		t.Fatalf("expected NoClipboard to be true")
+	}
+}

@@ -1,0 +1,75 @@
+#!/usr/bin/expect -f
+set timeout 30
+set env(NO_COLOR) 1
+set transcript $env(TUI_EXPECT_TRANSCRIPT)
+log_file -a $transcript
+set cmd [split $env(TUI_EXPECT_CMD)]
+eval spawn $cmd
+
+expect {
+    -re {bar prompt editor \(Bubble Tea prototype\)} {}
+    timeout { send_error "failed to render header"; exit 1 }
+}
+
+# Copy CLI command to clipboard (stubbed) and verify history entry
+send "\u0002"
+send "\u0008"
+expect {
+    -re {Palette history \(Ctrl\+H toggles\):} {}
+    timeout { send_error "missing palette history header after CLI copy"; exit 1 }
+}
+expect {
+    -re {Clipboard → CLI command copied} {}
+    timeout { send_error "missing CLI clipboard history entry"; exit 1 }
+}
+send "\u0008"
+
+# Copy preview text to clipboard (stubbed) and verify history entry
+send "\u000f"
+send "\u0008"
+expect {
+    -re {Palette history \(Ctrl\+H toggles\):} {}
+    timeout { send_error "missing palette history header after preview copy"; exit 1 }
+}
+expect {
+    -re {Clipboard → preview copied} {}
+    timeout { send_error "missing preview clipboard history entry"; exit 1 }
+}
+expect {
+    -re {Clipboard → CLI command copied} {}
+    timeout { send_error "missing previous CLI clipboard history entry"; exit 1 }
+}
+send "\u0008"
+
+# Apply a token via the palette and undo it to create an undo history entry
+send "\t"       ;# focus tokens
+send "\u0010"    ;# Ctrl+P opens palette
+send "todo"
+send "\r"       ;# move focus to options
+send "\r"       ;# apply selection
+send "\u001a"    ;# Ctrl+Z undo token change
+send "\u0008"    ;# show history
+expect {
+    -re {Palette history \(Ctrl\+H toggles\):} {}
+    timeout { send_error "missing palette history header after undo"; exit 1 }
+}
+expect {
+    -re {Tokens undo restored} {}
+    timeout { send_error "missing token undo history entry"; exit 1 }
+}
+expect {
+    -re {Static Prompt → todo applied} {}
+    timeout { send_error "missing token apply history entry"; exit 1 }
+}
+expect {
+    -re {Clipboard → preview copied} {}
+    timeout { send_error "expected earlier clipboard entry to persist"; exit 1 }
+}
+send "\u0008"    ;# hide history
+send "\u0010"    ;# close palette
+
+# Exit the TUI cleanly
+send "\003"
+after 200
+send "\003"
+expect eof

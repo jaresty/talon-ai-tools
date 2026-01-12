@@ -21,6 +21,7 @@ type Config struct {
 	FixtureWidth  int
 	FixtureHeight int
 	NoAltScreen   bool
+	NoClipboard   bool
 	EnvAllowlist  []string
 }
 
@@ -144,6 +145,8 @@ func Parse(args []string) (*Config, error) {
 			cfg.FixtureHeight = height
 		case arg == "--no-alt-screen":
 			cfg.NoAltScreen = true
+		case arg == "--no-clipboard":
+			cfg.NoClipboard = true
 		case arg == "--env":
 			i++
 			if i >= len(args) {

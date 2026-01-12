@@ -184,6 +184,19 @@ func runTUI(opts *cli.Config, stdin io.Reader, stdout, stderr io.Writer) int {
 		return err
 	}
 
+	clipboardRead := clipboard.ReadAll
+	clipboardWrite := clipboard.WriteAll
+	if opts.NoClipboard {
+		var clipboardBuffer string
+		clipboardRead = func() (string, error) {
+			return clipboardBuffer, nil
+		}
+		clipboardWrite = func(value string) error {
+			clipboardBuffer = value
+			return nil
+		}
+	}
+
 	err = startTUI(bartui.Options{
 		Tokens:          tokens,
 		TokenCategories: tokenCategories,
@@ -191,8 +204,8 @@ func runTUI(opts *cli.Config, stdin io.Reader, stdout, stderr io.Writer) int {
 		Output:          stdout,
 		Preview:         preview,
 		UseAltScreen:    !opts.NoAltScreen,
-		ClipboardRead:   clipboard.ReadAll,
-		ClipboardWrite:  clipboard.WriteAll,
+		ClipboardRead:   clipboardRead,
+		ClipboardWrite:  clipboardWrite,
 		RunCommand: func(ctx context.Context, command string, stdin string, env map[string]string) (string, string, error) {
 			return runShellCommand(ctx, command, stdin, env)
 		},

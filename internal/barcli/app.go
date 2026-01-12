@@ -23,7 +23,7 @@ var generalHelpText = strings.TrimSpace(`USAGE
 
   bar help
   bar help tokens [section...] [--grammar PATH]
-  bar tui [tokens...] [--grammar PATH] [--fixture PATH] [--fixture-width N|--width N] [--fixture-height N|--height N] [--no-alt-screen] [--env NAME]...
+  bar tui [tokens...] [--grammar PATH] [--fixture PATH] [--fixture-width N|--width N] [--fixture-height N|--height N] [--no-alt-screen] [--no-clipboard] [--env NAME]...
  
    bar completion <shell> [--grammar PATH] [--output FILE]
       (shell = bash | zsh | fish)
@@ -87,6 +87,7 @@ var generalHelpText = strings.TrimSpace(`USAGE
     tui          Launch the Bubble Tea prompt editor to capture subject text and preview recipes.
                  Use --fixture PATH to emit a deterministic transcript for smoke testing and
                  --no-alt-screen to keep the TUI in the primary terminal buffer.
+                 --no-clipboard to disable system clipboard calls (useful for headless testing).
                   --env NAME (repeatable) to pass specific environment variables to subprocesses.
     completion   Emit shell completion scripts (bash, zsh, fish) informed by the exported grammar.
     preset       Manage cached build presets (save/list/show/use/delete) derived from the last

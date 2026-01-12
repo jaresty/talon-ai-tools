@@ -189,7 +189,7 @@ func TestCompleteTUIFlagsAndTokens(t *testing.T) {
 		flagValues = append(flagValues, suggestion.TrimmedValue)
 	}
 
-	expectedFlags := []string{"--grammar", "--fixture", "--no-alt-screen", "--env"}
+	expectedFlags := []string{"--grammar", "--fixture", "--no-alt-screen", "--no-clipboard", "--env"}
 
 	for _, expected := range expectedFlags {
 		if !containsSuggestionValue(flagSuggestions, expected) {

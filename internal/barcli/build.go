@@ -1,10 +1,13 @@
 package barcli
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"sort"
 	"strings"
+
+	"github.com/talonvoice/talon-ai-tools/internal/barcli/tokens"
 )
 
 const (
@@ -249,118 +252,62 @@ func (s *buildState) applyShorthandToken(token string) *CLIError {
 }
 
 func (s *buildState) applyOverrideToken(token string) *CLIError {
-	idx := strings.Index(token, "=")
-	if idx <= 0 || idx == len(token)-1 {
-		return s.errorf(errorFormat, "key=value override expected")
-	}
-	key := strings.TrimSpace(token[:idx])
-	value := strings.TrimSpace(token[idx+1:])
-	if value == "" {
-		return s.errorf(errorFormat, "override for %s missing value", key)
+	ctx := tokens.OverrideContext{
+		IsStaticPrompt: s.isStaticPrompt,
+		IsAxisToken:    s.isAxisToken,
+		AxisCap:        s.axisCap,
+		SplitList:      s.splitValueList,
+		Contains:       contains,
+		AddRecognized:  s.addRecognized,
+		Errorf: func(kind, format string, args ...any) error {
+			return s.errorf(kind, format, args...)
+		},
+		UnknownValue: func(axis, value string) error {
+			return s.unknownValue(axis, value)
+		},
+		ApplyPersona: func(axis, value string, override bool) error {
+			return s.applyPersonaAxis(axis, value, override)
+		},
+		SetStatic: func(value string) error {
+			s.static = value
+			s.staticExplicit = true
+			return nil
+		},
+		SetCompleteness: func(value string) error {
+			s.completeness = value
+			s.completenessExplicit = true
+			return nil
+		},
+		SetScope: func(values []string) error {
+			s.scope = append([]string(nil), values...)
+			return nil
+		},
+		SetMethod: func(values []string) error {
+			s.method = append([]string(nil), values...)
+			return nil
+		},
+		SetForm: func(value string) error {
+			s.form = []string{value}
+			return nil
+		},
+		SetChannel: func(value string) error {
+			s.channel = []string{value}
+			return nil
+		},
+		SetDirectional: func(value string) error {
+			s.directional = value
+			return nil
+		},
 	}
 
-	switch key {
-	case "persona":
-		return s.errorf(errorPresetConflict, "persona presets must appear before overrides")
-	case "static":
-		if !s.isStaticPrompt(value) {
-			return s.unknownValue(key, value)
+	if err := tokens.ApplyOverride(ctx, token); err != nil {
+		var cliErr *CLIError
+		if errors.As(err, &cliErr) {
+			return cliErr
 		}
-		s.static = value
-		s.staticExplicit = true
-		s.addRecognized("static", value)
-		return nil
-	case "completeness":
-		if !s.isAxisToken("completeness", value) {
-			return s.unknownValue(key, value)
-		}
-		s.completeness = value
-		s.completenessExplicit = true
-		s.addRecognized("completeness", value)
-		return nil
-	case "scope":
-		tokens := s.splitValueList(value)
-		if len(tokens) == 0 {
-			return s.errorf(errorFormat, "scope override requires at least one token")
-		}
-		list := make([]string, 0, len(tokens))
-		for _, item := range tokens {
-			if !s.isAxisToken("scope", item) {
-				return s.unknownValue(key, item)
-			}
-			if !contains(list, item) {
-				list = append(list, item)
-			}
-		}
-		cap := s.axisCap("scope")
-		if cap > 0 && len(list) > cap {
-			return s.errorf(errorConflict, "scope supports at most %d tokens", cap)
-		}
-		s.scope = list
-		s.addRecognized("scope", list...)
-		return nil
-	case "method":
-		tokens := s.splitValueList(value)
-		if len(tokens) == 0 {
-			return s.errorf(errorFormat, "method override requires at least one token")
-		}
-		list := make([]string, 0, len(tokens))
-		for _, item := range tokens {
-			if !s.isAxisToken("method", item) {
-				return s.unknownValue(key, item)
-			}
-			if !contains(list, item) {
-				list = append(list, item)
-			}
-		}
-		cap := s.axisCap("method")
-		if cap > 0 && len(list) > cap {
-			return s.errorf(errorConflict, "method supports at most %d tokens", cap)
-		}
-		s.method = list
-		s.addRecognized("method", list...)
-		return nil
-	case "form":
-		tokens := s.splitValueList(value)
-		if len(tokens) == 0 {
-			return s.errorf(errorFormat, "form override requires a value")
-		}
-		if len(tokens) > 1 {
-			return s.errorf(errorConflict, "form accepts a single token")
-		}
-		if !s.isAxisToken("form", tokens[0]) {
-			return s.unknownValue(key, tokens[0])
-		}
-		s.form = []string{tokens[0]}
-		s.addRecognized("form", tokens[0])
-		return nil
-	case "channel":
-		tokens := s.splitValueList(value)
-		if len(tokens) == 0 {
-			return s.errorf(errorFormat, "channel override requires a value")
-		}
-		if len(tokens) > 1 {
-			return s.errorf(errorConflict, "channel accepts a single token")
-		}
-		if !s.isAxisToken("channel", tokens[0]) {
-			return s.unknownValue(key, tokens[0])
-		}
-		s.channel = []string{tokens[0]}
-		s.addRecognized("channel", tokens[0])
-		return nil
-	case "directional":
-		if !s.isAxisToken("directional", value) {
-			return s.unknownValue(key, value)
-		}
-		s.directional = value
-		s.addRecognized("directional", value)
-		return nil
-	case "voice", "audience", "tone", "intent":
-		return s.applyPersonaAxis(key, value, true)
-	default:
-		s.unrecognized = append(s.unrecognized, token)
-		return s.errorf(errorUnknownToken, "unknown override key %s", key)
+		return s.errorf(errorFormat, err.Error())
 	}
+	return nil
 }
 
 func (s *buildState) applyShorthandAxis(axis, token string) *CLIError {

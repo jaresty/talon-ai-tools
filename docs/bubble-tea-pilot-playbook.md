@@ -17,14 +17,12 @@ bar tui todo focus steps
 ```
 
 - The editor focuses the subject input immediately. Type the subject and watch the live preview refresh automatically.
-- `Ctrl+C` or `Esc` exits the program.
-- Press `?` to toggle the in-app shortcut overlay without leaving the session.
-- Press `Ctrl+R` to pipe the current preview into the configured shell command.
-- Use `PgUp`/`PgDn` to scroll whichever viewport is focused and `Home`/`End` to jump to its start or end. When the result viewport is focused (Tab after the command field), `Ctrl+U`/`Ctrl+D` half-page scroll and `Ctrl+T` toggles a condensed preview so long outputs do not drown the status or command metadata.
-- Within the token controls, use Left/Right to change categories, Up/Down to browse options, `Enter`/`Space` to toggle the highlighted token, `Delete` to remove it, and `Ctrl+Z` to undo the most recent change.
-
-- Press `Ctrl+P` to open the token palette for faster browsing and preset resets; the status bar now prompts “copy command”, press `Enter` to copy the CLI and close the palette, and press `Ctrl+W` at any time to clear the palette filter.
-- Press `?` to open the shortcut overlay; it now reminds you about the palette copy command flow so pilots can rediscover it mid-session.
+- `Ctrl+C` or `Esc` exits the program. `Ctrl+J` maximises the subject viewport, `Ctrl+K` maximises the result viewport, and pressing either again restores the default layout without hiding the grammar composer.
+- Press `?` (or `Ctrl+?`) to toggle the in-app shortcut overlay without leaving the session.
+- Press `Ctrl+R` to pipe the current preview into the configured shell command. `Ctrl+B` copies the current CLI to the clipboard, and `Ctrl+G` toggles the sidebar sections if you want a narrower focus.
+- Use `PgUp`/`PgDn` to scroll whichever viewport is focused and `Home`/`End` to jump to its start or end. When the result viewport is focused (Tab after the command field), `Ctrl+U`/`Ctrl+D` half-page scroll and `Ctrl+T` toggles a condensed preview so long outputs do not drown the status or command metadata. Breadcrumbs in the status strip show the active focus step (Subject ▸ Tokens ▸ Command ▸ Result) so pilots can keep track of where Tab will land next.
+- The grammar composer lives in the docked palette. Press `Ctrl+P` to focus it, type `category=value` fragments, and use `Tab`/`Shift+Tab` to cycle completions in CLI order. `Enter` stages the change, emits a toast confirming what applied, and updates the palette history with the exact CLI command that would reproduce it. The token telemetry sparkline beneath the composer updates after each commit so you can see token counts shift in context.
+- History is always a keystroke away—press `Ctrl+H` to expand or collapse the palette history and review recent token tweaks or CLI invocations. `Ctrl+W` clears the composer filter text, and `Ctrl+Z` undoes the most recent token change.
 - Alt screen is enabled by default so the original shell buffer is restored. If your terminal does not support alt screen or you want to capture transcripts, launch with `--no-alt-screen`.
 - Point at an alternate grammar bundle with `--grammar /path/to/grammar.json` when testing staged prompt changes.
 - Repeat `--env NAME` to opt specific environment variables into the subprocess allowlist. Once inside the TUI, press `Tab` until the allowlist is focused (subject → tokens → command → allowlist), use Up/Down to highlight entries, `Ctrl+E` to toggle the selection, `Ctrl+A` to re-enable all allowlisted variables, and `Ctrl+X` to clear the list if you want to run without any secrets.

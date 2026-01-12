@@ -107,3 +107,27 @@
   - Pilot-facing documentation updates for the grammar-first palette remain outstanding (severity: medium impact × low probability). Mitigation: schedule documentation loop once usage notes settle; monitor pilot feedback triage reviews. Owning ADR: 0072 follow-up §“Refresh docs…”.
 - next_work:
   - Behaviour: Refresh pilot playbook/quickstart docs with grammar-first palette guidance; validation target `scripts/tools/run-tui-expect.sh --all` plus documentation review checklist.
+
+## 2026-01-12 – Loop 014 (helper:v20251223.1)
+- focus: Follow-up §“Refresh docs…” — align the Bubble Tea pilot playbook with the grammar-first palette workflow (docked composer, history toggle, telemetry toast loop).
+- active_constraint: Pilot-facing documentation still described the pre-ADR modal palette, leaving pilots without instructions for `category=value` grammar composer usage; falsified by the current playbook missing composer/toast/history guidance despite the UI enforcing it.
+- expected_value table:
+  | Factor           | Value | Rationale |
+  |------------------|-------|-----------|
+  | Impact           | High  | Documentation mismatch prevented operators from learning the grammar-first palette flow mandated by ADR 0072. |
+  | Probability      | High  | Updating the playbook directly resolves the gap with no code uncertainty. |
+  | Time Sensitivity | Medium| Pilot handoff is ongoing; delaying risks another review cycle with stale instructions. |
+  | Uncertainty note | Low   | Behaviour verified by rerunning the canonical expect suite after the doc refresh. |
+- validation_targets:
+  - `scripts/tools/run-tui-expect.sh --all`
+- evidence:
+  - green | 2026-01-12T21:14:46Z | exit 0 | `scripts/tools/run-tui-expect.sh --all`
+    helper:diff-snapshot=1 file changed, 6 insertions(+), 8 deletions(-)
+    docs/adr/evidence/0072-bubble-tea-palette-flow/loop-014.md
+- rollback_plan: `git restore --source=HEAD~1 docs/bubble-tea-pilot-playbook.md` then rerun `scripts/tools/run-tui-expect.sh --all` to confirm the stale instructions still align with the registry state before reapplying.
+- delta_summary: helper:diff-snapshot=1 file changed, 6 insertions(+), 8 deletions(-); refreshed pilot playbook with grammar composer instructions, toast/telemetry callouts, history toggle, and viewport maximisation keys.
+- loops_remaining_forecast: 0 loops; confidence high — remaining work is monitoring pilot feedback rather than implementing ADR behaviours.
+- residual_constraints:
+  - Toast theming parity across light/dark palettes still lacks visual evidence (severity: medium impact × medium probability). Mitigation: capture expect/screenshot coverage once palette assets stabilise; monitor nightly `scripts/tools/run-tui-expect.sh --all` runs for regressions. Owning ADR: 0072 Decision §“Add focus breadcrumbs… toast-style transient feedback…”.
+- next_work:
+  - Behaviour: Monitor toast theming parity and capture expect fixtures when assets land; validation target `scripts/tools/run-tui-expect.sh --all` (extended with colour assertions).

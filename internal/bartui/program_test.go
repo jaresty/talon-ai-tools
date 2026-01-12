@@ -216,6 +216,43 @@ func TestReinsertLastResultAppliesImmediately(t *testing.T) {
 	}
 }
 
+func TestReinsertLastResultFallsBackToPreview(t *testing.T) {
+	opts := Options{
+		Tokens:         []string{"todo"},
+		Preview:        func(subject string, tokens []string) (string, error) { return "preview:" + subject, nil },
+		ClipboardRead:  func() (string, error) { return "", nil },
+		ClipboardWrite: func(string) error { return nil },
+		RunCommand: func(context.Context, string, string, map[string]string) (string, string, error) {
+			return "", "", nil
+		},
+		CommandTimeout: time.Second,
+	}
+	m := newModel(opts)
+	m.subject.SetValue("original")
+	m.refreshPreview()
+	m.lastResult = commandResult{Command: "cat", Stdout: ""}
+
+	(&m).reinsertLastResult()
+	if m.pendingSubject != nil {
+		t.Fatalf("expected subject replacement to apply immediately")
+	}
+	expected := "preview:original"
+	if got := m.subject.Value(); got != expected {
+		t.Fatalf("expected subject replaced with preview, got %q", got)
+	}
+	if !m.subjectUndoAvailable {
+		t.Fatalf("expected undo to be available after preview fallback")
+	}
+
+	m, _ = updateModel(t, m, tea.KeyMsg{Type: tea.KeyCtrlZ})
+	if got := m.subject.Value(); got != "original" {
+		t.Fatalf("expected undo to restore original subject, got %q", got)
+	}
+	if m.subjectUndoAvailable {
+		t.Fatalf("expected undo to clear after restoring original subject")
+	}
+}
+
 func TestCopyBuildCommandToClipboard(t *testing.T) {
 	var copied string
 	subject := "Need to review \"ADR 70\""
@@ -331,6 +368,7 @@ func TestExecuteSubjectCommand(t *testing.T) {
 }
 
 func TestExecutePreviewCommandAndReinsert(t *testing.T) {
+
 	var receivedStdin string
 	opts := Options{
 		Tokens:         []string{"todo"},

@@ -3729,12 +3729,21 @@ func (m *model) reinsertLastResult() {
 		m.statusMessage = "No command output available to insert."
 		return
 	}
-	if strings.TrimSpace(m.lastResult.Stdout) == "" {
-		m.statusMessage = "Last command stdout was empty; nothing to insert."
-		return
+
+	trimmed := strings.TrimRight(m.lastResult.Stdout, "\r\n")
+	source := "command stdout"
+
+	if strings.TrimSpace(trimmed) == "" {
+		fallback := strings.TrimSpace(m.preview)
+		if fallback == "" {
+			m.statusMessage = "Last command stdout was empty; nothing to insert."
+			return
+		}
+		trimmed = strings.TrimRight(m.preview, "\r\n")
+		source = "preview text"
 	}
-	trimmed := strings.TrimRight(m.lastResult.Stdout, "\n")
-	m.requestSubjectReplacement("command stdout", trimmed)
+
+	m.requestSubjectReplacement(source, trimmed)
 	if m.pendingSubject != nil {
 		m.applyPendingSubjectReplacement()
 	}

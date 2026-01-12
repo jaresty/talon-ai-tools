@@ -45,12 +45,8 @@ expect {
     timeout { send_error "missing history toggle status"; exit 1 }
 }
 expect {
-    -re {• \[[0-9]{2}:[0-9]{2}\] .*Tokens ·} {}
+    -re {• \[[0-9]{2}:[0-9]{2}\] .*Tokens · Static Prompt → todo applied · CLI: bar build todo} {}
     timeout { send_error "missing history metadata"; exit 1 }
-}
-expect {
-    -re {Prompt → todo applied} {}
-    timeout { send_error "missing history message"; exit 1 }
 }
 
 send "\003"

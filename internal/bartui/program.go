@@ -60,6 +60,7 @@ type historyEventKind string
 type historyEvent struct {
 	Kind      historyEventKind
 	Message   string
+	Command   string
 	Timestamp time.Time
 }
 
@@ -1461,9 +1462,11 @@ func (m *model) recordPaletteHistory(kind historyEventKind, entry string) {
 	if trimmed == "" {
 		return
 	}
+	command := strings.TrimSpace(m.displayCommandString())
 	event := historyEvent{
 		Kind:      kind,
 		Message:   trimmed,
+		Command:   command,
 		Timestamp: m.historyTimestamp(),
 	}
 	m.paletteHistory = append([]historyEvent{event}, m.paletteHistory...)
@@ -3200,10 +3203,19 @@ func formatHistoryEvent(event historyEvent) string {
 		timePart = event.Timestamp.UTC().Format("15:04")
 	}
 
+	var base string
 	if timePart != "" {
-		return fmt.Sprintf("[%s] %s · %s", timePart, label, event.Message)
+		base = fmt.Sprintf("[%s] %s · %s", timePart, label, event.Message)
+	} else {
+		base = fmt.Sprintf("%s · %s", label, event.Message)
 	}
-	return fmt.Sprintf("%s · %s", label, event.Message)
+
+	command := strings.TrimSpace(event.Command)
+	if command != "" {
+		base = fmt.Sprintf("%s · CLI: %s", base, shortenString(command, 56))
+	}
+
+	return base
 }
 
 func (m *model) renderPresetsSection() string {

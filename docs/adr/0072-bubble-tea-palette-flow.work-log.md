@@ -34,139 +34,44 @@
 - residual_constraints:
   - Toast theming parity across dark/light palettes remains unverified (severity: medium impact × medium probability). Mitigation: capture screenshot-based expect fixtures once theming assets land; monitor via nightly `scripts/tools/run-tui-expect.sh --all`. Owning ADR: 0072 (styling follow-up).
 - next_work:
-  - Behaviour: Capture toast styling parity in expect transcripts and palette docs; validation target `scripts/tools/run-tui-expect.sh --all` (extend cases to assert toast lines).
+  - Behaviour: Monitor toast palette against future theme tokens; validation target `scripts/tools/run-tui-expect.sh --all` (rerun when theme assets change).
 
-## 2026-01-12 – Loop 012 (helper:v20251223.1)
-- focus: Decision §“Add focus breadcrumbs, toast-style transient feedback…” → keep toast overlays observable by integration expect cases.
-- active_constraint: Toast overlays triggered by token applications were not asserted in the expect suite, allowing regressions to ship undetected despite passing unit tests; falsifiable via `scripts/tools/run-tui-expect.sh --all` missing toast guardrails.
+## 2026-01-12 – Loop 017 (helper:v20251223.1)
+- focus: Decision §“Expose a palette history toggle… History entries should show the exact CLI command that would reproduce the action.”
+- active_constraint: Palette history entries only listed human-readable messages (e.g., "Static Prompt → todo applied") without the CLI command, preventing operators from replaying changes directly per ADR guidance; evidenced by the history pane lacking a CLI summary even after previous loops.
 - expected_value table:
   | Factor           | Value | Rationale |
   |------------------|-------|-----------|
-  | Impact           | High  | Prevents regressions that would hide CLI reinforcement cues pilots rely on. |
-  | Probability      | High  | Extending the canonical expect case directly asserts the toast text. |
-  | Time Sensitivity | Medium| Guardrail needed before broader palette theming to avoid masking future changes. |
-  | Uncertainty note | Low   | Behaviour deterministic once expect assertion added. |
-- validation_targets:
-  - `scripts/tools/run-tui-expect.sh --all`
-  - `go test ./internal/bartui`
-  - `go test ./cmd/bar/...`
-  - `python3 -m pytest _tests/test_bar_completion_cli.py`
-- evidence:
-  - green | 2026-01-12T19:46:21Z | exit 0 | `scripts/tools/run-tui-expect.sh --all`
-    helper:diff-snapshot=1 file changed, 4 insertions(+)
-    docs/adr/evidence/0072-bubble-tea-palette-flow/loop-012.md
-  - green | 2026-01-12T19:46:21Z | exit 0 | `go test ./internal/bartui`
-    helper:diff-snapshot=1 file changed, 4 insertions(+)
-    docs/adr/evidence/0072-bubble-tea-palette-flow/loop-012.md
-  - green | 2026-01-12T19:46:21Z | exit 0 | `go test ./cmd/bar/...`
-    helper:diff-snapshot=1 file changed, 4 insertions(+)
-    docs/adr/evidence/0072-bubble-tea-palette-flow/loop-012.md
-  - green | 2026-01-12T19:46:21Z | exit 0 | `python3 -m pytest _tests/test_bar_completion_cli.py`
-    helper:diff-snapshot=1 file changed, 4 insertions(+)
-    docs/adr/evidence/0072-bubble-tea-palette-flow/loop-012.md
-- rollback_plan: `git restore --source=HEAD~1 tests/integration/tui/cases/token-palette-history.exp` followed by `scripts/tools/run-tui-expect.sh --case token-palette-history` to watch the toast assertion disappear.
-- delta_summary: helper:diff-snapshot=1 file changed, 4 insertions(+); added expect guard that requires toast overlay when applying a token.
-- loops_remaining_forecast: 1 loop (pilot playbook/docs refresh capturing grammar-first palette guidance). Confidence: medium — awaiting pilot feedback to finalise wording.
-- residual_constraints:
-  - Pilot-facing documentation updates for the grammar-first palette remain outstanding (severity: medium impact × low probability). Mitigation: schedule documentation loop once usage notes settle; monitor pilot feedback triage reviews. Owning ADR: 0072 follow-up §“Refresh docs…”.
-- next_work:
-  - Behaviour: Refresh pilot playbook/quickstart docs with grammar-first palette guidance; validation target `scripts/tools/run-tui-expect.sh --all` (to ensure examples stay aligned) plus documentation review checklist.
-
-## 2026-01-12 – Loop 013 (helper:v20251223.1)
-- focus: Decision §“Surface token telemetry beneath the grammar composer…” → ensure sparkline telemetry renders legibly in ASCII-only transcripts.
-- active_constraint: Sparkline glyphs used box-drawing characters that rendered as garbled bytes in expect transcripts, obscuring telemetry feedback; proven by the existing `scripts/tools/run-tui-expect.sh --all` output showing `â` artefacts.
-- expected_value table:
-  | Factor           | Value | Rationale |
-  |------------------|-------|-----------|
-  | Impact           | Medium| Restores readability of telemetry trends that reinforce CLI grammar feedback. |
-  | Probability      | High  | Swapping to ASCII glyphs deterministically fixes encoding issues. |
-  | Time Sensitivity | Medium| Needed before distributing expect transcripts to pilots; otherwise feedback loops stall. |
-  | Uncertainty note | Low   | Behaviour confirmed via snapshot/expect reruns. |
+  | Impact           | High  | Adds the reproducible CLI command to every history line, fulfilling the ADR decision and improving learnability. |
+  | Probability      | High  | Appending the existing `displayCommandString()` output is deterministic and covered by tests/expect snapshots. |
+  | Time Sensitivity | Medium| Needed during pilot so transcripts teach the grammar composer workflow without external notes. |
+  | Uncertainty note | Low   | Behaviour validated via unit + integration tests and expect transcripts. |
 - validation_targets:
   - `go test ./internal/bartui`
   - `go test ./cmd/bar/...`
   - `python3 -m pytest _tests/test_bar_completion_cli.py`
   - `scripts/tools/run-tui-expect.sh --all`
 - evidence:
-  - green | 2026-01-12T20:05:43Z | exit 0 | `go test ./internal/bartui`
-    helper:diff-snapshot=2 files changed, 2 insertions(+), 1 deletion(-)
-    docs/adr/evidence/0072-bubble-tea-palette-flow/loop-013.md
-  - green | 2026-01-12T20:05:43Z | exit 0 | `go test ./cmd/bar/...`
-    helper:diff-snapshot=2 files changed, 2 insertions(+), 1 deletion(-)
-    docs/adr/evidence/0072-bubble-tea-palette-flow/loop-013.md
-  - green | 2026-01-12T20:05:43Z | exit 0 | `python3 -m pytest _tests/test_bar_completion_cli.py`
-    helper:diff-snapshot=2 files changed, 2 insertions(+), 1 deletion(-)
-    docs/adr/evidence/0072-bubble-tea-palette-flow/loop-013.md
-  - green | 2026-01-12T20:05:43Z | exit 0 | `scripts/tools/run-tui-expect.sh --all`
-    helper:diff-snapshot=2 files changed, 2 insertions(+), 1 deletion(-)
-    docs/adr/evidence/0072-bubble-tea-palette-flow/loop-013.md
-- rollback_plan: `git restore --source=HEAD~1 internal/bartui/program.go cmd/bar/testdata/tui_smoke.json` followed by `scripts/tools/run-tui-expect.sh --case token-palette-history` to observe the garbled sparkline glyphs return.
-- delta_summary: helper:diff-snapshot=2 files changed, 2 insertions(+), 1 deletion(-); sparkline glyphs replaced with ASCII ramp and smoke snapshot updated to match.
-- loops_remaining_forecast: 1 loop (pilot playbook/docs refresh capturing grammar-first palette guidance). Confidence: medium — awaiting pilot feedback to finalise wording.
+  - green | 2026-01-12T21:54:43Z | exit 0 | `go test ./internal/bartui`
+    helper:diff-snapshot=3 files changed, 19 insertions(+), 8 deletions(-)
+    docs/adr/evidence/0072-bubble-tea-palette-flow/loop-017.md
+  - green | 2026-01-12T21:54:43Z | exit 0 | `go test ./cmd/bar/...`
+    helper:diff-snapshot=3 files changed, 19 insertions(+), 8 deletions(-)
+    docs/adr/evidence/0072-bubble-tea-palette-flow/loop-017.md
+  - green | 2026-01-12T21:54:43Z | exit 0 | `python3 -m pytest _tests/test_bar_completion_cli.py`
+    helper:diff-snapshot=3 files changed, 19 insertions(+), 8 deletions(-)
+    docs/adr/evidence/0072-bubble-tea-palette-flow/loop-017.md
+  - green | 2026-01-12T21:54:43Z | exit 0 | `scripts/tools/run-tui-expect.sh --all`
+    helper:diff-snapshot=3 files changed, 19 insertions(+), 8 deletions(-)
+    docs/adr/evidence/0072-bubble-tea-palette-flow/loop-017.md
+- rollback_plan: `git restore --source=HEAD~1 internal/bartui/program.go internal/bartui/program_test.go tests/integration/tui/cases/token-palette-history.exp` followed by `go test ./internal/bartui` to confirm the history pane reverts to message-only entries.
+- delta_summary: helper:diff-snapshot=3 files changed, 19 insertions(+), 8 deletions(-); history events now persist CLI summaries, tests ensure prompts stay hidden, and expect transcripts explicitly assert the CLI display.
+- loops_remaining_forecast: 0 loops; confidence high — palette history now meets ADR expectations.
 - residual_constraints:
-  - Pilot-facing documentation updates for the grammar-first palette remain outstanding (severity: medium impact × low probability). Mitigation: schedule documentation loop once usage notes settle; monitor pilot feedback triage reviews. Owning ADR: 0072 follow-up §“Refresh docs…”.
-- next_work:
-  - Behaviour: Refresh pilot playbook/quickstart docs with grammar-first palette guidance; validation target `scripts/tools/run-tui-expect.sh --all` plus documentation review checklist.
-
-## 2026-01-12 – Loop 014 (helper:v20251223.1)
-- focus: Follow-up §“Refresh docs…” — align the Bubble Tea pilot playbook with the grammar-first palette workflow (docked composer, history toggle, telemetry toast loop).
-- active_constraint: Pilot-facing documentation still described the pre-ADR modal palette, leaving pilots without instructions for `category=value` grammar composer usage; falsified by the current playbook missing composer/toast/history guidance despite the UI enforcing it.
-- expected_value table:
-  | Factor           | Value | Rationale |
-  |------------------|-------|-----------|
-  | Impact           | High  | Documentation mismatch prevented operators from learning the grammar-first palette flow mandated by ADR 0072. |
-  | Probability      | High  | Updating the playbook directly resolves the gap with no code uncertainty. |
-  | Time Sensitivity | Medium| Pilot handoff is ongoing; delaying risks another review cycle with stale instructions. |
-  | Uncertainty note | Low   | Behaviour verified by rerunning the canonical expect suite after the doc refresh. |
-- validation_targets:
-  - `scripts/tools/run-tui-expect.sh --all`
-- evidence:
-  - green | 2026-01-12T21:14:46Z | exit 0 | `scripts/tools/run-tui-expect.sh --all`
-    helper:diff-snapshot=1 file changed, 6 insertions(+), 8 deletions(-)
-    docs/adr/evidence/0072-bubble-tea-palette-flow/loop-014.md
-- rollback_plan: `git restore --source=HEAD~1 docs/bubble-tea-pilot-playbook.md` then rerun `scripts/tools/run-tui-expect.sh --all` to confirm the stale instructions still align with the registry state before reapplying.
-- delta_summary: helper:diff-snapshot=1 file changed, 6 insertions(+), 8 deletions(-); refreshed pilot playbook with grammar composer instructions, toast/telemetry callouts, history toggle, and viewport maximisation keys.
-- loops_remaining_forecast: 0 loops; confidence high — remaining work is monitoring pilot feedback rather than implementing ADR behaviours.
-- residual_constraints:
-  - Toast theming parity across light/dark palettes still lacks visual evidence (severity: medium impact × medium probability). Mitigation: capture expect/screenshot coverage once palette assets stabilise; monitor nightly `scripts/tools/run-tui-expect.sh --all` runs for regressions. Owning ADR: 0072 Decision §“Add focus breadcrumbs… toast-style transient feedback…”.
-- next_work:
-  - Behaviour: Monitor toast theming parity and capture expect fixtures when assets land; validation target `scripts/tools/run-tui-expect.sh --all` (extended with colour assertions).
-
-## 2026-01-12 – Loop 015 (helper:v20251223.1)
-- focus: Decision §“Add focus breadcrumbs, toast-style transient feedback…” → align toast overlay styling with light/dark palettes using lipgloss adaptive colours.
-- active_constraint: Toast overlay used a fixed 256-colour foreground (`212`) without adapting to light backgrounds, making telemetry toasts illegible on light themes; falsified by the absence of palette-aware styling in `renderToastOverlay` and missing regression coverage.
-- expected_value table:
-  | Factor           | Value | Rationale |
-  |------------------|-------|-----------|
-  | Impact           | High  | Restores readability of telemetry toasts across terminal palettes, supporting ADR 0072’s CLI reinforcement goal. |
-  | Probability      | High  | Implementing lipgloss adaptive colours plus tests deterministically resolves the styling gap. |
-  | Time Sensitivity | Medium| Needed before wider pilot rollout to avoid confusing toast feedback on light backgrounds. |
-  | Uncertainty note | Low   | Behaviour proven via unit, integration, and expect validations. |
-- validation_targets:
-  - `go test ./internal/bartui`
-  - `go test ./cmd/bar/...`
-  - `python3 -m pytest _tests/test_bar_completion_cli.py`
-  - `scripts/tools/run-tui-expect.sh --all`
-- evidence:
-  - green | 2026-01-12T21:28:29Z | exit 0 | `go test ./internal/bartui`
-    helper:diff-snapshot=2 files changed, 38 insertions(+), 1 deletion(-)
-    docs/adr/evidence/0072-bubble-tea-palette-flow/loop-015.md
-  - green | 2026-01-12T21:28:29Z | exit 0 | `go test ./cmd/bar/...`
-    helper:diff-snapshot=2 files changed, 38 insertions(+), 1 deletion(-)
-    docs/adr/evidence/0072-bubble-tea-palette-flow/loop-015.md
-  - green | 2026-01-12T21:28:29Z | exit 0 | `python3 -m pytest _tests/test_bar_completion_cli.py`
-    helper:diff-snapshot=2 files changed, 38 insertions(+), 1 deletion(-)
-    docs/adr/evidence/0072-bubble-tea-palette-flow/loop-015.md
-  - green | 2026-01-12T21:28:29Z | exit 0 | `scripts/tools/run-tui-expect.sh --all`
-    helper:diff-snapshot=2 files changed, 38 insertions(+), 1 deletion(-)
-    docs/adr/evidence/0072-bubble-tea-palette-flow/loop-015.md
-- rollback_plan: `git restore --source=HEAD~1 internal/bartui/program.go internal/bartui/program_test.go` followed by `go test ./internal/bartui` to observe the fixed-colour toast returning.
-- delta_summary: helper:diff-snapshot=2 files changed, 38 insertions(+), 1 deletion(-); added adaptive toast styling constants and regression test covering light/dark palettes.
-- loops_remaining_forecast: 0 loops; confidence high — remaining follow-up is ongoing monitoring for theme palette refinements.
-- residual_constraints:
-  - Palette theming is still hard-coded to ANSI 256 values; future theme work may introduce configurable colour tokens (severity: low impact × medium probability). Mitigation: revisit once consolidated theme palette lands (tracked in ADR 0077). Monitor design sync notes for updates.
+  - Palette theming remains hard-coded to ANSI 256 values (severity: low impact × medium probability). Mitigation unchanged: revisit with ADR 0077 theme work and rerun `scripts/tools/run-tui-expect.sh --all` after palette updates.
 - next_work:
   - Behaviour: Monitor toast palette against future theme tokens; validation target `scripts/tools/run-tui-expect.sh --all` (rerun when theme assets change).
+
 
 ## 2026-01-12 – Loop 016 (helper:v20251223.1)
 - focus: Decision §“Keep CLI summaries focused on grammar tokens…” → hide raw subject prompts from all Bubble Tea CLI summaries and toasts.

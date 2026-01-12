@@ -1323,6 +1323,9 @@ func TestTokenPaletteHistoryToggle(t *testing.T) {
 	if !viewContains(view, "HISTORY (Ctrl+H toggles)") {
 		t.Fatalf("expected view to include history header, got view:\n%s", view)
 	}
+	if !strings.Contains(view, "CLI: bar build todo") {
+		t.Fatalf("expected history entry to include CLI summary, got view:\n%s", view)
+	}
 
 	m, _ = updateModel(t, m, tea.KeyMsg{Type: tea.KeyCtrlH})
 	if m.paletteHistoryVisible {
@@ -1503,7 +1506,7 @@ func TestFormatHistoryEventIncludesMetadata(t *testing.T) {
 	}
 
 	formatted := formatHistoryEvent(event)
-	expected := "[15:04] 📋 Clipboard · Clipboard → preview copied"
+	expected := "[15:04] 📋 Clipboard · Clipboard → preview copied · CLI: bar build"
 	if formatted != expected {
 		t.Fatalf("expected formatted history %q, got %q", expected, formatted)
 	}

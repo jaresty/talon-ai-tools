@@ -56,6 +56,7 @@ In Progress — Bubble Tea TUI palette and grammar-aligned palette flow (2026-01
 - Coordinate with ADR 0075 (CLI coordination layer refactor) so the grammar composer shortcuts and palette history stay in sync with the accepted `internal/barcli/cli` contracts.
 - Monitor the two-column layout via `scripts/tools/run-tui-expect.sh --all` after palette or preset tweaks to catch regressions early.
 - Gather pilot feedback after release to tune Tab defaults (e.g., staged apply behaviour, history length, category hinting).
+- Add a viewport focus toggle (e.g., maximise Result or Subject panes with a shortcut) so pilots can page multi-line command output or subject drafts without distraction.
 - Pursue interaction simplification and typography cues outlined in ADR 0077.
 
 ## Anti-goals

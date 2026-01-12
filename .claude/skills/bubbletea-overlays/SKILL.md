@@ -21,8 +21,8 @@ description: Coordinate Bubble Tea layouts and overlay stacks while delegating d
 - Follow the full playbook in `references/overlays.md` for struct definitions, layout variants, compositor layering, and chrome sizing heuristics.
 - Pair with:
   - `bubbletea-dialog-stacking` for overlay model patterns and message contracts.
-  - `bubbles-form-inputs` / `bubbles-select-dialog` to handle focus within modal content.
-  - `lipgloss-status-chips` or `lipgloss-table-rendering` for reusable widgets inside overlays.
+  - `bubbles-inputs` to handle form focus, command palettes, and list filtering inside overlays.
+  - `lipgloss-components` for reusable widgets (chips, lists, tables, tree views) embedded within overlays.
 
 ## Checklist
 - [ ] Window size stored and forwarded downstream

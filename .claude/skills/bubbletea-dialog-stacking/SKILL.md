@@ -8,7 +8,8 @@ description: Pointer to the Bubble Tea overlays skill and reference material for
 For full guidance on overlay orchestration load **`bubbletea-overlays`** and read `references/overlays.md` within that skill. Pair it with:
 
 - `lipgloss-layout-utilities` to align modal shells and backdrop scrims
-- `bubbles-form-inputs` / `bubbles-select-dialog` for focus handling inside overlays
+- `bubbles-inputs` for focus handling across forms, palettes, and list-driven dialogs
+- `lipgloss-components` when dialogs display reusable rendered widgets
 
 ## Quick reminders
 - Model each dialog or sheet as a Bubble Tea program implementing `Init`, `Update`, and `View` plus a stable `ID()`.

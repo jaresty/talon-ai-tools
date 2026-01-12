@@ -1,61 +1,26 @@
 ---
 name: markdown-diff-rendering
-description: Render Markdown (with Glamour) and code diffs (with Chroma) in a charm-style terminal app.
+description: Capsule for terminal Markdown and diff previews with references for renderer setup.
 ---
 
-# Markdown & Diff Rendering
+# Markdown & Diff Rendering (Skill Capsule)
 
 ## Use this skill when
-- Displaying assistant responses or docs in terminal
-- Showing syntax-highlighted diffs in previews
-- Switching between colored and plain-text modes
+- Terminal apps need to display Markdown responses, help text, or documentation.
+- You want syntax-highlighted diffs alongside other views with graceful monochrome fallbacks.
+- The task spans both Glamour-based Markdown rendering and Chroma diff formatting.
 
-## Workflow
+## Quickstart
+- Choose a layout width first (from `lipgloss-layout-utilities`) and reuse it for both Markdown and diff renderers to avoid wrapping mismatches.
+- Cache Glamour and Chroma renderers so repeated renders stay responsive.
+- Offer plain-text fallbacks for copy/paste or limited-color environments.
 
-1. **Markdown rendering with Glamour**  
-   ```go
-   import "github.com/charmbracelet/glamour"
+## Dive deeper
+- `references/markdown.md` — Glamour setup, custom styles, and performance tips.
+- `references/diffs.md` — Chroma diff formatting, fallback renderers, and integration notes.
 
-   func renderMarkdown(input string, width int) (string, error) {
-     renderer, err := glamour.NewTermRenderer(
-       glamour.WithAutoStyle(),      // or custom ANSI config
-       glamour.WithWordWrap(width),
-     )
-     if err != nil {
-       return "", err
-     }
-     return renderer.Render(input)
-   }
-   ```
-
-2. **Custom styles**  
-   Provide a style config that maps headings, blockquotes, etc., to your theme colors. Reference the default `ansi.StyleConfig` and swap the color hex strings.
-
-3. **Diff rendering**  
-   Use a diff formatter + Chroma for syntax highlighting.
-
-   ```go
-   import (
-     "github.com/alecthomas/chroma/v2"
-     "github.com/alecthomas/chroma/v2/formatters/terminal16m"
-     "github.com/alecthomas/chroma/v2/styles"
-   )
-
-   func renderDiff(src string) (string, error) {
-     lexer := chroma.Coalesce(chroma.MustNewLexer(&diff.Config{}))
-     iterator, _ := lexer.Tokenise(nil, src)
-     formatter := terminal16m.New(terminal16m.WithLineNumbers(true))
-     style := styles.Get("github-dark") // or custom style
-     var buf bytes.Buffer
-     err := formatter.Format(&buf, style, iterator)
-     return buf.String(), err
-   }
-   ```
-
-4. **Plain text fallback**  
-   Offer a toggle or detection to render in monochrome using Glamour’s “no colors” template for copy/paste contexts.
-
-## Tips
-
-- Clamp word wrap to your available column width minus padding/borders.
-- Cache renderers when processing large volumes of markdown to avoid re-parsing style configs.
+## Checklist
+- [ ] Renderer instances cached for repeated use.
+- [ ] Word wrap width matches surrounding layout constraints.
+- [ ] Plain-text mode available for accessibility/export.
+- [ ] Theme colors align with `lipgloss-theme-foundations` when customizing styles.

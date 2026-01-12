@@ -16,13 +16,10 @@ In Progress — Bubble Tea TUI palette and grammar-aligned palette flow (2026-01
 
 ### Relevant Charm skills
 - `lipgloss-theme-foundations` — establish text/background/hover styles for chips, status strip, and the grammar composer.
-- `lipgloss-status-chips` — render inline chip rows and focus states for token categories.
+- `lipgloss-components` — reuse status chips, tables, lists, and tree widgets for palette summaries and history views.
 - `lipgloss-layout-utilities` — assemble main + sidebar columns, manage widths, and place sticky status strips.
-- `lipgloss-table-rendering` — format palette history or shortcut summaries as tabular views when needed.
-- `lipgloss-list-rendering` — present recent command/token actions as bullet lists mirroring CLI history.
-- `lipgloss-tree-rendering` — visualise grammar/category hierarchies or preset structures inside the sidebar.
-- `bubbletea-layout-composition` — manage Bubble Tea model/state split and viewport resizing in tandem with Lip Gloss joins.
-- `bubbletea-dialog-stacking` / `bubbles-select-dialog` / `bubbles-form-inputs` — reuse modal/select/input patterns if the grammar composer needs dialogs or staged forms.
+- `bubbletea-overlays` — manage Bubble Tea model/state split, overlay stacks, and viewport resizing alongside Lip Gloss joins.
+- `bubbletea-dialog-stacking` / `bubbles-inputs` — reuse modal, select, and input patterns if the grammar composer needs staged forms or focused dialogs.
 
 ### Typography & information architecture recommendations
 - Use `lipgloss-theme-foundations` to define a consistent text scale: body copy (~11–12 cols), small meta text for status strip, and bold/uppercase for section headers. Keep max line length ~70 columns in the main pane to avoid wrapping.

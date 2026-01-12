@@ -2648,8 +2648,15 @@ if bootstrap is not None:
             self.assertEqual(match.channelModifier, "slack")
 
             self.assertEqual(
-                GPTState.last_recipe,
-                "infer · full · bound edges · rigor · bullets · slack · rog",
+                GPTState.last_axes,
+                {
+                    "completeness": ["full"],
+                    "scope": ["bound", "edges"],
+                    "method": ["rigor"],
+                    "form": ["bullets"],
+                    "channel": ["slack"],
+                    "directional": ["rog"],
+                },
             )
 
         def test_history_then_rerun_keeps_last_axes_token_only(self):
@@ -2903,7 +2910,10 @@ if bootstrap is not None:
                 self.assertEqual(match.scopeModifier, "bound")
                 self.assertEqual(match.methodModifier, "rigor")
                 self.assertEqual(match.formModifier, "bullets")
-                self.assertEqual(match.channelModifier, "html")
+                self.assertFalse(
+                    hasattr(match, "channelModifier"),
+                    "channel overrides with legacy tokens should be dropped",
+                )
 
             self.assertEqual(
                 GPTState.last_axes,
@@ -2912,7 +2922,7 @@ if bootstrap is not None:
                     "scope": ["bound"],
                     "method": ["rigor"],
                     "form": ["bullets"],
-                    "channel": ["html"],
+                    "channel": [],
                     "directional": ["fig"],
                 },
             )

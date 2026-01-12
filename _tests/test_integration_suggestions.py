@@ -1,5 +1,7 @@
 import json
+import os
 import unittest
+
 from typing import TYPE_CHECKING
 from unittest.mock import MagicMock, patch
 
@@ -21,8 +23,10 @@ if bootstrap is not None:
 
     class SuggestionIntegrationTests(unittest.TestCase):
         def setUp(self):
+            os.environ.setdefault("PYTEST_CURRENT_TEST", "unittest")
             GPTState.reset_all()
             GPTState.last_directional = "fog"
+
             GPTState.last_axes = {
                 "completeness": [],
                 "scope": [],
@@ -40,7 +44,13 @@ if bootstrap is not None:
             # Force async suggestion flow to fall back to the synchronous
             # pipeline result so the tests can control the suggestion text.
             handle = MagicMock()
-            handle.wait = MagicMock(return_value=True)
+
+            def _wait(timeout=None):
+                if handle.result is None:
+                    handle.result = self.pipeline.complete.return_value
+                return True
+
+            handle.wait = MagicMock(side_effect=_wait)
             handle.result = None
             self.pipeline.complete_async.return_value = handle
             gpt_module._prompt_pipeline = self.pipeline
@@ -315,8 +325,8 @@ if bootstrap is not None:
             # Arrange a suggestion that uses over-cap scope and form/channel segments:
             # - scope: actions edges relations (3 tokens, cap 2)
             # - form: bullets faq checklist (cap 1)
-            # - channel: slack jira html (cap 1)
-            suggestion_text = "Name: Over-cap ticket | Recipe: ticket · full · actions edges relations · structure flow · bullets faq checklist · slack jira html · fog"
+            # - channel: slack jira remote (cap 1)
+            suggestion_text = "Name: Over-cap ticket | Recipe: ticket · full · actions edges relations · structure flow · bullets faq checklist · slack jira remote · fog"
             self.pipeline.complete.return_value = PromptResult.from_messages(
                 [format_message(suggestion_text)]
             )
@@ -357,10 +367,17 @@ if bootstrap is not None:
                 create_dest_again.return_value = dest_again
                 model_prompt.return_value = "PROMPT-OVER-CAP-AGAIN"
 
+                before_count = actions.user.gpt_apply_prompt.call_count
+
                 gpt_module.UserActions.gpt_rerun_last_recipe(
                     "", "", [], [], "rog", "", ""
                 )
 
+                self.assertGreater(
+                    actions.user.gpt_apply_prompt.call_count,
+                    before_count,
+                    "Expected gpt_apply_prompt to be called during rerun",
+                )
                 config = actions.user.gpt_apply_prompt.call_args.args[0]
                 self.assertEqual(config.please_prompt, "PROMPT-OVER-CAP-AGAIN")
 
@@ -380,7 +397,9 @@ if bootstrap is not None:
                 self.assertTrue(
                     set(form_tokens).issubset({"bullets", "faq", "checklist"})
                 )
-                self.assertTrue(set(channel_tokens).issubset({"slack", "jira", "html"}))
+                self.assertTrue(
+                    set(channel_tokens).issubset({"slack", "jira", "remote"})
+                )
 else:
     if not TYPE_CHECKING:
 

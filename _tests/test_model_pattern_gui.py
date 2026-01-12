@@ -43,6 +43,17 @@ if bootstrap is not None:
                 actions.user.notify = MagicMock()
                 actions.user.gpt_apply_prompt = MagicMock()
                 actions.user.model_pattern_gui_close = MagicMock()
+
+                try:
+                    from talon_user.GPT import gpt as gpt_module  # type: ignore
+                except Exception:
+                    pass
+                else:
+                    try:
+                        gpt_module._suppress_inflight_notify_request_id = None
+                    except Exception:
+                        pass
+
                 # Ensure talon_user.lib is importable for patch targets.
                 importlib.import_module("talon_user.lib.patternDebugCoordinator")
 
@@ -390,8 +401,8 @@ if bootstrap is not None:
                 self.assertEqual(GPTState.last_completeness, "gist")
                 self.assertEqual(GPTState.last_scope, "focus")
                 self.assertEqual(GPTState.last_method, "structure")
-                self.assertEqual(GPTState.last_form, "code")
-                self.assertEqual(GPTState.last_channel, "diagram")
+                self.assertEqual(GPTState.last_form, "diagram")
+                self.assertEqual(GPTState.last_channel, "")
                 self.assertEqual(GPTState.last_directional, "fog")
 
             def test_parse_recipe_handles_new_method_tokens(self) -> None:

@@ -464,7 +464,7 @@ PATTERNS: list[PromptPattern] = [
     PromptPattern(
         name="Sketch diagram",
         description="Convert this into a Mermaid-style diagram (code only).",
-        recipe="describe · gist · focus · structure · code · diagram · fog",
+        recipe="describe · gist · focus · structure · diagram · fog",
         domain="coding",
     ),
     PromptPattern(
@@ -1350,6 +1350,7 @@ def _run_pattern(pattern: PromptPattern) -> None:
         "method": method.split() if method else [],
         "form": form.split() if form else [],
         "channel": channel.split() if channel else [],
+        "directional": directional.split() if directional else [],
     }
 
     actions.user.model_pattern_gui_close()

@@ -626,6 +626,7 @@ def _show_entry(entry) -> bool:
             "method": [],
             "form": [],
             "channel": [],
+            "directional": [],
         }
     # History entries must include a directional lens post-ADR 048.
     if not getattr(GPTState, "last_directional", ""):

@@ -180,7 +180,7 @@ func TestCancelSubjectReplacement(t *testing.T) {
 	}
 }
 
-func TestReinsertLastResultRequiresConfirmation(t *testing.T) {
+func TestReinsertLastResultAppliesImmediately(t *testing.T) {
 	opts := Options{
 		Tokens:         []string{"todo"},
 		Preview:        func(subject string, tokens []string) (string, error) { return "preview:" + subject, nil },
@@ -197,16 +197,11 @@ func TestReinsertLastResultRequiresConfirmation(t *testing.T) {
 	m.lastResult = commandResult{Stdout: "updated via command"}
 
 	(&m).reinsertLastResult()
-	if m.pendingSubject == nil {
-		t.Fatalf("expected pending subject after reinsert request")
+	if m.pendingSubject != nil {
+		t.Fatalf("expected subject replacement to apply immediately")
 	}
-	if m.subject.Value() != "original" {
-		t.Fatalf("expected subject to remain unchanged until confirmation")
-	}
-
-	m, _ = updateModel(t, m, tea.KeyMsg{Type: tea.KeyEnter})
 	if got := m.subject.Value(); got != "updated via command" {
-		t.Fatalf("expected subject to update after confirmation, got %q", got)
+		t.Fatalf("expected subject replaced immediately, got %q", got)
 	}
 	if !m.subjectUndoAvailable {
 		t.Fatalf("expected undo to be available after subject replacement")
@@ -382,16 +377,22 @@ func TestExecutePreviewCommandAndReinsert(t *testing.T) {
 	}
 
 	(&m).reinsertLastResult()
-	if m.pendingSubject == nil {
-		t.Fatalf("expected pending subject replacement after reinsert request")
+	if m.pendingSubject != nil {
+		t.Fatalf("expected subject replacement to apply immediately")
 	}
-	if got := m.subject.Value(); got != "" {
-		t.Fatalf("expected subject to remain unchanged until confirmation, got %q", got)
+	if got := m.subject.Value(); got != "command stdout" {
+		t.Fatalf("expected subject replaced immediately, got %q", got)
+	}
+	if !m.subjectUndoAvailable {
+		t.Fatalf("expected undo available after subject replacement")
 	}
 
-	m, _ = updateModel(t, m, tea.KeyMsg{Type: tea.KeyEnter})
-	if got := m.subject.Value(); got != "command stdout" {
-		t.Fatalf("expected subject replaced after confirmation, got %q", got)
+	m, _ = updateModel(t, m, tea.KeyMsg{Type: tea.KeyCtrlZ})
+	if got := m.subject.Value(); got != "" {
+		t.Fatalf("expected undo to restore original subject, got %q", got)
+	}
+	if m.subjectUndoAvailable {
+		t.Fatalf("expected undo to clear after restoring original subject")
 	}
 }
 

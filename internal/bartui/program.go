@@ -3735,6 +3735,9 @@ func (m *model) reinsertLastResult() {
 	}
 	trimmed := strings.TrimRight(m.lastResult.Stdout, "\n")
 	m.requestSubjectReplacement("command stdout", trimmed)
+	if m.pendingSubject != nil {
+		m.applyPendingSubjectReplacement()
+	}
 }
 
 func (m *model) refreshPresetSummaries() error {

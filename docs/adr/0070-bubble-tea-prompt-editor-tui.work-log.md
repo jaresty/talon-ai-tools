@@ -1573,3 +1573,25 @@
 - next_work:
   - Behaviour: Prototype shorter status messages and evaluate dynamic wrapping; rerun `go test ./internal/bartui -run TestPaletteRemainsVisibleWithinWindowHeight`, `go test ./cmd/bar/...`, and `python3 -m pytest _tests/test_bar_completion_cli.py` after adjustments.
 
+## 2026-01-12 — loop 085
+- helper_version: helper:v20251223.1
+- focus: Decision § subject import/export — ensure Ctrl+Y reinserts stdout without stray confirmation steps
+- active_constraint: After loop 084, Ctrl+Y still staged a pending subject that required Enter, violating ADR 0070 Decision § subject import/export, which promises an immediate reinsertion shortcut with undo support.
+- validation_targets:
+  - go test -count=1 ./internal/bartui
+  - go test -count=1 ./cmd/bar/...
+  - python3 -m pytest _tests/test_bar_completion_cli.py
+- evidence:
+  - green: docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-085.md#loop-085-green--helper-diff-snapshot-git-diff--stat-head
+  - green: docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-085.md#loop-085-green--go-test--count1--internal-bartui
+  - green: docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-085.md#loop-085-green--go-test--count1--cmd-bar
+  - green: docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-085.md#loop-085-green--python3--m-pytest-_tests-test_bar_completion_cli.py
+- rollback_plan: `git restore --source=HEAD -- internal/bartui/program.go internal/bartui/program_test.go docs/adr/0070-bubble-tea-prompt-editor-tui.work-log.md docs/adr/evidence/0070-bubble-tea-prompt-editor-tui/loop-085.md`
+- delta_summary: helper:diff-snapshot=git diff --stat | internal/bartui/program.go (Ctrl+Y auto-applies subject reinsertion) · internal/bartui/program_test.go (updated Ctrl+Y regression coverage)
+- loops_remaining_forecast: 1 loop (status message length trim) — medium confidence while UX messaging work remains.
+- residual_constraints:
+  - Status line still exceeds comfortable length when commands/palette emit long guidance (severity: medium; mitigation: explore contextual status truncation; monitoring trigger: pilot feedback that status messages wrap or obscure viewport content).
+  - Help overlay remains the sole location for full shortcut documentation (severity: low; mitigation: leave as-is but monitor onboarding feedback).
+- next_work:
+  - Behaviour: Prototype shorter status messages and evaluate dynamic wrapping; rerun `go test ./internal/bartui -run TestPaletteRemainsVisibleWithinWindowHeight`, `go test ./cmd/bar/...`, and `python3 -m pytest _tests/test_bar_completion_cli.py` after adjustments.
+

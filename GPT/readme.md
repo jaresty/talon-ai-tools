@@ -245,9 +245,9 @@ The `model` command now supports several short, speech-friendly modifier axes yo
 
 Completeness (`completenessModifier`): `full`, `gist`, `max`, `minimal`, `skim`
 Scope (`scopeModifier`): `actions`, `activities`, `bound`, `dynamics`, `edges`, `focus`, `interfaces`, `narrow`, `relations`, `system`
-Method (`methodModifier`): `adversarial`, `analysis`, `boom`, `bridge`, `bud`, `case`, `cluster`, `cocreate`, `com b`, `compare`, `constraints`, `contextualise`, `converge`, `debugging`, `deep`, `diagnose`, `dimension`, `direct`, `diverge`, `drum`, `dub`, `effects`, `experimental`, `facilitate`, `filter`, `flow`, `graph`, `grove`, `how`, `indirect`, `invert`, `ladder`, `liberating`, `logic`, `map`, `mapping`, `math`, `meld`, `melody`, `mod`, `motifs`, `order`, `orthogonal`, `plan`, `prioritize`, `probability`, `probe`, `recurrence`, `reflection`, `rewrite`, `rigor`, `rotation`, `samples`, `scaffold`, `socratic`, `steps`, `structure`, `systemic`, `taxonomy`, `tune`, `visual`, `walkthrough`, `wasinawa`, `xp`
-Form (`formModifier`): `adr`, `bug`, `bullets`, `cards`, `checklist`, `code`, `commit`, `faq`, `gherkin`, `log`, `plain`, `recipe`, `shellscript`, `spike`, `story`, `table`, `tight`, `visual`
-Channel (`channelModifier`): `codetour`, `diagram`, `html`, `jira`, `presenterm`, `remote`, `slack`, `svg`, `sync`
+Method (`methodModifier`): `adversarial`, `analysis`, `boom`, `bridge`, `bud`, `case`, `cluster`, `cocreate`, `com b`, `compare`, `constraints`, `contextualise`, `converge`, `debugging`, `deep`, `diagnose`, `dimension`, `direct`, `diverge`, `drum`, `dub`, `effects`, `experimental`, `explore`, `facilitate`, `filter`, `flow`, `graph`, `grove`, `how`, `indirect`, `invert`, `ladder`, `liberating`, `logic`, `map`, `mapping`, `math`, `meld`, `melody`, `mod`, `motifs`, `order`, `orthogonal`, `plan`, `prioritize`, `probability`, `probe`, `recurrence`, `reflection`, `rewrite`, `rigor`, `rotation`, `scaffold`, `socratic`, `steps`, `structure`, `systemic`, `taxonomy`, `tune`, `walkthrough`, `wasinawa`, `xp`
+Form (`formModifier`): `adr`, `bug`, `bullets`, `cards`, `checklist`, `code`, `codetour`, `commit`, `diagram`, `faq`, `gherkin`, `html`, `log`, `plain`, `recipe`, `shellscript`, `spike`, `story`, `svg`, `table`, `tight`, `variants`, `visual`
+Channel (`channelModifier`): `jira`, `presenterm`, `remote`, `slack`, `sync`
 Directional (`directionalModifier`): `bog`, `dig`, `dip bog`, `dip ong`, `dip rog`, `fig`, `fip bog`, `fip ong`, `fip rog`, `fly bog`, `fly ong`, `fly rog`, `fog`, `jog`, `ong`, `rog`
   - Additional form/channel notes:
     - `cards` – format the answer as discrete cards/items with clear headings and short bodies.
@@ -255,8 +255,11 @@ Directional (`directionalModifier`): `bog`, `dig`, `dip bog`, `dip ong`, `dip ro
     - `bug` – format the output as a structured bug report (Steps to Reproduce, Expected Behavior, Actual Behavior, Environment/Context).
     - `spike` – format the output as a research spike: short problem/decision statement plus a list of key questions to answer.
     - `log` – write as a concise work or research log entry (dates/times optional, short bullet-style updates, enough context for future you).
-    - `codetour` (channel) – output only a valid VS Code CodeTour `.tour` JSON document; no extra prose.
-    - `diagram` (channel) – output only Mermaid diagram code; obey Mermaid safety constraints (no raw `()` in labels, escape `|` as `#124;`, etc.).
+    - `codetour` (form) – output only a valid VS Code CodeTour `.tour` JSON document; no extra prose.
+    - `diagram` (form) – output only Mermaid diagram code; obey Mermaid safety constraints (no raw `()` in labels, escape `|` as `#124;`, etc.).
+    - `variants` (form) – return several distinct, decision-ready options with short descriptions and approximate probabilities when helpful.
+    - `html` (form) – output semantic HTML only (no surrounding prose).
+    - `svg` (form) – output only raw, minimal SVG markup ready to paste into a `.svg` file.
     - `remote` – emphasise remote-friendly delivery: distributed/online context hints and tooling tips.
     - `sync` – shape the answer as a synchronous/live session plan with agenda/steps/cues.
 
@@ -346,7 +349,7 @@ Some high-frequency combinations you can say directly:
   - `model describe adversarial rog` – adversarial review: look for weaknesses, edge cases, and unstated assumptions.
   - `model describe scaffold fog` – explain for a beginner from first principles using gradual scaffolding.
   - `model describe socratic fog` – explore the topic by asking short, targeted questions before giving conclusions.
-  - `model describe samples diverge fog` – generate multiple options with approximate probabilities.
+  - `model describe explore form variants diverge fog` – generate multiple options with approximate probabilities.
   - `model describe liberating rog` – Liberating Structures-style facilitation framing.
   - `model describe diverge fog` – open up the option space and explore alternatives.
   - `model describe converge rog` – weigh options and narrow towards a decision.

@@ -7,17 +7,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Dict, FrozenSet
 
-AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {'channel': {'codetour': 'The response is a valid VS Code CodeTour `.tour` JSON document '
-                         '(schema-compatible) that uses steps and fields appropriate to the task '
-                         'and omits extra prose or surrounding explanation.',
-             'diagram': 'The response converts the input into Mermaid diagram code only: it infers '
-                        'the best diagram type for the task and respects Mermaid safety '
-                        'constraints (Mermaid diagrams do not allow parentheses in the syntax or '
-                        "raw '|' characters inside node labels; the text uses numeric encodings "
-                        'such as "#124;" for \'|\' instead of raw problematic characters).',
-             'html': 'The response consists solely of semantic HTML for the answer, with no '
-                     'surrounding prose.',
-             'jira': 'The response formats the content using Jira markup (headings, lists, panels) '
+AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {'channel': {'jira': 'The response formats the content using Jira markup (headings, lists, panels) '
                      'where relevant and avoids extra explanation beyond the main material.',
              'presenterm': 'The response is a valid multi-slide presenterm deck expressed as raw '
                            'Markdown (no code fences). The front matter always matches: "--- '
@@ -59,8 +49,7 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {'channel': {'codetour': 'The res
                            'codes with no leading ampersand, such as "#91;" for "[", "#93;" for '
                            '"]", "#40;" for "(", "#41;" for ")", "#123;" for "{{", "#125;" for '
                            '"}}", "#60;" for "<", "#62;" for ">", "#35;" for "#", "#58;" for ":", '
-                           'and "#124;" for "|". Internal double quotes escape as "". Ampersands '
-                           '"&" and slashes \'/\' remain as-is, with no additional entity '
+                           'and "&" and slashes \'/\' remain as-is, with no additional entity '
                            'encodings, and labels are never double-encoded. The deck avoids # '
                            'headers in slide bodies.',
              'remote': 'The response is optimised for remote delivery, ensuring instructions work '
@@ -68,9 +57,6 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {'channel': {'codetour': 'The res
                        'hints suitable for video, voice, or screen sharing.',
              'slack': 'The response formats the answer for Slack using appropriate Markdown, '
                       'mentions, and code blocks while avoiding channel-irrelevant decoration.',
-             'svg': 'The response consists solely of SVG markup for the answer, with no '
-                    'surrounding prose, and remains minimal and valid for copy/paste into an '
-                    '`.svg` file.',
              'sync': 'The response takes the shape of a synchronous or live session plan (agenda, '
                      'steps, cues) rather than static reference text.'},
  'completeness': {'full': 'The response provides a thorough answer for normal use, covering all '
@@ -144,13 +130,23 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {'channel': {'codetour': 'The res
                        'imperative tasks rather than descriptive prose.',
           'code': 'The response consists only of code or markup for the main answer, with no '
                   'surrounding natural-language explanation.',
+          'codetour': 'The response is a valid VS Code CodeTour `.tour` JSON document '
+                      '(schema-compatible) that uses steps and fields appropriate to the task and '
+                      'omits extra prose or surrounding explanation.',
           'commit': 'The response is formatted as a conventional commit message with a short type '
                     'or scope line and an optional concise body.',
+          'diagram': 'The response converts the input into Mermaid diagram code only: it infers '
+                     'the best diagram type for the task and respects Mermaid safety constraints '
+                     "(Mermaid diagrams do not allow parentheses in the syntax or raw '|' "
+                     'characters inside node labels; the text uses numeric encodings such as '
+                     '"#124;" for \'|\' instead of raw problematic characters).',
           'faq': 'The response adopts an FAQ layout: clearly separated question headings with '
                  'concise answers beneath each one, keeping content easy to skim and free of long '
                  'uninterrupted prose.',
           'gherkin': 'The response outputs only Gherkin, using Jira markup where appropriate and '
                      'omitting surrounding explanation.',
+          'html': 'The response consists solely of semantic HTML for the answer, with no '
+                  'surrounding prose.',
           'log': 'The response reads like a concise work or research log entry with date or time '
                  'markers as needed, short bullet-style updates, and enough context for future '
                  'reference without unrelated narrative.',
@@ -168,10 +164,16 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {'channel': {'codetour': 'The res
                    'want <capability>, so that <value>." It may include a short description and '
                    'high-level acceptance criteria in plain prose but avoids Gherkin or test-case '
                    'syntax.',
+          'svg': 'The response consists solely of SVG markup for the answer, with no surrounding '
+                 'prose, and remains minimal and valid for copy/paste into an `.svg` file.',
           'table': 'The response presents the main answer as a Markdown table when feasible, '
                    'keeping columns and rows compact.',
           'tight': 'The response uses concise, dense prose, remaining freeform without bullets, '
                    'tables, or code and avoiding filler.',
+          'variants': 'The response presents several distinct, decision-ready options as separate '
+                      'variants, labelling each one with a short description and including '
+                      'approximate probabilities when helpful while avoiding near-duplicate '
+                      'alternatives.',
           'visual': 'The response conveys the answer as an abstract visual or metaphorical layout '
                     'accompanied by a short legend, emphasising big-picture structure over dense '
                     'prose.'},
@@ -235,6 +237,10 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {'channel': {'codetour': 'The res
                             'proposing concrete experiments, outlining how each would run, '
                             'describing expected outcomes, and explaining how those outcomes would '
                             'update the hypotheses.',
+            'explore': 'The response explores the option space by generating and comparing '
+                       'multiple plausible approaches, weighing their trade-offs, and identifying '
+                       'which candidates merit deeper development without committing to a final '
+                       'recommendation yet.',
             'facilitate': 'The response facilitates the session by framing the goal, proposing '
                           'structure, managing turns, and keeping participation balanced rather '
                           'than doing the work solo.',
@@ -301,10 +307,6 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {'channel': {'codetour': 'The res
                      'logic explicit, avoiding hand-waving.',
             'rotation': 'The response presents a metaphorical 90-degree rotation of the concept to '
                         'surface contrasting viewpoints.',
-            'samples': 'The response generates several diverse, self-contained options and, when '
-                       'appropriate, attaches short descriptions and explicit numeric '
-                       'probabilities that approximately sum to 1 while avoiding near-duplicate '
-                       'options.',
             'scaffold': 'The response explains with scaffolding: it starts from first principles, '
                         'introduces ideas gradually, uses concrete examples and analogies, and '
                         'revisits key points so a beginner can follow and retain the concepts.',
@@ -325,9 +327,6 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {'channel': {'codetour': 'The res
                         'representations over prose.',
             'tune': 'The response evaluates visibility, scope, and volatility alignment using the '
                     'Concordance Frame and recommends tuning actions.',
-            'visual': 'The response expresses the big picture using an abstract visual or '
-                      'metaphorical layout as a reasoning aid—such as regions and contrasts—with a '
-                      'short legend and concise, format-ready hints when helpful.',
             'walkthrough': 'The response guides the audience step by step by outlining stages and '
                            'walking through them in order so understanding builds gradually.',
             'wasinawa': 'The response applies a What–So What–Now What reflection: it describes '

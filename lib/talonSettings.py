@@ -109,24 +109,6 @@ def _read_axis_value_to_key_map(filename: str) -> dict[str, str]:
 
 
 _METHOD_VALUE_TO_KEY = AXIS_VALUE_TO_KEY_MAPS.get("method", {})
-if "samples" in _METHOD_VALUE_TO_KEY:
-    # Tolerate truncated variants of the samples prompt so last_recipe stays concise.
-    _METHOD_VALUE_TO_KEY.setdefault("avoid near-duplicate options.", "samples")
-    _METHOD_VALUE_TO_KEY.setdefault("avoid near duplicate options.", "samples")
-    _METHOD_VALUE_TO_KEY.setdefault(
-        "approximately sum to 1; avoid near-duplicate options.", "samples"
-    )
-    _METHOD_VALUE_TO_KEY.setdefault(
-        "approximately sum to 1; avoid near duplicate options.", "samples"
-    )
-    _METHOD_VALUE_TO_KEY.setdefault(
-        "sum to 1; avoid near-duplicate options.", "samples"
-    )
-    _METHOD_VALUE_TO_KEY.setdefault(
-        "sum to 1; avoid near duplicate options.", "samples"
-    )
-    _METHOD_VALUE_TO_KEY.setdefault("sum to 1", "samples")
-    _METHOD_VALUE_TO_KEY.setdefault("approximately sum to 1", "samples")
 
 
 class AxisValues(TypedDict):
@@ -779,15 +761,51 @@ def modelPrompt(m) -> str:
         effective_channel_raw = settings.get("user.model_default_channel")
 
     # Map all axes to token-based storage, keeping a canonical form for recap/rerun.
-    raw_completeness_tokens = _map_axis_tokens(
-        "completeness", _tokens_list(effective_completeness_raw)
-    )
-    raw_scope_tokens = _map_axis_tokens("scope", _tokens_list(effective_scope_raw))
-    raw_method_tokens = _map_axis_tokens("method", _tokens_list(effective_method_raw))
-    raw_form_tokens = _map_axis_tokens("form", _tokens_list(effective_form_raw))
-    raw_channel_tokens = _map_axis_tokens(
-        "channel", _tokens_list(effective_channel_raw)
-    )
+    completeness_tokens_raw = _tokens_list(effective_completeness_raw)
+    scope_tokens_raw = _tokens_list(effective_scope_raw)
+    method_tokens_raw = _tokens_list(effective_method_raw)
+    form_tokens_raw = _tokens_list(effective_form_raw)
+    channel_tokens_raw = _tokens_list(effective_channel_raw)
+
+    legacy_method_tokens = [
+        token for token in method_tokens_raw if token in {"visual", "samples"}
+    ]
+    if legacy_method_tokens:
+        hints: list[str] = []
+        if "visual" in legacy_method_tokens:
+            hints.append(
+                "say form visual to set the container and keep a reasoning method such as mapping"
+            )
+        if "samples" in legacy_method_tokens:
+            hints.append(
+                "pair form variants with method explore to request multiple options"
+            )
+        hint_text = "; ".join(hints) if hints else "use the updated axis tokens"
+        message = (
+            f"GPT: method tokens visual/samples moved off the method axis; {hint_text}."
+        )
+        notify(message)
+        raise ValueError(message)
+
+    legacy_channel_tokens = [
+        token
+        for token in channel_tokens_raw
+        if token in {"diagram", "html", "codetour", "svg"}
+    ]
+    if legacy_channel_tokens:
+        suggestions = " / ".join(legacy_channel_tokens)
+        message = (
+            "GPT: channel tokens diagram/html/codetour/svg moved to the form axis; "
+            f"say {suggestions} as form tokens instead."
+        )
+        notify(message)
+        raise ValueError(message)
+
+    raw_completeness_tokens = _map_axis_tokens("completeness", completeness_tokens_raw)
+    raw_scope_tokens = _map_axis_tokens("scope", scope_tokens_raw)
+    raw_method_tokens = _map_axis_tokens("method", method_tokens_raw)
+    raw_form_tokens = _map_axis_tokens("form", form_tokens_raw)
+    raw_channel_tokens = _map_axis_tokens("channel", channel_tokens_raw)
 
     resolved_axes, canonical_axes = _apply_constraint_hierarchy(
         {

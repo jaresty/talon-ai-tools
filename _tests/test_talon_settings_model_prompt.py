@@ -629,17 +629,17 @@ if bootstrap is not None:
                 completenessModifier="full",
                 scopeModifier="actions",
                 methodModifier="structure",
-                channelModifier_list=["slack", "jira", "html"],
+                channelModifier_list=["slack", "jira", "remote"],
                 directionalModifier="fog",
             )
 
             _ = modelPrompt(m)
 
-            self.assertEqual(GPTState.system_prompt.channel, "html")
-            self.assertEqual(GPTState.last_channel, "html")
+            self.assertEqual(GPTState.system_prompt.channel, "remote")
+            self.assertEqual(GPTState.last_channel, "remote")
 
             recipe_parts = [p.strip() for p in GPTState.last_recipe.split("·")]
-            self.assertEqual(recipe_parts[-1], "html")
+            self.assertEqual(recipe_parts[-1], "remote")
 
         def test_model_prompt_updates_last_recipe_with_profile_axes(self):
             # When no spoken modifiers are provided, the per-prompt profile for

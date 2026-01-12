@@ -205,9 +205,14 @@ if bootstrap is not None:
                 "Expected 'analysis' method token from ADR 017 to be present",
             )
             self.assertIn(
+                "explore",
+                method_keys,
+                "Expected 'explore' method token from ADR 076 to be present",
+            )
+            self.assertNotIn(
                 "samples",
                 method_keys,
-                "Expected 'samples' method token from ADR 017/018 to be present",
+                "Legacy 'samples' method token should be removed per ADR 076",
             )
             self.assertIn(
                 "socratic",
@@ -221,6 +226,18 @@ if bootstrap is not None:
                 form_keys,
                 "Expected 'faq' form token from ADR 018 to be present",
             )
+            for token in ("codetour", "diagram", "html", "svg", "variants"):
+                self.assertIn(
+                    token,
+                    form_keys,
+                    f"Expected '{token}' form token after ADR 076 rebucketing",
+                )
+            for token in ("diagram", "html", "codetour", "svg"):
+                self.assertNotIn(
+                    token,
+                    channel_keys,
+                    f"Channel tokens should no longer include '{token}' after ADR 076",
+                )
             self.assertIn(
                 "slack",
                 channel_keys,

@@ -11,6 +11,7 @@ import (
 
 	tea "github.com/charmbracelet/bubbletea"
 	lipgloss "github.com/charmbracelet/lipgloss"
+	"github.com/muesli/termenv"
 )
 
 func updateModel(t *testing.T, m model, msg tea.Msg) (model, tea.Cmd) {
@@ -1107,6 +1108,38 @@ func TestToggleCurrentTokenOptionShowsToast(t *testing.T) {
 	m, _ = updateModel(t, m, toastExpiredMsg{sequence: seq})
 	if m.toastVisible {
 		t.Fatalf("expected toast to expire after toastExpiredMsg")
+	}
+}
+
+func TestRenderToastOverlayUsesAdaptivePalette(t *testing.T) {
+	originalBG := lipgloss.HasDarkBackground()
+	originalProfile := lipgloss.ColorProfile()
+	t.Cleanup(func() {
+		lipgloss.SetHasDarkBackground(originalBG)
+		lipgloss.SetColorProfile(originalProfile)
+	})
+
+	lipgloss.SetColorProfile(termenv.ANSI256)
+
+	m := model{
+		toastVisible: true,
+		toastMessage: "static=todo applied · CLI: bar build todo · Ctrl+Z undo",
+	}
+
+	lipgloss.SetHasDarkBackground(true)
+	dark := m.renderToastOverlay()
+	if !strings.Contains(dark, ";38;5;"+toastDarkColor+"m") {
+		t.Fatalf("expected dark background toast color %s, got %q", toastDarkColor, dark)
+	}
+
+	lipgloss.SetHasDarkBackground(false)
+	light := m.renderToastOverlay()
+	if !strings.Contains(light, ";38;5;"+toastLightColor+"m") {
+		t.Fatalf("expected light background toast color %s, got %q", toastLightColor, light)
+	}
+
+	if !strings.Contains(light, "Toast: ") || !strings.Contains(dark, "Toast: ") {
+		t.Fatalf("expected toast message prefix to persist, got dark=%q light=%q", dark, light)
 	}
 }
 

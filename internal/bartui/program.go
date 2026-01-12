@@ -351,6 +351,8 @@ const (
 
 const tokenSparklineWindow = 12
 const toastLifetime = 1500 * time.Millisecond
+const toastDarkColor = "212"
+const toastLightColor = "57"
 
 type toastExpiredMsg struct {
 	sequence int
@@ -3872,7 +3874,9 @@ func (m *model) renderToastOverlay() string {
 	if message == "" {
 		return ""
 	}
-	style := lipgloss.NewStyle().Foreground(lipgloss.Color("212")).Bold(true)
+	style := lipgloss.NewStyle().
+		Foreground(lipgloss.AdaptiveColor{Light: toastLightColor, Dark: toastDarkColor}).
+		Bold(true)
 	return style.Render("Toast: " + message)
 }
 

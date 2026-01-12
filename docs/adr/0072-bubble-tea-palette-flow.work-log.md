@@ -131,3 +131,39 @@
   - Toast theming parity across light/dark palettes still lacks visual evidence (severity: medium impact × medium probability). Mitigation: capture expect/screenshot coverage once palette assets stabilise; monitor nightly `scripts/tools/run-tui-expect.sh --all` runs for regressions. Owning ADR: 0072 Decision §“Add focus breadcrumbs… toast-style transient feedback…”.
 - next_work:
   - Behaviour: Monitor toast theming parity and capture expect fixtures when assets land; validation target `scripts/tools/run-tui-expect.sh --all` (extended with colour assertions).
+
+## 2026-01-12 – Loop 015 (helper:v20251223.1)
+- focus: Decision §“Add focus breadcrumbs, toast-style transient feedback…” → align toast overlay styling with light/dark palettes using lipgloss adaptive colours.
+- active_constraint: Toast overlay used a fixed 256-colour foreground (`212`) without adapting to light backgrounds, making telemetry toasts illegible on light themes; falsified by the absence of palette-aware styling in `renderToastOverlay` and missing regression coverage.
+- expected_value table:
+  | Factor           | Value | Rationale |
+  |------------------|-------|-----------|
+  | Impact           | High  | Restores readability of telemetry toasts across terminal palettes, supporting ADR 0072’s CLI reinforcement goal. |
+  | Probability      | High  | Implementing lipgloss adaptive colours plus tests deterministically resolves the styling gap. |
+  | Time Sensitivity | Medium| Needed before wider pilot rollout to avoid confusing toast feedback on light backgrounds. |
+  | Uncertainty note | Low   | Behaviour proven via unit, integration, and expect validations. |
+- validation_targets:
+  - `go test ./internal/bartui`
+  - `go test ./cmd/bar/...`
+  - `python3 -m pytest _tests/test_bar_completion_cli.py`
+  - `scripts/tools/run-tui-expect.sh --all`
+- evidence:
+  - green | 2026-01-12T21:28:29Z | exit 0 | `go test ./internal/bartui`
+    helper:diff-snapshot=2 files changed, 38 insertions(+), 1 deletion(-)
+    docs/adr/evidence/0072-bubble-tea-palette-flow/loop-015.md
+  - green | 2026-01-12T21:28:29Z | exit 0 | `go test ./cmd/bar/...`
+    helper:diff-snapshot=2 files changed, 38 insertions(+), 1 deletion(-)
+    docs/adr/evidence/0072-bubble-tea-palette-flow/loop-015.md
+  - green | 2026-01-12T21:28:29Z | exit 0 | `python3 -m pytest _tests/test_bar_completion_cli.py`
+    helper:diff-snapshot=2 files changed, 38 insertions(+), 1 deletion(-)
+    docs/adr/evidence/0072-bubble-tea-palette-flow/loop-015.md
+  - green | 2026-01-12T21:28:29Z | exit 0 | `scripts/tools/run-tui-expect.sh --all`
+    helper:diff-snapshot=2 files changed, 38 insertions(+), 1 deletion(-)
+    docs/adr/evidence/0072-bubble-tea-palette-flow/loop-015.md
+- rollback_plan: `git restore --source=HEAD~1 internal/bartui/program.go internal/bartui/program_test.go` followed by `go test ./internal/bartui` to observe the fixed-colour toast returning.
+- delta_summary: helper:diff-snapshot=2 files changed, 38 insertions(+), 1 deletion(-); added adaptive toast styling constants and regression test covering light/dark palettes.
+- loops_remaining_forecast: 0 loops; confidence high — remaining follow-up is ongoing monitoring for theme palette refinements.
+- residual_constraints:
+  - Palette theming is still hard-coded to ANSI 256 values; future theme work may introduce configurable colour tokens (severity: low impact × medium probability). Mitigation: revisit once consolidated theme palette lands (tracked in ADR 0077). Monitor design sync notes for updates.
+- next_work:
+  - Behaviour: Monitor toast palette against future theme tokens; validation target `scripts/tools/run-tui-expect.sh --all` (rerun when theme assets change).

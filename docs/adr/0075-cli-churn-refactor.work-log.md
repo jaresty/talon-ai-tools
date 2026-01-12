@@ -191,3 +191,35 @@ next_work:
 assets:
 - Grammar embed verification: `internal/barcli/embed/prompt-grammar.json`
 - Evidence: `docs/adr/evidence/0075-cli-churn-refactor/loop-005.md`
+
+## loop-006 | helper:v20251223.1 | 2026-01-12
+
+focus: ADR 0075 completion entry → record final coordination status and close out salient tasks 1–4.
+
+active_constraint: ADR 0075 lacked a completion summary confirming all refactor plan items were satisfied, risking ambiguity for downstream contributors until the work-log captured the closure (validated via work-log update review).
+
+expected_value:
+| Factor | Value | Rationale |
+| --- | --- | --- |
+| Impact | Medium | Capturing completion prevents duplicate work and clarifies remaining follow-ups |
+| Probability | High | Updating the work-log directly documents status |
+| Time Sensitivity | Medium | Needed before shifting coordination efforts to ADR 0072 |
+| Uncertainty note | Low | Work-log edit is deterministic |
+
+validation_targets:
+- `go test ./internal/barcli`
+
+evidence: `docs/adr/evidence/0075-cli-churn-refactor/loop-006.md`
+
+rollback_plan: `<VCS_REVERT>` = `git restore --source=HEAD -- docs/adr/0075-cli-churn-refactor.work-log.md`; rerun `go test ./internal/barcli` to confirm nothing else changed.
+
+loops_remaining_forecast: 0 loops remain; ADR 0075 refactor plan items are complete. Confidence: high.
+
+residual_constraints:
+- Low — ADR 0072 documentation still needs a coordination-layer pointer; mitigation: follow-up documentation loop under ADR 0072.
+
+next_work:
+- Behaviour: Reflect ADR 0075 coordination outcomes in ADR 0072 follow-ups (validation: docs review under ADR 0072).
+
+assets:
+- Completion log: `docs/adr/0075-cli-churn-refactor.work-log.md`

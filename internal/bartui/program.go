@@ -14,6 +14,8 @@ import (
 	"unicode"
 	"unicode/utf8"
 
+	"math"
+
 	textarea "github.com/charmbracelet/bubbles/textarea"
 	textinput "github.com/charmbracelet/bubbles/textinput"
 	"github.com/charmbracelet/bubbles/viewport"
@@ -347,6 +349,13 @@ const (
 	viewportModeResult
 )
 
+const tokenSparklineWindow = 12
+const toastLifetime = 1500 * time.Millisecond
+
+type toastExpiredMsg struct {
+	sequence int
+}
+
 func maxInt(a, b int) int {
 	if a > b {
 		return a
@@ -671,9 +680,14 @@ type model struct {
 	subjectViewport    viewport.Model
 	resultViewport     viewport.Model
 	condensedPreview   bool
+	tokenSparkline     []int
+	toastMessage       string
+	toastVisible       bool
+	toastSequence      int
 
-	subject                textarea.Model
-	command                textinput.Model
+	subject textarea.Model
+	command textinput.Model
+
 	focus                  focusArea
 	preview                string
 	previewErr             error
@@ -832,6 +846,7 @@ func newModel(opts Options) model {
 		sidebarPreference:      sidebarPreferenceShown,
 		now:                    time.Now,
 	}
+	m.tokenSparkline = []int{len(m.tokens)}
 	m.destinationSummary = "clipboard — Ctrl+B copies CLI"
 	m.initializeTokenCategories()
 	if len(envNames) == 0 {
@@ -1645,11 +1660,11 @@ func (m *model) currentTokenOption() (TokenOption, bool) {
 	return state.category.Options[m.tokenOptionIndex], true
 }
 
-func (m *model) toggleCurrentTokenOption() {
+func (m *model) toggleCurrentTokenOption() tea.Cmd {
 	option, ok := m.currentTokenOption()
 	if !ok {
 		m.statusMessage = "No token option available to toggle."
-		return
+		return nil
 	}
 	state := &m.tokenStates[m.tokenCategoryIndex]
 	slug := option.Slug
@@ -1661,7 +1676,7 @@ func (m *model) toggleCurrentTokenOption() {
 		state.remove(option.Value)
 		m.rebuildTokensFromStates()
 		m.statusMessage = fmt.Sprintf("%s → %s removed.", state.category.Label, slug)
-		return
+		return m.toastTokenChange(state.category, option, "removed")
 	}
 	max := state.category.MaxSelections
 	if max > 0 && len(state.selected) >= max {
@@ -1670,19 +1685,20 @@ func (m *model) toggleCurrentTokenOption() {
 			suffix = "s"
 		}
 		m.statusMessage = fmt.Sprintf("%s already has %d selection%s; remove one before adding another.", state.category.Label, max, suffix)
-		return
+		return nil
 	}
 	m.recordTokenUndo()
 	state.add(option.Value, max)
 	m.rebuildTokensFromStates()
 	m.statusMessage = fmt.Sprintf("%s → %s applied.", state.category.Label, slug)
+	return m.toastTokenChange(state.category, option, "applied")
 }
 
-func (m *model) removeCurrentTokenOption() {
+func (m *model) removeCurrentTokenOption() tea.Cmd {
 	option, ok := m.currentTokenOption()
 	if !ok {
 		m.statusMessage = "No token option highlighted to remove."
-		return
+		return nil
 	}
 	state := &m.tokenStates[m.tokenCategoryIndex]
 	if !state.has(option.Value) {
@@ -1691,7 +1707,7 @@ func (m *model) removeCurrentTokenOption() {
 			slug = option.Value
 		}
 		m.statusMessage = fmt.Sprintf("%s not selected; nothing to remove.", slug)
-		return
+		return nil
 	}
 	slug := option.Slug
 	if slug == "" {
@@ -1701,18 +1717,20 @@ func (m *model) removeCurrentTokenOption() {
 	state.remove(option.Value)
 	m.rebuildTokensFromStates()
 	m.statusMessage = fmt.Sprintf("%s → %s removed.", state.category.Label, slug)
+	return m.toastTokenChange(state.category, option, "removed")
 }
 
-func (m *model) undoTokenChange() {
+func (m *model) undoTokenChange() tea.Cmd {
 	if m.lastTokenSnapshot == nil {
 		m.statusMessage = "No token change to undo."
-		return
+		return nil
 	}
 	snapshot := append([]string(nil), m.lastTokenSnapshot...)
 	m.lastTokenSnapshot = nil
 	m.setTokens(snapshot)
 	m.statusMessage = "Token selection restored."
 	m.recordPaletteHistory(historyEventKindTokens, "Tokens undo restored")
+	return m.toastUndoRestored()
 }
 
 func (m *model) openTokenPalette() tea.Cmd {
@@ -2098,24 +2116,22 @@ func (m *model) refreshPaletteStatus() {
 	}
 }
 
-func (m *model) applyPaletteSelection() {
+func (m *model) applyPaletteSelection() tea.Cmd {
 	if len(m.tokenPaletteOptions) == 0 || m.tokenPaletteOptionIndex < 0 || m.tokenPaletteOptionIndex >= len(m.tokenPaletteOptions) {
 		m.statusMessage = "No token options available for the current filter."
-		return
+		return nil
 	}
 	index := m.tokenPaletteOptions[m.tokenPaletteOptionIndex]
 	if index == tokenPaletteCopyCommandOption {
 		m.copyBuildCommandToClipboard()
-		m.closeTokenPaletteWithStatus("")
-		return
+		return m.closeTokenPaletteWithStatus("")
 	}
 	if index == tokenPaletteResetOption {
-		m.applyPaletteReset()
-		return
+		return m.applyPaletteReset()
 	}
 	state := &m.tokenStates[m.tokenCategoryIndex]
 	if index < 0 || index >= len(state.category.Options) {
-		return
+		return nil
 	}
 	option := state.category.Options[index]
 	slug := option.Slug
@@ -2126,6 +2142,7 @@ func (m *model) applyPaletteSelection() {
 	if categoryLabel == "" {
 		categoryLabel = state.category.Key
 	}
+	var toast tea.Cmd
 	if state.has(option.Value) {
 		m.recordTokenUndo()
 		state.remove(option.Value)
@@ -2133,6 +2150,7 @@ func (m *model) applyPaletteSelection() {
 		historyEntry := fmt.Sprintf("%s → %s removed", categoryLabel, slug)
 		m.recordPaletteHistory(historyEventKindTokens, historyEntry)
 		m.statusMessage = fmt.Sprintf("%s → %s removed.", state.category.Label, slug)
+		toast = m.toastTokenChange(state.category, option, "removed")
 	} else {
 		max := state.category.MaxSelections
 		if max > 0 && len(state.selected) >= max {
@@ -2141,7 +2159,7 @@ func (m *model) applyPaletteSelection() {
 				suffix = "s"
 			}
 			m.statusMessage = fmt.Sprintf("%s already has %d selection%s; remove one before adding another.", state.category.Label, max, suffix)
-			return
+			return nil
 		}
 		m.recordTokenUndo()
 		state.add(option.Value, max)
@@ -2149,20 +2167,22 @@ func (m *model) applyPaletteSelection() {
 		historyEntry := fmt.Sprintf("%s → %s applied", categoryLabel, slug)
 		m.recordPaletteHistory(historyEventKindTokens, historyEntry)
 		m.statusMessage = fmt.Sprintf("%s → %s applied.", state.category.Label, slug)
+		toast = m.toastTokenChange(state.category, option, "applied")
 	}
 	m.updatePaletteOptions()
+	return toast
 }
 
-func (m *model) applyPaletteReset() {
+func (m *model) applyPaletteReset() tea.Cmd {
 	presetValues := m.presetTokensForCategory(m.tokenCategoryIndex)
 	if len(presetValues) == 0 {
 		m.statusMessage = "Active preset has no tokens for this category."
-		return
+		return nil
 	}
 	state := &m.tokenStates[m.tokenCategoryIndex]
 	if tokensSliceEqual(state.selected, presetValues) {
 		m.statusMessage = "Category already matches preset."
-		return
+		return nil
 	}
 	m.recordTokenUndo()
 	state.setSelected(presetValues, state.category.MaxSelections)
@@ -2173,6 +2193,7 @@ func (m *model) applyPaletteReset() {
 	}
 	m.recordPaletteHistory(historyEventKindTokens, fmt.Sprintf("%s reset to preset", categoryLabel))
 	m.statusMessage = fmt.Sprintf("%s reset to preset.", state.category.Label)
+	return m.toastCategoryReset(state.category)
 }
 
 func (m *model) handleTokenPaletteKey(key tea.KeyMsg) (bool, tea.Cmd) {
@@ -2209,11 +2230,11 @@ func (m *model) handleTokenPaletteKey(key tea.KeyMsg) (bool, tea.Cmd) {
 			m.refreshPaletteStatus()
 			return true, nil
 		}
-		m.applyPaletteSelection()
-		return true, nil
+		cmd := m.applyPaletteSelection()
+		return true, cmd
 	case tea.KeyCtrlZ:
-		m.undoTokenChange()
-		return true, nil
+		cmd := m.undoTokenChange()
+		return true, cmd
 	}
 
 	switch key.String() {
@@ -2733,6 +2754,12 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	}()
 
 	switch typed := msg.(type) {
+	case toastExpiredMsg:
+		if typed.sequence == m.toastSequence {
+			m.toastVisible = false
+			m.toastMessage = ""
+		}
+		return m, nil
 	case commandFinishedMsg:
 		m.commandRunning = false
 		m.runningCommand = ""
@@ -2857,7 +2884,9 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				return m, (&m).executeSubjectCommand()
 			}
 			if m.focus == focusTokens {
-				m.toggleCurrentTokenOption()
+				if cmd := m.toggleCurrentTokenOption(); cmd != nil {
+					return m, cmd
+				}
 				return m, nil
 			}
 			if m.focus == focusEnvironment {
@@ -2866,7 +2895,9 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 		case tea.KeySpace:
 			if m.focus == focusTokens {
-				m.toggleCurrentTokenOption()
+				if cmd := m.toggleCurrentTokenOption(); cmd != nil {
+					return m, cmd
+				}
 				return m, nil
 			}
 		case tea.KeyUp:
@@ -2899,7 +2930,9 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 		case tea.KeyDelete, tea.KeyBackspace:
 			if m.focus == focusTokens {
-				m.removeCurrentTokenOption()
+				if cmd := m.removeCurrentTokenOption(); cmd != nil {
+					return m, cmd
+				}
 				return m, nil
 			}
 			if m.focus == focusEnvironment {
@@ -2908,7 +2941,9 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 		case tea.KeyCtrlZ:
 			if m.focus == focusTokens || m.tokenPaletteVisible {
-				m.undoTokenChange()
+				if cmd := m.undoTokenChange(); cmd != nil {
+					return m, cmd
+				}
 				return m, nil
 			}
 			if m.focus == focusSubject {
@@ -3081,10 +3116,22 @@ func (m *model) renderComposeSection() string {
 	localTokenViewport := m.tokenViewport
 	localTokenViewport.SetContent(m.renderTokenViewportContent())
 	tokenSection := strings.TrimRight(localTokenViewport.View(), "\n")
-	if strings.TrimSpace(tokenSection) == "" {
+	hasTokenContent := strings.TrimSpace(tokenSection) != ""
+	if !hasTokenContent {
 		builder.WriteString("  No token controls available.\n")
 	} else {
 		builder.WriteString(tokenSection)
+	}
+
+	if spark := strings.TrimSpace(m.renderTokenSparklineLine()); spark != "" {
+		if hasTokenContent {
+			builder.WriteString("\n\n")
+		} else {
+			builder.WriteString("\n")
+		}
+		builder.WriteString("  ")
+		builder.WriteString(spark)
+		builder.WriteString("\n")
 	}
 
 	return strings.TrimRight(builder.String(), "\n")
@@ -3445,6 +3492,11 @@ func (m model) View() string {
 		b.WriteString("\n\n")
 	}
 
+	if toast := m.renderToastOverlay(); toast != "" {
+		b.WriteString(toast)
+		b.WriteString("\n\n")
+	}
+
 	mainContent := m.renderMainColumnContent()
 	sidebarContent := m.renderSidebarContent()
 
@@ -3655,7 +3707,173 @@ func (m *model) setTokens(tokens []string) {
 		m.clampTokenOptionIndex()
 		m.updatePaletteOptions()
 	}
+	m.recordTokenSparkline(len(m.tokens))
 	m.refreshPreview()
+}
+
+func (m *model) recordTokenSparkline(value int) {
+	if value < 0 {
+		value = 0
+	}
+	m.tokenSparkline = append(m.tokenSparkline, value)
+	if len(m.tokenSparkline) > tokenSparklineWindow {
+		trimmed := make([]int, tokenSparklineWindow)
+		copy(trimmed, m.tokenSparkline[len(m.tokenSparkline)-tokenSparklineWindow:])
+		m.tokenSparkline = trimmed
+	}
+}
+
+func sparklineBounds(values []int) (int, int) {
+	if len(values) == 0 {
+		return 0, 0
+	}
+	min := values[0]
+	max := values[0]
+	for _, v := range values[1:] {
+		if v < min {
+			min = v
+		}
+		if v > max {
+			max = v
+		}
+	}
+	return min, max
+}
+
+func sparklineString(values []int) string {
+	if len(values) == 0 {
+		return ""
+	}
+	const levels = "▁▂▃▄▅▆▇█"
+	min, max := sparklineBounds(values)
+	var builder strings.Builder
+	if min == max {
+		char := levels[len(levels)-2]
+		for range values {
+			builder.WriteRune(rune(char))
+		}
+		return builder.String()
+	}
+	span := float64(max - min)
+	if span <= 0 {
+		span = 1
+	}
+	for _, v := range values {
+		normalized := float64(v-min) / span
+		idx := int(math.Round(normalized * float64(len(levels)-1)))
+		if idx < 0 {
+			idx = 0
+		}
+		if idx >= len(levels) {
+			idx = len(levels) - 1
+		}
+		builder.WriteRune(rune(levels[idx]))
+	}
+	return builder.String()
+}
+
+func (m *model) renderTokenSparklineLine() string {
+	if len(m.tokenSparkline) == 0 {
+		return ""
+	}
+	line := sparklineString(m.tokenSparkline)
+	if line == "" {
+		return ""
+	}
+	min, max := sparklineBounds(m.tokenSparkline)
+	current := len(m.tokens)
+	label := fmt.Sprintf("Token telemetry (%d tokens", current)
+	if len(m.tokenSparkline) > 1 && min != max {
+		label += fmt.Sprintf(", %d–%d", min, max)
+	}
+	label += fmt.Sprintf("): %s", line)
+	return label
+}
+
+func tokenToastFragment(category TokenCategory, option TokenOption) string {
+	slug := strings.TrimSpace(option.Slug)
+	if slug == "" {
+		slug = strings.TrimSpace(option.Value)
+	}
+	categorySegment := strings.TrimSpace(categorySlug(category))
+	if categorySegment != "" && slug != "" && !strings.Contains(slug, "=") {
+		return fmt.Sprintf("%s=%s", categorySegment, slug)
+	}
+	if slug != "" {
+		return slug
+	}
+	return categorySegment
+}
+
+func (m *model) toastCommandSummary() string {
+	command := joinShellArgs(m.buildCommandArgs())
+	command = sanitizeShellCommand(command)
+	return shortenString(command, 48)
+}
+
+func (m *model) showToast(message string) tea.Cmd {
+	trimmed := limitStatusMessage(strings.TrimSpace(message))
+	if trimmed == "" {
+		return nil
+	}
+	m.toastMessage = trimmed
+	m.toastVisible = true
+	m.toastSequence++
+	sequence := m.toastSequence
+	return tea.Tick(toastLifetime, func(time.Time) tea.Msg {
+		return toastExpiredMsg{sequence: sequence}
+	})
+}
+
+func (m *model) toastTokenChange(category TokenCategory, option TokenOption, action string) tea.Cmd {
+	fragment := strings.TrimSpace(tokenToastFragment(category, option))
+	if fragment == "" {
+		fragment = "Token"
+	}
+	action = strings.TrimSpace(action)
+	message := fragment
+	if action != "" {
+		message = fmt.Sprintf("%s %s", fragment, action)
+	}
+	if command := strings.TrimSpace(m.toastCommandSummary()); command != "" {
+		message = fmt.Sprintf("%s · CLI: %s · Ctrl+Z undo", message, command)
+	} else {
+		message += " · Ctrl+Z undo"
+	}
+	return m.showToast(message)
+}
+
+func (m *model) toastCategoryReset(category TokenCategory) tea.Cmd {
+	name := strings.TrimSpace(categorySlug(category))
+	if name == "" {
+		name = "Tokens"
+	}
+	message := fmt.Sprintf("%s reset to preset", name)
+	if command := strings.TrimSpace(m.toastCommandSummary()); command != "" {
+		message = fmt.Sprintf("%s · CLI: %s · Ctrl+Z undo", message, command)
+	} else {
+		message += " · Ctrl+Z undo"
+	}
+	return m.showToast(message)
+}
+
+func (m *model) toastUndoRestored() tea.Cmd {
+	if command := strings.TrimSpace(m.toastCommandSummary()); command != "" {
+		return m.showToast(fmt.Sprintf("Tokens undo restored · CLI: %s", command))
+	}
+	return m.showToast("Tokens undo restored.")
+}
+
+func (m *model) renderToastOverlay() string {
+	if !m.toastVisible {
+		return ""
+	}
+	message := strings.TrimSpace(m.toastMessage)
+	if message == "" {
+		return ""
+	}
+	style := lipgloss.NewStyle().Foreground(lipgloss.Color("212")).Bold(true)
+	return style.Render("Toast: " + message)
 }
 
 func (m *model) refreshPreview() {

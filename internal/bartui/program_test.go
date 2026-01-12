@@ -1075,6 +1075,61 @@ func TestTokenPaletteApplyUndoFromEmptyTokens(t *testing.T) {
 	}
 }
 
+func TestToggleCurrentTokenOptionShowsToast(t *testing.T) {
+	opts := Options{
+		TokenCategories: defaultTokenCategories(),
+		Preview:         func(subject string, tokens []string) (string, error) { return "preview:" + subject, nil },
+		ClipboardRead:   func() (string, error) { return "", nil },
+		ClipboardWrite:  func(string) error { return nil },
+		RunCommand: func(context.Context, string, string, map[string]string) (string, string, error) {
+			return "", "", nil
+		},
+		CommandTimeout: time.Second,
+	}
+	m := newModel(opts)
+	m.focus = focusTokens
+
+	cmd := m.toggleCurrentTokenOption()
+	if cmd == nil {
+		t.Fatalf("expected toggleCurrentTokenOption to return a toast command")
+	}
+	if !m.toastVisible {
+		t.Fatalf("expected toast to be visible after token toggle")
+	}
+	if !strings.Contains(m.toastMessage, "static=todo applied") {
+		t.Fatalf("expected toast message to include grammar fragment, got %q", m.toastMessage)
+	}
+	if !strings.Contains(m.toastMessage, "CLI:") {
+		t.Fatalf("expected toast message to include CLI summary, got %q", m.toastMessage)
+	}
+
+	seq := m.toastSequence
+	m, _ = updateModel(t, m, toastExpiredMsg{sequence: seq})
+	if m.toastVisible {
+		t.Fatalf("expected toast to expire after toastExpiredMsg")
+	}
+}
+
+func TestComposeSectionShowsTelemetrySparkline(t *testing.T) {
+	opts := Options{
+		Tokens:          []string{"todo"},
+		TokenCategories: defaultTokenCategories(),
+		Preview:         func(subject string, tokens []string) (string, error) { return "preview:" + subject, nil },
+		ClipboardRead:   func() (string, error) { return "", nil },
+		ClipboardWrite:  func(string) error { return nil },
+		RunCommand: func(context.Context, string, string, map[string]string) (string, string, error) {
+			return "", "", nil
+		},
+		CommandTimeout: time.Second,
+	}
+	m := newModel(opts)
+	m.tokenSparkline = []int{0, 1, 2, 3}
+	view := m.View()
+	if !viewContains(view, "Token telemetry (") {
+		t.Fatalf("expected compose section to include token telemetry sparkline, got view:\n%s", view)
+	}
+}
+
 func TestInitialFocusBreadcrumbs(t *testing.T) {
 	opts := Options{
 		Preview:        func(subject string, tokens []string) (string, error) { return subject, nil },

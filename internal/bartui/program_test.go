@@ -10,6 +10,7 @@ import (
 	"time"
 
 	tea "github.com/charmbracelet/bubbletea"
+	lipgloss "github.com/charmbracelet/lipgloss"
 )
 
 func updateModel(t *testing.T, m model, msg tea.Msg) (model, tea.Cmd) {
@@ -651,6 +652,54 @@ func TestToggleShortcutReference(t *testing.T) {
 	}
 	if strings.Contains(m.View(), "Shortcut reference (press Ctrl+? to close)") {
 		t.Fatalf("expected shortcut reference to be hidden after second toggle")
+	}
+}
+
+func TestSidebarContentRespectsColumnWidth(t *testing.T) {
+	longLabel := "SupercalifragilisticexpialidociousPromptAxisValue"
+	categories := []TokenCategory{
+		{
+			Key:           "scope",
+			Label:         "Scope",
+			Kind:          TokenCategoryKindAxis,
+			MaxSelections: 1,
+			Options: []TokenOption{
+				{Value: "long-scope", Slug: "scope=" + longLabel, Label: longLabel},
+			},
+		},
+	}
+	opts := Options{
+		Tokens:          []string{"long-scope"},
+		TokenCategories: categories,
+		Preview:         func(subject string, tokens []string) (string, error) { return subject + strings.Join(tokens, ","), nil },
+		ClipboardRead:   func() (string, error) { return "", nil },
+		ClipboardWrite:  func(string) error { return nil },
+		RunCommand: func(_ context.Context, command string, stdin string, env map[string]string) (string, string, error) {
+			return "", "", nil
+		},
+		CommandTimeout: time.Second,
+	}
+
+	m := newModel(opts)
+	m.width = 90
+	m.height = 32
+	m.layoutViewports()
+	if m.sidebarColumnWidth == 0 {
+		t.Fatalf("expected sidebar column width to be positive after layout")
+	}
+
+	sidebarWidth := m.sidebarColumnWidth
+	sidebar := m.renderSidebarContent()
+	for _, line := range strings.Split(sidebar, "\n") {
+		trimmed := strings.TrimRight(line, "\n")
+		if strings.TrimSpace(trimmed) == "" {
+			continue
+		}
+		w := lipgloss.Width(trimmed)
+		t.Logf("sidebar line width=%d content=%q", w, trimmed)
+		if w > sidebarWidth {
+			t.Fatalf("expected sidebar line width <= %d, got %d: %q", sidebarWidth, w, trimmed)
+		}
 	}
 }
 

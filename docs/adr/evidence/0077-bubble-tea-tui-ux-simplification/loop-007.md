@@ -1,21 +1,9 @@
 ## Behaviour outcome
-Wrap sidebar sections to respect narrow terminal widths so Compose/History/Presets remain readable on smaller displays.
+Document and guard Bubble Tea layout composition by asserting sidebar content wraps within the Lip Gloss-constrained column width.
 
 ## Commands executed
 
 ### go test ./internal/bartui
-- green | 2026-01-12T08:33:16Z | exit 0
-  - helper:diff-snapshot=1 file changed, 10 insertions(+), 1 deletion(-)
-  - summary: validates that lipgloss-based width rendering keeps sidebar content within the column.
-
-### go test ./cmd/bar/...
-- green | 2026-01-12T08:33:16Z | exit 0
-  - summary: confirms CLI snapshot fixtures remain aligned after wrapping changes.
-
-### scripts/tools/run-tui-expect.sh --all
-- green | 2026-01-12T08:33:16Z | exit 0
-  - summary: expect harness verifies sidebar sections wrap correctly on constrained terminals.
-
-### python3 -m pytest _tests/test_bar_completion_cli.py
-- green | 2026-01-12T08:33:16Z | exit 0
-  - summary: ensures CLI integrations remain unaffected by sidebar wrapping changes.
+- green | 2026-01-12T13:47:03Z | exit 0
+  - helper:diff-snapshot=2 files changed, 54 insertions(+), 2 deletions(-)
+  - summary: unit coverage (including the new sidebar width assertion) verifies the layout stays within Lip Gloss column constraints while keeping history and preset rendering stable.

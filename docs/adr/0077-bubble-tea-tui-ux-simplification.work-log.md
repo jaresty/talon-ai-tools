@@ -238,3 +238,36 @@ residual_constraints:
 
 next_work:
 - Behaviour: When sidebar content expands, reuse `wrapSidebarSection` to keep lines within column width (validation: `scripts/tools/run-tui-expect.sh --all`).
+
+## loop-008 | helper:v20251223.1 | 2026-01-12
+
+focus: ADR 0077 Decision bullet 4 & Consequences layout clause → align Bubble Tea layout composition with Lip Gloss column constraints by codifying sidebar width behaviour.
+
+active_constraint: Layout responsiveness relied on manual review; without a regression guard, future edits could bypass Lip Gloss width constraints and reintroduce sidebar overflow (validation: `go test ./internal/bartui`).
+
+expected_value:
+| Factor | Value | Rationale |
+| --- | --- | --- |
+| Impact | Medium | Guarding the layout pattern keeps Compose/History/Presets readable on narrow terminals. |
+| Probability | High | The new unit test fails immediately if sidebar rendering exceeds the computed column width. |
+| Time Sensitivity | Medium | Locking the guard now prevents regressions before additional sidebar content ships. |
+| Uncertainty note | Low | Behaviour covered via targeted unit tests that exercise the layout helper. |
+
+validation_targets:
+- `go test ./internal/bartui`
+
+evidence: `docs/adr/evidence/0077-bubble-tea-tui-ux-simplification/loop-007.md`
+
+rollback_plan: `<VCS_REVERT>` = `git restore --source=HEAD -- docs/adr/0077-bubble-tea-tui-ux-simplification.md internal/bartui/program_test.go`; rerun `go test ./internal/bartui` to confirm the new guard is removed prior to reconsidering the layout composition change.
+
+delta_summary: helper:diff-snapshot=2 files changed, 54 insertions(+), 2 deletions(-) — documents the Lip Gloss layout dependency in ADR 0077 and adds a unit test ensuring sidebar content never exceeds the computed column width.
+
+loops_remaining_forecast: 2 loops (dialog stacking migration; theme audit) — medium confidence. Overlay orchestration still needs the dialog stacking skill, and typography must be validated across alternate palettes.
+
+residual_constraints:
+- Medium — Shortcut and dialog overlays still rely on single-layer handling. Mitigation: adopt the Bubble Tea dialog stacking skill and validate with `go test ./internal/bartui` plus `scripts/tools/run-tui-expect.sh --all`; monitor when new overlays are introduced (owner: ADR 0077 Decision bullet 5 follow-up).
+- Low — Typography cadence across alternate terminal themes remains unaudited. Mitigation: rerun `scripts/tools/run-tui-expect.sh --all` with theme overrides before closing ADR 0077; monitor operator readability feedback.
+
+next_work:
+- Behaviour: Integrate dialog stacking skill to layer shortcut reference and future modals without reflow artefacts (validation: `go test ./internal/bartui`, `scripts/tools/run-tui-expect.sh --all`).
+- Behaviour: Perform palette/theme audit to confirm typography remains legible across supported themes (validation: `scripts/tools/run-tui-expect.sh --all` with theme overrides).

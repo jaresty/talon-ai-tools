@@ -544,6 +544,83 @@ func (s *tokenCategoryState) setSelected(values []string, max int) {
 	}
 }
 
+func categorySlug(category TokenCategory) string {
+	if category.Key != "" {
+		return strings.ToLower(strings.TrimSpace(category.Key))
+	}
+	return slugifyLabel(category.Label)
+}
+
+func slugifyLabel(label string) string {
+	label = strings.TrimSpace(label)
+	if label == "" {
+		return ""
+	}
+	fields := strings.FieldsFunc(strings.ToLower(label), func(r rune) bool {
+		return (r < 'a' || r > 'z') && (r < '0' || r > '9')
+	})
+	return strings.Join(fields, "-")
+}
+
+func splitGrammarFilter(input string) (slug string, value string) {
+	trimmed := strings.TrimSpace(input)
+	if trimmed == "" {
+		return "", ""
+	}
+	parts := strings.SplitN(trimmed, "=", 2)
+	slug = strings.TrimSpace(parts[0])
+	if len(parts) == 1 {
+		return slug, ""
+	}
+	value = strings.TrimSpace(parts[1])
+	return slug, value
+}
+
+func (m *model) currentCategorySlug() string {
+	if m.tokenCategoryIndex < 0 || m.tokenCategoryIndex >= len(m.tokenStates) {
+		return ""
+	}
+	return categorySlug(m.tokenStates[m.tokenCategoryIndex].category)
+}
+
+func (m *model) findCategoryIndexBySlug(slug string) (int, bool) {
+	slug = strings.ToLower(strings.TrimSpace(slug))
+	if slug == "" {
+		return 0, false
+	}
+	for i, state := range m.tokenStates {
+		if categorySlug(state.category) == slug {
+			return i, true
+		}
+	}
+	return 0, false
+}
+
+func (m *model) setGrammarFilter(slug string, value string) {
+	slug = strings.TrimSpace(slug)
+	value = strings.TrimSpace(value)
+	if slug == "" {
+		slug = m.currentCategorySlug()
+	}
+	var builder strings.Builder
+	if slug != "" {
+		builder.WriteString(strings.ToLower(slug))
+		builder.WriteString("=")
+	}
+	builder.WriteString(value)
+	m.tokenPaletteFilter.SetValue(builder.String())
+	m.tokenPaletteFilter.CursorEnd()
+}
+
+func (m *model) seedGrammarFilter(preserveValue bool) {
+	value := ""
+	if preserveValue {
+		_, existing := splitGrammarFilter(m.tokenPaletteFilter.Value())
+		value = existing
+	}
+	m.setGrammarFilter("", value)
+}
+
 type model struct {
 	tokens                   []string
 	tokenCategories          []TokenCategory
@@ -1142,8 +1219,23 @@ func (m *model) updatePaletteOptions() {
 		hadPrev = true
 	}
 
+	rawFilter := m.tokenPaletteFilter.Value()
+	slugPart, valuePart := splitGrammarFilter(rawFilter)
+	slugPartLower := strings.ToLower(strings.TrimSpace(slugPart))
+	if slugPartLower != "" {
+		if idx, ok := m.findCategoryIndexBySlug(slugPartLower); ok && idx != m.tokenCategoryIndex {
+			m.tokenCategoryIndex = idx
+			m.clampTokenOptionIndex()
+			hadPrev = false
+		}
+	}
+
 	state := m.tokenStates[m.tokenCategoryIndex]
-	filter := strings.ToLower(strings.TrimSpace(m.tokenPaletteFilter.Value()))
+	filter := strings.ToLower(strings.TrimSpace(valuePart))
+	if slugPartLower == "" {
+		filter = strings.ToLower(strings.TrimSpace(rawFilter))
+	}
+
 	options := make([]int, 0, len(state.category.Options)+2)
 	if m.shouldShowCopyCommandAction(filter) {
 		options = append(options, tokenPaletteCopyCommandOption)
@@ -1152,7 +1244,7 @@ func (m *model) updatePaletteOptions() {
 		options = append(options, tokenPaletteResetOption)
 	}
 	for idx, option := range state.category.Options {
-		if optionMatchesFilter(option, filter) {
+		if optionMatchesValue(option, filter) {
 			options = append(options, idx)
 		}
 	}
@@ -1180,7 +1272,7 @@ func (m *model) updatePaletteOptions() {
 	}
 }
 
-func optionMatchesFilter(option TokenOption, filter string) bool {
+func optionMatchesValue(option TokenOption, filter string) bool {
 	if filter == "" {
 		return true
 	}
@@ -1204,11 +1296,10 @@ func (m *model) clearPaletteFilter() bool {
 		return false
 	}
 
-	m.tokenPaletteFilter.SetValue("")
-	m.tokenPaletteFilter.CursorStart()
+	m.seedGrammarFilter(false)
 	m.updatePaletteOptions()
 	m.refreshPaletteStatus()
-	m.statusMessage = "Token filter cleared. " + m.statusMessage
+	m.statusMessage = ensureCopyHint("Grammar composer reset to the current category. Type a value or press Tab to cycle completions.")
 	return true
 }
 
@@ -1419,6 +1510,7 @@ func (m *model) moveTokenCategory(delta int) {
 		m.tokenCategoryIndex += count
 	}
 	m.clampTokenOptionIndex()
+	m.seedGrammarFilter(false)
 	m.updatePaletteOptions()
 	m.refreshPaletteStatus()
 }
@@ -1557,7 +1649,7 @@ func (m *model) openTokenPalette() tea.Cmd {
 	m.tokenPaletteVisible = true
 	m.paletteHistoryVisible = false
 	m.tokenPaletteFocus = tokenPaletteFocusFilter
-	m.tokenPaletteFilter.SetValue("")
+	m.seedGrammarFilter(false)
 	cmd := m.tokenPaletteFilter.Focus()
 	m.updatePaletteOptions()
 	m.refreshPaletteStatus()
@@ -1808,11 +1900,25 @@ func (m *model) refreshPaletteStatus() {
 
 	switch m.tokenPaletteFocus {
 	case tokenPaletteFocusFilter:
-		filter := strings.TrimSpace(m.tokenPaletteFilter.Value())
-		if filter == "" {
-			m.statusMessage = "Token palette open. Type to filter (try \"copy command\"), Tab cycles focus, Enter applies or copies, Ctrl+W clears the filter, Esc closes."
+		slug, value := splitGrammarFilter(m.tokenPaletteFilter.Value())
+		slug = strings.TrimSpace(slug)
+		value = strings.TrimSpace(value)
+		slugDisplay := slug
+		if slugDisplay == "" {
+			slugDisplay = m.currentCategorySlug()
+		}
+		if slugDisplay != "" {
+			if value == "" {
+				m.statusMessage = ensureCopyHint(fmt.Sprintf("%s= — type a value, press Tab to cycle completions, Enter applies an option, Ctrl+W clears, Esc closes.", slugDisplay))
+			} else {
+				m.statusMessage = ensureCopyHint(fmt.Sprintf("%s=%s. Tab cycles completions, Enter applies an option, Ctrl+W clears, Esc closes.", slugDisplay, value))
+			}
 		} else {
-			m.statusMessage = fmt.Sprintf("Token palette open (filter=\"%s\"). Enter applies or copies; type \"copy command\" to focus the copy action. Tab cycles focus, Ctrl+W clears the filter, Esc closes.", filter)
+			if value == "" {
+				m.statusMessage = ensureCopyHint("Token palette open. Type to filter, Tab cycles focus, Enter applies or copies, Ctrl+W clears the filter, Esc closes.")
+			} else {
+				m.statusMessage = ensureCopyHint(fmt.Sprintf("Palette filter \"%s\" active. Tab cycles focus, Enter applies or copies, Ctrl+W clears the filter, Esc closes.", value))
+			}
 		}
 	case tokenPaletteFocusCategories:
 		label := ""

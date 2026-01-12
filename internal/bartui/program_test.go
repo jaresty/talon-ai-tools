@@ -830,8 +830,9 @@ func TestTokenPaletteToggle(t *testing.T) {
 	if !m.tokenPaletteVisible {
 		t.Fatalf("expected token palette to be visible")
 	}
-	if m.tokenPaletteFilter.Value() != "" {
-		t.Fatalf("expected palette filter to reset, got %q", m.tokenPaletteFilter.Value())
+	expectedFilter := categorySlug(m.tokenStates[m.tokenCategoryIndex].category) + "="
+	if m.tokenPaletteFilter.Value() != expectedFilter {
+		t.Fatalf("expected palette filter to reset to %q, got %q", expectedFilter, m.tokenPaletteFilter.Value())
 	}
 
 	m, _ = updateModel(t, m, tea.KeyMsg{Type: tea.KeyTab})   // categories
@@ -1250,8 +1251,9 @@ func TestTokenPaletteSummaryCondensedWhenVisible(t *testing.T) {
 	if !viewContains(view, "Token palette (Esc closes") {
 		t.Fatalf("expected palette section to be rendered, got view:\n%s", view)
 	}
-	if !viewContains(view, "Filter: Filter tokens") {
-		t.Fatalf("expected palette filter prompt to render, got view:\n%s", view)
+	filterLine := fmt.Sprintf("Filter: %s=", categorySlug(m.tokenStates[m.tokenCategoryIndex].category))
+	if !viewContains(view, filterLine) {
+		t.Fatalf("expected palette grammar composer to render, got view:\n%s", view)
 	}
 	if viewContains(view, "Tokens (Tab focuses tokens · Ctrl+P opens palette):") {
 		t.Fatalf("expected condensed summary to replace default token header, got view:\n%s", view)
@@ -1532,15 +1534,16 @@ func TestTokenPaletteFilterNoMatchesWithoutPreset(t *testing.T) {
 	}
 
 	m, _ = updateModel(t, m, tea.KeyMsg{Type: tea.KeyCtrlW})
-	if strings.TrimSpace(m.tokenPaletteFilter.Value()) != "" {
-		t.Fatalf("expected filter to clear, got %q", m.tokenPaletteFilter.Value())
+	expectedGrammarFilter := categorySlug(m.tokenStates[m.tokenCategoryIndex].category) + "="
+	if m.tokenPaletteFilter.Value() != expectedGrammarFilter {
+		t.Fatalf("expected filter to reset to %q, got %q", expectedGrammarFilter, m.tokenPaletteFilter.Value())
 	}
 	if m.tokenPaletteOptionIndex < 0 {
 		t.Fatalf("expected palette option index to reset, got %d", m.tokenPaletteOptionIndex)
 	}
 	t.Logf("status after clear: %q", m.statusMessage)
-	if !strings.Contains(m.statusMessage, "Token filter cleared.") {
-		t.Fatalf("expected status to mention cleared filter, got %q", m.statusMessage)
+	if !strings.Contains(m.statusMessage, "Grammar composer reset") {
+		t.Fatalf("expected status to mention grammar composer reset, got %q", m.statusMessage)
 	}
 	if !strings.Contains(m.statusMessage, "copy command") {
 		t.Fatalf("expected cleared-status to retain copy command hint, got %q", m.statusMessage)
@@ -1766,8 +1769,8 @@ func TestPaletteClearWhenEmptyRetainsCopyHint(t *testing.T) {
 	applyKey(tea.KeyMsg{Type: tea.KeyCtrlP})
 	applyKey(tea.KeyMsg{Type: tea.KeyCtrlW})
 
-	if !strings.Contains(m.statusMessage, "already empty") {
-		t.Fatalf("expected status to mention already empty filter, got %q", m.statusMessage)
+	if !strings.Contains(m.statusMessage, "Grammar composer reset") {
+		t.Fatalf("expected status to mention grammar composer reset, got %q", m.statusMessage)
 	}
 	if !strings.Contains(m.statusMessage, "copy command") {
 		t.Fatalf("expected empty-filter status to retain copy command hint, got %q", m.statusMessage)
@@ -2163,8 +2166,9 @@ func TestPaletteFilterStatusIncludesValue(t *testing.T) {
 
 	status := m.statusMessage
 
-	if !strings.Contains(status, "filter=\"sc\"") {
-		t.Fatalf("expected status to include current filter text, got %q", status)
+	expectedFragment := fmt.Sprintf("%s=sc", categorySlug(m.tokenStates[m.tokenCategoryIndex].category))
+	if !strings.Contains(status, expectedFragment) {
+		t.Fatalf("expected status to include current filter text %q, got %q", expectedFragment, status)
 	}
 	if !strings.Contains(status, "Ctrl+W") {
 		t.Fatalf("expected status to remind about Ctrl+W, got %q", status)
@@ -2172,7 +2176,7 @@ func TestPaletteFilterStatusIncludesValue(t *testing.T) {
 	if !strings.Contains(status, "copy command") {
 		t.Fatalf("expected status to remind about copy command shortcut, got %q", status)
 	}
-	if !strings.Contains(status, "type \"copy command\"") {
+	if !strings.Contains(status, "Type \"copy command\"") {
 		t.Fatalf("expected status to mention typing \"copy command\" for the copy action, got %q", status)
 	}
 }

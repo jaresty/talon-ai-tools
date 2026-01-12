@@ -13,13 +13,13 @@ expect {
 
 send "\u0010" ;# Ctrl+P opens palette
 expect {
-    -re {Token palette open\. Type to filter \(try "copy command"\), Tab cycles focus, Enter applies or copies, Ctrl\+W clears the filter, Esc closes\.} {}
+    -re {static= — type a value, press Tab to cycle completions, Enter applies an option, Ctrl\+W clears, Esc closes\. Type "copy command" to focus the copy action\.} {}
     timeout { send_error "expected palette open status"; exit 1 }
 }
 
 send "todo"
 expect {
-    -re {Token palette open \(filter="todo"\)\. Enter applies or copies; type "copy command" to focus the copy action\. Tab cycles focus, Ctrl\+W clears the filter, Esc closes\.} {}
+    -re {static=todo\. Tab cycles completions, Enter applies an option, Ctrl\+W clears, Esc closes\. Type "copy command" to focus the copy action\.} {}
     timeout { send_error "expected filtered status"; exit 1 }
 }
 

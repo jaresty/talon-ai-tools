@@ -319,3 +319,39 @@ assets:
 - `tests/integration/tui/cases/clipboard-history.exp`
 - `tests/integration/tui/cases/token-command-history.exp`
 - Evidence: `docs/adr/evidence/0072-bubble-tea-palette-flow/loop-008.md`
+
+## loop-009 | helper:v20251223.1 | 2026-01-12
+
+focus: ADR 0072 Decision (grammar composer bullets) → align the palette filter with `category=value` CLI grammar, seed slugs automatically, and refresh filter statuses so the TUI teaches Tab-driven completion.
+
+active_constraint: Palette filter still acted as a plain substring search, leaving the input blank on open and failing to reinforce CLI grammar; expect coverage (`token-palette-history`) reproduced the mismatch.
+
+expected_value:
+| Factor | Value | Rationale |
+| --- | --- | --- |
+| Impact | High | Grammar composer is the core learning goal; without it the TUI contradicts `bar build` muscle memory. |
+| Probability | High | Updating filter seeding, parsing, and status strings directly addresses the failing behaviour. |
+| Time Sensitivity | Medium | Needed before additional palette polish so downstream work inherits the grammar-aligned flow. |
+| Uncertainty note | Low | Unit tests and expect harness deterministically cover the composer path. |
+
+validation_targets:
+- `go test ./internal/bartui`
+- `go test ./cmd/bar/...`
+- `python3 -m pytest _tests/test_bar_completion_cli.py`
+- `scripts/tools/run-tui-expect.sh --all`
+
+evidence: `docs/adr/evidence/0072-bubble-tea-palette-flow/loop-009.md`
+
+rollback_plan: `<VCS_REVERT>` = `git restore --source=HEAD -- internal/bartui/program.go internal/bartui/program_test.go tests/integration/tui/cases/token-palette-history.exp`; rerun the validation targets above to confirm the pre-loop behaviour returns.
+
+delta_summary: helper:diff-snapshot=3 files changed, 136 insertions(+), 26 deletions(-) — seeded the palette filter with category slugs, parsed `category=value` input to switch categories, refreshed CLI-style status messages/tests, and updated the expect case for the grammar composer.
+
+loops_remaining_forecast: 2 loops (toast/undo affordances; telemetry sparkline) — medium confidence. We still need transient toast feedback (Decision bullet on Harmonica) and staged telemetry cues.
+
+residual_constraints:
+- Medium — Transient toast/undo animations remain unimplemented; mitigation: add focused toast component (refer to relevant Charm skills) and verify with expect captures.
+- Medium — Inline ntcharts telemetry still absent; mitigation: integrate sparkline helper once grammar composer settles, validated via snapshot/expect additions.
+
+next_work:
+- Behaviour: Implement toast/undo animations that reinforce CLI feedback without blocking keyboard flow (validation: `go test ./internal/bartui`, updated expect case).
+- Behaviour: Add inline telemetry sparkline below the composer, ensuring status strip remains legible (validation: `go test ./internal/bartui`, `scripts/tools/run-tui-expect.sh --all`).

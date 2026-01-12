@@ -116,3 +116,33 @@ residual_constraints:
 
 next_work:
 - Behaviour: Sync regenerated help/pattern artefacts into tracked docs/UIs; Validation: make axis-guardrails-test
+
+## 2026-01-12 – Loop: README axis/cheatsheet refresh (kind: docs)
+
+helper_version: helper:v20251223.1
+focus: ADR-076 §Follow-ups 2/4 – Apply regenerated axis snapshots to tracked docs and sampling examples.
+active_constraint: GPT README, cheatsheet, and sampling examples still reflected pre-variants tokens/orders, risking drift from the catalog and incorrect quick-start recipes.
+expected_value:
+  Impact: Medium – keeps user-facing docs aligned with the rebucketed axis contract and avoids incorrect recipes.
+  Probability: High – generators and targeted edits refresh the tracked artefacts directly from the catalog.
+  Time Sensitivity: Medium – delaying doc refresh would keep stale guidance visible to operators.
+  Uncertainty note: Low – scope limited to docs and a quick help sample; tests guard the regenerated content.
+validation_targets:
+  - python3.11 -m pytest _tests/test_readme_axis_lists.py _tests/test_make_static_prompt_docs.py
+
+EVIDENCE
+- green | 2026-01-12T02:26:30Z | exit 0 | python3.11 -m pytest _tests/test_readme_axis_lists.py _tests/test_make_static_prompt_docs.py
+    helper:diff-snapshot=4 files changed, 26 insertions(+), 25 deletions(-)
+    pointer: inline
+
+rollback_plan: git restore --source=HEAD -- GPT/readme.md docs/readme-axis-cheatsheet.md docs/adr/017-goal-modifier-decomposition-and-simplification.md lib/modelHelpCanvas.py
+
+delta_summary: helper:diff-snapshot=4 files changed, 26 insertions(+), 25 deletions(-); regenerated README axis lines/static prompt sections from the catalog, updated the cheatsheet metadata, and corrected curated sampling examples (README, ADR 017, quick help canvas) to include the scope focus token.
+
+loops_remaining_forecast: 1 (confidence medium) – apply regenerated help/pattern artefacts to tracked surfaces (quick help canvas already dynamic; remaining focus is release docs/UI snapshots when refreshed).
+
+residual_constraints:
+- severity: Low | constraint: Help/pattern UI docs still rely on regenerated tmp artefacts being applied during the next docs sweep; mitigation: schedule the broader docs/UI refresh before release; monitoring trigger: next docs PR; owning ADR: 076.
+
+next_work:
+- Behaviour: Run docs/UI sweep to apply regenerated help/pattern content; Validation: make axis-guardrails-test

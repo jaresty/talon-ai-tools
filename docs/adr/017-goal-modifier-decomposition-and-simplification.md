@@ -142,8 +142,8 @@ We will:
     - Form: use `form=variants` so the response delivers several self-contained options with short descriptions and approximate probabilities.  
     - Style: encourage `table` or structured `bullets` for readability.  
   - Example usage:  
-    - `model describe explore diverge variants fog` – generate multiple framings with probabilities.  
-    - `model describe mapping explore variants fog` – multiple systems-level options with probabilities.  
+    - `model describe explore diverge focus variants fog` – generate multiple framings with probabilities.  
+    - `model describe mapping explore focus variants fog` – multiple systems-level options with probabilities.  
   - Recommendation:  
     - Prefer expressing sampling behaviour via `method=explore` + `form=variants` (with supporting method/style tokens) rather than relying on the legacy `goalModifier=sample` in new docs and patterns.
 
@@ -185,8 +185,8 @@ A few patterns for axis-first usage:
   - `model fix xp ong` – problem-solving stance with `fix` static prompt and `xp` method (no `solve` needed).  
   - `model todo gist checklist ong` – generate and refine a todo list, lean into action.
 - Sampling:
-  - `model describe explore diverge variants fog` – propose several framings with probabilities.  
-  - `model describe mapping explore variants fog` – several systems-level framings with probabilities.
+  - `model describe explore diverge focus variants fog` – propose several framings with probabilities.  
+  - `model describe mapping explore focus variants fog` – several systems-level framings with probabilities.
 
 In all of these, completeness/scope/method/style and the directional lens carry the semantics; `goalModifier` is treated as legacy sugar rather than the primary contract surface.
 
@@ -215,8 +215,8 @@ This subsection gives concrete, side‑by‑side mappings from legacy `goalModif
     - `model sample product diverge fog`
     - `model sample describe mapping fog`
   - New (axis-first; sampling via method + form + style):
-    - `model describe explore diverge variants fog`
-    - `model describe mapping explore variants fog`
+    - `model describe explore diverge focus variants fog`
+    - `model describe mapping explore focus variants fog`
 
 These mappings are not exhaustive, but they should cover the most common uses of `just`/`solve`/`sample` and illustrate how to express the same intent using completeness, method, style, and directional axes instead of `goalModifier`.
 

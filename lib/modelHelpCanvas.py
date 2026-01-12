@@ -1825,7 +1825,7 @@ def _default_draw_quick_help(
         draw_text("  Analysis only: describe · gist · focus · analysis · fog", x, y)
         y += line_h
         draw_text(
-            "  Sample options: describe · explore · variants · focus · diverge · fog",
+            "  Sample options: describe · explore · diverge · focus · variants · fog",
             x,
             y,
         )

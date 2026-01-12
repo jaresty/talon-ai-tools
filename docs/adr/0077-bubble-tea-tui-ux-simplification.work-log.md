@@ -265,9 +265,38 @@ delta_summary: helper:diff-snapshot=2 files changed, 54 insertions(+), 2 deletio
 loops_remaining_forecast: 2 loops (dialog stacking migration; theme audit) — medium confidence. Overlay orchestration still needs the dialog stacking skill, and typography must be validated across alternate palettes.
 
 residual_constraints:
-- Medium — Shortcut and dialog overlays still rely on single-layer handling. Mitigation: adopt the Bubble Tea dialog stacking skill and validate with `go test ./internal/bartui` plus `scripts/tools/run-tui-expect.sh --all`; monitor when new overlays are introduced (owner: ADR 0077 Decision bullet 5 follow-up).
 - Low — Typography cadence across alternate terminal themes remains unaudited. Mitigation: rerun `scripts/tools/run-tui-expect.sh --all` with theme overrides before closing ADR 0077; monitor operator readability feedback.
 
 next_work:
-- Behaviour: Integrate dialog stacking skill to layer shortcut reference and future modals without reflow artefacts (validation: `go test ./internal/bartui`, `scripts/tools/run-tui-expect.sh --all`).
+- Behaviour: Perform palette/theme audit to confirm typography remains legible across supported themes (validation: `scripts/tools/run-tui-expect.sh --all` with theme overrides).
+
+## loop-009 | helper:v20251223.1 | 2026-01-12
+
+focus: ADR 0077 Decision bullet 5 → adopt the Bubble Tea dialog stacking skill for the shortcut overlay so additional modals can layer without reflow.
+
+active_constraint: The shortcut reference overlay bypassed the dialog stack, preventing layered modals and tying Esc handling to a single boolean state (validation: `go test ./internal/bartui`).
+
+expected_value:
+| Factor | Value | Rationale |
+| --- | --- | --- |
+| Impact | High | Dialog stacking keeps overlays composable, enabling future modals without regressions. |
+| Probability | High | Refactoring the overlay to use the shared manager resolves the single-layer limitation directly. |
+| Time Sensitivity | Medium | Needed before introducing additional overlays so they inherit predictable stacking behaviour. |
+| Uncertainty note | Low | Covered by unit tests that exercise the new dialog manager and Esc close flow. |
+
+validation_targets:
+- `go test ./internal/bartui`
+
+evidence: `docs/adr/evidence/0077-bubble-tea-tui-ux-simplification/loop-009.md`
+
+rollback_plan: `<VCS_REVERT>` = `git restore --source=HEAD -- internal/bartui/program.go internal/bartui/program_test.go`; rerun `go test ./internal/bartui` to confirm the dialog stack reverts to boolean handling before reapplying the loop diff.
+
+delta_summary: helper:diff-snapshot=2 files changed, 224 insertions(+), 39 deletions(-) — introduces a dialog manager for overlays, routes the shortcut reference through it, and adds an Esc-close regression test.
+
+loops_remaining_forecast: 1 loop (theme audit) — medium confidence. Typography still needs verification across palettes before closing ADR 0077.
+
+residual_constraints:
+- Low — Typography cadence across alternate terminal themes remains unaudited. Mitigation: rerun `scripts/tools/run-tui-expect.sh --all` with theme overrides before closing ADR 0077; monitor operator readability feedback.
+
+next_work:
 - Behaviour: Perform palette/theme audit to confirm typography remains legible across supported themes (validation: `scripts/tools/run-tui-expect.sh --all` with theme overrides).

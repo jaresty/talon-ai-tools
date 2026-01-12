@@ -70,6 +70,82 @@ type shortcutSection struct {
 	Entries []shortcutEntry
 }
 
+const shortcutReferenceDialogID = "shortcut-reference"
+
+type dialog interface {
+	ID() string
+	Init() tea.Cmd
+	Update(tea.Msg) (dialog, tea.Cmd, bool)
+	View(width int, height int) string
+}
+
+type dialogManager struct {
+	dialogs []dialog
+}
+
+func (dm *dialogManager) open(d dialog) tea.Cmd {
+	if d == nil {
+		return nil
+	}
+	if dm.has(d.ID()) {
+		return nil
+	}
+	dm.dialogs = append(dm.dialogs, d)
+	return d.Init()
+}
+
+func (dm *dialogManager) close(id string) bool {
+	for idx, dlg := range dm.dialogs {
+		if dlg.ID() == id {
+			dm.dialogs = append(dm.dialogs[:idx], dm.dialogs[idx+1:]...)
+			return true
+		}
+	}
+	return false
+}
+
+func (dm *dialogManager) closeTop() (string, bool) {
+	if len(dm.dialogs) == 0 {
+		return "", false
+	}
+	idx := len(dm.dialogs) - 1
+	id := dm.dialogs[idx].ID()
+	dm.dialogs = dm.dialogs[:idx]
+	return id, true
+}
+
+func (dm *dialogManager) has(id string) bool {
+	for _, dlg := range dm.dialogs {
+		if dlg.ID() == id {
+			return true
+		}
+	}
+	return false
+}
+
+func (dm *dialogManager) top() (dialog, bool) {
+	if len(dm.dialogs) == 0 {
+		return nil, false
+	}
+	return dm.dialogs[len(dm.dialogs)-1], true
+}
+
+func (dm *dialogManager) update(msg tea.Msg) (tea.Cmd, bool, string) {
+	if len(dm.dialogs) == 0 {
+		return nil, false, ""
+	}
+	idx := len(dm.dialogs) - 1
+	top := dm.dialogs[idx]
+	updated, cmd, handled := top.Update(msg)
+	if updated == nil {
+		id := top.ID()
+		dm.dialogs = dm.dialogs[:idx]
+		return cmd, true, id
+	}
+	dm.dialogs[idx] = updated
+	return cmd, handled, ""
+}
+
 type sidebarPreference int
 
 const (
@@ -122,7 +198,7 @@ func paletteDebugViewSummary(m *model, view string) {
 		m.tokenPaletteOptionIndex,
 		len(m.tokenPaletteFilter.Value()),
 		m.tokenPaletteFilter.Value(),
-		m.helpVisible,
+		m.isShortcutReferenceVisible(),
 		m.presetPaneVisible,
 		m.width,
 		m.height,
@@ -532,7 +608,7 @@ type model struct {
 	envValues              map[string]string
 	envInitial             map[string]string
 	envSelection           int
-	helpVisible            bool
+	dialogs                dialogManager
 	listPresets            ListPresetsFunc
 	loadPreset             LoadPresetFunc
 	savePreset             SavePresetFunc
@@ -640,7 +716,6 @@ func newModel(opts Options) model {
 		envValues:              envValues,
 		envInitial:             envInitial,
 		envSelection:           0,
-		helpVisible:            false,
 		width:                  initialWidth,
 		height:                 initialHeight,
 		subjectViewport:        subjectViewport,
@@ -1551,9 +1626,8 @@ func decodeKeyRunes(raw []rune) []rune {
 }
 
 func (m *model) handleCancelKey() (tea.Cmd, bool) {
-	if m.helpVisible {
-		m.helpVisible = false
-		m.restoreStatusAfterShortcutReference()
+	if id, closed := m.dialogs.closeTop(); closed {
+		m.onDialogClosed(id)
 		return tea.ClearScreen, true
 	}
 	if m.commandRunning {
@@ -1572,16 +1646,18 @@ func (m *model) handleCancelKey() (tea.Cmd, bool) {
 }
 
 func (m *model) toggleShortcutReference() tea.Cmd {
-	if m.helpVisible {
-		m.helpVisible = false
-		m.restoreStatusAfterShortcutReference()
-		return tea.ClearScreen
+	if m.isShortcutReferenceVisible() {
+		if m.dialogs.close(shortcutReferenceDialogID) {
+			m.onDialogClosed(shortcutReferenceDialogID)
+			return tea.ClearScreen
+		}
+		return nil
 	}
 
-	m.statusBeforeHelp = m.statusMessage
-	m.helpVisible = true
-	m.statusMessage = "Shortcut reference open. Press Ctrl+? to close."
-	return tea.ClearScreen
+	m.onDialogOpened(shortcutReferenceDialogID)
+	dialog := newShortcutReferenceDialog(m.shortcutReferenceSections())
+	cmd := m.dialogs.open(dialog)
+	return tea.Batch(tea.ClearScreen, cmd)
 }
 
 func (m *model) handleKeyString(key string) (bool, tea.Cmd) {
@@ -1694,6 +1770,35 @@ func (m *model) restoreStatusAfterShortcutReference() {
 		m.statusMessage = "Shortcut reference closed."
 	}
 	m.statusBeforeHelp = ""
+}
+
+func (m *model) isShortcutReferenceVisible() bool {
+	return m.dialogs.has(shortcutReferenceDialogID)
+}
+
+func (m *model) onDialogOpened(id string) {
+	switch id {
+	case shortcutReferenceDialogID:
+		m.statusBeforeHelp = m.statusMessage
+		m.statusMessage = "Shortcut reference open. Press Ctrl+? to close."
+	}
+}
+
+func (m *model) onDialogClosed(id string) {
+	switch id {
+	case shortcutReferenceDialogID:
+		m.restoreStatusAfterShortcutReference()
+	}
+}
+
+func (m model) dialogViewWidth() int {
+	if m.mainColumnWidth > 0 {
+		return m.mainColumnWidth
+	}
+	if m.width > 0 {
+		return m.width
+	}
+	return defaultViewportWidth
 }
 
 func (m *model) refreshPaletteStatus() {
@@ -2428,7 +2533,18 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.WindowSizeMsg:
 		paletteDebugLog(&m, "WindowSize", fmt.Sprintf("width=%d height=%d", typed.Width, typed.Height))
 		(&m).handleWindowSize(typed)
-		return m, nil
+	}
+
+	if cmdDialog, handledDialog, closedID := (&m).dialogs.update(msg); handledDialog || closedID != "" || cmdDialog != nil {
+		if closedID != "" {
+			(&m).onDialogClosed(closedID)
+		}
+		if cmdDialog != nil {
+			return m, cmdDialog
+		}
+		if handledDialog {
+			return m, nil
+		}
 	}
 
 	if keyMsg, ok := msg.(tea.KeyMsg); ok {
@@ -2839,8 +2955,7 @@ func (m *model) renderPresetsSection() string {
 	return strings.TrimRight(builder.String(), "\n")
 }
 
-func (m *model) renderShortcutReferenceOverlay() string {
-	sections := m.shortcutReferenceSections()
+func renderShortcutReferenceOverlayContent(sections []shortcutSection) string {
 	if len(sections) == 0 {
 		return ""
 	}
@@ -2903,6 +3018,54 @@ func (m *model) renderShortcutReferenceOverlay() string {
 	}
 
 	return strings.TrimRight(builder.String(), "\n")
+}
+
+func newShortcutReferenceDialog(sections []shortcutSection) dialog {
+	return &shortcutReferenceDialog{sections: sections}
+}
+
+type shortcutReferenceDialog struct {
+	sections []shortcutSection
+}
+
+func (d *shortcutReferenceDialog) ID() string {
+	return shortcutReferenceDialogID
+}
+
+func (d *shortcutReferenceDialog) Init() tea.Cmd {
+	return nil
+}
+
+func (d *shortcutReferenceDialog) Update(msg tea.Msg) (dialog, tea.Cmd, bool) {
+	keyMsg, ok := msg.(tea.KeyMsg)
+	if !ok {
+		return d, nil, false
+	}
+
+	switch keyMsg.String() {
+	case "?", "ctrl+?", "ctrl+/":
+		return nil, tea.ClearScreen, true
+	case "esc":
+		return nil, tea.ClearScreen, true
+	case "ctrl+c":
+		return d, nil, false
+	default:
+		return d, nil, true
+	}
+}
+
+func (d *shortcutReferenceDialog) View(width int, height int) string {
+	if width <= 0 {
+		width = defaultViewportWidth
+	}
+	content := renderShortcutReferenceOverlayContent(d.sections)
+	rendered := lipgloss.NewStyle().Width(width).Render(content)
+
+	var builder strings.Builder
+	builder.WriteString(rendered)
+	builder.WriteString("\n\nPress Ctrl+? or Esc to close the shortcut reference.\n")
+	builder.WriteString("Press Ctrl+C or Esc to exit.\n")
+	return builder.String()
 }
 
 func (m *model) shortcutReferenceSections() []shortcutSection {
@@ -3049,28 +3212,6 @@ func (m model) View() string {
 		b.WriteString("\n\n")
 	}
 
-	if m.helpVisible {
-		overlay := m.renderShortcutReferenceOverlay()
-		if overlay != "" {
-			width := m.mainColumnWidth
-			if width <= 0 {
-				width = m.width
-			}
-			if width <= 0 {
-				width = defaultViewportWidth
-			}
-			overlayRendered := lipgloss.NewStyle().Width(width).Render(overlay)
-			b.WriteString(overlayRendered)
-			b.WriteString("\n\nPress Ctrl+? or Esc to close the shortcut reference.\n")
-		} else {
-			b.WriteString("Shortcut reference unavailable.\n")
-		}
-		b.WriteString("Press Ctrl+C or Esc to exit.\n")
-		output := b.String()
-		paletteDebugViewSummary(&m, output)
-		return output
-	}
-
 	mainContent := m.renderMainColumnContent()
 	sidebarContent := m.renderSidebarContent()
 
@@ -3095,6 +3236,13 @@ func (m model) View() string {
 
 	b.WriteString("Press Ctrl+C or Esc to exit.\n")
 	output := b.String()
+
+	if dlg, ok := m.dialogs.top(); ok {
+		dialogView := dlg.View(m.dialogViewWidth(), m.height)
+		paletteDebugViewSummary(&m, dialogView)
+		return dialogView
+	}
+
 	paletteDebugViewSummary(&m, output)
 	return output
 }

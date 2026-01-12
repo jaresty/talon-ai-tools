@@ -655,6 +655,43 @@ func TestToggleShortcutReference(t *testing.T) {
 	}
 }
 
+func TestShortcutReferenceEscClosesDialog(t *testing.T) {
+	opts := Options{
+		Tokens:         []string{"todo"},
+		Preview:        func(subject string, tokens []string) (string, error) { return "preview:" + subject, nil },
+		ClipboardRead:  func() (string, error) { return "", nil },
+		ClipboardWrite: func(string) error { return nil },
+		RunCommand: func(_ context.Context, command string, stdin string, env map[string]string) (string, string, error) {
+			return "", "", nil
+		},
+		CommandTimeout: time.Second,
+	}
+
+	m := newModel(opts)
+	initialStatus := m.statusMessage
+
+	helpKey := tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{'?'}}
+	m, cmd := updateModel(t, m, helpKey)
+	if cmd != nil {
+		cmd()
+	}
+	if !strings.Contains(m.View(), "Shortcut reference (press Ctrl+? to close)") {
+		t.Fatalf("expected shortcut reference to be visible after toggle")
+	}
+
+	escKey := tea.KeyMsg{Type: tea.KeyEsc}
+	m, cmd = updateModel(t, m, escKey)
+	if cmd != nil {
+		cmd()
+	}
+	if strings.Contains(m.View(), "Shortcut reference (press Ctrl+? to close)") {
+		t.Fatalf("expected shortcut reference to be hidden after Esc")
+	}
+	if m.statusMessage != initialStatus {
+		t.Fatalf("expected status message to restore after closing, got %q", m.statusMessage)
+	}
+}
+
 func TestSidebarContentRespectsColumnWidth(t *testing.T) {
 	longLabel := "SupercalifragilisticexpialidociousPromptAxisValue"
 	categories := []TokenCategory{

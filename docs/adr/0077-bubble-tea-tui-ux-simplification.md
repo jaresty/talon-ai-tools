@@ -13,7 +13,7 @@ Proposed — Bubble Tea TUI interaction simplification and typography cues (2026
 - Introduce operator-driven layout controls: add a keyboard toggle to hide/show the sidebar and persist the preference, while exposing the current focus zone via breadcrumbs in the status strip.
 - Align the root Bubble Tea model with the layout composition patterns defined in our Bubble Tea skills: persist the latest `tea.WindowSizeMsg`, recompute main/sidebar widths, and render columns with Lip Gloss width constraints so subject, result, and token viewports wrap predictably on narrow terminals.
 - Enrich history entries with event metadata (type icon/label, timestamp) and highlight the active row, reducing the need to parse dense text.
-- Add an in-app shortcut reference (`Ctrl+?`) rendered as a full-screen overlay (clearing the screen before drawing) that surfaces grouped commands, focus toggles, and section controls without leaving the TUI.
+- Add an in-app shortcut reference (`Ctrl+?`) rendered as a full-screen overlay (clearing the screen before drawing) and backed by a dialog stack so grouped commands, focus toggles, and section controls can layer without leaving the TUI.
 - Provide lightweight feedback for applied palette changes by briefly highlighting affected rows or showing concise toast cues instead of duplicating confirmation text in history.
 - Apply typography and spacing cues (section headers, dividers, contrast hierarchy) so the sidebar content is visually scannable across terminal themes.
 
@@ -41,7 +41,7 @@ Proposed — Bubble Tea TUI interaction simplification and typography cues (2026
 
 ## Follow-up
 - Implement the interaction simplification and typography updates across Bubble Tea models and views in upcoming loops, referencing ADR 0072 as the baseline.
-- Evaluate migrating overlay handling to the Bubble Tea dialog stacking skill so future modals can layer cleanly without reflow artefacts.
+- Apply the Bubble Tea dialog stacking helper to any additional overlays or modals introduced after the shortcut reference ships.
 - Refresh operator documentation and quickstart guides once the simplified layout ships, keeping screenshots and shortcut summaries in sync.
 - Monitor expect harness output for regression drift in section order or typography cues, expanding tests as additional sidebar sections are introduced.
 - Evaluate the need for further accessibility refinements (contrast, focus indicators) after the initial simplification lands.

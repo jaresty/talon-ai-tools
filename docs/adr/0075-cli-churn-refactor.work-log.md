@@ -154,3 +154,40 @@ assets:
 - Env helper: `internal/barcli/cli/config.go`
 - Updated TUI launcher: `internal/barcli/tui.go`
 - Evidence: `docs/adr/evidence/0075-cli-churn-refactor/loop-004.md`
+
+## loop-005 | helper:v20251223.1 | 2026-01-12
+
+focus: ADR 0075 Refactor Plan step 4 → confirm embedded grammar assets align with the coordination layer refactor (salient task 4).
+
+active_constraint: Embedded grammar freshness was unverified after the CLI coordination changes; `python3 -m prompts.export` had not been rerun to confirm the mirror under `internal/barcli/embed/prompt-grammar.json` remained canonical.
+
+expected_value:
+| Factor | Value | Rationale |
+| --- | --- | --- |
+| Impact | Medium | Ensures CLI/TUI rely on the same canonical grammar payload before continuing coordination cleanups |
+| Probability | High | Regeneration deterministically validates the embed |
+| Time Sensitivity | Medium | Needed before closing ADR 0075 loops that depend on grammar fixtures |
+| Uncertainty note | Low | Command exit status directly reports freshness |
+
+validation_targets:
+- `python3 -m prompts.export`
+- `go test ./internal/barcli`
+- `go test ./...`
+
+evidence: `docs/adr/evidence/0075-cli-churn-refactor/loop-005.md`
+
+rollback_plan: `<VCS_REVERT>` = `git restore --source=HEAD -- internal/barcli/embed/prompt-grammar.json`; rerun `python3 -m prompts.export` to reapply the canonical payload if needed.
+
+delta_summary: helper:diff-snapshot=0 files changed — execution confirmed the embedded prompt grammar already matched the exported payload; no code changes were necessary.
+
+loops_remaining_forecast: 0 loops remain for ADR 0075 plan items; coordination package, overrides, and grammar alignment are complete. Confidence: high.
+
+residual_constraints:
+- Low — ADR 0072 documentation still needs pointer to the coordination layer work; mitigation: update ADR 0072 work log separately (outside current loop).
+
+next_work:
+- Behaviour: Update ADR 0072 follow-ups to reference the coordination layer (validation: docs review).
+
+assets:
+- Grammar embed verification: `internal/barcli/embed/prompt-grammar.json`
+- Evidence: `docs/adr/evidence/0075-cli-churn-refactor/loop-005.md`

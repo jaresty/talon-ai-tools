@@ -13,7 +13,7 @@ In Progress — Bubble Tea TUI palette and grammar-aligned palette flow (2026-01
 - Keep the palette docked in a right-side viewport that stays visible while editing, staged tokens remain visible until applied, and keyboard-first flows stay primary. Pointer support is optional; when implemented it must reinforce the CLI command being learned.
 - Add focus breadcrumbs, transient feedback, and a single-step undo stack tailored to token changes so pilots can experiment quickly without losing context. Favor simple Lip Gloss styling unless a Charm “skill” directly reinforces the learning objective.
 - Expose a palette history toggle (`Ctrl+H`) for recent token adjustments and command invocations, echoing shell history search patterns and aiding recall. History entries should show the exact CLI command that would reproduce the action.
-- Keep CLI summaries focused on grammar tokens and destinations; omit the raw subject/prompt text to prevent overwhelming the command line representation.
+- Keep CLI summaries focused on grammar tokens and destinations; omit the raw subject/prompt text (skip `--prompt`) to prevent overwhelming the command line representation.
 
 ### Relevant Charm skills
 - `lipgloss-theme-foundations` — establish text/background/hover styles for chips, status strip, and the grammar composer.

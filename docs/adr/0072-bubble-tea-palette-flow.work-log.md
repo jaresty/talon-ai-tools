@@ -1,5 +1,27 @@
 # ADR 0072 – Bubble Tea palette flow work log
 
+## 2026-01-12 – Loop 020 (helper:v20251223.1)
+- focus: Decision §“Typography & information architecture recommendations” → update the Bubble Tea pilot playbook with Charmtone palette guidance so docs match the themed sidebar and summary strip.
+- active_constraint: Docs/screenshots still described the pre-themed sidebar text, so pilots could not connect ADR 0072’s palette cues to what they see in `bar tui`; `scripts/tools/run-tui-expect.sh --all` remained green but the documentation lagged the implementation.
+- expected_value table:
+  | Factor           | Value | Rationale |
+  |------------------|-------|-----------|
+  | Impact           | Med   | Aligning docs with the live palette keeps operators from second-guessing the violet headers and ink summary strip. |
+  | Probability      | High  | Editing the pilot playbook directly addresses the wording gap with no code risk. |
+  | Time Sensitivity | Medium| Needs to land before the next pilot cut so refreshed transcripts and screenshots stay accurate. |
+  | Uncertainty note | Low   | Expect harness validates the themed UI remains stable.
+- validation_targets:
+  - `scripts/tools/run-tui-expect.sh --all`
+- evidence:
+  - docs/adr/evidence/0072-bubble-tea-palette-flow/loop-020.md
+- rollback_plan: `git restore --source=HEAD~1 docs/bubble-tea-pilot-playbook.md docs/adr/evidence/0072-bubble-tea-palette-flow/loop-020.md docs/adr/0072-bubble-tea-palette-flow.work-log.md` then rerun `scripts/tools/run-tui-expect.sh --all` to confirm the old wording still matches the transcripts.
+- delta_summary: helper:diff-snapshot=1 file changed, 7 insertions(+); added Charmtone palette bullets + verification instructions to the pilot playbook and recorded expect evidence.
+- loops_remaining_forecast: 0 loops; confidence medium — future pilots may still need refreshed screenshot assets once Charmtone mocks land.
+- residual_constraints:
+  - Image-based quickstart docs still embed pre-themed screenshots (severity: low impact × medium probability). Mitigation: capture new terminal screenshots after the next CLI release cut and attach them to the pilot knowledge base; monitor via `scripts/tools/run-tui-expect.sh --all` before publishing assets.
+- next_work:
+  - Behaviour: Refresh visual assets/screenshots when new Charmtone mocks are approved; validation target `scripts/tools/run-tui-expect.sh --all`.
+
 ## 2026-01-12 – Loop 019 (helper:v20251223.1)
 - focus: Decision §“Typography & information architecture recommendations” → style the history headers, hints, and summary strip with the Charmtone palette defined in `composerTheme`.
 - active_constraint: Sidebar headers and the summary strip still rendered as plain text strings, so `go test ./internal/bartui` could not guarantee Charmtone-aligned typography even though toast overlays already used the theme.

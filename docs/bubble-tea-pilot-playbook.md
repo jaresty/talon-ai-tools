@@ -27,6 +27,13 @@ bar tui todo focus steps
 - Point at an alternate grammar bundle with `--grammar /path/to/grammar.json` when testing staged prompt changes.
 - Repeat `--env NAME` to opt specific environment variables into the subprocess allowlist. Once inside the TUI, press `Tab` until the allowlist is focused (subject → tokens → command → allowlist), use Up/Down to highlight entries, `Ctrl+E` to toggle the selection, `Ctrl+A` to re-enable all allowlisted variables, and `Ctrl+X` to clear the list if you want to run without any secrets.
 
+### Charmtone palette cues (ADR 0072)
+
+- Toast overlays now use Charmtone plum (`#3C1053`) on light terminals and amber (`#F3D57C`) on dark terminals so CLI reinforcement stays readable regardless of theme. You will see the toast prefix rendered in that accent whenever tokens change, categories reset, or undo/redo fires.
+- History and Presets headers render in Charmtone violet (`#5B2A86`) or lilac (`#EAD8FF`), while the accompanying hints use the lighter mist tone (`#B7B2D6`). Expect these tints whenever the sidebar is visible; they mirror the CLI grammar composer prompts from `bar build`.
+- The summary strip uses Charmtone ink (`#1E1633`) on light terminals and pearl (`#F5F1FF`) on dark terminals so the CLI destination, preset, and env summaries remain high contrast. If your transcript tooling strips colour (e.g., `NO_COLOR=1`), call out the missing styling when sharing screenshots so reviewers know the accents were intentionally disabled.
+- To confirm the palette locally, run `scripts/tools/run-tui-expect.sh --all` for a quick sweep or capture an interactive session with `bar tui --no-alt-screen todo focus` and verify the violet headers, mist hints, and ink summary strip appear as described.
+
 ## Deterministic smoke harness
 
 Use the fixture harness to capture deterministic previews without entering the interactive event loop:

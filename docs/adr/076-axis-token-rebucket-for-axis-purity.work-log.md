@@ -86,3 +86,33 @@ residual_constraints:
 
 next_work:
 - Behaviour: Annotate ADR 017 docs to highlight `method=explore` replacing `samples`; Validation: python3.11 -m pytest _tests/test_static_prompt_docs.py
+
+## 2026-01-12 – Loop: ADR 017 documentation alignment (kind: docs+tests)
+
+helper_version: helper:v20251223.1
+focus: ADR-076 §Follow-ups 2 – Update ADR 017 guidance so it points to `method=explore` + `form=variants` instead of the legacy `method=samples` wording.
+active_constraint: ADR 017 still described sampling via `completeness=samples`, which contradicted ADR 076 and risked misleading contributors during migration.
+expected_value:
+  Impact: Medium – keeps the ADR chain consistent and reduces confusion when teaching sampling recipes.
+  Probability: High – editing ADR 017 directly addresses the wording gap.
+  Time Sensitivity: Medium – stale guidance would persist in onboarding docs until updated.
+  Uncertainty note: Low – scope limited to textual edits plus doc guardrail test.
+validation_targets:
+  - python3.11 -m pytest _tests/test_static_prompt_docs.py
+
+EVIDENCE
+- green | 2026-01-12T02:05:17Z | exit 0 | python3.11 -m pytest _tests/test_static_prompt_docs.py
+    helper:diff-snapshot=1 file changed, 24 insertions(+), 24 deletions(-)
+    pointer: inline
+
+rollback_plan: git restore --source=HEAD -- docs/adr/017-goal-modifier-decomposition-and-simplification.md
+
+delta_summary: helper:diff-snapshot=1 file changed, 15 insertions(+), 15 deletions(-); updated ADR 017 sampling guidance to reference `method=explore` + `form=variants`, refreshed examples, and adjusted implementation notes/tests references.
+
+loops_remaining_forecast: 1 (confidence medium) – apply regenerated help/pattern snapshots to tracked surfaces in a future docs sweep.
+
+residual_constraints:
+- severity: Low | constraint: Help/pattern UIs rely on the regenerated tmp/ outputs being applied in the next documentation refresh; mitigation: queue follow-up to sync the tracked Help Hub/quick help files during the upcoming docs sweep; monitor trigger: after next docs PR; owning ADR: 076.
+
+next_work:
+- Behaviour: Sync regenerated help/pattern artefacts into tracked docs/UIs; Validation: make axis-guardrails-test

@@ -100,7 +100,7 @@ We will:
 2. **Migrate `just` semantics into the method axis**:
    - Introduce a method token (name to be finalised; for this ADR we call it `analysis`) that encodes “describe/analyse only; do not propose solutions”.  
 3. **Migrate `sample` semantics into completeness + method + style**:
-   - Introduce a completeness token (for example, `samples` or `variants`) that encodes “produce N diverse options with short descriptions and explicit probabilities”, plus recommended method/style patterns.  
+   - Introduce dedicated axis tokens (`method=explore`, `form=variants`) that encode “produce N diverse options with short descriptions and explicit probabilities”, plus recommended method/style patterns.  
 4. **Treat `solve` as redundant**:
    - Problem-solving is already the default stance for most action-oriented static prompts; `solve` does not introduce a distinct behaviour that cannot be expressed via static prompts, purposes, and methods.  
    - We will deprecate `solve` in docs and examples, and avoid adding new behaviours under it.
@@ -134,19 +134,19 @@ We will:
   - Recommendation:
     - Treat `solve` as **redundant** for new usage. When you mean “solve”, pick an appropriate static prompt + intent + method combination instead (for example, `fix · steps · ong`).
 
-- `sample` – **Sampling goal → completeness + method + style**  
-  - Intended meaning:
+- `sample` – **Sampling goal → method + form (+ style)**  
+  - Intended meaning:  
     - “Act as a sampler over your own distribution: produce N diverse options with explicit probabilities that approximately sum to 1, avoiding near-duplicates.”  
-  - Axis-level expression:
-    - Completeness: introduce `completeness=samples` / `variants`:
-      - “Important: Provide N diverse, self-contained options with short descriptions and explicit numeric probabilities that approximately sum to 1; avoid near-duplicates.”  
-    - Method: use `diverge` (and possibly a future `sampling` method token if needed).  
+  - Axis-level expression (post ADR 076):  
+    - Method: use `method=explore` (optionally paired with `diverge`) to expand and compare candidate options before committing.  
+    - Form: use `form=variants` so the response delivers several self-contained options with short descriptions and approximate probabilities.  
     - Style: encourage `table` or structured `bullets` for readability.  
-  - Example usage:
-    - `model describe samples diverge fog` – sample multiple framings with probabilities.  
-    - `model describe mapping samples fog` – multiple systems-level options with probabilities.  
-  - Recommendation:
-    - Prefer expressing sampling behaviour via `completeness=samples` + method/style, rather than relying solely on `goalModifier=sample` in new docs and patterns.
+  - Example usage:  
+    - `model describe explore diverge variants fog` – generate multiple framings with probabilities.  
+    - `model describe mapping explore variants fog` – multiple systems-level options with probabilities.  
+  - Recommendation:  
+    - Prefer expressing sampling behaviour via `method=explore` + `form=variants` (with supporting method/style tokens) rather than relying on the legacy `goalModifier=sample` in new docs and patterns.
+
 
 ## Consequences
 
@@ -166,7 +166,7 @@ We will:
 
 ### Negative / trade-offs
 
-- Some existing habits (`model just …`, `model sample …`) will need to be migrated gradually to axis-based forms (for example, `analysis` and `samples` completeness).  
+- Some existing habits (`model just …`, `model sample …`) will need to be migrated gradually to axis-based forms (for example, `method=analysis` and `method=explore` + `form=variants`).  
 - Until completeness/method lists are extended and wired everywhere, `goalModifier` will remain in the grammar for backwards compatibility, which means the axis migration is a partial, staged change rather than an immediate removal.
 
 ## Migration notes and examples
@@ -185,8 +185,8 @@ A few patterns for axis-first usage:
   - `model fix xp ong` – problem-solving stance with `fix` static prompt and `xp` method (no `solve` needed).  
   - `model todo gist checklist ong` – generate and refine a todo list, lean into action.
 - Sampling:
-  - `model describe samples diverge fog` – propose several framings with probabilities.  
-  - `model describe mapping samples fog` – several systems-level framings with probabilities.
+  - `model describe explore diverge variants fog` – propose several framings with probabilities.  
+  - `model describe mapping explore variants fog` – several systems-level framings with probabilities.
 
 In all of these, completeness/scope/method/style and the directional lens carry the semantics; `goalModifier` is treated as legacy sugar rather than the primary contract surface.
 
@@ -214,9 +214,9 @@ This subsection gives concrete, side‑by‑side mappings from legacy `goalModif
   - Old:
     - `model sample product diverge fog`
     - `model sample describe mapping fog`
-  - New (axis-first; sampling via completeness + method + style):
-    - `model describe samples diverge fog`
-    - `model describe mapping samples fog`
+  - New (axis-first; sampling via method + form + style):
+    - `model describe explore diverge variants fog`
+    - `model describe mapping explore variants fog`
 
 These mappings are not exhaustive, but they should cover the most common uses of `just`/`solve`/`sample` and illustrate how to express the same intent using completeness, method, style, and directional axes instead of `goalModifier`.
 
@@ -225,18 +225,18 @@ These mappings are not exhaustive, but they should cover the most common uses of
 As of 2025‑12‑05, the following ADR 017 pieces are implemented in `talon-ai-tools`:
 
 - Axis tokens:
-  - `GPT/lists/completenessModifier.talon-list`:
-    - Includes the `samples` completeness token described here.
   - `GPT/lists/methodModifier.talon-list`:
-    - Includes the `analysis` method token described here.
+    - Includes the `analysis` and `explore` method tokens described here.
+  - `GPT/lists/formModifier.talon-list`:
+    - Includes the `variants` form token (introduced by ADR 076) that carries the multi-option output contract previously tied to `samples`.
 - Tests:
-  - `tests/test_static_prompt_docs.py`:
-    - `test_new_completeness_and_method_tokens_present` asserts that `samples` and `analysis` exist in the corresponding Talon lists.
+  - `_tests/test_static_prompt_docs.py`:
+    - `test_new_completeness_and_method_tokens_present` asserts that `analysis`, `explore`, and the form token `variants` remain available in the catalog-driven Talon lists.
 
 Not yet changed:
 
 - The `goalModifier` list file has been removed from this repo, and `goalModifier` is no longer registered or referenced in the `modelPrompt` grammar.  
-- README and quick-help surfaces now mention `samples` and `analysis` in cheat sheets and examples; any remaining references to `goalModifier` are purely historical/contextual (for example, in ADRs and migration notes).
+- README and quick-help surfaces now mention `analysis`, `explore`, and `variants` in cheat sheets and examples; any remaining references to `goalModifier` are purely historical/contextual (for example, in ADRs and migration notes).
 
 Future loops for this ADR should:
 

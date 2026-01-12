@@ -1,75 +1,39 @@
 ---
-name: bubbletea-layout-composition
-description: Compose Bubble Tea views with Lip Gloss layout helpers, handling full-screen resizing and overlay layering.
+name: bubbletea-overlays-layout
+description: Orchestrate Bubble Tea root layout, responsive sizing, and overlay stacks while reusing Lip Gloss primitives.
 ---
 
-# Bubble Tea Layout Composition
+# Bubble Tea Layout & Overlay Orchestration
 
 ## Use this skill when
-- Building page-level layouts (sidebars, headers, footers)
-- Switching between compact/expanded viewports
-- Stacking overlays like dialogs or popovers
+- Designing top-level screens that combine persistent panes with transient dialogs
+- Coordinating `tea.WindowSizeMsg` handling across nested components
+- Mixing Bubble Tea programs with Lip Gloss compositors or Charm overlays
+
+## Core ideas
+- **Forward sizing data**: capture the latest `tea.WindowSizeMsg` in the root model, then pass `SetSize(width, height)` into child components so each can react to breakpoints locally.
+- **Compose with Lip Gloss helpers**: reuse `lipgloss-layout-utilities` for joins and alignment, `lipgloss-theme-foundations` for shared styles, and `lipgloss-status-chips` or `lipgloss-table-rendering` for reusable widgets.
+- **Layer overlays deliberately**: treat dialogs, sheets, and toasts as independent Bubble Tea models that render via `lipgloss.NewLayer` or `lipgloss.NewCompositor` and block background input while active.
 
 ## Workflow
 
-1. **Maintain window size in your model**  
-   ```go
-   type model struct {
-     width, height int
-     showOverlay   bool
-     overlayView   string
-     styles        Styles // from the theme skill
-   }
-   
-   func (m *model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
-     switch msg := msg.(type) {
-     case tea.WindowSizeMsg:
-       m.width = msg.Width
-       m.height = msg.Height
-     }
-     …
-   }
-   ```
+1. **Shape the root model**  
+   Track `width`, `height`, routing state, and an overlay stack. Provide `Init` helpers that seed child models with the initial size if available (e.g. from `tea.WindowSizeMsg`).
 
-2. **Split layout using Lip Gloss joins**  
-   ```go
-   sidebar := m.styles.Base.
-     Width(30).
-     Render(renderSidebar())
-   
-   mainContent := lipgloss.JoinVertical(
-     lipgloss.Left,
-     renderHeader(),
-     renderBody(),
-     renderFooter(),
-   )
-   
-   baseView := lipgloss.JoinHorizontal(
-     lipgloss.Top,
-     sidebar,
-     m.styles.Base.Width(m.width-30).Render(mainContent),
-   )
-   ```
+2. **Layout base content**  
+   Use `lipgloss.JoinHorizontal` and `JoinVertical` for the structural skeleton. Defer styling to theme helpers (`lipgloss-theme-foundations`) so sizing math stays readable.
 
-3. **Handle overlays with layers**  
-   ```go
-   view := lipgloss.NewCompositor(
-     lipgloss.NewLayer(baseView),
-   )
-   if m.showOverlay {
-     overlay := renderModal()
-     view = lipgloss.NewCompositor(
-       lipgloss.NewLayer(baseView),
-       lipgloss.NewLayer(overlay).X((m.width-50)/2).Y((m.height-10)/2),
-     )
-   }
-   return view.Render()
-   ```
+3. **Integrate overlays**  
+   Maintain a slice-based overlay manager (see `bubbletea-dialog-stacking` skill) that forwards `Update` only to the top-most entry. Render base content first, then map overlays to Lip Gloss layers, adjusting `.X()`/`.Y()` relative to the captured window size.
 
-4. **Leave space for footers/status bars**  
-   Deduct footer height when positioning interactive regions so they never overlap.
+4. **Route input**  
+   When overlays are present, early-return from the root `Update` if the overlay manager handled the message. Otherwise propagate messages to focused child components such as forms (`bubbles-form-inputs`) or selects (`bubbles-select-dialog`).
 
-## Tips
+5. **Account for chrome**  
+   Reserve height for status bars or command palettes so overlays never crop essential UI. Keep constants or helper functions for gutter sizes in your theme package.
 
-- Keep component sizing logic (`SetSize`) close to the component; your root model just forwards window size messages.
-- When creating responsive variants, define breakpoints (e.g. `if m.width < 120 { use compact layout }`).
+## References
+- `lipgloss-layout-utilities` for layout primitives and responsive joins
+- `lipgloss-theme-foundations` for shared color tokens and base styles
+- `bubbletea-dialog-stacking` for stack-based dialog and sheet managers
+- `bubbles-form-inputs` and `bubbles-select-dialog` for focused input models

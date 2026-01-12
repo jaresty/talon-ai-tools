@@ -1,57 +1,19 @@
 ---
 name: bubbletea-dialog-stacking
-description: Manage modal dialogs in Bubble Tea using a stack, forwarding events and layering views.
+description: When you need stacked overlays, compose them through the Bubble Tea overlays/layout skill and reuse its manager pattern.
 ---
 
-# Bubble Tea Dialog Stacking
+# Bubble Tea Dialog Stacking (Pointer)
 
-## Use this skill when
-- Multiple modal dialogs can be opened (command palette, permission prompts)
-- You need to block background components while a dialog is active
-- Overlays must be composited with Lip Gloss layers
+This skill now defers to **`bubbletea-overlays-layout`** for the complete overlay orchestration workflow. Use it in tandem with:
 
-## Workflow
+- `bubbletea-overlays-layout` for managing the root overlay stack and responsive placement
+- `lipgloss-layout-utilities` to align modal shells and dimmed backdrops
+- `bubbles-form-inputs` and `bubbles-select-dialog` for focused input handling inside dialogs
 
-1. **Dialog interface**  
-   ```go
-   type Dialog interface {
-     Init() tea.Cmd
-     Update(tea.Msg) (Dialog, tea.Cmd)
-     View() string
-     Position() (x, y int)
-     ID() string
-   }
-   ```
+## How to apply it
+- Treat each dialog, sheet, or toast as a Bubble Tea model that implements `Init`, `Update`, and `View`.
+- Push models onto the shared overlay stack and let the root model (outlined in `bubbletea-overlays-layout`) gate all input through that stack before touching background components.
+- Have dialogs dispatch domain messages (`ConfirmDeleteMsg`, `CancelMsg`, etc.) on close so the root model can update application state.
 
-2. **Dialog manager**  
-   Keep a slice stack and forward `Update` only to the top dialog. Allow reusing a dialog if its ID is already in the stack.
-
-   ```go
-   type dialogManager struct {
-     dialogs []Dialog
-   }
-
-   func (m *dialogManager) Update(msg tea.Msg) (tea.Cmd, bool) {
-     if len(m.dialogs) == 0 {
-       return nil, false
-     }
-     top := m.dialogs[len(m.dialogs)-1]
-     updated, cmd := top.Update(msg)
-     m.dialogs[len(m.dialogs)-1] = updated
-     return cmd, true
-   }
-   ```
-
-3. **Open/close messages**  
-   Define `OpenDialogMsg{Dialog}` and `CloseDialogMsg{ID}`; your root model processes these and manipulates the stack.
-
-4. **Rendering**  
-   In `View()`, render the base UI, then map dialogs to `lipgloss.NewLayer`. Use each dialog’s `Position()` to place it accurately.
-
-5. **Input handling**  
-   Prevent background components from reacting while a dialog is active by early-returning when the dialog manager handled the message.
-
-## Tips
-
-- Give dialogs access to the terminal dimensions via `tea.WindowSizeMsg` so they can scale to different sizes.
-- For confirm/cancel flows, ensure dialogs emit a message your main model can handle after closing.
+👉 Jump to `bubbletea-overlays-layout` for detailed sequencing, layering, and sizing guidance. This file stays as a quick reminder that dialog stacking is one facet of the broader overlay workflow rather than a standalone low-level recipe.

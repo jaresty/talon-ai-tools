@@ -3744,7 +3744,7 @@ func sparklineString(values []int) string {
 	if len(values) == 0 {
 		return ""
 	}
-	const levels = "▁▂▃▄▅▆▇█"
+	const levels = ".:-=+*#@"
 	min, max := sparklineBounds(values)
 	var builder strings.Builder
 	if min == max {

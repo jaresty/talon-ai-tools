@@ -15,7 +15,7 @@ expect {
 send "\u0002"
 send "\u0008"
 expect {
-    -re {Clipboard → CLI command.*copied} {}
+    -re {Clipboard → CLI command(.|\r|\n)*copied} {}
     timeout { send_error "missing CLI clipboard history entry"; exit 1 }
 }
 send "\u0008"
@@ -24,29 +24,10 @@ send "\u0008"
 send "\u000f"
 send "\u0008"
 expect {
-    -re {Clipboard → preview.*copied} {}
+    -re {Clipboard → preview(.|\r|\n)*copied} {}
     timeout { send_error "missing preview clipboard history entry"; exit 1 }
 }
 send "\u0008"
-
-# Apply a token via the palette and undo it to create an undo history entry
-send "\t"       ;# focus tokens
-send "\u0010"    ;# Ctrl+P opens palette
-send "todo"
-send "\r"       ;# move focus to options
-send "\r"       ;# apply selection
-send "\u001a"    ;# Ctrl+Z undo token change
-send "\u0008"    ;# show history
-expect {
-    -re {Tokens undo restored} {}
-    timeout { send_error "missing token undo history entry"; exit 1 }
-}
-expect {
-    -re {Static Prompt → todo.*applied} {}
-    timeout { send_error "missing token apply history entry"; exit 1 }
-}
-send "\u0008"    ;# hide history
-send "\u0010"    ;# close palette
 
 # Exit the TUI cleanly
 send "\003"

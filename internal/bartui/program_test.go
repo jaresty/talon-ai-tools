@@ -67,6 +67,22 @@ func viewNotContains(view string, substr string) bool {
 	return !viewContains(view, substr)
 }
 
+func historyMessages(m model) []string {
+	messages := make([]string, len(m.paletteHistory))
+	for i, event := range m.paletteHistory {
+		messages[i] = event.Message
+	}
+	return messages
+}
+
+func historyKinds(m model) []historyEventKind {
+	kinds := make([]historyEventKind, len(m.paletteHistory))
+	for i, event := range m.paletteHistory {
+		kinds[i] = event.Kind
+	}
+	return kinds
+}
+
 func TestLoadSubjectFromClipboard(t *testing.T) {
 	opts := Options{
 		Tokens:         []string{"todo"},
@@ -103,8 +119,13 @@ func TestLoadSubjectFromClipboard(t *testing.T) {
 	if !m.subjectUndoAvailable {
 		t.Fatalf("expected undo to be available after replacement")
 	}
-	if len(m.paletteHistory) == 0 || m.paletteHistory[0] != "Subject replaced via clipboard text" {
-		t.Fatalf("expected history to record clipboard replacement, got %v", m.paletteHistory)
+	messages := historyMessages(m)
+	kinds := historyKinds(m)
+	if len(messages) == 0 || messages[0] != "Subject replaced via clipboard text" {
+		t.Fatalf("expected history to record clipboard replacement, got %v", messages)
+	}
+	if len(kinds) == 0 || kinds[0] != historyEventKindSubject {
+		t.Fatalf("expected subject history kind, got %v", kinds)
 	}
 
 	m, _ = updateModel(t, m, tea.KeyMsg{Type: tea.KeyCtrlZ})
@@ -114,11 +135,15 @@ func TestLoadSubjectFromClipboard(t *testing.T) {
 	if m.subjectUndoAvailable {
 		t.Fatalf("expected undo to be cleared after use")
 	}
-	if len(m.paletteHistory) == 0 || m.paletteHistory[0] != "Subject undo (clipboard text)" {
-		t.Fatalf("expected history to record subject undo, got %v", m.paletteHistory)
+	messages = historyMessages(m)
+	if len(messages) == 0 || messages[0] != "Subject undo (clipboard text)" {
+		t.Fatalf("expected history to record subject undo, got %v", messages)
 	}
-	if len(m.paletteHistory) < 2 || m.paletteHistory[1] != "Subject replaced via clipboard text" {
-		t.Fatalf("expected replacement entry to stay in history, got %v", m.paletteHistory)
+	if len(historyKinds(m)) == 0 || historyKinds(m)[0] != historyEventKindSubject {
+		t.Fatalf("expected subject history kind for undo, got %v", historyKinds(m))
+	}
+	if len(messages) < 2 || messages[1] != "Subject replaced via clipboard text" {
+		t.Fatalf("expected replacement entry to stay in history, got %v", messages)
 	}
 }
 
@@ -677,8 +702,12 @@ func TestTokenKeyboardToggle(t *testing.T) {
 	if !reflect.DeepEqual(m.tokenStates[1].selected, []string{"focus", "breadth"}) {
 		t.Fatalf("expected undo to restore breadth, got %v", m.tokenStates[1].selected)
 	}
-	if len(m.paletteHistory) == 0 || m.paletteHistory[0] != "Tokens undo restored" {
-		t.Fatalf("expected history to record token undo, got %v", m.paletteHistory)
+	messages := historyMessages(m)
+	if len(messages) == 0 || messages[0] != "Tokens undo restored" {
+		t.Fatalf("expected history to record token undo, got %v", messages)
+	}
+	if len(historyKinds(m)) == 0 || historyKinds(m)[0] != historyEventKindTokens {
+		t.Fatalf("expected token history kind, got %v", historyKinds(m))
 	}
 }
 
@@ -782,8 +811,9 @@ func TestTokenPaletteApplyUndoFromEmptyTokens(t *testing.T) {
 	if len(m.tokens) != 0 {
 		t.Fatalf("expected undo to restore empty token selection, got %v", m.tokens)
 	}
-	if len(m.paletteHistory) == 0 || m.paletteHistory[0] != "Tokens undo restored" {
-		t.Fatalf("expected history to record token undo, got %v", m.paletteHistory)
+	messages := historyMessages(m)
+	if len(messages) == 0 || messages[0] != "Tokens undo restored" {
+		t.Fatalf("expected history to record token undo, got %v", messages)
 	}
 }
 
@@ -850,8 +880,9 @@ func TestSummaryStripUpdatesAfterCopy(t *testing.T) {
 	if !strings.Contains(view, "Destination: clipboard — CLI command copied") {
 		t.Fatalf("expected summary to note CLI copy, got view:\n%s", view)
 	}
-	if len(m.paletteHistory) == 0 || m.paletteHistory[0] != "Clipboard → CLI command copied" {
-		t.Fatalf("expected history to record CLI copy, got %v", m.paletteHistory)
+	messages := historyMessages(m)
+	if len(messages) == 0 || messages[0] != "Clipboard → CLI command copied" {
+		t.Fatalf("expected history to record CLI copy, got %v", messages)
 	}
 
 	m.copyPreviewToClipboard()
@@ -859,11 +890,12 @@ func TestSummaryStripUpdatesAfterCopy(t *testing.T) {
 	if !strings.Contains(view, "Destination: clipboard — Preview copied") {
 		t.Fatalf("expected summary to note preview copy, got view:\n%s", view)
 	}
-	if len(m.paletteHistory) == 0 || m.paletteHistory[0] != "Clipboard → preview copied" {
-		t.Fatalf("expected history to record preview copy, got %v", m.paletteHistory)
+	messages = historyMessages(m)
+	if len(messages) == 0 || messages[0] != "Clipboard → preview copied" {
+		t.Fatalf("expected history to record preview copy, got %v", messages)
 	}
-	if len(m.paletteHistory) < 2 || m.paletteHistory[1] != "Clipboard → CLI command copied" {
-		t.Fatalf("expected CLI copy entry to remain in history, got %v", m.paletteHistory)
+	if len(messages) < 2 || messages[1] != "Clipboard → CLI command copied" {
+		t.Fatalf("expected CLI copy entry to remain in history, got %v", messages)
 	}
 }
 
@@ -910,8 +942,8 @@ func TestTokenPaletteHistoryToggle(t *testing.T) {
 	if !viewContains(view, "[TOKENS]") {
 		t.Fatalf("expected focus breadcrumbs to highlight tokens, got view:\n%s", view)
 	}
-	if !viewContains(view, "Palette history (Ctrl+H toggles):") {
-		t.Fatalf("expected view to include palette history header, got view:\n%s", view)
+	if !viewContains(view, "HISTORY (Ctrl+H toggles)") {
+		t.Fatalf("expected view to include history header, got view:\n%s", view)
 	}
 
 	m, _ = updateModel(t, m, tea.KeyMsg{Type: tea.KeyCtrlH})
@@ -935,13 +967,18 @@ func TestCommandHistoryRecordsSuccess(t *testing.T) {
 	result := commandResult{Command: "printf hi", ExitCode: 0, HasExitCode: true}
 	m, _ = updateModel(t, m, commandFinishedMsg{result: result, mode: commandModeSubject})
 
-	if len(m.paletteHistory) == 0 {
+	messages := historyMessages(m)
+	kinds := historyKinds(m)
+	if len(messages) == 0 {
 		t.Fatalf("expected command history entry to be recorded")
+	}
+	if len(kinds) == 0 || kinds[0] != historyEventKindCommand {
+		t.Fatalf("expected command history kind, got %v", kinds)
 	}
 
 	expected := "Command (subject) → \"printf hi\" exit 0"
-	if m.paletteHistory[0] != expected {
-		t.Fatalf("expected history entry %q, got %q", expected, m.paletteHistory[0])
+	if messages[0] != expected {
+		t.Fatalf("expected history entry %q, got %q", expected, messages[0])
 	}
 }
 
@@ -961,12 +998,17 @@ func TestCommandHistoryRecordsError(t *testing.T) {
 	result := commandResult{Command: "printf hi", Err: err}
 	m, _ = updateModel(t, m, commandFinishedMsg{result: result, mode: commandModeSubject})
 
-	if len(m.paletteHistory) == 0 {
+	messages := historyMessages(m)
+	kinds := historyKinds(m)
+	if len(messages) == 0 {
 		t.Fatalf("expected command history entry to be recorded")
 	}
+	if len(kinds) == 0 || kinds[0] != historyEventKindCommand {
+		t.Fatalf("expected command history kind, got %v", kinds)
+	}
 
-	if !strings.Contains(m.paletteHistory[0], "error: boom failure") {
-		t.Fatalf("expected error status in history entry, got %q", m.paletteHistory[0])
+	if !strings.Contains(messages[0], "error: boom failure") {
+		t.Fatalf("expected error status in history entry, got %q", messages[0])
 	}
 }
 
@@ -985,13 +1027,49 @@ func TestCommandHistoryPreviewScope(t *testing.T) {
 	result := commandResult{Command: "printf hi", ExitCode: 0, HasExitCode: true, UsedPreview: true}
 	m, _ = updateModel(t, m, commandFinishedMsg{result: result, mode: commandModePreview})
 
-	if len(m.paletteHistory) == 0 {
+	messages := historyMessages(m)
+	kinds := historyKinds(m)
+	if len(messages) == 0 {
 		t.Fatalf("expected command history entry to be recorded")
+	}
+	if len(kinds) == 0 || kinds[0] != historyEventKindCommand {
+		t.Fatalf("expected command history kind, got %v", kinds)
 	}
 
 	expected := "Command (preview) → \"printf hi\" exit 0"
-	if m.paletteHistory[0] != expected {
-		t.Fatalf("expected preview history entry %q, got %q", expected, m.paletteHistory[0])
+	if messages[0] != expected {
+		t.Fatalf("expected preview history entry %q, got %q", expected, messages[0])
+	}
+}
+
+func TestFormatHistoryEventIncludesMetadata(t *testing.T) {
+	opts := Options{
+		Preview:        func(subject string, tokens []string) (string, error) { return subject, nil },
+		ClipboardRead:  func() (string, error) { return "", nil },
+		ClipboardWrite: func(string) error { return nil },
+		RunCommand: func(context.Context, string, string, map[string]string) (string, string, error) {
+			return "", "", nil
+		},
+		CommandTimeout: time.Second,
+	}
+	m := newModel(opts)
+	fixed := time.Date(2026, time.January, 12, 15, 4, 0, 0, time.UTC)
+	m.now = func() time.Time { return fixed }
+
+	m.recordPaletteHistory(historyEventKindClipboard, "Clipboard → preview copied")
+
+	if len(m.paletteHistory) != 1 {
+		t.Fatalf("expected one history event, got %d", len(m.paletteHistory))
+	}
+	event := m.paletteHistory[0]
+	if !event.Timestamp.Equal(fixed) {
+		t.Fatalf("expected timestamp %v, got %v", fixed, event.Timestamp)
+	}
+
+	formatted := formatHistoryEvent(event)
+	expected := "[15:04] 📋 Clipboard · Clipboard → preview copied"
+	if formatted != expected {
+		t.Fatalf("expected formatted history %q, got %q", expected, formatted)
 	}
 }
 

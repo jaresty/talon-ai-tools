@@ -52,6 +52,22 @@ type PresetDetails struct {
 const paletteHistoryLimit = 20
 const commandHistoryErrorLimit = 80
 
+type historyEventKind string
+
+type historyEvent struct {
+	Kind      historyEventKind
+	Message   string
+	Timestamp time.Time
+}
+
+const (
+	historyEventKindTokens    historyEventKind = "Tokens"
+	historyEventKindClipboard historyEventKind = "Clipboard"
+	historyEventKindCommand   historyEventKind = "Command"
+	historyEventKindSubject   historyEventKind = "Subject"
+	historyEventKindPreset    historyEventKind = "Preset"
+)
+
 var (
 	paletteDebugMu     sync.Mutex
 	paletteDebugWriter io.Writer
@@ -446,7 +462,7 @@ type model struct {
 	tokenPaletteFocus        tokenPaletteFocus
 	tokenPaletteOptions      []int
 	tokenPaletteOptionIndex  int
-	paletteHistory           []string
+	paletteHistory           []historyEvent
 	paletteHistoryVisible    bool
 	lastPaletteCategoryIndex int
 	tokenPaletteFilter       textinput.Model
@@ -456,6 +472,8 @@ type model struct {
 	lastTokenSnapshot        []string
 
 	destinationSummary string
+
+	now func() time.Time
 
 	pendingSubject       *subjectReplacementPrompt
 	subjectUndoValue     string
@@ -624,6 +642,7 @@ func newModel(opts Options) model {
 		focusBeforePane:        focusSubject,
 		lastDeletedPreset:      nil,
 		lastDeletedDescription: "",
+		now:                    time.Now,
 	}
 	m.destinationSummary = "clipboard — Ctrl+B copies CLI"
 	m.initializeTokenCategories()
@@ -1163,12 +1182,24 @@ func (m *model) recordTokenUndo() {
 	m.lastTokenSnapshot = snapshot
 }
 
-func (m *model) recordPaletteHistory(entry string) {
+func (m *model) historyTimestamp() time.Time {
+	if m.now != nil {
+		return m.now().UTC()
+	}
+	return time.Now().UTC()
+}
+
+func (m *model) recordPaletteHistory(kind historyEventKind, entry string) {
 	trimmed := strings.TrimSpace(entry)
 	if trimmed == "" {
 		return
 	}
-	m.paletteHistory = append([]string{trimmed}, m.paletteHistory...)
+	event := historyEvent{
+		Kind:      kind,
+		Message:   trimmed,
+		Timestamp: m.historyTimestamp(),
+	}
+	m.paletteHistory = append([]historyEvent{event}, m.paletteHistory...)
 	if len(m.paletteHistory) > paletteHistoryLimit {
 		m.paletteHistory = m.paletteHistory[:paletteHistoryLimit]
 	}
@@ -1179,7 +1210,7 @@ func (m *model) recordCommandHistory(result commandResult, mode commandMode) {
 	if entry == "" {
 		return
 	}
-	m.recordPaletteHistory(entry)
+	m.recordPaletteHistory(historyEventKindCommand, entry)
 }
 
 func formatCommandHistoryEntry(result commandResult, mode commandMode) string {
@@ -1221,14 +1252,14 @@ func formatCommandHistoryEntry(result commandResult, mode commandMode) string {
 
 func (m *model) togglePaletteHistory() {
 	if !m.paletteHistoryVisible && len(m.paletteHistory) == 0 {
-		m.statusMessage = "No palette history yet. Make a palette change before toggling history."
+		m.statusMessage = "No history entries yet. Make a palette change before expanding history."
 		return
 	}
 	m.paletteHistoryVisible = !m.paletteHistoryVisible
 	if m.paletteHistoryVisible {
-		m.statusMessage = "Palette history visible. Press Ctrl+H to hide."
+		m.statusMessage = "History expanded. Press Ctrl+H to collapse."
 	} else {
-		m.statusMessage = "Palette history hidden."
+		m.statusMessage = "History collapsed. Press Ctrl+H to expand."
 	}
 }
 
@@ -1381,7 +1412,7 @@ func (m *model) undoTokenChange() {
 	m.lastTokenSnapshot = nil
 	m.setTokens(snapshot)
 	m.statusMessage = "Token selection restored."
-	m.recordPaletteHistory("Tokens undo restored")
+	m.recordPaletteHistory(historyEventKindTokens, "Tokens undo restored")
 }
 
 func (m *model) openTokenPalette() tea.Cmd {
@@ -1702,7 +1733,7 @@ func (m *model) applyPaletteSelection() {
 		state.remove(option.Value)
 		m.rebuildTokensFromStates()
 		historyEntry := fmt.Sprintf("%s → %s removed", categoryLabel, slug)
-		m.recordPaletteHistory(historyEntry)
+		m.recordPaletteHistory(historyEventKindTokens, historyEntry)
 		m.statusMessage = fmt.Sprintf("%s → %s removed.", state.category.Label, slug)
 	} else {
 		max := state.category.MaxSelections
@@ -1718,7 +1749,7 @@ func (m *model) applyPaletteSelection() {
 		state.add(option.Value, max)
 		m.rebuildTokensFromStates()
 		historyEntry := fmt.Sprintf("%s → %s applied", categoryLabel, slug)
-		m.recordPaletteHistory(historyEntry)
+		m.recordPaletteHistory(historyEventKindTokens, historyEntry)
 		m.statusMessage = fmt.Sprintf("%s → %s applied.", state.category.Label, slug)
 	}
 	m.updatePaletteOptions()
@@ -1742,7 +1773,7 @@ func (m *model) applyPaletteReset() {
 	if categoryLabel == "" {
 		categoryLabel = state.category.Key
 	}
-	m.recordPaletteHistory(fmt.Sprintf("%s reset to preset", categoryLabel))
+	m.recordPaletteHistory(historyEventKindTokens, fmt.Sprintf("%s reset to preset", categoryLabel))
 	m.statusMessage = fmt.Sprintf("%s reset to preset.", state.category.Label)
 }
 
@@ -2038,6 +2069,14 @@ func (m *model) renderSummaryStrip() string {
 	}
 
 	return "Summary strip: " + strings.Join(parts, " | ")
+}
+
+func renderSidebarSectionHeader(title string) string {
+	return strings.ToUpper(title)
+}
+
+func renderSidebarSectionHint(hint string) string {
+	return hint
 }
 
 func (m *model) renderResultSummaryLine() string {
@@ -2517,7 +2556,7 @@ func (m *model) applyPendingSubjectReplacement() {
 	m.updateSubjectViewportContent()
 	m.refreshPreview()
 	m.statusMessage = ensureCopyHint(fmt.Sprintf("Subject replaced with %s. Press Ctrl+Z to undo.", prompt.source))
-	m.recordPaletteHistory(fmt.Sprintf("Subject replaced via %s", prompt.source))
+	m.recordPaletteHistory(historyEventKindSubject, fmt.Sprintf("Subject replaced via %s", prompt.source))
 }
 
 func (m *model) cancelPendingSubjectReplacement() {
@@ -2546,7 +2585,7 @@ func (m *model) undoSubjectReplacement() {
 		source = "recent"
 	}
 	m.statusMessage = ensureCopyHint(fmt.Sprintf("Subject restored after %s replacement.", source))
-	m.recordPaletteHistory(fmt.Sprintf("Subject undo (%s)", source))
+	m.recordPaletteHistory(historyEventKindSubject, fmt.Sprintf("Subject undo (%s)", source))
 }
 
 func (m *model) renderMainColumnContent() string {
@@ -2573,37 +2612,139 @@ func (m *model) renderMainColumnContent() string {
 	return strings.TrimRight(builder.String(), "\n")
 }
 
-func (m *model) renderSidebarContent() string {
+func (m *model) renderComposeSection() string {
 	var builder strings.Builder
+	builder.WriteString(renderSidebarSectionHeader("Compose"))
+	builder.WriteString("\n")
 
 	localTokenViewport := m.tokenViewport
 	localTokenViewport.SetContent(m.renderTokenViewportContent())
 	tokenSection := strings.TrimRight(localTokenViewport.View(), "\n")
-	if tokenSection != "" {
+	if strings.TrimSpace(tokenSection) == "" {
+		builder.WriteString("  No token controls available.\n")
+	} else {
 		builder.WriteString(tokenSection)
-		builder.WriteString("\n\n")
-	}
-
-	if m.paletteHistoryVisible {
-		builder.WriteString("Palette history (Ctrl+H toggles):\n")
-		if len(m.paletteHistory) == 0 {
-			builder.WriteString("  (empty)\n\n")
-		} else {
-			for _, entry := range m.paletteHistory {
-				builder.WriteString(fmt.Sprintf("  • %s\n", entry))
-			}
-			builder.WriteString("\n")
-		}
-	}
-
-	if m.presetPaneVisible {
-		var presetBuilder strings.Builder
-		m.renderPresetPane(&presetBuilder)
-		builder.WriteString(strings.TrimRight(presetBuilder.String(), "\n"))
-		builder.WriteString("\n")
 	}
 
 	return strings.TrimRight(builder.String(), "\n")
+}
+
+func (m *model) renderHistorySection() string {
+	var builder strings.Builder
+	builder.WriteString(renderSidebarSectionHeader("History"))
+	hint := renderSidebarSectionHint("(Ctrl+H toggles)")
+	if hint != "" {
+		builder.WriteString(" ")
+		builder.WriteString(hint)
+	}
+	builder.WriteString("\n")
+
+	if !m.paletteHistoryVisible {
+		builder.WriteString("  History collapsed. Press Ctrl+H to expand.\n")
+		return strings.TrimRight(builder.String(), "\n")
+	}
+
+	if len(m.paletteHistory) == 0 {
+		builder.WriteString("  (empty)\n")
+	} else {
+		for _, entry := range m.paletteHistory {
+			builder.WriteString(fmt.Sprintf("  • %s\n", formatHistoryEvent(entry)))
+		}
+	}
+
+	return strings.TrimRight(builder.String(), "\n")
+}
+
+func historyEventIcon(kind historyEventKind) string {
+	switch kind {
+	case historyEventKindTokens:
+		return "🎛"
+	case historyEventKindClipboard:
+		return "📋"
+	case historyEventKindCommand:
+		return "⌘"
+	case historyEventKindSubject:
+		return "📝"
+	case historyEventKindPreset:
+		return "⭐"
+	default:
+		return ""
+	}
+}
+
+func historyEventLabel(kind historyEventKind) string {
+	label := strings.TrimSpace(string(kind))
+	if label == "" {
+		return "Event"
+	}
+	return label
+}
+
+func formatHistoryEvent(event historyEvent) string {
+	label := historyEventLabel(event.Kind)
+	icon := historyEventIcon(event.Kind)
+	if icon != "" {
+		label = fmt.Sprintf("%s %s", icon, label)
+	}
+
+	timePart := ""
+	if !event.Timestamp.IsZero() {
+		timePart = event.Timestamp.UTC().Format("15:04")
+	}
+
+	if timePart != "" {
+		return fmt.Sprintf("[%s] %s · %s", timePart, label, event.Message)
+	}
+	return fmt.Sprintf("%s · %s", label, event.Message)
+}
+
+func (m *model) renderPresetsSection() string {
+	var builder strings.Builder
+	builder.WriteString(renderSidebarSectionHeader("Presets"))
+	hint := renderSidebarSectionHint("(Ctrl+S toggles)")
+	if hint != "" {
+		builder.WriteString(" ")
+		builder.WriteString(hint)
+	}
+	builder.WriteString("\n")
+
+	if !m.presetPaneVisible {
+		builder.WriteString("  Presets collapsed. Press Ctrl+S to expand.\n")
+		return strings.TrimRight(builder.String(), "\n")
+	}
+
+	var presetBuilder strings.Builder
+	m.renderPresetPane(&presetBuilder)
+	presetContent := strings.TrimRight(presetBuilder.String(), "\n")
+	if strings.TrimSpace(presetContent) == "" {
+		builder.WriteString("  (no presets available)\n")
+	} else {
+		builder.WriteString(presetContent)
+	}
+
+	return strings.TrimRight(builder.String(), "\n")
+}
+
+func (m *model) renderSidebarContent() string {
+	sections := []string{
+		m.renderComposeSection(),
+		m.renderHistorySection(),
+		m.renderPresetsSection(),
+	}
+
+	var filtered []string
+	for _, section := range sections {
+		if strings.TrimSpace(section) == "" {
+			continue
+		}
+		filtered = append(filtered, section)
+	}
+
+	if len(filtered) == 0 {
+		return ""
+	}
+
+	return strings.TrimRight(strings.Join(filtered, "\n\n"), "\n")
 }
 
 func (m model) View() string {
@@ -2897,7 +3038,7 @@ func (m *model) copyPreviewToClipboard() {
 	}
 	m.destinationSummary = "clipboard — Preview copied"
 	m.statusMessage = "Copied preview to clipboard."
-	m.recordPaletteHistory("Clipboard → preview copied")
+	m.recordPaletteHistory(historyEventKindClipboard, "Clipboard → preview copied")
 }
 
 func (m *model) copyBuildCommandToClipboard() {
@@ -2908,7 +3049,7 @@ func (m *model) copyBuildCommandToClipboard() {
 	}
 	m.destinationSummary = "clipboard — CLI command copied"
 	m.statusMessage = "Copied bar build command to clipboard."
-	m.recordPaletteHistory("Clipboard → CLI command copied")
+	m.recordPaletteHistory(historyEventKindClipboard, "Clipboard → CLI command copied")
 }
 
 func (m *model) buildCommandArgs() []string {

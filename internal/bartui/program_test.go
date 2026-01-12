@@ -282,6 +282,8 @@ func TestExecuteSubjectCommand(t *testing.T) {
 		CommandTimeout: time.Second,
 	}
 	m := newModel(opts)
+	m.subject.SetValue("original subject")
+	m.refreshPreview()
 	m.command.SetValue("echo-subject")
 	cmd := (&m).executeSubjectCommand()
 	if cmd == nil {
@@ -294,11 +296,14 @@ func TestExecuteSubjectCommand(t *testing.T) {
 		t.Fatalf("expected status message to indicate running, got %q", m.statusMessage)
 	}
 	if receivedStdin != "" {
-		t.Fatalf("expected empty stdin for subject command, got %q", receivedStdin)
+		t.Fatalf("expected stdin to remain unset before execution, got %q", receivedStdin)
 	}
 
 	msg := cmd()
 	m, next := updateModel(t, m, msg)
+	if receivedStdin != "original subject" {
+		t.Fatalf("expected subject text piped to stdin, got %q", receivedStdin)
+	}
 	if next != nil {
 		t.Fatalf("unexpected follow-up command: %T", next)
 	}
@@ -308,7 +313,7 @@ func TestExecuteSubjectCommand(t *testing.T) {
 	if m.pendingSubject == nil {
 		t.Fatalf("expected pending subject replacement after command completion")
 	}
-	if got := m.subject.Value(); got != "" {
+	if got := m.subject.Value(); got != "original subject" {
 		t.Fatalf("expected subject to remain unchanged until confirmation, got %q", got)
 	}
 	if m.lastResult.Stdout != "new subject\n" {

@@ -3655,8 +3655,11 @@ func (m *model) startCommand(mode commandMode) tea.Cmd {
 	}
 
 	input := ""
-	if mode == commandModePreview {
+	switch mode {
+	case commandModePreview:
 		input = m.preview
+	case commandModeSubject:
+		input = m.subject.Value()
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), m.commandTimeout)

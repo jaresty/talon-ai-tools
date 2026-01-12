@@ -55,3 +55,34 @@ residual_constraints:
 
 next_work:
 - Behaviour: Regenerate help/pattern snapshots to propagate `form=variants` and updated channel messaging; Validation: make axis-guardrails-ci
+
+## 2026-01-12 – Loop: help/pattern guardrail regen (kind: guardrail)
+
+helper_version: helper:v20251223.1
+focus: ADR-076 §Follow-ups 2 – Regenerate help/pattern snapshots so guardrail assets include `form=variants` and the narrowed channel list.
+active_constraint: Help hub and pattern snapshots still referenced pre-rebucket tokens because guardrail regeneration had not been rerun since `form=variants` landed.
+expected_value:
+  Impact: Medium – keeps user-facing guardrail assets aligned with the new axis buckets.
+  Probability: High – `make axis-guardrails-ci` regenerates the snapshots directly from the catalog.
+  Time Sensitivity: Medium – stale guardrail artefacts would confuse users until the next release if left unresolved.
+  Uncertainty note: Low – prior runs showed the command completes quickly when the catalog is in sync.
+validation_targets:
+  - make axis-guardrails-ci
+
+EVIDENCE
+- green | 2026-01-12T01:54:20Z | exit 0 | make axis-guardrails-ci
+    helper:diff-snapshot=0 files changed
+    pointer: inline (axis guardrail regeneration emitted refreshed README/static prompt snapshots under tmp/ and verified catalog health)
+
+rollback_plan: git restore --source=HEAD -- .
+
+delta_summary: helper:diff-snapshot=0 files changed; reran the guardrail regeneration so tmp/ README axis lines, cheatsheet, and static prompt docs reflect `form=variants`/reduced channel set with catalog validation passing.
+
+loops_remaining_forecast: 1 (confidence medium) – annotate ADR 017 documentation to reference the `method=explore` rename.
+
+residual_constraints:
+- severity: Low | constraint: Historical ADR 017 documentation still references `method=samples`, which may confuse readers until annotated; mitigation: add a follow-up doc note linking to ADR-076’s rename; monitor trigger: first doc audit post-rebucket; owning ADR: 017.
+- severity: Low | constraint: Help/pattern UIs rely on the regenerated tmp/ outputs being applied in the next documentation refresh; mitigation: queue follow-up to sync the tracked Help Hub/quick help files during the upcoming docs sweep; monitor trigger: after next docs PR; owning ADR: 076.
+
+next_work:
+- Behaviour: Annotate ADR 017 docs to highlight `method=explore` replacing `samples`; Validation: python3.11 -m pytest _tests/test_static_prompt_docs.py

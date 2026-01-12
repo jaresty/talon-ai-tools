@@ -160,3 +160,39 @@ next_work:
 assets:
 - Updated ADR reference: `docs/adr/0072-bubble-tea-palette-flow.md`
 - Evidence: `docs/adr/evidence/0072-bubble-tea-palette-flow/loop-004.md`
+
+## loop-005 | helper:v20251223.1 | 2026-01-12
+
+focus: ADR 0072 Follow-up section → capture remaining palette history coverage (clipboard/undo/destination events) so expect harness work is explicit.
+
+active_constraint: Follow-up bullets lacked explicit guidance for extending history logging beyond token/command events, risking gaps when undo/clipboard flows ship (observed via ADR review comparing residual constraints).
+
+expected_value:
+| Factor | Value | Rationale |
+| --- | --- | --- |
+| Impact | Medium | Keeping docs explicit prevents palette history gaps when implementing remaining tasks |
+| Probability | High | Updating the follow-up bullet directly records the requirement |
+| Time Sensitivity | Medium | Needed before the palette history enrichment loop begins |
+| Uncertainty note | Low | Documentation change is deterministic |
+
+validation_targets:
+- `go test ./internal/bartui`
+
+evidence: `docs/adr/evidence/0072-bubble-tea-palette-flow/loop-005.md`
+
+rollback_plan: `<VCS_REVERT>` = `git restore --source=HEAD -- docs/adr/0072-bubble-tea-palette-flow.md docs/adr/0072-bubble-tea-palette-flow.work-log.md`; rerun `go test ./internal/bartui` to confirm behaviour remains green after reversion.
+
+delta_summary: helper:diff-snapshot=docs/adr/0072-bubble-tea-palette-flow.md | docs/adr/0072-bubble-tea-palette-flow.work-log.md — added follow-up guidance for clipboard/undo/destination history coverage and logged loop-005.
+
+loops_remaining_forecast: 2 loops (dock omnibox layout refactor; implement clipboard/undo history logging). Confidence: medium.
+
+residual_constraints:
+- Medium — Docked omnibox layout refactor pending; mitigation unchanged (Lip Gloss/Bubbles layout work + snapshots).
+
+next_work:
+- Behaviour: Execute docked omnibox layout refactor (validation: updated snapshots + `go test ./cmd/bar/...`).
+- Behaviour: Implement clipboard/undo/destination history logging with expect coverage (validation: new expect cases + `go test ./internal/bartui`).
+
+assets:
+- Follow-up guidance: `docs/adr/0072-bubble-tea-palette-flow.md`
+- Evidence: `docs/adr/evidence/0072-bubble-tea-palette-flow/loop-005.md`

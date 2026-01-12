@@ -39,6 +39,7 @@ Proposed — Bubble Tea TUI palette and inline editing refinements (2026-01-11)
 - Implement viewport refactors to house the docked palette and ensure PgUp/PgDn/Home/End map to the appropriate scroll targets.
 - Refresh docs, quickstart transcripts, and pilot playbook sections with the new palette flow and inline token editing guidance.
 - Coordinate with ADR 0075 (CLI coordination layer refactor) so the docked omnibox shortcuts and palette history stay in sync with the accepted `internal/barcli/cli` contracts.
+- Extend palette history coverage to clipboard inserts, undo operations, and command destinations with expect harness validation once the docked omnibox layout lands.
 - Gather pilot feedback after release to tune omnibox defaults (e.g., staged apply behavior, history length, category hinting).
 
 ## Anti-goals

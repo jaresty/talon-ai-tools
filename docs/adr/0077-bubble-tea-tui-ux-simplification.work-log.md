@@ -331,3 +331,37 @@ residual_constraints:
 
 next_work:
 - Behaviour: None — monitor expect transcripts during future updates to ensure typography remains stable.
+
+## loop-011 | helper:v20251223.1 | 2026-01-12
+
+focus: ADR 0077 Validation section → rerun the full guardrail matrix and mark the decision as accepted with reproducible evidence.
+
+active_constraint: Final ADR acceptance lacked a fresh validation sweep; without rerunning the documented commands, we could not prove the accepted state (validation: `go test ./internal/bartui`).
+
+expected_value:
+| Factor | Value | Rationale |
+| --- | --- | --- |
+| Impact | Medium | Confirms every guardrail still passes once the ADR status is updated. |
+| Probability | High | Running the canonical test suite directly exercises the behaviours governed by ADR 0077. |
+| Time Sensitivity | Medium | Capturing evidence at acceptance time avoids ambiguity about when validations were last green. |
+| Uncertainty note | Low | Commands are deterministic and already part of the ADR validation contract. |
+
+validation_targets:
+- `go test ./internal/bartui`
+- `go test ./cmd/bar/...`
+- `python3 -m pytest _tests/test_bar_completion_cli.py`
+- `scripts/tools/run-tui-expect.sh --all`
+
+evidence: `docs/adr/evidence/0077-bubble-tea-tui-ux-simplification/loop-011.md`
+
+rollback_plan: `<VCS_REVERT>` = `git restore --source=HEAD -- docs/adr/0077-bubble-tea-tui-ux-simplification.md docs/adr/0077-bubble-tea-tui-ux-simplification.work-log.md docs/adr/evidence/0077-bubble-tea-tui-ux-simplification/loop-011.md`; rerun the validation targets to reconfirm the pre-acceptance baseline if needed.
+
+delta_summary: helper:diff-snapshot=3 files changed, 59 insertions(+), 1 deletion(-) — marks the ADR as accepted and logs the final validation evidence.
+
+loops_remaining_forecast: 0 loops. Confidence: high — ADR 0077 is fully validated and accepted.
+
+residual_constraints:
+- None.
+
+next_work:
+- Behaviour: Monitor expect transcripts and CI guardrails for regressions during future feature work.

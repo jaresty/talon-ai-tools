@@ -1,4 +1,4 @@
-Proposed — Bubble Tea TUI interaction simplification and typography cues (2026-01-12)
+Accepted — Bubble Tea TUI interaction simplification and typography cues (2026-01-12)
 
 ## Context
 - ADR 0072 delivered a two-column Bubble Tea layout that keeps the omnibox, summary strip, palette, and history visible, but the resulting surface exposes overlapping controls and dense copy in the sidebar.

@@ -1,7 +1,8 @@
 # 076 – Axis Token Rebucket for Method/Form/Channel Purity
 
-- Status: Proposed  
+- Status: Accepted  
 - Date: 2026-01-11  
+- Accepted: 2026-01-12  
 - Context: Axis catalog tokens for `method`, `form`, and `channel` currently intermix output-shape semantics, reasoning workflows, and delivery media, creating conflicts with ADR 005/012 definitions and the dominance ladder (Completeness > Method > Scope > Style/Form > Channel).
 
 ---
@@ -11,7 +12,8 @@
 - Method tokens will strictly describe *how* the model reasons; visual-layout instructions move out.  
 - Form tokens will own output containers such as diagrams, HTML/SVG markup, CodeTour JSON, and multi-variant option sets.  
 - Channel tokens will focus on destination/medium biases (Slack, Jira, Presenterm, Remote, Sync) without dictating payload structure.  
-- Guardrails and docs will update together so spoken modifiers map to the clarified buckets.
+- Guardrails and docs will update together so spoken modifiers map to the clarified buckets.  
+- Quick help, cheatsheets, and README sampling examples now pull the refreshed catalog (explore + variants + focus) to keep recipes accurate.
 
 ---
 

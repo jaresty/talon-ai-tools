@@ -63,6 +63,7 @@ os.environ["OPENAI_API_KEY"] = "YOUR-KEY-HERE"
 
 ## Release Notes
 
+- **2026-01-12** – Axis modifiers and docs now reflect ADR-076: `method=samples` is replaced by `method=explore` + `form=variants`, sampling recipes highlight `scope=focus`, and quick-help / cheatsheet surfaces pull the refreshed catalog.
 - **2026-01-09** – `bar tui` now supports a fixture-driven snapshot harness (`--fixture`, `--no-alt-screen`) with README instructions and a committed smoke transcript so pilots and CI runs capture deterministic previews.
 - **2026-01-09** – CLI completion surfaces include `//next` skip sentinels with docs, help text, and examples (`bar help`, README, and docs quickstart) so you can jump persona/static stages without hunting for options.
 - **2026-01-08** – Portable CLI completions now insert slug tokens (for example, `as-teacher`). The CLI no longer accepts the legacy human-readable labels; supply slugs directly to keep recipes predictable.

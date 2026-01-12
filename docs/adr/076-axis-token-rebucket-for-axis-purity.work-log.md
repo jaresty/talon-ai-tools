@@ -146,3 +146,33 @@ residual_constraints:
 
 next_work:
 - Behaviour: Run docs/UI sweep to apply regenerated help/pattern content; Validation: make axis-guardrails-test
+
+## 2026-01-12 – Loop: Publish release notes & accept ADR (kind: docs)
+
+helper_version: helper:v20251223.1
+focus: ADR-076 wrap-up – Communicate the rebucket in release notes and mark the ADR accepted now that catalog/docs/quick-help surfaces are aligned.
+active_constraint: README release notes and ADR status still reflected a pre-acceptance state, leaving operators without a clear record that explore/variants/focus sampling is live.
+expected_value:
+  Impact: Medium – documents the change for users and signals closure of the ADR.
+  Probability: High – editing README/ADR text addresses the communication gap directly.
+  Time Sensitivity: Medium – aligning status soon after landing the rebucket avoids confusion across release artifacts.
+  Uncertainty note: Low – documentation-only change, guarded by existing README tests.
+validation_targets:
+  - python3.11 -m pytest _tests/test_readme_guardrails_docs.py
+
+EVIDENCE
+- green | 2026-01-12T02:37:55Z | exit 0 | python3.11 -m pytest _tests/test_readme_guardrails_docs.py
+    helper:diff-snapshot=3 files changed, 35 insertions(+), 2 deletions(-)
+    pointer: inline
+
+rollback_plan: git restore --source=HEAD -- README.md docs/adr/076-axis-token-rebucket-for-axis-purity.md docs/adr/076-axis-token-rebucket-for-axis-purity.work-log.md
+
+delta_summary: helper:diff-snapshot=3 files changed, 35 insertions(+), 2 deletions(-); added a release note documenting the rebucket, marked ADR 076 as accepted with refreshed summary guidance, and captured the loop in the work log.
+
+loops_remaining_forecast: 0 (confidence high) – All in-repo follow-ups for ADR 076 are complete; future adjustments can ride standard documentation passes.
+
+residual_constraints:
+- None; help/pattern surfaces draw from the catalog, and communication artifacts are up to date.
+
+next_work:
+- None; reopen if catalog semantics change.

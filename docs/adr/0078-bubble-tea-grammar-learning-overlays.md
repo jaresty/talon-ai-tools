@@ -30,6 +30,13 @@ Owners: Bubble Tea UX working group
 5. **Expect and unit coverage** – Author new expect fixtures covering scaffold rendering, overlay toggles, and invalid-state guidance; backfill unit tests around slot-state derivation to keep grammar feedback deterministic.
 6. **Documentation alignment** – Update operator docs and the Bubble Tea help surfaces to reference the grammar overlay gesture, reinforcing parity between CLI and TUI learning routes.
 
+## Reference Patterns from Crush
+- **Root model orchestration**: mirror `crush/internal/tui/tui.go:59-188`, where an `appModel` owns a `pages` map and dispatches Bubble Tea messages across focusable sub-models. Adopting the same aggregator lets the grammar scaffold, overlay, and dialogs remain isolated `util.Model`s while sharing sizing, keyboard enhancement, and pub/sub handling.
+- **Completion popovers**: reuse the `completions` component shown in `crush/internal/tui/components/completions/completions.go:60-204` to render slot suggestions near the cursor. Its `RepositionCompletionsMsg` and adaptive width logic are ready-made for grammar slot pickers.
+- **Status/help strip**: the adaptive help bar at `crush/internal/tui/components/core/status/status.go:20-114` already wraps `help.Model` with message TTLs. Porting it verbatim enables stage-aware feedforward hints without reinventing the status surface.
+- **Rich history items**: `crush/internal/tui/components/chat/messages/messages.go:51-200` demonstrates Lip Gloss borders, focus styles, and copy bindings for message cards. Use the same approach for grammar-history events (timestamps, icons, keyboard shortcuts).
+- **Responsive layouts**: `crush/internal/tui/page/chat/chat.go:70-188` shows how to switch between compact/full modes, manage sidebars, and batch `Init` commands. Apply the pattern so Compose/History/Presets sections collapse gracefully on narrow terminals.
+
 ## Validation Targets
 - `go test ./internal/bartui/...`
 - `scripts/tools/run-tui-expect.sh --all`

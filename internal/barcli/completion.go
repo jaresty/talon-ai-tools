@@ -7,6 +7,8 @@ import (
 	"strconv"
 	"strings"
 	"unicode"
+
+	"github.com/talonvoice/talon-ai-tools/internal/barcli/cli"
 )
 
 const bashCompletionTemplate = `# Bash completion for bar generated from the portable grammar CLI.
@@ -1146,7 +1148,7 @@ func grammarTokenExists(set map[string]struct{}, token string) bool {
 }
 
 // runCompletionEngine executes the hidden completion backend.
-func runCompletionEngine(opts *cliOptions, stdout, stderr io.Writer) int {
+func runCompletionEngine(opts *cli.Config, stdout, stderr io.Writer) int {
 	if len(opts.Tokens) < 2 {
 		writeError(stderr, "__complete requires a shell and index")
 		return 1

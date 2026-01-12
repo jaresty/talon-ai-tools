@@ -75,3 +75,82 @@ assets:
 - Updated build logic: `internal/barcli/build.go`
 - Tests: `internal/barcli/build_test.go`
 - Evidence: `docs/adr/evidence/0075-cli-churn-refactor/loop-002.md`
+
+## loop-003 | helper:v20251223.1 | 2026-01-12
+
+focus: ADR 0075 Refactor Plan step 3 → introduce the CLI configuration package and migrate Run/completion/TUI consumers to it (salient task 3).
+
+active_constraint: `go test ./internal/barcli` failed with `undefined: cliOptions` once `cli.Parse` replaced `parseArgs`, demonstrating every entry point still depended on the removed struct until migration completed.
+
+expected_value:
+| Factor | Value | Rationale |
+| --- | --- | --- |
+| Impact | High | Centralising parsing lowers churn across Run, completion engine, and TUI flows |
+| Probability | High | Unit tests and expect harness lock behaviour in place |
+| Time Sensitivity | Medium | Required before finishing ADR 0075 coordination cleanups |
+| Uncertainty note | Medium | Multiple call sites needed staged updates, but behaviour is well covered |
+
+validation_targets:
+- `go test ./internal/barcli`
+- `go test ./...`
+- `scripts/tools/run-tui-expect.sh --all`
+
+evidence: `docs/adr/evidence/0075-cli-churn-refactor/loop-003.md`
+
+rollback_plan: `<VCS_REVERT>` = `git restore --source=HEAD -- internal/barcli/app.go internal/barcli/completion.go internal/barcli/tui.go internal/barcli/app_parse_test.go internal/barcli/cli`; rerun `go test ./internal/barcli` to observe the undefined `cliOptions` failure reappear.
+
+delta_summary: helper:diff-snapshot=internal/barcli/cli/config.go | internal/barcli/app.go | internal/barcli/completion.go | internal/barcli/tui.go | internal/barcli/app_parse_test.go — extracted CLI parsing into `cli.Parse`, rewired Run/completion/TUI/helpers to accept `*cli.Config`, and moved the characterization tests under the new package API.
+
+loops_remaining_forecast: 2 loops (decouple residual TUI wiring, refresh grammar/expect scaffolding). Confidence: medium.
+
+residual_constraints:
+- Medium — TUI/preset coordination still handles fixture IO inline; mitigation: fold remaining helpers into the config/TUI boundary next loop.
+- Low — Grammar expect assets need a final sweep after coordination refactor; mitigation: regenerate snapshots once wiring settles (`scripts/tools/run-tui-expect.sh --all`).
+
+next_work:
+- Behaviour: Finish decoupling TUI helpers from inline CLI plumbing and refresh expect/grammar assets (validation: targeted go tests, expect harness).
+
+assets:
+- Typed config: `internal/barcli/cli/config.go`
+- Updated entry points: `internal/barcli/app.go`, `internal/barcli/completion.go`, `internal/barcli/tui.go`
+- Updated tests: `internal/barcli/app_parse_test.go`
+- Evidence: `docs/adr/evidence/0075-cli-churn-refactor/loop-003.md`
+
+## loop-004 | helper:v20251223.1 | 2026-01-12
+
+focus: ADR 0075 Refactor Plan step 3 → migrate environment bootstrap into the CLI coordination package so `runTUI` consumes typed config state (salient task 3).
+
+active_constraint: Environment allowlist resolution lived only in `runTUI`, preventing the new `cli.Config` from owning the canonical env bootstrap path (validated via `scripts/tools/run-tui-expect.sh --all`).
+
+expected_value:
+| Factor | Value | Rationale |
+| --- | --- | --- |
+| Impact | High | Consolidating env handling into the coordination package reduces divergent behaviour between CLI and TUI |
+| Probability | High | Refactoring the single helper guarantees the TUI path consumes the new method |
+| Time Sensitivity | Medium | Needed before finalising remaining coordination cleanups |
+| Uncertainty note | Low | Behaviour already characterised by expect harness |
+
+validation_targets:
+- `go test ./internal/barcli`
+- `go test ./...`
+- `scripts/tools/run-tui-expect.sh --all`
+
+evidence: `docs/adr/evidence/0075-cli-churn-refactor/loop-004.md`
+
+rollback_plan: `<VCS_REVERT>` = `git restore --source=HEAD -- internal/barcli/cli/config.go internal/barcli/tui.go`; rerun `scripts/tools/run-tui-expect.sh --all` to observe the env allowlist regression.
+
+delta_summary: helper:diff-snapshot=internal/barcli/cli/config.go | internal/barcli/tui.go | docs/adr/evidence/0075-cli-churn-refactor/loop-004.md — added `Config.ResolveEnvValues`, rewired `runTUI` to use it, and logged evidence for the consolidated env handling.
+
+loops_remaining_forecast: 1 loop (refresh grammar/embed scaffolding and final ADR cross-links). Confidence: medium.
+
+residual_constraints:
+- Medium — TUI fixture snapshot wiring still sits in `runTUI`; mitigation: lift fixture loading into the coordination package next loop, monitored via `scripts/tools/run-tui-expect.sh --all`.
+- Low — Grammar/embed assets need a final sweep once coordination stabilises; mitigation: regenerate embeds and expect fixtures (`scripts/tools/run-tui-expect.sh --all`, `go test ./cmd/bar`).
+
+next_work:
+- Behaviour: Extract remaining TUI fixture wiring into the coordination package and refresh grammar/embed assets (validation: `go test ./internal/barcli`, `scripts/tools/run-tui-expect.sh --all`).
+
+assets:
+- Env helper: `internal/barcli/cli/config.go`
+- Updated TUI launcher: `internal/barcli/tui.go`
+- Evidence: `docs/adr/evidence/0075-cli-churn-refactor/loop-004.md`

@@ -14,6 +14,7 @@ import (
 	"time"
 
 	"github.com/atotto/clipboard"
+	"github.com/talonvoice/talon-ai-tools/internal/barcli/cli"
 	"github.com/talonvoice/talon-ai-tools/internal/bartui"
 )
 
@@ -27,7 +28,7 @@ func defaultTUIStarter(opts bartui.Options) error {
 	return program.Start()
 }
 
-func runTUI(opts *cliOptions, stdin io.Reader, stdout, stderr io.Writer) int {
+func runTUI(opts *cli.Config, stdin io.Reader, stdout, stderr io.Writer) int {
 	if opts.JSON {
 		writeError(stderr, "tui does not support --json output")
 		return 1
@@ -122,22 +123,7 @@ func runTUI(opts *cliOptions, stdin io.Reader, stdout, stderr io.Writer) int {
 		return 0
 	}
 
-	envValues := make(map[string]string)
-	missingEnv := make([]string, 0, len(opts.EnvAllowlist))
-	for _, raw := range opts.EnvAllowlist {
-		name := strings.TrimSpace(raw)
-		if name == "" {
-			continue
-		}
-		if _, exists := envValues[name]; exists {
-			continue
-		}
-		if value, ok := os.LookupEnv(name); ok {
-			envValues[name] = value
-		} else {
-			missingEnv = append(missingEnv, name)
-		}
-	}
+	envValues, missingEnv := opts.ResolveEnvValues()
 
 	listPresetsFn := func() ([]bartui.PresetSummary, error) {
 		summaries, err := listPresets()

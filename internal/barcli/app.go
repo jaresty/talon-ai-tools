@@ -7,8 +7,9 @@ import (
 	"io"
 	"os"
 	"sort"
-	"strconv"
 	"strings"
+
+	"github.com/talonvoice/talon-ai-tools/internal/barcli/cli"
 )
 
 const (
@@ -118,7 +119,7 @@ var generalHelpText = strings.TrimSpace(`USAGE
 // Run executes the bar CLI with the provided arguments and streams.
 
 func Run(args []string, stdin io.Reader, stdout, stderr io.Writer) int {
-	options, err := parseArgs(args)
+	options, err := cli.Parse(args)
 	if err != nil {
 		writeError(stderr, err.Error())
 		return 1
@@ -203,198 +204,7 @@ func Run(args []string, stdin io.Reader, stdout, stderr io.Writer) int {
 	return 0
 }
 
-type cliOptions struct {
-	Command       string
-	Tokens        []string
-	Prompt        string
-	InputPath     string
-	OutputPath    string
-	JSON          bool
-	GrammarPath   string
-	Force         bool
-	FixturePath   string
-	FixtureWidth  int
-	FixtureHeight int
-	NoAltScreen   bool
-	EnvAllowlist  []string
-}
-
-func parseArgs(args []string) (*cliOptions, error) {
-	opts := &cliOptions{}
-	tokens := make([]string, 0, len(args))
-
-	i := 0
-	for i < len(args) {
-		arg := args[i]
-		switch {
-		case arg == "--prompt":
-			i++
-			if i >= len(args) {
-				return nil, fmt.Errorf("--prompt requires a value")
-			}
-			opts.Prompt = args[i]
-		case strings.HasPrefix(arg, "--prompt="):
-			opts.Prompt = strings.TrimPrefix(arg, "--prompt=")
-		case arg == "--input":
-			i++
-			if i >= len(args) {
-				return nil, fmt.Errorf("--input requires a path")
-			}
-			opts.InputPath = args[i]
-		case strings.HasPrefix(arg, "--input="):
-			opts.InputPath = strings.TrimPrefix(arg, "--input=")
-		case arg == "--output" || arg == "-o":
-			i++
-			if i >= len(args) {
-				return nil, fmt.Errorf("%s requires a path", arg)
-			}
-			opts.OutputPath = args[i]
-		case strings.HasPrefix(arg, "--output="):
-			opts.OutputPath = strings.TrimPrefix(arg, "--output=")
-		case arg == "--json":
-			opts.JSON = true
-		case arg == "--grammar":
-			i++
-			if i >= len(args) {
-				return nil, fmt.Errorf("--grammar requires a path")
-			}
-			opts.GrammarPath = args[i]
-		case strings.HasPrefix(arg, "--grammar="):
-			opts.GrammarPath = strings.TrimPrefix(arg, "--grammar=")
-		case arg == "--fixture":
-			i++
-			if i >= len(args) {
-				return nil, fmt.Errorf("--fixture requires a path")
-			}
-			opts.FixturePath = args[i]
-		case strings.HasPrefix(arg, "--fixture="):
-			opts.FixturePath = strings.TrimPrefix(arg, "--fixture=")
-		case arg == "--fixture-width":
-			i++
-			if i >= len(args) {
-				return nil, fmt.Errorf("--fixture-width requires a value")
-			}
-			width, err := strconv.Atoi(args[i])
-			if err != nil || width <= 0 {
-				return nil, fmt.Errorf("--fixture-width requires a positive integer")
-			}
-			opts.FixtureWidth = width
-		case strings.HasPrefix(arg, "--fixture-width="):
-			value := strings.TrimPrefix(arg, "--fixture-width=")
-			width, err := strconv.Atoi(value)
-			if err != nil || width <= 0 {
-				return nil, fmt.Errorf("--fixture-width requires a positive integer")
-			}
-			opts.FixtureWidth = width
-		case arg == "--width":
-			i++
-			if i >= len(args) {
-				return nil, fmt.Errorf("--width requires a value")
-			}
-			width, err := strconv.Atoi(args[i])
-			if err != nil || width <= 0 {
-				return nil, fmt.Errorf("--width requires a positive integer")
-			}
-			opts.FixtureWidth = width
-		case strings.HasPrefix(arg, "--width="):
-			value := strings.TrimPrefix(arg, "--width=")
-			width, err := strconv.Atoi(value)
-			if err != nil || width <= 0 {
-				return nil, fmt.Errorf("--width requires a positive integer")
-			}
-			opts.FixtureWidth = width
-
-		case arg == "--fixture-height":
-			i++
-			if i >= len(args) {
-				return nil, fmt.Errorf("--fixture-height requires a value")
-			}
-			height, err := strconv.Atoi(args[i])
-			if err != nil || height <= 0 {
-				return nil, fmt.Errorf("--fixture-height requires a positive integer")
-			}
-			opts.FixtureHeight = height
-		case strings.HasPrefix(arg, "--fixture-height="):
-			value := strings.TrimPrefix(arg, "--fixture-height=")
-			height, err := strconv.Atoi(value)
-			if err != nil || height <= 0 {
-				return nil, fmt.Errorf("--fixture-height requires a positive integer")
-			}
-			opts.FixtureHeight = height
-		case arg == "--height":
-			i++
-			if i >= len(args) {
-				return nil, fmt.Errorf("--height requires a value")
-			}
-			height, err := strconv.Atoi(args[i])
-			if err != nil || height <= 0 {
-				return nil, fmt.Errorf("--height requires a positive integer")
-			}
-			opts.FixtureHeight = height
-		case strings.HasPrefix(arg, "--height="):
-			value := strings.TrimPrefix(arg, "--height=")
-			height, err := strconv.Atoi(value)
-			if err != nil || height <= 0 {
-				return nil, fmt.Errorf("--height requires a positive integer")
-			}
-			opts.FixtureHeight = height
-
-		case arg == "--no-alt-screen":
-			opts.NoAltScreen = true
-
-		case arg == "--env":
-			i++
-			if i >= len(args) {
-				return nil, fmt.Errorf("--env requires a variable name")
-			}
-			name := strings.TrimSpace(args[i])
-			if name == "" {
-				return nil, fmt.Errorf("--env requires a non-empty variable name")
-			}
-			opts.EnvAllowlist = appendEnvOnce(opts.EnvAllowlist, name)
-		case strings.HasPrefix(arg, "--env="):
-			name := strings.TrimSpace(strings.TrimPrefix(arg, "--env="))
-			if name == "" {
-				return nil, fmt.Errorf("--env requires a non-empty variable name")
-			}
-			opts.EnvAllowlist = appendEnvOnce(opts.EnvAllowlist, name)
-		case arg == "--force":
-			opts.Force = true
-
-		case strings.HasPrefix(arg, "--"):
-			return nil, fmt.Errorf("unknown flag %s", arg)
-
-		default:
-			if opts.Command == "" {
-				opts.Command = arg
-			} else {
-				tokens = append(tokens, arg)
-			}
-		}
-		i++
-	}
-
-	if opts.Command == "" {
-		return nil, fmt.Errorf(topUsage)
-	}
-	if opts.Prompt != "" && opts.InputPath != "" {
-		return nil, fmt.Errorf("--prompt and --input cannot be used together")
-	}
-
-	opts.Tokens = tokens
-	return opts, nil
-}
-
-func appendEnvOnce(list []string, name string) []string {
-	for _, existing := range list {
-		if existing == name {
-			return list
-		}
-	}
-	return append(list, name)
-}
-
-func runHelp(opts *cliOptions, stdout, stderr io.Writer) int {
+func runHelp(opts *cli.Config, stdout, stderr io.Writer) int {
 
 	if len(opts.Tokens) == 0 {
 		fmt.Fprint(stdout, generalHelpText)
@@ -425,7 +235,7 @@ func runHelp(opts *cliOptions, stdout, stderr io.Writer) int {
 	}
 }
 
-func runCompletion(opts *cliOptions, stdout, stderr io.Writer) int {
+func runCompletion(opts *cli.Config, stdout, stderr io.Writer) int {
 	if len(opts.Tokens) == 0 {
 		writeError(stderr, "completion requires a shell (bash, zsh, or fish)")
 		return 1
@@ -458,7 +268,7 @@ func runCompletion(opts *cliOptions, stdout, stderr io.Writer) int {
 	return 0
 }
 
-func runPreset(opts *cliOptions, stdin io.Reader, stdout, stderr io.Writer) int {
+func runPreset(opts *cli.Config, stdin io.Reader, stdout, stderr io.Writer) int {
 	if len(opts.Tokens) == 0 {
 		writeError(stderr, "preset requires a subcommand (save, list, show, use, delete)")
 		fmt.Fprint(stdout, generalHelpText)
@@ -851,7 +661,7 @@ func renderTokensHelp(w io.Writer, grammar *Grammar, filters map[string]bool) {
 	fmt.Fprintln(w, "Multi-word tokens (e.g., \"fly rog\") should be supplied exactly as listed above.")
 }
 
-func readPrompt(opts *cliOptions, stdin io.Reader) (string, error) {
+func readPrompt(opts *cli.Config, stdin io.Reader) (string, error) {
 	if opts.Prompt != "" {
 		return trimTrailingNewlines(opts.Prompt), nil
 	}

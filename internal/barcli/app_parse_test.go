@@ -2,13 +2,15 @@ package barcli
 
 import (
 	"testing"
+
+	"github.com/talonvoice/talon-ai-tools/internal/barcli/cli"
 )
 
 func TestParseArgsBuildCommand(t *testing.T) {
-	opts, err := parseArgs([]string{"build", "todo", "focus", "--prompt", "hello", "--json", "--output", "out.txt", "--env", "CHATGPT_API_KEY", "--env=ORG_ID"})
+	opts, err := cli.Parse([]string{"build", "todo", "focus", "--prompt", "hello", "--json", "--output", "out.txt", "--env", "CHATGPT_API_KEY", "--env=ORG_ID"})
 
 	if err != nil {
-		t.Fatalf("parseArgs returned error: %v", err)
+		t.Fatalf("cli.Parse returned error: %v", err)
 	}
 	if opts.Command != "build" {
 		t.Fatalf("expected command 'build', got %q", opts.Command)
@@ -34,9 +36,9 @@ func TestParseArgsBuildCommand(t *testing.T) {
 }
 
 func TestParseArgsEnvDedup(t *testing.T) {
-	opts, err := parseArgs([]string{"tui", "--env", "CHATGPT_API_KEY", "--env", "CHATGPT_API_KEY", "--env", "ORG_ID"})
+	opts, err := cli.Parse([]string{"tui", "--env", "CHATGPT_API_KEY", "--env", "CHATGPT_API_KEY", "--env", "ORG_ID"})
 	if err != nil {
-		t.Fatalf("parseArgs returned error: %v", err)
+		t.Fatalf("cli.Parse returned error: %v", err)
 	}
 	if opts.Command != "tui" {
 		t.Fatalf("expected command 'tui', got %q", opts.Command)
@@ -47,13 +49,13 @@ func TestParseArgsEnvDedup(t *testing.T) {
 }
 
 func TestParseArgsErrors(t *testing.T) {
-	if _, err := parseArgs([]string{}); err == nil {
+	if _, err := cli.Parse([]string{}); err == nil {
 		t.Fatalf("expected error for missing command")
 	}
-	if _, err := parseArgs([]string{"build", "--prompt"}); err == nil {
+	if _, err := cli.Parse([]string{"build", "--prompt"}); err == nil {
 		t.Fatalf("expected error for missing --prompt value")
 	}
-	if _, err := parseArgs([]string{"build", "--unknown"}); err == nil {
+	if _, err := cli.Parse([]string{"build", "--unknown"}); err == nil {
 		t.Fatalf("expected error for unknown flag")
 	}
 }

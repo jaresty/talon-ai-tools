@@ -1,5 +1,5 @@
 # ADR-0075 – CLI Coordination Layer Refactor
-Status: Proposed
+Status: Accepted
 Date: 2026-01-11
 Owners: Bubble Tea / CLI working group
 

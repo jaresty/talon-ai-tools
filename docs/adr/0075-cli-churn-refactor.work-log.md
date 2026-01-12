@@ -223,3 +223,35 @@ next_work:
 
 assets:
 - Completion log: `docs/adr/0075-cli-churn-refactor.work-log.md`
+
+## loop-007 | helper:v20251223.1 | 2026-01-12
+
+focus: ADR 0075 governance → update ADR status to Accepted after completing plan items.
+
+active_constraint: The ADR header still reported `Status: Proposed`, leaving governance ambiguous despite the refactor landing (observable via ADR metadata review).
+
+expected_value:
+| Factor | Value | Rationale |
+| --- | --- | --- |
+| Impact | Medium | Accurately signalling completion prevents duplicate work and clarifies coordination owners |
+| Probability | High | Editing the ADR status directly resolves the inconsistency |
+| Time Sensitivity | Medium | Needed before handing off follow-up documentation to ADR 0072 |
+| Uncertainty note | Low | Status change is deterministic |
+
+validation_targets:
+- `go test ./internal/barcli`
+
+evidence: `docs/adr/evidence/0075-cli-churn-refactor/loop-007.md`
+
+rollback_plan: `<VCS_REVERT>` = `git restore --source=HEAD -- docs/adr/0075-cli-churn-refactor.md docs/adr/0075-cli-churn-refactor.work-log.md`; rerun `go test ./internal/barcli` to confirm no behaviour changed.
+
+loops_remaining_forecast: 0 loops remain; ADR 0075 is accepted. Confidence: high.
+
+residual_constraints:
+- Low — Update ADR 0072 follow-ups to reference the accepted coordination layer (mitigation planned separately).
+
+next_work:
+- Behaviour: Reflect coordination layer completion in ADR 0072 documentation (validation: docs review under ADR 0072).
+
+assets:
+- Accepted ADR: `docs/adr/0075-cli-churn-refactor.md`

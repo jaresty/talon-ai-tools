@@ -136,3 +136,37 @@ residual_constraints:
 
 next_work:
 - Behaviour: Run visual audit of shortcut typography across supported themes (validation: `scripts/tools/run-tui-expect.sh --all` with theme overrides).
+
+## loop-005 | helper:v20251223.1 | 2026-01-12
+
+focus: ADR 0077 Decision bullet 5 → harden the shortcut reference experience with typography cues that persist after closing and highlight the active token category inside the Compose sidebar.
+
+active_constraint: After loop-004 the overlay still occupied the entire layout and left artefacts on close, and the Compose section offered no visual cue for the focused token category, muting ADR 0077’s typography guidance (validation: `go test ./internal/bartui`).
+
+expected_value:
+| Factor | Value | Rationale |
+| --- | --- | --- |
+| Impact | High | Clearing the overlay and highlighting token focus restores trust in the UI guidance called out in ADR 0077. |
+| Probability | High | Adjusting the Bubble Tea view plus state wiring directly addresses the residual artefacts. |
+| Time Sensitivity | Medium | Needed before handoff so operators no longer see stale overlay text or ambiguous token focus. |
+| Uncertainty note | Low | Behaviour covered by unit tests, CLI snapshot, and expect harness refresh. |
+
+validation_targets:
+- `go test ./internal/bartui`
+- `go test ./cmd/bar/...`
+- `scripts/tools/run-tui-expect.sh --all`
+- `python3 -m pytest _tests/test_bar_completion_cli.py`
+
+evidence: `docs/adr/evidence/0077-bubble-tea-tui-ux-simplification/loop-005.md`
+
+rollback_plan: `<VCS_REVERT>` = `git restore --source=HEAD -- internal/bartui/program.go internal/bartui/program_test.go cmd/bar/testdata/tui_smoke.json`; rerun `go test ./internal/bartui` and `scripts/tools/run-tui-expect.sh --all` to confirm the overlay artefacts return before reapplying the loop diff.
+
+delta_summary: helper:diff-snapshot=3 files changed, 82 insertions(+), 20 deletions(-) — ensures the shortcut overlay renders full-screen with ClearScreen support and adds token category indicators to the Compose sidebar plus updated tests and fixture.
+
+loops_remaining_forecast: 0 loops. Confidence: medium — typography theme audit remains the only open residual.
+
+residual_constraints:
+- Low — Typography cadence across alternative terminal themes still needs verification. Mitigation: audit Lip Gloss styles against dark and light palettes using `scripts/tools/run-tui-expect.sh --all` with theme overrides; monitor pilot readability feedback. Owner: ADR 0077 follow-up.
+
+next_work:
+- Behaviour: Run visual audit of shortcut typography across supported themes (validation: `scripts/tools/run-tui-expect.sh --all` with theme overrides).

@@ -1554,7 +1554,7 @@ func (m *model) handleCancelKey() (tea.Cmd, bool) {
 	if m.helpVisible {
 		m.helpVisible = false
 		m.restoreStatusAfterShortcutReference()
-		return nil, true
+		return tea.ClearScreen, true
 	}
 	if m.commandRunning {
 		if m.cancelCommand != nil {
@@ -1571,16 +1571,17 @@ func (m *model) handleCancelKey() (tea.Cmd, bool) {
 	return tea.Quit, true
 }
 
-func (m *model) toggleShortcutReference() {
+func (m *model) toggleShortcutReference() tea.Cmd {
 	if m.helpVisible {
 		m.helpVisible = false
 		m.restoreStatusAfterShortcutReference()
-		return
+		return tea.ClearScreen
 	}
 
 	m.statusBeforeHelp = m.statusMessage
 	m.helpVisible = true
 	m.statusMessage = "Shortcut reference open. Press Ctrl+? to close."
+	return tea.ClearScreen
 }
 
 func (m *model) handleKeyString(key string) (bool, tea.Cmd) {
@@ -1589,14 +1590,11 @@ func (m *model) handleKeyString(key string) (bool, tea.Cmd) {
 		m.toggleFocus()
 		return true, nil
 	case "?":
-		m.toggleShortcutReference()
-		return true, nil
+		return true, m.toggleShortcutReference()
 	case "ctrl+/":
-		m.toggleShortcutReference()
-		return true, nil
+		return true, m.toggleShortcutReference()
 	case "ctrl+?":
-		m.toggleShortcutReference()
-		return true, nil
+		return true, m.toggleShortcutReference()
 	case "ctrl+l":
 		m.loadSubjectFromClipboard()
 		return true, nil
@@ -2195,13 +2193,16 @@ func (m *model) renderTokenSummary(b *strings.Builder) {
 	if len(m.tokenStates) == 0 {
 		if len(m.tokens) == 0 {
 			b.WriteString("Tokens: (none selected)\n")
-			return
+		} else {
+			b.WriteString("Tokens: " + strings.Join(m.tokens, ", ") + "\n")
 		}
-		b.WriteString("Tokens: " + strings.Join(m.tokens, ", ") + "\n")
+		if len(m.unassignedTokens) > 0 {
+			b.WriteString("Other tokens: " + strings.Join(m.unassignedTokens, ", ") + "\n")
+		}
 		return
 	}
 
-	var selections []string
+	tokenSummaries := make([]string, 0, len(m.tokenStates))
 	for idx, state := range m.tokenStates {
 		if len(state.selected) == 0 {
 			continue
@@ -2229,13 +2230,13 @@ func (m *model) renderTokenSummary(b *strings.Builder) {
 			}
 			values = append(values, value)
 		}
-		selections = append(selections, fmt.Sprintf("%s: %s", label, strings.Join(values, ", ")))
+		tokenSummaries = append(tokenSummaries, fmt.Sprintf("%s: %s", label, strings.Join(values, ", ")))
 	}
 
-	if len(selections) == 0 {
+	if len(tokenSummaries) == 0 {
 		b.WriteString("Tokens: (none selected)\n")
 	} else {
-		b.WriteString("Tokens: " + strings.Join(selections, " · ") + "\n")
+		b.WriteString("Tokens: " + strings.Join(tokenSummaries, " · ") + "\n")
 	}
 
 	unset := unsetCategoryLabels(m.tokenStates)
@@ -2245,6 +2246,47 @@ func (m *model) renderTokenSummary(b *strings.Builder) {
 
 	if len(m.unassignedTokens) > 0 {
 		b.WriteString("Other tokens: " + strings.Join(m.unassignedTokens, ", ") + "\n")
+	}
+
+	b.WriteString("Categories:\n")
+	for idx, state := range m.tokenStates {
+		label := state.category.Label
+		if label == "" {
+			label = state.category.Key
+		}
+		indicator := "○"
+		suffix := ""
+		if idx == m.tokenCategoryIndex {
+			indicator = "•"
+			if m.focus == focusTokens || m.tokenPaletteVisible {
+				indicator = "»"
+				suffix = " (focus)"
+			}
+		}
+		if len(state.selected) == 0 {
+			b.WriteString(fmt.Sprintf("  %s %s — (none)%s\n", indicator, label, suffix))
+			continue
+		}
+		var values []string
+		for _, value := range state.selected {
+			if ref, ok := m.tokenOptionLookup[value]; ok {
+				if ref.categoryIndex == idx && ref.optionIndex >= 0 && ref.optionIndex < len(state.category.Options) {
+					option := state.category.Options[ref.optionIndex]
+					slug := option.Slug
+					if slug == "" {
+						slug = option.Value
+					}
+					if option.Label != "" && !strings.EqualFold(option.Label, slug) {
+						values = append(values, fmt.Sprintf("%s — %s", slug, option.Label))
+					} else {
+						values = append(values, slug)
+					}
+					continue
+				}
+			}
+			values = append(values, value)
+		}
+		b.WriteString(fmt.Sprintf("  %s %s — %s%s\n", indicator, label, strings.Join(values, ", "), suffix))
 	}
 }
 
@@ -2995,9 +3037,23 @@ func (m model) View() string {
 	if m.helpVisible {
 		overlay := m.renderShortcutReferenceOverlay()
 		if overlay != "" {
-			b.WriteString(overlay)
-			b.WriteString("\n\n")
+			width := m.mainColumnWidth
+			if width <= 0 {
+				width = m.width
+			}
+			if width <= 0 {
+				width = defaultViewportWidth
+			}
+			overlayRendered := lipgloss.NewStyle().Width(width).Render(overlay)
+			b.WriteString(overlayRendered)
+			b.WriteString("\n\nPress Ctrl+? or Esc to close the shortcut reference.\n")
+		} else {
+			b.WriteString("Shortcut reference unavailable.\n")
 		}
+		b.WriteString("Press Ctrl+C or Esc to exit.\n")
+		output := b.String()
+		paletteDebugViewSummary(&m, output)
+		return output
 	}
 
 	mainContent := m.renderMainColumnContent()

@@ -626,11 +626,17 @@ func TestToggleShortcutReference(t *testing.T) {
 	helpKey := tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune{'?'}}
 	m, cmd := updateModel(t, m, helpKey)
 	if cmd != nil {
-		t.Fatalf("unexpected command when toggling shortcut reference: %T", cmd)
+		cmd()
 	}
 	view := m.View()
 	if !strings.Contains(view, "Shortcut reference (press Ctrl+? to close)") {
 		t.Fatalf("expected view to include shortcut reference contents, got:\n%s", view)
+	}
+	if !strings.Contains(view, "Press Ctrl+? or Esc to close the shortcut reference.") {
+		t.Fatalf("expected shortcut reference close hint, got:\n%s", view)
+	}
+	if strings.Contains(view, "Subject (PgUp/PgDn") {
+		t.Fatalf("expected shortcut overlay to replace main layout, got:\n%s", view)
 	}
 	if !strings.Contains(view, "Focus & Layout") {
 		t.Fatalf("expected shortcut reference to group shortcuts under Focus & Layout, got:\n%s", view)
@@ -641,7 +647,7 @@ func TestToggleShortcutReference(t *testing.T) {
 
 	m, cmd = updateModel(t, m, helpKey)
 	if cmd != nil {
-		t.Fatalf("unexpected command when toggling shortcut reference: %T", cmd)
+		cmd()
 	}
 	if strings.Contains(m.View(), "Shortcut reference (press Ctrl+? to close)") {
 		t.Fatalf("expected shortcut reference to be hidden after second toggle")

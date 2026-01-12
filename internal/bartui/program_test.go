@@ -721,6 +721,12 @@ func TestToggleShortcutReference(t *testing.T) {
 	if !strings.Contains(view, "Focus & Layout") {
 		t.Fatalf("expected shortcut reference to group shortcuts under Focus & Layout, got:\n%s", view)
 	}
+	if !strings.Contains(view, "Ctrl+J") {
+		t.Fatalf("expected shortcut reference to list Ctrl+J viewport toggle, got:\n%s", view)
+	}
+	if !strings.Contains(view, "Ctrl+K") {
+		t.Fatalf("expected shortcut reference to list Ctrl+K viewport toggle, got:\n%s", view)
+	}
 	if !strings.Contains(strings.ToLower(m.statusMessage), "shortcut reference") {
 		t.Fatalf("expected status message to reference shortcut reference, got %q", m.statusMessage)
 	}
@@ -731,6 +737,86 @@ func TestToggleShortcutReference(t *testing.T) {
 	}
 	if strings.Contains(m.View(), "Shortcut reference (press Ctrl+? to close)") {
 		t.Fatalf("expected shortcut reference to be hidden after second toggle")
+	}
+}
+
+func TestViewportFocusToggleSubject(t *testing.T) {
+	opts := Options{
+		Tokens:          []string{"todo", "focus"},
+		TokenCategories: defaultTokenCategories(),
+		Preview:         func(subject string, tokens []string) (string, error) { return "preview:" + subject, nil },
+		ClipboardRead:   func() (string, error) { return "", nil },
+		ClipboardWrite:  func(string) error { return nil },
+		RunCommand: func(context.Context, string, string, map[string]string) (string, string, error) {
+			return "", "", nil
+		},
+		CommandTimeout: time.Second,
+	}
+
+	m := newModel(opts)
+	baselineSubject := m.subjectViewport.Height
+	baselineResult := m.resultViewport.Height
+
+	m, _ = updateModel(t, m, tea.KeyMsg{Type: tea.KeyCtrlJ})
+	if m.viewportMode != viewportModeSubject {
+		t.Fatalf("expected viewport mode subject, got %v", m.viewportMode)
+	}
+	if m.subjectViewport.Height <= baselineSubject {
+		t.Fatalf("expected subject viewport height to increase, baseline=%d new=%d", baselineSubject, m.subjectViewport.Height)
+	}
+	if !strings.Contains(strings.ToLower(m.statusMessage), "subject viewport") {
+		t.Fatalf("expected status to mention subject viewport, got %q", m.statusMessage)
+	}
+
+	m, _ = updateModel(t, m, tea.KeyMsg{Type: tea.KeyCtrlJ})
+	if m.viewportMode != viewportModeNormal {
+		t.Fatalf("expected viewport mode reset to normal, got %v", m.viewportMode)
+	}
+	if m.subjectViewport.Height != baselineSubject {
+		t.Fatalf("expected subject viewport height to restore, baseline=%d restored=%d", baselineSubject, m.subjectViewport.Height)
+	}
+	if m.resultViewport.Height != baselineResult {
+		t.Fatalf("expected result viewport height to restore, baseline=%d restored=%d", baselineResult, m.resultViewport.Height)
+	}
+}
+
+func TestViewportFocusToggleResult(t *testing.T) {
+	opts := Options{
+		Tokens:          []string{"todo", "focus"},
+		TokenCategories: defaultTokenCategories(),
+		Preview:         func(subject string, tokens []string) (string, error) { return "preview:" + subject, nil },
+		ClipboardRead:   func() (string, error) { return "", nil },
+		ClipboardWrite:  func(string) error { return nil },
+		RunCommand: func(context.Context, string, string, map[string]string) (string, string, error) {
+			return "", "", nil
+		},
+		CommandTimeout: time.Second,
+	}
+
+	m := newModel(opts)
+	baselineSubject := m.subjectViewport.Height
+	baselineResult := m.resultViewport.Height
+
+	m, _ = updateModel(t, m, tea.KeyMsg{Type: tea.KeyCtrlK})
+	if m.viewportMode != viewportModeResult {
+		t.Fatalf("expected viewport mode result, got %v", m.viewportMode)
+	}
+	if m.resultViewport.Height <= baselineResult {
+		t.Fatalf("expected result viewport height to increase, baseline=%d new=%d", baselineResult, m.resultViewport.Height)
+	}
+	if !strings.Contains(strings.ToLower(m.statusMessage), "result viewport") {
+		t.Fatalf("expected status to mention result viewport, got %q", m.statusMessage)
+	}
+
+	m, _ = updateModel(t, m, tea.KeyMsg{Type: tea.KeyCtrlK})
+	if m.viewportMode != viewportModeNormal {
+		t.Fatalf("expected viewport mode reset to normal, got %v", m.viewportMode)
+	}
+	if m.resultViewport.Height != baselineResult {
+		t.Fatalf("expected result viewport height to restore, baseline=%d restored=%d", baselineResult, m.resultViewport.Height)
+	}
+	if m.subjectViewport.Height != baselineSubject {
+		t.Fatalf("expected subject viewport height to restore, baseline=%d restored=%d", baselineSubject, m.subjectViewport.Height)
 	}
 }
 

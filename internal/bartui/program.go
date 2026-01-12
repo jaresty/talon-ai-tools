@@ -322,6 +322,8 @@ func NewProgram(opts Options) (*tea.Program, error) {
 
 type focusArea int
 
+type viewportMode int
+
 const (
 	focusSubject focusArea = iota
 	focusTokens
@@ -337,6 +339,12 @@ const (
 	minTokenViewport      = 6
 	minSubjectViewport    = 4
 	minResultViewport     = 8
+)
+
+const (
+	viewportModeNormal viewportMode = iota
+	viewportModeSubject
+	viewportModeResult
 )
 
 func maxInt(a, b int) int {
@@ -659,6 +667,7 @@ type model struct {
 	mainColumnWidth    int
 	sidebarColumnWidth int
 	columnGap          int
+	viewportMode       viewportMode
 	subjectViewport    viewport.Model
 	resultViewport     viewport.Model
 	condensedPreview   bool
@@ -801,6 +810,7 @@ func newModel(opts Options) model {
 		envSelection:           0,
 		width:                  initialWidth,
 		height:                 initialHeight,
+		viewportMode:           viewportModeNormal,
 		subjectViewport:        subjectViewport,
 		resultViewport:         resultViewport,
 		listPresets:            opts.ListPresets,
@@ -872,6 +882,31 @@ func (m *model) layoutViewports() {
 			remaining -= extraSubject
 
 			resultHeight += remaining
+		}
+	}
+
+	switch m.viewportMode {
+	case viewportModeSubject:
+		tokenHeight = maxInt(minTokenViewport, tokenHeight)
+		subjectHeight = maxInt(minSubjectViewport, available-tokenHeight-minResultViewport)
+		if subjectHeight < minSubjectViewport {
+			subjectHeight = minSubjectViewport
+		}
+		resultHeight = available - tokenHeight - subjectHeight
+		if resultHeight < minResultViewport {
+			resultHeight = minResultViewport
+			subjectHeight = maxInt(minSubjectViewport, available-tokenHeight-resultHeight)
+		}
+	case viewportModeResult:
+		tokenHeight = maxInt(minTokenViewport, tokenHeight)
+		resultHeight = maxInt(minResultViewport, available-tokenHeight-minSubjectViewport)
+		if resultHeight < minResultViewport {
+			resultHeight = minResultViewport
+		}
+		subjectHeight = available - tokenHeight - resultHeight
+		if subjectHeight < minSubjectViewport {
+			subjectHeight = minSubjectViewport
+			resultHeight = maxInt(minResultViewport, available-tokenHeight-subjectHeight)
 		}
 	}
 
@@ -1497,6 +1532,36 @@ func (m *model) toggleSidebarVisibility() {
 	m.updateResultViewportContent()
 }
 
+func (m *model) toggleViewportFocus(area focusArea) {
+	var status string
+	switch area {
+	case focusSubject:
+		if m.viewportMode == viewportModeSubject {
+			m.viewportMode = viewportModeNormal
+			status = "Subject viewport restored to default layout."
+		} else {
+			m.viewportMode = viewportModeSubject
+			status = "Subject viewport maximised. Press Ctrl+J to restore the default layout."
+		}
+	case focusResult:
+		if m.viewportMode == viewportModeResult {
+			m.viewportMode = viewportModeNormal
+			status = "Result viewport restored to default layout."
+		} else {
+			m.viewportMode = viewportModeResult
+			status = "Result viewport maximised. Press Ctrl+K to restore the default layout."
+		}
+	default:
+		return
+	}
+
+	m.layoutViewports()
+	m.updateTokenViewportContent()
+	m.updateSubjectViewportContent()
+	m.updateResultViewportContent()
+	m.statusMessage = status
+}
+
 func (m *model) rebuildTokensFromStates() {
 	total := len(m.unassignedTokens)
 	for _, state := range m.tokenStates {
@@ -1794,6 +1859,12 @@ func (m *model) handleKeyString(key string) (bool, tea.Cmd) {
 		return true, nil
 	case "ctrl+g":
 		m.toggleSidebarVisibility()
+		return true, nil
+	case "ctrl+j":
+		m.toggleViewportFocus(focusSubject)
+		return true, nil
+	case "ctrl+k":
+		m.toggleViewportFocus(focusResult)
 		return true, nil
 	case "ctrl+e":
 		if m.focus == focusEnvironment {
@@ -3236,6 +3307,8 @@ func (m *model) shortcutReferenceSections() []shortcutSection {
 				{Keys: "Tab", Description: "Cycle focus between subject, command, tokens, and environment"},
 				{Keys: "Shift+Tab", Description: "Reverse the focus cycle"},
 				{Keys: "Ctrl+G", Description: "Toggle sidebar visibility"},
+				{Keys: "Ctrl+J", Description: "Toggle subject viewport maximisation"},
+				{Keys: "Ctrl+K", Description: "Toggle result viewport maximisation"},
 				{Keys: "Ctrl+?", Description: "Toggle this shortcut reference (aliases: ? / Ctrl+/)"},
 				{Keys: "Esc", Description: "Close overlays (reference → palette) then exit"},
 			},

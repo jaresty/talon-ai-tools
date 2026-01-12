@@ -12,6 +12,7 @@ In Progress — Bubble Tea TUI palette and grammar-aligned palette flow (2026-01
 - Replace the modal palette picker with a docked *grammar composer* that behaves like `bar build`: the input always shows `category=value`, Tab/Shift+Tab cycle completions in the same order as the CLI, and Enter commits staged changes. Mirror CLI hints inline so operators learn the grammar cadence.
 - Keep the palette docked in a right-side viewport that stays visible while editing, staged tokens remain visible until applied, and keyboard-first flows stay primary. Pointer support is optional; when implemented it must reinforce the CLI command being learned.
 - Add focus breadcrumbs, transient feedback, and a single-step undo stack tailored to token changes so pilots can experiment quickly without losing context. Favor simple Lip Gloss styling unless a Charm “skill” directly reinforces the learning objective.
+- Provide keyboard shortcuts (`Ctrl+J`, `Ctrl+K`) to maximise the subject or result viewports for focused review without disrupting the grammar composer.
 - Expose a palette history toggle (`Ctrl+H`) for recent token adjustments and command invocations, echoing shell history search patterns and aiding recall. History entries should show the exact CLI command that would reproduce the action.
 - Keep CLI summaries focused on grammar tokens and destinations; omit the raw subject/prompt text (skip `--prompt`) to prevent overwhelming the command line representation.
 
@@ -54,7 +55,6 @@ In Progress — Bubble Tea TUI palette and grammar-aligned palette flow (2026-01
 - Coordinate with ADR 0075 (CLI coordination layer refactor) so the grammar composer shortcuts and palette history stay in sync with the accepted `internal/barcli/cli` contracts.
 - Monitor the two-column layout via `scripts/tools/run-tui-expect.sh --all` after palette or preset tweaks to catch regressions early.
 - Gather pilot feedback after release to tune Tab defaults (e.g., staged apply behaviour, history length, category hinting).
-- Add a viewport focus toggle (e.g., maximise Result or Subject panes with a shortcut) so pilots can page multi-line command output or subject drafts without distraction.
 - When refreshing history/shortcut views, reuse the `lipgloss-components` recipes (tables, lists, trees) so the palette mirrors CLI artifacts with consistent styling.
 - Pursue interaction simplification and typography cues outlined in ADR 0077.
 

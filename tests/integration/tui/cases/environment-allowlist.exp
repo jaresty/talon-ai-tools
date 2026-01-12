@@ -11,7 +11,7 @@ expect {
     timeout { send_error "failed to render header"; exit 1 }
 }
 expect {
-    -re {Environment allowlist: CHATGPT_API_KEY, ORG_ID\. Tab again to focus the allowlist and press Ctrl\+E to toggle entries\.} {}
+    -re {Env: CHATGPT_API_KEY, ORG_ID} {}
     timeout { send_error "missing initial allowlist status"; exit 1 }
 }
 

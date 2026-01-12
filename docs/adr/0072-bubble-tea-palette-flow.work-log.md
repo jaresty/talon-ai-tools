@@ -355,3 +355,39 @@ residual_constraints:
 next_work:
 - Behaviour: Implement toast/undo animations that reinforce CLI feedback without blocking keyboard flow (validation: `go test ./internal/bartui`, updated expect case).
 - Behaviour: Add inline telemetry sparkline below the composer, ensuring status strip remains legible (validation: `go test ./internal/bartui`, `scripts/tools/run-tui-expect.sh --all`).
+
+## loop-010 | helper:v20251223.1 | 2026-01-12
+
+focus: ADR 0072 Decision (new viewport bullet) → add keyboard shortcuts that maximise the subject or result panes so operators can read long prompts/responses without leaving the grammar composer.
+
+active_constraint: Review showed no shortcut existed to enlarge the subject or result viewports; paging through multi-line output required manual scrolling within constrained panes, contradicting the ADR’s readability goals.
+
+expected_value:
+| Factor | Value | Rationale |
+| --- | --- | --- |
+| Impact | Medium | Improves readability of long prompts/results while keeping CLI guidance visible. |
+| Probability | High | Wiring explicit layout modes and shortcuts deterministically provides the behaviour. |
+| Time Sensitivity | Medium | Needed before layering telemetry/overlay polish so future work inherits the viewport controls. |
+| Uncertainty note | Low | Unit tests and expect harness validate the new shortcuts end-to-end. |
+
+validation_targets:
+- `go test ./internal/bartui`
+- `go test ./cmd/bar/...`
+- `python3 -m pytest _tests/test_bar_completion_cli.py`
+- `scripts/tools/run-tui-expect.sh --all`
+
+evidence: `docs/adr/evidence/0072-bubble-tea-palette-flow/loop-010.md`
+
+rollback_plan: `<VCS_REVERT>` = `git restore --source=HEAD -- internal/bartui/program.go internal/bartui/program_test.go docs/adr/0072-bubble-tea-palette-flow.md docs/adr/0072-bubble-tea-palette-flow.work-log.md tests/integration/tui/cases/environment-allowlist.exp`; rerun the validation targets above to confirm the previous constrained viewport behaviour returns.
+
+delta_summary: helper:diff-snapshot=5 files changed, 291 insertions(+), 15 deletions(-) — introduced viewport maximisation modes, added Ctrl+J/Ctrl+K bindings, refreshed shortcut reference/tests, and relaxed expect matching for environment allowlists.
+
+loops_remaining_forecast: 2 loops (toast/undo animations; telemetry sparkline) — medium confidence.
+
+residual_constraints:
+- Medium — Transient toast/undo animations remain unimplemented; mitigation: add toast helper aligned with Charm skills and record expect coverage.
+- Medium — Inline ntcharts telemetry still absent; mitigation: integrate sparkline helper when layout remains stable.
+
+next_work:
+- Behaviour: Implement toast/undo animations and verify with expect harness updates (validation: `go test ./internal/bartui`, targeted expect case).
+- Behaviour: Add inline telemetry sparkline beneath the grammar composer (validation: `go test ./internal/bartui`, `scripts/tools/run-tui-expect.sh --all`).

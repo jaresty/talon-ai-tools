@@ -349,7 +349,7 @@ Some high-frequency combinations you can say directly:
   - `model describe adversarial rog` – adversarial review: look for weaknesses, edge cases, and unstated assumptions.
   - `model describe scaffold fog` – explain for a beginner from first principles using gradual scaffolding.
   - `model describe socratic fog` – explore the topic by asking short, targeted questions before giving conclusions.
-  - `model describe explore form variants diverge fog` – generate multiple options with approximate probabilities.
+  - `model describe explore diverge variants fog` – generate multiple options with approximate probabilities.
   - `model describe liberating rog` – Liberating Structures-style facilitation framing.
   - `model describe diverge fog` – open up the option space and explore alternatives.
   - `model describe converge rog` – weigh options and narrow towards a decision.

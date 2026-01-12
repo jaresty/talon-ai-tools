@@ -107,7 +107,7 @@ EVIDENCE
 
 rollback_plan: git restore --source=HEAD -- docs/adr/017-goal-modifier-decomposition-and-simplification.md
 
-delta_summary: helper:diff-snapshot=1 file changed, 15 insertions(+), 15 deletions(-); updated ADR 017 sampling guidance to reference `method=explore` + `form=variants`, refreshed examples, and adjusted implementation notes/tests references.
+delta_summary: helper:diff-snapshot=1 file changed, 24 insertions(+), 24 deletions(-); updated ADR 017 sampling guidance to reference `method=explore` + `form=variants`, refreshed examples, and adjusted implementation notes/tests references.
 
 loops_remaining_forecast: 1 (confidence medium) – apply regenerated help/pattern snapshots to tracked surfaces in a future docs sweep.
 
